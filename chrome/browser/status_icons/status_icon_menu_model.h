@@ -16,8 +16,6 @@ namespace gfx {
 class Image;
 }
 
-class StatusIconMenuModelTest;
-
 // StatusIconMenuModel contains the state of the SimpleMenuModel as well as that
 // of its delegate. This is done so that we can easily identify when the menu
 // model state has changed and can tell the status icon to update the menu. This

@@ -22,7 +22,6 @@ class SlideAnimation;
 }
 
 namespace views {
-class View;
 class Widget;
 }
 

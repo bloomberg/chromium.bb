@@ -15,10 +15,6 @@
 #include "chrome/service/cloud_print/connector_settings.h"
 #include "printing/backend/print_backend.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace gaia {
 struct OAuthClientInfo;
 }

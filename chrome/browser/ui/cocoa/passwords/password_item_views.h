@@ -12,7 +12,6 @@ struct PasswordForm;
 }  // namespace autofill
 
 @class HoverImageButton;
-class ManagePasswordsBubbleModel;
 @protocol PasswordItemDelegate;
 
 // The state of the password item.

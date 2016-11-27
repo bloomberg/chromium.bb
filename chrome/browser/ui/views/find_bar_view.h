@@ -25,7 +25,6 @@ class Range;
 
 namespace views {
 class Label;
-class MouseEvent;
 class Painter;
 class Separator;
 class Textfield;

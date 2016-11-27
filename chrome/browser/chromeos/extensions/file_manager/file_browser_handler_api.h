@@ -25,7 +25,6 @@ namespace file_manager {
 
 namespace util {
 struct EntryDefinition;
-struct FileDefinition;
 }
 
 // Interface that is used by FileBrowserHandlerInternalSelectFileFunction to

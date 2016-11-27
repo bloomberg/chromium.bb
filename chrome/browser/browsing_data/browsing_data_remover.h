@@ -45,8 +45,6 @@
 class BrowsingDataFilterBuilder;
 class BrowsingDataFlashLSOHelper;
 class BrowsingDataRemoverFactory;
-class HostContentSettingsMap;
-class IOThread;
 class Profile;
 class WebappRegistry;
 
@@ -58,10 +56,6 @@ namespace content {
 class BrowserContext;
 class PluginDataRemover;
 class StoragePartition;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

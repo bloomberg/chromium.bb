@@ -27,11 +27,9 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
-class VideoFrame;
 
 namespace cast {
 class CastEnvironment;
-class FrameInput;
 class RawEventSubscriberBundle;
 
 namespace transport {

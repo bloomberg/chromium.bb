@@ -13,10 +13,6 @@
 
 class Profile;
 
-namespace extensions {
-class StorageFrontend;
-}
-
 namespace syncer {
 class SyncClient;
 }

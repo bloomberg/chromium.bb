@@ -11,7 +11,6 @@
 #include "base/callback.h"
 #include "ui/gfx/native_widget_types.h"
 
-class PermissionRequestManager;
 class PermissionRequest;
 
 namespace content {

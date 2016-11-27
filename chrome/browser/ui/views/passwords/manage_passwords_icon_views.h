@@ -13,7 +13,6 @@
 #include "ui/views/controls/image_view.h"
 
 class CommandUpdater;
-class ManagePasswordsUIController;
 
 // View for the password icon in the Omnibox.
 class ManagePasswordsIconViews : public ManagePasswordsIconView,

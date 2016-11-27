@@ -31,8 +31,6 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }  // namespace user_prefs
 
-class PrefRegistrySimple;
-
 // Provides a facade through which the user preference store may be accessed and
 // managed.
 class ProfilePrefStoreManager {

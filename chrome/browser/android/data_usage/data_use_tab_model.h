@@ -25,7 +25,6 @@
 #include "url/gurl.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TickClock;
 }
 
@@ -38,7 +37,6 @@ namespace chrome {
 namespace android {
 
 class DataUseMatcher;
-class ExternalDataUseObserverBridge;
 
 // Models tracking and labeling of data usage within each Tab. Within each tab,
 // the model tracks the data use of a sequence of navigations in a "tracking

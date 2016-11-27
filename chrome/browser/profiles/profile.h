@@ -17,20 +17,12 @@
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
 
-class ChromeAppCacheService;
 class ChromeZoomLevelPrefs;
 class DevToolsNetworkControllerHandle;
 class ExtensionSpecialStoragePolicy;
-class HostContentSettingsMap;
 class PrefProxyConfigTracker;
 class PrefService;
-class PromoCounter;
-class ProtocolHandlerRegistry;
 class TestingProfile;
-
-namespace android {
-class TabContentsProvider;
-}
 
 namespace base {
 class SequencedTaskRunner;
@@ -41,17 +33,8 @@ namespace chrome_browser_net {
 class Predictor;
 }
 
-namespace chromeos {
-class LibCrosServiceLibraryImpl;
-class ResetDefaultProxyConfigServiceTask;
-}
-
 namespace content {
 class WebUI;
-}
-
-namespace storage {
-class FileSystemContext;
 }
 
 namespace net {

@@ -22,7 +22,6 @@ class PrefRegistrySyncable;
 namespace chromeos {
 
 class MultiProfileUserControllerDelegate;
-class UserManager;
 
 // MultiProfileUserController decides whether a user is allowed to be in a
 // multi-profiles session. It caches the multi-profile user behavior pref backed

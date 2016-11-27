@@ -30,7 +30,6 @@ class IMEEngineHandlerInterface;
 namespace chromeos {
 class ComponentExtensionIMEManager;
 class ComponentExtensionIMEManagerDelegate;
-class InputMethodEngine;
 namespace input_method {
 class InputMethodDelegate;
 class ImeKeyboard;

@@ -21,8 +21,6 @@ class Profile;
 
 namespace content {
 class BrowserContext;
-class NotificationDetails;
-class NotificationObserver;
 class NotificationRegistrar;
 }  // namespace content
 

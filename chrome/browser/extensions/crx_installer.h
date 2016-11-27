@@ -37,7 +37,6 @@ class SequencedTaskRunner;
 namespace extensions {
 class CrxInstallError;
 class ExtensionUpdaterTest;
-class RequirementsChecker;
 
 // This class installs a crx file into a profile.
 //

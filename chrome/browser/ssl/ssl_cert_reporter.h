@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace net {
-class SSLInfo;
-}  // namespace net
-
 // An interface used by interstitial pages to send reports of invalid
 // certificate chains.
 class SSLCertReporter {

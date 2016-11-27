@@ -13,7 +13,6 @@
 #include "extensions/common/one_shot_event.h"
 
 class Profile;
-class ValueStore;
 
 #if defined(OS_CHROMEOS)
 namespace chromeos {

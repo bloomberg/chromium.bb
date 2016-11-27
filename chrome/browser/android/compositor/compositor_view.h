@@ -18,20 +18,9 @@
 #include "content/public/browser/browser_child_process_observer.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-class DecorationBackground;
-class DecorationCounter;
-class SkBitmap;
-class TabLayerContainer;
-
 namespace cc {
 class Layer;
 class SolidColorLayer;
-class TextureLayer;
-class UIResourceBitmap;
-}
-
-namespace gfx {
-class JavaBitmap;
 }
 
 namespace content {
@@ -46,10 +35,8 @@ class UIResourceProvider;
 
 namespace android {
 
-class LayerTitleCache;
 class SceneLayer;
 class TabContentManager;
-class ToolbarLayer;
 
 class CompositorView : public content::CompositorClient,
                        public content::BrowserChildProcessObserver {

@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace message_center {
 struct Notifier;
 }

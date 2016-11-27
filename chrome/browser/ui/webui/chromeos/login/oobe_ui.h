@@ -49,7 +49,6 @@ class KioskEnableScreenActor;
 class LoginScreenContext;
 class NativeWindowDelegate;
 class NetworkDropdownHandler;
-class NetworkErrorView;
 class NetworkStateInformer;
 class NetworkView;
 class SigninScreenHandler;

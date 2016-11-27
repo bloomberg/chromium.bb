@@ -20,10 +20,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace storage {
-class FileSystemURL;
-}  // namespace storage
-
 namespace extensions {
 namespace app_file_handler_util {
 

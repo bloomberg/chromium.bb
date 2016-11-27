@@ -15,9 +15,6 @@
 namespace gfx {
 class Canvas;
 }
-class BrowserNonClientFrameView;
-class BrowserView;
-class Profile;
 
 // ProfileIndicatorIcon
 //

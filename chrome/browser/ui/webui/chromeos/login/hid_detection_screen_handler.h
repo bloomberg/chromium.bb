@@ -15,10 +15,6 @@
 #include "components/prefs/pref_registry_simple.h"
 #include "content/public/browser/web_ui.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace chromeos {
 
 class CoreOobeActor;

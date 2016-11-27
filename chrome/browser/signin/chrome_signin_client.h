@@ -17,10 +17,6 @@
 #include "net/base/network_change_notifier.h"
 #endif
 
-namespace content_settings {
-class CookieSettings;
-}
-
 namespace net {
 class URLRequestContext;
 }

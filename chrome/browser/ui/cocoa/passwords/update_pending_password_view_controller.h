@@ -7,7 +7,6 @@
 
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 
-class ManagePasswordsBubbleModel;
 @class CredentialsSelectionView;
 @class PasswordsListViewController;
 

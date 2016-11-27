@@ -13,8 +13,6 @@
 #include "components/proximity_auth/screenlock_state.h"
 #include "components/signin/core/account_id/account_id.h"
 
-class PrefService;
-
 // Profile specific class responsible for updating screenlock UI for the user
 // associated with the profile when their Easy Unlock state changes.
 class EasyUnlockScreenlockStateHandler

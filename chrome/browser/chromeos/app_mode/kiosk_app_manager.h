@@ -26,10 +26,6 @@ class GURL;
 class PrefRegistrySimple;
 class Profile;
 
-namespace base {
-class RefCountedString;
-}
-
 namespace extensions {
 class Extension;
 class ExternalLoader;

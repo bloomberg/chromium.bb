@@ -27,7 +27,6 @@ namespace views {
 class Label;
 class LabelButton;
 class TreeView;
-class Widget;
 }
 
 // This is the Views implementation of the collected cookies dialog.

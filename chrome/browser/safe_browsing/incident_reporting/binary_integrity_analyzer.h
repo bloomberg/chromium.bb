@@ -12,7 +12,6 @@
 
 
 namespace base {
-class FilePath;
 class TimeDelta;
 }  // namespace base
 

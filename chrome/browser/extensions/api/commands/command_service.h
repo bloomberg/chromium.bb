@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 class BrowserContext;
 }

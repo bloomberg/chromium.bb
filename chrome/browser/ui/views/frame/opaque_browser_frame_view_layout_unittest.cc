@@ -339,7 +339,6 @@ class OpaqueBrowserFrameViewLayoutTest : public views::ViewsTestBase {
   TabIconView* tab_icon_view_ = nullptr;
   views::Label* window_title_ = nullptr;
 
-  AvatarMenuButton* menu_button_ = nullptr;
   views::MenuButton* avatar_button_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(OpaqueBrowserFrameViewLayoutTest);

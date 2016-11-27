@@ -15,8 +15,6 @@
 
 namespace drive {
 
-class FileSystemInterface;
-
 namespace internal {
 
 // The implementation of storage::AsyncFileUtil for Drive File System.

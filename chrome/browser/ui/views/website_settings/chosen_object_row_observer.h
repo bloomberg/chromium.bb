@@ -7,8 +7,6 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
-class ChosenObjectRow;
-
 class ChosenObjectRowObserver {
  public:
   // This method is called when permission for the object is revoked.

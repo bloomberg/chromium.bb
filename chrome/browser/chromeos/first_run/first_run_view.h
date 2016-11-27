@@ -10,8 +10,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 #include "ui/views/view.h"
 
-class Profile;
-
 namespace content {
 class BrowserContext;
 }

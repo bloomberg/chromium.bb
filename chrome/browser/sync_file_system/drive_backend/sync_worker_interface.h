@@ -22,11 +22,6 @@ class FilePath;
 class ListValue;
 }
 
-namespace drive {
-class DriveServiceInterface;
-class DriveUploaderInterface;
-}
-
 namespace storage {
 class FileSystemURL;
 }
@@ -38,10 +33,8 @@ class SyncFileMetadata;
 
 namespace drive_backend {
 
-class MetadataDatabase;
 class RemoteChangeProcessorOnWorker;
 class SyncEngineContext;
-class SyncTaskManager;
 
 class SyncWorkerInterface {
  public:

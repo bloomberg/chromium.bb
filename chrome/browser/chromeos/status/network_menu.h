@@ -14,16 +14,8 @@
 #include "base/strings/string16.h"
 #include "ui/gfx/native_widget_types.h"  // gfx::NativeWindow
 
-class Browser;
-
 namespace ui {
 class MenuModel;
-}
-
-namespace views {
-class MenuItemView;
-class MenuButton;
-class MenuRunner;
 }
 
 namespace chromeos {

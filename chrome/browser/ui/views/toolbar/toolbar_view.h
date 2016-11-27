@@ -39,11 +39,6 @@ namespace bookmarks {
 class BookmarkBubbleObserver;
 }
 
-namespace extensions {
-class Command;
-class Extension;
-}
-
 // The Browser Window's toolbar.
 class ToolbarView : public views::AccessiblePaneView,
                     public views::MenuButtonListener,

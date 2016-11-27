@@ -13,12 +13,6 @@
 #include "base/lazy_instance.h"
 #include "base/macros.h"
 
-namespace content {
-
-class BackgroundSyncManager;
-
-}
-
 // The BackgroundSyncLauncherAndroid singleton owns the Java
 // BackgroundSyncLauncher object and is used to register interest in starting
 // the browser the next time the device goes online. This class runs on the UI

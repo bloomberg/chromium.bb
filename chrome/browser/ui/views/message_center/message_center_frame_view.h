@@ -8,12 +8,6 @@
 #include "base/macros.h"
 #include "ui/views/window/non_client_view.h"
 
-namespace views {
-class Label;
-class LabelButton;
-class BubbleBorder;
-}
-
 namespace message_center {
 
 // The non-client frame view of the message center widget.

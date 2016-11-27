@@ -15,8 +15,6 @@ class FilePath;
 
 namespace content {
 class DownloadItem;
-class DownloadManager;
-class WebContents;
 }
 
 // Handles showing a dialog to the user to ask for the filename for a download.

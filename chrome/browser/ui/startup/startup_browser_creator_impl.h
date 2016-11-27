@@ -25,10 +25,6 @@ class CommandLine;
 class FilePath;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace internals {
 GURL GetTriggeredResetSettingsURL();
 GURL GetWelcomePageURL();

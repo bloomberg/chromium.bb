@@ -15,10 +15,6 @@
 #include "content/public/browser/download_item.h"
 #include "ui/base/models/simple_menu_model.h"
 
-namespace content {
-class PageNavigator;
-}
-
 // This class is responsible for the download shelf context menu. Platform
 // specific subclasses are responsible for creating and running the menu.
 //

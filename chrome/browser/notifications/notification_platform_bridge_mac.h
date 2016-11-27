@@ -20,7 +20,6 @@ class Notification;
 @class NSDictionary;
 @class NSUserNotificationCenter;
 @class NSXPCConnection;
-class PrefService;
 
 // This class is an implementation of NotificationPlatformBridge that will
 // send platform notifications to the the MacOSX notification center.

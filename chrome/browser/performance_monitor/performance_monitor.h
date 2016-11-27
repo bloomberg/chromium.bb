@@ -15,10 +15,6 @@
 #include "base/timer/timer.h"
 #include "chrome/browser/performance_monitor/process_metrics_history.h"
 
-namespace content {
-struct ChildProcessData;
-}
-
 namespace performance_monitor {
 
 class ProcessMetricsHistory;

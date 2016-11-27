@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
-class IdentityInternalsUITest;
-
 // The WebUI for chrome://identity-internals
 class IdentityInternalsUI
     : public content::WebUIController {

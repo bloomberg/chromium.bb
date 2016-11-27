@@ -12,8 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_message_bubble_controller.h"
 
-class Browser;
-
 namespace extensions {
 
 class ProxyOverriddenBubbleDelegate

@@ -16,7 +16,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 namespace content {
-class RenderProcessHost;
 class WebContents;
 }
 

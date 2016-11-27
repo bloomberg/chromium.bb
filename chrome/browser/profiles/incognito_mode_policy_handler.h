@@ -10,10 +10,6 @@
 
 class PrefValueMap;
 
-namespace base {
-class Value;
-}
-
 namespace policy {
 
 class PolicyErrorMap;

@@ -11,8 +11,6 @@
 #include "chrome/browser/image_decoder.h"
 #include "components/image_fetcher/image_decoder.h"
 
-class SkBitmap;
-
 namespace suggestions {
 
 // image_fetcher::ImageDecoder Implementation.

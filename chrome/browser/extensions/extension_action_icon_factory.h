@@ -12,7 +12,6 @@
 #include "extensions/browser/extension_icon_image.h"
 
 class ExtensionAction;
-class ExtensionIconSet;
 class Profile;
 
 namespace extensions {

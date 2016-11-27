@@ -12,10 +12,6 @@
 #include "chrome/browser/extensions/chrome_extension_function.h"
 #include "chrome/common/extensions/api/file_system_provider.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace chromeos {
 namespace file_system_provider {
 

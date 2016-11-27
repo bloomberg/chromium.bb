@@ -32,7 +32,6 @@
 #include "chrome/browser/extensions/menu_manager.h"
 #endif
 
-class OpenWithMenuObserver;
 class PrintPreviewContextMenuObserver;
 class Profile;
 class SpellingMenuObserver;

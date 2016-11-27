@@ -42,7 +42,6 @@ class PrefRegistrySyncable;
 }
 
 namespace proximity_auth {
-class ProximityAuthBleSystem;
 class ProximityAuthSystem;
 }
 

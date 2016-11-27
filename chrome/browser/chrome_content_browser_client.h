@@ -32,10 +32,6 @@ class BrowserContext;
 class QuotaPermissionContext;
 }
 
-namespace extensions {
-class BrowserPermissionsPolicyDelegate;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

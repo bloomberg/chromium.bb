@@ -13,11 +13,6 @@
 #include "chrome/common/extensions/api/autofill_private.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
 
-namespace autofill {
-class AutofillProfile;
-class CreditCard;
-}
-
 namespace extensions {
 
 namespace autofill_util {

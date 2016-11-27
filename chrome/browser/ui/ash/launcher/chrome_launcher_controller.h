@@ -24,7 +24,6 @@
 
 class AccountId;
 class ArcAppDeferredLauncherController;
-class Browser;
 class BrowserShortcutLauncherItemController;
 class GURL;
 class LauncherControllerHelper;

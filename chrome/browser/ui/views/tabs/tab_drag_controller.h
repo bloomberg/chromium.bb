@@ -21,9 +21,6 @@
 #include "ui/gfx/native_widget_types.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace gfx {
-class Screen;
-}
 namespace ui {
 class EventHandler;
 class ListSelectionModel;
@@ -34,7 +31,6 @@ class View;
 class Browser;
 class Tab;
 class TabDragControllerTest;
-struct TabRendererData;
 class TabStrip;
 class TabStripModel;
 class WindowFinder;

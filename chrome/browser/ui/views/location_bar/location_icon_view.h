@@ -13,7 +13,6 @@
 class LocationBarView;
 
 namespace ui {
-class KeyEvent;
 class LocatedEvent;
 }
 

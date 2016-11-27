@@ -17,12 +17,7 @@ class GURL;
 namespace content {
 class BrowserContext;
 class WebContents;
-class SessionStorageNamespace;
 }  // namespace content
-
-namespace gfx {
-class Size;
-}  // namespace gfx
 
 namespace offline_pages {
 

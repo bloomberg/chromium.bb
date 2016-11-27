@@ -22,7 +22,6 @@ class Profile;
 
 namespace content {
 enum class PermissionType;
-class WebContents;
 };  // namespace content
 
 class PermissionManager : public KeyedService,

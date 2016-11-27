@@ -26,13 +26,10 @@ class Browser;
 class DownloadShelf;
 class ExclusiveAccessContext;
 class FindBar;
-class GlobalErrorBubbleViewBase;
 class GURL;
 class LocationBar;
 class Profile;
-class ProfileResetGlobalError;
 class StatusBubble;
-class TemplateURL;
 class ToolbarActionsBar;
 
 struct WebApplicationInfo;

@@ -16,8 +16,6 @@
 namespace chromeos {
 namespace file_system_provider {
 
-class FileSystemInterface;
-
 // TODO(mtomasz): Remove this namespace.
 namespace internal {
 

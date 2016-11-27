@@ -22,7 +22,6 @@ class WebContents;
 namespace extensions {
 class Extension;
 class ContextMenuMatcher;
-class ExtensionContextMenuModelTest;
 
 // The context menu model for extension icons.
 class ExtensionContextMenuModel : public ui::SimpleMenuModel,

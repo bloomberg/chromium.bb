@@ -19,7 +19,6 @@
 class AvatarMenu;
 class ActiveProfileObserverBridge;
 class Browser;
-class ProfileOAuth2TokenService;
 
 namespace content {
 class WebContents;

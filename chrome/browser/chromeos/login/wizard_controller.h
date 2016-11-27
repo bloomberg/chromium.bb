@@ -29,7 +29,6 @@
 #include "chrome/browser/chromeos/login/screens/reset_screen.h"
 #include "chrome/browser/chromeos/policy/enrollment_config.h"
 
-class PrefRegistrySimple;
 class PrefService;
 
 namespace pairing_chromeos {
@@ -40,19 +39,14 @@ class SharkConnectionListener;
 
 namespace chromeos {
 
-class AutoEnrollmentCheckScreen;
-class EnrollmentScreen;
 class ErrorScreen;
 struct Geoposition;
 class LoginDisplayHost;
 class LoginScreenContext;
 class OobeUI;
 class SimpleGeolocationProvider;
-class SupervisedUserCreationScreen;
 class TimeZoneProvider;
 struct TimeZoneResponseData;
-class UpdateScreen;
-class UserImageScreen;
 
 // Class that manages control flow between wizard screens. Wizard controller
 // interacts with screen controllers to move the user between screens.

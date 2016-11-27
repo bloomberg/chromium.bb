@@ -20,7 +20,6 @@
 #include "url/gurl.h"
 
 class ProfileDownloaderDelegate;
-class OAuth2AccessTokenFetcher;
 
 namespace net {
 class URLFetcher;

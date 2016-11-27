@@ -15,13 +15,6 @@ namespace content {
 class BrowserContext;
 class WebContents;
 }
-namespace extensions {
-class ExtensionFunctionDispatcher;
-class WindowController;
-}
-namespace gfx {
-class Rect;
-}
 namespace keyboard {
 class KeyboardController;
 class KeyboardControllerObserver;

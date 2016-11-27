@@ -12,10 +12,6 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-namespace base {
-class Value;
-}
-
 namespace settings {
 
 // Chrome "Downloads" settings page UI handler.

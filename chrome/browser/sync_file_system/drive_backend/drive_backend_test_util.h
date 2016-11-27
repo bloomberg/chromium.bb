@@ -22,8 +22,6 @@ namespace drive_backend {
 class FileDetails;
 class FileMetadata;
 class FileTracker;
-class MetadataDatabase;
-class ServiceMetadata;
 
 namespace test_util {
 

@@ -25,7 +25,6 @@
 
 class AccountId;
 class Browser;
-class GaiaAuthFetcher;
 
 namespace base {
 class DictionaryValue;

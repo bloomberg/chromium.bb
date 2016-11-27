@@ -17,14 +17,8 @@ class TabIconView;
 class WebAppLeftHeaderView;
 
 namespace ash {
-class FrameCaptionButton;
 class FrameCaptionButtonContainerView;
 class HeaderPainter;
-}
-
-namespace views {
-class ImageButton;
-class ToggleImageButton;
 }
 
 class BrowserNonClientFrameViewAsh : public BrowserNonClientFrameView,

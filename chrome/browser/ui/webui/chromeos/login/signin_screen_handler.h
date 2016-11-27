@@ -37,7 +37,6 @@
 #include "ui/events/event_handler.h"
 
 class AccountId;
-class EasyUnlockService;
 
 namespace base {
 class DictionaryValue;
@@ -46,7 +45,6 @@ class ListValue;
 
 namespace chromeos {
 
-class CaptivePortalWindowProxy;
 class CoreOobeActor;
 class ErrorScreensHistogramHelper;
 class GaiaScreenHandler;

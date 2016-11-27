@@ -10,10 +10,6 @@
 
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class Extension;
 }

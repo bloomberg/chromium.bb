@@ -26,7 +26,6 @@
 class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
-class MetricsService;
 class PrefService;
 class ProcessPowerCollector;
 class Profile;

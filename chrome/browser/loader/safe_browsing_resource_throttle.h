@@ -21,14 +21,8 @@
 #include "net/log/net_log_with_source.h"
 #include "url/gurl.h"
 
-class ResourceDispatcherHost;
-
 namespace net {
 class URLRequest;
-}
-
-namespace safe_browsing {
-class V4LocalDatabaseManager;
 }
 
 // SafeBrowsingResourceThrottle checks that URLs are "safe" before

@@ -13,7 +13,6 @@
 
 class ExclusiveAccessManager;
 class GURL;
-class Profile;
 
 namespace content {
 class WebContents;

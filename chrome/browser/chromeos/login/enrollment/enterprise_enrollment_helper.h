@@ -13,7 +13,6 @@
 #include "chrome/browser/chromeos/policy/device_cloud_policy_initializer.h"
 
 class GoogleServiceAuthError;
-class Profile;
 
 namespace policy {
 struct EnrollmentConfig;

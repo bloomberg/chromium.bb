@@ -16,11 +16,7 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/label.h"
 
-class FullscreenController;
-
 namespace content {
-class NotificationDetails;
-class NotificationSource;
 class WebContents;
 }
 

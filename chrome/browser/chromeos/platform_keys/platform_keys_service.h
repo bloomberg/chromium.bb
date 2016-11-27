@@ -20,11 +20,6 @@
 
 class PrefService;
 
-namespace base {
-class ListValue;
-class Value;
-}
-
 namespace content {
 class BrowserContext;
 class WebContents;

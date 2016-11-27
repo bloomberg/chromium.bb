@@ -16,7 +16,6 @@
 #include "components/prefs/pref_member.h"
 #include "net/net_features.h"
 
-class NotificationUIManager;
 class Profile;
 
 namespace content {

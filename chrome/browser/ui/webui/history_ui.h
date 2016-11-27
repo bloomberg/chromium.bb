@@ -9,8 +9,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
-class Profile;
-
 namespace base {
 class RefCountedMemory;
 }

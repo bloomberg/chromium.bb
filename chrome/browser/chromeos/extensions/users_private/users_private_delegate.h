@@ -17,10 +17,6 @@
 
 class Profile;
 
-namespace base {
-class Value;
-}
-
 namespace extensions {
 
 // Provides prefs access for managing users.

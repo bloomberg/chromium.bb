@@ -9,7 +9,6 @@
 #include "components/upload_list/crash_upload_list.h"
 
 namespace base {
-class FilePath;
 class TaskRunner;
 }
 

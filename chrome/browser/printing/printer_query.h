@@ -19,7 +19,6 @@ class DictionaryValue;
 
 namespace printing {
 
-class PrintDestinationInterface;
 class PrintJobWorker;
 
 // Query the printer for settings.

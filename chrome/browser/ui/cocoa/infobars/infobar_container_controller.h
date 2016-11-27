@@ -16,14 +16,9 @@
 @class InfoBarController;
 class InfoBarCocoa;
 class InfoBarContainerCocoa;
-class TabStripModel;
 
 namespace content {
 class WebContents;
-}
-
-namespace infobars {
-class InfoBarDelegate;
 }
 
 // Protocol for basic container methods, as needed by an InfoBarController.

@@ -19,12 +19,6 @@
 #include "chrome/browser/history/browsing_history_service_handler.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class SupervisedUserService;
-
-namespace bookmarks {
-class BookmarkModel;
-}  // namespace bookmarks
-
 namespace history {
 struct QueryOptions;
 }  // namespace history

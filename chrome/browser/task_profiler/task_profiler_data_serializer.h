@@ -11,7 +11,6 @@
 
 namespace base {
 class DictionaryValue;
-class FilePath;
 }
 
 namespace tracked_objects {

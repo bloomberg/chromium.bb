@@ -11,7 +11,6 @@
 #include "chrome/browser/android/compositor/layer/layer.h"
 
 namespace cc {
-class ImageLayer;
 class Layer;
 class NinePatchLayer;
 class SolidColorLayer;
@@ -25,8 +24,6 @@ class Size;
 namespace ui {
 class ResourceManager;
 }
-
-class SkBitmap;
 
 namespace android {
 

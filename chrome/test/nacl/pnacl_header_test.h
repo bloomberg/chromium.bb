@@ -13,10 +13,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/resource_type.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace net {
 namespace test_server {
 struct HttpRequest;

@@ -13,7 +13,6 @@
 namespace content {
 class NavigationHandle;
 class NavigationThrottle;
-class WebContents;
 }
 
 // This class creates navigation throttles that redirect URLs to apps that have

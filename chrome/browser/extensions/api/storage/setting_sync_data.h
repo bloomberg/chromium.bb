@@ -16,10 +16,6 @@ namespace syncer {
 class SyncData;
 }
 
-namespace sync_pb {
-class ExtensionSettingSpecifics;
-}
-
 namespace extensions {
 
 // Container for data interpreted from sync data/changes for an extension or

@@ -22,7 +22,6 @@
 #include "extensions/browser/extension_function.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 
-class PrefService;
 class Profile;
 
 namespace chromeos {

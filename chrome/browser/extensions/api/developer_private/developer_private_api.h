@@ -42,14 +42,10 @@ class EventRouter;
 class ExtensionError;
 class ExtensionInfoGenerator;
 class ExtensionRegistry;
-class ExtensionSystem;
-class ManagementPolicy;
 class ProcessManager;
-class RequirementsChecker;
 
 namespace api {
 
-class EntryPicker;
 class EntryPickerClient;
 
 }  // namespace api

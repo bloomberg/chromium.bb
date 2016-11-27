@@ -28,7 +28,6 @@ class AppSyncUIState;
 class BrowserStatusMonitor;
 class Profile;
 class AppWindowLauncherController;
-class TabContents;
 
 namespace ash {
 class ShelfModel;
@@ -37,16 +36,8 @@ class ChromeLauncherPrefsObserver;
 }
 }
 
-namespace aura {
-class Window;
-}
-
 namespace content {
 class BrowserContext;
-}
-
-namespace extensions {
-class Extension;
 }
 
 class ChromeLauncherControllerUserSwitchObserver;

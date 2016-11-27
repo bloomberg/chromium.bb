@@ -27,7 +27,6 @@ struct ExtensionMsg_AccessibilityLocationChangeParams;
 
 namespace extensions {
 struct AutomationListener;
-class Extension;
 
 class AutomationEventRouter : public content::NotificationObserver {
  public:

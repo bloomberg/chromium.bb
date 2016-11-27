@@ -21,14 +21,12 @@
 
 class DevToolsNetworkController;
 class DevToolsNetworkUploadDataStream;
-class GURL;
 
 namespace net {
 class AuthCredentials;
 class HttpRequestHeaders;
 struct HttpRequestInfo;
 class HttpResponseInfo;
-class HttpNetworkSession;
 class IOBuffer;
 struct LoadTimingInfo;
 class NetLogWithSource;

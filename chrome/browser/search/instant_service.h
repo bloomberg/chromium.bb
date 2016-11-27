@@ -29,7 +29,6 @@ class Profile;
 struct TemplateURLData;
 class TemplateURLService;
 struct ThemeBackgroundInfo;
-class ThemeService;
 
 namespace content {
 class RenderProcessHost;

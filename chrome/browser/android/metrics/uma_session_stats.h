@@ -16,8 +16,6 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 
-class UserActionRateCounter;
-
 // The native part of java UmaSessionStats class.
 class UmaSessionStats {
  public:

@@ -18,8 +18,6 @@
 
 namespace media_router {
 
-class MediaRouter;
-
 class MediaRouterIntegrationBrowserTest : public MediaRouterBaseBrowserTest {
  public:
   MediaRouterIntegrationBrowserTest();

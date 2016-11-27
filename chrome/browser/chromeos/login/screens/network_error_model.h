@@ -11,10 +11,6 @@
 #include "chrome/browser/chromeos/login/screens/network_error.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_screen.h"
 
-namespace base {
-class ListValue;
-}
-
 namespace chromeos {
 
 class BaseScreenDelegate;

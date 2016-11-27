@@ -25,11 +25,8 @@ class IconImage;
 }
 
 namespace gfx {
-class Canvas;
 class Image;
 class ImageSkia;
-class Rect;
-class Size;
 }
 
 // ExtensionAction encapsulates the state of a browser action or page action.

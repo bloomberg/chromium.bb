@@ -21,10 +21,6 @@ class BinaryValue;
 class DictionaryValue;
 }
 
-namespace blink {
-class WebMediaStream;
-}
-
 namespace net {
 class IPEndPoint;
 }

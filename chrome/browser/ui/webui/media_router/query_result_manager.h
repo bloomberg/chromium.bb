@@ -27,8 +27,6 @@ namespace media_router {
 
 class MediaRouter;
 class MediaSinksObserver;
-struct RoutesQueryResult;
-struct SinksQueryResult;
 
 // The Media Router dialog allows the user to initiate casting using one of
 // several actions (each represented by a cast mode).  Each cast mode is

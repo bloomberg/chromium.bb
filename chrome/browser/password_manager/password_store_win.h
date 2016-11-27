@@ -12,10 +12,6 @@
 
 class PasswordWebDataService;
 
-namespace autofill {
-struct PasswordForm;
-}
-
 namespace password_manager {
 class LoginDatabase;
 }

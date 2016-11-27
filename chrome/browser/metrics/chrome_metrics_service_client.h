@@ -31,11 +31,6 @@ class ChromeOSMetricsProvider;
 class GoogleUpdateMetricsProviderWin;
 class PluginMetricsProvider;
 class PrefRegistrySimple;
-class PrefService;
-
-#if !defined(OS_CHROMEOS)
-class SigninStatusMetricsProvider;
-#endif
 
 namespace browser_watcher {
 class WatcherMetricsProviderWin;

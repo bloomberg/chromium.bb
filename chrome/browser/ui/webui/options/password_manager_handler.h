@@ -20,8 +20,6 @@
 #include "components/prefs/pref_member.h"
 #include "ui/shell_dialogs/select_file_dialog.h"
 
-class PasswordManagerHandlerTest;
-
 namespace options {
 
 // The WebUI based PasswordUIView. Displays passwords in the web ui.

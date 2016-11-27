@@ -43,11 +43,9 @@ class PrefRegistrySyncable;
 namespace chromeos {
 namespace file_system_provider {
 
-class ProvidedFileSystemFactoryInterface;
 class ProvidedFileSystemInfo;
 class ProvidedFileSystemInterface;
 class RegistryInterface;
-class ServiceFactory;
 struct MountOptions;
 
 // Registers preferences to remember registered file systems between reboots.

@@ -9,8 +9,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class AccountId;
-
 namespace chromeos {
 
 class MockLoginDisplay : public LoginDisplay {

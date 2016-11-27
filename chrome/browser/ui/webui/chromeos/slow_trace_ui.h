@@ -14,7 +14,6 @@
 #include "ui/base/layout.h"
 
 namespace base {
-class RefCountedMemory;
 class RefCountedString;
 }
 

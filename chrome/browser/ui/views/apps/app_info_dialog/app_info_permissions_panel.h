@@ -18,15 +18,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace ui {
-class Event;
-}
-
-namespace views {
-class GridLayout;
-class View;
-}
-
 // The summary panel of the app info dialog, which provides basic information
 // and controls related to the app.
 class AppInfoPermissionsPanel : public AppInfoPanel {

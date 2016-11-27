@@ -46,10 +46,6 @@ namespace domain_reliability {
 class DomainReliabilityMonitor;
 }
 
-namespace extensions {
-class ExtensionSystem;
-}
-
 namespace policy {
 class CloudPolicyManager;
 class ProfilePolicyConnector;

@@ -11,10 +11,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "content/public/browser/web_ui.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace chromeos {
 
 // WebUI implementation of AutoEnrollmentCheckScreenActor.

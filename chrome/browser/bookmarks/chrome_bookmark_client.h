@@ -18,10 +18,6 @@
 class GURL;
 class Profile;
 
-namespace base {
-class ListValue;
-}
-
 namespace bookmarks {
 class BookmarkModel;
 class BookmarkNode;

@@ -16,7 +16,6 @@
 class Profile;
 
 namespace extensions {
-class Extension;
 
 // Implementation of AppIconLoader that interacts with the ExtensionService and
 // ImageLoader to load images.

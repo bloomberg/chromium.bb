@@ -11,10 +11,6 @@
 class GURL;
 class Profile;
 
-namespace bookmarks {
-class BookmarkModel;
-}
-
 // ChromeFaviconClient implements the the FaviconClient interface.
 class ChromeFaviconClient : public favicon::FaviconClient {
  public:

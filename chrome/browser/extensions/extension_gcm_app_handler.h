@@ -27,7 +27,6 @@ class BrowserContext;
 
 namespace gcm {
 class GCMDriver;
-class GCMProfileService;
 }
 namespace instance_id {
 class InstanceIDDriver;

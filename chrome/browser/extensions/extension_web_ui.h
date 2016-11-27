@@ -17,7 +17,6 @@ class Profile;
 
 namespace content {
 class BrowserContext;
-class WebContents;
 }
 
 namespace user_prefs {

@@ -20,7 +20,6 @@
 #include "ui/views/controls/link_listener.h"
 
 class ContentSettingBubbleModel;
-class Profile;
 
 namespace chrome {
 class ContentSettingBubbleViewsBridge;

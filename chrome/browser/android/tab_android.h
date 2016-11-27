@@ -28,7 +28,6 @@
 
 class GURL;
 class Profile;
-class SkBitmap;
 
 namespace blimp {
 namespace client {
@@ -51,10 +50,6 @@ class TabContentManager;
 
 namespace content {
 class WebContents;
-}
-
-namespace infobars {
-class InfoBar;
 }
 
 namespace prerender {

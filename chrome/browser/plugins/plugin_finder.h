@@ -22,7 +22,6 @@ namespace base {
 class DictionaryValue;
 }
 
-class GURL;
 class PluginMetadata;
 class PrefRegistrySimple;
 

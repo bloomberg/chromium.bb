@@ -17,10 +17,6 @@ namespace base {
 class RefCountedMemory;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 class ComponentsUI : public content::WebUIController,
                      public component_updater::ServiceObserver {
  public:

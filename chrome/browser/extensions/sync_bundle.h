@@ -14,8 +14,6 @@
 #include "components/sync/model/sync_change_processor.h"
 #include "components/sync/model/sync_data.h"
 
-class ExtensionSyncService;
-
 namespace extensions {
 
 class ExtensionSyncData;

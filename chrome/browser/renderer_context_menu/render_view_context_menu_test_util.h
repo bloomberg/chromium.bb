@@ -17,8 +17,6 @@
 #include "chrome/browser/extensions/context_menu_matcher.h"
 #endif
 
-class Browser;
-
 namespace content {
 class WebContents;
 }

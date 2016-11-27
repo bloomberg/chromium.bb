@@ -12,9 +12,6 @@
 #include "base/macros.h"
 #include "google_apis/gaia/gaia_auth_consumer.h"
 
-class GaiaAuthFetcher;
-class OAuth2AccessTokenFetcher;
-
 namespace net {
 class URLRequestContextGetter;
 }

@@ -16,7 +16,6 @@
 #include "ui/views/view.h"
 
 namespace views {
-class Link;
 class StyledLabel;
 class TableView;
 class TableViewObserver;

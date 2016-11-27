@@ -9,10 +9,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-namespace content {
-struct AXEventNotificationDetails;
-}  // namespace content
-
 namespace extensions {
 class AutomationActionAdapter;
 
@@ -24,10 +20,6 @@ struct Params;
 }  // namespace automation_internal
 }  // namespace api
 }  // namespace extensions
-
-namespace ui {
-struct AXNodeData;
-}
 
 namespace extensions {
 

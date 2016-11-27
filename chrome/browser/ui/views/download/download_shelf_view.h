@@ -30,7 +30,6 @@ class PageNavigator;
 
 namespace views {
 class ImageButton;
-class ImageView;
 class MdTextButton;
 }
 

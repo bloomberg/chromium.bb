@@ -17,7 +17,6 @@
 
 namespace base {
 class FilePath;
-class Version;
 }  // namespace base
 
 class WorkItemList;

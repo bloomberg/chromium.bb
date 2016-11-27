@@ -61,7 +61,6 @@ namespace net {
 class FakeURLFetcherFactory;
 class ScopedDefaultHostResolverProc;
 class URLFetcherImplFactory;
-class URLRequestContextGetter;
 }  // namespace net
 
 // This is the base class for integration tests for all sync data types. Derived

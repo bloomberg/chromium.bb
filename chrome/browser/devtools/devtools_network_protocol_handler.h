@@ -16,7 +16,6 @@ class DevToolsAgentHost;
 }
 
 class DevToolsNetworkConditions;
-class Profile;
 
 class DevToolsNetworkProtocolHandler {
  public:

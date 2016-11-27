@@ -20,7 +20,6 @@
 class Browser;
 
 namespace views {
-class Link;
 class TableView;
 class View;
 }  // namespace views

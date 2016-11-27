@@ -24,9 +24,7 @@ class DictionaryValue;
 
 namespace chromeos {
 
-class NetworkConnectionHandler;
 class NetworkState;
-class NetworkStateHandler;
 class TestMobileActivator;
 
 // Cellular plan config document.

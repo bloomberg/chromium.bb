@@ -11,10 +11,6 @@
 #include "content/public/browser/gpu_data_manager_observer.h"
 #include "gpu/config/gpu_feature_type.h"
 
-namespace content {
-class GpuDataManager;
-}  // namespace content
-
 class GPUFeatureChecker : public base::RefCountedThreadSafe<GPUFeatureChecker>,
                           public content::GpuDataManagerObserver {
  public:

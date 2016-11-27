@@ -17,10 +17,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace net {
-class URLRequestInterceptor;
-}
-
 // Owns and creates NewTabPageInterceptorService instances.
 class NewTabPageInterceptorServiceFactory
     : public BrowserContextKeyedServiceFactory {

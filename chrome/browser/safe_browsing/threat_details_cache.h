@@ -21,7 +21,6 @@
 
 namespace net {
 class URLFetcher;
-class URLRequestContext;
 }
 
 namespace safe_browsing {

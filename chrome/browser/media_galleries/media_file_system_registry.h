@@ -36,10 +36,6 @@ namespace extensions {
 class Extension;
 }
 
-namespace storage {
-class IsolatedContext;
-}
-
 // Contains information about a particular filesystem being provided to a
 // client, including metadata like the name and ID, and API handles like the
 // fsid (filesystem ID) used to hook up the API objects.

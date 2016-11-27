@@ -13,7 +13,6 @@
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_button_cocoa.h"
 
-class Browser;
 @class BrowserActionsController;
 @class MenuController;
 class ToolbarActionViewController;

@@ -14,7 +14,6 @@
 namespace content {
 
 class RenderFrameHost;
-class WebContents;
 enum class PermissionType;
 
 }  // namespace content

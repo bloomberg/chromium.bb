@@ -10,9 +10,6 @@
 
 typedef base::Callback<void(bool)> OnMetricsReportingCallbackType;
 
-class PrefService;
-class PrefRegistrySimple;
-
 // Changes metrics reporting state without caring about the success of the
 // change.
 void ChangeMetricsReportingState(bool enabled);

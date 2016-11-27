@@ -25,7 +25,6 @@ class ExtensionAppContextMenu;
 }
 
 namespace extensions {
-class ContextMenuMatcher;
 class Extension;
 }
 

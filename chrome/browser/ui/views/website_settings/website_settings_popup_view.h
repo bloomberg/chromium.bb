@@ -41,9 +41,6 @@ class WebsiteSettingsPopupViewTestApi;
 }
 
 namespace views {
-class ImageButton;
-class Label;
-class LabelButton;
 class Link;
 class Widget;
 }

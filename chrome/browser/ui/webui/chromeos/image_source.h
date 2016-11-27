@@ -17,11 +17,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-// TODO(michaelpg): Remove dependency on user_manager.
-namespace user_manager {
-class UserImage;
-}
-
 namespace chromeos {
 
 // Data source that reads and decodes an image from the RO file system.

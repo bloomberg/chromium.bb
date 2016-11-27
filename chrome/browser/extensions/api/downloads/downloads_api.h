@@ -24,12 +24,6 @@
 #include "extensions/browser/warning_set.h"
 
 class DownloadFileIconExtractor;
-class DownloadQuery;
-
-namespace content {
-class ResourceContext;
-class ResourceDispatcherHost;
-}
 
 namespace extensions {
 class ExtensionRegistry;

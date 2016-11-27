@@ -16,8 +16,6 @@
 
 namespace autofill {
 
-class AutofillPopupController;
-
 // Mac implementation for PasswordGenerationPopupView interface.
 // Serves as a bridge to an instance of the Objective-C class which actually
 // implements the view.

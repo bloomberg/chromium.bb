@@ -27,7 +27,6 @@
 class BackgroundModeManager;
 class CRLSetFetcher;
 class IOThread;
-class MHTMLGenerationManager;
 class NotificationPlatformBridge;
 class NotificationUIManager;
 class PrefService;

@@ -13,7 +13,6 @@ class MenuModel;
 }
 
 namespace views {
-class Border;
 class ButtonListener;
 }
 

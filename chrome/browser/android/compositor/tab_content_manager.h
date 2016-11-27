@@ -19,7 +19,6 @@
 using base::android::ScopedJavaLocalRef;
 
 namespace cc {
-class CopyOutputResult;
 class Layer;
 }
 

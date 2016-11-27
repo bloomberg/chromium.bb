@@ -44,7 +44,6 @@ struct HistoryAddPageArgs;
 
 namespace prerender {
 
-class PrerenderHandle;
 class PrerenderManager;
 class PrerenderResourceThrottle;
 

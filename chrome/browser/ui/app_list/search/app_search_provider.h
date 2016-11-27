@@ -24,10 +24,6 @@ namespace app_list {
 
 class AppListItemList;
 
-namespace test {
-class AppSearchProviderTest;
-}
-
 class AppSearchProvider : public SearchProvider {
  public:
   class App;

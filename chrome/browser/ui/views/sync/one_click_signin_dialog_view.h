@@ -19,9 +19,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 namespace views {
-class GridLayout;
-class ImageButton;
-class LabelButton;
 class View;
 }
 

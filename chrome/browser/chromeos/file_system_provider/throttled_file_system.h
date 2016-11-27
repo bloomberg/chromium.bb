@@ -23,8 +23,6 @@
 #include "storage/browser/fileapi/watcher_manager.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace net {
 class IOBuffer;
 }  // namespace net

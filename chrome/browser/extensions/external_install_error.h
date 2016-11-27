@@ -15,7 +15,6 @@
 
 class Browser;
 class ExtensionInstallPromptShowParams;
-class ExtensionInstallUI;
 class GlobalError;
 class GlobalErrorService;
 

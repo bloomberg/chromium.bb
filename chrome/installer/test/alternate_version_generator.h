@@ -11,7 +11,6 @@
 
 namespace base {
 class FilePath;
-class Version;
 }
 
 namespace upgrade_test {

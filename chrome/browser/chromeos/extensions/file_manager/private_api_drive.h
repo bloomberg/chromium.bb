@@ -20,7 +20,6 @@
 #include "components/drive/file_errors.h"
 
 namespace drive {
-class FileCacheEntry;
 class ResourceEntry;
 struct SearchResultInfo;
 }

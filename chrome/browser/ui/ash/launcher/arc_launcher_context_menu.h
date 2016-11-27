@@ -8,8 +8,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/ash/launcher/launcher_context_menu.h"
 
-class ChromeLauncherController;
-
 namespace ash {
 struct ShelfItem;
 class WmShelf;

@@ -9,8 +9,6 @@
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
 #include "chrome/browser/ui/views/location_bar/location_bar_bubble_delegate_view.h"
 
-class ManagePasswordsIconViews;
-
 namespace content {
 class WebContents;
 }

@@ -10,10 +10,6 @@
 #include "base/macros.h"
 #include "extensions/components/native_app_window/native_app_window_views.h"
 
-namespace apps {
-class AppWindowFrameView;
-}
-
 class ExtensionKeybindingRegistryViews;
 
 class ChromeNativeAppWindowViews

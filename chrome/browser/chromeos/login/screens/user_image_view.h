@@ -5,12 +5,6 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_USER_IMAGE_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_SCREENS_USER_IMAGE_VIEW_H_
 
-class SkBitmap;
-
-namespace gfx {
-class ImageSkia;
-}
-
 namespace chromeos {
 
 class UserImageModel;

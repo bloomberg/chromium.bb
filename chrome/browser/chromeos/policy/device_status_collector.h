@@ -36,11 +36,6 @@ class StatisticsProvider;
 }
 }
 
-namespace content {
-class NotificationDetails;
-class NotificationSource;
-}
-
 class PrefRegistrySimple;
 class PrefService;
 

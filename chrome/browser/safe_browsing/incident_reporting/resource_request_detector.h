@@ -19,8 +19,6 @@ class URLRequest;
 
 namespace safe_browsing {
 
-class SafeBrowsingService;
-
 class ClientIncidentReport_IncidentData_ResourceRequestIncident;
 
 struct ResourceRequestInfo {

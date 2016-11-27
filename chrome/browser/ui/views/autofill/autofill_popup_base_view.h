@@ -13,10 +13,6 @@
 #include "ui/views/widget/widget_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace gfx {
 class Point;
 }

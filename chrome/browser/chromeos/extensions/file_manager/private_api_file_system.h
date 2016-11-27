@@ -21,12 +21,6 @@
 #include "extensions/browser/extension_function.h"
 #include "storage/browser/fileapi/file_system_url.h"
 
-class GURL;
-
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace storage {
 class FileSystemContext;
 class FileSystemURL;

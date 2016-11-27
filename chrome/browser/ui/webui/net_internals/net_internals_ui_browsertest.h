@@ -12,10 +12,6 @@
 
 class GURL;
 
-namespace base {
-class ListValue;
-}  // namespace base
-
 class NetInternalsTest : public WebUIBrowserTest {
  protected:
   NetInternalsTest();

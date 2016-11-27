@@ -13,16 +13,7 @@
 #include "chrome/browser/ui/webui/options/options_ui.h"
 #include "ui/gfx/native_widget_types.h"
 
-class Browser;
 class PrefService;
-
-namespace gfx {
-class ImageSkia;
-}
-
-namespace views {
-class WidgetDelegate;
-}
 
 namespace chromeos {
 namespace options {

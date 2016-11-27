@@ -13,7 +13,6 @@
 
 namespace views {
 class StyledLabel;
-class View;
 }
 
 namespace autofill {

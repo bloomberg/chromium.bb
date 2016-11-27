@@ -13,14 +13,8 @@
 
 class Browser;
 
-namespace base {
-class TimeTicks;
-}
-
 namespace gfx {
 class Canvas;
-class ImageSkia;
-class Rect;
 }
 
 namespace content {

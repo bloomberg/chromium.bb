@@ -33,7 +33,6 @@ class WebUI;
 
 namespace chromeos {
 
-class OobeUI;
 class ScreenLocker;
 class WebUILoginDisplay;
 

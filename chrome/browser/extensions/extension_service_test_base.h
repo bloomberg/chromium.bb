@@ -38,7 +38,6 @@ class BrowserContext;
 namespace extensions {
 
 class ExtensionRegistry;
-class ManagementPolicy;
 
 // A unittest infrastructure which creates an ExtensionService. Whenever
 // possible, use this instead of creating a browsertest.

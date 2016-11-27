@@ -16,10 +16,6 @@
 #include "storage/browser/fileapi/file_system_url.h"
 #include "storage/browser/storage_browser_export.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace storage {
 class FileSystemContext;
 }

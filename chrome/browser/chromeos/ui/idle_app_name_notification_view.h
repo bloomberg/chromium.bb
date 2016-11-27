@@ -14,10 +14,6 @@ namespace extensions {
 class Extension;
 }  // namespace extensions
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace chromeos {
 
 class IdleAppNameNotificationDelegateView;

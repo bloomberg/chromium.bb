@@ -24,11 +24,6 @@
 
 namespace base {
 template<typename T> struct DefaultSingletonTraits;
-
-class MessageLoop;
-class DictionaryValue;
-class ListValue;
-class Thread;
 }  // namespace base
 
 namespace content {

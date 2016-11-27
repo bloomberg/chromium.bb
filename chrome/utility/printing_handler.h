@@ -21,7 +21,6 @@
 namespace printing {
 
 struct PwgRasterSettings;
-struct PageRange;
 
 // Dispatches IPCs for printing.
 class PrintingHandler : public UtilityMessageHandler {

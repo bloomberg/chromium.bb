@@ -8,8 +8,6 @@
 #include "base/gtest_prod_util.h"
 #include "chrome/browser/extensions/chrome_extension_function.h"
 
-class PluginFinder;
-
 namespace content {
 struct WebPluginInfo;
 }

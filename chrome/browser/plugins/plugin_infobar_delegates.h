@@ -17,12 +17,7 @@
 #endif
 
 class InfoBarService;
-class HostContentSettingsMap;
 class PluginMetadata;
-
-namespace content {
-class WebContents;
-}
 
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
 // Infobar that's shown when a plugin is out of date.

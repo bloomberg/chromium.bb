@@ -14,8 +14,6 @@
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class OverlayUserPrefStore;
-class PrefService;
 class Profile;
 
 namespace content {

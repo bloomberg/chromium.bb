@@ -29,7 +29,6 @@ class ProfileSyncService;
 }  // namespace browser_sync
 
 namespace content {
-class WebContents;
 class WebUI;
 }  // namespace content
 

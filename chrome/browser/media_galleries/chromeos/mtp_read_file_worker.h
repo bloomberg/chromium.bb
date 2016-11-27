@@ -15,10 +15,6 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 
-namespace base {
-class FilePath;
-}
-
 class SnapshotFileDetails;
 struct SnapshotRequestInfo;
 

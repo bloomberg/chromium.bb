@@ -13,10 +13,6 @@
 #include "chrome/browser/profiles/profile_attributes_storage.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
-namespace base {
-class StringValue;
-}
-
 class Profile;
 
 namespace settings {

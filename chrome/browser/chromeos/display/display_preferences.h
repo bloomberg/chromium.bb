@@ -12,10 +12,6 @@
 
 class PrefRegistrySimple;
 
-namespace gfx {
-class Insets;
-}
-
 namespace chromeos {
 
 // Registers the prefs associated with display settings and stored

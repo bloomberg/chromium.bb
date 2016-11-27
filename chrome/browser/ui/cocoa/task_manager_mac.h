@@ -18,10 +18,6 @@
 
 @class WindowSizeAutosaver;
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace task_manager {
 class TaskManagerMac;
 }

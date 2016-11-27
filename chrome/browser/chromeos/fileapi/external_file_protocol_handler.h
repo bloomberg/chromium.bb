@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "net/url_request/url_request_job_factory.h"
 
-namespace base {
-class SequencedTaskRunner;
-}  // namespace base
-
 namespace chromeos {
 
 class ExternalFileProtocolHandler

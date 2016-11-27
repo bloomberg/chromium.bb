@@ -19,7 +19,6 @@
 #include "sql/connection.h"
 
 namespace base {
-class Clock;
 class FilePath;
 }
 

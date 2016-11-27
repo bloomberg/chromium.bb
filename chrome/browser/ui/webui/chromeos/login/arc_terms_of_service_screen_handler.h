@@ -20,8 +20,6 @@ class ArcOptInPreferenceHandler;
 
 namespace chromeos {
 
-class CoreOobeActor;
-
 // The sole implementation of the ArcTermsOfServiceScreenActor, using WebUI.
 class ArcTermsOfServiceScreenHandler :
     public BaseScreenHandler,

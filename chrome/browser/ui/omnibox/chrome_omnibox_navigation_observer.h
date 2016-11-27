@@ -23,7 +23,6 @@ class ShortcutsBackend;
 
 namespace net {
 class URLFetcher;
-class URLRequestStatus;
 }
 
 // Monitors omnibox navigations in order to trigger behaviors that depend on

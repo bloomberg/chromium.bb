@@ -40,10 +40,6 @@ class Profile;
 class ScopedBundleSwizzlerMac;
 #endif  // defined(OS_MACOSX)
 
-namespace content {
-class ContentRendererClient;
-}
-
 // Base class for tests wanting to bring up a browser in the unit test process.
 // Writing tests with InProcessBrowserTest is slightly different than that of
 // other tests. This is necessitated by InProcessBrowserTest running a message

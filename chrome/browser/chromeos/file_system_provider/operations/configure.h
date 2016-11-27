@@ -12,10 +12,6 @@
 #include "chrome/browser/chromeos/file_system_provider/operations/operation.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 namespace extensions {
 class EventRouter;
 }  // namespace extensions

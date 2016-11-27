@@ -7,8 +7,6 @@
 
 #include "chrome/browser/ui/extensions/extension_action_view_controller.h"
 
-class GURL;
-
 namespace extensions {
 class ExtensionViewHost;
 }

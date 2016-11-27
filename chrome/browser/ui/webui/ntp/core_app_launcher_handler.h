@@ -14,10 +14,6 @@
 #include "content/public/browser/web_ui_message_handler.h"
 #include "extensions/common/extension.h"
 
-namespace extensions {
-class Extension;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

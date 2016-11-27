@@ -11,10 +11,6 @@
 #include "extensions/common/extension.h"
 #include "extensions/common/manifest_handler.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 // A structure to hold the parsed linked app icon data.

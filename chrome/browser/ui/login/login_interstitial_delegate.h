@@ -14,14 +14,8 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
-class LoginHandler;
-
 namespace content {
 class WebContents;
-}
-
-namespace net {
-class AuthChallengeInfo;
 }
 
 // Placeholder interstitial for HTTP login prompts. This interstitial makes the

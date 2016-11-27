@@ -37,7 +37,6 @@ class ChromePDFPrintClient;
 class PrescientNetworkingDispatcher;
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
-class SpellCheckProvider;
 #endif
 
 struct ChromeViewHostMsg_GetPluginInfo_Output;
@@ -52,7 +51,6 @@ class PrescientNetworkingDispatcher;
 }
 
 namespace extensions {
-class Dispatcher;
 class Extension;
 }
 
@@ -70,10 +68,6 @@ class RulesetDealer;
 
 namespace web_cache {
 class WebCacheImpl;
-}
-
-namespace blink {
-class WebSecurityOrigin;
 }
 
 #if BUILDFLAG(ENABLE_WEBRTC)

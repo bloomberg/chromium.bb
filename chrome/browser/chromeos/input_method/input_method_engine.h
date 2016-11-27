@@ -18,8 +18,6 @@
 #include "ui/base/ime/ime_engine_handler_interface.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace ui {
 class CandidateWindow;
 struct CompositionText;

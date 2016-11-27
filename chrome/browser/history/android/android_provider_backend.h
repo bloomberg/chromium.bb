@@ -22,7 +22,6 @@
 namespace history {
 
 class AndroidProviderBackend;
-class AndroidURLsSQLHandler;
 class HistoryBackend;
 class HistoryBackendClient;
 class HistoryBackendNotifier;

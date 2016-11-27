@@ -10,10 +10,6 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 class PermissionSet;

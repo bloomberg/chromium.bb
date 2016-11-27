@@ -15,12 +15,6 @@
 #include "base/time/time.h"
 #include "components/password_manager/core/browser/password_store_default.h"
 
-class PrefService;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace password_manager {
 class LoginDatabase;
 }

@@ -10,14 +10,9 @@
 #include "ui/views/widget/widget.h"
 
 class BrowserFrame;
-class BrowserView;
 
 namespace content {
 struct NativeWebKeyboardEvent;
-}
-
-namespace views {
-class NativeWidget;
 }
 
 class NativeBrowserFrame {

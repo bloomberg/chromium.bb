@@ -9,7 +9,6 @@
 #include "chrome/browser/extensions/api/messaging/message_service.h"
 
 namespace extensions {
-class NativeMessageProcessHost;
 
 // A port that manages communication with a native application.
 // All methods must be called on the UI Thread of the browser process.

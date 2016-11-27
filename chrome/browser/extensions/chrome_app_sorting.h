@@ -17,11 +17,7 @@
 #include "extensions/browser/extension_prefs.h"
 #include "extensions/common/extension.h"
 
-class PrefService;
-
 namespace extensions {
-
-class ExtensionScopedPrefs;
 
 class ChromeAppSorting : public AppSorting {
  public:

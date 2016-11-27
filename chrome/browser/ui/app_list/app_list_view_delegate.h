@@ -49,10 +49,6 @@ namespace content {
 struct SpeechRecognitionSessionPreamble;
 }
 
-namespace gfx {
-class ImageSkia;
-}
-
 #if defined(USE_ASH)
 class AppSyncUIStateWatcher;
 #endif

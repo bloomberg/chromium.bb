@@ -10,8 +10,6 @@
 
 #include "base/macros.h"
 
-class GURL;
-
 // DevToolsNetworkConditions holds information about desired network conditions.
 class DevToolsNetworkConditions {
  public:

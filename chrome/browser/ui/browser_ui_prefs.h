@@ -8,7 +8,6 @@
 #include <string>
 
 class PrefRegistrySimple;
-class Profile;
 
 namespace user_prefs {
 class PrefRegistrySyncable;

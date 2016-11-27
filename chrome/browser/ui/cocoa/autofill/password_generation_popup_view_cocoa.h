@@ -12,10 +12,6 @@
 #import "chrome/browser/ui/cocoa/autofill/autofill_popup_base_view_cocoa.h"
 #import "ui/base/cocoa/tracking_area.h"
 
-namespace autofill {
-class AutofillPopupController;
-}  // namespace autofill
-
 @class HyperlinkTextView;
 
 // Draws the native password generation popup view on Mac.

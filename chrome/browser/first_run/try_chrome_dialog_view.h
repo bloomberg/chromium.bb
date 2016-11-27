@@ -13,8 +13,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-class ProcessSingleton;
-
 namespace gfx {
 class Rect;
 }

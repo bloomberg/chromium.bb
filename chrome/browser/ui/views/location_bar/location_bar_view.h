@@ -29,13 +29,11 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/drag_controller.h"
 
-class ActionBoxButtonView;
 class CommandUpdater;
 class ContentSettingBubbleModelDelegate;
 class ContentSettingImageView;
 class ExtensionAction;
 class GURL;
-class InstantController;
 class KeywordHintView;
 class LocationIconView;
 class OpenPDFInReaderView;
@@ -55,7 +53,6 @@ class SaveCardIconView;
 
 namespace views {
 class Label;
-class Widget;
 }
 
 /////////////////////////////////////////////////////////////////////////////

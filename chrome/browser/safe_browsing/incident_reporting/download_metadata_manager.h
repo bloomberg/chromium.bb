@@ -27,7 +27,6 @@ namespace safe_browsing {
 
 class ClientDownloadRequest;
 class ClientIncidentReport_DownloadDetails;
-class DownloadMetadata;
 
 // A browser-wide object that manages the persistent state of metadata
 // pertaining to a download.

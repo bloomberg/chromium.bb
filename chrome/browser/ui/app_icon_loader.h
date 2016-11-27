@@ -12,10 +12,6 @@
 
 class Profile;
 
-namespace gfx {
-class ImageSkia;
-}
-
 // Base class that loads and updates Chrome app's icons.
 class AppIconLoader {
  public:

@@ -30,7 +30,6 @@
 class AccountId;
 class GURL;
 class PrefRegistrySimple;
-class PrefService;
 class Profile;
 class TokenHandleFetcher;
 

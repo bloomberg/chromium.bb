@@ -23,7 +23,6 @@ namespace dmg {
 
 class ReadStream;
 class UDIFBlock;
-struct UDIFBlockChunk;
 
 // UDIFParser parses a Universal Disk Image Format file, allowing access to the
 // name, types, and data of the partitions held within the file. There is no

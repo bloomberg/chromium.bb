@@ -27,8 +27,6 @@ class Profile;
 namespace extensions {
 
 class Extension;
-struct ExtensionInfo;
-class PermissionSet;
 
 namespace util {
 

@@ -28,10 +28,6 @@
 class EditableProfilePhoto;
 class EditableProfileName;
 
-namespace gfx {
-class Image;
-}
-
 namespace views {
 class GridLayout;
 class ImageButton;

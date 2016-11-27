@@ -15,10 +15,6 @@
 class ToolbarActionViewController;
 class ToolbarActionsBarBubbleDelegate;
 
-namespace extensions {
-class ExtensionMessageBubbleController;
-}
-
 // The delegate class (which, in production, represents the view) of the
 // ToolbarActionsBar.
 class ToolbarActionsBarDelegate {

@@ -12,10 +12,6 @@
 #include "build/build_config.h"
 #include "chrome/browser/ui/views/apps/chrome_native_app_window_views.h"
 
-namespace apps {
-class AppWindowFrameView;
-}
-
 // Aura-specific parts of ChromeNativeAppWindowViews. This is used directly on
 // Linux and Windows, and is the base class for the Ash specific class used on
 // ChromeOS.

@@ -27,10 +27,6 @@ template<class T> class PrefMember;
 
 typedef PrefMember<bool> BooleanPrefMember;
 
-namespace base {
-class Value;
-}
-
 namespace content_settings {
 class CookieSettings;
 }

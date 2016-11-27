@@ -20,10 +20,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "net/base/backoff_entry.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

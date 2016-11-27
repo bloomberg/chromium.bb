@@ -14,7 +14,6 @@
 
 namespace base {
 class DictionaryValue;
-class Value;
 }
 
 class DevToolsClient;

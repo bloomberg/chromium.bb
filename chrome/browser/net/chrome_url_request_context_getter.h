@@ -15,7 +15,6 @@
 #include "net/url_request/url_request_job_factory.h"
 
 class ChromeURLRequestContextFactory;
-class IOThread;
 class Profile;
 class ProfileIOData;
 struct StoragePartitionDescriptor;

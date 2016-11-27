@@ -12,10 +12,6 @@ namespace base {
 class ListValue;
 }
 
-namespace content {
-class WebUIDataSource;
-}
-
 namespace settings {
 
 class BrowserLifetimeHandler : public SettingsPageUIHandler {

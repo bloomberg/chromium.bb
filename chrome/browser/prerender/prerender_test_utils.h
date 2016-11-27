@@ -31,11 +31,6 @@ namespace base {
 class FilePath;
 }  // namespace base
 
-namespace net {
-class URLRequest;
-class NetworkDelegate;
-}  // namespace net
-
 namespace prerender {
 
 namespace test_utils {

@@ -20,11 +20,6 @@
 #include "third_party/skia/include/core/SkBitmap.h"
 
 class GPUFeatureChecker;
-class GURL;
-
-namespace chrome {
-class BitmapFetcher;
-}  // namespace chrome
 
 namespace extensions {
 

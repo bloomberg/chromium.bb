@@ -11,7 +11,6 @@
 
 namespace base {
 class CommandLine;
-class FilePath;
 }
 
 // Class used to start a test license server.

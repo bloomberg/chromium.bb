@@ -14,7 +14,6 @@ namespace content {
 class WebContents;
 }
 
-class GURL;
 class OmniboxView;
 
 // Objects implement this interface to get notified about changes in the

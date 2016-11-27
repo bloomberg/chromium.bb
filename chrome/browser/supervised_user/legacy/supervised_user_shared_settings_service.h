@@ -17,7 +17,6 @@
 class PrefService;
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 

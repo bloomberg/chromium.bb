@@ -16,8 +16,6 @@
 #include "ui/views/bubble/bubble_dialog_delegate.h"
 #include "url/gurl.h"
 
-
-class Browser;
 namespace views {
 class Widget;
 }

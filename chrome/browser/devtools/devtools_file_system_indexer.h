@@ -17,16 +17,10 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 
-class Profile;
-
 namespace base {
 class FilePath;
 class FileEnumerator;
 class Time;
-}
-
-namespace content {
-class WebContents;
 }
 
 class DevToolsFileSystemIndexer

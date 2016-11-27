@@ -24,8 +24,6 @@
 
 namespace image_writer_api = extensions::api::image_writer_private;
 
-class Profile;
-
 namespace content {
 class BrowserContext;
 }

@@ -10,10 +10,6 @@
 #include "extensions/common/manifest_handler.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 // A structure to hold the parsed app icon color data.

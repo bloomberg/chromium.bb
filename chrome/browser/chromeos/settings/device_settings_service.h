@@ -24,10 +24,6 @@
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/scoped_nss_types.h"
 
-namespace crypto {
-class RSAPrivateKey;
-}
-
 namespace ownership {
 class OwnerKeyUtil;
 class PublicKey;

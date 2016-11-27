@@ -13,7 +13,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class ExtensionService;
-class InfoBarService;
 class Profile;
 class ThemeService;
 

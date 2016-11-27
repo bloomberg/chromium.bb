@@ -18,14 +18,9 @@
 class Browser;  // TODO(stevenjb) eliminate this dependency.
 class GURL;
 class Profile;
-class SessionID;
 
 namespace base {
 class DictionaryValue;
-}
-
-namespace gfx {
-class Rect;
 }
 
 namespace ui {

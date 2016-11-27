@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_UI_IME_IME_NATIVE_WINDOW_H_
 #define CHROME_BROWSER_UI_IME_IME_NATIVE_WINDOW_H_
 
-namespace content {
-class WebContents;
-}
-
 namespace gfx {
 class Rect;
 }

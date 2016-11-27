@@ -16,15 +16,10 @@
 #include "chrome/browser/ui/webui/signin/login_ui_service.h"
 
 class LoginUIService;
-class SigninManagerBase;
 
 namespace browser_sync {
 class ProfileSyncService;
 }  // namespace browser_sync
-
-namespace content {
-class WebContents;
-}  // namespace content
 
 namespace signin_metrics {
 enum class AccessPoint;

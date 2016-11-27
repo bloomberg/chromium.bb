@@ -18,7 +18,6 @@ class Profile;
 
 namespace net {
 class URLFetcher;
-class URLReportContextGetter;
 }
 
 class SafeSearchURLReporter : public OAuth2TokenService::Consumer,

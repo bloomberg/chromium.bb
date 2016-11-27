@@ -21,7 +21,6 @@ namespace content {
 class DevToolsAgentHost;
 struct NativeWebKeyboardEvent;
 class RenderFrameHost;
-class RenderViewHost;
 }
 
 namespace user_prefs {

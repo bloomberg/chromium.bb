@@ -14,17 +14,14 @@
 #include "base/memory/scoped_vector.h"
 #include "chrome/test/chromedriver/chrome/chrome.h"
 
-class AutomationExtension;
 struct BrowserInfo;
 class DevToolsClient;
 class DevToolsEventListener;
 class DevToolsHttpClient;
-class JavaScriptDialogManager;
 class PortReservation;
 class Status;
 class WebView;
 class WebViewImpl;
-struct WebViewInfo;
 class WebViewsInfo;
 
 class ChromeImpl : public Chrome {

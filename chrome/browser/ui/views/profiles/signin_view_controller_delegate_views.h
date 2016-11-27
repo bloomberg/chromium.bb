@@ -11,7 +11,6 @@
 #include "ui/views/window/dialog_delegate.h"
 
 class Browser;
-class Profile;
 
 namespace content {
 class WebContentsDelegate;

@@ -40,8 +40,6 @@ class ProximityAuthPrefManager;
 class RemoteDeviceLoader;
 }
 
-class EasyUnlockAppManager;
-class EasyUnlockToggleFlow;
 class Profile;
 
 // EasyUnlockService instance that should be used for regular, non-signin

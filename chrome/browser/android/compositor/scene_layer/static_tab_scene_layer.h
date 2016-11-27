@@ -26,7 +26,6 @@ class Layer;
 namespace android {
 
 class ContentLayer;
-class ToolbarLayer;
 
 // A SceneLayer to render a static tab.
 class StaticTabSceneLayer : public SceneLayer {

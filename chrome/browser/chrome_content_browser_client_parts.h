@@ -29,7 +29,6 @@ namespace storage {
 class FileSystemBackend;
 }
 
-class GURL;
 class Profile;
 
 // Implements a platform or feature specific part of ChromeContentBrowserClient.

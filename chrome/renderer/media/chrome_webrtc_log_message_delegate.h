@@ -16,7 +16,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }
 
-class PartialCircularBuffer;
 class WebRtcLoggingMessageFilter;
 
 // ChromeWebRtcLogMessageDelegate handles WebRTC logging. There is one object

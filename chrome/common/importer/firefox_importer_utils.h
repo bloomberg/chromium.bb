@@ -12,7 +12,6 @@
 #include "build/build_config.h"
 
 class GURL;
-class TemplateURL;
 
 namespace base {
 class DictionaryValue;

@@ -10,15 +10,12 @@
 #include "base/macros.h"
 #include "components/history/core/browser/android/sql_handler.h"
 
-class Profile;
-
 namespace bookmarks {
 class BookmarkModel;
 }
 
 namespace history {
 
-class HistoryDatabase;
 class URLDatabase;
 
 // The SQL handler for bookmarking_mapping table.

@@ -21,10 +21,6 @@ class NavigationEntry;
 class WebContents;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 namespace search {
 
 // For reporting Cacheable NTP navigations.

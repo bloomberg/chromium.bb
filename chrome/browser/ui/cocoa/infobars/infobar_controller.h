@@ -9,7 +9,6 @@
 
 @protocol InfoBarContainerControllerBase;
 class InfoBarCocoa;
-class InfoBarService;
 @class InfoBarGradientView;
 
 namespace infobars {

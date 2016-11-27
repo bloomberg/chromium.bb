@@ -9,7 +9,6 @@
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/content_settings/core/common/content_settings_types.h"
 
-class GURL;
 class HostContentSettingsMap;
 
 // This class manages the Plugins field trials.

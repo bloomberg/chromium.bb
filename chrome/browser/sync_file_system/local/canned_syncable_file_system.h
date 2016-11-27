@@ -28,7 +28,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class Thread;
 }
 
 namespace storage {

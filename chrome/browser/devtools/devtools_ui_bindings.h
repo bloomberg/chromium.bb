@@ -29,7 +29,6 @@ class Profile;
 class PortForwardingStatusSerializer;
 
 namespace content {
-struct FileChooserParams;
 class WebContents;
 }
 

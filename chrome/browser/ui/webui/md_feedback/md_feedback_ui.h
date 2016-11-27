@@ -13,8 +13,6 @@ namespace content {
 class BrowserContext;
 }  // namespace content
 
-class MdFeedbackWebUIMessageHandler;
-
 // The WebUI for chrome://feedback.
 class MdFeedbackUI : public content::WebUIController {
  public:

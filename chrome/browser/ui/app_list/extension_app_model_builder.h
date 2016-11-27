@@ -24,8 +24,6 @@ class ExtensionAppItem;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
-class ExtensionSet;
 class InstallTracker;
 }
 

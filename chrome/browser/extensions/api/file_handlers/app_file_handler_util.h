@@ -18,7 +18,6 @@ class Profile;
 
 namespace extensions {
 
-class ExtensionPrefs;
 struct EntryInfo;
 struct FileHandlerInfo;
 struct GrantedFileEntry;

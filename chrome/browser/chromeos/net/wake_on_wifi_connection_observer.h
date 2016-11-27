@@ -16,7 +16,6 @@ class Profile;
 
 namespace chromeos {
 
-class ConnectionObserverTest;
 class NetworkDeviceHandler;
 
 // Simple class that listens for a connection to the GCM server and passes the

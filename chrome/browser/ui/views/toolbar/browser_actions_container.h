@@ -22,14 +22,6 @@
 #include "ui/views/view.h"
 #include "ui/views/widget/widget_observer.h"
 
-class ExtensionPopup;
-
-namespace extensions {
-class ActiveTabPermissionGranter;
-class Command;
-class Extension;
-}
-
 namespace views {
 class BubbleDialogDelegateView;
 class ResizeArea;

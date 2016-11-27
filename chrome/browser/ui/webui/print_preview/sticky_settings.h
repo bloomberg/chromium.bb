@@ -12,10 +12,6 @@
 
 class PrefService;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

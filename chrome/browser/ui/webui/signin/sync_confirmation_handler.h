@@ -12,8 +12,6 @@
 #include "components/signin/core/browser/account_tracker_service.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class Browser;
-
 namespace base {
 class ListValue;
 }

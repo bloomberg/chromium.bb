@@ -17,11 +17,6 @@
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-namespace sessions {
-struct SessionTab;
-struct SessionWindow;
-}
-
 namespace syncer {
 class SyncService;
 }

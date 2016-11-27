@@ -13,8 +13,6 @@
 
 namespace chromeos {
 
-class EnterpriseEnrollmentHelperImpl;
-
 // Mocks out EnterpriseEnrollmentHelper.
 class EnterpriseEnrollmentHelperMock : public EnterpriseEnrollmentHelper {
  public:

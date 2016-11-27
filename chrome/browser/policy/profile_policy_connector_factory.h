@@ -16,7 +16,6 @@ namespace base {
 template <typename T>
 struct DefaultSingletonTraits;
 
-class SequencedTaskRunner;
 }  // namespace base
 
 namespace content {

@@ -15,8 +15,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/views/view.h"
 
-class GURL;
-
 namespace gfx {
 class Rect;
 class Size;

@@ -27,7 +27,6 @@
 
 class PrinterHandler;
 class PrintPreviewUI;
-class PrintSystemTaskProxy;
 
 namespace base {
 class DictionaryValue;

@@ -28,12 +28,12 @@ class Profile;
 class GURL;
 
 namespace base {
+class Clock;
 class FilePath;
 }
 
 namespace extensions {
 
-class Extension;
 
 // An abstract class for processing and summarizing activity log data.
 // Subclasses will generally store data in an SQLite database (the

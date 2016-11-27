@@ -46,7 +46,6 @@ class PrefRegistrySyncable;
 
 namespace app_list {
 
-class AppListFolderItem;
 class AppListItem;
 class AppListModel;
 

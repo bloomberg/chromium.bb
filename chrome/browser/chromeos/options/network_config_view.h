@@ -14,10 +14,6 @@
 #include "ui/views/controls/button/button.h"  // views::ButtonListener
 #include "ui/views/window/dialog_delegate.h"
 
-namespace gfx {
-class ImageSkia;
-}
-
 namespace views {
 class ImageView;
 }

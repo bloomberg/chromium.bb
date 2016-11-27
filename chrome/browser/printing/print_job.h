@@ -23,7 +23,6 @@ namespace printing {
 
 class JobEventDetails;
 class MetafilePlayer;
-class PdfToEmfConverter;
 class PrintJobWorker;
 class PrintedDocument;
 class PrintedPage;

@@ -37,10 +37,6 @@ class Profile;
 
 using file_manager::util::EntryDefinition;
 
-namespace base {
-class ListValue;
-}
-
 namespace chromeos {
 class NetworkState;
 }

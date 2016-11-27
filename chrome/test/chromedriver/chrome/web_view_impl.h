@@ -31,8 +31,6 @@ class NetworkConditionsOverrideManager;
 class HeapSnapshotTaker;
 struct KeyEvent;
 struct MouseEvent;
-class NavigationTracker;
-class NonBlockingNavigationTracker;
 class PageLoadStrategy;
 class Status;
 

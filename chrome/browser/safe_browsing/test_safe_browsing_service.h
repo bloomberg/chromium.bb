@@ -15,8 +15,6 @@
 namespace safe_browsing {
 struct SafeBrowsingProtocolConfig;
 class SafeBrowsingDatabaseManager;
-class SafeBrowsingPingManager;
-class SafeBrowsingProtocolManager;
 struct V4ProtocolConfig;
 class TestSafeBrowsingDatabaseManager;
 class TestSafeBrowsingUIManager;

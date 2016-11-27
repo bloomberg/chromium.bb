@@ -13,8 +13,6 @@
 #include "storage/browser/fileapi/file_system_backend.h"
 #include "storage/common/fileapi/file_system_types.h"
 
-class GURL;
-
 namespace base {
 class Time;
 }  // namespace base

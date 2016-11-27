@@ -18,8 +18,6 @@
 #include "chrome/browser/media/webrtc/webrtc_logging_handler_host.h"
 #include "net/url_request/url_fetcher_delegate.h"
 
-class Profile;
-
 namespace net {
 class URLFetcher;
 }

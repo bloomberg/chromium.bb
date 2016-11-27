@@ -10,7 +10,6 @@
 #include "base/mac/scoped_nsobject.h"
 
 @class ConfirmBubbleController;
-class ConfirmBubbleModel;
 
 // A view class that implements a bubble consisting of the following items:
 // * one icon ("icon")

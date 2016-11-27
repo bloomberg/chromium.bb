@@ -18,11 +18,6 @@
 @class ReauthDialogWindowController;
 @class UserManagerWindowController;
 
-namespace content {
-class NavigationController;
-class WebContents;
-}
-
 // Dialog widget that contains the Desktop User Manager webui. This object
 // should always be created from the UserManager::Show() method. Note that only
 // one User Manager will exist at a time.

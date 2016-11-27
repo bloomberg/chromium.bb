@@ -21,16 +21,12 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
-struct FrameNavigateParams;
-struct LoadCommittedDetails;
 class WebContents;
 }
 
 namespace autofill {
 
 class AutofillPopupControllerImpl;
-class CreditCardScannerController;
-struct FormData;
 
 // Chrome implementation of AutofillClient.
 class ChromeAutofillClient

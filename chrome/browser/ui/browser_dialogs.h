@@ -44,7 +44,6 @@ class Extension;
 }
 
 namespace gfx {
-class Image;
 class Point;
 }
 

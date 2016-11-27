@@ -4,10 +4,6 @@
 #ifndef CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORD_MANAGER_SETTING_MIGRATOR_HELPER_H_
 #define CHROME_BROWSER_SYNC_TEST_INTEGRATION_PASSWORD_MANAGER_SETTING_MIGRATOR_HELPER_H_
 
-namespace base {
-class FieldTrial;
-}
-
 class Profile;
 
 namespace password_manager_setting_migrater_helper {

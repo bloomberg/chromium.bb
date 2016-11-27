@@ -17,8 +17,6 @@
 #include "mojo/public/cpp/system/core.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
 
-class MojoWebUIHandler;
-
 class MojoWebUIControllerBase : public content::WebUIController {
  public:
   explicit MojoWebUIControllerBase(content::WebUI* contents);

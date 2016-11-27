@@ -18,7 +18,6 @@ class Storage;
 }
 
 class JsonPrefStore;
-class PersistentPrefStore;
 
 namespace autofill {
 

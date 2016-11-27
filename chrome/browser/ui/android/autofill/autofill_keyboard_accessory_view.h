@@ -14,10 +14,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace autofill {
 
 class AutofillPopupController;

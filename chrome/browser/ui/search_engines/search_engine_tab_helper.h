@@ -12,8 +12,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class TemplateURL;
-
 // Per-tab search engine manager. Handles dealing search engine processing
 // functionality.
 class SearchEngineTabHelper

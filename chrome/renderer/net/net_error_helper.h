@@ -23,7 +23,6 @@
 class GURL;
 
 namespace blink {
-class WebFrame;
 class WebURLResponse;
 struct WebURLError;
 }

@@ -15,10 +15,6 @@ namespace ash {
 class FrameCaptionButton;
 }
 
-namespace views {
-class ImageButton;
-}
-
 // WebAppLeftHeaderView is a container view for any icons on the left of the
 // frame used for web app style windows. It contains a back button and a
 // location icon.

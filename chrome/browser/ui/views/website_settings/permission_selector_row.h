@@ -30,7 +30,6 @@ class PermissionMenuButton;
 namespace views {
 class GridLayout;
 class ImageView;
-class MenuRunner;
 }
 
 // A PermissionSelectorRow is a row in the Page Info bubble that shows a

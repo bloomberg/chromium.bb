@@ -8,8 +8,6 @@
 #include "base/callback_forward.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 
-class GURL;
-
 namespace content {
 class DownloadItem;
 class WebContents;

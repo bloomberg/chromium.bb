@@ -15,11 +15,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view_delegate.h"
 #include "third_party/skia/include/core/SkColor.h"
 
-namespace gfx {
-class Point;
-class Rect;
-}
-
 namespace autofill {
 
 class AutofillPopupLayoutModel;

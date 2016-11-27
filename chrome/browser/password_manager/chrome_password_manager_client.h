@@ -33,12 +33,6 @@ namespace content {
 class WebContents;
 }
 
-namespace password_manager {
-struct CredentialInfo;
-class PasswordGenerationManager;
-class PasswordManagerDriver;
-}
-
 // ChromePasswordManagerClient implements the PasswordManagerClient interface.
 class ChromePasswordManagerClient
     : public password_manager::PasswordManagerClient,

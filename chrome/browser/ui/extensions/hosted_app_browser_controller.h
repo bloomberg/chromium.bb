@@ -10,7 +10,6 @@
 #include "base/macros.h"
 
 class Browser;
-class Profile;
 
 namespace extensions {
 

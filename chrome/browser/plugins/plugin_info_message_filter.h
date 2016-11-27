@@ -25,7 +25,6 @@ struct ChromeViewHostMsg_GetPluginInfo_Output;
 enum class ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
 class HostContentSettingsMap;
-class PluginFinder;
 class PluginMetadata;
 class Profile;
 

@@ -17,10 +17,6 @@ namespace content {
 class RenderFrameHost;
 }
 
-namespace device {
-class UsbDevice;
-}
-
 // Implementation of the public device::usb::ChooserService interface.
 // This interface can be used by a webpage to request permission from user
 // to access a certain device.

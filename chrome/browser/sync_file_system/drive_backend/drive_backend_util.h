@@ -17,11 +17,6 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "storage/browser/blob/scoped_file.h"
 
-namespace google_apis {
-class ChangeResource;
-class FileResource;
-}
-
 namespace sync_file_system {
 namespace drive_backend {
 

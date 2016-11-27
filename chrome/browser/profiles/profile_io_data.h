@@ -79,7 +79,6 @@ class ChannelIDService;
 class ClientCertStore;
 class CookieStore;
 class CTVerifier;
-class HttpServerProperties;
 class HttpTransactionFactory;
 class ProxyConfigService;
 class ProxyService;

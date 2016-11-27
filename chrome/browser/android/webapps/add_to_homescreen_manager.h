@@ -14,10 +14,6 @@ namespace content {
 class WebContents;
 }
 
-namespace IPC {
-class Message;
-}
-
 class GURL;
 class SkBitmap;
 struct ShortcutInfo;

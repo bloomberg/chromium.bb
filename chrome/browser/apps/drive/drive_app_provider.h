@@ -25,7 +25,6 @@ class DriveAppConverter;
 class DriveAppMapping;
 class DriveAppUninstallSyncService;
 class DriveServiceBridge;
-class ExtensionService;
 class Profile;
 
 // DriveAppProvider is the integration point for Drive apps. It ensures each

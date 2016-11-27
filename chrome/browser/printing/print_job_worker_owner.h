@@ -11,7 +11,6 @@
 #include "printing/printing_context.h"
 
 namespace base {
-class MessageLoop;
 class SequencedTaskRunner;
 }
 

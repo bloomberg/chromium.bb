@@ -43,7 +43,6 @@ class ScopedViewsTestHelper;
 
 namespace content {
 class NavigationController;
-class WebContents;
 }
 
 // Base class for browser based unit tests. BrowserWithTestWindowTest creates a

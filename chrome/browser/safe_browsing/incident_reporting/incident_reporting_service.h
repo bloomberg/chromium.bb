@@ -55,7 +55,6 @@ class ClientIncidentReport;
 class ClientIncidentReport_DownloadDetails;
 class ClientIncidentReport_EnvironmentData;
 class ClientIncidentReport_ExtensionData;
-class ClientIncidentReport_IncidentData;
 class Incident;
 class IncidentReceiver;
 class SafeBrowsingDatabaseManager;

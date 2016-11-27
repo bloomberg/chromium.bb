@@ -18,8 +18,6 @@
 #include "content/public/browser/service_worker_usage_info.h"
 #include "url/gurl.h"
 
-class Profile;
-
 // BrowsingDataServiceWorkerHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored for Service Workers -
 // registrations, scripts, and caches.

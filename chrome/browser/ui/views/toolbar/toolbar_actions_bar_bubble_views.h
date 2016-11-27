@@ -12,14 +12,11 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/controls/link_listener.h"
 
-class Profile;
 class ToolbarActionsBarBubbleDelegate;
-class ToolbarActionsBarBubbleViewsUnitTest;
 class ToolbarActionsBarBubbleViewsTest;
 
 namespace views {
 class Label;
-class LabelButton;
 class Link;
 }
 

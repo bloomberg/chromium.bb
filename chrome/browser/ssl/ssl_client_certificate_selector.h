@@ -16,7 +16,6 @@ class WebContents;
 
 namespace net {
 class SSLCertRequestInfo;
-class X509Certificate;
 }
 
 namespace chrome {

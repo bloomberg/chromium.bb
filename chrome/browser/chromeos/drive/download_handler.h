@@ -24,7 +24,6 @@ class DownloadManager;
 namespace drive {
 
 class FileSystemInterface;
-class ResourceEntry;
 
 // Observes downloads to temporary local drive folder. Schedules these
 // downloads for upload to drive service.

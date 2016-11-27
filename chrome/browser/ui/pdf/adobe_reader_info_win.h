@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 #define CHROME_BROWSER_UI_PDF_ADOBE_READER_INFO_WIN_H_
 
-class Profile;
-
 // Returns true if Adobe Reader or Adobe Acrobat is the default viewer for the
 // .pdf extension.
 bool IsAdobeReaderDefaultPDFViewer();

@@ -9,8 +9,6 @@
 #include "base/memory/weak_ptr.h"
 #include "content/public/browser/resource_throttle.h"
 
-class GURL;
-
 namespace net {
 class URLRequest;
 }

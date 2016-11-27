@@ -16,7 +16,6 @@
 #include "components/component_updater/default_component_installer.h"
 
 class PrefRegistrySimple;
-class PrefService;
 
 namespace base {
 class DictionaryValue;

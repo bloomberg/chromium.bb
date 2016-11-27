@@ -15,10 +15,6 @@ namespace policy {
 class AffiliatedInvalidationServiceProviderImplTest;
 }
 
-namespace syncer {
-class Invalidator;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

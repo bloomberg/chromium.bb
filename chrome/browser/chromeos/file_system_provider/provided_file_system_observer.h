@@ -17,7 +17,6 @@ namespace chromeos {
 namespace file_system_provider {
 
 class ProvidedFileSystemInfo;
-class RequestManager;
 
 // Observer class to be notified about changes happened to the provided file
 // system, including watched entries.

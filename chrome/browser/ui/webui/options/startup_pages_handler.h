@@ -18,7 +18,6 @@
 
 class AutocompleteController;
 class CustomHomePagesTableModel;
-class TemplateURLService;
 
 namespace options {
 

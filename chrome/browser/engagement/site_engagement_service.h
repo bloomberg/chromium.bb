@@ -21,7 +21,6 @@
 #include "ui/base/page_transition_types.h"
 
 namespace base {
-class DictionaryValue;
 class Clock;
 }
 

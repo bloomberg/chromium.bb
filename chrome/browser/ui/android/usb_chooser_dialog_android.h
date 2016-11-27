@@ -19,7 +19,6 @@
 
 namespace content {
 class RenderFrameHost;
-class WebContents;
 }
 
 namespace device {

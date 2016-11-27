@@ -9,10 +9,6 @@
 #include "chrome/browser/task_manager/providers/web_contents/extension_task.h"
 #include "chrome/browser/task_manager/providers/web_contents/web_contents_tag.h"
 
-namespace extensions {
-class Extension;
-}  // namespace extensions
-
 namespace task_manager {
 
 // Defines a concrete UserData type for WebContents owned by extensions.

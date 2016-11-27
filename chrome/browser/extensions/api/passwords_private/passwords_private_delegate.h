@@ -19,12 +19,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "extensions/browser/extension_function.h"
 
-class Profile;
-
-namespace base {
-class Value;
-}
-
 namespace content {
 class WebContents;
 }

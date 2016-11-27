@@ -14,11 +14,6 @@
 #include "chrome/browser/ui/views/download/download_item_view.h"
 #include "ui/base/ui_base_types.h"
 
-namespace content {
-class DownloadItem;
-class PageNavigator;
-}
-
 namespace gfx {
 class Rect;
 }

@@ -12,10 +12,6 @@
 
 class Profile;
 
-namespace content {
-class WebUI;
-}
-
 // A class to keep the ThemeSource up to date when theme changes.
 class ThemeHandler : public content::WebUIMessageHandler,
                      public content::NotificationObserver {

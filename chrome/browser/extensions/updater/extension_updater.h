@@ -32,15 +32,10 @@ class ExtensionServiceInterface;
 class PrefService;
 class Profile;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 
 class ExtensionCache;
 class ExtensionPrefs;
-class ExtensionRegistry;
 class ExtensionSet;
 class ExtensionUpdaterTest;
 

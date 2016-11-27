@@ -16,10 +16,6 @@ class DictionaryValue;
 }
 
 namespace extensions {
-class Extension;
-}
-
-namespace extensions {
 
 class Command {
  public:

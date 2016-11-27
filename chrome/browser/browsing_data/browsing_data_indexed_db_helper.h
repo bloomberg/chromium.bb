@@ -18,8 +18,6 @@
 #include "content/public/browser/indexed_db_info.h"
 #include "url/gurl.h"
 
-class Profile;
-
 // BrowsingDataIndexedDBHelper is an interface for classes dealing with
 // aggregating and deleting browsing data stored in indexed databases.  A
 // client of this class need to call StartFetching from the UI thread to

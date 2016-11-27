@@ -9,7 +9,6 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
 
-struct AppLaunchParams;
 class AppListService;
 class Profile;
 

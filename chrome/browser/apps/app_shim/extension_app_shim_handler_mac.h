@@ -27,10 +27,6 @@ namespace base {
 class FilePath;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class AppWindow;
 class Extension;

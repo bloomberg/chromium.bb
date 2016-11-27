@@ -31,8 +31,6 @@ class PolicyFetchResponse;
 
 namespace policy {
 
-class DeviceLocalAccountPolicyBroker;
-
 // CloudPolicyStore implementation for device-local account policy. Stores/loads
 // policy to/from session_manager.
 class DeviceLocalAccountPolicyStore : public UserCloudPolicyStoreBase {

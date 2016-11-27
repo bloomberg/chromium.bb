@@ -8,7 +8,6 @@
 #include "components/omnibox/browser/autocomplete_match.h"
 
 class Browser;
-class Profile;
 
 namespace content {
 class WebContents;

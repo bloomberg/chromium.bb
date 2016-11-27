@@ -12,7 +12,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace content {
-struct NativeWebKeyboardEvent;
 class RenderViewHost;
 class WebContents;
 }

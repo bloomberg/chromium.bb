@@ -20,7 +20,6 @@ class FrameCaptionButtonContainerView;
 }
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 class SlideAnimation;
 }

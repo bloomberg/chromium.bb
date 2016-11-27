@@ -13,7 +13,6 @@
 #include "base/macros.h"
 #include "chrome/browser/profiles/profile_list.h"
 
-class Browser;
 class ProfileAttributesStorage;
 
 // This model represents the profiles added to desktop Chrome (as opposed to

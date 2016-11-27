@@ -14,8 +14,6 @@
 
 namespace chromeos {
 
-class CertNameComparator;
-
 // This class is responsible for keeping track of certificates in a UI
 // friendly manner. It observes CertLoader to receive certificate list
 // updates and sorts them by type for the UI. All public APIs are expected

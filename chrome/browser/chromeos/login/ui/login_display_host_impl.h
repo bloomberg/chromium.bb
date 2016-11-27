@@ -34,13 +34,7 @@
 #include "ui/views/widget/widget_removals_observer.h"
 #include "ui/wm/public/scoped_drag_drop_disabler.h"
 
-class PrefService;
 class ScopedKeepAlive;
-
-namespace content {
-class RenderFrameHost;
-class WebContents;
-}
 
 namespace chromeos {
 

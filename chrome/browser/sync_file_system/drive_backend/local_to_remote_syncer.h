@@ -29,8 +29,6 @@ class FileResource;
 
 namespace sync_file_system {
 
-class RemoteChangeProcessor;
-
 namespace drive_backend {
 
 class FileDetails;

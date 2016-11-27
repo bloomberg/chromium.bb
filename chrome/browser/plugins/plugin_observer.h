@@ -19,21 +19,12 @@
 #include <map>
 #endif
 
-class GURL;
-class PluginFinder;
-class PluginMetadata;
-
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
-class PluginInstaller;
 class PluginPlaceholderHost;
 #endif
 
 namespace content {
 class WebContents;
-}
-
-namespace infobars {
-class InfoBarDelegate;
 }
 
 class PluginObserver : public content::WebContentsObserver,

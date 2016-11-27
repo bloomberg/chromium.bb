@@ -30,16 +30,7 @@
 #include "components/user_manager/user_manager.h"
 #endif
 
-class Profile;
 class NotifierSource;
-
-namespace base {
-class CancelableTaskTracker;
-}
-
-namespace favicon_base {
-struct FaviconImageResult;
-}
 
 namespace message_center {
 class ProfileNotifierGroup;

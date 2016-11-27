@@ -22,10 +22,6 @@ class BrowserContext;
 class WebContents;
 }  // namespace content
 
-namespace test {
-class ScopedCLDDynamicDataHarness;
-}  // namespace test
-
 class PrefService;
 
 namespace translate {

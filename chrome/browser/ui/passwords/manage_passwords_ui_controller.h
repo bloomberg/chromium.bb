@@ -23,7 +23,6 @@ class WebContents;
 
 namespace password_manager {
 enum class CredentialType;
-struct CredentialInfo;
 struct InteractionsStats;
 class PasswordFormManager;
 }

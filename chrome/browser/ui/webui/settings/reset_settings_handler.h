@@ -16,7 +16,6 @@
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }  // namespace base
 

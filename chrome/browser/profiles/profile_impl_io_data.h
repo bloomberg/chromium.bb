@@ -21,10 +21,6 @@ namespace chrome_browser_net {
 class Predictor;
 }  // namespace chrome_browser_net
 
-namespace data_reduction_proxy {
-class DataReductionProxyNetworkDelegate;
-}  // namespace data_reduction_proxy
-
 namespace domain_reliability {
 class DomainReliabilityMonitor;
 }  // namespace domain_reliability

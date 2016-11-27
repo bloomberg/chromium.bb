@@ -42,7 +42,6 @@ class BluetoothPolicyHandler;
 class DeviceActiveDirectoryPolicyManager;
 class DeviceCloudPolicyInitializer;
 class DeviceLocalAccountPolicyService;
-class DeviceManagementService;
 struct EnrollmentConfig;
 class NetworkConfigurationUpdater;
 class ProxyPolicyProvider;

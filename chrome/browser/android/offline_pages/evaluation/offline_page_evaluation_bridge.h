@@ -19,8 +19,6 @@ class BrowserContext;
 
 namespace offline_pages {
 
-struct OfflinePageItem;
-
 namespace android {
 
 /**

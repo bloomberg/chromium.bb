@@ -8,10 +8,6 @@
 #include "base/command_line.h"
 #include "chrome/test/base/web_ui_browser_test.h"
 
-namespace base {
-class WaitableEvent;
-}
-
 // Base class for BidiChecker-based tests. Preloads the BidiChecker JS library
 // for each test.
 class WebUIBidiCheckerBrowserTest : public WebUIBrowserTest {

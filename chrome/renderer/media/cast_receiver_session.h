@@ -13,10 +13,6 @@
 #include "base/single_thread_task_runner.h"
 #include "chrome/renderer/media/cast_receiver_session_delegate.h"
 
-namespace blink {
-class WebMediaStream;
-}
-
 namespace media {
 class AudioCapturerSource;
 struct VideoCaptureFormat;

@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "content/public/browser/web_ui_controller.h"
 
-namespace power_manager {
-class PowerSupplyProperties;
-}
-
 // The WebUI handler for chrome://device-emulator
 class DeviceEmulatorUI : public content::WebUIController {
  public:

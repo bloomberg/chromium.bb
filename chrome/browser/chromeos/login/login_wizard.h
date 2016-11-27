@@ -7,10 +7,6 @@
 
 #include <string>
 
-namespace gfx {
-class Size;
-}
-
 namespace chromeos {
 
 // Shows the Chrome OS out-of-box / login UI.

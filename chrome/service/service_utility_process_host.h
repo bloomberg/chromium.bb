@@ -18,7 +18,6 @@ namespace base {
 class CommandLine;
 class File;
 class FilePath;
-class ScopedTempDir;
 class SingleThreadTaskRunner;
 }  // namespace base
 
@@ -28,7 +27,6 @@ class ChildProcessHost;
 
 namespace printing {
 class MetafilePlayer;
-struct PageRange;
 struct PdfRenderSettings;
 struct PrinterCapsAndDefaults;
 struct PrinterSemanticCapsAndDefaults;

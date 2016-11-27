@@ -15,10 +15,6 @@
 #include "content/public/browser/utility_process_host.h"
 #include "content/public/browser/utility_process_host_client.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace IPC {
 class Message;
 }

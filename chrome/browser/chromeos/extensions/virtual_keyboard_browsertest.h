@@ -16,7 +16,6 @@ class FilePath;
 
 namespace content {
 class RenderViewHost;
-class WebContents;
 }
 
 // See the .cc for default values.

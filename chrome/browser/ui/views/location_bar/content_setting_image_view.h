@@ -30,8 +30,6 @@ class FontList;
 
 namespace views {
 class BubbleDialogDelegateView;
-class ImageView;
-class Label;
 }
 
 // The ContentSettingImageView displays an icon and optional text label for

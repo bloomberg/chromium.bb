@@ -7,9 +7,7 @@
 
 class BrowserFrame;
 class BrowserView;
-namespace gfx {
-class Rect;
-}
+
 namespace views {
 class DesktopNativeWidgetAura;
 class DesktopWindowTreeHost;

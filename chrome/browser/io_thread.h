@@ -78,7 +78,6 @@ class CookieStore;
 class CTLogVerifier;
 class HostMappingRules;
 class HostResolver;
-class HttpAuthHandlerRegistryFactory;
 class HttpAuthPreferences;
 class HttpServerProperties;
 class HttpTransactionFactory;

@@ -13,11 +13,6 @@
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_mac.h"
 #import "chrome/browser/ui/cocoa/extensions/extension_install_view_controller.h"
 
-namespace content {
-class PageNavigator;
-class WebContents;
-}
-
 namespace extensions {
 class ExperienceSamplingEvent;
 }

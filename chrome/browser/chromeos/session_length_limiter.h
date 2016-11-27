@@ -15,7 +15,6 @@
 #include "components/prefs/pref_change_registrar.h"
 #include "ui/base/user_activity/user_activity_observer.h"
 
-class PrefService;
 class PrefRegistrySimple;
 
 namespace chromeos {

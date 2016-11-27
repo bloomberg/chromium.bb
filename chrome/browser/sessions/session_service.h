@@ -32,7 +32,6 @@
 class Profile;
 
 namespace content {
-class NavigationEntry;
 class WebContents;
 }  // namespace content
 

@@ -16,13 +16,8 @@
 #include "content/public/browser/permission_type.h"
 #include "ui/gfx/native_widget_types.h"
 
-class GURL;
 class Profile;
 class WebsiteSettings;
-
-namespace base {
-class Value;
-};
 
 namespace gfx {
 class Image;

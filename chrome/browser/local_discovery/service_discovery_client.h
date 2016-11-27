@@ -15,10 +15,6 @@
 #include "net/base/host_port_pair.h"
 #include "net/base/ip_address.h"
 
-namespace net {
-class MDnsClient;
-}
-
 namespace local_discovery {
 
 struct ServiceDescription {

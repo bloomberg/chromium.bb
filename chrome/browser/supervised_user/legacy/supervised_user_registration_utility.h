@@ -25,10 +25,6 @@ class SupervisedUserRefreshTokenFetcher;
 class SupervisedUserRegistrationUtilityTest;
 class SupervisedUserSharedSettingsService;
 
-namespace browser_sync {
-class DeviceInfo;
-}
-
 // Structure to store registration information.
 struct SupervisedUserRegistrationInfo {
   SupervisedUserRegistrationInfo(const base::string16& name, int avatar_index);

@@ -12,10 +12,6 @@
 #include "chrome/browser/apps/app_shim/app_shim_host_manager_mac.h"
 #include "chrome/browser/browser_process_platform_part_base.h"
 
-namespace apps {
-class ExtensionAppShimHandler;
-}
-
 class BrowserProcessPlatformPart : public BrowserProcessPlatformPartBase {
  public:
   BrowserProcessPlatformPart();

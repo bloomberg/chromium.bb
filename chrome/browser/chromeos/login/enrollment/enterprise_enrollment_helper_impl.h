@@ -17,8 +17,6 @@
 #include "components/policy/core/common/cloud/enterprise_metrics.h"
 #include "google_apis/gaia/google_service_auth_error.h"
 
-class Profile;
-
 namespace policy {
 class PolicyOAuth2TokenFetcher;
 }

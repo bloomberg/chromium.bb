@@ -17,7 +17,6 @@
 namespace page_load_metrics {
 
 struct PageLoadExtraInfo;
-struct PageLoadTiming;
 
 // Returns true if:
 // - We have timing information for the event.

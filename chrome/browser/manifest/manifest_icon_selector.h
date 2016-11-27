@@ -9,18 +9,6 @@
 #include "content/public/common/manifest.h"
 #include "url/gurl.h"
 
-namespace content {
-class WebContents;
-}  // namespace content
-
-namespace IPC {
-class Message;
-}  // namespace IPC
-
-namespace gfx {
-class Screen;
-}
-
 // Selects the icon most closely matching the size constraints.  This follows
 // very basic heuristics -- improvements are welcome.
 class ManifestIconSelector {

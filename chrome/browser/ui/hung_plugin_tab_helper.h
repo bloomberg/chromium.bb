@@ -21,10 +21,6 @@ namespace base {
 class FilePath;
 }
 
-namespace infobars {
-class InfoBarDelegate;
-}
-
 // Manages per-tab state with regard to hung plugins. This only handles
 // Pepper plugins which we know are windowless. Hung NPAPI plugins (which
 // may have native windows) can not be handled with infobars and have a

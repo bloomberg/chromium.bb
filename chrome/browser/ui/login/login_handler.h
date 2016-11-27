@@ -22,7 +22,6 @@ class GURL;
 class LoginInterstitialDelegate;
 
 namespace content {
-class RenderViewHostDelegate;
 class NotificationRegistrar;
 class WebContents;
 }  // namespace content

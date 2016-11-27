@@ -18,8 +18,6 @@
 namespace chromeos {
 namespace file_system_provider {
 
-class ProvidedFileSystemInterface;
-
 // Implements a streamed file writer. It is lazily initialized by the first call
 // to Write().
 class FileStreamWriter : public storage::FileStreamWriter {

@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 class Profile;
-class SkBitmap;
 
 namespace base {
 class RefCountedMemory;

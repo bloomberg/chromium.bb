@@ -23,7 +23,6 @@
 
 class BrowserInstantController;
 class InstantController;
-class InstantModel;
 class OmniboxView;
 
 namespace content {

@@ -29,6 +29,8 @@ namespace gfx {
 enum class VectorIconId;
 }
 
+class DownloadNotificationManagerForProfile;
+
 class DownloadItemNotification : public DownloadNotification,
                                  public ImageDecoder::ImageRequest {
  public:

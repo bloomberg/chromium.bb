@@ -43,10 +43,6 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace safe_browsing {
 
 class SafeBrowsingBlockingPageFactory;

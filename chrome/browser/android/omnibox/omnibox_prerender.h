@@ -11,10 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-class AutocompleteResult;
-class ProfielAndroid;
 class Profile;
-class TabAndroid;
 struct AutocompleteMatch;
 
 namespace content {

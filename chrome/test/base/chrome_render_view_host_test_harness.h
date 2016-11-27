@@ -10,10 +10,6 @@
 
 class TestingProfile;
 
-namespace content {
-class WebContents;
-}
-
 // Wrapper around RenderViewHostTestHarness that uses a TestingProfile as
 // browser context instead of a TestBrowserContext.
 class ChromeRenderViewHostTestHarness

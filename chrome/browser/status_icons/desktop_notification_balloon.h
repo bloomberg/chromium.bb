@@ -11,7 +11,6 @@
 #include "base/macros.h"
 #include "base/strings/string16.h"
 
-class Notification;
 class Profile;
 
 namespace gfx {

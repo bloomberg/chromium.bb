@@ -10,7 +10,6 @@
 
 #include "base/strings/string16.h"
 
-class GlobalError;
 class Profile;
 class SigninManagerBase;
 

@@ -26,7 +26,6 @@ class SequencedTaskRunner;
 }
 
 class SnapshotFileDetails;
-struct SnapshotRequestInfo;
 
 // MTPDeviceDelegateImplWin is used to communicate with the media transfer
 // protocol (MTP) device to complete file system operations. These operations

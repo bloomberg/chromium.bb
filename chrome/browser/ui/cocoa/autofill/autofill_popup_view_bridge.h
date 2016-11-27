@@ -20,8 +20,6 @@
 
 namespace autofill {
 
-class AutofillPopupViewDelegate;
-
 class AutofillPopupViewCocoaDelegate {
  public:
   // Returns the bounds of the item at |index| in the popup, relative to

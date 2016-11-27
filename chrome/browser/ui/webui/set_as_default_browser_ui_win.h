@@ -8,7 +8,6 @@
 #include "base/macros.h"
 #include "ui/web_dialogs/web_dialog_ui.h"
 
-class Browser;
 class Profile;
 
 namespace views {

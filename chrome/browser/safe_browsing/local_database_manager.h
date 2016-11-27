@@ -34,7 +34,6 @@
 #include "url/gurl.h"
 
 namespace net {
-class URLRequestContext;
 class URLRequestContextGetter;
 }
 
@@ -42,8 +41,6 @@ namespace safe_browsing {
 
 class SafeBrowsingService;
 class SafeBrowsingDatabase;
-class ClientSideDetectionService;
-class DownloadProtectionService;
 struct V4ProtocolConfig;
 
 // Implementation that manages a local database on disk.

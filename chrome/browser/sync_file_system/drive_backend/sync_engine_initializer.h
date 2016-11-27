@@ -19,10 +19,6 @@
 #include "google_apis/drive/drive_api_error_codes.h"
 #include "google_apis/drive/drive_common_callbacks.h"
 
-namespace drive {
-class DriveServiceInterface;
-}
-
 namespace google_apis {
 class AboutResource;
 class FileList;

@@ -12,7 +12,6 @@
 #include "content/public/browser/notification_registrar.h"
 
 class Profile;
-class NetworkState;
 class Notification;
 
 namespace chromeos {

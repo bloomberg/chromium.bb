@@ -16,6 +16,10 @@
 class Browser;
 class URLPattern;
 
+namespace content {
+class WebContents;
+}
+
 namespace extensions {
 class Extension;
 }

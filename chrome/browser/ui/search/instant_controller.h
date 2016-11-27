@@ -21,7 +21,6 @@
 class BrowserInstantController;
 class GURL;
 class InstantService;
-class Profile;
 
 namespace content {
 class WebContents;

@@ -21,8 +21,6 @@
 typedef struct _GtkStyle GtkStyle;
 typedef struct _GtkWidget GtkWidget;
 
-class SkBitmap;
-
 namespace libgtkui {
 class Gtk2KeyBindingsHandler;
 class GConfListener;

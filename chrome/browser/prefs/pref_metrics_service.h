@@ -17,8 +17,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "components/sync_preferences/synced_pref_change_registrar.h"
 
-class PrefRegistrySimple;
-
 // PrefMetricsService is responsible for recording prefs-related UMA stats.
 class PrefMetricsService : public KeyedService {
  public:

@@ -31,8 +31,6 @@ enum class PasswordEntryType { SAVED, BLACKLISTED };
 
 class PasswordUIView;
 
-class Profile;
-
 // Contains the common logic used by a PasswordUIView to
 // interact with PasswordStore. It provides completion callbacks for
 // PasswordStore operations and updates the view on PasswordStore changes.

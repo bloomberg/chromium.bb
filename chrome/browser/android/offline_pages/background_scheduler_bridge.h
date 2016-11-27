@@ -9,10 +9,6 @@
 
 #include "base/android/jni_android.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace offline_pages {
 namespace android {
 

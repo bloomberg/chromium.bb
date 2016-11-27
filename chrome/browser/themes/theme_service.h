@@ -25,7 +25,6 @@
 #include "ui/base/theme_provider.h"
 
 class CustomThemeSupplier;
-class BrowserThemePack;
 class ThemeSyncableService;
 class Profile;
 

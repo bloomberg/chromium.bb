@@ -10,8 +10,6 @@
 #include "ash/public/interfaces/new_window.mojom.h"
 #include "base/macros.h"
 
-class Browser;
-
 class ChromeNewWindowClient : public ash::mojom::NewWindowClient {
  public:
   ChromeNewWindowClient();

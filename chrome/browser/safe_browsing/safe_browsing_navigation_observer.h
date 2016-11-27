@@ -11,7 +11,6 @@
 
 namespace content {
 class NavigationHandle;
-struct ResourceRedirectDetails;
 }
 
 namespace safe_browsing {

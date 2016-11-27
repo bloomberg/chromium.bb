@@ -25,21 +25,17 @@ namespace chromeos {
 
 class ArcKioskAppManager;
 class DataPromoNotification;
-class EventRewriter;
 class EventRewriterController;
 class ExtensionVolumeObserver;
 class IdleActionWarningObserver;
 class LoginLockStateNotifier;
 class LowDiskNotification;
-class MagnificationManager;
 class NetworkPrefStateObserver;
 class NetworkThrottlingObserver;
 class PeripheralBatteryObserver;
 class PowerPrefs;
 class RendererFreezer;
-class SessionManagerObserver;
 class ShutdownPolicyForwarder;
-class SwapMetrics;
 class WakeOnWifiManager;
 
 namespace default_app_order {

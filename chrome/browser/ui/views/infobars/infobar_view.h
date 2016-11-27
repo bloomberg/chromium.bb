@@ -16,17 +16,11 @@
 #include "ui/views/focus/external_focus_tracker.h"
 #include "ui/views/view_targeter_delegate.h"
 
-namespace ui {
-class MenuModel;
-}
-
 namespace views {
 class ImageView;
 class Label;
-class LabelButton;
 class Link;
 class LinkListener;
-class MenuButton;
 class MenuRunner;
 class VectorIconButton;
 }  // namespace views

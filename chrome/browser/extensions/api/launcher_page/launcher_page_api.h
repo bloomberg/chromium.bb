@@ -11,7 +11,6 @@
 
 namespace app_list {
 class AppListSyncableService;
-class AppListModel;
 }
 
 namespace extensions {

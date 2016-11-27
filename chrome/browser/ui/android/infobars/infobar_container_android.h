@@ -18,10 +18,6 @@
 
 class InfoBarAndroid;
 
-namespace content {
-class WebContents;
-}
-
 class InfoBarContainerAndroid : public infobars::InfoBarContainer {
  public:
   InfoBarContainerAndroid(JNIEnv* env,

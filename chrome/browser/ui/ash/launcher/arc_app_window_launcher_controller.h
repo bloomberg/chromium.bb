@@ -25,10 +25,6 @@ namespace aura {
 class Window;
 }
 
-namespace views {
-class Widget;
-}
-
 class ArcAppWindowLauncherItemController;
 class ChromeLauncherController;
 

@@ -22,8 +22,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 #include "content/public/browser/presentation_service_delegate.h"
 
-class Profile;
-
 namespace content {
 class WebContents;
 }

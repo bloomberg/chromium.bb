@@ -11,10 +11,6 @@
 #include "base/macros.h"
 #include "extensions/browser/extension_event_histogram_value.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 class BrowserContext;
 }
@@ -22,7 +18,6 @@ class BrowserContext;
 namespace extensions {
 
 class Extension;
-class ExtensionPrefs;
 class PermissionSet;
 
 // Updates an Extension's active and granted permissions in persistent storage

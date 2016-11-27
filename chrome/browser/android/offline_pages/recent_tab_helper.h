@@ -17,7 +17,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class NavigationEntry;
 class NavigationHandle;
 }
 

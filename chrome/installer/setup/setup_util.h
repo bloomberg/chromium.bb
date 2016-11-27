@@ -33,7 +33,6 @@ namespace installer {
 
 class InstallationState;
 class InstallerState;
-class ProductState;
 class MasterPreferences;
 
 extern const char kUnPackStatusMetricsName[];

@@ -7,7 +7,6 @@
 
 #include "chrome/browser/ui/website_settings/permission_prompt.h"
 
-class GroupedPermissionInfoBarDelegate;
 class InfoBarService;
 
 namespace content {

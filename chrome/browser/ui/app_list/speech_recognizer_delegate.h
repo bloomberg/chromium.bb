@@ -11,10 +11,6 @@
 #include "base/strings/string16.h"
 #include "ui/app_list/speech_ui_model_observer.h"
 
-namespace content {
-class WebContents;
-}
-
 namespace app_list {
 
 // Delegate for the app list speech recognizer. All methods are called from the

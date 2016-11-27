@@ -13,8 +13,6 @@ namespace base {
 class FilePath;
 }
 
-class MediaFileSystemRegistry;
-
 class MediaFileSystemContext {
  public:
   virtual ~MediaFileSystemContext() {}

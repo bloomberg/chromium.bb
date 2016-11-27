@@ -16,10 +16,6 @@
 #include "build/build_config.h"
 #include "components/crash/content/app/crash_reporter_client.h"
 
-namespace browser_watcher {
-class CrashReportingMetrics;
-}  // namespace browser_watcher
-
 class ChromeCrashReporterClient : public crash_reporter::CrashReporterClient {
  public:
   ChromeCrashReporterClient();

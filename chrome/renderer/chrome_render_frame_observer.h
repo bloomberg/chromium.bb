@@ -10,8 +10,6 @@
 #include "chrome/common/prerender_types.h"
 #include "content/public/renderer/render_frame_observer.h"
 
-class GURL;
-
 namespace gfx {
 class Size;
 }

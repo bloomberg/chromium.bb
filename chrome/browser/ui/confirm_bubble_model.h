@@ -9,10 +9,6 @@
 #include "base/strings/string16.h"
 #include "url/gurl.h"
 
-namespace gfx {
-class Image;
-}
-
 // An interface implemented by objects wishing to control an ConfirmBubbleView.
 // To use this class to implement a bubble menu, we need two steps:
 // 1. Implement a class derived from this class.

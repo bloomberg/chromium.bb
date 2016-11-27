@@ -15,16 +15,6 @@
 #include "ui/views/drag_controller.h"
 #include "ui/views/view.h"
 
-class ExtensionAction;
-
-namespace extensions {
-class Extension;
-}
-
-namespace gfx {
-class Image;
-}
-
 namespace views {
 class MenuItemView;
 class MenuModelAdapter;

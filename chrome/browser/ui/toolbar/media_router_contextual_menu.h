@@ -10,7 +10,6 @@
 #include "ui/base/models/simple_menu_model.h"
 
 class Browser;
-class ToolbarActionsModel;
 
 namespace extensions {
 class ComponentMigrationHelper;

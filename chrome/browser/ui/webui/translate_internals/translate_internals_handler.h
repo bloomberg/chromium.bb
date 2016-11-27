@@ -18,13 +18,11 @@
 #include "content/public/common/webplugininfo.h"
 
 namespace translate {
-struct LanguageDetectionDetails;
 struct TranslateErrorDetails;
 struct TranslateEventDetails;
 }
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Value;
 }

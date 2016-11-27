@@ -31,7 +31,6 @@ namespace extensions {
 class ExtensionActionManager;
 class ExtensionMessageBubbleController;
 class ExtensionRegistry;
-class ExtensionSet;
 }
 
 // Model for the browser actions toolbar. This is a per-profile instance, and

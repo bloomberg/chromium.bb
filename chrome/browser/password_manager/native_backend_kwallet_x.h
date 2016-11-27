@@ -25,7 +25,6 @@ struct PasswordForm;
 
 namespace base {
 class Pickle;
-class PickleIterator;
 class WaitableEvent;
 }
 

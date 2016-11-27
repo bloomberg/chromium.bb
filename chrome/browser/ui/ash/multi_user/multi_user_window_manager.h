@@ -10,7 +10,6 @@
 #include <string>
 
 class AccountId;
-class Browser;
 
 namespace content {
 class BrowserContext;
@@ -21,8 +20,6 @@ class Window;
 }
 
 namespace chrome {
-
-class MultiUserWindowManagerChromeOS;
 
 // The MultiUserWindowManager manages windows from multiple users by presenting
 // only user relevant windows to the current user. The manager is automatically

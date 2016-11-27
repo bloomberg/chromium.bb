@@ -23,10 +23,6 @@
 #include "base/memory/singleton.h"
 #include "chrome/browser/android/download/download_controller_base.h"
 
-namespace net {
-class URLRequest;
-}
-
 namespace ui {
 class WindowAndroid;
 }

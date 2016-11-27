@@ -13,10 +13,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace chromeos {
 
 class CoreOobeActor {

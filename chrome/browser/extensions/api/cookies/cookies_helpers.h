@@ -21,7 +21,6 @@ class Browser;
 class Profile;
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 

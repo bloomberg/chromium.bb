@@ -19,8 +19,6 @@
 
 namespace image_writer {
 
-class ImageWriter;
-
 // Manages the unmounting of disks through Disk Arbitration.  Disk Arbitration
 // has to be run on a thread with a CFRunLoop.  In the utility process neither
 // the main or IO thread have one by default, so we need to manage a new thread

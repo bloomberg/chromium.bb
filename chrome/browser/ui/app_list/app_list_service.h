@@ -25,10 +25,6 @@ namespace content {
 struct SpeechRecognitionSessionPreamble;
 }
 
-namespace gfx {
-class ImageSkia;
-}
-
 class AppListService {
  public:
   // Source that triggers the app launcher being enabled. This is used for UMA

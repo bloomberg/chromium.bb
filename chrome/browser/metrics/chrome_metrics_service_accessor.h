@@ -35,10 +35,6 @@ class ExternalDataUseObserverBridge;
 }
 }
 
-namespace component_updater {
-class ComponentUpdateService;
-}
-
 namespace domain_reliability {
 class DomainReliabilityServiceFactory;
 }

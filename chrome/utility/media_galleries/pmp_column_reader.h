@@ -16,7 +16,6 @@
 
 namespace base {
 class File;
-class FilePath;
 }
 
 namespace picasa {

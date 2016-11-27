@@ -16,8 +16,6 @@ namespace base {
 template <typename T> struct DefaultSingletonTraits;
 }
 
-class EnhancedBookmarkKeyService;
-
 // Singleton that owns all EnhancedBookmarkKeyServices and associates them with
 // BrowserContexts.
 class EnhancedBookmarkKeyServiceFactory

@@ -20,10 +20,6 @@
 class Browser;
 class Profile;
 
-namespace content {
-class WebContents;
-}
-
 namespace chrome {
 
 // Sources of requests to show the help tab.

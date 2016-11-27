@@ -30,8 +30,6 @@
 #include "extensions/common/stack_frame.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
-class FaviconDownloader;
-
 namespace content {
 struct LoadCommittedDetails;
 class RenderFrameHost;

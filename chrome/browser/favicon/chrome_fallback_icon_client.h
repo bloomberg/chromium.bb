@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "components/favicon/core/fallback_icon_client.h"
 
-class GURL;
-
 // ChromeFallbackIconClient implements the FallbackIconClient interface.
 class ChromeFallbackIconClient : public favicon::FallbackIconClient {
  public:

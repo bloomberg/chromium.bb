@@ -9,10 +9,6 @@
 #include "content/public/browser/web_ui_controller.h"
 #include "ui/base/layout.h"
 
-namespace base {
-class RefCountedMemory;
-}
-
 // The WebUI handler for chrome://webrtc-logs.
 class WebRtcLogsUI : public content::WebUIController {
  public:

@@ -20,8 +20,6 @@ class WebContents;
 
 namespace extensions {
 
-class Extension;
-
 // Creates and manages instances of an associated ContentPredicate subclass and
 // tracks the url and browser context state required to evaluate the predicates.
 //

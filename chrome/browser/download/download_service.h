@@ -14,7 +14,6 @@
 class ChromeDownloadManagerDelegate;
 class DownloadHistory;
 class ExtensionDownloadsEventRouter;
-class Profile;
 
 namespace content {
 class DownloadManager;

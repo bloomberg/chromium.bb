@@ -17,7 +17,6 @@
 
 namespace net {
 class DnsClient;
-struct DnsConfig;
 }
 
 namespace chrome_browser_net {

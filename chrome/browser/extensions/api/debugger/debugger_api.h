@@ -23,10 +23,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace content {
-class WebContents;
-}
-
 namespace extensions {
 class ExtensionDevToolsClientHost;
 

@@ -10,7 +10,6 @@
 
 namespace base {
 class FeatureList;
-class Time;
 }
 
 class ChromeBrowserFieldTrials {

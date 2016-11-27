@@ -14,8 +14,6 @@ class ImageFamily;
 class Size;
 }
 
-class SkBitmap;
-
 HICON GetAppIcon();
 HICON GetSmallAppIcon();
 

@@ -10,8 +10,6 @@
 #include "base/macros.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class IOThread;
-
 namespace content {
 class NavigationHandle;
 class RenderFrameHost;

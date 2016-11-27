@@ -7,8 +7,6 @@
 
 #include "chrome/browser/media/media_access_handler.h"
 
-class MediaStreamCaptureIndicator;
-
 // MediaAccessHandler for extension capturing requests.
 class ExtensionMediaAccessHandler : public MediaAccessHandler {
  public:

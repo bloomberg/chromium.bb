@@ -14,10 +14,6 @@
 #include "chrome/browser/ui/autofill/autofill_popup_view.h"
 #include "ui/android/view_android.h"
 
-namespace gfx {
-class Rect;
-}
-
 namespace autofill {
 
 class AutofillPopupController;

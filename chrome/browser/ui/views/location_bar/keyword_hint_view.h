@@ -19,7 +19,6 @@ class FontList;
 }
 
 namespace views {
-class ImageView;
 class Label;
 }
 

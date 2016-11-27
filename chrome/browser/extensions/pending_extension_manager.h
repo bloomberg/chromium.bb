@@ -30,7 +30,6 @@ FORWARD_DECLARE_TEST(ExtensionServiceTest,
                      UpdatePendingExtensionAlreadyInstalled);
 
 namespace extensions {
-class Extension;
 class PendingExtensionManager;
 
 class ExtensionUpdaterTest;

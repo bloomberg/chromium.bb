@@ -10,7 +10,6 @@
 
 #include "chrome/browser/permissions/permission_request_manager.h"
 
-class Browser;
 class MockPermissionPrompt;
 class PermissionPrompt;
 

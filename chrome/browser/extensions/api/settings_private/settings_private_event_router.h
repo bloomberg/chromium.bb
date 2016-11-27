@@ -20,8 +20,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class SettingsPrivateDelegate;
-
 // This is an event router that will observe listeners to pref changes on the
 // appropriate pref service(s) and notify listeners on the JavaScript
 // settingsPrivate API.

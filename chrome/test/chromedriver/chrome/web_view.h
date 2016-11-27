@@ -19,7 +19,6 @@ class TimeDelta;
 class Value;
 }
 
-class DevToolsClient;
 struct Geoposition;
 class JavaScriptDialogManager;
 struct KeyEvent;

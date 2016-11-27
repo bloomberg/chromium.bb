@@ -15,15 +15,6 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace gfx {
-class Display;
-class Point;
-}
-
-namespace ui {
-class KeyEvent;
-}
-
 namespace autofill {
 
 // Helper class which keeps tracks of popup bounds and related view information.

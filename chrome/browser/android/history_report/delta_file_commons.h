@@ -12,8 +12,6 @@
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/history/core/browser/history_types.h"
 
-class GURL;
-
 namespace history_report {
 
 // Represents a single delta file entry with additional data.

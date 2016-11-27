@@ -11,13 +11,9 @@
 #include "base/macros.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
-class Browser;
-class Profile;
-
 namespace chromeos {
 
 class LoginDisplayHost;
-class WizardController;
 
 // Base class for test related to login wizard and its screens.
 // Instead of creating Chrome browser window it creates login wizard window

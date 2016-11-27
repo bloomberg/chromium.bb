@@ -40,7 +40,6 @@ class ArcAndroidManagementChecker;
 class ArcAuthCodeFetcher;
 class ArcAuthContext;
 class ArcOptInPreferenceHandler;
-class ArcRobotAuth;
 enum class ProvisioningResult : int;
 
 // This class proxies the request from the client to fetch an auth code from

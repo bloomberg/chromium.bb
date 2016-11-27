@@ -21,10 +21,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace extensions {
 
 class ExtensionPrefs;

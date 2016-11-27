@@ -18,7 +18,6 @@
 
 namespace base {
 class FilePath;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace content {

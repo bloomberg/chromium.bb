@@ -13,8 +13,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/image_decoder.h"
 
-class SKBitmap;
-
 namespace base {
 class FilePath;
 }

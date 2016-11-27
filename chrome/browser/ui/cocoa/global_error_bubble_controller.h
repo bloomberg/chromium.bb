@@ -16,7 +16,6 @@ class Browser;
 class GlobalErrorWithStandardBubble;
 @class GTMUILocalizerAndLayoutTweaker;
 @class GTMWidthBasedTweaker;
-class Profile;
 
 namespace GlobalErrorBubbleControllerInternal {
 class Bridge;

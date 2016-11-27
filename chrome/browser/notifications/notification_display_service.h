@@ -13,7 +13,6 @@
 #include "components/keyed_service/core/keyed_service.h"
 
 class Notification;
-class NotificationPlatformBridge;
 class Profile;
 
 // Profile-bound service that enables notifications to be displayed and

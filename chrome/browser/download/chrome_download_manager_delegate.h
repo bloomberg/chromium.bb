@@ -35,10 +35,6 @@ namespace extensions {
 class CrxInstaller;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 // This is the Chrome side helper for the download system.
 class ChromeDownloadManagerDelegate
     : public content::DownloadManagerDelegate,

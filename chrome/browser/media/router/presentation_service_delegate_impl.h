@@ -24,7 +24,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 
 namespace content {
-class RenderFrameHost;
 class PresentationScreenAvailabilityListener;
 class WebContents;
 struct PresentationSessionInfo;
@@ -34,7 +33,6 @@ struct PresentationSessionMessage;
 namespace media_router {
 
 class MediaRoute;
-class MediaSinksObserver;
 class PresentationFrameManager;
 class RouteRequestResult;
 

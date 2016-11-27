@@ -13,16 +13,8 @@
 
 class Utterance;
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 class BrowserContext;
-}
-
-namespace extensions {
-class Extension;
 }
 
 namespace tts_engine_events {

@@ -9,8 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "chrome/browser/extensions/pack_extension_job.h"
 
-class Profile;
-
 namespace base {
 class CommandLine;
 }

@@ -10,7 +10,6 @@
 #include "components/keyed_service/content/browser_context_keyed_service_factory.h"
 
 class HotwordService;
-class Profile;
 
 // Singleton that owns all HotwordServices and associates them with Profiles.
 class HotwordServiceFactory : public BrowserContextKeyedServiceFactory {

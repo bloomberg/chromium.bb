@@ -30,12 +30,7 @@
 #include "url/gurl.h"
 
 namespace base {
-class File;
 class Time;
-}
-
-namespace content {
-class ContentViewCore;
 }
 
 typedef std::list<TabId> TabIdList;

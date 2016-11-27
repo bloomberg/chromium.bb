@@ -7,10 +7,6 @@
 
 #include <memory>
 
-namespace content {
-class WebContents;
-}
-
 namespace autofill {
 
 class CardUnmaskPromptView;

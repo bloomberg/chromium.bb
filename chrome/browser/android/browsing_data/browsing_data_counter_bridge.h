@@ -9,8 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 
-class Profile;
-
 // This class is a wrapper for BrowsingDataCounter (C++ backend) to be used by
 // ClearBrowsingDataFragment (Java UI).
 class BrowsingDataCounterBridge {

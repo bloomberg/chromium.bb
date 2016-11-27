@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "content/public/common/favicon_url.h"
 
-class GURL;
 class SkBitmap;
 
 namespace internal {

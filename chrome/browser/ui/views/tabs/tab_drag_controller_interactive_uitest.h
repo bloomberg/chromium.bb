@@ -20,14 +20,6 @@ namespace content {
 class WebContents;
 }
 
-namespace gfx {
-class Point;
-}
-
-namespace views {
-class View;
-}
-
 // TabDragControllerTest is the basis for the two tests that exercise
 // TabDragController.
 class TabDragControllerTest : public InProcessBrowserTest {

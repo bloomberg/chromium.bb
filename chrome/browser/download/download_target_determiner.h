@@ -22,7 +22,6 @@
 #include "content/public/browser/download_manager_delegate.h"
 #include "ppapi/features/features.h"
 
-class ChromeDownloadManagerDelegate;
 class Profile;
 class DownloadPrefs;
 

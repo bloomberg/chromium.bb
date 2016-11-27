@@ -19,7 +19,6 @@
 #include "chrome/installer/util/util_constants.h"
 #include "components/metrics/client_info.h"
 
-class AppRegistrationData;
 class BrowserDistribution;
 
 namespace installer {

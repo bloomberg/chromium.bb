@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/ash/multi_user/multi_user_window_manager.h"
 #include "components/signin/core/account_id/account_id.h"
 
+class Browser;
+
 // This is a test implementation of a MultiUserWindowManager which allows to
 // test a visiting window on another desktop. It will install and remove itself
 // from the system upon creation / destruction.

@@ -50,7 +50,6 @@ class FullscreenLowPowerCoordinatorCocoa;
 @class InfoBarContainerController;
 class LocationBarViewMac;
 @class OverlayableContentsController;
-class PermissionBubbleCocoa;
 class StatusBubbleMac;
 @class TabStripController;
 @class TabStripView;

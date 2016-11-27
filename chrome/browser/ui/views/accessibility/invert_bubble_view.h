@@ -7,10 +7,6 @@
 
 class BrowserView;
 
-namespace views {
-class View;
-}
-
 namespace chrome {
 
 // Show a bubble telling the user that they're using Windows high-contrast mode

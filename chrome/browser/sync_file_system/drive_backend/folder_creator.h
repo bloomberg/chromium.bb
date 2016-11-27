@@ -27,7 +27,6 @@ namespace sync_file_system {
 namespace drive_backend {
 
 class MetadataDatabase;
-class SyncEngineContext;
 
 class FolderCreator {
  public:

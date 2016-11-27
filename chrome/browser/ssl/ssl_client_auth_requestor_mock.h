@@ -15,7 +15,6 @@ class ClientCertificateDelegate;
 }
 
 namespace net {
-class HttpNetworkSession;
 class SSLCertRequestInfo;
 class URLRequest;
 class X509Certificate;

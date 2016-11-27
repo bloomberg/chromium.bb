@@ -15,12 +15,6 @@
 
 using base::android::ScopedJavaLocalRef;
 
-struct SessionWindow;
-
-namespace browser_sync {
-struct SyncedSession;
-}  // namespace browser_sync
-
 namespace syncer {
 class SyncService;
 }  // namespace syncer

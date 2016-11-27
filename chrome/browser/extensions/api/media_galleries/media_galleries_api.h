@@ -31,16 +31,9 @@ namespace MediaGalleries = extensions::api::media_galleries;
 
 namespace content {
 class BlobHandle;
-class WebContents;
-}
-
-namespace metadata {
-class SafeMediaMetadataParser;
 }
 
 namespace extensions {
-
-class Extension;
 
 // The profile-keyed service that manages the media galleries extension API.
 // Created at the same time as the Profile. This is also the event router.

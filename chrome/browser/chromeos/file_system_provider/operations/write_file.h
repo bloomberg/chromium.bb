@@ -19,10 +19,6 @@
 #include "net/base/io_buffer.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace extensions {
 class EventRouter;
 }  // namespace extensions

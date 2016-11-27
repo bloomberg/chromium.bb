@@ -9,6 +9,8 @@
 #include "chrome/browser/ui/views/frame/native_browser_frame.h"
 #include "ui/views/mus/native_widget_mus.h"
 
+class BrowserView;
+
 class BrowserFrameMus : public NativeBrowserFrame,
                         public views::NativeWidgetMus {
  public:

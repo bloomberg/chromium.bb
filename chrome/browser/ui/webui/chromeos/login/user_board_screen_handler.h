@@ -15,8 +15,6 @@
 
 namespace chromeos {
 
-class SigninScreenHandler;
-
 // A class that handles WebUI hooks in Gaia screen.
 class UserBoardScreenHandler : public BaseScreenHandler, public UserBoardView {
  public:

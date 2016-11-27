@@ -19,11 +19,9 @@
 #include "net/socket/udp_socket.h"
 
 namespace net {
-class IOBuffer;
 class IPEndPoint;
 class StringIOBuffer;
 class NetLog;
-struct NetworkInterface;
 }
 
 namespace extensions {

@@ -30,7 +30,6 @@ class Widget;
 namespace chromeos {
 namespace input_method {
 
-class DelayableWidget;
 class ModeIndicatorController;
 
 // The implementation of CandidateWindowController.

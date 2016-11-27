@@ -8,8 +8,6 @@
 #include "chrome/browser/extensions/api/extension_action/extension_action_api.h"
 #include "extensions/browser/extension_function.h"
 
-class Profile;
-
 namespace extensions {
 
 class SystemIndicatorSetIconFunction : public ExtensionActionSetIconFunction {

@@ -15,9 +15,7 @@
 class Browser;
 class ChromeExtensionFunctionDetails;
 class ChromeUIThreadExtensionFunction;
-class ExtensionFunction;
 class GURL;
-class Profile;
 class TabStripModel;
 class UIThreadExtensionFunction;
 

@@ -10,8 +10,6 @@
 #include "base/compiler_specific.h"
 #include "chrome/browser/download/download_shelf.h"
 
-class DownloadItemModel;
-
 @class DownloadShelfController;
 
 // A class to bridge the chromium download shelf to mac gui. This is just a

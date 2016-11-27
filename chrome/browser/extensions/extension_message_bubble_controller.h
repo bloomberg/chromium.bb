@@ -23,7 +23,6 @@ class Profile;
 
 namespace extensions {
 
-class ExtensionPrefs;
 class ExtensionRegistry;
 
 class ExtensionMessageBubbleController : public chrome::BrowserListObserver {

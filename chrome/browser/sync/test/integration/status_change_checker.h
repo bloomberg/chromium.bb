@@ -9,8 +9,6 @@
 
 #include "base/time/time.h"
 
-class ProfileSyncServiceHarness;
-
 // Interface for a helper class that can pump the message loop while waiting
 // for a certain state transition to take place.
 //

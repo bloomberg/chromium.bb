@@ -12,11 +12,6 @@
 
 class Browser;
 class GURL;
-class Profile;
-
-namespace content {
-class SiteInstance;
-}
 
 namespace gfx {
 class Rect;

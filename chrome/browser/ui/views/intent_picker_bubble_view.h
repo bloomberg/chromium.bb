@@ -24,8 +24,6 @@ class WebContents;
 }  // namespace content
 
 namespace views {
-class Label;
-class LabelButton;
 class View;
 class Widget;
 }  // namespace views

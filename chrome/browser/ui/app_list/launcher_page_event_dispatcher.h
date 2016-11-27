@@ -14,10 +14,6 @@
 
 class Profile;
 
-namespace base {
-class ListValue;
-}
-
 namespace app_list {
 
 // A class which sends API events to the custom launcher page.

@@ -12,7 +12,6 @@
 namespace views {
 class ImageButton;
 class ImageView;
-class Label;
 }
 
 namespace ui {

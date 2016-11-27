@@ -26,7 +26,6 @@ namespace chromeos {
 
 class LoginDisplayHost;
 class OobeUI;
-class UserManager;
 
 // Controller for the kiosk app launch process, responsible for
 // coordinating loading the kiosk profile, launching the app, and

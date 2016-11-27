@@ -11,7 +11,6 @@
 #include "components/prefs/pref_change_registrar.h"
 
 class PrefRegistrySimple;
-class Profile;
 
 namespace chromeos {
 

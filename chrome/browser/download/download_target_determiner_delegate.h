@@ -10,8 +10,6 @@
 #include "chrome/browser/download/download_path_reservation_tracker.h"
 #include "content/public/browser/download_danger_type.h"
 
-class ExtensionDownloadsEventRouter;
-
 namespace base {
 class FilePath;
 }

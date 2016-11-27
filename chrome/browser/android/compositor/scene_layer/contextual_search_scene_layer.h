@@ -17,7 +17,6 @@
 
 namespace cc {
 class Layer;
-class SolidColorLayer;
 }
 
 namespace android {

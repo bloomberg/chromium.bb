@@ -19,7 +19,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class NavigationHandle;
 class RenderFrameHost;
 }
 

@@ -18,7 +18,6 @@
 
 namespace cc {
 class Layer;
-class UIResourceLayer;
 }
 
 namespace ui {

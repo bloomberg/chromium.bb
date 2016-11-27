@@ -15,12 +15,6 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/message_center_observer.h"
 
-namespace test {
-class DownloadItemNotificationTest;
-}
-
-class DownloadNotificationManagerForProfile;
-
 class DownloadNotification {
  public:
   DownloadNotification();

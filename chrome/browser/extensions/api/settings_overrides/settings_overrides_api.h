@@ -15,7 +15,6 @@
 #include "extensions/browser/extension_registry_observer.h"
 
 class Profile;
-class TemplateURL;
 
 namespace extensions {
 class ExtensionRegistry;

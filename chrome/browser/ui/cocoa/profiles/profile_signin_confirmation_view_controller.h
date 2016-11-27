@@ -14,7 +14,6 @@
 
 @class HyperlinkTextView;
 class Browser;
-class Profile;
 
 namespace ui {
 class ProfileSigninConfirmationDelegate;

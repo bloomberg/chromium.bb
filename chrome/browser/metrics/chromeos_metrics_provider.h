@@ -22,7 +22,6 @@ class ChromeUserMetricsExtension;
 }
 
 class PrefRegistrySimple;
-class PrefService;
 
 // Performs ChromeOS specific metrics logging.
 class ChromeOSMetricsProvider : public metrics::MetricsProvider {

@@ -20,8 +20,6 @@ class RenderViewHost;
 class WebContents;
 }  // namespace content
 
-class GURL;
-
 // Registers and unregisters the IDs of renderers in single tab mode, which
 // are disallowed from opening new windows via
 // ChromeContentBrowserClient::CanCreateWindow().

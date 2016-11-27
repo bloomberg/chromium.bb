@@ -7,8 +7,6 @@
 
 #include "base/time/time.h"
 
-class PrefService;
-
 namespace base {
 class CommandLine;
 }

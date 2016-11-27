@@ -14,8 +14,6 @@
 #include "base/memory/weak_ptr.h"
 #include "chrome/browser/feedback/system_logs/system_logs_fetcher_base.h"
 
-class Profile;
-
 namespace system_logs {
 
 // Gathers log data from Debug Daemon.

@@ -16,7 +16,6 @@
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "extensions/features/features.h"
 
-class DelayedResourceQueue;
 class DownloadRequestLimiter;
 
 namespace content {

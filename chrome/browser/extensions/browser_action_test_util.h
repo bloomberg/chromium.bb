@@ -15,11 +15,9 @@
 
 class Browser;
 class ToolbarActionsBar;
-class ToolbarActionsBarDelegate;
 
 namespace gfx {
 class Image;
-class Rect;
 class Size;
 }  // namespace gfx
 

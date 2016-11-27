@@ -8,16 +8,10 @@
 #include "base/macros.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 
-class BrowserFrame;
-class BrowserView;
 class ChromeNativeAppWindowViewsWin;
 
 namespace views {
 class DesktopWindowTreeHost;
-}
-
-namespace wm {
-class VisibilityController;
 }
 
 // AppWindowDesktopNativeWidgetAura is a DesktopNativeWidgetAura subclass that

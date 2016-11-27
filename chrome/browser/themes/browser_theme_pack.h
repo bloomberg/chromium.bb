@@ -26,10 +26,6 @@ class FilePath;
 class RefCountedMemory;
 }
 
-namespace extensions {
-class Extensions;
-}
-
 namespace gfx {
 class Image;
 }

@@ -13,7 +13,6 @@
 #include "build/build_config.h"
 #include "components/prefs/pref_member.h"
 
-class PrefService;
 class Profile;
 
 namespace content {

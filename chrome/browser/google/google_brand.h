@@ -14,8 +14,6 @@
 
 #include "base/macros.h"
 
-class GURL;
-
 namespace google_brand {
 
 // Returns in |brand| the brand code or distribution tag that has been

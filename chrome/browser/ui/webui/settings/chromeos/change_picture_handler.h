@@ -17,7 +17,6 @@
 #include "ui/shell_dialogs/select_file_dialog.h"
 
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 

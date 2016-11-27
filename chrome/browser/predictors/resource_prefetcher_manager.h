@@ -21,7 +21,6 @@ class URLRequestContextGetter;
 
 namespace predictors {
 
-struct NavigationID;
 class ResourcePrefetchPredictor;
 
 // Manages prefetches for multiple navigations.

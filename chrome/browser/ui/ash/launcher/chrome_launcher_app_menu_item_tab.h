@@ -14,8 +14,6 @@ namespace content{
 class WebContents;
 }
 
-class TabStripModel;
-
 // A menu item controller for a running browser tab. It gets created when an
 // application/tab list gets created. It's main purpose is to add the
 // activation method to the |ChromeLauncherAppMenuItem| class.

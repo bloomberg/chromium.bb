@@ -21,11 +21,6 @@
 #include "ui/gfx/animation/tween.h"
 #include "ui/gfx/geometry/size.h"
 
-namespace extensions {
-class Extension;
-class ExtensionMessageBubbleController;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

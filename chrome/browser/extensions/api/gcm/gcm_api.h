@@ -11,7 +11,6 @@
 
 namespace gcm {
 class GCMDriver;
-class GCMProfileService;
 }  // namespace gcm
 
 class Profile;

@@ -21,7 +21,6 @@ class WeakPluginInstallerObserver;
 namespace content {
 class DownloadManager;
 class WebContents;
-struct WebPluginInfo;
 }
 
 class PluginInstaller : public content::DownloadItem::Observer {

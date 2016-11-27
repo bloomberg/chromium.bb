@@ -10,7 +10,6 @@
 #include "ui/views/layout/layout_manager.h"
 #include "ui/views/window/frame_buttons.h"
 
-class NewAvatarButton;
 class OpaqueBrowserFrameViewLayoutDelegate;
 
 namespace views {

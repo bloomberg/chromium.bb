@@ -23,10 +23,7 @@
 #include "base/time/time.h"
 #include "url/gurl.h"
 
-class Profile;
-
 namespace base {
-class DictionaryValue;
 class ListValue;
 class Value;
 }

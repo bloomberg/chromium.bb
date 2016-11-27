@@ -19,7 +19,6 @@
 
 namespace views {
 class Checkbox;
-class GridLayout;
 class Widget;
 }
 

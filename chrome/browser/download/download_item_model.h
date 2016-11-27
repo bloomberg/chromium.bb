@@ -15,8 +15,6 @@
 #include "chrome/browser/download/download_target_info.h"
 #include "chrome/common/safe_browsing/download_file_types.pb.h"
 
-class SavePackage;
-
 namespace content {
 class DownloadItem;
 }

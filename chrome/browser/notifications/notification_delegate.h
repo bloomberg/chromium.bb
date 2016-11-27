@@ -10,10 +10,6 @@
 #include "base/memory/ref_counted.h"
 #include "ui/message_center/notification_delegate.h"
 
-namespace content {
-class WebContents;
-}
-
 // Delegate for a notification. This class has two roles: to implement callback
 // methods for notification, and to provide an identity of the associated
 // notification.

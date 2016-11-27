@@ -24,16 +24,10 @@ class BookmarkMenuDelegate;
 class Browser;
 class ExtensionToolbarMenuView;
 
-namespace ui {
-class NativeTheme;
-}
-
 namespace views {
 class MenuButton;
-struct MenuConfig;
 class MenuItemView;
 class MenuRunner;
-class View;
 }
 
 // AppMenu adapts the AppMenuModel to view's menu related classes.

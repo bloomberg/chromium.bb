@@ -15,10 +15,6 @@
 
 class Profile;
 
-namespace base {
-class RefCountedMemory;
-}
-
 namespace history {
 class TopSites;
 }

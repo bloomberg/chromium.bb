@@ -21,16 +21,11 @@ class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace media {
-class VideoFrame;
 namespace cast {
 class AudioFrameInput;
 class VideoFrameInput;
 }  // namespace cast
 }  // namespace media
-
-namespace content {
-class P2PSocketClient;
-}  // namespace content
 
 class CastSessionDelegate;
 

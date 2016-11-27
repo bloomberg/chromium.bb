@@ -17,8 +17,6 @@ class GvrDeviceProvider;
 
 namespace vr_shell {
 
-class VrShell;
-
 class VrShellDelegate : public device::GvrDelegateProvider {
  public:
   VrShellDelegate(JNIEnv* env, jobject obj);

@@ -12,8 +12,6 @@
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/views/widget/widget_observer.h"
 
-class StatusIcon;
-
 namespace message_center {
 class DesktopPopupAlignmentDelegate;
 class MessageCenter;

@@ -25,8 +25,6 @@ class Value;
 }
 
 namespace content {
-class NotificationDetails;
-class NotificationSource;
 class RenderViewHost;
 }
 

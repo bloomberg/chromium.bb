@@ -25,10 +25,6 @@ namespace content {
 class WebContents;
 }
 
-namespace ui {
-class Clipboard;
-}
-
 // Implements OmniboxView on an AutocompleteTextField.
 class OmniboxViewMac : public OmniboxView,
                        public AutocompleteTextFieldObserver {

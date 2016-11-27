@@ -33,7 +33,6 @@
 #include "net/ssl/channel_id_store.h"
 #include "ui/base/models/tree_node_model.h"
 
-class BrowsingDataChannelIDHelper;
 class BrowsingDataCookieHelper;
 class CookiesTreeModel;
 class CookieTreeAppCacheNode;

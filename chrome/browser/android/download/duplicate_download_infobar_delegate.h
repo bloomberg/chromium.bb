@@ -7,8 +7,6 @@
 
 #include "components/infobars/core/confirm_infobar_delegate.h"
 
-class InfoBarService;
-
 namespace chrome {
 namespace android {
 

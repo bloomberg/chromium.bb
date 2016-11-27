@@ -9,8 +9,6 @@
 #include "components/gcm_driver/instance_id/instance_id.h"
 #include "extensions/browser/extension_function.h"
 
-class Profile;
-
 namespace extensions {
 
 class InstanceIDApiFunction : public UIThreadExtensionFunction {

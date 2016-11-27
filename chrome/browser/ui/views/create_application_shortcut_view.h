@@ -16,7 +16,6 @@
 #include "ui/views/controls/button/button.h"
 #include "ui/views/window/dialog_delegate.h"
 
-class FaviconDownloadHelper;
 class GURL;
 class Profile;
 class SkBitmap;

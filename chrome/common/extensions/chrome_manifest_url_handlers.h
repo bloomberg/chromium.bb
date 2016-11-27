@@ -13,10 +13,6 @@
 
 // Chrome-specific extension manifest URL handlers.
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 
 namespace chrome_manifest_urls {

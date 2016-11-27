@@ -29,9 +29,7 @@
 #include "content/public/browser/render_process_host_observer.h"
 #include "url/gurl.h"
 
-class InstantSearchPrerendererTest;
 class Profile;
-struct ChromeCookieDetails;
 
 namespace base {
 class DictionaryValue;
@@ -58,10 +56,6 @@ class Rect;
 class Size;
 }
 
-namespace offline_pages {
-class PrerenderAdapterTest;
-}
-
 namespace prerender {
 
 namespace test_utils {
@@ -70,7 +64,6 @@ class PrerenderInProcessBrowserTest;
 
 class PrerenderHandle;
 class PrerenderHistory;
-class PrerenderLocalPredictor;
 
 // PrerenderManager is responsible for initiating and keeping prerendered
 // views of web pages. All methods must be called on the UI thread unless

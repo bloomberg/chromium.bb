@@ -29,7 +29,6 @@
 class AvatarMenuActions;
 class AvatarMenuObserver;
 class Browser;
-class Profile;
 class ProfileAttributesStorage;
 class ProfileList;
 class SupervisedUserService;

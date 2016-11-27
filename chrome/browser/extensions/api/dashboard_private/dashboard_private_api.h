@@ -16,12 +16,7 @@
 #include "chrome/common/extensions/api/dashboard_private.h"
 #include "extensions/browser/extension_function.h"
 
-class GURL;
 class SkBitmap;
-
-namespace chrome {
-class BitmapFetcher;
-}  // namespace chrome
 
 namespace extensions {
 

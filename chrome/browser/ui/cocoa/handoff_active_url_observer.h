@@ -16,7 +16,6 @@ class WebContents;
 
 class Browser;
 class HandoffActiveURLObserverDelegate;
-class TabStripModel;
 
 // This class observes changes to the "active URL". This is defined as the
 // visible URL of the WebContents of the selected tab of the most recently

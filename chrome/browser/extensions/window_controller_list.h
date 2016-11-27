@@ -13,7 +13,6 @@
 #include "base/observer_list.h"
 #include "chrome/browser/extensions/window_controller.h"
 
-class Profile;
 class UIThreadExtensionFunction;
 
 namespace extensions {

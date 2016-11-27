@@ -10,8 +10,6 @@
 
 #include "ui/native_theme/native_theme.h"
 
-class SkBitmap;
-
 namespace aura {
 class Window;
 }

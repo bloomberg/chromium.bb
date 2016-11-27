@@ -13,7 +13,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 class GURL;
-class PrefService;
 class Profile;
 
 namespace bookmarks {

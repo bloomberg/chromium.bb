@@ -18,17 +18,12 @@
 namespace base {
 class DictionaryValue;
 class ListValue;
-class Value;
 }
 
 namespace chromeos {
 class CrosSettings;
 class ManagedNetworkConfigurationHandler;
 class NetworkDeviceHandler;
-
-namespace onc {
-class CertificateImporter;
-}
 }
 
 namespace policy {

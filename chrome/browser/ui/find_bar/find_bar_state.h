@@ -12,8 +12,6 @@
 #include "base/strings/string16.h"
 #include "components/keyed_service/core/keyed_service.h"
 
-class Profile;
-
 class FindBarState : public KeyedService {
  public:
   FindBarState() {}

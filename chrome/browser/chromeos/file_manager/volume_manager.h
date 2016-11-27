@@ -39,7 +39,6 @@ class BrowserContext;
 
 namespace file_manager {
 
-class MountedDiskMonitor;
 class SnapshotManager;
 class VolumeManagerObserver;
 

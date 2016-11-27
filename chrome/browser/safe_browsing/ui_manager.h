@@ -23,18 +23,10 @@
 #include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
 
-namespace base {
-class Thread;
-}  // namespace base
-
 namespace content {
 class NavigationEntry;
 class WebContents;
 }  // namespace content
-
-namespace net {
-class SSLInfo;
-}  // namespace net
 
 namespace safe_browsing {
 

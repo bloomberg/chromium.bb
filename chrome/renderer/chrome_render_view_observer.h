@@ -17,11 +17,7 @@
 #include "extensions/features/features.h"
 #include "url/gurl.h"
 
-class ContentSettingsObserver;
-class SkBitmap;
-
 namespace blink {
-class WebView;
 struct WebWindowFeatures;
 }
 

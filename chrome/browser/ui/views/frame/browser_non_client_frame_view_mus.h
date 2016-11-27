@@ -24,11 +24,6 @@ namespace ui {
 class Window;
 }
 
-namespace views {
-class ImageButton;
-class ToggleImageButton;
-}
-
 class BrowserNonClientFrameViewMus : public BrowserNonClientFrameView,
                                      public TabIconViewModel,
                                      public TabStripObserver {

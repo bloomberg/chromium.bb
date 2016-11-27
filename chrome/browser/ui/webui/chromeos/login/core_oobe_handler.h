@@ -24,10 +24,6 @@ namespace base {
 class ListValue;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace ui {
 class EventProcessor;
 }

@@ -13,16 +13,11 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 
-class GURL;
 class Profile;
 struct ExtensionHostMsg_APIActionOrEvent_Params;
 struct ExtensionHostMsg_DOMAction_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_TabTargetConnectionInfo;
-
-namespace base {
-class FilePath;
-}
 
 namespace extensions {
 class ActivityLog;

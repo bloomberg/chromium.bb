@@ -54,9 +54,7 @@ class ThemeProvider;
 }
 
 namespace views {
-class ImageButton;
 class Label;
-class LabelButton;
 class MdTextButton;
 }
 

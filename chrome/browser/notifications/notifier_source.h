@@ -15,7 +15,6 @@ class Profile;
 
 namespace message_center {
 struct Notifier;
-class NotifierSettingsObserver;
 }
 
 class NotifierSource {

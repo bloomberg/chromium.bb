@@ -7,7 +7,6 @@
 
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 
-class ManagePasswordsBubbleModel;
 @class PasswordsListViewController;
 
 // Manages the view that offers to save the user's password.

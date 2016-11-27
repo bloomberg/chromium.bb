@@ -24,10 +24,6 @@
 
 class Profile;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace extensions {
 class Extension;
 class ExtensionPrefs;

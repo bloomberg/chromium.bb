@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ENABLE_FLOW_DELEGATE_H_
 #define CHROME_BROWSER_UI_EXTENSIONS_EXTENSION_ENABLE_FLOW_DELEGATE_H_
 
-class ExtensionInstallPrompt;
-
 class ExtensionEnableFlowDelegate {
  public:
   // Invoked when |flow| is finished successfully.

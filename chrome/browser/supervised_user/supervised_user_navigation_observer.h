@@ -20,7 +20,6 @@
 class SupervisedUserService;
 
 namespace content {
-class NavigationEntry;
 class NavigationHandle;
 class WebContents;
 }

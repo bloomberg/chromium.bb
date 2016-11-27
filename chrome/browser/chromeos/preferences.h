@@ -18,7 +18,6 @@
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
 class PrefRegistrySimple;
-class PrefService;
 class TracingManager;
 
 namespace sync_preferences {

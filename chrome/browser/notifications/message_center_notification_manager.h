@@ -25,7 +25,6 @@
 #include "ui/message_center/message_center_tray_delegate.h"
 #include "ui/message_center/message_center_types.h"
 
-class MessageCenterSettingsController;
 class Notification;
 class Profile;
 class ProfileNotification;

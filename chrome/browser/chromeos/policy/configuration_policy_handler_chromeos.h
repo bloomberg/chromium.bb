@@ -13,7 +13,6 @@
 #include "components/policy/core/browser/configuration_policy_handler.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 

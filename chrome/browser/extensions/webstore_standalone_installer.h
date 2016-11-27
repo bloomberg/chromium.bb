@@ -26,10 +26,6 @@ namespace base {
 class DictionaryValue;
 }
 
-namespace net {
-class URLFetcher;
-}
-
 namespace extensions {
 class Extension;
 class WebstoreDataFetcher;

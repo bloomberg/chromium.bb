@@ -14,7 +14,6 @@
 #include "third_party/WebKit/public/platform/WebSecurityStyle.h"
 
 namespace content {
-struct SecurityStyleExplanations;
 class NavigationHandle;
 class WebContents;
 }  // namespace content

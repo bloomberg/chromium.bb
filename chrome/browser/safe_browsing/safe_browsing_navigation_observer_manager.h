@@ -10,11 +10,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "url/gurl.h"
 
-namespace content {
-class NavigationHandle;
-struct ResourceRedirectDetails;
-}
-
 namespace safe_browsing {
 
 class SafeBrowsingNavigationObserver;

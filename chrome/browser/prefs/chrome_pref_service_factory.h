@@ -28,9 +28,7 @@ namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-class PrefHashStore;
 class PrefRegistry;
-class PrefRegistrySimple;
 class PrefService;
 
 class PrefStore;

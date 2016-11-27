@@ -24,7 +24,6 @@ class FileMetadata;
 class FileTracker;
 class LevelDBWrapper;
 class ServiceMetadata;
-struct DatabaseContents;
 // TODO(peria): Migrate implementation of ParentIDAndTitle structure from
 //     metadata_database_index.{cc,h} to here, on removing the files.
 struct ParentIDAndTitle;

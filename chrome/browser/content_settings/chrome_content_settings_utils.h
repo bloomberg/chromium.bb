@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_CONTENT_SETTINGS_CHROME_CONTENT_SETTINGS_UTILS_H_
 #define CHROME_BROWSER_CONTENT_SETTINGS_CHROME_CONTENT_SETTINGS_UTILS_H_
 
-class GURL;
-
 // Put utility functions only used by //chrome code here. If a function declared
 // here would be meaningfully shared with other platforms, consider moving it to
 // components/content_settings/core/browser/content_settings_utils.h.

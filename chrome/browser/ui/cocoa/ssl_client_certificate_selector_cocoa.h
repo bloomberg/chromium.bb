@@ -22,6 +22,10 @@ class BrowserContext;
 class ClientCertificateDelegate;
 }
 
+namespace net {
+class X509Certificate;
+}
+
 class ConstrainedWindowMac;
 @class SFChooseIdentityPanel;
 class SSLClientAuthObserverCocoaBridge;

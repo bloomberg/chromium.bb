@@ -63,7 +63,6 @@ class BrowserToolbarModelDelegate;
 class BrowserLiveTabContext;
 class BrowserWindow;
 class FindBarController;
-class PrefService;
 class Profile;
 class ScopedKeepAlive;
 class SearchDelegate;
@@ -72,7 +71,6 @@ class StatusBubble;
 class TabStripModel;
 class TabStripModelDelegate;
 class ValidationMessageBubble;
-struct WebApplicationInfo;
 
 namespace chrome {
 class BrowserCommandController;
@@ -81,7 +79,6 @@ class UnloadController;
 }
 
 namespace content {
-class NavigationController;
 class PageState;
 class SessionStorageNamespace;
 }
@@ -100,7 +97,6 @@ class Point;
 
 namespace ui {
 struct SelectedFileInfo;
-class WebDialogDelegate;
 }
 
 namespace web_modal {

@@ -13,7 +13,6 @@
 #include "ui/views/context_menu_controller.h"
 #include "ui/views/widget/widget.h"
 
-class AvatarMenuButton;
 class BrowserRootView;
 class BrowserView;
 class NativeBrowserFrame;

@@ -10,10 +10,6 @@
 #include "chrome/browser/extensions/extension_uninstall_dialog.h"
 #include "extensions/browser/api/management/management_api_delegate.h"
 
-namespace favicon_base {
-struct FaviconImageResult;
-}  // namespace favicon_base
-
 class ChromeManagementAPIDelegate : public extensions::ManagementAPIDelegate {
  public:
   ChromeManagementAPIDelegate();

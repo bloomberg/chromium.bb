@@ -14,10 +14,6 @@
 
 class Profile;
 
-namespace base {
-class RefCountedMemory;
-}
-
 class ThemeSource : public content::URLDataSource {
  public:
   explicit ThemeSource(Profile* profile);

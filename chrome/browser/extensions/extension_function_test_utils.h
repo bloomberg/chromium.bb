@@ -19,10 +19,6 @@ class DictionaryValue;
 class ListValue;
 }
 
-namespace extensions {
-class Extension;
-}
-
 // TODO(ckehoe): Accept args as std::unique_ptr<base::Value>,
 // and migrate existing users to the new API.
 // This file is DEPRECATED. New tests should use the versions in

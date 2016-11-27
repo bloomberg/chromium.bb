@@ -28,7 +28,6 @@ class ErrorReporter;
 }
 
 namespace net {
-class SSLInfo;
 class URLRequestContextGetter;
 }  // namespace net
 

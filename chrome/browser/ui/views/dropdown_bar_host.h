@@ -19,10 +19,6 @@ class BrowserView;
 class DropdownBarHostDelegate;
 class DropdownBarView;
 
-namespace content {
-class WebContents;
-}
-
 namespace gfx {
 class SlideAnimation;
 }  // namespace gfx

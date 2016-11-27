@@ -30,7 +30,6 @@ class GCMDriver;
 
 namespace policy {
 
-class InstallAttributes;
 class HeartbeatRegistrationHelper;
 
 // Class responsible for periodically sending heartbeats to the policy service

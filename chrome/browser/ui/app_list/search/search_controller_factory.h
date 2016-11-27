@@ -14,7 +14,6 @@ class Profile;
 
 namespace app_list {
 
-class SearchBoxModel;
 class SearchController;
 
 // Build a SearchController instance with the profile.

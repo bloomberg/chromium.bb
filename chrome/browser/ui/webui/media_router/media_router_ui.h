@@ -43,11 +43,9 @@ class CreatePresentationConnectionRequest;
 class IssuesObserver;
 class MediaRoute;
 class MediaRouter;
-class MediaRouterDialogCallbacks;
 class MediaRoutesObserver;
 class MediaRouterWebUIMessageHandler;
 class MediaSink;
-class MediaSinksObserver;
 class RouteRequestResult;
 
 // Implements the chrome://media-router user interface.

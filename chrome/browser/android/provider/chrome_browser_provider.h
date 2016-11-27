@@ -28,10 +28,6 @@ namespace history {
 class TopSites;
 }
 
-namespace sql {
-class Statement;
-}
-
 // This class implements the native methods of ChromeBrowserProvider.java
 class ChromeBrowserProvider : public bookmarks::BaseBookmarkModelObserver,
                               public history::HistoryServiceObserver {

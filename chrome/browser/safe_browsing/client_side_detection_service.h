@@ -34,10 +34,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "url/gurl.h"
 
-namespace base {
-class TimeDelta;
-}
-
 namespace content {
 class RenderProcessHost;
 }
@@ -51,8 +47,6 @@ class URLRequestStatus;
 namespace safe_browsing {
 class ClientMalwareRequest;
 class ClientPhishingRequest;
-class ClientPhishingResponse;
-class ClientSideModel;
 
 // Main service which pushes models to the renderers, responds to classification
 // requests. This owns two ModelLoader objects.

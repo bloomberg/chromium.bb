@@ -11,10 +11,6 @@
 
 class PrefRegistrySimple;
 
-namespace views {
-class View;
-}
-
 namespace chromeos {
 
 // This class is responsible for triggering cellular network related

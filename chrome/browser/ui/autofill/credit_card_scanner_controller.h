@@ -13,8 +13,6 @@ class WebContents;
 
 namespace autofill {
 
-class CreditCardScannerView;
-
 // Controller for the credit card scanner UI. The controller deletes itself
 // after the view is dismissed.
 class CreditCardScannerController {

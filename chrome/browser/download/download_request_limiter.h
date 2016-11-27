@@ -23,7 +23,6 @@
 #include "content/public/browser/web_contents_observer.h"
 
 class HostContentSettingsMap;
-class DownloadRequestInfoBarDelegateAndroid;
 
 namespace content {
 class NavigationController;

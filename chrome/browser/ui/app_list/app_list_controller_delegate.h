@@ -26,7 +26,6 @@ class InstallTracker;
 }
 
 namespace gfx {
-class ImageSkia;
 class Rect;
 }
 

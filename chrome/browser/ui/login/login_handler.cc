@@ -56,8 +56,6 @@
 using autofill::PasswordForm;
 using content::BrowserThread;
 using content::NavigationController;
-using content::RenderViewHost;
-using content::RenderViewHostDelegate;
 using content::ResourceDispatcherHost;
 using content::ResourceRequestInfo;
 using content::WebContents;

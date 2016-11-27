@@ -34,7 +34,6 @@ class TreeView;
 
 class BookmarkEditorViewTest;
 class GURL;
-class Menu;
 class Profile;
 
 // View that allows the user to edit a bookmark/starred URL. The user can

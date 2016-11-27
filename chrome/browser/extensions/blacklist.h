@@ -29,7 +29,6 @@ class BrowserContext;
 namespace extensions {
 
 class BlacklistStateFetcher;
-class Extension;
 class ExtensionPrefs;
 
 // The blacklist of extensions backed by safe browsing.

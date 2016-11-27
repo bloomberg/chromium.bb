@@ -15,10 +15,6 @@
 #include "chrome/browser/chromeos/file_system_provider/request_value.h"
 #include "storage/browser/fileapi/async_file_util.h"
 
-namespace base {
-class FilePath;
-}  // namespace base
-
 namespace extensions {
 class EventRouter;
 }  // namespace extensions

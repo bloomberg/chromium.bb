@@ -28,10 +28,6 @@ namespace content {
 class WebContents;
 }
 
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
-
 // Manages protected media identifier permissions flow, and delegates UI
 // handling via PermissionQueueController.
 class ProtectedMediaIdentifierPermissionContext

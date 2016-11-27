@@ -16,12 +16,6 @@
 #include "base/memory/ref_counted.h"
 #include "ppapi/c/pp_instance.h"
 
-class Profile;
-
-namespace content {
-class BrowserPpapiHost;
-}
-
 namespace user_prefs {
 class PrefRegistrySyncable;
 }

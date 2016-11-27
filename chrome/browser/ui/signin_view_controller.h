@@ -10,7 +10,6 @@
 
 class Browser;
 class SigninViewControllerDelegate;
-class Profile;
 
 namespace signin_metrics {
 enum class AccessPoint;

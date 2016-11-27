@@ -13,7 +13,6 @@
 #include "components/content_settings/core/browser/content_settings_binary_value_map.h"
 #include "components/content_settings/core/browser/content_settings_observable_provider.h"
 
-class PrefService;
 class SupervisedUserSettingsService;
 
 namespace content_settings {

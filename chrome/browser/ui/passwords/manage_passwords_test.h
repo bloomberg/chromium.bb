@@ -15,7 +15,6 @@
 #include "components/password_manager/core/common/credential_manager_types.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-class GURL;
 class ManagePasswordsIconView;
 class PasswordsClientUIDelegate;
 

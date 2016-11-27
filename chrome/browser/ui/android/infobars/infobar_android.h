@@ -11,8 +11,6 @@
 #include "base/macros.h"
 #include "components/infobars/core/infobar.h"
 
-class InfoBarService;
-
 namespace infobars {
 class InfoBarDelegate;
 }

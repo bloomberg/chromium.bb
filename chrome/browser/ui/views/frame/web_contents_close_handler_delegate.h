@@ -5,10 +5,6 @@
 #ifndef CHROME_BROWSER_UI_VIEWS_FRAME_WEB_CONTENTS_CLOSE_HANDLER_DELEGATE_H_
 #define CHROME_BROWSER_UI_VIEWS_FRAME_WEB_CONTENTS_CLOSE_HANDLER_DELEGATE_H_
 
-namespace ui {
-class LayerTreeOwner;
-}
-
 // WebContentsCloseHandler delegate.
 class WebContentsCloseHandlerDelegate {
  public:

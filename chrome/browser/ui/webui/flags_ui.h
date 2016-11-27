@@ -15,15 +15,8 @@
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 #endif
 
-class PrefRegistrySimple;
-class Profile;
-
 namespace base {
 class RefCountedMemory;
-}
-
-namespace user_prefs {
-class PrefRegistrySyncable;
 }
 
 class FlagsUI : public content::WebUIController {

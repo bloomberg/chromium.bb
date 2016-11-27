@@ -9,12 +9,7 @@
 
 class UIThreadExtensionFunction;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
-class Extension;
 class WindowController;
 }
 

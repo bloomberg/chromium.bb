@@ -17,17 +17,8 @@
 
 class ChromeLauncherController;
 class ChromeLauncherAppMenuItem;
-class Profile;
 
 typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
-
-namespace aura {
-class Window;
-}
-
-namespace content {
-class WebContents;
-}
 
 // LauncherItemController is used by ChromeLauncherController to track one
 // or more windows associated with a shelf item.

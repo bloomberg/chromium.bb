@@ -16,8 +16,6 @@
 
 namespace media_router {
 
-class MediaRouter;
-
 /**
  * Base class for media router browser test.
  *

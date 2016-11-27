@@ -19,7 +19,6 @@ class BrowserViewLayoutDelegate;
 class ContentsLayoutManager;
 class ImmersiveModeController;
 class InfoBarContainerView;
-class TabContentsContainer;
 class TabStrip;
 
 namespace gfx {

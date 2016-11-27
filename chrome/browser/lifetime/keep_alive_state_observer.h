@@ -5,8 +5,6 @@
 #ifndef CHROME_BROWSER_LIFETIME_KEEP_ALIVE_STATE_OBSERVER_H_
 #define CHROME_BROWSER_LIFETIME_KEEP_ALIVE_STATE_OBSERVER_H_
 
-struct KeepAliveOptions;
-
 class KeepAliveStateObserver {
  public:
   virtual void OnKeepAliveStateChanged(bool is_keeping_alive) = 0;

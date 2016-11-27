@@ -22,7 +22,6 @@
 #include "extensions/common/extension_id.h"
 
 class GURL;
-class Profile;
 
 namespace content {
 class BrowserContext;

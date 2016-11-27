@@ -24,10 +24,8 @@ class DriveServiceInterface;
 namespace sync_file_system {
 namespace drive_backend {
 
-class FileTracker;
 class MetadataDatabase;
 class SyncEngineContext;
-class TrackerSet;
 
 class UninstallAppTask : public ExclusiveTask {
  public:

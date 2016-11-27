@@ -41,9 +41,6 @@
 #include "chrome/browser/shell_integration.h"
 #endif  // !defined(OS_CHROMEOS)
 
-class AutocompleteController;
-class CloudPrintSetupHandler;
-class CustomHomePagesTableModel;
 class TemplateURLService;
 
 namespace base {

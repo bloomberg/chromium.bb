@@ -13,10 +13,6 @@
 #include "content/public/browser/web_contents_user_data.h"
 #include "ui/gfx/range/range.h"
 
-namespace gfx {
-class RectF;
-}
-
 // Per-tab find manager. Handles dealing with the life cycle of find sessions.
 class FindTabHelper : public content::WebContentsObserver,
                       public content::WebContentsUserData<FindTabHelper> {

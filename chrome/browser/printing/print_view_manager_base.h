@@ -27,7 +27,6 @@ class RenderFrameHost;
 namespace printing {
 
 class JobEventDetails;
-class MetafilePlayer;
 class PrintJob;
 class PrintJobWorkerOwner;
 class PrintQueriesQueue;

@@ -13,10 +13,6 @@
 #include "chrome/browser/chromeos/login/ui/login_display.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace views {
-class Widget;
-}  // namespace views
-
 namespace chromeos {
 
 class AppLaunchController;

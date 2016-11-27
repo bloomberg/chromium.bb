@@ -7,8 +7,6 @@
 
 #include "chrome/browser/ui/website_settings/website_settings_ui.h"
 
-class PermissionSelectorRow;
-
 class PermissionSelectorRowObserver {
  public:
   // This method is called whenever the permission setting is changed.

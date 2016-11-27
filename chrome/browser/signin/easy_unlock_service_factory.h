@@ -18,7 +18,6 @@ template <typename T> struct DefaultSingletonTraits;
 }
 
 class EasyUnlockService;
-class Profile;
 
 // Singleton factory that builds and owns all EasyUnlockService.
 class EasyUnlockServiceFactory : public BrowserContextKeyedServiceFactory {

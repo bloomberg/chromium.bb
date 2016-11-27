@@ -16,10 +16,6 @@
 #include "chrome/browser/chromeos/policy/auto_enrollment_client.h"
 #include "chrome/browser/chromeos/settings/device_settings_service.h"
 
-namespace policy {
-class ServerBackedStateKeysBroker;
-}
-
 namespace chromeos {
 
 // Drives the forced re-enrollment check (for historical reasons called

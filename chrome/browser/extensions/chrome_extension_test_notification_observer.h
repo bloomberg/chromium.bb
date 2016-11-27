@@ -15,7 +15,6 @@ class Browser;
 
 namespace content {
 class BrowserContext;
-class WindowedNotificationObserver;
 }
 
 // Test helper class for observing extension-related events.

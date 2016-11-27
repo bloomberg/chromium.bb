@@ -26,10 +26,6 @@ class GURL;
 class SkBitmap;
 class TabStripModel;
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 class WebContents;
 }

@@ -11,10 +11,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "third_party/cros_system_api/dbus/update_engine/dbus-constants.h"
 
-namespace message_center {
-class MessageCenter;
-}
-
 namespace chromeos {
 
 // EolNotification is created when user logs in. It is

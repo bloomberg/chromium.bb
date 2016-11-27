@@ -15,17 +15,9 @@
 #include "content/public/browser/interstitial_page_delegate.h"
 #include "url/gurl.h"
 
-namespace base {
-class DictionaryValue;
-}
-
 namespace content {
 class InterstitialPage;
 class WebContents;
-}
-
-namespace extensions {
-class Extension;
 }
 
 namespace chromeos {

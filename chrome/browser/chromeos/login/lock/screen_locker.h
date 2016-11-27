@@ -22,14 +22,6 @@
 #include "ui/base/accelerators/accelerator.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
 
-namespace content {
-class WebUI;
-}
-
-namespace gfx {
-class Image;
-}
-
 namespace chromeos {
 
 class Authenticator;

@@ -15,15 +15,9 @@
 #include "components/invalidation/public/invalidation_util.h"
 #include "content/public/browser/web_ui_message_handler.h"
 
-class Profile;
-
 namespace invalidation {
 class InvalidationLogger;
 }  // namespace invalidation
-
-namespace syncer {
-class InvalidationHandler;
-}  // namespace syncer
 
 // The implementation for the chrome://invalidations page.
 class InvalidationsMessageHandler

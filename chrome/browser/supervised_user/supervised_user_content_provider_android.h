@@ -12,7 +12,7 @@
 #include "chrome/browser/supervised_user/supervised_user_url_filter.h"
 #include "components/supervised_user_error_page/supervised_user_error_page.h"
 
-class SupervisedUserService;
+class Profile;
 
 class SupervisedUserContentProvider {
  public:

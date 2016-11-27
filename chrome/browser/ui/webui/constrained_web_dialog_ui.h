@@ -16,13 +16,11 @@ class Size;
 
 namespace content {
 class BrowserContext;
-class RenderViewHost;
 class WebContents;
 }
 
 namespace ui {
 class WebDialogDelegate;
-class WebDialogWebContentsDelegate;
 }
 
 class ConstrainedWebDialogDelegate {

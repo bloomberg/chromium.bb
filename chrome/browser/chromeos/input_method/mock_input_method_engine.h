@@ -21,8 +21,6 @@ class KeyEvent;
 
 namespace chromeos {
 
-class CompositionText;
-
 class MockInputMethodEngine : public ui::IMEEngineHandlerInterface {
  public:
   MockInputMethodEngine();

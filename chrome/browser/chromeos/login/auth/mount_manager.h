@@ -12,8 +12,6 @@
 #include "base/files/file_path.h"
 #include "base/macros.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 // Keeps track of mount points for different users.

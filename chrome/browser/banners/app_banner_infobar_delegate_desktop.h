@@ -17,7 +17,6 @@ class WebContents;
 
 namespace extensions {
 class BookmarkAppHelper;
-class Extension;
 }
 
 namespace infobars {

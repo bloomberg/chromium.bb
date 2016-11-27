@@ -21,7 +21,6 @@
 
 namespace base {
 class PersistentHistogramAllocator;
-class SharedPersistentMemoryAllocator;
 }
 
 // SubprocessMetricsProvider gathers and merges histograms stored in shared

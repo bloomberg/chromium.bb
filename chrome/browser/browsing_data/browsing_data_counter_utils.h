@@ -9,8 +9,6 @@
 #include "components/browsing_data/core/browsing_data_utils.h"
 #include "components/browsing_data/core/counters/browsing_data_counter.h"
 
-class Profile;
-
 // Whether the browsing data counters experiment is enabled.
 bool AreCountersEnabled();
 

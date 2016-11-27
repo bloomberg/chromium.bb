@@ -9,12 +9,6 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
-class GURL;
-
-namespace content {
-class RenderFrameHost;
-}
-
 // Tracks whether a previews infobar has been shown for a page. Handles showing
 // the infobar when the main frame response indicates a Lite Page.
 class PreviewsInfoBarTabHelper

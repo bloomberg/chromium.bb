@@ -24,7 +24,6 @@ class LocationBarView;
 class OmniboxEditModel;
 class OmniboxResultView;
 class OmniboxView;
-class Profile;
 
 // A view representing the contents of the autocomplete popup.
 class OmniboxPopupContentsView : public views::View,

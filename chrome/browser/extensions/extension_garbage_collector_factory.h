@@ -13,8 +13,6 @@ template <typename T>
 struct DefaultSingletonTraits;
 }
 
-class Profile;
-
 namespace extensions {
 
 class ExtensionGarbageCollector;

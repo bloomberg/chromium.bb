@@ -24,7 +24,6 @@ class AutocompleteController;
 struct AutocompleteMatch;
 class AutocompleteResult;
 class Profile;
-class Tab;
 
 // The native part of the Java AutocompleteController class.
 class AutocompleteControllerAndroid : public AutocompleteControllerDelegate,

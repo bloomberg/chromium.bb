@@ -22,12 +22,6 @@
 #include "net/ssl/ssl_info.h"
 #include "url/gurl.h"
 
-#if BUILDFLAG(ENABLE_EXTENSIONS)
-namespace extensions {
-class ExperienceSamplingEvent;
-}
-#endif
-
 namespace policy {
 class PolicyTest_SSLErrorOverridingDisallowed_Test;
 }

@@ -9,7 +9,6 @@
 #include "content/public/browser/web_contents_delegate.h"
 
 class Browser;
-class ModalSigninDelegate;
 class SigninViewController;
 
 namespace signin_metrics {

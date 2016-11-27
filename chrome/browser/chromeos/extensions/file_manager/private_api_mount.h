@@ -14,10 +14,6 @@
 #include "components/drive/drive.pb.h"
 #include "components/drive/file_errors.h"
 
-namespace ui {
-struct SelectedFileInfo;
-}
-
 namespace extensions {
 
 // Implements chrome.fileManagerPrivate.addMount method.

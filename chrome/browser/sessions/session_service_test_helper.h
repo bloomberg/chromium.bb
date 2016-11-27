@@ -17,13 +17,8 @@
 
 class SessionService;
 
-namespace base {
-class RunLoop;
-}
-
 namespace sessions {
 class SerializedNavigationEntry;
-class SessionCommand;
 struct SessionTab;
 struct SessionWindow;
 }

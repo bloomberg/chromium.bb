@@ -9,8 +9,6 @@
 
 #include "chrome/browser/ui/cocoa/themed_window.h"
 
-class Browser;
-
 namespace content {
 struct NativeWebKeyboardEvent;
 }

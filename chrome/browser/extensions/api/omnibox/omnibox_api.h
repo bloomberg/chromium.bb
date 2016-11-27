@@ -25,10 +25,6 @@ class Profile;
 class TemplateURL;
 class TemplateURLService;
 
-namespace base {
-class ListValue;
-}
-
 namespace content {
 class BrowserContext;
 class WebContents;
