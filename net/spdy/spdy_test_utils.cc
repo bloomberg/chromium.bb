@@ -95,40 +95,16 @@ void CompareCharArraysWithHexError(const string& description,
 void SetFrameFlags(SpdySerializedFrame* frame,
                    uint8_t flags,
                    SpdyMajorVersion spdy_version) {
-  switch (spdy_version) {
-    case SPDY3:
-    case HTTP2:
-      frame->data()[4] = flags;
-      break;
-    default:
-      LOG(FATAL) << "Unsupported SPDY version.";
-  }
+  frame->data()[4] = flags;
 }
 
 void SetFrameLength(SpdySerializedFrame* frame,
                     size_t length,
                     SpdyMajorVersion spdy_version) {
-  switch (spdy_version) {
-    case SPDY3:
-      CHECK_EQ(0u, length & ~kLengthMask);
-      {
-        int32_t wire_length = base::HostToNet32(length);
-        // The length field in SPDY 3 is a 24-bit (3B) integer starting at
-        // offset 5.
-        memcpy(frame->data() + 5, reinterpret_cast<char*>(&wire_length) + 1, 3);
-      }
-      break;
-    case HTTP2:
-      CHECK_GT(1u<<14, length);
-      {
-        int32_t wire_length = base::HostToNet32(length);
-        memcpy(frame->data(),
-               reinterpret_cast<char*>(&wire_length) + 1,
-               3);
-      }
-      break;
-    default:
-      LOG(FATAL) << "Unsupported SPDY version.";
+  CHECK_GT(1u << 14, length);
+  {
+    int32_t wire_length = base::HostToNet32(length);
+    memcpy(frame->data(), reinterpret_cast<char*>(&wire_length) + 1, 3);
   }
 }
 

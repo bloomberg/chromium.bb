@@ -63,7 +63,7 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
                                                SpdyFrameType type,
                                                uint8_t flags) {
-  DCHECK_EQ(SPDY3, version_);
+  DCHECK(false);
   DCHECK(SpdyConstants::IsValidFrameType(
       version_, SpdyConstants::SerializeFrameType(version_, type)));
   bool success = true;
@@ -80,21 +80,7 @@ bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
 bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
                                             SpdyStreamId stream_id,
                                             uint8_t flags) {
-  if (version_ == HTTP2) {
-    return BeginNewFrame(framer, DATA, flags, stream_id);
-  }
-  DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  bool success = true;
-  success &= WriteUInt32(stream_id);
-  size_t length_field = capacity_ - framer.GetDataFrameMinimumSize();
-  DCHECK_EQ(0u, length_field & ~static_cast<size_t>(kLengthMask));
-  FlagsAndLength flags_length;
-  flags_length.length = base::HostToNet32(static_cast<uint32_t>(length_field));
-  DCHECK_EQ(0, flags & ~kDataFlagsMask);
-  flags_length.flags[0] = flags;
-  success &= WriteBytes(&flags_length, sizeof(flags_length));
-  DCHECK_EQ(framer.GetDataFrameMinimumSize(), length());
-  return success;
+  return BeginNewFrame(framer, DATA, flags, stream_id);
 }
 
 bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
@@ -169,28 +155,12 @@ bool SpdyFrameBuilder::RewriteLength(const SpdyFramer& framer) {
 
 bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
                                        size_t length) {
-  if (version_ == SPDY3) {
-    DCHECK_GE(framer.GetFrameMaximumSize() - framer.GetFrameMinimumSize(),
-              length);
-  } else {
-    DCHECK_GE(framer.GetFrameMaximumSize(), length);
-  }
+  DCHECK_GE(framer.GetFrameMaximumSize(), length);
   bool success = false;
   const size_t old_length = length_;
 
-  if (version_ == SPDY3) {
-    FlagsAndLength flags_length = CreateFlagsAndLength(
-        0,  // We're not writing over the flags value anyway.
-        length);
-
-    // Write into the correct location by temporarily faking the offset.
-    length_ = 5;  // Offset at which the length field occurs.
-    success = WriteBytes(reinterpret_cast<char*>(&flags_length) + 1,
-                         sizeof(flags_length) - 1);
-  } else {
-    length_ = 0;
-    success = WriteUInt24(length);
-  }
+  length_ = 0;
+  success = WriteUInt24(length);
 
   length_ = old_length;
   return success;

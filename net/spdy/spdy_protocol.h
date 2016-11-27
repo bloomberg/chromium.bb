@@ -36,8 +36,7 @@ namespace net {
 // which indicate application-layer incompatibility. It is NOT guaranteed
 // that the enum value SPDYn maps to the integer n.
 enum SpdyMajorVersion {
-  SPDY3 = 1,
-  HTTP2,
+  HTTP2 = 2,
 };
 
 // 15 bit version field for SPDY/3 frames.
