@@ -219,8 +219,6 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   StartServerAndOpenTabs();
   SetupPeerconnectionWithLocalStream(left_tab_);
   SetupPeerconnectionWithLocalStream(right_tab_);
-  CreateDataChannel(left_tab_, "data");
-  CreateDataChannel(right_tab_, "data");
   NegotiateCall(left_tab_, right_tab_);
 
   std::set<std::string> missing_expected_stats;
@@ -230,9 +228,9 @@ IN_PROC_BROWSER_TEST_F(WebRtcBrowserTest,
   for (const std::string& type : VerifyStatsGeneratedPromise(left_tab_)) {
     missing_expected_stats.erase(type);
   }
-  for (const std::string& type : missing_expected_stats) {
-    EXPECT_TRUE(false) << "Expected stats dictionary is missing: " << type;
-  }
+  // TODO(hbos): When all stats are ready and returned by "getStats":
+  // EXPECT_TRUE(missing_expected_stats.empty());
+  // crbug.com/627816
 
   DetectVideoAndHangUp();
 }

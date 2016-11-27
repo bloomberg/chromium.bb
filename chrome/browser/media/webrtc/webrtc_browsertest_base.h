@@ -122,8 +122,6 @@ class WebRtcTestBase : public InProcessBrowserTest {
       content::WebContents* tab,
       const std::string& certificate) const;
 
-  void CreateDataChannel(content::WebContents* tab, const std::string& label);
-
   // Exchanges offers and answers between the peer connections in the
   // respective tabs. Before calling this, you must have prepared peer
   // connections in both tabs and configured them as you like (for instance by
