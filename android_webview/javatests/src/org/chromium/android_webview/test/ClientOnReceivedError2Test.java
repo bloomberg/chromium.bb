@@ -32,7 +32,7 @@ public class ClientOnReceivedError2Test extends AwTestBase {
     private TestWebServer mWebServer;
 
     private static final String BAD_HTML_URL =
-            "http://man.id.be.really.surprised.if.this.address.existed/a.html";
+            "http://id.be.really.surprised.if.this.address.existed/a.html";
 
     @Override
     public void setUp() throws Exception {

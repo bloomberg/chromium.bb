@@ -37,7 +37,7 @@ public class ClientOnReceivedErrorTest extends AwTestBase {
         TestCallbackHelperContainer.OnReceivedErrorHelper onReceivedErrorHelper =
                 mContentsClient.getOnReceivedErrorHelper();
 
-        String url = "http://man.id.be.really.surprised.if.this.address.existed.blah/";
+        String url = "http://id.be.really.surprised.if.this.address.existed.blah/";
         int onReceivedErrorCallCount = onReceivedErrorHelper.getCallCount();
         loadUrlAsync(mAwContents, url);
 
