@@ -99,8 +99,7 @@ PassRefPtr<FontDataForRangeSet> FontFallbackIterator::next(
 
   if (m_fallbackStage == SystemFonts) {
     // We've reached pref + system fallback.
-    ASSERT(hintList.size());
-    RefPtr<SimpleFontData> systemFont = uniqueSystemFontForHint(hintList[0]);
+    RefPtr<SimpleFontData> systemFont = uniqueSystemFontForHintList(hintList);
     if (systemFont) {
       // Fallback fonts are not retained in the FontDataCache.
       return uniqueOrNext(adoptRef(new FontDataForRangeSet(systemFont)),
@@ -193,15 +192,47 @@ PassRefPtr<SimpleFontData> FontFallbackIterator::fallbackPriorityFont(
       m_fontFallbackPriority);
 }
 
-PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHint(
-    UChar32 hint) {
+static inline unsigned chooseHintIndex(const Vector<UChar32>& hintList) {
+  // crbug.com/618178 has a test case where no Myanmar font is ever found,
+  // because the run starts with a punctuation character with a script value of
+  // common. Our current font fallback code does not find a very meaningful
+  // result for this.
+  // TODO crbug.com/668706 - Improve this situation.
+  // So if we have multiple hint characters (which indicates that a
+  // multi-character grapheme or more failed to shape, then we can try to be
+  // smarter and select the first character that has an actual script value.
+  DCHECK(hintList.size());
+  if (hintList.size() <= 1)
+    return 0;
+
+  UErrorCode err = U_ZERO_ERROR;
+  UScriptCode hintCharScript = uscript_getScript(hintList[0], &err);
+  if (!U_SUCCESS(err) || hintCharScript > USCRIPT_INHERITED)
+    return 0;
+
+  for (size_t i = 1; i < hintList.size(); ++i) {
+    UScriptCode newHintScript = uscript_getScript(hintList[i], &err);
+    if (!U_SUCCESS(err))
+      return 0;
+    if (newHintScript > USCRIPT_INHERITED)
+      return i;
+  }
+  return 0;
+}
+
+PassRefPtr<SimpleFontData> FontFallbackIterator::uniqueSystemFontForHintList(
+    const Vector<UChar32>& hintList) {
   // When we're asked for a fallback for the same characters again, we give up
   // because the shaper must have previously tried shaping with the font
   // already.
-  if (!hint || m_previouslyAskedForHint.contains(hint))
+  if (!hintList.size())
     return nullptr;
 
   FontCache* fontCache = FontCache::fontCache();
+  UChar32 hint = hintList[chooseHintIndex(hintList)];
+
+  if (!hint || m_previouslyAskedForHint.contains(hint))
+    return nullptr;
   m_previouslyAskedForHint.add(hint);
   return fontCache->fallbackFontForCharacter(
       m_fontDescription, hint,
