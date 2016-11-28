@@ -132,6 +132,8 @@ for vcs in VCS:
   VCS_SHORT_NAMES.append(min(vcs['aliases'], key=len))
   VCS_ABBREVIATIONS.update((alias, vcs['name']) for alias in vcs['aliases'])
 
+UPLOAD_TIMEOUT = 120
+
 
 # The result of parsing Subversion's [auto-props] setting.
 svn_auto_props_map = None
@@ -1036,7 +1038,7 @@ class VersionControlSystem(object):
         threads.append(t)
 
     for t in threads:
-      print(t.get(timeout=60))
+      print(t.get(timeout=UPLOAD_TIMEOUT))
 
   def IsImage(self, filename):
     """Returns true if the filename has an image extension."""
@@ -2101,7 +2103,7 @@ def UploadSeparatePatches(issue, rpc_server, patchset, data, options):
     threads.append(t)
 
   for t in threads:
-    result = t.get(timeout=60)
+    result = t.get(timeout=UPLOAD_TIMEOUT)
     print(result[0])
     rv.append(result[1])
 
