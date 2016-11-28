@@ -69,22 +69,6 @@ v8::Local<v8::Value> toV8(WorkerOrWorkletGlobalScope*,
                           v8::Local<v8::Object> creationContext,
                           v8::Isolate*);
 
-// PassRefPtr and RefPtr
-
-template <typename T>
-inline v8::Local<v8::Value> toV8(PassRefPtr<T> impl,
-                                 v8::Local<v8::Object> creationContext,
-                                 v8::Isolate* isolate) {
-  return toV8(impl.get(), creationContext, isolate);
-}
-
-template <typename T>
-inline v8::Local<v8::Value> toV8(const RefPtr<T>& impl,
-                                 v8::Local<v8::Object> creationContext,
-                                 v8::Isolate* isolate) {
-  return toV8(impl.get(), creationContext, isolate);
-}
-
 // Primitives
 
 inline v8::Local<v8::Value> toV8(const String& value,
