@@ -636,7 +636,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 startAndWaitForComplete(MockUrlRequestJobFactory.getMockUrlWithFailure(
                         FailurePhase.READ_SYNC, arbitraryNetError));
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(0, callback.mResponseInfo.getReceivedBytesCount());
+        assertEquals(15, callback.mResponseInfo.getReceivedBytesCount());
         assertNotNull(callback.mError);
         assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
@@ -653,7 +653,7 @@ public class CronetUrlRequestTest extends CronetTestBase {
                 startAndWaitForComplete(MockUrlRequestJobFactory.getMockUrlWithFailure(
                         FailurePhase.READ_ASYNC, arbitraryNetError));
         assertEquals(200, callback.mResponseInfo.getHttpStatusCode());
-        assertEquals(0, callback.mResponseInfo.getReceivedBytesCount());
+        assertEquals(15, callback.mResponseInfo.getReceivedBytesCount());
         assertNotNull(callback.mError);
         assertEquals(arbitraryNetError, callback.mError.getCronetInternalErrorCode());
         assertEquals(0, callback.mRedirectCount);
