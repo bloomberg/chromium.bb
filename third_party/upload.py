@@ -133,6 +133,7 @@ for vcs in VCS:
   VCS_ABBREVIATIONS.update((alias, vcs['name']) for alias in vcs['aliases'])
 
 UPLOAD_TIMEOUT = 120
+MAX_UPLOAD_ATTEMPTS = 3
 
 
 # The result of parsing Subversion's [auto-props] setting.
@@ -1018,27 +1019,41 @@ class VersionControlSystem(object):
     patches = dict()
     [patches.setdefault(v, k) for k, v in patch_list]
 
-    threads = []
-    thread_pool = ThreadPool(options.num_upload_threads)
+    def uploadAttempt():
+      threads = []
+      thread_pool = ThreadPool(options.num_upload_threads)
 
-    for filename in patches.keys():
-      base_content, new_content, is_binary, status = files[filename]
-      file_id_str = patches.get(filename)
-      if file_id_str.find("nobase") != -1:
-        base_content = None
-        file_id_str = file_id_str[file_id_str.rfind("_") + 1:]
-      file_id = int(file_id_str)
-      if base_content != None:
-        t = thread_pool.apply_async(UploadFile, args=(filename,
-            file_id, base_content, is_binary, status, True))
-        threads.append(t)
-      if new_content != None:
-        t = thread_pool.apply_async(UploadFile, args=(filename,
-            file_id, new_content, is_binary, status, False))
-        threads.append(t)
+      for filename in patches.keys():
+        base_content, new_content, is_binary, status = files[filename]
+        file_id_str = patches.get(filename)
+        if file_id_str.find("nobase") != -1:
+          base_content = None
+          file_id_str = file_id_str[file_id_str.rfind("_") + 1:]
+        file_id = int(file_id_str)
+        if base_content != None:
+          t = thread_pool.apply_async(UploadFile, args=(filename,
+              file_id, base_content, is_binary, status, True))
+          threads.append(t)
+        if new_content != None:
+          t = thread_pool.apply_async(UploadFile, args=(filename,
+              file_id, new_content, is_binary, status, False))
+          threads.append(t)
 
-    for t in threads:
-      print(t.get(timeout=UPLOAD_TIMEOUT))
+      for t in threads:
+        print(t.get(timeout=UPLOAD_TIMEOUT))
+
+    success = False
+    for _ in range(MAX_UPLOAD_ATTEMPTS):
+      try:
+        uploadAttempt()
+        success = True
+        break
+      except multiprocessing.TimeoutError:
+        LOGGER.warning('Timeout error while uploading, retrying...')
+
+    if not success:
+      raise IOError(
+          '%d consecutive timeout errors, aborting!' % MAX_UPLOAD_ATTEMPTS)
 
   def IsImage(self, filename):
     """Returns true if the filename has an image extension."""
