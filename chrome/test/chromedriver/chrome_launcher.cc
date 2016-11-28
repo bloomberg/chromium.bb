@@ -371,7 +371,7 @@ Status LaunchDesktopChrome(
   }
 #elif defined(OS_WIN)
   if (!SwitchToUSKeyboardLayout())
-    VLOG(0) << "Can not set to US keyboard layout - Some keycodes may be"
+    VLOG(0) << "Cannot switch to US keyboard layout - some keys may be "
         "interpreted incorrectly";
 #endif
 
