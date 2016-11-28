@@ -50,6 +50,12 @@ class TestingSpellCheckProvider : public SpellCheckProvider {
                              const std::vector<SpellCheckMarker>& markers);
   void ResetResult();
 
+  void SetLastResults(
+      const base::string16 last_request,
+      blink::WebVector<blink::WebTextCheckingResult>& last_results);
+  bool SatisfyRequestFromCache(const base::string16& text,
+                               blink::WebTextCheckingCompletion* completion);
+
   base::string16 text_;
   ScopedVector<IPC::Message> messages_;
   size_t spelling_service_call_count_;

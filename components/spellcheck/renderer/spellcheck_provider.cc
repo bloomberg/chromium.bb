@@ -330,17 +330,10 @@ bool SpellCheckProvider::SatisfyRequestFromCache(
       if (start <= text_length && end <= text_length)
         ++result_size;
     }
-    if (result_size > 0) {
-      blink::WebVector<blink::WebTextCheckingResult> results(result_size);
-      for (size_t i = 0; i < result_size; ++i) {
-        results[i].decoration = last_results_[i].decoration;
-        results[i].location = last_results_[i].location;
-        results[i].length = last_results_[i].length;
-        results[i].replacement = last_results_[i].replacement;
-      }
-      completion->didFinishCheckingText(results);
-      return true;
-    }
+    blink::WebVector<blink::WebTextCheckingResult> results(last_results_.data(),
+                                                           result_size);
+    completion->didFinishCheckingText(results);
+    return true;
   }
 
   return false;

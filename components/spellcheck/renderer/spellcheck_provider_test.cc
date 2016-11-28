@@ -96,6 +96,19 @@ void TestingSpellCheckProvider::ResetResult() {
   text_.clear();
 }
 
+void TestingSpellCheckProvider::SetLastResults(
+    const base::string16 last_request,
+    blink::WebVector<blink::WebTextCheckingResult>& last_results) {
+  last_request_ = last_request;
+  last_results_ = last_results;
+}
+
+bool TestingSpellCheckProvider::SatisfyRequestFromCache(
+    const base::string16& text,
+    blink::WebTextCheckingCompletion* completion) {
+  return SpellCheckProvider::SatisfyRequestFromCache(text, completion);
+}
+
 SpellCheckProviderTest::SpellCheckProviderTest() {}
 SpellCheckProviderTest::~SpellCheckProviderTest() {}
 

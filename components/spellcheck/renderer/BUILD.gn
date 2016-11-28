@@ -67,6 +67,7 @@ source_set("unit_tests") {
     "spellcheck_provider_mac_unittest.cc",
     "spellcheck_provider_test.cc",
     "spellcheck_provider_test.h",
+    "spellcheck_provider_unittest.cc",
     "spellcheck_unittest.cc",
     "spellcheck_worditerator_unittest.cc",
   ]
