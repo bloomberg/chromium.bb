@@ -146,6 +146,21 @@ class PLATFORM_EXPORT ResourceResponse final {
   bool isNull() const { return m_isNull; }
   bool isHTTP() const;
 
+  // The URL of the resource. Note that if a service worker responded to the
+  // request for this resource, it may have fetched an entirely different URL
+  // and responded with that resource. wasFetchedViaServiceWorker() and
+  // originalURLViaServiceWorker() can be used to determine whether and how a
+  // service worker responded to the request. Example service worker code:
+  //
+  // onfetch = (event => {
+  //   if (event.request.url == 'https://abc.com')
+  //     event.respondWith(fetch('https://def.com'));
+  // });
+  //
+  // If this service worker responds to an "https://abc.com" request, then for
+  // the resulting ResourceResponse, url() is "https://abc.com",
+  // wasFetchedViaServiceWorker() is true, and originalURLViaServiceWorker() is
+  // "https://def.com".
   const KURL& url() const;
   void setURL(const KURL&);
 
@@ -263,6 +278,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     m_wasAlternateProtocolAvailable = value;
   }
 
+  // See ServiceWorkerResponseInfo::was_fetched_via_service_worker.
   bool wasFetchedViaServiceWorker() const {
     return m_wasFetchedViaServiceWorker;
   }
@@ -275,6 +291,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     m_wasFetchedViaForeignFetch = value;
   }
 
+  // See ServiceWorkerResponseInfo::was_fallback_required.
   bool wasFallbackRequiredByServiceWorker() const {
     return m_wasFallbackRequiredByServiceWorker;
   }
@@ -289,6 +306,7 @@ class PLATFORM_EXPORT ResourceResponse final {
     m_serviceWorkerResponseType = value;
   }
 
+  // See ServiceWorkerResponseInfo::original_url_via_service_worker.
   const KURL& originalURLViaServiceWorker() const {
     return m_originalURLViaServiceWorker;
   }

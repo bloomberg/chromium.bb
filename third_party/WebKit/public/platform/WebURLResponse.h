@@ -234,7 +234,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT bool wasAlternateProtocolAvailable() const;
   BLINK_PLATFORM_EXPORT void setWasAlternateProtocolAvailable(bool);
 
-  // Flag whether this request was loaded via a ServiceWorker.
+  // Flag whether this request was loaded via a ServiceWorker. See
+  // ServiceWorkerResponseInfo::was_fetched_via_service_worker() for details.
   BLINK_PLATFORM_EXPORT bool wasFetchedViaServiceWorker() const;
   BLINK_PLATFORM_EXPORT void setWasFetchedViaServiceWorker(bool);
 
@@ -243,7 +244,8 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setWasFetchedViaForeignFetch(bool);
 
   // Flag whether the fallback request with skip service worker flag was
-  // required.
+  // required. See ServiceWorkerResponseInfo::was_fallback_required() for
+  // details.
   BLINK_PLATFORM_EXPORT bool wasFallbackRequiredByServiceWorker() const;
   BLINK_PLATFORM_EXPORT void setWasFallbackRequiredByServiceWorker(bool);
 
@@ -253,8 +255,9 @@ class WebURLResponse {
   BLINK_PLATFORM_EXPORT void setServiceWorkerResponseType(
       WebServiceWorkerResponseType);
 
-  // The original URL of the response which was fetched by the ServiceWorker.
-  // This may be empty if the response was created inside the ServiceWorker.
+  // The URL of the Response object the ServiceWorker passed to respondWith().
+  // See ServiceWorkerResponseInfo::original_url_via_service_worker() for
+  // details.
   BLINK_PLATFORM_EXPORT WebURL originalURLViaServiceWorker() const;
   BLINK_PLATFORM_EXPORT void setOriginalURLViaServiceWorker(const WebURL&);
 

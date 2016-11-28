@@ -44,10 +44,28 @@ class CONTENT_EXPORT ServiceWorkerResponseInfo
       const ServiceWorkerHeaderList& cors_exposed_header_names);
   void ResetData();
 
+  // Returns true if a service worker responded to the request. If the service
+  // worker received a fetch event and did not call respondWith(), or was
+  // bypassed due to absence of a fetch event handler, this function
+  // typically returns false but returns true if "fallback to renderer" was
+  // required (however in this case the response is not an actual resource and
+  // the request will be reissued by the renderer).
   bool was_fetched_via_service_worker() const {
     return was_fetched_via_service_worker_;
   }
+
+  // Returns true if "fallback to renderer" was required. This happens when a
+  // request was directed to a service worker but it did not call respondWith()
+  // or was bypassed due to absense of a fetch event handler, and the browser
+  // could not directly fall back to network because the CORS algorithm must be
+  // run, which is implemented in the renderer.
   bool was_fallback_required() const { return was_fallback_required_; }
+
+  // Returns the URL of the Response object the service worker passed to
+  // respondWith() to create this response. This URL is null if the response was
+  // programatically generated as in respondWith(new Response()). It is also
+  // null if a service worker did not respond to the request or did not call
+  // respondWith().
   const GURL& original_url_via_service_worker() const {
     return original_url_via_service_worker_;
   }
