@@ -132,6 +132,10 @@ weston_desktop_xwayland_surface_committed(struct weston_desktop_surface *dsurfac
 {
 	struct weston_desktop_xwayland_surface *surface = user_data;
 
+#ifdef WM_DEBUG
+	weston_log("%s: xwayland surface %p\n", __func__, surface);
+#endif
+
 	if (surface->has_next_geometry) {
 		surface->has_next_geometry = false;
 		weston_desktop_surface_set_geometry(surface->surface,
