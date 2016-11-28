@@ -160,8 +160,8 @@ void StreamTextureWrapperImpl::InitializeOnMainThread(
   DCHECK(main_task_runner_->BelongsToCurrentThread());
   DVLOG(2) << __FUNCTION__;
 
-  stream_texture_proxy_.reset(factory_->CreateProxy(
-      kGLTextureExternalOES, &texture_id_, &texture_mailbox_));
+  stream_texture_proxy_ = factory_->CreateProxy(
+      kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
   if (!stream_texture_proxy_)
     return;
 

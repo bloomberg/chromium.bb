@@ -1148,8 +1148,8 @@ void WebMediaPlayerAndroid::TryCreateStreamTextureProxyIfNeeded() {
     return;
 
   DCHECK(!texture_id_);
-  stream_texture_proxy_.reset(stream_texture_factory_->CreateProxy(
-      kGLTextureExternalOES, &texture_id_, &texture_mailbox_));
+  stream_texture_proxy_ = stream_texture_factory_->CreateProxy(
+      kGLTextureExternalOES, &texture_id_, &texture_mailbox_);
   if (!stream_texture_proxy_)
     return;
   ReallocateVideoFrame();

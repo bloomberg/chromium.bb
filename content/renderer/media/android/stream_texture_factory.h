@@ -67,7 +67,7 @@ class StreamTextureProxy : public StreamTextureHost::Listener {
   };
  private:
   friend class StreamTextureFactory;
-  explicit StreamTextureProxy(StreamTextureHost* host);
+  explicit StreamTextureProxy(std::unique_ptr<StreamTextureHost> host);
 
   void BindOnThread();
   void Release();
@@ -100,9 +100,9 @@ class CONTENT_EXPORT StreamTextureFactory
   // nullptr is returned and *texture_id will be set to 0. If the route_id is
   // valid it returns StreamTextureProxy object. The caller needs to take care
   // of cleaning up the texture_id.
-  StreamTextureProxy* CreateProxy(unsigned texture_target,
-                                  unsigned* texture_id,
-                                  gpu::Mailbox* texture_mailbox);
+  ScopedStreamTextureProxy CreateProxy(unsigned texture_target,
+                                       unsigned* texture_id,
+                                       gpu::Mailbox* texture_mailbox);
 
   gpu::gles2::GLES2Interface* ContextGL();
 
