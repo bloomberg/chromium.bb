@@ -23,7 +23,6 @@
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/ui/browser_navigator.h"
 #include "chrome/browser/ui/browser_navigator_params.h"
-#include "chrome/common/chrome_features.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/api/webstore_widget_private.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -386,14 +385,12 @@ void PrinterDetector::ClickOnNotificationButton(int button_index) {
   } else if (command_ == ButtonCommand::CANCEL_SETUP) {
     // TODO(skau/xdai): call the CUPS backend to cancel the printer setup.
   } else if (command_ == ButtonCommand::GET_HELP) {
-    if (base::FeatureList::IsEnabled(features::kMaterialDesignSettings)) {
-      chrome::NavigateParams params(profile_,
-                                    GURL(chrome::kChromeUIMdCupsSettingsURL),
-                                    ui::PAGE_TRANSITION_LINK);
-      params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
-      params.window_action = chrome::NavigateParams::SHOW_WINDOW;
-      chrome::Navigate(&params);
-    }
+    chrome::NavigateParams params(profile_,
+                                  GURL(chrome::kChromeUIMdCupsSettingsURL),
+                                  ui::PAGE_TRANSITION_LINK);
+    params.disposition = WindowOpenDisposition::NEW_FOREGROUND_TAB;
+    params.window_action = chrome::NavigateParams::SHOW_WINDOW;
+    chrome::Navigate(&params);
   }
 }
 
