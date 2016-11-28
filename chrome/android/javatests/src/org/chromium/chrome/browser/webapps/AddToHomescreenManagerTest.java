@@ -160,8 +160,6 @@ public class AddToHomescreenManagerTest extends ChromeActivityTestCaseBase<Chrom
         super.setUp();
         ChromeWebApkHost.initForTesting(false);
         mTestServer = EmbeddedTestServer.createAndStartServer(getInstrumentation().getContext());
-        // Register handler for "slow?10000" URL.
-        mTestServer.addDefaultHandlers(mTestServer.getURL("/chrome/test/data"));
         mShortcutHelperDelegate = new TestShortcutHelperDelegate();
         ShortcutHelper.setDelegateForTests(mShortcutHelperDelegate);
         mActivity = getActivity();
