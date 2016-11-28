@@ -248,6 +248,7 @@ void ContextualSearchLayer::SetProperties(
       search_caption_resource_id,
       search_caption_visible,
       search_caption_animation_percentage,
+      search_term_opacity,
       search_context_resource_id,
       search_context_opacity,
       search_term_caption_spacing);
@@ -533,21 +534,22 @@ void ContextualSearchLayer::SetStaticImageProperties(
       gfx::PointF(side_margin, static_image_y_offset));
 }
 
-void ContextualSearchLayer::SetupTextLayer(
-    float bar_top,
-    float bar_height,
-    float search_text_layer_min_height,
-    int caption_resource_id,
-    bool caption_visible,
-    float animation_percentage,
-    int context_resource_id,
-    float context_opacity,
-    float term_caption_spacing) {
+void ContextualSearchLayer::SetupTextLayer(float bar_top,
+                                           float bar_height,
+                                           float search_text_layer_min_height,
+                                           int caption_resource_id,
+                                           bool caption_visible,
+                                           float animation_percentage,
+                                           float search_term_opacity,
+                                           int context_resource_id,
+                                           float context_opacity,
+                                           float term_caption_spacing) {
   // ---------------------------------------------------------------------------
   // Setup the Drawing Hierarchy
   // ---------------------------------------------------------------------------
   // Search Term
-  if (bar_text_->parent() != text_layer_)
+  bool bar_text_visible = search_term_opacity > 0.0f;
+  if (bar_text_visible && bar_text_->parent() != text_layer_)
     text_layer_->AddChild(bar_text_);
 
   // Search Context
@@ -587,15 +589,20 @@ void ContextualSearchLayer::SetupTextLayer(
   // We may not be able to fit these inside the ideal size as the user may have
   // their Font Size set to large.
 
+  // The Term might not be visible or initialized yet, so set up main_text with
+  // whichever main bar text seems appropriate.
+  scoped_refptr<cc::UIResourceLayer> main_text =
+      (bar_text_visible ? bar_text_ : search_context_);
+
   // The search_caption_ may not have had it's resource set by this point, if so
   // the bounds will be zero and everything will still work.
-  float term_height = bar_text_->bounds().height();
+  float term_height = main_text->bounds().height();
   float caption_height = search_caption_->bounds().height();
 
   float layer_height = std::max(search_text_layer_min_height,
       term_height + caption_height + term_caption_spacing);
-  float layer_width = std::max(bar_text_->bounds().width(),
-                                 search_caption_->bounds().width());
+  float layer_width =
+      std::max(main_text->bounds().width(), search_caption_->bounds().width());
 
   float layer_top = bar_top + (bar_height - layer_height) / 2;
   text_layer_->SetBounds(gfx::Size(layer_width, layer_height));

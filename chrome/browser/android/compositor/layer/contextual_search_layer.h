@@ -123,16 +123,16 @@ class ContextualSearchLayer : public OverlayPanelLayer {
 
   // Sets up |text_layer_|, which contains |bar_text_|, |search_context_| and
   // |search_caption_|.
-  void SetupTextLayer(
-      float search_bar_top,
-      float search_bar_height,
-      float search_text_layer_min_height,
-      int search_caption_resource_id,
-      bool search_caption_visible,
-      float search_caption_animation_percentage,
-      int search_context_resource_id,
-      float search_context_opacity,
-      float search_term_caption_spacing);
+  void SetupTextLayer(float search_bar_top,
+                      float search_bar_height,
+                      float search_text_layer_min_height,
+                      int search_caption_resource_id,
+                      bool search_caption_visible,
+                      float search_caption_animation_percentage,
+                      float search_term_opacity,
+                      int search_context_resource_id,
+                      float search_context_opacity,
+                      float search_term_caption_spacing);
 
   int static_image_size_;
   float thumbnail_side_margin_;
