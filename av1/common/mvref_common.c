@@ -743,7 +743,10 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       find_mv_refs_sync sync, void *const data,
                       int16_t *mode_context) {
 #if CONFIG_REF_MV
-  int idx, all_zero = 1;
+#if !CONFIG_GLOBAL_MOTION
+  int idx;
+#endif
+  int all_zero = 1;
 #endif
 #if CONFIG_EXT_INTER
   av1_update_mv_context(xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
@@ -766,6 +769,9 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
                     -1, mi_row, mi_col, mode_context);
 
+#if CONFIG_GLOBAL_MOTION
+  if ((*ref_mv_count >= 2) || (ref_frame <= ALTREF_FRAME)) all_zero = 0;
+#else
   if (*ref_mv_count >= 2) {
     for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
       if (ref_mv_stack[idx].this_mv.as_int != 0) all_zero = 0;
@@ -776,6 +782,7 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
     for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
       if (mv_ref_list[idx].as_int != 0) all_zero = 0;
   }
+#endif
 
   if (all_zero) mode_context[ref_frame] |= (1 << ALL_ZERO_FLAG_OFFSET);
 #endif

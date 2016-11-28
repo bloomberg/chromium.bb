@@ -9899,10 +9899,6 @@ PALETTE_EXIT:
           ) {
     int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
     int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
-#if !CONFIG_EXT_INTER
-    if (best_mbmode.ref_frame[1] > NONE)
-      mode_ctx &= (mbmi_ext->mode_context[best_mbmode.ref_frame[1]] | 0x00ff);
-#endif  // !CONFIG_EXT_INTER
 
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
       best_mbmode.mode = ZEROMV;
