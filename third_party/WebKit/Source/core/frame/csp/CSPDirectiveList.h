@@ -190,17 +190,17 @@ class CORE_EXPORT CSPDirectiveList
   SourceListDirective* operativeDirective(SourceListDirective*,
                                           SourceListDirective* override) const;
   void reportViolation(const String& directiveText,
-                       const String& effectiveDirective,
+                       const ContentSecurityPolicy::DirectiveType&,
                        const String& consoleMessage,
                        const KURL& blockedURL,
                        ResourceRequest::RedirectStatus) const;
   void reportViolationWithFrame(const String& directiveText,
-                                const String& effectiveDirective,
+                                const ContentSecurityPolicy::DirectiveType&,
                                 const String& consoleMessage,
                                 const KURL& blockedURL,
                                 LocalFrame*) const;
   void reportViolationWithLocation(const String& directiveText,
-                                   const String& effectiveDirective,
+                                   const ContentSecurityPolicy::DirectiveType&,
                                    const String& consoleMessage,
                                    const KURL& blockedURL,
                                    const String& contextURL,
@@ -208,7 +208,7 @@ class CORE_EXPORT CSPDirectiveList
                                    Element*) const;
   void reportViolationWithState(
       const String& directiveText,
-      const String& effectiveDirective,
+      const ContentSecurityPolicy::DirectiveType&,
       const String& message,
       const KURL& blockedURL,
       ScriptState*,
@@ -247,10 +247,11 @@ class CORE_EXPORT CSPDirectiveList
                                      bool isScript,
                                      const String& hashValue) const;
 
-  bool checkSourceAndReportViolation(SourceListDirective*,
-                                     const KURL&,
-                                     const String& effectiveDirective,
-                                     ResourceRequest::RedirectStatus) const;
+  bool checkSourceAndReportViolation(
+      SourceListDirective*,
+      const KURL&,
+      const ContentSecurityPolicy::DirectiveType&,
+      ResourceRequest::RedirectStatus) const;
   bool checkMediaTypeAndReportViolation(MediaListDirective*,
                                         const String& type,
                                         const String& typeAttribute,

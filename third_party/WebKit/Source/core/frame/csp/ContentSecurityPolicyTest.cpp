@@ -911,4 +911,51 @@ TEST_F(ContentSecurityPolicyTest, ShouldEnforceEmbeddersPolicy) {
   }
 }
 
+TEST_F(ContentSecurityPolicyTest, DirectiveType) {
+  struct TestCase {
+    ContentSecurityPolicy::DirectiveType type;
+    const String& name;
+  } cases[] = {
+      {ContentSecurityPolicy::DirectiveType::BaseURI, "base-uri"},
+      {ContentSecurityPolicy::DirectiveType::BlockAllMixedContent,
+       "block-all-mixed-content"},
+      {ContentSecurityPolicy::DirectiveType::ChildSrc, "child-src"},
+      {ContentSecurityPolicy::DirectiveType::ConnectSrc, "connect-src"},
+      {ContentSecurityPolicy::DirectiveType::DefaultSrc, "default-src"},
+      {ContentSecurityPolicy::DirectiveType::FrameAncestors, "frame-ancestors"},
+      {ContentSecurityPolicy::DirectiveType::FrameSrc, "frame-src"},
+      {ContentSecurityPolicy::DirectiveType::FontSrc, "font-src"},
+      {ContentSecurityPolicy::DirectiveType::FormAction, "form-action"},
+      {ContentSecurityPolicy::DirectiveType::ImgSrc, "img-src"},
+      {ContentSecurityPolicy::DirectiveType::ManifestSrc, "manifest-src"},
+      {ContentSecurityPolicy::DirectiveType::MediaSrc, "media-src"},
+      {ContentSecurityPolicy::DirectiveType::ObjectSrc, "object-src"},
+      {ContentSecurityPolicy::DirectiveType::PluginTypes, "plugin-types"},
+      {ContentSecurityPolicy::DirectiveType::ReportURI, "report-uri"},
+      {ContentSecurityPolicy::DirectiveType::RequireSRIFor, "require-sri-for"},
+      {ContentSecurityPolicy::DirectiveType::Sandbox, "sandbox"},
+      {ContentSecurityPolicy::DirectiveType::ScriptSrc, "script-src"},
+      {ContentSecurityPolicy::DirectiveType::StyleSrc, "style-src"},
+      {ContentSecurityPolicy::DirectiveType::TreatAsPublicAddress,
+       "treat-as-public-address"},
+      {ContentSecurityPolicy::DirectiveType::UpgradeInsecureRequests,
+       "upgrade-insecure-requests"},
+      {ContentSecurityPolicy::DirectiveType::WorkerSrc, "worker-src"},
+  };
+
+  EXPECT_EQ(ContentSecurityPolicy::DirectiveType::Undefined,
+            ContentSecurityPolicy::getDirectiveType("random"));
+
+  for (const auto& test : cases) {
+    const String& nameFromType =
+        ContentSecurityPolicy::getDirectiveName(test.type);
+    ContentSecurityPolicy::DirectiveType typeFromName =
+        ContentSecurityPolicy::getDirectiveType(test.name);
+    EXPECT_EQ(nameFromType, test.name);
+    EXPECT_EQ(typeFromName, test.type);
+    EXPECT_EQ(test.type, ContentSecurityPolicy::getDirectiveType(nameFromType));
+    EXPECT_EQ(test.name, ContentSecurityPolicy::getDirectiveName(typeFromName));
+  }
+}
+
 }  // namespace blink

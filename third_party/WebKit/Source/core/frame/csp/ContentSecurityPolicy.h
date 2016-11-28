@@ -72,43 +72,6 @@ using RedirectStatus = ResourceRequest::RedirectStatus;
 class CORE_EXPORT ContentSecurityPolicy
     : public GarbageCollectedFinalized<ContentSecurityPolicy> {
  public:
-  // CSP Level 1 Directives
-  static const char ConnectSrc[];
-  static const char DefaultSrc[];
-  static const char FontSrc[];
-  static const char FrameSrc[];
-  static const char ImgSrc[];
-  static const char MediaSrc[];
-  static const char ObjectSrc[];
-  static const char ReportURI[];
-  static const char Sandbox[];
-  static const char ScriptSrc[];
-  static const char StyleSrc[];
-
-  // CSP Level 2 Directives
-  static const char BaseURI[];
-  static const char ChildSrc[];
-  static const char FormAction[];
-  static const char FrameAncestors[];
-  static const char PluginTypes[];
-
-  // CSP Level 3 Directives
-  static const char ManifestSrc[];
-  static const char WorkerSrc[];
-
-  // Mixed Content Directive
-  // https://w3c.github.io/webappsec/specs/mixedcontent/#strict-mode
-  static const char BlockAllMixedContent[];
-
-  // https://w3c.github.io/webappsec/specs/upgrade/
-  static const char UpgradeInsecureRequests[];
-
-  // https://mikewest.github.io/cors-rfc1918/#csp
-  static const char TreatAsPublicAddress[];
-
-  // https://w3c.github.io/webappsec-subresource-integrity/#require-sri-for
-  static const char RequireSRIFor[];
-
   enum ReportingStatus { SendReport, SuppressReport };
 
   enum ExceptionStatus { WillThrowException, WillNotThrowException };
@@ -120,6 +83,32 @@ class CORE_EXPORT ContentSecurityPolicy
   enum ViolationType { InlineViolation, EvalViolation, URLViolation };
 
   enum class InlineType { Block, Attribute };
+
+  enum class DirectiveType {
+    Undefined,
+    BaseURI,
+    BlockAllMixedContent,
+    ChildSrc,
+    ConnectSrc,
+    DefaultSrc,
+    FrameAncestors,
+    FrameSrc,
+    FontSrc,
+    FormAction,
+    ImgSrc,
+    ManifestSrc,
+    MediaSrc,
+    ObjectSrc,
+    PluginTypes,
+    ReportURI,
+    RequireSRIFor,
+    Sandbox,
+    ScriptSrc,
+    StyleSrc,
+    TreatAsPublicAddress,
+    UpgradeInsecureRequests,
+    WorkerSrc,
+  };
 
   static ContentSecurityPolicy* create() { return new ContentSecurityPolicy(); }
   ~ContentSecurityPolicy();
@@ -311,7 +300,7 @@ class CORE_EXPORT ContentSecurityPolicy
   // |m_executionContext| (or dropped on the floor if no such context is
   // available).
   void reportViolation(const String& directiveText,
-                       const String& effectiveDirective,
+                       const DirectiveType& effectiveType,
                        const String& consoleMessage,
                        const KURL& blockedURL,
                        const Vector<String>& reportEndpoints,
@@ -354,8 +343,6 @@ class CORE_EXPORT ContentSecurityPolicy
 
   static bool shouldBypassMainWorld(const ExecutionContext*);
 
-  static bool isDirectiveName(const String&);
-
   static bool isNonceableElement(const Element*);
 
   // This method checks whether the request should be allowed for an
@@ -363,6 +350,9 @@ class CORE_EXPORT ContentSecurityPolicy
   // Please, see https://w3c.github.io/webappsec-csp/embedded/#origin-allowed.
   static bool shouldEnforceEmbeddersPolicy(const ResourceResponse&,
                                            SecurityOrigin*);
+
+  static const char* getDirectiveName(const DirectiveType&);
+  static DirectiveType getDirectiveType(const String& name);
 
   Document* document() const;
 
