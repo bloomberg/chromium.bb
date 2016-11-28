@@ -944,7 +944,6 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     @Override
     public void onDismiss() {
         disconnectFromClientWithDebugMessage("Dialog dismissed");
-        closeUI(true);
         recordAbortReasonHistogram(PaymentRequestMetrics.ABORT_REASON_ABORTED_BY_USER);
     }
 
