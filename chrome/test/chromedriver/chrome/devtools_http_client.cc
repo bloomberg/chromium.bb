@@ -203,7 +203,7 @@ Status DevToolsHttpClient::CloseFrontends(const std::string& for_client_id) {
     std::unique_ptr<DevToolsClient> client(new DevToolsClientImpl(
         socket_factory_, web_socket_url_prefix_ + *it, *it));
     std::unique_ptr<WebViewImpl> web_view(
-        new WebViewImpl(*it, &browser_info_, std::move(client), NULL,
+        new WebViewImpl(*it, false, &browser_info_, std::move(client), NULL,
                         page_load_strategy_));
 
     status = web_view->ConnectIfNecessary();

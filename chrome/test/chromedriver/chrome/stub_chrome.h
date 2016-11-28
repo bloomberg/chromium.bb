@@ -24,8 +24,10 @@ class StubChrome : public Chrome {
   Status GetAsDesktop(ChromeDesktopImpl** desktop) override;
   const BrowserInfo* GetBrowserInfo() const override;
   bool HasCrashedWebView() override;
-  Status GetWebViewIdForFirstTab(std::string* web_view_id) override;
-  Status GetWebViewIds(std::list<std::string>* web_view_ids) override;
+  Status GetWebViewIdForFirstTab(std::string* web_view_id,
+                                 bool w3c_compliant) override;
+  Status GetWebViewIds(std::list<std::string>* web_view_ids,
+                       bool w3c_compliant) override;
   Status GetWebViewById(const std::string& id, WebView** web_view) override;
   Status CloseWebView(const std::string& id) override;
   Status ActivateWebView(const std::string& id) override;

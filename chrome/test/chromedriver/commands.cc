@@ -251,7 +251,8 @@ void ExecuteSessionCommandOnSessionThread(
         // Some commands, like clicking a button or link which closes the
         // window, may result in a kDisconnected error code.
         std::list<std::string> web_view_ids;
-        Status status_tmp = session->chrome->GetWebViewIds(&web_view_ids);
+        Status status_tmp = session->chrome->GetWebViewIds(
+          &web_view_ids, session->w3c_compliant);
         if (status_tmp.IsError() && status_tmp.code() != kChromeNotReachable) {
           status.AddDetails(
               "failed to check if window was closed: " + status_tmp.message());

@@ -43,10 +43,12 @@ class ChromeDesktopImpl : public ChromeImpl {
   // Returns an error if the timeout is exceeded.
   Status WaitForPageToLoad(const std::string& url,
                            const base::TimeDelta& timeout,
-                           std::unique_ptr<WebView>* web_view);
+                           std::unique_ptr<WebView>* web_view,
+                           bool w3c_compliant);
 
   // Gets the installed automation extension.
-  Status GetAutomationExtension(AutomationExtension** extension);
+  Status GetAutomationExtension(AutomationExtension** extension,
+                                bool w3c_compliant);
 
   // Overridden from Chrome:
   Status GetAsDesktop(ChromeDesktopImpl** desktop) override;

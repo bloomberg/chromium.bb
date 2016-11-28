@@ -37,12 +37,13 @@ bool ChromeImpl::HasCrashedWebView() {
   return false;
 }
 
-Status ChromeImpl::GetWebViewIdForFirstTab(std::string* web_view_id) {
+Status ChromeImpl::GetWebViewIdForFirstTab(std::string* web_view_id,
+                                           bool w3c_compliant) {
   WebViewsInfo views_info;
   Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
   if (status.IsError())
     return status;
-  UpdateWebViews(views_info);
+  UpdateWebViews(views_info, w3c_compliant);
   for (size_t i = 0; i < views_info.GetSize(); ++i) {
     const WebViewInfo& view = views_info.Get(i);
     if (view.type == WebViewInfo::kPage) {
@@ -53,12 +54,13 @@ Status ChromeImpl::GetWebViewIdForFirstTab(std::string* web_view_id) {
   return Status(kUnknownError, "unable to discover open window in chrome");
 }
 
-Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
+Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids,
+                                 bool w3c_compliant) {
   WebViewsInfo views_info;
   Status status = devtools_http_client_->GetWebViewsInfo(&views_info);
   if (status.IsError())
     return status;
-  UpdateWebViews(views_info);
+  UpdateWebViews(views_info, w3c_compliant);
   std::list<std::string> web_view_ids_tmp;
   for (WebViewList::const_iterator web_view_iter = web_views_.begin();
        web_view_iter != web_views_.end(); ++web_view_iter) {
@@ -68,7 +70,8 @@ Status ChromeImpl::GetWebViewIds(std::list<std::string>* web_view_ids) {
   return Status(kOk);
 }
 
-void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info) {
+void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info,
+                                bool w3c_compliant) {
   // Check if some web views are closed (or in the case of background pages,
   // become inactive).
   WebViewList::iterator it = web_views_.begin();
@@ -105,8 +108,9 @@ void ChromeImpl::UpdateWebViews(const WebViewsInfo& views_info) {
         }
         CHECK(!page_load_strategy_.empty());
         web_views_.push_back(make_linked_ptr(new WebViewImpl(
-            view.id, devtools_http_client_->browser_info(), std::move(client),
-            devtools_http_client_->device_metrics(), page_load_strategy_)));
+            view.id, w3c_compliant, devtools_http_client_->browser_info(),
+            std::move(client), devtools_http_client_->device_metrics(),
+            page_load_strategy_)));
       }
     }
   }

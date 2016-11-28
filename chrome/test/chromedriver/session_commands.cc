@@ -221,11 +221,13 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
                         bound_params.port_manager,
                         capabilities,
                         &devtools_event_listeners,
-                        &session->chrome);
+                        &session->chrome,
+                        session->w3c_compliant);
   if (status.IsError())
     return status;
 
-  status = session->chrome->GetWebViewIdForFirstTab(&session->window);
+  status = session->chrome->GetWebViewIdForFirstTab(&session->window,
+                                                    session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -295,7 +297,7 @@ Status ExecuteLaunchApp(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -306,7 +308,8 @@ Status ExecuteClose(Session* session,
                     const base::DictionaryValue& params,
                     std::unique_ptr<base::Value>* value) {
   std::list<std::string> web_view_ids;
-  Status status = session->chrome->GetWebViewIds(&web_view_ids);
+  Status status = session->chrome->GetWebViewIds(&web_view_ids,
+                                                 session->w3c_compliant);
   if (status.IsError())
     return status;
   bool is_last_web_view = web_view_ids.size() == 1u;
@@ -321,7 +324,8 @@ Status ExecuteClose(Session* session,
   if (status.IsError())
     return status;
 
-  status = session->chrome->GetWebViewIds(&web_view_ids);
+  status = session->chrome->GetWebViewIds(&web_view_ids,
+                                          session->w3c_compliant);
   if ((status.code() == kChromeNotReachable && is_last_web_view) ||
       (status.IsOk() && web_view_ids.empty())) {
     // If no window is open, close is the equivalent of calling "quit".
@@ -336,7 +340,8 @@ Status ExecuteGetWindowHandles(Session* session,
                                const base::DictionaryValue& params,
                                std::unique_ptr<base::Value>* value) {
   std::list<std::string> web_view_ids;
-  Status status = session->chrome->GetWebViewIds(&web_view_ids);
+  Status status = session->chrome->GetWebViewIds(&web_view_ids,
+                                                 session->w3c_compliant);
   if (status.IsError())
     return status;
   std::unique_ptr<base::ListValue> window_ids(new base::ListValue());
@@ -356,7 +361,8 @@ Status ExecuteSwitchToWindow(Session* session,
     return Status(kUnknownError, "'name' must be a string");
 
   std::list<std::string> web_view_ids;
-  Status status = session->chrome->GetWebViewIds(&web_view_ids);
+  Status status = session->chrome->GetWebViewIds(&web_view_ids,
+                                                 session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -617,7 +623,8 @@ Status ExecuteSetNetworkConnection(Session* session,
   // to ensure that network emulation is applied on a per-session basis
   // rather than the just to the current WebView.
   std::list<std::string> web_view_ids;
-  status = session->chrome->GetWebViewIds(&web_view_ids);
+  status = session->chrome->GetWebViewIds(&web_view_ids,
+                                          session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -643,7 +650,7 @@ Status ExecuteGetWindowPosition(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -673,7 +680,7 @@ Status ExecuteSetWindowPosition(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -689,7 +696,7 @@ Status ExecuteGetWindowSize(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -720,7 +727,7 @@ Status ExecuteSetWindowSize(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 
@@ -737,7 +744,7 @@ Status ExecuteMaximizeWindow(Session* session,
     return status;
 
   AutomationExtension* extension = NULL;
-  status = desktop->GetAutomationExtension(&extension);
+  status = desktop->GetAutomationExtension(&extension, session->w3c_compliant);
   if (status.IsError())
     return status;
 

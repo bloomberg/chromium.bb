@@ -28,11 +28,107 @@ var NodeType = {
 var ELEMENT_KEY = 'ELEMENT';
 
 /**
+ * True if using W3C Element references.
+ * @const
+ * @type {boolean}
+ */
+var w3cEnabled = false;
+
+/**
  * True if shadow dom is enabled.
  * @const
  * @type {boolean}
  */
 var SHADOW_DOM_ENABLED = typeof ShadowRoot === 'function';
+
+/**
+ * Generates a unique ID to identify an element.
+ * @void
+ * @return {string} Randomly generated ID.
+ */
+function generateUUID() {
+  var array = new Uint8Array(16);
+  window.crypto.getRandomValues(array);
+  array[6] = 0x40 | (array[6] & 0x0f);
+  array[8] = 0x80 | (array[8] & 0x3f);
+
+  var UUID = "";
+  for (var i = 0; i < 16; i++) {
+    var temp = array[i].toString(16);
+    if (temp.length < 2)
+      temp = "0" + temp;
+    UUID += temp;
+    if (i == 3 || i == 5 || i == 7 || i == 9)
+      UUID += "-";
+  }
+  return UUID;
+};
+
+/**
+ * A cache which maps IDs <-> cached objects for the purpose of identifying
+ * a script object remotely. Uses UUIDs for identification.
+ * @constructor
+ */
+function CacheWithUUID() {
+  this.cache_ = {};
+}
+
+CacheWithUUID.prototype = {
+  /**
+   * Stores a given item in the cache and returns a unique UUID.
+   *
+   * @param {!Object} item The item to store in the cache.
+   * @return {number} The UUID for the cached item.
+   */
+  storeItem: function(item) {
+    for (var i in this.cache_) {
+      if (item == this.cache_[i])
+        return i;
+    }
+    var id = generateUUID();
+    this.cache_[id] = item;
+    return id;
+  },
+
+  /**
+   * Retrieves the cached object for the given ID.
+   *
+   * @param {number} id The ID for the cached item to retrieve.
+   * @return {!Object} The retrieved item.
+   */
+  retrieveItem: function(id) {
+    var item = this.cache_[id];
+    if (item)
+      return item;
+    var error = new Error('not in cache');
+    error.code = StatusCode.STALE_ELEMENT_REFERENCE;
+    error.message = 'element is not attached to the page document';
+    throw error;
+  },
+
+  /**
+   * Clears stale items from the cache.
+   */
+  clearStale: function() {
+    for (var id in this.cache_) {
+      var node = this.cache_[id];
+      if (!this.isNodeReachable_(node))
+        delete this.cache_[id];
+    }
+  },
+
+  /**
+    * @private
+    * @param {!Node} node The node to check.
+    * @return {boolean} If the nodes is reachable.
+    */
+  isNodeReachable_: function(node) {
+    var nodeRoot = getNodeRootThroughAnyShadows(node);
+    return (nodeRoot == document);
+  }
+
+
+};
 
 /**
  * A cache which maps IDs <-> cached objects for the purpose of identifying
@@ -133,12 +229,19 @@ function getNodeRootThroughAnyShadows(node) {
  *     the current document.
  * @return {!Cache} The page's object cache.
  */
-function getPageCache(opt_doc) {
+function getPageCache(opt_doc, opt_w3c) {
   var doc = opt_doc || document;
+  var w3c = opt_w3c || false;
   var key = '$cdc_asdjflasutopfhvcZLmcfl_';
-  if (!(key in doc))
-    doc[key] = new Cache();
-  return doc[key];
+  if (w3c) {
+    if (!(key in doc))
+      doc[key] = new CacheWithUUID();
+    return doc[key];
+  } else {
+    if (!(key in doc))
+      doc[key] = new Cache();
+    return doc[key];
+  }
 }
 
 /**
@@ -163,7 +266,7 @@ function wrap(value) {
         || (SHADOW_DOM_ENABLED && value instanceof ShadowRoot)) {
       var wrapped = {};
       var root = getNodeRootThroughAnyShadows(value);
-      wrapped[ELEMENT_KEY] = getPageCache(root).storeItem(value);
+      wrapped[ELEMENT_KEY] = getPageCache(root, w3cEnabled).storeItem(value);
       return wrapped;
     }
 
@@ -209,6 +312,7 @@ function unwrap(value, cache) {
  * @param {function(...[*]) : *} func The function to invoke.
  * @param {!Array<*>} args The array of arguments to supply to the function,
  *     which will be unwrapped before invoking the function.
+ * @param {boolean} w3c Whether to return a W3C compliant element reference.
  * @param {boolean=} opt_unwrappedReturn Whether the function's return value
  *     should be left unwrapped.
  * @return {*} An object containing a status and value property, where status
@@ -216,15 +320,20 @@ function unwrap(value, cache) {
  *     unwrapped return was specified, this will be the function's pure return
  *     value.
  */
-function callFunction(shadowHostIds, func, args, opt_unwrappedReturn) {
-  var cache = getPageCache();
+function callFunction(shadowHostIds, func, args, w3c, opt_unwrappedReturn) {
+  if (w3c) {
+    w3cEnabled = true;
+    ELEMENT_KEY = 'element-6066-11e4-a52e-4f735466cecf';
+
+  }
+  var cache = getPageCache(null, w3cEnabled);
   cache.clearStale();
   if (shadowHostIds && SHADOW_DOM_ENABLED) {
     for (var i = 0; i < shadowHostIds.length; i++) {
       var host = cache.retrieveItem(shadowHostIds[i]);
       // TODO(zachconrad): Use the olderShadowRoot API when available to check
       // all of the shadow roots.
-      cache = getPageCache(host.webkitShadowRoot);
+      cache = getPageCache(host.webkitShadowRoot, w3cEnabled);
       cache.clearStale();
     }
   }

@@ -8,6 +8,28 @@ function clearCache() {
   getPageCache().cache_ = {};
 }
 
+function isValidUUID(uuid) {
+  assertEquals(36, uuid.length);
+  var list = uuid.split("-").map(function(x) {return x.length;});
+  assertEquals(5, list.length);
+  assertEquals(8, list[0]);
+  assertEquals(4, list[1]);
+  assertEquals(4, list[2]);
+  assertEquals(4, list[3]);
+  assertEquals(12, list[4]);
+  assert(/[a-z0-9-]{36}/.test(uuid));
+}
+
+function testUUID() {
+  var uuids = {}
+  for (var i = 0; i < 100; i++) {
+    var uuid = generateUUID();
+    isValidUUID(uuid);
+    assertEquals(null, uuids[uuid]);
+    uuids[uuid] = 1;
+  }
+}
+
 function testCallFunctionNoArgs() {
   clearCache();
 
@@ -53,7 +75,7 @@ function testCallFunctionArgsUnwrappedReturn() {
   function func(elem) {
     return elem.querySelector('div');
   }
-  var result = callFunction(null, func, [wrap(document)], true);
+  var result = callFunction(null, func, [wrap(document)], false, true);
   assertEquals(document.querySelector('div'), result);
 }
 
@@ -182,7 +204,7 @@ function testCallFunctionWithShadowHost() {
   document.body.removeChild(host);
 }
 
-function testCallFunctionWithShadowRoot() {
+function DISABLED_testCallFunctionWithShadowRoot() {
   clearCache();
 
   // Set up something in the shadow DOM.
@@ -209,7 +231,7 @@ function testCallFunctionWithShadowRoot() {
   document.body.removeChild(host);
 }
 
-function testCacheWithShadowDomAttached() {
+function DISABLED_testCacheWithShadowDomAttached() {
   clearCache();
   var pageCache = getPageCache();
   

@@ -1352,6 +1352,14 @@ class ChromeDriverTest(ChromeDriverBaseTestWithWebServer):
      self.assertTrue(
          self._driver.ExecuteScript('return arguments[0].checked', checkbox))
 
+  def testElementReference(self):
+    self._driver.Load(self.GetHttpUrlForFile('/chromedriver/element_ref.html'))
+    element = self._driver.FindElement('id', 'link')
+    self._driver.FindElements('tag name', 'br')
+    w3c_id_length = 36
+    if (self._driver.w3c_compliant):
+      self.assertEquals(len(element._id), w3c_id_length)
+
 
 class ChromeDriverPageLoadTimeoutTest(ChromeDriverBaseTestWithWebServer):
 

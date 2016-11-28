@@ -317,7 +317,8 @@ Status LaunchDesktopChrome(
     const SyncWebSocketFactory& socket_factory,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    std::unique_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome,
+    bool w3c_compliant) {
   base::CommandLine command(base::CommandLine::NO_PROGRAM);
   base::ScopedTempDir user_data_dir;
   base::ScopedTempDir extension_dir;
@@ -455,7 +456,8 @@ Status LaunchDesktopChrome(
     VLOG(0) << "Waiting for extension bg page load: " << extension_bg_pages[i];
     std::unique_ptr<WebView> web_view;
     Status status = chrome_desktop->WaitForPageToLoad(
-        extension_bg_pages[i], base::TimeDelta::FromSeconds(10), &web_view);
+        extension_bg_pages[i], base::TimeDelta::FromSeconds(10),
+        &web_view, w3c_compliant);
     if (status.IsError()) {
       return Status(kUnknownError,
                     "failed to wait for extension background page to load: " +
@@ -544,7 +546,8 @@ Status LaunchChrome(
     PortManager* port_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    std::unique_ptr<Chrome>* chrome) {
+    std::unique_ptr<Chrome>* chrome,
+    bool w3c_compliant) {
   if (capabilities.IsRemoteBrowser()) {
     return LaunchRemoteChromeSession(
         context_getter, socket_factory,
@@ -576,7 +579,8 @@ Status LaunchChrome(
                     port_status);
     return LaunchDesktopChrome(context_getter, port,
                                std::move(port_reservation), socket_factory,
-                               capabilities, devtools_event_listeners, chrome);
+                               capabilities, devtools_event_listeners, chrome,
+                               w3c_compliant);
   }
 }
 

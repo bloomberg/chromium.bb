@@ -36,7 +36,8 @@ Status LaunchChrome(
     PortManager* port_manager,
     const Capabilities& capabilities,
     ScopedVector<DevToolsEventListener>* devtools_event_listeners,
-    std::unique_ptr<Chrome>* chrome);
+    std::unique_ptr<Chrome>* chrome,
+    bool w3c_compliant);
 
 namespace internal {
 Status ProcessExtensions(const std::vector<std::string>& extensions,

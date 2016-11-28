@@ -113,7 +113,8 @@ ChromeDesktopImpl::~ChromeDesktopImpl() {
 Status ChromeDesktopImpl::WaitForPageToLoad(
     const std::string& url,
     const base::TimeDelta& timeout_raw,
-    std::unique_ptr<WebView>* web_view) {
+    std::unique_ptr<WebView>* web_view,
+    bool w3c_compliant) {
   Timeout timeout(timeout_raw);
   std::string id;
   WebViewInfo::Type type = WebViewInfo::Type::kPage;
@@ -148,7 +149,7 @@ Status ChromeDesktopImpl::WaitForPageToLoad(
     device_metrics = nullptr;
   }
   std::unique_ptr<WebView> web_view_tmp(
-      new WebViewImpl(id, devtools_http_client_->browser_info(),
+      new WebViewImpl(id, w3c_compliant, devtools_http_client_->browser_info(),
                       devtools_http_client_->CreateClient(id), device_metrics,
                       page_load_strategy()));
   Status status = web_view_tmp->ConnectIfNecessary();
@@ -163,14 +164,16 @@ Status ChromeDesktopImpl::WaitForPageToLoad(
 }
 
 Status ChromeDesktopImpl::GetAutomationExtension(
-    AutomationExtension** extension) {
+    AutomationExtension** extension,
+    bool w3c_compliant) {
   if (!automation_extension_) {
     std::unique_ptr<WebView> web_view;
     Status status = WaitForPageToLoad(
         "chrome-extension://aapnijgdinlhnhlmodcfapnahmbfebeb/"
         "_generated_background_page.html",
         base::TimeDelta::FromSeconds(10),
-        &web_view);
+        &web_view,
+        w3c_compliant);
     if (status.IsError())
       return Status(kUnknownError, "cannot get automation extension", status);
 

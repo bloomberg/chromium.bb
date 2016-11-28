@@ -9,6 +9,8 @@ import command_executor
 from command_executor import Command
 from webelement import WebElement
 
+ELEMENT_KEY_W3C = "element-6066-11e4-a52e-4f735466cecf"
+ELEMENT_KEY = "ELEMENT"
 
 class ChromeDriverException(Exception):
   pass
@@ -213,6 +215,7 @@ class ChromeDriver(object):
     self._session_id = response['sessionId']
     self.capabilities = self._UnwrapValue(response['value'])
 
+
   def _WrapValue(self, value):
     """Wrap value from client side for chromedriver side."""
     if isinstance(value, dict):
@@ -221,18 +224,25 @@ class ChromeDriver(object):
         converted[key] = self._WrapValue(val)
       return converted
     elif isinstance(value, WebElement):
-      return {'ELEMENT': value._id}
+      if (self.w3c_compliant):
+        return {ELEMENT_KEY_W3C: value._id}
+      else:
+        return {ELEMENT_KEY: value._id}
     elif isinstance(value, list):
       return list(self._WrapValue(item) for item in value)
     else:
       return value
 
   def _UnwrapValue(self, value):
-    """Unwrap value from chromedriver side for client side."""
     if isinstance(value, dict):
-      if (len(value) == 1 and 'ELEMENT' in value
-          and isinstance(value['ELEMENT'], basestring)):
-        return WebElement(self, value['ELEMENT'])
+      if (self.w3c_compliant and len(value) == 1
+          and ELEMENT_KEY_W3C in value
+          and isinstance(
+            value[ELEMENT_KEY_W3C], basestring)):
+        return WebElement(self, value[ELEMENT_KEY_W3C])
+      elif (len(value) == 1 and ELEMENT_KEY in value
+            and isinstance(value[ELEMENT_KEY], basestring)):
+        return WebElement(self, value[ELEMENT_KEY])
       else:
         unwraped = {}
         for key, val in value.items():

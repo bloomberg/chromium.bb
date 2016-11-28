@@ -22,11 +22,13 @@ bool StubChrome::HasCrashedWebView() {
   return false;
 }
 
-Status StubChrome::GetWebViewIdForFirstTab(std::string* web_view_id) {
+Status StubChrome::GetWebViewIdForFirstTab(std::string* web_view_id,
+                                           bool w3c_compliant) {
   return Status(kOk);
 }
 
-Status StubChrome::GetWebViewIds(std::list<std::string>* web_view_ids) {
+Status StubChrome::GetWebViewIds(std::list<std::string>* web_view_ids,
+                                 bool w3c_compliant) {
   return Status(kOk);
 }
 

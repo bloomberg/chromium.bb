@@ -870,7 +870,8 @@ Status ExecuteScreenshot(Session* session,
   status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk() && !session->force_devtools_screenshot) {
     AutomationExtension* extension = NULL;
-    status = desktop->GetAutomationExtension(&extension);
+    status = desktop->GetAutomationExtension(&extension,
+                                             session->w3c_compliant);
     if (status.IsError())
       return status;
     status = extension->CaptureScreenshot(&screenshot);
