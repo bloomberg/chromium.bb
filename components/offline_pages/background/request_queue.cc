@@ -10,6 +10,7 @@
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/offline_pages/background/change_requests_state_task.h"
+#include "components/offline_pages/background/get_requests_task.h"
 #include "components/offline_pages/background/mark_attempt_aborted_task.h"
 #include "components/offline_pages/background/mark_attempt_completed_task.h"
 #include "components/offline_pages/background/mark_attempt_started_task.h"
@@ -66,7 +67,9 @@ RequestQueue::RequestQueue(std::unique_ptr<RequestQueueStore> store)
 RequestQueue::~RequestQueue() {}
 
 void RequestQueue::GetRequests(const GetRequestsCallback& callback) {
-  store_->GetRequests(base::Bind(&GetRequestsDone, callback));
+  std::unique_ptr<Task> task(new GetRequestsTask(
+      store_.get(), base::Bind(&GetRequestsDone, callback)));
+  task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::AddRequest(const SavePageRequest& request,

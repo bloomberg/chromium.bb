@@ -11,6 +11,8 @@ static_library("background_offliner") {
     "change_requests_state_task.cc",
     "change_requests_state_task.h",
     "device_conditions.h",
+    "get_requests_task.cc",
+    "get_requests_task.h",
     "mark_attempt_aborted_task.cc",
     "mark_attempt_aborted_task.h",
     "mark_attempt_completed_task.cc",
@@ -82,6 +84,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "change_requests_state_task_unittest.cc",
+    "get_requests_task_unittest.cc",
     "mark_attempt_aborted_task_unittest.cc",
     "mark_attempt_completed_task_unittest.cc",
     "mark_attempt_started_task_unittest.cc",
