@@ -50,11 +50,13 @@ class CORE_EXPORT CSPSource : public GarbageCollectedFinalized<CSPSource> {
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IsSimilar);
+  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, Intersect);
+  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IntersectSchemesOnly);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest,
                            GetIntersectCSPSourcesSchemes);
-  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, Intersect);
-  FRIEND_TEST_ALL_PREFIXES(CSPSourceTest, IntersectSchemesOnly);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
   bool schemeMatches(const String&) const;
   bool hostMatches(const String&) const;

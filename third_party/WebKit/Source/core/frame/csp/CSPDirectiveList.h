@@ -22,6 +22,8 @@ namespace blink {
 
 class ContentSecurityPolicy;
 
+typedef HeapVector<Member<SourceListDirective>> SourceListDirectiveVector;
+
 class CORE_EXPORT CSPDirectiveList
     : public GarbageCollectedFinalized<CSPDirectiveList> {
   WTF_MAKE_NONCOPYABLE(CSPDirectiveList);
@@ -156,10 +158,16 @@ class CORE_EXPORT CSPDirectiveList
 
   bool shouldSendCSPHeader(Resource::Type) const;
 
+  // The algorithm is described here:
+  // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
+  bool subsumes(const CSPDirectiveListVector&);
+
   DECLARE_TRACE();
 
  private:
   FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, IsMatchingNoncePresent);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
   enum RequireSRIForToken { None = 0, Script = 1 << 0, Style = 1 << 1 };
 
@@ -265,6 +273,17 @@ class CORE_EXPORT CSPDirectiveList
       ResourceRequest::RedirectStatus) const;
 
   bool denyIfEnforcingPolicy() const { return isReportOnly(); }
+
+  // Tthis function returns a SourceListDirective of a given type
+  // or if it is not defined, the default SourceListDirective for that type.
+  SourceListDirective* operativeDirective(
+      const ContentSecurityPolicy::DirectiveType&);
+
+  // This function aggregates from a vector of policies all operative
+  // SourceListDirectives of a given type into a vector.
+  static SourceListDirectiveVector getSourceVector(
+      const ContentSecurityPolicy::DirectiveType&,
+      const CSPDirectiveListVector& policies);
 
   Member<ContentSecurityPolicy> m_policy;
 

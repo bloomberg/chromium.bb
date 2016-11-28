@@ -53,6 +53,8 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest, GetIntersectCSPSources);
   FRIEND_TEST_ALL_PREFIXES(SourceListDirectiveTest,
                            GetIntersectCSPSourcesSchemes);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, GetSourceVector);
+  FRIEND_TEST_ALL_PREFIXES(CSPDirectiveListTest, OperativeDirectiveGivenType);
 
   bool parseSource(const UChar* begin,
                    const UChar* end,

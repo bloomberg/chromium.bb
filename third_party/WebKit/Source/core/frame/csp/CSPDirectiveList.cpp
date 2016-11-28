@@ -1164,6 +1164,103 @@ void CSPDirectiveList::addDirective(const String& name, const String& value) {
   }
 }
 
+SourceListDirective* CSPDirectiveList::operativeDirective(
+    const ContentSecurityPolicy::DirectiveType& type) {
+  switch (type) {
+    // Directives that do not have a default directive.
+    case ContentSecurityPolicy::DirectiveType::BaseURI:
+      return m_baseURI.get();
+    case ContentSecurityPolicy::DirectiveType::DefaultSrc:
+      return m_defaultSrc.get();
+    case ContentSecurityPolicy::DirectiveType::FrameAncestors:
+      return m_frameAncestors.get();
+    case ContentSecurityPolicy::DirectiveType::FormAction:
+      return m_formAction.get();
+    // Directives that have one default directive.
+    case ContentSecurityPolicy::DirectiveType::ChildSrc:
+      return operativeDirective(m_childSrc.get());
+    case ContentSecurityPolicy::DirectiveType::ConnectSrc:
+      return operativeDirective(m_connectSrc.get());
+    case ContentSecurityPolicy::DirectiveType::FontSrc:
+      return operativeDirective(m_fontSrc.get());
+    case ContentSecurityPolicy::DirectiveType::ImgSrc:
+      return operativeDirective(m_imgSrc.get());
+    case ContentSecurityPolicy::DirectiveType::ManifestSrc:
+      return operativeDirective(m_manifestSrc.get());
+    case ContentSecurityPolicy::DirectiveType::MediaSrc:
+      return operativeDirective(m_mediaSrc.get());
+    case ContentSecurityPolicy::DirectiveType::ObjectSrc:
+      return operativeDirective(m_objectSrc.get());
+    case ContentSecurityPolicy::DirectiveType::ScriptSrc:
+      return operativeDirective(m_scriptSrc.get());
+    case ContentSecurityPolicy::DirectiveType::StyleSrc:
+      return operativeDirective(m_styleSrc.get());
+    // Directives that default to child-src, which defaults to default-src.
+    case ContentSecurityPolicy::DirectiveType::FrameSrc:
+      return operativeDirective(m_frameSrc,
+                                operativeDirective(m_childSrc.get()));
+    // TODO(mkwst): Reevaluate this
+    case ContentSecurityPolicy::DirectiveType::WorkerSrc:
+      return operativeDirective(m_workerSrc.get(),
+                                operativeDirective(m_childSrc.get()));
+    default:
+      return nullptr;
+  }
+}
+
+SourceListDirectiveVector CSPDirectiveList::getSourceVector(
+    const ContentSecurityPolicy::DirectiveType& type,
+    const CSPDirectiveListVector& policies) {
+  SourceListDirectiveVector sourceListDirectives;
+  for (const auto& policy : policies) {
+    if (SourceListDirective* directive = policy->operativeDirective(type))
+      sourceListDirectives.append(directive);
+  }
+
+  return sourceListDirectives;
+}
+
+bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
+  // A white-list of directives that we consider for subsumption.
+  // See more about source lists here:
+  // https://w3c.github.io/webappsec-csp/#framework-directive-source-list
+  ContentSecurityPolicy::DirectiveType directives[] = {
+      ContentSecurityPolicy::DirectiveType::ChildSrc,
+      ContentSecurityPolicy::DirectiveType::ConnectSrc,
+      ContentSecurityPolicy::DirectiveType::FontSrc,
+      ContentSecurityPolicy::DirectiveType::FrameSrc,
+      ContentSecurityPolicy::DirectiveType::ImgSrc,
+      ContentSecurityPolicy::DirectiveType::ManifestSrc,
+      ContentSecurityPolicy::DirectiveType::MediaSrc,
+      ContentSecurityPolicy::DirectiveType::ObjectSrc,
+      ContentSecurityPolicy::DirectiveType::ScriptSrc,
+      ContentSecurityPolicy::DirectiveType::StyleSrc,
+      ContentSecurityPolicy::DirectiveType::WorkerSrc,
+      ContentSecurityPolicy::DirectiveType::BaseURI,
+      ContentSecurityPolicy::DirectiveType::FrameAncestors,
+      ContentSecurityPolicy::DirectiveType::FormAction};
+
+  for (const auto& directive : directives) {
+    // There should only be one SourceListDirective for each directive in
+    // Embedding-CSP.
+    SourceListDirectiveVector requiredList =
+        getSourceVector(directive, CSPDirectiveListVector(1, this));
+    if (requiredList.size() == 0)
+      continue;
+    SourceListDirective* required = requiredList[0];
+    // Aggregate all serialized source lists of the returned CSP into a vector
+    // based on a directive type, defaulting accordingly (for example, to
+    // `default-src`).
+    SourceListDirectiveVector returned = getSourceVector(directive, other);
+    // TODO(amalika): Add checks for plugin-types, sandbox, disown-opener,
+    // navigation-to, worker-src.
+    if (!required->subsumes(returned))
+      return false;
+  }
+
+  return true;
+}
+
 DEFINE_TRACE(CSPDirectiveList) {
   visitor->trace(m_policy);
   visitor->trace(m_pluginTypes);
