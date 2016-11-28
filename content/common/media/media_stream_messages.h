@@ -77,13 +77,6 @@ IPC_MESSAGE_ROUTED2(MediaStreamMsg_DeviceStopped,
                     std::string /* label */,
                     content::StreamDeviceInfo /* the device */)
 
-// The browser has enumerated devices. If no devices are found
-// |device_list| is empty.
-// Used by Pepper and WebRTC.
-IPC_MESSAGE_ROUTED2(MediaStreamMsg_DevicesEnumerated,
-                    int /* request id */,
-                    content::StreamDeviceInfoArray /* device_list */)
-
 // TODO(wjia): should DeviceOpen* messages be merged with
 // StreamGenerat* ones?
 // The browser has opened a device successfully.
