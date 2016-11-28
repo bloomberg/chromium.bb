@@ -18,6 +18,8 @@ class ChromiumBrowserProvider : public ios::ChromeBrowserProvider {
   void SetChromeIdentityServiceForTesting(
       std::unique_ptr<ios::ChromeIdentityService> service) override;
   ios::ChromeIdentityService* GetChromeIdentityService() override;
+  UITextField<TextFieldStyling>* CreateStyledTextField(
+      CGRect frame) const override NS_RETURNS_RETAINED;
   void InitializeCastService(id main_tab_model) const override;
   void AttachTabHelpers(web::WebState* web_state, id tab) const override;
   VoiceSearchProvider* GetVoiceSearchProvider() const override;

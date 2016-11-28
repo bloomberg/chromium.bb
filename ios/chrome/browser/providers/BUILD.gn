@@ -16,6 +16,8 @@ source_set("providers") {
   deps = [
     "//base",
     "//ios/chrome/browser/providers/images",
+    "//ios/chrome/browser/providers/signin",
+    "//ios/chrome/browser/providers/ui",
     "//ios/public/provider/chrome/browser",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]

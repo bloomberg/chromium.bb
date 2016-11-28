@@ -8,10 +8,11 @@
 #import "ios/chrome/browser/providers/chromium_logo_controller.h"
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
 #import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
+#include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
+#include "ios/chrome/browser/providers/ui/chromium_styled_text_field.h"
 #include "ios/public/provider/chrome/browser/distribution/app_distribution_provider.h"
 #include "ios/public/provider/chrome/browser/signin/chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/signin_error_provider.h"
-#include "ios/public/provider/chrome/browser/signin/signin_resources_provider.h"
 #include "ios/public/provider/chrome/browser/user_feedback/user_feedback_provider.h"
 
 #if !defined(__has_feature) || !__has_feature(objc_arc)
@@ -23,7 +24,7 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       branded_image_provider_(base::MakeUnique<ChromiumBrandedImageProvider>()),
       signin_error_provider_(base::MakeUnique<ios::SigninErrorProvider>()),
       signin_resources_provider_(
-          base::MakeUnique<ios::SigninResourcesProvider>()),
+          base::MakeUnique<ChromiumSigninResourcesProvider>()),
       user_feedback_provider_(base::MakeUnique<UserFeedbackProvider>()),
       voice_search_provider_(base::MakeUnique<ChromiumVoiceSearchProvider>()) {}
 
@@ -49,6 +50,11 @@ ChromiumBrowserProvider::GetChromeIdentityService() {
     chrome_identity_service_ = base::MakeUnique<ios::ChromeIdentityService>();
   }
   return chrome_identity_service_.get();
+}
+
+UITextField<TextFieldStyling>* ChromiumBrowserProvider::CreateStyledTextField(
+    CGRect frame) const {
+  return [[ChromiumStyledTextField alloc] initWithFrame:CGRectZero];
 }
 
 void ChromiumBrowserProvider::InitializeCastService(id main_tab_model) const {}
