@@ -476,6 +476,10 @@
                   'components/gcm_driver/|'\
                   'google_apis/gcm/',
     },
+    'generic_sensor': {
+      'filepath': 'device/generic_sensor/|'\
+                  'third_party/WebKit/Source/modules/sensor/',
+    },
     'geolocation': {
       'filepath': 'chrome/browser/geolocation/|'\
                   'content/browser/geolocation|'\
@@ -1835,6 +1839,9 @@
     'gcm': ['johnme+watch@chromium.org',
             'peter@chromium.org',
             'zea+watch@chromium.org'],
+    'generic_sensor': ['alexander.shalamov@intel.com',
+                       'mikhail.pozdnyakov@intel.com',
+                       'wanming.lin@intel.com'],
     'geolocation': ['mlamouri+watch-geolocation@chromium.org',
                     'mvanouwerkerk@chromium.org'],
     'gfx_geometry': ['cc-bugs@chromium.org'],
