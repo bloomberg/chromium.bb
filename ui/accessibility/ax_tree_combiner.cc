@@ -82,6 +82,7 @@ bool IsNodeIdIntListAttribute(AXIntListAttribute attr) {
     // add a new attribute without explicitly considering whether it's
     // a node id attribute or not.
     case AX_INT_LIST_ATTRIBUTE_NONE:
+    case AX_ATTR_LINE_BREAKS:
     case AX_ATTR_MARKER_TYPES:
     case AX_ATTR_MARKER_STARTS:
     case AX_ATTR_MARKER_ENDS:

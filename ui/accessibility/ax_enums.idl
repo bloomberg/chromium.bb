@@ -456,6 +456,11 @@
     flowto_ids,
     labelledby_ids,
 
+    // For static text. Character indices where line breaks occur. Note that
+    // this attribute is only available on Chrome OS and will be deprecated
+    // soon.
+    line_breaks,
+
     // For static text. These int lists must be the same size; they represent
     // the start and end character offset of each marker. Examples of markers
     // include spelling and grammar errors, and find-in-page matches.

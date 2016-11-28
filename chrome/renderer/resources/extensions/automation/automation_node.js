@@ -728,6 +728,7 @@ var nodeRefAttributes = [
 
 var intListAttributes = [
     'characterOffsets',
+    'lineBreaks',
     'markerEnds',
     'markerStarts',
     'markerTypes',

@@ -139,18 +139,11 @@ AutomationEditableText.prototype = {
   getLineIndex: function(charIndex) {
     if (!this.multiline)
       return 0;
-    var breaks = this.getLineBreaks_();
-
-    var computedIndex = 0;
-    for (var index = 0; index < breaks.length; index++) {
-      if (charIndex >= breaks[index] &&
-          (index == (breaks.length - 1) ||
-              charIndex < breaks[index + 1])) {
-        computedIndex = index + 1;
-        break;
-      }
-    }
-    return computedIndex;
+    var breaks = this.node_.lineBreaks || [];
+    var index = 0;
+    while (index < breaks.length && breaks[index] <= charIndex)
+      ++index;
+    return index;
   },
 
   /** @override */
@@ -175,38 +168,9 @@ AutomationEditableText.prototype = {
    * @private
    */
   getLineBreaks_: function() {
-    if (this.lineBreaks_.length)
-      return this.lineBreaks_;
-
-    // |lineStartOffsets| is sometimes pretty wrong especially when
-    // there's multiple consecutive line breaks.
-
-    // Use Blink's innerText which we plumb through as value.  For
-    // soft line breaks, use line start offsets, but ensure it is
-    // likely to be a soft line wrap.
-
-    var lineStartOffsets = {};
-    this.node_.lineStartOffsets.forEach(function(offset) {
-      lineStartOffsets[offset] = true;
-    });
-    var lineBreaks = [];
-    for (var i = 0; i < this.node_.value.length; i++) {
-      var prev = this.node_.value[i - 1];
-      var next = this.node_.value[i + 1];
-      var cur = this.node_.value[i];
-      if (prev == '\n') {
-        // Hard line break.
-        lineBreaks.push(i);
-      } else if (lineStartOffsets[i]) {
-        // Soft line break.
-        if (prev != '\n' && next != '\n' && cur != '\n')
-          lineBreaks.push(i);
-      }
-    }
-
-    this.lineBreaks_ = lineBreaks;
-
-    return lineBreaks;
+    // node.lineBreaks is undefined when the multiline field has no line
+    // breaks.
+    return this.node_.lineBreaks || [];
   },
 
   /** @private */
