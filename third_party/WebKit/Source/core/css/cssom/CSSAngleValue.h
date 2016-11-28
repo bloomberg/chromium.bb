@@ -26,6 +26,8 @@ class CORE_EXPORT CSSAngleValue final : public CSSStyleValue {
   double gradians() const;
   double turns() const;
 
+  double value() const { return m_value; }
+  CSSPrimitiveValue::UnitType unit() const { return m_unit; }
   CSSValue* toCSSValue() const override;
 
  private:

@@ -3,10 +3,10 @@
 // found in the LICENSE file.
 
 [
-    Constructor(double ax, double ay),
+    Constructor(CSSAngleValue ax, CSSAngleValue ay),
     Exposed=(Window,PaintWorklet),
     RuntimeEnabled=CSSTypedOM
 ] interface CSSSkew : CSSTransformComponent {
-    readonly attribute double ax;
-    readonly attribute double ay;
+    readonly attribute CSSAngleValue ax;
+    readonly attribute CSSAngleValue ay;
 };
