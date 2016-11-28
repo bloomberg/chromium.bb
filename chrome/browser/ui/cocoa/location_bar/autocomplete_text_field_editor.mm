@@ -16,6 +16,7 @@
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #include "chrome/grit/generated_resources.h"
 #import "ui/base/cocoa/find_pasteboard.h"
+#import "ui/base/cocoa/touch_bar_forward_declarations.h"
 #include "ui/base/l10n/l10n_util_mac.h"
 #include "ui/base/material_design/material_design_controller.h"
 
@@ -94,6 +95,11 @@ NSMenuItem* PasteAndGoMenuItemForObserver(
     [self setEnabledTextCheckingTypes:checkingTypes];
   }
   return self;
+}
+
+// Overridden to prevent unwanted items from appearing in the Touch Bar.
+- (NSTouchBar*)makeTouchBar {
+  return nil;
 }
 
 - (void)updateColorsToMatchTheme {
