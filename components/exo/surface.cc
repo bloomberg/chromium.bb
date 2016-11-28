@@ -244,12 +244,10 @@ Surface::~Surface() {
                                  frame_callbacks_);
   for (const auto& frame_callback : active_frame_callbacks_)
     frame_callback.Run(base::TimeTicks());
-
   if (begin_frame_source_ && needs_begin_frame_)
     begin_frame_source_->RemoveObserver(this);
 
-  if (local_frame_id_.is_valid())
-    factory_owner_->surface_factory_->Destroy(local_frame_id_);
+  factory_owner_->surface_factory_->EvictSurface();
 
   surface_manager_->UnregisterSurfaceFactoryClient(
       factory_owner_->frame_sink_id_);
@@ -479,16 +477,9 @@ void Surface::CommitSurfaceHierarchy() {
   if (needs_commit_to_new_surface_ || !local_frame_id_.is_valid()) {
     needs_commit_to_new_surface_ = false;
     local_frame_id_ = factory_owner_->id_allocator_->GenerateId();
-    factory_owner_->surface_factory_->Create(local_frame_id_);
   }
 
   UpdateSurface(true);
-
-  if (old_local_frame_id.is_valid() && old_local_frame_id != local_frame_id_) {
-    factory_owner_->surface_factory_->SetPreviousFrameSurface(
-        local_frame_id_, old_local_frame_id);
-    factory_owner_->surface_factory_->Destroy(old_local_frame_id);
-  }
 
   if (old_local_frame_id != local_frame_id_) {
     float contents_surface_to_layer_scale = 1.0;

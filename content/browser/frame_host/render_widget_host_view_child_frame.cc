@@ -69,9 +69,7 @@ RenderWidgetHostViewChildFrame::RenderWidgetHostViewChildFrame(
 }
 
 RenderWidgetHostViewChildFrame::~RenderWidgetHostViewChildFrame() {
-  if (local_frame_id_.is_valid())
-    surface_factory_->Destroy(local_frame_id_);
-
+  surface_factory_->EvictSurface();
   if (GetSurfaceManager())
     GetSurfaceManager()->InvalidateFrameSinkId(frame_sink_id_);
 }
@@ -400,20 +398,10 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
     current_surface_scale_factor_ = scale_factor;
   }
 
+  bool allocated_new_local_frame_id = false;
   if (!local_frame_id_.is_valid()) {
     local_frame_id_ = id_allocator_->GenerateId();
-    surface_factory_->Create(local_frame_id_);
-
-    cc::SurfaceSequence sequence =
-        cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
-    // The renderer process will satisfy this dependency when it creates a
-    // SurfaceLayer.
-    cc::SurfaceManager* manager = GetSurfaceManager();
-    manager->GetSurfaceForId(cc::SurfaceId(frame_sink_id_, local_frame_id_))
-        ->AddDestructionDependency(sequence);
-    frame_connector_->SetChildFrameSurface(
-        cc::SurfaceId(frame_sink_id_, local_frame_id_), frame_size,
-        scale_factor, sequence);
+    allocated_new_local_frame_id = true;
   }
 
   cc::SurfaceFactory::DrawCallback ack_callback =
@@ -425,6 +413,18 @@ void RenderWidgetHostViewChildFrame::OnSwapCompositorFrame(
   surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
                                           ack_callback);
 
+  if (allocated_new_local_frame_id) {
+    cc::SurfaceSequence sequence =
+        cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
+    // The renderer process will satisfy this dependency when it creates a
+    // SurfaceLayer.
+    cc::SurfaceManager* manager = GetSurfaceManager();
+    manager->GetSurfaceForId(cc::SurfaceId(frame_sink_id_, local_frame_id_))
+        ->AddDestructionDependency(sequence);
+    frame_connector_->SetChildFrameSurface(
+        cc::SurfaceId(frame_sink_id_, local_frame_id_), frame_size,
+        scale_factor, sequence);
+  }
   ProcessFrameSwappedCallbacks();
 }
 
@@ -619,7 +619,7 @@ void RenderWidgetHostViewChildFrame::SubmitSurfaceCopyRequest(
   if (!src_subrect.IsEmpty())
     request->set_area(src_subrect);
 
-  surface_factory_->RequestCopyOfSurface(local_frame_id_, std::move(request));
+  surface_factory_->RequestCopyOfSurface(std::move(request));
 }
 
 void RenderWidgetHostViewChildFrame::CopyFromCompositingSurfaceToVideoFrame(
@@ -726,8 +726,7 @@ RenderWidgetHostViewChildFrame::CreateBrowserAccessibilityManager(
 }
 
 void RenderWidgetHostViewChildFrame::ClearCompositorSurfaceIfNecessary() {
-  if (local_frame_id_.is_valid())
-    surface_factory_->Destroy(local_frame_id_);
+  surface_factory_->EvictSurface();
   local_frame_id_ = cc::LocalFrameId();
 }
 

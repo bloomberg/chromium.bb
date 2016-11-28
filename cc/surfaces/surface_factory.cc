@@ -26,102 +26,77 @@ SurfaceFactory::SurfaceFactory(const FrameSinkId& frame_sink_id,
       weak_factory_(this) {}
 
 SurfaceFactory::~SurfaceFactory() {
-  if (!surface_map_.empty()) {
-    LOG(ERROR) << "SurfaceFactory has " << surface_map_.size()
-               << " entries in map on destruction.";
-  }
-  DestroyAll();
+  // This is to prevent troubles when a factory that resides in a client is
+  // being destroyed. In such cases, the factory might attempt to return
+  // resources to the client while it's in the middle of destruction and this
+  // could cause a crash or some unexpected behaviour.
+  DCHECK(!current_surface_) << "Please call EvictSurface before destruction";
 }
 
-void SurfaceFactory::DestroyAll() {
-  if (manager_) {
-    for (auto& pair : surface_map_)
-      manager_->Destroy(std::move(pair.second));
-  }
-  surface_map_.clear();
+void SurfaceFactory::EvictSurface() {
+  if (!current_surface_)
+    return;
+  if (manager_)
+    manager_->Destroy(std::move(current_surface_));
+  current_surface_.reset();
 }
 
 void SurfaceFactory::Reset() {
-  DestroyAll();
+  EvictSurface();
   // Disown Surfaces that are still alive so that they don't try to unref
   // resources that we're not tracking any more.
   weak_factory_.InvalidateWeakPtrs();
   holder_.Reset();
 }
 
-void SurfaceFactory::Create(const LocalFrameId& local_frame_id) {
-  auto surface(base::MakeUnique<Surface>(
-      SurfaceId(frame_sink_id_, local_frame_id), weak_factory_.GetWeakPtr()));
-  manager_->RegisterSurface(surface.get());
-  DCHECK(!surface_map_.count(local_frame_id));
-  surface_map_[local_frame_id] = std::move(surface);
-}
-
-void SurfaceFactory::Destroy(const LocalFrameId& local_frame_id) {
-  OwningSurfaceMap::iterator it = surface_map_.find(local_frame_id);
-  DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory().get() == this);
-  std::unique_ptr<Surface> surface(std::move(it->second));
-  surface_map_.erase(it);
-  if (manager_)
-    manager_->Destroy(std::move(surface));
-}
-
-void SurfaceFactory::SetPreviousFrameSurface(const LocalFrameId& new_id,
-                                             const LocalFrameId& old_id) {
-  OwningSurfaceMap::iterator it = surface_map_.find(new_id);
-  DCHECK(it != surface_map_.end());
-  Surface* old_surface =
-      manager_->GetSurfaceForId(SurfaceId(frame_sink_id_, old_id));
-  if (old_surface) {
-    it->second->SetPreviousFrameSurface(old_surface);
-  }
-}
-
 void SurfaceFactory::SubmitCompositorFrame(const LocalFrameId& local_frame_id,
                                            CompositorFrame frame,
                                            const DrawCallback& callback) {
   TRACE_EVENT0("cc", "SurfaceFactory::SubmitCompositorFrame");
-  OwningSurfaceMap::iterator it = surface_map_.find(local_frame_id);
-  DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory().get() == this);
-  // Tell the SurfaceManager if this is the first frame submitted with this
-  // LocalFrameId.
-  if (!it->second->HasFrame()) {
-    float device_scale_factor = frame.metadata.device_scale_factor;
+  DCHECK(local_frame_id.is_valid());
+  std::unique_ptr<Surface> surface;
+  bool create_new_surface =
+      (!current_surface_ ||
+       local_frame_id != current_surface_->surface_id().local_frame_id());
+  if (!create_new_surface) {
+    surface = std::move(current_surface_);
+  } else {
+    surface = Create(local_frame_id);
     gfx::Size frame_size;
     // CompositorFrames may not be populated with a RenderPass in unit tests.
     if (!frame.render_pass_list.empty())
       frame_size = frame.render_pass_list[0]->output_rect.size();
-    manager_->SurfaceCreated(it->second->surface_id(), frame_size,
-                             device_scale_factor);
+    manager_->SurfaceCreated(surface->surface_id(), frame_size,
+                             frame.metadata.device_scale_factor);
   }
-  it->second->QueueFrame(std::move(frame), callback);
+  surface->QueueFrame(std::move(frame), callback);
   if (!manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id))) {
     TRACE_EVENT_INSTANT0("cc", "Damage not visible.", TRACE_EVENT_SCOPE_THREAD);
-    it->second->RunDrawCallbacks();
+    surface->RunDrawCallbacks();
   }
+  if (current_surface_ && create_new_surface) {
+    surface->SetPreviousFrameSurface(current_surface_.get());
+    Destroy(std::move(current_surface_));
+  }
+  current_surface_ = std::move(surface);
 }
 
 void SurfaceFactory::RequestCopyOfSurface(
-    const LocalFrameId& local_frame_id,
     std::unique_ptr<CopyOutputRequest> copy_request) {
-  OwningSurfaceMap::iterator it = surface_map_.find(local_frame_id);
-  if (it == surface_map_.end()) {
+  if (!current_surface_) {
     copy_request->SendEmptyResult();
     return;
   }
-  DCHECK(it->second->factory().get() == this);
-  it->second->RequestCopyOfOutput(std::move(copy_request));
-  manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id));
+  DCHECK(current_surface_->factory().get() == this);
+  current_surface_->RequestCopyOfOutput(std::move(copy_request));
+  manager_->SurfaceModified(current_surface_->surface_id());
 }
 
-void SurfaceFactory::ClearSurface(const LocalFrameId& local_frame_id) {
-  OwningSurfaceMap::iterator it = surface_map_.find(local_frame_id);
-  DCHECK(it != surface_map_.end());
-  DCHECK(it->second->factory().get() == this);
-  it->second->EvictFrame();
-  manager_->SurfaceModified(SurfaceId(frame_sink_id_, local_frame_id));
+void SurfaceFactory::ClearSurface() {
+  if (!current_surface_)
+    return;
+  current_surface_->EvictFrame();
+  manager_->SurfaceModified(current_surface_->surface_id());
 }
 
 void SurfaceFactory::WillDrawSurface(const LocalFrameId& id,
@@ -140,6 +115,19 @@ void SurfaceFactory::RefResources(const TransferableResourceArray& resources) {
 
 void SurfaceFactory::UnrefResources(const ReturnedResourceArray& resources) {
   holder_.UnrefResources(resources);
+}
+
+std::unique_ptr<Surface> SurfaceFactory::Create(
+    const LocalFrameId& local_frame_id) {
+  auto surface = base::MakeUnique<Surface>(
+      SurfaceId(frame_sink_id_, local_frame_id), weak_factory_.GetWeakPtr());
+  manager_->RegisterSurface(surface.get());
+  return surface;
+}
+
+void SurfaceFactory::Destroy(std::unique_ptr<Surface> surface) {
+  if (manager_)
+    manager_->Destroy(std::move(surface));
 }
 
 }  // namespace cc

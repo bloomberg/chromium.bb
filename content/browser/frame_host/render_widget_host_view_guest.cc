@@ -306,10 +306,22 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
     current_surface_scale_factor_ = scale_factor;
   }
 
+  bool allocated_new_local_frame_id = false;
   if (!local_frame_id_.is_valid()) {
     local_frame_id_ = id_allocator_->GenerateId();
-    surface_factory_->Create(local_frame_id_);
+    allocated_new_local_frame_id = true;
+  }
 
+  cc::SurfaceFactory::DrawCallback ack_callback = base::Bind(
+      &RenderWidgetHostViewChildFrame::SurfaceDrawn,
+      RenderWidgetHostViewChildFrame::AsWeakPtr(), compositor_frame_sink_id);
+  ack_pending_count_++;
+  // If this value grows very large, something is going wrong.
+  DCHECK(ack_pending_count_ < 1000);
+  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
+                                          ack_callback);
+
+  if (allocated_new_local_frame_id) {
     cc::SurfaceSequence sequence =
         cc::SurfaceSequence(frame_sink_id_, next_surface_sequence_++);
     // The renderer process will satisfy this dependency when it creates a
@@ -326,16 +338,6 @@ void RenderWidgetHostViewGuest::OnSwapCompositorFrame(
                                    sequence);
     }
   }
-
-  cc::SurfaceFactory::DrawCallback ack_callback = base::Bind(
-      &RenderWidgetHostViewChildFrame::SurfaceDrawn,
-      RenderWidgetHostViewChildFrame::AsWeakPtr(), compositor_frame_sink_id);
-  ack_pending_count_++;
-  // If this value grows very large, something is going wrong.
-  DCHECK(ack_pending_count_ < 1000);
-  surface_factory_->SubmitCompositorFrame(local_frame_id_, std::move(frame),
-                                          ack_callback);
-
   ProcessFrameSwappedCallbacks();
 
   // If after detaching we are sent a frame, we should finish processing it, and

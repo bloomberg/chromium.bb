@@ -106,6 +106,7 @@ class DisplayTest : public testing::Test {
 
   ~DisplayTest() override {
     manager_.InvalidateFrameSinkId(kArbitraryFrameSinkId);
+    factory_.EvictSurface();
   }
 
   void SetUpDisplay(const RendererSettings& settings,
@@ -195,8 +196,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
   EXPECT_FALSE(scheduler_->damaged);
   EXPECT_TRUE(scheduler_->display_resized_);
   EXPECT_FALSE(scheduler_->has_new_root_surface);
-
-  factory_.Create(local_frame_id);
 
   // First draw from surface should have full damage.
   RenderPassList pass_list;
@@ -414,8 +413,6 @@ TEST_F(DisplayTest, DisplayDamaged) {
               software_output_device_->damage_rect());
     EXPECT_EQ(0u, output_surface_->last_sent_frame()->latency_info.size());
   }
-
-  factory_.Destroy(local_frame_id);
 }
 
 class MockedContext : public TestWebGraphicsContext3D {
@@ -442,7 +439,6 @@ TEST_F(DisplayTest, Finish) {
   display_->SetLocalFrameId(local_frame_id, 1.f);
 
   display_->Resize(gfx::Size(100, 100));
-  factory_.Create(local_frame_id);
 
   {
     RenderPassList pass_list;
@@ -488,8 +484,6 @@ TEST_F(DisplayTest, Finish) {
   EXPECT_CALL(*context_ptr, shallowFinishCHROMIUM());
   display_->Resize(gfx::Size(250, 250));
   testing::Mock::VerifyAndClearExpectations(context_ptr);
-
-  factory_.Destroy(local_frame_id);
 }
 
 class CountLossDisplayClient : public StubDisplayClient {

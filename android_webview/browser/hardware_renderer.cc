@@ -167,7 +167,6 @@ void HardwareRenderer::DrawGL(AwDrawGLInfo* draw_info) {
 void HardwareRenderer::AllocateSurface() {
   DCHECK(!child_id_.is_valid());
   child_id_ = surface_id_allocator_->GenerateId();
-  surface_factory_->Create(child_id_);
   surfaces_->AddChildId(cc::SurfaceId(frame_sink_id_, child_id_));
 }
 
@@ -177,9 +176,8 @@ void HardwareRenderer::DestroySurface() {
   // Submit an empty frame to force any existing resources to be returned.
   surface_factory_->SubmitCompositorFrame(child_id_, cc::CompositorFrame(),
                                           cc::SurfaceFactory::DrawCallback());
-
   surfaces_->RemoveChildId(cc::SurfaceId(frame_sink_id_, child_id_));
-  surface_factory_->Destroy(child_id_);
+  surface_factory_->EvictSurface();
   child_id_ = cc::LocalFrameId();
 }
 

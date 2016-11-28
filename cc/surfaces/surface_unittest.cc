@@ -40,11 +40,10 @@ TEST(SurfaceTest, SurfaceLifetime) {
 
   LocalFrameId local_frame_id(6, base::UnguessableToken::Create());
   SurfaceId surface_id(kArbitraryFrameSinkId, local_frame_id);
-  {
-    factory.Create(local_frame_id);
-    EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
-    factory.Destroy(local_frame_id);
-  }
+  factory.SubmitCompositorFrame(local_frame_id, CompositorFrame(),
+                                SurfaceFactory::DrawCallback());
+  EXPECT_TRUE(manager.GetSurfaceForId(surface_id));
+  factory.EvictSurface();
 
   EXPECT_EQ(NULL, manager.GetSurfaceForId(surface_id));
 }

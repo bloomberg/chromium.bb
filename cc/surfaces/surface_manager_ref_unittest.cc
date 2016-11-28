@@ -10,11 +10,11 @@
 #include "base/memory/ptr_util.h"
 #include "cc/surfaces/surface.h"
 #include "cc/surfaces/surface_factory.h"
+#include "cc/surfaces/surface_factory_client.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_sequence_generator.h"
 #include "testing/gtest/include/gtest/gtest.h"
-
 namespace cc {
 namespace {
 
@@ -23,6 +23,12 @@ constexpr FrameSinkId kFrameSink2(2, 0);
 constexpr FrameSinkId kFrameSink3(3, 0);
 const LocalFrameId kLocalFrame1(1, base::UnguessableToken::Create());
 const LocalFrameId kLocalFrame2(2, base::UnguessableToken::Create());
+
+class StubSurfaceFactoryClient : public SurfaceFactoryClient {
+ public:
+  void ReturnResources(const ReturnedResourceArray& resources) override {}
+  void SetBeginFrameSource(BeginFrameSource* begin_frame_source) override {}
+};
 
 // Tests for reference tracking in SurfaceManager.
 class SurfaceManagerRefTest : public testing::Test {
@@ -33,13 +39,15 @@ class SurfaceManagerRefTest : public testing::Test {
   // SurfaceFactory for |frame_sink_id| if necessary.
   SurfaceId CreateSurface(const FrameSinkId& frame_sink_id,
                           const LocalFrameId& local_frame_id) {
-    GetFactory(frame_sink_id).Create(local_frame_id);
+    GetFactory(frame_sink_id)
+        .SubmitCompositorFrame(local_frame_id, CompositorFrame(),
+                               SurfaceFactory::DrawCallback());
     return SurfaceId(frame_sink_id, local_frame_id);
   }
 
   // Destroy Surface with |surface_id|.
   void DestroySurface(const SurfaceId& surface_id) {
-    GetFactory(surface_id.frame_sink_id()).Destroy(surface_id.local_frame_id());
+    GetFactory(surface_id.frame_sink_id()).EvictSurface();
   }
 
  protected:
@@ -47,7 +55,7 @@ class SurfaceManagerRefTest : public testing::Test {
     auto& factory_ptr = factories_[frame_sink_id];
     if (!factory_ptr)
       factory_ptr = base::MakeUnique<SurfaceFactory>(frame_sink_id,
-                                                     manager_.get(), nullptr);
+                                                     manager_.get(), &client_);
     return *factory_ptr;
   }
 
@@ -57,6 +65,8 @@ class SurfaceManagerRefTest : public testing::Test {
     manager_ = base::MakeUnique<SurfaceManager>();
   }
   void TearDown() override {
+    for (auto& factory : factories_)
+      factory.second->EvictSurface();
     factories_.clear();
     manager_.reset();
   }
@@ -66,6 +76,7 @@ class SurfaceManagerRefTest : public testing::Test {
                      FrameSinkIdHash>
       factories_;
   std::unique_ptr<SurfaceManager> manager_;
+  StubSurfaceFactoryClient client_;
 };
 
 }  // namespace
