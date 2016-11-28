@@ -32,8 +32,9 @@ SyntheticGesture::Result SyntheticTapGesture::ForwardInputEvents(
 
   DCHECK_NE(gesture_source_type_, SyntheticGestureParams::DEFAULT_INPUT);
 
-  if (!synthetic_pointer_)
-    synthetic_pointer_ = SyntheticPointer::Create(gesture_source_type_);
+  if (!synthetic_pointer_driver_)
+    synthetic_pointer_driver_ =
+        SyntheticPointerDriver::Create(gesture_source_type_);
 
   if (gesture_source_type_ == SyntheticGestureParams::TOUCH_INPUT ||
       gesture_source_type_ == SyntheticGestureParams::MOUSE_INPUT)
@@ -49,13 +50,13 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp, SyntheticGestureTarget* target) {
   switch (state_) {
     case PRESS:
-      synthetic_pointer_->Press(params_.position.x(), params_.position.y(),
-                                target, timestamp);
-      synthetic_pointer_->DispatchEvent(target, timestamp);
+      synthetic_pointer_driver_->Press(params_.position.x(),
+                                       params_.position.y());
+      synthetic_pointer_driver_->DispatchEvent(target, timestamp);
       // Release immediately if duration is 0.
       if (params_.duration_ms == 0) {
-        synthetic_pointer_->Release(0, target, timestamp);
-        synthetic_pointer_->DispatchEvent(target, timestamp);
+        synthetic_pointer_driver_->Release();
+        synthetic_pointer_driver_->DispatchEvent(target, timestamp);
         state_ = DONE;
       } else {
         start_time_ = timestamp;
@@ -64,8 +65,9 @@ void SyntheticTapGesture::ForwardTouchOrMouseInputEvents(
       break;
     case WAITING_TO_RELEASE:
       if (timestamp - start_time_ >= GetDuration()) {
-        synthetic_pointer_->Release(0, target, start_time_ + GetDuration());
-        synthetic_pointer_->DispatchEvent(target, start_time_ + GetDuration());
+        synthetic_pointer_driver_->Release();
+        synthetic_pointer_driver_->DispatchEvent(target,
+                                                 start_time_ + GetDuration());
         state_ = DONE;
       }
       break;

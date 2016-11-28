@@ -7,11 +7,17 @@
 namespace content {
 
 SyntheticPointerActionParams::SyntheticPointerActionParams()
-    : pointer_action_type_(PointerActionType::NOT_INITIALIZED), index_(-1) {}
+    : pointer_action_type_(PointerActionType::NOT_INITIALIZED) {
+  index_ = gesture_source_type != MOUSE_INPUT ? -1 : 0;
+}
 
 SyntheticPointerActionParams::SyntheticPointerActionParams(
-    PointerActionType type)
-    : pointer_action_type_(type), index_(-1) {}
+    PointerActionType action_type,
+    GestureSourceType source_type)
+    : pointer_action_type_(action_type) {
+  gesture_source_type = source_type;
+  index_ = gesture_source_type != MOUSE_INPUT ? -1 : 0;
+}
 
 SyntheticPointerActionParams::SyntheticPointerActionParams(
     const SyntheticPointerActionParams& other)
@@ -24,9 +30,11 @@ SyntheticPointerActionParams::SyntheticPointerActionParams(
       position_ = other.position();
       break;
     case PointerActionType::RELEASE:
+    case PointerActionType::IDLE:
+    case PointerActionType::NOT_INITIALIZED:
       index_ = other.index();
       break;
-    default:
+    case PointerActionType::FINISH:
       break;
   }
 }

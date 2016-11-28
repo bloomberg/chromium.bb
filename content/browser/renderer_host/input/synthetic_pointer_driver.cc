@@ -2,33 +2,32 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "content/browser/renderer_host/input/synthetic_pointer.h"
+#include "content/browser/renderer_host/input/synthetic_pointer_driver.h"
 
 #include "base/memory/ptr_util.h"
-#include "content/browser/renderer_host/input/synthetic_mouse_pointer.h"
-#include "content/browser/renderer_host/input/synthetic_touch_pointer.h"
-#include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "content/browser/renderer_host/input/synthetic_mouse_driver.h"
+#include "content/browser/renderer_host/input/synthetic_touch_driver.h"
 
 namespace content {
 
-SyntheticPointer::SyntheticPointer() {}
-SyntheticPointer::~SyntheticPointer() {}
+SyntheticPointerDriver::SyntheticPointerDriver() {}
+SyntheticPointerDriver::~SyntheticPointerDriver() {}
 
 // static
-std::unique_ptr<SyntheticPointer> SyntheticPointer::Create(
+std::unique_ptr<SyntheticPointerDriver> SyntheticPointerDriver::Create(
     SyntheticGestureParams::GestureSourceType gesture_source_type) {
   if (gesture_source_type == SyntheticGestureParams::TOUCH_INPUT) {
-    return base::MakeUnique<SyntheticTouchPointer>();
+    return base::MakeUnique<SyntheticTouchDriver>();
   } else if (gesture_source_type == SyntheticGestureParams::MOUSE_INPUT) {
-    return base::MakeUnique<SyntheticMousePointer>();
+    return base::MakeUnique<SyntheticMouseDriver>();
   } else {
     NOTREACHED() << "Invalid gesture source type";
-    return std::unique_ptr<SyntheticPointer>();
+    return std::unique_ptr<SyntheticPointerDriver>();
   }
 }
 
 // static
-double SyntheticPointer::ConvertTimestampToSeconds(
+double SyntheticPointerDriver::ConvertTimestampToSeconds(
     const base::TimeTicks& timestamp) {
   return (timestamp - base::TimeTicks()).InSecondsF();
 }

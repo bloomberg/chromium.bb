@@ -15,81 +15,54 @@ SyntheticPointerAction::SyntheticPointerAction(
     : params_(params) {}
 
 SyntheticPointerAction::SyntheticPointerAction(
-    std::unique_ptr<std::vector<SyntheticPointerActionParams>> param_list,
-    SyntheticPointer* synthetic_pointer,
-    IndexMap* index_map)
-    : param_list_(std::move(param_list)),
-      synthetic_pointer_(synthetic_pointer),
-      index_map_(index_map) {}
+    std::vector<SyntheticPointerActionParams>* param_list,
+    SyntheticPointerDriver* synthetic_pointer_driver)
+    : param_list_(param_list),
+      synthetic_pointer_driver_(synthetic_pointer_driver) {}
 
 SyntheticPointerAction::~SyntheticPointerAction() {}
 
 SyntheticGesture::Result SyntheticPointerAction::ForwardInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  DCHECK(synthetic_pointer_);
+  DCHECK(synthetic_pointer_driver_);
   return ForwardTouchOrMouseInputEvents(timestamp, target);
 }
 
 SyntheticGesture::Result SyntheticPointerAction::ForwardTouchOrMouseInputEvents(
     const base::TimeTicks& timestamp,
     SyntheticGestureTarget* target) {
-  int point_index;
-  for (const SyntheticPointerActionParams& params : *param_list_) {
-    if (!UserInputCheck(params))
+  for (SyntheticPointerActionParams& params : *param_list_) {
+    if (!synthetic_pointer_driver_->UserInputCheck(params))
       return POINTER_ACTION_INPUT_INVALID;
 
     switch (params.pointer_action_type()) {
-      case SyntheticPointerActionParams::PointerActionType::PRESS:
-        point_index = synthetic_pointer_->Press(
-            params.position().x(), params.position().y(), target, timestamp);
-        SetPointIndex(params.index(), point_index);
+      case SyntheticPointerActionParams::PointerActionType::PRESS: {
+        int index = synthetic_pointer_driver_->Press(params.position().x(),
+                                                     params.position().y());
+        params.set_index(index);
         break;
+      }
       case SyntheticPointerActionParams::PointerActionType::MOVE:
-        point_index = GetPointIndex(params.index());
-        synthetic_pointer_->Move(point_index, params.position().x(),
-                                 params.position().y(), target, timestamp);
+        synthetic_pointer_driver_->Move(params.position().x(),
+                                        params.position().y(), params.index());
         break;
       case SyntheticPointerActionParams::PointerActionType::RELEASE:
-        point_index = GetPointIndex(params.index());
-        synthetic_pointer_->Release(point_index, target, timestamp);
-        SetPointIndex(params.index(), -1);
+        synthetic_pointer_driver_->Release(params.index());
+        // Only reset the index for touch pointers.
+        if (params.gesture_source_type != SyntheticGestureParams::MOUSE_INPUT)
+          params.set_index(-1);
         break;
-      default:
+      case SyntheticPointerActionParams::PointerActionType::IDLE:
+        break;
+      case SyntheticPointerActionParams::PointerActionType::NOT_INITIALIZED:
         return POINTER_ACTION_INPUT_INVALID;
+      case SyntheticPointerActionParams::PointerActionType::FINISH:
+        return GESTURE_FINISHED;
     }
   }
-  synthetic_pointer_->DispatchEvent(target, timestamp);
+  synthetic_pointer_driver_->DispatchEvent(target, timestamp);
   return GESTURE_FINISHED;
-}
-
-bool SyntheticPointerAction::UserInputCheck(
-    const SyntheticPointerActionParams& params) {
-  if (params.index() < 0 || params.index() >= WebTouchEvent::kTouchesLengthCap)
-    return false;
-
-  if (synthetic_pointer_->SourceType() != params.gesture_source_type)
-    return false;
-
-  if (params.pointer_action_type() ==
-          SyntheticPointerActionParams::PointerActionType::PRESS &&
-      GetPointIndex(params.index()) >= 0) {
-    return false;
-  }
-
-  if (synthetic_pointer_->SourceType() == SyntheticGestureParams::TOUCH_INPUT &&
-      params.pointer_action_type() ==
-          SyntheticPointerActionParams::PointerActionType::MOVE &&
-      GetPointIndex(params.index()) < 0) {
-    return false;
-  }
-
-  if (params.pointer_action_type() ==
-          SyntheticPointerActionParams::PointerActionType::RELEASE &&
-      GetPointIndex(params.index()) < 0) {
-    return false;
-  }
-  return true;
 }
 
 }  // namespace content

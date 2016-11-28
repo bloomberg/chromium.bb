@@ -954,7 +954,8 @@ struct FuzzTraits<content::SyntheticGesturePacket> {
         if (!FuzzParam(&index, fuzzer))
           return false;
         content::SyntheticPointerActionParams* params =
-            new content::SyntheticPointerActionParams(action_type);
+            new content::SyntheticPointerActionParams();
+        params->set_pointer_action_type(action_type);
         params->set_position(position);
         params->set_index(index);
         gesture_params.reset(params);

@@ -67,15 +67,15 @@ SyntheticGesture::Result SyntheticSmoothMoveGesture::ForwardInputEvents(
 
   switch (params_.input_type) {
     case SyntheticSmoothMoveGestureParams::TOUCH_INPUT:
-      if (!synthetic_pointer_)
-        synthetic_pointer_ =
-            SyntheticPointer::Create(SyntheticGestureParams::TOUCH_INPUT);
+      if (!synthetic_pointer_driver_)
+        synthetic_pointer_driver_ =
+            SyntheticPointerDriver::Create(SyntheticGestureParams::TOUCH_INPUT);
       ForwardTouchInputEvents(timestamp, target);
       break;
     case SyntheticSmoothMoveGestureParams::MOUSE_DRAG_INPUT:
-      if (!synthetic_pointer_)
-        synthetic_pointer_ =
-            SyntheticPointer::Create(SyntheticGestureParams::MOUSE_INPUT);
+      if (!synthetic_pointer_driver_)
+        synthetic_pointer_driver_ =
+            SyntheticPointerDriver::Create(SyntheticGestureParams::MOUSE_INPUT);
       ForwardMouseClickInputEvents(timestamp, target);
       break;
     case SyntheticSmoothMoveGestureParams::MOUSE_WHEEL_INPUT:
@@ -256,10 +256,9 @@ void SyntheticSmoothMoveGesture::ForwardMouseWheelEvent(
 void SyntheticSmoothMoveGesture::PressPoint(SyntheticGestureTarget* target,
                                             const base::TimeTicks& timestamp) {
   DCHECK_EQ(current_move_segment_, 0);
-  synthetic_pointer_->Press(current_move_segment_start_position_.x(),
-                            current_move_segment_start_position_.y(), target,
-                            timestamp);
-  synthetic_pointer_->DispatchEvent(target, timestamp);
+  synthetic_pointer_driver_->Press(current_move_segment_start_position_.x(),
+                                   current_move_segment_start_position_.y());
+  synthetic_pointer_driver_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticSmoothMoveGesture::MovePoint(SyntheticGestureTarget* target,
@@ -268,9 +267,8 @@ void SyntheticSmoothMoveGesture::MovePoint(SyntheticGestureTarget* target,
   DCHECK_GE(current_move_segment_, 0);
   DCHECK_LT(current_move_segment_, static_cast<int>(params_.distances.size()));
   gfx::PointF new_position = current_move_segment_start_position_ + delta;
-  synthetic_pointer_->Move(0, new_position.x(), new_position.y(), target,
-                           timestamp);
-  synthetic_pointer_->DispatchEvent(target, timestamp);
+  synthetic_pointer_driver_->Move(new_position.x(), new_position.y());
+  synthetic_pointer_driver_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticSmoothMoveGesture::ReleasePoint(
@@ -284,8 +282,8 @@ void SyntheticSmoothMoveGesture::ReleasePoint(
     position = current_move_segment_start_position_ +
                GetPositionDeltaAtTime(timestamp);
   }
-  synthetic_pointer_->Release(0, target, timestamp);
-  synthetic_pointer_->DispatchEvent(target, timestamp);
+  synthetic_pointer_driver_->Release();
+  synthetic_pointer_driver_->DispatchEvent(target, timestamp);
 }
 
 void SyntheticSmoothMoveGesture::AddTouchSlopToFirstDistance(
