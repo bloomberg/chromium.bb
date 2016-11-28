@@ -577,8 +577,9 @@ EmbeddedWorkerInstance::EmbeddedWorkerInstance(
 void EmbeddedWorkerInstance::OnProcessAllocated(
     std::unique_ptr<WorkerProcessHandle> handle,
     ServiceWorkerMetrics::StartSituation start_situation) {
-  DCHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
-  DCHECK(!process_handle_);
+  // TODO(shimazu): Change CHECK to DCHECK after crbug.com/668633 is fixed.
+  CHECK_EQ(EmbeddedWorkerStatus::STARTING, status_);
+  CHECK(!process_handle_);
 
   process_handle_ = std::move(handle);
   starting_phase_ = REGISTERING_TO_DEVTOOLS;
