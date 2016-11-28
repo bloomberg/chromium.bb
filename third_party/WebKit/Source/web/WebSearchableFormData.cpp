@@ -66,18 +66,6 @@ void getFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding) {
     *encoding = WTF::TextEncoding(form.document().encoding());
 }
 
-// Returns true if the submit request results in an HTTP URL.
-bool isHTTPFormSubmit(const HTMLFormElement& form) {
-  // FIXME: This function is insane. This is an overly complicated way to get
-  // this information.
-  String action(form.action());
-  // The isNull() check is trying to avoid completeURL returning KURL() when
-  // passed a null string.
-  return form.document()
-      .completeURL(action.isNull() ? "" : action)
-      .protocolIs("http");
-}
-
 // If the form does not have an activated submit button, the first submit
 // button is returned.
 HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form) {
@@ -235,9 +223,7 @@ WebSearchableFormData::WebSearchableFormData(
       static_cast<HTMLInputElement*>(selectedInputElement);
 
   // Only consider forms that GET data.
-  // Allow HTTPS only when an input element is provided.
-  if (equalIgnoringASCIICase(formElement->getAttribute(methodAttr), "post") ||
-      (!isHTTPFormSubmit(*formElement) && !inputElement))
+  if (equalIgnoringASCIICase(formElement->getAttribute(methodAttr), "post"))
     return;
 
   WTF::TextEncoding encoding;
