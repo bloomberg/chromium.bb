@@ -7,6 +7,10 @@ Autorename:
     by generate_gn.py. https://chromium-review.googlesource.com/#/c/274543/
 
 Current patches:
+  Changes to libavcodec/flac_parser.c crbug.com/665305
+    Started decrementing buffered header count during flac parsing, to prevent
+    a clusterfuzz hang.
+
   .gitignore has a "Chromium stuff" section.
 
   Changes to configure
