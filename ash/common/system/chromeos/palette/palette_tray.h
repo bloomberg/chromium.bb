@@ -124,6 +124,9 @@ class ASH_EXPORT PaletteTray : public TrayBackgroundView,
   // instance.
   bool should_block_shelf_auto_hide_ = false;
 
+  // Cached palette enabled/disabled pref value.
+  bool is_palette_enabled_ = true;
+
   // Used to indicate whether the palette bubble is automatically opened by a
   // stylus eject event.
   bool is_bubble_auto_opened_ = false;

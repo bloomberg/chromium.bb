@@ -456,6 +456,8 @@ void PaletteTray::OnStylusStateChanged(ui::StylusState stylus_state) {
 }
 
 void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
+  is_palette_enabled_ = enabled;
+
   if (!enabled) {
     SetVisible(false);
     palette_tool_manager_->DisableActiveTool(PaletteGroup::MODE);
@@ -465,7 +467,7 @@ void PaletteTray::OnPaletteEnabledPrefChanged(bool enabled) {
 }
 
 void PaletteTray::UpdateIconVisibility() {
-  SetVisible(IsInUserSession());
+  SetVisible(is_palette_enabled_ && IsInUserSession());
 }
 
 }  // namespace ash
