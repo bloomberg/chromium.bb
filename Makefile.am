@@ -1477,13 +1477,13 @@ ivi_layout_internal_test_la_LIBADD = $(test_module_libadd)
 ivi_layout_internal_test_la_LDFLAGS = $(test_module_ldflags)
 ivi_layout_internal_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_layout_internal_test_la_SOURCES =			\
-	tests/ivi_layout-internal-test.c
+	tests/ivi-layout-internal-test.c
 
 ivi_layout_test_la_LIBADD = $(test_module_libadd)
 ivi_layout_test_la_LDFLAGS = $(test_module_ldflags)
 ivi_layout_test_la_CFLAGS = $(AM_CFLAGS) $(COMPOSITOR_CFLAGS)
 ivi_layout_test_la_SOURCES =			\
-	tests/ivi_layout-test-plugin.c		\
+	tests/ivi-layout-test-plugin.c		\
 	tests/ivi-test.h			\
 	shared/helpers.h
 nodist_ivi_layout_test_la_SOURCES =		\
@@ -1500,17 +1500,17 @@ nodist_ivi_shell_app_weston_SOURCES =		\
 ivi_shell_app_weston_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
 ivi_shell_app_weston_LDADD = libtest-client.la
 
-noinst_PROGRAMS += ivi-layout.ivi
+noinst_PROGRAMS += ivi-layout-test-client.ivi
 
-ivi_layout_ivi_SOURCES =			\
-	tests/ivi_layout-test.c 		\
+ivi_layout_test_client_ivi_SOURCES =			\
+	tests/ivi-layout-test-client.c 		\
 	tests/ivi-test.h			\
 	shared/helpers.h
-nodist_ivi_layout_ivi_SOURCES = 		\
+nodist_ivi_layout_test_client_ivi_SOURCES = 		\
 	protocol/ivi-application-protocol.c	\
 	protocol/ivi-application-client-protocol.h
-ivi_layout_ivi_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
-ivi_layout_ivi_LDADD = libtest-client.la
+ivi_layout_test_client_ivi_CFLAGS = $(AM_CFLAGS) $(TEST_CLIENT_CFLAGS)
+ivi_layout_test_client_ivi_LDADD = libtest-client.la
 endif
 
 if BUILD_SETBACKLIGHT

@@ -1,9 +1,9 @@
 [core]
-shell=@plugin_prefix@ivi-shell.so
-modules=@plugin_prefix@hmi-controller.so
+shell=ivi-shell.so
+modules=hmi-controller.so
 
 [ivi-shell]
-ivi-shell-user-interface=@abs_top_builddir@/weston-ivi-shell-user-interface
+ivi-shell-user-interface=weston-ivi-shell-user-interface
 
 #developermode=true
 
@@ -38,7 +38,7 @@ workspace-background-color=0x99000000
 workspace-background-id=2001
 
 [input-method]
-path=@libexecdir@/weston-keyboard
+path=weston-keyboard
 
 [ivi-launcher]
 workspace-id=0

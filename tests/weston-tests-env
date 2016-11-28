@@ -34,7 +34,7 @@ for mod in cms-colord cms-static desktop-shell drm-backend fbdev-backend \
 done
 
 for exe in weston-desktop-shell weston-keyboard weston-screenshooter \
-	   weston-simple-im ivi-layout.ivi; do \
+	   weston-simple-im ivi-layout-test-client.ivi; do \
 	WESTON_MODULE_MAP="${WESTON_MODULE_MAP}${exe}=${abs_builddir}/${exe};"
 done
 

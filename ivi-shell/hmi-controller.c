@@ -676,6 +676,7 @@ hmi_server_setting_create(struct weston_compositor *ec)
 	struct hmi_server_setting *setting = MEM_ALLOC(sizeof(*setting));
 	struct weston_config *config = wet_get_config(ec);
 	struct weston_config_section *shell_section = NULL;
+	char *ivi_ui_config;
 
 	shell_section = weston_config_get_section(config, "ivi-shell",
 						  NULL, NULL);
@@ -704,7 +705,16 @@ hmi_server_setting_create(struct weston_compositor *ec)
 
 	weston_config_section_get_string(shell_section,
 					 "ivi-shell-user-interface",
-					 &setting->ivi_homescreen, NULL);
+					 &ivi_ui_config, NULL);
+	if (ivi_ui_config && ivi_ui_config[0] != '/') {
+		setting->ivi_homescreen = wet_get_binary_path(ivi_ui_config);
+		if (setting->ivi_homescreen)
+			free(ivi_ui_config);
+		else
+			setting->ivi_homescreen = ivi_ui_config;
+	} else {
+		setting->ivi_homescreen = ivi_ui_config;
+	}
 
 	return setting;
 }

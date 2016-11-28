@@ -175,18 +175,18 @@ ivi_window_destroy(struct ivi_window *wnd)
 /******************************** tests ********************************/
 
 /*
- * This is a test program, launched by ivi_layout-test-plugin.c. Each TEST()
+ * This is a test program, launched by ivi-layout-test-plugin.c. Each TEST()
  * is forked and exec'd as usual with the weston-test-runner framework.
  *
  * These tests make use of weston_test_runner global interface exposed by
- * ivi_layout-test-plugin.c. This allows these tests to trigger compositor-side
+ * ivi-layout-test-plugin.c. This allows these tests to trigger compositor-side
  * checks.
  *
- * See ivi_layout-test-plugin.c for further details.
+ * See ivi-layout-test-plugin.c for further details.
  */
 
 /**
- * RUNNER_TEST() names are defined in ivi_layout-test-plugin.c.
+ * RUNNER_TEST() names are defined in ivi-layout-test-plugin.c.
  * Each RUNNER_TEST name listed here uses the same simple initial client setup.
  */
 const char * const basic_test_names[] = {
