@@ -25,14 +25,13 @@ class TypedUrlDataTypeController : public syncer::NonUIDataTypeController {
                              const char* history_disabled_pref_name);
   ~TypedUrlDataTypeController() override;
 
-  // NonUIDataTypeController implementation
-  syncer::ModelSafeGroup model_safe_group() const override;
+  // NonUIDataTypeController implementation.
   bool ReadyForStart() const override;
 
  protected:
-  // NonUIDataTypeController interface.
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override;
+  // NonUIDataTypeController implementation.
+  bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+                             const base::Closure& task) override;
 
  private:
   void OnSavingBrowserHistoryDisabledChanged();

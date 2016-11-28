@@ -105,14 +105,16 @@ class NonUIDataTypeControllerFake : public NonUIDataTypeController {
       NonUIDataTypeControllerMock* mock,
       SharedChangeProcessor* change_processor,
       scoped_refptr<base::SingleThreadTaskRunner> backend_task_runner)
-      : NonUIDataTypeController(kType, base::Closure(), sync_client),
+      : NonUIDataTypeController(kType,
+                                base::Closure(),
+                                sync_client,
+                                GROUP_DB,
+                                nullptr),
         blocked_(false),
         mock_(mock),
         change_processor_(change_processor),
         backend_task_runner_(backend_task_runner) {}
   ~NonUIDataTypeControllerFake() override {}
-
-  ModelSafeGroup model_safe_group() const override { return GROUP_DB; }
 
   // Prevent tasks from being posted on the backend thread until
   // UnblockBackendTasks() is called.
@@ -124,7 +126,7 @@ class NonUIDataTypeControllerFake : public NonUIDataTypeController {
     blocked_ = false;
     for (std::vector<PendingTask>::const_iterator it = pending_tasks_.begin();
          it != pending_tasks_.end(); ++it) {
-      PostTaskOnBackendThread(it->from_here, it->task);
+      PostTaskOnModelThread(it->from_here, it->task);
     }
     pending_tasks_.clear();
   }
@@ -138,8 +140,8 @@ class NonUIDataTypeControllerFake : public NonUIDataTypeController {
   }
 
  protected:
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override {
+  bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+                             const base::Closure& task) override {
     if (blocked_) {
       pending_tasks_.push_back(PendingTask(from_here, task));
       return true;

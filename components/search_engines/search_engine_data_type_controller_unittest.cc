@@ -157,6 +157,9 @@ TEST_F(SyncSearchEngineDataTypeControllerTest, Stop) {
   search_engine_dtc_.Stop();
   EXPECT_EQ(syncer::DataTypeController::NOT_RUNNING,
             search_engine_dtc_.state());
+  // NonUIDataTypeController::Stop posts call to StopLocalService to model
+  // thread. We run message loop for this call to take effect.
+  base::RunLoop().RunUntilIdle();
   EXPECT_FALSE(syncable_service_.syncing());
 }
 

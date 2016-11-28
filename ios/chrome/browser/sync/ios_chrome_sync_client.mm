@@ -33,7 +33,6 @@
 #include "components/sync/base/report_unrecoverable_error.h"
 #include "components/sync/driver/sync_api_component_factory.h"
 #include "components/sync/driver/sync_util.h"
-#include "components/sync/driver/ui_data_type_controller.h"
 #include "components/sync/engine/browser_thread_model_worker.h"
 #include "components/sync/engine/passive_model_worker.h"
 #include "components/sync/engine/ui_model_worker.h"

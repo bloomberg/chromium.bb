@@ -41,7 +41,6 @@ class UIDataTypeController : public DirectoryDataTypeController {
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  ModelSafeGroup model_safe_group() const override;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;

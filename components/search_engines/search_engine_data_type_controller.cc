@@ -4,13 +4,19 @@
 
 #include "components/search_engines/search_engine_data_type_controller.h"
 
+#include "base/threading/thread_task_runner_handle.h"
+
 namespace browser_sync {
 
 SearchEngineDataTypeController::SearchEngineDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     TemplateURLService* template_url_service)
-    : UIDataTypeController(syncer::SEARCH_ENGINES, dump_stack, sync_client),
+    : NonUIDataTypeController(syncer::SEARCH_ENGINES,
+                              dump_stack,
+                              sync_client,
+                              syncer::GROUP_UI,
+                              base::ThreadTaskRunnerHandle::Get()),
       template_url_service_(template_url_service) {}
 
 TemplateURLService::Subscription*
@@ -47,7 +53,7 @@ void SearchEngineDataTypeController::StopModels() {
 
 void SearchEngineDataTypeController::OnTemplateURLServiceLoaded() {
   DCHECK(CalledOnValidThread());
-  DCHECK_EQ(MODEL_STARTING, state_);
+  DCHECK_EQ(MODEL_STARTING, state());
   template_url_subscription_.reset();
   OnModelLoaded();
 }

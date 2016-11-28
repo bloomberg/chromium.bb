@@ -55,18 +55,20 @@ class DirectoryDataTypeController : public DataTypeController {
   // |dump_stack| is called when an unrecoverable error occurs.
   DirectoryDataTypeController(ModelType type,
                               const base::Closure& dump_stack,
-                              SyncClient* sync_client);
-
-  // The model safe group of this data type.  This should reflect the
-  // thread that should be used to modify the data type's native
-  // model.
-  virtual ModelSafeGroup model_safe_group() const = 0;
+                              SyncClient* sync_client,
+                              ModelSafeGroup model_safe_group);
 
   // Access to the ChangeProcessor for the type being controlled by |this|.
   // Returns null if the ChangeProcessor isn't created or connected.
   virtual ChangeProcessor* GetChangeProcessor() const = 0;
 
   SyncClient* const sync_client_;
+
+ private:
+  // The model safe group of this data type.  This should reflect the
+  // thread that should be used to modify the data type's native
+  // model.
+  ModelSafeGroup model_safe_group_;
 };
 
 }  // namespace syncer

@@ -23,7 +23,7 @@ FrontendDataTypeController::FrontendDataTypeController(
     ModelType type,
     const base::Closure& dump_stack,
     SyncClient* sync_client)
-    : DirectoryDataTypeController(type, dump_stack, sync_client),
+    : DirectoryDataTypeController(type, dump_stack, sync_client, GROUP_UI),
       state_(NOT_RUNNING) {
   DCHECK(CalledOnValidThread());
   DCHECK(sync_client);
@@ -106,10 +106,6 @@ void FrontendDataTypeController::Stop() {
   state_ = NOT_RUNNING;
 }
 
-ModelSafeGroup FrontendDataTypeController::model_safe_group() const {
-  return GROUP_UI;
-}
-
 std::string FrontendDataTypeController::name() const {
   // For logging only.
   return ModelTypeToString(type());
@@ -120,7 +116,10 @@ DataTypeController::State FrontendDataTypeController::state() const {
 }
 
 FrontendDataTypeController::FrontendDataTypeController()
-    : DirectoryDataTypeController(UNSPECIFIED, base::Closure(), nullptr),
+    : DirectoryDataTypeController(UNSPECIFIED,
+                                  base::Closure(),
+                                  nullptr,
+                                  GROUP_UI),
       state_(NOT_RUNNING) {}
 
 FrontendDataTypeController::~FrontendDataTypeController() {}

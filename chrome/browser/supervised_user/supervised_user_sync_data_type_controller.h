@@ -7,7 +7,7 @@
 
 #include "base/macros.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 class Profile;
 
@@ -15,10 +15,10 @@ namespace syncer {
 class SyncClient;
 }
 
-// A UIDataTypeController for supervised user sync datatypes, which enables or
+// A DataTypeController for supervised user sync datatypes, which enables or
 // disables these types based on the profile's IsSupervised state.
 class SupervisedUserSyncDataTypeController
-    : public syncer::UIDataTypeController {
+    : public syncer::NonUIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   SupervisedUserSyncDataTypeController(syncer::ModelType type,
@@ -27,6 +27,7 @@ class SupervisedUserSyncDataTypeController
                                        Profile* profile);
   ~SupervisedUserSyncDataTypeController() override;
 
+  // NonUIDataTypeController implementation.
   bool ReadyForStart() const override;
 
  private:

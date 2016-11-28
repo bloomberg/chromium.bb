@@ -30,13 +30,8 @@ class ExtensionSettingDataTypeController
                                      Profile* profile);
   ~ExtensionSettingDataTypeController() override;
 
-  // NonFrontendDataTypeController implementation
-  syncer::ModelSafeGroup model_safe_group() const override;
-
  private:
-  // NonFrontendDataTypeController implementation.
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override;
+  // NonUIDataTypeController implementation.
   bool StartModels() override;
 
   // Only used on the UI thread.

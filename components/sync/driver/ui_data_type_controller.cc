@@ -25,13 +25,16 @@
 namespace syncer {
 
 UIDataTypeController::UIDataTypeController()
-    : DirectoryDataTypeController(UNSPECIFIED, base::Closure(), nullptr),
+    : DirectoryDataTypeController(UNSPECIFIED,
+                                  base::Closure(),
+                                  nullptr,
+                                  GROUP_UI),
       state_(NOT_RUNNING) {}
 
 UIDataTypeController::UIDataTypeController(ModelType type,
                                            const base::Closure& dump_stack,
                                            SyncClient* sync_client)
-    : DirectoryDataTypeController(type, dump_stack, sync_client),
+    : DirectoryDataTypeController(type, dump_stack, sync_client, GROUP_UI),
       state_(NOT_RUNNING),
       processor_factory_(new GenericChangeProcessorFactory()) {
   DCHECK(IsRealDataType(type));
@@ -309,11 +312,6 @@ void UIDataTypeController::Stop() {
 
 void UIDataTypeController::StopModels() {
   // Do nothing by default.
-}
-
-ModelSafeGroup UIDataTypeController::model_safe_group() const {
-  DCHECK(IsRealDataType(type()));
-  return GROUP_UI;
 }
 
 std::string UIDataTypeController::name() const {

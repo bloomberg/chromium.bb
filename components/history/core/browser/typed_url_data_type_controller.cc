@@ -51,7 +51,11 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const char* history_disabled_pref_name)
-    : NonUIDataTypeController(syncer::TYPED_URLS, dump_stack, sync_client),
+    : NonUIDataTypeController(syncer::TYPED_URLS,
+                              dump_stack,
+                              sync_client,
+                              syncer::GROUP_HISTORY,
+                              nullptr),
       history_disabled_pref_name_(history_disabled_pref_name),
       sync_client_(sync_client) {
   pref_registrar_.Init(sync_client->GetPrefService());
@@ -60,10 +64,6 @@ TypedUrlDataTypeController::TypedUrlDataTypeController(
       base::Bind(
           &TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged,
           base::AsWeakPtr(this)));
-}
-
-syncer::ModelSafeGroup TypedUrlDataTypeController::model_safe_group() const {
-  return syncer::GROUP_HISTORY;
 }
 
 bool TypedUrlDataTypeController::ReadyForStart() const {
@@ -79,7 +79,7 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
     // generate an unrecoverable error. This can be fixed by restarting
     // Chrome (on restart, typed urls will not be a registered type).
     if (state() != NOT_RUNNING && state() != STOPPING) {
-      PostTaskOnBackendThread(
+      PostTaskOnModelThread(
           FROM_HERE,
           base::Bind(&syncer::DataTypeErrorHandler::OnUnrecoverableError,
                      base::Passed(CreateErrorHandler()),
@@ -90,7 +90,7 @@ void TypedUrlDataTypeController::OnSavingBrowserHistoryDisabledChanged() {
   }
 }
 
-bool TypedUrlDataTypeController::PostTaskOnBackendThread(
+bool TypedUrlDataTypeController::PostTaskOnModelThread(
     const tracked_objects::Location& from_here,
     const base::Closure& task) {
   DCHECK(CalledOnValidThread());

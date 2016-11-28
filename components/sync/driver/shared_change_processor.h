@@ -62,6 +62,7 @@ class SharedChangeProcessor
 
   void StartAssociation(StartDoneCallback start_done,
                         SyncClient* const sync_client,
+                        GenericChangeProcessorFactory* processor_factory,
                         UserShare* user_share,
                         std::unique_ptr<DataTypeErrorHandler> error_handler);
 

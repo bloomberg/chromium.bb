@@ -52,6 +52,7 @@ SharedChangeProcessor::~SharedChangeProcessor() {
 void SharedChangeProcessor::StartAssociation(
     StartDoneCallback start_done,
     SyncClient* const sync_client,
+    GenericChangeProcessorFactory* processor_factory,
     UserShare* user_share,
     std::unique_ptr<DataTypeErrorHandler> error_handler) {
   DCHECK(user_share);
@@ -64,10 +65,9 @@ void SharedChangeProcessor::StartAssociation(
   // Note that it's possible the shared_change_processor has already been
   // disconnected at this point, so all our accesses to the syncer from this
   // point on are through it.
-  GenericChangeProcessorFactory factory;
   local_service_ =
-      Connect(sync_client, &factory, user_share, std::move(error_handler),
-              weak_ptr_factory.GetWeakPtr());
+      Connect(sync_client, processor_factory, user_share,
+              std::move(error_handler), weak_ptr_factory.GetWeakPtr());
   if (!local_service_.get()) {
     SyncError error(FROM_HERE, SyncError::DATATYPE_ERROR,
                     "Failed to connect to syncer.", type_);

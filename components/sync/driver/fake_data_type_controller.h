@@ -34,7 +34,6 @@ class FakeDataTypeController : public DirectoryDataTypeController {
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
   std::string name() const override;
-  ModelSafeGroup model_safe_group() const override;
   ChangeProcessor* GetChangeProcessor() const override;
   State state() const override;
   bool ReadyForStart() const override;

@@ -9,7 +9,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/driver/data_type_controller.h"
-#include "components/sync/driver/ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 class Profile;
 
@@ -17,9 +17,9 @@ namespace syncer {
 class SyncClient;
 }
 
-// A UIDataTypeController for arc package sync datatypes, which enables or
+// A DataTypeController for arc package sync datatypes, which enables or
 // disables these types based on whether ArcAppInstance is ready.
-class ArcPackageSyncDataTypeController : public syncer::UIDataTypeController,
+class ArcPackageSyncDataTypeController : public syncer::NonUIDataTypeController,
                                          public ArcAppListPrefs::Observer {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -29,7 +29,7 @@ class ArcPackageSyncDataTypeController : public syncer::UIDataTypeController,
                                    Profile* profile);
   ~ArcPackageSyncDataTypeController() override;
 
-  // UIDataTypeController override:
+  // NonUIDataTypeController implementation.
   bool ReadyForStart() const override;
   bool StartModels() override;
   void StopModels() override;
@@ -47,8 +47,6 @@ class ArcPackageSyncDataTypeController : public syncer::UIDataTypeController,
   bool model_normal_start_ = true;
 
   Profile* const profile_;
-
-  syncer::SyncClient* sync_client_;
 
   PrefChangeRegistrar pref_registrar_;
 

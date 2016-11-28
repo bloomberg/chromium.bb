@@ -10,7 +10,6 @@
 #include "base/feature_list.h"
 #include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "components/autofill/core/browser/autofill_wallet_data_type_controller.h"
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
@@ -34,10 +33,10 @@
 #include "components/sync/driver/glue/sync_backend_host.h"
 #include "components/sync/driver/glue/sync_backend_host_impl.h"
 #include "components/sync/driver/model_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 #include "components/sync/driver/proxy_data_type_controller.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_driver_switches.h"
-#include "components/sync/driver/ui_data_type_controller.h"
 #include "components/sync/engine/attachments/attachment_downloader.h"
 #include "components/sync/engine/attachments/attachment_uploader.h"
 #include "components/sync/model/attachments/attachment_service.h"
@@ -59,8 +58,8 @@ using syncer::DataTypeManagerImpl;
 using syncer::DataTypeManagerObserver;
 using syncer::DeviceInfoDataTypeController;
 using syncer::ProxyDataTypeController;
-using syncer::UIDataTypeController;
 using syncer::ModelTypeController;
+using syncer::NonUIDataTypeController;
 using sync_sessions::SessionDataTypeController;
 
 namespace browser_sync {
@@ -145,7 +144,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
     sync_service->RegisterDataTypeController(
         base::MakeUnique<ModelTypeController>(
             syncer::DEVICE_INFO, base::Bind(&base::debug::DumpWithoutCrashing),
-            sync_client_, base::ThreadTaskRunnerHandle::Get()));
+            sync_client_, ui_thread_));
   } else {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<DeviceInfoDataTypeController>(
@@ -234,11 +233,13 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       !disabled_types.Has(syncer::FAVICON_TRACKING) && !history_disabled) {
     // crbug/384552. We disable error uploading for this data types for now.
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIDataTypeController>(syncer::FAVICON_IMAGES,
-                                               base::Closure(), sync_client_));
+        base::MakeUnique<NonUIDataTypeController>(
+            syncer::FAVICON_IMAGES, base::Closure(), sync_client_,
+            syncer::GROUP_UI, ui_thread_));
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIDataTypeController>(syncer::FAVICON_TRACKING,
-                                               base::Closure(), sync_client_));
+        base::MakeUnique<NonUIDataTypeController>(
+            syncer::FAVICON_TRACKING, base::Closure(), sync_client_,
+            syncer::GROUP_UI, ui_thread_));
   }
 
   // Password sync is enabled by default.  Register unless explicitly
@@ -253,27 +254,29 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
   if (!disabled_types.Has(syncer::PREFERENCES)) {
     if (!override_prefs_controller_to_uss_for_test_) {
       sync_service->RegisterDataTypeController(
-          base::MakeUnique<UIDataTypeController>(syncer::PREFERENCES,
-                                                 error_callback, sync_client_));
+          base::MakeUnique<NonUIDataTypeController>(
+              syncer::PREFERENCES, error_callback, sync_client_,
+              syncer::GROUP_UI, ui_thread_));
     } else {
       sync_service->RegisterDataTypeController(
           base::MakeUnique<ModelTypeController>(
-              syncer::PREFERENCES, error_callback, sync_client_,
-              base::ThreadTaskRunnerHandle::Get()));
+              syncer::PREFERENCES, error_callback, sync_client_, ui_thread_));
     }
   }
 
   if (!disabled_types.Has(syncer::PRIORITY_PREFERENCES)) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIDataTypeController>(syncer::PRIORITY_PREFERENCES,
-                                               error_callback, sync_client_));
+        base::MakeUnique<NonUIDataTypeController>(
+            syncer::PRIORITY_PREFERENCES, error_callback, sync_client_,
+            syncer::GROUP_UI, ui_thread_));
   }
 
   // Article sync is disabled by default.  Register only if explicitly enabled.
   if (dom_distiller::IsEnableSyncArticlesSet()) {
     sync_service->RegisterDataTypeController(
-        base::MakeUnique<UIDataTypeController>(syncer::ARTICLES, error_callback,
-                                               sync_client_));
+        base::MakeUnique<NonUIDataTypeController>(
+            syncer::ARTICLES, error_callback, sync_client_, syncer::GROUP_UI,
+            ui_thread_));
   }
 
   // Reading list sync is enabled by default only on iOS. Register unless
@@ -282,8 +285,7 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
       reading_list::switches::IsReadingListEnabled()) {
     sync_service->RegisterDataTypeController(
         base::MakeUnique<ModelTypeController>(
-            syncer::READING_LIST, error_callback, sync_client_,
-            base::ThreadTaskRunnerHandle::Get()));
+            syncer::READING_LIST, error_callback, sync_client_, ui_thread_));
   }
 }
 

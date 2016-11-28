@@ -33,13 +33,10 @@ class PasswordDataTypeController : public syncer::NonUIDataTypeController,
       const scoped_refptr<password_manager::PasswordStore>& password_store);
   ~PasswordDataTypeController() override;
 
-  // NonFrontendDataTypeController implementation
-  syncer::ModelSafeGroup model_safe_group() const override;
-
  protected:
   // NonUIDataTypeController interface.
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override;
+  bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+                             const base::Closure& task) override;
   bool StartModels() override;
   void StopModels() override;
 

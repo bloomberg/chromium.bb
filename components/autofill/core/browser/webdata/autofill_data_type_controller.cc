@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_data_type_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
@@ -14,17 +16,16 @@
 namespace browser_sync {
 
 AutofillDataTypeController::AutofillDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
-    : NonUIDataTypeController(syncer::AUTOFILL, dump_stack, sync_client),
-      db_thread_(db_thread),
+    : NonUIDataTypeController(syncer::AUTOFILL,
+                              dump_stack,
+                              sync_client,
+                              syncer::GROUP_DB,
+                              std::move(db_thread)),
       web_data_service_(web_data_service) {}
-
-syncer::ModelSafeGroup AutofillDataTypeController::model_safe_group() const {
-  return syncer::GROUP_DB;
-}
 
 void AutofillDataTypeController::WebDatabaseLoaded() {
   DCHECK(CalledOnValidThread());
@@ -35,13 +36,6 @@ void AutofillDataTypeController::WebDatabaseLoaded() {
 
 AutofillDataTypeController::~AutofillDataTypeController() {
   DCHECK(CalledOnValidThread());
-}
-
-bool AutofillDataTypeController::PostTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(CalledOnValidThread());
-  return db_thread_->PostTask(from_here, task);
 }
 
 bool AutofillDataTypeController::StartModels() {

@@ -7,15 +7,15 @@
 
 #include "base/macros.h"
 #include "components/sync/device_info/local_device_info_provider.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 #include "components/sync/driver/sync_service_observer.h"
-#include "components/sync/driver/ui_data_type_controller.h"
 
 namespace browser_sync {
 
 // A controller for delete directives, which cannot sync when full encryption
 // is enabled.
 class HistoryDeleteDirectivesDataTypeController
-    : public syncer::UIDataTypeController,
+    : public syncer::NonUIDataTypeController,
       public syncer::SyncServiceObserver {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
@@ -23,7 +23,7 @@ class HistoryDeleteDirectivesDataTypeController
                                             syncer::SyncClient* sync_client);
   ~HistoryDeleteDirectivesDataTypeController() override;
 
-  // UIDataTypeController override.
+  // NonUIDataTypeController override.
   bool ReadyForStart() const override;
   bool StartModels() override;
   void StopModels() override;

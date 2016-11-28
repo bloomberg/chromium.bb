@@ -551,8 +551,6 @@ SyncError SupervisedUserSyncService::ProcessSyncChanges(
 void SupervisedUserSyncService::GoogleSignedOut(
     const std::string& account_id,
     const std::string& username) {
-  DCHECK(!sync_processor_);
-
   // Clear all data on signout, to avoid supervised users from one custodian
   // appearing in another one's profile.
   prefs_->ClearPref(prefs::kSupervisedUsers);

@@ -81,7 +81,7 @@ bool SessionDataTypeController::IsWaiting() {
 }
 
 void SessionDataTypeController::MaybeCompleteLoading() {
-  if (state_ == MODEL_STARTING && !IsWaiting()) {
+  if (state() == MODEL_STARTING && !IsWaiting()) {
     OnModelLoaded();
   }
 }

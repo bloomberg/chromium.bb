@@ -26,7 +26,7 @@ class SessionDataTypeController : public syncer::UIDataTypeController {
                             const char* history_disabled_pref_name);
   ~SessionDataTypeController() override;
 
-  // UIDataTypeController interface.
+  // UIDataTypeController implementation.
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;

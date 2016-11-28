@@ -24,13 +24,12 @@ class NonUIDataTypeControllerMock : public NonUIDataTypeController {
   MOCK_METHOD0(Stop, void());
   MOCK_CONST_METHOD0(type, ModelType());
   MOCK_CONST_METHOD0(name, std::string());
-  MOCK_CONST_METHOD0(model_safe_group, ModelSafeGroup());
   MOCK_CONST_METHOD0(state, State());
 
   // NonUIDataTypeController mocks.
   MOCK_METHOD0(StartModels, bool());
   MOCK_METHOD0(StopModels, void());
-  MOCK_METHOD2(PostTaskOnBackendThread,
+  MOCK_METHOD2(PostTaskOnModelThread,
                bool(const tracked_objects::Location&, const base::Closure&));
   MOCK_METHOD3(StartDone,
                void(DataTypeController::ConfigureResult result,

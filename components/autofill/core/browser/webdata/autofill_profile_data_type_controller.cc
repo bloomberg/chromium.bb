@@ -4,6 +4,8 @@
 
 #include "components/autofill/core/browser/webdata/autofill_profile_data_type_controller.h"
 
+#include <utility>
+
 #include "base/bind.h"
 #include "base/metrics/histogram.h"
 #include "components/autofill/core/browser/personal_data_manager.h"
@@ -17,22 +19,18 @@ using autofill::AutofillWebDataService;
 namespace browser_sync {
 
 AutofillProfileDataTypeController::AutofillProfileDataTypeController(
-    const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> db_thread,
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     const scoped_refptr<autofill::AutofillWebDataService>& web_data_service)
     : NonUIDataTypeController(syncer::AUTOFILL_PROFILE,
                               dump_stack,
-                              sync_client),
-      db_thread_(db_thread),
+                              sync_client,
+                              syncer::GROUP_DB,
+                              std::move(db_thread)),
       sync_client_(sync_client),
       web_data_service_(web_data_service),
       callback_registered_(false) {}
-
-syncer::ModelSafeGroup AutofillProfileDataTypeController::model_safe_group()
-    const {
-  return syncer::GROUP_DB;
-}
 
 void AutofillProfileDataTypeController::WebDatabaseLoaded() {
   DCHECK(CalledOnValidThread());
@@ -59,13 +57,6 @@ void AutofillProfileDataTypeController::OnPersonalDataChanged() {
 }
 
 AutofillProfileDataTypeController::~AutofillProfileDataTypeController() {}
-
-bool AutofillProfileDataTypeController::PostTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(CalledOnValidThread());
-  return db_thread_->PostTask(from_here, task);
-}
 
 bool AutofillProfileDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());

@@ -24,19 +24,14 @@ class AutofillDataTypeController : public syncer::NonUIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillDataTypeController(
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& dump_stack,
       syncer::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillDataTypeController() override;
 
-  // NonUIDataTypeController implementation.
-  syncer::ModelSafeGroup model_safe_group() const override;
-
  protected:
   // NonUIDataTypeController implementation.
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override;
   bool StartModels() override;
 
  private:
@@ -46,9 +41,6 @@ class AutofillDataTypeController : public syncer::NonUIDataTypeController {
 
   // Callback once WebDatabase has loaded.
   void WebDatabaseLoaded();
-
-  // A reference to the DB thread's task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
 
   // A reference to the AutofillWebDataService for this controller.
   scoped_refptr<autofill::AutofillWebDataService> web_data_service_;

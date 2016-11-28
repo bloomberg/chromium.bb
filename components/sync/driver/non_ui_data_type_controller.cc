@@ -4,6 +4,8 @@
 
 #include "components/sync/driver/non_ui_data_type_controller.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/base/bind_to_task_runner.h"
@@ -27,9 +29,17 @@ SharedChangeProcessor* NonUIDataTypeController::CreateSharedChangeProcessor() {
 NonUIDataTypeController::NonUIDataTypeController(
     ModelType type,
     const base::Closure& dump_stack,
-    SyncClient* sync_client)
-    : DirectoryDataTypeController(type, dump_stack, sync_client),
-      state_(NOT_RUNNING) {}
+    SyncClient* sync_client,
+    ModelSafeGroup model_safe_group,
+    scoped_refptr<base::SequencedTaskRunner> model_thread)
+    : DirectoryDataTypeController(type,
+                                  dump_stack,
+                                  sync_client,
+                                  model_safe_group),
+      user_share_(nullptr),
+      processor_factory_(new GenericChangeProcessorFactory()),
+      state_(NOT_RUNNING),
+      model_thread_(std::move(model_thread)) {}
 
 void NonUIDataTypeController::LoadModels(
     const ModelLoadCallback& model_load_callback) {
@@ -75,6 +85,13 @@ bool NonUIDataTypeController::StartModels() {
 
 void NonUIDataTypeController::StopModels() {
   DCHECK(CalledOnValidThread());
+}
+
+bool NonUIDataTypeController::PostTaskOnModelThread(
+    const tracked_objects::Location& from_here,
+    const base::Closure& task) {
+  DCHECK(CalledOnValidThread());
+  return model_thread_->PostTask(from_here, task);
 }
 
 void NonUIDataTypeController::StartAssociating(
@@ -134,8 +151,17 @@ DataTypeController::State NonUIDataTypeController::state() const {
   return state_;
 }
 
+void NonUIDataTypeController::SetGenericChangeProcessorFactoryForTest(
+    std::unique_ptr<GenericChangeProcessorFactory> factory) {
+  DCHECK_EQ(state_, NOT_RUNNING);
+  processor_factory_ = std::move(factory);
+}
+
 NonUIDataTypeController::NonUIDataTypeController()
-    : DirectoryDataTypeController(UNSPECIFIED, base::Closure(), nullptr) {}
+    : DirectoryDataTypeController(UNSPECIFIED,
+                                  base::Closure(),
+                                  nullptr,
+                                  GROUP_PASSIVE) {}
 
 NonUIDataTypeController::~NonUIDataTypeController() {}
 
@@ -198,13 +224,14 @@ void NonUIDataTypeController::DisableImpl(const SyncError& error) {
 bool NonUIDataTypeController::StartAssociationAsync() {
   DCHECK(CalledOnValidThread());
   DCHECK_EQ(state(), ASSOCIATING);
-  return PostTaskOnBackendThread(
+  return PostTaskOnModelThread(
       FROM_HERE,
       base::Bind(
           &SharedChangeProcessor::StartAssociation, shared_change_processor_,
           BindToCurrentThread(base::Bind(&NonUIDataTypeController::StartDone,
                                          base::AsWeakPtr(this))),
-          sync_client_, user_share_, base::Passed(CreateErrorHandler())));
+          sync_client_, processor_factory_.get(), user_share_,
+          base::Passed(CreateErrorHandler())));
 }
 
 ChangeProcessor* NonUIDataTypeController::GetChangeProcessor() const {
@@ -225,9 +252,9 @@ void NonUIDataTypeController::DisconnectSharedChangeProcessor() {
 void NonUIDataTypeController::StopSyncableService() {
   DCHECK(CalledOnValidThread());
   if (shared_change_processor_.get()) {
-    PostTaskOnBackendThread(FROM_HERE,
-                            base::Bind(&SharedChangeProcessor::StopLocalService,
-                                       shared_change_processor_));
+    PostTaskOnModelThread(FROM_HERE,
+                          base::Bind(&SharedChangeProcessor::StopLocalService,
+                                     shared_change_processor_));
   }
 }
 

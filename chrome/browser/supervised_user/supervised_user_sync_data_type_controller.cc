@@ -4,6 +4,7 @@
 
 #include "chrome/browser/supervised_user/supervised_user_sync_data_type_controller.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/profiles/profile.h"
 
 SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
@@ -11,7 +12,11 @@ SupervisedUserSyncDataTypeController::SupervisedUserSyncDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : syncer::UIDataTypeController(type, dump_stack, sync_client),
+    : syncer::NonUIDataTypeController(type,
+                                      dump_stack,
+                                      sync_client,
+                                      syncer::GROUP_UI,
+                                      base::ThreadTaskRunnerHandle::Get()),
       profile_(profile) {
   DCHECK(type == syncer::SUPERVISED_USERS ||
          type == syncer::SUPERVISED_USER_SETTINGS ||

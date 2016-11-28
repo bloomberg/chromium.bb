@@ -4,6 +4,7 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_package_sync_data_type_controller.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
@@ -30,9 +31,12 @@ ArcPackageSyncDataTypeController::ArcPackageSyncDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : syncer::UIDataTypeController(type, dump_stack, sync_client),
-      profile_(profile),
-      sync_client_(sync_client) {
+    : syncer::NonUIDataTypeController(type,
+                                      dump_stack,
+                                      sync_client,
+                                      syncer::GROUP_UI,
+                                      base::ThreadTaskRunnerHandle::Get()),
+      profile_(profile) {
   pref_registrar_.Init(profile_->GetPrefs());
   pref_registrar_.Add(
       prefs::kArcEnabled,
@@ -48,20 +52,6 @@ bool ArcPackageSyncDataTypeController::ReadyForStart() const {
   return IsArcEnabled(profile_) && ShouldSyncArc();
 }
 
-void ArcPackageSyncDataTypeController::OnPackageListInitialRefreshed() {
-  // model_normal_start_ is true by default. Normally,
-  // ArcPackageSyncDataTypeController::StartModels() gets called before Arc
-  // package list is refreshed. But in integration test, the order can be either
-  // way. If OnPackageListInitialRefreshed comes before
-  // ArcPackageSyncDataTypeController ::StartModels(), this function is no-op
-  // and waits for StartModels() to be called.
-  if (model_normal_start_)
-    return;
-
-  model_normal_start_ = true;
-  OnModelLoaded();
-}
-
 bool ArcPackageSyncDataTypeController::StartModels() {
   DCHECK_EQ(state(), MODEL_STARTING);
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
@@ -75,6 +65,20 @@ void ArcPackageSyncDataTypeController::StopModels() {
   ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile_);
   if (arc_prefs)
     arc_prefs->RemoveObserver(this);
+}
+
+void ArcPackageSyncDataTypeController::OnPackageListInitialRefreshed() {
+  // model_normal_start_ is true by default. Normally,
+  // ArcPackageSyncDataTypeController::StartModels() gets called before Arc
+  // package list is refreshed. But in integration test, the order can be either
+  // way. If OnPackageListInitialRefreshed comes before
+  // ArcPackageSyncDataTypeController ::StartModels(), this function is no-op
+  // and waits for StartModels() to be called.
+  if (model_normal_start_)
+    return;
+
+  model_normal_start_ = true;
+  OnModelLoaded();
 }
 
 void ArcPackageSyncDataTypeController::OnArcEnabledPrefChanged() {

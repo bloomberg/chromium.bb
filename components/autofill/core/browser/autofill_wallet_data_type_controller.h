@@ -23,19 +23,14 @@ class AutofillWalletDataTypeController
   // |dump_stack| is called when an unrecoverable error occurs.
   AutofillWalletDataTypeController(
       syncer::ModelType type,
-      const scoped_refptr<base::SingleThreadTaskRunner>& db_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> db_thread,
       const base::Closure& dump_stack,
       syncer::SyncClient* sync_client,
       const scoped_refptr<autofill::AutofillWebDataService>& web_data_service);
   ~AutofillWalletDataTypeController() override;
 
-  // NonUIDataTypeController implementation.
-  syncer::ModelSafeGroup model_safe_group() const override;
-
  private:
   // NonUIDataTypeController implementation.
-  bool PostTaskOnBackendThread(const tracked_objects::Location& from_here,
-                               const base::Closure& task) override;
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;
@@ -45,12 +40,6 @@ class AutofillWalletDataTypeController
 
   // Returns true if the prefs are set such that wallet sync should be enabled.
   bool IsEnabled();
-
-  // A reference to the DB thread's task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> db_thread_;
-
-  // A pointer to the sync client.
-  syncer::SyncClient* const sync_client_;
 
   // Whether the database loaded callback has been registered.
   bool callback_registered_;

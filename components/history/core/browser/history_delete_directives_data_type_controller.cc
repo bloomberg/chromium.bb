@@ -4,6 +4,7 @@
 
 #include "components/history/core/browser/history_delete_directives_data_type_controller.h"
 
+#include "base/threading/thread_task_runner_handle.h"
 #include "components/sync/driver/sync_client.h"
 #include "components/sync/driver/sync_service.h"
 
@@ -12,9 +13,11 @@ namespace browser_sync {
 HistoryDeleteDirectivesDataTypeController::
     HistoryDeleteDirectivesDataTypeController(const base::Closure& dump_stack,
                                               syncer::SyncClient* sync_client)
-    : syncer::UIDataTypeController(syncer::HISTORY_DELETE_DIRECTIVES,
-                                   dump_stack,
-                                   sync_client),
+    : syncer::NonUIDataTypeController(syncer::HISTORY_DELETE_DIRECTIVES,
+                                      dump_stack,
+                                      sync_client,
+                                      syncer::GROUP_UI,
+                                      base::ThreadTaskRunnerHandle::Get()),
       sync_client_(sync_client) {}
 
 HistoryDeleteDirectivesDataTypeController::

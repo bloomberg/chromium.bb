@@ -11,6 +11,7 @@
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/sequenced_task_runner.h"
 #include "components/sync/driver/directory_data_type_controller.h"
 #include "components/sync/driver/shared_change_processor.h"
 
@@ -19,22 +20,33 @@ namespace syncer {
 class SyncClient;
 struct UserShare;
 
+// Implementation for datatypes that reside on non-UI thread. All interaction
+// with datatype controller happens on UI thread. Calls to SyncableService are
+// posted to model thread through PostTaskOnModelThread().
+// Note: RefCountedThreadSafe by way of DataTypeController.
 class NonUIDataTypeController : public DirectoryDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
-  NonUIDataTypeController(ModelType type,
-                          const base::Closure& dump_stack,
-                          SyncClient* sync_client);
+  NonUIDataTypeController(
+      ModelType type,
+      const base::Closure& dump_stack,
+      SyncClient* sync_client,
+      ModelSafeGroup model_safe_group,
+      scoped_refptr<base::SequencedTaskRunner> model_thread);
   ~NonUIDataTypeController() override;
 
   // DataTypeController interface.
   void LoadModels(const ModelLoadCallback& model_load_callback) override;
   void StartAssociating(const StartCallback& start_callback) override;
   void Stop() override;
-  ModelSafeGroup model_safe_group() const override = 0;
   ChangeProcessor* GetChangeProcessor() const override;
   std::string name() const override;
   State state() const override;
+
+  // Used by tests to override the factory used to create
+  // GenericChangeProcessors.
+  void SetGenericChangeProcessorFactoryForTest(
+      std::unique_ptr<GenericChangeProcessorFactory> factory);
 
  protected:
   // For testing only.
@@ -54,12 +66,12 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // Note: this is performed on the UI thread.
   virtual void StopModels();
 
-  // Posts the given task to the backend thread, i.e. the thread the
-  // datatype lives on.  Return value: True if task posted successfully,
-  // false otherwise.
-  virtual bool PostTaskOnBackendThread(
-      const tracked_objects::Location& from_here,
-      const base::Closure& task) = 0;
+  // Posts the given task to the model thread, i.e. the thread the datatype
+  // lives on. Return value: True if task posted successfully, false otherwise.
+  // Default implementation posts task to model_thread_. Types that don't use
+  // TaskRunner need to override this method.
+  virtual bool PostTaskOnModelThread(const tracked_objects::Location& from_here,
+                                     const base::Closure& task);
 
   // Start up complete, update the state and invoke the callback.
   virtual void StartDone(DataTypeController::ConfigureResult start_result,
@@ -106,12 +118,20 @@ class NonUIDataTypeController : public DirectoryDataTypeController {
   // passed to SharedChangeProcessor::Connect on the model thread.
   UserShare* user_share_;
 
+  // Factory is used by tests to inject custom implementation of
+  // GenericChangeProcessor.
+  std::unique_ptr<GenericChangeProcessorFactory> processor_factory_;
+
   // State of this datatype controller.
   State state_;
 
   // Callbacks for use when starting the datatype.
   StartCallback start_callback_;
   ModelLoadCallback model_load_callback_;
+
+  // Task runner of the model thread. Can be nullptr in which case datatype
+  // controller needs to override PostTaskOnModelThread().
+  scoped_refptr<base::SequencedTaskRunner> model_thread_;
 
   // The shared change processor is the thread-safe interface to the
   // datatype.  We hold a reference to it from the UI thread so that

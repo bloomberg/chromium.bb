@@ -22,24 +22,17 @@ ExtensionSettingDataTypeController::ExtensionSettingDataTypeController(
     const base::Closure& dump_stack,
     syncer::SyncClient* sync_client,
     Profile* profile)
-    : NonUIDataTypeController(type, dump_stack, sync_client),
+    : NonUIDataTypeController(
+          type,
+          dump_stack,
+          sync_client,
+          syncer::GROUP_FILE,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE)),
       profile_(profile) {
   DCHECK(type == syncer::EXTENSION_SETTINGS || type == syncer::APP_SETTINGS);
 }
 
-syncer::ModelSafeGroup
-ExtensionSettingDataTypeController::model_safe_group() const {
-  return syncer::GROUP_FILE;
-}
-
 ExtensionSettingDataTypeController::~ExtensionSettingDataTypeController() {}
-
-bool ExtensionSettingDataTypeController::PostTaskOnBackendThread(
-    const tracked_objects::Location& from_here,
-    const base::Closure& task) {
-  DCHECK(CalledOnValidThread());
-  return BrowserThread::PostTask(BrowserThread::FILE, from_here, task);
-}
 
 bool ExtensionSettingDataTypeController::StartModels() {
   DCHECK(CalledOnValidThread());
