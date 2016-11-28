@@ -40,3 +40,8 @@ struct UnguessableToken {
 struct Version {
   array<uint32> components;
 };
+
+// Corresponds to |base::File| in base/files/file.h
+struct File {
+  handle fd;
+};

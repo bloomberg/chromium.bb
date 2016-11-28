@@ -319,6 +319,7 @@ component("base") {
     "files/dir_reader_linux.h",
     "files/dir_reader_posix.h",
     "files/file.cc",
+    "files/file.h",
     "files/file_descriptor_watcher_posix.cc",
     "files/file_descriptor_watcher_posix.h",
     "files/file_enumerator.cc",

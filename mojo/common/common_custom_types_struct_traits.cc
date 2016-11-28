@@ -4,7 +4,7 @@
 
 #include "mojo/common/common_custom_types_struct_traits.h"
 
-#include <iterator>
+#include "mojo/public/cpp/system/platform_handle.h"
 
 namespace mojo {
 
@@ -50,6 +50,24 @@ bool StructTraits<
     return false;
 
   *out = base::UnguessableToken::Deserialize(high, low);
+  return true;
+}
+
+mojo::ScopedHandle StructTraits<common::mojom::FileDataView, base::File>::fd(
+    base::File& file) {
+  DCHECK(file.IsValid());
+  return mojo::WrapPlatformFile(file.TakePlatformFile());
+}
+
+bool StructTraits<common::mojom::FileDataView, base::File>::Read(
+    common::mojom::FileDataView data,
+    base::File* file) {
+  base::PlatformFile platform_handle = base::kInvalidPlatformFile;
+  if (mojo::UnwrapPlatformFile(data.TakeFd(), &platform_handle) !=
+      MOJO_RESULT_OK) {
+    return false;
+  }
+  *file = base::File(platform_handle);
   return true;
 }
 

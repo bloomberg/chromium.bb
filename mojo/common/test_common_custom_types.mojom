@@ -36,3 +36,9 @@ interface TestString16 {
   BounceString16(mojo.common.mojom.String16 in)
       => (mojo.common.mojom.String16 out);
 };
+
+interface TestFile {
+  [Sync]
+  BounceFile(mojo.common.mojom.File? in)
+      => (mojo.common.mojom.File? out);
+};

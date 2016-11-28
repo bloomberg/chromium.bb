@@ -5,6 +5,7 @@
 #ifndef MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 #define MOJO_COMMON_COMMON_CUSTOM_TYPES_STRUCT_TRAITS_H_
 
+#include "base/files/file.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/unguessable_token.h"
 #include "base/version.h"
@@ -66,6 +67,16 @@ struct StructTraits<common::mojom::TimeDeltaDataView, base::TimeDelta> {
     *delta = base::TimeDelta::FromMicroseconds(data.microseconds());
     return true;
   }
+};
+
+template <>
+struct StructTraits<common::mojom::FileDataView, base::File> {
+  static bool IsNull(const base::File& file) { return !file.IsValid(); }
+
+  static void SetToNull(base::File* file) { *file = base::File(); }
+
+  static mojo::ScopedHandle fd(base::File& file);
+  static bool Read(common::mojom::FileDataView data, base::File* file);
 };
 
 }  // namespace mojo

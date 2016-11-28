@@ -94,5 +94,6 @@ source_set("struct_traits") {
   deps = [
     ":common_custom_types_shared_cpp_sources",
     "//base:base",
+    "//mojo/public/cpp/system",
   ]
 }
