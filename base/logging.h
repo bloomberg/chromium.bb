@@ -527,10 +527,24 @@ class CheckOpResult {
 // it uses the definition for operator<<, with a few special cases below.
 template <typename T>
 inline typename std::enable_if<
-    base::internal::SupportsOstreamOperator<const T&>::value,
+    base::internal::SupportsOstreamOperator<const T&>::value &&
+        !std::is_function<typename std::remove_pointer<T>::type>::value,
     void>::type
 MakeCheckOpValueString(std::ostream* os, const T& v) {
   (*os) << v;
+}
+
+// Provide an overload for functions and function pointers. Function pointers
+// don't implicitly convert to void* but do implicitly convert to bool, so
+// without this function pointers are always printed as 1 or 0. (MSVC isn't
+// standards-conforming here and converts function pointers to regular
+// pointers, so this is a no-op for MSVC.)
+template <typename T>
+inline typename std::enable_if<
+    std::is_function<typename std::remove_pointer<T>::type>::value,
+    void>::type
+MakeCheckOpValueString(std::ostream* os, const T& v) {
+  (*os) << reinterpret_cast<const void*>(v);
 }
 
 // We need overloads for enums that don't support operator<<.
