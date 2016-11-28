@@ -317,6 +317,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
             mUiFrameListener.mSurfaceTexture.release();
         }
         restoreContentWindow();
+        mUiContents.destroy();
     }
 
     @Override
