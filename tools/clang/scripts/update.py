@@ -496,7 +496,6 @@ def UpdateClang(args):
                      '-DCMAKE_BUILD_TYPE=Release',
                      '-DLLVM_ENABLE_ASSERTIONS=ON',
                      '-DLLVM_ENABLE_THREADS=OFF',
-                     '-DLLVM_ENABLE_TIMESTAMPS=OFF',
                      # Statically link MSVCRT to avoid DLL dependencies.
                      '-DLLVM_USE_CRT_RELEASE=MT',
                      ]
