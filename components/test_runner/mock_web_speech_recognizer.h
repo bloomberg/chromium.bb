@@ -48,11 +48,15 @@ class MockWebSpeechRecognizer : public blink::WebSpeechRecognizer {
   blink::WebSpeechRecognizerClient* Client() { return client_; }
   blink::WebSpeechRecognitionHandle& Handle() { return handle_; }
 
+  void SetClientContext(const blink::WebSpeechRecognitionHandle&,
+                        blink::WebSpeechRecognizerClient*);
+
   class Task {
    public:
     Task(MockWebSpeechRecognizer* recognizer) : recognizer_(recognizer) {}
     virtual ~Task() {}
     virtual void run() = 0;
+    virtual bool isNewContextTask() const;
 
    protected:
     MockWebSpeechRecognizer* recognizer_;

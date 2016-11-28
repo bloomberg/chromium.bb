@@ -120,18 +120,41 @@ class EndedTask : public MockWebSpeechRecognizer::Task {
 
   void run() override {
     blink::WebSpeechRecognitionHandle handle = recognizer_->Handle();
-    recognizer_->Handle().reset();
-    recognizer_->Client()->didEnd(handle);
+    blink::WebSpeechRecognizerClient* client = recognizer_->Client();
+    recognizer_->SetClientContext(blink::WebSpeechRecognitionHandle(), nullptr);
+    client->didEnd(handle);
   }
 
  private:
   DISALLOW_COPY_AND_ASSIGN(EndedTask);
 };
 
+// Task for switching processing to the next (handle, client) pairing.
+class SwitchClientHandleTask : public MockWebSpeechRecognizer::Task {
+ public:
+  SwitchClientHandleTask(MockWebSpeechRecognizer* mock,
+                         const blink::WebSpeechRecognitionHandle& handle,
+                         blink::WebSpeechRecognizerClient* client)
+      : MockWebSpeechRecognizer::Task(mock), handle_(handle), client_(client) {}
+
+  ~SwitchClientHandleTask() override {}
+
+  bool isNewContextTask() const override { return true; }
+
+  void run() override { recognizer_->SetClientContext(handle_, client_); }
+
+ private:
+  const blink::WebSpeechRecognitionHandle handle_;
+  blink::WebSpeechRecognizerClient* client_;
+
+  DISALLOW_COPY_AND_ASSIGN(SwitchClientHandleTask);
+};
+
 }  // namespace
 
 MockWebSpeechRecognizer::MockWebSpeechRecognizer()
-    : was_aborted_(false),
+    : client_(nullptr),
+      was_aborted_(false),
       task_queue_running_(false),
       delegate_(0),
       weak_factory_(this) {}
@@ -140,8 +163,19 @@ MockWebSpeechRecognizer::~MockWebSpeechRecognizer() {
   ClearTaskQueue();
 }
 
+bool MockWebSpeechRecognizer::Task::isNewContextTask() const {
+  return false;
+}
+
 void MockWebSpeechRecognizer::SetDelegate(WebTestDelegate* delegate) {
   delegate_ = delegate;
+}
+
+void MockWebSpeechRecognizer::SetClientContext(
+    const blink::WebSpeechRecognitionHandle& handle,
+    blink::WebSpeechRecognizerClient* client) {
+  handle_ = handle;
+  client_ = client;
 }
 
 void MockWebSpeechRecognizer::start(
@@ -149,8 +183,12 @@ void MockWebSpeechRecognizer::start(
     const blink::WebSpeechRecognitionParams& params,
     blink::WebSpeechRecognizerClient* client) {
   was_aborted_ = false;
-  handle_ = handle;
-  client_ = client;
+  if (!client_) {
+    handle_ = handle;
+    client_ = client;
+  } else {
+    task_queue_.push_back(new SwitchClientHandleTask(this, handle, client));
+  }
 
   task_queue_.push_back(
       new ClientCallTask(this, &blink::WebSpeechRecognizerClient::didStart));
@@ -183,8 +221,7 @@ void MockWebSpeechRecognizer::start(
 void MockWebSpeechRecognizer::stop(
     const blink::WebSpeechRecognitionHandle& handle,
     blink::WebSpeechRecognizerClient* client) {
-  handle_ = handle;
-  client_ = client;
+  SetClientContext(handle, client);
 
   // FIXME: Implement.
   NOTREACHED();
@@ -193,11 +230,9 @@ void MockWebSpeechRecognizer::stop(
 void MockWebSpeechRecognizer::abort(
     const blink::WebSpeechRecognitionHandle& handle,
     blink::WebSpeechRecognizerClient* client) {
-  handle_ = handle;
-  client_ = client;
-
-  ClearTaskQueue();
   was_aborted_ = true;
+  ClearTaskQueue();
+  task_queue_.push_back(new SwitchClientHandleTask(this, handle, client));
   task_queue_.push_back(new EndedTask(this));
 
   StartTaskQueue();
@@ -248,10 +283,14 @@ void MockWebSpeechRecognizer::StartTaskQueue() {
 
 void MockWebSpeechRecognizer::ClearTaskQueue() {
   while (!task_queue_.empty()) {
+    Task* task = task_queue_.front();
+    if (task->isNewContextTask())
+      break;
     delete task_queue_.front();
     task_queue_.pop_front();
   }
-  task_queue_running_ = false;
+  if (task_queue_.empty())
+    task_queue_running_ = false;
 }
 
 void MockWebSpeechRecognizer::PostRunTaskFromQueue() {
