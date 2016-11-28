@@ -2350,6 +2350,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestBadFrameNavigation) {
 // From an HTTP top frame, navigate to good and bad HTTPS (security state should
 // stay unauthenticated).
 IN_PROC_BROWSER_TEST_F(SSLUITest, TestUnauthenticatedFrameNavigation) {
+  // TODO(crbug.com/668913): Flaky with --site-per-process.
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kSitePerProcess)) {
+    return;
+  }
   ASSERT_TRUE(embedded_test_server()->Start());
   ASSERT_TRUE(https_server_.Start());
   ASSERT_TRUE(https_server_expired_.Start());
