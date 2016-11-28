@@ -142,6 +142,12 @@ void InProcessWorkerObjectProxy::postMessageToPageInspector(
   }
 }
 
+ParentFrameTaskRunners*
+InProcessWorkerObjectProxy::getParentFrameTaskRunners() {
+  DCHECK(m_messagingProxy);
+  return m_messagingProxy->getParentFrameTaskRunners();
+}
+
 void InProcessWorkerObjectProxy::didCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* globalScope) {
   DCHECK(!m_workerGlobalScope);
@@ -185,12 +191,6 @@ InProcessWorkerObjectProxy::InProcessWorkerObjectProxy(
       m_defaultIntervalInSec(kDefaultIntervalInSec),
       m_nextIntervalInSec(kDefaultIntervalInSec),
       m_maxIntervalInSec(kMaxIntervalInSec) {}
-
-ParentFrameTaskRunners*
-InProcessWorkerObjectProxy::getParentFrameTaskRunners() {
-  DCHECK(m_messagingProxy);
-  return m_messagingProxy->getParentFrameTaskRunners();
-}
 
 ExecutionContext* InProcessWorkerObjectProxy::getExecutionContext() {
   DCHECK(m_messagingProxy);

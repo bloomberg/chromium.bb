@@ -7,6 +7,7 @@
 #include "bindings/core/v8/V8GCController.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
 #include "core/workers/WorkerGlobalScope.h"
@@ -52,7 +53,8 @@ class MockWorkerLoaderProxyProvider : public WorkerLoaderProxyProvider {
 
 class MockWorkerReportingProxy : public WorkerReportingProxy {
  public:
-  MockWorkerReportingProxy() {}
+  MockWorkerReportingProxy()
+      : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
   ~MockWorkerReportingProxy() override {}
 
   MOCK_METHOD3(reportExceptionMock,
@@ -81,6 +83,10 @@ class MockWorkerReportingProxy : public WorkerReportingProxy {
     reportExceptionMock(errorMessage, location.get(), exceptionId);
   }
 
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
+    return m_parentFrameTaskRunners.get();
+  }
+
   void willEvaluateWorkerScript(size_t scriptSize,
                                 size_t cachedMetadataSize) override {
     m_scriptEvaluationEvent.signal();
@@ -90,6 +96,7 @@ class MockWorkerReportingProxy : public WorkerReportingProxy {
   void waitUntilScriptEvaluation() { m_scriptEvaluationEvent.wait(); }
 
  private:
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
   WaitableEvent m_scriptEvaluationEvent;
 };
 

@@ -41,6 +41,7 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override;
   void postMessageToPageInspector(const String&) override;
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override;
   void willDestroyWorkerGlobalScope() override {}

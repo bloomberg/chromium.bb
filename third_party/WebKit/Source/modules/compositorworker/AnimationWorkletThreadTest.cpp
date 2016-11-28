@@ -10,6 +10,7 @@
 #include "bindings/core/v8/WorkerOrWorkletScriptController.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
@@ -45,6 +46,9 @@ class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override {}
   void postMessageToPageInspector(const String&) override {}
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
+    return m_parentFrameTaskRunners.get();
+  }
 
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override {}
@@ -52,7 +56,10 @@ class TestAnimationWorkletReportingProxy : public WorkerReportingProxy {
   void didTerminateWorkerThread() override {}
 
  private:
-  TestAnimationWorkletReportingProxy() {}
+  TestAnimationWorkletReportingProxy()
+      : m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
+
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 };
 
 class AnimationWorkletTestPlatform : public TestingPlatformSupport {

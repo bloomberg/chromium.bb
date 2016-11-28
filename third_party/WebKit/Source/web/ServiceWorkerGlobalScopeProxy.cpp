@@ -38,6 +38,7 @@
 #include "core/dom/MessagePort.h"
 #include "core/inspector/ConsoleMessage.h"
 #include "core/origin_trials/OriginTrials.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerGlobalScope.h"
 #include "core/workers/WorkerThread.h"
 #include "modules/background_sync/SyncEvent.h"
@@ -86,6 +87,7 @@ ServiceWorkerGlobalScopeProxy::~ServiceWorkerGlobalScopeProxy() {
 
 DEFINE_TRACE(ServiceWorkerGlobalScopeProxy) {
   visitor->trace(m_document);
+  visitor->trace(m_parentFrameTaskRunners);
   visitor->trace(m_pendingPreloadFetchEvents);
 }
 
@@ -357,6 +359,11 @@ void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(
                             crossThreadUnretained(m_embeddedWorker), message));
 }
 
+ParentFrameTaskRunners*
+ServiceWorkerGlobalScopeProxy::getParentFrameTaskRunners() {
+  return m_parentFrameTaskRunners.get();
+}
+
 void ServiceWorkerGlobalScopeProxy::didCreateWorkerGlobalScope(
     WorkerOrWorkletGlobalScope* workerGlobalScope) {
   DCHECK(!m_workerGlobalScope);
@@ -416,7 +423,15 @@ ServiceWorkerGlobalScopeProxy::ServiceWorkerGlobalScopeProxy(
     : m_embeddedWorker(&embeddedWorker),
       m_document(&document),
       m_client(&client),
-      m_workerGlobalScope(nullptr) {}
+      m_workerGlobalScope(nullptr) {
+  // ServiceWorker can sometimes run tasks that are initiated by/associated with
+  // a document's frame but these documents can be from a different process. So
+  // we intentionally populate the task runners with null document in order to
+  // use the thread's default task runner. Note that |m_document| should not be
+  // used as it's a dummy document for loading that doesn't represent the frame
+  // of any associated document.
+  m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
+}
 
 void ServiceWorkerGlobalScopeProxy::detach() {
   m_embeddedWorker = nullptr;

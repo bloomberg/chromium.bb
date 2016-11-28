@@ -45,7 +45,6 @@ class ConsoleMessage;
 class ExecutionContext;
 class ExecutionContextTask;
 class InProcessWorkerMessagingProxy;
-class ParentFrameTaskRunners;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
 
@@ -82,6 +81,7 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
                             const String& message,
                             SourceLocation*) override;
   void postMessageToPageInspector(const String&) override;
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void didEvaluateWorkerScript(bool success) override;
   void didCloseWorkerGlobalScope() override;
@@ -96,9 +96,6 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
   friend class InProcessWorkerMessagingProxyForTest;
 
   void checkPendingActivity(TimerBase*);
-
-  // Returns the parent frame's task runners.
-  ParentFrameTaskRunners* getParentFrameTaskRunners();
 
   // This object always outlives this proxy.
   InProcessWorkerMessagingProxy* m_messagingProxy;

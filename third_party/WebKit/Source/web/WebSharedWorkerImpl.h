@@ -83,6 +83,7 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
                             const String& message,
                             SourceLocation*) override;
   void postMessageToPageInspector(const WTF::String&) override;
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didEvaluateWorkerScript(bool success) override {}
   void didCloseWorkerGlobalScope() override;
   void willDestroyWorkerGlobalScope() override {}
@@ -167,7 +168,7 @@ class WebSharedWorkerImpl final : public WorkerReportingProxy,
 
   Persistent<WorkerInspectorProxy> m_workerInspectorProxy;
 
-  Persistent<ParentFrameTaskRunners> m_mainThreadTaskRunners;
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   std::unique_ptr<WorkerThread> m_workerThread;
 

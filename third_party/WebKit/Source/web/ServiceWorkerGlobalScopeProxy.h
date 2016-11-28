@@ -127,6 +127,7 @@ class ServiceWorkerGlobalScopeProxy final
                             const String& message,
                             SourceLocation*) override;
   void postMessageToPageInspector(const String&) override;
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override;
   void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override;
   void didInitializeWorkerContext() override;
   void willEvaluateWorkerScript(size_t scriptSize,
@@ -160,6 +161,8 @@ class ServiceWorkerGlobalScopeProxy final
   // as part of its finalization.
   WebEmbeddedWorkerImpl* m_embeddedWorker;
   Member<Document> m_document;
+
+  Member<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 
   HeapHashMap<int, Member<FetchEvent>> m_pendingPreloadFetchEvents;
 

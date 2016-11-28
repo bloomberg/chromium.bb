@@ -250,7 +250,13 @@ void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(
   m_workerInspectorProxy->dispatchMessageFromWorker(message);
 }
 
+ParentFrameTaskRunners* WebSharedWorkerImpl::getParentFrameTaskRunners() {
+  return m_parentFrameTaskRunners.get();
+}
+
 void WebSharedWorkerImpl::didCloseWorkerGlobalScope() {
+  // TODO(nhiroki): Replace this with getParentFrameTaskRunners().
+  // (https://crbug.com/667310)
   Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(
@@ -265,6 +271,8 @@ void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread() {
 }
 
 void WebSharedWorkerImpl::didTerminateWorkerThread() {
+  // TODO(nhiroki): Replace this with getParentFrameTaskRunners().
+  // (https://crbug.com/667310)
   Platform::current()->mainThread()->getWebTaskRunner()->postTask(
       BLINK_FROM_HERE,
       crossThreadBind(
@@ -284,7 +292,7 @@ void WebSharedWorkerImpl::postTaskToLoader(
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task) {
   // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and
-  // consider using m_mainThreadTaskRunners->get(TaskType::Networking)
+  // consider using m_parentFrameTaskRunners->get(TaskType::Networking)
   // instead.
   m_mainFrame->frame()->document()->postTask(location, std::move(task));
 }
@@ -376,11 +384,13 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
           m_mainScriptLoader->responseAddressSpace(),
           m_mainScriptLoader->originTrialTokens(), std::move(workerSettings));
 
-  // We have a dummy document here for loading but it doesn't really represent
-  // the document/frame of associated document(s) for this worker. Here we
-  // populate the task runners with null document not to confuse the frame
-  // scheduler (which will end up using the thread's default task runner).
-  m_mainThreadTaskRunners = ParentFrameTaskRunners::create(nullptr);
+  // SharedWorker can sometimes run tasks that are initiated by/associated with
+  // a document's frame but these documents can be from a different process. So
+  // we intentionally populate the task runners with null document in order to
+  // use the thread's default task runner. Note that |m_document| should not be
+  // used as it's a dummy document for loading that doesn't represent the frame
+  // of any associated document.
+  m_parentFrameTaskRunners = ParentFrameTaskRunners::create(nullptr);
 
   m_loaderProxy = WorkerLoaderProxy::create(this);
   m_workerThread = SharedWorkerThread::create(m_name, m_loaderProxy, *this);

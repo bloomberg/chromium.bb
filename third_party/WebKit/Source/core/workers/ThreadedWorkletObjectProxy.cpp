@@ -53,6 +53,12 @@ void ThreadedWorkletObjectProxy::postMessageToPageInspector(
                                 message));
 }
 
+ParentFrameTaskRunners*
+ThreadedWorkletObjectProxy::getParentFrameTaskRunners() {
+  DCHECK(m_messagingProxy);
+  return m_messagingProxy->getParentFrameTaskRunners();
+}
+
 void ThreadedWorkletObjectProxy::didCloseWorkerGlobalScope() {
   getExecutionContext()->postTask(
       BLINK_FROM_HERE,
