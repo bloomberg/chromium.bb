@@ -8,7 +8,6 @@
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl_shared_memory.h"
 #include "gpu/ipc/common/gpu_memory_buffer_support.h"
-#include "services/ui/common/generic_shared_memory_id_generator.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
 
 namespace ui {
@@ -26,7 +25,8 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBuffer(
     gfx::BufferFormat format,
     gfx::BufferUsage usage,
     gpu::SurfaceHandle surface_handle) {
-  gfx::GpuMemoryBufferId id = GetNextGenericSharedMemoryId();
+  DCHECK(CalledOnValidThread());
+  gfx::GpuMemoryBufferId id(next_gpu_memory_id_++);
   const bool is_native =
       gpu::IsNativeGpuMemoryBufferConfigurationSupported(format, usage);
   if (is_native) {
@@ -61,6 +61,7 @@ MusGpuMemoryBufferManager::CreateGpuMemoryBufferFromHandle(
 void MusGpuMemoryBufferManager::SetDestructionSyncToken(
     gfx::GpuMemoryBuffer* buffer,
     const gpu::SyncToken& sync_token) {
+  DCHECK(CalledOnValidThread());
   static_cast<gpu::GpuMemoryBufferImpl*>(buffer)->set_destruction_sync_token(
       sync_token);
 }
@@ -70,6 +71,7 @@ void MusGpuMemoryBufferManager::DestroyGpuMemoryBuffer(
     int client_id,
     bool is_native,
     const gpu::SyncToken& sync_token) {
+  DCHECK(CalledOnValidThread());
   if (is_native) {
     gpu_service_->DestroyGpuMemoryBuffer(id, client_id, sync_token);
   }

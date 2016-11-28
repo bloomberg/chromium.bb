@@ -40,8 +40,6 @@ source_set("mus_common") {
 # process, display compositor in the gpu process).
 source_set("server_gpu") {
   sources = [
-    "generic_shared_memory_id_generator.cc",
-    "generic_shared_memory_id_generator.h",
     "mus_gpu_memory_buffer_manager.cc",
     "mus_gpu_memory_buffer_manager.h",
   ]
