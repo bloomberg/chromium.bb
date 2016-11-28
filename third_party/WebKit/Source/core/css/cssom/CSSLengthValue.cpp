@@ -19,6 +19,14 @@ CSSPrimitiveValue::UnitType CSSLengthValue::unitFromName(const String& name) {
   return CSSPrimitiveValue::stringToUnitType(name);
 }
 
+CSSLengthValue* CSSLengthValue::fromCSSValue(const CSSPrimitiveValue& value) {
+  if (value.isCalculated()) {
+    // TODO(meade): Implement CSSCalcLength::fromCSSValue.
+    return nullptr;
+  }
+  return CSSSimpleLength::fromCSSValue(value);
+}
+
 CSSLengthValue* CSSLengthValue::from(const String& cssText,
                                      ExceptionState& exceptionState) {
   // TODO: Implement

@@ -19,9 +19,7 @@ class CORE_EXPORT CSSPerspective : public CSSTransformComponent {
 
  public:
   static CSSPerspective* create(const CSSLengthValue*, ExceptionState&);
-  static CSSPerspective* fromCSSValue(const CSSFunctionValue& value) {
-    return nullptr;
-  }
+  static CSSPerspective* fromCSSValue(const CSSFunctionValue&);
 
   // Bindings require a non const return value.
   CSSLengthValue* length() const {

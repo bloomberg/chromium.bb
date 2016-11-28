@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<div id="testElement"></div>
+<script>
+var EPSILON = 1e-6; // float epsilon
+var supportedUnits = [
+  'px',
+  'em',
+  'ex',
+  'ch',
+  'rem',
+  'vw',
+  'vh',
+  'vmin',
+  'vmax',
+  'cm',
+  'mm',
+  'in',
+  'pc',
+  'pt'
+];
+// Note: unsupportedUnits = ['percent', 'q'];
+
+test(function() {
+  for (var i = 0; i < supportedUnits.length; i++) {
+    var unit = supportedUnits[i];
+    var cssText = 'perspective(' + i + unit + ')';
+    testElement.style.transform = cssText;
+
+    var result = testElement.styleMap.get('transform');
+    assert_equals(result.cssText, cssText);
+    assert_true(result instanceof CSSTransformValue,
+      'value for ' + unit + 'was not CSSTransformValue');
+
+    var components = [...result.values()];
+    assert_equals(components.length, 1);
+    assert_true(components[0] instanceof CSSPerspective);
+    assert_equals(components[0].cssText, cssText);
+  }
+}, "Perspective read from a StyleMap is correct");
+
+test(function() {
+  for (var i = 0; i < supportedUnits.length; i++) {
+    var unit = supportedUnits[i];
+    var perspective = new CSSTransformValue([
+        new CSSPerspective(new CSSSimpleLength(i, unit))]);
+    testElement.styleMap.set('transform', perspective);
+
+    var cssText = 'perspective(' + i + unit + ')';
+    assert_equals(testElement.style.transform, cssText);
+  }
+}, "Set Perspective into the inline StylePropertyMap");
+
+</script>

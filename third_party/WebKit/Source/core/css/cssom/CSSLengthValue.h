@@ -19,6 +19,7 @@ class CORE_EXPORT CSSLengthValue : public CSSStyleValue {
 
  public:
   static CSSPrimitiveValue::UnitType unitFromName(const String& name);
+  static CSSLengthValue* fromCSSValue(const CSSPrimitiveValue&);
 
   CSSLengthValue* add(const CSSLengthValue* other);
   CSSLengthValue* subtract(const CSSLengthValue* other);
