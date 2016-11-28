@@ -121,7 +121,7 @@ class DummyMemoryPressureMonitor : public base::MemoryPressureMonitor {
   }
 
   // base::CriticalMemoryPressureMonitor:
-  MemoryPressureLevel GetCurrentPressureLevel() const override {
+  MemoryPressureLevel GetCurrentPressureLevel() override {
     return memory_pressure_level_;
   }
   void SetDispatchCallback(const DispatchCallback& callback) override {}

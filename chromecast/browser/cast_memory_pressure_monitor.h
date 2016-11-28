@@ -21,7 +21,7 @@ class CastMemoryPressureMonitor : public base::MemoryPressureMonitor {
   ~CastMemoryPressureMonitor() override;
 
   // base::MemoryPressureMonitor implementation:
-  MemoryPressureLevel GetCurrentPressureLevel() const override;
+  MemoryPressureLevel GetCurrentPressureLevel() override;
   void SetDispatchCallback(const DispatchCallback& callback) override;
 
  private:

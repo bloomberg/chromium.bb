@@ -55,7 +55,7 @@ CastMemoryPressureMonitor::CastMemoryPressureMonitor()
 CastMemoryPressureMonitor::~CastMemoryPressureMonitor() {}
 
 CastMemoryPressureMonitor::MemoryPressureLevel
-CastMemoryPressureMonitor::GetCurrentPressureLevel() const {
+CastMemoryPressureMonitor::GetCurrentPressureLevel() {
   return current_level_;
 }
 
