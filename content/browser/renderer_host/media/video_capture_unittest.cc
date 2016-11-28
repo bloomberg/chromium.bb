@@ -208,7 +208,7 @@ class VideoCaptureTest : public testing::Test,
   }
   MOCK_METHOD1(DoOnBufferCreated, void(int32_t));
   void OnBufferReady(int32_t buffer_id,
-                     mojom::VideoFrameInfoPtr info) override {
+                     media::mojom::VideoFrameInfoPtr info) override {
     DoOnBufferReady(buffer_id);
   }
   MOCK_METHOD1(DoOnBufferReady, void(int32_t));

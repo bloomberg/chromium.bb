@@ -255,7 +255,7 @@ void VideoCaptureImpl::OnBufferCreated(int32_t buffer_id,
 }
 
 void VideoCaptureImpl::OnBufferReady(int32_t buffer_id,
-                                     mojom::VideoFrameInfoPtr info) {
+                                     media::mojom::VideoFrameInfoPtr info) {
   DVLOG(1) << __func__ << " buffer_id: " << buffer_id;
   DCHECK(io_thread_checker_.CalledOnValidThread());
 

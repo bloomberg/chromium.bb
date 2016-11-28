@@ -5,6 +5,7 @@
 module media.mojom;
 
 import "media/mojo/interfaces/media_types.mojom";
+import "mojo/common/common_custom_types.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
 
 enum ResolutionChangePolicy {
@@ -55,4 +56,13 @@ struct VideoCaptureParams {
   VideoCaptureFormat requested_format;
   ResolutionChangePolicy resolution_change_policy;
   PowerLineFrequency power_line_frequency;
+};
+
+struct VideoFrameInfo{
+  mojo.common.mojom.TimeDelta timestamp;
+  mojo.common.mojom.DictionaryValue metadata;
+  VideoPixelFormat pixel_format;
+  VideoPixelStorage storage_type;
+  gfx.mojom.Size coded_size;
+  gfx.mojom.Rect visible_rect;
 };

@@ -1410,6 +1410,7 @@ test("content_unittests") {
     "//media/base:test_support",
     "//media/blink",
     "//media/capture",
+    "//media/capture/mojo:capture_types",
     "//media/midi:midi",
     "//media/midi:mojo_cpp_sources",
     "//mojo/edk/test:test_support",

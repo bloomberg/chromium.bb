@@ -123,7 +123,7 @@ class VideoCaptureImplTest : public ::testing::Test {
   }
 
   void SimulateBufferReceived(int buffer_id, const gfx::Size& size) {
-    mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
+    media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
 
     const base::TimeTicks now = base::TimeTicks::Now();
     media::VideoFrameMetadata frame_metadata;

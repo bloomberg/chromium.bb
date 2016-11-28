@@ -11,6 +11,7 @@ mojom("capture_types") {
 
   public_deps = [
     "//media/mojo/interfaces",
+    "//mojo/common:common_custom_types",
     "//ui/gfx/geometry/mojo",
   ]
 }

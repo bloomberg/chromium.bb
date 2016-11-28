@@ -87,7 +87,8 @@ class CONTENT_EXPORT VideoCaptureImpl : public mojom::VideoCaptureObserver {
   void OnStateChanged(mojom::VideoCaptureState state) override;
   void OnBufferCreated(int32_t buffer_id,
                        mojo::ScopedSharedBufferHandle handle) override;
-  void OnBufferReady(int32_t buffer_id, mojom::VideoFrameInfoPtr info) override;
+  void OnBufferReady(int32_t buffer_id,
+                     media::mojom::VideoFrameInfoPtr info) override;
   void OnBufferDestroyed(int32_t buffer_id) override;
 
   // Sends an IPC message to browser process when all clients are done with the

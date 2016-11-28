@@ -19,6 +19,7 @@ sources = [
 deps = [
   "//media",
   "//media/capture/ipc",
+  "//media/mojo/interfaces",
 ]
 
 type_mappings = [

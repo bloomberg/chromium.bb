@@ -93,7 +93,7 @@ void VideoCaptureHost::OnBufferReady(
   if (!base::ContainsKey(device_id_to_observer_map_, controller_id))
     return;
 
-  mojom::VideoFrameInfoPtr info = mojom::VideoFrameInfo::New();
+  media::mojom::VideoFrameInfoPtr info = media::mojom::VideoFrameInfo::New();
   info->timestamp = video_frame->timestamp();
   video_frame->metadata()->MergeInternalValuesInto(&info->metadata);
 

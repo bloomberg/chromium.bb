@@ -51,15 +51,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 //      | ---> StopCapture                                      |
 //      |                        OnStateChanged(STOPPED) <---   |
 
-struct VideoFrameInfo{
-  mojo.common.mojom.TimeDelta timestamp;
-  mojo.common.mojom.DictionaryValue metadata;
-  media.mojom.VideoPixelFormat pixel_format;
-  media.mojom.VideoPixelStorage storage_type;
-  gfx.mojom.Size coded_size;
-  gfx.mojom.Rect visible_rect;
-};
-
 enum VideoCaptureState {
   STARTED,
   PAUSED,
@@ -80,7 +71,7 @@ interface VideoCaptureObserver {
 
   // |buffer_id| has video capture data with |info| containing the associated
   // VideoFrame constituent parts.
-  OnBufferReady(int32 buffer_id, VideoFrameInfo info);
+  OnBufferReady(int32 buffer_id, media.mojom.VideoFrameInfo info);
 
   // |buffer_id| has been released by VideoCaptureHost and must not be used.
   OnBufferDestroyed(int32 buffer_id);
