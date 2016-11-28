@@ -1083,7 +1083,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, FullscreenDisallowed) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   // Make it possible to force-install a hosted app and an extension.
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -1095,6 +1095,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionsUncached) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
                  testing_update_manifest_provider));
+  embedded_test_server()->StartAcceptingConnections();
 
   // Specify policy to force-install the hosted app and the extension.
   em::StringList* forcelist = device_local_account_policy_.payload()
@@ -1253,7 +1254,7 @@ static void CreateFile(const base::FilePath& file,
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   // Make it possible to force-install a hosted app and an extension.
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -1265,6 +1266,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, ExtensionCacheImplTest) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
                  testing_update_manifest_provider));
+  embedded_test_server()->StartAcceptingConnections();
   // Create and initialize local cache.
   base::ScopedTempDir cache_dir;
   EXPECT_TRUE(cache_dir.CreateUniqueTempDir());
@@ -2222,7 +2224,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, TermsOfServiceWithLocaleSwitch) {
 
 IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   // Set up a test update server for the Show Managed Storage app.
-  ASSERT_TRUE(embedded_test_server()->Start());
+  ASSERT_TRUE(embedded_test_server()->InitializeAndListen());
   scoped_refptr<TestingUpdateManifestProvider> testing_update_manifest_provider(
       new TestingUpdateManifestProvider(kRelativeUpdateURL));
   testing_update_manifest_provider->AddUpdate(
@@ -2232,6 +2234,7 @@ IN_PROC_BROWSER_TEST_F(DeviceLocalAccountTest, PolicyForExtensions) {
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&TestingUpdateManifestProvider::HandleRequest,
                  testing_update_manifest_provider));
+  embedded_test_server()->StartAcceptingConnections();
 
   // Force-install the Show Managed Storage app. This app can be installed in
   // public sessions because it's whitelisted for testing purposes.

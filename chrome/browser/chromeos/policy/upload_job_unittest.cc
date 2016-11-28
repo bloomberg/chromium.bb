@@ -228,9 +228,9 @@ class UploadFlowTest : public UploadJobTestBase {
 
   // UploadJobTestBase:
   void SetUp() override {
-    UploadJobTestBase::SetUp();
     test_server_.RegisterRequestHandler(
         base::Bind(&UploadFlowTest::HandlePostRequest, base::Unretained(this)));
+    UploadJobTestBase::SetUp();
     upload_attempt_count_ = 0;
   }
 
@@ -349,9 +349,9 @@ class UploadRequestTest : public UploadJobTestBase {
 
   // UploadJobTestBase:
   void SetUp() override {
-    UploadJobTestBase::SetUp();
     test_server_.RegisterRequestHandler(base::Bind(
         &UploadRequestTest::HandlePostRequest, base::Unretained(this)));
+    UploadJobTestBase::SetUp();
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandlePostRequest(

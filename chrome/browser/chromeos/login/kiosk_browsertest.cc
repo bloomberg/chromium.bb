@@ -2281,18 +2281,20 @@ IN_PROC_BROWSER_TEST_F(KioskEnterpriseTest, PrivateStore) {
 
   const char kPrivateStoreUpdate[] = "/private_store_update";
   net::EmbeddedTestServer private_server;
-  ASSERT_TRUE(private_server.Start());
 
   // |private_server| serves crx from test data dir.
   base::FilePath test_data_dir;
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_dir);
   private_server.ServeFilesFromDirectory(test_data_dir);
+  ASSERT_TRUE(private_server.InitializeAndListen());
 
   FakeCWS private_store;
   private_store.InitAsPrivateStore(&private_server, kPrivateStoreUpdate);
   private_store.SetUpdateCrx(kTestEnterpriseKioskApp,
                              std::string(kTestEnterpriseKioskApp) + ".crx",
                              "1.0.0");
+
+  private_server.StartAcceptingConnections();
 
   // Configure kTestEnterpriseKioskApp in device policy.
   ConfigureKioskAppInPolicy(kTestEnterpriseAccountId,
