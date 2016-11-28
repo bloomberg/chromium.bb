@@ -10,6 +10,7 @@
     <includes>
       <include name="IDR_AW_LOAD_ERROR_HTML" file="resources\load_error.html" flattenhtml="true" type="BINDATA" />
       <include name="IDR_AW_BROWSER_MANIFEST_OVERLAY" file="../browser/aw_browser_manifest_overlay.json" type="BINDATA" />
+      <include name="IDR_AW_RENDERER_MANIFEST_OVERLAY" file="../browser/aw_renderer_manifest_overlay.json" type="BINDATA" />
     </includes>
   </release>
 </grit>

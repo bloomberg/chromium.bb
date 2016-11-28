@@ -534,6 +534,8 @@ AwContentBrowserClient::GetServiceManifestOverlay(const std::string& name) {
   int id = -1;
   if (name == content::mojom::kBrowserServiceName)
     id = IDR_AW_BROWSER_MANIFEST_OVERLAY;
+  else if (name == content::mojom::kRendererServiceName)
+    id = IDR_AW_RENDERER_MANIFEST_OVERLAY;
   if (id == -1)
     return nullptr;
 

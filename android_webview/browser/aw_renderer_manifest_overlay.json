@@ -1,0 +1,14 @@
+{
+  "name": "content_renderer",
+  "interface_provider_specs": {
+    "navigation:frame": {
+      "provides": {
+        "browser": [
+          "autofill::mojom::AutofillAgent",
+          "autofill::mojom::PasswordAutofillAgent",
+          "autofill::mojom::PasswordGenerationAgent"
+        ]
+      }
+    }
+  }
+}
