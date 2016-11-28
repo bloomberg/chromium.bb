@@ -196,6 +196,7 @@ class CORE_EXPORT Animation final : public EventTargetWithInlineData,
   Animation(ExecutionContext*, AnimationTimeline&, AnimationEffectReadOnly*);
 
   void clearOutdated();
+  void forceServiceOnNextFrame();
 
   double effectEnd() const;
   bool limited(double currentTime) const;

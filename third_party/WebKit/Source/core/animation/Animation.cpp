@@ -447,7 +447,7 @@ void Animation::setStartTimeInternal(double newStartTime) {
   } else if (!hadStartTime && m_timeline) {
     // Even though this animation is not outdated, time to effect change is
     // infinity until start time is set.
-    m_timeline->wake();
+    forceServiceOnNextFrame();
   }
 }
 
@@ -619,6 +619,7 @@ void Animation::finish(ExceptionState& exceptionState) {
   m_currentTimePending = false;
   m_startTime = calculateStartTime(newCurrentTime);
   m_playState = Finished;
+  forceServiceOnNextFrame();
 }
 
 ScriptPromise Animation::finished(ScriptState* scriptState) {
@@ -715,6 +716,10 @@ void Animation::setOutdated() {
   m_outdated = true;
   if (m_timeline)
     m_timeline->setOutdatedAnimation(this);
+}
+
+void Animation::forceServiceOnNextFrame() {
+  m_timeline->wake();
 }
 
 bool Animation::canStartAnimationOnCompositor() const {
@@ -888,6 +893,7 @@ void Animation::cancel() {
   m_playState = Idle;
   m_startTime = nullValue();
   m_currentTimePending = false;
+  forceServiceOnNextFrame();
 }
 
 void Animation::beginUpdatingState() {
