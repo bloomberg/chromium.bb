@@ -4,12 +4,10 @@
 
 #include "chrome/browser/predictors/resource_prefetch_common.h"
 
-#include <stdlib.h>
+#include <string>
 #include <tuple>
 
 #include "base/command_line.h"
-#include "base/metrics/field_trial.h"
-#include "base/strings/string_split.h"
 #include "chrome/browser/net/prediction_options.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/chrome_switches.h"
@@ -19,34 +17,17 @@
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/web_contents.h"
 
-using base::FieldTrialList;
-using std::string;
-using std::vector;
-
 namespace predictors {
 
-const char kSpeculativePrefetchingTrialName[] =
-    "SpeculativeResourcePrefetching";
+namespace {
 
-/*
- * SpeculativeResourcePrefetching is a field trial, and its value must have the
- * following format: key1=value1:key2=value2:key3=value3
- * e.g. "Prefetching=Enabled:Predictor=Url:Confidence=High"
- * The function below extracts the value corresponding to a key provided from
- * the SpeculativeResourcePrefetching field trial.
- */
-std::string GetFieldTrialSpecValue(string key) {
-  std::string trial_name =
-      FieldTrialList::FindFullName(kSpeculativePrefetchingTrialName);
-  for (const base::StringPiece& element : base::SplitStringPiece(
-           trial_name, ":", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL)) {
-    std::vector<base::StringPiece> key_value = base::SplitStringPiece(
-        element, "=", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-    if (key_value.size() == 2 && key_value[0] == key)
-      return key_value[1].as_string();
-  }
-  return string();
-}
+constexpr int kLearningMode = ResourcePrefetchPredictorConfig::URL_LEARNING |
+                              ResourcePrefetchPredictorConfig::HOST_LEARNING;
+constexpr int kPrefetchingMode =
+    ResourcePrefetchPredictorConfig::URL_PREFETCHING |
+    ResourcePrefetchPredictorConfig::HOST_PREFETCHING;
+
+}  // namespace
 
 bool IsSpeculativeResourcePrefetchingEnabled(
     Profile* profile,
@@ -68,85 +49,15 @@ bool IsSpeculativeResourcePrefetchingEnabled(
     if (value == switches::kSpeculativeResourcePrefetchingDisabled) {
       return false;
     } else if (value == switches::kSpeculativeResourcePrefetchingLearning) {
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
+      config->mode |= kLearningMode;
       return true;
     } else if (value == switches::kSpeculativeResourcePrefetchingEnabled) {
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::URL_PREFETCHING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_PRFETCHING;
+      config->mode |= kLearningMode | kPrefetchingMode;
       return true;
     }
   }
 
-  // Disable if no field trial is specified.
-  std::string trial = base::FieldTrialList::FindFullName(
-        kSpeculativePrefetchingTrialName);
-  if (trial.empty())
-    return false;
-
-  // Enabled by field trial.
-  std::string spec_prefetching = GetFieldTrialSpecValue("Prefetching");
-  std::string spec_predictor = GetFieldTrialSpecValue("Predictor");
-  std::string spec_confidence = GetFieldTrialSpecValue("Confidence");
-  std::string spec_more_resources = GetFieldTrialSpecValue("MoreResources");
-  std::string spec_small_db = GetFieldTrialSpecValue("SmallDB");
-
-  if (spec_prefetching == "Learning") {
-    if (spec_predictor == "Url") {
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-    } else if (spec_predictor == "Host") {
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-    } else {
-      // Default: both Url and Host
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-    }
-  } else if (spec_prefetching == "Enabled") {
-    if (spec_predictor == "Url") {
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::URL_PREFETCHING;
-    } else if (spec_predictor == "Host") {
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_PRFETCHING;
-    } else {
-      // Default: both Url and Host
-      config->mode |= ResourcePrefetchPredictorConfig::URL_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_LEARNING;
-      config->mode |= ResourcePrefetchPredictorConfig::URL_PREFETCHING;
-      config->mode |= ResourcePrefetchPredictorConfig::HOST_PRFETCHING;
-    }
-  } else {
-    // Default: spec_prefetching == "Disabled"
-    return false;
-  }
-
-  if (spec_confidence == "Low") {
-    config->min_url_visit_count = 1;
-    config->min_resource_confidence_to_trigger_prefetch = 0.5f;
-    config->min_resource_hits_to_trigger_prefetch = 1;
-  } else if (spec_confidence == "High") {
-    config->min_url_visit_count = 3;
-    config->min_resource_confidence_to_trigger_prefetch = 0.9f;
-    config->min_resource_hits_to_trigger_prefetch = 3;
-  } else {
-    // default
-    config->min_url_visit_count = 2;
-    config->min_resource_confidence_to_trigger_prefetch = 0.7f;
-    config->min_resource_hits_to_trigger_prefetch = 2;
-  }
-
-  if (spec_more_resources == "Enabled") {
-    config->max_resources_per_entry = 100;
-  }
-
-  if (spec_small_db == "Enabled") {
-    config->max_urls_to_track = 200;
-    config->max_hosts_to_track = 100;
-  }
-
-  return true;
+  return false;
 }
 
 NavigationID::NavigationID()
@@ -252,7 +163,7 @@ bool ResourcePrefetchPredictorConfig::IsHostPrefetchingEnabled(
       chrome_browser_net::NetworkPredictionStatus::ENABLED) {
     return false;
   }
-  return (mode & HOST_PRFETCHING) > 0;
+  return (mode & HOST_PREFETCHING) > 0;
 }
 
 bool ResourcePrefetchPredictorConfig::IsLowConfidenceForTest() const {
