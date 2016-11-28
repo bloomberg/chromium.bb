@@ -144,10 +144,6 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   const gfx::GpuMemoryBufferId kId(99);
   const uint32_t kOffset = 126;
   const int32_t kStride = 256;
-#if defined(USE_OZONE)
-  const uint64_t kSize = kOffset + kStride;
-  const uint64_t kModifier = 2;
-#endif
   base::SharedMemory shared_memory;
   ASSERT_TRUE(shared_memory.CreateAnonymous(1024));
   ASSERT_TRUE(shared_memory.Map(1024));
@@ -159,11 +155,6 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   handle.offset = kOffset;
   handle.stride = kStride;
 
-#if defined(USE_OZONE)
-  handle.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
-                                                  kModifier);
-#endif
-
   mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
   gfx::GpuMemoryBufferHandle output;
   proxy->EchoGpuMemoryBufferHandle(handle, &output);
@@ -172,16 +163,25 @@ TEST_F(StructTraitsTest, GpuMemoryBufferHandle) {
   EXPECT_EQ(kOffset, output.offset);
   EXPECT_EQ(kStride, output.stride);
 
-#if defined(USE_OZONE)
-  ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
-  EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);
-  EXPECT_EQ(kModifier, output.native_pixmap_handle.planes.back().modifier);
-#endif
-
 #if !defined(OS_MACOSX) && !defined(OS_IOS)
   // TODO: Add support for mach_port on mac.
   base::SharedMemory output_memory(output.handle, true);
   EXPECT_TRUE(output_memory.Map(1024));
+#endif
+
+#if defined(USE_OZONE)
+  const uint64_t kSize = kOffset + kStride;
+  const uint64_t kModifier = 2;
+  handle.type = gfx::OZONE_NATIVE_PIXMAP;
+  handle.id = kId;
+  handle.native_pixmap_handle.planes.emplace_back(kOffset, kStride, kSize,
+                                                  kModifier);
+  proxy->EchoGpuMemoryBufferHandle(handle, &output);
+  EXPECT_EQ(gfx::OZONE_NATIVE_PIXMAP, output.type);
+  EXPECT_EQ(kId, output.id);
+  ASSERT_EQ(1u, output.native_pixmap_handle.planes.size());
+  EXPECT_EQ(kSize, output.native_pixmap_handle.planes.back().size);
+  EXPECT_EQ(kModifier, output.native_pixmap_handle.planes.back().modifier);
 #endif
 }
 
