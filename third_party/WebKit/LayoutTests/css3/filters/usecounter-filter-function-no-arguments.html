@@ -9,7 +9,7 @@ test(() => {
     const CSSFilterFunctionNoArguments = 1403; // From UseCounter.h
     var style = document.querySelector('style');
     assert_false(internals.isUseCounted(document, CSSFilterFunctionNoArguments));
-    style.textContent = "* { -webkit-filter: brightness(); }";
+    style.textContent = "* { filter: brightness(); }";
     assert_true(internals.isUseCounted(document, CSSFilterFunctionNoArguments));
 }, "'filter' function without arguments is use counted.");
 </script>
