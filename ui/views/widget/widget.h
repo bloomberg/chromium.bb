@@ -165,12 +165,15 @@ class VIEWS_EXPORT Widget : public internal::NativeWidgetDelegate,
 
     enum WindowOpacity {
       // Infer fully opaque or not. For WinAura, top-level windows that are not
-      // of TYPE_WINDOW are translucent so that they can be made to fade in. In
-      // all other cases, windows are fully opaque.
+      // of TYPE_WINDOW are translucent so that they can be made to fade in.
+      // For LinuxAura, only windows that are TYPE_DRAG are translucent.  In all
+      // other cases, windows are fully opaque.
       INFER_OPACITY,
       // Fully opaque.
       OPAQUE_WINDOW,
-      // Possibly translucent/transparent.
+      // Possibly translucent/transparent.  Widgets that fade in or out using
+      // SetOpacity() but do not make use of an alpha channel should use
+      // INFER_OPACITY.
       TRANSLUCENT_WINDOW,
     };
 
