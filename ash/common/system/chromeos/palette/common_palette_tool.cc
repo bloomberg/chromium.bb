@@ -24,13 +24,6 @@
 namespace ash {
 namespace {
 
-// Returns the font used by any displayed labels.
-const gfx::FontList& GetLabelFont() {
-  // TODO(tdanderson|jdufault): Use TrayPopupItemStyle instead.
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      1, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM);
-}
-
 void AddHistogramTimes(PaletteToolId id, base::TimeDelta duration) {
   if (id == PaletteToolId::LASER_POINTER) {
     UMA_HISTOGRAM_CUSTOM_TIMES("Ash.Shelf.Palette.InLaserPointerMode", duration,
@@ -104,7 +97,6 @@ views::View* CommonPaletteTool::CreateDefaultView(const base::string16& name) {
                                              kTrayPopupPaddingHorizontal);
   highlight_view_->AddRightIcon(check, kMenuIconSize);
   highlight_view_->set_custom_height(kMenuButtonSize);
-  highlight_view_->text_label()->SetFontList(GetLabelFont());
 
   if (enabled()) {
     highlight_view_->SetAccessiblityState(

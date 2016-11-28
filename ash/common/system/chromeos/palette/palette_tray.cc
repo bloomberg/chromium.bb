@@ -11,11 +11,13 @@
 #include "ash/common/shelf/wm_shelf_util.h"
 #include "ash/common/system/chromeos/palette/palette_tool_manager.h"
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "ash/common/system/tray/system_menu_button.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/tray/tray_popup_header_button.h"
+#include "ash/common/system/tray/tray_popup_item_style.h"
 #include "ash/common/wm_lookup.h"
 #include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
@@ -83,49 +85,59 @@ bool IsInUserSession() {
              LoginStatus::KIOSK_APP;
 }
 
-// Returns the font used by the title view.
-const gfx::FontList& GetTitleFont() {
-  // TODO(tdanderson|jdufault): Use TrayPopupItemStyle instead.
-  return ui::ResourceBundle::GetSharedInstance().GetFontListWithDelta(
-      2, gfx::Font::FontStyle::NORMAL, gfx::Font::Weight::MEDIUM);
-}
-
 class TitleView : public views::View, public views::ButtonListener {
  public:
   explicit TitleView(PaletteTray* palette_tray) : palette_tray_(palette_tray) {
+    // TODO(tdanderson|jdufault): Use TriView to handle the layout of the title.
+    // See crbug.com/614453.
     auto* box_layout = new views::BoxLayout(
         views::BoxLayout::kHorizontal, 0, kVerticalMarginAroundTitleView,
         kHorizontalPaddingBetweenTitleEntries);
     SetLayoutManager(box_layout);
 
-    views::Label* text_label =
+    title_label_ =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STYLUS_TOOLS_TITLE));
-    text_label->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-    text_label->SetFontList(GetTitleFont());
-    AddChildView(text_label);
-    box_layout->SetFlexForView(text_label, 1);
+    title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
+    AddChildView(title_label_);
+    box_layout->SetFlexForView(title_label_, 1);
+    if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
+      help_button_ =
+          new SystemMenuButton(this, TrayPopupInkDropStyle::HOST_CENTERED,
+                               kSystemMenuHelpIcon, IDS_ASH_STATUS_TRAY_HELP);
+      settings_button_ = new SystemMenuButton(
+          this, TrayPopupInkDropStyle::HOST_CENTERED, kSystemMenuSettingsIcon,
+          IDS_ASH_STATUS_TRAY_SETTINGS);
+    } else {
+      gfx::ImageSkia help_icon =
+          gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
+      gfx::ImageSkia settings_icon =
+          gfx::CreateVectorIcon(kSystemMenuSettingsIcon, kMenuIconColor);
 
-    gfx::ImageSkia settings_icon =
-        gfx::CreateVectorIcon(kSystemMenuSettingsIcon, kMenuIconColor);
-    gfx::ImageSkia help_icon =
-        gfx::CreateVectorIcon(kSystemMenuHelpIcon, kMenuIconColor);
+      auto* help_button = new ash::TrayPopupHeaderButton(
+          this, help_icon, IDS_ASH_STATUS_TRAY_HELP);
+      help_button->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
+      help_button_ = help_button;
 
-    help_button_ = new ash::TrayPopupHeaderButton(this, help_icon,
-                                                  IDS_ASH_STATUS_TRAY_HELP);
-    help_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_HELP));
+      auto* settings_button = new ash::TrayPopupHeaderButton(
+          this, settings_icon, IDS_ASH_STATUS_TRAY_SETTINGS);
+      settings_button->SetTooltipText(
+          l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SETTINGS));
+      settings_button_ = settings_button;
+    }
+
     AddChildView(help_button_);
-
-    settings_button_ = new ash::TrayPopupHeaderButton(
-        this, settings_icon, IDS_ASH_STATUS_TRAY_SETTINGS);
-    settings_button_->SetTooltipText(
-        l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_SETTINGS));
     AddChildView(settings_button_);
   }
 
   ~TitleView() override {}
 
  private:
+  // views::View:
+  void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
+    UpdateStyle();
+  }
+
   // views::ButtonListener:
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
     if (sender == settings_button_) {
@@ -143,10 +155,18 @@ class TitleView : public views::View, public views::ButtonListener {
     }
   }
 
+  void UpdateStyle() {
+    TrayPopupItemStyle style(GetNativeTheme(),
+                             TrayPopupItemStyle::FontStyle::TITLE);
+    style.SetupLabel(title_label_);
+  }
+
   // Unowned pointers to button views so we can determine which button was
   // clicked.
-  ash::TrayPopupHeaderButton* settings_button_;
-  ash::TrayPopupHeaderButton* help_button_;
+  views::View* settings_button_;
+  views::View* help_button_;
+  // Needed for UpdateStyles()
+  views::Label* title_label_;
   PaletteTray* palette_tray_;
 
   DISALLOW_COPY_AND_ASSIGN(TitleView);
