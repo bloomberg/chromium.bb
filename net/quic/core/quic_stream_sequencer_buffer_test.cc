@@ -332,26 +332,6 @@ TEST_F(QuicStreamSequencerBufferTest, Readv100Bytes) {
   EXPECT_TRUE(helper_->CheckBufferInvariants());
 }
 
-TEST_F(QuicStreamSequencerBufferTest, ReadvError) {
-  string source = string(100, 'b');
-  clock_.AdvanceTime(QuicTime::Delta::FromSeconds(1));
-  QuicTime t1 = clock_.ApproximateNow();
-  // Write something into [0, 100).
-  size_t written;
-  buffer_->OnStreamData(0, source, t1, &written, &error_details_);
-  EXPECT_TRUE(helper_->GetBlock(0) != nullptr);
-  EXPECT_TRUE(buffer_->HasBytesToRead());
-  // Read into a iovec array with total capacity of 120 bytes.
-  iovec iov{nullptr, 120};
-  size_t read;
-  EXPECT_EQ(QUIC_STREAM_SEQUENCER_INVALID_STATE,
-            buffer_->Readv(&iov, 1, &read, &error_details_));
-  EXPECT_EQ(0u,
-            error_details_.find(
-                "QuicStreamSequencerBuffer error: Readv() dest == nullptr: true"
-                " blocks_[0] == nullptr: false"));
-}
-
 TEST_F(QuicStreamSequencerBufferTest, ReadvAcrossBlocks) {
   string source(kBlockSizeBytes + 50, 'a');
   // Write 1st block to full and extand 50 bytes to next block.

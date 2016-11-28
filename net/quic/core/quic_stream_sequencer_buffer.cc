@@ -50,12 +50,17 @@ QuicStreamSequencerBuffer::QuicStreamSequencerBuffer(size_t max_capacity_bytes)
       blocks_count_(
           ceil(static_cast<double>(max_capacity_bytes) / kBlockSizeBytes)),
       total_bytes_read_(0),
-      blocks_(nullptr) {
+      blocks_(nullptr),
+      destruction_indicator_(123456) {
+  CHECK_GT(blocks_count_, 1u)
+      << "blocks_count_ = " << blocks_count_
+      << ", max_buffer_capacity_bytes_ = " << max_buffer_capacity_bytes_;
   Clear();
 }
 
 QuicStreamSequencerBuffer::~QuicStreamSequencerBuffer() {
   Clear();
+  destruction_indicator_ = 654321;
 }
 
 void QuicStreamSequencerBuffer::Clear() {
@@ -92,6 +97,7 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
     QuicTime timestamp,
     size_t* const bytes_buffered,
     std::string* error_details) {
+  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
   *bytes_buffered = 0;
   QuicStreamOffset offset = starting_offset;
   size_t size = data.size();
@@ -273,9 +279,12 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
                                                size_t dest_count,
                                                size_t* bytes_read,
                                                string* error_details) {
+  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
+
   *bytes_read = 0;
   for (size_t i = 0; i < dest_count && ReadableBytes() > 0; ++i) {
     char* dest = reinterpret_cast<char*>(dest_iov[i].iov_base);
+    CHECK_NE(dest, nullptr);
     size_t dest_remaining = dest_iov[i].iov_len;
     while (dest_remaining > 0 && ReadableBytes() > 0) {
       size_t block_idx = NextBlockToRead();
@@ -329,6 +338,8 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
 
 int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
                                                   int iov_count) const {
+  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
+
   DCHECK(iov != nullptr);
   DCHECK_GT(iov_count, 0);
 
@@ -387,6 +398,8 @@ int QuicStreamSequencerBuffer::GetReadableRegions(struct iovec* iov,
 
 bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov,
                                                   QuicTime* timestamp) const {
+  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
+
   if (ReadableBytes() == 0) {
     iov[0].iov_base = nullptr;
     iov[0].iov_len = 0;
@@ -425,6 +438,8 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov,
 }
 
 bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
+  CHECK_EQ(destruction_indicator_, 123456) << "This object has been destructed";
+
   if (bytes_used > ReadableBytes()) {
     return false;
   }

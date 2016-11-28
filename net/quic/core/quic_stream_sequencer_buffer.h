@@ -248,6 +248,11 @@ class NET_EXPORT_PRIVATE QuicStreamSequencerBuffer {
   // Stores all the buffered frames' start offset, length and arrival time.
   std::map<QuicStreamOffset, FrameInfo> frame_arrival_time_map_;
 
+  // For debugging use after free, assigned to 123456 in constructor and 654321
+  // in destructor. As long as it's not 123456, this means either use after free
+  // or memory corruption.
+  int32_t destruction_indicator_;
+
   DISALLOW_COPY_AND_ASSIGN(QuicStreamSequencerBuffer);
 };
 }  // namespace net
