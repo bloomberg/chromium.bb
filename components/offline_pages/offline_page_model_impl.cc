@@ -441,10 +441,10 @@ void OfflinePageModelImpl::DeletePagesByClientIds(
       .AllowExpiredPages(true);
   auto delete_pages = base::Bind(&OfflinePageModelImpl::DeletePages,
                                  weak_ptr_factory_.GetWeakPtr(), callback);
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           delete_pages));
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), delete_pages));
 }
 
 void OfflinePageModelImpl::DeletePages(
@@ -459,16 +459,40 @@ void OfflinePageModelImpl::DeletePages(
   DoDeletePagesByOfflineId(offline_ids, callback);
 }
 
+void OfflinePageModelImpl::GetPagesMatchingQuery(
+    std::unique_ptr<OfflinePageModelQuery> query,
+    const MultipleOfflinePageItemCallback& callback) {
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+      weak_ptr_factory_.GetWeakPtr(), base::Passed(&query), callback));
+}
+
+void OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone(
+    std::unique_ptr<OfflinePageModelQuery> query,
+    const MultipleOfflinePageItemCallback& callback) {
+  DCHECK(query);
+  DCHECK(is_loaded_);
+
+  MultipleOfflinePageItemResult offline_pages_result;
+
+  for (const auto& id_page_pair : offline_pages_) {
+    if (query->Matches(id_page_pair.second))
+      offline_pages_result.emplace_back(id_page_pair.second);
+  }
+
+  callback.Run(offline_pages_result);
+}
+
 void OfflinePageModelImpl::GetPagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const MultipleOfflinePageItemCallback& callback) {
   OfflinePageModelQueryBuilder builder;
   builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
                        client_ids);
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           callback));
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::DeleteCachedPagesByURLPredicate(
@@ -512,34 +536,19 @@ void OfflinePageModelImpl::CheckPagesExistOffline(
         callback.Run(result);
       },
       callback);
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           pages_to_urls));
-}
-
-void OfflinePageModelImpl::GetPagesMatchingQuery(
-    std::unique_ptr<OfflinePageModelQuery> query,
-    const MultipleOfflinePageItemCallback& callback) {
-  DCHECK(query);
-
-  MultipleOfflinePageItemResult offline_pages_result;
-
-  for (const auto& id_page_pair : offline_pages_) {
-    if (query->Matches(id_page_pair.second))
-      offline_pages_result.emplace_back(id_page_pair.second);
-  }
-
-  callback.Run(offline_pages_result);
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), pages_to_urls));
 }
 
 void OfflinePageModelImpl::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {
   OfflinePageModelQueryBuilder builder;
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           callback));
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::GetAllPagesWithExpired(
@@ -547,10 +556,10 @@ void OfflinePageModelImpl::GetAllPagesWithExpired(
   OfflinePageModelQueryBuilder builder;
   builder.AllowExpiredPages(true);
 
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           callback));
+  RunWhenLoaded(
+      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+                 weak_ptr_factory_.GetWeakPtr(),
+                 base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
 void OfflinePageModelImpl::GetOfflineIdsForClientId(
@@ -564,6 +573,7 @@ void OfflinePageModelImpl::GetOfflineIdsForClientId(
 void OfflinePageModelImpl::GetOfflineIdsForClientIdWhenLoadDone(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) const {
+  DCHECK(is_loaded_);
   callback.Run(MaybeGetOfflineIdsForClientId(client_id));
 }
 
@@ -605,10 +615,10 @@ void OfflinePageModelImpl::GetPageByOfflineId(
       },
       callback);
 
-  RunWhenLoaded(base::Bind(&OfflinePageModelImpl::GetPagesMatchingQuery,
-                           weak_ptr_factory_.GetWeakPtr(),
-                           base::Passed(builder.Build(GetPolicyController())),
-                           multiple_callback));
+  RunWhenLoaded(base::Bind(
+      &OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
+      weak_ptr_factory_.GetWeakPtr(),
+      base::Passed(builder.Build(GetPolicyController())), multiple_callback));
 }
 
 void OfflinePageModelImpl::GetPagesByURL(
@@ -625,6 +635,7 @@ void OfflinePageModelImpl::GetPagesByURLWhenLoadDone(
     const GURL& url,
     URLSearchMode url_search_mode,
     const MultipleOfflinePageItemCallback& callback) const {
+  DCHECK(is_loaded_);
   std::vector<OfflinePageItem> result;
 
   GURL::Replacements remove_params;

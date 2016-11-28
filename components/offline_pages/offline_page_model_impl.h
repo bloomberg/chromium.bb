@@ -129,15 +129,12 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Callback for ensuring archive directory is created.
   void OnEnsureArchivesDirCreatedDone(const base::TimeTicks& start_time);
 
-  void CheckPagesExistOfflineAfterLoadDone(
-      const std::set<GURL>& urls,
-      const CheckPagesExistOfflineCallback& callback);
+  void GetPagesMatchingQueryWhenLoadDone(
+      std::unique_ptr<OfflinePageModelQuery> query,
+      const MultipleOfflinePageItemCallback& callback);
   void GetOfflineIdsForClientIdWhenLoadDone(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) const;
-  void GetPageByOfflineIdWhenLoadDone(
-      int64_t offline_id,
-      const SingleOfflinePageItemCallback& callback) const;
   const std::vector<int64_t> MaybeGetOfflineIdsForClientId(
       const ClientId& client_id) const;
   void GetPagesByURLWhenLoadDone(

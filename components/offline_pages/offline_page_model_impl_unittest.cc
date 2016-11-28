@@ -482,7 +482,7 @@ bool OfflinePageModelImplTest::HasPages(std::string name_space) {
 TEST_F(OfflinePageModelImplTest, SavePageSuccessful) {
   EXPECT_FALSE(HasPages(kTestClientNamespace));
 
-   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
   SavePageWithArchiverAsync(
       kTestUrl, kTestClientId1, kTestUrl2, std::move(archiver));
@@ -1269,6 +1269,37 @@ TEST_F(OfflinePageModelImplTest, StoreResetFailed) {
       SavePage(kTestUrl, ClientId(kDownloadNamespace, "123"));
 
   EXPECT_EQ(SavePageResult::STORE_FAILURE, result.first);
+}
+
+TEST_F(OfflinePageModelImplTest, GetPagesMatchingQuery) {
+  std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
+      kTestUrl, OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED));
+  SavePageWithArchiverAsync(kTestUrl, kTestClientId1, kTestUrl2,
+                            std::move(archiver));
+  PumpLoop();
+
+  std::vector<ClientId> client_ids{kTestClientId1};
+  OfflinePageModelQueryBuilder builder;
+  builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+                       client_ids);
+
+  MultipleOfflinePageItemResult offline_pages;
+  model()->GetPagesMatchingQuery(
+      builder.Build(model()->GetPolicyController()),
+      base::Bind(&OfflinePageModelImplTest::OnGetMultipleOfflinePageItemsResult,
+                 AsWeakPtr(), base::Unretained(&offline_pages)));
+  PumpLoop();
+
+  ASSERT_EQ(1UL, offline_pages.size());
+  EXPECT_EQ(kTestUrl, offline_pages[0].url);
+  EXPECT_EQ(kTestClientId1.id, offline_pages[0].client_id.id);
+  EXPECT_EQ(kTestClientId1.name_space, offline_pages[0].client_id.name_space);
+  EXPECT_EQ(last_archiver_path(), offline_pages[0].file_path);
+  EXPECT_EQ(kTestFileSize, offline_pages[0].file_size);
+  EXPECT_EQ(0, offline_pages[0].access_count);
+  EXPECT_EQ(0, offline_pages[0].flags);
+  EXPECT_EQ(kTestTitle, offline_pages[0].title);
+  EXPECT_EQ(kTestUrl2, offline_pages[0].original_url);
 }
 
 TEST(CommandLineFlagsTest, OfflineBookmarks) {
