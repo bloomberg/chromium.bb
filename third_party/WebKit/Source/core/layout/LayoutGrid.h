@@ -345,10 +345,15 @@ class LayoutGrid final : public LayoutBlock {
     size_t numTracks(GridTrackSizingDirection) const;
 
     void ensureGridSize(size_t maximumRowSize, size_t maximumColumnSize);
-    void insert(LayoutBox&, const GridArea&, bool isOrthogonalChild);
+    void insert(LayoutBox&, const GridArea&);
 
-    bool hasInFlowGridItems() const { return !m_gridItemArea.isEmpty(); }
-    bool hasAnyOrthogonalChildren() const { return m_hasAnyOrthogonalChildren; }
+    // Note that out of flow children are not grid items.
+    bool hasGridItems() const { return !m_gridItemArea.isEmpty(); }
+
+    // TODO(svillar): move this to SizingData once it's passed to
+    // placeItemsOnGrid.
+    bool hasAnyOrthogonalGridItem() const { return m_hasAnyOrthogonalGridItem; }
+    void setHasAnyOrthogonalGridItem(bool);
 
     GridArea gridItemArea(const LayoutBox& item) const;
     void setGridItemArea(const LayoutBox& item, GridArea);
@@ -397,7 +402,7 @@ class LayoutGrid final : public LayoutBlock {
     size_t m_autoRepeatColumns{0};
     size_t m_autoRepeatRows{0};
 
-    bool m_hasAnyOrthogonalChildren{false};
+    bool m_hasAnyOrthogonalGridItem{false};
     GridAsMatrix m_grid;
 
     HashMap<const LayoutBox*, GridArea> m_gridItemArea;
