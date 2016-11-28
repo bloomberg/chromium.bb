@@ -47,13 +47,13 @@ const char Zoom[] = "Zoom";
 }  // namespace StyleChangeReason
 
 namespace StyleChangeExtraData {
-DEFINE_GLOBAL(AtomicString, Active)
-DEFINE_GLOBAL(AtomicString, Disabled)
-DEFINE_GLOBAL(AtomicString, Drag)
-DEFINE_GLOBAL(AtomicString, Focus)
-DEFINE_GLOBAL(AtomicString, Hover)
-DEFINE_GLOBAL(AtomicString, Past)
-DEFINE_GLOBAL(AtomicString, Unresolved)
+DEFINE_GLOBAL(AtomicString, Active);
+DEFINE_GLOBAL(AtomicString, Disabled);
+DEFINE_GLOBAL(AtomicString, Drag);
+DEFINE_GLOBAL(AtomicString, Focus);
+DEFINE_GLOBAL(AtomicString, Hover);
+DEFINE_GLOBAL(AtomicString, Past);
+DEFINE_GLOBAL(AtomicString, Unresolved);
 
 void init() {
   DCHECK(isMainThread());

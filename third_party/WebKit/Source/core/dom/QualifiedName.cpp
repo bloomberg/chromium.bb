@@ -109,8 +109,8 @@ String QualifiedName::toString() const {
 }
 
 // Global init routines
-DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom)
-DEFINE_GLOBAL(QualifiedName, nullName, nullAtom, nullAtom, nullAtom)
+DEFINE_GLOBAL(QualifiedName, anyName, nullAtom, starAtom, starAtom);
+DEFINE_GLOBAL(QualifiedName, nullName, nullAtom, nullAtom, nullAtom);
 
 void QualifiedName::initAndReserveCapacityForSize(unsigned size) {
   DCHECK(starAtom.impl());

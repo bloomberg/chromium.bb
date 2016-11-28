@@ -48,19 +48,19 @@ StringImpl* StringImpl::empty16Bit() {
   return &emptyString;
 }
 
-WTF_EXPORT DEFINE_GLOBAL(AtomicString, nullAtom) WTF_EXPORT
-    DEFINE_GLOBAL(AtomicString, emptyAtom) WTF_EXPORT
-    DEFINE_GLOBAL(AtomicString, starAtom) WTF_EXPORT
-    DEFINE_GLOBAL(AtomicString, xmlAtom) WTF_EXPORT
-    DEFINE_GLOBAL(AtomicString, xmlnsAtom) WTF_EXPORT
-    DEFINE_GLOBAL(AtomicString, xlinkAtom)
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, nullAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, emptyAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, starAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, xmlnsAtom);
+WTF_EXPORT DEFINE_GLOBAL(AtomicString, xlinkAtom);
 
-    // This is not an AtomicString because it is unlikely to be used as an
-    // event/element/attribute name, so it shouldn't pollute the AtomicString
-    // hash table.
-    WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon)
+// This is not an AtomicString because it is unlikely to be used as an
+// event/element/attribute name, so it shouldn't pollute the AtomicString hash
+// table.
+WTF_EXPORT DEFINE_GLOBAL(String, xmlnsWithColon);
 
-        NEVER_INLINE unsigned StringImpl::hashSlowCase() const {
+NEVER_INLINE unsigned StringImpl::hashSlowCase() const {
   if (is8Bit())
     setHash(StringHasher::computeHashAndMaskTop8Bits(characters8(), m_length));
   else

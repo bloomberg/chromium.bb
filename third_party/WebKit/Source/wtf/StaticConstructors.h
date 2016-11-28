@@ -34,6 +34,6 @@
 // alignment issue.
 #define DEFINE_GLOBAL(type, name, ...)                                     \
   void* name##Storage[(sizeof(type) + sizeof(void*) - 1) / sizeof(void*)]; \
-  const type& name = *reinterpret_cast<type*>(&name##Storage);
+  const type& name = *reinterpret_cast<type*>(&name##Storage)
 
 #endif  // StaticConstructors_h
