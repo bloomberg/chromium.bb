@@ -1068,8 +1068,8 @@ config("chromium_code") {
       # The compiler driver can sometimes (rarely) emit warnings before calling
       # the actual linker.  Make sure these warnings are treated as errors as
       # well.
-      # TODO(thakis): Enable this in use_custom_libcxx (asan) builds.
-      # TODO(thakis): Enable this in chromecast builds.
+      # TODO(thakis): Enable in use_custom_libcxx builds, crbug.com/669072
+      # TODO(thakis): Enable in chromecast builds, crbug.com/669076
       if (!use_custom_libcxx && !is_chromecast) {
         ldflags = [ "-Werror" ]
       }
@@ -1130,8 +1130,8 @@ config("no_chromium_code") {
     if (treat_warnings_as_errors && is_clang) {
       cflags += [ "-Werror" ]
 
-      # TODO(thakis): Enable this in use_custom_libcxx (asan) builds.
-      # TODO(thakis): Enable this in chromecast builds.
+      # TODO(thakis): Enable in use_custom_libcxx builds, crbug.com/669072
+      # TODO(thakis): Enable in chromecast builds, crbug.com/669076
       if (!use_custom_libcxx && !is_chromecast) {
         ldflags = [ "-Werror" ]
       }
