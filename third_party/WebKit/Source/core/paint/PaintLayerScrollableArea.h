@@ -320,7 +320,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
   // Currently, they run at the end of box()'es layout (or after all flexbox
   // layout has finished) but while document layout is still happening.
   void updateAfterLayout();
-  void clampScrollOffsetsAfterLayout();
+  void clampScrollOffsetAfterOverflowChange();
 
   void didChangeGlobalRootScroller() override;
 

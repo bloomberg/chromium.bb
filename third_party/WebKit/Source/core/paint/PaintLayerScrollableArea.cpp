@@ -784,7 +784,7 @@ void PaintLayerScrollableArea::updateAfterLayout() {
       setHasVerticalScrollbar(false);
   }
 
-  clampScrollOffsetsAfterLayout();
+  clampScrollOffsetAfterOverflowChange();
 
   if (!scrollbarsAreFrozen) {
     updateScrollableAreaSet(hasScrollableHorizontalOverflow() ||
@@ -795,7 +795,7 @@ void PaintLayerScrollableArea::updateAfterLayout() {
   positionOverflowControls();
 }
 
-void PaintLayerScrollableArea::clampScrollOffsetsAfterLayout() {
+void PaintLayerScrollableArea::clampScrollOffsetAfterOverflowChange() {
   // If a vertical scrollbar was removed, the min/max scroll offsets may have
   // changed, so the scroll offsets needs to be clamped.  If the scroll offset
   // did not change, but the scroll origin *did* change, we still need to notify
@@ -999,6 +999,8 @@ void PaintLayerScrollableArea::updateAfterOverflowRecalc() {
     box().setNeedsLayoutAndFullPaintInvalidation(
         LayoutInvalidationReason::Unknown);
   }
+
+  clampScrollOffsetAfterOverflowChange();
 }
 
 IntRect PaintLayerScrollableArea::rectForHorizontalScrollbar(
@@ -2015,7 +2017,7 @@ void PaintLayerScrollableArea::DelayScrollOffsetClampScope::setNeedsClamp(
 void PaintLayerScrollableArea::DelayScrollOffsetClampScope::
     clampScrollableAreas() {
   for (auto& scrollableArea : *s_needsClamp)
-    scrollableArea->clampScrollOffsetsAfterLayout();
+    scrollableArea->clampScrollOffsetAfterOverflowChange();
   delete s_needsClamp;
   s_needsClamp = nullptr;
 }
