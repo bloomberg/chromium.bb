@@ -169,7 +169,7 @@ bool MemoryCoordinator::CanThrottleRenderer(int render_process_id) {
   if (!delegate_)
     return true;
   auto* render_process_host = RenderProcessHost::FromID(render_process_id);
-  return render_process_host->IsProcessBackgrounded();
+  return render_process_host && render_process_host->IsProcessBackgrounded();
 }
 
 bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
@@ -177,8 +177,8 @@ bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
   if (!delegate_)
     return true;
   auto* render_process_host = RenderProcessHost::FromID(render_process_id);
-  if (!render_process_host->IsProcessBackgrounded())
-      return false;
+  if (!render_process_host || !render_process_host->IsProcessBackgrounded())
+    return false;
   return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
 }
 
