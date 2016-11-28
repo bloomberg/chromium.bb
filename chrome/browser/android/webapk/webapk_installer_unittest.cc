@@ -8,23 +8,18 @@
 #include <memory>
 #include <string>
 
-#include "base/android/field_trial_list.h"
 #include "base/android/scoped_java_ref.h"
 #include "base/bind.h"
 #include "base/callback_forward.h"
-#include "base/feature_list.h"
+#include "base/command_line.h"
 #include "base/files/file_path.h"
-#include "base/memory/ptr_util.h"
 #include "base/memory/ref_counted.h"
 #include "base/run_loop.h"
 #include "base/single_thread_task_runner.h"
-#include "base/test/scoped_feature_list.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "chrome/browser/android/chrome_feature_list.h"
 #include "chrome/browser/android/shortcut_info.h"
 #include "chrome/browser/android/webapk/webapk.pb.h"
 #include "chrome/common/chrome_switches.h"
-#include "components/variations/variations_associated_data.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
@@ -39,10 +34,6 @@ namespace {
 
 const base::FilePath::CharType kTestDataDir[] =
     FILE_PATH_LITERAL("chrome/test/data");
-
-// Mock field trial name and field trial group to use for "WebApks" feature.
-const char kFieldTrialName[] = "MockFieldTrial";
-const char kFieldTrialGroup[] = "MockFieldTrialGroup";
 
 // URL of mock WebAPK server.
 const char* kServerUrl = "/webapkserver/";
@@ -193,9 +184,7 @@ class WebApkInstallerTest : public ::testing::Test {
 
   WebApkInstallerTest()
       : thread_bundle_(content::TestBrowserThreadBundle::IO_MAINLOOP) {}
-  ~WebApkInstallerTest() override {
-    variations::testing::ClearAllVariationParams();
-  }
+  ~WebApkInstallerTest() override {}
 
   void SetUp() override {
     test_server_.AddDefaultHandlers(base::FilePath(kTestDataDir));
@@ -203,16 +192,6 @@ class WebApkInstallerTest : public ::testing::Test {
         base::Bind(&WebApkInstallerTest::HandleWebApkRequest,
                    base::Unretained(this)));
     ASSERT_TRUE(test_server_.Start());
-
-    field_trial_list_.reset(new base::FieldTrialList(nullptr));
-    base::FieldTrial* field_trial = base::FieldTrialList::CreateFieldTrial(
-        kFieldTrialName, kFieldTrialGroup);
-    std::unique_ptr<base::FeatureList> feature_list =
-        base::MakeUnique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        chrome::android::kWebApks.name,
-        base::FeatureList::OVERRIDE_ENABLE_FEATURE, field_trial);
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
 
     SetDefaults();
   }
@@ -225,11 +204,8 @@ class WebApkInstallerTest : public ::testing::Test {
   // Sets the URL to send the webapk::CreateWebApkRequest to. WebApkInstaller
   // should fail if the URL is not |kServerUrl|.
   void SetWebApkServerUrl(const GURL& server_url) {
-    variations::testing::ClearAllVariationParams();
-    std::map<std::string, std::string> params;
-    params["ServerUrl"] = server_url.spec();
-    ASSERT_TRUE(variations::AssociateVariationParams(kFieldTrialName,
-                                                     kFieldTrialGroup, params));
+    base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
+        switches::kWebApkServerUrl, server_url.spec());
   }
 
   // Sets the function that should be used to build the response to the
@@ -266,9 +242,6 @@ class WebApkInstallerTest : public ::testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   net::EmbeddedTestServer test_server_;
-
-  std::unique_ptr<base::FieldTrialList> field_trial_list_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   // Web Manifest's icon URL.
   GURL best_icon_url_;

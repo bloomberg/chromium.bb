@@ -1065,6 +1065,9 @@ const char kTabManagementExperimentTypeDisabled[] =
     "tab-management-experiment-type-disabled";
 const char kTabManagementExperimentTypeElderberry[] =
     "tab-management-experiment-type-elderberry";
+
+// Custom WebAPK server URL for the sake of testing.
+const char kWebApkServerUrl[] = "webapk-server-url";
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)

@@ -310,6 +310,7 @@ extern const char kNtpSwitchToExistingTab[];
 extern const char kProgressBarAnimation[];
 extern const char kTabManagementExperimentTypeDisabled[];
 extern const char kTabManagementExperimentTypeElderberry[];
+extern const char kWebApkServerUrl[];
 #endif  // defined(OS_ANDROID)
 
 #if defined(OS_CHROMEOS)
