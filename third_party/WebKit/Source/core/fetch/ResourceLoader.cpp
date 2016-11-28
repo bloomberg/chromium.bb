@@ -219,11 +219,9 @@ void ResourceLoader::didReceiveResponse(WebURLLoader* loader,
 void ResourceLoader::didReceiveData(WebURLLoader*,
                                     const char* data,
                                     int length,
-                                    int encodedDataLength,
-                                    int encodedBodyLength) {
+                                    int encodedDataLength) {
   CHECK_GE(length, 0);
   m_fetcher->didReceiveData(m_resource.get(), data, length, encodedDataLength);
-  m_resource->addToEncodedBodyLength(encodedBodyLength);
   m_resource->addToDecodedBodyLength(length);
   m_resource->appendData(data, length);
 }
@@ -235,8 +233,10 @@ void ResourceLoader::didFinishLoadingFirstPartInMultipart() {
 
 void ResourceLoader::didFinishLoading(WebURLLoader*,
                                       double finishTime,
-                                      int64_t encodedDataLength) {
+                                      int64_t encodedDataLength,
+                                      int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
+  m_resource->addToEncodedBodyLength(encodedBodyLength);
   m_loader.reset();
   m_fetcher->didFinishLoading(m_resource.get(), finishTime,
                               ResourceFetcher::DidFinishLoading);
@@ -244,8 +244,10 @@ void ResourceLoader::didFinishLoading(WebURLLoader*,
 
 void ResourceLoader::didFail(WebURLLoader*,
                              const WebURLError& error,
-                             int64_t encodedDataLength) {
+                             int64_t encodedDataLength,
+                             int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
+  m_resource->addToEncodedBodyLength(encodedBodyLength);
   didFail(error);
 }
 
@@ -275,15 +277,16 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
   WebURLError errorOut;
   WebData dataOut;
   int64_t encodedDataLength = WebURLLoaderClient::kUnknownEncodedDataLength;
+  int64_t encodedBodyLength = 0;
   m_loader->loadSynchronously(requestIn, responseOut, errorOut, dataOut,
-                              encodedDataLength);
+                              encodedDataLength, encodedBodyLength);
 
   // A message dispatched while synchronously fetching the resource
   // can bring about the cancellation of this load.
   if (!m_loader)
     return;
   if (errorOut.reason) {
-    didFail(0, errorOut, encodedDataLength);
+    didFail(0, errorOut, encodedDataLength, encodedBodyLength);
     return;
   }
   didReceiveResponse(0, responseOut);
@@ -300,7 +303,8 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
                               encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
   }
-  didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength);
+  didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength,
+                   encodedBodyLength);
 }
 
 void ResourceLoader::activateCacheAwareLoadingIfNeeded(

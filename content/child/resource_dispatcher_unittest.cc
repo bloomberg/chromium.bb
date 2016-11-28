@@ -104,7 +104,8 @@ class TestRequestPeer : public RequestPeer {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size) override {
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size) override {
     if (context_->cancelled)
       return;
     EXPECT_TRUE(context_->received_response);
@@ -544,15 +545,16 @@ class TestResourceDispatcherDelegate : public ResourceDispatcherDelegate {
                             bool was_ignored_by_handler,
                             bool stale_copy_in_cache,
                             const base::TimeTicks& completion_time,
-                            int64_t total_transfer_size) override {
+                            int64_t total_transfer_size,
+                            int64_t encoded_body_size) override {
       original_peer_->OnReceivedResponse(response_info_);
       if (!data_.empty()) {
         original_peer_->OnReceivedData(base::MakeUnique<FixedReceivedData>(
-            data_.data(), data_.size(), -1, data_.size()));
+            data_.data(), data_.size(), -1));
       }
-      original_peer_->OnCompletedRequest(error_code, was_ignored_by_handler,
-                                         stale_copy_in_cache, completion_time,
-                                         total_transfer_size);
+      original_peer_->OnCompletedRequest(
+          error_code, was_ignored_by_handler, stale_copy_in_cache,
+          completion_time, total_transfer_size, encoded_body_size);
     }
 
    private:

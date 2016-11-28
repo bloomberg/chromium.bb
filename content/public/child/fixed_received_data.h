@@ -18,25 +18,18 @@ namespace content {
 class CONTENT_EXPORT FixedReceivedData final
     : public RequestPeer::ThreadSafeReceivedData {
  public:
-  FixedReceivedData(const char* data,
-                    size_t length,
-                    int encoded_data_length,
-                    int encoded_body_length);
+  FixedReceivedData(const char* data, size_t length, int encoded_data_length);
   explicit FixedReceivedData(ReceivedData* data);
-  FixedReceivedData(const std::vector<char>& data,
-                    int encoded_data_length,
-                    int encoded_body_length);
+  FixedReceivedData(const std::vector<char>& data, int encoded_data_length);
   ~FixedReceivedData() override;
 
   const char* payload() const override;
   int length() const override;
   int encoded_data_length() const override;
-  int encoded_body_length() const override;
 
  private:
   std::vector<char> data_;
   int encoded_data_length_;
-  int encoded_body_length_;
 
   DISALLOW_COPY_AND_ASSIGN(FixedReceivedData);
 };

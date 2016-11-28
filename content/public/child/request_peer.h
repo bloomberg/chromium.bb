@@ -53,10 +53,6 @@ class CONTENT_EXPORT RequestPeer {
     // different from length(), and may be smaller if the content was
     // compressed. -1 means this value is unavailable.
     virtual int encoded_data_length() const = 0;
-    // The encoded_body_length is the size of the body as transferred over the
-    // network or stored in the disk cache, excluding headers. This will be
-    // different from length() if a content encoding was used.
-    virtual int encoded_body_length() const = 0;
   };
 
   // A ThreadSafeReceivedData can be deleted on ANY thread.
@@ -100,7 +96,8 @@ class CONTENT_EXPORT RequestPeer {
                                   bool was_ignored_by_handler,
                                   bool stale_copy_in_cache,
                                   const base::TimeTicks& completion_time,
-                                  int64_t total_transfer_size) = 0;
+                                  int64_t total_transfer_size,
+                                  int64_t encoded_body_size) = 0;
 
   virtual ~RequestPeer() {}
 };

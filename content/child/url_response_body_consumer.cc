@@ -26,10 +26,9 @@ class URLResponseBodyConsumer::ReceivedData final
 
   const char* payload() const override { return payload_; }
   int length() const override { return length_; }
-  // TODO(yhirano): These return incorrect values. Remove these from
+  // TODO(yhirano): This returns an incorrect value. Remove it from
   // ReceivedData before enabling Mojo-Loading.
   int encoded_data_length() const override { return length_; }
-  int encoded_body_length() const override { return length_; }
 
  private:
   const char* const payload_;

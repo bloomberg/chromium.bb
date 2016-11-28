@@ -10344,10 +10344,10 @@ class MultipleDataChunkDelegate : public WebURLLoaderTestDelegate {
                       int dataLength,
                       int encodedDataLength) override {
     EXPECT_GT(dataLength, 16);
-    originalClient->didReceiveData(loader, data, 16, 16, 16);
+    originalClient->didReceiveData(loader, data, 16, 16);
     // This didReceiveData call shouldn't crash due to a failed assertion.
     originalClient->didReceiveData(loader, data + 16, dataLength - 16,
-                                   encodedDataLength - 16, dataLength - 16);
+                                   encodedDataLength - 16);
   }
 };
 

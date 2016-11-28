@@ -390,7 +390,8 @@ class WebURLLoaderImpl::Context : public base::RefCounted<Context> {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size);
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size);
 
  private:
   friend class base::RefCounted<Context>;
@@ -438,7 +439,8 @@ class WebURLLoaderImpl::RequestPeerImpl : public RequestPeer {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size) override;
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size) override;
 
  private:
   scoped_refptr<Context> context_;
@@ -813,8 +815,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
-    client_->didReceiveData(loader_, payload, data_length, encoded_data_length,
-                            data->encoded_body_length());
+    client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
 
     if (request_.useStreamOnResponse()) {
       // We don't support ftp_listening_delegate_ for now.
@@ -839,7 +840,8 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
-    int64_t total_transfer_size) {
+    int64_t total_transfer_size,
+    int64_t encoded_body_size) {
   if (ftp_listing_delegate_) {
     ftp_listing_delegate_->OnCompletedRequest();
     ftp_listing_delegate_.reset(NULL);
@@ -858,11 +860,11 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
       client_->didFail(loader_,
                        CreateWebURLError(request_.url(), stale_copy_in_cache,
                                          error_code, was_ignored_by_handler),
-                       total_transfer_size);
+                       total_transfer_size, encoded_body_size);
     } else {
       client_->didFinishLoading(loader_,
                                 (completion_time - TimeTicks()).InSecondsF(),
-                                total_transfer_size);
+                                total_transfer_size, encoded_body_size);
     }
   }
 }
@@ -889,7 +891,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
     client_->didFail(loader_,
                      CreateWebURLError(request_.url(), false, net::ERR_ABORTED),
-                     WebURLLoaderClient::kUnknownEncodedDataLength);
+                     WebURLLoaderClient::kUnknownEncodedDataLength, 0);
   }
 
   // Notify the browser process that the request is canceled.
@@ -955,11 +957,11 @@ void WebURLLoaderImpl::Context::HandleDataURL() {
     OnReceivedResponse(info);
     auto size = data.size();
     if (size != 0)
-      OnReceivedData(
-          base::MakeUnique<FixedReceivedData>(data.data(), size, 0, size));
+      OnReceivedData(base::MakeUnique<FixedReceivedData>(data.data(), size, 0));
   }
 
-  OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0);
+  OnCompletedRequest(error_code, false, false, base::TimeTicks::Now(), 0,
+                     data.size());
 }
 
 // WebURLLoaderImpl::RequestPeerImpl ------------------------------------------
@@ -1005,10 +1007,11 @@ void WebURLLoaderImpl::RequestPeerImpl::OnCompletedRequest(
     bool was_ignored_by_handler,
     bool stale_copy_in_cache,
     const base::TimeTicks& completion_time,
-    int64_t total_transfer_size) {
+    int64_t total_transfer_size,
+    int64_t encoded_body_size) {
   context_->OnCompletedRequest(error_code, was_ignored_by_handler,
                                stale_copy_in_cache, completion_time,
-                               total_transfer_size);
+                               total_transfer_size, encoded_body_size);
 }
 
 // WebURLLoaderImpl -----------------------------------------------------------
@@ -1201,7 +1204,8 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
                                          WebURLResponse& response,
                                          WebURLError& error,
                                          WebData& data,
-                                         int64_t& encoded_data_length) {
+                                         int64_t& encoded_data_length,
+                                         int64_t& encoded_body_length) {
   TRACE_EVENT0("loading", "WebURLLoaderImpl::loadSynchronously");
   SyncLoadResponse sync_load_response;
   context_->Start(request, &sync_load_response);
@@ -1221,9 +1225,9 @@ void WebURLLoaderImpl::loadSynchronously(const WebURLRequest& request,
 
   PopulateURLResponse(final_url, sync_load_response, &response,
                       request.reportRawHeaders());
-  response.addToEncodedBodyLength(sync_load_response.encoded_body_length);
   response.addToDecodedBodyLength(sync_load_response.data.size());
   encoded_data_length = sync_load_response.encoded_data_length;
+  encoded_body_length = sync_load_response.encoded_body_length;
 
   data.assign(sync_load_response.data.data(), sync_load_response.data.size());
 }

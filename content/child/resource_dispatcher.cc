@@ -327,10 +327,8 @@ void ResourceDispatcher::OnReceivedInlinedDataChunk(
 
   DCHECK(!request_info->buffer.get());
 
-  std::unique_ptr<RequestPeer::ReceivedData> received_data(
-      new content::FixedReceivedData(data, encoded_data_length,
-                                     encoded_body_length));
-  request_info->peer->OnReceivedData(std::move(received_data));
+  request_info->peer->OnReceivedData(
+      base::MakeUnique<content::FixedReceivedData>(data, encoded_data_length));
 }
 
 void ResourceDispatcher::OnReceivedData(int request_id,
@@ -360,8 +358,8 @@ void ResourceDispatcher::OnReceivedData(int request_id,
     }
 
     std::unique_ptr<RequestPeer::ReceivedData> data =
-        request_info->received_data_factory->Create(
-            data_offset, data_length, encoded_data_length, encoded_body_length);
+        request_info->received_data_factory->Create(data_offset, data_length,
+                                                    encoded_data_length);
     // |data| takes care of ACKing.
     send_ack = false;
     request_info->peer->OnReceivedData(std::move(data));
@@ -466,7 +464,8 @@ void ResourceDispatcher::OnRequestComplete(
                            request_complete_data.was_ignored_by_handler,
                            request_complete_data.exists_in_cache,
                            renderer_completion_time,
-                           request_complete_data.encoded_data_length);
+                           request_complete_data.encoded_data_length,
+                           request_complete_data.encoded_body_length);
 }
 
 bool ResourceDispatcher::RemovePendingRequest(int request_id) {

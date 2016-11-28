@@ -86,8 +86,7 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
   void didReceiveData(blink::WebURLLoader* loader,
                       const char* data,
                       int data_length,
-                      int encoded_data_length,
-                      int encoded_body_length) override {
+                      int encoded_data_length) override {
     DCHECK(!completed_);
     DCHECK_GT(data_length, 0);
 
@@ -95,14 +94,16 @@ class ResourceFetcherImpl::ClientImpl : public blink::WebURLLoaderClient {
   }
   void didFinishLoading(blink::WebURLLoader* loader,
                         double finishTime,
-                        int64_t total_encoded_data_length) override {
+                        int64_t total_encoded_data_length,
+                        int64_t total_encoded_body_length) override {
     DCHECK(!completed_);
 
     OnLoadCompleteInternal(LOAD_SUCCEEDED);
   }
   void didFail(blink::WebURLLoader* loader,
                const blink::WebURLError& error,
-               int64_t total_encoded_data_length) override {
+               int64_t total_encoded_data_length,
+               int64_t total_encoded_body_length) override {
     OnLoadCompleteInternal(LOAD_FAILED);
   }
 

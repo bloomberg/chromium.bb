@@ -210,9 +210,9 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
                           WebURLRequest&,
                           const WebURLResponse&) override;
   void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
-  void didReceiveData(WebURLLoader*, const char*, int, int, int) final;
-  void didFinishLoading(WebURLLoader*, double, int64_t) final;
-  void didFail(WebURLLoader*, const WebURLError&, int64_t) final;
+  void didReceiveData(WebURLLoader*, const char*, int, int) final;
+  void didFinishLoading(WebURLLoader*, double, int64_t, int64_t) final;
+  void didFail(WebURLLoader*, const WebURLError&, int64_t, int64_t) final;
 
   void timeout(TimerBase*);
 
@@ -346,7 +346,7 @@ void PingLoaderImpl::didReceiveResponse(WebURLLoader*,
   dispose();
 }
 
-void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int, int) {
+void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -355,7 +355,7 @@ void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int, int) {
   dispose();
 }
 
-void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t) {
+void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t, int64_t) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -366,6 +366,7 @@ void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t) {
 
 void PingLoaderImpl::didFail(WebURLLoader*,
                              const WebURLError& resourceError,
+                             int64_t,
                              int64_t) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",

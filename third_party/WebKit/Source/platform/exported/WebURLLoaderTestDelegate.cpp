@@ -28,23 +28,26 @@ void WebURLLoaderTestDelegate::didReceiveData(
     const char* data,
     int dataLength,
     int encodedDataLength) {
-  originalClient->didReceiveData(loader, data, dataLength, encodedDataLength,
-                                 dataLength);
+  originalClient->didReceiveData(loader, data, dataLength, encodedDataLength);
 }
 
 void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient,
                                        WebURLLoader* loader,
                                        const WebURLError& error,
-                                       int64_t totalEncodedDataLength) {
-  originalClient->didFail(loader, error, totalEncodedDataLength);
+                                       int64_t totalEncodedDataLength,
+                                       int64_t totalEncodedBodyLength) {
+  originalClient->didFail(loader, error, totalEncodedDataLength,
+                          totalEncodedBodyLength);
 }
 
 void WebURLLoaderTestDelegate::didFinishLoading(
     WebURLLoaderClient* originalClient,
     WebURLLoader* loader,
     double finishTime,
-    int64_t totalEncodedDataLength) {
-  originalClient->didFinishLoading(loader, finishTime, totalEncodedDataLength);
+    int64_t totalEncodedDataLength,
+    int64_t totalEncodedBodyLength) {
+  originalClient->didFinishLoading(loader, finishTime, totalEncodedDataLength,
+                                   totalEncodedBodyLength);
 }
 
 }  // namespace blink

@@ -64,7 +64,8 @@ class BufferedPeer : public SecurityFilterPeer {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size) override;
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size) override;
 
  protected:
   // Invoked when the entire request has been processed before the data is sent
@@ -102,7 +103,8 @@ class ReplaceContentPeer : public SecurityFilterPeer {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size) override;
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size) override;
 
  private:
   content::ResourceResponseInfo response_info_;

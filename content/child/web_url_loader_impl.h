@@ -60,7 +60,8 @@ class CONTENT_EXPORT WebURLLoaderImpl
                          blink::WebURLResponse& response,
                          blink::WebURLError& error,
                          blink::WebData& data,
-                         int64_t& encoded_data_length) override;
+                         int64_t& encoded_data_length,
+                         int64_t& encoded_body_length) override;
   void loadAsynchronously(
       const blink::WebURLRequest& request,
       blink::WebURLLoaderClient* client) override;

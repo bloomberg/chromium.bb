@@ -190,8 +190,7 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
   void didReceiveData(blink::WebURLLoader* loader,
                       const char* data,
                       int dataLength,
-                      int encodedDataLength,
-                      int encodedBodyLength) override {
+                      int encodedDataLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     // The response should have started, but must not have finished, or failed.
@@ -214,7 +213,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   void didFinishLoading(blink::WebURLLoader* loader,
                         double finishTime,
-                        int64_t totalEncodedDataLength) override {
+                        int64_t totalEncodedDataLength,
+                        int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     EXPECT_TRUE(did_receive_response_);
@@ -227,7 +227,8 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   void didFail(blink::WebURLLoader* loader,
                const blink::WebURLError& error,
-               int64_t totalEncodedDataLength) override {
+               int64_t totalEncodedDataLength,
+               int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
     EXPECT_EQ(loader_.get(), loader);
     EXPECT_FALSE(did_finish_);
@@ -337,14 +338,14 @@ class WebURLLoaderImplTest : public testing::Test {
     EXPECT_EQ("", client()->received_data());
     auto size = strlen(kTestData);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kTestData, size, size, size));
+        base::MakeUnique<FixedReceivedData>(kTestData, size, size));
     EXPECT_EQ(kTestData, client()->received_data());
   }
 
   void DoCompleteRequest() {
     EXPECT_FALSE(client()->did_finish());
     peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
-                               strlen(kTestData));
+                               strlen(kTestData), strlen(kTestData));
     EXPECT_TRUE(client()->did_finish());
     // There should be no error.
     EXPECT_EQ(net::OK, client()->error().reason);
@@ -353,8 +354,8 @@ class WebURLLoaderImplTest : public testing::Test {
 
   void DoFailRequest() {
     EXPECT_FALSE(client()->did_finish());
-    peer()->OnCompletedRequest(net::ERR_FAILED, false, false,
-                               base::TimeTicks(), strlen(kTestData));
+    peer()->OnCompletedRequest(net::ERR_FAILED, false, false, base::TimeTicks(),
+                               strlen(kTestData), strlen(kTestData));
     EXPECT_FALSE(client()->did_finish());
     EXPECT_EQ(net::ERR_FAILED, client()->error().reason);
     EXPECT_EQ(net::kErrorDomain, client()->error().domain.utf8());
@@ -371,7 +372,7 @@ class WebURLLoaderImplTest : public testing::Test {
   void DoReceiveDataFtp() {
     auto size = strlen(kFtpDirListing);
     peer()->OnReceivedData(
-        base::MakeUnique<FixedReceivedData>(kFtpDirListing, size, size, size));
+        base::MakeUnique<FixedReceivedData>(kFtpDirListing, size, size));
     // The FTP delegate should modify the data the client sees.
     EXPECT_NE(kFtpDirListing, client()->received_data());
   }
@@ -594,7 +595,7 @@ TEST_F(WebURLLoaderImplTest, FtpDeleteOnReceiveMoreData) {
   // cancel in DoReceiveDataFtp, before the request finishes.
   client()->set_delete_on_receive_data();
   peer()->OnCompletedRequest(net::OK, false, false, base::TimeTicks(),
-                              strlen(kTestData));
+                             strlen(kTestData), strlen(kTestData));
   EXPECT_FALSE(client()->did_finish());
 }
 
@@ -704,14 +705,12 @@ TEST_F(WebURLLoaderImplTest, SyncLengths) {
   blink::WebURLError error;
   blink::WebData data;
   int64_t encoded_data_length = 0;
-  client()->loader()->loadSynchronously(request, response, error, data,
-                                        encoded_data_length);
+  int64_t encoded_body_length = 0;
+  client()->loader()->loadSynchronously(
+      request, response, error, data, encoded_data_length, encoded_body_length);
 
-  EXPECT_EQ(kEncodedBodyLength, response.encodedBodyLengthForTesting());
+  EXPECT_EQ(kEncodedBodyLength, encoded_body_length);
   EXPECT_EQ(kEncodedDataLength, encoded_data_length);
-  int expected_decoded_body_length = strlen(kBodyData);
-  EXPECT_EQ(expected_decoded_body_length,
-            response.decodedBodyLengthForTesting());
 }
 
 }  // namespace

@@ -59,7 +59,8 @@ class WebURLLoader {
                                  WebURLResponse&,
                                  WebURLError&,
                                  WebData&,
-                                 int64_t& encodedDataLength) = 0;
+                                 int64_t& encodedDataLength,
+                                 int64_t& encodedBodyLength) = 0;
 
   // Load the request asynchronously, sending notifications to the given
   // client.  The client will receive no further notifications if the

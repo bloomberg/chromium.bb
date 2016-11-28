@@ -104,15 +104,16 @@ class CORE_EXPORT ResourceLoader final
   void didReceiveData(WebURLLoader*,
                       const char*,
                       int,
-                      int encodedDataLength,
-                      int encodedBodyLength) override;
+                      int encodedDataLength) override;
   void didDownloadData(WebURLLoader*, int, int) override;
   void didFinishLoading(WebURLLoader*,
                         double finishTime,
-                        int64_t encodedDataLength) override;
+                        int64_t encodedDataLength,
+                        int64_t encodedBodyLength) override;
   void didFail(WebURLLoader*,
                const WebURLError&,
-               int64_t encodedDataLength) override;
+               int64_t encodedDataLength,
+               int64_t encodedBodyLength) override;
 
   void didFinishLoadingFirstPartInMultipart();
   void didFail(const ResourceError&);

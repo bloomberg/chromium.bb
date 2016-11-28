@@ -58,7 +58,8 @@ class TestRequestPeer : public RequestPeer {
                           bool was_ignored_by_handler,
                           bool stale_copy_in_cache,
                           const base::TimeTicks& completion_time,
-                          int64_t total_transfer_size) override {
+                          int64_t total_transfer_size,
+                          int64_t encoded_body_size) override {
     EXPECT_FALSE(context_->complete);
     context_->complete = true;
     context_->error_code = error_code;

@@ -56,16 +56,17 @@ void SimNetwork::didReceiveData(WebURLLoaderClient* client,
                                 int dataLength,
                                 int encodedDataLength) {
   if (!m_currentRequest)
-    client->didReceiveData(loader, data, dataLength, encodedDataLength,
-                           dataLength);
+    client->didReceiveData(loader, data, dataLength, encodedDataLength);
 }
 
 void SimNetwork::didFail(WebURLLoaderClient* client,
                          WebURLLoader* loader,
                          const WebURLError& error,
-                         int64_t encodedDataLength) {
+                         int64_t totalEncodedDataLength,
+                         int64_t totalEncodedBodyLength) {
   if (!m_currentRequest) {
-    client->didFail(loader, error, encodedDataLength);
+    client->didFail(loader, error, totalEncodedDataLength,
+                    totalEncodedBodyLength);
     return;
   }
   m_currentRequest->didFail(error);
@@ -74,9 +75,11 @@ void SimNetwork::didFail(WebURLLoaderClient* client,
 void SimNetwork::didFinishLoading(WebURLLoaderClient* client,
                                   WebURLLoader* loader,
                                   double finishTime,
-                                  int64_t totalEncodedDataLength) {
+                                  int64_t totalEncodedDataLength,
+                                  int64_t totalEncodedBodyLength) {
   if (!m_currentRequest) {
-    client->didFinishLoading(loader, finishTime, totalEncodedDataLength);
+    client->didFinishLoading(loader, finishTime, totalEncodedDataLength,
+                             totalEncodedBodyLength);
     return;
   }
   m_currentRequest = nullptr;
