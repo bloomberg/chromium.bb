@@ -34,13 +34,9 @@ struct StructTraits<metrics::mojom::CallStackModuleDataView,
 
   static bool Read(metrics::mojom::CallStackModuleDataView data,
                    base::StackSamplingProfiler::Module* out) {
-    // Linux has the longest build id at 40 bytes.
-    static const size_t kMaxIDSize = 40;
-
     std::string id;
     base::FilePath filename;
-    if (!data.ReadId(&id) || id.size() > kMaxIDSize ||
-        !data.ReadFilename(&filename))
+    if (!data.ReadId(&id) || !data.ReadFilename(&filename))
       return false;
 
     *out =

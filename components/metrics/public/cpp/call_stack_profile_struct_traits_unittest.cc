@@ -130,18 +130,6 @@ TEST_F(CallStackProfileStructTraitsTest, Module) {
       Module(0x10, "", base::FilePath(base::FilePath::kCurrentDirectory)),
       true
     },
-    // Module id at the length limit.
-    {
-      Module(0x10, std::string(40, ' '),
-             base::FilePath(base::FilePath::kCurrentDirectory)),
-      true
-    },
-    // Module id beyond the length limit.
-    {
-      Module(0x10, std::string(41, ' '),
-             base::FilePath(base::FilePath::kCurrentDirectory)),
-      false
-    },
   };
 
   for (const SerializeCase& input : serialize_cases) {
