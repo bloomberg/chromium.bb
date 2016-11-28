@@ -303,10 +303,10 @@
       <ph name="BEGIN_LINK">&lt;a href="#buttons" onclick="toggleHelpBox()"&gt;</ph>Checking the proxy address<ph name="END_LINK">&lt;/a&gt;<ex>&lt;/a&gt;</ex></ph>
     </message>
   </if>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to contact his system administrator. The suggestions list is prefixed with 'Try:'.">
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY" desc="The message displayed in a list of suggestions following a network error suggesting to the user to contact their system administrator. The suggestions list is prefixed with 'Try:'.">
     Contacting the system admin
   </message>
-  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_STANDALONE" desc="Stand alone suggestion following a network error suggesting to the user to contact his system administrator.">
+  <message name="IDS_ERRORPAGES_SUGGESTION_CONTACT_ADMIN_SUMMARY_STANDALONE" desc="Stand alone suggestion following a network error suggesting to the user to contact their system administrator.">
     Try contacting the system admin.
   </message>
   <message name="IDS_ERRORPAGES_SUGGESTION_LEARNMORE_SUMMARY" desc="The message displayed in a list of suggestions when a webpage fails to load. A link provided to the help center to learn more about the failure. The suggestions list is prefixed with 'Try:'.">

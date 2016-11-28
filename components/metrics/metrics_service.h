@@ -272,7 +272,7 @@ class MetricsService : public base::HistogramFlattener {
   // call to this function.  Also updates the cumulative uptime metric (stored
   // as a pref) for uninstall.  Uptimes are measured using TimeTicks, which
   // guarantees that it is monotonic and does not jump if the user changes
-  // his/her clock.  The TimeTicks implementation also makes the clock not
+  // their clock.  The TimeTicks implementation also makes the clock not
   // count time the computer is suspended.
   void GetUptimes(PrefService* pref,
                   base::TimeDelta* incremental_uptime,
