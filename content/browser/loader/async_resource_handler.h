@@ -95,7 +95,6 @@ class CONTENT_EXPORT AsyncResourceHandler : public ResourceHandler,
   base::RepeatingTimer progress_timer_;
 
   int64_t reported_transfer_size_;
-  int64_t reported_encoded_body_length_;
 
   DISALLOW_COPY_AND_ASSIGN(AsyncResourceHandler);
 };

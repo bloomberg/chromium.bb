@@ -215,13 +215,11 @@ class CONTENT_EXPORT ResourceDispatcher : public IPC::Listener {
                        base::ProcessId renderer_pid);
   void OnReceivedInlinedDataChunk(int request_id,
                                   const std::vector<char>& data,
-                                  int encoded_data_length,
-                                  int encoded_body_length);
+                                  int encoded_data_length);
   void OnReceivedData(int request_id,
                       int data_offset,
                       int data_length,
-                      int encoded_data_length,
-                      int encoded_body_length);
+                      int encoded_data_length);
   void OnDownloadedData(int request_id, int data_len, int encoded_data_length);
   void OnRequestComplete(
       int request_id,

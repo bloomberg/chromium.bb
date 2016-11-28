@@ -275,14 +275,14 @@ class ResourceDispatcherTest : public testing::Test, public IPC::Sender {
            data.length());
 
     EXPECT_TRUE(dispatcher_->OnMessageReceived(ResourceMsg_DataReceived(
-        request_id, 0, data.length(), data.length(), data.length())));
+        request_id, 0, data.length(), data.length())));
   }
 
   void NotifyInlinedDataChunkReceived(int request_id,
                                       const std::vector<char>& data) {
     auto size = data.size();
     EXPECT_TRUE(dispatcher_->OnMessageReceived(
-        ResourceMsg_InlinedDataChunkReceived(request_id, data, size, size)));
+        ResourceMsg_InlinedDataChunkReceived(request_id, data, size)));
   }
 
   void NotifyDataDownloaded(int request_id,

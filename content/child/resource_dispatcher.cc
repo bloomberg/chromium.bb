@@ -306,8 +306,7 @@ void ResourceDispatcher::OnSetDataBuffer(int request_id,
 void ResourceDispatcher::OnReceivedInlinedDataChunk(
     int request_id,
     const std::vector<char>& data,
-    int encoded_data_length,
-    int encoded_body_length) {
+    int encoded_data_length) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedInlinedDataChunk");
   DCHECK(!data.empty());
   DCHECK(base::FeatureList::IsEnabled(
@@ -334,8 +333,7 @@ void ResourceDispatcher::OnReceivedInlinedDataChunk(
 void ResourceDispatcher::OnReceivedData(int request_id,
                                         int data_offset,
                                         int data_length,
-                                        int encoded_data_length,
-                                        int encoded_body_length) {
+                                        int encoded_data_length) {
   TRACE_EVENT0("loader", "ResourceDispatcher::OnReceivedData");
   DCHECK_GT(data_length, 0);
   PendingRequestInfo* request_info = GetPendingRequestInfo(request_id);

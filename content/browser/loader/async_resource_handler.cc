@@ -72,14 +72,6 @@ void InitializeResourceBufferConstants() {
   GetNumericArg("resource-buffer-max-allocation-size", &kMaxAllocationSize);
 }
 
-// Updates |*cached| to |updated| and returns the difference from the old
-// value.
-int TrackDifference(int64_t updated, int64_t* cached) {
-  int difference = updated - *cached;
-  *cached = updated;
-  return difference;
-}
-
 }  // namespace
 
 // Used when kOptimizeLoadingIPCForSmallResources is enabled.
@@ -125,7 +117,6 @@ class AsyncResourceHandler::InliningHelper {
   // Returns true if the received data is sent to the consumer.
   bool SendInlinedDataIfApplicable(int bytes_read,
                                    int encoded_data_length,
-                                   int encoded_body_length,
                                    IPC::Sender* sender,
                                    int request_id) {
     DCHECK(sender);
@@ -138,7 +129,7 @@ class AsyncResourceHandler::InliningHelper {
     leading_chunk_buffer_ = nullptr;
 
     sender->Send(new ResourceMsg_InlinedDataChunkReceived(
-        request_id, data, encoded_data_length, encoded_body_length));
+        request_id, data, encoded_data_length));
     return true;
   }
 
@@ -215,8 +206,7 @@ AsyncResourceHandler::AsyncResourceHandler(
       inlining_helper_(new InliningHelper),
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
-      reported_transfer_size_(0),
-      reported_encoded_body_length_(0) {
+      reported_transfer_size_(0) {
   InitializeResourceBufferConstants();
 }
 
@@ -430,12 +420,11 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   if (!first_chunk_read_)
     encoded_data_length -= request()->raw_header_size();
 
-  int encoded_body_length = CalculateEncodedBodyLengthToReport();
   first_chunk_read_ = true;
 
   // Return early if InliningHelper handled the received data.
   if (inlining_helper_->SendInlinedDataIfApplicable(
-          bytes_read, encoded_data_length, encoded_body_length, filter,
+          bytes_read, encoded_data_length, filter,
           GetRequestID()))
     return true;
 
@@ -455,8 +444,7 @@ bool AsyncResourceHandler::OnReadCompleted(int bytes_read, bool* defer) {
   int data_offset = buffer_->GetLastAllocationOffset();
 
   filter->Send(new ResourceMsg_DataReceived(GetRequestID(), data_offset,
-                                            bytes_read, encoded_data_length,
-                                            encoded_body_length));
+                                            bytes_read, encoded_data_length));
   ++pending_data_count_;
 
   if (!buffer_->CanAllocate()) {
@@ -559,13 +547,10 @@ bool AsyncResourceHandler::CheckForSufficientResource() {
 }
 
 int AsyncResourceHandler::CalculateEncodedDataLengthToReport() {
-  return TrackDifference(request()->GetTotalReceivedBytes(),
-                         &reported_transfer_size_);
-}
-
-int AsyncResourceHandler::CalculateEncodedBodyLengthToReport() {
-  return TrackDifference(request()->GetRawBodyBytes(),
-                         &reported_encoded_body_length_);
+  const auto transfer_size = request()->GetTotalReceivedBytes();
+  const auto difference =  transfer_size - reported_transfer_size_;
+  reported_transfer_size_ = transfer_size;
+  return difference;
 }
 
 void AsyncResourceHandler::RecordHistogram() {
