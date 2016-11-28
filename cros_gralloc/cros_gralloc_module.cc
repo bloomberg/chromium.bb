@@ -72,7 +72,7 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_NONE;
 	}
 
-	if (drmPrimeFDToHandle(drv_get_fd(mod->drv), hnd->data.fds[0], &id)) {
+	if (drmPrimeFDToHandle(drv_get_fd(mod->drv), hnd->fds[0], &id)) {
 		cros_gralloc_error("drmPrimeFDToHandle failed.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
@@ -82,11 +82,25 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 		bo->refcount++;
 		hnd->bo = reinterpret_cast<uint64_t>(bo);
 	} else {
-		hnd->data.fds[1] = hnd->data.fds[2] = hnd->data.fds[3]
-				 = hnd->data.fds[0];
+		struct drv_import_fd_data data;
+		size_t num_planes = drv_num_planes_from_format(hnd->format);
+
+		data.format = hnd->format;
+		data.width = hnd->width;
+		data.height = hnd->height;
+		for (size_t p = 0; p < num_planes; p++) {
+			data.fds[p] = hnd->fds[p];
+			data.strides[p] = hnd->strides[p];
+			data.offsets[p] = hnd->offsets[p];
+			data.sizes[p] = hnd->sizes[p];
+			data.format_modifiers[p] = static_cast<uint64_t>
+				(hnd->format_modifiers[p]) << 32;
+			data.format_modifiers[p] |= hnd->format_modifiers[p+1];
+		}
+
 		bo = new cros_gralloc_bo();
 
-		bo->bo = drv_bo_import(mod->drv, &hnd->data);
+		bo->bo = drv_bo_import(mod->drv, &data);
 		if (!bo->bo) {
 			delete bo;
 			return CROS_GRALLOC_ERROR_NO_RESOURCES;
@@ -155,7 +169,7 @@ static int cros_gralloc_lock(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (hnd->format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
+	if (hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
 		cros_gralloc_error("YUV format not compatible.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
@@ -241,13 +255,13 @@ static int cros_gralloc_perform(struct gralloc_module_t const* module,
 		break;
 	case GRALLOC_DRM_GET_FORMAT:
 		out_format = va_arg(args, int32_t *);
-		*out_format = hnd->format;
+		*out_format = hnd->droid_format;
 		break;
 	case GRALLOC_DRM_GET_DIMENSIONS:
 		out_width = va_arg(args, uint32_t *);
 		out_height = va_arg(args, uint32_t *);
-		*out_width = hnd->data.width;
-		*out_height = hnd->data.height;
+		*out_width = hnd->width;
+		*out_height = hnd->height;
 		break;
 	case GRALLOC_DRM_GET_BACKING_STORE:
 		out_store = va_arg(args, uint64_t *);
@@ -284,7 +298,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if ((hnd->format != HAL_PIXEL_FORMAT_YCbCr_420_888)) {
+	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888)) {
 		cros_gralloc_error("Non-YUV format not compatible.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
@@ -305,7 +319,7 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 	for (size_t p = 0; p < drv_bo_get_num_planes(bo->bo); p++)
 		offsets[p] = drv_bo_get_plane_offset(bo->bo, p);
 
-	switch (hnd->data.format) {
+	switch (hnd->format) {
 	case DRM_FORMAT_NV12:
 		ycbcr->y = addr;
 		ycbcr->cb = addr + offsets[1];

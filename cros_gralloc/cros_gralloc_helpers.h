@@ -7,6 +7,7 @@
 #ifndef CROS_GRALLOC_HELPERS_H
 #define CROS_GRALLOC_HELPERS_H
 
+#include "../drv.h"
 #include "cros_gralloc_handle.h"
 
 #include <hardware/gralloc.h>
@@ -44,14 +45,9 @@ constexpr uint32_t cros_gralloc_magic(void)
 	return 0xABCDDCBA;
 }
 
-constexpr uint32_t num_ints(void)
+constexpr uint32_t num_ints_handle()
 {
-	/*
-	 * numFds in our case is one. Subtract that from our numInts
-	 * calculation.
-	 */
-	return ((sizeof(struct cros_gralloc_handle)
-		- offsetof(cros_gralloc_handle, data)) / sizeof(int)) - 1;
+	return ((sizeof(struct cros_gralloc_handle)) / sizeof(int));
 }
 
 constexpr uint32_t sw_access(void)

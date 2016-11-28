@@ -10,19 +10,32 @@
 #include <cutils/native_handle.h>
 #include <cstdint>
 
-#include "../drv.h"
+#define DRV_MAX_PLANES 4
+
+/*
+ * Only use 32-bit integers in the handle. This guarantees that the handle is
+ * densely packed (i.e, the compiler does not insert any padding).
+ */
 
 struct cros_gralloc_handle {
 	native_handle_t base;
-	drv_import_fd_data data;
+	int32_t fds[DRV_MAX_PLANES];
+	uint32_t strides[DRV_MAX_PLANES];
+	uint32_t offsets[DRV_MAX_PLANES];
+	uint32_t sizes[DRV_MAX_PLANES];
+	uint32_t format_modifiers[2 * DRV_MAX_PLANES];
+	uint32_t width;
+	uint32_t height;
+	uint32_t format;            /* DRM format */
 	uint32_t magic;
 	uint32_t pixel_stride;
-	int32_t format, usage;     /* Android format and usage. */
-	uint64_t bo;		   /* Pointer to cros_gralloc_bo. */
-	int32_t registrations;     /*
-				    * Number of times (*register)() has been
-				    * called on this handle.
-				    */
+	int32_t droid_format;
+	int32_t usage;              /* Android usage. */
+	uint64_t bo;		    /* Pointer to cros_gralloc_bo. */
+	int32_t registrations;      /*
+				     * Number of times (*register)() has been
+				     * called on this handle.
+				     */
 };
 
 #endif
