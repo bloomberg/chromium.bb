@@ -14,3 +14,9 @@ mojom("capture_types") {
     "//ui/gfx/geometry/mojo",
   ]
 }
+
+mojom("image_capture") {
+  sources = [
+    "image_capture.mojom",
+  ]
+}

@@ -2,7 +2,7 @@
 
 let mockImageCaptureReady = define(
   'mockImageCapture',
-  ['media/mojo/interfaces/image_capture.mojom',
+  ['media/capture/mojo/image_capture.mojom',
    'mojo/public/js/bindings',
    'mojo/public/js/connection',
    'content/public/renderer/interfaces',
