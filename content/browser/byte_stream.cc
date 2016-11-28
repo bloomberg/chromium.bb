@@ -22,10 +22,10 @@ ContentVector;
 
 class ByteStreamReaderImpl;
 
-// A poor man's weak pointer; a RefCountedThreadSafe boolean that can be
-// cleared in an object destructor and accessed to check for object
-// existence.  We can't use weak pointers because they're tightly tied to
-// threads rather than task runners.
+// A makeshift weak pointer; a RefCountedThreadSafe boolean that can be cleared
+// in an object destructor and accessed to check for object existence. We can't
+// use weak pointers because they're tightly tied to threads rather than task
+// runners.
 // TODO(rdsmith): A better solution would be extending weak pointers
 // to support SequencedTaskRunners.
 struct LifetimeFlag : public base::RefCountedThreadSafe<LifetimeFlag> {
