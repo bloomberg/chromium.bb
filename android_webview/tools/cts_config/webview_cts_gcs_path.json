@@ -2,7 +2,11 @@
   "arm_64": {
     "L": {
         "filename": "arm_64/L/android-cts-arm_64-3500656.zip",
-        "_origin": "aosp-lollipop-mr1-cts-dev@3500656" 
+        "_origin": "aosp-lollipop-mr1-cts-dev@3500656"
+    },
+    "M": {
+        "filename": "arm_64/M/android-cts-arm_64-3505727.zip",
+        "_origin": "aosp-marshmallow-cts-dev@3505727"
     },
     "N": {
         "filename": "arm_64/N/android-cts-arm_64-3367285.zip",
