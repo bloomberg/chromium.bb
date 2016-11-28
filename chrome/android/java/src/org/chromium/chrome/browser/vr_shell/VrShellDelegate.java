@@ -164,7 +164,7 @@ public class VrShellDelegate {
         } else {
             if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
-                mVrShell.setWebVrModeEnabled(false);
+                mVrDaydreamApi.setVrModeEnabled(false);
             }
         }
 
