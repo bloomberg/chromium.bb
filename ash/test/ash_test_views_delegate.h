@@ -11,6 +11,14 @@
 namespace ash {
 namespace test {
 
+class TestAccessibilityEventDelegate {
+ public:
+  TestAccessibilityEventDelegate() {}
+  virtual ~TestAccessibilityEventDelegate() {}
+  virtual void NotifyAccessibilityEvent(views::View* view,
+                                        ui::AXEvent event_type) = 0;
+};
+
 // Ash specific ViewsDelegate. In addition to creating a TestWebContents this
 // parents widget with no parent/context to the shell. This is created by
 // default AshTestHelper.
@@ -19,12 +27,23 @@ class AshTestViewsDelegate : public views::TestViewsDelegate {
   AshTestViewsDelegate();
   ~AshTestViewsDelegate() override;
 
+  // Not owned.
+  void set_test_accessibility_event_delegate(
+      TestAccessibilityEventDelegate* test_accessibility_event_delegate) {
+    test_accessibility_event_delegate_ = test_accessibility_event_delegate;
+  }
+
   // Overriden from TestViewsDelegate.
   void OnBeforeWidgetInit(
       views::Widget::InitParams* params,
       views::internal::NativeWidgetDelegate* delegate) override;
+  void NotifyAccessibilityEvent(views::View* view,
+                                ui::AXEvent event_type) override;
 
  private:
+  // Not owned.
+  TestAccessibilityEventDelegate* test_accessibility_event_delegate_ = nullptr;
+
   DISALLOW_COPY_AND_ASSIGN(AshTestViewsDelegate);
 };
 

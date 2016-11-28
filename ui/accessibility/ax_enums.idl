@@ -51,6 +51,11 @@
     menu_popup_end,            // Native / Win
     menu_popup_start,          // Native / Win
     menu_start,                // Native / Win
+    mouse_canceled,
+    mouse_dragged,
+    mouse_moved,
+    mouse_pressed,
+    mouse_released,
     row_collapsed,             // Web / Mac
     row_count_changed,         // Web / Mac
     row_expanded,              // Web / Mac

@@ -12,12 +12,10 @@ namespace base {
 class SequencedWorkerPool;
 }
 
-namespace views {
-class ViewsDelegate;
-}
-
 namespace ash {
 namespace test {
+
+class AshTestViewsDelegate;
 
 // AshTestEnvironment creates objects specific to an environment. Two
 // environments are provided, one for content (AshTestEnvironmentContent)
@@ -44,7 +42,7 @@ class AshTestEnvironment {
 
   virtual base::SequencedWorkerPool* GetBlockingPool() = 0;
 
-  virtual std::unique_ptr<views::ViewsDelegate> CreateViewsDelegate() = 0;
+  virtual std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() = 0;
 
  protected:
   AshTestEnvironment() {}

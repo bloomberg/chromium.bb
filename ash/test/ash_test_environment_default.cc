@@ -35,7 +35,7 @@ class AshTestEnvironmentDefault : public AshTestEnvironment {
     }
     return blocking_pool_owner_->pool().get();
   }
-  std::unique_ptr<views::ViewsDelegate> CreateViewsDelegate() override {
+  std::unique_ptr<AshTestViewsDelegate> CreateViewsDelegate() override {
     return base::MakeUnique<AshTestViewsDelegate>();
   }
 

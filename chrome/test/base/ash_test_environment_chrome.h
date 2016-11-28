@@ -15,7 +15,8 @@ class AshTestEnvironmentChrome : public ash::test::AshTestEnvironment {
 
   // AshTestEnvironment:
   base::SequencedWorkerPool* GetBlockingPool() override;
-  std::unique_ptr<views::ViewsDelegate> CreateViewsDelegate() override;
+  std::unique_ptr<ash::test::AshTestViewsDelegate> CreateViewsDelegate()
+      override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(AshTestEnvironmentChrome);

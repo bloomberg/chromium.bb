@@ -60,11 +60,12 @@ class AutomationManagerAura : public extensions::AutomationActionAdapter,
   // views::AXAuraObjCache::Delegate implementation.
   void OnChildWindowRemoved(views::AXAuraObjWrapper* parent) override;
 
- private:
-  friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
-
+ protected:
   AutomationManagerAura();
   virtual ~AutomationManagerAura();
+
+ private:
+  friend struct base::DefaultSingletonTraits<AutomationManagerAura>;
 
   // Reset all state in this manager.
   void ResetSerializer();

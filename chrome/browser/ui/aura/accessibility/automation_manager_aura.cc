@@ -68,8 +68,9 @@ void AutomationManagerAura::HandleEvent(BrowserContext* context,
   if (!enabled_)
     return;
 
-  views::AXAuraObjWrapper* aura_obj =
-      views::AXAuraObjCache::GetInstance()->GetOrCreate(view);
+  views::AXAuraObjWrapper* aura_obj = view ?
+      views::AXAuraObjCache::GetInstance()->GetOrCreate(view) :
+      current_tree_->GetRoot();
   SendEvent(nullptr, aura_obj, event_type);
 }
 

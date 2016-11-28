@@ -18,7 +18,7 @@ base::SequencedWorkerPool* AshTestEnvironmentChrome::GetBlockingPool() {
   return content::BrowserThread::GetBlockingPool();
 }
 
-std::unique_ptr<views::ViewsDelegate>
+std::unique_ptr<ash::test::AshTestViewsDelegate>
 AshTestEnvironmentChrome::CreateViewsDelegate() {
   return base::MakeUnique<ash::test::AshTestViewsDelegate>();
 }

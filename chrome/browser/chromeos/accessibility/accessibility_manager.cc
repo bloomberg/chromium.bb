@@ -38,6 +38,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_extension_loader.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_highlight_manager.h"
 #include "chrome/browser/chromeos/accessibility/magnification_manager.h"
+#include "chrome/browser/chromeos/accessibility/select_to_speak_event_handler.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/ui/accessibility_focus_ring_controller.h"
 #include "chrome/browser/extensions/api/braille_display_private/stub_braille_controller.h"
@@ -861,8 +862,11 @@ void AccessibilityManager::UpdateSelectToSpeakFromPref() {
   if (enabled) {
     select_to_speak_loader_->Load(profile_, "" /* init_script_str */,
                                   base::Closure() /* done_cb */);
+    select_to_speak_event_handler_.reset(
+        new chromeos::SelectToSpeakEventHandler());
   } else {
     select_to_speak_loader_->Unload();
+    select_to_speak_event_handler_.reset(nullptr);
   }
 }
 
