@@ -954,7 +954,6 @@ class CORE_EXPORT UseCounter {
     V8ForInInitializer = 1238,
     V8Animation_Id_AttributeGetter = 1239,
     V8Animation_Id_AttributeSetter = 1240,
-    WebAnimationHyphenatedProperty = 1243,
     FormControlsCollectionReturnsRadioNodeListForFieldSet = 1244,
     ApplicationCacheManifestSelectInsecureOrigin = 1245,
     ApplicationCacheManifestSelectSecureOrigin = 1246,

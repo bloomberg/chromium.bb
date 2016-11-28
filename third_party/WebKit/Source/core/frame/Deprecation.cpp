@@ -384,10 +384,6 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
       return replacedBy("'Performance.onwebkitresourcetimingbufferfull'",
                         "'Performance.onresourcetimingbufferfull'");
 
-    case UseCounter::WebAnimationHyphenatedProperty:
-      return "Hyphenated property names in Web Animations keyframes are "
-             "invalid and therefore ignored. Please use camelCase instead.";
-
     case UseCounter::HTMLKeygenElement:
       return willBeRemoved("The <keygen> element", M57, "5716060992962560");
 

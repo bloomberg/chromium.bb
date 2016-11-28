@@ -1,5 +1,0 @@
-CONSOLE WARNING: line 15: Hyphenated property names in Web Animations keyframes are invalid and therefore ignored. Please use camelCase instead.
-This is a testharness.js-based test.
-PASS Hyphenated propery names are ignored. 
-Harness: the test ran to completion.
-

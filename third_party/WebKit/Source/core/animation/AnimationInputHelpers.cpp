@@ -46,12 +46,8 @@ CSSPropertyID AnimationInputHelpers::keyframeAttributeToCSSProperty(
   StringBuilder builder;
   for (size_t i = 0; i < property.length(); ++i) {
     // Disallow hyphenated properties.
-    if (property[i] == '-') {
-      if (cssPropertyID(property) != CSSPropertyInvalid)
-        Deprecation::countDeprecation(
-            document, UseCounter::WebAnimationHyphenatedProperty);
+    if (property[i] == '-')
       return CSSPropertyInvalid;
-    }
     if (isASCIIUpper(property[i]))
       builder.append('-');
     builder.append(property[i]);
