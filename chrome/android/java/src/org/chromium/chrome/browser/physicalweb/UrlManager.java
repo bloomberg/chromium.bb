@@ -693,6 +693,9 @@ class UrlManager {
                             @Override
                             public void onSuccess(boolean alreadyStarted) {
                                 mNativePhysicalWebDataSourceAndroid = nativeInit();
+                                for (UrlInfo urlInfo : getUrls()) {
+                                    safeNotifyNativeListenersOnFound(urlInfo.getUrl());
+                                }
                             }
 
                             @Override
