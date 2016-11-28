@@ -417,7 +417,9 @@ int FtpNetworkTransaction::ProcessCtrlResponse() {
   }
 
   // We may get multiple responses for some commands,
-  // see http://crbug.com/18036.
+  // see http://crbug.com/18036. Consume all responses, regardless of whether
+  // they make sense. On unexpected responses, SendFtpCommand expects all data
+  // to have already been consumed, even when sending the QUIT command.
   while (ctrl_response_buffer_->ResponseAvailable() && rv == OK) {
     response = ctrl_response_buffer_->PopResponse();
 
@@ -430,7 +432,8 @@ int FtpNetworkTransaction::ProcessCtrlResponse() {
         break;
       default:
         // Multiple responses for other commands are invalid.
-        return Stop(ERR_INVALID_RESPONSE);
+        rv = Stop(ERR_INVALID_RESPONSE);
+        break;
     }
   }
 

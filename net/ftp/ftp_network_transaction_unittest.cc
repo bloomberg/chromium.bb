@@ -1729,6 +1729,31 @@ TEST_P(FtpNetworkTransactionTest, UnexpectedInitiatedResponseForFile) {
   }
 }
 
+// Make sure that receiving extra unexpected responses correctly results in
+// sending a QUIT message, without triggering a DCHECK.
+TEST_P(FtpNetworkTransactionTest, ExtraResponses) {
+  FtpSocketDataProviderDirectoryListing ctrl_socket;
+  ctrl_socket.InjectFailure(FtpSocketDataProvider::PRE_TYPE,
+                            FtpSocketDataProvider::PRE_QUIT,
+                            "157 Foo\r\n"
+                            "157 Bar\r\n"
+                            "157 Trombones\r\n");
+  ExecuteTransaction(&ctrl_socket, "ftp://host/", ERR_INVALID_RESPONSE);
+}
+
+// Make sure that receiving extra unexpected responses to a QUIT message
+// correctly results in ending the transaction with an error, without triggering
+// a DCHECK.
+TEST_P(FtpNetworkTransactionTest, ExtraQuitResponses) {
+  FtpSocketDataProviderDirectoryListing ctrl_socket;
+  ctrl_socket.InjectFailure(FtpSocketDataProvider::PRE_QUIT,
+                            FtpSocketDataProvider::QUIT,
+                            "221 Foo\r\n"
+                            "221 Bar\r\n"
+                            "221 Trombones\r\n");
+  ExecuteTransaction(&ctrl_socket, "ftp://host/", ERR_INVALID_RESPONSE);
+}
+
 INSTANTIATE_TEST_CASE_P(FTP,
                         FtpNetworkTransactionTest,
                         ::testing::Values(AF_INET, AF_INET6));
