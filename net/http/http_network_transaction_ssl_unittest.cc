@@ -37,36 +37,6 @@ namespace net {
 
 namespace {
 
-class TLS10SSLConfigService : public SSLConfigService {
- public:
-  TLS10SSLConfigService() {
-    ssl_config_.version_min = SSL_PROTOCOL_VERSION_TLS1;
-    ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1;
-  }
-
-  void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
-
- private:
-  ~TLS10SSLConfigService() override {}
-
-  SSLConfig ssl_config_;
-};
-
-class TLS12SSLConfigService : public SSLConfigService {
- public:
-  TLS12SSLConfigService() {
-    ssl_config_.version_min = SSL_PROTOCOL_VERSION_TLS1;
-    ssl_config_.version_max = SSL_PROTOCOL_VERSION_TLS1_2;
-  }
-
-  void GetSSLConfig(SSLConfig* config) override { *config = ssl_config_; }
-
- private:
-  ~TLS12SSLConfigService() override {}
-
-  SSLConfig ssl_config_;
-};
-
 class TokenBindingSSLConfigService : public SSLConfigService {
  public:
   TokenBindingSSLConfigService() {
@@ -86,7 +56,7 @@ class TokenBindingSSLConfigService : public SSLConfigService {
 class HttpNetworkTransactionSSLTest : public testing::Test {
  protected:
   void SetUp() override {
-    ssl_config_service_ = new TLS10SSLConfigService;
+    ssl_config_service_ = new TokenBindingSSLConfigService;
     session_params_.ssl_config_service = ssl_config_service_.get();
 
     auth_handler_factory_.reset(new HttpAuthHandlerMock::Factory());
@@ -112,10 +82,6 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
     return request_info;
   }
 
-  SSLConfig& GetServerSSLConfig(HttpNetworkTransaction* trans) {
-    return trans->server_ssl_config_;
-  }
-
   scoped_refptr<SSLConfigService> ssl_config_service_;
   std::unique_ptr<HttpAuthHandlerMock::Factory> auth_handler_factory_;
   std::unique_ptr<ProxyService> proxy_service_;
@@ -133,8 +99,6 @@ class HttpNetworkTransactionSSLTest : public testing::Test {
 
 #if !defined(OS_IOS)
 TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
-  ssl_config_service_ = new TokenBindingSSLConfigService;
-  session_params_.ssl_config_service = ssl_config_service_.get();
   ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL),
                                       base::ThreadTaskRunnerHandle::Get());
   session_params_.channel_id_service = &channel_id_service;
@@ -185,8 +149,6 @@ TEST_F(HttpNetworkTransactionSSLTest, TokenBinding) {
 }
 
 TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
-  ssl_config_service_ = new TokenBindingSSLConfigService;
-  session_params_.ssl_config_service = ssl_config_service_.get();
   ChannelIDService channel_id_service(new DefaultChannelIDStore(NULL),
                                       base::ThreadTaskRunnerHandle::Get());
   session_params_.channel_id_service = &channel_id_service;
@@ -218,9 +180,6 @@ TEST_F(HttpNetworkTransactionSSLTest, NoTokenBindingOverHttp) {
 
 // Regression test for https://crbug.com/667683.
 TEST_F(HttpNetworkTransactionSSLTest, TokenBindingAsync) {
-  ssl_config_service_ = new TokenBindingSSLConfigService;
-  session_params_.ssl_config_service = ssl_config_service_.get();
-
   // Create a separate thread for ChannelIDService
   // so that asynchronous Channel ID creation can be delayed.
   base::Thread channel_id_thread("ThreadForChannelIDService");
