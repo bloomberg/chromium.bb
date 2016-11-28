@@ -133,6 +133,11 @@ TEST_F(ShellSurfaceTest, Minimize) {
   // Confirm that attaching and commiting doesn't reset the state.
   surface->Attach(buffer.get());
   surface->Commit();
+  EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
+
+  shell_surface->Restore();
+  EXPECT_FALSE(shell_surface->GetWidget()->IsMinimized());
+
   shell_surface->Minimize();
   EXPECT_TRUE(shell_surface->GetWidget()->IsMinimized());
 }
