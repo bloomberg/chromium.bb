@@ -11,10 +11,6 @@
 #include "net/base/net_export.h"
 #include "net/cert/internal/trust_store.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 
 // TrustStoreNSS is an implementation of TrustStore which uses NSS to find trust
@@ -26,21 +22,16 @@ namespace net {
 class NET_EXPORT TrustStoreNSS : public TrustStore {
  public:
   // Creates a TrustStoreNSS which will find anchors that are trusted for
-  // |trust_type|. All NSS calls will be done on |nss_task_runner|.
-  TrustStoreNSS(SECTrustType trust_type,
-                scoped_refptr<base::TaskRunner> nss_task_runner);
+  // |trust_type|.
+  explicit TrustStoreNSS(SECTrustType trust_type);
   ~TrustStoreNSS() override;
 
   // TrustStore implementation:
-  void FindTrustAnchorsForCert(
-      const scoped_refptr<ParsedCertificate>& cert,
-      const TrustAnchorsCallback& callback,
-      TrustAnchors* synchronous_matches,
-      std::unique_ptr<Request>* out_req) const override;
+  void FindTrustAnchorsForCert(const scoped_refptr<ParsedCertificate>& cert,
+                               TrustAnchors* matches) const override;
 
  private:
   SECTrustType trust_type_;
-  scoped_refptr<base::TaskRunner> nss_task_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(TrustStoreNSS);
 };

@@ -145,8 +145,7 @@ bool VerifyCRL(const Crl& crl,
   net::CertPathBuilder path_builder(parsed_cert.get(), trust_store,
                                     signature_policy.get(), verification_time,
                                     &result);
-  net::CompletionStatus rv = path_builder.Run(base::Closure());
-  DCHECK_EQ(rv, net::CompletionStatus::SYNC);
+  path_builder.Run();
   if (!result.HasValidPath()) {
     VLOG(2) << "CRL - Issuer certificate verification failed.";
     // TODO(crbug.com/634443): Log the error information.

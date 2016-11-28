@@ -14,10 +14,6 @@ namespace net {
 
 namespace {
 
-void NotCalled(CertIssuerSource::Request* req) {
-  ADD_FAILURE() << "NotCalled was called";
-}
-
 ::testing::AssertionResult ReadTestPem(const std::string& file_name,
                                        const std::string& block_name,
                                        std::string* result) {
@@ -137,7 +133,7 @@ TEST_F(CertIssuerSourceStaticTest, IsNotAsync) {
   CertIssuerSourceStatic source;
   source.AddCert(i1_1_);
   std::unique_ptr<CertIssuerSource::Request> request;
-  source.AsyncGetIssuersOf(c1_.get(), base::Bind(&NotCalled), &request);
+  source.AsyncGetIssuersOf(c1_.get(), &request);
   EXPECT_EQ(nullptr, request);
 }
 

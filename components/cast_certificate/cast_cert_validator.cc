@@ -310,8 +310,7 @@ bool VerifyDeviceCertUsingCustomTrustStore(
                                     signature_policy.get(), verification_time,
                                     &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
-  net::CompletionStatus rv = path_builder.Run(base::Closure());
-  DCHECK_EQ(rv, net::CompletionStatus::SYNC);
+  path_builder.Run();
   if (!result.HasValidPath()) {
     // TODO(crbug.com/634443): Log error information.
     return false;
