@@ -970,6 +970,8 @@ void PrintWebViewHelper::ScriptedPrint(bool user_initiated) {
     Print(web_frame, blink::WebNode(), true /* is_scripted? */);
 #endif
   }
+  // WARNING: |this| may be gone at this point. Do not do any more work here and
+  // just return.
 }
 
 bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
@@ -1019,6 +1021,8 @@ void PrintWebViewHelper::OnPrintPages() {
   // that instead.
   auto plugin = delegate_->GetPdfElement(frame);
   Print(frame, plugin, false /* is_scripted? */);
+  // WARNING: |this| may be gone at this point. Do not do any more work here and
+  // just return.
 }
 
 void PrintWebViewHelper::OnPrintForSystemDialog() {
@@ -1030,6 +1034,8 @@ void PrintWebViewHelper::OnPrintForSystemDialog() {
     return;
   }
   Print(frame, print_preview_context_.source_node(), false);
+  // WARNING: |this| may be gone at this point. Do not do any more work here and
+  // just return.
 }
 #endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
@@ -1418,8 +1424,6 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
 
   print_node_in_progress_ = true;
 
-  // Make a copy of the node, in case RenderView::OnContextMenuClosed resets
-  // its |context_menu_node_|.
   if (g_is_preview_enabled) {
 #if BUILDFLAG(ENABLE_PRINT_PREVIEW)
     print_preview_context_.InitWithNode(node);
@@ -1427,8 +1431,16 @@ void PrintWebViewHelper::PrintNode(const blink::WebNode& node) {
 #endif
   } else {
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
+    // Make a copy of the node, in case RenderView::OnContextMenuClosed() resets
+    // its |context_menu_node_|.
     blink::WebNode duplicate_node(node);
-    Print(duplicate_node.document().frame(), duplicate_node, false);
+
+    auto self = weak_ptr_factory_.GetWeakPtr();
+    Print(duplicate_node.document().frame(), duplicate_node,
+          false /* is_scripted? */);
+    // Check if |this| is still valid.
+    if (!self)
+      return;
 #endif
   }
 
@@ -1458,11 +1470,26 @@ void PrintWebViewHelper::Print(blink::WebLocalFrame* frame,
   }
 
   // Ask the browser to show UI to retrieve the final print settings.
-  if (delegate_->IsAskPrintSettingsEnabled() &&
-      !GetPrintSettingsFromUser(frame_ref.GetFrame(), node, expected_page_count,
-                                is_scripted)) {
-    DidFinishPrinting(OK);  // Release resources and fail silently.
-    return;
+  if (delegate_->IsAskPrintSettingsEnabled()) {
+    // PrintHostMsg_ScriptedPrint in GetPrintSettingsFromUser() will reset
+    // |print_scaling_option|, so save the value here and restore it afterwards.
+    blink::WebPrintScalingOption scaling_option =
+        print_pages_params_->params.print_scaling_option;
+
+    PrintMsg_PrintPages_Params print_settings;
+    auto self = weak_ptr_factory_.GetWeakPtr();
+    GetPrintSettingsFromUser(frame_ref.GetFrame(), node, expected_page_count,
+                             is_scripted, &print_settings);
+    // Check if |this| is still valid.
+    if (!self)
+      return;
+
+    print_settings.params.print_scaling_option = scaling_option;
+    SetPrintPagesParams(print_settings);
+    if (!print_settings.params.dpi || !print_settings.params.document_cookie) {
+      DidFinishPrinting(OK);  // Release resources and fail silently on failure.
+      return;
+    }
   }
 
   // Render Pages for printing.
@@ -1732,54 +1759,45 @@ bool PrintWebViewHelper::UpdatePrintSettings(
 
   SetPrintPagesParams(settings);
 
-  if (!PrintMsg_Print_Params_IsValid(settings.params)) {
-    if (!print_for_preview_)
-      print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
-    else
-      Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
+  if (PrintMsg_Print_Params_IsValid(settings.params))
+    return true;
 
-    return false;
-  }
-
-  return true;
+  if (print_for_preview_)
+    Send(new PrintHostMsg_ShowInvalidPrinterSettingsError(routing_id()));
+  else
+    print_preview_context_.set_error(PREVIEW_ERROR_INVALID_PRINTER_SETTINGS);
+  return false;
 }
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-bool PrintWebViewHelper::GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
-                                                  const blink::WebNode& node,
-                                                  int expected_pages_count,
-                                                  bool is_scripted) {
+void PrintWebViewHelper::GetPrintSettingsFromUser(
+    blink::WebLocalFrame* frame,
+    const blink::WebNode& node,
+    int expected_pages_count,
+    bool is_scripted,
+    PrintMsg_PrintPages_Params* print_settings) {
   PrintHostMsg_ScriptedPrint_Params params;
-  PrintMsg_PrintPages_Params print_settings;
-
   params.cookie = print_pages_params_->params.document_cookie;
   params.has_selection = frame->hasSelection();
   params.expected_pages_count = expected_pages_count;
   MarginType margin_type = DEFAULT_MARGINS;
-  if (PrintingNodeOrPdfFrame(frame, node)) {
-    margin_type =
-        GetMarginsForPdf(frame, node, print_pages_params_->params);
-  }
+  if (PrintingNodeOrPdfFrame(frame, node))
+    margin_type = GetMarginsForPdf(frame, node, print_pages_params_->params);
   params.margin_type = margin_type;
   params.is_scripted = is_scripted;
   params.is_modifiable = !PrintingNodeOrPdfFrame(frame, node);
 
   Send(new PrintHostMsg_DidShowPrintDialog(routing_id()));
 
-  // PrintHostMsg_ScriptedPrint will reset print_scaling_option, so we save the
-  // value before and restore it afterwards.
-  blink::WebPrintScalingOption scaling_option =
-      print_pages_params_->params.print_scaling_option;
-
   print_pages_params_.reset();
-  IPC::SyncMessage* msg =
-      new PrintHostMsg_ScriptedPrint(routing_id(), params, &print_settings);
+
+  auto msg = base::MakeUnique<PrintHostMsg_ScriptedPrint>(
+      routing_id(), params, print_settings);
   msg->EnableMessagePumping();
-  Send(msg);
-  print_settings.params.print_scaling_option = scaling_option;
-  SetPrintPagesParams(print_settings);
-  return (print_settings.params.dpi && print_settings.params.document_cookie);
+  Send(msg.release());
+  // WARNING: |this| may be gone at this point. Do not do any more work here
+  // and just return.
 }
 
 bool PrintWebViewHelper::RenderPagesForPrint(blink::WebLocalFrame* frame,
@@ -1943,11 +1961,14 @@ void PrintWebViewHelper::RequestPrintPreview(PrintPreviewRequestType type) {
             FROM_HERE, base::Bind(&PrintWebViewHelper::ShowScriptedPrintPreview,
                                   weak_ptr_factory_.GetWeakPtr()));
       }
-      IPC::SyncMessage* msg =
-          new PrintHostMsg_SetupScriptedPrintPreview(routing_id());
+      auto msg = base::MakeUnique<PrintHostMsg_SetupScriptedPrintPreview>(
+          routing_id());
       msg->EnableMessagePumping();
-      Send(msg);
-      is_scripted_preview_delayed_ = false;
+      auto self = weak_ptr_factory_.GetWeakPtr();
+      Send(msg.release());
+      // Check if |this| is still valid.
+      if (self)
+        is_scripted_preview_delayed_ = false;
       return;
     }
     case PRINT_PREVIEW_USER_INITIATED_ENTIRE_FRAME: {

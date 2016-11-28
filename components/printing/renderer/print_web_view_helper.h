@@ -72,6 +72,8 @@ class FrameReference {
  private:
   blink::WebView* view_;
   blink::WebLocalFrame* frame_;
+
+  DISALLOW_COPY_AND_ASSIGN(FrameReference);
 };
 
 // PrintWebViewHelper handles most of the printing grunt work for RenderView.
@@ -222,7 +224,9 @@ class PrintWebViewHelper
   // Main printing code -------------------------------------------------------
 
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
-  // |is_scripted| should be true when the call is coming from window.print()
+  // Print with the system dialog.
+  // |is_scripted| should be true when the call is coming from window.print().
+  // WARNING: |this| may be gone after this method returns.
   void Print(blink::WebLocalFrame* frame,
              const blink::WebNode& node,
              bool is_scripted);
@@ -255,15 +259,18 @@ class PrintWebViewHelper
                            const base::DictionaryValue& passed_job_settings);
 #endif  // BUILDFLAG(ENABLE_PRINT_PREVIEW)
 
+#if BUILDFLAG(ENABLE_BASIC_PRINTING)
   // Get final print settings from the user.
-  // Return false if the user cancels or on error.
-  bool GetPrintSettingsFromUser(blink::WebLocalFrame* frame,
-                                const blink::WebNode& node,
-                                int expected_pages_count,
-                                bool is_scripted);
+  // WARNING: |this| may be gone after this method returns.
+  void GetPrintSettingsFromUser(
+      blink::WebLocalFrame* frame,
+      const blink::WebNode& node,
+      int expected_pages_count,
+      bool is_scripted,
+      PrintMsg_PrintPages_Params* print_settings);
+#endif  // BUILDFLAG(ENABLE_BASIC_PRINTING)
 
   // Page Printing / Rendering ------------------------------------------------
-
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
   void OnFramePreparedForPrintPages();
   void PrintPages();
@@ -352,6 +359,8 @@ class PrintWebViewHelper
   // Shows scripted print preview when options from plugin are available.
   void ShowScriptedPrintPreview();
 
+  // WARNING: |this| may be gone after this method returns when |type| is
+  // PRINT_PREVIEW_SCRIPTED.
   void RequestPrintPreview(PrintPreviewRequestType type);
 
   // Checks whether print preview should continue or not.
