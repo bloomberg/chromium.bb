@@ -96,7 +96,8 @@ void HTMLResourcePreloader::preload(
 
   Resource* resource =
       m_document->loader()->startPreload(preload->resourceType(), request);
-  if (resource && preload->resourceType() == Resource::CSSStyleSheet) {
+  if (resource && !resource->isLoaded() &&
+      preload->resourceType() == Resource::CSSStyleSheet) {
     Settings* settings = m_document->settings();
     if (settings && (settings->cssExternalScannerNoPreload() ||
                      settings->cssExternalScannerPreload()))
