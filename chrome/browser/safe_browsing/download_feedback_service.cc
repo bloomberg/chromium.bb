@@ -9,7 +9,6 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/supports_user_data.h"
 #include "base/task_runner.h"
@@ -176,10 +175,9 @@ void DownloadFeedbackService::BeginFeedbackOrDeleteFile(
       return;
     service->BeginFeedback(ping_request, ping_response, path);
   } else {
-    base::FileUtilProxy::DeleteFile(file_task_runner.get(),
-                                    path,
-                                    false,
-                                    base::FileUtilProxy::StatusCallback());
+    file_task_runner->PostTask(
+        FROM_HERE,
+        base::Bind(base::IgnoreResult(&base::DeleteFile), path, false));
   }
 }
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/safe_browsing/download_feedback.h"
 
 #include "base/bind.h"
-#include "base/files/file_util_proxy.h"
+#include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
@@ -106,10 +106,9 @@ DownloadFeedbackImpl::~DownloadFeedbackImpl() {
     uploader_.reset();
   }
 
-  base::FileUtilProxy::DeleteFile(file_task_runner_.get(),
-                                  file_path_,
-                                  false,
-                                  base::FileUtilProxy::StatusCallback());
+  file_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::DeleteFile), file_path_, false));
 }
 
 void DownloadFeedbackImpl::Start(const base::Closure& finish_callback) {

@@ -13,7 +13,6 @@
 
 #include "base/bind.h"
 #include "base/files/file_util.h"
-#include "base/files/file_util_proxy.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -529,9 +528,9 @@ void PrintDialogGtk2::OnJobCompleted(GtkPrintJob* print_job,
     LOG(ERROR) << "Printing failed: " << error->message;
   if (print_job)
     g_object_unref(print_job);
-  base::FileUtilProxy::DeleteFile(
-      BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get(),
-      path_to_pdf_, false, base::FileUtilProxy::StatusCallback());
+  BrowserThread::PostTask(
+      BrowserThread::FILE, FROM_HERE,
+      base::Bind(base::IgnoreResult(&base::DeleteFile), path_to_pdf_, false));
   // Printing finished. Matches AddRef() in PrintDocument();
   Release();
 }
