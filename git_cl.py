@@ -360,7 +360,7 @@ def _get_bucket_map(changelist, options, option_parser):
         output_stream=sys.stdout)
     if masters is None:
       return None
-    return {MASTER_PREFIX + m: b for m, b in masters.iteritems()}
+    return {_prefix_master(m): b for m, b in masters.iteritems()}
 
   if options.bucket:
     return {options.bucket: {b: [] for b in options.bot}}
