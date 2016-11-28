@@ -593,7 +593,6 @@ wayland_output_repaint_pixman(struct weston_output *output_base,
 	struct wayland_output *output = to_wayland_output(output_base);
 	struct wayland_backend *b =
 		to_wayland_backend(output->base.compositor);
-	struct wl_callback *callback;
 	struct wayland_shm_buffer *sb;
 
 	if (output->frame) {
@@ -613,8 +612,8 @@ wayland_output_repaint_pixman(struct weston_output *output_base,
 
 	wayland_shm_buffer_attach(sb);
 
-	callback = wl_surface_frame(output->parent.surface);
-	wl_callback_add_listener(callback, &frame_listener, output);
+	output->frame_cb = wl_surface_frame(output->parent.surface);
+	wl_callback_add_listener(output->frame_cb, &frame_listener, output);
 	wl_surface_commit(output->parent.surface);
 	wl_display_flush(b->parent.wl_display);
 
