@@ -468,6 +468,8 @@ void FrameFetchContext::dispatchDidLoadResourceFromMemoryCache(
     WebURLRequest::FrameType frameType,
     WebURLRequest::RequestContext requestContext) {
   ResourceRequest request(resource->url());
+  request.setFrameType(frameType);
+  request.setRequestContext(requestContext);
   frame()->loader().client()->dispatchDidLoadResourceFromMemoryCache(
       request, resource->response());
   dispatchWillSendRequest(identifier, request, ResourceResponse(),

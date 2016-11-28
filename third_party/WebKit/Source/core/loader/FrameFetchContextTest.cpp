@@ -48,7 +48,7 @@
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebCachePolicy.h"
 #include "public/platform/WebInsecureRequestPolicy.h"
-#include "testing/gmock/include/gmock/gmock-generated-function-mockers.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
 
@@ -77,6 +77,8 @@ class MockFrameLoaderClient : public EmptyFrameLoaderClient {
  public:
   MockFrameLoaderClient() : EmptyFrameLoaderClient() {}
   MOCK_METHOD1(didDisplayContentWithCertificateErrors, void(const KURL&));
+  MOCK_METHOD2(dispatchDidLoadResourceFromMemoryCache,
+               void(const ResourceRequest&, const ResourceResponse&));
 };
 
 class FrameFetchContextTest : public ::testing::Test {
@@ -137,16 +139,14 @@ class FrameFetchContextTest : public ::testing::Test {
   Persistent<DummyFrameOwner> owner;
 };
 
-// This test class sets up a mock frame loader client that expects a call to
-// didDisplayContentWithCertificateErrors().
-class FrameFetchContextDisplayedCertificateErrorsTest
+// This test class sets up a mock frame loader client.
+class FrameFetchContextMockedFrameLoaderClientTest
     : public FrameFetchContextTest {
  protected:
   void SetUp() override {
     url = KURL(KURL(), "https://example.test/foo");
     mainResourceUrl = KURL(KURL(), "https://www.example.test");
-    MockFrameLoaderClient* client = new MockFrameLoaderClient;
-    EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url));
+    client = new testing::NiceMock<MockFrameLoaderClient>();
     dummyPageHolder =
         DummyPageHolder::create(IntSize(500, 500), nullptr, client);
     dummyPageHolder->page().setDeviceScaleFactor(1.0);
@@ -163,6 +163,8 @@ class FrameFetchContextDisplayedCertificateErrorsTest
 
   KURL url;
   KURL mainResourceUrl;
+
+  Persistent<testing::NiceMock<MockFrameLoaderClient>> client;
 };
 
 class FrameFetchContextModifyRequestTest : public FrameFetchContextTest {
@@ -671,9 +673,29 @@ TEST_F(FrameFetchContextTest, DisabledDataSaver) {
   EXPECT_EQ(String(), resourceRequest.httpHeaderField("Save-Data"));
 }
 
+// Tests that the embedder gets correct notification when a resource is loaded
+// from the memory cache.
+TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
+       DispatchDidLoadResourceFromMemoryCache) {
+  ResourceRequest resourceRequest(url);
+  Resource* resource = ImageResource::create(resourceRequest);
+  EXPECT_CALL(
+      *client,
+      dispatchDidLoadResourceFromMemoryCache(
+          testing::AllOf(testing::Property(&ResourceRequest::url, url),
+                         testing::Property(&ResourceRequest::frameType,
+                                           WebURLRequest::FrameTypeNone),
+                         testing::Property(&ResourceRequest::requestContext,
+                                           WebURLRequest::RequestContextImage)),
+          ResourceResponse()));
+  fetchContext->dispatchDidLoadResourceFromMemoryCache(
+      createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone,
+      WebURLRequest::RequestContextImage);
+}
+
 // Tests that when a resource with certificate errors is loaded from the memory
 // cache, the embedder is notified.
-TEST_F(FrameFetchContextDisplayedCertificateErrorsTest,
+TEST_F(FrameFetchContextMockedFrameLoaderClientTest,
        MemoryCacheCertificateError) {
   ResourceRequest resourceRequest(url);
   ResourceResponse response;
@@ -681,6 +703,7 @@ TEST_F(FrameFetchContextDisplayedCertificateErrorsTest,
   response.setHasMajorCertificateErrors(true);
   Resource* resource = ImageResource::create(resourceRequest);
   resource->setResponse(response);
+  EXPECT_CALL(*client, didDisplayContentWithCertificateErrors(url));
   fetchContext->dispatchDidLoadResourceFromMemoryCache(
       createUniqueIdentifier(), resource, WebURLRequest::FrameTypeNone,
       WebURLRequest::RequestContextImage);
