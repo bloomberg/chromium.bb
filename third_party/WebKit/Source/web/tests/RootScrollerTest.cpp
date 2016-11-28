@@ -1168,6 +1168,25 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
   EXPECT_EQ(rect->top(), visualViewport().scrollOffset().height());
 }
 
+// Tests that we don't crash if the default documentElement isn't a valid root
+// scroller. This can happen in some edge cases where documentElement isn't
+// <html>. crbug.com/668553.
+TEST_F(RootScrollerTest, InvalidDefaultRootScroller) {
+  initialize("overflow-scrolling.html");
+
+  Document* document = mainFrame()->document();
+
+  Element* br = document->createElement("br");
+  document->replaceChild(br, document->documentElement());
+  mainFrameView()->updateAllLifecyclePhases();
+  Element* html = document->createElement("html");
+  Element* body = document->createElement("body");
+  html->appendChild(body);
+  body->appendChild(br);
+  document->appendChild(html);
+  mainFrameView()->updateAllLifecyclePhases();
+}
+
 }  // namespace
 
 }  // namespace blink

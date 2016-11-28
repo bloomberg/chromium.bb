@@ -36,10 +36,9 @@ ScrollableArea* scrollableAreaForRootScroller(const Element& element) {
 }
 
 PaintLayer* paintLayerForRootScroller(const Element* element) {
-  if (!element || !element->layoutObject())
+  if (!element || !element->layoutObject() || !element->layoutObject()->isBox())
     return nullptr;
 
-  DCHECK(element->layoutObject()->isBox());
   LayoutBox* box = toLayoutBox(element->layoutObject());
 
   // If the root scroller is the <html> element we do a bit of a fake out
