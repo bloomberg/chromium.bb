@@ -57,12 +57,12 @@ static v8::Local<v8::Value> compileAndRunPrivateScript(ScriptState* scriptState,
 
   v8::Local<v8::Context> context = scriptState->context();
   v8::Local<v8::Object> global = context->Global();
-  v8::Local<v8::Value> privateScriptController =
-      global->Get(context, v8String(isolate, "privateScriptController"))
-          .ToLocalChecked();
-  RELEASE_ASSERT(privateScriptController->IsUndefined() ||
-                 privateScriptController->IsObject());
-  if (privateScriptController->IsObject()) {
+  v8::Local<v8::String> key = v8String(isolate, "privateScriptController");
+
+  if (global->HasOwnProperty(context, key).ToChecked()) {
+    v8::Local<v8::Value> privateScriptController =
+        global->Get(context, key).ToLocalChecked();
+    CHECK(privateScriptController->IsObject());
     v8::Local<v8::Object> privateScriptControllerObject =
         privateScriptController.As<v8::Object>();
     v8::Local<v8::Value> importFunctionValue =
