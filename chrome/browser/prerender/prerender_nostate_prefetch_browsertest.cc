@@ -30,6 +30,7 @@
 #include "ui/base/l10n/l10n_util.h"
 
 using prerender::test_utils::CreateCountingInterceptorOnIO;
+using prerender::test_utils::CreatePrefetchOnlyInterceptorOnIO;
 using prerender::test_utils::DestructionWaiter;
 using prerender::test_utils::RequestCounter;
 using prerender::test_utils::TestPrerender;
@@ -126,6 +127,30 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchSimple) {
   main_counter.WaitForCount(1);
   script_counter.WaitForCount(1);
   script2_counter.WaitForCount(0);
+
+  // Verify that the page load did not happen.
+  test_prerender->WaitForLoads(0);
+}
+
+// Check that the LOAD_PREFETCH flag is set.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, PrefetchLoadFlag) {
+  RequestCounter main_counter;
+  RequestCounter script_counter;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreatePrefetchOnlyInterceptorOnIO,
+                 src_server()->GetURL(MakeAbsolute(kPrefetchPage)),
+                 main_counter.AsWeakPtr()));
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreatePrefetchOnlyInterceptorOnIO,
+                 src_server()->GetURL(MakeAbsolute(kPrefetchScript)),
+                 script_counter.AsWeakPtr()));
+
+  std::unique_ptr<TestPrerender> test_prerender =
+      PrefetchFromFile(kPrefetchPage, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  main_counter.WaitForCount(1);
+  script_counter.WaitForCount(1);
 
   // Verify that the page load did not happen.
   test_prerender->WaitForLoads(0);
@@ -267,6 +292,29 @@ IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301Redirect) {
           net::EscapeQueryParamValue(MakeAbsolute(kPrefetchPage), false),
       FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
   script_counter.WaitForCount(1);
+}
+
+// Checks that the load flags are set correctly for all resources in a 301
+// redirect chain.
+IN_PROC_BROWSER_TEST_F(NoStatePrefetchBrowserTest, Prefetch301LoadFlags) {
+  std::string redirect_path =
+      "/server-redirect/?" +
+      net::EscapeQueryParamValue(MakeAbsolute(kPrefetchPage), false);
+  GURL redirect_url = src_server()->GetURL(redirect_path);
+  GURL page_url = src_server()->GetURL(MakeAbsolute(kPrefetchPage));
+  RequestCounter redirect_counter;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreatePrefetchOnlyInterceptorOnIO, redirect_url,
+                 redirect_counter.AsWeakPtr()));
+  RequestCounter page_counter;
+  content::BrowserThread::PostTask(
+      content::BrowserThread::IO, FROM_HERE,
+      base::Bind(&CreatePrefetchOnlyInterceptorOnIO, page_url,
+                 page_counter.AsWeakPtr()));
+  PrefetchFromFile(redirect_path, FINAL_STATUS_NOSTATE_PREFETCH_FINISHED);
+  redirect_counter.WaitForCount(1);
+  page_counter.WaitForCount(1);
 }
 
 // Checks that a subresource 301 redirect is followed.

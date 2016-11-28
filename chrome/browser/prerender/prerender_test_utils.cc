@@ -31,6 +31,7 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
 #include "content/public/test/ppapi_test_utils.h"
+#include "net/base/load_flags.h"
 #include "net/test/embedded_test_server/request_handler_util.h"
 #include "net/url_request/url_request_filter.h"
 #include "ppapi/shared_impl/ppapi_switches.h"
@@ -102,6 +103,28 @@ class CountingInterceptor : public net::URLRequestInterceptor {
   base::FilePath file_;
   base::WeakPtr<RequestCounter> counter_;
   mutable base::WeakPtrFactory<CountingInterceptor> weak_factory_;
+};
+
+// URLRequestInterceptor which asserts that the request is prefetch only. Pings
+// |counter| after the flag is checked.
+class PrefetchOnlyInterceptor : public net::URLRequestInterceptor {
+ public:
+  explicit PrefetchOnlyInterceptor(const base::WeakPtr<RequestCounter>& counter)
+      : counter_(counter) {}
+  ~PrefetchOnlyInterceptor() override {}
+
+  net::URLRequestJob* MaybeInterceptRequest(
+      net::URLRequest* request,
+      net::NetworkDelegate* network_delegate) const override {
+    EXPECT_TRUE(request->load_flags() & net::LOAD_PREFETCH);
+    content::BrowserThread::PostTask(
+        content::BrowserThread::UI, FROM_HERE,
+        base::Bind(&RequestCounter::RequestStarted, counter_));
+    return nullptr;
+  }
+
+ private:
+  base::WeakPtr<RequestCounter> counter_;
 };
 
 // URLRequestJob (and associated handler) which hangs.
@@ -696,6 +719,14 @@ void CreateCountingInterceptorOnIO(
   CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
   net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
       url, base::MakeUnique<CountingInterceptor>(file, counter));
+}
+
+void CreatePrefetchOnlyInterceptorOnIO(
+    const GURL& url,
+    const base::WeakPtr<RequestCounter>& counter) {
+  CHECK(content::BrowserThread::CurrentlyOn(content::BrowserThread::IO));
+  net::URLRequestFilter::GetInstance()->AddUrlInterceptor(
+      url, base::MakeUnique<PrefetchOnlyInterceptor>(counter));
 }
 
 void CreateMockInterceptorOnIO(const GURL& url, const base::FilePath& file) {
