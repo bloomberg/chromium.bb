@@ -697,8 +697,6 @@ TEST_F(MultiprocessMessagePipeTest, DataPipeConsumer) {
 TEST_P(MultiprocessMessagePipeTestWithPeerSupport, CreateMessagePipe) {
   MojoHandle p0, p1;
   CreateMessagePipe(&p0, &p1);
-  VerifyTransmission(p0, p1, "hey man");
-  VerifyTransmission(p1, p0, "slow down");
   VerifyTransmission(p0, p1, std::string(10 * 1024 * 1024, 'a'));
   VerifyTransmission(p1, p0, std::string(10 * 1024 * 1024, 'e'));
 
@@ -1018,8 +1016,8 @@ TEST_F(MultiprocessMessagePipeTest, ChildToChildPipes) {
       b.SendHandle("y", p1);
 
       // Make sure they can talk.
-      a.Send("say:x:hello sir");
-      b.Send("hear:y:hello sir");
+      a.Send("say:x:hello");
+      b.Send("hear:y:hello");
 
       b.Send("say:y:i love multiprocess pipes!");
       a.Send("hear:x:i love multiprocess pipes!");

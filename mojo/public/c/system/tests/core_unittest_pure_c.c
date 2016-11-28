@@ -21,7 +21,7 @@
 #define FAILURE(message) \
   __FILE__ "(" STRINGIFY2(__LINE__) "): Failure: " message
 
-// Poor man's gtest.
+// Makeshift gtest.
 #define EXPECT_EQ(a, b)                                                  \
   do {                                                                   \
     if ((a) != (b))                                                      \
