@@ -45,10 +45,6 @@
 #include "content/browser/media/capture/screen_capture_device_android.h"
 #endif
 
-#if defined(OS_MACOSX)
-#include "media/base/mac/avfoundation_glue.h"
-#endif
-
 namespace {
 
 // Compares two VideoCaptureFormat by checking smallest frame_size area, then
@@ -301,14 +297,6 @@ void VideoCaptureManager::EnumerateDevices(
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DVLOG(1) << "VideoCaptureManager::EnumerateDevices";
 
-#if defined(OS_MACOSX)
-  if (NeedToInitializeCaptureDeviceApi(MEDIA_DEVICE_VIDEO_CAPTURE)) {
-    InitializeCaptureDeviceApiOnUIThread(base::Bind(
-        &VideoCaptureManager::EnumerateDevices, this, client_callback));
-    return;
-  }
-#endif
-
   // Bind a callback to ConsolidateDevicesInfoOnDeviceThread() with an argument
   // for another callback to OnDevicesInfoEnumerated() to be run in the current
   // loop, i.e. IO loop. Pass a timer for UMA histogram collection.
@@ -442,14 +430,6 @@ void VideoCaptureManager::HandleQueuedStartRequest() {
   const int serial_id = request->serial_id();
   DeviceEntry* const entry = GetDeviceEntryBySerialId(serial_id);
   DCHECK(entry);
-
-#if defined(OS_MACOSX)
-  if (NeedToInitializeCaptureDeviceApi(entry->stream_type)) {
-    InitializeCaptureDeviceApiOnUIThread(
-        base::Bind(&VideoCaptureManager::HandleQueuedStartRequest, this));
-    return;
-  }
-#endif
 
   DVLOG(3) << "HandleQueuedStartRequest, Post start to device thread, device = "
            << entry->id << " start id = " << entry->serial_id;
@@ -1208,32 +1188,6 @@ void VideoCaptureManager::DoTakePhoto(
       FROM_HERE, base::Bind(&VideoCaptureDevice::TakePhoto,
                             base::Unretained(device), base::Passed(&callback)));
 }
-
-#if defined(OS_MACOSX)
-void VideoCaptureManager::OnDeviceLayerInitialized(
-    const base::Closure& and_then) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  capture_device_api_initialized_ = true;
-  and_then.Run();
-}
-
-bool VideoCaptureManager::NeedToInitializeCaptureDeviceApi(
-    MediaStreamType stream_type) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  return !capture_device_api_initialized_ &&
-         stream_type == MEDIA_DEVICE_VIDEO_CAPTURE;
-}
-
-void VideoCaptureManager::InitializeCaptureDeviceApiOnUIThread(
-    const base::Closure& and_then) {
-  DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  BrowserThread::PostTaskAndReply(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&AVFoundationGlue::InitializeAVFoundation),
-      base::Bind(&VideoCaptureManager::OnDeviceLayerInitialized, this,
-                 and_then));
-}
-#endif
 
 #if defined(OS_ANDROID)
 void VideoCaptureManager::OnApplicationStateChange(

@@ -5,23 +5,18 @@
 #ifndef MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
 #define MEDIA_CAPTURE_VIDEO_MAC_VIDEO_CAPTURE_DEVICE_AVFOUNDATION_MAC_H_
 
+#import <AVFoundation/AVFoundation.h>
 #import <Foundation/Foundation.h>
 
 #import "base/mac/scoped_nsobject.h"
 #include "base/synchronization/lock.h"
 #include "base/threading/thread_checker.h"
-#import "media/base/mac/avfoundation_glue.h"
 #include "media/capture/video/video_capture_device.h"
 #include "media/capture/video_capture_types.h"
 
 namespace media {
 class VideoCaptureDeviceMac;
 }
-
-@class CrAVCaptureDevice;
-@class CrAVCaptureSession;
-@class CrAVCaptureVideoDataOutput;
-@class CrAVCaptureStillImageOutput;
 
 // Class used by VideoCaptureDeviceMac (VCDM) for video and image capture using
 // AVFoundation API. This class lives inside the thread created by its owner
@@ -56,7 +51,7 @@ class VideoCaptureDeviceMac;
 //
 //
 @interface VideoCaptureDeviceAVFoundation
-    : NSObject<CrAVCaptureVideoDataOutputSampleBufferDelegate> {
+    : NSObject<AVCaptureVideoDataOutputSampleBufferDelegate> {
  @private
   // The following attributes are set via -setCaptureHeight:width:frameRate:.
   int frameWidth_;
@@ -66,17 +61,17 @@ class VideoCaptureDeviceMac;
   base::Lock lock_;  // Protects concurrent setting and using |frameReceiver_|.
   media::VideoCaptureDeviceMac* frameReceiver_;  // weak.
 
-  base::scoped_nsobject<CrAVCaptureSession> captureSession_;
+  base::scoped_nsobject<AVCaptureSession> captureSession_;
 
   // |captureDevice_| is an object coming from AVFoundation, used only to be
   // plugged in |captureDeviceInput_| and to query for session preset support.
-  CrAVCaptureDevice* captureDevice_;
+  AVCaptureDevice* captureDevice_;
   // |captureDeviceInput_| is owned by |captureSession_|.
-  CrAVCaptureDeviceInput* captureDeviceInput_;
-  base::scoped_nsobject<CrAVCaptureVideoDataOutput> captureVideoDataOutput_;
+  AVCaptureDeviceInput* captureDeviceInput_;
+  base::scoped_nsobject<AVCaptureVideoDataOutput> captureVideoDataOutput_;
 
   // An AVDataOutput specialized for taking pictures out of |captureSession_|.
-  base::scoped_nsobject<CrAVCaptureStillImageOutput> stillImageOutput_;
+  base::scoped_nsobject<AVCaptureStillImageOutput> stillImageOutput_;
 
   base::ThreadChecker main_thread_checker_;
 }

@@ -282,26 +282,6 @@ class CONTENT_EXPORT VideoCaptureManager : public MediaStreamProvider {
   void DoTakePhoto(VideoCaptureDevice::TakePhotoCallback callback,
                    VideoCaptureDevice* device);
 
-#if defined(OS_MACOSX)
-  // Called on the IO thread after the device layer has been initialized on Mac.
-  // Sets |capture_device_api_initialized_| to true and then executes and_then.
-  void OnDeviceLayerInitialized(const base::Closure& and_then);
-
-  // Returns true if the current operation needs to be preempted by a call to
-  // InitializeCaptureDeviceApiOnUIThread.
-  // Called on the IO thread.
-  bool NeedToInitializeCaptureDeviceApi(MediaStreamType stream_type);
-
-  // Called on the IO thread to do async initialization of the capture api.
-  // Once initialization is done, and_then will be run on the IO thread.
-  void InitializeCaptureDeviceApiOnUIThread(const base::Closure& and_then);
-
-  // Due to initialization issues with AVFoundation on Mac, we need
-  // to make sure we initialize the APIs on the UI thread before we can reliably
-  // use them.  This variable is only checked and set on the IO thread.
-  bool capture_device_api_initialized_ = false;
-#endif
-
 #if defined(OS_ANDROID)
   void ReleaseDevices();
   void ResumeDevices();

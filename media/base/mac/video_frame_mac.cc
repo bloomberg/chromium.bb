@@ -9,7 +9,6 @@
 
 #include <algorithm>
 
-#include "media/base/mac/corevideo_glue.h"
 #include "media/base/video_frame.h"
 
 namespace media {
@@ -51,7 +50,7 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
   if (video_frame_format == PIXEL_FORMAT_I420) {
     cv_format = kCVPixelFormatType_420YpCbCr8Planar;
   } else if (video_frame_format == PIXEL_FORMAT_NV12) {
-    cv_format = CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
+    cv_format = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange;
   } else {
     DLOG(ERROR) << " unsupported frame format: " << video_frame_format;
     return pixel_buffer;
@@ -77,10 +76,9 @@ WrapVideoFrameInCVPixelBuffer(const VideoFrame& frame) {
 
   // CVPixelBufferCreateWithPlanarBytes needs a dummy plane descriptor or the
   // release callback will not execute. The descriptor is freed in the callback.
-  void* descriptor = calloc(
-      1,
-      std::max(sizeof(CVPlanarPixelBufferInfo_YCbCrPlanar),
-               sizeof(CoreVideoGlue::CVPlanarPixelBufferInfo_YCbCrBiPlanar)));
+  void* descriptor =
+      calloc(1, std::max(sizeof(CVPlanarPixelBufferInfo_YCbCrPlanar),
+                         sizeof(CVPlanarPixelBufferInfo_YCbCrBiPlanar)));
 
   // Wrap the frame's data in a CVPixelBuffer. Because this is a C API, we can't
   // give it a smart pointer to the frame, so instead pass a raw pointer and

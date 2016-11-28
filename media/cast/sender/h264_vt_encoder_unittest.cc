@@ -210,8 +210,6 @@ class H264VideoToolboxEncoderTest : public ::testing::Test {
   H264VideoToolboxEncoderTest() = default;
 
   void SetUp() final {
-    CHECK(VideoToolboxGlue::Get())
-        << "VideoToolbox is not available. Requires OS X 10.8 or iOS 8.0.";
     clock_ = new base::SimpleTestTickClock();
     clock_->Advance(base::TimeTicks::Now() - base::TimeTicks());
 

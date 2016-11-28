@@ -124,8 +124,10 @@ component("capture") {
   if (is_mac) {
     deps += [ "//third_party/decklink" ]
     libs = [
+      "AVFoundation.framework",
       "CoreFoundation.framework",
       "CoreGraphics.framework",
+      "CoreMedia.framework",
       "CoreVideo.framework",
       "Foundation.framework",
     ]

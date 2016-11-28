@@ -13,24 +13,17 @@ source_set("mac") {
 
   set_sources_assignment_filter([])
   sources = [
-    "coremedia_glue.h",
-    "coremedia_glue.mm",
-    "corevideo_glue.h",
     "video_frame_mac.cc",
     "video_frame_mac.h",
-    "videotoolbox_glue.h",
-    "videotoolbox_glue.mm",
     "videotoolbox_helpers.cc",
     "videotoolbox_helpers.h",
   ]
   if (is_mac) {
-    sources += [
-      "avfoundation_glue.h",
-      "avfoundation_glue.mm",
-    ]
     libs = [
       "AVFoundation.framework",
+      "CoreMedia.framework",
       "CoreVideo.framework",  # Required by video_frame_mac.cc.
+      "VideoToolbox.framework",
     ]
   }
   set_sources_assignment_filter(sources_assignment_filter)

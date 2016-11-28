@@ -4,6 +4,7 @@
 
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 
+#import <AVFoundation/AVFoundation.h>
 #import <CoreMedia/CoreMedia.h>
 #import <CoreVideo/CoreVideo.h>
 #include <stddef.h>
@@ -102,9 +103,9 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
   switch (code) {
     case kCVPixelFormatType_422YpCbCr8:
       return media::PIXEL_FORMAT_UYVY;
-    case CoreMediaGlue::kCMPixelFormat_422YpCbCr8_yuvs:
+    case kCMPixelFormat_422YpCbCr8_yuvs:
       return media::PIXEL_FORMAT_YUY2;
-    case CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML:
+    case kCMVideoCodecType_JPEG_OpenDML:
       return media::PIXEL_FORMAT_MJPEG;
     default:
       return media::PIXEL_FORMAT_UNKNOWN;
@@ -112,16 +113,14 @@ media::VideoPixelFormat FourCCToChromiumPixelFormat(FourCharCode code) {
 }
 
 // Extracts |base_address| and |length| out of a SampleBuffer.
-void ExtractBaseAddressAndLength(
-    char** base_address,
-    size_t* length,
-    CoreMediaGlue::CMSampleBufferRef sample_buffer) {
-  CoreMediaGlue::CMBlockBufferRef block_buffer =
-      CoreMediaGlue::CMSampleBufferGetDataBuffer(sample_buffer);
+void ExtractBaseAddressAndLength(char** base_address,
+                                 size_t* length,
+                                 CMSampleBufferRef sample_buffer) {
+  CMBlockBufferRef block_buffer = CMSampleBufferGetDataBuffer(sample_buffer);
   DCHECK(block_buffer);
 
   size_t length_at_offset;
-  const OSStatus status = CoreMediaGlue::CMBlockBufferGetDataPointer(
+  const OSStatus status = CMBlockBufferGetDataPointer(
       block_buffer, 0, &length_at_offset, length, base_address);
   DCHECK_EQ(noErr, status);
   // Expect the (M)JPEG data to be available as a contiguous reference, i.e.
@@ -138,11 +137,11 @@ void ExtractBaseAddressAndLength(
 + (void)getDeviceNames:(NSMutableDictionary*)deviceNames {
   // At this stage we already know that AVFoundation is supported and the whole
   // library is loaded and initialised, by the device monitoring.
-  NSArray* devices = [AVCaptureDeviceGlue devices];
+  NSArray* devices = [AVCaptureDevice devices];
   int number_of_suspended_devices = 0;
-  for (CrAVCaptureDevice* device in devices) {
-    if ([device hasMediaType:AVFoundationGlue::AVMediaTypeVideo()] ||
-        [device hasMediaType:AVFoundationGlue::AVMediaTypeMuxed()]) {
+  for (AVCaptureDevice* device in devices) {
+    if ([device hasMediaType:AVMediaTypeVideo] ||
+        [device hasMediaType:AVMediaTypeMuxed]) {
       if ([device isSuspended]) {
         ++number_of_suspended_devices;
         continue;
@@ -168,26 +167,24 @@ void ExtractBaseAddressAndLength(
 
 + (void)getDevice:(const media::VideoCaptureDeviceDescriptor&)descriptor
     supportedFormats:(media::VideoCaptureFormats*)formats {
-  NSArray* devices = [AVCaptureDeviceGlue devices];
-  CrAVCaptureDevice* device = nil;
+  NSArray* devices = [AVCaptureDevice devices];
+  AVCaptureDevice* device = nil;
   for (device in devices) {
     if ([[device uniqueID] UTF8String] == descriptor.device_id)
       break;
   }
   if (device == nil)
     return;
-  for (CrAVCaptureDeviceFormat* format in device.formats) {
+  for (AVCaptureDeviceFormat* format in device.formats) {
     // MediaSubType is a CMPixelFormatType but can be used as CVPixelFormatType
     // as well according to CMFormatDescription.h
     const media::VideoPixelFormat pixelFormat = FourCCToChromiumPixelFormat(
-        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-            [format formatDescription]));
+        CMFormatDescriptionGetMediaSubType([format formatDescription]));
 
-    CoreMediaGlue::CMVideoDimensions dimensions =
-        CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(
-            [format formatDescription]);
+    CMVideoDimensions dimensions =
+        CMVideoFormatDescriptionGetDimensions([format formatDescription]);
 
-    for (CrAVFrameRateRange* frameRate in
+    for (AVFrameRateRange* frameRate in
          [format videoSupportedFrameRateRanges]) {
       media::VideoCaptureFormat format(
           gfx::Size(dimensions.width, dimensions.height),
@@ -206,8 +203,7 @@ void ExtractBaseAddressAndLength(
     DCHECK(main_thread_checker_.CalledOnValidThread());
     DCHECK(frameReceiver);
     [self setFrameReceiver:frameReceiver];
-    captureSession_.reset(
-        [[AVFoundationGlue::AVCaptureSessionClass() alloc] init]);
+    captureSession_.reset([[AVCaptureSession alloc] init]);
   }
   return self;
 }
@@ -242,7 +238,7 @@ void ExtractBaseAddressAndLength(
   }
 
   // Look for input device with requested name.
-  captureDevice_ = [AVCaptureDeviceGlue deviceWithUniqueID:deviceId];
+  captureDevice_ = [AVCaptureDevice deviceWithUniqueID:deviceId];
   if (!captureDevice_) {
     [self
         sendErrorString:[NSString stringWithUTF8String:
@@ -253,8 +249,7 @@ void ExtractBaseAddressAndLength(
   // Create the capture input associated with the device. Easy peasy.
   NSError* error = nil;
   captureDeviceInput_ =
-      [AVCaptureDeviceInputGlue deviceInputWithDevice:captureDevice_
-                                                error:&error];
+      [AVCaptureDeviceInput deviceInputWithDevice:captureDevice_ error:&error];
   if (!captureDeviceInput_) {
     captureDevice_ = nil;
     [self sendErrorString:
@@ -268,8 +263,7 @@ void ExtractBaseAddressAndLength(
 
   // Create a new data output for video. The data output is configured to
   // discard late frames by default.
-  captureVideoDataOutput_.reset(
-      [[AVFoundationGlue::AVCaptureVideoDataOutputClass() alloc] init]);
+  captureVideoDataOutput_.reset([[AVCaptureVideoDataOutput alloc] init]);
   if (!captureVideoDataOutput_) {
     [captureSession_ removeInput:captureDeviceInput_];
     [self sendErrorString:[NSString stringWithUTF8String:
@@ -285,8 +279,7 @@ void ExtractBaseAddressAndLength(
 
   // Create and plug the still image capture output. This should happen in
   // advance of the actual picture to allow for the 3A to stabilize.
-  stillImageOutput_.reset(
-      [[AVFoundationGlue::AVCaptureStillImageOutputClass() alloc] init]);
+  stillImageOutput_.reset([[AVCaptureStillImageOutput alloc] init]);
   if (stillImageOutput_ && [captureSession_ canAddOutput:stillImageOutput_])
     [captureSession_ addOutput:stillImageOutput_];
 
@@ -306,12 +299,10 @@ void ExtractBaseAddressAndLength(
   FourCharCode best_fourcc = kCVPixelFormatType_422YpCbCr8;
   const bool prefer_mjpeg =
       width > kMjpegWidthThreshold || height > kMjpegHeightThreshold;
-  for (CrAVCaptureDeviceFormat* format in captureDevice_.formats) {
+  for (AVCaptureDeviceFormat* format in captureDevice_.formats) {
     const FourCharCode fourcc =
-        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-            [format formatDescription]);
-    if (prefer_mjpeg &&
-        fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
+        CMFormatDescriptionGetMediaSubType([format formatDescription]);
+    if (prefer_mjpeg && fourcc == kCMVideoCodecType_JPEG_OpenDML) {
       best_fourcc = fourcc;
       break;
     }
@@ -324,7 +315,7 @@ void ExtractBaseAddressAndLength(
     }
   }
 
-  if (best_fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
+  if (best_fourcc == kCMVideoCodecType_JPEG_OpenDML) {
     [captureSession_ removeOutput:stillImageOutput_];
     stillImageOutput_.reset();
   }
@@ -336,16 +327,15 @@ void ExtractBaseAddressAndLength(
   // yes/no and preserve aspect ratio yes/no when scaling. Currently we set
   // cropping and preservation.
   NSDictionary* videoSettingsDictionary = @{
-    (id) kCVPixelBufferWidthKey : @(width), (id)
-    kCVPixelBufferHeightKey : @(height), (id)
-    kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
-    AVFoundationGlue::AVVideoScalingModeKey() :
-        AVFoundationGlue::AVVideoScalingModeResizeAspectFill()
+    (id)kCVPixelBufferWidthKey : @(width),
+    (id)kCVPixelBufferHeightKey : @(height),
+    (id)kCVPixelBufferPixelFormatTypeKey : @(best_fourcc),
+    AVVideoScalingModeKey : AVVideoScalingModeResizeAspectFill
   };
   [captureVideoDataOutput_ setVideoSettings:videoSettingsDictionary];
 
-  CrAVCaptureConnection* captureConnection = [captureVideoDataOutput_
-      connectionWithMediaType:AVFoundationGlue::AVMediaTypeVideo()];
+  AVCaptureConnection* captureConnection =
+      [captureVideoDataOutput_ connectionWithMediaType:AVMediaTypeVideo];
   // Check selector existence, related to bugs http://crbug.com/327532 and
   // http://crbug.com/328096.
   // CMTimeMake accepts integer argumenst but |frameRate| is float, round it.
@@ -353,19 +343,17 @@ void ExtractBaseAddressAndLength(
           respondsToSelector:@selector(isVideoMinFrameDurationSupported)] &&
       [captureConnection isVideoMinFrameDurationSupported]) {
     [captureConnection
-        setVideoMinFrameDuration:CoreMediaGlue::CMTimeMake(
-                                     media::kFrameRatePrecision,
-                                     (int)(frameRate *
-                                           media::kFrameRatePrecision))];
+        setVideoMinFrameDuration:CMTimeMake(media::kFrameRatePrecision,
+                                            (int)(frameRate *
+                                                  media::kFrameRatePrecision))];
   }
   if ([captureConnection
           respondsToSelector:@selector(isVideoMaxFrameDurationSupported)] &&
       [captureConnection isVideoMaxFrameDurationSupported]) {
     [captureConnection
-        setVideoMaxFrameDuration:CoreMediaGlue::CMTimeMake(
-                                     media::kFrameRatePrecision,
-                                     (int)(frameRate *
-                                           media::kFrameRatePrecision))];
+        setVideoMaxFrameDuration:CMTimeMake(media::kFrameRatePrecision,
+                                            (int)(frameRate *
+                                                  media::kFrameRatePrecision))];
   }
   return YES;
 }
@@ -380,7 +368,7 @@ void ExtractBaseAddressAndLength(
   NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
   [nc addObserver:self
          selector:@selector(onVideoError:)
-             name:AVFoundationGlue::AVCaptureSessionRuntimeErrorNotification()
+             name:AVCaptureSessionRuntimeErrorNotification
            object:captureSession_];
   [captureSession_ startRunning];
   return YES;
@@ -400,7 +388,7 @@ void ExtractBaseAddressAndLength(
     return;
 
   DCHECK_EQ(1u, [[stillImageOutput_ connections] count]);
-  CrAVCaptureConnection* const connection =
+  AVCaptureConnection* const connection =
       [[stillImageOutput_ connections] firstObject];
   if (!connection) {
     base::AutoLock lock(lock_);
@@ -408,8 +396,7 @@ void ExtractBaseAddressAndLength(
     return;
   }
 
-  const auto handler = ^(CoreMediaGlue::CMSampleBufferRef sampleBuffer,
-                         NSError* error) {
+  const auto handler = ^(CMSampleBufferRef sampleBuffer, NSError* error) {
     base::AutoLock lock(lock_);
     if (!frameReceiver_)
       return;
@@ -421,10 +408,9 @@ void ExtractBaseAddressAndLength(
     // Recommended compressed pixel format is JPEG, we don't expect surprises.
     // TODO(mcasas): Consider using [1] for merging EXIF output information:
     // [1] +(NSData*)jpegStillImageNSDataRepresentation:jpegSampleBuffer;
-    DCHECK_EQ(
-        CoreMediaGlue::kCMVideoCodecType_JPEG,
-        CoreMediaGlue::CMFormatDescriptionGetMediaSubType(
-            CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer)));
+    DCHECK_EQ(kCMVideoCodecType_JPEG,
+              CMFormatDescriptionGetMediaSubType(
+                  CMSampleBufferGetFormatDescription(sampleBuffer)));
 
     char* baseAddress = 0;
     size_t length = 0;
@@ -442,15 +428,15 @@ void ExtractBaseAddressAndLength(
 // |captureOutput| is called by the capture device to deliver a new frame.
 // AVFoundation calls from a number of threads, depending on, at least, if
 // Chrome is on foreground or background.
-- (void)captureOutput:(CrAVCaptureOutput*)captureOutput
-didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
-       fromConnection:(CrAVCaptureConnection*)connection {
-  const CoreMediaGlue::CMFormatDescriptionRef formatDescription =
-      CoreMediaGlue::CMSampleBufferGetFormatDescription(sampleBuffer);
+- (void)captureOutput:(AVCaptureOutput*)captureOutput
+    didOutputSampleBuffer:(CMSampleBufferRef)sampleBuffer
+           fromConnection:(AVCaptureConnection*)connection {
+  const CMFormatDescriptionRef formatDescription =
+      CMSampleBufferGetFormatDescription(sampleBuffer);
   const FourCharCode fourcc =
-      CoreMediaGlue::CMFormatDescriptionGetMediaSubType(formatDescription);
-  const CoreMediaGlue::CMVideoDimensions dimensions =
-      CoreMediaGlue::CMVideoFormatDescriptionGetDimensions(formatDescription);
+      CMFormatDescriptionGetMediaSubType(formatDescription);
+  const CMVideoDimensions dimensions =
+      CMVideoFormatDescriptionGetDimensions(formatDescription);
   const media::VideoCaptureFormat captureFormat(
       gfx::Size(dimensions.width, dimensions.height), frameRate_,
       FourCCToChromiumPixelFormat(fourcc));
@@ -458,10 +444,10 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
   char* baseAddress = 0;
   size_t frameSize = 0;
   CVImageBufferRef videoFrame = nil;
-  if (fourcc == CoreMediaGlue::kCMVideoCodecType_JPEG_OpenDML) {
+  if (fourcc == kCMVideoCodecType_JPEG_OpenDML) {
     ExtractBaseAddressAndLength(&baseAddress, &frameSize, sampleBuffer);
   } else {
-    videoFrame = CoreMediaGlue::CMSampleBufferGetImageBuffer(sampleBuffer);
+    videoFrame = CMSampleBufferGetImageBuffer(sampleBuffer);
     // Lock the frame and calculate frame size.
     if (CVPixelBufferLockBaseAddress(videoFrame, kCVPixelBufferLock_ReadOnly) ==
         kCVReturnSuccess) {
@@ -475,8 +461,8 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
 
   {
     base::AutoLock lock(lock_);
-    const CoreMediaGlue::CMTime cm_timestamp =
-        CoreMediaGlue::CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
+    const CMTime cm_timestamp =
+        CMSampleBufferGetPresentationTimeStamp(sampleBuffer);
     const base::TimeDelta timestamp =
         CMTIME_IS_VALID(cm_timestamp)
             ? base::TimeDelta::FromMicroseconds(
@@ -495,8 +481,8 @@ didOutputSampleBuffer:(CoreMediaGlue::CMSampleBufferRef)sampleBuffer
 }
 
 - (void)onVideoError:(NSNotification*)errorNotification {
-  NSError* error = base::mac::ObjCCast<NSError>([[errorNotification userInfo]
-      objectForKey:AVFoundationGlue::AVCaptureSessionErrorKey()]);
+  NSError* error = base::mac::ObjCCast<NSError>(
+      [[errorNotification userInfo] objectForKey:AVCaptureSessionErrorKey]);
   [self sendErrorString:[NSString
                             stringWithFormat:@"%@: %@",
                                              [error localizedDescription],

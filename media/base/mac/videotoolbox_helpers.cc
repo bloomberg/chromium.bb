@@ -135,7 +135,7 @@ void CopyNalsToAnnexB(char* avcc_buffer,
   }
 }
 
-bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
+bool CopySampleBufferToAnnexBBuffer(CMSampleBufferRef sbuf,
                                     AnnexBBuffer* annexb_buffer,
                                     bool keyframe) {
   // Perform two pass, one to figure out the total output size, and another to
@@ -145,20 +145,19 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
   OSStatus status;
 
   // Get the sample buffer's block buffer and format description.
-  auto* bb = CoreMediaGlue::CMSampleBufferGetDataBuffer(sbuf);
+  auto* bb = CMSampleBufferGetDataBuffer(sbuf);
   DCHECK(bb);
-  auto* fdesc = CoreMediaGlue::CMSampleBufferGetFormatDescription(sbuf);
+  auto* fdesc = CMSampleBufferGetFormatDescription(sbuf);
   DCHECK(fdesc);
 
-  size_t bb_size = CoreMediaGlue::CMBlockBufferGetDataLength(bb);
+  size_t bb_size = CMBlockBufferGetDataLength(bb);
   size_t total_bytes = bb_size;
 
   size_t pset_count;
   int nal_size_field_bytes;
-  status = CoreMediaGlue::CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+  status = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
       fdesc, 0, nullptr, nullptr, &pset_count, &nal_size_field_bytes);
-  if (status ==
-      CoreMediaGlue::kCMFormatDescriptionBridgeError_InvalidParameter) {
+  if (status == kCMFormatDescriptionBridgeError_InvalidParameter) {
     DLOG(WARNING) << " assuming 2 parameter sets and 4 bytes NAL length header";
     pset_count = 2;
     nal_size_field_bytes = 4;
@@ -173,9 +172,8 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
     const uint8_t* pset;
     size_t pset_size;
     for (size_t pset_i = 0; pset_i < pset_count; ++pset_i) {
-      status =
-          CoreMediaGlue::CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
-              fdesc, pset_i, &pset, &pset_size, nullptr, nullptr);
+      status = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+          fdesc, pset_i, &pset, &pset_size, nullptr, nullptr);
       if (status != noErr) {
         DLOG(ERROR)
             << " CMVideoFormatDescriptionGetH264ParameterSetAtIndex failed: "
@@ -197,9 +195,8 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
     const uint8_t* pset;
     size_t pset_size;
     for (size_t pset_i = 0; pset_i < pset_count; ++pset_i) {
-      status =
-          CoreMediaGlue::CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
-              fdesc, pset_i, &pset, &pset_size, nullptr, nullptr);
+      status = CMVideoFormatDescriptionGetH264ParameterSetAtIndex(
+          fdesc, pset_i, &pset, &pset_size, nullptr, nullptr);
       if (status != noErr) {
         DLOG(ERROR)
             << " CMVideoFormatDescriptionGetH264ParameterSetAtIndex failed: "
@@ -213,13 +210,13 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
 
   // Block buffers can be composed of non-contiguous chunks. For the sake of
   // keeping this code simple, flatten non-contiguous block buffers.
-  base::ScopedCFTypeRef<CoreMediaGlue::CMBlockBufferRef> contiguous_bb(
+  base::ScopedCFTypeRef<CMBlockBufferRef> contiguous_bb(
       bb, base::scoped_policy::RETAIN);
-  if (!CoreMediaGlue::CMBlockBufferIsRangeContiguous(bb, 0, 0)) {
+  if (!CMBlockBufferIsRangeContiguous(bb, 0, 0)) {
     contiguous_bb.reset();
-    status = CoreMediaGlue::CMBlockBufferCreateContiguous(
-        kCFAllocatorDefault, bb, kCFAllocatorDefault, nullptr, 0, 0, 0,
-        contiguous_bb.InitializeInto());
+    status = CMBlockBufferCreateContiguous(kCFAllocatorDefault, bb,
+                                           kCFAllocatorDefault, nullptr, 0, 0,
+                                           0, contiguous_bb.InitializeInto());
     if (status != noErr) {
       DLOG(ERROR) << " CMBlockBufferCreateContiguous failed: " << status;
       return false;
@@ -229,8 +226,8 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
   // Copy all the NAL units. In the process convert them from AVCC format
   // (length header) to AnnexB format (start code).
   char* bb_data;
-  status = CoreMediaGlue::CMBlockBufferGetDataPointer(contiguous_bb, 0, nullptr,
-                                                      nullptr, &bb_data);
+  status =
+      CMBlockBufferGetDataPointer(contiguous_bb, 0, nullptr, nullptr, &bb_data);
   if (status != noErr) {
     DLOG(ERROR) << " CMBlockBufferGetDataPointer failed: " << status;
     return false;
@@ -248,14 +245,14 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
   return true;
 }
 
-bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
+bool CopySampleBufferToAnnexBBuffer(CMSampleBufferRef sbuf,
                                     bool keyframe,
                                     std::string* annexb_buffer) {
   StringAnnexBBuffer buffer(annexb_buffer);
   return CopySampleBufferToAnnexBBuffer(sbuf, &buffer, keyframe);
 }
 
-bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
+bool CopySampleBufferToAnnexBBuffer(CMSampleBufferRef sbuf,
                                     bool keyframe,
                                     size_t annexb_buffer_size,
                                     char* annexb_buffer,
@@ -267,37 +264,32 @@ bool CopySampleBufferToAnnexBBuffer(CoreMediaGlue::CMSampleBufferRef sbuf,
 }
 
 SessionPropertySetter::SessionPropertySetter(
-    base::ScopedCFTypeRef<VideoToolboxGlue::VTCompressionSessionRef> session,
-    const VideoToolboxGlue* const glue)
-    : session_(session), glue_(glue) {}
+    base::ScopedCFTypeRef<VTCompressionSessionRef> session)
+    : session_(session) {}
 
 SessionPropertySetter::~SessionPropertySetter() {}
 
 bool SessionPropertySetter::Set(CFStringRef key, int32_t value) {
   DCHECK(session_);
-  DCHECK(glue_);
   base::ScopedCFTypeRef<CFNumberRef> cfvalue(
       CFNumberCreate(nullptr, kCFNumberSInt32Type, &value));
-  return glue_->VTSessionSetProperty(session_, key, cfvalue) == noErr;
+  return VTSessionSetProperty(session_, key, cfvalue) == noErr;
 }
 
 bool SessionPropertySetter::Set(CFStringRef key, bool value) {
   DCHECK(session_);
-  DCHECK(glue_);
   CFBooleanRef cfvalue = (value) ? kCFBooleanTrue : kCFBooleanFalse;
-  return glue_->VTSessionSetProperty(session_, key, cfvalue) == noErr;
+  return VTSessionSetProperty(session_, key, cfvalue) == noErr;
 }
 
 bool SessionPropertySetter::Set(CFStringRef key, CFStringRef value) {
   DCHECK(session_);
-  DCHECK(glue_);
-  return glue_->VTSessionSetProperty(session_, key, value) == noErr;
+  return VTSessionSetProperty(session_, key, value) == noErr;
 }
 
 bool SessionPropertySetter::Set(CFStringRef key, CFArrayRef value) {
   DCHECK(session_);
-  DCHECK(glue_);
-  return glue_->VTSessionSetProperty(session_, key, value) == noErr;
+  return VTSessionSetProperty(session_, key, value) == noErr;
 }
 
 }  // namespace video_toolbox

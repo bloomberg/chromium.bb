@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
-#include "media/base/mac/corevideo_glue.h"
 #include "media/base/video_frame.h"
 
 #include "testing/gtest/include/gtest/gtest.h"
@@ -112,8 +111,7 @@ TEST(VideoFrameMac, CheckLifetime) {
 TEST(VideoFrameMac, CheckWrapperFrame) {
   const FormatPair format_pairs[] = {
       {PIXEL_FORMAT_I420, kCVPixelFormatType_420YpCbCr8Planar},
-      {PIXEL_FORMAT_NV12,
-       CoreVideoGlue::kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange},
+      {PIXEL_FORMAT_NV12, kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange},
   };
 
   const gfx::Size size(kWidth, kHeight);

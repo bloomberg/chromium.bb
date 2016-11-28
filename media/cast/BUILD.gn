@@ -175,7 +175,9 @@ source_set("sender") {
 
     libs += [
       "AudioToolbox.framework",
+      "CoreMedia.framework",
       "CoreVideo.framework",
+      "VideoToolbox.framework",
     ]
   }
 }

@@ -32,7 +32,6 @@
 #endif
 
 #if defined(OS_MACOSX)
-#include "media/base/mac/avfoundation_glue.h"
 #include "media/capture/video/mac/video_capture_device_factory_mac.h"
 #endif
 
@@ -238,9 +237,6 @@ class VideoCaptureDeviceTest : public testing::TestWithParam<gfx::Size> {
     static_cast<VideoCaptureDeviceFactoryAndroid*>(
         video_capture_device_factory_.get())
         ->ConfigureForTesting();
-#endif
-#if defined(OS_MACOSX)
-    AVFoundationGlue::InitializeAVFoundation();
 #endif
     EXPECT_CALL(*video_capture_client_, DoReserveOutputBuffer()).Times(0);
     EXPECT_CALL(*video_capture_client_, DoOnIncomingCapturedBuffer()).Times(0);

@@ -5,8 +5,10 @@
 #ifndef MEDIA_BASE_MAC_VIDEOTOOLBOX_HELPERS_H_
 #define MEDIA_BASE_MAC_VIDEOTOOLBOX_HELPERS_H_
 
+#include <CoreMedia/CoreMedia.h>
+#include <VideoToolbox/VideoToolbox.h>
+
 #include "base/mac/scoped_cftyperef.h"
-#include "media/base/mac/videotoolbox_glue.h"
 #include "media/base/media_export.h"
 
 namespace media {
@@ -33,23 +35,19 @@ MEDIA_EXPORT base::ScopedCFTypeRef<CFArrayRef> ArrayWithIntegerAndFloat(
 
 // Copy a H.264 frame stored in a CM sample buffer to an Annex B buffer. Copies
 // parameter sets for keyframes before the frame data as well.
-MEDIA_EXPORT bool CopySampleBufferToAnnexBBuffer(
-    CoreMediaGlue::CMSampleBufferRef sbuf,
-    bool keyframe,
-    std::string* annexb_buffer);
-MEDIA_EXPORT bool CopySampleBufferToAnnexBBuffer(
-    CoreMediaGlue::CMSampleBufferRef sbuf,
-    bool keyframe,
-    size_t annexb_buffer_size,
-    char* annexb_buffer,
-    size_t* used_buffer_size);
+MEDIA_EXPORT bool CopySampleBufferToAnnexBBuffer(CMSampleBufferRef sbuf,
+                                                 bool keyframe,
+                                                 std::string* annexb_buffer);
+MEDIA_EXPORT bool CopySampleBufferToAnnexBBuffer(CMSampleBufferRef sbuf,
+                                                 bool keyframe,
+                                                 size_t annexb_buffer_size,
+                                                 char* annexb_buffer,
+                                                 size_t* used_buffer_size);
 
 // Helper class to add session properties to a VTCompressionSessionRef.
 class MEDIA_EXPORT SessionPropertySetter {
  public:
-  SessionPropertySetter(
-      base::ScopedCFTypeRef<VideoToolboxGlue::VTCompressionSessionRef> session,
-      const VideoToolboxGlue* const glue);
+  SessionPropertySetter(base::ScopedCFTypeRef<VTCompressionSessionRef> session);
   ~SessionPropertySetter();
 
   bool Set(CFStringRef key, int32_t value);
@@ -58,8 +56,7 @@ class MEDIA_EXPORT SessionPropertySetter {
   bool Set(CFStringRef key, CFArrayRef value);
 
  private:
-  base::ScopedCFTypeRef<VideoToolboxGlue::VTCompressionSessionRef> session_;
-  const VideoToolboxGlue* glue_;
+  base::ScopedCFTypeRef<VTCompressionSessionRef> session_;
 };
 
 }  // namespace video_toolbox

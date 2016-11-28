@@ -15,7 +15,6 @@
 #include "base/profiler/scoped_tracker.h"
 #include "base/strings/string_util.h"
 #include "base/task_runner_util.h"
-#import "media/base/mac/avfoundation_glue.h"
 #import "media/capture/video/mac/video_capture_device_avfoundation_mac.h"
 #import "media/capture/video/mac/video_capture_device_decklink_mac.h"
 #include "media/capture/video/mac/video_capture_device_mac.h"
