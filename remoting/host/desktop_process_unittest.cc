@@ -286,7 +286,8 @@ void DesktopProcessTest::SendCrashRequest() {
 
 void DesktopProcessTest::SendStartSessionAgent() {
   network_channel_->Send(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      "user@domain/rest-of-jid", ScreenResolution(), false));
+      "user@domain/rest-of-jid", ScreenResolution(),
+      DesktopEnvironmentOptions()));
 }
 
 // Launches the desktop process and waits when it connects back.

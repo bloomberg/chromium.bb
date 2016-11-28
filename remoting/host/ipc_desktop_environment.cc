@@ -32,12 +32,12 @@ IpcDesktopEnvironment::IpcDesktopEnvironment(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal) {
+    const DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner->BelongsToCurrentThread());
 
   desktop_session_proxy_ = new DesktopSessionProxy(
       audio_task_runner, caller_task_runner, io_task_runner,
-      client_session_control, desktop_session_connector, virtual_terminal);
+      client_session_control, desktop_session_connector, options);
 }
 
 IpcDesktopEnvironment::~IpcDesktopEnvironment() {}
@@ -96,8 +96,7 @@ std::unique_ptr<DesktopEnvironment> IpcDesktopEnvironmentFactory::Create(
 
   return base::MakeUnique<IpcDesktopEnvironment>(
       audio_task_runner_, caller_task_runner_, io_task_runner_,
-      client_session_control, connector_factory_.GetWeakPtr(),
-      options.enable_curtaining());
+      client_session_control, connector_factory_.GetWeakPtr(), options);
 }
 
 bool IpcDesktopEnvironmentFactory::SupportsAudioCapture() const {

@@ -45,7 +45,7 @@ class IpcDesktopEnvironment : public DesktopEnvironment {
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool virtual_terminal);
+      const DesktopEnvironmentOptions& options);
   ~IpcDesktopEnvironment() override;
 
   // DesktopEnvironment implementation.

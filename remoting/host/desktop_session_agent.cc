@@ -159,13 +159,11 @@ DesktopSessionAgent::DesktopSessionAgent(
     scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
     scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
     scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-    scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-    const DesktopEnvironmentOptions& desktop_environment_options)
+    scoped_refptr<AutoThreadTaskRunner> io_task_runner)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       input_task_runner_(input_task_runner),
       io_task_runner_(io_task_runner),
-      desktop_environment_options_(desktop_environment_options),
       weak_factory_(this) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
@@ -255,7 +253,7 @@ void DesktopSessionAgent::SetDisableInputs(bool disable_inputs) {
 void DesktopSessionAgent::OnStartSessionAgent(
     const std::string& authenticated_jid,
     const ScreenResolution& resolution,
-    bool virtual_terminal) {
+    const remoting::DesktopEnvironmentOptions& options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
   DCHECK(!started_);
   DCHECK(!audio_capturer_);
@@ -266,10 +264,6 @@ void DesktopSessionAgent::OnStartSessionAgent(
 
   started_ = true;
   client_jid_ = authenticated_jid;
-
-  DesktopEnvironmentOptions options = desktop_environment_options_;
-  // Enable the curtain mode.
-  options.set_enable_curtaining(virtual_terminal);
 
   // Create a desktop environment for the new session.
   desktop_environment_ = delegate_->desktop_environment_factory().Create(

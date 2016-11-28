@@ -11,6 +11,7 @@
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_platform_file.h"
 #include "remoting/host/chromoting_param_traits.h"
+#include "remoting/host/desktop_environment_options.h"
 #include "remoting/host/screen_resolution.h"
 #include "remoting/protocol/errors.h"
 #include "remoting/protocol/transport.h"
@@ -205,7 +206,7 @@ IPC_MESSAGE_CONTROL1(ChromotingDesktopNetworkMsg_AudioPacket,
 IPC_MESSAGE_CONTROL3(ChromotingNetworkDesktopMsg_StartSessionAgent,
                      std::string /* authenticated_jid */,
                      remoting::ScreenResolution /* resolution */,
-                     bool /* virtual_terminal */)
+                     remoting::DesktopEnvironmentOptions /* options */)
 
 IPC_MESSAGE_CONTROL0(ChromotingNetworkDesktopMsg_CaptureFrame)
 

@@ -139,9 +139,9 @@ bool DesktopProcess::Start(
 #endif  // !defined(OS_WIN)
 
   // Create a desktop agent.
-  desktop_agent_ = new DesktopSessionAgent(
-      audio_task_runner, caller_task_runner_, input_task_runner_,
-      io_task_runner_, DesktopEnvironmentOptions::CreateDefault());
+  desktop_agent_ =
+      new DesktopSessionAgent(audio_task_runner, caller_task_runner_,
+                              input_task_runner_, io_task_runner_);
 
   // Start the agent and create an IPC channel to talk to it.
   mojo::ScopedMessagePipeHandle desktop_pipe =

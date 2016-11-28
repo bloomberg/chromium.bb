@@ -76,7 +76,7 @@ class DesktopSessionProxy
       scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
       base::WeakPtr<ClientSessionControl> client_session_control,
       base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-      bool virtual_terminal);
+      const DesktopEnvironmentOptions& options);
 
   // Mirrors DesktopEnvironment.
   std::unique_ptr<AudioCapturer> CreateAudioCapturer();
@@ -216,7 +216,7 @@ class DesktopSessionProxy
   // True if |this| has been connected to the desktop session.
   bool is_desktop_session_connected_;
 
-  bool virtual_terminal_;
+  DesktopEnvironmentOptions options_;
 
   // Stores the session id for the proxied desktop process.
   uint32_t desktop_session_id_ = UINT32_MAX;

@@ -93,7 +93,7 @@ DesktopSessionProxy::DesktopSessionProxy(
     scoped_refptr<base::SingleThreadTaskRunner> io_task_runner,
     base::WeakPtr<ClientSessionControl> client_session_control,
     base::WeakPtr<DesktopSessionConnector> desktop_session_connector,
-    bool virtual_terminal)
+    const DesktopEnvironmentOptions& options)
     : audio_capture_task_runner_(audio_capture_task_runner),
       caller_task_runner_(caller_task_runner),
       io_task_runner_(io_task_runner),
@@ -101,7 +101,7 @@ DesktopSessionProxy::DesktopSessionProxy(
       desktop_session_connector_(desktop_session_connector),
       pending_capture_frame_requests_(0),
       is_desktop_session_connected_(false),
-      virtual_terminal_(virtual_terminal) {
+      options_(options) {
   DCHECK(caller_task_runner_->BelongsToCurrentThread());
 }
 
@@ -138,7 +138,7 @@ DesktopSessionProxy::CreateMouseCursorMonitor() {
 std::string DesktopSessionProxy::GetCapabilities() const {
   std::string result = protocol::kRateLimitResizeRequests;
   // Ask the client to send its resolution unconditionally.
-  if (virtual_terminal_) {
+  if (options_.enable_curtaining()) {
     result += " ";
     result += protocol::kSendInitialResolution;
   }
@@ -154,10 +154,10 @@ std::string DesktopSessionProxy::GetCapabilities() const {
 void DesktopSessionProxy::SetCapabilities(const std::string& capabilities) {
   // Delay creation of the desktop session until the client screen resolution is
   // received if the desktop session requires the initial screen resolution
-  // (when |virtual_terminal_| is true) and the client is expected to
+  // (when enable_curtaining() is true) and the client is expected to
   // sent its screen resolution (the 'sendInitialResolution' capability is
   // supported).
-  if (virtual_terminal_ &&
+  if (options_.enable_curtaining() &&
       HasCapability(capabilities, protocol::kSendInitialResolution)) {
     VLOG(1) << "Waiting for the client screen resolution.";
     return;
@@ -167,8 +167,8 @@ void DesktopSessionProxy::SetCapabilities(const std::string& capabilities) {
   if (!is_desktop_session_connected_) {
     is_desktop_session_connected_ = true;
     if (desktop_session_connector_.get()) {
-      desktop_session_connector_->ConnectTerminal(
-          this, screen_resolution_, virtual_terminal_);
+      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
+                                                  options_.enable_curtaining());
     }
   }
 }
@@ -229,9 +229,7 @@ bool DesktopSessionProxy::AttachToDesktop(
   // Pass ID of the client (which is authenticated at this point) to the desktop
   // session agent and start the agent.
   SendToDesktop(new ChromotingNetworkDesktopMsg_StartSessionAgent(
-      client_session_control_->client_jid(),
-      screen_resolution_,
-      virtual_terminal_));
+      client_session_control_->client_jid(), screen_resolution_, options_));
 
   desktop_session_id_ = session_id;
 
@@ -381,8 +379,8 @@ void DesktopSessionProxy::SetScreenResolution(
   if (!is_desktop_session_connected_) {
     is_desktop_session_connected_ = true;
     if (desktop_session_connector_.get()) {
-      desktop_session_connector_->ConnectTerminal(
-          this, screen_resolution_, virtual_terminal_);
+      desktop_session_connector_->ConnectTerminal(this, screen_resolution_,
+                                                  options_.enable_curtaining());
     }
     return;
   }

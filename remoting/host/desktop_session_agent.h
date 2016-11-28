@@ -71,8 +71,7 @@ class DesktopSessionAgent
       scoped_refptr<AutoThreadTaskRunner> audio_capture_task_runner,
       scoped_refptr<AutoThreadTaskRunner> caller_task_runner,
       scoped_refptr<AutoThreadTaskRunner> input_task_runner,
-      scoped_refptr<AutoThreadTaskRunner> io_task_runner,
-      const DesktopEnvironmentOptions& options);
+      scoped_refptr<AutoThreadTaskRunner> io_task_runner);
 
   // IPC::Listener implementation.
   bool OnMessageReceived(const IPC::Message& message) override;
@@ -116,7 +115,7 @@ class DesktopSessionAgent
   // Handles StartSessionAgent request from the client.
   void OnStartSessionAgent(const std::string& authenticated_jid,
                            const ScreenResolution& resolution,
-                           bool virtual_terminal);
+                           const DesktopEnvironmentOptions& options);
 
   // Handles CaptureFrame requests from the client.
   void OnCaptureFrame();
@@ -191,8 +190,6 @@ class DesktopSessionAgent
   // Keep reference to the last frame sent to make sure shared buffer is alive
   // before it's received.
   std::unique_ptr<webrtc::DesktopFrame> last_frame_;
-
-  DesktopEnvironmentOptions desktop_environment_options_;
 
   // Used to disable callbacks to |this|.
   base::WeakPtrFactory<DesktopSessionAgent> weak_factory_;
