@@ -80,8 +80,9 @@ static_assert(
 
 const int kChromeReaderDefaultExpiryTimeMins = 3 * 24 * 60;
 
-NTPSnippet::NTPSnippet(const std::string& id, int remote_category_id)
-    : ids_(1, id),
+NTPSnippet::NTPSnippet(const std::vector<std::string>& ids,
+                       int remote_category_id)
+    : ids_(ids),
       score_(0),
       is_dismissed_(false),
       remote_category_id_(remote_category_id) {}
@@ -96,58 +97,24 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     return nullptr;
   }
 
-  // Need at least the id.
-  std::string id;
-  if (!content->GetString("url", &id) || id.empty()) {
+  // Need at least a primary id.
+  std::string primary_id;
+  if (!content->GetString("url", &primary_id) || primary_id.empty()) {
     return nullptr;
-  }
-
-  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(id, kArticlesRemoteId));
-
-  std::string title;
-  if (content->GetString("title", &title)) {
-    snippet->title_ = title;
-  }
-  std::string salient_image_url;
-  if (content->GetString("thumbnailUrl", &salient_image_url)) {
-    snippet->salient_image_url_ = GURL(salient_image_url);
-  }
-  std::string snippet_str;
-  if (content->GetString("snippet", &snippet_str)) {
-    snippet->snippet_ = snippet_str;
-  }
-  // The creation and expiry timestamps are uint64s which are stored as strings.
-  std::string creation_timestamp_str;
-  if (content->GetString("creationTimestampSec", &creation_timestamp_str)) {
-    snippet->publish_date_ = TimeFromJsonString(creation_timestamp_str);
-  }
-  std::string expiry_timestamp_str;
-  if (content->GetString("expiryTimestampSec", &expiry_timestamp_str)) {
-    snippet->expiry_date_ = TimeFromJsonString(expiry_timestamp_str);
-  }
-
-  // If publish and/or expiry date are missing, fill in reasonable defaults.
-  if (snippet->publish_date_.is_null()) {
-    snippet->publish_date_ = base::Time::Now();
-  }
-  if (snippet->expiry_date_.is_null()) {
-    snippet->expiry_date_ =
-        snippet->publish_date() +
-        base::TimeDelta::FromMinutes(kChromeReaderDefaultExpiryTimeMins);
   }
 
   const base::ListValue* corpus_infos_list = nullptr;
   if (!content->GetList("sourceCorpusInfo", &corpus_infos_list)) {
-    DLOG(WARNING) << "No sources found for article " << title;
+    DLOG(WARNING) << "No sources found for article " << primary_id;
     return nullptr;
   }
 
-  std::vector<std::string> additional_ids;
+  std::vector<std::string> ids(1, primary_id);
   std::vector<SnippetSource> sources;
   for (const auto& value : *corpus_infos_list) {
     const base::DictionaryValue* dict_value = nullptr;
     if (!value->GetAsDictionary(&dict_value)) {
-      DLOG(WARNING) << "Invalid source info for article " << id;
+      DLOG(WARNING) << "Invalid source info for article " << primary_id;
       continue;
     }
 
@@ -186,14 +153,47 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromChromeReaderDictionary(
     // We use the raw string so that we can compare it against other primary
     // IDs. Parsing the ID as a URL might add a trailing slash (and we don't do
     // this for the primary ID).
-    additional_ids.push_back(corpus_id_str);
+    ids.push_back(corpus_id_str);
   }
-  snippet->AddIDs(additional_ids);
-
   if (sources.empty()) {
-    DLOG(WARNING) << "No sources found for article " << id;
+    DLOG(WARNING) << "No sources found for article " << primary_id;
     return nullptr;
   }
+
+  std::unique_ptr<NTPSnippet> snippet(new NTPSnippet(ids, kArticlesRemoteId));
+
+  std::string title;
+  if (content->GetString("title", &title)) {
+    snippet->title_ = title;
+  }
+  std::string salient_image_url;
+  if (content->GetString("thumbnailUrl", &salient_image_url)) {
+    snippet->salient_image_url_ = GURL(salient_image_url);
+  }
+  std::string snippet_str;
+  if (content->GetString("snippet", &snippet_str)) {
+    snippet->snippet_ = snippet_str;
+  }
+  // The creation and expiry timestamps are uint64s which are stored as strings.
+  std::string creation_timestamp_str;
+  if (content->GetString("creationTimestampSec", &creation_timestamp_str)) {
+    snippet->publish_date_ = TimeFromJsonString(creation_timestamp_str);
+  }
+  std::string expiry_timestamp_str;
+  if (content->GetString("expiryTimestampSec", &expiry_timestamp_str)) {
+    snippet->expiry_date_ = TimeFromJsonString(expiry_timestamp_str);
+  }
+
+  // If publish and/or expiry date are missing, fill in reasonable defaults.
+  if (snippet->publish_date_.is_null()) {
+    snippet->publish_date_ = base::Time::Now();
+  }
+  if (snippet->expiry_date_.is_null()) {
+    snippet->expiry_date_ =
+        snippet->publish_date() +
+        base::TimeDelta::FromMinutes(kChromeReaderDefaultExpiryTimeMins);
+  }
+
   const SnippetSource& source = FindBestSource(sources);
   snippet->url_ = source.url;
   snippet->publisher_name_ = source.publisher_name;
@@ -227,10 +227,7 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromContentSuggestionsDictionary(
   if (parsed_ids.empty()) {
     return nullptr;
   }
-  auto snippet =
-      base::MakeUnique<NTPSnippet>(parsed_ids.front(), remote_category_id);
-  parsed_ids.erase(parsed_ids.begin(), parsed_ids.begin() + 1);
-  snippet->AddIDs(parsed_ids);
+  auto snippet = MakeUnique(parsed_ids, remote_category_id);
 
   if (!(dict.GetString("title", &snippet->title_) &&
         dict.GetString("snippet", &snippet->snippet_) &&
@@ -264,9 +261,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateFromProto(
                                ? proto.remote_category_id()
                                : kArticlesRemoteId;
 
-  auto snippet = base::MakeUnique<NTPSnippet>(proto.ids(0), remote_category_id);
-  snippet->AddIDs(
-      std::vector<std::string>(proto.ids().begin() + 1, proto.ids().end()));
+  std::vector<std::string> ids(proto.ids().begin(), proto.ids().end());
+  auto snippet = MakeUnique(ids, remote_category_id);
 
   snippet->title_ = proto.title();
   snippet->snippet_ = proto.snippet();
@@ -314,7 +310,8 @@ std::unique_ptr<NTPSnippet> NTPSnippet::CreateForTesting(
     const GURL& url,
     const std::string& publisher_name,
     const GURL& amp_url) {
-  auto snippet = base::MakeUnique<NTPSnippet>(id, remote_category_id);
+  auto snippet = MakeUnique(std::vector<std::string>(1, id),
+                            remote_category_id);
   snippet->url_ = url;
   snippet->publisher_name_ = publisher_name;
   snippet->amp_url_ = amp_url;
@@ -358,10 +355,6 @@ SnippetProto NTPSnippet::ToProto() const {
   return result;
 }
 
-void NTPSnippet::AddIDs(const std::vector<std::string>& ids) {
-  ids_.insert(ids_.end(), ids.begin(), ids.end());
-}
-
 // static
 base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
   int64_t timestamp;
@@ -377,6 +370,12 @@ base::Time NTPSnippet::TimeFromJsonString(const std::string& timestamp_str) {
 // static
 std::string NTPSnippet::TimeToJsonString(const base::Time& time) {
   return base::Int64ToString((time - base::Time::UnixEpoch()).InSeconds());
+}
+
+// static
+std::unique_ptr<NTPSnippet> NTPSnippet::MakeUnique(
+    const std::vector<std::string>& ids, int remote_category_id) {
+  return base::WrapUnique(new NTPSnippet(ids, remote_category_id));
 }
 
 }  // namespace ntp_snippets

@@ -30,10 +30,6 @@ class NTPSnippet {
  public:
   using PtrVector = std::vector<std::unique_ptr<NTPSnippet>>;
 
-  // Public only so that MakeUnique will work. Don't use directly, call one of
-  // the CreateFrom* methods below instead.
-  // TODO(treib): Make the constructor take the vector of IDs and remove AddIDs.
-  NTPSnippet(const std::string& id, int remote_category_id);
   ~NTPSnippet();
 
   // Creates an NTPSnippet from a dictionary, as returned by Chrome Reader.
@@ -121,7 +117,11 @@ class NTPSnippet {
   static std::string TimeToJsonString(const base::Time& time);
 
  private:
-  void AddIDs(const std::vector<std::string>& ids);
+  NTPSnippet(const std::vector<std::string>& ids, int remote_category_id);
+
+  // base::MakeUnique doesn't work if the ctor is private.
+  static std::unique_ptr<NTPSnippet> MakeUnique(
+      const std::vector<std::string>& ids, int remote_category_id);
 
   // The first ID in the vector is the primary id.
   std::vector<std::string> ids_;
