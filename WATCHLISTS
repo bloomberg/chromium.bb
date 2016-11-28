@@ -797,9 +797,6 @@
     'precache': {
       'filepath': '[pP]recache'
     },
-    'predictors': {
-      'filepath': 'predictors',
-    },
     'prepopulated_engines': {
       'filepath': 'components/search_engines/prepopulated_engines.json',
     },
@@ -973,9 +970,6 @@
     },
     'tools': {
       'filepath': 'tools/',
-    },
-    'tools_emacs': {
-      'filepath': 'tools/emacs/',
     },
     'tracing': {
       'filepath': 'base/debug/trace_event.*'\
@@ -1864,9 +1858,7 @@
                   'wfh+watch@chromium.org'],
     'installer_linux': [ 'mmoss@chromium.org'],
     'instant': ['dcblack@chromium.org',
-                'dhollowa+watch@chromium.org',
                 'donnd+watch@chromium.org',
-                'dougw+watch@chromium.org',
                 'jered@chromium.org',
                 'jfweitz+watch@chromium.org',
                 'kmadhusu+watch@chromium.org',
@@ -1968,7 +1960,6 @@
     'polymer': ['dbeam+watch-polymer@chromium.org',
                 'michaelpg+watch-polymer@chromium.org'],
     'precache': ['wifiprefetch-reviews@google.com'],
-    'predictors': ['shishir+watch@chromium.org'],
     'prepopulated_engines': ['vasilii+watch@chromium.org'],
     'prerender': ['cbentzel+watch@chromium.org',
                   'gavinp+prer@chromium.org',
@@ -2035,7 +2026,6 @@
                            'shuchen+watch@chromium.org',
                            'yusukes+watch@chromium.org'],
     'timers': ['chirantan+watch@chromium.org'],
-    'tools_emacs': ['dhollowa+watch@chromium.org'],
     'tracing': ['tracing+reviews@chromium.org',
                 'wfh+watch@chromium.org'],
     'ui_compositor': ['cc-bugs@chromium.org'],
