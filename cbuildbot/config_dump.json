@@ -12494,6 +12494,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12595,6 +12599,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,
@@ -12775,6 +12783,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
         "internal": true,
         "manifest": "official.xml",
         "manifest_repo_url": "https://chrome-internal-review.googlesource.com/chromeos/manifest-internal",
@@ -12877,6 +12889,10 @@
         "factory": false,
         "factory_install_netboot": false,
         "factory_toolkit": false,
+        "health_alert_recipients": [
+            "gci-alerts+buildbots@google.com"
+        ],
+        "health_threshold": 1,
         "hw_tests": [],
         "hwqual": false,
         "image_test": false,

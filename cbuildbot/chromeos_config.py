@@ -1037,6 +1037,14 @@ def CreateBuilderTemplates(site_config, hw_test_list, is_release_branch):
       run_gce_tests=True,
   )
 
+  # An anchor of Laktiu' notification email settings.
+  site_config.AddTemplate(
+      'lakitu_notification_emails',
+      # Send an email on build failures.
+      health_threshold=1,
+      health_alert_recipients=['gci-alerts+buildbots@google.com'],
+  )
+
   site_config.AddTemplate(
       'moblab',
       image_test=False,
@@ -2569,6 +2577,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       site_config.templates.internal_incremental,
       board_configs['lakitu'],
       site_config.templates.lakitu_test_customizations,
+      site_config.templates.lakitu_notification_emails,
   )
 
   site_config.Add(
@@ -2577,6 +2586,7 @@ def _GetConfig(site_config, board_configs, hw_test_list):
       site_config.templates.internal_incremental,
       board_configs['lakitu_next'],
       site_config.templates.lakitu_test_customizations,
+      site_config.templates.lakitu_notification_emails,
   )
 
   # Now generate generic release-afdo configs if we haven't created anything
@@ -3105,11 +3115,13 @@ def ApplyCustomOverrides(site_config, hw_test_list):
 
       'lakitu-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
+          site_config.templates.lakitu_notification_emails,
           sign_types=['base'],
       ),
 
       'lakitu_next-release': config_lib.BuildConfig().apply(
           site_config.templates.lakitu_test_customizations,
+          site_config.templates.lakitu_notification_emails,
           signer_tests=False,
       ),
 
