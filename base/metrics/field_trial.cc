@@ -10,7 +10,6 @@
 #include "base/base_switches.h"
 #include "base/build_time.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
 #include "base/pickle.h"
@@ -180,48 +179,6 @@ void AddForceFieldTrialsFlag(CommandLine* cmd_line) {
   if (!field_trial_states.empty()) {
     cmd_line->AppendSwitchASCII(switches::kForceFieldTrials,
                                 field_trial_states);
-  }
-}
-
-// In order to debug the crash where two field trials with the same name but
-// different groups get added to the allocator, let's try to get the stack
-// frame where the second duplicate gets added here as well as the trial/group
-// names by going through the allocator and checking if a trial with the same
-// name already exists.
-void CheckAllocatorForTrial(FieldTrialList::FieldTrialAllocator* allocator,
-                            const std::string& trial_name,
-                            const std::string& group_name) {
-  FieldTrialList::FieldTrialAllocator::Iterator iter(allocator);
-  FieldTrial::FieldTrialRef ref;
-  while ((ref = iter.GetNextOfType(kFieldTrialType)) !=
-         FieldTrialList::FieldTrialAllocator::kReferenceNull) {
-    const FieldTrialEntry* entry =
-        allocator->GetAsObject<const FieldTrialEntry>(ref, kFieldTrialType);
-
-    StringPiece trial_name_to_check;
-    StringPiece group_name_to_check;
-    if (!entry->GetTrialAndGroupName(&trial_name_to_check,
-                                     &group_name_to_check)) {
-      CHECK(false);
-    }
-
-    if (trial_name_to_check.as_string() == trial_name) {
-      constexpr size_t buf_size = 100;
-
-      char trial_name_c_str[buf_size];
-      char group_name_c_str[buf_size];
-      char existing_group_name_c_str[buf_size];
-
-      strlcpy(trial_name_c_str, trial_name.c_str(), buf_size);
-      strlcpy(group_name_c_str, group_name.c_str(), buf_size);
-      strlcpy(existing_group_name_c_str,
-              group_name_to_check.as_string().c_str(), buf_size);
-
-      debug::Alias(trial_name_c_str);
-      debug::Alias(group_name_c_str);
-      debug::Alias(existing_group_name_c_str);
-      CHECK_EQ(group_name_to_check.as_string(), group_name);
-    }
   }
 }
 
@@ -931,40 +888,6 @@ bool FieldTrialList::CreateTrialsFromSharedMemory(
     FieldTrial* trial =
         CreateFieldTrial(trial_name.as_string(), group_name.as_string());
 
-    // If we failed to create the field trial, crash with debug info.
-    // TODO(665129): Remove this when the crash is resolved.
-    if (!trial) {
-      constexpr size_t buf_size = 100;
-      char trial_name_c_str[buf_size] = {0};
-      char group_name_c_str[buf_size] = {0};
-      char existing_group_name_c_str[buf_size] = {0};
-
-      // Copy the names over to the stack.
-      std::string trial_name_string = trial_name.as_string();
-      strlcpy(trial_name_c_str, trial_name_string.c_str(), buf_size);
-      std::string group_name_string = group_name.as_string();
-      strlcpy(group_name_c_str, group_name_string.c_str(), buf_size);
-
-      // Alias the trial and group name.
-      debug::Alias(trial_name_c_str);
-      debug::Alias(group_name_c_str);
-
-      // Copy and alias the existing field trial name, if there is one.
-      FieldTrial* existing_field_trial =
-          FieldTrialList::Find(trial_name_string);
-      if (existing_field_trial) {
-        std::string existing_group_name_string =
-            existing_field_trial->group_name_internal();
-        strlcpy(existing_group_name_c_str, group_name_string.c_str(), buf_size);
-        debug::Alias(existing_group_name_c_str);
-      }
-      CHECK(!trial_name_string.empty());
-      CHECK(!group_name_string.empty());
-      CHECK_EQ(existing_field_trial->group_name_internal(),
-               group_name.as_string());
-      return false;
-    }
-
     trial->ref_ = ref;
     if (entry->activated) {
       // Call |group()| to mark the trial as "used" and notify observers, if
@@ -1020,10 +943,6 @@ void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
   // shouldn't be writing to it.
   if (allocator->IsReadonly())
     return;
-
-  // TODO(665129): Remove this code once the bug has been fixed.
-  CheckAllocatorForTrial(allocator, field_trial->trial_name(),
-                         field_trial->group_name_internal());
 
   FieldTrial::State trial_state;
   if (!field_trial->GetStateWhileLocked(&trial_state))
