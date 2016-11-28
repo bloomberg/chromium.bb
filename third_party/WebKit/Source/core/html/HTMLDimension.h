@@ -72,6 +72,7 @@ class HTMLDimension {
 };
 
 CORE_EXPORT Vector<HTMLDimension> parseListOfDimensions(const String&);
+CORE_EXPORT bool parseDimensionValue(const String&, HTMLDimension&);
 
 }  // namespace blink
 

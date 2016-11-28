@@ -198,4 +198,78 @@ TEST(HTMLDimensionTest, parseListOfDimensionsMultipleDimensionsWithOneEmpty) {
   ASSERT_EQ(HTMLDimension(8., HTMLDimension::Percentage), result[2]);
 }
 
+TEST(HTMLDimensionTest, parseDimensionValueEmptyString) {
+  HTMLDimension dimension;
+  EXPECT_FALSE(parseDimensionValue(String(""), dimension));
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueSpacesOnly) {
+  HTMLDimension dimension;
+  EXPECT_FALSE(parseDimensionValue(String("     "), dimension));
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAllowedSpaces) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String(" \t\f\r\n10"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Absolute), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueLeadingPlus) {
+  HTMLDimension dimension;
+  EXPECT_FALSE(parseDimensionValue(String("+10"), dimension));
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAbsolute) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Absolute), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAbsoluteFraction) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10.50"), dimension));
+  EXPECT_EQ(HTMLDimension(10.5, HTMLDimension::Absolute), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAbsoluteDotNoFraction) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10.%"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Percentage), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAbsoluteTrailingGarbage) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10foo"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Absolute), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueAbsoluteTrailingGarbageAfterSpace) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10 foo"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Absolute), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValuePercentage) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10%"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Percentage), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueRelative) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10*"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Relative), dimension);
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueInvalidNumberFormatDot) {
+  HTMLDimension dimension;
+  EXPECT_FALSE(parseDimensionValue(String(".50"), dimension));
+}
+
+TEST(HTMLDimensionTest, parseDimensionValueInvalidNumberFormatExponent) {
+  HTMLDimension dimension;
+  EXPECT_TRUE(parseDimensionValue(String("10e10"), dimension));
+  EXPECT_EQ(HTMLDimension(10, HTMLDimension::Absolute), dimension);
+}
+
 }  // namespace blink

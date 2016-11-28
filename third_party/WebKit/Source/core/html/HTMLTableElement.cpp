@@ -328,8 +328,10 @@ void HTMLTableElement::collectStyleForPresentationAttribute(
       addPropertyToPresentationAttributeStyle(style, CSSPropertyVerticalAlign,
                                               value);
   } else if (name == cellspacingAttr) {
-    if (!value.isEmpty())
-      addHTMLLengthToStyle(style, CSSPropertyBorderSpacing, value);
+    if (!value.isEmpty()) {
+      addHTMLLengthToStyle(style, CSSPropertyBorderSpacing, value,
+                           DontAllowPercentageValues);
+    }
   } else if (name == alignAttr) {
     if (!value.isEmpty()) {
       if (equalIgnoringCase(value, "center")) {

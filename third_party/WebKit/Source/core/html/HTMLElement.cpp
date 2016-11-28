@@ -51,6 +51,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/UseCounter.h"
 #include "core/html/HTMLBRElement.h"
+#include "core/html/HTMLDimension.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLInputElement.h"
 #include "core/html/HTMLMenuElement.h"
@@ -902,43 +903,24 @@ void HTMLElement::adjustDirectionalityIfNeededAfterChildrenChanged(
 
 void HTMLElement::addHTMLLengthToStyle(MutableStylePropertySet* style,
                                        CSSPropertyID propertyID,
-                                       const String& value) {
-  // FIXME: This function should not spin up the CSS parser, but should instead
-  // just figure out the correct length unit and make the appropriate parsed
-  // value.
-
-  // strip attribute garbage..
-  StringImpl* v = value.impl();
-  if (v) {
-    unsigned length = 0;
-
-    while (length < v->length() && (*v)[length] <= ' ')
-      length++;
-
-    for (; length < v->length(); length++) {
-      UChar cc = (*v)[length];
-      if (cc > '9')
-        break;
-      if (cc < '0') {
-        if (cc == '%' || cc == '*') {
-          if (propertyID == CSSPropertyWidth)
-            UseCounter::count(document(),
-                              UseCounter::HTMLElementDeprecatedWidth);
-          length++;
-        }
-        if (cc != '.')
-          break;
-      }
-    }
-
-    if (length != v->length()) {
-      addPropertyToPresentationAttributeStyle(style, propertyID,
-                                              v->substring(0, length));
-      return;
-    }
+                                       const String& value,
+                                       AllowPercentage allowPercentage) {
+  HTMLDimension dimension;
+  if (!parseDimensionValue(value, dimension))
+    return;
+  if (propertyID == CSSPropertyWidth &&
+      (dimension.isPercentage() || dimension.isRelative())) {
+    UseCounter::count(document(), UseCounter::HTMLElementDeprecatedWidth);
   }
-
-  addPropertyToPresentationAttributeStyle(style, propertyID, value);
+  if (dimension.isRelative())
+    return;
+  if (dimension.isPercentage() && allowPercentage != AllowPercentageValues)
+    return;
+  CSSPrimitiveValue::UnitType unit =
+      dimension.isPercentage() ? CSSPrimitiveValue::UnitType::Percentage
+                               : CSSPrimitiveValue::UnitType::Pixels;
+  addPropertyToPresentationAttributeStyle(style, propertyID, dimension.value(),
+                                          unit);
 }
 
 static RGBA32 parseColorStringWithCrazyLegacyRules(const String& colorString) {
