@@ -693,7 +693,7 @@
           "experimental": false,
           "leader_board": true,
           "board_group": "oak",
-          "arch": "UNKNOWN"
+          "arch": "ARM_INTERNAL"
         }
       ]
     },
