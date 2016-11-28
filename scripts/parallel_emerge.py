@@ -38,6 +38,7 @@ import time
 import traceback
 
 from chromite.lib import cros_build_lib
+from chromite.lib import cros_event
 from chromite.lib import process_util
 from chromite.lib import proctitle
 
@@ -94,8 +95,8 @@ import portage.debug
 def Usage():
   """Print usage."""
   print("Usage:")
-  print(" ./parallel_emerge [--board=BOARD] [--workon=PKGS]")
-  print("                   [--rebuild] [emerge args] package")
+  print(" ./parallel_emerge [--board=BOARD] [--workon=PKGS] [--rebuild]")
+  print("                   [--eventlogfile=FILE] [emerge args] package")
   print()
   print("Packages specified as workon packages are always built from source.")
   print()
@@ -108,6 +109,9 @@ def Usage():
   print()
   print("The --rebuild option rebuilds packages whenever their dependencies")
   print("are changed. This ensures that your build is correct.")
+  print()
+  print("The --eventlogfile writes events to the given file. File is")
+  print("is overwritten if it exists.")
 
 
 # Global start time
@@ -270,6 +274,9 @@ class DepGraphGenerator(object):
       elif arg == "--unpackonly":
         emerge_args.append("--fetchonly")
         self.unpack_only = True
+      elif arg.startswith("--eventlogfile="):
+        log_file_name = arg.replace("--eventlogfile=", "")
+        cros_event.setEventLogger(cros_event.getEventFileLogger(log_file_name))
       else:
         # Not one of our options, so pass through to emerge.
         emerge_args.append(arg)
@@ -462,8 +469,9 @@ class DepGraphGenerator(object):
     if "--quiet" not in emerge.opts:
       print("Calculating deps...")
 
-    self.CreateDepgraph(emerge, packages)
-    depgraph = emerge.depgraph
+    with cros_event.newEvent(step="generate dependency tree"):
+      self.CreateDepgraph(emerge, packages)
+      depgraph = emerge.depgraph
 
     # Build our own tree from the emerge digraph.
     deps_tree = {}
@@ -919,6 +927,7 @@ def EmergeProcess(output, target, *args, **kwargs):
   Returns:
     The exit code returned by the subprocess.
   """
+  event = cros_event.newEvent(step="emerge", package=target)
   pid = os.fork()
   if pid == 0:
     try:
@@ -955,7 +964,10 @@ def EmergeProcess(output, target, *args, **kwargs):
       scheduler._opts_ignore_blockers = frozenset()
 
       # Actually do the merge.
-      retval = scheduler.merge()
+      with event:
+        retval = scheduler.merge()
+        if retval != 0:
+          event.fail(message="non-zero value returned")
 
     # We catch all exceptions here (including SystemExit, KeyboardInterrupt,
     # etc) so as to ensure that we don't confuse the multiprocessing module,
@@ -993,18 +1005,23 @@ def UnpackPackage(pkg_state):
     cmd.append("--ignore-trailing-garbage=1")
   cmd.append(path)
 
-  result = cros_build_lib.RunCommand(cmd, cwd=root, stdout_to_pipe=True,
-                                     print_cmd=False, error_code_ok=True)
+  with cros_event.newEvent(step="unpack package", **pkg_state) as event:
+    result = cros_build_lib.RunCommand(cmd, cwd=root, stdout_to_pipe=True,
+                                       print_cmd=False, error_code_ok=True)
 
-  # If we were not successful, return now and don't attempt untar.
-  if result.returncode:
+    # If we were not successful, return now and don't attempt untar.
+    if result.returncode != 0:
+      event.fail("error compressing: returned {}".format(result.returncode))
+      return result.returncode
+
+    cmd = ["sudo", "tar", "-xf", "-", "-C", root]
+
+    result = cros_build_lib.RunCommand(cmd, cwd=root, input=result.output,
+                                       print_cmd=False, error_code_ok=True)
+    if result.returncode != 0:
+      event.fail("error extracting:returned {}".format(result.returncode))
+
     return result.returncode
-
-  cmd = ["sudo", "tar", "-xf", "-", "-C", root]
-  result = cros_build_lib.RunCommand(cmd, cwd=root, input=result.output,
-                                     print_cmd=False, error_code_ok=True)
-
-  return result.returncode
 
 
 def EmergeWorker(task_queue, job_queue, emerge, package_db, fetch_only=False,
@@ -1221,7 +1238,7 @@ def PrintWorker(queue):
 
 
 class TargetState(object):
-  """Structure descriting the TargetState."""
+  """Structure describing the TargetState."""
 
   __slots__ = ("target", "info", "score", "prefetched", "fetched_successfully")
 

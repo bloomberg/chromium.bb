@@ -7,6 +7,8 @@
 from __future__ import print_function
 
 from time import time
+
+import atexit
 import json
 import multiprocessing
 
@@ -150,6 +152,21 @@ class EventLogger(object):
       d.update(data)
     return Event(eid=self.idGen.next(), data=d, emit_func=self.emit_func)
 
+  def shutdown(self):
+    """Call to clean up any resources that the logger my be using"""
+    pass
+
+
+def getEventFileLogger(file_name, data=None, encoder_func=json.dumps):
+  """Returns an EventFileLogger using the given file name"""
+  file_out = open(file_name, "w")
+  event_logger = EventFileLogger(file_out, data=data, encoder_func=encoder_func)
+
+  # make sure the file is closed on exit
+  atexit.register(event_logger.shutdown)
+
+  return event_logger
+
 
 class EventFileLogger(EventLogger):
   """Event Logger that writes to a file"""
@@ -162,3 +179,37 @@ class EventFileLogger(EventLogger):
   def write_event(self, event):
     """Writes Event(dict) to file"""
     self.file_out.write(self.encoder_func(event) + "\n")
+    self.file_out.flush()
+
+  def shutdown(self):
+    """Close given file object"""
+    super(EventFileLogger, self).shutdown()
+    self.file_out.close()
+
+
+class EventDummyLogger(EventLogger):
+  """Event Logger that does not write event to anything"""
+
+  def __init__(self):
+    def nop(event):
+      # pylint: disable=unused-argument
+      pass
+    super(EventDummyLogger, self).__init__(nop)
+
+
+# Default logger to use
+root = EventDummyLogger()
+
+
+def setEventLogger(logger):
+  """Set the root EventLogger"""
+  if not isinstance(logger, EventLogger):
+    raise TypeError("not an instance of EventLogger")
+
+  # pylint: disable=global-statement
+  global root
+  root = logger
+
+def newEvent(**kwargs):
+  """Return a new Event object using root EventLogger"""
+  return root.Event(data=kwargs)

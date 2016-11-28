@@ -159,6 +159,9 @@ class EventFileLoggerTest(cros_test_lib.TestCase):
     self.log = ce.EventFileLogger(self.file_out, data=self.data1,
                                   encoder_func=self.encode_func)
 
+  def testInit(self):
+    self.assertTrue(isinstance(self.log, ce.EventLogger))
+
   def testEvents(self):
     with self.log.Event():
       pass
@@ -170,3 +173,40 @@ class EventFileLoggerTest(cros_test_lib.TestCase):
       raise ce.Failure("always fail")
 
     self.assertDictEqual(self.emitEvent, self.get_event_from_file())
+
+  def testShutdown(self):
+    self.log.shutdown()
+
+
+class EventDummyLogger(cros_test_lib.TestCase):
+  """Test EventDummyLogger class"""
+
+  def setUp(self):
+    self.log = ce.EventDummyLogger()
+
+  def testInit(self):
+    self.assertTrue(isinstance(self.log, ce.EventLogger))
+
+
+class FunctionTest(cros_test_lib.TestCase):
+  """Test Module Tests"""
+
+  def setUp(self):
+    self._last_root = ce.root
+
+  def tearDown(self):
+    if hasattr(self, "_last_root") and self._last_root:
+      ce.setEventLogger(self._last_root)
+
+  def SetEventLoggerTest(self):
+    new_log = ce.EventDummyLogger()
+    ce.setEventLogger(new_log)
+    self.assertEqual(new_log, ce.root)
+
+  def EventTest(self):
+    e1 = ce.newEvent()
+    self.assertTrue(isinstance(e1, ce.Event))
+
+    e2 = ce.newEvent(foo="bar")
+    self.assertTrue(isinstance(e2, ce.Event))
+    self.assertEqual("bar", e2["foo"])
