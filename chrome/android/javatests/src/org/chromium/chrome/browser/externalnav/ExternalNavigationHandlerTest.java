@@ -516,6 +516,30 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
     }
 
     @SmallTest
+    public void testInstantAppsIntent_customTabRedirect() throws Exception {
+        TestContext context = new TestContext();
+        TabRedirectHandler redirectHandler = new TabRedirectHandler(context);
+        int transTypeLinkFromIntent = PageTransition.LINK | PageTransition.FROM_API;
+
+        // In Custom Tabs, if the first url is a redirect, don't allow it to intent out, unless
+        // the redirect is going to Instant Apps.
+        Intent fooIntent = Intent.parseUri("http://foo.com/", Intent.URI_INTENT_SCHEME);
+        fooIntent.putExtra(CustomTabsIntent.EXTRA_SESSION, "");
+        fooIntent.putExtra(CustomTabsIntent.EXTRA_ENABLE_INSTANT_APPS, true);
+        fooIntent.setPackage(context.getPackageName());
+        redirectHandler.updateIntent(fooIntent);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, false, false, 0, 0);
+        redirectHandler.updateNewUrlLoading(transTypeLinkFromIntent, true, false, 0, 0);
+
+        mDelegate.setCanHandleWithInstantApp(true);
+        checkUrl("http://instantappenabled.com")
+                .withPageTransition(transTypeLinkFromIntent)
+                .withIsRedirect(true)
+                .withRedirectHandler(redirectHandler)
+                .expecting(OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT, IGNORE);
+    }
+
+    @SmallTest
     public void testFallbackUrl_IntentResolutionSucceeds() {
         // IMDB app is installed.
         mDelegate.setCanResolveActivity(true);
@@ -1182,7 +1206,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         @Override
         public boolean maybeLaunchInstantApp(Tab tab, String url, String referrerUrl,
                 boolean isIncomingRedirect) {
-            return false;
+            return mCanHandleWithInstantApp;
         }
 
         @Override
@@ -1216,6 +1240,10 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
             mIsWithinCurrentWebappScope = value;
         }
 
+        public void setCanHandleWithInstantApp(boolean value) {
+            mCanHandleWithInstantApp = value;
+        }
+
         public Intent startActivityIntent = null;
         public boolean startIncognitoIntentCalled = false;
 
@@ -1224,6 +1252,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
 
         private String mNewUrlAfterClobbering;
         private String mReferrerUrlForClobbering;
+        private boolean mCanHandleWithInstantApp;
         public boolean mIsChromeAppInForeground = true;
         public boolean mIsWithinCurrentWebappScope;
 

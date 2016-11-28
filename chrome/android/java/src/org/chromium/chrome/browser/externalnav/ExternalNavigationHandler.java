@@ -207,21 +207,6 @@ public class ExternalNavigationHandler {
             return OverrideUrlLoadingResult.OVERRIDE_WITH_ASYNC_ACTION;
         }
 
-        // http://crbug/331571 : Do not override a navigation started from user typing.
-        // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
-        if (params.getRedirectHandler() != null) {
-            TabRedirectHandler handler = params.getRedirectHandler();
-            if (handler.shouldStayInChrome(isExternalProtocol)
-                    || handler.shouldNotOverrideUrlLoading()) {
-                return OverrideUrlLoadingResult.NO_OVERRIDE;
-            }
-        }
-
-        // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
-        if (mDelegate.isWithinCurrentWebappScope(params.getUrl())) {
-            return OverrideUrlLoadingResult.NO_OVERRIDE;
-        }
-
         // http://crbug.com/149218: We want to show the intent picker for ordinary links, providing
         // the link is not an incoming intent from another application, unless it's a redirect (see
         // below).
@@ -234,6 +219,31 @@ public class ExternalNavigationHandler {
         // another app that 30x redirects to a YouTube/Google Maps/Play Store/Google+ URL etc.
         boolean incomingIntentRedirect = (isLink && isFromIntent && params.isRedirect())
                 || isOnEffectiveIntentRedirect;
+
+
+        // http://crbug/331571 : Do not override a navigation started from user typing.
+        // http://crbug/424029 : Need to stay in Chrome for an intent heading explicitly to Chrome.
+        if (params.getRedirectHandler() != null) {
+            TabRedirectHandler handler = params.getRedirectHandler();
+            if (handler.shouldStayInChrome(isExternalProtocol)
+                    || handler.shouldNotOverrideUrlLoading()) {
+                // http://crbug.com/659301: Handle redirects to Instant Apps out of Custom Tabs.
+                if (handler.isFromCustomTabIntent()
+                        && !isExternalProtocol
+                        && incomingIntentRedirect
+                        && !handler.shouldNavigationTypeStayInChrome()
+                        && mDelegate.maybeLaunchInstantApp(params.getTab(), params.getUrl(),
+                                params.getReferrerUrl(), true)) {
+                    return OverrideUrlLoadingResult.OVERRIDE_WITH_EXTERNAL_INTENT;
+                }
+                return OverrideUrlLoadingResult.NO_OVERRIDE;
+            }
+        }
+
+        // http://crbug.com/647569 : Stay in a PWA window for a URL within the same scope.
+        if (mDelegate.isWithinCurrentWebappScope(params.getUrl())) {
+            return OverrideUrlLoadingResult.NO_OVERRIDE;
+        }
 
         // http://crbug.com/181186: We need to show the intent picker when we receive a redirect
         // following a form submit.
