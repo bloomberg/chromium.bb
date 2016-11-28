@@ -15,14 +15,11 @@ package sync_pb;
 // protobuf.
 message ReadingListSpecifics {
   optional string entry_id = 1;
-
   optional string title = 2;
-
   optional string url = 3;
-
   optional int64 creation_time_us = 4;
-
   optional int64 update_time_us = 5;
+  optional int64 first_read_time_us = 7;
 
   enum ReadingListEntryStatus {
     UNREAD = 0;
