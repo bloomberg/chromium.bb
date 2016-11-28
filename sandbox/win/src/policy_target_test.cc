@@ -214,6 +214,15 @@ TEST(PolicyTargetTest, OpenProcess) {
       "Opens a process";
 }
 
+TEST(PolicyTargetTest, PolicyBaseNoJobLifetime) {
+  TestRunner runner(JOB_NONE, USER_RESTRICTED_SAME_ACCESS, USER_LOCKDOWN);
+  runner.SetReleasePolicyInRun(true);
+  // TargetPolicy and its SharedMemIPCServer should continue to exist until
+  // the child process dies.
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread"))
+      << "Opens the current thread";
+}
+
 // Launches the app in the sandbox and ask it to wait in an
 // infinite loop. Waits for 2 seconds and then check if the
 // desktop associated with the app thread is not the same as the

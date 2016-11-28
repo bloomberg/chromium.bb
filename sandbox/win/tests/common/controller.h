@@ -116,6 +116,10 @@ class TestRunner {
   // destroyed.
   void SetKillOnDestruction(bool value) { kill_on_destruction_ = value; }
 
+  // Sets whether the TargetPolicy should be released after the child process
+  // is launched while the test is running.
+  void SetReleasePolicyInRun(bool value) { release_policy_in_run_ = value; }
+
   // Returns the pointers to the policy object. It can be used to modify
   // the policy manually.
   TargetPolicy* GetPolicy();
@@ -147,6 +151,7 @@ class TestRunner {
   bool no_sandbox_;
   bool disable_csrss_;
   bool kill_on_destruction_;
+  bool release_policy_in_run_ = false;
   base::win::ScopedHandle target_process_;
   DWORD target_process_id_;
 };
