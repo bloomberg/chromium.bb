@@ -309,7 +309,9 @@ class DeviceLocalAccountPolicyStatusProvider
 };
 
 // Provides status for DeviceActiveDirectoryPolicyManager.
-class DeviceActiveDirectoryPolicyStatusProvider : public PolicyStatusProvider {
+class DeviceActiveDirectoryPolicyStatusProvider
+    : public PolicyStatusProvider,
+      public policy::CloudPolicyStore::Observer {
  public:
   explicit DeviceActiveDirectoryPolicyStatusProvider(
       policy::DeviceActiveDirectoryPolicyManager* manager);
@@ -318,8 +320,12 @@ class DeviceActiveDirectoryPolicyStatusProvider : public PolicyStatusProvider {
   // PolicyStatusProvider implementation.
   void GetStatus(base::DictionaryValue* dict) override;
 
+  // policy::CloudPolicyStore::Observer implementation.
+  void OnStoreLoaded(policy::CloudPolicyStore* store) override;
+  void OnStoreError(policy::CloudPolicyStore* store) override;
+
  private:
-  const policy::CloudPolicyStore* store_;
+  policy::CloudPolicyStore* store_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceActiveDirectoryPolicyStatusProvider);
 };
@@ -437,10 +443,14 @@ void DeviceLocalAccountPolicyStatusProvider::OnDeviceLocalAccountsChanged() {
 DeviceActiveDirectoryPolicyStatusProvider::
     DeviceActiveDirectoryPolicyStatusProvider(
         policy::DeviceActiveDirectoryPolicyManager* manager)
-    : store_(manager->store()) {}
+    : store_(manager->store()) {
+  store_->AddObserver(this);
+}
 
 DeviceActiveDirectoryPolicyStatusProvider::
-    ~DeviceActiveDirectoryPolicyStatusProvider() {}
+    ~DeviceActiveDirectoryPolicyStatusProvider() {
+  store_->RemoveObserver(this);
+}
 
 // TODO(tnagel): Provide more details and/or remove unused fields from UI.  See
 // https://crbug.com/664747.
@@ -449,6 +459,16 @@ void DeviceActiveDirectoryPolicyStatusProvider::GetStatus(
   base::string16 status =
       policy::FormatStoreStatus(store_->status(), store_->validation_status());
   dict->SetString("status", status);
+}
+
+void DeviceActiveDirectoryPolicyStatusProvider::OnStoreLoaded(
+    policy::CloudPolicyStore* store) {
+  NotifyStatusChange();
+}
+
+void DeviceActiveDirectoryPolicyStatusProvider::OnStoreError(
+    policy::CloudPolicyStore* store) {
+  NotifyStatusChange();
 }
 
 #endif  // defined(OS_CHROMEOS)

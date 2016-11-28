@@ -34,7 +34,7 @@ class DeviceActiveDirectoryPolicyManager : public ConfigurationPolicyProvider,
   void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
   void OnStoreError(CloudPolicyStore* cloud_policy_store) override;
 
-  const CloudPolicyStore* store() const { return store_.get(); }
+  CloudPolicyStore* store() const { return store_.get(); }
 
  private:
   // Publishes the policy that's currently cached in the store.
