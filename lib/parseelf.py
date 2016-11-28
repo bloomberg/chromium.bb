@@ -66,8 +66,14 @@ def ParseELFSymbols(elf):
     symtab_offset = next(elf.address_offsets(symtab_ptr))
 
     if dthash_ptr:
+      # DT_SYMTAB provides no information on the number of symbols table
+      # entries. Instead, we use DT_HASH's nchain value, which according to the
+      # spec, "should equal the number of symbol table entries".
+      # nchain is the second 32-bit integer at the address pointed by DT_HASH,
+      # both for ELF and ELF64 formats.
+      fmt = "<I" if elf.little_endian else ">I"
       elf.stream.seek(dthash_ptr + 4)
-      nsymbols = struct.unpack('i', elf.stream.read(4))[0]
+      nsymbols = struct.unpack(fmt, elf.stream.read(4))[0]
     else:
       # If DT_HASH is not defined, assume that symtab ends right before strtab.
       # This is the same assumption that glibc makes in dl-addr.c.
