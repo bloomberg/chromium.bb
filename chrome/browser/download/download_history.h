@@ -42,7 +42,8 @@ class DownloadHistory : public AllDownloadItemNotifier::Observer {
         const history::DownloadRow& info,
         const history::HistoryService::DownloadCreateCallback& callback);
 
-    virtual void UpdateDownload(const history::DownloadRow& data);
+    virtual void UpdateDownload(const history::DownloadRow& data,
+                                bool should_commit_immediately);
 
     virtual void RemoveDownloads(const std::set<uint32_t>& ids);
 

@@ -334,7 +334,7 @@ class HistoryBackend : public base::RefCountedThreadSafe<HistoryBackend>,
 
   uint32_t GetNextDownloadId();
   void QueryDownloads(std::vector<DownloadRow>* rows);
-  void UpdateDownload(const DownloadRow& data);
+  void UpdateDownload(const DownloadRow& data, bool should_commit_immediately);
   bool CreateDownload(const DownloadRow& history_info);
   void RemoveDownloads(const std::set<uint32_t>& ids);
 

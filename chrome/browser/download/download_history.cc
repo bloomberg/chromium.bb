@@ -143,25 +143,45 @@ history::DownloadRow GetDownloadRow(
       item->GetOpened(), by_ext_id, by_ext_name);
 }
 
-bool ShouldUpdateHistory(const history::DownloadRow* previous,
-                         const history::DownloadRow& current) {
+enum class ShouldUpdateHistoryResult {
+    NO,
+    UPDATE,
+    UPDATE_IMMEDIATELY,
+};
+
+ShouldUpdateHistoryResult ShouldUpdateHistory(
+    const history::DownloadRow* previous,
+    const history::DownloadRow& current) {
+  // When download path is determined, Chrome should commit the history
+  // immediately. Otherwise the file will be left permanently on the external
+  // storage if Chrome crashes right away.
+  // TODO(qinmin): this doesn't solve all the issues. When download starts,
+  // Chrome will write the http response data to a temporary file, and later
+  // rename it. If Chrome is killed before committing the history here,
+  // that temporary file will still get permanently left.
+  // See http://crbug.com/664677.
+  if (previous == nullptr || previous->current_path != current.current_path)
+    return ShouldUpdateHistoryResult::UPDATE_IMMEDIATELY;
+
   // Ignore url_chain, referrer, site_url, http_method, mime_type,
   // original_mime_type, start_time, id, and guid. These fields don't change.
-  return ((previous == NULL) ||
-          (previous->current_path != current.current_path) ||
-          (previous->target_path != current.target_path) ||
-          (previous->end_time != current.end_time) ||
-          (previous->received_bytes != current.received_bytes) ||
-          (previous->total_bytes != current.total_bytes) ||
-          (previous->etag != current.etag) ||
-          (previous->last_modified != current.last_modified) ||
-          (previous->state != current.state) ||
-          (previous->danger_type != current.danger_type) ||
-          (previous->interrupt_reason != current.interrupt_reason) ||
-          (previous->hash != current.hash) ||
-          (previous->opened != current.opened) ||
-          (previous->by_ext_id != current.by_ext_id) ||
-          (previous->by_ext_name != current.by_ext_name));
+  if ((previous->target_path != current.target_path) ||
+      (previous->end_time != current.end_time) ||
+      (previous->received_bytes != current.received_bytes) ||
+      (previous->total_bytes != current.total_bytes) ||
+      (previous->etag != current.etag) ||
+      (previous->last_modified != current.last_modified) ||
+      (previous->state != current.state) ||
+      (previous->danger_type != current.danger_type) ||
+      (previous->interrupt_reason != current.interrupt_reason) ||
+      (previous->hash != current.hash) ||
+      (previous->opened != current.opened) ||
+      (previous->by_ext_id != current.by_ext_id) ||
+      (previous->by_ext_name != current.by_ext_name)) {
+    return ShouldUpdateHistoryResult::UPDATE;
+  }
+
+  return ShouldUpdateHistoryResult::NO;
 }
 
 typedef std::vector<history::DownloadRow> InfoVector;
@@ -186,8 +206,8 @@ void DownloadHistory::HistoryAdapter::CreateDownload(
 }
 
 void DownloadHistory::HistoryAdapter::UpdateDownload(
-    const history::DownloadRow& data) {
-  history_->UpdateDownload(data);
+    const history::DownloadRow& data, bool should_commit_immediately) {
+  history_->UpdateDownload(data, should_commit_immediately);
 }
 
 void DownloadHistory::HistoryAdapter::RemoveDownloads(
@@ -408,11 +428,15 @@ void DownloadHistory::OnDownloadUpdated(
   }
 
   history::DownloadRow current_info(GetDownloadRow(item));
-  bool should_update = ShouldUpdateHistory(data->info(), current_info);
+  ShouldUpdateHistoryResult should_update_result =
+      ShouldUpdateHistory(data->info(), current_info);
+  bool should_update = (should_update_result != ShouldUpdateHistoryResult::NO);
   UMA_HISTOGRAM_ENUMERATION("Download.HistoryPropagatedUpdate",
                             should_update, 2);
   if (should_update) {
-    history_->UpdateDownload(current_info);
+    history_->UpdateDownload(
+        current_info,
+        should_update_result == ShouldUpdateHistoryResult::UPDATE_IMMEDIATELY);
     for (Observer& observer : observers_)
       observer.OnDownloadStored(item, current_info);
   }

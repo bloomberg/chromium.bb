@@ -717,11 +717,14 @@ void HistoryService::QueryDownloads(const DownloadQueryCallback& callback) {
 
 // Handle updates for a particular download. This is a 'fire and forget'
 // operation, so we don't need to be called back.
-void HistoryService::UpdateDownload(const DownloadRow& data) {
+void HistoryService::UpdateDownload(
+    const DownloadRow& data,
+    bool should_commit_immediately) {
   DCHECK(backend_task_runner_) << "History service being called after cleanup";
   DCHECK(thread_checker_.CalledOnValidThread());
   ScheduleTask(PRIORITY_NORMAL, base::Bind(&HistoryBackend::UpdateDownload,
-                                           history_backend_, data));
+                                           history_backend_, data,
+                                           should_commit_immediately));
 }
 
 void HistoryService::RemoveDownloads(const std::set<uint32_t>& ids) {

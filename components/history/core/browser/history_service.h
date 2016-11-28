@@ -419,7 +419,7 @@ class HistoryService : public syncer::SyncableService, public KeyedService {
   // Called to update the history service about the current state of a download.
   // This is a 'fire and forget' query, so just pass the relevant state info to
   // the database with no need for a callback.
-  void UpdateDownload(const DownloadRow& data);
+  void UpdateDownload(const DownloadRow& data, bool should_commit_immediately);
 
   // Permanently remove some downloads from the history system. This is a 'fire
   // and forget' operation.
