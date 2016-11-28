@@ -22,7 +22,6 @@
 #include "chrome/browser/ui/ash/ash_util.h"
 #include "chrome/browser/ui/ash/chrome_new_window_client.h"
 #include "chrome/browser/ui/ash/keyboard_ui_service.h"
-#include "chrome/browser/ui/ash/system_tray_client.h"
 #include "chrome/browser/ui/ash/volume_controller_chromeos.h"
 #include "chrome/browser/ui/browser_commands.h"
 #include "chrome/browser/ui/browser_finder.h"
@@ -125,11 +124,6 @@ class FactoryImpl {
                                            std::move(request));
   }
 
-  void BindRequest(ash::mojom::SystemTrayClientRequest request) {
-    system_tray_client_bindings_.AddBinding(SystemTrayClient::Get(),
-                                            std::move(request));
-  }
-
   void BindRequest(ash::mojom::WallpaperManagerRequest request) {
     WallpaperManager::Get()->BindRequest(std::move(request));
   }
@@ -154,7 +148,6 @@ class FactoryImpl {
   std::unique_ptr<ChromeLaunchable> launchable_;
   std::unique_ptr<ChromeNewWindowClient> new_window_client_;
   mojo::BindingSet<ash::mojom::NewWindowClient> new_window_client_bindings_;
-  mojo::BindingSet<ash::mojom::SystemTrayClient> system_tray_client_bindings_;
   std::unique_ptr<VolumeController> volume_controller_;
   std::unique_ptr<AppListPresenterService> app_list_presenter_service_;
   mojo::BindingSet<app_list::mojom::AppListPresenter>
@@ -185,8 +178,6 @@ bool ChromeInterfaceFactory::OnConnect(
   FactoryImpl::AddFactory<mash::mojom::Launchable>(registry,
                                                    main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::NewWindowClient>(
-      registry, main_thread_task_runner_);
-  FactoryImpl::AddFactory<ash::mojom::SystemTrayClient>(
       registry, main_thread_task_runner_);
   FactoryImpl::AddFactory<ash::mojom::VolumeController>(
       registry, main_thread_task_runner_);

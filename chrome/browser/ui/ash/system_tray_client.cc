@@ -9,8 +9,6 @@
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/shell.h"
-#include "base/bind.h"
-#include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part.h"
@@ -63,7 +61,20 @@ void ShowSettingsSubPageForActiveUser(const std::string& sub_page) {
 
 }  // namespace
 
-SystemTrayClient::SystemTrayClient() {
+SystemTrayClient::SystemTrayClient() : binding_(this) {
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
+  // Connect to the SystemTray interface in ash. Under mash the SystemTray
+  // interface is in the ash process. In classic ash we provide it to ourself.
+  if (chrome::IsRunningInMash()) {
+    connector->ConnectToInterface("ash", &system_tray_);
+  } else {
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &system_tray_);
+  }
+  // Register this object as the client interface implementation.
+  system_tray_->SetClient(binding_.CreateInterfacePtrAndBind());
+
   // If this observes clock setting changes before ash comes up the IPCs will
   // be queued on |system_tray_|.
   g_browser_process->platform_part()->GetSystemClock()->AddObserver(this);
@@ -314,30 +325,5 @@ void SystemTrayClient::RequestRestartForUpdate() {
 
 void SystemTrayClient::OnSystemClockChanged(
     chromeos::system::SystemClock* clock) {
-  ConnectToSystemTray();
   system_tray_->SetUse24HourClock(clock->ShouldUse24HourClock());
-}
-
-void SystemTrayClient::ConnectToSystemTray() {
-  if (system_tray_.is_bound())
-    return;
-
-  service_manager::Connector* connector =
-      content::ServiceManagerConnection::GetForProcess()->GetConnector();
-  // Under mash the SystemTray interface is in the ash process. In classic ash
-  // we provide it to ourself.
-  if (chrome::IsRunningInMash()) {
-    connector->ConnectToInterface("ash", &system_tray_);
-  } else {
-    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
-                                  &system_tray_);
-  }
-
-  // Tolerate ash crashing and coming back up.
-  system_tray_.set_connection_error_handler(base::Bind(
-      &SystemTrayClient::OnClientConnectionError, base::Unretained(this)));
-}
-
-void SystemTrayClient::OnClientConnectionError() {
-  system_tray_.reset();
 }

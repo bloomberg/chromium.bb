@@ -24,7 +24,6 @@
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",
           "ash::mojom::SystemTray",
-          "ash::mojom::SystemTrayClient",
           "ash::mojom::WallpaperController",
           "ash::mojom::WallpaperManager",
           "ash::mojom::VolumeController",

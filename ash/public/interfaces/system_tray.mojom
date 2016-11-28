@@ -6,6 +6,9 @@ module ash.mojom;
 
 // Allows clients (e.g. Chrome browser) to control the ash system tray menu.
 interface SystemTray {
+  // Sets the client interface.
+  SetClient(SystemTrayClient client);
+
   // Sets the clock to use 24 hour time formatting if |use_24_hour| is true.
   // Otherwise sets 12 hour time formatting.
   SetUse24HourClock(bool use_24_hour);

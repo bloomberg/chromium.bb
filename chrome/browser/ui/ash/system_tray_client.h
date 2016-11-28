@@ -69,14 +69,11 @@ class SystemTrayClient : public ash::mojom::SystemTrayClient,
   // chromeos::system::SystemClockObserver:
   void OnSystemClockChanged(chromeos::system::SystemClock* clock) override;
 
-  // Connects or reconnects the |system_tray_| interface.
-  void ConnectToSystemTray();
-
-  // Handles errors on the |system_tray_| interface connection.
-  void OnClientConnectionError();
-
   // System tray mojo service in ash.
   ash::mojom::SystemTrayPtr system_tray_;
+
+  // Binds this object to the client interface.
+  mojo::Binding<ash::mojom::SystemTrayClient> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(SystemTrayClient);
 };

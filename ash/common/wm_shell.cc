@@ -255,8 +255,7 @@ WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
           delegate_->GetShellConnector())),
       shelf_controller_(base::MakeUnique<ShelfController>()),
       shutdown_controller_(base::MakeUnique<ShutdownController>()),
-      system_tray_controller_(base::MakeUnique<SystemTrayController>(
-          delegate_->GetShellConnector())),
+      system_tray_controller_(base::MakeUnique<SystemTrayController>()),
       system_tray_notifier_(base::MakeUnique<SystemTrayNotifier>()),
       wallpaper_delegate_(delegate_->CreateWallpaperDelegate()),
       window_cycle_controller_(base::MakeUnique<WindowCycleController>()),
