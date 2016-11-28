@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGInlineBox_h
-#define NGInlineBox_h
+#ifndef NGInlineNode_h
+#define NGInlineNode_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_input_node.h"
@@ -29,7 +29,6 @@ class NGPhysicalFragment;
 struct MinAndMaxContentSizes;
 
 // Represents an inline node to be laid out.
-// TODO(layout-dev): Make this and NGBlockNode inherit from a common class.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {
  public:
   NGInlineNode(LayoutObject* start_inline, ComputedStyle* block_style);
@@ -129,4 +128,4 @@ DEFINE_TYPE_CASTS(NGInlineNode,
 
 }  // namespace blink
 
-#endif  // NGInlineBox_h
+#endif  // NGInlineNode_h

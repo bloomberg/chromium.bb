@@ -50,4 +50,4 @@ class CORE_EXPORT NGLayoutInputNode
 
 }  // namespace blink
 
-#endif  // NGInlineBox_h
+#endif  // NGLayoutInputNode_h

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NGBox_h
-#define NGBox_h
+#ifndef NGBlockNode_h
+#define NGBlockNode_h
 
 #include "core/CoreExport.h"
 #include "core/layout/ng/ng_layout_input_node.h"
@@ -91,4 +91,4 @@ DEFINE_TYPE_CASTS(NGBlockNode,
 
 }  // namespace blink
 
-#endif  // NGBox_h
+#endif  // NGBlockNode

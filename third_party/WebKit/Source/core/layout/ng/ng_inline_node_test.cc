@@ -39,9 +39,9 @@ class NGInlineNodeForTest : public NGInlineNode {
   void SegmentText() { NGInlineNode::SegmentText(); }
 };
 
-class NGInlineBoxTest : public ::testing::Test {};
+class NGInlineNodeTest : public ::testing::Test {};
 
-TEST_F(NGInlineBoxTest, SegmentASCII) {
+TEST_F(NGInlineNodeTest, SegmentASCII) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText("Hello");
@@ -53,7 +53,7 @@ TEST_F(NGInlineBoxTest, SegmentASCII) {
   EXPECT_EQ(LTR, item.Direction());
 }
 
-TEST_F(NGInlineBoxTest, SegmentHebrew) {
+TEST_F(NGInlineNodeTest, SegmentHebrew) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText(u"\u05E2\u05D1\u05E8\u05D9\u05EA");
@@ -65,7 +65,7 @@ TEST_F(NGInlineBoxTest, SegmentHebrew) {
   EXPECT_EQ(RTL, item.Direction());
 }
 
-TEST_F(NGInlineBoxTest, SegmentSplit1To2) {
+TEST_F(NGInlineNodeTest, SegmentSplit1To2) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText(u"Hello \u05E2\u05D1\u05E8\u05D9\u05EA");
@@ -81,7 +81,7 @@ TEST_F(NGInlineBoxTest, SegmentSplit1To2) {
   EXPECT_EQ(RTL, item.Direction());
 }
 
-TEST_F(NGInlineBoxTest, SegmentSplit3To4) {
+TEST_F(NGInlineNodeTest, SegmentSplit3To4) {
   RefPtr<ComputedStyle> style = ComputedStyle::create();
   NGInlineNodeForTest* box = new NGInlineNodeForTest(style.get());
   box->AppendText("Hel");
