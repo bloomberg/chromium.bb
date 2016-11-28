@@ -34,12 +34,8 @@ void UpdateBookmarkOnURLVisitedInMainFrame(
 // which also includes the case that the bookmark was dismissed from the NTP.
 // As visits, we primarily understand visits on Android (the visit when the
 // bookmark is created also counts). Visits on desktop platforms are considered
-// only if |consider_visits_from_desktop|. If no info about last visit date is
-// present and |creation_date_fallback| is true, the date when the bookmarks is
-// created is used as the alst visit date (most likely, it is the date when the
-// bookmark was synced to this device).
+// only if |consider_visits_from_desktop|.
 bool GetLastVisitDateForNTPBookmark(const bookmarks::BookmarkNode* node,
-                                    bool creation_date_fallback,
                                     bool consider_visits_from_desktop,
                                     base::Time* out);
 
@@ -57,17 +53,14 @@ void MarkAllBookmarksUndismissed(bookmarks::BookmarkModel* bookmark_model);
 // For each bookmarked URL, it returns the most recently created bookmark.
 // The result is ordered by visit time (the most recent first). Only bookmarks
 // visited after |min_visit_time| are considered, at most |max_count| bookmarks
-// are returned. If this results into less than |min_count| bookmarks, the list
-// is filled up with older bookmarks sorted by their last visit / creation date.
+// are returned.
 // If |consider_visits_from_desktop|, also visits to bookmarks on synced desktop
 // platforms are considered (and not only on this and other synced Android
 // devices).
 std::vector<const bookmarks::BookmarkNode*> GetRecentlyVisitedBookmarks(
     bookmarks::BookmarkModel* bookmark_model,
-    int min_count,
     int max_count,
     const base::Time& min_visit_time,
-    bool creation_date_fallback,
     bool consider_visits_from_desktop);
 
 // Returns the list of all dismissed bookmarks. Only used for debugging.

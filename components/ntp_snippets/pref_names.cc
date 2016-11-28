@@ -41,9 +41,6 @@ const char kDismissedForeignSessionsSuggestions[] =
     "ntp_suggestions.foreign_sessions.dismissed_ids";
 const char kDismissedCategories[] = "ntp_suggestions.dismissed_categories";
 
-const char kBookmarksFirstM54Start[] =
-    "ntp_suggestions.bookmarks.first_M54_start";
-
 const char kUserClassifierAverageNTPOpenedPerHour[] =
     "ntp_suggestions.user_classifier.average_ntp_opened_per_hour";
 const char kUserClassifierAverageSuggestionsShownPerHour[] =

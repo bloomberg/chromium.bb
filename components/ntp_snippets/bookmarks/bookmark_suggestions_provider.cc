@@ -34,17 +34,16 @@ namespace ntp_snippets {
 namespace {
 
 const int kMaxBookmarks = 10;
-const int kMinBookmarks = 3;
 const int kMaxBookmarkAgeInDays = 42;
-const int kUseCreationDateFallbackForDays = 0;
 
 const char* kMaxBookmarksParamName = "bookmarks_max_count";
-const char* kMinBookmarksParamName = "bookmarks_min_count";
 const char* kMaxBookmarkAgeInDaysParamName = "bookmarks_max_age_in_days";
-const char* kUseCreationDateFallbackForDaysParamName =
-    "bookmarks_creation_date_fallback_days";
 const char* kConsiderDesktopVisitsParamName =
     "bookmarks_consider_desktop_visits";
+
+// TODO(treib,jkrcal): Remove this after M57.
+const char kDeprecatedBookmarksFirstM54StartPref[] =
+    "ntp_suggestions.bookmarks.first_M54_start";
 
 // Any bookmark created or visited after this time will be considered recent.
 // Note that bookmarks can be shown that do not meet this threshold.
@@ -55,28 +54,10 @@ base::Time GetThresholdTime() {
              kMaxBookmarkAgeInDaysParamName, kMaxBookmarkAgeInDays));
 }
 
-// The number of days used as a threshold where if this is larger than the time
-// since M54 started, then the creation timestamp of a bookmark be used as a
-// fallback if no last visited timestamp is present.
-int UseCreationDateFallbackForDays() {
-  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
-                       kUseCreationDateFallbackForDaysParamName,
-                       kUseCreationDateFallbackForDays);
-}
-
 // The maximum number of suggestions ever provided.
 int GetMaxCount() {
   return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
                        kMaxBookmarksParamName, kMaxBookmarks);
-}
-
-// The minimum number of suggestions to try to provide. Depending on other
-// parameters this may or not be respected. Currently creation date fallback
-// must be active in order for older bookmarks to be incorporated to meet this
-// min.
-int GetMinCount() {
-  return GetParamAsInt(ntp_snippets::kBookmarkSuggestionsFeature,
-                       kMinBookmarksParamName, kMinBookmarks);
 }
 
 bool AreDesktopVisitsConsidered() {
@@ -100,21 +81,7 @@ BookmarkSuggestionsProvider::BookmarkSuggestionsProvider(
       end_of_list_last_visit_date_(GetThresholdTime()),
       consider_bookmark_visits_from_desktop_(AreDesktopVisitsConsidered()) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
-  base::Time first_m54_start;
-  base::Time now = base::Time::Now();
-  if (pref_service->HasPrefPath(prefs::kBookmarksFirstM54Start)) {
-    first_m54_start = base::Time::FromInternalValue(
-        pref_service->GetInt64(prefs::kBookmarksFirstM54Start));
-  } else {
-    first_m54_start = now;
-    pref_service->SetInt64(prefs::kBookmarksFirstM54Start,
-                           first_m54_start.ToInternalValue());
-  }
-  base::TimeDelta time_since_first_m54_start = now - first_m54_start;
-  // Note: Setting the fallback timeout to zero effectively turns off the
-  // fallback entirely.
-  creation_date_fallback_ =
-      time_since_first_m54_start.InDays() < UseCreationDateFallbackForDays();
+  pref_service->ClearPref(kDeprecatedBookmarksFirstM54StartPref);
   bookmark_model_->AddObserver(this);
   FetchBookmarks();
 }
@@ -126,7 +93,7 @@ BookmarkSuggestionsProvider::~BookmarkSuggestionsProvider() {
 // static
 void BookmarkSuggestionsProvider::RegisterProfilePrefs(
     PrefRegistrySimple* registry) {
-  registry->RegisterInt64Pref(prefs::kBookmarksFirstM54Start, 0);
+  registry->RegisterInt64Pref(kDeprecatedBookmarksFirstM54StartPref, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -237,7 +204,7 @@ void BookmarkSuggestionsProvider::OnWillChangeBookmarkMetaInfo(
     BookmarkModel* model,
     const BookmarkNode* node) {
   // Store the last visit date of the node that is about to change.
-  if (!GetLastVisitDateForNTPBookmark(node, creation_date_fallback_,
+  if (!GetLastVisitDateForNTPBookmark(node,
                                       consider_bookmark_visits_from_desktop_,
                                       &node_to_change_last_visit_date_)) {
     node_to_change_last_visit_date_ = base::Time::UnixEpoch();
@@ -248,9 +215,8 @@ void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
     BookmarkModel* model,
     const BookmarkNode* node) {
   base::Time time;
-  if (!GetLastVisitDateForNTPBookmark(node, creation_date_fallback_,
-                                      consider_bookmark_visits_from_desktop_,
-                                      &time)) {
+  if (!GetLastVisitDateForNTPBookmark(
+          node, consider_bookmark_visits_from_desktop_, &time)) {
     // Error in loading the last visit date after the change. This happens when
     // the bookmark just got dismissed. We must not update the suggestion in
     // such a case.
@@ -274,9 +240,8 @@ void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
       const bookmarks::BookmarkNode* node,
       const std::set<GURL>& no_longer_bookmarked) {
   base::Time time;
-  if (GetLastVisitDateForNTPBookmark(node, creation_date_fallback_,
-                                     consider_bookmark_visits_from_desktop_,
-                                     &time) &&
+  if (GetLastVisitDateForNTPBookmark(
+          node, consider_bookmark_visits_from_desktop_, &time) &&
       time < end_of_list_last_visit_date_) {
     // We know the node is too old to influence the list.
     return;
@@ -291,9 +256,9 @@ void BookmarkSuggestionsProvider::BookmarkNodeAdded(
     const bookmarks::BookmarkNode* parent,
     int index) {
   base::Time time;
-  if (!GetLastVisitDateForNTPBookmark(
-          parent->GetChild(index), creation_date_fallback_,
-          consider_bookmark_visits_from_desktop_, &time) ||
+  if (!GetLastVisitDateForNTPBookmark(parent->GetChild(index),
+                                      consider_bookmark_visits_from_desktop_,
+                                      &time) ||
       time < end_of_list_last_visit_date_) {
     // The new node has no last visited info or is too old to get into the list.
     return;
@@ -307,9 +272,8 @@ void BookmarkSuggestionsProvider::ConvertBookmark(
     const BookmarkNode* bookmark,
     std::vector<ContentSuggestion>* suggestions) {
   base::Time publish_date;
-  if (!GetLastVisitDateForNTPBookmark(bookmark, creation_date_fallback_,
-                                      consider_bookmark_visits_from_desktop_,
-                                      &publish_date)) {
+  if (!GetLastVisitDateForNTPBookmark(
+          bookmark, consider_bookmark_visits_from_desktop_, &publish_date)) {
     return;
   }
 
@@ -330,8 +294,8 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
 
   base::Time threshold_time = GetThresholdTime();
   std::vector<const BookmarkNode*> bookmarks = GetRecentlyVisitedBookmarks(
-      bookmark_model_, GetMinCount(), GetMaxCount(), threshold_time,
-      creation_date_fallback_, consider_bookmark_visits_from_desktop_);
+      bookmark_model_, GetMaxCount(), threshold_time,
+      consider_bookmark_visits_from_desktop_);
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks) {

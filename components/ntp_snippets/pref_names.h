@@ -46,9 +46,6 @@ extern const char kDismissedOfflinePageDownloadSuggestions[];
 extern const char kDismissedForeignSessionsSuggestions[];
 extern const char kDismissedCategories[];
 
-// The pref name for the time when M54 was first started on the device.
-extern const char kBookmarksFirstM54Start[];
-
 // The pref name for the discounted average number of browsing sessions per hour
 // that involve opening a new NTP.
 extern const char kUserClassifierAverageNTPOpenedPerHour[];

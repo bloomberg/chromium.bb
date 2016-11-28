@@ -110,11 +110,6 @@ class BookmarkSuggestionsProvider : public ContentSuggestionsProvider,
   base::Time node_to_change_last_visit_date_;
   base::Time end_of_list_last_visit_date_;
 
-  // TODO(jkrcal): Remove this field and the pref after M55.
-  // For six weeks after first installing M54, this is true and the
-  // fallback implemented in BookmarkLastVisitUtils is activated.
-  bool creation_date_fallback_;
-
   // By default, only visits to bookmarks on Android are considered when
   // deciding which bookmarks to suggest. Should we also consider visits on
   // desktop platforms?

@@ -27,7 +27,6 @@ namespace {
 struct RecentBookmark {
   const bookmarks::BookmarkNode* node;
   base::Time last_visited;
-  bool visited_recently;
 };
 
 const char* kBookmarksURLBlacklist[] = {"chrome://newtab/",
@@ -70,15 +69,13 @@ bool IsBlacklisted(const GURL& url) {
 
 std::vector<const BookmarkNode*>::const_iterator FindMostRecentBookmark(
     const std::vector<const BookmarkNode*>& bookmarks,
-    bool creation_date_fallback,
     bool consider_visits_from_desktop) {
   auto most_recent = bookmarks.end();
   base::Time most_recent_last_visited = base::Time::UnixEpoch();
 
   for (auto iter = bookmarks.begin(); iter != bookmarks.end(); ++iter) {
     base::Time last_visited;
-    if (GetLastVisitDateForNTPBookmark(*iter, creation_date_fallback,
-                                       consider_visits_from_desktop,
+    if (GetLastVisitDateForNTPBookmark(*iter, consider_visits_from_desktop,
                                        &last_visited) &&
         most_recent_last_visited <= last_visited) {
       most_recent = iter;
@@ -120,7 +117,6 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
 }
 
 bool GetLastVisitDateForNTPBookmark(const BookmarkNode* node,
-                                    bool creation_date_fallback,
                                     bool consider_visits_from_desktop,
                                     base::Time* out) {
   if (!node || IsDismissedFromNTPForBookmark(node)) {
@@ -142,11 +138,6 @@ bool GetLastVisitDateForNTPBookmark(const BookmarkNode* node,
       }
       return true;
     }
-  }
-
-  if (!got_mobile_date && creation_date_fallback) {
-    *out = node->date_added();
-    return true;
   }
 
   return got_mobile_date;
@@ -189,17 +180,14 @@ void MarkAllBookmarksUndismissed(BookmarkModel* bookmark_model) {
 
 std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     BookmarkModel* bookmark_model,
-    int min_count,
     int max_count,
     const base::Time& min_visit_time,
-    bool creation_date_fallback,
     bool consider_visits_from_desktop) {
   // Get all the bookmark URLs.
   std::vector<BookmarkModel::URLAndTitle> bookmark_urls;
   bookmark_model->GetBookmarks(&bookmark_urls);
 
   std::vector<RecentBookmark> bookmarks;
-  int recently_visited_count = 0;
   // Find for each bookmark the most recently visited BookmarkNode and find out
   // whether it is visited since |min_visit_time|.
   for (const BookmarkModel::URLAndTitle& url_and_title : bookmark_urls) {
@@ -215,69 +203,35 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
 
     // Find the most recently visited node for the given URL.
     auto most_recent =
-        FindMostRecentBookmark(bookmarks_for_url, creation_date_fallback,
-                               consider_visits_from_desktop);
+        FindMostRecentBookmark(bookmarks_for_url, consider_visits_from_desktop);
     if (most_recent == bookmarks_for_url.end()) {
       continue;
     }
 
     // Extract the last visit of the node to use later for sorting.
-    base::Time last_visit;
-    if (!GetLastVisitDateForNTPBookmark(*most_recent, creation_date_fallback,
-                                        consider_visits_from_desktop,
-                                        &last_visit)) {
+    base::Time last_visit_time;
+    if (!GetLastVisitDateForNTPBookmark(
+            *most_recent, consider_visits_from_desktop, &last_visit_time) ||
+        last_visit_time <= min_visit_time) {
       continue;
     }
 
-    // Has it been _visited_ recently enough (not considering creation date)?
-    base::Time last_real_visit;
-    if (GetLastVisitDateForNTPBookmark(
-            *most_recent, /*creation_date_fallback=*/false,
-            consider_visits_from_desktop, &last_real_visit) &&
-        min_visit_time < last_real_visit) {
-      recently_visited_count++;
-      bookmarks.push_back(
-          {*most_recent, last_visit, /*visited_recently=*/true});
-    } else {
-      bookmarks.push_back(
-          {*most_recent, last_visit, /*visited_recently=*/false});
-    }
+    bookmarks.push_back({*most_recent, last_visit_time});
   }
 
-  if (recently_visited_count < min_count) {
-    // There aren't enough recently-visited bookmarks. Fill the list up to
-    // |min_count| with older bookmarks (in particular those with only a
-    // creation date, if creation_date_fallback is true).
-    max_count = min_count;
-  } else {
-    // Remove the bookmarks that are not recently visited; we do not need them.
-    // (We might end up with fewer than |min_count| bookmarks if all the recent
-    // ones are dismissed.)
-    bookmarks.erase(
-        std::remove_if(bookmarks.begin(), bookmarks.end(),
-                       [](const RecentBookmark& bookmark) {
-                         return !bookmark.visited_recently;
-                       }),
-        bookmarks.end());
-  }
-
-  // Sort the remaining entries by date.
-  std::sort(bookmarks.begin(), bookmarks.end(),
-            [creation_date_fallback, consider_visits_from_desktop](
-                const RecentBookmark& a, const RecentBookmark& b) {
-              return a.last_visited > b.last_visited;
-            });
+  // Sort the entries by date, getting the |max_count| most recent bookmarks
+  // to the front.
+  size_t count_to_sort =
+      std::min(bookmarks.size(), static_cast<size_t>(max_count));
+  std::partial_sort(bookmarks.begin(), bookmarks.begin() + count_to_sort,
+                    bookmarks.end(),
+                    [](const RecentBookmark& a, const RecentBookmark& b) {
+                      return a.last_visited > b.last_visited;
+                    });
 
   // Insert the first |max_count| items from |bookmarks| into |result|.
   std::vector<const BookmarkNode*> result;
   for (const RecentBookmark& bookmark : bookmarks) {
-    // TODO(jkrcal): The following break rule is in conflict with the comment
-    // and code above that we give at least |min_count| bookmarks (irrespective
-    // of creation_date_fallback). Discuss with treib@ and clear up.
-    if (!creation_date_fallback && bookmark.last_visited < min_visit_time) {
-      break;
-    }
-
     result.push_back(bookmark.node);
     if (result.size() >= static_cast<size_t>(max_count)) {
       break;
