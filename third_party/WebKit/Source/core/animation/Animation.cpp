@@ -651,11 +651,7 @@ ExecutionContext* Animation::getExecutionContext() const {
 }
 
 bool Animation::hasPendingActivity() const {
-  bool hasPendingPromise =
-      m_finishedPromise &&
-      m_finishedPromise->getState() == ScriptPromisePropertyBase::Pending;
-
-  return m_pendingFinishedEvent || hasPendingPromise ||
+  return m_pendingFinishedEvent ||
          (!m_finished && hasEventListeners(EventTypeNames::finish));
 }
 
