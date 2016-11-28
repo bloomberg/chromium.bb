@@ -27,10 +27,14 @@
 #define WebIDBDatabaseCallbacks_h
 
 #include "public/platform/WebCommon.h"
-#include "public/platform/WebString.h"
+#include "public/platform/WebVector.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabaseError.h"
 
+#include <unordered_map>
+
 namespace blink {
+
+struct WebIDBObservation;
 
 class WebIDBDatabaseCallbacks {
  public:
@@ -41,6 +45,10 @@ class WebIDBDatabaseCallbacks {
 
   virtual void onAbort(long long transactionId, const WebIDBDatabaseError&) = 0;
   virtual void onComplete(long long transactionId) = 0;
+  virtual void onChanges(
+      const std::unordered_map<int32_t, std::vector<int32_t>>&
+          observation_index_map,
+      const WebVector<WebIDBObservation>& observations) = 0;
   virtual void detach() = 0;
 };
 

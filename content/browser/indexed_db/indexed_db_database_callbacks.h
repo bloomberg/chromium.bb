@@ -17,14 +17,12 @@
 namespace content {
 class IndexedDBDatabaseError;
 class IndexedDBDispatcherHost;
-class IndexedDBObserverChanges;
 
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
  public:
   IndexedDBDatabaseCallbacks(
       scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
-      int32_t ipc_thread_id,
       ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo callbacks_info);
 
   virtual void OnForcedClose();
@@ -34,7 +32,7 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
                        const IndexedDBDatabaseError& error);
   virtual void OnComplete(int64_t host_transaction_id);
   virtual void OnDatabaseChange(
-      std::unique_ptr<IndexedDBObserverChanges> changes);
+      ::indexed_db::mojom::ObserverChangesPtr changes);
 
  protected:
   virtual ~IndexedDBDatabaseCallbacks();
@@ -45,7 +43,6 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   class IOThreadHelper;
 
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
-  int32_t ipc_thread_id_;
   std::unique_ptr<IOThreadHelper, BrowserThread::DeleteOnIOThread> io_helper_;
   base::ThreadChecker thread_checker_;
 

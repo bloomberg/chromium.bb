@@ -27,6 +27,15 @@ struct EnumTraits<indexed_db::mojom::DataLoss, blink::WebIDBDataLoss> {
 };
 
 template <>
+struct EnumTraits<indexed_db::mojom::OperationType,
+                  blink::WebIDBOperationType> {
+  static indexed_db::mojom::OperationType ToMojom(
+      blink::WebIDBOperationType input);
+  static bool FromMojom(indexed_db::mojom::OperationType input,
+                        blink::WebIDBOperationType* output);
+};
+
+template <>
 struct EnumTraits<indexed_db::mojom::PutMode, blink::WebIDBPutMode> {
   static indexed_db::mojom::PutMode ToMojom(blink::WebIDBPutMode input);
   static bool FromMojom(indexed_db::mojom::PutMode input,

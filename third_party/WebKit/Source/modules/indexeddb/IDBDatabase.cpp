@@ -29,6 +29,7 @@
 #include "bindings/core/v8/ExceptionStatePlaceholder.h"
 #include "bindings/core/v8/Nullable.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
+#include "bindings/modules/v8/IDBObserverCallback.h"
 #include "bindings/modules/v8/V8BindingForModules.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/dom/ExecutionContext.h"
@@ -37,6 +38,8 @@
 #include "modules/indexeddb/IDBEventDispatcher.h"
 #include "modules/indexeddb/IDBIndex.h"
 #include "modules/indexeddb/IDBKeyPath.h"
+#include "modules/indexeddb/IDBObserver.h"
+#include "modules/indexeddb/IDBObserverChanges.h"
 #include "modules/indexeddb/IDBTracing.h"
 #include "modules/indexeddb/IDBVersionChangeEvent.h"
 #include "modules/indexeddb/WebIDBDatabaseCallbacksImpl.h"
@@ -113,6 +116,7 @@ IDBDatabase::~IDBDatabase() {
 DEFINE_TRACE(IDBDatabase) {
   visitor->trace(m_versionChangeTransaction);
   visitor->trace(m_transactions);
+  visitor->trace(m_observers);
   visitor->trace(m_enqueuedEvents);
   visitor->trace(m_databaseCallbacks);
   EventTargetWithInlineData::trace(visitor);
@@ -124,6 +128,11 @@ int64_t IDBDatabase::nextTransactionId() {
   // bits of the id.
   static int currentTransactionId = 0;
   return atomicIncrement(&currentTransactionId);
+}
+
+int32_t IDBDatabase::nextObserverId() {
+  static int currentObserverId = 0;
+  return atomicIncrement(&currentObserverId);
 }
 
 void IDBDatabase::setMetadata(const IDBDatabaseMetadata& metadata) {
@@ -170,6 +179,21 @@ void IDBDatabase::onComplete(int64_t transactionId) {
   m_transactions.get(transactionId)->onComplete();
 }
 
+void IDBDatabase::onChanges(
+    const std::unordered_map<int32_t, std::vector<int32_t>>&
+        observation_index_map,
+    const WebVector<WebIDBObservation>& observations) {
+  for (const auto& map_entry : observation_index_map) {
+    auto it = m_observers.find(map_entry.first);
+    if (it != m_observers.end()) {
+      IDBObserver* observer = it->value;
+      observer->callback()->call(
+          observer,
+          IDBObserverChanges::create(this, observations, map_entry.second));
+    }
+  }
+}
+
 DOMStringList* IDBDatabase::objectStoreNames() const {
   DOMStringList* objectStoreNames =
       DOMStringList::create(DOMStringList::IndexedDB);
@@ -183,6 +207,25 @@ const String& IDBDatabase::getObjectStoreName(int64_t objectStoreId) const {
   const auto& it = m_metadata.objectStores.find(objectStoreId);
   DCHECK(it != m_metadata.objectStores.end());
   return it->value->name;
+}
+
+int32_t IDBDatabase::addObserver(
+    IDBObserver* observer,
+    int64_t transactionId,
+    bool includeTransaction,
+    bool noRecords,
+    bool values,
+    const std::bitset<WebIDBOperationTypeCount>& operationTypes) {
+  int32_t observerId = nextObserverId();
+  m_observers.set(observerId, observer);
+  backend()->addObserver(transactionId, observerId, includeTransaction,
+                         noRecords, values, operationTypes);
+  return observerId;
+}
+
+void IDBDatabase::removeObservers(const Vector<int32_t>& observerIds) {
+  m_observers.removeAll(observerIds);
+  backend()->removeObservers(observerIds);
 }
 
 IDBObjectStore* IDBDatabase::createObjectStore(const String& name,

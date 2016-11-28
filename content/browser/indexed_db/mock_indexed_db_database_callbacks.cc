@@ -9,7 +9,7 @@
 namespace content {
 
 MockIndexedDBDatabaseCallbacks::MockIndexedDBDatabaseCallbacks()
-    : IndexedDBDatabaseCallbacks(nullptr, 0, nullptr),
+    : IndexedDBDatabaseCallbacks(nullptr, nullptr),
       abort_called_(false),
       forced_close_called_(false) {}
 

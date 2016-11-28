@@ -8,14 +8,8 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "base/gtest_prod_util.h"
-#include "base/id_map.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "base/strings/nullable_string16.h"
 #include "content/child/indexed_db/indexed_db_callbacks_impl.h"
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
@@ -24,16 +18,8 @@
 #include "content/public/child/worker_thread.h"
 #include "ipc/ipc_sync_message_filter.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBCallbacks.h"
-#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObserver.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 #include "url/origin.h"
-
-struct IndexedDBMsg_Observation;
-struct IndexedDBMsg_ObserverChanges;
-
-namespace blink {
-struct WebIDBObservation;
-}
 
 namespace content {
 class WebIDBCursorImpl;
@@ -53,18 +39,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   // WorkerThread::Observer implementation.
   void WillStopCurrentWorkerThread() override;
-
-  static std::vector<blink::WebIDBObservation> ConvertObservations(
-      const std::vector<IndexedDBMsg_Observation>& idb_observation);
-
-  void OnMessageReceived(const IPC::Message& msg);
-
-  int32_t RegisterObserver(std::unique_ptr<blink::WebIDBObserver> observer);
-
-  // Removes observers from our local map observers_.
-  void RemoveObservers(const std::vector<int32_t>& observer_ids_to_remove);
-
-  enum { kAllCursors = -1 };
 
   void RegisterCursor(WebIDBCursorImpl* cursor);
   void UnregisterCursor(WebIDBCursorImpl* cursor);
@@ -97,11 +71,6 @@ class CONTENT_EXPORT IndexedDBDispatcher : public WorkerThread::Observer {
 
   static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
-  // IDBCallback message handlers.
-  void OnDatabaseChanges(int32_t ipc_thread_id,
-                         const IndexedDBMsg_ObserverChanges&);
-
-  IDMap<blink::WebIDBObserver, IDMapOwnPointer> observers_;
   std::unordered_set<WebIDBCursorImpl*> cursors_;
 
   // Holds pointers to the worker-thread owned state of IndexedDBCallbacksImpl

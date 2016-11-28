@@ -6,6 +6,7 @@
 
 using indexed_db::mojom::CursorDirection;
 using indexed_db::mojom::DataLoss;
+using indexed_db::mojom::OperationType;
 using indexed_db::mojom::PutMode;
 using indexed_db::mojom::TaskType;
 using indexed_db::mojom::TransactionMode;
@@ -74,6 +75,47 @@ bool EnumTraits<DataLoss, blink::WebIDBDataLoss>::FromMojom(
       return true;
     case DataLoss::Total:
       *output = blink::WebIDBDataLossTotal;
+      return true;
+  }
+  return false;
+}
+
+// static
+OperationType EnumTraits<OperationType, blink::WebIDBOperationType>::ToMojom(
+    blink::WebIDBOperationType input) {
+  switch (input) {
+    case blink::WebIDBAdd:
+      return OperationType::Add;
+    case blink::WebIDBPut:
+      return OperationType::Put;
+    case blink::WebIDBDelete:
+      return OperationType::Delete;
+    case blink::WebIDBClear:
+      return OperationType::Clear;
+    case blink::WebIDBOperationTypeCount:
+      // WebIDBOperationTypeCount is not a valid option.
+      break;
+  }
+  NOTREACHED();
+  return OperationType::Add;
+}
+
+// static
+bool EnumTraits<OperationType, blink::WebIDBOperationType>::FromMojom(
+    OperationType input,
+    blink::WebIDBOperationType* output) {
+  switch (input) {
+    case OperationType::Add:
+      *output = blink::WebIDBAdd;
+      return true;
+    case OperationType::Put:
+      *output = blink::WebIDBPut;
+      return true;
+    case OperationType::Delete:
+      *output = blink::WebIDBDelete;
+      return true;
+    case OperationType::Clear:
+      *output = blink::WebIDBClear;
       return true;
   }
   return false;

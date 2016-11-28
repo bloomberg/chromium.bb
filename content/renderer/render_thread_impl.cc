@@ -60,7 +60,6 @@
 #include "content/child/content_child_helpers.h"
 #include "content/child/db_message_filter.h"
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
-#include "content/child/indexed_db/indexed_db_message_filter.h"
 #include "content/child/memory/child_memory_coordinator_impl.h"
 #include "content/child/resource_dispatcher.h"
 #include "content/child/resource_scheduling_filter.h"
@@ -718,8 +717,6 @@ void RenderThreadImpl::Init(
 
   midi_message_filter_ = new MidiMessageFilter(GetIOTaskRunner());
   AddFilter(midi_message_filter_.get());
-
-  AddFilter((new IndexedDBMessageFilter(thread_safe_sender()))->GetFilter());
 
   AddFilter((new CacheStorageMessageFilter(thread_safe_sender()))->GetFilter());
 

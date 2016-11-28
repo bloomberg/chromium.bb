@@ -41,7 +41,6 @@ class IndexedDBFactory;
 class IndexedDBKey;
 class IndexedDBKeyPath;
 class IndexedDBKeyRange;
-class IndexedDBObserverChanges;
 class IndexedDBTransaction;
 struct IndexedDBValue;
 
@@ -150,7 +149,7 @@ class CONTENT_EXPORT IndexedDBDatabase
                          blink::WebIDBOperationType type,
                          const IndexedDBKeyRange& key_range);
   void SendObservations(
-      std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>> change_map);
+      std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr> change_map);
 
   void Get(int64_t transaction_id,
            int64_t object_store_id,

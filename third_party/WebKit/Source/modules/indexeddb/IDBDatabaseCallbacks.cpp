@@ -63,6 +63,14 @@ void IDBDatabaseCallbacks::onComplete(int64_t transactionId) {
     m_database->onComplete(transactionId);
 }
 
+void IDBDatabaseCallbacks::onChanges(
+    const std::unordered_map<int32_t, std::vector<int32_t>>&
+        observation_index_map,
+    const WebVector<WebIDBObservation>& observations) {
+  if (m_database)
+    m_database->onChanges(observation_index_map, observations);
+}
+
 void IDBDatabaseCallbacks::connect(IDBDatabase* database) {
   DCHECK(!m_database);
   DCHECK(database);

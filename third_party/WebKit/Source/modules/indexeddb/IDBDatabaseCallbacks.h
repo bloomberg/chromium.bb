@@ -28,13 +28,17 @@
 
 #include "modules/ModulesExport.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebVector.h"
 #include "wtf/PassRefPtr.h"
+
+#include <unordered_map>
 
 namespace blink {
 
 class DOMException;
 class IDBDatabase;
 class WebIDBDatabaseCallbacks;
+struct WebIDBObservation;
 
 class MODULES_EXPORT IDBDatabaseCallbacks
     : public GarbageCollectedFinalized<IDBDatabaseCallbacks> {
@@ -49,6 +53,10 @@ class MODULES_EXPORT IDBDatabaseCallbacks
 
   virtual void onAbort(int64_t transactionId, DOMException*);
   virtual void onComplete(int64_t transactionId);
+  virtual void onChanges(
+      const std::unordered_map<int32_t, std::vector<int32_t>>&
+          observation_index_map,
+      const WebVector<WebIDBObservation>& observations);
 
   void connect(IDBDatabase*);
 

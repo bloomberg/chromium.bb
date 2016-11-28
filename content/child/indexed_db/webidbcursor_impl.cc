@@ -11,7 +11,6 @@
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
 #include "content/child/indexed_db/indexed_db_key_builders.h"
-#include "content/common/indexed_db/indexed_db_messages.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBValue.h"
 

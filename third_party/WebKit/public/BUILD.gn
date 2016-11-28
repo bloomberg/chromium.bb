@@ -349,7 +349,6 @@ source_set("blink_headers") {
     "platform/modules/indexeddb/WebIDBKeyRange.h",
     "platform/modules/indexeddb/WebIDBMetadata.h",
     "platform/modules/indexeddb/WebIDBObservation.h",
-    "platform/modules/indexeddb/WebIDBObserver.h",
     "platform/modules/indexeddb/WebIDBTypes.h",
     "platform/modules/indexeddb/WebIDBValue.h",
     "platform/modules/installedapp/WebInstalledAppClient.h",

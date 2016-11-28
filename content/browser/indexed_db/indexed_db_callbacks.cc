@@ -25,7 +25,6 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/common/indexed_db/indexed_db_constants.h"
-#include "content/common/indexed_db/indexed_db_messages.h"
 #include "content/common/indexed_db/indexed_db_metadata.h"
 #include "mojo/public/cpp/bindings/strong_associated_binding.h"
 #include "storage/browser/blob/blob_storage_context.h"

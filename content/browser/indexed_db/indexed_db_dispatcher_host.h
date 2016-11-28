@@ -23,10 +23,6 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "url/gurl.h"
 
-struct IndexedDBHostMsg_DatabaseObserve_Params;
-struct IndexedDBMsg_Observation;
-struct IndexedDBMsg_ObserverChanges;
-
 namespace url {
 class Origin;
 }
@@ -37,8 +33,6 @@ class IndexedDBCallbacks;
 class IndexedDBConnection;
 class IndexedDBContextImpl;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBObservation;
-class IndexedDBObserverChanges;
 
 // Handles all IndexedDB related messages from a particular renderer process.
 class IndexedDBDispatcherHost
@@ -51,11 +45,6 @@ class IndexedDBDispatcherHost
                           net::URLRequestContextGetter* request_context_getter,
                           IndexedDBContextImpl* indexed_db_context,
                           ChromeBlobStorageContext* blob_storage_context);
-
-  static IndexedDBMsg_ObserverChanges ConvertObserverChanges(
-      std::unique_ptr<IndexedDBObserverChanges> changes);
-  static IndexedDBMsg_Observation ConvertObservation(
-      const IndexedDBObservation* observation);
 
   // BrowserMessageFilter implementation.
   void OnChannelClosing() override;
@@ -110,8 +99,7 @@ class IndexedDBDispatcherHost
   void GetDatabaseNames(
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
       const url::Origin& origin) override;
-  void Open(int32_t worker_thread,
-            ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
+  void Open(::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
             ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
                 database_callbacks_info,
             const url::Origin& origin,

@@ -61,7 +61,5 @@ blink_modules_sources("indexeddb") {
     "WebIDBCallbacksImpl.h",
     "WebIDBDatabaseCallbacksImpl.cpp",
     "WebIDBDatabaseCallbacksImpl.h",
-    "WebIDBObserverImpl.cpp",
-    "WebIDBObserverImpl.h",
   ]
 }

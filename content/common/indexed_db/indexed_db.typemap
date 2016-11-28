@@ -24,6 +24,7 @@ type_mappings = [
   "indexed_db.mojom.KeyPath=content::IndexedDBKeyPath",
   "indexed_db.mojom.KeyRange=content::IndexedDBKeyRange",
   "indexed_db.mojom.ObjectStoreMetadata=content::IndexedDBObjectStoreMetadata",
+  "indexed_db.mojom.OperationType=blink::WebIDBOperationType",
   "indexed_db.mojom.PutMode=blink::WebIDBPutMode",
   "indexed_db.mojom.TaskType=blink::WebIDBTaskType",
   "indexed_db.mojom.TransactionMode=blink::WebIDBTransactionMode",

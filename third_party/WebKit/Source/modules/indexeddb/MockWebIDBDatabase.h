@@ -9,7 +9,6 @@
 #include "modules/indexeddb/IDBKeyRange.h"
 #include "public/platform/modules/indexeddb/WebIDBDatabase.h"
 #include "public/platform/modules/indexeddb/WebIDBKeyRange.h"
-#include "public/platform/modules/indexeddb/WebIDBObserver.h"
 #include <gmock/gmock.h>
 #include <memory>
 
@@ -58,13 +57,14 @@ class MockWebIDBDatabase : public testing::StrictMock<WebIDBDatabase> {
                     long long objectStoreId,
                     long long indexId,
                     const WebString& newName));
-
-  // Gmock does not support movable type, so cannot use MOCK_METHOD for
-  // addObserver. Issue: https://github.com/google/googletest/issues/395.
-  int32_t addObserver(std::unique_ptr<WebIDBObserver>,
-                      long long transactionId) {
-    return -1;
-  }
+  MOCK_METHOD6(
+      addObserver,
+      void(long long transactionId,
+           int32_t observerId,
+           bool includeTransaction,
+           bool noRecords,
+           bool values,
+           const std::bitset<WebIDBOperationTypeCount>& operationTypes));
   MOCK_CONST_METHOD1(containsObserverId, bool(int32_t id));
   MOCK_METHOD1(removeObservers,
                void(const WebVector<int32_t>& observerIdsToRemove));

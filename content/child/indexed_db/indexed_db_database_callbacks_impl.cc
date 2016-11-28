@@ -5,8 +5,10 @@
 #include "content/child/indexed_db/indexed_db_database_callbacks_impl.h"
 
 #include "content/child/indexed_db/indexed_db_dispatcher.h"
+#include "content/child/indexed_db/indexed_db_key_builders.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseCallbacks.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseError.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBObservation.h"
 
 using blink::WebIDBDatabaseCallbacks;
 
@@ -25,6 +27,21 @@ void BuildErrorAndAbort(WebIDBDatabaseCallbacks* callbacks,
                         int32_t code,
                         const base::string16& message) {
   callbacks->onAbort(transaction_id, blink::WebIDBDatabaseError(code, message));
+}
+
+void BuildObservationsAndNotify(WebIDBDatabaseCallbacks* callbacks,
+                                indexed_db::mojom::ObserverChangesPtr changes) {
+  std::vector<blink::WebIDBObservation> web_observations;
+  for (const auto& observation : changes->observations) {
+    blink::WebIDBObservation web_observation;
+    web_observation.objectStoreId = observation->object_store_id;
+    web_observation.type = observation->type;
+    web_observation.keyRange =
+        WebIDBKeyRangeBuilder::Build(observation->key_range);
+    // TODO(palakj): Assign value to web_observation.
+    web_observations.push_back(std::move(web_observation));
+  }
+  callbacks->onChanges(changes->observation_index_map, web_observations);
 }
 
 }  // namespace
@@ -70,6 +87,13 @@ void IndexedDBDatabaseCallbacksImpl::Complete(int64_t transaction_id) {
   callback_runner_->PostTask(
       FROM_HERE, base::Bind(&WebIDBDatabaseCallbacks::onComplete,
                             base::Unretained(callbacks_), transaction_id));
+}
+
+void IndexedDBDatabaseCallbacksImpl::Changes(
+    indexed_db::mojom::ObserverChangesPtr changes) {
+  callback_runner_->PostTask(FROM_HERE, base::Bind(&BuildObservationsAndNotify,
+                                                   base::Unretained(callbacks_),
+                                                   base::Passed(&changes)));
 }
 
 }  // namespace content

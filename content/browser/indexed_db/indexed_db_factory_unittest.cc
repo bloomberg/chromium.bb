@@ -251,7 +251,7 @@ TEST_F(IndexedDBFactoryTest, QuotaErrorOnDiskFull) {
   scoped_refptr<LookingForQuotaErrorMockCallbacks> callbacks =
       new LookingForQuotaErrorMockCallbacks;
   scoped_refptr<IndexedDBDatabaseCallbacks> dummy_database_callbacks =
-      new IndexedDBDatabaseCallbacks(nullptr, 0, nullptr);
+      new IndexedDBDatabaseCallbacks(nullptr, nullptr);
   const base::string16 name(ASCIIToUTF16("name"));
   std::unique_ptr<IndexedDBPendingConnection> connection(
       base::MakeUnique<IndexedDBPendingConnection>(

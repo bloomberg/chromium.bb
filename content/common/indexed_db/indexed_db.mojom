@@ -64,6 +64,13 @@ struct KeyRange {
   bool upper_open;
 };
 
+enum OperationType {
+  Add,
+  Put,
+  Delete,
+  Clear,
+};
+
 enum PutMode {
   AddOrUpdate,
   AddOnly,
@@ -135,6 +142,17 @@ struct ReturnValue {
   KeyPath key_path;
 };
 
+struct Observation {
+  int64 object_store_id;
+  OperationType type;
+  KeyRange key_range;
+};
+
+struct ObserverChanges {
+  map<int32, array<int32>> observation_index_map;
+  array<Observation> observations;
+};
+
 // The Callbacks interface is used to return results for individual requests.
 // Some requests may return multiple results before completion, such as
 // UpgradeNeeded before SuccessDatabase.
@@ -196,6 +214,7 @@ interface DatabaseCallbacks {
   Abort(int64 transaction_id, int32 code,
         mojo.common.mojom.String16 message);
   Complete(int64 transaction_id);
+  Changes(ObserverChanges changes);
 };
 
 interface Cursor {
@@ -297,7 +316,7 @@ interface Database {
 
 interface Factory {
   GetDatabaseNames(associated Callbacks callbacks, url.mojom.Origin origin);
-  Open(int32 worker_thread, associated Callbacks callbacks,
+  Open(associated Callbacks callbacks,
        associated DatabaseCallbacks database_callbacks, url.mojom.Origin origin,
        mojo.common.mojom.String16 name, int64 version, int64 transaction_id);
   DeleteDatabase(associated Callbacks callbacks, url.mojom.Origin origin,

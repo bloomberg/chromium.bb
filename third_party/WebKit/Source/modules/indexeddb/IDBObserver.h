@@ -19,7 +19,6 @@ class IDBDatabase;
 class IDBObserverCallback;
 class IDBObserverInit;
 class IDBTransaction;
-struct WebIDBObservation;
 
 class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
                                          public ScriptWrappable {
@@ -28,10 +27,7 @@ class MODULES_EXPORT IDBObserver final : public GarbageCollected<IDBObserver>,
  public:
   static IDBObserver* create(IDBObserverCallback*);
 
-  void removeObserver(int32_t id);
-  void onChange(int32_t id,
-                const WebVector<WebIDBObservation>&,
-                const WebVector<int32_t>& observationIndex);
+  IDBObserverCallback* callback() { return m_callback; }
 
   // Implement the IDBObserver IDL.
   void observe(IDBDatabase*,

@@ -7,8 +7,6 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
-#include "content/browser/indexed_db/indexed_db_observer_changes.h"
-#include "content/common/indexed_db/indexed_db_messages.h"
 
 using ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
 
@@ -23,6 +21,7 @@ class IndexedDBDatabaseCallbacks::IOThreadHelper {
   void SendVersionChange(int64_t old_version, int64_t new_version);
   void SendAbort(int64_t transaction_id, const IndexedDBDatabaseError& error);
   void SendComplete(int64_t transaction_id);
+  void SendChanges(::indexed_db::mojom::ObserverChangesPtr changes);
 
  private:
   ::indexed_db::mojom::DatabaseCallbacksAssociatedPtr callbacks_;
@@ -32,10 +31,8 @@ class IndexedDBDatabaseCallbacks::IOThreadHelper {
 
 IndexedDBDatabaseCallbacks::IndexedDBDatabaseCallbacks(
     scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
-    int32_t ipc_thread_id,
     DatabaseCallbacksAssociatedPtrInfo callbacks_info)
     : dispatcher_host_(std::move(dispatcher_host)),
-      ipc_thread_id_(ipc_thread_id),
       io_helper_(new IOThreadHelper(std::move(callbacks_info))) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   thread_checker_.DetachFromThread();
@@ -100,12 +97,13 @@ void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
 }
 
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(
-    std::unique_ptr<IndexedDBObserverChanges> changes) {
+    ::indexed_db::mojom::ObserverChangesPtr changes) {
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(io_helper_);
-  dispatcher_host_->Send(new IndexedDBMsg_DatabaseCallbacksChanges(
-      ipc_thread_id_,
-      IndexedDBDispatcherHost::ConvertObserverChanges(std::move(changes))));
+  BrowserThread::PostTask(
+      BrowserThread::IO, FROM_HERE,
+      base::Bind(&IOThreadHelper::SendChanges,
+                 base::Unretained(io_helper_.get()), base::Passed(&changes)));
 }
 
 IndexedDBDatabaseCallbacks::IOThreadHelper::IOThreadHelper(
@@ -134,6 +132,11 @@ void IndexedDBDatabaseCallbacks::IOThreadHelper::SendAbort(
 void IndexedDBDatabaseCallbacks::IOThreadHelper::SendComplete(
     int64_t transaction_id) {
   callbacks_->Complete(transaction_id);
+}
+
+void IndexedDBDatabaseCallbacks::IOThreadHelper::SendChanges(
+    ::indexed_db::mojom::ObserverChangesPtr changes) {
+  callbacks_->Changes(std::move(changes));
 }
 
 }  // namespace content

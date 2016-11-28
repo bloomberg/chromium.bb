@@ -20,7 +20,6 @@
 namespace blink {
 class WebBlobInfo;
 class WebIDBCallbacks;
-class WebIDBObserver;
 class WebString;
 }
 
@@ -51,8 +50,13 @@ class CONTENT_EXPORT WebIDBDatabaseImpl
   void close() override;
   void versionChangeIgnored() override;
 
-  int32_t addObserver(std::unique_ptr<blink::WebIDBObserver>,
-                      long long transactionId) override;
+  void addObserver(long long transaction_id,
+                   int32_t observer_id,
+                   bool include_transaction,
+                   bool no_records,
+                   bool values,
+                   const std::bitset<blink::WebIDBOperationTypeCount>&
+                       operation_types) override;
   void removeObservers(
       const blink::WebVector<int32_t>& observer_ids_to_remove) override;
 

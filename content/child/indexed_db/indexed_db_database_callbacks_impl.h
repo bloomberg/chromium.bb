@@ -27,6 +27,7 @@ class IndexedDBDatabaseCallbacksImpl
              int32_t code,
              const base::string16& message) override;
   void Complete(int64_t transaction_id) override;
+  void Changes(indexed_db::mojom::ObserverChangesPtr changes) override;
 
  private:
   scoped_refptr<base::SingleThreadTaskRunner> callback_runner_;

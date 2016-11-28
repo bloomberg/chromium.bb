@@ -70,6 +70,14 @@ void WebIDBDatabaseCallbacksImpl::onComplete(long long transactionId) {
     m_callbacks->onComplete(transactionId);
 }
 
+void WebIDBDatabaseCallbacksImpl::onChanges(
+    const std::unordered_map<int32_t, std::vector<int32_t>>&
+        observation_index_map,
+    const WebVector<WebIDBObservation>& observations) {
+  if (m_callbacks)
+    m_callbacks->onChanges(observation_index_map, observations);
+}
+
 void WebIDBDatabaseCallbacksImpl::detach() {
   m_callbacks.clear();
 }

@@ -16,8 +16,6 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
-#include "content/browser/indexed_db/indexed_db_observation.h"
-#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -485,15 +483,15 @@ void IndexedDBTransaction::RemovePendingObservers(
 
 void IndexedDBTransaction::AddObservation(
     int32_t connection_id,
-    std::unique_ptr<IndexedDBObservation> observation) {
+    ::indexed_db::mojom::ObservationPtr observation) {
   auto it = connection_changes_map_.find(connection_id);
   if (it == connection_changes_map_.end()) {
     it = connection_changes_map_
              .insert(std::make_pair(
-                 connection_id, base::MakeUnique<IndexedDBObserverChanges>()))
+                 connection_id, ::indexed_db::mojom::ObserverChanges::New()))
              .first;
   }
-  it->second->AddObservation(std::move(observation));
+  it->second->observations.push_back(std::move(observation));
 }
 
 void IndexedDBTransaction::RecordObserverForLastObservation(
@@ -501,7 +499,8 @@ void IndexedDBTransaction::RecordObserverForLastObservation(
     int32_t observer_id) {
   auto it = connection_changes_map_.find(connection_id);
   DCHECK(it != connection_changes_map_.end());
-  it->second->RecordObserverForLastObservation(observer_id);
+  it->second->observation_index_map[observer_id].push_back(
+      it->second->observations.size() - 1);
 }
 
 }  // namespace content

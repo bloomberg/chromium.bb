@@ -16,7 +16,6 @@
 #include "modules/indexeddb/IDBObserverChanges.h"
 #include "modules/indexeddb/IDBObserverInit.h"
 #include "modules/indexeddb/IDBTransaction.h"
-#include "modules/indexeddb/WebIDBObserverImpl.h"
 
 namespace blink {
 
@@ -73,14 +72,10 @@ void IDBObserver::observe(IDBDatabase* database,
     }
   }
 
-  std::unique_ptr<WebIDBObserverImpl> observer =
-      WebIDBObserverImpl::create(this, options.transaction(), options.values(),
-                                 options.noRecords(), types);
-  WebIDBObserverImpl* observerPtr = observer.get();
   int32_t observerId =
-      database->backend()->addObserver(std::move(observer), transaction->id());
+      database->addObserver(this, transaction->id(), options.transaction(),
+                            options.values(), options.noRecords(), types);
   m_observerIds.add(observerId, database);
-  observerPtr->setId(observerId);
 }
 
 void IDBObserver::unobserve(IDBDatabase* database,
@@ -99,20 +94,7 @@ void IDBObserver::unobserve(IDBDatabase* database,
   m_observerIds.removeAll(observerIdsToRemove);
 
   if (!observerIdsToRemove.isEmpty())
-    database->backend()->removeObservers(observerIdsToRemove);
-}
-
-void IDBObserver::removeObserver(int32_t id) {
-  m_observerIds.remove(id);
-}
-
-void IDBObserver::onChange(int32_t id,
-                           const WebVector<WebIDBObservation>& observations,
-                           const WebVector<int32_t>& observationIndex) {
-  auto it = m_observerIds.find(id);
-  DCHECK(it != m_observerIds.end());
-  m_callback->call(this, IDBObserverChanges::create(it->value, observations,
-                                                    observationIndex));
+    database->removeObservers(observerIdsToRemove);
 }
 
 DEFINE_TRACE(IDBObserver) {

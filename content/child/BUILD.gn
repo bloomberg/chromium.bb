@@ -107,8 +107,6 @@ target(link_target_type, "child") {
     "indexed_db/indexed_db_dispatcher.h",
     "indexed_db/indexed_db_key_builders.cc",
     "indexed_db/indexed_db_key_builders.h",
-    "indexed_db/indexed_db_message_filter.cc",
-    "indexed_db/indexed_db_message_filter.h",
     "indexed_db/webidbcursor_impl.cc",
     "indexed_db/webidbcursor_impl.h",
     "indexed_db/webidbdatabase_impl.cc",

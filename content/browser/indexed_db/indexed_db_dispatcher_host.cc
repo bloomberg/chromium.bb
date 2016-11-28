@@ -19,8 +19,6 @@
 #include "content/browser/indexed_db/indexed_db_connection.h"
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
-#include "content/browser/indexed_db/indexed_db_observation.h"
-#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
 #include "content/browser/renderer_host/render_message_filter.h"
@@ -207,25 +205,6 @@ bool IndexedDBDispatcherHost::IsOpen() const {
   return is_open_;
 }
 
-IndexedDBMsg_ObserverChanges IndexedDBDispatcherHost::ConvertObserverChanges(
-    std::unique_ptr<IndexedDBObserverChanges> changes) {
-  IndexedDBMsg_ObserverChanges idb_changes;
-  idb_changes.observation_index = changes->release_observation_indices_map();
-  for (const auto& observation : changes->release_observations())
-    idb_changes.observations.push_back(ConvertObservation(observation.get()));
-  return idb_changes;
-}
-
-IndexedDBMsg_Observation IndexedDBDispatcherHost::ConvertObservation(
-    const IndexedDBObservation* observation) {
-  // TODO(palakj): Modify function for indexed_db_value. Issue crbug.com/609934.
-  IndexedDBMsg_Observation idb_observation;
-  idb_observation.object_store_id = observation->object_store_id();
-  idb_observation.type = observation->type();
-  idb_observation.key_range = observation->key_range();
-  return idb_observation;
-}
-
 void IndexedDBDispatcherHost::GetDatabaseNames(
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
     const url::Origin& origin) {
@@ -245,7 +224,6 @@ void IndexedDBDispatcherHost::GetDatabaseNames(
 }
 
 void IndexedDBDispatcherHost::Open(
-    int32_t worker_thread,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info,
     ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo
         database_callbacks_info,
@@ -263,8 +241,7 @@ void IndexedDBDispatcherHost::Open(
   scoped_refptr<IndexedDBCallbacks> callbacks(
       new IndexedDBCallbacks(this, origin, std::move(callbacks_info)));
   scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks(
-      new IndexedDBDatabaseCallbacks(this, worker_thread,
-                                     std::move(database_callbacks_info)));
+      new IndexedDBDatabaseCallbacks(this, std::move(database_callbacks_info)));
   indexed_db_context_->TaskRunner()->PostTask(
       FROM_HERE,
       base::Bind(&IndexedDBDispatcherHost::OpenOnIDBThread, this,

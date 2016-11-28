@@ -150,8 +150,6 @@ source_set("common") {
     "indexed_db/indexed_db_messages.h",
     "indexed_db/indexed_db_metadata.cc",
     "indexed_db/indexed_db_metadata.h",
-    "indexed_db/indexed_db_param_traits.cc",
-    "indexed_db/indexed_db_param_traits.h",
     "indexed_db/indexed_db_struct_traits.cc",
     "indexed_db/indexed_db_struct_traits.h",
     "input/event_with_latency_info.cc",

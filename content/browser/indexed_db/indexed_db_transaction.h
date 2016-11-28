@@ -29,8 +29,6 @@ namespace content {
 class BlobWriteCallbackImpl;
 class IndexedDBCursor;
 class IndexedDBDatabaseCallbacks;
-class IndexedDBObservation;
-class IndexedDBObserverChanges;
 
 class CONTENT_EXPORT IndexedDBTransaction
     : public NON_EXPORTED_BASE(base::RefCounted<IndexedDBTransaction>) {
@@ -74,7 +72,7 @@ class CONTENT_EXPORT IndexedDBTransaction
 
   // Adds observation for the connection.
   void AddObservation(int32_t connection_id,
-                      std::unique_ptr<IndexedDBObservation>);
+                      ::indexed_db::mojom::ObservationPtr observation);
   // Adds the last observation index to observer_id's list of recorded
   // observation indices.
   void RecordObserverForLastObservation(int32_t connection_id,
@@ -154,7 +152,7 @@ class CONTENT_EXPORT IndexedDBTransaction
 
   // Observers in pending queue do not listen to changes until activated.
   std::vector<std::unique_ptr<IndexedDBObserver>> pending_observers_;
-  std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>>
+  std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr>
       connection_changes_map_;
 
   class TaskQueue {

@@ -52,6 +52,8 @@ namespace blink {
 class DOMException;
 class ExceptionState;
 class ExecutionContext;
+class IDBObserver;
+struct WebIDBObservation;
 
 class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
                                          public ActiveScriptWrappable,
@@ -76,6 +78,14 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   void transactionCreated(IDBTransaction*);
   void transactionFinished(const IDBTransaction*);
   const String& getObjectStoreName(int64_t objectStoreId) const;
+  int32_t addObserver(
+      IDBObserver*,
+      int64_t transactionId,
+      bool includeTransaction,
+      bool noRecords,
+      bool values,
+      const std::bitset<WebIDBOperationTypeCount>& operationTypes);
+  void removeObservers(const Vector<int32_t>& observerIds);
 
   // Implement the IDL
   const String& name() const { return m_metadata.name; }
@@ -105,6 +115,9 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   void onVersionChange(int64_t oldVersion, int64_t newVersion);
   void onAbort(int64_t, DOMException*);
   void onComplete(int64_t);
+  void onChanges(const std::unordered_map<int32_t, std::vector<int32_t>>&
+                     observation_index_map,
+                 const WebVector<WebIDBObservation>& observations);
 
   // ScriptWrappable
   bool hasPendingActivity() const final;
@@ -133,6 +146,7 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   WebIDBDatabase* backend() const { return m_backend.get(); }
 
   static int64_t nextTransactionId();
+  static int32_t nextObserverId();
 
   static const char indexDeletedErrorMessage[];
   static const char indexNameTakenErrorMessage[];
@@ -173,6 +187,7 @@ class MODULES_EXPORT IDBDatabase final : public EventTargetWithInlineData,
   std::unique_ptr<WebIDBDatabase> m_backend;
   Member<IDBTransaction> m_versionChangeTransaction;
   HeapHashMap<int64_t, Member<IDBTransaction>> m_transactions;
+  HeapHashMap<int32_t, Member<IDBObserver>> m_observers;
 
   bool m_closePending = false;
 

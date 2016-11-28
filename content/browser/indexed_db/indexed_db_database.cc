@@ -25,8 +25,6 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_index_writer.h"
-#include "content/browser/indexed_db/indexed_db_observation.h"
-#include "content/browser/indexed_db/indexed_db_observer_changes.h"
 #include "content/browser/indexed_db/indexed_db_pending_connection.h"
 #include "content/browser/indexed_db/indexed_db_return_value.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
@@ -907,15 +905,12 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
           !observer->IsRecordingObjectStore(object_store_id))
         continue;
       if (!recorded) {
-        if (type == blink::WebIDBClear) {
-          transaction->AddObservation(
-              connection->id(),
-              base::MakeUnique<IndexedDBObservation>(object_store_id, type));
-        } else {
-          transaction->AddObservation(connection->id(),
-                                      base::MakeUnique<IndexedDBObservation>(
-                                          object_store_id, type, key_range));
-        }
+        auto observation = ::indexed_db::mojom::Observation::New();
+        observation->object_store_id = object_store_id;
+        observation->type = type;
+        if (type != blink::WebIDBClear)
+          observation->key_range = key_range;
+        transaction->AddObservation(connection->id(), std::move(observation));
         recorded = true;
       }
       transaction->RecordObserverForLastObservation(connection->id(),
@@ -925,7 +920,7 @@ void IndexedDBDatabase::FilterObservation(IndexedDBTransaction* transaction,
 }
 
 void IndexedDBDatabase::SendObservations(
-    std::map<int32_t, std::unique_ptr<IndexedDBObserverChanges>> changes_map) {
+    std::map<int32_t, ::indexed_db::mojom::ObserverChangesPtr> changes_map) {
   for (auto* conn : connections_) {
     auto it = changes_map.find(conn->id());
     if (it != changes_map.end())
