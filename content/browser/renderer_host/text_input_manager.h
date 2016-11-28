@@ -123,9 +123,12 @@ class CONTENT_EXPORT TextInputManager {
   // Users of these methods should not hold on to the pointers as they become
   // dangling if the TextInputManager or |active_view_| are destroyed.
 
-  // Returns the currently stored TextInputState. An state of nullptr can be
-  // interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE.
-  const TextInputState* GetTextInputState() const;
+  // Returns the currently stored TextInputState for |view|. A state of nullptr
+  // can be interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE for
+  // the view. If |view| is null and there is an |active_view_|, the state for
+  // |active_view_| is returned.
+  const TextInputState* GetTextInputState(
+      RenderWidgetHostViewBase* view = nullptr) const;
 
   // Returns the selection bounds information for |view|. If |view| == nullptr,
   // it will return the corresponding information for |active_view_| or nullptr

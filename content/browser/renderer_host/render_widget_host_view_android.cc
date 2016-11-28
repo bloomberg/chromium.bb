@@ -468,6 +468,9 @@ RenderWidgetHostViewAndroid::RenderWidgetHostViewAndroid(
 
   host_->SetView(this);
   SetContentViewCore(content_view_core);
+
+  if (GetTextInputManager())
+    GetTextInputManager()->AddObserver(this);
 }
 
 RenderWidgetHostViewAndroid::~RenderWidgetHostViewAndroid() {
@@ -757,22 +760,29 @@ long RenderWidgetHostViewAndroid::GetNativeImeAdapter() {
   return reinterpret_cast<intptr_t>(&ime_adapter_android_);
 }
 
-void RenderWidgetHostViewAndroid::TextInputStateChanged(
-    const TextInputState& params) {
-  if (params.is_non_ime_change) {
+// -----------------------------------------------------------------------------
+// TextInputManager::Observer implementations.
+void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
+    TextInputManager* text_input_manager,
+    RenderWidgetHostViewBase* updated_view,
+    bool did_change_state) {
+  DCHECK_EQ(text_input_manager_, text_input_manager);
+  const TextInputState& state =
+      *GetTextInputManager()->GetTextInputState(updated_view);
+  if (state.is_non_ime_change && updated_view->GetRenderWidgetHost()) {
     // Sends an acknowledgement to the renderer of a processed IME event.
-    host_->Send(new InputMsg_ImeEventAck(host_->GetRoutingID()));
+    updated_view->GetRenderWidgetHost()->Send(
+        new InputMsg_ImeEventAck(host_->GetRoutingID()));
   }
 
   if (!content_view_core_)
     return;
 
   content_view_core_->UpdateImeAdapter(
-      GetNativeImeAdapter(),
-      static_cast<int>(params.type), params.flags,
-      params.value, params.selection_start, params.selection_end,
-      params.composition_start, params.composition_end,
-      params.show_ime_if_needed, params.is_non_ime_change);
+      GetNativeImeAdapter(), static_cast<int>(state.type), state.flags,
+      state.value, state.selection_start, state.selection_end,
+      state.composition_start, state.composition_end, state.show_ime_if_needed,
+      state.is_non_ime_change);
 }
 
 void RenderWidgetHostViewAndroid::UpdateBackgroundColor(SkColor color) {
@@ -925,6 +935,9 @@ void RenderWidgetHostViewAndroid::Destroy() {
 
   // The RenderWidgetHost's destruction led here, so don't call it.
   host_ = NULL;
+
+  if (GetTextInputManager() && GetTextInputManager()->HasObserver(this))
+    GetTextInputManager()->RemoveObserver(this);
 
   delete this;
 }

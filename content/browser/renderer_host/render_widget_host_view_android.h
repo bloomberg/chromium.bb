@@ -26,6 +26,7 @@
 #include "content/browser/renderer_host/ime_adapter_android.h"
 #include "content/browser/renderer_host/input/stylus_text_selector.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
+#include "content/browser/renderer_host/text_input_manager.h"
 #include "content/common/content_export.h"
 #include "content/public/browser/readback_types.h"
 #include "gpu/command_buffer/common/mailbox.h"
@@ -65,7 +66,6 @@ class RenderWidgetHostImpl;
 class SynchronousCompositorHost;
 class SynchronousCompositorClient;
 struct NativeWebKeyboardEvent;
-struct TextInputState;
 
 // -----------------------------------------------------------------------------
 // See comments in render_widget_host_view.h about this class and its members.
@@ -77,7 +77,8 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
       public DelegatedFrameEvictorClient,
       public StylusTextSelectorClient,
       public ui::TouchSelectionControllerClient,
-      public content::ContentViewCoreImplObserver {
+      public content::ContentViewCoreImplObserver,
+      public content::TextInputManager::Observer {
  public:
   RenderWidgetHostViewAndroid(RenderWidgetHostImpl* widget,
                               ContentViewCoreImpl* content_view_core);
@@ -111,7 +112,6 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   float GetBottomControlsHeight() const override;
   void UpdateCursor(const WebCursor& cursor) override;
   void SetIsLoading(bool is_loading) override;
-  void TextInputStateChanged(const TextInputState& params) override;
   void ImeCancelComposition() override;
   void ImeCompositionRangeChanged(
       const gfx::Range& range,
@@ -246,6 +246,11 @@ class CONTENT_EXPORT RenderWidgetHostViewAndroid
   }
 
   static void OnContextLost();
+
+  // TextInputManager::Observer overrides.
+  void OnUpdateTextInputStateCalled(TextInputManager* text_input_manager,
+                                    RenderWidgetHostViewBase* updated_view,
+                                    bool did_change_state) override;
 
  private:
   void RunAckCallbacks();

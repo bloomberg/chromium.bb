@@ -469,11 +469,8 @@ bool RenderWidgetHostViewBase::IsRenderWidgetHostViewChildFrame() {
 
 void RenderWidgetHostViewBase::TextInputStateChanged(
     const TextInputState& text_input_state) {
-// TODO(ekaramad): Use TextInputManager code paths for IME on other platforms.
-#if !defined(OS_ANDROID)
   if (GetTextInputManager())
     GetTextInputManager()->UpdateTextInputState(this, text_input_state);
-#endif
 }
 
 void RenderWidgetHostViewBase::ImeCancelComposition() {

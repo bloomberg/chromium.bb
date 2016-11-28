@@ -15,7 +15,7 @@ namespace content {
 
 namespace {
 
-bool AreDifferentTextInputStates(const content::TextInputState& old_state,
+bool ShouldUpdateTextInputState(const content::TextInputState& old_state,
                                  const content::TextInputState& new_state) {
 #if defined(USE_AURA)
   return old_state.type != new_state.type || old_state.mode != new_state.mode ||
@@ -24,8 +24,11 @@ bool AreDifferentTextInputStates(const content::TextInputState& old_state,
 #elif defined(OS_MACOSX)
   return old_state.type != new_state.type ||
          old_state.can_compose_inline != new_state.can_compose_inline;
+#elif defined(OS_ANDROID)
+  // On Android, TextInputState update is sent only if there is some change in
+  // the state. So the new state is always different.
+  return true;
 #else
-  // TODO(ekaramad): Implement the logic for other platforms (crbug.com/578168).
   NOTREACHED();
   return true;
 #endif
@@ -57,8 +60,12 @@ RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
                         : nullptr;
 }
 
-const TextInputState* TextInputManager::GetTextInputState() const {
-  return !!active_view_ ? &text_input_state_map_.at(active_view_) : nullptr;
+const TextInputState* TextInputManager::GetTextInputState(
+    RenderWidgetHostViewBase* view) const {
+  DCHECK(!view || IsRegistered(view));
+  if (!view)
+    view = active_view_;
+  return !!view ? &text_input_state_map_.at(view) : nullptr;
 }
 
 const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(
@@ -105,8 +112,8 @@ void TextInputManager::UpdateTextInputState(
 
   // Since |view| is registered, we already have a previous value for its
   // TextInputState.
-  bool changed = AreDifferentTextInputStates(text_input_state_map_[view],
-                                             text_input_state);
+  bool changed = ShouldUpdateTextInputState(text_input_state_map_[view],
+                                            text_input_state);
 
   text_input_state_map_[view] = text_input_state;
 

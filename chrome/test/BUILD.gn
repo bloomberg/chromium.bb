@@ -398,6 +398,7 @@ if (!is_android) {
       "../browser/password_manager/password_manager_interactive_uitest.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.cc",
       "../browser/renderer_context_menu/render_view_context_menu_browsertest_util.h",
+      "../browser/renderer_host/site_per_process_text_input_browsertest.cc",
       "../browser/site_per_process_interactive_browsertest.cc",
       "../browser/ui/autofill/autofill_popup_controller_interactive_uitest.cc",
       "../browser/ui/blocked_content/popup_blocker_browsertest.cc",
@@ -607,10 +608,6 @@ if (!is_android) {
             [ "//ui/views/widget/native_widget_aura_interactive_uitest.cc" ]
       }
       if (use_aura || is_mac) {
-        # TODO(ekaramad): These tests are activated for aura and mac only. They
-        # should be moved to 'interactive_ui_tests' sources for all platforms
-        # once https://crbug.com/578168 is fixed.
-        sources += [ "//chrome/browser/renderer_host/site_per_process_text_input_browsertest.cc" ]
         deps += [ "//ui/touch_selection" ]
       }
     }
