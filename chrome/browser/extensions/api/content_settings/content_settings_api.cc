@@ -53,7 +53,7 @@ bool RemoveContentType(base::ListValue* args,
     return false;
   // We remove the ContentSettingsType parameter since this is added by the
   // renderer, and is not part of the JSON schema.
-  args->Remove(0, NULL);
+  args->Remove(0, nullptr);
   *content_type =
       extensions::content_settings_helpers::StringToContentSettingsType(
           content_type_str);
@@ -154,9 +154,8 @@ ContentSettingsContentSettingGetFunction::Run() {
   ContentSetting setting;
   if (content_type == CONTENT_SETTINGS_TYPE_COOKIES) {
     // TODO(jochen): Do we return the value for setting or for reading cookies?
-    bool setting_cookie = false;
-    setting = cookie_settings->GetCookieSetting(primary_url, secondary_url,
-                                                setting_cookie, NULL);
+    cookie_settings->GetCookieSetting(primary_url, secondary_url, nullptr,
+                                      nullptr /* reading_setting */, &setting);
   } else {
     setting = map->GetContentSetting(primary_url, secondary_url, content_type,
                                      resource_identifier);

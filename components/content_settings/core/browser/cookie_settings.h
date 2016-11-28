@@ -36,7 +36,7 @@ class CookieSettings : public RefcountedKeyedService {
 
   // Returns the default content setting (CONTENT_SETTING_ALLOW,
   // CONTENT_SETTING_BLOCK, or CONTENT_SETTING_SESSION_ONLY) for cookies. If
-  // |provider_id| is not NULL, the id of the provider which provided the
+  // |provider_id| is not nullptr, the id of the provider which provided the
   // default setting is assigned to it.
   //
   // This may be called on any thread.
@@ -56,6 +56,15 @@ class CookieSettings : public RefcountedKeyedService {
   bool IsSettingCookieAllowed(const GURL& url,
                               const GURL& first_party_url) const;
 
+  // Gets the results from IsReadingCookieAllowed and IsSettingCookieAllowed in
+  // a performance efficient way.
+  //
+  // This may be called on any thread.
+  void GetReadingAndSettingCookieAllowed(const GURL& url,
+                                         const GURL& first_party_url,
+                                         bool* reading_cookie_allowed,
+                                         bool* setting_cookie_allowed) const;
+
   // Returns true if the cookie set by a page identified by |url| should be
   // session only. Querying this only makes sense if |IsSettingCookieAllowed|
   // has returned true.
@@ -65,7 +74,7 @@ class CookieSettings : public RefcountedKeyedService {
 
   // Returns all patterns with a non-default cookie setting, mapped to their
   // actual settings, in the precedence order of the setting rules. |settings|
-  // must be a non-NULL outparam.
+  // must be a non-nullptr outparam.
   //
   // This may be called on any thread.
   void GetCookieSettings(ContentSettingsForOneType* settings) const;
@@ -94,11 +103,11 @@ class CookieSettings : public RefcountedKeyedService {
   void ShutdownOnUIThread() override;
 
   // A helper for applying third party cookie blocking rules.
-  ContentSetting GetCookieSetting(
-      const GURL& url,
-      const GURL& first_party_url,
-      bool setting_cookie,
-      content_settings::SettingSource* source) const;
+  void GetCookieSetting(const GURL& url,
+                        const GURL& first_party_url,
+                        content_settings::SettingSource* source,
+                        ContentSetting* reading_cookie,
+                        ContentSetting* setting_cookie) const;
 
   static void RegisterProfilePrefs(user_prefs::PrefRegistrySyncable* registry);
 

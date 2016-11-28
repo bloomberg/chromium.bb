@@ -542,10 +542,11 @@ bool ChromeNetworkDelegate::OnCanEnablePrivacyMode(
   if (!cookie_settings_.get())
     return false;
 
-  bool reading_cookie_allowed = cookie_settings_->IsReadingCookieAllowed(
-      url, first_party_for_cookies);
-  bool setting_cookie_allowed = cookie_settings_->IsSettingCookieAllowed(
-      url, first_party_for_cookies);
+  bool reading_cookie_allowed = false;
+  bool setting_cookie_allowed = false;
+  cookie_settings_->GetReadingAndSettingCookieAllowed(
+      url, first_party_for_cookies, &reading_cookie_allowed,
+      &setting_cookie_allowed);
   bool privacy_mode = !(reading_cookie_allowed && setting_cookie_allowed);
   return privacy_mode;
 }
