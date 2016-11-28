@@ -2115,7 +2115,7 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return list;
     }
     case CSSPropertyBorderCollapse:
-      if (style.borderCollapse())
+      if (style.borderCollapse() == EBorderCollapse::Collapse)
         return CSSIdentifierValue::create(CSSValueCollapse);
       return CSSIdentifierValue::create(CSSValueSeparate);
     case CSSPropertyBorderSpacing: {

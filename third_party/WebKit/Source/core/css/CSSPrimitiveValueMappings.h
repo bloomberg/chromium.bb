@@ -3870,10 +3870,10 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EBorderCollapse e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case BorderCollapseSeparate:
+    case EBorderCollapse::Separate:
       m_valueID = CSSValueSeparate;
       break;
-    case BorderCollapseCollapse:
+    case EBorderCollapse::Collapse:
       m_valueID = CSSValueCollapse;
       break;
   }
@@ -3883,15 +3883,15 @@ template <>
 inline EBorderCollapse CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueSeparate:
-      return BorderCollapseSeparate;
+      return EBorderCollapse::Separate;
     case CSSValueCollapse:
-      return BorderCollapseCollapse;
+      return EBorderCollapse::Collapse;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return BorderCollapseSeparate;
+  return EBorderCollapse::Separate;
 }
 
 template <>

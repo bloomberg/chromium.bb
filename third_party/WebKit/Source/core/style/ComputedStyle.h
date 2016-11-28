@@ -368,7 +368,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
     m_inheritedData.m_whiteSpace = static_cast<unsigned>(initialWhiteSpace());
-    m_inheritedData.m_borderCollapse = initialBorderCollapse();
+    m_inheritedData.m_borderCollapse =
+        static_cast<unsigned>(initialBorderCollapse());
     m_inheritedData.m_rtlOrdering = initialRTLOrdering();
     m_inheritedData.m_boxDirection =
         static_cast<unsigned>(initialBoxDirection());
@@ -2054,13 +2055,13 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // border-collapse
   static EBorderCollapse initialBorderCollapse() {
-    return BorderCollapseSeparate;
+    return EBorderCollapse::Separate;
   }
   EBorderCollapse borderCollapse() const {
     return static_cast<EBorderCollapse>(m_inheritedData.m_borderCollapse);
   }
   void setBorderCollapse(EBorderCollapse collapse) {
-    m_inheritedData.m_borderCollapse = collapse;
+    m_inheritedData.m_borderCollapse = static_cast<unsigned>(collapse);
   }
 
   // Border-spacing properties.

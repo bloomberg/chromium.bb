@@ -93,7 +93,7 @@ enum ColumnFill { ColumnFillBalance, ColumnFillAuto };
 
 enum ColumnSpan { ColumnSpanNone = 0, ColumnSpanAll };
 
-enum EBorderCollapse { BorderCollapseSeparate = 0, BorderCollapseCollapse = 1 };
+enum class EBorderCollapse : unsigned { Separate = 0, Collapse = 1 };
 
 // These have been defined in the order of their precedence for
 // border-collapsing. Do not change this order! This order also must match the
