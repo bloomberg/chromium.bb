@@ -1172,10 +1172,8 @@ Node* EventHandler::updateMouseEventTargetNode(Node* targetNode) {
   Node* newNodeUnderMouse = targetNode;
 
   // If we're capturing, we always go right to that node.
-  EventTarget* mousePointerCapturingNode =
-      m_pointerEventManager->getMouseCapturingNode();
-  if (mousePointerCapturingNode &&
-      !RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
+  if (EventTarget* mousePointerCapturingNode =
+          m_pointerEventManager->getMouseCapturingNode()) {
     newNodeUnderMouse = mousePointerCapturingNode->toNode();
     DCHECK(newNodeUnderMouse);
   } else if (m_capturingMouseEventsNode) {

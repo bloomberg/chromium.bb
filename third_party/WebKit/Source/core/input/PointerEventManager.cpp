@@ -209,19 +209,6 @@ void PointerEventManager::sendMouseAndPointerBoundaryEvents(
 void PointerEventManager::sendBoundaryEvents(EventTarget* exitedTarget,
                                              EventTarget* enteredTarget,
                                              PointerEvent* pointerEvent) {
-  if (RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
-    if (exitedTarget == enteredTarget)
-      return;
-    if (EventTarget* capturingTarget =
-            getCapturingNode(pointerEvent->pointerId())) {
-      if (capturingTarget == exitedTarget)
-        enteredTarget = nullptr;
-      else if (capturingTarget == enteredTarget)
-        exitedTarget = nullptr;
-      else
-        return;
-    }
-  }
   PointerEventBoundaryEventDispatcher boundaryEventDispatcher(this,
                                                               pointerEvent);
   boundaryEventDispatcher.sendBoundaryEvents(exitedTarget, enteredTarget);
@@ -344,8 +331,7 @@ void PointerEventManager::computeTouchTargets(
     // that will be capturing this event. |m_pointerCaptureTarget| may not
     // have this target yet since the processing of that will be done right
     // before firing the event.
-    if (RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled() ||
-        touchInfo.point.state() == PlatformTouchPoint::TouchPressed ||
+    if (touchInfo.point.state() == PlatformTouchPoint::TouchPressed ||
         !m_pendingPointerCaptureTarget.contains(pointerId)) {
       HitTestRequest::HitTestRequestType hitType = HitTestRequest::TouchEvent |
                                                    HitTestRequest::ReadOnly |
@@ -438,8 +424,7 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
   processCaptureAndPositionOfPointerEvent(pointerEvent, target);
 
   // Setting the implicit capture for touch
-  if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled() &&
-      pointerEvent->type() == EventTypeNames::pointerdown)
+  if (pointerEvent->type() == EventTypeNames::pointerdown)
     setPointerCapture(pointerEvent->pointerId(), target);
 
   WebInputEventResult result = dispatchPointerEvent(
@@ -558,13 +543,11 @@ EventTarget* PointerEventManager::processCaptureAndPositionOfPointerEvent(
     bool sendMouseEvent) {
   processPendingPointerCapture(pointerEvent);
 
-  if (!RuntimeEnabledFeatures::pointerEventV1SpecCapturingEnabled()) {
-    PointerCapturingMap::const_iterator it =
-        m_pointerCaptureTarget.find(pointerEvent->pointerId());
-    if (EventTarget* pointercaptureTarget =
-            (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
-      hitTestTarget = pointercaptureTarget;
-  }
+  PointerCapturingMap::const_iterator it =
+      m_pointerCaptureTarget.find(pointerEvent->pointerId());
+  if (EventTarget* pointercaptureTarget =
+          (it != m_pointerCaptureTarget.end()) ? it->value : nullptr)
+    hitTestTarget = pointercaptureTarget;
 
   setNodeUnderPointer(pointerEvent, hitTestTarget);
   if (sendMouseEvent) {

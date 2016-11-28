@@ -6038,12 +6038,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_FLAGS_EXPERIMENTAL_WEB_PLATFORM_FEATURES_DESCRIPTION" desc="Description for the flag to enable experimental Web Platform features.">
         Enables experimental Web Platform features that are in development.
       </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_V1_SPEC_CAPTURING_NAME" desc="Name for the flag to enable pointer event v1 spec capturing.">
-        Pointer event v1 spec capturing
-      </message>
-      <message name="IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_V1_SPEC_CAPTURING_DESCRIPTION" desc="Description for the flag to enable pointer event v1 spec capturing.">
-        Disables implicit capturing of touch pointer events.
-      </message>
       <message name="IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_NAME" desc="Name for the flag to enable the experimental pointer events.">
         Pointer Events
       </message>

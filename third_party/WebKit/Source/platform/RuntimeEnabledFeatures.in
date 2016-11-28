@@ -181,8 +181,6 @@ PermissionDelegation status=test
 Permissions status=stable
 PermissionsRequestRevoke status=experimental
 PointerEvent status=stable
-// For temporary compat testing of Edge-like model - crbug.com/640700
-PointerEventV1SpecCapturing
 PreciseMemoryInfo
 PreferredImageRasterBounds settable_from_internals=True
 // This feature is deprecated and we are evangelizing affected sites.

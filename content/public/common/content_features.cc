@@ -147,11 +147,6 @@ const base::Feature kPassiveEventListenersDueToFling{
 const base::Feature kPointerEvents{"PointerEvent",
                                    base::FEATURE_ENABLED_BY_DEFAULT};
 
-// Whether pointer event capturing follow v1 spec instead of v2 proposal.
-// See https://rawgit.com/w3c/pointerevents/reduce-hit-tests/index.html.
-const base::Feature kPointerEventV1SpecCapturing{
-    "PointerEventV1SpecCapturing", base::FEATURE_DISABLED_BY_DEFAULT};
-
 // Enables purge and suspend.
 const base::Feature kPurgeAndSuspend{"PurgeAndSuspend",
                                      base::FEATURE_DISABLED_BY_DEFAULT};

@@ -2025,10 +2025,6 @@ const FeatureEntry kFeatureEntries[] = {
     {"enable-feature-policy", IDS_FLAGS_FEATURE_POLICY_NAME,
      IDS_FLAGS_FEATURE_POLICY_DESCRIPTION, kOsAll,
      FEATURE_VALUE_TYPE(features::kFeaturePolicy)},
-    {"enable-pointer-event-v1-spec-capturing-behavior",
-     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_V1_SPEC_CAPTURING_NAME,
-     IDS_FLAGS_EXPERIMENTAL_POINTER_EVENT_V1_SPEC_CAPTURING_DESCRIPTION, kOsAll,
-     FEATURE_VALUE_TYPE(features::kPointerEventV1SpecCapturing)},
 #if defined(OS_CHROMEOS)
     {"enable-emoji-handwriting-voice-on-ime-menu",
      IDS_FLAGS_ENABLE_EHV_INPUT_NAME, IDS_FLAGS_ENABLE_EHV_INPUT_DESCRIPTION,
