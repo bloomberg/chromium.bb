@@ -625,9 +625,10 @@ void LocalDOMWindow::schedulePostMessage(MessageEvent* event,
   // Allowing unbounded amounts of messages to build up for a suspended context
   // is problematic; consider imposing a limit or other restriction if this
   // surfaces often as a problem (see crbug.com/587012).
-  PostMessageTimer* timer = new PostMessageTimer(
-      *this, event, std::move(target), SourceLocation::capture(source),
-      UserGestureIndicator::currentToken());
+  std::unique_ptr<SourceLocation> location = SourceLocation::capture(source);
+  PostMessageTimer* timer =
+      new PostMessageTimer(*this, event, std::move(target), std::move(location),
+                           UserGestureIndicator::currentToken());
   timer->startOneShot(0, BLINK_FROM_HERE);
   timer->suspendIfNeeded();
   m_postMessageTimers.add(timer);
