@@ -120,12 +120,14 @@ void CloseModalSigninIfNeeded(InlineLoginHandlerImpl* handler) {
 
 void UnlockProfileAndHideLoginUI(const base::FilePath profile_path,
                                  InlineLoginHandlerImpl* handler) {
-  ProfileManager* profile_manager = g_browser_process->profile_manager();
-  if (profile_manager) {
-    ProfileAttributesEntry* entry;
-    if (profile_manager->GetProfileAttributesStorage()
-            .GetProfileAttributesWithPath(profile_path, &entry)) {
-      entry->SetIsSigninRequired(false);
+  if (!profile_path.empty()) {
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    if (profile_manager) {
+      ProfileAttributesEntry* entry;
+      if (profile_manager->GetProfileAttributesStorage()
+              .GetProfileAttributesWithPath(profile_path, &entry)) {
+        entry->SetIsSigninRequired(false);
+      }
     }
   }
   if (handler)
@@ -796,7 +798,7 @@ void InlineLoginHandlerImpl::FinishCompleteLogin(
 
   // If opened from user manager to unlock a profile, make sure the user manager
   // is closed and that the profile is marked as unlocked.
-  if (!params.profile_path.empty() && !signin::IsForceSigninEnabled()) {
+  if (!signin::IsForceSigninEnabled()) {
     UnlockProfileAndHideLoginUI(params.profile_path, params.handler);
   }
 }
