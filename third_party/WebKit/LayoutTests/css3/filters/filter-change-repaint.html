@@ -15,49 +15,49 @@
         }
 
         .software_from_none {
-            -webkit-filter: drop-shadow(0px 0px 10px blue);
+            filter: drop-shadow(0px 0px 10px blue);
         }
 
         .software_from_none.before {
-            -webkit-filter: none;
+            filter: none;
         }
 
         .software_from_software {
-            -webkit-filter: drop-shadow(0px 0px 10px blue);
+            filter: drop-shadow(0px 0px 10px blue);
         }
 
         .software_from_software.before {
-            -webkit-filter: drop-shadow(0px 0px 10px red);
+            filter: drop-shadow(0px 0px 10px red);
         }
 
         .composited_from_software {
             /* force a composited layer */
             transform: translate3d(0, 0, 0);
-            -webkit-filter: drop-shadow(0px 0px 10px blue);
+            filter: drop-shadow(0px 0px 10px blue);
         }
 
         .composited_from_software.before {
             transform: none;
-            -webkit-filter: drop-shadow(0px 0px 10px red);
+            filter: drop-shadow(0px 0px 10px red);
         }
 
         .software_from_composited {
             transform: none;
-            -webkit-filter: drop-shadow(0px 0px 10px blue);
+            filter: drop-shadow(0px 0px 10px blue);
         }
 
         .software_from_composited.before {
             /* force a composited layer */
             transform: translate3d(0, 0, 0);
-            -webkit-filter: drop-shadow(0px 0px 10px red);
+            filter: drop-shadow(0px 0px 10px red);
         }
 
         .none_from_software {
-            -webkit-filter: none;
+            filter: none;
         }
 
         .none_from_software.before {
-            -webkit-filter: drop-shadow(0px 0px 10px red);
+            filter: drop-shadow(0px 0px 10px red);
         }
     </style>
 
