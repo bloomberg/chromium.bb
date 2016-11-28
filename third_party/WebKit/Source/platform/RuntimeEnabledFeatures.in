@@ -171,6 +171,7 @@ PassiveDocumentEventListeners status=stable
 PassiveEventListenersDueToFling status=experimental
 PassPaintVisualRectToCompositor
 PaymentApp status=experimental
+PaymentDetailsError status=experimental
 // PaymentRequest is enabled by default on Android
 PaymentRequest status=experimental
 PaymentRequestIFrame status=experimental
