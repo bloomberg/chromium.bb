@@ -55,11 +55,14 @@ static const int mode_2_counter[MB_MODE_COUNT] = {
   9,  // D153_PRED
   9,  // D207_PRED
   9,  // D63_PRED
-  9,  // TM_PRED
-  0,  // NEARESTMV
-  0,  // NEARMV
-  3,  // ZEROMV
-  1,  // NEWMV
+#if CONFIG_ALT_INTRA
+  9,    // SMOOTH_PRED
+#endif  // CONFIG_ALT_INTRA
+  9,    // TM_PRED
+  0,    // NEARESTMV
+  0,    // NEARMV
+  3,    // ZEROMV
+  1,    // NEWMV
 #if CONFIG_EXT_INTER
   1,    // NEWFROMNEARMV
   0,    // NEAREST_NEARESTMV

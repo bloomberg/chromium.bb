@@ -36,7 +36,11 @@ static const PREDICTION_MODE interintra_to_intra_mode[INTERINTRA_MODES] = {
 // Mapping of intra mode to the interintra mode
 static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
   II_DC_PRED,   II_V_PRED,    II_H_PRED,    II_D45_PRED, II_D135_PRED,
-  II_D117_PRED, II_D153_PRED, II_D207_PRED, II_D63_PRED, II_TM_PRED
+  II_D117_PRED, II_D153_PRED, II_D207_PRED, II_D63_PRED,
+#if CONFIG_ALT_INTRA
+  II_DC_PRED,  // Note: Filler value, as there's no II_SMOOTH_PRED.
+#endif         // CONFIG_ALT_INTRA
+  II_TM_PRED
 };
 #endif  // CONFIG_EXT_INTER
 #ifdef __cplusplus
