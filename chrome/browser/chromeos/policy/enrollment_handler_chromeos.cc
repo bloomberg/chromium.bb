@@ -186,7 +186,7 @@ void EnrollmentHandlerChromeOS::OnPolicyFetched(CloudPolicyClient* client) {
   // TODO(mnissler): Plumb the enrolling user's username into this object so we
   // can validate the username on the resulting policy, and use the domain from
   // that username to validate the key below (http://crbug.com/343074).
-  validator->ValidateInitialKey(GetPolicyVerificationKey(), domain);
+  validator->ValidateInitialKey(domain);
   validator.release()->StartValidation(
       base::Bind(&EnrollmentHandlerChromeOS::HandlePolicyValidationResult,
                  weak_ptr_factory_.GetWeakPtr()));

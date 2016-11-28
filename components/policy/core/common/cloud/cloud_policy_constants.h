@@ -62,9 +62,12 @@ enum PolicyFetchStatus {
 // The header used to transmit the policy ID for this client.
 POLICY_EXPORT extern const char kChromePolicyHeader[];
 
-// Information about the verification key used to verify that policy signing
-// keys are valid.
+// Public half of the verification key that is used to verify that policy
+// signing keys are originating from DM server.  Returns empty string in case
+// policy key verification is disabled on the command line.
 POLICY_EXPORT std::string GetPolicyVerificationKey();
+
+// Corresponding hash.
 POLICY_EXPORT extern const char kPolicyVerificationKeyHash[];
 
 // Status codes for communication errors with the device management service.

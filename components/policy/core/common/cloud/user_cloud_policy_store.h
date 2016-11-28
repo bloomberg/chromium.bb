@@ -37,7 +37,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   UserCloudPolicyStore(
       const base::FilePath& policy_file,
       const base::FilePath& key_file,
-      const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
   ~UserCloudPolicyStore() override;
 
@@ -45,7 +44,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   // |profile_path|.
   static std::unique_ptr<UserCloudPolicyStore> Create(
       const base::FilePath& profile_path,
-      const std::string& verification_key,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner);
 
   // The username from signin for validation of the policy.
@@ -79,7 +77,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
   void Validate(
       std::unique_ptr<enterprise_management::PolicyFetchResponse> policy,
       std::unique_ptr<enterprise_management::PolicySigningKey> key,
-      const std::string& verification_key,
       bool validate_in_background,
       const UserCloudPolicyValidator::CompletionCallback& callback);
 
@@ -103,9 +100,6 @@ class POLICY_EXPORT UserCloudPolicyStore : public UserCloudPolicyStoreBase {
 
   // Path to file where we store the signing key for the policy blob.
   base::FilePath key_path_;
-
-  // The hard-coded key used to verify new signing keys.
-  const std::string verification_key_;
 
   // The username from signin for validation of the policy.
   std::string signin_username_;

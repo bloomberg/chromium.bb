@@ -14,6 +14,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/task_runner_util.h"
+#include "components/policy/core/common/cloud/cloud_policy_constants.h"
 #include "components/policy/proto/cloud_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "components/policy/proto/policy_signing_key.pb.h"
@@ -137,7 +138,6 @@ bool WriteStringToFile(const base::FilePath path, const std::string& data) {
 void StorePolicyToDiskOnBackgroundThread(
     const base::FilePath& policy_path,
     const base::FilePath& key_path,
-    const std::string& verification_key,
     const em::PolicyFetchResponse& policy) {
   DVLOG(1) << "Storing policy to " << policy_path.value();
   std::string data;
@@ -155,7 +155,7 @@ void StorePolicyToDiskOnBackgroundThread(
     key_info.set_signing_key(policy.new_public_key());
     key_info.set_signing_key_signature(
         policy.new_public_key_verification_signature_deprecated());
-    key_info.set_verification_key(verification_key);
+    key_info.set_verification_key(GetPolicyVerificationKey());
     std::string key_data;
     if (!key_info.SerializeToString(&key_data)) {
       DLOG(WARNING) << "Failed to serialize policy signing key";
@@ -171,12 +171,10 @@ void StorePolicyToDiskOnBackgroundThread(
 UserCloudPolicyStore::UserCloudPolicyStore(
     const base::FilePath& policy_path,
     const base::FilePath& key_path,
-    const std::string& verification_key,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner)
     : UserCloudPolicyStoreBase(background_task_runner),
       policy_path_(policy_path),
       key_path_(key_path),
-      verification_key_(verification_key),
       weak_factory_(this) {}
 
 UserCloudPolicyStore::~UserCloudPolicyStore() {}
@@ -184,14 +182,13 @@ UserCloudPolicyStore::~UserCloudPolicyStore() {}
 // static
 std::unique_ptr<UserCloudPolicyStore> UserCloudPolicyStore::Create(
     const base::FilePath& profile_path,
-    const std::string& verification_key,
     scoped_refptr<base::SequencedTaskRunner> background_task_runner) {
   base::FilePath policy_path =
       profile_path.Append(kPolicyDir).Append(kPolicyCacheFile);
   base::FilePath key_path =
       profile_path.Append(kPolicyDir).Append(kKeyCacheFile);
-  return base::WrapUnique(new UserCloudPolicyStore(
-      policy_path, key_path, verification_key, background_task_runner));
+  return base::WrapUnique(
+      new UserCloudPolicyStore(policy_path, key_path, background_task_runner));
 }
 
 void UserCloudPolicyStore::SetSigninUsername(const std::string& username) {
@@ -262,9 +259,8 @@ void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
           new em::PolicySigningKey(result.key));
 
       bool doing_key_rotation = false;
-      const std::string& verification_key = verification_key_;
       if (!key->has_verification_key() ||
-          key->verification_key() != verification_key_) {
+          key->verification_key() != GetPolicyVerificationKey()) {
         // The cached key didn't match our current key, so we're doing a key
         // rotation - make sure we request a new key from the server on our
         // next fetch.
@@ -276,8 +272,7 @@ void UserCloudPolicyStore::PolicyLoaded(bool validate_in_background,
       }
 
       Validate(
-          std::move(cloud_policy), std::move(key), verification_key,
-          validate_in_background,
+          std::move(cloud_policy), std::move(key), validate_in_background,
           base::Bind(&UserCloudPolicyStore::InstallLoadedPolicyAfterValidation,
                      weak_factory_.GetWeakPtr(), doing_key_rotation,
                      result.key.has_signing_key() ? result.key.signing_key()
@@ -332,15 +327,13 @@ void UserCloudPolicyStore::Store(const em::PolicyFetchResponse& policy) {
   std::unique_ptr<em::PolicyFetchResponse> policy_copy(
       new em::PolicyFetchResponse(policy));
   Validate(std::move(policy_copy), std::unique_ptr<em::PolicySigningKey>(),
-           verification_key_, true,
-           base::Bind(&UserCloudPolicyStore::StorePolicyAfterValidation,
-                      weak_factory_.GetWeakPtr()));
+           true, base::Bind(&UserCloudPolicyStore::StorePolicyAfterValidation,
+                            weak_factory_.GetWeakPtr()));
 }
 
 void UserCloudPolicyStore::Validate(
     std::unique_ptr<em::PolicyFetchResponse> policy,
     std::unique_ptr<em::PolicySigningKey> cached_key,
-    const std::string& verification_key,
     bool validate_in_background,
     const UserCloudPolicyValidator::CompletionCallback& callback) {
   // Configure the validator.
@@ -393,7 +386,6 @@ void UserCloudPolicyStore::Validate(
 
     validator->ValidateCachedKey(cached_key->signing_key(),
                                  cached_key->signing_key_signature(),
-                                 verification_key,
                                  owning_domain);
     // Loading from cache, so don't allow key rotation.
     validator->ValidateSignature(cached_key->signing_key());
@@ -404,14 +396,14 @@ void UserCloudPolicyStore::Validate(
       // Case #3 - no valid existing policy key (either this is the initial
       // policy fetch, or we're doing a key rotation), so this new policy fetch
       // should include an initial key provision.
-      validator->ValidateInitialKey(verification_key, owning_domain);
+      validator->ValidateInitialKey(owning_domain);
     } else {
       // Case #4 - verify new policy with existing key. We always allow key
       // rotation - the verification key will prevent invalid policy from being
       // injected. |persisted_policy_key_| is already known to be valid, so no
       // need to verify via ValidateCachedKey().
-      validator->ValidateSignatureAllowingRotation(
-          persisted_policy_key_, verification_key, owning_domain);
+      validator->ValidateSignatureAllowingRotation(persisted_policy_key_,
+                                                   owning_domain);
     }
   }
 
@@ -443,10 +435,8 @@ void UserCloudPolicyStore::StorePolicyAfterValidation(
   // Persist the validated policy (just fire a task - don't bother getting a
   // reply because we can't do anything if it fails).
   background_task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&StorePolicyToDiskOnBackgroundThread,
-                 policy_path_, key_path_, verification_key_,
-                 *validator->policy()));
+      FROM_HERE, base::Bind(&StorePolicyToDiskOnBackgroundThread, policy_path_,
+                            key_path_, *validator->policy()));
 
   // If the key was rotated, update our local cache of the key.
   if (validator->policy()->has_new_public_key())

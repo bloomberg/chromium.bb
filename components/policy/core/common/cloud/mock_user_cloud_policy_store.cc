@@ -9,7 +9,6 @@ namespace policy {
 MockUserCloudPolicyStore::MockUserCloudPolicyStore()
     : UserCloudPolicyStore(base::FilePath(),
                            base::FilePath(),
-                           std::string(),
                            scoped_refptr<base::SequencedTaskRunner>()) {}
 
 MockUserCloudPolicyStore::~MockUserCloudPolicyStore() {}

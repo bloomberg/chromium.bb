@@ -150,12 +150,10 @@ void UserCloudPolicyStoreChromeOS::ValidatePolicyForStore(
       std::move(policy), CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
   validator->ValidateUsername(account_id_.GetUserEmail(), true);
   if (cached_policy_key_.empty()) {
-    validator->ValidateInitialKey(GetPolicyVerificationKey(),
-                                  ExtractDomain(account_id_.GetUserEmail()));
+    validator->ValidateInitialKey(ExtractDomain(account_id_.GetUserEmail()));
   } else {
     validator->ValidateSignatureAllowingRotation(
-        cached_policy_key_, GetPolicyVerificationKey(),
-        ExtractDomain(account_id_.GetUserEmail()));
+        cached_policy_key_, ExtractDomain(account_id_.GetUserEmail()));
   }
 
   // Start validation. The Validator will delete itself once validation is

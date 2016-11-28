@@ -143,8 +143,8 @@ UserCloudPolicyManagerFactory::CreateManagerForOriginalBrowserContext(
   // Instead, instances are instantiated via CreateServiceNow().
   DCHECK(!testing_factory_);
 
-  std::unique_ptr<UserCloudPolicyStore> store(UserCloudPolicyStore::Create(
-      context->GetPath(), GetPolicyVerificationKey(), background_task_runner));
+  std::unique_ptr<UserCloudPolicyStore> store(
+      UserCloudPolicyStore::Create(context->GetPath(), background_task_runner));
   if (force_immediate_load)
     store->LoadImmediately();
 
