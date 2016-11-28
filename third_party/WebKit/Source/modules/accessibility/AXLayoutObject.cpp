@@ -67,6 +67,7 @@
 #include "core/layout/LayoutListMarker.h"
 #include "core/layout/LayoutMenuList.h"
 #include "core/layout/LayoutTextControl.h"
+#include "core/layout/LayoutTextFragment.h"
 #include "core/layout/LayoutView.h"
 #include "core/layout/api/LayoutAPIShim.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -125,6 +126,13 @@ static inline bool isInlineWithContinuation(LayoutObject* object) {
 static inline LayoutObject* firstChildConsideringContinuation(
     LayoutObject* layoutObject) {
   LayoutObject* firstChild = layoutObject->slowFirstChild();
+
+  // CSS first-letter pseudo element is handled as continuation. Returning it
+  // will result in duplicated elements.
+  if (firstChild && firstChild->isText() &&
+      toLayoutText(firstChild)->isTextFragment() &&
+      toLayoutTextFragment(firstChild)->firstLetterPseudoElement())
+    return nullptr;
 
   if (!firstChild && isInlineWithContinuation(layoutObject))
     firstChild = firstChildInContinuation(toLayoutInline(*layoutObject));
