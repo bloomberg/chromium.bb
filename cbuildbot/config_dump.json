@@ -27855,8 +27855,7 @@
         "active_waterfall": "chromeos",
         "boards": [
             "x86-mario"
-        ],
-        "important": true
+        ]
     },
     "x86-mario-release-afdo": {
         "_template": "release_afdo_generate",

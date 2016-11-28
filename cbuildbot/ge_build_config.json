@@ -1278,7 +1278,7 @@
       "configs": [
         {
           "builder": "RELEASE",
-          "experimental": false,
+          "experimental": true,
           "leader_board": true,
           "board_group": "pineview",
           "arch": "X86_INTERNAL"
