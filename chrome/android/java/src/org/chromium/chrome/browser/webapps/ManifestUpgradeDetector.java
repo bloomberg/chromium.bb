@@ -8,7 +8,8 @@ import android.text.TextUtils;
 
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.util.UrlUtilities;
-import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
+
+import java.util.Map;
 
 /**
  * This class checks whether the WebAPK needs to be re-installed and sends a request to re-install
@@ -23,20 +24,24 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
          * TODO(pkotwicz): Add calls to {@link #onFinishedFetchingWebManifestForInitialUrl()}.
          * @param needsUpgrade Whether the WebAPK should be updated because the Web Manifest has
          *                     changed. False if the Web Manifest could not be fetched.
-         * @param data         The fetched Web Manifest data. Null if the initial URL does not point
+         * @param info         The fetched Web Manifest data. Null if the initial URL does not point
          *                     to a Web Manifest.
+         * @param bestIconUrl  The icon URL in {@link WebApkInfo#iconUrlToMurmur2HashMap()} best
+         *                     suited for use as the launcher icon on this device.
          */
         void onFinishedFetchingWebManifestForInitialUrl(
-                boolean needsUpgrade, FetchedManifestData data);
+                boolean needsUpgrade, WebApkInfo info, String bestIconUrl);
 
         /**
          * Called when the Web Manifest has been successfully fetched (including on the initial URL
          * load).
          * @param needsUpgrade Whether the WebAPK should be updated because the Web Manifest has
-         *        changed.
-         * @param data The fetched Web Manifest data.
+         *                     changed.
+         * @param info         The fetched Web Manifest data.
+         * @param bestIconUrl  The icon URL in {@link WebApkInfo#iconUrlToMurmur2HashMap()} best
+         *                     suited for use as the launcher icon on this device.
          */
-        void onGotManifestData(boolean needsUpgrade, FetchedManifestData data);
+        void onGotManifestData(boolean needsUpgrade, WebApkInfo info, String bestIconUrl);
     }
 
     private static final String TAG = "cr_UpgradeDetector";
@@ -47,7 +52,7 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     /**
      * Web Manifest data at time that the WebAPK was generated.
      */
-    private WebApkMetaData mMetaData;
+    private WebApkInfo mInfo;
 
     /**
      * Fetches the WebAPK's Web Manifest from the web.
@@ -61,12 +66,12 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * @param tab WebAPK's tab.
      * @param webappInfo Parameters used for generating the WebAPK. Extracted from WebAPK's Android
      *                   manifest.
-     * @param metadata Metadata from WebAPK's Android Manifest.
-     * @param callback Called once it has been determined whether the WebAPK needs to be upgraded.
+     * @param info       Web Manifest data at the time that the WebAPK was generated.
+     * @param callback   Called once it has been determined whether the WebAPK needs to be upgraded.
      */
-    public ManifestUpgradeDetector(Tab tab, WebApkMetaData metaData, Callback callback) {
+    public ManifestUpgradeDetector(Tab tab, WebApkInfo info, Callback callback) {
         mTab = tab;
-        mMetaData = metaData;
+        mInfo = info;
         mCallback = callback;
     }
 
@@ -76,12 +81,8 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
     public boolean start() {
         if (mFetcher != null) return false;
 
-        if (TextUtils.isEmpty(mMetaData.manifestUrl)) {
-            return false;
-        }
-
         mFetcher = createFetcher();
-        return mFetcher.start(mTab, mMetaData.scope, mMetaData.manifestUrl, this);
+        return mFetcher.start(mTab, mInfo, this);
     }
 
     /**
@@ -105,32 +106,51 @@ public class ManifestUpgradeDetector implements ManifestUpgradeDetectorFetcher.C
      * Called when the updated Web Manifest has been fetched.
      */
     @Override
-    public void onGotManifestData(FetchedManifestData fetchedData) {
+    public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
         mFetcher.destroy();
         mFetcher = null;
 
         // TODO(hanxi): crbug.com/627824. Validate whether the new fetched data is
         // WebAPK-compatible.
-        boolean upgrade = needsUpgrade(fetchedData);
-        mCallback.onGotManifestData(upgrade, fetchedData);
+        boolean upgrade = needsUpgrade(fetchedInfo, bestIconUrl);
+        mCallback.onGotManifestData(upgrade, fetchedInfo, bestIconUrl);
     }
 
     /**
      * Checks whether the WebAPK needs to be upgraded provided the fetched manifest data.
      */
-    private boolean needsUpgrade(FetchedManifestData fetchedData) {
-        String metaDataBestIconMurmur2Hash =
-                mMetaData.iconUrlAndIconMurmur2HashMap.get(fetchedData.bestIconUrl);
+    private boolean needsUpgrade(WebApkInfo fetchedInfo, String bestIconUrl) {
+        // We should have computed the Murmur2 hash for the bitmap at the best icon URL for
+        // {@link fetchedInfo} (but not the other icon URLs.)
+        String fetchedBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
+        String bestIconMurmur2Hash =
+                findMurmur2HashForUrlIgnoringFragment(mInfo.iconUrlToMurmur2HashMap(), bestIconUrl);
 
-        return !TextUtils.equals(metaDataBestIconMurmur2Hash, fetchedData.bestIconMurmur2Hash)
-                || !urlsMatchIgnoringFragments(mMetaData.scope, fetchedData.scopeUrl)
-                || !urlsMatchIgnoringFragments(mMetaData.startUrl, fetchedData.startUrl)
-                || !TextUtils.equals(mMetaData.shortName, fetchedData.shortName)
-                || !TextUtils.equals(mMetaData.name, fetchedData.name)
-                || mMetaData.backgroundColor != fetchedData.backgroundColor
-                || mMetaData.themeColor != fetchedData.themeColor
-                || mMetaData.orientation != fetchedData.orientation
-                || mMetaData.displayMode != fetchedData.displayMode;
+        return !TextUtils.equals(bestIconMurmur2Hash, fetchedBestIconMurmur2Hash)
+                || !urlsMatchIgnoringFragments(
+                           mInfo.scopeUri().toString(), fetchedInfo.scopeUri().toString())
+                || !urlsMatchIgnoringFragments(
+                           mInfo.manifestStartUrl(), fetchedInfo.manifestStartUrl())
+                || !TextUtils.equals(mInfo.shortName(), fetchedInfo.shortName())
+                || !TextUtils.equals(mInfo.name(), fetchedInfo.name())
+                || mInfo.backgroundColor() != fetchedInfo.backgroundColor()
+                || mInfo.themeColor() != fetchedInfo.themeColor()
+                || mInfo.orientation() != fetchedInfo.orientation()
+                || mInfo.displayMode() != fetchedInfo.displayMode();
+    }
+
+    /**
+     * Returns the Murmur2 hash for entry in {@link iconUrlToMurmur2HashMap} whose canonical
+     * representation, ignoring fragments, matches {@link iconUrlToMatch}.
+     */
+    private String findMurmur2HashForUrlIgnoringFragment(
+            Map<String, String> iconUrlToMurmur2HashMap, String iconUrlToMatch) {
+        for (Map.Entry<String, String> entry : iconUrlToMurmur2HashMap.entrySet()) {
+            if (urlsMatchIgnoringFragments(entry.getKey(), iconUrlToMatch)) {
+                return entry.getValue();
+            }
+        }
+        return null;
     }
 
     /**

@@ -12,10 +12,11 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.net.test.EmbeddedTestServer;
+
+import java.util.HashMap;
 
 /**
  * Tests the ManifestUpgradeDetectorFetcher.
@@ -49,13 +50,13 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
     private static class CallbackWaiter
             extends CallbackHelper implements ManifestUpgradeDetectorFetcher.Callback {
         private String mName;
-        private String mIconMurmur2Hash;
+        private String mBestIconMurmur2Hash;
 
         @Override
-        public void onGotManifestData(FetchedManifestData fetchedData) {
+        public void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl) {
             assertNull(mName);
-            mName = fetchedData.name;
-            mIconMurmur2Hash = fetchedData.bestIconMurmur2Hash;
+            mName = fetchedInfo.name();
+            mBestIconMurmur2Hash = fetchedInfo.iconUrlToMurmur2HashMap().get(bestIconUrl);
             notifyCalled();
         }
 
@@ -63,8 +64,8 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
             return mName;
         }
 
-        public String iconMurmur2Hash() {
-            return mIconMurmur2Hash;
+        public String bestIconMurmur2Hash() {
+            return mBestIconMurmur2Hash;
         }
     }
 
@@ -96,7 +97,10 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                fetcher.start(mTab, scopeUrl, manifestUrl, callback);
+                WebApkInfo oldInfo = WebApkInfo.create("", "", scopeUrl, null, null, null, -1, -1,
+                        -1, -1, -1, "random.package", -1, manifestUrl, null,
+                        new HashMap<String, String>());
+                fetcher.start(mTab, oldInfo, callback);
             }
         });
     }
@@ -155,6 +159,6 @@ public class ManifestUpgradeDetectorFetcherTest extends ChromeTabbedActivityTest
                 mTestServer, mTab, WEB_MANIFEST_WITH_LONG_ICON_MURMUR2_HASH);
         waiter.waitForCallback(0);
 
-        assertEquals(LONG_ICON_MURMUR2_HASH, waiter.iconMurmur2Hash());
+        assertEquals(LONG_ICON_MURMUR2_HASH, waiter.bestIconMurmur2Hash());
     }
 }

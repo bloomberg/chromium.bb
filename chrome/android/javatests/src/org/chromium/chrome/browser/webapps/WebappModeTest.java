@@ -73,9 +73,9 @@ public class WebappModeTest extends MultiActivityTestBase {
             intent.putExtra(ShortcutHelper.EXTRA_MAC, mac);
         }
 
-        WebappInfo webappInfo = WebappInfo.create(id, url, null, icon, title, null,
-                WebDisplayMode.Standalone, ScreenOrientationValues.PORTRAIT, ShortcutSource.UNKNOWN,
-                ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
+        WebappInfo webappInfo = WebappInfo.create(id, url, null, new WebappInfo.Icon(icon), title,
+                null, WebDisplayMode.Standalone, ScreenOrientationValues.PORTRAIT,
+                ShortcutSource.UNKNOWN, ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING,
                 ShortcutHelper.MANIFEST_COLOR_INVALID_OR_MISSING, false);
         webappInfo.setWebappIntentExtras(intent);
 

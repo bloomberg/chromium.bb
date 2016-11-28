@@ -1031,8 +1031,6 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/webapps/WebApkInfo.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkInstaller.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkManagedActivity.java",
-  "java/src/org/chromium/chrome/browser/webapps/WebApkMetaData.java",
-  "java/src/org/chromium/chrome/browser/webapps/WebApkMetaDataUtils.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkUpdateManager.java",
   "java/src/org/chromium/chrome/browser/webapps/WebApkVersionManager.java",
   "java/src/org/chromium/chrome/browser/webapps/WebappActivity.java",
@@ -1507,7 +1505,6 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/webapps/WebappDataStorageTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebappRegistryTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkInfoTest.java",
-  "junit/src/org/chromium/chrome/browser/webapps/WebApkMetaDataUtilsTest.java",
   "junit/src/org/chromium/chrome/browser/webapps/WebApkUpdateManagerTest.java",
 ]
 

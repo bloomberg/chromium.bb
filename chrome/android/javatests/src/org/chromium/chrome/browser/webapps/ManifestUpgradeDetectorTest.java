@@ -12,13 +12,13 @@ import org.chromium.base.test.util.CallbackHelper;
 import org.chromium.base.test.util.Feature;
 import org.chromium.blink_public.platform.WebDisplayMode;
 import org.chromium.chrome.browser.tab.Tab;
-import org.chromium.chrome.browser.webapps.ManifestUpgradeDetectorFetcher.FetchedManifestData;
 import org.chromium.chrome.test.ChromeTabbedActivityTestBase;
 import org.chromium.chrome.test.util.browser.WebappTestPage;
 import org.chromium.content_public.common.ScreenOrientationValues;
 import org.chromium.net.test.EmbeddedTestServer;
 
 import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Tests ManifestUpgradeDetector. This class contains tests which cannot be done as JUnit tests.
@@ -53,10 +53,10 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
 
         @Override
         public void onFinishedFetchingWebManifestForInitialUrl(
-                boolean needsUpgrade, FetchedManifestData data) {}
+                boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {}
 
-        public void onGotManifestData(boolean needsUpgrade, FetchedManifestData data) {
-            mName = data.name;
+        public void onGotManifestData(boolean needsUpgrade, WebApkInfo info, String bestIconUrl) {
+            mName = info.name();
             mNeedsUpgrade = needsUpgrade;
             notifyCalled();
         }
@@ -70,23 +70,36 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         }
     }
 
-    public WebApkMetaData defaultWebApkMetaData(EmbeddedTestServer server) {
-        WebApkMetaData metaData = new WebApkMetaData();
-        metaData.manifestUrl = mTestServer.getURL(WEBAPK_MANIFEST_URL);
-        metaData.startUrl = server.getURL(WEBAPK_START_URL);
-        metaData.scope = server.getURL(WEBAPK_SCOPE_URL);
-        metaData.name = WEBAPK_NAME;
-        metaData.shortName = WEBAPK_SHORT_NAME;
-        metaData.displayMode = WEBAPK_DISPLAY_MODE;
-        metaData.orientation = WEBAPK_ORIENTATION;
-        metaData.themeColor = WEBAPK_THEME_COLOR;
-        metaData.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+    private static class CreationData {
+        public String manifestUrl;
+        public String startUrl;
+        public String scope;
+        public String name;
+        public String shortName;
+        public Map<String, String> iconUrlToMurmur2HashMap;
+        public int displayMode;
+        public int orientation;
+        public long themeColor;
+        public long backgroundColor;
+    }
 
-        metaData.iconUrlAndIconMurmur2HashMap = new HashMap<String, String>();
-        metaData.iconUrlAndIconMurmur2HashMap.put(server.getURL(WEBAPK_ICON_URL),
-                WEBAPK_ICON_MURMUR2_HASH);
+    public CreationData defaultCreationData(EmbeddedTestServer server) {
+        CreationData creationData = new CreationData();
+        creationData.manifestUrl = mTestServer.getURL(WEBAPK_MANIFEST_URL);
+        creationData.startUrl = server.getURL(WEBAPK_START_URL);
+        creationData.scope = server.getURL(WEBAPK_SCOPE_URL);
+        creationData.name = WEBAPK_NAME;
+        creationData.shortName = WEBAPK_SHORT_NAME;
 
-        return metaData;
+        creationData.iconUrlToMurmur2HashMap = new HashMap<String, String>();
+        creationData.iconUrlToMurmur2HashMap.put(
+                server.getURL(WEBAPK_ICON_URL), WEBAPK_ICON_MURMUR2_HASH);
+
+        creationData.displayMode = WEBAPK_DISPLAY_MODE;
+        creationData.orientation = WEBAPK_ORIENTATION;
+        creationData.themeColor = WEBAPK_THEME_COLOR;
+        creationData.backgroundColor = WEBAPK_BACKGROUND_COLOR;
+        return creationData;
     }
 
     @Override
@@ -113,9 +126,13 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
      * Web Manifest and determined whether the WebAPK needs to be upgraded.
      */
     private void startManifestUpgradeDetector(
-            WebApkMetaData metaData, final ManifestUpgradeDetector.Callback callback) {
-        final ManifestUpgradeDetector detector =
-                new ManifestUpgradeDetector(mTab, metaData, callback);
+            CreationData creationData, final ManifestUpgradeDetector.Callback callback) {
+        WebApkInfo info = WebApkInfo.create("", "", creationData.scope, null, creationData.name,
+                creationData.shortName, creationData.displayMode, creationData.orientation, 0,
+                creationData.themeColor, creationData.backgroundColor, "", 0,
+                creationData.manifestUrl, creationData.startUrl,
+                creationData.iconUrlToMurmur2HashMap);
+        final ManifestUpgradeDetector detector = new ManifestUpgradeDetector(mTab, info, callback);
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
@@ -136,7 +153,7 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         CallbackWaiter waiter = new CallbackWaiter();
 
         // URL canonicalization should replace "%74" with 't'.
-        WebApkMetaData creationData = defaultWebApkMetaData(mTestServer);
+        CreationData creationData = defaultCreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
                 "/chrome/test/data/banners/manifest_%74est_page.html");
         startManifestUpgradeDetector(creationData, waiter);
@@ -158,7 +175,7 @@ public class ManifestUpgradeDetectorTest extends ChromeTabbedActivityTestBase {
         CallbackWaiter waiter = new CallbackWaiter();
 
         // URL canonicalization should replace "%62" with 'b'.
-        WebApkMetaData creationData = defaultWebApkMetaData(mTestServer);
+        CreationData creationData = defaultCreationData(mTestServer);
         creationData.startUrl = mTestServer.getURL(
                 "/chrome/test/data/banners/manifest_%62est_page.html");
         startManifestUpgradeDetector(creationData, waiter);

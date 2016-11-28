@@ -8,10 +8,11 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 
 import org.chromium.base.annotations.CalledByNative;
-import org.chromium.chrome.browser.ShortcutHelper;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.content_public.browser.WebContents;
+
+import java.util.HashMap;
 
 /**
  * Downloads the Web Manifest if the web site still uses the {@link manifestUrl} passed to the
@@ -23,29 +24,12 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
      * Called once the Web Manifest has been downloaded.
      */
     public interface Callback {
-        void onGotManifestData(FetchedManifestData fetchedData);
-    }
-
-    /**
-     * Fetched Web Manifest data.
-     */
-    public static class FetchedManifestData {
-        public String startUrl;
-        public String scopeUrl;
-        public String name;
-        public String shortName;
-        public String bestIconUrl;
-
-        // Hash of untransformed icon bytes. The hash should have been taken prior to any
-        // encoding/decoding.
-        public String bestIconMurmur2Hash;
-
-        public Bitmap bestIcon;
-        public String[] iconUrls;
-        public int displayMode;
-        public int orientation;
-        public long themeColor;
-        public long backgroundColor;
+        /**
+         * @param fetchedInfo The fetched Web Manifest data.
+         * @param bestIconUrl Icon URL in {@link data} which is best suited for use as the launcher
+         *                    icon on this device.
+         */
+        void onGotManifestData(WebApkInfo fetchedInfo, String bestIconUrl);
     }
 
     /**
@@ -57,17 +41,25 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
     /** The tab that is being observed. */
     private Tab mTab;
 
-    protected Callback mCallback;
+    /**
+     * Web Manifest data at time that the WebAPK was generated.
+     */
+    private WebApkInfo mOldInfo;
+
+    private Callback mCallback;
 
     /**
      * Starts fetching the web manifest resources.
      * @param callback Called once the Web Manifest has been downloaded.
      */
-    public boolean start(Tab tab, String scopeUrl, String manifestUrl, Callback callback) {
-        if (tab.getWebContents() == null) return false;
+    public boolean start(Tab tab, WebApkInfo oldInfo, Callback callback) {
+        if (tab.getWebContents() == null || TextUtils.isEmpty(oldInfo.manifestUrl())) {
+            return false;
+        }
 
         mTab = tab;
-        mNativePointer = nativeInitialize(scopeUrl, manifestUrl);
+        mOldInfo = oldInfo;
+        mNativePointer = nativeInitialize(mOldInfo.scopeUri().toString(), mOldInfo.manifestUrl());
         mCallback = callback;
         mTab.addObserver(this);
         nativeStart(mNativePointer, mTab.getWebContents());
@@ -109,25 +101,18 @@ public class ManifestUpgradeDetectorFetcher extends EmptyTabObserver {
             String bestIconUrl, String bestIconMurmur2Hash, Bitmap bestIconBitmap,
             String[] iconUrls, int displayMode, int orientation, long themeColor,
             long backgroundColor) {
-        if (TextUtils.isEmpty(scopeUrl)) {
-            scopeUrl = ShortcutHelper.getScopeFromUrl(startUrl);
+        HashMap<String, String> iconUrlToMurmur2HashMap = new HashMap<String, String>();
+        for (String iconUrl : iconUrls) {
+            String murmur2Hash = (iconUrl.equals(bestIconUrl)) ? bestIconMurmur2Hash : null;
+            iconUrlToMurmur2HashMap.put(iconUrl, murmur2Hash);
         }
 
-        FetchedManifestData fetchedData = new FetchedManifestData();
-        fetchedData.startUrl = startUrl;
-        fetchedData.scopeUrl = scopeUrl;
-        fetchedData.name = name;
-        fetchedData.shortName = shortName;
-        fetchedData.bestIconUrl = bestIconUrl;
-        fetchedData.bestIconMurmur2Hash = bestIconMurmur2Hash;
-        fetchedData.bestIcon = bestIconBitmap;
-        fetchedData.iconUrls = iconUrls;
-        fetchedData.displayMode = displayMode;
-        fetchedData.orientation = orientation;
-        fetchedData.themeColor = themeColor;
-        fetchedData.backgroundColor = backgroundColor;
-
-        mCallback.onGotManifestData(fetchedData);
+        WebApkInfo info = WebApkInfo.create(mOldInfo.id(), startUrl, scopeUrl,
+                new WebApkInfo.Icon(bestIconBitmap), name, shortName, displayMode, orientation,
+                mOldInfo.source(), themeColor, backgroundColor, mOldInfo.webApkPackageName(),
+                mOldInfo.shellApkVersion(), mOldInfo.manifestUrl(), startUrl,
+                iconUrlToMurmur2HashMap);
+        mCallback.onGotManifestData(info, bestIconUrl);
     }
 
     private native long nativeInitialize(String scope, String webManifestUrl);
