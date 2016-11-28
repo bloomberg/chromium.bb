@@ -11,6 +11,7 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.ObserverList;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.content_public.browser.LoadUrlParams;
 
@@ -122,7 +123,8 @@ public class TabModelSelectorTabObserverTest extends TabModelSelectorObserverTes
     }
 
     private void assertTabHasObserver(Tab tab, TabObserver observer) {
-        ObserverList.RewindableIterator<TabObserver> tabObservers = tab.getTabObservers();
+        ObserverList.RewindableIterator<TabObserver> tabObservers =
+                TabTestUtils.getTabObservers(tab);
         tabObservers.rewind();
         boolean containsObserver = false;
         while (tabObservers.hasNext()) {
@@ -135,7 +137,8 @@ public class TabModelSelectorTabObserverTest extends TabModelSelectorObserverTes
     }
 
     private void assertTabDoesNotHaveObserver(Tab tab, TabObserver observer) {
-        ObserverList.RewindableIterator<TabObserver> tabObservers = tab.getTabObservers();
+        ObserverList.RewindableIterator<TabObserver> tabObservers =
+                TabTestUtils.getTabObservers(tab);
         tabObservers.rewind();
         while (tabObservers.hasNext()) {
             MoreAsserts.assertNotEqual(tabObservers.next(), observer);

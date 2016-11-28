@@ -22,6 +22,7 @@ import org.chromium.chrome.R;
 import org.chromium.chrome.browser.ChromeActivity;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.util.ColorUtils;
 import org.chromium.chrome.test.ChromeActivityTestCaseBase;
 import org.chromium.chrome.test.util.ChromeRestriction;
@@ -173,7 +174,7 @@ public class BrandColorTest extends ChromeActivityTestCaseBase<ChromeActivity> {
             @Override
             public void run() {
                 Tab tab = getActivity().getActivityTab();
-                RewindableIterator<TabObserver> observers = tab.getTabObservers();
+                RewindableIterator<TabObserver> observers = TabTestUtils.getTabObservers(tab);
                 while (observers.hasNext()) {
                     observers.next().onLoadStarted(tab, true);
                 }
