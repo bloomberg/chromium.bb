@@ -48,7 +48,6 @@ struct FullscreenToolbarLayout {
 // tracking, and mouse tracking associated with the toolbar. It receives input
 // from these objects to update and recompute the fullscreen toolbar laytout.
 
-// TODO (spqchan): Write tests for this class. See crbug.com/640064.
 @interface FullscreenToolbarController : NSObject {
  @private
   // Our parent controller.
@@ -131,11 +130,24 @@ struct FullscreenToolbarLayout {
 
 // Private methods exposed for testing.
 @interface FullscreenToolbarController (ExposedForTesting)
-// Adjusts the AppKit Fullscreen options of the application.
-- (void)setSystemFullscreenModeTo:(base::mac::FullScreenMode)mode;
 
-// Callback for menu bar animations.
-- (void)setMenuBarRevealProgress:(CGFloat)progress;
+// Returns |animationController_|.
+- (FullscreenToolbarAnimationController*)animationController;
+
+// Allows tests to set a mock FullscreenMenubarTracker object.
+- (void)setMenubarTracker:(FullscreenMenubarTracker*)tracker;
+
+// Allows tests to set a mock FullscreenToolbarMouseTracker object.
+- (void)setMouseTracker:(FullscreenToolbarMouseTracker*)tracker;
+
+// Sets the value of |toolbarStyle_|.
+- (void)setToolbarStyle:(FullscreenToolbarStyle)style;
+
+// Sets the value of |inFullscreenMode_|.
+- (void)setTestFullscreenMode:(BOOL)isInFullscreen;
+
+// Returns |kToolbarVerticalOffset|.
+- (CGFloat)toolbarVerticalOffset;
 
 @end
 

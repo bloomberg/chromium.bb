@@ -89,6 +89,11 @@ bool FullscreenToolbarAnimationController::IsAnimationRunning() const {
   return animation_.is_animating();
 }
 
+void FullscreenToolbarAnimationController::SetAnimationDuration(
+    CGFloat duration) {
+  animation_.SetSlideDuration(duration);
+}
+
 //////////////////////////////////////////////////////////////////
 // FullscreenToolbarAnimationController::AnimationDelegate:
 

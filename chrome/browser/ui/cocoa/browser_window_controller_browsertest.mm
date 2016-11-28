@@ -352,19 +352,6 @@ class BrowserWindowControllerTest : public InProcessBrowserTest {
     runner->Run();
   }
 
-  void VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle style) {
-    EXPECT_EQ(
-        [[controller() fullscreenToolbarController] computeLayout].toolbarStyle,
-        style);
-
-    NSRect toolbarFrame = [[[controller() toolbarController] view] frame];
-    NSRect screenFrame = [[[controller() window] screen] frame];
-    if (style == FullscreenToolbarStyle::TOOLBAR_PRESENT)
-      EXPECT_LE(NSMaxY(toolbarFrame), NSMaxY(screenFrame));
-    else
-      EXPECT_GE(NSMinY(toolbarFrame), NSMaxY(screenFrame));
-  }
-
   NSInteger GetExpectedTopInfoBarTipHeight() {
     InfoBarContainerController* info_bar_container_controller =
         [controller() infoBarContainerController];
@@ -731,30 +718,35 @@ IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest, FullscreenResizeFlags) {
 // Tests that the omnibox and tabs are hidden/visible in fullscreen mode.
 // Ensure that when the user toggles this setting, the omnibox, tabs and
 // preferences are updated correctly.
-// Flakily times out. http://crbug.com/599119
 IN_PROC_BROWSER_TEST_F(BrowserWindowControllerTest,
-                       DISABLED_FullscreenToolbarIsVisibleAccordingToPrefs) {
+                       FullscreenToolbarIsVisibleAccordingToPrefs) {
   // Tests that the preference is set to true by default.
   PrefService* prefs = browser()->profile()->GetPrefs();
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
 
+  [[controller() fullscreenToolbarController] setMenubarTracker:nil];
+
   // Toggle fullscreen and check if the toolbar is shown.
   ToggleFullscreenAndWaitForNotification();
-  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_PRESENT);
+  EXPECT_EQ(
+      FullscreenToolbarStyle::TOOLBAR_PRESENT,
+      [[controller() fullscreenToolbarController] computeLayout].toolbarStyle);
 
   // Toggle the visibility of the fullscreen toolbar. Verify that the toolbar
   // is hidden and the preference is correctly updated.
-  [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_FALSE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));
-  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_HIDDEN);
+  EXPECT_EQ(
+      FullscreenToolbarStyle::TOOLBAR_HIDDEN,
+      [[controller() fullscreenToolbarController] computeLayout].toolbarStyle);
 
   // Toggle out and back into fullscreen and verify that the toolbar is still
   // hidden.
   ToggleFullscreenAndWaitForNotification();
   ToggleFullscreenAndWaitForNotification();
-  [[controller() fullscreenToolbarController] setMenuBarRevealProgress:0.0];
-  VerifyFullscreenToolbarVisibility(FullscreenToolbarStyle::TOOLBAR_HIDDEN);
+  EXPECT_EQ(
+      FullscreenToolbarStyle::TOOLBAR_HIDDEN,
+      [[controller() fullscreenToolbarController] computeLayout].toolbarStyle);
 
   chrome::ExecuteCommand(browser(), IDC_TOGGLE_FULLSCREEN_TOOLBAR);
   EXPECT_TRUE(prefs->GetBoolean(prefs::kShowFullscreenToolbar));

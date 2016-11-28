@@ -189,3 +189,31 @@ const CGFloat kToolbarVerticalOffset = -22;
 }
 
 @end
+
+@implementation FullscreenToolbarController (ExposedForTesting)
+
+- (FullscreenToolbarAnimationController*)animationController {
+  return animationController_.get();
+}
+
+- (void)setMenubarTracker:(FullscreenMenubarTracker*)tracker {
+  menubarTracker_.reset([tracker retain]);
+}
+
+- (void)setMouseTracker:(FullscreenToolbarMouseTracker*)tracker {
+  mouseTracker_.reset([tracker retain]);
+}
+
+- (void)setToolbarStyle:(FullscreenToolbarStyle)style {
+  toolbarStyle_ = style;
+}
+
+- (void)setTestFullscreenMode:(BOOL)isInFullscreen {
+  inFullscreenMode_ = isInFullscreen;
+}
+
+- (CGFloat)toolbarVerticalOffset {
+  return kToolbarVerticalOffset;
+}
+
+@end

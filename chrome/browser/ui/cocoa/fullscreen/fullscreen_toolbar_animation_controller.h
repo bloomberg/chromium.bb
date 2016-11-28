@@ -42,6 +42,9 @@ class FullscreenToolbarAnimationController : public gfx::AnimationDelegate {
   // Returns true if |animation_| is running.
   bool IsAnimationRunning() const;
 
+  // Only for testing. Sets the duration of |animation_|.
+  void SetAnimationDuration(CGFloat duration);
+
   // gfx::AnimationDelegate:
   void AnimationProgressed(const gfx::Animation* animation) override;
   void AnimationEnded(const gfx::Animation* animation) override;
