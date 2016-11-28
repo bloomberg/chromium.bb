@@ -40,7 +40,13 @@ public class CompositorViewHolderBehavior extends Behavior<View> {
 
     @Override
     public boolean onTouchEvent(CoordinatorLayout parent, View child, MotionEvent ev) {
-        if (!mShouldIntercept) return false;
+        // If an ACTION_MOVE is dispatched to a ListView or a ScrollView and the ViewGroup
+        // intercepts it, the framework will generate an ACTION_CANCEL to the ViewGroup's children.
+        // This class, however, will steal this cancel event and send to the ViewGroup again,
+        // causing scroll to fail. Thus we should specifically not catch ACTION_CANCEL in behavior.
+        // In theory, stopping ACTION_CANCEL will cause problem when CompositorViewHolder scrolls.
+        // Yet currently CompositorViewHolder does not scroll.
+        if (!mShouldIntercept || ev.getActionMasked() == MotionEvent.ACTION_CANCEL) return false;
         ev.offsetLocation(-child.getX(), -child.getY());
         child.dispatchTouchEvent(ev);
         return true;
