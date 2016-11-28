@@ -15,12 +15,33 @@
 #include "./aom_config.h"
 #include "./av1_rtcd.h"
 #include "av1/common/filter.h"
-#include "av1/common/x86/av1_convolve_filters_ssse3.h"
 
 #define WIDTH_BOUND (16)
 #define HEIGHT_BOUND (16)
 
-typedef const int8_t (*SubpelFilterCoeffs)[16];
+#if CONFIG_EXT_INTERP
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_10sharp_signal_dir[15][2][16]);
+
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_10sharp_ver_signal_dir[15][6][16]);
+
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_12sharp_signal_dir[15][2][16]);
+
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_12sharp_ver_signal_dir[15][6][16]);
+#endif  // CONFIG_EXT_INTERP
+
+#if USE_TEMPORALFILTER_12TAP
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_temporalfilter_12_signal_dir[15][2][16]);
+
+DECLARE_ALIGNED(16, static int8_t,
+                sub_pel_filters_temporalfilter_12_ver_signal_dir[15][6][16]);
+#endif
+
+typedef int8_t (*SubpelFilterCoeffs)[16];
 
 static INLINE SubpelFilterCoeffs
 get_subpel_filter_signal_dir(const InterpFilterParams p, int index) {
@@ -918,4 +939,103 @@ void av1_convolve_vert_ssse3(const uint8_t *src, int src_stride, uint8_t *dst,
   } else {
     assert(0);
   }
+}
+
+static void init_simd_horiz_filter(const int16_t *filter_ptr, int taps,
+                                   int8_t (*simd_horiz_filter)[2][16]) {
+  int shift;
+  int offset = (12 - taps) / 2;
+  const int16_t *filter_row;
+  for (shift = 1; shift < SUBPEL_SHIFTS; ++shift) {
+    int i;
+    filter_row = filter_ptr + shift * taps;
+    for (i = 0; i < offset; ++i) simd_horiz_filter[shift - 1][0][i] = 0;
+
+    for (i = 0; i < offset + 2; ++i) simd_horiz_filter[shift - 1][1][i] = 0;
+
+    for (i = 0; i < taps; ++i) {
+      simd_horiz_filter[shift - 1][0][i + offset] = filter_row[i];
+      simd_horiz_filter[shift - 1][1][i + offset + 2] = filter_row[i];
+    }
+
+    for (i = offset + taps; i < 16; ++i) simd_horiz_filter[shift - 1][0][i] = 0;
+
+    for (i = offset + 2 + taps; i < 16; ++i)
+      simd_horiz_filter[shift - 1][1][i] = 0;
+  }
+}
+
+static void init_simd_vert_filter(const int16_t *filter_ptr, int taps,
+                                  int8_t (*simd_vert_filter)[6][16]) {
+  int shift;
+  int offset = (12 - taps) / 2;
+  const int16_t *filter_row;
+  for (shift = 1; shift < SUBPEL_SHIFTS; ++shift) {
+    int i;
+    filter_row = filter_ptr + shift * taps;
+    for (i = 0; i < 6; ++i) {
+      int j;
+      for (j = 0; j < 16; ++j) {
+        int c = i * 2 + (j % 2) - offset;
+        if (c >= 0 && c < taps)
+          simd_vert_filter[shift - 1][i][j] = filter_row[c];
+        else
+          simd_vert_filter[shift - 1][i][j] = 0;
+      }
+    }
+  }
+}
+
+typedef struct SimdFilter {
+  InterpFilter interp_filter;
+  int8_t (*simd_horiz_filter)[2][16];
+  int8_t (*simd_vert_filter)[6][16];
+} SimdFilter;
+
+#if CONFIG_EXT_INTERP
+#define MULTITAP_FILTER_NUM 2
+SimdFilter simd_filters[MULTITAP_FILTER_NUM] = {
+  { MULTITAP_SHARP, &sub_pel_filters_10sharp_signal_dir[0],
+    &sub_pel_filters_10sharp_ver_signal_dir[0] },
+  { MULTITAP_SHARP2, &sub_pel_filters_12sharp_signal_dir[0],
+    &sub_pel_filters_12sharp_ver_signal_dir[0] },
+};
+#endif
+
+#if USE_TEMPORALFILTER_12TAP
+SimdFilter temporal_simd_filter = {
+  TEMPORALFILTER_12TAP, &sub_pel_filters_temporalfilter_12_signal_dir[0],
+  &sub_pel_filters_temporalfilter_12_ver_signal_dir[0]
+};
+#endif
+
+void av1_convolve_init_ssse3(void) {
+#if USE_TEMPORALFILTER_12TAP
+  {
+    InterpFilterParams filter_params =
+        av1_get_interp_filter_params(temporal_simd_filter.interp_filter);
+    int taps = filter_params.taps;
+    const int16_t *filter_ptr = filter_params.filter_ptr;
+    init_simd_horiz_filter(filter_ptr, taps,
+                           temporal_simd_filter.simd_horiz_filter);
+    init_simd_vert_filter(filter_ptr, taps,
+                          temporal_simd_filter.simd_vert_filter);
+  }
+#endif
+#if CONFIG_EXT_INTERP
+  {
+    int i;
+    for (i = 0; i < MULTITAP_FILTER_NUM; ++i) {
+      InterpFilter interp_filter = simd_filters[i].interp_filter;
+      InterpFilterParams filter_params =
+          av1_get_interp_filter_params(interp_filter);
+      int taps = filter_params.taps;
+      const int16_t *filter_ptr = filter_params.filter_ptr;
+      init_simd_horiz_filter(filter_ptr, taps,
+                             simd_filters[i].simd_horiz_filter);
+      init_simd_vert_filter(filter_ptr, taps, simd_filters[i].simd_vert_filter);
+    }
+  }
+#endif
+  return;
 }

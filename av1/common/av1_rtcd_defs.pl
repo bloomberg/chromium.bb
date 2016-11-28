@@ -38,6 +38,9 @@ if ($opts{arch} eq "x86_64") {
 #
 # 10/12-tap convolution filters
 #
+add_proto qw/void av1_convolve_init/, "void";
+specialize qw/av1_convolve_init ssse3/;
+
 add_proto qw/void av1_convolve_horiz/, "const uint8_t *src, int src_stride, uint8_t *dst, int dst_stride, int w, int h, const InterpFilterParams fp, const int subpel_x_q4, int x_step_q4, int avg";
 specialize qw/av1_convolve_horiz ssse3/;
 

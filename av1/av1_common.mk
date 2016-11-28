@@ -69,7 +69,6 @@ AV1_COMMON_SRCS-yes += common/av1_fwd_txfm2d_cfg.h
 AV1_COMMON_SRCS-yes += common/av1_inv_txfm2d.c
 AV1_COMMON_SRCS-yes += common/av1_inv_txfm2d_cfg.h
 AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/av1_convolve_ssse3.c
-AV1_COMMON_SRCS-$(HAVE_SSSE3) += common/x86/av1_convolve_filters_ssse3.h
 ifeq ($(CONFIG_AOM_HIGHBITDEPTH),yes)
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/av1_highbd_convolve_sse4.c
 AV1_COMMON_SRCS-$(HAVE_SSE4_1) += common/x86/av1_highbd_convolve_filters_sse4.h

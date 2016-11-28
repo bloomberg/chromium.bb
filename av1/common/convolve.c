@@ -191,6 +191,11 @@ void av1_convolve(const uint8_t *src, int src_stride, uint8_t *dst,
   }
 }
 
+void av1_convolve_init_c(void) {
+  // A placeholder for SIMD initialization
+  return;
+}
+
 #if CONFIG_AOM_HIGHBITDEPTH
 void av1_highbd_convolve_horiz_c(const uint16_t *src, int src_stride,
                                  uint16_t *dst, int dst_stride, int w, int h,
