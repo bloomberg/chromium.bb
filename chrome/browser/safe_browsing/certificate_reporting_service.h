@@ -15,6 +15,7 @@
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/certificate_reporting/error_reporter.h"
+#include "components/keyed_service/core/keyed_service.h"
 
 namespace base {
 class Clock;
@@ -22,7 +23,7 @@ class Clock;
 
 // This service initiates uploads of invalid certificate reports and retries any
 // failed uploads.
-class CertificateReportingService {
+class CertificateReportingService : public KeyedService {
  public:
   // Represent a report to be sent.
   struct Report {

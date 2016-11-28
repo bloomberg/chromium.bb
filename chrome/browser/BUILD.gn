@@ -1967,8 +1967,12 @@ split_static_library("browser") {
     sources += [
       "loader/data_reduction_proxy_resource_throttle_android.cc",
       "loader/data_reduction_proxy_resource_throttle_android.h",
+      "safe_browsing/certificate_reporting_metrics_provider.cc",
+      "safe_browsing/certificate_reporting_metrics_provider.h",
       "safe_browsing/certificate_reporting_service.cc",
       "safe_browsing/certificate_reporting_service.h",
+      "safe_browsing/certificate_reporting_service_factory.cc",
+      "safe_browsing/certificate_reporting_service_factory.h",
       "safe_browsing/permission_reporter.cc",
       "safe_browsing/permission_reporter.h",
       "safe_browsing/ping_manager.cc",
