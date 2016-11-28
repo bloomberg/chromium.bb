@@ -2410,6 +2410,8 @@
       'data/name_constraints_unittest/dnsname-exclude_dot.pem',
       'data/name_constraints_unittest/dnsname-excludeall.pem',
       'data/name_constraints_unittest/dnsname-excluded.pem',
+      'data/name_constraints_unittest/dnsname-excluded_with_leading_dot.pem',
+      'data/name_constraints_unittest/dnsname-permitted_two_dot.pem',
       'data/name_constraints_unittest/dnsname-permitted_with_leading_dot.pem',
       'data/name_constraints_unittest/dnsname-with_max.pem',
       'data/name_constraints_unittest/dnsname-with_min_0.pem',
