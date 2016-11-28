@@ -134,7 +134,7 @@ inline unsigned CSSSelector::specificityForOneSelector() const {
     case Unknown:
       return 0;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0;
 }
 
@@ -158,7 +158,7 @@ unsigned CSSSelector::specificityForPage() const {
             s += 1;
             break;
           default:
-            ASSERT_NOT_REACHED();
+            NOTREACHED();
         }
         break;
       default:
@@ -272,7 +272,7 @@ PseudoId CSSSelector::pseudoId(PseudoType type) {
       return PseudoIdNone;
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return PseudoIdNone;
 }
 

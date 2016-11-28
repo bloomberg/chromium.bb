@@ -61,7 +61,7 @@ bool BarProp::visible() const {
       return host->chromeClient().statusbarVisible();
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

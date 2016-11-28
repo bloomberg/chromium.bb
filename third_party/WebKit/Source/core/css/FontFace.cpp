@@ -80,7 +80,7 @@ FontFace* FontFace::create(ExecutionContext* context,
     return create(context, family, source.getAsArrayBuffer(), descriptors);
   if (source.isArrayBufferView())
     return create(context, family, source.getAsArrayBufferView(), descriptors);
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return nullptr;
 }
 
@@ -298,7 +298,7 @@ bool FontFace::setPropertyValue(const CSSValue* value,
       m_display = value;
       break;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return false;
   }
   return true;
@@ -350,7 +350,7 @@ String FontFace::status() const {
     case Error:
       return "error";
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
   }
   return emptyString();
 }

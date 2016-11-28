@@ -1244,7 +1244,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
 
   virtual LayoutBox* createAnonymousBoxWithSameTypeAs(
       const LayoutObject*) const {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return nullptr;
   }
 

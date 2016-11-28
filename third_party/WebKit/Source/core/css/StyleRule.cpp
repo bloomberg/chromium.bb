@@ -88,7 +88,7 @@ DEFINE_TRACE(StyleRuleBase) {
       toStyleRuleViewport(this)->traceAfterDispatch(visitor);
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void StyleRuleBase::finalizeGarbageCollectedObject() {
@@ -127,7 +127,7 @@ void StyleRuleBase::finalizeGarbageCollectedObject() {
       toStyleRuleViewport(this)->~StyleRuleViewport();
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 StyleRuleBase* StyleRuleBase::copy() const {
@@ -144,7 +144,7 @@ StyleRuleBase* StyleRuleBase::copy() const {
       return toStyleRuleSupports(this)->copy();
     case Import:
       // FIXME: Copy import rules.
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return nullptr;
     case Keyframes:
       return toStyleRuleKeyframes(this)->copy();

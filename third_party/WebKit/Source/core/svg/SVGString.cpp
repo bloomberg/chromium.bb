@@ -24,7 +24,7 @@
 namespace blink {
 
 void SVGString::add(SVGPropertyBase*, SVGElement*) {
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGString::calculateAnimatedValue(SVGAnimationElement* animationElement,

@@ -111,7 +111,7 @@ inline bool ShapeValue::operator==(const ShapeValue& other) const {
       return dataEquivalent(image(), other.image());
   }
 
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return false;
 }
 

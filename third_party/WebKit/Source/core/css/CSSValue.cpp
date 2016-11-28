@@ -211,7 +211,7 @@ bool CSSValue::equals(const CSSValue& other) const {
       case PendingSubstitutionValueClass:
         return compareCSSValues<CSSPendingSubstitutionValue>(*this, other);
     }
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
     return false;
   }
   return false;
@@ -304,7 +304,7 @@ String CSSValue::cssText() const {
     case PendingSubstitutionValueClass:
       return toCSSPendingSubstitutionValue(this)->customCSSText();
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return String();
 }
 
@@ -438,7 +438,7 @@ void CSSValue::finalizeGarbageCollectedObject() {
       toCSSPendingSubstitutionValue(this)->~CSSPendingSubstitutionValue();
       return;
   }
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 DEFINE_TRACE(CSSValue) {

@@ -95,7 +95,7 @@ String SVGPoint::valueAsString() const {
 
 void SVGPoint::add(SVGPropertyBase* other, SVGElement*) {
   // SVGPoint is not animated by itself
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement,
@@ -106,13 +106,13 @@ void SVGPoint::calculateAnimatedValue(SVGAnimationElement* animationElement,
                                       SVGPropertyBase* toAtEndOfDurationValue,
                                       SVGElement*) {
   // SVGPoint is not animated by itself
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 float SVGPoint::calculateDistance(SVGPropertyBase* to,
                                   SVGElement* contextElement) {
   // SVGPoint is not animated by itself
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return 0.0f;
 }
 

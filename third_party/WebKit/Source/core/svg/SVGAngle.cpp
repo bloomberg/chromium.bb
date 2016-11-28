@@ -64,7 +64,7 @@ void SVGMarkerOrientEnumeration::notifyChange() {
 
 void SVGMarkerOrientEnumeration::add(SVGPropertyBase*, SVGElement*) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 void SVGMarkerOrientEnumeration::calculateAnimatedValue(
@@ -76,14 +76,14 @@ void SVGMarkerOrientEnumeration::calculateAnimatedValue(
     SVGPropertyBase* toAtEndOfDurationValue,
     SVGElement* contextElement) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
 }
 
 float SVGMarkerOrientEnumeration::calculateDistance(
     SVGPropertyBase* to,
     SVGElement* contextElement) {
   // SVGMarkerOrientEnumeration is only animated via SVGAngle
-  ASSERT_NOT_REACHED();
+  NOTREACHED();
   return -1.0;
 }
 
