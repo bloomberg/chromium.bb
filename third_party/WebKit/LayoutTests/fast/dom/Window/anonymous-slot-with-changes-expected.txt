@@ -1,5 +1,5 @@
 Tests that we clone object hierarchies
-PASS: 'postMessage((function(){}))' threw DataCloneError: Failed to execute 'postMessage' on 'Window': An object could not be cloned.
+PASS: 'postMessage((function(){}))' threw DataCloneError: Failed to execute 'postMessage' on 'Window': function (){} could not be cloned.
 PASS: eventData is null of type object
 PASS: eventData is null of type object
 PASS: eventData is null of type object

@@ -152,22 +152,6 @@ PASS areValuesIdentical(newObj, obj) is true
 Serialize -10:
 PASS bufferView.length is expectedBufferValues.length
 
-Deserialize to 1073741824:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize 1073741824:
-PASS bufferView.length is expectedBufferValues.length
-
-Backwards compatibility with version 3 serialization.
-
-Deserialize to 1073741824:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize 1073741824:
-PASS bufferView.length is expectedBufferValues.length
-
 Deserialize to 36028797018963970:
 PASS JSON.stringify(newObj) is JSON.stringify(obj)
 PASS areValuesIdentical(newObj, obj) is true
@@ -198,38 +182,6 @@ PASS areValuesIdentical(newObj, obj) is true
 PASS JSON.stringify(newObj) is JSON.stringify(obj)
 PASS areValuesIdentical(newObj, obj) is true
 Serialize 1.23:
-PASS bufferView.length is expectedBufferValues.length
-
-Deserialize to 2147483647:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize 2147483647:
-PASS bufferView.length is expectedBufferValues.length
-
-Backwards compatibility with version 3 serialization.
-
-Deserialize to 2147483647:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize 2147483647:
-PASS bufferView.length is expectedBufferValues.length
-
-Deserialize to -2147483648:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize -2147483648:
-PASS bufferView.length is expectedBufferValues.length
-
-Backwards compatibility with version 3 serialization.
-
-Deserialize to -2147483648:
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-PASS JSON.stringify(newObj) is JSON.stringify(obj)
-PASS areValuesIdentical(newObj, obj) is true
-Serialize -2147483648:
 PASS bufferView.length is expectedBufferValues.length
 
 Deserialize to 2147483648:

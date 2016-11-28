@@ -16,7 +16,7 @@ PASS Posting message ('[object MessagePort]', [object MessagePort],[object Messa
 PASS Posting message ('[object MessagePort]', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('[object MessagePort],[object MessagePort]', [object MessagePort],[object MessagePort]) did not throw an exception
 PASS Posting message ('data', [object MessagePort],[object MessagePort]): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': Port at index 0 is already neutered.
-PASS Posting message ('[object MessagePort],[object MessagePort]', ): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': A MessagePort could not be cloned.
+PASS Posting message ('[object MessagePort],[object MessagePort]', ): threw exception DataCloneError: Failed to execute 'postMessage' on 'Window': A MessagePort could not be cloned because it was not transferred.
 PASS Posting message ('[object ArrayBuffer]', [object ArrayBuffer]) did not throw an exception
 PASS arrayBuffer neutered
 PASS view neutered

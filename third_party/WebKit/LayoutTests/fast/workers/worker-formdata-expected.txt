@@ -12,7 +12,7 @@ PASS [Worker] formData.append('key', 'value'); did not throw exception.
 PASS [Worker] blob is non-null.
 PASS [Worker] formData.append('key', blob); did not throw exception.
 PASS [Worker] formData.append('key', blob, 'filename'); did not throw exception.
-PASS [Worker] postMessage(formData) threw exception DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': An object could not be cloned..
+PASS [Worker] postMessage(formData) threw exception DataCloneError: Failed to execute 'postMessage' on 'DedicatedWorkerGlobalScope': FormData object could not be cloned..
 PASS successfullyParsed is true
 
 TEST COMPLETE

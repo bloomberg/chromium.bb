@@ -175,7 +175,7 @@ window.tryPostMessage = function(message, shouldThrow, expected, expectedExcepti
         }
     } catch(e) {
         if (shouldThrow) {
-            if (expectedException === undefined || expectedException == e.code || expectedException == e) {
+            if (expectedException === undefined || expectedException == e.code || expectedException == e || e instanceof expectedException) {
                 console.innerHTML += "PASS: 'postMessage("+message+")' threw " + escapeHTML(e) + "<br>";
             } else {
                 console.innerHTML += "FAIL: 'postMessage("+message+")' threw " + escapeHTML(e) + ", was expecting " + escapeHTML(expectedException) + "<br>";
