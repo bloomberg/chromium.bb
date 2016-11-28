@@ -26,6 +26,7 @@
 #ifndef ArrayBuffer_h
 #define ArrayBuffer_h
 
+#include "wtf/Assertions.h"
 #include "wtf/HashSet.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/RefCounted.h"
@@ -131,7 +132,8 @@ PassRefPtr<ArrayBuffer> ArrayBuffer::create(const void* source,
                                             unsigned byteLength) {
   ArrayBufferContents contents(byteLength, 1, ArrayBufferContents::NotShared,
                                ArrayBufferContents::DontInitialize);
-  RELEASE_ASSERT(contents.data());
+  if (UNLIKELY(!contents.data()))
+    OOM_CRASH();
   RefPtr<ArrayBuffer> buffer = adoptRef(new ArrayBuffer(contents));
   memcpy(buffer->data(), source, byteLength);
   return buffer.release();
