@@ -27,9 +27,9 @@ FakeIntentHelperInstance::~FakeIntentHelperInstance() {}
 void FakeIntentHelperInstance::AddPreferredPackage(
     const std::string& package_name) {}
 
-void FakeIntentHelperInstance::GetFileSize(
+void FakeIntentHelperInstance::GetFileSizeDeprecated(
     const std::string& url,
-    const GetFileSizeCallback& callback) {}
+    const GetFileSizeDeprecatedCallback& callback) {}
 
 void FakeIntentHelperInstance::HandleIntent(mojom::IntentInfoPtr intent,
                                             mojom::ActivityNamePtr activity) {}
@@ -44,9 +44,9 @@ void FakeIntentHelperInstance::HandleUrlList(
 
 void FakeIntentHelperInstance::Init(mojom::IntentHelperHostPtr host_ptr) {}
 
-void FakeIntentHelperInstance::OpenFileToRead(
+void FakeIntentHelperInstance::OpenFileToReadDeprecated(
     const std::string& url,
-    const OpenFileToReadCallback& callback) {}
+    const OpenFileToReadDeprecatedCallback& callback) {}
 
 void FakeIntentHelperInstance::RequestActivityIcons(
     std::vector<mojom::ActivityNamePtr> activities,

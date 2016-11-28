@@ -11,17 +11,20 @@
 namespace arc {
 namespace intent_helper_util {
 
-// Utility which posts a task to run IntentHelperInstance::GetFileSize.
-// This function must be called on the IO thread.
-void GetFileSizeOnIOThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::GetFileSizeCallback& callback);
+using GetFileSizeCallback =
+    mojom::IntentHelperInstance::GetFileSizeDeprecatedCallback;
+using OpenFileToReadCallback =
+    mojom::IntentHelperInstance::OpenFileToReadDeprecatedCallback;
 
-// Utility which posts a task to run IntentHelperInstance::OpenFileToRead.
+// Utility which posts a task to run GetFileSize.
 // This function must be called on the IO thread.
-void OpenFileToReadOnIOThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::OpenFileToReadCallback& callback);
+void GetFileSizeOnIOThread(const GURL& arc_url,
+                           const GetFileSizeCallback& callback);
+
+// Utility which posts a task to run OpenFileToRead.
+// This function must be called on the IO thread.
+void OpenFileToReadOnIOThread(const GURL& arc_url,
+                              const OpenFileToReadCallback& callback);
 
 }  // namespace intent_helper_util
 }  // namespace arc

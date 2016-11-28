@@ -32,8 +32,9 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
 
   ~ArcIntentHelperInstanceTestImpl() override = default;
 
-  void GetFileSize(const std::string& url,
-                   const GetFileSizeCallback& callback) override {
+  void GetFileSizeDeprecated(
+      const std::string& url,
+      const GetFileSizeDeprecatedCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
     base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(file_path_, &info));
@@ -41,8 +42,9 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
         FROM_HERE, base::Bind(callback, info.size));
   }
 
-  void OpenFileToRead(const std::string& url,
-                      const OpenFileToReadCallback& callback) override {
+  void OpenFileToReadDeprecated(
+      const std::string& url,
+      const OpenFileToReadDeprecatedCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
 
     base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);

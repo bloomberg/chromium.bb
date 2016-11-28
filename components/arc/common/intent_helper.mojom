@@ -116,8 +116,8 @@ interface IntentHelperInstance {
   // When multiple packages are set as preferred, the most recent setting wins.
   [MinVersion=7] AddPreferredPackage@8(string package_name);
 
-  // Asks the ContentResolver for the size of the file specified by the URL.
-  [MinVersion=15] GetFileSize@11(string url) => (int64 size);
+  // DEPRECATED. Use FileSystemInstance.GetFileSize() instead.
+  [MinVersion=15] GetFileSizeDeprecated@11(string url) => (int64 size);
 
   // Passes an intent to an activity.
   [MinVersion=12] HandleIntent@10(IntentInfo intent, ActivityName activity);
@@ -134,9 +134,8 @@ interface IntentHelperInstance {
   // Establishes full-duplex communication with the host.
   Init@0(IntentHelperHost host_ptr);
 
-  // Asks the ContentResolver to get an FD to read the file specified by the
-  // URL.
-  [MinVersion=15] OpenFileToRead@12(string url) => (handle? fd);
+  // DEPRECATED. Use FileSystemInstance.OpenFileToRead() instead.
+  [MinVersion=15] OpenFileToReadDeprecated@12(string url) => (handle? fd);
 
   // Requests 48dp * 48dp icons of the |activities| suitable for the
   // |scale_factor|. An array of icon data will be returned.

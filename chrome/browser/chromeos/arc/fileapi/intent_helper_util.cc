@@ -13,17 +13,17 @@ namespace intent_helper_util {
 
 namespace {
 
-void OnGetFileSize(
-    const mojom::IntentHelperInstance::GetFileSizeCallback& callback,
-    int64_t size) {
+constexpr uint32_t kGetFileSizeVersion = 15;
+constexpr uint32_t kOpenFileToReadVersion = 15;
+
+void OnGetFileSize(const GetFileSizeCallback& callback, int64_t size) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    base::Bind(callback, size));
 }
 
-void GetFileSizeOnUIThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::GetFileSizeCallback& callback) {
+void GetFileSizeOnUIThread(const GURL& arc_url,
+                           const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* arc_bridge_service = arc::ArcBridgeService::Get();
   if (!arc_bridge_service) {
@@ -32,28 +32,26 @@ void GetFileSizeOnUIThread(
     return;
   }
   mojom::IntentHelperInstance* intent_helper_instance =
-      arc_bridge_service->intent_helper()->GetInstanceForMethod("GetFileSize",
-                                                                15);
+      arc_bridge_service->intent_helper()->GetInstanceForMethod(
+          "GetFileSizeDeprecated", kGetFileSizeVersion);
   if (!intent_helper_instance) {
     LOG(ERROR) << "Failed to get IntentHelperInstance.";
     OnGetFileSize(callback, -1);
     return;
   }
-  intent_helper_instance->GetFileSize(arc_url.spec(),
-                                      base::Bind(&OnGetFileSize, callback));
+  intent_helper_instance->GetFileSizeDeprecated(
+      arc_url.spec(), base::Bind(&OnGetFileSize, callback));
 }
 
-void OnOpenFileToRead(
-    const mojom::IntentHelperInstance::OpenFileToReadCallback& callback,
-    mojo::ScopedHandle handle) {
+void OnOpenFileToRead(const OpenFileToReadCallback& callback,
+                      mojo::ScopedHandle handle) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   content::BrowserThread::PostTask(content::BrowserThread::IO, FROM_HERE,
                                    base::Bind(callback, base::Passed(&handle)));
 }
 
-void OpenFileToReadOnUIThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::OpenFileToReadCallback& callback) {
+void OpenFileToReadOnUIThread(const GURL& arc_url,
+                              const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   auto* arc_bridge_service = arc::ArcBridgeService::Get();
   if (!arc_bridge_service) {
@@ -63,30 +61,28 @@ void OpenFileToReadOnUIThread(
   }
   mojom::IntentHelperInstance* intent_helper_instance =
       arc_bridge_service->intent_helper()->GetInstanceForMethod(
-          "OpenFileToRead", 15);
+          "OpenFileToReadDeprecated", kOpenFileToReadVersion);
   if (!intent_helper_instance) {
     LOG(ERROR) << "Failed to get IntentHelperInstance.";
     OnOpenFileToRead(callback, mojo::ScopedHandle());
     return;
   }
-  intent_helper_instance->OpenFileToRead(
+  intent_helper_instance->OpenFileToReadDeprecated(
       arc_url.spec(), base::Bind(&OnOpenFileToRead, callback));
 }
 
 }  // namespace
 
-void GetFileSizeOnIOThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::GetFileSizeCallback& callback) {
+void GetFileSizeOnIOThread(const GURL& arc_url,
+                           const GetFileSizeCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,
       base::Bind(&GetFileSizeOnUIThread, arc_url, callback));
 }
 
-void OpenFileToReadOnIOThread(
-    const GURL& arc_url,
-    const mojom::IntentHelperInstance::OpenFileToReadCallback& callback) {
+void OpenFileToReadOnIOThread(const GURL& arc_url,
+                              const OpenFileToReadCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
   content::BrowserThread::PostTask(
       content::BrowserThread::UI, FROM_HERE,

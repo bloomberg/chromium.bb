@@ -1,10 +1,21 @@
 // Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+//
+// Next MinVersion: 2
 
 module arc.mojom;
 
+// Next method ID: 3
 interface FileSystemInstance {
+  // Asks the ContentResolver for the size of the file specified by the URL.
+  // If the file does not exist or the size is unknown, -1 is returned.
+  [MinVersion=1] GetFileSize@1(string url) => (int64 size);
+
+  // Asks the ContentResolver to get a FD to read the file specified by the
+  // URL.
+  [MinVersion=1] OpenFileToRead@2(string url) => (handle? fd);
+
   // Requests MediaProvider to scan specified files.
   // When the specified file does not exist, the corresponding entry in
   // MediaProvider is removed.

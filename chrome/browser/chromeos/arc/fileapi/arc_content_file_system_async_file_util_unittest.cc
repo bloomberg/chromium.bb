@@ -26,8 +26,9 @@ constexpr int64_t kSize = 123456;
 
 class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
  public:
-  void GetFileSize(const std::string& url,
-                   const GetFileSizeCallback& callback) override {
+  void GetFileSizeDeprecated(
+      const std::string& url,
+      const GetFileSizeDeprecatedCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, kSize));
