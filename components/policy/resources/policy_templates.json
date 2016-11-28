@@ -5814,11 +5814,11 @@
       'tags': [],
       'supported_on': ['chrome_os:54-'],
       'caption': '''Treat external storage devices as read-only.''',
-      'desc': '''This policy is effective only when ExternalStorageDisabled is set to false or not configured.
+      'desc': '''When this policy is set to true, users cannot write anything to external storage devices.
 
-      When this policy is set to true, users cannot write anything to external storage devices.
+      If this setting is set to false or not configured, then users can create and modify files of external storage devices which are physically writable.
 
-      If this setting is disabled or not configured then users can create and modify files of external storage devices which are physically writable.
+      The ExternalStorageDisabled policy takes precedence over this policy - if ExternalStorageDisabled is set to true, then all access to external storage is disabled and this policy is consequently ignored.
 
       Dynamic refresh of this policy is supported in M56 and later.''',
       'features': {
