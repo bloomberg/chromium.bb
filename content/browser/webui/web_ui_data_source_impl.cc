@@ -61,6 +61,11 @@ class WebUIDataSourceImpl::InternalDataSource : public URLDataSource {
   bool ShouldAddContentSecurityPolicy() const override {
     return parent_->add_csp_;
   }
+  std::string GetContentSecurityPolicyScriptSrc() const override {
+    if (parent_->script_src_set_)
+      return parent_->script_src_;
+    return URLDataSource::GetContentSecurityPolicyScriptSrc();
+  }
   std::string GetContentSecurityPolicyObjectSrc() const override {
     if (parent_->object_src_set_)
       return parent_->object_src_;
@@ -88,6 +93,7 @@ WebUIDataSourceImpl::WebUIDataSourceImpl(const std::string& source_name)
       source_name_(source_name),
       default_resource_(-1),
       add_csp_(true),
+      script_src_set_(false),
       object_src_set_(false),
       frame_src_set_(false),
       deny_xframe_options_(true),
@@ -178,6 +184,12 @@ void WebUIDataSourceImpl::ExcludePathFromGzip(const std::string& path) {
 
 void WebUIDataSourceImpl::DisableContentSecurityPolicy() {
   add_csp_ = false;
+}
+
+void WebUIDataSourceImpl::OverrideContentSecurityPolicyScriptSrc(
+    const std::string& data) {
+  script_src_set_ = true;
+  script_src_ = data;
 }
 
 void WebUIDataSourceImpl::OverrideContentSecurityPolicyObjectSrc(

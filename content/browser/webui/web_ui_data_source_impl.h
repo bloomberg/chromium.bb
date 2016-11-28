@@ -45,6 +45,7 @@ class CONTENT_EXPORT WebUIDataSourceImpl
       const WebUIDataSource::HandleRequestCallback& callback) override;
   void DisableReplaceExistingSource() override;
   void DisableContentSecurityPolicy() override;
+  void OverrideContentSecurityPolicyScriptSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyObjectSrc(const std::string& data) override;
   void OverrideContentSecurityPolicyChildSrc(const std::string& data) override;
   void DisableDenyXFrameOptions() override;
@@ -97,6 +98,8 @@ class CONTENT_EXPORT WebUIDataSourceImpl
   base::DictionaryValue localized_strings_;
   WebUIDataSource::HandleRequestCallback filter_callback_;
   bool add_csp_;
+  bool script_src_set_;
+  std::string script_src_;
   bool object_src_set_;
   std::string object_src_;
   bool frame_src_set_;

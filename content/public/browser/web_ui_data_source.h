@@ -87,6 +87,8 @@ class WebUIDataSource {
   // Currently only used by embedders for WebUIs with multiple instances.
   virtual void DisableReplaceExistingSource() = 0;
   virtual void DisableContentSecurityPolicy() = 0;
+  virtual void OverrideContentSecurityPolicyScriptSrc(
+      const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyObjectSrc(
       const std::string& data) = 0;
   virtual void OverrideContentSecurityPolicyChildSrc(

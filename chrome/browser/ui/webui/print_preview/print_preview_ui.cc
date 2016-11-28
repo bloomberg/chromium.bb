@@ -16,6 +16,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_split.h"
 #include "base/strings/string_util.h"
+#include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/synchronization/lock.h"
 #include "base/values.h"
@@ -37,6 +38,7 @@
 #include "content/public/browser/url_data_source.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui_data_source.h"
+#include "extensions/common/constants.h"
 #include "printing/features/features.h"
 #include "printing/page_size_margins.h"
 #include "printing/print_job_constants.h"
@@ -397,6 +399,10 @@ content::WebUIDataSource* CreatePrintPreviewUISource() {
                           IDR_PRINT_PREVIEW_IMAGES_MOBILE_SHARED);
   source->SetDefaultResource(IDR_PRINT_PREVIEW_HTML);
   source->SetRequestFilter(base::Bind(&HandleRequestCallback));
+  source->OverrideContentSecurityPolicyScriptSrc(
+      base::StringPrintf("script-src chrome://resources 'self' 'unsafe-eval' "
+                         "chrome-extension://%s;",
+                         extension_misc::kPdfExtensionId));
   source->OverrideContentSecurityPolicyChildSrc("child-src 'self';");
   source->DisableDenyXFrameOptions();
   source->OverrideContentSecurityPolicyObjectSrc("object-src 'self';");
