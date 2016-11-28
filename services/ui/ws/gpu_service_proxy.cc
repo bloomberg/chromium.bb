@@ -13,6 +13,7 @@
 #include "mojo/public/cpp/system/buffer.h"
 #include "mojo/public/cpp/system/platform_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/ws/gpu_service_proxy_delegate.h"
 #include "ui/gfx/buffer_format_util.h"
 
@@ -36,6 +37,8 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
   gpu_main_.Create(GetProxy(&gpu_service_));
   gpu_service_->Initialize(
       base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));
+  gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
+      gpu_service_.get(), next_client_id_++);
 }
 
 GpuServiceProxy::~GpuServiceProxy() {

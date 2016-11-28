@@ -130,6 +130,7 @@ static_library("lib") {
     "//services/service_manager/public/interfaces",
     "//services/tracing/public/cpp",
     "//services/ui/common:mus_common",
+    "//services/ui/common:server_gpu",
     "//services/ui/display",
     "//services/ui/public/interfaces",
     "//ui/base",

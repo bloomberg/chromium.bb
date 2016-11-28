@@ -132,6 +132,10 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
 
   std::unique_ptr<ui::DisplayCompositor> display_compositor_;
 
+  // The message-pipe used by the DisplayCompositor to request gpu memory
+  // buffers.
+  mojom::GpuServiceInternalPtr gpu_internal_;
+
   scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;

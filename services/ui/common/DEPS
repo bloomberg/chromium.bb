@@ -3,6 +3,7 @@ include_rules = [
   "+gpu/command_buffer",
   "+gpu/ipc/client",
   "+gpu/ipc/common",
+  "+services/ui/gpu/interfaces",
 ]
 
 specific_include_rules = {

@@ -18,7 +18,7 @@
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ipc/ipc_channel_handle.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 
 namespace gpu {
 class ImageFactory;

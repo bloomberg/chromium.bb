@@ -27,8 +27,8 @@
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/surfaces/display_compositor.h"
-#include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"
@@ -114,14 +114,13 @@ void GpuServiceInternal::CreateDisplayCompositorOnCompositorThread(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtrInfo client_info) {
   DCHECK(compositor_runner_->BelongsToCurrentThread());
-  mojom::GpuServiceInternalPtr gpu_service_ptr;
-  gpu_service_ptr.Bind(std::move(gpu_service_info));
+  gpu_internal_.Bind(std::move(gpu_service_info));
 
   cc::mojom::DisplayCompositorClientPtr client_ptr;
   client_ptr.Bind(std::move(client_info));
 
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager =
-      base::MakeUnique<MusGpuMemoryBufferManager>(std::move(gpu_service_ptr),
+      base::MakeUnique<MusGpuMemoryBufferManager>(gpu_internal_.get(),
                                                   1 /* client_id */);
   // |gpu_memory_buffer_factory_| is null in tests.
   gpu::ImageFactory* image_factory =
@@ -146,6 +145,7 @@ void GpuServiceInternal::DestroyDisplayCompositor() {
 
 void GpuServiceInternal::DestroyDisplayCompositorOnCompositorThread() {
   display_compositor_.reset();
+  gpu_internal_.reset();
 }
 
 void GpuServiceInternal::DidCreateOffscreenContext(const GURL& active_url) {

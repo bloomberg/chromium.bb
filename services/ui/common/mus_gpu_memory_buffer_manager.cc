@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/mus_gpu_memory_buffer_manager.h"
+#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 
 #include "base/logging.h"
 #include "gpu/ipc/client/gpu_memory_buffer_impl.h"
@@ -14,11 +14,9 @@
 namespace ui {
 
 MusGpuMemoryBufferManager::MusGpuMemoryBufferManager(
-    mojom::GpuServiceInternalPtr gpu_service,
+    mojom::GpuServiceInternal* gpu_service,
     int client_id)
-    : gpu_service_(std::move(gpu_service)),
-      client_id_(client_id),
-      weak_factory_(this) {}
+    : gpu_service_(gpu_service), client_id_(client_id), weak_factory_(this) {}
 
 MusGpuMemoryBufferManager::~MusGpuMemoryBufferManager() {}
 

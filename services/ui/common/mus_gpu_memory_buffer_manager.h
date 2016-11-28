@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_SURFACES_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
-#define SERVICES_UI_SURFACES_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#ifndef SERVICES_UI_COMMON_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#define SERVICES_UI_COMMON_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
 
 #include <memory>
 
@@ -18,7 +18,7 @@ namespace ui {
 // mus locally.
 class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
  public:
-  MusGpuMemoryBufferManager(mojom::GpuServiceInternalPtr gpu_service,
+  MusGpuMemoryBufferManager(mojom::GpuServiceInternal* gpu_service,
                             int client_id);
   ~MusGpuMemoryBufferManager() override;
 
@@ -36,18 +36,19 @@ class MusGpuMemoryBufferManager : public gpu::GpuMemoryBufferManager {
                                const gpu::SyncToken& sync_token) override;
 
  private:
-  DISALLOW_COPY_AND_ASSIGN(MusGpuMemoryBufferManager);
-
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               bool is_native,
                               const gpu::SyncToken& sync_token);
 
-  mojom::GpuServiceInternalPtr gpu_service_;
+  mojom::GpuServiceInternal* gpu_service_;
+
   const int client_id_;
   base::WeakPtrFactory<MusGpuMemoryBufferManager> weak_factory_;
+
+  DISALLOW_COPY_AND_ASSIGN(MusGpuMemoryBufferManager);
 };
 
 }  // namespace ui
 
-#endif  // SERVICES_UI_SURFACES_MUS_GPU_MEMORY_BUFFER_MANAGER_H_
+#endif  // SERVICES_UI_COMMON_MUS_GPU_MEMORY_BUFFER_MANAGER_H_

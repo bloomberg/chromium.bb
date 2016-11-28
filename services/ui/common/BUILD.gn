@@ -10,8 +10,6 @@ source_set("mus_common") {
   sources = [
     "event_matcher_util.cc",
     "event_matcher_util.h",
-    "generic_shared_memory_id_generator.cc",
-    "generic_shared_memory_id_generator.h",
     "switches.cc",
     "switches.h",
     "transient_window_utils.h",
@@ -35,6 +33,28 @@ source_set("mus_common") {
     "//mojo/public/cpp/system",
     "//services/ui/public/interfaces",
     "//ui/base",
+  ]
+}
+
+# GPU related code used by the server-side components (e.g. window server
+# process, display compositor in the gpu process).
+source_set("server_gpu") {
+  sources = [
+    "generic_shared_memory_id_generator.cc",
+    "generic_shared_memory_id_generator.h",
+    "mus_gpu_memory_buffer_manager.cc",
+    "mus_gpu_memory_buffer_manager.h",
+  ]
+
+  deps = [
+    "//gpu/ipc/client",
+  ]
+
+  public_deps = [
+    "//gpu/command_buffer/client",
+    "//gpu/ipc/common",
+    "//services/ui/gpu/interfaces",
+    "//ui/gfx",
   ]
 }
 
