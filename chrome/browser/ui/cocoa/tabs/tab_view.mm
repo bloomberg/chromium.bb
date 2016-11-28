@@ -47,6 +47,10 @@ const NSTimeInterval kAlertHideDuration = 0.4;
 // increasing/decreasing).
 const NSTimeInterval kGlowUpdateInterval = 0.025;
 
+// The intensity of the white overlay when hovering the mouse over a tab.
+const CGFloat kMouseHoverWhiteValue = 1.0;
+const CGFloat kMouseHoverWhiteValueIncongito = 0.3;
+
 // This is used to judge whether the mouse has moved during rapid closure; if it
 // has moved less than the threshold, we want to close the tab.
 const CGFloat kRapidCloseDist = 2.5;
@@ -479,10 +483,9 @@ CGFloat LineWidthFromContext(CGContextRef context) {
     // Draw a mouse hover gradient for the default themes.
     if (hoverAlpha > 0) {
       if (themeProvider && !hasCustomTheme) {
-        CGFloat whiteValue = 1;
-        // In Incognito mode, give the glow a darker value.
+        CGFloat whiteValue = kMouseHoverWhiteValue;
         if (themeProvider && themeProvider->InIncognitoMode()) {
-          whiteValue = 0.5;
+          whiteValue = kMouseHoverWhiteValueIncongito;
         }
         base::scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:whiteValue
