@@ -6,6 +6,8 @@
       "provides": {
         // A collection of interfaces needed by a generic client of mus.
         // Additional interfaces may be requested a-la-carte.
+        // NOTE: when adding a new interface chances are you will want to add it
+        // to ui:window_manager as well.
         "app": [
           "ui::mojom::Clipboard",
           "ui::mojom::DisplayCompositor",
@@ -37,6 +39,13 @@
           "display::mojom::DisplayController",
           "display::mojom::TestDisplayController",
           "ui::mojom::AccessibilityManager",
+          "ui::mojom::Clipboard",
+          "ui::mojom::DisplayCompositor",
+          "ui::mojom::DisplayManager",
+          "ui::mojom::Gpu",
+          "ui::mojom::GpuService",
+          "ui::mojom::IMEServer",
+          "ui::mojom::InputDeviceServer",
           "ui::mojom::WindowManagerWindowTreeFactory"
         ],
         "ui:window_tree_host_factory": [
