@@ -248,15 +248,18 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     return;
 
   LatencyInfo::LatencyComponent original_component;
+  std::string scroll_name = "ScrollUpdate";
   if (latency.FindLatency(
           ui::INPUT_EVENT_LATENCY_FIRST_SCROLL_UPDATE_ORIGINAL_COMPONENT,
           latency_component_id, &original_component)) {
+    scroll_name = "ScrollBegin";
     // This UMA metric tracks the time between the final frame swap for the
     // first scroll event in a sequence and the original timestamp of that
     // scroll event's underlying touch/wheel event.
+
     UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
-        "Event.Latency.ScrollUpdate." + event_type_name +
-            ".TimeToFirstScrollUpdateSwapBegin2",
+        "Event.Latency.ScrollBegin." + event_type_name +
+            ".TimeToScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
@@ -289,7 +292,7 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
   const std::string thread_name = rendering_scheduled_on_main ? "Main" : "Impl";
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-      "Event.Latency.ScrollUpdate." + event_type_name +
+      "Event.Latency." + scroll_name + "." + event_type_name +
           ".TimeToHandled2_" + thread_name,
       original_component, rendering_scheduled_component);
 
@@ -299,7 +302,7 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     return;
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-      "Event.Latency.ScrollUpdate." + event_type_name +
+      "Event.Latency." + scroll_name + "." + event_type_name +
           ".HandledToRendererSwap2_" + thread_name,
       rendering_scheduled_component, renderer_swap_component);
 
@@ -310,17 +313,17 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
     return;
 
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
-      "Event.Latency.ScrollUpdate." + event_type_name +
+      "Event.Latency." + scroll_name + "." + event_type_name +
           ".RendererSwapToBrowserNotified2",
       renderer_swap_component, browser_received_swap_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_LONG_2(
-      "Event.Latency.ScrollUpdate." + event_type_name +
+      "Event.Latency." + scroll_name + "." + event_type_name +
           ".BrowserNotifiedToBeforeGpuSwap2",
       browser_received_swap_component, gpu_swap_begin_component);
 
   UMA_HISTOGRAM_SCROLL_LATENCY_SHORT_2(
-      "Event.Latency.ScrollUpdate." + event_type_name + ".GpuSwap2",
+      "Event.Latency." + scroll_name + "." + event_type_name + ".GpuSwap2",
       gpu_swap_begin_component, gpu_swap_end_component);
 }
 // LatencyComponents generated in the renderer must have component IDs
