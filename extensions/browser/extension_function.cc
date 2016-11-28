@@ -271,7 +271,6 @@ ExtensionFunction::ExtensionFunction()
       user_gesture_(false),
       bad_message_(false),
       histogram_value_(extensions::functions::UNKNOWN),
-      source_tab_id_(-1),
       source_context_type_(Feature::UNSPECIFIED_CONTEXT),
       source_process_id_(-1),
       did_respond_(false) {}

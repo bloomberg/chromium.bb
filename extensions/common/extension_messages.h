@@ -100,9 +100,6 @@ IPC_STRUCT_BEGIN(ExtensionHostMsg_Request_Params)
   // extension. Or, they can originate from hosted apps or normal web pages.
   IPC_STRUCT_MEMBER(GURL, source_url)
 
-  // The id of the tab that sent this request, or -1 if there is no source tab.
-  IPC_STRUCT_MEMBER(int, source_tab_id)
-
   // Unique request id to match requests and responses.
   IPC_STRUCT_MEMBER(int, request_id)
 

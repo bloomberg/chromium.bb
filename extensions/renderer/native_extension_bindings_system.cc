@@ -10,7 +10,6 @@
 #include "extensions/common/extension_api.h"
 #include "extensions/common/extension_messages.h"
 #include "extensions/common/features/feature_provider.h"
-#include "extensions/renderer/extension_frame_helper.h"
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
@@ -180,20 +179,11 @@ void NativeExtensionBindingsSystem::SendRequest(
   else
     url = script_context->url();
 
-  int tab_id = -1;
-  if (content::RenderFrame* render_frame = script_context->GetRenderFrame()) {
-    ExtensionFrameHelper* frame_helper =
-        ExtensionFrameHelper::Get(render_frame);
-    DCHECK(frame_helper);
-    tab_id = frame_helper->tab_id();
-  }
-
   ExtensionHostMsg_Request_Params params;
   params.name = request->method_name;
   params.arguments.Swap(request->arguments.get());
   params.extension_id = script_context->GetExtensionID();
   params.source_url = url;
-  params.source_tab_id = tab_id;
   params.request_id = request->request_id;
   params.has_callback = request->has_callback;
   params.user_gesture = request->has_user_gesture;

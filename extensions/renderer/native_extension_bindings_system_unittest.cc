@@ -75,7 +75,6 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
     last_params_.arguments.Swap(params.arguments.CreateDeepCopy().get());
     last_params_.extension_id = params.extension_id;
     last_params_.source_url = params.source_url;
-    last_params_.source_tab_id = params.source_tab_id;
     last_params_.request_id = params.request_id;
     last_params_.has_callback = params.has_callback;
     last_params_.user_gesture = params.user_gesture;
@@ -173,7 +172,6 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
   EXPECT_EQ(extension->id(), last_params().extension_id);
   EXPECT_EQ("idle.queryState", last_params().name);
   EXPECT_EQ(extension->url(), last_params().source_url);
-  EXPECT_EQ(-1, last_params().source_tab_id);
   EXPECT_TRUE(last_params().has_callback);
   EXPECT_TRUE(
       last_params().arguments.Equals(ListValueFromString("[30]").get()));
