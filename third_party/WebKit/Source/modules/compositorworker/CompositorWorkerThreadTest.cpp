@@ -12,6 +12,7 @@
 #include "core/inspector/ConsoleMessage.h"
 #include "core/testing/DummyPageHolder.h"
 #include "core/workers/InProcessWorkerObjectProxy.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerLoaderProxy.h"
 #include "core/workers/WorkerOrWorkletGlobalScope.h"
@@ -49,6 +50,9 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
                             const String& message,
                             SourceLocation*) override {}
   void postMessageToPageInspector(const String&) override {}
+  ParentFrameTaskRunners* getParentFrameTaskRunners() override {
+    return m_parentFrameTaskRunners.get();
+  }
 
   void didCreateWorkerGlobalScope(WorkerOrWorkletGlobalScope*) override {}
   void didEvaluateWorkerScript(bool success) override {}
@@ -62,9 +66,12 @@ class TestCompositorWorkerObjectProxy : public InProcessWorkerObjectProxy {
 
  private:
   TestCompositorWorkerObjectProxy(ExecutionContext* context)
-      : InProcessWorkerObjectProxy(nullptr), m_executionContext(context) {}
+      : InProcessWorkerObjectProxy(nullptr),
+        m_executionContext(context),
+        m_parentFrameTaskRunners(ParentFrameTaskRunners::create(nullptr)) {}
 
   Persistent<ExecutionContext> m_executionContext;
+  Persistent<ParentFrameTaskRunners> m_parentFrameTaskRunners;
 };
 
 class TestCompositorProxyClient

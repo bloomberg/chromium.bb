@@ -27,8 +27,10 @@ void waitForSignalTask(WorkerThread* workerThread,
   EXPECT_TRUE(workerThread->isCurrentThread());
 
   // Notify the main thread that the debugger task is waiting for the signal.
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
+  workerThread->workerReportingProxy()
+      .getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(BLINK_FROM_HERE, crossThreadBind(&testing::exitRunLoop));
   waitableEvent->wait();
 }
 

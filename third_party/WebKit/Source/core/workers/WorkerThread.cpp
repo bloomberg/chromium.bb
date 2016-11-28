@@ -35,6 +35,7 @@
 #include "core/inspector/WorkerInspectorController.h"
 #include "core/inspector/WorkerThreadDebugger.h"
 #include "core/origin_trials/OriginTrialContext.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/ThreadedWorkletGlobalScope.h"
 #include "core/workers/WorkerBackingThread.h"
 #include "core/workers/WorkerClients.h"
@@ -351,9 +352,9 @@ void WorkerThread::terminateInternal(TerminationMode mode) {
         case TerminationMode::Graceful:
           DCHECK(!m_forcibleTerminationTaskHandle.isActive());
           m_forcibleTerminationTaskHandle =
-              Platform::current()
-                  ->mainThread()
-                  ->getWebTaskRunner()
+              workerReportingProxy()
+                  .getParentFrameTaskRunners()
+                  ->get(TaskType::Internal)
                   ->postDelayedCancellableTask(
                       BLINK_FROM_HERE,
                       WTF::bind(&WorkerThread::mayForciblyTerminateExecution,

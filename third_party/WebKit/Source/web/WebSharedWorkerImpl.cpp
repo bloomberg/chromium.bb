@@ -255,13 +255,13 @@ ParentFrameTaskRunners* WebSharedWorkerImpl::getParentFrameTaskRunners() {
 }
 
 void WebSharedWorkerImpl::didCloseWorkerGlobalScope() {
-  // TODO(nhiroki): Replace this with getParentFrameTaskRunners().
-  // (https://crbug.com/667310)
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE,
-      crossThreadBind(
-          &WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread,
-          crossThreadUnretained(this)));
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(
+          BLINK_FROM_HERE,
+          crossThreadBind(
+              &WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread,
+              crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread() {
@@ -271,13 +271,12 @@ void WebSharedWorkerImpl::didCloseWorkerGlobalScopeOnMainThread() {
 }
 
 void WebSharedWorkerImpl::didTerminateWorkerThread() {
-  // TODO(nhiroki): Replace this with getParentFrameTaskRunners().
-  // (https://crbug.com/667310)
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      BLINK_FROM_HERE,
-      crossThreadBind(
-          &WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread,
-          crossThreadUnretained(this)));
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(
+                     &WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread,
+                     crossThreadUnretained(this)));
 }
 
 void WebSharedWorkerImpl::didTerminateWorkerThreadOnMainThread() {
