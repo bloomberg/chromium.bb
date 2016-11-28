@@ -80,9 +80,6 @@ fast/harness/sample-fail-mismatch-reftest.html [ WontFix ]
 # AAT/mortx shaping not supported on platforms other than Mac
 [ Linux Win Android ] fast/text/aat-morx.html [ WontFix ]
 
-# Linux layout tests do not have a Myanmar fallback font.
-[ Linux ] inspector-protocol/layout-fonts/fallback-myanmar.html [ WontFix ]
-
 # Tests in media/stable are only supposed to be run as virtual test (see virtual/stable/media).
 media/stable [ WontFix ]
 
