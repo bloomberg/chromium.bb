@@ -105,6 +105,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                          int route_id,
                          ServiceWorkerProviderType provider_type,
                          bool is_parent_frame_secure) override;
+  void OnProviderDestroyed(int provider_id) override;
+  void OnSetHostedVersionId(int provider_id,
+                            int64_t version_id,
+                            int embedded_worker_id) override;
 
   // IPC Message handlers
   void OnRegisterServiceWorker(int thread_id,
@@ -142,10 +146,6 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
                                     int provider_id,
                                     int64_t registration_id,
                                     const std::string& value);
-  void OnProviderDestroyed(int provider_id);
-  void OnSetHostedVersionId(int provider_id,
-                            int64_t version_id,
-                            int embedded_worker_id);
   void OnWorkerReadyForInspection(int embedded_worker_id);
   void OnWorkerScriptLoaded(int embedded_worker_id);
   void OnWorkerThreadStarted(int embedded_worker_id,

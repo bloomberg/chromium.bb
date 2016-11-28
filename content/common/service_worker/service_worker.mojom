@@ -14,4 +14,9 @@ interface ServiceWorkerDispatcherHost {
                     int32 route_id,
                     ServiceWorkerProviderType provider_type,
                     bool is_parent_frame_secure);
+  OnProviderDestroyed(int32 provider_id);
+  // Make relationship between the network provider and the service worker
+  OnSetHostedVersionId(int32 provider_id,
+                       int64 version_id,
+                       int32 embedded_worker_id);
 };
