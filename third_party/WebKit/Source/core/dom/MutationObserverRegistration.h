@@ -33,6 +33,7 @@
 
 #include "bindings/core/v8/ScriptWrappable.h"
 #include "bindings/core/v8/TraceWrapperMember.h"
+#include "core/CoreExport.h"
 #include "core/dom/MutationObserver.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
@@ -43,7 +44,7 @@ namespace blink {
 
 class QualifiedName;
 
-class MutationObserverRegistration final
+class CORE_EXPORT MutationObserverRegistration final
     : public GarbageCollectedFinalized<MutationObserverRegistration>,
       public TraceWrapperBase {
  public:

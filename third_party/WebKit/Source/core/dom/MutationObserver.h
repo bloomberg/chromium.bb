@@ -31,7 +31,9 @@
 #ifndef MutationObserver_h
 #define MutationObserver_h
 
+#include "base/gtest_prod_util.h"
 #include "bindings/core/v8/ScriptWrappable.h"
+#include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
 #include "wtf/HashSet.h"
 #include "wtf/Vector.h"
@@ -55,7 +57,7 @@ using MutationObserverRegistrationSet =
 using MutationObserverVector = HeapVector<Member<MutationObserver>>;
 using MutationRecordVector = HeapVector<Member<MutationRecord>>;
 
-class MutationObserver final
+class CORE_EXPORT MutationObserver final
     : public GarbageCollectedFinalized<MutationObserver>,
       public ScriptWrappable {
   DEFINE_WRAPPERTYPEINFO();
@@ -108,6 +110,8 @@ class MutationObserver final
   MutationRecordVector m_records;
   MutationObserverRegistrationSet m_registrations;
   unsigned m_priority;
+
+  FRIEND_TEST_ALL_PREFIXES(MutationObserverTest, DisconnectCrash);
 };
 
 }  // namespace blink

@@ -36,6 +36,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class MutationRecord;
 class MutationObserver;
 

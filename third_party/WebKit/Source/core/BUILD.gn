@@ -1113,6 +1113,7 @@ source_set("unit_tests") {
     "dom/ExecutionContextTaskTest.cpp",
     "dom/IdleDeadlineTest.cpp",
     "dom/MainThreadTaskRunnerTest.cpp",
+    "dom/MutationObserverTest.cpp",
     "dom/NodeTest.cpp",
     "dom/NthIndexCacheTest.cpp",
     "dom/RangeTest.cpp",
