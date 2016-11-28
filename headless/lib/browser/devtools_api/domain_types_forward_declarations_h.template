@@ -4,8 +4,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATION_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
-#define HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATION_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
+#ifndef HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATIONS_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
+#define HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATIONS_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
 
 #include "base/optional.h"
 #include "base/values.h"
@@ -41,4 +41,4 @@ enum class {{type.id}} {
 
 }  // namespace headless
 
-#endif  // HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATION_{{domain.domain | camelcase_to_hacker_style | upper}}_H_
+#endif  // HEADLESS_PUBLIC_DEVTOOLS_INTERNAL_TYPES_FORWARD_DECLARATIONS_{{domain.domain | camelcase_to_hacker_style | upper}}_H_

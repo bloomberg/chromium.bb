@@ -494,8 +494,8 @@ def GenerateTypes(jinja_env, output_dirname, json_api):
   # Generate forward declarations for types.
   GeneratePerDomain(
       jinja_env, os.path.join(output_dirname, 'devtools', 'internal'),
-      json_api, 'domain_types_forward_declaration', ['h'],
-      lambda domain_name: 'types_forward_declaration_%s' % (domain_name, ))
+      json_api, 'domain_types_forward_declarations', ['h'],
+      lambda domain_name: 'types_forward_declarations_%s' % (domain_name, ))
   # Generate types on per-domain basis.
   GeneratePerDomain(
       jinja_env, os.path.join(output_dirname, 'devtools', 'domains'),

@@ -137,7 +137,7 @@ action("gen_devtools_client_api") {
     "lib/browser/devtools_api/domain_h.template",
     "lib/browser/devtools_api/domain_type_conversions_h.template",
     "lib/browser/devtools_api/domain_types_cc.template",
-    "lib/browser/devtools_api/domain_types_forward_declaration_h.template",
+    "lib/browser/devtools_api/domain_types_forward_declarations_h.template",
     "lib/browser/devtools_api/domain_types_h.template",
   ]
 

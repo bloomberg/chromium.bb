@@ -10,7 +10,7 @@
 #include "base/optional.h"
 #include "base/values.h"
 {% for domain_name in domain.dependencies %}
-#include "headless/public/devtools/internal/types_forward_declaration_{{domain_name | camelcase_to_hacker_style}}.h"
+#include "headless/public/devtools/internal/types_forward_declarations_{{domain_name | camelcase_to_hacker_style}}.h"
 {% endfor %}
 #include "headless/public/headless_export.h"
 #include "headless/public/util/error_reporter.h"
