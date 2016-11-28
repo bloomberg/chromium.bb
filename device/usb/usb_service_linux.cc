@@ -253,7 +253,8 @@ void UsbServiceLinux::DeviceReady(scoped_refptr<UsbDeviceLinux> device,
   bool enumeration_became_ready = false;
   if (!enumeration_ready()) {
     DCHECK_GT(first_enumeration_countdown_, 0u);
-    if (--first_enumeration_countdown_ == 0)
+    first_enumeration_countdown_--;
+    if (enumeration_ready())
       enumeration_became_ready = true;
   }
 
