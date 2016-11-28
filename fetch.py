@@ -114,7 +114,7 @@ class GclientGitCheckout(GclientCheckout, GitCheckout):
                              for key, value in soln.iteritems())
       soln_strings.append('  {\n%s\n  },' % soln_string)
     gclient_spec = 'solutions = [\n%s\n]\n' % '\n'.join(soln_strings)
-    extra_keys = ['target_os', 'target_os_only']
+    extra_keys = ['target_os', 'target_os_only', 'cache_dir']
     gclient_spec += ''.join('%s = %s\n' % (key, _format_literal(self.spec[key]))
                              for key in extra_keys if key in self.spec)
     return gclient_spec

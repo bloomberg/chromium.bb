@@ -31,6 +31,9 @@ class WebRTC(config_util.Config):
     if props.get('target_os'):
       spec['target_os'] = props['target_os'].split(',')
 
+    if props.get('cache_dir'):
+      spec['cache_dir'] = props['cache_dir']
+
     return {
       'type': 'gclient_git',
       'gclient_git_spec': spec,
