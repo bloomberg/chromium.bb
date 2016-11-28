@@ -146,6 +146,7 @@ class SiteEngagementService : public KeyedService,
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetMedianEngagement);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalNavigationPoints);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, GetTotalUserInputPoints);
+  FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest, LastShortcutLaunch);
   FRIEND_TEST_ALL_PREFIXES(SiteEngagementServiceTest,
                            CleanupOriginsOnHistoryDeletion);
@@ -185,6 +186,10 @@ class SiteEngagementService : public KeyedService,
 
   // Records UMA metrics.
   void RecordMetrics();
+
+  // Returns true if we should record engagement for this URL. Currently,
+  // engagement is only earned for HTTP and HTTPS.
+  bool ShouldRecordEngagement(const GURL& url) const;
 
   // Get and set the last engagement time from prefs.
   base::Time GetLastEngagementTime() const;

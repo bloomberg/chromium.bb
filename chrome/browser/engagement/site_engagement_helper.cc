@@ -169,8 +169,7 @@ SiteEngagementService::Helper::Helper(content::WebContents* web_contents)
       input_tracker_(this, web_contents),
       media_tracker_(this, web_contents),
       service_(SiteEngagementService::Get(
-          Profile::FromBrowserContext(web_contents->GetBrowserContext()))),
-      record_engagement_(false) {}
+          Profile::FromBrowserContext(web_contents->GetBrowserContext()))) {}
 
 void SiteEngagementService::Helper::RecordUserInput(
     SiteEngagementMetrics::EngagementType type) {
@@ -188,11 +187,9 @@ void SiteEngagementService::Helper::RecordMediaPlaying(bool is_hidden) {
 
 void SiteEngagementService::Helper::DidFinishNavigation(
     content::NavigationHandle* handle) {
-  // Ignore all schemes except HTTP and HTTPS, as well as uncommitted, non
-  // main-frame, same page, or error page navigations.
-  record_engagement_ = handle->GetURL().SchemeIsHTTPOrHTTPS();
+  // Ignore uncommitted, non main-frame, same page, or error page navigations.
   if (!handle->HasCommitted() || !handle->IsInMainFrame() ||
-      handle->IsSamePage() || handle->IsErrorPage() || !record_engagement_) {
+      handle->IsSamePage() || handle->IsErrorPage()) {
     return;
   }
 
@@ -223,10 +220,8 @@ void SiteEngagementService::Helper::DidFinishNavigation(
 
 void SiteEngagementService::Helper::WasShown() {
   // Ensure that the input callbacks are registered when we come into view.
-  if (record_engagement_) {
-    input_tracker_.Start(
-        base::TimeDelta::FromSeconds(g_seconds_delay_after_show));
-  }
+  input_tracker_.Start(
+      base::TimeDelta::FromSeconds(g_seconds_delay_after_show));
 }
 
 void SiteEngagementService::Helper::WasHidden() {

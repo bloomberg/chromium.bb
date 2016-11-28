@@ -389,6 +389,35 @@ TEST_F(SiteEngagementServiceTest, GetTotalUserInputPoints) {
   EXPECT_DOUBLE_EQ(0.4, service->GetTotalEngagementPoints());
 }
 
+TEST_F(SiteEngagementServiceTest, RestrictedToHTTPAndHTTPS) {
+  SiteEngagementService* service = SiteEngagementService::Get(profile());
+  ASSERT_TRUE(service);
+
+  // The https and http versions of www.google.com should be separate.
+  GURL url1("ftp://www.google.com/");
+  GURL url2("file://blah");
+  GURL url3("chrome://");
+  GURL url4("about://config");
+
+  NavigateAndCommit(url1);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_MOUSE);
+  EXPECT_EQ(0, service->GetScore(url1));
+
+  NavigateAndCommit(url2);
+  service->HandleNavigation(web_contents(), ui::PAGE_TRANSITION_TYPED);
+  EXPECT_EQ(0, service->GetScore(url2));
+
+  NavigateAndCommit(url3);
+  service->HandleMediaPlaying(web_contents(), true);
+  EXPECT_EQ(0, service->GetScore(url3));
+
+  NavigateAndCommit(url4);
+  service->HandleUserInput(web_contents(),
+                           SiteEngagementMetrics::ENGAGEMENT_KEYPRESS);
+  EXPECT_EQ(0, service->GetScore(url4));
+}
+
 TEST_F(SiteEngagementServiceTest, LastShortcutLaunch) {
   base::SimpleTestClock* clock = new base::SimpleTestClock();
   std::unique_ptr<SiteEngagementService> service(
