@@ -43,11 +43,13 @@ class POLICY_EXPORT ComponentCloudPolicyUpdater {
       ComponentCloudPolicyStore* store);
   ~ComponentCloudPolicyUpdater();
 
-  // |response| is the latest policy information fetched for some component.
+  // |response| is the latest policy information fetched for component
+  // represented by namespace |ns|.
   // This method schedules the download of the policy data, if |response| is
   // validated. If the downloaded data also passes validation then that data
   // will be passed to the |store_|.
   void UpdateExternalPolicy(
+      const PolicyNamespace& ns,
       std::unique_ptr<enterprise_management::PolicyFetchResponse> response);
 
   // Cancels any pending operations for the given namespace.

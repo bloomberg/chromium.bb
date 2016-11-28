@@ -22,6 +22,7 @@
 #include "components/policy/core/common/policy_types.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -67,11 +68,13 @@ class MockComponentCloudPolicyStoreDelegate
 
 class ComponentCloudPolicyUpdaterTest : public testing::Test {
  protected:
+  ComponentCloudPolicyUpdaterTest();
   void SetUp() override;
   void TearDown() override;
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse();
 
+  const PolicyNamespace kTestPolicyNS;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ScopedTempDir temp_dir_;
   std::unique_ptr<ResourceCache> cache_;
@@ -82,7 +85,31 @@ class ComponentCloudPolicyUpdaterTest : public testing::Test {
   std::unique_ptr<ComponentCloudPolicyUpdater> updater_;
   ComponentPolicyBuilder builder_;
   PolicyBundle expected_bundle_;
+  std::string public_key_;
 };
+
+ComponentCloudPolicyUpdaterTest::ComponentCloudPolicyUpdaterTest()
+    : kTestPolicyNS(POLICY_DOMAIN_EXTENSIONS, kTestExtension) {
+  builder_.SetDefaultSigningKey();
+  builder_.policy_data().set_policy_type(
+      dm_protocol::kChromeExtensionPolicyType);
+  builder_.policy_data().set_settings_entity_id(kTestExtension);
+  builder_.payload().set_download_url(kTestDownload);
+  builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
+
+  std::vector<uint8_t> public_key_bits;
+  builder_.GetSigningKey()->ExportPublicKey(&public_key_bits);
+  public_key_.assign(reinterpret_cast<const char*>(public_key_bits.data()),
+                     public_key_bits.size());
+
+  PolicyMap& policy = expected_bundle_.Get(kTestPolicyNS);
+  policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD,
+             base::MakeUnique<base::StringValue>("disabled"), nullptr);
+  policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
+             POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("maybe"),
+             nullptr);
+}
 
 void ComponentCloudPolicyUpdaterTest::SetUp() {
   ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
@@ -90,7 +117,10 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
   cache_.reset(new ResourceCache(temp_dir_.GetPath(), task_runner_));
   store_.reset(new ComponentCloudPolicyStore(&store_delegate_, cache_.get()));
   store_->SetCredentials(ComponentPolicyBuilder::kFakeUsername,
-                         ComponentPolicyBuilder::kFakeToken);
+                         ComponentPolicyBuilder::kFakeToken,
+                         ComponentPolicyBuilder::kFakeDeviceId,
+                         public_key_,
+                         ComponentPolicyBuilder::kFakePublicKeyVersion);
   fetcher_factory_.set_remove_fetcher_on_delete(true);
   fetcher_backend_.reset(new ExternalPolicyDataFetcherBackend(
       task_runner_,
@@ -100,21 +130,6 @@ void ComponentCloudPolicyUpdaterTest::SetUp() {
       fetcher_backend_->CreateFrontend(task_runner_),
       store_.get()));
   ASSERT_EQ(store_->policy().end(), store_->policy().begin());
-
-  builder_.policy_data().set_policy_type(
-      dm_protocol::kChromeExtensionPolicyType);
-  builder_.policy_data().set_settings_entity_id(kTestExtension);
-  builder_.payload().set_download_url(kTestDownload);
-  builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
-
-  PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
-  PolicyMap& policy = expected_bundle_.Get(ns);
-  policy.Set("Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD,
-             base::MakeUnique<base::StringValue>("disabled"), nullptr);
-  policy.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
-             POLICY_SOURCE_CLOUD, base::MakeUnique<base::StringValue>("maybe"),
-             nullptr);
 }
 
 void ComponentCloudPolicyUpdaterTest::TearDown() {
@@ -130,7 +145,7 @@ ComponentCloudPolicyUpdaterTest::CreateResponse() {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchAndCache) {
   // Submit a policy fetch response.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that a download has been started.
@@ -155,15 +170,19 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseTooLarge) {
   std::string long_download("http://example.com/get?id=");
   long_download.append(20 * 1024, '1');
   builder_.payload().set_download_url(long_download);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   // Submit two valid policy fetch responses.
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
   builder_.payload().set_download_url(kTestDownload2);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
+      CreateResponse());
   builder_.policy_data().set_settings_entity_id(kTestExtension3);
   builder_.payload().set_download_url(kTestDownload3);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension3),
+      CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the first policy fetch response has been ignored and downloads
@@ -174,21 +193,26 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseTooLarge) {
   fetcher = fetcher_factory_.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(GURL(kTestDownload3), fetcher->GetOriginalURL());
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(2));
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseInvalid) {
   // Submit an invalid policy fetch response.
   builder_.policy_data().set_username("wronguser@example.com");
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
 
   // Submit two valid policy fetch responses.
   builder_.policy_data().set_username(ComponentPolicyBuilder::kFakeUsername);
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
   builder_.payload().set_download_url(kTestDownload2);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
+      CreateResponse());
   builder_.policy_data().set_settings_entity_id(kTestExtension3);
   builder_.payload().set_download_url(kTestDownload3);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension3),
+      CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the first policy fetch response has been ignored and downloads
@@ -199,22 +223,83 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseInvalid) {
   fetcher = fetcher_factory_.GetFetcherByID(1);
   ASSERT_TRUE(fetcher);
   EXPECT_EQ(GURL(kTestDownload3), fetcher->GetOriginalURL());
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(2));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseNoSignature) {
+  // Submit an invalid policy fetch response.
+  builder_.UnsetSigningKey();
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseBadSignature) {
+  // Submit an invalid policy fetch response.
+  std::unique_ptr<em::PolicyFetchResponse> response = CreateResponse();
+  response->set_policy_data_signature("invalid");
+  updater_->UpdateExternalPolicy(kTestPolicyNS, std::move(response));
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseWrongPublicKey) {
+  // Submit a policy fetch response signed with a wrong signing key.
+  builder_.SetSigningKey(*ComponentPolicyBuilder::CreateTestOtherSigningKey());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest,
+       PolicyFetchResponseWrongPublicKeyVersion) {
+  // Submit a policy fetch response containing different public key version.
+  builder_.policy_data().set_public_key_version(
+      ComponentPolicyBuilder::kFakePublicKeyVersion + 1);
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
+}
+
+TEST_F(ComponentCloudPolicyUpdaterTest, PolicyFetchResponseDifferentPublicKey) {
+  // Submit a policy fetch response signed with a different key and containing a
+  // new public key version.
+  builder_.SetSigningKey(*ComponentPolicyBuilder::CreateTestOtherSigningKey());
+  builder_.policy_data().set_public_key_version(
+      ComponentPolicyBuilder::kFakePublicKeyVersion + 1);
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
+
+  task_runner_->RunUntilIdle();
+
+  // Verify that the policy fetch response has been ignored.
+  EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));
 }
 
 TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
   // Cache policy for an extension.
   builder_.Build();
-  PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  EXPECT_TRUE(store_->Store(ns,
-                            builder_.GetBlob(),
-                            crypto::SHA256HashString(kTestPolicy),
-                            kTestPolicy));
+  EXPECT_TRUE(
+      store_->Store(kTestPolicyNS, builder_.GetBlob(),
+                    base::MakeUnique<em::PolicyData>(builder_.policy_data()),
+                    crypto::SHA256HashString(kTestPolicy), kTestPolicy));
   Mock::VerifyAndClearExpectations(&store_delegate_);
 
   // Submit a policy fetch response whose extension ID and hash match the
   // already cached policy.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that no download has been started.
@@ -223,13 +308,17 @@ TEST_F(ComponentCloudPolicyUpdaterTest, AlreadyCached) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, PolicyDataInvalid) {
   // Submit three policy fetch responses.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   builder_.payload().set_download_url(kTestDownload2);
   builder_.policy_data().set_settings_entity_id(kTestExtension2);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension2),
+      CreateResponse());
   builder_.policy_data().set_settings_entity_id(kTestExtension3);
   builder_.payload().set_download_url(kTestDownload3);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(
+      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension3),
+      CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the first download has been started.
@@ -255,7 +344,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, PolicyDataInvalid) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
   // Submit a policy fetch response.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the first download has been started.
@@ -266,7 +355,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
   // Submit a second policy fetch response for the same extension with an
   // updated download URL.
   builder_.payload().set_download_url(kTestDownload2);
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the first download is no longer running.
@@ -280,7 +369,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedData) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   // Submit a policy fetch response.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the download has been started.
@@ -304,7 +393,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
   builder_.payload().clear_download_url();
   builder_.payload().clear_secure_hash();
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated());
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   Mock::VerifyAndClearExpectations(&store_delegate_);
   task_runner_->RunUntilIdle();
 
@@ -318,7 +407,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, FetchUpdatedDataWithoutPolicy) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
   // Submit a policy fetch response with a valid download URL.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the download has been started.
@@ -327,7 +416,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
   // Update the policy fetch response before the download has finished. The new
   // policy fetch response has no download URL.
   builder_.payload().Clear();
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the download is no longer running.
@@ -336,7 +425,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, NoPolicy) {
 
 TEST_F(ComponentCloudPolicyUpdaterTest, CancelUpdate) {
   // Submit a policy fetch response with a valid download URL.
-  updater_->UpdateExternalPolicy(CreateResponse());
+  updater_->UpdateExternalPolicy(kTestPolicyNS, CreateResponse());
   task_runner_->RunUntilIdle();
 
   // Verify that the download has been started.
@@ -344,8 +433,7 @@ TEST_F(ComponentCloudPolicyUpdaterTest, CancelUpdate) {
 
   // Now cancel that update before the download completes.
   EXPECT_CALL(store_delegate_, OnComponentCloudPolicyStoreUpdated()).Times(0);
-  updater_->CancelUpdate(
-      PolicyNamespace(POLICY_DOMAIN_EXTENSIONS, kTestExtension));
+  updater_->CancelUpdate(kTestPolicyNS);
   task_runner_->RunUntilIdle();
   Mock::VerifyAndClearExpectations(&store_delegate_);
   EXPECT_FALSE(fetcher_factory_.GetFetcherByID(0));

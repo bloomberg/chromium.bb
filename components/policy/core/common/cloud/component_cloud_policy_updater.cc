@@ -6,6 +6,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
@@ -48,6 +49,7 @@ ComponentCloudPolicyUpdater::~ComponentCloudPolicyUpdater() {
 }
 
 void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
+    const PolicyNamespace& ns,
     std::unique_ptr<em::PolicyFetchResponse> response) {
   // Keep a serialized copy of |response|, to cache it later.
   // The policy is also rejected if it exceeds the maximum size.
@@ -58,10 +60,10 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
   }
 
   // Validate the policy before doing anything else.
-  PolicyNamespace ns;
+  std::unique_ptr<em::PolicyData> policy_data(new em::PolicyData);
   em::ExternalPolicyData data;
-  if (!store_->ValidatePolicy(std::move(response), &ns, &data)) {
-    LOG(ERROR) << "Failed to validate component policy fetched from DMServer";
+  if (!store_->ValidatePolicy(ns, std::move(response), policy_data.get(),
+                              &data)) {
     return;
   }
 
@@ -87,13 +89,10 @@ void ComponentCloudPolicyUpdater::UpdateExternalPolicy(
     // Make a request to fetch policy for this component. If another fetch
     // request is already pending for the component, it will be canceled.
     external_policy_data_updater_.FetchExternalData(
-        key,
-        ExternalPolicyDataUpdater::Request(data.download_url(),
-                                           data.secure_hash(),
-                                           kPolicyDataMaxSize),
+        key, ExternalPolicyDataUpdater::Request(
+                 data.download_url(), data.secure_hash(), kPolicyDataMaxSize),
         base::Bind(&ComponentCloudPolicyStore::Store, base::Unretained(store_),
-                   ns,
-                   serialized_response,
+                   ns, serialized_response, base::Passed(&policy_data),
                    data.secure_hash()));
   }
 }

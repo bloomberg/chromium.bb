@@ -4,9 +4,12 @@
 
 #include "components/policy/core/common/cloud/component_cloud_policy_service.h"
 
+#include <stdint.h>
+
 #include <map>
 #include <string>
 #include <utility>
+#include <vector>
 
 #include "base/callback.h"
 #include "base/files/scoped_temp_dir.h"
@@ -27,6 +30,7 @@
 #include "components/policy/core/common/schema_map.h"
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
+#include "crypto/rsa_private_key.h"
 #include "crypto/sha2.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_fetcher_delegate.h"
@@ -38,6 +42,7 @@
 namespace em = enterprise_management;
 
 using testing::Mock;
+using testing::Return;
 
 namespace policy {
 
@@ -113,20 +118,18 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         core_(dm_protocol::kChromeUserPolicyType,
               std::string(),
               &store_,
-              loop_.task_runner()) {}
-
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-
-    owned_cache_.reset(
-        new ResourceCache(temp_dir_.GetPath(), loop_.task_runner()));
-    cache_ = owned_cache_.get();
-
+              loop_.task_runner()) {
+    builder_.SetDefaultSigningKey();
     builder_.policy_data().set_policy_type(
         dm_protocol::kChromeExtensionPolicyType);
     builder_.policy_data().set_settings_entity_id(kTestExtension);
     builder_.payload().set_download_url(kTestDownload);
     builder_.payload().set_secure_hash(crypto::SHA256HashString(kTestPolicy));
+
+    std::vector<uint8_t> public_key_bits;
+    builder_.GetSigningKey()->ExportPublicKey(&public_key_bits);
+    public_key_.assign(reinterpret_cast<const char*>(public_key_bits.data()),
+                       public_key_bits.size());
 
     expected_policy_.Set(
         "Name", POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
@@ -134,6 +137,14 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
     expected_policy_.Set("Second", POLICY_LEVEL_RECOMMENDED, POLICY_SCOPE_USER,
                          POLICY_SOURCE_CLOUD,
                          base::MakeUnique<base::StringValue>("maybe"), nullptr);
+  }
+
+  void SetUp() override {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+
+    owned_cache_.reset(
+        new ResourceCache(temp_dir_.GetPath(), loop_.task_runner()));
+    cache_ = owned_cache_.get();
   }
 
   void TearDown() override {
@@ -168,13 +179,13 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   }
 
   void LoadStore() {
-    EXPECT_FALSE(store_.is_initialized());
-
     em::PolicyData* data = new em::PolicyData();
     data->set_username(ComponentPolicyBuilder::kFakeUsername);
     data->set_request_token(ComponentPolicyBuilder::kFakeToken);
+    data->set_device_id(ComponentPolicyBuilder::kFakeDeviceId);
+    data->set_public_key_version(ComponentPolicyBuilder::kFakePublicKeyVersion);
     store_.policy_.reset(data);
-
+    store_.policy_signature_public_key_ = public_key_;
     store_.NotifyStoreLoaded();
     RunUntilIdle();
     EXPECT_TRUE(store_.is_initialized());
@@ -198,6 +209,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
         "extension-policy", kTestExtension2, CreateSerializedResponse()));
     EXPECT_TRUE(
         cache_->Store("extension-policy-data", kTestExtension2, kTestPolicy));
+    builder_.policy_data().set_settings_entity_id(kTestExtension);
   }
 
   std::unique_ptr<em::PolicyFetchResponse> CreateResponse() {
@@ -233,6 +245,7 @@ class ComponentCloudPolicyServiceTest : public testing::Test {
   std::unique_ptr<ComponentCloudPolicyService> service_;
   ComponentPolicyBuilder builder_;
   PolicyMap expected_policy_;
+  std::string public_key_;
 };
 
 TEST_F(ComponentCloudPolicyServiceTest, InitializeStoreThenRegistry) {
@@ -429,12 +442,7 @@ TEST_F(ComponentCloudPolicyServiceTest, SignInAfterStartup) {
 
   // Now update the |store_| with the updated policy, which includes
   // credentials. The responses in the |client_| will be reloaded.
-  em::PolicyData* data = new em::PolicyData();
-  data->set_username(ComponentPolicyBuilder::kFakeUsername);
-  data->set_request_token(ComponentPolicyBuilder::kFakeToken);
-  store_.policy_.reset(data);
-  store_.NotifyStoreLoaded();
-  RunUntilIdle();
+  LoadStore();
 
   // The extension policy was validated this time, and the download is started.
   fetcher = fetcher_factory_.GetFetcherByID(0);
@@ -478,6 +486,7 @@ TEST_F(ComponentCloudPolicyServiceTest, SignOut) {
   EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
   core_.Disconnect();
   store_.policy_.reset();
+  Mock::VerifyAndClearExpectations(&store_);
   store_.NotifyStoreLoaded();
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
@@ -555,10 +564,6 @@ TEST_F(ComponentCloudPolicyServiceTest, PurgeWhenServerRemovesPolicy) {
   RunUntilIdle();
   Mock::VerifyAndClearExpectations(&delegate_);
 
-  // That should have triggered the download fetch for the first extension.
-  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
-  ASSERT_TRUE(fetcher);
-
   // The cache should have dropped the entries for the second extension.
   contents.clear();
   cache_->LoadAllSubkeys("extension-policy", &contents);
@@ -568,6 +573,61 @@ TEST_F(ComponentCloudPolicyServiceTest, PurgeWhenServerRemovesPolicy) {
 
   // And the service isn't publishing policy for the second extension anymore.
   expected_bundle.Clear();
+  expected_bundle.Get(ns).CopyFrom(expected_policy_);
+  EXPECT_TRUE(service_->policy().Equals(expected_bundle));
+}
+
+TEST_F(ComponentCloudPolicyServiceTest, KeyRotation) {
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  Connect();
+  LoadStore();
+  InitializeRegistry();
+  RunUntilIdle();
+  EXPECT_TRUE(service_->is_initialized());
+
+  // Send back a fake policy fetch response with the new signing key.
+  const int kNewPublicKeyVersion =
+      ComponentPolicyBuilder::kFakePublicKeyVersion + 1;
+  std::unique_ptr<crypto::RSAPrivateKey> new_signing_key =
+      ComponentPolicyBuilder::CreateTestOtherSigningKey();
+  builder_.SetSigningKey(*new_signing_key);
+  builder_.policy_data().set_public_key_version(kNewPublicKeyVersion);
+  client_->SetPolicy(dm_protocol::kChromeExtensionPolicyType, kTestExtension,
+                     *CreateResponse());
+  service_->OnPolicyFetched(client_);
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&store_);
+
+  // The download fetch shouldn't have been triggered, as the component policy
+  // validation should fail due to the old key returned by the store.
+  ASSERT_FALSE(fetcher_factory_.GetFetcherByID(0));
+
+  // Update the signing key in the store.
+  std::vector<uint8_t> new_public_key_bits;
+  new_signing_key->ExportPublicKey(&new_public_key_bits);
+  const std::string new_public_key(
+      reinterpret_cast<const char*>(new_public_key_bits.data()),
+      new_public_key_bits.size());
+  store_.policy_signature_public_key_ = new_public_key;
+  store_.policy_->set_public_key_version(kNewPublicKeyVersion);
+  store_.NotifyStoreLoaded();
+  RunUntilIdle();
+
+  // The validation of the component policy should have finished successfully
+  // and trigger the download fetch.
+  net::TestURLFetcher* fetcher = fetcher_factory_.GetFetcherByID(0);
+  ASSERT_TRUE(fetcher);
+  fetcher->set_response_code(200);
+  fetcher->SetResponseString(kTestPolicy);
+  fetcher->delegate()->OnURLFetchComplete(fetcher);
+
+  EXPECT_CALL(delegate_, OnComponentCloudPolicyUpdated());
+  RunUntilIdle();
+  Mock::VerifyAndClearExpectations(&delegate_);
+
+  // The policy is now being served.
+  PolicyNamespace ns(POLICY_DOMAIN_EXTENSIONS, kTestExtension);
+  PolicyBundle expected_bundle;
   expected_bundle.Get(ns).CopyFrom(expected_policy_);
   EXPECT_TRUE(service_->policy().Equals(expected_bundle));
 }

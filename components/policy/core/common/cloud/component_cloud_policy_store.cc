@@ -5,6 +5,8 @@
 #include "components/policy/core/common/cloud/component_cloud_policy_store.h"
 
 #include <stddef.h>
+#include <stdint.h>
+
 #include <utility>
 
 #include "base/callback.h"
@@ -21,6 +23,7 @@
 #include "components/policy/proto/chrome_extension_policy.pb.h"
 #include "components/policy/proto/device_management_backend.pb.h"
 #include "crypto/sha2.h"
+#include "google_apis/gaia/gaia_auth_util.h"
 #include "url/gurl.h"
 
 namespace em = enterprise_management;
@@ -54,30 +57,32 @@ const struct DomainConstants {
 };
 
 const DomainConstants* GetDomainConstants(PolicyDomain domain) {
-  for (size_t i = 0; i < arraysize(kDomains); ++i) {
-    if (kDomains[i].domain == domain)
-      return &kDomains[i];
+  for (const DomainConstants& constants : kDomains) {
+    if (constants.domain == domain)
+      return &constants;
   }
-  return NULL;
+  return nullptr;
 }
 
 const DomainConstants* GetDomainConstantsForType(const std::string& type) {
-  for (size_t i = 0; i < arraysize(kDomains); ++i) {
-    if (kDomains[i].policy_type == type)
-      return &kDomains[i];
+  for (const DomainConstants& constants : kDomains) {
+    if (constants.policy_type == type)
+      return &constants;
   }
-  return NULL;
+  return nullptr;
+}
+
+base::Time GetTimeFromPolicyTimestamp(int64_t timestamp) {
+  return base::Time::UnixEpoch() + base::TimeDelta::FromMilliseconds(timestamp);
 }
 
 }  // namespace
 
 ComponentCloudPolicyStore::Delegate::~Delegate() {}
 
-ComponentCloudPolicyStore::ComponentCloudPolicyStore(
-    Delegate* delegate,
-    ResourceCache* cache)
-    : delegate_(delegate),
-      cache_(cache) {
+ComponentCloudPolicyStore::ComponentCloudPolicyStore(Delegate* delegate,
+                                                     ResourceCache* cache)
+    : delegate_(delegate), cache_(cache) {
   // Allow the store to be created on a different thread than the thread that
   // will end up using it.
   DetachFromThread();
@@ -89,7 +94,7 @@ ComponentCloudPolicyStore::~ComponentCloudPolicyStore() {
 
 // static
 bool ComponentCloudPolicyStore::SupportsDomain(PolicyDomain domain) {
-  return GetDomainConstants(domain) != NULL;
+  return GetDomainConstants(domain) != nullptr;
 }
 
 // static
@@ -98,7 +103,7 @@ bool ComponentCloudPolicyStore::GetPolicyType(PolicyDomain domain,
   const DomainConstants* constants = GetDomainConstants(domain);
   if (constants)
     *policy_type = constants->policy_type;
-  return constants != NULL;
+  return constants != nullptr;
 }
 
 // static
@@ -107,7 +112,7 @@ bool ComponentCloudPolicyStore::GetPolicyDomain(const std::string& policy_type,
   const DomainConstants* constants = GetDomainConstantsForType(policy_type);
   if (constants)
     *domain = constants->domain;
-  return constants != NULL;
+  return constants != nullptr;
 }
 
 const std::string& ComponentCloudPolicyStore::GetCachedHash(
@@ -119,12 +124,19 @@ const std::string& ComponentCloudPolicyStore::GetCachedHash(
 }
 
 void ComponentCloudPolicyStore::SetCredentials(const std::string& username,
-                                               const std::string& dm_token) {
+                                               const std::string& dm_token,
+                                               const std::string& device_id,
+                                               const std::string& public_key,
+                                               int public_key_version) {
   DCHECK(CalledOnValidThread());
   DCHECK(username_.empty() || username == username_);
   DCHECK(dm_token_.empty() || dm_token == dm_token_);
+  DCHECK(device_id_.empty() || device_id == device_id_);
   username_ = username;
   dm_token_ = dm_token;
+  device_id_ = device_id;
+  public_key_ = public_key;
+  public_key_version_ = public_key_version;
 }
 
 void ComponentCloudPolicyStore::Load() {
@@ -132,21 +144,20 @@ void ComponentCloudPolicyStore::Load() {
   typedef std::map<std::string, std::string> ContentMap;
 
   // Load all cached policy protobufs for each domain.
-  for (size_t domain = 0; domain < arraysize(kDomains); ++domain) {
-    const DomainConstants& constants = kDomains[domain];
+  for (const DomainConstants& constants : kDomains) {
     ContentMap protos;
     cache_->LoadAllSubkeys(constants.proto_cache_key, &protos);
     for (ContentMap::iterator it = protos.begin(); it != protos.end(); ++it) {
       const std::string& id(it->first);
-      PolicyNamespace ns(constants.domain, id);
+      const PolicyNamespace ns(constants.domain, id);
 
       // Validate each protobuf.
       std::unique_ptr<em::PolicyFetchResponse> proto(
           new em::PolicyFetchResponse);
       em::ExternalPolicyData payload;
+      em::PolicyData policy_data;
       if (!proto->ParseFromString(it->second) ||
-          !ValidateProto(std::move(proto), constants.policy_type, id, &payload,
-                         NULL)) {
+          !ValidatePolicy(ns, std::move(proto), &policy_data, &payload)) {
         Delete(ns);
         continue;
       }
@@ -159,6 +170,8 @@ void ComponentCloudPolicyStore::Load() {
         // The data is also good; expose the policies.
         policy_bundle_.Get(ns).Swap(&policy);
         cached_hashes_[ns] = payload.secure_hash();
+        stored_policy_times_[ns] =
+            GetTimeFromPolicyTimestamp(policy_data.timestamp());
       } else {
         // The data for this proto couldn't be loaded or is corrupted.
         Delete(ns);
@@ -167,15 +180,19 @@ void ComponentCloudPolicyStore::Load() {
   }
 }
 
-bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
-                                      const std::string& serialized_policy,
-                                      const std::string& secure_hash,
-                                      const std::string& data) {
+bool ComponentCloudPolicyStore::Store(
+    const PolicyNamespace& ns,
+    const std::string& serialized_policy,
+    std::unique_ptr<em::PolicyData> policy_data,
+    const std::string& secure_hash,
+    const std::string& data) {
   DCHECK(CalledOnValidThread());
   const DomainConstants* constants = GetDomainConstants(ns.domain);
   PolicyMap policy;
   // |serialized_policy| has already been validated; validate the data now.
-  if (!constants || !ValidateData(data, secure_hash, &policy))
+  if (!constants)
+    return false;
+  if (!ValidateData(data, secure_hash, &policy))
     return false;
 
   // Flush the proto and the data to the cache.
@@ -184,6 +201,8 @@ bool ComponentCloudPolicyStore::Store(const PolicyNamespace& ns,
   // And expose the policy.
   policy_bundle_.Get(ns).Swap(&policy);
   cached_hashes_[ns] = secure_hash;
+  stored_policy_times_[ns] =
+      GetTimeFromPolicyTimestamp(policy_data->timestamp());
   delegate_->OnComponentCloudPolicyStoreUpdated();
   return true;
 }
@@ -230,10 +249,13 @@ void ComponentCloudPolicyStore::Purge(
   // policy state changes.
   std::map<PolicyNamespace, std::string>::iterator it = cached_hashes_.begin();
   while (it != cached_hashes_.end()) {
-    if (it->first.domain == domain && filter.Run(it->first.component_id)) {
+    const PolicyNamespace ns(it->first);
+    if (ns.domain == domain && filter.Run(ns.component_id)) {
       std::map<PolicyNamespace, std::string>::iterator prev = it;
       ++it;
       cached_hashes_.erase(prev);
+      DCHECK(stored_policy_times_.count(ns));
+      stored_policy_times_.erase(ns);
     } else {
       ++it;
     }
@@ -244,11 +266,12 @@ void ComponentCloudPolicyStore::Purge(
 }
 
 void ComponentCloudPolicyStore::Clear() {
-  for (size_t i = 0; i < arraysize(kDomains); ++i) {
-    cache_->Clear(kDomains[i].proto_cache_key);
-    cache_->Clear(kDomains[i].data_cache_key);
+  for (const DomainConstants& constants : kDomains) {
+    cache_->Clear(constants.proto_cache_key);
+    cache_->Clear(constants.data_cache_key);
   }
   cached_hashes_.clear();
+  stored_policy_times_.clear();
   const PolicyBundle empty_bundle;
   if (!policy_bundle_.Equals(empty_bundle)) {
     policy_bundle_.Clear();
@@ -257,71 +280,85 @@ void ComponentCloudPolicyStore::Clear() {
 }
 
 bool ComponentCloudPolicyStore::ValidatePolicy(
+    const PolicyNamespace& ns,
     std::unique_ptr<em::PolicyFetchResponse> proto,
-    PolicyNamespace* ns,
+    em::PolicyData* policy_data,
     em::ExternalPolicyData* payload) {
-  em::PolicyData policy_data;
-  if (!ValidateProto(std::move(proto), std::string(), std::string(), payload,
-                     &policy_data)) {
+  std::string policy_type;
+  if (!GetPolicyType(ns.domain, &policy_type)) {
+    LOG(ERROR) << "Bad policy type";
     return false;
   }
 
-  if (!policy_data.has_policy_type())
+  if (username_.empty() || dm_token_.empty() || device_id_.empty() ||
+      public_key_.empty() || public_key_version_ == -1) {
+    LOG(WARNING) << "Credentials are not loaded yet";
     return false;
+  }
 
-  const DomainConstants* constants =
-      GetDomainConstantsForType(policy_data.policy_type());
-  if (!constants || !policy_data.has_settings_entity_id())
-    return false;
-
-  ns->domain = constants->domain;
-  ns->component_id = policy_data.settings_entity_id();
-  return true;
-}
-
-bool ComponentCloudPolicyStore::ValidateProto(
-    std::unique_ptr<em::PolicyFetchResponse> proto,
-    const std::string& policy_type,
-    const std::string& settings_entity_id,
-    em::ExternalPolicyData* payload,
-    em::PolicyData* policy_data) {
-  if (username_.empty() || dm_token_.empty())
-    return false;
+  // Calculate the bounds for the timestamp validation: a valid policy should be
+  // not older than the currently stored policy, and also the timestamp should
+  // not point too far in the future. This allows to prevent the rollback of the
+  // policy, together with some protection against incorrectly large timestamps
+  // that could be generated by the server due to some bug.
+  base::Time time_not_before;
+  const auto stored_policy_times_iter = stored_policy_times_.find(ns);
+  if (stored_policy_times_iter != stored_policy_times_.end())
+    time_not_before = stored_policy_times_iter->second;
+  const base::Time time_not_after = base::Time::NowFromSystemTime();
 
   std::unique_ptr<ComponentCloudPolicyValidator> validator(
       ComponentCloudPolicyValidator::Create(
           std::move(proto), scoped_refptr<base::SequencedTaskRunner>()));
+  validator->ValidateTimestamp(
+      time_not_before, time_not_after,
+      CloudPolicyValidatorBase::TIMESTAMP_FULLY_VALIDATED);
   validator->ValidateUsername(username_, true);
   validator->ValidateDMToken(dm_token_,
                              ComponentCloudPolicyValidator::DM_TOKEN_REQUIRED);
-  if (!policy_type.empty())
-    validator->ValidatePolicyType(policy_type);
-  if (!settings_entity_id.empty())
-    validator->ValidateSettingsEntityId(settings_entity_id);
+  validator->ValidateDeviceId(device_id_,
+                              CloudPolicyValidatorBase::DEVICE_ID_REQUIRED);
+  validator->ValidatePolicyType(policy_type);
+  validator->ValidateSettingsEntityId(ns.component_id);
   validator->ValidatePayload();
-  // TODO(joaodasilva): validate signature.
+  validator->ValidateSignature(public_key_);
   validator->RunValidation();
   if (!validator->success())
     return false;
+
+  if (!validator->policy_data()->has_public_key_version()) {
+    LOG(ERROR) << "Public key version missing";
+    return false;
+  }
+  if (validator->policy_data()->public_key_version() != public_key_version_) {
+    LOG(ERROR) << "Wrong public key version "
+               << validator->policy_data()->public_key_version()
+               << " - expected " << public_key_version_;
+    return false;
+  }
 
   em::ExternalPolicyData* data = validator->payload().get();
   // The download URL must be empty, or must be a valid URL.
   // An empty download URL signals that this component doesn't have cloud
   // policy, or that the policy has been removed.
   if (data->has_download_url() && !data->download_url().empty()) {
-    if (!GURL(data->download_url()).is_valid() ||
-        !data->has_secure_hash() ||
-        data->secure_hash().empty()) {
+    if (!GURL(data->download_url()).is_valid()) {
+      LOG(ERROR) << "Invalid URL: " << data->download_url();
+      return false;
+    }
+    if (!data->has_secure_hash() || data->secure_hash().empty()) {
+      LOG(ERROR) << "Secure hash missing";
       return false;
     }
   } else if (data->has_secure_hash()) {
+    LOG(ERROR) << "URL missing";
     return false;
   }
 
-  if (payload)
-    payload->Swap(validator->payload().get());
   if (policy_data)
     policy_data->Swap(validator->policy_data().get());
+  if (payload)
+    payload->Swap(validator->payload().get());
   return true;
 }
 
@@ -337,7 +374,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
                                             PolicyMap* policy) {
   std::unique_ptr<base::Value> json = base::JSONReader::Read(
       data, base::JSON_PARSE_RFC | base::JSON_DETACHABLE_CHILDREN);
-  base::DictionaryValue* dict = NULL;
+  base::DictionaryValue* dict = nullptr;
   if (!json || !json->GetAsDictionary(&dict))
     return false;
 
@@ -347,7 +384,7 @@ bool ComponentCloudPolicyStore::ParsePolicy(const std::string& data,
   // "Value" key. The optional "Level" key is either "Mandatory" (default) or
   // "Recommended".
   for (base::DictionaryValue::Iterator it(*dict); !it.IsAtEnd(); it.Advance()) {
-    base::DictionaryValue* description = NULL;
+    base::DictionaryValue* description = nullptr;
     if (!dict->GetDictionaryWithoutPathExpansion(it.key(), &description))
       return false;
 
