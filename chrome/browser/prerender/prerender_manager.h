@@ -76,7 +76,10 @@ class PrerenderManager : public content::NotificationObserver,
   enum PrerenderManagerMode {
     PRERENDER_MODE_DISABLED,
     PRERENDER_MODE_ENABLED,
-    PRERENDER_MODE_NOSTATE_PREFETCH
+    PRERENDER_MODE_NOSTATE_PREFETCH,
+    // Like PRERENDER_MODE_DISABLED, but keeps track of pages that would have
+    // been prerendered and records metrics for comparison with other modes.
+    PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT
   };
 
   // One or more of these flags must be passed to ClearData() to specify just
@@ -215,6 +218,7 @@ class PrerenderManager : public content::NotificationObserver,
   static void SetMode(PrerenderManagerMode mode);
   static bool IsPrerenderingPossible();
   static bool IsNoStatePrefetch();
+  static bool IsSimpleLoadExperiment();
 
   // Query the list of current prerender pages to see if the given web contents
   // is prerendering a page. The optional parameter |origin| is an output

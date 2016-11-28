@@ -613,6 +613,11 @@ bool PrerenderManager::IsNoStatePrefetch() {
   return GetMode() == PRERENDER_MODE_NOSTATE_PREFETCH;
 }
 
+// static
+bool PrerenderManager::IsSimpleLoadExperiment() {
+  return GetMode() == PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
+}
+
 bool PrerenderManager::IsWebContentsPrerendering(
     const WebContents* web_contents,
     Origin* origin) const {
@@ -943,6 +948,16 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
     return nullptr;
   }
 
+  // Record the URL in the prefetch list, even when in full prerender mode, to
+  // enable metrics comparisons.
+  prefetches_.emplace_back(url, GetCurrentTimeTicks(), origin);
+
+  if (IsSimpleLoadExperiment()) {
+    // Exit after adding the url to prefetches_, so that no prefetching occurs
+    // but the page is still tracked as "would have been prefetched".
+    return nullptr;
+  }
+
   std::unique_ptr<PrerenderContents> prerender_contents =
       CreatePrerenderContents(url, referrer, origin);
   DCHECK(prerender_contents);
@@ -960,9 +975,6 @@ std::unique_ptr<PrerenderHandle> PrerenderManager::AddPrerender(
 
   histograms_->RecordPrerenderStarted(origin);
   DCHECK(!prerender_contents_ptr->prerendering_has_started());
-
-  if (prerender_contents_ptr->prerender_mode() == PREFETCH_ONLY)
-    prefetches_.emplace_back(url, GetCurrentTimeTicks(), origin);
 
   std::unique_ptr<PrerenderHandle> prerender_handle =
       base::WrapUnique(new PrerenderHandle(active_prerenders_.back().get()));

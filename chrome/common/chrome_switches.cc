@@ -755,6 +755,9 @@ const char kPrerenderModeSwitchValueDisabled[] = "disabled";
 const char kPrerenderModeSwitchValueEnabled[] = "enabled";
 //   prefetch: NoState Prefetch experiment.
 const char kPrerenderModeSwitchValuePrefetch[] = "prefetch";
+//   simple-load: experiment with prerendering disabled but metrics reporting
+//                enabled, to use as a reference for comparisons.
+const char kPrerenderModeSwitchValueSimpleLoad[] = "simple-load";
 
 // Use IPv6 only for privet HTTP.
 const char kPrivetIPv6Only[]                   = "privet-ipv6-only";

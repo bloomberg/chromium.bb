@@ -30,6 +30,8 @@ void ConfigurePrerender(const base::CommandLine& command_line) {
       // The empty string means the option was provided with no value, and that
       // means enable.
       mode = PrerenderManager::PRERENDER_MODE_ENABLED;
+    } else if (switch_value == switches::kPrerenderModeSwitchValueSimpleLoad) {
+      mode = PrerenderManager::PRERENDER_MODE_SIMPLE_LOAD_EXPERIMENT;
     } else {
       mode = PrerenderManager::PRERENDER_MODE_DISABLED;
       LOG(ERROR) << "Invalid --prerender option received on command line: "
