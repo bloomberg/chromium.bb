@@ -13,8 +13,6 @@
 #include "base/macros.h"
 #include "extensions/common/manifest.h"
 
-class SkBitmap;
-
 namespace base {
 class DictionaryValue;
 }

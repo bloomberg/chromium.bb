@@ -25,12 +25,7 @@
 
 namespace base {
 class ListValue;
-class Value;
 class DictionaryValue;
-}
-
-namespace content {
-class RenderProcessHost;
 }
 
 namespace extensions {
@@ -39,7 +34,6 @@ class Extension;
 
 namespace net {
 class NetLogWithSource;
-class URLRequest;
 }
 
 namespace extension_web_request_api_helpers {

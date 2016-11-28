@@ -22,10 +22,6 @@ class WebString;
 class WebURL;
 }
 
-namespace content {
-class V8ValueConverter;
-}
-
 namespace extensions {
 
 // Used to log DOM API calls from within WebKit. The events are sent via IPC to

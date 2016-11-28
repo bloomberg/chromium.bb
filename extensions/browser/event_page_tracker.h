@@ -11,9 +11,6 @@
 
 namespace extensions {
 
-class Extension;
-class ExtensionHost;
-
 // Tracks an extension's event page suspend state.
 class EventPageTracker {
  public:

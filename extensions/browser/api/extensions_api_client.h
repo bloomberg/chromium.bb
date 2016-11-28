@@ -12,8 +12,6 @@
 #include "extensions/browser/api/declarative_content/content_rules_registry.h"
 #include "extensions/browser/api/storage/settings_namespace.h"
 
-class GURL;
-
 namespace base {
 template <class T>
 class ObserverListThreadSafe;

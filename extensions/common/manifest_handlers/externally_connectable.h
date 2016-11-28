@@ -15,8 +15,6 @@
 #include "extensions/common/manifest_handler.h"
 #include "extensions/common/url_pattern_set.h"
 
-class GURL;
-
 namespace base {
 class Value;
 }

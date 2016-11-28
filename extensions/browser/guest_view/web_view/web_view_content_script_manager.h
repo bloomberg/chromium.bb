@@ -20,11 +20,9 @@ struct HostID;
 namespace content {
 class BrowserContext;
 class RenderFrameHost;
-class WebContents;
 }
 
 namespace extensions {
-class UserScript;
 
 // WebViewContentScriptManager manages the content scripts that each webview
 // guest adds and removes programmatically.

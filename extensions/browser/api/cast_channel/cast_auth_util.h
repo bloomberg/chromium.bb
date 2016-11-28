@@ -25,7 +25,6 @@ namespace cast_channel {
 
 class AuthResponse;
 class CastMessage;
-class DeviceAuthMessage;
 
 struct AuthResult {
  public:

@@ -49,10 +49,6 @@ class IOThreadExtensionMessageFilter;
 class QuotaLimitHeuristic;
 }
 
-namespace IPC {
-class Sender;
-}
-
 #ifdef NDEBUG
 #define EXTENSION_FUNCTION_VALIDATE(test) \
   do {                                    \

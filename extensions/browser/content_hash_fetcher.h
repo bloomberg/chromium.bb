@@ -22,7 +22,6 @@ class URLRequestContextGetter;
 
 namespace extensions {
 class Extension;
-class ExtensionRegistry;
 class ContentHashFetcherJob;
 class ContentVerifierDelegate;
 

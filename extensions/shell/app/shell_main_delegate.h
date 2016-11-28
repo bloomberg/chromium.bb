@@ -14,14 +14,12 @@
 #include "content/public/app/content_main_delegate.h"
 
 namespace content {
-class BrowserContext;
 class ContentBrowserClient;
 class ContentClient;
 class ContentRendererClient;
 }
 
 namespace extensions {
-class ShellBrowserMainDelegate;
 
 class ShellMainDelegate : public content::ContentMainDelegate {
  public:

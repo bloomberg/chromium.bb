@@ -14,7 +14,6 @@
 namespace extensions {
 
 class WiFiDisplayElementaryStreamInfo;
-class WiFiDisplayElementaryStreamPacket;
 
 // This class represents an MPEG Transport Stream (MPEG-TS) packet containing
 // WiFi Display elementary stream unit data or related meta information.

@@ -14,10 +14,6 @@
 #include "base/pickle.h"
 #include "base/values.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace extensions {
 
 class PermissionIDSet;

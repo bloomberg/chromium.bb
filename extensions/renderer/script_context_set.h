@@ -20,10 +20,6 @@
 
 class GURL;
 
-namespace base {
-class ListValue;
-}
-
 namespace blink {
 class WebLocalFrame;
 class WebSecurityOrigin;

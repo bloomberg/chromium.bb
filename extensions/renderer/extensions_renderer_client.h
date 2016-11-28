@@ -5,8 +5,6 @@
 #ifndef EXTENSIONS_RENDERER_EXTENSIONS_RENDERER_CLIENT_H_
 #define EXTENSIONS_RENDERER_EXTENSIONS_RENDERER_CLIENT_H_
 
-class ResourceBundleSourceMap;
-
 namespace extensions {
 
 // Interface to allow the extensions module to make render-process-specific

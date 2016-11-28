@@ -35,7 +35,6 @@ class ResourceContext;
 namespace net {
 class IOBuffer;
 class URLRequestContextGetter;
-class SSLClientSocket;
 }
 
 namespace extensions {

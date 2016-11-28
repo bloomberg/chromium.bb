@@ -10,7 +10,6 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
-class Dispatcher;
 
 // Implements custom bindings for the guestViewInternal API.
 class GuestViewInternalCustomBindings : public ObjectBackedNativeHandler {

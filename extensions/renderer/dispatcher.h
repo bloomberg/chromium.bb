@@ -37,7 +37,6 @@
 class ChromeRenderViewTest;
 class GURL;
 class ModuleSystem;
-class URLPattern;
 struct ExtensionMsg_DispatchEvent_Params;
 struct ExtensionMsg_ExternalConnectionInfo;
 struct ExtensionMsg_Loaded_Params;
@@ -45,25 +44,17 @@ struct ExtensionMsg_TabConnectionInfo;
 struct ExtensionMsg_UpdatePermissions_Params;
 
 namespace blink {
-class WebFrame;
 class WebLocalFrame;
-class WebSecurityOrigin;
 }
 
 namespace base {
 class ListValue;
 }
 
-namespace content {
-class RenderThread;
-}
-
 namespace extensions {
 class ContentWatcher;
 class DispatcherDelegate;
-class FilteredEventRouter;
 class ExtensionBindingsSystem;
-class ManifestPermissionSet;
 class RequestSender;
 class ScriptContext;
 class ScriptInjectionManager;

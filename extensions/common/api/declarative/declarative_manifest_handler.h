@@ -13,7 +13,6 @@
 
 namespace extensions {
 class Extension;
-class ManifestPermission;
 }
 
 namespace extensions {

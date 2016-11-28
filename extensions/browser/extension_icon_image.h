@@ -27,7 +27,6 @@ class Extension;
 }
 
 namespace gfx {
-class Size;
 class Image;
 }
 

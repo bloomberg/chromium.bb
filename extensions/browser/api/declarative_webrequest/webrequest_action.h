@@ -19,10 +19,7 @@
 #include "extensions/common/api/events.h"
 #include "url/gurl.h"
 
-class WebRequestPermission;
-
 namespace base {
-class DictionaryValue;
 class Time;
 class Value;
 }
@@ -35,10 +32,6 @@ namespace extensions {
 class Extension;
 class InfoMap;
 struct WebRequestData;
-}
-
-namespace net {
-class URLRequest;
 }
 
 namespace re2 {

@@ -29,7 +29,6 @@
 #include "net/log/net_log_source.h"
 
 namespace net {
-class AddressList;
 class CertVerifier;
 class CTPolicyEnforcer;
 class CTVerifier;
@@ -47,7 +46,6 @@ namespace cast_channel {
 class CastMessage;
 class Logger;
 struct LastErrors;
-class MessageFramer;
 
 // Cast device capabilities.
 enum CastDeviceCapability {

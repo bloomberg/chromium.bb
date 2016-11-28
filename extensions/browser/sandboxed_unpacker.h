@@ -30,10 +30,6 @@ namespace content {
 class UtilityProcessHost;
 }
 
-namespace crypto {
-class SecureHash;
-}
-
 namespace extensions {
 class Extension;
 

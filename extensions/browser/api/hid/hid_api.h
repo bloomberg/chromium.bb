@@ -21,7 +21,6 @@
 namespace device {
 class HidConnection;
 class HidDeviceInfo;
-class HidService;
 }  // namespace device
 
 namespace net {

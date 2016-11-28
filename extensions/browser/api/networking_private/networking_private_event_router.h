@@ -15,8 +15,6 @@ class BrowserContext;
 
 namespace extensions {
 
-class NetworkingPrivateDelegate;
-
 // This is an event router that will observe listeners to |NetworksChanged| and
 // |NetworkListChanged| events. On ChromeOS it will forward these events
 // from the NetworkStateHandler to the JavaScript Networking API.

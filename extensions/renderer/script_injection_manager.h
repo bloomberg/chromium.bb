@@ -26,7 +26,6 @@ class RenderFrame;
 }
 
 namespace extensions {
-class Extension;
 
 // The ScriptInjectionManager manages extensions injecting scripts into frames
 // via both content/user scripts and tabs.executeScript(). It is responsible for

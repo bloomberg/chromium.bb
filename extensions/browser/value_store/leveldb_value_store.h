@@ -19,10 +19,6 @@
 #include "extensions/browser/value_store/value_store.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 
-namespace base {
-class HistogramBase;
-}  // namespace base
-
 // Value store area, backed by a leveldb database.
 // All methods must be run on the FILE thread.
 class LeveldbValueStore : public ValueStore,

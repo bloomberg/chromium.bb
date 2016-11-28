@@ -15,8 +15,6 @@
 
 namespace extensions {
 
-class ExtensionScopedPrefs;
-
 // An interface that provides a fixed ordering for a set of apps.
 class AppSorting {
  public:

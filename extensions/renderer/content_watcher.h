@@ -20,8 +20,6 @@ class WebString;
 
 namespace extensions {
 class Dispatcher;
-class Extension;
-class NativeHandler;
 
 // Watches the content of WebFrames to notify extensions when they match various
 // patterns.  This class tracks the set of relevant patterns (set by

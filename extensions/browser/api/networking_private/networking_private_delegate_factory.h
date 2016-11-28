@@ -18,10 +18,6 @@ class BrowserContext;
 
 namespace extensions {
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
-class NetworkingPrivateServiceClient;
-#endif
-
 // Factory for creating NetworkingPrivateDelegate instances as a keyed service.
 // NetworkingPrivateDelegate supports the networkingPrivate API.
 class NetworkingPrivateDelegateFactory

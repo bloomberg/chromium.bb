@@ -9,7 +9,6 @@
 #include "extensions/renderer/object_backed_native_handler.h"
 
 namespace extensions {
-class ScriptContextSet;
 
 // Implements custom bindings for the app.window API.
 class AppWindowCustomBindings : public ObjectBackedNativeHandler {

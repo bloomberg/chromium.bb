@@ -17,10 +17,6 @@ class PickleIterator;
 class Value;
 }
 
-namespace IPC {
-class Message;
-}
-
 namespace extensions {
 
 // Represent the custom behavior of a top-level manifest entry contributing to

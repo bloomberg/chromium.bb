@@ -22,21 +22,10 @@
 class SkRegion;
 
 namespace content {
-class BrowserContext;
 class RenderViewHost;
-class WebContents;
-}
-
-namespace extensions {
-class Extension;
-}
-
-namespace ui {
-class MenuModel;
 }
 
 namespace views {
-class MenuRunner;
 class WebView;
 }
 

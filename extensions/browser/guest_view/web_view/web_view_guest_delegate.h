@@ -10,13 +10,6 @@
 
 namespace extensions {
 
-namespace api {
-namespace web_view_internal {
-
-struct ContextMenuItem;
-}  // namespace web_view_internal
-}  // namespace api
-
 // A delegate class of WebViewGuest that are not a part of chrome.
 class WebViewGuestDelegate {
  public :

@@ -12,9 +12,7 @@
 
 namespace extensions {
 
-class InfoMap;
 class ShellBrowserMainParts;
-class ShellSpecialStoragePolicy;
 
 // The BrowserContext used by the content, apps and extensions systems in
 // app_shell.

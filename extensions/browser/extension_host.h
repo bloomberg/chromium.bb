@@ -23,12 +23,9 @@
 #include "extensions/common/stack_frame.h"
 #include "extensions/common/view_type.h"
 
-class PrefsTabHelper;
-
 namespace content {
 class BrowserContext;
 class RenderProcessHost;
-class RenderWidgetHostView;
 class SiteInstance;
 }
 
@@ -37,7 +34,6 @@ class Extension;
 class ExtensionHostDelegate;
 class ExtensionHostObserver;
 class ExtensionHostQueue;
-class WindowController;
 
 // This class is the browser component of an extension component's RenderView.
 // It handles setting up the renderer process, if needed, with special

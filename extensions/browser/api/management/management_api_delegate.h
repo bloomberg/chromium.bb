@@ -24,7 +24,6 @@ class ExtensionPrefs;
 class ManagementCreateAppShortcutFunction;
 class ManagementGenerateAppForLinkFunction;
 class ManagementGetPermissionWarningsByManifestFunction;
-class ManagementSetEnabledFunction;
 class ManagementUninstallFunctionBase;
 class RequirementsChecker;
 

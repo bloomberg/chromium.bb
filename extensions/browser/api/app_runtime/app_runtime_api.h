@@ -19,7 +19,6 @@ class DictionaryValue;
 
 namespace content {
 class BrowserContext;
-class WebContents;
 }
 
 namespace extensions {

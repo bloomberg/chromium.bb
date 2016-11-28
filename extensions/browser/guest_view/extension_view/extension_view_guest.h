@@ -10,10 +10,6 @@
 #include "extensions/browser/extension_function_dispatcher.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 
 class ExtensionViewGuest

@@ -12,7 +12,6 @@
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace extensions {

@@ -39,8 +39,6 @@ class GURL;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
-class StringValue;
 }
 
 namespace content {

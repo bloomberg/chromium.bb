@@ -15,10 +15,6 @@ class Value;
 
 }  // namespace base
 
-namespace device {
-class UsbDevice;
-}
-
 namespace extensions {
 
 // A pattern that can be used to match a USB device permission.

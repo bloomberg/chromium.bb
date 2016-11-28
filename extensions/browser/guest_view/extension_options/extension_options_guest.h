@@ -12,10 +12,6 @@
 #include "extensions/browser/guest_view/extension_options/extension_options_guest_delegate.h"
 #include "url/gurl.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace extensions {
 
 class ExtensionOptionsGuest

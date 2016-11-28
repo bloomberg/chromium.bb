@@ -14,6 +14,10 @@
 #include "extensions/common/permissions/set_disjunction_permission.h"
 #include "extensions/common/permissions/usb_device_permission_data.h"
 
+namespace device {
+class UsbDevice;
+}
+
 namespace extensions {
 
 class Extension;

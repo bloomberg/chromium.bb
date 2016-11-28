@@ -21,10 +21,6 @@
 #include "third_party/WebKit/public/platform/WebMediaStreamTrack.h"
 #include "third_party/wds/src/libwds/public/media_manager.h"
 
-namespace media {
-class AudioBus;
-}  // namespace media
-
 namespace extensions {
 
 // This class encapsulates the WiFi Display media pipeline including

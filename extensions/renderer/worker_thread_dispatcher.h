@@ -20,7 +20,6 @@ class RenderThread;
 namespace extensions {
 class ExtensionBindingsSystem;
 class ResourceBundleSourceMap;
-class RequestSender;
 class ServiceWorkerRequestSender;
 class V8SchemaRegistry;
 

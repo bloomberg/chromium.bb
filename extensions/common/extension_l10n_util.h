@@ -17,7 +17,6 @@ class FilePath;
 }
 
 namespace extensions {
-struct ExtensionInfo;
 class MessageBundle;
 }
 

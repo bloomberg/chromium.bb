@@ -10,7 +10,6 @@
 
 namespace extensions {
 class Extension;
-class ExtensionHost;
 class ProcessManager;
 
 // Observes the background page load state of an extension. Use this in tests

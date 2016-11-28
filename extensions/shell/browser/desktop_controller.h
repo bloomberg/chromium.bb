@@ -7,11 +7,6 @@
 
 #include "ui/gfx/native_widget_types.h"
 
-namespace aura {
-class Window;
-class WindowTreeHost;
-}
-
 namespace content {
 class BrowserContext;
 }
@@ -23,7 +18,6 @@ class Size;
 namespace extensions {
 class AppWindow;
 class Extension;
-class ShellAppWindow;
 
 // DesktopController is an interface to construct the window environment in
 // extensions shell. ShellDesktopControllerAura provides a default

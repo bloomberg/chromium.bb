@@ -20,8 +20,6 @@
 
 namespace content {
 class BrowserContext;
-class NotificationDetails;
-class NotificationSource;
 }
 
 namespace extensions {

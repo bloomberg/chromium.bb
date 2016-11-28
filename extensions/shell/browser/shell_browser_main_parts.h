@@ -22,10 +22,6 @@ class BrowserContext;
 struct MainFunctionParams;
 }
 
-namespace views {
-class Widget;
-}
-
 namespace extensions {
 
 class AppWindowClient;

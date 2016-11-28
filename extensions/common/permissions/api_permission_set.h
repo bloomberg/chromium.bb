@@ -22,7 +22,6 @@ class ListValue;
 namespace extensions {
 
 class APIPermissionSet;
-class Extension;
 
 template<>
 struct BaseSetOperatorsTraits<APIPermissionSet> {

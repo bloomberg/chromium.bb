@@ -19,10 +19,6 @@ namespace base {
 class Value;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace extensions {
 
 class HeaderMatcher;

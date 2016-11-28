@@ -15,7 +15,6 @@
 
 namespace gfx {
 class Canvas;
-class Size;
 }
 
 namespace extensions {

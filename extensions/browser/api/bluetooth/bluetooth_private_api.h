@@ -18,8 +18,6 @@ class BluetoothAdapter;
 
 namespace extensions {
 
-class BluetoothApiPairingDelegate;
-
 // The profile-keyed service that manages the bluetoothPrivate extension API.
 class BluetoothPrivateAPI : public BrowserContextKeyedAPI,
                             public EventRouter::Observer {

@@ -5,10 +5,6 @@
 #ifndef EXTENSIONS_SHELL_APP_PATHS_MAC_H_
 #define EXTENSIONS_SHELL_APP_PATHS_MAC_H_
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 
 // Override the framework bundle path.

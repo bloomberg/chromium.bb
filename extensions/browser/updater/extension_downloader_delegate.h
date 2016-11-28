@@ -15,10 +15,6 @@
 
 class GURL;
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 
 class ExtensionDownloaderDelegate {

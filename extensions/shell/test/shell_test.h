@@ -11,10 +11,6 @@
 #include "content/public/test/browser_test_base.h"
 #include "extensions/common/features/feature_channel.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace content {
 class BrowserContext;
 }

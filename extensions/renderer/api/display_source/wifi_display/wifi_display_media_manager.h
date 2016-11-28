@@ -26,7 +26,6 @@ namespace extensions {
 class WiFiDisplayAudioSink;
 class WiFiDisplayVideoSink;
 class WiFiDisplayMediaPipeline;
-class WiFiDisplaySessionService;
 
 class WiFiDisplayMediaManager : public wds::SourceMediaManager {
  public:

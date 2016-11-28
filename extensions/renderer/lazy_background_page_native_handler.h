@@ -9,8 +9,6 @@
 
 namespace extensions {
 
-class Extension;
-
 class LazyBackgroundPageNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit LazyBackgroundPageNativeHandler(ScriptContext* context);

@@ -17,6 +17,10 @@
 #include "extensions/browser/api/declarative_webrequest/webrequest_condition_attribute.h"
 #include "net/http/http_response_headers.h"
 
+namespace net {
+class URLRequest;
+}
+
 namespace extensions {
 class ExtensionNavigationUIData;
 

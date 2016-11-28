@@ -20,12 +20,6 @@
 
 class ExtensionService;
 
-#if defined(OS_CHROMEOS)
-namespace chromeos {
-class DeviceLocalAccountManagementPolicyProvider;
-}
-#endif  // defined(OS_CHROMEOS)
-
 namespace content {
 class BrowserContext;
 }

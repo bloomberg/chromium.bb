@@ -20,7 +20,6 @@
 namespace net {
 class DrainableIOBuffer;
 class IPEndPoint;
-class IOBuffer;
 class DrainableIOBuffer;
 class GrowableIOBuffer;
 class Socket;
@@ -30,7 +29,6 @@ namespace extensions {
 namespace api {
 namespace cast_channel {
 class CastMessage;
-struct LastErrors;
 class Logger;
 class MessageFramer;
 

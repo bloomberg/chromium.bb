@@ -16,11 +16,7 @@
 #include "extensions/browser/extension_function.h"
 #include "extensions/browser/process_manager_observer.h"
 
-class Profile;
-
 namespace extensions {
-
-class ProcessManager;
 
 class WebcamPrivateAPI : public BrowserContextKeyedAPI {
  public:

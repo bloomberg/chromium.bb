@@ -25,7 +25,6 @@ class BrowserContext;
 namespace extensions {
 class ContentRulesRegistry;
 class ExtensionRegistry;
-class RulesRegistryStorageDelegate;
 }
 
 namespace extensions {

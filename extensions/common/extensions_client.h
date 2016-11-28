@@ -23,13 +23,9 @@ namespace extensions {
 
 class APIPermissionSet;
 class Extension;
-class ExtensionAPI;
 class FeatureProvider;
 class JSONFeatureProviderSource;
-class ManifestPermissionSet;
-class PermissionMessage;
 class PermissionMessageProvider;
-class SimpleFeature;
 class URLPatternSet;
 
 // Sets up global state for the extensions system. Should be Set() once in each

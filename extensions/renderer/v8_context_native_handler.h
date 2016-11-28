@@ -9,8 +9,6 @@
 
 namespace extensions {
 
-class Dispatcher;
-
 class V8ContextNativeHandler : public ObjectBackedNativeHandler {
  public:
   explicit V8ContextNativeHandler(ScriptContext* context);

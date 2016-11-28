@@ -24,8 +24,6 @@ class BrowserContext;
 class RenderProcessHost;
 }
 
-class ListenerRemovalListener;
-
 namespace extensions {
 struct Event;
 

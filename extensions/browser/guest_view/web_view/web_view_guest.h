@@ -26,10 +26,6 @@ namespace blink {
 struct WebFindOptions;
 }  // namespace blink
 
-namespace content {
-struct GlobalRequestID;
-}  // namespace content
-
 namespace extensions {
 
 class WebViewInternalFindFunction;

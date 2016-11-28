@@ -16,8 +16,6 @@
 
 namespace content {
 class BrowserContext;
-class ContentBrowserClient;
-class ContentClient;
 class ContentUtilityClient;
 class RenderViewHostTestEnabler;
 }

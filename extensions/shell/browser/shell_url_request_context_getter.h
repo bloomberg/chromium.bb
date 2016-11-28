@@ -9,10 +9,6 @@
 #include "base/macros.h"
 #include "content/shell/browser/shell_url_request_context_getter.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace content {
 class BrowserContext;
 }

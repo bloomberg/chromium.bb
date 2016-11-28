@@ -17,7 +17,6 @@ class ListValue;
 
 namespace extensions {
 
-class Extension;
 class ManifestPermission;
 class ManifestPermissionSet;
 

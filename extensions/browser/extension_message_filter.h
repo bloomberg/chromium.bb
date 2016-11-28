@@ -20,10 +20,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace extensions {
 class EventRouter;
 

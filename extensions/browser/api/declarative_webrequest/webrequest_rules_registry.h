@@ -26,8 +26,6 @@
 #include "extensions/browser/info_map.h"
 #include "extensions/common/extension_id.h"
 
-class WebRequestPermissions;
-
 namespace content {
 class BrowserContext;
 }
@@ -36,13 +34,7 @@ namespace extension_web_request_api_helpers {
 struct EventResponseDelta;
 }
 
-namespace net {
-class URLRequest;
-}
-
 namespace extensions {
-
-class RulesRegistryService;
 
 typedef linked_ptr<extension_web_request_api_helpers::EventResponseDelta>
     LinkedPtrEventResponseDelta;

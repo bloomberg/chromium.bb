@@ -10,8 +10,6 @@
 
 #include "extensions/common/manifest.h"
 
-class GURL;
-
 namespace base {
 class Version;
 }

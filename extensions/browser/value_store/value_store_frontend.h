@@ -16,10 +16,6 @@
 #include "base/values.h"
 #include "extensions/browser/value_store/value_store.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace extensions {
 class ValueStoreFactory;
 }  // namespace extensions

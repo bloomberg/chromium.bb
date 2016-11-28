@@ -25,10 +25,8 @@
 namespace extensions {
 
 class DevicePermissionEntry;
-class DevicePermissions;
 class DevicePermissionsPrompt;
 class DevicePermissionsManager;
-class UsbDeviceResource;
 
 class UsbPermissionCheckingFunction : public UIThreadExtensionFunction {
  protected:
