@@ -115,7 +115,8 @@ PassRefPtr<Image> createTransparentImage(const IntSize& size) {
   DCHECK(ImageBuffer::canCreateImageBuffer(size));
   sk_sp<SkSurface> surface =
       SkSurface::MakeRasterN32Premul(size.width(), size.height());
-  return StaticBitmapImage::create(surface->makeImageSnapshot());
+  return surface ? StaticBitmapImage::create(surface->makeImageSnapshot())
+                 : nullptr;
 }
 
 }  // namespace
