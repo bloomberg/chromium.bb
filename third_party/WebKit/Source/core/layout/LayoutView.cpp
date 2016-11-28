@@ -817,6 +817,7 @@ bool LayoutView::hasPendingSelection() const {
 }
 
 void LayoutView::commitPendingSelection() {
+  TRACE_EVENT0("blink", "LayoutView::commitPendingSelection");
   m_frameView->frame().selection().commitAppearanceIfNeeded(*this);
 }
 
