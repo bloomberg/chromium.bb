@@ -14,6 +14,6 @@ blink_modules_sources("imagecapture") {
   ]
 
   deps = [
-    "//media/capture/mojo:image_capture_blink",
+    "//media/mojo/interfaces:image_capture_blink",
   ]
 }

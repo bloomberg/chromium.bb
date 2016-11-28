@@ -5,7 +5,7 @@
 #ifndef MEDIA_CAPTURE_VIDEO_BLOB_UTILS_H_
 #define MEDIA_CAPTURE_VIDEO_BLOB_UTILS_H_
 
-#include "media/capture/mojo/image_capture.mojom.h"
+#include "media/mojo/interfaces/image_capture.mojom.h"
 
 namespace media {
 

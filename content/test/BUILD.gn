@@ -238,7 +238,7 @@ static_library("test_support") {
     "//ipc:test_support",
     "//media",
     "//media/capture",
-    "//media/capture/mojo:image_capture",
+    "//media/mojo/interfaces:image_capture",
     "//mojo/edk/system",
     "//mojo/edk/test:test_support",
     "//net:test_support",

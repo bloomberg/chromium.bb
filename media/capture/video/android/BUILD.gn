@@ -27,7 +27,7 @@ source_set("android") {
   ]
   deps = [
     ":capture_jni_headers",
-    "//media/capture/mojo:image_capture",
+    "//media/mojo/interfaces:image_capture",
     "//third_party/libyuv",
   ]
 }
