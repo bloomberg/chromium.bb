@@ -2065,9 +2065,10 @@ void WebContentsImpl::CreateNewWindow(
 
   if (delegate_ &&
       !delegate_->ShouldCreateWebContents(
-          this, route_id, main_frame_route_id, main_frame_widget_route_id,
-          params.window_container_type, params.frame_name, params.target_url,
-          partition_id, session_storage_namespace)) {
+          this, source_site_instance, route_id, main_frame_route_id,
+          main_frame_widget_route_id, params.window_container_type,
+          params.opener_url, params.frame_name, params.target_url, partition_id,
+          session_storage_namespace)) {
     if (route_id != MSG_ROUTING_NONE &&
         !RenderViewHost::FromID(render_process_id, route_id)) {
       // If the embedder didn't create a WebContents for this route, we need to

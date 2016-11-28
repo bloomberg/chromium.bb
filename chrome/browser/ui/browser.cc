@@ -1580,11 +1580,13 @@ void Browser::ShowRepostFormWarningDialog(WebContents* source) {
 }
 
 bool Browser::ShouldCreateWebContents(
-    WebContents* web_contents,
+    content::WebContents* web_contents,
+    content::SiteInstance* source_site_instance,
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     WindowContainerType window_container_type,
+    const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
@@ -1592,8 +1594,9 @@ bool Browser::ShouldCreateWebContents(
   if (window_container_type == WINDOW_CONTAINER_TYPE_BACKGROUND) {
     // If a BackgroundContents is created, suppress the normal WebContents.
     return !MaybeCreateBackgroundContents(
-        route_id, main_frame_route_id, main_frame_widget_route_id, web_contents,
-        frame_name, target_url, partition_id, session_storage_namespace);
+        source_site_instance, opener_url, route_id, main_frame_route_id,
+        main_frame_widget_route_id, frame_name, target_url, partition_id,
+        session_storage_namespace);
   }
 
   return true;
@@ -2519,21 +2522,19 @@ bool Browser::ShouldStartShutdown() const {
 }
 
 bool Browser::MaybeCreateBackgroundContents(
+    content::SiteInstance* source_site_instance,
+    const GURL& opener_url,
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
-    WebContents* opener_web_contents,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
     content::SessionStorageNamespace* session_storage_namespace) {
-  GURL opener_url = opener_web_contents->GetURL();
   ExtensionService* extensions_service =
       extensions::ExtensionSystem::Get(profile_)->extension_service();
 
-  if (!opener_url.is_valid() ||
-      frame_name.empty() ||
-      !extensions_service ||
+  if (!opener_url.is_valid() || frame_name.empty() || !extensions_service ||
       !extensions_service->is_ready())
     return false;
 
@@ -2554,11 +2555,10 @@ bool Browser::MaybeCreateBackgroundContents(
     return false;
 
   // Ensure that we're trying to open this from the extension's process.
-  SiteInstance* opener_site_instance = opener_web_contents->GetSiteInstance();
   extensions::ProcessMap* process_map = extensions::ProcessMap::Get(profile_);
-  if (!opener_site_instance->GetProcess() ||
-      !process_map->Contains(
-          extension->id(), opener_site_instance->GetProcess()->GetID())) {
+  if (!source_site_instance->GetProcess() ||
+      !process_map->Contains(extension->id(),
+                             source_site_instance->GetProcess()->GetID())) {
     return false;
   }
 
@@ -2576,28 +2576,33 @@ bool Browser::MaybeCreateBackgroundContents(
     delete existing;
   }
 
-  // If script access is not allowed, create the the background contents in a
-  // new SiteInstance, so that a separate process is used.
-  scoped_refptr<content::SiteInstance> site_instance =
-      allow_js_access ?
-      opener_site_instance :
-      content::SiteInstance::Create(opener_web_contents->GetBrowserContext());
-
   // Passed all the checks, so this should be created as a BackgroundContents.
-  BackgroundContents* contents = service->CreateBackgroundContents(
-      site_instance.get(), route_id, main_frame_route_id,
-      main_frame_widget_route_id, profile_, frame_name,
-      base::ASCIIToUTF16(extension->id()), partition_id,
-      session_storage_namespace);
+  BackgroundContents* contents = nullptr;
+  if (allow_js_access) {
+    contents = service->CreateBackgroundContents(
+        source_site_instance, route_id, main_frame_route_id,
+        main_frame_widget_route_id, profile_, frame_name,
+        base::ASCIIToUTF16(extension->id()), partition_id,
+        session_storage_namespace);
+  } else {
+    // If script access is not allowed, create the the background contents in a
+    // new SiteInstance, so that a separate process is used. We must not use any
+    // of the passed-in routing IDs, as they are objects in the opener's
+    // process.
+    contents = service->CreateBackgroundContents(
+        content::SiteInstance::Create(
+            source_site_instance->GetBrowserContext()),
+        MSG_ROUTING_NONE, MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_,
+        frame_name, base::ASCIIToUTF16(extension->id()), partition_id,
+        session_storage_namespace);
 
-  // When a separate process is used, the original renderer cannot access the
-  // new window later, thus we need to navigate the window now.
-  if (contents && !allow_js_access) {
-    contents->web_contents()->GetController().LoadURL(
-        target_url,
-        content::Referrer(),
-        ui::PAGE_TRANSITION_LINK,
-        std::string());  // No extra headers.
+    // When a separate process is used, the original renderer cannot access the
+    // new window later, thus we need to navigate the window now.
+    if (contents) {
+      contents->web_contents()->GetController().LoadURL(
+          target_url, content::Referrer(), ui::PAGE_TRANSITION_LINK,
+          std::string());  // No extra headers.
+    }
   }
 
   return contents != NULL;

@@ -42,7 +42,9 @@ class ColorChooser;
 class JavaScriptDialogManager;
 class PageState;
 class RenderFrameHost;
+class RenderWidgetHost;
 class SessionStorageNamespace;
+class SiteInstance;
 class WebContents;
 class WebContentsImpl;
 struct ColorSuggestion;
@@ -69,7 +71,6 @@ class WebGestureEvent;
 }
 
 namespace content {
-class RenderWidgetHost;
 
 struct OpenURLParams;
 struct WebContentsUnresponsiveState;
@@ -289,17 +290,36 @@ class CONTENT_EXPORT WebContentsDelegate {
   // Returns true to allow WebContents to continue with the default processing.
   virtual bool OnGoToEntryOffset(int offset);
 
-  // Allows delegate to control whether a WebContents will be created. Returns
-  // true to allow the creation. Default is to allow it. In cases where the
-  // delegate handles the creation/navigation itself, it will use |target_url|.
-  // The embedder has to synchronously adopt |route_id| or else the view will
-  // be destroyed.
+  // Allows delegate to control whether a new WebContents can be created by
+  // |web_contents|.
+  //
+  // The route ID parameters passed to this method are associated with the
+  // |source_site_instance|'s RenderProcessHost. They may also be
+  // MSG_ROUTING_NONE. If they are valid, they correspond to a trio of
+  // RenderView, RenderFrame, and RenderWidget objects that have been created in
+  // the renderer, but not yet assigned a WebContents, RenderViewHost,
+  // RenderFrameHost, or RenderWidgetHost.
+  //
+  // The return value is interpreted as follows:
+  //
+  //   Return true: |web_contents| should create a WebContents.
+  //   Return false: |web_contents| should not create a WebContents. The
+  //       provisionally-created RenderView (if it exists) in the renderer
+  //       process will be destroyed, UNLESS the delegate, during this method,
+  //       itself creates a WebContents using |source_site_instance|,
+  //       |route_id|, |main_frame_route_id|, and |main_frame_widget_route_id|
+  //       as creation parameters. If this happens, the delegate assumes
+  //       ownership of the corresponding RenderView, etc. |web_contents| will
+  //       detect that this has happened by looking for the existence of a
+  //       RenderViewHost in |source_site_instance| with |route_id|.
   virtual bool ShouldCreateWebContents(
       WebContents* web_contents,
+      SiteInstance* source_site_instance,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       WindowContainerType window_container_type,
+      const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,

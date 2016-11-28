@@ -165,10 +165,12 @@ class DriveWebContentsManager : public content::WebContentsObserver,
   // content::WebContentsDelegate overrides:
   bool ShouldCreateWebContents(
       content::WebContents* web_contents,
+      content::SiteInstance* source_site_instance,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       WindowContainerType window_container_type,
+      const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
@@ -280,10 +282,12 @@ void DriveWebContentsManager::DidFailLoad(
 
 bool DriveWebContentsManager::ShouldCreateWebContents(
     content::WebContents* web_contents,
+    content::SiteInstance* source_site_instance,
     int32_t route_id,
     int32_t main_frame_route_id,
     int32_t main_frame_widget_route_id,
     WindowContainerType window_container_type,
+    const GURL& opener_url,
     const std::string& frame_name,
     const GURL& target_url,
     const std::string& partition_id,
@@ -308,10 +312,12 @@ bool DriveWebContentsManager::ShouldCreateWebContents(
       base::UTF8ToUTF16(app_id_))) {
     return false;
   }
+  // We are creating a new SiteInstance (and thus a new renderer process) here,
+  // so we must not use |route_id|, etc, which are IDs in a different process.
   BackgroundContents* contents =
       background_contents_service->CreateBackgroundContents(
-          content::SiteInstance::Create(profile_), route_id,
-          main_frame_route_id, main_frame_widget_route_id, profile_, frame_name,
+          content::SiteInstance::Create(profile_), MSG_ROUTING_NONE,
+          MSG_ROUTING_NONE, MSG_ROUTING_NONE, profile_, frame_name,
           base::ASCIIToUTF16(app_id_), partition_id, session_storage_namespace);
 
   contents->web_contents()->GetController().LoadURL(

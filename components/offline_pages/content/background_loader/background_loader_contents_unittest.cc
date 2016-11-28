@@ -96,11 +96,13 @@ TEST_F(BackgroundLoaderContentsTest, CannotDownload) {
 
 TEST_F(BackgroundLoaderContentsTest, ShouldNotCreateWebContents) {
   ASSERT_FALSE(contents()->ShouldCreateWebContents(
-      nullptr /* contents */, 0 /* route_id */, 0 /* main_frame_route_id */,
+      nullptr /* contents */, nullptr /* source_site_instance */,
+      0 /* route_id */, 0 /* main_frame_route_id */,
       0 /* main_frame_widget_route_id */,
       WINDOW_CONTAINER_TYPE_NORMAL /* window_container_type */,
-      "foo" /* frame_name */, GURL::EmptyGURL() /* target_url */,
-      "bar" /* partition_id */, nullptr /* session_storage_namespace */));
+      GURL() /* opener_url */, "foo" /* frame_name */,
+      GURL::EmptyGURL() /* target_url */, "bar" /* partition_id */,
+      nullptr /* session_storage_namespace */));
 }
 
 TEST_F(BackgroundLoaderContentsTest, ShouldNotAddNewContents) {

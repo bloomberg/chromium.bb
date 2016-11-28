@@ -131,11 +131,13 @@ class PrerenderContents::WebContentsDelegateImpl
   }
 
   bool ShouldCreateWebContents(
-      WebContents* web_contents,
+      content::WebContents* web_contents,
+      content::SiteInstance* source_site_instance,
       int32_t route_id,
       int32_t main_frame_route_id,
       int32_t main_frame_widget_route_id,
       WindowContainerType window_container_type,
+      const GURL& opener_url,
       const std::string& frame_name,
       const GURL& target_url,
       const std::string& partition_id,
