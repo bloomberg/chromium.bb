@@ -1050,6 +1050,8 @@ weston_wm_window_draw_decoration(void *data)
 	uint32_t flags = 0;
 	struct weston_view *view;
 
+	wm_log("XWM: start draw decoration, win %d\n", window->id);
+
 	weston_wm_window_read_properties(window);
 
 	window->repaint_source = NULL;
@@ -1108,6 +1110,9 @@ weston_wm_window_draw_decoration(void *data)
 		pixman_region32_init_rect(&window->surface->pending.input,
 					  input_x, input_y, input_w, input_h);
 
+		wm_log("XWM: draw decoration, win %d geometry: %d,%d %dx%d\n",
+		       window->id, input_x, input_y, input_w, input_h);
+
 		xwayland_interface->set_window_geometry(window->shsurf,
 							input_x, input_y, input_w, input_h);
 	}
@@ -1138,6 +1143,8 @@ weston_wm_window_schedule_repaint(struct weston_wm_window *window)
 
 	if (window->repaint_source)
 		return;
+
+	wm_log("XWM: schedule repaint, win %d\n", window->id);
 
 	window->repaint_source =
 		wl_event_loop_add_idle(wm->server->loop,
@@ -2546,6 +2553,9 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		xwayland_interface->create_surface(xwayland,
 						   window->surface,
 						   &shell_client);
+
+	wm_log("XWM: map shell surface, win %d, xwayland surface %p\n",
+	       window->id, window->shsurf);
 
 	if (window->name)
 		xwayland_interface->set_title(window->shsurf, window->name);
