@@ -206,7 +206,7 @@ begnum # 3456-4 print number sign before number
 midnum , 2
 
 # the decimal digits
-include litdigits6Dots.uti
+include digits6Dots.uti
 
 # Arabic numerals
 digit \x0660 245
