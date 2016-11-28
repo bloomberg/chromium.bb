@@ -1297,6 +1297,8 @@ component("platform") {
     "text/DecodeEscapeSequences.h",
     "text/Hyphenation.cpp",
     "text/Hyphenation.h",
+    "text/ICUError.cpp",
+    "text/ICUError.h",
     "text/LineEnding.cpp",
     "text/LineEnding.h",
     "text/LocaleICU.cpp",

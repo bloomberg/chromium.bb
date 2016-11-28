@@ -119,7 +119,6 @@ void NGInlineNode::SegmentText() {
   text_content_.ensure16Bit();
   if (!bidi.SetParagraph(text_content_, block_style_.get())) {
     // On failure, give up bidi resolving and reordering.
-    NOTREACHED();
     is_bidi_enabled_ = false;
     return;
   }
