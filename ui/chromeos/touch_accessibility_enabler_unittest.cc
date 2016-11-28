@@ -123,7 +123,7 @@ TEST_F(TouchAccessibilityEnablerTest, PlaysProgressSound) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(0U, delegate_.feedback_progress_sound_count());
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(3000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_EQ(1U, delegate_.feedback_progress_sound_count());
 }
@@ -142,7 +142,7 @@ TEST_F(TouchAccessibilityEnablerTest, TogglesSpokenFeedback) {
   enabler_->TriggerOnTimerForTesting();
   EXPECT_FALSE(delegate_.toggle_spoken_feedback());
 
-  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(3500));
+  simulated_clock_->Advance(base::TimeDelta::FromMilliseconds(5000));
   enabler_->TriggerOnTimerForTesting();
   EXPECT_TRUE(delegate_.toggle_spoken_feedback());
 }

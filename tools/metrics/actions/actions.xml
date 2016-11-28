@@ -1028,6 +1028,18 @@ should be able to be added at any place in this file.
   </description>
 </action>
 
+<action name="Accessibility.TwoFingersHeldGeneratedSpokenFeedbackCountdown">
+  <owner>dmazzoni@chromium.org</owner>
+  <description>
+    Metric recorded on Chrome OS when the user holds down two fingers on a touch
+    screen for more than the minimum number of seconds to trigger a countdown.
+    If the user continues to hold down two fingers through the countdown it will
+    toggle spoken feedback. If spoken feedback is toggled, the
+    StatusArea_SpokenFeedbackEnabled or StatusArea_SpokenFeedbackDisabled
+    actions will be recorded.
+  </description>
+</action>
+
 <action name="ActionBox.ClickButton">
   <owner>Please list the metric's owners. Add more owner tags as needed.</owner>
   <description>Please enter the description of this user action.</description>
