@@ -533,7 +533,7 @@ FakeBluetoothGattCharacteristicClient::GetHeartRateMeasurementValue() {
 
   // Total calories burned in kJoules since the last reset. Increment this by 1
   // every time. It's fine if it overflows: it becomes 0 when the user resets
-  // the heart rate monitor (or pretend that he had a lot of cheeseburgers).
+  // the heart rate monitor (or pretend that they had a lot of cheeseburgers).
   value.energy_expanded = calories_burned_++;
 
   // Include one RR-Interval value, in seconds.
