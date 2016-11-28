@@ -379,7 +379,9 @@ UrlCommitObserver::UrlCommitObserver(FrameTreeNode* frame_tree_node,
                                        ->GetAsWebContents()),
       frame_tree_node_id_(frame_tree_node->frame_tree_node_id()),
       url_(url),
-      message_loop_runner_(new MessageLoopRunner) {}
+      message_loop_runner_(
+          new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE)) {
+}
 
 UrlCommitObserver::~UrlCommitObserver() {}
 

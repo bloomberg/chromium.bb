@@ -33,7 +33,8 @@ TestFrameNavigationObserver::TestFrameNavigationObserver(
       navigation_started_(false),
       has_committed_(false),
       wait_for_commit_(false),
-      message_loop_runner_(new MessageLoopRunner) {
+      message_loop_runner_(
+          new MessageLoopRunner(MessageLoopRunner::QuitMode::IMMEDIATE)) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 }
 

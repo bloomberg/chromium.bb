@@ -89,9 +89,19 @@ bool RegisterJniForTesting(JNIEnv* env);
 // Helper class to Run and Quit the message loop. Run and Quit can only happen
 // once per instance. Make a new instance for each use. Calling Quit after Run
 // has returned is safe and has no effect.
+// Note that by default Quit does not quit immediately. If that is not what you
+// really need, pass QuitMode::IMMEDIATE in the constructor.
 class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
  public:
-  MessageLoopRunner();
+  enum class QuitMode {
+    // Message loop stops after finishing the current task.
+    IMMEDIATE,
+
+    // Several generations of posted tasks are executed before stopping.
+    DEFERRED,
+  };
+
+  MessageLoopRunner(QuitMode mode = QuitMode::DEFERRED);
 
   // Run the current MessageLoop unless the quit closure
   // has already been called.
@@ -112,6 +122,8 @@ class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
  private:
   friend class base::RefCounted<MessageLoopRunner>;
   ~MessageLoopRunner();
+
+  QuitMode quit_mode_;
 
   // True when the message loop is running.
   bool loop_running_;

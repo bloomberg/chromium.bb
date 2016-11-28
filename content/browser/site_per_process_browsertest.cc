@@ -8374,6 +8374,8 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
                     "};\n"));
 
   // Navigate B's subframe to a cross-site C.
+  RenderFrameDeletedObserver deleted_observer(
+      root->child_at(0)->child_at(0)->current_frame_host());
   std::string script =
       std::string("window.document.getElementById('child-0').src = \"") +
       embedded_test_server()
@@ -8384,8 +8386,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessBrowserTest, NavigateInUnloadHandler) {
       ExecuteScript(root->child_at(0)->current_frame_host(), script.c_str()));
 
   // Wait until B's subframe RenderFrameHost is destroyed.
-  RenderFrameDeletedObserver deleted_observer(
-      root->child_at(0)->child_at(0)->current_frame_host());
   deleted_observer.WaitUntilDeleted();
 
   // Check that C's subframe is alive and the navigation in the unload handler

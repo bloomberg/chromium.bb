@@ -208,9 +208,8 @@ bool RegisterJniForTesting(JNIEnv* env) {
 }
 #endif
 
-MessageLoopRunner::MessageLoopRunner()
-    : loop_running_(false),
-      quit_closure_called_(false) {
+MessageLoopRunner::MessageLoopRunner(QuitMode quit_mode)
+    : quit_mode_(quit_mode), loop_running_(false), quit_closure_called_(false) {
 }
 
 MessageLoopRunner::~MessageLoopRunner() = default;
@@ -239,7 +238,14 @@ void MessageLoopRunner::Quit() {
 
   // Only run the quit task if we are running the message loop.
   if (loop_running_) {
-    GetQuitTaskForRunLoop(&run_loop_).Run();
+    switch (quit_mode_) {
+      case QuitMode::DEFERRED:
+        GetQuitTaskForRunLoop(&run_loop_).Run();
+        break;
+      case QuitMode::IMMEDIATE:
+        run_loop_.Quit();
+        break;
+    }
     loop_running_ = false;
   }
 }
