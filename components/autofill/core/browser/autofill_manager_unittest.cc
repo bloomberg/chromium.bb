@@ -3667,12 +3667,25 @@ TEST_F(AutofillManagerTest, FormSubmittedWithDefaultValues) {
 }
 
 // Tests that credit card data are saved for forms on https
-TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTPS) {
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_ImportFormDataCreditCardHTTPS \
+  DISABLED_ImportFormDataCreditCardHTTPS
+#else
+#define MAYBE_ImportFormDataCreditCardHTTPS ImportFormDataCreditCardHTTPS
+#endif
+TEST_F(AutofillManagerTest, MAYBE_ImportFormDataCreditCardHTTPS) {
   TestSaveCreditCards(true);
 }
 
 // Tests that credit card data are saved for forms on http
-TEST_F(AutofillManagerTest, ImportFormDataCreditCardHTTP) {
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_ImportFormDataCreditCardHTTP DISABLED_ImportFormDataCreditCardHTTP
+#else
+#define MAYBE_ImportFormDataCreditCardHTTP ImportFormDataCreditCardHTTP
+#endif
+TEST_F(AutofillManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
   TestSaveCreditCards(false);
 }
 
