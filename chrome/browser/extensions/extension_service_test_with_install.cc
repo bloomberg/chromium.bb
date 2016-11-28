@@ -6,9 +6,11 @@
 
 #include "base/files/file_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extension_error_reporter.h"
+#include "chrome/browser/profiles/profile.h"
 #include "content/public/browser/notification_service.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/browser/notification_types.h"
@@ -417,22 +419,18 @@ void ExtensionServiceTestWithInstall::InstallCRXInternal(
     Manifest::Location install_location,
     InstallState install_state,
     int creation_flags) {
-  EXPECT_TRUE(base::PathExists(crx_path)) << "Path does not exist: "
-                                          << crx_path.value().c_str();
-  // no client (silent install)
-  scoped_refptr<CrxInstaller> installer(
-      CrxInstaller::CreateSilent(service()));
-  installer->set_install_source(install_location);
-  installer->set_creation_flags(creation_flags);
-  if (!(creation_flags & Extension::WAS_INSTALLED_BY_DEFAULT))
-    installer->set_allow_silent_install(true);
-
-  content::WindowedNotificationObserver observer(
-      extensions::NOTIFICATION_CRX_INSTALLER_DONE,
-      content::Source<extensions::CrxInstaller>(installer.get()));
-
-  installer->InstallCrx(crx_path);
-  observer.Wait();
+  ChromeTestExtensionLoader extension_loader(profile());
+  extension_loader.set_location(install_location);
+  extension_loader.set_creation_flags(creation_flags);
+  extension_loader.set_should_fail(install_state == INSTALL_FAILED);
+  // TODO(devlin): We shouldn't be granting permissions based on whether
+  // something was installed by default. That's weird.
+  extension_loader.set_grant_permissions(
+      (creation_flags & Extension::WAS_INSTALLED_BY_DEFAULT) == 0);
+  // TODO(devlin): We shouldn't ignore manifest warnings here, but we always
+  // did so a bunch of stuff fails. Migrate this over.
+  extension_loader.set_ignore_manifest_warnings(true);
+  extension_loader.LoadExtension(crx_path);
 }
 
 }  // namespace extensions

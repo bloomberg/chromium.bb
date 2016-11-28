@@ -24,6 +24,8 @@ class ChromeExtensionTestNotificationObserver
       public extensions::ExtensionActionAPI::Observer {
  public:
   explicit ChromeExtensionTestNotificationObserver(Browser* browser);
+  explicit ChromeExtensionTestNotificationObserver(
+      content::BrowserContext* browser_context);
   ~ChromeExtensionTestNotificationObserver() override;
 
   // Waits for the number of visible page actions to change to |count|.

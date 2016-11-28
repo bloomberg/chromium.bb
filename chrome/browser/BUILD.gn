@@ -4249,6 +4249,10 @@ static_library("test_support") {
 
   if (enable_extensions) {
     sources += [
+      "extensions/chrome_extension_test_notification_observer.cc",
+      "extensions/chrome_extension_test_notification_observer.h",
+      "extensions/chrome_test_extension_loader.cc",
+      "extensions/chrome_test_extension_loader.h",
       "extensions/extension_action_test_util.cc",
       "extensions/extension_action_test_util.h",
     ]

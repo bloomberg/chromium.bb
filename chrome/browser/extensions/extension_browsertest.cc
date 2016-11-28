@@ -19,6 +19,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/chrome_test_extension_loader.h"
 #include "chrome/browser/extensions/component_loader.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -175,117 +176,22 @@ const Extension* ExtensionBrowserTest::LoadExtensionWithFlags(
   return LoadExtensionWithInstallParam(path, flags, std::string());
 }
 
-const extensions::Extension*
-ExtensionBrowserTest::LoadExtensionWithInstallParam(
+const Extension* ExtensionBrowserTest::LoadExtensionWithInstallParam(
     const base::FilePath& path,
     int flags,
     const std::string& install_param) {
-  ExtensionService* service = extensions::ExtensionSystem::Get(
-      profile())->extension_service();
-  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  {
-    observer_->Watch(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-                     content::NotificationService::AllSources());
-
-    scoped_refptr<extensions::UnpackedInstaller> installer(
-        extensions::UnpackedInstaller::Create(service));
-    installer->set_prompt_for_plugins(false);
-    installer->set_require_modern_manifest_version(
-        (flags & kFlagAllowOldManifestVersions) == 0);
-    installer->Load(path);
-
-    observer_->Wait();
-  }
-
-  // Find the loaded extension by its path. See crbug.com/59531 for why
-  // we cannot just use last_loaded_extension_id().
-  const Extension* extension =
-      GetExtensionByPath(registry->enabled_extensions(), path);
-  if (!extension)
-    return NULL;
-
-  if (!(flags & kFlagIgnoreManifestWarnings)) {
-    const std::vector<extensions::InstallWarning>& install_warnings =
-        extension->install_warnings();
-    if (!install_warnings.empty()) {
-      std::string install_warnings_message = base::StringPrintf(
-          "Unexpected warnings when loading test extension %s:\n",
-          path.AsUTF8Unsafe().c_str());
-
-      for (std::vector<extensions::InstallWarning>::const_iterator it =
-          install_warnings.begin(); it != install_warnings.end(); ++it) {
-        install_warnings_message += "  " + it->message + "\n";
-      }
-
-      EXPECT_EQ(0u, extension->install_warnings().size())
-          << install_warnings_message;
-      return NULL;
-    }
-  }
-
-  const std::string extension_id = extension->id();
-
-  // If this is an incognito test (e.g. where the test fixture appended the
-  // --incognito flag), we need to use the original profile when we wait for
-  // notifications.
-  Profile* original_profile = profile()->GetOriginalProfile();
-
-  if (!install_param.empty()) {
-    extensions::ExtensionPrefs::Get(original_profile)
-        ->SetInstallParam(extension_id, install_param);
-    // Re-enable the extension if needed.
-    if (registry->enabled_extensions().Contains(extension_id)) {
-      content::WindowedNotificationObserver load_signal(
-          extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-          content::Source<Profile>(original_profile));
-      // Reload the extension so that the
-      // NOTIFICATION_EXTENSION_LOADED_DEPRECATED
-      // observers may access |install_param|.
-      service->ReloadExtension(extension_id);
-      load_signal.Wait();
-      extension = service->GetExtensionById(extension_id, false);
-      CHECK(extension) << extension_id << " not found after reloading.";
-    }
-  }
-
-  // Toggling incognito or file access will reload the extension, so wait for
-  // the reload and grab the new extension instance. The default state is
-  // incognito disabled and file access enabled, so we don't wait in those
-  // cases.
-  {
-    content::WindowedNotificationObserver load_signal(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::Source<Profile>(original_profile));
-    CHECK(!extensions::util::IsIncognitoEnabled(extension_id, original_profile))
-        << extension_id << " is enabled in incognito, but shouldn't be";
-
-    if (flags & kFlagEnableIncognito) {
-      extensions::util::SetIsIncognitoEnabled(extension_id, original_profile,
-                                              true);
-      load_signal.Wait();
-      extension = service->GetExtensionById(extension_id, false);
-      CHECK(extension) << extension_id << " not found after reloading.";
-    }
-  }
-
-  {
-    content::WindowedNotificationObserver load_signal(
-        extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED,
-        content::Source<Profile>(original_profile));
-    CHECK(extensions::util::AllowFileAccess(extension_id, original_profile));
-    if (!(flags & kFlagEnableFileAccess)) {
-      extensions::util::SetAllowFileAccess(extension_id, original_profile,
-                                           false);
-      load_signal.Wait();
-      extension = service->GetExtensionById(extension_id, false);
-      CHECK(extension) << extension_id << " not found after reloading.";
-    }
-  }
-
-  if (!observer_->WaitForExtensionViewsToLoad())
-    return NULL;
-
-  return extension;
+  extensions::ChromeTestExtensionLoader loader(profile());
+  loader.set_require_modern_manifest_version(
+      (flags & kFlagAllowOldManifestVersions) == 0);
+  loader.set_ignore_manifest_warnings(
+      (flags & kFlagIgnoreManifestWarnings) != 0);
+  loader.set_allow_incognito_access((flags & kFlagEnableIncognito) != 0);
+  loader.set_allow_file_access((flags & kFlagEnableFileAccess) != 0);
+  loader.set_install_param(install_param);
+  scoped_refptr<const Extension> extension = loader.LoadExtension(path);
+  if (extension)
+    observer_->set_last_loaded_extension_id(extension->id());
+  return extension.get();
 }
 
 const Extension* ExtensionBrowserTest::LoadExtensionAsComponentWithManifest(

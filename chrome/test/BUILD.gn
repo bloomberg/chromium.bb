@@ -2044,8 +2044,6 @@ test("browser_tests") {
         "../browser/apps/app_browsertest_util.h",
         "../browser/extensions/browsertest_util.cc",
         "../browser/extensions/browsertest_util.h",
-        "../browser/extensions/chrome_extension_test_notification_observer.cc",
-        "../browser/extensions/chrome_extension_test_notification_observer.h",
         "../browser/extensions/extension_apitest.cc",
         "../browser/extensions/extension_apitest.h",
         "../browser/extensions/extension_browsertest.cc",

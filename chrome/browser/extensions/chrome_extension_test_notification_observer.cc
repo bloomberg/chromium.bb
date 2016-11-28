@@ -52,6 +52,10 @@ ChromeExtensionTestNotificationObserver::
       browser_(browser) {}
 
 ChromeExtensionTestNotificationObserver::
+    ChromeExtensionTestNotificationObserver(content::BrowserContext* context)
+    : ExtensionTestNotificationObserver(context), browser_(nullptr) {}
+
+ChromeExtensionTestNotificationObserver::
     ~ChromeExtensionTestNotificationObserver() {}
 
 content::BrowserContext*
@@ -67,6 +71,7 @@ ChromeExtensionTestNotificationObserver::GetBrowserContext() {
 
 bool ChromeExtensionTestNotificationObserver::
     WaitForPageActionVisibilityChangeTo(int count) {
+  DCHECK(browser_);
   ScopedObserver<extensions::ExtensionActionAPI,
                  extensions::ExtensionActionAPI::Observer>
       observer(this);
