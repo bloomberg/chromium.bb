@@ -202,6 +202,7 @@ _ANDROID_NEGATIVE_FILTER['chromedriver_webview_shell'] = (
             'testHistoryNavigationWithPageLoadTimeout',
         # Webview shell doesn't support Alerts.
         'ChromeDriverTest.testAlert',
+        'ChromeDesiredCapabilityTest.testUnexpectedAlertBehaviour',
     ]
 )
 
@@ -1657,6 +1658,7 @@ class ChromeDownloadDirTest(ChromeDriverBaseTest):
     download = prefs['download']
     self.assertEqual(download['default_directory'], download_dir)
 
+
 class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
   """Tests that chromedriver properly processes chromeOptions.args capabilities.
 
@@ -1673,6 +1675,21 @@ class ChromeSwitchesCapabilityTest(ChromeDriverBaseTest):
     self.assertNotEqual(
         None,
         driver.ExecuteScript('return window.domAutomationController'))
+
+
+class ChromeDesiredCapabilityTest(ChromeDriverBaseTest):
+  """Tests that chromedriver properly processes desired capabilities."""
+
+  def testUnexpectedAlertBehaviour(self):
+    driver = self.CreateDriver(unexpected_alert_behaviour="accept")
+    self.assertEquals("accept",
+                      driver.capabilities['unexpectedAlertBehaviour'])
+    driver.ExecuteScript('alert("HI");')
+    self.WaitForCondition(driver.IsAlertOpen)
+    self.assertRaisesRegexp(chromedriver.UnexpectedAlertOpen,
+                            'unexpected alert open: {Alert text : HI}',
+                            driver.FindElement, 'tag name', 'div')
+    self.assertFalse(driver.IsAlertOpen())
 
 
 class ChromeExtensionsCapabilityTest(ChromeDriverBaseTest):
@@ -2185,6 +2202,7 @@ class SessionHandlingTest(ChromeDriverBaseTest):
     response = driver2.GetSessions()
     self.assertEqual(2, len(response))
 
+
 class RemoteBrowserTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver remote browser capability."""
   def setUp(self):
@@ -2219,6 +2237,7 @@ class RemoteBrowserTest(ChromeDriverBaseTest):
       except socket.error:
         return port
     raise RuntimeError('Cannot find open port')
+
 
 class PerfTest(ChromeDriverBaseTest):
   """Tests for ChromeDriver perf."""

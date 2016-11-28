@@ -18,6 +18,10 @@
 #include "chrome/test/chromedriver/chrome/network_conditions.h"
 #include "chrome/test/chromedriver/command_listener.h"
 
+static const char kAccept[] = "accept";
+static const char kDismiss[] = "dismiss";
+static const char kIgnore[] = "ignore";
+
 namespace base {
 class DictionaryValue;
 }
@@ -86,6 +90,7 @@ struct Session {
   // |CommandListener|s might be |CommandListenerProxy|s that forward to
   // |DevToolsEventListener|s owned by |chrome|.
   ScopedVector<CommandListener> command_listeners;
+  std::string unexpected_alert_behaviour;
 };
 
 Session* GetThreadLocalSession();

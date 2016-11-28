@@ -218,12 +218,24 @@ Status ExecuteWindowCommand(const WindowCommand& command,
   if (status.IsError())
     return status;
 
-  if (web_view->GetJavaScriptDialogManager()->IsDialogOpen()) {
+  JavaScriptDialogManager* dialog_manager =
+      web_view->GetJavaScriptDialogManager();
+  if (dialog_manager->IsDialogOpen()) {
     std::string alert_text;
-    status =
-        web_view->GetJavaScriptDialogManager()->GetDialogMessage(&alert_text);
+    status = dialog_manager->GetDialogMessage(&alert_text);
     if (status.IsError())
       return status;
+
+    // Close the dialog depending on the unexpectedalert behaviour set by user
+    // before returning an error, so that subsequent commands do not fail.
+    std::string alert_behaviour = session->unexpected_alert_behaviour;
+    if (alert_behaviour == kAccept)
+      status = dialog_manager->HandleDialog(true, session->prompt_text.get());
+    else if (alert_behaviour == kDismiss)
+      status = dialog_manager->HandleDialog(false, session->prompt_text.get());
+    if (status.IsError())
+      return status;
+
     return Status(kUnexpectedAlertOpen, "{Alert text : " + alert_text + "}");
   }
 

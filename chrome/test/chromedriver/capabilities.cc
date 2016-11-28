@@ -23,6 +23,7 @@
 #include "chrome/test/chromedriver/chrome/page_load_strategy.h"
 #include "chrome/test/chromedriver/chrome/status.h"
 #include "chrome/test/chromedriver/logging.h"
+#include "chrome/test/chromedriver/session.h"
 
 namespace {
 
@@ -188,6 +189,17 @@ Status ParsePageLoadStrategy(const base::Value& option,
       capabilities->page_load_strategy == PageLoadStrategy::kNone)
     return Status(kOk);
   return Status(kUnknownError, "page load strategy unsupported");
+}
+
+Status ParseUnexpectedAlertBehaviour(const base::Value& option,
+                             Capabilities* capabilities) {
+  if (!option.GetAsString(&capabilities->unexpected_alert_behaviour))
+    return Status(kUnknownError, "must be a string");
+  if (capabilities->unexpected_alert_behaviour == kAccept ||
+      capabilities->unexpected_alert_behaviour == kDismiss ||
+      capabilities->unexpected_alert_behaviour == kIgnore)
+    return Status(kOk);
+  return Status(kUnknownError, "unexpected alert behaviour unsupported");
 }
 
 Status ParseSwitches(const base::Value& option,
@@ -620,6 +632,8 @@ Status Capabilities::Parse(const base::DictionaryValue& desired_caps) {
   parser_map["loggingPrefs"] = base::Bind(&ParseLoggingPrefs);
   parser_map["proxy"] = base::Bind(&ParseProxy);
   parser_map["pageLoadStrategy"] = base::Bind(&ParsePageLoadStrategy);
+  parser_map["unexpectedAlertBehaviour"] =
+      base::Bind(&ParseUnexpectedAlertBehaviour);
   // Network emulation requires device mode, which is only enabled when
   // mobile emulation is on.
   if (desired_caps.GetDictionary("chromeOptions.mobileEmulation", nullptr)) {

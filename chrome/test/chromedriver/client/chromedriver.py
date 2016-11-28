@@ -111,7 +111,7 @@ class ChromeDriver(object):
                mobile_emulation=None, experimental_options=None,
                download_dir=None, network_connection=None,
                send_w3c_capability=None, send_w3c_request=None,
-               page_load_strategy=None):
+               page_load_strategy=None, unexpected_alert_behaviour=None):
     self._executor = command_executor.CommandExecutor(server_url)
 
     options = {}
@@ -189,6 +189,11 @@ class ChromeDriver(object):
     if page_load_strategy:
       assert type(page_load_strategy) is str
       params['desiredCapabilities']['pageLoadStrategy'] = page_load_strategy
+
+    if unexpected_alert_behaviour:
+      assert type(unexpected_alert_behaviour) is str
+      params['desiredCapabilities']['unexpectedAlertBehaviour'] = (
+          unexpected_alert_behaviour)
 
     if network_connection:
       params['desiredCapabilities']['networkConnectionEnabled'] = (

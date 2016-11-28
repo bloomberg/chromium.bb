@@ -104,13 +104,14 @@ InitSessionParams::~InitSessionParams() {}
 
 namespace {
 
-std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
+std::unique_ptr<base::DictionaryValue> CreateCapabilities(Session* session) {
   std::unique_ptr<base::DictionaryValue> caps(new base::DictionaryValue());
   caps->SetString("browserName", "chrome");
-  caps->SetString("version", chrome->GetBrowserInfo()->browser_version);
+  caps->SetString("version",
+                  session->chrome->GetBrowserInfo()->browser_version);
   caps->SetString("chrome.chromedriverVersion", kChromeDriverVersion);
-  caps->SetString("platform", chrome->GetOperatingSystemName());
-  caps->SetString("pageLoadStrategy", chrome->page_load_strategy());
+  caps->SetString("platform", session->chrome->GetOperatingSystemName());
+  caps->SetString("pageLoadStrategy", session->chrome->page_load_strategy());
   caps->SetBoolean("javascriptEnabled", true);
   caps->SetBoolean("takesScreenshot", true);
   caps->SetBoolean("takesHeapSnapshot", true);
@@ -118,7 +119,7 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("databaseEnabled", false);
   caps->SetBoolean("locationContextEnabled", true);
   caps->SetBoolean("mobileEmulationEnabled",
-                   chrome->IsMobileEmulationEnabled());
+                   session->chrome->IsMobileEmulationEnabled());
   caps->SetBoolean("applicationCacheEnabled", false);
   caps->SetBoolean("browserConnectionEnabled", false);
   caps->SetBoolean("cssSelectorsEnabled", true);
@@ -126,10 +127,12 @@ std::unique_ptr<base::DictionaryValue> CreateCapabilities(Chrome* chrome) {
   caps->SetBoolean("rotatable", false);
   caps->SetBoolean("acceptSslCerts", true);
   caps->SetBoolean("nativeEvents", true);
-  caps->SetBoolean("hasTouchScreen", chrome->HasTouchScreen());
+  caps->SetBoolean("hasTouchScreen", session->chrome->HasTouchScreen());
+  caps->SetString("unexpectedAlertBehaviour",
+                  session->unexpected_alert_behaviour);
 
   ChromeDesktopImpl* desktop = NULL;
-  Status status = chrome->GetAsDesktop(&desktop);
+  Status status = session->chrome->GetAsDesktop(&desktop);
   if (status.IsOk()) {
     caps->SetString("chrome.userDataDir",
                     desktop->command().GetSwitchValueNative("user-data-dir"));
@@ -187,6 +190,9 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
   if (status.IsError())
     return status;
 
+  desired_caps->GetString("unexpectedAlertBehaviour",
+                           &session->unexpected_alert_behaviour);
+
   Log::Level driver_level = Log::kWarning;
   if (capabilities.logging_prefs.count(WebDriverLog::kDriverType))
     driver_level = capabilities.logging_prefs[WebDriverLog::kDriverType];
@@ -225,7 +231,7 @@ Status InitSessionHelper(const InitSessionParams& bound_params,
 
   session->detach = capabilities.detach;
   session->force_devtools_screenshot = capabilities.force_devtools_screenshot;
-  session->capabilities = CreateCapabilities(session->chrome.get());
+  session->capabilities = CreateCapabilities(session);
   value->reset(session->capabilities->DeepCopy());
   return CheckSessionCreated(session);
 }

@@ -75,7 +75,8 @@ _REVISION_NEGATIVE_FILTER['HEAD'] = [
     'TypingTest.testShouldBeAbleToTypeIntoContentEditableElementWithExistingValue',
     'TypingTest.testShouldNotTypeIntoElementsThatPreventKeyDownEvents',
     'TypingTest.testTypingIntoAnIFrameWithContentEditableOrDesignModeSet',
-    'UnexpectedAlertBehaviorTest.*',
+    'UnexpectedAlertBehaviorTest.requiredUnhandledAlertCapabilityHasPriorityOverDesired',
+    'UnexpectedAlertBehaviorTest.dismissUnhandledAlertsByDefault',
     'VisibilityTest.testElementHiddenByOverflowXIsNotVisible',
     'VisibilityTest.testElementHiddenByOverflowYIsNotVisible',
     'VisibilityTest.tooSmallAWindowWithOverflowHiddenIsNotAProblem',
@@ -176,6 +177,7 @@ _OS_NEGATIVE_FILTER['android:chrome'] = [
 
     # Alerts are not yet supported on Android.
     'AlertsTest.*',
+    'UnexpectedAlertBehaviorTest.*',
 
     # http://crbug.com/156390
     'DragAndDropTest.*',

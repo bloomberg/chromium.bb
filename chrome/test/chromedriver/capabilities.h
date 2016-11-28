@@ -144,6 +144,8 @@ struct Capabilities {
 
   std::string page_load_strategy;
 
+  std::string unexpected_alert_behaviour;
+
   bool network_emulation_enabled;
 
   PerfLoggingPrefs perf_logging_prefs;
