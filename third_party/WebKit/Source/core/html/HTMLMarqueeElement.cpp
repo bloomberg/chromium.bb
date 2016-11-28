@@ -27,12 +27,14 @@
 #include "core/HTMLNames.h"
 #include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
+#include "platform/ScriptForbiddenScope.h"
 
 namespace blink {
 
 inline HTMLMarqueeElement::HTMLMarqueeElement(Document& document)
     : HTMLElement(HTMLNames::marqueeTag, document) {
   if (document.contextDocument()) {
+    ScriptForbiddenScope::AllowUserAgentScript script;
     v8::Local<v8::Value> classObject =
         PrivateScriptRunner::installClassIfNeeded(&document,
                                                   "HTMLMarqueeElement");
