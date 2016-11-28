@@ -14,7 +14,6 @@ namespace blink {
 
 class ConsoleMessage;
 class ExecutionContext;
-class ExecutionContextTask;
 class ThreadedWorkletMessagingProxy;
 
 // A proxy to talk to the parent worklet object. This object is created on the
@@ -29,7 +28,6 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
       ThreadedWorkletMessagingProxy*);
   ~ThreadedWorkletObjectProxy() override {}
 
-  void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
   void reportPendingActivity(bool hasPendingActivity);
 
   // WorkerReportingProxy overrides.

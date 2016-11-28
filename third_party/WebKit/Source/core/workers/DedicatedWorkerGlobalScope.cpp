@@ -33,8 +33,6 @@
 #include "bindings/core/v8/ExceptionState.h"
 #include "bindings/core/v8/SerializedScriptValue.h"
 #include "core/dom/ExecutionContextTask.h"
-#include "core/frame/Deprecation.h"
-#include "core/frame/UseCounter.h"
 #include "core/frame/csp/ContentSecurityPolicy.h"
 #include "core/origin_trials/OriginTrialContext.h"
 #include "core/workers/DedicatedWorkerThread.h"
@@ -100,28 +98,14 @@ void DedicatedWorkerGlobalScope::postMessage(
                                                 std::move(channels));
 }
 
-static void countOnDocument(UseCounter::Feature feature,
-                            ExecutionContext* context) {
-  DCHECK(context->isDocument());
-  UseCounter::count(context, feature);
-}
-
-static void countDeprecationOnDocument(UseCounter::Feature feature,
-                                       ExecutionContext* context) {
-  DCHECK(context->isDocument());
-  Deprecation::countDeprecation(context, feature);
-}
-
 void DedicatedWorkerGlobalScope::countFeature(
     UseCounter::Feature feature) const {
-  workerObjectProxy().postTaskToMainExecutionContext(
-      createCrossThreadTask(&countOnDocument, feature));
+  workerObjectProxy().countFeature(feature);
 }
 
 void DedicatedWorkerGlobalScope::countDeprecation(
     UseCounter::Feature feature) const {
-  workerObjectProxy().postTaskToMainExecutionContext(
-      createCrossThreadTask(&countDeprecationOnDocument, feature));
+  workerObjectProxy().countDeprecation(feature);
 }
 
 InProcessWorkerObjectProxy& DedicatedWorkerGlobalScope::workerObjectProxy()

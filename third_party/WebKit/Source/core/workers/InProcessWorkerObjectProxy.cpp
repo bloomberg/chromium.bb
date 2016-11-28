@@ -72,13 +72,6 @@ void InProcessWorkerObjectProxy::postMessageToWorkerObject(
                      passed(std::move(channels))));
 }
 
-void InProcessWorkerObjectProxy::postTaskToMainExecutionContext(
-    std::unique_ptr<ExecutionContextTask> task) {
-  // TODO(hiroshige,yuryu): Make this not use ExecutionContextTask and use
-  // getParentFrameTaskRunners() instead.
-  getExecutionContext()->postTask(BLINK_FROM_HERE, std::move(task));
-}
-
 void InProcessWorkerObjectProxy::confirmMessageFromWorkerObject() {
   getParentFrameTaskRunners()
       ->get(TaskType::Internal)
@@ -99,6 +92,23 @@ void InProcessWorkerObjectProxy::startPendingActivityTimer() {
   }
   m_timer->startOneShot(m_nextIntervalInSec, BLINK_FROM_HERE);
   m_nextIntervalInSec = std::min(m_nextIntervalInSec * 1.5, m_maxIntervalInSec);
+}
+
+void InProcessWorkerObjectProxy::countFeature(UseCounter::Feature feature) {
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(&InProcessWorkerMessagingProxy::countFeature,
+                                 m_messagingProxyWeakPtr, feature));
+}
+
+void InProcessWorkerObjectProxy::countDeprecation(UseCounter::Feature feature) {
+  getParentFrameTaskRunners()
+      ->get(TaskType::Internal)
+      ->postTask(
+          BLINK_FROM_HERE,
+          crossThreadBind(&InProcessWorkerMessagingProxy::countDeprecation,
+                          m_messagingProxyWeakPtr, feature));
 }
 
 void InProcessWorkerObjectProxy::reportException(

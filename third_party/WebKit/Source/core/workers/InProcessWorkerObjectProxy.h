@@ -33,6 +33,7 @@
 
 #include "core/CoreExport.h"
 #include "core/dom/MessagePort.h"
+#include "core/frame/UseCounter.h"
 #include "core/workers/WorkerReportingProxy.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
@@ -43,7 +44,6 @@ namespace blink {
 
 class ConsoleMessage;
 class ExecutionContext;
-class ExecutionContextTask;
 class InProcessWorkerMessagingProxy;
 class WorkerGlobalScope;
 class WorkerOrWorkletGlobalScope;
@@ -68,9 +68,13 @@ class CORE_EXPORT InProcessWorkerObjectProxy : public WorkerReportingProxy {
 
   void postMessageToWorkerObject(PassRefPtr<SerializedScriptValue>,
                                  std::unique_ptr<MessagePortChannelArray>);
-  void postTaskToMainExecutionContext(std::unique_ptr<ExecutionContextTask>);
   void confirmMessageFromWorkerObject();
   void startPendingActivityTimer();
+
+  // TODO(nhiroki): Move these to WorkerReportingProxy so that we can reuse them
+  // for other workers and worklets (https://crbug.com/376039, 667357).
+  void countFeature(UseCounter::Feature);
+  void countDeprecation(UseCounter::Feature);
 
   // WorkerReportingProxy overrides.
   void reportException(const String& errorMessage,
