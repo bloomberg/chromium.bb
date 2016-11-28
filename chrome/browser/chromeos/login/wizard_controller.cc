@@ -149,10 +149,11 @@ bool IsRemoraRequisition() {
 }
 
 bool IsSharkRequisition() {
-  return g_browser_process->platform_part()
-      ->browser_policy_connector_chromeos()
-      ->GetDeviceCloudPolicyManager()
-      ->IsSharkRequisition();
+  policy::DeviceCloudPolicyManagerChromeOS* policy_manager =
+      g_browser_process->platform_part()
+          ->browser_policy_connector_chromeos()
+          ->GetDeviceCloudPolicyManager();
+  return policy_manager && policy_manager->IsSharkRequisition();
 }
 
 // Checks if a controller device ("Master") is detected during the bootstrapping
