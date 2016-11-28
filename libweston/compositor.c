@@ -5225,18 +5225,27 @@ weston_load_module(const char *name, const char *entrypoint)
 	const char *builddir = getenv("WESTON_BUILD_DIR");
 	char path[PATH_MAX];
 	void *module, *init;
+	size_t len;
 
 	if (name == NULL)
 		return NULL;
 
 	if (name[0] != '/') {
 		if (builddir)
-			snprintf(path, sizeof path, "%s/.libs/%s", builddir, name);
+			len = snprintf(path, sizeof path, "%s/.libs/%s",
+				       builddir, name);
 		else
-			snprintf(path, sizeof path, "%s/%s", LIBWESTON_MODULEDIR, name);
+			len = snprintf(path, sizeof path, "%s/%s",
+				       LIBWESTON_MODULEDIR, name);
 	} else {
-		snprintf(path, sizeof path, "%s", name);
+		len = snprintf(path, sizeof path, "%s", name);
 	}
+
+	/* snprintf returns the length of the string it would've written,
+	 * _excluding_ the NUL byte. So even being equal to the size of
+	 * our buffer is an error here. */
+	if (len >= sizeof path)
+		return NULL;
 
 	module = dlopen(path, RTLD_NOW | RTLD_NOLOAD);
 	if (module) {
