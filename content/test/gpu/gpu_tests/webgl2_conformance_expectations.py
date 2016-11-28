@@ -545,8 +545,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'intel', 'no_angle'], bug=664180)
 
     # Linux Intel with ANGLE only
-    self.Fail('conformance2/textures/misc/copy-texture-image-luma-format.html',
-        ['linux', 'intel', 'opengl'], bug=1492) # ANGLE bug id
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
 
