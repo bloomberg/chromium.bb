@@ -44,6 +44,7 @@
 extern "C" {
 void CGSSetDenyWindowServerConnections(bool);
 void CGSShutdownServerConnections();
+OSStatus SetApplicationIsDaemon(Boolean isDaemon);
 };
 
 namespace content {
@@ -348,6 +349,12 @@ void Sandbox::SandboxWarmup(int sandbox_type) {
     // messages to be printed to the system logger on certain OS versions.
     CGSSetDenyWindowServerConnections(true);
     CGSShutdownServerConnections();
+
+    // Allow the process to continue without a LaunchServices ASN. The
+    // INIT_Process function in HIServices will abort if it cannot connect to
+    // launchservicesd to get an ASN. By setting this flag, HIServices skips
+    // that.
+    SetApplicationIsDaemon(true);
   }
 }
 
