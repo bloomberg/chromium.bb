@@ -96,7 +96,7 @@ void WebrtcVideoRendererAdapter::SetVideoStatsChannel(
 }
 
 void WebrtcVideoRendererAdapter::OnFrame(const webrtc::VideoFrame& frame) {
-  if (static_cast<uint64_t>(frame.timestamp_us()) >= rtc::TimeMicros()) {
+  if (frame.timestamp_us() >= rtc::TimeMicros()) {
     // The host sets playout delay to 0, so all incoming frames are expected to
     // be rendered as so as they are received.
     LOG(WARNING) << "Received frame with playout delay greater than 0.";

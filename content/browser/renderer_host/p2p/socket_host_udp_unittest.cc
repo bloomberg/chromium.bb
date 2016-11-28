@@ -39,7 +39,7 @@ class ScopedFakeClock : public rtc::ClockInterface {
   ScopedFakeClock() { prev_clock_ = rtc::SetClockForTesting(this); }
   ~ScopedFakeClock() override { rtc::SetClockForTesting(prev_clock_); }
   // ClockInterface implementation.
-  uint64_t TimeNanos() const override { return time_nanos_; }
+  int64_t TimeNanos() const override { return time_nanos_; }
   void SetTimeNanos(uint64_t time_nanos) { time_nanos_ = time_nanos; }
 
  private:
