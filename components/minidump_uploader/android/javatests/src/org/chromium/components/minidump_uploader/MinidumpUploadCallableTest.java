@@ -111,48 +111,6 @@ public class MinidumpUploadCallableTest extends CrashTestCase {
         }
     }
 
-    private static class MockCrashReportingPermissionManager
-            implements CrashReportingPermissionManager {
-        protected boolean mIsInSample;
-        protected boolean mIsPermitted;
-        protected boolean mIsUserPermitted;
-        protected boolean mIsCommandLineDisabled;
-        protected boolean mIsNetworkAvailable;
-        protected boolean mIsEnabledForTests;
-
-        MockCrashReportingPermissionManager() {}
-
-        @Override
-        public boolean isClientInMetricsSample() {
-            return mIsInSample;
-        }
-
-        @Override
-        public boolean isNetworkAvailableForCrashUploads() {
-            return mIsNetworkAvailable;
-        }
-
-        @Override
-        public boolean isMetricsUploadPermitted() {
-            return mIsPermitted;
-        }
-
-        @Override
-        public boolean isUsageAndCrashReportingPermittedByUser() {
-            return mIsUserPermitted;
-        }
-
-        @Override
-        public boolean isCrashUploadDisabledByCommandLine() {
-            return mIsCommandLineDisabled;
-        }
-
-        @Override
-        public boolean isUploadEnabledForTests() {
-            return mIsEnabledForTests;
-        }
-    }
-
     /**
      * This class calls |getInstrumentation| which cannot be done in a static context.
      */

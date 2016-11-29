@@ -7,6 +7,7 @@ package org.chromium.components.minidump_uploader;
 import android.test.InstrumentationTestCase;
 
 import org.chromium.base.Log;
+import org.chromium.components.minidump_uploader.util.CrashReportingPermissionManager;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -25,13 +26,21 @@ public class CrashTestCase extends InstrumentationTestCase {
     @Override
     protected void setUp() throws Exception {
         super.setUp();
-        mCacheDir = getInstrumentation().getTargetContext().getCacheDir();
+        mCacheDir = getExistingCacheDir();
         mCrashDir = new File(
                 mCacheDir,
                 CrashFileManager.CRASH_DUMP_DIR);
         if (!mCrashDir.isDirectory() && !mCrashDir.mkdir()) {
             throw new Exception("Unable to create directory: " + mCrashDir.getAbsolutePath());
         }
+    }
+
+    /**
+     * Returns the cache directory where we should store minidumps.
+     * Can be overriden by sub-classes to allow for use with different cache directories.
+     */
+    protected File getExistingCacheDir() {
+        return getInstrumentation().getTargetContext().getCacheDir();
     }
 
     @Override
@@ -80,6 +89,52 @@ public class CrashTestCase extends InstrumentationTestCase {
             if (minidumpWriter != null) {
                 minidumpWriter.close();
             }
+        }
+    }
+
+    /**
+     * A utility instantiation of CrashReportingPermissionManager providing a compact way of
+     * overriding different permission settings.
+     */
+    public static class MockCrashReportingPermissionManager
+            implements CrashReportingPermissionManager {
+        protected boolean mIsInSample;
+        protected boolean mIsPermitted;
+        protected boolean mIsUserPermitted;
+        protected boolean mIsCommandLineDisabled;
+        protected boolean mIsNetworkAvailable;
+        protected boolean mIsEnabledForTests;
+
+        MockCrashReportingPermissionManager() {}
+
+        @Override
+        public boolean isClientInMetricsSample() {
+            return mIsInSample;
+        }
+
+        @Override
+        public boolean isNetworkAvailableForCrashUploads() {
+            return mIsNetworkAvailable;
+        }
+
+        @Override
+        public boolean isMetricsUploadPermitted() {
+            return mIsPermitted;
+        }
+
+        @Override
+        public boolean isUsageAndCrashReportingPermittedByUser() {
+            return mIsUserPermitted;
+        }
+
+        @Override
+        public boolean isCrashUploadDisabledByCommandLine() {
+            return mIsCommandLineDisabled;
+        }
+
+        @Override
+        public boolean isUploadEnabledForTests() {
+            return mIsEnabledForTests;
         }
     }
 }
