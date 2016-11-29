@@ -2320,6 +2320,16 @@ const char kSearchGeolocationDisclosureShownCount[] =
 // When the disclosure was shown last.
 const char kSearchGeolocationDisclosureLastShowDate[] =
     "search_geolocation_disclosure.last_show_date";
+
+// Whether the metrics for the state of geolocation pre-disclosure being shown
+// have been recorded.
+const char kSearchGeolocationPreDisclosureMetricsRecorded[] =
+    "search_geolocation_pre_disclosure_metrics_recorded";
+
+// Whether the metrics for the state of geolocation post-disclosure being shown
+// have been recorded.
+const char kSearchGeolocationPostDisclosureMetricsRecorded[] =
+    "search_geolocation_post_disclosure_metrics_recorded";
 #endif
 
 }  // namespace prefs

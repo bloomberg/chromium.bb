@@ -4,6 +4,8 @@
 
 module blink.mojom;
 
+// Do not remove items from, or reorder this enum as it is used in histograms.
+// New items should be added at the end.
 enum PermissionStatus {
   GRANTED,
   DENIED,

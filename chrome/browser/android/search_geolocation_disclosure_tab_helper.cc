@@ -6,6 +6,7 @@
 
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "chrome/browser/android/search_geolocation_disclosure_infobar_delegate.h"
@@ -22,6 +23,7 @@
 #include "content/public/browser/permission_type.h"
 #include "content/public/browser/web_contents.h"
 #include "jni/GeolocationHeader_jni.h"
+#include "third_party/WebKit/public/platform/modules/permissions/permission_status.mojom.h"
 
 namespace {
 
@@ -80,31 +82,14 @@ void SearchGeolocationDisclosureTabHelper::RegisterProfilePrefs(
                                 0);
   registry->RegisterInt64Pref(prefs::kSearchGeolocationDisclosureLastShowDate,
                               0);
+  registry->RegisterBooleanPref(
+      prefs::kSearchGeolocationPreDisclosureMetricsRecorded, false);
+  registry->RegisterBooleanPref(
+      prefs::kSearchGeolocationPostDisclosureMetricsRecorded, false);
 }
 
 void SearchGeolocationDisclosureTabHelper::
-    MaybeShowDefaultSearchGeolocationDisclosure(GURL gurl) {
-  // Don't show the infobar if the user has dismissed it.
-  PrefService* prefs = GetProfile()->GetPrefs();
-  bool dismissed_already =
-      prefs->GetBoolean(prefs::kSearchGeolocationDisclosureDismissed);
-  if (dismissed_already)
-    return;
-
-  // Or if they've seen it enough times already.
-  int shown_count =
-      prefs->GetInteger(prefs::kSearchGeolocationDisclosureShownCount);
-  if (shown_count >= GetMaxShowCount())
-    return;
-
-  // Or if it has been shown too recently.
-  base::Time last_shown = base::Time::FromInternalValue(
-      prefs->GetInt64(prefs::kSearchGeolocationDisclosureLastShowDate));
-  if (base::Time::Now() - last_shown <
-      base::TimeDelta::FromDays(GetDaysPerShow())) {
-    return;
-  }
-
+    MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl) {
   // Only show the disclosure for default search navigations from the omnibox.
   TemplateURLService* template_url_service =
       TemplateURLServiceFactory::GetForProfile(GetProfile());
@@ -123,6 +108,31 @@ void SearchGeolocationDisclosureTabHelper::
     return;
   }
 
+  // Don't show the infobar if the user has dismissed it, or they've seen it
+  // enough times already.
+  PrefService* prefs = GetProfile()->GetPrefs();
+  bool dismissed_already =
+      prefs->GetBoolean(prefs::kSearchGeolocationDisclosureDismissed);
+  int shown_count =
+      prefs->GetInteger(prefs::kSearchGeolocationDisclosureShownCount);
+  if (dismissed_already || shown_count >= GetMaxShowCount()) {
+    // Record metrics for the state of permissions after the disclosure has been
+    // shown. This is not done immediately after showing the last disclosure
+    // (i.e. at the end of this function), but on the next omnibox search, to
+    // allow the metric to capture changes to settings done by the user as a
+    // result of clicking on the Settings link in the disclosure.
+    RecordPostDisclosureMetrics(gurl);
+    return;
+  }
+
+  // Or if it has been shown too recently.
+  base::Time last_shown = base::Time::FromInternalValue(
+      prefs->GetInt64(prefs::kSearchGeolocationDisclosureLastShowDate));
+  if (base::Time::Now() - last_shown <
+      base::TimeDelta::FromDays(GetDaysPerShow())) {
+    return;
+  }
+
   // Check that the Chrome app has geolocation permission.
   JNIEnv* env = base::android::AttachCurrentThread();
   if (!Java_GeolocationHeader_hasGeolocationPermission(env))
@@ -137,12 +147,54 @@ void SearchGeolocationDisclosureTabHelper::
   if (status != blink::mojom::PermissionStatus::ASK)
     return;
 
+  // Record metrics for the state of permissions before the disclosure has been
+  // shown.
+  RecordPreDisclosureMetrics(gurl);
+
   // All good, let's show the disclosure and increment the shown count.
   SearchGeolocationDisclosureInfoBarDelegate::Create(web_contents(), gurl);
   shown_count++;
   prefs->SetInteger(prefs::kSearchGeolocationDisclosureShownCount, shown_count);
   prefs->SetInt64(prefs::kSearchGeolocationDisclosureLastShowDate,
                   base::Time::Now().ToInternalValue());
+}
+
+void SearchGeolocationDisclosureTabHelper::RecordPreDisclosureMetrics(
+    const GURL& gurl) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  if (!prefs->GetBoolean(
+          prefs::kSearchGeolocationPreDisclosureMetricsRecorded)) {
+    blink::mojom::PermissionStatus status =
+        PermissionManager::Get(GetProfile())
+            ->GetPermissionStatus(content::PermissionType::GEOLOCATION, gurl,
+                                  gurl);
+    UMA_HISTOGRAM_ENUMERATION("GeolocationDisclosure.PreDisclosurePermission",
+                              static_cast<base::HistogramBase::Sample>(status),
+                              static_cast<base::HistogramBase::Sample>(
+                                  blink::mojom::PermissionStatus::LAST) +
+                                  1);
+    prefs->SetBoolean(prefs::kSearchGeolocationPreDisclosureMetricsRecorded,
+                      true);
+  }
+}
+
+void SearchGeolocationDisclosureTabHelper::RecordPostDisclosureMetrics(
+    const GURL& gurl) {
+  PrefService* prefs = GetProfile()->GetPrefs();
+  if (!prefs->GetBoolean(
+          prefs::kSearchGeolocationPostDisclosureMetricsRecorded)) {
+    blink::mojom::PermissionStatus status =
+        PermissionManager::Get(GetProfile())
+            ->GetPermissionStatus(content::PermissionType::GEOLOCATION, gurl,
+                                  gurl);
+    UMA_HISTOGRAM_ENUMERATION("GeolocationDisclosure.PostDisclosurePermission",
+                              static_cast<base::HistogramBase::Sample>(status),
+                              static_cast<base::HistogramBase::Sample>(
+                                  blink::mojom::PermissionStatus::LAST) +
+                                  1);
+    prefs->SetBoolean(prefs::kSearchGeolocationPostDisclosureMetricsRecorded,
+                      true);
+  }
 }
 
 Profile* SearchGeolocationDisclosureTabHelper::GetProfile() {

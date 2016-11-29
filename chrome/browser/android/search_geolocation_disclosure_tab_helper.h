@@ -35,7 +35,12 @@ class SearchGeolocationDisclosureTabHelper
   friend class content::WebContentsUserData<
       SearchGeolocationDisclosureTabHelper>;
 
-  void MaybeShowDefaultSearchGeolocationDisclosure(GURL gurl);
+  void MaybeShowDefaultSearchGeolocationDisclosure(const GURL& gurl);
+
+  // Record metrics, once per client, of the permission state before and after
+  // the disclosure has been shown.
+  void RecordPreDisclosureMetrics(const GURL& gurl);
+  void RecordPostDisclosureMetrics(const GURL& gurl);
   Profile* GetProfile();
 
   bool consistent_geolocation_enabled_;

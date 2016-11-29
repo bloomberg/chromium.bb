@@ -853,6 +853,8 @@ extern const char kComponentUpdatesEnabled[];
 extern const char kSearchGeolocationDisclosureDismissed[];
 extern const char kSearchGeolocationDisclosureShownCount[];
 extern const char kSearchGeolocationDisclosureLastShowDate[];
+extern const char kSearchGeolocationPreDisclosureMetricsRecorded[];
+extern const char kSearchGeolocationPostDisclosureMetricsRecorded[];
 #endif
 
 }  // namespace prefs
