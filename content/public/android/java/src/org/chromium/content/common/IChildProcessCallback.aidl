@@ -14,7 +14,7 @@ interface IChildProcessCallback {
       int pid, in Surface surface, int primaryID, int secondaryID);
 
   void forwardSurfaceForSurfaceRequest(
-      long requestTokenHigh, long requestTokenLow, in Surface surface);
+      in UnguessableToken requestToken, in Surface surface);
 
   SurfaceWrapper getViewSurface(int surfaceId);
 

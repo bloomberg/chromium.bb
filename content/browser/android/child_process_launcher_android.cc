@@ -13,6 +13,7 @@
 #include "base/android/context_utils.h"
 #include "base/android/jni_android.h"
 #include "base/android/jni_array.h"
+#include "base/android/unguessable_token_android.h"
 #include "base/logging.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/frame_host/render_frame_host_impl.h"
@@ -196,10 +197,12 @@ void EstablishSurfacePeer(JNIEnv* env,
 
 void CompleteScopedSurfaceRequest(JNIEnv* env,
                                   const JavaParamRef<jclass>& clazz,
-                                  jlong request_token_high,
-                                  jlong request_token_low,
+                                  const JavaParamRef<jobject>& token,
                                   const JavaParamRef<jobject>& surface) {
-  if (request_token_high == 0 && request_token_low == 0) {
+  base::UnguessableToken requestToken =
+      base::android::UnguessableTokenAndroid::FromJavaUnguessableToken(env,
+                                                                       token);
+  if (!requestToken) {
     DLOG(ERROR) << "Received invalid surface request token.";
     return;
   }
@@ -209,9 +212,7 @@ void CompleteScopedSurfaceRequest(JNIEnv* env,
   ScopedJavaGlobalRef<jobject> jsurface;
   jsurface.Reset(env, surface);
   ScopedSurfaceRequestManager::GetInstance()->FulfillScopedSurfaceRequest(
-      base::UnguessableToken::Deserialize(request_token_high,
-                                          request_token_low),
-      gl::ScopedJavaSurface(jsurface));
+      requestToken, gl::ScopedJavaSurface(jsurface));
 }
 
 void CreateSurfaceTextureSurface(int surface_texture_id,

@@ -20,6 +20,7 @@ import org.chromium.base.BaseSwitches;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.UnguessableToken;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.MainDex;
@@ -371,7 +372,7 @@ public class ChildProcessServiceImpl {
     @SuppressWarnings("unused")
     @CalledByNative
     private void forwardSurfaceTextureForSurfaceRequest(
-            long requestTokenHigh, long requestTokenLow, SurfaceTexture surfaceTexture) {
+            UnguessableToken requestToken, SurfaceTexture surfaceTexture) {
         if (mCallback == null) {
             Log.e(TAG, "No callback interface has been provided.");
             return;
@@ -380,7 +381,7 @@ public class ChildProcessServiceImpl {
         Surface surface = new Surface(surfaceTexture);
 
         try {
-            mCallback.forwardSurfaceForSurfaceRequest(requestTokenHigh, requestTokenLow, surface);
+            mCallback.forwardSurfaceForSurfaceRequest(requestToken, surface);
         } catch (RemoteException e) {
             Log.e(TAG, "Unable to call forwardSurfaceForSurfaceRequest: %s", e);
             return;

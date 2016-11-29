@@ -21,6 +21,7 @@ import org.chromium.base.CpuFeatures;
 import org.chromium.base.Log;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.TraceEvent;
+import org.chromium.base.UnguessableToken;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
@@ -844,7 +845,7 @@ public class ChildProcessLauncher {
 
             @Override
             public void forwardSurfaceForSurfaceRequest(
-                    long requestTokenHigh, long requestTokenLow, Surface surface) {
+                    UnguessableToken requestToken, Surface surface) {
                 // Do not allow a malicious renderer to connect to a producer. This is only used
                 // from stream textures managed by the GPU process.
                 if (callbackType != CALLBACK_FOR_GPU_PROCESS) {
@@ -852,7 +853,7 @@ public class ChildProcessLauncher {
                     return;
                 }
 
-                nativeCompleteScopedSurfaceRequest(requestTokenHigh, requestTokenLow, surface);
+                nativeCompleteScopedSurfaceRequest(requestToken, surface);
             }
 
             @Override
@@ -995,7 +996,7 @@ public class ChildProcessLauncher {
     private static native void nativeEstablishSurfacePeer(
             int pid, Surface surface, int primaryID, int secondaryID);
     private static native void nativeCompleteScopedSurfaceRequest(
-            long requestTokenHigh, long requestTokenLow, Surface surface);
+            UnguessableToken requestToken, Surface surface);
     private static native boolean nativeIsSingleProcess();
     private static native Surface nativeGetViewSurface(int surfaceId);
 }

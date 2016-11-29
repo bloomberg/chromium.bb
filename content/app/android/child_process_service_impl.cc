@@ -10,6 +10,7 @@
 #include "base/android/jni_array.h"
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/memory_pressure_listener_android.h"
+#include "base/android/unguessable_token_android.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
@@ -110,8 +111,8 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
 
     content::
         Java_ChildProcessServiceImpl_forwardSurfaceTextureForSurfaceRequest(
-            env, service_impl_, request_token.GetHighForSerialization(),
-            request_token.GetLowForSerialization(),
+            env, service_impl_,
+            base::android::UnguessableTokenAndroid::Create(env, request_token),
             surface_texture->j_surface_texture());
   }
 

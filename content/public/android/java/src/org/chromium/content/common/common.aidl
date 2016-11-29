@@ -8,3 +8,4 @@
 
 interface org.chromium.content.common.IChildProcessCallback;
 interface org.chromium.content.common.IChildProcessService;
+parcelable org.chromium.base.UnguessableToken;
