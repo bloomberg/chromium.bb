@@ -64,6 +64,9 @@ class JavaScriptDialogTabHelper
 
  private:
   friend class content::WebContentsUserData<JavaScriptDialogTabHelper>;
+  enum class DismissalCause;
+
+  void LogDialogDismissalCause(DismissalCause cause);
 
   // Wrapper around a DialogClosedCallback so that we can intercept it before
   // passing it onto the original callback.
@@ -73,12 +76,17 @@ class JavaScriptDialogTabHelper
 
   void CloseDialog(bool suppress_callback,
                    bool success,
-                   const base::string16& user_input);
+                   const base::string16& user_input,
+                   DismissalCause cause);
 
   void ClearDialogInfo();
 
   // The dialog being displayed on the observed WebContents.
   base::WeakPtr<JavaScriptDialog> dialog_;
+
+  // The type of dialog being displayed. Only valid when |dialog_| is non-null.
+  content::JavaScriptMessageType message_type_ =
+      content::JavaScriptMessageType::JAVASCRIPT_MESSAGE_TYPE_ALERT;
 
   // The callback provided for when the dialog is closed. Usually the dialog
   // itself calls it, but in the cases where the dialog is closed not by the

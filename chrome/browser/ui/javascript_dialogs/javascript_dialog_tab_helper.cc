@@ -56,14 +56,29 @@ bool IsWebContentsForemost(content::WebContents* web_contents) {
 // JavaScriptDialogTabHelper::OnDialogClosed(), which, after doing the callback,
 // again calls ClearDialogInfo() to remove observers.
 
+enum class JavaScriptDialogTabHelper::DismissalCause {
+  // This is used for a UMA histogram. Please never alter existing values, only
+  // append new ones.
+  TAB_HELPER_DESTROYED = 0,
+  SUBSEQUENT_DIALOG_SHOWN = 1,
+  HANDLE_DIALOG_CALLED = 2,
+  CANCEL_DIALOGS_CALLED = 3,
+  TAB_HIDDEN = 4,
+  BROWSER_SWITCHED = 5,
+  DIALOG_BUTTON_CLICKED = 6,
+  MAX,
+};
+
 JavaScriptDialogTabHelper::JavaScriptDialogTabHelper(
     content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents) {
 }
 
 JavaScriptDialogTabHelper::~JavaScriptDialogTabHelper() {
-  if (dialog_)
-    CloseDialog(true /*suppress_callback*/, false, base::string16());
+  if (dialog_) {
+    CloseDialog(true /*suppress_callback*/, false, base::string16(),
+                DismissalCause::TAB_HELPER_DESTROYED);
+  }
 }
 
 void JavaScriptDialogTabHelper::SetDialogShownCallbackForTesting(
@@ -131,12 +146,14 @@ void JavaScriptDialogTabHelper::RunJavaScriptDialog(
 
     if (dialog_) {
       // There's already a dialog up; clear it out.
-      CloseDialog(false, false, base::string16());
+      CloseDialog(false, false, base::string16(),
+                  DismissalCause::SUBSEQUENT_DIALOG_SHOWN);
     }
 
     base::string16 title =
         AppModalDialogManager()->GetTitle(alerting_web_contents, origin_url);
     dialog_callback_ = callback;
+    message_type_ = message_type;
     dialog_ = JavaScriptDialog::Create(
         parent_web_contents, alerting_web_contents, title, message_type,
         message_text, default_prompt_text,
@@ -213,7 +230,8 @@ bool JavaScriptDialogTabHelper::HandleJavaScriptDialog(
     const base::string16* prompt_override) {
   if (dialog_) {
     CloseDialog(false /*suppress_callback*/, accept,
-                prompt_override ? *prompt_override : base::string16());
+                prompt_override ? *prompt_override : base::string16(),
+                DismissalCause::HANDLE_DIALOG_CALLED);
     return true;
   }
 
@@ -227,7 +245,8 @@ void JavaScriptDialogTabHelper::CancelDialogs(
     bool suppress_callbacks,
     bool reset_state) {
   if (dialog_)
-    CloseDialog(suppress_callbacks, false, base::string16());
+    CloseDialog(suppress_callbacks, false, base::string16(),
+                DismissalCause::CANCEL_DIALOGS_CALLED);
 
   // Cancel any app-modal dialogs being run by the app-modal dialog system.
   return AppModalDialogManager()->CancelDialogs(
@@ -235,19 +254,44 @@ void JavaScriptDialogTabHelper::CancelDialogs(
 }
 
 void JavaScriptDialogTabHelper::WasHidden() {
-  if (dialog_)
-    CloseDialog(false, false, base::string16());
+  if (dialog_) {
+    CloseDialog(false, false, base::string16(), DismissalCause::TAB_HIDDEN);
+  }
 }
 
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
-  if (dialog_ && !IsWebContentsForemost(web_contents()))
-    CloseDialog(false, false, base::string16());
+  if (dialog_ && !IsWebContentsForemost(web_contents())) {
+    CloseDialog(false, false, base::string16(),
+                DismissalCause::BROWSER_SWITCHED);
+  }
+}
+
+void JavaScriptDialogTabHelper::LogDialogDismissalCause(
+    JavaScriptDialogTabHelper::DismissalCause cause) {
+  switch (message_type_) {
+    case content::JAVASCRIPT_MESSAGE_TYPE_ALERT:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Alert",
+                                static_cast<int>(cause),
+                                static_cast<int>(DismissalCause::MAX));
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_CONFIRM:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Confirm",
+                                static_cast<int>(cause),
+                                static_cast<int>(DismissalCause::MAX));
+      break;
+    case content::JAVASCRIPT_MESSAGE_TYPE_PROMPT:
+      UMA_HISTOGRAM_ENUMERATION("JSDialogs.DismissalCause.Prompt",
+                                static_cast<int>(cause),
+                                static_cast<int>(DismissalCause::MAX));
+      break;
+  }
 }
 
 void JavaScriptDialogTabHelper::OnDialogClosed(
     DialogClosedCallback callback,
     bool success,
     const base::string16& user_input) {
+  LogDialogDismissalCause(DismissalCause::DIALOG_BUTTON_CLICKED);
   callback.Run(success, user_input);
 
   ClearDialogInfo();
@@ -255,8 +299,10 @@ void JavaScriptDialogTabHelper::OnDialogClosed(
 
 void JavaScriptDialogTabHelper::CloseDialog(bool suppress_callback,
                                             bool success,
-                                            const base::string16& user_input) {
+                                            const base::string16& user_input,
+                                            DismissalCause cause) {
   DCHECK(dialog_);
+  LogDialogDismissalCause(cause);
 
   dialog_->CloseDialogWithoutCallback();
   if (!suppress_callback)
