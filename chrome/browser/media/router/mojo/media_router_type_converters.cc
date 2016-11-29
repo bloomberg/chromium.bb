@@ -199,6 +199,8 @@ media_router::RouteRequestResult::ResultCode RouteRequestResultCodeFromMojo(
       return media_router::RouteRequestResult::INCOGNITO_MISMATCH;
     case RouteRequestResultCode::NO_SUPPORTED_PROVIDER:
       return media_router::RouteRequestResult::NO_SUPPORTED_PROVIDER;
+    case RouteRequestResultCode::CANCELLED:
+      return media_router::RouteRequestResult::CANCELLED;
     default:
       NOTREACHED() << "Unknown RouteRequestResultCode " << result_code;
       return media_router::RouteRequestResult::UNKNOWN_ERROR;
