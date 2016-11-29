@@ -12,6 +12,10 @@
     public *;
 }
 
+-keep class com.android.webview.chromium.WebViewDatabaseAdapter {
+  public *;
+}
+
 # This is the main entry point for APIs. It is kept to make developing with
 # unreleased Android easier.
 -keep class com.android.webview.chromium.WebViewChromium {
