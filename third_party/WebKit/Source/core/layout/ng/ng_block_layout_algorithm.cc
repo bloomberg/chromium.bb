@@ -220,6 +220,11 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
 
       space_builder_ =
           new NGConstraintSpaceBuilder(constraint_space_->WritingMode());
+      if (Style().specifiesColumns()) {
+        space_builder_->SetFragmentationType(FragmentColumn);
+        adjusted_inline_size =
+            ResolveUsedColumnInlineSize(adjusted_inline_size, Style());
+      }
       space_builder_->SetAvailableSize(
           NGLogicalSize(adjusted_inline_size, adjusted_block_size));
       space_builder_->SetPercentageResolutionSize(

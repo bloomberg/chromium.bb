@@ -365,5 +365,70 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   EXPECT_EQ(LayoutUnit(5000), margins.inline_end);
 }
 
+// Simple wrappers that don't use LayoutUnit(). Their only purpose is to make
+// the tests below humanly readable (to make the expectation expressions fit on
+// one line each). Passing 0 for column width or column count means "auto".
+int GetUsedColumnWidth(int computed_column_count,
+                       int computed_column_width,
+                       int used_column_gap,
+                       int available_inline_size) {
+  LayoutUnit column_width(computed_column_width);
+  if (!computed_column_width)
+    column_width = LayoutUnit(NGSizeIndefinite);
+  return ResolveUsedColumnInlineSize(computed_column_count, column_width,
+                                     LayoutUnit(used_column_gap),
+                                     LayoutUnit(available_inline_size))
+      .toInt();
+}
+int GetUsedColumnCount(int computed_column_count,
+                       int computed_column_width,
+                       int used_column_gap,
+                       int available_inline_size) {
+  LayoutUnit column_width(computed_column_width);
+  if (!computed_column_width)
+    column_width = LayoutUnit(NGSizeIndefinite);
+  return ResolveUsedColumnCount(computed_column_count, column_width,
+                                LayoutUnit(used_column_gap),
+                                LayoutUnit(available_inline_size));
+}
+
+TEST_F(NGLengthUtilsTest, testColumnWidthAndCount) {
+  EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 0, 300));
+  EXPECT_EQ(3, GetUsedColumnCount(0, 100, 0, 300));
+  EXPECT_EQ(150, GetUsedColumnWidth(0, 101, 0, 300));
+  EXPECT_EQ(2, GetUsedColumnCount(0, 101, 0, 300));
+  EXPECT_EQ(300, GetUsedColumnWidth(0, 151, 0, 300));
+  EXPECT_EQ(1, GetUsedColumnCount(0, 151, 0, 300));
+  EXPECT_EQ(300, GetUsedColumnWidth(0, 1000, 0, 300));
+  EXPECT_EQ(1, GetUsedColumnCount(0, 1000, 0, 300));
+
+  EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 10, 320));
+  EXPECT_EQ(3, GetUsedColumnCount(0, 100, 10, 320));
+  EXPECT_EQ(150, GetUsedColumnWidth(0, 101, 10, 310));
+  EXPECT_EQ(2, GetUsedColumnCount(0, 101, 10, 310));
+  EXPECT_EQ(300, GetUsedColumnWidth(0, 151, 10, 300));
+  EXPECT_EQ(1, GetUsedColumnCount(0, 151, 10, 300));
+  EXPECT_EQ(300, GetUsedColumnWidth(0, 1000, 10, 300));
+  EXPECT_EQ(1, GetUsedColumnCount(0, 1000, 10, 300));
+
+  EXPECT_EQ(125, GetUsedColumnWidth(4, 0, 0, 500));
+  EXPECT_EQ(4, GetUsedColumnCount(4, 0, 0, 500));
+  EXPECT_EQ(125, GetUsedColumnWidth(4, 100, 0, 500));
+  EXPECT_EQ(4, GetUsedColumnCount(4, 100, 0, 500));
+  EXPECT_EQ(100, GetUsedColumnWidth(6, 100, 0, 500));
+  EXPECT_EQ(5, GetUsedColumnCount(6, 100, 0, 500));
+  EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 0, 500));
+  EXPECT_EQ(5, GetUsedColumnCount(0, 100, 0, 500));
+
+  EXPECT_EQ(125, GetUsedColumnWidth(4, 0, 10, 530));
+  EXPECT_EQ(4, GetUsedColumnCount(4, 0, 10, 530));
+  EXPECT_EQ(125, GetUsedColumnWidth(4, 100, 10, 530));
+  EXPECT_EQ(4, GetUsedColumnCount(4, 100, 10, 530));
+  EXPECT_EQ(100, GetUsedColumnWidth(6, 100, 10, 540));
+  EXPECT_EQ(5, GetUsedColumnCount(6, 100, 10, 540));
+  EXPECT_EQ(100, GetUsedColumnWidth(0, 100, 10, 540));
+  EXPECT_EQ(5, GetUsedColumnCount(0, 100, 10, 540));
+}
+
 }  // namespace
 }  // namespace blink

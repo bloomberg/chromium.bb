@@ -50,6 +50,7 @@
 #include "core/layout/shapes/ShapeOutsideInfo.h"
 #include "core/paint/BlockFlowPaintInvalidator.h"
 #include "core/paint/PaintLayer.h"
+#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
 
@@ -4178,6 +4179,9 @@ LayoutMultiColumnFlowThread* LayoutBlockFlow::createMultiColumnFlowThread(
 
 void LayoutBlockFlow::createOrDestroyMultiColumnFlowThreadIfNeeded(
     const ComputedStyle* oldStyle) {
+  if (RuntimeEnabledFeatures::layoutNGEnabled())
+    return;
+
   // Paged overflow trumps multicol in this implementation. Ideally, it should
   // be possible to have both paged overflow and multicol on the same element,
   // but then we need two flow threads. Anyway, this is nothing to worry about

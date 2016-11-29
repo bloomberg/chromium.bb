@@ -228,6 +228,53 @@ LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace& constraintSpace,
   return extent;
 }
 
+int ResolveUsedColumnCount(int computed_count,
+                           LayoutUnit computed_size,
+                           LayoutUnit used_gap,
+                           LayoutUnit available_size) {
+  if (computed_size == NGSizeIndefinite) {
+    DCHECK(computed_count);
+    return computed_count;
+  }
+  DCHECK(computed_size > LayoutUnit());
+  int count_from_width =
+      ((available_size + used_gap) / (computed_size + used_gap)).toInt();
+  count_from_width = std::max(1, count_from_width);
+  if (!computed_count)
+    return count_from_width;
+  return std::max(1, std::min(computed_count, count_from_width));
+}
+
+LayoutUnit ResolveUsedColumnInlineSize(int computed_count,
+                                       LayoutUnit computed_size,
+                                       LayoutUnit used_gap,
+                                       LayoutUnit available_size) {
+  int used_count = ResolveUsedColumnCount(computed_count, computed_size,
+                                          used_gap, available_size);
+  return ((available_size + used_gap) / used_count) - used_gap;
+}
+
+LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
+                                       const ComputedStyle& style) {
+  // Should only attempt to resolve this if columns != auto.
+  DCHECK(!style.hasAutoColumnCount() || !style.hasAutoColumnWidth());
+
+  LayoutUnit computed_size =
+      style.hasAutoColumnWidth()
+          ? NGSizeIndefinite
+          : std::max(LayoutUnit(1), LayoutUnit(style.columnWidth()));
+  int computed_count = style.hasAutoColumnCount() ? 0 : style.columnCount();
+  LayoutUnit used_gap = ResolveUsedColumnGap(style);
+  return ResolveUsedColumnInlineSize(computed_count, computed_size, used_gap,
+                                     available_size);
+}
+
+LayoutUnit ResolveUsedColumnGap(const ComputedStyle& style) {
+  if (style.hasNormalColumnGap())
+    return LayoutUnit(style.getFontDescription().computedPixelSize());
+  return LayoutUnit(style.columnGap());
+}
+
 NGBoxStrut ComputeMargins(const NGConstraintSpace& constraintSpace,
                           const ComputedStyle& style,
                           const NGWritingMode writing_mode,

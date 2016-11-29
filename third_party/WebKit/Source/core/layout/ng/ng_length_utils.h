@@ -67,6 +67,24 @@ CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
                                                    LayoutUnit contentSize);
 
+// Based on available inline size, CSS computed column-width, CSS computed
+// column-count and CSS used column-gap, return CSS used column-count.
+CORE_EXPORT int ResolveUsedColumnCount(int computed_count,
+                                       LayoutUnit computed_size,
+                                       LayoutUnit used_gap,
+                                       LayoutUnit available_size);
+
+// Based on available inline size, CSS computed column-width, CSS computed
+// column-count and CSS used column-gap, return CSS used column-width.
+CORE_EXPORT LayoutUnit ResolveUsedColumnInlineSize(int computed_count,
+                                                   LayoutUnit computed_size,
+                                                   LayoutUnit used_gap,
+                                                   LayoutUnit available_size);
+CORE_EXPORT LayoutUnit ResolveUsedColumnInlineSize(LayoutUnit available_size,
+                                                   const ComputedStyle&);
+
+CORE_EXPORT LayoutUnit ResolveUsedColumnGap(const ComputedStyle&);
+
 CORE_EXPORT NGBoxStrut ComputeMargins(const NGConstraintSpace&,
                                       const ComputedStyle&,
                                       const NGWritingMode writing_mode,
