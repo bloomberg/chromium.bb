@@ -228,8 +228,8 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_IMAGE_ENCODER_CLASS
 #endif
 
-#ifndef    SK_ANALYTIC_AA
-#   define SK_ANALYTIC_AA
+#ifndef    SK_ANALYTIC_AA_GUARD
+#   define SK_ANALYTIC_AA_GUARD
 #endif
 
 ///////////////////////// Imported from BUILD.gn and skia_common.gypi
