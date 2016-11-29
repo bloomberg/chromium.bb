@@ -86,10 +86,16 @@ public class ReaderModePanel extends OverlayPanel {
                 mContentViewDelegate.setOverlayPanelContentViewCore(contentView);
 
                 WebContents distilledWebContents = contentView.getWebContents();
-                if (distilledWebContents == null) return;
+                if (distilledWebContents == null) {
+                    closePanel(StateChangeReason.UNKNOWN, false);
+                    return;
+                }
 
                 WebContents sourceWebContents = mManagerDelegate.getBasePageWebContents();
-                if (sourceWebContents == null) return;
+                if (sourceWebContents == null) {
+                    closePanel(StateChangeReason.UNKNOWN, false);
+                    return;
+                }
 
                 DomDistillerTabUtils.distillAndView(sourceWebContents, distilledWebContents);
             }
@@ -255,7 +261,7 @@ public class ReaderModePanel extends OverlayPanel {
         if (!mTimerRunning && animatingToOpenState) {
             mStartTime = System.currentTimeMillis();
             mTimerRunning = true;
-            if (mManagerDelegate != null) {
+            if (mManagerDelegate != null && mManagerDelegate.getBasePageWebContents() != null) {
                 String url = mManagerDelegate.getBasePageWebContents().getUrl();
                 RapporServiceBridge.sampleDomainAndRegistryFromURL(
                         "DomDistiller.OpenPanel", url);
