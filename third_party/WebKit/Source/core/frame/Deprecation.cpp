@@ -393,7 +393,7 @@ String Deprecation::deprecationMessage(UseCounter::Feature feature) {
           "requestMediaKeySystemAccess() include codecs. Non-standard support "
           "for contentType strings without codecs will be removed in %s. "
           "Please specify the desired codec(s) as part of the contentType.",
-          milestoneString(M56));
+          milestoneString(M58));
 
     case UseCounter::VRDeprecatedFieldOfView:
       return replacedBy("VREyeParameters.fieldOfView",
