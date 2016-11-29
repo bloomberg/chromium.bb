@@ -976,6 +976,16 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
     DCHECK(releasedMailboxInfo != firstMailbox);
   }
 
+#if USE_IOSURFACE_FOR_2D_CANVAS
+  if (releasedMailboxInfo->m_imageInfo && !lostResource) {
+    if (contextLost) {
+      deleteCHROMIUMImage(releasedMailboxInfo->m_imageInfo);
+    } else {
+      m_imageInfoCache.append(releasedMailboxInfo->m_imageInfo);
+    }
+  }
+#endif  // USE_IOSURFACE_FOR_2D_CANVAS
+
   if (!contextLost) {
     // Invalidate texture state in case the compositor altered it since the
     // copy-on-write.
@@ -1001,12 +1011,6 @@ void Canvas2DLayerBridge::mailboxReleased(const gpu::Mailbox& mailbox,
         }
       }
     }
-
-#if USE_IOSURFACE_FOR_2D_CANVAS
-    if (releasedMailboxInfo->m_imageInfo && !lostResource) {
-      m_imageInfoCache.append(releasedMailboxInfo->m_imageInfo);
-    }
-#endif  // USE_IOSURFACE_FOR_2D_CANVAS
   }
 
   RefPtr<Canvas2DLayerBridge> selfRef;

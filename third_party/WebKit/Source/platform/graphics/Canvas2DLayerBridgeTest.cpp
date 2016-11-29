@@ -27,6 +27,7 @@
 
 #include "cc/resources/single_release_callback.h"
 #include "cc/resources/texture_mailbox.h"
+#include "cc/test/test_gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/capabilities.h"
 #include "platform/CrossThreadFunctional.h"
@@ -44,6 +45,7 @@
 #include "skia/ext/texture_handle.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "third_party/WebKit/Source/platform/testing/TestingPlatformSupport.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/core/SkSurface.h"
 #include "third_party/skia/include/gpu/gl/GrGLTypes.h"
@@ -88,6 +90,30 @@ class Canvas2DLayerBridgePtr {
 
  private:
   RefPtr<Canvas2DLayerBridge> m_layerBridge;
+};
+
+class FakeGLES2InterfaceWithImageSupport : public FakeGLES2Interface {
+ public:
+  GLuint CreateImageCHROMIUM(ClientBuffer, GLsizei, GLsizei, GLenum) override {
+    return ++m_createImageCount;
+  }
+  void DestroyImageCHROMIUM(GLuint) override { ++m_destroyImageCount; }
+
+  GLuint createImageCount() { return m_createImageCount; }
+  GLuint destroyImageCount() { return m_destroyImageCount; }
+
+ private:
+  GLuint m_createImageCount = 0;
+  GLuint m_destroyImageCount = 0;
+};
+
+class FakePlatformSupport : public TestingPlatformSupport {
+  gpu::GpuMemoryBufferManager* getGpuMemoryBufferManager() override {
+    return &m_testGpuMemoryBufferManager;
+  }
+
+ private:
+  cc::TestGpuMemoryBufferManager m_testGpuMemoryBufferManager;
 };
 
 }  // anonymous namespace
@@ -1219,6 +1245,35 @@ TEST_F(Canvas2DLayerBridgeTest, DISABLED_PrepareMailboxWhileBackgroundRendering)
   // Tear down the bridge on the thread so that 'bridge' can go out of scope
   // without crashing due to thread checks
   postAndWaitDestroyBridgeTask(BLINK_FROM_HERE, testThread.get(), &bridge);
+}
+
+#if USE_IOSURFACE_FOR_2D_CANVAS
+TEST_F(Canvas2DLayerBridgeTest, DeleteIOSurfaceAfterTeardown)
+#else
+TEST_F(Canvas2DLayerBridgeTest, DISABLED_DeleteIOSurfaceAfterTeardown)
+#endif
+{
+  FakeGLES2InterfaceWithImageSupport gl;
+  FakePlatformSupport testingPlatformSupport;
+  std::unique_ptr<FakeWebGraphicsContext3DProvider> contextProvider =
+      wrapUnique(new FakeWebGraphicsContext3DProvider(&gl));
+
+  cc::TextureMailbox textureMailbox;
+  std::unique_ptr<cc::SingleReleaseCallback> releaseCallback;
+
+  {
+    Canvas2DLayerBridgePtr bridge(adoptRef(new Canvas2DLayerBridge(
+        std::move(contextProvider), IntSize(300, 150), 0, NonOpaque,
+        Canvas2DLayerBridge::ForceAccelerationForTesting, nullptr,
+        kN32_SkColorType)));
+    bridge->PrepareTextureMailbox(&textureMailbox, &releaseCallback);
+  }
+
+  bool lostResource = false;
+  releaseCallback->Run(gpu::SyncToken(), lostResource);
+
+  EXPECT_EQ(1u, gl.createImageCount());
+  EXPECT_EQ(1u, gl.destroyImageCount());
 }
 
 }  // namespace blink
