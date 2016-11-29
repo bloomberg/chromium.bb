@@ -44,9 +44,8 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/test/histogram_tester.h"
-#include "base/test/test_mock_time_task_runner.h"
+#include "base/test/scoped_mock_time_message_loop_task_runner.h"
 #include "base/test/user_action_tester.h"
-#include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "ui/app_list/presenter/app_list_presenter.h"
@@ -2605,34 +2604,6 @@ class TestOverflowButtonShellDelegate : public TestShellDelegate {
   DISALLOW_COPY_AND_ASSIGN(TestOverflowButtonShellDelegate);
 };
 
-// A scoped wrapper around TestMockTimeTaskRunner that replaces message loop's
-// task runner with a TestMockTimeTaskRunner and resets it back at the end of
-// the scope.
-class ScopedMockTaskRunnerWrapper {
- public:
-  ScopedMockTaskRunnerWrapper() {
-    mock_task_runner_ = new base::TestMockTimeTaskRunner;
-    previous_task_runner_ = base::ThreadTaskRunnerHandle::Get();
-    base::MessageLoop::current()->SetTaskRunner(mock_task_runner_);
-  }
-
-  ~ScopedMockTaskRunnerWrapper() {
-    DCHECK_EQ(mock_task_runner_, base::ThreadTaskRunnerHandle::Get());
-    mock_task_runner_->ClearPendingTasks();
-    base::MessageLoop::current()->SetTaskRunner(previous_task_runner_);
-  }
-
-  void FastForwardUntilNoTasksRemain() {
-    mock_task_runner_->FastForwardUntilNoTasksRemain();
-  }
-
- private:
-  scoped_refptr<base::TestMockTimeTaskRunner> mock_task_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> previous_task_runner_;
-
-  DISALLOW_COPY_AND_ASSIGN(ScopedMockTaskRunnerWrapper);
-};
-
 }  // namespace
 
 // Test fixture for testing material design ink drop on overflow button.
@@ -2891,32 +2862,28 @@ TEST_F(OverflowButtonInkDropTest, TouchDragOutAndBack) {
 TEST_F(OverflowButtonInkDropTest, TouchContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
+  base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
 
-  RunAllPendingInMessageLoop();
-  {
-    ScopedMockTaskRunnerWrapper mock_task_runner;
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTION_PENDING,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ACTION_PENDING));
 
-    generator.PressTouch();
-    EXPECT_EQ(views::InkDropState::ACTION_PENDING,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                ElementsAre(views::InkDropState::ACTION_PENDING));
+  mock_task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              ElementsAre(views::InkDropState::ALTERNATE_ACTION_PENDING,
+                          views::InkDropState::HIDDEN));
 
-    mock_task_runner.FastForwardUntilNoTasksRemain();
-    EXPECT_EQ(views::InkDropState::HIDDEN,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                ElementsAre(views::InkDropState::ALTERNATE_ACTION_PENDING,
-                            views::InkDropState::HIDDEN));
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::HIDDEN,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-    generator.ReleaseTouch();
-    EXPECT_EQ(views::InkDropState::HIDDEN,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                IsEmpty());
-
-    EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
-  }
+  EXPECT_FALSE(test_api_->IsShowingOverflowBubble());
 }
 
 #endif  // !defined(OS_WIN)
@@ -3136,31 +3103,27 @@ TEST_F(OverflowButtonActiveInkDropTest, TouchDragOutAndBack) {
 TEST_F(OverflowButtonActiveInkDropTest, TouchContextMenu) {
   ui::test::EventGenerator& generator = GetEventGenerator();
   generator.set_current_location(GetScreenPointInsideOverflowButton());
+  base::ScopedMockTimeMessageLoopTaskRunner mock_task_runner;
 
-  RunAllPendingInMessageLoop();
-  {
-    ScopedMockTaskRunnerWrapper mock_task_runner;
+  generator.PressTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-    generator.PressTouch();
-    EXPECT_EQ(views::InkDropState::ACTIVATED,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                IsEmpty());
+  mock_task_runner->FastForwardUntilNoTasksRemain();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-    mock_task_runner.FastForwardUntilNoTasksRemain();
-    EXPECT_EQ(views::InkDropState::ACTIVATED,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                IsEmpty());
+  generator.ReleaseTouch();
+  EXPECT_EQ(views::InkDropState::ACTIVATED,
+            overflow_button_ink_drop_->GetTargetInkDropState());
+  EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
+              IsEmpty());
 
-    generator.ReleaseTouch();
-    EXPECT_EQ(views::InkDropState::ACTIVATED,
-              overflow_button_ink_drop_->GetTargetInkDropState());
-    EXPECT_THAT(overflow_button_ink_drop_->GetAndResetRequestedStates(),
-                IsEmpty());
-
-    ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
-  }
+  ASSERT_TRUE(test_api_->IsShowingOverflowBubble());
 }
 
 #endif  // !defined(OS_WIN)
