@@ -52,10 +52,18 @@ PendingScript::PendingScript(Element* element, ScriptResource* resource)
 PendingScript::~PendingScript() {}
 
 void PendingScript::dispose() {
-  if (!m_client)
-    return;
   stopWatchingForLoad();
-  releaseElementAndClear();
+  DCHECK(!m_client);
+  DCHECK(!m_watchingForLoad);
+
+  setScriptResource(nullptr);
+  m_startingPosition = TextPosition::belowRangePosition();
+  m_integrityFailure = false;
+  m_parserBlockingLoadStartTime = 0;
+  if (m_streamer)
+    m_streamer->cancel();
+  m_streamer = nullptr;
+  m_element = nullptr;
 }
 
 void PendingScript::watchForLoad(ScriptResourceClient* client) {
@@ -89,18 +97,6 @@ void PendingScript::streamingFinished() {
 
 void PendingScript::setElement(Element* element) {
   m_element = element;
-}
-
-Element* PendingScript::releaseElementAndClear() {
-  setScriptResource(0);
-  m_watchingForLoad = false;
-  m_startingPosition = TextPosition::belowRangePosition();
-  m_integrityFailure = false;
-  m_parserBlockingLoadStartTime = 0;
-  if (m_streamer)
-    m_streamer->cancel();
-  m_streamer.release();
-  return m_element.release();
 }
 
 void PendingScript::setScriptResource(ScriptResource* resource) {

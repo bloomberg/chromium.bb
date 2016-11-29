@@ -561,8 +561,7 @@ void ScriptLoader::execute() {
   DCHECK(m_pendingScript->resource());
   bool errorOccurred = false;
   ScriptSourceCode source = m_pendingScript->getSource(KURL(), errorOccurred);
-  Element* element = m_pendingScript->releaseElementAndClear();
-  ALLOW_UNUSED_LOCAL(element);
+  m_pendingScript->dispose();
   if (errorOccurred) {
     dispatchErrorEvent();
   } else if (!m_resource->wasCanceled()) {

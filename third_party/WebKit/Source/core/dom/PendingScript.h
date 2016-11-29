@@ -76,7 +76,6 @@ class CORE_EXPORT PendingScript final
 
   Element* element() const { return m_element.get(); }
   void setElement(Element*);
-  Element* releaseElementAndClear();
 
   void setScriptResource(ScriptResource*);
 

@@ -169,13 +169,11 @@ void HTMLScriptRunner::detach() {
   if (!m_document)
     return;
 
-  m_parserBlockingScript->stopWatchingForLoad();
-  m_parserBlockingScript->releaseElementAndClear();
+  m_parserBlockingScript->dispose();
 
   while (!m_scriptsToExecuteAfterParsing.isEmpty()) {
     PendingScript* pendingScript = m_scriptsToExecuteAfterParsing.takeFirst();
-    pendingScript->stopWatchingForLoad();
-    pendingScript->releaseElementAndClear();
+    pendingScript->dispose();
   }
   m_document = nullptr;
   // m_reentryPermit is not cleared here, because the script runner
@@ -210,6 +208,8 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(
 
   // Stop watching loads before executeScript to prevent recursion if the script
   // reloads itself.
+  // TODO(kouhei): Consider merging this w/ pendingScript->dispose() after the
+  // if block.
   pendingScript->stopWatchingForLoad();
 
   if (!isExecutingScript()) {
@@ -227,7 +227,9 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(
   double scriptParserBlockingTime =
       pendingScript->parserBlockingLoadStartTime();
   // Clear the pending script before possible re-entrancy from executeScript()
-  Element* element = pendingScript->releaseElementAndClear();
+  Element* element = pendingScript->element();
+  pendingScript->dispose();
+
   if (ScriptLoader* scriptLoader = toScriptLoaderIfPossible(element)) {
     HTMLParserReentryPermit::ScriptNestingLevelIncrementer
         nestingLevelIncrementer =
@@ -261,14 +263,12 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(
 
 void HTMLScriptRunner::stopWatchingResourceForLoad(Resource* resource) {
   if (m_parserBlockingScript->resource() == resource) {
-    m_parserBlockingScript->stopWatchingForLoad();
-    m_parserBlockingScript->releaseElementAndClear();
+    m_parserBlockingScript->dispose();
     return;
   }
   for (auto& script : m_scriptsToExecuteAfterParsing) {
     if (script->resource() == resource) {
-      script->stopWatchingForLoad();
-      script->releaseElementAndClear();
+      script->dispose();
       return;
     }
   }
@@ -515,7 +515,7 @@ void HTMLScriptRunner::runScript(Element* script,
         m_parserBlockingScript->setStartingPosition(scriptStartPosition);
       } else {
         DCHECK_GT(m_reentryPermit->scriptNestingLevel(), 1u);
-        m_parserBlockingScript->releaseElementAndClear();
+        m_parserBlockingScript->dispose();
         ScriptSourceCode sourceCode(script->textContent(),
                                     documentURLForScriptExecution(m_document),
                                     scriptStartPosition);

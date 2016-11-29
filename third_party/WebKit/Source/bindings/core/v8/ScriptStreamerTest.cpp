@@ -196,8 +196,7 @@ TEST_F(ScriptStreamingTest, CancellingStreaming) {
   // Simulate cancelling the network load (e.g., because the user navigated
   // away).
   EXPECT_FALSE(client->finished());
-  getPendingScript()->stopWatchingForLoad();
-  getPendingScript()->releaseElementAndClear();
+  getPendingScript()->dispose();
   m_pendingScript = nullptr;  // This will destroy m_resource.
   m_resource = nullptr;
 
