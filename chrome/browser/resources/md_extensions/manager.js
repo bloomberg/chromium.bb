@@ -63,6 +63,23 @@ cr.define('extensions', function() {
         value: '',
       },
 
+      /**
+       * The item currently displayed in the error subpage. We use a separate
+       * item for different pages (rather than a single subpageItem_ property)
+       * so that hidden subpages don't update when an item updates. That is, we
+       * don't want the details view subpage to update when the item shown in
+       * the errors page updates, and vice versa.
+       * @private {!chrome.developerPrivate.ExtensionInfo|undefined}
+       */
+      errorPageItem_: Object,
+
+      /**
+       * The item currently displayed in the details view subpage. See also
+       * errorPageItem_.
+       * @private {!chrome.developerPrivate.ExtensionInfo|undefined}
+       */
+      detailViewItem_: Object,
+
       /** @type {!Array<!chrome.developerPrivate.ExtensionInfo>} */
       extensions: {
         type: Array,
@@ -116,7 +133,7 @@ cr.define('extensions', function() {
      */
     showItemDetails: function(data) {
       this.$['items-list'].willShowItemSubpage(data.id);
-      this.$['details-view'].data = data;
+      this.detailViewItem_ = data;
       this.changePage(Page.DETAIL_VIEW);
     },
 
@@ -203,6 +220,19 @@ cr.define('extensions', function() {
       // We should never try and update a non-existent item.
       assert(index >= 0);
       this.set([listId, index], item);
+
+      // Update the subpage if it is open and displaying the item. If it's not
+      // open, we don't update the data even if it's displaying that item. We'll
+      // set the item correctly before opening the page. It's a little weird
+      // that the DOM will have stale data, but there's no point in causing the
+      // extra work.
+      if (this.detailViewItem_ && this.detailViewItem_.id == item.id &&
+          this.$.pages.selected == Page.DETAIL_VIEW) {
+        this.detailViewItem_ = item;
+      } else if (this.errorPageItem_ && this.errorPageItem_.id == item.id &&
+                 this.$.pages.selected == Page.ERROR_PAGE) {
+        this.errorPageItem_ = item;
+      }
     },
 
     /**
@@ -283,17 +313,21 @@ cr.define('extensions', function() {
     onShouldShowItemErrors_: function(e) {
       var data = e.detail.data;
       this.$['items-list'].willShowItemSubpage(data.id);
-      this.$['error-page'].data = data;
+      this.errorPageItem_ = data;
       this.changePage(Page.ERROR_PAGE);
     },
 
     /** @private */
     onDetailsViewClose_: function() {
+      // Note: we don't reset detailViewItem_ here because doing so just causes
+      // extra work for the data-bound details view.
       this.changePage(Page.ITEM_LIST);
     },
 
     /** @private */
     onErrorPageClose_: function() {
+      // Note: we don't reset errorPageItem_ here because doing so just causes
+      // extra work for the data-bound error page.
       this.changePage(Page.ITEM_LIST);
     }
   });

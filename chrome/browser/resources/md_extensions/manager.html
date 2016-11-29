@@ -81,12 +81,13 @@
             hidden$="[[computeListHidden_(extensions, extensions.splices, apps, apps.splices)]]">
         </extensions-item-list>
         <extensions-detail-view id="details-view" delegate="[[itemDelegate]]"
-            on-close="onDetailsViewClose_">
+            data="[[detailViewItem_]]" on-close="onDetailsViewClose_">
         </extensions-detail-view>
         <extensions-keyboard-shortcuts id="keyboard-shortcuts"
             items="[[extensions]]">
         </extensions-keyboard-shortcuts>
-        <extensions-error-page id="error-page" on-close="onErrorPageClose_">
+        <extensions-error-page id="error-page" on-close="onErrorPageClose_"
+            data="[[errorPageItem_]]">
         </extensions-error-page>
       </neon-animated-pages>
       <extensions-options-dialog id="options-dialog">
