@@ -42,6 +42,34 @@ static INLINE void fdct64x64_1(const int16_t *src, tran_low_t *dst,
 }
 #endif  // CONFIG_TX64X64
 
+#if CONFIG_CB4X4
+static void fwd_txfm_2x2(const int16_t *src_diff, tran_low_t *coeff,
+                         int diff_stride, TX_TYPE tx_type, int lossless) {
+  tran_high_t a1 = src_diff[0];
+  tran_high_t b1 = src_diff[1];
+  tran_high_t c1 = src_diff[diff_stride];
+  tran_high_t d1 = src_diff[1 + diff_stride];
+
+  tran_high_t a2 = a1 + c1;
+  tran_high_t b2 = b1 + d1;
+  tran_high_t c2 = a1 - c1;
+  tran_high_t d2 = b1 - d1;
+
+  a1 = a2 + b2;
+  b1 = a2 - b2;
+  c1 = c2 + d2;
+  d1 = c2 - d2;
+
+  coeff[0] = (tran_low_t)(4 * a1);
+  coeff[1] = (tran_low_t)(4 * b1);
+  coeff[2] = (tran_low_t)(4 * c1);
+  coeff[3] = (tran_low_t)(4 * d1);
+
+  (void)tx_type;
+  (void)lossless;
+}
+#endif
+
 static void fwd_txfm_4x4(const int16_t *src_diff, tran_low_t *coeff,
                          int diff_stride, TX_TYPE tx_type, int lossless) {
   if (lossless) {
@@ -512,6 +540,11 @@ void fwd_txfm(const int16_t *src_diff, tran_low_t *coeff, int diff_stride,
     case TX_4X4:
       fwd_txfm_4x4(src_diff, coeff, diff_stride, tx_type, lossless);
       break;
+#if CONFIG_CB4X4
+    case TX_2X2:
+      fwd_txfm_2x2(src_diff, coeff, diff_stride, tx_type, lossless);
+      break;
+#endif
     default: assert(0); break;
   }
 }
