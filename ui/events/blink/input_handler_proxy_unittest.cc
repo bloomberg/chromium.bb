@@ -196,7 +196,9 @@ class MockInputHandler : public cc::InputHandler {
   MOCK_CONST_METHOD1(
       GetEventListenerProperties,
       cc::EventListenerProperties(cc::EventListenerClass event_class));
-  MOCK_METHOD1(DoTouchEventsBlockScrollAt, bool(const gfx::Point& point));
+  MOCK_METHOD1(
+      EventListenerTypeForTouchStartAt,
+      cc::InputHandler::TouchStartEventListenerType(const gfx::Point& point));
 
   MOCK_METHOD0(RequestUpdateForSynchronousInputHandler, void());
   MOCK_METHOD1(SetSynchronousInputHandlerRootScrollOffset,
@@ -2031,12 +2033,10 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestNegative) {
       mock_input_handler_,
       GetEventListenerProperties(cc::EventListenerClass::kTouchEndOrCancel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kNone));
-  EXPECT_CALL(mock_input_handler_, DoTouchEventsBlockScrollAt(testing::_))
-      .WillOnce(testing::Return(false));
-  EXPECT_CALL(mock_input_handler_,
-              DoTouchEventsBlockScrollAt(
-                  testing::Property(&gfx::Point::x, testing::Lt(0))))
-      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_, EventListenerTypeForTouchStartAt(testing::_))
+      .Times(2)
+      .WillRepeatedly(testing::Return(
+          cc::InputHandler::TouchStartEventListenerType::NO_HANDLER));
 
   WebTouchEvent touch;
   touch.type = WebInputEvent::TouchStart;
@@ -2057,13 +2057,15 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
   VERIFY_AND_RESET_MOCKS();
 
   EXPECT_CALL(mock_input_handler_,
-              DoTouchEventsBlockScrollAt(
+              EventListenerTypeForTouchStartAt(
                   testing::Property(&gfx::Point::x, testing::Eq(0))))
-      .WillOnce(testing::Return(false));
+      .WillOnce(testing::Return(
+          cc::InputHandler::TouchStartEventListenerType::NO_HANDLER));
   EXPECT_CALL(mock_input_handler_,
-              DoTouchEventsBlockScrollAt(
+              EventListenerTypeForTouchStartAt(
                   testing::Property(&gfx::Point::x, testing::Gt(0))))
-      .WillOnce(testing::Return(true));
+      .WillOnce(testing::Return(cc::InputHandler::TouchStartEventListenerType::
+                                    HANDLER_ON_SCROLLING_LAYER));
   // Since the second touch point hits a touch-region, there should be no
   // hit-testing for the third touch point.
 
@@ -2080,8 +2082,8 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPositive) {
 }
 
 TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPassivePositive) {
-  // One of the touch points is on a touch-region. So the event should be sent
-  // to the main thread.
+  // One of the touch points is not on a touch-region. So the event should be
+  // sent to the impl thread.
   expected_disposition_ = InputHandlerProxy::DID_HANDLE_NON_BLOCKING;
   VERIFY_AND_RESET_MOCKS();
 
@@ -2089,8 +2091,9 @@ TEST_P(InputHandlerProxyTest, MultiTouchPointHitTestPassivePositive) {
       mock_input_handler_,
       GetEventListenerProperties(cc::EventListenerClass::kTouchStartOrMove))
       .WillRepeatedly(testing::Return(cc::EventListenerProperties::kPassive));
-  EXPECT_CALL(mock_input_handler_, DoTouchEventsBlockScrollAt(testing::_))
-      .WillRepeatedly(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_, EventListenerTypeForTouchStartAt(testing::_))
+      .WillRepeatedly(testing::Return(
+          cc::InputHandler::TouchStartEventListenerType::NO_HANDLER));
 
   WebTouchEvent touch;
   touch.type = WebInputEvent::TouchStart;
@@ -2119,8 +2122,9 @@ TEST_P(InputHandlerProxyTest, TouchStartPassiveAndTouchEndBlocking) {
       mock_input_handler_,
       GetEventListenerProperties(cc::EventListenerClass::kTouchEndOrCancel))
       .WillOnce(testing::Return(cc::EventListenerProperties::kBlocking));
-  EXPECT_CALL(mock_input_handler_, DoTouchEventsBlockScrollAt(testing::_))
-      .WillOnce(testing::Return(false));
+  EXPECT_CALL(mock_input_handler_, EventListenerTypeForTouchStartAt(testing::_))
+      .WillOnce(testing::Return(
+          cc::InputHandler::TouchStartEventListenerType::NO_HANDLER));
 
   WebTouchEvent touch;
   touch.type = WebInputEvent::TouchStart;

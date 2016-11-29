@@ -935,12 +935,19 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleGestureFlingStart(
 InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     const blink::WebTouchEvent& touch_event) {
   EventDisposition result = DROP_EVENT;
+  bool is_touching_scrolling_layer = false;
   for (size_t i = 0; i < touch_event.touchesLength; ++i) {
     if (touch_event.touches[i].state != WebTouchPoint::StatePressed)
       continue;
-    if (input_handler_->DoTouchEventsBlockScrollAt(
+    cc::InputHandler::TouchStartEventListenerType event_listener_type =
+        input_handler_->EventListenerTypeForTouchStartAt(
             gfx::Point(touch_event.touches[i].position.x,
-                       touch_event.touches[i].position.y))) {
+                       touch_event.touches[i].position.y));
+    if (event_listener_type !=
+        cc::InputHandler::TouchStartEventListenerType::NO_HANDLER) {
+      is_touching_scrolling_layer =
+          event_listener_type == cc::InputHandler::TouchStartEventListenerType::
+                                     HANDLER_ON_SCROLLING_LAYER;
       result = DID_NOT_HANDLE;
       break;
     }
@@ -991,8 +998,9 @@ InputHandlerProxy::EventDisposition InputHandlerProxy::HandleTouchStart(
     result = DID_HANDLE_NON_BLOCKING;
   }
 
-  bool is_fling_on_impl = fling_curve_ && !fling_may_be_active_on_main_thread_;
-  if (result == DID_NOT_HANDLE && is_fling_on_impl)
+  bool is_flinging_on_impl =
+      fling_curve_ && !fling_may_be_active_on_main_thread_;
+  if (is_flinging_on_impl && is_touching_scrolling_layer)
     result = DID_NOT_HANDLE_NON_BLOCKING_DUE_TO_FLING;
 
   return result;

@@ -104,6 +104,12 @@ class CC_EXPORT InputHandler {
     NON_BUBBLING_GESTURE
   };
 
+  enum class TouchStartEventListenerType {
+    NO_HANDLER,
+    HANDLER,
+    HANDLER_ON_SCROLLING_LAYER
+  };
+
   // Binds a client to this handler to receive notifications. Only one client
   // can be bound to an InputHandler. The client must live at least until the
   // handler calls WillShutdown() on the client.
@@ -187,9 +193,12 @@ class CC_EXPORT InputHandler {
   virtual EventListenerProperties GetEventListenerProperties(
       EventListenerClass event_class) const = 0;
 
+  // It returns the type of a touch start event listener at |viewport_point|.
   // Whether the page should be given the opportunity to suppress scrolling by
-  // consuming touch events that started at |viewport_point|.
-  virtual bool DoTouchEventsBlockScrollAt(const gfx::Point& viewport_point) = 0;
+  // consuming touch events that started at |viewport_point|, and whether
+  // |viewport_point| is on the currently scrolling layer.
+  virtual TouchStartEventListenerType EventListenerTypeForTouchStartAt(
+      const gfx::Point& viewport_point) = 0;
 
   // Calling CreateLatencyInfoSwapPromiseMonitor() to get a scoped
   // LatencyInfoSwapPromiseMonitor. During the life time of the

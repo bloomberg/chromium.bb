@@ -154,6 +154,23 @@ void RecordCompositorSlowScrollMetric(InputHandler::ScrollInputType type,
   }
 }
 
+// Return true if scrollable 'ancestor' is the same layer as 'child' or its
+// ancestor along the scroll tree.
+bool IsScrolledBy(LayerImpl* child, LayerImpl* ancestor) {
+  DCHECK(ancestor && ancestor->scrollable());
+  if (!child)
+    return false;
+
+  ScrollTree& scroll_tree =
+      child->layer_tree_impl()->property_trees()->scroll_tree;
+  for (ScrollNode* scroll_node = scroll_tree.Node(child->scroll_tree_index());
+       scroll_node; scroll_node = scroll_tree.parent(scroll_node)) {
+    if (scroll_node->owner_id == ancestor->id())
+      return true;
+  }
+  return false;
+}
+
 }  // namespace
 
 DEFINE_SCOPED_UMA_HISTOGRAM_TIMER(PendingTreeDurationHistogramTimer,
@@ -581,7 +598,8 @@ EventListenerProperties LayerTreeHostImpl::GetEventListenerProperties(
   return active_tree_->event_listener_properties(event_class);
 }
 
-bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
+InputHandler::TouchStartEventListenerType
+LayerTreeHostImpl::EventListenerTypeForTouchStartAt(
     const gfx::Point& viewport_point) {
   gfx::PointF device_viewport_point = gfx::ScalePoint(
       gfx::PointF(viewport_point), active_tree_->device_scale_factor());
@@ -591,7 +609,17 @@ bool LayerTreeHostImpl::DoTouchEventsBlockScrollAt(
   LayerImpl* layer_impl =
       active_tree_->FindLayerThatIsHitByPointInTouchHandlerRegion(
           device_viewport_point);
-  return layer_impl != NULL;
+  if (layer_impl == NULL)
+    return InputHandler::TouchStartEventListenerType::NO_HANDLER;
+
+  if (!CurrentlyScrollingLayer())
+    return InputHandler::TouchStartEventListenerType::HANDLER;
+
+  bool is_ancestor =
+      IsScrolledBy(layer_impl, active_tree_->CurrentlyScrollingLayer());
+  return is_ancestor ? InputHandler::TouchStartEventListenerType::
+                           HANDLER_ON_SCROLLING_LAYER
+                     : InputHandler::TouchStartEventListenerType::HANDLER;
 }
 
 std::unique_ptr<SwapPromiseMonitor>
@@ -2545,8 +2573,8 @@ LayerImpl* LayerTreeHostImpl::FindScrollLayerForDeviceViewportPoint(
   return potentially_scrolling_layer_impl;
 }
 
-// Similar to LayerImpl::HasAncestor, but walks up the scroll parents.
-static bool HasScrollAncestor(LayerImpl* child, LayerImpl* scroll_ancestor) {
+static bool IsClosestScrollAncestor(LayerImpl* child,
+                                    LayerImpl* scroll_ancestor) {
   DCHECK(scroll_ancestor);
   if (!child)
     return false;
@@ -2631,7 +2659,7 @@ InputHandler::ScrollStatus LayerTreeHostImpl::ScrollBegin(
         active_tree_->FindFirstScrollingLayerOrScrollbarLayerThatIsHitByPoint(
             device_viewport_point);
     if (scroll_layer_impl &&
-        !HasScrollAncestor(layer_impl, scroll_layer_impl)) {
+        !IsClosestScrollAncestor(layer_impl, scroll_layer_impl)) {
       scroll_status.thread = SCROLL_UNKNOWN;
       scroll_status.main_thread_scrolling_reasons =
           MainThreadScrollingReason::kFailedHitTest;
