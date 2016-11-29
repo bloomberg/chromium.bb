@@ -15620,7 +15620,7 @@ read aloud to screenreader users to announce that a completion is available.">
       Video streaming blocked
     </message>
     <message name="IDS_MEDIA_REMOTING_STREAMING_BLOCKED_DESCRIPTION" desc="The description text of the modal dialog that is shown when remote video streaming is blocked, which recommends the user to reload the page to try enabling streaming.">
-      "<ph name="SITE_NAME">$1<ex>example.com</ex></ph>" has blocked streaming to your Cast device. Reload to try again.
+      This site has blocked streaming to your Cast device. Reload to try again.
     </message>
     <message name="IDS_MEDIA_REMOTING_RELOAD_BUTTON" desc="A button on a modal dialog, which, on click, will reload the page.">
       Reload
