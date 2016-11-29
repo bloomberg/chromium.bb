@@ -894,6 +894,15 @@
         },
         "test": "vr_shell_unittests"
       }
+    ],
+    "instrumentation_tests": [
+      {
+        "args": [
+          "--test-filter",
+          "VrShellTest#*"
+        ],
+        "test": "chrome_public_test_apk"
+      }
     ]
   },
   "Android x64 Tests": {
