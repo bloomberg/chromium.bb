@@ -386,6 +386,10 @@ void AnimationTimelinesTest::CreateTestMainLayer() {
   client_.RegisterElement(element_id_, ElementListType::ACTIVE);
 }
 
+void AnimationTimelinesTest::DestroyTestMainLayer() {
+  client_.UnregisterElement(element_id_, ElementListType::ACTIVE);
+}
+
 void AnimationTimelinesTest::CreateTestImplLayer(
     ElementListType element_list_type) {
   client_impl_.RegisterElement(element_id_, element_list_type);

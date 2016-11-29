@@ -373,7 +373,7 @@ void ElementAnimations::UpdateActivation(ActivationType type) {
       }
     }
 
-    if (is_active_ && (!was_active || force)) {
+    if (is_active_ && ((!was_active && has_element_in_any_list()) || force)) {
       animation_host_->DidActivateElementAnimations(this);
     } else if (!is_active_ && (was_active || force)) {
       // Resetting last_tick_time_ here ensures that calling ::UpdateState

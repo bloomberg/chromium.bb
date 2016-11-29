@@ -3633,5 +3633,23 @@ TEST_F(ElementAnimationsTest, TestIsAnimatingPropertyTimeOffsetFillMode) {
                                                      ElementListType::ACTIVE));
 }
 
+TEST_F(ElementAnimationsTest, DestroyTestMainLayerBeforePushProperties) {
+  CreateTestLayer(false, false);
+  AttachTimelinePlayerLayer();
+  EXPECT_EQ(0u, host_->active_element_animations_for_testing().size());
+
+  player_->AddAnimation(CreateAnimation(
+      std::unique_ptr<AnimationCurve>(new FakeFloatTransition(1.0, 1.f, 0.5f)),
+      2, TargetProperty::OPACITY));
+  EXPECT_EQ(1u, host_->active_element_animations_for_testing().size());
+
+  DestroyTestMainLayer();
+  EXPECT_EQ(0u, host_->active_element_animations_for_testing().size());
+
+  PushProperties();
+  EXPECT_EQ(0u, host_->active_element_animations_for_testing().size());
+  EXPECT_EQ(0u, host_impl_->active_element_animations_for_testing().size());
+}
+
 }  // namespace
 }  // namespace cc

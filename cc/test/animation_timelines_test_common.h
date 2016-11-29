@@ -240,6 +240,7 @@ class AnimationTimelinesTest : public testing::Test {
   void CreateImplTimelineAndPlayer();
 
   void CreateTestMainLayer();
+  void DestroyTestMainLayer();
   void CreateTestImplLayer(ElementListType element_list_type);
 
   void ReleaseRefPtrs();
