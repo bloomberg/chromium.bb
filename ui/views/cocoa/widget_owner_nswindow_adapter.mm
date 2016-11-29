@@ -102,7 +102,11 @@ void WidgetOwnerNSWindowAdapter::OnWindowDidChangeOcclusionState() {
     return;
 
   if (child_->window_visible()) {
-    DCHECK([child_->ns_window() parentWindow]);
+    // A sheet should never have a parentWindow, otherwise dismissing the sheet
+    // causes graphical glitches (http://crbug.com/605098). Non-sheets should
+    // always have a parentWindow.
+    DCHECK([child_->ns_window() isSheet] !=
+           !![child_->ns_window() parentWindow]);
     DCHECK(child_->wants_to_be_visible());
     return;
   }
@@ -115,8 +119,8 @@ void WidgetOwnerNSWindowAdapter::OnWindowDidChangeOcclusionState() {
   [child_->ns_window() orderWindow:NSWindowAbove
                         relativeTo:[anchor_window_ windowNumber]];
 
-  // Ordering the window should add back the relationship.
-  DCHECK([child_->ns_window() parentWindow]);
+  // Ordering the window should add back the relationship (unless it's a sheet).
+  DCHECK([child_->ns_window() isSheet] != !![child_->ns_window() parentWindow]);
   DCHECK(child_->window_visible());
 }
 

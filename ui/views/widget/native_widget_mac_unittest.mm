@@ -1045,17 +1045,15 @@ TEST_F(NativeWidgetMacTest, NativeWindowChildModalShowHide) {
 }
 
 // Tests behavior of window-modal dialogs, displayed as sheets.
-// Disabled: fails due to sharding adjustments. DCHECK fails during closure when
-// the parent window receives an asynchronous occlusion state change from the
-// window server, after the child has its parent window relationship removed.
-// TODO(tapted): Fix it. http://cbrug.com/666503.
-TEST_F(NativeWidgetMacTest, DISABLED_WindowModalSheet) {
+TEST_F(NativeWidgetMacTest, WindowModalSheet) {
   NSWindow* native_parent =
       MakeNativeParentWithStyle(NSClosableWindowMask | NSTitledWindowMask);
 
   Widget* sheet_widget = views::DialogDelegate::CreateDialogWidget(
       new ModalDialogDelegate(ui::MODAL_TYPE_WINDOW), nullptr,
       [native_parent contentView]);
+
+  WidgetChangeObserver widget_observer(sheet_widget);
 
   // Retain, to run checks after the Widget is torn down.
   base::scoped_nsobject<NSWindow> sheet_window(
@@ -1095,6 +1093,27 @@ TEST_F(NativeWidgetMacTest, DISABLED_WindowModalSheet) {
   // Modal, so the close button in the parent window should get disabled.
   EXPECT_FALSE([parent_close_button isEnabled]);
 
+  // The sheet should be hidden and shown in step with the parent.
+  widget_observer.WaitForVisibleCounts(1, 0);
+  EXPECT_TRUE(sheet_widget->IsVisible());
+
+  // TODO(tapted): Ideally [native_parent orderOut:nil] would also work here.
+  // But it does not. AppKit's childWindow management breaks down after an
+  // -orderOut: (see BridgedNativeWidget::OnVisibilityChanged()). For regular
+  // child windows, BridgedNativeWidget fixes the behavior with its own
+  // management. However, it can't do that for sheets without encountering
+  // http://crbug.com/605098 and http://crbug.com/667602. -[NSApp hide:] makes
+  // the NSWindow hidden in a different way, which does not break like
+  // -orderOut: does. Which is good, because a user can always do -[NSApp
+  // hide:], e.g., with Cmd+h, and that needs to work correctly.
+  [NSApp hide:nil];
+
+  widget_observer.WaitForVisibleCounts(1, 1);
+  EXPECT_FALSE(sheet_widget->IsVisible());
+  [native_parent makeKeyAndOrderFront:nil];
+  widget_observer.WaitForVisibleCounts(2, 1);
+  EXPECT_TRUE(sheet_widget->IsVisible());
+
   // Trigger the close. Don't use CloseNow, since that tears down the UI before
   // the close sheet animation gets a chance to run (so it's banned).
   sheet_widget->Close();
@@ -1118,7 +1137,6 @@ TEST_F(NativeWidgetMacTest, DISABLED_WindowModalSheet) {
 
   // Pump in order to trigger -[NSWindow endSheet:..], which will block while
   // the animation runs, then delete |sheet_widget|.
-  TestWidgetObserver widget_observer(sheet_widget);
   EXPECT_TRUE([sheet_window delegate]);
   base::RunLoop().RunUntilIdle();
   EXPECT_FALSE([sheet_window delegate]);
