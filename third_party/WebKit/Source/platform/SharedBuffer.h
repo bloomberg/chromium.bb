@@ -113,15 +113,14 @@ class PLATFORM_EXPORT SharedBuffer : public RefCounted<SharedBuffer> {
   }
 
   // Returns the content data into "dest" as a flat buffer. "byteLength" must
-  // exactly match with size(). Returns true on success, otherwise the content
-  // of "dest" is not guaranteed.
+  // exactly match with size(). |dest| must not be null even if |bytesLength|
+  // is 0.
   HAS_STRICTLY_TYPED_ARG
-  bool getAsBytes(void* dest, STRICTLY_TYPED_ARG(byteLength)) const {
+  void getAsBytes(void* dest, STRICTLY_TYPED_ARG(byteLength)) const {
     STRICT_ARG_TYPE(size_t);
-    if (byteLength != size())
-      return false;
-
-    return getAsBytesInternal(dest, 0, byteLength);
+    DCHECK_EQ(byteLength, size());
+    auto result = getAsBytesInternal(dest, 0, byteLength);
+    DCHECK(result);
   }
 
   // Copies "byteLength" bytes from "position"-th bytes (0 origin) of the

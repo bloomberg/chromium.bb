@@ -52,7 +52,7 @@ TEST(SharedBufferTest, getAsBytes) {
 
   const size_t size = sharedBuffer->size();
   std::unique_ptr<char[]> data = wrapArrayUnique(new char[size]);
-  ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
+  sharedBuffer->getAsBytes(data.get(), size);
 
   char expectedConcatenation[] = "HelloWorldGoodbye";
   ASSERT_EQ(strlen(expectedConcatenation), size);
@@ -102,7 +102,7 @@ TEST(SharedBufferTest, getAsBytesLargeSegments) {
 
   const size_t size = sharedBuffer->size();
   std::unique_ptr<char[]> data = wrapArrayUnique(new char[size]);
-  ASSERT_TRUE(sharedBuffer->getAsBytes(data.get(), size));
+  sharedBuffer->getAsBytes(data.get(), size);
 
   ASSERT_EQ(0x4000U + 0x4000U + 0x4000U, size);
   int position = 0;
