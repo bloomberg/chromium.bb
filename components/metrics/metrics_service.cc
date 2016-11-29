@@ -916,12 +916,14 @@ void MetricsService::SendNextLog() {
 
 bool MetricsService::ProvidersHaveInitialStabilityMetrics() {
   // Check whether any metrics provider has initial stability metrics.
-  for (MetricsProvider* provider : metrics_providers_) {
-    if (provider->HasInitialStabilityMetrics())
-      return true;
-  }
+  // All providers are queried (rather than stopping after the first "true"
+  // response) in case they do any kind of setup work in preparation for
+  // the later call to RecordInitialHistogramSnapshots().
+  bool has_stability_metrics = false;
+  for (MetricsProvider* provider : metrics_providers_)
+    has_stability_metrics |= provider->HasInitialStabilityMetrics();
 
-  return false;
+  return has_stability_metrics;
 }
 
 bool MetricsService::PrepareInitialStabilityLog(

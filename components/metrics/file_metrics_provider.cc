@@ -22,6 +22,7 @@
 #include "components/metrics/metrics_service.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/variations/variations_associated_data.h"
 
 namespace metrics {
 
@@ -470,6 +471,12 @@ void FileMetricsProvider::OnDidCreateMetricsLog() {
 
 bool FileMetricsProvider::HasInitialStabilityMetrics() {
   DCHECK(thread_checker_.CalledOnValidThread());
+
+  // Check if there is an experiment that disables stability metrics.
+  std::string unreported = variations::GetVariationParamValueByFeature(
+      base::kPersistentHistogramsFeature, "send_unreported_metrics");
+  if (unreported == "no")
+    sources_for_previous_run_.clear();
 
   // Measure the total time spent checking all sources as well as the time
   // per individual file. This method is called during startup and thus blocks
