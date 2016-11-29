@@ -30,6 +30,7 @@ CC_EXPORT extern const char kEnableTileCompression[];
 // Switches for both the renderer and ui compositors.
 CC_EXPORT extern const char kEnableColorCorrectRendering[];
 CC_EXPORT extern const char kEnableGpuBenchmarking[];
+CC_EXPORT extern const char kEnableTrueColorRendering[];
 
 // Debug visualizations.
 CC_EXPORT extern const char kShowCompositedLayerBorders[];

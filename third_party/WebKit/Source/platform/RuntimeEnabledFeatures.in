@@ -44,7 +44,7 @@ Canvas2dImageChromium status=experimental
 ClientHints status=stable
 CompositeOpaqueFixedPosition status=stable, settable_from_internals=True
 CompositeOpaqueScrollers status=stable, settable_from_internals=True
-ColorCorrectRendering settable_from_internals=True
+ColorCorrectRendering status=experimental
 CompositedSelectionUpdate
 CompositorWorker status=experimental
 ContextMenu status=test
@@ -238,6 +238,7 @@ TimerThrottlingForHiddenFrames status=stable
 // touchscreen) in ApplyWebPreferences.
 TouchEventAPI status=stable
 TraceWrappables
+TrueColorRendering status=experimental, settable_from_internals=True
 TrustedEventsDefaultAction status=stable
 UserSelectAll status=stable
 WebAnimationsAPI status=experimental

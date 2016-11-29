@@ -1770,6 +1770,7 @@ void RenderProcessHostImpl::PropagateBrowserCommandLineToRenderer(
     cc::switches::kEnableGpuBenchmarking,
     cc::switches::kEnableLayerLists,
     cc::switches::kEnableTileCompression,
+    cc::switches::kEnableTrueColorRendering,
     cc::switches::kShowCompositedLayerBorders,
     cc::switches::kShowFPSCounter,
     cc::switches::kShowLayerAnimationBounds,

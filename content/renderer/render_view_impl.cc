@@ -938,6 +938,10 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
 
   WebRuntimeFeatures::enableColorCorrectRendering(
       prefs.color_correct_rendering_enabled);
+
+  WebRuntimeFeatures::enableTrueColorRendering(
+      prefs.true_color_rendering_enabled);
+
   settings->setShouldRespectImageOrientation(
       prefs.should_respect_image_orientation);
 

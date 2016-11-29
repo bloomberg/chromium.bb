@@ -76,6 +76,10 @@ void WebRuntimeFeatures::enableColorCorrectRendering(bool enable) {
   RuntimeEnabledFeatures::setColorCorrectRenderingEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableTrueColorRendering(bool enable) {
+  RuntimeEnabledFeatures::setTrueColorRenderingEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableCompositedSelectionUpdate(bool enable) {
   RuntimeEnabledFeatures::setCompositedSelectionUpdateEnabled(enable);
 }
