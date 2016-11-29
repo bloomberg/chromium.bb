@@ -449,13 +449,15 @@ class Rietveld(object):
                 'EOF occurred in violation of protocol',
                 'timed out',
                 # See http://crbug.com/601260.
-                'urlopen error [Errno 10060] A connection attempt failed',
-                'urlopen error [Errno 104] Connection reset by peer',
+                '[Errno 10060] A connection attempt failed',
+                '[Errno 104] Connection reset by peer',
             ):
               if retry_anyway in reason_as_str:
                 return True
             return False  # Assume permanent otherwise.
           if not is_transient():
+            logging.error('Caught urllib2.URLError %s which wasn\'t deemed '
+                          'transient', e.reason)
             raise
         except socket.error, e:
           if retry >= (self._maxtries - 1):
