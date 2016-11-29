@@ -941,7 +941,6 @@ void WallpaperManagerBase::OnCustomizedDefaultWallpaperDecoded(
   std::unique_ptr<gfx::ImageSkia> small_wallpaper_image(new gfx::ImageSkia);
   std::unique_ptr<gfx::ImageSkia> large_wallpaper_image(new gfx::ImageSkia);
 
-  // TODO(bshe): This may break if Bytes becomes RefCountedMemory.
   base::Closure resize_closure = base::Bind(
       &WallpaperManagerBase::ResizeCustomizedDefaultWallpaper,
       base::Passed(&deep_copy),
