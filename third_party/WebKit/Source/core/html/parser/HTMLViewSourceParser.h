@@ -26,6 +26,7 @@
 #ifndef HTMLViewSourceParser_h
 #define HTMLViewSourceParser_h
 
+#include "core/CoreExport.h"
 #include "core/dom/DecodedDataDocumentParser.h"
 #include "core/html/HTMLViewSourceDocument.h"
 #include "core/html/parser/HTMLInputStream.h"
@@ -36,7 +37,8 @@
 
 namespace blink {
 
-class HTMLViewSourceParser final : public DecodedDataDocumentParser {
+class CORE_EXPORT HTMLViewSourceParser final
+    : public DecodedDataDocumentParser {
  public:
   static HTMLViewSourceParser* create(HTMLViewSourceDocument& document,
                                       const String& mimeType) {
