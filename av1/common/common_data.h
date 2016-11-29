@@ -562,27 +562,6 @@ static const int tx_size_2d[TX_SIZES_ALL] = {
   32,   32, 128, 128,  512, 512,
 };
 
-static const uint8_t tx_size_1d_log2[TX_SIZES] = {
-#if CONFIG_CB4X4
-  1,
-#endif
-  2, 3, 4, 5,
-#if CONFIG_TX64X64
-  6,
-#endif  // CONFIG_TX64X64
-};
-
-// TODO(jingning): Temporary table during the construction.
-static const int tx_size_1d_in_unit_log2[TX_SIZES] = {
-#if CONFIG_CB4X4
-  -1,
-#endif
-  0,  1, 2, 3,
-#if CONFIG_TX64X64
-  4,
-#endif  // CONFIG_TX64X64
-};
-
 static const BLOCK_SIZE txsize_to_bsize[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
   BLOCK_4X4,  // TX_2X2
