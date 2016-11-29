@@ -37,11 +37,13 @@ class WebAudioSourceProvider {
   virtual ~WebAudioSourceProvider() {}
 
   // provideInput() gets called repeatedly to render time-slices of a continuous
-  // audio stream.
+  // audio stream. May be called from any thread.
   virtual void provideInput(const WebVector<float*>& audioData,
                             size_t numberOfFrames) = 0;
 
   // If a client is set, we call it back when the audio format is available.
+  // Must always be called from the same thread. I.e., once called on a thread,
+  // all future calls to setClient must be issued from that same thread.
   virtual void setClient(WebAudioSourceProviderClient*) {}
 };
 
