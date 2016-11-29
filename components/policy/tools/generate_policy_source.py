@@ -74,6 +74,7 @@ class PolicyDetails:
     self.can_be_mandatory = features.get('can_be_mandatory', True)
     self.is_deprecated = policy.get('deprecated', False)
     self.is_device_only = policy.get('device_only', False)
+    self.is_future = policy.get('future', False)
     self.schema = policy.get('schema', {})
     self.has_enterprise_default = 'default_for_enterprise_users' in policy
     if self.has_enterprise_default:
@@ -1171,7 +1172,8 @@ def _WriteAppRestrictions(policies, os, f, riskTags):
   f.write('<restrictions xmlns:android="'
           'http://schemas.android.com/apk/res/android">\n\n')
   for policy in policies:
-    if policy.is_supported and policy.restriction_type != 'invalid':
+    if (policy.is_supported and policy.restriction_type != 'invalid' and
+         not policy.is_deprecated and not policy.is_future):
       WriteAppRestriction(policy)
   f.write('</restrictions>')
 
