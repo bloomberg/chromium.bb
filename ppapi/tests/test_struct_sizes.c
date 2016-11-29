@@ -12,7 +12,7 @@
 
 #include "ppapi/tests/all_c_includes.h"
 
-#if !defined(__native_client__) && (defined(_M_X64) || defined(__x86_64__))
+#if !defined(__native_client__) && (defined(_M_X64) || defined(__x86_64__) || defined(__aarch64__))
 /* This section is for 64-bit compilation on Windows, Mac, and Linux.  Native
    client follows ILP32 even if -m64 is used, so NaCl code is explicitly treated
    as 32-bit.  This means pointers are always 4 bytes in native client, and it
