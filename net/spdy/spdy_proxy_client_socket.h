@@ -32,7 +32,6 @@
 
 namespace net {
 
-class AddressList;
 class HttpStream;
 class IOBuffer;
 class SpdyStream;

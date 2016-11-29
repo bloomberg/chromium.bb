@@ -13,7 +13,6 @@
 
 namespace net {
 
-class IPAddress;
 struct WriteResult;
 
 class NET_EXPORT_PRIVATE PerPacketOptions {

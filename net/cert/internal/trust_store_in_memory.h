@@ -14,10 +14,6 @@
 
 namespace net {
 
-namespace der {
-class Input;
-}
-
 // A very simple implementation of a TrustStore, which contains a set of
 // trust anchors.
 class NET_EXPORT TrustStoreInMemory : public TrustStore {

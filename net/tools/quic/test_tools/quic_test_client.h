@@ -32,7 +32,6 @@ class QuicPacketWriterWrapper;
 
 namespace test {
 
-class HTTPMessage;
 class MockableQuicClient;
 
 // A quic client which allows mocking out reads and writes.

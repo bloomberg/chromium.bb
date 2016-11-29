@@ -38,8 +38,6 @@ class EphemeralKeySource;
 class KeyExchange;
 class ProofSource;
 class QuicClock;
-class QuicDecrypter;
-class QuicEncrypter;
 class QuicRandom;
 class QuicServerConfigProtobuf;
 struct QuicSignedServerConfig;

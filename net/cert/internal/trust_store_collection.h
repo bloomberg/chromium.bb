@@ -9,10 +9,6 @@
 #include "net/base/net_export.h"
 #include "net/cert/internal/trust_store.h"
 
-namespace base {
-class TaskRunner;
-}
-
 namespace net {
 
 // TrustStoreCollection is an implementation of TrustStore which combines the

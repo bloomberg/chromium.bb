@@ -38,14 +38,12 @@ class ECPrivateKey;
 namespace net {
 
 class BidirectionalStreamImpl;
-class ClientSocketHandle;
 class HttpAuthController;
 class HttpNetworkSession;
 class HttpStream;
 class HttpStreamRequest;
 class IOBuffer;
 class ProxyInfo;
-class SpdySession;
 class SSLPrivateKey;
 struct HttpRequestInfo;
 

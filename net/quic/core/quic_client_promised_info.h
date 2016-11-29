@@ -19,8 +19,6 @@
 namespace net {
 
 class QuicClientSessionBase;
-class QuicDataToResend;
-class QuicConnectionHelperInterface;
 
 namespace test {
 class QuicClientPromisedInfoPeer;

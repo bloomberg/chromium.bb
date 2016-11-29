@@ -27,7 +27,6 @@
 
 namespace net {
 
-struct HttpRequestInfo;
 class QuicChromiumAlarmFactory;
 class QuicChromiumConnectionHelper;
 class UDPClientSocket;

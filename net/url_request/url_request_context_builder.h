@@ -49,7 +49,6 @@ class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class CTVerifier;
-class FtpTransactionFactory;
 class HostMappingRules;
 class HttpAuthHandlerFactory;
 class HttpServerProperties;

@@ -17,8 +17,6 @@
 
 namespace net {
 
-class IPAddress;
-
 // ProofSource is an interface by which a QUIC server can obtain certificate
 // chains and signatures that prove its identity.
 class NET_EXPORT_PRIVATE ProofSource {

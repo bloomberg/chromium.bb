@@ -23,9 +23,7 @@
 
 namespace net {
 
-class QuicTime;
 class QuicRandom;
-struct QuicCryptoNegotiatedParameters;
 
 class NET_EXPORT_PRIVATE CryptoUtils {
  public:

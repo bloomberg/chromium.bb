@@ -14,7 +14,6 @@
 
 namespace net {
 
-struct QuicAckFrame;
 struct QuicPacketHeader;
 class QuicAlarm;
 class QuicConnectionHelperInterface;
@@ -24,7 +23,6 @@ class QuicFramer;
 class QuicPacketCreator;
 class QuicPacketGenerator;
 class QuicPacketWriter;
-class QuicReceivedPacketManager;
 class QuicSentPacketManager;
 class SendAlgorithmInterface;
 

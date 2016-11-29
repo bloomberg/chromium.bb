@@ -20,7 +20,6 @@ namespace net {
 
 class QuicConnection;
 class QuicServerId;
-class QuicStream;
 
 class QuicClientSession : public QuicClientSessionBase {
  public:

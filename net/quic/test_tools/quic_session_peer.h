@@ -18,9 +18,7 @@
 namespace net {
 
 class QuicCryptoStream;
-class QuicHeadersStream;
 class QuicSession;
-class QuicSpdyStream;
 class QuicStream;
 
 namespace test {

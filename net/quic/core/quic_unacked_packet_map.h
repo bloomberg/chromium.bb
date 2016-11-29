@@ -15,8 +15,6 @@
 
 namespace net {
 
-class AckNotifierManager;
-
 // Class which tracks unacked packets for three purposes:
 // 1) Track retransmittable data, including multiple transmissions of frames.
 // 2) Track packets and bytes in flight for congestion control.

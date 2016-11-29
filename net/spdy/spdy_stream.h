@@ -31,7 +31,6 @@
 
 namespace net {
 
-class AddressList;
 class IPEndPoint;
 struct LoadTimingInfo;
 class SSLInfo;

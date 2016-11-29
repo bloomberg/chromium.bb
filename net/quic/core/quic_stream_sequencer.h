@@ -21,7 +21,6 @@ class QuicStreamSequencerPeer;
 }  // namespace test
 
 class QuicClock;
-class QuicSession;
 class QuicStream;
 
 // Buffers frames until we have something which can be passed

@@ -28,8 +28,6 @@ namespace net {
 
 class QuicServerId;
 
-class QuicEpollConnectionHelper;
-
 namespace test {
 class QuicClientPeer;
 }  // namespace test

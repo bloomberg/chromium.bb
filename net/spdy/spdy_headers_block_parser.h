@@ -19,12 +19,6 @@
 
 namespace net {
 
-namespace test {
-
-class SpdyHeadersBlockParserPeer;
-
-}  // namespace test
-
 // This class handles SPDY headers block bytes and parses out key-value pairs
 // as they arrive. This class is not thread-safe, and assumes that all headers
 // block bytes are processed in a single thread.

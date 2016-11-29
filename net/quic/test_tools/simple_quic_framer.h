@@ -18,10 +18,6 @@
 namespace net {
 
 struct QuicAckFrame;
-class QuicConnection;
-class QuicConnectionVisitorInterface;
-class QuicPacketCreator;
-class SendAlgorithmInterface;
 
 namespace test {
 

@@ -47,19 +47,10 @@ class Entry;
 
 namespace net {
 
-class CertVerifier;
-class ChannelIDService;
-class HostResolver;
-class HttpAuthHandlerFactory;
 class HttpNetworkSession;
 class HttpResponseInfo;
-class HttpServerProperties;
 class IOBuffer;
 class NetLog;
-class NetworkDelegate;
-class ProxyService;
-class SSLConfigService;
-class TransportSecurityState;
 class ViewCacheHelper;
 struct HttpRequestInfo;
 

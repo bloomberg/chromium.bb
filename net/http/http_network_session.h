@@ -55,7 +55,6 @@ class ProxyDelegate;
 class ProxyService;
 class QuicClock;
 class QuicCryptoClientStreamFactory;
-class QuicServerInfoFactory;
 class SocketPerformanceWatcherFactory;
 class SOCKSClientSocketPool;
 class SSLClientSocketPool;

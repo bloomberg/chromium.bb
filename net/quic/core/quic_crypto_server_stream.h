@@ -24,7 +24,6 @@ class CachedNetworkParameters;
 class CryptoHandshakeMessage;
 class QuicCryptoServerConfig;
 class QuicCryptoServerStreamBase;
-class QuicServerSessionBase;
 
 namespace test {
 class CryptoTestUtils;

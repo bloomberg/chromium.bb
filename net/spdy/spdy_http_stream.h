@@ -21,7 +21,6 @@
 
 namespace net {
 
-class DrainableIOBuffer;
 struct HttpRequestInfo;
 class HttpResponseInfo;
 class IOBuffer;

@@ -27,12 +27,9 @@
 
 namespace net {
 
-class QuicBlockedWriterInterface;
 class QuicConfig;
 class QuicConnection;
 class QuicCryptoServerConfig;
-class ReliableQuicStream;
-
 
 namespace test {
 class QuicSimpleServerSessionPeer;

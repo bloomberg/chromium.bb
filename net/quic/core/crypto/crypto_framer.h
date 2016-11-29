@@ -21,7 +21,6 @@ namespace net {
 
 class CryptoFramer;
 class QuicData;
-class QuicDataReader;
 class QuicDataWriter;
 
 class NET_EXPORT_PRIVATE CryptoFramerVisitorInterface {

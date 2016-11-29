@@ -26,12 +26,6 @@ namespace net {
 const int kNumPacketsPerReadMmsgCall = 16;
 #endif
 
-namespace test {
-class QuicServerPeer;
-}  // namespace test
-
-class QuicDispatcher;
-
 class QuicPacketReader {
  public:
   QuicPacketReader();

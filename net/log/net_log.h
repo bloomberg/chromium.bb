@@ -26,7 +26,6 @@
 #include "net/log/net_log_source_type.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }
 
