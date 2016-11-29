@@ -6,6 +6,7 @@
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
+#include "base/metrics/histogram_macros.h"
 #include "base/numerics/safe_math.h"
 #include "base/run_loop.h"
 #include "media/base/video_frame.h"
@@ -68,6 +69,17 @@ ArcGpuVideoDecodeAccelerator::~ArcGpuVideoDecodeAccelerator() {
 }
 
 ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::Initialize(
+    const Config& config,
+    ArcVideoAccelerator::Client* client) {
+  auto result = InitializeTask(config, client);
+  // Report initialization status to UMA.
+  UMA_HISTOGRAM_ENUMERATION(
+      "Media.ArcGpuVideoDecodeAccelerator.InitializeResult", result,
+      RESULT_MAX);
+  return result;
+}
+
+ArcVideoAccelerator::Result ArcGpuVideoDecodeAccelerator::InitializeTask(
     const Config& config,
     ArcVideoAccelerator::Client* client) {
   DVLOG(5) << "Initialize(device=" << config.device_type

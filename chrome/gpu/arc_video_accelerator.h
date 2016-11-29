@@ -56,12 +56,16 @@ struct VideoFormat {
 class ArcVideoAccelerator {
  public:
   enum Result {
+    // Note: this enum is used for UMA reporting. The existing values should not
+    // be rearranged, reused or removed and any additions should include updates
+    // to UMA reporting and histograms.xml.
     SUCCESS = 0,
     ILLEGAL_STATE = 1,
     INVALID_ARGUMENT = 2,
     UNREADABLE_INPUT = 3,
     PLATFORM_FAILURE = 4,
     INSUFFICIENT_RESOURCES = 5,
+    RESULT_MAX = 6,
   };
 
   struct Config {

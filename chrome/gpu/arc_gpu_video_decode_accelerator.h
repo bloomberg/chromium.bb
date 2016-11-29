@@ -105,6 +105,11 @@ class ArcGpuVideoDecodeAccelerator
     ~OutputBufferInfo();
   };
 
+  // The helper method to simplify reporting of the status returned to UMA.
+  ArcVideoAccelerator::Result InitializeTask(
+      const Config& config,
+      ArcVideoAccelerator::Client* client);
+
   // Helper function to validate |port| and |index|.
   bool ValidatePortAndIndex(PortType port, uint32_t index) const;
 
