@@ -213,7 +213,7 @@ bool OfflinePageUtils::EqualsIgnoringFragment(const GURL& lhs,
   remove_params.ClearRef();
 
   GURL lhs_stripped = lhs.ReplaceComponents(remove_params);
-  GURL rhs_stripped = lhs.ReplaceComponents(remove_params);
+  GURL rhs_stripped = rhs.ReplaceComponents(remove_params);
 
   return lhs_stripped == rhs_stripped;
 }

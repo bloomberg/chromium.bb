@@ -129,6 +129,7 @@ TEST_F(PreviewsInfoBarTabHelperUnitTest, CreateOfflineInfoBar) {
 
   SimulateCommit();
   offline_pages::OfflinePageItem item;
+  item.url = GURL(kTestUrl);
   offline_pages::OfflinePageHeader header;
   offline_pages::OfflinePageTabHelper::FromWebContents(web_contents())
       ->SetOfflinePage(item, header, true);
