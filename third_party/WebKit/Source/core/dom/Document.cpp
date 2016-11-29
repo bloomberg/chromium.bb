@@ -242,11 +242,13 @@
 #include "platform/weborigin/OriginAccessEntry.h"
 #include "platform/weborigin/SchemeRegistry.h"
 #include "platform/weborigin/SecurityOrigin.h"
+#include "public/platform/InterfaceProvider.h"
 #include "public/platform/Platform.h"
 #include "public/platform/WebAddressSpace.h"
 #include "public/platform/WebFrameScheduler.h"
 #include "public/platform/WebPrerenderingSupport.h"
 #include "public/platform/WebScheduler.h"
+#include "public/platform/modules/sensitive_input_visibility/sensitive_input_visibility_service.mojom-blink.h"
 #include "wtf/AutoReset.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/DateMath.h"
@@ -4332,6 +4334,32 @@ const OriginAccessEntry& Document::accessEntryFromURL() {
   return *m_accessEntryFromURL;
 }
 
+void Document::sendSensitiveInputVisibility() {
+  if (m_sensitiveInputVisibilityTask.isActive())
+    return;
+
+  m_sensitiveInputVisibilityTask =
+      TaskRunnerHelper::get(TaskType::Internal, this)
+          ->postCancellableTask(
+              BLINK_FROM_HERE,
+              WTF::bind(&Document::sendSensitiveInputVisibilityInternal,
+                        wrapWeakPersistent(this)));
+}
+
+void Document::sendSensitiveInputVisibilityInternal() {
+  if (!frame())
+    return;
+
+  mojom::blink::SensitiveInputVisibilityServicePtr sensitiveInputServicePtr;
+  frame()->interfaceProvider()->getInterface(
+      mojo::GetProxy(&sensitiveInputServicePtr));
+  if (m_passwordCount > 0) {
+    sensitiveInputServicePtr->PasswordFieldVisibleInInsecureContext();
+    return;
+  }
+  sensitiveInputServicePtr->AllPasswordFieldsInInsecureContextInvisible();
+}
+
 void Document::registerEventFactory(
     std::unique_ptr<EventFactoryBase> eventFactory) {
   DCHECK(!eventFactories().contains(eventFactory.get()));
@@ -6430,15 +6458,26 @@ PropertyRegistry* Document::propertyRegistry() {
 
 void Document::incrementPasswordCount() {
   ++m_passwordCount;
+  if (isSecureContext() || m_passwordCount != 1) {
+    // The browser process only cares about passwords on pages where the
+    // top-level URL is not secure. Secure contexts must have a top-level
+    // URL that is secure, so there is no need to send notifications for
+    // password fields in secure contexts.
+    //
+    // Also, only send a message on the first visible password field; the
+    // browser process doesn't care about the presence of additional
+    // password fields beyond that.
+    return;
+  }
+  sendSensitiveInputVisibility();
 }
 
 void Document::decrementPasswordCount() {
   DCHECK_GT(m_passwordCount, 0u);
   --m_passwordCount;
-}
-
-unsigned Document::passwordCount() const {
-  return m_passwordCount;
+  if (isSecureContext() || m_passwordCount > 0)
+    return;
+  sendSensitiveInputVisibility();
 }
 
 DEFINE_TRACE(Document) {
