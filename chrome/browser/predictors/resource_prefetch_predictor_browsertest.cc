@@ -21,6 +21,8 @@
 
 namespace predictors {
 
+namespace {
+
 static const char kImagePath[] = "/predictors/image.png";
 static const char kStylePath[] = "/predictors/style.css";
 static const char kScriptPath[] = "/predictors/script.js";
@@ -61,6 +63,27 @@ class InitializationObserver : public TestObserver {
   DISALLOW_COPY_AND_ASSIGN(InitializationObserver);
 };
 
+using PageRequestSummary = ResourcePrefetchPredictor::PageRequestSummary;
+using URLRequestSummary = ResourcePrefetchPredictor::URLRequestSummary;
+
+std::vector<URLRequestSummary> GetUniqueSubresources(
+    const PageRequestSummary& summary) {
+  std::vector<URLRequestSummary> subresources(summary.subresource_requests);
+  std::stable_sort(subresources.begin(), subresources.end(),
+                   [](const URLRequestSummary& x, const URLRequestSummary& y) {
+                     return x.resource_url < y.resource_url;
+                   });
+  subresources.erase(
+      std::unique(subresources.begin(), subresources.end(),
+                  [](const URLRequestSummary& x, const URLRequestSummary& y) {
+                    return x.resource_url == y.resource_url;
+                  }),
+      subresources.end());
+  return subresources;
+}
+
+}  // namespace
+
 // Helper class to track and allow waiting for ResourcePrefetchPredictor events.
 // These events are also used to verify that ResourcePrefetchPredictor works as
 // expected.
@@ -82,9 +105,12 @@ class ResourcePrefetchPredictorTestObserver : public TestObserver {
     EXPECT_EQ(url_visit_count, url_visit_count_);
     EXPECT_EQ(summary.main_frame_url, summary_.main_frame_url);
     EXPECT_EQ(summary.initial_url, summary_.initial_url);
-    EXPECT_THAT(
-        summary.subresource_requests,
-        testing::UnorderedElementsAreArray(summary_.subresource_requests));
+    // Duplicate resources can be observed in a single navigation but
+    // ResourcePrefetchPredictor only cares about the first occurrence of each.
+    std::vector<ResourcePrefetchPredictor::URLRequestSummary> subresources =
+        GetUniqueSubresources(summary);
+    EXPECT_THAT(subresources, testing::UnorderedElementsAreArray(
+                                  summary_.subresource_requests));
     run_loop_.Quit();
   }
 
