@@ -3488,15 +3488,6 @@ FloatingObject* LayoutBlockFlow::insertFloatingObject(LayoutBox& floatBox) {
   // Create the special object entry & append it to the list
 
   std::unique_ptr<FloatingObject> newObj = FloatingObject::create(&floatBox);
-
-  // TODO(mstensho): Avoid laying out before positioning the object, as that's
-  // bad for pagination.
-  floatBox.layoutIfNeeded();
-
-  setLogicalWidthForFloat(*newObj, logicalWidthForChild(floatBox) +
-                                       marginStartForChild(floatBox) +
-                                       marginEndForChild(floatBox));
-
   return m_floatingObjects->add(std::move(newObj));
 }
 
@@ -3630,38 +3621,81 @@ LayoutUnit LayoutBlockFlow::positionAndLayoutFloat(
     }
   }
 
+  if (child.needsLayout()) {
+    if (isPaginated) {
+      // Before we can lay out the float, we need to estimate a position for
+      // it. In order to do that, we first need to know its block start margin.
+      child.computeAndSetBlockDirectionMargins(this);
+      LayoutUnit marginBefore = marginBeforeForChild(child);
+
+      // We have found the highest possible position for the float, so we'll
+      // lay out right there. Later on, we may be pushed further down by
+      // adjacent floats which we don't fit beside, or pushed by fragmentation
+      // if we need to break before the top margin edge of the float.
+      setLogicalTopForChild(child, logicalTopMarginEdge + marginBefore);
+      child.layout();
+
+      // May need to push the float to the next fragmentainer before attempting
+      // to place it.
+      logicalTopMarginEdge =
+          adjustFloatLogicalTopForPagination(child, logicalTopMarginEdge);
+    } else {
+      child.layout();
+    }
+  }
+
+  LayoutUnit marginStart = marginStartForChild(child);
+  LayoutUnit marginEnd = marginEndForChild(child);
+  setLogicalWidthForFloat(
+      floatingObject, logicalWidthForChild(child) + marginStart + marginEnd);
+
+  // We have determined the logical width of the float. This is enough
+  // information to fit it among other floats according to float positioning
+  // rules. Note that logical *height* doesn't really matter yet (until we're
+  // going to place subsequent floats or other objects that are affected by
+  // floats), since no float may be positioned above the outer logical top edge
+  // of any other earlier float in the block formatting context.
   LayoutUnit marginBefore = marginBeforeForChild(child);
   LayoutUnit marginAfter = marginAfterForChild(child);
   LayoutPoint floatLogicalLocation =
       computeLogicalLocationForFloat(floatingObject, logicalTopMarginEdge);
   logicalTopMarginEdge = floatLogicalLocation.y();
-
   setLogicalTopForChild(child, logicalTopMarginEdge + marginBefore);
 
   SubtreeLayoutScope layoutScope(child);
-  if (!child.needsLayout())
-    markChildForPaginationRelayoutIfNeeded(child, layoutScope);
 
+  // A new position may mean that we need to insert, move or remove breaks
+  // inside the float. We may also need to lay out if we just ceased to be
+  // fragmented, in order to remove pagination struts inside the child.
+  markChildForPaginationRelayoutIfNeeded(child, layoutScope);
   child.layoutIfNeeded();
 
   if (isPaginated) {
+    // We may have to insert a break before the float.
     LayoutUnit newLogicalTopMarginEdge =
         adjustFloatLogicalTopForPagination(child, logicalTopMarginEdge);
     if (logicalTopMarginEdge != newLogicalTopMarginEdge) {
+      // We had already found a location for the float, but a soft
+      // fragmentainer break then made us push it further down. This may affect
+      // the inline position of the float (since we may no longer be beside the
+      // same floats anymore). Block position will remain unaffected, though.
       floatLogicalLocation = computeLogicalLocationForFloat(
           floatingObject, newLogicalTopMarginEdge);
-      logicalTopMarginEdge = floatLogicalLocation.y();
+      DCHECK_EQ(floatLogicalLocation.y(), newLogicalTopMarginEdge);
+      logicalTopMarginEdge = newLogicalTopMarginEdge;
+
       setLogicalTopForChild(child, logicalTopMarginEdge + marginBefore);
 
+      // Pushing the child to the next fragmentainer most likely means that we
+      // need to recalculate pagination struts inside it.
       if (child.isLayoutBlock())
         child.setChildNeedsLayout(MarkOnlyThis);
       child.layoutIfNeeded();
     }
   }
 
-  LayoutUnit childLogicalLeftMargin = style()->isLeftToRightDirection()
-                                          ? marginStartForChild(child)
-                                          : marginEndForChild(child);
+  LayoutUnit childLogicalLeftMargin =
+      style()->isLeftToRightDirection() ? marginStart : marginEnd;
   setLogicalLeftForChild(child,
                          floatLogicalLocation.x() + childLogicalLeftMargin);
   setLogicalLeftForFloat(floatingObject, floatLogicalLocation.x());

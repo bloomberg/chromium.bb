@@ -488,21 +488,27 @@ inline void BreakingContext::handleOutOfFlowPositioned(
 inline void BreakingContext::handleFloat() {
   LineLayoutBox floatBox(m_current.getLineLayoutItem());
   FloatingObject* floatingObject = m_block.insertFloatingObject(floatBox);
-  // Check if it fits in the current line; if it does, position it now,
-  // otherwise, position it after moving to next line (in newLine() func).
-  // FIXME: Bug 110372: Properly position multiple stacked floats with
-  // non-rectangular shape outside.
-  if (m_floatsFitOnLine &&
-      m_width.fitsOnLine(
-          m_block.logicalWidthForFloat(*floatingObject).toFloat(),
-          ExcludeWhitespace)) {
-    m_block.placeNewFloats(m_block.logicalHeight(), &m_width);
-    if (m_lineBreak.getLineLayoutItem() == m_current.getLineLayoutItem()) {
-      ASSERT(!m_lineBreak.offset());
-      m_lineBreak.increment();
+
+  if (m_floatsFitOnLine) {
+    // We need to calculate the logical width of the float before we can tell
+    // whether it's going to fit on the line.
+    m_block.positionAndLayoutFloat(*floatingObject, m_block.logicalHeight());
+
+    // Check if it fits in the current line; if it does, place it now,
+    // otherwise, place it after moving to next line (in newLine() func).
+    // FIXME: Bug 110372: Properly position multiple stacked floats with
+    // non-rectangular shape outside.
+    if (m_width.fitsOnLine(
+            m_block.logicalWidthForFloat(*floatingObject).toFloat(),
+            ExcludeWhitespace)) {
+      m_block.placeNewFloats(m_block.logicalHeight(), &m_width);
+      if (m_lineBreak.getLineLayoutItem() == m_current.getLineLayoutItem()) {
+        DCHECK(!m_lineBreak.offset());
+        m_lineBreak.increment();
+      }
+    } else {
+      m_floatsFitOnLine = false;
     }
-  } else {
-    m_floatsFitOnLine = false;
   }
   // Update prior line break context characters, using U+FFFD (OBJECT
   // REPLACEMENT CHARACTER) for floating element.

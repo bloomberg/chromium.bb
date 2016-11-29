@@ -122,6 +122,11 @@ class LineLayoutBlockFlow : public LineLayoutBox {
     return toBlockFlow()->placeNewFloats(logicalTopMarginEdge, width);
   }
 
+  void positionAndLayoutFloat(FloatingObject& floatingObject,
+                              LayoutUnit logicalTopMarginEdge) {
+    toBlockFlow()->positionAndLayoutFloat(floatingObject, logicalTopMarginEdge);
+  }
+
   LayoutUnit nextFloatLogicalBottomBelow(LayoutUnit logicalHeight) const {
     return toBlockFlow()->nextFloatLogicalBottomBelow(logicalHeight);
   }
