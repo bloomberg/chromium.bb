@@ -24,7 +24,13 @@ const char* const kLegacyCSSHistogramName =
 
 namespace blink {
 
-TEST(UseCounterTest, RecordingFeatures) {
+// Failing on Android: crbug.com/667913
+#if OS(ANDROID)
+#define MAYBE_RecordingFeatures DISABLED_RecordingFeatures
+#else
+#define MAYBE_RecordingFeatures RecordingFeatures
+#endif
+TEST(UseCounterTest, MAYBE_RecordingFeatures) {
   UseCounter useCounter;
   HistogramTester histogramTester;
 
