@@ -61,14 +61,14 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 
 void WindowTreeHost::InitHost() {
   InitCompositor();
-  UpdateRootWindowSize(GetBounds().size());
+  UpdateRootWindowSize(GetBoundsInPixels().size());
   Env::GetInstance()->NotifyHostInitialized(this);
   window()->Show();
 }
 
 void WindowTreeHost::InitCompositor() {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
-                               GetBounds().size());
+                               GetBoundsInPixels().size());
   compositor_->SetRootLayer(window()->layer());
   compositor_->SetDisplayColorSpace(
       GetICCProfileForCurrentDisplay().GetColorSpace());
@@ -96,7 +96,7 @@ gfx::Transform WindowTreeHost::GetRootTransform() const {
 
 void WindowTreeHost::SetRootTransform(const gfx::Transform& transform) {
   window()->SetTransform(transform);
-  UpdateRootWindowSize(GetBounds().size());
+  UpdateRootWindowSize(GetBoundsInPixels().size());
 }
 
 gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
@@ -112,7 +112,7 @@ void WindowTreeHost::SetOutputSurfacePadding(const gfx::Insets& padding) {
     return;
 
   output_surface_padding_ = padding;
-  OnHostResized(GetBounds().size());
+  OnHostResized(GetBoundsInPixels().size());
 }
 
 void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
@@ -285,7 +285,7 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
                                adjusted_size);
 
-  gfx::Size layer_size = GetBounds().size();
+  gfx::Size layer_size = GetBoundsInPixels().size();
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
   UpdateRootWindowSize(layer_size);

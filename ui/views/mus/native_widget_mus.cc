@@ -471,7 +471,7 @@ class NativeWidgetMus::MusWindowObserver : public ui::WindowObserver {
                               const gfx::Rect& old_bounds,
                               const gfx::Rect& new_bounds) override {
     DCHECK_EQ(window, mus_window());
-    window_tree_host()->SetBounds(new_bounds);
+    window_tree_host()->SetBoundsInPixels(new_bounds);
   }
   void OnWindowFocusChanged(ui::Window* gained_focus,
                             ui::Window* lost_focus) override {
@@ -1027,14 +1027,14 @@ void NativeWidgetMus::SetBounds(const gfx::Rect& bounds_in_screen) {
   size.SetToMax(min_size);
   window_->SetBounds(gfx::Rect(origin, size));
   // Observer on |window_tree_host_| expected to synchronously update bounds.
-  DCHECK(window_->bounds() == window_tree_host_->GetBounds());
+  DCHECK(window_->bounds() == window_tree_host_->GetBoundsInPixels());
 }
 
 void NativeWidgetMus::SetSize(const gfx::Size& size) {
   if (!window_tree_host_)
     return;
 
-  gfx::Rect bounds = window_tree_host_->GetBounds();
+  gfx::Rect bounds = window_tree_host_->GetBoundsInPixels();
   SetBounds(gfx::Rect(bounds.origin(), size));
 }
 

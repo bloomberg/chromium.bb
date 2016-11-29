@@ -110,8 +110,8 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   gfx::AcceleratedWidget GetAcceleratedWidget() override;
   void ShowImpl() override;
   void HideImpl() override;
-  gfx::Rect GetBounds() const override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  gfx::Rect GetBoundsInPixels() const override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Point GetLocationOnNativeScreen() const override;
   void SetCapture() override;
   void ReleaseCapture() override;

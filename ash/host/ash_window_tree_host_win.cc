@@ -46,13 +46,13 @@ void AshWindowTreeHostWin::ToggleFullScreen() {
                SWP_NOZORDER | SWP_NOACTIVATE | SWP_FRAMECHANGED);
 }
 
-void AshWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
+void AshWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
   if (fullscreen_) {
     saved_window_rect_.right = saved_window_rect_.left + bounds.width();
     saved_window_rect_.bottom = saved_window_rect_.top + bounds.height();
     return;
   }
-  AshWindowTreeHostPlatform::SetBounds(bounds);
+  AshWindowTreeHostPlatform::SetBoundsInPixels(bounds);
 }
 
 }  // namespace ash

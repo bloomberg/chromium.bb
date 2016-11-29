@@ -19,7 +19,7 @@ class AshWindowTreeHostWin : public AshWindowTreeHostPlatform {
   void ToggleFullScreen() override;
 
   // WindowTreeHost:
-  void SetBounds(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
 
   bool fullscreen_;
   RECT saved_window_rect_;

@@ -472,10 +472,10 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   WindowTreeHostMus window_tree_host(window_tree_client_impl());
   Window* top_level = window_tree_host.window();
   const gfx::Rect bounds(0, 0, 100, 100);
-  window_tree_host.SetBounds(bounds);
+  window_tree_host.SetBoundsInPixels(bounds);
   window_tree_host.Show();
   EXPECT_EQ(bounds, top_level->bounds());
-  EXPECT_EQ(bounds, window_tree_host.GetBounds());
+  EXPECT_EQ(bounds, window_tree_host.GetBoundsInPixels());
   Window child(&window_delegate);
   child.Init(ui::LAYER_NOT_DRAWN);
   top_level->AddChild(&child);
@@ -769,7 +769,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsPropertiesFromData) {
   // TODO: check display_id.
   EXPECT_EQ(display_id, window_tree_host.display_id());
   EXPECT_EQ(gfx::Rect(0, 0, 3, 4), top_level->bounds());
-  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), top_level->GetHost()->GetBounds());
+  EXPECT_EQ(gfx::Rect(1, 2, 3, 4), top_level->GetHost()->GetBoundsInPixels());
 }
 
 TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
@@ -785,7 +785,7 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   top_level->Hide();
 
   // Change bounds to 5, 6, 7, 8.
-  window_tree_host.SetBounds(gfx::Rect(5, 6, 7, 8));
+  window_tree_host.SetBoundsInPixels(gfx::Rect(5, 6, 7, 8));
   EXPECT_EQ(gfx::Rect(0, 0, 7, 8), window_tree_host.window()->bounds());
 
   const uint8_t explicitly_set_test_property1_value = 2;
@@ -815,7 +815,7 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   // The only value that should take effect is the property for 'yy' as it was
   // not in flight.
   EXPECT_FALSE(top_level->TargetVisibility());
-  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), window_tree_host.GetBounds());
+  EXPECT_EQ(gfx::Rect(5, 6, 7, 8), window_tree_host.GetBoundsInPixels());
   EXPECT_EQ(gfx::Rect(0, 0, 7, 8), top_level->bounds());
   EXPECT_EQ(explicitly_set_test_property1_value,
             top_level->GetProperty(kTestPropertyKey1));
@@ -835,7 +835,7 @@ TEST_F(WindowTreeClientClientTest, NewWindowGetsAllChangesInFlight) {
   EXPECT_EQ(gfx::Rect(bounds_from_server.size()), top_level->bounds());
   // But the bounds of the WindowTreeHost is display relative.
   EXPECT_EQ(bounds_from_server,
-            top_level->GetRootWindow()->GetHost()->GetBounds());
+            top_level->GetRootWindow()->GetHost()->GetBoundsInPixels());
   window_tree()->AckAllChangesOfType(WindowTreeChangeType::PROPERTY, false);
   EXPECT_EQ(server_test_property1_value,
             top_level->GetProperty(kTestPropertyKey1));

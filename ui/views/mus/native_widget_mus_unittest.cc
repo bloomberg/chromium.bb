@@ -530,7 +530,8 @@ TEST_F(NativeWidgetMusTest, SetMusWindowBounds) {
   EXPECT_NE(start_bounds, end_bounds);
 
   EXPECT_EQ(start_bounds, mus_window->bounds());
-  EXPECT_EQ(start_bounds, native_widget->window_tree_host()->GetBounds());
+  EXPECT_EQ(start_bounds,
+            native_widget->window_tree_host()->GetBoundsInPixels());
 
   mus_window->SetBounds(end_bounds);
 
@@ -538,7 +539,7 @@ TEST_F(NativeWidgetMusTest, SetMusWindowBounds) {
 
   // Main check for this test: Setting |mus_window| bounds while bypassing
   // |native_widget| must update window_tree_host bounds.
-  EXPECT_EQ(end_bounds, native_widget->window_tree_host()->GetBounds());
+  EXPECT_EQ(end_bounds, native_widget->window_tree_host()->GetBoundsInPixels());
 }
 
 // Verifies visibility of the aura::Window and ui::Window are updated when the

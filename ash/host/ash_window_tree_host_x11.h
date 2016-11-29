@@ -36,7 +36,7 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   void PrepareForShutdown() override;
 
   // aura::WindowTreehost:
-  void SetBounds(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
   gfx::Transform GetRootTransform() const override;
   void SetRootTransform(const gfx::Transform& transform) override;
   gfx::Transform GetInverseRootTransform() const override;

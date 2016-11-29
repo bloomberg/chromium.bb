@@ -90,11 +90,11 @@ void WindowTreeHostPlatform::HideImpl() {
   window_->Hide();
 }
 
-gfx::Rect WindowTreeHostPlatform::GetBounds() const {
+gfx::Rect WindowTreeHostPlatform::GetBoundsInPixels() const {
   return window_ ? window_->GetBounds() : gfx::Rect();
 }
 
-void WindowTreeHostPlatform::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostPlatform::SetBoundsInPixels(const gfx::Rect& bounds) {
   window_->SetBounds(bounds);
 }
 

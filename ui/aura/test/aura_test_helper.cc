@@ -122,7 +122,7 @@ void AuraTestHelper::SetUp(ui::ContextFactory* context_factory) {
 
   root_window()->Show();
   // Ensure width != height so tests won't confuse them.
-  host()->SetBounds(gfx::Rect(host_size));
+  host()->SetBoundsInPixels(gfx::Rect(host_size));
 
   if (mode_ == Mode::MUS_CREATE_WINDOW_TREE_CLIENT)
     window_tree()->AckAllChanges();

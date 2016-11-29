@@ -799,7 +799,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
 
   gfx::Rect monitor_bounds(monitor_info.rcMonitor);
   gfx::Rect window_bounds = widget.GetWindowBoundsInScreen();
-  gfx::Rect client_area_bounds = host->GetBounds();
+  gfx::Rect client_area_bounds = host->GetBoundsInPixels();
 
   EXPECT_EQ(window_bounds, monitor_bounds);
   EXPECT_EQ(monitor_bounds, client_area_bounds);
@@ -809,7 +809,7 @@ TEST_F(WidgetTestInteractive, FullscreenMaximizedWindowBounds) {
   EXPECT_FALSE(widget.IsFullscreen());
   EXPECT_TRUE(widget.IsMaximized());
 
-  client_area_bounds = host->GetBounds();
+  client_area_bounds = host->GetBoundsInPixels();
   EXPECT_TRUE(monitor_bounds.Contains(client_area_bounds));
   EXPECT_NE(monitor_bounds, client_area_bounds);
 

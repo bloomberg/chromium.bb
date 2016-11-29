@@ -504,10 +504,10 @@ void DesktopWindowTreeHostWin::HideImpl() {
     message_handler_->Hide();
 }
 
-// GetBounds and SetBounds work in pixel coordinates, whereas other get/set
-// methods work in DIP.
+// GetBoundsInPixels and SetBoundsInPixels work in pixel coordinates, whereas
+// other get/set methods work in DIP.
 
-gfx::Rect DesktopWindowTreeHostWin::GetBounds() const {
+gfx::Rect DesktopWindowTreeHostWin::GetBoundsInPixels() const {
   gfx::Rect bounds(message_handler_->GetClientAreaBounds());
   // If the window bounds were expanded we need to return the original bounds
   // To achieve this we do the reverse of the expansion, i.e. add the
@@ -523,11 +523,11 @@ gfx::Rect DesktopWindowTreeHostWin::GetBounds() const {
   return without_expansion;
 }
 
-void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
+void DesktopWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
   // If the window bounds have to be expanded we need to subtract the
   // window_expansion_top_left_delta_ from the origin and add the
   // window_expansion_bottom_right_delta_ to the width and height
-  gfx::Size old_content_size = GetBounds().size();
+  gfx::Size old_content_size = GetBoundsInPixels().size();
 
   gfx::Rect expanded(
       bounds.x() - window_expansion_top_left_delta_.x(),
@@ -546,7 +546,7 @@ void DesktopWindowTreeHostWin::SetBounds(const gfx::Rect& bounds) {
 }
 
 gfx::Point DesktopWindowTreeHostWin::GetLocationOnNativeScreen() const {
-  return GetBounds().origin();
+  return GetBoundsInPixels().origin();
 }
 
 void DesktopWindowTreeHostWin::SetCapture() {
@@ -583,10 +583,10 @@ void DesktopWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
 void DesktopWindowTreeHostWin::SetHostTransitionOffsets(
     const gfx::Vector2d& top_left_delta,
     const gfx::Vector2d& bottom_right_delta) {
-  gfx::Rect bounds_without_expansion = GetBounds();
+  gfx::Rect bounds_without_expansion = GetBoundsInPixels();
   window_expansion_top_left_delta_ = top_left_delta;
   window_expansion_bottom_right_delta_ = bottom_right_delta;
-  SetBounds(bounds_without_expansion);
+  SetBoundsInPixels(bounds_without_expansion);
 }
 
 void DesktopWindowTreeHostWin::OnWindowHidingAnimationCompleted() {
@@ -793,7 +793,7 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 
 void DesktopWindowTreeHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
-  OnHostMoved(GetBounds().origin());
+  OnHostMoved(GetBoundsInPixels().origin());
 }
 
 void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {

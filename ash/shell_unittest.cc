@@ -375,8 +375,9 @@ TEST_F(ShellTest, ManagedWindowModeBasics) {
   EXPECT_TRUE(shelf_widget->IsVisible());
   // Shelf is at bottom-left of screen.
   EXPECT_EQ(0, shelf_widget->GetWindowBoundsInScreen().x());
-  EXPECT_EQ(Shell::GetPrimaryRootWindow()->GetHost()->GetBounds().height(),
-            shelf_widget->GetWindowBoundsInScreen().bottom());
+  EXPECT_EQ(
+      Shell::GetPrimaryRootWindow()->GetHost()->GetBoundsInPixels().height(),
+      shelf_widget->GetWindowBoundsInScreen().bottom());
   // We have a wallpaper but not a bare layer.
   // TODO (antrim): enable once we find out why it fails component build.
   //  WallpaperWidgetController* wallpaper =

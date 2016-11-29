@@ -110,7 +110,8 @@ bool UnifiedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
       FindMirroringWindowTreeHostFromScreenPoint(point_in_unified_host);
   if (!host)
     return false;
-  point_in_native.Offset(host->GetBounds().x(), host->GetBounds().y());
+  point_in_native.Offset(host->GetBoundsInPixels().x(),
+                         host->GetBoundsInPixels().y());
 #endif
 
   return WarpMouseCursorInNativeCoords(point_in_native, point_in_unified_host,

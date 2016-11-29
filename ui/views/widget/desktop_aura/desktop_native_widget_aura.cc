@@ -685,7 +685,8 @@ void DesktopNativeWidgetAura::SetBounds(const gfx::Rect& bounds) {
   aura::Window* root = host_->window();
   display::Screen* screen = display::Screen::GetScreen();
   gfx::Rect bounds_in_pixels = screen->DIPToScreenRectInWindow(root, bounds);
-  desktop_window_tree_host_->AsWindowTreeHost()->SetBounds(bounds_in_pixels);
+  desktop_window_tree_host_->AsWindowTreeHost()->SetBoundsInPixels(
+      bounds_in_pixels);
 }
 
 void DesktopNativeWidgetAura::SetSize(const gfx::Size& size) {

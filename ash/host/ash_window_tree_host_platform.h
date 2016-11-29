@@ -38,7 +38,7 @@ class ASH_EXPORT AshWindowTreeHostPlatform
   gfx::Transform GetInverseRootTransform() const override;
   void UpdateRootWindowSize(const gfx::Size& host_size) override;
   void OnCursorVisibilityChangedNative(bool show) override;
-  void SetBounds(const gfx::Rect& bounds) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds) override;
   void DispatchEvent(ui::Event* event) override;
 
   // ui::internal::InputMethodDelegate:

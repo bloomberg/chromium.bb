@@ -237,7 +237,7 @@ void MirrorWindowController::UpdateWindow(
       aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
       GetRootWindowSettings(host->window())->display_id = display_info.id();
       ash_host->SetRootWindowTransformer(std::move(transformer));
-      host->SetBounds(display_info.bounds_in_native());
+      host->SetBoundsInPixels(display_info.bounds_in_native());
     }
   }
 
@@ -293,9 +293,9 @@ void MirrorWindowController::OnHostResized(const aura::WindowTreeHost* host) {
   for (auto& pair : mirroring_host_info_map_) {
     MirroringHostInfo* info = pair.second;
     if (info->ash_host->AsWindowTreeHost() == host) {
-      if (info->mirror_window_host_size == host->GetBounds().size())
+      if (info->mirror_window_host_size == host->GetBoundsInPixels().size())
         return;
-      info->mirror_window_host_size = host->GetBounds().size();
+      info->mirror_window_host_size = host->GetBoundsInPixels().size();
       reflector_->OnMirroringCompositorResized();
       // No need to update the transformer as new transformer is already set
       // in UpdateWindow.

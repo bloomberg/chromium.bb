@@ -131,7 +131,7 @@ class TouchSelectionControllerClientAuraTest : public ContentBrowserTest {
     GURL test_url(embedded_test_server()->GetURL(url));
     NavigateToURL(shell(), test_url);
     aura::Window* content = shell()->web_contents()->GetContentNativeView();
-    content->GetHost()->SetBounds(gfx::Rect(800, 600));
+    content->GetHost()->SetBoundsInPixels(gfx::Rect(800, 600));
   }
 
   bool GetPointInsideText(gfx::PointF* point) {

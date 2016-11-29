@@ -655,7 +655,8 @@ void WindowTreeHostManager::OnDisplayAdded(const display::Display& display) {
     const display::ManagedDisplayInfo& display_info =
         GetDisplayManager()->GetDisplayInfo(display.id());
     AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
-    ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
+    ash_host->AsWindowTreeHost()->SetBoundsInPixels(
+        display_info.bounds_in_native());
     SetDisplayPropertiesOnHost(ash_host, display);
   } else {
     if (primary_display_id == display::kInvalidDisplayId)
@@ -737,7 +738,8 @@ void WindowTreeHostManager::OnDisplayMetricsChanged(
       GetDisplayManager()->GetDisplayInfo(display.id());
   DCHECK(!display_info.bounds_in_native().IsEmpty());
   AshWindowTreeHost* ash_host = window_tree_hosts_[display.id()];
-  ash_host->AsWindowTreeHost()->SetBounds(display_info.bounds_in_native());
+  ash_host->AsWindowTreeHost()->SetBoundsInPixels(
+      display_info.bounds_in_native());
   SetDisplayPropertiesOnHost(ash_host, display);
 }
 
@@ -747,7 +749,8 @@ void WindowTreeHostManager::OnHostResized(const aura::WindowTreeHost* host) {
           const_cast<aura::Window*>(host->window()));
 
   display::DisplayManager* display_manager = GetDisplayManager();
-  if (display_manager->UpdateDisplayBounds(display.id(), host->GetBounds())) {
+  if (display_manager->UpdateDisplayBounds(display.id(),
+                                           host->GetBoundsInPixels())) {
     mirror_window_controller_->UpdateWindow();
     cursor_window_controller_->UpdateContainer();
   }

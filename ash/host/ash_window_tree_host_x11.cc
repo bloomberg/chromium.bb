@@ -121,8 +121,8 @@ void AshWindowTreeHostX11::PrepareForShutdown() {
   }
 }
 
-void AshWindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
-  WindowTreeHostX11::SetBounds(bounds);
+void AshWindowTreeHostX11::SetBoundsInPixels(const gfx::Rect& bounds) {
+  WindowTreeHostX11::SetBoundsInPixels(bounds);
   if (pointer_barriers_) {
     UnConfineCursor();
     ConfineCursorToRootWindow();

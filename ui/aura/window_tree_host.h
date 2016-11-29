@@ -173,8 +173,8 @@ class AURA_EXPORT WindowTreeHost : public ui::internal::InputMethodDelegate,
   void Hide();
 
   // Gets/Sets the size of the WindowTreeHost (in pixels).
-  virtual gfx::Rect GetBounds() const = 0;
-  virtual void SetBounds(const gfx::Rect& bounds_in_pixels) = 0;
+  virtual gfx::Rect GetBoundsInPixels() const = 0;
+  virtual void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) = 0;
 
   // Sets the OS capture to the root window.
   virtual void SetCapture() = 0;

@@ -87,7 +87,7 @@ std::unique_ptr<MouseWarpController> CreateMouseWarpController(
 gfx::Rect GetNativeEdgeBounds(AshWindowTreeHost* ash_host,
                               const gfx::Rect& bounds_in_screen) {
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
-  gfx::Rect native_bounds = host->GetBounds();
+  gfx::Rect native_bounds = host->GetBoundsInPixels();
   native_bounds.Inset(ash_host->GetHostInsets());
   gfx::Point start_in_native = bounds_in_screen.origin();
   gfx::Point end_in_native = bounds_in_screen.bottom_right();
@@ -126,7 +126,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
   host->ConvertPointToNativeScreen(&point_in_native);
 
   // now fit the point inside the native bounds.
-  gfx::Rect native_bounds = host->GetBounds();
+  gfx::Rect native_bounds = host->GetBoundsInPixels();
   gfx::Point native_origin = native_bounds.origin();
   native_bounds.Inset(ash_host->GetHostInsets());
   // Shrink further so that the mouse doesn't warp on the

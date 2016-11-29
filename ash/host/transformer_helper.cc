@@ -87,7 +87,7 @@ void TransformerHelper::SetRootWindowTransformer(
   // If the layer is not animating, then we need to update the root window
   // size immediately.
   if (!window->layer()->GetAnimator()->is_animating())
-    host->UpdateRootWindowSize(host->GetBounds().size());
+    host->UpdateRootWindowSize(host->GetBoundsInPixels().size());
 }
 
 gfx::Transform TransformerHelper::GetTransform() const {

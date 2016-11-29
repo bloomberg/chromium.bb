@@ -28,7 +28,8 @@ void X11DesktopWindowMoveClient::OnMouseMovement(const gfx::Point& screen_point,
                                                  int flags,
                                                  base::TimeTicks event_time) {
   gfx::Point system_loc = screen_point - window_offset_;
-  host_->SetBounds(gfx::Rect(system_loc, host_->GetBounds().size()));
+  host_->SetBoundsInPixels(
+      gfx::Rect(system_loc, host_->GetBoundsInPixels().size()));
 }
 
 void X11DesktopWindowMoveClient::OnMouseReleased() {

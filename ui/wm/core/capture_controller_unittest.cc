@@ -61,7 +61,7 @@ class CaptureControllerTest : public aura::test::AuraTestBase {
     second_host_.reset(aura::WindowTreeHost::Create(gfx::Rect(0, 0, 800, 600)));
     second_host_->InitHost();
     second_host_->window()->Show();
-    second_host_->SetBounds(gfx::Rect(800, 600));
+    second_host_->SetBoundsInPixels(gfx::Rect(800, 600));
     second_capture_controller_.reset(
         new ScopedCaptureClient(second_host_->window()));
   }

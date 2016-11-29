@@ -1474,7 +1474,7 @@ void WindowTreeClient::OnWindowTreeHostBoundsWillChange(
     WindowTreeHostMus* window_tree_host,
     const gfx::Rect& bounds) {
   ScheduleInFlightBoundsChange(WindowMus::Get(window_tree_host->window()),
-                               window_tree_host->GetBounds(), bounds);
+                               window_tree_host->GetBoundsInPixels(), bounds);
 }
 
 void WindowTreeClient::OnWindowTreeHostClientAreaWillChange(

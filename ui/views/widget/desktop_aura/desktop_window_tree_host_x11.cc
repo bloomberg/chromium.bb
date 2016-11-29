@@ -665,7 +665,7 @@ void DesktopWindowTreeHostX11::CenterWindow(const gfx::Size& size) {
   // able to close or move it.
   window_bounds_in_pixels.AdjustToFit(parent_bounds_in_pixels);
 
-  SetBounds(window_bounds_in_pixels);
+  SetBoundsInPixels(window_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostX11::GetWindowPlacement(
@@ -850,7 +850,7 @@ void DesktopWindowTreeHostX11::Maximize() {
     gfx::Rect adjusted_bounds_in_pixels(bounds_in_pixels_.origin(),
                                         AdjustSize(bounds_in_pixels_.size()));
     if (adjusted_bounds_in_pixels != bounds_in_pixels_)
-      SetBounds(adjusted_bounds_in_pixels);
+      SetBoundsInPixels(adjusted_bounds_in_pixels);
   }
 
   // Some WMs do not respect maximization hints on unmapped windows, so we
@@ -1204,11 +1204,11 @@ void DesktopWindowTreeHostX11::HideImpl() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
-gfx::Rect DesktopWindowTreeHostX11::GetBounds() const {
+gfx::Rect DesktopWindowTreeHostX11::GetBoundsInPixels() const {
   return bounds_in_pixels_;
 }
 
-void DesktopWindowTreeHostX11::SetBounds(
+void DesktopWindowTreeHostX11::SetBoundsInPixels(
     const gfx::Rect& requested_bounds_in_pixel) {
   gfx::Rect bounds_in_pixels(requested_bounds_in_pixel.origin(),
                              AdjustSize(requested_bounds_in_pixel.size()));
@@ -1579,7 +1579,7 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // calling OnHostResized() with an empty size. In particular,
   // HWNDMessageHandler::GetClientAreaBounds() returns an empty size when the
   // window is minimized. On Linux, returning empty size in GetBounds() or
-  // SetBounds() does not work.
+  // SetBoundsInPixels() does not work.
   // We also propagate the minimization to the compositor, to makes sure that we
   // don't draw any 'blank' frames that could be noticed in applications such as
   // window manager previews, which show content even when a window is

@@ -39,7 +39,7 @@ void AshWindowTreeHost::TranslateLocatedEvent(ui::LocatedEvent* event) {
   aura::Window* root_window = wth->window();
   aura::client::ScreenPositionClient* screen_position_client =
       aura::client::GetScreenPositionClient(root_window);
-  gfx::Rect local(wth->GetBounds().size());
+  gfx::Rect local(wth->GetBoundsInPixels().size());
   local.Inset(GetHostInsets());
 
   if (screen_position_client && !local.Contains(event->location())) {

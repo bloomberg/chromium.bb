@@ -396,11 +396,11 @@ void WindowTreeHostX11::HideImpl() {
   }
 }
 
-gfx::Rect WindowTreeHostX11::GetBounds() const {
+gfx::Rect WindowTreeHostX11::GetBoundsInPixels() const {
   return bounds_;
 }
 
-void WindowTreeHostX11::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostX11::SetBoundsInPixels(const gfx::Rect& bounds) {
   // Even if the host window's size doesn't change, aura's root window
   // size, which is in DIP, changes when the scale changes.
   float current_scale = compositor()->device_scale_factor();

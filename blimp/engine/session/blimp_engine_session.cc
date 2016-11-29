@@ -305,7 +305,8 @@ void BlimpEngineSession::Initialize() {
 
   window_tree_host_->GetInputMethod()->AddObserver(this);
 
-  window_tree_host_->SetBounds(gfx::Rect(screen_->GetPrimaryDisplay().size()));
+  window_tree_host_->SetBoundsInPixels(
+      gfx::Rect(screen_->GetPrimaryDisplay().size()));
 
   RegisterFeatures();
 
@@ -393,7 +394,7 @@ void BlimpEngineSession::HandleResize(float device_pixel_ratio,
                                       const gfx::Size& size) {
   DVLOG(1) << "Resize to " << size.ToString() << ", " << device_pixel_ratio;
   screen_->UpdateDisplayScaleAndSize(device_pixel_ratio, size);
-  window_tree_host_->SetBounds(gfx::Rect(size));
+  window_tree_host_->SetBoundsInPixels(gfx::Rect(size));
   if (tab_) {
     tab_->Resize(device_pixel_ratio,
                  screen_->GetPrimaryDisplay().bounds().size());

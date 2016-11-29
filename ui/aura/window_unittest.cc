@@ -1610,7 +1610,7 @@ TEST_P(WindowTest, IgnoreEventsTest) {
 
 // Tests transformation on the root window.
 TEST_P(WindowTest, Transform) {
-  gfx::Size size = host()->GetBounds().size();
+  gfx::Size size = host()->GetBoundsInPixels().size();
   EXPECT_EQ(gfx::Rect(size), display::Screen::GetScreen()
                                  ->GetDisplayNearestPoint(gfx::Point())
                                  .bounds());
@@ -1632,11 +1632,11 @@ TEST_P(WindowTest, Transform) {
                 .ToString());
 
   // Host size shouldn't change.
-  EXPECT_EQ(size.ToString(), host()->GetBounds().size().ToString());
+  EXPECT_EQ(size.ToString(), host()->GetBoundsInPixels().size().ToString());
 }
 
 TEST_P(WindowTest, TransformGesture) {
-  gfx::Size size = host()->GetBounds().size();
+  gfx::Size size = host()->GetBoundsInPixels().size();
 
   std::unique_ptr<GestureTrackPositionDelegate> delegate(
       new GestureTrackPositionDelegate);

@@ -39,7 +39,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
   root_window->GetHost()->ConvertPointFromHost(&point_in_root);
 
 #if defined(USE_X11) || defined(USE_OZONE)
-  gfx::Rect host_bounds(root_window->GetHost()->GetBounds().size());
+  gfx::Rect host_bounds(root_window->GetHost()->GetBoundsInPixels().size());
   if (!host_bounds.Contains(*point)) {
     // This conversion is necessary to deal with X's passive input
     // grab while dragging window. For example, if we have two
@@ -67,7 +67,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
 
     for (size_t i = 0; i < root_windows.size(); ++i) {
       aura::WindowTreeHost* host = root_windows[i]->GetHost();
-      const gfx::Rect native_bounds = host->GetBounds();
+      const gfx::Rect native_bounds = host->GetBoundsInPixels();
       if (native_bounds.Contains(location_in_native)) {
         *target_root = root_windows[i];
         *point = location_in_native;

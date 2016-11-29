@@ -108,7 +108,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // WindowTreeHostMus:
   void ShowImpl() override;
   void HideImpl() override;
-  void SetBounds(const gfx::Rect& bounds_in_pixels) override;
+  void SetBoundsInPixels(const gfx::Rect& bounds_in_pixels) override;
 
   // aura::EnvObserver:
   void OnWindowInitialized(aura::Window* window) override;

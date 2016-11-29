@@ -92,7 +92,7 @@ class ShellWindowDelegateView : public views::WidgetDelegateView,
     // Resizing a widget on chromeos doesn't automatically resize the root, need
     // to explicitly do that.
 #if defined(OS_CHROMEOS)
-    GetWidget()->GetNativeWindow()->GetHost()->SetBounds(bounds);
+    GetWidget()->GetNativeWindow()->GetHost()->SetBoundsInPixels(bounds);
 #endif
   }
 

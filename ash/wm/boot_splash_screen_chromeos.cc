@@ -42,9 +42,10 @@ class BootSplashScreen::CopyHostContentLayerDelegate
 // to create a zero-copy texture (when possible):
 // https://codereview.chromium.org/10543125
 #if defined(USE_X11)
-    ui::PaintRecorder recorder(context, host_->GetBounds().size());
-    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(), host_->GetBounds(),
-                         gfx::Point(), recorder.canvas());
+    ui::PaintRecorder recorder(context, host_->GetBoundsInPixels().size());
+    ui::CopyAreaToCanvas(host_->GetAcceleratedWidget(),
+                         host_->GetBoundsInPixels(), gfx::Point(),
+                         recorder.canvas());
 #else
     // TODO(spang): Figure out what to do here.
     NOTIMPLEMENTED();

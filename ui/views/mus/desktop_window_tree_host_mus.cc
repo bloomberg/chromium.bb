@@ -173,7 +173,7 @@ float DesktopWindowTreeHostMus::GetScaleFactor() const {
 
 void DesktopWindowTreeHostMus::SetBoundsInDips(
     const gfx::Rect& bounds_in_dips) {
-  SetBounds(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dips));
+  SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dips));
 }
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
@@ -281,7 +281,7 @@ bool DesktopWindowTreeHostMus::IsVisible() const {
 void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
   // Use GetBounds() as the origin of window() is always at 0, 0.
   gfx::Rect screen_bounds =
-      gfx::ConvertRectToDIP(GetScaleFactor(), GetBounds());
+      gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
   screen_bounds.set_size(size);
   SetBoundsInDips(screen_bounds);
 }
@@ -324,7 +324,7 @@ void DesktopWindowTreeHostMus::GetWindowPlacement(
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetWindowBoundsInScreen() const {
-  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBounds());
+  return gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
 }
 
 gfx::Rect DesktopWindowTreeHostMus::GetClientAreaBoundsInScreen() const {
@@ -569,9 +569,10 @@ void DesktopWindowTreeHostMus::HideImpl() {
   native_widget_delegate_->OnNativeWidgetVisibilityChanged(false);
 }
 
-void DesktopWindowTreeHostMus::SetBounds(const gfx::Rect& bounds_in_pixels) {
+void DesktopWindowTreeHostMus::SetBoundsInPixels(
+    const gfx::Rect& bounds_in_pixels) {
   gfx::Rect final_bounds_in_pixels = bounds_in_pixels;
-  if (GetBounds().size() != bounds_in_pixels.size()) {
+  if (GetBoundsInPixels().size() != bounds_in_pixels.size()) {
     gfx::Size size = bounds_in_pixels.size();
     size.SetToMax(gfx::ConvertSizeToPixel(
         GetScaleFactor(), native_widget_delegate_->GetMinimumSize()));
@@ -581,7 +582,7 @@ void DesktopWindowTreeHostMus::SetBounds(const gfx::Rect& bounds_in_pixels) {
       size.SetToMin(max_size_in_pixels);
     final_bounds_in_pixels.set_size(size);
   }
-  WindowTreeHostMus::SetBounds(final_bounds_in_pixels);
+  WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels);
 }
 
 void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}

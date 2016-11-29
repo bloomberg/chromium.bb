@@ -83,7 +83,7 @@ void ShellPlatformDataAura::ShowWindow() {
 }
 
 void ShellPlatformDataAura::ResizeWindow(const gfx::Size& size) {
-  host_->SetBounds(gfx::Rect(size));
+  host_->SetBoundsInPixels(gfx::Rect(size));
 }
 
 }  // namespace content

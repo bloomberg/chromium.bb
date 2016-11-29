@@ -99,7 +99,7 @@ WindowTreeHostMus::~WindowTreeHostMus() {
 
 void WindowTreeHostMus::SetBoundsFromServer(const gfx::Rect& bounds) {
   base::AutoReset<bool> resetter(&in_set_bounds_from_server_, true);
-  SetBounds(bounds);
+  SetBoundsInPixels(bounds);
 }
 
 void WindowTreeHostMus::SetClientArea(const gfx::Insets& insets) {
@@ -130,10 +130,10 @@ void WindowTreeHostMus::HideImpl() {
   window()->Hide();
 }
 
-void WindowTreeHostMus::SetBounds(const gfx::Rect& bounds) {
+void WindowTreeHostMus::SetBoundsInPixels(const gfx::Rect& bounds) {
   if (!in_set_bounds_from_server_)
     delegate_->OnWindowTreeHostBoundsWillChange(this, bounds);
-  WindowTreeHostPlatform::SetBounds(bounds);
+  WindowTreeHostPlatform::SetBoundsInPixels(bounds);
 }
 
 void WindowTreeHostMus::DispatchEvent(ui::Event* event) {
