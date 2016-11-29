@@ -1562,10 +1562,6 @@ drm_fb_get_from_view(struct drm_output_state *state, struct weston_view *ev)
 	struct linux_dmabuf_buffer *dmabuf;
 	struct drm_fb *fb;
 
-	/* Don't import buffers which span multiple outputs. */
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
-
 	if (ev->alpha != 1.0f)
 		return NULL;
 
@@ -3135,10 +3131,6 @@ drm_output_prepare_cursor_view(struct drm_output_state *output_state,
 	if (plane->state_cur->output && plane->state_cur->output != output)
 		return NULL;
 
-	/* Don't import buffers which span multiple outputs. */
-	if (ev->output_mask != (1u << output->base.id))
-		return NULL;
-
 	/* We use GBM to import SHM buffers. */
 	if (b->gbm == NULL)
 		return NULL;
@@ -3296,6 +3288,16 @@ drm_output_propose_state(struct weston_output *output_base,
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
 		struct weston_plane *next_plane = NULL;
 
+		/* If this view doesn't touch our output at all, there's no
+		 * reason to do anything with it. */
+		if (!(ev->output_mask & (1u << output->base.id)))
+			continue;
+
+		/* We only assign planes to views which are exclusively present
+		 * on our output. */
+		if (ev->output_mask != (1u << output->base.id))
+			next_plane = primary;
+
 		/* Since we process views from top to bottom, we know that if
 		 * the view intersects the calculated renderer region, it must
 		 * be part of, or occluded by, it, and cannot go on a plane. */
@@ -3344,6 +3346,11 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 
 	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
 		struct drm_plane *target_plane = NULL;
+
+		/* If this view doesn't touch our output at all, there's no
+		 * reason to do anything with it. */
+		if (!(ev->output_mask & (1u << output->base.id)))
+			continue;
 
 		/* Test whether this buffer can ever go into a plane:
 		 * non-shm, or small enough to be a cursor.
