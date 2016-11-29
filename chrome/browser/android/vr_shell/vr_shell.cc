@@ -496,9 +496,16 @@ void VrShell::SendEventsToTarget(VrInputManager* input_target,
 
   if (gesture->type == WebInputEvent::GestureScrollEnd) {
     CHECK(gesture_list.size() == 2);
-    std::unique_ptr<WebGestureEvent> fling_gesture =
+    std::unique_ptr<WebGestureEvent> followup_gesture =
         std::move(gesture_list.back());
-    content_input_manager_->ProcessUpdatedGesture(*fling_gesture.get());
+    if (followup_gesture->type == WebInputEvent::GestureTapDown) {
+      followup_gesture->data.tapDown.width = pixel_x;
+      followup_gesture->data.tapDown.height = pixel_y;
+      if (input_target != nullptr)
+        input_target->ProcessUpdatedGesture(*followup_gesture.get());
+    } else if (followup_gesture->type == WebInputEvent::GestureFlingStart) {
+      content_input_manager_->ProcessUpdatedGesture(*followup_gesture.get());
+    }
   }
 
   WebInputEvent::Type original_type = gesture->type;
