@@ -5,6 +5,7 @@
 #include "components/handoff/handoff_manager.h"
 
 #include "base/logging.h"
+#include "base/mac/objc_property_releaser.h"
 #include "base/mac/scoped_nsobject.h"
 #include "net/base/mac/url_conversions.h"
 
@@ -32,7 +33,12 @@
 
 @end
 
-@implementation HandoffManager
+@implementation HandoffManager {
+  base::mac::ObjCPropertyReleaser _propertyReleaser_HandoffManager;
+  GURL _activeURL;
+  NSUserActivity* _userActivity;
+  handoff::Origin _origin;
+}
 
 @synthesize userActivity = _userActivity;
 
