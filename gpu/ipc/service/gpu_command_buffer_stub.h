@@ -41,20 +41,14 @@ namespace gpu {
 struct Mailbox;
 struct SyncToken;
 class SyncPointClient;
-class SyncPointManager;
-namespace gles2 {
-class MailboxManager;
-}
 }
 
 struct GPUCreateCommandBufferConfig;
 struct GpuCommandBufferMsg_CreateImage_Params;
-struct GpuCommandBufferMsg_SwapBuffersCompleted_Params;
 
 namespace gpu {
 
 class GpuChannel;
-class GpuWatchdogThread;
 struct WaitForCommandState;
 
 class GPU_EXPORT GpuCommandBufferStub

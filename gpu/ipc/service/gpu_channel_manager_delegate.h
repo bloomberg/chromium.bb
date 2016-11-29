@@ -10,13 +10,7 @@
 
 class GURL;
 
-namespace IPC {
-struct ChannelHandle;
-}
-
 namespace gpu {
-
-struct GPUMemoryUmaStats;
 
 class GpuChannelManagerDelegate {
  public:

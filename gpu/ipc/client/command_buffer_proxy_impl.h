@@ -45,10 +45,6 @@ namespace base {
 class SharedMemory;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace gpu {
 struct GpuProcessHostedCALayerTreeParamsMac;
 struct Mailbox;

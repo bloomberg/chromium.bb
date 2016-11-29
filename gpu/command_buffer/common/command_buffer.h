@@ -13,10 +13,6 @@
 #include "gpu/command_buffer/common/constants.h"
 #include "gpu/gpu_export.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace gpu {
 
 // Common interface for CommandBuffer implementations.

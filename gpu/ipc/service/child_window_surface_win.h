@@ -13,7 +13,6 @@
 
 namespace gpu {
 
-class GpuChannelManager;
 struct SharedData;
 
 class ChildWindowSurfaceWin : public gl::NativeViewGLSurfaceEGL {

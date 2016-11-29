@@ -33,7 +33,6 @@ class GLES2Decoder;
 class GLStreamTextureImage;
 struct ContextState;
 struct DecoderFramebufferState;
-class Display;
 class ErrorState;
 class FeatureInfo;
 class FramebufferManager;

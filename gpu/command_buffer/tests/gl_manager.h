@@ -43,13 +43,10 @@ class TransferBuffer;
 
 namespace gles2 {
 
-class ContextGroup;
 class MailboxManager;
 class GLES2Decoder;
 class GLES2CmdHelper;
 class GLES2Implementation;
-class ImageManager;
-class ShareGroup;
 
 };
 

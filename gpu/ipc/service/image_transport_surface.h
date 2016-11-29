@@ -16,7 +16,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
-class GpuChannelManager;
 class ImageTransportSurfaceDelegate;
 
 // The GPU process is agnostic as to how it displays results. On some platforms

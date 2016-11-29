@@ -26,7 +26,6 @@ class GLSurface;
 }
 
 namespace gpu {
-class AsyncPixelTransferDelegate;
 
 namespace gles2 {
 

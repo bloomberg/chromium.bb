@@ -24,10 +24,6 @@ namespace base {
 class Lock;
 }
 
-namespace gfx {
-class GpuMemoryBuffer;
-}
-
 namespace gpu {
 class GpuControlClient;
 struct SyncToken;

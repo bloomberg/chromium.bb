@@ -20,8 +20,6 @@
 
 namespace gpu {
 
-struct GpuPreferences;
-
 namespace gles2 {
 
 // Program cache that stores binaries completely in-memory

@@ -27,7 +27,6 @@ class FramebufferCompletenessCache;
 class FramebufferManager;
 class Renderbuffer;
 class RenderbufferManager;
-class Texture;
 class TextureRef;
 class TextureManager;
 

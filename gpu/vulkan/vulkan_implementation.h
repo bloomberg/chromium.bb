@@ -10,8 +10,6 @@
 #include "gpu/vulkan/vulkan_export.h"
 namespace gpu {
 
-class VulkanCommandPool;
-
 VULKAN_EXPORT bool InitializeVulkan();
 VULKAN_EXPORT bool VulkanSupported();
 

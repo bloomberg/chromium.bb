@@ -25,7 +25,6 @@
 
 namespace gpu {
 class TransferBuffer;
-class TransferBufferManagerInterface;
 
 namespace gles2 {
 class GLES2CmdHelper;

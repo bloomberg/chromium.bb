@@ -14,7 +14,6 @@
 #include "ui/gl/gl_context.h"
 
 namespace gl {
-class GPUPreference;
 class GPUTimingClient;
 class GLShareGroup;
 class GLSurface;

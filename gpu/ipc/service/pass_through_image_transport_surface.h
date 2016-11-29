@@ -18,7 +18,6 @@
 #include "ui/gl/gl_surface.h"
 
 namespace gpu {
-class GpuChannelManager;
 
 // An implementation of ImageTransportSurface that implements GLSurface through
 // GLSurfaceAdapter, thereby forwarding GLSurface methods through to it.

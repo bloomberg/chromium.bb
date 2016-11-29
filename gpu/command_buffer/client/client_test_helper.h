@@ -24,8 +24,6 @@
 
 namespace gpu {
 
-class CommandBufferHelper;
-
 class MockCommandBufferBase : public CommandBufferServiceBase {
  public:
   static const int32_t kTransferBufferBaseId = 0x123;

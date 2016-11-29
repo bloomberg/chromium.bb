@@ -13,10 +13,6 @@
 #include "gpu/command_buffer/service/indexed_buffer_binding_host.h"
 #include "gpu/gpu_export.h"
 
-namespace gfx {
-struct GLVersionInfo;
-};
-
 namespace gpu {
 namespace gles2 {
 

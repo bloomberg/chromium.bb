@@ -26,10 +26,6 @@
 #include "ui/gl/gl_mock.h"
 #include "ui/gl/gl_surface_stub.h"
 
-namespace base {
-class CommandLine;
-}
-
 namespace gpu {
 namespace gles2 {
 

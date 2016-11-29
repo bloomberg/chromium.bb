@@ -26,7 +26,6 @@ class Buffer;
 class ErrorState;
 class ErrorStateClient;
 class FeatureInfo;
-class Framebuffer;
 class IndexedBufferBindingHost;
 class Logger;
 class Program;

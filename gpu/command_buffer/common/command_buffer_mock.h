@@ -12,10 +12,6 @@
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace base {
-class SharedMemory;
-}
-
 namespace gpu {
 
 // An NPObject that implements a shared memory command buffer and a synchronous

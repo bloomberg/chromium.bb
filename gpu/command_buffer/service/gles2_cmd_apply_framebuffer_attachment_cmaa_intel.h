@@ -8,10 +8,6 @@
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/gpu_export.h"
 
-namespace {
-class CMAAEffect;
-}
-
 namespace gpu {
 namespace gles2 {
 class CopyTextureCHROMIUMResourceManager;

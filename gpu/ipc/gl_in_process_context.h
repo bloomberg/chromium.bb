@@ -17,16 +17,6 @@
 #include "ui/gl/gl_surface.h"
 #include "ui/gl/gpu_preference.h"
 
-namespace gfx {
-class Size;
-}
-
-#if defined(OS_ANDROID)
-namespace gl {
-class SurfaceTexture;
-}
-#endif
-
 namespace gpu {
 class InProcessCommandBuffer;
 struct SharedMemoryLimits;
