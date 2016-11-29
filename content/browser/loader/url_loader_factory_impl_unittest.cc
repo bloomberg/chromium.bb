@@ -33,7 +33,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/common/content_paths.h"
-#include "content/public/common/process_type.h"
 #include "content/public/test/test_browser_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/public/c/system/data_pipe.h"
@@ -52,6 +51,7 @@
 #include "net/url_request/url_request_filter.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "url/gurl.h"
+#include "url/origin.h"
 
 namespace content {
 
@@ -83,23 +83,19 @@ class URLLoaderFactoryImplTest : public ::testing::TestWithParam<size_t> {
         browser_context_(new TestBrowserContext()),
         resource_message_filter_(new ResourceMessageFilter(
             kChildId,
-            // If browser side navigation is enabled then
-            // ResourceDispatcherHostImpl prevents main frame URL requests from
-            // the renderer. Ensure that these checks don't trip us up by
-            // setting the process type in ResourceMessageFilter as
-            // PROCESS_TYPE_UNKNOWN.
-            PROCESS_TYPE_UNKNOWN,
             nullptr,
             nullptr,
             nullptr,
             nullptr,
             base::Bind(&URLLoaderFactoryImplTest::GetContexts,
                        base::Unretained(this)))) {
+    resource_message_filter_->InitializeForTest();
     MojoAsyncResourceHandler::SetAllocationSizeForTesting(GetParam());
     rdh_.SetLoaderDelegate(&loader_deleate_);
 
-    URLLoaderFactoryImpl::Create(resource_message_filter_,
-                                 mojo::GetProxy(&factory_));
+    URLLoaderFactoryImpl::Create(
+        resource_message_filter_->requester_info_for_test(),
+        mojo::GetProxy(&factory_));
 
     // Calling this function creates a request context.
     browser_context_->GetResourceContext()->GetRequestContext();
@@ -149,7 +145,12 @@ TEST_P(URLLoaderFactoryImplTest, GetResponse) {
   // Assume the file contents is small enough to be stored in the data pipe.
   request.url = net::URLRequestMockHTTPJob::GetMockUrl("hello.html");
   request.method = "GET";
-  request.is_main_frame = true;
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,
@@ -218,6 +219,12 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse) {
   request.url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       net::URLRequestFailedJob::START, net::ERR_TIMED_OUT);
   request.method = "GET";
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
@@ -241,7 +248,12 @@ TEST_P(URLLoaderFactoryImplTest, GetFailedResponse2) {
   request.url = net::URLRequestFailedJob::GetMockHttpUrlWithFailurePhase(
       net::URLRequestFailedJob::READ_ASYNC, net::ERR_TIMED_OUT);
   request.method = "GET";
-  request.is_main_frame = true;
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
@@ -262,6 +274,12 @@ TEST_P(URLLoaderFactoryImplTest, InvalidURL) {
   TestURLLoaderClient client;
   request.url = GURL();
   request.method = "GET";
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   ASSERT_FALSE(request.url.is_valid());
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
@@ -283,6 +301,12 @@ TEST_P(URLLoaderFactoryImplTest, ShouldNotRequestURL) {
   TestURLLoaderClient client;
   request.url = GURL("http://localhost/");
   request.method = "GET";
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), 2, 1, request,
       client.CreateRemoteAssociatedPtrInfo(factory_.associated_group()));
@@ -438,6 +462,12 @@ TEST_P(URLLoaderFactoryImplTest, CancelFromRenderer) {
   request.url = net::URLRequestFailedJob::GetMockHttpUrl(net::ERR_IO_PENDING);
   request.method = "GET";
   request.is_main_frame = true;
+  // |resource_type| can't be a frame type. It is because when PlzNavigate is
+  // enabled, the url scheme of frame type requests from the renderer process
+  // must be blob scheme.
+  request.resource_type = RESOURCE_TYPE_XHR;
+  // Need to set |request_initiator| for non main frame type request.
+  request.request_initiator = url::Origin();
   factory_->CreateLoaderAndStart(
       mojo::GetProxy(&loader, factory_.associated_group()), kRoutingId,
       kRequestId, request,

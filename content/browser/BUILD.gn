@@ -798,6 +798,8 @@ source_set("browser") {
     "loader/resource_message_filter.h",
     "loader/resource_request_info_impl.cc",
     "loader/resource_request_info_impl.h",
+    "loader/resource_requester_info.cc",
+    "loader/resource_requester_info.h",
     "loader/resource_scheduler.cc",
     "loader/resource_scheduler.h",
     "loader/resource_scheduler_filter.cc",

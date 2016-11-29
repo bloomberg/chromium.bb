@@ -9,7 +9,6 @@
 
 #include "base/logging.h"
 #include "content/browser/loader/async_revalidation_driver.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/browser/loader/resource_scheduler.h"
 #include "content/common/resource_messages.h"
@@ -52,13 +51,14 @@ AsyncRevalidationManager::~AsyncRevalidationManager() {
 }
 
 void AsyncRevalidationManager::BeginAsyncRevalidation(
-    const net::URLRequest& for_request,
+    net::URLRequest* for_request,
     ResourceScheduler* scheduler) {
-  DCHECK_EQ(for_request.url_chain().size(), 1u);
-  const ResourceRequestInfoImpl* info =
-      ResourceRequestInfoImpl::ForRequest(&for_request);
+  DCHECK_EQ(for_request->url_chain().size(), 1u);
+  ResourceRequestInfoImpl* info =
+      ResourceRequestInfoImpl::ForRequest(for_request);
   DCHECK(info);
-  if (!info->filter()) {
+  DCHECK(info->requester_info()->IsRenderer());
+  if (!info->requester_info()->filter()) {
     // The child has gone away and we can no longer get ResourceContext and
     // URLRequestContext to perform async revalidation.
     // This can happen in the following cases, ordered from bad to not-so-bad
@@ -89,12 +89,12 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
 
   // The embedder of //content needs to ensure that the URLRequestContext object
   // remains valid until after the ResourceContext object is destroyed.
-  info->filter()->GetContexts(info->GetResourceType(), &resource_context,
-                              &request_context);
+  info->requester_info()->GetContexts(info->GetResourceType(),
+                                      &resource_context, &request_context);
 
   AsyncRevalidationKey async_revalidation_key(
       resource_context, request_context->http_transaction_factory()->GetCache(),
-      for_request.url());
+      for_request->url());
   std::pair<AsyncRevalidationMap::iterator, bool> insert_result =
       in_progress_.insert(AsyncRevalidationMap::value_type(
           async_revalidation_key, std::unique_ptr<AsyncRevalidationDriver>()));
@@ -108,17 +108,18 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
   headers.AddHeadersFromString(info->original_headers());
 
   // Construct the request.
-  std::unique_ptr<net::URLRequest> new_request = request_context->CreateRequest(
-      for_request.url(), net::IDLE, nullptr);
+  std::unique_ptr<net::URLRequest> new_request =
+      request_context->CreateRequest(for_request->url(), net::IDLE, nullptr);
 
-  new_request->set_method(for_request.method());
+  new_request->set_method(for_request->method());
   new_request->set_first_party_for_cookies(
-      for_request.first_party_for_cookies());
-  new_request->set_initiator(for_request.initiator());
-  new_request->set_first_party_url_policy(for_request.first_party_url_policy());
+      for_request->first_party_for_cookies());
+  new_request->set_initiator(for_request->initiator());
+  new_request->set_first_party_url_policy(
+      for_request->first_party_url_policy());
 
-  new_request->SetReferrer(for_request.referrer());
-  new_request->set_referrer_policy(for_request.referrer_policy());
+  new_request->SetReferrer(for_request->referrer());
+  new_request->set_referrer_policy(for_request->referrer_policy());
 
   new_request->SetExtraRequestHeaders(headers);
 
@@ -127,7 +128,7 @@ void AsyncRevalidationManager::BeginAsyncRevalidation(
   // Also remove things which shouldn't have been there to begin with,
   // and unrecognised flags.
   int load_flags =
-      for_request.load_flags() &
+      for_request->load_flags() &
       (net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_BYPASS_PROXY |
        net::LOAD_VERIFY_EV_CERT | net::LOAD_DO_NOT_SEND_COOKIES |
        net::LOAD_DO_NOT_SEND_AUTH_DATA | net::LOAD_MAYBE_USER_GESTURE |

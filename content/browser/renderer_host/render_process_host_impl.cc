@@ -1048,8 +1048,8 @@ void RenderProcessHostImpl::CreateMessageFilters() {
       ChromeBlobStorageContext::GetFor(browser_context);
 
   resource_message_filter_ = new ResourceMessageFilter(
-      GetID(), PROCESS_TYPE_RENDERER,
-      storage_partition_impl_->GetAppCacheService(), blob_storage_context.get(),
+      GetID(), storage_partition_impl_->GetAppCacheService(),
+      blob_storage_context.get(),
       storage_partition_impl_->GetFileSystemContext(),
       storage_partition_impl_->GetServiceWorkerContext(),
       get_contexts_callback);

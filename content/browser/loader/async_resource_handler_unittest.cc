@@ -33,7 +33,6 @@
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_request_info.h"
 #include "content/public/common/content_features.h"
-#include "content/public/common/process_type.h"
 #include "content/public/common/resource_type.h"
 #include "content/public/test/mock_resource_context.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -96,7 +95,6 @@ class RecordingResourceMessageFilter : public ResourceMessageFilter {
                                  net::URLRequestContext* request_context)
       : ResourceMessageFilter(
             0,
-            PROCESS_TYPE_RENDERER,
             nullptr,
             nullptr,
             nullptr,
@@ -105,6 +103,7 @@ class RecordingResourceMessageFilter : public ResourceMessageFilter {
                        base::Unretained(this))),
         resource_context_(resource_context),
         request_context_(request_context) {
+    InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
   }
 
@@ -165,8 +164,7 @@ class AsyncResourceHandlerTest : public ::testing::Test,
     filter_ =
         new RecordingResourceMessageFilter(resource_context_.get(), &context_);
     ResourceRequestInfoImpl* info = new ResourceRequestInfoImpl(
-        PROCESS_TYPE_RENDERER,                 // process_type
-        0,                                     // child_id
+        filter_->requester_info_for_test(),
         0,                                     // route_id
         -1,                                    // frame_tree_node_id
         0,                                     // origin_pid
@@ -187,7 +185,6 @@ class AsyncResourceHandlerTest : public ::testing::Test,
         blink::WebReferrerPolicyDefault,       // referrer_policy
         blink::WebPageVisibilityStateVisible,  // visibility_state
         resource_context_.get(),               // context
-        filter_->GetWeakPtr(),                 // filter
         false,                                 // report_raw_headers
         true,                                  // is_async
         false,                                 // is_using_lofi

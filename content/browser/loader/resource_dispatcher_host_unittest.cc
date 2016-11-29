@@ -102,10 +102,10 @@ void GetResponseHead(const std::vector<IPC::Message>& messages,
   ASSERT_TRUE(IPC::ReadParam(&messages[0], &iter, response_head));
 }
 
-void GenerateIPCMessage(scoped_refptr<ResourceMessageFilter> filter,
+void GenerateIPCMessage(scoped_refptr<ResourceRequesterInfo> requester_info,
                         std::unique_ptr<IPC::Message> message) {
-  ResourceDispatcherHostImpl::Get()->OnMessageReceived(
-      *message, filter.get());
+  ResourceDispatcherHostImpl::Get()->OnMessageReceived(*message,
+                                                       requester_info.get());
 }
 
 // On Windows, ResourceMsg_SetDataBuffer supplies a HANDLE which is not
@@ -253,7 +253,6 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
                                      int process_id)
       : ResourceMessageFilter(
             process_id,
-            PROCESS_TYPE_RENDERER,
             NULL,
             NULL,
             NULL,
@@ -263,6 +262,7 @@ class TestFilterSpecifyingChild : public ResourceMessageFilter {
         resource_context_(resource_context),
         canceled_(false),
         received_after_canceled_(0) {
+    InitializeForTest();
     set_peer_process_for_testing(base::Process::Current());
   }
 
@@ -1003,9 +1003,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
   void CancelRequest(int request_id);
   void RendererCancelRequest(int request_id) {
-    ResourceMessageFilter* old_filter = SetFilter(filter_.get());
-    host_.OnCancelRequest(request_id);
-    SetFilter(old_filter);
+    filter_->OnMessageReceived(ResourceHostMsg_CancelRequest(request_id));
   }
 
   void CompleteStartRequest(int request_id);
@@ -1057,15 +1055,9 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
 
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
-        base::Bind(&GenerateIPCMessage, filter_, base::Passed(&ack)));
-  }
-
-  // Setting filters for testing renderer messages.
-  // Returns the previous filter.
-  ResourceMessageFilter* SetFilter(ResourceMessageFilter* new_filter) {
-    ResourceMessageFilter* old_filter = host_.filter_;
-    host_.filter_ = new_filter;
-    return old_filter;
+        base::Bind(&GenerateIPCMessage, scoped_refptr<ResourceRequesterInfo>(
+                                            filter_->requester_info_for_test()),
+                   base::Passed(&ack)));
   }
 
   void WaitForRequestComplete() {
@@ -1128,6 +1120,16 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
     CheckRequestCompleteErrorCode(msgs[0][0], expected_error_code);
   }
 
+  void OnMessageReceived(const IPC::Message& message,
+                         ResourceMessageFilter* filter) {
+    host_.OnMessageReceived(message, filter->requester_info_for_test());
+  }
+
+  ResourceRequesterInfo* GetResourceRequesterInfo(
+      ResourceMessageFilter* filter) {
+    return filter->requester_info_for_test();
+  }
+
   content::TestBrowserThreadBundle thread_bundle_;
   std::unique_ptr<TestBrowserContext> browser_context_;
   std::unique_ptr<TestURLRequestJobFactory> job_factory_;
@@ -1167,7 +1169,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithRenderFrame(
   ResourceRequest request = CreateResourceRequest("GET", type, url);
   request.render_frame_id = render_frame_id;
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
-  host_.OnMessageReceived(msg, filter_.get());
+  OnMessageReceived(msg, filter_.get());
   KickOffRequest();
 }
 
@@ -1179,7 +1181,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithResourceType(
     ResourceType type) {
   ResourceRequest request = CreateResourceRequest("GET", type, url);
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
-  host_.OnMessageReceived(msg, filter);
+  OnMessageReceived(msg, filter);
   KickOffRequest();
 }
 
@@ -1199,7 +1201,7 @@ void ResourceDispatcherHostTest::
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
   ResourceHostMsg_RequestResource msg(web_contents_->GetRoutingID(), request_id,
                                       request);
-  host_.OnMessageReceived(msg, web_contents_filter_.get());
+  OnMessageReceived(msg, web_contents_filter_.get());
   KickOffRequest();
 }
 
@@ -1221,7 +1223,7 @@ void ResourceDispatcherHostTest::MakeTestRequestWithPriorityAndRenderFrame(
   request.render_frame_id = render_frame_id;
   request.priority = priority;
   ResourceHostMsg_RequestResource msg(render_view_id, request_id, request);
-  host_.OnMessageReceived(msg, filter_.get());
+  OnMessageReceived(msg, filter_.get());
 }
 
 void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
@@ -1407,7 +1409,7 @@ TEST_P(ResourceDispatcherHostTest, TestMany) {
 
   // Finish the redirection
   ResourceHostMsg_FollowRedirect redirect_msg(5);
-  host_.OnMessageReceived(redirect_msg, filter_.get());
+  OnMessageReceived(redirect_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   // flush all the pending requests
@@ -1491,7 +1493,7 @@ TEST_P(ResourceDispatcherHostTest, DownloadToNetworkCache) {
       "GET", RESOURCE_TYPE_IMAGE, net::URLRequestTestJob::test_url_3());
   request_to_cache.download_to_network_cache_only = true;
   ResourceHostMsg_RequestResource msg_to_cache(0, 2, request_to_cache);
-  host_.OnMessageReceived(msg_to_cache, filter_.get());
+  OnMessageReceived(msg_to_cache, filter_.get());
 
   KickOffRequest();
 
@@ -1578,7 +1580,7 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadSuccess) {
   // Successful sync load.
   std::tuple<SyncLoadResult> result;
   ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &std::get<0>(result));
-  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  OnMessageReceived(sync_load_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   const IPC::Message* reply = accum_.GetReply(sync_load_msg);
@@ -1596,7 +1598,7 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadError) {
   // Failued sync load.
   std::tuple<SyncLoadResult> result;
   ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &std::get<0>(result));
-  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  OnMessageReceived(sync_load_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   const IPC::Message* reply = accum_.GetReply(sync_load_msg);
@@ -1615,7 +1617,7 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadCancel) {
   SyncLoadResult result;
   ResourceHostMsg_SyncLoad sync_load_msg(0, 1, request, &result);
 
-  host_.OnMessageReceived(sync_load_msg, filter_.get());
+  OnMessageReceived(sync_load_msg, filter_.get());
   host_.CancelRequestsForProcess(filter_->child_id());
   base::RunLoop().RunUntilIdle();
 
@@ -1634,9 +1636,9 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
       "GET", RESOURCE_TYPE_PING, net::URLRequestTestJob::test_url_3());
 
   ResourceHostMsg_RequestResource msg_prefetch(0, 1, request_prefetch);
-  host_.OnMessageReceived(msg_prefetch, filter_.get());
+  OnMessageReceived(msg_prefetch, filter_.get());
   ResourceHostMsg_RequestResource msg_ping(0, 2, request_ping);
-  host_.OnMessageReceived(msg_ping, filter_.get());
+  OnMessageReceived(msg_ping, filter_.get());
 
   // Remove the filter before processing the requests by simulating channel
   // closure.
@@ -1644,11 +1646,9 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetached) {
       host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 1)));
   ResourceRequestInfoImpl* info_ping = ResourceRequestInfoImpl::ForRequest(
       host_.GetURLRequest(GlobalRequestID(filter_->child_id(), 2)));
-  DCHECK_EQ(filter_.get(), info_prefetch->filter());
-  DCHECK_EQ(filter_.get(), info_ping->filter());
+  DCHECK_EQ(filter_.get(), info_prefetch->requester_info()->filter());
+  DCHECK_EQ(filter_.get(), info_ping->requester_info()->filter());
   filter_->OnChannelClosing();
-  info_prefetch->filter_.reset();
-  info_ping->filter_.reset();
 
   // From the renderer's perspective, the requests were cancelled.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -1684,15 +1684,14 @@ TEST_P(ResourceDispatcherHostTest, DeletedFilterDetachedRedirect) {
       net::URLRequestTestJob::test_url_redirect_to_url_2());
 
   ResourceHostMsg_RequestResource msg(0, 1, request);
-  host_.OnMessageReceived(msg, filter_.get());
+  OnMessageReceived(msg, filter_.get());
 
   // Remove the filter before processing the request by simulating channel
   // closure.
   GlobalRequestID global_request_id(filter_->child_id(), 1);
   ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
       host_.GetURLRequest(global_request_id));
-  info->filter_->OnChannelClosing();
-  info->filter_.reset();
+  info->requester_info()->filter()->OnChannelClosing();
 
   // From the renderer's perspective, the request was cancelled.
   ResourceIPCAccumulator::ClassifiedMessages msgs;
@@ -2605,7 +2604,7 @@ TEST_P(ResourceDispatcherHostTest, IgnoreCancelForDownloads) {
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  host_.OnMessageReceived(msg, filter_.get());
+  OnMessageReceived(msg, filter_.get());
 
   // Since the request had already started processing as a download,
   // the cancellation above should have been ignored and the request
@@ -2681,7 +2680,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
 
     // And now simulate a cancellation coming from the renderer.
     ResourceHostMsg_CancelRequest msg(request_id);
-    host_.OnMessageReceived(msg, filter_.get());
+    OnMessageReceived(msg, filter_.get());
 
     // Since the request had already started processing as a download,
     // the cancellation above should have been ignored and the request
@@ -2758,7 +2757,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
 
   // And now simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  host_.OnMessageReceived(msg, web_contents_filter_.get());
+  OnMessageReceived(msg, web_contents_filter_.get());
 
   // Since the request is marked as being transferred,
   // the cancellation above should have been ignored and the request
@@ -2807,7 +2806,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
               "Content-Type: text/html\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  host_.OnMessageReceived(redirect_msg, filter_.get());
+  OnMessageReceived(redirect_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -2827,7 +2826,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationHtml) {
 
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  OnMessageReceived(transfer_request_msg, second_filter.get());
   base::RunLoop().RunUntilIdle();
 
   // Check generated messages.
@@ -2896,7 +2895,7 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  OnMessageReceived(transfer_request_msg, second_filter.get());
   base::RunLoop().RunUntilIdle();
 
   // Transfer the second request.
@@ -2908,7 +2907,7 @@ TEST_P(ResourceDispatcherHostTest, TransferTwoNavigationsHtml) {
 
   ResourceHostMsg_RequestResource second_transfer_request_msg(
       new_render_view_id, new_second_request_id, second_request);
-  host_.OnMessageReceived(second_transfer_request_msg, second_filter.get());
+  OnMessageReceived(second_transfer_request_msg, second_filter.get());
   base::RunLoop().RunUntilIdle();
 
   // Check generated messages.
@@ -2957,7 +2956,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
               "Content-Type: text/plain\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  host_.OnMessageReceived(redirect_msg, filter_.get());
+  OnMessageReceived(redirect_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -2978,7 +2977,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationText) {
 
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  OnMessageReceived(transfer_request_msg, second_filter.get());
   base::RunLoop().RunUntilIdle();
 
   // Check generated messages.
@@ -3024,7 +3023,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
 
     ResourceHostMsg_RequestResource first_request_msg(
         render_view_id, request_id, first_request);
-    host_.OnMessageReceived(first_request_msg, first_filter.get());
+    OnMessageReceived(first_request_msg, first_filter.get());
     base::RunLoop().RunUntilIdle();
 
     // Now that we're blocked on the redirect, update the response and unblock
@@ -3033,7 +3032,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
                 "Content-Type: text/html\n\n",
                 kResponseBody);
     ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-    host_.OnMessageReceived(redirect_msg, first_filter.get());
+    OnMessageReceived(redirect_msg, first_filter.get());
     base::RunLoop().RunUntilIdle();
 
     // Flush all the pending requests to get the response through the
@@ -3062,7 +3061,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithProcessCrash) {
   child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  OnMessageReceived(transfer_request_msg, second_filter.get());
   base::RunLoop().RunUntilIdle();
 
   // Check generated messages.
@@ -3104,7 +3103,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   SetResponse("HTTP/1.1 302 Found\n"
               "Location: http://other.com/blerg\n\n");
   ResourceHostMsg_FollowRedirect redirect_msg(request_id);
-  host_.OnMessageReceived(redirect_msg, filter_.get());
+  OnMessageReceived(redirect_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   // Now that we're blocked on the second redirect, update the response and
@@ -3116,7 +3115,7 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
               "Content-Type: text/plain\n\n",
               kResponseBody);
   ResourceHostMsg_FollowRedirect redirect_msg2(request_id);
-  host_.OnMessageReceived(redirect_msg2, filter_.get());
+  OnMessageReceived(redirect_msg2, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   // Flush all the pending requests to get the response through the
@@ -3139,16 +3138,16 @@ TEST_P(ResourceDispatcherHostTest, TransferNavigationWithTwoRedirects) {
   child_ids_.insert(second_filter->child_id());
   ResourceHostMsg_RequestResource transfer_request_msg(
       new_render_view_id, new_request_id, request);
-  host_.OnMessageReceived(transfer_request_msg, second_filter.get());
+  OnMessageReceived(transfer_request_msg, second_filter.get());
 
   // Verify that we update the ResourceRequestInfo.
   GlobalRequestID global_request_id(second_filter->child_id(), new_request_id);
-  const ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
+  ResourceRequestInfoImpl* info = ResourceRequestInfoImpl::ForRequest(
       host_.GetURLRequest(global_request_id));
   EXPECT_EQ(second_filter->child_id(), info->GetChildID());
   EXPECT_EQ(new_render_view_id, info->GetRouteID());
   EXPECT_EQ(new_request_id, info->GetRequestID());
-  EXPECT_EQ(second_filter.get(), info->filter());
+  EXPECT_EQ(second_filter.get(), info->requester_info()->filter());
 
   // Let request complete.
   base::RunLoop().RunUntilIdle();
@@ -3229,7 +3228,7 @@ TEST_P(ResourceDispatcherHostTest, DataSentBeforeDetach) {
 
   // Simulate a cancellation coming from the renderer.
   ResourceHostMsg_CancelRequest msg(request_id);
-  host_.OnMessageReceived(msg, filter_.get());
+  OnMessageReceived(msg, filter_.get());
 
   EXPECT_EQ(1, host_.pending_requests());
 
@@ -3294,7 +3293,7 @@ TEST_P(ResourceDispatcherHostTest, DelayedDataReceivedACKs) {
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
-      host_.OnMessageReceived(msg, filter_.get());
+      OnMessageReceived(msg, filter_.get());
     }
 
     base::RunLoop().RunUntilIdle();
@@ -3330,7 +3329,7 @@ TEST_P(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
   // Send some unexpected ACKs.
   for (size_t i = 0; i < 128; ++i) {
     ResourceHostMsg_DataReceived_ACK msg(1);
-    host_.OnMessageReceived(msg, filter_.get());
+    OnMessageReceived(msg, filter_.get());
   }
 
   msgs[0].erase(msgs[0].begin());
@@ -3348,7 +3347,7 @@ TEST_P(ResourceDispatcherHostTest, DataReceivedUnexpectedACKs) {
       EXPECT_EQ(ResourceMsg_DataReceived::ID, msgs[0][i].type());
 
       ResourceHostMsg_DataReceived_ACK msg(1);
-      host_.OnMessageReceived(msg, filter_.get());
+      OnMessageReceived(msg, filter_.get());
     }
 
     base::RunLoop().RunUntilIdle();
@@ -3383,7 +3382,7 @@ TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
 
   // The child releases from the request.
   ResourceHostMsg_ReleaseDownloadedFile release_msg(kRequestID);
-  host_.OnMessageReceived(release_msg, filter_.get());
+  OnMessageReceived(release_msg, filter_.get());
 
   // Still readable because there is another reference to the file. (The child
   // may take additional blob references.)
@@ -3439,7 +3438,7 @@ TEST_P(ResourceDispatcherHostTest, DownloadToFile) {
       "GET", RESOURCE_TYPE_SUB_RESOURCE, net::URLRequestTestJob::test_url_1());
   request.download_to_file = true;
   ResourceHostMsg_RequestResource request_msg(0, 1, request);
-  host_.OnMessageReceived(request_msg, filter_.get());
+  OnMessageReceived(request_msg, filter_.get());
 
   // Running the message loop until idle does not work because
   // RedirectToFileResourceHandler posts things to base::WorkerPool. Instead,
@@ -3494,7 +3493,7 @@ TEST_P(ResourceDispatcherHostTest, DownloadToFile) {
   // RunUntilIdle doesn't work because base::WorkerPool is involved.
   ShareableFileReleaseWaiter waiter(response_head.download_file_path);
   ResourceHostMsg_ReleaseDownloadedFile release_msg(1);
-  host_.OnMessageReceived(release_msg, filter_.get());
+  OnMessageReceived(release_msg, filter_.get());
   waiter.Wait();
   // The release callback runs before the delete is scheduled, so pump the
   // message loop for the delete itself. (This relies on the delete happening on
@@ -3720,7 +3719,7 @@ TEST_P(ResourceDispatcherHostTest, DidChangePriority) {
   // Increase the priority of the second idle priority request. It was
   // scheduled later, so it is not currently running.
   ResourceHostMsg_DidChangePriority priority_msg(3, net::MAXIMUM_PRIORITY, 0);
-  host_.OnMessageReceived(priority_msg, filter_.get());
+  OnMessageReceived(priority_msg, filter_.get());
   base::RunLoop().RunUntilIdle();
 
   EXPECT_EQ(3, job_factory_->url_request_jobs_created_count());
@@ -3809,9 +3808,9 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoSuccess) {
   bool called = false;
   bool was_null = false;
   SyncLoadResult result;
-  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
-                           base::Bind(&StoreSyncLoadResult,
-                                      &called, &was_null, &result));
+  host_.OnSyncLoadWithMojo(
+      GetResourceRequesterInfo(filter_.get()), 0, 1, request,
+      base::Bind(&StoreSyncLoadResult, &called, &was_null, &result));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_FALSE(was_null);
@@ -3826,9 +3825,9 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoError) {
   bool called = false;
   bool was_null = false;
   SyncLoadResult result;
-  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
-                           base::Bind(&StoreSyncLoadResult,
-                                      &called, &was_null, &result));
+  host_.OnSyncLoadWithMojo(
+      GetResourceRequesterInfo(filter_.get()), 0, 1, request,
+      base::Bind(&StoreSyncLoadResult, &called, &was_null, &result));
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_FALSE(was_null);
@@ -3843,9 +3842,9 @@ TEST_P(ResourceDispatcherHostTest, SyncLoadWithMojoCancel) {
   bool called = false;
   bool was_null = false;
   SyncLoadResult result;
-  host_.OnSyncLoadWithMojo(0, 1, request, filter_.get(),
-                           base::Bind(&StoreSyncLoadResult,
-                                      &called, &was_null, &result));
+  host_.OnSyncLoadWithMojo(
+      GetResourceRequesterInfo(filter_.get()), 0, 1, request,
+      base::Bind(&StoreSyncLoadResult, &called, &was_null, &result));
   host_.CancelRequestsForProcess(filter_->child_id());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);

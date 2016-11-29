@@ -54,7 +54,6 @@ specific_include_rules = {
     "-content",
     "+content/browser/loader/async_revalidation_driver.h",
     "+content/browser/loader/async_revalidation_manager.h",
-    "+content/browser/loader/resource_message_filter.h",
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/resource_scheduler.h",
     "+content/public/browser/resource_throttle.h",
@@ -143,6 +142,7 @@ specific_include_rules = {
     "+content/browser/loader/resource_loader_delegate.h",
     "+content/browser/loader/resource_message_filter.h",
     "+content/browser/loader/resource_request_info_impl.h",
+    "+content/browser/loader/resource_requester_info.h",
     "+content/browser/loader/resource_scheduler.h",
     "+content/browser/loader/stream_resource_handler.h",
     "+content/browser/loader/sync_resource_handler.h",
@@ -179,6 +179,7 @@ specific_include_rules = {
     "+content/browser/resource_context_impl.h",
     "+content/browser/service_worker/foreign_fetch_request_handler.h",
     "+content/browser/service_worker/link_header_support.h",
+    "+content/browser/service_worker/service_worker_context_wrapper.h",
     "+content/browser/service_worker/service_worker_navigation_handle_core.h",
     "+content/browser/service_worker/service_worker_request_handler.h",
     "+content/browser/streams/stream.h",
@@ -198,7 +199,6 @@ specific_include_rules = {
     "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/content_features.h",
     "+content/public/common/content_switches.h",
-    "+content/public/common/process_type.h",
     "+content/public/common/request_context_type.h",
     "+content/public/common/resource_type.h",
 
@@ -239,7 +239,6 @@ specific_include_rules = {
     "+content/browser/ssl/ssl_manager.h",
     "+content/public/common/content_client.h",
     "+content/public/common/content_switches.h",
-    "+content/public/common/process_type.h",
   ],
   "resource_handler_delegate\.h": [
     "-content",
@@ -250,6 +249,7 @@ specific_include_rules = {
     "+content/browser/loader/resource_handler.h",
     "+content/browser/loader/resource_message_filter.h",
     "+content/browser/loader/resource_request_info_impl.h",
+    "+content/browser/loader/resource_requester_info.h",
     "+content/common/content_export.h",
     "+content/common/resource_request_body_impl.h",
     "+content/common/url_loader.mojom.h",
@@ -260,7 +260,6 @@ specific_include_rules = {
 
     # TODO: these all have to be removed.
     "+content/browser/frame_host/frame_tree_node.h",
-    "+content/browser/service_worker/service_worker_context_wrapper.h",
     "+content/browser/web_contents/web_contents_impl.h",
     "+content/common/net/url_request_service_worker_data.h",
     "+content/common/net/url_request_user_data.h",
@@ -268,6 +267,18 @@ specific_include_rules = {
     "+content/public/browser/navigation_ui_data.h",
     "+content/public/common/browser_side_navigation_policy.h",
     "+content/public/common/process_type.h",
+  ],
+  "resource_requester_info\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/resource_requester_info.h",
+    "+content/common/content_export.h",
+    "+content/public/common/resource_type.h",
+
+    # TODO: these all have to be removed.
+    "+content/browser/appcache/chrome_appcache_service.h",
+    "+content/browser/blob_storage/chrome_blob_storage_context.h",
+    "+content/browser/service_worker/service_worker_context_wrapper.h",
+    "+content/public/browser/browser_thread.h",
   ],
   "resource_scheduler\.(cc|h)": [
     "-content",
@@ -296,7 +307,6 @@ specific_include_rules = {
     "+content/browser/loader/netlog_observer.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
     "+content/browser/loader/resource_handler.h",
-    "+content/browser/loader/resource_message_filter.h",
     "+content/browser/loader/resource_request_info_impl.h",
     "+content/browser/loader/sync_resource_handler.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
@@ -318,7 +328,7 @@ specific_include_rules = {
   "url_loader_factory_impl\.(cc|h)": [
     "-content",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
-    "+content/browser/loader/resource_message_filter.h",
+    "+content/browser/loader/resource_requester_info.h",
     "+content/browser/loader/url_loader_factory_impl.h",
     "+content/common/content_export.h",
     "+content/common/resource_request.h",
@@ -342,7 +352,6 @@ specific_include_rules = {
     "+content/public/browser/resource_context.h",
     "+content/public/browser/resource_dispatcher_host_delegate.h",
     "+content/public/common/content_paths.h",
-    "+content/public/common/process_type.h",
     "+content/public/test/test_browser_context.h",
     "+content/public/test/test_browser_thread_bundle.h",
 

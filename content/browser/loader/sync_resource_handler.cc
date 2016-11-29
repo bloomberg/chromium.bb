@@ -8,7 +8,6 @@
 #include "base/logging.h"
 #include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
 #include "content/common/resource_messages.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
@@ -63,8 +62,9 @@ bool SyncResourceHandler::OnRequestRedirected(
 bool SyncResourceHandler::OnResponseStarted(
     ResourceResponse* response,
     bool* defer) {
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (!info->filter())
+  ResourceRequestInfoImpl* info = GetRequestInfo();
+  DCHECK(info->requester_info()->IsRenderer());
+  if (!info->requester_info()->filter())
     return false;
 
   if (rdh_->delegate()) {

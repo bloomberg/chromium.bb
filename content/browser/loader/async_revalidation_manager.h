@@ -37,7 +37,7 @@ class AsyncRevalidationManager {
 
   // Starts an async revalidation by copying |for_request|. |scheduler| must
   // remain valid until this object is destroyed.
-  void BeginAsyncRevalidation(const net::URLRequest& for_request,
+  void BeginAsyncRevalidation(net::URLRequest* for_request,
                               ResourceScheduler* scheduler);
 
   // Cancel all pending async revalidations that use ResourceContext.

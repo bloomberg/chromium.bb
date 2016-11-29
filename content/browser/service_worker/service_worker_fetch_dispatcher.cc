@@ -13,8 +13,8 @@
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
 #include "content/browser/loader/resource_request_info_impl.h"
+#include "content/browser/loader/resource_requester_info.h"
 #include "content/browser/loader/url_loader_factory_impl.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
 #include "content/browser/service_worker/service_worker_version.h"
@@ -377,19 +377,22 @@ void ServiceWorkerFetchDispatcher::MaybeStartNavigationPreload(
     // Origin-Trial for NavigationPreload.
     return;
   }
+
+  ResourceRequestInfoImpl* original_info =
+      ResourceRequestInfoImpl::ForRequest(original_request);
   if (IsBrowserSideNavigationEnabled()) {
     // TODO(horo): Support NavigationPreload with PlzNavigate.
+    DCHECK(original_info->requester_info()->IsBrowserSideNavigation());
     NOTIMPLEMENTED();
     return;
   }
+  DCHECK(original_info->requester_info()->IsRenderer());
+  if (!original_info->requester_info()->filter())
+    return;
 
   DCHECK(!url_loader_factory_);
-  const ResourceRequestInfoImpl* original_info =
-      ResourceRequestInfoImpl::ForRequest(original_request);
-  if (!original_info->filter())
-    return;
   mojom::URLLoaderFactoryPtr factory;
-  URLLoaderFactoryImpl::Create(original_info->filter(),
+  URLLoaderFactoryImpl::Create(original_info->requester_info(),
                                mojo::GetProxy(&url_loader_factory_));
 
   preload_handle_ = mojom::FetchEventPreloadHandle::New();

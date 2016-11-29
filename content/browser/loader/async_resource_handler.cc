@@ -207,6 +207,7 @@ AsyncResourceHandler::AsyncResourceHandler(
       last_upload_position_(0),
       waiting_for_upload_progress_ack_(false),
       reported_transfer_size_(0) {
+  DCHECK(GetRequestInfo()->requester_info()->IsRenderer());
   InitializeResourceBufferConstants();
 }
 
@@ -290,8 +291,8 @@ bool AsyncResourceHandler::OnRequestRedirected(
     const net::RedirectInfo& redirect_info,
     ResourceResponse* response,
     bool* defer) {
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (!info->filter())
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
     return false;
 
   *defer = did_defer_ = true;
@@ -306,7 +307,7 @@ bool AsyncResourceHandler::OnRequestRedirected(
   // cookies? The only case where it can change is top-level navigation requests
   // and hopefully those will eventually all be owned by the browser. It's
   // possible this is still needed while renderer-owned ones exist.
-  return info->filter()->Send(new ResourceMsg_ReceivedRedirect(
+  return filter->Send(new ResourceMsg_ReceivedRedirect(
       GetRequestID(), redirect_info, response->head));
 }
 
@@ -321,10 +322,11 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   response_started_ticks_ = base::TimeTicks::Now();
 
   progress_timer_.Stop();
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (!info->filter())
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
     return false;
 
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   // We want to send a final upload progress message prior to sending the
   // response complete message even if we're waiting for an ack to to a
   // previous upload progress message.
@@ -351,16 +353,15 @@ bool AsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
 
   response->head.request_start = request()->creation_time();
   response->head.response_start = TimeTicks::Now();
-  info->filter()->Send(new ResourceMsg_ReceivedResponse(GetRequestID(),
-                                                        response->head));
+  filter->Send(
+      new ResourceMsg_ReceivedResponse(GetRequestID(), response->head));
   sent_received_response_msg_ = true;
 
   if (request()->response_info().metadata.get()) {
     std::vector<char> copy(request()->response_info().metadata->data(),
                            request()->response_info().metadata->data() +
                                request()->response_info().metadata->size());
-    info->filter()->Send(new ResourceMsg_ReceivedCachedMetadata(GetRequestID(),
-                                                                copy));
+    filter->Send(new ResourceMsg_ReceivedCachedMetadata(GetRequestID(), copy));
   }
 
   inlining_helper_->OnResponseReceived(*response);
@@ -468,8 +469,8 @@ void AsyncResourceHandler::OnDataDownloaded(int bytes_downloaded) {
 void AsyncResourceHandler::OnResponseCompleted(
     const net::URLRequestStatus& status,
     bool* defer) {
-  const ResourceRequestInfoImpl* info = GetRequestInfo();
-  if (!info->filter())
+  ResourceMessageFilter* filter = GetFilter();
+  if (!filter)
     return;
 
   // If we crash here, figure out what URL the renderer was requesting.
@@ -487,6 +488,7 @@ void AsyncResourceHandler::OnResponseCompleted(
         sent_received_response_msg_);
 
   int error_code = status.error();
+  const ResourceRequestInfoImpl* info = GetRequestInfo();
   bool was_ignored_by_handler = info->WasIgnoredByHandler();
 
   DCHECK(status.status() != net::URLRequestStatus::IO_PENDING);
@@ -503,7 +505,7 @@ void AsyncResourceHandler::OnResponseCompleted(
   request_complete_data.encoded_data_length =
       request()->GetTotalReceivedBytes();
   request_complete_data.encoded_body_length = request()->GetRawBodyBytes();
-  info->filter()->Send(
+  filter->Send(
       new ResourceMsg_RequestComplete(GetRequestID(), request_complete_data));
 
   if (status.is_success())

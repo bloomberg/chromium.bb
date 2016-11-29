@@ -13,9 +13,8 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
 #include "base/supports_user_data.h"
-#include "content/browser/service_worker/service_worker_context_wrapper.h"
+#include "content/browser/loader/resource_requester_info.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -27,7 +26,6 @@
 namespace content {
 class DetachableResourceHandler;
 class ResourceContext;
-class ResourceMessageFilter;
 struct GlobalRequestID;
 struct GlobalRoutingID;
 
@@ -49,8 +47,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       const net::URLRequest* request);
 
   CONTENT_EXPORT ResourceRequestInfoImpl(
-      int process_type,
-      int child_id,
+      scoped_refptr<ResourceRequesterInfo> requester_info,
       int route_id,
       int frame_tree_node_id,
       int origin_pid,
@@ -71,7 +68,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
       blink::WebReferrerPolicy referrer_policy,
       blink::WebPageVisibilityState visibility_state,
       ResourceContext* context,
-      base::WeakPtr<ResourceMessageFilter> filter,
       bool report_raw_headers,
       bool is_async,
       bool is_using_lofi,
@@ -116,21 +112,17 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // request).
   int frame_tree_node_id() const { return frame_tree_node_id_; }
 
-  // May be NULL (e.g., if process dies during a transfer).
-  ResourceMessageFilter* filter() const {
-    return filter_.get();
-  }
+  ResourceRequesterInfo* requester_info() { return requester_info_.get(); }
 
   // Updates the data associated with this request after it is is transferred
   // to a new renderer process.  Not all data will change during a transfer.
   // We do not expect the ResourceContext to change during navigation, so that
   // does not need to be updated.
-  void UpdateForTransfer(int child_id,
-                         int route_id,
+  void UpdateForTransfer(int route_id,
                          int render_frame_id,
                          int origin_pid,
                          int request_id,
-                         base::WeakPtr<ResourceMessageFilter> filter,
+                         ResourceRequesterInfo* requester_info,
                          mojom::URLLoaderAssociatedRequest url_loader_request,
                          mojom::URLLoaderClientAssociatedPtr url_loader_client);
 
@@ -148,9 +140,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   void set_detachable_handler(DetachableResourceHandler* h) {
     detachable_handler_ = h;
   }
-
-  // Identifies the type of process (renderer, plugin, etc.) making the request.
-  int process_type() const { return process_type_; }
 
   // Downloads are allowed only as a top level request.
   bool allow_download() const { return allow_download_; }
@@ -206,17 +195,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
     navigation_ui_data_ = std::move(navigation_ui_data);
   }
 
-  // PlzNavigate: used in navigations to store the ServiceWorkerContext, since
-  // the ResourceMessageFilter will be null in this case. All other requests
-  // should access the ServiceWorkerContext through the ResourceMessageFilter.
-  void set_service_worker_context(
-      scoped_refptr<ServiceWorkerContextWrapper> service_worker_context) {
-    service_worker_context_ = service_worker_context;
-  }
-  ServiceWorkerContextWrapper* service_worker_context() const {
-    return service_worker_context_.get();
-  }
-
   void set_on_transfer(const TransferCallback& on_transfer) {
     on_transfer_ = on_transfer;
   }
@@ -229,8 +207,7 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   // Non-owning, may be NULL.
   DetachableResourceHandler* detachable_handler_;
 
-  int process_type_;
-  int child_id_;
+  scoped_refptr<ResourceRequesterInfo> requester_info_;
   int route_id_;
   const int frame_tree_node_id_;
   int origin_pid_;
@@ -254,9 +231,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   blink::WebReferrerPolicy referrer_policy_;
   blink::WebPageVisibilityState visibility_state_;
   ResourceContext* context_;
-  // The filter might be deleted without deleting this object if the process
-  // exits during a transfer.
-  base::WeakPtr<ResourceMessageFilter> filter_;
   bool report_raw_headers_;
   bool is_async_;
   bool is_using_lofi_;
@@ -264,7 +238,6 @@ class ResourceRequestInfoImpl : public ResourceRequestInfo,
   scoped_refptr<ResourceRequestBodyImpl> body_;
   bool initiated_in_secure_context_;
   std::unique_ptr<NavigationUIData> navigation_ui_data_;
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
 
   // This callback is set by MojoAsyncResourceHandler to update its mojo binding
   // and remote endpoint. This callback will be removed once PlzNavigate is

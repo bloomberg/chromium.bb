@@ -19,10 +19,10 @@ class URLRequest;
 namespace content {
 class ServiceWorkerContextWrapper;
 
-void ProcessRequestForLinkHeaders(const net::URLRequest* request);
+void ProcessRequestForLinkHeaders(net::URLRequest* request);
 
 CONTENT_EXPORT void ProcessLinkHeaderForRequest(
-    const net::URLRequest* request,
+    net::URLRequest* request,
     const std::string& link_header,
     ServiceWorkerContextWrapper* service_worker_context_for_testing = nullptr);
 

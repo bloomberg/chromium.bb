@@ -5,7 +5,7 @@
 #include "content/browser/loader/url_loader_factory_impl.h"
 
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
-#include "content/browser/loader/resource_message_filter.h"
+#include "content/browser/loader/resource_requester_info.h"
 #include "content/common/resource_request.h"
 #include "content/common/url_loader.mojom.h"
 #include "content/public/browser/browser_thread.h"
@@ -34,9 +34,10 @@ void DispatchSyncLoadResult(
 } // namespace
 
 URLLoaderFactoryImpl::URLLoaderFactoryImpl(
-    scoped_refptr<ResourceMessageFilter> resource_message_filter)
-    : resource_message_filter_(std::move(resource_message_filter)) {
-  DCHECK(resource_message_filter_);
+    scoped_refptr<ResourceRequesterInfo> requester_info)
+    : requester_info_(std::move(requester_info)) {
+  DCHECK(requester_info_->IsRenderer());
+  DCHECK(requester_info_->filter());
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 }
 
@@ -50,55 +51,55 @@ void URLLoaderFactoryImpl::CreateLoaderAndStart(
     int32_t request_id,
     const ResourceRequest& url_request,
     mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
-  CreateLoaderAndStart(std::move(request), routing_id, request_id, url_request,
-                       std::move(client_ptr_info),
-                       resource_message_filter_.get());
+  CreateLoaderAndStart(requester_info_.get(), std::move(request), routing_id,
+                       request_id, url_request, std::move(client_ptr_info));
 }
 
 void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
                                     const SyncLoadCallback& callback) {
-  SyncLoad(routing_id, request_id, url_request, callback,
-           resource_message_filter_.get());
+  SyncLoad(requester_info_.get(), routing_id, request_id, url_request,
+           callback);
 }
 
 // static
 void URLLoaderFactoryImpl::CreateLoaderAndStart(
+    ResourceRequesterInfo* requester_info,
     mojom::URLLoaderAssociatedRequest request,
     int32_t routing_id,
     int32_t request_id,
     const ResourceRequest& url_request,
-    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info,
-    ResourceMessageFilter* filter) {
+    mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   mojom::URLLoaderClientAssociatedPtr client;
   client.Bind(std::move(client_ptr_info));
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  rdh->OnRequestResourceWithMojo(routing_id, request_id, url_request,
-                                 std::move(request), std::move(client), filter);
+  rdh->OnRequestResourceWithMojo(requester_info, routing_id, request_id,
+                                 url_request, std::move(request),
+                                 std::move(client));
 }
 
 // static
-void URLLoaderFactoryImpl::SyncLoad(int32_t routing_id,
+void URLLoaderFactoryImpl::SyncLoad(ResourceRequesterInfo* requester_info,
+                                    int32_t routing_id,
                                     int32_t request_id,
                                     const ResourceRequest& url_request,
-                                    const SyncLoadCallback& callback,
-                                    ResourceMessageFilter* filter) {
+                                    const SyncLoadCallback& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
   ResourceDispatcherHostImpl* rdh = ResourceDispatcherHostImpl::Get();
-  rdh->OnSyncLoadWithMojo(routing_id, request_id, url_request, filter,
+  rdh->OnSyncLoadWithMojo(requester_info, routing_id, request_id, url_request,
                           base::Bind(&DispatchSyncLoadResult, callback));
 }
 
 void URLLoaderFactoryImpl::Create(
-    scoped_refptr<ResourceMessageFilter> filter,
+    scoped_refptr<ResourceRequesterInfo> requester_info,
     mojo::InterfaceRequest<mojom::URLLoaderFactory> request) {
   mojo::MakeStrongBinding(
-      base::WrapUnique(new URLLoaderFactoryImpl(std::move(filter))),
+      base::WrapUnique(new URLLoaderFactoryImpl(std::move(requester_info))),
       std::move(request));
 }
 

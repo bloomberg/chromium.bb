@@ -12,10 +12,11 @@
 
 namespace content {
 
-class ResourceMessageFilter;
+class ResourceRequesterInfo;
 
 // This class is an implementation of mojom::URLLoaderFactory that creates
-// a mojom::URLLoader.
+// a mojom::URLLoader. This class is instantiated only for Service Worker
+// navigation preload or test caseses.
 class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
  public:
   ~URLLoaderFactoryImpl() override;
@@ -32,29 +33,29 @@ class URLLoaderFactoryImpl final : public mojom::URLLoaderFactory {
                 const SyncLoadCallback& callback) override;
 
   static void CreateLoaderAndStart(
+      ResourceRequesterInfo* requester_info,
       mojom::URLLoaderAssociatedRequest request,
       int32_t routing_id,
       int32_t request_id,
       const ResourceRequest& url_request,
-      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info,
-      ResourceMessageFilter* filter);
-  static void SyncLoad(int32_t routing_id,
+      mojom::URLLoaderClientAssociatedPtrInfo client_ptr_info);
+  static void SyncLoad(ResourceRequesterInfo* requester_info,
+                       int32_t routing_id,
                        int32_t request_id,
                        const ResourceRequest& request,
-                       const SyncLoadCallback& callback,
-                       ResourceMessageFilter* filter);
+                       const SyncLoadCallback& callback);
 
   // Creates a URLLoaderFactoryImpl instance. The instance is held by the
   // StrongBinding in it, so this function doesn't return the instance.
   CONTENT_EXPORT static void Create(
-      scoped_refptr<ResourceMessageFilter> resource_message_filter,
+      scoped_refptr<ResourceRequesterInfo> requester_info,
       mojom::URLLoaderFactoryRequest request);
 
  private:
   explicit URLLoaderFactoryImpl(
-      scoped_refptr<ResourceMessageFilter> resource_message_filter);
+      scoped_refptr<ResourceRequesterInfo> requester_info);
 
-  scoped_refptr<ResourceMessageFilter> resource_message_filter_;
+  scoped_refptr<ResourceRequesterInfo> requester_info_;
 
   DISALLOW_COPY_AND_ASSIGN(URLLoaderFactoryImpl);
 };

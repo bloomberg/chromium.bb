@@ -9,6 +9,7 @@
 
 #include "base/callback_forward.h"
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
 #include "content/common/content_export.h"
@@ -31,6 +32,7 @@ namespace content {
 class ChromeAppCacheService;
 class ChromeBlobStorageContext;
 class ResourceContext;
+class ResourceRequesterInfo;
 class ServiceWorkerContextWrapper;
 
 // This class filters out incoming IPC messages for network requests and
@@ -47,13 +49,11 @@ class CONTENT_EXPORT ResourceMessageFilter
                               ResourceContext**,
                               net::URLRequestContext**)> GetContextsCallback;
 
-  // |appcache_service|, |blob_storage_context|, |file_system_context| may be
-  // NULL in unittests or for requests from the (NPAPI) plugin process.
-  // The |origin_pid| argument to |get_contexts_callback| is not used
-  // (and may be invalid) for requests that are NOT from the NPAPI plugin
-  // process.
+  // |appcache_service|, |blob_storage_context|, |file_system_context|,
+  // |service_worker_context| may be nullptr in unittests.
+  // InitializeForTest() needs to be manually called for unittests where
+  // OnFilterAdded() would not otherwise be called.
   ResourceMessageFilter(int child_id,
-                        int process_type,
                         ChromeAppCacheService* appcache_service,
                         ChromeBlobStorageContext* blob_storage_context,
                         storage::FileSystemContext* file_system_context,
@@ -61,35 +61,10 @@ class CONTENT_EXPORT ResourceMessageFilter
                         const GetContextsCallback& get_contexts_callback);
 
   // BrowserMessageFilter implementation.
+  void OnFilterAdded(IPC::Channel* channel) override;
   void OnChannelClosing() override;
   bool OnMessageReceived(const IPC::Message& message) override;
   void OnDestruct() const override;
-
-  void GetContexts(ResourceType resource_type,
-                   ResourceContext** resource_context,
-                   net::URLRequestContext** request_context);
-
-  // Returns the net::URLRequestContext for the given request.
-  net::URLRequestContext* GetURLRequestContext(ResourceType request_type);
-
-  ChromeAppCacheService* appcache_service() const {
-    return appcache_service_.get();
-  }
-
-  ChromeBlobStorageContext* blob_storage_context() const {
-    return blob_storage_context_.get();
-  }
-
-  storage::FileSystemContext* file_system_context() const {
-    return file_system_context_.get();
-  }
-
-  ServiceWorkerContextWrapper* service_worker_context() const {
-    return service_worker_context_.get();
-  }
-
-  int child_id() const { return child_id_; }
-  int process_type() const { return process_type_; }
 
   base::WeakPtr<ResourceMessageFilter> GetWeakPtr();
 
@@ -103,6 +78,12 @@ class CONTENT_EXPORT ResourceMessageFilter
                 int32_t request_id,
                 const ResourceRequest& request,
                 const SyncLoadCallback& callback) override;
+  int child_id() const;
+
+  ResourceRequesterInfo* requester_info_for_test() {
+    return requester_info_.get();
+  }
+  void InitializeForTest();
 
  protected:
   // Protected destructor so that we can be overriden in tests.
@@ -112,18 +93,11 @@ class CONTENT_EXPORT ResourceMessageFilter
   friend struct BrowserThread::DeleteOnThread<BrowserThread::IO>;
   friend class base::DeleteHelper<ResourceMessageFilter>;
 
-  // The ID of the child process.
-  int child_id_;
+  // Initializes the weak pointer of this filter in |requester_info_|.
+  void InitializeOnIOThread();
 
-  int process_type_;
   bool is_channel_closed_;
-
-  scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<ChromeBlobStorageContext> blob_storage_context_;
-  scoped_refptr<storage::FileSystemContext> file_system_context_;
-  scoped_refptr<ServiceWorkerContextWrapper> service_worker_context_;
-
-  GetContextsCallback get_contexts_callback_;
+  scoped_refptr<ResourceRequesterInfo> requester_info_;
 
   // This must come last to make sure weak pointers are invalidated first.
   base::WeakPtrFactory<ResourceMessageFilter> weak_ptr_factory_;
