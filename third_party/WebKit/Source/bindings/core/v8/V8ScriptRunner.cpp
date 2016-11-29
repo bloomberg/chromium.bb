@@ -629,6 +629,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callFunction(
     TRACE_EVENT_BEGIN1("devtools.timeline", "FunctionCall", "data",
                        InspectorFunctionCallEvent::data(context, function));
 
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kRunMicrotasks);
   PerformanceMonitor::willCallFunction(context);
@@ -650,6 +651,7 @@ v8::MaybeLocal<v8::Value> V8ScriptRunner::callInternalFunction(
     v8::Local<v8::Value> args[],
     v8::Isolate* isolate) {
   TRACE_EVENT0("v8", "v8.callFunction");
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   v8::MicrotasksScope microtasksScope(isolate,
                                       v8::MicrotasksScope::kDoNotRunMicrotasks);
   v8::MaybeLocal<v8::Value> result =

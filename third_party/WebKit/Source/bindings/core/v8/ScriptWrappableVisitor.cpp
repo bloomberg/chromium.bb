@@ -30,7 +30,7 @@ void ScriptWrappableVisitor::TracePrologue() {
   // This CHECK ensures that wrapper tracing is not started from scopes
   // that forbid GC execution, e.g., constructors.
   CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isGCForbidden());
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   performCleanup();
 
   CHECK(!m_tracingInProgress);
@@ -43,13 +43,13 @@ void ScriptWrappableVisitor::TracePrologue() {
 
 void ScriptWrappableVisitor::EnterFinalPause() {
   CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isGCForbidden());
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   ActiveScriptWrappable::traceActiveScriptWrappables(m_isolate, this);
 }
 
 void ScriptWrappableVisitor::TraceEpilogue() {
   CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isGCForbidden());
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   DCHECK(m_markingDeque.isEmpty());
 #if DCHECK_IS_ON()
   ScriptWrappableVisitorVerifier verifier;
@@ -185,7 +185,7 @@ bool ScriptWrappableVisitor::AdvanceTracing(
   // perform a GC. This makes sure that TraceTraits and friends find
   // themselves in a well-defined environment, e.g., properly set up vtables.
   CHECK(ThreadState::current());
-  CHECK(!ThreadState::current()->isGCForbidden());
+  CHECK(!ThreadState::current()->isWrapperTracingForbidden());
   CHECK(m_tracingInProgress);
   WTF::AutoReset<bool>(&m_advancingTracing, true);
   while (actions.force_completion ==

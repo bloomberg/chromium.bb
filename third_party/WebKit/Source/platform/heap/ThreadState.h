@@ -292,6 +292,7 @@ class PLATFORM_EXPORT ThreadState {
   }
   void enterNoAllocationScope() { m_noAllocationCount++; }
   void leaveNoAllocationScope() { m_noAllocationCount--; }
+  bool isWrapperTracingForbidden() { return isMixinInConstruction(); }
   bool isGCForbidden() const {
     return m_gcForbiddenCount || isMixinInConstruction();
   }
