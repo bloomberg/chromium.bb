@@ -750,8 +750,8 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
   if (exceptionState.hadException())
     return;
 
-  if (details.hasError() && !details.error().isEmpty()) {
-    exceptionState.throwTypeError("Error value should be empty");
+  if (details.hasError()) {
+    exceptionState.throwTypeError("Error message not allowed in constructor");
     return;
   }
 

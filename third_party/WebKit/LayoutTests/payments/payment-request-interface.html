@@ -351,6 +351,15 @@ generate_tests(assert_throws, [
     }],
     ['Empty string for payment method specific data parameter should throw', null, function() {
         new PaymentRequest([{'supportedMethods': ['foo'], 'data': ''}], buildDetails())
+    }],
+    ['If details contains a null value for error, then throw a TypeError', new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'error': null})
+    }],
+    ['If details contains an empty string value for error, then throw a TypeError', new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'error': ''})
+    }],
+    ['If details contains a non-empty string value for error, then throw a TypeError', new TypeError(), function() {
+        new PaymentRequest([{'supportedMethods': ['foo']}], {'total': buildItem(), 'error': 'Message'})
     }]
 ]);
 

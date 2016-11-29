@@ -138,17 +138,15 @@ PaymentDetails buildPaymentDetailsForTest(
   else
     modifier = buildPaymentDetailsModifierForTest();
 
-  String errorMessage = "";
-  if (detail == PaymentTestDetailError)
-    errorMessage = valueToUse;
-
   PaymentDetails result;
   result.setTotal(total);
   result.setDisplayItems(HeapVector<PaymentItem>(1, item));
   result.setShippingOptions(
       HeapVector<PaymentShippingOption>(1, shippingOption));
   result.setModifiers(HeapVector<PaymentDetailsModifier>(1, modifier));
-  result.setError(errorMessage);
+
+  if (detail == PaymentTestDetailError)
+    result.setError(valueToUse);
 
   return result;
 }
