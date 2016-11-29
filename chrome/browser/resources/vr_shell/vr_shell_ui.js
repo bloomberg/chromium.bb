@@ -125,11 +125,12 @@ var vrShellUi = (function() {
       let descriptors = [
           ['#back', function() {
             // If we are in cinema mode, revert to standard mode on back press.
-            if (sceneManager.mode == api.Mode.CINEMA) {
+            if (sceneManager.cinemaMode) {
               // TODO(crbug/644511): Send a message back to native to handle
               // switching back to standard mode and out of full screen instead
               // of only changing the mode here.
-              sceneManager.setMode(api.Mode.STANDARD);
+              sceneManager.setMode(sceneManager.mode, sceneManager.menuMode,
+                false /* Cinema Mode */);
             } else {
               api.doAction(api.Action.HISTORY_BACK);
             }
@@ -390,6 +391,8 @@ var vrShellUi = (function() {
   class SceneManager {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
+      this.menuMode = false;
+      this.cinemaMode = false;
 
       this.contentQuad = new ContentQuad();
       let contentId = this.contentQuad.getElementId();
@@ -399,17 +402,17 @@ var vrShellUi = (function() {
       this.omnibox = new Omnibox(contentId);
     }
 
-    setMode(mode) {
+    setMode(mode, menuMode, cinemaMode) {
       this.mode = mode;
-      this.contentQuad.setEnabled(
-          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
-      this.contentQuad.setCinemaMode(mode == api.Mode.CINEMA);
+      this.menuMode = menuMode;
+      this.cinemaMode = cinemaMode;
+
+      this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.contentQuad.setCinemaMode(cinemaMode);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
       // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
-      this.controls.setEnabled(
-          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
-      this.omnibox.setEnabled(
-          mode == api.Mode.STANDARD || mode == api.Mode.CINEMA);
+      this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
+      this.omnibox.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
     }
 
@@ -432,7 +435,7 @@ var vrShellUi = (function() {
 
   function command(dict) {
     if ('mode' in dict) {
-      sceneManager.setMode(dict['mode']);
+      sceneManager.setMode(dict['mode'], dict['menuMode'], dict['cinemaMode']);
     }
     if ('secureOrigin' in dict) {
       sceneManager.setSecureOrigin(dict['secureOrigin']);

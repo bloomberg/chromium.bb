@@ -9,15 +9,31 @@
 
 namespace vr_shell {
 
-UiInterface::UiInterface() {
-  SetMode(Mode::STANDARD);
+UiInterface::UiInterface(Mode initial_mode) {
+  SetMode(initial_mode);
 }
 
 UiInterface::~UiInterface() {}
 
 void UiInterface::SetMode(Mode mode) {
   mode_ = mode;
-  updates_.SetInteger("mode", static_cast<int>(mode));
+  FlushModeState();
+}
+
+void UiInterface::SetMenuMode(bool enabled) {
+  menu_mode_ = enabled;
+  FlushModeState();
+}
+
+void UiInterface::SetCinemaMode(bool enabled) {
+  cinema_mode_ = enabled;
+  FlushModeState();
+}
+
+void UiInterface::FlushModeState() {
+  updates_.SetInteger("mode", static_cast<int>(mode_));
+  updates_.SetBoolean("menuMode", menu_mode_);
+  updates_.SetBoolean("cinemaMode", cinema_mode_);
   FlushUpdates();
 }
 

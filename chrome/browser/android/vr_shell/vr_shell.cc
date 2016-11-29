@@ -151,7 +151,8 @@ VrShell::VrShell(JNIEnv* env,
                  content::WebContents* main_contents,
                  ui::WindowAndroid* content_window,
                  content::WebContents* ui_contents,
-                 ui::WindowAndroid* ui_window)
+                 ui::WindowAndroid* ui_window,
+                 bool for_web_vr)
     : WebContentsObserver(ui_contents),
       main_contents_(main_contents),
       ui_contents_(ui_contents),
@@ -162,7 +163,11 @@ VrShell::VrShell(JNIEnv* env,
   g_instance = this;
   j_vr_shell_.Reset(env, obj);
   scene_.reset(new UiScene);
-  html_interface_.reset(new UiInterface);
+
+  if (for_web_vr)
+    metrics_helper_->SetWebVREnabled(true);
+  html_interface_.reset(new UiInterface(
+      for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD));
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
   vr_web_contents_observer_.reset(
@@ -230,7 +235,6 @@ void VrShell::GvrInit(JNIEnv* env,
   base::AutoLock lock(gvr_init_lock_);
 
   // set the initial webvr state
-  metrics_helper_->SetWebVREnabled(webvr_mode_);
   metrics_helper_->SetVRActive(true);
 
   gvr_api_ =
@@ -349,26 +353,17 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   // Note that button up/down state is transient, so IsButtonUp only returns
   // true for a single frame (and we're guaranteed not to miss it).
   if (controller_->IsButtonUp(
-      gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
-    if (html_interface_->GetMode() == UiInterface::Mode::MENU) {
-      // Temporary: Hit app button a second time to exit menu mode.
-      if (webvr_mode_) {
-        html_interface_->SetMode(UiInterface::Mode::WEB_VR);
-        main_thread_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnDisplayFocus,
-                                  delegate_->GetDeviceProvider()));
-      } else {
-        html_interface_->SetMode(UiInterface::Mode::STANDARD);
-      }
-    } else {
-      if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
-        main_thread_task_runner_->PostTask(
-            FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnDisplayBlur,
-                                  delegate_->GetDeviceProvider()));
-      }
-      html_interface_->SetMode(UiInterface::Mode::MENU);
-      // TODO(mthiesse): The page is no longer visible here. We should unfocus
-      // or otherwise let it know it's hidden.
+          gvr::ControllerButton::GVR_CONTROLLER_BUTTON_APP)) {
+    html_interface_->SetMenuMode(!html_interface_->GetMenuMode());
+
+    // TODO(mthiesse): The page is no longer visible when in menu mode. We
+    // should unfocus or otherwise let it know it's hidden.
+    if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
+      const auto&& task = html_interface_->GetMenuMode() ?
+          &device::GvrDeviceProvider::OnDisplayBlur :
+          &device::GvrDeviceProvider::OnDisplayFocus;
+      main_thread_task_runner_->PostTask(
+          FROM_HERE, base::Bind(task, delegate_->GetDeviceProvider()));
     }
   }
 #endif
@@ -903,8 +898,7 @@ void VrShell::OnDomContentsLoaded() {
 void VrShell::SetWebVrMode(JNIEnv* env,
                            const base::android::JavaParamRef<jobject>& obj,
                            bool enabled) {
-  webvr_mode_ = enabled;
-  metrics_helper_->SetWebVREnabled(webvr_mode_);
+  metrics_helper_->SetWebVREnabled(enabled);
   if (enabled) {
     html_interface_->SetMode(UiInterface::Mode::WEB_VR);
   } else {
@@ -916,8 +910,7 @@ void VrShell::SetWebVRSecureOrigin(bool secure_origin) {
   html_interface_->SetSecureOrigin(secure_origin);
 }
 
-void VrShell::SubmitWebVRFrame() {
-}
+void VrShell::SubmitWebVRFrame() {}
 
 void VrShell::UpdateWebVRTextureBounds(const gvr::Rectf& left_bounds,
                                        const gvr::Rectf& right_bounds) {
@@ -1018,8 +1011,7 @@ void VrShell::DoUiAction(const UiAction action) {
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(false);
-      html_interface_.reset(new UiInterface);
-      html_interface_->SetMode(UiInterface::Mode::STANDARD);
+      html_interface_.reset(new UiInterface(UiInterface::Mode::STANDARD));
       vr_web_contents_observer_->SetUiInterface(html_interface_.get());
       break;
 #endif
@@ -1045,12 +1037,14 @@ jlong Init(JNIEnv* env,
            const JavaParamRef<jobject>& content_web_contents,
            jlong content_window_android,
            const JavaParamRef<jobject>& ui_web_contents,
-           jlong ui_window_android) {
+           jlong ui_window_android,
+           jboolean for_web_vr) {
   return reinterpret_cast<intptr_t>(new VrShell(
       env, obj, content::WebContents::FromJavaWebContents(content_web_contents),
       reinterpret_cast<ui::WindowAndroid*>(content_window_android),
       content::WebContents::FromJavaWebContents(ui_web_contents),
-      reinterpret_cast<ui::WindowAndroid*>(ui_window_android)));
+      reinterpret_cast<ui::WindowAndroid*>(ui_window_android),
+      for_web_vr));
 }
 
 }  // namespace vr_shell

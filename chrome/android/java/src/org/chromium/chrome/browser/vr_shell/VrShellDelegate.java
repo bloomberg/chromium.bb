@@ -154,10 +154,7 @@ public class VrShellDelegate {
             return;
         }
         if (enterVR()) {
-            if (mRequestedWebVR) {
-                nativeSetPresentResult(mNativeVrShellDelegate, true);
-                mVrShell.setWebVrModeEnabled(true);
-            }
+            if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, true);
         } else {
             if (mRequestedWebVR) nativeSetPresentResult(mNativeVrShellDelegate, false);
             if (!mVrDaydreamApi.exitFromVr(EXIT_VR_RESULT, new Intent())) {
@@ -186,7 +183,7 @@ public class VrShellDelegate {
         mTab.addObserver(mTabObserver);
         addVrViews();
         setupVrModeWindowFlags();
-        mVrShell.initializeNative(mTab, this);
+        mVrShell.initializeNative(mTab, this, mRequestedWebVR);
         mVrShell.setCloseButtonListener(new Runnable() {
             @Override
             public void run() {

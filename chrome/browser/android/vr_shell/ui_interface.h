@@ -23,16 +23,19 @@ class UiInterface {
  public:
   enum Mode {
     STANDARD,
-    WEB_VR,
-    MENU,
-    CINEMA,
+    WEB_VR
   };
 
-  UiInterface();
+  explicit UiInterface(Mode initial_mode);
   virtual ~UiInterface();
 
   void SetMode(Mode mode);
   Mode GetMode() { return mode_; }
+  void SetMenuMode(bool enabled);
+  bool GetMenuMode() { return menu_mode_; }
+  void SetCinemaMode(bool enabled);
+  bool GetCinemaMode() { return cinema_mode_; }
+
   void SetSecureOrigin(bool secure);
   void SetLoading(bool loading);
   void SetURL(const GURL& url);
@@ -43,8 +46,11 @@ class UiInterface {
 
  private:
   void FlushUpdates();
+  void FlushModeState();
 
   Mode mode_;
+  bool menu_mode_ = false;
+  bool cinema_mode_ = false;
   UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;

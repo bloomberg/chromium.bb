@@ -108,7 +108,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     }
 
     @Override
-    public void initializeNative(Tab currentTab, VrShellDelegate delegate) {
+    public void initializeNative(Tab currentTab, VrShellDelegate delegate, boolean forWebVR) {
         assert currentTab.getContentViewCore() != null;
         mTab = currentTab;
         mContentCVC = mTab.getContentViewCore();
@@ -122,8 +122,8 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
                 uiContentView, mUiContents, mUiVrWindowAndroid);
 
         mNativeVrShell = nativeInit(mContentCVC.getWebContents(),
-                mContentVrWindowAndroid.getNativePointer(),
-                mUiContents, mUiVrWindowAndroid.getNativePointer());
+                mContentVrWindowAndroid.getNativePointer(), mUiContents,
+                mUiVrWindowAndroid.getNativePointer(), forWebVR);
         mGlSurfaceView.setOnTouchListener(new View.OnTouchListener() {
             @Override
             @SuppressLint("ClickableViewAccessibility")
@@ -362,7 +362,7 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     }
 
     private native long nativeInit(WebContents contentWebContents, long nativeContentWindowAndroid,
-            WebContents uiWebContents, long nativeUiWindowAndroid);
+            WebContents uiWebContents, long nativeUiWindowAndroid, boolean forWebVR);
     private native void nativeSetDelegate(long nativeVrShell, VrShellDelegate delegate);
     private native void nativeGvrInit(long nativeVrShell, long nativeGvrApi);
     private native void nativeDestroy(long nativeVrShell);

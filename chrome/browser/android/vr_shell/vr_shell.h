@@ -61,7 +61,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
           content::WebContents* main_contents,
           ui::WindowAndroid* content_window,
           content::WebContents* ui_contents,
-          ui::WindowAndroid* ui_window);
+          ui::WindowAndroid* ui_window,
+          bool for_web_vr);
 
   void UpdateCompositorLayers(JNIEnv* env,
                               const base::android::JavaParamRef<jobject>& obj);
@@ -195,8 +196,6 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   int content_tex_width_ = 0;
   int content_tex_height_ = 0;
   gvr::Sizei content_tex_pixels_for_webvr_ = {0, 0};
-
-  bool webvr_mode_ = false;
 
   // The pose ring buffer size must be a power of two to avoid glitches when
   // the pose index wraps around. It should be large enough to handle the
