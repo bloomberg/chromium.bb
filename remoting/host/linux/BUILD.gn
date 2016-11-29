@@ -18,23 +18,20 @@ if (enable_me2me_host) {
     ]
   }
 
-  copy("remoting_me2me_host_copy_host") {
+  copy("remoting_me2me_host_copy_host_wrapper") {
     sources = [
       "remoting_me2me_host_wrapper.sh",
     ]
     outputs = [
       "$root_build_dir/remoting/chrome-remote-desktop-host",
     ]
-
-    deps = [
-      "//remoting/host:remoting_me2me_host",
-    ]
   }
 
   group("remoting_dev_me2me_host") {
     deps = [
-      ":remoting_me2me_host_copy_host",
+      ":remoting_me2me_host_copy_host_wrapper",
       ":remoting_me2me_host_copy_script",
+      "//remoting/host:remoting_me2me_host",
     ]
   }
 }
