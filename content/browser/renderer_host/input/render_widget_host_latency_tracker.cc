@@ -261,6 +261,13 @@ void ComputeTouchAndWheelScrollLatencyHistograms(
         "Event.Latency.ScrollBegin." + event_type_name +
             ".TimeToScrollUpdateSwapBegin2",
         original_component, gpu_swap_begin_component);
+
+    // TODO(lanwei): Will remove them when M56 is stable, see
+    // https://crbug.com/669618.
+    UMA_HISTOGRAM_TOUCH_WHEEL_TO_SCROLL_LATENCY(
+        "Event.Latency.ScrollUpdate." + event_type_name +
+            ".TimeToFirstScrollUpdateSwapBegin2",
+        original_component, gpu_swap_begin_component);
   } else if (latency.FindLatency(
                  ui::INPUT_EVENT_LATENCY_SCROLL_UPDATE_ORIGINAL_COMPONENT,
                  latency_component_id, &original_component)) {
