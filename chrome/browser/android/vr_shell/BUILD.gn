@@ -82,7 +82,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
   }
 }
 
-if (enable_vr_shell) {
+if (enable_webvr) {
   test("vr_shell_unittests") {
     sources = [
       "ui_elements_unittest.cc",
