@@ -265,6 +265,9 @@ struct CONTENT_EXPORT WebPreferences {
   // If enabled, disabled video track when the video is in the background.
   bool background_video_track_optimization_enabled;
 
+  // Whether it is a presentation receiver.
+  bool presentation_receiver;
+
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
   // the embedder to use the same default value.

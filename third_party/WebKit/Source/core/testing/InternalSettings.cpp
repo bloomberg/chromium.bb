@@ -528,4 +528,10 @@ void InternalSettings::setCompositorWorkerEnabled(
   RuntimeEnabledFeatures::setCompositorWorkerEnabled(enabled);
 }
 
+void InternalSettings::setPresentationReceiver(bool enabled,
+                                               ExceptionState& exceptionState) {
+  InternalSettingsGuardForSettings();
+  settings()->setPresentationReceiver(enabled);
+}
+
 }  // namespace blink

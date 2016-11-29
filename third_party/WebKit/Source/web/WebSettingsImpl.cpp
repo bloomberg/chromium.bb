@@ -514,6 +514,10 @@ void WebSettingsImpl::setHideDownloadUI(bool hide) {
   m_settings->setHideDownloadUI(hide);
 }
 
+void WebSettingsImpl::setPresentationReceiver(bool enabled) {
+  m_settings->setPresentationReceiver(enabled);
+}
+
 void WebSettingsImpl::setHistoryEntryRequiresUserGesture(bool enabled) {
   m_settings->setHistoryEntryRequiresUserGesture(enabled);
 }

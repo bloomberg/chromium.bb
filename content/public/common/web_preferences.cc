@@ -220,7 +220,8 @@ WebPreferences::WebPreferences()
       default_maximum_page_scale_factor(4.f),
 #endif
       hide_download_ui(false),
-      background_video_track_optimization_enabled(false) {
+      background_video_track_optimization_enabled(false),
+      presentation_receiver(false) {
   standard_font_family_map[kCommonScript] =
       base::ASCIIToUTF16("Times New Roman");
   fixed_font_family_map[kCommonScript] = base::ASCIIToUTF16("Courier New");

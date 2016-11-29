@@ -56,6 +56,7 @@ PASS window.cached_navigator_mediaSession.onprevioustrack is null
 PASS window.cached_navigator_mediaSession.onseekbackward is null
 PASS window.cached_navigator_mediaSession.onseekforward is null
 PASS window.cached_navigator_presentation.defaultRequest is null
+PASS window.cached_navigator_presentation.receiver is null
 PASS window.cached_navigator_serviceWorker.controller is null
 PASS window.cached_navigator_serviceWorker.oncontrollerchange is null
 PASS window.cached_navigator_serviceWorker.onmessage is null

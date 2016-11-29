@@ -125,6 +125,7 @@ class InternalSettings final : public InternalSettingsGenerated,
   void setViewportMetaEnabled(bool, ExceptionState&);
   void setViewportStyle(const String& preference, ExceptionState&);
   void setCompositorWorkerEnabled(bool, ExceptionState&);
+  void setPresentationReceiver(bool, ExceptionState&);
 
   // FIXME: The following are RuntimeEnabledFeatures and likely
   // cannot be changed after process start. These setters should

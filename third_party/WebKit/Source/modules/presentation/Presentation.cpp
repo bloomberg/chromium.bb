@@ -6,6 +6,7 @@
 
 #include "core/dom/Document.h"
 #include "core/frame/LocalFrame.h"
+#include "core/frame/Settings.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/presentation/PresentationReceiver.h"
 #include "modules/presentation/PresentationRequest.h"
@@ -48,16 +49,18 @@ void Presentation::setDefaultRequest(PresentationRequest* request) {
 }
 
 PresentationReceiver* Presentation::receiver() {
-  if (!frame())
+  if (!frame() || !frame()->settings())
     return nullptr;
-  // TODO(crbug.com/647296): only return something if the Blink instance is
-  // running in presentation receiver mode. The flag PresentationReceiver could
-  // be used for that.
+
+  if (!frame()->settings()->presentationReceiver())
+    return nullptr;
+
   if (!m_receiver) {
     PresentationController* controller = PresentationController::from(*frame());
     auto* client = controller ? controller->client() : nullptr;
     m_receiver = new PresentationReceiver(frame(), client);
   }
+
   return m_receiver;
 }
 

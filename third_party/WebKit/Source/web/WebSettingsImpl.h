@@ -102,6 +102,7 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setForceZeroLayoutHeight(bool) override;
   void setFullscreenSupported(bool) override;
   void setHideDownloadUI(bool) override;
+  void setPresentationReceiver(bool) override;
   void setHistoryEntryRequiresUserGesture(bool) override;
   void setHyperlinkAuditingEnabled(bool) override;
   void setIgnoreMainFrameOverflowHiddenQuirk(bool) override;

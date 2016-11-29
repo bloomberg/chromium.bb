@@ -431,3 +431,7 @@ hideDownloadUI initial=false
 
 # Whether or not to issue range requests for images and show placeholders.
 fetchImagePlaceholders initial=false
+
+# Whether the frame is a presentation receiver and should expose
+# `navigator.presentation.receiver`.
+presentationReceiver initial=false

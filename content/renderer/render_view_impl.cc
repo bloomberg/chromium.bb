@@ -1066,6 +1066,8 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   WebRuntimeFeatures::enableBackgroundVideoTrackOptimization(
       prefs.background_video_track_optimization_enabled);
 
+  settings->setPresentationReceiver(prefs.presentation_receiver);
+
 #if defined(OS_MACOSX)
   settings->setDoubleTapToZoomEnabled(true);
   web_view->setMaximumLegibleScale(prefs.default_maximum_page_scale_factor);

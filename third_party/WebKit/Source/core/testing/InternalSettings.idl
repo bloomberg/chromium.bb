@@ -54,6 +54,7 @@ interface InternalSettings : InternalSettingsGenerated {
     [RaisesException] void setPrimaryHoverType(DOMString type);
     [RaisesException] void setImageAnimationPolicy(DOMString policy);
     [RaisesException] void setCompositorWorkerEnabled(boolean enabled);
+    [RaisesException] void setPresentationReceiver(boolean enabled);
 
     // FIXME: The following are RuntimeEnabledFeatures and likely
     // cannot be changed after process start.  These setters should

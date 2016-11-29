@@ -5,15 +5,30 @@
 <script src="../resources/testharnessreport.js"></script>
 <script>
 
-test(function() {
-    assert_true('receiver' in navigator.presentation);
-    assert_true('connectionList' in navigator.presentation.receiver);
-}, "Test that the Presentation Receiver API is present.")
+test(t => {
+  assert_true('receiver' in navigator.presentation);
+}, "Test that presentation.receiver is present.")
 
-test(function() {
+test(t => {
+  assert_equals(navigator.presentation.receiver, null);
+}, "Test that presentation.receiver returns null when the setting is not set.");
+
+test(t => {
+  internals.settings.setPresentationReceiver(true);
+  t.add_cleanup(_ => { internals.settings.setPresentationReceiver(false); });
+
+  assert_not_equals(navigator.presentation.receiver, null);
+}, "Test that presentation.receiver returns non-null when the setting is set.");
+
+test(t => {
+  internals.settings.setPresentationReceiver(true);
+  t.add_cleanup(_ => { internals.settings.setPresentationReceiver(false); });
+
   assert_equals(typeof(navigator.presentation.receiver), "object");
+
+  assert_true('connectionList' in navigator.presentation.receiver);
   assert_equals(typeof(navigator.presentation.receiver.connectionList), "object");
-}, "Test the Presentation Receiver API property types.");
+}, "Test the Presentation Receiver API properties types and presence.");
 
 </script>
 </body>
