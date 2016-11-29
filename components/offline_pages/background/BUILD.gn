@@ -8,6 +8,8 @@ if (is_android) {
 
 static_library("background_offliner") {
   sources = [
+    "add_request_task.cc",
+    "add_request_task.h",
     "change_requests_state_task.cc",
     "change_requests_state_task.h",
     "device_conditions.h",
@@ -83,6 +85,7 @@ static_library("test_support") {
 source_set("unit_tests") {
   testonly = true
   sources = [
+    "add_request_task_unittest.cc",
     "change_requests_state_task_unittest.cc",
     "get_requests_task_unittest.cc",
     "mark_attempt_aborted_task_unittest.cc",

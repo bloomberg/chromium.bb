@@ -9,6 +9,7 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/offline_pages/background/add_request_task.h"
 #include "components/offline_pages/background/change_requests_state_task.h"
 #include "components/offline_pages/background/get_requests_task.h"
 #include "components/offline_pages/background/mark_attempt_aborted_task.h"
@@ -76,7 +77,9 @@ void RequestQueue::AddRequest(const SavePageRequest& request,
                               const AddRequestCallback& callback) {
   // TODO(fgorski): check that request makes sense.
   // TODO(fgorski): check that request does not violate policy.
-  store_->AddRequest(request, base::Bind(&AddRequestDone, callback, request));
+  std::unique_ptr<AddRequestTask> task(new AddRequestTask(
+      store_.get(), request, base::Bind(&AddRequestDone, callback, request)));
+  task_queue_.AddTask(std::move(task));
 }
 
 void RequestQueue::RemoveRequests(const std::vector<int64_t>& request_ids,
