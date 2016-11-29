@@ -140,10 +140,10 @@ class IndexedDBCallbacks::IOThreadHelper {
 };
 
 IndexedDBCallbacks::IndexedDBCallbacks(
-    IndexedDBDispatcherHost* dispatcher_host,
+    scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
     const url::Origin& origin,
     ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info)
-    : dispatcher_host_(dispatcher_host),
+    : dispatcher_host_(std::move(dispatcher_host)),
       host_transaction_id_(kNoTransaction),
       origin_(origin),
       data_loss_(blink::WebIDBDataLossNone),

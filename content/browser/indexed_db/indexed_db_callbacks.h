@@ -37,7 +37,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
     : public base::RefCounted<IndexedDBCallbacks> {
  public:
   IndexedDBCallbacks(
-      IndexedDBDispatcherHost* dispatcher_host,
+      scoped_refptr<IndexedDBDispatcherHost> dispatcher_host,
       const url::Origin& origin,
       ::indexed_db::mojom::CallbacksAssociatedPtrInfo callbacks_info);
 
