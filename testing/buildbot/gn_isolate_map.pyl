@@ -566,6 +566,17 @@
     "label": "//media/blink:media_blink_unittests",
     "type": "windowed_test_launcher",
   },
+  "media_router_tests": {
+    "label": "//chrome/test/media_router:media_router_tests",
+    "type": "script",
+    "script": "//chrome/test/media_router/internal/media_router_tests.py",
+    "args": [
+      "--extension",
+      "mr_extension/",
+      "--test_binary",
+      "./browser_tests",
+    ],
+  },
   "midi_unittests": {
     "label": "//media/midi:midi_unittests",
     "type": "windowed_test_launcher",
