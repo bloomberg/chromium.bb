@@ -61,11 +61,11 @@ layer at (347,97) size 147x148
     layer at (0,0) size 148x148
       LayoutSVGRoot {svg} at (0,0) size 148x148
         LayoutSVGHiddenContainer {defs} at (0,0) size 0x0
-        LayoutSVGRect {rect} at (0,0) size 148x148 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
-        LayoutSVGEllipse {circle} at (0,0) size 148x148 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
-        LayoutSVGContainer {g} at (22,46) size 105x58
-          LayoutSVGText {text} at (29,62) size 142x78 contains 1 chunk(s)
-            LayoutSVGInlineText {#text} at (0,0) size 141x78
+        LayoutSVGRect {rect} at (-3000,-1000) size 6200x2200 [fill={[type=SOLID] [color=#5588FF]}] [x=-3000.00] [y=-1000.00] [width=6200.00] [height=2200.00]
+        LayoutSVGEllipse {circle} at (0,0) size 200x200 [fill={[type=SOLID] [color=#0000FF]}] [cx=100.00] [cy=100.00] [r=100.00]
+        LayoutSVGContainer {g} at (29.97,62.84) size 140.83x77.02
+          LayoutSVGText {text} at (29.97,62.84) size 140.83x77.02 contains 1 chunk(s)
+            LayoutSVGInlineText {#text} at (29.97,62.84) size 140.83x77.02
               chunk 1 (middle anchor) text run 1 at (29.98,125.00) startOffset 0 endOffset 3 width 140.03: "SVG"
 layer at (499,95) size 73x150
   LayoutEmbeddedObject {object} at (451.61,0) size 73.78x150 [bgcolor=#FF0000]
