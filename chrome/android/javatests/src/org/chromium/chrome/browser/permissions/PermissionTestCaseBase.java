@@ -176,7 +176,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
 
         if (isDialog) {
             DialogShownCriteria criteria = new DialogShownCriteria("Dialog not shown");
-            CriteriaHelper.pollInstrumentationThread(criteria);
+            CriteriaHelper.pollUiThread(criteria);
             replyToDialogAndWaitForUpdates(
                     updateWaiter, criteria.getDialog(), nUpdates, true, hasSwitch, toggleSwitch);
         } else {
@@ -198,12 +198,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         if (hasSwitch) {
             SwitchCompat persistSwitch = (SwitchCompat) infobar.getView().findViewById(
                     R.id.permission_infobar_persist_toggle);
-            assertNotNull(persistSwitch);
-            assertTrue(persistSwitch.isChecked());
-            if (toggleSwitch) {
-                singleClickView(persistSwitch);
-                waitForCheckedState(persistSwitch, false);
-            }
+            checkAndToggleSwitch(persistSwitch, toggleSwitch);
         }
 
         if (allow) {
@@ -225,12 +220,7 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         if (hasSwitch) {
             SwitchCompat persistSwitch =
                     (SwitchCompat) dialog.findViewById(R.id.permission_dialog_persist_toggle);
-            assertNotNull(persistSwitch);
-            assertTrue(persistSwitch.isChecked());
-            if (toggleSwitch) {
-                singleClickView(persistSwitch);
-                waitForCheckedState(persistSwitch, false);
-            }
+            checkAndToggleSwitch(persistSwitch, toggleSwitch);
         }
 
         if (allow) {
@@ -241,17 +231,17 @@ public class PermissionTestCaseBase extends ChromeActivityTestCaseBase<ChromeAct
         updateWaiter.waitForNumUpdates(nUpdates);
     }
 
-    /**
-     * Waits until the provided switch reaches a specified position (checked or unchecked).
-     */
-    private void waitForCheckedState(final SwitchCompat persistSwitch, boolean isChecked)
-            throws InterruptedException {
-        CriteriaHelper.pollUiThread(Criteria.equals(isChecked, new Callable<Boolean>() {
-            @Override
-            public Boolean call() {
-                return persistSwitch.isChecked();
-            }
-        }));
+    private void checkAndToggleSwitch(final SwitchCompat persistSwitch, boolean toggleSwitch) {
+        assertNotNull(persistSwitch);
+        assertTrue(persistSwitch.isChecked());
+        if (toggleSwitch) {
+            ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+                @Override
+                public void run() {
+                    persistSwitch.toggle();
+                }
+            });
+        }
     }
 
     @Override

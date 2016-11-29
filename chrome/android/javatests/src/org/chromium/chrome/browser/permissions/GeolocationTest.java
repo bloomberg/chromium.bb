@@ -9,7 +9,6 @@ import android.test.suitebuilder.annotation.MediumTest;
 import android.test.suitebuilder.annotation.Smoke;
 
 import org.chromium.base.test.util.CommandLineFlags;
-import org.chromium.base.test.util.DisabledTest;
 import org.chromium.base.test.util.Feature;
 import org.chromium.base.test.util.RetryOnFailure;
 import org.chromium.chrome.browser.tab.Tab;
@@ -179,7 +178,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      */
     @MediumTest
     @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
-    @DisabledTest(message = "crbug.com/663677")  // Flaky.
     @Feature({"Location"})
     public void testGeolocationPersistenceOffAllowedDialog() throws Exception {
         Tab tab = getActivity().getActivityTab();
@@ -219,7 +217,6 @@ public class GeolocationTest extends PermissionTestCaseBase {
      */
     @LargeTest
     @CommandLineFlags.Add("enable-features=" + MODAL_TOGGLE_FLAG)
-    @DisabledTest(message = "crbug.com/662294")  // Flaky.
     @Feature({"Location"})
     public void testGeolocationWatchPersistenceOffAllowedDialog() throws Exception {
         runTest("initiate_watchPosition()", 2, true, true, true, true);
