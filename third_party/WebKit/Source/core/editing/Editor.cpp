@@ -875,13 +875,14 @@ void Editor::unappliedEditing(EditCommandComposition* cmd) {
   // VisibleSelections as starting and ending selections.
   frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
-  VisibleSelection newSelection =
+  const VisibleSelection& newSelection =
       correctedVisibleSelection(cmd->startingSelection());
-  if (newSelection.start().document() == frame().document() &&
-      newSelection.end().document() == frame().document())
+  DCHECK(newSelection.isValidFor(*frame().document())) << newSelection;
+  if (!newSelection.isNone()) {
     changeSelectionAfterCommand(
         newSelection,
         FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
+  }
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerRedoStep(cmd);
