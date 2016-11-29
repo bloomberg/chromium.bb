@@ -187,8 +187,9 @@ void MemoryCoordinator::CreateChildInfoMapEntry(
     std::unique_ptr<MemoryCoordinatorHandleImpl> handle) {
   auto& child_info = children_[render_process_id];
   // Process always start with normal memory state.
-  // TODO(chrisha): Consider having memory state be a startup parameter of
-  // child processes, allowing them to be launched in a restricted state.
+  // We'll set renderer's memory state to the current global state when the
+  // corresponding renderer process is ready to communicate. Renderer processes
+  // call AddChild() when they are ready.
   child_info.memory_state = mojom::MemoryState::NORMAL;
   child_info.handle = std::move(handle);
 }
