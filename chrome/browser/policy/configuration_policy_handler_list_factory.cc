@@ -20,6 +20,7 @@
 #include "chrome/browser/policy/javascript_policy_handler.h"
 #include "chrome/browser/policy/managed_bookmarks_policy_handler.h"
 #include "chrome/browser/policy/network_prediction_policy_handler.h"
+#include "chrome/browser/profiles/guest_mode_policy_handler.h"
 #include "chrome/browser/profiles/incognito_mode_policy_handler.h"
 #include "chrome/browser/sessions/restore_on_startup_policy_handler.h"
 #include "chrome/common/chrome_switches.h"
@@ -575,9 +576,6 @@ const PolicyToPreferenceMapEntry kSimplePolicyMap[] = {
   { key::kNativeMessagingUserLevelHosts,
     extensions::pref_names::kNativeMessagingUserLevelHosts,
     base::Value::TYPE_BOOLEAN },
-  { key::kBrowserGuestModeEnabled,
-    prefs::kBrowserGuestModeEnabled,
-    base::Value::TYPE_BOOLEAN },
   { key::kBrowserAddPersonEnabled,
     prefs::kBrowserAddPersonEnabled,
     base::Value::TYPE_BOOLEAN },
@@ -748,6 +746,7 @@ std::unique_ptr<ConfigurationPolicyHandlerList> BuildHandlerList(
   handlers->AddHandler(base::MakeUnique<ForceSafeSearchPolicyHandler>());
   handlers->AddHandler(base::MakeUnique<ForceYouTubeSafetyModePolicyHandler>());
   handlers->AddHandler(base::MakeUnique<IncognitoModePolicyHandler>());
+  handlers->AddHandler(base::MakeUnique<GuestModePolicyHandler>());
   handlers->AddHandler(
       base::MakeUnique<ManagedBookmarksPolicyHandler>(chrome_schema));
   handlers->AddHandler(base::MakeUnique<ProxyPolicyHandler>());

@@ -926,6 +926,8 @@ split_static_library("browser") {
     "profiles/gaia_info_update_service.h",
     "profiles/gaia_info_update_service_factory.cc",
     "profiles/gaia_info_update_service_factory.h",
+    "profiles/guest_mode_policy_handler.cc",
+    "profiles/guest_mode_policy_handler.h",
     "profiles/incognito_helpers.cc",
     "profiles/incognito_helpers.h",
     "profiles/incognito_mode_policy_handler.cc",
