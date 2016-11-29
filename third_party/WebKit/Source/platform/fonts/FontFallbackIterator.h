@@ -51,7 +51,8 @@ class FontFallbackIterator : public RefCounted<FontFallbackIterator> {
       const Vector<UChar32>& hintList);
 
   PassRefPtr<SimpleFontData> fallbackPriorityFont(UChar32 hint);
-  PassRefPtr<SimpleFontData> uniqueSystemFontForHint(UChar32 hint);
+  PassRefPtr<SimpleFontData> uniqueSystemFontForHintList(
+      const Vector<UChar32>& hintList);
 
   const FontDescription& m_fontDescription;
   RefPtr<FontFallbackList> m_fontFallbackList;

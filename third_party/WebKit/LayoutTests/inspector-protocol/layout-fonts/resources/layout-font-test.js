@@ -51,6 +51,10 @@ function test()
         InspectorTest.evaluateInInspectedPage("injectCollectedResultsInPage(" +
                                               JSON.stringify(collectedFontUsage) +
                                               ")");
+        InspectorTest.evaluateInInspectedPage("postTestHookWithFontResults(" +
+                                              JSON.stringify(collectedFontUsage) +
+                                              ")");
+
     }
 
     function platformFontsForElementWithSelector(selector)
