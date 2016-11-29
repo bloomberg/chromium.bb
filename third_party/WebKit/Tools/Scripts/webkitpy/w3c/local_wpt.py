@@ -72,17 +72,16 @@ class LocalWPT(object):
         """Returns a list of local and remote branches."""
         return self.run(['git', 'branch', '-a']).splitlines()
 
-    def create_branch_with_patch(self, branch_name, message, patch):
+    def create_branch_with_patch(self, message, patch):
         """Commits the given patch and pushes to the upstream repo.
 
         Args:
-            branch_name: A name that is used for both the local branch
-                and the remote branch on github.
             message: Commit message string.
             patch: A patch that can be applied by git apply.
         """
         self.clean()
         all_branches = self.all_branches()
+        branch_name = 'chromium-export-try'
         remote_branch_name = 'remotes/github/%s' % branch_name
 
         if branch_name in all_branches:
@@ -105,6 +104,8 @@ class LocalWPT(object):
         self.run(['git', 'apply', '-'], input=patch)
         self.run(['git', 'commit', '-am', message])
         self.run(['git', 'push', 'github', branch_name])
+
+        return branch_name
 
     def commits_behind_master(self, commit):
         """Returns the number of commits after the given commit on origin/master.

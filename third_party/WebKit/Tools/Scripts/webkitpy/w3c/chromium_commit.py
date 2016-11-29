@@ -2,6 +2,9 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+from webkitpy.common.memoized import memoized
+from webkitpy.common.webkit_finder import WebKitFinder
+
 
 class ChromiumCommit(object):
 
@@ -51,3 +54,23 @@ class ChromiumCommit(object):
         return self.host.executive.run_command([
             'git', 'show', '--format=%b', '--no-patch', self.sha
         ])
+
+    def message(self):
+        """Returns a string with a commit's subject and body."""
+        return self.host.executive.run_command([
+            'git', 'show', '--format=%B', '--no-patch', self.sha
+        ])
+
+    def format_patch(self):
+        """Makes a patch with just changes in files in the WPT for a given commit."""
+        # TODO(jeffcarp): exclude expectations files
+        # TODO(jeffcarp): exclude manifest files
+        return self.host.executive.run_command([
+            'git', 'format-patch', '-1', '--stdout',
+            self.sha, self.absolute_chromium_wpt_dir()
+        ])
+
+    @memoized
+    def absolute_chromium_wpt_dir(self):
+        finder = WebKitFinder(self.host.filesystem)
+        return finder.path_from_webkit_base('LayoutTests', 'imported', 'wpt')

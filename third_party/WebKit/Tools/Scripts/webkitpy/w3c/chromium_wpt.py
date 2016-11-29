@@ -22,22 +22,30 @@ class ChromiumWPT(object):
         """
         self.host = host
 
-    # TODO(jeffcarp): add tests for this
     def exportable_commits_since(self, commit):
+        """Returns SHAs of exportable commits since `commit` in chronological order.
+
+        Args:
+            commit: The SHA of the Chromium commit from which this method will look.
+        """
         toplevel = self.host.executive.run_command([
             'git', 'rev-parse', '--show-toplevel'
         ]).strip()
 
         commits = self.host.executive.run_command([
-            'git', 'rev-list', '{}..HEAD'.format(commit),
+            'git', 'rev-list', '{}..HEAD'.format(commit), '--reverse',
             '--', toplevel + '/' + CHROMIUM_WPT_DIR
         ]).splitlines()
 
-        # TODO(jeffcarp): this is temporary until I solve
-        #     the import/export differentiation problem
+        # TODO(jeffcarp): allow this logic to be shared
         def is_exportable(chromium_commit):
+            message = self.message(chromium_commit)
             return (
-                'export' in self.message(chromium_commit)
+                'NOEXPORT=true' not in message
+                and not message.startswith('Import ')
+                # TODO(jeffcarp): change this to allow any commit with
+                #   any non-expectation changes to be exportable
+                and not self._has_expectations(chromium_commit)
             )
 
         return filter(is_exportable, commits)
@@ -78,9 +86,3 @@ class ChromiumWPT(object):
     def absolute_chromium_wpt_dir(self):
         finder = WebKitFinder(self.host.filesystem)
         return finder.path_from_webkit_base('LayoutTests', 'imported', 'wpt')
-
-    # TODO(jeffcarp): this is duplicated in LocalWPT, maybe move into a GitRepo base class?
-    def commits_behind_master(self, commit):
-        return len(self.host.executive.run_command([
-            'git', 'rev-list', '{}..origin/master'.format(commit)
-        ]).splitlines())
