@@ -1709,9 +1709,8 @@ static void reconcileTextDecorationProperties(MutableStylePropertySet* style) {
       style->getPropertyCSSValue(CSSPropertyWebkitTextDecorationsInEffect);
   const CSSValue* textDecoration =
       style->getPropertyCSSValue(textDecorationPropertyForEditing());
-  // We shouldn't have both text-decoration and
-  // -webkit-text-decorations-in-effect because that wouldn't make sense.
-  DCHECK(!textDecorationsInEffect || !textDecoration);
+  // "LayoutTests/editing/execCommand/insert-list-and-strikethrough.html" makes
+  // both |textDecorationsInEffect| and |textDecoration| non-null.
   if (textDecorationsInEffect) {
     style->setProperty(textDecorationPropertyForEditing(),
                        textDecorationsInEffect->cssText());
