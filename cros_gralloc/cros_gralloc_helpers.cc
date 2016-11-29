@@ -16,7 +16,7 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	uint64_t usage = BO_USE_NONE;
 
 	if (flags & GRALLOC_USAGE_CURSOR)
-		usage |= BO_USE_CURSOR;
+		usage |= BO_USE_NONE;
 	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_RARELY)
 		usage |= BO_USE_SW_READ_RARELY;
 	if ((flags & sw_read()) == GRALLOC_USAGE_SW_READ_OFTEN)
@@ -35,7 +35,7 @@ uint64_t cros_gralloc_convert_flags(int flags)
 	/* HWC wants to use display hardware, but can defer to OpenGL. */
 		usage |= BO_USE_SCANOUT | BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_HW_FB)
-		usage |= BO_USE_SCANOUT;
+		usage |= BO_USE_SCANOUT | BO_USE_RENDERING;
 	if (flags & GRALLOC_USAGE_EXTERNAL_DISP)
 	/* We're ignoring this flag until we decide what to with display link */
 		usage |= BO_USE_NONE;

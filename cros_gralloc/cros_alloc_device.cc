@@ -10,6 +10,7 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 						      int width, int height,
 						      int format, int usage)
 {
+	int32_t supported;
 	uint64_t drv_usage;
 	uint32_t drv_format;
 	struct cros_gralloc_bo *bo;
@@ -18,11 +19,20 @@ static struct cros_gralloc_bo *cros_gralloc_bo_create(struct driver *drv,
 	drv_format = drv_resolve_format(drv, drv_format);
 	drv_usage = cros_gralloc_convert_flags(usage);
 
-	if (!drv_is_combination_supported(drv, drv_format, drv_usage,
-					  DRM_FORMAT_MOD_NONE)) {
+	supported = drv_is_combination_supported(drv, drv_format, drv_usage,
+						 DRM_FORMAT_MOD_NONE);
+
+	if (!supported && (drv_usage & BO_USE_SCANOUT)) {
+		drv_usage &= ~BO_USE_SCANOUT;
+		supported = drv_is_combination_supported(drv, drv_format,
+							 drv_usage,
+							 DRM_FORMAT_MOD_NONE);
+	}
+
+	if (!supported) {
 		cros_gralloc_error("Unsupported combination -- HAL format: %u, "
-				    "HAL flags: %u, drv_format: %u, "
-				    "drv_flags: %llu", format, usage,
+				   "HAL flags: %u, drv_format: %u, "
+				   "drv_flags: %llu", format, usage,
 				    drv_format, drv_usage);
 		return NULL;
 	}
