@@ -60,6 +60,8 @@ typename std::vector<std::pair<FirstType, SecondType>>::const_iterator
 AXNodeData::AXNodeData()
     : id(-1),
       role(AX_ROLE_UNKNOWN),
+      // Turn on all flags to more easily catch bugs where no flags are set.
+      // This will be cleared back to a 0-state before use.
       state(0xFFFFFFFF),
       offset_container_id(-1) {
 }
