@@ -62,10 +62,8 @@ namespace {
 #if defined(OS_MACOSX)
 // U+0028 U+21E7 U+2318 U+0050 U+0029 in UTF8
 const char kBasicPrintShortcut[] = "\x28\xE2\x8c\xA5\xE2\x8C\x98\x50\x29";
-#elif defined(OS_WIN) || defined(OS_CHROMEOS)
-const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #else
-const char kBasicPrintShortcut[] = "(Shift+Ctrl+P)";
+const char kBasicPrintShortcut[] = "(Ctrl+Shift+P)";
 #endif
 
 // Thread-safe wrapper around a std::map to keep track of mappings from
