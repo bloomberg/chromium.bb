@@ -47,7 +47,8 @@ Polymer({
   },
 
   listeners: {
-    'tap': 'showSearch_',
+    // Deliberately uses 'click' instead of 'tap' to fix crbug.com/624356.
+    'click': 'showSearch_',
   },
 
   /** @return {!HTMLInputElement} */
