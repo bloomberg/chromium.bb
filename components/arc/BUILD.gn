@@ -92,7 +92,6 @@ static_library("arc") {
     "//mojo/edk/system",
     "//skia",
     "//third_party/re2:re2",
-    "//ui/arc",
     "//ui/aura",
     "//ui/base:base",
     "//ui/base/ime",

@@ -9,6 +9,5 @@ include_rules = [
   "+mojo",
   "+third_party/re2",
   "+third_party/skia",
-  "+ui/arc",
   "+ui/gfx/geometry/rect.h",
 ]

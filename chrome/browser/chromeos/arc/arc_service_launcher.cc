@@ -19,61 +19,131 @@
 #include "chrome/browser/chromeos/arc/tts/arc_tts_service.h"
 #include "chrome/browser/chromeos/arc/video/gpu_arc_video_service_host.h"
 #include "chrome/browser/chromeos/arc/wallpaper/arc_wallpaper_service.h"
+#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
+#include "components/arc/arc_service_manager.h"
+#include "components/arc/audio/arc_audio_bridge.h"
+#include "components/arc/bluetooth/arc_bluetooth_bridge.h"
+#include "components/arc/boot_phase_monitor/arc_boot_phase_monitor_bridge.h"
+#include "components/arc/clipboard/arc_clipboard_bridge.h"
+#include "components/arc/crash_collector/arc_crash_collector_bridge.h"
+#include "components/arc/ime/arc_ime_service.h"
 #include "components/arc/intent_helper/arc_intent_helper_bridge.h"
+#include "components/arc/kiosk/arc_kiosk_bridge.h"
+#include "components/arc/metrics/arc_metrics_service.h"
+#include "components/arc/net/arc_net_host_impl.h"
+#include "components/arc/obb_mounter/arc_obb_mounter_bridge.h"
+#include "components/arc/power/arc_power_bridge.h"
+#include "components/arc/storage_manager/arc_storage_manager.h"
+#include "components/arc/user_data/arc_user_data_service.h"
+#include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_thread.h"
+#include "ui/arc/notification/arc_notification_manager.h"
 
 namespace arc {
+namespace {
 
-ArcServiceLauncher::ArcServiceLauncher() = default;
+// ChromeBrowserMainPartsChromeos owns.
+ArcServiceLauncher* g_arc_service_launcher = nullptr;
 
-ArcServiceLauncher::~ArcServiceLauncher() = default;
+}  // namespace
+
+ArcServiceLauncher::ArcServiceLauncher() {
+  DCHECK(g_arc_service_launcher == nullptr);
+  g_arc_service_launcher = this;
+}
+
+ArcServiceLauncher::~ArcServiceLauncher() {
+  DCHECK(!arc_service_manager_);
+  DCHECK_EQ(g_arc_service_launcher, this);
+  g_arc_service_launcher = nullptr;
+}
+
+// static
+ArcServiceLauncher* ArcServiceLauncher::Get() {
+  DCHECK(g_arc_service_launcher);
+  return g_arc_service_launcher;
+}
 
 void ArcServiceLauncher::Initialize() {
   // Create ARC service manager.
   arc_service_manager_ = base::MakeUnique<ArcServiceManager>(
       content::BrowserThread::GetBlockingPool());
 
-  // Creates ArcSessionManager at first.
-  // TODO(hidehiko): ArcSessionManager should be rather than an ArcService but
-  // its manager. Restructure it to reflect the concept.
-  arc_service_manager_->AddService(base::MakeUnique<ArcSessionManager>(
-      arc_service_manager_->arc_bridge_service()));
+  ArcBridgeService* arc_bridge_service =
+      arc_service_manager_->arc_bridge_service();
 
-  arc_service_manager_->AddService(base::MakeUnique<ArcAuthService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcBootErrorNotification>(
-      arc_service_manager_->arc_bridge_service()));
+  // Creates ArcSessionManager at first.
+  arc_session_manager_ =
+      base::MakeUnique<ArcSessionManager>(arc_bridge_service);
+
+  // List in lexicographical order.
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcContentFileSystemService>(
-          arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcDownloadsWatcherService>(
-      arc_service_manager_->arc_bridge_service()));
+      base::MakeUnique<ArcAudioBridge>(arc_bridge_service));
   arc_service_manager_->AddService(
-      base::MakeUnique<ArcEnterpriseReportingService>(
-          arc_service_manager_->arc_bridge_service()));
+      base::MakeUnique<ArcAuthService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcBluetoothBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcBootErrorNotification>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcBootPhaseMonitorBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcClipboardBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcContentFileSystemService>(arc_bridge_service));
+  arc_service_manager_->AddService(base::MakeUnique<ArcCrashCollectorBridge>(
+      arc_bridge_service, arc_service_manager_->blocking_task_runner()));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcDownloadsWatcherService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcEnterpriseReportingService>(arc_bridge_service));
   arc_service_manager_->AddService(base::MakeUnique<ArcIntentHelperBridge>(
-      arc_service_manager_->arc_bridge_service(),
-      arc_service_manager_->icon_loader(),
+      arc_bridge_service, arc_service_manager_->icon_loader(),
       arc_service_manager_->activity_resolver()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcPolicyBridge>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcPrintService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcProcessService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcSettingsService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcTtsService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<ArcWallpaperService>(
-      arc_service_manager_->arc_bridge_service()));
-  arc_service_manager_->AddService(base::MakeUnique<GpuArcVideoServiceHost>(
-      arc_service_manager_->arc_bridge_service()));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcImeService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcKioskBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcMetricsService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcNetHostImpl>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcObbMounterBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcPolicyBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcPowerBridge>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcPrintService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcProcessService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcSettingsService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcStorageManager>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcTtsService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<ArcWallpaperService>(arc_bridge_service));
+  arc_service_manager_->AddService(
+      base::MakeUnique<GpuArcVideoServiceHost>(arc_bridge_service));
+}
+
+void ArcServiceLauncher::OnPrimaryUserProfilePrepared(Profile* profile) {
+  DCHECK(arc_service_manager_);
+  arc_service_manager_->AddService(base::MakeUnique<ArcNotificationManager>(
+      arc_service_manager_->arc_bridge_service(),
+      multi_user_util::GetAccountIdFromProfile(profile)));
+  arc_session_manager_->OnPrimaryUserProfilePrepared(profile);
 }
 
 void ArcServiceLauncher::Shutdown() {
   DCHECK(arc_service_manager_);
+  // Destroy in the reverse order of the initialization.
   arc_service_manager_->Shutdown();
+  arc_session_manager_.reset();
+  arc_service_manager_.reset();
 }
 
 }  // namespace arc

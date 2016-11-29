@@ -13,6 +13,7 @@
 #include "base/run_loop.h"
 #include "base/time/time.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
@@ -159,13 +160,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     GetFakeUserManager()->LoginUser(account_id);
 
     // Set up ARC for test profile.
-    std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
-        base::MakeUnique<BooleanPrefMember>();
-    arc_enabled_pref->Init(prefs::kArcEnabled, profile()->GetPrefs());
-    ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-        multi_user_util::GetAccountIdFromProfile(profile()),
-        std::move(arc_enabled_pref));
-    ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(profile());
+    ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile());
   }
 
   void TearDownOnMainThread() override {

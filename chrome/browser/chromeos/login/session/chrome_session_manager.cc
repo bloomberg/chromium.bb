@@ -15,7 +15,7 @@
 #include "chrome/browser/chromeos/app_mode/arc/arc_kiosk_app_manager.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_launch_error.h"
 #include "chrome/browser/chromeos/app_mode/kiosk_app_manager.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/login/login_wizard.h"
 #include "chrome/browser/chromeos/login/session/user_session_manager.h"
@@ -24,7 +24,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/audio/cras_audio_handler.h"
@@ -33,7 +32,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/session_manager_client.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/prefs/pref_service.h"
 #include "components/signin/core/account_id/account_id.h"
 #include "components/signin/core/browser/signin_manager.h"
@@ -111,15 +109,8 @@ void StartRestoreAfterCrashSession(Profile* user_profile,
 
     if (arc::ArcBridgeService::GetEnabled(
             base::CommandLine::ForCurrentProcess())) {
-      DCHECK(arc::ArcServiceManager::Get());
-      std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
-          base::MakeUnique<BooleanPrefMember>();
-      arc_enabled_pref->Init(prefs::kArcEnabled, user_profile->GetPrefs());
-      arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-          multi_user_util::GetAccountIdFromProfile(user_profile),
-          std::move(arc_enabled_pref));
-      DCHECK(arc::ArcSessionManager::Get());
-      arc::ArcSessionManager::Get()->OnPrimaryUserProfilePrepared(user_profile);
+      arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(
+          user_profile);
     }
 
     // Send the PROFILE_PREPARED notification and call SessionStarted()

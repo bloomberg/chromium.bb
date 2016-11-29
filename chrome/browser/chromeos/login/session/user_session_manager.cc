@@ -31,7 +31,7 @@
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/chromeos/accessibility/accessibility_manager.h"
-#include "chrome/browser/chromeos/arc/arc_session_manager.h"
+#include "chrome/browser/chromeos/arc/arc_service_launcher.h"
 #include "chrome/browser/chromeos/base/locale_util.h"
 #include "chrome/browser/chromeos/boot_times_recorder.h"
 #include "chrome/browser/chromeos/first_run/first_run.h"
@@ -94,7 +94,6 @@
 #include "chromeos/network/portal_detector/network_portal_detector_strategy.h"
 #include "chromeos/settings/cros_settings_names.h"
 #include "components/arc/arc_bridge_service.h"
-#include "components/arc/arc_service_manager.h"
 #include "components/component_updater/component_updater_service.h"
 #include "components/flags_ui/pref_service_flags_storage.h"
 #include "components/policy/core/common/cloud/cloud_policy_constants.h"
@@ -1147,18 +1146,7 @@ void UserSessionManager::FinalizePrepareProfile(Profile* profile) {
 
     if (arc::ArcBridgeService::GetEnabled(
             base::CommandLine::ForCurrentProcess())) {
-      const AccountId& account_id =
-          multi_user_util::GetAccountIdFromProfile(profile);
-      std::unique_ptr<BooleanPrefMember> arc_enabled_pref =
-          base::MakeUnique<BooleanPrefMember>();
-      arc_enabled_pref->Init(prefs::kArcEnabled, profile->GetPrefs());
-      DCHECK(arc::ArcServiceManager::Get());
-      arc::ArcServiceManager::Get()->OnPrimaryUserProfilePrepared(
-          account_id, std::move(arc_enabled_pref));
-      arc::ArcSessionManager* arc_session_manager =
-          arc::ArcSessionManager::Get();
-      DCHECK(arc_session_manager);
-      arc_session_manager->OnPrimaryUserProfilePrepared(profile);
+      arc::ArcServiceLauncher::Get()->OnPrimaryUserProfilePrepared(profile);
     }
   }
 
@@ -1841,13 +1829,6 @@ bool UserSessionManager::TokenHandlesEnabled() {
 }
 
 void UserSessionManager::Shutdown() {
-  if (arc::ArcBridgeService::GetEnabled(
-          base::CommandLine::ForCurrentProcess())) {
-    DCHECK(arc::ArcServiceManager::Get());
-    arc::ArcSessionManager* arc_session_manager = arc::ArcSessionManager::Get();
-    if (arc_session_manager)
-      arc_session_manager->Shutdown();
-  }
   token_handle_fetcher_.reset();
   token_handle_util_.reset();
   first_run::GoodiesDisplayer::Delete();

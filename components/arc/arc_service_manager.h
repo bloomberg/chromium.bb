@@ -14,8 +14,6 @@
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
-#include "components/prefs/pref_member.h"
-#include "components/signin/core/account_id/account_id.h"
 
 namespace arc {
 
@@ -40,11 +38,6 @@ class ArcServiceManager {
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
   static ArcServiceManager* Get();
-
-  // Called when the main profile is initialized after user logs in.
-  void OnPrimaryUserProfilePrepared(
-      const AccountId& account_id,
-      std::unique_ptr<BooleanPrefMember> arc_enabled_pref);
 
   // Called to shut down all ARC services.
   void Shutdown();
