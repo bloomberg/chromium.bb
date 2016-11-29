@@ -16,8 +16,6 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/certificate_viewer.h"
-#include "chrome/browser/devtools/devtools_toggle_action.h"
-#include "chrome/browser/devtools/devtools_window.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/browser.h"
@@ -28,13 +26,11 @@
 #include "chrome/browser/ui/views/website_settings/non_accessible_image_view.h"
 #include "chrome/browser/ui/views/website_settings/permission_selector_row.h"
 #include "chrome/browser/ui/website_settings/website_settings.h"
-#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/chromium_strings.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/theme_resources.h"
 #include "components/content_settings/core/common/content_settings_types.h"
-#include "components/prefs/pref_service.h"
 #include "components/strings/grit/components_chromium_strings.h"
 #include "components/strings/grit/components_strings.h"
 #include "content/public/browser/browser_thread.h"
@@ -131,8 +127,7 @@ class PopupHeaderView : public views::View {
   void SetSummary(const base::string16& summary_text);
 
   // Sets the security details for the current page.
-  void SetDetails(const base::string16& details_text,
-                  bool include_details_link);
+  void SetDetails(const base::string16& details_text);
 
   void AddResetDecisionsLabel();
 
@@ -144,7 +139,8 @@ class PopupHeaderView : public views::View {
   views::Label* summary_label_;
 
   // The label that displays the status of the identity check for this site.
-  // Includes a link to open the DevTools Security panel.
+  // Includes a link to open the Chrome Help Center article about connection
+  // security.
   views::StyledLabel* details_label_;
 
   // A container for the styled label with a link for resetting cert decisions.
@@ -274,33 +270,25 @@ void PopupHeaderView::SetSummary(const base::string16& summary_text) {
   summary_label_->SetText(summary_text);
 }
 
-void PopupHeaderView::SetDetails(const base::string16& details_text,
-                                 bool include_details_label_link) {
-  if (include_details_label_link) {
-    base::string16 details_link_text =
-        l10n_util::GetStringUTF16(IDS_WEBSITE_SETTINGS_DETAILS_LINK);
+void PopupHeaderView::SetDetails(const base::string16& details_text) {
+  std::vector<base::string16> subst;
+  subst.push_back(details_text);
+  subst.push_back(l10n_util::GetStringUTF16(IDS_LEARN_MORE));
 
-    std::vector<base::string16> subst;
-    subst.push_back(details_text);
-    subst.push_back(details_link_text);
+  std::vector<size_t> offsets;
 
-    std::vector<size_t> offsets;
+  base::string16 text = base::ReplaceStringPlaceholders(
+      base::ASCIIToUTF16("$1 $2"), subst, &offsets);
+  details_label_->SetText(text);
+  gfx::Range details_range(offsets[1], text.length());
 
-    base::string16 text = base::ReplaceStringPlaceholders(
-        base::ASCIIToUTF16("$1 $2"), subst, &offsets);
-    details_label_->SetText(text);
-    gfx::Range details_range(offsets[1], text.length());
+  views::StyledLabel::RangeStyleInfo link_style =
+      views::StyledLabel::RangeStyleInfo::CreateForLink();
+  if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
+    link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
+  link_style.disable_line_wrapping = false;
 
-    views::StyledLabel::RangeStyleInfo link_style =
-        views::StyledLabel::RangeStyleInfo::CreateForLink();
-    if (!ui::MaterialDesignController::IsSecondaryUiMaterial())
-      link_style.font_style |= gfx::Font::FontStyle::UNDERLINE;
-    link_style.disable_line_wrapping = false;
-
-    details_label_->AddStyleRange(details_range, link_style);
-  } else {
-    details_label_->SetText(details_text);
-  }
+  details_label_->AddStyleRange(details_range, link_style);
 }
 
 void PopupHeaderView::AddResetDecisionsLabel() {
@@ -466,8 +454,6 @@ WebsiteSettingsPopupView::WebsiteSettingsPopupView(
       weak_factory_(this) {
   g_shown_popup_type = POPUP_WEBSITE_SETTINGS;
   set_parent_window(parent_window);
-  is_devtools_disabled_ =
-      profile->GetPrefs()->GetBoolean(prefs::kDevToolsDisabled);
 
   // Compensate for built-in vertical padding in the anchor view's image.
   set_anchor_view_insets(gfx::Insets(
@@ -725,9 +711,7 @@ void WebsiteSettingsPopupView::SetIdentityInfo(
       header_->AddResetDecisionsLabel();
   }
 
-  bool include_details_link = !is_devtools_disabled_ || certificate_;
-
-  header_->SetDetails(security_description->details, include_details_link);
+  header_->SetDetails(security_description->details);
 
   Layout();
   SizeToContents();
@@ -787,20 +771,12 @@ void WebsiteSettingsPopupView::StyledLabelLinkClicked(views::StyledLabel* label,
                                                       int event_flags) {
   switch (label->id()) {
     case STYLED_LABEL_SECURITY_DETAILS:
+      web_contents()->OpenURL(content::OpenURLParams(
+          GURL(chrome::kPageInfoHelpCenterURL), content::Referrer(),
+          WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+          false));
       presenter_->RecordWebsiteSettingsAction(
-          WebsiteSettings::WEBSITE_SETTINGS_SECURITY_DETAILS_OPENED);
-
-      if (is_devtools_disabled_) {
-        DCHECK(certificate_);
-        gfx::NativeWindow parent =
-            anchor_widget() ? anchor_widget()->GetNativeWindow() : nullptr;
-        presenter_->RecordWebsiteSettingsAction(
-            WebsiteSettings::WEBSITE_SETTINGS_CERTIFICATE_DIALOG_OPENED);
-        ShowCertificateViewer(web_contents(), parent, certificate_.get());
-      } else {
-        DevToolsWindow::OpenDevToolsWindow(
-            web_contents(), DevToolsToggleAction::ShowSecurityPanel());
-      }
+          WebsiteSettings::WEBSITE_SETTINGS_CONNECTION_HELP_OPENED);
       break;
     case STYLED_LABEL_RESET_CERTIFICATE_DECISIONS:
       presenter_->OnRevokeSSLErrorBypassButtonPressed();
