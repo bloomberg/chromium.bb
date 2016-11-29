@@ -75,6 +75,18 @@ struct ManagedDisplayModeSorter {
 
 }  // namespace
 
+TouchCalibrationData::TouchCalibrationData() {}
+
+TouchCalibrationData::TouchCalibrationData(
+    const TouchCalibrationData::CalibrationPointPairQuad& point_pairs,
+    const gfx::Size& bounds) : point_pairs(point_pairs),
+                               bounds(bounds) {}
+
+TouchCalibrationData::TouchCalibrationData(
+    const TouchCalibrationData& calibration_data)
+    : point_pairs(calibration_data.point_pairs),
+      bounds(calibration_data.bounds) {}
+
 ManagedDisplayMode::ManagedDisplayMode()
     : refresh_rate_(0.0f),
       is_interlaced_(false),
@@ -279,6 +291,7 @@ ManagedDisplayInfo::ManagedDisplayInfo()
       has_overscan_(false),
       active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
       touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
+      has_touch_calibration_data_(false),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -296,6 +309,7 @@ ManagedDisplayInfo::ManagedDisplayInfo(int64_t id,
       has_overscan_(has_overscan),
       active_rotation_source_(Display::ROTATION_SOURCE_UNKNOWN),
       touch_support_(Display::TOUCH_SUPPORT_UNKNOWN),
+      has_touch_calibration_data_(false),
       device_scale_factor_(1.0f),
       device_dpi_(kDpi96),
       overscan_insets_in_dip_(0, 0, 0, 0),
@@ -356,6 +370,10 @@ void ManagedDisplayInfo::Copy(const ManagedDisplayInfo& native_info) {
       overscan_insets_in_dip_.Set(0, 0, 0, 0);
     else if (!native_info.overscan_insets_in_dip_.IsEmpty())
       overscan_insets_in_dip_ = native_info.overscan_insets_in_dip_;
+
+    has_touch_calibration_data_ = native_info.has_touch_calibration_data_;
+    if (has_touch_calibration_data_)
+      touch_calibration_data_ = native_info.touch_calibration_data_;
 
     rotations_ = native_info.rotations_;
     configured_ui_scale_ = native_info.configured_ui_scale_;
@@ -495,6 +513,12 @@ void ManagedDisplayInfo::ClearInputDevices() {
 
 void ResetDisplayIdForTest() {
   synthesized_display_id = kSynthesizedDisplayIdStart;
+}
+
+void ManagedDisplayInfo::SetTouchCalibrationData(
+    const TouchCalibrationData& touch_calibration_data) {
+  has_touch_calibration_data_ = true;
+  touch_calibration_data_ = touch_calibration_data;
 }
 
 }  // namespace display

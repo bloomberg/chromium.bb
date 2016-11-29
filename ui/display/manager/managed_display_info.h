@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <array>
 #include <map>
 #include <string>
 #include <vector>
@@ -20,6 +21,26 @@
 #include "ui/gfx/geometry/rect.h"
 
 namespace display {
+
+// A struct that represents all the data required for touch calibration for the
+// display.
+struct DISPLAY_EXPORT TouchCalibrationData {
+  // CalibrationPointPair.first -> display point
+  // CalibrationPointPair.second -> touch point
+  using CalibrationPointPair = std::pair<gfx::Point, gfx::Point>;
+  using CalibrationPointPairQuad = std::array<CalibrationPointPair, 4>;
+  TouchCalibrationData();
+  TouchCalibrationData(const CalibrationPointPairQuad& point_pairs,
+                       const gfx::Size& bounds);
+  TouchCalibrationData(const TouchCalibrationData& calibration_data);
+
+  // Calibration point pairs used during calibration. Each point pair contains a
+  // display point and the corresponding touch point.
+  CalibrationPointPairQuad point_pairs;
+
+  // Bounds of the touch display when the calibration was performed.
+  gfx::Size bounds;
+};
 
 // A class that represents the display's mode info.
 class DISPLAY_EXPORT ManagedDisplayMode
@@ -243,6 +264,15 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
   // display.
   void SetManagedDisplayModes(const ManagedDisplayModeList& display_modes);
 
+
+  // Sets/Gets the touch calibration data for the display.
+  void SetTouchCalibrationData(const TouchCalibrationData& calibration_data);
+  TouchCalibrationData
+      GetTouchCalibrationData() const & { return touch_calibration_data_; }
+  bool has_touch_calibration_data() const
+      { return has_touch_calibration_data_; }
+  void clear_touch_calibration_data() { has_touch_calibration_data_ = false; }
+
   // Returns the native mode size. If a native mode is not present, return an
   // empty size.
   gfx::Size GetNativeModeSize() const;
@@ -302,6 +332,7 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
   std::map<Display::RotationSource, Display::Rotation> rotations_;
   Display::RotationSource active_rotation_source_;
   Display::TouchSupport touch_support_;
+  bool has_touch_calibration_data_;
 
   // The set of input devices associated with this display.
   std::vector<int> input_devices_;
@@ -353,6 +384,9 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
 
   // Maximum cursor size.
   gfx::Size maximum_cursor_size_;
+
+  // Information associated to touch calibration for the display.
+  TouchCalibrationData touch_calibration_data_;
 
   // If you add a new member, you need to update Copy().
 };
