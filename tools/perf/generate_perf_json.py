@@ -78,38 +78,6 @@ SCRIPT_TESTS = [
   },
   {
     'args': [
-      'cc_perftests',
-      '--test-launcher-print-test-stdio=always'
-    ],
-    'name': 'cc_perftests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Linux Perf',
-          'shards': [3]
-        },
-      ]
-    }
-  },
-  {
-    'args': [
-      'tracing_perftests',
-      '--test-launcher-print-test-stdio=always'
-    ],
-    'name': 'tracing_perftests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Linux Perf',
-          'shards': [3]
-        },
-      ]
-    }
-  },
-  {
-    'args': [
       'load_library_perf_tests',
       '--test-launcher-print-test-stdio=always'
     ],
@@ -117,26 +85,6 @@ SCRIPT_TESTS = [
     'script': 'gtest_perf_test.py',
     'testers': {
       'chromium.perf': [
-        {
-          'name': 'Linux Perf',
-          'shards': [3]
-        },
-        {
-          'name': 'Win 7 ATI GPU Perf',
-          'shards': [2]
-        },
-        {
-          'name': 'Win 7 Nvidia GPU Perf',
-          'shards': [2]
-        },
-        {
-          'name': 'Win 7 Perf',
-          'shards': [3]
-        },
-        {
-          'name': 'Win 7 x64 Perf',
-          'shards': [2]
-        },
         {
           'name': 'Win 8 Perf',
           'shards': [2]
@@ -165,44 +113,7 @@ SCRIPT_TESTS = [
           'shards': [3]
         },
         {
-          'name': 'Win 7 ATI GPU Perf',
-          'shards': [2]
-        },
-        {
-          'name': 'Win 7 Nvidia GPU Perf',
-          'shards': [2]
-        },
-        {
-          'name': 'Win 7 Perf',
-          'shards': [3]
-        },
-        {
-          'name': 'Win 7 x64 Perf',
-          'shards': [2]
-        },
-        {
           'name': 'Win 8 Perf',
-          'shards': [2]
-        },
-      ]
-    }
-  },
-  {
-    'args': [
-      'angle_perftests',
-      '--test-launcher-print-test-stdio=always',
-      '--test-launcher-jobs=1'
-    ],
-    'name': 'angle_perftests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Win 7 ATI GPU Perf',
-          'shards': [2]
-        },
-        {
-          'name': 'Win 7 Nvidia GPU Perf',
           'shards': [2]
         },
       ]
@@ -302,19 +213,83 @@ def get_waterfall_config():
     waterfall, 'Win 8 Perf', 'chromium-rel-win8-dual', 'win', num_host_shards=5)
   waterfall = add_tester(
     waterfall, 'Win 7 Perf', 'chromium-rel-win7-dual',
-    'win', target_bits=32, num_host_shards=5)
+    'win', target_bits=32,
+    swarming=[
+      {
+       'gpu': '102b:0532',
+       'os': 'Windows-2008ServerR2-SP1',
+       'device_ids': [
+           'build185-m1', 'build186-m1',
+           'build187-m1', 'build188-m1', 'build189-m1'
+          ],
+       'perf_tests': [
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Win 7 x64 Perf',
-    'chromium-rel-win7-x64-dual', 'win', num_host_shards=5)
+    'chromium-rel-win7-x64-dual', 'win',
+    swarming=[
+      {
+       'gpu': '102b:0532',
+       'os': 'Windows-2008ServerR2-SP1',
+       'device_ids': [
+           'build138-m1', 'build139-m1',
+           'build140-m1', 'build141-m1', 'build142-m1'
+          ],
+       'perf_tests': [
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Win 7 ATI GPU Perf',
-    'chromium-rel-win7-gpu-ati', 'win', num_host_shards=5)
+    'chromium-rel-win7-gpu-ati', 'win',
+    swarming=[
+      {
+       'gpu': '1002:6779',
+       'os': 'Windows-2008ServerR2-SP1',
+       'device_ids': [
+           'build101-m1', 'build102-m1',
+           'build103-m1', 'build104-m1', 'build105-m1'
+          ],
+       'perf_tests': [
+         ('angle_perftests', 2),
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Win 7 Intel GPU Perf',
-    'chromium-rel-win7-gpu-intel', 'win', num_host_shards=5)
+    'chromium-rel-win7-gpu-intel', 'win',
+    swarming=[
+      {
+       'gpu': '8086:041a',
+       'os': 'Windows-2008ServerR2-SP1',
+       'device_ids': [
+           'build164-m1', 'build165-m1',
+           'build166-m1', 'build167-m1', 'build168-m1'
+          ]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Win 7 Nvidia GPU Perf',
-    'chromium-rel-win7-gpu-nvidia', 'win', num_host_shards=5)
+    'chromium-rel-win7-gpu-nvidia', 'win',
+    swarming=[
+      {
+       'gpu': '10de:104a',
+       'os': 'Windows-2008ServerR2-SP1',
+       'device_ids': [
+           'build92-m1', 'build93-m1',
+           'build94-m1', 'build95-m1', 'build96-m1'
+          ],
+       'perf_tests': [
+         ('angle_perftests', 2),
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
+      }
+    ])
 
   waterfall = add_tester(
     waterfall, 'Mac 10.11 Perf', 'chromium-rel-mac11',
@@ -576,11 +551,9 @@ def get_sorted_benchmark_list_by_time(all_benchmarks):
     benchmark_avg_time = benchmark_avgs.get(benchmark.Name(), None)
     if benchmark_avg_time is None:
       # Assume that this is a new benchmark that was added after 11/1/16 when
-      # we generated the benchmarks. Use the old affinity algorith after
+      # we generated the benchmarks. Use the old affinity algorithm after
       # we have given the rest the same distribution, add it to the
       # new benchmarks list.
-      print ('Warning: Benchmark %s was not seen in times generated on Nov1 '
-        '2016, defaulting to old device affinity algorithm' % benchmark.Name())
       new_benchmarks.append(benchmark)
     else:
       # Need to multiple the seconds by 2 since we will be generating two tests
