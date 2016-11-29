@@ -316,6 +316,11 @@ class BASE_EXPORT PersistentMemoryAllocator {
         GetBlockData(ref, type_id, count * sizeof(T))));
   }
 
+  // Get the corresponding reference for an object held in persistent memory.
+  // If the |memory| is not valid or the type does not match, a kReferenceNull
+  // result will be returned.
+  Reference GetAsReference(const void* memory, uint32_t type_id) const;
+
   // Get the number of bytes allocated to a block. This is useful when storing
   // arrays in order to validate the ending boundary. The returned value will
   // include any padding added to achieve the required alignment and so could

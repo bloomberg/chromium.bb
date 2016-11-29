@@ -453,6 +453,24 @@ size_t PersistentMemoryAllocator::used() const {
                   mem_size_);
 }
 
+PersistentMemoryAllocator::Reference PersistentMemoryAllocator::GetAsReference(
+    const void* memory,
+    uint32_t type_id) const {
+  uintptr_t address = reinterpret_cast<uintptr_t>(memory);
+  if (address < reinterpret_cast<uintptr_t>(mem_base_))
+    return kReferenceNull;
+
+  uintptr_t offset = address - reinterpret_cast<uintptr_t>(mem_base_);
+  if (offset >= mem_size_ || offset < sizeof(BlockHeader))
+    return kReferenceNull;
+
+  Reference ref = static_cast<Reference>(offset) - sizeof(BlockHeader);
+  if (!GetBlockData(ref, type_id, kSizeAny))
+    return kReferenceNull;
+
+  return ref;
+}
+
 size_t PersistentMemoryAllocator::GetAllocSize(Reference ref) const {
   const volatile BlockHeader* const block = GetBlock(ref, 0, 0, false, false);
   if (!block)

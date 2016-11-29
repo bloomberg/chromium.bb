@@ -121,6 +121,18 @@ TEST_F(PersistentMemoryAllocatorTest, AllocateAndIterate) {
   EXPECT_EQ(meminfo0.total, meminfo1.total);
   EXPECT_GT(meminfo0.free, meminfo1.free);
 
+  // Verify that pointers can be turned back into references and that invalid
+  // addresses return null.
+  char* memory1 = allocator_->GetAsArray<char>(block1, 1, 1);
+  ASSERT_TRUE(memory1);
+  EXPECT_EQ(block1, allocator_->GetAsReference(memory1, 0));
+  EXPECT_EQ(block1, allocator_->GetAsReference(memory1, 1));
+  EXPECT_EQ(0U, allocator_->GetAsReference(memory1, 2));
+  EXPECT_EQ(0U, allocator_->GetAsReference(memory1 + 1, 0));
+  EXPECT_EQ(0U, allocator_->GetAsReference(memory1 + 16, 0));
+  EXPECT_EQ(0U, allocator_->GetAsReference(nullptr, 0));
+  EXPECT_EQ(0U, allocator_->GetAsReference(&base_name, 0));
+
   // Ensure that the test-object can be made iterable.
   PersistentMemoryAllocator::Iterator iter1a(allocator_.get());
   EXPECT_EQ(0U, iter1a.GetLast());
