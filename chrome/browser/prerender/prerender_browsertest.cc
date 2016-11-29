@@ -1695,7 +1695,7 @@ IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest, PrerenderInfiniteLoop) {
 // Checks that we don't prerender in an infinite loop and multiple links are
 // handled correctly.
 IN_PROC_BROWSER_TEST_F(PrerenderBrowserTest,
-                       PrerenderInfiniteLoopMultiple) {
+                       DISABLED_PrerenderInfiniteLoopMultiple) {
   const char* const kHtmlFileA =
       "/prerender/prerender_infinite_a_multiple.html";
   const char* const kHtmlFileB =
