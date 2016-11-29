@@ -36,7 +36,7 @@ public final class CronetUploadDataStream extends UploadDataSink {
     private static final String TAG = "CronetUploadDataStream";
     // These are never changed, once a request starts.
     private final Executor mExecutor;
-    private final UploadDataProvider mDataProvider;
+    private final VersionSafeCallbacks.UploadDataProviderWrapper mDataProvider;
     private long mLength;
     private long mRemainingLength;
     private CronetUrlRequest mRequest;
@@ -98,7 +98,7 @@ public final class CronetUploadDataStream extends UploadDataSink {
      */
     public CronetUploadDataStream(UploadDataProvider dataProvider, Executor executor) {
         mExecutor = executor;
-        mDataProvider = dataProvider;
+        mDataProvider = new VersionSafeCallbacks.UploadDataProviderWrapper(dataProvider);
     }
 
     /**

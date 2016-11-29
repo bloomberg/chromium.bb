@@ -87,7 +87,7 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
     private String mUserAgent;
     private String mStoragePath;
     private boolean mLegacyModeEnabled;
-    private CronetEngine.Builder.LibraryLoader mLibraryLoader;
+    private VersionSafeCallbacks.LibraryLoader mLibraryLoader;
     private boolean mQuicEnabled;
     private boolean mHttp2Enabled;
     private boolean mSdchEnabled;
@@ -158,11 +158,11 @@ public class CronetEngineBuilderImpl extends ICronetEngineBuilder {
 
     @Override
     public CronetEngineBuilderImpl setLibraryLoader(CronetEngine.Builder.LibraryLoader loader) {
-        mLibraryLoader = loader;
+        mLibraryLoader = new VersionSafeCallbacks.LibraryLoader(loader);
         return this;
     }
 
-    CronetEngine.Builder.LibraryLoader libraryLoader() {
+    VersionSafeCallbacks.LibraryLoader libraryLoader() {
         return mLibraryLoader;
     }
 

@@ -29,7 +29,7 @@ public final class UrlResponseInfoImpl extends UrlResponseInfo {
     private final String mNegotiatedProtocol;
     private final String mProxyServer;
     private final AtomicLong mReceivedBytesCount;
-    private final HeaderBlock mHeaders;
+    private final HeaderBlockImpl mHeaders;
 
     /**
      * Unmodifiable container of response headers or trailers.

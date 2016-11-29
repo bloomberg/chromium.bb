@@ -39,8 +39,8 @@ import javax.annotation.concurrent.GuardedBy;
  * any thread it is protected by mUrlRequestAdapterLock.
  */
 @JNINamespace("cronet")
-// Qualifies UrlRequest.StatusListener which is used in onStatus, a JNI method.
-@JNIAdditionalImport(UrlRequest.class)
+// Qualifies VersionSafeCallbacks.UrlRequestStatusListener which is used in onStatus, a JNI method.
+@JNIAdditionalImport(VersionSafeCallbacks.class)
 @VisibleForTesting
 public final class CronetUrlRequest extends UrlRequestBase {
     private final boolean mAllowDirectExecutor;
@@ -74,7 +74,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private final List<String> mUrlChain = new ArrayList<String>();
     private long mReceivedBytesCountFromRedirects;
 
-    private final UrlRequest.Callback mCallback;
+    private final VersionSafeCallbacks.UrlRequestCallback mCallback;
     private final String mInitialUrl;
     private final int mPriority;
     private String mInitialMethod;
@@ -143,7 +143,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         mInitialUrl = url;
         mUrlChain.add(url);
         mPriority = convertRequestPriority(priority);
-        mCallback = callback;
+        mCallback = new VersionSafeCallbacks.UrlRequestCallback(callback);
         mExecutor = executor;
         mRequestAnnotations = requestAnnotations;
         mDisableCache = disableCache;
@@ -314,7 +314,9 @@ public final class CronetUrlRequest extends UrlRequestBase {
     }
 
     @Override
-    public void getStatus(final UrlRequest.StatusListener listener) {
+    public void getStatus(UrlRequest.StatusListener unsafeListener) {
+        final VersionSafeCallbacks.UrlRequestStatusListener listener =
+                new VersionSafeCallbacks.UrlRequestStatusListener(unsafeListener);
         synchronized (mUrlRequestAdapterLock) {
             if (mUrlRequestAdapter != 0) {
                 nativeGetStatus(mUrlRequestAdapter, listener);
@@ -675,7 +677,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
      */
     @SuppressWarnings("unused")
     @CalledByNative
-    private void onStatus(final UrlRequest.StatusListener listener, final int loadState) {
+    private void onStatus(
+            final VersionSafeCallbacks.UrlRequestStatusListener listener, final int loadState) {
         Runnable task = new Runnable() {
             @Override
             public void run() {
@@ -777,5 +780,6 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private native void nativeDestroy(long nativePtr, boolean sendOnCanceled);
 
     @NativeClassQualifiedName("CronetURLRequestAdapter")
-    private native void nativeGetStatus(long nativePtr, UrlRequest.StatusListener listener);
+    private native void nativeGetStatus(
+            long nativePtr, VersionSafeCallbacks.UrlRequestStatusListener listener);
 }

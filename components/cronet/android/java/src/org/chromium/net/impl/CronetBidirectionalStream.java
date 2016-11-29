@@ -79,7 +79,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
 
     private final CronetUrlRequestContext mRequestContext;
     private final Executor mExecutor;
-    private final Callback mCallback;
+    private final VersionSafeCallbacks.BidirectionalStreamCallback mCallback;
     private final String mInitialUrl;
     private final int mInitialPriority;
     private final String mInitialMethod;
@@ -230,7 +230,7 @@ public class CronetBidirectionalStream extends ExperimentalBidirectionalStream {
         mRequestContext = requestContext;
         mInitialUrl = url;
         mInitialPriority = convertStreamPriority(priority);
-        mCallback = callback;
+        mCallback = new VersionSafeCallbacks.BidirectionalStreamCallback(callback);
         mExecutor = executor;
         mInitialMethod = httpMethod;
         mRequestHeaders = stringsFromHeaderList(requestHeaders);

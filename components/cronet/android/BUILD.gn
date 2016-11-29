@@ -318,6 +318,7 @@ android_library("cronet_impl_common_java") {
     "java/src/org/chromium/net/impl/UrlRequestBuilderImpl.java",
     "java/src/org/chromium/net/impl/UrlResponseInfoImpl.java",
     "java/src/org/chromium/net/impl/UserAgent.java",
+    "java/src/org/chromium/net/impl/VersionSafeCallbacks.java",
   ]
 
   deps = [

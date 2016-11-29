@@ -77,7 +77,7 @@ final class JavaUrlRequest extends UrlRequestBase {
 
     /* These don't change with redirects */
     private String mInitialMethod;
-    private UploadDataProvider mUploadDataProvider;
+    private VersionSafeCallbacks.UploadDataProviderWrapper mUploadDataProvider;
     private Executor mUploadExecutor;
 
     /**
@@ -96,7 +96,7 @@ final class JavaUrlRequest extends UrlRequestBase {
     /* These change with redirects. */
     private String mCurrentUrl;
     private ReadableByteChannel mResponseChannel;
-    private UrlResponseInfo mUrlResponseInfo;
+    private UrlResponseInfoImpl mUrlResponseInfo;
     private String mPendingRedirectUrl;
     /**
      * The happens-before edges created by the executor submission and AtomicReference setting are
@@ -249,7 +249,8 @@ final class JavaUrlRequest extends UrlRequestBase {
         if (mInitialMethod == null) {
             mInitialMethod = "POST";
         }
-        this.mUploadDataProvider = uploadDataProvider;
+        this.mUploadDataProvider =
+                new VersionSafeCallbacks.UploadDataProviderWrapper(uploadDataProvider);
         if (mAllowDirectExecutor) {
             this.mUploadExecutor = executor;
         } else {
@@ -271,7 +272,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         final HttpURLConnection mUrlConnection;
         WritableByteChannel mOutputChannel;
         OutputStream mUrlConnectionOutputStream;
-        final UploadDataProvider mUploadProvider;
+        final VersionSafeCallbacks.UploadDataProviderWrapper mUploadProvider;
         ByteBuffer mBuffer;
         /** This holds the total bytes to send (the content-length). -1 if unknown. */
         long mTotalBytes;
@@ -279,7 +280,8 @@ final class JavaUrlRequest extends UrlRequestBase {
         long mWrittenBytes = 0;
 
         OutputStreamDataSink(final Executor userExecutor, Executor executor,
-                HttpURLConnection urlConnection, UploadDataProvider provider) {
+                HttpURLConnection urlConnection,
+                VersionSafeCallbacks.UploadDataProviderWrapper provider) {
             this.mUserUploadExecutor = new Executor() {
                 @Override
                 public void execute(Runnable runnable) {
@@ -790,17 +792,18 @@ final class JavaUrlRequest extends UrlRequestBase {
                 throw new IllegalStateException("Switch is exhaustive: " + state);
         }
 
-        mCallbackAsync.sendStatus(listener, status);
+        mCallbackAsync.sendStatus(
+                new VersionSafeCallbacks.UrlRequestStatusListener(listener), status);
     }
 
     /** This wrapper ensures that callbacks are always called on the correct executor */
     private final class AsyncUrlRequestCallback {
-        final Callback mCallback;
+        final VersionSafeCallbacks.UrlRequestCallback mCallback;
         final Executor mUserExecutor;
         final Executor mFallbackExecutor;
 
         AsyncUrlRequestCallback(Callback callback, final Executor userExecutor) {
-            this.mCallback = callback;
+            this.mCallback = new VersionSafeCallbacks.UrlRequestCallback(callback);
             if (mAllowDirectExecutor) {
                 this.mUserExecutor = userExecutor;
                 this.mFallbackExecutor = null;
@@ -810,7 +813,8 @@ final class JavaUrlRequest extends UrlRequestBase {
             }
         }
 
-        void sendStatus(final StatusListener listener, final int status) {
+        void sendStatus(
+                final VersionSafeCallbacks.UrlRequestStatusListener listener, final int status) {
             mUserExecutor.execute(new Runnable() {
                 @Override
                 public void run() {

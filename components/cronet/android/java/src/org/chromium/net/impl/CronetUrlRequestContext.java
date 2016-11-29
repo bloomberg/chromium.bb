@@ -33,6 +33,7 @@ import java.net.URLConnection;
 import java.net.URLStreamHandlerFactory;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Executor;
@@ -115,16 +116,21 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private int mDownstreamThroughputKbps = RttThroughputValues.INVALID_RTT_THROUGHPUT;
 
     @GuardedBy("mNetworkQualityLock")
-    private final ObserverList<NetworkQualityRttListener> mRttListenerList =
-            new ObserverList<NetworkQualityRttListener>();
+    private final ObserverList<VersionSafeCallbacks.NetworkQualityRttListenerWrapper>
+            mRttListenerList =
+                    new ObserverList<VersionSafeCallbacks.NetworkQualityRttListenerWrapper>();
 
     @GuardedBy("mNetworkQualityLock")
-    private final ObserverList<NetworkQualityThroughputListener> mThroughputListenerList =
-            new ObserverList<NetworkQualityThroughputListener>();
+    private final ObserverList<VersionSafeCallbacks.NetworkQualityThroughputListenerWrapper>
+            mThroughputListenerList =
+                    new ObserverList<VersionSafeCallbacks
+                                             .NetworkQualityThroughputListenerWrapper>();
 
     @GuardedBy("mFinishedListenerLock")
-    private final List<RequestFinishedInfo.Listener> mFinishedListenerList =
-            new ArrayList<RequestFinishedInfo.Listener>();
+    private final Map<RequestFinishedInfo.Listener,
+            VersionSafeCallbacks.RequestFinishedInfoListener> mFinishedListenerMap =
+            new HashMap<RequestFinishedInfo.Listener,
+                    VersionSafeCallbacks.RequestFinishedInfoListener>();
 
     /**
      * Synchronize access to mCertVerifierData.
@@ -412,7 +418,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                     nativeProvideRTTObservations(mUrlRequestContextAdapter, true);
                 }
             }
-            mRttListenerList.addObserver(listener);
+            mRttListenerList.addObserver(
+                    new VersionSafeCallbacks.NetworkQualityRttListenerWrapper(listener));
         }
     }
 
@@ -422,11 +429,13 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            mRttListenerList.removeObserver(listener);
-            if (mRttListenerList.isEmpty()) {
-                synchronized (mLock) {
-                    checkHaveAdapter();
-                    nativeProvideRTTObservations(mUrlRequestContextAdapter, false);
+            if (mRttListenerList.removeObserver(
+                        new VersionSafeCallbacks.NetworkQualityRttListenerWrapper(listener))) {
+                if (mRttListenerList.isEmpty()) {
+                    synchronized (mLock) {
+                        checkHaveAdapter();
+                        nativeProvideRTTObservations(mUrlRequestContextAdapter, false);
+                    }
                 }
             }
         }
@@ -444,7 +453,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
                     nativeProvideThroughputObservations(mUrlRequestContextAdapter, true);
                 }
             }
-            mThroughputListenerList.addObserver(listener);
+            mThroughputListenerList.addObserver(
+                    new VersionSafeCallbacks.NetworkQualityThroughputListenerWrapper(listener));
         }
     }
 
@@ -454,11 +464,14 @@ public class CronetUrlRequestContext extends CronetEngineBase {
             throw new IllegalStateException("Network quality estimator must be enabled");
         }
         synchronized (mNetworkQualityLock) {
-            mThroughputListenerList.removeObserver(listener);
-            if (mThroughputListenerList.isEmpty()) {
-                synchronized (mLock) {
-                    checkHaveAdapter();
-                    nativeProvideThroughputObservations(mUrlRequestContextAdapter, false);
+            if (mThroughputListenerList.removeObserver(
+                        new VersionSafeCallbacks.NetworkQualityThroughputListenerWrapper(
+                                listener))) {
+                if (mThroughputListenerList.isEmpty()) {
+                    synchronized (mLock) {
+                        checkHaveAdapter();
+                        nativeProvideThroughputObservations(mUrlRequestContextAdapter, false);
+                    }
                 }
             }
         }
@@ -467,20 +480,21 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @Override
     public void addRequestFinishedListener(RequestFinishedInfo.Listener listener) {
         synchronized (mFinishedListenerLock) {
-            mFinishedListenerList.add(listener);
+            mFinishedListenerMap.put(
+                    listener, new VersionSafeCallbacks.RequestFinishedInfoListener(listener));
         }
     }
 
     @Override
     public void removeRequestFinishedListener(RequestFinishedInfo.Listener listener) {
         synchronized (mFinishedListenerLock) {
-            mFinishedListenerList.remove(listener);
+            mFinishedListenerMap.remove(listener);
         }
     }
 
     boolean hasRequestFinishedListener() {
         synchronized (mFinishedListenerLock) {
-            return !mFinishedListenerList.isEmpty();
+            return !mFinishedListenerMap.isEmpty();
         }
     }
 
@@ -613,7 +627,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     @CalledByNative
     private void onRttObservation(final int rttMs, final long whenMs, final int source) {
         synchronized (mNetworkQualityLock) {
-            for (final NetworkQualityRttListener listener : mRttListenerList) {
+            for (final VersionSafeCallbacks.NetworkQualityRttListenerWrapper listener :
+                    mRttListenerList) {
                 Runnable task = new Runnable() {
                     @Override
                     public void run() {
@@ -630,7 +645,8 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     private void onThroughputObservation(
             final int throughputKbps, final long whenMs, final int source) {
         synchronized (mNetworkQualityLock) {
-            for (final NetworkQualityThroughputListener listener : mThroughputListenerList) {
+            for (final VersionSafeCallbacks.NetworkQualityThroughputListenerWrapper listener :
+                    mThroughputListenerList) {
                 Runnable task = new Runnable() {
                     @Override
                     public void run() {
@@ -650,11 +666,12 @@ public class CronetUrlRequestContext extends CronetEngineBase {
     }
 
     void reportFinished(final RequestFinishedInfo requestInfo) {
-        ArrayList<RequestFinishedInfo.Listener> currentListeners;
+        ArrayList<VersionSafeCallbacks.RequestFinishedInfoListener> currentListeners;
         synchronized (mFinishedListenerLock) {
-            currentListeners = new ArrayList<RequestFinishedInfo.Listener>(mFinishedListenerList);
+            currentListeners = new ArrayList<VersionSafeCallbacks.RequestFinishedInfoListener>(
+                    mFinishedListenerMap.values());
         }
-        for (final RequestFinishedInfo.Listener listener : currentListeners) {
+        for (final VersionSafeCallbacks.RequestFinishedInfoListener listener : currentListeners) {
             Runnable task = new Runnable() {
                 @Override
                 public void run() {
