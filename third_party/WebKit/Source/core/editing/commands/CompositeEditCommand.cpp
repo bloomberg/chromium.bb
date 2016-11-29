@@ -1511,6 +1511,14 @@ void CompositeEditCommand::moveParagraphs(
       startOfParagraphToMove.isNull())
     return;
 
+  // Can't move the range to a destination inside itself.
+  if (destination.deepEquivalent() > startOfParagraphToMove.deepEquivalent() &&
+      destination.deepEquivalent() < endOfParagraphToMove.deepEquivalent()) {
+    // Reached by unit test TypingCommandTest.insertLineBreakWithIllFormedHTML
+    editingState->abort();
+    return;
+  }
+
   int startIndex = -1;
   int endIndex = -1;
   int destinationIndex = -1;

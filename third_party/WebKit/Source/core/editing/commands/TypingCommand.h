@@ -30,7 +30,7 @@
 
 namespace blink {
 
-class TypingCommand final : public CompositeEditCommand {
+class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
  public:
   enum ETypingCommand {
     DeleteSelection,

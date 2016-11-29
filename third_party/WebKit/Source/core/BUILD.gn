@@ -1163,6 +1163,7 @@ source_set("unit_tests") {
     "editing/commands/ApplyBlockElementCommandTest.cpp",
     "editing/commands/InsertListCommandTest.cpp",
     "editing/commands/ReplaceSelectionCommandTest.cpp",
+    "editing/commands/TypingCommandTest.cpp",
     "editing/iterators/BackwardsTextBufferTest.cpp",
     "editing/iterators/CharacterIteratorTest.cpp",
     "editing/iterators/ForwardsTextBufferTest.cpp",
