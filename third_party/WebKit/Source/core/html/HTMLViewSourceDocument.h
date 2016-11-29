@@ -25,6 +25,7 @@
 #ifndef HTMLViewSourceDocument_h
 #define HTMLViewSourceDocument_h
 
+#include "core/CoreExport.h"
 #include "core/html/HTMLDocument.h"
 
 namespace blink {
@@ -33,7 +34,7 @@ class HTMLTableCellElement;
 class HTMLTableSectionElement;
 class HTMLToken;
 
-class HTMLViewSourceDocument final : public HTMLDocument {
+class CORE_EXPORT HTMLViewSourceDocument final : public HTMLDocument {
  public:
   enum SourceAnnotation { AnnotateSourceAsSafe, AnnotateSourceAsXSS };
 

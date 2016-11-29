@@ -77,10 +77,10 @@ void HTMLViewSourceParser::finish() {
   if (!m_input.haveSeenEndOfFile())
     m_input.markEndOfFile();
 
-  if (!isDetached())
+  if (!isDetached()) {
     pumpTokenizer();
-
-  document()->finishedParsing();
+    document()->finishedParsing();
+  }
 }
 
 }  // namespace blink
