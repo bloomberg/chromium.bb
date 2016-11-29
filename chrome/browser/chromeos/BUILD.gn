@@ -875,6 +875,8 @@ source_set("chromeos") {
     "login/ui/user_adding_screen.h",
     "login/ui/user_adding_screen_input_methods_controller.cc",
     "login/ui/user_adding_screen_input_methods_controller.h",
+    "login/ui/web_contents_set_background_color.cc",
+    "login/ui/web_contents_set_background_color.h",
     "login/ui/webui_login_display.cc",
     "login/ui/webui_login_display.h",
     "login/ui/webui_login_view.cc",

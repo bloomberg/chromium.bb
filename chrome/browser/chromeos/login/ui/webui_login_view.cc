@@ -21,6 +21,7 @@
 #include "chrome/browser/chromeos/accessibility/accessibility_util.h"
 #include "chrome/browser/chromeos/login/ui/login_display_host_impl.h"
 #include "chrome/browser/chromeos/login/ui/proxy_settings_dialog.h"
+#include "chrome/browser/chromeos/login/ui/web_contents_set_background_color.h"
 #include "chrome/browser/chromeos/login/ui/webui_login_display.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/chromeos/settings/cros_settings.h"
@@ -351,13 +352,8 @@ void WebUILoginView::LoadURL(const GURL & url) {
   webui_login_->LoadInitialURL(url);
   webui_login_->RequestFocus();
 
-  // TODO(nkostylev): Use WebContentsObserver::RenderViewCreated to track
-  // when RenderView is created.
-  GetWebContents()
-      ->GetRenderViewHost()
-      ->GetWidget()
-      ->GetView()
-      ->SetBackgroundColor(SK_ColorTRANSPARENT);
+  WebContentsSetBackgroundColor::CreateForWebContentsWithColor(
+      GetWebContents(), SK_ColorTRANSPARENT);
 
   // There is no Shell instance while running in mash.
   if (chrome::IsRunningInMash())
