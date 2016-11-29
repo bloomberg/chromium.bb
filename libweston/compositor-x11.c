@@ -1298,15 +1298,10 @@ static int
 x11_backend_next_event(struct x11_backend *b,
 		       xcb_generic_event_t **event, uint32_t mask)
 {
-	if (mask & WL_EVENT_READABLE) {
+	if (mask & WL_EVENT_READABLE)
 		*event = xcb_poll_for_event(b->conn);
-	} else {
-#ifdef HAVE_XCB_POLL_FOR_QUEUED_EVENT
+	else
 		*event = xcb_poll_for_queued_event(b->conn);
-#else
-		*event = xcb_poll_for_event(b->conn);
-#endif
-	}
 
 	return *event != NULL;
 }
