@@ -226,6 +226,9 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
         task->traits.shutdown_behavior() !=
         TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN);
 
+    const bool previous_wait_allowed =
+        ThreadRestrictions::SetWaitAllowed(task->traits.with_wait());
+
     {
       // Set up SequenceToken as expected for the scope of the task.
       ScopedSetSequenceTokenForCurrentThread
@@ -260,6 +263,8 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
 
       PerformRunTask(std::move(task));
     }
+
+    ThreadRestrictions::SetWaitAllowed(previous_wait_allowed);
 
     AfterRunTask(shutdown_behavior);
   }
