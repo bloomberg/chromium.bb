@@ -70,9 +70,10 @@ bool IsTimezoneAutomaticDetectionUserEditable() {
 
 }  // namespace
 
-DateTimeHandler::DateTimeHandler() : weak_ptr_factory_(this) {}
+DateTimeHandler::DateTimeHandler()
+    : scoped_observer_(this), weak_ptr_factory_(this) {}
 
-DateTimeHandler::~DateTimeHandler() {}
+DateTimeHandler::~DateTimeHandler() = default;
 
 DateTimeHandler* DateTimeHandler::Create(
     content::WebUIDataSource* html_source) {
@@ -107,7 +108,7 @@ void DateTimeHandler::RegisterMessages() {
 void DateTimeHandler::OnJavascriptAllowed() {
   SystemClockClient* system_clock_client =
       DBusThreadManager::Get()->GetSystemClockClient();
-  system_clock_client->AddObserver(this);
+  scoped_observer_.Add(system_clock_client);
   SystemClockCanSetTimeChanged(system_clock_client->CanSetTime());
 
   // The system time zone policy disables auto-detection entirely. (However,
@@ -130,8 +131,7 @@ void DateTimeHandler::OnJavascriptAllowed() {
 }
 
 void DateTimeHandler::OnJavascriptDisallowed() {
-  DBusThreadManager::Get()->GetSystemClockClient()->RemoveObserver(this);
-
+  scoped_observer_.RemoveAll();
   system_timezone_policy_subscription_.reset();
 
   if (!IsSystemTimezoneAutomaticDetectionPolicyFlagDisabled())
