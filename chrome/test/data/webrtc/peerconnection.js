@@ -100,6 +100,15 @@ function forceVideoCodec(videoCodec) {
 }
 
 /**
+ * Creates a data channel with the specified label.
+ * Returns 'ok-created' to test.
+ */
+function createDataChannel(label) {
+  peerConnection_().createDataChannel(label);
+  returnToTest('ok-created');
+}
+
+/**
  * Asks this page to create a local offer.
  *
  * Returns a string on the format ok-(JSON encoded session description).

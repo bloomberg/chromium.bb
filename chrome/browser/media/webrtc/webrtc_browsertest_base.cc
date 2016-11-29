@@ -404,6 +404,12 @@ void WebRtcTestBase::GatherAndSendIceCandidates(
       to_tab));
 }
 
+void WebRtcTestBase::CreateDataChannel(content::WebContents* tab,
+                                       const std::string& label) {
+  EXPECT_EQ("ok-created",
+            ExecuteJavascript("createDataChannel('" + label + "')", tab));
+}
+
 void WebRtcTestBase::NegotiateCall(content::WebContents* from_tab,
                                    content::WebContents* to_tab) const {
   std::string local_offer = CreateLocalOffer(from_tab);

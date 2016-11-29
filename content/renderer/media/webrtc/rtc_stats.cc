@@ -20,11 +20,14 @@ class RTCStatsWhitelist {
  public:
   RTCStatsWhitelist() {
     whitelisted_stats_types_.insert(webrtc::RTCCertificateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCCodecStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCDataChannelStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCIceCandidatePairStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCIceCandidateStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCLocalIceCandidateStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCRemoteIceCandidateStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCMediaStreamStats::kType);
+    whitelisted_stats_types_.insert(webrtc::RTCMediaStreamTrackStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCPeerConnectionStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCRTPStreamStats::kType);
     whitelisted_stats_types_.insert(webrtc::RTCInboundRTPStreamStats::kType);
