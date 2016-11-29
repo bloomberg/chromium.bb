@@ -1102,7 +1102,6 @@ void WebURLLoaderImpl::PopulateURLResponse(const GURL& url,
     load_info.setHTTPStatusCode(info.devtools_info->http_status_code);
     load_info.setHTTPStatusText(WebString::fromLatin1(
         info.devtools_info->http_status_text));
-    load_info.setEncodedDataLength(info.encoded_data_length);
 
     load_info.setRequestHeadersText(WebString::fromLatin1(
         info.devtools_info->request_headers_text));

@@ -59,9 +59,6 @@ class WebHTTPLoadInfo {
   BLINK_PLATFORM_EXPORT WebString httpStatusText() const;
   BLINK_PLATFORM_EXPORT void setHTTPStatusText(const WebString&);
 
-  BLINK_PLATFORM_EXPORT long long encodedDataLength() const;
-  BLINK_PLATFORM_EXPORT void setEncodedDataLength(long long);
-
   BLINK_PLATFORM_EXPORT void addRequestHeader(const WebString& name,
                                               const WebString& value);
   BLINK_PLATFORM_EXPORT void addResponseHeader(const WebString& name,

@@ -210,10 +210,7 @@ void NetworkResourcesData::responseReceived(const String& requestId,
   resourceData->setMimeType(response.mimeType());
   resourceData->setTextEncodingName(response.textEncodingName());
   resourceData->setHTTPStatusCode(response.httpStatusCode());
-  resourceData->setRawHeaderSize(
-      response.resourceLoadInfo()
-          ? response.resourceLoadInfo()->encodedDataLength
-          : 0);
+  resourceData->setRawHeaderSize(response.encodedDataLength());
 
   String filePath = response.downloadedFilePath();
   if (!filePath.isEmpty()) {

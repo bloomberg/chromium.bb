@@ -363,10 +363,7 @@ buildObjectForResourceResponse(const ResourceResponse& response,
   else
     headersMap = response.httpHeaderFields();
 
-  int64_t encodedDataLength =
-      response.resourceLoadInfo()
-          ? response.resourceLoadInfo()->encodedDataLength
-          : -1;
+  int64_t encodedDataLength = response.encodedDataLength();
 
   String securityState = protocol::Security::SecurityStateEnum::Unknown;
   switch (response.getSecurityStyle()) {

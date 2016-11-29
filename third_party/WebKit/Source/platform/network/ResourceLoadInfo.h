@@ -32,11 +32,10 @@
 namespace blink {
 
 struct ResourceLoadInfo : RefCounted<ResourceLoadInfo> {
-  ResourceLoadInfo() : httpStatusCode(0), encodedDataLength(-1) {}
+  ResourceLoadInfo() : httpStatusCode(0) {}
 
   int httpStatusCode;
   String httpStatusText;
-  long long encodedDataLength;
   HTTPHeaderMap requestHeaders;
   HTTPHeaderMap responseHeaders;
   String requestHeadersText;
