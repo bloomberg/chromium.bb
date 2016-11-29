@@ -202,6 +202,9 @@ class MEDIA_GPU_EXPORT V4L2VideoDecodeAccelerator
   // Decoding tasks, to be run on decode_thread_.
   //
 
+  // Task to finish initialization on decoder_thread_.
+  void InitializeTask();
+
   // Enqueue a BitstreamBuffer to decode.  This will enqueue a buffer to the
   // decoder_input_queue_, then queue a DecodeBufferTask() to actually decode
   // the buffer.
