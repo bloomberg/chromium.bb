@@ -204,3 +204,61 @@ blink_core_sources("editing") {
     "//build/config/compiler:no_size_t_to_int_warning",
   ]
 }
+
+source_set("unit_tests") {
+  testonly = true
+  sources = [
+    "CompositionUnderlineTest.cpp",
+    "EditingCommandTest.cpp",
+    "EditingStrategyTest.cpp",
+    "EditingStyleTest.cpp",
+    "EditingTestBase.cpp",
+    "EditingTestBase.h",
+    "EditingUtilitiesTest.cpp",
+    "EditorTest.cpp",
+    "EphemeralRangeTest.cpp",
+    "FrameSelectionTest.cpp",
+    "GranularityStrategyTest.cpp",
+    "InputMethodControllerTest.cpp",
+    "PositionTest.cpp",
+    "RelocatablePositionTest.cpp",
+    "SelectionAdjusterTest.cpp",
+    "SelectionControllerTest.cpp",
+    "SelectionTemplateTest.cpp",
+    "SurroundingTextTest.cpp",
+    "VisiblePositionTest.cpp",
+    "VisibleSelectionTest.cpp",
+    "VisibleUnitsTest.cpp",
+    "commands/ApplyBlockElementCommandTest.cpp",
+    "commands/InsertListCommandTest.cpp",
+    "commands/ReplaceSelectionCommandTest.cpp",
+    "commands/TypingCommandTest.cpp",
+    "iterators/BackwardsTextBufferTest.cpp",
+    "iterators/CharacterIteratorTest.cpp",
+    "iterators/ForwardsTextBufferTest.cpp",
+    "iterators/SearchBufferTest.cpp",
+    "iterators/SimplifiedBackwardsTextIteratorTest.cpp",
+    "iterators/TextIteratorTest.cpp",
+    "iterators/TextSearcherICUTest.cpp",
+    "markers/DocumentMarkerControllerTest.cpp",
+    "serializers/StyledMarkupSerializerTest.cpp",
+    "spellcheck/SpellCheckerTest.cpp",
+    "state_machines/BackspaceStateMachineTest.cpp",
+    "state_machines/BackwardGraphemeBoundaryStateMachineTest.cpp",
+    "state_machines/ForwardGraphemeBoundaryStateMachineTest.cpp",
+    "state_machines/StateMachineTestUtil.cpp",
+    "state_machines/StateMachineUtilTest.cpp",
+  ]
+
+  configs += [
+    "//third_party/WebKit/Source/core:blink_core_pch",
+    "//third_party/WebKit/Source:config",
+    "//third_party/WebKit/Source:inside_blink",
+  ]
+
+  deps = [
+    "//testing/gmock",
+    "//testing/gtest",
+    "//third_party/WebKit/Source/core:core",
+  ]
+}
