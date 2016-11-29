@@ -58,3 +58,16 @@ repack("repack_unscaled_resources") {
   output = "$target_gen_dir/resources.pak"
   copy_data_to_bundle = true
 }
+
+bundle_data("launchscreen_assets") {
+  sources = [
+    "launchscreen_images.xcassets/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_app_logo.imageset/launchscreen_app_logo.png",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/Contents.json",
+    "launchscreen_images.xcassets/launchscreen_brand_name.imageset/launchscreen_brand_name.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
