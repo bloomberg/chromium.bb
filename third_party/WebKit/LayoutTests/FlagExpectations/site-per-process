@@ -1,6 +1,9 @@
 # These tests currently fail when they run with --site-per-process.
 # See https://crbug.com/477150.
 
+# https://crbug.com/669083: console messages mismatch (origin-only VS full-URI)
+crbug.com/669083 http/tests/security/frameNavigation/xss-DENIED-top-navigation-without-user-gesture.html [ Failure ]
+
 # https://crbug.com/661725 - Propagating user gesture via postMessage doesn't work for OOPIFs
 crbug.com/661725 http/tests/security/frameNavigation/xss-ALLOWED-top-navigation-after-postMessage.html [ Timeout ]
 
