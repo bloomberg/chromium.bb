@@ -486,6 +486,8 @@ void LayoutMultiColumnFlowThread::layoutColumns(
   // flow thread, the flow thread needs layout as well.
   layoutScope.setChildNeedsLayout(this);
 
+  calculateColumnHeightAvailable();
+
   if (FragmentationContext* enclosingFragmentationContext =
           this->enclosingFragmentationContext()) {
     m_blockOffsetInEnclosingFragmentationContext =
@@ -654,6 +656,30 @@ LayoutUnit LayoutMultiColumnFlowThread::remainingLogicalHeightAt(
     LayoutUnit blockOffset) {
   return pageRemainingLogicalHeightForOffset(blockOffset,
                                              AssociateWithLatterPage);
+}
+
+void LayoutMultiColumnFlowThread::calculateColumnHeightAvailable() {
+  // Calculate the non-auto content box height, or set it to 0 if it's auto. We
+  // need to know this before layout, so that we can figure out where to insert
+  // column breaks. We also treat LayoutView (which may be paginated, which uses
+  // the multicol implementation) as having a fixed height, since its height is
+  // deduced from the viewport height. We use computeLogicalHeight() to
+  // calculate the content box height. That method will clamp against max-height
+  // and min-height. Since we're now at the beginning of layout, and we don't
+  // know the actual height of the content yet, only call that method when
+  // height is definite, or we might fool ourselves into believing that columns
+  // have a definite height when they in fact don't.
+  LayoutBlockFlow* container = multiColumnBlockFlow();
+  LayoutUnit columnHeight;
+  if (container->hasDefiniteLogicalHeight() || container->isLayoutView()) {
+    LogicalExtentComputedValues computedValues;
+    container->computeLogicalHeight(LayoutUnit(), container->logicalTop(),
+                                    computedValues);
+    columnHeight = computedValues.m_extent -
+                   container->borderAndPaddingLogicalHeight() -
+                   container->scrollbarLogicalHeight();
+  }
+  setColumnHeightAvailable(std::max(columnHeight, LayoutUnit()));
 }
 
 void LayoutMultiColumnFlowThread::calculateColumnCountAndWidth(

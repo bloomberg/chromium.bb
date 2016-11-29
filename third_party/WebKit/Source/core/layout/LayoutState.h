@@ -67,13 +67,11 @@ class LayoutState {
 
  public:
   // Constructor for root LayoutState created by LayoutView
-  LayoutState(LayoutUnit pageLogicalHeight,
-              LayoutView&);
+  explicit LayoutState(LayoutView&);
   // Constructor for sub-tree layout and orthogonal writing-mode roots
   explicit LayoutState(LayoutObject& root);
 
   LayoutState(LayoutBox&,
-              LayoutUnit pageLogicalHeight = LayoutUnit(),
               bool containingBlockLogicalWidthChanged = false);
 
   ~LayoutState();
@@ -94,7 +92,6 @@ class LayoutState {
   };
 
   const LayoutSize& paginationOffset() const { return m_paginationOffset; }
-  LayoutUnit pageLogicalHeight() const { return m_pageLogicalHeight; }
   bool containingBlockLogicalWidthChanged() const {
     return m_containingBlockLogicalWidthChanged;
   }
@@ -123,9 +120,6 @@ class LayoutState {
   // x/y offset from the logical top / start of the first page. Does not include
   // relative positioning or scroll offsets.
   LayoutSize m_paginationOffset;
-
-  // The current page height for the pagination model that encloses us.
-  LayoutUnit m_pageLogicalHeight;
 
   // The height we need to make available for repeating table headers in
   // paginated layout.

@@ -277,47 +277,6 @@ bool LayoutBlockFlow::updateLogicalWidthAndColumnWidth() {
   return relayoutChildren;
 }
 
-void LayoutBlockFlow::checkForPaginationLogicalHeightChange(
-    LayoutUnit& pageLogicalHeight) {
-  if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-    // Calculate the non-auto content box height, or set it to 0 if it's auto.
-    // We need to know this before layout, so that we can figure out where to
-    // insert column breaks. We also treat LayoutView (which may be paginated,
-    // which uses the multicol implmentation) as having non-auto height, since
-    // its height is deduced from the viewport height.
-    // We use computeLogicalHeight() to calculate the content box height. That
-    // method will clamp against max-height and min-height. Since we're now at
-    // the beginning of layout, and we don't know the actual height of the
-    // content yet, only call that method when height is definite, or we might
-    // fool ourselves into believing that columns have a definite height when
-    // they in fact don't.
-    LayoutUnit columnHeight;
-    if (hasDefiniteLogicalHeight() || isLayoutView()) {
-      LogicalExtentComputedValues computedValues;
-      computeLogicalHeight(LayoutUnit(), logicalTop(), computedValues);
-      columnHeight = computedValues.m_extent - borderAndPaddingLogicalHeight() -
-                     scrollbarLogicalHeight();
-    }
-    flowThread->setColumnHeightAvailable(std::max(columnHeight, LayoutUnit()));
-  } else if (isLayoutFlowThread()) {
-    LayoutFlowThread* flowThread = toLayoutFlowThread(this);
-
-    // FIXME: This is a hack to always make sure we have a page logical height,
-    // if said height is known. The page logical height thing in LayoutState is
-    // meaningless for flow thread-based pagination (page height isn't
-    // necessarily uniform throughout the flow thread), but as long as it is
-    // used universally as a means to determine whether page height is known or
-    // not, we need this. Page height is unknown when column balancing is
-    // enabled and flow thread height is still unknown (i.e. during the first
-    // layout pass). When it's unknown, we need to prevent the pagination code
-    // from assuming page breaks everywhere and thereby eating every top margin.
-    // It should be trivial to clean up and get rid of this hack once the old
-    // multicol implementation is gone.
-    pageLogicalHeight =
-        flowThread->isPageLogicalHeightKnown() ? LayoutUnit(1) : LayoutUnit();
-  }
-}
-
 void LayoutBlockFlow::setBreakAtLineToAvoidWidow(int lineToBreak) {
   ASSERT(lineToBreak >= 0);
   ensureRareData();
@@ -444,9 +403,8 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
   // Multiple passes might be required for column based layout.
   // The number of passes could be as high as the number of columns.
   bool done = false;
-  LayoutUnit pageLogicalHeight;
   while (!done)
-    done = layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
+    done = layoutBlockFlow(relayoutChildren, layoutScope);
 
   updateLayerTransformAfterLayout();
 
@@ -461,7 +419,6 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
 
 DISABLE_CFI_PERF
 inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
-                                             LayoutUnit& pageLogicalHeight,
                                              SubtreeLayoutScope& layoutScope) {
   LayoutUnit oldLeft = logicalLeft();
   bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
@@ -469,9 +426,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
 
   rebuildFloatsFromIntruding();
 
-  checkForPaginationLogicalHeightChange(pageLogicalHeight);
-
-  LayoutState state(*this, pageLogicalHeight, logicalWidthChanged);
+  LayoutState state(*this, logicalWidthChanged);
 
   if (m_paginationStateChanged) {
     // We now need a deep layout to clean up struts after pagination, if we
@@ -544,7 +499,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
     // potential infinite loop, run layout again with auto scrollbars frozen in
     // their current state.
     PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
-    return layoutBlockFlow(relayoutChildren, pageLogicalHeight, layoutScope);
+    return layoutBlockFlow(relayoutChildren, layoutScope);
   }
 
   // Expand our intrinsic height to encompass floats.

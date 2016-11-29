@@ -31,21 +31,18 @@
 
 namespace blink {
 
-LayoutState::LayoutState(LayoutUnit pageLogicalHeight,
-                         LayoutView& view)
-    : m_isPaginated(pageLogicalHeight),
+LayoutState::LayoutState(LayoutView& view)
+    : m_isPaginated(view.pageLogicalHeight()),
       m_containingBlockLogicalWidthChanged(false),
       m_paginationStateChanged(false),
       m_flowThread(nullptr),
       m_next(nullptr),
-      m_pageLogicalHeight(pageLogicalHeight),
       m_layoutObject(view) {
   ASSERT(!view.layoutState());
   view.pushLayoutState(*this);
 }
 
 LayoutState::LayoutState(LayoutBox& layoutObject,
-                         LayoutUnit pageLogicalHeight,
                          bool containingBlockLogicalWidthChanged)
     : m_containingBlockLogicalWidthChanged(containingBlockLogicalWidthChanged),
       m_next(layoutObject.view()->layoutState()),
@@ -58,9 +55,8 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   layoutObject.view()->pushLayoutState(*this);
   m_heightOffsetForTableHeaders = m_next->heightOffsetForTableHeaders();
 
-  if (pageLogicalHeight || layoutObject.isLayoutFlowThread()) {
+  if (layoutObject.isLayoutFlowThread()) {
     // Entering a new pagination context.
-    m_pageLogicalHeight = pageLogicalHeight;
     m_paginationOffset = LayoutSize();
     m_isPaginated = true;
     return;
@@ -72,15 +68,11 @@ LayoutState::LayoutState(LayoutBox& layoutObject,
   if (layoutObject.getPaginationBreakability() == LayoutBox::ForbidBreaks ||
       (m_layoutObject.isSVG() && !m_layoutObject.isSVGRoot())) {
     m_flowThread = nullptr;
-    m_pageLogicalHeight = LayoutUnit();
     m_isPaginated = false;
     return;
   }
 
-  // Propagate the old page height and offset down.
-  m_pageLogicalHeight = m_next->m_pageLogicalHeight;
-
-  m_isPaginated = m_pageLogicalHeight || m_flowThread;
+  m_isPaginated = m_next->m_isPaginated;
   if (!m_isPaginated)
     return;
 

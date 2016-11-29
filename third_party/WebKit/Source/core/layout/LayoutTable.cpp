@@ -737,7 +737,7 @@ void LayoutTable::layout() {
     computeOverflow(clientLogicalBottom());
     updateAfterLayout();
 
-    if (state.pageLogicalHeight()) {
+    if (state.isPaginated() && isPageLogicalHeightKnown()) {
       m_blockOffsetToFirstRepeatableHeader = state.pageLogicalOffset(
           *this, topSection ? topSection->logicalTop() : LayoutUnit());
     }

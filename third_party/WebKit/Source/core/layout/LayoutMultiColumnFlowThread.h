@@ -290,6 +290,7 @@ class CORE_EXPORT LayoutMultiColumnFlowThread : public LayoutFlowThread,
   void layout() override;
 
  private:
+  void calculateColumnHeightAvailable();
   void calculateColumnCountAndWidth(LayoutUnit& width, unsigned& count) const;
   void createAndInsertMultiColumnSet(LayoutBox* insertBefore = nullptr);
   void createAndInsertSpannerPlaceholder(

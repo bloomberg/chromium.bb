@@ -277,7 +277,7 @@ void LayoutView::layout() {
   if (!needsLayout())
     return;
 
-  LayoutState rootLayoutState(pageLogicalHeight(), *this);
+  LayoutState rootLayoutState(*this);
 
   layoutContent();
 
