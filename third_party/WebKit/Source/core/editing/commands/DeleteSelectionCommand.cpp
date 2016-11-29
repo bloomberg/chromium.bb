@@ -818,6 +818,8 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
     return;
   }
 
+  RelocatablePosition relocatableStart(startOfParagraphToMove.deepEquivalent());
+
   // We need to merge into m_upstreamStart's block, but it's been emptied out
   // and collapsed by deletion.
   if (!mergeDestination.deepEquivalent().anchorNode() ||
@@ -828,16 +830,13 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
       (m_startsAtEmptyLine &&
        mergeDestination.deepEquivalent() !=
            startOfParagraphToMove.deepEquivalent())) {
-    PositionWithAffinity storedStartOfParagraphToMove =
-        startOfParagraphToMove.toPositionWithAffinity();
     insertNodeAt(HTMLBRElement::create(document()), m_upstreamStart,
                  editingState);
     if (editingState->isAborted())
       return;
     document().updateStyleAndLayoutIgnorePendingStylesheets();
     mergeDestination = createVisiblePosition(m_upstreamStart);
-    startOfParagraphToMove =
-        createVisiblePosition(storedStartOfParagraphToMove);
+    startOfParagraphToMove = createVisiblePosition(relocatableStart.position());
   }
 
   if (mergeDestination.deepEquivalent() ==
@@ -886,7 +885,7 @@ void DeleteSelectionCommand::mergeParagraphs(EditingState* editingState) {
           editingState);
       if (editingState->isAborted())
         return;
-      m_endingPosition = startOfParagraphToMove.deepEquivalent();
+      m_endingPosition = relocatableStart.position();
       return;
     }
   }

@@ -33,7 +33,7 @@ namespace blink {
 class EditingStyle;
 class HTMLTableRowElement;
 
-class DeleteSelectionCommand final : public CompositeEditCommand {
+class CORE_EXPORT DeleteSelectionCommand final : public CompositeEditCommand {
  public:
   static DeleteSelectionCommand* create(
       Document& document,
