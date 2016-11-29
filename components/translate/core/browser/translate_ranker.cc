@@ -180,9 +180,7 @@ bool TranslateRanker::ShouldOfferTranslation(
 
   UMA_HISTOGRAM_BOOLEAN("Translate.Ranker.QueryResult", result);
 
-  // If enforcement is enabled, return the real result; otherwise, return the
-  // default.
-  return IsEnforcementEnabled() ? result : kDefaultResponse;
+  return result;
 }
 
 TranslateRanker::TranslateRanker() {}
