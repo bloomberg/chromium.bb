@@ -63,7 +63,8 @@ imported/csswg-test/css-text-3/word-break [ Skip ]
 imported/csswg-test/css-transforms-1 [ Skip ]
 imported/csswg-test/css-transitions-1 [ Skip ]
 imported/csswg-test/css-transitions-2 [ Skip ]
-imported/csswg-test/css-ui-3 [ Skip ]
+## Owners: rego@igalia.com
+# imported/csswg-test/css-ui-3 [ Pass ]
 imported/csswg-test/css-values-3 [ Skip ]
 imported/csswg-test/css-variables-1 [ Skip ]
 ## Owners: kojii@chromium.org
@@ -811,3 +812,7 @@ imported/wpt/uievents/order-of-events/mouse-events/click-order-manual.html [ Ski
 imported/wpt/uievents/order-of-events/mouse-events/mouseevents-mousemove-manual.htm [ Skip ]
 imported/wpt/uievents/order-of-events/mouse-events/mousemove-across-manual.html [ Skip ]
 imported/wpt/uievents/order-of-events/mouse-events/mousemove-between-manual.html [ Skip ]
+
+# crbug.com/669452: [css-ui] Skip gzipped SVG and test that uses it.
+imported/csswg-test/css-ui-3/cursor-image-007.html [Skip]
+imported/csswg-test/css-ui-3/support/cursors/woolly-64.svgz [Skip]

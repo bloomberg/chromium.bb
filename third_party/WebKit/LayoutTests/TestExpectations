@@ -1720,3 +1720,18 @@ crbug.com/664782 virtual/gpu-rasterization/images/huge-image-viewport-scale.html
 crbug.com/661497 inspector/console/console-log-side-effects.html [ NeedsRebaseline ]
 
 crbug.com/475556 virtual/stable/webexposed/global-interface-listing.html [ NeedsRebaseline ]
+
+# [css-ui] Imported tests from W3C suite.
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-014.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-015.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-016.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-018.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-019.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-024.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-025.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/caret-color-009.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/caret-color-013.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/caret-color-016.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/caret-color-018.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/text-overflow-002.html [ Failure ]
+crbug.com/669473 imported/csswg-test/css-ui-3/text-overflow-004.html [ Failure ]
