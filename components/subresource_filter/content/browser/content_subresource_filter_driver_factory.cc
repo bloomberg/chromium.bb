@@ -18,6 +18,14 @@
 
 namespace subresource_filter {
 
+namespace {
+
+std::string DistillURLToHostAndPath(const GURL& url) {
+  return url.host() + url.path();
+}
+
+}  // namespace
+
 // static
 const char ContentSubresourceFilterDriverFactory::kWebContentsUserDataKey[] =
     "web_contents_subresource_filter_driver_factory";
@@ -75,30 +83,24 @@ bool ContentSubresourceFilterDriverFactory::IsWhitelisted(
   return whitelisted_hosts_.find(url.host()) != whitelisted_hosts_.end();
 }
 
-bool ContentSubresourceFilterDriverFactory::IsHit(const GURL& url) const {
-  return safe_browsing_blacklisted_patterns_.find(url.host() + url.path()) !=
-         safe_browsing_blacklisted_patterns_.end();
-}
-
-
 void ContentSubresourceFilterDriverFactory::
     OnMainResourceMatchedSafeBrowsingBlacklist(
         const GURL& url,
         const std::vector<GURL>& redirect_urls,
         safe_browsing::SBThreatType threat_type,
         safe_browsing::ThreatPatternType threat_type_metadata) {
-  bool proceed = false;
-  if (GetCurrentActivationList() ==
-      ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL) {
-    proceed = (threat_type_metadata ==
-               safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS);
-  } else if (GetCurrentActivationList() ==
-             ActivationList::PHISHING_INTERSTITIAL) {
-    proceed = (threat_type == safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  bool is_phishing_interstitial =
+      (threat_type == safe_browsing::SB_THREAT_TYPE_URL_PHISHING);
+  bool is_soc_engineering_ads_interstitial =
+      threat_type_metadata ==
+      safe_browsing::ThreatPatternType::SOCIAL_ENGINEERING_ADS;
+
+  if (is_phishing_interstitial) {
+    if (is_soc_engineering_ads_interstitial) {
+      AddActivationListMatch(url, ActivationList::SOCIAL_ENG_ADS_INTERSTITIAL);
+    }
+    AddActivationListMatch(url, ActivationList::PHISHING_INTERSTITIAL);
   }
-  if (!proceed)
-    return;
-  AddToActivationHitsSet(url);
 }
 
 void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
@@ -107,18 +109,12 @@ void ContentSubresourceFilterDriverFactory::AddHostOfURLToWhitelistSet(
     whitelisted_hosts_.insert(url.host());
 }
 
-void ContentSubresourceFilterDriverFactory::AddToActivationHitsSet(
-    const GURL& url) {
-  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
-    safe_browsing_blacklisted_patterns_.insert(url.host() + url.path());
-}
-
 bool ContentSubresourceFilterDriverFactory::ShouldActivateForMainFrameURL(
     const GURL& url) const {
   if (GetCurrentActivationScope() == ActivationScope::ALL_SITES)
     return !IsWhitelisted(url);
   else if (GetCurrentActivationScope() == ActivationScope::ACTIVATION_LIST)
-    return IsHit(url) && !IsWhitelisted(url);
+    return DidURLMatchCurrentActivationList(url) && !IsWhitelisted(url);
   return false;
 }
 
@@ -153,6 +149,23 @@ ContentSubresourceFilterDriverFactory::DriverFromFrameHost(
   return iterator == frame_drivers_.end() ? nullptr : iterator->second.get();
 }
 
+void ContentSubresourceFilterDriverFactory::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  if (navigation_handle->IsInMainFrame()) {
+    navigation_chain_.clear();
+    activation_list_matches_.clear();
+    navigation_chain_.push_back(navigation_handle->GetURL());
+
+    client_->ToggleNotificationVisibility(false);
+    activation_state_ = ActivationState::DISABLED;
+  }
+}
+
+void ContentSubresourceFilterDriverFactory::DidRedirectNavigation(
+    content::NavigationHandle* navigation_handle) {
+  navigation_chain_.push_back(navigation_handle->GetURL());
+}
+
 void ContentSubresourceFilterDriverFactory::RenderFrameCreated(
     content::RenderFrameHost* render_frame_host) {
   CreateDriverForFrameHostIfNeeded(render_frame_host);
@@ -161,15 +174,6 @@ void ContentSubresourceFilterDriverFactory::RenderFrameCreated(
 void ContentSubresourceFilterDriverFactory::RenderFrameDeleted(
     content::RenderFrameHost* render_frame_host) {
   frame_drivers_.erase(render_frame_host);
-}
-
-void ContentSubresourceFilterDriverFactory::DidStartNavigation(
-    content::NavigationHandle* navigation_handle) {
-  safe_browsing_blacklisted_patterns_.clear();
-  if (navigation_handle->IsInMainFrame()) {
-    client_->ToggleNotificationVisibility(false);
-    activation_state_ = ActivationState::DISABLED;
-  }
 }
 
 void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigation(
@@ -196,6 +200,7 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
     content::RenderFrameHost* render_frame_host,
     const GURL& url) {
   if (!render_frame_host->GetParent()) {
+    RecordRedirectChainMatchPattern();
     if (ShouldActivateForMainFrameURL(url)) {
       activation_state_ = GetMaximumActivationState();
       ActivateForFrameHostIfNeeded(render_frame_host, url);
@@ -205,6 +210,56 @@ void ContentSubresourceFilterDriverFactory::ReadyToCommitNavigationInternal(
   } else {
     ActivateForFrameHostIfNeeded(render_frame_host, url);
   }
+}
+
+bool ContentSubresourceFilterDriverFactory::DidURLMatchCurrentActivationList(
+    const GURL& url) const {
+  auto match_types =
+      activation_list_matches_.find(DistillURLToHostAndPath(url));
+  return match_types != activation_list_matches_.end() &&
+         match_types->second.find(GetCurrentActivationList()) !=
+             match_types->second.end();
+}
+
+void ContentSubresourceFilterDriverFactory::AddActivationListMatch(
+    const GURL& url,
+    ActivationList match_type) {
+  if (!url.host().empty() && url.SchemeIsHTTPOrHTTPS())
+    activation_list_matches_[DistillURLToHostAndPath(url)].insert(match_type);
+}
+
+void ContentSubresourceFilterDriverFactory::RecordRedirectChainMatchPattern()
+    const {
+  int hits_pattern = 0;
+  const int kInitialURLHitMask = 0x4;
+  const int kRedirectURLHitMask = 0x2;
+  const int kFinalURLHitMask = 0x1;
+  if (navigation_chain_.size() > 1) {
+    if (DidURLMatchCurrentActivationList(navigation_chain_.back()))
+      hits_pattern |= kFinalURLHitMask;
+    if (DidURLMatchCurrentActivationList(navigation_chain_.front()))
+      hits_pattern |= kInitialURLHitMask;
+
+    // Examine redirects.
+    for (size_t i = 1; i < navigation_chain_.size() - 1; ++i) {
+      if (DidURLMatchCurrentActivationList(navigation_chain_[i])) {
+        hits_pattern |= kRedirectURLHitMask;
+        break;
+      }
+    }
+  } else {
+    if (navigation_chain_.size() &&
+        DidURLMatchCurrentActivationList(navigation_chain_.front())) {
+      hits_pattern = 0x8;  // One url hit.
+    }
+  }
+  if (!hits_pattern)
+    return;
+  UMA_HISTOGRAM_ENUMERATION(
+      "SubresourceFilter.PageLoad.RedirectChainMatchPattern", hits_pattern,
+      0x10 /* max value */);
+  UMA_HISTOGRAM_COUNTS("SubresourceFilter.PageLoad.RedirectChainLength",
+                       navigation_chain_.size());
 }
 
 }  // namespace subresource_filter

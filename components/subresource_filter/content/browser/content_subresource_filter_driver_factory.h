@@ -22,13 +22,20 @@ class WebContents;
 class RenderFrameHost;
 }  // namespace content
 
-namespace subresource_filter {
+namespace safe_browsing {
+class SafeBrowsingServiceTest;
+};
 
-using HostSet = std::set<std::string>;
+namespace subresource_filter {
 
 class ContentSubresourceFilterDriver;
 class SubresourceFilterClient;
 enum class ActivationState;
+enum class ActivationList;
+
+using HostPathSet = std::set<std::string>;
+using URLToActivationListsMap =
+    std::unordered_map<std::string, std::set<ActivationList>>;
 
 // Controls the activation of subresource filtering for each page load in a
 // WebContents and manufactures the per-frame ContentSubresourceFilterDrivers.
@@ -61,8 +68,6 @@ class ContentSubresourceFilterDriverFactory
   // filtering for the lifetime of this WebContents.
   void AddHostOfURLToWhitelistSet(const GURL& url);
 
-  void AddToActivationHitsSet(const GURL& url);
-
   // Called when Safe Browsing detects that the |url| corresponding to the load
   // of the main frame belongs to the blacklist with |threat_type|. If the
   // blacklist is the Safe Browsing Social Engineering ads landing, then |url|
@@ -76,14 +81,19 @@ class ContentSubresourceFilterDriverFactory
   // Reloads the page and inserts the url to the whitelist.
   void OnReloadRequested();
 
-  const HostSet& safe_browsing_blacklisted_patterns_set() const {
-    return safe_browsing_blacklisted_patterns_;
-  }
+  const HostPathSet& whitelisted_set() const { return whitelisted_hosts_; }
+
   ActivationState activation_state() { return activation_state_; }
+
+  const URLToActivationListsMap& safe_browsing_blacklisted_patterns_set()
+      const {
+    return activation_list_matches_;
+  }
 
  private:
   friend class ContentSubresourceFilterDriverFactoryTest;
   friend class SubresourceFilterNavigationThrottleTest;
+  friend class safe_browsing::SafeBrowsingServiceTest;
 
   typedef std::map<content::RenderFrameHost*,
                    std::unique_ptr<ContentSubresourceFilterDriver>>
@@ -99,10 +109,12 @@ class ContentSubresourceFilterDriverFactory
   void OnFirstSubresourceLoadDisallowed();
 
   // content::WebContentsObserver:
-  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
-  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
+  void DidRedirectNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void RenderFrameCreated(content::RenderFrameHost* render_frame_host) override;
+  void RenderFrameDeleted(content::RenderFrameHost* render_frame_host) override;
   void ReadyToCommitNavigation(
       content::NavigationHandle* navigation_handle) override;
   bool OnMessageReceived(const IPC::Message& message,
@@ -120,23 +132,24 @@ class ContentSubresourceFilterDriverFactory
       content::RenderFrameHost* render_frame_host,
       const GURL& url);
 
-  bool IsHit(const GURL& url) const;
+  bool DidURLMatchCurrentActivationList(const GURL& url) const;
+
+  void AddActivationListMatch(const GURL& url, ActivationList match_type);
+  void RecordRedirectChainMatchPattern() const;
 
   static const char kWebContentsUserDataKey[];
 
   FrameHostToOwnedDriverMap frame_drivers_;
   std::unique_ptr<SubresourceFilterClient> client_;
 
-  HostSet whitelisted_hosts_;
-
-  // Host+path list of the URLs, where the Safe Browsing detected hit to the
-  // threat list of interest. When the navigation is commited
-  // |safe_browsing_blacklisted_patterns_| is used to determine whenever
-  // the activation signal should be sent. All entities are deleted from the
-  // list on navigation commit event.
-  HostSet safe_browsing_blacklisted_patterns_;
+  HostPathSet whitelisted_hosts_;
 
   ActivationState activation_state_;
+
+  // The URLs in the navigation chain.
+  std::vector<GURL> navigation_chain_;
+
+  URLToActivationListsMap activation_list_matches_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSubresourceFilterDriverFactory);
 };
