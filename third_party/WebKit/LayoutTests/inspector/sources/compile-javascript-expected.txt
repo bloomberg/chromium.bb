@@ -1,4 +1,5 @@
 Verifies proactive javascript compilation.
 
-0:13 [Error] Uncaught SyntaxError: Unexpected identifier
+SourceFrame edit-me.js: 1 message(s)
+  0:13 [Error] Uncaught SyntaxError: Unexpected identifier
 

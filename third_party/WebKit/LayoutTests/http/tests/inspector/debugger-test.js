@@ -134,6 +134,20 @@ InspectorTest.runAsyncCallStacksTest = function(totalDebuggerStatements, maxAsyn
     }
 };
 
+InspectorTest.dumpSourceFrameMessages = function(sourceFrame, dumpFullURL)
+{
+    var messages = [];
+    for (var bucket of sourceFrame._rowMessageBuckets.values()) {
+        for (var rowMessage of bucket._messages) {
+            var message = rowMessage.message();
+            messages.push(String.sprintf("  %d:%d [%s] %s", message.lineNumber(), message.columnNumber(), message.level(), message.text()));
+        }
+    }
+    var name = dumpFullURL ? sourceFrame.uiSourceCode().url() : sourceFrame.uiSourceCode().displayName();
+    InspectorTest.addResult("SourceFrame " + name + ": " + messages.length + " message(s)");
+    InspectorTest.addResult(messages.join("\n"));
+}
+
 InspectorTest.waitUntilPausedNextTime = function(callback)
 {
     InspectorTest._waitUntilPausedCallback = InspectorTest.safeWrap(callback);

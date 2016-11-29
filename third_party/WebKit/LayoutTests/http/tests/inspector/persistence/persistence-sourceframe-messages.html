@@ -1,0 +1,87 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../debugger-test.js"></script>
+<script src="../workspace-test.js"></script>
+<script src="../isolated-filesystem-test.js"></script>
+<script src="./persistence-test.js"></script>
+<script src="./resources/foo.js"></script>
+<script>
+
+function test()
+{
+    var fs = new InspectorTest.TestFileSystem("file:///var/www");
+    InspectorTest.addFooJSFile(fs);
+    var networkSourceCode;
+    var fileSystemSourceCode;
+    var fileSystemSourceFrame, networkSourceFrame;
+
+    InspectorTest.runTestSuite([
+        function waitForUISourceCodes(next)
+        {
+            fs.reportCreated(function() { });
+            Promise.all([
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.FileSystem)
+                    .then(sourceCode => fileSystemSourceCode = sourceCode),
+                InspectorTest.waitForUISourceCode("foo.js", Workspace.projectTypes.Network)
+                    .then(sourceCode => networkSourceCode = sourceCode),
+            ]).then(next);
+        },
+
+        function addMessages(next)
+        {
+            fileSystemSourceCode.addLineMessage(Workspace.UISourceCode.Message.Level.Error, 'error in filesystem', 0, 0);
+            networkSourceCode.addLineMessage(Workspace.UISourceCode.Message.Level.Warning, 'warning in network', 1, 0);
+
+            Promise.all([
+                InspectorTest.showUISourceCodePromise(fileSystemSourceCode),
+                InspectorTest.showUISourceCodePromise(networkSourceCode)
+            ]).then(onSourceFrames);
+
+            function onSourceFrames(sourceFrames)
+            {
+                fileSystemSourceFrame = sourceFrames[0];
+                networkSourceFrame = sourceFrames[1];
+                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                next();
+            }
+        },
+
+        function addMapping(next)
+        {
+            InspectorTest.waitForBinding("foo.js").then(onBindingCreated);
+            Workspace.fileSystemMapping.addFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingCreated(binding)
+            {
+                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                next();
+            }
+        },
+
+        function removeMapping(next)
+        {
+            Persistence.persistence.addEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+            Workspace.fileSystemMapping.removeFileMapping(fs.fileSystemPath, "http://127.0.0.1:8000", "/");
+
+            function onBindingRemoved(event)
+            {
+                var binding = event.data;
+                if (binding.network.name() !== "foo.js")
+                    return
+                Persistence.persistence.removeEventListener(Persistence.Persistence.Events.BindingRemoved, onBindingRemoved);
+                InspectorTest.dumpSourceFrameMessages(fileSystemSourceFrame, /* dumpFullURL */ true);
+                InspectorTest.dumpSourceFrameMessages(networkSourceFrame, /* dumpFullURL */ true);
+                next();
+            }
+        },
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Verify that messages are synced in UISourceCodeFrame between UISourceCodes of persistence binding.</p>
+</body>
+</html>
