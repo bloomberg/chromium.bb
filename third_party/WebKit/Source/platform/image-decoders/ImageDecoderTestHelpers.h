@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "platform/image-decoders/ImageDecoder.h"
 #include "wtf/Vector.h"
 #include <memory>
 
@@ -14,6 +15,9 @@ class SharedBuffer;
 const char decodersTestingDir[] = "Source/platform/image-decoders/testing";
 
 using DecoderCreator = std::unique_ptr<ImageDecoder> (*)();
+using DecoderCreatorWithAlpha =
+    std::unique_ptr<ImageDecoder> (*)(ImageDecoder::AlphaOption);
+
 PassRefPtr<SharedBuffer> readFile(const char* fileName);
 PassRefPtr<SharedBuffer> readFile(const char* dir, const char* fileName);
 unsigned hashBitmap(const SkBitmap&);
@@ -83,4 +87,21 @@ void testProgressiveDecoding(DecoderCreator,
                              const char* dir,
                              const char* file,
                              size_t increment = 1);
+
+void testUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
+                                                     const char* dir,
+                                                     const char* file);
+void testUpdateRequiredPreviousFrameAfterFirstDecode(DecoderCreator,
+                                                     const char* file);
+
+void testResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
+                                                       const char* dir,
+                                                       const char* file);
+void testResumePartialDecodeAfterClearFrameBufferCache(DecoderCreator,
+                                                       const char* file);
+
+// Verifies that result of alpha blending is similar for AlphaPremultiplied and
+// AlphaNotPremultiplied cases.
+void testAlphaBlending(DecoderCreatorWithAlpha, const char*);
+
 }  // namespace blink

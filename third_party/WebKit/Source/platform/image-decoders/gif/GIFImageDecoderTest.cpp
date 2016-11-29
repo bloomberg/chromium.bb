@@ -145,32 +145,9 @@ TEST(GIFImageDecoderTest, parseByteByByte) {
 }
 
 TEST(GIFImageDecoderTest, parseAndDecodeByteByByte) {
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-
-  RefPtr<SharedBuffer> data =
-      readFile(layoutTestResourcesDir, "animated-gif-with-offsets.gif");
-  ASSERT_TRUE(data.get());
-
-  size_t frameCount = 0;
-  size_t framesDecoded = 0;
-
-  // Pass data to decoder byte by byte.
-  for (size_t length = 1; length <= data->size(); ++length) {
-    RefPtr<SharedBuffer> tempData = SharedBuffer::create(data->data(), length);
-    decoder->setData(tempData.get(), length == data->size());
-
-    EXPECT_LE(frameCount, decoder->frameCount());
-    frameCount = decoder->frameCount();
-
-    ImageFrame* frame = decoder->frameBufferAtIndex(frameCount - 1);
-    if (frame && frame->getStatus() == ImageFrame::FrameComplete &&
-        framesDecoded < frameCount)
-      ++framesDecoded;
-  }
-
-  EXPECT_EQ(5u, decoder->frameCount());
-  EXPECT_EQ(5u, framesDecoded);
-  EXPECT_EQ(cAnimationLoopInfinite, decoder->repetitionCount());
+  testByteByByteDecode(&createDecoder, layoutTestResourcesDir,
+                       "animated-gif-with-offsets.gif", 5u,
+                       cAnimationLoopInfinite);
 }
 
 TEST(GIFImageDecoderTest, brokenSecondFrame) {
@@ -271,36 +248,8 @@ TEST(GIFImageDecoderTest, badTerminator) {
 }
 
 TEST(GIFImageDecoderTest, updateRequiredPreviousFrameAfterFirstDecode) {
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-
-  RefPtr<SharedBuffer> fullData =
-      readFile(layoutTestResourcesDir, "animated-10color.gif");
-  ASSERT_TRUE(fullData.get());
-
-  // Give it data that is enough to parse but not decode in order to check the
-  // status.
-  // of requiredPreviousFrameIndex before decoding.
-  size_t partialSize = 1;
-  do {
-    RefPtr<SharedBuffer> data =
-        SharedBuffer::create(fullData->data(), partialSize);
-    decoder->setData(data.get(), false);
-    ++partialSize;
-  } while (!decoder->frameCount() ||
-           decoder->frameBufferAtIndex(0)->getStatus() ==
-               ImageFrame::FrameEmpty);
-
-  EXPECT_EQ(kNotFound,
-            decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
-  unsigned frameCount = decoder->frameCount();
-  for (size_t i = 1; i < frameCount; ++i)
-    EXPECT_EQ(i - 1,
-              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
-
-  decoder->setData(fullData.get(), true);
-  for (size_t i = 0; i < frameCount; ++i)
-    EXPECT_EQ(kNotFound,
-              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
+  testUpdateRequiredPreviousFrameAfterFirstDecode(
+      &createDecoder, layoutTestResourcesDir, "animated-10color.gif");
 }
 
 TEST(GIFImageDecoderTest, randomFrameDecode) {
@@ -325,37 +274,8 @@ TEST(GIFImageDecoderTest, randomDecodeAfterClearFrameBufferCache) {
 }
 
 TEST(GIFImageDecoderTest, resumePartialDecodeAfterClearFrameBufferCache) {
-  RefPtr<SharedBuffer> fullData =
-      readFile(layoutTestResourcesDir, "animated-10color.gif");
-  ASSERT_TRUE(fullData.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-
-  // Let frame 0 be partially decoded.
-  size_t partialSize = 1;
-  do {
-    RefPtr<SharedBuffer> data =
-        SharedBuffer::create(fullData->data(), partialSize);
-    decoder->setData(data.get(), false);
-    ++partialSize;
-  } while (!decoder->frameCount() ||
-           decoder->frameBufferAtIndex(0)->getStatus() ==
-               ImageFrame::FrameEmpty);
-
-  // Skip to the last frame and clear.
-  decoder->setData(fullData.get(), true);
-  EXPECT_EQ(frameCount, decoder->frameCount());
-  ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
-  EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->bitmap()));
-  decoder->clearCacheExceptFrame(kNotFound);
-
-  // Resume decoding of the first frame.
-  ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
-  EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
-  EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->bitmap()));
+  testResumePartialDecodeAfterClearFrameBufferCache(
+      &createDecoder, layoutTestResourcesDir, "animated-10color.gif");
 }
 
 // The first LZW codes in the image are invalid values that try to create a loop

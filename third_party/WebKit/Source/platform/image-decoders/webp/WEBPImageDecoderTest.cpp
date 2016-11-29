@@ -78,65 +78,6 @@ void testInvalidImage(const char* webpFile, bool parseErrorExpected) {
   EXPECT_TRUE(decoder->failed());
 }
 
-uint32_t premultiplyColor(uint32_t c) {
-  return SkPremultiplyARGBInline(SkGetPackedA32(c), SkGetPackedR32(c),
-                                 SkGetPackedG32(c), SkGetPackedB32(c));
-}
-
-void verifyFramesMatch(const char* webpFile,
-                       const ImageFrame* const a,
-                       ImageFrame* const b) {
-  const SkBitmap& bitmapA = a->bitmap();
-  const SkBitmap& bitmapB = b->bitmap();
-  ASSERT_EQ(bitmapA.width(), bitmapB.width());
-  ASSERT_EQ(bitmapA.height(), bitmapB.height());
-
-  int maxDifference = 0;
-  for (int y = 0; y < bitmapA.height(); ++y) {
-    for (int x = 0; x < bitmapA.width(); ++x) {
-      uint32_t colorA = *bitmapA.getAddr32(x, y);
-      if (!a->premultiplyAlpha())
-        colorA = premultiplyColor(colorA);
-      uint32_t colorB = *bitmapB.getAddr32(x, y);
-      if (!b->premultiplyAlpha())
-        colorB = premultiplyColor(colorB);
-      uint8_t* pixelA = reinterpret_cast<uint8_t*>(&colorA);
-      uint8_t* pixelB = reinterpret_cast<uint8_t*>(&colorB);
-      for (int channel = 0; channel < 4; ++channel) {
-        const int difference = abs(pixelA[channel] - pixelB[channel]);
-        if (difference > maxDifference)
-          maxDifference = difference;
-      }
-    }
-  }
-
-  // Pre-multiplication could round the RGBA channel values. So, we declare
-  // that the frames match if the RGBA channel values differ by at most 2.
-  EXPECT_GE(2, maxDifference) << webpFile;
-}
-
-// Verifies that result of alpha blending is similar for AlphaPremultiplied and
-// AlphaNotPremultiplied cases.
-void testAlphaBlending(const char* webpFile) {
-  RefPtr<SharedBuffer> data = readFile(webpFile);
-  ASSERT_TRUE(data.get());
-
-  std::unique_ptr<ImageDecoder> decoderA =
-      createDecoder(ImageDecoder::AlphaPremultiplied);
-  decoderA->setData(data.get(), true);
-
-  std::unique_ptr<ImageDecoder> decoderB =
-      createDecoder(ImageDecoder::AlphaNotPremultiplied);
-  decoderB->setData(data.get(), true);
-
-  size_t frameCount = decoderA->frameCount();
-  ASSERT_EQ(frameCount, decoderB->frameCount());
-
-  for (size_t i = 0; i < frameCount; ++i)
-    verifyFramesMatch(webpFile, decoderA->frameBufferAtIndex(i),
-                      decoderB->frameBufferAtIndex(i));
-}
-
 }  // anonymous namespace
 
 TEST(AnimatedWebPTests, uniqueGenerationIDs) {
@@ -424,35 +365,8 @@ TEST(AnimatedWebPTests, frameIsCompleteAndDuration) {
 }
 
 TEST(AnimatedWebPTests, updateRequiredPreviousFrameAfterFirstDecode) {
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-
-  RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/images/resources/webp-animated.webp");
-  ASSERT_TRUE(fullData.get());
-
-  // Check the status of requiredPreviousFrameIndex before decoding, by
-  // supplying data sufficient to parse but not decode.
-  size_t partialSize = 1;
-  do {
-    RefPtr<SharedBuffer> data =
-        SharedBuffer::create(fullData->data(), partialSize);
-    decoder->setData(data.get(), false);
-    ++partialSize;
-  } while (!decoder->frameCount() ||
-           decoder->frameBufferAtIndex(0)->getStatus() ==
-               ImageFrame::FrameEmpty);
-
-  EXPECT_EQ(kNotFound,
-            decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
-  size_t frameCount = decoder->frameCount();
-  for (size_t i = 1; i < frameCount; ++i)
-    EXPECT_EQ(i - 1,
-              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
-
-  decoder->setData(fullData.get(), true);
-  for (size_t i = 0; i < frameCount; ++i)
-    EXPECT_EQ(kNotFound,
-              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
+  testUpdateRequiredPreviousFrameAfterFirstDecode(
+      &createDecoder, "/LayoutTests/images/resources/webp-animated.webp");
 }
 
 TEST(AnimatedWebPTests, randomFrameDecode) {
@@ -481,39 +395,12 @@ TEST(AnimatedWebPTests, randomDecodeAfterClearFrameBufferCache) {
       "/LayoutTests/images/resources/webp-animated-icc-xmp.webp");
 }
 
+// This test is disabled since it timed out on the Windows bot. See
+// crrev.com/962853004
 TEST(AnimatedWebPTests,
      DISABLED_resumePartialDecodeAfterClearFrameBufferCache) {
-  RefPtr<SharedBuffer> fullData =
-      readFile("/LayoutTests/images/resources/webp-animated-large.webp");
-  ASSERT_TRUE(fullData.get());
-  Vector<unsigned> baselineHashes;
-  createDecodingBaseline(&createDecoder, fullData.get(), &baselineHashes);
-  size_t frameCount = baselineHashes.size();
-
-  std::unique_ptr<ImageDecoder> decoder = createDecoder();
-
-  // Let frame 0 be partially decoded.
-  size_t partialSize = 1;
-  do {
-    RefPtr<SharedBuffer> data =
-        SharedBuffer::create(fullData->data(), partialSize);
-    decoder->setData(data.get(), false);
-    ++partialSize;
-  } while (!decoder->frameCount() ||
-           decoder->frameBufferAtIndex(0)->getStatus() ==
-               ImageFrame::FrameEmpty);
-
-  // Skip to the last frame and clear.
-  decoder->setData(fullData.get(), true);
-  EXPECT_EQ(frameCount, decoder->frameCount());
-  ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
-  EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->bitmap()));
-  decoder->clearCacheExceptFrame(kNotFound);
-
-  // Resume decoding of the first frame.
-  ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
-  EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
-  EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->bitmap()));
+  testResumePartialDecodeAfterClearFrameBufferCache(
+      &createDecoder, "/LayoutTests/images/resources/webp-animated-large.webp");
 }
 
 TEST(AnimatedWebPTests, decodeAfterReallocatingData) {
@@ -525,14 +412,19 @@ TEST(AnimatedWebPTests, decodeAfterReallocatingData) {
 }
 
 TEST(AnimatedWebPTests, alphaBlending) {
-  testAlphaBlending("/LayoutTests/images/resources/webp-animated.webp");
+  testAlphaBlending(&createDecoder,
+                    "/LayoutTests/images/resources/webp-animated.webp");
   testAlphaBlending(
+      &createDecoder,
       "/LayoutTests/images/resources/webp-animated-semitransparent1.webp");
   testAlphaBlending(
+      &createDecoder,
       "/LayoutTests/images/resources/webp-animated-semitransparent2.webp");
   testAlphaBlending(
+      &createDecoder,
       "/LayoutTests/images/resources/webp-animated-semitransparent3.webp");
   testAlphaBlending(
+      &createDecoder,
       "/LayoutTests/images/resources/webp-animated-semitransparent4.webp");
 }
 

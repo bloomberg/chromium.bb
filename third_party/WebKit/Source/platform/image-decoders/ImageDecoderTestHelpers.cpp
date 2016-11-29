@@ -5,7 +5,6 @@
 #include "platform/image-decoders/ImageDecoderTestHelpers.h"
 
 #include "platform/SharedBuffer.h"
-#include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/ImageFrame.h"
 #include "platform/testing/UnitTestHelpers.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -288,6 +287,71 @@ static void testProgressiveDecoding(DecoderCreator createDecoder,
     ASSERT_EQ(truncatedHashes[i], progressiveHashes[i]);
 }
 
+void testUpdateRequiredPreviousFrameAfterFirstDecode(
+    DecoderCreator createDecoder,
+    SharedBuffer* fullData) {
+  std::unique_ptr<ImageDecoder> decoder = createDecoder();
+
+  // Give it data that is enough to parse but not decode in order to check the
+  // status of requiredPreviousFrameIndex before decoding.
+  size_t partialSize = 1;
+  do {
+    RefPtr<SharedBuffer> data =
+        SharedBuffer::create(fullData->data(), partialSize);
+    decoder->setData(data.get(), false);
+    ++partialSize;
+  } while (!decoder->frameCount() ||
+           decoder->frameBufferAtIndex(0)->getStatus() ==
+               ImageFrame::FrameEmpty);
+
+  EXPECT_EQ(kNotFound,
+            decoder->frameBufferAtIndex(0)->requiredPreviousFrameIndex());
+  unsigned frameCount = decoder->frameCount();
+  for (size_t i = 1; i < frameCount; ++i) {
+    EXPECT_EQ(i - 1,
+              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
+  }
+
+  decoder->setData(fullData, true);
+  for (size_t i = 0; i < frameCount; ++i) {
+    EXPECT_EQ(kNotFound,
+              decoder->frameBufferAtIndex(i)->requiredPreviousFrameIndex());
+  }
+}
+
+void testResumePartialDecodeAfterClearFrameBufferCache(
+    DecoderCreator createDecoder,
+    SharedBuffer* fullData) {
+  Vector<unsigned> baselineHashes;
+  createDecodingBaseline(createDecoder, fullData, &baselineHashes);
+  size_t frameCount = baselineHashes.size();
+
+  std::unique_ptr<ImageDecoder> decoder = createDecoder();
+
+  // Let frame 0 be partially decoded.
+  size_t partialSize = 1;
+  do {
+    RefPtr<SharedBuffer> data =
+        SharedBuffer::create(fullData->data(), partialSize);
+    decoder->setData(data.get(), false);
+    ++partialSize;
+  } while (!decoder->frameCount() ||
+           decoder->frameBufferAtIndex(0)->getStatus() ==
+               ImageFrame::FrameEmpty);
+
+  // Skip to the last frame and clear.
+  decoder->setData(fullData, true);
+  EXPECT_EQ(frameCount, decoder->frameCount());
+  ImageFrame* lastFrame = decoder->frameBufferAtIndex(frameCount - 1);
+  EXPECT_EQ(baselineHashes[frameCount - 1], hashBitmap(lastFrame->bitmap()));
+  decoder->clearCacheExceptFrame(kNotFound);
+
+  // Resume decoding of the first frame.
+  ImageFrame* firstFrame = decoder->frameBufferAtIndex(0);
+  EXPECT_EQ(ImageFrame::FrameComplete, firstFrame->getStatus());
+  EXPECT_EQ(baselineHashes[0], hashBitmap(firstFrame->bitmap()));
+}
+
 void testByteByByteDecode(DecoderCreator createDecoder,
                           const char* file,
                           size_t expectedFrameCount,
@@ -414,6 +478,101 @@ void testProgressiveDecoding(DecoderCreator createDecoder,
   RefPtr<SharedBuffer> data = readFile(dir, file);
   ASSERT_TRUE(data.get());
   testProgressiveDecoding(createDecoder, data.get(), increment);
+}
+
+void testUpdateRequiredPreviousFrameAfterFirstDecode(
+    DecoderCreator createDecoder,
+    const char* dir,
+    const char* file) {
+  RefPtr<SharedBuffer> data = readFile(dir, file);
+  ASSERT_TRUE(data.get());
+  testUpdateRequiredPreviousFrameAfterFirstDecode(createDecoder, data.get());
+}
+
+void testUpdateRequiredPreviousFrameAfterFirstDecode(
+    DecoderCreator createDecoder,
+    const char* file) {
+  RefPtr<SharedBuffer> data = readFile(file);
+  ASSERT_TRUE(data.get());
+  testUpdateRequiredPreviousFrameAfterFirstDecode(createDecoder, data.get());
+}
+
+void testResumePartialDecodeAfterClearFrameBufferCache(
+    DecoderCreator createDecoder,
+    const char* dir,
+    const char* file) {
+  RefPtr<SharedBuffer> data = readFile(dir, file);
+  ASSERT_TRUE(data.get());
+  testResumePartialDecodeAfterClearFrameBufferCache(createDecoder, data.get());
+}
+
+void testResumePartialDecodeAfterClearFrameBufferCache(
+    DecoderCreator createDecoder,
+    const char* file) {
+  RefPtr<SharedBuffer> data = readFile(file);
+  ASSERT_TRUE(data.get());
+  testResumePartialDecodeAfterClearFrameBufferCache(createDecoder, data.get());
+}
+
+static uint32_t premultiplyColor(uint32_t c) {
+  return SkPremultiplyARGBInline(SkGetPackedA32(c), SkGetPackedR32(c),
+                                 SkGetPackedG32(c), SkGetPackedB32(c));
+}
+
+static void verifyFramesMatch(const char* file,
+                              const ImageFrame* const a,
+                              const ImageFrame* const b) {
+  const SkBitmap& bitmapA = a->bitmap();
+  const SkBitmap& bitmapB = b->bitmap();
+  ASSERT_EQ(bitmapA.width(), bitmapB.width());
+  ASSERT_EQ(bitmapA.height(), bitmapB.height());
+
+  int maxDifference = 0;
+  for (int y = 0; y < bitmapA.height(); ++y) {
+    for (int x = 0; x < bitmapA.width(); ++x) {
+      uint32_t colorA = *bitmapA.getAddr32(x, y);
+      if (!a->premultiplyAlpha())
+        colorA = premultiplyColor(colorA);
+      uint32_t colorB = *bitmapB.getAddr32(x, y);
+      if (!b->premultiplyAlpha())
+        colorB = premultiplyColor(colorB);
+      uint8_t* pixelA = reinterpret_cast<uint8_t*>(&colorA);
+      uint8_t* pixelB = reinterpret_cast<uint8_t*>(&colorB);
+      for (int channel = 0; channel < 4; ++channel) {
+        const int difference = abs(pixelA[channel] - pixelB[channel]);
+        if (difference > maxDifference)
+          maxDifference = difference;
+      }
+    }
+  }
+
+  // Pre-multiplication could round the RGBA channel values. So, we declare
+  // that the frames match if the RGBA channel values differ by at most 2.
+  EXPECT_GE(2, maxDifference) << file;
+}
+
+// Verifies that result of alpha blending is similar for AlphaPremultiplied and
+// AlphaNotPremultiplied cases.
+void testAlphaBlending(DecoderCreatorWithAlpha createDecoder,
+                       const char* file) {
+  RefPtr<SharedBuffer> data = readFile(file);
+  ASSERT_TRUE(data.get());
+
+  std::unique_ptr<ImageDecoder> decoderA =
+      createDecoder(ImageDecoder::AlphaPremultiplied);
+  decoderA->setData(data.get(), true);
+
+  std::unique_ptr<ImageDecoder> decoderB =
+      createDecoder(ImageDecoder::AlphaNotPremultiplied);
+  decoderB->setData(data.get(), true);
+
+  size_t frameCount = decoderA->frameCount();
+  ASSERT_EQ(frameCount, decoderB->frameCount());
+
+  for (size_t i = 0; i < frameCount; ++i) {
+    verifyFramesMatch(file, decoderA->frameBufferAtIndex(i),
+                      decoderB->frameBufferAtIndex(i));
+  }
 }
 
 }  // namespace blink
