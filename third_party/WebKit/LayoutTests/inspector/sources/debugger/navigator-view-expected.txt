@@ -2,6 +2,7 @@ Tests scripts panel file selectors.
 
 
 
+
 ================================================
 Adding first resource:
 Sources:
@@ -70,7 +71,7 @@ Sources:
 top
   script.js
   script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 Sources:
@@ -79,7 +80,7 @@ top
   localhost:8080
     script.js
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -90,7 +91,7 @@ top
     LayoutTests/inspector/debugger/foo/bar
       script.js
       script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -123,7 +124,7 @@ Sources:
 top
   script.js
   script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -136,7 +137,7 @@ top
   localhost:8080
     script.js
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -152,7 +153,7 @@ top
     LayoutTests/inspector/debugger/foo/bar
       script.js
       script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -214,7 +215,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -239,7 +240,7 @@ top
     contentScript2.js?a=1
     script.js
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -269,7 +270,7 @@ top
       contentScript2.js?a=1
       script.js
       script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -286,13 +287,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -309,9 +310,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -319,6 +317,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -367,7 +368,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -392,7 +393,7 @@ top
     contentScript2.js?a=1
     script.js
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -422,7 +423,7 @@ top
       contentScript2.js?a=1
       script.js
       script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -439,13 +440,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -462,9 +463,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -472,6 +470,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -511,7 +512,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -537,7 +538,7 @@ top
     script.js
     script.js
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -570,7 +571,7 @@ top
         script.js?a=2
       debugger2/foo/bar
         script.js
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -587,13 +588,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -611,9 +612,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -621,6 +619,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -664,7 +665,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -691,7 +692,7 @@ top
     script.js
     script.js?a=2
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -725,7 +726,7 @@ top
       debugger2/foo/bar
         script.js
         script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -742,13 +743,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -767,9 +768,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -777,6 +775,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -823,7 +824,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -852,7 +853,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -890,7 +891,7 @@ top
           script.js?a=2
         baz
           script.js
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -907,13 +908,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -934,9 +935,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -944,6 +942,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -996,7 +997,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -1028,7 +1029,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1072,7 +1073,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -1089,13 +1090,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -1119,9 +1120,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -1129,6 +1127,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -1188,7 +1189,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 mock-target-100
@@ -1220,7 +1221,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1264,7 +1265,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar
@@ -1281,13 +1282,13 @@ mock-target-100
           script.js
 Sources:
 -------- Setting mode: [domain]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     script.js
     script.js?a=3
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   (index)
   ?a=b
@@ -1311,9 +1312,6 @@ localhost:8080
   script.js?a=2
 Sources:
 -------- Setting mode: [domain/folder]
-(no domain)
-  ?a=b
-  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 mock-target-100
   localhost:8080
     LayoutTests/inspector/debugger/foo
@@ -1321,6 +1319,9 @@ mock-target-100
         script.js?a=3
       baz
         script.js
+(no domain)
+  ?a=b
+  very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
 example.com
   path with spaces
     white space.html
@@ -1390,7 +1391,7 @@ top
   script.js?a=2
   very_looooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooooo…
   white space.html
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     script.js
     script.js?a=1
 Sources:
@@ -1418,7 +1419,7 @@ top
     script.js?a=1
     script.js?a=2
     script.js?a=2
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       script.js
       script.js?a=1
@@ -1457,7 +1458,7 @@ top
             foo.js
           foo.js
         foo.js
-  childframe (iframeurl.html)
+  childframe (post-message-listener.html)
     localhost:8080
       LayoutTests/inspector/debugger/foo
         bar

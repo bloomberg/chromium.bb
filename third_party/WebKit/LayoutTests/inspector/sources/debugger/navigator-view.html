@@ -2,42 +2,35 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../../http/tests/inspector/workspace-test.js"></script>
 
 <script>
 function test()
 {
-    var target = InspectorTest.createWorkspaceWithTarget(true);
-    target.resourceTreeModel._frameAttached(239, target.resourceTreeModel.mainFrame.id);
-    var mainFrame = target.resourceTreeModel.mainFrame;
-    target.resourceTreeModel._frameNavigated({id: 239, parentId: mainFrame.id, url:"iframeurl.html", name: "childframe"});
-    var networkProject1 = InspectorTest.testNetworkProject;
-
-    var subframe = target.resourceTreeModel.frameForId(239);
-    SDK.targetManager = InspectorTest.testTargetManager;
-
-    target2 = InspectorTest.createMockTarget(100);
-    var networkProject2 = InspectorTest.testNetworkProject;
+    var networkProject1 = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
+    networkProject1._reset();
+    var target2 = InspectorTest.createMockTarget("mock-target-100");
+    SDK.ResourceTreeModel.fromTarget(target2)._cachedResourcesProcessed = true;
+    SDK.ResourceTreeModel.fromTarget(target2)._frameAttached("42", 0);
+    var networkProject2 = Bindings.NetworkProject.forTarget(target2);
+    var subframe = InspectorTest.mainFrame().childFrames[0];
 
     var sourcesNavigatorView = new Sources.SourcesNavigatorView();
-    sourcesNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
     sourcesNavigatorView.show(UI.inspectorView.element);
     var contentScriptsNavigatorView = new Sources.ContentScriptsNavigatorView();
-    contentScriptsNavigatorView._resetWorkspace(InspectorTest.testWorkspace);
     contentScriptsNavigatorView.show(UI.inspectorView.element);
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript, frame)
     {
         var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        var uiSourceCode = networkProject1.addFile(contentProvider, frame || mainFrame);
+        var uiSourceCode = networkProject1.addFile(contentProvider, frame || InspectorTest.mainFrame());
         uiSourceCodes.push(uiSourceCode);
     }
 
     function addUISourceCode2(url, isContentScript)
     {
         var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        var uiSourceCode = networkProject2.addFile(contentProvider, target2.resourceTreeModel.mainFrame);
+        var uiSourceCode = networkProject2.addFile(contentProvider, SDK.ResourceTreeModel.fromTarget(target2).mainFrame);
         uiSourceCodes.push(uiSourceCode);
     }
 
@@ -126,7 +119,7 @@ function test()
 
     InspectorTest.addResult("\n\n================================================");
     InspectorTest.addResult("Removing all resources:");
-    InspectorTest.testNetworkProject._reset(target);
+    networkProject2._reset();
     InspectorTest.dumpNavigatorViewInAllModes(sourcesNavigatorView);
     InspectorTest.dumpNavigatorViewInAllModes(contentScriptsNavigatorView);
 
@@ -135,10 +128,11 @@ function test()
 </script>
 
 </head>
-<body onload="runTest()">
+<body>
 <p>
 Tests scripts panel file selectors.
 </p>
+<iframe src="resources/post-message-listener.html" name="childframe" onload="runTest()"></iframe>
 </body>
 
 </html>

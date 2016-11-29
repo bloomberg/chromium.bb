@@ -2,7 +2,6 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../../http/tests/inspector/workspace-test.js"></script>
 
 <script>
 function test()
@@ -10,20 +9,25 @@ function test()
     function createNavigatorView(constructor)
     {
         var navigatorView = new constructor();
-        navigatorView._resetWorkspace(InspectorTest.testWorkspace);
         navigatorView.show(UI.inspectorView.element);
         return navigatorView;
     }
 
-    InspectorTest.createWorkspaceWithTarget(true);
     sourcesNavigatorView = createNavigatorView(Sources.SourcesNavigatorView);
     contentScriptsNavigatorView = createNavigatorView(Sources.ContentScriptsNavigatorView);
+
+    Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+
+    var target2 = InspectorTest.createMockTarget("mock-target-1");
+    SDK.ResourceTreeModel.fromTarget(target2)._cachedResourcesProcessed = true;
+    SDK.ResourceTreeModel.fromTarget(target2)._frameAttached("42", 0);
+    var frame = SDK.ResourceTreeModel.fromTarget(target2).mainFrame;
 
     var uiSourceCodes = [];
     function addUISourceCode(url, isContentScript)
     {
         var contentProvider = Common.StaticContentProvider.fromString(url, Common.resourceTypes.Script, "");
-        var uiSourceCode = InspectorTest.testNetworkProject.addFile(contentProvider, InspectorTest.mainFrame(), isContentScript);
+        var uiSourceCode = Bindings.NetworkProject.forTarget(target2).addFile(contentProvider, frame, isContentScript);
         uiSourceCodes.push(uiSourceCode);
     }
 

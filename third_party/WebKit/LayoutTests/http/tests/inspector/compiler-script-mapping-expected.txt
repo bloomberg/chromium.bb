@@ -114,33 +114,29 @@ cat.jpeg resolves to http://a/b/c/cat.jpeg===http://a/b/c/cat.jpeg passes: true
  resolves to http://example.com/path.css?query===http://example.com/path.css?query passes: true
 
 Running: testCompilerScriptMapping
-UISourceCodeAdded: [debugger] debugger:///VM1 compiled.js
-UISourceCodeAdded: [network] compiled.js
-UISourceCodeAdded: [service] compiled.js
-UISourceCodeRemoved: [service] compiled.js
-UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/source1.js
-UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/source2.js
-afterScriptAdded
-
-Running: testCompilerScriptMappingWhenResourceWasLoadedAfterSource
-UISourceCodeAdded: [debugger] debugger:///VM2 compiled.js
-UISourceCodeAdded: [service] compiled.js
-UISourceCodeAdded: [network] compiled.js
-UISourceCodeRemoved: [service] compiled.js
-UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/source1.js
-UISourceCodeAdded: [contentscripts] http://localhost:8000/inspector/resources/source2.js
+Adding compiled.js
+compiled.js UISourceCode arrived
+compiled.js script found
+source1.js UISourceCode arrived
+source2.js UISourceCode arrived
+Location checks passed. Requesting content
+Content1 arrived.
+Content2 arrived.
 
 Running: testInlinedSourceMap
-UISourceCodeAdded: [debugger] debugger:///VM3 compiled.js
-UISourceCodeAdded: [service] http://example.com/compiled.js
-UISourceCodeRemoved: [service] http://example.com/compiled.js
-UISourceCodeAdded: [contentscripts] http://example.com/source.js
+Adding compiled.js
+compiled.js UISourceCode arrived
+compiled.js script found
+source3.js UISourceCode arrived
+Location checks passed. Requesting content
 <source content> === <source content>
 
 Running: testSourceMapCouldNotBeLoaded
-UISourceCodeAdded: [debugger] debugger:///VM4 compiled.js
-UISourceCodeAdded: [service] compiled.js
-compiled.js
+Adding compiled.js
+compiled.js UISourceCode arrived
+compiled.js script found
+source-map.json_ UISourceCode arrived
+debugger:///VM
 
 Running: testSourceRoot
 /example.js === /example.js

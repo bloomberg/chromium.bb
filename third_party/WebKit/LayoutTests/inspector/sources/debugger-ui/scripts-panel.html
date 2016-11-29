@@ -2,7 +2,6 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script>
 function test()
 {
@@ -14,10 +13,7 @@ function test()
 
     function createNavigatorView()
     {
-        var workspace = Workspace.workspace;
-        Workspace.workspace = InspectorTest.testWorkspace;
         var navigatorView = new Sources.SourcesNavigatorView();
-        Workspace.workspace = workspace;
         navigatorView.show(UI.inspectorView.element);
         return navigatorView;
     }
@@ -33,37 +29,23 @@ function test()
         return contentProvider;
     }
 
-    function createMockWorkspace()
+    function addNetworkFile(url)
     {
-        InspectorTest.createWorkspaceWithTarget(true);
-        InspectorTest.testDebuggerProject = new Bindings.ContentProviderBasedProject(InspectorTest.testWorkspace, "", Workspace.projectTypes.Debugger, "");
-        return InspectorTest.testWorkspace;
-    }
-
-    function addNetworkFile(workspace, url)
-    {
-        return InspectorTest.testNetworkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
-    }
-
-    function addDebuggerFile(workspace, url)
-    {
-        var uiSourceCode = InspectorTest.testDebuggerProject.createUISourceCode(url, Common.resourceTypes.Script);
-        InspectorTest.testDebuggerProject.addUISourceCodeWithProvider(uiSourceCode, createContentProvider(url));
-        return uiSourceCode;
+        var networkProject = Bindings.NetworkProject.forTarget(InspectorTest.mainTarget);
+        return networkProject.addFile(createContentProvider(url), InspectorTest.mainFrame());
     }
 
     InspectorTest.runTestSuite([
         function testInitialLoad(next)
         {
-            var workspace = createMockWorkspace();
-
-            addNetworkFile(workspace, "foobar.js");
+            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
+            addNetworkFile("foobar.js");
 
             var sourcesNavigatorView = createNavigatorView();
 
-            addNetworkFile(workspace, "foo.js");
-            addNetworkFile(workspace, "bar.js");
-            var uiSourceCode = addNetworkFile(workspace, "baz.js");
+            addNetworkFile("foo.js");
+            addNetworkFile("bar.js");
+            var uiSourceCode = addNetworkFile("baz.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
 
             dumpNavigator(sourcesNavigatorView);
@@ -72,21 +54,21 @@ function test()
 
         function testReset(next)
         {
-            var workspace = createMockWorkspace();
+            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
             var sourcesNavigatorView = createNavigatorView();
 
-            var uiSourceCode = addNetworkFile(workspace, "foo.js");
-            addNetworkFile(workspace, "bar.js");
-            addNetworkFile(workspace, "baz.js");
+            var uiSourceCode = addNetworkFile("foo.js");
+            addNetworkFile("bar.js");
+            addNetworkFile("baz.js");
 
             dumpNavigator(sourcesNavigatorView);
             InspectorTest.addResult("Revealing in navigator.");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
-            InspectorTest.testNetworkProject._reset();
+            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
             dumpNavigator(sourcesNavigatorView);
-            uiSourceCode = addNetworkFile(workspace, "bar.js");
+            uiSourceCode = addNetworkFile("bar.js");
             sourcesNavigatorView.revealUISourceCode(uiSourceCode);
             dumpNavigator(sourcesNavigatorView);
 
@@ -95,20 +77,25 @@ function test()
 
         function testDebuggerUISourceCodeAddedAndRemoved(next)
         {
-            var workspace = createMockWorkspace();
+            Bindings.NetworkProject.forTarget(InspectorTest.mainTarget)._reset();
             var sourcesNavigatorView = createNavigatorView();
 
-            var uiSourceCode = addNetworkFile(workspace, "foo.js");
-            var debuggerUISourceCode = addDebuggerFile(workspace, "compiled.js");
-            sourcesNavigatorView.revealUISourceCode(uiSourceCode);
-            sourcesNavigatorView.revealUISourceCode(debuggerUISourceCode);
-            dumpNavigator(sourcesNavigatorView);
+            var uiSourceCode = addNetworkFile("foo.js");
+            InspectorTest.waitForUISourceCode(onUISourceCode);
+            InspectorTest.evaluateInPage("function foo() {}");
 
-            // Plug compiler source mapping.
-            addNetworkFile(workspace, "source.js");
+            function onUISourceCode(debuggerUISourceCode)
+            {
+                sourcesNavigatorView.revealUISourceCode(uiSourceCode);
+                sourcesNavigatorView.revealUISourceCode(debuggerUISourceCode);
+                dumpNavigator(sourcesNavigatorView);
 
-            dumpNavigator(sourcesNavigatorView);
-            next();
+                // Plug compiler source mapping.
+                addNetworkFile("source.js");
+
+                dumpNavigator(sourcesNavigatorView);
+                next();
+            }
         }
     ]);
 };
