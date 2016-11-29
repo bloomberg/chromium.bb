@@ -361,4 +361,12 @@ ResultExpr RestrictGetRandom() {
   return If((flags & ~kGoodFlags) == 0, Allow()).Else(CrashSIGSYS());
 }
 
+ResultExpr RestrictPrlimitToGetrlimit(pid_t target_pid) {
+  const Arg<pid_t> pid(0);
+  const Arg<uintptr_t> new_limit(2);
+  // Only allow 'get' operations, and only for the current process.
+  return If(AllOf(new_limit == 0, AnyOf(pid == 0, pid == target_pid)), Allow())
+      .Else(Error(EPERM));
+}
+
 }  // namespace sandbox.

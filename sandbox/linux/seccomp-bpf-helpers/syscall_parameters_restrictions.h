@@ -98,6 +98,11 @@ SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictClockID();
 // GRND_NONBLOCK.
 SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictGetRandom();
 
+// Restrict |new_limit| to NULL, and |pid| to the calling process (or 0) for
+// prlimit64().  This allows only getting rlimits on the current process.
+// Otherwise, fail gracefully; see crbug.com/160157.
+SANDBOX_EXPORT bpf_dsl::ResultExpr RestrictPrlimitToGetrlimit(pid_t target_pid);
+
 }  // namespace sandbox.
 
 #endif  // SANDBOX_LINUX_SECCOMP_BPF_HELPERS_SYSCALL_PARAMETERS_RESTRICTIONS_H_

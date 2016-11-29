@@ -88,7 +88,8 @@ ResultExpr RendererProcessPolicy::EvaluateSyscall(int sysno) const {
     case __NR_sched_setscheduler:
       return sandbox::RestrictSchedTarget(GetPolicyPid(), sysno);
     case __NR_prlimit64:
-      return Error(EPERM);  // See crbug.com/160157.
+      // See crbug.com/662450.
+      return sandbox::RestrictPrlimitToGetrlimit(GetPolicyPid());
     default:
       // Default on the content baseline policy.
       return SandboxBPFBasePolicy::EvaluateSyscall(sysno);
