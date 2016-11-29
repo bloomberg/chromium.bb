@@ -109,13 +109,13 @@ class FtpSocketDataProvider : public SocketDataProvider {
                       "227 Entering Extended Passive Mode (|||31744|)\r\n");
       case PRE_LIST_PASV:
         return Verify("PASV\r\n", data, PRE_LIST,
-                      "227 Entering Passive Mode 127,0,0,1,123,456\r\n");
+                      "227 Entering Passive Mode 127,0,0,1,123,123\r\n");
       case PRE_RETR_EPSV:
         return Verify("EPSV\r\n", data, PRE_RETR,
                       "227 Entering Extended Passive Mode (|||31744|)\r\n");
       case PRE_RETR_PASV:
         return Verify("PASV\r\n", data, PRE_RETR,
-                      "227 Entering Passive Mode 127,0,0,1,123,456\r\n");
+                      "227 Entering Passive Mode 127,0,0,1,123,123\r\n");
       case PRE_NOPASV:
         // Use unallocated 599 FTP error code to make sure it falls into the
         // generic ERR_FTP_FAILED bucket.
@@ -1187,9 +1187,37 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvUnsafePort4) {
   ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_UNSAFE_PORT);
 }
 
+TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvInvalidPort1) {
+  // Unsafe. 8 * 256 + 1 = 2049, which is used by nfs.
+  FtpSocketDataProviderEvilPasv ctrl_socket(
+      "227 Portscan (127,0,0,1,256,100)\r\n", FtpSocketDataProvider::PRE_QUIT);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_INVALID_RESPONSE);
+}
+
+TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvInvalidPort2) {
+  // Unsafe. 8 * 256 + 1 = 2049, which is used by nfs.
+  FtpSocketDataProviderEvilPasv ctrl_socket(
+      "227 Portscan (127,0,0,1,100,256)\r\n", FtpSocketDataProvider::PRE_QUIT);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_INVALID_RESPONSE);
+}
+
+TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvInvalidPort3) {
+  // Unsafe. 8 * 256 + 1 = 2049, which is used by nfs.
+  FtpSocketDataProviderEvilPasv ctrl_socket(
+      "227 Portscan (127,0,0,1,-100,100)\r\n", FtpSocketDataProvider::PRE_QUIT);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_INVALID_RESPONSE);
+}
+
+TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvInvalidPort4) {
+  // Unsafe. 8 * 256 + 1 = 2049, which is used by nfs.
+  FtpSocketDataProviderEvilPasv ctrl_socket(
+      "227 Portscan (127,0,0,1,100,-100)\r\n", FtpSocketDataProvider::PRE_QUIT);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_INVALID_RESPONSE);
+}
+
 TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilPasvUnsafeHost) {
   FtpSocketDataProviderEvilPasv ctrl_socket(
-      "227 Portscan (10,1,2,3,123,456)\r\n", FtpSocketDataProvider::PRE_RETR);
+      "227 Portscan (10,1,2,3,123,123)\r\n", FtpSocketDataProvider::PRE_RETR);
   ctrl_socket.set_use_epsv(GetFamily() != AF_INET);
   std::string mock_data("mock-data");
   MockRead data_reads[] = {
@@ -1315,6 +1343,16 @@ TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilEpsvUnsafePort4) {
   FtpSocketDataProviderEvilEpsv ctrl_socket("227 Portscan (|||2049|)\r\n",
                                             FtpSocketDataProvider::PRE_QUIT);
   ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_UNSAFE_PORT);
+}
+
+TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilEpsvInvalidPort) {
+  // This test makes no sense for IPv4 connections (we don't use EPSV there).
+  if (GetFamily() == AF_INET)
+    return;
+
+  FtpSocketDataProviderEvilEpsv ctrl_socket("227 Portscan (|||4294973296|)\r\n",
+                                            FtpSocketDataProvider::PRE_QUIT);
+  ExecuteTransaction(&ctrl_socket, "ftp://host/file", ERR_INVALID_RESPONSE);
 }
 
 TEST_P(FtpNetworkTransactionTest, DownloadTransactionEvilEpsvWeirdSep) {

@@ -16,6 +16,7 @@
 #include "net/base/address_list.h"
 #include "net/base/escape.h"
 #include "net/base/net_errors.h"
+#include "net/base/parse_number.h"
 #include "net/base/port_util.h"
 #include "net/base/url_util.h"
 #include "net/ftp/ftp_request_info.h"
@@ -123,25 +124,32 @@ int GetNetErrorCodeForFtpResponseCode(int response_code) {
 bool ExtractPortFromEPSVResponse(const FtpCtrlResponse& response, int* port) {
   if (response.lines.size() != 1)
     return false;
-  const char* ptr = response.lines[0].c_str();
-  while (*ptr && *ptr != '(')
-    ++ptr;
-  if (!*ptr)
-    return false;
-  char sep = *(++ptr);
-  if (!sep || isdigit(sep) || *(++ptr) != sep || *(++ptr) != sep)
-    return false;
-  if (!isdigit(*(++ptr)))
-    return false;
-  *port = *ptr - '0';
-  while (isdigit(*(++ptr))) {
-    *port *= 10;
-    *port += *ptr - '0';
-  }
-  if (*ptr != sep)
+
+  base::StringPiece epsv_line(response.lines[0]);
+  size_t start = epsv_line.find('(');
+  // If the line doesn't have a '(' or doesn't have enough characters after the
+  // first '(', fail.
+  if (start == base::StringPiece::npos || epsv_line.length() - start < 7)
     return false;
 
-  return true;
+  char separator = epsv_line[start + 1];
+
+  // Make sure we have "(<d><d><d>...", where <d> is not a number.
+  if (isdigit(separator) || epsv_line[start + 2] != separator ||
+      epsv_line[start + 3] != separator) {
+    return false;
+  }
+
+  // Skip over those characters.
+  start += 4;
+
+  // Make sure there's a terminal <d>.
+  size_t end = epsv_line.find(separator, start);
+  if (end == base::StringPiece::npos)
+    return false;
+
+  return ParseInt32(epsv_line.substr(start, end - start),
+                    ParseIntFormat::NON_NEGATIVE, port);
 }
 
 // There are two way we can receive IP address and port.
@@ -190,13 +198,15 @@ bool ExtractPortFromPASVResponse(const FtpCtrlResponse& response, int* port) {
 
   // Ignore the IP address supplied in the response. We are always going
   // to connect back to the same server to prevent FTP PASV port scanning.
-  int p0, p1;
-  if (!base::StringToInt(pieces[4], &p0))
+  uint32_t p0, p1;
+  if (!ParseUint32(pieces[4], &p0))
     return false;
-  if (!base::StringToInt(pieces[5], &p1))
+  if (!ParseUint32(pieces[5], &p1))
     return false;
-  *port = (p0 << 8) + p1;
+  if (p0 > 0xFF || p1 > 0xFF)
+    return false;
 
+  *port = (p0 << 8) + p1;
   return true;
 }
 
