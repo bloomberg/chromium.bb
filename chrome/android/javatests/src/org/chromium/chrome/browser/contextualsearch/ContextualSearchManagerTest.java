@@ -1537,6 +1537,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     public void testTapOnRoleIgnored() throws InterruptedException, TimeoutException {
         PanelState initialState = mPanel.getPanelState();
         clickNode("role");
@@ -2673,7 +2674,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
     public void testImageControl() throws InterruptedException, TimeoutException {
         simulateTapSearch("search");
 
-        ContextualSearchImageControl imageControl = mPanel.getImageControl();
+        final ContextualSearchImageControl imageControl = mPanel.getImageControl();
         final ContextualSearchIconSpriteControl iconSpriteControl =
                 imageControl.getIconSpriteControl();
 
@@ -2681,8 +2682,13 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
         assertFalse(imageControl.getThumbnailVisible());
         assertTrue(TextUtils.isEmpty(imageControl.getThumbnailUrl()));
 
-        imageControl.setThumbnailUrl("http://someimageurl.com/image.png");
-        imageControl.onThumbnailFetched(true);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                imageControl.setThumbnailUrl("http://someimageurl.com/image.png");
+                imageControl.onThumbnailFetched(true);
+            }
+        });
 
         assertTrue(imageControl.getThumbnailVisible());
         assertEquals(imageControl.getThumbnailUrl(), "http://someimageurl.com/image.png");
@@ -2696,7 +2702,12 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
             }
         });
 
-        imageControl.hideStaticImage(false);
+        ThreadUtils.runOnUiThreadBlocking(new Runnable() {
+            @Override
+            public void run() {
+                imageControl.hideStaticImage(false);
+            }
+        });
 
         assertTrue(iconSpriteControl.isVisible());
         assertFalse(imageControl.getThumbnailVisible());
