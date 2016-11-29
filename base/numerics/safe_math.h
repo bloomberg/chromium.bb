@@ -19,7 +19,9 @@ namespace internal {
 // boundary conditions such as overflow, underflow, and invalid conversions.
 // The CheckedNumeric type implicitly converts from floating point and integer
 // data types, and contains overloads for basic arithmetic operations (i.e.: +,
-// -, *, / for all types, % for integers, and &, |, ^ for unsigned integers).
+// -, *, / for all types and %, <<, >>, &, |, ^ for integers; additionally the
+// result of all bitwise logical operations is always promoted to an unsigned
+// CheckedNumeric type matching the width of the larger operand).
 //
 // You may also use one of the variadic convenience functions, which accept
 // standard arithmetic or CheckedNumeric types, perform arithmetic operations,
