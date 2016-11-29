@@ -663,6 +663,21 @@ TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuid) {
   EXPECT_TRUE(processor()->put_multimap().empty());
 }
 
+TEST_F(DeviceInfoSyncBridgeTest, MergeLocalGuidBeforeReconcile) {
+  InitializeBridge();
+  const DeviceInfoSpecifics specifics = CreateSpecifics(kDefaultLocalSuffix);
+
+  // The message loop is never pumped, which means local data/metadata is never
+  // loaded, and thus reconcile is never called. The bridge should ignore this
+  // EntityData because its cache guid is the same the local device's.
+  const SyncError error = bridge()->MergeSyncData(
+      bridge()->CreateMetadataChangeList(),
+      {{specifics.cache_guid(), SpecificsToEntity(specifics)}});
+  EXPECT_FALSE(error.IsSet());
+  EXPECT_EQ(0, change_count());
+  EXPECT_EQ(0u, bridge()->GetAllDeviceInfo().size());
+}
+
 TEST_F(DeviceInfoSyncBridgeTest, CountActiveDevices) {
   InitializeAndPump();
   EXPECT_EQ(1, bridge()->CountActiveDevices());

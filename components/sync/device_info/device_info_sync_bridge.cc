@@ -142,11 +142,6 @@ SyncError DeviceInfoSyncBridge::MergeSyncData(
       // Don't Put local data if it's the same as the remote copy.
       if (local_info->Equals(*SpecificsToModel(specifics))) {
         local_guids_to_put.erase(local_guid);
-      } else {
-        // This device is valid right now and this entry is about to be
-        // committed, use this as an opportunity to refresh the timestamp.
-        all_data_[local_guid]->set_last_updated_timestamp(
-            TimeToProtoTime(Time::Now()));
       }
     } else {
       // Remote data wins conflicts.
