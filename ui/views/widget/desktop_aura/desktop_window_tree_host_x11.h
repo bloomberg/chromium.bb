@@ -161,11 +161,12 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   void HideImpl() override;
   gfx::Rect GetBoundsInPixels() const override;
   void SetBoundsInPixels(const gfx::Rect& requested_bounds_in_pixels) override;
-  gfx::Point GetLocationOnNativeScreen() const override;
+  gfx::Point GetLocationOnScreenInPixels() const override;
   void SetCapture() override;
   void ReleaseCapture() override;
   void SetCursorNative(gfx::NativeCursor cursor) override;
-  void MoveCursorToNative(const gfx::Point& location) override;
+  void MoveCursorToScreenLocationInPixels(
+      const gfx::Point& location_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
  private:

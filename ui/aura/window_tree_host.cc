@@ -61,7 +61,7 @@ WindowTreeHost* WindowTreeHost::GetForAcceleratedWidget(
 
 void WindowTreeHost::InitHost() {
   InitCompositor();
-  UpdateRootWindowSize(GetBoundsInPixels().size());
+  UpdateRootWindowSizeInPixels(GetBoundsInPixels().size());
   Env::GetInstance()->NotifyHostInitialized(this);
   window()->Show();
 }
@@ -96,7 +96,7 @@ gfx::Transform WindowTreeHost::GetRootTransform() const {
 
 void WindowTreeHost::SetRootTransform(const gfx::Transform& transform) {
   window()->SetTransform(transform);
-  UpdateRootWindowSize(GetBoundsInPixels().size());
+  UpdateRootWindowSizeInPixels(GetBoundsInPixels().size());
 }
 
 gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
@@ -107,18 +107,20 @@ gfx::Transform WindowTreeHost::GetInverseRootTransform() const {
   return invert;
 }
 
-void WindowTreeHost::SetOutputSurfacePadding(const gfx::Insets& padding) {
-  if (output_surface_padding_ == padding)
+void WindowTreeHost::SetOutputSurfacePaddingInPixels(
+    const gfx::Insets& padding_in_pixels) {
+  if (output_surface_padding_in_pixels_ == padding_in_pixels)
     return;
 
-  output_surface_padding_ = padding;
-  OnHostResized(GetBoundsInPixels().size());
+  output_surface_padding_in_pixels_ = padding_in_pixels;
+  OnHostResizedInPixels(GetBoundsInPixels().size());
 }
 
-void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
-  gfx::Rect bounds(output_surface_padding_.left(),
-                   output_surface_padding_.top(), host_size.width(),
-                   host_size.height());
+void WindowTreeHost::UpdateRootWindowSizeInPixels(
+    const gfx::Size& host_size_in_pixels) {
+  gfx::Rect bounds(output_surface_padding_in_pixels_.left(),
+                   output_surface_padding_in_pixels_.top(),
+                   host_size_in_pixels.width(), host_size_in_pixels.height());
   float scale_factor = ui::GetDeviceScaleFactor(window()->layer());
   gfx::RectF new_bounds =
       gfx::ScaleRect(gfx::RectF(bounds), 1.0f / scale_factor);
@@ -126,25 +128,25 @@ void WindowTreeHost::UpdateRootWindowSize(const gfx::Size& host_size) {
   window()->SetBounds(gfx::ToEnclosingRect(new_bounds));
 }
 
-void WindowTreeHost::ConvertPointToNativeScreen(gfx::Point* point) const {
-  ConvertPointToHost(point);
-  gfx::Point location = GetLocationOnNativeScreen();
+void WindowTreeHost::ConvertDIPToScreenInPixels(gfx::Point* point) const {
+  ConvertDIPToPixels(point);
+  gfx::Point location = GetLocationOnScreenInPixels();
   point->Offset(location.x(), location.y());
 }
 
-void WindowTreeHost::ConvertPointFromNativeScreen(gfx::Point* point) const {
-  gfx::Point location = GetLocationOnNativeScreen();
+void WindowTreeHost::ConvertScreenInPixelsToDIP(gfx::Point* point) const {
+  gfx::Point location = GetLocationOnScreenInPixels();
   point->Offset(-location.x(), -location.y());
-  ConvertPointFromHost(point);
+  ConvertPixelsToDIP(point);
 }
 
-void WindowTreeHost::ConvertPointToHost(gfx::Point* point) const {
+void WindowTreeHost::ConvertDIPToPixels(gfx::Point* point) const {
   auto point_3f = gfx::Point3F(gfx::PointF(*point));
   GetRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
 }
 
-void WindowTreeHost::ConvertPointFromHost(gfx::Point* point) const {
+void WindowTreeHost::ConvertPixelsToDIP(gfx::Point* point) const {
   auto point_3f = gfx::Point3F(gfx::PointF(*point));
   GetInverseRootTransform().TransformPoint(&point_3f);
   *point = gfx::ToFlooredPoint(point_3f.AsPointF());
@@ -172,16 +174,18 @@ void WindowTreeHost::OnCursorVisibilityChanged(bool show) {
   OnCursorVisibilityChangedNative(show);
 }
 
-void WindowTreeHost::MoveCursorTo(const gfx::Point& location_in_dip) {
+void WindowTreeHost::MoveCursorToLocationInDIP(
+    const gfx::Point& location_in_dip) {
   gfx::Point host_location(location_in_dip);
-  ConvertPointToHost(&host_location);
+  ConvertDIPToPixels(&host_location);
   MoveCursorToInternal(location_in_dip, host_location);
 }
 
-void WindowTreeHost::MoveCursorToHostLocation(const gfx::Point& host_location) {
-  gfx::Point root_location(host_location);
-  ConvertPointFromHost(&root_location);
-  MoveCursorToInternal(root_location, host_location);
+void WindowTreeHost::MoveCursorToLocationInPixels(
+    const gfx::Point& location_in_pixels) {
+  gfx::Point root_location(location_in_pixels);
+  ConvertPixelsToDIP(&root_location);
+  MoveCursorToInternal(root_location, location_in_pixels);
 }
 
 ui::InputMethod* WindowTreeHost::GetInputMethod() {
@@ -268,18 +272,20 @@ void WindowTreeHost::OnAcceleratedWidgetAvailable() {
                                kWindowTreeHostForAcceleratedWidget, this));
 }
 
-void WindowTreeHost::OnHostMoved(const gfx::Point& new_location) {
-  TRACE_EVENT1("ui", "WindowTreeHost::OnHostMoved",
-               "origin", new_location.ToString());
+void WindowTreeHost::OnHostMovedInPixels(
+    const gfx::Point& new_location_in_pixels) {
+  TRACE_EVENT1("ui", "WindowTreeHost::OnHostMovedInPixels", "origin",
+               new_location_in_pixels.ToString());
 
   for (WindowTreeHostObserver& observer : observers_)
-    observer.OnHostMoved(this, new_location);
+    observer.OnHostMovedInPixels(this, new_location_in_pixels);
 }
 
-void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
-  gfx::Size adjusted_size(new_size);
-  adjusted_size.Enlarge(output_surface_padding_.width(),
-                        output_surface_padding_.height());
+void WindowTreeHost::OnHostResizedInPixels(
+    const gfx::Size& new_size_in_pixels) {
+  gfx::Size adjusted_size(new_size_in_pixels);
+  adjusted_size.Enlarge(output_surface_padding_in_pixels_.width(),
+                        output_surface_padding_in_pixels_.height());
   // The compositor should have the same size as the native root window host.
   // Get the latest scale from display because it might have been changed.
   compositor_->SetScaleAndSize(GetDeviceScaleFactorFromDisplay(window()),
@@ -288,7 +294,7 @@ void WindowTreeHost::OnHostResized(const gfx::Size& new_size) {
   gfx::Size layer_size = GetBoundsInPixels().size();
   // The layer, and the observers should be notified of the
   // transformed size of the root window.
-  UpdateRootWindowSize(layer_size);
+  UpdateRootWindowSizeInPixels(layer_size);
   for (WindowTreeHostObserver& observer : observers_)
     observer.OnHostResized(this);
 }
@@ -329,7 +335,7 @@ ui::EventProcessor* WindowTreeHost::GetEventProcessor() {
 void WindowTreeHost::MoveCursorToInternal(const gfx::Point& root_location,
                                           const gfx::Point& host_location) {
   last_cursor_request_position_in_host_ = host_location;
-  MoveCursorToNative(host_location);
+  MoveCursorToScreenLocationInPixels(host_location);
   client::CursorClient* cursor_client = client::GetCursorClient(window());
   if (cursor_client) {
     const display::Display& display =

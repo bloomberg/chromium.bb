@@ -61,7 +61,7 @@ void SetMouseLocationInScreen(const gfx::Point& screen_location) {
       aura::client::GetScreenPositionClient(root_window);
   if (client)
     client->ConvertPointFromScreen(root_window, &host_location);
-  root_window->GetHost()->MoveCursorTo(host_location);
+  root_window->GetHost()->MoveCursorToLocationInDIP(host_location);
 }
 
 }  // namespace

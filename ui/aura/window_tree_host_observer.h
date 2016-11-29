@@ -20,8 +20,8 @@ class AURA_EXPORT WindowTreeHostObserver {
   virtual void OnHostResized(const WindowTreeHost* host) {}
 
   // Called when the host is moved on screen.
-  virtual void OnHostMoved(const WindowTreeHost* host,
-                           const gfx::Point& new_origin) {}
+  virtual void OnHostMovedInPixels(const WindowTreeHost* host,
+                                   const gfx::Point& new_origin_in_pixels) {}
 
   // Called when the host is moved to a different workspace.
   virtual void OnHostWorkspaceChanged(const WindowTreeHost* host) {}

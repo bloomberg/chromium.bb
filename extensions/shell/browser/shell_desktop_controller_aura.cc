@@ -259,7 +259,7 @@ void ShellDesktopControllerAura::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   gfx::Size size = GetPrimaryDisplaySize();
   if (!size.IsEmpty())
-    host_->UpdateRootWindowSize(size);
+    host_->UpdateRootWindowSizeInPixels(size);
 }
 #endif
 

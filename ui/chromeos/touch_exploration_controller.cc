@@ -62,7 +62,7 @@ TouchExplorationController::~TouchExplorationController() {
 void TouchExplorationController::SetTouchAccessibilityAnchorPoint(
     const gfx::Point& anchor_point) {
   gfx::Point native_point = anchor_point;
-  root_window_->GetHost()->ConvertPointToNativeScreen(&native_point);
+  root_window_->GetHost()->ConvertDIPToScreenInPixels(&native_point);
 
   anchor_point_ = gfx::PointF(native_point.x(), native_point.y());
   anchor_point_state_ = ANCHOR_POINT_EXPLICITLY_SET;
@@ -93,7 +93,7 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
 
   if (!exclude_bounds_.IsEmpty()) {
     gfx::Point location = touch_event.location();
-    root_window_->GetHost()->ConvertPointFromNativeScreen(&location);
+    root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
     bool in_exclude_area = exclude_bounds_.Contains(location);
     if (in_exclude_area) {
       if (state_ == NO_FINGERS_DOWN)
@@ -901,7 +901,7 @@ void TouchExplorationController::SideSlideControl(ui::GestureEvent* gesture) {
   }
 
   location = gesture->location();
-  root_window_->GetHost()->ConvertPointFromNativeScreen(&location);
+  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&location);
   float volume_adjust_height =
       root_window_->bounds().height() - 2 * kMaxDistanceFromEdge;
   float ratio = (location.y() - kMaxDistanceFromEdge) / volume_adjust_height;
@@ -1003,7 +1003,7 @@ int TouchExplorationController::FindEdgesWithinBounds(gfx::Point point,
                                                       float bounds) {
   // Since GetBoundsInScreen is in DIPs but point is not, then point needs to be
   // converted.
-  root_window_->GetHost()->ConvertPointFromNativeScreen(&point);
+  root_window_->GetHost()->ConvertScreenInPixelsToDIP(&point);
   gfx::Rect window = root_window_->GetBoundsInScreen();
 
   float left_edge_limit = window.x() + bounds;

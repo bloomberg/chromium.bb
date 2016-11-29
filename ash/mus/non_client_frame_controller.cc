@@ -257,7 +257,7 @@ class WmNativeWidgetMus : public views::NativeWidgetMus {
         window_tree_host->window(), shadow_.get());
     window_tree_host->window()->SetLayoutManager(layout_manager);
     const int inset = Shadow::GetInteriorInsetForStyle(Shadow::STYLE_ACTIVE);
-    window_tree_host->SetOutputSurfacePadding(
+    window_tree_host->SetOutputSurfacePaddingInPixels(
         gfx::Insets(inset, inset, inset, inset));
     window_tree_host->window()->layer()->Add(shadow_->layer());
     shadow_->layer()->parent()->StackAtBottom(shadow_->layer());

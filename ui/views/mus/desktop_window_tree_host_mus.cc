@@ -187,15 +187,14 @@ float DesktopWindowTreeHostMus::GetScaleFactor() const {
       .device_scale_factor();
 }
 
-void DesktopWindowTreeHostMus::SetBoundsInDips(
-    const gfx::Rect& bounds_in_dips) {
-  SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dips));
+void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
+  SetBoundsInPixels(gfx::ConvertRectToPixel(GetScaleFactor(), bounds_in_dip));
 }
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
   if (!params.bounds.IsEmpty())
-    SetBoundsInDips(params.bounds);
+    SetBoundsInDIP(params.bounds);
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -299,7 +298,7 @@ void DesktopWindowTreeHostMus::SetSize(const gfx::Size& size) {
   gfx::Rect screen_bounds =
       gfx::ConvertRectToDIP(GetScaleFactor(), GetBoundsInPixels());
   screen_bounds.set_size(size);
-  SetBoundsInDips(screen_bounds);
+  SetBoundsInDIP(screen_bounds);
 }
 
 void DesktopWindowTreeHostMus::StackAbove(aura::Window* window) {
@@ -328,7 +327,7 @@ void DesktopWindowTreeHostMus::CenterWindow(const gfx::Size& size) {
 
   gfx::Rect resulting_bounds(bounds_to_center_in);
   resulting_bounds.ClampToCenteredSize(size);
-  SetBoundsInDips(resulting_bounds);
+  SetBoundsInDIP(resulting_bounds);
 }
 
 void DesktopWindowTreeHostMus::GetWindowPlacement(

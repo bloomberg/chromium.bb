@@ -43,7 +43,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   // Helper function to get the scale factor.
   float GetScaleFactor() const;
 
-  void SetBoundsInDips(const gfx::Rect& bounds_in_dips);
+  void SetBoundsInDIP(const gfx::Rect& bounds_in_dip);
 
   // DesktopWindowTreeHost:
   void Init(aura::Window* content_window,

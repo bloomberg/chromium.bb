@@ -127,7 +127,7 @@ void EventGeneratorDelegateAura::ConvertPointFromHost(
     const ui::EventTarget* hosted_target,
     gfx::Point* point) const {
   const Window* window = WindowFromTarget(hosted_target);
-  window->GetHost()->ConvertPointFromHost(point);
+  window->GetHost()->ConvertPixelsToDIP(point);
 }
 
 void EventGeneratorDelegateAura::DispatchKeyEventToIME(ui::EventTarget* target,

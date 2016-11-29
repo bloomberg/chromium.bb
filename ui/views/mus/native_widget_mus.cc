@@ -1467,8 +1467,9 @@ void NativeWidgetMus::OnHostResized(const aura::WindowTreeHost* host) {
   UpdateHitTestMask();
 }
 
-void NativeWidgetMus::OnHostMoved(const aura::WindowTreeHost* host,
-                                  const gfx::Point& new_origin) {
+void NativeWidgetMus::OnHostMovedInPixels(
+    const aura::WindowTreeHost* host,
+    const gfx::Point& new_origin_in_pixels) {
   native_widget_delegate_->OnNativeWidgetMove();
 }
 

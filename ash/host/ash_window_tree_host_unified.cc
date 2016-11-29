@@ -80,7 +80,7 @@ void AshWindowTreeHostUnified::RegisterMirroringHost(
 
 void AshWindowTreeHostUnified::SetBoundsInPixels(const gfx::Rect& bounds) {
   AshWindowTreeHostPlatform::SetBoundsInPixels(bounds);
-  OnHostResized(bounds.size());
+  OnHostResizedInPixels(bounds.size());
 }
 
 void AshWindowTreeHostUnified::SetCursorNative(gfx::NativeCursor cursor) {
@@ -95,7 +95,7 @@ void AshWindowTreeHostUnified::OnCursorVisibilityChangedNative(bool show) {
 
 void AshWindowTreeHostUnified::OnBoundsChanged(const gfx::Rect& bounds) {
   if (platform_window())
-    OnHostResized(bounds.size());
+    OnHostResizedInPixels(bounds.size());
 }
 
 void AshWindowTreeHostUnified::OnWindowDestroying(aura::Window* window) {

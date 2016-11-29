@@ -144,7 +144,7 @@ class UIControlsDesktopX11 : public UIControlsAura {
     aura::WindowTreeHost* host = root_window->GetHost();
     gfx::Point root_current_location =
         aura::test::QueryLatestMousePositionRequestInHost(host);
-    host->ConvertPointFromHost(&root_current_location);
+    host->ConvertPixelsToDIP(&root_current_location);
 
     auto screen = views::test::TestDesktopScreenX11::GetInstance();
     DCHECK_EQ(screen, display::Screen::GetScreen());

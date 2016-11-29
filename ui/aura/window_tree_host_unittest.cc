@@ -29,7 +29,7 @@ TEST_F(WindowTreeHostTest, DPIWindowSize) {
 
   gfx::Insets padding(1, 2, 3, 4);
   // Padding is in physical pixels.
-  host()->SetOutputSurfacePadding(padding);
+  host()->SetOutputSurfacePaddingInPixels(padding);
   gfx::Rect padded_rect = starting_bounds;
   padded_rect.Inset(-padding);
   EXPECT_EQ(padded_rect.size(), host()->compositor()->size());

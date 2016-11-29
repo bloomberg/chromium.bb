@@ -545,7 +545,7 @@ void DesktopWindowTreeHostWin::SetBoundsInPixels(const gfx::Rect& bounds) {
   message_handler_->SetBounds(new_expanded, old_content_size != bounds.size());
 }
 
-gfx::Point DesktopWindowTreeHostWin::GetLocationOnNativeScreen() const {
+gfx::Point DesktopWindowTreeHostWin::GetLocationOnScreenInPixels() const {
   return GetBoundsInPixels().origin();
 }
 
@@ -571,8 +571,9 @@ void DesktopWindowTreeHostWin::OnCursorVisibilityChangedNative(bool show) {
   ::ShowCursor(!!show);
 }
 
-void DesktopWindowTreeHostWin::MoveCursorToNative(const gfx::Point& location) {
-  POINT cursor_location = location.ToPOINT();
+void DesktopWindowTreeHostWin::MoveCursorToScreenLocationInPixels(
+    const gfx::Point& location_in_pixels) {
+  POINT cursor_location = location_in_pixels.ToPOINT();
   ::ClientToScreen(GetHWND(), &cursor_location);
   ::SetCursorPos(cursor_location.x, cursor_location.y);
 }
@@ -793,7 +794,7 @@ void DesktopWindowTreeHostWin::HandleEndWMSizeMove() {
 
 void DesktopWindowTreeHostWin::HandleMove() {
   native_widget_delegate_->OnNativeWidgetMove();
-  OnHostMoved(GetBoundsInPixels().origin());
+  OnHostMovedInPixels(GetBoundsInPixels().origin());
 }
 
 void DesktopWindowTreeHostWin::HandleWorkAreaChanged() {
@@ -811,7 +812,7 @@ void DesktopWindowTreeHostWin::HandleVisibilityChanged(bool visible) {
 void DesktopWindowTreeHostWin::HandleClientSizeChanged(
     const gfx::Size& new_size) {
   if (dispatcher())
-    OnHostResized(new_size);
+    OnHostResizedInPixels(new_size);
 }
 
 void DesktopWindowTreeHostWin::HandleFrameChanged() {

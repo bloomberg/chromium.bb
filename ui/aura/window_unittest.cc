@@ -441,7 +441,7 @@ TEST_P(WindowTest, MoveCursorToWithTransformRootWindow) {
   transform.Rotate(90.0);
   transform.Scale(2.0, 5.0);
   host()->SetRootTransform(transform);
-  host()->MoveCursorTo(gfx::Point(10, 10));
+  host()->MoveCursorToLocationInDIP(gfx::Point(10, 10));
 #if !defined(OS_WIN)
   // TODO(yoshiki): fix this to build on Windows. See crbug.com/133413.OD
   EXPECT_EQ("50,120", QueryLatestMousePositionRequestInHost(host()).ToString());

@@ -74,7 +74,7 @@ const int kCaretPanningMargin = 50;
 void MoveCursorTo(aura::WindowTreeHost* host, const gfx::Point& root_location) {
   auto host_location_3f = gfx::Point3F(gfx::PointF(root_location));
   host->GetRootTransform().TransformPoint(&host_location_3f);
-  host->MoveCursorToHostLocation(
+  host->MoveCursorToLocationInPixels(
       gfx::ToCeiledPoint(host_location_3f.AsPointF()));
 }
 

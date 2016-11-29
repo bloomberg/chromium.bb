@@ -198,7 +198,7 @@ DragDropControllerMus::CreateDropTargetEvent(Window* window,
                                              uint32_t effect_bitmask) {
   DCHECK(window->GetHost());
   gfx::Point root_location = screen_location;
-  window->GetHost()->ConvertPointFromNativeScreen(&root_location);
+  window->GetHost()->ConvertScreenInPixelsToDIP(&root_location);
   gfx::Point location = root_location;
   Window::ConvertPointToTarget(window->GetRootWindow(), window, &location);
   std::unique_ptr<ui::DropTargetEvent> event =

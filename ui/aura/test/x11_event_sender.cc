@@ -34,7 +34,7 @@ void PostEventToWindowTreeHost(const XEvent& xevent, WindowTreeHost* host) {
       event.xmotion.time = CurrentTime;
 
       gfx::Point point(event.xmotion.x, event.xmotion.y);
-      host->ConvertPointToNativeScreen(&point);
+      host->ConvertDIPToScreenInPixels(&point);
       event.xmotion.x_root = point.x();
       event.xmotion.y_root = point.y();
     }

@@ -600,7 +600,7 @@ void DesktopWindowTreeHostX11::SetSize(const gfx::Size& requested_size) {
                 size_in_pixels.height());
   bounds_in_pixels_.set_size(size_in_pixels);
   if (size_changed) {
-    OnHostResized(size_in_pixels);
+    OnHostResizedInPixels(size_in_pixels);
     ResetWindowRegion();
   }
 }
@@ -1068,8 +1068,8 @@ void DesktopWindowTreeHostX11::SetFullscreen(bool fullscreen) {
   } else {
     bounds_in_pixels_ = restored_bounds_in_pixels_;
   }
-  OnHostMoved(bounds_in_pixels_.origin());
-  OnHostResized(bounds_in_pixels_.size());
+  OnHostMovedInPixels(bounds_in_pixels_.origin());
+  OnHostResizedInPixels(bounds_in_pixels_.size());
 
   if (HasWMSpecProperty("_NET_WM_STATE_FULLSCREEN") == fullscreen) {
     Relayout();
@@ -1258,12 +1258,12 @@ void DesktopWindowTreeHostX11::SetBoundsInPixels(
   if (origin_changed)
     native_widget_delegate_->AsWidget()->OnNativeWidgetMove();
   if (size_changed) {
-    OnHostResized(bounds_in_pixels.size());
+    OnHostResizedInPixels(bounds_in_pixels.size());
     ResetWindowRegion();
   }
 }
 
-gfx::Point DesktopWindowTreeHostX11::GetLocationOnNativeScreen() const {
+gfx::Point DesktopWindowTreeHostX11::GetLocationOnScreenInPixels() const {
   return bounds_in_pixels_.origin();
 }
 
@@ -1308,10 +1308,11 @@ void DesktopWindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
   XDefineCursor(xdisplay_, xwindow_, cursor.platform());
 }
 
-void DesktopWindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
+void DesktopWindowTreeHostX11::MoveCursorToScreenLocationInPixels(
+    const gfx::Point& location_in_pixels) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
-               bounds_in_pixels_.x() + location.x(),
-               bounds_in_pixels_.y() + location.y());
+               bounds_in_pixels_.x() + location_in_pixels.x(),
+               bounds_in_pixels_.y() + location_in_pixels.y());
 }
 
 void DesktopWindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
@@ -1576,7 +1577,7 @@ void DesktopWindowTreeHostX11::OnWMStateUpdated() {
   // the render side can update its visibility properly. OnWMStateUpdated() is
   // called by PropertyNofify event from DispatchEvent() when the browser is
   // minimized or shown from minimized state. On Windows, this is realized by
-  // calling OnHostResized() with an empty size. In particular,
+  // calling OnHostResizedInPixels() with an empty size. In particular,
   // HWNDMessageHandler::GetClientAreaBounds() returns an empty size when the
   // window is minimized. On Linux, returning empty size in GetBounds() or
   // SetBoundsInPixels() does not work.
@@ -1795,8 +1796,8 @@ void DesktopWindowTreeHostX11::ConvertEventToDifferentHost(
       display::Screen::GetScreen()->GetDisplayNearestWindow(host->window());
   DCHECK_EQ(display_src.device_scale_factor(),
             display_dest.device_scale_factor());
-  gfx::Vector2d offset = GetLocationOnNativeScreen() -
-                         host->GetLocationOnNativeScreen();
+  gfx::Vector2d offset =
+      GetLocationOnScreenInPixels() - host->GetLocationOnScreenInPixels();
   gfx::PointF location_in_pixel_in_host =
       located_event->location_f() + gfx::Vector2dF(offset);
   located_event->set_location_f(location_in_pixel_in_host);
@@ -2050,7 +2051,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
       bounds_in_pixels_ = bounds_in_pixels;
 
       if (origin_changed)
-        OnHostMoved(bounds_in_pixels_.origin());
+        OnHostMovedInPixels(bounds_in_pixels_.origin());
 
       if (size_changed) {
         delayed_resize_task_.Reset(base::Bind(
@@ -2263,7 +2264,7 @@ uint32_t DesktopWindowTreeHostX11::DispatchEvent(
 }
 
 void DesktopWindowTreeHostX11::DelayedResize(const gfx::Size& size_in_pixels) {
-  OnHostResized(size_in_pixels);
+  OnHostResizedInPixels(size_in_pixels);
   ResetWindowRegion();
   delayed_resize_task_.Cancel();
 }

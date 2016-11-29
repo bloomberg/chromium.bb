@@ -529,7 +529,7 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
         closest_distance_squared > distance_squared) {
       aura::Window* root_window = GetRootWindowForDisplayId(display.id());
       ::wm::ConvertPointFromScreen(root_window, &center);
-      root_window->GetHost()->ConvertPointToNativeScreen(&center);
+      root_window->GetHost()->ConvertDIPToScreenInPixels(&center);
       dst_root_window = root_window;
       target_location_in_native = center;
       closest_distance_squared = distance_squared;
@@ -537,7 +537,7 @@ void WindowTreeHostManager::UpdateMouseLocationAfterDisplayChange() {
   }
 
   gfx::Point target_location_in_root = target_location_in_native;
-  dst_root_window->GetHost()->ConvertPointFromNativeScreen(
+  dst_root_window->GetHost()->ConvertScreenInPixelsToDIP(
       &target_location_in_root);
 
 #if defined(USE_OZONE)
@@ -791,7 +791,7 @@ void WindowTreeHostManager::PreDisplayConfigurationChange(bool clear_focus) {
   gfx::Point point_in_native = point_in_screen;
   aura::Window* root_window = GetRootWindowForDisplayId(display.id());
   ::wm::ConvertPointFromScreen(root_window, &point_in_native);
-  root_window->GetHost()->ConvertPointToNativeScreen(&point_in_native);
+  root_window->GetHost()->ConvertDIPToScreenInPixels(&point_in_native);
   cursor_location_in_native_coords_for_restore_ = point_in_native;
 }
 

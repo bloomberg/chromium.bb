@@ -312,9 +312,9 @@ uint32_t WindowTreeHostX11::DispatchEvent(const ui::PlatformEvent& event) {
       bounds_ = bounds;
       OnConfigureNotify();
       if (size_changed)
-        OnHostResized(bounds.size());
+        OnHostResizedInPixels(bounds.size());
       if (origin_changed)
-        OnHostMoved(bounds_.origin());
+        OnHostMovedInPixels(bounds_.origin());
       break;
     }
     case GenericEvent:
@@ -433,15 +433,15 @@ void WindowTreeHostX11::SetBoundsInPixels(const gfx::Rect& bounds) {
   // |bounds_| later.
   bounds_ = bounds;
   if (origin_changed)
-    OnHostMoved(bounds.origin());
+    OnHostMovedInPixels(bounds.origin());
   if (size_changed || current_scale != new_scale) {
-    OnHostResized(bounds.size());
+    OnHostResizedInPixels(bounds.size());
   } else {
     window()->SchedulePaintInRect(window()->bounds());
   }
 }
 
-gfx::Point WindowTreeHostX11::GetLocationOnNativeScreen() const {
+gfx::Point WindowTreeHostX11::GetLocationOnScreenInPixels() const {
   return bounds_.origin();
 }
 
@@ -465,10 +465,11 @@ void WindowTreeHostX11::SetCursorNative(gfx::NativeCursor cursor) {
   SetCursorInternal(cursor);
 }
 
-void WindowTreeHostX11::MoveCursorToNative(const gfx::Point& location) {
+void WindowTreeHostX11::MoveCursorToScreenLocationInPixels(
+    const gfx::Point& location_in_pixels) {
   XWarpPointer(xdisplay_, None, x_root_window_, 0, 0, 0, 0,
-               bounds_.x() + location.x(),
-               bounds_.y() + location.y());
+               bounds_.x() + location_in_pixels.x(),
+               bounds_.y() + location_in_pixels.y());
 }
 
 void WindowTreeHostX11::OnCursorVisibilityChangedNative(bool show) {
@@ -570,8 +571,8 @@ void WindowTreeHostX11::TranslateAndDispatchLocatedEvent(
 }
 
 // static
-WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds) {
-  return new WindowTreeHostX11(bounds);
+WindowTreeHost* WindowTreeHost::Create(const gfx::Rect& bounds_in_pixels) {
+  return new WindowTreeHostX11(bounds_in_pixels);
 }
 
 namespace test {

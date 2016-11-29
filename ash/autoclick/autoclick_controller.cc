@@ -180,7 +180,7 @@ void AutoclickControllerImpl::DoAutoclick(const gfx::Point& event_location,
   gfx::Point click_location(event_location);
   ::wm::ConvertPointFromScreen(root_window, &click_location);
   aura::WindowTreeHost* host = root_window->GetHost();
-  host->ConvertPointToHost(&click_location);
+  host->ConvertDIPToPixels(&click_location);
 
   ui::MouseEvent press_event(ui::ET_MOUSE_PRESSED, click_location,
                              click_location, ui::EventTimeForNow(),

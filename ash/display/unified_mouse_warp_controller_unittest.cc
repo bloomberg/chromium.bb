@@ -53,8 +53,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
                 ->window_tree_host_manager()
                 ->mirror_window_controller()
                 ->GetAshWindowTreeHostForDisplayId(info.id());
-        ash_host->AsWindowTreeHost()->ConvertPointFromHost(
-            point_in_unified_host);
+        ash_host->AsWindowTreeHost()->ConvertPixelsToDIP(point_in_unified_host);
         return true;
       }
     }
@@ -87,7 +86,7 @@ class UnifiedMouseWarpControllerTest : public test::AshTestBase {
     gfx::Point new_location_in_unified_host =
         aura::Env::GetInstance()->last_mouse_location();
     // Convert screen to the host.
-    root->GetHost()->ConvertPointToHost(&new_location_in_unified_host);
+    root->GetHost()->ConvertDIPToPixels(&new_location_in_unified_host);
 
     int new_index = display::FindDisplayIndexContainingPoint(
         display_manager()->software_mirroring_display_list(),

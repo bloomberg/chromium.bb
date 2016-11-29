@@ -40,7 +40,8 @@ class ASH_EXPORT AshWindowTreeHostX11 : public AshWindowTreeHost,
   gfx::Transform GetRootTransform() const override;
   void SetRootTransform(const gfx::Transform& transform) override;
   gfx::Transform GetInverseRootTransform() const override;
-  void UpdateRootWindowSize(const gfx::Size& host_size) override;
+  void UpdateRootWindowSizeInPixels(
+      const gfx::Size& host_size_in_pixels) override;
   void OnCursorVisibilityChangedNative(bool show) override;
 
   // aura::WindowTreeHostX11:

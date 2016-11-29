@@ -248,7 +248,7 @@ aura::Window* MusClient::GetWindowAtScreenPoint(const gfx::Point& point) {
       continue;
     // TODO: this likely gets z-order wrong. http://crbug.com/663606.
     gfx::Point relative_point(point);
-    window_tree_host->ConvertPointFromNativeScreen(&relative_point);
+    window_tree_host->ConvertScreenInPixelsToDIP(&relative_point);
     if (gfx::Rect(root->bounds().size()).Contains(relative_point))
       return root->GetTopWindowContainingPoint(relative_point);
   }

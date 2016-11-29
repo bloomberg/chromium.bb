@@ -225,8 +225,8 @@ class VIEWS_MUS_EXPORT NativeWidgetMus
 
   // Overridden from aura::WindowTreeHostObserver:
   void OnHostResized(const aura::WindowTreeHost* host) override;
-  void OnHostMoved(const aura::WindowTreeHost* host,
-                   const gfx::Point& new_origin) override;
+  void OnHostMovedInPixels(const aura::WindowTreeHost* host,
+                           const gfx::Point& new_origin_in_pixels) override;
   void OnHostCloseRequested(const aura::WindowTreeHost* host) override;
 
   // Overridden from aura::client::DragDropDelegate:

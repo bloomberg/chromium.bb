@@ -107,7 +107,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     }
 
     gfx::Point host_location = root_location;
-    host_->ConvertPointToHost(&host_location);
+    host_->ConvertDIPToPixels(&host_location);
 
     ui::EventType event_type;
 
@@ -137,7 +137,7 @@ class UIControlsOzone : public ui_controls::UIControlsAura {
     }
 
     gfx::Point host_location = root_location;
-    host_->ConvertPointToHost(&host_location);
+    host_->ConvertDIPToPixels(&host_location);
 
     int flag = 0;
 

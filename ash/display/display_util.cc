@@ -67,7 +67,7 @@ class DisplayErrorNotificationDelegate
 void ConvertPointFromScreenToNative(aura::WindowTreeHost* host,
                                     gfx::Point* point) {
   ::wm::ConvertPointFromScreen(host->window(), point);
-  host->ConvertPointToNativeScreen(point);
+  host->ConvertDIPToScreenInPixels(point);
 }
 
 }  // namespace
@@ -123,7 +123,7 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
   aura::WindowTreeHost* host = ash_host->AsWindowTreeHost();
   gfx::Point point_in_native = point_in_screen;
   ::wm::ConvertPointFromScreen(host->window(), &point_in_native);
-  host->ConvertPointToNativeScreen(&point_in_native);
+  host->ConvertDIPToScreenInPixels(&point_in_native);
 
   // now fit the point inside the native bounds.
   gfx::Rect native_bounds = host->GetBoundsInPixels();
@@ -141,20 +141,20 @@ void MoveCursorTo(AshWindowTreeHost* ash_host,
   gfx::Point point_in_host = point_in_native;
 
   point_in_host.Offset(-native_origin.x(), -native_origin.y());
-  host->MoveCursorToHostLocation(point_in_host);
+  host->MoveCursorToLocationInPixels(point_in_host);
 
   if (update_last_location_now) {
     gfx::Point new_point_in_screen;
     if (Shell::GetInstance()->display_manager()->IsInUnifiedMode()) {
       new_point_in_screen = point_in_host;
       // First convert to the unified host.
-      host->ConvertPointFromHost(&new_point_in_screen);
+      host->ConvertPixelsToDIP(&new_point_in_screen);
       // Then convert to the unified screen.
-      Shell::GetPrimaryRootWindow()->GetHost()->ConvertPointFromHost(
+      Shell::GetPrimaryRootWindow()->GetHost()->ConvertPixelsToDIP(
           &new_point_in_screen);
     } else {
       new_point_in_screen = point_in_native;
-      host->ConvertPointFromNativeScreen(&new_point_in_screen);
+      host->ConvertScreenInPixelsToDIP(&new_point_in_screen);
       ::wm::ConvertPointToScreen(host->window(), &new_point_in_screen);
     }
     aura::Env::GetInstance()->set_last_mouse_location(new_point_in_screen);

@@ -114,7 +114,7 @@ class UIControlsX11 : public UIControlsAura {
     }
     gfx::Point root_current_location =
         QueryLatestMousePositionRequestInHost(host_);
-    host_->ConvertPointFromHost(&root_current_location);
+    host_->ConvertPixelsToDIP(&root_current_location);
 
     if (root_location != root_current_location && button_down_mask == 0) {
       // Move the cursor because EnterNotify/LeaveNotify are generated with the

@@ -140,7 +140,7 @@ bool ExtendedMouseWarpController::WarpMouseCursor(ui::MouseEvent* event) {
     aura::Window* target_root = target->GetRootWindow();
     gfx::Point point_in_native = point_in_screen;
     ::wm::ConvertPointFromScreen(target_root, &point_in_native);
-    target_root->GetHost()->ConvertPointToNativeScreen(&point_in_native);
+    target_root->GetHost()->ConvertDIPToScreenInPixels(&point_in_native);
     return WarpMouseCursorInNativeCoords(point_in_native, point_in_screen,
                                          true);
   }

@@ -36,7 +36,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
     aura::Window** target_root) {
   DCHECK(!root_window->parent());
   gfx::Point point_in_root(*point);
-  root_window->GetHost()->ConvertPointFromHost(&point_in_root);
+  root_window->GetHost()->ConvertPixelsToDIP(&point_in_root);
 
 #if defined(USE_X11) || defined(USE_OZONE)
   gfx::Rect host_bounds(root_window->GetHost()->GetBoundsInPixels().size());
@@ -63,7 +63,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
 
     gfx::Point location_in_native(point_in_root);
 
-    root_window->GetHost()->ConvertPointToNativeScreen(&location_in_native);
+    root_window->GetHost()->ConvertDIPToScreenInPixels(&location_in_native);
 
     for (size_t i = 0; i < root_windows.size(); ++i) {
       aura::WindowTreeHost* host = root_windows[i]->GetHost();
@@ -71,7 +71,7 @@ void ScreenPositionController::ConvertHostPointToRelativeToRootWindow(
       if (native_bounds.Contains(location_in_native)) {
         *target_root = root_windows[i];
         *point = location_in_native;
-        host->ConvertPointFromNativeScreen(point);
+        host->ConvertScreenInPixelsToDIP(point);
         return;
       }
     }

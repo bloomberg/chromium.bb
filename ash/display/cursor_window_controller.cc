@@ -150,7 +150,7 @@ void CursorWindowController::UpdateLocation() {
     return;
   gfx::Point point = aura::Env::GetInstance()->last_mouse_location();
   if (!is_cursor_compositing_enabled_) {
-    Shell::GetPrimaryRootWindow()->GetHost()->ConvertPointToHost(&point);
+    Shell::GetPrimaryRootWindow()->GetHost()->ConvertDIPToPixels(&point);
   } else {
     point.Offset(-bounds_in_screen_.x(), -bounds_in_screen_.y());
   }
