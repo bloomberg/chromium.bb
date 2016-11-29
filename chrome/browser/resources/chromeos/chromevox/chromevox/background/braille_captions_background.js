@@ -141,7 +141,9 @@ cvox.BrailleCaptionsBackground.setActive = function(newValue) {
 cvox.BrailleCaptionsBackground.getVirtualDisplayState = function() {
   var self = cvox.BrailleCaptionsBackground;
   if (self.isEnabled()) {
-    return {available: true, textCellCount: 40};  // 40, why not?
+    var rows = parseInt(localStorage['virtualBrailleRows'], 10) || 1;
+    var columns = parseInt(localStorage['virtualBrailleColumns'], 10) || 40;
+    return {available: true, textRowCount: rows, textColumnCount: columns};
   } else {
     return {available: false};
   }
