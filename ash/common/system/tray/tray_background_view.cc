@@ -402,13 +402,23 @@ void TrayBackgroundView::AboutToRequestFocusFromTabTraversal(bool reverse) {
 std::unique_ptr<views::InkDropRipple> TrayBackgroundView::CreateInkDropRipple()
     const {
   return base::MakeUnique<views::FloodFillInkDropRipple>(
-      GetInkDropBounds(), GetInkDropCenterBasedOnLastEvent(),
+      size(), GetBackgroundInsets(), GetInkDropCenterBasedOnLastEvent(),
       GetInkDropBaseColor(), ink_drop_visible_opacity());
 }
 
 std::unique_ptr<views::InkDropHighlight>
 TrayBackgroundView::CreateInkDropHighlight() const {
-  gfx::Rect bounds = GetInkDropBounds();
+  gfx::Rect bounds = GetBackgroundBounds();
+  // Currently, we don't handle view resize. To compensate for that, enlarge the
+  // bounds by two tray icons so that the hightlight looks good even if two more
+  // icons are added when it is visible. Note that ink drop mask handles resize
+  // correctly, so the extra highlight would be clipped.
+  // TODO(mohsen): Remove this extra size when resize is handled properly (see
+  // https://crbug.com/669253).
+  const int icon_size =
+      kTrayIconSize + 2 * GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
+  bounds.set_width(bounds.width() + 2 * icon_size);
+  bounds.set_height(bounds.height() + 2 * icon_size);
   std::unique_ptr<views::InkDropHighlight> highlight(
       new views::InkDropHighlight(bounds.size(), 0,
                                   gfx::RectF(bounds).CenterPoint(),
@@ -632,20 +642,10 @@ gfx::Insets TrayBackgroundView::GetBackgroundInsets() const {
   return insets;
 }
 
-gfx::Rect TrayBackgroundView::GetInkDropBounds() const {
+gfx::Rect TrayBackgroundView::GetBackgroundBounds() const {
   gfx::Insets insets = GetBackgroundInsets();
   gfx::Rect bounds = GetLocalBounds();
   bounds.Inset(insets);
-  // Currently, we don't handle view resize. To compensate for that, enlarge the
-  // bounds by two tray icons so that ripple looks good even if two more icons
-  // are added when ripple is active. Note that ink drop mask handles resize
-  // correctly, so the extra ripple would be clipped.
-  // TODO(mohsen): Remove this extra size when resize is handled properly (see
-  // https://crbug.com/666175).
-  const int icon_size =
-      kTrayIconSize + 2 * GetTrayConstant(TRAY_IMAGE_ITEM_PADDING);
-  bounds.set_width(bounds.width() + 2 * icon_size);
-  bounds.set_height(bounds.height() + 2 * icon_size);
   return bounds;
 }
 

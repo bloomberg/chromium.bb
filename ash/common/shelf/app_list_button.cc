@@ -245,7 +245,8 @@ std::unique_ptr<views::InkDropRipple> AppListButton::CreateInkDropRipple()
                    center.y() - kAppListButtonRadius, 2 * kAppListButtonRadius,
                    2 * kAppListButtonRadius);
   return base::MakeUnique<views::FloodFillInkDropRipple>(
-      bounds, GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      size(), GetLocalBounds().InsetsFrom(bounds),
+      GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
       ink_drop_visible_opacity());
 }
 

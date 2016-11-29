@@ -107,21 +107,35 @@ base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
       kAnimationDurationInMs[state]);
 }
 
+gfx::Rect CalculateClipBounds(const gfx::Size& host_size,
+                              const gfx::Insets& clip_insets) {
+  gfx::Rect clip_bounds(host_size);
+  clip_bounds.Inset(clip_insets);
+  return clip_bounds;
+}
+
+float CalculateCircleLayerRadius(const gfx::Rect& clip_bounds) {
+  return std::max(clip_bounds.width(), clip_bounds.height()) / 2.f;
+}
+
 }  // namespace
 
 namespace views {
 
-FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
+FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Size& host_size,
+                                               const gfx::Insets& clip_insets,
                                                const gfx::Point& center_point,
                                                SkColor color,
                                                float visible_opacity)
-    : center_point_(center_point),
+    : clip_insets_(clip_insets),
+      center_point_(center_point),
       visible_opacity_(visible_opacity),
       root_layer_(ui::LAYER_NOT_DRAWN),
-      circle_layer_delegate_(
-          color,
-          std::max(clip_bounds.width(), clip_bounds.height()) / 2.f),
+      circle_layer_delegate_(color,
+                             CalculateCircleLayerRadius(
+                                 CalculateClipBounds(host_size, clip_insets))),
       ink_drop_state_(InkDropState::HIDDEN) {
+  gfx::Rect clip_bounds = CalculateClipBounds(host_size, clip_insets);
   root_layer_.set_name("FloodFillInkDropRipple:ROOT_LAYER");
   root_layer_.SetMasksToBounds(true);
   root_layer_.SetBounds(clip_bounds);
@@ -142,10 +156,33 @@ FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Rect& clip_bounds,
   SetStateToHidden();
 }
 
+FloodFillInkDropRipple::FloodFillInkDropRipple(const gfx::Size& host_size,
+                                               const gfx::Point& center_point,
+                                               SkColor color,
+                                               float visible_opacity)
+    : FloodFillInkDropRipple(host_size,
+                             gfx::Insets(),
+                             center_point,
+                             color,
+                             visible_opacity) {}
+
 FloodFillInkDropRipple::~FloodFillInkDropRipple() {
   // Explicitly aborting all the animations ensures all callbacks are invoked
   // while this instance still exists.
   AbortAllAnimations();
+}
+
+void FloodFillInkDropRipple::HostSizeChanged(const gfx::Size& new_size) {
+  root_layer_.SetBounds(CalculateClipBounds(new_size, clip_insets_));
+  switch (target_ink_drop_state()) {
+    case InkDropState::ACTION_PENDING:
+    case InkDropState::ALTERNATE_ACTION_PENDING:
+    case InkDropState::ACTIVATED:
+      painted_layer_.SetTransform(GetMaxSizeTargetTransform());
+      break;
+    default:
+      break;
+  }
 }
 
 void FloodFillInkDropRipple::SnapToActivated() {

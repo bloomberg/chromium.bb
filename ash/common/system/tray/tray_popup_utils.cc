@@ -353,9 +353,13 @@ std::unique_ptr<views::InkDropRipple> TrayPopupUtils::CreateInkDropRipple(
       }
     // Intentional fall through.
     case TrayPopupInkDropStyle::INSET_BOUNDS:
-    case TrayPopupInkDropStyle::FILL_BOUNDS:
+    case TrayPopupInkDropStyle::FILL_BOUNDS: {
+      const gfx::Insets insets =
+          TrayPopupUtils::GetInkDropInsets(ink_drop_style);
       return base::MakeUnique<views::FloodFillInkDropRipple>(
-          bounds, center_point, color, kTrayPopupInkDropRippleOpacity);
+          host->size(), insets, center_point, color,
+          kTrayPopupInkDropRippleOpacity);
+    }
   }
   // Required for some compilers.
   NOTREACHED();

@@ -30,6 +30,8 @@ InkDropRipple::InkDropRipple()
 
 InkDropRipple::~InkDropRipple() {}
 
+void InkDropRipple::HostSizeChanged(const gfx::Size& new_size) {}
+
 void InkDropRipple::AnimateToState(InkDropState ink_drop_state) {
   // Does not return early if |target_ink_drop_state_| == |ink_drop_state| for
   // two reasons.

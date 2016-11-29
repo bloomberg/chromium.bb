@@ -162,9 +162,9 @@ class ASH_EXPORT TrayBackgroundView : public ActionableView,
   // Helper function that calculates background insets relative to local bounds.
   gfx::Insets GetBackgroundInsets() const;
 
-  // Helper function that calculates ink drop bounds relative to local bounds
-  // based on the background insets returned from GetBackgroundInsets().
-  gfx::Rect GetInkDropBounds() const;
+  // Helper function that calculates background bounds relative to local bounds
+  // based on background insets returned from GetBackgroundInsets().
+  gfx::Rect GetBackgroundBounds() const;
 
   // The shelf containing the system tray for this view.
   WmShelf* wm_shelf_;

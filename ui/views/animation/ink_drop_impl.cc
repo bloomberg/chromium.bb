@@ -626,6 +626,8 @@ void InkDropImpl::HostSizeChanged(const gfx::Size& new_size) {
   // when a mask layer is applied to it. This will not affect clipping if no
   // mask layer is set.
   root_layer_->SetBounds(gfx::Rect(new_size));
+  if (ink_drop_ripple_)
+    ink_drop_ripple_->HostSizeChanged(new_size);
 }
 
 InkDropState InkDropImpl::GetTargetInkDropState() const {

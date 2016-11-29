@@ -440,7 +440,7 @@ std::unique_ptr<InkDrop> LabelButton::CreateInkDrop() {
 std::unique_ptr<views::InkDropRipple> LabelButton::CreateInkDropRipple() const {
   return UseFloodFillInkDrop()
              ? base::MakeUnique<views::FloodFillInkDropRipple>(
-                   GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+                   size(), GetInkDropCenterBasedOnLastEvent(),
                    GetInkDropBaseColor(), ink_drop_visible_opacity())
              : CreateDefaultInkDropRipple(
                    image()->GetMirroredBounds().CenterPoint());

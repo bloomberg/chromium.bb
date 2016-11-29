@@ -79,6 +79,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/favicon_size.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/image/image_skia_operations.h"
 #include "ui/gfx/paint_vector_icon.h"
@@ -165,9 +166,13 @@ gfx::ImageSkia* GetImageSkiaNamed(int id) {
   return ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(id);
 }
 
+// Ink drop ripple/highlight for bookmark buttons should be inset 1px vertically
+// so that they do not touch the bookmark bar borders.
+constexpr gfx::Insets kInkDropInsets(1, 0);
+
 gfx::Rect CalculateInkDropBounds(const gfx::Size& size) {
   gfx::Rect ink_drop_bounds(size);
-  ink_drop_bounds.Inset(0, 1);
+  ink_drop_bounds.Inset(kInkDropInsets);
   return ink_drop_bounds;
 }
 
@@ -225,7 +230,7 @@ class BookmarkButtonBase : public views::LabelButton {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::MakeUnique<views::FloodFillInkDropRipple>(
-        CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
+        size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
 
@@ -348,7 +353,7 @@ class BookmarkMenuButtonBase : public views::MenuButton {
 
   std::unique_ptr<views::InkDropRipple> CreateInkDropRipple() const override {
     return base::MakeUnique<views::FloodFillInkDropRipple>(
-        CalculateInkDropBounds(size()), GetInkDropCenterBasedOnLastEvent(),
+        size(), kInkDropInsets, GetInkDropCenterBasedOnLastEvent(),
         GetInkDropBaseColor(), ink_drop_visible_opacity());
   }
 

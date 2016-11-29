@@ -151,7 +151,7 @@ class TransparentButton : public CustomButton {
   std::unique_ptr<InkDropRipple> CreateInkDropRipple() const override {
     return std::unique_ptr<views::InkDropRipple>(
         new views::FloodFillInkDropRipple(
-            GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
+            size(), GetInkDropCenterBasedOnLastEvent(),
             GetNativeTheme()->GetSystemColor(
                 ui::NativeTheme::kColorId_LabelEnabledColor),
             ink_drop_visible_opacity()));

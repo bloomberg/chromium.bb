@@ -94,9 +94,10 @@ std::unique_ptr<views::InkDrop> OverflowButton::CreateInkDrop() {
 
 std::unique_ptr<views::InkDropRipple> OverflowButton::CreateInkDropRipple()
     const {
+  gfx::Insets insets = GetLocalBounds().InsetsFrom(CalculateButtonBounds());
   return base::MakeUnique<views::FloodFillInkDropRipple>(
-      CalculateButtonBounds(), GetInkDropCenterBasedOnLastEvent(),
-      GetInkDropBaseColor(), ink_drop_visible_opacity());
+      size(), insets, GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+      ink_drop_visible_opacity());
 }
 
 bool OverflowButton::ShouldEnterPushedState(const ui::Event& event) {

@@ -130,8 +130,8 @@ std::unique_ptr<views::InkDropRipple> MdTextButton::CreateInkDropRipple()
     const {
   return std::unique_ptr<views::InkDropRipple>(
       new views::FloodFillInkDropRipple(
-          GetLocalBounds(), GetInkDropCenterBasedOnLastEvent(),
-          GetInkDropBaseColor(), ink_drop_visible_opacity()));
+          size(), GetInkDropCenterBasedOnLastEvent(), GetInkDropBaseColor(),
+          ink_drop_visible_opacity()));
 }
 
 void MdTextButton::StateChanged() {

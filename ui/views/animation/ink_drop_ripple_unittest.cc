@@ -8,6 +8,7 @@
 
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/size.h"
 #include "ui/views/animation/flood_fill_ink_drop_ripple.h"
 #include "ui/views/animation/ink_drop_ripple_observer.h"
@@ -67,7 +68,7 @@ InkDropRippleTest::InkDropRippleTest() {
     }
     case FLOOD_FILL_INK_DROP_RIPPLE: {
       FloodFillInkDropRipple* flood_fill_ink_drop_ripple =
-          new FloodFillInkDropRipple(gfx::Rect(0, 0, 10, 10), gfx::Point(),
+          new FloodFillInkDropRipple(gfx::Size(10, 10), gfx::Point(),
                                      SK_ColorBLACK, kVisibleOpacity);
       ink_drop_ripple_.reset(flood_fill_ink_drop_ripple);
       test_api_.reset(
