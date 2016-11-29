@@ -396,13 +396,8 @@ cr.define('ntp', function() {
     onClick_: function(e) {
       if (/** @type {MouseEvent} */(e).button > 1) return;
 
-      var url = !this.appData_.is_webstore ? '' :
-          appendParam(this.appData_.url,
-                      'utm_source',
-                      'chrome-ntp-icon');
-
       chrome.send('launchApp',
-                  [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, url,
+                  [this.appId, APP_LAUNCH.NTP_APPS_MAXIMIZED, 'chrome-ntp-icon',
                    e.button, e.altKey, e.ctrlKey, e.metaKey, e.shiftKey]);
 
       // Don't allow the click to trigger a link or anything
@@ -709,9 +704,9 @@ cr.define('ntp', function() {
       if (html) {
         // It's important that we don't attach this node to the document
         // because it might contain scripts.
-        var node = this.ownerDocument.createElement('div');
-        node.innerHTML = html;
-        title = node.textContent;
+        var doc = document.implementation.createHTMLDocument();
+        doc.body.innerHTML = html;
+        title = doc.body.textContent;
       }
 
       // Make sure title is >=1 and <=45 characters for Chrome app limits.
