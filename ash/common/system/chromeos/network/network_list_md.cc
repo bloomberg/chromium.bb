@@ -33,6 +33,7 @@
 #include "ui/views/border.h"
 #include "ui/views/controls/button/toggle_button.h"
 #include "ui/views/controls/label.h"
+#include "ui/views/controls/separator.h"
 #include "ui/views/layout/box_layout.h"
 #include "ui/views/layout/fill_layout.h"
 #include "ui/views/painter.h"
@@ -47,11 +48,6 @@ using chromeos::NetworkTypePattern;
 namespace ash {
 
 namespace {
-
-// TODO(varkha): Merge some of those those constants in tray_constants.h
-const int kSectionHeaderRowSize = 48;
-const int kSectionHeaderRowVerticalInset = 4;
-const int kSectionHeaderRowLeftInset = 18;
 
 bool IsProhibitedByPolicy(const chromeos::NetworkState* network) {
   if (!NetworkTypePattern::WiFi().MatchesType(network->type()))
@@ -111,15 +107,8 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
   // enabled/disable their respective technology, for example.
   virtual void OnToggleToggled(bool is_on) = 0;
 
-  views::View* container() const { return container_; }
+  TriView* container() const { return container_; }
   TrayPopupItemStyle* style() const { return style_.get(); }
-
-  // views::View:
-  gfx::Size GetPreferredSize() const override {
-    gfx::Size size = views::View::GetPreferredSize();
-    size.set_height(kSectionHeaderRowSize + kSectionHeaderRowVerticalInset * 2);
-    return size;
-  }
 
   int GetHeightForWidth(int w) const override {
     // Make row height fixed avoiding layout manager adjustments.
@@ -138,30 +127,20 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
     // to TrayPopupUtils to simplify creation of the following layout. See
     // https://crbug.com/614453.
     TrayPopupUtils::ConfigureAsStickyHeader(this);
-    container_ = new views::View;
-    container_->SetBorder(
-        views::CreateEmptyBorder(0, kSectionHeaderRowLeftInset, 0, 0));
-    views::FillLayout* layout = new views::FillLayout;
-    SetLayoutManager(layout);
+    SetLayoutManager(new views::FillLayout);
+    container_ = TrayPopupUtils::CreateSubHeaderRowView();
     AddChildView(container_);
-
-    views::BoxLayout* container_layout =
-        new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
-    container_layout->set_cross_axis_alignment(
-        views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);
-    container_->SetLayoutManager(container_layout);
 
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
     style()->SetupLabel(label);
     label->SetText(l10n_util::GetStringUTF16(title_id_));
-    container_->AddChildView(label);
-    container_layout->SetFlexForView(label, 1);
+    container_->AddView(TriView::Container::CENTER, label);
   }
 
   void AddToggleButton(bool enabled) {
     toggle_ = TrayPopupUtils::CreateToggleButton(this, title_id_);
     toggle_->SetIsOn(enabled, false);
-    container_->AddChildView(toggle_);
+    container_->AddView(TriView::Container::END, toggle_);
   }
 
   // Resource ID for the string to use as the title of the section and for the
@@ -170,7 +149,7 @@ class NetworkListViewMd::SectionHeaderRowView : public views::View,
 
   // View containing header row views, including title, toggle, and extra
   // buttons.
-  views::View* container_;
+  TriView* container_;
 
   // ToggleButton to toggle section on or off.
   views::ToggleButton* toggle_;
@@ -242,8 +221,7 @@ class WifiHeaderRowView : public NetworkListViewMd::SectionHeaderRowView {
                                  IDS_ASH_STATUS_TRAY_OTHER_WIFI);
     join_->SetInkDropColor(prominent_color);
     join_->SetEnabled(enabled);
-
-    container()->AddChildView(join_);
+    container()->AddView(TriView::Container::END, join_);
   }
 
   void ButtonPressed(views::Button* sender, const ui::Event& event) override {
@@ -285,7 +263,9 @@ NetworkListViewMd::NetworkListViewMd(NetworkListDelegate* delegate)
       no_wifi_networks_view_(nullptr),
       no_cellular_networks_view_(nullptr),
       cellular_header_view_(nullptr),
-      wifi_header_view_(nullptr) {
+      wifi_header_view_(nullptr),
+      cellular_separator_view_(nullptr),
+      wifi_separator_view_(nullptr) {
   CHECK(delegate_);
 }
 
@@ -455,17 +435,16 @@ NetworkListViewMd::UpdateNetworkListEntries() {
   std::unique_ptr<std::set<std::string>> new_service_paths =
       UpdateNetworkChildren(NetworkInfo::Type::UNKNOWN, 0);
 
-  // Keep an index of the last inserted child.
+  // Keep an index where the next child should be inserted.
   int index = new_service_paths->size();
 
   const NetworkTypePattern pattern = delegate_->GetNetworkTypePattern();
   if (pattern.MatchesPattern(NetworkTypePattern::Cellular())) {
     if (handler->IsTechnologyAvailable(NetworkTypePattern::Cellular())) {
-      UpdateSectionHeaderRow(
+      index = UpdateSectionHeaderRow(
           NetworkTypePattern::Cellular(),
           handler->IsTechnologyEnabled(NetworkTypePattern::Cellular()), index,
-          &cellular_header_view_);
-      ++index;
+          &cellular_header_view_, &cellular_separator_view_);
     }
 
     // Cellular initializing.
@@ -488,11 +467,10 @@ NetworkListViewMd::UpdateNetworkListEntries() {
   }
 
   if (pattern.MatchesPattern(NetworkTypePattern::WiFi())) {
-    UpdateSectionHeaderRow(
+    index = UpdateSectionHeaderRow(
         NetworkTypePattern::WiFi(),
         handler->IsTechnologyEnabled(NetworkTypePattern::WiFi()), index,
-        &wifi_header_view_);
-    ++index;
+        &wifi_header_view_, &wifi_separator_view_);
 
     // "Wifi Enabled / Disabled".
     int message_id = 0;
@@ -588,10 +566,12 @@ void NetworkListViewMd::UpdateInfoLabel(int message_id,
   *label_ptr = label;
 }
 
-void NetworkListViewMd::UpdateSectionHeaderRow(NetworkTypePattern pattern,
-                                               bool enabled,
-                                               int child_index,
-                                               SectionHeaderRowView** view) {
+int NetworkListViewMd::UpdateSectionHeaderRow(
+    NetworkTypePattern pattern,
+    bool enabled,
+    int child_index,
+    SectionHeaderRowView** view,
+    views::Separator** separator_view) {
   if (!*view) {
     if (pattern.Equals(NetworkTypePattern::Cellular()))
       *view = new CellularHeaderRowView();
@@ -601,8 +581,21 @@ void NetworkListViewMd::UpdateSectionHeaderRow(NetworkTypePattern pattern,
       NOTREACHED();
     (*view)->Init(enabled);
   }
+  // Show or hide a separator above the header. The separator should only be
+  // visible when the header row is not at the top of the list.
+  if (child_index > 0) {
+    if (!*separator_view)
+      *separator_view = TrayPopupUtils::CreateListSubHeaderSeparator();
+    PlaceViewAtIndex(*separator_view, child_index++);
+  } else {
+    if (*separator_view)
+      delete *separator_view;
+    *separator_view = nullptr;
+  }
+
   (*view)->SetEnabled(enabled);
-  PlaceViewAtIndex(*view, child_index);
+  PlaceViewAtIndex(*view, child_index++);
+  return child_index;
 }
 
 void NetworkListViewMd::NetworkIconChanged() {

@@ -108,13 +108,24 @@ class VPNListProviderEntryMd : public views::ButtonListener,
                                public views::View {
  public:
   VPNListProviderEntryMd(ViewClickListener* parent,
+                         bool top_item,
                          const std::string& name,
                          int button_accessible_name_id)
       : parent_(parent) {
+    // TODO(varkha): Make this a sticky section header.
     SetLayoutManager(new views::FillLayout);
-    TriView* tri_view = TrayPopupUtils::CreateDefaultRowView();
-    tri_view->SetContainerVisible(TriView::Container::START, false);
+    TriView* tri_view = TrayPopupUtils::CreateSubHeaderRowView();
     AddChildView(tri_view);
+
+    // Sets up the border. When the provider header is the first item in the
+    // list (i.e. when the list was empty before adding the provider row) there
+    // is already |kMenuSeparatorVerticalPadding| padding at the top of the
+    //  scroll contents, so only add that padding when the list was not |empty|.
+    // TODO(varkha): Delete this special handling when we allow the header to be
+    // sticky and just use ConfigureAsStickyHeader() instead.
+    tri_view->SetBorder(
+        views::CreateEmptyBorder(top_item ? 0 : kMenuSeparatorVerticalPadding,
+                                 0, kMenuSeparatorVerticalPadding, 0));
 
     views::Label* label = TrayPopupUtils::CreateDefaultLabel();
     TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::SUB_HEADER);
@@ -449,14 +460,8 @@ void VPNListView::AddProviderAndNetworks(
     const VPNProvider& vpn_provider,
     const chromeos::NetworkStateHandler::NetworkStateList& networks) {
   // Add a visual separator, unless this is the topmost entry in the list.
-  if (!list_empty_) {
-    views::Separator* const separator =
-        new views::Separator(views::Separator::HORIZONTAL);
-    separator->SetColor(kBorderLightColor);
-    container()->AddChildView(separator);
-  } else {
-    list_empty_ = false;
-  }
+  if (!list_empty_)
+    container()->AddChildView(TrayPopupUtils::CreateListSubHeaderSeparator());
   std::string vpn_name =
       vpn_provider.third_party
           ? vpn_provider.third_party_provider_name
@@ -466,12 +471,13 @@ void VPNListView::AddProviderAndNetworks(
   views::View* provider_view = nullptr;
   if (UseMd()) {
     provider_view = new VPNListProviderEntryMd(
-        this, vpn_name, IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
+        this, list_empty_, vpn_name, IDS_ASH_STATUS_TRAY_ADD_CONNECTION);
   } else {
     provider_view = new VPNListProviderEntry(this, vpn_name);
   }
   container()->AddChildView(provider_view);
   provider_view_map_[provider_view] = vpn_provider;
+  list_empty_ = false;
   // Add the networks belonging to this provider, in the priority order returned
   // by shill.
   for (const chromeos::NetworkState* const& network : networks) {

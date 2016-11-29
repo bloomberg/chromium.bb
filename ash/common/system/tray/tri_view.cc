@@ -138,6 +138,10 @@ void TriView::ViewHierarchyChanged(
   }
 }
 
+const char* TriView::GetClassName() const {
+  return "TriView";
+}
+
 views::View* TriView::GetContainer(Container container) {
   return child_at(static_cast<int>(container));
 }

@@ -46,6 +46,17 @@ class TrayPopupUtils {
   // The CENTER container has a flexible width.
   static TriView* CreateDefaultRowView();
 
+  // Creates a container view to be used by system menu sub-section header rows.
+  // The caller takes over ownership of the created view.
+  //
+  // The returned view consists of 2 regions: CENTER, and END having the same
+  // properties as when using |CreateMultiTargetRowView|. The START container is
+  // hidden.
+  // The END container has a fixed minimum width but can grow into the CENTER
+  // container if space is required and available. The CENTER container has a
+  // flexible width.
+  static TriView* CreateSubHeaderRowView();
+
   // Creates a container view to be used by system menu rows that want to embed
   // a targetable area within one (or more) of the containers OR by any row
   // that requires a non-default layout within the container views. The returned
@@ -168,6 +179,11 @@ class TrayPopupUtils {
   // the left by the width normally occupied by an icon. Caller assumes
   // ownership of the returned separator.
   static views::Separator* CreateListItemSeparator(bool left_inset);
+
+  // Creates and returns a horizontal separator line to be drawn between rows
+  // in a detailed view above the sub-header rows. Caller assumes ownership of
+  // the returned separator.
+  static views::Separator* CreateListSubHeaderSeparator();
 
   // Returns true if it is possible to open WebUI settings in a browser window,
   // i.e., the user is logged in, not on the lock screen, and not in a secondary

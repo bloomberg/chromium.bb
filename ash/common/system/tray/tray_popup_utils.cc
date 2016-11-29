@@ -188,6 +188,18 @@ TriView* TrayPopupUtils::CreateDefaultRowView() {
   return tri_view;
 }
 
+TriView* TrayPopupUtils::CreateSubHeaderRowView() {
+  TriView* tri_view = CreateMultiTargetRowView();
+  tri_view->SetInsets(
+      gfx::Insets(0, kTrayPopupPaddingHorizontal, 0,
+                  GetTrayConstant(TRAY_POPUP_ITEM_RIGHT_INSET)));
+  tri_view->SetContainerVisible(TriView::Container::START, false);
+  tri_view->SetContainerLayout(
+      TriView::Container::END,
+      CreateDefaultLayoutManager(TriView::Container::END));
+  return tri_view;
+}
+
 TriView* TrayPopupUtils::CreateMultiTargetRowView() {
   TriView* tri_view = new TriView(0 /* padding_between_items */);
 
@@ -424,6 +436,16 @@ views::Separator* TrayPopupUtils::CreateListItemSeparator(bool left_inset) {
                 kTrayPopupLabelHorizontalPadding
           : 0,
       kMenuSeparatorVerticalPadding, 0));
+  return separator;
+}
+
+views::Separator* TrayPopupUtils::CreateListSubHeaderSeparator() {
+  views::Separator* separator =
+      new views::Separator(views::Separator::HORIZONTAL);
+  separator->SetColor(kHorizontalSeparatorColor);
+  separator->SetPreferredSize(kSeparatorWidth);
+  separator->SetBorder(views::CreateEmptyBorder(
+      kMenuSeparatorVerticalPadding - kSeparatorWidth, 0, 0, 0));
   return separator;
 }
 

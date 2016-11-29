@@ -148,7 +148,7 @@ class ScrollContentsView : public views::View,
   // calls to Layout() to allow keeping track of which view should be sticky.
   struct Header {
     explicit Header(views::View* view)
-        : view(view), natural_offset(view->y()) {}
+        : view(view), natural_offset(view->y()), draw_separator_below(false) {}
 
     // A header View that can be decorated as sticky.
     views::View* view;
@@ -156,6 +156,10 @@ class ScrollContentsView : public views::View,
     // Offset from the top of ScrollContentsView to |view|'s original vertical
     // position.
     int natural_offset;
+
+    // True when a separator needs to be painted below the header when another
+    // header is pushing |this| header up.
+    bool draw_separator_below;
   };
 
   // Adjusts y-position of header rows allowing one or two rows to stick to the
@@ -165,14 +169,16 @@ class ScrollContentsView : public views::View,
     Header* previous_header = nullptr;
     for (auto& header : base::Reversed(headers_)) {
       views::View* header_view = header.view;
+      header.draw_separator_below = false;
       if (header.natural_offset >= scroll_offset) {
         previous_header = &header;
         header_view->SetY(header.natural_offset);
         continue;
       }
       if (previous_header &&
-          previous_header->view->y() < scroll_offset + header_view->height()) {
+          previous_header->view->y() <= scroll_offset + header_view->height()) {
         // Lower header displacing the header above.
+        header.draw_separator_below = true;
         header_view->SetY(previous_header->view->y() - header_view->height());
       } else {
         // A header becomes sticky.
@@ -190,27 +196,22 @@ class ScrollContentsView : public views::View,
   // was drawn.
   bool PaintDelineation(const Header& header, const ui::PaintContext& context) {
     const View* view = header.view;
-    const bool at_top = view->y() == -y();
 
-    // If the header is where it normally belongs, draw a separator above.
-    if (view->y() == header.natural_offset) {
-      // But if the header is at the very top of the viewport, draw nothing.
-      if (at_top)
-        return false;
+    // If the header is where it normally belongs, draw nothing.
+    if (view->y() == header.natural_offset)
+      return false;
 
+    // If the header is pushed by a header directly below it, draw a separator.
+    if (header.draw_separator_below) {
       // TODO(estade): look better at 1.5x scale.
       ui::PaintRecorder recorder(context, size());
       gfx::Canvas* canvas = recorder.canvas();
       gfx::Rect separator = view->bounds();
+      separator.set_y(separator.bottom() - kSeparatorWidth);
       separator.set_height(kSeparatorWidth);
       canvas->FillRect(separator, kSeparatorColor);
       return false;
     }
-
-    // If the header is displaced but is not at the top of the viewport, it's
-    // being pushed out by another header. Draw nothing.
-    if (!at_top)
-      return false;
 
     // Otherwise, draw a shadow below.
     DrawShadow(context,

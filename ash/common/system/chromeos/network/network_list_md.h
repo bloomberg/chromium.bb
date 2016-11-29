@@ -21,6 +21,7 @@
 
 namespace views {
 class Label;
+class Separator;
 class View;
 }
 
@@ -91,11 +92,13 @@ class NetworkListViewMd : public NetworkListViewBase,
 
   // Creates a cellular/Wi-Fi header row |view| and adds it to |container()| if
   // necessary and reorders the |container()| placing the |view| at
-  // |child_index|.
-  void UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
-                              bool enabled,
-                              int child_index,
-                              SectionHeaderRowView** view);
+  // |child_index|. Returns the index where the next child should be inserted,
+  // i.e., the index directly after the last inserted child.
+  int UpdateSectionHeaderRow(chromeos::NetworkTypePattern pattern,
+                             bool enabled,
+                             int child_index,
+                             SectionHeaderRowView** view,
+                             views::Separator** separator_view);
 
   // network_icon::AnimationObserver:
   void NetworkIconChanged() override;
@@ -107,6 +110,8 @@ class NetworkListViewMd : public NetworkListViewBase,
   views::Label* no_cellular_networks_view_;
   SectionHeaderRowView* cellular_header_view_;
   SectionHeaderRowView* wifi_header_view_;
+  views::Separator* cellular_separator_view_;
+  views::Separator* wifi_separator_view_;
 
   // An owned list of network info.
   std::vector<std::unique_ptr<NetworkInfo>> network_list_;
