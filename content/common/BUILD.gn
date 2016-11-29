@@ -604,7 +604,6 @@ mojom("mojo_bindings") {
     "//services/video_capture/public/interfaces",
     "//skia/public/interfaces",
     "//third_party/WebKit/public:mojo_bindings",
-    "//third_party/WebKit/public:new_wrapper_types_mojo_bindings",
     "//ui/base/mojo:mojo_bindings",
     "//ui/gfx/geometry/mojo",
     "//ui/gfx/mojo",

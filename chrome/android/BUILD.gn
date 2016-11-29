@@ -192,7 +192,7 @@ android_library("chrome_java") {
     "//services/service_manager/public/java:service_manager_java",
     "//third_party/WebKit/public:android_mojo_bindings_java",
     "//third_party/WebKit/public:blink_headers_java",
-    "//third_party/WebKit/public:new_wrapper_types_mojo_bindings_java",
+    "//third_party/WebKit/public:mojo_bindings_java",
     "//third_party/android_data_chart:android_data_chart_java",
     "//third_party/android_media:android_media_java",
     "//third_party/android_protobuf:protobuf_nano_javalib",

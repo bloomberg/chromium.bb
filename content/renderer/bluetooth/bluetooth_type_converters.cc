@@ -17,15 +17,18 @@ blink::mojom::WebBluetoothScanFilterPtr TypeConverter<
   blink::mojom::WebBluetoothScanFilterPtr filter =
       blink::mojom::WebBluetoothScanFilter::New();
 
-  if (!web_filter.services.isEmpty())
-    filter->services =
-        Array<base::Optional<device::BluetoothUUID>>::From(web_filter.services);
+  if (!web_filter.services.isEmpty()) {
+    filter->services.emplace();
+    for (const auto& service : web_filter.services) {
+      filter->services->push_back(device::BluetoothUUID(service.utf8()));
+    }
+  }
 
   if (web_filter.hasName)
-    filter->name = String::From(web_filter.name);
+    filter->name = web_filter.name.utf8();
 
   if (!web_filter.namePrefix.isEmpty())
-    filter->name_prefix = String::From(web_filter.namePrefix);
+    filter->name_prefix = web_filter.namePrefix.utf8();
   return filter;
 }
 
@@ -37,22 +40,24 @@ TypeConverter<blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
 
-  options->filters = mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>::From(
-      web_options.filters);
-  options->optional_services =
-      mojo::Array<base::Optional<device::BluetoothUUID>>::From(
-          web_options.optionalServices);
+  for (const auto& filter : web_options.filters) {
+    options->filters.push_back(blink::mojom::WebBluetoothScanFilter::From<
+                               blink::WebBluetoothScanFilter>(filter));
+  }
+  for (const auto& optional_service : web_options.optionalServices) {
+    options->optional_services.push_back(
+        device::BluetoothUUID(optional_service.utf8()));
+  }
   return options;
 }
 
 // static
-base::Optional<device::BluetoothUUID>
-TypeConverter<base::Optional<device::BluetoothUUID>, blink::WebString>::Convert(
+device::BluetoothUUID
+TypeConverter<device::BluetoothUUID, blink::WebString>::Convert(
     const blink::WebString& web_string) {
-  base::Optional<device::BluetoothUUID> uuid =
-      device::BluetoothUUID(web_string.utf8());
+  device::BluetoothUUID uuid = device::BluetoothUUID(web_string.utf8());
 
-  DCHECK(uuid->IsValid());
+  DCHECK(uuid.IsValid());
 
   return uuid;
 }

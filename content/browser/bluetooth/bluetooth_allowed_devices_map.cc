@@ -167,12 +167,16 @@ void BluetoothAllowedDevicesMap::AddUnionOfServicesTo(
     std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash>*
         unionOfServices) {
   for (const auto& filter : options->filters) {
-    for (const base::Optional<BluetoothUUID>& uuid : filter->services) {
-      unionOfServices->insert(uuid.value());
+    if (!filter->services) {
+      continue;
+    }
+
+    for (const BluetoothUUID& uuid : filter->services.value()) {
+      unionOfServices->insert(uuid);
     }
   }
-  for (const base::Optional<BluetoothUUID>& uuid : options->optional_services) {
-    unionOfServices->insert(uuid.value());
+  for (const BluetoothUUID& uuid : options->optional_services) {
+    unionOfServices->insert(uuid);
   }
 }
 

@@ -94,7 +94,7 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   // characteristics that have been returned to the client in the past.
   void NotifyCharacteristicValueChanged(
       const std::string& characteristic_instance_id,
-      std::vector<uint8_t> value);
+      const std::vector<uint8_t>& value);
 
   // WebBluetoothService methods:
   void SetClient(
@@ -108,25 +108,25 @@ class CONTENT_EXPORT WebBluetoothServiceImpl
   void RemoteServerGetPrimaryServices(
       const WebBluetoothDeviceId& device_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
-      const base::Optional<device::BluetoothUUID>& service_uuid,
+      const base::Optional<device::BluetoothUUID>& services_uuid,
       const RemoteServerGetPrimaryServicesCallback& callback) override;
   void RemoteServiceGetCharacteristics(
-      const mojo::String& service_instance_id,
+      const std::string& service_instance_id,
       blink::mojom::WebBluetoothGATTQueryQuantity quantity,
       const base::Optional<device::BluetoothUUID>& characteristics_uuid,
       const RemoteServiceGetCharacteristicsCallback& callback) override;
   void RemoteCharacteristicReadValue(
-      const mojo::String& characteristic_instance_id,
+      const std::string& characteristic_instance_id,
       const RemoteCharacteristicReadValueCallback& callback) override;
   void RemoteCharacteristicWriteValue(
-      const mojo::String& characteristic_instance_id,
-      mojo::Array<uint8_t> value,
+      const std::string& characteristic_instance_id,
+      const std::vector<uint8_t>& value,
       const RemoteCharacteristicWriteValueCallback& callback) override;
   void RemoteCharacteristicStartNotifications(
-      const mojo::String& characteristic_instance_id,
+      const std::string& characteristic_instance_id,
       const RemoteCharacteristicStartNotificationsCallback& callback) override;
   void RemoteCharacteristicStopNotifications(
-      const mojo::String& characteristic_instance_id,
+      const std::string& characteristic_instance_id,
       const RemoteCharacteristicStopNotificationsCallback& callback) override;
 
   void RequestDeviceImpl(

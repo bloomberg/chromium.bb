@@ -86,10 +86,13 @@ bool BluetoothBlocklist::IsExcluded(const BluetoothUUID& uuid) const {
 }
 
 bool BluetoothBlocklist::IsExcluded(
-    const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
+    const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
   for (const blink::mojom::WebBluetoothScanFilterPtr& filter : filters) {
-    for (const base::Optional<BluetoothUUID>& service : filter->services) {
-      if (IsExcluded(service.value())) {
+    if (!filter->services) {
+      continue;
+    }
+    for (const BluetoothUUID& service : filter->services.value()) {
+      if (IsExcluded(service)) {
         return true;
       }
     }
@@ -115,10 +118,9 @@ bool BluetoothBlocklist::IsExcludedFromWrites(const BluetoothUUID& uuid) const {
 
 void BluetoothBlocklist::RemoveExcludedUUIDs(
     blink::mojom::WebBluetoothRequestDeviceOptions* options) {
-  mojo::Array<base::Optional<BluetoothUUID>>
-      optional_services_blocklist_filtered;
-  for (const base::Optional<BluetoothUUID>& uuid : options->optional_services) {
-    if (!IsExcluded(uuid.value())) {
+  std::vector<device::BluetoothUUID> optional_services_blocklist_filtered;
+  for (const BluetoothUUID& uuid : options->optional_services) {
+    if (!IsExcluded(uuid)) {
       optional_services_blocklist_filtered.push_back(uuid);
     }
   }

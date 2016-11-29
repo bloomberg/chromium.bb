@@ -64,17 +64,17 @@ void LogRequestDeviceOptions(
   int i = 0;
   for (const auto& filter : options->filters) {
     VLOG(1) << "Filter #" << ++i;
-    if (!filter->name.is_null())
-      VLOG(1) << "Name: " << filter->name;
+    if (filter->name)
+      VLOG(1) << "Name: " << filter->name.value();
 
-    if (!filter->name_prefix.is_null())
-      VLOG(1) << "Name Prefix: " << filter->name_prefix;
+    if (filter->name_prefix)
+      VLOG(1) << "Name Prefix: " << filter->name_prefix.value();
 
-    if (!filter->services.is_null()) {
+    if (filter->services) {
       VLOG(1) << "Services: ";
       VLOG(1) << "\t[";
-      for (const auto& service : filter->services)
-        VLOG(1) << "\t\t" << service->canonical_value();
+      for (const auto& service : filter->services.value())
+        VLOG(1) << "\t\t" << service.canonical_value();
       VLOG(1) << "\t]";
     }
   }
@@ -83,25 +83,24 @@ void LogRequestDeviceOptions(
 bool IsEmptyOrInvalidFilter(
     const blink::mojom::WebBluetoothScanFilterPtr& filter) {
   // At least one member needs to be present.
-  if (filter->name.is_null() && filter->name_prefix.is_null() &&
-      filter->services.is_null())
+  if (!filter->name && !filter->name_prefix && !filter->services)
     return true;
 
   // The renderer will never send a name or a name_prefix longer than
   // kMaxLengthForDeviceName.
-  if (!filter->name.is_null() && filter->name.size() > kMaxLengthForDeviceName)
+  if (filter->name && filter->name->size() > kMaxLengthForDeviceName)
     return true;
-  if (!filter->name_prefix.is_null() && filter->name_prefix.size() == 0)
+  if (filter->name_prefix && filter->name_prefix->size() == 0)
     return true;
-  if (!filter->name_prefix.is_null() &&
-      filter->name_prefix.size() > kMaxLengthForDeviceName)
+  if (filter->name_prefix &&
+      filter->name_prefix->size() > kMaxLengthForDeviceName)
     return true;
 
   return false;
 }
 
 bool HasEmptyOrInvalidFilter(
-    const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
+    const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
   return filters.empty()
              ? true
              : filters.end() != std::find_if(filters.begin(), filters.end(),
@@ -111,24 +110,24 @@ bool HasEmptyOrInvalidFilter(
 bool MatchesFilter(const std::string* device_name,
                    const UUIDSet& device_uuids,
                    const blink::mojom::WebBluetoothScanFilterPtr& filter) {
-  if (!filter->name.is_null()) {
+  if (filter->name) {
     if (device_name == nullptr)
       return false;
-    if (filter->name != *device_name)
+    if (filter->name.value() != *device_name)
       return false;
   }
 
-  if (!filter->name_prefix.is_null() && filter->name_prefix.size()) {
+  if (filter->name_prefix && filter->name_prefix->size()) {
     if (device_name == nullptr)
       return false;
-    if (!base::StartsWith(*device_name, filter->name_prefix.get(),
+    if (!base::StartsWith(*device_name, filter->name_prefix.value(),
                           base::CompareCase::SENSITIVE))
       return false;
   }
 
-  if (!filter->services.is_null()) {
-    for (const base::Optional<BluetoothUUID>& service : filter->services) {
-      if (!base::ContainsKey(device_uuids, service.value())) {
+  if (filter->services) {
+    for (const auto& service : filter->services.value()) {
+      if (!base::ContainsKey(device_uuids, service)) {
         return false;
       }
     }
@@ -140,7 +139,7 @@ bool MatchesFilter(const std::string* device_name,
 bool MatchesFilters(
     const std::string* device_name,
     const UUIDSet& device_uuids,
-    const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
+    const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
   DCHECK(!HasEmptyOrInvalidFilter(filters));
   for (const auto& filter : filters) {
     if (MatchesFilter(device_name, device_uuids, filter)) {
@@ -151,11 +150,14 @@ bool MatchesFilters(
 }
 
 std::unique_ptr<device::BluetoothDiscoveryFilter> ComputeScanFilter(
-    const mojo::Array<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
+    const std::vector<blink::mojom::WebBluetoothScanFilterPtr>& filters) {
   std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash> services;
   for (const auto& filter : filters) {
-    for (const base::Optional<BluetoothUUID>& service : filter->services) {
-      services.insert(service.value());
+    if (!filter->services) {
+      continue;
+    }
+    for (const auto& service : filter->services.value()) {
+      services.insert(service);
     }
   }
   // There isn't much support for GATT over BR/EDR from neither platforms nor

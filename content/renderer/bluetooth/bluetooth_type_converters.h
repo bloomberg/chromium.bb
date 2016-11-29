@@ -33,9 +33,8 @@ struct TypeConverter<blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
 };
 
 template <>
-struct TypeConverter<base::Optional<device::BluetoothUUID>, blink::WebString> {
-  static base::Optional<device::BluetoothUUID> Convert(
-      const blink::WebString& web_string);
+struct TypeConverter<device::BluetoothUUID, blink::WebString> {
+  static device::BluetoothUUID Convert(const blink::WebString& web_string);
 };
 
 }  // namespace mojo

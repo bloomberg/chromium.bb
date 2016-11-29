@@ -170,15 +170,14 @@ void WebBluetoothImpl::registerCharacteristicObject(
 }
 
 void WebBluetoothImpl::RemoteCharacteristicValueChanged(
-    const mojo::String& characteristic_instance_id,
-    mojo::Array<uint8_t> value) {
+    const std::string& characteristic_instance_id,
+    const std::vector<uint8_t>& value) {
   // We post a task so that the event is fired after any pending promises have
   // resolved.
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
       base::Bind(&WebBluetoothImpl::DispatchCharacteristicValueChanged,
-                 base::Unretained(this), characteristic_instance_id,
-                 value.PassStorage()));
+                 base::Unretained(this), characteristic_instance_id, value));
 }
 
 void WebBluetoothImpl::OnRequestDeviceComplete(
@@ -188,8 +187,8 @@ void WebBluetoothImpl::OnRequestDeviceComplete(
   if (result == blink::mojom::WebBluetoothResult::SUCCESS) {
     callbacks->onSuccess(base::MakeUnique<blink::WebBluetoothDeviceInit>(
         blink::WebString::fromUTF8(device->id.str()),
-        device->name.is_null() ? blink::WebString()
-                               : blink::WebString::fromUTF8(device->name)));
+        device->name ? blink::WebString::fromUTF8(device->name.value())
+                     : blink::WebString()));
   } else {
     callbacks->onError(ToInt32(result));
   }
@@ -223,17 +222,18 @@ void WebBluetoothImpl::OnGetPrimaryServicesComplete(
     const blink::WebString& device_id,
     std::unique_ptr<blink::WebBluetoothGetPrimaryServicesCallbacks> callbacks,
     blink::mojom::WebBluetoothResult result,
-    mojo::Array<blink::mojom::WebBluetoothRemoteGATTServicePtr> services) {
+    base::Optional<std::vector<blink::mojom::WebBluetoothRemoteGATTServicePtr>>
+        services) {
   if (result == blink::mojom::WebBluetoothResult::SUCCESS) {
+    DCHECK(services);
     // TODO(dcheng): This WebVector should use smart pointers.
     blink::WebVector<blink::WebBluetoothRemoteGATTService*> promise_services(
-        services.size());
-
-    for (size_t i = 0; i < services.size(); i++) {
+        services->size());
+    for (size_t i = 0; i < services->size(); i++) {
       promise_services[i] = new blink::WebBluetoothRemoteGATTService(
-          blink::WebString::fromUTF8(services[i]->instance_id),
-          blink::WebString::fromUTF8(services[i]->uuid), true /* isPrimary */,
-          device_id);
+          blink::WebString::fromUTF8(services.value()[i]->instance_id),
+          blink::WebString::fromUTF8(services.value()[i]->uuid),
+          true /* isPrimary */, device_id);
     }
     callbacks->onSuccess(promise_services);
   } else {
@@ -245,20 +245,21 @@ void WebBluetoothImpl::OnGetCharacteristicsComplete(
     const blink::WebString& service_instance_id,
     std::unique_ptr<blink::WebBluetoothGetCharacteristicsCallbacks> callbacks,
     blink::mojom::WebBluetoothResult result,
-    mojo::Array<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>
+    base::Optional<
+        std::vector<blink::mojom::WebBluetoothRemoteGATTCharacteristicPtr>>
         characteristics) {
   if (result == blink::mojom::WebBluetoothResult::SUCCESS) {
+    DCHECK(characteristics);
     // TODO(dcheng): This WebVector should use smart pointers.
     blink::WebVector<blink::WebBluetoothRemoteGATTCharacteristicInit*>
-        promise_characteristics(characteristics.size());
-
-    for (size_t i = 0; i < characteristics.size(); i++) {
+        promise_characteristics(characteristics->size());
+    for (size_t i = 0; i < characteristics->size(); i++) {
       promise_characteristics[i] =
           new blink::WebBluetoothRemoteGATTCharacteristicInit(
-              service_instance_id,
-              blink::WebString::fromUTF8(characteristics[i]->instance_id),
-              blink::WebString::fromUTF8(characteristics[i]->uuid),
-              characteristics[i]->properties);
+              service_instance_id, blink::WebString::fromUTF8(
+                                       characteristics.value()[i]->instance_id),
+              blink::WebString::fromUTF8(characteristics.value()[i]->uuid),
+              characteristics.value()[i]->properties);
     }
     callbacks->onSuccess(promise_characteristics);
   } else {
@@ -269,9 +270,10 @@ void WebBluetoothImpl::OnGetCharacteristicsComplete(
 void WebBluetoothImpl::OnReadValueComplete(
     std::unique_ptr<blink::WebBluetoothReadValueCallbacks> callbacks,
     blink::mojom::WebBluetoothResult result,
-    mojo::Array<uint8_t> value) {
+    const base::Optional<std::vector<uint8_t>>& value) {
   if (result == blink::mojom::WebBluetoothResult::SUCCESS) {
-    callbacks->onSuccess(value.PassStorage());
+    DCHECK(value);
+    callbacks->onSuccess(value.value());
   } else {
     callbacks->onError(ToInt32(result));
   }
