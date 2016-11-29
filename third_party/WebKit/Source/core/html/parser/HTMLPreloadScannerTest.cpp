@@ -803,4 +803,17 @@ TEST_F(HTMLPreloadScannerTest, testScriptTypeAndLanguage) {
     test(testCase);
 }
 
+// Regression test for crbug.com/664744.
+TEST_F(HTMLPreloadScannerTest, testUppercaseAsValues) {
+  TestCase testCases[] = {
+      {"http://example.test", "<link rel=preload href=bla as=SCRIPT>", "bla",
+       "http://example.test/", Resource::Script, 0},
+      {"http://example.test", "<link rel=preload href=bla as=fOnT>", "bla",
+       "http://example.test/", Resource::Font, 0},
+  };
+
+  for (const auto& testCase : testCases)
+    test(testCase);
+}
+
 }  // namespace blink

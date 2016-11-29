@@ -349,7 +349,7 @@ class TokenPreloadScanner::StartTagScanner {
     } else if (match(attributeName, nonceAttr)) {
       setNonce(attributeValue);
     } else if (match(attributeName, asAttr)) {
-      m_asAttributeValue = attributeValue;
+      m_asAttributeValue = attributeValue.lower();
     } else if (match(attributeName, typeAttr)) {
       m_matched &= MIMETypeRegistry::isSupportedStyleSheetMIMEType(
           ContentType(attributeValue).type());
