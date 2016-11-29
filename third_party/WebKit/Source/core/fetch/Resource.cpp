@@ -355,17 +355,12 @@ void Resource::setLoader(ResourceLoader* loader) {
 }
 
 void Resource::checkNotify() {
-  notifyClientsInternal(MarkFinishedOption::ShouldMarkFinished);
-}
-
-void Resource::notifyClientsInternal(MarkFinishedOption markFinishedOption) {
   if (isLoading())
     return;
 
   ResourceClientWalker<ResourceClient> w(m_clients);
   while (ResourceClient* c = w.next()) {
-    if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
-      markClientFinished(c);
+    markClientFinished(c);
     c->notifyFinished(this);
   }
 }

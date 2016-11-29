@@ -152,19 +152,17 @@ void ImageResource::checkNotify() {
   if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
     return;
 
-  notifyObserversInternal(MarkFinishedOption::ShouldMarkFinished);
+  notifyObserversInternal();
   Resource::checkNotify();
 }
 
-void ImageResource::notifyObserversInternal(
-    MarkFinishedOption markFinishedOption) {
+void ImageResource::notifyObserversInternal() {
   if (isLoading())
     return;
 
   for (auto* observer : m_observers.asVector()) {
     if (m_observers.contains(observer)) {
-      if (markFinishedOption == MarkFinishedOption::ShouldMarkFinished)
-        markObserverFinished(observer);
+      markObserverFinished(observer);
       observer->imageNotifyFinished(this);
     }
   }
@@ -700,10 +698,9 @@ void ImageResource::onePartInMultipartReceived(
     // Notify finished when the first part ends.
     if (!errorOccurred())
       setStatus(Cached);
-    // We will also notify clients/observers of the finish in
-    // Resource::finish()/error() so we don't mark them finished here.
-    notifyObserversInternal(MarkFinishedOption::DoNotMarkFinished);
-    notifyClientsInternal(MarkFinishedOption::DoNotMarkFinished);
+    // We notify clients/observers of finish here, and they will not be
+    // notified again in Resource::finish()/error().
+    checkNotify();
     if (loader())
       loader()->didFinishLoadingFirstPartInMultipart();
   }

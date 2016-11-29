@@ -338,8 +338,6 @@ class CORE_EXPORT Resource : public GarbageCollectedFinalized<Resource>,
 
   virtual void checkNotify();
 
-  enum class MarkFinishedOption { ShouldMarkFinished, DoNotMarkFinished };
-  void notifyClientsInternal(MarkFinishedOption);
   void markClientFinished(ResourceClient*);
 
   virtual bool hasClientsOrObservers() const {

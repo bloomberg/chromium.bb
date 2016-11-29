@@ -196,7 +196,7 @@ class CORE_EXPORT ImageResource final
   void ensureImage();
 
   void checkNotify() override;
-  void notifyObserversInternal(MarkFinishedOption);
+  void notifyObserversInternal();
   void markObserverFinished(ImageResourceObserver*);
 
   void doResetAnimation();
