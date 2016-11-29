@@ -34,6 +34,9 @@ enum MostVisitedTileType {
   NUM_RECORDED_TILE_TYPES,
   // The item displays a thumbnail of the page. Used on desktop.
   THUMBNAIL,
+  // The tile type has not been determined yet. Used on iOS, until we can detect
+  // when all tiles have loaded.
+  UNKNOWN_TILE_TYPE,
 };
 
 // Records an NTP impression, after all tiles have loaded.
