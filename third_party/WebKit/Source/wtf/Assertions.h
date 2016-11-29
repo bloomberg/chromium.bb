@@ -129,30 +129,6 @@ class WTF_EXPORT ScopedLogger {
 
 }  // namespace WTF
 
-// IMMEDIATE_CRASH() - Like CRASH() below but crashes in the fastest, simplest
-// possible way with no attempt at logging.
-#ifndef IMMEDIATE_CRASH
-#if COMPILER(GCC) || COMPILER(CLANG)
-#define IMMEDIATE_CRASH() __builtin_trap()
-#else
-#define IMMEDIATE_CRASH() ((void)(*(volatile char*)0 = 0))
-#endif
-#endif
-
-// OOM_CRASH() - Specialization of IMMEDIATE_CRASH which will raise a custom
-// exception on Windows to signal this is OOM and not a normal assert.
-#ifndef OOM_CRASH
-#if OS(WIN)
-#define OOM_CRASH()                                                     \
-  do {                                                                  \
-    ::RaiseException(0xE0000008, EXCEPTION_NONCONTINUABLE, 0, nullptr); \
-    IMMEDIATE_CRASH();                                                  \
-  } while (0)
-#else
-#define OOM_CRASH() IMMEDIATE_CRASH()
-#endif
-#endif
-
 // CRASH() - Raises a fatal error resulting in program termination and
 // triggering either the debugger or the crash reporter.
 //
