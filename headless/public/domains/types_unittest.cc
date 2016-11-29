@@ -3,7 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/json/json_reader.h"
+#include "base/json/json_string_value_serializer.h"
 #include "headless/public/devtools/domains/accessibility.h"
+#include "headless/public/devtools/domains/dom.h"
 #include "headless/public/devtools/domains/memory.h"
 #include "headless/public/devtools/domains/page.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -211,6 +213,31 @@ TEST(TypesTest, AnyProperty) {
   int clone_value;
   EXPECT_TRUE(clone->GetValue()->GetAsInteger(&clone_value));
   EXPECT_EQ(123, clone_value);
+}
+
+TEST(TypesTest, ComplexObjectClone) {
+  std::vector<std::unique_ptr<dom::Node>> child_nodes;
+  child_nodes.emplace_back(dom::Node::Builder()
+                               .SetNodeId(1)
+                               .SetBackendNodeId(2)
+                               .SetNodeType(3)
+                               .SetNodeName("-blink-blink")
+                               .SetLocalName("-blink-blink")
+                               .SetNodeValue("-blink-blink")
+                               .Build());
+  std::unique_ptr<dom::SetChildNodesParams> params =
+      dom::SetChildNodesParams::Builder()
+          .SetParentId(123)
+          .SetNodes(std::move(child_nodes))
+          .Build();
+  std::unique_ptr<dom::SetChildNodesParams> clone = params->Clone();
+  ASSERT_NE(nullptr, clone);
+
+  std::string orig;
+  JSONStringValueSerializer(&orig).Serialize(*params->Serialize());
+  std::string clone_value;
+  JSONStringValueSerializer(&clone_value).Serialize(*clone->Serialize());
+  EXPECT_EQ(orig, clone_value);
 }
 
 }  // namespace headless

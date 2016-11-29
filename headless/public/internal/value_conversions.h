@@ -67,7 +67,7 @@ std::unique_ptr<base::Value> ToValueImpl(const std::vector<T>& vector,
 template <typename T>
 std::unique_ptr<base::Value> ToValueImpl(const std::unique_ptr<T>& value,
                                          std::unique_ptr<T>*) {
-  return ToValue(value.get());
+  return ToValue(*value);
 }
 
 // FromValue specializations for basic types.
