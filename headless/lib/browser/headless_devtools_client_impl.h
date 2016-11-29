@@ -115,7 +115,8 @@ class HeadlessDevToolsClientImpl : public HeadlessDevToolsClient,
       const char* method,
       base::Callback<void(const base::Value&)> callback) override;
 
-  void AttachToHost(content::DevToolsAgentHost* agent_host);
+  bool AttachToHost(content::DevToolsAgentHost* agent_host);
+  void ForceAttachToHost(content::DevToolsAgentHost* agent_host);
   void DetachFromHost(content::DevToolsAgentHost* agent_host);
 
  private:
