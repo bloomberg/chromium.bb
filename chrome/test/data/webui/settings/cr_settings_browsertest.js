@@ -1081,3 +1081,27 @@ TEST_F('CrSettingsDateTimePageTest', 'DateTimePageTest', function() {
 });
 
 GEN('#endif');
+
+/**
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsExtensionControlledIndicatorTest() {}
+
+CrSettingsExtensionControlledIndicatorTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/controls/extension_controlled_indicator.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    'test_browser_proxy.js',
+    'test_extension_control_browser_proxy.js',
+    'extension_controlled_indicator_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsExtensionControlledIndicatorTest', 'All', function() {
+  mocha.run();
+});
