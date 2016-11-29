@@ -1234,6 +1234,7 @@ void ViewSource(Browser* browser,
   GURL view_source_url =
       GURL(content::kViewSourceScheme + std::string(":") + url.spec());
   last_committed_entry->SetVirtualURL(view_source_url);
+  last_committed_entry->SetURL(url);
 
   // Do not restore scroller position.
   last_committed_entry->SetPageState(page_state.RemoveScrollOffset());
