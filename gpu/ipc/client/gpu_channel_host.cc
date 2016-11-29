@@ -220,7 +220,7 @@ void GpuChannelHost::RemoveRoute(int route_id) {
 }
 
 base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
-    base::SharedMemoryHandle source_handle) {
+    const base::SharedMemoryHandle& source_handle) {
   if (IsLost())
     return base::SharedMemory::NULLHandle();
 
@@ -230,52 +230,6 @@ base::SharedMemoryHandle GpuChannelHost::ShareToGpuProcess(
 int32_t GpuChannelHost::ReserveTransferBufferId() {
   // 0 is a reserved value.
   return g_next_transfer_buffer_id.GetNext() + 1;
-}
-
-gfx::GpuMemoryBufferHandle GpuChannelHost::ShareGpuMemoryBufferToGpuProcess(
-    const gfx::GpuMemoryBufferHandle& source_handle,
-    bool* requires_sync_point) {
-  switch (source_handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      gfx::GpuMemoryBufferHandle handle;
-      handle.type = gfx::SHARED_MEMORY_BUFFER;
-      handle.handle = ShareToGpuProcess(source_handle.handle);
-      handle.offset = source_handle.offset;
-      handle.stride = source_handle.stride;
-      *requires_sync_point = false;
-      return handle;
-    }
-#if defined(USE_OZONE)
-    case gfx::OZONE_NATIVE_PIXMAP: {
-      std::vector<base::ScopedFD> scoped_fds;
-      for (auto& fd : source_handle.native_pixmap_handle.fds) {
-        base::ScopedFD scoped_fd(HANDLE_EINTR(dup(fd.fd)));
-        if (!scoped_fd.is_valid()) {
-          PLOG(ERROR) << "dup";
-          return gfx::GpuMemoryBufferHandle();
-        }
-        scoped_fds.emplace_back(std::move(scoped_fd));
-      }
-      gfx::GpuMemoryBufferHandle handle;
-      handle.type = gfx::OZONE_NATIVE_PIXMAP;
-      handle.id = source_handle.id;
-      for (auto& scoped_fd : scoped_fds) {
-        handle.native_pixmap_handle.fds.emplace_back(scoped_fd.release(),
-                                                     true /* auto_close */);
-      }
-      handle.native_pixmap_handle.planes =
-          source_handle.native_pixmap_handle.planes;
-      *requires_sync_point = false;
-      return handle;
-    }
-#endif
-    case gfx::IO_SURFACE_BUFFER:
-      *requires_sync_point = true;
-      return source_handle;
-    default:
-      NOTREACHED();
-      return gfx::GpuMemoryBufferHandle();
-  }
 }
 
 int32_t GpuChannelHost::ReserveImageId() {

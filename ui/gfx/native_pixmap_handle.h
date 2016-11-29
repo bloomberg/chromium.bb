@@ -6,6 +6,8 @@
 #define UI_GFX_NATIVE_PIXMAP_HANDLE_H_
 
 #include <stddef.h>
+#include <stdint.h>
+
 #include <vector>
 
 #include "ui/gfx/gfx_export.h"
@@ -49,6 +51,13 @@ struct GFX_EXPORT NativePixmapHandle {
 #endif
   std::vector<NativePixmapPlane> planes;
 };
+
+#if defined(USE_OZONE)
+// Returns an instance of |handle| which can be sent over IPC. This duplicates
+// the file-handles, so that the IPC code take ownership of them, without
+// invalidating |handle|.
+NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle);
+#endif
 
 }  // namespace gfx
 

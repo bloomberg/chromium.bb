@@ -108,34 +108,6 @@ class ScopedEvent {
   base::WaitableEvent* event_;
 };
 
-base::SharedMemoryHandle ShareToGpuThread(
-    base::SharedMemoryHandle source_handle) {
-  return base::SharedMemory::DuplicateHandle(source_handle);
-}
-
-gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuThread(
-    const gfx::GpuMemoryBufferHandle& source_handle,
-    bool* requires_sync_point) {
-  switch (source_handle.type) {
-    case gfx::SHARED_MEMORY_BUFFER: {
-      gfx::GpuMemoryBufferHandle handle;
-      handle.type = gfx::SHARED_MEMORY_BUFFER;
-      handle.handle = ShareToGpuThread(source_handle.handle);
-      handle.offset = source_handle.offset;
-      handle.stride = source_handle.stride;
-      *requires_sync_point = false;
-      return handle;
-    }
-    case gfx::IO_SURFACE_BUFFER:
-    case gfx::OZONE_NATIVE_PIXMAP:
-      *requires_sync_point = true;
-      return source_handle;
-    default:
-      NOTREACHED();
-      return gfx::GpuMemoryBufferHandle();
-  }
-}
-
 scoped_refptr<InProcessCommandBuffer::Service> GetInitialService(
     const scoped_refptr<InProcessCommandBuffer::Service>& service) {
   if (service)
@@ -745,9 +717,9 @@ int32_t InProcessCommandBuffer::CreateImage(ClientBuffer buffer,
   // This handle is owned by the GPU thread and must be passed to it or it
   // will leak. In otherwords, do not early out on error between here and the
   // queuing of the CreateImage task below.
-  bool requires_sync_point = false;
-  gfx::GpuMemoryBufferHandle handle = ShareGpuMemoryBufferToGpuThread(
-      gpu_memory_buffer->GetHandle(), &requires_sync_point);
+  gfx::GpuMemoryBufferHandle handle =
+      gfx::CloneHandleForIPC(gpu_memory_buffer->GetHandle());
+  bool requires_sync_point = handle.type == gfx::IO_SURFACE_BUFFER;
 
   uint64_t fence_sync = 0;
   if (requires_sync_point) {

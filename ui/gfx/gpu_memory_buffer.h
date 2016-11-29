@@ -99,6 +99,12 @@ class GFX_EXPORT GpuMemoryBuffer {
   virtual ClientBuffer AsClientBuffer() = 0;
 };
 
+// Returns an instance of |handle| which can be sent over IPC. This duplicates
+// the file-handles as appropriate, so that the IPC code take ownership of them,
+// without invalidating |handle| itself.
+GFX_EXPORT GpuMemoryBufferHandle
+CloneHandleForIPC(const GpuMemoryBufferHandle& handle);
+
 }  // namespace gfx
 
 #endif  // UI_GFX_GPU_MEMORY_BUFFER_H_

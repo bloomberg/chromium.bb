@@ -2,9 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include <stdint.h>
-
 #include "ui/gfx/native_pixmap_handle.h"
+
+#if defined(USE_OZONE)
+#include "base/posix/eintr_wrapper.h"
+#endif
 
 namespace gfx {
 
@@ -26,5 +28,24 @@ NativePixmapHandle::NativePixmapHandle(const NativePixmapHandle& other) =
     default;
 
 NativePixmapHandle::~NativePixmapHandle() {}
+
+#if defined(USE_OZONE)
+NativePixmapHandle CloneHandleForIPC(const NativePixmapHandle& handle) {
+  NativePixmapHandle clone;
+  std::vector<base::ScopedFD> scoped_fds;
+  for (auto& fd : handle.fds) {
+    base::ScopedFD scoped_fd(HANDLE_EINTR(dup(fd.fd)));
+    if (!scoped_fd.is_valid()) {
+      PLOG(ERROR) << "dup";
+      return NativePixmapHandle();
+    }
+    scoped_fds.emplace_back(std::move(scoped_fd));
+  }
+  for (auto& scoped_fd : scoped_fds)
+    clone.fds.emplace_back(scoped_fd.release(), true /* auto_close */);
+  clone.planes = handle.planes;
+  return clone;
+}
+#endif  // defined(USE_OZONE)
 
 }  // namespace gfx

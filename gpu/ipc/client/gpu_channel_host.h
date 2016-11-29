@@ -139,17 +139,10 @@ class GPU_EXPORT GpuChannelHost
   // GPU process. The caller is responsible for ensuring it is closed. Returns
   // an invalid handle on failure.
   base::SharedMemoryHandle ShareToGpuProcess(
-      base::SharedMemoryHandle source_handle);
+      const base::SharedMemoryHandle& source_handle);
 
   // Reserve one unused transfer buffer ID.
   int32_t ReserveTransferBufferId();
-
-  // Returns a GPU memory buffer handle to the buffer that can be sent via
-  // IPC to the GPU process. The caller is responsible for ensuring it is
-  // closed. Returns an invalid handle on failure.
-  gfx::GpuMemoryBufferHandle ShareGpuMemoryBufferToGpuProcess(
-      const gfx::GpuMemoryBufferHandle& source_handle,
-      bool* requires_sync_point);
 
   // Reserve one unused image ID.
   int32_t ReserveImageId();
