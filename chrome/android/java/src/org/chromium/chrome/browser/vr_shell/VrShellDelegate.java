@@ -70,14 +70,12 @@ public class VrShellDelegate {
     private boolean mDaydreamReadyDevice;
     private Boolean mVrShellEnabled;
 
-    private Class<? extends VrShell> mVrShellClass;
-    private Class<? extends NonPresentingGvrContext> mNonPresentingGvrContextClass;
-    private Class<? extends VrDaydreamApi> mVrDaydreamApiClass;
-    private Class<? extends VrCoreVersionChecker> mVrCoreVersionCheckerClass;
+    private VrClassesBuilder mVrClassesBuilder;
     private VrShell mVrShell;
     private NonPresentingGvrContext mNonPresentingGvrContext;
     private VrDaydreamApi mVrDaydreamApi;
     private VrCoreVersionChecker mVrCoreVersionChecker;
+
     private boolean mInVr;
     private int mRestoreSystemUiVisibilityFlag = -1;
     private int mRestoreOrientation = ActivityInfo.SCREEN_ORIENTATION_UNSPECIFIED;
@@ -89,7 +87,8 @@ public class VrShellDelegate {
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
-        mVrAvailable = maybeFindVrClasses() && isVrCoreCompatible() && createVrDaydreamApi()
+
+        mVrAvailable = createVrClassesBuilder() && isVrCoreCompatible() && createVrDaydreamApi()
                 && mVrDaydreamApi.isDaydreamReadyDevice();
         if (mVrAvailable) {
             mEnterVRIntent = mVrDaydreamApi.createVrIntent(
@@ -125,23 +124,21 @@ public class VrShellDelegate {
     }
 
     @SuppressWarnings("unchecked")
-    private boolean maybeFindVrClasses() {
+    private boolean createVrClassesBuilder() {
         try {
-            mVrShellClass = (Class<? extends VrShell>) Class.forName(
-                    "org.chromium.chrome.browser.vr_shell.VrShellImpl");
-            mNonPresentingGvrContextClass =
-                    (Class<? extends NonPresentingGvrContext>) Class.forName(
-                            "org.chromium.chrome.browser.vr_shell.NonPresentingGvrContextImpl");
-            mVrDaydreamApiClass = (Class<? extends VrDaydreamApi>) Class.forName(
-                    "org.chromium.chrome.browser.vr_shell.VrDaydreamApiImpl");
-            mVrCoreVersionCheckerClass = (Class<? extends VrCoreVersionChecker>) Class.forName(
-                    "org.chromium.chrome.browser.vr_shell.VrCoreVersionCheckerImpl");
+            Class<? extends VrClassesBuilder> vrClassesBuilderClass =
+                    (Class<? extends VrClassesBuilder>) Class.forName(
+                            "org.chromium.chrome.browser.vr_shell.VrClassesBuilderImpl");
+            Constructor<?> vrClassesBuilderConstructor =
+                    vrClassesBuilderClass.getConstructor(Activity.class);
+            mVrClassesBuilder =
+                    (VrClassesBuilder) vrClassesBuilderConstructor.newInstance(mActivity);
             return true;
-        } catch (ClassNotFoundException e) {
-            mVrShellClass = null;
-            mNonPresentingGvrContextClass = null;
-            mVrDaydreamApiClass = null;
-            mVrCoreVersionCheckerClass = null;
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException
+                | IllegalArgumentException | InvocationTargetException | NoSuchMethodException e) {
+            if (!(e instanceof ClassNotFoundException)) {
+                Log.e(TAG, "Unable to instantiate VrClassesBuilder", e);
+            }
             return false;
         }
     }
@@ -382,19 +379,8 @@ public class VrShellDelegate {
 
     @CalledByNative
     private long createNonPresentingNativeContext() {
-        if (!mVrAvailable) return 0;
-
-        try {
-            Constructor<?> nonPresentingGvrContextConstructor =
-                    mNonPresentingGvrContextClass.getConstructor(Activity.class);
-            mNonPresentingGvrContext =
-                    (NonPresentingGvrContext)
-                            nonPresentingGvrContextConstructor.newInstance(mActivity);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException e) {
-            Log.e(TAG, "Unable to instantiate NonPresentingGvrContext", e);
-            return 0;
-        }
+        if (mVrClassesBuilder == null) return 0;
+        mNonPresentingGvrContext = mVrClassesBuilder.createNonPresentingGvrContext();
         return mNonPresentingGvrContext.getNativeGvrContext();
     }
 
@@ -441,53 +427,27 @@ public class VrShellDelegate {
     }
 
     private boolean isVrCoreCompatible() {
+        if (mVrClassesBuilder == null) return false;
+
         if (mVrCoreVersionChecker != null) {
             return mVrCoreVersionChecker.isVrCoreCompatible();
         }
-
-        if (mVrCoreVersionCheckerClass == null) {
-            return false;
-        }
-
-        try {
-            Constructor<?> mVrCoreVersionCheckerConstructor =
-                    mVrCoreVersionCheckerClass.getConstructor();
-            mVrCoreVersionChecker =
-                    (VrCoreVersionChecker) mVrCoreVersionCheckerConstructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException e) {
-            Log.d(TAG, "Unable to instantiate VrCoreVersionChecker", e);
-            return false;
-        }
+        mVrCoreVersionChecker = mVrClassesBuilder.createVrCoreVersionChecker();
         return mVrCoreVersionChecker.isVrCoreCompatible();
     }
 
     private boolean createVrDaydreamApi() {
-        try {
-            Constructor<?> vrPrivateApiConstructor =
-                    mVrDaydreamApiClass.getConstructor(Activity.class);
-            mVrDaydreamApi = (VrDaydreamApi) vrPrivateApiConstructor.newInstance(mActivity);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException | SecurityException e) {
-            Log.d(TAG, "Unable to instantiate VrDaydreamApi", e);
-            return false;
-        }
+        if (mVrClassesBuilder == null) return false;
+        mVrDaydreamApi = mVrClassesBuilder.createVrDaydreamApi();
         return true;
     }
 
     private boolean createVrShell() {
+        if (mVrClassesBuilder == null) return false;
         StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
         StrictMode.allowThreadDiskWrites();
-        try {
-            Constructor<?> vrShellConstructor = mVrShellClass.getConstructor(Activity.class);
-            mVrShell = (VrShell) vrShellConstructor.newInstance(mActivity);
-        } catch (InstantiationException | IllegalAccessException | IllegalArgumentException
-                | InvocationTargetException | NoSuchMethodException e) {
-            Log.e(TAG, "Unable to instantiate VrShell", e);
-            return false;
-        } finally {
-            StrictMode.setThreadPolicy(oldPolicy);
-        }
+        mVrShell = mVrClassesBuilder.createVrShell();
+        StrictMode.setThreadPolicy(oldPolicy);
         return true;
     }
 

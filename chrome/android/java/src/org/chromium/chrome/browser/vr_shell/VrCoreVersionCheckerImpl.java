@@ -11,18 +11,12 @@ import com.google.vr.vrcore.base.api.VrCoreUtils.ConnectionResult;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
-import org.chromium.base.annotations.UsedByReflection;
 
 /**
  * Helper class to check if VrCore version is compatible with Chromium.
  */
-@UsedByReflection("VrShellDelegate.java")
 public class VrCoreVersionCheckerImpl implements VrCoreVersionChecker {
     private static final String TAG = "VrCoreVersionChecker";
-
-    @UsedByReflection("VrShellDelegate.java")
-    public VrCoreVersionCheckerImpl() {
-    }
 
     @Override
     public boolean isVrCoreCompatible() {

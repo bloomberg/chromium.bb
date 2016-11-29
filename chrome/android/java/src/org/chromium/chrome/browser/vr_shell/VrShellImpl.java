@@ -30,7 +30,6 @@ import com.google.vr.ndk.base.GvrLayout;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.annotations.JNINamespace;
-import org.chromium.base.annotations.UsedByReflection;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.ChromeVersionInfo;
 import org.chromium.chrome.browser.WebContentsFactory;
@@ -49,12 +48,8 @@ import javax.microedition.khronos.opengles.GL10;
  * This view extends from GvrLayout which wraps a GLSurfaceView that renders VR shell.
  */
 @JNINamespace("vr_shell")
-@UsedByReflection("VrShellDelegate.java")
 public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, VrShell {
     private static final String TAG = "VrShellImpl";
-
-    @UsedByReflection("VrShellDelegate.java")
-    public static final String VR_EXTRA = "android.intent.extra.VR_LAUNCH";
 
     private Activity mActivity;
 
@@ -88,7 +83,6 @@ public class VrShellImpl extends GvrLayout implements GLSurfaceView.Renderer, Vr
     private ContentViewCore mUiCVC;
     private VrWindowAndroid mUiVrWindowAndroid;
 
-    @UsedByReflection("VrShellDelegate.java")
     public VrShellImpl(Activity activity) {
         super(activity);
         mActivity = activity;

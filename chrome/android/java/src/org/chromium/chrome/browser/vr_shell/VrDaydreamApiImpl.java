@@ -13,17 +13,13 @@ import com.google.vr.ndk.base.AndroidCompat;
 import com.google.vr.ndk.base.DaydreamApi;
 import com.google.vr.ndk.base.GvrApi;
 
-import org.chromium.base.annotations.UsedByReflection;
-
 /**
  * A wrapper for DaydreamApi. Note that we have to recreate the DaydreamApi instance each time we
  * use it, or API calls begin to silently fail.
  */
-@UsedByReflection("VrShellDelegate.java")
 public class VrDaydreamApiImpl implements VrDaydreamApi {
     private final Activity mActivity;
 
-    @UsedByReflection("VrShellDelegate.java")
     public VrDaydreamApiImpl(Activity activity) {
         mActivity = activity;
     }

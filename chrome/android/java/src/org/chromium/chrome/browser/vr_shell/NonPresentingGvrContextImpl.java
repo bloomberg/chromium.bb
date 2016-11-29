@@ -10,17 +10,14 @@ import android.os.StrictMode;
 import com.google.vr.ndk.base.GvrLayout;
 
 import org.chromium.base.Log;
-import org.chromium.base.annotations.UsedByReflection;
 
 /**
  * Creates an active GvrContext from a detached GvrLayout. This is used by magic window mode.
  */
-@UsedByReflection("VrShellDelegate.java")
 public class NonPresentingGvrContextImpl implements NonPresentingGvrContext {
     private static final String TAG = "NPGvrContextImpl";
     private GvrLayout mGvrLayout;
 
-    @UsedByReflection("VrShellDelegate.java")
     public NonPresentingGvrContextImpl(Activity activity) {
         mGvrLayout = new GvrLayout(activity);
     }
