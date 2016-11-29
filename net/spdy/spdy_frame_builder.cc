@@ -13,26 +13,6 @@
 
 namespace net {
 
-namespace {
-
-// A special structure for the 8 bit flags and 24 bit length fields.
-union FlagsAndLength {
-  uint8_t flags[4];  // 8 bits
-  uint32_t length;   // 24 bits
-};
-
-// Creates a FlagsAndLength.
-FlagsAndLength CreateFlagsAndLength(uint8_t flags, size_t length) {
-  DCHECK_EQ(0u, length & ~static_cast<size_t>(kLengthMask));
-  FlagsAndLength flags_length;
-  flags_length.length = base::HostToNet32(static_cast<uint32_t>(length));
-  DCHECK_EQ(0, flags & ~kControlFlagsMask);
-  flags_length.flags[0] = flags;
-  return flags_length;
-}
-
-}  // namespace
-
 SpdyFrameBuilder::SpdyFrameBuilder(size_t size, SpdyMajorVersion version)
     : buffer_(new char[size]),
       capacity_(size),
@@ -58,29 +38,6 @@ bool SpdyFrameBuilder::Seek(size_t length) {
 
   length_ += length;
   return true;
-}
-
-bool SpdyFrameBuilder::WriteControlFrameHeader(const SpdyFramer& framer,
-                                               SpdyFrameType type,
-                                               uint8_t flags) {
-  DCHECK(false);
-  DCHECK(SpdyConstants::IsValidFrameType(
-      version_, SpdyConstants::SerializeFrameType(version_, type)));
-  bool success = true;
-  FlagsAndLength flags_length =
-      CreateFlagsAndLength(flags, capacity_ - framer.GetFrameHeaderSize());
-  success &= WriteUInt16(kControlFlagMask | kSpdy3Version);
-  success &= WriteUInt16(
-      SpdyConstants::SerializeFrameType(framer.protocol_version(), type));
-  success &= WriteBytes(&flags_length, sizeof(flags_length));
-  DCHECK_EQ(framer.GetFrameHeaderSize(), length());
-  return success;
-}
-
-bool SpdyFrameBuilder::WriteDataFrameHeader(const SpdyFramer& framer,
-                                            SpdyStreamId stream_id,
-                                            uint8_t flags) {
-  return BeginNewFrame(framer, DATA, flags, stream_id);
 }
 
 bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,

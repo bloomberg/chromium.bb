@@ -86,19 +86,6 @@ void SpdyFramerVisitorAdapter::OnHeaderFrameEnd(SpdyStreamId stream_id,
   visitor_->OnHeaderFrameEnd(stream_id, end_headers);
 }
 
-void SpdyFramerVisitorAdapter::OnSynStream(SpdyStreamId stream_id,
-                                           SpdyStreamId associated_stream_id,
-                                           SpdyPriority priority,
-                                           bool fin,
-                                           bool unidirectional) {
-  visitor_->OnSynStream(stream_id, associated_stream_id, priority, fin,
-                        unidirectional);
-}
-
-void SpdyFramerVisitorAdapter::OnSynReply(SpdyStreamId stream_id, bool fin) {
-  visitor_->OnSynReply(stream_id, fin);
-}
-
 void SpdyFramerVisitorAdapter::OnRstStream(SpdyStreamId stream_id,
                                            SpdyRstStreamStatus status) {
   visitor_->OnRstStream(stream_id, status);

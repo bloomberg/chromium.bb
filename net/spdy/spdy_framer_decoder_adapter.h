@@ -114,12 +114,6 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
   SpdyHeadersHandlerInterface* OnHeaderFrameStart(
       SpdyStreamId stream_id) override;
   void OnHeaderFrameEnd(SpdyStreamId stream_id, bool end_headers) override;
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   bool fin,
-                   bool unidirectional) override;
-  void OnSynReply(SpdyStreamId stream_id, bool fin) override;
   void OnRstStream(SpdyStreamId stream_id, SpdyRstStreamStatus status) override;
   void OnSetting(SpdySettingsIds id, uint8_t flags, uint32_t value) override;
   void OnPing(SpdyPingId unique_id, bool is_ack) override;

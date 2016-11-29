@@ -5,6 +5,8 @@
 #include "net/quic/core/quic_headers_stream.h"
 
 #include <string>
+#include <tuple>
+#include <utility>
 
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/core/quic_bug_tracker.h"
@@ -47,7 +49,7 @@ namespace test {
 
 class MockHpackDebugVisitor : public QuicHeadersStream::HpackDebugVisitor {
  public:
-  explicit MockHpackDebugVisitor() : HpackDebugVisitor() {}
+  MockHpackDebugVisitor() : HpackDebugVisitor() {}
 
   MOCK_METHOD1(OnUseEntry, void(QuicTime::Delta elapsed));
 
@@ -76,13 +78,6 @@ class MockVisitor : public SpdyFramerVisitorInterface {
                bool(SpdyStreamId stream_id,
                     const char* header_data,
                     size_t len));
-  MOCK_METHOD5(OnSynStream,
-               void(SpdyStreamId stream_id,
-                    SpdyStreamId associated_stream_id,
-                    SpdyPriority priority,
-                    bool fin,
-                    bool unidirectional));
-  MOCK_METHOD2(OnSynReply, void(SpdyStreamId stream_id, bool fin));
   MOCK_METHOD2(OnRstStream,
                void(SpdyStreamId stream_id, SpdyRstStreamStatus status));
   MOCK_METHOD1(OnSettings, void(bool clear_persisted));
@@ -307,20 +302,20 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
     headers_handler_->OnHeaderBlockEnd(size);
   }
 
-  void WriteHeadersAndExpectSynStream(QuicStreamId stream_id,
-                                      bool fin,
-                                      SpdyPriority priority) {
-    WriteHeadersAndCheckData(stream_id, fin, priority, SYN_STREAM);
+  void WriteAndExpectRequestHeaders(QuicStreamId stream_id,
+                                    bool fin,
+                                    SpdyPriority priority) {
+    WriteHeadersAndCheckData(stream_id, fin, priority, true /*is_request*/);
   }
 
-  void WriteHeadersAndExpectSynReply(QuicStreamId stream_id, bool fin) {
-    WriteHeadersAndCheckData(stream_id, fin, 0, SYN_REPLY);
+  void WriteAndExpectResponseHeaders(QuicStreamId stream_id, bool fin) {
+    WriteHeadersAndCheckData(stream_id, fin, 0, false /*is_request*/);
   }
 
   void WriteHeadersAndCheckData(QuicStreamId stream_id,
                                 bool fin,
                                 SpdyPriority priority,
-                                SpdyFrameType type) {
+                                bool is_request) {
     // Write the headers and capture the outgoing data
     EXPECT_CALL(session_, WritevData(headers_stream_, kHeadersStreamId, _, _,
                                      false, nullptr))
@@ -329,7 +324,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
                                   nullptr);
 
     // Parse the outgoing data and check that it matches was was written.
-    if (type == SYN_STREAM) {
+    if (is_request) {
       EXPECT_CALL(visitor_,
                   OnHeaders(stream_id, kHasPriority,
                             Spdy3PriorityToHttp2Weight(priority),
@@ -424,11 +419,11 @@ TEST_P(QuicHeadersStreamTest, WriteHeaders) {
        stream_id < kClientDataStreamId3; stream_id += 2) {
     for (bool fin : kFins) {
       if (perspective() == Perspective::IS_SERVER) {
-        WriteHeadersAndExpectSynReply(stream_id, fin);
+        WriteAndExpectResponseHeaders(stream_id, fin);
       } else {
         for (SpdyPriority priority = 0; priority < 7; ++priority) {
           // TODO(rch): implement priorities correctly.
-          WriteHeadersAndExpectSynStream(stream_id, fin, 0);
+          WriteAndExpectRequestHeaders(stream_id, fin, 0);
         }
       }
     }
@@ -925,12 +920,12 @@ TEST_P(QuicHeadersStreamTest, HpackEncoderDebugVisitor) {
        stream_id < kClientDataStreamId3; stream_id += 2) {
     for (bool fin : {false, true}) {
       if (perspective() == Perspective::IS_SERVER) {
-        WriteHeadersAndExpectSynReply(stream_id, fin);
+        WriteAndExpectResponseHeaders(stream_id, fin);
         connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
       } else {
         for (SpdyPriority priority = 0; priority < 7; ++priority) {
           // TODO(rch): implement priorities correctly.
-          WriteHeadersAndExpectSynStream(stream_id, fin, 0);
+          WriteAndExpectRequestHeaders(stream_id, fin, 0);
           connection_->AdvanceTime(QuicTime::Delta::FromMilliseconds(1));
         }
       }

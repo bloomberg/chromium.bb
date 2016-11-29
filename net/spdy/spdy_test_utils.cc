@@ -4,8 +4,10 @@
 
 #include "net/spdy/spdy_test_utils.h"
 
+#include <algorithm>
 #include <cstring>
 #include <memory>
+#include <utility>
 #include <vector>
 
 #include "base/base64.h"

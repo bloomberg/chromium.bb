@@ -45,14 +45,6 @@ void BufferedSpdyFramer::OnError(SpdyFramer* spdy_framer) {
   visitor_->OnError(spdy_framer->error_code());
 }
 
-void BufferedSpdyFramer::OnSynStream(SpdyStreamId stream_id,
-                                     SpdyStreamId associated_stream_id,
-                                     SpdyPriority priority,
-                                     bool fin,
-                                     bool unidirectional) {
-  NOTREACHED();
-}
-
 void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
                                    bool has_priority,
                                    int weight,
@@ -74,11 +66,6 @@ void BufferedSpdyFramer::OnHeaders(SpdyStreamId stream_id,
   control_frame_fields_->fin = fin;
 
   InitHeaderStreaming(stream_id);
-}
-
-void BufferedSpdyFramer::OnSynReply(SpdyStreamId stream_id,
-                                    bool fin) {
-  NOTREACHED();
 }
 
 void BufferedSpdyFramer::OnDataFrameHeader(SpdyStreamId stream_id,
@@ -118,12 +105,6 @@ void BufferedSpdyFramer::OnHeaderFrameEnd(SpdyStreamId stream_id,
   }
   DCHECK(control_frame_fields_.get());
   switch (control_frame_fields_->type) {
-    case SYN_STREAM:
-      NOTREACHED();
-      break;
-    case SYN_REPLY:
-      NOTREACHED();
-      break;
     case HEADERS:
       visitor_->OnHeaders(
           control_frame_fields_->stream_id, control_frame_fields_->has_priority,

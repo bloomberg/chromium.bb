@@ -105,27 +105,13 @@ QuicHeadersStream::HpackDebugVisitor::HpackDebugVisitor() {}
 
 QuicHeadersStream::HpackDebugVisitor::~HpackDebugVisitor() {}
 
-// A SpdyFramer visitor which passed SYN_STREAM and SYN_REPLY frames to
-// the QuicSpdyStream, and closes the connection if any unexpected frames
-// are received.
+// A SpdyFramerVisitor that passes HEADERS frames to the QuicSpdyStream, and
+// closes the connection if any unexpected frames are received.
 class QuicHeadersStream::SpdyFramerVisitor
     : public SpdyFramerVisitorInterface,
       public SpdyFramerDebugVisitorInterface {
  public:
   explicit SpdyFramerVisitor(QuicHeadersStream* stream) : stream_(stream) {}
-
-  // SpdyFramerVisitorInterface implementation
-  void OnSynStream(SpdyStreamId stream_id,
-                   SpdyStreamId associated_stream_id,
-                   SpdyPriority priority,
-                   bool fin,
-                   bool unidirectional) override {
-    CloseConnection("SPDY SYN_STREAM frame received.");
-  }
-
-  void OnSynReply(SpdyStreamId stream_id, bool fin) override {
-    CloseConnection("SPDY SYN_REPLY frame received.");
-  }
 
   void OnStreamFrameData(SpdyStreamId stream_id,
                          const char* data,
@@ -137,8 +123,8 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
   void OnStreamEnd(SpdyStreamId stream_id) override {
-    // The framer invokes OnStreamEnd after processing a SYN_STREAM
-    // or SYN_REPLY frame that had the fin bit set.
+    // The framer invokes OnStreamEnd after processing a frame that had the fin
+    // bit set.
   }
 
   void OnStreamPadding(SpdyStreamId stream_id, size_t len) override {

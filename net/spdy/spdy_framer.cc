@@ -30,7 +30,6 @@
 #include "net/spdy/spdy_frame_reader.h"
 #include "net/spdy/spdy_framer_decoder_adapter.h"
 #include "net/spdy/spdy_headers_block_parser.h"
-#include "third_party/zlib/zlib.h"
 
 using base::StringPiece;
 using std::hex;
@@ -40,37 +39,6 @@ using std::vector;
 namespace net {
 
 namespace {
-
-// Compute the id of our dictionary so that we know we're using the
-// right one when asked for it.
-uLong CalculateDictionaryId(const char* dictionary,
-                            const size_t dictionary_size) {
-  uLong initial_value = adler32(0L, Z_NULL, 0);
-  return adler32(initial_value,
-                 reinterpret_cast<const Bytef*>(dictionary),
-                 dictionary_size);
-}
-
-#if !defined(USE_SYSTEM_ZLIB)
-// Check to see if the name and value of a cookie are both empty.
-bool IsCookieEmpty(const base::StringPiece& cookie) {
-  if (cookie.size() == 0) {
-     return true;
-  }
-  size_t pos = cookie.find('=');
-  if (pos  == base::StringPiece::npos) {
-     return false;
-  }
-  // Ignore leading whitespaces of cookie value.
-  size_t value_start = pos + 1;
-  for (; value_start < cookie.size(); value_start++) {
-     if (!(cookie[value_start] == ' ' || cookie[value_start] == '\t')) {
-        break;
-     }
-  }
-  return (pos == 0) && ((cookie.size() - value_start) == 0);
-}
-#endif  // !defined(USE_SYSTEM_ZLIB)
 
 // Pack parent stream ID and exclusive flag into the format used by HTTP/2
 // headers and priority frames.
@@ -104,18 +72,7 @@ std::unique_ptr<SpdyFramerDecoderAdapter> DecoderAdapterFactory(
   return nullptr;
 }
 
-struct DictionaryIds {
-  DictionaryIds()
-      : v3_dictionary_id(
-            CalculateDictionaryId(kV3Dictionary, kV3DictionarySize)) {}
-  const uLong v3_dictionary_id;
-};
-
-// Adler ID for the SPDY header compressor dictionaries. Note that they are
-// initialized lazily to avoid static initializers.
-base::LazyInstance<DictionaryIds>::Leaky g_dictionary_ids;
-
-// Used to indicate no flags in a SPDY flags field.
+// Used to indicate no flags in a HTTP2 flags field.
 const uint8_t kNoFlags = 0;
 
 // Wire sizes of priority payloads.
@@ -135,8 +92,7 @@ const size_t SpdyFramer::kHeaderDataChunkMaxSize = 1024;
 const size_t SpdyFramer::kMaxControlFrameSize = (1 << 14) - 1;
 const size_t SpdyFramer::kMaxDataPayloadSendSize = 1 << 14;
 // The size of the control frame buffer. Must be >= the minimum size of the
-// largest control frame, which is SYN_STREAM. See GetSynStreamMinimumSize() for
-// calculation details.
+// largest control frame.
 const size_t SpdyFramer::kControlFrameBufferSize = 19;
 
 #ifdef DEBUG_SPDY_STATE_CHANGES
@@ -168,7 +124,7 @@ SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(SpdyMajorVersion version,
 
 SettingsFlagsAndId::SettingsFlagsAndId(uint8_t flags, uint32_t id)
     : flags_(flags), id_(id & 0x00ffffff) {
-  SPDY_BUG_IF(id > (1u << 24)) << "SPDY setting ID too large: " << id;
+  SPDY_BUG_IF(id > (1u << 24)) << "HTTP2 setting ID too large: " << id;
 }
 
 uint32_t SettingsFlagsAndId::GetWireFormat(SpdyMajorVersion version) const {
@@ -193,10 +149,8 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version,
       visitor_(NULL),
       debug_visitor_(NULL),
       header_handler_(nullptr),
-      display_protocol_("SPDY"),
       protocol_version_(version),
       enable_compression_(true),
-      syn_frame_processed_(false),
       probable_http_response_(false),
       end_stream_when_done_(false) {
   DCHECK(protocol_version_ == HTTP2);
@@ -216,12 +170,6 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version)
     : SpdyFramer(version, &DecoderAdapterFactory) {}
 
 SpdyFramer::~SpdyFramer() {
-  if (header_compressor_.get()) {
-    deflateEnd(header_compressor_.get());
-  }
-  if (header_decompressor_.get()) {
-    inflateEnd(header_decompressor_.get());
-  }
 }
 
 void SpdyFramer::Reset() {
@@ -293,19 +241,6 @@ size_t SpdyFramer::GetDataFrameMinimumSize() const {
 // Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetFrameHeaderSize() const {
   return SpdyConstants::GetFrameHeaderSize(protocol_version_);
-}
-
-size_t SpdyFramer::GetSynStreamMinimumSize() const {
-  // Size, in bytes, of a SYN_STREAM frame not including the variable-length
-  // header block.
-  return GetFrameHeaderSize() + kPriorityDependencyPayloadSize +
-         kPriorityWeightPayloadSize;
-}
-
-size_t SpdyFramer::GetSynReplyMinimumSize() const {
-  // Size, in bytes, of a SYN_REPLY frame not including the variable-length
-  // header block.
-  return GetFrameHeaderSize();
 }
 
 // TODO(jamessynge): Rename this to GetRstStreamSize as the frame is fixed size.
@@ -532,10 +467,6 @@ const char* SpdyFramer::FrameTypeToString(SpdyFrameType type) {
   switch (type) {
     case DATA:
       return "DATA";
-    case SYN_STREAM:
-      return "SYN_STREAM";
-    case SYN_REPLY:
-      return "SYN_REPLY";
     case RST_STREAM:
       return "RST_STREAM";
     case SETTINGS:
@@ -600,7 +531,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
 
       case SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK: {
         // Control frames that contain header blocks
-        // (SYN_STREAM, SYN_REPLY, HEADERS, PUSH_PROMISE, CONTINUATION)
+        // (HEADERS, PUSH_PROMISE, CONTINUATION)
         // take a special path through the state machine - they
         // will go:
         //   1. SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK
@@ -690,8 +621,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       }
 
       default:
-        SPDY_BUG << "Invalid value for " << display_protocol_
-                 << " framer state: " << state_;
+        SPDY_BUG << "Invalid value for framer state: " << state_;
         // This ensures that we don't infinite-loop if state_ gets an
         // invalid value somehow, such as due to a SpdyFramer getting deleted
         // from a callback it calls.
@@ -853,18 +783,12 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
             remaining_data_length_ + reader.GetBytesConsumed());
 
   // This is just a sanity check for help debugging early frame errors.
-  if (remaining_data_length_ > 1000000u) {
-    // The strncmp for 5 is safe because we only hit this point if we
-    // have kMinCommonHeader (8) bytes
-    if (!syn_frame_processed_ &&
-        strncmp(current_frame_buffer_.data(), "HTTP/", 5) == 0) {
-      LOG(WARNING) << "Unexpected HTTP response to " << display_protocol_
-                   << " request";
-      probable_http_response_ = true;
-    } else {
-      LOG(WARNING) << "Unexpectedly large frame.  " << display_protocol_
-                   << " session is likely corrupt.";
-    }
+  // The strncmp for 5 is safe because we only hit this point if we
+  // have kMinCommonHeader (8) bytes
+  if (remaining_data_length_ > 1000000u &&
+      strncmp(current_frame_buffer_.data(), "HTTP/", 5) == 0) {
+    LOG(WARNING) << "Unexpected HTTP response to HTTP2 request";
+    probable_http_response_ = true;
   }
 
   // If we're here, then we have the common header all received.
@@ -910,21 +834,6 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
 
   // Do some sanity checking on the control frame sizes and flags.
   switch (current_frame_type_) {
-    case SYN_STREAM:
-      if (current_frame_length_ < GetSynStreamMinimumSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ &
-                 ~(CONTROL_FLAG_FIN | CONTROL_FLAG_UNIDIRECTIONAL)) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
-      }
-      break;
-    case SYN_REPLY:
-      if (current_frame_length_ < GetSynReplyMinimumSize()) {
-        set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (current_frame_flags_ & ~CONTROL_FLAG_FIN) {
-        set_error(SPDY_INVALID_CONTROL_FRAME_FLAGS);
-      }
-      break;
     case RST_STREAM:
       if (current_frame_length_ != GetRstStreamMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
@@ -1064,8 +973,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       }
       break;
     default:
-      LOG(WARNING) << "Valid " << display_protocol_
-                   << " control frame with unhandled type: "
+      LOG(WARNING) << "Valid control frame with unhandled type: "
                    << current_frame_type_;
       // This branch should be unreachable because of the frame type bounds
       // check above. However, we DLOG(FATAL) here in an effort to painfully
@@ -1097,14 +1005,6 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
   // Determine the frame size without variable-length data.
   int32_t frame_size_without_variable_data;
   switch (current_frame_type_) {
-    case SYN_STREAM:
-      syn_frame_processed_ = true;
-      frame_size_without_variable_data = GetSynStreamMinimumSize();
-      break;
-    case SYN_REPLY:
-      syn_frame_processed_ = true;
-      frame_size_without_variable_data = GetSynReplyMinimumSize();
-      break;
     case SETTINGS:
       frame_size_without_variable_data = GetSettingsMinimumSize();
       break;
@@ -1141,8 +1041,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     // We should already be in an error state. Double-check.
     DCHECK_EQ(SPDY_ERROR, state_);
     if (state_ != SPDY_ERROR) {
-      SPDY_BUG << display_protocol_
-               << " control frame buffer too small for fixed-length frame.";
+      SPDY_BUG << "Control frame buffer too small for fixed-length frame.";
       set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
     }
     return;
@@ -1196,179 +1095,6 @@ size_t SpdyFramer::GetSerializedLength(
   return total_length;
 }
 
-// TODO(phajdan.jr): Clean up after we no longer need
-// to workaround http://crbug.com/139744.
-#if !defined(USE_SYSTEM_ZLIB)
-
-// These constants are used by zlib to differentiate between normal data and
-// cookie data. Cookie data is handled specially by zlib when compressing.
-enum ZDataClass {
-  // kZStandardData is compressed normally, save that it will never match
-  // against any other class of data in the window.
-  kZStandardData = Z_CLASS_STANDARD,
-  // kZCookieData is compressed in its own Huffman blocks and only matches in
-  // its entirety and only against other kZCookieData blocks. Any matches must
-  // be preceeded by a kZStandardData byte, or a semicolon to prevent matching
-  // a suffix. It's assumed that kZCookieData ends in a semicolon to prevent
-  // prefix matches.
-  kZCookieData = Z_CLASS_COOKIE,
-  // kZHuffmanOnlyData is only Huffman compressed - no matches are performed
-  // against the window.
-  kZHuffmanOnlyData = Z_CLASS_HUFFMAN_ONLY,
-};
-
-// WriteZ writes |data| to the deflate context |out|. WriteZ will flush as
-// needed when switching between classes of data.
-static void WriteZ(const base::StringPiece& data,
-                   ZDataClass clas,
-                   z_stream* out) {
-  int rv;
-
-  // If we are switching from standard to non-standard data then we need to end
-  // the current Huffman context to avoid it leaking between them.
-  if (out->clas == kZStandardData &&
-      clas != kZStandardData) {
-    out->avail_in = 0;
-    rv = deflate(out, Z_PARTIAL_FLUSH);
-    DCHECK_EQ(Z_OK, rv);
-    DCHECK_EQ(0u, out->avail_in);
-    DCHECK_LT(0u, out->avail_out);
-  }
-
-  out->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(data.data()));
-  out->avail_in = data.size();
-  out->clas = clas;
-  if (clas == kZStandardData) {
-    rv = deflate(out, Z_NO_FLUSH);
-  } else {
-    rv = deflate(out, Z_PARTIAL_FLUSH);
-  }
-  if (!data.empty()) {
-    // If we didn't provide any data then zlib will return Z_BUF_ERROR.
-    DCHECK_EQ(Z_OK, rv);
-  }
-  DCHECK_EQ(0u, out->avail_in);
-  DCHECK_LT(0u, out->avail_out);
-}
-
-// WriteLengthZ writes |n| as a |length|-byte, big-endian number to |out|.
-static void WriteLengthZ(size_t n,
-                         unsigned length,
-                         ZDataClass clas,
-                         z_stream* out) {
-  char buf[4];
-  DCHECK_LE(length, sizeof(buf));
-  for (unsigned i = 1; i <= length; i++) {
-    buf[length - i] = static_cast<char>(n);
-    n >>= 8;
-  }
-  WriteZ(base::StringPiece(buf, length), clas, out);
-}
-
-// WriteHeaderBlockToZ serialises |headers| to the deflate context |z| in a
-// manner that resists the length of the compressed data from compromising
-// cookie data.
-void SpdyFramer::WriteHeaderBlockToZ(const SpdyHeaderBlock* headers,
-                                     z_stream* z) const {
-  const size_t length_length = 4;
-  WriteLengthZ(headers->size(), length_length, kZStandardData, z);
-
-  SpdyHeaderBlock::const_iterator it;
-  for (it = headers->begin(); it != headers->end(); ++it) {
-    WriteLengthZ(it->first.size(), length_length, kZStandardData, z);
-
-    std::string lowercase_key = base::ToLowerASCII(it->first);
-    WriteZ(lowercase_key, kZStandardData, z);
-
-    if (lowercase_key == "cookie") {
-      // We require the cookie values (save for the last) to end with a
-      // semicolon and (save for the first) to start with a space. This is
-      // typically the format that we are given them in but we reserialize them
-      // to be sure.
-
-      std::vector<base::StringPiece> cookie_values;
-      size_t cookie_length = 0;
-      base::StringPiece cookie_data(it->second);
-
-      for (;;) {
-        while (!cookie_data.empty() &&
-               (cookie_data[0] == ' ' || cookie_data[0] == '\t')) {
-          cookie_data.remove_prefix(1);
-        }
-        if (cookie_data.empty())
-          break;
-
-        size_t i;
-        for (i = 0; i < cookie_data.size(); i++) {
-          if (cookie_data[i] == ';')
-            break;
-        }
-        if (i < cookie_data.size()) {
-          if (!IsCookieEmpty(cookie_data.substr(0, i))) {
-            cookie_values.push_back(cookie_data.substr(0, i));
-            cookie_length += i + 2 /* semicolon and space */;
-          }
-          cookie_data.remove_prefix(i + 1);
-        } else {
-          if (!IsCookieEmpty(cookie_data)) {
-            cookie_values.push_back(cookie_data);
-            cookie_length += cookie_data.size();
-          } else if (cookie_length > 2) {
-            cookie_length -= 2 /* compensate for previously added length */;
-          }
-          cookie_data.remove_prefix(i);
-        }
-      }
-
-      WriteLengthZ(cookie_length, length_length, kZStandardData, z);
-      for (size_t i = 0; i < cookie_values.size(); i++) {
-        std::string cookie;
-        // Since zlib will only back-reference complete cookies, a cookie that
-        // is currently last (and so doesn't have a trailing semicolon) won't
-        // match if it's later in a non-final position. The same is true of
-        // the first cookie.
-        if (i == 0 && cookie_values.size() == 1) {
-          cookie = cookie_values[i].as_string();
-        } else if (i == 0) {
-          cookie = cookie_values[i].as_string() + ";";
-        } else if (i < cookie_values.size() - 1) {
-          cookie = " " + cookie_values[i].as_string() + ";";
-        } else {
-          cookie = " " + cookie_values[i].as_string();
-        }
-        WriteZ(cookie, kZCookieData, z);
-      }
-    } else if (lowercase_key == "accept" ||
-               lowercase_key == "accept-charset" ||
-               lowercase_key == "accept-encoding" ||
-               lowercase_key == "accept-language" ||
-               lowercase_key == "host" ||
-               lowercase_key == "version" ||
-               lowercase_key == "method" ||
-               lowercase_key == "scheme" ||
-               lowercase_key == ":host" ||
-               lowercase_key == ":version" ||
-               lowercase_key == ":method" ||
-               lowercase_key == ":scheme" ||
-               lowercase_key == "user-agent") {
-      WriteLengthZ(it->second.size(), length_length, kZStandardData, z);
-      WriteZ(it->second, kZStandardData, z);
-    } else {
-      // Non-whitelisted headers are Huffman compressed in their own block, but
-      // don't match against the window.
-      WriteLengthZ(it->second.size(), length_length, kZStandardData, z);
-      WriteZ(it->second, kZHuffmanOnlyData, z);
-    }
-  }
-
-  z->avail_in = 0;
-  int rv = deflate(z, Z_SYNC_FLUSH);
-  DCHECK_EQ(Z_OK, rv);
-  z->clas = kZStandardData;
-}
-
-#endif  // !defined(USE_SYSTEM_ZLIB)
-
 size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
                                                         size_t len) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_BEFORE_HEADER_BLOCK, state_);
@@ -1387,15 +1113,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
     reader.Seek(GetFrameHeaderSize());  // Seek past frame header.
 
     switch (current_frame_type_) {
-      case SYN_STREAM:
-        // TODO(alyssar) remove SYN_STREAM, SYN_REPLY and all associated calls.
-        DCHECK(false);
-        break;
-      case SYN_REPLY:
-        DCHECK(false);
-        break;
       case HEADERS:
-        // SYN_REPLY and HEADERS are the same, save for the visitor call.
         {
           bool successful_read = true;
           if (current_frame_stream_id_ == 0) {
@@ -1438,23 +1156,16 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           }
           DCHECK(reader.IsDoneReading());
           if (debug_visitor_) {
-            debug_visitor_->OnReceiveCompressedFrame(
-                current_frame_stream_id_,
-                current_frame_type_,
-                current_frame_length_);
+            debug_visitor_->OnReceiveCompressedFrame(current_frame_stream_id_,
+                                                     current_frame_type_,
+                                                     current_frame_length_);
           }
-          if (current_frame_type_ == SYN_REPLY) {
-            visitor_->OnSynReply(
-                current_frame_stream_id_,
-                (current_frame_flags_ & CONTROL_FLAG_FIN) != 0);
-          } else {
-            visitor_->OnHeaders(
-                current_frame_stream_id_,
-                (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, weight,
-                parent_stream_id, exclusive,
-                (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
-                expect_continuation_ == 0);
-          }
+          visitor_->OnHeaders(
+              current_frame_stream_id_,
+              (current_frame_flags_ & HEADERS_FLAG_PRIORITY) != 0, weight,
+              parent_stream_id, exclusive,
+              (current_frame_flags_ & CONTROL_FLAG_FIN) != 0,
+              expect_continuation_ == 0);
         }
         break;
       case PUSH_PROMISE:
@@ -1548,18 +1259,14 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
 
 // Does not buffer the control payload. Instead, either passes directly to the
 // visitor or decompresses and then passes directly to the visitor, via
-// IncrementallyDeliverControlFrameHeaderData() or
-// IncrementallyDecompressControlFrameHeaderData() respectively.
+// IncrementallyDeliverControlFrameHeaderData()
 size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
                                                   size_t data_len,
                                                   bool is_hpack_header_block) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_HEADER_BLOCK, state_);
 
   bool processed_successfully = true;
-  if (current_frame_type_ != SYN_STREAM &&
-      current_frame_type_ != SYN_REPLY &&
-      current_frame_type_ != HEADERS &&
-      current_frame_type_ != PUSH_PROMISE &&
+  if (current_frame_type_ != HEADERS && current_frame_type_ != PUSH_PROMISE &&
       current_frame_type_ != CONTINUATION) {
     SPDY_BUG << "Unhandled frame type in ProcessControlFrameHeaderBlock.";
   }
@@ -2155,6 +1862,7 @@ SpdySerializedFrame SpdyFramer::SpdyHeaderFrameIterator::NextFrame() {
     debug_total_size_ += size_without_block;
     debug_total_size_ += encoding->size();
     if (!has_next_frame_) {
+      // TODO(birenroy) are these (here and below) still necessary?
       // HTTP2 uses HPACK for header compression. However, continue to
       // use GetSerializedLength() for an apples-to-apples comparision of
       // compression performance between HPACK and SPDY w/ deflate.
@@ -2194,7 +1902,7 @@ SpdySerializedFrame SpdyFramer::SerializeData(const SpdyDataIR& data_ir) const {
                                    data_ir.padding_payload_len() +
                                    GetDataFrameMinimumSize();
   SpdyFrameBuilder builder(size_with_padding, protocol_version_);
-  builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
+  builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
   if (data_ir.padded()) {
     builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
   }
@@ -2225,7 +1933,7 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
   }
 
   SpdyFrameBuilder builder(frame_size, protocol_version_);
-  builder.WriteDataFrameHeader(*this, data_ir.stream_id(), flags);
+  builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
   if (protocol_version_ == HTTP2) {
     if (data_ir.padded()) {
       builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
@@ -2236,81 +1944,6 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
     builder.OverwriteLength(*this, data_ir.data_len());
   }
   DCHECK_EQ(frame_size, builder.length());
-  return builder.take();
-}
-
-SpdySerializedFrame SpdyFramer::SerializeSynStream(
-    const SpdySynStreamIR& syn_stream) {
-  // TODO(alyssar) remove this entirely
-  DCHECK(false);
-  uint8_t flags = 0;
-  if (syn_stream.fin()) {
-    flags |= CONTROL_FLAG_FIN;
-  }
-  if (syn_stream.unidirectional()) {
-    flags |= CONTROL_FLAG_UNIDIRECTIONAL;
-  }
-
-  // Sanitize priority.
-  uint8_t priority = syn_stream.priority();
-  if (priority > GetLowestPriority()) {
-    SPDY_BUG << "Priority out-of-bounds.";
-    priority = GetLowestPriority();
-  }
-
-  // The size of this frame, including variable-length header block.
-  size_t size = GetSynStreamMinimumSize() +
-                GetSerializedLength(syn_stream.header_block());
-
-  SpdyFrameBuilder builder(size, protocol_version_);
-  builder.WriteControlFrameHeader(*this, SYN_STREAM, flags);
-  builder.WriteUInt32(syn_stream.stream_id());
-  builder.WriteUInt32(syn_stream.associated_to_stream_id());
-  builder.WriteUInt8(priority << 5);
-  builder.WriteUInt8(0);  // Unused byte.
-  DCHECK_EQ(GetSynStreamMinimumSize(), builder.length());
-  SerializeHeaderBlock(&builder, syn_stream);
-
-  if (debug_visitor_) {
-    const size_t payload_len =
-        GetSerializedLength(protocol_version_, &(syn_stream.header_block()));
-    debug_visitor_->OnSendCompressedFrame(syn_stream.stream_id(),
-                                          SYN_STREAM,
-                                          payload_len,
-                                          builder.length());
-  }
-
-  return builder.take();
-}
-
-SpdySerializedFrame SpdyFramer::SerializeSynReply(
-    const SpdySynReplyIR& syn_reply) {
-  // TODO(alyssar) remove this entirely
-  DCHECK(false);
-  uint8_t flags = 0;
-  if (syn_reply.fin()) {
-    flags |= CONTROL_FLAG_FIN;
-  }
-
-  // The size of this frame, including variable-length header block.
-  const size_t size =
-      GetSynReplyMinimumSize() + GetSerializedLength(syn_reply.header_block());
-
-  SpdyFrameBuilder builder(size, protocol_version_);
-  builder.WriteControlFrameHeader(*this, SYN_REPLY, flags);
-  builder.WriteUInt32(syn_reply.stream_id());
-  DCHECK_EQ(GetSynReplyMinimumSize(), builder.length());
-  SerializeHeaderBlock(&builder, syn_reply);
-
-  if (debug_visitor_) {
-    const size_t payload_len =
-        GetSerializedLength(protocol_version_, &(syn_reply.header_block()));
-    debug_visitor_->OnSendCompressedFrame(syn_reply.stream_id(),
-                                          SYN_REPLY,
-                                          payload_len,
-                                          builder.length());
-  }
-
   return builder.take();
 }
 
@@ -2392,7 +2025,7 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
   // Serialize the GOAWAY frame.
   builder.BeginNewFrame(*this, GOAWAY, 0, 0);
 
-  // GOAWAY frames specify the last good stream id for all SPDY versions.
+  // GOAWAY frames specify the last good stream id.
   builder.WriteUInt32(goaway.last_good_stream_id());
 
   // GOAWAY frames also specify the error status code.
@@ -2669,12 +2302,6 @@ class FrameSerializationVisitor : public SpdyFrameVisitor {
   void VisitData(const SpdyDataIR& data) override {
     frame_ = framer_->SerializeData(data);
   }
-  void VisitSynStream(const SpdySynStreamIR& syn_stream) override {
-    frame_ = framer_->SerializeSynStream(syn_stream);
-  }
-  void VisitSynReply(const SpdySynReplyIR& syn_reply) override {
-    frame_ = framer_->SerializeSynReply(syn_reply);
-  }
   void VisitRstStream(const SpdyRstStreamIR& rst_stream) override {
     frame_ = framer_->SerializeRstStream(rst_stream);
   }
@@ -2720,18 +2347,6 @@ SpdySerializedFrame SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
   FrameSerializationVisitor visitor(this);
   frame.Visit(&visitor);
   return visitor.ReleaseSerializedFrame();
-}
-
-size_t SpdyFramer::GetSerializedLength(const SpdyHeaderBlock& headers) {
-  const size_t uncompressed_length =
-      GetSerializedLength(protocol_version_, &headers);
-  if (!enable_compression_) {
-    return uncompressed_length;
-  }
-  z_stream* compressor = GetHeaderCompressor();
-  // Since we'll be performing lots of flushes when compressing the data,
-  // zlib's lower bounds may be insufficient.
-  return 2 * deflateBound(compressor, uncompressed_length);
 }
 
 size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
@@ -2828,66 +2443,6 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
   }
 }
 
-// The following compression setting are based on Brian Olson's analysis. See
-// https://groups.google.com/group/spdy-dev/browse_thread/thread/dfaf498542fac792
-// for more details.
-#if defined(USE_SYSTEM_ZLIB)
-// System zlib is not expected to have workaround for http://crbug.com/139744,
-// so disable compression in that case.
-// TODO(phajdan.jr): Remove the special case when it's no longer necessary.
-static const int kCompressorLevel = 0;
-#else  // !defined(USE_SYSTEM_ZLIB)
-static const int kCompressorLevel = 9;
-#endif  // !defined(USE_SYSTEM_ZLIB)
-static const int kCompressorWindowSizeInBits = 11;
-static const int kCompressorMemLevel = 1;
-
-z_stream* SpdyFramer::GetHeaderCompressor() {
-  if (header_compressor_.get()) {
-    return header_compressor_.get();  // Already initialized.
-  }
-
-  header_compressor_.reset(new z_stream);
-  memset(header_compressor_.get(), 0, sizeof(z_stream));
-
-  int success = deflateInit2(header_compressor_.get(),
-                             kCompressorLevel,
-                             Z_DEFLATED,
-                             kCompressorWindowSizeInBits,
-                             kCompressorMemLevel,
-                             Z_DEFAULT_STRATEGY);
-  if (success == Z_OK) {
-    const char* dictionary = kV3Dictionary;
-    const int dictionary_size = kV3DictionarySize;
-    success = deflateSetDictionary(header_compressor_.get(),
-                                   reinterpret_cast<const Bytef*>(dictionary),
-                                   dictionary_size);
-  }
-  if (success != Z_OK) {
-    LOG(WARNING) << "deflateSetDictionary failure: " << success;
-    header_compressor_.reset(NULL);
-    return NULL;
-  }
-  return header_compressor_.get();
-}
-
-z_stream* SpdyFramer::GetHeaderDecompressor() {
-  if (header_decompressor_.get()) {
-    return header_decompressor_.get();  // Already initialized.
-  }
-
-  header_decompressor_.reset(new z_stream);
-  memset(header_decompressor_.get(), 0, sizeof(z_stream));
-
-  int success = inflateInit(header_decompressor_.get());
-  if (success != Z_OK) {
-    LOG(WARNING) << "inflateInit failure: " << success;
-    header_decompressor_.reset(NULL);
-    return NULL;
-  }
-  return header_decompressor_.get();
-}
-
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
   DCHECK_EQ(HTTP2, protocol_version_);
   if (hpack_encoder_.get() == nullptr) {
@@ -2902,81 +2457,6 @@ HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
     hpack_decoder_.reset(new HpackDecoder());
   }
   return hpack_decoder_.get();
-}
-
-// Incrementally decompress the control frame's header block, feeding the
-// result to the visitor in chunks. Continue this until the visitor
-// indicates that it cannot process any more data, or (more commonly) we
-// run out of data to deliver.
-bool SpdyFramer::IncrementallyDecompressControlFrameHeaderData(
-    SpdyStreamId stream_id,
-    const char* data,
-    size_t len) {
-  // Get a decompressor or set error.
-  z_stream* decomp = GetHeaderDecompressor();
-  if (decomp == NULL) {
-    SPDY_BUG << "Couldn't get decompressor for handling compressed headers.";
-    set_error(SPDY_DECOMPRESS_FAILURE);
-    return false;
-  }
-
-  bool processed_successfully = true;
-  char buffer[kHeaderDataChunkMaxSize];
-
-  decomp->next_in = reinterpret_cast<Bytef*>(const_cast<char*>(data));
-  decomp->avail_in = len;
-  // If we get a SYN_STREAM/SYN_REPLY/HEADERS frame with stream ID zero, we
-  // signal an error back in ProcessControlFrameBeforeHeaderBlock.  So if we've
-  // reached this method successfully, stream_id should be nonzero.
-  DCHECK_LT(0u, stream_id);
-  while (decomp->avail_in > 0 && processed_successfully) {
-    decomp->next_out = reinterpret_cast<Bytef*>(buffer);
-    decomp->avail_out = arraysize(buffer);
-
-    int rv = inflate(decomp, Z_SYNC_FLUSH);
-    if (rv == Z_NEED_DICT) {
-      const char* dictionary = kV3Dictionary;
-      const int dictionary_size = kV3DictionarySize;
-      const DictionaryIds& ids = g_dictionary_ids.Get();
-      const uLong dictionary_id = ids.v3_dictionary_id;
-      // Need to try again with the right dictionary.
-      if (decomp->adler == dictionary_id) {
-        rv = inflateSetDictionary(decomp,
-                                  reinterpret_cast<const Bytef*>(dictionary),
-                                  dictionary_size);
-        if (rv == Z_OK) {
-          rv = inflate(decomp, Z_SYNC_FLUSH);
-        }
-      }
-    }
-
-    // Inflate will generate a Z_BUF_ERROR if it runs out of input
-    // without producing any output.  The input is consumed and
-    // buffered internally by zlib so we can detect this condition by
-    // checking if avail_in is 0 after the call to inflate.
-    bool input_exhausted = ((rv == Z_BUF_ERROR) && (decomp->avail_in == 0));
-    if ((rv == Z_OK) || input_exhausted) {
-      size_t decompressed_len = arraysize(buffer) - decomp->avail_out;
-      if (decompressed_len > 0) {
-        processed_successfully = header_parser_->HandleControlFrameHeadersData(
-            stream_id, buffer, decompressed_len);
-        if (header_parser_->get_error() ==
-            SpdyHeadersBlockParser::NEED_MORE_DATA) {
-          processed_successfully = true;
-        }
-      }
-      if (!processed_successfully) {
-        // Assume that the problem was the header block was too large for the
-        // visitor.
-        set_error(SPDY_CONTROL_PAYLOAD_TOO_LARGE);
-      }
-    } else {
-      DLOG(WARNING) << "inflate failure: " << rv << " " << len;
-      set_error(SPDY_DECOMPRESS_FAILURE);
-      processed_successfully = false;
-    }
-  }
-  return processed_successfully;
 }
 
 bool SpdyFramer::IncrementallyDeliverControlFrameHeaderData(
@@ -3041,64 +2521,6 @@ void SpdyFramer::SerializeHeaderBlockWithoutCompression(
     builder->WriteStringPiece32(base::ToLowerASCII(header.first));
     builder->WriteStringPiece32(header.second);
   }
-}
-
-void SpdyFramer::SerializeHeaderBlock(SpdyFrameBuilder* builder,
-                                      const SpdyFrameWithHeaderBlockIR& frame) {
-  if (!enable_compression_) {
-    return SerializeHeaderBlockWithoutCompression(builder,
-                                                  frame.header_block());
-  }
-
-  // First build an uncompressed version to be fed into the compressor.
-  const size_t uncompressed_len =
-      GetSerializedLength(protocol_version_, &(frame.header_block()));
-  SpdyFrameBuilder uncompressed_builder(uncompressed_len, protocol_version_);
-  SerializeHeaderBlockWithoutCompression(&uncompressed_builder,
-                                         frame.header_block());
-  SpdySerializedFrame uncompressed_payload(uncompressed_builder.take());
-
-  z_stream* compressor = GetHeaderCompressor();
-  if (!compressor) {
-    SPDY_BUG << "Could not obtain compressor.";
-    return;
-  }
-  // Create an output frame.
-  // Since we'll be performing lots of flushes when compressing the data,
-  // zlib's lower bounds may be insufficient.
-  //
-  // TODO(akalin): Avoid the duplicate calculation with
-  // GetSerializedLength(const SpdyHeaderBlock&).
-  const int compressed_max_size =
-      2 * deflateBound(compressor, uncompressed_len);
-
-  // TODO(phajdan.jr): Clean up after we no longer need
-  // to workaround http://crbug.com/139744.
-#if defined(USE_SYSTEM_ZLIB)
-  compressor->next_in = reinterpret_cast<Bytef*>(uncompressed_payload.data());
-  compressor->avail_in = uncompressed_len;
-#endif  // defined(USE_SYSTEM_ZLIB)
-  compressor->next_out = reinterpret_cast<Bytef*>(
-      builder->GetWritableBuffer(compressed_max_size));
-  compressor->avail_out = compressed_max_size;
-
-  // TODO(phajdan.jr): Clean up after we no longer need
-  // to workaround http://crbug.com/139744.
-#if defined(USE_SYSTEM_ZLIB)
-  int rv = deflate(compressor, Z_SYNC_FLUSH);
-  if (rv != Z_OK) {  // How can we know that it compressed everything?
-    // This shouldn't happen, right?
-    LOG(WARNING) << "deflate failure: " << rv;
-    // TODO(akalin): Upstream this return.
-    return;
-  }
-#else
-  WriteHeaderBlockToZ(&frame.header_block(), compressor);
-#endif  // defined(USE_SYSTEM_ZLIB)
-
-  int compressed_size = compressed_max_size - compressor->avail_out;
-  builder->Seek(compressed_size);
-  builder->RewriteLength(*this);
 }
 
 }  // namespace net

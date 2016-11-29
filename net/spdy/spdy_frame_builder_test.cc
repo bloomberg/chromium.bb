@@ -11,16 +11,16 @@
 namespace net {
 
 TEST(SpdyFrameBuilderTest, GetWritableBuffer) {
-  const size_t builder_size = 10;
-  SpdyFrameBuilder builder(builder_size, HTTP2);
-  char* writable_buffer = builder.GetWritableBuffer(builder_size);
-  memset(writable_buffer, ~1, builder_size);
-  EXPECT_TRUE(builder.Seek(builder_size));
+  const size_t kBuilderSize = 10;
+  SpdyFrameBuilder builder(kBuilderSize, HTTP2);
+  char* writable_buffer = builder.GetWritableBuffer(kBuilderSize);
+  memset(writable_buffer, ~1, kBuilderSize);
+  EXPECT_TRUE(builder.Seek(kBuilderSize));
   SpdySerializedFrame frame(builder.take());
-  char expected[builder_size];
-  memset(expected, ~1, builder_size);
-  EXPECT_EQ(base::StringPiece(expected, builder_size),
-            base::StringPiece(frame.data(), builder_size));
+  char expected[kBuilderSize];
+  memset(expected, ~1, kBuilderSize);
+  EXPECT_EQ(base::StringPiece(expected, kBuilderSize),
+            base::StringPiece(frame.data(), kBuilderSize));
 }
 
 TEST(SpdyFrameBuilderTest, RewriteLength) {

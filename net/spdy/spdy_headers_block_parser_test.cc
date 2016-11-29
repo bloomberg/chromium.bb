@@ -6,6 +6,7 @@
 
 #include <memory>
 #include <string>
+#include <vector>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/sys_byteorder.h"

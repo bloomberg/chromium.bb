@@ -491,14 +491,6 @@ void SpdyDataIR::Visit(SpdyFrameVisitor* visitor) const {
   return visitor->VisitData(*this);
 }
 
-void SpdySynStreamIR::Visit(SpdyFrameVisitor* visitor) const {
-  return visitor->VisitSynStream(*this);
-}
-
-void SpdySynReplyIR::Visit(SpdyFrameVisitor* visitor) const {
-  return visitor->VisitSynReply(*this);
-}
-
 SpdyRstStreamIR::SpdyRstStreamIR(SpdyStreamId stream_id,
                                  SpdyRstStreamStatus status)
     : SpdyFrameWithStreamIdIR(stream_id) {

@@ -2075,17 +2075,18 @@ void SpdySession::OnSendCompressedFrame(
     SpdyFrameType type,
     size_t payload_len,
     size_t frame_len) {
-  if (type != HEADERS)
+  if (type != HEADERS) {
     return;
+  }
 
   DCHECK(buffered_spdy_framer_.get());
   size_t compressed_len =
-      frame_len - buffered_spdy_framer_->GetSynStreamMinimumSize();
+      frame_len - buffered_spdy_framer_->GetFrameMinimumSize();
 
   if (payload_len) {
     // Make sure we avoid early decimal truncation.
     int compression_pct = 100 - (100 * compressed_len) / payload_len;
-    UMA_HISTOGRAM_PERCENTAGE("Net.SpdySynStreamCompressionPercentage",
+    UMA_HISTOGRAM_PERCENTAGE("Net.SpdyHeadersCompressionPercentage",
                              compression_pct);
   }
 }
