@@ -23,7 +23,6 @@
         android:layout_width="@dimen/drawer_width"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:paddingTop="@dimen/drawer_margin_large"
         android:orientation="vertical"
         android:background="@android:color/white" >
 

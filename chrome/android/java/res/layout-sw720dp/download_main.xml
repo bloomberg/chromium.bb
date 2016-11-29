@@ -14,8 +14,7 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@android:color/white"
-        android:orientation="vertical"
-        android:paddingTop="@dimen/drawer_margin_large" >
+        android:orientation="vertical" >
 
         <include layout="@layout/download_manager_ui_space_widget" />
 
