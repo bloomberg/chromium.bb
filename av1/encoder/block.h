@@ -57,8 +57,6 @@ typedef struct macroblock_plane {
 #if CONFIG_NEW_QUANT
   const cuml_bins_type_nuq *cuml_bins_nuq[QUANT_PROFILES];
 #endif  // CONFIG_NEW_QUANT
-
-  int64_t quant_thred[2];
 } MACROBLOCK_PLANE;
 
 /* The [2] dimension is for whether we skip the EOB node (i.e. if previous

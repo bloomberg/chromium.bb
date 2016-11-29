@@ -1882,9 +1882,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
   }
 #endif  // CONFIG_NEW_QUANT
 
-  x->plane[0].quant_thred[0] = x->plane[0].zbin[0] * x->plane[0].zbin[0];
-  x->plane[0].quant_thred[1] = x->plane[0].zbin[1] * x->plane[0].zbin[1];
-
   // UV
   for (i = 1; i < 3; i++) {
     x->plane[i].quant = quants->uv_quant[qindex];
@@ -1906,9 +1903,6 @@ void av1_init_plane_quantizers(const AV1_COMP *cpi, MACROBLOCK *x,
       xd->plane[i].dequant_val_nuq[dq] = cpi->uv_dequant_val_nuq[dq][qindex];
     }
 #endif  // CONFIG_NEW_QUANT
-
-    x->plane[i].quant_thred[0] = x->plane[i].zbin[0] * x->plane[i].zbin[0];
-    x->plane[i].quant_thred[1] = x->plane[i].zbin[1] * x->plane[i].zbin[1];
   }
 
   x->skip_block = segfeature_active(&cm->seg, segment_id, SEG_LVL_SKIP);
