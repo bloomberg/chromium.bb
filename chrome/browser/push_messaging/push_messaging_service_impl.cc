@@ -373,6 +373,7 @@ void PushMessagingServiceImpl::DeliverMessageCallback(
     // notifications).
     case content::PUSH_DELIVERY_STATUS_SUCCESS:
     case content::PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED:
+    case content::PUSH_DELIVERY_STATUS_TIMEOUT:
 #if defined(ENABLE_NOTIFICATIONS)
       // Only enforce the user visible requirements if this is currently running
       // as the delivery callback for the last in-flight message, and silent

@@ -22,6 +22,10 @@ namespace content {
 
 namespace {
 
+// The number of seconds for which the event triggered by a push message should
+// be allowed to run.
+const int kPushMessageTimeoutSeconds = 90;
+
 void RunDeliverCallback(
     const PushMessagingRouter::DeliverMessageCallback& deliver_message_callback,
     PushDeliveryStatus delivery_status) {
@@ -113,10 +117,12 @@ void PushMessagingRouter::DeliverMessageToWorker(
     const PushEventPayload& payload,
     const DeliverMessageCallback& deliver_message_callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  int request_id = service_worker->StartRequest(
+  int request_id = service_worker->StartRequestWithCustomTimeout(
       ServiceWorkerMetrics::EventType::PUSH,
       base::Bind(&PushMessagingRouter::DeliverMessageEnd,
-                 deliver_message_callback, service_worker_registration));
+                 deliver_message_callback, service_worker_registration),
+      base::TimeDelta::FromSeconds(kPushMessageTimeoutSeconds),
+      ServiceWorkerVersion::KILL_ON_TIMEOUT);
   service_worker->DispatchSimpleEvent<ServiceWorkerHostMsg_PushEventFinished>(
       request_id, ServiceWorkerMsg_PushEvent(request_id, payload));
 }
@@ -139,13 +145,15 @@ void PushMessagingRouter::DeliverMessageEnd(
     case SERVICE_WORKER_ERROR_EVENT_WAITUNTIL_REJECTED:
       delivery_status = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED;
       break;
+    case SERVICE_WORKER_ERROR_TIMEOUT:
+      delivery_status = PUSH_DELIVERY_STATUS_TIMEOUT;
+      break;
     case SERVICE_WORKER_ERROR_FAILED:
     case SERVICE_WORKER_ERROR_ABORT:
     case SERVICE_WORKER_ERROR_START_WORKER_FAILED:
     case SERVICE_WORKER_ERROR_PROCESS_NOT_FOUND:
     case SERVICE_WORKER_ERROR_NOT_FOUND:
     case SERVICE_WORKER_ERROR_IPC_FAILED:
-    case SERVICE_WORKER_ERROR_TIMEOUT:
     case SERVICE_WORKER_ERROR_SCRIPT_EVALUATE_FAILED:
     case SERVICE_WORKER_ERROR_DISK_CACHE:
     case SERVICE_WORKER_ERROR_REDUNDANT:

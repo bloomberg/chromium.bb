@@ -189,12 +189,15 @@ enum PushDeliveryStatus {
   // event.waitUntil that got rejected.
   PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED = 6,
 
+  // The message was delivered, but the Service Worker timed out processing it.
+  PUSH_DELIVERY_STATUS_TIMEOUT = 7,
+
   // NOTE: Do not renumber these as that would confuse interpretation of
   // previously logged data. When making changes, also update the enum list
   // in tools/metrics/histograms/histograms.xml to keep it in sync, and
   // update PUSH_DELIVERY_STATUS_LAST below.
 
-  PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_EVENT_WAITUNTIL_REJECTED
+  PUSH_DELIVERY_STATUS_LAST = PUSH_DELIVERY_STATUS_TIMEOUT
 };
 
 // Push message user visible tracking for reporting in UMA. Enum values can be
