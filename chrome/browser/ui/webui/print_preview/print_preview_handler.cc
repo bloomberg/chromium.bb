@@ -912,23 +912,28 @@ void PrintPreviewHandler::HandlePrint(const base::ListValue* args) {
     // association with the initiator yet.
     print_preview_ui()->OnHidePreviewDialog();
 
-    // Do this so the initiator can open a new print preview dialog, while the
-    // current print preview dialog is still handling its print job.
+    // Grab the current initiator before calling ClearInitiatorDetails() below.
+    // Otherwise calling GetInitiator() later will return the wrong WebContents.
+    // https://crbug.com/407080
     WebContents* initiator = GetInitiator();
     if (initiator) {
-      // Save initiator IDs. |PrintingMessageFilter::OnUpdatePrintSettings|
-      // would be called when initiator info is cleared.
+      // Save initiator IDs. PrintMsg_PrintForPrintPreview below should cause
+      // the renderer to send PrintHostMsg_UpdatePrintSettings and trigger
+      // PrintingMessageFilter::OnUpdatePrintSettings(), which needs this info.
+      auto* main_render_frame = initiator->GetMainFrame();
       settings->SetInteger(printing::kPreviewInitiatorHostId,
-                           initiator->GetRenderProcessHost()->GetID());
+                           main_render_frame->GetProcess()->GetID());
       settings->SetInteger(printing::kPreviewInitiatorRoutingId,
-                           initiator->GetRoutingID());
+                           main_render_frame->GetRoutingID());
     }
 
+    // Do this so the initiator can open a new print preview dialog, while the
+    // current print preview dialog is still handling its print job.
     ClearInitiatorDetails();
 
     // The PDF being printed contains only the pages that the user selected,
     // so ignore the page range and print all pages.
-    settings->Remove(printing::kSettingPageRange, NULL);
+    settings->Remove(printing::kSettingPageRange, nullptr);
     // Reset selection only flag for the same reason.
     settings->SetBoolean(printing::kSettingShouldPrintSelectionOnly, false);
 
