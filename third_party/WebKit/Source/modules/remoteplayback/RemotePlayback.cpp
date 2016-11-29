@@ -13,6 +13,7 @@
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "modules/EventTargetModules.h"
+#include "platform/MemoryCoordinator.h"
 #include "platform/UserGestureIndicator.h"
 
 namespace blink {
@@ -73,8 +74,13 @@ ScriptPromise RemotePlayback::watchAvailability(
     return promise;
   }
 
-  // TODO(avayvod): implement steps 4 and 5 of the algorithm.
-  // https://crbug.com/655233
+  if (MemoryCoordinator::isLowEndDevice()) {
+    resolver->reject(DOMException::create(
+        NotSupportedError,
+        "Availability monitoring is not supported on this device."));
+    return promise;
+  }
+
   int id;
   do {
     id = getExecutionContext()->circularSequentialID();

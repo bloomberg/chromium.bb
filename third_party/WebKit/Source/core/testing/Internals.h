@@ -531,6 +531,9 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
   // Intentional crash.
   void crash();
 
+  // Overrides if the device is low-end (low on memory).
+  void setIsLowEndDevice(bool);
+
  private:
   explicit Internals(ExecutionContext*);
   Document* contextDocument() const;

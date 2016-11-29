@@ -31,6 +31,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "platform/Histogram.h"
+#include "platform/MemoryCoordinator.h"
 #include "platform/PartitionAllocMemoryDumpProvider.h"
 #include "platform/fonts/FontCacheMemoryDumpProvider.h"
 #include "platform/heap/BlinkGCMemoryDumpProvider.h"
@@ -78,6 +79,7 @@ void Platform::initialize(Platform* platform) {
   WTF::initialize(callOnMainThreadFunction);
 
   ProcessHeap::init();
+  MemoryCoordinator::initialize();
   if (base::ThreadTaskRunnerHandle::IsSet())
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
         BlinkGCMemoryDumpProvider::instance(), "BlinkGC",
