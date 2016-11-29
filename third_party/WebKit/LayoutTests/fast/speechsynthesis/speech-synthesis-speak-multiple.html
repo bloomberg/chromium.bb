@@ -21,12 +21,14 @@
     // Start a very short speaking job that will finish quickly.
     var u = new SpeechSynthesisUtterance(" ");
     u.onstart = function(event) {
-        shouldBeTrue("event.elapsedTime > 0");
+        shouldBeTrue("event.elapsedTime >= 0");
+        shouldBeTrue("event.elapsedTime < 1000");
         shouldBeTrue("speechSynthesis.speaking");
     };
     u.onend = function(event) {
         shouldBeGreaterThanOrEqual("count", "i");
         shouldBeTrue("event.elapsedTime > 0");
+        shouldBeTrue("event.elapsedTime < 10000");
         shouldBeTrue("speechSynthesis.speaking");
         if (++i == count) {
             speechSynthesis.cancel();
