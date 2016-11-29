@@ -61,7 +61,6 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/first_run/first_run.h"
 #include "chrome/browser/geolocation/chrome_access_token_store.h"
-#include "chrome/browser/google/google_brand.h"
 #include "chrome/browser/gpu/gpu_profile_cache.h"
 #include "chrome/browser/gpu/three_d_api_observer.h"
 #include "chrome/browser/media/webrtc/media_capture_devices_dispatcher.h"
@@ -962,14 +961,6 @@ int ChromeBrowserMainParts::PreCreateThreads() {
 int ChromeBrowserMainParts::PreCreateThreadsImpl() {
   TRACE_EVENT0("startup", "ChromeBrowserMainParts::PreCreateThreadsImpl")
   run_message_loop_ = false;
-
-// Record whether the machine is domain joined (Win only) in a crash key. This
-// will be used to better identify whether crashes are from enterprise users.
-#if defined(OS_WIN)
-  base::debug::SetCrashKeyValue(crash_keys::kEnrolledToDomain,
-                                base::win::IsEnrolledToDomain() ? "yes" : "no");
-#endif
-
 #if !defined(OS_ANDROID)
   chrome::MaybeShowInvalidUserDataDirWarningDialog();
 #endif  // !defined(OS_ANDROID)

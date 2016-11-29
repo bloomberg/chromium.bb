@@ -58,8 +58,6 @@ const char kHungRendererReason[] = "hung-reason";
 
 const char kThirdPartyModulesLoaded[] = "third-party-modules-loaded";
 const char kThirdPartyModulesNotLoaded[] = "third-party-modules-not-loaded";
-
-const char kEnrolledToDomain[] = "enrolled-to-domain";
 #endif
 
 const char kInputEventFilterSendFailure[] = "input-event-filter-send-failure";
@@ -145,7 +143,6 @@ size_t RegisterChromeCrashKeys() {
     { kHungRendererReason, kSmallSize },
     { kThirdPartyModulesLoaded, kSmallSize },
     { kThirdPartyModulesNotLoaded, kSmallSize },
-    { kEnrolledToDomain, kSmallSize },
 #endif
     { kInputEventFilterSendFailure, kSmallSize },
 #if defined(OS_CHROMEOS)

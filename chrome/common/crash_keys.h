@@ -95,8 +95,6 @@ extern const char kHungRendererReason[];
 // Third-party module crash keys are sent only on Windows.
 extern const char kThirdPartyModulesLoaded[];
 extern const char kThirdPartyModulesNotLoaded[];
-
-extern const char kEnrolledToDomain[];
 #endif
 
 // Number of input event send IPC failures. Added to debug
