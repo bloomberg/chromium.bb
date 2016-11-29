@@ -42,11 +42,13 @@ class LayoutSVGText final : public LayoutSVGBlock {
   void setNeedsTransformUpdate() override { m_needsTransformUpdate = true; }
   void setNeedsTextMetricsUpdate() { m_needsTextMetricsUpdate = true; }
   FloatRect visualRectInLocalSVGCoordinates() const override;
-  FloatRect objectBoundingBox() const override {
-    return FloatRect(frameRect());
-  }
+  FloatRect objectBoundingBox() const override;
   FloatRect strokeBoundingBox() const override;
   bool isObjectBoundingBoxValid() const;
+
+  void addOutlineRects(Vector<LayoutRect>&,
+                       const LayoutPoint& additionalOffset,
+                       IncludeBlockVisualOverflowOrNot) const override;
 
   static LayoutSVGText* locateLayoutSVGTextAncestor(LayoutObject*);
   static const LayoutSVGText* locateLayoutSVGTextAncestor(const LayoutObject*);

@@ -69,17 +69,19 @@ void SVGRootInlineBox::computePerCharacterLayoutInformation() {
   // Perform SVG text layout phase four
   // Position & resize all SVGInlineText/FlowBoxes in the inline box tree,
   // resize the root box as well as the LayoutSVGText parent block.
-  LayoutRect childRect = layoutInlineBoxes(*this);
+  layoutInlineBoxes(*this);
 
-  // Finally, assign the root block position, now that all content is laid out.
+  // Let the HTML block space originate from the local SVG coordinate space.
   LineLayoutBlockFlow parentBlock = block();
-  parentBlock.setLocation(childRect.location());
-  parentBlock.setSize(childRect.size());
+  parentBlock.setLocation(LayoutPoint());
+  // The width could be any value, but set it so that a line box will mirror
+  // within the childRect when its coordinates are converted between physical
+  // block direction and flipped block direction, for ease of understanding of
+  // flipped coordinates. The height doesn't matter.
+  parentBlock.setSize(LayoutSize(x() * 2 + width(), LayoutUnit()));
 
-  adjustInlineBoxesToBlockSpace(*this);
-
-  setLineTopBottomPositions(LayoutUnit(), logicalHeight(), LayoutUnit(),
-                            logicalHeight());
+  setLineTopBottomPositions(logicalTop(), logicalBottom(), logicalTop(),
+                            logicalBottom());
 }
 
 LayoutRect SVGRootInlineBox::layoutInlineBoxes(InlineBox& box) {
@@ -104,21 +106,6 @@ LayoutRect SVGRootInlineBox::layoutInlineBoxes(InlineBox& box) {
     toSVGRootInlineBox(box).setLogicalHeight(logicalHeight);
 
   return rect;
-}
-
-void SVGRootInlineBox::adjustInlineBoxesToBlockSpace(InlineBox& box) {
-  LineLayoutBlockFlow parentBlock = block();
-  LayoutPoint location = box.topLeft();
-  location.moveBy(-parentBlock.location());
-  box.setX(location.x());
-  box.setY(location.y());
-
-  if (!box.isInlineFlowBox())
-    return;
-
-  for (InlineBox* child = toInlineFlowBox(box).firstChild(); child;
-       child = child->nextOnLine())
-    adjustInlineBoxesToBlockSpace(*child);
 }
 
 InlineBox* SVGRootInlineBox::closestLeafChildForPosition(

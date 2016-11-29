@@ -249,16 +249,13 @@ void LayoutSVGText::layout() {
 
   m_needsReordering = false;
 
-  // If we don't have any line boxes, then make sure the frame rect is still
-  // cleared.
-  if (!firstLineBox())
-    setFrameRect(LayoutRect());
+  FloatRect newBoundaries = objectBoundingBox();
+  if (!updateParentBoundaries)
+    updateParentBoundaries = oldBoundaries != newBoundaries;
 
   m_overflow.reset();
+  addSelfVisualOverflow(LayoutRect(newBoundaries));
   addVisualEffectOverflow();
-
-  if (!updateParentBoundaries)
-    updateParentBoundaries = oldBoundaries != objectBoundingBox();
 
   // Invalidate all resources of this client if our layout changed.
   if (everHadLayout() && selfNeedsLayout())
@@ -330,7 +327,9 @@ PositionWithAffinity LayoutSVGText::positionForPoint(
     return createPositionWithAffinity(0);
 
   LayoutPoint clippedPointInContents(pointInContents);
+  clippedPointInContents.moveBy(-rootBox->topLeft());
   clippedPointInContents.clampNegativeToZero();
+  clippedPointInContents.moveBy(rootBox->topLeft());
 
   ASSERT(!rootBox->nextRootBox());
   ASSERT(childrenInline());
@@ -352,6 +351,12 @@ void LayoutSVGText::absoluteQuads(Vector<FloatQuad>& quads) const {
 void LayoutSVGText::paint(const PaintInfo& paintInfo,
                           const LayoutPoint&) const {
   SVGTextPainter(*this).paint(paintInfo);
+}
+
+FloatRect LayoutSVGText::objectBoundingBox() const {
+  if (const RootInlineBox* box = firstRootBox())
+    return FloatRect(box->frameRect());
+  return FloatRect();
 }
 
 FloatRect LayoutSVGText::strokeBoundingBox() const {
@@ -376,6 +381,12 @@ FloatRect LayoutSVGText::visualRectInLocalSVGCoordinates() const {
     textShadow->adjustRectForShadow(visualRect);
 
   return visualRect;
+}
+
+void LayoutSVGText::addOutlineRects(Vector<LayoutRect>& rects,
+                                    const LayoutPoint&,
+                                    IncludeBlockVisualOverflowOrNot) const {
+  rects.append(LayoutRect(objectBoundingBox()));
 }
 
 bool LayoutSVGText::isObjectBoundingBoxValid() const {

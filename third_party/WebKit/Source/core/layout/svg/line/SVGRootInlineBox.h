@@ -56,7 +56,6 @@ class SVGRootInlineBox final : public RootInlineBox {
  private:
   void reorderValueLists();
   LayoutRect layoutInlineBoxes(InlineBox&);
-  void adjustInlineBoxesToBlockSpace(InlineBox&);
 
   LayoutUnit m_logicalHeight;
 };
