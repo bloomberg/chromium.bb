@@ -426,7 +426,6 @@ _arm_internal_release_boards = frozenset([
     'gru',
     'hana',
     'kevin',
-    'kevin-tpm2',
     'nyan',
     'nyan_big',
     'nyan_blaze',
