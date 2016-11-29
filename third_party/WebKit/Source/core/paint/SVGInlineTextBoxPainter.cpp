@@ -51,9 +51,8 @@ FloatRect SVGInlineTextBoxPainter::boundsForDrawingRecorder(
     const ComputedStyle& style,
     const LayoutPoint& paintOffset,
     bool includeSelectionRect) const {
-  LayoutRect bounds(
-      m_svgInlineTextBox.locationIncludingFlipping() + paintOffset,
-      m_svgInlineTextBox.size());
+  LayoutRect bounds(m_svgInlineTextBox.topLeft() + paintOffset,
+                    m_svgInlineTextBox.size());
   if (hasShadow(paintInfo, style))
     bounds.expand(style.textShadow()->rectOutsetsIncludingOriginal());
   if (includeSelectionRect) {

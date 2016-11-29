@@ -299,7 +299,7 @@ bool SVGInlineTextBox::nodeAtPoint(HitTestResult& result,
         (hitRules.canHitFill &&
          (getLineLayoutItem().style()->svgStyle().hasFill() ||
           !hitRules.requireFill))) {
-      LayoutRect rect(locationIncludingFlipping(), size());
+      LayoutRect rect(topLeft(), size());
       rect.moveBy(accumulatedOffset);
       if (locationInContainer.intersects(rect)) {
         LineLayoutSVGInlineText lineLayoutItem =

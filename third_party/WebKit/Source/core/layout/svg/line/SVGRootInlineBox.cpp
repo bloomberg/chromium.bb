@@ -108,14 +108,10 @@ LayoutRect SVGRootInlineBox::layoutInlineBoxes(InlineBox& box) {
 
 void SVGRootInlineBox::adjustInlineBoxesToBlockSpace(InlineBox& box) {
   LineLayoutBlockFlow parentBlock = block();
-  LayoutRect rect(box.topLeft(), box.size());
-  // In layoutChildBoxes(), the box was laid out in physical SVG coordinates.
-  rect.moveBy(-parentBlock.location());
-  // Convert physical coordinates into "physical coordinates in flipped block
-  // direction".
-  parentBlock.flipForWritingMode(rect);
-  box.setX(rect.x());
-  box.setY(rect.y());
+  LayoutPoint location = box.topLeft();
+  location.moveBy(-parentBlock.location());
+  box.setX(location.x());
+  box.setY(location.y());
 
   if (!box.isInlineFlowBox())
     return;
