@@ -68,7 +68,10 @@ class DevicePermissionsPrompt {
     // implementation should register an observer.
     class Observer {
      public:
-      virtual void OnDevicesChanged() = 0;
+      virtual void OnDeviceAdded(size_t index,
+                                 const base::string16& device_name) = 0;
+      virtual void OnDeviceRemoved(size_t index,
+                                   const base::string16& device_name) = 0;
 
      protected:
       virtual ~Observer();
@@ -81,8 +84,6 @@ class DevicePermissionsPrompt {
     // Only one observer may be registered at a time.
     virtual void SetObserver(Observer* observer);
 
-    virtual base::string16 GetHeading() const = 0;
-    base::string16 GetPromptMessage() const;
     size_t GetDeviceCount() const { return devices_.size(); }
     base::string16 GetDeviceName(size_t index) const;
     base::string16 GetDeviceSerialNumber(size_t index) const;

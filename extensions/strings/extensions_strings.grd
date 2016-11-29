@@ -245,24 +245,14 @@
       <message name="IDS_DEVICE_NAME_WITH_UNKNOWN_PRODUCT_VENDOR_SERIAL" desc="String describing a device by its vendor name and serial number when only the numeric product ID is available.">
         Unknown product <ph name="PRODUCT_ID">$1<ex>1234</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph> (serial number <ph name="SERIAL_NUMBER">$3<ex>00001</ex></ph>)
       </message>
-      <message name="IDS_DEVICE_PERMISSIONS_PROMPT" desc="Instructions asking the user to select one or more devices for use with an app. [ICU Syntax]">
-      {0, select,
-        single {The application "<ph name="APP_NAME">{1}<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices.}
-        multiple {The application "<ph name="APP_NAME">{1}<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices.}
-        other {UNUSED}}
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_SINGLE_SELECTION" desc="Instructions asking the user to select one device for use with an app.">
+        "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one of your devices:
+      </message>
+      <message name="IDS_DEVICE_PERMISSIONS_PROMPT_MULTIPLE_SELECTION" desc="Instructions asking the user to select one or more devices for use with an app.">
+        "<ph name="APP_NAME">$1<ex>Chrome Dev Editor</ex></ph>" is requesting access to one or more of your devices:
       </message>
       <message name="IDS_EXTENSION_USB_DEVICE_PRODUCT_NAME_AND_VENDOR" desc="USB device name and vendor string, used in various permission messages for USB devices.">
         <ph name="PRODUCT_NAME">$1<ex>SoundKnob</ex></ph> from <ph name="VENDOR_NAME">$2<ex>Griffin Technology</ex></ph>
-      </message>
-      <message name="IDS_HID_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the HID device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
-      {0, select,
-       single {Select a HID device} multiple {Select HID devices}
-       other {UNUSED}}
-      </message>
-      <message name="IDS_USB_DEVICE_PERMISSIONS_PROMPT_TITLE" desc="Title of the USB device selection dialog when the app will accept one or more selected devices. [ICU Syntax]">
-      {0, select,
-       single {Select a USB device} multiple {Select USB devices}
-       other {UNUSED}}
       </message>
 
       <!-- Extension task manager strings. Please keep alphabetized. -->

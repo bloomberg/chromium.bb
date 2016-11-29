@@ -521,6 +521,8 @@ static_library("extensions") {
     "data_deleter.h",
     "dev_mode_bubble_delegate.cc",
     "dev_mode_bubble_delegate.h",
+    "device_permissions_dialog_controller.cc",
+    "device_permissions_dialog_controller.h",
     "devtools_util.cc",
     "devtools_util.h",
     "display_info_provider_chromeos.cc",

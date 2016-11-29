@@ -14685,12 +14685,6 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       </message>
 
       <!-- Device permissions dialog strings. -->
-      <message name="IDS_DEVICE_PERMISSIONS_DIALOG_DEVICE_NAME_COLUMN" desc="Label for the table column displaying the name of a device.">
-        Device Name
-      </message>
-      <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SERIAL_NUMBER_COLUMN" desc="Label for the table column displaying the serial number of a device.">
-        Serial Number
-      </message>
       <message name="IDS_DEVICE_PERMISSIONS_DIALOG_SELECT" desc="Button confirming the devices selected for access by the app.">
         Select
       </message>

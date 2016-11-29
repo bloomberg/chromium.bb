@@ -87,10 +87,6 @@ ChooserContentView::ChooserContentView(
       views::StyledLabel::RangeStyleInfo::CreateForLink());
   turn_adapter_off_help_->SetVisible(false);
   AddChildView(turn_adapter_off_help_);
-  footnote_link_ = base::MakeUnique<views::StyledLabel>(help_text_, this);
-  footnote_link_->set_owned_by_client();
-  footnote_link_->AddStyleRange(
-      help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
 }
 
 ChooserContentView::~ChooserContentView() {
@@ -210,6 +206,7 @@ void ChooserContentView::OnAdapterEnabledChanged(bool enabled) {
   if (enabled) {
     SetGetHelpAndReScanLink();
   } else {
+    DCHECK(footnote_link_);
     footnote_link_->SetText(help_text_);
     footnote_link_->AddStyleRange(
         help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
@@ -240,6 +237,7 @@ void ChooserContentView::OnRefreshStateChanged(bool refreshing) {
     throbber_->Stop();
 
   if (refreshing) {
+    DCHECK(footnote_link_);
     footnote_link_->SetText(help_and_scanning_text_);
     footnote_link_->AddStyleRange(
         help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
@@ -284,6 +282,17 @@ bool ChooserContentView::IsDialogButtonEnabled(ui::DialogButton button) const {
          !table_view_->selection_model().empty();
 }
 
+views::StyledLabel* ChooserContentView::footnote_link() {
+  if (chooser_controller_->ShouldShowFootnoteView()) {
+    footnote_link_ = base::MakeUnique<views::StyledLabel>(help_text_, this);
+    footnote_link_->set_owned_by_client();
+    footnote_link_->AddStyleRange(
+        help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());
+  }
+
+  return footnote_link_.get();
+}
+
 void ChooserContentView::Accept() {
   std::vector<size_t> indices(
       table_view_->selection_model().selected_indices().begin(),
@@ -309,6 +318,7 @@ void ChooserContentView::UpdateTableView() {
 }
 
 void ChooserContentView::SetGetHelpAndReScanLink() {
+  DCHECK(footnote_link_);
   footnote_link_->SetText(help_and_re_scan_text_);
   footnote_link_->AddStyleRange(
       help_text_range_, views::StyledLabel::RangeStyleInfo::CreateForLink());

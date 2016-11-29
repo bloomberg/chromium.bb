@@ -9,7 +9,9 @@
 #include "base/single_thread_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
+#include "chrome/browser/extensions/device_permissions_dialog_controller.h"
 #include "chrome/browser/ui/browser_dialogs.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
@@ -63,4 +65,18 @@ void ChromeExtensionChooserDialog::ShowDialog(
         new ChooserDialogCocoa(web_contents_, std::move(chooser_controller));
     chooser_dialog->ShowDialog();
   }
+}
+
+void ChromeDevicePermissionsPrompt::ShowDialog() {
+  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+    return ChromeDevicePermissionsPrompt::ShowDialogViews();
+
+  std::unique_ptr<ChooserController> chooser_controller(
+      new DevicePermissionsDialogController(web_contents()->GetMainFrame(),
+                                            prompt()));
+
+  // These objects will delete themselves when the dialog closes.
+  ChooserDialogCocoa* chooser_dialog =
+      new ChooserDialogCocoa(web_contents(), std::move(chooser_controller));
+  chooser_dialog->ShowDialog();
 }

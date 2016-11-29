@@ -62,7 +62,7 @@ class ChooserContentView : public views::View,
   base::string16 GetWindowTitle() const;
   base::string16 GetDialogButtonLabel(ui::DialogButton button) const;
   bool IsDialogButtonEnabled(ui::DialogButton button) const;
-  views::StyledLabel* footnote_link() { return footnote_link_.get(); }
+  views::StyledLabel* footnote_link();
   void Accept();
   void Cancel();
   void Close();

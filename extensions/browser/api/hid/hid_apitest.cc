@@ -133,7 +133,17 @@ class TestDevicePermissionsPrompt
 
   void ShowDialog() override { prompt()->SetObserver(this); }
 
-  void OnDevicesChanged() override {
+  void OnDeviceAdded(size_t index, const base::string16& device_name) override {
+    OnDevicesChanged();
+  }
+
+  void OnDeviceRemoved(size_t index,
+                       const base::string16& device_name) override {
+    OnDevicesChanged();
+  }
+
+ private:
+  void OnDevicesChanged() {
     for (size_t i = 0; i < prompt()->GetDeviceCount(); ++i) {
       prompt()->GrantDevicePermission(i);
       if (!prompt()->multiple()) {

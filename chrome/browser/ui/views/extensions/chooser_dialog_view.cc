@@ -5,8 +5,11 @@
 #include "chrome/browser/ui/views/extensions/chooser_dialog_view.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chooser_controller/chooser_controller.h"
+#include "chrome/browser/extensions/api/chrome_device_permissions_prompt.h"
 #include "chrome/browser/extensions/chrome_extension_chooser_dialog.h"
+#include "chrome/browser/extensions/device_permissions_dialog_controller.h"
 #include "chrome/browser/ui/views/chooser_content_view.h"
 #include "components/constrained_window/constrained_window_views.h"
 #include "components/web_modal/web_contents_modal_dialog_manager.h"
@@ -129,4 +132,15 @@ void ChromeExtensionChooserDialog::ShowDialogImpl(
     constrained_window::ShowWebModalDialogViews(
         new ChooserDialogView(std::move(chooser_controller)), web_contents_);
   }
+}
+
+void ChromeDevicePermissionsPrompt::ShowDialogViews() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+
+  std::unique_ptr<ChooserController> chooser_controller(
+      new DevicePermissionsDialogController(web_contents()->GetMainFrame(),
+                                            prompt()));
+
+  constrained_window::ShowWebModalDialogViews(
+      new ChooserDialogView(std::move(chooser_controller)), web_contents());
 }

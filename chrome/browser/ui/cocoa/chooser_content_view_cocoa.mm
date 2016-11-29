@@ -452,13 +452,17 @@ void ChooserContentViewController::UpdateTableView() {
     separator_ = [self createSeparator];
 
     // Help button.
-    helpButton_ =
-        [self createHyperlinkButtonWithText:
-                  l10n_util::GetNSStringF(
-                      IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
-                      base::string16())];
-    CGFloat helpButtonWidth = NSWidth([helpButton_ frame]);
-    CGFloat helpButtonHeight = NSHeight([helpButton_ frame]);
+    CGFloat helpButtonWidth = 0.0f;
+    CGFloat helpButtonHeight = 0.0f;
+    if (chooserController_->ShouldShowFootnoteView()) {
+      helpButton_ =
+          [self createHyperlinkButtonWithText:
+                    l10n_util::GetNSStringF(
+                        IDS_DEVICE_CHOOSER_GET_HELP_LINK_WITH_SCANNING_STATUS,
+                        base::string16())];
+      helpButtonWidth = NSWidth([helpButton_ frame]);
+      helpButtonHeight = NSHeight([helpButton_ frame]);
+    }
 
     // Scanning message.
     scanningMessage_ = CreateLabel(
@@ -477,12 +481,17 @@ void ChooserContentViewController::UpdateTableView() {
 
     // ScollView embedding with TableView.
     CGFloat scrollViewWidth = kChooserWidth - 2 * kMarginX;
-    CGFloat scrollViewHeight = kChooserHeight - 2 * kMarginY -
-                               4 * kVerticalPadding - titleHeight -
-                               connectButtonHeight - helpButtonHeight;
+    CGFloat scrollViewHeight =
+        kChooserHeight - 2 * kMarginY -
+        (chooserController_->ShouldShowFootnoteView() ? 4 * kVerticalPadding
+                                                      : 2 * kVerticalPadding) -
+        titleHeight - connectButtonHeight - helpButtonHeight;
     CGFloat scrollViewOriginX = kMarginX;
-    CGFloat scrollViewOriginY = kMarginY + helpButtonHeight +
-                                3 * kVerticalPadding + connectButtonHeight;
+    CGFloat scrollViewOriginY =
+        kMarginY + helpButtonHeight +
+        (chooserController_->ShouldShowFootnoteView() ? 3 * kVerticalPadding
+                                                      : kVerticalPadding) +
+        connectButtonHeight;
     NSRect scrollFrame = NSMakeRect(scrollViewOriginX, scrollViewOriginY,
                                     scrollViewWidth, scrollViewHeight);
     scrollView_.reset([[NSScrollView alloc] initWithFrame:scrollFrame]);
@@ -556,7 +565,9 @@ void ChooserContentViewController::UpdateTableView() {
                                    kHorizontalPadding - connectButtonWidth -
                                    cancelButtonWidth;
     CGFloat connectButtonOriginY =
-        kMarginY + helpButtonHeight + 2 * kVerticalPadding;
+        kMarginY + helpButtonHeight +
+        (chooserController_->ShouldShowFootnoteView() ? 2 * kVerticalPadding
+                                                      : 0.0f);
     [connectButton_
         setFrameOrigin:NSMakePoint(connectButtonOriginX, connectButtonOriginY)];
     [connectButton_ setEnabled:NO];
@@ -569,50 +580,52 @@ void ChooserContentViewController::UpdateTableView() {
         setFrameOrigin:NSMakePoint(cancelButtonOriginX, cancelButtonOriginY)];
     [self addSubview:cancelButton_];
 
-    // Separator.
-    CGFloat separatorOriginX = 0.0f;
-    separatorOriginY_ = kMarginY + helpButtonHeight + kVerticalPadding;
-    [separator_
-        setFrameOrigin:NSMakePoint(separatorOriginX, separatorOriginY_)];
-    [self addSubview:separator_];
+    if (chooserController_->ShouldShowFootnoteView()) {
+      // Separator.
+      CGFloat separatorOriginX = 0.0f;
+      separatorOriginY_ = kMarginY + helpButtonHeight + kVerticalPadding;
+      [separator_
+          setFrameOrigin:NSMakePoint(separatorOriginX, separatorOriginY_)];
+      [self addSubview:separator_];
 
-    // Help button.
-    CGFloat helpButtonOriginX = kMarginX;
-    CGFloat helpButtonOriginY = (kVerticalPadding + kMarginY) / 2;
-    [helpButton_
-        setFrameOrigin:NSMakePoint(helpButtonOriginX, helpButtonOriginY)];
-    [helpButton_ setTarget:self];
-    [helpButton_ setAction:@selector(onHelpPressed:)];
-    [self addSubview:helpButton_];
+      // Help button.
+      CGFloat helpButtonOriginX = kMarginX;
+      CGFloat helpButtonOriginY = (kVerticalPadding + kMarginY) / 2;
+      [helpButton_
+          setFrameOrigin:NSMakePoint(helpButtonOriginX, helpButtonOriginY)];
+      [helpButton_ setTarget:self];
+      [helpButton_ setAction:@selector(onHelpPressed:)];
+      [self addSubview:helpButton_];
 
-    // Scanning message.
-    CGFloat scanningMessageOriginX =
-        kMarginX + helpButtonWidth - kHorizontalPadding / 2;
-    CGFloat scanningMessageOriginY = helpButtonOriginY;
-    [scanningMessage_ setFrameOrigin:NSMakePoint(scanningMessageOriginX,
-                                                 scanningMessageOriginY)];
-    [self addSubview:scanningMessage_];
-    [scanningMessage_ setHidden:YES];
+      // Scanning message.
+      CGFloat scanningMessageOriginX =
+          kMarginX + helpButtonWidth - kHorizontalPadding / 2;
+      CGFloat scanningMessageOriginY = helpButtonOriginY;
+      [scanningMessage_ setFrameOrigin:NSMakePoint(scanningMessageOriginX,
+                                                   scanningMessageOriginY)];
+      [self addSubview:scanningMessage_];
+      [scanningMessage_ setHidden:YES];
 
-    // Word connector.
-    CGFloat wordConnectorOriginX =
-        kMarginX + helpButtonWidth - kHorizontalPadding / 2;
-    CGFloat wordConnectorOriginY = helpButtonOriginY;
-    [wordConnector_
-        setFrameOrigin:NSMakePoint(wordConnectorOriginX, wordConnectorOriginY)];
-    [self addSubview:wordConnector_];
-    [wordConnector_ setHidden:YES];
+      // Word connector.
+      CGFloat wordConnectorOriginX =
+          kMarginX + helpButtonWidth - kHorizontalPadding / 2;
+      CGFloat wordConnectorOriginY = helpButtonOriginY;
+      [wordConnector_ setFrameOrigin:NSMakePoint(wordConnectorOriginX,
+                                                 wordConnectorOriginY)];
+      [self addSubview:wordConnector_];
+      [wordConnector_ setHidden:YES];
 
-    // Re-scan button.
-    CGFloat reScanButtonOriginX =
-        kMarginX + helpButtonWidth + wordConnectorWidth - kHorizontalPadding;
-    CGFloat reScanButtonOriginY = helpButtonOriginY;
-    [rescanButton_
-        setFrameOrigin:NSMakePoint(reScanButtonOriginX, reScanButtonOriginY)];
-    [rescanButton_ setTarget:self];
-    [rescanButton_ setAction:@selector(onRescan:)];
-    [self addSubview:rescanButton_];
-    [rescanButton_ setHidden:YES];
+      // Re-scan button.
+      CGFloat reScanButtonOriginX =
+          kMarginX + helpButtonWidth + wordConnectorWidth - kHorizontalPadding;
+      CGFloat reScanButtonOriginY = helpButtonOriginY;
+      [rescanButton_
+          setFrameOrigin:NSMakePoint(reScanButtonOriginX, reScanButtonOriginY)];
+      [rescanButton_ setTarget:self];
+      [rescanButton_ setAction:@selector(onRescan:)];
+      [self addSubview:rescanButton_];
+      [rescanButton_ setHidden:YES];
+    }
 
     chooserContentViewController_.reset(new ChooserContentViewController(
         chooserController_.get(), adapterOffHelpButton_.get(),

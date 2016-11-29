@@ -68,6 +68,9 @@ class ChooserController {
   // For WebBluetooth, it is a signal strength icon.
   virtual bool ShouldShowIconBeforeText() const;
 
+  // Returns if the chooser needs to show a footnote view.
+  virtual bool ShouldShowFootnoteView() const;
+
   // Returns if the chooser allows multiple items to be selected.
   virtual bool AllowMultipleSelection() const;
 

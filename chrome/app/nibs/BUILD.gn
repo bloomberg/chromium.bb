@@ -48,7 +48,6 @@ translated_xibs = [
 
 untranslated_xibs = [
   "BookmarkBarFolderWindow.xib",
-  "DevicePermissionsPrompt.xib",
   "FindBar.xib",
   "GlobalErrorBubble.xib",
   "InfoBar.xib",
