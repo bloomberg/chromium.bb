@@ -8,10 +8,16 @@
 #include <string>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
 #include "net/proxy/proxy_retry_info.h"
 #include "net/proxy/proxy_server.h"
 #include "url/gurl.h"
+
+namespace base {
+class TickClock;
+}
 
 namespace net {
 class HostPortPair;
@@ -30,18 +36,22 @@ class DataReductionProxyConfig;
 class DataReductionProxyConfigurator;
 class DataReductionProxyEventCreator;
 
-class DataReductionProxyDelegate : public net::ProxyDelegate {
+class DataReductionProxyDelegate
+    : public net::ProxyDelegate,
+      public net::NetworkChangeNotifier::IPAddressObserver {
  public:
   // ProxyDelegate instance is owned by io_thread. |auth_handler| and |config|
   // outlives this class instance.
-  explicit DataReductionProxyDelegate(
-      DataReductionProxyConfig* config,
-      const DataReductionProxyConfigurator* configurator,
-      DataReductionProxyEventCreator* event_creator,
-      DataReductionProxyBypassStats* bypass_stats,
-      net::NetLog* net_log);
+  DataReductionProxyDelegate(DataReductionProxyConfig* config,
+                             const DataReductionProxyConfigurator* configurator,
+                             DataReductionProxyEventCreator* event_creator,
+                             DataReductionProxyBypassStats* bypass_stats,
+                             net::NetLog* net_log);
 
   ~DataReductionProxyDelegate() override;
+
+  // Performs initialization on the IO thread.
+  void InitializeOnIOThread();
 
   // net::ProxyDelegate implementation:
   void OnResolveProxy(const GURL& url,
@@ -59,6 +69,8 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
       const net::HostPortPair& origin,
       const net::HostPortPair& proxy_server,
       const net::HttpResponseHeaders& response_headers) override;
+
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
  protected:
   // Protected so that these methods are accessible for testing.
@@ -102,6 +114,9 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   void RecordGetDefaultAlternativeProxy(
       DefaultAlternativeProxyStatus status) const;
 
+  // NetworkChangeNotifier::IPAddressObserver:
+  void OnIPAddressChanged() override;
+
   const DataReductionProxyConfig* config_;
   const DataReductionProxyConfigurator* configurator_;
   DataReductionProxyEventCreator* event_creator_;
@@ -110,7 +125,21 @@ class DataReductionProxyDelegate : public net::ProxyDelegate {
   // True if the use of alternate proxies is disabled.
   bool alternative_proxies_broken_;
 
+  // Tick clock used for obtaining the current time.
+  std::unique_ptr<base::TickClock> tick_clock_;
+
+  // True if the metrics related to the first request whose resolved proxy was a
+  // data saver proxy has been recorded. |first_data_saver_request_recorded_| is
+  // reset to false on IP address change events.
+  bool first_data_saver_request_recorded_;
+
+  // Set to the time when last IP address change event was received, or the time
+  // of initialization of |this|, whichever is later.
+  base::TimeTicks last_network_change_time_;
+
   net::NetLog* net_log_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyDelegate);
 };

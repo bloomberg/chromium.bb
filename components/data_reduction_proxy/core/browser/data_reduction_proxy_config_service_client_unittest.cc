@@ -145,7 +145,7 @@ class DataReductionProxyConfigServiceClientTest : public testing::Test {
 
     context_->set_client_socket_factory(mock_socket_factory_.get());
     test_context_->AttachToURLRequestContext(context_storage_.get());
-    delegate_ = test_context_->io_data()->CreateProxyDelegate();
+    delegate_ = test_context_->io_data()->CreateProxyDelegateForTesting();
     context_->set_proxy_delegate(delegate_.get());
 
     context_->Init();

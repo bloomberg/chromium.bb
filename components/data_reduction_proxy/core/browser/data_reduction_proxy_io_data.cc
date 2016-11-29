@@ -194,6 +194,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
+  proxy_delegate_->InitializeOnIOThread();
   if (config_client_.get())
     config_client_->InitializeOnIOThread(url_request_context_getter_);
   if (ui_task_runner_->BelongsToCurrentThread()) {
@@ -248,7 +249,7 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 }
 
 std::unique_ptr<DataReductionProxyDelegate>
-DataReductionProxyIOData::CreateProxyDelegate() const {
+DataReductionProxyIOData::CreateProxyDelegateForTesting() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return base::MakeUnique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),

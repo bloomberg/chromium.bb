@@ -291,7 +291,8 @@ class DataReductionProxyInterceptorEndToEndTest : public testing::Test {
             .Build();
     drp_test_context_->AttachToURLRequestContext(&context_storage_);
     context_.set_client_socket_factory(&mock_socket_factory_);
-    proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
+    proxy_delegate_ =
+        drp_test_context_->io_data()->CreateProxyDelegateForTesting();
     context_.set_proxy_delegate(proxy_delegate_.get());
     context_.Init();
     drp_test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();

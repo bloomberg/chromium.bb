@@ -84,7 +84,8 @@ class DataReductionProxyIOData : public DataReductionProxyEventStorageDelegate {
       std::unique_ptr<net::NetworkDelegate> wrapped_network_delegate,
       bool track_proxy_bypass_statistics);
 
-  std::unique_ptr<DataReductionProxyDelegate> CreateProxyDelegate() const;
+  std::unique_ptr<DataReductionProxyDelegate> CreateProxyDelegateForTesting()
+      const;
 
   // Sets user defined preferences for how the Data Reduction Proxy
   // configuration should be set. |at_startup| is true only

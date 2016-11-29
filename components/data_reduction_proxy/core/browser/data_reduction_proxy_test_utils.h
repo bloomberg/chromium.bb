@@ -21,6 +21,7 @@
 #include "base/time/time.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_bypass_stats.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_config_service_client.h"
+#include "components/data_reduction_proxy/core/browser/data_reduction_proxy_delegate.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_io_data.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_request_options.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_service.h"
@@ -205,6 +206,11 @@ class TestDataReductionProxyIOData : public DataReductionProxyIOData {
   }
   DataReductionProxyConfigServiceClient* config_client() const {
     return config_client_.get();
+  }
+
+  void set_proxy_delegate(
+      std::unique_ptr<DataReductionProxyDelegate> proxy_delegate) {
+    proxy_delegate_ = std::move(proxy_delegate);
   }
 
   void SetSimpleURLRequestContextGetter(

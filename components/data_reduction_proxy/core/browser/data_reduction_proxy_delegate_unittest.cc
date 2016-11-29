@@ -22,6 +22,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/test/histogram_tester.h"
 #include "base/test/mock_entropy_provider.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "base/values.h"
 #include "build/build_config.h"
@@ -37,6 +38,7 @@
 #include "components/variations/variations_associated_data.h"
 #include "net/base/host_port_pair.h"
 #include "net/base/net_errors.h"
+#include "net/base/network_change_notifier.h"
 #include "net/base/proxy_delegate.h"
 #include "net/http/http_request_headers.h"
 #include "net/http/http_response_headers.h"
@@ -613,10 +615,16 @@ class DataReductionProxyDelegateTest : public testing::Test {
     lofi_ui_service_ = lofi_ui_service.get();
     test_context_->io_data()->set_lofi_ui_service(std::move(lofi_ui_service));
 
-    proxy_delegate_ = test_context_->io_data()->CreateProxyDelegate();
+    // Create a mock network change notifier to make it possible to call its
+    // static methods.
+    network_change_notifier_.reset(net::NetworkChangeNotifier::CreateMock());
+    base::RunLoop().RunUntilIdle();
+
+    proxy_delegate_ = test_context_->io_data()->CreateProxyDelegateForTesting();
     context_.set_proxy_delegate(proxy_delegate_.get());
 
     context_.Init();
+    proxy_delegate_->InitializeOnIOThread();
 
     test_context_->EnableDataReductionProxyWithSecureProxyCheckSuccess();
   }
@@ -671,6 +679,10 @@ class DataReductionProxyDelegateTest : public testing::Test {
     return test_context_->config();
   }
 
+  DataReductionProxyDelegate* proxy_delegate() const {
+    return proxy_delegate_.get();
+  }
+
  private:
   int64_t GetSessionNetworkStatsInfoInt64(const char* key) const {
     const DataReductionProxyNetworkDelegate* drp_network_delegate =
@@ -695,7 +707,9 @@ class DataReductionProxyDelegateTest : public testing::Test {
   net::URLRequestContextStorage context_storage_;
 
   TestLoFiUIService* lofi_ui_service_;
-  std::unique_ptr<net::ProxyDelegate> proxy_delegate_;
+
+  std::unique_ptr<net::NetworkChangeNotifier> network_change_notifier_;
+  std::unique_ptr<DataReductionProxyDelegate> proxy_delegate_;
   std::unique_ptr<DataReductionProxyTestContext> test_context_;
 };
 
@@ -925,6 +939,57 @@ TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor200) {
 
   histogram_tester.ExpectUniqueSample(
       "DataReductionProxy.ConfigService.HTTPRequests", 1, 1);
+}
+
+TEST_F(DataReductionProxyDelegateTest, TimeToFirstHttpDataSaverRequest) {
+  std::unique_ptr<base::SimpleTestTickClock> tick_clock(
+      new base::SimpleTestTickClock());
+  base::SimpleTestTickClock* tick_clock_ptr = tick_clock.get();
+  proxy_delegate()->SetTickClockForTesting(std::move(tick_clock));
+
+  const char kResponseHeaders[] =
+      "HTTP/1.1 200 OK\r\n"
+      "Via: 1.1 Chrome-Compression-Proxy-Suffix\r\n"
+      "Content-Length: 10\r\n\r\n";
+
+  {
+    base::HistogramTester histogram_tester;
+    base::TimeDelta advance_time(base::TimeDelta::FromSeconds(1));
+    tick_clock_ptr->Advance(advance_time);
+
+    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
+                    10);
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.TimeToFirstDataSaverRequest",
+        advance_time.InMilliseconds(), 1);
+
+    // Second request should not result in recording of UMA.
+    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
+                    10);
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.TimeToFirstDataSaverRequest", 1);
+  }
+
+  {
+    base::HistogramTester histogram_tester;
+    // Third request should result in recording of UMA due to change in IP.
+    base::TimeDelta advance_time(base::TimeDelta::FromSeconds(2));
+    net::NetworkChangeNotifier::NotifyObserversOfIPAddressChangeForTests();
+    base::RunLoop().RunUntilIdle();
+
+    tick_clock_ptr->Advance(advance_time);
+    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
+                    10);
+    histogram_tester.ExpectUniqueSample(
+        "DataReductionProxy.TimeToFirstDataSaverRequest",
+        advance_time.InMilliseconds(), 1);
+
+    // Fourth request should not result in recording of UMA.
+    FetchURLRequest(GURL("http://example.com/path/"), nullptr, kResponseHeaders,
+                    10);
+    histogram_tester.ExpectTotalCount(
+        "DataReductionProxy.TimeToFirstDataSaverRequest", 1);
+  }
 }
 
 TEST_F(DataReductionProxyDelegateTest, OnCompletedSizeFor304) {
