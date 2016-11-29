@@ -85,10 +85,11 @@ class PpdProviderImpl : public PpdProvider {
         << "Can't have concurrent PpdProvider Resolve calls";
     resolve_inflight_ = true;
     auto cache_result = base::MakeUnique<base::Optional<base::FilePath>>();
+    auto* raw_cache_result_ptr = cache_result.get();
     bool post_result = io_task_runner_->PostTaskAndReply(
         FROM_HERE, base::Bind(&PpdProviderImpl::ResolveDoCacheLookup,
                               weak_factory_.GetWeakPtr(), ppd_reference,
-                              cache_result.get()),
+                              raw_cache_result_ptr),
         base::Bind(&PpdProviderImpl::ResolveCacheLookupDone,
                    weak_factory_.GetWeakPtr(), ppd_reference, cb,
                    std::move(cache_result)));
@@ -104,9 +105,10 @@ class PpdProviderImpl : public PpdProvider {
     CHECK(!query_inflight_)
         << "Can't have concurrent PpdProvider QueryAvailable calls";
     query_inflight_ = true;
+    auto* raw_cache_result_ptr = cache_result.get();
     CHECK(io_task_runner_->PostTaskAndReply(
         FROM_HERE, base::Bind(&PpdProviderImpl::QueryAvailableDoCacheLookup,
-                              weak_factory_.GetWeakPtr(), cache_result.get()),
+                              weak_factory_.GetWeakPtr(), raw_cache_result_ptr),
         base::Bind(&PpdProviderImpl::QueryAvailableCacheLookupDone,
                    weak_factory_.GetWeakPtr(), cb, std::move(cache_result))));
   }
@@ -136,6 +138,7 @@ class PpdProviderImpl : public PpdProvider {
   void QueryAvailableDoCacheLookup(
       base::Optional<const PpdProvider::AvailablePrintersMap*>* cache_result)
       const {
+    DCHECK(cache_result);
     auto tmp = cache_->FindAvailablePrinters();
     if (tmp != nullptr) {
       *cache_result = tmp;
