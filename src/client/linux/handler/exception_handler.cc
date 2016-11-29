@@ -424,7 +424,7 @@ int ExceptionHandler::ThreadEntry(void *arg) {
 
 // This function runs in a compromised context: see the top of the file.
 // Runs on the crashing thread.
-bool ExceptionHandler::HandleSignal(int sig, siginfo_t* info, void* uc) {
+bool ExceptionHandler::HandleSignal(int /*sig*/, siginfo_t* info, void* uc) {
   if (filter_ && !filter_(callback_context_))
     return false;
 
