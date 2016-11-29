@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Bluetooth デバイスと USB デバイスを検索しています...</translation>
 <translation id="1056898198331236512">警告</translation>
 <translation id="1056982457359827501">Chrome アプリで BLE Advertising を有効にします。BLE Advertising は Bluetooth Low Energy 機能の通常使用の妨げとなる場合があります。</translation>
-<translation id="1058325955712687476">サイトとの通信を記録し通信状況に応じてリソースを割り当てる、サイト エンゲージメント サービスを有効にします。</translation>
 <translation id="1058418043520174283"><ph name="COUNT" /> 件のうち <ph name="INDEX" /> 番目</translation>
 <translation id="1062407476771304334">置換</translation>
 <translation id="1062866675591297858">監視対象ユーザーを管理するには<ph name="BEGIN_LINK" />監視対象ユーザーのダッシュボード<ph name="END_LINK" />を使用します。</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> 件のファイルをインポートしています...</translation>
 <translation id="1352103415082130575">タイ語キーボード（Pattachote）</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">マテリアル デザインのストレージ マネージャ</translation>
 <translation id="1353966721814789986">起動ページ</translation>
 <translation id="1354868058853714482">Adobe Reader のバージョンが古いため安全でない可能性があります。</translation>
 <translation id="1355408554203439639">3D ソフトウェア ラスタライザ</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Identity API トークン キャッシュ</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">詳細: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">ポインタ イベント v1 の情報取得</translation>
 <translation id="1480041086352807611">デモ モード</translation>
 <translation id="1481244281142949601">適切なサンドボックスを使用しています。</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> 枚の新しい写真をバックアップする準備ができました</translation>
@@ -886,7 +883,6 @@
 <translation id="2177950615300672361">シークレット タブ: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">認証局が侵害された</translation>
 <translation id="218070003709087997">印刷部数を数値（1～999）で指定してください。</translation>
-<translation id="218492098606937156">タッチ イベントを有効にする</translation>
 <translation id="2187317261103489799">検出（デフォルト）</translation>
 <translation id="2187895286714876935">サーバー証明書インポート エラー</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> を開く</translation>
@@ -1042,7 +1038,6 @@
 <translation id="2367972762794486313">アプリを表示</translation>
 <translation id="2371076942591664043">ダウンロードしたら開く(&amp;D)</translation>
 <translation id="2372036074421194686">お使いのパソコンで迷惑プログラム（<ph name="UWS_NAME" />）が見つかりました。Chrome クリーンアップ ツールでこのプログラムを削除できる可能性があります。</translation>
-<translation id="2375701438512326360">タッチスクリーンのサポートが常に有効または無効になるように、または起動時にタッチスクリーンが検出されたときに有効になるように強制します（自動、デフォルト）。</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> 個のファイルを選択</translation>
 <translation id="2378982052244864789">拡張機能のディレクトリを選択してください。</translation>
 <translation id="2379281330731083556">システム ダイアログを使用して印刷... <ph name="SHORTCUT_KEY" /></translation>
@@ -2086,7 +2081,6 @@
 <translation id="3648460724479383440">選択されているラジオボタン</translation>
 <translation id="3649138363871392317">写真を撮りました</translation>
 <translation id="3650242103421962931">線形</translation>
-<translation id="3653069516296104653">タッチポインタ イベントの暗黙的な取得を無効にします。</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> によるマイクへのアクセスを引き続き許可する</translation>
 <translation id="3654045516529121250">ユーザー補助設定の読み取り</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{1 個のファイルに永続的にアクセスできます。}other{# 個のファイルに永続的にアクセスできます。}}</translation>
@@ -2129,7 +2123,6 @@
 <translation id="3709244229496787112">ダウンロードの完了前に、ブラウザがシャットダウンされました。</translation>
 <translation id="3711895659073496551">停止する</translation>
 <translation id="3712897371525859903">名前を付けてページを保存(&amp;A)...</translation>
-<translation id="3713494718070140825">危険なアプリやサイトの検出に役立てるために一部のシステム情報やページのコンテンツを Google に<ph name="BEGIN_WHITEPAPER_LINK" />自動送信<ph name="END_WHITEPAPER_LINK" />する。<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">ウェブ カレンダー</translation>
 <translation id="3715597595485130451">Wi-Fi 接続</translation>
 <translation id="3716615839203649375">許可</translation>
@@ -2478,13 +2471,11 @@
 <translation id="418179967336296930">ロシア語表音（YaZHert）キーボード</translation>
 <translation id="4181841719683918333">言語</translation>
 <translation id="4184885522552335684">ディスプレイをドラッグして移動</translation>
-<translation id="4188447344915957833">マテリアル デザインの設定でストレージ マネージャを有効にします。</translation>
 <translation id="4189406272289638749">拡張機能 &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; がこの設定を制御しています。</translation>
 <translation id="4193154014135846272">Google ドキュメント</translation>
 <translation id="4193182321948161343">マテリアル デザイン ユーザー マネージャを有効にする</translation>
 <translation id="4193297030838143153">新しい請求先の住所...</translation>
 <translation id="4194570336751258953">タップによるクリックを有効にする</translation>
-<translation id="4195621107636847694">サイト エンゲージメント サービス</translation>
 <translation id="4195643157523330669">新しいタブで開く</translation>
 <translation id="4195814663415092787">前回開いていたページを開く</translation>
 <translation id="4197674956721858839">zip 圧縮</translation>

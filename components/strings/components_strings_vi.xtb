@@ -706,7 +706,6 @@ Lưu ý! Chế độ ẩn danh <ph name="SHORTCUT_KEY" /> có thể hữu ích v
 <translation id="9050666287014529139">Cụm mật khẩu</translation>
 <translation id="9065203028668620118">Chỉnh sửa</translation>
 <translation id="9068849894565669697">Chọn màu</translation>
-<translation id="9092364396508701805">Trang <ph name="HOST_NAME" /> hiện không hoạt động</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> thường sử dụng mã hóa để bảo vệ thông tin của bạn. Khi Chromium cố gắng kết nối với <ph name="SITE" /> tại thời điểm này, trang web đã gửi lại thông tin đăng nhập không chính xác và bất thường. Điều này có thể xảy ra khi kẻ tấn công đang cố gắng giả mạo là <ph name="SITE" /> hoặc màn hình đăng nhập Wi-Fi đã làm gián đoạn kết nối. Thông tin của bạn vẫn an toàn do Chromium đã ngừng kết nối trước khi bất kỳ dữ liệu nào được trao đổi.</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9148507642005240123">&amp;Hoàn tác chỉnh sửa</translation>

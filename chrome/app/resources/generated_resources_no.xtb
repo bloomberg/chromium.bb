@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Søker etter Bluetooth og USB-enheter …</translation>
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1056982457359827501">Slår på BLE-annonsering i Chrome-apper. BLE-annonsering kan komme i konflikt med vanlig bruk av Bluetooth Low Energy-funksjoner.</translation>
-<translation id="1058325955712687476">Slår på tjenesten for nettstedengasjement, som registrerer interaksjon med nettsteder og tildeler ressurser i samsvar med disse dataene.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> av <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Erstatt</translation>
 <translation id="1062866675591297858">Administrer de administrerte brukerne dine via <ph name="BEGIN_LINK" />oversikten for administrerte brukere<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT" /> filer ...</translation>
 <translation id="1352103415082130575">Thai-tastatur (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">«Material design»-lagringsbehandling</translation>
 <translation id="1353966721814789986">Oppstartsider</translation>
 <translation id="1354868058853714482">Adobe Reader er utdatert og kan være usikkert.</translation>
 <translation id="1355408554203439639">Programvarebasert 3D-rasterisering</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Tokenbuffer for identitets-API</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Oppfanging av spesifikasjoner for pointer-events v1</translation>
 <translation id="1480041086352807611">Demo-modus</translation>
 <translation id="1481244281142949601">Du har tilstrekkelig sandkassebeskyttelse.</translation>
 <translation id="1482124012545051544">Klar til å sikkerhetskopiere <ph name="FILE_COUNT" /> nye bilder</translation>
@@ -695,7 +692,7 @@
 <translation id="1895934970388272448">Du må bekrefte registreringen på skriveren for å fullføre denne prosessen – sjekk det nå.</translation>
 <translation id="1897762215429052132">Konfigurer nettverkstilkobling, språk, tastaturoppsett med mer</translation>
 <translation id="189967228374787259">Pakker «progressive nettprogrammer» så de blir mer integrert i Android. Det brukes en Chrome-tjener til å pakke nettsteder.
-        I Chrome Canary og Chrome Dev krever dette at «Untrusted sources» (Ikke-klarerte kilder) aktiveres i sikkerhetsinnstillingene for Android.</translation>
+        I Chrome Canary og Chrome Dev krever dette at «Untrusted sources» (Ikke-klarerte kilder) slås på i sikkerhetsinnstillingene for Android.</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE" /> – <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1901303067676059328">Marker &amp;alt</translation>
 <translation id="1901769927849168791">SD-kort oppdaget</translation>
@@ -882,7 +879,6 @@
 <translation id="2177950615300672361">Inkognitofane: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Sertifiseringsinstans-kompromiss</translation>
 <translation id="218070003709087997">Bruk et tall for å angi hvor mange eksemplarer som skal skrives ut (1–999).</translation>
-<translation id="218492098606937156">Aktivér berøringshendelser</translation>
 <translation id="2187317261103489799">Oppdag (standard)</translation>
 <translation id="2187895286714876935">Feil ved import av tjenersertifikat</translation>
 <translation id="2188881192257509750">Åpne <ph name="APPLICATION" /></translation>
@@ -1038,7 +1034,6 @@ Når du har opprettet en ny administrert bruker, kan du når som helst – og fr
 <translation id="2367972762794486313">Vis apper</translation>
 <translation id="2371076942591664043">Åpne når ne&amp;dlastingen er ferdig</translation>
 <translation id="2372036074421194686">Chrome har funnet et uønsket program (<ph name="UWS_NAME" />) på datamaskinen. Du kan prøve å fjerne dette programmet med opprydningsverktøyet for Chrome.</translation>
-<translation id="2375701438512326360">Tving støtten for berøringsskjerm til å alltid være aktivert eller deaktivert, eller til å aktiveres når en berøringsskjerm oppdages ved oppstart (automatisk standard).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="2378982052244864789">Velg katalog for utvidelsen.</translation>
 <translation id="2379281330731083556">Skriv ut med systemdialogen <ph name="SHORTCUT_KEY" /></translation>
@@ -2080,7 +2075,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Valgt alternativknapp</translation>
 <translation id="3649138363871392317">Bildet er tatt</translation>
 <translation id="3650242103421962931">Lineær</translation>
-<translation id="3653069516296104653">Slår av implisitt oppfanging av berørings-/pekerhendelser</translation>
 <translation id="3653999333232393305">Fortsett å tillate <ph name="HOST" /> å bruke mikrofonen din</translation>
 <translation id="3654045516529121250">lese tilgjengelighetsinnstillingene dine</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent tilgang til én fil.}other{Den har permanent tilgang til # filer.}}</translation>
@@ -2123,7 +2117,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Nettleseren ble lukket før nedlastingen var ferdig.</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3712897371525859903">L&amp;agre side som...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Send automatisk<ph name="END_WHITEPAPER_LINK" /> noe systeminformasjon og sideinnhold til Google for å bidra til å oppdage farlige apper og nettsteder. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">nettkalender</translation>
 <translation id="3715597595485130451">Tilkobling til Wi-Fi</translation>
 <translation id="3716615839203649375">tillat</translation>
@@ -2470,13 +2463,11 @@ Alle brukere må logge av for å fortsette.</translation>
 <translation id="418179967336296930">Russisk Fonetisk (YaZHert) tastatur</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4184885522552335684">Dra i skjermene for å flytte dem</translation>
-<translation id="4188447344915957833">Slår på lagringsbehandlingen i «material design»-innstillingene.</translation>
 <translation id="4189406272289638749">Denne innstillingen kontrolleres av utvidelsen &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;.</translation>
 <translation id="4193154014135846272">Google-dokument</translation>
 <translation id="4193182321948161343">Slå på «material design»-brukerbehandlingen</translation>
 <translation id="4193297030838143153">Ny fakturaadresse</translation>
 <translation id="4194570336751258953">Aktiver berøringsklikk</translation>
-<translation id="4195621107636847694">Tjeneste for nettstedsengasjement</translation>
 <translation id="4195643157523330669">Åpne i ny fane</translation>
 <translation id="4195814663415092787">Fortsett der du slapp</translation>
 <translation id="4197674956721858839">Zip-utvalg</translation>

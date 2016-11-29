@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Пошук пристроїв Bluetooth і USB…</translation>
 <translation id="1056898198331236512">Застереження</translation>
 <translation id="1056982457359827501">Увімкнути BLE Advertising у додатках Chrome. BLE Advertising може заважати роботі функцій у режимі енергозбереження Bluetooth.</translation>
-<translation id="1058325955712687476">Вмикається служба Site Engagement Service, яка реєструє взаємодію із сайтами та відповідно розподіляє ресурси.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> з <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Замінити</translation>
 <translation id="1062866675591297858">Керуйте своїми контрольованими користувачами на <ph name="BEGIN_LINK" />Інформаційній панелі контрольованих користувачів<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Імпортування файлів (<ph name="FILE_COUNT" />)…</translation>
 <translation id="1352103415082130575">Тайська клавіатура (паттачоте)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Адміністратор пам’яті матеріального дизайну</translation>
 <translation id="1353966721814789986">Сторінки запуску</translation>
 <translation id="1354868058853714482">Версія Adobe Reader застаріла й може бути незахищена.</translation>
 <translation id="1355408554203439639">3D-раструвальник програмного забезпечення</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Кеш маркера API ідентифікації</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Деталі: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Запис деталей події вказівника версії 1</translation>
 <translation id="1480041086352807611">Демонстраційний режим</translation>
 <translation id="1481244281142949601">Ви достатньо захищені механізмом ізольованого програмного середовища.</translation>
 <translation id="1482124012545051544">Нові фотографії (<ph name="FILE_COUNT" />) готові до імпорту</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">Анонімна вкладка: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Дискредитація ЦС</translation>
 <translation id="218070003709087997">Використовуйте число, щоб указати кількість копій для друку (від 1 до 999).</translation>
-<translation id="218492098606937156">Увімкнути сенсорні події</translation>
 <translation id="2187317261103489799">Визначати (за умовчанням)</translation>
 <translation id="2187895286714876935">Помилка імпортування сертифіката сервера</translation>
 <translation id="2188881192257509750">Відкрити <ph name="APPLICATION" /></translation>
@@ -1041,7 +1037,6 @@
 <translation id="2367972762794486313">Показати програми</translation>
 <translation id="2371076942591664043">Відкрити коли &amp;виконано</translation>
 <translation id="2372036074421194686">На вашому комп’ютері встановлено небажану програму (<ph name="UWS_NAME" />). Видаліть її за допомогою Майстра очищення Chrome.</translation>
-<translation id="2375701438512326360">Підтримка сенсорного екрана завжди ввімкнена чи вимкнена або вмикається, якщо сенсорний екран виявлено під час запуску (за умовчанням – автоматично).</translation>
 <translation id="2378075407703503998">Вибрано файлів: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Виберіть каталог розширення.</translation>
 <translation id="2379281330731083556">Друкувати за допомогою діалогового вікна системи... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@
 <translation id="3648460724479383440">Вибраний перемикач</translation>
 <translation id="3649138363871392317">Фотографію збережено</translation>
 <translation id="3650242103421962931">Лінійна анімація</translation>
-<translation id="3653069516296104653">Вимикається неявний запис подій дотику вказівника.</translation>
 <translation id="3653999333232393305">Продовжити надавати хосту <ph name="HOST" /> доступ до вашого мікрофона</translation>
 <translation id="3654045516529121250">Переглядати налаштування доступності</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Має постійний доступ до одного файлу.}one{Має постійний доступ до # файлу.}few{Має постійний доступ до # файлів.}many{Має постійний доступ до # файлів.}other{Має постійний доступ до # файлу.}}</translation>
@@ -2128,7 +2122,6 @@
 <translation id="3709244229496787112">Завантаження не закінчилося через завершення роботи веб-переглядача.</translation>
 <translation id="3711895659073496551">Призупинити</translation>
 <translation id="3712897371525859903">Зберегти сторінку &amp;як...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Автоматично надсилати<ph name="END_WHITEPAPER_LINK" /> в Google деяку інформацію про систему та вміст сторінок, щоб допомогти виявляти небезпечні додатки й сайти. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">веб-календар</translation>
 <translation id="3715597595485130451">Під’єднання до мережі Wi-Fi</translation>
 <translation id="3716615839203649375">дозволити</translation>
@@ -2477,13 +2470,11 @@
 <translation id="418179967336296930">Російська фонетична клавіатура (YaZHert)</translation>
 <translation id="4181841719683918333">Мови</translation>
 <translation id="4184885522552335684">Потягніть, щоб перемістити дисплей</translation>
-<translation id="4188447344915957833">Вмикає адміністратора пам’яті в налаштуваннях матеріального дизайну.</translation>
 <translation id="4189406272289638749">Розширення &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; контролює це налаштування.</translation>
 <translation id="4193154014135846272">Документ Google</translation>
 <translation id="4193182321948161343">Увімкнути матеріальний дизайн диспетчера користувачів</translation>
 <translation id="4193297030838143153">Нова платіжна адреса…</translation>
 <translation id="4194570336751258953">Увімкнути функцію "торкнутися, щоб натиснути"</translation>
-<translation id="4195621107636847694">Перевірка взаємодії користувачів із сайтом</translation>
 <translation id="4195643157523330669">Відкрити в новій вкладці</translation>
 <translation id="4195814663415092787">Продовжити з місця зупинки</translation>
 <translation id="4197674956721858839">Вибір файлів для архівування</translation>

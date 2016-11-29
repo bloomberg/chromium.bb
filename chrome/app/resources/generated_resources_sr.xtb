@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Тражимо Bluetooth и USB уређаје...</translation>
 <translation id="1056898198331236512">Упозорење</translation>
 <translation id="1056982457359827501">Омогућава BLE оглашавање у Chrome апликацијама. BLE оглашавање може да омета стандардно коришћење функција Bluetooth-а са ниском потрошњом.</translation>
-<translation id="1058325955712687476">Омогућава Услугу за ангажовање са сајтовима, која евидентира интеракцију са сајтовима и у складу са тим додељује ресурсе.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> од <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Замени</translation>
 <translation id="1062866675591297858">Управљајте корисницима под надзором преко <ph name="BEGIN_LINK" />Контролне табле за кориснике под надзором<ph name="END_LINK" />.</translation>
@@ -259,7 +258,6 @@
 <translation id="1351692861129622852">Увозе се датотеке (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">Тајска тастатура (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Менаџер меморијског простора за материјални дизајн</translation>
 <translation id="1353966721814789986">Странице приликом покретања</translation>
 <translation id="1354868058853714482">Adobe Reader је застарео и можда није безбедан.</translation>
 <translation id="1355408554203439639">3D софтверска алатка за растеризацију</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Кеш токена API-ја за идентитет</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Детаљи: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Снимање спецификација верзије 1 догађаја показивача</translation>
 <translation id="1480041086352807611">Режим демонстрације</translation>
 <translation id="1481244281142949601">Налазите се у адекватном заштићеном окружењу.</translation>
 <translation id="1482124012545051544">Све је спремно за прављење резервних копија нових слика (<ph name="FILE_COUNT" />)</translation>
@@ -884,7 +881,6 @@
 <translation id="2177950615300672361">Картица Без архивирања: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA је компромитован</translation>
 <translation id="218070003709087997">Наведите број примерака за штампање (1 до 999).</translation>
-<translation id="218492098606937156">Омогући догађаје са додиром</translation>
 <translation id="2187317261103489799">Откриј (подразумевано)</translation>
 <translation id="2187895286714876935">Грешка при увозу серверског сертификата</translation>
 <translation id="2188881192257509750">Отвори <ph name="APPLICATION" /></translation>
@@ -1040,7 +1036,6 @@
 <translation id="2367972762794486313">Прикажите апликације</translation>
 <translation id="2371076942591664043">Отвори кад буде &amp;довршено</translation>
 <translation id="2372036074421194686">Chrome је утврдио да је на рачунару инсталиран нежељени програм (<ph name="UWS_NAME" />). Можда ћете моћи да га уклоните ако покренете Алатку за чишћење Chrome-а.</translation>
-<translation id="2375701438512326360">Принудно подешава подршку за додирни екран да увек буде омогућена или онемогућена, или да буде омогућена када се додирни екран открива при покретању (Аутоматски, подразумевано подешавање).</translation>
 <translation id="2378075407703503998">Изабраних датотека: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Избор директоријума додатка.</translation>
 <translation id="2379281330731083556">Штампај помоћу системског дијалога... <ph name="SHORTCUT_KEY" /></translation>
@@ -2083,7 +2078,6 @@
 <translation id="3648460724479383440">Изабрано дугме за избор</translation>
 <translation id="3649138363871392317">Слика је снимљена</translation>
 <translation id="3650242103421962931">Линеарно</translation>
-<translation id="3653069516296104653">Онемогућава имплицитно снимање догађаја показивача са додиром.</translation>
 <translation id="3653999333232393305">И даље дозвољавај да <ph name="HOST" /> приступа микрофону</translation>
 <translation id="3654045516529121250">Читање подешавања приступачности</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Има сталан приступ једној датотеци.}one{Има сталан приступ # датотеци.}few{Има сталан приступ за # датотеке.}other{Има сталан приступ за # датотека.}}</translation>
@@ -2126,7 +2120,6 @@
 <translation id="3709244229496787112">Прегледач је затворен пре него што је преузимање завршено.</translation>
 <translation id="3711895659073496551">Искључи</translation>
 <translation id="3712897371525859903">Сачувај страницу &amp;као...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Аутоматски шаљи<ph name="END_WHITEPAPER_LINK" /> неке системске информације и садржај страница Google-у да бисмо открили опасне апликације и сајтове. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">веб календар</translation>
 <translation id="3715597595485130451">Повезивање са Wi-Fi мрежом</translation>
 <translation id="3716615839203649375">дозволи</translation>
@@ -2475,13 +2468,11 @@
 <translation id="418179967336296930">Руска фонетска тастатура (YaZHert)</translation>
 <translation id="4181841719683918333">Језици</translation>
 <translation id="4184885522552335684">Превлачите да бисте померили приказ</translation>
-<translation id="4188447344915957833">Омогућава менаџер меморијског простора у подешавањима материјалног дизајна.</translation>
 <translation id="4189406272289638749">Додатак, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, контролише ово подешавање.</translation>
 <translation id="4193154014135846272">Google документ</translation>
 <translation id="4193182321948161343">Омогући менаџера корисника за материјални дизајн</translation>
 <translation id="4193297030838143153">Нова адреса за обрачун...</translation>
 <translation id="4194570336751258953">Омогући функцију „додирни-за-клик“</translation>
-<translation id="4195621107636847694">Услуга за интеракцију са сајтовима</translation>
 <translation id="4195643157523330669">Отвори у новој картици</translation>
 <translation id="4195814663415092787">Настави претходну сесију</translation>
 <translation id="4197674956721858839">Избор за додавање у zip датотеку</translation>
@@ -5084,7 +5075,7 @@
 <translation id="7772032839648071052">Потврди приступну фразу</translation>
 <translation id="7772127298218883077">О <ph name="PRODUCT_NAME" /> прегледачу</translation>
 <translation id="7773726648746946405">Меморијски простор сесије</translation>
-<translation id="7774497835322490043">Омогућите члан за уклањање грешака засновано на GDB-у. Тиме се зауставља Native Client апликација при покретању и чека се на nacl-gdb (из NaCl комплета за развој софтвера) који ће јој бити приложен.</translation>
+<translation id="7774497835322490043">Омогућите члан за уклањање грешака засновано на GDB-у. Тиме се зауставља Native Client апликација при покретању и чека се на nacl-gdb (из NaCl пакета за развој софтвера) који ће јој бити приложен.</translation>
 <translation id="7781335840981796660">Сви кориснички налози и локални подаци ће бити уклоњени.</translation>
 <translation id="7782102568078991263">Нема више предлога са Google-а</translation>
 <translation id="7782250248211791706">Прекини везу са Google налогом</translation>

@@ -140,7 +140,6 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="238909021488141516">Ocorreu um erro ao transferir o conteúdo.</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2433507940547922241">Aspeto</translation>
-<translation id="2439248520967274840">Está a iniciar sessão em <ph name="TO_ACCOUNT" />. Alguns dos seus marcadores, histórico, palavras-passe e outras definições existentes foram sincronizados anteriormente com <ph name="FROM_ACCOUNT" />. O que pretende fazer com os dados existentes?</translation>
 <translation id="2440823041667407902">Acesso à localização</translation>
 <translation id="2476578072172137802">Definições do site</translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -188,7 +187,6 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="2996291259634659425">Criar frase de acesso</translation>
 <translation id="2996809686854298943">URL obrigatório</translation>
 <translation id="300526633675317032">Esta ação elimina os <ph name="SIZE_IN_KB" /> de armazenamento do Website.</translation>
-<translation id="3012408695656332380">Substituir os dados deste dispositivo pelos dados de <ph name="TO_ACCOUNT" />. Pode obter os seus dados existentes ao alternar novamente para <ph name="FROM_ACCOUNT" />, mas perderá os dados criados desde que terminou sessão.</translation>
 <translation id="3029704984691124060">As frases de acesso não coincidem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obter ajuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir no separador anónimo</translation>
@@ -215,7 +213,6 @@ Pode controlar a Web física nas Definições do Chrome.
 <translation id="3320021301628644560">Adicionar endereço de faturação</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3350687908700087792">Fechar todos os separadores de navegação anónima</translation>
-<translation id="3351441609270267898">Importar dados existentes</translation>
 <translation id="3365671512111106261">Não disponível quando a Poupança de dados está ativada</translation>
 <translation id="3367813778245106622">Iniciar sessão novamente para iniciar a sincronização</translation>
 <translation id="3384347053049321195">Partilhar imagem</translation>
@@ -394,7 +391,7 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5335288049665977812">Permitir que os sites executem JavaScript (recomendado)</translation>
 <translation id="5345040418939504969"><ph name="BOOKMARK_TITLE" /> eliminado</translation>
 <translation id="5345083863238459644">O acesso à localização também está <ph name="BEGIN_LINK" />desativado neste dispositivo<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Experiência Adicionar ao ecrã principal melhorada</translation>
+<translation id="5349103022427743704">Experiência "Adicionar ao ecrã principal" melhorada</translation>
 <translation id="53553865750799677">Endereço de recolha não suportado. Selecione um endereço diferente.</translation>
 <translation id="5372829067651257087">URL copiado.</translation>
 <translation id="5400569084694353794">Ao utilizar esta aplicação, concorda com os <ph name="BEGIN_LINK1" />Termos de Utilização<ph name="END_LINK1" /> e o <ph name="BEGIN_LINK2" />Aviso de Privacidade<ph name="END_LINK2" /> do Chrome.</translation>
@@ -426,7 +423,6 @@ Para ajustar o termo de pesquisa, prima continuamente para selecionar. Para refi
 <translation id="5676636989614905379">Não é possível reproduzir vídeo no <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">Ups! Não foi possível traduzir esta página.</translation>
-<translation id="5708031556037168012">Manter os dados existentes no dispositivo e importar permanentemente os dados para <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">As páginas que visualizar em separadores de navegação anónima não serão guardadas no histórico do navegador, no armazenamento de cookies ou no histórico de pesquisas depois de fechar todos os separadores de navegação anónima. Os ficheiros que transferir ou os marcadores que criar manter-se-ão.
 
 No entanto, a navegação não é invisível. Passar para o modo de navegação anónima não oculta a navegação do empregador ou do prestador de serviços de Internet, nem os Websites que visitar.</translation>
@@ -563,7 +559,6 @@ Por exemplo, alguns Websites podem responder a este pedido ao mostrar-lhe anúnc
 <translation id="7062545763355031412">Aceitar e mudar de contas</translation>
 <translation id="7063006564040364415">Não foi possível estabelecer ligação ao servidor de sincronização.</translation>
 <translation id="7064851114919012435">Informações de contacto</translation>
-<translation id="7081639897063626814">Manter os dados existentes separados</translation>
 <translation id="7094922512924405309">Não foram encontradas páginas da Web física próximas</translation>
 <translation id="7138678301420049075">Outros</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -736,12 +731,10 @@ Para obter licenças novas, ligue-se à Internet e reproduza o conteúdo transfe
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que os sites enviem notificações (recomendado)</translation>
-<translation id="9141510419986760385">Está a mudar as contas de sincronização de <ph name="FROM_ACCOUNT" /> para <ph name="TO_ACCOUNT" />. O que pretende fazer com os seus marcadores, histórico, palavras-passe e outras definições existentes?</translation>
 <translation id="9154194610265714752">Atualizado</translation>
 <translation id="917685106653909562">Páginas da Web física próximas</translation>
 <translation id="9187199695613236444">Visualização compatível com dispositivos móveis</translation>
 <translation id="9188680907066685419">Terminar sessão na conta gerida</translation>
-<translation id="9198708126133947749">Substitua os dados deste dispositivo pelos dados da conta <ph name="TO_ACCOUNT" />. Pode obter os dados existentes ao alternar novamente para <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="932327136139879170">Página inicial</translation>

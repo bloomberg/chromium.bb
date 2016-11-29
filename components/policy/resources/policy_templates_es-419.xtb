@@ -769,9 +769,6 @@ Si esta política no se configura, se utilizará 'Permitir complementos' y el us
 <translation id="3322771899429619102">Te permite configurar una lista de patrones de URL que especifican los sitios que están autorizados a utilizar la generación de claves. Si un patrón de URL tiene configurada la política "KeygenBlockedForUrls", se anulan estas excepciones.
 
           Si esta política no se configura, se usará el valor global predeterminado para todos los sitios, ya sea de la política "DefaultKeygenSetting" si está configurada o de otro tipo de configuración personal del usuario.</translation>
-<translation id="3322902067538988734">Si esta política se establece como verdadera, el usuario deberá acceder a <ph name="PRODUCT_NAME" /> con su perfil antes de usar el navegador. El valor predeterminado BrowserGuestModeEnabled se establecerá como falso.
-
-      Si esta política se establece como falsa o no se configura, el usuario podrá usar el navegador sin acceder a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Establece la frecuencia con la que el usuario debe ingresar la contraseña para usar el desbloqueo rápido.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de manera predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no requieren contraseña.
@@ -1580,14 +1577,6 @@ desactivarlo).</translation>
       De lo contrario, se puede establecer en uno de los siguientes valores: "sslv3", "tls1", "tls1.1" o "tls1.2". Cuando esté establecida, <ph name="PRODUCT_NAME" /> no usará versiones de SSL/TLS inferiores a la versión especificada. Se ignorarán los valores no reconocidos.
 
       Se debe tener en cuenta que, a pesar del número, "sslv3" es una versión anterior a "tls1".</translation>
-<translation id="6177482277304066047">Establece una versión de destino para las Actualizaciones automáticas.
-
-      Especifica el prefijo de una versión de destino a la que <ph name="PRODUCT_OS_NAME" /> se debe actualizar. Si el dispositivo se ejecuta en una versión anterior al prefijo especificado, se actualizará a la versión más reciente con el prefijo dado. Si el dispositivo ya está en una versión más reciente, no se realizarán cambios (es decir, no se cambia a una versión anterior) y el dispositivo permanecerá en la versión actual. El formato de prefijo funciona de acuerdo al componente como se demuestra en el siguiente ejemplo:
-
-      "" (o no está configurado): actualizar a la versión más reciente disponible.
-      "1412.": actualizar a cualquier versión menor a 1412 (por ejemplo, 1412.24.34 ó 1412.60.2),
-      "1412.2.": actualizar a cualquier versión menor a 1412.2 (por ejemplo, 1412.2.34 ó 1412.2.2),
-      "1412.24.34": actualizar solamente a esta versión específica.</translation>
 <translation id="6190022522129724693">Configuración predeterminada de ventanas emergentes</translation>
 <translation id="6197453924249895891">Permite el acceso a claves empresariales para las extensiones.
 
@@ -1623,7 +1612,6 @@ desactivarlo).</translation>
 <translation id="6367755442345892511">Configuración del canal de versiones por parte del usuario</translation>
 <translation id="6368011194414932347">Configurar la dirección URL de la página principal</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
-<translation id="6373222873250380826">Desactiva las actualizaciones automáticas cuando se configura en True. Los dispositivos <ph name="PRODUCT_OS_NAME" /> comprueban, de manera automática, si hay actualizaciones cuando este valor no está configurado o se establece en False.</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6378076389057087301">Especificar si la actividad de audio afecta a la administración de energía</translation>
 <translation id="637934607141010488">Informa sobre la lista de usuarios de dispositivos que accedieron recientemente.
@@ -1961,13 +1949,6 @@ desactivarlo).</translation>
 <translation id="7336878834592315572">Guardar las cookies durante la sesión</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7384999953864505698">Permite el protocolo QUIC</translation>
-<translation id="7406651467768226499">Determina si se permite que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" />.
-
-      Mediante esta política, se determina si se permite que la aplicación de kiosko con lanzamiento automático sin tiempo de espera controle la versión de <ph name="PRODUCT_OS_NAME" /> al declarar un valor de required_platform_version en su manifiesto y al usarlo como el prefijo para la versión de destino de actualizaciones automáticas.
-
-      Si se aplica la política, el valor de la clave de manifiestos required_platform_version de la aplicación de kiosko con lanzamiento automático sin tiempo de espera se utiliza como prefijo para la versión de destino de actualizaciones automáticas.
-
-      Si la política no se configura o se decide no aplicarla, se ignora la clave de manifiestos required_platform_version, y la actualización automática se realiza normalmente.</translation>
 <translation id="7417972229667085380">Indica el porcentaje en el que debe ajustarse la demora de inactividad en el modo de presentación (en desuso).</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones para la lista de complementos inhabilitados</translation>

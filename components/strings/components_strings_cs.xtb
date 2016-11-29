@@ -701,7 +701,6 @@ Pssst! Příště by se vám mohl hodit anonymní režim (<ph name="SHORTCUT_KEY
 <translation id="9050666287014529139">Heslová fráze</translation>
 <translation id="9065203028668620118">Upravit</translation>
 <translation id="9068849894565669697">Výběr barvy</translation>
-<translation id="9092364396508701805">Stránka <ph name="HOST_NAME" /> nefunguje</translation>
 <translation id="9103872766612412690">Web <ph name="SITE" /> vaše informace běžně chrání šifrováním. Když se prohlížeč Chromium k webu <ph name="SITE" /> pokusil připojit tentokrát, web vrátil neobvyklé a nesprávné identifikační údaje. K tomuto problému může dojít, pokud se za web <ph name="SITE" /> pokouší vydávat nějaký útočník nebo pokud bylo připojení přerušeno přihlašovací obrazovkou sítě Wi-Fi. Vaše informace jsou i nadále v bezpečí, protože prohlížeč Chromium připojení přerušil dříve, než došlo k odeslání jakýchkoliv dat.</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9148507642005240123">&amp;Vrátit úpravy zpět</translation>

@@ -2,7 +2,7 @@
 <!DOCTYPE translationbundle>
 <translationbundle lang="da">
 <translation id="111910763555783249">Indstillinger for underretninger</translation>
-<translation id="1127811143501539442">{DAYS,plural, =1{for 1 dag siden}one{for # dage siden}other{for # dage siden}}</translation>
+<translation id="1127811143501539442">{DAYS,plural, =1{for 1 dag siden}one{for # dag siden}other{for # dage siden}}</translation>
 <translation id="1190609913194133056">Underretningcenter</translation>
 <translation id="1243314992276662751">Upload</translation>
 <translation id="1293699935367580298">Esc</translation>

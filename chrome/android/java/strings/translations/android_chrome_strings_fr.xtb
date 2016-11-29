@@ -140,7 +140,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="238909021488141516">Une erreur s'est produite lors du téléchargement du contenu.</translation>
 <translation id="2414886740292270097">Foncé</translation>
 <translation id="2433507940547922241">Apparence</translation>
-<translation id="2439248520967274840">Vous vous connectez au compte <ph name="TO_ACCOUNT" />. Certains de vos favoris, votre historique, vos mots de passe et d'autres paramètres ont déjà été synchronisés avec le compte <ph name="FROM_ACCOUNT" />. Que souhaitez-vous faire de vos données ?</translation>
 <translation id="2440823041667407902">Accès à la position</translation>
 <translation id="2476578072172137802">Paramètres du site</translation>
 <translation id="2482878487686419369">Notifications</translation>
@@ -188,7 +187,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="2996291259634659425">Créer une phrase secrète</translation>
 <translation id="2996809686854298943">Veuillez saisir une URL.</translation>
 <translation id="300526633675317032">Cette action aura pour effet de libérer l'espace de stockage utilisé pour les données de site (<ph name="SIZE_IN_KB" />).</translation>
-<translation id="3012408695656332380">Remplacer les données de cet appareil par celles du compte <ph name="TO_ACCOUNT" />. Notez que vous pouvez récupérer vos données en repassant sur le compte <ph name="FROM_ACCOUNT" />. En revanche, les données créées depuis que vous vous êtes déconnecté seront perdues.</translation>
 <translation id="3029704984691124060">Les phrases secrètes ne correspondent pas.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtenir de l'aide<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Ouvrir dans un onglet de nav. privée</translation>
@@ -215,7 +213,6 @@ Vous pouvez contrôler les paramètres du Web physique dans les paramètres de C
 <translation id="3320021301628644560">Ajouter une adresse de facturation</translation>
 <translation id="3328801116991980348">Informations sur le site</translation>
 <translation id="3350687908700087792">Fermer tous les onglets de navigation privée</translation>
-<translation id="3351441609270267898">Importer des données</translation>
 <translation id="3365671512111106261">Non disponible lorsque l'économiseur de données est activé</translation>
 <translation id="3367813778245106622">Connectez-vous de nouveau à votre compte pour démarrer la synchronisation.</translation>
 <translation id="3384347053049321195">Partager l'image</translation>
@@ -426,7 +423,6 @@ Pour modifier le terme de recherche, appuyez sur celui-ci de manière prolongée
 <translation id="5676636989614905379">Impossible de lire la vidéo sur "<ph name="SCREEN_NAME" />".</translation>
 <translation id="5677928146339483299">Bloqué</translation>
 <translation id="5684874026226664614">Petit problème… Impossible de traduire cette page.</translation>
-<translation id="5708031556037168012">Maintenir les données déjà enregistrées sur votre appareil et importer les données sur le compte <ph name="TO_ACCOUNT" /> de manière permanente.</translation>
 <translation id="5719837394786370183">Les pages consultées dans les onglets de navigation privée ne sont pas enregistrées dans l'historique de votre navigateur, dans les cookies ni dans l'historique des recherches une fois que vous avez fermé tous les onglets de navigation privée. Les fichiers téléchargés et les favoris ajoutés sont conservés.
 
 Vous n'êtes cependant pas devenu invisible. L'utilisation du mode navigation privée n'empêche pas votre employeur, votre fournisseur d'accès à Internet ou les sites Web que vous avez consultés d'avoir accès aux informations relatives à votre navigation.</translation>
@@ -563,7 +559,6 @@ Par exemple, certains sites Web peuvent répondre à cette demande en diffusant 
 <translation id="7062545763355031412">Accepter et changer de compte</translation>
 <translation id="7063006564040364415">Impossible de se connecter au serveur de synchronisation.</translation>
 <translation id="7064851114919012435">Coordonnées</translation>
-<translation id="7081639897063626814">Maintenir les données existantes à part</translation>
 <translation id="7094922512924405309">Aucune page Web physique n'a été trouvée.</translation>
 <translation id="7138678301420049075">Autre</translation>
 <translation id="7180611975245234373">Actualiser</translation>
@@ -735,12 +730,10 @@ Pour obtenir de nouvelles licences, connectez-vous à Internet et lisez le conte
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9139068048179869749">Demander avant d'autoriser des sites à envoyer des notifications (recommandé)</translation>
-<translation id="9141510419986760385">Vous changez de compte synchronisé pour passer de <ph name="FROM_ACCOUNT" /> à <ph name="TO_ACCOUNT" />. Que souhaitez-vous faire des favoris, de l'historique, des mots de passe et des autres paramètres actuels ?</translation>
 <translation id="9154194610265714752">Mis à jour</translation>
 <translation id="917685106653909562">Pages Web physique à proximité</translation>
 <translation id="9187199695613236444">Affichage adapté au mobile</translation>
 <translation id="9188680907066685419">Se déconnecter d'un compte géré</translation>
-<translation id="9198708126133947749">Remplacer les données de cet appareil avec celles du compte <ph name="TO_ACCOUNT" />. Vous pouvez récupérer vos données en revenant dans le compte <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Images</translation>
 <translation id="932327136139879170">Accueil</translation>

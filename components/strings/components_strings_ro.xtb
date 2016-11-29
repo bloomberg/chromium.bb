@@ -267,7 +267,7 @@
 <translation id="3658742229777143148">Versiune</translation>
 <translation id="3678029195006412963">Solicitarea nu a putut fi semnată</translation>
 <translation id="3681007416295224113">Informații despre certificat</translation>
-<translation id="3690164694835360974">Conectarea nu este sigură</translation>
+<translation id="3690164694835360974">Conectarea nu este securizată</translation>
 <translation id="3693415264595406141">Parolă:</translation>
 <translation id="3696411085566228381">niciuna</translation>
 <translation id="3704609568417268905"><ph name="TIME" /> <ph name="BOOKMARKED" /> <ph name="TITLE" /> <ph name="DOMAIN" /></translation>
@@ -535,7 +535,7 @@
 <translation id="7090678807593890770">Caută <ph name="LINK" /> pe Google</translation>
 <translation id="7108649287766967076">Traducerea în <ph name="TARGET_LANGUAGE" /> nu a reușit.</translation>
 <translation id="7139724024395191329">Emirat</translation>
-<translation id="7155487117670177674">Plata nu este sigură</translation>
+<translation id="7155487117670177674">Plata nu este securizată</translation>
 <translation id="7179921470347911571">Relansează acum</translation>
 <translation id="7180611975245234373">Actualizați</translation>
 <translation id="7182878459783632708">Nu au fost setate politici</translation>
@@ -706,7 +706,6 @@ Data viitoare ați putea utiliza combinația <ph name="SHORTCUT_KEY" /> pentru a
 <translation id="9050666287014529139">Expresie de acces</translation>
 <translation id="9065203028668620118">Editează</translation>
 <translation id="9068849894565669697">Selectați culoarea</translation>
-<translation id="9092364396508701805">Pagina de pe <ph name="HOST_NAME" /> nu funcționează</translation>
 <translation id="9103872766612412690">Site-ul <ph name="SITE" /> folosește în mod obișnuit criptarea pentru a-ți proteja informațiile. Când Chromium a încercat să se conecteze la <ph name="SITE" /> de această dată, site-ul a returnat date de conectare neobișnuite și incorecte. Acest lucru s-a întâmplat fie pentru că un atacator încearcă să falsifice site-ul <ph name="SITE" />, fie pentru că un ecran de conectare Wi-Fi a întrerupt conexiunea. Securitatea informațiilor tale nu a fost afectată, deoarece Chromium a oprit conexiunea înainte ca datele să fie transferate.</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9148507642005240123">&amp;Anulați editarea</translation>

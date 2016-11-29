@@ -140,7 +140,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="238909021488141516">Ett fel uppstod när innehållet skulle laddas ned.</translation>
 <translation id="2414886740292270097">Mörk</translation>
 <translation id="2433507940547922241">Utseende</translation>
-<translation id="2439248520967274840">Du håller på att logga in på <ph name="TO_ACCOUNT" />. En del av de befintliga bokmärkena, historiken, lösenorden och andra inställningar har tidigare synkroniserats med <ph name="FROM_ACCOUNT" />. Vad vill du ska hända med befintlig data?</translation>
 <translation id="2440823041667407902">Platsåtkomst</translation>
 <translation id="2476578072172137802">Inställningar för webbplatsen</translation>
 <translation id="2482878487686419369">Aviseringar</translation>
@@ -188,7 +187,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="2996291259634659425">Skapa lösenfras</translation>
 <translation id="2996809686854298943">En webbadress måste anges.</translation>
 <translation id="300526633675317032">Det här alternativet tar bort alla <ph name="SIZE_IN_KB" /> webbplatslagring.</translation>
-<translation id="3012408695656332380">Ersätt den här enhetens data med data från <ph name="TO_ACCOUNT" />. Du kan hämta befintlig data genom att byta tillbaka till <ph name="FROM_ACCOUNT" /> men data som har skapats efter att du loggade ut försvinner.</translation>
 <translation id="3029704984691124060">Lösenfraserna matchar inte</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjälp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Öppna i inkognitoflik</translation>
@@ -215,7 +213,6 @@ Du kan styra Physical Web i inställningarna för Chrome
 <translation id="3320021301628644560">Lägg till faktureringsadress</translation>
 <translation id="3328801116991980348">Platsinformation</translation>
 <translation id="3350687908700087792">Stäng alla inkognitoflikar</translation>
-<translation id="3351441609270267898">Importera befintlig data</translation>
 <translation id="3365671512111106261">Inte tillgängligt när Databesparing är aktiverat</translation>
 <translation id="3367813778245106622">Logga in igen om du vill påbörja synkroniseringen</translation>
 <translation id="3384347053049321195">Dela bild</translation>
@@ -426,7 +423,6 @@ Om du vill ändra söktermen trycker du länge för att välja. Om du vill förf
 <translation id="5676636989614905379">Det går inte att spela upp video på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blockerad</translation>
 <translation id="5684874026226664614">Det gick inte att översätta sidan.</translation>
-<translation id="5708031556037168012">Behåll befintlig data på enheten och importera data till <ph name="TO_ACCOUNT" /> permanent.</translation>
 <translation id="5719837394786370183">Sidor du visar i inkognitoflikar sparas inte i webbläsarhistoriken och lagras inte bland cookies eller i sökhistoriken när du har stängt alla inkognitoflikar. Däremot sparas alla filer du laddar ned och bokmärken du skapar.
 
 Du är dock inte osynlig. Trots inkognitoläget kan din arbetsgivare, din internetleverantör eller de webbplatser du besöker se din aktivitet.</translation>
@@ -563,7 +559,6 @@ Vissa webbplatser kan till exempel svara på begäran genom att visa annonser so
 <translation id="7062545763355031412">Godkänn och byt konto</translation>
 <translation id="7063006564040364415">Det gick inte att ansluta till synkroniseringsservern.</translation>
 <translation id="7064851114919012435">Kontaktuppgifter</translation>
-<translation id="7081639897063626814">Håll befintlig data separat</translation>
 <translation id="7094922512924405309">Inga Physical Web-sidor hittades i närheten</translation>
 <translation id="7138678301420049075">Övrigt</translation>
 <translation id="7180611975245234373">Uppdatera</translation>
@@ -736,12 +731,10 @@ Du hämtar nya licenser genom att ansluta till internet och spela upp det nedlad
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Visa original</translation>
 <translation id="9139068048179869749">Fråga innan webbplatser tillåts att skicka aviseringar (rekommenderas)</translation>
-<translation id="9141510419986760385">Du håller på att byta synkroniseringskonto från <ph name="FROM_ACCOUNT" /> till <ph name="TO_ACCOUNT" />. Vad vill du ska hända med bokmärken, historik, lösenord och andra inställningar?</translation>
 <translation id="9154194610265714752">Uppdaterat</translation>
 <translation id="917685106653909562">Physical Web-sidor i närheten</translation>
 <translation id="9187199695613236444">Mobilanpassad vy</translation>
 <translation id="9188680907066685419">Logga ut från hanterat konto</translation>
-<translation id="9198708126133947749">Ersätt enhetens data med data från <ph name="TO_ACCOUNT" />. Du kan hämta befintlig data genom att byta tillbaka till <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Startsida</translation>

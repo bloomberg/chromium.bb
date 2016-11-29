@@ -140,7 +140,6 @@
 <translation id="238909021488141516">Ocorreu um erro durante o download do conteúdo.</translation>
 <translation id="2414886740292270097">Escuro</translation>
 <translation id="2433507940547922241">Aparência</translation>
-<translation id="2439248520967274840">Você está fazendo login na conta <ph name="TO_ACCOUNT" />. Alguns dos seus favoritos, histórico, senhas e outras configurações já existentes foram sincronizados anteriormente em <ph name="FROM_ACCOUNT" />. O que deseja fazer com os dados já existentes?</translation>
 <translation id="2440823041667407902">Acesso ao local</translation>
 <translation id="2476578072172137802">Configurações do site</translation>
 <translation id="2482878487686419369">Notificações</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">Criar senha longa</translation>
 <translation id="2996809686854298943">O URL é obrigatório</translation>
 <translation id="300526633675317032">Essa ação limpará todos <ph name="SIZE_IN_KB" /> de dados de armazenamento de website.</translation>
-<translation id="3012408695656332380">Substitui os dados deste dispositivo com os dados da conta <ph name="TO_ACCOUNT" />. É possível recuperar os dados já existentes voltando para <ph name="FROM_ACCOUNT" />, mas os dados criados depois que você se desconectar serão perdidos.</translation>
 <translation id="3029704984691124060">As senhas não correspondem</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Receber ajuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir em guia anônima</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">Adicionar endereço de faturamento</translation>
 <translation id="3328801116991980348">Informações do site</translation>
 <translation id="3350687908700087792">Fechar todas as guias anônimas</translation>
-<translation id="3351441609270267898">Importar dados existentes</translation>
 <translation id="3365671512111106261">Indisponível quando a extensão Economia de dados está ativada</translation>
 <translation id="3367813778245106622">Faça login novamente para começar a sincronizar</translation>
 <translation id="3384347053049321195">Compartilhar imagem</translation>
@@ -425,7 +422,6 @@ Para selecionar o termo que quer pesquisar, toque no termo e mantenha-o pression
 <translation id="5676636989614905379">Não é possível reproduzir vídeo em <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloqueados</translation>
 <translation id="5684874026226664614">Não foi possível traduzir esta página.</translation>
-<translation id="5708031556037168012">Mantém os dados já existentes no seu dispositivo e os importa permanentemente para <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Quando você está no modo invisível, as páginas que você visita não aparecem no seu histórico de navegação e de pesquisa, nem armazenam arquivos "cookies". Mas os downloads e os favoritos continuam funcionando normalmente.﻿
          No entanto, o modo invisível NÃO oculta seus dados de navegação. Seu empregador, seu provedor de Internet e os websites visitados continuam tendo acesso a essas informações.</translation>
 <translation id="572328651809341494">Guias recentes</translation>
@@ -561,7 +557,6 @@ Por exemplo, alguns websites podem reagir a esse pedido mostrando anúncios que 
 <translation id="7062545763355031412">Aceitar e alternar entre contas</translation>
 <translation id="7063006564040364415">Não foi possível conectar ao servidor de sincronização.</translation>
 <translation id="7064851114919012435">Dados de contato</translation>
-<translation id="7081639897063626814">Manter os dados já existentes separados</translation>
 <translation id="7094922512924405309">Nenhuma página da Web física foi encontrada nas proximidades</translation>
 <translation id="7138678301420049075">Outro</translation>
 <translation id="7180611975245234373">Atualizar</translation>
@@ -733,12 +728,10 @@ Para receber novas licenças, conecte-se à Internet e use seu conteúdo baixado
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Perguntar antes de permitir que sites enviem notificações (recomendado)</translation>
-<translation id="9141510419986760385">Você está trocando de contas de sincronização de <ph name="FROM_ACCOUNT" /> para <ph name="TO_ACCOUNT" />. O que deseja fazer com os favoritos, histórico, senhas e outras configurações já existentes?</translation>
 <translation id="9154194610265714752">Atualizado</translation>
 <translation id="917685106653909562">Páginas da Web física nas proximidades</translation>
 <translation id="9187199695613236444">Visualização p/ disp. móveis</translation>
 <translation id="9188680907066685419">Sair da conta gerenciada</translation>
-<translation id="9198708126133947749">Substitui os dados deste dispositivo com os dados da conta <ph name="TO_ACCOUNT" />. É possível recuperar os dados já existentes voltando para a conta <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagens</translation>
 <translation id="932327136139879170">Início</translation>

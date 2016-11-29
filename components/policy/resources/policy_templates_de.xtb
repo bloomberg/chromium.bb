@@ -383,7 +383,7 @@ Diese Richtlinien sind nur aktiv, wenn der Chrome Remote Desktop-Host installier
 
       Wenn Sie diese Richtlinie konfigurieren, kann sie vom Nutzer nicht geändert oder überschrieben werden.
 
-      Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild wählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt werden soll.</translation>
+      Ist die Richtlinie nicht konfiguriert, kann der Nutzer ein Bild auswählen, das als Hintergrund auf dem Desktop und dem Anmeldebildschirm angezeigt werden soll.</translation>
 <translation id="2411919772666155530">Benachrichtigungen auf diesen Websites blockieren</translation>
 <translation id="2418507228189425036">Deaktiviert das Speichern des Browserverlaufs in <ph name="PRODUCT_NAME" /> und verhindert, dass Nutzer diese Einstellung ändern. 
 
@@ -766,9 +766,6 @@ Falls die Richtlinie auf "false" gesetzt wird, kann eine verzögerungsfreie auto
 <translation id="3322771899429619102">Ermöglicht Ihnen die Erstellung einer Liste mit URL-Mustern, die Websites angeben, denen die Schlüsselgenerierung gestattet ist. Wenn ein URL-Muster in "KeygenBlockedForUrls" angegeben ist, werden diese Ausnahmen dadurch überschrieben.
 
           Wenn diese Richtlinie nicht konfiguriert ist, wird für alle Websites entweder der globale Standardwert der Richtlinie "DefaultKeygenSetting", sofern festgelegt, oder die persönliche Konfiguration des Nutzers verwendet.</translation>
-<translation id="3322902067538988734">Wenn diese Richtlinie auf "true" gesetzt ist, muss sich der Nutzer mit seinem Profil in <ph name="PRODUCT_NAME" /> anmelden, um den Browser zu nutzen. Der Standardwert von BrowserGuestModeEnabled wird auf "false" gesetzt.
-
-      Ist die Richtlinie auf "false" gesetzt, kann der Nutzer den Browser verwenden, ohne sich bei <ph name="PRODUCT_NAME" /> anzumelden.</translation>
 <translation id="3347687541825006165">Legt fest, wie oft ein Nutzer ein Passwort eingeben muss, um das schnelle Entsperren zu verwenden.</translation>
 <translation id="3381968327636295719">Standardmäßig Host-Browser verwenden</translation>
 <translation id="3417418267404583991">Wenn diese Richtlinie auf "true" gesetzt oder nicht konfiguriert ist, sind Gastanmeldungen in <ph name="PRODUCT_OS_NAME" /> möglich. Eine Anmeldung als Gast erfolgt anonym und erfordert keine Passworteingabe.
@@ -1572,14 +1569,6 @@ Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name=
       Für die Richtlinie kann auch einer der folgenden Werte festgelegt werden: "sslv3", "tls1", "tls1.1" oder "tls1.2". Wenn die Richtlinie konfiguriert ist, verwendet <ph name="PRODUCT_NAME" /> keine Versionen von SSL/TLS, die niedriger als die vorgegebene Version sind. Unbekannte Werte werden ignoriert.
 
       Beachten Sie, dass "sslv3" trotz der höheren Zahl eine frühere Version als "tls1" ist.</translation>
-<translation id="6177482277304066047">Legt eine Zielversion für automatische Aktualisierungen fest.
-
-      Gibt das Präfix einer Zielversion an, auf die <ph name="PRODUCT_OS_NAME" /> aktualisiert werden soll. Wenn das Gerät eine niedrigere Version als im Präfix festgelegt ausführt, wird eine Aktualisierung auf die neueste Version mit diesem Präfix durchgeführt. Sollte das Gerät bereits die neueste Version ausführen, hat diese Richtlinie keine Auswirkungen, das heißt, es werden keine Downgrades ausgeführt, und das Gerät verwendet weiterhin die momentan installierte Version. Das Format des Präfixes bezieht sich auf die jeweilige Komponente, wie im folgenden Beispiel dargestellt:
-
-      "" oder nicht konfiguriert: Aktualisierung auf die neueste verfügbare Version
-      "1412.": Aktualisierung auf eine Nebenversion von 1412, z. B. 1412.24.34 oder 1412.60.2
-      "1412.2.": Aktualisierung auf eine Nebenversion von 1412.2, z. B. 1412.2.34 oder 1412.2.2
-      "1412.24.34": nur Aktualisierung auf diese Version</translation>
 <translation id="6190022522129724693">Standardeinstellung für Pop-ups</translation>
 <translation id="6197453924249895891">Durch diese Richtlinie wird der Zugriff auf Schlüssel zur geschäftlichen Nutzung in Erweiterungen gewährt
 
@@ -1615,9 +1604,6 @@ Ist diese Richtlinie aktiviert oder deaktiviert, können Nutzer sie in <ph name=
 <translation id="6367755442345892511">Ob der Release-Kanal vom Nutzer konfiguriert werden kann</translation>
 <translation id="6368011194414932347">Startseiten-URL konfigurieren</translation>
 <translation id="6368403635025849609">JavaScript auf diesen Websites zulassen</translation>
-<translation id="6373222873250380826">Bei Festlegung auf "true" werden automatische Updates deaktiviert.
-
-      Ist die Richtlinie nicht konfiguriert oder auf "false" gesetzt, suchen <ph name="PRODUCT_OS_NAME" />-Geräte automatisch nach Updates.</translation>
 <translation id="6376659517206731212">Kann verbindlich sein</translation>
 <translation id="6378076389057087301">Angaben zum Einfluss von Audioaktivitäten auf den Energiesparmodus</translation>
 <translation id="637934607141010488">Meldet eine Liste der Gerätenutzer, die sich kürzlich angemeldet haben
@@ -1950,13 +1936,6 @@ Wird diese Richtlinie nicht konfiguriert, wird der standardmäßige Profilpfad v
 <translation id="7336878834592315572">Cookies für die Dauer der Sitzung beibehalten</translation>
 <translation id="7340034977315324840">Aktivitätszeit von Geräten melden</translation>
 <translation id="7384999953864505698">Lässt das QUIC-Protokoll zu</translation>
-<translation id="7406651467768226499">Gibt an, ob der automatisch ohne Verzögerung gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet werden soll.
-
-      Durch diese Richtlinie wird festgelegt, ob der automatisch ohne Verzögerung gestarteten Kiosk-App die Steuerung der <ph name="PRODUCT_OS_NAME" />-Version gestattet wird, indem in ihrem Manifest eine erforderliche Plattformversion (required_platform_version) deklariert und als Zielversionspräfix beim automatischen Update verwendet wird.
-
-      Wenn die Richtlinie auf "true" gesetzt ist, wird der Wert des Manifestschlüssels "required_platform_version" der automatisch ohne Verzögerung gestarteten Kiosk-App als Zielversionspräfix beim automatischen Update verwendet.
-
-      Wenn die Richtlinie nicht konfiguriert oder auf "false" gesetzt ist, wird der Manifestschlüssel "required_platform_version" ignoriert und das automatische Update erfolgt wie gewohnt.</translation>
 <translation id="7417972229667085380">Prozentsatz für die Skalierung der Inaktivitätsspanne im Präsentationsmodus (veraltet)</translation>
 <translation id="7421483919690710988">Cache-Größe für Mediendatenträger in Byte festlegen</translation>
 <translation id="7424751532654212117">Liste der Ausnahmen von der Liste der deaktivierten Plug-ins</translation>
@@ -2518,7 +2497,7 @@ Diese Außerkraftsetzung soll in Zukunft beseitigt werden.</translation>
 <translation id="944817693306670849">Datenträger-Cache-Größe festlegen</translation>
 <translation id="969164417253718105">Diese Einstellung legt fest, wie oft Sie auf dem Sperrbildschirm dazu aufgefordert werden, das Passwort einzugeben, um das schnelle Entsperren weiterhin verwenden zu können. Jedes Mal, wenn der Sperrbildschirm aktiviert wird, und die letzte Passworteingabe länger her ist als in dieser Einstellung festgelegt, ist das schnelle Entsperren beim Eintreten in den Sperrmodus nicht mehr verfügbar. Sollte sich der Nutzer nach diesem Zeitraum noch auf dem Sperrbildschirm befinden, wird ein Passwort angefordert, wenn der Nutzer das nächste Mal einen falschen Code eingibt oder erneut in den Sperrmodus wechselt, je nachdem, welcher Fall zuerst eintritt.
 
-      Ist diese Einstellung konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihre Passwörter je nach Einstellung auf dem Sperrbildschirm einzugeben.
+      Ist diese Einstellung konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort je nach Einstellung auf dem Sperrbildschirm einzugeben.
 
       Ist diese Einstellung nicht konfiguriert, werden Nutzer, die das schnelle Entsperren verwenden, dazu aufgefordert, ihr Passwort jeden Tag auf dem Sperrbildschirm einzugeben.</translation>
 </translationbundle>

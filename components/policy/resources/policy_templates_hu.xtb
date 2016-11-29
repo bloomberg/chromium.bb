@@ -781,9 +781,6 @@
 <translation id="3322771899429619102">Lehetővé teszi, hogy létrehozza az olyan webhelyeket megadó URL-minták egy listáját, ahol engedélyezett a kulcslétrehozás. Ha valamelyik URL-minta a „KeygenBlockedForUrls” házirendben található, akkor az felülírja ezen kivételeket.
 
           Ha a házirend konfigurálatlanul marad, akkor a rendszer a globális alapértelmezett értéket használja a „DefaultKeygenSetting” házirendből (ha az be van állítva), egyéb esetben pedig a felhasználó saját személyes beállításából.</translation>
-<translation id="3322902067538988734">Ha a házirend értéke igaz, akkor a felhasználónak be kell jelentkeznie a <ph name="PRODUCT_NAME" /> böngészőbe a profiljával, hogy használhassa. A BrowserGuestModeEnabled házirend alapértelmezett értéke hamisra lesz állítva.
-
-      Ha a házirend értéke hamis, vagy ha nincs beállítva, a felhasználó bejelentkezés nélkül is használhatja a <ph name="PRODUCT_NAME" /> böngészőt.</translation>
 <translation id="3347687541825006165">Azt szabályozza, hogy a felhasználónak milyen gyakran kell megadnia jelszavát a gyorsfeloldás használatához.</translation>
 <translation id="3381968327636295719">Alapértelmezés szerint használja a gazdagép böngészőjét</translation>
 <translation id="3417418267404583991">Ha a házirend beállítása igaz, vagy nincs megadva az értéke, akkor a(z) <ph name="PRODUCT_OS_NAME" /> engedélyezi a Vendég módban való bejelentkezéseket. A vendégbejelentkezések névtelen felhasználói munkamenetek, amelyek nem kérik jelszó magadását.
@@ -1588,14 +1585,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
       Máskülönben a következő értékek egyikét használhatja: „sslv3”, „tls1”, „tls1.1” vagy „tls1.2”. Ha beállítja a házirendet, a <ph name="PRODUCT_NAME" /> nem használ a megadottnál alacsonyabb verziószámú SSL/TLS-verziót. Az ismeretlen értékeket a böngésző figyelmen kívül hagyja.
 
       Felhívjuk figyelmét, hogy a számozás ellenére az „sslv3” korábbi verzió, mint a „tls1”.</translation>
-<translation id="6177482277304066047">Célverziót állít be az automatikus frissítésekhez.
-
-      Megadja annak a célverziónak az előtagját, amelyre a(z) <ph name="PRODUCT_OS_NAME" /> rendszert frissíteni kell. Ha az eszközön futó verzió a megadott előtagnál korábbi, akkor a megadott előtaggal rendelkező utolsó verzióra frissül. Ha az eszközön már egy újabb verzió van, akkor nincs hatása (azaz nem történik korábbi verzióra frissítés), és az eszközön a jelenlegi verzió marad meg. Az előtag formátuma komponenstudatos, ahogy az a következő példából látható:
-
-      „” (vagy nincs konfigurálva): frissítés az elérhető legújabb verzióra.
-      „1412.”: frissítés a 1412 egyik alverziójára (pl. 1412.24.34 vagy 1412.60.2)
-      „1412.2.”: frissítés a 1412.2 egyik alverziójára (pl. 1412.2.34 vagy 1412.2.2)
-      „1412.24.34”: frissítés kizárólag erre a konkrét verzióra</translation>
 <translation id="6190022522129724693">Előugró ablakok alapértelmezett beállítása</translation>
 <translation id="6197453924249895891">Hozzáférés biztosítása a vállalati kulcsokhoz a bővítmények számára.
 
@@ -1631,9 +1620,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="6367755442345892511">A kiadási csatorna felhasználó által beállítható legyen-e.</translation>
 <translation id="6368011194414932347">Állítsa be a kezdőoldal URL-jét</translation>
 <translation id="6368403635025849609">JavaScript engedélyezése ezeken a webhelyeken</translation>
-<translation id="6373222873250380826">Igaz érték esetén letiltja az automatikus frissítéseket.
-
-      A(z) <ph name="PRODUCT_OS_NAME" /> eszközök automatikusan ellenőrzik a frissítéseket, amennyiben ez a beállítás nincs megadva, vagy beállítása Hamis.</translation>
 <translation id="6376659517206731212">Kötelező lehet</translation>
 <translation id="6378076389057087301">Megadja, hogy az audiotevékenység hatással van-e az energiagazdálkodásra</translation>
 <translation id="637934607141010488">Jelentés készítése a mostanában bejelentkezett eszközfelhasználókról.
@@ -1969,13 +1955,6 @@ Ha a házirend értéke hamis, a böngésző nem jelenti a kioszkmunkamenet info
 <translation id="7336878834592315572">Cookie-k megtartása a munkamenet idejére</translation>
 <translation id="7340034977315324840">Az eszköz aktív idejének jelentése</translation>
 <translation id="7384999953864505698">Engedélyezi a QUIC-protokollt</translation>
-<translation id="7406651467768226499">Annak meghatározása, hogy a késés nélkül, automatikusan elindított kioszkalkalmazás irányítsa-e a <ph name="PRODUCT_OS_NAME" /> verzióját.
-
-      Ez a házirend határozza meg, hogy Ön engedélyezi-e a késés nélkül, automatikusan elindított kioszkalkalmazás számára a <ph name="PRODUCT_OS_NAME" /> verziójának irányítását a required_platform_version kulcs jegyzékben való meghatározásával annak érdekében, hogy ez a kulcs adja a célverzió előtagját az automatikus frissítéseknél.
-
-      Ha a házirend értéke „true” (igaz), akkor a késés nélkül, automatikusan elindított kioszkalkalmazás required_platform_version jegyzékkulcsát használja a rendszer a célverzió automatikus frissítésének előtagjaként.
-
-      Ha a házirend nincs konfigurálva, vagy értéke „false” (hamis), akkor a rendszer figyelmen kívül hagyja a required_platform_version jegyzékkulcsot, és az automatikus frissítés a megszokottak szerint megy végbe.</translation>
 <translation id="7417972229667085380">Az a százalék, amelynek alapján a tétlenségi késleltetés skálázódik prezentációs módban (megszűnt)</translation>
 <translation id="7421483919690710988">A médialemez gyorsítótárméretének beállítása bájtban</translation>
 <translation id="7424751532654212117">A tiltott bővítmények listájának kivétellistája</translation>

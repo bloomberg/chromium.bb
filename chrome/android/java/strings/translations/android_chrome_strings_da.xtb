@@ -140,7 +140,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="238909021488141516">Der opstod en fejl under download af indholdet.</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2433507940547922241">Udseende</translation>
-<translation id="2439248520967274840">Du er ved at logge ind på <ph name="TO_ACCOUNT" />. Noget af din historik og nogle af dine eksisterende bogmærker, adgangskoder og andre indstillinger blev tidligere synkroniseret med <ph name="FROM_ACCOUNT" />. Hvad vil du gøre med dine eksisterende data?</translation>
 <translation id="2440823041667407902">Placeringsadgang</translation>
 <translation id="2476578072172137802">Indstillinger for websitet</translation>
 <translation id="2482878487686419369">Underretninger</translation>
@@ -188,7 +187,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="2996291259634659425">Opret adgangssætning</translation>
 <translation id="2996809686854298943">En webadresse er påkrævet</translation>
 <translation id="300526633675317032">Dette rydder alle <ph name="SIZE_IN_KB" /> i websitelagerpladsen.</translation>
-<translation id="3012408695656332380">Erstat denne enheds data med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />, men du mister de data, der er oprettet, efter du er logget ud.</translation>
 <translation id="3029704984691124060">Adgangssætningerne stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjælp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Åbn i inkognitofane</translation>
@@ -215,7 +213,6 @@ Du kan kontrollere Fysisk web i Chrome-indstillingerne.
 <translation id="3320021301628644560">Tilføj faktureringsadresse</translation>
 <translation id="3328801116991980348">Webstedoplysninger</translation>
 <translation id="3350687908700087792">Luk alle inkognitofaner</translation>
-<translation id="3351441609270267898">Importér eksisterende data</translation>
 <translation id="3365671512111106261">Ikke tilgængelig, når Datasparefunktion er slået til.</translation>
 <translation id="3367813778245106622">Log ind igen for at starte synkroniseringen</translation>
 <translation id="3384347053049321195">Del billede</translation>
@@ -426,7 +423,6 @@ Tryk længe på din søgeterm for at vælge den og tilpasse den. Du kan afgræns
 <translation id="5676636989614905379">Videoen kan ikke afspilles på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokeret</translation>
 <translation id="5684874026226664614">Ups! Denne side kunne ikke oversættes.</translation>
-<translation id="5708031556037168012">Behold eksisterende data på din enhed, og importér dem permanent til <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">De sider, du ser på inkognitofaner, gemmes ikke i browserhistorikken, cookielageret eller søgehistorikken, når du har lukket alle dine inkognitofaner. Alle de filer, du downloader, eller bogmærker, du opretter, vil blive gemt.
 
 Du er dog ikke usynlig. Inkognitotilstanden skjuler ikke dine søgninger fra din arbejdsgiver, din internetudbyder eller de websites, du besøger.</translation>
@@ -563,7 +559,6 @@ Nogle websites kan f.eks. reagere på denne anmodning ved at vise dig annoncer, 
 <translation id="7062545763355031412">Acceptér, og skift konto</translation>
 <translation id="7063006564040364415">Der kunne ikke oprettes forbindelse til synkroniseringsserveren.</translation>
 <translation id="7064851114919012435">Kontaktoplysninger</translation>
-<translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Der blev ikke fundet nogen Fysisk web-sider i nærheden</translation>
 <translation id="7138678301420049075">Andet</translation>
 <translation id="7180611975245234373">Opdater</translation>
@@ -736,12 +731,10 @@ Du kan få nye licenser ved at oprette forbindelse til internettet og afspille d
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9139068048179869749">Spørg om tilladelse, før websites sender underretninger (anbefales)</translation>
-<translation id="9141510419986760385">Du er ved at skifte synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hvad vil du gøre med dine eksisterende bogmærker, din historik, dine adgangskoder og andre indstillinger?</translation>
 <translation id="9154194610265714752">Opdateret</translation>
 <translation id="917685106653909562">Fysisk web-sider i nærheden</translation>
 <translation id="9187199695613236444">Mobilvenlig visning</translation>
 <translation id="9188680907066685419">Log ud af den administrerede konto</translation>
-<translation id="9198708126133947749">Erstat denne enheds data med data fra <ph name="TO_ACCOUNT" />. Du kan hente dine eksisterende data ved at skifte tilbage til <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Billeder</translation>
 <translation id="932327136139879170">Start</translation>

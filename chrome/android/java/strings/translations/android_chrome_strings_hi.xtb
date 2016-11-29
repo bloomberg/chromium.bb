@@ -140,7 +140,6 @@
 <translation id="238909021488141516">सामग्री डाउनलोड करते समय कोई त्रुटि हुई.</translation>
 <translation id="2414886740292270097">गहरा</translation>
 <translation id="2433507940547922241">प्रकटन</translation>
-<translation id="2439248520967274840">आप <ph name="TO_ACCOUNT" /> में प्रवेश कर रहे हैं. आपके कुछ मौजूदा बुकमार्क, इतिहास, पासवर्ड, और अन्य सेटिंग पूर्व में <ph name="FROM_ACCOUNT" /> से समन्वयित की गई थीं. आप अपनी मौजूदा सेटिंग का क्या करना चाहते हैं?</translation>
 <translation id="2440823041667407902">स्‍थान की एक्‍सेस</translation>
 <translation id="2476578072172137802">साइट की सेटिंग</translation>
 <translation id="2482878487686419369">अधिसूचनाएं</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">पासफ़्रेज़ बनाएं</translation>
 <translation id="2996809686854298943">URL आवश्यक है</translation>
 <translation id="300526633675317032">इससे वेबसाइट की सभी <ph name="SIZE_IN_KB" /> जगह साफ़ हो जाएगी.</translation>
-<translation id="3012408695656332380">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> में वापस बदलते हुए अपना मौजूदा डेटा पुनर्प्राप्त कर सकते हैं, लेकिन आपके प्रस्थान करने के बाद से निर्मित डेटा खो जाएगा.</translation>
 <translation id="3029704984691124060">पासफ़्रेज़ मिलान नहीं करते</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />सहायता प्राप्त करें<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">गुप्त टैब में खोलें</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">बिलिंग पता जोड़ें</translation>
 <translation id="3328801116991980348">साइट जानकारी</translation>
 <translation id="3350687908700087792">सभी गुप्त टैब बंद करें</translation>
-<translation id="3351441609270267898">मौजूदा डेटा आयात करें</translation>
 <translation id="3365671512111106261">डेटा बचाने के साधन के चालू होने पर यह सेटिंग अनुपलब्ध होती है</translation>
 <translation id="3367813778245106622">समन्वयन शुरू करने के लिए फिर से प्रवेश करें</translation>
 <translation id="3384347053049321195">चित्र साझा करें</translation>
@@ -426,7 +423,6 @@
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" /> पर वीडियो नहीं चलाया जा सकता.</translation>
 <translation id="5677928146339483299">अवरोधित</translation>
 <translation id="5684874026226664614">ओह. इस पृष्ठ का अनुवाद नहीं किया जा सका.</translation>
-<translation id="5708031556037168012">मौजूदा डेटा को अपने डिवाइस पर बनाए रखें और डेटा को स्थायी रूप से <ph name="TO_ACCOUNT" /> में आयात करें.</translation>
 <translation id="5719837394786370183">आपके द्वारा अपने सभी गुप्त टैब बंद करने के बाद आपको गुप्त टैब में दिखाई देने वाले पृष्ठ आपके ब्राउज़र के इतिहास, कुकी स्टोर, या खोज इतिहास में नहीं बने रहेंगे. आप जो भी फ़ाइल डाउनलोड करते हैं या जो भी बुकमार्क बनाते हैं उन्हें रखा जाएगा.
 
 हालांकि, आप अदृश्य नहीं हैं. गुप्त मोड में जाने से आपके नियोक्ता, आपके इंटरनेट सेवा प्रदाता, या आपके द्वारा देखी जाने वाली वेबसाइटों से आपकी ब्राउज़िंग नहीं छिपती.</translation>
@@ -563,7 +559,6 @@
 <translation id="7062545763355031412">स्वीकार करें और खातों को बदलें</translation>
 <translation id="7063006564040364415">समन्‍वयन सर्वर से कनेक्‍ट नहीं किया जा सका.</translation>
 <translation id="7064851114919012435">संपर्क जानकारी</translation>
-<translation id="7081639897063626814">मौजूदा डेटा को अलग रखें</translation>
 <translation id="7094922512924405309">आस-पास कोई भी जीता-जागता वेब पृष्ठ नहीं मिला</translation>
 <translation id="7138678301420049075">अन्य</translation>
 <translation id="7180611975245234373">रीफ्रेश करें</translation>
@@ -736,12 +731,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">मूल दिखाएं</translation>
 <translation id="9139068048179869749">साइट को नोटिफ़िकेशन भेजने देने से पहले अनुमति लेना आवश्यक बनाएं (अनुशंसित)</translation>
-<translation id="9141510419986760385">आप समन्वयन खातों को <ph name="FROM_ACCOUNT" /> से <ph name="TO_ACCOUNT" /> में बदल रहे हैं. आप अपने मौजूदा बुकमार्क, इतिहास, पासवर्ड और अन्य सेटिंग का क्या करना चाहते हैं?</translation>
 <translation id="9154194610265714752">अपडेट किया गया</translation>
 <translation id="917685106653909562">आस-पास के जीते-जागते वेब पृष्ठ</translation>
 <translation id="9187199695613236444">मोबाइल के अनुकूल दृश्‍य</translation>
 <translation id="9188680907066685419">प्रबंधित खाते से प्रस्थान करें</translation>
-<translation id="9198708126133947749">इस डिवाइस के डेटा को <ph name="TO_ACCOUNT" /> के डेटा से बदलें. आप <ph name="FROM_ACCOUNT" /> पर वापस जाकर अपना मौजूदा डेटा पुनः प्राप्त कर सकते हैं.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">चित्र</translation>
 <translation id="932327136139879170">मुख्यपृष्ठ</translation>

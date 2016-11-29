@@ -209,7 +209,7 @@
       memastikan bahwa server proxy bekerja. Jika Anda tidak yakin harus
       menggunakan server proxy:
       <ph name="PLATFORM_TEXT" /></translation>
-<translation id="3202578601642193415">Teranyar</translation>
+<translation id="3202578601642193415">Terbaru</translation>
 <translation id="3207960819495026254">Diberi bookmark</translation>
 <translation id="3226128629678568754">Tekan tombol muat ulang untuk mengirimkan lagi data yang dibutuhkan untuk memuat laman ini.</translation>
 <translation id="3228969707346345236">Terjemahan gagal karena laman sudah dalam bahasa <ph name="LANGUAGE" />.</translation>
@@ -706,7 +706,6 @@ Ssst! <ph name="SHORTCUT_KEY" /> mode penyamaran mungkin berguna suatu saat nant
 <translation id="9050666287014529139">Frasa sandi</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="9068849894565669697">Pilih warna</translation>
-<translation id="9092364396508701805">Laman <ph name="HOST_NAME" /> tidak bekerja</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> biasanya menggunakan enkripsi untuk melindungi informasi Anda. Saat Chromium mencoba menyambung ke <ph name="SITE" /> kali ini, situs web mengembalikan kredensial yang salah dan tidak biasa. Hal ini dapat terjadi jika ada penyerang yang berpura-pura menjadi <ph name="SITE" />, atau layar masuk Wi-Fi mengganggu sambungan. Informasi Anda masih aman karena Chromium menghentikan sambungan sebelum terjadi pertukaran data apa pun.</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
 <translation id="9148507642005240123">&amp;Urungkan pengeditan</translation>

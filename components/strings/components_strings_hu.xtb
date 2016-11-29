@@ -704,7 +704,6 @@ Pszt! Az inkognitómód (<ph name="SHORTCUT_KEY" />) hasznos lehet a következő
 <translation id="9050666287014529139">Összetett jelszó</translation>
 <translation id="9065203028668620118">Szerkesztés</translation>
 <translation id="9068849894565669697">Szín kiválasztása</translation>
-<translation id="9092364396508701805">A(z) <ph name="HOST_NAME" /> oldal nem működik</translation>
 <translation id="9103872766612412690">A(z) <ph name="SITE" /> webhely rendes esetben titkosítást alkalmaz az Ön adatainak védelme érdekében. Amikor a Chromium most csatlakozni próbált, a(z) <ph name="SITE" /> webhely szokatlan és helytelen hitelesítési adatokat küldött vissza.Ez olyankor fordulhat elő, amikor egy támadó megpróbálja magát kiadni a(z) <ph name="SITE" /> webhelynek, vagy valamilyen Wi-Fi-bejelentkezési képernyő megszakította a kapcsolatot. Adatai továbbra is biztonságban vannak, mivel a Chromium még azt megelőzően megszakította a kapcsolatot, hogy bármiféle adatcserére sor kerülhetett volna.</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9148507642005240123">&amp;Szerkesztés visszavonása</translation>

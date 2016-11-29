@@ -140,7 +140,6 @@
 <translation id="238909021488141516">コンテンツのダウンロード中にエラーが発生しました。</translation>
 <translation id="2414886740292270097">暗</translation>
 <translation id="2433507940547922241">デザイン</translation>
-<translation id="2439248520967274840"><ph name="TO_ACCOUNT" /> にログインします。既存のブックマーク、履歴、パスワード、その他の設定に、以前 <ph name="FROM_ACCOUNT" /> と同期したものが含まれています。既存のデータをどのように処理しますか？</translation>
 <translation id="2440823041667407902">現在地情報へのアクセス</translation>
 <translation id="2476578072172137802">サイト設定</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">パスフレーズの作成</translation>
 <translation id="2996809686854298943">URLが必要です</translation>
 <translation id="300526633675317032">ウェブサイトのストレージ <ph name="SIZE_IN_KB" /> をすべて消去します。</translation>
-<translation id="3012408695656332380">このデバイスのデータを <ph name="TO_ACCOUNT" /> のデータに置き換えます。<ph name="FROM_ACCOUNT" /> に切り替えると、既存のデータを取得することができます。ただし、ログアウト後に作成したデータは失われます。</translation>
 <translation id="3029704984691124060">パスフレーズが一致しません</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ヘルプ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">シークレット タブで開く</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">請求先住所を追加</translation>
 <translation id="3328801116991980348">サイト情報</translation>
 <translation id="3350687908700087792">すべてのシークレット タブを閉じます</translation>
-<translation id="3351441609270267898">既存のデータをインポートする</translation>
 <translation id="3365671512111106261">データセーバーが有効になっている場合は使用できません</translation>
 <translation id="3367813778245106622">同期を開始するにはもう一度ログインします</translation>
 <translation id="3384347053049321195">画像を共有</translation>
@@ -426,7 +423,6 @@
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" />で動画を再生できません。</translation>
 <translation id="5677928146339483299">ブロック</translation>
 <translation id="5684874026226664614">このページを翻訳できませんでした。</translation>
-<translation id="5708031556037168012">デバイスの既存のデータを保持して、<ph name="TO_ACCOUNT" /> にデータを完全にインポートします。</translation>
 <translation id="5719837394786370183">シークレット タブで表示したページの記録は、シークレット タブをすべて閉じた後、ブラウザの履歴、Cookieの保存場所、検索履歴から消去されます。ただし、ダウンロードしたファイルや作成したブックマークは保存されます。
 
 あらゆる場所に記録が一切残らないわけではありません。シークレット モードを使っても、雇用主、インターネット サービス プロバイダ、訪問先のウェブサイトに閲覧内容が知られる可能性はあります。</translation>
@@ -563,7 +559,6 @@
 <translation id="7062545763355031412">同意してアカウントを切り替える</translation>
 <translation id="7063006564040364415">同期サーバーに接続できませんでした。</translation>
 <translation id="7064851114919012435">連絡先情報</translation>
-<translation id="7081639897063626814">既存のデータを別に保持する</translation>
 <translation id="7094922512924405309">近くにフィジカル ウェブページは見つかりませんでした</translation>
 <translation id="7138678301420049075">その他</translation>
 <translation id="7180611975245234373">更新</translation>
@@ -736,12 +731,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />（<ph name="ITEM_ID" />）</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9139068048179869749">サイトに通知の送信を許可する前に確認する（推奨）</translation>
-<translation id="9141510419986760385">同期アカウントを <ph name="FROM_ACCOUNT" /> から <ph name="TO_ACCOUNT" /> に切り替えます。既存のブックマーク、履歴、パスワード、その他の設定をどのように処理しますか？</translation>
 <translation id="9154194610265714752">更新完了</translation>
 <translation id="917685106653909562">近くのフィジカル ウェブページ</translation>
 <translation id="9187199695613236444">モバイル向け表示</translation>
 <translation id="9188680907066685419">管理対象アカウントからログアウトする</translation>
-<translation id="9198708126133947749">この端末のデータを <ph name="TO_ACCOUNT" /> のデータに置き換えます。<ph name="FROM_ACCOUNT" /> に切り替えると、以前のデータを取得できます。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">画像</translation>
 <translation id="932327136139879170">ホーム</translation>

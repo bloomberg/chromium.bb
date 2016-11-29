@@ -773,9 +773,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="3322771899429619102">Permite que você defina uma lista de padrões de URL que especificam sites que têm permissão para usar a geração de chaves. Se um padrão de URL está na política "KeygenBlockedForUrls", essa política substitui essas exceções.
 
           Se esta política não for definida, o valor padrão global será utilizado para todos os sites a partir da política "DefaultKeygenSetting", caso ela tenha sido definida, ou a partir das configurações pessoais do usuário, caso não tenha sido definida.</translation>
-<translation id="3322902067538988734">Se esta política for definida como true, o usuário deverá fazer login no <ph name="PRODUCT_NAME" /> com o próprio perfil antes de usar o navegador. O valor padrão de BrowserGuestModeEnabled será definido como false.
-
-      Se essa política for definida como false ou não for configurada, o usuário pode usar o navegador sem fazer login no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Define com que frequência o usuário precisa digitar a senha para usar o desbloqueio rápido.</translation>
 <translation id="3381968327636295719">Usar o navegador de host por padrão</translation>
 <translation id="3417418267404583991">Se esta política for definida como true ou não for configurada, o <ph name="PRODUCT_OS_NAME" /> permitirá o login de visitantes. Os logins de visitantes são sessões anônimas de usuários e não requerem uma senha. Se esta política for configurada para false, o <ph name="PRODUCT_OS_NAME" /> não permitirá que sejam iniciadas sessões de visitantes.</translation>
@@ -1078,7 +1075,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="4372704773119750918">Não permitir que o usuário corporativo faça parte de diversos perfis (primários ou secundários)</translation>
 <translation id="4377599627073874279">Permitir que todos os sites exibam todas as imagens</translation>
 <translation id="4389091865841123886">Configurar a declaração remota com mecanismo TPM</translation>
-<translation id="4397469093966511008">A configuração dessa política como "false" impede que os usuários optem por enviar informações do sistema e conteúdos de páginas aos servidores do Google. Se essa configuração for definida como "true" ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdos de página ao Navegação segura para ajudar a detectar apps e sites perigosos.</translation>
+<translation id="4397469093966511008">A configuração dessa política como "false" impede que os usuários optem por enviar informações do sistema e conteúdos de páginas aos servidores do Google. Se essa configuração for definida como "true" ou não for configurada, os usuários terão permissão para enviar informações do sistema e conteúdos de página à Navegação segura para ajudar a detectar apps e sites perigosos.</translation>
 <translation id="4423597592074154136">Especificar manualmente as configurações de proxy</translation>
 <translation id="4429220551923452215">Ativa ou desativa os atalhos dos aplicativos na barra de favoritos.
 
@@ -1563,9 +1560,9 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6166832345529129545">Controla quais modos de desbloqueio rápido têm permissão para serem configurados e utilizados.
       Esta configuração autoriza os modos de desbloqueio rápido que podem ser configurados e usados para desbloquear a tela do dispositivo. O valor é uma lista de strings, e cada uma delas precisa ser um dos seguintes tipos: "todos" ou "PIN". Se a opção "todos" for selecionada, todos os modos rápidos compatíveis estarão disponíveis. Caso contrário, os modos exibidos na lista serão os disponibilizados.
 
-      Se esta configuração for definida, os modos de desbloqueio rápido que tiverem um tipo que não está nessa lista não poderão ser configurados ou utilizados.
+      Se esta configuração for definida, não será possível configurar ou usar os modos de desbloqueio rápido com um tipo que não está nessa lista.
 
-      Se esta configuração for deixada sem definição, o modo "PIN" ficará ativado e todos os outros modos serão desativados.</translation>
+      Se esta configuração não for definida, o modo "PIN" ficará ativado e todos os outros modos serão desativados.</translation>
 <translation id="6167074305866468481">Aviso: o suporte para SSLv3 será totalmente removido do <ph name="PRODUCT_NAME" /> após a versão 43 (por volta de julho de 2015) e esta política será removida na mesma época.
 
       Se esta política não está configurada, o <ph name="PRODUCT_NAME" /> usa a versão mínima padrão, que é SSLv3 no <ph name="PRODUCT_NAME" /> e TLS 1.0 em versões mais recentes.
@@ -1573,14 +1570,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
       Caso contrário, ela pode ser definida para um dos valores a seguir: "sslv3", "tls1", "tls1.1" ou "tls1.2". Quando definida, o <ph name="PRODUCT_NAME" /> não usa versões SSL/TLS menores que a versão especificada. Um valor não reconhecido será ignorado.
 
       Observe que, apesar do número, "sslv3" é uma versão mais antiga que "tls1".</translation>
-<translation id="6177482277304066047">Define uma versão de destino para atualizações automáticas.
-
-      Especifica o prefixo de uma versão de destino para a qual o <ph name="PRODUCT_OS_NAME" /> deve ser atualizado. Se o dispositivo estiver executando uma versão anterior ao prefixo especificado, ele será atualizado para a versão mais recente com o prefixo especificado. Se o dispositivo já estiver em uma versão posterior, não há qualquer efeito (ou seja, ele não volta para a versão anterior), e o dispositivo permanecerá na versão atual. O formato do prefixo funciona como um componente, conforme demonstrado no seguinte exemplo:
-
-      "" (ou não configurado): atualizar para a versão mais recente disponível.
-      "1412.": atualizar para qualquer versão menor que 1412 (por exemplo, 1412.24.34 ou 1412.60.2)
-      "1412.2".: atualizar para qualquer release da versão 1412.2 (por exemplo, 1412.2.34 ou 1412.2.2)
-     "1412.24.34": atualizar especificamente para esta versão e release</translation>
 <translation id="6190022522129724693">Configuração padrão de pop-ups</translation>
 <translation id="6197453924249895891">Concede acesso a chaves corporativas para extensões.
 
@@ -1616,7 +1605,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="6367755442345892511">Se o canal de versão deve ser configurado pelo usuário</translation>
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="6368403635025849609">Permitir o JavaScript nestes sites</translation>
-<translation id="6373222873250380826">Desativa as atualizações automáticas quando configurada como true. Os dispositivos <ph name="PRODUCT_OS_NAME" /> verificam automaticamente se há atualizações quando essa configuração não é definida ou quando é configurada como False.</translation>
 <translation id="6376659517206731212">Pode ser obrigatória</translation>
 <translation id="6378076389057087301">Especifica se a atividade de áudio afeta o gerenciamento de energia</translation>
 <translation id="637934607141010488">Informa a lista de usuários do dispositivo que fizeram login recentemente.
@@ -1951,13 +1939,6 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="7336878834592315572">Manter cookies enquanto durar a sessão</translation>
 <translation id="7340034977315324840">Informar horário das atividades do dispositivo</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
-<translation id="7406651467768226499">Permitir que o app em Kiosk aberto automaticamente com zero de atraso controle a versão do <ph name="PRODUCT_OS_NAME" />.
-
-      Esta política controla se o app em Kiosk aberto automaticamente com zero de atraso tem permissão para controlar a versão do <ph name="PRODUCT_OS_NAME" />, declarando um required_platform_version em seu manifesto e usando-o como o prefixo de atualização automática de versão de destino.
-
-      Se a política for definida como "true", o valor da chave de manifesto required_platform_version do app em Kiosk aberto automaticamente com zero de atraso será usado como prefixo de atualização automática de versão de destino.
-
-      Se a política não estiver configurada ou estiver definida como "false", a chave de manifesto required_platform_version será ignorada, e a atualização automática prosseguirá normalmente.</translation>
 <translation id="7417972229667085380">Percentual pelo qual calcular o intervalo de inatividade no modo de apresentação (uso suspenso)</translation>
 <translation id="7421483919690710988">Define o tamanho do cache de disco de mídia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>
@@ -2520,7 +2501,7 @@ Se esta política não for definida, 'AllowPlugins' será usada, e o usuário po
 <translation id="930930237275114205">Configura o diretório de dados do usuário do <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Configurar os modos de desbloqueio rápido permitidos.</translation>
 <translation id="944817693306670849">Definir o tamanho do disco de cache</translation>
-<translation id="969164417253718105">Esta configuração controla com que frequência a tela de bloqueio solicitará que a senha seja informada para continuar usando o desbloqueio rápido. Se a última vez em que a senha foi informada tiver sido há um período maior que essa configuração, o desbloqueio rápido não estará disponível ao acessar a tela de bloqueio. Se o usuário ficar na tela de bloqueio após esse período, uma senha será solicitada na próxima vez em que ele informar o código errado ou acessar novamente a tela de bloqueio, o que ocorrer primeiro.
+<translation id="969164417253718105">Esta configuração controla com que frequência a tela de bloqueio solicitará que a senha seja informada para continuar usando o desbloqueio rápido. Se a senha tiver sido informada pela última vez em uma data fora do período dessa configuração, o desbloqueio rápido não estará disponível ao acessar a tela de bloqueio. Se o usuário ficar na tela de bloqueio após esse período, uma senha será solicitada na próxima vez em que ele informar o código errado ou acessar novamente a tela de bloqueio, o que ocorrer primeiro.
 
       Se esta configuração for definida, os usuários que utilizam o desbloqueio rápido terão que informar as respectivas senhas na tela de bloqueio de acordo com essa configuração.
 

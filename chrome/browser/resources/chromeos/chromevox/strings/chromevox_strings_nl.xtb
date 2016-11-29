@@ -32,7 +32,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Volgende kop voor niveau 6</translation>
 <translation id="1275718070701477396">Geselecteerd</translation>
-<translation id="1310230882256010289">Upgrades in geavanceerde opties. We hebben de werking van ChromeVox compleet vernieuwd. De prestaties, stabiliteit en online ondersteuning/naleving zijn sterk verbeterd.</translation>
+<translation id="1310230882256010289">Upgrades op de achtergrond. We hebben de werking van ChromeVox compleet vernieuwd. De prestaties, stabiliteit en online ondersteuning/naleving zijn sterk verbeterd.</translation>
 <translation id="1319608975892113573">Geen vorig blok met geciteerde tekst.</translation>
 <translation id="1321576897702511272">Help van ChromeVox verbergen</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> van <ph name="TOTAL" /></translation>
@@ -41,7 +41,7 @@
 <translation id="1342835525016946179">artikel</translation>
 <translation id="1346748346194534595">Rechts</translation>
 <translation id="136718599399906424">Volgende rij van tabel</translation>
-<translation id="1377925789329510816">Dit is de laatste is de laatste kop. Druk op Zoeken + H om terug te keren naar de eerste kop of druk op Zoeken + Shift + H om naar de tweede kop op deze pagina te gaan.</translation>
+<translation id="1377925789329510816">Dit is de laatste kop. Druk op Zoeken + H om terug te keren naar de eerste kop of druk op Zoeken + Shift + H om naar de tweede kop op deze pagina te gaan.</translation>
 <translation id="1383876407941801731">Zoeken</translation>
 <translation id="1385214448885562192">Druk op Enter om door te gaan of op Escape om te annuleren. Druk op de pijl-omlaag voor het volgende resultaat en op de pijl-omhoog voor het vorige resultaat.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -519,7 +519,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="5712338278108304766">Volgende kolom van tabel</translation>
 <translation id="571866080859340309">Groepen verkennen</translation>
 <translation id="5728409797179002635">Geen tabel gevonden.</translation>
-<translation id="5732189279857692565">Dit is de tweede kop. Ga door; druk op Zoeken + H of Zoeken + Shift + H.</translation>
+<translation id="5732189279857692565">Dit is de tweede kop. Ga door. Druk op Zoeken + H of Zoeken + Shift + H.</translation>
 <translation id="5748623122140342504">Vorige kop voor niveau 5</translation>
 <translation id="5750633686117194034">Er is geen functietoets ingedrukt. Raak een of meer functietoetsen aan, til je vingers op zodra je klaar bent en je hoort dat de toetsen zijn ingedrukt. Druk op Tab om te sluiten.</translation>
 <translation id="5788275253279308023">incognitovenster, tabblad <ph name="TITLE" /></translation>
@@ -554,7 +554,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6119955456199054975">Einde van de cel.</translation>
 <translation id="6122013438240733403">knop</translation>
 <translation id="6129953537138746214">Spatie</translation>
-<translation id="6138576064440631958">$1 chord</translation>
+<translation id="6138576064440631958">Combinatie $1</translation>
 <translation id="6142308968191113180">Kop 4</translation>
 <translation id="6169420925157477918">Afbeelding met lange beschrijving</translation>
 <translation id="6186305613600865047">Naar de onderkant van de pagina</translation>
@@ -610,7 +610,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="6786800275320335305">Artikel</translation>
 <translation id="6787839852456839824">Sneltoetsen</translation>
 <translation id="6793101435925451627">keuzelijst</translation>
-<translation id="6818172019016005152">We hebben hard gewerkt om de functionaliteit van ChromeVox te vernieuwen en te verbeteren. De volgende functies zijn nieuw:</translation>
+<translation id="6818172019016005152">We hebben hard gewerkt aan een vernieuwd en verbeterd ChromeVox. De volgende functies zijn nieuw:</translation>
 <translation id="6833103209700200188">Voettekst</translation>
 <translation id="6871161210040114857">Hoofdlettergebruik wordt genegeerd.</translation>
 <translation id="6877435256196695200">Geen volgende afbeelding.</translation>
@@ -628,7 +628,7 @@ Druk op Alt + F om het menu van de Chrome-browser te openen.</translation>
 <translation id="7037042857287298941">Vorige lijst</translation>
 <translation id="7041173719775863268">Selectie eindigen</translation>
 <translation id="7086377898680121060">helderheid omhoog</translation>
-<translation id="7094527465295945904">Nieuwe sneltoetsen. We hebben een sneltoets voor zoeken in ChromeVox gemaakt en de toetsencombinaties drastisch vereenvoudigd.</translation>
+<translation id="7094527465295945904">Nieuwe sneltoetsen. We hebben een functietoets voor zoeken in ChromeVox gemaakt en de toetsencombinaties drastisch vereenvoudigd.</translation>
 <translation id="7095834689119144465">Tekst alleen numeriek bewerken</translation>
 <translation id="7096001299300236431">Vorige media</translation>
 <translation id="7116595520562830928">multln</translation>

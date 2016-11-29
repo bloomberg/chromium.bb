@@ -119,7 +119,7 @@ Es posible que algunas funciones no estén disponibles y que no se guarden los c
 <translation id="4621240073146040695">Chromium casi ha terminado de actualizarse. Reinícialo para completar la actualización.</translation>
 <translation id="4677944499843243528">Parece que otro proceso de Chromium (<ph name="PROCESS_ID" />) está utilizando el perfil en otro ordenador (<ph name="HOST_NAME" />). Chromium ha bloqueado el perfil para que no se dañe. Si estás seguro de que ningún otro proceso está utilizando este perfil, puedes desbloquearlo y volver a iniciar Chromium.</translation>
 <translation id="469338717132742108">Obtener ayuda de Chromium OS</translation>
-<translation id="4708774505295300557">Otro usuario ha iniciado sesión anteriormente en Chromium con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chromium para mantener tu información por separado.</translation>
+<translation id="4708774505295300557">Otro usuario ha iniciado sesión anteriormente en Chromium con la cuenta <ph name="ACCOUNT_EMAIL_LAST" /> a través de este ordenador. Debes crear un usuario de Chromium para proteger tu información.</translation>
 <translation id="4714956846925717402">Accede a Chromium más rápido</translation>
 <translation id="4743926867934016338">Aceptar y buscar</translation>
 <translation id="4888717733111232871">Regla entrante para que Chromium permita tráfico mDNS.</translation>

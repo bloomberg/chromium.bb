@@ -706,7 +706,6 @@ Conseil : Le mode navigation privée (<ph name="SHORTCUT_KEY" />) pourra vous �
 <translation id="9050666287014529139">Phrase secrète</translation>
 <translation id="9065203028668620118">Modifier</translation>
 <translation id="9068849894565669697">Sélectionner couleur</translation>
-<translation id="9092364396508701805">La page <ph name="HOST_NAME" /> ne fonctionne pas</translation>
 <translation id="9103872766612412690">Un chiffrement est normalement utilisé sur le site <ph name="SITE" /> pour protéger vos informations. Lors de la dernière tentative de connexion de Chromium au site <ph name="SITE" />, des identifiants inhabituels et incorrects ont été retournés. Il est possible qu'un individu malveillant tente de se faire passer pour <ph name="SITE" /> ou qu'un écran de connexion Wi-Fi ait interrompu la connexion. Vos informations restent sécurisées, car nous avons arrêté la connexion avant l'échange des données.</translation>
 <translation id="9137013805542155359">Afficher l'original</translation>
 <translation id="9148507642005240123">&amp;Annuler la modification</translation>

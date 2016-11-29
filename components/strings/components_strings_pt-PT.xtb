@@ -706,7 +706,6 @@ O modo de navegação anónima <ph name="SHORTCUT_KEY" /> pode ser útil da pró
 <translation id="9050666287014529139">Frase de acesso</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9068849894565669697">Selecionar cor</translation>
-<translation id="9092364396508701805">A página de <ph name="HOST_NAME" /> não está a funcionar</translation>
 <translation id="9103872766612412690">Normalmente, o site <ph name="SITE" /> utiliza a encriptação para proteger as suas informações. Quando o Chromium tentou estabelecer ligação a <ph name="SITE" /> desta vez, o Website devolveu credenciais invulgares e incorretas. Isto pode acontecer quando um utilizador mal intencionado tenta simular ser <ph name="SITE" /> ou quando um ecrã de início de sessão Wi-Fi interrompe a ligação. As suas informações continuam seguras porque o Chromium interrompeu a ligação antes de qualquer troca de dados.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9148507642005240123">&amp;Anular edição</translation>

@@ -706,7 +706,6 @@
 <translation id="9050666287014529139">パスフレーズ</translation>
 <translation id="9065203028668620118">編集</translation>
 <translation id="9068849894565669697">色の選択</translation>
-<translation id="9092364396508701805"><ph name="HOST_NAME" /> ページは機能していません</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> では通常、暗号化して情報を保護しています。今回、Chromium から <ph name="SITE" /> への接続試行時に、このウェブサイトからいつもとは異なる誤った認証情報が返されました。悪意のあるユーザーが <ph name="SITE" /> になりすまそうとしているか、Wi-Fi ログイン画面で接続が中断された可能性があります。データのやり取りが行われる前に Chromium によって接続が停止されたため、情報は引き続き保護されています。</translation>
 <translation id="9137013805542155359">原文のページを表示</translation>
 <translation id="9148507642005240123">編集の取り消し（&amp;U）</translation>

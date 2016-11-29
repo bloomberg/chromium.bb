@@ -787,9 +787,6 @@
 <translation id="3322771899429619102">Îți permite să setezi o listă de șabloane de adrese URL care specifică site-urile ce au permisiunea să folosească generarea cheilor. Dacă în „KeygenBlockedForUrls” este specificat un șablon de adresă URL, această politică va modifica aceste excepții.
 
           Dacă politica nu este configurată, valoarea prestabilită la nivel global va fi folosită pentru toate site-urile, fie din politica „DefaultKeygenSetting”, în cazul în care aceasta este configurată, fie din configurația personală a utilizatorului, în caz contrar.</translation>
-<translation id="3322902067538988734">Dacă această politică este activată, utilizatorul trebuie să se conecteze la <ph name="PRODUCT_NAME" /> cu profilul său înainte de a folosi browserul. Iar politica BrowserGuestModeEnabled va fi în mod prestabilit dezactivată.
-
-      Dacă această politică este dezactivată sau nu este configurată, utilizatorul poate folosi browserul fără să se conecteze la <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Setează frecvența cu care un utilizator trebuie să introducă parola pentru a folosi deblocarea rapidă.</translation>
 <translation id="3381968327636295719">Utilizează în mod prestabilit browserul gazdă</translation>
 <translation id="3417418267404583991">Dacă această politică este activată sau nu este configurată, <ph name="PRODUCT_OS_NAME" /> va permite invitaților să se conecteze. Conectările invitaților sunt sesiuni de utilizator anonime și nu necesită o parolă.
@@ -1597,7 +1594,7 @@
 <translation id="6157537876488211233">Lista de valori separate prin virgulă a regulilor de ocolire a proxy-ului</translation>
 <translation id="6158324314836466367">Numele magazinului web pentru întreprinderi (politică învechită)</translation>
 <translation id="6166832345529129545">Controlează ce moduri pentru deblocare rapidă pot fi configurate și folosite.
-      Această setare adaugă pe lista albă modurile pentru deblocare rapidă permise care pot fi configurate și folosite pentru a debloca ecranul de blocare. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „toate”, „PIN”. Dacă opțiunea „toate” este selectată, vor fi disponibile toate modurile rapide acceptate. În caz contrar, vor fi disponibile doar modurile din listă.
+      Această setare adaugă pe lista albă modurile pentru deblocare rapidă permise care pot fi configurate și folosite pentru a debloca ecranul. Valoarea este o listă de șiruri, iar fiecare dintre acestea trebuie să fie unul dintre următoarele: „toate”, „PIN”. Dacă opțiunea „toate” este selectată, vor fi disponibile toate modurile rapide acceptate. În caz contrar, vor fi disponibile doar modurile din listă.
 
       Dacă setarea este configurată, modurile pentru deblocare rapidă de tipuri neincluse în listă nu pot fi configurate sau folosite.
 
@@ -1609,14 +1606,6 @@
       În caz contrar, poate fi configurată la una dintre următoarele valori: „sslv3”, „tls1”, „tls1.1” sau „tls1.2”. Atunci când este configurată, <ph name="PRODUCT_NAME" /> nu va folosi versiuni SSL/TLS inferioare versiunii specificate. Valorile neidentificate vor fi ignorate.
 
       Reține că în ciuda numărului, „sslv3” este o versiune anterioară versiunii „tls1”.</translation>
-<translation id="6177482277304066047">Setează o versiune țintă pentru actualizări automate.
-
-      Specifică prefixul unei versiuni țintă la care <ph name="PRODUCT_OS_NAME" /> trebuie să se actualizeze. Dacă dispozitivul rulează o versiune care este inferioară prefixului specificat, actualizarea se va face la cea mai recentă versiune care are prefixul dat. Dacă pe dispozitiv este instalată deja o versiune superioară, nu se întâmplă nimic (adică nu se face trecerea la o versiune inferioară), iar dispozitivul va rămâne la versiunea curentă. Formatul prefixului reflectă structura componentelor, ca în următorul exemplu:
-
-      "" (sau neconfigurat): actualizarea se efectuează la ultima versiune disponibilă;
-      "1412.": actualizare la orice versiune subordonată pentru 1412 (de exemplu, 1412.24.34 sau 1412.60.2);
-      "1412.2.": actualizare la orice versiune subordonată pentru 1412.2 (de exemplu, 1412.2.34 sau 1412.2.2);
-      "1412.24.34": actualizare numai la această versiune.</translation>
 <translation id="6190022522129724693">Setare prestabilită pentru ferestrele pop-up</translation>
 <translation id="6197453924249895891">Acordă extensiilor accesul la certificatele companiei.
 
@@ -1652,9 +1641,6 @@
 <translation id="6367755442345892511">Această politică stabilește dacă utilizatorul poate configura canalul de lansare</translation>
 <translation id="6368011194414932347">Configurează adresa URL a paginii de pornire</translation>
 <translation id="6368403635025849609">Permite JavaScript pe aceste site-uri</translation>
-<translation id="6373222873250380826">Atunci când politica este activată, se dezactivează actualizările automate.
-
-      Dispozitivele cu <ph name="PRODUCT_OS_NAME" /> verifică în mod automat existența unor actualizări atunci când această setare nu este configurată sau nu este activată.</translation>
 <translation id="6376659517206731212">Poate fi obligatorie</translation>
 <translation id="6378076389057087301">Specificați dacă activitatea audio afectează gestionarea consumului de energie</translation>
 <translation id="637934607141010488">Raportează lista cu utilizatorii dispozitivului care s-au conectat recent.
@@ -1991,13 +1977,6 @@ nu poate fi stabilit de utilizator din setările browserului.
 <translation id="7336878834592315572">Păstrați cookie-urile pe durata sesiunii</translation>
 <translation id="7340034977315324840">Raportați perioadele de activitate ale dispozitivului</translation>
 <translation id="7384999953864505698">Permite protocolul QUIC</translation>
-<translation id="7406651467768226499">Dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" />.
-
-      Această politică stabilește dacă aplicația chioșc lansată automat fără nicio întârziere poate să controleze versiunea <ph name="PRODUCT_OS_NAME" /> declarând o valoare pentru required_platform_version în manifestul său și să o folosească drept prefixul versiunii țintă de actualizare automată.
-
-      Dacă politica este activată, valoarea cheii din manifest required_platform_version a aplicației chioșc lansate automat fără nicio întârziere este folosită drept prefixul versiunii țintă de actualizare automată.
-
-      Dacă politica nu este configurată sau este dezactivată, cheia din manifest required_platform_version este ignorată, iar actualizarea automată se face ca de obicei.</translation>
 <translation id="7417972229667085380">Procentul cu care se ajustează intervalul de inactivitate în modul de prezentare (politică învechită)</translation>
 <translation id="7421483919690710988">Setați dimensiunea în octeți a memoriei cache pe disc pentru conținut media</translation>
 <translation id="7424751532654212117">Lista de excepții de la lista cu pluginuri dezactivate</translation>

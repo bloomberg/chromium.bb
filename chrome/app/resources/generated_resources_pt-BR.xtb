@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Procurando dispositivos Bluetooth e USB...</translation>
 <translation id="1056898198331236512">Aviso</translation>
 <translation id="1056982457359827501">Ativa a Publicidade de Bluetooth de baixa energia (BLE, na sigla em inglês) em Aplicativos do Google Chrome. A Publicidade de BLE pode interferir no uso normal de recursos de Bluetooth de baixa energia.</translation>
-<translation id="1058325955712687476">Ativa o Serviço de engajamento do site, que registra a interação com os sites e aloca os recursos adequadamente.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1062866675591297858">Administre seus usuários supervisionados usando o <ph name="BEGIN_LINK" />Painel de usuários supervisionados<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT" /> arquivos...</translation>
 <translation id="1352103415082130575">Teclado tailandês (pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Gerenciador de armazenamento do material design</translation>
 <translation id="1353966721814789986">Páginas de inicialização</translation>
 <translation id="1354868058853714482">O Adobe Reader está desatualizado e pode oferecer insegurança.</translation>
 <translation id="1355408554203439639">Rasterizador de software 3D</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Cache do token da API de identidade</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detalhes: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Captura de espec. v1 do evento do ponteiro</translation>
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="1481244281142949601">Sua sandbox é adequada.</translation>
 <translation id="1482124012545051544">Pronto para fazer o backup de <ph name="FILE_COUNT" /> fotos novas</translation>
@@ -697,7 +694,7 @@
 <translation id="1895658205118569222">Encerramento</translation>
 <translation id="1895934970388272448">Você deve confirmar o registro na sua impressora para concluir este processo. Verifique isso agora.</translation>
 <translation id="1897762215429052132">Configurar conexão de rede, idioma, layout do teclado...</translation>
-<translation id="189967228374787259">Empacota "Apps da Web progressivos" para que eles possam ser integrados de forma mais profunda ao Android. Um servidor do Chrome é usado para empacotar sites.
+<translation id="189967228374787259">Cria pacotes de "Apps da Web progressivos" para possibilitar maior integração ao Android. Um servidor do Chrome é usado para criar pacotes de sites.
         No Chrome Canary e Chrome Dev, essa ação exige que a opção “Fontes não confiáveis” esteja ativada nas configurações de segurança do Android.</translation>
 <translation id="1899708097738826574"><ph name="OPTIONS_TITLE" /> - <ph name="SUBPAGE_TITLE" /></translation>
 <translation id="1901303067676059328">Selecionar &amp;tudo</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">Guia anônima: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Compromisso da autoridade de certificação</translation>
 <translation id="218070003709087997">Use um número para indicar o número de cópias a serem impressas (1 a 999).</translation>
-<translation id="218492098606937156">Ativar eventos de toque</translation>
 <translation id="2187317261103489799">Detectar (padrão)</translation>
 <translation id="2187895286714876935">Erro de importação do certificado de servidor</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -1041,7 +1037,6 @@ Depois que um novo usuário supervisionado é criado, é possível gerenciar as 
 <translation id="2367972762794486313">Mostrar aplicativos</translation>
 <translation id="2371076942591664043">Abrir quando estiver &amp;concluído</translation>
 <translation id="2372036074421194686">O Chrome encontrou um programa indesejado (<ph name="UWS_NAME" />) instalado no seu computador. Você pode removê-lo executando a Ferramenta de limpeza do Chrome.</translation>
-<translation id="2375701438512326360">Força o suporte ao touchscreen a sempre estar ativado ou desativado ou a ser ativado quando um touchscreen for detectado na inicialização (a opção padrão é Automático).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> arquivos selecionados</translation>
 <translation id="2378982052244864789">Selecionar o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando caixa de diálogo de sistema... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Selecionar botão de opção</translation>
 <translation id="3649138363871392317">A foto foi capturada</translation>
 <translation id="3650242103421962931">Linear</translation>
-<translation id="3653069516296104653">Desativa a captura implícita de eventos de toque do ponteiro.</translation>
 <translation id="3653999333232393305">Continuar permitindo que <ph name="HOST" /> acesse seu microfone</translation>
 <translation id="3654045516529121250">Ler suas configurações de acessibilidade</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um arquivo.}one{Tem acesso permanente a # arquivos.}other{Tem acesso permanente a # arquivos.}}</translation>
@@ -2128,7 +2122,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">O navegador foi fechado antes do término do download.</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3712897371525859903">Salvar página &amp;como...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Enviar automaticamente<ph name="END_WHITEPAPER_LINK" /> algumas informações do sistema e conteúdos de página ao Google para ajudar a detectar sites e apps perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">agenda na web</translation>
 <translation id="3715597595485130451">Conectar-se ao Wi-Fi</translation>
 <translation id="3716615839203649375">permitir</translation>
@@ -2477,13 +2470,11 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="418179967336296930">Teclado fonético russo (YaZHert)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arraste para mover uma tela</translation>
-<translation id="4188447344915957833">Ativa o gerenciador de armazenamento nas configurações do material design.</translation>
 <translation id="4189406272289638749">Uma extensão, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, está controlando esta configuração.</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4193182321948161343">Ativar o gerenciador de usuários do material design</translation>
 <translation id="4193297030838143153">Novo endereço de faturamento...</translation>
 <translation id="4194570336751258953">Ativar toque para clicar</translation>
-<translation id="4195621107636847694">Serviço de engajamento do site</translation>
 <translation id="4195643157523330669">Abrir em uma nova guia</translation>
 <translation id="4195814663415092787">Continuar de onde você parou</translation>
 <translation id="4197674956721858839">Compactar seleção</translation>
@@ -3113,7 +3104,7 @@ Todos os usuários devem sair para continuar.</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 com criptografia RSA</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5094721898978802975">Comunicar-se com aplicativos nativos de colaboração</translation>
-<translation id="5096691708387552456">Ativa o carregamento (ou download) simultâneo em segundo plano de páginas em dispositivos Android com 512 MB de memória RAM. Se essa opção não for ativada, o carregamento em segundo plano ocorrerá quando esse dispositivo estiver inativo.</translation>
+<translation id="5096691708387552456">Ativa o carregamento (ou download) simultâneo em segundo plano de páginas em dispositivos Android básicos, com 512 MB de memória RAM. Se essa opção não for ativada, o carregamento em segundo plano ocorrerá quando esse dispositivo estiver inativo.</translation>
 <translation id="5097002363526479830">Falha na conexão à rede "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">Hebraico</translation>
 <translation id="5098647635849512368">Não é possível encontrar o caminho absoluto para o diretório do pacote.</translation>
@@ -3547,7 +3538,7 @@ Não exponha nenhuma informação confidencial.</translation>
 <translation id="5622017037336776003">Abrir PDF no Reader</translation>
 <translation id="5623842676595125836">Registro</translation>
 <translation id="5624120631404540903">Gerenciar senhas</translation>
-<translation id="5624562467061092681">Ativa a exibição do botão "FAZER O DOWNLOAD DA PÁGINA MAIS TARDE" em páginas de erro de forma que o usuário possa clicar nele para fazer o download da página posteriormente.</translation>
+<translation id="5624562467061092681">Ativa a exibição do botão "FAZER O DOWNLOAD DA PÁGINA MAIS TARDE" em páginas de erro. Dessa forma, o usuário pode clicar nesse botão para fazer o download da página posteriormente.</translation>
 <translation id="5626134646977739690">Nome:</translation>
 <translation id="5627086634964711283">Controla também qual página deve ser exibida quando você clica no botão "Página inicial".</translation>
 <translation id="5627259319513858869">Ativa o uso de recursos experimentais de canvas que ainda estão em desenvolvimento.</translation>
@@ -5325,7 +5316,7 @@ Mantenha a sua chave de arquivo em um local seguro. Você precisará dela para c
 <translation id="8074127646604999664">Permitir que sites fechados recentemente concluam o envio e o recebimento de dados</translation>
 <translation id="8077684120002777443">Nome de usuário (por exemplo, usuario@example.com)</translation>
 <translation id="8079530767338315840">Repetir</translation>
-<translation id="8081035298624755899">Ativa o carregamento simultâneo em segundo plano em dispositivos com 512 MB de memória RAM.</translation>
+<translation id="8081035298624755899">Ativa o carregamento simultâneo em segundo plano em dispositivos básicos.</translation>
 <translation id="8083739373364455075">Ganhe 100 GB de espaço livre com o Google Drive</translation>
 <translation id="8086015605808120405">Configurando <ph name="PRINTER_NAME" />…</translation>
 <translation id="8088137642766812908">Cuidado, este recurso morde</translation>

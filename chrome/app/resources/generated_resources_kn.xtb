@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">ಬ್ಲೂಟೂತ್‌ ಮತ್ತು USB ಸಾಧನಗಳನ್ನು ಹುಡುಕಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1056898198331236512">ಎಚ್ಚರಿಕೆ</translation>
 <translation id="1056982457359827501">Chrome Apps ನಲ್ಲಿ BLE ಜಾಹೀರಾತುಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ. BLE ಜಾಹೀರಾತು ಬ್ಲೂಟೂತ್‌ನ ಸಾಮಾನ್ಯ ಬಳಕೆಯ ವೈಶಿಷ್ಟ್ಯಗಳೊಂದಿಗೆ ಮಧ್ಯೆ ಪ್ರವೇಶಿಸಬಹುದು.</translation>
-<translation id="1058325955712687476">ಸೈಟ್‌ಗಳೊಂದಿಗೆ ಸಂವಾದವನ್ನು ರೆಕಾರ್ಡ್ ಮಾಡುವ ಮತ್ತು ಅದಕ್ಕೆ ತಕ್ಕಂತೆ ಸಂಪನ್ಮೂಲಗಳನ್ನು ನಿಯೋಜಿಸುವ ಸೈಟ್ ತೊಡಗಿಸಿಕೊಳ್ಳುವಿಕೆ ಸೇವೆಯನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="1058418043520174283"><ph name="COUNT" /> ರಲ್ಲಿ <ph name="INDEX" /></translation>
 <translation id="1062407476771304334">ಸ್ಥಾನಾಂತರಿಸು</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರ ಡ್ಯಾಶ್‌ಬೋರ್ಡ್<ph name="END_LINK" /> ಮೂಲಕ ನಿಮ್ಮ ಮೇಲ್ವಿಚಾರಣೆಯ ಬಳಕೆದಾರರನ್ನು ನಿರ್ವಹಿಸಿ.</translation>
@@ -210,7 +209,7 @@
 <translation id="1277908057200820621">ಸಾಧನ ಪಟ್ಟಿಯನ್ನು ವೀಕ್ಷಿಸಿ</translation>
 <translation id="1278049586634282054">ಪರಿಶೀಲನಾ ವೀಕ್ಷಣೆಗಳು:</translation>
 <translation id="1278813325885878377">ಹಂಗೇರಿಯನ್ QWERTY ಕೀಬೋರ್ಡ್</translation>
-<translation id="1284355409890639046">Bluetooth ಸಾಧನ ಜೋಡಿಗೊಳಿಸಿ</translation>
+<translation id="1284355409890639046">ಬ್ಲೂಟೂತ್‌ ಸಾಧನ ಜೋಡಿಗೊಳಿಸಿ</translation>
 <translation id="1285320974508926690">ಈ ಸೈಟ್ ಅನ್ನು ಎಂದಿಗೂ ಭಾಷಾಂತರಿಸದಿರಿ</translation>
 <translation id="1285484354230578868">ಡೇಟಾವನ್ನು ನಿಮ್ಮ Google ಡ್ರೈವ್ ಖಾತೆಯಲ್ಲಿ ಸಂಗ್ರಹಿಸಿ</translation>
 <translation id="1290223615328246825">ಸ್ವಯಂಚಾಲಿತ ಸೈನ್-ಇನ್ ವಿಫಲವಾಗಿದೆ</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> ಫೈಲ್‌ಗಳನ್ನು ಆಮದು ಮಾಡಲಾಗುತ್ತಿದೆ...</translation>
 <translation id="1352103415082130575">ಥಾಯ್ ಕೀಬೋರ್ಡ್ (ಪ್ಯಾಟಾಚೊಟ್)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">ವಸ್ತು ವಿನ್ಯಾಸ ಸಂಗ್ರಹಣೆ ನಿರ್ವಾಹಕ</translation>
 <translation id="1353966721814789986">ಆರಂಭಿಕ ಪುಟಗಳು</translation>
 <translation id="1354868058853714482">Adobe Reader ಅವಧಿ ಮುಗಿದಿದೆ ಮತ್ತು ಸುರಕ್ಷತೆಯ ದೃಷ್ಟಿಯಿಂದ ದುರ್ಬಲಗೊಂಡಿರಬಹುದು.</translation>
 <translation id="1355408554203439639">3D ಸಾಫ್ಟ್‌ವೇರ್ ರಾಸ್ಟರೈಸರ್</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">ಗುರುತಿಸುವಿಕೆ API ಟೋಕನ್ ಕ್ಯಾಶ್</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">ವಿವರಗಳು: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">ಪಾಯಿಂಟರ್ ಈವೆಂಟ್ v1 ಸ್ಪೆಕ್ ಸೆರೆಹಿಡಿಯುವಿಕೆ</translation>
 <translation id="1480041086352807611">ಡೆಮೋ ಮೋಡ್</translation>
 <translation id="1481244281142949601">ನೀವು ಸಮರ್ಪಕವಾಗಿ sandbox ಅನ್ನು ಪ್ರವೇಶಿಸಿದ್ದೀರಿ.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> ಹೊಸ ಫೋಟೋಗಳು ಬ್ಯಾಕಪ್ ಮಾಡಲು ಸಿದ್ಧವಾಗಿವೆ</translation>
@@ -837,7 +834,7 @@
 <translation id="2121825465123208577">ಮರುಗಾತ್ರ</translation>
 <translation id="2125314715136825419">Adobe Reader ನವೀಕರಣವಿಲ್ಲದೆ ಮುಂದುವರಿಸು (ಶಿಫಾರಸು ಮಾಡಲಾಗಿಲ್ಲ)</translation>
 <translation id="2126167708562367080">ನಿಮ್ಮ ನಿರ್ವಾಹಕರು ಸಿಂಕ್ ಅನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿದ್ದಾರೆ.</translation>
-<translation id="2127166530420714525">Bluetooth ಅಡಾಪ್ಟರ್ ಶಕ್ತಿ ಸ್ಥಿತಿಯನ್ನು ಬದಲಾಯಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
+<translation id="2127166530420714525">ಬ್ಲೂಟೂತ್‌ ಅಡಾಪ್ಟರ್ ಶಕ್ತಿ ಸ್ಥಿತಿಯನ್ನು ಬದಲಾಯಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="2127372758936585790">ಕಡಿಮೆ ವಿದ್ಯುತ್ ಚಾರ್ಜರ್</translation>
 <translation id="2128531968068887769">ಸ್ಥಳೀಯ ಗ್ರಾಹಕ</translation>
 <translation id="212862741129535676">ಆವರ್ತನ ಸ್ಥಿತಿಯ ನೆಲೆಸುವಿಕೆಯ ಪ್ರತಿಶತ</translation>
@@ -886,7 +883,6 @@
 <translation id="2177950615300672361">ಅದೃಶ್ಯ ಟ್ಯಾಬ್: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA ಹೊಂದಾಣಿಕೆ</translation>
 <translation id="218070003709087997">ಎಷ್ಟು ಪ್ರತಿಗಳನ್ನು ಮುದ್ರಿಸಬೇಕೆಂದು (1 ರಿಂದ 999) ಸೂಚಿಸಲು ಸಂಖ್ಯೆಯನ್ನು ಬಳಸಿ.</translation>
-<translation id="218492098606937156">ಸ್ಪರ್ಶ ಈವೆಂಟ್‌ಗಳನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2187317261103489799">ಪತ್ತೆ ಮಾಡಿ (ಡಿಫಾಲ್ಟ್)</translation>
 <translation id="2187895286714876935">ಸರ್ವರ್ ಪ್ರಮಾಣಪತ್ರದ ಆಮದು ದೋಷ</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> ತೆರೆಯಿರಿ</translation>
@@ -1042,7 +1038,6 @@
 <translation id="2367972762794486313">ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ತೋರಿಸು</translation>
 <translation id="2371076942591664043">&amp;ಮುಗಿಸಿದಾಗ ತೆರೆಯಿರಿ</translation>
 <translation id="2372036074421194686">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಲ್ಲಿ ಅನಪೇಕ್ಷಿತ ಪ್ರೋಗ್ರಾಂ (<ph name="UWS_NAME" />) ಸ್ಥಾಪನೆಯಾಗಿರುವುದನ್ನು Chrome ಪತ್ತೆಹಚ್ಚಿದೆ. Chrome ಸ್ವಚ್ಛತಾ ಸಾಧನವನ್ನು ರನ್ ಮಾಡುವ ಮೂಲಕ ಅದನ್ನು ತೆಗೆದುಹಾಕಲು ನಿಮಗೆ ಸಾಧ್ಯವಾಗಬಹುದು.</translation>
-<translation id="2375701438512326360">ಎಲ್ಲಾ ಸಂದರ್ಭಗಳಲ್ಲೂ ಸಕ್ರಿಯಗೊಂಡಿರಲು ಅಥವಾ ನಿಷ್ಕ್ರಿಯಗೊಂಡಿರಲು ಅಥವಾ ಆರಂಭದ (ಸ್ವಯಂಚಾಲಿತ, ಡಿಫಾಲ್ಟ್) ನಲ್ಲಿ ಸ್ಪರ್ಶಪರದೆಯನ್ನು ಪತ್ತೆಹಚ್ಚುವಾಗ ಸಕ್ರಿಯಗೊಳಿಸುವಿಕೆಯ ಸ್ಪರ್ಶಪರದೆಯನ್ನು ಬೆಂಬಲಿಸಲು ಒತ್ತಾಯಿಸಿ.</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ಫೈಲ್‌ಗಳನ್ನು ಆಯ್ಕೆ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="2378982052244864789">ವಿಸ್ತರಣೆ ಡೈರೆಕ್ಟರಿಯನ್ನು ಆಯ್ಕೆಮಾಡಿ.</translation>
 <translation id="2379281330731083556">ಸಿಸ್ಟಂ ಸಂವಾದವನ್ನು ಬಳಸಿ ಮುದ್ರಿಸಿ... <ph name="SHORTCUT_KEY" /></translation>
@@ -1521,7 +1516,7 @@
 <translation id="2942290791863759244">ಜರ್ಮನ್ ನಿಯೊ 2 ಕೀಬೋರ್ಡ್</translation>
 <translation id="2943400156390503548">ಸ್ಲೈಡ್‌ಗಳು</translation>
 <translation id="2946119680249604491">ಸಂಪರ್ಕ ಸೇರಿಸಿ</translation>
-<translation id="2946640296642327832">bluetooth ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="2946640296642327832">ಬ್ಲೂಟೂತ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="2948300991547862301"><ph name="PAGE_TITLE" /> ಗೆ ಹೋಗಿ</translation>
 <translation id="29488703364906173">ಆಧುನಿಕ ವೆಬ್‌ಗಾಗಿ ರೂಪಿಸಲಾದ, ತ್ವರಿತ, ಸರಳ ಮತ್ತು ಸುರಕ್ಷಿತ ವೆಬ್‌ ಬ್ರೌಸರ್‌ ಆಗಿದೆ.</translation>
 <translation id="2951247061394563839">ಕೇಂದ್ರ ವಿಂಡೋ</translation>
@@ -2085,7 +2080,6 @@
 <translation id="3648460724479383440">ಆಯ್ಕೆಮಾಡಿರುವ ರೇಡಿಯೊ ಬಟನ್</translation>
 <translation id="3649138363871392317">ಫೋಟೋವನ್ನು ಸೆರೆಹಿಡಿಯಲಾಗಿದೆ</translation>
 <translation id="3650242103421962931">ಲೀನಿಯರ್</translation>
-<translation id="3653069516296104653">ಸ್ಪರ್ಶ ಪಾಯಿಂಟರ್ ಈವೆಂಟ್‌ಗಳ ಅಂತರ್ಗತ ಸೆರೆಹಿಡಿಯುವಿಕೆಯನ್ನು ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="3653999333232393305">ನಿಮ್ಮ ಮೈಕ್ರೋಫೋನ್ ಪ್ರವೇಶಿಸಲು <ph name="HOST" /> ಗೆ ಅನುಮತಿಸುವುದನ್ನು ಮುಂದುವರೆಸಿ</translation>
 <translation id="3654045516529121250">ನಿಮ್ಮ ಪ್ರವೇಶಿಸುವಿಕೆ ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ಓದಿಕೊಳ್ಳಿ</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{ಇದು ಒಂದು ಫೈಲ್‌ಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}one{ಇದು # ಫೈಲ್‌ಗಳಿಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}other{ಇದು # ಫೈಲ್‌ಗಳಿಗೆ ಶಾಶ್ವತ ಪ್ರವೇಶವನ್ನು ಹೊಂದಿದೆ.}}</translation>
@@ -2127,7 +2121,6 @@
 <translation id="3709244229496787112">ಡೌನ್‌ಲೋಡ್ ಪೂರ್ಣಗೊಳ್ಳುವುದಕ್ಕೂ ಮುನ್ನ ಬ್ರೌಸರ್ ಶಟ್‌ಡೌನ್ ಆಗಿದೆ.</translation>
 <translation id="3711895659073496551">ಅಮಾನತು</translation>
 <translation id="3712897371525859903">&amp;ಪುಟವನ್ನು ಹೀಗೆ ಉಳಿಸಿ...</translation>
-<translation id="3713494718070140825">ಅಪಾಯಕಾರಿ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಸೈಟ್‌ಗಳ ಪತ್ತೆಗೆ ಸಹಾಯ ಮಾಡಲು Google ಗೆ ಕೆಲವು ಸಿಸ್ಟಂ ಮಾಹಿತಿ ಮತ್ತು ಪುಟ ವಿಷಯವನ್ನು <ph name="BEGIN_WHITEPAPER_LINK" />ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಕಳುಹಿಸಿ<ph name="END_WHITEPAPER_LINK" />.<ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">ವೆಬ್ ಕ್ಯಾಲೆಂಡರ್</translation>
 <translation id="3715597595485130451">ವೈ-ಫೈಗೆ ಸಂಪರ್ಕಪಡಿಸಿ</translation>
 <translation id="3716615839203649375">ಅನುಮತಿಸು</translation>
@@ -2476,13 +2469,11 @@
 <translation id="418179967336296930">ರಷ್ಯನ್ ಫೋನೆಟಿಕ್ (YaZHert) ಕೀಬೋರ್ಡ್</translation>
 <translation id="4181841719683918333">ಭಾಷೆಗಳು</translation>
 <translation id="4184885522552335684">ಪ್ರದರ್ಶನವನ್ನು ಸರಿಸಲು ಡ್ರ್ಯಾಗ್ ಮಾಡಿ</translation>
-<translation id="4188447344915957833">ವಸ್ತು ವಿನ್ಯಾಸ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಸಂಗ್ರಹಣೆಯ ನಿರ್ವಾಹಕವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>
 <translation id="4189406272289638749">&lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; ವಿಸ್ತರಣೆಯೊಂದು ಈ ಸೆಟ್ಟಿಂಗ್ ಅನ್ನು ನಿಯಂತ್ರಿಸುತ್ತಿದೆ.</translation>
 <translation id="4193154014135846272">Google ಡಾಕ್ಯುಮೆಂಟ್‌</translation>
 <translation id="4193182321948161343">ವಸ್ತು ವಿನ್ಯಾಸ ಬಳಕೆದಾರ ಮ್ಯಾನೇಜರ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="4193297030838143153">ಹೊಸ ಬಿಲ್ಲಿಂಗ್ ವಿಳಾಸ...</translation>
 <translation id="4194570336751258953">ಕ್ಲಿಕ್ ಮಾಡಲು ಟ್ಯಾಪ್ ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
-<translation id="4195621107636847694">ಸೈಟ್ ತೊಡಗಿಸಿಕೊಳ್ಳುವಿಕೆ ಸೇವೆ</translation>
 <translation id="4195643157523330669">ಹೊಸ ಟ್ಯಾಬ್‌ನಲ್ಲಿ ತೆರೆಯಿರಿ</translation>
 <translation id="4195814663415092787">ಎಲ್ಲಿ ಬಿಡಲಾಗಿದೆಯೋ ಅಲ್ಲಿಂದಲೇ ಮುಂದುವರೆ</translation>
 <translation id="4197674956721858839">ಜಿಪ್ ಆಯ್ಕೆ</translation>
@@ -3510,7 +3501,7 @@
 <translation id="5558129378926964177">ಝೂಮ್ &amp;ಇನ್</translation>
 <translation id="55601339223879446">ಪ್ರದರ್ಶನದ ಒಳಗೆ ನಿಮ್ಮ ಡೆಸ್ಕ್‌ಟಾಪ್‌ನ ಎಲ್ಲೆಗಳನ್ನು ಸರಿಹೊಂದಿಸಿ</translation>
 <translation id="556042886152191864">ಬಟನ್</translation>
-<translation id="5562781907504170924">ಈ ಟ್ಯಾಬ್ ಅನ್ನು Bluetooth ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ.</translation>
+<translation id="5562781907504170924">ಈ ಟ್ಯಾಬ್ ಅನ್ನು ಬ್ಲೂಟೂತ್‌ ಸಾಧನಕ್ಕೆ ಸಂಪರ್ಕಿಸಲಾಗಿದೆ.</translation>
 <translation id="5565871407246142825">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳು</translation>
 <translation id="5567989639534621706">ಅಪ್ಲಿಕೇಶನ್ ಸಂಗ್ರಹಗಳು</translation>
 <translation id="5568069709869097550">ಸೈನ್ ಇನ್ ಆಗಲು ಸಾಧ್ಯವಾಗುತ್ತಿಲ್ಲ</translation>
@@ -3797,7 +3788,7 @@
 <translation id="5963453369025043595"><ph name="NUM_HANDLES" /> (<ph name="NUM_KILOBYTES_LIVE" /> ಪೀಕ್)</translation>
 <translation id="5965403572731919803">ಶೆಲ್ಫ್‌ಗೆ ಸೇರಿಸು...</translation>
 <translation id="5965661248935608907">ನೀವು ಮುಖಪುಟ ಬಟನ್ ಕ್ಲಿಕ್ ಮಾಡಿದಾಗ ಅಥವಾ ಓಮ್ನಿಬಾಕ್ಸ್‌ನಿಂದ ಹುಡುಕಿದಾಗ ತೋರಿಸಬೇಕಾದ ಪುಟವನ್ನು ಕೂಡಾ ಇದು ನಿಯಂತ್ರಿಸುತ್ತದೆ.</translation>
-<translation id="5971037678316050792">Bluetooth ಅಡಾಪ್ಟರ್ ಸ್ಥಿತಿ ಮತ್ತು ಜೋಡಿಸುವಿಕೆಯನ್ನು ನಿಯಂತ್ರಿಸು</translation>
+<translation id="5971037678316050792">ಬ್ಲೂಟೂತ್‌ ಅಡಾಪ್ಟರ್ ಸ್ಥಿತಿ ಮತ್ತು ಜೋಡಿಸುವಿಕೆಯನ್ನು ನಿಯಂತ್ರಿಸು</translation>
 <translation id="5972017421290582825">MIDI ಸೆಟ್ಟಿಂಗ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="5972708806901999743">ಮೇಲಕ್ಕೆ ಸರಿಸಿ</translation>
 <translation id="5972826969634861500"><ph name="PRODUCT_NAME" /> ಪ್ರಾರಂಭಿಸು</translation>
@@ -3809,7 +3800,7 @@
 <translation id="5982621672636444458">ಆಯ್ಕೆಗಳನ್ನು ವಿಂಗಡಿಸು</translation>
 <translation id="598419517516225249">"ಮರುಮೌಲ್ಯೀಕರಿಸುವಾಗ ಹಳೆಯದಾಗಿಸುವಿಕೆ" ಸಂಗ್ರಹ ನಿರ್ದೇಶನವನ್ನು ಸಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="5984222099446776634">ಇತ್ತೀಚೆಗೆ ಭೇಟಿ ನೀಡಿದವು</translation>
-<translation id="5984814259619230127">Smart Lock Bluetooth ಕಡಿಮೆ ಶಕ್ತಿ ಅನ್ವೇಷಣೆ</translation>
+<translation id="5984814259619230127">Smart Lock ಬ್ಲೂಟೂತ್‌ ಕಡಿಮೆ ಶಕ್ತಿ ಅನ್ವೇಷಣೆ</translation>
 <translation id="5986245990306121338">ಸಕ್ರಿಯಗೊಳಿಸಿದರೆ, ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ 'ಟ್ಯಾಬ್‌ಗಳು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ವಿಲೀನಗೊಳಿಸು' ಆಯ್ಕೆ ಇದ್ದರೂ ಟ್ಯಾಬ್ ಸ್ವಿಚ್ಚರ್ ತೋರಿಸಲಾಗುತ್ತದೆ.</translation>
 <translation id="5989712527536636369"><ph name="BEGIN_PARAGRAPH1" />ಇದು ಈ ಸಾಧನದ ಬಗ್ಗೆ ಮತ್ತು ಅದನ್ನು ನೀವು ಹೇಗೆ ಬಳಸುತ್ತೀರಿ ಎಂಬುದರ ಕುರಿತು ಸಾಮಾನ್ಯ ಮಾಹಿತಿಯಾಗಿದೆ, ಅಂದರೆ ಬ್ಯಾಟರಿ ಮಟ್ಟ, ನಿಮ್ಮ ಅಪ್ಲಿಕೇಶನ್‌ಗಳನ್ನು ಎಷ್ಟು ಬಾರಿ ಬಳಸಲಾಗುತ್ತದೆ, ನೆಟ್‌ವರ್ಕ್ ಸಂಪರ್ಕಗಳ ಗುಣಮಟ್ಟ ಮತ್ತು ಅವಧಿ (ವೈ-ಫೈ ಮತ್ತು ಬ್ಲೂಟೂತ್‌ನಂತಹ) ಮತ್ತು ಕೆಲಸ ಮಾಡುವ ರೀತಿಯಲ್ಲಿ ಮಾಡದೆ ಇರುವಾಗ ಕ್ರ್ಯಾಶ್ ವರದಿಗಳಂತಹ ಮಾಹಿತಿ ಹೊಂದಿರುತ್ತದೆ. ಇದನ್ನು ಎಲ್ಲರಿಗೂ Google ನ ಉತ್ಪನ್ನಗಳು ಮತ್ತು ಸೇವೆಗಳನ್ನು ಸುಧಾರಿಸಲು ಬಳಸಲಾಗುತ್ತದೆ. ಕೆಲವು ಒಟ್ಟು ಮೊತ್ತದ ಮಾಹಿತಿಯು Android ಡೆವಲಪರ್‌ಗಳಂತಹ ಪಾಲುದಾರರಿಗೆ, ತಮ್ಮ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ಉತ್ಪನ್ನಗಳು ಉತ್ತಮವಾಗಿ ಕಾರ್ಯನಿರ್ವಹಿಸುವಂತೆ ಕೂಡಾ ಸಹಾಯ ಮಾಡುತ್ತದೆ.<ph name="END_PARAGRAPH1" /><ph name="BEGIN_PARAGRAPH2" />ನೀವು ಇದನ್ನು ಯಾವ ಸಮಯದಲ್ಲಾದರೂ Android ಅಪ್ಲಿಕೇಶನ್ ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ ಆನ್ ಅಥವಾ ಆಫ್ ಮಾಡಬಹುದು. ಸಿಸ್ಟಂ ಅಪ್‌ಡೇಟ್‌ಗಳು ಮತ್ತು ಭದ್ರತೆಯಂತಹ ಅಗತ್ಯ ಸೇವೆಗಳನ್ನು ಸ್ವೀಕರಿಸಲು ಅಗತ್ಯವಿರುವ ಮಾಹಿತಿ ಕಳುಹಿಸಲು ಇದು ಈ ಸಾಧನದ ಸಾಮರ್ಥ್ಯದ ಮೇಲೆ ಯಾವುದೇ ಪರಿಣಾಮ ಬೀರುವುದಿಲ್ಲ.<ph name="END_PARAGRAPH2" /></translation>
 <translation id="5990198433782424697">chrome:// URLಗಳಲ್ಲಿನ ವಿಸ್ತರಣೆಗಳು</translation>
@@ -4733,7 +4724,7 @@
 <translation id="7260504762447901703">ಪ್ರವೇಶವನ್ನು ಹಿಂತೆಗೆದುಕೊಳ್ಳಿ</translation>
 <translation id="7262004276116528033">ಈ ಸೈನ್ ಇನ್ ಸೇವೆಯನ್ನು <ph name="SAML_DOMAIN" /> ಮೂಲಕ ಹೋಸ್ಟ್ ಮಾಡಲಾಗಿದೆ</translation>
 <translation id="7262221505565121">ಸ್ಯಾಂಡ್‌ಬಾಕ್ಸ್ ರದ್ದುಗೊಳಿಸಲಾಗಿರುವ ಪ್ಲಗ್-ಇನ್ ಪ್ರವೇಶ ವಿನಾಯಿತಿಗಳು</translation>
-<translation id="7264275118036872269">Bluetooth ಸಾಧನ ಅನಾವರಣವನ್ನು ಪ್ರಾರಂಭಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
+<translation id="7264275118036872269">ಬ್ಲೂಟೂತ್‌ ಸಾಧನ ಅನಾವರಣವನ್ನು ಪ್ರಾರಂಭಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="7264454014834869122">Chrome ವೆಬ್ ಅಂಗಡಿಯಿಂದ ಆಯ್ಕೆಮಾಡಿ</translation>
 <translation id="726502072182862130">Google ಪ್ರೊಫೈಲ್ ಹೆಸರು ಮತ್ತು ಐಕಾನ್</translation>
 <translation id="7268365133021434339">ಟ್ಯಾಬ್‌ಗಳನ್ನು ಮುಚ್ಚಿ</translation>
@@ -5027,7 +5018,7 @@
 <translation id="7661259717474717992">ಕುಕೀ ಡೇಟಾವನ್ನು ಉಳಿಸಲು ಮತ್ತು ಓದಲು ಸೈಟ್‌ಗಳಿಗೆ ಅನುಮತಿ ನೀಡಿ</translation>
 <translation id="7661451191293163002">ನೋಂದಣಿ ಪ್ರಮಾಣಪತ್ರವನ್ನು ಪಡೆದುಕೊಳ್ಳಲಾಗಲಿಲ್ಲ.</translation>
 <translation id="7663719505383602579">ರಿಸೀವರ್: <ph name="ARC_PROCESS_NAME" /></translation>
-<translation id="7664620655576155379">ಬೆಂಬಲಿಸದಿರುವ Bluetooth ಸಾಧನ: "<ph name="DEVICE_NAME" />".</translation>
+<translation id="7664620655576155379">ಬೆಂಬಲಿಸದಿರುವ ಬ್ಲೂಟೂತ್‌ ಸಾಧನ: "<ph name="DEVICE_NAME" />".</translation>
 <translation id="7665369617277396874">ಖಾತೆಯನ್ನು ಸೇರಿಸು</translation>
 <translation id="766747607778166022">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್‌ಗಳನ್ನು ನಿರ್ವಹಿಸಿ...</translation>
 <translation id="7671130400130574146">ಸಿಸ್ಟಂ ಶೀರ್ಷಿಕೆ ಪಟ್ಟಿ ಮತ್ತು ಅಂಚುಗಳನ್ನು ಬಳಸಿ</translation>
@@ -5166,7 +5157,7 @@
 <translation id="7859704718976024901">ಬ್ರೌಸಿಂಗ್ ಇತಿಹಾಸ</translation>
 <translation id="786073089922909430">ಸೇವೆ: <ph name="ARC_PROCESS_NAME" /></translation>
 <translation id="7861215335140947162">&amp;ಡೌನ್‌ಲೋಡ್‌ಗಳು</translation>
-<translation id="7864539943188674973">bluetooth ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
+<translation id="7864539943188674973">ಬ್ಲೂಟೂತ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸಿ</translation>
 <translation id="786957569166715433"><ph name="DEVICE_NAME" /> - ಜೋಡಿಸಲಾಗಿದೆ</translation>
 <translation id="7870790288828963061">ಹೊಸ ಆವೃತ್ತಿಯೊಂದಿಗೆ ಯಾವುದೇ ಕಿಯೋಸ್ಕ್ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಕಂಡುಬಂದಿಲ್ಲ. ನವೀಕರಿಸಲು ಏನೂ ಇಲ್ಲ. ದಯವಿಟ್ಟು USB ಸ್ಟಿಕ್ ತೆಗೆದುಹಾಕಿ.</translation>
 <translation id="787150342916295244">ಕ್ರೆಡಿಟ್ ಕಾರ್ಡ್ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗುತ್ತಿದೆ</translation>
@@ -5181,7 +5172,7 @@
 <translation id="7885253890047913815">ಇತ್ತೀಚಿನ ಗಮ್ಯಸ್ಥಾನಗಳು</translation>
 <translation id="7887192723714330082">ಪರದೆಯು ಆನ್ ಆಗಿರುವಾಗ ಮತ್ತು ಅನ್‌ಲಾಕ್ ಮಾಡಿರುವಾಗ "Ok Google" ಗೆ ಪ್ರತಿಕ್ರಿಯಿಸಿ</translation>
 <translation id="7887334752153342268">ನಕಲು</translation>
-<translation id="7887864092952184874">Bluetooth ಮೌಸ್ ಜೋಡಿಯಾಗಿದೆ</translation>
+<translation id="7887864092952184874">ಬ್ಲೂಟೂತ್‌ ಮೌಸ್ ಜೋಡಿಯಾಗಿದೆ</translation>
 <translation id="7892100671754994880">ಮುಂದಿನ ಬಳಕೆದಾರ</translation>
 <translation id="7893008570150657497">ನಿಮ್ಮ ಕಂಪ್ಯೂಟರ್‌ನಿಂದ ಫೋಟೋಗಳು, ಸಂಗೀತ ಮತ್ತು ಇತರೆ ಮಾಧ್ಯಮ ಪ್ರವೇಶಿಸಿ</translation>
 <translation id="7893393459573308604"><ph name="ENGINE_NAME" /> (ಡಿಫಾಲ್ಟ್)</translation>
@@ -5646,7 +5637,7 @@
 <translation id="8495193314787127784">"Ok Google" ಸಕ್ರಿಯಗೊಳಿಸು</translation>
 <translation id="8496717697661868878">ಈ ಪ್ಲಗಿನ್ ಚಾಲನೆ ಮಾಡು</translation>
 <translation id="8497392509610708671">ನೀವು <ph name="BEGIN_LINK" />Chrome ಸೆಟ್ಟಿಂಗ್‌ಗಳಲ್ಲಿ<ph name="END_LINK" /> ಇದನ್ನು ಯಾವ ಸಮಯದಲ್ಲಾದರೂ ಬದಲಾಯಿಸಬಹುದು.</translation>
-<translation id="8498716162437226120">Bluetooth ಸಾಧನವನ್ನು ಸೇರಿಸಿ</translation>
+<translation id="8498716162437226120">ಬ್ಲೂಟೂತ್‌ ಸಾಧನವನ್ನು ಸೇರಿಸಿ</translation>
 <translation id="8503813439785031346">ಬಳಕೆದಾರಹೆಸರು</translation>
 <translation id="8506101089619487946">Chromebook ಗೆ Smart Lock ಆಫ್ ಮಾಡುವುದೇ?</translation>
 <translation id="8509646642152301857">ಕಾಗುಣಿತ ಪರಿಶೀಲನೆ ನಿಘಂಟು ಡೌನ್‌ಲೋಡ್ ವಿಫಲವಾಗಿದೆ.</translation>
@@ -5917,7 +5908,7 @@
 <translation id="8847988622838149491">USB</translation>
 <translation id="8852742364582744935">ಕೆಳಗಿನ ಅಪ್ಲಿಕೇಶನ್‌ಗಳು ಮತ್ತು ವಿಸ್ತರಣೆಗಳನ್ನು ಸೇರಿಸಲಾಗಿದೆ:</translation>
 <translation id="885381502874625531">ಬೆಲರೂಸಿಯನ್ ಕೀಬೋರ್ಡ್</translation>
-<translation id="8856844195561710094">Bluetooth ಸಾಧನ ಅನಾವರಣವನ್ನು ಸ್ಥಗಿತಗೊಳಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
+<translation id="8856844195561710094">ಬ್ಲೂಟೂತ್‌ ಸಾಧನ ಅನಾವರಣವನ್ನು ಸ್ಥಗಿತಗೊಳಿಸಲು ವಿಫಲಗೊಂಡಿದೆ.</translation>
 <translation id="8856939286556828596">ಸೈಟ್ ವಿವರಗಳು</translation>
 <translation id="885701979325669005">ಸಂಗ್ರಹಣೆ</translation>
 <translation id="8858798938034909167"><ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /> ನಲ್ಲಿ ಯಾವುದೇ ಸಾಧನದಿಂದ ನಿಮ್ಮ ಪಾಸ್‌ವರ್ಡ್‌ಗಳನ್ನು ಪ್ರವೇಶಿಸಿ</translation>
@@ -6093,7 +6084,7 @@
 <translation id="907148966137935206">ಯಾವುದೇ ಸೈಟ್‌ ಪಾಪ್-ಅಪ್‌ಗಳನ್ನು ತೋರಿಸಲು ಅನುಮತಸಬೇಡ (ಶಿಫಾರಸು ಮಾಡಲಾಗಿದೆ)</translation>
 <translation id="9072550133391925347">ನೀವು ಉಳಿಸಲಾದ ಪಾಸ್‌ವರ್ಡ್‌ಗಳೊಂದಿಗೆ ಅರ್ಹರಾಗಿರುವ ಸೈಟ್‌ಗಳು ಮತ್ತು ಅಪ್ಲಿಕೇಶನ್‌ಗಳಿಗೆ <ph name="PASSWORD_MANAGER_BRAND" /> ನಿಮ್ಮನ್ನು ಸ್ವಯಂಚಾಲಿತವಾಗಿ ಸೈನ್ ಇನ್ ಮಾಡುತ್ತದೆ.</translation>
 <translation id="9073281213608662541">PAP</translation>
-<translation id="9074739597929991885">Bluetooth</translation>
+<translation id="9074739597929991885">ಬ್ಲೂಟೂತ್‌</translation>
 <translation id="9074836595010225693">USB ಮೌಸ್ ಸಂಪರ್ಕಗೊಂಡಿದೆ</translation>
 <translation id="9076523132036239772">ಕ್ಷಮಿಸಿ, ನಿಮ್ಮ ಇಮೇಲ್ ಅಥವಾ ಪಾಸ್‌ವರ್ಡ್ ಅನ್ನು ಪರಿಶೀಲಿಸಲಾಗಲಿಲ್ಲ. ಮೊದಲು ಯಾವುದಾದರೂ ನೆಟ್‌ವರ್ಕ್‌ ಜೊತೆ ಸಂಪರ್ಕ ಸಾಧಿಸಲು ಪ್ರಯತ್ನಿಸಿ.</translation>
 <translation id="9077132661879924646">Android ನಲ್ಲಿ ಏಕೀಕೃತ ಮಾಧ್ಯಮ ಪೈಪ್‌ಲೈನ್ ನಿಷ್ಕ್ರಿಯಗೊಳಿಸುತ್ತದೆ.</translation>

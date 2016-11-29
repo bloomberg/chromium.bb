@@ -620,7 +620,7 @@
 <translation id="7942349550061667556">สีแดง</translation>
 <translation id="7951415247503192394">(32 บิต)</translation>
 <translation id="7956713633345437162">บุ๊กมาร์กบนมือถือ</translation>
-<translation id="7961015016161918242">ไม่เคย</translation>
+<translation id="7961015016161918242">ไม่ต้องเลย</translation>
 <translation id="7962083544045318153">รหัสข้อขัดข้อง <ph name="CRASH_LOCAL_ID" /></translation>
 <translation id="7983301409776629893">แปล <ph name="ORIGINAL_LANGUAGE" /> เป็น <ph name="TARGET_LANGUAGE" /> เสมอ</translation>
 <translation id="7995512525968007366">ไม่ได้ระบุ</translation>
@@ -677,7 +677,7 @@
 <translation id="8740359287975076522">ไม่พบ&lt;abbr id="dnsDefinition"&gt;ที่อยู่ DNS&lt;/abbr&gt; ของ <ph name="HOST_NAME" /> กำลังวินิจฉัยปัญหา</translation>
 <translation id="8790007591277257123">&amp;ทำซ้ำการนำออก</translation>
 <translation id="8798099450830957504">ค่าเริ่มต้น</translation>
-<translation id="8804164990146287819">นโยบายส่วนบุคคล</translation>
+<translation id="8804164990146287819">นโยบายความเป็นส่วนตัว</translation>
 <translation id="8820817407110198400">บุ๊กมาร์ก</translation>
 <translation id="8834246243508017242">เปิดใช้การป้อนข้อความอัตโนมัติโดยใช้รายชื่อติดต่อ…</translation>
 <translation id="883848425547221593">บุ๊กมาร์กอื่นๆ</translation>
@@ -706,7 +706,6 @@
 <translation id="9050666287014529139">ข้อความรหัสผ่าน</translation>
 <translation id="9065203028668620118">แก้ไข</translation>
 <translation id="9068849894565669697">เลือกสี</translation>
-<translation id="9092364396508701805">หน้า <ph name="HOST_NAME" /> ไม่ทำงาน</translation>
 <translation id="9103872766612412690">โดยทั่วไป <ph name="SITE" /> จะใช้การเข้ารหัสเพื่อปกป้องข้อมูลของคุณ เมื่อ Chromium พยายามเชื่อมต่อกับ <ph name="SITE" /> ในครั้งนี้ เว็บไซต์ดังกล่าวส่งข้อมูลรับรองที่ผิดปกติและไม่ถูกต้องกลับมา เหตุการณ์นี้อาจเกิดขึ้นเมื่อผู้บุกรุกพยายามปลอมเป็น <ph name="SITE" /> หรือหน้าจอการลงชื่อเข้าใช้ Wi-Fi รบกวนการเชื่อมต่อ ข้อมูลของคุณยังปลอดภัยอยู่เนื่องจาก Chromium หยุดการเชื่อมต่อก่อนมีการแลกเปลี่ยนข้อมูล</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9148507642005240123">&amp;เลิกทำการแก้ไข</translation>

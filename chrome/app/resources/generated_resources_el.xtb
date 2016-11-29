@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Αναζήτηση για συσκευές Bluetooth και USB…</translation>
 <translation id="1056898198331236512">Προειδοποίηση</translation>
 <translation id="1056982457359827501">Επιτρέπει τις διαφημίσεις BLE στις εφαρμογές Chrome. Οι διαφημίσεις BLE ενδέχεται να παρεμβαίνουν στην τακτική χρήση των λειτουργιών του Bluetooth χαμηλής κατανάλωσης ενέργειας.</translation>
-<translation id="1058325955712687476">Ενεργοποιεί την υπηρεσία αφοσίωσης ιστότοπου, η οποία καταγράφει την αλληλεπίδραση με τους ιστότοπους και κατανέμει τους πόρους ανάλογα.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> από <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Αντικατάσταση</translation>
 <translation id="1062866675591297858">Διαχειριστείτε τους εποπτευόμενους χρήστες σας μέσω του <ph name="BEGIN_LINK" />Πίνακα ελέγχου εποπτευόμενων χρηστών<ph name="END_LINK" />.</translation>
@@ -259,7 +258,6 @@
 <translation id="1351692861129622852">Εισαγωγή <ph name="FILE_COUNT" /> αρχείων…</translation>
 <translation id="1352103415082130575">Πληκτρολόγιο Ταϊλανδικών (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Διαχείριση αποθηκευτικού χώρου Material Design</translation>
 <translation id="1353966721814789986">Σελίδες εκκίνησης</translation>
 <translation id="1354868058853714482">Το Adobe Reader έχει λήξει και ενδέχεται να μην είναι ασφαλές.</translation>
 <translation id="1355408554203439639">Πρόγραμμα επεξεργασίας ράστερ τρισδιάστατου λογισμικού</translation>
@@ -373,7 +371,6 @@
 <translation id="1477301030751268706">Κρυφή μνήμη διακριτικών API ταυτότητας</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Λεπτομέρειες: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Συμβάν δείκτη έκδ. 1 καταγραφής προδιαγραφής</translation>
 <translation id="1480041086352807611">Λειτουργία επίδειξης</translation>
 <translation id="1481244281142949601">Βρίσκεστε σε κατάλληλο περιβάλλον δοκιμών.</translation>
 <translation id="1482124012545051544">Μπορείτε να δημιουργήσετε αντίγραφα ασφαλείας για <ph name="FILE_COUNT" /> νέες φωτογραφίες</translation>
@@ -889,7 +886,6 @@
 <translation id="2177950615300672361">Καρτέλα ανώνυμης περιήγησης: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Παραβίαση αρχής έκδοσης πιστοποιητικών</translation>
 <translation id="218070003709087997">Χρησιμοποιήστε έναν αριθμό για να υποδείξετε πόσα αντίγραφα θα εκτυπωθούν (1 ή 999).</translation>
-<translation id="218492098606937156">Ενεργοποίηση συμβάντων αφής</translation>
 <translation id="2187317261103489799">Εντοπισμός (προεπιλογή)</translation>
 <translation id="2187895286714876935">Σφάλμα εισαγωγής του πιστοποιητικού διακομιστή  </translation>
 <translation id="2188881192257509750">Άνοιγμα <ph name="APPLICATION" /></translation>
@@ -1045,7 +1041,6 @@
 <translation id="2367972762794486313">Εμφάνιση εφαρμογών</translation>
 <translation id="2371076942591664043">Άνοιγμα κατά την &amp;ολοκλήρωση</translation>
 <translation id="2372036074421194686">Το Chrome εντόπισε ένα ανεπιθύμητο πρόγραμμα (<ph name="UWS_NAME" />) εγκατεστημένο στον υπολογιστή σας. Ενδεχομένως να μπορείτε να το καταργήσετε εκτελώντας το Εργαλείο καθαρισμού του Chrome.</translation>
-<translation id="2375701438512326360">Ορίστε την υποστήριξη οθόνης αφής έτσι ώστε να είναι πάντα ενεργή ή ανενεργή ή να ενεργοποιείται όταν εντοπίζεται μια οθόνη αφής κατά την εκκίνηση (Αυτόματο, προεπιλογή).</translation>
 <translation id="2378075407703503998">Έχουν επιλεγεί <ph name="SELCTED_FILE_COUNT" /> αρχεία</translation>
 <translation id="2378982052244864789">Επιλέξτε τον κατάλογο επεκτάσεων.</translation>
 <translation id="2379281330731083556">Εκτύπωση με χρήση του παραθύρου διαλόγου συστήματος... <ph name="SHORTCUT_KEY" /></translation>
@@ -2094,7 +2089,6 @@
 <translation id="3648460724479383440">Επιλεγμένο κουμπί επιλογής</translation>
 <translation id="3649138363871392317">Έγινε λήψη φωτογραφίας</translation>
 <translation id="3650242103421962931">Γραμμικό</translation>
-<translation id="3653069516296104653">Απενεργοποιεί τη σιωπηρή καταγραφή συμβάντων αφής δείκτη.</translation>
 <translation id="3653999333232393305">Να συνεχίσει να επιτρέπεται στο <ph name="HOST" /> η πρόσβαση στο μικρόφωνό σας</translation>
 <translation id="3654045516529121250">Ανάγνωση των ρυθμίσεων προσβασιμότητας</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Έχει μόνιμη πρόσβαση σε ένα αρχείο.}other{Έχει μόνιμη πρόσβαση σε # αρχεία.}}</translation>
@@ -2137,7 +2131,6 @@
 <translation id="3709244229496787112">Η λειτουργία του προγράμματος περιήγησης τερματίστηκε πριν από την ολοκλήρωση της λήψης.</translation>
 <translation id="3711895659073496551">Αναστολή</translation>
 <translation id="3712897371525859903">Αποθήκευση σελίδας &amp;ως...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Στείλτε αυτόματα<ph name="END_WHITEPAPER_LINK" /> ορισμένες πληροφορίες συστήματος και περιεχόμενο σελίδων στην Google, για να διευκολυνθεί ο εντοπισμός επικίνδυνων εφαρμογών και ιστοτόπων. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">ημερολόγιο ιστού</translation>
 <translation id="3715597595485130451">Σύνδεση σε Wi-Fi</translation>
 <translation id="3716615839203649375">επιτρέπεται</translation>
@@ -2487,13 +2480,11 @@
 <translation id="418179967336296930">Ρωσικό φωνητικό πληκτρολόγιο (YaZHert)</translation>
 <translation id="4181841719683918333">Γλώσσες</translation>
 <translation id="4184885522552335684">Σύρετε για μετακίνηση οθόνης</translation>
-<translation id="4188447344915957833">Ενεργοποιεί τη διαχείριση αποθηκευτικού χώρου στις ρυθμίσεις του Material Design.</translation>
 <translation id="4189406272289638749">Η επέκταση &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, ελέγχει αυτήν τη ρύθμιση.</translation>
 <translation id="4193154014135846272">Έγγραφο Google</translation>
 <translation id="4193182321948161343">Ενεργοποίηση Εργαλείου διαχείρισης χρηστών Material Design</translation>
 <translation id="4193297030838143153">Νέα διεύθυνση χρέωσης…</translation>
 <translation id="4194570336751258953">Ενεργοποίηση λειτουργίας χειρισμού με αφή</translation>
-<translation id="4195621107636847694">Υπηρεσία αφοσίωσης ιστότοπου</translation>
 <translation id="4195643157523330669">Άνοιγμα σε νέα καρτέλα</translation>
 <translation id="4195814663415092787">Συνέχεια από εκεί που σταματήσατε</translation>
 <translation id="4197674956721858839">Επιλογή για δημιουργία συμπιεσμένου αρχείου</translation>

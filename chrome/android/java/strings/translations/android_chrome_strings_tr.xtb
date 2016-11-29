@@ -140,7 +140,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="238909021488141516">İçerik indirilirken bir hata oluştu.</translation>
 <translation id="2414886740292270097">Koyu</translation>
 <translation id="2433507940547922241">Görünüm</translation>
-<translation id="2439248520967274840"><ph name="TO_ACCOUNT" /> hesabında oturum açıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızın bir kısmı <ph name="FROM_ACCOUNT" /> hesabı ile önceden senkronize edilmişti. Mevcut verilerinizle ne yapmak istiyorsunuz?</translation>
 <translation id="2440823041667407902">Konum erişimi</translation>
 <translation id="2476578072172137802">Site Ayarları</translation>
 <translation id="2482878487686419369">Bildirimler</translation>
@@ -188,7 +187,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="2996291259634659425">Parola oluşturun</translation>
 <translation id="2996809686854298943">URL gerekli</translation>
 <translation id="300526633675317032">Bu işlem <ph name="SIZE_IN_KB" /> olan web sitesi depolama alanının tamamını temizleyecek.</translation>
-<translation id="3012408695656332380">Bu cihazın verilerini <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz, ancak oturumu kapatmanızdan sonra oluşturulan veriler kaybolur.</translation>
 <translation id="3029704984691124060">Parolalar eşleşmiyor</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Yardım alın<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Gizli sekmede aç</translation>
@@ -215,7 +213,6 @@ Chrome Ayarları'ndan Fiziksel Web'i kontrol edebilirsiniz.
 <translation id="3320021301628644560">Fatura adresi ekle</translation>
 <translation id="3328801116991980348">Site bilgileri</translation>
 <translation id="3350687908700087792">Tüm gizli sekmeleri kapatın.</translation>
-<translation id="3351441609270267898">Mevcut verileri içe aktar</translation>
 <translation id="3365671512111106261">Veri Tasarrufu açık olduğunda kullanılamaz</translation>
 <translation id="3367813778245106622">Senkronizasyonu başlatmak için tekrar oturum açın</translation>
 <translation id="3384347053049321195">Resmi paylaş</translation>
@@ -426,7 +423,6 @@ Arama teriminizi düzeltmek için uzun basarak terimi seçin. Aramanızı ayrın
 <translation id="5676636989614905379">Video <ph name="SCREEN_NAME" /> üzerinde oynatılamıyor.</translation>
 <translation id="5677928146339483299">Engellenenler</translation>
 <translation id="5684874026226664614">Hata! Bu sayfa çevrilemedi.</translation>
-<translation id="5708031556037168012">Mevcut verileri cihazınızda tutun ve verileri kalıcı olarak <ph name="TO_ACCOUNT" /> hesabına aktarın.</translation>
 <translation id="5719837394786370183">Gizli sekmelerde görüntülediğiniz sayfalar, gizli sekmelerinizin tamamını kapattıktan sonra tarayıcı geçmişinizde, çerez deponuzda veya arama geçmişinizde kalmaz. İndirdiğiniz dosyalar veya oluşturduğunuz yer işaretleri saklanır.
 
 Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı işvereninizden, İnternet servis sağlayıcınızdan veya ziyaret ettiğiniz web sitelerinden saklamaz.</translation>
@@ -563,7 +559,6 @@ Yine de, görünmez olmazsınız. Gizli moda geçmeniz web'de yaptıklarınızı
 <translation id="7062545763355031412">Kabul et ve hesabı değiştir</translation>
 <translation id="7063006564040364415">Senkronizasyon sunucusuna bağlanılamadı.</translation>
 <translation id="7064851114919012435">İletişim bilgileri</translation>
-<translation id="7081639897063626814">Mevcut verileri ayrı tut</translation>
 <translation id="7094922512924405309">Yakınlarda herhangi bir Fiziksel Web sayfası bulunamadı</translation>
 <translation id="7138678301420049075">Diğer</translation>
 <translation id="7180611975245234373">Yenile</translation>
@@ -736,12 +731,10 @@ Yeni lisansları edinmek için İnternet'e bağlanın ve indirdiğiniz içeriği
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9139068048179869749">Sitelerin bildirim göndermesine izin vermeden önce size sorulsun (önerilir)</translation>
-<translation id="9141510419986760385">Senkronizasyon hesapları arasında (<ph name="FROM_ACCOUNT" /> hesabından <ph name="TO_ACCOUNT" /> hesabına) geçiş yapıyorsunuz. Mevcut yer işaretleri, geçmiş, şifreler ve diğer ayarlarınızla ne yapmak istiyorsunuz?</translation>
 <translation id="9154194610265714752">Güncellendi</translation>
 <translation id="917685106653909562">Yakınlardaki Fiziksel Web sayfaları</translation>
 <translation id="9187199695613236444">Mobil uyumlu görünüm</translation>
 <translation id="9188680907066685419">Yönetilen hesabın oturumunu kapat</translation>
-<translation id="9198708126133947749">Bu cihazın verilerini, <ph name="TO_ACCOUNT" /> hesabının verileriyle değiştirin. Mevcut verilerinizi tekrar <ph name="FROM_ACCOUNT" /> hesabına geçerek alabilirsiniz.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Resimler</translation>
 <translation id="932327136139879170">Ana Sayfa</translation>

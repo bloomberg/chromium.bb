@@ -118,7 +118,7 @@ Certaines fonctionnalités ne seront peut-être pas disponibles, et les modifica
 <translation id="4621240073146040695">Mise à jour presque terminée. Relancez Chromium pour la finaliser.</translation>
 <translation id="4677944499843243528">Le profil semble être utilisé dans le cadre d'un autre processus Chromium (<ph name="PROCESS_ID" />) sur un autre ordinateur (<ph name="HOST_NAME" />). Ce profil a été verrouillé de sorte qu'il ne soit pas endommagé. Si vous êtes sûr que le profil n'est utilisé dans le cadre d'aucun autre processus, vous pouvez le déverrouiller et relancer Chromium.</translation>
 <translation id="469338717132742108">Obtenir de l'aide avec Chromium OS</translation>
-<translation id="4708774505295300557">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un utilisateur Chromium pour séparer vos informations.</translation>
+<translation id="4708774505295300557">Un utilisateur s'est récemment connecté à Chromium sur cet ordinateur en tant que <ph name="ACCOUNT_EMAIL_LAST" />. Veuillez créer un autre utilisateur Chromium pour séparer vos informations.</translation>
 <translation id="4714956846925717402">Accédez à Chromium plus rapidement</translation>
 <translation id="4743926867934016338">Accepter et rechercher</translation>
 <translation id="4888717733111232871">Règle de trafic entrant pour Chromium autorisant le trafic mDNS</translation>

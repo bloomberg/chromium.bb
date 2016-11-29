@@ -825,7 +825,6 @@ The contents of the list 'URLs to open at start-up' are ignored unless you selec
 <translation id="3322771899429619102">Allows you to set a list of URL patterns that specify sites which are allowed to use key generation. If a URL pattern is in 'KeygenBlockedForUrls', that overrides these exceptions.
 
           If this policy is left not set the global default value will be used for all sites either from the 'DefaultKeygenSetting' policy if it is set or the user's personal configuration otherwise.</translation>
-<translation id="3322902067538988734">If this policy is set to true, the user has to sign in to <ph name="PRODUCT_NAME" /> with his or her profile before using the browser. And the default value of BrowserGuestModeEnabled will be set to false. If this policy is set to false or not configured, user can use the browser without sign in to <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Sets how often user has to enter password to use quick unlock.</translation>
 <translation id="3381968327636295719">Use the host browser by default</translation>
 <translation id="3417418267404583991">If this policy is set to true or not configured, <ph name="PRODUCT_OS_NAME" /> will enable guest logins. Guest logins are anonymous user sessions and do not require a password.
@@ -1703,14 +1702,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
       Otherwise it may be set to one of the following values: "sslv3", "tls1", "tls1.1" or "tls1.2". When set, <ph name="PRODUCT_NAME" /> will not use SSL/TLS versions less than the specified version. An unrecognised value will be ignored.
 
       Note that, despite the number, "sslv3" is an earlier version than "tls1".</translation>
-<translation id="6177482277304066047">Sets a target version for Auto Updates.
-
-      Specifies the prefix of a target version <ph name="PRODUCT_OS_NAME" /> should update to. If the device is running a version that's before the specified prefix, it will update to the latest version with the given prefix. If the device is already on a later version, there is no effect (i.e. no downgrades are performed) and the device will remain on the current version. The prefix format works component-wise as is demonstrated in the following example:
-
-      "" (or not configured): update to latest version available.
-      "1412.": update to any minor version of 1412 (e.g. 1412.24.34 or 1412.60.2)
-      "1412.2.": update to any minor version of 1412.2 (e.g. 1412.2.34 or 1412.2.2)
-      "1412.24.34": update to this specific version only</translation>
 <translation id="6190022522129724693"> setting</translation>
 <translation id="6197453924249895891">Grants access to corporate keys to extensions.
 
@@ -1746,9 +1737,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="6367755442345892511">Whether the release channel should be configurable by the user</translation>
 <translation id="6368011194414932347">Configure the home page URL</translation>
 <translation id="6368403635025849609">Allow JavaScript on these sites</translation>
-<translation id="6373222873250380826">Disables automatic updates when set to True.
-
-      <ph name="PRODUCT_OS_NAME" /> devices automatically check for updates when this setting is not configured or set to False.</translation>
 <translation id="6376659517206731212">Can Be Mandatory</translation>
 <translation id="6378076389057087301">Specify whether audio activity affects power management</translation>
 <translation id="637934607141010488">Report list of device users that have recently logged in.
@@ -2110,13 +2098,6 @@ If this setting is not set, <ph name="PRODUCT_NAME" /> will allow the user to co
 <translation id="7336878834592315572">Keep cookies for the duration of the session.</translation>
 <translation id="7340034977315324840">Report device activity times</translation>
 <translation id="7384999953864505698">Allows QUIC protocol</translation>
-<translation id="7406651467768226499">Whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version.
-
-      This policy controls whether to allow the auto launched with zero delay kiosk app to control <ph name="PRODUCT_OS_NAME" /> version by declaring a required_platform_version in its manifest and use it as the auto update target version prefix.
-
-      If the policy is set to true, the value of required_platform_version manifest key of the auto launched with zero delay kiosk app is used as auto update target version prefix.
-
-      If the policy is not configured or set to false, the required_platform_version manifest key is ignored and auto update proceeds as normal.</translation>
 <translation id="7417972229667085380">Percentage by which to scale the idle delay in presentation mode (deprecated)</translation>
 <translation id="7421483919690710988">Set media disk cache size in bytes</translation>
 <translation id="7424751532654212117">List of exceptions to the list of disabled plugins</translation>

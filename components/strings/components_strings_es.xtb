@@ -706,7 +706,6 @@
 <translation id="9050666287014529139">Frase de contraseña</translation>
 <translation id="9065203028668620118">Editar</translation>
 <translation id="9068849894565669697">Seleccionar color</translation>
-<translation id="9092364396508701805">La página <ph name="HOST_NAME" /> no funciona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utiliza normalmente el cifrado para proteger tu información. Cuando Chromium intentó establecer conexión con <ph name="SITE" />, el sitio web devolvió unas credenciales inusuales e incorrectas. Esto puede ocurrir si un atacante intenta suplantar la identidad de <ph name="SITE" /> o si una pantalla de inicio de sesión Wi-Fi interrumpe la conexión. Tu información sigue estando protegida, ya que Chromium detuvo la conexión antes de que se intercambiaran datos.</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9148507642005240123">&amp;Deshacer edición</translation>

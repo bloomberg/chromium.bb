@@ -140,7 +140,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="238909021488141516">콘텐츠를 다운로드하는 중에 오류가 발생했습니다.</translation>
 <translation id="2414886740292270097">어두운</translation>
 <translation id="2433507940547922241">모양</translation>
-<translation id="2439248520967274840"><ph name="TO_ACCOUNT" />에 로그인합니다. 기존 북마크, 방문 기록, 비밀번호, 기타 설정 중 일부는 이전에 <ph name="FROM_ACCOUNT" />에 동기화되었습니다. 기존 데이터를 어떻게 할까요?</translation>
 <translation id="2440823041667407902">위치 정보 액세스</translation>
 <translation id="2476578072172137802">사이트 설정</translation>
 <translation id="2482878487686419369">알림</translation>
@@ -188,7 +187,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="2996291259634659425">암호 만들기</translation>
 <translation id="2996809686854298943">URL이 필요합니다.</translation>
 <translation id="300526633675317032">웹사이트 저장공간 <ph name="SIZE_IN_KB" />가 모두 삭제됩니다.</translation>
-<translation id="3012408695656332380">이 기기의 데이터를 <ph name="TO_ACCOUNT" />의 데이터로 대체합니다. 기존 데이터는 <ph name="FROM_ACCOUNT" />(으)로 다시 전환하여 검색할 수 있지만 로그아웃한 후 만든 데이터는 저장되지 않습니다.</translation>
 <translation id="3029704984691124060">암호가 일치하지 않습니다.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />도움 받기<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">시크릿 탭에서 열기</translation>
@@ -215,7 +213,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="3320021301628644560">청구지 주소 추가</translation>
 <translation id="3328801116991980348">사이트 정보</translation>
 <translation id="3350687908700087792">모든 시크릿 탭 닫기</translation>
-<translation id="3351441609270267898">기존 데이터 가져오기</translation>
 <translation id="3365671512111106261">데이터 절약 모드가 켜져 있으면 사용할 수 없습니다.</translation>
 <translation id="3367813778245106622">다시 로그인하여 동기화 시작</translation>
 <translation id="3384347053049321195">이미지 공유</translation>
@@ -426,7 +423,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="5676636989614905379"><ph name="SCREEN_NAME" />에서 동영상을 재생할 수 없습니다.</translation>
 <translation id="5677928146339483299">차단됨</translation>
 <translation id="5684874026226664614">죄송합니다. 이 페이지를 번역할 수 없습니다.</translation>
-<translation id="5708031556037168012">기기의 기존 데이터를 보관하고 데이터를 <ph name="TO_ACCOUNT" />(으)로 완전히 가져옵니다.</translation>
 <translation id="5719837394786370183">시크릿 탭을 모두 닫으면 시크릿 탭에서 본 페이지는 브라우저 방문 기록, 쿠키 저장소 또는 방문 기록 어디에도 흔적이 남지 않습니다. 단, 다운로드한 파일이나 생성한 북마크는 유지됩니다.
 
 하지만 완전한 비밀이 보장되는 것은 아닙니다. 시크릿 모드로 탐색해도 회사, 인터넷 서비스 제공업체(IPS), 방문한 웹사이트에 저장된 흔적까지 없앨 수는 없습니다.</translation>
@@ -563,7 +559,6 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="7062545763355031412">동의 및 계정 전환</translation>
 <translation id="7063006564040364415">동기화 서버에 연결할 수 없습니다.</translation>
 <translation id="7064851114919012435">연락처 정보</translation>
-<translation id="7081639897063626814">기존 데이터를 별도로 유지</translation>
 <translation id="7094922512924405309">주변에 피지컬 웹페이지가 없습니다.</translation>
 <translation id="7138678301420049075">기타</translation>
 <translation id="7180611975245234373">새로고침</translation>
@@ -735,12 +730,10 @@ Chrome 설정에서 피지컬 웹을 관리할 수 있습니다.
 <translation id="9133703968756164531"><ph name="ITEM_NAME" />(<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">원본 보기</translation>
 <translation id="9139068048179869749">사이트에서 알림을 보내도록 허용하기 전에 확인(권장)</translation>
-<translation id="9141510419986760385">동기화 계정을 <ph name="FROM_ACCOUNT" />에서 <ph name="TO_ACCOUNT" />(으)로 전환합니다. 기존 북마크, 방문 기록, 비밀번호, 기타 설정은 어떻게 할까요?</translation>
 <translation id="9154194610265714752">업데이트됨</translation>
 <translation id="917685106653909562">근처 피지컬 웹페이지</translation>
 <translation id="9187199695613236444">모바일 보기</translation>
 <translation id="9188680907066685419">관리 계정에서 로그아웃</translation>
-<translation id="9198708126133947749">이 기기의 데이터를 <ph name="TO_ACCOUNT" />의 데이터로 대체합니다. <ph name="FROM_ACCOUNT" />(으)로 전환하여 기존 데이터를 가져올 수 있습니다.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">이미지</translation>
 <translation id="932327136139879170">홈</translation>

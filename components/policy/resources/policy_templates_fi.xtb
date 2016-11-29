@@ -777,9 +777,6 @@ Jos asetus ei ole käytössä, käyttäjät eivät voi ottaa välityspalvelinta 
 <translation id="3322771899429619102">Voit määrittää URL-mallien luettelon, jossa määritetään sivustot, jotka saavat luoda avaimia. Jos URL-malli on KeygenBlockedForUrls-käytännössä, se ohittaa nämä poikkeukset.
 
           Jos tätä käytäntöä ei ole määritetty, kaikille sivustoille käytetään joko DefaultKeygenSetting-käytännön yleistä oletusarvoa, jos se on asetettu, tai käyttäjän henkilökohtaisia määrityksiä.</translation>
-<translation id="3322902067538988734">Jos tämän käytännön arvoksi on määritetty tosi, käyttäjän on kirjauduttava kohteeseen <ph name="PRODUCT_NAME" /> omalla profiilillaan selaimen kautta ja BrowserGuestModeEnabled-arvon oletukseksi määritetään epätosi.
-
-      Jos tämän käytännön arvoksi on määritetty epätosi tai sitä ei ole määritetty, käyttäjä voi käyttää selainta kirjautumatta kohteeseen <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Määrittää, kuinka usein käyttäjän on annettava salasana, jotta hän voi käyttää lukituksen pika-avaamista.</translation>
 <translation id="3381968327636295719">Käytä oletuksena isäntäselainta</translation>
 <translation id="3417418267404583991">Jos tälle käytännölle asetetaan tosi-arvo tai sitä ei määritetä, <ph name="PRODUCT_OS_NAME" /> sallii vieraskirjautumisen. Vieraskirjautuminen on anonyymi käyttökerta, johon ei tarvita salasanaa.
@@ -1590,14 +1587,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
       Käytännölle voidaan asettaa seuraavat arvot: sslv3, tls1, tls1.1 tai tls1.2. Kun arvo on asetettu, <ph name="PRODUCT_NAME" /> ei käytä asetettua arvoa pienempiä SSL/TLS-versioita. Tunnistamattomat arvot ohitetaan.
 
       Huom. Nimestään huolimatta sslv3 on vanhempi versio kuin tls1.</translation>
-<translation id="6177482277304066047">Asettaa automaattisille päivityksille halutun version.
-
-      Määrittää etuliitteen versiolle, johon <ph name="PRODUCT_OS_NAME" /> tulee päivittää. Jos laite käyttää versiota, jonka numero on määritettyä etuliitettä vanhempi, versioksi päivitetään uusin, annettua etuliitettä käyttävä versio. Jos laite käyttää jo uudempaa versiota, päivitystä ei suoriteta eikä versiota vaihdeta vanhemmaksi. Etuliitteen muoto toimii seuraavan esimerkin mukaisesti:
-
-      "" (tai ei määritetty): päivitetään uusimpaan saatavilla olevaan versioon.
-      "1412.": päivitetään mihin tahansa 1412:n alaversioon (esim. 1412.24.34 tai 1412.60.2)
-      "1412.2.": päivitetään mihin tahansa 1412.2:n alaversioon (esim. 1412.2.34 tai 1412.2.2)
-      "1412.24.34": päivitetään vain tähän versioon</translation>
 <translation id="6190022522129724693">Ponnahdusikkunoiden oletusasetus</translation>
 <translation id="6197453924249895891">Antaa laajennuksille yritysavainten käyttöoikeuden.
 
@@ -1633,9 +1622,6 @@ Jos tämä asetus ei ole käytössä tai jos sen arvo on false, tulostuskomento 
 <translation id="6367755442345892511">Onko julkaisuversio käyttäjän asetettavissa</translation>
 <translation id="6368011194414932347">Määritä etusivun URL-osoite</translation>
 <translation id="6368403635025849609">Salli JavaScript näissä sivustoissa</translation>
-<translation id="6373222873250380826">Kun arvo on tosi, automaattiset päivitykset poistetaan käytöstä.
-
-      Tuotetta <ph name="PRODUCT_OS_NAME" /> käyttävät laitteet hakevat päivityksiä automaattisesti, jos tätä asetusta ei ole määritetty tai sen arvo on epätosi.</translation>
 <translation id="6376659517206731212">Voidaan asettaa pakolliseksi</translation>
 <translation id="6378076389057087301">Määritä, vaikuttaako äänitoiminta virranhallintaan</translation>
 <translation id="637934607141010488">Raporttiluettelo viime aikoina sisäänkirjautuneista laitteen käyttäjistä.
@@ -1969,13 +1955,6 @@ Jos tätä käytäntöä ei ole määritetty, käytetään oletusarvoa (32).</tr
 <translation id="7336878834592315572">Säilytä evästeet käyttökerran ajan</translation>
 <translation id="7340034977315324840">Ilmoita laitteen käyttöajat</translation>
 <translation id="7384999953864505698">Sallii QUIC-protokollan käytön</translation>
-<translation id="7406651467768226499">Tämä määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota.
-
-      Tämä käytäntö määrittää, sallitaanko automaattisesti ilman viivettä käynnistettävän kioskisovelluksen hallinnoida käyttöjärjestelmän <ph name="PRODUCT_OS_NAME" /> versiota määrittämällä required_platform_version-luetteloavain, jota käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
-
-      Jos käytännön arvo on tosi, automaattisesti ilman viivettä käynnistettävän kioskisovelluksen required_platform_version-luetteloavaimen arvoa käytetään automaattisesti päivitettävän kohdeversion etuliitteenä.
-
-      Jos käytäntöä ei ole määritetty tai sen arvo on epätosi, required_platform_version-luetteloavainta ei oteta huomioon ja automaattinen päivitys suoritetaan tavallisesti.</translation>
 <translation id="7417972229667085380">Prosenttiosuus, jolla käyttämättömyyden viive skaalataan esitystilassa (ei enää käytössä)</translation>
 <translation id="7421483919690710988">Aseta levyn mediavälimuistin koko tavuina</translation>
 <translation id="7424751532654212117">Käytöstä poistettujen laajennuksien poikkeukset</translation>

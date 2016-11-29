@@ -27,12 +27,12 @@
 <translation id="1201402288615127009">Siguiente</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox, la voz de Chrome</translation>
-<translation id="1226487719524433143">Nos encantaría conocer tu opinión sobre esta nueva experiencia. Envíanos tus comentarios directamente pulsando Búsqueda+a y luego i. Haz clic en el botón Siguiente para continuar con el tutorial y así conocer toda la información que necesitas para empezar.</translation>
+<translation id="1226487719524433143">Nos encantaría conocer tu opinión sobre esta nueva experiencia. Envíanos tus comentarios directamente pulsando Búsqueda+A y luego la letra "i". Haz clic en el botón Siguiente para continuar con el tutorial y así conocer toda la información que necesitas para empezar.</translation>
 <translation id="1229276918471378188">Salto anterior</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Siguiente encabezado de nivel 6</translation>
 <translation id="1275718070701477396">Seleccionado</translation>
-<translation id="1310230882256010289">Actualizaciones técnicas. Hemos mejorado el funcionamiento de ChromeVox desde la base. Descubrirás mejoras en rendimiento, estabilidad, así como asistencia y cumplimiento web.</translation>
+<translation id="1310230882256010289">Actualizaciones técnicas. Hemos renovado el funcionamiento de ChromeVox de arriba abajo. Notarás mejoras en el rendimiento y la estabilidad, así como en la asistencia y el cumplimiento web.</translation>
 <translation id="1319608975892113573">No hay ninguna etiqueta "blockquote" anterior.</translation>
 <translation id="1321576897702511272">Oculta la ayuda de ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> de <ph name="TOTAL" /></translation>
@@ -41,7 +41,7 @@
 <translation id="1342835525016946179">artículo</translation>
 <translation id="1346748346194534595">Derecha</translation>
 <translation id="136718599399906424">Siguiente fila de la tabla</translation>
-<translation id="1377925789329510816">Esta es la última sección. Pulsa Búsqueda+h para volver a la primera sección o Búsqueda+Mayús+h para acceder a la segunda en esta página.</translation>
+<translation id="1377925789329510816">Esta es la última sección. Pulsa Búsqueda+H para volver a la primera sección o Búsqueda+Mayús+H para acceder a la segunda de esta página.</translation>
 <translation id="1383876407941801731">Buscar</translation>
 <translation id="1385214448885562192">Pulsa Intro para aceptar, Esc para cancelar, la tecla de flecha hacia abajo para ver el siguiente resultado y la tecla de flecha hacia arriba para ver el resultado anterior.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -137,7 +137,7 @@
 <translation id="2582407057977008361">Etiqueta de contenido tangencial</translation>
 <translation id="2606210917827248971">con {COUNT,plural, =1{# elemento}other{# elementos}}</translation>
 <translation id="2614981083756825552">Diseño de MathML</translation>
-<translation id="2624431853467395961">Abrir modo aprendizaje</translation>
+<translation id="2624431853467395961">Abrir modo de aprendizaje</translation>
 <translation id="2626530649491650971">elemento en el que se puede hacer clic</translation>
 <translation id="2628764385451019380">No hay ningún cuadro combinado anterior.</translation>
 <translation id="2637227747952042642">Objeto matemático</translation>
@@ -396,7 +396,7 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="4826604887384865800">Siguiente salto</translation>
 <translation id="4827410568042294688">no seleccionado</translation>
 <translation id="4842108708071771135">No hay ninguna etiqueta "blockquote" posterior.</translation>
-<translation id="4844625982113518938">Pulsa cualquier tecla para conocer su nombre. La combinación Ctrl+w cerrará el modo aprendizaje.</translation>
+<translation id="4844625982113518938">Pulsa cualquier tecla para oír su nombre. Si quieres salir del modo de aprendizaje, pulsa Ctrl+W.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Elemento anterior similar.</translation>
 <translation id="485011152882364255">En ChromeVox Next, la tecla de búsqueda es la tecla modificadora. La mayoría de combinaciones de teclas de ChromeVox empiezan con la tecla de búsqueda. También utilizarás las teclas de flecha para desplazarte.</translation>
@@ -477,13 +477,13 @@ Si has completado el tutorial, utiliza ChromeVox para desplazarte hasta el botó
 <translation id="5507663321906818013">Punto de referencia de depuración</translation>
 <translation id="5518443085409638729">Colocar el cursor entre los caracteres al editar texto (como en Mac OS X)</translation>
 <translation id="552195134157544755">Botón de opción</translation>
-<translation id="5531530875187439488">Audioconos nuevos. Hemos actualizado el conjunto de iconos de audio para que la navegación sea más adaptable.</translation>
+<translation id="5531530875187439488">Audiconos nuevos. Hemos actualizado el conjunto de iconos de audio para que la navegación sea más ágil.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">No hay ningún título de nivel 5 anterior.</translation>
 <translation id="556042886152191864">Botón</translation>
 <translation id="5561345396546889625">Siguiente lista</translation>
 <translation id="5562645715554321347">hdnggrp</translation>
-<translation id="5574412348552378458">ChromeVox Learn Mode</translation>
+<translation id="5574412348552378458">Modo de aprendizaje de ChromeVox</translation>
 <translation id="5583640892426849032">Tecla de retroceso</translation>
 <translation id="5585044216466955529">Edita texto, entrada de correo electrónico</translation>
 <translation id="5597170376237141345">Siguiente casilla de verificación</translation>
@@ -519,7 +519,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="5712338278108304766">Siguiente columna de la tabla</translation>
 <translation id="571866080859340309">Explorando grupos</translation>
 <translation id="5728409797179002635">No se ha encontrado la tabla.</translation>
-<translation id="5732189279857692565">Esta es la segunda sección. Sigue avanzando, pulsa Búsqueda+h o Búsqueda+Mayús+h.</translation>
+<translation id="5732189279857692565">Esta es la segunda sección. Sigue avanzando, pulsa Búsqueda+H o Búsqueda+Mayús+H</translation>
 <translation id="5748623122140342504">Encabezado anterior de nivel 5</translation>
 <translation id="5750633686117194034">No se ha pulsado ningún modificador; mantén pulsado uno o varios modificadores; levanta los dedos cuando lo hayas hecho y escucharás el conjunto de teclas. Pulsa el tabulador para salir.</translation>
 <translation id="5788275253279308023">ventana de incógnito, <ph name="TITLE" />, pestaña</translation>
@@ -554,7 +554,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="6119955456199054975">Fin de celda.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Espacio</translation>
-<translation id="6138576064440631958">acorde $1</translation>
+<translation id="6138576064440631958">cor $1</translation>
 <translation id="6142308968191113180">Título 4</translation>
 <translation id="6169420925157477918">Imagen con descripción larga</translation>
 <translation id="6186305613600865047">Accede al final de la página</translation>
@@ -759,7 +759,7 @@ Para abrir el menú del navegador Chrome, pulsa Alt+F.</translation>
 <translation id="8520472399088452386">Botón de control numérico</translation>
 <translation id="8538744478902126321">Intenta detectar el encabezado de la fila de la celda actual</translation>
 <translation id="8540054775867439484">Continuar al principio</translation>
-<translation id="8542271685829952264">Para explorar todos los comandos y las combinaciones de teclas de ChromeVox, pulsa Búsqueda+punto, utiliza las teclas de flecha para desplazarte por los menús y la tecla Intro para activar un comando. Para volver, pulsa Búsqueda+o y luego la tecla t.</translation>
+<translation id="8542271685829952264">Para explorar todos los comandos y las combinaciones de teclas de ChromeVox, pulsa Búsqueda+punto. Para desplazarte por los menús, utiliza las teclas de flecha. Para activar un comando, pulsa la tecla Intro. Para volver, pulsa Búsqueda+O y luego la tecla T.</translation>
 <translation id="8548973727659841685">Carácter</translation>
 <translation id="8561322612995434619">tiene un componente emergente</translation>
 <translation id="8571096049907249734">selmult</translation>

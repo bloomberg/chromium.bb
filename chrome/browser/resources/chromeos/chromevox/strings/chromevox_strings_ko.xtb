@@ -27,7 +27,7 @@
 <translation id="1201402288615127009">다음</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox - Chrome이 말을 합니다.</translation>
-<translation id="1226487719524433143">새로 제공되는 환경과 관련된 의견을 듣고 싶습니다. Search+a를 누른 다음 i를 누르면 바로 Google에 의견을 보낼 수 있습니다. 다음 버튼을 누르면 가이드를 통해 시작하는 데 필요한 모든 사항을 배울 수 있습니다.</translation>
+<translation id="1226487719524433143">새로 제공된 기능과 관련된 의견을 듣고 싶습니다. Search+a를 누른 다음 i를 누르면 바로 Google에 의견을 보낼 수 있습니다. 다음 버튼을 누르면 시작 가이드로 이동합니다.</translation>
 <translation id="1229276918471378188">이전 점프</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">다음 수준 6 제목</translation>
@@ -466,7 +466,7 @@
 <translation id="5417034931411865818">라우팅 키 $1 아래에서 항목을 클릭합니다.</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{작음 부호}other{작음 부호 #개}}</translation>
 <translation id="5444587279251314700">(활성)</translation>
-<translation id="5451268436205074266"><ph name="DOT" />번 점</translation>
+<translation id="5451268436205074266">점 <ph name="DOT" /></translation>
 <translation id="5455441614648621694">상호 보완</translation>
 <translation id="5458780372341732962">ChromeVox Next(베타) 사용하기</translation>
 <translation id="5485036206801896268">이전 그래픽이 없습니다.</translation>
@@ -477,7 +477,7 @@
 <translation id="5507663321906818013">디버그 벤치마크</translation>
 <translation id="5518443085409638729">텍스트 수정 시 커서를 문자 사이에 위치합니다(Mac OS X처럼).</translation>
 <translation id="552195134157544755">라디오 버튼</translation>
-<translation id="5531530875187439488">새 이어콘입니다. 탐색 반응 성능을 개선을 위해 듣게 될 오디오 아이콘 모음을 수정했습니다.</translation>
+<translation id="5531530875187439488">새 이어콘입니다. 브라우징 반응 성능을 개선을 위해 오디오 아이콘 모음을 수정했습니다.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">이전 수준 5 제목이 없습니다.</translation>
 <translation id="556042886152191864">버튼</translation>
@@ -678,7 +678,7 @@ Chrome 브라우저 메뉴를 열려면 Alt+F를 누릅니다.</translation>
 <translation id="7532613204005497612">6월</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, 슬라이더</translation>
 <translation id="7552432549459840808">유용한 Chrome 단축키</translation>
-<translation id="7579911500627256166"><ph name="DOT" />번 점</translation>
+<translation id="7579911500627256166">점 <ph name="DOT" /></translation>
 <translation id="7596919493010894443">선택항목 삭제됨</translation>
 <translation id="7604026522577407655">현재 열의 처음으로 이동</translation>
 <translation id="7604451927827590395">hdng</translation>

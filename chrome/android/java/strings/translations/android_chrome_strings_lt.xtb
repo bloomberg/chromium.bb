@@ -140,7 +140,6 @@ Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.
 <translation id="238909021488141516">Atsisiunčiant turinį įvyko klaida.</translation>
 <translation id="2414886740292270097">Tamsi</translation>
 <translation id="2433507940547922241">Išvaizda</translation>
-<translation id="2439248520967274840">Prisijungiate prie <ph name="TO_ACCOUNT" />. Kai kurios esamos žymės, istorija, slaptažodžiai ir kiti nustatymai anksčiau buvo sinchronizuoti su <ph name="FROM_ACCOUNT" />. Ką norite daryti su esamais duomenimis?</translation>
 <translation id="2440823041667407902">Prieiga prie vietovės</translation>
 <translation id="2476578072172137802">Svetainės nustatymai</translation>
 <translation id="2482878487686419369">Pranešimai</translation>
@@ -188,7 +187,6 @@ Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.
 <translation id="2996291259634659425">Kurkite slaptafrazę</translation>
 <translation id="2996809686854298943">Reikalingas URL</translation>
 <translation id="300526633675317032">Bus išvalyta visa <ph name="SIZE_IN_KB" /> svetainės saugykla.</translation>
-<translation id="3012408695656332380">Šio įrenginio duomenys bus pakeisti paskyros <ph name="TO_ACCOUNT" /> duomenimis. Esamus duomenis galite gauti perjungę atgal į <ph name="FROM_ACCOUNT" />, bet po atsijungimo sukurti duomenys bus prarasti.</translation>
 <translation id="3029704984691124060">Slaptafrazės neatitinka</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Gaukite pagalbos<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Atidaryti inkognito skirtuko lape</translation>
@@ -215,7 +213,6 @@ Fizinį žiniatinklį galite valdyti „Chrome“ nustatymuose.
 <translation id="3320021301628644560">Atsiskaitymo adreso pridėjimas</translation>
 <translation id="3328801116991980348">Svetainės informacija</translation>
 <translation id="3350687908700087792">Uždaryti visus inkognito skirtukų lapus</translation>
-<translation id="3351441609270267898">Importuoti esamus duomenis</translation>
 <translation id="3365671512111106261">Nepasiekiama, kai Duomenų taupymo priemonė įjungta</translation>
 <translation id="3367813778245106622">Prisijunkite dar kartą, kad pradėtumėte sinchronizavimą</translation>
 <translation id="3384347053049321195">Bendrinti vaizdą</translation>
@@ -312,7 +309,7 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="4522570452068850558">Išsami informacija</translation>
 <translation id="4526249700380860531">Peržiūrėkite ir tvarkykite išsaugotus slaptažodžius apsilankę adresu <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pasirinkti aplanką</translation>
-<translation id="4535858793016067060">„Android“ saugos nustatymuose įjunkite funkciją „Nežinomi šaltiniai“, kad išbandytumėte eksperimentą „Patobulinta funkcija „Pridėti prie pagrindinio ekrano“. Būtinai išjunkite šį nustatymą, kai jį išbandysite.</translation>
+<translation id="4535858793016067060">„Android“ saugos nustatymuose įjunkite funkciją „Nežinomi šaltiniai“, kad išbandytumėte eksperimentą „Patobulinta funkcija „Pridėti prie pagrindinio ekrano“. Būtinai išjunkite šią funkciją, kai jį išbandysite.</translation>
 <translation id="4543661749405994812">Kopijuoti el. pašto adresą</translation>
 <translation id="4572422548854449519">Prisijungimas prie tvarkomos paskyros</translation>
 <translation id="457875822857220463">Pristatymas</translation>
@@ -426,7 +423,6 @@ Jei norite koreguoti paieškos terminą, paspauskite ir laikykite, kad jį pasir
 <translation id="5676636989614905379">Nepavyko paleisti vaizdo įrašo ekrane „<ph name="SCREEN_NAME" />“.</translation>
 <translation id="5677928146339483299">Užblokuota</translation>
 <translation id="5684874026226664614">Oi, nepavyko išversti šio puslapio.</translation>
-<translation id="5708031556037168012">Esami duomenys bus išlaikyti įrenginyje ir visam laikui importuoti į paskyrą <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Kai uždarysite visus inkognito skirtukų lapus, puslapiai, kuriuos žiūrite inkognito režimu, nebus saugomi naršyklės istorijoje, slapukų saugykloje ar paieškos istorijoje. Bus išsaugoti visi atsisiųsti failai ar sukurtos žymės.
 
 Tačiau nesate nematomi. Kai naudojate inkognito režimą, jūsų darbdavys, interneto paslaugų teikėjas ar lankomos svetainės vis tiek gali pasiekti naršymo informaciją.</translation>
@@ -563,7 +559,6 @@ Pavyzdžiui, kai kurios svetainės gali atsakyti į šią užklausą rodydamos j
 <translation id="7062545763355031412">Sutikti ir perjungti paskyras</translation>
 <translation id="7063006564040364415">Nepavyko prisijungti prie sinchronizavimo serverio.</translation>
 <translation id="7064851114919012435">Kontaktinė informacija</translation>
-<translation id="7081639897063626814">Esamus duomenis išlaikyti atskirus</translation>
 <translation id="7094922512924405309">Nerasta jokių fizinių tinklalapių netoliese</translation>
 <translation id="7138678301420049075">Kitas</translation>
 <translation id="7180611975245234373">Atnaujinti</translation>
@@ -736,12 +731,10 @@ Jei norite gauti naujas licencijas, prisijunkite prie interneto ir leiskite atsi
 <translation id="9133703968756164531">„<ph name="ITEM_NAME" />“ (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rodyti originalą</translation>
 <translation id="9139068048179869749">Klausti prieš leidžiant svetainėms siųsti pranešimus (rekomenduojama)</translation>
-<translation id="9141510419986760385">Perjungiate sinchronizavimo paskyras iš <ph name="FROM_ACCOUNT" /> į <ph name="TO_ACCOUNT" />. Ką norite daryti su esamomis žymėmis, istorija, slaptažodžiais ir kitais nustatymais?</translation>
 <translation id="9154194610265714752">Atnaujinta</translation>
 <translation id="917685106653909562">Fiziniai tinklalapiai netoliese</translation>
 <translation id="9187199695613236444">Mobiliesiems pritaikytas rodinys</translation>
 <translation id="9188680907066685419">Atsijungimas nuo valdomos paskyros</translation>
-<translation id="9198708126133947749">Pakeiskite šio įrenginio duomenis <ph name="TO_ACCOUNT" /> paskyros duomenimis. Esamus duomenis galite gauti perjungę atgal į <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Vaizdai</translation>
 <translation id="932327136139879170">Kontaktinė namų informacija</translation>

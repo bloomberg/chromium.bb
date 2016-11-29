@@ -140,7 +140,6 @@ Fizisko tīmekli varat kontrolēt Chrome iestatījumos.
 <translation id="238909021488141516">Lejupielādējot saturu, radās kļūda.</translation>
 <translation id="2414886740292270097">Tumšs</translation>
 <translation id="2433507940547922241">Izskats</translation>
-<translation id="2439248520967274840">Jūs pierakstāties kontā <ph name="TO_ACCOUNT" />. Dažas jūsu esošās grāmatzīmes, vēsture, paroles un citi iestatījumi iepriekš tika sinhronizēti ar kontu <ph name="FROM_ACCOUNT" />. Ko vēlaties darīt ar esošajiem datiem?</translation>
 <translation id="2440823041667407902">Piekļuve atrašanās vietai</translation>
 <translation id="2476578072172137802">Vietnes iestatījumi</translation>
 <translation id="2482878487686419369">Paziņojumi</translation>
@@ -188,7 +187,6 @@ Fizisko tīmekli varat kontrolēt Chrome iestatījumos.
 <translation id="2996291259634659425">Ieejas frāzes izveide</translation>
 <translation id="2996809686854298943">URL ir jānorāda obligāti.</translation>
 <translation id="300526633675317032">Tādējādi tiks notīrīti visi vietnes krātuves dati (<ph name="SIZE_IN_KB" />).</translation>
-<translation id="3012408695656332380">Šīs ierīces dati tiks nomainīti ar konta <ph name="TO_ACCOUNT" /> datiem. Esošos datus varat izgūt, pārejot atpakaļ uz kontu <ph name="FROM_ACCOUNT" />, bet dati, kas tika izveidoti pēc izrakstīšanās, tiks zaudēti.</translation>
 <translation id="3029704984691124060">Ieejas frāzes neatbilst.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Saņemt palīdzību<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Atvērt inkognito režīma cilnē</translation>
@@ -215,7 +213,6 @@ Fizisko tīmekli varat kontrolēt Chrome iestatījumos.
 <translation id="3320021301628644560">Norēķinu adreses pievienošana</translation>
 <translation id="3328801116991980348">Vietnes informācija</translation>
 <translation id="3350687908700087792">Aizvērt visas inkognito režīma cilnes</translation>
-<translation id="3351441609270267898">Esošo datu importēšana</translation>
 <translation id="3365671512111106261">Nav pieejams, kad ir ieslēgts datu lietojuma samazinātājs</translation>
 <translation id="3367813778245106622">Lai sāktu sinhronizēšanu, pierakstieties vēlreiz</translation>
 <translation id="3384347053049321195">Kopīgot attēlu</translation>
@@ -426,7 +423,6 @@ Lai pielāgotu meklēšanas vienumu, nospiediet un turiet to. Lai veiktu precīz
 <translation id="5676636989614905379">Nevar atskaņot video ekrānā “<ph name="SCREEN_NAME" />”.</translation>
 <translation id="5677928146339483299">Bloķēts</translation>
 <translation id="5684874026226664614">Hmm... Šo lapu nevarēja iztulkot.</translation>
-<translation id="5708031556037168012">Esošie dati tiks glabāti jūsu ierīcē, kā arī dati tiks pastāvīgi importēti kontā <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Lapas, ko skatāt inkognito cilnēs, nebūs redzamas pārlūka vēsturē, sīkfailu krātuvē vai meklēšanas vēsturē, kad aizvērsiet visas inkognito cilnes. Tomēr visi lejupielādētie faili un izveidotās grāmatzīmes tiks saglabātas.
 
 Ņemiet vērā, ka inkognito režīmā jūs neesat neredzams. Jūsu pārlūkošanas darbības inkognito režīmā netiek slēptas no jūsu darba devēja, interneta pakalpojumu sniedzēja vai apmeklētajām vietnēm.</translation>
@@ -563,7 +559,6 @@ Piemēram, dažas vietnes, reaģējot uz šo pieprasījumu, var rādīt jums rek
 <translation id="7062545763355031412">Piekrist un pārslēgt kontus</translation>
 <translation id="7063006564040364415">Nevarēja izveidot savienojumu ar sinhronizācijas serveri.</translation>
 <translation id="7064851114919012435">Kontaktinformācija</translation>
-<translation id="7081639897063626814">Glabāt esošos datus atsevišķi</translation>
 <translation id="7094922512924405309">Tuvumā nav atrasta neviena fiziskā tīmekļa lapa</translation>
 <translation id="7138678301420049075">Cits</translation>
 <translation id="7180611975245234373">Atsvaidzināt</translation>
@@ -736,12 +731,10 @@ Lai iegūtu jaunas licences, izveidojiet savienojumu ar internetu un atskaņojie
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Rādīt oriģinālo</translation>
 <translation id="9139068048179869749">Jautāt, pirms atļaut vietnēm sūtīt paziņojumus (ieteicams)</translation>
-<translation id="9141510419986760385">Jūs pārslēdzat sinhronizējamos kontus no konta <ph name="FROM_ACCOUNT" /> uz kontu <ph name="TO_ACCOUNT" />. Ko vēlaties darīt ar esošajām grāmatzīmēm, vēsturi, parolēm un citiem iestatījumiem?</translation>
 <translation id="9154194610265714752">Atjaunināts</translation>
 <translation id="917685106653909562">Tuvumā esošās fiziskā tīmekļa lapas</translation>
 <translation id="9187199695613236444">Mobilajām ierīcēm piemērots skatījums</translation>
 <translation id="9188680907066685419">Izrakstīšanās no pārvaldīta konta</translation>
-<translation id="9198708126133947749">Šīs ierīces dati tiks nomainīti ar konta <ph name="TO_ACCOUNT" /> datiem. Esošos datus varat izgūt, pārejot atpakaļ uz kontu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Attēli</translation>
 <translation id="932327136139879170">Sākums</translation>

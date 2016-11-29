@@ -140,7 +140,6 @@
 <translation id="238909021488141516">下载该内容时出现错误。</translation>
 <translation id="2414886740292270097">深色调</translation>
 <translation id="2433507940547922241">外观</translation>
-<translation id="2439248520967274840">您正要登录 <ph name="TO_ACCOUNT" />。部分现有书签、历史记录、密码及其他设置之前已同步到 <ph name="FROM_ACCOUNT" />。您希望如何处理现有数据？</translation>
 <translation id="2440823041667407902">位置信息使用权</translation>
 <translation id="2476578072172137802">网站设置</translation>
 <translation id="2482878487686419369">通知</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">创建密码</translation>
 <translation id="2996809686854298943">必须提供网址</translation>
 <translation id="300526633675317032">这会清除全部的网站存储数据 (<ph name="SIZE_IN_KB" />)。</translation>
-<translation id="3012408695656332380">将这台设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据，但自您退出后创建的数据将会丢失。</translation>
 <translation id="3029704984691124060">密码不匹配</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />获取帮助<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">在隐身标签页中打开</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">添加账单邮寄地址</translation>
 <translation id="3328801116991980348">网站信息</translation>
 <translation id="3350687908700087792">关闭所有隐身标签页</translation>
-<translation id="3351441609270267898">导入现有数据</translation>
 <translation id="3365671512111106261">在流量节省程序处于开启状态时不可用</translation>
 <translation id="3367813778245106622">重新登录以开始同步</translation>
 <translation id="3384347053049321195">分享图片</translation>
@@ -426,7 +423,6 @@
 <translation id="5676636989614905379">无法在<ph name="SCREEN_NAME" />上播放视频。</translation>
 <translation id="5677928146339483299">已屏蔽</translation>
 <translation id="5684874026226664614">糟糕，此网页内容无法翻译。</translation>
-<translation id="5708031556037168012">将现有数据保留在您的设备上，并将这些数据永久导入到 <ph name="TO_ACCOUNT" />。</translation>
 <translation id="5719837394786370183">在您关闭所有隐身标签页后，您在这些标签页中查看的网页不会在浏览器历史记录、Cookie 存储区或搜索记录中留下任何痕迹。不过，您下载的所有文件或创建的书签均会保留下来。
 
 但是，这并不意味着您能完全隐身。即使您进入隐身模式，您的雇主、互联网服务提供商和您访问的网站仍然能看到您的浏览活动。</translation>
@@ -563,7 +559,6 @@
 <translation id="7062545763355031412">接受并切换帐号</translation>
 <translation id="7063006564040364415">无法连接到同步服务器。</translation>
 <translation id="7064851114919012435">联系信息</translation>
-<translation id="7081639897063626814">将现有数据单独存储</translation>
 <translation id="7094922512924405309">找不到附近的“实物网”网页</translation>
 <translation id="7138678301420049075">其他</translation>
 <translation id="7180611975245234373">刷新</translation>
@@ -736,12 +731,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">显示原始网页</translation>
 <translation id="9139068048179869749">在允许网站发送通知前先询问（推荐）</translation>
-<translation id="9141510419986760385">您正要将同步帐号从 <ph name="FROM_ACCOUNT" /> 切换到 <ph name="TO_ACCOUNT" />。您希望如何处理现有书签、历史记录、密码及其他设置？</translation>
 <translation id="9154194610265714752">已更新</translation>
 <translation id="917685106653909562">附近的“实物网”网页</translation>
 <translation id="9187199695613236444">适合在移动设备上浏览的视图</translation>
 <translation id="9188680907066685419">退出受管理的帐号</translation>
-<translation id="9198708126133947749">系统会将此设备的数据替换为 <ph name="TO_ACCOUNT" /> 的数据。不过，您可以切换回 <ph name="FROM_ACCOUNT" /> 来获取现有数据。</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">图片</translation>
 <translation id="932327136139879170">首页</translation>

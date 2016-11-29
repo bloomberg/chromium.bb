@@ -117,7 +117,7 @@
 <translation id="4621240073146040695">Quase atualizado! Reinicie o Chromium para concluir a atualização.</translation>
 <translation id="4677944499843243528">O perfil parece estar a ser utilizado por outro processo do Chromium (<ph name="PROCESS_ID" />) noutro computador (<ph name="HOST_NAME" />). O Chromium bloqueou o perfil para que não seja danificado. Se tiver a certeza de que não existem outros processos a utilizar este perfil, pode desbloqueá-lo e reiniciar o Chromium.</translation>
 <translation id="469338717132742108">Obter ajuda relacionada com o SO Chromium</translation>
-<translation id="4708774505295300557">Anteriormente, alguém iniciou sessão no Chromium neste computador com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo utilizador do Chromium para manter as informações em separado.</translation>
+<translation id="4708774505295300557">Alguém iniciou sessão no Chromium neste computador anteriormente com a conta <ph name="ACCOUNT_EMAIL_LAST" />. Crie um novo utilizador do Chromium para manter as informações em separado.</translation>
 <translation id="4714956846925717402">Aceder mais rapidamente ao Chromium</translation>
 <translation id="4743926867934016338">Aceitar e pesquisar</translation>
 <translation id="4888717733111232871">Regra de importação para o Chromium permitir o tráfego mDNS.</translation>

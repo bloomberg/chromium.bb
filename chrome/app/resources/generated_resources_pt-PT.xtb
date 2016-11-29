@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">A procurar dispositivos Bluetooth e USB…</translation>
 <translation id="1056898198331236512">Aviso</translation>
 <translation id="1056982457359827501">Ativa BLE Advertising nas Aplicações do Chrome. A BLE Advertising pode interferir com a utilização normal das funcionalidades de Bluetooth Low Energy.</translation>
-<translation id="1058325955712687476">Ativa o Serviço de envolvimento de sites, que regista a interação com os sites e atribui os recursos em conformidade.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Substituir</translation>
 <translation id="1062866675591297858">Faça a gestão dos seus utilizadores supervisionados no <ph name="BEGIN_LINK" />Painel de controlo de utilizadores supervisionados<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">A importar <ph name="FILE_COUNT" /> ficheiros...</translation>
 <translation id="1352103415082130575">Teclado tailandês (pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Gestor de armazenamento do material design</translation>
 <translation id="1353966721814789986">Páginas de arranque</translation>
 <translation id="1354868058853714482">O Adobe Reader está desactualizado e pode não estar seguro.</translation>
 <translation id="1355408554203439639">Rasterizador de software 3D</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Cache do Símbolo da API de Identidade</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detalhes: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Captura de especificações v1 de eventos do ponteiro</translation>
 <translation id="1480041086352807611">Modo de demonstração</translation>
 <translation id="1481244281142949601">Está correctamente isolado relativamente a processos.</translation>
 <translation id="1482124012545051544">Pronto para fazer uma cópia de segurança de <ph name="FILE_COUNT" /> novas fotografias</translation>
@@ -886,7 +883,6 @@
 <translation id="2177950615300672361">Separador de navegação anónima: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">AC comprometida</translation>
 <translation id="218070003709087997">Utilize um número para indicar as cópias a imprimir (1 a 999).</translation>
-<translation id="218492098606937156">Ativar eventos de toque</translation>
 <translation id="2187317261103489799">Detetar (predefinição)</translation>
 <translation id="2187895286714876935">Erro na importação do certificado do servidor</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -1042,7 +1038,6 @@ Depois de criar um novo utilizador supervisionado, pode gerir as respetivas defi
 <translation id="2367972762794486313">Mostrar aplicações</translation>
 <translation id="2371076942591664043">Abrir quando estiver concluí&amp;do</translation>
 <translation id="2372036074421194686">O Chrome encontrou um programa indesejado (<ph name="UWS_NAME" />) instalado no seu computador. Pode ser possível remover esse programa ao executar a Ferramenta de limpeza do Chrome.</translation>
-<translation id="2375701438512326360">Force o suporte de ecrã tátil para estar sempre ativado ou desativado, ou para estar ativado quando for detetado um ecrã tátil no arranque (Automático, por predefinição).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> ficheiros selecionados</translation>
 <translation id="2378982052244864789">Selecione o diretório da extensão.</translation>
 <translation id="2379281330731083556">Imprimir utilizando a caixa de diálogo do sistema... <ph name="SHORTCUT_KEY" /></translation>
@@ -2087,7 +2082,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Botão de opção selecionado</translation>
 <translation id="3649138363871392317">Foi capturada uma fotografia</translation>
 <translation id="3650242103421962931">Linear</translation>
-<translation id="3653069516296104653">Desativa a captura implícita de eventos do ponteiro tátil.</translation>
 <translation id="3653999333232393305">Continuar a permitir que <ph name="HOST" /> aceda ao seu microfone</translation>
 <translation id="3654045516529121250">Ler definições de acessibilidade</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tem acesso permanente a um ficheiro.}other{Tem acesso permanente a # ficheiros.}}</translation>
@@ -2130,7 +2124,6 @@ De <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">O navegador foi encerrado antes de a transferência estar concluída.</translation>
 <translation id="3711895659073496551">Suspenso</translation>
 <translation id="3712897371525859903">Guard&amp;ar página como...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Enviar automaticamente<ph name="END_WHITEPAPER_LINK" /> algumas informações do sistema e conteúdo de páginas para a Google para ajudar a detetar aplicações e sites perigosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">calendário Web</translation>
 <translation id="3715597595485130451">Estabelecer ligação a redes Wi-Fi</translation>
 <translation id="3716615839203649375">permitir</translation>
@@ -2479,13 +2472,11 @@ Todos os utilizadores têm de terminar sessão para continuar.</translation>
 <translation id="418179967336296930">Teclado com a fonética russa (YaZHert)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arrastar para mover um ecrã</translation>
-<translation id="4188447344915957833">Ativa o gestor de armazenamento nas Definições do material design.</translation>
 <translation id="4189406272289638749">Uma extensão, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, está a controlar esta definição.</translation>
 <translation id="4193154014135846272">Documento do Google</translation>
 <translation id="4193182321948161343">Ativar gestor de utilizadores do Material Design</translation>
 <translation id="4193297030838143153">Novo endereço de faturação…</translation>
 <translation id="4194570336751258953">Ativar tocar para clicar</translation>
-<translation id="4195621107636847694">Serviço de envolvimento de sites</translation>
 <translation id="4195643157523330669">Abrir num novo separador</translation>
 <translation id="4195814663415092787">Continuar onde deixou</translation>
 <translation id="4197674956721858839">Seleção de zip</translation>
@@ -3118,7 +3109,7 @@ Prima qualquer tecla para continuar a explorar.</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 Com encriptação RSA</translation>
 <translation id="509429900233858213">Ocorreu um erro.</translation>
 <translation id="5094721898978802975">Comunicar com aplicações nativas cooperantes</translation>
-<translation id="5096691708387552456">Permite o carregamento (ou a transferência) em segundo plano simultâneo de páginas em dispositivos Android svelte (512 MB de RAM). Caso contrário, o carregamento em segundo plano ocorre quando o dispositivo svelte estiver inativo.</translation>
+<translation id="5096691708387552456">Permite o carregamento (ou a transferência) em segundo plano simultâneo de páginas em dispositivos Android de baixa gama (512 MB de RAM). Caso contrário, o carregamento em segundo plano ocorre quando o dispositivo mencionado estiver inativo.</translation>
 <translation id="5097002363526479830">Falha ao ligar à rede "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">Hebraico</translation>
 <translation id="5098647635849512368">Não foi possível encontrar o caminho absoluto para o directório a empacotar.</translation>
@@ -5326,7 +5317,7 @@ Mantenha o seu ficheiro de chave num local seguro, pois irá precisar dele para 
 <translation id="8074127646604999664">Permitir que os sites fechados recentemente concluam o envio e a receção de dados</translation>
 <translation id="8077684120002777443">Nome de utilizador (por exemplo, utilizador@example.com)</translation>
 <translation id="8079530767338315840">Repetir</translation>
-<translation id="8081035298624755899">Permite o carregamento em segundo plano em simultâneo no svelte.</translation>
+<translation id="8081035298624755899">Permite o carregamento em segundo plano em simultâneo no dispositivo de baixa gama.</translation>
 <translation id="8083739373364455075">Obtenha 100 GB gratuitos com o Google Drive</translation>
 <translation id="8086015605808120405">A configurar <ph name="PRINTER_NAME" />…</translation>
 <translation id="8088137642766812908">Tenha cuidado, esta funcionalidade pode criar problemas</translation>

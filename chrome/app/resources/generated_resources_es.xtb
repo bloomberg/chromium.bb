@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Buscando dispositivos USB y Bluetooth...</translation>
 <translation id="1056898198331236512">Advertencia</translation>
 <translation id="1056982457359827501">Habilita la publicidad de BLE en las aplicaciones de Chrome. La publicidad de BLE podría interferir con el uso habitual de las funciones del Bluetooth de bajo consumo.</translation>
-<translation id="1058325955712687476">Habilita el Servicio de interacción con sitios, que registra la interacción con los sitios y asigna recursos según corresponda.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> de <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Sustituir</translation>
 <translation id="1062866675591297858">Administra los usuarios supervisados mediante el <ph name="BEGIN_LINK" />panel de control de usuarios supervisados<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importando <ph name="FILE_COUNT" /> archivos...</translation>
 <translation id="1352103415082130575">Teclado tailandés (pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Gestor de almacenamiento de Material Design</translation>
 <translation id="1353966721814789986">Páginas de inicio</translation>
 <translation id="1354868058853714482">Adobe Reader no está actualizado y puede que no sea seguro.</translation>
 <translation id="1355408554203439639">Rasterizador de software 3D</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Caché del token de la API de identidad</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detalles: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Captura de especificación de la versión 1 del evento de puntero</translation>
 <translation id="1480041086352807611">Modo demo</translation>
 <translation id="1481244281142949601">La zona de pruebas es adecuada.</translation>
 <translation id="1482124012545051544">Listo para realizar la copia de seguridad de <ph name="FILE_COUNT" /> fotos nuevas</translation>
@@ -886,7 +883,6 @@
 <translation id="2177950615300672361">Pestaña de incógnito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Compromiso de entidad emisora de certificados</translation>
 <translation id="218070003709087997">Usa un número para indicar cuántas copias quieres imprimir (entre 1 y 999).</translation>
-<translation id="218492098606937156">Habilitar eventos de toque</translation>
 <translation id="2187317261103489799">Detectar (predeterminado)</translation>
 <translation id="2187895286714876935">Error de importación del certificado de servidor</translation>
 <translation id="2188881192257509750">Abrir <ph name="APPLICATION" /></translation>
@@ -1042,7 +1038,6 @@ Una vez que hayas creado un nuevo usuario supervisado, podrás administrar su co
 <translation id="2367972762794486313">Mostrar aplicaciones</translation>
 <translation id="2371076942591664043">Abrir al &amp;finalizar</translation>
 <translation id="2372036074421194686">Chrome ha encontrado un programa no deseado (<ph name="UWS_NAME" />) instalado en tu ordenador. Para eliminarlo, ejecuta el Limpiador de Chrome.</translation>
-<translation id="2375701438512326360">Fuerza la compatibilidad de pantalla táctil para que siempre esté habilitada o inhabilitada, o para que se habilite al detectar una pantalla táctil al iniciar el sistema (la opción predeterminada es la configuración automática).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> archivos seleccionados</translation>
 <translation id="2378982052244864789">Selecciona el directorio de la extensión.</translation>
 <translation id="2379281330731083556">Imprimir utilizando el cuadro de diálogo del sistema <ph name="SHORTCUT_KEY" /></translation>
@@ -2086,7 +2081,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3648460724479383440">Botón de opción seleccionado</translation>
 <translation id="3649138363871392317">Se ha hecho la foto</translation>
 <translation id="3650242103421962931">Lineal</translation>
-<translation id="3653069516296104653">Desactiva la captura implícita de los eventos de puntero táctiles.</translation>
 <translation id="3653999333232393305">Seguir permitiendo que <ph name="HOST" /> acceda al micrófono</translation>
 <translation id="3654045516529121250">Leer tu configuración de accesibilidad</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Tiene acceso permanente a un archivo.}other{Tiene acceso permanente a # archivos.}}</translation>
@@ -2129,7 +2123,6 @@ Si no cambias la configuración predeterminada, <ph name="USER_DISPLAY_NAME" /> 
 <translation id="3709244229496787112">El navegador se ha cerrado antes de que finalizara la descarga.</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3712897371525859903">Gu&amp;ardar página como...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Enviar automáticamente<ph name="END_WHITEPAPER_LINK" /> información del sistema y contenido de las páginas a Google para facilitar la detección de aplicaciones y sitios web peligrosos. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">calendario web</translation>
 <translation id="3715597595485130451">Conectarse a una red Wi-Fi</translation>
 <translation id="3716615839203649375">permitir</translation>
@@ -2477,13 +2470,11 @@ Todos los usuarios deben cerrar sesión para continuar.</translation>
 <translation id="418179967336296930">Teclado fonético ruso (YaZHert)</translation>
 <translation id="4181841719683918333">Idiomas</translation>
 <translation id="4184885522552335684">Arrastra una pantalla para moverla</translation>
-<translation id="4188447344915957833">Habilita el gestor de almacenamiento en la configuración de Material Design.</translation>
 <translation id="4189406272289638749">La extensión &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; controla esta opción.</translation>
 <translation id="4193154014135846272">Documento de Google</translation>
 <translation id="4193182321948161343">Habilitar el administrador de usuarios de Material Design</translation>
 <translation id="4193297030838143153">Nueva dirección de facturación...</translation>
 <translation id="4194570336751258953">Habilitar la función Tocar para hacer clic</translation>
-<translation id="4195621107636847694">Servicio de interacción con sitios</translation>
 <translation id="4195643157523330669">Abrir en una pestaña nueva</translation>
 <translation id="4195814663415092787">Abrir todo como estaba antes de cerrar</translation>
 <translation id="4197674956721858839">Selección de archivo comprimido</translation>
@@ -3115,7 +3106,7 @@ Pulsa cualquier tecla para seguir con la exploración.</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 con cifrado RSA</translation>
 <translation id="509429900233858213">Se ha producido un error.</translation>
 <translation id="5094721898978802975">Comunicarse con aplicaciones nativas cooperativas</translation>
-<translation id="5096691708387552456">Habilita la carga (o la descarga) simultánea en segundo plano de páginas en dispositivos svelte (512 MB RAM) de Android. De lo contrario, la carga en segundo plano ocurrirá cuando el dispositivo svelte esté inactivo.</translation>
+<translation id="5096691708387552456">Habilita la carga (o la descarga) simultánea en segundo plano de páginas en dispositivos de gama baja (512 MB de RAM) de Android. De lo contrario, la carga en segundo plano ocurrirá cuando el dispositivo esté inactivo.</translation>
 <translation id="5097002363526479830">Error al establecer conexión con la red "<ph name="NAME" />": <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">Hebreo</translation>
 <translation id="5098647635849512368">No se puede encontrar la ruta absoluta hasta el directorio donde está la extensión</translation>
@@ -5318,7 +5309,7 @@ Guarda tu archivo de clave en un lugar seguro, ya que lo necesitarás para crear
 <translation id="8074127646604999664">Permitir que los sitios web cerrados recientemente terminen de enviar y recibir datos</translation>
 <translation id="8077684120002777443">Nombre de usuario (p. ej., usuario@example.com)</translation>
 <translation id="8079530767338315840">Repetir</translation>
-<translation id="8081035298624755899">Habilita la carga simultánea en segundo plano en svelte.</translation>
+<translation id="8081035298624755899">Habilita la carga simultánea en segundo plano en dispositivos de gama baja.</translation>
 <translation id="8083739373364455075">Consigue 100 GB de espacio libre en Google Drive</translation>
 <translation id="8086015605808120405">Configurando <ph name="PRINTER_NAME" />...</translation>
 <translation id="8088137642766812908">Ten cuidado con esta función</translation>
@@ -6188,7 +6179,7 @@ Puede que las notificaciones, las ventanas y los cuadros de diálogo que aparezc
 <translation id="9215934040295798075">Establecer fondo de pantalla</translation>
 <translation id="9218430445555521422">Establecer como predeterminado</translation>
 <translation id="9219103736887031265">Imágenes</translation>
-<translation id="9220525904950070496">Eliminar cuenta</translation>
+<translation id="9220525904950070496">Quitar cuenta</translation>
 <translation id="923467487918828349">Mostrar todas</translation>
 <translation id="930268624053534560">Marcas de tiempo detalladas</translation>
 <translation id="932327136139879170">Página principal</translation>

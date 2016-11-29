@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Bluetooth ve USB cihazları aranıyor...</translation>
 <translation id="1056898198331236512">Uyarı</translation>
 <translation id="1056982457359827501">Chrome Uygulamalarında BLE Reklamcılığını etkinleştirir. BLE Reklamcılığı Bluetooth Düşük Enerji özelliklerini normal kullanımınızı etkileyebilir.</translation>
-<translation id="1058325955712687476">Sitelerle etkileşimi kaydeden ve buna göre kaynakları ayıran Site Etkileşim Hizmeti'ni etkinleştirir.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> / <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Değiştir</translation>
 <translation id="1062866675591297858">Denetlenen kullanıcılarınızı <ph name="BEGIN_LINK" />Denetlenen Kullanıcılar Gösterge Tablosu<ph name="END_LINK" /> aracılığıyla yönetin.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> dosya içe aktarılıyor...</translation>
 <translation id="1352103415082130575">Tayca klavye (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Materyal Tasarım depolama yöneticisi</translation>
 <translation id="1353966721814789986">Başlangıç sayfaları</translation>
 <translation id="1354868058853714482">Adobe Reader'ın sürümü eski olduğundan güvenli olmayabilir.</translation>
 <translation id="1355408554203439639">3D yazılım tabanlı pikselleştirici</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Kimlik API'sı Jeton Önbelleği</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Ayrıntılar: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">İşaretçi etkinliği v1 özellik yakalama</translation>
 <translation id="1480041086352807611">Demo modu</translation>
 <translation id="1481244281142949601">Sandbox (korumalı alan) içine düzgün bir şekilde alındınız.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> yeni fotoğrafı yedeklemeye hazır</translation>
@@ -886,7 +883,6 @@ Dolması için gereken süre: <ph name="HOUR" />:<ph name="MINUTE" /></translati
 <translation id="2177950615300672361">Gizli Sekmesi: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA Uzlaşması</translation>
 <translation id="218070003709087997">Yazdırılacak kopya sayısını göstermek için rakam kullanın (1 - 999 arası).</translation>
-<translation id="218492098606937156">Dokunmatik işlemleri etkinleştir</translation>
 <translation id="2187317261103489799">Algıla (varsayılan)</translation>
 <translation id="2187895286714876935">Sunucu Sertifikası İçe Aktarma Hatası</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> adlı uygulamayı aç</translation>
@@ -1042,7 +1038,6 @@ Yeni bir denetlenen kullanıcı oluşturduktan sonra, istediğiniz zaman herhang
 <translation id="2367972762794486313">Uygulamaları göster</translation>
 <translation id="2371076942591664043">İşlem tamamlandığın&amp;da aç</translation>
 <translation id="2372036074421194686">Chrome, bilgisayarınızda yüklü istenmeyen bir program (<ph name="UWS_NAME" />) buldu. Chrome Temizleme Aracı'nı kullanarak söz konusu programı kaldırabilirsiniz.</translation>
-<translation id="2375701438512326360">Dokunmatik ekran desteğini her zaman etkin veya devre dışı olacak şekilde ayarlayın ya da başlangıçta bir dokunmatik ekran algılandığında etkinleşmesini sağlayın (Otomatik, varsayılan).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> dosya seçildi</translation>
 <translation id="2378982052244864789">Uzantı dizinini seçin.</translation>
 <translation id="2379281330731083556">Sistem iletişim kutusunu kullanarak yazdır... <ph name="SHORTCUT_KEY" /></translation>
@@ -2086,7 +2081,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3648460724479383440">Seçili radyo düğmesi</translation>
 <translation id="3649138363871392317">Fotoğraf çekildi</translation>
 <translation id="3650242103421962931">Doğrusal</translation>
-<translation id="3653069516296104653">Dokunmatik işaretçi etkinliklerinin örtülü bir şekilde yakalanmasını devre dışı bırakır.</translation>
 <translation id="3653999333232393305">Mikrofonuma <ph name="HOST" /> tarafından erişilmesine izin vermeye devam et</translation>
 <translation id="3654045516529121250">Erişilebilirlik ayarlarınızı okuma</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Bir dosyaya kalıcı erişimi vardır.}other{# dosyaya kalıcı erişimi vardır.}}</translation>
@@ -2129,7 +2123,6 @@ Bunlar ve diğer talimatlar için lütfen <ph name="ACCOUNT_EMAIL" /> e-postanı
 <translation id="3709244229496787112">İndirme işlemi tamamlanmadan tarayıcı kapatıldı.</translation>
 <translation id="3711895659073496551">Askıya al</translation>
 <translation id="3712897371525859903">Sayfayı &amp;farklı kaydet...</translation>
-<translation id="3713494718070140825">Tehlikeli uygulamaların ve sitelerin tespit edilmesine yardımcı olmak için Google'a bazı sistem bilgilerini ve sayfa içeriklerini <ph name="BEGIN_WHITEPAPER_LINK" />otomatik olarak gönder<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">web takvimi</translation>
 <translation id="3715597595485130451">Kablosuz Ağa Bağlanma</translation>
 <translation id="3716615839203649375">izin ver</translation>
@@ -2478,13 +2471,11 @@ Tüm kullanıcılar devam etmek için çıkış yapmalıdır.</translation>
 <translation id="418179967336296930">Rusça Fonetik (YaZHert) klavye</translation>
 <translation id="4181841719683918333">Diller</translation>
 <translation id="4184885522552335684">Ekranı taşımak için sürükleyin</translation>
-<translation id="4188447344915957833">Materyal Tasarım Ayarları'nda depolama yöneticisini etkinleştirir.</translation>
 <translation id="4189406272289638749">Bu ayarı &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; adlı uzantı kontrol ediyor.</translation>
 <translation id="4193154014135846272">Google dokümanı</translation>
 <translation id="4193182321948161343">Materyal Tasarım Kullanıcı Yöneticisini Etkinleştir</translation>
 <translation id="4193297030838143153">Yeni fatura adresi...</translation>
 <translation id="4194570336751258953">Tıklamak için hafifçe vur'u etkinleştir</translation>
-<translation id="4195621107636847694">Site Etkileşim Hizmeti</translation>
 <translation id="4195643157523330669">Yeni sekmede aç</translation>
 <translation id="4195814663415092787">Kaldığım yerden devam et</translation>
 <translation id="4197674956721858839">Zip seçimi</translation>
@@ -3117,7 +3108,7 @@ Keşfetmeye devam etmek için herhangi bir tuşa basın.</translation>
 <translation id="5088534251099454936">PKCS #1 RSA Şifrelemeli SHA-512</translation>
 <translation id="509429900233858213">Bir hata oluştu.</translation>
 <translation id="5094721898978802975">İşbirliği yapan yerel uygulamalarla iletişim kurma</translation>
-<translation id="5096691708387552456">Android svelte (512 MB RAM) cihazlarda sayfaların eş zamanlı olarak arka planda yüklenmesini (veya indirilmesini) etkinleştirir. Aksi taktirde arka planda yükleme sadece svelte cihazı boştayken gerçekleşir.</translation>
+<translation id="5096691708387552456">Düşük konfigürasyonlu Android cihazlarda (512 MB RAM) sayfaların eş zamanlı olarak arka planda yüklenmesini (veya indirilmesini) etkinleştirir. Aksi taktirde arka planda yükleme sadece söz konusu cihazlar boştayken gerçekleşir.</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />' ağına bağlanamadı: <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">İbranice</translation>
 <translation id="5098647635849512368">Paket dizininin tam yolu bulunamadı.</translation>
@@ -5326,7 +5317,7 @@ Anahtar dosyanızı güvenli bir yerde saklayın. Uzantınızın yeni sürümler
 <translation id="8074127646604999664">Son kapatılan sitelerin veri gönderme ve alma işlemini bitirmesine izin ver</translation>
 <translation id="8077684120002777443">Kullanıcı adı (ör. kullanıcı@example.com)</translation>
 <translation id="8079530767338315840">Tekrarla</translation>
-<translation id="8081035298624755899">Svelte'de arka planda eş zamanlı yüklemeyi etkinleştirir.</translation>
+<translation id="8081035298624755899">Düşük konfigürasyonlu cihazlarda arka planda eş zamanlı yüklemeyi etkinleştirir.</translation>
 <translation id="8083739373364455075">Google Drive ile ücretsiz 100 GB alın</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> yapılandırılıyor...</translation>
 <translation id="8088137642766812908">Dikkat! Bu özellik istenmeyen şeylere neden olabilir</translation>

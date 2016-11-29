@@ -706,7 +706,6 @@ El mode d'incògnit, <ph name="SHORTCUT_KEY" />, us pot resultar pràctic la pro
 <translation id="9050666287014529139">Frase de contrasenya</translation>
 <translation id="9065203028668620118">Edita</translation>
 <translation id="9068849894565669697">Selecció de color</translation>
-<translation id="9092364396508701805">La pàgina de <ph name="HOST_NAME" /> no funciona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> utilitza normalment l'encriptació per protegir la vostra informació. En aquesta ocasió, quan Chromium ha provat de connectar-se a <ph name="SITE" />, el lloc web ha enviat credencials poc comunes i incorrectes. Pot ser que un atacant estigui provant de fer-se passar per <ph name="SITE" /> o que una pantalla d'inici de sessió a la xarxa Wi-Fi hagi interromput la connexió. En qualsevol cas, la vostra informació continua estant segura, perquè Chromium ha aturat la connexió abans no s'intercanviés cap dada.</translation>
 <translation id="9137013805542155359">Mostra l'original</translation>
 <translation id="9148507642005240123">&amp;Desfés la modificació</translation>

@@ -785,9 +785,6 @@
 <translation id="3322771899429619102">Umożliwia skonfigurowanie listy wzorcowych URL-i określających witryny, w których mogą być generowane klucze. Jeśli wzorzec adresu URL znajduje się w zasadzie „KeygenBlockedForUrls”, zastępuje to te wyjątki.
 
           Jeśli ta zasada nie zostanie skonfigurowana, dla wszystkich witryn będzie używana globalna wartość domyślna pochodząca z zasady „DefaultKeygenSetting” (jeśli została skonfigurowana) lub z osobistej konfiguracji użytkownika.</translation>
-<translation id="3322902067538988734">Po włączeniu tej zasady użytkownik może korzystać z przeglądarki, tylko jeśli zaloguje się w <ph name="PRODUCT_NAME" /> za pomocą swojego profilu. Domyślnie zasada BrowserGuestModeEnabled jest wyłączana.
-
-      Gdy ta zasada jest wyłączona lub nie została skonfigurowana, użytkownik może korzystać z przeglądarki bez logowania się w <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Określa, jak często użytkownik musi podawać hasło, by używać szybkiego odblokowania.</translation>
 <translation id="3381968327636295719">Używaj domyślnie przeglądarki hosta</translation>
 <translation id="3417418267404583991">Jeśli ta zasada zostanie włączona lub nie będzie skonfigurowana, <ph name="PRODUCT_OS_NAME" /> będzie umożliwiał logowanie się w trybie gościa. Logowania w trybie gościa to anonimowe sesje użytkownika, które nie wymagają hasła.
@@ -1090,7 +1087,7 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik będzie mógł korzystać z
 <translation id="4372704773119750918">Nie zezwalaj użytkownikom firmowym na korzystanie z trybu wieloprofilowego (jako użytkownik główny ani dodatkowy)</translation>
 <translation id="4377599627073874279">Zezwalaj na wyświetlanie wszelkich grafik we wszystkich witrynach</translation>
 <translation id="4389091865841123886">Konfiguruje zdalne poświadczanie przy użyciu mechanizmu TPM</translation>
-<translation id="4397469093966511008">Wyłączenie tej zasady sprawi, że użytkownicy nie będą mogli wysyłać na serwery Google pewnych informacji o systemie ani zawartości stron. Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownicy będą mogli wysyłać te dane do usługi Bezpieczne przeglądanie, by pomóc w wykrywaniu niebezpiecznych aplikacji i stron.</translation>
+<translation id="4397469093966511008">Wyłączenie tej zasady spowoduje, że użytkownicy nie będą mogli wysyłać na serwery Google pewnych informacji o systemie ani zawartości stron. Jeśli ta zasada jest włączona lub nieskonfigurowana, użytkownicy będą mogli wysyłać te dane do usługi Bezpieczne przeglądanie, by pomóc w wykrywaniu niebezpiecznych aplikacji i stron.</translation>
 <translation id="4423597592074154136">Ręcznie określ ustawienia serwera proxy</translation>
 <translation id="4429220551923452215">Włącza lub wyłącza skróty aplikacji na pasku zakładek.
 
@@ -1593,14 +1590,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
       W przeciwnym razie można ustawić jedną z tych wartości: „sslv3”, „tls1”, „tls1.1” lub „tls1.2”. Po ich ustawieniu <ph name="PRODUCT_NAME" /> nie będzie używać protokołu SSL/TLS w wersji niższej niż określona. Wszystkie nierozpoznane wartości będą ignorowane.
 
       Należy pamiętać, że wbrew temu, co sugeruje numer, wersja „sslv3” jest starsza od „tls1”.</translation>
-<translation id="6177482277304066047">Ustawia wersję docelową dla autoaktualizacji.
-
-      Określa przedrostek wersji docelowej aktualizacji systemu <ph name="PRODUCT_OS_NAME" />. Jeśli na urządzeniu działa wersja starsza niż określona przez podany przedrostek, zostanie wykonana aktualizacja do najnowszej wersji z danym przedrostkiem. Jeśli na urządzeniu działa już późniejsza wersja, nie są wprowadzane żadne zmiany (czyli nie jest przywracana starsza wersja), a na urządzeniu jest pozostawiana aktualnie używana wersja. Jak pokazano w poniższym przykładzie, format przedrostka rozróżnia komponenty:
-
-      "" (lub brak konfiguracji): aktualizacja do najnowszej dostępnej wersji.
-      "1412.": aktualizacja do dowolnej wersji podrzędnej 1412 (np. 1412.24.34 lub 1412.60.2)
-      "1412.2.": aktualizacja do dowolnej wersji podrzędnej 1412.2 (np. 1412.2.34 lub 1412.2.2)
-      "1412.24.34": aktualizacja tylko do tej konkretnej wersji</translation>
 <translation id="6190022522129724693">Domyślne ustawienie wyskakujących okienek</translation>
 <translation id="6197453924249895891">Przyznaje dostęp do kluczy firmowych do rozszerzeń.
 
@@ -1636,9 +1625,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="6367755442345892511">Czy użytkownik ma mieć możliwość skonfigurowania kanału wersji</translation>
 <translation id="6368011194414932347">Konfiguruj adres URL strony startowej</translation>
 <translation id="6368403635025849609">Zezwalaj na wykonywanie kodu JavaScript w tych witrynach</translation>
-<translation id="6373222873250380826">Włączone ustawienie wyłącza automatyczne aktualizacje.
-
-      Jeśli to ustawienie jest nieskonfigurowane lub wyłączone, urządzenia z <ph name="PRODUCT_OS_NAME" /> automatycznie sprawdzają dostępność aktualizacji.</translation>
 <translation id="6376659517206731212">Może być obowiązkowa</translation>
 <translation id="6378076389057087301">Określ, czy aktywność związana z dźwiękiem wpływa na zarządzanie energią</translation>
 <translation id="637934607141010488">Zgłasza listę użytkowników urządzenia, którzy niedawno się zalogowali.
@@ -1964,13 +1950,6 @@ Jeśli ta zasada nie zostanie ustawiona, użytkownik może wyłączyć każdą w
 <translation id="7336878834592315572">Zachowaj pliki cookie na czas trwania sesji</translation>
 <translation id="7340034977315324840">Zgłoś godziny aktywności urządzenia</translation>
 <translation id="7384999953864505698">Zezwala na protokół QUIC</translation>
-<translation id="7406651467768226499">Czy zezwolić aplikacji kiosku uruchamianej automatycznie z zerowym opóźnieniem na kontrolowanie wersji <ph name="PRODUCT_OS_NAME" />.
-
-      Ta zasada określa, czy uruchamiana automatycznie z zerowym opóźnieniem aplikacja kiosku może kontrolować wersję <ph name="PRODUCT_OS_NAME" /> przez zadeklarowanie w swoim pliku manifestu wartości klucza required_platform_version i używanie jej jako przedrostka docelowej wersji po aktualizacji automatycznej.
-
-      Jeśli ustawisz w niej wartość prawda, wartość klucza manifestu required_platform_version uruchamianej automatycznie z zerowym opóźnieniem aplikacji kiosku będzie używana jako przedrostek docelowej wersji po aktualizacji automatycznej.
-
-      Jeśli nie skonfigurujesz tej zasady lub ustawisz w niej wartość fałsz, klucz manifestu required_platform_version będzie ignorowany i aktualizacje automatyczne będą przebiegać normalnie.</translation>
 <translation id="7417972229667085380">Wartość procentowa skalowania opóźnienia bezczynności w trybie prezentacji (wycofana)</translation>
 <translation id="7421483919690710988">Ustaw rozmiar dyskowej pamięci podręcznej multimediów w bajtach</translation>
 <translation id="7424751532654212117">Lista wyjątków od listy wyłączonych wtyczek</translation>

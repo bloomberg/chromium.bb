@@ -140,7 +140,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="238909021488141516">Pri sťahovaní obsahu sa vyskytla chyba</translation>
 <translation id="2414886740292270097">Tmavý režim</translation>
 <translation id="2433507940547922241">Vzhľad</translation>
-<translation id="2439248520967274840">Prihlasujete sa do účtu <ph name="TO_ACCOUNT" />. Niektoré vaše existujúce záložky, história, heslá a ďalšie nastavenia boli v minulosti synchronizované do účtu <ph name="FROM_ACCOUNT" />. Čo chcete urobiť s týmito existujúcimi údajmi?</translation>
 <translation id="2440823041667407902">Prístup k polohe</translation>
 <translation id="2476578072172137802">Nastavenia webu</translation>
 <translation id="2482878487686419369">Upozornenia</translation>
@@ -188,7 +187,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="2996291259634659425">Vytvorenie prístupovej frázy</translation>
 <translation id="2996809686854298943">Vyžaduje sa webová adresa</translation>
 <translation id="300526633675317032">Táto akcia vymaže dáta z úložiska webu (celkovo: <ph name="SIZE_IN_KB" />).</translation>
-<translation id="3012408695656332380">Nahraďte údaje tohto zariadenia údajmi z účtu <ph name="TO_ACCOUNT" />. Existujúce údaje môžete získať prepnutím na účet <ph name="FROM_ACCOUNT" />, ale údaje vytvorené po odhlásení stratíte.</translation>
 <translation id="3029704984691124060">Prístupové frázy sa nezhodujú</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Získať pomoc<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Otvoriť na karte inkognito</translation>
@@ -215,7 +213,6 @@ Predvoľby Fyzického webu môžete ovládať v Nastaveniach Chromu.
 <translation id="3320021301628644560">Pridanie fakturačnej adresy</translation>
 <translation id="3328801116991980348">Informácie o stránkach</translation>
 <translation id="3350687908700087792">Zavrieť všetky karty inkognito</translation>
-<translation id="3351441609270267898">Importovanie existiujúcich údajov</translation>
 <translation id="3365671512111106261">Keď je zapnutý Šetrič dát, nie je táto možnosť k dispozícii</translation>
 <translation id="3367813778245106622">Ak chcete spustiť synchronizáciu, znova sa prihláste</translation>
 <translation id="3384347053049321195">Zdieľať obrázok</translation>
@@ -426,7 +423,6 @@ Ak chcete upraviť hľadaný výraz, vyberte ho dlhým stlačením. Ak chcete vy
 <translation id="5676636989614905379">Na zariadení <ph name="SCREEN_NAME" /> nie je možné prehrať video</translation>
 <translation id="5677928146339483299">Zablokované</translation>
 <translation id="5684874026226664614">Hops. Túto stránku nebolo možné preložiť.</translation>
-<translation id="5708031556037168012">Ponechajte si existujúce údaje na zariadení a natrvalo importujte údaje do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Stránky, ktoré si zobrazíte na kartách inkognito, budú odstránené z histórie prehliadača, z histórie vyhľadávania aj zo súborov cookie okamžite po zatvorení všetkých kariet inkognito. Stiahnuté súbory a záložky, ktoré vytvoríte, ostanú uložené.
 
 Nie ste však neviditeľný/-á. Používanie režimu inkognito neukryje vaše prehliadanie pred vaším zamestnávateľom, poskytovateľom internetových služieb či webovými stránkami, ktoré navštívite.</translation>
@@ -563,7 +559,6 @@ Niektoré weby môžu napríklad na túto žiadosť reagovať tak, že vám zobr
 <translation id="7062545763355031412">Prijať a prepnúť účty</translation>
 <translation id="7063006564040364415">Nepodarilo sa pripojiť k synchronizačnému serveru.</translation>
 <translation id="7064851114919012435">Kontaktné informácie</translation>
-<translation id="7081639897063626814">Ponechať existujúce údaje oddelené</translation>
 <translation id="7094922512924405309">Nenašli sa žiadne stránky Fyzického webu v okolí</translation>
 <translation id="7138678301420049075">Iné</translation>
 <translation id="7180611975245234373">Obnoviť</translation>
@@ -734,12 +729,10 @@ Váš účet Google môže mať na adrese <ph name="BEGIN_LINK" />history.google
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobraziť originál</translation>
 <translation id="9139068048179869749">Opýtať sa pred povolením webu odosielať upozornenia (odporúčané)</translation>
-<translation id="9141510419986760385">Účet na synchronizáciu <ph name="FROM_ACCOUNT" /> prepínate na účet <ph name="TO_ACCOUNT" />. Čo chcete urobiť s vašimi existujúcimi záložkami, históriou, heslami a ďalšími nastaveniami?</translation>
 <translation id="9154194610265714752">Aktualizované</translation>
 <translation id="917685106653909562">Stránky Fyzického webu v okolí</translation>
 <translation id="9187199695613236444">Zobrazenie pre mobil</translation>
 <translation id="9188680907066685419">Odhlásenie zo spravovaného účtu</translation>
-<translation id="9198708126133947749">Nahradiť údaje na tomto zariadení údajmi z účtu <ph name="TO_ACCOUNT" />. Svoje súčasné údaje získate prepnutím späť do účtu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="932327136139879170">Domov</translation>

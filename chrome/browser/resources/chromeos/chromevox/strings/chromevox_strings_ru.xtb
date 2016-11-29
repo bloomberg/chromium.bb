@@ -32,7 +32,7 @@
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Перейти к следующему заголовку шестого уровня</translation>
 <translation id="1275718070701477396">Выбрано</translation>
-<translation id="1310230882256010289">Мы полностью изменили принцип работы ChromeVox. Теперь производительность, стабильность и веб-поддержка программы стали ещё лучше.</translation>
+<translation id="1310230882256010289">Мы полностью изменили принцип работы ChromeVox, уделив особое внимание производительности, стабильности и веб-поддержке программы.</translation>
 <translation id="1319608975892113573">Предыдущей цитаты нет.</translation>
 <translation id="1321576897702511272">Скрыть справку ChromeVox</translation>
 <translation id="1331702245475014624"><ph name="INDEX" /> из <ph name="TOTAL" /></translation>
@@ -477,7 +477,7 @@
 <translation id="5507663321906818013">Эталон для отладки</translation>
 <translation id="5518443085409638729">Показывать курсор между символами (как в Mac OS X)</translation>
 <translation id="552195134157544755">Переключатель</translation>
-<translation id="5531530875187439488">Мы обновили звуковые сигналы, чтобы повысить отзывчивость интерфейса.</translation>
+<translation id="5531530875187439488">Мы обновили звуковые сигналы, чтобы улучшить отклик интерфейса.</translation>
 <translation id="5534303576632885660">hdr</translation>
 <translation id="5546092960038624944">Предыдущего заголовка пятого уровня нет.</translation>
 <translation id="556042886152191864">Кнопка</translation>
@@ -538,7 +538,7 @@
 <translation id="5937336320314038555">{COUNT,plural, =1{знак равенства}one{# знак равенства}few{# знака равенства}many{# знаков равенства}other{# equal signs}}</translation>
 <translation id="5939518447894949180">Сбросить</translation>
 <translation id="5948123859135882163">Переключение между структурным и семантическим методами интерпретации математических выражений</translation>
-<translation id="5948485979596965684">Теперь вы используете самую новую версию ChromeVox!</translation>
+<translation id="5948485979596965684">Теперь вы используете последнюю версию ChromeVox!</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Диалоговое окно</translation>
 <translation id="5963413905009737549">Раздел</translation>

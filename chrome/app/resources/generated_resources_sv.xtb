@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Söker efter Bluetooth- och USB-enheter …</translation>
 <translation id="1056898198331236512">Varning</translation>
 <translation id="1056982457359827501">Aktiverar BLE-annonser i Chrome-appar. BLE-annonser kan störa normal användning av Bluetooth Low Energy-funktioner.</translation>
-<translation id="1058325955712687476">Aktiverar tjänsten för webbplatsengagemang som registrerar interaktionen med webbplatser och tilldelar resurser därefter.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> av <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Ersätt</translation>
 <translation id="1062866675591297858">Hantera dina kontrollerade användare via <ph name="BEGIN_LINK" />översikten för kontrollerade användare<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importerar <ph name="FILE_COUNT" /> filer …</translation>
 <translation id="1352103415082130575">Tangentbord för thailändska (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Lagringshanteraren för Material Design</translation>
 <translation id="1353966721814789986">Startsidor</translation>
 <translation id="1354868058853714482">Adobe Reader är inte uppdaterat och kan vara osäkert.</translation>
 <translation id="1355408554203439639">3D-rastreringsprogramvara</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Tokencacheminne för identitets-API</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Registrera pekarhändelse enligt version 1 av specifikationen</translation>
 <translation id="1480041086352807611">Demoläge</translation>
 <translation id="1481244281142949601">Din sandlåda ger tillräckligt skydd.</translation>
 <translation id="1482124012545051544">Klar att säkerhetskopiera <ph name="FILE_COUNT" /> nya foton</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">Fliken Inkognito: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA-kompromiss</translation>
 <translation id="218070003709087997">Använd ett nummer som anger hur många kopior som ska skrivas ut (1 till 999).</translation>
-<translation id="218492098606937156">Aktivera pekskärmshändelser</translation>
 <translation id="2187317261103489799">Identifiera (standard)</translation>
 <translation id="2187895286714876935">Fel vid import av servercertifikat</translation>
 <translation id="2188881192257509750">Öppna <ph name="APPLICATION" /></translation>
@@ -1041,7 +1037,6 @@ När du har skapat en ny kontrollerad användare kan du hantera inställningarna
 <translation id="2367972762794486313">Visa appar</translation>
 <translation id="2371076942591664043">Öppna när nedladdning är &amp;klar</translation>
 <translation id="2372036074421194686">Chrome hittade ett oönskat program (<ph name="UWS_NAME" />) på datorn. Det kan gå att ta bort det genom att köra Chrome Cleanup Tool.</translation>
-<translation id="2375701438512326360">Tvinga stöd för pekskärm att alltid aktiveras eller inaktiveras eller att aktiveras när en pekskärm upptäcks vid start (automatiskt – standard).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer har valts</translation>
 <translation id="2378982052244864789">Välj tilläggets katalog.</translation>
 <translation id="2379281330731083556">Skriv ut via systemets dialogruta ... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Markerad alternativknapp</translation>
 <translation id="3649138363871392317">En bild har tagits</translation>
 <translation id="3650242103421962931">Linjär</translation>
-<translation id="3653069516296104653">Inaktiverar indirekt registrering av kontaktpunktshändelser.</translation>
 <translation id="3653999333232393305">Fortsätt tillåta <ph name="HOST" /> att använda din mikrofon</translation>
 <translation id="3654045516529121250">Läsa tillgänglighetsinställningarna</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent åtkomst till en fil.}other{Den har permanent åtkomst till # filer.}}</translation>
@@ -2128,7 +2122,6 @@ Från <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Webbläsaren stängdes innan nedladdningen var klar.</translation>
 <translation id="3711895659073496551">Stäng av</translation>
 <translation id="3712897371525859903">Spara &amp;sida som...</translation>
-<translation id="3713494718070140825">Viss information om systemet och innehåll på sidan <ph name="BEGIN_WHITEPAPER_LINK" />skickas automatiskt<ph name="END_WHITEPAPER_LINK" /> till Google i syfte att identifiera skadliga appar och webbplatser. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">webbkalender</translation>
 <translation id="3715597595485130451">Anslut till Wi-Fi</translation>
 <translation id="3716615839203649375">tillåt</translation>
@@ -2477,13 +2470,11 @@ Alla användare måste logga ut för att fortsätta.</translation>
 <translation id="418179967336296930">Ryskt fonetiskt tangentbord (YaZHert)</translation>
 <translation id="4181841719683918333">Språk</translation>
 <translation id="4184885522552335684">Flytta skärmar genom att dra dem</translation>
-<translation id="4188447344915957833">Aktiverar lagringshanteraren i Material Design-inställningarna.</translation>
 <translation id="4189406272289638749">Ett tillägg,  &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, styr den här inställningen.</translation>
 <translation id="4193154014135846272">Google Dokument</translation>
 <translation id="4193182321948161343">Aktivera användarhanteraren med Material Design</translation>
 <translation id="4193297030838143153">Ny faktureringsadress ...</translation>
 <translation id="4194570336751258953">Aktivera klick på styrplattan</translation>
-<translation id="4195621107636847694">Tjänst för webbplatsengagemang</translation>
 <translation id="4195643157523330669">Öppna i ny flik</translation>
 <translation id="4195814663415092787">Fortsätt där du slutade</translation>
 <translation id="4197674956721858839">Zippa markerade filer</translation>
@@ -5125,7 +5116,7 @@ Använd bara den här funktionen med konton som du litar på.</translation>
 <translation id="7814458197256864873">&amp;Kopiera</translation>
 <translation id="7818135753970109980">Ett nytt tema har lagts till (<ph name="EXTENSION_NAME" />)</translation>
 <translation id="7819857487979277519">PSK (WPA eller RSN)</translation>
-<translation id="782057141565633384">K&amp;opiera videoadres</translation>
+<translation id="782057141565633384">K&amp;opiera videoadress</translation>
 <translation id="7821394484233142159">Accelererad 2D-canvas</translation>
 <translation id="7825423931463735974">Tangentbord för tamil (Tamil99)</translation>
 <translation id="782590969421016895">Använd aktuella sidor</translation>

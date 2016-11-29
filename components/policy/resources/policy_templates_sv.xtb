@@ -830,9 +830,6 @@
 <translation id="3322771899429619102">Policyn gör att du kan ange en lista med webbadressmönster som anger vilka webbplatser som får använda nyckelgenerering. Om ett webbadressmönster har policyn KeygenBlockedForUrls åsidosätts dessa undantag.
 
           Om policyn inte anges används den globala standardpolicyn för alla webbplatser. Standardvärdet hämtas antingen från policyn DefaultKeygenSetting om den har angetts, eller från användarens personliga konfiguration om den inte har det.</translation>
-<translation id="3322902067538988734">Om principen är inställd på sant måste användare logga in i <ph name="PRODUCT_NAME" /> med sina profiler för att kunna använda webbläsaren. Och falskt anges som standardvärde för BrowserGuestModeEnabled.
-
-      Om principen är inställd på falskt eller om den inte har konfigurerats kan användare använda webbläsaren utan att logga in i <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Ställer in hur ofta användaren måste ange lösenord för att kunna använda snabb upplåsning.</translation>
 <translation id="3381968327636295719">Använd värdwebbläsaren som standard</translation>
 <translation id="3417418267404583991">Om den här policyn är inställd på sant eller inte är konfigurerad aktiveras gästinloggning i <ph name="PRODUCT_OS_NAME" />. Gästinloggningar är anonyma användarsessioner och kräver inget lösenord.
@@ -1709,14 +1706,6 @@
       I andra fall kan den sättas till något av följande värden: sslv3, tls1, tls1.1 eller tls1.2. Efter inställning kommer <ph name="PRODUCT_NAME" /> inte att använda SSL-/TLS-versioner som är tidigare än den angivna versionen. Ett värde som inte känns igen ignoreras.
 
       Observera att sslv3 trots numret är en tidigare version än tls1.</translation>
-<translation id="6177482277304066047">Anger en målversion för automatiska uppdateringar.
-
-      Anger prefix för en målversion som <ph name="PRODUCT_OS_NAME" /> ska uppdateras till. Om enheten har en version som är äldre än det angivna prefixet uppdateras den till den senaste versionen med det angivna prefixet. Om enheten redan har en nyare version händer ingenting (ingen nedgradering görs) och enhetens befintliga version påverkas inte. Prefixformatet fungerar per komponent som i följande exempel:
-
-      "" (eller inte konfigurerad): uppdatera till den senaste tillgängliga versionen.
-      "1412.": uppdatera till alla delversioner av 1412 (t.ex. 1412.24.34 eller 1412.60.2)
-      "1412.2.": uppdatera till alla delversioner av 1412.2 (t.ex. 1412.2.34 eller 1412.2.2)
-      "1412.24.34": uppdatera bara till denna specifika version.</translation>
 <translation id="6190022522129724693">Standardinställning för popup-fönster</translation>
 <translation id="6197453924249895891">Ger företagsnycklar åtkomst till tillägg.
 
@@ -1756,9 +1745,6 @@
 <translation id="6367755442345892511">Anger om lanseringskanalen ska kunna konfigureras av användaren</translation>
 <translation id="6368011194414932347">Konfigurera webbadress för startsida</translation>
 <translation id="6368403635025849609">Tillåt JavaScript på dessa webbplatser</translation>
-<translation id="6373222873250380826">Inaktiverar automatiska uppdateringar när inställningen är sant.
-
-      <ph name="PRODUCT_OS_NAME" /> enheter söker automatiskt efter uppdateringar när inställningen inte är konfigurerad eller inställd på falskt.</translation>
 <translation id="6376659517206731212">Kan vara obligatorisk</translation>
 <translation id="6378076389057087301">Ange om ljudaktiviteter påverkar energihanteringen</translation>
 <translation id="637934607141010488">Rapportera en lista över enhetsanvändare som nyligen har loggat in.
@@ -2119,13 +2105,6 @@
 <translation id="7336878834592315572">Behåll cookies under hela sessionen</translation>
 <translation id="7340034977315324840">Rapportera aktivitetstider för enhet</translation>
 <translation id="7384999953864505698">Tillåter QUIC-protokoll</translation>
-<translation id="7406651467768226499">Tillåta eller inte tillåta att kioskappen som startas automatiskt utan fördröjning styr <ph name="PRODUCT_OS_NAME" />-versionen.
-
-      Den här policyn styr om kioskappen som startas automatiskt utan fördröjning ska styra <ph name="PRODUCT_OS_NAME" />-versionen genom att en required_platform_version anges i manifestfilen och används som målversionsprefix för automatisk uppdatering.
-
-      Om Sant har angetts för policyn används värdet i manifestnyckeln required_platform_version för kioskappen som startas automatiskt utan fördröjning som målversionsprefix för automatisk uppdatering.
-
-      Om Falskt har angetts för policyn, eller om den inte är konfigurerad, ignoreras manifestnyckeln required_platform_version och den automatiska uppdateringen fortsätter som vanligt.</translation>
 <translation id="7417972229667085380">Procentsatsen med vilken fördröjningen vid dödtid skalanpassas i presentationsläge (föråldrad)</translation>
 <translation id="7421483919690710988">Ange medieenhetens cachestorlek i byte</translation>
 <translation id="7424751532654212117">Lista med undantag till listan med inaktiverade plugin-program</translation>

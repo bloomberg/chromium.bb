@@ -782,9 +782,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="3322771899429619102">Memungkinkan Anda menyetel daftar pola URL guna menentukan situs yang diizinkan untuk menggunakan pembuatan kunci. Jika pola URL ada di dalam 'KeygenBlockedForUrls', maka pola tersebut akan mengganti pengecualian ini.
 
           Jika kebijakan ini tidak disetel, nilai default global akan digunakan untuk semua situs dari kebijakan 'DefaultKeygenSetting' jika disetel, atau dari konfigurasi pribadi pengguna.</translation>
-<translation id="3322902067538988734">Jika kebijakan ini disetel ke true, pengguna harus masuk ke <ph name="PRODUCT_NAME" /> dengan profil mereka sebelum menggunakan browser. Nilai default BrowserGuestModeEnabled akan disetel ke false.
-
-      Jika kebijakan disetel ke false atau tidak dikonfigurasi, pengguna dapat menggunakan browser tanpa harus masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Atur seberapa sering pengguna harus memasukkan sandi untuk menggunakan buka kunci cepat.</translation>
 <translation id="3381968327636295719">Gunakan browser host jika tidak diubah</translation>
 <translation id="3417418267404583991">Jika kebijakan ini disetel ke true atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mengaktifkan masuk sebagai tamu. Masuk sebagai tamu adalah sesi pengguna anonim dan tidak memerlukan sandi.
@@ -1595,14 +1592,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
       Jika tidak, kebijakan ini akan disetel ke salah satu dari nilai berikut: "sslv3", "tls1", "tls1.1", atau "tls1.2". Jika disetel, <ph name="PRODUCT_NAME" /> tidak akan menggunakan SSL/TLS dengan versi yang kurang dari versi yang ditentukan. Nilai yang tidak dikenali akan diabaikan.
 
       Perhatikan bahwa, "sslv3" adalah versi yang lebih awal dibandingkan "tls1", meskipun angkanya lebih besar.</translation>
-<translation id="6177482277304066047">Menyetel versi target untuk Pembaruan Otomatis.
-
-      Menentukan awalan versi target <ph name="PRODUCT_OS_NAME" /> yang harus diperbarui. Jika perangkat menjalankan versi sebelum awalan ditentukan, perangkat akan diperbarui ke versi teranyar dengan awalan yang diberikan. Jika perangkat sudah pada versi terbaru, tidak akan ada pengaruh yang terjadi (tidak dilakukan penurunan versi) dan perangkat akan tetap pada versi sekarang. Format awalan bekerja secara bijak-komponen seperti yang diperagakan pada contoh berikut:
-
-      "" (atau tidak dikonfigurasi): pembaruan ke versi terbaru yang tersedia.
-      "1412.": pembaruan ke versi minor apa pun dari 1412 (misal: 1412.24.34 atau 1412.60.2)
-      "1412.2.": pembaruan ke versi minor apa pun dari 1412.2 (misal: 1412.2.34 atau 1412.2.2)
-      "1412.24.34": pembaruan ke versi spesifik ini saja</translation>
 <translation id="6190022522129724693">Setelan munculan default</translation>
 <translation id="6197453924249895891">Memberikan akses ke kunci perusahaan ke ekstensi.
 
@@ -1638,9 +1627,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="6367755442345892511">Apakah saluran rilis dapat dikonfigurasi oleh pengguna atau tidak</translation>
 <translation id="6368011194414932347">Mengonfigurasi URL beranda</translation>
 <translation id="6368403635025849609">Izinkan JavaScript di situs ini</translation>
-<translation id="6373222873250380826">Menonaktifkan pembaruan otomatis saat disetel ke True.
-
-      Perangkat <ph name="PRODUCT_OS_NAME" /> memeriksa pembaruan secara otomatis saat setelan ini tidak dikonfigurasikan atau disetel ke False.</translation>
 <translation id="6376659517206731212">Bisa Jadi Wajib</translation>
 <translation id="6378076389057087301">Tentukan apakah aktivitas audio memengaruhi pengelolaan daya</translation>
 <translation id="637934607141010488">Melaporkan daftar pengguna perangkat yang saat ini masuk.
@@ -1976,13 +1962,6 @@ Pengguna dapat memasang item dari URL apa pun yang cocok dengan item dalam dafta
 <translation id="7336878834592315572">Menyimpan cookie selama durasi sesi</translation>
 <translation id="7340034977315324840">Laporkan waktu aktivitas perangkat</translation>
 <translation id="7384999953864505698">Memungkinkan protokol QUIC</translation>
-<translation id="7406651467768226499">Mengizinkan peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> atau tidak.
-
-      Kebijakan ini mengontrol apakah peluncuran otomatis dengan aplikasi kios tanpa penundaan untuk mengontrol versi <ph name="PRODUCT_OS_NAME" /> diizinkan atau tidak, dengan menyatakan required_platform_version di dalam manifes dan menggunakannya sebagai awalan versi target pembaruan otomatis.
-
-      Jika kebijakan ini disetel ke True, nilai kunci manifes required_platform_version peluncuran otomatis dengan aplikasi kios tanpa penundaan akan digunakan sebagai awalan versi target pembaruan otomatis.
-
-      Jika kebijakan ini tidak dikonfigurasi atau disetel ke False, kunci manifes required_platform_version akan diabaikan dan pembaruan otomatis dilakukan secara normal.</translation>
 <translation id="7417972229667085380">Persentase yang digunakan untuk menskalakan penundaan status menganggur dalam mode presentasi (tidak digunakan lagi)</translation>
 <translation id="7421483919690710988">Setel ukuran cache disk media dalam bita</translation>
 <translation id="7424751532654212117">Daftar pengecualian untuk daftar plugin yang dinonaktifkan</translation>

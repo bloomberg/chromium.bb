@@ -778,9 +778,6 @@
 <translation id="3322771899429619102">允許您設定網址模式清單，指定可以使用金鑰產生功能的網站。如果網址模式為「KeygenBlockedForUrls」，則會覆寫這類例外狀況。
 
           如果未設定這項政策，系統會根據「DefaultKeygenSetting」政策 (如果有設定的話) 或使用者的個人設定，將通用預設值套用到所有網站。</translation>
-<translation id="3322902067538988734">如果將這項政策設為 true，使用者必須以個人設定檔登入 <ph name="PRODUCT_NAME" />，才能使用瀏覽器。此外，BrowserGuestModeEnabled 的預設值將設為 false。
-
-      如果將這項政策設為 false 或不設定這項政策，使用者不需登入 <ph name="PRODUCT_NAME" /> 也能使用瀏覽器。</translation>
 <translation id="3347687541825006165">設定使用者使用快速解鎖功能時需輸入密碼的頻率。</translation>
 <translation id="3381968327636295719">根據預設使用主機瀏覽器</translation>
 <translation id="3417418267404583991">如果這項政策設為 True 或未設定，<ph name="PRODUCT_OS_NAME" /> 會啟用訪客登入。訪客登入是匿名的使用者工作階段，並且不需要密碼。
@@ -1588,14 +1585,6 @@
       可使用的設定值包括：「sslv3」、「tls1」、「tls1.1」或「tls1.2」。設定時，<ph name="PRODUCT_NAME" /> 不會使用低於指定版本的 SSL/TLS 版本。系統會忽略無法辨識的值。
 
       請注意，雖然標有版次編號，但「sslv3」版本早於「tls1」版本。</translation>
-<translation id="6177482277304066047">設定自動更新的目標版本。
-
-      指定 <ph name="PRODUCT_OS_NAME" /> 應更新的目標版本前置碼。如果裝置執行的本比指定前置碼更舊，就會更新至含有指定前置碼的最新版本。如果裝置已安裝最新版本，則不會有任何效果 (例如執行降級動作)，裝置也會保持為目前版本。前置碼格式需按部分逐一指定，如下列範例所示：
-
-      "" (或不設定)：更新至可用的最新版本
-      "1412."：更新至任何 1412 的子版本 (例如 1412.24.34 或 1412.60.2)
-      "1412.2."：更新至任何 1412.2 的子版本 (例如 1412.2.34 或 1412.2.2)
-      "1412.24.34"：僅更新至這個指定版本</translation>
 <translation id="6190022522129724693">預設彈出視視窗設定</translation>
 <translation id="6197453924249895891">將企業用金鑰的存取權授予給擴充功能。
 
@@ -1631,9 +1620,6 @@
 <translation id="6367755442345892511">是否允許使用者設定發佈頻道</translation>
 <translation id="6368011194414932347">設定首頁網址</translation>
 <translation id="6368403635025849609">允許這些網站的 JavaScript</translation>
-<translation id="6373222873250380826">在設為 True 時，停用自動更新。
-
-      在這項設定未調整或設為 False 時，<ph name="PRODUCT_OS_NAME" /> 裝置會自動檢查更新。</translation>
 <translation id="6376659517206731212">可強制實行</translation>
 <translation id="6378076389057087301">指定會影響電源管理的音訊活動</translation>
 <translation id="637934607141010488">回報最近登入的裝置使用者清單。
@@ -1965,14 +1951,6 @@
 <translation id="7336878834592315572">在工作階段期間保留 Cookie</translation>
 <translation id="7340034977315324840">回報裝置活動時間</translation>
 <translation id="7384999953864505698">允許 QUIC 通訊協定</translation>
-<translation id="7406651467768226499">是否允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本。
-
-      這項政策可控制是否允許使用無延遲資訊站應用程式的自動啟動功能來控制 <ph name="PRODUCT_OS_NAME" /> 版本；做法是在資訊清單中聲明 required_platform_version (需求平台版本)，並以該版本做為自動更新目標版本的前置字串。
-
-      如果您將這項政策設為 True，使用無延遲資訊站應用程式的自動啟動功能，required_platform_version 資訊清單金鑰的值就是自動更新目標版本的前置字串。
-
-
-      如果您將這項政策設為 False，系統就會略過 required_platform_version 資訊清單金鑰，自動更新功能則會照常運作。</translation>
 <translation id="7417972229667085380">簡報模式中的閒置延遲時間延長百分比 (已不適用)</translation>
 <translation id="7421483919690710988">設定媒體磁碟快取大小 (以位元組為單位)</translation>
 <translation id="7424751532654212117">停用的外掛程式清單的例外清單</translation>

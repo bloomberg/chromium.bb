@@ -140,7 +140,6 @@
 <translation id="238909021488141516">حدث خطأ أثناء تنزيل المحتوى.</translation>
 <translation id="2414886740292270097">داكن</translation>
 <translation id="2433507940547922241">المظهر</translation>
-<translation id="2439248520967274840">يتم تسجيل دخولك إلى <ph name="TO_ACCOUNT" />. تمت مسبقًا مزامنة بعض الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى الحالية إلى <ph name="FROM_ACCOUNT" />. ما الإجراء الذي تريد اتخاذه حيال بياناتك الحالية؟</translation>
 <translation id="2440823041667407902">الدخول إلى الموقع</translation>
 <translation id="2476578072172137802">إعدادات الموقع</translation>
 <translation id="2482878487686419369">الاشعارات</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">إنشاء عبارة المرور</translation>
 <translation id="2996809686854298943">‏عنوان URL المطلوب</translation>
 <translation id="300526633675317032">سيؤدي هذا إلى مسح السعة التي تبلغ <ph name="SIZE_IN_KB" /> بأكملها من سعة تخزين موقع الويب.</translation>
-<translation id="3012408695656332380">استبدال بيانات هذا الجهاز ببيانات <ph name="TO_ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة أخرى إلى <ph name="FROM_ACCOUNT" />، ولكن سيتم فقدان البيانات التي تم إنشاؤها منذ تسجيل خروجك.</translation>
 <translation id="3029704984691124060">عبارات المرور غير متطابقة</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />الحصول على مساعدة<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">فتح في علامة تبويب تصفح متخفي</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">إضافة عنوان إرسال الفواتير</translation>
 <translation id="3328801116991980348">معلومات موقع الويب</translation>
 <translation id="3350687908700087792">إغلاق كافة علامات تبويب التصفح المتخفي</translation>
-<translation id="3351441609270267898">استيراد البيانات الحالية</translation>
 <translation id="3365671512111106261">غير متاح عند تشغيل توفير البيانات</translation>
 <translation id="3367813778245106622">تسجيل الدخول مرة أخرى لبدء المزامنة</translation>
 <translation id="3384347053049321195">مشاركة صورة</translation>
@@ -427,7 +424,6 @@
 <translation id="5676636989614905379">يتعذر تشغيل الفيديو على <ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">تم المنع</translation>
 <translation id="5684874026226664614">عفوًا. تعذرت ترجمة هذه الصفحة.</translation>
-<translation id="5708031556037168012">يمكنك الحفاظ على البيانات الحالية على جهازك واستيراد البيانات نهائيًا إلى <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">لن تظهر الصفحات التي تشاهدها في علامات تبويب التصفح المتخفي في سجل متصفحك ولا في وحدة تخزين ملفات تعريف الارتباط ولا في سجل البحث بعد إغلاق جميع علامات تبويب التصفح المتخفي. وستُحفظ أي ملفات تنزلها وأي علامات مرجعية تنشئها.
           
           لكنك لن تكون غير مرئي، فاستخدام وضع التصفح المتخفي لا يخفي تصفحك عن صاحب العمل أو مزود خدمة الإنترنت أو مواقع الويب التي تزورها.</translation>
@@ -564,7 +560,6 @@
 <translation id="7062545763355031412">قبول الحسابات وتبديلها</translation>
 <translation id="7063006564040364415">تعذر الاتصال بخادم المزامنة.</translation>
 <translation id="7064851114919012435">معلومات الاتصال</translation>
-<translation id="7081639897063626814">الحفاظ على البيانات الموجودة منفصلة</translation>
 <translation id="7094922512924405309">لم يتم العثور على صفحات الشبكة المادية المجاورة</translation>
 <translation id="7138678301420049075">أخرى</translation>
 <translation id="7180611975245234373">تحديث</translation>
@@ -737,12 +732,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">إظهار الصفحة الأصلية</translation>
 <translation id="9139068048179869749">السؤال قبل السماح للمواقع بإرسال الإشعارات (موصى به)</translation>
-<translation id="9141510419986760385">أنت تجري تبديلاً لحسابات المزامنة من <ph name="FROM_ACCOUNT" /> إلى <ph name="TO_ACCOUNT" />. ما الإجراء الذي تريد اتخاذه حيال الإشارات المرجعية، والسجل، وكلمات المرور، والإعدادات الأخرى الحالية؟</translation>
 <translation id="9154194610265714752">تم التحديث</translation>
 <translation id="917685106653909562">صفحات الشبكة المادية المجاورة</translation>
 <translation id="9187199695613236444">عرض مناسب للجوال</translation>
 <translation id="9188680907066685419">تسجيل الخروج من الحساب المُدار</translation>
-<translation id="9198708126133947749">استبدال بيانات هذا الجهاز ببيانات <ph name="TO_ACCOUNT" />. يمكنك استرداد بياناتك الحالية بالتبديل مرة ثانية إلى <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">صور</translation>
 <translation id="932327136139879170">الصفحة الرئيسية</translation>

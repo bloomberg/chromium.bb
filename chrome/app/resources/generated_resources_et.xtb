@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Bluetoothi ja USB-seadmete otsimine ...</translation>
 <translation id="1056898198331236512">Hoiatus</translation>
 <translation id="1056982457359827501">Chrome'i rakendustes lubatakse BLE-reklaamid. BLE-reklaamid võivad häirida Bluetoothi energiasäästmise funktsioonide tavapärast kasutust.</translation>
-<translation id="1058325955712687476">Lubab saidi seotuse teenuse, mis salvestab suhtluse saitidega ja määrab selle põhjal ressursid.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" />/<ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Asenda</translation>
 <translation id="1062866675591297858">Hallake jälgitavaid kasutajaid <ph name="BEGIN_LINK" />jälgitavate kasutajate juhtpaneelil<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> faili importimine ...</translation>
 <translation id="1352103415082130575">Tai klaviatuur (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Materiaalse disaini salvestusruumi haldur</translation>
 <translation id="1353966721814789986">Käivitamisel avatavad lehed</translation>
 <translation id="1354868058853714482">Adobe Reader on aegunud ega pruugi olla turvaline.</translation>
 <translation id="1355408554203439639">3D-tarkvararasterdaja</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Identiteedi API loa vahemälu</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Üksikasjad: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Kursori sündmuse v1 tehniliste andmete jäädvustamine</translation>
 <translation id="1480041086352807611">Demorežiim</translation>
 <translation id="1481244281142949601">Teie liivakast on piisav.</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" /> uue foto varundamiseks valmis</translation>
@@ -886,7 +883,6 @@
 <translation id="2177950615300672361">Inkognito vaheleht: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA turvarike</translation>
 <translation id="218070003709087997">Kasutage numbrit, mis näitab, kui palju koopiaid printida (1 kuni 999).</translation>
-<translation id="218492098606937156">Luba puutesündmused</translation>
 <translation id="2187317261103489799">Tuvasta (vaikimisi)</translation>
 <translation id="2187895286714876935">Serveri sertifikaadi impordi viga</translation>
 <translation id="2188881192257509750">Ava <ph name="APPLICATION" /></translation>
@@ -1042,7 +1038,6 @@ Kui olete loonud uue jälgitava kasutaja, saate tema seadeid mis tahes ajal ja s
 <translation id="2367972762794486313">Rakenduste kuvamine</translation>
 <translation id="2371076942591664043">Ava, kui on &amp;valmis</translation>
 <translation id="2372036074421194686">Chrome leidis soovimatu programmi (<ph name="UWS_NAME" />), mis on teie arvutisse installitud. Saate selle võib-olla eemaldada, käitades Chrome Cleanup Tooli.</translation>
-<translation id="2375701438512326360">Lubage või keelake puuteekraani tugi alatiseks või lubage see juhul, kui käivitamisel tuvastatakse puuteekraan (vaikeseade on automaatne).</translation>
 <translation id="2378075407703503998">Valitud on <ph name="SELCTED_FILE_COUNT" /> faili</translation>
 <translation id="2378982052244864789">Laiendi kataloogi valimine.</translation>
 <translation id="2379281330731083556">Prindi süsteemidialoogi abil ... <ph name="SHORTCUT_KEY" /></translation>
@@ -2086,7 +2081,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Valitud raadionupp</translation>
 <translation id="3649138363871392317">Foto jäädvustati</translation>
 <translation id="3650242103421962931">Lineaarne</translation>
-<translation id="3653069516296104653">Keelatakse puutekursori sündmuste kaudne jäädvustamine.</translation>
 <translation id="3653999333232393305">Luba saidil <ph name="HOST" /> ka edaspidi mikrofoni juurde pääseda</translation>
 <translation id="3654045516529121250">Juurdepääsetavuse seadete lugemine</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Sellel on püsiv juurdepääs ühele failile.}other{Sellel on püsiv juurdepääs # failile.}}</translation>
@@ -2129,7 +2123,6 @@ Asukohast <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Brauseri suleti enne allalaadimise lõppu.</translation>
 <translation id="3711895659073496551">Peata</translation>
 <translation id="3712897371525859903">Salvesta lehekülg &amp;nimega...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Saada automaatselt<ph name="END_WHITEPAPER_LINK" /> teatud süsteemiteavet ja lehesisu Google'ile, et aidata tuvastada ohtlikke rakendusi ning saite. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">veebikalender</translation>
 <translation id="3715597595485130451">Ühenduse loomine WiFi-võrguga</translation>
 <translation id="3716615839203649375">luba</translation>
@@ -2478,13 +2471,11 @@ Jätkamiseks peavad kõik kasutajad välja logima.</translation>
 <translation id="418179967336296930">Vene foneetiline (YaZHert) klaviatuur</translation>
 <translation id="4181841719683918333">Keeled</translation>
 <translation id="4184885522552335684">Lohistage ekraani liigutamiseks</translation>
-<translation id="4188447344915957833">Lubab salvestusruumi halduri materiaalse disaini seadetes.</translation>
 <translation id="4189406272289638749">Laiendus &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; juhib seda seadet.</translation>
 <translation id="4193154014135846272">Google'i dokument</translation>
 <translation id="4193182321948161343">Materiaalse disaini kasutajahalduri lubamine</translation>
 <translation id="4193297030838143153">Uus arveldusaadress ...</translation>
 <translation id="4194570336751258953">Luba klõpsamine</translation>
-<translation id="4195621107636847694">Saidi seotuse teenus</translation>
 <translation id="4195643157523330669">Ava uuel &amp;vahelehel</translation>
 <translation id="4195814663415092787">Jätka sealt, kus pooleli jäin</translation>
 <translation id="4197674956721858839">Valiku pakkimine</translation>

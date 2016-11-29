@@ -140,7 +140,6 @@
 <translation id="238909021488141516">เกิดข้อผิดพลาดขณะดาวน์โหลดเนื้อหานี้</translation>
 <translation id="2414886740292270097">มืด</translation>
 <translation id="2433507940547922241">ลักษณะที่ปรากฏ</translation>
-<translation id="2439248520967274840">คุณกำลังลงชื่อเข้าใช้ <ph name="TO_ACCOUNT" /> ก่อนหน้านี้มีการซิงค์บุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ที่มีอยู่บางส่วนกับ <ph name="FROM_ACCOUNT" /> คุณต้องการทำอย่างไรกับข้อมูลที่มีอยู่</translation>
 <translation id="2440823041667407902">การเข้าถึงตำแหน่ง</translation>
 <translation id="2476578072172137802">การตั้งค่าไซต์</translation>
 <translation id="2482878487686419369">การแจ้งเตือน</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">สร้างรหัสผ่าน</translation>
 <translation id="2996809686854298943">ต้องระบุ URL</translation>
 <translation id="300526633675317032">การดำเนินการนี้จะล้างพื้นที่เก็บข้อมูลเว็บไซต์ทั้ง <ph name="SIZE_IN_KB" /></translation>
-<translation id="3012408695656332380">แทนที่ข้อมูลของอุปกรณ์เครื่องนี้ด้วยข้อมูลของ <ph name="TO_ACCOUNT" /> คุณสามารถดึงข้อมูลที่มีอยู่โดยเปลี่ยนกลับไปเป็น <ph name="FROM_ACCOUNT" /> แต่ข้อมูลที่สร้างขึ้นหลังจากที่คุณออกจากระบบจะสูญหายไป</translation>
 <translation id="3029704984691124060">รหัสผ่านไม่ตรงกัน</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />ขอความช่วยเหลือ<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">เปิดในแท็บไม่ระบุตัวตน</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">เพิ่มที่อยู่สำหรับการเรียกเก็บเงิน</translation>
 <translation id="3328801116991980348">ข้อมูลไซต์</translation>
 <translation id="3350687908700087792">ปิดแท็บไม่ระบุตัวตนทั้งหมด</translation>
-<translation id="3351441609270267898">นำเข้าข้อมูลที่มีอยู่</translation>
 <translation id="3365671512111106261">ใช้งานไม่ได้เมื่อเปิดโปรแกรมประหยัดอินเทอร์เน็ต</translation>
 <translation id="3367813778245106622">ลงชื่อเข้าใช้อีกครั้งเพื่อเริ่มซิงค์</translation>
 <translation id="3384347053049321195">แชร์รูปภาพ</translation>
@@ -262,7 +259,7 @@
 <translation id="3927692899758076493">Sans Serif</translation>
 <translation id="3931947361983910192">4 สัปดาห์ที่ผ่านมา</translation>
 <translation id="393697183122708255">ไม่มีการเปิดใช้การค้นหาด้วยเสียง</translation>
-<translation id="3946611741043634542">เมื่อดำเนินการต่อ แสดงว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" /></translation>
+<translation id="3946611741043634542">เมื่อดำเนินการต่อ แสดงว่าคุณยอมรับ <ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" /> และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" /></translation>
 <translation id="3950820424414687140">ลงชื่อเข้าใช้</translation>
 <translation id="3967822245660637423">ดาวน์โหลดเสร็จสมบูรณ์</translation>
 <translation id="397583555483684758">การซิงค์หยุดทำงานแล้ว</translation>
@@ -397,7 +394,7 @@
 <translation id="5349103022427743704">ประสบการณ์การเพิ่มหน้าจอหลักที่ปรับปรุงใหม่</translation>
 <translation id="53553865750799677">ที่อยู่ในการรับใช้ไม่ได้ โปรดเลือกที่อยู่อื่น</translation>
 <translation id="5372829067651257087">คัดลอก URL แล้ว</translation>
-<translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายส่วนบุคคล<ph name="END_LINK2" />ของ Chrome</translation>
+<translation id="5400569084694353794">การใช้แอปพลิเคชันนี้แสดงว่า คุณยอมรับ<ph name="BEGIN_LINK1" />ข้อกำหนดในการให้บริการ<ph name="END_LINK1" />และ<ph name="BEGIN_LINK2" />ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัว<ph name="END_LINK2" />ของ Chrome</translation>
 <translation id="5414836363063783498">กำลังยืนยัน…</translation>
 <translation id="5423934151118863508">หน้าที่มีการเข้าชมมากที่สุดของคุณจะปรากฏที่นี่</translation>
 <translation id="5424588387303617268">ว่าง <ph name="GIGABYTES" /> GB</translation>
@@ -426,7 +423,6 @@
 <translation id="5676636989614905379">ไม่สามารถเล่นวิดีโอบน <ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">ถูกบล็อก</translation>
 <translation id="5684874026226664614">อ๊ะ หน้านี้ไม่สามารถแปลได้</translation>
-<translation id="5708031556037168012">เก็บข้อมูลที่มีไว้บนอุปกรณ์และนำเข้าข้อมูลไปยัง <ph name="TO_ACCOUNT" /> อย่างถาวร</translation>
 <translation id="5719837394786370183">หน้าที่คุณดูในแท็บแบบไม่ระบุตัวตนจะไม่เก็บอยู่ในประวัติของเบราว์เซอร์ การจัดเก็บคุกกี้ หรือประวัติการค้นหาหลังจากที่คุณปิดแท็บที่ไม่ระบุตัวตนทั้งหมดแล้ว แต่จะมีการเก็บไฟล์ใดๆ ที่คุณดาวน์โหลดหรือบุ๊กมาร์กที่คุณสร้างไว้
 
 อย่างไรก็ตาม คนอื่นจะยังสามารถมองเห็นคุณ การเข้าสู่โหมดไม่ระบุตัวตนไม่ได้เป็นการซ่อนการท่องเว็บจากนายจ้าง ผู้ให้บริการอินเทอร์เน็ต หรือเว็บไซต์ที่คุณเข้าชม</translation>
@@ -522,7 +518,7 @@
 <translation id="6659594942844771486">แท็บ</translation>
 <translation id="666268767214822976">ใช้บริการการคาดคะเนเพื่อแสดงคำค้นหาที่เกี่ยวข้องและเว็บไซต์ยอดนิยมขณะที่คุณพิมพ์ในแถบที่อยู่เว็บ</translation>
 <translation id="666731172850799929">เปิดใน <ph name="APP_NAME" /></translation>
-<translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายส่วนบุคคลของ Chrome</translation>
+<translation id="666981079809192359">ประกาศเกี่ยวกับนโยบายความเป็นส่วนตัวของ Chrome</translation>
 <translation id="6698801883190606802">จัดการข้อมูลที่ซิงค์</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="6738867403308150051">กำลังดาวน์โหลด…</translation>
@@ -563,7 +559,6 @@
 <translation id="7062545763355031412">ยอมรับและเปลี่ยนบัญชี</translation>
 <translation id="7063006564040364415">ไม่สามารถเชื่อมต่อกับเซิร์ฟเวอร์การซิงค์</translation>
 <translation id="7064851114919012435">ข้อมูลติดต่อ</translation>
-<translation id="7081639897063626814">เก็บข้อมูลที่มีอยู่แยกไว้ต่างหาก</translation>
 <translation id="7094922512924405309">ไม่พบหน้า Physical Web ที่อยู่ใกล้เคียง</translation>
 <translation id="7138678301420049075">อื่นๆ</translation>
 <translation id="7180611975245234373">รีเฟรช</translation>
@@ -736,12 +731,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">แสดงหน้าเว็บเดิม</translation>
 <translation id="9139068048179869749">ถามก่อน ก่อนที่จะอนุญาตให้เว็บไซต์ส่งการแจ้งเตือน (แนะนำ)</translation>
-<translation id="9141510419986760385">คุณกำลังเปลี่ยนบัญชีในการซิงค์จาก <ph name="FROM_ACCOUNT" /> เป็น <ph name="TO_ACCOUNT" /> คุณต้องการทำอย่างไรกับบุ๊กมาร์ก ประวัติ รหัสผ่าน และการตั้งค่าอื่นๆ ที่มีอยู่</translation>
 <translation id="9154194610265714752">อัปเดตแล้ว</translation>
 <translation id="917685106653909562">มีหน้า Physical Web อยู่ใกล้เคียง</translation>
 <translation id="9187199695613236444">มุมมองสำหรับอุปกรณ์เคลื่อนที่</translation>
 <translation id="9188680907066685419">ออกจากระบบบัญชีที่มีการจัดการ</translation>
-<translation id="9198708126133947749">แทนที่ข้อมูลของอุปกรณ์นี้ด้วยข้อมูลของ <ph name="TO_ACCOUNT" /> คุณสามารถดึงข้อมูลเดิมที่มีอยู่โดยเปลี่ยนกลับไปยัง <ph name="FROM_ACCOUNT" /></translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">ภาพ</translation>
 <translation id="932327136139879170">หน้าแรก</translation>

@@ -467,7 +467,7 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, API'ye yapılan ça
       Bu ayar belirlenmemiş olarak bırakılırsa kullanıcı bu işlevi kullanıp kullanmayacağına karar verebilir.
 
       Bu ayar, <ph name="PRODUCT_NAME" /> 29 ve sonraki sürümlerinde kaldırılmıştır.</translation>
-<translation id="2432116014157020512">Her hafta şifre girilmesi gerekiyor (168 saat).</translation>
+<translation id="2432116014157020512">Her hafta (168 saatte bir) şifre girilmesi gerekiyor.</translation>
 <translation id="2436445024487698630"><ph name="PRODUCT_NAME" /> oturumunun açılmasına izin verir</translation>
 <translation id="243972079416668391">Cihaz AC güçle çalışırken boşta kalma süresine ulaşıldığında yapılacak işlemi belirtir.
 
@@ -820,9 +820,6 @@ False (yanlış) olarak ayarlanırsa veya hiç ayarlanmazsa, API'ye yapılan ça
 <translation id="3322771899429619102">Anahtar oluşturmasına izin verilen sitelerin belirtildiği bir URL kalıpları listesi ayarlamanıza olanak tanır. Bir URL kalıbı "KeygenBlockedForUrls" içindeyse, bu istisnalar geçersiz kılınır.
 
           Bu politika ayarlanmadan bırakıldığında, ayarlandıysa "DefaultKeygenSetting" politikasının değeri, değilse kullanıcının kişisel yapılandırmasındaki değer tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
-<translation id="3322902067538988734">Bu politika true (doğru) olarak ayarlanırsa kullanıcının tarayıcıyı kullanmadan önce <ph name="PRODUCT_NAME" /> ürününde kendi profiliyle oturum açması gerekir. BrowserGuestModeEnabled varsayılan değeri false (yanlış) olarak ayarlanır.
-
-      Bu politika false (yanlış) olarak ayarlanır veya yapılandırılmazsa kullanıcı <ph name="PRODUCT_NAME" /> ürününde oturum açmadan tarayıcıyı kullanabilir.</translation>
 <translation id="3347687541825006165">Hızlı kilit açmayı kullanmak için kullanıcının şifreyi hangi sıklıkta girmesi gerektiğini ayarlar.</translation>
 <translation id="3381968327636295719">Varsayılan olarak ana makine tarayıcısını kullan</translation>
 <translation id="3417418267404583991">Bu politika true olarak ayarlanırsa veya hiçbir şekilde ayarlanmazsa, <ph name="PRODUCT_OS_NAME" /> misafir modunda giriş yapılmasına izin verir. misafir girişleri adsız kullanıcı oturumlarıdır ve şifre gerektirmez.
@@ -1685,14 +1682,6 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Aksi durumda, şu değerlerden birine ayarlanabilir: "sslv3", "tls1", "tls1.1" ya da "tls1.2". Bu politika yapılandırıldığında, <ph name="PRODUCT_NAME" /> ürünü belirtilen sürümden daha eski SSL/TLS sürümlerini kullanmaz. Tanınmayan bir değer ise yoksayılır.
 
       "sslv3"ün numarası büyük olsa da, "tls1"den daha eski bir sürüm olduğunu unutmayın.</translation>
-<translation id="6177482277304066047">Otomatik Güncellemeler için hedef sürüm ayarlar.
-
-      Güncelleme yapılacak bir <ph name="PRODUCT_OS_NAME" /> hedef sürümü öneki belirtir. Cihaz belirtilen önekten önceki bir sürümü çalıştırıyorsa, belirtilen öneke sahip en son sürüme güncellenir. Cihaz zaten sonraki bir sürümdeyse, herhangi bir etkisi olmaz (sürüm düşürme gerçekleştirilmez) ve cihaz geçerli sürümünde kalır. Bileşen genelinde çalışan önek biçimi, aşağıdaki örnekte gösterildiği gibidir:
-
-      "" (veya yapılandırılmadı): mevcut son sürüme güncelle.
-      "1412.": 1412'nin herhangi bir alt sürümüne güncelle (ör. 1412.24.34 veya 1412.60.2)
-      "1412.2.": 1412.2'nin herhangi bir alt sürümüne güncelle (ör. 1412.2.34 veya 1412.2.2)
-      "1412.24.34": yalnızca bu belirli sürüme güncelle</translation>
 <translation id="6190022522129724693">Varsayılan pop-up'lar ayarı</translation>
 <translation id="6197453924249895891">Uzantıların şirket anahtarlarına erişmesine izin verir.
 
@@ -1732,9 +1721,6 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
 <translation id="6367755442345892511">Yayın kanalının kullanıcı tarafından yapılandırılıp yapılandırılamayacağı</translation>
 <translation id="6368011194414932347">Ana sayfa URL'sini yapılandır</translation>
 <translation id="6368403635025849609">Bu sitelerde JavaScript'e izin ver</translation>
-<translation id="6373222873250380826">True olarak ayarlandığında otomatik güncellemeleri devre dışı bırakır.
-
-      Bu ayar yapılandırılmadığında veya False değerine ayarlandığında <ph name="PRODUCT_OS_NAME" /> cihazları güncellemeleri otomatik olarak kontrol eder.</translation>
 <translation id="6376659517206731212">Zorunlu Olabilir</translation>
 <translation id="6378076389057087301">Ses etkinliğinin güç yönetimini etkileyip etkilemeyeceğini belirtme</translation>
 <translation id="637934607141010488">Son zamanlarda giriş yapmış cihaz kullanıcılarının listesini bildirin.
@@ -1748,7 +1734,7 @@ Bu politika ayarlanmadan bırakılırsa kullanıcı sistemde yüklü herhangi bi
       Bu ayarı etkinleştirirseniz veya bir değer ayarlamazsanız, Otomatik Doldurma kullanıcının denetimi altında kalır. Böylece kullanıcılara, Otomatik Doldurma profillerini yapılandırma ve kendi istedikleri şekilde Otomatik Doldurma özelliğini açıp kapama olanağı verilir.</translation>
 <translation id="6394350458541421998">Bu politika, <ph name="PRODUCT_OS_NAME" /> Sürüm 29 itibariyle kullanımdan kaldırılmıştır. Lütfen bunun yerine PresentationScreenDimDelayScale politikasını kullanın.</translation>
 <translation id="6401669939808766804">Kullanıcının oturumunu kapat</translation>
-<translation id="6413263121045928260">Her gün şifre girilmesi gerekiyor (24 saat).</translation>
+<translation id="6413263121045928260">Her gün (24 saatte bir) şifre girilmesi gerekiyor.</translation>
 <translation id="6417861582779909667">Çerezleri ayarlamalarına izin verilmeyen sitelerin belirtildiği bir URL kalıpları listesini ayarlamanıza olanak tanır.
 
           Bu politika ayarlanmadan bırakılırsa, 'DefaultCookiesSetting' politikası ayarlandıysa buradaki değer, aksi takdirde kullanıcının kişisel yapılandırması tüm siteler için genel varsayılan değer olarak kullanılır.</translation>
@@ -2094,13 +2080,6 @@ Bu politika yanlış (false) değerine ayarlanırsa Yeni Sekme sayfasında, otom
 <translation id="7336878834592315572">Oturum süresince çerezleri tutma</translation>
 <translation id="7340034977315324840">Cihaz etkinlik zamanlarını rapor et</translation>
 <translation id="7384999953864505698">QUIC protokolüne izin verir</translation>
-<translation id="7406651467768226499">Sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine izin verilip verilmeyeceğini belirtir.
-
-      Bu politika, sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının, manifest dosyasında bir required_platform_version belirterek <ph name="PRODUCT_OS_NAME" /> sürümünü kontrol etmesine ve bunu otomatik güncelleme hedef sürümü öneki olarak kullanmasına izin verilip verilmeyeceğini denetler.
-
-      Politika doğru değerine ayarlanırsa sıfır gecikmeyle otomatik başlatılan kiosk uygulamasının required_platform_version manifest anahtarı değeri, otomatik güncelleme hedef sürümü öneki olarak kullanılır.
-
-      Politika yapılandırılmazsa veya yanlış değerine ayarlanırsa required_platform_version manifest anahtarı yoksayılır ve otomatik güncelleme işlemi normal bir şekilde ilerler.</translation>
 <translation id="7417972229667085380">Sunum modundayken boşta gecikme süresini ölçekleme yüzdesi (kullanımdan kaldırıldı)</translation>
 <translation id="7421483919690710988">Medya disk önbelleği boyutunu bayt olarak ayarla</translation>
 <translation id="7424751532654212117">Devre dışı bırakılmış eklentiler listesinin istisnalar listesi</translation>

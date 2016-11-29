@@ -705,7 +705,6 @@ Geheimtipp: Verwenden Sie nächstes Mal den Inkognitomodus (<ph name="SHORTCUT_K
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Bearbeiten</translation>
 <translation id="9068849894565669697">Farbe auswählen</translation>
-<translation id="9092364396508701805">Die Seite <ph name="HOST_NAME" /> funktioniert nicht</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> schützt Ihre Daten in der Regel durch Verschlüsselung. Als Chromium dieses Mal versuchte, eine Verbindung zu <ph name="SITE" /> herzustellen, gab die Website ungewöhnliche und falsche Anmeldedaten zurück. Entweder versucht ein Angreifer, sich als <ph name="SITE" /> auszugeben, oder die Verbindung wurde durch eine WLAN-Anmeldeseite unterbrochen. Da Chromium die Verbindung vor dem Austausch von Daten unterbrochen hat, sind Ihre Informationen weiterhin sicher.</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9148507642005240123">&amp;Bearbeiten rückgängig machen</translation>

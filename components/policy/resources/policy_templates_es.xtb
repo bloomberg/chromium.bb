@@ -471,7 +471,7 @@ Si no se establece esta política, el teclado en pantalla estará inhabilitado i
       Si no se establece esta opción, el usuario podrá decidir si quiere o no utilizar esta función.
 
       Esta opción se ha eliminado de la versión 29 y versiones posteriores de <ph name="PRODUCT_NAME" />.</translation>
-<translation id="2432116014157020512">Es obligatorio introducir la contraseña cada semana (168 horas).</translation>
+<translation id="2432116014157020512">Es obligatorio introducir la contraseña cada semana (cada 168 horas).</translation>
 <translation id="2436445024487698630">Permite iniciar sesión en <ph name="PRODUCT_NAME" /></translation>
 <translation id="243972079416668391">Permite especificar la acción que se debe emprender si se alcanza el retraso de inactividad mientras el dispositivo está conectado a la red eléctrica.
 
@@ -824,9 +824,6 @@ Si se inhabilita o no se configura esta opción, los usuarios podrán decidir si
 <translation id="3322771899429619102">Te permite establecer una lista de patrones de URL para especificar los sitios web que pueden utilizar la generación de claves. Si un patrón de URL está en KeygenBlockedForUrls, se anularán estas excepciones.
 
        Si no se establece esta política, se utilizará el valor general predeterminado de la política DefaultKeygenSetting (si está configurada) para todos los sitios web. De lo contrario, se utilizará la configuración personalizada que haya definido el usuario.</translation>
-<translation id="3322902067538988734">Si se asigna el valor true a esta política, el usuario tiene que iniciar sesión en <ph name="PRODUCT_NAME" /> con su perfil antes de utilizar el navegador. El valor predeterminado de BrowserGuestModeEnabled será false.
-
-      Si se asigna el valor false a esta política o no se configura, el usuario puede utilizar el navegador sin iniciar sesión en <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Configura la frecuencia con la que el usuario debe introducir la contraseña para utilizar el desbloqueo rápido.</translation>
 <translation id="3381968327636295719">Utilizar el navegador del host de forma predeterminada</translation>
 <translation id="3417418267404583991">Si esta política no se configura o el valor correspondiente se establece en "true", <ph name="PRODUCT_OS_NAME" /> permitirá iniciar sesión como invitado. Los inicios de sesión como invitado son sesiones de usuario anónimas y no necesitan contraseña.
@@ -1682,7 +1679,7 @@ Si esta política está habilitada o inhabilitada, los usuarios no pueden cambia
 <translation id="6166832345529129545">Permite controlar los modos de desbloqueo rápido que se pueden configurar y utilizar.
       Esta opción crea una lista con los modos de desbloqueo rápido permitidos que se pueden configurar y utilizar para desbloquear la pantalla de bloqueo. El valor es una lista de cadenas y cada una de ellas debe indicar los modos "todo" o "PIN". Si se selecciona "todo", significa que todos los modos rápidos admitidos estarán disponibles, mientras que si se selecciona "PIN", serán los modos de la lista los que estarán disponibles.
 
-      Si se configura esta opción, los modos de desbloqueo rápido cuyo tipo no aparezca en la lista no se pueden configurar ni utilizar.
+      Si se configura esta opción, los modos de desbloqueo rápido cuyo tipo no aparezca en la lista no se podrán configurar ni utilizar.
 
       Si esta opción no se configura, se habilitará el modo "PIN" y se inhabilitarán todos los demás.</translation>
 <translation id="6167074305866468481">Advertencia: La compatibilidad con SSLv3 desaparecerá por completo de <ph name="PRODUCT_NAME" /> después de la versión 43 (sobre julio de 2015), al igual que esta política.
@@ -1692,14 +1689,6 @@ Si esta política está habilitada o inhabilitada, los usuarios no pueden cambia
       Si se configura, se pueden asignar los valores sslv3, tls1, tls1.1 o tls1.2, en cuyo caso <ph name="PRODUCT_NAME" /> no utilizará versiones de SSL/TLS inferiores a la versión especificada. Si no se reconoce el valor establecido, se ignorará la política.
 
       Ten en cuenta que sslv3 es una versión anterior a tls1, a pesar de la numeración.</translation>
-<translation id="6177482277304066047">Permite establecer una versión de destino para las actualizaciones automáticas.
-
-      Asimismo, permite especificar el prefijo de una versión de destino a la que se debería actualizar <ph name="PRODUCT_OS_NAME" />. Si el dispositivo está ejecutando una versión anterior al prefijo especificado, se actualizará a la última versión con el prefijo especificado. Si el dispositivo ya dispone de una versión posterior, no ocurrirá nada (es decir, no se cambiará a una versión anterior) y el dispositivo mantendrá la versión actual. El formato del prefijo depende del componente, tal y como se observa en el ejemplo que se indica a continuación.
-
-      "" (o no configurado): actualización a la última versión disponible
-      "1412.": actualización a cualquier versión secundaria de 1412 (por ejemplo, 1412.24.34 o 1412.60.2) 
-      "1412.2.": actualización a cualquier versión secundaria de 1412.2 (por ejemplo, 1412.2.34 o 1412.2.2) 
-      "1412.24.34": actualización únicamente a esta versión específica</translation>
 <translation id="6190022522129724693">Configuración de pop-ups predeterminada</translation>
 <translation id="6197453924249895891">Concede acceso a claves corporativas de extensiones.
 
@@ -1739,9 +1728,6 @@ Si esta opción no está establecida o está establecida en True, los dispositiv
 <translation id="6367755442345892511">Posibilidad de configuración del canal de versiones por parte del usuario</translation>
 <translation id="6368011194414932347">Configurar la URL de la página de inicio</translation>
 <translation id="6368403635025849609">Permitir JavaScript en estos sitios</translation>
-<translation id="6373222873250380826">Permite inhabilitar las actualizacioes automáticas si se establece en "true".
-
-      Los dispositivos <ph name="PRODUCT_OS_NAME" /> buscan actualizaciones de forma automática cuando no se configura esta opción o cuando el valor correspondiente se establece en "false".</translation>
 <translation id="6376659517206731212">Puede ser obligatoria</translation>
 <translation id="6378076389057087301">Especificar si la actividad de audio afecta a la administración de energía</translation>
 <translation id="637934607141010488">Permite informar sobre la lista de usuarios de dispositivos que han iniciado sesión recientemente.
@@ -1755,7 +1741,7 @@ Si la política está establecida en False, no se informará sobre los usuarios.
      Si habilitas esta opción o no estableces ningún valor, los usuarios podrán controlar la función Autocompletar para configurar los perfiles de Autocompletar y activar o desactivar esta función cuando lo deseen.</translation>
 <translation id="6394350458541421998">Esta política no está disponible desde la versión 29 de <ph name="PRODUCT_OS_NAME" />. Utiliza la política PresentationScreenDimDelayScale en su lugar.</translation>
 <translation id="6401669939808766804">Cerrar la sesión del usuario</translation>
-<translation id="6413263121045928260">Es obligatorio introducir la contraseña todos los días (24 horas).</translation>
+<translation id="6413263121045928260">Es obligatorio introducir la contraseña todos los días (cada 24 horas).</translation>
 <translation id="6417861582779909667">Permite definir una lista de patrones de URL para especificar los sitios que no pueden establecer cookies.
 
           Si no se establece esta política, se usará para todos los sitios el valor general predeterminado que se indique en la política DefaultCookiesSetting (si se ha establecido) o el valor personalizado que haya definido el usuario (en caso contrario).</translation>
@@ -2097,13 +2083,6 @@ Estas políticas te permiten configurar el comportamiento de <ph name="PRODUCT_O
 <translation id="7336878834592315572">Guardar las cookies durante la duración de la sesión</translation>
 <translation id="7340034977315324840">Notificar tiempo de actividad del dispositivo</translation>
 <translation id="7384999953864505698">Permitir protocolo QUIC</translation>
-<translation id="7406651467768226499">Permitir que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" />.
-
-      Esta política controla si se permitirá que la aplicación de kiosco sin retardo con inicio automático controle la versión de <ph name="PRODUCT_OS_NAME" /> incluyendo required_platform_version en su archivo de manifiesto y la utilice como el prefijo de la versión de destino de actualización automática.
-
-      Si se asigna el valor true a esta política, el valor de la clave de manifiesto required_platform_version de la aplicación de kiosco sin retardo con inicio automático se utilizará como un prefijo de la versión de destino de actualización automática.
-
-      Si esta política no se configura o se le asigna el valor false, la clave de manifiesto required_platform_version se ignorará y la actualización automática se realizará con normalidad.</translation>
 <translation id="7417972229667085380">Porcentaje que permite ajustar el retraso de inactividad en el modo de presentación (política obsoleta)</translation>
 <translation id="7421483919690710988">Establecer tamaño de caché de disco de medios en bytes</translation>
 <translation id="7424751532654212117">Lista de excepciones de la lista de complementos inhabilitados</translation>
@@ -2715,9 +2694,9 @@ Los controladores de protocolos registrados por la política se combinan con los
 <translation id="930930237275114205">Configurar directorio de datos de usuario de <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Configura los modos de desbloqueo rápido permitidos.</translation>
 <translation id="944817693306670849">Establecer tamaño de caché de disco</translation>
-<translation id="969164417253718105">Esta opción controla la frecuencia con la que la pantalla de bloqueo solicitará que se introduzca la contraseña y así poder seguir utilizando el desbloqueo rápido. Cada vez que se introduzca la pantalla de bloqueo (si la frecuencia con la que se hizo la última vez fue mayor), el desbloqueo rápido no estará disponible. Si el usuario permanece en la pantalla de bloqueo tras este periodo de tiempo, se le solicitará una contraseña la próxima vez que este introduzca un código erróneo o vuelva a introducir la pantalla de bloqueo (lo que ocurra primero).
+<translation id="969164417253718105">Esta opción controla la frecuencia con la que la pantalla de bloqueo solicitará que se introduzca la contraseña para así poder seguir utilizando el desbloqueo rápido. Cada vez que se active la pantalla de bloqueo (si la frecuencia con la que se hizo la última vez fue mayor), el desbloqueo rápido no estará disponible. Si el usuario permanece en la pantalla de bloqueo tras este periodo de tiempo, se le solicitará una contraseña la próxima vez que este introduzca un código erróneo o se vuelva a activar la pantalla de bloqueo (lo que ocurra primero).
 
-      Si se configura esta opción, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan sus contraseñas en la pantalla de bloqueo según corresponda.
+      Si se configura esta opción, se solicitará a quienes utilicen el desbloqueo rápido que introduzcan sus contraseñas en la pantalla de bloqueo con la frecuencia definida.
 
-      Si esta opción no se configura, se solicitará a los usuarios que utilicen el desbloqueo rápido que introduzcan su contraseña en la pantalla de bloqueo todos los días.</translation>
+      Si no se configura, se solicitará a quienes utilicen el desbloqueo rápido que introduzcan su contraseña en la pantalla de bloqueo todos los días.</translation>
 </translationbundle>

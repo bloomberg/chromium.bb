@@ -140,7 +140,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="238909021488141516">Podczas pobierania treści wystąpił błąd.</translation>
 <translation id="2414886740292270097">Ciemny</translation>
 <translation id="2433507940547922241">Wygląd</translation>
-<translation id="2439248520967274840">Logujesz się na konto <ph name="TO_ACCOUNT" />. Niektóre z Twoich dotychczasowych zakładek, wpisów w historii, haseł i innych ustawień były wcześniej synchronizowane z kontem <ph name="FROM_ACCOUNT" />. Co chcesz zrobić z istniejącymi danymi?</translation>
 <translation id="2440823041667407902">Dostęp do lokalizacji</translation>
 <translation id="2476578072172137802">Ustawienia witryny</translation>
 <translation id="2482878487686419369">Powiadomienia</translation>
@@ -188,7 +187,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="2996291259634659425">Utwórz hasło</translation>
 <translation id="2996809686854298943">Wymagany adres URL</translation>
 <translation id="300526633675317032">Spowoduje to usunięcie <ph name="SIZE_IN_KB" /> danych witryn.</translation>
-<translation id="3012408695656332380">Zastąp dane na urządzeniu danymi z konta <ph name="TO_ACCOUNT" />. Możesz pobrać istniejące dane, przełączając się z powrotem na konto <ph name="FROM_ACCOUNT" />, jednak dane utworzone od momentu wylogowania się zostaną utracone.</translation>
 <translation id="3029704984691124060">Hasła nie pasują do siebie</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poproś o pomoc<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Otwórz w karcie incognito</translation>
@@ -215,7 +213,6 @@ Internet rzeczy możesz skonfigurować w ustawieniach Chrome.
 <translation id="3320021301628644560">Dodaj adres rozliczeniowy</translation>
 <translation id="3328801116991980348">Informacje o witrynie</translation>
 <translation id="3350687908700087792">Zamknij wszystkie karty incognito</translation>
-<translation id="3351441609270267898">Importuj istniejące dane</translation>
 <translation id="3365671512111106261">Niedostępne, gdy Oszczędzanie danych jest włączone</translation>
 <translation id="3367813778245106622">Zaloguj się ponownie, by rozpocząć synchronizację</translation>
 <translation id="3384347053049321195">Udostępnij zdjęcie</translation>
@@ -426,7 +423,6 @@ Aby dostosować wyszukiwane hasło, naciśnij je i przytrzymaj, by je zaznaczyć
 <translation id="5676636989614905379">Nie można odtworzyć filmu na ekranie <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Zablokowane</translation>
 <translation id="5684874026226664614">Nie można przetłumaczyć tej strony.</translation>
-<translation id="5708031556037168012">Zachowaj istniejące dane na urządzeniu i stale importuj dane na konto <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Po zamknięciu wszystkich kart incognito wyświetlane na nich strony nie pozostawią żadnych śladów w historii przeglądarki, magazynie plików cookie ani historii wyszukiwania. Pobrane pliki i utworzone zakładki zostaną zachowane.
 
 To jednak nie oznacza, że Cię nie widać. Nawet gdy przejdziesz w tryb incognito, Twój pracodawca, dostawca usług internetowych czy webmasterzy otwieranych stron mogą dowiedzieć się, co przeglądasz.</translation>
@@ -563,7 +559,6 @@ Na przykład niektóre strony mogą na nie zareagować, wyświetlając reklamy b
 <translation id="7062545763355031412">Zaakceptuj i przełącz konta</translation>
 <translation id="7063006564040364415">Nie udało się nawiązać połączenia z serwerem synchronizacji.</translation>
 <translation id="7064851114919012435">Dane kontaktowe</translation>
-<translation id="7081639897063626814">Przechowuj istniejące dane oddzielnie</translation>
 <translation id="7094922512924405309">Nie znaleziono stron internetu rzeczy w pobliżu</translation>
 <translation id="7138678301420049075">Inne</translation>
 <translation id="7180611975245234373">Odśwież</translation>
@@ -735,12 +730,10 @@ Aby otrzymać nowe licencje, połącz się z internetem i odtwórz pobrane treś
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9139068048179869749">Pytaj, zanim zezwolisz stronom na wysyłanie powiadomień (zalecane)</translation>
-<translation id="9141510419986760385">Przełączasz synchronizację kont z <ph name="FROM_ACCOUNT" /> na <ph name="TO_ACCOUNT" />. Co chcesz zrobić z istniejącymi zakładkami, historią, hasłami i innymi ustawieniami?</translation>
 <translation id="9154194610265714752">Zaktualizowano</translation>
 <translation id="917685106653909562">Strony internetu rzeczy w pobliżu</translation>
 <translation id="9187199695613236444">Wersja na urządzenia mobilne</translation>
 <translation id="9188680907066685419">Wyloguj się z konta zarządzanego</translation>
-<translation id="9198708126133947749">Zastąp dane urządzenia danymi konta <ph name="TO_ACCOUNT" />. Aby pobrać istniejące dane, przełącz się z powrotem na konto <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Grafika</translation>
 <translation id="932327136139879170">Strona główna</translation>

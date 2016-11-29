@@ -782,9 +782,6 @@ Tato zásada zatím není připravena k použití. Nepoužívejte ji prosím.
 <translation id="3322771899429619102">Umožňuje nastavit seznam vzorů adres URL webových stránek, které mají povoleno generovat klíče. Vzory adres URL uvedené v zásadě KeygenBlockedForUrls tyto výjimky přepíšou.
 
 Pokud tuto zásadu nenastavíte, použije se pro všechny webové stránky globální výchozí hodnota buď ze zásady DefaultKeygenSetting (pokud je nastavena), nebo z osobního nastavení uživatele.</translation>
-<translation id="3322902067538988734">Pokud je tato zásada nastavena na hodnotu True, uživatel se před použitím do prohlížeče <ph name="PRODUCT_NAME" /> musí přihlásit pomocí svého profilu. V tomto případě bude výchozí hodnota zásady BrowserGuestModeEnabled nastavena na False.
-
-      Pokud je tato zásada nastavena na hodnotu False nebo není nakonfigurována, může uživatel prohlížeč <ph name="PRODUCT_NAME" /> používat bez přihlášení.</translation>
 <translation id="3347687541825006165">Nastavuje, jak často musí uživatel zadat heslo, pokud chce používat rychlé odemknutí.</translation>
 <translation id="3381968327636295719">Používat ve výchozím nastavení hostitelský prohlížeč</translation>
 <translation id="3417418267404583991">Pokud je tato zásada nastavena na hodnotu True nebo není nastavena, povolí systém <ph name="PRODUCT_OS_NAME" /> přihlášení hosta. Přihlášení hosta jsou anonymní uživatelské relace a nevyžadují heslo.
@@ -1631,14 +1628,6 @@ Pokud tato zásada není nakonfigurována, <ph name="PRODUCT_NAME" /> použije v
 Zásadu lze nastavit na jednu z následujících hodnot: sslv3, tls1, tls1.1 nebo tls1.2. Je-li nastavena, <ph name="PRODUCT_NAME" /> nebude používat verze protokolů SSL a TLS nižší, než je uvedená verze. Nerozpoznané hodnoty budou ignorovány.
 
 Upozorňujeme, že verze sslv3 je starší než tls1 (bez ohledu na číslo).</translation>
-<translation id="6177482277304066047">Nastavuje cílovou verzi automatické aktualizace.
-
-      Určuje předponu cílové verze, na kterou se má <ph name="PRODUCT_OS_NAME" /> aktualizovat. Pokud zařízení obsahuje starší verzi, než jakou určuje předpona, bude systém aktualizován na poslední verzi s danou předponou. Jestliže zařízení již obsahuje novější verzi, nestane se nic (tj. nedojde k přechodu na nižší verzi) a zařízení zůstane u stávající verze. Formát předpony funguje na základě komponent, jak ukazuje následující příklad:
-
-      "" (nebo není nastaveno): aktualizovat na nejnovější dostupnou verzi,
-      "1412.": aktualizovat na libovolnou podverzi verze 1412 (např. 1412.24.34 nebo 1412.60.2),
-      "1412.2.": aktualizovat na libovolnou podverzi verze 1412.2 (nebo 1412.2.34 nebo 1412.2.2),
-      "1412.24.34": aktualizovat pouze na tuto konkrétní verzi.</translation>
 <translation id="6190022522129724693">Výchozí nastavení vyskakovacích oken</translation>
 <translation id="6197453924249895891">Uděluje rozšířením přístup k podnikovým klíčům.
 
@@ -1678,9 +1667,6 @@ Nastavením této zásady na hodnotu False přeskočení stránky s upozorněn�
 <translation id="6367755442345892511">Zda má být kanál verzí nastavitelný uživatelem</translation>
 <translation id="6368011194414932347">Konfigurace adresy URL domovské stránky</translation>
 <translation id="6368403635025849609">Povolit JavaScript na těchto stránkách</translation>
-<translation id="6373222873250380826">Pokud je tato zásada nastavena na hodnotu True, budou automatické aktualizace zakázány.
-
-      Zařízení se systémem <ph name="PRODUCT_OS_NAME" /> automaticky kontrolují aktualizace, pokud zásada není nastavena nebo je nastavena na hodnotu False.</translation>
 <translation id="6376659517206731212">Může být povinné</translation>
 <translation id="6378076389057087301">Určuje, zda aktivita zvukových zařízení ovlivňuje správu napájení</translation>
 <translation id="637934607141010488">Hlásit seznam uživatelů zařízení, kteří se nedávno přihlásili.
@@ -2033,13 +2019,6 @@ Pokud nezadáte žádné nastavení, ověření protokolu <ph name="HTTP_NEGOTIA
 <translation id="7336878834592315572">Uchovat soubory cookie po dobu trvání relace</translation>
 <translation id="7340034977315324840">Hlásit časy aktivity zařízení</translation>
 <translation id="7384999953864505698">Povoluje protokol QUIC</translation>
-<translation id="7406651467768226499">Udává, zda má mít automaticky spouštěná terminálová aplikace s nulovým zpožděním povoleno ovládat verzi systému <ph name="PRODUCT_OS_NAME" />.
-
-      Tato zásada řídí, zda bude mít automaticky spouštěná terminálová aplikace s nulovým zpožděním povoleno ovládat verzi systému <ph name="PRODUCT_OS_NAME" /> tím, že ve svém manifestu deklaruje klíč required_platform_version, který se použije jako předpona cílové verze u automatických aktualizací.
-
-      Je-li tato zásada nastavena na hodnotu true, hodnota klíče required_platform_version v manifestu automaticky spouštěné terminálové aplikace s nulovým zpožděním se použije jako předpona cílové verze automatických aktualizací.
-
-      Pokud tato zásada není nakonfigurována nebo je nastavena na hodnotu false, klíč manifestu required_platform_version je ignorován a automatické aktualizace fungují běžným způsobem.</translation>
 <translation id="7417972229667085380">Procento prodloužení prodlevy režimu nečinnosti v režimu prezentace (podpora ukončena)</translation>
 <translation id="7421483919690710988">Nastavit velikost diskové mezipaměti médií v bajtech</translation>
 <translation id="7424751532654212117">Seznam výjimek ze seznamu deaktivovaných pluginů</translation>

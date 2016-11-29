@@ -137,7 +137,7 @@
 <translation id="2582407057977008361">Šalia</translation>
 <translation id="2606210917827248971">su {COUNT,plural, =1{# elementu}one{# elementu}few{# elementais}many{# elemento}other{# elementų}}</translation>
 <translation id="2614981083756825552">Matematikos žymėjimo kalbos išdėstymas</translation>
-<translation id="2624431853467395961">Atidaryti mokomąjį režimą</translation>
+<translation id="2624431853467395961">Atidarykite mokomąjį režimą</translation>
 <translation id="2626530649491650971">spustelėjamas</translation>
 <translation id="2628764385451019380">Nėra ankstesnio išskleidžiamojo laukelio.</translation>
 <translation id="2637227747952042642">Matematika</translation>
@@ -466,7 +466,7 @@ Peržiūrėję visą mokymo programą, naudokite „ChromeVox“, kad pasiektum�
 <translation id="5417034931411865818">Spustelėkite $1 maršruto parinkimo klavišo elementą</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{ženklas mažiau}one{# ženklas mažiau}few{# ženklai mažiau}many{# less than signs}other{# ženklų mažiau}}</translation>
 <translation id="5444587279251314700">(aktyvus)</translation>
-<translation id="5451268436205074266"><ph name="DOT" /> taškai</translation>
+<translation id="5451268436205074266">Taškai: <ph name="DOT" /></translation>
 <translation id="5455441614648621694">Papildomas</translation>
 <translation id="5458780372341732962">Naudoti „ChromeVox Next“ (beta versija)</translation>
 <translation id="5485036206801896268">Nėra ankstesnio grafinio vaizdo.</translation>
@@ -554,7 +554,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="6119955456199054975">Langelio pabaiga.</translation>
 <translation id="6122013438240733403">btn</translation>
 <translation id="6129953537138746214">Tarpas</translation>
-<translation id="6138576064440631958">$1 pokalbis</translation>
+<translation id="6138576064440631958">Pokalbiai: $1</translation>
 <translation id="6142308968191113180">4 antraštė</translation>
 <translation id="6169420925157477918">Vaizdas su ilgu aprašu</translation>
 <translation id="6186305613600865047">Pereinama į puslapio apačią</translation>
@@ -678,7 +678,7 @@ Kad atidarytumėte „Chrome“ naršyklės meniu, paspauskite „Alt“ ir F.</
 <translation id="7532613204005497612">Birželis</translation>
 <translation id="7540083713905917247"><ph name="VALUE" />, <ph name="NAME" />, šliaužiklis</translation>
 <translation id="7552432549459840808">Naudingi „Chrome“ spartieji klavišai</translation>
-<translation id="7579911500627256166"><ph name="DOT" /> taškas</translation>
+<translation id="7579911500627256166">Taškas: <ph name="DOT" /></translation>
 <translation id="7596919493010894443">išvalytas pasirinkimas</translation>
 <translation id="7604026522577407655">Eiti į dabartinio stulpelio pradžią</translation>
 <translation id="7604451927827590395">hdng</translation>

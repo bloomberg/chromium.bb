@@ -702,7 +702,6 @@ Psst! La prossima volta potrebbe esserti utile la modalità di navigazione in in
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">Modifica</translation>
 <translation id="9068849894565669697">Seleziona colore</translation>
-<translation id="9092364396508701805">La pagina <ph name="HOST_NAME" /> non funziona</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> in genere utilizza la crittografia per proteggere le tue informazioni. Questa volta, quando Chromium ha provato a connettersi a <ph name="SITE" />, il sito web ha restituito credenziali insolite e sbagliate. È possibile che un malintenzionato stia cercando di spacciarsi per il sito <ph name="SITE" /> oppure che una schermata di accesso alla rete Wi-Fi abbia interrotto la connessione. Le tue informazioni sono ancora al sicuro perché Chromium ha interrotto la connessione prima che avvenissero scambi di dati.</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9148507642005240123">&amp;Annulla modifica</translation>

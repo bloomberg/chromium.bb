@@ -706,7 +706,6 @@ Psst! Następnym razem możesz użyć trybu incognito <ph name="SHORTCUT_KEY" />
 <translation id="9050666287014529139">Hasło</translation>
 <translation id="9065203028668620118">Edycja</translation>
 <translation id="9068849894565669697">Wybierz kolor</translation>
-<translation id="9092364396508701805">Strona <ph name="HOST_NAME" /> nie działa</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> zazwyczaj używa szyfrowania do ochrony Twoich informacji. Gdy tym razem przeglądarka Chromium próbowała połączyć się ze stroną <ph name="SITE" />, odesłała ona nietypowe i nieprawidłowe dane logowania. Może się tak zdarzyć, gdy pod stronę <ph name="SITE" /> podszywa się osoba atakująca albo gdy ekran logowania do sieci Wi-Fi przerwie połączenie. Twoje informacje są nadal bezpieczne, bo połączenie w Chromium zakończyło się przed wymianą jakichkolwiek danych.</translation>
 <translation id="9137013805542155359">Pokaż tekst oryginalny</translation>
 <translation id="9148507642005240123">&amp;Cofnij edycję</translation>

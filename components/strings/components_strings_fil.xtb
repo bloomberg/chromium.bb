@@ -706,7 +706,6 @@ Psst! Maaaring maging kapaki-pakinabang ang mode na incognito <ph name="SHORTCUT
 <translation id="9050666287014529139">Passphrase</translation>
 <translation id="9065203028668620118">I-edit</translation>
 <translation id="9068849894565669697">Pumili ng kulay</translation>
-<translation id="9092364396508701805">Hindi gumagana ang <ph name="HOST_NAME" /> page</translation>
 <translation id="9103872766612412690">Karaniwang gumagamit ang <ph name="SITE" /> ng pag-encrypt upang protektahan ang iyong impormasyon. Noong sinubukang kumonekta ng Chromium sa <ph name="SITE" /> sa pagkakataong ito, nagbalik ang website ng mga hindi pangkaraniwan at maling kredensyal. Maaari itong mangyari kapag sinusubukan ng isang attacker na magpanggap bilang <ph name="SITE" />, o naputol ang koneksyon dahil sa isang screen ng pag-sign in sa Wi-Fi. Secure pa rin ang iyong impormasyon dahil inihinto ng Chromium ang koneksyon bago magkaroon ng palitan ng anumang data.</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9148507642005240123">&amp;I-undo ang pag-e-edit</translation>

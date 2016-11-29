@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">‏מחפש מכשירי Bluetooth ו-USB...</translation>
 <translation id="1056898198331236512">אזהרה</translation>
 <translation id="1056982457359827501">‏מאפשר שימוש בתפקוד של BLE Advertising באפליקציות של Chrome. התפקוד של BLE Advertising עשוי לשבש את השימוש הרגיל בתכונות Bluetooth Low Energy.</translation>
-<translation id="1058325955712687476">‏הפעלת השירות Site Engagement, המתעד אינטראקציה עם אתרים ומקצה משאבים בהתאם.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> מתוך <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">החלף</translation>
 <translation id="1062866675591297858">נהל את המשתמשים שבפיקוח באמצעות <ph name="BEGIN_LINK" />לוח הבקרה למשתמשים בפיקוח<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">מייבא <ph name="FILE_COUNT" /> קבצים...</translation>
 <translation id="1352103415082130575">‏מקלדת תאילנדית (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">מנהל אחסון בעיצוב חדשני תלת-ממדי</translation>
 <translation id="1353966721814789986">דפי הפעלה</translation>
 <translation id="1354868058853714482">‏Adobe Reader אינו מעודכן ועשוי להיות לא מאובטח.</translation>
 <translation id="1355408554203439639">יוצר רשת הנקודות של תוכנות תלת ממד</translation>
@@ -370,7 +368,6 @@
 <translation id="1477301030751268706">‏קובץ שמור של אסימון ממשק API של זהות</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">פרטים: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">תיעוד מפרט של אירוע מצביע בגרסה 1</translation>
 <translation id="1480041086352807611">מצב הדגמה</translation>
 <translation id="1481244281142949601">אתה נמצא בארגז חול מוגבל כראוי.</translation>
 <translation id="1482124012545051544">מוכן לגבות <ph name="FILE_COUNT" /> תמונות חדשות</translation>
@@ -880,7 +877,6 @@
 <translation id="2177950615300672361">כרטיסיית גלישה בסתר: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">‏רשות האישורים (CA) בסכנה</translation>
 <translation id="218070003709087997">ציין את מספר העותקים שיש להדפיס (1 עד 999).</translation>
-<translation id="218492098606937156">הפעל אירועי מגע</translation>
 <translation id="2187317261103489799">זהה (ברירת מחדל)</translation>
 <translation id="2187895286714876935">שגיאת ייבוא של אישור שרת</translation>
 <translation id="2188881192257509750">פתח את <ph name="APPLICATION" /></translation>
@@ -1036,7 +1032,6 @@
 <translation id="2367972762794486313">הצג יישומים</translation>
 <translation id="2371076942591664043">פתח &amp;בסיום</translation>
 <translation id="2372036074421194686">‏Chrome מצא תכנית לא רצויה (<ph name="UWS_NAME" />) שמותקנת במחשב. ייתכן שתוכל להסיר אותה על ידי הפעלת Chrome Cleanup Tool.</translation>
-<translation id="2375701438512326360">אלץ את התמיכה במסך מגע להיות תמיד מופעלת או מושבתת, או להיות מופעלת כאשר מזוהה מסך מגע בעת ההפעלה (אוטומטית, ברירת המחדל).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> קבצים נבחרו</translation>
 <translation id="2378982052244864789">בחר את ספריית ההרחבה.</translation>
 <translation id="2379281330731083556">הדפס באמצעות תיבת דו-שיח של המערכת... <ph name="SHORTCUT_KEY" /></translation>
@@ -2079,7 +2074,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3648460724479383440">לחצן בחירה שנבחר</translation>
 <translation id="3649138363871392317">צולמה תמונה</translation>
 <translation id="3650242103421962931">ליניארי</translation>
-<translation id="3653069516296104653">השבתת תיעוד עקיף של אירועי מצביע במגע.</translation>
 <translation id="3653999333232393305">המשך לאפשר ל-<ph name="HOST" /> לגשת למיקרופון שלך</translation>
 <translation id="3654045516529121250">קרא את הגדרות הנגישות שלך</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{יש לו גישה קבועה אל קובץ אחד.}two{יש לו גישה קבועה אל # קבצים.}many{יש לו גישה קבועה אל # קבצים.}other{יש לו גישה קבועה אל # קבצים.}}</translation>
@@ -2122,7 +2116,6 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="3709244229496787112">הדפדפן נסגר לפני שההורדה הושלמה.</translation>
 <translation id="3711895659073496551">השהה</translation>
 <translation id="3712897371525859903">שמור דף &amp;בשם...</translation>
-<translation id="3713494718070140825">‏<ph name="BEGIN_WHITEPAPER_LINK" />שלח באופן אוטומטי<ph name="END_WHITEPAPER_LINK" /> חלק מפרטי המערכת ותוכן הדף אל Google כדי לעזור בזיהוי של יישומים ואתרים מסוכנים. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">יומן אינטרנט</translation>
 <translation id="3715597595485130451">‏התחברות ל-Wi-Fi</translation>
 <translation id="3716615839203649375">הפעל</translation>
@@ -2471,13 +2464,11 @@ http://www.chromium.org/chromium-os/how-tos-and-troubleshooting/debugging-featur
 <translation id="418179967336296930">‏מקלדת רוסית פונטית (YaZHert)</translation>
 <translation id="4181841719683918333">שפות</translation>
 <translation id="4184885522552335684">גרור כדי להזיז צג</translation>
-<translation id="4188447344915957833">מפעיל את מנהל האחסון בהגדרות 'עיצוב חדשני תלת-ממדי'.</translation>
 <translation id="4189406272289638749">‏ההגדרה הזו נמצאת בשליטה של תוסף - &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;.</translation>
 <translation id="4193154014135846272">‏מסמך Google</translation>
 <translation id="4193182321948161343">הפעל את מנהל המשתמשים בעל העיצוב החדשני והתלת-ממדי</translation>
 <translation id="4193297030838143153">כתובת חדשה לחיוב...</translation>
 <translation id="4194570336751258953">הפעל אפשרות של 'הקש ללחיצה'</translation>
-<translation id="4195621107636847694">‏שירות Site Engagement</translation>
 <translation id="4195643157523330669">פתח בכרטיסייה חדשה</translation>
 <translation id="4195814663415092787">המשך מהמקום שבו הפסקת</translation>
 <translation id="4197674956721858839">כווץ את הקבצים שנבחרו</translation>

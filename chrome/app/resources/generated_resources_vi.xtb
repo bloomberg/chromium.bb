@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Đang tìm kiếm thiết bị Bluetooth và USB...</translation>
 <translation id="1056898198331236512">Cảnh báo</translation>
 <translation id="1056982457359827501">Bật Quảng cáo BLE trong Ứng dụng Chrome. Quảng cáo BLE có thể ảnh hưởng đến việc sử dụng bình thường các tính năng Bluetooth Low Energy.</translation>
-<translation id="1058325955712687476">Bật Dịch vụ quản lý trang web, ghi lại tương tác với các trang web và phân bổ tài nguyên một cách phù hợp.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> trong tổng số <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Thay thế</translation>
 <translation id="1062866675591297858">Quản lý người dùng được giám sát của bạn qua <ph name="BEGIN_LINK" />Bảng điều khiển người dùng được giám sát<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Đang nhập <ph name="FILE_COUNT" /> tệp...</translation>
 <translation id="1352103415082130575">Bàn phím tiếng Thái (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Trình quản lý bộ nhớ Material Design</translation>
 <translation id="1353966721814789986">Trang khởi động</translation>
 <translation id="1354868058853714482">Adobe Reader đã lỗi thời và có thể không an toàn.</translation>
 <translation id="1355408554203439639">Bộ quét trên phần mềm 3D</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Lưu bộ nhớ cache mã thông báo API nhận dạng</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Chi tiết: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Thu thập thông số kỹ thuật của sự kiện con trỏ v1</translation>
 <translation id="1480041086352807611">Chế độ trình diễn</translation>
 <translation id="1481244281142949601">Hộp cát của bạn đã đầy.</translation>
 <translation id="1482124012545051544">Sẵn sàng sao lưu <ph name="FILE_COUNT" /> ảnh mới</translation>
@@ -887,7 +884,6 @@
 <translation id="2177950615300672361">Tab ẩn danh: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Lộ CA</translation>
 <translation id="218070003709087997">Sử dụng một số để cho biết số bản cần in (1 đến 999).</translation>
-<translation id="218492098606937156">Bật sự kiện chạm</translation>
 <translation id="2187317261103489799">Phát hiện (mặc định)</translation>
 <translation id="2187895286714876935">Lỗi nhập chứng chỉ máy chủ</translation>
 <translation id="2188881192257509750">Mở <ph name="APPLICATION" /></translation>
@@ -1043,7 +1039,6 @@ Sau khi tạo người dùng được giám sát mới, bạn có thể quản l
 <translation id="2367972762794486313">Hiển thị ứng dụng</translation>
 <translation id="2371076942591664043">Mở khi &amp;hoàn tất</translation>
 <translation id="2372036074421194686">Chrome đã tìm thấy chương trình không mong muốn (<ph name="UWS_NAME" />) được cài đặt trên máy tính của bạn. Bạn có thể xóa chương trình đó bằng cách chạy Công cụ làm sạch Chrome.</translation>
-<translation id="2375701438512326360">Buộc hỗ trợ màn hình cảm ứng luôn được bật hoặc tắt hoặc được bật khi phát hiện màn hình cảm ứng vào lúc khởi động (Tự động, mặc định).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> tệp được chọn</translation>
 <translation id="2378982052244864789">Chọn thư mục tiện ích.</translation>
 <translation id="2379281330731083556">In bằng hộp thoại hệ thống... <ph name="SHORTCUT_KEY" /></translation>
@@ -2087,7 +2082,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Nút radio đã được chọn</translation>
 <translation id="3649138363871392317">Đã chụp ảnh</translation>
 <translation id="3650242103421962931">Tuyến tính</translation>
-<translation id="3653069516296104653">Tắt thu thập ngầm sự kiện của con trỏ chạm.</translation>
 <translation id="3653999333232393305">Tiếp tục cho phép <ph name="HOST" /> truy cập micrô của bạn</translation>
 <translation id="3654045516529121250">Đọc cài đặt trợ năng của bạn</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ứng dụng có quyền truy cập vĩnh viễn vào một tệp.}other{Ứng dụng có quyền truy cập vĩnh viễn vào # tệp.}}</translation>
@@ -2130,7 +2124,6 @@ Từ <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Trình duyệt bị tắt trước khi quá trình tải xuống hoàn tất.</translation>
 <translation id="3711895659073496551">Tạm ngừng</translation>
 <translation id="3712897371525859903">Lưu trang &amp;thành...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Tự động gửi <ph name="END_WHITEPAPER_LINK" /> một số thông tin hệ thống và nội dung trang cho Google để giúp phát hiện các ứng dụng và trang web nguy hiểm. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">lịch trên web</translation>
 <translation id="3715597595485130451">Kết nối Wi-Fi</translation>
 <translation id="3716615839203649375">cho phép</translation>
@@ -2479,13 +2472,11 @@ Tất cả người dùng phải đăng xuất để tiếp tục.</translation>
 <translation id="418179967336296930">Bàn phím ngữ âm tiếng Nga (YaZHert)</translation>
 <translation id="4181841719683918333">Ngôn ngữ</translation>
 <translation id="4184885522552335684">Kéo để di chuyển màn hình</translation>
-<translation id="4188447344915957833">Bật trình quản lý bộ nhớ trong Cài đặt Material Design.</translation>
 <translation id="4189406272289638749">Tiện ích, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, đang kiểm soát cài đặt này.</translation>
 <translation id="4193154014135846272">Tài liệu Google</translation>
 <translation id="4193182321948161343">Bật trình quản lý người dùng thiết kế Material Design</translation>
 <translation id="4193297030838143153">Địa chỉ thanh toán mới...</translation>
 <translation id="4194570336751258953">Cho phép gõ để nhấp</translation>
-<translation id="4195621107636847694">Dịch vụ tương tác trang web</translation>
 <translation id="4195643157523330669">Mở bằng tab mới</translation>
 <translation id="4195814663415092787">Tiếp tục từ điểm bạn đã dừng lại</translation>
 <translation id="4197674956721858839">Chọn file nén zip</translation>

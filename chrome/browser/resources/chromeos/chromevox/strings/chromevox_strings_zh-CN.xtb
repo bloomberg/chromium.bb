@@ -519,7 +519,7 @@
 <translation id="5712338278108304766">表格下一列</translation>
 <translation id="571866080859340309">正在浏览群组</translation>
 <translation id="5728409797179002635">找不到表格。</translation>
-<translation id="5732189279857692565">这是第二个标题。要想继续操作，请按 Search+H 或 Search+Shift+H 组合键</translation>
+<translation id="5732189279857692565">这是第二个标题。要想继续阅读，请按 Search+H 或 Search+Shift+H 组合键</translation>
 <translation id="5748623122140342504">上一个5级标题</translation>
 <translation id="5750633686117194034">尚未按下任何辅助键；请按住一个或多个辅助键；完成后即可松开您的手指，此时您会听到相应键已成功设置的提示音。要退出，请按Tab键。</translation>
 <translation id="5788275253279308023">在隐身窗口中打开“<ph name="TITLE" />”标签页</translation>
@@ -759,7 +759,7 @@
 <translation id="8520472399088452386">数值调节按钮</translation>
 <translation id="8538744478902126321">推测当前单元格的行标题</translation>
 <translation id="8540054775867439484">转至顶部</translation>
-<translation id="8542271685829952264">要想了解所有 ChromeVox 命令和快捷键，请按 Search+句点组合键，然后使用箭头键浏览菜单中的内容，并按 Enter 键启动相应命令。若想返回此处，请先按 Search+O 组合键，然后按 T 键。</translation>
+<translation id="8542271685829952264">要想了解所有 ChromeVox 命令和快捷键，请按“Search+句点”组合键，然后使用箭头键浏览菜单中的内容，并按 Enter 键启动相应命令。若想返回此处，请先按 Search+O 组合键，然后按 T 键。</translation>
 <translation id="8548973727659841685">逐个字符</translation>
 <translation id="8561322612995434619">包含弹出式窗口</translation>
 <translation id="8571096049907249734">多选</translation>

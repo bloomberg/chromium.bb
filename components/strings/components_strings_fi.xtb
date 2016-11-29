@@ -707,7 +707,6 @@ Psst! Suosittelemme käyttämään ensi kerralla incognito-tilaa <ph name="SHORT
 <translation id="9050666287014529139">Tunnuslause</translation>
 <translation id="9065203028668620118">Muokkaa</translation>
 <translation id="9068849894565669697">Valitse väri</translation>
-<translation id="9092364396508701805"><ph name="HOST_NAME" />-sivu ei toimi</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> suojaa tietosi normaalisti salauksen avulla. Kun Chromium yritti tällä kertaa yhdistää sivustoon <ph name="SITE" />, sivusto palautti epätavalliset ja virheelliset kirjautumistiedot. Hyökkääjä saattaa yrittää esiintyä sivustona <ph name="SITE" />, tai Wi-Fi-kirjautumisruutu on keskeyttänyt yhteyden. Tietosi ovat edelleen turvassa, sillä Chromium katkaisi yhteyden, ennen kuin mitään tietoja vaihdettiin.</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9148507642005240123">K&amp;umoa muokkaus</translation>

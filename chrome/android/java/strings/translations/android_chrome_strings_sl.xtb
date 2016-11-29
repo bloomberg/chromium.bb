@@ -115,7 +115,7 @@
 <translation id="2148716181193084225">Danes</translation>
 <translation id="2154484045852737596">Urejanje kartice</translation>
 <translation id="2154710561487035718">Kopiraj URL</translation>
-<translation id="2156993118928861787">Neveljaven naslov</translation>
+<translation id="2156993118928861787">Neveljavni naslov</translation>
 <translation id="219985413780390209">Zaščitite sebe in napravo pred nevarnimi spletnimi mesti</translation>
 <translation id="2206488550163399966"><ph name="APP_NAME" />, spletna aplikacija. <ph name="APP_URL" /></translation>
 <translation id="2268044343513325586">Izboljšaj iskanje</translation>
@@ -140,7 +140,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="238909021488141516">Pri prenosu vsebine je prišlo do napake.</translation>
 <translation id="2414886740292270097">Temno</translation>
 <translation id="2433507940547922241">Videz</translation>
-<translation id="2439248520967274840">Prijavili se boste v račun <ph name="TO_ACCOUNT" />. Nekateri obstoječi zaznamki, zgodovina, gesla in druge nastavitve so bili že sinhronizirani z računom <ph name="FROM_ACCOUNT" />. Kaj želite storiti z obstoječimi podatki?</translation>
 <translation id="2440823041667407902">Dostop do lokacije</translation>
 <translation id="2476578072172137802">Nastavitve mesta</translation>
 <translation id="2482878487686419369">Obvestila</translation>
@@ -188,7 +187,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="2996291259634659425">Ustvarjanje gesla</translation>
 <translation id="2996809686854298943">URL je obvezen</translation>
 <translation id="300526633675317032">S tem bo izbrisanih vseh toliko shranjenih podatkov spletnega mesta: <ph name="SIZE_IN_KB" />.</translation>
-<translation id="3012408695656332380">Zamenjava podatkov te naprave s podatki računa <ph name="TO_ACCOUNT" />. Obstoječe podatke lahko pridobite tako, da preklopite na račun <ph name="FROM_ACCOUNT" />, podatki, ki ste jih ustvarili po odjavi, pa bodo izgubljeni.</translation>
 <translation id="3029704984691124060">Gesli se ne ujemata</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Poiščite pomoč<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Odpri v zavihku brez beleženja zgodovine</translation>
@@ -215,7 +213,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="3320021301628644560">Dodajanje naslova za izstavitev računa</translation>
 <translation id="3328801116991980348">Podatki o mestu</translation>
 <translation id="3350687908700087792">Zapri vse zavihke brez beleženja zgodovine</translation>
-<translation id="3351441609270267898">Uvoz obstoječih podatkov</translation>
 <translation id="3365671512111106261">Ni na voljo, ko je vklopljeno varčevanje s podatki</translation>
 <translation id="3367813778245106622">Prijavite se znova, če želite začeti sinhronizacijo</translation>
 <translation id="3384347053049321195">Skupna raba slike</translation>
@@ -312,7 +309,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="4522570452068850558">Podrobnosti</translation>
 <translation id="4526249700380860531">Ogled in upravljanje shranjenih gesel na <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Izbira mape</translation>
-<translation id="4535858793016067060">V varnostnih nastavitvah Androida vklopite »Neznani viri«, če želite preskusiti preizkus »Izboljšano dodajanje na začetni zaslon«. Ko končate preizkus, to nastavitev onemogočite.</translation>
+<translation id="4535858793016067060">V varnostnih nastavitvah Androida vklopite »Neznani viri«, če želite zagnati preizkus »Izboljšano dodajanje na začetni zaslon«. Ko končate preizkus, to nastavitev onemogočite.</translation>
 <translation id="4543661749405994812">Kopiraj e-poštni naslov</translation>
 <translation id="4572422548854449519">Prijava v upravljani račun</translation>
 <translation id="457875822857220463">Dostava</translation>
@@ -389,7 +386,7 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5313967007315987356">Dodajanje mesta</translation>
 <translation id="5317780077021120954">Shrani</translation>
 <translation id="5324858694974489420">Starševske nastavitve</translation>
-<translation id="5326702247179446998">Obvezen je prejemnik</translation>
+<translation id="5326702247179446998">Vnos prejemnika je obvezen</translation>
 <translation id="5327248766486351172">Ime</translation>
 <translation id="5335288049665977812">Spletnim mestom dovoli izvajanje JavaScripta (priporočeno)</translation>
 <translation id="5345040418939504969">Izbrisano: <ph name="BOOKMARK_TITLE" /></translation>
@@ -426,7 +423,6 @@ Fizični splet lahko nadzirate v Chromovih nastavitvah.
 <translation id="5676636989614905379">Na zaslonu <ph name="SCREEN_NAME" /> ni mogoče predvajati videoposnetka.</translation>
 <translation id="5677928146339483299">Blokirano</translation>
 <translation id="5684874026226664614">Ojoj, te strani bi bilo mogoče prevesti.</translation>
-<translation id="5708031556037168012">Ohranitev obstoječih podatkov v napravi in trajni uvoz podatkov v račun <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Strani, ki si jih ogledate na zavihkih brez beleženja zgodovine, ne bodo pustile sledi v zgodovini brskalnika, shrambi piškotkov ali zgodovini iskanja, ko zaprete vse zavihke brez beleženja zgodovine. Prenesene datoteke ali ustvarjeni zaznamki se bodo ohranili.
 
 Kljub temu niste nevidni. Če uporabljate način brez beleženja zgodovine, ne skrijete brskanja pred delodajalcem, ponudnikom internetnih storitev ali spletnimi mesti, ki jih obiskujete.</translation>
@@ -563,7 +559,6 @@ Nekatera spletna mesta se lahko na primer na zahtevo odzovejo tako, da prikažej
 <translation id="7062545763355031412">Sprejmi in preklopi račun</translation>
 <translation id="7063006564040364415">Povezave s strežnikom za sinhronizacijo ni bilo mogoče vzpostaviti.</translation>
 <translation id="7064851114919012435">Podatki o stiku</translation>
-<translation id="7081639897063626814">Obstoječi podatki naj bodo ločeni</translation>
 <translation id="7094922512924405309">Ni strani za Fizični splet v bližini</translation>
 <translation id="7138678301420049075">Drugo</translation>
 <translation id="7180611975245234373">Osveži</translation>
@@ -735,12 +730,10 @@ Nove licence dobite tako, da se povežete v internet in predvajate preneseno vse
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Pokaži izvirno besedilo</translation>
 <translation id="9139068048179869749">Poziv, preden se spletnim mestom dovoli pošiljanje obvestil (priporočeno)</translation>
-<translation id="9141510419986760385">Z računa za sinhronizacijo <ph name="FROM_ACCOUNT" /> boste preklopili na račun <ph name="TO_ACCOUNT" />. Kaj želite storiti z obstoječimi zaznamki, zgodovino, gesli in drugimi nastavitvami?</translation>
 <translation id="9154194610265714752">Posodobljeno</translation>
 <translation id="917685106653909562">Strani za Fizični splet v bližini</translation>
 <translation id="9187199695613236444">Pogled, prilagojen za mobilne naprave</translation>
 <translation id="9188680907066685419">Odjava iz upravljanega računa</translation>
-<translation id="9198708126133947749">Zamenjava podatkov te naprave s podatki računa <ph name="TO_ACCOUNT" />. Obstoječe podatke lahko pridobite tako, da preklopite nazaj na račun <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Slike</translation>
 <translation id="932327136139879170">Domov</translation>

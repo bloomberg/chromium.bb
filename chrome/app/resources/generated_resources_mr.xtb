@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Bluetooth आणि USB डिव्हाइसेस शोधत आहे...</translation>
 <translation id="1056898198331236512">चेतावणी</translation>
 <translation id="1056982457359827501">Chrome अॅप्स मध्‍ये BLE जाहिरात सक्षम करते. BLE जाहिरात Bluetooth निम्न उर्जा वैशिष्ट्यांच्या नियमित वापरामध्‍ये कदाचित हस्तक्षेप करू शकते.</translation>
-<translation id="1058325955712687476">साइट गुंतवणे सेवा सक्षम करते, जी साइटशी केलेल्या परस्परसंवादाची नोंद ठेवते आणि त्यानुसार संसाधनांचे वितरण करते.</translation>
 <translation id="1058418043520174283"><ph name="COUNT" /> पैकी <ph name="INDEX" /></translation>
 <translation id="1062407476771304334">पुनर्स्थित करा</translation>
 <translation id="1062866675591297858">आपले पर्यवेक्षित वापरकर्ते <ph name="BEGIN_LINK" />पर्यवेक्षित वापरकर्ते डॅशबोर्ड<ph name="END_LINK" /> द्वारे व्‍यवस्‍थापित करा.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" /> फायली आयात करीत आहे...</translation>
 <translation id="1352103415082130575">थाई कीबोर्ड (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">वस्तू डिझाइन संचय व्यवस्थापक</translation>
 <translation id="1353966721814789986">स्टार्टअप पृष्ठे</translation>
 <translation id="1354868058853714482">Adobe Reader कालबाह्य आणि कदाचित असुरक्षित आहे.</translation>
 <translation id="1355408554203439639">3D सॉफ्टवेअर रास्टरायझर</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">ओळख API टोकन कॅशे</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">तपशील: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">पॉइंटर कार्यक्रम v1 विशिष्ट कॅप्चर</translation>
 <translation id="1480041086352807611">डेमो मोड</translation>
 <translation id="1481244281142949601">आपल्याला पर्याप्तपणे sandbox मध्ये गेलात.</translation>
 <translation id="1482124012545051544">नवीन <ph name="FILE_COUNT" /> फोटोंचा बॅकअप घेण्यासाठी तयार आहे</translation>
@@ -884,7 +881,6 @@
 <translation id="2177950615300672361">गुप्त टॅब: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA तडजोड</translation>
 <translation id="218070003709087997">किती प्रती मुद्रित करायच्या ते सूचित करण्यासाठी संख्या वापरा (1 ते 999).</translation>
-<translation id="218492098606937156">टच इव्हेंट सक्षम करा</translation>
 <translation id="2187317261103489799">शोधा (डीफॉल्ट)</translation>
 <translation id="2187895286714876935">सर्व्हर प्रमाणपत्र आयात त्रुटी</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> उघडा</translation>
@@ -1040,7 +1036,6 @@
 <translation id="2367972762794486313">अ‍ॅप्स दर्शवा</translation>
 <translation id="2371076942591664043">&amp;पूर्ण झाल्यानंतर उघडा</translation>
 <translation id="2372036074421194686">Chrome ला आपल्या संगणकावर एक अवांछित कार्यक्रम (<ph name="UWS_NAME" />) स्थापित केलेला आढळला आहे. आपण Chrome क्लीनअप साधन चालवून तो काढून टाकू शकाल.</translation>
-<translation id="2375701438512326360">नेहमी सक्षम किंवा अक्षम ठेवण्यासाठी किंवा प्रारंभ करताना टचस्क्रीन आढळते तेव्हा सक्षम ठेवण्यासाठी टचस्क्रीन समर्थनाची सक्ती करा (स्वयंचलित, डीफॉल्ट).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> फायली निवडल्या</translation>
 <translation id="2378982052244864789">विस्तार निर्देशिका निवडा.</translation>
 <translation id="2379281330731083556">सिस्टम संवाद वापरून मुद्रित करा… <ph name="SHORTCUT_KEY" /></translation>
@@ -2001,7 +1996,7 @@
 <translation id="3564334271939054422">आपण वापरत असलेल्या (<ph name="NETWORK_ID" />) Wi-Fi नेटवर्कला आपण त्याच्या लॉग इन पृष्ठास भेट देणे आवश्यक असू शकते.</translation>
 <translation id="3564708465992574908">झूम स्तर</translation>
 <translation id="356512994079769807">सिस्टीम स्थापना सेटिंग्ज</translation>
-<translation id="3566721612727112615">कोरत्याही साइट जोडल्या नाहीत</translation>
+<translation id="3566721612727112615">कोणत्याही साइट जोडल्या नाहीत</translation>
 <translation id="3569382839528428029"><ph name="APP_NAME" /> नी आपली स्क्रीन सामायिक करावी असे आपण इच्छिता?</translation>
 <translation id="3569954353360281408">पॅक केलेल्या अॅप्ससाठी डीबगिंग</translation>
 <translation id="3570985609317741174">वेब सामग्री</translation>
@@ -2080,7 +2075,6 @@
 <translation id="3648460724479383440">निवडलेले रेडिओ बटण</translation>
 <translation id="3649138363871392317">फोटो कॅप्चर केला</translation>
 <translation id="3650242103421962931">एकरेषीय</translation>
-<translation id="3653069516296104653">स्पर्श पॉइंंटर इव्हेंटचेे सुस्पष्ट कॅप्चरिंग अक्षम करते.</translation>
 <translation id="3653999333232393305">आपल्या मायक्रोफोनवर प्रवेश करण्यासाठी <ph name="HOST" /> ला अनुमती देणे सुरू ठेवा</translation>
 <translation id="3654045516529121250">आपल्या प्रवेश योग्यता सेटिंग्ज वाचा</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{यास एका फाईलवर कायमचा प्रवेश आहे.}one{यास # फाईलवर कायमचा प्रवेश आहे.}other{यास # फायलींवर कायमचा प्रवेश आहे.}}</translation>
@@ -2122,7 +2116,6 @@
 <translation id="3709244229496787112">डाउनलोड पूर्ण होण्यापूर्वी ब्राउझर बंद करण्यात आला.</translation>
 <translation id="3711895659073496551">निलंबन</translation>
 <translation id="3712897371525859903">पृष्ठ &amp;म्हणून जतन करा...</translation>
-<translation id="3713494718070140825">धोकादायक अॅप्स आणि साइट शोधण्यात मदत करण्यासाठी Google ला काही सिस्टीम माहिती आणि पृष्ठ सामग्री <ph name="BEGIN_WHITEPAPER_LINK" />स्वयंचलितपणे पाठवा<ph name="END_WHITEPAPER_LINK" />. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">वेब कॅलेंडर</translation>
 <translation id="3715597595485130451">Wi-Fi वर कनेक्ट करा</translation>
 <translation id="3716615839203649375">अनुमती द्या</translation>
@@ -2470,13 +2463,11 @@
 <translation id="418179967336296930">रशियन ध्वन्यात्मक (YaZHert) कीबोर्ड</translation>
 <translation id="4181841719683918333">भाषा</translation>
 <translation id="4184885522552335684">प्रदर्शन हलविण्यासाठी ड्रॅग करा</translation>
-<translation id="4188447344915957833">वस्तू डिझाइन सेटिंग्जमध्ये संचय व्यवस्थापकास सक्षम करते.</translation>
 <translation id="4189406272289638749">&lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; विस्तार, हे सेटिंग नियंत्रित करत आहे.</translation>
 <translation id="4193154014135846272">Google दस्तऐवज</translation>
 <translation id="4193182321948161343">वस्तू डिझाइन वापरकर्ता व्यवस्थापक सक्षम करा</translation>
 <translation id="4193297030838143153">नवीन बिलिंग पत्ता...</translation>
 <translation id="4194570336751258953">टॅप-टू-क्लिक सक्षम करा</translation>
-<translation id="4195621107636847694">साइट प्रतिबद्धता सेवा</translation>
 <translation id="4195643157523330669">नवीन विंडोमध्ये उघडा</translation>
 <translation id="4195814663415092787">आपण सोडले होते तिथून पुढे सुरु करा</translation>
 <translation id="4197674956721858839">झिप निवड</translation>
@@ -3109,7 +3100,7 @@
 <translation id="5088534251099454936">PKCS #1 RSA कूटबद्धीकरणासह SHA-512</translation>
 <translation id="509429900233858213">एक त्रुटी आली आहे.</translation>
 <translation id="5094721898978802975">मूळ अनुप्रयोगांना सहकार्य करून संप्रेषण करा</translation>
-<translation id="5096691708387552456">Android svelte (512MB RAM) डिव्हाइसवर पृष्ठांसह जुळणारी पार्श्वभूमी लोड करणे (किंवा डाउनलोड करणे) सक्षम करते. अन्यथा, svelte डिव्हाइस निष्क्रिय असताना पार्श्वभूमी लोड होईल.</translation>
+<translation id="5096691708387552456">साधारण Android (512MB RAM) डिव्हाइसवर पृष्ठांसह जुळणारी पार्श्वभूमी लोड करणे (किंवा डाउनलोड करणे) सक्षम करते. अन्यथा, साधारण डिव्हाइस निष्क्रिय असताना पार्श्वभूमी लोड होईल.</translation>
 <translation id="5097002363526479830">'<ph name="NAME" />': नेटवर्कशी कनेक्ट करण्यात अयशस्वी. <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">हिब्रू</translation>
 <translation id="5098647635849512368">पॅक करण्यासाठी असलेल्या निर्देशिकेचा अचूक पथ शोधणे शक्य नाही.</translation>
@@ -4468,7 +4459,7 @@
 <translation id="6920569915859786172">नेहमी WebFonts लोड करण्यासाठी वापरकर्ता-एजंट हस्तक्षेप ट्रिगर करा.</translation>
 <translation id="6920989436227028121">नियमित टॅब म्हणून वापरा</translation>
 <translation id="6922128026973287222">Google डेटा बचतकर्ता वापरून डेटा जतन करा आणि अधिक जलद ब्राउझ करा. अधिक जाणून घेण्यासाठी क्लिक करा.</translation>
-<translation id="6928156602870961453">मुख्यपृष्ठ स्क्रीनवर सुधारित केलेले जोडा सक्षम करा</translation>
+<translation id="6928156602870961453">सुधारित केलेले मुख्यपृष्ठ स्क्रीनवर जोडा सक्षम करा</translation>
 <translation id="6929555043669117778">पॉप-अप अवरोधित करणे सुरू ठेवा </translation>
 <translation id="6930242544192836755">कालावधी</translation>
 <translation id="6934265752871836553">Chrome अधिक जलदपणे सामग्री काढण्यास लावण्यासाठी ब्लीडिंग-एज कोड वापरा. या पथामागील
@@ -5317,7 +5308,7 @@
 <translation id="8074127646604999664">अलीकडे बंद केलेल्या साइटना डेटा पाठविणे आणि प्राप्त करणे समाप्त करण्याची अनुमती द्या</translation>
 <translation id="8077684120002777443">वापरकर्तानाव (e.g. user@example.com)</translation>
 <translation id="8079530767338315840">पुनरावृत्ती करा</translation>
-<translation id="8081035298624755899">svelte वर जुळणारी पार्श्वभूमी लोडिंग सक्षम करते.</translation>
+<translation id="8081035298624755899">सामान्यवर जुळणारी पार्श्वभूमी लोडिंग सक्षम करते.</translation>
 <translation id="8083739373364455075">Google ड्राइव्हसह 100 GB विनामूल्य मिळवा</translation>
 <translation id="8086015605808120405"><ph name="PRINTER_NAME" /> कॉन्फिगर करत आहे...</translation>
 <translation id="8088137642766812908">सावधगिरी बाळगा, हे वैशिष्ट्य हानी करू शकते</translation>

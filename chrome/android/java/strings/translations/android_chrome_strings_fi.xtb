@@ -140,7 +140,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="238909021488141516">Virhe ladattaessa sisältöä.</translation>
 <translation id="2414886740292270097">Tumma</translation>
 <translation id="2433507940547922241">Ulkonäkö</translation>
-<translation id="2439248520967274840">Olet kirjautumassa tilille <ph name="TO_ACCOUNT" />. Osa aiemmista kirjanmerkeistäsi, historiatiedoistasi, salasanoistasi ja muista asetuksistasi on synkronoitu aiemmin tilille <ph name="FROM_ACCOUNT" />. Mitä olemassa oleville tiedoille tehdään?</translation>
 <translation id="2440823041667407902">Sijaintitietojen käyttöoikeus</translation>
 <translation id="2476578072172137802">Sivuston asetukset</translation>
 <translation id="2482878487686419369">Ilmoitukset</translation>
@@ -188,7 +187,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="2996291259634659425">Luo tunnuslause</translation>
 <translation id="2996809686854298943">URL-osoite vaaditaan</translation>
 <translation id="300526633675317032">Tämä tyhjentää yhteensä <ph name="SIZE_IN_KB" /> tallennettuja sivustotietoja.</translation>
-<translation id="3012408695656332380">Laitteen tiedot korvataan tilin <ph name="TO_ACCOUNT" /> tiedoilla. Voit palauttaa olemassa olevat tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />, mutta uloskirjautumisen jälkeen luodut tiedot menetetään.</translation>
 <translation id="3029704984691124060">Tunnuslauseet eivät vastaa toisiaan.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Tutustu ohjeisiin<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Avaa incognito-välilehdessä</translation>
@@ -215,7 +213,6 @@ Voit hallinnoida Fyysisen webin ominaisuuksia Chromen asetuksissa.
 <translation id="3320021301628644560">Lisää laskutusosoite</translation>
 <translation id="3328801116991980348">Tietoja sivustosta</translation>
 <translation id="3350687908700087792">Sulje kaikki incognito-välilehdet.</translation>
-<translation id="3351441609270267898">Tuo olemassa olevat tiedot</translation>
 <translation id="3365671512111106261">Ei käytössä, kun Data Saver on käytössä</translation>
 <translation id="3367813778245106622">Aloita synkronointi kirjautumalla uudelleen sisään.</translation>
 <translation id="3384347053049321195">Jaa kuva</translation>
@@ -426,7 +423,6 @@ Muokkaa hakutermiä valitsemalla se pitkällä painalluksella. Tarkenna hakua li
 <translation id="5676636989614905379">Videon toisto näytöllä <ph name="SCREEN_NAME" /> epäonnistui.</translation>
 <translation id="5677928146339483299">Estetty</translation>
 <translation id="5684874026226664614">Hups, tätä sivua ei voi kääntää.</translation>
-<translation id="5708031556037168012">Säilytä nykyiset tiedot laitteella ja vie tiedot pysyvästi tilille <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Incognito-välilehdillä avaamasi sivut eivät jää selaimen historiaan, evästeisiin tai hakuhistoriaan, kun olet sulkenut kaikki incognito-välilehdet. Kaikki lataamasi tiedostot ja luomasi kirjanmerkit säilytetään.
 
 Et ole kuitenkaan näkymätön. Incognito-tila ei piilota selaustietojasi työnantajaltasi, internetpalveluntarjoajaltasi tai vierailemiltasi verkkosivustoilta.</translation>
@@ -563,7 +559,6 @@ Jotkin verkkosivustot voivat vastata tähän pyyntöön esimerkiksi näyttämäl
 <translation id="7062545763355031412">Hyväksy ja vaihda tiliä</translation>
 <translation id="7063006564040364415">Synkronointipalvelimeen ei saada yhteyttä.</translation>
 <translation id="7064851114919012435">Yhteystiedot</translation>
-<translation id="7081639897063626814">Säilytä nykyiset tiedot erillään</translation>
 <translation id="7094922512924405309">Fyysisen webin sivuja ei löytynyt lähistöltä.</translation>
 <translation id="7138678301420049075">Muu</translation>
 <translation id="7180611975245234373">Päivitä</translation>
@@ -736,12 +731,10 @@ Hanki uudet käyttöoik. muodostam. verkkoyhteys ja toistamalla ladattu sisält�
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Näytä alkuperäinen</translation>
 <translation id="9139068048179869749">Pyydä lupaa, kun sivustot yrittävät lähettää ilmoituksia (suositus).</translation>
-<translation id="9141510419986760385">Muutoksen jälkeen synkronointi käyttää tilin <ph name="FROM_ACCOUNT" /> sijaan tiliä <ph name="TO_ACCOUNT" />. Mitä nykyisille kirjanmerkeille, historiatiedoille, salasanoille ja muille asetuksille tehdään?</translation>
 <translation id="9154194610265714752">Päivitetty</translation>
 <translation id="917685106653909562">Lähistöllä on Fyysisen webin sivuja.</translation>
 <translation id="9187199695613236444">Mobiililaitteille sopiva näkymä</translation>
 <translation id="9188680907066685419">Kirjaudu ulos hallinnoidulta tililtä</translation>
-<translation id="9198708126133947749">Laitteen tiedot korvataan tilin <ph name="TO_ACCOUNT" /> tiedoilla. Voit palauttaa nykyiset tiedot kirjautumalla takaisin tilille <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Kuvat</translation>
 <translation id="932327136139879170">Etusivu</translation>

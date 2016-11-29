@@ -140,7 +140,6 @@
 <translation id="238909021488141516">אירעה שגיאה בזמן הורדת התוכן.</translation>
 <translation id="2414886740292270097">כהה</translation>
 <translation id="2433507940547922241">מראה</translation>
-<translation id="2439248520967274840">אתה נכנס אל <ph name="TO_ACCOUNT" />. חלק מהסימניות, ההיסטוריה, הסיסמאות והגדרות נוספות סונכרנו בעבר עם <ph name="FROM_ACCOUNT" />. מה ברצונך לעשות עם הנתונים הקיימים?</translation>
 <translation id="2440823041667407902">גישה למיקום</translation>
 <translation id="2476578072172137802">הגדרות אתר</translation>
 <translation id="2482878487686419369">התראות</translation>
@@ -188,7 +187,6 @@
 <translation id="2996291259634659425">יצירת ביטוי סיסמה</translation>
 <translation id="2996809686854298943">דרושה כתובת אתר</translation>
 <translation id="300526633675317032">פעולה זו תמחק את כל נתוני האתר המאוחסנים (<ph name="SIZE_IN_KB" />).</translation>
-<translation id="3012408695656332380">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי מעבר חזרה אל <ph name="FROM_ACCOUNT" />, אך הנתונים שנצברו מאז שיצאת מהחשבון לא יישמרו.</translation>
 <translation id="3029704984691124060">ביטויי הסיסמה אינם תואמים</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />קבל עזרה<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">פתח בכרטיסיית גלישה בסתר</translation>
@@ -215,7 +213,6 @@
 <translation id="3320021301628644560">הוספה של כתובת לחיוב</translation>
 <translation id="3328801116991980348">פרטי אתר</translation>
 <translation id="3350687908700087792">סגור את כל כרטיסיות הגלישה בסתר</translation>
-<translation id="3351441609270267898">ייבא נתונים קיימים</translation>
 <translation id="3365671512111106261">‏לא זמין כאשר חוסך הנתונים (Data Saver) פועל</translation>
 <translation id="3367813778245106622">היכנס שוב כדי להתחיל בסנכרון</translation>
 <translation id="3384347053049321195">שתף תמונה</translation>
@@ -426,7 +423,6 @@
 <translation id="5676636989614905379">לא ניתן להפעיל את הסרטון ב-<ph name="SCREEN_NAME" /></translation>
 <translation id="5677928146339483299">במצב חסום</translation>
 <translation id="5684874026226664614">אופס. לא ניתן היה לתרגם את הדף הזה.</translation>
-<translation id="5708031556037168012">שמור את הנתונים הקיימים במכשיר וייבא לצמיתות את הנתונים אל <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">‏דפים שאתה מציג בכרטיסיות גלישה בסתר לא יישמרו בהיסטוריית הדפדפן, אחסון קובצי ה-cookie או היסטוריית החיפושים לאחר שתסגור את כל הכרטיסיות של גלישה בסתר. קבצים שתוריד או סימניות שתיצור יישמרו.
 
 עם זאת, אינך בלתי נראה. מעבר למצב גלישה בסתר אינו מסתיר את הגלישה שלך מהמעסיק, ספק שירות האינטרנט או האתרים שבהם אתה מבקר.</translation>
@@ -563,7 +559,6 @@
 <translation id="7062545763355031412">קבל והחלף חשבונות</translation>
 <translation id="7063006564040364415">לא ניתן היה להתחבר אל שרת הסנכרון.</translation>
 <translation id="7064851114919012435">פרטים ליצירת קשר</translation>
-<translation id="7081639897063626814">שמור בנפרד את הנתונים הקיימים</translation>
 <translation id="7094922512924405309">לא נמצאו דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="7138678301420049075">אחר</translation>
 <translation id="7180611975245234373">רענן</translation>
@@ -734,12 +729,10 @@
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">הצג מקור</translation>
 <translation id="9139068048179869749">שאל לפני שתאפשר לאתרים לשלוח הודעות (מומלץ)</translation>
-<translation id="9141510419986760385">אתה מחליף חשבונות סינכרון מ-<ph name="FROM_ACCOUNT" /> ל-<ph name="TO_ACCOUNT" />. מה ברצונך לעשות עם הסימניות, ההיסטוריה, הסיסמאות ושאר ההגדרות הקיימות?</translation>
 <translation id="9154194610265714752">עודכן</translation>
 <translation id="917685106653909562">דפים של האינטרנט הווירטופיזי בקרבת מקום</translation>
 <translation id="9187199695613236444">תצוגה מותאמת למכשירים ניידים</translation>
 <translation id="9188680907066685419">צא מהחשבון המנוהל</translation>
-<translation id="9198708126133947749">החלף את נתוני המכשיר הזה בנתונים של <ph name="TO_ACCOUNT" />. תוכל לאחזר את הנתונים הקיימים שלך על-ידי חזרה אל <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">א</translation>
 <translation id="9219103736887031265">תמונות</translation>
 <translation id="932327136139879170">בית</translation>

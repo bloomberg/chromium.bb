@@ -777,9 +777,6 @@
 <translation id="3322771899429619102">Omogućuje postavljanje popisa uzoraka URL-ova koji određuju web-lokacije koje smiju upotrebljavati generiranje ključeva. Ako je uzorak URL-ova u pravilu "KeygenBlockedForUrls", to nadjačava ove iznimke.
 
           Ako se to pravilo ne postavi, globalna zadana vrijednost upotrebljavat će se za sve web-lokacije iz pravila "DefaultKeygenSetting" ako je postavljeno, a u suprotnom iz korisnikove osobne konfiguracije.</translation>
-<translation id="3322902067538988734">Ako se to pravilo postavi na True, korisnik se mora prijaviti na <ph name="PRODUCT_NAME" /> svojim profilom da bi mogao upotrebljavati preglednik. Zadana vrijednost za BrowserGuestModeEnabled bit će postavljena na False.
-
-      Ako se to pravilo postavi na False ili se ne konfigurira, korisnik može upotrebljavati preglednik bez prijave na <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Određuje koliko često korisnik mora unijeti zaporku za upotrebu brzog otključavanja.</translation>
 <translation id="3381968327636295719">Upotrijebi preglednik hosta prema zadanim postavkama</translation>
 <translation id="3417418267404583991">Ako je to pravilo postavljeno na "istinito" ili ako nije konfigurirano, sustav <ph name="PRODUCT_OS_NAME" /> omogućit će prijave gostiju. Prijave gostiju predstavljaju sesije anonimnih korisnika i zaporka nije potrebna.
@@ -1594,14 +1591,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
       U protivnom se može postaviti na jednu od sljedećih vrijednosti: "sslv3", "tls1", "tls1.1" ili "tls1.2". Kada se postavi, <ph name="PRODUCT_NAME" /> neće upotrebljavati verzije SSL-a/TLS-a starije od navedene verzije. Neprepoznate će se vrijednosti zanemariti.
 
       Napomena: usprkos broju, "sslv3" starija je verzija od "tls1".</translation>
-<translation id="6177482277304066047">Postavlja ciljnu verziju za Automatska ažuriranja.
-
-      Određuje prefiks ciljne verzije na koju bi se proizvod <ph name="PRODUCT_OS_NAME" /> trebao ažurirati. Ako uređaj izvodi verziju koja prethodi navedenom prefiksu, ažurirat će se u najnoviju verziju s navedenim prefiksom. Ako uređaj već ima noviju verziju, ništa se neće promijeniti (tj. neće biti vraćanja na stariju verziju) i uređaj će ostati na trenutačnoj verziji. Format prefiksa funkcionira prema komponentama kao što je prikazano u sljedećem primjeru:
-
-      "" (ili nije konfigurirano): ažuriranje u najnoviju dostupnu verziju.
-      "1412.": ažuriranje u bilo koju verziju podređenu verziji 1412 (npr., 1412.24.34 ili 1412.60.2)
-      "1412.2.": ažuriranje u bilo koju verziju podređenu verziji 1412.2 (npr., 1412.2.34 ili 1412.2.2)
-      "1412.24.34": ažuriranje samo u tu konkretnu verziju</translation>
 <translation id="6190022522129724693">Zadana postavka skočnih prozora</translation>
 <translation id="6197453924249895891">Dodjeljuje pristup korporacijskim ključevima za proširenja.
 
@@ -1637,9 +1626,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="6367755442345892511">Treba li korisnik imati mogućnost za konfiguriranje kanala izdanja</translation>
 <translation id="6368011194414932347">Konfiguriraj URL početne stranice</translation>
 <translation id="6368403635025849609">Omogući JavaScript na ovim web-lokacijama</translation>
-<translation id="6373222873250380826">Onemogućuje automatska ažuriranja kada je postavljeno na "istinito".
-
-      Uređaji sa sustavom <ph name="PRODUCT_OS_NAME" /> automatski traže ažuriranja kada ta postavka nije konfigurirana ili kada je postavljena na "lažno".</translation>
 <translation id="6376659517206731212">Može biti obavezno</translation>
 <translation id="6378076389057087301">Odredi utječe li zvučna aktivnost na upravljanje napajanjem</translation>
 <translation id="637934607141010488">Generira popis korisnika uređaja koji su se nedavno prijavili.
@@ -1971,13 +1957,6 @@ Ako omogućite tu postavku, <ph name="PRODUCT_NAME" /> zanemarivat će sve opcij
 <translation id="7336878834592315572">Zadrži kolačiće za vrijeme trajanja sesije</translation>
 <translation id="7340034977315324840">Izvješće o vremenima aktivnosti uređaja</translation>
 <translation id="7384999953864505698">Omogući QUIC protokol</translation>
-<translation id="7406651467768226499">Određuje hoće li kiosk aplikacija pokrenuta automatski bez odgode upravljati verzijom proizvoda <ph name="PRODUCT_OS_NAME" />.
-
-      To pravilo određuje hoće li kiosk aplikacija pokrenuta automatski bez odgode upravljati verzijom proizvoda <ph name="PRODUCT_OS_NAME" /> tako što u manifestu navodi potrebnu verziju platforme i upotrebljava je kao prefiks verzije koji će se ciljati prilikom automatskog ažuriranja.
-
-      Ako se to pravilo postavi na True, vrijednost potrebne verzije platforme ključa manifesta kiosk aplikacije pokrenute automatski bez odgode upotrebljava se kao prefiks verzije koji će se ciljati prilikom automatskog ažuriranja.
-
-      Ako se to pravilo ne konfigurira ili se postavi na False, ključ manifesta potrebne verzije platforme zanemaruje se i automatsko ažuriranje izvodi se na uobičajen način.</translation>
 <translation id="7417972229667085380">Postotak za skaliranje odgode u stanju mirovanja u načinu prezentacije (obustavljeno)</translation>
 <translation id="7421483919690710988">Postavite veličinu predmemorije medijskog diska u bajtovima</translation>
 <translation id="7424751532654212117">Popis iznimki popisa onemogućenih dodataka</translation>

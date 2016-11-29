@@ -140,7 +140,6 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="238909021488141516">Se produjo un error al descargar el contenido.</translation>
 <translation id="2414886740292270097">Oscuro</translation>
 <translation id="2433507940547922241">Diseño</translation>
-<translation id="2439248520967274840">Estás accediendo a <ph name="TO_ACCOUNT" />. Algunos de los marcadores, el historial, las contraseñas y otras opciones de configuración existentes se sincronizaron previamente con <ph name="FROM_ACCOUNT" />. ¿Qué deseas hacer con tus datos existentes?</translation>
 <translation id="2440823041667407902">Acceso a la ubicación</translation>
 <translation id="2476578072172137802">Configuración del sitio</translation>
 <translation id="2482878487686419369">Notificaciones</translation>
@@ -188,7 +187,6 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="2996291259634659425">Crear frase de contraseña</translation>
 <translation id="2996809686854298943">URL obligatoria</translation>
 <translation id="300526633675317032">Esta acción borrará todos los <ph name="SIZE_IN_KB" /> del almacenamiento del sitio web.</translation>
-<translation id="3012408695656332380">Reemplaza los datos de este dispositivo con los de <ph name="TO_ACCOUNT" />. Para recuperar tus datos existentes, cambia de nuevo a <ph name="FROM_ACCOUNT" />. Ten en cuenta que se perderán los datos creados desde que saliste.</translation>
 <translation id="3029704984691124060">Las frases de contraseña no coinciden.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obtener ayuda<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Abrir en pestaña de incógnito</translation>
@@ -215,7 +213,6 @@ Puedes controlar la Web física desde la configuración de Chrome.
 <translation id="3320021301628644560">Agregar dirección de facturación</translation>
 <translation id="3328801116991980348">Información del sitio</translation>
 <translation id="3350687908700087792">Cerrar todas las pestañas de incógnito</translation>
-<translation id="3351441609270267898">Importar datos existentes</translation>
 <translation id="3365671512111106261">No está disponible cuando la función Reducir datos está activada</translation>
 <translation id="3367813778245106622">Volver a acceder para iniciar la sincronización</translation>
 <translation id="3384347053049321195">Compartir imagen</translation>
@@ -426,7 +423,6 @@ Para ajustar el término de búsqueda, mantén presionado el texto y seleccióna
 <translation id="5676636989614905379">No se puede reproducir el video en <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloqueado</translation>
 <translation id="5684874026226664614">No se puede traducir esta página.</translation>
-<translation id="5708031556037168012">Mantiene los datos existentes en tu dispositivo y los importa de forma permanente a <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Una vez que cierres todas las pestañas de incógnito, los datos de las páginas que hayas visitado en ese modo no se guardarán en el historial del navegador, en la lista de cookies ni en el historial de búsquedas. Sí se guardarán los archivos que descargues y los marcadores que crees.
 
 Sin embargo, no vas a pasar completamente desapercibido. El modo de navegación de incógnito no oculta tu información de navegación de un empleador, del proveedor de servicios de Internet ni de los sitios web que visitas.</translation>
@@ -563,7 +559,6 @@ Por ejemplo, algunos sitios web pueden responder a la solicitud mediante anuncio
 <translation id="7062545763355031412">Aceptar y cambiar de cuenta</translation>
 <translation id="7063006564040364415">No se pudo establecer conexión con el servidor de sincronización.</translation>
 <translation id="7064851114919012435">Información de contacto</translation>
-<translation id="7081639897063626814">Mantener los datos existentes por separado</translation>
 <translation id="7094922512924405309">No se encontró ninguna página web física cercana</translation>
 <translation id="7138678301420049075">Otros</translation>
 <translation id="7180611975245234373">Actualizar</translation>
@@ -736,12 +731,10 @@ Conéctate a Internet y reproduce el contenido descargado para obtener licencias
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostrar original</translation>
 <translation id="9139068048179869749">Preguntar antes de permitir que los sitios envíen notificaciones (recomendado)</translation>
-<translation id="9141510419986760385">Estás cambiando la cuenta de sincronización de <ph name="FROM_ACCOUNT" /> a <ph name="TO_ACCOUNT" />. ¿Qué deseas hacer con los marcadores, el historial, las contraseñas y otras opciones de configuración existentes?</translation>
 <translation id="9154194610265714752">Actualizado</translation>
 <translation id="917685106653909562">Páginas web físicas cercanas</translation>
 <translation id="9187199695613236444">Vista optimizada para celulares</translation>
 <translation id="9188680907066685419">Salir de la cuenta administrada</translation>
-<translation id="9198708126133947749">Reemplaza los datos de este dispositivo con los datos de <ph name="TO_ACCOUNT" />. Puedes recuperar tus datos existentes al volver a <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imágenes</translation>
 <translation id="932327136139879170">Página principal</translation>

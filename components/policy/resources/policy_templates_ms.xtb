@@ -827,9 +827,6 @@ chrome.enterprise.platformKeys.challengeUserKey().
 <translation id="3322771899429619102">Membenarkan anda menetapkan senarai pola url yang menentukan tapak yang dibenarkan untuk menggunakan penghasilan kunci. Pengecualian akan dibatalkan jika pola url berada dalam 'KeygenBlockedForUrls'.
 
           Jika dasar ini dibiarkan tanpa ditetapkan, nilai lalai global akan digunakan untuk semua tapak, sama ada daripada dasar 'DefaultKeygenSetting' jika ditetapkan atau konfigurasi peribadi pengguna jika tidak ditetapkan.</translation>
-<translation id="3322902067538988734">Jika dasar ini ditetapkan kepada benar, pengguna perlu mengelog masuk ke <ph name="PRODUCT_NAME" /> menggunakan profilnya sebelum menggunakan penyemak imbas. Selain itu, nilai lalai BrowserGuestModeEnabled akan ditetapkan kepada palsu.
-
-      Jika dasar ini ditetapkan kepada palsu atau tidak dikonfigurasikan, pengguna boleh menggunakan penyemak imbas tanpa perlu mengelog masuk ke <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Menetapkan kekerapan pengguna perlu memasukkan kata laluan untuk menggunakan buka kunci pantas.</translation>
 <translation id="3381968327636295719">Gunakan penyemak imbas hos secara lalai</translation>
 <translation id="3417418267404583991">Jika dasar ini ditetapkan kepada benar atau tidak dikonfigurasi, <ph name="PRODUCT_OS_NAME" /> akan mendayakan log masuk tetamu. Log masuk tetamu adalah sesi pengguna tanpa nama dan tidak memerlukan kata laluan.
@@ -1692,7 +1689,7 @@ chrome.enterprise.platformKeys.challengeUserKey().
 <translation id="6157537876488211233">Senarai diasingkan koma bagi peraturan memintas proksi</translation>
 <translation id="6158324314836466367">Nama kedai web perusahaan (tidak akan digunakan lagi)</translation>
 <translation id="6166832345529129545">Mengawal mod buka kunci pantas yang dibenarkan untuk disediakan dan digunakan.
-      Senarai ini menyenaraiputihkan mod buka kunci pantas yang dibenarkan yang boleh disediakan dan digunakan untuk membuka kunci skrin kunci. Nilainya ialah satu senarai rentetan, setiap satunya hendaklah terdiri daripada satu nilai berikut: "semua", "PIN". Jika "semua" dipilih, maka semua mod pantas yang disokong akan tersedia, jika tidak, mod yang di dalam senarai yang akan tersedia.
+      Tetapan ini menyenaraiputihkan mod buka kunci pantas yang dibenarkan yang boleh disediakan dan digunakan untuk membuka kunci skrin kunci. Nilainya ialah satu senarai rentetan, setiap satunya hendaklah terdiri daripada satu nilai berikut: "semua", "PIN". Jika "semua" dipilih, maka semua mod pantas yang disokong akan tersedia, jika tidak, mod yang di dalam senarai yang akan tersedia.
 
       Jika tetapan ini dikonfigurasikan, mod buka kunci pantas yang mempunyai jenis yang tidak terdapat dalam senarai ini tidak boleh disediakan atau digunakan.
 
@@ -1704,14 +1701,6 @@ chrome.enterprise.platformKeys.challengeUserKey().
       Jika tidak, produk mungkin ditetapkan kepada salah satu nilai berikut: "sslv3", "tls1", "tls1.1" atau "tls1.2". Apabila ditetapkan, <ph name="PRODUCT_NAME" /> tidak akan menggunakan versi SSL/TLS yang lebih rendah daripada versi yang dinyatakan. Nilai yang tidak dikenali akan diabaikan.
 
       Ambil perhatian bahawa, "sslv3" ialah versi yang lebih awal daripada "tls1" walaupun nombornya tidak menggambarkan begitu.</translation>
-<translation id="6177482277304066047">Menetapkan versi sasaran untuk Kemas Kini Automatik.
-
-      Menentukan awalan versi sasaran untuk mengemas kini <ph name="PRODUCT_OS_NAME" />. Jika peranti menjalankan versi sebelum awalan yang ditentukan, peranti akan mengemas kini kepada versi terkini dengan awalan yang dinyatakan. Jika peranti telah pun memasang versi yang lebih baharu, tiada apa-apa akan terjejas. (iaitu tiada turun taraf akan dilakukan) dan peranti akan kekal pada versi semasa. Format awalan berfungi dari segi komponen seperti yang ditunjukkan dalam contoh berikut:
-
-      "" (atau tidak dikonfigurasi): kemas kini kepada versi terkini tersedia.
-      "1412.": kemas kini kepada mana-mana versi kecil 1412 (cth. 1412.24.34 atau 1412.60.2)
-      "1412.2.": kemas kini kepada mana-mana versi kecil 1412.2 (cth. 1412.2.34 atau 1412.2.2)
-      "1412.24.34": kemas kini kepada versi khusus ini sahaja</translation>
 <translation id="6190022522129724693">Tetapan pop muncul lalai</translation>
 <translation id="6197453924249895891">Memberi akses kepada kunci korporat untuk sambungan.
 
@@ -1751,9 +1740,6 @@ chrome.enterprise.platformKeys.challengeUserKey().
 <translation id="6367755442345892511">Sama ada saluran pelepasan harus boleh dikonfigurasikan oleh pengguna</translation>
 <translation id="6368011194414932347">Konfigurasi URL halaman utama</translation>
 <translation id="6368403635025849609">Benarkan JavaScript pada tapak ini</translation>
-<translation id="6373222873250380826">Melumpuhkan kemas kini automatik apabila ditetapkan kepada Benar.
-
-      Peranti <ph name="PRODUCT_OS_NAME" /> menyemak kemas kini secara automatik apabila tetapan ini tidak dikonfigurasi atau ditetapkan kepada Palsu.</translation>
 <translation id="6376659517206731212">Boleh Jadi Mandatori</translation>
 <translation id="6378076389057087301">Menyatakan sama ada aktiviti audio menjejaskan pengurusan kuasa</translation>
 <translation id="637934607141010488">Laporkan senarai pengguna peranti yang telah log masuk baru-baru ini.
@@ -2115,13 +2101,6 @@ Jika dasar ini dibiarkan tidak ditetapkan, papan kekunci pada skrin dilumpuhkan 
 <translation id="7336878834592315572">Simpan kuki sepanjang tempoh sesi</translation>
 <translation id="7340034977315324840">Laporkan masa aktiviti peranti</translation>
 <translation id="7384999953864505698">Membenarkan protokol QUIC</translation>
-<translation id="7406651467768226499">Sama ada hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" />.
-
-      Dasar ini mengawal sama anda hendak membenarkan apl kios kelewatan sifar yang dilancarkan secara automatik untuk mengawal versi <ph name="PRODUCT_OS_NAME" /> dengan mengisytiharkan required_platform_version dalam manifesnya dan menggunakannya sebagai awalan versi sasaran kemas kini automatik.
-
-      Jika dasar ini ditetapkan kepada benar, nilai kunci manifes required_platform_version apl kios kelewatan sifar yang dilancarkan secara automatik digunakan sebagai awalan versi sasaran kemas kini automatik.
-
-      Jika dasar ini tidak dikonfigurasi atau ditetapkan sebagai palsu, kunci manifes required_platform_version diabaikan dan kemas kini automatik diteruskan seperti biasa.</translation>
 <translation id="7417972229667085380">Peratusan yang digunakan untuk skala kelewatan melahu dalam mod penyampaian (tidak akan digunakan lagi)</translation>
 <translation id="7421483919690710988">Tetapkan saiz cache cakera media dalam bait</translation>
 <translation id="7424751532654212117">Senarai pengecualian kepada senarai pemalam dilumpuhkan</translation>

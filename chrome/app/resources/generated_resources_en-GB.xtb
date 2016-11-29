@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Searching for Bluetooth and USB devices...</translation>
 <translation id="1056898198331236512">Warning</translation>
 <translation id="1056982457359827501">Enables BLE Advertising in Chrome Apps. BLE Advertising might interfere with regular use of Bluetooth Low Energy features.</translation>
-<translation id="1058325955712687476">Enables the Site Engagement Service, which records interaction with sites and allocates resources accordingly.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> of <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Replace</translation>
 <translation id="1062866675591297858">Manage your supervised users via the <ph name="BEGIN_LINK" />Supervised Users Dashboard<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importing <ph name="FILE_COUNT" /> files...</translation>
 <translation id="1352103415082130575">Thai keyboard (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Material Design storage manager</translation>
 <translation id="1353966721814789986">Startup pages:</translation>
 <translation id="1354868058853714482">Adobe Reader is out of date and may be insecure.</translation>
 <translation id="1355408554203439639">3D software rasteriser</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Identity API Token Cache</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Details: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Pointer event v1 spec capturing</translation>
 <translation id="1480041086352807611">Demo mode</translation>
 <translation id="1481244281142949601">You are adequately sandboxed.</translation>
 <translation id="1482124012545051544">Ready to backup <ph name="FILE_COUNT" /> new photos</translation>
@@ -887,7 +884,6 @@
 <translation id="2177950615300672361">Incognito Tab: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA Compromise</translation>
 <translation id="218070003709087997">Use a number to indicate how many copies to print (1 to 999).</translation>
-<translation id="218492098606937156">Enable touch events</translation>
 <translation id="2187317261103489799">Detect (default)</translation>
 <translation id="2187895286714876935">Server Certificate Import Error</translation>
 <translation id="2188881192257509750">Open <ph name="APPLICATION" /></translation>
@@ -1043,7 +1039,6 @@ After you create a new supervised user, you can manage their settings at any tim
 <translation id="2367972762794486313">Show apps</translation>
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="2372036074421194686">Chrome found an unwanted program (<ph name="UWS_NAME" />) installed on your computer. You may be able to remove it by running the Chrome Clean-Up Tool.</translation>
-<translation id="2375701438512326360">Force touchscreen support to always be enabled or disabled, or to be enabled when a touchscreen is detected on startup (Automatic, the default).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> files selected</translation>
 <translation id="2378982052244864789">Select the extension directory.</translation>
 <translation id="2379281330731083556">Print using system dialogue... <ph name="SHORTCUT_KEY" /></translation>
@@ -2086,7 +2081,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Selected radio button</translation>
 <translation id="3649138363871392317">Photo was captured</translation>
 <translation id="3650242103421962931">Linear</translation>
-<translation id="3653069516296104653">Disables implicit capturing of touch pointer events.</translation>
 <translation id="3653999333232393305">Continue allowing <ph name="HOST" /> to access your microphone</translation>
 <translation id="3654045516529121250">Read your accessibility settings</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{It has permanent access to one file.}other{It has permanent access to # files.}}</translation>
@@ -2129,7 +2123,6 @@ From <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">The browser was shut down before the download completed.</translation>
 <translation id="3711895659073496551">Suspend</translation>
 <translation id="3712897371525859903">Save page &amp;as...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Automatically send<ph name="END_WHITEPAPER_LINK" /> some system information and page content to Google to help detect dangerous apps and sites. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">web calendar</translation>
 <translation id="3715597595485130451">Connect to Wi-Fi</translation>
 <translation id="3716615839203649375">allow</translation>
@@ -2478,13 +2471,11 @@ All users must sign out to continue.</translation>
 <translation id="418179967336296930">Russian Phonetic (YaZHert) keyboard</translation>
 <translation id="4181841719683918333">Languages</translation>
 <translation id="4184885522552335684">Drag to move a display</translation>
-<translation id="4188447344915957833">Enables storage manager in Material Design Settings.</translation>
 <translation id="4189406272289638749">An extension, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, is controlling this setting.</translation>
 <translation id="4193154014135846272">Google document</translation>
 <translation id="4193182321948161343">Enable Material Design User Manager</translation>
 <translation id="4193297030838143153">New billing address...</translation>
 <translation id="4194570336751258953">Enable tap-to-click</translation>
-<translation id="4195621107636847694">Site Engagement Service</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="4195814663415092787">Continue where you left off</translation>
 <translation id="4197674956721858839">Zip selection</translation>

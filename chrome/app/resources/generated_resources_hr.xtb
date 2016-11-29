@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Pretraživanje Bluetooth i USB uređaja...</translation>
 <translation id="1056898198331236512">Upozorenje</translation>
 <translation id="1056982457359827501">Omogućuje BLE oglašavanje u Chromeovim aplikacijama. BLE oglašavanje može ometati redovitu upotrebu značajki Bluetooth Low Energy.</translation>
-<translation id="1058325955712687476">Omogućuje uslugu angažmana na web-lokaciji koja bilježi interakciju s web-lokacijama i dodjeljuje resurse u skladu s njome.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> od <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Zamijeni</translation>
 <translation id="1062866675591297858">Upravljajte svojim nadziranim korisnicima putem <ph name="BEGIN_LINK" />nadzorne ploče nadziranih korisnika<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Uvoz datoteka (<ph name="FILE_COUNT" />)...</translation>
 <translation id="1352103415082130575">tajska tipkovnica (pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Upravitelj pohrane materijalnog dizajna</translation>
 <translation id="1353966721814789986">Početne stranice</translation>
 <translation id="1354868058853714482">Adobe Reader je zastario i može biti nesiguran.</translation>
 <translation id="1355408554203439639">3D softverski rasterizator</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Predmemoriranje oznake API-ja Identity</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Pojedinosti: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Snimanje specifikacija događaja pokazivača v1</translation>
 <translation id="1480041086352807611">Demonstracijski način</translation>
 <translation id="1481244281142949601">Nalazite se u primjerenoj sigurnosnoj okolini.</translation>
 <translation id="1482124012545051544">Spremno za izradu sigurnosnih kopija novih fotografija (ukupno <ph name="FILE_COUNT" />)</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">Anonimna kartica: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA kompromis</translation>
 <translation id="218070003709087997">Upotrijebite broj kako biste odredili broj primjeraka za ispis (od 1 do 999).</translation>
-<translation id="218492098606937156">Omogući događaje dodira</translation>
 <translation id="2187317261103489799">Otkrij (zadano)</translation>
 <translation id="2187895286714876935">Pogreška pri uvozu Certifikata poslužitelja</translation>
 <translation id="2188881192257509750">Otvori aplikaciju <ph name="APPLICATION" /></translation>
@@ -1041,7 +1037,6 @@ Nakon izrade novog nadziranog korisnika možete upravljati njegovim postavkama u
 <translation id="2367972762794486313">Prikaz aplikacija</translation>
 <translation id="2371076942591664043">Otvori nakon &amp;dovršetka</translation>
 <translation id="2372036074421194686">Chrome je pronašao neželjeni program na računalu (<ph name="UWS_NAME" />). Možda ćete ga moći ukloniti Chromeovim alatom za čišćenje.</translation>
-<translation id="2375701438512326360">Prisilno trajno omogućite ili onemogućite podršku za dodirni zaslon ili je omogućite kada je pri pokretanju otkriven dodirni zaslon (automatski, zadano).</translation>
 <translation id="2378075407703503998">Odabrane datoteke: <ph name="SELCTED_FILE_COUNT" /></translation>
 <translation id="2378982052244864789">Odaberi direktorij proširenja.</translation>
 <translation id="2379281330731083556">Ispis pomoću dijaloškog okvira sustava... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Označeni izborni gumb</translation>
 <translation id="3649138363871392317">Fotografija je snimljena</translation>
 <translation id="3650242103421962931">Linearno</translation>
-<translation id="3653069516296104653">Onemogućuje implicitno snimanje događaja dodirnog pokazivača.</translation>
 <translation id="3653999333232393305">Nastavi dopuštati hostu <ph name="HOST" /> pristup mikrofonu</translation>
 <translation id="3654045516529121250">čitati postavke pristupačnosti</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ima trajni pristup jednoj datoteci.}one{Ima trajni pristup # datoteci.}few{Ima trajni pristup do # datoteke.}other{Ima trajni pristup do # datoteka.}}</translation>
@@ -2128,7 +2122,6 @@ s <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Preglednik se isključio prije nego što je preuzimanje dovršeno.</translation>
 <translation id="3711895659073496551">Obustavi</translation>
 <translation id="3712897371525859903">Spremi stranicu &amp;kao...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Automatski šalji<ph name="END_WHITEPAPER_LINK" /> Googleu neke podatke o sustavu i sadržaj stranice radi otkrivanja opasnih aplikacija i web-lokacija. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">web-kalendar</translation>
 <translation id="3715597595485130451">Povezivanje s Wi-Fi mrežom</translation>
 <translation id="3716615839203649375">dopusti</translation>
@@ -2477,13 +2470,11 @@ Svi se korisnici moraju prijaviti za nastavak.</translation>
 <translation id="418179967336296930">Ruska fonetska (YaZHert) tipkovnica</translation>
 <translation id="4181841719683918333">Jezici</translation>
 <translation id="4184885522552335684">Povucite da biste premjestili zaslon</translation>
-<translation id="4188447344915957833">Omogućuje upravitelj pohrane u postavkama materijalnog dizajna.</translation>
 <translation id="4189406272289638749">Proširenje &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; upravlja ovom postavkom.</translation>
 <translation id="4193154014135846272">Googleov dokument</translation>
 <translation id="4193182321948161343">Omogući upravitelja korisnika Materijalnog dizajna</translation>
 <translation id="4193297030838143153">Nova adresa za naplatu...</translation>
 <translation id="4194570336751258953">Omogući dodir umjesto klika</translation>
-<translation id="4195621107636847694">Usluga angažmana na web-lokaciji</translation>
 <translation id="4195643157523330669">Otvori u novoj kartici</translation>
 <translation id="4195814663415092787">Nastavite tamo gdje ste stali</translation>
 <translation id="4197674956721858839">Komprimiraj odabrano</translation>

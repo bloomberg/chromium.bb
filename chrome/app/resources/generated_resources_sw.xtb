@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Inatafuta vifaa vya Bluetooth na USB...</translation>
 <translation id="1056898198331236512">Ilani</translation>
 <translation id="1056982457359827501">Huwasha Matangazo ya BLE katika Programu za Chrome. Matangazo ya BLE yanaweza kuingilia matumizi ya kila mara ya vipengele vya Bluetooth ya Nishati Ndogo.</translation>
-<translation id="1058325955712687476">Huwasha Huduma za Uwasilianifu wa Tovuti, ambazo hurekodi mawasiliano miongoni mwa tovuti na kugawa rasilimali ifaavyo.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> ya <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Badilisha</translation>
 <translation id="1062866675591297858">Dhibiti watumiaji wako wanaosimamiwa kupitia <ph name="BEGIN_LINK" />Dashibodi ya Watumiaji Wanaosimamiwa<ph name="END_LINK" /> .</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Inaleta faili <ph name="FILE_COUNT" />...</translation>
 <translation id="1352103415082130575">Kibodi ya Kithai (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Kidhibiti cha hifadhi ya Usanifu Bora</translation>
 <translation id="1353966721814789986">Kurasa za kuanza</translation>
 <translation id="1354868058853714482">Toleo hili la Adobe Reader halitumiki tena na huenda si salama.</translation>
 <translation id="1355408554203439639">Kiweka safu za picha cha programu ya 3D</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">Akiba ya Kitambulisho cha Tokeni ya API</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Maelezo: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Kupiga picha vipengele vya v1 vya tukio la kielekezi</translation>
 <translation id="1480041086352807611">Modi ya kuonyesha</translation>
 <translation id="1481244281142949601">Una sandbox ya kutosha.</translation>
 <translation id="1482124012545051544">Tayari kuweka hifadhi rudufu ya picha <ph name="FILE_COUNT" /> mpya</translation>
@@ -884,7 +881,6 @@ Imebakisha <ph name="HOUR" />:<ph name="MINUTE" /> ijae</translation>
 <translation id="2177950615300672361">Kichupo Fiche: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Kuvurugwa kwa Mamlaka ya Cheti</translation>
 <translation id="218070003709087997">Tumia nambari kuonyesha idadi ya nakala za kuchapa (1 hadi 999).</translation>
-<translation id="218492098606937156">Wezesha matukio ya mguso</translation>
 <translation id="2187317261103489799">Gundua (chaguo-msingi)</translation>
 <translation id="2187895286714876935">Hitilafu ya Kuleta Cheti cha Seva</translation>
 <translation id="2188881192257509750">Fungua <ph name="APPLICATION" /></translation>
@@ -1040,7 +1036,6 @@ Baada ya kuunda mtumiaji mpya anayesimamiwa, unaweza kudhibiti mipangilio yake w
 <translation id="2367972762794486313">Onyesha programu</translation>
 <translation id="2371076942591664043">Fungua baada ya &amp;kumaliza</translation>
 <translation id="2372036074421194686">Chrome imepata programu (<ph name="UWS_NAME" />) ambayo haitakikani ikiwa imesakinishwa kwenye kompyuta yako. Unaweza kuiondoa kwa kutekeleza Zana ya Kusafisha Chrome.</translation>
-<translation id="2375701438512326360">Lazimisha msaada wa skrini ya kugusa ili kuwasha au kuzima wakati wote, au kuwashwa wakati skrini ya kugusa inapogunduliwa wakati wa kuanza (Kiotomatiki, chaguo-msingi).</translation>
 <translation id="2378075407703503998">Faili <ph name="SELCTED_FILE_COUNT" /> zimezochaguliwa</translation>
 <translation id="2378982052244864789">Chagua saraka ya kiendelezi.</translation>
 <translation id="2379281330731083556">Chapisha kwa kutumia kidadisi cha mfumo... <ph name="SHORTCUT_KEY" /></translation>
@@ -2080,7 +2075,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Kitufe cha mviringo kilichochaguliwa</translation>
 <translation id="3649138363871392317">Picha ilipigwa</translation>
 <translation id="3650242103421962931">Upau kistari wa mendeleo</translation>
-<translation id="3653069516296104653">Huzima kipengele cha kupiga picha iliyodokezwa ya matukio ya kielekezi cha kugusa.</translation>
 <translation id="3653999333232393305">Endelea kuruhusu <ph name="HOST" /> kufikia maikrofoni yako</translation>
 <translation id="3654045516529121250">Soma mipangilio yako ya ufikiaji</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Ina idhini ya ufikiaji wa kudumu wa faili moja.}other{Ina idhini ya ufikiaji wa kudumu wa faili #.}}</translation>
@@ -2123,7 +2117,6 @@ Kutoka <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Kivinjari kimezimika kabla upakuaji kukamilika.</translation>
 <translation id="3711895659073496551">Sitisha</translation>
 <translation id="3712897371525859903">Hifadhi ukurasa k&amp;ama...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Tuma kiotomatiki<ph name="END_WHITEPAPER_LINK" /> baadhi ya maelezo ya mfumo na maudhui ya ukurasa kwa Google ili kusaidia kugundua programu na tovuti hatari. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">kalenda ya wavuti</translation>
 <translation id="3715597595485130451">Unganisha kwenye Wi-Fi</translation>
 <translation id="3716615839203649375">ruhusu</translation>
@@ -2469,13 +2462,11 @@ Ungependa kuanza <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="418179967336296930">Kibodi ya Fonetiki (YaZHert) ya Kirusi</translation>
 <translation id="4181841719683918333">Lugha</translation>
 <translation id="4184885522552335684">Buruta ili usogeze onyesho</translation>
-<translation id="4188447344915957833">Huwasha kidhibiti cha hifadhi katika Mipangilio ya Usanifu Bora.</translation>
 <translation id="4189406272289638749">Kiendelezi, &lt;b&gt; <ph name="EXTENSION_NAME" /> &lt;/ b&gt;, kinadhibiti mpangilio huu.</translation>
 <translation id="4193154014135846272">Hati za Google</translation>
 <translation id="4193182321948161343">Washa Kidhibiti cha Mtumiaji wa Usanifu Bora</translation>
 <translation id="4193297030838143153">Anwani mpya ya kutozwa...</translation>
 <translation id="4194570336751258953">Wezesha gonga-kubofya</translation>
-<translation id="4195621107636847694">Huduma za Uwasilianifu wa Tovuti</translation>
 <translation id="4195643157523330669">Fungua katika kichupo kipya</translation>
 <translation id="4195814663415092787">Endelea kutoka mahali ulipoachia</translation>
 <translation id="4197674956721858839">Punguza uchaguzi</translation>

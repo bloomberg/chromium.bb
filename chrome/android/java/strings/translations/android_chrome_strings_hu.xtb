@@ -140,7 +140,6 @@ A Fizikai webet a Chrome-beállításokban szabályozhatja.
 <translation id="238909021488141516">Hiba történt a tartalom letöltésekor.</translation>
 <translation id="2414886740292270097">Sötét</translation>
 <translation id="2433507940547922241">Megjelenés</translation>
-<translation id="2439248520967274840">Ön most bejelentkezik a(z) <ph name="TO_ACCOUNT" /> fiókba. Egyes meglévő könyvjelzők, előzmények, jelszók és más beállítások korábban a(z) <ph name="FROM_ACCOUNT" /> fiókkal voltak szinkronizálva. Mit szeretne tenni a meglévő adataival?</translation>
 <translation id="2440823041667407902">Helyhozzáférés</translation>
 <translation id="2476578072172137802">Webhelybeállítások</translation>
 <translation id="2482878487686419369">Értesítések</translation>
@@ -188,7 +187,6 @@ A Fizikai webet a Chrome-beállításokban szabályozhatja.
 <translation id="2996291259634659425">Összetett jelszó létrehozása</translation>
 <translation id="2996809686854298943">URL szükséges</translation>
 <translation id="300526633675317032">Ezzel törli a webhely teljes tárhelyét: <ph name="SIZE_IN_KB" />.</translation>
-<translation id="3012408695656332380">Lecseréli az eszköz adatait a(z) <ph name="TO_ACCOUNT" /> fiók adataira. Lekérheti a meglévő adatait, ha visszavált a(z) <ph name="FROM_ACCOUNT" /> fiókra, de a kijelentkezés óta keletkezett adatok elvesznek.</translation>
 <translation id="3029704984691124060">Az összetett jelszavak nem egyeznek</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Kérjen segítséget<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Megnyitás inkognitólapon</translation>
@@ -215,7 +213,6 @@ A Fizikai webet a Chrome-beállításokban szabályozhatja.
 <translation id="3320021301628644560">Számlázási cím hozzáadása</translation>
 <translation id="3328801116991980348">Webhelyadatok</translation>
 <translation id="3350687908700087792">Az összes inkognitólap bezárása</translation>
-<translation id="3351441609270267898">Meglévő adatok importálása</translation>
 <translation id="3365671512111106261">Nem áll rendelkezésre, ha az Adatforgalom-csökkentő be van kapcsolva</translation>
 <translation id="3367813778245106622">A szinkronizálás megkezdéséhez jelentkezzen be újra</translation>
 <translation id="3384347053049321195">Kép megosztása</translation>
@@ -426,7 +423,6 @@ A keresési kifejezés módosításához hosszú nyomva tartással hajthat végr
 <translation id="5676636989614905379">A videó nem játszható le a következőn: <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Letiltva</translation>
 <translation id="5684874026226664614">Hoppá! Az oldalt nem sikerült lefordítani.</translation>
-<translation id="5708031556037168012">A meglévő adatok megtartása az eszközén, és az adatok végleges importálása a(z) <ph name="TO_ACCOUNT" /> fiókba.</translation>
 <translation id="5719837394786370183">Az inkognitólapokon megtekintett oldalak nem maradnak meg a böngészési előzményekben, a cookie-k tárolójában vagy a keresési előzményekben, miután bezárta az összes inkognitólapot. A letöltött fájlok és a létrehozott könyvjelzők azonban megmaradnak.
 
 Mindazonáltal Ön nem lesz láthatatlan. Az inkognitómód használatával nem rejtheti el böngészési tevékenységét munkaadója, internetszolgáltatója vagy a felkeresett webhelyek elől.</translation>
@@ -563,7 +559,6 @@ Egyes webhelyek például válaszolhatnak rá úgy, hogy olyan hirdetéseket jel
 <translation id="7062545763355031412">Elfogadás és fiókváltás</translation>
 <translation id="7063006564040364415">Nem sikerült csatlakozni a szinkronizálószerverhez.</translation>
 <translation id="7064851114919012435">Kapcsolatfelvételi adatok</translation>
-<translation id="7081639897063626814">A meglévő adatok elkülönített tárolása</translation>
 <translation id="7094922512924405309">A Fizikai web nem talált oldalakat a közelben</translation>
 <translation id="7138678301420049075">Egyéb</translation>
 <translation id="7180611975245234373">Frissítés</translation>
@@ -736,12 +731,10 @@ Az új engedélyek beszerzéséhez kapcsolódjon az internethez, és játssza le
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Eredeti megjelenítése</translation>
 <translation id="9139068048179869749">Kérdezzen rá, mielőtt engedélyezné a webhelyek számára az értesítések küldését (ajánlott)</translation>
-<translation id="9141510419986760385">A(z) <ph name="FROM_ACCOUNT" /> szinkronizált fiókról a következőre vált át: <ph name="TO_ACCOUNT" />. Mit kíván tenni a meglévő könyvjelzőkkel, előzményekkel, jelszavakkal és egyéb beállításokkal?</translation>
 <translation id="9154194610265714752">Frissítve</translation>
 <translation id="917685106653909562">Fizikai web közeli oldalai</translation>
 <translation id="9187199695613236444">Mobilbarát nézet</translation>
 <translation id="9188680907066685419">Kijelentkezés felügyelt fiókból</translation>
-<translation id="9198708126133947749">Lecseréli az eszköz adatait a(z) <ph name="TO_ACCOUNT" /> fiók adataira. Meglévő adatainak lekéréséhez váltson vissza a(z) <ph name="FROM_ACCOUNT" /> fiókra.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Képek</translation>
 <translation id="932327136139879170">Főoldal</translation>

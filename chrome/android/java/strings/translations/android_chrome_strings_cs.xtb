@@ -140,7 +140,6 @@ Fyzický web můžete ovládat v nastavení Chromu.
 <translation id="238909021488141516">Při stahování obsahu došlo k chybě.</translation>
 <translation id="2414886740292270097">Tmavé</translation>
 <translation id="2433507940547922241">Vzhled</translation>
-<translation id="2439248520967274840">Přihlašujete se k účtu <ph name="TO_ACCOUNT" />. Některé z vašich existujících záložek, historie, hesel a dalších nastavení byla dříve synchronizována do účtu <ph name="FROM_ACCOUNT" />. Co se svými stávajícími daty chcete provést?</translation>
 <translation id="2440823041667407902">Přístup k poloze</translation>
 <translation id="2476578072172137802">Nastavení webu</translation>
 <translation id="2482878487686419369">Oznámení</translation>
@@ -188,7 +187,6 @@ Fyzický web můžete ovládat v nastavení Chromu.
 <translation id="2996291259634659425">Vytvoření heslové fráze</translation>
 <translation id="2996809686854298943">Je požadována adresa URL</translation>
 <translation id="300526633675317032">Tímto vymažete celé úložiště webů (<ph name="SIZE_IN_KB" />).</translation>
-<translation id="3012408695656332380">Nahradit data tohoto zařízení daty účtu <ph name="TO_ACCOUNT" />. Svá existující data můžete načíst přepnutím zpět na účet <ph name="FROM_ACCOUNT" />. Data, která byla vytvořena poté, co jste se odhlásili, však budou ztracena.</translation>
 <translation id="3029704984691124060">Heslové fráze se neshodují</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Zobrazit nápovědu<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Otevřít na anonymní kartě</translation>
@@ -215,7 +213,6 @@ Fyzický web můžete ovládat v nastavení Chromu.
 <translation id="3320021301628644560">Přidání fakturační adresy</translation>
 <translation id="3328801116991980348">Informace o stránkách</translation>
 <translation id="3350687908700087792">Zavřít všechny anonymní karty</translation>
-<translation id="3351441609270267898">Import existujících dat</translation>
 <translation id="3365671512111106261">Není k dispozici, když je zapnut Spořič dat</translation>
 <translation id="3367813778245106622">Chcete-li zahájit synchronizaci, znovu se přihlaste.</translation>
 <translation id="3384347053049321195">Sdílet obrázek</translation>
@@ -426,7 +423,6 @@ Chcete-li vyhledávací dotaz upravit, proveďte výběr dlouhým stisknutím. C
 <translation id="5676636989614905379">Na obrazovce <ph name="SCREEN_NAME" /> nelze přehrát video.</translation>
 <translation id="5677928146339483299">Zablokováno</translation>
 <translation id="5684874026226664614">Jejda. Tuto stránku se nepodařilo přeložit.</translation>
-<translation id="5708031556037168012">Uchovat existující data v zařízení a trvale je importovat do účtu <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Stránky, které otevřete na anonymních kartách, po zavření všech anonymních karet nezanechají žádné stopy v historii prohlížeče, v úložišti souborů cookie ani v historii vyhledávání. Všechny stažené soubory a vytvořené záložky však zůstanou zachovány.
 
 Nejste však neviditelní. Anonymní režim neskryje vaši aktivitu před zaměstnavatelem, poskytovatelem internetových služeb ani webovými stránkami, které navštívíte.</translation>
@@ -546,7 +542,7 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="6963766334940102469">Smazat záložky</translation>
 <translation id="6965382102122355670">OK</translation>
 <translation id="6973630695168034713">Složky</translation>
-<translation id="6978479750597523876">Resetování nastavení překladů</translation>
+<translation id="6978479750597523876">Obnovit nastavení překladače</translation>
 <translation id="6981982820502123353">Usnadnění</translation>
 <translation id="6985347914332179298">Nejsou k dispozici žádné stažené soubory</translation>
 <translation id="6990079615885386641">Získat aplikaci z Obchodu Google Play: <ph name="APP_ACTION" /></translation>
@@ -563,7 +559,6 @@ Některé weby mohou například na tento požadavek reagovat tak, že vám zobr
 <translation id="7062545763355031412">Přijmout a přepnout účet</translation>
 <translation id="7063006564040364415">K synchronizačnímu serveru se nelze připojit.</translation>
 <translation id="7064851114919012435">Kontaktní údaje</translation>
-<translation id="7081639897063626814">Uchovat existující data odděleně</translation>
 <translation id="7094922512924405309">V okolí nebyly nalezeny žádné stránky fyzického webu</translation>
 <translation id="7138678301420049075">Ostatní</translation>
 <translation id="7180611975245234373">Obnovit</translation>
@@ -736,12 +731,10 @@ Chcete-li získat nové licence, připojte se k internetu a přehrajte stažen
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Zobrazit originál</translation>
 <translation id="9139068048179869749">Pokud web bude chtít odesílat oznámení, zobrazit dotaz (doporučeno)</translation>
-<translation id="9141510419986760385">Přepínáte účet pro synchronizaci z <ph name="FROM_ACCOUNT" /> na <ph name="TO_ACCOUNT" />. Co chcete provést se svými existujícími záložkami, historií, hesly a dalším nastavením?</translation>
 <translation id="9154194610265714752">Aktualizováno</translation>
 <translation id="917685106653909562">Stránky fyzického webu v okolí</translation>
 <translation id="9187199695613236444">Zobrazení optimalizované pro mobily</translation>
 <translation id="9188680907066685419">Odhlásit se ze spravovaného účtu</translation>
-<translation id="9198708126133947749">Nahradit data tohoto zařízení daty účtu <ph name="TO_ACCOUNT" />. Existující data můžete načíst přepnutím zpět na účet <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Obrázky</translation>
 <translation id="932327136139879170">Domovská stránka</translation>

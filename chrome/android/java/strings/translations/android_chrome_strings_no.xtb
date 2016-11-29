@@ -140,7 +140,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="238909021488141516">Det oppsto en feil under nedlastingen av innholdet.</translation>
 <translation id="2414886740292270097">Mørk</translation>
 <translation id="2433507940547922241">Utseende</translation>
-<translation id="2439248520967274840">Du logger på <ph name="TO_ACCOUNT" />. Noen av de eksisterende bokmerkene, loggoppføringene, passordene og de andre innstillingene dine ble tidligere synkronisert med <ph name="FROM_ACCOUNT" />. Hva vil du gjøre med de eksisterende dataene dine?</translation>
 <translation id="2440823041667407902">Posisjonstilgang</translation>
 <translation id="2476578072172137802">Nettstedsinnstillinger</translation>
 <translation id="2482878487686419369">Varsler</translation>
@@ -188,7 +187,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="2996291259634659425">Opprett en passordfrase</translation>
 <translation id="2996809686854298943">Nettadresse kreves</translation>
 <translation id="300526633675317032">Dette sletter alle dataene (<ph name="SIZE_IN_KB" />) fra nettstedslagringen.</translation>
-<translation id="3012408695656332380">Erstatt dataene på denne enheten med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente ut de eksisterende dataene dine ved å bytte tilbake til <ph name="FROM_ACCOUNT" />, men data som er opprettet etter at du logget av, går tapt.</translation>
 <translation id="3029704984691124060">Passordfrasene stemmer ikke overens</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Få hjelp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Åpne i inkognitofane</translation>
@@ -215,7 +213,6 @@ Du kan kontrollere det fysiske nettet i Chrome-innstillingene.
 <translation id="3320021301628644560">Legg til faktureringsadresse</translation>
 <translation id="3328801116991980348">Informasjon om nettstedet</translation>
 <translation id="3350687908700087792">Lukk alle inkognitofaner</translation>
-<translation id="3351441609270267898">Importér eksisterende data</translation>
 <translation id="3365671512111106261">Utilgjengelig når Datasparing er slått på</translation>
 <translation id="3367813778245106622">Logg på igjen for å starte synkroniseringen</translation>
 <translation id="3384347053049321195">Del bildet</translation>
@@ -312,7 +309,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="4522570452068850558">Detaljer</translation>
 <translation id="4526249700380860531">Se på og administrer lagrede passord på <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Velg en mappe</translation>
-<translation id="4535858793016067060">Slå på «Ukjente kilder» i sikkerhetsinnstillingene for Android for å prøve «Forbedret legg til på startsiden»-eksperimentet. Husk å slå av denne innstillingen når du er ferdig med å prøve det.</translation>
+<translation id="4535858793016067060">Slå på «Ukjente kilder» i sikkerhetsinnstillingene for Android for å prøve «Forbedret Legg til på startsiden»-eksperimentet. Husk å slå av denne innstillingen når du er ferdig med å prøve det.</translation>
 <translation id="4543661749405994812">Kopiér e-postadressen</translation>
 <translation id="4572422548854449519">Logg på en administrert konto</translation>
 <translation id="457875822857220463">Levering</translation>
@@ -394,7 +391,7 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5335288049665977812">Tillat nettsteder å kjøre JavaScript (anbefales)</translation>
 <translation id="5345040418939504969">Slettet <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Posisjonstilgang er også <ph name="BEGIN_LINK" />slått av for denne enheten<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Forbedret legg til på startsiden-eksperiment</translation>
+<translation id="5349103022427743704">Forbedret Legg til på startsiden-eksperiment</translation>
 <translation id="53553865750799677">Henteadressen støttes ikke. Velg en annen adresse.</translation>
 <translation id="5372829067651257087">Nettadressen er kopiert.</translation>
 <translation id="5400569084694353794">Ved å bruke dette programmet samtykker du i Chromes <ph name="BEGIN_LINK1" />vilkår for bruk<ph name="END_LINK1" /> og <ph name="BEGIN_LINK2" />merknad om personvern<ph name="END_LINK2" />.</translation>
@@ -426,7 +423,6 @@ Hvis du vil endre søkeordet, kan du trykke på det og holde for å merke det. H
 <translation id="5676636989614905379">Kunne ikke spille av videoen på <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blokkert</translation>
 <translation id="5684874026226664614">Beklager. Denne siden kunne ikke oversettes.</translation>
-<translation id="5708031556037168012">Behold de eksisterende dataene på enheten din, og importér dataene permanent til <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Når du åpner sider i inkognitofaner, lagres de ikke i nettleser- eller søkeloggen, og eventuelle informasjonskapsler slettes. Filer du laster ned og bokmerker du oppretter, beholdes.
 
 Du er imidlertid ikke usynlig. Inkognito-modusen skjuler ikke surfingen din for arbeidsgiveren, nettleverandøren eller nettstedene du besøker.</translation>
@@ -563,7 +559,6 @@ Noen nettsteder kan for eksempel svare på denne forespørselen ved å vise deg 
 <translation id="7062545763355031412">Godta og bytt konto</translation>
 <translation id="7063006564040364415">Kunne ikke koble til synkroniseringstjeneren.</translation>
 <translation id="7064851114919012435">Kontaktinformasjon</translation>
-<translation id="7081639897063626814">Hold eksisterende data adskilt</translation>
 <translation id="7094922512924405309">Fant ingen Fysisk nett-sider i nærheten</translation>
 <translation id="7138678301420049075">Annet</translation>
 <translation id="7180611975245234373">Last inn på nytt</translation>
@@ -735,12 +730,10 @@ For å få nye lisenser må du koble deg til Internett og spille av innholdet du
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9139068048179869749">Spør før nettsteder får sende varsler (anbefales)</translation>
-<translation id="9141510419986760385">Du bytter synkroniseringskonto fra <ph name="FROM_ACCOUNT" /> til <ph name="TO_ACCOUNT" />. Hva vil du gjøre med de eksisterende bokmerkene, loggoppføringene, passordene og de andre innstillingene dine?</translation>
 <translation id="9154194610265714752">Oppdatert</translation>
 <translation id="917685106653909562">Fysisk nett-sider i nærheten</translation>
 <translation id="9187199695613236444">Mobilvennlig visning</translation>
 <translation id="9188680907066685419">Logg av administrert konto</translation>
-<translation id="9198708126133947749">Erstatt dataene på denne enheten med dataene fra <ph name="TO_ACCOUNT" />. Du kan hente ut de eksisterende dataene dine ved å bytte tilbake til <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Start</translation>

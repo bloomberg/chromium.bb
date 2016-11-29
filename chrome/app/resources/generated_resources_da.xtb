@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Søger efter Bluetooth- og USB-enheder…</translation>
 <translation id="1056898198331236512">Advarsel</translation>
 <translation id="1056982457359827501">Aktiverer BLE-annoncering i Chrome-apps. BLE-annoncering kan forstyrre den normale brug af Bluetooth Low Energy-funktionerne.</translation>
-<translation id="1058325955712687476">Aktiverer Site Engagement Service, der registrerer interaktion med websites og tildeler ressourcer i overensstemmelse hermed.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> af <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Erstat</translation>
 <translation id="1062866675591297858">Administrer dine brugere via <ph name="BEGIN_LINK" />Betjeningspanelet for administrerede brugere<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Importerer <ph name="FILE_COUNT" /> filer...</translation>
 <translation id="1352103415082130575">Thailandsk tastatur (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Lageradministrator for material design</translation>
 <translation id="1353966721814789986">Startsider</translation>
 <translation id="1354868058853714482">Adobe Reader er forældet og er muligvis ikke sikkert.</translation>
 <translation id="1355408554203439639">3D-softwarerasterisering</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Tokencache for Identity API</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detaljer: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Markørhændelse v1 specifikationsregistrering</translation>
 <translation id="1480041086352807611">Demotilstand</translation>
 <translation id="1481244281142949601">Din sandkasse er sikker.</translation>
 <translation id="1482124012545051544">Klar til at sikkerhedskopiere <ph name="FILE_COUNT" /> nye billeder</translation>
@@ -882,7 +879,6 @@
 <translation id="2177950615300672361">Inkognitofane: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">Sammensat nøglecenter</translation>
 <translation id="218070003709087997">Brug et tal til at angive, hvor mange kopier der skal udskrives (1 til 999).</translation>
-<translation id="218492098606937156">Aktivér berøringshændelser</translation>
 <translation id="2187317261103489799">Registrer (standardindstilling)</translation>
 <translation id="2187895286714876935">Fejl ved import af servercertifikat</translation>
 <translation id="2188881192257509750">Åbn <ph name="APPLICATION" /></translation>
@@ -1038,7 +1034,6 @@ Når du har oprettet en ny administreret bruger, kan du til enhver tid administr
 <translation id="2367972762794486313">Vis apps</translation>
 <translation id="2371076942591664043">Åbn når &amp;færdigt</translation>
 <translation id="2372036074421194686">Chrome har registreret, at et uønsket program (<ph name="UWS_NAME" />) er installeret på din computer. Du kan muligvis fjerne det ved at køre Oprydningsværktøj til Chrome.</translation>
-<translation id="2375701438512326360">Tving support for touchskærm til altid at være aktiveret eller deaktiveret eller til at være aktiveret, når der registreres en touchskærm ved opstart (standard er Automatisk).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> filer valgt</translation>
 <translation id="2378982052244864789">Vælg udvidelsens mappe.</translation>
 <translation id="2379281330731083556">Dialogboks til Udskriv via system... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Valgte alternativknapper</translation>
 <translation id="3649138363871392317">Billede blev taget</translation>
 <translation id="3650242103421962931">Lineær</translation>
-<translation id="3653069516296104653">Deaktiverer implicit registrering af berøringsmarkørhændelser.</translation>
 <translation id="3653999333232393305">Tillad fortsat, at <ph name="HOST" /> har adgang til din mikrofon</translation>
 <translation id="3654045516529121250">Læse dine indstillinger for hjælpefunktioner</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Den har permanent adgang til én fil.}one{Den har permanent adgang til # filer.}other{Den har permanent adgang til # filer.}}</translation>
@@ -2128,7 +2122,6 @@ Fra <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Browseren blev lukket ned, inden overførslen var færdig.</translation>
 <translation id="3711895659073496551">Suspender</translation>
 <translation id="3712897371525859903">Gem side &amp;som...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Send automatisk<ph name="END_WHITEPAPER_LINK" /> nogle systemoplysninger og sideindhold til Google som en hjælp til at registrere skadelige apps og websites. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">webkalender</translation>
 <translation id="3715597595485130451">Opret forbindelse til Wi-Fi</translation>
 <translation id="3716615839203649375">tillad</translation>
@@ -2476,13 +2469,11 @@ Vil du starte <ph name="CONTROL_PANEL_APPLET_NAME" />?</translation>
 <translation id="418179967336296930">Russisk fonetisk (YaZHert) tastatur</translation>
 <translation id="4181841719683918333">Sprog</translation>
 <translation id="4184885522552335684">Træk for at flytte en skærm</translation>
-<translation id="4188447344915957833">Aktiverer lageradministrator i indstillingerne for material design.</translation>
 <translation id="4189406272289638749">Udvidelsen &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt; styrer denne indstilling.</translation>
 <translation id="4193154014135846272">Google-dokument</translation>
 <translation id="4193182321948161343">Aktivér Brugeradministration af Material Design</translation>
 <translation id="4193297030838143153">Ny faktureringsadresse...</translation>
 <translation id="4194570336751258953">Aktivér berøringsklik</translation>
-<translation id="4195621107636847694">Site Engagement Service</translation>
 <translation id="4195643157523330669">Åbn på ny fane</translation>
 <translation id="4195814663415092787">Fortsæt, hvor du slap</translation>
 <translation id="4197674956721858839">Valg af komprimering</translation>

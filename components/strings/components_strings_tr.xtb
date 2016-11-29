@@ -706,7 +706,6 @@ Hatırlatma! Bir dahaki sefere Gizli mod <ph name="SHORTCUT_KEY" /> kullanışl�
 <translation id="9050666287014529139">Parola</translation>
 <translation id="9065203028668620118">Düzenle</translation>
 <translation id="9068849894565669697">Renk seçin</translation>
-<translation id="9092364396508701805"><ph name="HOST_NAME" /> sayfası çalışmıyor</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> normalde bilgilerinizi korumak için şifreleme kullanmaktadır. Chromium bu sefer <ph name="SITE" /> sitesine bağlanmayı denediğinde, web sitesi sıra dışı ve yanlış kimlik bilgileri döndürdü. Bir saldırgan <ph name="SITE" /> gibi davranmaya çalışıyor olabilir ya da bir Kablosuz oturum açma ekranı bağlantıyı kesmiştir. Chromium herhangi bir veri alışverişinden önce bağlantıyı durdurduğu için bilgileriniz hâlâ güvendedir.</translation>
 <translation id="9137013805542155359">Orijinali göster</translation>
 <translation id="9148507642005240123">Düzenlemeyi &amp;geri al</translation>

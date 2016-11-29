@@ -706,7 +706,6 @@ Forresten: Inkognitomodus (<ph name="SHORTCUT_KEY" />) kan være kjekt neste gan
 <translation id="9050666287014529139">Passordfrase</translation>
 <translation id="9065203028668620118">Endre</translation>
 <translation id="9068849894565669697">Velg farge</translation>
-<translation id="9092364396508701805"><ph name="HOST_NAME" />-siden fungerer ikke</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruker vanligvis kryptering for å beskytte informasjonen din. Da Chromium prøvde å koble til <ph name="SITE" /> denne gangen, sendte nettstedet tilbake uvanlig og feil legitimasjon. Dette kan skje hvis en angriper prøver å utgi seg for å være <ph name="SITE" />, eller hvis en Wi-Fi-påloggingsskjerm har avbrutt tilkoblingen. Informasjonen din er likevel sikker fordi Chromium stoppet tilkoblingen før det ble utvekslet noen data.</translation>
 <translation id="9137013805542155359">Vis original</translation>
 <translation id="9148507642005240123">&amp;Angre endringen</translation>

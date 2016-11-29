@@ -140,7 +140,6 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="238909021488141516">Si è verificato un errore durante il download dei contenuti.</translation>
 <translation id="2414886740292270097">Scuro</translation>
 <translation id="2433507940547922241">Aspetto</translation>
-<translation id="2439248520967274840">Stai per accedere all'account <ph name="TO_ACCOUNT" />. Alcuni dei tuoi preferiti, la cronologia, le password e le altre impostazioni erano precedentemente sincronizzati con l'account <ph name="FROM_ACCOUNT" />. Cosa intendi fare con i dati esistenti?</translation>
 <translation id="2440823041667407902">Accesso alla posizione</translation>
 <translation id="2476578072172137802">Impostazioni sito</translation>
 <translation id="2482878487686419369">Notifiche</translation>
@@ -188,7 +187,6 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="2996291259634659425">Crea passphrase</translation>
 <translation id="2996809686854298943">URL obbligatorio</translation>
 <translation id="300526633675317032">Verranno cancellati tutti i <ph name="SIZE_IN_KB" /> di memoria utilizzata dai siti web.</translation>
-<translation id="3012408695656332380">Sostituisci i dati di questo dispositivo con quelli dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />, ma i dati creati dopo esserti scollegato andranno persi.</translation>
 <translation id="3029704984691124060">Le passphrase non corrispondono</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Richiedi assistenza<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Apri in scheda in incognito</translation>
@@ -215,7 +213,6 @@ Puoi gestire il Physical Web nelle impostazioni di Chrome.
 <translation id="3320021301628644560">Aggiungi l'indirizzo di fatturazione</translation>
 <translation id="3328801116991980348">Informazioni sito</translation>
 <translation id="3350687908700087792">Chiudi tutte le schede di navigazione in incognito</translation>
-<translation id="3351441609270267898">Importa i dati esistenti</translation>
 <translation id="3365671512111106261">Non disponibile quando è attiva la funzione Risparmio dati</translation>
 <translation id="3367813778245106622">Accedi nuovamente per avviare la sincronizzazione</translation>
 <translation id="3384347053049321195">Condividi immagine</translation>
@@ -426,7 +423,6 @@ Per modificare il termine di ricerca, premi a lungo per selezionarlo. Per perfez
 <translation id="5676636989614905379">Impossibile riprodurre il video su <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bloccati</translation>
 <translation id="5684874026226664614">Spiacenti. Impossibile tradurre questa pagina.</translation>
-<translation id="5708031556037168012">Mantieni i dati esistenti sul tuo dispositivo e importa definitivamente i dati nell'account <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Le pagine visualizzate nelle schede in incognito non vengono memorizzate nella cronologia del browser, nell'archivio di cookie o nella cronologia delle ricerche dopo aver chiuso tutte le schede. I file da te scaricati o i Preferiti da te creati vengono mantenuti.
 
 Tuttavia, le tue attività non sono invisibili. L'attivazione della modalità di navigazione in incognito non consente di nascondere la navigazione al tuo datore di lavoro, al tuo provider di servizi Internet o ai siti web da te visitati.</translation>
@@ -563,7 +559,6 @@ Ad esempio, alcuni siti web potrebbero rispondere alla richiesta mostrando annun
 <translation id="7062545763355031412">Accetta e cambia account</translation>
 <translation id="7063006564040364415">Impossibile collegarsi al server di sincronizzazione.</translation>
 <translation id="7064851114919012435">Informazioni di contatto</translation>
-<translation id="7081639897063626814">Mantieni separati i dati esistenti</translation>
 <translation id="7094922512924405309">Nessuna pagina Physical Web trovata nelle vicinanze</translation>
 <translation id="7138678301420049075">Altro</translation>
 <translation id="7180611975245234373">Aggiorna</translation>
@@ -735,12 +730,10 @@ Per ottenere nuove licenze, connettiti a Internet e riproduci i contenuti scaric
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Mostra originale</translation>
 <translation id="9139068048179869749">Chiedi conferma prima di consentire ai siti di inviare notifiche (opzione consigliata)</translation>
-<translation id="9141510419986760385">Stai per cambiare account di sincronizzazione, passando dall'account <ph name="FROM_ACCOUNT" /> all'account <ph name="TO_ACCOUNT" />. Che cosa intendi fare con i preferiti, la cronologia, le password e le altre impostazioni esistenti?</translation>
 <translation id="9154194610265714752">Aggiornato</translation>
 <translation id="917685106653909562">Pagine Physical Web nelle vicinanze</translation>
 <translation id="9187199695613236444">Visualizzazione ottimizzata per dispositivi mobili</translation>
 <translation id="9188680907066685419">Esci dall'account gestito</translation>
-<translation id="9198708126133947749">Sostituisci i dati di questo dispositivo con i dati dell'account <ph name="TO_ACCOUNT" />. Puoi recuperare i tuoi dati esistenti tornando all'account <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Immagini</translation>
 <translation id="932327136139879170">Home page</translation>

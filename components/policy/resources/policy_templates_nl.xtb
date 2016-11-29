@@ -820,9 +820,6 @@
 <translation id="3322771899429619102">Hiermee kun je een lijst met URL-patronen instellen waarmee sites worden gespecificeerd die sleutels mogen genereren. Als een URL-patroon in 'KeygenBlockedForUrls' staat, worden deze uitzonderingen daardoor overschreven.
 
           Als dit beleid niet wordt ingesteld, wordt de algemene standaardwaarde gebruikt voor alle sites op basis van het beleid 'DefaultKeygenSetting' (als dit is ingesteld), of anders op basis van de persoonlijke configuratie van de gebruiker.</translation>
-<translation id="3322902067538988734">Als dit beleid is ingesteld op 'true' (waar), moet de gebruiker bij <ph name="PRODUCT_NAME" /> inloggen met zijn profiel voordat hij de browser gebruikt. De standaardwaarde van BrowserGuestModeEnabled wordt ingesteld op 'false' (onwaar).
-
-      Als dit beleid is ingesteld op 'false' of niet is geconfigureerd, kan de gebruiker de browser gebruiken zonder in te loggen bij <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Hier kun je instellen hoe vaak een gebruiker het wachtwoord moet opgeven om de functie voor snel ontgrendelen te kunnen gebruiken.</translation>
 <translation id="3381968327636295719"> gebruiken</translation>
 <translation id="3417418267404583991">Als dit beleid is ingesteld op 'true' of niet is geconfigureerd, staat <ph name="PRODUCT_OS_NAME" /> gasten toe zich aan te melden. Gastensessies zijn anonieme sessies waar geen wachtwoord voor hoeft te worden ingevoerd.
@@ -1655,7 +1652,7 @@
 
           Wanneer de periode niet is ingesteld, wordt een standaardperiode gebruikt.
 
-          De aanbevolen manier om het scherm te vergrendelen bij inacitiviteit is de schermvergrendeling in te schakelen bij tijdelijk blokkeren en <ph name="PRODUCT_OS_NAME" /> tijdelijk te laten blokkeren zodra de inactiviteitsdrempel is bereikt. Dit beleid mag alleen worden gebruikt wanneer de schermvergrendeling aanzienlijk eerder moet worden ingesteld dan de tijdelijke blokkering of wanneer tijdelijk blokkeren bij inactiviteit helemaal niet wenselijk is.
+          De aanbevolen manier om het scherm te vergrendelen bij inacitiviteit is de schermvergrendeling in te schakelen bij tijdelijk opschorten en <ph name="PRODUCT_OS_NAME" /> tijdelijk te laten opschorten zodra de inactiviteitsdrempel is bereikt. Dit beleid mag alleen worden gebruikt wanneer de schermvergrendeling aanzienlijk eerder moet worden ingesteld dan de tijdelijke opschorting of wanneer tijdelijk opschorten bij inactiviteit helemaal niet wenselijk is.
 
           De beleidswaarde moet worden gespecificeerd in milliseconden. Waarden worden vastgezet op een lagere waarde dan de inactiviteitsdrempel.</translation>
 <translation id="6111936128861357925">Easter egg-dinosaurusgame toestaan</translation>
@@ -1687,14 +1684,6 @@
       Anders kan dit worden ingesteld op een van de volgende waarden: 'sslv3', 'tls1', 'tls1.1' of 'tls1.2'. Als het beleid is ingesteld, gebruikt <ph name="PRODUCT_NAME" /> geen SSL-/TLS-versies lager dan de opgegeven versie. Een niet-herkende waarde wordt genegeerd.
 
       Let op dat 'sslv3' ondanks het cijfer een vroegere versie is dan 'tls1'.</translation>
-<translation id="6177482277304066047">Hiermee stel je een doelversie voor Automatische updates in.
-
-      Hiermee geef je het voorvoegsel van een doelversie op waarnaar <ph name="PRODUCT_OS_NAME" /> moet worden bijgewerkt. Als op het apparaat een versie wordt uitgevoerd die lager is dan het opgegeven voorvoegsel, wordt het apparaat bijgewerkt naar de nieuwste versie met het opgegeven voorvoegsel. Als op het apparaat al een hogere versie is geïnstalleerd, gebeurt er niets (dat wil zeggen, er worden geen downgrades uitgevoerd) en blijft het apparaat de huidige versie gebruiken. De notatie van het voorvoegsel werkt op basis van componenten, zoals het volgende voorbeeld laat zien:
-
-      "" (of niet geconfigureerd): bijwerken naar de nieuwste versie.
-      "1412.": bijwerken naar een secundaire versie van 1412 (bijvoorbeeld 1412.24.34 of 1412.60.2)
-      "1412.2.": bijwerken naar een secundaire versie van 1412.2 (bijvoorbeeld 1412.2.34 of 1412.2.2)
-      "1412.24.34": alleen bijwerken naar deze specifieke versie</translation>
 <translation id="6190022522129724693">Standaardinstelling voor pop-ups</translation>
 <translation id="6197453924249895891">Geeft extensies toegang tot zakelijke sleutels.
 
@@ -1734,9 +1723,6 @@
 <translation id="6367755442345892511">Of de gebruiker het releasekanaal moet configureren</translation>
 <translation id="6368011194414932347">De startpagina-URL configureren</translation>
 <translation id="6368403635025849609">JavaScript toestaan op deze sites</translation>
-<translation id="6373222873250380826">Schakelt automatische updates uit als dit is ingesteld op 'True'.
-
-      <ph name="PRODUCT_OS_NAME" />-apparaten zoeken automatisch naar updates als deze instelling niet is geconfigureerd of is ingesteld op 'False'.</translation>
 <translation id="6376659517206731212">Kan verplicht zijn</translation>
 <translation id="6378076389057087301">Specificeer of audioactiviteit invloed heeft op stroombeheer</translation>
 <translation id="637934607141010488">Lijst melden met apparaatgebruikers die onlangs zijn ingelogd.
@@ -1820,10 +1806,9 @@
           * |Shutdown|
           * |DoNothing|
 
-          Wanneer |IdleAction| niet is ingesteld, wordt de standaardactie uitgevoerd (tijdelijk blokkeren).
+          Wanneer |IdleAction| niet is ingesteld, wordt de standaardactie uitgevoerd (tijdelijk opschorten).
 
-          Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de accu werkt.
-          </translation>
+          Er zijn ook afzonderlijke instellingen voor wanneer het apparaat op netstroom of op de accu werkt.</translation>
 <translation id="6641981670621198190">Ondersteuning voor API's voor 3D-beelden uitschakelen</translation>
 <translation id="6647965994887675196">Als dit wordt ingesteld op 'true' (waar), kunnen bewaakte gebruikers worden gemaakt en gebruikt.
 
@@ -2095,13 +2080,6 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="7336878834592315572">Cookies bewaren voor de duur van de sessie</translation>
 <translation id="7340034977315324840">Tijdsduur van apparaatgebruik melden</translation>
 <translation id="7384999953864505698">QUIC-protocol toestaan</translation>
-<translation id="7406651467768226499">Of de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie mag beheren.
-
-      Met dit beleid wordt bepaald of de kiosk-app die automatisch zonder vertraging is gestart, de <ph name="PRODUCT_OS_NAME" />-versie mag beheren door een required_platform_version te declareren in het bijbehorende manifest en deze te gebruiken als voorvoegsel voor de doelversie van de automatische update.
-
-      Als het beleid is ingesteld op 'waar', wordt de waarde van de manifestsleutel required_platform_version van de kiosk-app die automatisch zonder vertraging is gestart, gebruikt als voorvoegsel voor de doelversie van de automatische update.
-
-      Als het beleid niet is geconfigureerd of is ingesteld op 'onwaar', wordt de manifestsleutel required_platform_version genegeerd en wordt de automatische update zoals gebruikelijk uitgevoerd.</translation>
 <translation id="7417972229667085380">Het percentage waarmee je de inactieve vertraging in presentatiemodus kunt schalen (verouderd)</translation>
 <translation id="7421483919690710988">Grootte van mediaschijfcache in bytes instellen</translation>
 <translation id="7424751532654212117">Lijst van uitzonderingen op de lijst met uitgeschakelde plug-ins</translation>
@@ -2691,9 +2669,9 @@ Geheugengegevens worden in alle gevallen aan de pagina gerapporteerd, afgezien v
 <translation id="922540222991413931">Installatiebronnen voor het configureren van extensies, apps en gebruikersscripts</translation>
 <translation id="924557436754151212">Opgeslagen wachtwoorden importeren uit standaardbrowser bij eerste uitvoering</translation>
 <translation id="930930237275114205">Directory met gebruikersgegevens voor <ph name="PRODUCT_FRAME_NAME" /> instellen</translation>
-<translation id="944607242500063080">Modi voor snel ontgrendelen configureren.</translation>
+<translation id="944607242500063080">Toegestane modi voor snel ontgrendelen configureren.</translation>
 <translation id="944817693306670849">Grootte voor schijfcache instellen</translation>
-<translation id="969164417253718105">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode of er een verkeerd wachtwoord is opgegeven, moet de gebruiker de volgende keer het wachtwoord opgegeven om het scherm te ontgrendelen, afhankelijk van wat zich het eerst voordoet.
+<translation id="969164417253718105">Met deze instelling wordt bepaald hoe vaak het wachtwoord voor het vergrendelingsscherm moet worden opgegeven om de functie voor snel ontgrendelen te kunnen blijven gebruiken. Telkens wanneer het vergrendelingsscherm wordt weergegeven en het wachtwoord nog niet is opgegeven gedurende de ingestelde periode, is de functie voor snel ontgrendelen niet beschikbaar om het vergrendelingsscherm te ontgrendelen. Wanneer het vergrendelingsscherm niet wordt ontgrendeld gedurende de ingestelde periode, moet de volgende keer dat de gebruiker een verkeerde code invoert of het vergrendelingsscherm opnieuw opent een wachtwoord worden opgegeven.
 
       Als deze instelling is ingeschakeld, wordt gebruikers die de functie voor snel ontgrendelen gebruiken, op basis van deze instelling gevraagd hun wachtwoord op te geven voor het vergrendelingsscherm.
 

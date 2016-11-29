@@ -706,7 +706,6 @@
 <translation id="9050666287014529139">通關密語</translation>
 <translation id="9065203028668620118">編輯</translation>
 <translation id="9068849894565669697">選取顏色</translation>
-<translation id="9092364396508701805"><ph name="HOST_NAME" /> 頁面無法正常運作</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> 通常使用加密方式保護您的資訊。但 Chromium 這次嘗試連線到 <ph name="SITE" /> 時，該網站傳回了異常且錯誤的憑證。這可能是因為有攻擊者企圖偽裝成 <ph name="SITE" />，或是受到 Wi-Fi 登入畫面影響而造成連線中斷。不過請放心，Chromium 已及時停止連線，並未傳輸任何資料，因此您的資訊仍然安全無虞。</translation>
 <translation id="9137013805542155359">顯示原文</translation>
 <translation id="9148507642005240123">復原編輯(&amp;U)</translation>

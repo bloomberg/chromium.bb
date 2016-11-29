@@ -809,9 +809,6 @@ Kama sera hii haitawekwa, hii itawashwa lakini mtumiaji ataweza kuibadilisha.</t
 <translation id="3322771899429619102">Hukuruhusu kuweka orodha ya ruwaza za url zinazobainisha tovuti zinazoruhusiwa kuunda ufunguo. Ikiwa ruwaza ya url iko katika 'KeygenBlockedForUrls', hiyo hubatilisha vighairi hivi.
 
           Sera hii ikiachwa bila kuwekwa, thamani chaguo-msingi ya kote duniani itatumiwa kwenye tovuti zote iwe ni kutoka sera ya 'DefaultKeygenSetting', ikiwa imewekwa, la sivyo mipangilio ya kibinafsi ya mtumiaji itatumika.</translation>
-<translation id="3322902067538988734">Sera hii ikiwekwa kuwa ndivyo, lazima mtumiaji aingie katika <ph name="PRODUCT_NAME" /> kwa wasifu wake kabla ya kutumia kivinjari. Na thamani chaguo-msingi ya BrowserGuestModeEnabled itawekwa kuwa sivyo.
-
-      Sera hii ikiwekwa kuwa sivyo au isipowekwa, mtumiaji anaweza kutumia kivinjari bila kuingia katika <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Huweka mara ambazo mtumiaji anatakiwa kuweka nenosiri ili atumie kipengele cha kufungua haraka.</translation>
 <translation id="3381968327636295719">Tumia kivinjari kipangishi kwa chaguo-msingi</translation>
 <translation id="3417418267404583991">Ikiwa sera hii itawekwa kwenye Ndivyo au haitasanidiwa, <ph name="PRODUCT_OS_NAME" /> haitawezesha uingiaji wa mgeni. Uingiaji wa mgeni ni vipindi visivyojulikana vya mtumiaji na havihitaji nenosiri..
@@ -1674,14 +1671,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
       Vinginevyo inaweza kuwekwa kuwa moja ya thamani zifuatazo: "sslv3", "tls1", "tls1.1" au "tls1.2". Ikiwekwa, <ph name="PRODUCT_NAME" /> haitatumia matoleo ya SSL/TLS chini ya toleo lililobainishwa. Thamani ambayo haitatambulika itapuuzwa.
 
       Kumbuka kwamba, licha ya nambari, "sslv3" ni toleo la awali kuliko "tls1".</translation>
-<translation id="6177482277304066047">Inawezesha toleo lengwa la Visasisho Otomatiki.
-
-      Inabainisha kiambishi awali ambacho toleo lengwa <ph name="PRODUCT_OS_NAME" /> linafaa kusasishwa kuwa. Ikiwa kifaa kinaendesha toleo ambalo  ni la kabla ya kiambishi awali kilichobainishwa, kitajisasisha hadi kwenye toleo la sasa kwa kiambishi awali kilichotolewa. Ikiwa kifaa tayari kipo katika toleo la sasa, hakuna athari (yaani hakuna kushusha gredi kunakofanyika) na kifaa kitasalia katika toleo la hivi punde. Umbizo la kiambishi awali linafanyakazi kama kijenzi kama linavyoonyeshwa katika mifano ifuatayo:
-
-      "" (au haijasanidiwa): sasisha hadi kwenye toleo la sasa linalopatikana.
-      "1412.": sasisha hadi kwenye toleo lolote dogo la 1412 (k.m. 1412.24.34 au 1412.60.2)
-      "1412.2.": sasisha hadi kwenye toleo lolote dogo la 1412.2 (k.m. 1412.2.34 au 1412.2.2)
-      "1412.24.34": sasisha hadi kwenye toleo hili bainifu tu</translation>
 <translation id="6190022522129724693">Mpangilio chaguo-msingi za ibukizi</translation>
 <translation id="6197453924249895891">Hutoa idhini ya kufikia vitufe vya shirika vya viendelezi.
 
@@ -1721,9 +1710,6 @@ Thamani ya sera inapaswa kubainishwa katika milisekunde. Thamani huwekwa pamoja 
 <translation id="6367755442345892511">Ikiwa kituo cha kutoa kinastahili kusanidiwa na mtumiaji.</translation>
 <translation id="6368011194414932347">Sanidi URL ya ukurasa wa kwanza</translation>
 <translation id="6368403635025849609">Ruhusu JavaScript kwenye tovuti hizi</translation>
-<translation id="6373222873250380826">Inalemaza visasisho otomatiki inapowekwa kwenye Ndivyo.
-
-      Vifaa <ph name="PRODUCT_OS_NAME" /> vinakagua visasisho kiotomatiki wakati mpangilio huu haujasanidiwa au umewekwa kuwa Sivyo.</translation>
 <translation id="6376659517206731212">Inaweza Kuwa ya Lazima</translation>
 <translation id="6378076389057087301">Bainisha iwapo shughuli za sauti zinaathiri udhibiti wa nishati</translation>
 <translation id="637934607141010488">Ripoti orodha ya watumiaji wa kifaa ambao waliingia katika akaunti hivi karibuni.
@@ -2075,13 +2061,6 @@ Kama sera haitawekwa, kikuza skrini kitazimwa wakati skrini ya kuingia katika ak
 <translation id="7336878834592315572">Weka vidakuzi katika muda wa kipindi</translation>
 <translation id="7340034977315324840">Ripoti muda wa shughuli za kifaa</translation>
 <translation id="7384999953864505698">Huruhusu itifaki ya QUIC</translation>
-<translation id="7406651467768226499">Kuruhusu au kutoruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" />.
-
-      Sera hii hudhibiti ikiwa uruhusu kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima kudhibiti toleo la <ph name="PRODUCT_OS_NAME" /> kwa kutangaza required_platform_version katika faili yake ya maelezo na kuitumia kama kiambishi awali cha toleo lengwa la sasisho otomatiki.
-
-     Sera hii ikiwekwa kuwa ndivyo, thamani ya ufunguo wa faili ya maelezo ya required_platform_version ya kipengele kilichofunguliwa kiotomatiki bila chochote kuchelewesha programu inayotumia skrini nzima inatumika kama kiambishi awali cha toleo lengwa la sasisho otomatiki.
-
-     Sera hii isipoweka mipangilio au ikawekwa kuwa sivyo, ufunguo wa faili ya maelezo ya required_platform_version hupuuzwa na kusasisha kiotomatiki huendelea kama kawaida.</translation>
 <translation id="7417972229667085380">Asilimia ya kupima kuchelewesha kwa mwanga wa skrini katika modi ya wasilisho (kimewacha kuendesha huduma)</translation>
 <translation id="7421483919690710988">Weka ukubwa wa akiba ya diski ya media katika vipimo vya baiti</translation>
 <translation id="7424751532654212117">Orodha ya vighairi katika orodha ya programu jalizi zilizolemazwa</translation>

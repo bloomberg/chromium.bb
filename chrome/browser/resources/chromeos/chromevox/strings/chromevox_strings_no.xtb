@@ -27,7 +27,7 @@
 <translation id="1201402288615127009">Neste</translation>
 <translation id="1206619573307042055">marquee</translation>
 <translation id="1213216066620407844">ChromeVox – gir Chrome en stemme</translation>
-<translation id="1226487719524433143">Vi vil gjerne høre hva du syns om denne nye opplevelsen. Trykk på Søk + A og deretter I for å sende oss tilbakemelding. Trykk på neste-knappen for å gå videre til veiledningen og finne ut hva du trenger for å komme i gang.</translation>
+<translation id="1226487719524433143">Vi vil gjerne høre hva du syns om denne nye opplevelsen. Trykk på Søk+A og deretter I for å sende oss tilbakemelding. Trykk på neste-knappen for å gå videre til veiledningen og finne ut hva du trenger for å komme i gang.</translation>
 <translation id="1229276918471378188">Forrige hopp</translation>
 <translation id="1237866625126425153">rdgrp</translation>
 <translation id="1251750620252348585">Neste overskrift på nivå 6</translation>
@@ -41,7 +41,7 @@
 <translation id="1342835525016946179">article</translation>
 <translation id="1346748346194534595">Høyre</translation>
 <translation id="136718599399906424">Neste tabellrad</translation>
-<translation id="1377925789329510816">Dette er den siste overskriften. Trykk på Søk + H for å gå til den første overskriften eller på Søk + Shift + H for å gå til den andre overskriften på denne siden.</translation>
+<translation id="1377925789329510816">Dette er den siste overskriften. Trykk på Søk+H for å gå til den første overskriften eller på Søk+Shift+H for å gå til den andre overskriften på denne siden.</translation>
 <translation id="1383876407941801731">Søk</translation>
 <translation id="1385214448885562192">Trykk på Enter for å godta, Esc for å avbryte, ned for neste eller opp for forrige.</translation>
 <translation id="1396114365388024581">tablst</translation>
@@ -396,7 +396,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="4826604887384865800">Neste hopp</translation>
 <translation id="4827410568042294688">fjernet fra utvalget</translation>
 <translation id="4842108708071771135">Det finnes ikke flere blokksitat-elementer.</translation>
-<translation id="4844625982113518938">Trykk på en hvilken som helst tast for å finne ut hva den heter. Du kan lukke læremodusen ved å trykke på Ctrl + W.</translation>
+<translation id="4844625982113518938">Trykk på en hvilken som helst tast for å finne ut hva den heter. Du kan lukke læremodusen ved å trykke på Ctrl+W.</translation>
 <translation id="4848993367330139335">tmr</translation>
 <translation id="4850023505158945298">Forrige lignende element.</translation>
 <translation id="485011152882364255">Søketasten er modifikatornøkkelen i ChromeVox Next. De fleste hurtigtastene i ChromeVox starter med søketasten. Du bruker også piltastene for å navigere.</translation>
@@ -463,7 +463,7 @@ Hvis du er ferdig med veiledningen, kan du bruke ChromeVox til å navigere til L
 <translation id="5402367795255837559">Punktskrift</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{semikolon}other{# semikolontegn}}</translation>
 <translation id="5411891038905756502">Det finnes ingen tidligere punkter å gå til.</translation>
-<translation id="5417034931411865818">Klikk på elementet under rutingnøkkel $1</translation>
+<translation id="5417034931411865818">Klikk på elementet under rutertasten $1</translation>
 <translation id="5436105723448703439">{COUNT,plural, =1{mindre enn}other{# mindre enn-tegn}}</translation>
 <translation id="5444587279251314700">(aktiv)</translation>
 <translation id="5451268436205074266">punkter <ph name="DOT" /></translation>
@@ -519,7 +519,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5712338278108304766">Neste tabellkolonne</translation>
 <translation id="571866080859340309">Utforsking av grupper</translation>
 <translation id="5728409797179002635">Fant ingen tabell.</translation>
-<translation id="5732189279857692565">Dette er den andre overskriften. Gå videre ved å trykke på enten Søk + H eller Søk + Shift + H</translation>
+<translation id="5732189279857692565">Dette er den andre overskriften. Gå videre ved å trykke på Søk+H eller Søk+Shift+H</translation>
 <translation id="5748623122140342504">Forrige overskrift på nivå 5</translation>
 <translation id="5750633686117194034">Du har ikke trykt på noen modifikatorer. Trykk på og hold inne én eller flere modifikatorer. Slipp dem når du er ferdig for å høre tastene du har trykket på. Trykk på tabulatortasten for å avslutte.</translation>
 <translation id="5788275253279308023">inkognitovinduet med <ph name="TITLE" />-fanen</translation>
@@ -538,7 +538,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="5937336320314038555">{COUNT,plural, =1{likhetstegn}other{# likhetstegn}}</translation>
 <translation id="5939518447894949180">Tilbakestill</translation>
 <translation id="5948123859135882163">Bytt mellom strukturell og semantisk tolkning av matematiske uttrykk</translation>
-<translation id="5948485979596965684">ChromeVox er oppdatert til en stor ny utgivelse.</translation>
+<translation id="5948485979596965684">ChromeVox er oppdatert til en ny hovedversjon.</translation>
 <translation id="5955304353782037793">app</translation>
 <translation id="5956928062748260866">Dialog</translation>
 <translation id="5963413905009737549">Del</translation>
@@ -610,7 +610,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="6786800275320335305">Artikkel</translation>
 <translation id="6787839852456839824">Hurtigtaster</translation>
 <translation id="6793101435925451627">lstbx</translation>
-<translation id="6818172019016005152">Vi har jobbet hardt for å gi deg en ny og forbedret ChromeVox-opplevelse. Dette er nytt</translation>
+<translation id="6818172019016005152">Vi har jobbet hardt for å gi deg en ny og forbedret ChromeVox-opplevelse. Dette er nytt:</translation>
 <translation id="6833103209700200188">Bunntekst</translation>
 <translation id="6871161210040114857">Skiller ikke mellom store og små bokstaver.</translation>
 <translation id="6877435256196695200">Det finnes ikke flere illustrasjoner.</translation>
@@ -759,7 +759,7 @@ For å åpne Chrome-menyen, trykk på Alt+F.</translation>
 <translation id="8520472399088452386">Verdisettingsknapp</translation>
 <translation id="8538744478902126321">Gjett radoverskriften i den nåværende cellen</translation>
 <translation id="8540054775867439484">Legges sammen øverst</translation>
-<translation id="8542271685829952264">For å se alle kommandoene og hurtigtastene i ChromeVox, trykk på Søk + punktum. Bruk deretter piltastene til å navigere i menyene og Enter til å aktivere kommandoer. Trykk på Søk + O og deretter T for å komme tilbake hit.</translation>
+<translation id="8542271685829952264">For å se alle kommandoene og hurtigtastene i ChromeVox, trykk på Søk+punktum. Bruk deretter piltastene til å navigere i menyene og Enter til å aktivere kommandoer. Trykk på Søk+O og deretter T for å komme tilbake hit.</translation>
 <translation id="8548973727659841685">Tegn</translation>
 <translation id="8561322612995434619">har forgrunnsvindu</translation>
 <translation id="8571096049907249734">flervalg</translation>

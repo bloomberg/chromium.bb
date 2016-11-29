@@ -140,7 +140,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="238909021488141516">Đã xảy ra lỗi khi tải xuống nội dung.</translation>
 <translation id="2414886740292270097">Tối</translation>
 <translation id="2433507940547922241">Hình thức</translation>
-<translation id="2439248520967274840">Bạn đang đăng nhập vào <ph name="TO_ACCOUNT" />. Một số dấu trang, lịch sử, mật khẩu hiện có và các cài đặt khác đã được đồng bộ hóa với <ph name="FROM_ACCOUNT" /> trước đây. Bạn muốn làm gì với dữ liệu hiện có của mình?</translation>
 <translation id="2440823041667407902">Truy cập vị trí</translation>
 <translation id="2476578072172137802">Cài đặt trang web</translation>
 <translation id="2482878487686419369">Thông báo</translation>
@@ -188,7 +187,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="2996291259634659425">Tạo cụm mật khẩu</translation>
 <translation id="2996809686854298943">Cần có URL</translation>
 <translation id="300526633675317032">Thao tác này sẽ xóa tất cả <ph name="SIZE_IN_KB" /> bộ nhớ trang web.</translation>
-<translation id="3012408695656332380">Thay thế dữ liệu của thiết bị này bằng dữ liệu của <ph name="TO_ACCOUNT" />. Bạn có thể truy xuất dữ liệu hiện có của mình bằng cách chuyển về <ph name="FROM_ACCOUNT" /> nhưng dữ liệu được tạo từ lúc bạn đăng xuất sẽ bị mất.</translation>
 <translation id="3029704984691124060">Cụm mật khẩu không khớp</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Nhận trợ giúp<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Mở bằng tab ẩn danh</translation>
@@ -215,7 +213,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="3320021301628644560">Thêm địa chỉ thanh toán</translation>
 <translation id="3328801116991980348">Thông tin về trang web</translation>
 <translation id="3350687908700087792">Đóng tất cả các tab ẩn danh</translation>
-<translation id="3351441609270267898">Nhập dữ liệu hiện có</translation>
 <translation id="3365671512111106261">Không khả dụng khi Trình tiết kiệm dữ liệu được bật</translation>
 <translation id="3367813778245106622">Đăng nhập lại để bắt đầu đồng bộ hóa</translation>
 <translation id="3384347053049321195">Chia sẻ hình ảnh</translation>
@@ -426,7 +423,6 @@ Bạn có thể kiểm soát cài đặt Web trong cuộc sống trên Chrome.
 <translation id="5676636989614905379">Không thể phát video trên <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Bị chặn</translation>
 <translation id="5684874026226664614">Rất tiếc. Không thể dịch trang này.</translation>
-<translation id="5708031556037168012">Giữ lại dữ liệu hiện có trên thiết bị của bạn và nhập dữ liệu vĩnh viễn vào <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Trang mà bạn xem ở tab ẩn danh sẽ không bị lưu lại trong lịch sử của trình duyệt, kho cookie hoặc lịch sử tìm kiếm sau khi bạn đóng tất cả tab ẩn danh của bạn. Mọi tệp bạn tải xuống hoặc dấu trang bạn tạo sẽ được giữ nguyên.
 
 Tuy nhiên, bạn vẫn hiển thị. Truy cập ẩn danh sẽ không ẩn thao tác duyệt của bạn khỏi chủ lao động, nhà cung cấp dịch vụ Internet hoặc trang web bạn truy cập.</translation>
@@ -563,7 +559,6 @@ Ví dụ: một số trang web có thể phản hồi yêu cầu này bằng cá
 <translation id="7062545763355031412">Chấp nhận và chuyển đổi tài khoản</translation>
 <translation id="7063006564040364415">Không thể kết nối với máy chủ đồng bộ hóa.</translation>
 <translation id="7064851114919012435">Thông tin liên hệ</translation>
-<translation id="7081639897063626814">Luôn tách riêng dữ liệu hiện có</translation>
 <translation id="7094922512924405309">Không tìm thấy trang Web trong cuộc sống lân cận nào</translation>
 <translation id="7138678301420049075">Khác</translation>
 <translation id="7180611975245234373">Làm mới</translation>
@@ -736,12 +731,10 @@ Tài khoản Google của bạn có thể có các dạng lịch sử duyệt we
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Hiển thị văn bản gốc</translation>
 <translation id="9139068048179869749">Hỏi trước khi cho phép trang web gửi thông báo (được đề xuất)</translation>
-<translation id="9141510419986760385">Bạn đang chuyển các tài khoản đồng bộ hóa từ <ph name="FROM_ACCOUNT" /> về <ph name="TO_ACCOUNT" />. Bạn muốn làm gì với dấu trang, lịch sử, mật khẩu hiện có và các cài đặt khác?</translation>
 <translation id="9154194610265714752">Đã cập nhật</translation>
 <translation id="917685106653909562">Trang Web trong cuộc sống lân cận</translation>
 <translation id="9187199695613236444">Chế độ xem thân thiện với thiết bị di động</translation>
 <translation id="9188680907066685419">Đăng xuất khỏi tài khoản được quản lý</translation>
-<translation id="9198708126133947749">Thay thế dữ liệu của thiết bị này bằng dữ liệu của <ph name="TO_ACCOUNT" />. Bạn có thể truy xuất dữ liệu hiện có của mình bằng cách chuyển về <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Hình ảnh</translation>
 <translation id="932327136139879170">Trang chủ</translation>

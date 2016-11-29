@@ -140,7 +140,6 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="238909021488141516">Terjadi kesalahan saat mengunduh konten.</translation>
 <translation id="2414886740292270097">Gelap</translation>
 <translation id="2433507940547922241">Tampilan</translation>
-<translation id="2439248520967274840">Anda masuk ke <ph name="TO_ACCOUNT" />. Sebagian bookmark, riwayat, sandi, dan setelan lain yang sudah ada sebelumnya disinkronkan ke <ph name="FROM_ACCOUNT" />. Apa yang ingin Anda lakukan dengan data yang sudah ada?</translation>
 <translation id="2440823041667407902">Akses lokasi</translation>
 <translation id="2476578072172137802">Setelan Situs</translation>
 <translation id="2482878487686419369">Notifikasi</translation>
@@ -188,7 +187,6 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="2996291259634659425">Buat frasa sandi</translation>
 <translation id="2996809686854298943">Perlu URL</translation>
 <translation id="300526633675317032">Tindakan ini akan menghapus <ph name="SIZE_IN_KB" /> seluruhnya dari penyimpanan situs web.</translation>
-<translation id="3012408695656332380">Ganti data perangkat ini dengan data <ph name="TO_ACCOUNT" />. Anda dapat mengambil data yang sudah ada dengan beralih kembali ke <ph name="FROM_ACCOUNT" />, namun data yang dibuat setelah Anda keluar akan hilang.</translation>
 <translation id="3029704984691124060">Frasa sandi tidak cocok</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Dapatkan bantuan<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Buka di tab penyamaran</translation>
@@ -215,7 +213,6 @@ Anda dapat mengontrol Web Fisik di Setelan Chrome.
 <translation id="3320021301628644560">Tambahkan alamat penagihan</translation>
 <translation id="3328801116991980348">Informasi situs</translation>
 <translation id="3350687908700087792">Tutup semua jendela penyamaran</translation>
-<translation id="3351441609270267898">Impor data yang ada</translation>
 <translation id="3365671512111106261">Tidak tersedia jika Penghemat Data diaktifkan</translation>
 <translation id="3367813778245106622">Masuk lagi untuk memulai sinkronisasi</translation>
 <translation id="3384347053049321195">Bagikan gambar</translation>
@@ -312,7 +309,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="4522570452068850558">Detail</translation>
 <translation id="4526249700380860531">Melihat dan mengelola sandi yang tersimpan di <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Pilih folder</translation>
-<translation id="4535858793016067060">Aktifkan “Sumber tidak dikenal” di setelan keamanan Android untuk mencoba pengalaman "Tambahan yang Disempurnakan ke layar Utama". Pastikan untuk menonaktifkan setelan ini setelah Anda mencobanya.</translation>
+<translation id="4535858793016067060">Aktifkan “Sumber tidak dikenal” di setelan keamanan Android untuk mencoba eksperimen "Tambah ke layar Utama yang Disempurnakan". Pastikan untuk menonaktifkan setelan ini setelah Anda mencobanya.</translation>
 <translation id="4543661749405994812">Salin alamat email</translation>
 <translation id="4572422548854449519">Masuk ke akun yang dikelola</translation>
 <translation id="457875822857220463">Pengiriman</translation>
@@ -394,7 +391,7 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5335288049665977812">Izinkan situs menjalankan JavaScript (disarankan)</translation>
 <translation id="5345040418939504969">Menghapus <ph name="BOOKMARK_TITLE" /></translation>
 <translation id="5345083863238459644">Akses lokasi juga <ph name="BEGIN_LINK" />dinonaktifkan untuk perangkat ini<ph name="END_LINK" />.</translation>
-<translation id="5349103022427743704">Pengalaman Tambahan yang Disempurnakan ke layar Utama</translation>
+<translation id="5349103022427743704">Eksperimen Tambah ke layar Utama yang Disempurnakan</translation>
 <translation id="53553865750799677">Alamat pengambilan tidak didukung. Pilih alamat lain.</translation>
 <translation id="5372829067651257087">URL disalin.</translation>
 <translation id="5400569084694353794">Dengan menggunakan aplikasi ini, Anda menyetujui <ph name="BEGIN_LINK1" />Persyaratan Layanan<ph name="END_LINK1" /> dan <ph name="BEGIN_LINK2" />Pemberitahuan Privasi<ph name="END_LINK2" /> Chrome.</translation>
@@ -426,7 +423,6 @@ Untuk menyesuaikan istilah penelusuran, tekan lama untuk memilih. Untuk menyarin
 <translation id="5676636989614905379">Tidak dapat memutar video di <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Dicekal</translation>
 <translation id="5684874026226664614">Ups. Laman ini tidak dapat diterjemahkan.</translation>
-<translation id="5708031556037168012">Simpan data yang sudah ada di perangkat dan impor data ke <ph name="TO_ACCOUNT" /> secara permanen.</translation>
 <translation id="5719837394786370183">Halaman yang Anda lihat dalam tab penyamaran tidak akan disimpan di riwayat, penyimpanan cookie, atau riwayat penelusuran browser setelah semua tab penyamaran ditutup. File apa pun yang diunduh atau bookmark yang dibuat akan tetap tersimpan.
 
 Namun demikian, bukan berarti Anda sama sekali tidak terlihat. Menggunakan mode penyamaran tidak akan menyembunyikan penjelajahan yang Anda lakukan dari atasan di kantor, dari penyedia layanan internet, maupun situs web yang Anda kunjungi.</translation>
@@ -563,7 +559,6 @@ Misalnya, beberapa situs web mungkin menanggapi permintaan ini dengan menayangka
 <translation id="7062545763355031412">Terima dan beralih akun</translation>
 <translation id="7063006564040364415">Tidak dapat menyambung ke server sinkronisasi.</translation>
 <translation id="7064851114919012435">Info kontak</translation>
-<translation id="7081639897063626814">Tetap pisahkan data yang sudah ada</translation>
 <translation id="7094922512924405309">Laman Web Fisik di sekitar tidak ditemukan</translation>
 <translation id="7138678301420049075">Lainnya</translation>
 <translation id="7180611975245234373">Segarkan</translation>
@@ -735,12 +730,10 @@ Untuk mendapatkan lisensi baru, sambungkan ke internet dan putar konten yang diu
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Perlihatkan laman asli</translation>
 <translation id="9139068048179869749">Tanya terlebih dahulu sebelum mengizinkan situs mengirimkan notifikasi (disarankan)</translation>
-<translation id="9141510419986760385">Anda beralih akun sinkronisasi dari <ph name="FROM_ACCOUNT" /> ke <ph name="TO_ACCOUNT" />. Apa yang ingin Anda lakukan dengan bookmark, riwayat, sandi, dan setelan lain yang sudah ada?</translation>
 <translation id="9154194610265714752">Diperbarui</translation>
 <translation id="917685106653909562">Laman Web fisik di sekitar</translation>
 <translation id="9187199695613236444">Tampilan mobile-friendly</translation>
 <translation id="9188680907066685419">Keluar dari akun yang dikelola</translation>
-<translation id="9198708126133947749">Ganti data perangkat ini dengan data <ph name="TO_ACCOUNT" />. Anda dapat mengambil data yang sudah ada dengan beralih kembali ke <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Gambar</translation>
 <translation id="932327136139879170">Beranda</translation>

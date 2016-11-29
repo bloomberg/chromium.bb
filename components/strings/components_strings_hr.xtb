@@ -705,7 +705,6 @@ Psst! Sljedeći bi vam put mogao koristiti anonimni način <ph name="SHORTCUT_KE
 <translation id="9050666287014529139">Zaporka</translation>
 <translation id="9065203028668620118">Uredi</translation>
 <translation id="9068849894565669697">Odaberite boju</translation>
-<translation id="9092364396508701805">Stranica hosta <ph name="HOST_NAME" /> ne funkcionira</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> obično upotrebljava enkripciju radi zaštite vaših podataka. Prilikom ovog pokušaja povezivanja Chromiuma s web-lokacijom <ph name="SITE" /> ta je web-lokacija vratila neuobičajene
 i netočne vjerodajnice. To može značiti da se neki napadač pokušava predstaviti kao <ph name="SITE" /> ili je zaslon za prijavu na Wi-Fi prekinuo vezu. Vaši su podaci još uvijek sigurni jer je Chromium zaustavio povezivanje prije razmjene podataka.</translation>
 <translation id="9137013805542155359">Prikaži original</translation>

@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">Menelusuri perangkat USB dan Bluetooth...</translation>
 <translation id="1056898198331236512">Peringatan</translation>
 <translation id="1056982457359827501">Mengaktifan iklan BLE di Chrome Apps. Iklan BLE mungkin dapat mengganggu penggunaan reguler fitur Bluetooth Hemat Energi.</translation>
-<translation id="1058325955712687476">Mengaktifkan Layanan Keterlibatan Situs, yang merekam interaksi dengan situs dan mengalokasikan sumber daya yang sesuai.</translation>
 <translation id="1058418043520174283"><ph name="INDEX" /> dari <ph name="COUNT" /></translation>
 <translation id="1062407476771304334">Ganti</translation>
 <translation id="1062866675591297858">Mengelola pengguna yang dilindungi milik Anda menggunakan <ph name="BEGIN_LINK" />Dasbor Pengguna yang Dilindungi<ph name="END_LINK" />.</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852">Mengimpor <ph name="FILE_COUNT" /> file...</translation>
 <translation id="1352103415082130575">Keyboard Thai (Pattachote)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" />: <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">Pengelola penyimpanan Desain Material</translation>
 <translation id="1353966721814789986">Laman permulaan</translation>
 <translation id="1354868058853714482">Adobe Reader sudah usang dan mungkin tidak aman.</translation>
 <translation id="1355408554203439639">Rasterizer perangkat lunak 3D</translation>
@@ -371,7 +369,6 @@
 <translation id="1477301030751268706">Cache Token API Identitas</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">Detail: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">Penangkapan spek v1 kejadian penunjuk</translation>
 <translation id="1480041086352807611">Mode demo</translation>
 <translation id="1481244281142949601">Sandbox Anda memadai.</translation>
 <translation id="1482124012545051544">Siap mencadangkan <ph name="FILE_COUNT" /> foto baru</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">Tab Penyamaran: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA Mencurigakan</translation>
 <translation id="218070003709087997">Gunakan angka untuk mengindikasikan jumlah salinan yang akan dicetak (1 sampai 999).</translation>
-<translation id="218492098606937156">Aktifkan acara sentuh</translation>
 <translation id="2187317261103489799">Deteksi (default)</translation>
 <translation id="2187895286714876935">Kesalahan Impor Sertifikat Server</translation>
 <translation id="2188881192257509750">Buka <ph name="APPLICATION" /></translation>
@@ -1041,7 +1037,6 @@ Setelah membuat pengguna yang dilindungi, Anda dapat mengelola setelannya kapan 
 <translation id="2367972762794486313">Tampilkan aplikasi</translation>
 <translation id="2371076942591664043">Buka setelah &amp;selesai</translation>
 <translation id="2372036074421194686">Chrome menemukan program yang tidak diinginkan (<ph name="UWS_NAME" />) yang terpasang di komputer. Anda dapat menghapusnya dengan menjalankan Alat Pembersih Chrome.</translation>
-<translation id="2375701438512326360">Paksa dukungan layar sentuh untuk selalu diaktifkan atau dinonaktifkan, atau diaktifkan jika layar sentuh terdeteksi saat memulai (Otomatis, default).</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> file dipilih</translation>
 <translation id="2378982052244864789">Pilih direktori ekstensi.</translation>
 <translation id="2379281330731083556">Cetak menggunakan dialog sistem... <ph name="SHORTCUT_KEY" /></translation>
@@ -2085,7 +2080,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3648460724479383440">Tombol radio yang dipilih</translation>
 <translation id="3649138363871392317">Foto dijepret</translation>
 <translation id="3650242103421962931">Linier</translation>
-<translation id="3653069516296104653">Menonaktifkan penangkapan implisit kejadian penunjuk sentuh.</translation>
 <translation id="3653999333232393305">Terus izinkan <ph name="HOST" /> mengakses mikrofon Anda</translation>
 <translation id="3654045516529121250">Baca setelan aksesibilitas Anda</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{Memiliki akses permanen ke satu file.}other{Memiliki akses permanen ke # file.}}</translation>
@@ -2128,7 +2122,6 @@ Dari <ph name="DOWNLOAD_DOMAIN" /></translation>
 <translation id="3709244229496787112">Browser mati sebelum unduhan selesai.</translation>
 <translation id="3711895659073496551">Tangguhkan</translation>
 <translation id="3712897371525859903">Simp&amp;an laman sebagai...</translation>
-<translation id="3713494718070140825"><ph name="BEGIN_WHITEPAPER_LINK" />Mengirim<ph name="END_WHITEPAPER_LINK" /> sebagian informasi sistem dan konten halaman secara otomatis ke Google untuk membantu mendeteksi aplikasi dan situs berbahaya. <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">kalender web</translation>
 <translation id="3715597595485130451">Menyambung ke jaringan Wi-Fi</translation>
 <translation id="3716615839203649375">izinkan</translation>
@@ -2477,13 +2470,11 @@ Semua pengguna harus keluar untuk melanjutkan.</translation>
 <translation id="418179967336296930">Keyboard Fonetik Rusia (YaZHert)</translation>
 <translation id="4181841719683918333">Bahasa</translation>
 <translation id="4184885522552335684">Seret untuk memindahkan tampilan</translation>
-<translation id="4188447344915957833">Mengaktifkan pengelola penyimpanan di Setelan Desain Material.</translation>
 <translation id="4189406272289638749">Ekstensi, &lt;b&gt;<ph name="EXTENSION_NAME" />&lt;/b&gt;, mengontrol setelan ini.</translation>
 <translation id="4193154014135846272">Dokumen Google</translation>
 <translation id="4193182321948161343">Aktifkan Pengelola Pengguna Desain Material</translation>
 <translation id="4193297030838143153">Alamat penagihan baru...</translation>
 <translation id="4194570336751258953">Aktifkan ketuk-untuk-mengeklik</translation>
-<translation id="4195621107636847694">Layanan Keterlibatan Situs</translation>
 <translation id="4195643157523330669">Buka di tab baru</translation>
 <translation id="4195814663415092787">Lanjutkan dari laman terakhir yang dibuka</translation>
 <translation id="4197674956721858839">Pilihan file zip</translation>
@@ -3116,7 +3107,7 @@ Tekan sembarang tombol untuk melanjutkan penjelajahan.</translation>
 <translation id="5088534251099454936">PKCS #1 SHA-512 Dengan Enkripsi RSA</translation>
 <translation id="509429900233858213">Terjadi kesalahan.</translation>
 <translation id="5094721898978802975">Berkomunikasi dengan aplikasi asli yang kooperatif</translation>
-<translation id="5096691708387552456">Mengaktifkan pemuatan latar belakang (atau download-an) halaman pada perangkat Android svelte (RAM 512MB) secara bersamaan. Jika tidak, pemuatan latar belakang akan terjadi kapan pun perangkat svelte tidak digunakan.</translation>
+<translation id="5096691708387552456">Mengaktifkan pemuatan latar belakang (atau proses download) halaman pada perangkat Android svelte (RAM 512MB) secara bersamaan. Jika tidak, pemuatan latar belakang akan terjadi kapan pun perangkat svelte tidak digunakan.</translation>
 <translation id="5097002363526479830">Gagal menyambung ke jaringan '<ph name="NAME" />': <ph name="DETAILS" /></translation>
 <translation id="5098629044894065541">Ibrani</translation>
 <translation id="5098647635849512368">Tidak dapat menemukan jalur pasti ke direktori untuk masuk.</translation>
@@ -4475,7 +4466,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="6920569915859786172">Picu untuk selalu memuat Intervensi Agen untuk WebFont</translation>
 <translation id="6920989436227028121">Buka sebagai tab biasa</translation>
 <translation id="6922128026973287222">Hemat data dan jelajahi dengan lebih cepat menggunakan Penghemat Data Google. Klik untuk mempelajari lebih lanjut.</translation>
-<translation id="6928156602870961453">Mengaktifkan tambahan yang disempurnakan ke layar Utama</translation>
+<translation id="6928156602870961453">Mengaktifkan tambah ke layar Utama yang disempurnakan</translation>
 <translation id="6929555043669117778">Lanjutkan mencekal munculan</translation>
 <translation id="6930242544192836755">Durasi</translation>
 <translation id="6934265752871836553">Gunakan kode bleeding-edge untuk membuat Chrome menggambar konten lebih cepat. Perubahan
@@ -5140,7 +5131,7 @@ Hanya gunakan fitur ini dengan akun yang Anda percayai.</translation>
 <translation id="7839580021124293374">3</translation>
 <translation id="7839804798877833423">Mengambil file ini akan menggunakan sekitar <ph name="FILE_SIZE" /> data seluler.</translation>
 <translation id="7839963980801867006">Pilih IME ekstensi mana yang akan tersedia di menu bahasa.</translation>
-<translation id="7842346819602959665">Versi ekstensi "<ph name="EXTENSION_NAME" />" teranyar memerlukan izin lebih lanjut, jadi ekstensi belum diaktifkan.</translation>
+<translation id="7842346819602959665">Versi ekstensi "<ph name="EXTENSION_NAME" />" terbaru memerlukan izin lebih lanjut, jadi ekstensi belum diaktifkan.</translation>
 <translation id="7844992432319478437">Memperbarui diff</translation>
 <translation id="7846076177841592234">Batalkan pilihan</translation>
 <translation id="7846634333498149051">Keyboard</translation>

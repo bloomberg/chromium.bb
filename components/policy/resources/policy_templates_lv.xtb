@@ -828,9 +828,6 @@
 <translation id="3322771899429619102">Ļauj iestatīt URL šablonu sarakstu, kurā ir norādītas vietnes, kam ir atļauts izmantot atslēgu ģenerēšanu. Ja URL šablons ir iestatīts politikā “KeygenBlockedForUrls”, šie izņēmumi tiek ignorēti.
 
           Ja šī politika nav iestatīta, visām vietnēm tiks izmantota globālā noklusējuma vērtība no politikas “DefaultKeygenSetting” (ja tā ir iestatīta) vai pretējā gadījumā no lietotāja personīgās konfigurācijas.</translation>
-<translation id="3322902067538988734">Ja politikai ir iestatīta vērtība Patiesa, lietotājam pirms pārlūkprogrammas <ph name="PRODUCT_NAME" /> lietošanas ir jāpierakstās profilā. Šādā gadījumā politikai BrowserGuestModeEnabled tiek iestatīta noklusējuma vērtība Aplama.
-
-Ja politikai ir iestatīta vērtība Aplama vai politika nav konfigurēta, lietotājs var lietot pārlūkprogrammu <ph name="PRODUCT_NAME" /> bez pierakstīšanās.</translation>
 <translation id="3347687541825006165">Iestata, cik bieži lietotājam ir jāievada parole, lai izmantotu ātro atbloķēšanu.</translation>
 <translation id="3381968327636295719">Pēc noklusējuma lieto saimniekdatora pārlūku</translation>
 <translation id="3417418267404583991">Ja šī politika ir iestatīta uz Patiesa vai nav konfigurēta, produkts <ph name="PRODUCT_OS_NAME" /> iespējo viesu pieteikšanās sesijas. Viesu pieteikšanās sesijas ir anonīmu lietotāju sesijas, un tām nav jāizmanto parole.
@@ -1693,14 +1690,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
       Pretējā gadījumā var iestatīt kādu no šīm vērtībām: “sslv3”, “tls1”, “tls1.1” vai “tls1.2”. Ja vērtība ir iestatīta, pārlūkā <ph name="PRODUCT_NAME" /> netiks izmantotas par norādīto versiju vecākas standarta SSL/TLS versijas. Neatpazītas vērtības tiks ignorētas.
 
       Ņemiet vērā, ka “sslv3” ir vecāka versija nekā “tls1”, kaut arī skaitlis versijas nosaukumā ir lielāks.</translation>
-<translation id="6177482277304066047">Iestata mērķa versiju automātiskajai atjaunināšanai.
-
-      Norāda tās <ph name="PRODUCT_OS_NAME" /> mērķa versijas prefiksu, uz kuru ir jāveic atjaunināšana. Ja ierīcē darbojas versija, kas ir vecāka par norādīto prefiksu, tā tiks atjaunināta uz jaunāko versiju ar šo prefiksu. Ja ierīcē jau darbojas jaunākā versija, šī darbība neko neietekmēs (t.i., netiks veikta atkāpšanās uz vecāku versiju) un ierīcē turpinās darboties pašreizējā versija. Kā parādīts tālāk esošajā piemērā, prefiksa formāts darbojas komponenta veidā:
-
-      “” (vai nav konfigurēts): atjaunināt uz jaunāko pieejamo versiju.
-      “1412.”: atjaunināt uz jebkuru no 1412 papildversijām (piemēram, 1412.24.34 vai 1412.60.2).
-      “1412.2.”: atjaunināt uz jebkuru no 1412.2 papildversijām (piemēram, 1412.2.34 vai 1412.2.2).
-      “1412.24.34”: atjaunināt tikai uz šo konkrēto versiju.</translation>
 <translation id="6190022522129724693">Noklusējuma uznirstošo logu iestatījums</translation>
 <translation id="6197453924249895891">Paplašinājumiem tiek sniegta piekļuve korporatīvajām atslēgām.
 
@@ -1736,9 +1725,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="6367755442345892511">Vai lietotājam ir jābūt iespējai konfigurēt izlaišanas kanālu</translation>
 <translation id="6368011194414932347">Konfigurē sākumlapas URL</translation>
 <translation id="6368403635025849609">Atļauj izmantot JavaScript šajās vietnēs</translation>
-<translation id="6373222873250380826">Atspējo automātiskos atjauninājumus, kad politika ir iestatīta uz Patiesa.
-
-      Produkta <ph name="PRODUCT_OS_NAME" /> ierīces automātiski pārbauda atjauninājumus, kad šis iestatījums nav konfigurēts vai ir iestatīts uz Aplams.</translation>
 <translation id="6376659517206731212">Var būt obligāta</translation>
 <translation id="6378076389057087301">Audio darbības ietekmes uz jaudas pārvaldību norādīšana</translation>
 <translation id="637934607141010488">Parāda sarakstu ar ierīces lietotājiem, kuri nesen ir pieteikušies ierīcē.
@@ -2100,13 +2086,6 @@ Ja šī politika nav iestatīta, lietotājs var atspējot jebkuru sistēmā inst
 <translation id="7336878834592315572">Sīkfailu saglabāšana sesijas laikā</translation>
 <translation id="7340034977315324840">Ziņot par ierīces darbības laikiem</translation>
 <translation id="7384999953864505698">Atļauja lietot QUIC protokolu</translation>
-<translation id="7406651467768226499">Atļauja kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju.
-
-      Šī politika nosaka, vai atļaut kioska lietotnei, kas tiek automātiski palaista ar nulles aizkavi, kontrolēt <ph name="PRODUCT_OS_NAME" /> versiju, manifestā norādot parametru required_platform_version, un izmantot to kā automātiskās atjaunināšanas mērķa versijas prefiksu.
-
-      Ja politikai ir iestatīta vērtība “Patiesa”, tās kioska lietotnes, kura tiek automātiski palaista ar nulles aizkavi, manifesta atslēgas required_platform_version vērtība tiek izmantota kā automātiskās atjaunināšanas mērķa versijas prefikss.
-
-      Ja politika nav konfigurēta vai tai ir iestatīta vērtība “Nepatiesa”, manifesta atslēga required_platform_version tiek ignorēta un automātiskā atjaunināšana tiek veikta kā parasti.</translation>
 <translation id="7417972229667085380">Aizkaves līdz dīkstāvei norādīšana procentos (prezentācijas režīmā; pārtraukta)</translation>
 <translation id="7421483919690710988">Iestatīt datu nesēja kešatmiņas lielumu baitos</translation>
 <translation id="7424751532654212117">Atspējoto spraudņu saraksta izņēmumu saraksts</translation>

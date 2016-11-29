@@ -785,9 +785,6 @@ Hvis kompatabilitet med en fejlbehæftet server skal opretholdes, kan denne poli
 <translation id="3322771899429619102">Giver dig mulighed for at oprette en liste med webadressemønstre, der angiver websites, som har tilladelse til at benytte nøglegenerering. Hvis et webadressemønster findes i "KeygenBlockedForUrls", tilsidesættes disse undtagelser.
 
           Hvis denne politik ikke angives, anvendes den globale standardværdi på alle websites, enten fra politikken "DefaultKeygenSetting", hvis den er angivet, eller brugerens personlige konfiguration.</translation>
-<translation id="3322902067538988734">Hvis denne politik er angivet som Sand, skal brugeren logge ind på <ph name="PRODUCT_NAME" /> med sin profil, inden browseren anvendes. Standardværdien for BrowserGuestModeEnabled angives dermed til Falsk.
-
-      Hvis denne politik er angivet som Falsk eller ikke er konfigureret, kan brugeren benytte browseren uden at logge ind på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Konfigurerer, hvor ofte brugeren skal indtaste adgangskoden for at bruge hurtig oplåsning.</translation>
 <translation id="3381968327636295719">Brug værtsbrowseren som standard</translation>
 <translation id="3417418267404583991">Hvis denne politik er angivet til sand eller ikke er konfigureret, aktiverer <ph name="PRODUCT_OS_NAME" /> gæstelogins. Gæstelogins er anonyme brugersessioner, der ikke kræver en adgangskode,
@@ -1602,14 +1599,6 @@ Hvis denne politik ikke er indstillet, er standardfrekvensen 3 minutter. Minimum
       Alternativt kan den angives til én af følgende værdier: "sslv3", "tls1", "tls1.1" eller "tls1.2". Når den er angivet, benytter <ph name="PRODUCT_NAME" /> ikke SSL/TLS-versioner, der er ældre end den angivne version. En ukendt værdi ignoreres.
 
       Bemærk, at "sslv3" på trods af tallet er en ældre version end "tls1".</translation>
-<translation id="6177482277304066047">Indstiller en målversion for automatiske opdateringer.
-
-      Angiver præfikset for en målversion, som <ph name="PRODUCT_OS_NAME" /> skal opdatere til. Hvis enheden kører med en version, der er ældre end det angivne præfiks, opdateres den til den seneste version med det angivne præfiks. Hvis enheden allerede har en nyere version, har det ingen effekt (dvs. ingen nedgraderinger), og enhedens version ændres ikke. Præfiksformatet virker i forhold til komponenten, som det ses i følgende eksempel:
-
-      "" (eller ikke konfigureret): opdater til den nyeste version.
-      "1412.": opdater til en mindre version af 1412 (f.eks. 1412.24.34 eller 1412.60.2)
-      "1412.2.": opdater til en mindre version af 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
-      "1412.24.34": opdater kun til denne specifikke version</translation>
 <translation id="6190022522129724693">Standardindstillinger for pop op-vinduer</translation>
 <translation id="6197453924249895891">Giver virksomhedsnøgler adgang til udvidelser.
 
@@ -1645,9 +1634,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="6367755442345892511">Om udgivelseskanalen skal konfigureres af brugeren</translation>
 <translation id="6368011194414932347">Konfigurer webadressen for startsiden</translation>
 <translation id="6368403635025849609">Tillad JavaScript på disse websites</translation>
-<translation id="6373222873250380826">Deaktiverer automatiske opdateringer, når indstillingen angives til Sand.
-
-      <ph name="PRODUCT_OS_NAME" />-enheder søger automatisk efter opdateringer, når denne indstilling ikke er konfigureret eller er angivet til Falsk.</translation>
 <translation id="6376659517206731212">Kan være obligatorisk</translation>
 <translation id="6378076389057087301">Angiv, om lydaktivitet påvirker strømstyringen</translation>
 <translation id="637934607141010488">Rapportér liste over enhedsbrugere, der har logget ind for nylig.
@@ -1985,13 +1971,6 @@ Kun hvis allowCorporateKeyUsage er angivet som "sand" for en udvidelse, kan den 
 <translation id="7336878834592315572">Behold cookies under sessionen</translation>
 <translation id="7340034977315324840">Rapportér tidspunkter for aktiviteter på enheden</translation>
 <translation id="7384999953864505698">Tillader QUIC-protokol</translation>
-<translation id="7406651467768226499">Om den automatisk startede terminalapp uden forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versionen.
-
-      Denne politik bestemmer, om den automatisk startede terminalapp uden forsinkelse skal kunne styre <ph name="PRODUCT_OS_NAME" />-versionen ved at angive en required_platform_version i sit manifest og bruge den som et præfiks for en automatisk opdateret målversion.
-
-      Hvis politikken er angivet til sand, bruges værdien i manifestnøglen required_platform_version fra den automatisk startede terminalapp uden forsinkelse til automatisk at opdatere præfikset for målversionen.
-
-      Hvis politikken ikke konfigureres, eller den indstilles til falsk, ignoreres manifestnøglen required_platform_version, og den automatiske opdatering fortsætter som normalt.</translation>
 <translation id="7417972229667085380">Den procentdel, som inaktivitetsforsinkelsen i præsentationstilstand skaleres efter (udfases)</translation>
 <translation id="7421483919690710988">Angiv størrelsen på mediediskcache i bytes</translation>
 <translation id="7424751532654212117">Liste over undtagelser for listen over ​​deaktiverede plugins</translation>

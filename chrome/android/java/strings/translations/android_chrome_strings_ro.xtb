@@ -140,7 +140,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="238909021488141516">A apărut o eroare la descărcarea conținutului.</translation>
 <translation id="2414886740292270097">Întunecat</translation>
 <translation id="2433507940547922241">Aspect</translation>
-<translation id="2439248520967274840">Te conectezi la <ph name="TO_ACCOUNT" />. Unele marcaje, elemente din istoric, parole și alte setări existente au fost sincronizate anterior cu <ph name="FROM_ACCOUNT" />. Ce dorești să faci cu datele existente?</translation>
 <translation id="2440823041667407902">Accesul la locație</translation>
 <translation id="2476578072172137802">Setări site</translation>
 <translation id="2482878487686419369">Notificări</translation>
@@ -188,7 +187,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="2996291259634659425">Creează o expresie de acces</translation>
 <translation id="2996809686854298943">Adresă URL obligatorie</translation>
 <translation id="300526633675317032">Astfel, se vor șterge <ph name="SIZE_IN_KB" /> din stocarea site-urilor.</translation>
-<translation id="3012408695656332380">Înlocuiește datele acestui dispozitiv cu datele contului <ph name="TO_ACCOUNT" />. Poți recupera datele existente comutând înapoi la <ph name="FROM_ACCOUNT" />, dar datele create după ce te-ai deconectat se vor pierde.</translation>
 <translation id="3029704984691124060">Expresiile de acces nu corespund</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Obține ajutor<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Deschideți într-o filă incognito</translation>
@@ -215,7 +213,6 @@ Poți să controlezi Webul material din Setările Chrome.
 <translation id="3320021301628644560">Adaugă o adresă de facturare</translation>
 <translation id="3328801116991980348">Informații despre site</translation>
 <translation id="3350687908700087792">Închide toate filele incognito</translation>
-<translation id="3351441609270267898">Importă datele existente</translation>
 <translation id="3365671512111106261">Nu este disponibilă când Economizorul de date este activat</translation>
 <translation id="3367813778245106622">Conectează-te din nou pentru a începe sincronizarea</translation>
 <translation id="3384347053049321195">Trimite imaginea</translation>
@@ -426,7 +423,6 @@ Pentru a ajusta termenii căutării, apasă lung pentru a selecta. Pentru a rafi
 <translation id="5676636989614905379">Videoclipul nu poate fi redat pe <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Blocat</translation>
 <translation id="5684874026226664614">Hopa. Această pagină nu a putut fi tradusă.</translation>
-<translation id="5708031556037168012">Păstrează datele existente pe dispozitiv și importă definitiv datele în <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Paginile pe care le vezi în filele incognito nu vor fi înregistrate în istoricul browserului, nu vor stoca cookie-uri și nu vor rămâne în istoricul de căutare după ce închizi toate filele incognito. Fișierele descărcate și marcajele create vor fi păstrate.
 
 Totuși, nu ești invizibil(ă). Trecerea în modul incognito nu ascunde activitatea de navigare față de angajator, față de furnizorul de servicii de internet sau față de site-urile pe care le accesezi.</translation>
@@ -563,7 +559,6 @@ De exemplu, unele site-uri pot răspunde la această solicitare afișând anunț
 <translation id="7062545763355031412">Acceptă și comută conturile</translation>
 <translation id="7063006564040364415">Nu s-a putut stabili conexiunea cu serverul de sincronizare.</translation>
 <translation id="7064851114919012435">Informații de contact</translation>
-<translation id="7081639897063626814">Păstrează datele existente separat</translation>
 <translation id="7094922512924405309">Nu au fost găsite pagini din Webul material în apropiere</translation>
 <translation id="7138678301420049075">Altele</translation>
 <translation id="7180611975245234373">Actualizați</translation>
@@ -736,12 +731,10 @@ Pentru licențe noi, conectează-te la internet și redă conținutul descărcat
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Afișează originalul</translation>
 <translation id="9139068048179869749">Întreabă înainte de a permite site-urilor să trimită notificări (recomandat)</translation>
-<translation id="9141510419986760385">Comuți contul pentru sincronizare de la <ph name="FROM_ACCOUNT" /> la <ph name="TO_ACCOUNT" />. Ce dorești să faci cu marcajele, istoricul, parolele și alte setări existente?</translation>
 <translation id="9154194610265714752">Actualizat</translation>
 <translation id="917685106653909562">Există pagini din Webul material în apropiere</translation>
 <translation id="9187199695613236444">Vizualizare adecvată pentru dispozitivele mobile</translation>
 <translation id="9188680907066685419">Deconectează-te de la contul gestionat</translation>
-<translation id="9198708126133947749">Înlocuiește datele acestui dispozitiv cu datele contului <ph name="TO_ACCOUNT" />. Poți recupera datele existente comutând înapoi la <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Imagini</translation>
 <translation id="932327136139879170">Pagina de pornire</translation>

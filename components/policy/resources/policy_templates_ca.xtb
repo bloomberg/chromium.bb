@@ -769,9 +769,6 @@ Si es desactiva aquest paràmetre, els usuaris no podran activar el servidor int
 
 
           Si aquesta política es deixa sense establir, s'utilitzarà el valor general predeterminat de la política "DefaultKeygenSetting" (si està configurada) per a tots els llocs web, o bé s'utilitzarà la configuració personal de l'usuari.</translation>
-<translation id="3322902067538988734">Si aquesta política s'estableix en "true", l'usuari ha d'iniciar la sessió a <ph name="PRODUCT_NAME" /> amb el seu perfil abans d'utilitzar el navegador. El valor predeterminat de BrowserGuestModeEnabled és "false".
-
-      Si aquesta política s'estableix en "false" o no es configura cap valor, l'usuari pot utilitzar el navegador sense iniciar la sessió a <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Defineix amb quina freqüència l'usuari ha d'introduir la contrasenya per utilitzar el desbloqueig ràpid.</translation>
 <translation id="3381968327636295719">Fes servir el navegador amfitrió de manera predeterminada</translation>
 <translation id="3417418267404583991">Si aquesta política es defineix a «true» (cert) o no es configura, <ph name="PRODUCT_OS_NAME" /> permetrà els inicis de sessió de convidat. Aquests inicis de sessió són sessions d'usuari anònimes i no cal introduir cap contrasenya.
@@ -1558,7 +1555,7 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6157537876488211233">Llista de regles d'evitació de servidors intermediaris separada per comes</translation>
 <translation id="6158324314836466367">Nom de la botiga web de l'empresa (obsolet)</translation>
 <translation id="6166832345529129545">Controla quins modes de desbloqueig ràpid es poden configurar i utilitzar.
-      Aquesta opció de configuració afegeix a una llista blanca els modes de desbloqueig ràpid que es poden configurar i utilitzar per desbloquejar la pantalla de bloqueig. El valor és una llista de cadenes i cadascuna d'elles ha de ser una de les següents: "all", "PIN". Si se selecciona "all", estan disponibles tots els modes ràpids admesos. En cas contrari, estan disponibles els modes de la llista.
+      Aquesta opció de configuració afegeix a una llista blanca els modes de desbloqueig ràpid que es poden configurar i utilitzar per desbloquejar la pantalla de bloqueig. El valor és una llista de cadenes cadascuna de les quals ha de tenir el valor "all" o "PIN". Si se selecciona "all", estan disponibles tots els modes ràpids admesos. En cas contrari, estan disponibles els modes de la llista.
 
       Si aquesta opció es configura, no es poden configurar ni utilitzar els modes de desbloqueig ràpid que siguin d'un tipus no inclòs a la llista.
 
@@ -1570,15 +1567,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
       En cas contrari, es pot establir un d'aquests valors: sslv3, tls1, tls1.1 o tls1.2. Quan s'estableixi, <ph name="PRODUCT_NAME" /> no utilitzarà versions de SSL/TLS anteriors a la versió especificada.  S'ignoraran els valors que no es reconeguin.
 
       Tingueu en compte que, al contrari del que sembla, sslv3 és una versió anterior a tls1.</translation>
-<translation id="6177482277304066047">Defineix una versió de destinació per a les actualitzacions automàtiques.
-
-      Especifica el prefix de la versió de destinació a la qual <ph name="PRODUCT_OS_NAME" /> s'ha d'actualitzar. Si el dispositiu està executant una versió anterior al prefix especificat, s'actualitzarà a la darrera versió que tingui el prefix en qüestió. Si el dispositiu ja disposa d'una versió posterior, no tindrà cap efecte (és a dir, no es canviarà a una versió inferior) i el dispositiu continuarà tenint la versió actual. El format del prefix depèn del component, tal com es mostra a l'exemple següent:
-
-
-      "" (o sense configurar): s'actualitza a la darrera versió disponible.
-      "1412.": s'actualitza a qualsevol versió menor de 1412 (p. ex., 1412.24.34 o 1412.60.2)
-      "1412.2.": s'actualitza a qualsevol versió menor de 1412.2 (p. ex., 1412.2.34 o 1412.2.2)
-      "1412.24.34": només s'actualitza a aquesta versió específica</translation>
 <translation id="6190022522129724693">Configuració predeterminada de les finestres emergents</translation>
 <translation id="6197453924249895891">Permet que les extensions tinguin accés a les claus corporatives.
 
@@ -1614,9 +1602,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="6367755442345892511">Si l'usuari pot configurar el canal de llançament</translation>
 <translation id="6368011194414932347">Configura l'URL de la pàgina d'inici</translation>
 <translation id="6368403635025849609">Permet JavaScript en aquests llocs</translation>
-<translation id="6373222873250380826">Desactiva les actualitzacions automàtiques quan es defineix a «True» (cert).
-
-      Els dispositius <ph name="PRODUCT_OS_NAME" /> comproven automàticament si hi ha actualitzacions quan aquest paràmetre no està configurat o s'ha definit a «False» (fals).</translation>
 <translation id="6376659517206731212">Pot ser obligatòria</translation>
 <translation id="6378076389057087301">Especifica si l'activitat d'àudio afecta la gestió d'alimentació</translation>
 <translation id="637934607141010488">Mostra una llista dels usuaris que han iniciat la sessió recentment al dispositiu.
@@ -1948,13 +1933,6 @@ Si aquesta política no es defineix o no s'activa, les ordres d'impressió faran
 <translation id="7336878834592315572">Conserva les galetes mentre duri la sessió</translation>
 <translation id="7340034977315324840">Informa del temps d'activitat dels dispositius</translation>
 <translation id="7384999953864505698">Permet el protocol QUIC</translation>
-<translation id="7406651467768226499">Aquesta política defineix si es permet que l'aplicació de quiosc d'inici automàtic sense retards controli la versió de <ph name="PRODUCT_OS_NAME" />.
-
-      Per poder controlar la versió de <ph name="PRODUCT_OS_NAME" />, la política declara una required_platform_version (versió obligatòria de la plataforma) al fitxer de manifest i la utilitza com a prefix per a la versió desitjada a la qual cal actualitzar automàticament.
-
-      Si la política s'estableix en "true", el valor de la clau de manifest de required_platform_version atorgat a l'aplicació de quiosc d'inici automàtic sense retards s'utilitza com a prefix per a la versió desitjada a la qual cal actualitzar automàticament.
-
-      Si la política no es configura o s'estableix en "false", la clau de manifest de required_platform_version s'ignora i l'actualització automàtica continua com de costum.</translation>
 <translation id="7417972229667085380">Percentatge que permet ajustar el retard d'inactivitat en mode de presentació (desactivat)</translation>
 <translation id="7421483919690710988">Defineix la mida de la memòria cau del disc multimèdia en bytes</translation>
 <translation id="7424751532654212117">Llista d'excepcions de la llista de connectors desactivats</translation>
@@ -2504,9 +2482,9 @@ Aquesta política s'ignora en els comptes d'usuari normals.</translation>
 <translation id="930930237275114205">Defineix el directori de dades de l'usuari del producte <ph name="PRODUCT_FRAME_NAME" /></translation>
 <translation id="944607242500063080">Configura els modes de desbloqueig ràpid permesos.</translation>
 <translation id="944817693306670849">Defineix la mida de la memòria cau del disc</translation>
-<translation id="969164417253718105">Aquesta opció de configuració controla amb quina freqüència es demanarà introduir la contrasenya a la pantalla de bloqueig per continuar utilitzar el desbloqueig ràpid. Cada vegada que s'entra a la pantalla de bloqueig, si la darrera vegada que s'ha introduït la contrasenya és un temps superior a aquesta opció, el desbloqueig ràpid no estarà disponible. Si l'usuari supera aquest període de temps a la pantalla de bloqueig, se li sol·licitarà una contrasenya la propera vegada que introdueixi un codi erroni o que torni a entrar a la pantalla de bloqueig, el que passi abans.
+<translation id="969164417253718105">Aquesta opció de configuració controla amb quina freqüència es demanarà introduir la contrasenya a la pantalla de bloqueig per continuar utilitzant el desbloqueig ràpid. El desbloqueig ràpid no estarà disponible si, en entrar a la pantalla de bloqueig, la darrera vegada que s'ha introduït la contrasenya és un temps superior a aquesta opció. Si l'usuari supera aquest període de temps a la pantalla de bloqueig, se li sol·licitarà una contrasenya la propera vegada que introdueixi un codi erroni o que torni a entrar a la pantalla de bloqueig, el que passi abans.
 
-      Si aquesta opció es configura, serà la referència per demanar als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig.
+      Si aquesta opció es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig en funció d'aquesta opció.
 
       Si aquesta opció no es configura, es demanarà als usuaris que fan servir el desbloqueig ràpid que introdueixin la contrasenya a la pantalla de bloqueig cada dia.</translation>
 </translationbundle>

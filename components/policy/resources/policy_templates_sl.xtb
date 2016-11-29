@@ -825,10 +825,7 @@ napravi konfiguriran tako, da pri samodejni prijavi ni zakasnitve, naprava pa ni
 <translation id="3322771899429619102">Omogoča nastavitev seznama vzorcev URL-jev, s katerim so določena mesta, ki smejo uporabljati ustvarjanje ključev. Če je vzorec URL-ja v »KeygenBlockedForUrls«, to preglasi te izjeme.
 
          Če ta pravilnik ni nastavljen, bo za vsa spletna mesta uporabljena splošna privzeta vrednost iz pravilnika »DefaultKeygenSetting«, kadar je ta nastavljen, ali iz uporabnikove osebne konfiguracije, kadar pravilnik »DefaultKeygenSetting« ni nastavljen.</translation>
-<translation id="3322902067538988734">Če je ta pravilnik omogočen, se mora uporabnik s svojim profilom prijaviti v brskalnik <ph name="PRODUCT_NAME" />, preden ga lahko uporablja. Privzeta vrednost za pravilnik BrowserGuestModeEnabled bo nastavljena na onemogočeno.
-
-      Če je ta pravilnik onemogočen ali ni konfiguriran, lahko uporabnik uporablja brskalnik brez prijave v brskalnik <ph name="PRODUCT_NAME" />.</translation>
-<translation id="3347687541825006165">Nastavi, kako pogosto mora uporabniki vnesti geslo, če želi uporabljati hitro odklepanje.</translation>
+<translation id="3347687541825006165">Nastavi, kako pogosto mora uporabnik vnesti geslo, če želi uporabljati hitro odklepanje.</translation>
 <translation id="3381968327636295719">Privzeto uporabi brskalnik gostitelja</translation>
 <translation id="3417418267404583991">Če je ta pravilnik omogočen ali ni nastavljen, <ph name="PRODUCT_OS_NAME" /> omogoči prijave gostov. Prijave gostov so anonimne seje uporabnikov in ne zahtevajo gesla.
 
@@ -1693,7 +1690,7 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6157537876488211233">Seznam pravil za obvod proxyja, ločenih z vejico</translation>
 <translation id="6158324314836466367">Ime spletne trgovine podjetja (zastarelo)</translation>
 <translation id="6166832345529129545">Nadzira, katere načine hitrega odklepanja je dovoljeno nastaviti in uporabljati.
-      Ta nastavitev na seznam dovoljenih uvrsti dovoljene načine hitrega odklepanja, ki jih je mogoče nastaviti in uporabljati za odklepanje zaklenjenega zaslona. Vrednost je seznam nizov, od katerih mora biti vsak nekaj od tega: »all«, »PIN«. Če je izbrano »all«, so na voljo vsi podprti načini hitrega odklepanja, sicer pa so na voljo načini na seznamu.
+      Če je ta nastavitev vklopljena, bodo na seznam dovoljenih vključeni načini hitrega odklepanja, ki jih je mogoče nastaviti in uporabljati za odklepanje zaklenjenega zaslona. Vrednost je seznam nizov, od katerih mora biti vsak nekaj od tega: »all«, »PIN«. Če je izbrano »all«, so na voljo vsi podprti načini hitrega odklepanja, v nasprotnem primeru pa so na voljo načini na seznamu.
 
       Če je ta nastavitev konfigurirana, načinov hitrega odklepanja z vrsto, ki je ni na tem seznamu, ni mogoče nastaviti ali uporabljati.
 
@@ -1705,14 +1702,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
       V nasprotnem primeru je morda nastavljen na eno od naslednjih vrednosti: »sslv3«, »tls1«, »tls1.1« ali »tls1.2«. Če je nastavljen, <ph name="PRODUCT_NAME" /> ne uporablja različic SSL/TLS, ki so nižje od določene različice. Neprepoznana vrednost bo prezrta.
 
       Kljub številki je »sslv3« starejša različica kot »tls1«.</translation>
-<translation id="6177482277304066047">Nastavi ciljno različico za samodejne posodobitve.
-
-      Določi predpono ciljne različice, na katero se posodobi sistem <ph name="PRODUCT_OS_NAME" />. Če je v napravi različica sistema, ki je starejša od določene predpone, se posodobi na najnovejšo različico z določeno predpono. Če je v napravi novejša različica, se ne zgodi nič (ne uporabi se prejšnja različica) in v napravi je še naprej nameščena trenutna različica. Oblika predpone je odvisna od komponente, kot je prikazano v tem primeru:
-
-      »« (ali ni nastavljeno): posodobitev na najnovejšo razpoložljivo različico.
-      »1412.«: posodobitev na podrazličico različice 1412 (npr. 1412.24.34 ali 1412.60.2)
-      »1412.2.«: posodobitev na podrazličico različice 1412.2 (npr. 1412.2.34 ali 1412.2.2)
-      »1412.24.34«: posodobitev samo na to različico</translation>
 <translation id="6190022522129724693">Privzeta nastavitev pojavnih oken</translation>
 <translation id="6197453924249895891">Razširitvam odobri dostop do ključev podjetja.
 
@@ -1752,9 +1741,6 @@ Vrednost pravilnika mora vedno biti navedena v sekundah. Vrednosti so navzdol om
 <translation id="6367755442345892511">Ali lahko distribucijski kanal za nove izdaje nastavi uporabnik</translation>
 <translation id="6368011194414932347">Konfiguracija URL-ja domače strani</translation>
 <translation id="6368403635025849609">Dovoli JavaScript na teh mestih</translation>
-<translation id="6373222873250380826">Če je pravilnik nastavljen na »True«, so samodejne posodobitve onemogočene.
-
-      Če nastavitev ni nastavljena ali je onemogočena, naprave s sistemom <ph name="PRODUCT_OS_NAME" /> samodejno preverijo, ali so na voljo posodobitve.</translation>
 <translation id="6376659517206731212">Lahko je obvezno</translation>
 <translation id="6378076389057087301">Navedite, ali zvočna dejavnost vpliva na upravljanje napajanja</translation>
 <translation id="637934607141010488">Poročanje o seznamu nedavno prijavljenih uporabnikov naprave.
@@ -2116,13 +2102,6 @@ URL-ji, ki uporabljajo sheme s tega seznama, se ne bodo naložili in dostop do n
 <translation id="7336878834592315572">Ohrani piškotke za obdobje trajanja seje</translation>
 <translation id="7340034977315324840">Pošiljanje podatkov o času dejavnosti v napravi</translation>
 <translation id="7384999953864505698">Dovoli protokol QUIC</translation>
-<translation id="7406651467768226499">Ali naj se samodejno zagnani aplikaciji za kiosk brez zamika dovoli nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" />.
-
-      Ta pravilnik nadzira, ali naj se samodejno zagnani aplikaciji za kiosk brez zamika dovoli nadzor nad različico sistema <ph name="PRODUCT_OS_NAME" /> z označitvijo različice required_platform_version v njenem manifestu in njeno uporabo kot predpono za samodejno posodobitev ciljne različice.
-
-      Če je pravilnik omogočen, se vrednost ključa manifesta required_platform_version samodejno zagnane aplikacije za kiosk brez zamika uporabi kot predpona za samodejno posodobitev ciljne različice.
-
-      Če pravilnik ni konfiguriran ali ni omogočen, je ključ manifesta required_platform_version prezrt in samodejna posodobitev se nadaljuje kot običajno.</translation>
 <translation id="7417972229667085380">Odstotek prilagoditve časovnega zamika nedejavnosti v načinu predstavitve (zastarelo)</translation>
 <translation id="7421483919690710988">Nastavi velikost predpomnilnika medija v bajtih</translation>
 <translation id="7424751532654212117">Seznam izjem za seznam onemogočenih vtičnikov</translation>

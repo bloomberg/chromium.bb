@@ -140,7 +140,6 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="238909021488141516">Er is een fout opgetreden tijdens het downloaden van de content.</translation>
 <translation id="2414886740292270097">Donker</translation>
 <translation id="2433507940547922241">Vormgeving</translation>
-<translation id="2439248520967274840">Je logt in op <ph name="TO_ACCOUNT" />. Sommige van je bestaande bladwijzers, geschiedenis, wachtwoorden en andere instellingen zijn eerder gesynchroniseerd met <ph name="FROM_ACCOUNT" />. Wat wil je doen met je bestaande gegevens?</translation>
 <translation id="2440823041667407902">Locatietoegang</translation>
 <translation id="2476578072172137802">Site instellingen</translation>
 <translation id="2482878487686419369">Meldingen</translation>
@@ -188,7 +187,6 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="2996291259634659425">Wachtwoordzin maken</translation>
 <translation id="2996809686854298943">URL vereist</translation>
 <translation id="300526633675317032">Hiermee wordt de volledige <ph name="SIZE_IN_KB" /> aan site-opslag gewist.</translation>
-<translation id="3012408695656332380">De gegevens van dit apparaat vervangen door de gegevens van <ph name="TO_ACCOUNT" />. Je kunt je bestaande gegevens ophalen door terug te schakelen naar <ph name="FROM_ACCOUNT" />, maar gegevens die zijn gemaakt nadat je bent uitgelogd, gaan verloren.</translation>
 <translation id="3029704984691124060">Wachtwoordzinnen komen niet overeen</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hulp krijgen<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Openen op incognitotabblad</translation>
@@ -215,7 +213,6 @@ Je kunt het Fysieke web beheren via de instellingen van Chrome.
 <translation id="3320021301628644560">Factuuradres toevoegen</translation>
 <translation id="3328801116991980348">Site-informatie</translation>
 <translation id="3350687908700087792">Alle incognitotabbladen sluiten</translation>
-<translation id="3351441609270267898">Bestaande gegevens importeren</translation>
 <translation id="3365671512111106261">Niet beschikbaar wanneer Databesparing is ingeschakeld</translation>
 <translation id="3367813778245106622">Log opnieuw in om de synchronisatie te starten</translation>
 <translation id="3384347053049321195">Afbeelding delen</translation>
@@ -312,7 +309,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="4522570452068850558">Details</translation>
 <translation id="4526249700380860531">Opgeslagen wachtwoorden bekijken en beheren via <ph name="BEGIN_LINK" />passwords.google.com<ph name="END_LINK" /></translation>
 <translation id="4532845899244822526">Map kiezen</translation>
-<translation id="4535858793016067060">Schakel de optie 'Onbekende bronnen' in de beveiligingsinstellingen van Android in om het experiment 'Verbeterde functie voor toevoegen aan startscherm' te proberen. Vergeet niet de instelling uit te schakelen wanneer je klaar bent met proberen.</translation>
+<translation id="4535858793016067060">Schakel de optie 'Onbekende bronnen' in de beveiligingsinstellingen van Android in om het experiment 'Verbeterde functie voor toevoegen aan startscherm' uit te voeren. Vergeet niet de instelling uit te schakelen wanneer je klaar bent met uitproberen.</translation>
 <translation id="4543661749405994812">E-mailadres kopiëren</translation>
 <translation id="4572422548854449519">Inloggen bij een beheerd account</translation>
 <translation id="457875822857220463">Bezorging</translation>
@@ -404,7 +401,7 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="544291274896356069">Je verlaat de incognitomodus als deze link wordt geopend in een externe app. Doorgaan?</translation>
 <translation id="5447201525962359567">Alle site-opslag, inclusief cookies en andere lokaal opgeslagen gegevens</translation>
 <translation id="5456381639095306749">Pagina downloaden</translation>
-<translation id="54817484435770891">Geldig adres toevoegen</translation>
+<translation id="54817484435770891">Voeg een geldig adres toe</translation>
 <translation id="548278423535722844">Openen in app voor kaarten</translation>
 <translation id="5487521232677179737">Gegevens wissen</translation>
 <translation id="5487729733663684359">Updates van Chrome worden niet meer ondersteund voor deze versie van Android.</translation>
@@ -426,7 +423,6 @@ Als je de zoekterm wilt aanpassen, houd je deze aangeraakt om de term te selecte
 <translation id="5676636989614905379">Kan video niet afspelen op <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Geblokkeerd</translation>
 <translation id="5684874026226664614">Deze pagina kan niet worden vertaald.</translation>
-<translation id="5708031556037168012">Bestaande gegevens op je apparaat behouden en de gegevens permanent importeren in <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Pagina's die je bekijkt op incognitotabbladen, blijven niet in de geschiedenis, cookie-opslag of zoekgeschiedenis van je browser staan nadat je alle incognitotabbladen hebt gesloten. Bestanden die je downloadt of bladwijzers die je instelt, blijven behouden.
 
 Je bent echter niet onzichtbaar. Als je incognito bent, wordt je browsegeschiedenis niet verborgen voor je werkgever, je internetprovider of de websites die je bezoekt.</translation>
@@ -563,7 +559,6 @@ Zo kunnen sommige websites op dit verzoek reageren door advertenties weer te gev
 <translation id="7062545763355031412">Accepteren en account wijzigen</translation>
 <translation id="7063006564040364415">Kan geen verbinding maken met synchronisatieserver.</translation>
 <translation id="7064851114919012435">Contactgegevens</translation>
-<translation id="7081639897063626814">Bestaande gegevens gescheiden houden</translation>
 <translation id="7094922512924405309">Geen Fysieke webpagina's in de buurt gevonden</translation>
 <translation id="7138678301420049075">Overige</translation>
 <translation id="7180611975245234373">Vernieuwen</translation>
@@ -735,12 +730,10 @@ Maak verbinding met internet en speel je gedownloade content af om nieuwe licent
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9139068048179869749">Vragen voordat sites meldingen mogen verzenden (aanbevolen)</translation>
-<translation id="9141510419986760385">Je wijzigt het synchronisatieaccount van <ph name="FROM_ACCOUNT" /> in <ph name="TO_ACCOUNT" />. Wat wil je doen met je bestaande bladwijzers, geschiedenis, wachtwoorden en andere instellingen?</translation>
 <translation id="9154194610265714752">Bijgewerkt</translation>
 <translation id="917685106653909562">Fysieke webpagina's in de buurt</translation>
 <translation id="9187199695613236444">Mobielvriendelijke weergave</translation>
 <translation id="9188680907066685419">Uitloggen van beheerd account</translation>
-<translation id="9198708126133947749">De gegevens van dit apparaat vervangen door de gegevens van <ph name="TO_ACCOUNT" />. Je kunt je bestaande gegevens ophalen door terug te schakelen naar <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Afbeeldingen</translation>
 <translation id="932327136139879170">Startpagina</translation>

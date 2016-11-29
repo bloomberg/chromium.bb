@@ -819,9 +819,6 @@
 <translation id="3322771899429619102">Binibigyang-daan ka na magtakda ng isang listahan ng mga pattern ng URL na tumutukoy sa mga site na pinapayagang gumamit ng pagbuo ng key. Kung ang isang pattern ng URL ay nasa 'KeygenBlockedForUrls,' ino-override nito ang mga pagbubukod na ito.
 
           Kung hinayaang hindi nakatakda ang patakarang ito, gagamitin ang default na pandaigdigang value para sa lahat ng site mula sa patakaran na 'DefaultKeygenSetting' kung nakatakda ito, o kung hindi naman ay sa personal na configuration ng user.</translation>
-<translation id="3322902067538988734">Kung nakatakda sa true ang patakarang ito, kailangang mag-sign in ng user sa <ph name="PRODUCT_NAME" /> gamit ang kanyang profile bago magamit ang browser. At itatakda ang default na value ng BrowserGuestModeEnabled sa false.
-
-      Kung nakatakda ang patakarang ito sa false o hindi naka-configure, maaaring gamitin ng user ang browser nang hindi nagsa-sign in sa <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Nagtatakda kung gaano kadalas kailangang ilagay ng user ang password upang magamit ang mabilisang pag-unlock.</translation>
 <translation id="3381968327636295719">Gamitin ang host browser bilang default</translation>
 <translation id="3417418267404583991">Kung nakatakda sa true o hindi naka-configure ang patakarang ito, papaganahin ng <ph name="PRODUCT_OS_NAME" /> ang mga pag-login ng bisita. Ang mga pag-login ng bisita ay mga walang pagkakakilanlang session ng user at hindi nangangailangan ng password.
@@ -1689,14 +1686,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
       Kung hindi naman, maaari itong itakda sa isa sa mga sumusunod na value: "sslv3," "tls1," "tls1.1" o "tls1.2." Kapag itinakda, hindi gagamit ang <ph name="PRODUCT_NAME" /> ng mga bersyon ng SSL/TLS na mas mababa sa tinukoy na bersyon. Babalewalain ang hindi matutukoy na value.
 
       Tandaang kahit na ganito ang mga numero, mas naunang bersyon ang "sslv3" kumpara sa "tls1."</translation>
-<translation id="6177482277304066047">Nagtatakda ng target na bersyon para sa mga Awtomatkong Pag-update.
-
-      Tinutukoy ang prefix ng target na bersyon na dapat i-update ng <ph name="PRODUCT_OS_NAME" />. Kung ang device ay napapatakbo ng isang bersyong mas nauna kaysa sa tinukoy na prefix, mag-a-update ito sa pinakabagong bersyon gamit ang ibinigay na prefix. Kung ang device ay nasa mas bago nang bersyon, walang magiging epekto (hal. walang isasagawang pag-downgrade) at mananatili ang device sa pinakabagong bersyon. Gumagana ang format ng prefix ayon sa bahagi tulad ng ipinapakita sa mga susunod na halimbawa:
-
-      "" (o hindi na-configure): i-update sa pinakabagong available na bersyon.
-      "1412.": i-update sa anumang minor na bersyon ng 1412 (e.g. 1412.24.34 or 1412.60.2)
-      "1412.2.": i-update sa anumang minor na bersyon ng 1412.2 (e.g. 1412.2.34 or 1412.2.2)
-      "1412.24.34": sa tukoy na bersyong ito lang i-update</translation>
 <translation id="6190022522129724693">Default na setting ng mga popup</translation>
 <translation id="6197453924249895891">Nagbibigay-daan sa pag-access ng mga corporate key sa mga extension.
 
@@ -1736,9 +1725,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="6367755442345892511">Kung maaaring i-configure ng user ang release channel</translation>
 <translation id="6368011194414932347">I-configure ang URL ng home page</translation>
 <translation id="6368403635025849609">Payagan ang JavaScript sa mga site na ito</translation>
-<translation id="6373222873250380826">Hindi pinapagana ang mga awtomatikong update kapag nakatakda sa True.
-
-      Awtomatikong tumitingin ng mga update ang mga <ph name="PRODUCT_OS_NAME" /> device kapag hindi naka-configure ang setting na ito o kung nakatakda ito sa False.</translation>
 <translation id="6376659517206731212">Maaaring Mandatoryo</translation>
 <translation id="6378076389057087301">Tukuyin kung nakakaapekto ang aktibidad ng audio sa pamamahala ng power</translation>
 <translation id="637934607141010488">Iulat ang listahan ng mga user ng device na kamakailang nag-log in.
@@ -2100,13 +2086,6 @@ lumagpas na sa partikular na haba ng panahon ang oras na hindi ito nagamit.
 <translation id="7336878834592315572">Panatilihin ang cookies para sa kabuuan ng session</translation>
 <translation id="7340034977315324840">Iulat ang mga panahon ng aktibidad ng device</translation>
 <translation id="7384999953864505698">Pinapayagan ang QUIC protocol</translation>
-<translation id="7406651467768226499">Kung papayagan ba ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" />.
-
-      Kinokontrol ng patakarang ito kung papayagan ang awtomatikong inilunsad na walang pagkaantalang kiosk app na kontrolin ang bersyon ng <ph name="PRODUCT_OS_NAME" /> sa pamamagitan ng pagpapahayag ng required_platform_version sa manifest nito at gamitin ito bilang ang prefix ng bersyon ng target ng awtomatikong pag-update.
-
-      Kung itatakda sa true ang patakaran, ang value ng required_platform_version manifest key ng awtomatikong inilunsad na walang pagkaantalang kiosk app ay gagamitin bilang prefix ng bersyon ng target ng awtomatikong pag-update.
-
-      Kung hindi naka-configure o nakatakda sa false ang patakaran, babalewalain ang required_platform_version manifest key at magpapatuloy ayon sa nakasanayan ang awtomatikong pag-update.</translation>
 <translation id="7417972229667085380">Porsyento ng pag-scale ng idle delay kapag nasa presentation mode (hindi na ginagamit)</translation>
 <translation id="7421483919690710988">Itakda ang laki ng cache ng disk ng media sa bytes</translation>
 <translation id="7424751532654212117">Listahan ng mga pagbubukod sa listahan ng hindi pinaganang mga plugin</translation>

@@ -140,7 +140,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="238909021488141516">Beim Herunterladen des Inhalts ist ein Fehler aufgetreten.</translation>
 <translation id="2414886740292270097">Dunkel</translation>
 <translation id="2433507940547922241">Darstellung</translation>
-<translation id="2439248520967274840">Sie melden sich gerade in <ph name="TO_ACCOUNT" /> an. Einige Ihrer bestehenden Lesezeichen, Ihrer Passwörter, Ihrer anderen Einstellungen sowie ein Teil Ihres Verlaufs wurden zuvor mit <ph name="FROM_ACCOUNT" /> synchronisiert. Was möchten Sie mit den vorhandenen Daten tun?</translation>
 <translation id="2440823041667407902">Standortzugriff</translation>
 <translation id="2476578072172137802">Website-Einstellungen</translation>
 <translation id="2482878487686419369">Benachrichtigungen</translation>
@@ -188,7 +187,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="2996291259634659425">Passphrase erstellen</translation>
 <translation id="2996809686854298943">URL erforderlich</translation>
 <translation id="300526633675317032">Alle <ph name="SIZE_IN_KB" /> des Websitespeichers werden gelöscht.</translation>
-<translation id="3012408695656332380">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre bestehenden Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />. Daten, die Sie nach Ihrer Abmeldung erstellt haben, gehen jedoch verloren.</translation>
 <translation id="3029704984691124060">Passphrasen stimmen nicht überein.</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Hilfe aufrufen<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">In Inkognito-Tab öffnen</translation>
@@ -215,7 +213,6 @@ Zur Verwendung von Physical Web müssen Bluetooth und der Standortdienst aktivie
 <translation id="3320021301628644560">Rechnungsadresse hinzufügen</translation>
 <translation id="3328801116991980348">Websiteinformationen</translation>
 <translation id="3350687908700087792">Alle Inkognitotabs schließen</translation>
-<translation id="3351441609270267898">Vorhandene Daten importieren</translation>
 <translation id="3365671512111106261">Nicht verfügbar, wenn der Datensparmodus aktiviert ist</translation>
 <translation id="3367813778245106622">Melden Sie sich nochmals an, um die Synchronisierung zu starten</translation>
 <translation id="3384347053049321195">Bild teilen</translation>
@@ -426,7 +423,6 @@ Zur Anpassung des Suchbegriffs drücken Sie einige Sekunden lang auf den entspre
 <translation id="5676636989614905379">Wiedergabe des Videos auf <ph name="SCREEN_NAME" /> nicht möglich.</translation>
 <translation id="5677928146339483299">Blockiert</translation>
 <translation id="5684874026226664614">Hoppla! Diese Seite konnte nicht übersetzt werden.</translation>
-<translation id="5708031556037168012">Vorhandene Daten bleiben auf dem Gerät erhalten und Daten werden dauerhaft in <ph name="TO_ACCOUNT" /> importiert.</translation>
 <translation id="5719837394786370183">Seiten, die Sie sich auf Inkognito-Tabs ansehen, werden nach dem Schließen aller Inkognito-Tabs nicht in Ihrem Browserverlauf, Cookie-Speicher oder Suchverlauf gespeichert. Ihre Lesezeichen und Ihre heruntergeladenen Dateien bleiben erhalten.
 
 Sie sind jedoch nicht unsichtbar. Der Inkognitomodus verhindert nicht, dass Informationen zu Ihren Webaktivitäten von Ihrem Arbeitgeber oder Ihrem Internetanbieter erfasst werden. Zudem verzeichnen auch die Websites, die Sie im Inkognitomodus aufrufen, weiterhin Ihren Besuch.</translation>
@@ -563,7 +559,6 @@ Einige Websites schalten möglicherweise Werbeanzeigen, deren Auswahl nicht dara
 <translation id="7062545763355031412">Akzeptieren und Konto wechseln</translation>
 <translation id="7063006564040364415">Verbindung zum Synchronisierungsserver konnte nicht hergestellt werden.</translation>
 <translation id="7064851114919012435">Kontaktdaten</translation>
-<translation id="7081639897063626814">Bestehende Daten getrennt halten</translation>
 <translation id="7094922512924405309">Keine Physical Web-Seiten zu Objekten in der Nähe gefunden</translation>
 <translation id="7138678301420049075">Sonstiges</translation>
 <translation id="7180611975245234373">Aktualisieren</translation>
@@ -736,12 +731,10 @@ Um neue Lizenzen zu erwerben, stellen Sie eine Internetverbindung her und spiele
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Original anzeigen</translation>
 <translation id="9139068048179869749">Nachfragen, bevor Websites Benachrichtigungen senden dürfen (empfohlen)</translation>
-<translation id="9141510419986760385">Sie stellen die Kontosynchronisierung von <ph name="FROM_ACCOUNT" /> auf <ph name="TO_ACCOUNT" /> um. Was möchten Sie mit Ihren bestehenden Lesezeichen, Ihrem Verlauf, Ihren Passwörtern und anderen Einstellungen tun?</translation>
 <translation id="9154194610265714752">Aktualisiert</translation>
 <translation id="917685106653909562">Physical Web-Seiten zu Objekten in der Nähe</translation>
 <translation id="9187199695613236444">Für Mobilgeräte optimierte Ansicht</translation>
 <translation id="9188680907066685419">Von verwaltetem Konto abmelden</translation>
-<translation id="9198708126133947749">Die Daten dieses Geräts werden durch die Daten von <ph name="TO_ACCOUNT" /> ersetzt. Wenn Sie Ihre vorhandenen Daten abrufen möchten, wechseln Sie zurück zu <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Bilder</translation>
 <translation id="932327136139879170">Privat</translation>

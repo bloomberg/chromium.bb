@@ -820,9 +820,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="3322771899429619102">Cho phép bạn thiết lập danh sách các mẫu URL chỉ định những trang web được phép sử dụng tạo khóa. Nếu một mẫu URL nằm trong 'KeygenBlockedForUrls', chính sách đó sẽ ghi đè các ngoại lệ này.
 
           Nếu không thiết lập chính sách này, giá trị mặc định chung sẽ được sử dụng cho tất cả trang web từ chính sách 'DefaultKeygenSetting' nếu chính sách này được đặt hoặc từ cấu hình cá nhân của người dùng.</translation>
-<translation id="3322902067538988734">Nếu chính sách này được đặt thành true, người dùng phải đăng nhập vào <ph name="PRODUCT_NAME" /> bằng hồ sơ của họ trước khi sử dụng trình duyệt. Và giá trị mặc định của BrowserGuestModeEnabled sẽ được đặt thành false.
-
-      Nếu chính sách này được đặt thành false hoặc không được định cấu hình, người dùng có thể sử dụng trình duyệt mà không cần đăng nhập vào <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Đặt tần suất người dùng phải nhập mật khẩu để sử dụng tính năng mở khóa nhanh.</translation>
 <translation id="3381968327636295719">Sử dụng trình duyệt chính theo mặc định</translation>
 <translation id="3417418267404583991">Nếu chính sách này được đặt thành đúng hoặc không được định cấu hình, <ph name="PRODUCT_OS_NAME" /> sẽ bật tính năng đăng nhập với tư cách khách. Các đăng nhập với tư cách khách là các phiên người dùng ẩn danh và không yêu cầu mật khẩu.
@@ -1689,14 +1686,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
       Ngoài ra, chính sách này có thể được đặt thành một trong các giá trị sau: "sslv3", "tls1", "tls1.1" hoặc "tls1.2". Khi được đặt, <ph name="PRODUCT_NAME" /> sẽ không sử dụng các phiên bản SSL/TLS nhỏ hơn phiên bản đã chỉ định. Giá trị không xác định sẽ bị bỏ qua.
 
       Lưu ý rằng, dù số lớn hơn nhưng "sslv3" là phiên bản cũ hơn "tls1".</translation>
-<translation id="6177482277304066047">Đặt phiên bản đích cho Cập nhật tự động.
-
-      Chỉ định tiền tố của phiên bản đích mà <ph name="PRODUCT_OS_NAME" /> sẽ cập nhật. Nếu thiết bị đang chạy một phiên bản trước khi tiền tố được chỉ định, thiết bị sẽ cập nhật lên phiên bản mới nhất với tiền tố đã cho. Nếu thiết bị đã chạy phiên bản mới hơn, sẽ không có ảnh hưởng (tức là không bị hạ cấp) và thiết bị sẽ vẫn chạy trên phiên bản hiện tại. Định dạng tiền tố hoạt động theo từng thành phần như được minh họa trong ví dụ sau:
-
-      "" (hoặc không được định cấu hình): cập nhật lên phiên bản mới nhất có sẵn.
-      "1412.": cập nhật lên bất kỳ phiên bản phụ nào của 1412 (ví dụ: 1412.24.34 hoặc 1412.60.2)
-      "1412.2.": cập nhật lên bất kỳ phiên bản phụ nào của 1412.2 (ví dụ: 1412.2.34 hoặc 1412.2.2)
-      "1412.24.34": chỉ cập nhật lên phiên bản cụ thể này</translation>
 <translation id="6190022522129724693">Cài đặt cửa sổ bật lên</translation>
 <translation id="6197453924249895891">Cấp quyền truy cập vào khóa kết hợp đến các tiện ích.
 
@@ -1736,9 +1725,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="6367755442345892511">Kênh phát hành có thể được định cấu hình bởi người dùng hay không</translation>
 <translation id="6368011194414932347">Định cấu hình URL trang chủ</translation>
 <translation id="6368403635025849609">Cho phép JavaScript trên các trang web này</translation>
-<translation id="6373222873250380826">Tắt cập nhật tự động khi được đặt thành đúng.
-
-      Thiết bị <ph name="PRODUCT_OS_NAME" /> sẽ tự động kiểm tra các cập nhật khi cài đặt này không được định cấu hình hoặc được đặt thành sai.</translation>
 <translation id="6376659517206731212">Có thể bắt buộc</translation>
 <translation id="6378076389057087301">Chỉ định xem hoạt động âm thanh có ảnh hưởng đến việc quản lý nguồn không</translation>
 <translation id="637934607141010488">Danh sách báo cáo người dùng thiết bị đã đăng nhập gần đây.
@@ -2091,13 +2077,6 @@ Khi chính sách này được đặt thành false hoặc không được địn
 <translation id="7336878834592315572">Lưu giữ cookie trong thời hạn phiên</translation>
 <translation id="7340034977315324840">Báo cáo thời gian hoạt động của thiết bị</translation>
 <translation id="7384999953864505698">Cho phép giao thức QUIC</translation>
-<translation id="7406651467768226499">Dù có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> hay không.
-
-      Chính sách này kiểm soát việc có cho phép ứng dụng kiosk tự động khởi chạy với độ trễ bằng không kiểm soát phiên bản <ph name="PRODUCT_OS_NAME" /> bằng cách tuyên bố required_platform_version trong tệp kê khai và sử dụng tệp này làm tiền tố phiên bản đích cập nhật tự động.
-
-      Nếu chính sách được đặt thành đúng, giá trị của khóa tệp kê khai required_platform_version của ứng dụng kiosk tự động khởi chạy với độ trễ bằng không được sử dụng làm tiền tố phiên bản đích cập nhật tự động.
-
-      Nếu chính sách chưa được định cấu hình hoặc được đặt thành sai, khóa tệp kê khai required_platform_version bị bỏ qua và tự động cập nhật tiến hành như bình thường.</translation>
 <translation id="7417972229667085380">Tỷ lệ phần trăm theo đó xác định độ trễ khi không hoạt động trong chế độ bản trình bày (không dùng nữa)</translation>
 <translation id="7421483919690710988">Đặt kích thước bộ nhớ cache của đĩa phương tiện theo byte</translation>
 <translation id="7424751532654212117">Danh sách các trường hợp ngoại lệ của danh sách plugin bị vô hiệu hóa</translation>

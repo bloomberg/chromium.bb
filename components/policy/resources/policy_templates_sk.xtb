@@ -807,9 +807,6 @@ Ak je toto nastavenie zakázané alebo nie je nakonfigurované, nebudú môcť p
 <translation id="3322771899429619102">Umožňuje nastaviť zoznam vzorov webových adries určujúcich webové stránky, ktoré môžu používať generovanie kľúčov. Ak sa vzor webovej adresy nachádza v zozname KeygenBlockedForUrls, tieto výnimky sa prepíšu.
 
           Ak toto pravidlo ponecháte nenastavené, pre všetky stránky sa použije globálna predvolená hodnota buď z pravidla DefaultKeygenSetting (ak je nastavené), alebo z osobnej konfigurácie používateľa.</translation>
-<translation id="3322902067538988734">Ak toto pravidlo nastavíte na možnosť True, používateľ sa musí prihlásiť do prehliadača <ph name="PRODUCT_NAME" /> pomocou svojho profilu ešte predtým, ako ho začne používať. Predvolená hodnota parametra BrowserGuestModeEnabled bude nastavená na možnosť False.
-
-      Ak toto pravidlo nastavíte na možnosť False alebo ho nenakonfigurujete, používateľ môže používať prehliadač <ph name="PRODUCT_NAME" /> bez prihlásenia.</translation>
 <translation id="3347687541825006165">Nastaví, ako často musí používateľ zadávať heslo na používanie rýchleho odomknutia.</translation>
 <translation id="3381968327636295719">V predvolenom nastavení použiť hosťovský prehliadač</translation>
 <translation id="3417418267404583991">Ak je toto pravidlo nastavené na hodnotu true alebo je nenakonfigurované, systém <ph name="PRODUCT_OS_NAME" /> povolí prihlásenie hostí. Prihlásenia hostí predstavujú relácie anonymných používateľov a nevyžadujú heslo.
@@ -1676,14 +1673,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
       V opačnom prípade môžete nastaviť jednu z nasledujúcich hodnôt: sslv3, tls1, tls1.1 alebo tls1.2. Ak túto hodnotu nastavíte, prehliadač <ph name="PRODUCT_NAME" /> nepoužije protokol SSL alebo TLS v nižšej ako zadanej verzii. Nerozpoznaná hodnota sa bude ignorovať.
 
       Upozorňujeme, že napriek vyššiemu číslu predstavuje protokol sslv3 staršiu verziu ako protokol tls1.</translation>
-<translation id="6177482277304066047">Nastavuje cieľovú verziu automatických aktualizácií.
-
-      Určuje predponu cieľovej verzie, na ktorú sa má systém <ph name="PRODUCT_OS_NAME" /> aktualizovať. Ak zariadenie obsahuje staršiu verziu, ako určuje predpona, bude systém aktualizovaný na poslednú verziu s danou predponou. Ak už zariadenie obsahuje novšiu verziu, nestane sa nič (t.j. nedôjde k prechodu na nižšiu verziu) a zariadenie zostane pri existujúcej verzii. Formát predpony funguje na základe komponentu, ako ukazuje nasledujúci príklad:
-
-      "" (alebo nie je nakonfigurované): aktualizovať na najnovšiu dostupnú verziu.
-      "1412.": aktualizovať na ľubovoľnú podverziu verzie 1412 (napr. 1412.24.34 alebo 1412.60.2)
-      "1412.2.": aktualizovať na ľubovolnú podverziu verzie 1412.2 (napr. 1412.2.34 alebo 1412.2.2)
-      "1412.24.34": aktualizovať iba na túto konkrétnu verziu</translation>
 <translation id="6190022522129724693">Predvolené nastavenie kontextových okien</translation>
 <translation id="6197453924249895891">Poskytne rozšíreniam prístup k podnikovým kľúčom.
 
@@ -1723,9 +1712,6 @@ Pozrite si tiež pravidlo RemoteAccessHostDomain.</translation>
 <translation id="6367755442345892511">Či má byť kanál na vydávanie nových verzií konfigurovateľný používateľom</translation>
 <translation id="6368011194414932347">Konfigurovať webovú adresu domovskej stránky</translation>
 <translation id="6368403635025849609">Povoliť jazyk JavaScript na týchto stránkach</translation>
-<translation id="6373222873250380826">Ak je pravidlo nastavené na hodnotu true, zakáže automatické aktualizácie.
-
-      Ak je toto nastavenie nenakonfigurované, alebo je nastavené na hodnotu false, budú zariadenia so systémom <ph name="PRODUCT_OS_NAME" /> automaticky kontrolovať aktualizácie.</translation>
 <translation id="6376659517206731212">Môže byť povinné</translation>
 <translation id="6378076389057087301">Určuje, či prehrávanie zvuku ovplyvňuje správu napájania</translation>
 <translation id="637934607141010488">Nahlásenie zoznamu používateľov zariadenia, ktorí sa nedávno prihlásili.
@@ -2086,13 +2072,6 @@ Pozrite si tiež pravidlo RemoteAccessHostClientDomain.</translation>
 <translation id="7336878834592315572">Uchovať súbory cookie počas trvania relácie</translation>
 <translation id="7340034977315324840">Hlásiť časy aktivity zariadenia</translation>
 <translation id="7384999953864505698">Povolenie protokolu QUIC</translation>
-<translation id="7406651467768226499">Ovláda, či má byť povolené verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" />.
-
-      Toto pravidlo ovláda, či má byť povolené verejnej aplikácii, ktorá sa spúšťa automaticky s nulovým oneskorením, ovládať verziu systému <ph name="PRODUCT_OS_NAME" /> deklarovaním hodnoty required_platform_version v jej manifeste a jej používaním ako predpony cieľovej verzie automatickej aktualizácie.
-
-      Ak je toto pravidlo nastavené na hodnotu True, hodnota kľúča manifestu required_platform_version verejnej aplikácie, ktorá sa spúšťa automaticky s nulovým oneskorením, sa použije ako predpona cieľovej verzie automatickej aktualizácie.
-
-      Ak toto pravidlo nie je nakonfigurované alebo je nastavené na hodnotu False, kľúč manifestu required_platform_version sa bude ignorovať a automatická aktualizácia prebehne ako zvyčajne.</translation>
 <translation id="7417972229667085380">Percento predĺženia oneskorenia režimu nečinnosti v režime prezentácie (podpora je ukončená)</translation>
 <translation id="7421483919690710988">Nastaviť veľkosť vyrovnávacej pamäte média v bajtoch</translation>
 <translation id="7424751532654212117">Zoznam výnimiek zo zoznamu zakázaných doplnkov</translation>

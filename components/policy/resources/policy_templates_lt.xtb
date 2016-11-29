@@ -825,9 +825,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="3322771899429619102">Leidžiama nustatyti URL šablonų, nurodančių svetaines, kuriose leidžiama naudoti rakto generavimą, sąrašą. Jei URL šablonas yra politikoje „KeygenBlockedForUrls“, šių išimčių nepaisoma.
 
           Nenustačius šios politikos visose svetainėse bus naudojama visuotinė numatytoji vertė iš politikos „DefaultKeygenSetting“ (jei nustatyta) arba naudotojo asmeninės konfigūracijos.</translation>
-<translation id="3322902067538988734">Jei ši politika nustatyta į „true“, naudotojas naršyklėje turi prisijungti prie „<ph name="PRODUCT_NAME" />“ naudodamas savo profilį. O numatytoji „BrowserGuestModeEnabled“ vertė bus nustatyta į „false“.
-
-      Jei ši politika nustatyta į „false“ arba nesukonfigūruota, naudotojas galės naudoti naršyklę neprisijungęs prie „<ph name="PRODUCT_NAME" />“.</translation>
 <translation id="3347687541825006165">Nustatoma, kaip dažnai naudotojas turi įvesti slaptažodį, kad galėtų naudoti spartųjį atrakinimą.</translation>
 <translation id="3381968327636295719">Pagal numatytuosius nustatymus naudoti prieglobos naršyklę</translation>
 <translation id="3417418267404583991">Jei ši politika nustatyta į „true“ (tiesa) arba nesukonfigūruota, „<ph name="PRODUCT_OS_NAME" />“ įgalinami svečių prisijungimai. Svečių prisijungimai – tai anoniminės naudotojų sesijos ir nereikalaujama slaptažodžio.
@@ -1702,14 +1699,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
       Kitaip tai gali būti nustatyta į vieną iš šių verčių: „sslv3“, „tls1“, „tls1.1“ arba „tls1.2“. Kai politika nustatyta, „<ph name="PRODUCT_NAME" />“ nenaudos senesnės nei nurodyta versijos SSL / TLS. Neatpažintos vertės bus nepaisoma.
 
       Atminkite, kad, nepaisant skaičiaus, „sslv3“ yra senesnės versijos funkcija nei „tls1“.</translation>
-<translation id="6177482277304066047">Nustatoma tikslinė automatinių naujinių versija.
-
-      Nurodomas tikslinės versijos, pagal kurią turėtų būti atnaujintas „<ph name="PRODUCT_OS_NAME" />“, kodas. Jei įrenginyje vykdoma ankstesnė nei nurodyto kodo versija, naudojant nurodytą kodą atnaujinama į naujausią versiją. Jei įrenginyje jau veikia naujesnė versija, tai neturi jokios įtakos (t. y. negrąžinama jokia ankstesnė versija) ir įrenginyje išlieka dabartinė versija. Kodo formatas veikia pagal komponentus, kaip nurodyta šiame pavyzdyje:
-
-      "" (arba nesukonfigūruota): atnaujinti į naujausią pasiekiamą versiją.
-      "1412.": atnaujinti į šalutinę 1412 versiją (pvz., 1412.24.34 arba 1412.60.2)
-      "1412.2.": atnaujinti į šalutinę 1412.2 versiją (pvz., 1412.2.34 arba 1412.2.2)
-      "1412.24.34": atnaujinti tik į šią konkrečią versiją</translation>
 <translation id="6190022522129724693">Numatytasis iššokančiųjų langų nustatymas</translation>
 <translation id="6197453924249895891">Suteikiama galimybė įmonės raktais pasiekti plėtinius.
 
@@ -1749,9 +1738,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="6367755442345892511">Ar naudotojui (-ai) turėtų būti leidžiama konfigūruoti paleidimo kanalą</translation>
 <translation id="6368011194414932347">Konfigūruoti pagrindinio puslapio URL</translation>
 <translation id="6368403635025849609">Leisti „JavaScript“ šiose svetainėse</translation>
-<translation id="6373222873250380826">Neleidžiami automatiniai naujiniai, kai nustatyta į „True“ (tiesa).
-
-      „<ph name="PRODUCT_OS_NAME" />“ įrenginiai automatiškai tikrina, ar yra naujinių, kai šis nustatymas nesukonfigūruotas ar nustatytas į „False“ (netiesa).</translation>
 <translation id="6376659517206731212">Gali būti nustatyta kaip būtina</translation>
 <translation id="6378076389057087301">Nurodykite, ar garso įrašo veikla paveikia energijos valdymą</translation>
 <translation id="637934607141010488">Pateikti neseniai prisijungusių įrenginio naudotojų sąrašą.
@@ -2113,13 +2099,6 @@ Jei ši politika negalioja arba nenustatyta, iškviečiant API įvyks klaida ir 
 <translation id="7336878834592315572">Išsaugoti slapukus vykstant sesijai</translation>
 <translation id="7340034977315324840">Pranešti įrenginio veiklos laiką</translation>
 <translation id="7384999953864505698">Leidžiamas protokolas QUIC</translation>
-<translation id="7406651467768226499">Ar automatiškai be delsos paleistai viešojo terminalo programai bus leidžiama valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją.
-
-      Ši politika valdo, ar automatiškai be delsos paleistai viešojo terminalo programai bus leidžiama valdyti „<ph name="PRODUCT_OS_NAME" />“ versiją (jos apraše nurodžius required_platform_version) ir ją naudoti, kaip automatinio naujinio tikslinės versijos priešdėlį.
-
-      Jei politika nustatyta į „true“, automatiškai be delsos paleistos viešojo terminalo programos aprašo rakto „required_platform_version“ vertė naudojama kaip automatinio naujinio tikslinės versijos priešdėlis.
-
-      Jei politika nesukonfigūruota arba nustatyta į „false“, aprašo raktos required_platform_version nepaisoma ir automatinis atnaujinimas tęsiamas kaip įprasta.</translation>
 <translation id="7417972229667085380">Procentas, pagal kurį bus keičiamas neveikos delsos mastelis dirbant pristatymo režimu (nebenaudojama)</translation>
 <translation id="7421483919690710988">Nustatyti medijos disko talpyklos dydį baitais</translation>
 <translation id="7424751532654212117">Neleidžiamų papildinių sąrašo išimčių sąrašas</translation>

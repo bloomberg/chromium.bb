@@ -802,9 +802,6 @@
 <translation id="3322771899429619102">Gjør det mulig å definere en liste med nettadressemønstre for å spesifisere nettsteder som har tillatelse til å bruke nøkkelgenerering. Hvis det er et nettadressemønster i «KeygenBlockedForUrls», overstyrer det disse unntakene.
 
           Hvis denne regelen ikke angis, brukes den globale standardverdien for alle nettstedene, enten fra regelen «DefaultKeygenSetting» hvis den er angitt, eller fra brukerens personlige konfigurasjon.</translation>
-<translation id="3322902067538988734">Hvis denne regelen er satt til «True» (sann), må brukeren logge på <ph name="PRODUCT_NAME" /> med profilen sin før vedkommende bruker nettleseren. Standardverdien for BrowserGuestModeEnabled blir satt til «False» (usann).
-
-      Hvis denne regelen er satt til «False» eller ikke er konfigurert, kan brukeren bruke nettleseren uten å logge på <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Angir hvor ofte brukerne må skrive inn passord for å bruke hurtigopplåsing.</translation>
 <translation id="3381968327636295719">Bruk vertsnettleser som standard</translation>
 <translation id="3417418267404583991">Hvis denne retningslinjen er angitt som Sann eller ikke er konfigurert, aktiverer <ph name="PRODUCT_OS_NAME" /> gjestepålogging. Gjestepålogginger er anonyme brukerøkter og krever ikke passord.
@@ -1646,11 +1643,11 @@
 <translation id="6157537876488211233">Kommadelt liste over regler for å omgå proxy-tjener</translation>
 <translation id="6158324314836466367">Navn på bedriftens nettbutikk (avviklet)</translation>
 <translation id="6166832345529129545">Kontrollerer hvilke moduser for hurtigopplåsing som kan konfigureres og brukes.
-      Denne innstillingen setter de tillate modusene for hurtigopplåsing som kan konfigureres og brukes til å låse opp låseskjermen, på en godkjenningsliste. Verdien er en liste over strenger, der hver må være en av de følgende: «all» (alle), «PIN». Hvis «all» (alle) er valgt, er alle hurtigmoduser tilgjengelige. Hvis ikke er bare modusene i listen tilgjengelige.
+      Denne innstillingen klarerer de tillatte modusene for hurtigopplåsing som kan konfigureres og brukes til å låse opp låseskjermen, på en godkjenningsliste. Verdien er en liste over strenger, der hver må være en av de følgende: «all» (alle), «PIN». Hvis «all» (alle) er valgt, er alle hurtigmoduser tilgjengelige. Hvis ikke er bare modusene i listen tilgjengelige.
 
       Hvis denne innstillingen er konfigurert, kan ikke opplåsingsmoduser av en type som ikke er på denne listen, konfigureres eller brukes.
 
-      Hvis denne innstillingen ikke konfigureres, blir «PIN»-modus aktivert, og alle andre moduser deaktiveres.</translation>
+      Hvis denne innstillingen ikke konfigureres, blir «PIN»-modus slått på og alle andre moduser slått av.</translation>
 <translation id="6167074305866468481">Advarsel: SSLv3-støtte blir fjernet helt fra <ph name="PRODUCT_NAME" /> etter versjon 43 (cirka juli 2015), og denne regelen blir fjernet samtidig.
 
       Hvis denne regelen ikke er konfigurert, bruker <ph name="PRODUCT_NAME" /> en standard minimumsversjon, som er SSLv3 i <ph name="PRODUCT_NAME" /> 39 og TLS 1.0 i nyere versjoner.
@@ -1658,14 +1655,6 @@
       Ellers kan den settes til én av de følgende verdiene: «sslv3», «tls1», «tls1.1» eller «tls1.2». Når den er spesifisert, bruker ikke <ph name="PRODUCT_NAME" /> SSL-/TLS-versjoner som er lavere enn den angitte versjonen. Verdier som ikke gjenkjennes, blir ignorert.
 
       Vær oppmerksom på at «sslv3» er en tidligere versjon enn «tls1», til tross for tallet.</translation>
-<translation id="6177482277304066047">Angir en målversjon for automatiske oppdateringer.
-
-      Spesifiserer prefikset for en målversjon som <ph name="PRODUCT_OS_NAME" /> skal oppdateres til. Hvis enheten kjører en versjon som er en forløper til det spesifiserte prefikset, oppdateres enheten til den siste versjonen med det gitte prefikset. Hvis enheten allerede bruker en nyere versjon, skjer det ikke noe (enheten blir med andre ord ikke nedgradert), og enheten beholder den nåværende versjonen. Prefiksformatet fungerer komponentvis, som demonstrert i det følgende eksemplet:
-
-      "" (eller ikke konfigurert): Oppdater til den siste tilgjengelige versjonen.
-      "1412.": Oppdater til en underversjon av 1412 (f.eks. 1412.24.34 eller 1412.60.2)
-      "1412.2.": Oppdater til en underversjon av 1412.2 (f.eks. 1412.2.34 eller 1412.2.2)
-      "1412.24.34": Oppdater bare til denne spesifikke versjonen.</translation>
 <translation id="6190022522129724693">Standardinnstillinger for forgrunnsvinduer</translation>
 <translation id="6197453924249895891">Gir utvidelser tilgang til bedriftsnøkler.
 
@@ -1705,9 +1694,6 @@
 <translation id="6367755442345892511">Om lanseringskanalen skal kunne konfigureres av brukeren</translation>
 <translation id="6368011194414932347">Konfigurer nettadresse for startsiden</translation>
 <translation id="6368403635025849609">Tillat JavaScript på disse nettstedene</translation>
-<translation id="6373222873250380826">Deaktiverer automatiske oppdateringer når angitt som Sann.
-
-      <ph name="PRODUCT_OS_NAME" />-enheter ser automatisk etter oppdateringer når denne innstillingen ikke er konfigurert eller angitt som Usann.</translation>
 <translation id="6376659517206731212">Kan være obligatorisk</translation>
 <translation id="6378076389057087301">Angi om lydaktivitet skal påvirke strømbehandling</translation>
 <translation id="637934607141010488">Rapportliste over enhetsbrukere som har logget på i det siste.
@@ -2059,13 +2045,6 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="7336878834592315572">Behold informasjonskapsler så lenge økten varer</translation>
 <translation id="7340034977315324840">Rapportering av aktivitetstider for enhet</translation>
 <translation id="7384999953864505698">Tillater QUIC-protokollen</translation>
-<translation id="7406651467768226499">Spesifiserer om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen.
-
-      Denne regelen kontrollerer om den automatisk startede kioskappen uten forsinkelse skal kunne kontrollere <ph name="PRODUCT_OS_NAME" />-versjonen ved å erklære en required_platform_version i manifestet og bruke den som prefiks for den automatisk oppdaterte målversjonen.
-
-      Hvis regelen er satt til «true» (sann), brukes verdien i manifestnøkkelen required_platfrom_version for den automatisk startede kioskappen uten forsinkelse som prefiks for den automatisk oppdaterte målversjonen.
-
-      Hvis regelen ikke er konfigurert eller er satt til «false» (usann), skal manifestnøkkelen required_platform_version ignoreres, og den automatiske oppdateringen fortsetter som normalt.</translation>
 <translation id="7417972229667085380">Prosentandelen for skalering av inaktivitetsforsinkelsen i presentasjonsmodus (avviklet)</translation>
 <translation id="7421483919690710988">Angi størrelse på mediediskbuffer i byte</translation>
 <translation id="7424751532654212117">Liste over unntak fra listen over deaktiverte programtillegg</translation>
@@ -2108,7 +2087,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 
       Hvis innstillingen ikke er angitt, brukes standard bufferstørrelse, og brukeren kan overstyre den med «--disk-cache-size»-flagget.</translation>
 <translation id="7604169113182304895">Android-apper kan følge denne listen frivillig. Du kan ikke tvinge dem til å respektere den.</translation>
-<translation id="7611372873040492235">Passordet må skrives inn hver tolvte time.</translation>
+<translation id="7611372873040492235">Passordet må skrives inn hver 12. time.</translation>
 <translation id="7612157962821894603">Flagg for hele systemet som skal brukes ved oppstart av <ph name="PRODUCT_NAME" /></translation>
 <translation id="7614663184588396421">Liste over deaktiverte protokollsystemer</translation>
 <translation id="7625444193696794922">Angir den frigivende kanalen som denne enheten skal låses til.</translation>
@@ -2635,7 +2614,7 @@ Minneinformasjon blir uansett rapportert til siden, uavhengig av verdien for alt
 <translation id="9088433379343318874">Slå på innholdsleverandøren for administrerte brukere</translation>
 <translation id="9088444059179765143">Konfigurer metoden for automatisk påvisning av tidssoner</translation>
 <translation id="9096086085182305205">Godkjenningsliste for autentiseringstjener</translation>
-<translation id="9098186110082719131">Passordet må skrives inn hver sjette time.</translation>
+<translation id="9098186110082719131">Passordet må skrives inn hver 6. time.</translation>
 <translation id="9098553063150791878">Regler for HTTP-autentisering</translation>
 <translation id="9105265795073104888">Bare en undergruppe av konfigurasjonsalternativer for proxy-tjenere er gjort tilgjengelig for Android-apper. Android-apper kan velge å bruke proxy-tjeneren frivillig. Du kan ikke tvinge dem til å bruke proxy-tjenere.</translation>
 <translation id="9112897538922695510">Med denne innstillingen kan du registrere en liste over protokollbehandlere. Dette er bare en anbefalt innstilling. Egenskapen |protocol| bør settes til det aktuelle skjemaet, for eksempel «mailto», og egenskapen |url| bør settes til nettadressemønsteret for appen som behandler skjemaet. Mønsteret kan inkludere en «%s» som, hvis den brukes, erstattes av nettadressen som behandles.

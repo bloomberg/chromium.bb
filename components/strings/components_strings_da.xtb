@@ -706,7 +706,6 @@ Psst! Prøv at bruge Inkognitotilstand <ph name="SHORTCUT_KEY" /> næste gang.</
 <translation id="9050666287014529139">Adgangssætning</translation>
 <translation id="9065203028668620118">Rediger</translation>
 <translation id="9068849894565669697">Vælg farve</translation>
-<translation id="9092364396508701805">Siden fra <ph name="HOST_NAME" /> fungerer ikke</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> bruger normalt kryptering til at beskytte dine oplysninger. Da Chromium forsøgte at oprette forbindelse til <ph name="SITE" /> denne gang, returnerede websitet usædvanlige og forkerte loginoplysninger. Dette kan skyldes, at en hacker forsøger at udgive sig for at være <ph name="SITE" />, eller at en Wi-Fi-loginskærm har forstyrret forbindelsen. Dine oplysninger er stadig sikre, idet Chromium afbrød forbindelsen, inden der blev udvekslet data.</translation>
 <translation id="9137013805542155359">Vis oprindelig</translation>
 <translation id="9148507642005240123">&amp;Fortryd redigering</translation>

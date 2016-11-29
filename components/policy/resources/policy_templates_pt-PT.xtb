@@ -784,9 +784,6 @@ Se esta definição estiver desativada, os utilizadores não podem ativar o prox
 <translation id="3322771899429619102">Permite definir uma lista de padrões de URL que especificam os sites autorizados a utilizar a geração de chaves. Se um padrão do URL estiver incluído em "KeygenBlockedForUrls", tal substitui estas exceções.
 
           Se esta política não for definida, é utilizado o valor global predefinido para todos os sites, seja a partir da política "DefaultKeygenSetting", se estiver definida, ou a partir da configuração pessoal do utilizador.</translation>
-<translation id="3322902067538988734">Se esta política for definida como verdadeira, o utilizador tem de iniciar sessão no <ph name="PRODUCT_NAME" /> com o respetivo perfil antes de utilizar o navegador. Nesse caso, o valor predefinido de BrowserGuestModeEnabled é definido como falso.
-
-       Se esta política for definida como falsa ou não for configurada, o utilizador pode utilizar o navegador sem iniciar sessão no <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Define com que frequência o utilizador tem de introduzir a palavra-passe para utilizar o desbloqueio rápido.</translation>
 <translation id="3381968327636295719">Utilizar o navegador anfitrião por predefinição</translation>
 <translation id="3417418267404583991">Se esta política estiver definida como verdadeira ou não estiver configurada, o <ph name="PRODUCT_OS_NAME" /> irá ativar os inícios de sessão de convidado. Os inícios de sessão de convidado são sessões de utilizadores anónimos e não necessitam de uma palavra-passe.
@@ -1599,14 +1596,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
       Caso contrário, pode ser definida para um dos seguintes valores: "sslv3", "tls1", "tls1.1" ou "tls1.2". Quando definida, o <ph name="PRODUCT_NAME" /> não utiliza as versões SSL/TLS inferiores à versão especificada. Um valor não reconhecido é ignorado.
 
       Tenha em atenção que, apesar do número, "sslv3" é uma versão mais antiga do que "tls1".</translation>
-<translation id="6177482277304066047">Define uma versão-alvo para Atualizações Automáticas.
-
-      Especifica o prefixo de uma versão-alvo para a qual o <ph name="PRODUCT_OS_NAME" /> deverá fazer a atualização. Se o dispositivo estiver a executar uma versão anterior ao prefixo especificado, será feita a atualização para a versão mais recente com o prefixo em questão. Se o dispositivo já estiver a executar uma versão posterior, não é efetuada qualquer ação (ou seja, não é efetuada qualquer alteração para uma versão anterior) e o dispositivo permanecerá com a versão atual. O formato do prefixo funciona de acordo com o componente, conforme demonstrado no seguinte exemplo:
-
-      "" (ou não configurado): atualizar para a versão mais recente disponível.
-      "1412.": atualizar para qualquer versão inferior à 1412 (por exemplo, 1412.24.34 ou 1412.60.2)
-      "1412.2.": atualizar para qualquer versão inferior à 1412.2 (por exemplo, 1412.2.34 ou 1412.2.2)
-      "1412.24.34": atualizar apenas para esta versão específica</translation>
 <translation id="6190022522129724693">Definição de pop-ups predefinida</translation>
 <translation id="6197453924249895891">Concede às extensões o acesso às chaves empresariais.
 
@@ -1642,9 +1631,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="6367755442345892511">Se o canal de lançamento deve ou não ser passível de configuração pelo utilizador</translation>
 <translation id="6368011194414932347">Configurar o URL da página inicial</translation>
 <translation id="6368403635025849609">Permitir JavaScript nestes sites</translation>
-<translation id="6373222873250380826">Desativa as atualizações automáticas quando a política está definida como Verdadeira.
-
-      Os aparelhos <ph name="PRODUCT_OS_NAME" /> verificam automaticamente se existem atualizações quando esta política não está configurada ou está definida como Falsa.</translation>
 <translation id="6376659517206731212">Pode ser obrigatória</translation>
 <translation id="6378076389057087301">Especificar se a atividade do áudio afeta a gestão da energia</translation>
 <translation id="637934607141010488">Comunicar lista de utilizadores do dispositivo que iniciaram sessão recentemente.
@@ -1980,13 +1966,6 @@ Se desativar ou não definir esta opção, permite que o utilizador use as Ferra
 <translation id="7336878834592315572">Manter cookies durante toda a sessão</translation>
 <translation id="7340034977315324840">Comunicar períodos de atividade do aparelho</translation>
 <translation id="7384999953864505698">Permite o protocolo QUIC</translation>
-<translation id="7406651467768226499">Permitir ou não que a aplicação de quiosque de início automático com atraso zero controle a versão do <ph name="PRODUCT_OS_NAME" />.
-
-      Esta política controla se a aplicação de quiosque de início automático com atraso zero tem autorização para controlar a versão do <ph name="PRODUCT_OS_NAME" /> ao declarar uma chave required_platform_version no respetivo manifesto e utilizá-la como o prefixo da versão alvo da atualização automática.
-
-      Se a política estiver definida como verdadeira, o valor da chave do manifesto required_platform_version da aplicação de quiosque de início automático com atraso zero é utilizado como o prefixo da versão alvo da atualização automática.
-
-      Se a política não estiver configurada ou estiver definida como falsa, a chave do manifesto required_platform_version é ignorada e a atualização automática decorre como habitualmente.</translation>
 <translation id="7417972229667085380">Percentagem que determina a escala do atraso de inatividade no modo de apresentação (descontinuado)</translation>
 <translation id="7421483919690710988">Definir o tamanho da cache do disco multimédia em bytes</translation>
 <translation id="7424751532654212117">Lista de exceções à lista de plug-ins desativados</translation>

@@ -817,9 +817,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="3322771899429619102">Võimaldab määrata URL-i mustrite loendi, mis määrab saidid, millel on lubatud kasutada võtmete loomist. Kui URL-i muster on loendis „KeygenBlockedForUrls”, alistab see need erandid.
 
           Kui jätate reegli määramata, kasutatakse kõikide saitide puhul globaalset vaikeväärtust, mis pärineb reeglist „DefaultKeygenSetting”, kui see on määratud, või kasutaja isiklikku seadistust.</translation>
-<translation id="3322902067538988734">Kui reegel määratakse väärtusele Tõene, peab kasutaja enne brauseri kasutamist rakendusse <ph name="PRODUCT_NAME" /> oma profiiliga sisse logima. Samuti määratakse seade BrowserGuestModeEnabled vaikeväärtuseks Väär.
-
-      Kui reegel määratakse väärtusele Väär või jäetakse seadistamata, saab kasutaja brauserit rakendusse <ph name="PRODUCT_NAME" /> sisse logimata kasutada.</translation>
 <translation id="3347687541825006165">Määrab, kui sageli peab kasutaja kiireks avamiseks parooli sisestama.</translation>
 <translation id="3381968327636295719">Kasuta vaikimisi hostbrauserit</translation>
 <translation id="3417418267404583991">Kui lubate selle reegli või jätate seadistamata, siis lubab <ph name="PRODUCT_OS_NAME" /> külastajatel sisse logida. Külastajana sisse logides kasutatakse anonüümseid seansse ja selleks ei ole vaja parooli sisestada.
@@ -1686,14 +1683,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
       Muul juhul võidakse see määrata ühele järgmistest väärtustest: „sslv3”, „tls1”, „tls1.1” või „tls1.2”. Kui see on määratud, ei kasuta teenus <ph name="PRODUCT_NAME" /> SSL-i/TLS-i versioone, mis on määratud versioonist vanemad. Tundmatut väärtust eiratakse.
 
       Pange tähele, et numbrist olenemata on „sslv3” versioonist „tls1” vanem versioon.</translation>
-<translation id="6177482277304066047">Määrab sihtversiooni automaatsete värskenduste jaoks.
-
-      Määrab eesliite sihtversioonile, millele <ph name="PRODUCT_OS_NAME" /> peab värskendama. Kui seade käitab versiooni, mis eelneb määratud eesliitele, värskendatakse see antud eesliite uusimale versioonile. Kui seade kasutab juba uuemat versiooni, siis sellel mõju pole (st ei toimu üleminekut vanemale versioonile) ja seade jääb praegusele versioonile. Eesliite vorming töötab komponendipõhiselt, nagu näha järgmises näites.
-
-      "" (või seadistamata): saadaval värskendus uusimale versioonile.
-      "1412.": värskendus mis tahes 1412 uuemale versioonile (nt 1412.24.34 või 1412.60.2)
-      "1412.2.": värskendus mis tahes 1412.2 uuemale versioonile (nt 1412.2.34 või 1412.2.2)
-      "1412.24.34": värskendus ainult sellele konkreetsele versioonile</translation>
 <translation id="6190022522129724693">Hüpikakende vaikeseade</translation>
 <translation id="6197453924249895891">Annab juurdepääsu laienduste ettevõttevõtmetele.
 
@@ -1733,9 +1722,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="6367755442345892511">Määramine, kas kasutajal on võimalik versiooni kanalit seadistada</translation>
 <translation id="6368011194414932347">Avalehe URL-i seadistamine</translation>
 <translation id="6368403635025849609">Luba JavaScript nendel saitidel</translation>
-<translation id="6373222873250380826">Reegli lubamisel on automaatsed värskendused keelatud.
-
-      Kui seade ei ole seadistatud või on keelatud, siis otsivad teenuse <ph name="PRODUCT_OS_NAME" /> seadmed värskendusi automaatselt.</translation>
 <translation id="6376659517206731212">Võib olla kohustuslik</translation>
 <translation id="6378076389057087301">Määrake, kas helitoimingud mõjutavad toitehaldust</translation>
 <translation id="637934607141010488">Saadab loendi seadme kasutajatest, kes on hiljuti sisse loginud.
@@ -2099,13 +2085,6 @@ vastama ühele printeritest, mida <ph name="PRODUCT_NAME" /> toetab.
 <translation id="7336878834592315572">Säilita küpsised seansi kestuse jooksul</translation>
 <translation id="7340034977315324840">Saada teavet seadme aktiivsuse aja kohta</translation>
 <translation id="7384999953864505698">Lubab QUIC-protokolli</translation>
-<translation id="7406651467768226499">Kas lubada automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni.
-
-      See reegel juhib seda, kas lubada automaatselt käivitatud viivituseta kioskirakendusel juhtida operatsioonisüsteemi <ph name="PRODUCT_OS_NAME" /> versiooni, määrates manifesti võtme required_platform_version ja kasutades seda automaatvärskenduse sihtversiooni eesliitena.
-
-      Kui reegel on määratud väärtusele Tõene, siis kasutatakse automaatselt käivitatud viivituseta kioskirakenduse manifesti võtme required_platform_version väärtust automaatvärskenduse sihtversiooni eesliitena.
-
-      Kui reeglit pole seadistatud või see on määratud väärtusele Väär, eiratakse manifesti võtit required_platform_version ja automaatvärskendus toimub tavapäraselt.</translation>
 <translation id="7417972229667085380">Esitlusrežiimis tegevusetu oleku viivituse skaleerimise määr protsentides (tugi on katkestatud)</translation>
 <translation id="7421483919690710988">Määrake meediumiketta vahemälu suurus baitides</translation>
 <translation id="7424751532654212117">Keelatud pistikprogrammide loendi erandite loend</translation>

@@ -744,9 +744,6 @@
 <translation id="3322771899429619102">可让您设置一个网址格式列表，以便指定哪些网站可以使用密钥生成功能。对于同时还包含在“KeygenBlockedForUrls”中的网址格式，系统将应用“KeygenBlockedForUrls”政策而忽略此政策。
 
           如果此政策未设置，系统将根据“DefaultKeygenSetting”政策（如果此政策已设置）或用户的个人配置为所有网站使用全局默认值。</translation>
-<translation id="3322902067538988734">如果此政策设为 true，用户必须先使用其个人资料登录 <ph name="PRODUCT_NAME" />，然后才能使用该浏览器。此外，BrowserGuestModeEnabled 的默认值将设为 false。
-
-      如果此政策设为 false 或未配置，用户无需登录 <ph name="PRODUCT_NAME" /> 即可使用该浏览器。</translation>
 <translation id="3347687541825006165">指定用户必须按什么样的频率输入密码才能使用“快速解锁”功能。</translation>
 <translation id="3381968327636295719">默认情况下托管主机浏览器</translation>
 <translation id="3417418267404583991">如果未配置此政策或将其设置为 true，<ph name="PRODUCT_OS_NAME" />将启用访客登录。访客登录是匿名用户会话，不需要密码。
@@ -1526,14 +1523,6 @@
       您可以将此政策设为以下其中一个值：sslv3、tls1、tls1.1 或 tls1.2。如果您设置了此政策，<ph name="PRODUCT_NAME" /> 将不会使用低于指定版本的 SSL/TLS 版本。系统将忽略无法识别的值。
 
       请注意，sslv3 的版本低于 tls1，不要被数字迷惑了。</translation>
-<translation id="6177482277304066047">设置自动更新的目标版本。
-
-      指定 <ph name="PRODUCT_OS_NAME" />应更新到的目标版本的前缀。如果设备运行的版本早于指定的前缀，那么该设备将更新到具有指定前缀的最新版本。如果设备运行的已经是较新版本，则不会产生任何效果（即不会执行任何下载操作），并且该设备将继续采用当前版本。前缀格式以组件的方式工作，具体如以下示例所示：
-
-      “”（或未配置）：更新到现有的最新版本。
-      “1412.”：更新到 1412 的任意次要版本（例如 1412.24.34 或 1412.60.2）
-      “1412.2.”：更新到 1412.2 的任意次要版本（例如 1412.2.34 或 1412.2.2） 
-      “1412.24.34”：仅更新到此指定版本</translation>
 <translation id="6190022522129724693">默认弹出式窗口设置</translation>
 <translation id="6197453924249895891">向扩展程序授予对企业密钥的使用权限。
 
@@ -1569,9 +1558,6 @@
 <translation id="6367755442345892511">是否允许用户配置发布版</translation>
 <translation id="6368011194414932347">配置主页网址</translation>
 <translation id="6368403635025849609">在这些网站上允许 JavaScript</translation>
-<translation id="6373222873250380826">将此政策设置为 true 可停用自动更新。
-
-      如果未配置此政策或将其设置为 false，<ph name="PRODUCT_OS_NAME" />设备就会自动检查更新。</translation>
 <translation id="6376659517206731212">可强制执行</translation>
 <translation id="6378076389057087301">指定音频活动是否影响电源管理</translation>
 <translation id="637934607141010488">报告最近登录过的设备用户列表。
@@ -1902,13 +1888,6 @@
 <translation id="7336878834592315572">在会话期间保留 Cookie</translation>
 <translation id="7340034977315324840">报告设备活动时间</translation>
 <translation id="7384999953864505698">允许使用 QUIC 协议</translation>
-<translation id="7406651467768226499">是否允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本。
-
-      该政策通过在清单中声明 required_platform_version 并将其用作自动更新目标版本前缀，来控制是否允许自动启动零延迟的自助服务终端应用控制 <ph name="PRODUCT_OS_NAME" />版本。
-
-      如果该政策设为“true”，自动启动零延迟的自助服务终端应用的 required_platform_version 清单键值便会被用作自动更新目标版本前缀。
-
-      如果该政策设为“false”或未配置，required_platform_version 清单键便会被忽略，并且系统会按照常规流程进行自动更新。</translation>
 <translation id="7417972229667085380">演示模式下待机延迟时间的调整幅度（百分比）（已弃用）</translation>
 <translation id="7421483919690710988">设置媒体磁盘缓存大小（字节）</translation>
 <translation id="7424751532654212117">已停用插件列表的例外情况</translation>
@@ -2424,7 +2403,7 @@
 <translation id="930930237275114205">设置 <ph name="PRODUCT_FRAME_NAME" />用户数据目录</translation>
 <translation id="944607242500063080">配置所允许的“快速解锁”模式。</translation>
 <translation id="944817693306670849">设置磁盘缓存大小</translation>
-<translation id="969164417253718105">此设置可控制锁定屏幕将会按什么样的频率要求用户输入密码以便继续使用“快速解锁”功能。每当进入锁定屏幕时，如果与上次密码输入时间之间的间隔超过了此设置中设定的时间段，则无法使用“快速解锁”进入锁定屏幕。如果用户在锁定屏幕上的停留时间超过了此时间段，那么当用户下次输错代码或重新进入锁定屏幕时（无论哪个在先），系统都会要求输入密码。
+<translation id="969164417253718105">此设置可控制锁定屏幕将会按什么样的频率要求用户输入密码以便继续使用“快速解锁”功能。每当进入锁定屏幕时，如果与上次密码输入时间之间的间隔超过了此设置中设定的时间段，则无法使用“快速解锁”进入锁定屏幕。如果用户停留在已超过此时间段的锁定屏幕上，那么当用户下次输错代码或重新进入锁定屏幕时（无论哪个在先），系统都会要求输入密码。
 
       如果此设置已配置，系统将会要求那些使用“快速解锁”的用户在锁定屏幕上输入密码（具体视此设置而定）。
 

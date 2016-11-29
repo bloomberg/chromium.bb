@@ -43,7 +43,6 @@
 <translation id="1055806300943943258">ব্লুটুথ ও USB ডিভাইসগুলির জন্য অনুসন্ধান করা হচ্ছে...</translation>
 <translation id="1056898198331236512">সতর্কতা</translation>
 <translation id="1056982457359827501">Chrome অ্যাপ্লিকেশানগুলিতে BLE বিজ্ঞাপন সক্ষম করুন। BLE বিজ্ঞাপন কম ব্লুটুথ শক্তি রয়েছে এমন বৈশিষ্ট্যগুলির নিয়মিত ব্যবহারে বাধা দিতে পারে।</translation>
-<translation id="1058325955712687476">সাইট নিযুক্তি পরিষেবা সক্ষম করে, যা সাইটগুলির সাথে ইন্টারঅ্যাকশন রেকর্ড করে এবং সেই অনুযায়ী সম্পদ বরাদ্দ করে৷</translation>
 <translation id="1058418043520174283"><ph name="COUNT" />টির <ph name="INDEX" />টি</translation>
 <translation id="1062407476771304334">প্রতিস্থাপন করুন</translation>
 <translation id="1062866675591297858"><ph name="BEGIN_LINK" />তত্ত্বাবধানে থাকা ব্যবহারকারীদের ড্যাশবোর্ড<ph name="END_LINK" /> এর মাধ্যমে আপনার তত্ত্বাবধানে থাকা ব্যবহারকারীদের পরিচালনা করুন৷</translation>
@@ -258,7 +257,6 @@
 <translation id="1351692861129622852"><ph name="FILE_COUNT" />টি ফাইল আমদানি করা হচ্ছে...</translation>
 <translation id="1352103415082130575">থাই কীবোর্ড (পাট্টাচোটে)</translation>
 <translation id="1353686479385938207"><ph name="PROVIDER_NAME" /> : <ph name="NETWORK_NAME" /></translation>
-<translation id="1353946958707294039">মেটারিয়াল ডিজাইন সঞ্চয়স্থান পরিচালক</translation>
 <translation id="1353966721814789986">প্রারম্ভ পৃষ্ঠা</translation>
 <translation id="1354868058853714482">Adobe Reader তারিখ সীমার বাইরে এবং অসুরক্ষিত হতে পারে৷</translation>
 <translation id="1355408554203439639">3D সফ্টওয়্যার রাস্টারাইজার</translation>
@@ -372,7 +370,6 @@
 <translation id="1477301030751268706">পরিচয় API টোকেন ক্যাশে</translation>
 <translation id="1477934438414550161">TLS 1.2</translation>
 <translation id="1478340334823509079">বিবরণ: <ph name="FILE_NAME" /></translation>
-<translation id="1479633899288589053">পয়েন্টার ইভেন্ট v1 স্পেক ক্যাপচারিং</translation>
 <translation id="1480041086352807611">নমুনা মোড</translation>
 <translation id="1481244281142949601">আপনি পর্যাপ্তরূপে স্যান্ডবক্সভুক্ত হয়েছেন৷</translation>
 <translation id="1482124012545051544"><ph name="FILE_COUNT" />টি নতুন ফটোর ব্যাকআপ নিতে প্রস্তুত</translation>
@@ -885,7 +882,6 @@
 <translation id="2177950615300672361">ছদ্মবেশী ট্যাব: <ph name="TAB_NAME" /></translation>
 <translation id="2178614541317717477">CA আপোস</translation>
 <translation id="218070003709087997">কতগুলি কপি মুদ্রণ হবে তা নির্দিষ্ট করতে একটি সংখ্যা ব্যবহার করুন (১ থেকে ৯৯৯)।</translation>
-<translation id="218492098606937156">স্পর্শ ঘটনা সক্ষম করুন</translation>
 <translation id="2187317261103489799">সনাক্ত করুন (ডিফল্ট)</translation>
 <translation id="2187895286714876935">সার্ভার শংসাপত্র  আমদানি  ত্রুটি</translation>
 <translation id="2188881192257509750"><ph name="APPLICATION" /> খুলুন</translation>
@@ -1041,7 +1037,6 @@
 <translation id="2367972762794486313">অ্যাপ্লিকেশানগুলি দেখান</translation>
 <translation id="2371076942591664043">&amp;সম্পন্ন হলে খুলুন</translation>
 <translation id="2372036074421194686">Chrome আপনার কম্পিউটারে ইনস্টল করা একটি অবাঞ্ছিত প্রোগ্রাম (<ph name="UWS_NAME" />) পেয়েছে। আপনি Chrome পরিষ্কারের সরঞ্জাম চালু করার মাধ্যমে এটি সরাতে সক্ষম হতে পারেন।</translation>
-<translation id="2375701438512326360">ফোর্স টাচস্ক্রীন সর্বদা সক্ষম অথবা অক্ষম রাখতে, অথবা যখন সূচনায় একটি টাচস্ক্রীন সনাক্ত হয় তখন সক্ষম রাখতে সমর্থন করে (স্বয়ংক্রিয়, ডিফল্ট)৷</translation>
 <translation id="2378075407703503998"><ph name="SELCTED_FILE_COUNT" /> টি ফাইল নির্বাচিত</translation>
 <translation id="2378982052244864789">এক্সটেনশন ডিরেক্টরিটি নির্বাচন করুন৷</translation>
 <translation id="2379281330731083556">সিস্টেম কথোপকথন ব্যবহার করে প্রিন্ট করুন...<ph name="SHORTCUT_KEY" /></translation>
@@ -2081,7 +2076,6 @@
 <translation id="3648460724479383440">নির্বাচিত  রেডিও বোতাম</translation>
 <translation id="3649138363871392317">ফটো তোলা হয়েছে</translation>
 <translation id="3650242103421962931">রৈখিক</translation>
-<translation id="3653069516296104653">টাচপয়েন্টার ইভেন্টের অন্তর্নিহিত ক্যাপচারিং অক্ষম করে।</translation>
 <translation id="3653999333232393305"><ph name="HOST" /> কে আপনার মাইক্রোফোন অ্যাক্সেস করার মঞ্জুরি অবিরত রাখুন</translation>
 <translation id="3654045516529121250">আপনার অ্যাক্সেসযোগ্যতার সেটিংস পড়ুন</translation>
 <translation id="3655712721956801464">{NUM_FILES,plural, =1{একটি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}one{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}other{#টি ফাইলে এটার স্থায়ী অ্যাক্সেস আছে৷}}</translation>
@@ -2124,7 +2118,6 @@
 <translation id="3709244229496787112">ডাউনলোডটি সম্পূর্ণ হওয়ার আগে ব্রাউজারটি বন্ধ হয়েছিল৷</translation>
 <translation id="3711895659073496551">সাসপেন্ড</translation>
 <translation id="3712897371525859903">এ&amp;ইভাবে পৃষ্ঠা সংরক্ষণ করুন...</translation>
-<translation id="3713494718070140825">বিপজ্জনক অ্যাপ্লিকেশান ও সাইটগুলি সনাক্ত করতে Google এর কাছে কিছু সিস্টেম তথ্য ও পৃষ্ঠার সামগ্রী <ph name="BEGIN_WHITEPAPER_LINK" />স্বয়ংক্রিয়ভাবে পাঠান<ph name="END_WHITEPAPER_LINK" />। <ph name="PRIVACY_PAGE_LINK" /></translation>
 <translation id="3714633008798122362">ওয়েব ক্যালেন্ডার</translation>
 <translation id="3715597595485130451">ওয়াই-ফাই তে সংযোগ স্থাপন করুন</translation>
 <translation id="3716615839203649375">অনুমতি দিন</translation>
@@ -2472,13 +2465,11 @@
 <translation id="418179967336296930">রাশিয়ান ফোনেটিক (YaZHert) কীবোর্ড</translation>
 <translation id="4181841719683918333">ভাষাসমূহ</translation>
 <translation id="4184885522552335684">কোনো প্রদর্শন সরাতে টেনে আনুন</translation>
-<translation id="4188447344915957833">মেটারিয়াল ডিজাইন সেটিংসে সঞ্চয়স্থান পরিচালক সক্ষম করে।</translation>
 <translation id="4189406272289638749">একটি এক্সটেনশান, &lt;b&gt; <ph name="EXTENSION_NAME" /> &lt;/ b&gt;, এই সেটিংটিকে নিয়ন্ত্রণ করছে৷</translation>
 <translation id="4193154014135846272">Google দস্তাবেজ</translation>
 <translation id="4193182321948161343">মেটারিয়াল ডিজাইন ব্যবহারকারী পরিচালক সক্ষম করে</translation>
 <translation id="4193297030838143153">নতুন বিলিং ঠিকানা...</translation>
 <translation id="4194570336751258953">ট্যাপ-টু-ক্লিক সক্ষম করুন</translation>
-<translation id="4195621107636847694">জুড়ে থাকা পরিষেবার সাইট</translation>
 <translation id="4195643157523330669">নতুন ট্যাবে খুলুন</translation>
 <translation id="4195814663415092787">আপনি যেখানে ছেডেছেন সেখান থেকে চালিয়ে যান</translation>
 <translation id="4197674956721858839">জিপ নির্বাচন</translation>

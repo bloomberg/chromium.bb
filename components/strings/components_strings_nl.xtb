@@ -701,7 +701,6 @@ De volgende keer kan het handig zijn de incognitomodus <ph name="SHORTCUT_KEY" /
 <translation id="9050666287014529139">Wachtwoordzin</translation>
 <translation id="9065203028668620118">Bewerken</translation>
 <translation id="9068849894565669697">Kleur selecteren</translation>
-<translation id="9092364396508701805">De pagina op <ph name="HOST_NAME" /> werkt niet</translation>
 <translation id="9103872766612412690"><ph name="SITE" /> gebruikt gewoonlijk versleuteling om je gegevens te beschermen. Toen Chromium deze keer probeerde verbinding te maken met <ph name="SITE" />, retourneerde de website ongewone en onjuiste inloggegevens. Dit gebeurt wanneer een aanvaller probeert zich als <ph name="SITE" /> voor te doen of wanneer een wifi-inlogscherm de verbinding heeft verbroken. Je gegevens zijn nog steeds veilig omdat Chromium de verbinding heeft beëindigd voordat er gegevens konden worden uitgewisseld.</translation>
 <translation id="9137013805542155359">Origineel weergeven</translation>
 <translation id="9148507642005240123">&amp;Bewerken ongedaan maken</translation>

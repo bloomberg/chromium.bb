@@ -830,9 +830,6 @@ Si elle n'est pas configurée, l'utilisateur peut être invité à effectuer l'i
 <translation id="3322771899429619102">Permet de définir une liste de formats d'URL qui déterminent les sites autorisés à utiliser la génération de clé. Si la règle "KeygenBlockedForUrls" est appliquée à un format d'URL, elle a priorité sur ces exceptions.
 
           Si cette règle n'est pas définie, la valeur globale par défaut est utilisée pour tous les sites, et déterminée à partir de la règle "DefaultKeygenSetting" si celle-ci est définie, ou à partir de la configuration personnelle de l'utilisateur.</translation>
-<translation id="3322902067538988734">Si cette règle est définie sur "True", l'utilisateur doit se connecter à <ph name="PRODUCT_NAME" /> avec son propre profil pour pouvoir utiliser le navigateur. La valeur par défaut de BrowserGuestModeEnabled sera définie sur "False".
-
-      Si cette règle est définie sur "False" ou n'est pas configurée, l'utilisateur peut employer le navigateur sans se connecter à <ph name="PRODUCT_NAME" />.</translation>
 <translation id="3347687541825006165">Permet de définir la fréquence à laquelle l'utilisateur doit saisir le mot de passe pour utiliser le déverrouillage rapide.</translation>
 <translation id="3381968327636295719">Utiliser le navigateur hôte par défaut</translation>
 <translation id="3417418267404583991">Si cette règle est définie sur "true" ou si elle n'est pas configurée, <ph name="PRODUCT_OS_NAME" /> autorise les connexions en mode invité. Les connexions en mode invité correspondent à des sessions utilisateur anonymes et ne nécessitent pas de mot de passe.
@@ -1717,14 +1714,6 @@ Si cette règle n'est pas configurée, la valeur par défaut globale sera utilis
       Dans les autres cas, les valeurs suivantes peuvent être utilisées : "sslv3", "tls1", "tls1.1" ou "tls1.2". Dans ce cas, <ph name="PRODUCT_NAME" /> n'utilisera pas de versions SSL/TLS plus anciennes que la version précisée. Toute valeur non reconnue sera ignorée.
 
       Veuillez noter que malgré son numéro, "sslv3" est une version plus ancienne que "tls1".</translation>
-<translation id="6177482277304066047">Définit une version cible pour les mises à jour automatiques.
-
-      Indique le préfixe de la version cible dans laquelle la mise à jour de <ph name="PRODUCT_OS_NAME" /> doit se faire. Si l'appareil utilise une version antérieure au préfixe défini, la mise à jour installe la toute dernière version comportant le préfixe donné. Si la version de l'appareil est ultérieure au préfixe défini, aucune mise à jour n'est effectuée : l'appareil conserve la version actuelle. Le format du préfixe dépend du composant, conformément à l'exemple suivant :
-
-      "" (ou règle non configurée) : installation de la dernière mise à jour disponible
-      "1412." : installation de toutes les mises à jour mineures de la version 1412 (1412.24.34 ou 1412.60.2, par exemple)
-      "1412.2." : installation de toutes les mises à jour mineures de la version 1412.2 (1412.2.34 ou 1412.2.2, par exemple)
-      "1412.24.34" : installation de cette mise à jour spécifique</translation>
 <translation id="6190022522129724693">Paramètre de fenêtres pop-up par défaut</translation>
 <translation id="6197453924249895891">Permettre aux extensions d'accéder aux clés d'entreprise.
 
@@ -1764,9 +1753,6 @@ Si vous désactivez ce paramètre ou si vous ne le configurez pas, le SPN Kerber
 <translation id="6367755442345892511">Autoriser ou verrouiller la configuration de la version par l'utilisateur</translation>
 <translation id="6368011194414932347">Configurer l'URL de la page d'accueil</translation>
 <translation id="6368403635025849609">Autoriser JavaScript sur ces sites</translation>
-<translation id="6373222873250380826">Désactive les mises à jour automatiques lorsque cette règle est définie sur "true".
-
-       Les appareils <ph name="PRODUCT_OS_NAME" /> recherchent automatiquement les mises à jour lorsque ce paramètre n'est pas configuré ou lorsqu'il est défini sur "false".</translation>
 <translation id="6376659517206731212">Peut être obligatoire</translation>
 <translation id="6378076389057087301">Indiquer si l'activité audio a une incidence sur la gestion de l'alimentation</translation>
 <translation id="637934607141010488">Générer une liste des utilisateurs qui se sont récemment connectés à l'appareil.
@@ -2127,13 +2113,6 @@ Si elle est définie sur "False" ou si elle n'est pas configurée, ces publicit�
 <translation id="7336878834592315572">Conserver les cookies pendant toute la durée de la session</translation>
 <translation id="7340034977315324840">Indiquer les périodes d'activité de l'appareil</translation>
 <translation id="7384999953864505698">Permet d'utiliser le protocole QUIC</translation>
-<translation id="7406651467768226499">Autoriser ou non l'application kiosque lancée automatiquement sans délai à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" />.
-
-      Cette règle détermine si l'application kiosque lancée automatiquement sans délai est autorisée à contrôler la version de l'application <ph name="PRODUCT_OS_NAME" /> en déclarant un élément "required_platform_version" dans son fichier manifeste et en l'utilisant en tant que préfixe de version cible de la mise à jour automatique.
-
-      Si la règle est définie sur "true", la valeur de la clé du fichier manifeste "required_platform_version" de l'application kiosque lancée automatiquement sans délai est utilisée en tant que préfixe de version cible de la mise à jour automatique.
-
-      Si la règle n'est pas configurée, ou si elle est définie sur "false", la clé du fichier manifeste "required_platform_version" est ignorée et la mise à jour automatique a lieu de manière normale.</translation>
 <translation id="7417972229667085380">Pourcentage d'adaptation du délai d'inactivité en mode Présentation (abandonné)</translation>
 <translation id="7421483919690710988">Définir la taille du cache du disque de support en octets</translation>
 <translation id="7424751532654212117">Liste des exceptions à la liste des plug-ins désactivés</translation>

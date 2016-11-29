@@ -706,7 +706,6 @@ Inkognito režiim <ph name="SHORTCUT_KEY" /> võib järgmisel korral kasulikuks 
 <translation id="9050666287014529139">Parool</translation>
 <translation id="9065203028668620118">Muuda</translation>
 <translation id="9068849894565669697">Värvi valimine</translation>
-<translation id="9092364396508701805">Hosti <ph name="HOST_NAME" /> leht ei tööta</translation>
 <translation id="9103872766612412690">Sait <ph name="SITE" /> kasutab teie teabe kaitsmiseks tavaliselt krüpteerimist. Kui Chromium püüdis seekord saidiga <ph name="SITE" /> ühendust luua, tagastas veebisait ebatavalised ja valed mandaadid. See võib juhtuda siis, kui ründaja proovib teeselda, et on sait <ph name="SITE" />, või WiFi sisselogimisekraan on ühenduse katkestanud. Teie teave on endiselt kaitstud, sest Chromium peatas ühenduse enne andmevahetust.</translation>
 <translation id="9137013805542155359">Kuva originaal</translation>
 <translation id="9148507642005240123">&amp;Võta muudatus tagasi</translation>

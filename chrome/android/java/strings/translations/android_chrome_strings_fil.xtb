@@ -140,7 +140,6 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="238909021488141516">Nagkaroon ng error habang dina-download ang content.</translation>
 <translation id="2414886740292270097">Madilim</translation>
 <translation id="2433507940547922241">Hitsura</translation>
-<translation id="2439248520967274840">Nagsa-sign in ka sa <ph name="TO_ACCOUNT" />. Ang ilan sa kasalukuyan mong mga bookmark, history, mga password at iba pang mga setting ay dati nang na-sync sa <ph name="FROM_ACCOUNT" />. Ano ang gusto mong gawin sa kasalukuyan mong data?</translation>
 <translation id="2440823041667407902">Access sa lokasyon</translation>
 <translation id="2476578072172137802">Mga Setting ng Site</translation>
 <translation id="2482878487686419369">Mga Abiso</translation>
@@ -188,7 +187,6 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="2996291259634659425">Gumawa ng passphrase</translation>
 <translation id="2996809686854298943">Kinakailangan ang URL</translation>
 <translation id="300526633675317032">Iki-clear nito ang lahat ng <ph name="SIZE_IN_KB" /> ng storage ng website.</translation>
-<translation id="3012408695656332380">Palitan ng data ni <ph name="TO_ACCOUNT" /> ang data ng device na ito. Makukuha mo ang kasalukuyan mong data sa pamamagitan ng pagbalik sa <ph name="FROM_ACCOUNT" />, ngunit mawawala ang nagawang data simula noong nag-sign out ka.</translation>
 <translation id="3029704984691124060">Hindi nagtutugma ang mga passphrase</translation>
 <translation id="3036750288708366620"><ph name="BEGIN_LINK" />Humingi ng tulong<ph name="END_LINK" /></translation>
 <translation id="3089395242580810162">Buksan sa tab na incognito</translation>
@@ -215,7 +213,6 @@ Makokontrol mo ang Pisikal na Web sa Mga Setting ng Chrome.
 <translation id="3320021301628644560">Magdagdag ng billing address</translation>
 <translation id="3328801116991980348">Impormasyon ng site</translation>
 <translation id="3350687908700087792">Isara ang lahat ng incognito na tab</translation>
-<translation id="3351441609270267898">I-import ang kasalukuyang data</translation>
 <translation id="3365671512111106261">Hindi available kapag naka-on ang Data Saver</translation>
 <translation id="3367813778245106622">Mag-sign in muli upang simulan ang pag-sync</translation>
 <translation id="3384347053049321195">Magbahagi ng larawan</translation>
@@ -426,7 +423,6 @@ Upang baguhin ang iyong termino para sa paghahanap, pindutin ito nang matagal up
 <translation id="5676636989614905379">Hindi ma-play ang video sa <ph name="SCREEN_NAME" />.</translation>
 <translation id="5677928146339483299">Naka-block</translation>
 <translation id="5684874026226664614">Oops. Hindi maisalin ang pahinang ito.</translation>
-<translation id="5708031556037168012">Panatilihin sa iyong device ang kasalukuyang data at permanenteng i-import ang data sa <ph name="TO_ACCOUNT" />.</translation>
 <translation id="5719837394786370183">Hindi mananatili ang mga page na tiningnan mo sa mga tab na incognito sa iyong history ng browser, cookie store o history ng paghahanap pagkatapos mong isara ang lahat ng iyong tab na incognito. Itatabi ang anumang file na iyong na-download o bookmark na iyong ginawa.
 
 Gayunpaman, hindi ka invisible. Hindi tinatago ng pagiging incognito ang iyong pagba-browse sa iyong employer, iyong internet service provider o sa mga binibisita mong website.</translation>
@@ -563,7 +559,6 @@ Halimbawa, maaaring tumugon ang ilang website sa kahilingang ito sa pamamagitan 
 <translation id="7062545763355031412">Tanggapin at lumipat ng account</translation>
 <translation id="7063006564040364415">Hindi makakonekta sa server ng pag-sync.</translation>
 <translation id="7064851114919012435">Impormasyon sa pakikipag-ugnayan</translation>
-<translation id="7081639897063626814">Panatilihing hiwalay ang kasalukuyang data</translation>
 <translation id="7094922512924405309">Walang nakitang kalapit na mga page ng Pisikal na Web</translation>
 <translation id="7138678301420049075">Iba pa</translation>
 <translation id="7180611975245234373">I-refresh</translation>
@@ -735,12 +730,10 @@ Upang makakuha ng mga bagong lisensya, kumonekta sa internet at i-play ang iyong
 <translation id="9133703968756164531"><ph name="ITEM_NAME" /> (<ph name="ITEM_ID" />)</translation>
 <translation id="9137013805542155359">Ipakita ang orihinal</translation>
 <translation id="9139068048179869749">Magtanong bago payagan ang mga site na magpadala ng mga notification (inirerekomenda)</translation>
-<translation id="9141510419986760385">Lumilipat ka sa naka-sync na account na <ph name="TO_ACCOUNT" /> mula sa <ph name="FROM_ACCOUNT" />. Ano ang gusto mong gawin sa kasalukuyan mong mga bookmark, history, mga password at iba pang mga setting?</translation>
 <translation id="9154194610265714752">Na-update</translation>
 <translation id="917685106653909562">Kalapit na mga page ng Pisikal na Web</translation>
 <translation id="9187199695613236444">View na pang-mobile</translation>
 <translation id="9188680907066685419">Mag-sign out sa pinamamahalaang account</translation>
-<translation id="9198708126133947749">Palitan ng data ng <ph name="TO_ACCOUNT" /> ang data ng device na ito. Maaari mong kunin ang iyong kasalukuyang data sa pamamagitan ng pagbalik sa <ph name="FROM_ACCOUNT" />.</translation>
 <translation id="9206873250291191720">A</translation>
 <translation id="9219103736887031265">Mga Larawan</translation>
 <translation id="932327136139879170">Home</translation>
