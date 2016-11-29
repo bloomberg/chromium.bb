@@ -263,6 +263,7 @@ void TouchEvent::preventDefault() {
   String warningMessage;
   switch (handlingPassive()) {
     case PassiveMode::NotPassive:
+    case PassiveMode::NotPassiveDefault:
       if (!cancelable()) {
         warningMessage = "Ignored attempt to cancel a " + type() +
                          " event with cancelable=false, for example "
