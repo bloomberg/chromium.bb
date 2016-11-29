@@ -16,8 +16,8 @@
 
 namespace {
 
-// This is used to increase the right margin of this decoration.
-const CGFloat kLeftSidePadding = 6.0;
+// This is used to increase the left padding of this decoration.
+const CGFloat kLeftSidePadding = 5.0;
 
 // Padding between the icon/label and bubble edges.
 const CGFloat kBubblePadding = 7.0;

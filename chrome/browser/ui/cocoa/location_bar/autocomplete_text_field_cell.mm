@@ -36,7 +36,7 @@ const CGFloat kRightDecorationXOffset = 2.0;
 const CGFloat kLeftDecorationXOffset = 1.0;
 
 // How much the text frame needs to overlap the rightmost left decoration.
-const CGFloat kTextFrameDecorationOverlap = 4.0;
+const CGFloat kTextFrameDecorationOverlap = 5.0;
 
 // How long to wait for mouse-up on the location icon before assuming
 // that the user wants to drag.
