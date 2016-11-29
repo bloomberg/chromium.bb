@@ -106,14 +106,17 @@ class SVGMarkerData {
     return 0;
   }
 
-  void updateOutslope(const FloatPoint& point) {
+  void updateOutslope(const PathElement& element) {
     m_outslopePoints[0] = m_origin;
+    FloatPoint point = element.type == PathElementCloseSubpath
+                           ? m_subpathStart
+                           : element.points[0];
     m_outslopePoints[1] = point;
   }
 
   void updateFromPathElement(const PathElement& element) {
     // First update the outslope for the previous element.
-    updateOutslope(element.points[0]);
+    updateOutslope(element);
 
     // Record the marker for the previous element.
     if (m_elementIndex > 0) {
@@ -148,7 +151,7 @@ class SVGMarkerData {
         m_origin = points[0];
         break;
       case PathElementCloseSubpath:
-        updateInslope(points[0]);
+        updateInslope(m_subpathStart);
         m_origin = m_subpathStart;
         m_subpathStart = FloatPoint();
     }
