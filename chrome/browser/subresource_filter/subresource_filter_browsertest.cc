@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/files/file_path.h"
 #include "base/path_service.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/subresource_filter/test_ruleset_publisher.h"
 #include "chrome/browser/ui/browser.h"
@@ -22,7 +23,15 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/test/browser_test_utils.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+namespace {
+
+const char kSubresourceFilterPromptHistogram[] =
+    "SubresourceFilter.Prompt.NumVisibility";
+
+}  // namespace
 
 namespace subresource_filter {
 
@@ -130,6 +139,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
   GURL url(GetTestUrl("subresource_filter/frame_set.html"));
   ASSERT_NO_FATAL_FAILURE(
       SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  base::HistogramTester tester;
   ui_test_utils::NavigateToURL(browser(), url);
 
   const char* kSubframeNames[] = {"one", "two"};
@@ -138,6 +148,7 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest, SubFrameActivation) {
     ASSERT_TRUE(frame);
     EXPECT_FALSE(WasScriptResourceLoaded(frame));
   }
+  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
 }
 
 IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
@@ -152,6 +163,20 @@ IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
   // page load right after start-up.
   ui_test_utils::NavigateToURL(browser(), url);
   EXPECT_FALSE(WasScriptResourceLoaded(web_contents()->GetMainFrame()));
+}
+
+IN_PROC_BROWSER_TEST_F(SubresourceFilterBrowserTest,
+                       PromptShownAgainOnNextNavigation) {
+  ASSERT_NO_FATAL_FAILURE(
+      SetRulesetToDisallowURLsWithPathSuffix("included_script.js"));
+  GURL url(GetTestUrl("subresource_filter/frame_set.html"));
+  base::HistogramTester tester;
+  ui_test_utils::NavigateToURL(browser(), url);
+  EXPECT_TRUE(ExecuteScript(FindFrameByName("three"), "runny()"));
+  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 1);
+  // Check that bubble is shown for new navigation.
+  ui_test_utils::NavigateToURL(browser(), url);
+  tester.ExpectBucketCount(kSubresourceFilterPromptHistogram, true, 2);
 }
 
 }  // namespace subresource_filter

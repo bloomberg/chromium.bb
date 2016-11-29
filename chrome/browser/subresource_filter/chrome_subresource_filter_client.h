@@ -24,6 +24,7 @@ class ChromeSubresourceFilterClient
 
  private:
   content::WebContents* web_contents_;
+  bool shown_for_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeSubresourceFilterClient);
 };

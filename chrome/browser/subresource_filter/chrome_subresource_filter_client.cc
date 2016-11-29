@@ -11,7 +11,7 @@
 
 ChromeSubresourceFilterClient::ChromeSubresourceFilterClient(
     content::WebContents* web_contents)
-    : web_contents_(web_contents) {
+    : web_contents_(web_contents), shown_for_navigation_(false) {
   DCHECK(web_contents);
 }
 
@@ -19,6 +19,9 @@ ChromeSubresourceFilterClient::~ChromeSubresourceFilterClient() {}
 
 void ChromeSubresourceFilterClient::ToggleNotificationVisibility(
     bool visibility) {
+  if (shown_for_navigation_ && visibility)
+    return;
+  shown_for_navigation_ = visibility;
   UMA_HISTOGRAM_BOOLEAN("SubresourceFilter.Prompt.NumVisibility", visibility);
   TabSpecificContentSettings* content_settings =
       TabSpecificContentSettings::FromWebContents(web_contents_);
