@@ -7,7 +7,6 @@
 #include <limits>
 
 #include "base/logging.h"
-#include "base/threading/thread_restrictions.h"
 
 namespace media {
 
@@ -62,7 +61,6 @@ AudioDeviceThread::~AudioDeviceThread() {
 
 void AudioDeviceThread::ThreadMain() {
   base::PlatformThread::SetName(thread_name_);
-  base::ThreadRestrictions::SetSingletonAllowed(true);
   callback_->InitializeOnAudioThread();
 
   uint32_t buffer_index = 0;
