@@ -4479,7 +4479,13 @@ TEST_F(AutofillManagerTest, FillInUpdatedExpirationDate) {
                                      "4012888888881881");
 }
 
-TEST_F(AutofillManagerTest, UploadCreditCard) {
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_UploadCreditCard DISABLED_UploadCreditCard
+#else
+#define MAYBE_UploadCreditCard UploadCreditCard
+#endif
+TEST_F(AutofillManagerTest, MAYBE_UploadCreditCard) {
   personal_data_.ClearAutofillProfiles();
   autofill_manager_->set_credit_card_upload_enabled(true);
 
