@@ -146,17 +146,20 @@ class LayoutGrid final : public LayoutBlock {
   std::unique_ptr<OrderedTrackIndexSet> computeEmptyTracksForAutoRepeat(
       GridTrackSizingDirection) const;
 
-  void placeItemsOnGrid(SizingOperation);
-  void populateExplicitGridAndOrderIterator();
+  class Grid;
+  void placeItemsOnGrid(Grid&, SizingOperation);
+  void populateExplicitGridAndOrderIterator(Grid&) const;
   std::unique_ptr<GridArea> createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
       const LayoutBox&,
       GridTrackSizingDirection,
       const GridSpan& specifiedPositions) const;
-  void placeSpecifiedMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
-  void placeAutoMajorAxisItemsOnGrid(const Vector<LayoutBox*>&);
+  void placeSpecifiedMajorAxisItemsOnGrid(Grid&,
+                                          const Vector<LayoutBox*>&) const;
+  void placeAutoMajorAxisItemsOnGrid(Grid&, const Vector<LayoutBox*>&) const;
   void placeAutoMajorAxisItemOnGrid(
+      Grid&,
       LayoutBox&,
-      std::pair<size_t, size_t>& autoPlacementCursor);
+      std::pair<size_t, size_t>& autoPlacementCursor) const;
   GridTrackSizingDirection autoPlacementMajorAxisDirection() const;
   GridTrackSizingDirection autoPlacementMinorAxisDirection() const;
 

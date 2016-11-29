@@ -632,7 +632,7 @@ void LayoutGrid::layoutBlock(bool relayoutChildren) {
         autoRepeatColumns !=
             computeAutoRepeatTracksCount(ForColumns, TrackSizing))
       dirtyGrid();
-    placeItemsOnGrid(TrackSizing);
+    placeItemsOnGrid(m_grid, TrackSizing);
 
     GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
 
@@ -790,7 +790,8 @@ LayoutUnit LayoutGrid::guttersSize(GridTrackSizingDirection direction,
 void LayoutGrid::computeIntrinsicLogicalWidths(
     LayoutUnit& minLogicalWidth,
     LayoutUnit& maxLogicalWidth) const {
-  const_cast<LayoutGrid*>(this)->placeItemsOnGrid(IntrinsicSizeComputation);
+  const_cast<LayoutGrid*>(this)->placeItemsOnGrid(const_cast<Grid&>(m_grid),
+                                                  IntrinsicSizeComputation);
 
   GridSizingData sizingData(numTracks(ForColumns), numTracks(ForRows));
   computeTrackSizesForIndefiniteSize(ForColumns, sizingData, minLogicalWidth,
@@ -2043,11 +2044,12 @@ LayoutGrid::computeEmptyTracksForAutoRepeat(
   return emptyTrackIndexes;
 }
 
-void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
+void LayoutGrid::placeItemsOnGrid(LayoutGrid::Grid& grid,
+                                  SizingOperation sizingOperation) {
   if (!m_gridIsDirty)
     return;
 
-  DCHECK(!m_grid.hasGridItems());
+  DCHECK(!grid.hasGridItems());
 
   size_t autoRepeatColumns;
   size_t autoRepeatRows =
@@ -2060,7 +2062,7 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
   }
   m_grid.setAutoRepeatTracks(autoRepeatRows, autoRepeatColumns);
 
-  populateExplicitGridAndOrderIterator();
+  populateExplicitGridAndOrderIterator(grid);
 
   // We clear the dirty bit here as the grid sizes have been updated.
   m_gridIsDirty = false;
@@ -2069,27 +2071,27 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
   Vector<LayoutBox*> autoMajorAxisAutoGridItems;
   Vector<LayoutBox*> specifiedMajorAxisAutoGridItems;
 #if ENABLE(ASSERT)
-  DCHECK(!m_grid.hasAnyGridItemPaintOrder());
+  DCHECK(!grid.hasAnyGridItemPaintOrder());
 #endif
-  DCHECK(!m_grid.hasAnyOrthogonalGridItem());
+  DCHECK(!grid.hasAnyOrthogonalGridItem());
   size_t childIndex = 0;
-  for (LayoutBox* child = m_grid.orderIterator().first(); child;
-       child = m_grid.orderIterator().next()) {
+  for (LayoutBox* child = grid.orderIterator().first(); child;
+       child = grid.orderIterator().next()) {
     if (child->isOutOfFlowPositioned())
       continue;
 
     hasAnyOrthogonalGridItem =
         hasAnyOrthogonalGridItem || isOrthogonalChild(*child);
-    m_grid.setGridItemPaintOrder(*child, childIndex++);
+    grid.setGridItemPaintOrder(*child, childIndex++);
 
-    GridArea area = m_grid.gridItemArea(*child);
+    GridArea area = grid.gridItemArea(*child);
     if (!area.rows.isIndefinite())
-      area.rows.translate(abs(m_grid.smallestTrackStart(ForRows)));
+      area.rows.translate(abs(grid.smallestTrackStart(ForRows)));
     if (!area.columns.isIndefinite())
-      area.columns.translate(abs(m_grid.smallestTrackStart(ForColumns)));
+      area.columns.translate(abs(grid.smallestTrackStart(ForColumns)));
 
     if (area.rows.isIndefinite() || area.columns.isIndefinite()) {
-      m_grid.setGridItemArea(*child, area);
+      grid.setGridItemArea(*child, area);
       GridSpan majorAxisPositions =
           (autoPlacementMajorAxisDirection() == ForColumns) ? area.columns
                                                             : area.rows;
@@ -2099,50 +2101,50 @@ void LayoutGrid::placeItemsOnGrid(SizingOperation sizingOperation) {
         specifiedMajorAxisAutoGridItems.append(child);
       continue;
     }
-    m_grid.insert(*child, area);
+    grid.insert(*child, area);
   }
   m_grid.setHasAnyOrthogonalGridItem(hasAnyOrthogonalGridItem);
 
 #if ENABLE(ASSERT)
-  if (m_grid.hasGridItems()) {
-    DCHECK_GE(m_grid.numTracks(ForRows),
+  if (grid.hasGridItems()) {
+    DCHECK_GE(grid.numTracks(ForRows),
               GridPositionsResolver::explicitGridRowCount(
-                  *style(), m_grid.autoRepeatTracks(ForRows)));
-    DCHECK_GE(m_grid.numTracks(ForColumns),
+                  *style(), grid.autoRepeatTracks(ForRows)));
+    DCHECK_GE(grid.numTracks(ForColumns),
               GridPositionsResolver::explicitGridColumnCount(
-                  *style(), m_grid.autoRepeatTracks(ForColumns)));
+                  *style(), grid.autoRepeatTracks(ForColumns)));
   }
 #endif
 
-  placeSpecifiedMajorAxisItemsOnGrid(specifiedMajorAxisAutoGridItems);
-  placeAutoMajorAxisItemsOnGrid(autoMajorAxisAutoGridItems);
+  placeSpecifiedMajorAxisItemsOnGrid(grid, specifiedMajorAxisAutoGridItems);
+  placeAutoMajorAxisItemsOnGrid(grid, autoMajorAxisAutoGridItems);
 
-  m_grid.shrinkToFit();
+  grid.shrinkToFit();
 
   // Compute collapsable tracks for auto-fit.
-  m_grid.setAutoRepeatEmptyColumns(computeEmptyTracksForAutoRepeat(ForColumns));
-  m_grid.setAutoRepeatEmptyRows(computeEmptyTracksForAutoRepeat(ForRows));
+  grid.setAutoRepeatEmptyColumns(computeEmptyTracksForAutoRepeat(ForColumns));
+  grid.setAutoRepeatEmptyRows(computeEmptyTracksForAutoRepeat(ForRows));
 
 #if ENABLE(ASSERT)
-  for (LayoutBox* child = m_grid.orderIterator().first(); child;
-       child = m_grid.orderIterator().next()) {
+  for (LayoutBox* child = grid.orderIterator().first(); child;
+       child = grid.orderIterator().next()) {
     if (child->isOutOfFlowPositioned())
       continue;
 
-    GridArea area = m_grid.gridItemArea(*child);
+    GridArea area = grid.gridItemArea(*child);
     ASSERT(area.rows.isTranslatedDefinite() &&
            area.columns.isTranslatedDefinite());
   }
 #endif
 }
 
-void LayoutGrid::populateExplicitGridAndOrderIterator() {
-  OrderIteratorPopulator populator(m_grid.orderIterator());
+void LayoutGrid::populateExplicitGridAndOrderIterator(Grid& grid) const {
+  OrderIteratorPopulator populator(grid.orderIterator());
   int smallestRowStart = 0;
   int smallestColumnStart = 0;
 
-  size_t autoRepeatRows = m_grid.autoRepeatTracks(ForRows);
-  size_t autoRepeatColumns = m_grid.autoRepeatTracks(ForColumns);
+  size_t autoRepeatRows = grid.autoRepeatTracks(ForRows);
+  size_t autoRepeatColumns = grid.autoRepeatTracks(ForColumns);
   size_t maximumRowIndex =
       GridPositionsResolver::explicitGridRowCount(*style(), autoRepeatRows);
   size_t maximumColumnIndex = GridPositionsResolver::explicitGridColumnCount(
@@ -2160,7 +2162,7 @@ void LayoutGrid::populateExplicitGridAndOrderIterator() {
     GridSpan columnPositions =
         GridPositionsResolver::resolveGridPositionsFromStyle(
             *style(), *child, ForColumns, autoRepeatColumns);
-    m_grid.setGridItemArea(*child, GridArea(rowPositions, columnPositions));
+    grid.setGridItemArea(*child, GridArea(rowPositions, columnPositions));
 
     // |positions| is 0 if we need to run the auto-placement algorithm.
     if (!rowPositions.isIndefinite()) {
@@ -2190,9 +2192,9 @@ void LayoutGrid::populateExplicitGridAndOrderIterator() {
     }
   }
 
-  m_grid.setSmallestTracksStart(smallestRowStart, smallestColumnStart);
-  m_grid.ensureGridSize(maximumRowIndex + abs(smallestRowStart),
-                        maximumColumnIndex + abs(smallestColumnStart));
+  grid.setSmallestTracksStart(smallestRowStart, smallestColumnStart);
+  grid.ensureGridSize(maximumRowIndex + abs(smallestRowStart),
+                      maximumColumnIndex + abs(smallestColumnStart));
 }
 
 std::unique_ptr<GridArea>
@@ -2216,7 +2218,8 @@ LayoutGrid::createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
 }
 
 void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
-    const Vector<LayoutBox*>& autoGridItems) {
+    Grid& grid,
+    const Vector<LayoutBox*>& autoGridItems) const {
   bool isForColumns = autoPlacementMajorAxisDirection() == ForColumns;
   bool isGridAutoFlowDense = style()->isGridAutoFlowAlgorithmDense();
 
@@ -2230,27 +2233,25 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
 
   for (const auto& autoGridItem : autoGridItems) {
     GridSpan majorAxisPositions =
-        m_grid.gridItemSpan(*autoGridItem, autoPlacementMajorAxisDirection());
+        grid.gridItemSpan(*autoGridItem, autoPlacementMajorAxisDirection());
     ASSERT(majorAxisPositions.isTranslatedDefinite());
-    DCHECK(
-        !m_grid.gridItemSpan(*autoGridItem, autoPlacementMinorAxisDirection())
-             .isTranslatedDefinite());
+    DCHECK(!grid.gridItemSpan(*autoGridItem, autoPlacementMinorAxisDirection())
+                .isTranslatedDefinite());
     size_t minorAxisSpanSize = GridPositionsResolver::spanSizeForAutoPlacedItem(
         *style(), *autoGridItem, autoPlacementMinorAxisDirection());
     unsigned majorAxisInitialPosition = majorAxisPositions.startLine();
 
-    GridIterator iterator(m_grid, autoPlacementMajorAxisDirection(),
-                          majorAxisPositions.startLine(),
-                          isGridAutoFlowDense
-                              ? 0
-                              : minorAxisCursors.get(majorAxisInitialPosition));
+    GridIterator iterator(
+        grid, autoPlacementMajorAxisDirection(), majorAxisPositions.startLine(),
+        isGridAutoFlowDense ? 0
+                            : minorAxisCursors.get(majorAxisInitialPosition));
     std::unique_ptr<GridArea> emptyGridArea = iterator.nextEmptyGridArea(
         majorAxisPositions.integerSpan(), minorAxisSpanSize);
     if (!emptyGridArea)
       emptyGridArea = createEmptyGridAreaAtSpecifiedPositionsOutsideGrid(
           *autoGridItem, autoPlacementMajorAxisDirection(), majorAxisPositions);
 
-    m_grid.insert(*autoGridItem, *emptyGridArea);
+    grid.insert(*autoGridItem, *emptyGridArea);
 
     if (!isGridAutoFlowDense)
       minorAxisCursors.set(majorAxisInitialPosition,
@@ -2260,12 +2261,13 @@ void LayoutGrid::placeSpecifiedMajorAxisItemsOnGrid(
 }
 
 void LayoutGrid::placeAutoMajorAxisItemsOnGrid(
-    const Vector<LayoutBox*>& autoGridItems) {
+    Grid& grid,
+    const Vector<LayoutBox*>& autoGridItems) const {
   std::pair<size_t, size_t> autoPlacementCursor = std::make_pair(0, 0);
   bool isGridAutoFlowDense = style()->isGridAutoFlowAlgorithmDense();
 
   for (const auto& autoGridItem : autoGridItems) {
-    placeAutoMajorAxisItemOnGrid(*autoGridItem, autoPlacementCursor);
+    placeAutoMajorAxisItemOnGrid(grid, *autoGridItem, autoPlacementCursor);
 
     // If grid-auto-flow is dense, reset auto-placement cursor.
     if (isGridAutoFlowDense) {
@@ -2276,17 +2278,18 @@ void LayoutGrid::placeAutoMajorAxisItemsOnGrid(
 }
 
 void LayoutGrid::placeAutoMajorAxisItemOnGrid(
+    Grid& grid,
     LayoutBox& gridItem,
-    std::pair<size_t, size_t>& autoPlacementCursor) {
+    std::pair<size_t, size_t>& autoPlacementCursor) const {
   GridSpan minorAxisPositions =
-      m_grid.gridItemSpan(gridItem, autoPlacementMinorAxisDirection());
-  DCHECK(!m_grid.gridItemSpan(gridItem, autoPlacementMajorAxisDirection())
+      grid.gridItemSpan(gridItem, autoPlacementMinorAxisDirection());
+  DCHECK(!grid.gridItemSpan(gridItem, autoPlacementMajorAxisDirection())
               .isTranslatedDefinite());
   size_t majorAxisSpanSize = GridPositionsResolver::spanSizeForAutoPlacedItem(
       *style(), gridItem, autoPlacementMajorAxisDirection());
 
   const size_t endOfMajorAxis =
-      m_grid.numTracks(autoPlacementMajorAxisDirection());
+      grid.numTracks(autoPlacementMajorAxisDirection());
   size_t majorAxisAutoPlacementCursor =
       autoPlacementMajorAxisDirection() == ForColumns
           ? autoPlacementCursor.second
@@ -2304,7 +2307,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
       majorAxisAutoPlacementCursor++;
 
     if (majorAxisAutoPlacementCursor < endOfMajorAxis) {
-      GridIterator iterator(m_grid, autoPlacementMinorAxisDirection(),
+      GridIterator iterator(grid, autoPlacementMinorAxisDirection(),
                             minorAxisPositions.startLine(),
                             majorAxisAutoPlacementCursor);
       emptyGridArea = iterator.nextEmptyGridArea(
@@ -2320,7 +2323,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
 
     for (size_t majorAxisIndex = majorAxisAutoPlacementCursor;
          majorAxisIndex < endOfMajorAxis; ++majorAxisIndex) {
-      GridIterator iterator(m_grid, autoPlacementMajorAxisDirection(),
+      GridIterator iterator(grid, autoPlacementMajorAxisDirection(),
                             majorAxisIndex, minorAxisAutoPlacementCursor);
       emptyGridArea =
           iterator.nextEmptyGridArea(majorAxisSpanSize, minorAxisSpanSize);
@@ -2334,7 +2337,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
                 ? emptyGridArea->columns.endLine()
                 : emptyGridArea->rows.endLine();
         const size_t endOfMinorAxis =
-            m_grid.numTracks(autoPlacementMinorAxisDirection());
+            grid.numTracks(autoPlacementMinorAxisDirection());
         if (minorAxisFinalPositionIndex <= endOfMinorAxis)
           break;
 
@@ -2355,7 +2358,7 @@ void LayoutGrid::placeAutoMajorAxisItemOnGrid(
           GridSpan::translatedDefiniteGridSpan(0, minorAxisSpanSize));
   }
 
-  m_grid.insert(gridItem, *emptyGridArea);
+  grid.insert(gridItem, *emptyGridArea);
   // Move auto-placement cursor to the new position.
   autoPlacementCursor.first = emptyGridArea->rows.startLine();
   autoPlacementCursor.second = emptyGridArea->columns.startLine();
