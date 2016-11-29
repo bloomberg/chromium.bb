@@ -366,6 +366,7 @@ Polymer({
     return languageCode == this.languageHelper.getProspectiveUILanguage();
   },
 
+<if expr="chromeos or is_win">
    /**
     * @return {string}
     * @private
@@ -373,6 +374,15 @@ Polymer({
   getProspectiveUILanguageName_: function() {
     return this.languageHelper.getLanguage(
         this.languageHelper.getProspectiveUILanguage()).displayName;
+  },
+</if>
+
+  /**
+   * @return {string}
+   * @private
+   */
+  getLanguageListTwoLine_: function() {
+    return cr.isChromeOS || cr.isWindows ? 'two-line' : '';
   },
 
   /**

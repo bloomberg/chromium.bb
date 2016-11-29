@@ -70,13 +70,15 @@
     </settings-languages>
     <settings-animated-pages id="pages" section="languages">
       <neon-animatable route-path="default">
-        <div class="settings-box first two-line">
+        <div class$="settings-box first [[getLanguageListTwoLine_()]]">
           <div class="start">
             <div>$i18n{languagesListTitle}</div>
+<if expr="chromeos or is_win">
             <div class="secondary">
               [[getProspectiveUILanguageName_(
                     languages, prefs.intl.app_locale.value)]]
             </div>
+</if>
           </div>
           <cr-expand-button expanded="{{languagesOpened_}}"
               alt="$i18n{languagesExpandA11yLabel}">
