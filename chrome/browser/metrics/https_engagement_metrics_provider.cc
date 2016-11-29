@@ -19,9 +19,16 @@ void HttpsEngagementMetricsProvider::ProvideGeneralMetrics(
   if (!profile_manager)
     return;
 
+  // Do not try to create profile here if it does not exist,
+  // because this method can be called during browser shutdown.
+  Profile* profile = profile_manager->GetProfileByPath(
+      profile_manager->GetLastUsedProfileDir(
+          profile_manager->user_data_dir()));
+  if (!profile)
+    return;
+
   HttpsEngagementService* engagement_service =
-      HttpsEngagementServiceFactory::GetForBrowserContext(
-          profile_manager->GetLastUsedProfile());
+      HttpsEngagementServiceFactory::GetForBrowserContext(profile);
   if (!engagement_service)
     return;
   engagement_service->StoreMetricsAndClear();
