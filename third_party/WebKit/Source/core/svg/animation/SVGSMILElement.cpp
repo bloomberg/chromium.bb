@@ -1310,7 +1310,7 @@ void SVGSMILElement::dispatchPendingEvent(const AtomicString& eventType) {
          eventType == EventTypeNames::beginEvent ||
          eventType == EventTypeNames::repeatEvent || eventType == "repeatn");
   if (eventType == "repeatn") {
-    unsigned repeatEventCount = m_repeatEventCountList.first();
+    unsigned repeatEventCount = m_repeatEventCountList.front();
     m_repeatEventCountList.remove(0);
     dispatchEvent(RepeatEvent::create(eventType, repeatEventCount));
   } else {

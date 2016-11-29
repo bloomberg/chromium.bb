@@ -68,7 +68,7 @@ Vector<v8::Local<v8::Value>> WebScriptExecutor::execute(LocalFrame* frame) {
   } else {
     v8::Local<v8::Value> scriptValue =
         frame->script().executeScriptInMainWorldAndReturnValue(
-            m_sources.first());
+            m_sources.front());
     results.append(scriptValue);
   }
 

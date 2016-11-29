@@ -174,7 +174,7 @@ void paintComplexOutline(GraphicsContext& graphicsContext,
   }
 
   DCHECK(count >= 4 && edges.size() == count);
-  int firstAdjacentWidth = adjustJoint(width, edges.back(), edges.first());
+  int firstAdjacentWidth = adjustJoint(width, edges.back(), edges.front());
 
   // The width of the angled part of starting and ending joint of the current
   // edge.

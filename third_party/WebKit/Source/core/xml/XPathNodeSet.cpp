@@ -225,7 +225,7 @@ void NodeSet::traversalSort() const {
   HeapVector<Member<Node>> sortedNodes;
   sortedNodes.reserveInitialCapacity(nodeCount);
 
-  for (Node& n : NodeTraversal::startsAt(*findRootNode(m_nodes.first()))) {
+  for (Node& n : NodeTraversal::startsAt(*findRootNode(m_nodes.front()))) {
     if (nodes.contains(&n))
       sortedNodes.append(&n);
 

@@ -112,7 +112,7 @@ void DocumentOrderedMap::remove(const AtomicString& key, Element* element) {
   } else {
     if (entry->element == element) {
       DCHECK(entry->orderedList.isEmpty() ||
-             entry->orderedList.first() == element);
+             entry->orderedList.front() == element);
       entry->element =
           entry->orderedList.size() > 1 ? entry->orderedList[1] : nullptr;
     }
@@ -186,7 +186,7 @@ const HeapVector<Member<Element>>& DocumentOrderedMap::getAllElementsById(
       entry->orderedList.uncheckedAppend(element);
     }
     if (!entry->element)
-      entry->element = entry->orderedList.first();
+      entry->element = entry->orderedList.front();
   }
 
   return entry->orderedList;

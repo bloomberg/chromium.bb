@@ -121,7 +121,7 @@ void BaseRenderingContext2D::reset() {
   validateStateStack();
   unwindStateStack();
   m_stateStack.resize(1);
-  m_stateStack.first() = CanvasRenderingContext2DState::create();
+  m_stateStack.front() = CanvasRenderingContext2DState::create();
   m_path.clear();
   if (SkCanvas* c = existingDrawingCanvas()) {
     // The canvas should always have an initial/unbalanced save frame, which

@@ -281,7 +281,7 @@ bool ICOImageDecoder::processDirectoryEntries() {
   std::sort(m_dirEntries.begin(), m_dirEntries.end(), compareEntries);
 
   // The image size is the size of the largest entry.
-  const IconDirectoryEntry& dirEntry = m_dirEntries.first();
+  const IconDirectoryEntry& dirEntry = m_dirEntries.front();
   // Technically, this next call shouldn't be able to fail, since the width
   // and height here are each <= 256, and |m_frameSize| is empty.
   return setSize(dirEntry.m_size.width(), dirEntry.m_size.height());

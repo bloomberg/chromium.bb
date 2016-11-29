@@ -496,7 +496,7 @@ v8::Local<v8::Value> toV8(
       String stringData;
       if (!record->data.isEmpty()) {
         stringData = String::fromUTF8WithLatin1Fallback(
-            static_cast<unsigned char*>(&record->data.first()),
+            static_cast<unsigned char*>(&record->data.front()),
             record->data.size());
       }
 
@@ -521,7 +521,7 @@ v8::Local<v8::Value> toV8(
     case device::nfc::mojom::blink::NFCRecordType::OPAQUE_RECORD: {
       if (!record->data.isEmpty()) {
         DOMArrayBuffer* buffer = DOMArrayBuffer::create(
-            static_cast<void*>(&record->data.first()), record->data.size());
+            static_cast<void*>(&record->data.front()), record->data.size());
         return toV8(buffer, scriptState->context()->Global(),
                     scriptState->isolate());
       }

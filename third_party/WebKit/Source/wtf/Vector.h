@@ -916,8 +916,8 @@ class Vector
     return const_reverse_iterator(begin());
   }
 
-  T& first() { return at(0); }
-  const T& first() const { return at(0); }
+  T& front() { return at(0); }
+  const T& front() const { return at(0); }
   T& back() { return at(size() - 1); }
   const T& back() const { return at(size() - 1); }
 

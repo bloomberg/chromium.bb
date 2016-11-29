@@ -413,11 +413,11 @@ Element* HTMLCollection::namedItem(const AtomicString& name) const {
   const NamedItemCache& cache = namedItemCache();
   HeapVector<Member<Element>>* idResults = cache.getElementsById(name);
   if (idResults && !idResults->isEmpty())
-    return idResults->first();
+    return idResults->front();
 
   HeapVector<Member<Element>>* nameResults = cache.getElementsByName(name);
   if (nameResults && !nameResults->isEmpty())
-    return nameResults->first();
+    return nameResults->front();
 
   return nullptr;
 }

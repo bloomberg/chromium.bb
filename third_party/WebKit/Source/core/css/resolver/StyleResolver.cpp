@@ -1195,7 +1195,7 @@ void StyleResolver::applyAnimatedProperties(
                                  : entry.key.presentationAttribute();
     if (!CSSPropertyPriorityData<priority>::propertyHasPriority(property))
       continue;
-    const Interpolation& interpolation = *entry.value.first();
+    const Interpolation& interpolation = *entry.value.front();
     if (interpolation.isInvalidatableInterpolation()) {
       InterpolationEnvironment environment(state);
       InvalidatableInterpolation::applyStack(entry.value, environment);

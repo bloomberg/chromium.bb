@@ -53,7 +53,7 @@ class CORE_EXPORT HTMLSlotElement final : public HTMLElement {
   Node* firstDistributedNode() const {
     DCHECK(supportsDistribution());
     return m_distributedNodes.isEmpty() ? nullptr
-                                        : m_distributedNodes.first().get();
+                                        : m_distributedNodes.front().get();
   }
   Node* lastDistributedNode() const {
     DCHECK(supportsDistribution());

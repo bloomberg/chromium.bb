@@ -67,7 +67,7 @@ void BMPImageDecoder::decode(bool onlySize) {
   // If we're done decoding the image, we don't need the BMPImageReader
   // anymore.  (If we failed, |m_reader| has already been cleared.)
   else if (!m_frameBufferCache.isEmpty() &&
-           (m_frameBufferCache.first().getStatus() ==
+           (m_frameBufferCache.front().getStatus() ==
             ImageFrame::FrameComplete))
     m_reader.reset();
 }
@@ -84,7 +84,7 @@ bool BMPImageDecoder::decodeHelper(bool onlySize) {
   }
 
   if (!m_frameBufferCache.isEmpty())
-    m_reader->setBuffer(&m_frameBufferCache.first());
+    m_reader->setBuffer(&m_frameBufferCache.front());
 
   return m_reader->decodeBMP(onlySize);
 }

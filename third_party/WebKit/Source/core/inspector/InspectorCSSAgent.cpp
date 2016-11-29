@@ -173,7 +173,7 @@ void blendWithColorsFromGradient(CSSGradientValue* gradient,
       return;
     }
 
-    Color existingColor = colors.first();
+    Color existingColor = colors.front();
     colors.clear();
     for (auto stopColor : stopColors) {
       foundNonTransparentColor =

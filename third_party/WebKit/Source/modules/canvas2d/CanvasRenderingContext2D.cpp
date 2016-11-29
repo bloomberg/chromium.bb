@@ -161,7 +161,7 @@ void CanvasRenderingContext2D::validateStateStack() const {
     }
   }
 #endif
-  CHECK(m_stateStack.first()
+  CHECK(m_stateStack.front()
             .get());  // Temporary for investigating crbug.com/648510
 }
 

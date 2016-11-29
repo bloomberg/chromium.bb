@@ -257,7 +257,7 @@ static bool requiresStopsNormalization(const Vector<GradientStop>& stops,
     return true;
 
   // Degenerate stops
-  if (stops.first().offset < 0 || stops.back().offset > 1)
+  if (stops.front().offset < 0 || stops.back().offset > 1)
     return true;
 
   return false;
@@ -269,7 +269,7 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
                                  Gradient* gradient) {
   ASSERT(stops.size() > 1);
 
-  const float firstOffset = stops.first().offset;
+  const float firstOffset = stops.front().offset;
   const float lastOffset = stops.back().offset;
   const float span = lastOffset - firstOffset;
 
@@ -282,7 +282,7 @@ static bool normalizeAndAddStops(const Vector<GradientStop>& stops,
     // For non-repeating gradients, both the first color and the last color can
     // be significant (padding on both sides of the offset).
     if (gradient->spreadMethod() != SpreadMethodRepeat)
-      gradient->addColorStop(clampedOffset, stops.first().color);
+      gradient->addColorStop(clampedOffset, stops.front().color);
     gradient->addColorStop(clampedOffset, stops.back().color);
 
     return false;
@@ -461,7 +461,7 @@ void CSSGradientValue::addStops(Gradient* gradient,
     }
   }
 
-  ASSERT(stops.first().specified && stops.back().specified);
+  ASSERT(stops.front().specified && stops.back().specified);
 
   // If any color-stop still does not have a position, then, for each run of
   // adjacent color-stops without positions, set their positions so that they
@@ -510,10 +510,10 @@ void CSSGradientValue::addStops(Gradient* gradient,
 
     if (normalizeAndAddStops(stops, gradient)) {
       if (isLinearGradientValue()) {
-        adjustGradientPointsForOffsetRange(gradient, stops.first().offset,
+        adjustGradientPointsForOffsetRange(gradient, stops.front().offset,
                                            stops.back().offset);
       } else {
-        adjustGradientRadiiForOffsetRange(gradient, stops.first().offset,
+        adjustGradientRadiiForOffsetRange(gradient, stops.front().offset,
                                           stops.back().offset);
       }
     } else {

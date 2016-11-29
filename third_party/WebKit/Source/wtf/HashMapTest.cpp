@@ -266,14 +266,14 @@ TEST(HashMapTest, AddResultVectorValue) {
 
   result.storedValue->value.append(11);
   EXPECT_EQ(1u, map.find(1)->value.size());
-  EXPECT_EQ(11, map.find(1)->value.first());
+  EXPECT_EQ(11, map.find(1)->value.front());
 
   IntVectorMap::AddResult result2 = map.add(1, Vector<int>());
   EXPECT_FALSE(result2.isNewEntry);
   EXPECT_EQ(1, result.storedValue->key);
   EXPECT_EQ(1u, result.storedValue->value.size());
-  EXPECT_EQ(11, result.storedValue->value.first());
-  EXPECT_EQ(11, map.find(1)->value.first());
+  EXPECT_EQ(11, result.storedValue->value.front());
+  EXPECT_EQ(11, map.find(1)->value.front());
 }
 
 class InstanceCounter {

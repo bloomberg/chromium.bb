@@ -147,10 +147,10 @@ KeyframeEffectModelBase::normalizedKeyframes(const KeyframeVector& keyframes) {
     result.back()->setOffset(1);
 
   if (result.size() > 1 && isNull(result[0]->offset()))
-    result.first()->setOffset(0);
+    result.front()->setOffset(0);
 
   size_t lastIndex = 0;
-  lastOffset = result.first()->offset();
+  lastOffset = result.front()->offset();
   for (size_t i = 1; i < result.size(); ++i) {
     double offset = result[i]->offset();
     if (!isNull(offset)) {
@@ -301,8 +301,8 @@ bool KeyframeEffectModelBase::PropertySpecificKeyframeGroup::
 
   bool addedSyntheticKeyframe = false;
 
-  if (m_keyframes.first()->offset() != 0.0) {
-    m_keyframes.insert(0, m_keyframes.first()->neutralKeyframe(
+  if (m_keyframes.front()->offset() != 0.0) {
+    m_keyframes.insert(0, m_keyframes.front()->neutralKeyframe(
                               0, std::move(zeroOffsetEasing)));
     addedSyntheticKeyframe = true;
   }

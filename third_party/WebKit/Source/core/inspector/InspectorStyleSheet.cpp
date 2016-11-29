@@ -389,7 +389,7 @@ void StyleSheetHandler::observeComment(unsigned startOffset,
   CSSParser::parseDeclarationListForInspector(
       parserContextForDocument(m_document), commentText, handler);
   Vector<CSSPropertySourceData>& commentPropertyData =
-      sourceData.first()->styleSourceData->propertyData;
+      sourceData.front()->styleSourceData->propertyData;
   if (commentPropertyData.size() != 1)
     return;
   CSSPropertySourceData& propertyData = commentPropertyData.at(0);
@@ -1990,7 +1990,7 @@ InspectorStyleSheetForInlineStyle::ruleSourceData() {
                               &ruleSourceDataResult);
     CSSParser::parseDeclarationListForInspector(
         parserContextForDocument(&m_element->document()), text, handler);
-    ruleSourceData = ruleSourceDataResult.first().release();
+    ruleSourceData = ruleSourceDataResult.front().release();
   }
   return ruleSourceData.release();
 }

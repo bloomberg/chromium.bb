@@ -88,8 +88,8 @@ class WTFArray {
 
   // Returns a reference to the first element of the array. Calling this on a
   // null or empty array causes undefined behavior.
-  const T& front() const { return vec_.first(); }
-  T& front() { return vec_.first(); }
+  const T& front() const { return vec_.front(); }
+  T& front() { return vec_.front(); }
 
   // Returns the size of the array, which will be zero if the array is null.
   size_t size() const { return vec_.size(); }

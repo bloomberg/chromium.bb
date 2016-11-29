@@ -60,7 +60,7 @@ TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
 
   EXPECT_EQ(1u, resourceClient->m_preloads.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloads.first()->resourceURL());
+            resourceClient->m_preloads.front()->resourceURL());
 }
 
 // Regression test for crbug.com/608310 where the client is destroyed but was
@@ -139,7 +139,7 @@ TEST_F(CSSPreloadScannerTest, DoNotExpectValidDocument) {
 
   EXPECT_EQ(1u, resourceClient->m_preloads.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
-            resourceClient->m_preloads.first()->resourceURL());
+            resourceClient->m_preloads.front()->resourceURL());
 }
 
 }  // namespace blink

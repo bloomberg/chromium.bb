@@ -164,7 +164,7 @@ TEST(VectorTest, OwnPtr) {
   vector.append(wrapUnique(new DestructCounter(1, &destructNumber)));
   EXPECT_EQ(2u, vector.size());
 
-  std::unique_ptr<DestructCounter>& counter0 = vector.first();
+  std::unique_ptr<DestructCounter>& counter0 = vector.front();
   ASSERT_EQ(0, counter0->get());
   int counter1 = vector.back()->get();
   ASSERT_EQ(1, counter1);
@@ -248,7 +248,7 @@ TEST(VectorTest, MoveOnlyType) {
   vector.append(MoveOnly(2));
   EXPECT_EQ(2u, vector.size());
 
-  ASSERT_EQ(1, vector.first().value());
+  ASSERT_EQ(1, vector.front().value());
   ASSERT_EQ(2, vector.back().value());
 
   vector.remove(0);
@@ -429,11 +429,11 @@ TEST(VectorTest, AppendFirst) {
   // the input reference stale).
   size_t limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
-    vector.append(vector.first());
+    vector.append(vector.front());
 
   limit = vector.capacity() + 1;
   for (size_t i = 0; i < limit; i++)
-    vector.append(const_cast<const WTF::String&>(vector.first()));
+    vector.append(const_cast<const WTF::String&>(vector.front()));
 }
 
 // The test below is for the following issue:

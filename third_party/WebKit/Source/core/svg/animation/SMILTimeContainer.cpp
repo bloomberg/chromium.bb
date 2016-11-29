@@ -477,7 +477,7 @@ SMILTime SMILTimeContainer::updateAnimations(double elapsed, bool seekToTime) {
       // Only reset the animated type to the base value once for
       // the lowest priority animation that animates and
       // contributes to a particular element/attribute pair.
-      SVGSMILElement* resultElement = sandwich.first();
+      SVGSMILElement* resultElement = sandwich.front();
       resultElement->resetAnimatedType();
 
       // Go through the sandwich from lowest prio to highest and generate

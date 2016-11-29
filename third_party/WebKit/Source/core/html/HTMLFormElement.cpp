@@ -740,8 +740,8 @@ void HTMLFormElement::getNamedElements(
   elements()->namedItems(name, namedItems);
 
   Element* elementFromPast = elementFromPastNamesMap(name);
-  if (namedItems.size() && namedItems.first() != elementFromPast) {
-    addToPastNamesMap(namedItems.first().get(), name);
+  if (namedItems.size() && namedItems.front() != elementFromPast) {
+    addToPastNamesMap(namedItems.front().get(), name);
   } else if (elementFromPast && namedItems.isEmpty()) {
     namedItems.append(elementFromPast);
     UseCounter::count(document(), UseCounter::FormNameAccessForPastNamesMap);
@@ -784,7 +784,7 @@ void HTMLFormElement::anonymousNamedGetter(
   DCHECK(!elements.isEmpty());
 
   bool onlyMatchImg =
-      !elements.isEmpty() && isHTMLImageElement(*elements.first());
+      !elements.isEmpty() && isHTMLImageElement(*elements.front());
   if (onlyMatchImg) {
     UseCounter::count(document(), UseCounter::FormNameAccessForImageElement);
     // The following code has performance impact, but it should be small

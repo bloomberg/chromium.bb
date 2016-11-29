@@ -239,7 +239,7 @@ void SVGTextChunkBuilder::handleTextChunk(BoxListConstIterator boxStart,
         if (!foundFirstFragment) {
           foundFirstFragment = true;
           textLengthBias =
-              computeTextLengthBias(fragments.first(), textLengthScale);
+              computeTextLengthBias(fragments.front(), textLengthScale);
         }
 
         applyTextLengthScaleAdjustment(textLengthScale, textLengthBias,

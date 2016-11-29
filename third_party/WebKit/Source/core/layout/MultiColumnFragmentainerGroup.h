@@ -157,9 +157,9 @@ class CORE_EXPORT MultiColumnFragmentainerGroupList {
   // Remove all fragmentainer groups but the first one.
   void deleteExtraGroups();
 
-  MultiColumnFragmentainerGroup& first() { return m_groups.first(); }
+  MultiColumnFragmentainerGroup& first() { return m_groups.front(); }
   const MultiColumnFragmentainerGroup& first() const {
-    return m_groups.first();
+    return m_groups.front();
   }
   MultiColumnFragmentainerGroup& last() { return m_groups.back(); }
   const MultiColumnFragmentainerGroup& last() const { return m_groups.back(); }

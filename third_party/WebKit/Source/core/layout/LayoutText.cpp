@@ -1026,7 +1026,7 @@ static float maxWordFragmentWidth(LayoutText* layoutText,
     maxFragmentWidth = std::max(maxFragmentWidth, fragmentWidth);
     end = start;
   }
-  suffixStart = hyphenLocations.first();
+  suffixStart = hyphenLocations.front();
   return maxFragmentWidth + layoutText->hyphenWidth(font, textDirection);
 }
 

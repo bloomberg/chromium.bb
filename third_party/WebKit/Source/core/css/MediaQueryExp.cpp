@@ -215,7 +215,7 @@ MediaQueryExp* MediaQueryExp::createIfValid(
   if (tokenList.size() == 0 && featureWithoutValue(lowerMediaFeature)) {
     // Valid, creates a MediaQueryExp with an 'invalid' MediaQueryExpValue
   } else if (tokenList.size() == 1) {
-    CSSParserToken token = tokenList.first();
+    CSSParserToken token = tokenList.front();
 
     if (token.type() == IdentToken) {
       CSSValueID ident = token.id();

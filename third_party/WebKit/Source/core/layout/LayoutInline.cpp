@@ -470,7 +470,7 @@ void LayoutInline::splitInlines(LayoutBlockFlow* fromBlock,
 
   // The last inline to clone is |this|, and the current |cloneInline| is cloned
   // from |this|.
-  ASSERT(this == inlinesToClone.first());
+  ASSERT(this == inlinesToClone.front());
 
   // Hook |cloneInline| up as the continuation of the middle block.
   cloneInline->setContinuation(oldCont);

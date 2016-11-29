@@ -108,7 +108,7 @@ void BroadcastChannel::OnMessage(const WTF::Vector<uint8_t>& message) {
   // Queue a task to dispatch the event.
   RefPtr<SerializedScriptValue> value = SerializedScriptValue::create(
       message.isEmpty() ? nullptr
-                        : reinterpret_cast<const char*>(&message.first()),
+                        : reinterpret_cast<const char*>(&message.front()),
       message.size());
   MessageEvent* event = MessageEvent::create(
       nullptr, value.release(),

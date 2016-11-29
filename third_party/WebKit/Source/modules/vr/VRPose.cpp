@@ -13,7 +13,7 @@ DOMFloat32Array* mojoArrayToFloat32Array(
   if (!vec)
     return nullptr;
 
-  return DOMFloat32Array::create(&(vec.value().first()), vec.value().size());
+  return DOMFloat32Array::create(&(vec.value().front()), vec.value().size());
 }
 
 }  // namespace

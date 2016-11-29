@@ -126,7 +126,7 @@ double AudioDSPKernelProcessor::tailTime() const {
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
     // It is expected that all the kernels have the same tailTime.
-    return !m_kernels.isEmpty() ? m_kernels.first()->tailTime() : 0;
+    return !m_kernels.isEmpty() ? m_kernels.front()->tailTime() : 0;
   }
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.
@@ -138,7 +138,7 @@ double AudioDSPKernelProcessor::latencyTime() const {
   MutexTryLocker tryLocker(m_processLock);
   if (tryLocker.locked()) {
     // It is expected that all the kernels have the same latencyTime.
-    return !m_kernels.isEmpty() ? m_kernels.first()->latencyTime() : 0;
+    return !m_kernels.isEmpty() ? m_kernels.front()->latencyTime() : 0;
   }
   // Since we don't want to block the Audio Device thread, we return a large
   // value instead of trying to acquire the lock.

@@ -328,7 +328,7 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
     // Note that on commit, the loader dispatched preloads for all the non-media
     // links.
     document()->loader()->dispatchLinkHeaderPreloads(
-        &pendingChunks.first()->viewport, LinkLoader::OnlyLoadMedia);
+        &pendingChunks.front()->viewport, LinkLoader::OnlyLoadMedia);
     m_triedLoadingLinkHeaders = true;
   }
 

@@ -1686,7 +1686,7 @@ FloatRect Range::boundingRect() const {
 
   // If all rects are empty, return the first rect.
   if (result.isEmpty() && !quads.isEmpty())
-    return quads.first().boundingBox();
+    return quads.front().boundingBox();
 
   return result;
 }

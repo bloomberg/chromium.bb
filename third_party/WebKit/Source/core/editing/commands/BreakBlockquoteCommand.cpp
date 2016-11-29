@@ -241,7 +241,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
     // into the clone corresponding to the ancestor's parent.
     Element* ancestor = nullptr;
     Element* clonedParent = nullptr;
-    for (ancestor = ancestors.first(),
+    for (ancestor = ancestors.front(),
         clonedParent = clonedAncestor->parentElement();
          ancestor && ancestor != topBlockquote;
          ancestor = ancestor->parentElement(),
@@ -253,7 +253,7 @@ void BreakBlockquoteCommand::doApply(EditingState* editingState) {
     }
 
     // If the startNode's original parent is now empty, remove it
-    Element* originalParent = ancestors.first().get();
+    Element* originalParent = ancestors.front().get();
     if (!originalParent->hasChildren()) {
       removeNode(originalParent, editingState);
       if (editingState->isAborted())

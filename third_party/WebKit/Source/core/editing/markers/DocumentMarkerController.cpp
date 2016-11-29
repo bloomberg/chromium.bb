@@ -564,7 +564,7 @@ void DocumentMarkerController::invalidateRectsForMarkersInNode(
     for (auto& marker : *markerList)
       marker->invalidate();
 
-    if (markerList->first()->type() == DocumentMarker::TextMatch)
+    if (markerList->front()->type() == DocumentMarker::TextMatch)
       invalidatePaintForTickmarks(node);
   }
 }
@@ -579,7 +579,7 @@ void DocumentMarkerController::invalidateRectsForAllMarkers() {
       for (auto& marker : *markerList)
         marker->invalidate();
 
-      if (markerList->first()->type() == DocumentMarker::TextMatch)
+      if (markerList->front()->type() == DocumentMarker::TextMatch)
         invalidatePaintForTickmarks(node);
     }
   }

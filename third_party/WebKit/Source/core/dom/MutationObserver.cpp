@@ -238,7 +238,7 @@ void MutationObserver::deliver() {
 
   // Report the first (earliest) stack as the async cause.
   InspectorInstrumentation::AsyncTask asyncTask(
-      m_callback->getExecutionContext(), records.first());
+      m_callback->getExecutionContext(), records.front());
   m_callback->call(records, this);
 }
 

@@ -65,7 +65,7 @@ void TimeRanges::invert() {
   if (!m_ranges.size()) {
     inverted->add(negInf, posInf);
   } else {
-    double start = m_ranges.first().m_start;
+    double start = m_ranges.front().m_start;
     if (start != negInf)
       inverted->add(negInf, start);
 
