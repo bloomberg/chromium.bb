@@ -2014,15 +2014,7 @@ void SpdySession::OnStreamEnd(SpdyStreamId stream_id) {
                        base::Bind(&NetLogSpdyDataCallback, stream_id, 0, true));
   }
 
-  // Build the buffer as early as possible so that we go through the
-  // session flow control checks and update
-  // |unacked_recv_window_bytes_| properly even when the stream is
-  // inactive (since the other side has still reduced its session send
-  // window).
-  std::unique_ptr<SpdyBuffer> buffer;
-
   ActiveStreamMap::iterator it = active_streams_.find(stream_id);
-
   // By the time data comes in, the stream may already be inactive.
   if (it == active_streams_.end())
     return;
@@ -2030,7 +2022,7 @@ void SpdySession::OnStreamEnd(SpdyStreamId stream_id) {
   SpdyStream* stream = it->second;
   CHECK_EQ(stream->stream_id(), stream_id);
 
-  stream->OnDataReceived(std::move(buffer));
+  stream->OnDataReceived(std::unique_ptr<SpdyBuffer>());
 }
 
 void SpdySession::OnStreamPadding(SpdyStreamId stream_id, size_t len) {
@@ -2552,13 +2544,8 @@ void SpdySession::TryCreatePushStream(SpdyStreamId stream_id,
                      stream_max_recv_window_size_, net_log_));
   stream->set_stream_id(stream_id);
 
-  // In HTTP2 PUSH_PROMISE arrives on associated stream.
-  if (associated_it != active_streams_.end()) {
-    associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);
-  } else {
-    stream->AddRawReceivedBytes(last_compressed_frame_len_);
-  }
-
+  // PUSH_PROMISE arrives on associated stream.
+  associated_it->second->AddRawReceivedBytes(last_compressed_frame_len_);
   last_compressed_frame_len_ = 0;
 
   UnclaimedPushedStreamContainer::const_iterator inserted_pushed_it =
