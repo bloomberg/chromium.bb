@@ -22,6 +22,7 @@ class HistogramBase;
 }  // namespace base
 
 namespace leveldb {
+class Cache;
 class DB;
 class Env;
 struct Options;
@@ -67,8 +68,9 @@ class LevelDB : public base::trace_event::MemoryDumpProvider {
   DFAKE_MUTEX(thread_checker_);
 
   // The declaration order of these members matters: |db_| depends on |env_| and
-  // therefore has to be destructed first.
+  // |custom_block_cache_| and therefore has to be destructed first.
   std::unique_ptr<leveldb::Env> env_;
+  std::unique_ptr<leveldb::Cache> custom_block_cache_;
   std::unique_ptr<leveldb::DB> db_;
   base::HistogramBase* open_histogram_;
   // Name of the client shown in chrome://tracing.

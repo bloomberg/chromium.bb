@@ -21,6 +21,7 @@
 #include "base/trace_event/process_memory_dump.h"
 #include "third_party/leveldatabase/env_chromium.h"
 #include "third_party/leveldatabase/src/helpers/memenv/memenv.h"
+#include "third_party/leveldatabase/src/include/leveldb/cache.h"
 #include "third_party/leveldatabase/src/include/leveldb/db.h"
 #include "third_party/leveldatabase/src/include/leveldb/env.h"
 #include "third_party/leveldatabase/src/include/leveldb/iterator.h"
@@ -92,6 +93,10 @@ bool LevelDB::Init(const leveldb_proto::Options& options) {
   leveldb_options.reuse_logs = leveldb_env::kDefaultLogReuseOptionValue;
   if (options.write_buffer_size != 0)
     leveldb_options.write_buffer_size = options.write_buffer_size;
+  if (options.read_cache_size != 0) {
+    custom_block_cache_.reset(leveldb::NewLRUCache(options.read_cache_size));
+    leveldb_options.block_cache = custom_block_cache_.get();
+  }
   if (options.database_dir.empty()) {
     env_.reset(leveldb::NewMemEnv(leveldb::Env::Default()));
     leveldb_options.env = env_.get();
