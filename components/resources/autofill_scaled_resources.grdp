@@ -4,6 +4,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_DISCOVER" file="autofill/discover.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_GENERIC" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MASTERCARD" file="autofill/mastercard.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_MIR" file="autofill/mir.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_CC_VISA" file="autofill/visa.png" />
 
   <!-- These are not used on desktop, only Android, so use a placeholder file.
@@ -25,6 +26,7 @@
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_GENERIC" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_JCB" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_MASTERCARD" file="autofill/cc-generic.png" />
+  <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_MIR" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_UNIONPAY" file="autofill/cc-generic.png" />
   <structure type="chrome_scaled_image" name="IDR_AUTOFILL_PR_VISA" file="autofill/cc-generic.png" />
 

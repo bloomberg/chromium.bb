@@ -386,6 +386,8 @@ TEST(CreditCardTest, IconResourceId) {
             CreditCard::IconResourceId(kJCBCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_MASTERCARD,
             CreditCard::IconResourceId(kMasterCard));
+  EXPECT_EQ(IDR_AUTOFILL_CC_MIR,
+            CreditCard::IconResourceId(kMirCard));
   EXPECT_EQ(IDR_AUTOFILL_CC_VISA,
             CreditCard::IconResourceId(kVisaCard));
 }
@@ -659,6 +661,9 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "6247130048162403", kUnionPay, true },
     { "6247130048162403", kUnionPay, true },
     { "622384452162063648", kUnionPay, true },
+    { "2204883716636153", kMirCard, true },
+    { "2200111234567898", kMirCard, true },
+    { "2200481349288130", kMirCard, true },
 
     // Empty string
     { std::string(), kGenericCard, false },
@@ -670,13 +675,16 @@ TEST(CreditCardTest, GetCreditCardType) {
     // Fails Luhn check.
     { "4111111111111112", kVisaCard, false },
     { "6247130048162413", kUnionPay, false },
+    { "2204883716636154", kMirCard, false },
 
     // Invalid length.
     { "3434343434343434", kAmericanExpressCard, false },
     { "411111111111116", kVisaCard, false },
+    { "220011123456783", kMirCard, false },
 
     // Issuer Identification Numbers (IINs) that Chrome recognizes.
     { "4", kVisaCard, false },
+    { "22", kMirCard, false },
     { "34", kAmericanExpressCard, false },
     { "37", kAmericanExpressCard, false },
     { "300", kDinersCard, false },
@@ -708,6 +716,7 @@ TEST(CreditCardTest, GetCreditCardType) {
     { "62", kUnionPay, false },
 
     // Not enough data to determine an IIN uniquely.
+    { "2", kGenericCard, false },
     { "3", kGenericCard, false },
     { "30", kGenericCard, false },
     { "309", kGenericCard, false },
@@ -721,7 +730,6 @@ TEST(CreditCardTest, GetCreditCardType) {
     // Unknown IINs.
     { "0", kGenericCard, false },
     { "1", kGenericCard, false },
-    { "2", kGenericCard, false },
     { "306", kGenericCard, false },
     { "307", kGenericCard, false },
     { "308", kGenericCard, false },

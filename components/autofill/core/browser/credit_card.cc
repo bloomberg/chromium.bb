@@ -72,6 +72,8 @@ base::string16 TypeForFill(const std::string& type) {
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_JCB);
   if (type == kMasterCard)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MASTERCARD);
+  if (type == kMirCard)
+    return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_MIR);
   if (type == kUnionPay)
     return l10n_util::GetStringUTF16(IDS_AUTOFILL_CC_UNION_PAY);
   if (type == kVisaCard)
@@ -137,6 +139,8 @@ int CreditCard::IconResourceId(const std::string& type) {
     return IDR_AUTOFILL_CC_GENERIC;
   if (type == kMasterCard)
     return IDR_AUTOFILL_CC_MASTERCARD;
+  if (type == kMirCard)
+    return IDR_AUTOFILL_CC_MIR;
   if (type == kUnionPay)
     return IDR_AUTOFILL_CC_GENERIC;
   if (type == kVisaCard)
@@ -187,6 +191,9 @@ const char* CreditCard::GetCreditCardType(const base::string16& number) {
   int first_two_digits = 0;
   if (!base::StringToInt(number.substr(0, 2), &first_two_digits))
     return kGenericCard;
+
+  if (first_two_digits == 22)
+    return kMirCard;
 
   if (first_two_digits == 34 || first_two_digits == 37)
     return kAmericanExpressCard;
@@ -865,6 +872,7 @@ const char kDiscoverCard[] = "discoverCC";
 const char kGenericCard[] = "genericCC";
 const char kJCBCard[] = "jcbCC";
 const char kMasterCard[] = "masterCardCC";
+const char kMirCard[] = "mirCC";
 const char kUnionPay[] = "unionPayCC";
 const char kVisaCard[] = "visaCC";
 

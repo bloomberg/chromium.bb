@@ -44,6 +44,7 @@ const struct {
     {"genericCC", IDR_AUTOFILL_CC_GENERIC},
     {"jcbCC", IDR_AUTOFILL_CC_GENERIC},
     {"masterCardCC", IDR_AUTOFILL_CC_MASTERCARD},
+    {"mirCC", IDR_AUTOFILL_CC_MIR},
     {"visaCC", IDR_AUTOFILL_CC_VISA},
 #if defined(OS_ANDROID)
     {"scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW},

@@ -53,6 +53,7 @@ const IconImageMap kCreditCardIconImageMap[] = {
     {autofill::kAmericanExpressCard, @"autofill_card_american_express"},
     {autofill::kDiscoverCard, @"autofill_card_discover"},
     {autofill::kMasterCard, @"autofill_card_mastercard"},
+    {autofill::kMirCard, @"autofill_card_mir"},
     {autofill::kVisaCard, @"autofill_card_visa"},
     {autofill::kDinersCard, @"autofill_card_diners"},
     {autofill::kGenericCard, @"autofill_card_generic"},

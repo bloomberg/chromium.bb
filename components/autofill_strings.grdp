@@ -66,6 +66,9 @@
   <message name="IDS_AUTOFILL_CC_MASTERCARD" desc="MasterCard credit card name." formatter_data="android_java">
     MasterCard
   </message>
+  <message name="IDS_AUTOFILL_CC_MIR" desc="Mir credit card name." formatter_data="android_java">
+    Mir
+  </message>
   <message name="IDS_AUTOFILL_CC_UNION_PAY" desc="China UnionPay credit card name." formatter_data="android_java">
     China UnionPay
   </message>

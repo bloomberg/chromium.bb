@@ -171,6 +171,8 @@ public class CardEditor extends EditorBase<AutofillPaymentInstrument>
                 new CardTypeInfo(R.drawable.pr_jcb, R.string.autofill_cc_jcb));
         mCardTypes.put("mastercard",
                 new CardTypeInfo(R.drawable.pr_mc, R.string.autofill_cc_mastercard));
+        mCardTypes.put("mir",
+                new CardTypeInfo(R.drawable.pr_mir, R.string.autofill_cc_mir));
         mCardTypes.put("unionpay",
                 new CardTypeInfo(R.drawable.pr_unionpay, R.string.autofill_cc_union_pay));
         mCardTypes.put("visa",

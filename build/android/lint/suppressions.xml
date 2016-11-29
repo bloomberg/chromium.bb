@@ -341,6 +341,7 @@ Still reading?
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_screen_share.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/infobar_subresource_filtering.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/mc_card.png"/>
+    <ignore regexp="chrome/android/java/res/drawable-hdpi/mir_card.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/pageinfo_bad.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/pageinfo_good.png"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/pageinfo_warning.png"/>

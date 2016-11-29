@@ -266,6 +266,7 @@ extern const char kDiscoverCard[];
 extern const char kGenericCard[];
 extern const char kJCBCard[];
 extern const char kMasterCard[];
+extern const char kMirCard[];
 extern const char kUnionPay[];
 extern const char kVisaCard[];
 

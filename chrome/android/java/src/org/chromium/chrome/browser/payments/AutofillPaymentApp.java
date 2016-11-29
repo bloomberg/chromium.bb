@@ -83,6 +83,7 @@ public class AutofillPaymentApp implements PaymentApp {
         methods.add("diners");
         methods.add("jcb");
         methods.add("unionpay");
+        methods.add("mir");
 
         // The spec does not include "generic" card types. That's the type of card for which
         // Chrome cannot determine the type.

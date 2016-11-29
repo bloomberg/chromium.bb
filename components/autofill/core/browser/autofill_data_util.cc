@@ -27,6 +27,7 @@ const PaymentRequestData kPaymentRequestData[]{
     {"discoverCC", "discover", IDR_AUTOFILL_PR_DISCOVER},
     {"jcbCC", "jcb", IDR_AUTOFILL_PR_JCB},
     {"masterCardCC", "mastercard", IDR_AUTOFILL_PR_MASTERCARD},
+    {"mirCC", "mir", IDR_AUTOFILL_PR_MIR},
     {"unionPayCC", "unionpay", IDR_AUTOFILL_PR_UNIONPAY},
     {"visaCC", "visa", IDR_AUTOFILL_PR_VISA},
 };
