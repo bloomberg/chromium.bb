@@ -503,8 +503,8 @@ void UserCardView::AddUserContentMd(LoginStatus login_status) {
     if (!user_name_string.empty()) {
       user_name = new views::Label(user_name_string);
       user_name->SetHorizontalAlignment(gfx::ALIGN_LEFT);
-      TrayPopupItemStyle user_name_style(nullptr,
-                                         TrayPopupItemStyle::FontStyle::TITLE);
+      TrayPopupItemStyle user_name_style(
+          TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
       user_name_style.SetupLabel(user_name);
     }
   }
@@ -519,9 +519,6 @@ void UserCardView::AddUserContentMd(LoginStatus login_status) {
                   delegate->GetUserInfo(user_index_)->GetDisplayEmail());
     if (!user_email_string.empty()) {
       user_email = new views::Label(user_email_string);
-      user_email->SetFontList(
-          ui::ResourceBundle::GetSharedInstance().GetFontList(
-              ui::ResourceBundle::SmallFont));
       user_email->SetHorizontalAlignment(gfx::ALIGN_LEFT);
       TrayPopupItemStyle user_email_style(
           nullptr, TrayPopupItemStyle::FontStyle::CAPTION);

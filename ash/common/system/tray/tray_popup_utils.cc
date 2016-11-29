@@ -113,9 +113,9 @@ class BorderlessLabelButton : public views::LabelButton {
       set_has_ink_drop_action_on_click(true);
       set_ink_drop_base_color(kTrayPopupInkDropBaseColor);
       set_ink_drop_visible_opacity(kTrayPopupInkDropRippleOpacity);
-      const int kHorizontalPadding = 8;
+      const int kHorizontalPadding = 20;
       SetBorder(views::CreateEmptyBorder(gfx::Insets(0, kHorizontalPadding)));
-      TrayPopupItemStyle style(nullptr, TrayPopupItemStyle::FontStyle::BUTTON);
+      TrayPopupItemStyle style(TrayPopupItemStyle::FontStyle::BUTTON);
       style.SetupLabel(label());
       // TODO(tdanderson): Update focus rect for material design. See
       // crbug.com/615892
@@ -139,7 +139,7 @@ class BorderlessLabelButton : public views::LabelButton {
   // views::LabelButton:
   int GetHeightForWidth(int width) const override {
     if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      return kMenuButtonSize - 2 * kTrayPopupInkDropInset;
+      return kMenuButtonSize;
 
     return LabelButton::GetHeightForWidth(width);
   }
