@@ -28,10 +28,9 @@ ash::ShelfItemType LauncherItemController::GetShelfItemType() const {
 
   switch (type_) {
     case LauncherItemController::TYPE_SHORTCUT:
-    case LauncherItemController::TYPE_WINDOWED_APP:
       return ash::TYPE_APP_SHORTCUT;
     case LauncherItemController::TYPE_APP:
-      return ash::TYPE_PLATFORM_APP;
+      return ash::TYPE_APP;
     case LauncherItemController::TYPE_APP_PANEL:
       return ash::TYPE_APP_PANEL;
   }

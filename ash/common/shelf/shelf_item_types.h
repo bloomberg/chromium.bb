@@ -30,11 +30,10 @@ enum ShelfItemType {
   // The browser shortcut button.
   TYPE_BROWSER_SHORTCUT,
 
-  // Represents a platform app.
-  TYPE_PLATFORM_APP,
-
-  // Represents a windowed V1 browser app.
-  TYPE_WINDOWED_APP,
+  // Represents an app: Extension "V1" (legacy packaged and hosted) apps,
+  //                    Extension "V2" (platform) apps,
+  //                    Arc (App Runtime for Chrome - Android Play Store) apps.
+  TYPE_APP,
 
   // Represents a dialog.
   TYPE_DIALOG,

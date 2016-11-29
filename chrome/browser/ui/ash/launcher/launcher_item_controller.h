@@ -28,7 +28,6 @@ class LauncherItemController : public ash::ShelfItemDelegate {
     TYPE_APP,
     TYPE_APP_PANEL,
     TYPE_SHORTCUT,
-    TYPE_WINDOWED_APP
   };
 
   LauncherItemController(Type type,

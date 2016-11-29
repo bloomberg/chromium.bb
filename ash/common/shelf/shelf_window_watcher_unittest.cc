@@ -157,7 +157,7 @@ TEST_F(ShelfWindowWatcherTest, UpdateWindowProperty) {
   EXPECT_EQ(STATUS_ACTIVE, model_->items()[index].status);
 
   // Update the ShelfItemType for |window|.
-  window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_PLATFORM_APP);
+  window->SetIntProperty(WmWindowProperty::SHELF_ITEM_TYPE, TYPE_APP);
   // No new item is created after updating a launcher item.
   EXPECT_EQ(2, model_->item_count());
   // index and id are not changed after updating a launcher item.

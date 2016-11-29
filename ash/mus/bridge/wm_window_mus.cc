@@ -440,8 +440,7 @@ int WmWindowMus::GetIntProperty(WmWindowProperty key) {
           ui::mojom::WindowManager::kShelfItemType_Property);
     }
     // Mash provides a default shelf item type for non-ignored windows.
-    return GetWindowIgnoredByShelf(window_) ? TYPE_UNDEFINED
-                                            : TYPE_PLATFORM_APP;
+    return GetWindowIgnoredByShelf(window_) ? TYPE_UNDEFINED : TYPE_APP;
   }
 
   if (key == WmWindowProperty::TOP_VIEW_INSET) {

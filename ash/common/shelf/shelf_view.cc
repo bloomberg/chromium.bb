@@ -585,9 +585,8 @@ void ShelfView::ButtonPressed(views::Button* sender,
   // Collect usage statistics before we decide what to do with the click.
   switch (model_->items()[last_pressed_index_].type) {
     case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
     case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
       WmShell::Get()->RecordUserMetricsAction(UMA_LAUNCHER_CLICK_ON_APP);
       break;
 
@@ -1072,12 +1071,11 @@ void ShelfView::AnimateToIdealBounds() {
 views::View* ShelfView::CreateViewForItem(const ShelfItem& item) {
   views::View* view = nullptr;
   switch (item.type) {
-    case TYPE_BROWSER_SHORTCUT:
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
-    case TYPE_DIALOG:
     case TYPE_APP_PANEL:
+    case TYPE_APP_SHORTCUT:
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
+    case TYPE_DIALOG:
     case TYPE_IME_MENU: {
       ShelfButton* button = new ShelfButton(this, this);
       button->SetImage(item.image);
@@ -1401,10 +1399,9 @@ bool ShelfView::SameDragType(ShelfItemType typea, ShelfItemType typeb) const {
     case TYPE_APP_SHORTCUT:
     case TYPE_BROWSER_SHORTCUT:
       return (typeb == TYPE_APP_SHORTCUT || typeb == TYPE_BROWSER_SHORTCUT);
-    case TYPE_APP_LIST:
-    case TYPE_PLATFORM_APP:
-    case TYPE_WINDOWED_APP:
     case TYPE_APP_PANEL:
+    case TYPE_APP_LIST:
+    case TYPE_APP:
     case TYPE_DIALOG:
     case TYPE_IME_MENU:
       return typeb == typea;
@@ -1725,14 +1722,11 @@ void ShelfView::ShelfItemChanged(int model_index, const ShelfItem& old_item) {
 
   views::View* view = view_model_->view_at(model_index);
   switch (item.type) {
-    case TYPE_BROWSER_SHORTCUT:
-    // Fallthrough for the new Shelf since it needs to show the activation
-    // change as well.
-    case TYPE_APP_SHORTCUT:
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
-    case TYPE_DIALOG:
     case TYPE_APP_PANEL:
+    case TYPE_APP_SHORTCUT:
+    case TYPE_BROWSER_SHORTCUT:
+    case TYPE_APP:
+    case TYPE_DIALOG:
     case TYPE_IME_MENU: {
       CHECK_EQ(ShelfButton::kViewClassName, view->GetClassName());
       ShelfButton* button = static_cast<ShelfButton*>(view);

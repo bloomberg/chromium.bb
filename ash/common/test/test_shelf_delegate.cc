@@ -42,7 +42,7 @@ void TestShelfDelegate::AddShelfItem(WmWindow* window, ShelfItemStatus status) {
   if (window->GetType() == ui::wm::WINDOW_TYPE_PANEL)
     item.type = TYPE_APP_PANEL;
   else
-    item.type = TYPE_PLATFORM_APP;
+    item.type = TYPE_APP;
   ShelfID id = model_->next_id();
   item.status = status;
   model_->Add(item);

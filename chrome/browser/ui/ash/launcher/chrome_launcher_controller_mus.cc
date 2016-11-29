@@ -150,12 +150,6 @@ void ChromeLauncherControllerMus::SetLauncherItemImage(
   NOTIMPLEMENTED();
 }
 
-bool ChromeLauncherControllerMus::IsWindowedAppInLauncher(
-    const std::string& app_id) {
-  NOTIMPLEMENTED();
-  return false;
-}
-
 void ChromeLauncherControllerMus::SetLaunchType(
     ash::ShelfID id,
     extensions::LaunchType launch_type) {

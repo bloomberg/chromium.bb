@@ -41,19 +41,23 @@ void ExtensionLauncherContextMenu::Init() {
   extension_items_.reset(new extensions::ContextMenuMatcher(
       controller()->profile(), this, this,
       base::Bind(MenuItemHasLauncherContext)));
-  if (item().type == ash::TYPE_APP_SHORTCUT ||
-      item().type == ash::TYPE_WINDOWED_APP) {
+  if (item().type == ash::TYPE_APP_SHORTCUT || item().type == ash::TYPE_APP) {
     // V1 apps can be started from the menu - but V2 apps should not.
     if (!controller()->IsPlatformApp(item().id)) {
       AddItem(MENU_OPEN_NEW, base::string16());
       AddSeparator(ui::NORMAL_SEPARATOR);
     }
+
     AddPinMenu();
-    if (controller()->IsOpen(item().id))
+
+    if (controller()->IsOpen(item().id) &&
+        !extension_misc::IsImeMenuExtensionId(
+            controller()->GetAppIDForShelfID(item().id))) {
       AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    }
 
     if (!controller()->IsPlatformApp(item().id) &&
-        item().type != ash::TYPE_WINDOWED_APP) {
+        item().type == ash::TYPE_APP_SHORTCUT) {
       AddSeparator(ui::NORMAL_SEPARATOR);
       if (extensions::util::IsNewBookmarkAppsEnabled()) {
         // With bookmark apps enabled, hosted apps launch in a window by
@@ -89,21 +93,14 @@ void ExtensionLauncherContextMenu::Init() {
   } else if (item().type == ash::TYPE_DIALOG) {
     AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
   } else {
-    if (item().type == ash::TYPE_PLATFORM_APP)
-      AddPinMenu();
-    bool show_close_button = controller()->IsOpen(item().id);
-    if (extension_misc::IsImeMenuExtensionId(
+    if (controller()->IsOpen(item().id) &&
+        !extension_misc::IsImeMenuExtensionId(
             controller()->GetAppIDForShelfID(item().id))) {
-      show_close_button = false;
-    }
-
-    if (show_close_button)
       AddItemWithStringId(MENU_CLOSE, IDS_LAUNCHER_CONTEXT_MENU_CLOSE);
+    }
   }
   AddSeparator(ui::NORMAL_SEPARATOR);
-  if (item().type == ash::TYPE_APP_SHORTCUT ||
-      item().type == ash::TYPE_WINDOWED_APP ||
-      item().type == ash::TYPE_PLATFORM_APP) {
+  if (item().type == ash::TYPE_APP_SHORTCUT || item().type == ash::TYPE_APP) {
     const extensions::MenuItem::ExtensionKey app_key(
         controller()->GetAppIDForShelfID(item().id));
     if (!app_key.empty()) {
@@ -124,7 +121,7 @@ bool ExtensionLauncherContextMenu::IsItemForCommandIdDynamic(
 base::string16 ExtensionLauncherContextMenu::GetLabelForCommandId(
     int command_id) const {
   if (command_id == MENU_OPEN_NEW) {
-    if (item().type == ash::TYPE_PLATFORM_APP)
+    if (controller()->IsPlatformApp(item().id))
       return l10n_util::GetStringUTF16(IDS_APP_LIST_CONTEXT_MENU_NEW_WINDOW);
     switch (controller()->GetLaunchType(item().id)) {
       case extensions::LAUNCH_TYPE_PINNED:

@@ -100,7 +100,7 @@ void WindowWatcher::OnWindowAdded(aura::Window* new_window) {
   ShelfItem item;
   item.type = new_window->type() == ui::wm::WINDOW_TYPE_PANEL
                   ? ash::TYPE_APP_PANEL
-                  : ash::TYPE_PLATFORM_APP;
+                  : ash::TYPE_APP;
   ash::ShelfID id = model->next_id();
   id_to_window_[id] = new_window;
 

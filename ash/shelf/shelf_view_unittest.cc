@@ -356,9 +356,9 @@ class ShelfViewTest : public AshTestBase {
     return id;
   }
 
-  ShelfID AddPlatformAppNoWait() {
+  ShelfID AddAppNoWait() {
     ShelfItem item;
-    item.type = TYPE_PLATFORM_APP;
+    item.type = TYPE_APP;
     item.status = STATUS_RUNNING;
 
     ShelfID id = model_->next_id();
@@ -378,8 +378,8 @@ class ShelfViewTest : public AshTestBase {
     return id;
   }
 
-  ShelfID AddPlatformApp() {
-    ShelfID id = AddPlatformAppNoWait();
+  ShelfID AddApp() {
+    ShelfID id = AddAppNoWait();
     test_api_->RunMessageLoopUntilAnimationsDone();
     return id;
   }
@@ -390,7 +390,7 @@ class ShelfViewTest : public AshTestBase {
 
     ShelfItem item = model_->items()[index];
 
-    if (item.type == TYPE_PLATFORM_APP || item.type == TYPE_WINDOWED_APP) {
+    if (item.type == TYPE_APP) {
       item.type = TYPE_APP_SHORTCUT;
       model_->Set(index, item);
     }
@@ -735,7 +735,7 @@ class ShelfViewTextDirectionTest : public ShelfViewTest,
 // Checks that the ideal item icon bounds match the view's bounds in the screen
 // in both LTR and RTL.
 TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
-  ShelfID id = AddPlatformApp();
+  ShelfID id = AddApp();
   ShelfButton* button = GetButtonByID(id);
   gfx::Rect item_bounds = button->GetBoundsInScreen();
   gfx::Point icon_offset = button->GetIconBounds().origin();
@@ -751,17 +751,17 @@ TEST_P(ShelfViewTextDirectionTest, IdealBoundsOfItemIcon) {
 // Check that items in the overflow area are returning the overflow button as
 // ideal bounds.
 TEST_F(ShelfViewTest, OverflowButtonBounds) {
-  ShelfID first_id = AddPlatformApp();
-  ShelfID overflow_id = AddPlatformApp();
+  ShelfID first_id = AddApp();
+  ShelfID overflow_id = AddApp();
   int items_added = 0;
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(overflow_id)->visible());
-    overflow_id = AddPlatformApp();
+    overflow_id = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
-  ShelfID last_id = AddPlatformApp();
+  ShelfID last_id = AddApp();
 
   gfx::Rect first_bounds = shelf_view_->GetIdealBoundsOfItemIcon(first_id);
   gfx::Rect overflow_bounds =
@@ -777,31 +777,22 @@ TEST_F(ShelfViewTest, OverflowButtonBounds) {
 
 // Checks that shelf view contents are considered in the correct drag group.
 TEST_F(ShelfViewTest, EnforceDragType) {
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_PLATFORM_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_SHORTCUT));
-  EXPECT_FALSE(
-      test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_WINDOWED_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_PLATFORM_APP, TYPE_APP_PANEL));
+  EXPECT_TRUE(test_api_->SameDragType(TYPE_APP, TYPE_APP));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_SHORTCUT));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_BROWSER_SHORTCUT));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_LIST));
+  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_SHORTCUT));
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_WINDOWED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_SHORTCUT, TYPE_APP_PANEL));
 
   EXPECT_TRUE(
       test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_BROWSER_SHORTCUT));
-  EXPECT_FALSE(
-      test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_WINDOWED_APP));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_BROWSER_SHORTCUT, TYPE_APP_PANEL));
-
-  EXPECT_TRUE(test_api_->SameDragType(TYPE_WINDOWED_APP, TYPE_WINDOWED_APP));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_WINDOWED_APP, TYPE_APP_LIST));
-  EXPECT_FALSE(test_api_->SameDragType(TYPE_WINDOWED_APP, TYPE_APP_PANEL));
 
   EXPECT_TRUE(test_api_->SameDragType(TYPE_APP_LIST, TYPE_APP_LIST));
   EXPECT_FALSE(test_api_->SameDragType(TYPE_APP_LIST, TYPE_APP_PANEL));
@@ -817,12 +808,12 @@ TEST_F(ShelfViewTest, AddBrowserUntilOverflow) {
 
   // Add platform app button until overflow.
   int items_added = 0;
-  ShelfID last_added = AddPlatformApp();
+  ShelfID last_added = AddApp();
   while (!test_api_->IsOverflowButtonVisible()) {
     // Added button is visible after animation while in this loop.
     EXPECT_TRUE(GetButtonByID(last_added)->visible());
 
-    last_added = AddPlatformApp();
+    last_added = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -838,7 +829,7 @@ TEST_F(ShelfViewTest, AddAppShortcutWithBrowserButtonUntilOverflow) {
   // All buttons should be visible.
   ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
-  ShelfID browser_button_id = AddPlatformApp();
+  ShelfID browser_button_id = AddApp();
 
   // Add app shortcut until overflow.
   int items_added = 0;
@@ -863,10 +854,10 @@ TEST_F(ShelfViewTest, AddPanelHidesPlatformAppButton) {
   // Add platform app button until overflow, remember last visible platform app
   // button.
   int items_added = 0;
-  ShelfID first_added = AddPlatformApp();
+  ShelfID first_added = AddApp();
   EXPECT_TRUE(GetButtonByID(first_added)->visible());
   while (true) {
-    ShelfID added = AddPlatformApp();
+    ShelfID added = AddApp();
     if (test_api_->IsOverflowButtonVisible()) {
       EXPECT_FALSE(GetButtonByID(added)->visible());
       RemoveByID(added);
@@ -890,7 +881,7 @@ TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
   ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  ShelfID platform_app = AddPlatformApp();
+  ShelfID platform_app = AddApp();
   ShelfID first_panel = AddPanel();
 
   EXPECT_TRUE(GetButtonByID(platform_app)->visible());
@@ -916,7 +907,7 @@ TEST_F(ShelfViewTest, PlatformAppHidesExcessPanels) {
   items_added = 0;
   while (GetButtonByID(platform_app)->visible() &&
          GetButtonByID(last_panel)->visible()) {
-    platform_app = AddPlatformApp();
+    platform_app = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -930,7 +921,7 @@ TEST_F(ShelfViewTest, AssertNoButtonsOverlap) {
   std::vector<ShelfID> button_ids;
   // Add app icons until the overflow button is visible.
   while (!test_api_->IsOverflowButtonVisible()) {
-    ShelfID id = AddPlatformApp();
+    ShelfID id = AddApp();
     button_ids.push_back(id);
   }
   ASSERT_LT(button_ids.size(), 10000U);
@@ -1017,10 +1008,10 @@ TEST_F(ShelfViewTest, RemoveButtonRevealsOverflowed) {
 
   // Add platform app buttons until overflow.
   int items_added = 0;
-  ShelfID first_added = AddPlatformApp();
+  ShelfID first_added = AddApp();
   ShelfID last_added = first_added;
   while (!test_api_->IsOverflowButtonVisible()) {
-    last_added = AddPlatformApp();
+    last_added = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -1046,9 +1037,9 @@ TEST_F(ShelfViewTest, RemoveLastOverflowed) {
 
   // Add platform app button until overflow.
   int items_added = 0;
-  ShelfID last_added = AddPlatformApp();
+  ShelfID last_added = AddApp();
   while (!test_api_->IsOverflowButtonVisible()) {
-    last_added = AddPlatformApp();
+    last_added = AddApp();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -1066,7 +1057,7 @@ TEST_F(ShelfViewTest, AddButtonQuickly) {
   // Add a few platform buttons quickly without wait for animation.
   int added_count = 0;
   while (!test_api_->IsOverflowButtonVisible()) {
-    AddPlatformAppNoWait();
+    AddAppNoWait();
     ++added_count;
     ASSERT_LT(added_count, 10000);
   }
@@ -1284,7 +1275,7 @@ TEST_F(ShelfViewTest, ShelfItemStatus) {
   ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  ShelfID last_added = AddPlatformApp();
+  ShelfID last_added = AddApp();
   ShelfItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   ShelfButton* button = GetButtonByID(last_added);
@@ -1304,7 +1295,7 @@ TEST_F(ShelfViewTest, ShelfItemStatusPlatformApp) {
   ASSERT_EQ(test_api_->GetButtonCount(), test_api_->GetLastVisibleIndex() + 1);
 
   // Add platform app button.
-  ShelfID last_added = AddPlatformApp();
+  ShelfID last_added = AddApp();
   ShelfItem item = GetItemByID(last_added);
   int index = model_->ItemIndexByID(last_added);
   ShelfButton* button = GetButtonByID(last_added);
@@ -1333,7 +1324,7 @@ TEST_F(ShelfViewTest, ShelfTooltipTest) {
 
   // Prepare some items to the shelf.
   ShelfID app_button_id = AddAppShortcut();
-  ShelfID platform_button_id = AddPlatformApp();
+  ShelfID platform_button_id = AddApp();
 
   ShelfButton* app_button = GetButtonByID(app_button_id);
   ShelfButton* platform_button = GetButtonByID(platform_button_id);
@@ -1415,7 +1406,7 @@ TEST_F(ShelfViewTest, ShelfAlignmentClosesTooltip) {
 
 TEST_F(ShelfViewTest, ShouldHideTooltipTest) {
   ShelfID app_button_id = AddAppShortcut();
-  ShelfID platform_button_id = AddPlatformApp();
+  ShelfID platform_button_id = AddApp();
 
   // The tooltip shouldn't hide if the mouse is on normal buttons.
   for (int i = 0; i < test_api_->GetButtonCount(); i++) {
@@ -1535,10 +1526,10 @@ TEST_F(ShelfViewTest, ResizeDuringOverflowAddAnimation) {
   // Add buttons until overflow. Let the non-overflow add animations finish but
   // leave the last running.
   int items_added = 0;
-  AddPlatformAppNoWait();
+  AddAppNoWait();
   while (!test_api_->IsOverflowButtonVisible()) {
     test_api_->RunMessageLoopUntilAnimationsDone();
-    AddPlatformAppNoWait();
+    AddAppNoWait();
     ++items_added;
     ASSERT_LT(items_added, 10000);
   }
@@ -1791,7 +1782,7 @@ TEST_F(ShelfViewTest, CheckOverflowStatusPinOpenedAppToShelf) {
   AddButtonsUntilOverflow();
 
   // Add a running Platform app.
-  ShelfID platform_app_id = AddPlatformApp();
+  ShelfID platform_app_id = AddApp();
   EXPECT_FALSE(GetButtonByID(platform_app_id)->visible());
 
   // Make the added running platform app to be an app shortcut.

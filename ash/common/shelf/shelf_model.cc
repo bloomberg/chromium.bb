@@ -22,8 +22,7 @@ int ShelfItemTypeToWeight(ShelfItemType type) {
     case TYPE_BROWSER_SHORTCUT:
     case TYPE_APP_SHORTCUT:
       return 1;
-    case TYPE_WINDOWED_APP:
-    case TYPE_PLATFORM_APP:
+    case TYPE_APP:
       return 2;
     case TYPE_DIALOG:
       return 3;
@@ -141,12 +140,8 @@ ShelfItems::const_iterator ShelfModel::ItemByID(int id) const {
 }
 
 int ShelfModel::FirstRunningAppIndex() const {
-  // Since lower_bound only checks weights against each other, we do not need
-  // to explicitly change different running application types.
-  DCHECK_EQ(ShelfItemTypeToWeight(TYPE_WINDOWED_APP),
-            ShelfItemTypeToWeight(TYPE_PLATFORM_APP));
   ShelfItem weight_dummy;
-  weight_dummy.type = TYPE_WINDOWED_APP;
+  weight_dummy.type = TYPE_APP;
   return std::lower_bound(items_.begin(), items_.end(), weight_dummy,
                           CompareByWeight) -
          items_.begin();
