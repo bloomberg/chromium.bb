@@ -238,17 +238,27 @@ cr.define('settings', function() {
   };
 
   /**
-   * Returns the matching canonical route, or null if none matches.
+   * Regular expression that captures the leading slash, the content and the
+   * trailing slash in three different groups.
+   * @const {!RegExp}
+   */
+  var CANONICAL_PATH_REGEX = /(^\/)([\/-\w]+)(\/$)/;
+
+  /**
    * @param {string} path
-   * @return {?settings.Route}
+   * @return {?settings.Route} The matching canonical route, or null if none
+   *     matches.
    */
   var getRouteForPath = function(path) {
+    // Allow trailing slash in paths.
+    var canonicalPath = path.replace(CANONICAL_PATH_REGEX, '$1$2');
+
     // TODO(tommycli): Use Object.values once Closure compilation supports it.
     var matchingKey = Object.keys(Route).find(function(key) {
-      return Route[key].path == path;
+      return Route[key].path == canonicalPath;
     });
 
-    return Route[matchingKey] || null;
+    return !!matchingKey ? Route[matchingKey] : null;
   };
 
   /**

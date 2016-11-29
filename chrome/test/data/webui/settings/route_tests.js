@@ -157,4 +157,31 @@ suite('route', function() {
       assertFalse(settings.lastRouteChangeWasPopstate());
     });
   });
+
+  test('getRouteForPath trailing slashes', function() {
+    assertEquals(settings.Route.BASIC, settings.getRouteForPath('/'));
+    assertEquals(null, settings.getRouteForPath('//'));
+
+    // Simple path.
+    assertEquals(settings.Route.PEOPLE, settings.getRouteForPath('/people/'));
+    assertEquals(settings.Route.PEOPLE, settings.getRouteForPath('/people'));
+
+    // Path with a slash.
+    assertEquals(
+        settings.Route.SITE_SETTINGS_COOKIES,
+        settings.getRouteForPath('/content/cookies'));
+    assertEquals(
+        settings.Route.SITE_SETTINGS_COOKIES,
+        settings.getRouteForPath('/content/cookies/'));
+
+    if (cr.isChromeOS) {
+      // Path with a dash.
+      assertEquals(
+          settings.Route.KEYBOARD,
+          settings.getRouteForPath('/keyboard-overlay'));
+      assertEquals(
+          settings.Route.KEYBOARD,
+          settings.getRouteForPath('/keyboard-overlay/'));
+    }
+  });
 });
