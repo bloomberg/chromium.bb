@@ -6,6 +6,7 @@ package org.chromium.android_webview;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.graphics.Canvas;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
@@ -27,6 +28,8 @@ import org.chromium.content.browser.PositionObserver;
 import org.chromium.content.browser.ViewPositionObserver;
 import org.chromium.content.browser.input.HandleViewResources;
 import org.chromium.content_public.browser.GestureStateListener;
+import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid.DisplayAndroidObserver;
 import org.chromium.ui.touch_selection.TouchHandleOrientation;
 
 import java.lang.reflect.InvocationTargetException;
@@ -40,7 +43,20 @@ import java.lang.reflect.Method;
  *
  */
 @JNINamespace("android_webview")
-public class PopupTouchHandleDrawable extends View {
+public class PopupTouchHandleDrawable extends View implements DisplayAndroidObserver {
+    @Override
+    public void onRotationChanged(int rotation) {}
+
+    @Override
+    public void onDIPScaleChanged(float dipScale) {
+        if (mDeviceScale != dipScale) {
+            mDeviceScale = dipScale;
+
+            // Postpone update till onConfigurationChanged()
+            mNeedsUpdateDrawable = true;
+        }
+    }
+
     private final PopupWindow mContainer;
     private final PositionObserver.Listener mParentPositionListener;
     private ContentViewCore mContentViewCore;
@@ -67,6 +83,8 @@ public class PopupTouchHandleDrawable extends View {
     private final int[] mTempScreenCoords = new int[2];
 
     private int mOrientation = TouchHandleOrientation.UNDEFINED;
+
+    private float mDeviceScale;
 
     // Length of the delay before fading in after the last page movement.
     private static final int MOVING_FADE_IN_DELAY_MS = 300;
@@ -98,6 +116,8 @@ public class PopupTouchHandleDrawable extends View {
     private Runnable mInvalidationRunnable;
     private boolean mHasPendingInvalidate;
 
+    private boolean mNeedsUpdateDrawable;
+
     // List of drawables used to inform them of the container view switching.
     private final ObserverList<PopupTouchHandleDrawable> mDrawableObserverList;
 
@@ -108,8 +128,12 @@ public class PopupTouchHandleDrawable extends View {
         mDrawableObserverList.addObserver(this);
 
         mContentViewCore = contentViewCore;
-        mContainer = new PopupWindow(mContentViewCore.getWindowAndroid().getContext().get(),
-                null, android.R.attr.textSelectHandleWindowStyle);
+
+        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        mDeviceScale = windowAndroid.getDisplay().getDipScale();
+
+        mContainer = new PopupWindow(
+                windowAndroid.getContext().get(), null, android.R.attr.textSelectHandleWindowStyle);
         mContainer.setSplitTouchEnabled(true);
         mContainer.setClippingEnabled(false);
 
@@ -251,6 +275,19 @@ public class PopupTouchHandleDrawable extends View {
         if (orientationChanged || mirroringChanged) scheduleInvalidate();
     }
 
+    @SuppressLint("NewApi")
+    private void updateDrawableAndRequestLayout() {
+        mNeedsUpdateDrawable = false;
+
+        if (mDrawable == null) return;
+
+        mDrawable = getHandleDrawable(getContext(), mOrientation);
+
+        if (mDrawable != null) mDrawable.setAlpha((int) (255 * mAlpha));
+
+        if (!isInLayout()) requestLayout();
+    }
+
     private void updateParentPosition(int parentPositionX, int parentPositionY) {
         if (mParentPositionX == parentPositionX && mParentPositionY == parentPositionY) return;
         mParentPositionX = parentPositionX;
@@ -259,13 +296,11 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private int getContainerPositionX() {
-        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
-        return mParentPositionX + (int) (mOriginXDip * deviceScale);
+        return mParentPositionX + (int) (mOriginXDip * mDeviceScale);
     }
 
     private int getContainerPositionY() {
-        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
-        return mParentPositionY + (int) (mOriginYDip * deviceScale);
+        return mParentPositionY + (int) (mOriginYDip * mDeviceScale);
     }
 
     private void updatePosition() {
@@ -274,11 +309,10 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     private boolean isShowingAllowed() {
-        final float deviceScale = mContentViewCore.getDeviceScaleFactor();
         // mOriginX/YDip * deviceScale is the distance of the handler drawable from the top left of
         // the containerView (the WebView).
         return mAttachedToWindow && mVisible && mFocused && !mScrolling && !mTemporarilyHidden
-                && isPositionVisible(mOriginXDip * deviceScale, mOriginYDip * deviceScale);
+                && isPositionVisible(mOriginXDip * mDeviceScale, mOriginYDip * mDeviceScale);
     }
 
     // Adapted from android.widget.Editor#isPositionVisible.
@@ -446,6 +480,16 @@ public class PopupTouchHandleDrawable extends View {
     }
 
     @Override
+    protected void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+
+        // Update the drawable when the configuration with the new density comes.
+        if (mNeedsUpdateDrawable && mDeviceScale == getResources().getDisplayMetrics().density) {
+            updateDrawableAndRequestLayout();
+        }
+    }
+
+    @Override
     protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
         if (mDrawable == null) {
             setMeasuredDimension(0, 0);
@@ -475,11 +519,22 @@ public class PopupTouchHandleDrawable extends View {
         super.onAttachedToWindow();
         mAttachedToWindow = true;
         onVisibilityInputChanged();
+
+        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        if (windowAndroid != null) {
+            windowAndroid.getDisplay().addObserver(this);
+            mDeviceScale = windowAndroid.getDisplay().getDipScale();
+            updateDrawableAndRequestLayout();
+        }
     }
 
     @Override
     protected void onDetachedFromWindow() {
         super.onDetachedFromWindow();
+
+        WindowAndroid windowAndroid = mContentViewCore.getWindowAndroid();
+        if (windowAndroid != null) windowAndroid.getDisplay().removeObserver(this);
+
         mAttachedToWindow = false;
         onVisibilityInputChanged();
     }
@@ -555,15 +610,13 @@ public class PopupTouchHandleDrawable extends View {
     @CalledByNative
     private float getVisibleWidthDip() {
         if (mDrawable == null) return 0;
-        if (mContentViewCore == null) return 0;
-        return mDrawable.getIntrinsicWidth() / mContentViewCore.getDeviceScaleFactor();
+        return mDrawable.getIntrinsicWidth() / mDeviceScale;
     }
 
     @CalledByNative
     private float getVisibleHeightDip() {
         if (mDrawable == null) return 0;
-        if (mContentViewCore == null) return 0;
-        return mDrawable.getIntrinsicHeight() / mContentViewCore.getDeviceScaleFactor();
+        return mDrawable.getIntrinsicHeight() / mDeviceScale;
     }
 
     public void onContainerViewChanged(ViewGroup newContainerView) {
