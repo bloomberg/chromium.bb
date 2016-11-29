@@ -1,61 +1,13 @@
 Tests ResourceScriptMapping class.
 
 
-Running: testScriptWithPendingResource
-Adding script for pending request.
-UISourceCode: debugger:///VM1 foo.js
-UISourceCode is content script: false
-Highlighter type: text/javascript
-UISourceCode content: <content script source>
-Adding uiSourceCode for finished resource.
-UISourceCode: foo.js
-UISourceCode is content script: false
-Highlighter type: text/javascript
-UISourceCode content: <content script resource content>
-
-Running: testScriptWithFinishedResource
-Adding uiSourceCode for finished resource.
-UISourceCode: foo.js
-UISourceCode is content script: false
-Highlighter type: text/javascript
-UISourceCode content: <script resource content>
-Adding script for finished request.
-UISourceCode: foo.js
-UISourceCode is content script: false
-Highlighter type: text/javascript
-UISourceCode content: <script resource content>
-
-Running: testHTMLWithPendingResource
-Adding first script for pending request.
-UISourceCode: debugger:///VM3 index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <script source 1>
-Adding second script for pending request.
-UISourceCode: debugger:///VM4 index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <script source 2>
-Adding uiSourceCode for finished resource.
-UISourceCode: index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <resource content>
-
-Running: testHTMLWithFinishedResource
-Adding uiSourceCode for finished resource.
-UISourceCode: index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <resource content>
-Adding first script for finished request.
-UISourceCode: index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <resource content>
-Adding second script for finished request.
-UISourceCode: index.html
-UISourceCode is content script: false
-Highlighter type: text/html
-UISourceCode content: <resource content>
+Waiting for scripts
+Script arrived
+Script arrived
+Script arrived
+Waiting for UISourceCode
+UISourceCode arrived
+Checking script at (3, 8)
+Checking script at (11, 12)
+Checking script at (16, 8)
 
