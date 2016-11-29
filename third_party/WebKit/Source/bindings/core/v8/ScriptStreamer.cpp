@@ -235,6 +235,11 @@ class SourceStream : public v8::ScriptCompiler::ExternalSourceStream {
   void prepareDataOnMainThread(ScriptStreamer* streamer) {
     DCHECK(isMainThread());
 
+    if (m_cancelled) {
+      m_dataQueue.finish();
+      return;
+    }
+
     // The Resource must still be alive; otherwise we should've cancelled
     // the streaming (if we have cancelled, the background thread is not
     // waiting).
