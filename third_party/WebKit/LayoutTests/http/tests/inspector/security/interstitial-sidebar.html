@@ -19,6 +19,10 @@ function test()
 
     // Test that the sidebar is hidden when an interstitial is shown. https://crbug.com/559150
     InspectorTest.mainTarget.model(SDK.ResourceTreeModel).dispatchEventToListeners(SDK.ResourceTreeModel.Events.InterstitialShown);
+    // Simulate a request finishing after the interstitial is shown, to make sure that doesn't show up in the sidebar.
+    var request3 = new SDK.NetworkRequest(InspectorTest.mainTarget, 0, "https://bar.test/foo.jpg", "https://bar.test", 0, 0, null);
+    request3.setSecurityState(Protocol.Security.SecurityState.Unknown);
+    InspectorTest.dispatchRequestFinished(request3);
     InspectorTest.addResult("After interstitial is shown:");
     InspectorTest.dumpDeepInnerHTML(Security.SecurityPanel._instance()._sidebarTree.element);
 

@@ -1356,6 +1356,23 @@ IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, TargetDiscovery) {
   EXPECT_TRUE(notifications_.empty());
 }
 
+// Tests that an interstitialShown event is sent when an interstitial is showing
+// on attach.
+IN_PROC_BROWSER_TEST_F(DevToolsProtocolTest, InterstitialShownOnAttach) {
+  TestInterstitialDelegate* delegate = new TestInterstitialDelegate;
+  WebContentsImpl* web_contents =
+      static_cast<WebContentsImpl*>(shell()->web_contents());
+  GURL interstitial_url("https://example.test");
+  InterstitialPageImpl* interstitial = new InterstitialPageImpl(
+      web_contents, static_cast<RenderWidgetHostDelegate*>(web_contents), true,
+      interstitial_url, delegate);
+  interstitial->Show();
+  WaitForInterstitialAttach(web_contents);
+  Attach();
+  SendCommand("Page.enable", nullptr, false);
+  WaitForNotification("Page.interstitialShown", true);
+}
+
 class SitePerProcessDevToolsProtocolTest : public DevToolsProtocolTest {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {

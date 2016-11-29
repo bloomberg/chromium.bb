@@ -198,6 +198,8 @@ void PageHandler::DidDetachInterstitialPage() {
 
 Response PageHandler::Enable() {
   enabled_ = true;
+  if (GetWebContents() && GetWebContents()->ShowingInterstitialPage())
+    client_->InterstitialShown(InterstitialShownParams::Create());
   return Response::FallThrough();
 }
 
