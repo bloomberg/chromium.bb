@@ -45,7 +45,6 @@ void installConditionalFeaturesForModules(
     return;
   v8::Isolate* isolate = scriptState->isolate();
   const DOMWrapperWorld& world = scriptState->world();
-  v8::Local<v8::Object> global = scriptState->context()->Global();
   if (wrapperTypeInfo == &V8Navigator::wrapperTypeInfo) {
     if (OriginTrials::webShareEnabled(executionContext)) {
       V8NavigatorPartial::installWebShare(isolate, world,
@@ -57,30 +56,32 @@ void installConditionalFeaturesForModules(
                                         prototypeObject, interfaceObject);
     }
     if (OriginTrials::webVREnabled(executionContext)) {
-      V8NavigatorPartial::installWebVR(isolate, world, global, prototypeObject,
-                                       interfaceObject);
+      V8NavigatorPartial::installWebVR(isolate, world, v8::Local<v8::Object>(),
+                                       prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
+    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
     if (OriginTrials::imageCaptureEnabled(executionContext)) {
-      V8WindowPartial::installImageCapture(isolate, world, global,
+      V8WindowPartial::installImageCapture(isolate, world, instanceObject,
                                            prototypeObject, interfaceObject);
     }
     if (OriginTrials::webUSBEnabled(executionContext)) {
-      V8WindowPartial::installWebUSB(isolate, world, global, prototypeObject,
-                                     interfaceObject);
+      V8WindowPartial::installWebUSB(isolate, world, instanceObject,
+                                     prototypeObject, interfaceObject);
     }
     if (OriginTrials::webVREnabled(executionContext)) {
-      V8WindowPartial::installWebVR(isolate, world, global, prototypeObject,
-                                    interfaceObject);
+      V8WindowPartial::installWebVR(isolate, world, instanceObject,
+                                    prototypeObject, interfaceObject);
     }
     if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
       V8WindowPartial::installGamepadExtensions(
-          isolate, world, global, prototypeObject, interfaceObject);
+          isolate, world, instanceObject, prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8ServiceWorkerGlobalScope::wrapperTypeInfo) {
+    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
     if (OriginTrials::foreignFetchEnabled(executionContext)) {
       V8ServiceWorkerGlobalScope::installForeignFetch(
-          isolate, world, global, prototypeObject, interfaceObject);
+          isolate, world, instanceObject, prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8InstallEvent::wrapperTypeInfo) {
     if (OriginTrials::foreignFetchEnabled(executionContext)) {
@@ -90,13 +91,15 @@ void installConditionalFeaturesForModules(
     }
   } else if (wrapperTypeInfo == &V8Gamepad::wrapperTypeInfo) {
     if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
-      V8Gamepad::installGamepadExtensions(isolate, world, global,
+      V8Gamepad::installGamepadExtensions(isolate, world,
+                                          v8::Local<v8::Object>(),
                                           prototypeObject, interfaceObject);
     }
   } else if (wrapperTypeInfo == &V8GamepadButton::wrapperTypeInfo) {
     if (OriginTrials::gamepadExtensionsEnabled(executionContext)) {
       V8GamepadButton::installGamepadExtensions(
-          isolate, world, global, prototypeObject, interfaceObject);
+          isolate, world, v8::Local<v8::Object>(), prototypeObject,
+          interfaceObject);
     }
   }
 }
