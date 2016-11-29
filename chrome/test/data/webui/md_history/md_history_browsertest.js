@@ -124,7 +124,8 @@ MaterialHistoryListTest.prototype = {
   ]),
 };
 
-TEST_F('MaterialHistoryListTest', 'All', function() {
+// Test is very flaky on all platforms, http://crbug.com/669227
+TEST_F('MaterialHistoryListTest', 'DISABLED_All', function() {
   mocha.run();
 });
 
