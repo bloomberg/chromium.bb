@@ -41,7 +41,7 @@ TEST_F(UpdaterStateTest, Serialize) {
   EXPECT_STREQ("1", attributes.at("autoupdatecheckenabled").c_str());
   EXPECT_STREQ("1", attributes.at("updatepolicy").c_str());
 
-#if defined(GOOGLE_CHROME_BUILD)
+#if defined(GOOGLE_CHROME_BUILD) && defined(OS_WIN)
   // The name of the Windows updater for Chrome.
   EXPECT_STREQ("Omaha", UpdaterState::GetState(false)->at("name").c_str());
 #endif  // GOOGLE_CHROME_BUILD
