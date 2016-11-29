@@ -18,6 +18,8 @@ source_set("native_app_launcher") {
     "//ios/chrome/app/strings",
     "//ios/chrome/browser/infobars",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
+    "//ios/public/provider/chrome/browser/ui",
     "//ui/base",
     "//url",
   ]
@@ -39,6 +41,7 @@ source_set("unit_tests") {
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser:test_support",
+    "//ios/public/provider/chrome/browser/native_app_launcher",
     "//ios/web",
     "//ios/web:test_support",
     "//net:test_support",

@@ -70,6 +70,7 @@ source_set("passwords") {
     "//ios/chrome/browser/ui/commands",
     "//ios/chrome/browser/ui/elements",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
     "//ui/base",
     "//url",

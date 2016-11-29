@@ -100,6 +100,7 @@ source_set("browser_state_impl") {
     "//ios/chrome/browser/undo",
     "//ios/net",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/web",
     "//net",
     "//net:extras",
@@ -148,6 +149,7 @@ source_set("test_support") {
     "//ios/chrome/browser/sync/glue",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
     "//net:test_support",
   ]

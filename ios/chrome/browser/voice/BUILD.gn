@@ -21,6 +21,7 @@ source_set("voice") {
   public_deps = [
     "//base",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/voice",
   ]
 }
 
@@ -33,7 +34,7 @@ source_set("prefs") {
   deps = [
     "//components/pref_registry",
     "//components/prefs",
-    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/voice",
   ]
 }
 
@@ -54,7 +55,7 @@ source_set("tts") {
     "//components/prefs",
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/voice",
     "//ios/web",
     "//net",
     "//third_party/google_toolbox_for_mac",

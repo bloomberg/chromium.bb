@@ -1,0 +1,24 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("sessions") {
+  sources = [
+    "live_tab_context_provider.h",
+  ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_live_tab_context_provider.cc",
+    "test_live_tab_context_provider.h",
+    "test_synced_window_delegates_getter.cc",
+    "test_synced_window_delegates_getter.h",
+  ]
+  deps = [
+    "//base",
+    "//components/sync_sessions",
+    "//ios/public/provider/chrome/browser/sessions",
+  ]
+}

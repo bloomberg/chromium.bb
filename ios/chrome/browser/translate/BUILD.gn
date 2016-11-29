@@ -37,6 +37,7 @@ source_set("translate") {
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/infobars",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",

@@ -24,6 +24,7 @@ source_set("infobars") {
     "//base",
     "//components/translate/core/browser",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
     "//ios/web",
     "//ui/base",
     "//ui/gfx",

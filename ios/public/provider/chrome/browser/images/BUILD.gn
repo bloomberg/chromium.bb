@@ -4,15 +4,22 @@
 
 source_set("images") {
   sources = [
-    "chromium_branded_image_provider.h",
-    "chromium_branded_image_provider.mm",
+    "branded_image_provider.h",
+    "branded_image_provider.mm",
+    "whats_new_icon.h",
   ]
   deps = [
     "//base",
-    "//ios/chrome/app/theme",
-    "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser/images",
-    "//ui/base",
   ]
-  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_branded_image_provider.h",
+    "test_branded_image_provider.mm",
+  ]
+  deps = [
+    "//ios/public/provider/chrome/browser/images",
+  ]
 }

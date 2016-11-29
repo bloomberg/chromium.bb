@@ -19,6 +19,11 @@ source_set("providers") {
     "//ios/chrome/browser/providers/signin",
     "//ios/chrome/browser/providers/ui",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/distribution",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/ui",
+    "//ios/public/provider/chrome/browser/user_feedback",
+    "//ios/public/provider/chrome/browser/voice",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 }

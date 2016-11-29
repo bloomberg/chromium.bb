@@ -56,6 +56,7 @@ source_set("signin") {
     "//ios/chrome/browser/content_settings",
     "//ios/chrome/browser/crash_report",
     "//ios/chrome/browser/ui/commands",
+    "//ios/public/provider/chrome/browser/signin",
     "//ios/web",
     "//url",
   ]
@@ -91,6 +92,7 @@ source_set("test_support") {
     "//components/signin/ios/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sync",
+    "//ios/public/provider/chrome/browser/signin",
   ]
   public_deps = [
     ":signin",
@@ -127,7 +129,8 @@ source_set("unit_tests") {
     "//ios/chrome/browser/sync:test_support",
     "//ios/chrome/test:test_support",
     "//ios/public/provider/chrome/browser",
-    "//ios/public/provider/chrome/browser:test_support",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/public/provider/chrome/browser/signin:test_support",
     "//ios/web:test_support",
     "//net:test_support",
     "//testing/gmock",

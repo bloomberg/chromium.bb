@@ -1,0 +1,33 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("ui") {
+  sources = [
+    "app_rating_prompt.h",
+    "default_ios_web_view_factory.h",
+    "default_ios_web_view_factory.mm",
+    "infobar_view_delegate.h",
+    "infobar_view_protocol.h",
+    "logo_vendor.h",
+    "text_field_styling.h",
+  ]
+  deps = [
+    "//base",
+    "//ios/public/provider/chrome/browser/voice",
+  ]
+  libs = [ "CoreGraphics.framework" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "test_infobar_view.h",
+    "test_infobar_view.mm",
+    "test_styled_text_field.h",
+    "test_styled_text_field.mm",
+  ]
+  deps = [
+    "//ios/public/provider/chrome/browser/ui",
+  ]
+}
