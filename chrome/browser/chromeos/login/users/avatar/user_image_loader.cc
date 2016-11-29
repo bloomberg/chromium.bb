@@ -46,12 +46,11 @@ struct ImageInfo {
 };
 
 // Crops |image| to the square format and downsizes the image to
-// |target_size| in pixels. On success, returns true and stores the cropped
-// image in |bitmap| and the bytes representation in |byytes|.
-bool CropImage(const SkBitmap& image,
-               int target_size,
-               SkBitmap* bitmap,
-               user_manager::UserImage::Bytes* bytes) {
+// |target_size| in pixels. On success, returns the bytes representation and
+// stores the cropped image in |bitmap|. On failure, returns nullptr.
+scoped_refptr<base::RefCountedBytes> CropImage(const SkBitmap& image,
+                                               int target_size,
+                                               SkBitmap* bitmap) {
   DCHECK_GT(target_size, 0);
 
   SkBitmap final_image;
@@ -71,14 +70,11 @@ bool CropImage(const SkBitmap& image,
   }
 
   // Encode the cropped image to web-compatible bytes representation
-  std::unique_ptr<user_manager::UserImage::Bytes> encoded =
+  scoped_refptr<base::RefCountedBytes> encoded =
       user_manager::UserImage::Encode(final_image);
-  if (!encoded)
-    return false;
-
-  bitmap->swap(final_image);
-  bytes->swap(*encoded);
-  return true;
+  if (encoded)
+    bitmap->swap(final_image);
+  return encoded;
 }
 
 // Handles the decoded image returned from ImageDecoder through the
@@ -90,7 +86,10 @@ class UserImageRequest : public ImageDecoder::ImageRequest {
       const std::string& image_data,
       scoped_refptr<base::SequencedTaskRunner> background_task_runner)
       : image_info_(image_info),
-        image_data_(image_data.begin(), image_data.end()),
+        // TODO(crbug.com/593251): Remove the data copy here.
+        image_data_(new base::RefCountedBytes(
+            reinterpret_cast<const unsigned char*>(image_data.data()),
+            image_data.size())),
         background_task_runner_(background_task_runner),
         weak_ptr_factory_(this) {}
   ~UserImageRequest() override {}
@@ -101,18 +100,17 @@ class UserImageRequest : public ImageDecoder::ImageRequest {
 
   // Called after the image is cropped (and downsized) as needed.
   void OnImageCropped(SkBitmap* bitmap,
-                      user_manager::UserImage::Bytes* bytes,
-                      bool succeeded);
+                      scoped_refptr<base::RefCountedBytes> bytes);
 
   // Called after the image is finalized. |image_bytes_regenerated| is true
   // if |image_bytes| is regenerated from the cropped image.
   void OnImageFinalized(const SkBitmap& image,
-                        const user_manager::UserImage::Bytes& image_bytes,
+                        scoped_refptr<base::RefCountedBytes> image_bytes,
                         bool image_bytes_regenerated);
 
  private:
   const ImageInfo image_info_;
-  const user_manager::UserImage::Bytes image_data_;
+  scoped_refptr<base::RefCountedBytes> image_data_;
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;
 
   // This should be the last member.
@@ -125,34 +123,32 @@ void UserImageRequest::OnImageDecoded(const SkBitmap& decoded_image) {
     // Cropping an image could be expensive, hence posting to the background
     // thread.
     SkBitmap* bitmap = new SkBitmap;
-    user_manager::UserImage::Bytes* bytes = new user_manager::UserImage::Bytes;
     base::PostTaskAndReplyWithResult(
         background_task_runner_.get(), FROM_HERE,
-        base::Bind(&CropImage, decoded_image, target_size, bitmap, bytes),
+        base::Bind(&CropImage, decoded_image, target_size, bitmap),
         base::Bind(&UserImageRequest::OnImageCropped,
-                   weak_ptr_factory_.GetWeakPtr(), base::Owned(bitmap),
-                   base::Owned(bytes)));
+                   weak_ptr_factory_.GetWeakPtr(), base::Owned(bitmap)));
   } else {
     OnImageFinalized(decoded_image, image_data_,
                      false /* image_bytes_regenerated */);
   }
 }
 
-void UserImageRequest::OnImageCropped(SkBitmap* bitmap,
-                                      user_manager::UserImage::Bytes* bytes,
-                                      bool succeeded) {
+void UserImageRequest::OnImageCropped(
+    SkBitmap* bitmap,
+    scoped_refptr<base::RefCountedBytes> bytes) {
   DCHECK_GT(image_info_.pixels_per_side, 0);
 
-  if (!succeeded) {
+  if (!bytes) {
     OnDecodeImageFailed();
     return;
   }
-  OnImageFinalized(*bitmap, *bytes, true /* image_bytes_regenerated */);
+  OnImageFinalized(*bitmap, bytes, true /* image_bytes_regenerated */);
 }
 
 void UserImageRequest::OnImageFinalized(
     const SkBitmap& image,
-    const user_manager::UserImage::Bytes& image_bytes,
+    scoped_refptr<base::RefCountedBytes> image_bytes,
     bool image_bytes_regenerated) {
   SkBitmap final_image = image;
   // Make the SkBitmap immutable as we won't modify it. This is important

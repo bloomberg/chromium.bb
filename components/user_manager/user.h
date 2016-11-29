@@ -135,7 +135,7 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   int image_index() const { return image_index_; }
   bool has_image_bytes() const { return user_image_->has_image_bytes(); }
   // Returns bytes representation of static user image for WebUI.
-  const UserImage::Bytes& image_bytes() const {
+  scoped_refptr<base::RefCountedBytes> image_bytes() const {
     return user_image_->image_bytes();
   }
 

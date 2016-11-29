@@ -149,11 +149,11 @@ int ImageIndexToHistogramIndex(int image_index) {
   }
 }
 
-bool SaveImage(std::unique_ptr<user_manager::UserImage::Bytes> image_bytes,
+bool SaveImage(scoped_refptr<base::RefCountedBytes> image_bytes,
                const base::FilePath& image_path) {
-  if (image_bytes->empty() ||
+  if (image_bytes->size() == 0 ||
       base::WriteFile(image_path,
-                      reinterpret_cast<const char*>(image_bytes->data()),
+                      reinterpret_cast<const char*>(image_bytes->front()),
                       image_bytes->size()) == -1) {
     LOG(ERROR) << "Failed to save image to file.";
     return false;
@@ -237,7 +237,7 @@ class UserImageManagerImpl::Job {
   // |image_is_safe_format|. Local state will be updated as needed.
   void SaveImageAndUpdateLocalState(
       bool image_is_safe_format,
-      std::unique_ptr<user_manager::UserImage::Bytes> image_bytes);
+      scoped_refptr<base::RefCountedBytes> image_bytes);
 
   // Called back after the user image has been saved to
   // disk. Updates the user image information in local state. The
@@ -421,26 +421,20 @@ void UserImageManagerImpl::Job::UpdateUser(
 
 void UserImageManagerImpl::Job::UpdateUserAndSaveImage(
     std::unique_ptr<user_manager::UserImage> user_image) {
-  // TODO(crbug.com/593251): Remove the data copy.
-  // Copy the image bytes, before the user image is passed to
-  // UpdateUser(). This is needed to safely save the data bytes to the disk
-  // in the blocking pool. Copying is not desirable but the user image is
-  // JPEG data of 512x512 pixels (usually <100KB) hence it's not enormous.
   const bool image_is_safe_format = user_image->is_safe_format();
-  std::unique_ptr<user_manager::UserImage::Bytes> copied_bytes;
-  if (image_is_safe_format) {
-    copied_bytes.reset(
-        new user_manager::UserImage::Bytes(user_image->image_bytes()));
-  }
+  // Create a reference before user_image is passed.
+  scoped_refptr<base::RefCountedBytes> image_bytes;
+  if (image_is_safe_format)
+    image_bytes = user_image->image_bytes();
 
   UpdateUser(std::move(user_image));
 
-  SaveImageAndUpdateLocalState(image_is_safe_format, std::move(copied_bytes));
+  SaveImageAndUpdateLocalState(image_is_safe_format, image_bytes);
 }
 
 void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
     bool image_is_safe_format,
-    std::unique_ptr<user_manager::UserImage::Bytes> image_bytes) {
+    scoped_refptr<base::RefCountedBytes> image_bytes) {
   base::FilePath user_data_dir;
   PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
   image_path_ = user_data_dir.Append(user_id() + kSafeImagePathExtension);
@@ -464,7 +458,7 @@ void UserImageManagerImpl::Job::SaveImageAndUpdateLocalState(
 
   base::PostTaskAndReplyWithResult(
       parent_->background_task_runner_.get(), FROM_HERE,
-      base::Bind(&SaveImage, base::Passed(std::move(image_bytes)), image_path_),
+      base::Bind(&SaveImage, image_bytes, image_path_),
       base::Bind(&Job::OnSaveImageDone, weak_factory_.GetWeakPtr()));
 }
 

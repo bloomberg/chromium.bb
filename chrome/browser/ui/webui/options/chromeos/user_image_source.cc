@@ -43,7 +43,8 @@ void ParseRequest(const GURL& url, std::string* email) {
   *email = account_id.GetUserEmail();
 }
 
-base::RefCountedMemory* GetUserImageInternal(const AccountId& account_id) {
+scoped_refptr<base::RefCountedMemory> GetUserImageInternal(
+    const AccountId& account_id) {
   const user_manager::User* user =
       user_manager::UserManager::Get()->FindUser(account_id);
 
@@ -53,7 +54,7 @@ base::RefCountedMemory* GetUserImageInternal(const AccountId& account_id) {
   // specifically want 100% scale images to not transmit more data than needed.
   if (user) {
     if (user->has_image_bytes())
-      return new base::RefCountedBytes(user->image_bytes());
+      return user->image_bytes();
     if (user->image_is_stub()) {
       return ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
           IDR_PROFILE_PICTURE_LOADING, ui::SCALE_FACTOR_100P);

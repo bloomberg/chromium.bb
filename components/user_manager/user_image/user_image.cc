@@ -19,19 +19,20 @@ const int kDefaultEncodingQuality = 90;
 }  // namespace
 
 // static
-std::unique_ptr<UserImage::Bytes> UserImage::Encode(const SkBitmap& bitmap) {
+scoped_refptr<base::RefCountedBytes> UserImage::Encode(
+    const SkBitmap& bitmap) {
   TRACE_EVENT2("oobe", "UserImage::Encode",
                "width", bitmap.width(), "height", bitmap.height());
   SkAutoLockPixels lock_bitmap(bitmap);
-  std::unique_ptr<Bytes> output(new Bytes);
+  std::vector<unsigned char> output;
   if (gfx::JPEGCodec::Encode(
           reinterpret_cast<unsigned char*>(bitmap.getAddr32(0, 0)),
           gfx::JPEGCodec::FORMAT_SkBitmap,
           bitmap.width(),
           bitmap.height(),
           bitmap.width() * bitmap.bytesPerPixel(),
-          kDefaultEncodingQuality, output.get())) {
-    return output;
+          kDefaultEncodingQuality, &output)) {
+    return base::RefCountedBytes::TakeVector(&output);
   } else {
     return nullptr;
   }
@@ -43,34 +44,26 @@ std::unique_ptr<UserImage> UserImage::CreateAndEncode(
   if (image.isNull())
     return base::WrapUnique(new UserImage);
 
-  std::unique_ptr<Bytes> image_bytes = Encode(*image.bitmap());
+  scoped_refptr<base::RefCountedBytes> image_bytes = Encode(*image.bitmap());
   if (image_bytes) {
-    // TODO(crbug.com/593251): Remove the data copy via |image_bytes|.
-    std::unique_ptr<UserImage> result(new UserImage(image, *image_bytes));
+    std::unique_ptr<UserImage> result(new UserImage(image, image_bytes));
     result->MarkAsSafe();
     return result;
   }
   return base::WrapUnique(new UserImage(image));
 }
 
-UserImage::UserImage()
-    : has_image_bytes_(false),
-      is_safe_format_(false) {
+UserImage::UserImage() {
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image)
-    : image_(image),
-      has_image_bytes_(false),
-      is_safe_format_(false) {
+    : image_(image) {
 }
 
 UserImage::UserImage(const gfx::ImageSkia& image,
-                     const Bytes& image_bytes)
+                     scoped_refptr<base::RefCountedBytes> image_bytes)
     : image_(image),
-      has_image_bytes_(false),
-      is_safe_format_(false) {
-  has_image_bytes_ = true;
-  image_bytes_ = image_bytes;
+      image_bytes_(image_bytes) {
 }
 
 UserImage::~UserImage() {}
