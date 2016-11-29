@@ -619,7 +619,7 @@ InspectorTest.expandRow = function(row, callback)
     row.addEventListener(Profiler.HeapSnapshotGridNode.Events.PopulateComplete, populateComplete, this);
     (function expand()
     {
-        if (row.hasChildren)
+        if (row.hasChildren())
             row.expand();
         else
             setTimeout(expand, 0);
