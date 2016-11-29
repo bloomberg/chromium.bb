@@ -2594,7 +2594,21 @@ error::Error GLES2DecoderPassthroughImpl::DoGetUniformsES3CHROMIUM(
 error::Error GLES2DecoderPassthroughImpl::DoGetTranslatedShaderSourceANGLE(
     GLuint shader,
     std::string* source) {
-  NOTIMPLEMENTED();
+  FlushErrors();
+  GLuint service_id = GetShaderServiceID(shader, resources_);
+  GLint translated_source_length = 0;
+  glGetShaderiv(service_id, GL_TRANSLATED_SHADER_SOURCE_LENGTH_ANGLE,
+                &translated_source_length);
+  if (FlushErrors()) {
+    return error::kNoError;
+  }
+
+  if (translated_source_length > 0) {
+    std::vector<char> buffer(translated_source_length, 0);
+    glGetTranslatedShaderSourceANGLE(service_id, translated_source_length,
+                                     nullptr, buffer.data());
+    *source = std::string(buffer.data());
+  }
   return error::kNoError;
 }
 
