@@ -109,6 +109,20 @@ def GetScheduledBuildDict(scheduled_slave_list):
 
   return build_info_dict
 
+def GetBuildInfoDict(metadata):
+  """Get build_info_dict from metadata.
+
+  Returns:
+    build_info_dict: A dict mapping build config name to its buildbucket
+        information dict(current buildbucket_id, current created_ts, retry #).
+        See GetScheduledBuildDict for details.
+  """
+  assert metadata is not None
+
+  scheduled_slaves_list = metadata.GetValueWithDefault(
+      constants.METADATA_SCHEDULED_SLAVES, [])
+  return GetScheduledBuildDict(scheduled_slaves_list)
+
 class BuildbucketClient(object):
   """Buildbucket client to interact with the Buildbucket server."""
 

@@ -231,6 +231,18 @@ class CBuildbotMetadata(object):
     """
     return self._metadata_dict[key]
 
+  def GetValueWithDefault(self, key, default=None):
+    """Return the value for key if key is in the dictionary, else default.
+
+    If default is not given, it defaults to None.
+    This method is in most cases an inexpensive equivalent to:
+    GetDict().get(key, default)
+
+    However, it cannot be used for items like 'cl_actions' or 'board-metadata'
+    which are not stored directly in the metadata dictionary.
+    """
+    return self._metadata_dict.get(key, default)
+
   def GetJSON(self):
     """Return a JSON string representation of metadata."""
     return json.dumps(self.GetDict())

@@ -29,6 +29,28 @@ class MetadataTest(cros_test_lib.TestCase):
     ending_dict = metadata.GetDict()
     self.assertEqual(starting_dict, ending_dict)
 
+  def testGetValue(self):
+    """Test GetValue."""
+    starting_dict = {
+        'key1': 1,
+        'key2': '2'
+    }
+    metadata = metadata_lib.CBuildbotMetadata(starting_dict)
+    self.assertEqual(metadata.GetValue('key1'), 1)
+    self.assertEqual(metadata.GetValue('key2'), '2')
+    self.assertRaises(KeyError, metadata.GetValue, 'key3')
+
+  def testGetValueWithDefault(self):
+    """Test GetValueWithDefault."""
+    starting_dict = {
+        'key1': 1,
+        'key2': '2'
+    }
+    metadata = metadata_lib.CBuildbotMetadata(starting_dict)
+    self.assertEqual(metadata.GetValueWithDefault('key1'), 1)
+    self.assertEqual(metadata.GetValueWithDefault('key2', 2), '2')
+    self.assertEqual(metadata.GetValueWithDefault('key3', 3), 3)
+
   def testUpdateKeyDictWithDict(self):
     expected_dict = {str(x): x for x in range(20)}
     m = multiprocessing.Manager()

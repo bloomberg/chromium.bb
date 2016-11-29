@@ -318,12 +318,6 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
 
   def ConstructStage(self):
     sync_stage = sync_stages.ManifestVersionedSyncStage(self._run)
-    return completion_stages.MasterSlaveSyncCompletionStage(
-        self._run, sync_stage, success=True)
-
-  def testPerformStage(self):
-    """Test PerformStage on master-paladin."""
-    stage = self.ConstructStage()
 
     scheduled_slaves_list = {
         ('build_1', 'buildbucket_id_1', 1),
@@ -331,6 +325,12 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
     }
     self._run.attrs.metadata.ExtendKeyListWithList(
         'scheduled_slaves', scheduled_slaves_list)
+    return completion_stages.MasterSlaveSyncCompletionStage(
+        self._run, sync_stage, success=True)
+
+  def testPerformStage(self):
+    """Test PerformStage on master-paladin."""
+    stage = self.ConstructStage()
 
     stage._run.attrs.manifest_manager = mock.MagicMock()
 
@@ -346,11 +346,6 @@ class MasterSlaveSyncCompletionStageTestWithMasterPaladin(
 
     with self.assertRaises(completion_stages.ImportantBuilderFailedException):
       stage.PerformStage()
-
-    self.assertEqual(stage.build_info_dict['build_1']['buildbucket_id'],
-                     'buildbucket_id_1')
-    self.assertEqual(stage.build_info_dict['build_2']['buildbucket_id'],
-                     'buildbucket_id_2')
 
   def testAnnotateBuildStatusFromBuildbucket(self):
     """Test AnnotateBuildStatusFromBuildbucket"""

@@ -579,9 +579,9 @@ class SyncStage(generic_stages.BuilderStage):
                           % (slave_name, current_ts, e))
 
     self._run.attrs.metadata.ExtendKeyListWithList(
-        'scheduled_slaves', scheduled_slave_builds)
+        constants.METADATA_SCHEDULED_SLAVES, scheduled_slave_builds)
     self._run.attrs.metadata.ExtendKeyListWithList(
-        'unscheduled_slaves', unscheduled_slave_builds)
+        constants.METADATA_UNSCHEDULED_SLAVES, unscheduled_slave_builds)
 
   @failures_lib.SetFailureType(failures_lib.InfrastructureFailure)
   def PerformStage(self):
@@ -706,7 +706,8 @@ class ManifestVersionedSyncStage(SyncStage):
         force=self._force,
         branch=self._run.manifest_branch,
         dry_run=dry_run,
-        master=self._run.config.master,
+        config=self._run.config,
+        metadata=self._run.attrs.metadata,
         buildbucket_client=self.buildbucket_client))
 
   def _SetAndroidVersionIfApplicable(self, manifest):
@@ -935,7 +936,8 @@ class MasterSlaveLKGMSyncStage(ManifestVersionedSyncStage):
         force=self._force,
         branch=self._run.manifest_branch,
         dry_run=self._run.options.debug,
-        master=self._run.config.master,
+        config=self._run.config,
+        metadata=self._run.attrs.metadata,
         buildbucket_client=self.buildbucket_client)
 
   def Initialize(self):

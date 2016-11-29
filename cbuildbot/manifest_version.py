@@ -454,7 +454,7 @@ class SlaveStatus(object):
     self.start_time = start_time
     self.builders_array = builders_array
     self.previous_completed = previous_completed
-    self.completed = {}
+    self.completed = None
 
     self.build_info_dict = build_info_dict
 
@@ -620,7 +620,7 @@ class BuildSpecsManager(object):
 
   def __init__(self, source_repo, manifest_repo, build_names, incr_type, force,
                branch, manifest=constants.DEFAULT_MANIFEST, dry_run=True,
-               master=False, buildbucket_client=None):
+               config=None, metadata=None, buildbucket_client=None):
     """Initializes a build specs manager.
 
     Args:
@@ -634,7 +634,9 @@ class BuildSpecsManager(object):
       branch: Branch this builder is running on.
       manifest: Manifest to use for checkout. E.g. 'full' or 'buildtools'.
       dry_run: Whether we actually commit changes we make or not.
-      master: Whether we are the master builder.
+      config: Instance of config_lib.BuildConfig. Config dict of this builder.
+      metadata: Instance of metadata_lib.CBuildbotMetadata. Metadata of this
+                builder.
       buildbucket_client: Instance of buildbucket_lib.buildbucket_client.
     """
     self.cros_source = source_repo
@@ -651,7 +653,9 @@ class BuildSpecsManager(object):
     self.branch = branch
     self.manifest = manifest
     self.dry_run = dry_run
-    self.master = master
+    self.config = config
+    self.master = False if config is None else config.master
+    self.metadata = metadata
     self.buildbucket_client = buildbucket_client
 
     # Directories and specifications are set once we load the specs.
@@ -909,7 +913,7 @@ class BuildSpecsManager(object):
     return status_dict
 
   def GetSlaveStatus(self, start_time, builders_array, builders_completed,
-                     master_build_id, build_info_dict):
+                     master_build_id):
     """Get statuses of slaves.
 
     When build_info_dict is None, get slave statuses from CIDB given
@@ -921,25 +925,25 @@ class BuildSpecsManager(object):
       builders_array: A list of the names of build configs to check.
       builders_completed: A list of builds already completed.
       master_build_id: Master build id of the slave builds.
-      build_info_dict: A dict mapping build config name to its buildbucket
-          information dict(current buildbucket_id, current created_ts, retry #).
-          See buildbucket_lib.GetScheduledBuildDict for details.
 
     Returns:
       An instance of SlaveStatus presenting the slave statues.
     """
-    if build_info_dict is None:
-      return SlaveStatus(
-          self.GetSlaveStatusesFromCIDB(master_build_id),
-          start_time, builders_array, builders_completed)
-    else:
+    if (self.config is not None and
+        self.metadata is not None and
+        config_lib.UseBuildbucketScheduler(self.config)):
+      build_info_dict = buildbucket_lib.GetBuildInfoDict(self.metadata)
+
       return SlaveStatus(
           self.GetSlaveStatusesFromBuildbucket(build_info_dict),
           start_time, builders_array, builders_completed,
           build_info_dict=build_info_dict)
+    else:
+      return SlaveStatus(
+          self.GetSlaveStatusesFromCIDB(master_build_id),
+          start_time, builders_array, builders_completed)
 
-  def GetBuildersStatus(self, master_build_id, builders_array, timeout=3 * 60,
-                        build_info_dict=None):
+  def GetBuildersStatus(self, master_build_id, builders_array, timeout=3 * 60):
     """Get the statuses of the slave builders of the master.
 
     This function checks the status of slaves in |builders_array|. It
@@ -951,9 +955,6 @@ class BuildSpecsManager(object):
       master_build_id: Master build id to check.
       builders_array: A list of the names of build configs to check.
       timeout: Number of seconds to wait for the results.
-      build_info_dict: A dict mapping build config name to its buildbucket
-          information dict(current buildbucket_id, current created_ts, retry #).
-          See buildbucket_lib.GetScheduledBuildDict for details.
 
     Returns:
       A build_config name-> status dictionary of build statuses.
@@ -971,7 +972,7 @@ class BuildSpecsManager(object):
           lambda statuses: statuses.ShouldWait(),
           lambda: self.GetSlaveStatus(
               start_time, builders_array, builders_completed,
-              master_build_id, build_info_dict),
+              master_build_id),
           timeout,
           period=self.SLEEP_TIMEOUT,
           side_effect_func=_PrintRemainingTime)

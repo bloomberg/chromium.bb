@@ -13,6 +13,7 @@ from chromite.cbuildbot import buildbucket_lib
 from chromite.lib import auth
 from chromite.lib import constants
 from chromite.lib import cros_test_lib
+from chromite.lib import metadata_lib
 
 class BuildbucketClientTest(cros_test_lib.MockTestCase):
   """Tests for BuildbucketClient."""
@@ -416,3 +417,16 @@ class BuildbucketLibTest(cros_test_lib.MockTestCase):
 
     build_dict = buildbucket_lib.GetScheduledBuildDict(None)
     self.assertEqual(build_dict, {})
+
+  def testGetBuildInfo(self):
+    """Test UpdateBuildInfoDict with metadata and config."""
+    metadata = metadata_lib.CBuildbotMetadata()
+    slaves = [('config_1', 'bb_id_1', 0),
+              ('config_1', 'bb_id_2', 1)]
+    metadata.ExtendKeyListWithList(
+        constants.METADATA_SCHEDULED_SLAVES, slaves)
+
+    build_info_dict = buildbucket_lib.GetBuildInfoDict(metadata)
+    self.assertEqual(build_info_dict['config_1']['retry'], 1)
+    self.assertEqual(build_info_dict['config_1']['buildbucket_id'],
+                     'bb_id_2')

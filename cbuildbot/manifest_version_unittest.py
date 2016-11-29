@@ -15,10 +15,11 @@ from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import manifest_version
 from chromite.cbuildbot import repository
 from chromite.lib import constants
-from chromite.lib import failures_lib
+from chromite.lib import config_lib
 from chromite.lib import cros_build_lib_unittest
-from chromite.lib import git
 from chromite.lib import cros_test_lib
+from chromite.lib import failures_lib
+from chromite.lib import git
 from chromite.lib import osutils
 
 
@@ -170,12 +171,13 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
     osutils.SafeMakedirs(self.tmpmandir)
     self.manager = None
 
-  def BuildManager(self, buildbucket_client=None):
+  def BuildManager(self, config=None, metadata=None,
+                   buildbucket_client=None):
     repo = repository.RepoRepository(
         self.source_repo, self.tempdir, self.branch)
     manager = manifest_version.BuildSpecsManager(
         repo, self.manifest_repo, self.build_names, self.incr_type, False,
-        branch=self.branch, dry_run=True,
+        branch=self.branch, dry_run=True, config=config, metadata=metadata,
         buildbucket_client=buildbucket_client)
     manager.manifest_dir = self.tmpmandir
     # Shorten the sleep between attempts.
@@ -472,8 +474,12 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
                      'GetBuildStatus',
                      side_effect=build_statuses)
 
+    self.PatchObject(buildbucket_lib,
+                     'GetBuildInfoDict',
+                     return_value=buildbucket_id_dict)
+
     return self.manager.GetBuildersStatus(
-        'builderid', builders, build_info_dict=buildbucket_id_dict)
+        'builderid', builders)
 
   def testGetBuildersStatusBothFinishedWithBuildbucket(self):
     """Tests GetBuilderStatus where both Buildbucket builds have finished."""
@@ -482,7 +488,11 @@ class BuildSpecsManagerTest(cros_test_lib.MockTempDirTestCase):
         'build2': {'buildbucket_id': 'id_2', 'retry': 0}
     }
     buildbucket_client_mock = mock.Mock()
-    self.manager = self.BuildManager(buildbucket_client=buildbucket_client_mock)
+    config = config_lib.BuildConfig(name='master-paladin',
+                                    master=True)
+    self.manager = self.BuildManager(
+        config=config, metadata=mock.Mock(),
+        buildbucket_client=buildbucket_client_mock)
     status_runs = [{
         'build1': {
             'status': constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED,

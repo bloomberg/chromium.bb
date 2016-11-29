@@ -997,3 +997,10 @@ CHROMEOS_SERVICE_ACCOUNT = os.path.join('/', 'creds', 'service_accounts',
 TRYSERVER_BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
 CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
+
+# TODO(nxia): consolidate all run.metadata key constants,
+# add a unit test to avoid duplicated keys in run_metadata
+
+# Builder_run metadata keys
+METADATA_SCHEDULED_SLAVES = 'scheduled_slaves'
+METADATA_UNSCHEDULED_SLAVES = 'unscheduled_slaves'
