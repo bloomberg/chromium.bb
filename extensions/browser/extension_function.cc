@@ -289,7 +289,8 @@ IOThreadExtensionFunction* ExtensionFunction::AsIOThreadExtensionFunction() {
 bool ExtensionFunction::HasPermission() {
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
-          name_, extension_.get(), source_context_type_, source_url());
+          name_, extension_.get(), source_context_type_, source_url(),
+          extensions::CheckAliasStatus::ALLOWED);
   return availability.is_available();
 }
 

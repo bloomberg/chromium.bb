@@ -588,7 +588,8 @@ void EventRouter::DispatchEventToProcess(
 
   Feature::Availability availability =
       ExtensionAPI::GetSharedInstance()->IsAvailable(
-          event->event_name, extension, target_context, listener_url);
+          event->event_name, extension, target_context, listener_url,
+          CheckAliasStatus::ALLOWED);
   if (!availability.is_available()) {
     // It shouldn't be possible to reach here, because access is checked on
     // registration. However, for paranoia, check on dispatch as well.

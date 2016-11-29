@@ -94,6 +94,10 @@ class Feature {
   // Note that this arg is passed as a StringPiece to avoid a lot of bloat from
   // inlined std::string code.
   void set_name(base::StringPiece name);
+  const std::string& alias() const { return alias_; }
+  void set_alias(base::StringPiece alias);
+  const std::string& source() const { return source_; }
+  void set_source(base::StringPiece source);
   bool no_parent() const { return no_parent_; }
 
   // Gets the platform the code is currently running on.
@@ -150,6 +154,8 @@ class Feature {
 
  protected:
   std::string name_;
+  std::string alias_;
+  std::string source_;
   bool no_parent_;
   // TODO(devlin): Remove this once we set the feature channel for tests.
   bool check_channel_;

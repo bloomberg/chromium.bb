@@ -33,6 +33,7 @@ class RenderFrame;
 }
 
 namespace extensions {
+enum class CheckAliasStatus;
 class Extension;
 
 // Extensions wrapper for a v8::Context.
@@ -126,6 +127,11 @@ class ScriptContext : public RequestSender::Source {
 
   // Returns the availability of the API |api_name|.
   Feature::Availability GetAvailability(const std::string& api_name);
+  // Returns the availability of the API |api_name|.
+  // |check_alias| Whether API that has an alias that is available should be
+  // considered available (even if the API itself is not available).
+  Feature::Availability GetAvailability(const std::string& api_name,
+                                        CheckAliasStatus check_alias);
 
   // Returns a string description of the type of context this is.
   std::string GetContextTypeDescription() const;
@@ -152,10 +158,12 @@ class ScriptContext : public RequestSender::Source {
   // TODO(kalman): Make this a constructor parameter (as an origin).
   void set_url(const GURL& url) { url_ = url; }
 
-  // Returns whether the API |api| or any part of the API could be
-  // available in this context without taking into account the context's
-  // extension.
-  bool IsAnyFeatureAvailableToContext(const extensions::Feature& api);
+  // Returns whether the API |api| or any part of the API could be available in
+  // this context without taking into account the context's extension.
+  // |check_alias| Whether the API should be considered available if it has an
+  // alias that is available.
+  bool IsAnyFeatureAvailableToContext(const extensions::Feature& api,
+                                      CheckAliasStatus check_alias);
 
   // Utility to get the URL we will match against for a frame. If the frame has
   // committed, this is the commited URL. Otherwise it is the provisional URL.

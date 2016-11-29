@@ -9,6 +9,7 @@
 #include "content/public/child/v8_value_converter.h"
 #include "content/public/common/content_switches.h"
 #include "extensions/common/extension.h"
+#include "extensions/common/extension_api.h"
 #include "extensions/common/extension_urls.h"
 #include "extensions/common/extensions_client.h"
 #include "extensions/common/features/feature.h"
@@ -178,13 +179,13 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
       // contexts, because it's too expensive to run the full bindings code.
       // All of the same permission checks will still apply.
       if (context->GetAvailability("app").is_available())
-        RegisterBinding("app", context);
+        RegisterBinding("app", "app", context);
       if (context->GetAvailability("webstore").is_available())
-        RegisterBinding("webstore", context);
+        RegisterBinding("webstore", "webstore", context);
       if (context->GetAvailability("dashboardPrivate").is_available())
-        RegisterBinding("dashboardPrivate", context);
+        RegisterBinding("dashboardPrivate", "dashboardPrivate", context);
       if (IsRuntimeAvailableToContext(context))
-        RegisterBinding("runtime", context);
+        RegisterBinding("runtime", "runtime", context);
       break;
 
     case Feature::SERVICE_WORKER_CONTEXT:
@@ -217,10 +218,15 @@ void JsExtensionBindingsSystem::UpdateBindingsForContext(
           continue;
         }
 
-        if (context->IsAnyFeatureAvailableToContext(*map_entry.second)) {
+        if (context->IsAnyFeatureAvailableToContext(
+                *map_entry.second, CheckAliasStatus::NOT_ALLOWED)) {
+          // Check if the API feature is indeed an alias. If it is, the API
+          // should use source API bindings as its own.
+          const std::string& source = map_entry.second->source();
           // TODO(lazyboy): RegisterBinding() uses |source_map_|, any thread
           // safety issue?
-          RegisterBinding(map_entry.first, context);
+          RegisterBinding(source.empty() ? map_entry.first : source,
+                          map_entry.first, context);
         }
       }
       break;
@@ -266,11 +272,13 @@ void JsExtensionBindingsSystem::DispatchEventInContext(
       arguments.data());
 }
 
-void JsExtensionBindingsSystem::RegisterBinding(const std::string& api_name,
-                                                ScriptContext* context) {
+void JsExtensionBindingsSystem::RegisterBinding(
+    const std::string& api_name,
+    const std::string& api_bind_name,
+    ScriptContext* context) {
   std::string bind_name;
   v8::Local<v8::Object> bind_object =
-      GetOrCreateBindObjectIfAvailable(api_name, &bind_name, context);
+      GetOrCreateBindObjectIfAvailable(api_bind_name, &bind_name, context);
 
   // Empty if the bind object failed to be created, probably because the
   // extension overrode chrome with a non-object, e.g. window.chrome = true.
@@ -298,10 +306,10 @@ void JsExtensionBindingsSystem::RegisterBinding(const std::string& api_name,
   ModuleSystem* module_system = context->module_system();
   if (!source_map_->Contains(api_name)) {
     module_system->RegisterNativeHandler(
-        api_name,
+        api_bind_name,
         std::unique_ptr<NativeHandler>(
             new BindingGeneratingNativeHandler(context, api_name, "binding")));
-    module_system->SetNativeLazyField(bind_object, bind_name, api_name,
+    module_system->SetNativeLazyField(bind_object, bind_name, api_bind_name,
                                       "binding");
   } else {
     module_system->SetLazyField(bind_object, bind_name, api_name, "binding");

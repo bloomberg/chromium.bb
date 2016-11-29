@@ -170,10 +170,12 @@ void ExtensionAPI::RegisterDependencyProvider(const std::string& name,
   dependency_providers_[name] = provider;
 }
 
-bool ExtensionAPI::IsAnyFeatureAvailableToContext(const Feature& api,
-                                                  const Extension* extension,
-                                                  Feature::Context context,
-                                                  const GURL& url) {
+bool ExtensionAPI::IsAnyFeatureAvailableToContext(
+    const Feature& api,
+    const Extension* extension,
+    Feature::Context context,
+    const GURL& url,
+    CheckAliasStatus check_alias) {
   FeatureProviderMap::iterator provider = dependency_providers_.find("api");
   CHECK(provider != dependency_providers_.end());
 
@@ -189,19 +191,40 @@ bool ExtensionAPI::IsAnyFeatureAvailableToContext(const Feature& api,
     if ((*it)->IsAvailableToContext(extension, context, url).is_available())
       return true;
   }
-  return false;
+
+  if (check_alias != CheckAliasStatus::ALLOWED)
+    return false;
+
+  const std::string& alias_name = api.alias();
+  if (alias_name.empty())
+    return false;
+
+  const Feature* alias = provider->second->GetFeature(alias_name);
+  CHECK(alias) << "Cannot find alias feature " << alias_name
+               << " for API feature " << api.name();
+  return IsAnyFeatureAvailableToContext(*alias, extension, context, url,
+                                        CheckAliasStatus::NOT_ALLOWED);
 }
 
 Feature::Availability ExtensionAPI::IsAvailable(const std::string& full_name,
                                                 const Extension* extension,
                                                 Feature::Context context,
-                                                const GURL& url) {
+                                                const GURL& url,
+                                                CheckAliasStatus check_alias) {
   Feature* feature = GetFeatureDependency(full_name);
   if (!feature) {
     return Feature::Availability(Feature::NOT_PRESENT,
                                  std::string("Unknown feature: ") + full_name);
   }
-  return feature->IsAvailableToContext(extension, context, url);
+
+  Feature::Availability availability =
+      feature->IsAvailableToContext(extension, context, url);
+  if (availability.is_available() || check_alias != CheckAliasStatus::ALLOWED)
+    return availability;
+
+  Feature::Availability alias_availability =
+      IsAliasAvailable(full_name, feature, extension, context, url);
+  return alias_availability.is_available() ? alias_availability : availability;
 }
 
 base::StringPiece ExtensionAPI::GetSchemaStringPiece(
@@ -302,6 +325,41 @@ bool ExtensionAPI::IsKnownAPI(const std::string& name,
                               ExtensionsClient* client) {
   return schemas_.find(name) != schemas_.end() ||
          client->IsAPISchemaGenerated(name);
+}
+
+Feature::Availability ExtensionAPI::IsAliasAvailable(
+    const std::string& full_name,
+    Feature* feature,
+    const Extension* extension,
+    Feature::Context context,
+    const GURL& url) {
+  const std::string& alias = feature->alias();
+  if (alias.empty())
+    return Feature::Availability(Feature::NOT_PRESENT, "Alias not defined");
+
+  FeatureProviderMap::iterator provider = dependency_providers_.find("api");
+  CHECK(provider != dependency_providers_.end());
+
+  // Check if there is a child feature associated with full name for alias API.
+  // This is to ensure that the availability of the feature associated with the
+  // aliased |full_name| is properly determined in case the feature in question
+  // is a child feature. For example, if API foo has an alias fooAlias, which
+  // has a child feature fooAlias.method, aliased foo.method availability should
+  // be determined using fooAlias.method feature, rather than fooAlias feature.
+  std::string child_name;
+  GetAPINameFromFullName(full_name, &child_name);
+  std::string full_alias_name = alias + "." + child_name;
+  Feature* alias_feature = provider->second->GetFeature(full_alias_name);
+
+  // If there is no child feature, use the alias API feature to check
+  // availability.
+  if (!alias_feature)
+    alias_feature = provider->second->GetFeature(alias);
+
+  CHECK(alias_feature) << "Cannot find alias feature " << alias
+                       << " for API feature " << feature->name();
+
+  return alias_feature->IsAvailableToContext(extension, context, url);
 }
 
 }  // namespace extensions

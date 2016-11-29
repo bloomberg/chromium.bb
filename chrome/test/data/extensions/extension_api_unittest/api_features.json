@@ -106,5 +106,19 @@
     "channel": "stable",
     "contexts": ["content_script", "blessed_extension", "unblessed_extension"],
     "session_types": ["kiosk", "regular"]
+  },
+  "alias_api": {
+    "channel": "stable",
+    "source": "alias_api_source",
+    "contexts": ["content_script", "blessed_extension", "unblessed_extension"]
+  },
+  "alias_api.foo": {
+    "channel": "dev",
+    "contexts": ["blessed_extension"]
+  },
+  "alias_api_source": {
+    "channel": "dev",
+    "alias": "alias_api",
+    "contexts": ["blessed_extension"]
   }
 }

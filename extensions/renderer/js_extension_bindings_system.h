@@ -37,7 +37,9 @@ class JsExtensionBindingsSystem : public ExtensionBindingsSystem {
   RequestSender* GetRequestSender() override;
 
  private:
-  void RegisterBinding(const std::string& api_name, ScriptContext* context);
+  void RegisterBinding(const std::string& api_name,
+                       const std::string& api_bind_name,
+                       ScriptContext* context);
 
   ResourceBundleSourceMap* source_map_ = nullptr;
 

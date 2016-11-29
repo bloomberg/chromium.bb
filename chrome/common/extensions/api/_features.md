@@ -119,6 +119,52 @@ feature.
 
 The following properties are supported in the feature system.
 
+### alias
+
+The `alias` property specifies that the feature has an associated alias feature.
+An alias feature is a feature that provides the same functionality as it's
+source feature (i.e. the feature referenced by the alias). For example, an API
+alias provides bindings for the source API under a different name. If one wanted
+to declare an API alias, they would have to introduce an API alias feature -
+defined as a feature that has `source` property, and set `alias` property on
+the original feature. For example, the following would introduce an API alias
+feature named `featureAlias` for API `feature`:
+```none
+{
+  "feature": {
+    "contexts": ["blessed_extension"],
+    "channel": "dev",
+    "alias": "featureAlias"
+  },
+  "featureAlias": {
+   "contexts": ["blessed_extension"],
+   "channel": "dev",
+   "source": "feature"
+  }
+}
+```
+`featureAlias[source]` value specifies that `featureAlias` is an alias for API
+feature `feature`
+
+`feature[alias]` value specifies that `feature` API has an API alias
+`featureAlias`
+
+When feature `featureAlias` is available, `feature` bindings would be accessible
+using `feauteAlias`. In other words `chrome.featureAlias` would point to an API
+with the bindings equivalent to the bindings of `feature` API.
+
+The alias API will inherit the schema from the source API, but it will not
+respect the source API child features. To accomplish parity with the source API
+feature children, identical child features should be added for the alias API.
+
+Note that to properly create an alias, both `source` property on the alias
+feature and `alias` property on the aliased feature have to be set.
+
+Alias features are only available for API features, and each API can have at
+most one alias.
+For complex features, `alias` property will be set to the `alias` value of the
+first component simple feature that has it set.
+
 ### blacklist
 
 The `blacklist` property specifies a list of ID hashes for extensions that
@@ -261,9 +307,18 @@ logged in the current session. Session types to which feature can be restricted
 are only supported on Chrome OS - features restricted to set of session types
 will be disabled on other platforms. Also, note that all currently supported
 session types imply that a user is logged into the session (i.e. features that
-use 'session_types' property will be disabled when a user is not logged in).
+use `session_types` property will be disabled when a user is not logged in).
 
 The accepted values are lists of strings from `regular` and `kiosk`.
+
+### source
+
+The `source` property specifies that the feature is an alias for the feature
+specified by the property value, and is only allowed for API features.
+For more information about alias features, see [alias](#alias) property documentation.
+
+For complex features, `source` property will be set to the `source` value of the
+first component simple feature that has it set.
 
 ### whitelist
 

@@ -221,6 +221,12 @@ void ScriptContext::SafeCallFunction(const v8::Local<v8::Function>& function,
 
 Feature::Availability ScriptContext::GetAvailability(
     const std::string& api_name) {
+  return GetAvailability(api_name, CheckAliasStatus::ALLOWED);
+}
+
+Feature::Availability ScriptContext::GetAvailability(
+    const std::string& api_name,
+    CheckAliasStatus check_alias) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (base::StartsWith(api_name, "test", base::CompareCase::SENSITIVE)) {
     bool allowed = base::CommandLine::ForCurrentProcess()->
@@ -239,8 +245,8 @@ Feature::Availability ScriptContext::GetAvailability(
       (api_name == "runtime.connect" || api_name == "runtime.sendMessage")) {
     extension = NULL;
   }
-  return ExtensionAPI::GetSharedInstance()->IsAvailable(api_name, extension,
-                                                        context_type_, url());
+  return ExtensionAPI::GetSharedInstance()->IsAvailable(
+      api_name, extension, context_type_, url(), check_alias);
 }
 
 void ScriptContext::DispatchEvent(const char* event_name,
@@ -265,13 +271,15 @@ std::string ScriptContext::GetEffectiveContextTypeDescription() const {
   return GetContextTypeDescriptionString(effective_context_type_);
 }
 
-bool ScriptContext::IsAnyFeatureAvailableToContext(const Feature& api) {
+bool ScriptContext::IsAnyFeatureAvailableToContext(
+    const Feature& api,
+    CheckAliasStatus check_alias) {
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(lazyboy): Decide what we should do for SERVICE_WORKER_CONTEXT, where
   // web_frame() is null.
   GURL url = web_frame() ? GetDataSourceURLForFrame(web_frame()) : url_;
   return ExtensionAPI::GetSharedInstance()->IsAnyFeatureAvailableToContext(
-      api, extension(), context_type(), url);
+      api, extension(), context_type(), url, check_alias);
 }
 
 // static

@@ -30,6 +30,16 @@ class Extension;
 class ExtensionsClient;
 class Feature;
 
+// Used when testing Feature availability to specify whether feature aliases
+// should be ignored or not - i.e. if a feature exposed only through an alias
+// should be considered available.
+enum class CheckAliasStatus {
+  // Includes aliases in an availability check.
+  ALLOWED,
+  // Ignores aliases during an availability check.
+  NOT_ALLOWED
+};
+
 // C++ Wrapper for the JSON API definitions in chrome/common/extensions/api/.
 //
 // WARNING: This class is accessed on multiple threads in the browser process
@@ -85,20 +95,29 @@ class ExtensionAPI {
   // |extension| or |url| (or both) may determine its availability, but this is
   // up to the configuration of the individual feature.
   //
+  // |check_alias| determines whether it should be tested whether the API
+  // is available through an alias.
+  //
   // TODO(kalman): This is just an unnecessary combination of finding a Feature
   // then calling Feature::IsAvailableToContext(..) on it. Just provide that
   // FindFeature function and let callers compose if they want.
   Feature::Availability IsAvailable(const std::string& api_full_name,
                                     const Extension* extension,
                                     Feature::Context context,
-                                    const GURL& url);
+                                    const GURL& url,
+                                    CheckAliasStatus check_alias);
 
-  // Determines whether an API, or any parts of that API, are available in
+  // Determines whether an API, or any parts of that API, can be exposed to
   // |context|.
+  //
+  // |check_alias| determines whether it should be tested whether the API
+  // is available through an alias.
+  //
   bool IsAnyFeatureAvailableToContext(const Feature& api,
                                       const Extension* extension,
                                       Feature::Context context,
-                                      const GURL& url);
+                                      const GURL& url,
+                                      CheckAliasStatus check_alias);
 
   // Gets the StringPiece for the schema specified by |api_name|.
   base::StringPiece GetSchemaStringPiece(const std::string& api_name);
@@ -134,6 +153,14 @@ class ExtensionAPI {
   // Returns true if there exists an API with |name|. Declared virtual for
   // testing purposes.
   virtual bool IsKnownAPI(const std::string& name, ExtensionsClient* client);
+
+  // Checks if |full_name| is available to provided context and extension under
+  // associated API's alias name.
+  Feature::Availability IsAliasAvailable(const std::string& full_name,
+                                         Feature* feature,
+                                         const Extension* extension,
+                                         Feature::Context context,
+                                         const GURL& url);
 
   bool default_configuration_initialized_;
 

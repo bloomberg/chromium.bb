@@ -54,4 +54,12 @@ void Feature::set_name(base::StringPiece name) {
   name_ = name.as_string();
 }
 
+void Feature::set_alias(base::StringPiece alias) {
+  alias_ = alias.as_string();
+}
+
+void Feature::set_source(base::StringPiece source) {
+  source_ = source.as_string();
+}
+
 }  // namespace extensions

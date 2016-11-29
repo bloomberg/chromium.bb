@@ -124,7 +124,8 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
       continue;
     }
 
-    if (!context->IsAnyFeatureAvailableToContext(*map_entry.second))
+    if (!context->IsAnyFeatureAvailableToContext(*map_entry.second,
+                                                 CheckAliasStatus::NOT_ALLOWED))
       continue;
 
     // TODO(devlin): Make this lazy by adding a getter.
