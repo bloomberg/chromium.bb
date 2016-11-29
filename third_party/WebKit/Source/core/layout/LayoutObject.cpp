@@ -1259,7 +1259,11 @@ void LayoutObject::adjustPreviousPaintInvalidationForScrollIfNeeded(
 
 void LayoutObject::clearPreviousVisualRects() {
   setPreviousVisualRect(LayoutRect());
-  // After clearing ("invalidating" the visual rects, mark this object as
+  ObjectPaintInvalidator(*this).setPreviousLocationInBacking(LayoutPoint());
+  // Ensure check paint invalidation of subtree that would be triggered by
+  // location change if we had valid previous location.
+  setMayNeedPaintInvalidationSubtree();
+  // After clearing ("invalidating") the visual rects, mark this object as
   // needing to re-compute them.
   setShouldDoFullPaintInvalidation();
 }
