@@ -1792,6 +1792,22 @@ TEST_P(FtpNetworkTransactionTest, ExtraQuitResponses) {
   ExecuteTransaction(&ctrl_socket, "ftp://host/", ERR_INVALID_RESPONSE);
 }
 
+TEST_P(FtpNetworkTransactionTest, InvalidRemoteDirectory) {
+  FtpSocketDataProviderFileDownload ctrl_socket;
+  TransactionFailHelper(
+      &ctrl_socket, "ftp://host/file", FtpSocketDataProvider::PRE_PWD,
+      FtpSocketDataProvider::PRE_QUIT,
+      "257 \"foo\rbar\" is your current location\r\n", ERR_INVALID_RESPONSE);
+}
+
+TEST_P(FtpNetworkTransactionTest, InvalidRemoteDirectory2) {
+  FtpSocketDataProviderFileDownload ctrl_socket;
+  TransactionFailHelper(
+      &ctrl_socket, "ftp://host/file", FtpSocketDataProvider::PRE_PWD,
+      FtpSocketDataProvider::PRE_QUIT,
+      "257 \"foo\nbar\" is your current location\r\n", ERR_INVALID_RESPONSE);
+}
+
 INSTANTIATE_TEST_CASE_P(FTP,
                         FtpNetworkTransactionTest,
                         ::testing::Values(AF_INET, AF_INET6));

@@ -36,8 +36,8 @@ const char kCRLF[] = "\r\n";
 
 const int kCtrlBufLen = 1024;
 
-// Returns true if |input| can be safely used as a part of FTP command.
-bool IsValidFTPCommandString(const std::string& input) {
+// Returns true if |input| can be safely used as a part of an FTP command.
+bool IsValidFTPCommandSubstring(const std::string& input) {
   // RFC 959 only allows ASCII strings, but at least Firefox can send non-ASCII
   // characters in the command if the request path contains them. To be
   // compatible, we do the same and allow non-ASCII characters in a command.
@@ -462,7 +462,7 @@ int FtpNetworkTransaction::SendFtpCommand(const std::string& command,
   DCHECK(!write_command_buf_.get());
   DCHECK(!write_buf_.get());
 
-  if (!IsValidFTPCommandString(command)) {
+  if (!IsValidFTPCommandSubstring(command)) {
     // Callers should validate the command themselves and return a more specific
     // error code.
     NOTREACHED();
@@ -505,7 +505,7 @@ std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
       UnescapeRule::SPACES |
       UnescapeRule::URL_SPECIAL_CHARS_EXCEPT_PATH_SEPARATORS;
   // This may unescape to non-ASCII characters, but we allow that. See the
-  // comment for IsValidFTPCommandString.
+  // comment for IsValidFTPCommandSubstring.
   path = UnescapeURLComponent(path, unescape_rules);
 
   if (system_type_ == SYSTEM_TYPE_VMS) {
@@ -515,7 +515,7 @@ std::string FtpNetworkTransaction::GetRequestPathForFtpCommand(
       path = FtpUtil::UnixFilePathToVMS(path);
   }
 
-  DCHECK(IsValidFTPCommandString(path));
+  DCHECK(IsValidFTPCommandSubstring(path));
   return path;
 }
 
@@ -756,7 +756,7 @@ int FtpNetworkTransaction::DoCtrlWriteComplete(int result) {
 int FtpNetworkTransaction::DoCtrlWriteUSER() {
   std::string command = "USER " + base::UTF16ToUTF8(credentials_.username());
 
-  if (!IsValidFTPCommandString(command))
+  if (!IsValidFTPCommandSubstring(command))
     return Stop(ERR_MALFORMED_IDENTITY);
 
   next_state_ = STATE_CTRL_READ;
@@ -786,7 +786,7 @@ int FtpNetworkTransaction::ProcessResponseUSER(
 int FtpNetworkTransaction::DoCtrlWritePASS() {
   std::string command = "PASS " + base::UTF16ToUTF8(credentials_.password());
 
-  if (!IsValidFTPCommandString(command))
+  if (!IsValidFTPCommandSubstring(command))
     return Stop(ERR_MALFORMED_IDENTITY);
 
   next_state_ = STATE_CTRL_READ;
@@ -896,6 +896,11 @@ int FtpNetworkTransaction::ProcessResponsePWD(const FtpCtrlResponse& response) {
         line = FtpUtil::VMSPathToUnix(line);
       if (!line.empty() && line.back() == '/')
         line.erase(line.length() - 1);
+      // Fail if the "path" contains characters not allowed in commands.
+      // This does mean that files with CRs or LFs in their names aren't
+      // handled, but that's probably for the best.
+      if (!IsValidFTPCommandSubstring(line))
+        return Stop(ERR_INVALID_RESPONSE);
       current_remote_directory_ = line;
       next_state_ = STATE_CTRL_WRITE_TYPE;
       break;
