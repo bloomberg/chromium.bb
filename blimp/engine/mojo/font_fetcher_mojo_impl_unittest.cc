@@ -55,18 +55,20 @@ class FontFetcherMojoImplUnittest : public testing::Test {
       : font_fetcher_mojo_impl_(new FakeFontDataFetcher()) {}
   ~FontFetcherMojoImplUnittest() override {}
 
+ protected:
+  base::MessageLoop message_loop_;
   FontFetcherMojoImpl font_fetcher_mojo_impl_;
 };
 
-// TODO(mlliu): add tests later to do a full IPC test, calling the FontFetcher
-// API via the corresponding Mojo client interface.
 TEST_F(FontFetcherMojoImplUnittest, VerifyWriteToDataPipe) {
+  mojom::FontFetcherPtr mojo_ptr;
+  font_fetcher_mojo_impl_.BindRequest(GetProxy(&mojo_ptr));
+
   // Expect that dummy font data is written correctly to a Mojo DataPipe.
-  font_fetcher_mojo_impl_.GetFontStream(kFakeHash,
-                                        base::Bind(&VerifyDataWriteCorrectly));
+  mojo_ptr->GetFontStream(kFakeHash, base::Bind(&VerifyDataWriteCorrectly));
 
   // Expect empty handle if the font stream is empty.
-  font_fetcher_mojo_impl_.GetFontStream("", base::Bind(&VerifyEmptyDataWrite));
+  mojo_ptr->GetFontStream("", base::Bind(&VerifyEmptyDataWrite));
 }
 
 }  // namespace
