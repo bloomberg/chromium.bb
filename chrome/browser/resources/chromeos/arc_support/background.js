@@ -568,7 +568,8 @@ function showURLOverlay(url) {
  * the content of terms view.
  */
 function showPrivacyPolicyOverlay() {
-  termsView.executeScript({code: 'getPrivacyPolicyLink();'}, function(results) {
+  var details = {code: 'getPrivacyPolicyLink();'};
+  termsPage.termsView_.executeScript(details, function(results) {
     if (results && results.length == 1 && typeof results[0] == 'string') {
       showURLOverlay(results[0]);
     } else {
