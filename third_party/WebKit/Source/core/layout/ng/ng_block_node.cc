@@ -234,10 +234,12 @@ bool NGBlockNode::CanUseNewLayout() {
 }
 
 bool NGBlockNode::HasInlineChildren() {
-  if (!layout_box_)
+  if (!layout_box_ || !layout_box_->isLayoutBlockFlow())
     return false;
 
   const LayoutBlockFlow* block_flow = toLayoutBlockFlow(layout_box_);
+  if (!block_flow->childrenInline())
+    return false;
   LayoutObject* child = block_flow->firstChild();
   while (child) {
     if (child->isInline())
