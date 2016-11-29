@@ -70,6 +70,11 @@ struct PaintPropertyTreeBuilderContext {
   // Therefore, we don't need extra bookkeeping for effect nodes and can
   // generate the effect tree from a DOM-order traversal.
   const EffectPaintPropertyNode* currentEffect = nullptr;
+  // Some effects are spatial, i.e. may refer to input pixels outside of output
+  // clip. The cull rect for its input shall be derived from its output clip.
+  // This variable represents the input cull of current effect, also serves as
+  // output clip of child effects that don't have a hard clip.
+  const ClipPaintPropertyNode* inputClipOfCurrentEffect = nullptr;
 
   bool isUnderMultiColumnSpanner = false;
 };

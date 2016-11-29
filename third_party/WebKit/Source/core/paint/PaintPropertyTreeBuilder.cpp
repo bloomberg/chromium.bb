@@ -26,6 +26,7 @@ PaintPropertyTreeBuilder::setupInitialContext() {
   context.current.clip = context.absolutePosition.clip =
       context.fixedPosition.clip = ClipPaintPropertyNode::root();
   context.currentEffect = EffectPaintPropertyNode::root();
+  context.inputClipOfCurrentEffect = ClipPaintPropertyNode::root();
   context.current.transform = context.absolutePosition.transform =
       context.fixedPosition.transform = TransformPaintPropertyNode::root();
   context.current.scroll = context.absolutePosition.scroll =
@@ -378,7 +379,7 @@ void PaintPropertyTreeBuilder::updateEffect(
       filter = layer->createCompositorFilterOperationsForFilter(style);
     }
 
-    const ClipPaintPropertyNode* outputClip = ClipPaintPropertyNode::root();
+    const ClipPaintPropertyNode* outputClip = context.inputClipOfCurrentEffect;
     // The CSS filter spec didn't specify how filters interact with overflow
     // clips. The implementation here mimics the old Blink/WebKit behavior for
     // backward compatibility.
@@ -419,11 +420,14 @@ void PaintPropertyTreeBuilder::updateEffect(
   const auto* properties = object.paintProperties();
   if (properties && properties->effect()) {
     context.currentEffect = properties->effect();
-    // TODO(pdr): Once the expansion clip node is created above, it should be
-    // used here to update all current clip nodes;
-    const ClipPaintPropertyNode* expansionHint = context.current.clip;
-    context.current.clip = context.absolutePosition.clip =
-        context.fixedPosition.clip = expansionHint;
+    if (!properties->effect()->filter().isEmpty()) {
+      // TODO(trchen): Change input clip to expansion hint once implemented.
+      const ClipPaintPropertyNode* inputClip =
+          properties->effect()->outputClip();
+      context.inputClipOfCurrentEffect = context.current.clip =
+          context.absolutePosition.clip = context.fixedPosition.clip =
+              inputClip;
+    }
   }
 }
 

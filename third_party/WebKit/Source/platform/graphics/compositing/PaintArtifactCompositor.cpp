@@ -724,20 +724,12 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   scoped_refptr<cc::Layer> dummyLayer = nextEffect->ensureDummyLayer();
   m_rootLayer->AddChild(dummyLayer);
 
-  // Also cc assumes a clip node is always created by a layer that creates
-  // render surface.
-  cc::ClipNode& dummyClip =
-      *clipTree().Node(clipTree().Insert(cc::ClipNode(), kSecondaryRootNodeId));
-  dummyClip.owner_id = dummyLayer->id();
-  dummyClip.transform_id = kRealRootNodeId;
-  dummyClip.target_transform_id = kRealRootNodeId;
-  dummyClip.target_effect_id = kSecondaryRootNodeId;
-  m_propertyTrees.clip_id_to_index_map[dummyClip.owner_id] = dummyClip.id;
+  int outputClipId = compositorIdForClipNode(nextEffect->outputClip());
 
   cc::EffectNode& effectNode = *effectTree().Node(effectTree().Insert(
       cc::EffectNode(), compositorIdForCurrentEffectNode()));
   effectNode.owner_id = dummyLayer->id();
-  effectNode.clip_id = dummyClip.id;
+  effectNode.clip_id = outputClipId;
   // Every effect is supposed to have render surface enabled for grouping,
   // but we can get away without one if the effect is opacity-only and has only
   // one compositing child. This is both for optimization and not introducing
@@ -747,13 +739,16 @@ void PropertyTreeManager::buildEffectNodesRecursively(
   // TODO(crbug.com/504464): There is ongoing work in cc to delay render surface
   // decision until later phase of the pipeline. Remove premature optimization
   // here once the work is ready.
+  if (!nextEffect->filter().isEmpty())
+    effectNode.has_render_surface = true;
   effectNode.opacity = nextEffect->opacity();
+  effectNode.filters = nextEffect->filter().asCcFilterOperations();
   m_propertyTrees.effect_id_to_index_map[effectNode.owner_id] = effectNode.id;
   m_effectStack.append(BlinkEffectAndCcIdPair{nextEffect, effectNode.id});
 
   dummyLayer->set_property_tree_sequence_number(kPropertyTreeSequenceNumber);
   dummyLayer->SetTransformTreeIndex(kSecondaryRootNodeId);
-  dummyLayer->SetClipTreeIndex(dummyClip.id);
+  dummyLayer->SetClipTreeIndex(outputClipId);
   dummyLayer->SetEffectTreeIndex(effectNode.id);
   dummyLayer->SetScrollTreeIndex(kRealRootNodeId);
 }
