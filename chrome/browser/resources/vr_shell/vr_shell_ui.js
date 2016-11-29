@@ -334,7 +334,7 @@ var vrShellUi = (function() {
         clearInterval(this.visibilityTimer);
         this.visibilityTimer = null;
       }
-      if (this.enabled && this.visibilityTimeout > 0) {
+      if (this.enabled && this.visibilityTimeout > 0 && !this.loading) {
         this.visibilityTimer = setTimeout(
           this.onVisibilityTimer.bind(this), this.visibilityTimeout);
       }
@@ -364,11 +364,11 @@ var vrShellUi = (function() {
 
       let state = 'idle';
       this.visibleAfterTransition = true;
-      if (this.visibilityTimeout > 0 && !this.visibilityTimer) {
+      if (this.loading) {
+        state = 'loading';
+      } else if (this.visibilityTimeout > 0 && !this.visibilityTimer) {
         state = 'hide';
         this.visibleAfterTransition = false;
-      } else if (this.loading) {
-        state = 'loading';
       }
       document.querySelector('#omni').className = state;
 
