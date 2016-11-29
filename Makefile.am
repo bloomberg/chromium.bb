@@ -1354,7 +1354,8 @@ endif
 if ENABLE_XWAYLAND_TEST
 weston_tests +=	xwayland-test.weston
 xwayland_test_weston_SOURCES = tests/xwayland-test.c
-xwayland_test_weston_CFLAGS = $(AM_CFLAGS) $(XWAYLAND_TEST_CFLAGS)
+xwayland_test_weston_CFLAGS = \
+	$(AM_CFLAGS) $(XWAYLAND_TEST_CFLAGS) -DXSERVER_PATH='"@XSERVER_PATH@"'
 xwayland_test_weston_LDADD = libtest-client.la $(XWAYLAND_TEST_LIBS)
 endif
 

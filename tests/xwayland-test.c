@@ -53,6 +53,9 @@ TEST(xwayland_client_test)
 	Atom atom, type_atom, actual_type;
 	char *wm_name;
 
+	if (access(XSERVER_PATH, X_OK) != 0)
+		exit(77);
+
 	display = XOpenDisplay(NULL);
 	if (!display)
 		exit(EXIT_FAILURE);
