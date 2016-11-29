@@ -196,6 +196,10 @@ class MEDIA_EXPORT AudioRendererImpl
   // Updates |buffering_state_| and fires |buffering_state_cb_|.
   void SetBufferingState_Locked(BufferingState buffering_state);
 
+  // Configure's the channel mask for |algorithm_|. Must be called if the layout
+  // changes. Expect the layout in |last_decoded_channel_layout_|.
+  void ConfigureChannelMask();
+
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   std::unique_ptr<AudioBufferConverter> buffer_converter_;
@@ -234,8 +238,9 @@ class MEDIA_EXPORT AudioRendererImpl
   // sample rate changes due to implicit AAC configuration change.
   int last_decoded_sample_rate_;
 
-  // Indicates which channels are muted and can be ignored by the algorithm.
-  std::vector<bool> channel_mask_;
+  // Similar to |last_decoded_sample_rate_|, used to configure the channel mask
+  // given to the |algorithm_| for efficient playback rate changes.
+  ChannelLayout last_decoded_channel_layout_;
 
   // After Initialize() has completed, all variables below must be accessed
   // under |lock_|. ------------------------------------------------------------

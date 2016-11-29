@@ -82,11 +82,9 @@ AudioRendererAlgorithm::AudioRendererAlgorithm()
 
 AudioRendererAlgorithm::~AudioRendererAlgorithm() {}
 
-void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
-                                        std::vector<bool> channel_mask) {
+void AudioRendererAlgorithm::Initialize(const AudioParameters& params) {
   CHECK(params.IsValid());
 
-  channel_mask_ = std::move(channel_mask);
   channels_ = params.channels();
   samples_per_second_ = params.sample_rate();
   initial_capacity_ = capacity_ =
@@ -126,8 +124,14 @@ void AudioRendererAlgorithm::Initialize(const AudioParameters& params,
 
   // If no mask is provided, assume all channels are valid.
   if (channel_mask_.empty())
-    channel_mask_ = std::vector<bool>(channels_, true);
-  DCHECK_EQ(channel_mask_.size(), static_cast<size_t>(channels_));
+    SetChannelMask(std::vector<bool>(channels_, true));
+}
+
+void AudioRendererAlgorithm::SetChannelMask(std::vector<bool> channel_mask) {
+  DCHECK_EQ(channel_mask.size(), static_cast<size_t>(channels_));
+  channel_mask_ = std::move(channel_mask);
+  if (ola_window_)
+    CreateSearchWrappers();
 }
 
 int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
@@ -203,21 +207,8 @@ int AudioRendererAlgorithm::FillBuffer(AudioBus* dest,
         channels_, num_candidate_blocks_ + (ola_window_size_ - 1));
     target_block_ = AudioBus::Create(channels_, ola_window_size_);
 
-    // WSOLA is quite expensive to run, so if a channel mask exists, use it to
-    // reduce the size of our search space.
-    std::vector<float*> active_target_channels;
-    std::vector<float*> active_search_channels;
-    for (int ch = 0; ch < channels_; ++ch) {
-      if (channel_mask_[ch]) {
-        active_target_channels.push_back(target_block_->channel(ch));
-        active_search_channels.push_back(search_block_->channel(ch));
-      }
-    }
-
-    target_block_wrapper_ =
-        AudioBus::WrapVector(target_block_->frames(), active_target_channels);
-    search_block_wrapper_ =
-        AudioBus::WrapVector(search_block_->frames(), active_search_channels);
+    // Create potentially smaller wrappers for playback rate adaptation.
+    CreateSearchWrappers();
   }
 
   int rendered_frames = 0;
@@ -430,6 +421,24 @@ void AudioRendererAlgorithm::PeekAudioWithZeroPrepend(
   }
   audio_buffer_.PeekFrames(num_frames_to_read, read_offset_frames,
                            write_offset, dest);
+}
+
+void AudioRendererAlgorithm::CreateSearchWrappers() {
+  // WSOLA is quite expensive to run, so if a channel mask exists, use it to
+  // reduce the size of our search space.
+  std::vector<float*> active_target_channels;
+  std::vector<float*> active_search_channels;
+  for (int ch = 0; ch < channels_; ++ch) {
+    if (channel_mask_[ch]) {
+      active_target_channels.push_back(target_block_->channel(ch));
+      active_search_channels.push_back(search_block_->channel(ch));
+    }
+  }
+
+  target_block_wrapper_ =
+      AudioBus::WrapVector(target_block_->frames(), active_target_channels);
+  search_block_wrapper_ =
+      AudioBus::WrapVector(search_block_->frames(), active_search_channels);
 }
 
 }  // namespace media

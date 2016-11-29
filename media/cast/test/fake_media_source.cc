@@ -251,7 +251,7 @@ void FakeMediaSource::Start(scoped_refptr<AudioFrameInput> audio_frame_input,
   }
 
   // Send transcoding streams.
-  audio_algo_.Initialize(source_audio_params_, std::vector<bool>());
+  audio_algo_.Initialize(source_audio_params_);
   audio_algo_.FlushBuffers();
   audio_fifo_input_bus_ = AudioBus::Create(
       source_audio_params_.channels(),

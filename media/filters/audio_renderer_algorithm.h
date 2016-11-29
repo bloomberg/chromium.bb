@@ -41,16 +41,19 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
   AudioRendererAlgorithm();
   ~AudioRendererAlgorithm();
 
-  // Initializes this object with information about the audio stream. If a
-  // channel mask is specified, only these channels will be considered by the
+  // Initializes this object with information about the audio stream.
+  void Initialize(const AudioParameters& params);
+
+  // Allows clients to specify which channels will be considered by the
   // algorithm when adapting for playback rate, other channels will be muted.
-  // Useful to avoid performance overhead of the adapatation algorithm.
+  // Useful to avoid performance overhead of the adapatation algorithm. Must
+  // only be called after Initialize(); may be called multiple times if the
+  // mask changes.
   //
   // E.g., If |channel_mask| is [true, false] only the first channel will be
   // used to construct the playback rate adapated signal. This is useful if
   // channel upmixing has been performed prior to this point.
-  void Initialize(const AudioParameters& params,
-                  std::vector<bool> channel_mask);
+  void SetChannelMask(std::vector<bool> channel_mask);
 
   // Tries to fill |requested_frames| frames into |dest| with possibly scaled
   // data from our |audio_buffer_|. Data is scaled based on |playback_rate|,
@@ -92,6 +95,8 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Returns the samples per second for this audio stream.
   int samples_per_second() { return samples_per_second_; }
+
+  std::vector<bool> channel_mask_for_testing() { return channel_mask_; }
 
  private:
   // Within |search_block_|, find the block of data that is most similar to
@@ -136,6 +141,11 @@ class MEDIA_EXPORT AudioRendererAlgorithm {
 
   // Converts a time in milliseconds to frames using |samples_per_second_|.
   int ConvertMillisecondsToFrames(int ms) const;
+
+  // Creates or recreates |target_block_wrapper_| and |search_block_wrapper_|
+  // after a |channel_mask_| change. May be called at anytime after a channel
+  // mask has been specified.
+  void CreateSearchWrappers();
 
   // Number of channels in audio stream.
   int channels_;

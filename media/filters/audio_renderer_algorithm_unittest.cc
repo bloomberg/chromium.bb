@@ -91,8 +91,9 @@ class AudioRendererAlgorithmTest : public testing::Test {
                   SampleFormat sample_format,
                   int samples_per_second,
                   int frames_per_buffer) {
-    Initialize(channel_layout, sample_format, samples_per_second,
-               frames_per_buffer, std::vector<bool>());
+    Initialize(
+        channel_layout, sample_format, samples_per_second, frames_per_buffer,
+        std::vector<bool>(ChannelLayoutToChannelCount(channel_layout), true));
   }
 
   void Initialize(ChannelLayout channel_layout,
@@ -108,7 +109,8 @@ class AudioRendererAlgorithmTest : public testing::Test {
     AudioParameters params(media::AudioParameters::AUDIO_PCM_LINEAR,
                            channel_layout, samples_per_second,
                            bytes_per_sample_ * 8, frames_per_buffer);
-    algorithm_.Initialize(params, channel_mask);
+    algorithm_.Initialize(params);
+    algorithm_.SetChannelMask(std::move(channel_mask));
     FillAlgorithmQueue();
   }
 
@@ -250,7 +252,7 @@ class AudioRendererAlgorithmTest : public testing::Test {
     channels_ = ChannelLayoutToChannelCount(kChannelLayout);
     AudioParameters params(AudioParameters::AUDIO_PCM_LINEAR, kChannelLayout,
                            kSampleRateHz, kBytesPerSample * 8, kNumFrames);
-    algorithm_.Initialize(params, std::vector<bool>());
+    algorithm_.Initialize(params);
 
     // A pulse is 6 milliseconds (even number of samples).
     const int kPulseWidthSamples = 6 * kSampleRateHz / 1000;
@@ -703,8 +705,7 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_ChannelMask) {
              {true, false, true, false});
 
   std::unique_ptr<AudioBus> bus = AudioBus::Create(channels_, kFrameSize);
-  const int frames_filled =
-      algorithm_.FillBuffer(bus.get(), 0, kFrameSize, 2.0);
+  int frames_filled = algorithm_.FillBuffer(bus.get(), 0, kFrameSize, 2.0);
   ASSERT_GT(frames_filled, 0);
 
   // Verify the channels are muted appropriately; even though the created buffer
@@ -717,6 +718,19 @@ TEST_F(AudioRendererAlgorithmTest, FillBuffer_ChannelMask) {
       ASSERT_EQ(sum, 0);
     else
       ASSERT_NE(sum, 0);
+  }
+
+  // Update the channel mask and verify it's reflected correctly.
+  algorithm_.SetChannelMask({true, true, true, true});
+  frames_filled = algorithm_.FillBuffer(bus.get(), 0, kFrameSize, 2.0);
+  ASSERT_GT(frames_filled, 0);
+
+  // Verify no channels are muted now.
+  for (int ch = 0; ch < bus->channels(); ++ch) {
+    double sum = 0;
+    for (int i = 0; i < bus->frames(); ++i)
+      sum += bus->channel(ch)[i];
+    ASSERT_NE(sum, 0);
   }
 }
 
