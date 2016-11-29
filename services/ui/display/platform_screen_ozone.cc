@@ -28,7 +28,13 @@ const float kInchInMm = 25.4f;
 
 float ComputeDisplayDPI(const gfx::Size& pixel_size,
                         const gfx::Size& physical_size) {
-  DCHECK(!physical_size.IsEmpty());
+  // The physical_size is broken for some devices, return standard DPI. See
+  // crbug.com/669554.
+  if (physical_size.IsEmpty()) {
+    LOG(ERROR) << "Display has empty phsical_size";
+    return 96.0f;
+  }
+
   return (pixel_size.width() / static_cast<float>(physical_size.width())) *
          kInchInMm;
 }
