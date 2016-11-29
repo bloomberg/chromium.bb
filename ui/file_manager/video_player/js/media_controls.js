@@ -489,6 +489,11 @@ MediaControls.prototype.updateTimeLabel_ = function(current, opt_duration) {
  * Volume controls
  */
 
+MediaControls.STORAGE_PREFIX = 'videoplayer-';
+
+MediaControls.KEY_NORMALIZED_VOLUME =
+    MediaControls.STORAGE_PREFIX + 'normalized-volume';
+
 /**
  * @param {HTMLElement=} opt_parent Parent element for the controls.
  */
@@ -512,8 +517,24 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
   this.volume_.addEventListener('immediate-value-change', function(event) {
     this.onVolumeDrag_();
   }.bind(this));
-  this.volume_.value = this.volume_.max;
+  this.loadVolumeControlState();
   volumeControls.appendChild(this.volume_);
+};
+
+MediaControls.prototype.loadVolumeControlState = function() {
+  chrome.storage.local.get([MediaControls.KEY_NORMALIZED_VOLUME],
+      function(retrieved) {
+        var normalizedVolume = (MediaControls.KEY_NORMALIZED_VOLUME
+                                 in retrieved)
+            ? retrieved[MediaControls.KEY_NORMALIZED_VOLUME] : 1;
+        this.volume_.value = this.volume_.max * normalizedVolume;
+      }.bind(this));
+};
+
+MediaControls.prototype.saveVolumeControlState = function() {
+  var valuesToStore = {};
+  valuesToStore[MediaControls.KEY_NORMALIZED_VOLUME] = this.media_.volume;
+  chrome.storage.local.set(valuesToStore);
 };
 
 /**
@@ -559,6 +580,7 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
   this.soundButton_.setAttribute('aria-label',
       value === 0 ? str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL')
                   : str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
+  this.saveVolumeControlState();
 };
 
 /**
