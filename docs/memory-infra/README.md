@@ -58,11 +58,16 @@ MemoryInfra UI are explained in its [design doc][mi-ui-doc].
 **Columns in blue** reflect the amount of actual physical memory used by the
 process. This is what exerts memory pressure on the system.
 
- * **Total Resident**: (TODO: document this).
- * **Peak Total Resident**: (TODO: document this).
- * **PSS**: (TODO: document this).
- * **Private Dirty**: (TODO: document this).
- * **Swapped**: (TODO: document this).
+ * **Total Resident**: The current working set size of the process, excluding
+   the memory overhead of tracing. On Linux, this returns the resident set size.
+ * **Peak Total Resident**: The overall peak working set size of the process on
+   supported platforms. On Linux kernel versions >= 4.0 the peak usage between
+   two memory dumps is shown.
+ * **PSS**: POSIX only. The process's proportional share of total resident size.
+ * **Private Dirty**: The total size of dirty pages which are not used by any
+   other process.
+ * **Swapped**: The total size of anonymous memory used by process, which is
+   swapped out of RAM.
 
 **Columns in black** reflect a best estimation of the the amount of physical
 memory used by various subsystems of Chrome.
@@ -70,20 +75,25 @@ memory used by various subsystems of Chrome.
  * **Blink GC**: Memory used by [Oilpan][oilpan].
  * **CC**: Memory used by the compositor.
    See [cc/memory][cc-memory] for the full details.
- * **Discardable**: (TODO: document this).
- * **Font Caches**: (TODO: document this).
+ * **Discardable**: Total [discardable][discardable] memory used by the process
+   from various components like Skia caches and Web caches.
+ * **Font Caches**: Size of cache that stores Font shapes and platform Fonts.
  * **GPU** and **GPU Memory Buffer**: GPU memory and RAM used for GPU purposes.
    See [GPU Memory Tracing][gpu-memory].
- * **LevelDB**: (TODO: document this).
+ * **LevelDB**: Memory used for LeveldbValueStore(s), IndexedDB databases and
+   ProtoDatabase(s).
  * **Malloc**: Memory allocated by calls to `malloc`, or `new` for most
      non-Blink objects.
  * **PartitionAlloc**: Memory allocated via [PartitionAlloc][partalloc].
    Blink objects that are not managed by Oilpan are allocated with
    PartitionAlloc.
- * **Skia**: (TODO: document this).
- * **SQLite**: (TODO: document this).
- * **V8**: (TODO: document this).
- * **Web Cache**: (TODO: document this).
+ * **Skia**: Memory used by all resources used by the Skia rendering system.
+ * **SQLite**: Memory used for all sqlite databases.
+ * **Sync**: Memory used by Chrome Sync when signed in.
+ * **UI**: Android only. Memory used by Android java bitmaps for the UI.
+ * **V8**: Memory used by V8 Javascript engine.
+ * **Web Cache**: Memory used by resources downloaded from the Web, like images
+   and scipts.
 
 The **tracing column in gray** reports memory that is used to collect all of the
 above information. This memory would not be used if tracing were not enabled,
@@ -92,6 +102,7 @@ and it is discounted from malloc and the blue columns.
 <!-- TODO(primiano): Improve this. https://crbug.com/??? -->
 
 [oilpan]:     /third_party/WebKit/Source/platform/heap/BlinkGCDesign.md
+[discardable]:base/memory/discardable_memory.h
 [cc-memory]:  probe-cc.md
 [gpu-memory]: probe-gpu.md
 [partalloc]:  /third_party/WebKit/Source/wtf/allocator/PartitionAlloc.md
