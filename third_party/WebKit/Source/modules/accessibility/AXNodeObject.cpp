@@ -527,11 +527,11 @@ AccessibilityRole AXNodeObject::determineAccessibilityRole() {
     return role;
   if (getNode()->isElementNode()) {
     Element* element = toElement(getNode());
-    if (element->isInCanvasSubtree()) {
-      getDocument()->updateStyleAndLayoutTreeForNode(element);
-      if (element->isFocusable())
-        return GroupRole;
-    }
+    // A generic element with tabIndex explicitly set gets GroupRole.
+    // The layout checks for focusability aren't critical here; a false
+    // positive would be harmless.
+    if (element->isInCanvasSubtree() && element->supportsFocus())
+      return GroupRole;
   }
   return UnknownRole;
 }
