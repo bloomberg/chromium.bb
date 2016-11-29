@@ -16,6 +16,7 @@
 #include "content/browser/indexed_db/indexed_db_cursor.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
 #include "content/browser/indexed_db/indexed_db_database_callbacks.h"
+#include "content/browser/indexed_db/indexed_db_factory.h"
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction_coordinator.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
@@ -34,6 +35,22 @@ void CommitUnused(scoped_refptr<IndexedDBTransaction> transaction) {
   DCHECK(status.ok());
 }
 
+// The database will be closed during this call.
+void ReportError(leveldb::Status status,
+                 const scoped_refptr<IndexedDBDatabase> database,
+                 IndexedDBFactory* factory) {
+  DCHECK(!status.ok());
+  if (status.IsCorruption()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 base::ASCIIToUTF16(status.ToString()));
+    factory->HandleBackingStoreCorruption(database->origin(), error);
+  } else {
+    factory->HandleBackingStoreFailure(database->origin());
+  }
+}
+
+
+
 }  // namespace
 
 IndexedDBTransaction::TaskQueue::TaskQueue() {}
@@ -46,7 +63,7 @@ void IndexedDBTransaction::TaskQueue::clear() {
 
 IndexedDBTransaction::Operation IndexedDBTransaction::TaskQueue::pop() {
   DCHECK(!queue_.empty());
-  Operation task(queue_.front());
+  Operation task = std::move(queue_.front());
   queue_.pop();
   return task;
 }
@@ -59,9 +76,9 @@ void IndexedDBTransaction::TaskStack::clear() {
     stack_.pop();
 }
 
-IndexedDBTransaction::Operation IndexedDBTransaction::TaskStack::pop() {
+IndexedDBTransaction::AbortOperation IndexedDBTransaction::TaskStack::pop() {
   DCHECK(!stack_.empty());
-  Operation task(stack_.top());
+  AbortOperation task = std::move(stack_.top());
   stack_.pop();
   return task;
 }
@@ -75,14 +92,8 @@ IndexedDBTransaction::IndexedDBTransaction(
     : id_(id),
       object_store_ids_(object_store_ids),
       mode_(mode),
-      used_(false),
-      state_(CREATED),
-      commit_pending_(false),
       connection_(std::move(connection)),
-      transaction_(backing_store_transaction),
-      backing_store_transaction_begun_(false),
-      should_process_queue_(false),
-      pending_preemptive_events_(0) {
+      transaction_(backing_store_transaction) {
   callbacks_ = connection_->callbacks();
   database_ = connection_->database();
 
@@ -102,6 +113,7 @@ IndexedDBTransaction::~IndexedDBTransaction() {
   DCHECK(task_queue_.empty());
   DCHECK(abort_task_stack_.empty());
   DCHECK(pending_observers_.empty());
+  DCHECK(!processing_event_queue_);
 }
 
 void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
@@ -121,10 +133,10 @@ void IndexedDBTransaction::ScheduleTask(blink::WebIDBTaskType type,
   RunTasksIfStarted();
 }
 
-void IndexedDBTransaction::ScheduleAbortTask(Operation abort_task) {
+void IndexedDBTransaction::ScheduleAbortTask(AbortOperation abort_task) {
   DCHECK_NE(FINISHED, state_);
   DCHECK(used_);
-  abort_task_stack_.push(abort_task);
+  abort_task_stack_.push(std::move(abort_task));
 }
 
 void IndexedDBTransaction::RunTasksIfStarted() {
@@ -168,7 +180,7 @@ void IndexedDBTransaction::Abort(const IndexedDBDatabaseError& error) {
 
   // Run the abort tasks, if any.
   while (!abort_task_stack_.empty())
-    abort_task_stack_.pop().Run(NULL);
+    abort_task_stack_.pop().Run();
 
   preemptive_task_queue_.clear();
   pending_preemptive_events_ = 0;
@@ -256,11 +268,17 @@ void IndexedDBTransaction::BlobWriteComplete(bool success) {
   if (state_ == FINISHED)  // aborted
     return;
   DCHECK_EQ(state_, COMMITTING);
-  if (success)
-    CommitPhaseTwo();
-  else
+
+  if (!success) {
     Abort(IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionDataError,
                                  "Failed to write blobs."));
+    return;
+  }
+  // Save the database as |this| can be destroyed in the next line.
+  scoped_refptr<IndexedDBDatabase> database = database_;
+  leveldb::Status s = CommitPhaseTwo();
+  if (!s.ok())
+    ReportError(s, database, database->factory());
 }
 
 leveldb::Status IndexedDBTransaction::Commit() {
@@ -367,7 +385,7 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     database_->TransactionFinished(this, true);
   } else {
     while (!abort_task_stack_.empty())
-      abort_task_stack_.pop().Run(NULL);
+      abort_task_stack_.pop().Run();
 
     IndexedDBDatabaseError error;
     if (leveldb_env::IndicatesDiskFull(s)) {
@@ -381,7 +399,6 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
     callbacks_->OnAbort(id_, error);
 
     database_->TransactionFinished(this, false);
-    database_->TransactionCommitFailed(s);
   }
 
   database_ = NULL;
@@ -391,9 +408,13 @@ leveldb::Status IndexedDBTransaction::CommitPhaseTwo() {
 void IndexedDBTransaction::ProcessTaskQueue() {
   IDB_TRACE1("IndexedDBTransaction::ProcessTaskQueue", "txn.id", id());
 
+  DCHECK(!processing_event_queue_);
+
   // May have been aborted.
   if (!should_process_queue_)
     return;
+
+  processing_event_queue_ = true;
 
   DCHECK(!IsTaskQueueEmpty());
   should_process_queue_ = false;
@@ -413,10 +434,16 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   while (!task_queue->empty() && state_ != FINISHED) {
     DCHECK_EQ(state_, STARTED);
     Operation task(task_queue->pop());
-    task.Run(this);
+    leveldb::Status result = task.Run(this);
     if (!pending_preemptive_events_) {
       DCHECK(diagnostics_.tasks_completed < diagnostics_.tasks_scheduled);
       ++diagnostics_.tasks_completed;
+    }
+    if (!result.ok()) {
+      processing_event_queue_ = false;
+      if (!result.ok())
+        ReportError(result, database_, database_->factory());
+      return;
     }
 
     // Event itself may change which queue should be processed next.
@@ -427,13 +454,18 @@ void IndexedDBTransaction::ProcessTaskQueue() {
   // If there are no pending tasks, we haven't already committed/aborted,
   // and the front-end requested a commit, it is now safe to do so.
   if (!HasPendingTasks() && state_ != FINISHED && commit_pending_) {
-    Commit();
+    leveldb::Status result = Commit();
+    processing_event_queue_ = false;
+    if (!result.ok())
+      ReportError(result, database_, database_->factory());
     return;
   }
 
   // The transaction may have been aborted while processing tasks.
-  if (state_ == FINISHED)
+  if (state_ == FINISHED) {
+    processing_event_queue_ = false;
     return;
+  }
 
   DCHECK(state_ == STARTED);
 
@@ -444,6 +476,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     timeout_timer_.Start(FROM_HERE, GetInactivityTimeout(),
                          base::Bind(&IndexedDBTransaction::Timeout, this));
   }
+  processing_event_queue_ = false;
 }
 
 base::TimeDelta IndexedDBTransaction::GetInactivityTimeout() const {

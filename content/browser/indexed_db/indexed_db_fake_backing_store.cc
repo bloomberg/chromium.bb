@@ -47,11 +47,9 @@ leveldb::Status IndexedDBFakeBackingStore::CreateIDBDatabaseMetaData(
     int64_t* row_id) {
   return leveldb::Status::OK();
 }
-bool IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
+void IndexedDBFakeBackingStore::UpdateIDBDatabaseIntVersion(Transaction*,
                                                             int64_t row_id,
-                                                            int64_t version) {
-  return false;
-}
+                                                            int64_t version) {}
 leveldb::Status IndexedDBFakeBackingStore::DeleteDatabase(
     const base::string16& name) {
   return leveldb::Status::OK();

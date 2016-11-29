@@ -15,6 +15,7 @@
 #include "content/browser/indexed_db/indexed_db_tracing.h"
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/browser/indexed_db/indexed_db_value.h"
+#include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 
 namespace content {
 
@@ -40,6 +41,13 @@ void IndexedDBCursor::Continue(std::unique_ptr<IndexedDBKey> key,
                                scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::Continue");
 
+  if (closed_) {
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "The cursor has been closed."));
+    return;
+  }
+
   transaction_->ScheduleTask(
       task_type_,
       base::Bind(&IndexedDBCursor::CursorIterationOperation,
@@ -53,56 +61,81 @@ void IndexedDBCursor::Advance(uint32_t count,
                               scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::Advance");
 
+  if (closed_) {
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "The cursor has been closed."));
+    return;
+  }
+
   transaction_->ScheduleTask(
       task_type_,
       base::Bind(
           &IndexedDBCursor::CursorAdvanceOperation, this, count, callbacks));
 }
 
-void IndexedDBCursor::CursorAdvanceOperation(
+leveldb::Status IndexedDBCursor::CursorAdvanceOperation(
     uint32_t count,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorAdvanceOperation");
-  leveldb::Status s;
-  // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
-  //                 properly fail, caller will not know why, and any corruption
-  //                 will be ignored.
+  leveldb::Status s = leveldb::Status::OK();
+
   if (!cursor_ || !cursor_->Advance(count, &s)) {
     cursor_.reset();
-    callbacks->OnSuccess(nullptr);
-    return;
+    if (s.ok()) {
+      callbacks->OnSuccess(nullptr);
+      return s;
+    }
+    Close();
+    callbacks->OnError(IndexedDBDatabaseError(
+        blink::WebIDBDatabaseExceptionUnknownError, "Error advancing cursor"));
+    return s;
   }
 
   callbacks->OnSuccess(key(), primary_key(), Value());
+  return s;
 }
 
-void IndexedDBCursor::CursorIterationOperation(
+leveldb::Status IndexedDBCursor::CursorIterationOperation(
     std::unique_ptr<IndexedDBKey> key,
     std::unique_ptr<IndexedDBKey> primary_key,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorIterationOperation");
-  leveldb::Status s;
-  // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
-  //                 properly fail, caller will not know why, and any corruption
-  //                 will be ignored.
-  if (!cursor_ || !cursor_->Continue(key.get(),
-                                     primary_key.get(),
-                                     IndexedDBBackingStore::Cursor::SEEK,
-                                     &s) || !s.ok()) {
+  leveldb::Status s = leveldb::Status::OK();
+
+  if (!cursor_ ||
+      !cursor_->Continue(key.get(), primary_key.get(),
+                         IndexedDBBackingStore::Cursor::SEEK, &s)) {
     cursor_.reset();
-    callbacks->OnSuccess(nullptr);
-    return;
+    if (s.ok()) {
+      // This happens if we reach the end of the iterator and can't continue.
+      callbacks->OnSuccess(nullptr);
+      return s;
+    }
+    Close();
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "Error continuing cursor."));
+    return s;
   }
 
   callbacks->OnSuccess(this->key(), this->primary_key(), Value());
+  return s;
 }
 
 void IndexedDBCursor::PrefetchContinue(
     int number_to_fetch,
     scoped_refptr<IndexedDBCallbacks> callbacks) {
   IDB_TRACE("IndexedDBCursor::PrefetchContinue");
+
+  if (closed_) {
+    callbacks->OnError(
+        IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                               "The cursor has been closed."));
+    return;
+  }
 
   transaction_->ScheduleTask(
       task_type_,
@@ -112,11 +145,12 @@ void IndexedDBCursor::PrefetchContinue(
                  callbacks));
 }
 
-void IndexedDBCursor::CursorPrefetchIterationOperation(
+leveldb::Status IndexedDBCursor::CursorPrefetchIterationOperation(
     int number_to_fetch,
     scoped_refptr<IndexedDBCallbacks> callbacks,
     IndexedDBTransaction* /*transaction*/) {
   IDB_TRACE("IndexedDBCursor::CursorPrefetchIterationOperation");
+  leveldb::Status s = leveldb::Status::OK();
 
   std::vector<IndexedDBKey> found_keys;
   std::vector<IndexedDBKey> found_primary_keys;
@@ -126,7 +160,6 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   // TODO(cmumford): Use IPC::Channel::kMaximumMessageSize
   const size_t max_size_estimate = 10 * 1024 * 1024;
   size_t size_estimate = 0;
-  leveldb::Status s;
 
   // TODO(cmumford): Handle this error (crbug.com/363397). Although this will
   //                 properly fail, caller will not know why, and any corruption
@@ -134,7 +167,15 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
   for (int i = 0; i < number_to_fetch; ++i) {
     if (!cursor_ || !cursor_->Continue(&s)) {
       cursor_.reset();
-      break;
+      if (s.ok()) {
+        // We've reached the end, so just return what we have.
+        break;
+      }
+      Close();
+      callbacks->OnError(
+          IndexedDBDatabaseError(blink::WebIDBDatabaseExceptionUnknownError,
+                                 "Error continuing cursor."));
+      return s;
     }
 
     if (i == 0) {
@@ -169,11 +210,12 @@ void IndexedDBCursor::CursorPrefetchIterationOperation(
 
   if (found_keys.empty()) {
     callbacks->OnSuccess(nullptr);
-    return;
+    return s;
   }
 
   callbacks->OnSuccessWithPrefetch(
       found_keys, found_primary_keys, &found_values);
+  return s;
 }
 
 leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
@@ -185,8 +227,8 @@ leveldb::Status IndexedDBCursor::PrefetchReset(int used_prefetches,
 
   if (closed_)
     return s;
-  if (cursor_) {
-    // First prefetched result is always used.
+  // First prefetched result is always used.
+  if (cursor_){
     DCHECK_GT(used_prefetches, 0);
     for (int i = 0; i < used_prefetches - 1; ++i) {
       bool ok = cursor_->Continue(&s);

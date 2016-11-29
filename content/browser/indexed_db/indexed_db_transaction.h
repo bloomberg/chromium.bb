@@ -33,7 +33,8 @@ class IndexedDBDatabaseCallbacks;
 class CONTENT_EXPORT IndexedDBTransaction
     : public NON_EXPORTED_BASE(base::RefCounted<IndexedDBTransaction>) {
  public:
-  typedef base::Callback<void(IndexedDBTransaction*)> Operation;
+  using Operation = base::Callback<leveldb::Status(IndexedDBTransaction*)>;
+  using AbortOperation = base::Closure;
 
   enum State {
     CREATED,     // Created, but not yet started by coordinator.
@@ -57,7 +58,7 @@ class CONTENT_EXPORT IndexedDBTransaction
     ScheduleTask(blink::WebIDBTaskTypeNormal, task);
   }
   void ScheduleTask(blink::WebIDBTaskType, Operation task);
-  void ScheduleAbortTask(Operation abort_task);
+  void ScheduleAbortTask(AbortOperation abort_task);
   void RegisterOpenCursor(IndexedDBCursor* cursor);
   void UnregisterOpenCursor(IndexedDBCursor* cursor);
   void AddPreemptiveEvent() { pending_preemptive_events_++; }
@@ -125,6 +126,7 @@ class CONTENT_EXPORT IndexedDBTransaction
                            SchedulePreemptiveTask);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode,
                            ScheduleNormalTask);
+  FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTestMode, TaskFails);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, Timeout);
   FRIEND_TEST_ALL_PREFIXES(IndexedDBTransactionTest, IndexedDBObserver);
 
@@ -143,9 +145,9 @@ class CONTENT_EXPORT IndexedDBTransaction
   const std::set<int64_t> object_store_ids_;
   const blink::WebIDBTransactionMode mode_;
 
-  bool used_;
-  State state_;
-  bool commit_pending_;
+  bool used_ = false;
+  State state_ = CREATED;
+  bool commit_pending_ = false;
   base::WeakPtr<IndexedDBConnection> connection_;
   scoped_refptr<IndexedDBDatabaseCallbacks> callbacks_;
   scoped_refptr<IndexedDBDatabase> database_;
@@ -160,7 +162,7 @@ class CONTENT_EXPORT IndexedDBTransaction
     TaskQueue();
     ~TaskQueue();
     bool empty() const { return queue_.empty(); }
-    void push(Operation task) { queue_.push(task); }
+    void push(Operation task) { queue_.push(std::move(task)); }
     Operation pop();
     void clear();
 
@@ -175,12 +177,12 @@ class CONTENT_EXPORT IndexedDBTransaction
     TaskStack();
     ~TaskStack();
     bool empty() const { return stack_.empty(); }
-    void push(Operation task) { stack_.push(task); }
-    Operation pop();
+    void push(AbortOperation task) { stack_.push(std::move(task)); }
+    AbortOperation pop();
     void clear();
 
    private:
-    std::stack<Operation> stack_;
+    std::stack<AbortOperation> stack_;
 
     DISALLOW_COPY_AND_ASSIGN(TaskStack);
   };
@@ -190,10 +192,11 @@ class CONTENT_EXPORT IndexedDBTransaction
   TaskStack abort_task_stack_;
 
   std::unique_ptr<IndexedDBBackingStore::Transaction> transaction_;
-  bool backing_store_transaction_begun_;
+  bool backing_store_transaction_begun_ = false;
 
-  bool should_process_queue_;
-  int pending_preemptive_events_;
+  bool should_process_queue_ = false;
+  int pending_preemptive_events_ = 0;
+  bool processing_event_queue_ = false;
 
   std::set<IndexedDBCursor*> open_cursors_;
 

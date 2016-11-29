@@ -64,6 +64,7 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   int64_t id() const { return metadata_.id; }
   const base::string16& name() const { return metadata_.name; }
+  const url::Origin& origin() const { return identifier_.first; }
 
   void AddObjectStore(const IndexedDBObjectStoreMetadata& metadata,
                       int64_t new_max_object_store_id);
@@ -134,9 +135,6 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   void TransactionCreated(IndexedDBTransaction* transaction);
   void TransactionFinished(IndexedDBTransaction* transaction, bool committed);
-
-  // Called by transactions to report failure committing to the backing store.
-  void TransactionCommitFailed(const leveldb::Status& status);
 
   void AddPendingObserver(int64_t transaction_id,
                           int32_t observer_id,
@@ -211,69 +209,66 @@ class CONTENT_EXPORT IndexedDBDatabase
   size_t PendingOpenDeleteCount() const { return pending_requests_.size(); }
 
   // Asynchronous tasks scheduled within transactions:
-  void CreateObjectStoreAbortOperation(int64_t object_store_id,
-                                       IndexedDBTransaction* transaction);
-  void DeleteObjectStoreOperation(int64_t object_store_id,
-                                  IndexedDBTransaction* transaction);
+  void CreateObjectStoreAbortOperation(int64_t object_store_id);
+  leveldb::Status DeleteObjectStoreOperation(int64_t object_store_id,
+                                             IndexedDBTransaction* transaction);
   void DeleteObjectStoreAbortOperation(
-      const IndexedDBObjectStoreMetadata& object_store_metadata,
-      IndexedDBTransaction* transaction);
+      const IndexedDBObjectStoreMetadata& object_store_metadata);
   void RenameObjectStoreAbortOperation(int64_t object_store_id,
-                                       const base::string16& old_name,
+                                       const base::string16& old_name);
+  leveldb::Status VersionChangeOperation(
+      int64_t version,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+  void VersionChangeAbortOperation(int64_t previous_version);
+  leveldb::Status DeleteIndexOperation(int64_t object_store_id,
+                                       int64_t index_id,
                                        IndexedDBTransaction* transaction);
-  void VersionChangeOperation(int64_t version,
-                              scoped_refptr<IndexedDBCallbacks> callbacks,
-                              IndexedDBTransaction* transaction);
-  void VersionChangeAbortOperation(int64_t previous_version,
-                                   IndexedDBTransaction* transaction);
-  void DeleteIndexOperation(int64_t object_store_id,
-                            int64_t index_id,
-                            IndexedDBTransaction* transaction);
-  void CreateIndexAbortOperation(int64_t object_store_id,
-                                 int64_t index_id,
-                                 IndexedDBTransaction* transaction);
+  void CreateIndexAbortOperation(int64_t object_store_id, int64_t index_id);
   void DeleteIndexAbortOperation(int64_t object_store_id,
-                                 const IndexedDBIndexMetadata& index_metadata,
-                                 IndexedDBTransaction* transaction);
+                                 const IndexedDBIndexMetadata& index_metadata);
   void RenameIndexAbortOperation(int64_t object_store_id,
                                  int64_t index_id,
-                                 const base::string16& old_name,
-                                 IndexedDBTransaction* transaction);
-  void GetOperation(int64_t object_store_id,
-                    int64_t index_id,
-                    std::unique_ptr<IndexedDBKeyRange> key_range,
-                    indexed_db::CursorType cursor_type,
-                    scoped_refptr<IndexedDBCallbacks> callbacks,
-                    IndexedDBTransaction* transaction);
-  void GetAllOperation(int64_t object_store_id,
-                       int64_t index_id,
-                       std::unique_ptr<IndexedDBKeyRange> key_range,
-                       indexed_db::CursorType cursor_type,
-                       int64_t max_count,
-                       scoped_refptr<IndexedDBCallbacks> callbacks,
-                       IndexedDBTransaction* transaction);
+                                 const base::string16& old_name);
+  leveldb::Status GetOperation(int64_t object_store_id,
+                               int64_t index_id,
+                               std::unique_ptr<IndexedDBKeyRange> key_range,
+                               indexed_db::CursorType cursor_type,
+                               scoped_refptr<IndexedDBCallbacks> callbacks,
+                               IndexedDBTransaction* transaction);
+  leveldb::Status GetAllOperation(int64_t object_store_id,
+                                  int64_t index_id,
+                                  std::unique_ptr<IndexedDBKeyRange> key_range,
+                                  indexed_db::CursorType cursor_type,
+                                  int64_t max_count,
+                                  scoped_refptr<IndexedDBCallbacks> callbacks,
+                                  IndexedDBTransaction* transaction);
   struct PutOperationParams;
-  void PutOperation(std::unique_ptr<PutOperationParams> params,
-                    IndexedDBTransaction* transaction);
-  void SetIndexesReadyOperation(size_t index_count,
-                                IndexedDBTransaction* transaction);
+  leveldb::Status PutOperation(std::unique_ptr<PutOperationParams> params,
+                               IndexedDBTransaction* transaction);
+  leveldb::Status SetIndexesReadyOperation(size_t index_count,
+                                           IndexedDBTransaction* transaction);
   struct OpenCursorOperationParams;
-  void OpenCursorOperation(std::unique_ptr<OpenCursorOperationParams> params,
-                           IndexedDBTransaction* transaction);
-  void CountOperation(int64_t object_store_id,
-                      int64_t index_id,
-                      std::unique_ptr<IndexedDBKeyRange> key_range,
-                      scoped_refptr<IndexedDBCallbacks> callbacks,
-                      IndexedDBTransaction* transaction);
-  void DeleteRangeOperation(int64_t object_store_id,
-                            std::unique_ptr<IndexedDBKeyRange> key_range,
-                            scoped_refptr<IndexedDBCallbacks> callbacks,
-                            IndexedDBTransaction* transaction);
-  void ClearOperation(int64_t object_store_id,
-                      scoped_refptr<IndexedDBCallbacks> callbacks,
-                      IndexedDBTransaction* transaction);
+  leveldb::Status OpenCursorOperation(
+      std::unique_ptr<OpenCursorOperationParams> params,
+      IndexedDBTransaction* transaction);
+  leveldb::Status CountOperation(int64_t object_store_id,
+                                 int64_t index_id,
+                                 std::unique_ptr<IndexedDBKeyRange> key_range,
+                                 scoped_refptr<IndexedDBCallbacks> callbacks,
+                                 IndexedDBTransaction* transaction);
+  leveldb::Status DeleteRangeOperation(
+      int64_t object_store_id,
+      std::unique_ptr<IndexedDBKeyRange> key_range,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+  leveldb::Status ClearOperation(int64_t object_store_id,
+                                 scoped_refptr<IndexedDBCallbacks> callbacks,
+                                 IndexedDBTransaction* transaction);
 
  protected:
+  friend class IndexedDBTransaction;
+
   IndexedDBDatabase(const base::string16& name,
                     scoped_refptr<IndexedDBBackingStore> backing_store,
                     scoped_refptr<IndexedDBFactory> factory,
@@ -282,6 +277,8 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   // May be overridden in tests.
   virtual size_t GetMaxMessageSizeInBytes() const;
+
+  IndexedDBFactory* factory() const { return factory_.get(); }
 
  private:
   friend class base::RefCounted<IndexedDBDatabase>;

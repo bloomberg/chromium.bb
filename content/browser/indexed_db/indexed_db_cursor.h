@@ -14,12 +14,11 @@
 #include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/indexed_db_backing_store.h"
 #include "content/browser/indexed_db/indexed_db_database.h"
+#include "content/browser/indexed_db/indexed_db_transaction.h"
 #include "content/common/indexed_db/indexed_db_key_range.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
 namespace content {
-
-class IndexedDBTransaction;
 
 class CONTENT_EXPORT IndexedDBCursor
     : NON_EXPORTED_BASE(public base::RefCounted<IndexedDBCursor>) {
@@ -45,14 +44,16 @@ class CONTENT_EXPORT IndexedDBCursor
   }
   void Close();
 
-  void CursorIterationOperation(std::unique_ptr<IndexedDBKey> key,
-                                std::unique_ptr<IndexedDBKey> primary_key,
-                                scoped_refptr<IndexedDBCallbacks> callbacks,
-                                IndexedDBTransaction* transaction);
-  void CursorAdvanceOperation(uint32_t count,
-                              scoped_refptr<IndexedDBCallbacks> callbacks,
-                              IndexedDBTransaction* transaction);
-  void CursorPrefetchIterationOperation(
+  leveldb::Status CursorIterationOperation(
+      std::unique_ptr<IndexedDBKey> key,
+      std::unique_ptr<IndexedDBKey> primary_key,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+  leveldb::Status CursorAdvanceOperation(
+      uint32_t count,
+      scoped_refptr<IndexedDBCallbacks> callbacks,
+      IndexedDBTransaction* transaction);
+  leveldb::Status CursorPrefetchIterationOperation(
       int number_to_fetch,
       scoped_refptr<IndexedDBCallbacks> callbacks,
       IndexedDBTransaction* transaction);

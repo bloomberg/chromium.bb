@@ -333,7 +333,8 @@ TEST_F(IndexedDBDatabaseTest, ConnectionRequestsNoLongerValid) {
   EXPECT_EQ(db->PendingOpenDeleteCount(), 0UL);
 }
 
-void DummyOperation(IndexedDBTransaction* transaction) {
+leveldb::Status DummyOperation(IndexedDBTransaction* transaction) {
+  return leveldb::Status::OK();
 }
 
 class IndexedDBDatabaseOperationTest : public testing::Test {

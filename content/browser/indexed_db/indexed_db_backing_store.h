@@ -349,18 +349,20 @@ class CONTENT_EXPORT IndexedDBBackingStore
     IndexedDBBackingStore::RecordIdentifier record_identifier_;
 
    private:
+    enum class ContinueResult { LEVELDB_ERROR, DONE, OUT_OF_BOUNDS };
+
     // For cursors with direction Next or NextNoDuplicate.
-    bool ContinueNext(const IndexedDBKey* key,
-                      const IndexedDBKey* primary_key,
-                      IteratorState state,
-                      leveldb::Status*);
+    ContinueResult ContinueNext(const IndexedDBKey* key,
+                                const IndexedDBKey* primary_key,
+                                IteratorState state,
+                                leveldb::Status*);
     // For cursors with direction Prev or PrevNoDuplicate. The PrevNoDuplicate
     // case has additional complexity of not being symmetric with
     // NextNoDuplicate.
-    bool ContinuePrevious(const IndexedDBKey* key,
-                          const IndexedDBKey* primary_key,
-                          IteratorState state,
-                          leveldb::Status*);
+    ContinueResult ContinuePrevious(const IndexedDBKey* key,
+                                    const IndexedDBKey* primary_key,
+                                    IteratorState state,
+                                    leveldb::Status*);
 
     DISALLOW_COPY_AND_ASSIGN(Cursor);
   };
@@ -416,7 +418,7 @@ class CONTENT_EXPORT IndexedDBBackingStore
   virtual leveldb::Status CreateIDBDatabaseMetaData(const base::string16& name,
                                                     int64_t version,
                                                     int64_t* row_id);
-  virtual bool UpdateIDBDatabaseIntVersion(
+  virtual void UpdateIDBDatabaseIntVersion(
       IndexedDBBackingStore::Transaction* transaction,
       int64_t row_id,
       int64_t version);
