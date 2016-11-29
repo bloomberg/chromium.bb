@@ -100,6 +100,7 @@ table_files = \
 	en-ueb-chardefs.uti \
 	en-ueb-g1.ctb \
 	en-ueb-g2.ctb \
+	en-ueb-math.ctb \
 	en-us-brf.dis \
 	en-us-comp6.ctb \
 	en-us-comp8.ctb \
@@ -152,6 +153,7 @@ table_files = \
 	gon.tbl \
 	gr-bb.ctb \
 	gr-gr-g1.utb \
+	gr-pl-comp8.uti \
 	gu-in-g1.utb \
 	gujarati.cti \
 	gurumuki.cti \
