@@ -9,6 +9,8 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/strings/stringprintf.h"
+#include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/net/referrer.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -27,6 +29,7 @@
 #include "device/usb/mojo/type_converters.h"
 #include "device/usb/usb_device.h"
 #include "device/usb/usb_device_filter.h"
+#include "device/usb/usb_ids.h"
 #include "device/usb/webusb_descriptors.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "url/gurl.h"
@@ -38,6 +41,30 @@ Browser* GetBrowser() {
       ProfileManager::GetActiveUserProfile());
   DCHECK(browser_displayer.browser());
   return browser_displayer.browser();
+}
+
+base::string16 GetDeviceName(scoped_refptr<device::UsbDevice> device) {
+  base::string16 device_name = device->product_string();
+  if (device_name.empty()) {
+    uint16_t vendor_id = device->vendor_id();
+    uint16_t product_id = device->product_id();
+    if (const char* product_name =
+            device::UsbIds::GetProductName(vendor_id, product_id)) {
+      device_name = base::UTF8ToUTF16(product_name);
+    } else if (const char* vendor_name =
+                   device::UsbIds::GetVendorName(vendor_id)) {
+      device_name = l10n_util::GetStringFUTF16(
+          IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME,
+          base::UTF8ToUTF16(vendor_name));
+    } else {
+      device_name = l10n_util::GetStringFUTF16(
+          IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID,
+          base::ASCIIToUTF16(base::StringPrintf("%04x", vendor_id)),
+          base::ASCIIToUTF16(base::StringPrintf("%04x", product_id)));
+    }
+  }
+
+  return device_name;
 }
 
 }  // namespace
@@ -154,7 +181,7 @@ void UsbChooserController::OpenHelpCenterUrl() const {
 void UsbChooserController::OnDeviceAdded(
     scoped_refptr<device::UsbDevice> device) {
   if (DisplayDevice(device)) {
-    const base::string16& device_name = device->product_string();
+    base::string16 device_name = GetDeviceName(device);
     devices_.push_back(std::make_pair(device, device_name));
     ++device_name_map_[device_name];
     if (view())
@@ -184,7 +211,7 @@ void UsbChooserController::GotUsbDeviceList(
     const std::vector<scoped_refptr<device::UsbDevice>>& devices) {
   for (const auto& device : devices) {
     if (DisplayDevice(device)) {
-      const base::string16& device_name = device->product_string();
+      base::string16 device_name = GetDeviceName(device);
       devices_.push_back(std::make_pair(device, device_name));
       ++device_name_map_[device_name];
     }

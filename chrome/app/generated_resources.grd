@@ -15213,6 +15213,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_AND_PAIRED_STATUS_TEXT" desc="Text of the device name and paired status.">
         <ph name="DEVICE_NAME">$1<ex>device name</ex></ph> - Paired
       </message>
+      <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_NAME" desc="String describing an unknown device by its vendor name.">
+        Unknown device from <ph name="VENDOR_NAME">$1<ex>vendor name</ex></ph>
+      </message>
+      <message name="IDS_DEVICE_CHOOSER_DEVICE_NAME_UNKNOWN_DEVICE_WITH_VENDOR_ID_AND_PRODUCT_ID" desc="String describing a device when only numeric vendor and product IDs are available.">
+        Unknown device [<ph name="VENDOR_ID">$1<ex>123</ex></ph>:<ph name="PRODUCT_ID">$2<ex>123</ex></ph>]
+      </message>
     </if>
 
     <if expr="is_android">
