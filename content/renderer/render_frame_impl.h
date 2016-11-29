@@ -27,6 +27,7 @@
 #include "build/build_config.h"
 #include "content/common/accessibility_mode_enums.h"
 #include "content/common/associated_interface_registry_impl.h"
+#include "content/common/download/mhtml_save_status.h"
 #include "content/common/frame.mojom.h"
 #include "content/common/frame_message_enums.h"
 #include "content/common/host_zoom.mojom.h"
@@ -887,7 +888,7 @@ class CONTENT_EXPORT RenderFrameImpl
       int job_id,
       std::set<std::string> serialized_resources_uri_digests,
       base::TimeDelta main_thread_use_time,
-      bool success);
+      MhtmlSaveStatus save_status);
 
   // Requests that the browser process navigates to |url|. If
   // |is_history_navigation_in_new_child| is true, the browser process should

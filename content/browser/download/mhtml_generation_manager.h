@@ -15,6 +15,7 @@
 #include "base/macros.h"
 #include "base/memory/singleton.h"
 #include "base/process/process.h"
+#include "content/common/download/mhtml_save_status.h"
 #include "content/public/common/mhtml_generation_params.h"
 #include "ipc/ipc_platform_file.h"
 
@@ -53,14 +54,13 @@ class MHTMLGenerationManager {
   void OnSerializeAsMHTMLResponse(
       RenderFrameHostImpl* sender,
       int job_id,
-      bool mhtml_generation_in_renderer_succeeded,
+      MhtmlSaveStatus save_status,
       const std::set<std::string>& digests_of_uris_of_serialized_resources,
       base::TimeDelta renderer_main_thread_time);
 
  private:
   friend struct base::DefaultSingletonTraits<MHTMLGenerationManager>;
   class Job;
-  enum class JobStatus { SUCCESS, FAILURE };
 
   MHTMLGenerationManager();
   virtual ~MHTMLGenerationManager();
@@ -73,10 +73,10 @@ class MHTMLGenerationManager {
   void OnFileAvailable(int job_id, base::File browser_file);
 
   // Called on the UI thread when a job has been finished.
-  void JobFinished(Job* job, JobStatus job_status);
+  void JobFinished(Job* job, MhtmlSaveStatus save_status);
 
   // Called on the UI thread after the file got finalized and we have its size.
-  void OnFileClosed(int job_id, JobStatus job_status, int64_t file_size);
+  void OnFileClosed(int job_id, MhtmlSaveStatus save_status, int64_t file_size);
 
   // Creates and registers a new job.
   Job* NewJob(WebContents* web_contents,

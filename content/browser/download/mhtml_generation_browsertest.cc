@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/callback.h"
@@ -12,6 +13,7 @@
 #include "base/macros.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/histogram_tester.h"
 #include "base/threading/thread_restrictions.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/frame_messages.h"
@@ -111,6 +113,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
   void GenerateMHTMLForCurrentPage(const MHTMLGenerationParams& params) {
     base::RunLoop run_loop;
+    histogram_tester_.reset(new base::HistogramTester());
 
     shell()->web_contents()->GenerateMHTML(
         params, base::Bind(&MHTMLGenerationTest::MHTMLGenerated,
@@ -194,6 +197,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
   bool has_mhtml_callback_run() const { return has_mhtml_callback_run_; }
   int64_t file_size() const { return file_size_; }
+  base::HistogramTester* histogram_tester() { return histogram_tester_.get(); }
 
   base::ScopedTempDir temp_dir_;
 
@@ -206,6 +210,7 @@ class MHTMLGenerationTest : public ContentBrowserTest {
 
   bool has_mhtml_callback_run_;
   int64_t file_size_;
+  std::unique_ptr<base::HistogramTester> histogram_tester_;
 };
 
 // Tests that generating a MHTML does create contents.
@@ -230,6 +235,11 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTML) {
     EXPECT_THAT(mhtml,
                 HasSubstr("Content-Transfer-Encoding: quoted-printable"));
   }
+
+  // Checks that the final status reported to UMA is correct.
+  histogram_tester()->ExpectUniqueSample(
+      "PageSerialization.MhtmlGeneration.FinalSaveStatus",
+      static_cast<int>(MhtmlSaveStatus::SUCCESS), 1);
 }
 
 class GenerateMHTMLAndExitRendererMessageFilter : public BrowserMessageFilter {
@@ -355,6 +365,11 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, InvalidPath) {
   ASSERT_FALSE(HasFailure());  // No failures with the invocation itself?
 
   EXPECT_EQ(file_size(), -1);  // Expecting that the callback reported failure.
+
+  // Checks that the final status reported to UMA is correct.
+  histogram_tester()->ExpectUniqueSample(
+      "PageSerialization.MhtmlGeneration.FinalSaveStatus",
+      static_cast<int>(MhtmlSaveStatus::FILE_CREATION_ERROR), 1);
 }
 
 // Tests that MHTML generated using the default 'quoted-printable' encoding does
@@ -454,6 +469,11 @@ IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest, GenerateMHTMLObeyNoStoreMainFrame) {
 
   // Make sure the contents are missing.
   EXPECT_THAT(mhtml, Not(HasSubstr("test body")));
+
+  // Checks that the final status reported to UMA is correct.
+  histogram_tester()->ExpectUniqueSample(
+      "PageSerialization.MhtmlGeneration.FinalSaveStatus",
+      static_cast<int>(MhtmlSaveStatus::FRAME_SERIALIZATION_FORBIDDEN), 1);
 }
 
 IN_PROC_BROWSER_TEST_F(MHTMLGenerationTest,

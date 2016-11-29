@@ -9,6 +9,7 @@
 #define CONTENT_COMMON_CONTENT_PARAM_TRAITS_MACROS_H_
 
 #include "content/common/content_export.h"
+#include "content/common/download/mhtml_save_status.h"
 #include "content/common/input/input_event_ack_state.h"
 #include "content/public/common/request_context_frame_type.h"
 #include "content/public/common/request_context_type.h"
@@ -33,6 +34,8 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextType,
                           content::REQUEST_CONTEXT_TYPE_LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(content::RequestContextFrameType,
                           content::REQUEST_CONTEXT_FRAME_TYPE_LAST)
+IPC_ENUM_TRAITS_MAX_VALUE(content::MhtmlSaveStatus,
+                          content::MhtmlSaveStatus::LAST)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicySource,
                           blink::WebContentSecurityPolicySourceLast)
 IPC_ENUM_TRAITS_MAX_VALUE(blink::WebContentSecurityPolicyType,
