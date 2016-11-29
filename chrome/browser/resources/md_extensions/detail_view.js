@@ -52,6 +52,18 @@ cr.define('extensions', function() {
      * @return {boolean}
      * @private
      */
+    shouldShowHomepageButton_: function() {
+      // Note: we ignore |data.homePage.specified| - we use an extension's
+      // webstore entry as a homepage if the extension didn't explicitly specify
+      // a homepage. (|url| can still be unset in the case of unpacked
+      // extensions.)
+      return this.data.homePage.url.length > 0;
+    },
+
+    /**
+     * @return {boolean}
+     * @private
+     */
     shouldShowOptionsButton_: function() {
       return !!this.data.optionsPage;
     },

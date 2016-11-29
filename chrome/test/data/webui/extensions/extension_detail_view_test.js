@@ -54,7 +54,7 @@ cr.define('extension_detail_view_tests', function() {
 
         var testIsVisible = extension_test_util.isVisible.bind(null, item);
         expectTrue(testIsVisible('#close-button'));
-        expectTrue(testIsVisible('#open-in-webstore'));
+        expectFalse(testIsVisible('#open-homepage'));
         expectFalse(testIsVisible('#options'));
 
         // Check the checkboxes visibility and state. They should be visible
@@ -108,6 +108,11 @@ cr.define('extension_detail_view_tests', function() {
              'chrome-extension://' + extensionData.id + '/options.html';
         item.set('data.optionsPage', {openInTab: true, url: optionsUrl});
         expectTrue(testIsVisible('#options'));
+
+        var homepageUrl = 'https://www.example.com/';
+        item.set('data.homePage', {specified: true, url: homepageUrl});
+        expectTrue(testIsVisible('#open-homepage'));
+        expectEquals(homepageUrl, item.$$('#open-homepage').href);
       });
 
       test(assert(TestNames.ClickableElements), function() {

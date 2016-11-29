@@ -175,6 +175,7 @@ cr.define('extension_test_util', function() {
         corruptInstall: false,
         updateRequired: false,
       },
+      homePage: {specified: false, url: ''},
       iconUrl: 'chrome://extension-icon/' + id + '/24/0',
       id: id,
       incognitoAccess: {isEnabled: true, isActive: false},

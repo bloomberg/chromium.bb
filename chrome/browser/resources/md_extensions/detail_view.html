@@ -32,6 +32,10 @@
         padding: 8px 12px 0;
       }
 
+      a paper-icon-button {
+        color: var(--paper-grey-600);
+      }
+
       #name {
         flex-grow: 1;
       }
@@ -74,8 +78,10 @@
         <paper-icon-button id="close-button" icon="arrow-back"
             on-tap="onCloseButtonTap_"></paper-icon-button>
         <span id="name">[[data.name]]</span>
-        <paper-icon-button id="open-in-webstore" icon="open-in-new">
-        </paper-icon-button>
+        <a id="open-homepage" href="[[data.homePage.url]]" tabindex="-1"
+            target="_blank" hidden$="[[!shouldShowHomepageButton_(data.*)]]">
+          <paper-icon-button icon="open-in-new"></paper-icon-button>
+        </a>
         <paper-icon-button id="options" icon="settings"
             on-tap="onOptionsButtonTap_"
             hidden$="[[!shouldShowOptionsButton_(data.*)]]">
