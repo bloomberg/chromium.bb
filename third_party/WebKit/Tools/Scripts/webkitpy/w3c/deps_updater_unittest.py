@@ -70,7 +70,8 @@ class DepsUpdaterTest(unittest.TestCase):
         self.assertEqual(
             description,
             ('Last commit message\n'
-             'TBR=qyearsley@chromium.org'))
+             'TBR=qyearsley@chromium.org\n'
+             'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])
 
     def test_cl_description_with_environ_variables(self):
@@ -85,5 +86,6 @@ class DepsUpdaterTest(unittest.TestCase):
             description,
             ('Last commit message\n'
              'Build: https://build.chromium.org/p/my.master/builders/b/builds/123\n\n'
-             'TBR=qyearsley@chromium.org'))
+             'TBR=qyearsley@chromium.org\n'
+             'NOEXPORT=true'))
         self.assertEqual(host.executive.calls, [['git', 'log', '-1', '--format=%B']])

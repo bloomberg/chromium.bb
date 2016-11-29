@@ -342,7 +342,8 @@ class DepsUpdater(object):
         build_link = self._build_link()
         if build_link:
             description += 'Build: %s\n\n' % build_link
-        description += 'TBR=qyearsley@chromium.org'
+        description += 'TBR=qyearsley@chromium.org\n'
+        description += 'NOEXPORT=true'
         return description
 
     def _build_link(self):
