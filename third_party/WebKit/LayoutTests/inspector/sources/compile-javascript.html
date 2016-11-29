@@ -19,9 +19,8 @@ function test()
 
     function onCompilationFinished(sourceFrame)
     {
-        for (var line in sourceFrame._rowMessageBuckets) {
-            var bubble = sourceFrame._rowMessageBuckets[line];
-            for (var rowMessage of bubble._messages) {
+        for (var bucket of sourceFrame._rowMessageBuckets.values()) {
+            for (var rowMessage of bucket._messages) {
                 var message = rowMessage.message();
                 InspectorTest.addResult(String.sprintf("%d:%d [%s] %s", message.lineNumber(), message.columnNumber(), message.level(), message.text()));
             }

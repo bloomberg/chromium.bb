@@ -50,7 +50,7 @@ var test = function()
             {
                 dumpConsoleMessageURLs();
                 InspectorTest.addResult("Pre-format row message list:");
-                InspectorTest.addResult(JSON.stringify(Object.keys(sourceFrame._rowMessageBuckets)));
+                InspectorTest.addResult(JSON.stringify(sourceFrame._rowMessageBuckets.keysArray()));
                 var name = panel.visibleView.uiSourceCode().name();
                 scriptFormatter._toggleFormatScriptSource();
                 InspectorTest.showScriptSource(name + ":formatted", uiSourceCodeScriptFormatted);
@@ -61,7 +61,7 @@ var test = function()
                 dumpConsoleMessageURLs();
                 InspectorTest.addResult("Post-format row message list:");
                 var formattedSourceFrame = panel.visibleView;
-                InspectorTest.addResult(JSON.stringify(Object.keys(formattedSourceFrame._rowMessageBuckets)));
+                InspectorTest.addResult(JSON.stringify(formattedSourceFrame._rowMessageBuckets.keysArray()));
                 next();
             }
         }
