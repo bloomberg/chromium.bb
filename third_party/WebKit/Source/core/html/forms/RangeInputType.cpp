@@ -322,8 +322,9 @@ bool RangeInputType::shouldRespectListAttribute() {
 }
 
 inline SliderThumbElement* RangeInputType::sliderThumbElement() const {
-  return toSliderThumbElement(element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::sliderThumb()));
+  return toSliderThumbElementOrDie(
+      element().userAgentShadowRoot()->getElementById(
+          ShadowElementNames::sliderThumb()));
 }
 
 inline Element* RangeInputType::sliderTrackElement() const {

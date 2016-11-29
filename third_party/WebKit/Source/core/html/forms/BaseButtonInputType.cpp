@@ -62,7 +62,7 @@ void BaseButtonInputType::createShadowSubtree() {
 }
 
 void BaseButtonInputType::valueAttributeChanged() {
-  toText(element().userAgentShadowRoot()->firstChild())
+  toTextOrDie(element().userAgentShadowRoot()->firstChild())
       ->setData(displayValue());
 }
 

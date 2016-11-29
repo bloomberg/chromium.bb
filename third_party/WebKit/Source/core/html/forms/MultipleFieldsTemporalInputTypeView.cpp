@@ -133,25 +133,28 @@ bool DateTimeFormatValidator::validateFormat(
 
 DateTimeEditElement* MultipleFieldsTemporalInputTypeView::dateTimeEditElement()
     const {
-  return toDateTimeEditElement(element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::dateTimeEdit()));
+  return toDateTimeEditElementOrDie(
+      element().userAgentShadowRoot()->getElementById(
+          ShadowElementNames::dateTimeEdit()));
 }
 
 SpinButtonElement* MultipleFieldsTemporalInputTypeView::spinButtonElement()
     const {
-  return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::spinButton()));
+  return toSpinButtonElementOrDie(
+      element().userAgentShadowRoot()->getElementById(
+          ShadowElementNames::spinButton()));
 }
 
 ClearButtonElement* MultipleFieldsTemporalInputTypeView::clearButtonElement()
     const {
-  return toClearButtonElement(element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::clearButton()));
+  return toClearButtonElementOrDie(
+      element().userAgentShadowRoot()->getElementById(
+          ShadowElementNames::clearButton()));
 }
 
 PickerIndicatorElement*
 MultipleFieldsTemporalInputTypeView::pickerIndicatorElement() const {
-  return toPickerIndicatorElement(
+  return toPickerIndicatorElementOrDie(
       element().userAgentShadowRoot()->getElementById(
           ShadowElementNames::pickerIndicator()));
 }

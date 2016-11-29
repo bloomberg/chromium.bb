@@ -112,9 +112,9 @@ Element* HTMLDetailsElement::findMainSummary() const {
     return summary;
 
   HTMLContentElement* content =
-      toHTMLContentElement(userAgentShadowRoot()->firstChild());
+      toHTMLContentElementOrDie(userAgentShadowRoot()->firstChild());
   DCHECK(content->firstChild());
-  DCHECK(isHTMLSummaryElement(*content->firstChild()));
+  CHECK(isHTMLSummaryElement(*content->firstChild()));
   return toElement(content->firstChild());
 }
 

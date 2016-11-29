@@ -127,7 +127,7 @@ void HTMLKeygenElement::resetImpl() {
 
 HTMLSelectElement* HTMLKeygenElement::shadowSelect() const {
   ShadowRoot* root = userAgentShadowRoot();
-  return root ? toHTMLSelectElement(root->firstChild()) : 0;
+  return root ? toHTMLSelectElementOrDie(root->firstChild()) : nullptr;
 }
 
 bool HTMLKeygenElement::isInteractiveContent() const {

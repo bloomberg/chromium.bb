@@ -451,7 +451,8 @@ void SVGUseElement::buildShadowAndInstanceTree(SVGElement& target) {
 
   // If the instance root was a <use>, it could have been replaced now, so
   // reset |m_targetElementInstance|.
-  m_targetElementInstance = toSVGElement(shadowTreeRootElement->firstChild());
+  m_targetElementInstance =
+      toSVGElementOrDie(shadowTreeRootElement->firstChild());
   ASSERT(m_targetElementInstance->parentNode() == shadowTreeRootElement);
 
   // Update relative length information.

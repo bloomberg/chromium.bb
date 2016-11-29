@@ -48,6 +48,7 @@ inline bool isElementOfType<const {{tag.interface}}>(const {{namespace}}Element&
 
 {% for tag in tags|sort if not tag.multipleTagNames and not tag.noTypeHelpers %}
 #define to{{tag.interface}}(x) blink::toElement<blink::{{tag.interface}}>(x)
+#define to{{tag.interface}}OrDie(x) blink::toElementOrDie<blink::{{tag.interface}}>(x)
 {% endfor %}
 
 {% if namespace == "HTML" %}

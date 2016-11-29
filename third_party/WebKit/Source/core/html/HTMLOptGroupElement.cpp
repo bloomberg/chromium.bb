@@ -181,7 +181,7 @@ void HTMLOptGroupElement::updateGroupLabel() {
 }
 
 HTMLDivElement& HTMLOptGroupElement::optGroupLabelElement() const {
-  return *toHTMLDivElement(userAgentShadowRoot()->getElementById(
+  return *toHTMLDivElementOrDie(userAgentShadowRoot()->getElementById(
       ShadowElementNames::optGroupLabel()));
 }
 

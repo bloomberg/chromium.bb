@@ -163,7 +163,7 @@ bool TextControlElement::placeholderShouldBeVisible() const {
 }
 
 HTMLElement* TextControlElement::placeholderElement() const {
-  return toHTMLElement(
+  return toHTMLElementOrDie(
       userAgentShadowRoot()->getElementById(ShadowElementNames::placeholder()));
 }
 
@@ -900,7 +900,7 @@ String TextControlElement::directionForFormData() const {
 }
 
 HTMLElement* TextControlElement::innerEditorElement() const {
-  return toHTMLElement(
+  return toHTMLElementOrDie(
       userAgentShadowRoot()->getElementById(ShadowElementNames::innerEditor()));
 }
 

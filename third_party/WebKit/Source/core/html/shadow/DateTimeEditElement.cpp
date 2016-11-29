@@ -524,7 +524,7 @@ DEFINE_TRACE(DateTimeEditElement) {
 
 inline Element* DateTimeEditElement::fieldsWrapperElement() const {
   DCHECK(firstChild());
-  return toElement(firstChild());
+  return toElementOrDie(firstChild());
 }
 
 void DateTimeEditElement::addField(DateTimeFieldElement* field) {

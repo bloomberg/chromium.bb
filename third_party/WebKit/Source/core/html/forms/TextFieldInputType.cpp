@@ -125,8 +125,9 @@ InputType::ValueMode TextFieldInputType::valueMode() const {
 }
 
 SpinButtonElement* TextFieldInputType::spinButtonElement() const {
-  return toSpinButtonElement(element().userAgentShadowRoot()->getElementById(
-      ShadowElementNames::spinButton()));
+  return toSpinButtonElementOrDie(
+      element().userAgentShadowRoot()->getElementById(
+          ShadowElementNames::spinButton()));
 }
 
 bool TextFieldInputType::shouldShowFocusRingOnMouseFocus() const {

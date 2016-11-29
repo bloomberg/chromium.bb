@@ -218,7 +218,8 @@ void ColorInputType::updateView() {
 
 HTMLElement* ColorInputType::shadowColorSwatch() const {
   ShadowRoot* shadow = element().userAgentShadowRoot();
-  return shadow ? toHTMLElement(shadow->firstChild()->firstChild()) : 0;
+  return shadow ? toHTMLElementOrDie(shadow->firstChild()->firstChild())
+                : nullptr;
 }
 
 Element& ColorInputType::ownerElement() const {

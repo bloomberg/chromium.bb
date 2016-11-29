@@ -961,6 +961,27 @@ inline const T* toElement(const Node* node) {
   return static_cast<const T*>(node);
 }
 
+template <typename T>
+inline T& toElementOrDie(Node& node) {
+  CHECK(isElementOfType<const T>(node));
+  return static_cast<T&>(node);
+}
+template <typename T>
+inline T* toElementOrDie(Node* node) {
+  CHECK(!node || isElementOfType<const T>(*node));
+  return static_cast<T*>(node);
+}
+template <typename T>
+inline const T& toElementOrDie(const Node& node) {
+  CHECK(isElementOfType<const T>(node));
+  return static_cast<const T&>(node);
+}
+template <typename T>
+inline const T* toElementOrDie(const Node* node) {
+  CHECK(!node || isElementOfType<const T>(*node));
+  return static_cast<const T*>(node);
+}
+
 inline bool isDisabledFormControl(const Node* node) {
   return node->isElementNode() && toElement(node)->isDisabledFormControl();
 }
