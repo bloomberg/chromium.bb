@@ -2,7 +2,7 @@
 <head>
 <script src="../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../http/tests/inspector/console-test.js"></script>
-<script src="../../http/tests/inspector/workspace-test.js"></script>
+
 <script src="resources/stack-with-sourceUrl.js"></script>
 <script src="resources/stack-with-sourceMap.js"></script>
 <script>
@@ -74,7 +74,7 @@ function test()
     InspectorTest.waitUntilMessageReceived(waitForUISourceCode);
     function waitForUISourceCode()
     {
-        InspectorTest.waitForGivenUISourceCode("stack-with-sourceMap.coffee", dumpMessages);
+        InspectorTest.waitForUISourceCode(dumpMessages, "stack-with-sourceMap.coffee");
     }
 
     function dumpMessages()

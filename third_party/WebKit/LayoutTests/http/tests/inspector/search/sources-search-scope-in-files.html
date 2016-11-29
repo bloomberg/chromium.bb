@@ -3,12 +3,20 @@
 <title>Test search in sources.</title>
 <script src="../inspector-test.js"></script>
 <script src="../isolated-filesystem-test.js"></script>
-<script src="../workspace-test.js"></script>
 <script src="../debugger-test.js"></script>
 <script src="./search-test.js"></script>
 <script>
 function test()
 {
+    function fileSystemUISourceCodes()
+    {
+        var uiSourceCodes = [];
+        var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
+        for (var project of fileSystemProjects)
+            uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
+        return uiSourceCodes;
+    }
+
     var scope = new Sources.SourcesSearchScope();
     var names = ["search.html", "search.js", "search.css"];
     var fs = new InspectorTest.TestFileSystem("file:///var/www");
@@ -179,7 +187,7 @@ function test()
         function testDirtyFiles(next)
         {
             var uiSourceCode;
-            var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
+            var uiSourceCodes = fileSystemUISourceCodes();
             for (var i = 0; i < uiSourceCodes.length; ++i) {
                 if (uiSourceCodes[i].name() === "search.js") {
                     uiSourceCode = uiSourceCodes[i];

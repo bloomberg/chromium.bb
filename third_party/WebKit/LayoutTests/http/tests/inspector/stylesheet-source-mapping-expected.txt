@@ -1,6 +1,6 @@
 Tests SourceMap and StyleSheetMapping.
 
-Added CSS uiSourceCode: http://localhost:8000/inspector/resources/example.css
-Added SCSS uiSourceCode: http://localhost:8000/inspector/resources/example.scss
-UILocation upon LiveLocation update: http://localhost:8000/inspector/resources/example.scss:2:2
+Added CSS uiSourceCode: http://127.0.0.1:8000/inspector/resources/example.css
+Added SCSS uiSourceCode: http://127.0.0.1:8000/inspector/resources/example.scss
+UILocation upon LiveLocation update: http://127.0.0.1:8000/inspector/resources/example.scss:2:2
 

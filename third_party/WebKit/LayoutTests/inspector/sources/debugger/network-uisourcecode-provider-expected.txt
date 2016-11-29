@@ -1,28 +1,42 @@
+CONSOLE ERROR: line 4: Uncaught SyntaxError: Unexpected token )
+CONSOLE MESSAGE: line 8: Iframe loaded
 Tests NetworkUISourceCodeProvider class.
+
 
 
 Running: testDocumentResource
 Creating resource.
-UISourceCode: http://fake.url/1
+UISourceCode: LayoutTests/inspector/sources/debugger/resources/syntax-error.html
 UISourceCode is content script: false
 Highlighter type: text/html
-UISourceCode content: <document resource content>
+UISourceCode content: <html>
+<head>
+<script>
+)
+</script>
+</head>
 
-Running: testScriptResourceAndVMScript
-Creating script resource.
+<body onload="console.log('Iframe loaded');">
+</body>
+</html>
+
+Running: testVMScript
 Creating script.
-UISourceCode: http://fake.url/3
+UISourceCode: foo.js
 UISourceCode is content script: false
 Highlighter type: text/javascript
-UISourceCode content: <script content>
+UISourceCode content: var foo=1;
 
-Running: testRemoveStyleSheetFromModelWithComplexURL
-Creating stylesheet resource.
-Added uiSourceCode: http://example.com/foo.css
-Removed uiSourceCode: http://example.com/foo.css
 
-Running: testRemoveStyleSheetFromModelWithSimpleURL
+Running: testScriptResource
+Creating script resource.
+UISourceCode: LayoutTests/inspector/sources/debugger/resources/script1.js
+UISourceCode is content script: false
+Highlighter type: text/javascript
+UISourceCode content: function f1() {}
+
+Running: testRemoveStyleSheetFromModel
 Creating stylesheet resource.
-Added uiSourceCode: foo.css
-Removed uiSourceCode: foo.css
+Added uiSourceCode: LayoutTests/inspector/sources/debugger/resources/style1.css
+Removed uiSourceCode: LayoutTests/inspector/sources/debugger/resources/style1.css
 

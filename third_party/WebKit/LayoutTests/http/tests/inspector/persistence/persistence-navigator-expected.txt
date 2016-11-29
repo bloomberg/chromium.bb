@@ -15,7 +15,6 @@ top
       debugger-test.js
       inspector-test.js
       isolated-filesystem-test.js
-      workspace-test.js
 www [dimmed]
   inspector/persistence/resources [dimmed]
     foo.js
@@ -32,7 +31,6 @@ top
       debugger-test.js
       inspector-test.js
       isolated-filesystem-test.js
-      workspace-test.js
 www
   inspector/persistence/resources
     foo.js [mapped]
@@ -49,7 +47,6 @@ top
       debugger-test.js
       inspector-test.js
       isolated-filesystem-test.js
-      workspace-test.js
 www [dimmed]
   inspector/persistence/resources [dimmed]
     foo.js

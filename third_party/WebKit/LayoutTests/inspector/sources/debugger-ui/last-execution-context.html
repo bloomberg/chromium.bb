@@ -1,16 +1,14 @@
 <html>
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
-<script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script>
 
 function test()
 {
-    InspectorTest.createWorkspace(true);
     var context = new UI.Context();
     context.addFlavorChangeListener(SDK.ExecutionContext, executionContextChanged, this);
     context.addFlavorChangeListener(SDK.Target, targetChanged, this);
-    new Components.ExecutionContextSelector(InspectorTest.testTargetManager, context);
+    new Components.ExecutionContextSelector(SDK.targetManager, context);
 
     function executionContextChanged(event)
     {
@@ -23,17 +21,21 @@ function test()
         InspectorTest.addResult("Target selected: " + event.data.name());
     }
 
+    InspectorTest.runtimeModel._executionContextsCleared();
+
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding page target");
     var pageTarget = InspectorTest.createMockTarget("page-target");
+    SDK.ResourceTreeModel.fromTarget(pageTarget)._cachedResourcesProcessed = true;
+    SDK.ResourceTreeModel.fromTarget(pageTarget)._frameAttached("42", 0);
     pageTarget.runtimeModel._executionContextCreated({id: "cs1", auxData: { isDefault: false, frameId: "42" }, origin: "origin", name: "contentScript1"});
     pageTarget.runtimeModel._executionContextCreated({id: "if1", auxData: { isDefault: true, frameId: "iframe1" }, origin: "origin", name: "iframeContext1"});
     pageTarget.runtimeModel._executionContextCreated({id: "p1", auxData: { isDefault: true, frameId: "42" }, origin: "origin", name: "pageContext1Name"});
 
     InspectorTest.addResult("");
     InspectorTest.addResult("Adding sw target");
-    var swTarget = InspectorTest.createMockTarget("sw-target", null, SDK.Target.Capability.Network | SDK.Target.Capability.Worker);
+    var swTarget = InspectorTest.createMockTarget("sw-target", SDK.Target.Capability.Network | SDK.Target.Capability.Worker);
     swTarget.runtimeModel._executionContextCreated({id: "sw1", auxData: { isDefault: true, frameId: "" }, origin: "origin", name: "swContext1Name"});
 
     InspectorTest.addResult("");

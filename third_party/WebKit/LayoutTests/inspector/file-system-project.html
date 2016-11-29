@@ -2,11 +2,34 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/debugger-test.js"></script>
-<script src="../http/tests/inspector/workspace-test.js"></script>
 <script src="../http/tests/inspector/isolated-filesystem-test.js"></script>
 <script>
 function test()
 {
+    function fileSystemUISourceCodes()
+    {
+        var uiSourceCodes = [];
+        var fileSystemProjects = Workspace.workspace.projectsForType(Workspace.projectTypes.FileSystem);
+        for (var project of fileSystemProjects)
+            uiSourceCodes = uiSourceCodes.concat(project.uiSourceCodes());
+        return uiSourceCodes;
+    }
+
+    function dumpUISourceCode(uiSourceCode, callback)
+    {
+        InspectorTest.addResult("UISourceCode: " + uiSourceCode.url().replace(/.*LayoutTests/, "LayoutTests"));
+        if (uiSourceCode.contentType() === Common.resourceTypes.Script || uiSourceCode.contentType() === Common.resourceTypes.Document)
+            InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts));
+        uiSourceCode.requestContent().then(didRequestContent);
+
+        function didRequestContent(content, contentEncoded)
+        {
+            InspectorTest.addResult("Highlighter type: " + Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+            InspectorTest.addResult("UISourceCode content: " + content);
+            callback();
+        }
+    }
+
     function dumpUISourceCodes(uiSourceCodes, next)
     {
         innerDumpUISourceCodes(uiSourceCodes, 0, next);
@@ -19,7 +42,7 @@ function test()
                 return;
             }
 
-            InspectorTest.dumpUISourceCode(uiSourceCodes[startIndex], innerDumpUISourceCodes.bind(this, uiSourceCodes, startIndex + 1, next));
+            dumpUISourceCode(uiSourceCodes[startIndex], innerDumpUISourceCodes.bind(this, uiSourceCodes, startIndex + 1, next));
         }
     }
 
@@ -36,7 +59,7 @@ function test()
     function dumpWorkspaceUISourceCodes()
     {
         InspectorTest.addResult("Dumping uiSourceCodes origin URLs:");
-        var uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
+        var uiSourceCodes = fileSystemUISourceCodes();
         for (var i = 0; i < uiSourceCodes.length; ++i)
             InspectorTest.addResult("  - " + uiSourceCodes[i].url());
     }
@@ -86,7 +109,7 @@ function test()
 
             function onUISourceCodesLoaded()
             {
-                uiSourceCodes = InspectorTest.fileSystemUISourceCodes();
+                uiSourceCodes = fileSystemUISourceCodes();
                 dumpUISourceCodes(uiSourceCodes, uiSourceCodesDumped);
             }
 
@@ -100,7 +123,7 @@ function test()
             function contentCommitted()
             {
                 InspectorTest.addResult("After revision added:");
-                InspectorTest.dumpUISourceCode(uiSourceCodes[0], finalize);
+                dumpUISourceCode(uiSourceCodes[0], finalize);
             }
 
             function finalize()
@@ -146,7 +169,7 @@ function test()
 
             function dumpExcludes(fs)
             {
-                InspectorTest.fileSystemUISourceCodes()[0].project().excludeFolder("file:///var/www3/html2/");
+                fileSystemUISourceCodes()[0].project().excludeFolder("file:///var/www3/html2/");
                 InspectorTest.addResult("");
                 InspectorTest.addResult("-- Excluded /html2/ --");
                 dumpWorkspaceUISourceCodes();

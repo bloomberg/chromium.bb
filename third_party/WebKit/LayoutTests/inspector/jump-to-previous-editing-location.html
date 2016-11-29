@@ -2,7 +2,6 @@
 <head>
 <script src="../http/tests/inspector/inspector-test.js"></script>
 <script src="../http/tests/inspector/console-test.js"></script>
-<script src="../http/tests/inspector/workspace-test.js"></script>
 <script src="../http/tests/inspector/debugger-test.js"></script>
 <script src="resources/example-fileset-for-test.js"></script>
 <script src="editor/editor-test.js"></script>
@@ -141,11 +140,11 @@ function test()
 
         function testCrossFileJump(next)
         {
-            InspectorTest.showScriptSource("workspace-test.js", onContentLoaded);
+            InspectorTest.showScriptSource("editor-test.js", onContentLoaded);
             function onContentLoaded()
             {
                 var editor = panel.visibleView.textEditor;
-                dumpSelection("Opened workspace-test.js");
+                dumpSelection("Opened editor-test.js");
                 clickAndDump(editor, [10, 11], [1, 1]);
                 for (var i = 0; i < 4; ++i) {
                     rollback();
@@ -217,7 +216,7 @@ function test()
         function testShowAnchorLocation(next)
         {
             dumpSelection("Before switching to other panel");
-            InspectorTest.waitForScriptSource("workspace-test.js", onScriptSource);
+            InspectorTest.waitForScriptSource("editor-test.js", onScriptSource);
             function onScriptSource(uiSourceCode)
             {
                 var linkifier = new Components.Linkifier();

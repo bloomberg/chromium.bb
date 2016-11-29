@@ -401,6 +401,51 @@ InspectorTest.dumpNavigatorViewInMode = function(view, mode)
     InspectorTest.dumpNavigatorView(view);
 }
 
+InspectorTest.waitForUISourceCode = function(callback, url, projectType)
+{
+    function matches(uiSourceCode)
+    {
+        if (projectType && uiSourceCode.project().type() !== projectType)
+            return false;
+        if (!projectType && uiSourceCode.project().type() === Workspace.projectTypes.Service)
+            return false;
+        if (url && !uiSourceCode.url().endsWith(url))
+            return false;
+        return true;
+    }
+
+    for (var uiSourceCode of Workspace.workspace.uiSourceCodes()) {
+        if (url && matches(uiSourceCode)) {
+            callback(uiSourceCode);
+            return;
+        }
+    }
+
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+    function uiSourceCodeAdded(event)
+    {
+        if (!matches(event.data))
+            return;
+        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeAdded, uiSourceCodeAdded);
+        callback(event.data);
+    }
+}
+
+InspectorTest.waitForUISourceCodeRemoved = function(callback)
+{
+    Workspace.workspace.addEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+    function uiSourceCodeRemoved(event)
+    {
+        Workspace.workspace.removeEventListener(Workspace.Workspace.Events.UISourceCodeRemoved, uiSourceCodeRemoved);
+        callback(event.data);
+    }
+}
+
+InspectorTest.createMockTarget = function(name, capabilities)
+{
+    return SDK.targetManager.createTarget(name, capabilities || SDK.Target.Capability.AllForTests, params => new SDK.StubConnection(params), null);
+}
+
 InspectorTest.assertGreaterOrEqual = function(a, b, message)
 {
     if (a < b)

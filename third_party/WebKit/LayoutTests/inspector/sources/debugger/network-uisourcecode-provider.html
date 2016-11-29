@@ -2,141 +2,118 @@
 <head>
 <script src="../../../http/tests/inspector/inspector-test.js"></script>
 <script src="../../../http/tests/inspector/debugger-test.js"></script>
-<script src="../../../http/tests/inspector/workspace-test.js"></script>
 <script>
+function addIframe()
+{
+    var iframe = document.createElement("iframe");
+    iframe.setAttribute("src", "resources/syntax-error.html");
+    document.body.appendChild(iframe);
+}
+
+function addScript()
+{
+    var script = document.createElement("script");
+    script.setAttribute("src", "resources/script1.js");
+    document.head.appendChild(script);
+}
+
+function addStyleSheet()
+{
+    var style = document.createElement("link");
+    style.setAttribute("rel", "stylesheet");
+    style.setAttribute("type", "text/css");
+    style.setAttribute("href", "resources/style1.css");
+    document.head.appendChild(style);
+    window._style = style;
+}
+
+function removeStyleSheet()
+{
+    window._style.parentNode.removeChild(window._style);
+    window._style = null;
+}
+
 function test()
 {
-    var mockContentsMap = {};
-    var target;
-    var lastResourceId = 0;
-    var lastStyleSheetId = 0;
+    var target = InspectorTest.mainTarget;
 
-    InspectorTest._defaultWorkspaceEventHandler = function() {}
-
-    function createMockStyleSheetHeader(url)
+    function uiSourceCodeURL(uiSourceCode)
     {
-        return {
-            styleSheetId: (++lastStyleSheetId) + "",
-            sourceURL: url,
-            sourceMapURL: "",
-            origin: "regular",
-            title: "",
-            disabled: false
-        };
+        return uiSourceCode.url().replace(/.*LayoutTests/, "LayoutTests");
     }
 
-    function createResourceMock(type, content)
+    function dumpUISourceCode(uiSourceCode, callback)
     {
-        var documentURL = "http://fake.url";
-        var resourceId = ++lastResourceId + "";
-        var url = documentURL + "/" + resourceId;
-        var frameId = "frame-id";
-        var loaderId = "loader-id";
-        var mimeType;
-        switch (type) {
-        case Common.resourceTypes.Document:
-            mimeType = "text/html";
-            break;
-        case Common.resourceTypes.Script:
-            mimeType = "text/javascript";
-            break;
-        case Common.resourceTypes.Stylesheet:
-            mimeType = "text/css";
-            break;
+        InspectorTest.addResult("UISourceCode: " + uiSourceCodeURL(uiSourceCode));
+        if (uiSourceCode.contentType() === Common.resourceTypes.Script || uiSourceCode.contentType() === Common.resourceTypes.Document)
+            InspectorTest.addResult("UISourceCode is content script: " + (uiSourceCode.project().type() === Workspace.projectTypes.ContentScripts));
+        uiSourceCode.requestContent().then(didRequestContent);
+
+        function didRequestContent(content, contentEncoded)
+        {
+            InspectorTest.addResult("Highlighter type: " + Bindings.NetworkProject.uiSourceCodeMimeType(uiSourceCode));
+            InspectorTest.addResult("UISourceCode content: " + content);
+            callback();
         }
-
-        var resource = new SDK.Resource(target, null, url, documentURL, frameId, loaderId, type, mimeType);
-        resource._content = content;
-        target.resourceTreeModel.dispatchEventToListeners(SDK.ResourceTreeModel.Events.ResourceAdded, resource);
-
-        return resource;
-    }
-
-    function createScriptMock(content)
-    {
-        var documentURL = "http://fake.url";
-        var resourceId = ++lastResourceId + "";
-        var url = documentURL + "/" + resourceId;
-        var script = InspectorTest.createScriptMock(url, 0, 0, false, content, target);
-        target.debuggerModel.dispatchEventToListeners(SDK.DebuggerModel.Events.ParsedScriptSource, script);
-    }
-
-    function finishResource(resource)
-    {
-        resource.request.finished = true;
-        resource.request.dispatchEventToListeners(SDK.NetworkRequest.Events.FinishedLoading, resource.request);
-    }
-
-    function createNetworkUISourceCodeProvider()
-    {
-        target = InspectorTest.createWorkspaceWithTarget(true);
     }
 
     InspectorTest.runTestSuite([
         function testDocumentResource(next)
         {
-            createNetworkUISourceCodeProvider();
             InspectorTest.addResult("Creating resource.");
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            createResourceMock(Common.resourceTypes.Document, "<document resource content>");
+            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "resources/syntax-error.html");
+            InspectorTest.evaluateInPage("addIframe()");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                // setTimeouts are necessary since same event finalizes uiSourceCode creation.
-                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
+                dumpUISourceCode(uiSourceCode, next);
             }
         },
 
-        function testScriptResourceAndVMScript(next)
+        function testVMScript(next)
         {
-            createNetworkUISourceCodeProvider();
-            InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-            InspectorTest.addResult("Creating script resource.");
-            createResourceMock(Common.resourceTypes.Script, "<script resource content>");
             InspectorTest.addResult("Creating script.");
-            createScriptMock("<script content>");
+            InspectorTest.evaluateInPage("var foo=1;\n//# sourceURL=foo.js\n");
+            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "foo.js");
 
             function uiSourceCodeAdded(uiSourceCode)
             {
-                setTimeout(function() { InspectorTest.dumpUISourceCode(uiSourceCode, next); });
+                dumpUISourceCode(uiSourceCode, next);
             }
         },
 
-        function testRemoveStyleSheetFromModelWithComplexURL(next)
+        function testScriptResource(next)
         {
-            var mockStyleSheetHeader = createMockStyleSheetHeader("http://example.com/foo.css");
-            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
+            InspectorTest.addResult("Creating script resource.");
+            InspectorTest.evaluateInPage("addScript()");
+            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "script1.js");
+
+            function uiSourceCodeAdded(uiSourceCode)
+            {
+                dumpUISourceCode(uiSourceCode, next);
+            }
         },
 
-        function testRemoveStyleSheetFromModelWithSimpleURL(next)
+        function testRemoveStyleSheetFromModel(next)
         {
-            var mockStyleSheetHeader = createMockStyleSheetHeader("foo.css");
-            testRemoveStyleSheetFromModel(mockStyleSheetHeader, next);
+            InspectorTest.waitForUISourceCode(uiSourceCodeAdded, "style1.css");
+            InspectorTest.addResult("Creating stylesheet resource.");
+            InspectorTest.evaluateInPage(`addStyleSheet()`);
+
+            function uiSourceCodeAdded(uiSourceCode)
+            {
+                InspectorTest.addResult("Added uiSourceCode: " + uiSourceCodeURL(uiSourceCode));
+                InspectorTest.waitForUISourceCodeRemoved(uiSourceCodeRemoved);
+                InspectorTest.evaluateInPage("removeStyleSheet()");
+            }
+
+            function uiSourceCodeRemoved(uiSourceCode)
+            {
+                InspectorTest.addResult("Removed uiSourceCode: " + uiSourceCodeURL(uiSourceCode));
+                next();
+            }
         }
     ]);
-
-    function testRemoveStyleSheetFromModel(mockStyleSheetHeader, callback)
-    {
-        createNetworkUISourceCodeProvider();
-        InspectorTest.waitForWorkspaceUISourceCodeAddedEvent(uiSourceCodeAdded);
-        InspectorTest.addResult("Creating stylesheet resource.");
-        createResourceMock(Common.resourceTypes.Stylesheet, "<stylesheet resource content>");
-
-        SDK.CSSModel.fromTarget(target)._styleSheetAdded(mockStyleSheetHeader);
-
-        function uiSourceCodeAdded(uiSourceCode)
-        {
-            InspectorTest.addResult("Added uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-            InspectorTest.waitForWorkspaceUISourceCodeRemovedEvent(uiSourceCodeRemoved);
-            SDK.CSSModel.fromTarget(target)._styleSheetRemoved(mockStyleSheetHeader.styleSheetId);
-        }
-
-        function uiSourceCodeRemoved(uiSourceCode)
-        {
-            InspectorTest.addResult("Removed uiSourceCode: " + InspectorTest.uiSourceCodeURL(uiSourceCode));
-            callback();
-        }
-    }
 };
 </script>
 </head>
