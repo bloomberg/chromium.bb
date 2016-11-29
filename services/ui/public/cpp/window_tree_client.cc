@@ -42,6 +42,11 @@ Id MakeTransportId(ClientSpecificId client_id, ClientSpecificId local_id) {
 // Helper function to get the device_scale_factor() of the display::Display
 // with |display_id|.
 float ScaleFactorForDisplay(int64_t display_id) {
+  // TODO(jonross): Remove this once aura-mus is complete. Currently the screen
+  // is not being set properly for mus-in-renderer. (http://crbug.com/659155)
+  if (!display::Screen::GetScreen())
+    return 1.f;
+
   // TODO(riajiang): Change to use display::GetDisplayWithDisplayId() after
   // https://codereview.chromium.org/2361283002/ is landed.
   std::vector<display::Display> displays =
