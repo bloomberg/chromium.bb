@@ -85,6 +85,10 @@ class MEDIA_MOJO_EXPORT MojoRendererService
       std::unique_ptr<media::Renderer> renderer,
       InitiateSurfaceRequestCB initiate_surface_request_cb);
 
+  void set_bad_message_cb(base::Closure bad_message_cb) {
+    bad_message_cb_ = bad_message_cb;
+  }
+
   // RendererClient implementation.
   void OnError(PipelineStatus status) final;
   void OnEnded() final;
@@ -150,9 +154,10 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   // Returns the token to be used to fulfill the request.
   InitiateSurfaceRequestCB initiate_surface_request_cb_;
 
-  // WeakPtr to the binding that owns |this|.
-  // Used to forcefully close the connection (which also safely destroy |this|).
-  mojo::StrongBindingPtr<mojom::Renderer> binding_;
+  // Callback to be called when an invalid or unexpected message is received.
+  // TODO(tguilbert): Revisit how to do InitiateScopedSurfaceRequest() so that
+  // we can eliminate this callback. See http://crbug.com/669606
+  base::Closure bad_message_cb_;
 
   base::WeakPtr<MojoRendererService> weak_this_;
   base::WeakPtrFactory<MojoRendererService> weak_factory_;

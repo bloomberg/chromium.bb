@@ -92,6 +92,7 @@ class MojoRendererTest : public ::testing::Test {
   MOCK_METHOD1(OnInitialized, void(PipelineStatus));
   MOCK_METHOD0(OnFlushed, void());
   MOCK_METHOD1(OnCdmAttached, void(bool));
+  MOCK_METHOD1(OnSurfaceRequestToken, void(const base::UnguessableToken&));
 
   std::unique_ptr<StrictMock<MockDemuxerStream>> CreateStream(
       DemuxerStream::Type type) {
@@ -370,6 +371,22 @@ TEST_F(MojoRendererTest, GetMediaTime) {
   WaitFor(kSleepTime);
   EXPECT_EQ(pause_time, mojo_renderer_->GetMediaTime());
   Destroy();
+}
+
+// When |initiate_surface_request_cb_| is not set, the client should not call
+// InitiateScopedSurfaceRequest(). Otherwise, it will cause the pipe to be
+// closed and MojoRendererService destroyed.
+TEST_F(MojoRendererTest, InitiateScopedSurfaceRequest) {
+  Initialize();
+  DCHECK(renderer_binding_);
+
+  EXPECT_CALL(renderer_client_, OnError(PIPELINE_ERROR_DECODE)).Times(1);
+
+  mojo_renderer_->InitiateScopedSurfaceRequest(base::Bind(
+      &MojoRendererTest::OnSurfaceRequestToken, base::Unretained(this)));
+  base::RunLoop().RunUntilIdle();
+
+  DCHECK(!renderer_binding_);
 }
 
 TEST_F(MojoRendererTest, OnBufferingStateChange) {

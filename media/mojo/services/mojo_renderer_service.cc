@@ -18,6 +18,16 @@
 
 namespace media {
 
+namespace {
+
+void CloseBindingOnBadMessage(mojo::StrongBindingPtr<mojom::Renderer> binding) {
+  LOG(ERROR) << __func__;
+  DCHECK(binding);
+  binding->Close();
+}
+
+}  // namespace
+
 // Time interval to update media time.
 const int kTimeUpdateIntervalMs = 50;
 
@@ -37,7 +47,7 @@ mojo::StrongBindingPtr<mojom::Renderer> MojoRendererService::Create(
       mojo::MakeStrongBinding<mojom::Renderer>(base::WrapUnique(service),
                                                std::move(request));
 
-  service->binding_ = binding;
+  service->set_bad_message_cb(base::Bind(&CloseBindingOnBadMessage, binding));
 
   return binding;
 }
@@ -271,7 +281,10 @@ void MojoRendererService::InitiateScopedSurfaceRequest(
     // |renderer_| is likely not of type MediaPlayerRenderer.
     // This is an unexpected call, and the connection should be closed.
     mojo::ReportBadMessage("Unexpected call to InitiateScopedSurfaceRequest.");
-    binding_->Close();
+
+    // This may cause |this| to be destructed.
+    DCHECK(!bad_message_cb_.is_null());
+    bad_message_cb_.Run();
     return;
   }
 
