@@ -1347,6 +1347,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         hidePastePopup();
         hideSelectPopupWithCancelMessage();
         mPopupZoomer.hide(false);
+        if (mWebContents != null) mWebContents.dismissTextHandles();
     }
 
     @CalledByNative
