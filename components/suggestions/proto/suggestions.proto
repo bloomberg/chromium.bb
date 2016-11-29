@@ -52,10 +52,6 @@ message ChromeSuggestion {
 
   // The timestamp (usec) at which this suggestion ceases to be valid.
   optional int64 expiry_ts = 7;
-
-  // URL that should be pinged back when the suggestion is shown/clicked.
-  optional string impression_url = 13;
-  optional string click_url = 14;
 }
 
 // A list of URLs that should be filtered from the SuggestionsProfile.

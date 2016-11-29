@@ -183,16 +183,6 @@ v8::Local<v8::Object> GenerateMostVisitedItem(
     obj->Set(v8::String::NewFromUtf8(isolate, "faviconUrl"),
              UTF8ToV8String(isolate, mv_item.favicon.spec()));
   }
-  // If the suggestion has an impression url, we populate the element with it.
-  if (!mv_item.impression_url.spec().empty()) {
-    obj->Set(v8::String::NewFromUtf8(isolate, "impressionUrl"),
-             UTF8ToV8String(isolate, mv_item.impression_url.spec()));
-  }
-  // If the suggestion has a click url, we populate the element with it.
-  if (!mv_item.click_url.spec().empty()) {
-    obj->Set(v8::String::NewFromUtf8(isolate, "pingUrl"),
-             UTF8ToV8String(isolate, mv_item.click_url.spec()));
-  }
 
   if (IsIconNTPEnabled()) {
     // Update website http://www.chromium.org/embeddedsearch when we make this

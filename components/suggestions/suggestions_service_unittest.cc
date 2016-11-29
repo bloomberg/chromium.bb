@@ -50,10 +50,6 @@ const char kTestUrl[] = "http://go.com";
 const char kTestFaviconUrl[] =
     "https://s2.googleusercontent.com/s2/favicons?domain_url="
     "http://go.com&alt=s&sz=32";
-const char kTestImpressionUrl[] =
-    "https://www.google.com/chromesuggestions/click?q=123&cd=-1";
-const char kTestClickUrl[] =
-    "https://www.google.com/chromesuggestions/click?q=123&cd=0";
 const char kBlacklistedUrl[] = "http://blacklist.com";
 const char kBlacklistedUrlAlt[] = "http://blacklist-atl.com";
 const int64_t kTestDefaultExpiry = 1402200000000000;
@@ -188,9 +184,6 @@ class SuggestionsServiceTest : public testing::Test {
     EXPECT_EQ(kTestUrl, suggestions_profile.suggestions(0).url());
     EXPECT_EQ(kTestFaviconUrl,
               suggestions_profile.suggestions(0).favicon_url());
-    EXPECT_EQ(kTestImpressionUrl,
-              suggestions_profile.suggestions(0).impression_url());
-    EXPECT_EQ(kTestClickUrl, suggestions_profile.suggestions(0).click_url());
   }
 
   int suggestions_data_callback_count_;

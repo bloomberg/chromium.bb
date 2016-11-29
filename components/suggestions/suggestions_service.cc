@@ -132,9 +132,6 @@ const char kAuthorizationHeaderFormat[] = "Authorization: Bearer %s";
 const char kFaviconURL[] =
     "https://s2.googleusercontent.com/s2/favicons?domain_url=%s&alt=s&sz=32";
 
-const char kPingURL[] =
-    "https://www.google.com/chromesuggestions/click?q=%lld&cd=%d";
-
 // The default expiry timeout is 168 hours.
 const int64_t kDefaultExpiryUsec = 168 * base::Time::kMicrosecondsPerHour;
 
@@ -507,16 +504,6 @@ void SuggestionsService::PopulateExtraData(SuggestionsProfile* suggestions) {
     suggestions::ChromeSuggestion* s = suggestions->mutable_suggestions(i);
     if (!s->has_favicon_url() || s->favicon_url().empty()) {
       s->set_favicon_url(base::StringPrintf(kFaviconURL, s->url().c_str()));
-    }
-    if (!s->has_impression_url() || s->impression_url().empty()) {
-      s->set_impression_url(
-          base::StringPrintf(
-              kPingURL, static_cast<long long>(suggestions->timestamp()), -1));
-    }
-
-    if (!s->has_click_url() || s->click_url().empty()) {
-      s->set_click_url(base::StringPrintf(
-          kPingURL, static_cast<long long>(suggestions->timestamp()), i));
     }
   }
 }
