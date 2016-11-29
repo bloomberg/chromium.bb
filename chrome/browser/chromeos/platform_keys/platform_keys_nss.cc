@@ -20,8 +20,8 @@
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_process_platform_part_chromeos.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_provider.h"
@@ -441,10 +441,15 @@ void GenerateRSAKeyWithDB(std::unique_ptr<GenerateRSAKeyState> state,
                           net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&GenerateRSAKeyOnWorkerThread, base::Passed(&state)),
-      true /*task is slow*/);
+  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithFileIO()
+                     .WithWait()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&GenerateRSAKeyOnWorkerThread, base::Passed(&state)));
 }
 
 // Does the actual signing on a worker thread. Used by SignRSAWithDB().
@@ -533,9 +538,15 @@ void SignRSAWithDB(std::unique_ptr<SignRSAState> state,
                    net::NSSCertDatabase* cert_db) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   // Only the slot and not the NSSCertDatabase is required. Ignore |cert_db|.
-  base::WorkerPool::PostTask(
-      FROM_HERE, base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)),
-      true /*task is slow*/);
+  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithFileIO()
+                     .WithWait()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&SignRSAOnWorkerThread, base::Passed(&state)));
 }
 
 // Called when ClientCertStoreChromeOS::GetClientCerts is done. Builds the list
@@ -598,10 +609,15 @@ void DidGetCertificates(std::unique_ptr<GetCertificatesState> state,
                         std::unique_ptr<net::CertificateList> all_certs) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   state->certs_ = std::move(all_certs);
-  base::WorkerPool::PostTask(
-      FROM_HERE,
-      base::Bind(&FilterCertificatesOnWorkerThread, base::Passed(&state)),
-      true /*task is slow*/);
+  // This task interacts with the TPM, hence WithFileIO() and WithWait().
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithFileIO()
+                     .WithWait()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&FilterCertificatesOnWorkerThread, base::Passed(&state)));
 }
 
 // Continues getting certificates with the obtained NSSCertDatabase. Used by
