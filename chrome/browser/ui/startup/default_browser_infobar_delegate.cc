@@ -97,8 +97,8 @@ DefaultBrowserInfoBarDelegate::GetIdentifier() const {
   return DEFAULT_BROWSER_INFOBAR_DELEGATE;
 }
 
-gfx::VectorIconId DefaultBrowserInfoBarDelegate::GetVectorIconId() const {
-  return gfx::VectorIconId::CHROME_PRODUCT;
+int DefaultBrowserInfoBarDelegate::GetIconId() const {
+  return IDR_PRODUCT_LOGO_32;
 }
 
 #if defined(OS_WIN)
