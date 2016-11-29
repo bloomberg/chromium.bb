@@ -26,6 +26,43 @@
 
 namespace syncer {
 
+namespace {
+
+void CallOnSyncStartingHelper(
+    SyncClient* sync_client,
+    ModelType type,
+    std::unique_ptr<DataTypeErrorHandler> error_handler,
+    ModelTypeChangeProcessor::StartCallback callback) {
+  base::WeakPtr<ModelTypeSyncBridge> bridge =
+      sync_client->GetSyncBridgeForModelType(type);
+  if (bridge) {
+    bridge->OnSyncStarting(std::move(error_handler), callback);
+  }
+}
+
+void CallGetAllNodesHelper(SyncClient* sync_client,
+                           ModelType type,
+                           DataTypeController::AllNodesCallback callback) {
+  base::WeakPtr<ModelTypeSyncBridge> bridge =
+      sync_client->GetSyncBridgeForModelType(type);
+  if (bridge) {
+    ModelTypeDebugInfo::GetAllNodes(bridge, callback);
+  }
+}
+
+void CallGetStatusCountersHelper(
+    SyncClient* sync_client,
+    ModelType type,
+    const DataTypeController::StatusCountersCallback& callback) {
+  base::WeakPtr<ModelTypeSyncBridge> bridge =
+      sync_client->GetSyncBridgeForModelType(type);
+  if (bridge) {
+    ModelTypeDebugInfo::GetStatusCounters(bridge, callback);
+  }
+}
+
+}  // namespace
+
 ModelTypeController::ModelTypeController(
     ModelType type,
     const base::Closure& dump_stack,
@@ -69,26 +106,21 @@ void ModelTypeController::LoadModels(
 
   // Start the type processor on the model thread.
   model_thread_->PostTask(
-      FROM_HERE, base::Bind(&ModelTypeSyncBridge::OnSyncStarting,
-                            sync_client_->GetSyncBridgeForModelType(type()),
+      FROM_HERE, base::Bind(&CallOnSyncStartingHelper, sync_client_, type(),
                             base::Passed(CreateErrorHandler()), callback));
 }
 
 void ModelTypeController::GetAllNodes(const AllNodesCallback& callback) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client_->GetSyncBridgeForModelType(type());
-  model_thread_->PostTask(FROM_HERE,
-                          base::Bind(&ModelTypeDebugInfo::GetAllNodes, bridge,
-                                     BindToCurrentThread(callback)));
+  model_thread_->PostTask(
+      FROM_HERE, base::Bind(&CallGetAllNodesHelper, sync_client_, type(),
+                            BindToCurrentThread(callback)));
 }
 
 void ModelTypeController::GetStatusCounters(
     const StatusCountersCallback& callback) {
-  base::WeakPtr<ModelTypeSyncBridge> bridge =
-      sync_client_->GetSyncBridgeForModelType(type());
   model_thread_->PostTask(
       FROM_HERE,
-      base::Bind(&ModelTypeDebugInfo::GetStatusCounters, bridge, callback));
+      base::Bind(&CallGetStatusCountersHelper, sync_client_, type(), callback));
 }
 
 void ModelTypeController::LoadModelsDone(ConfigureResult result,

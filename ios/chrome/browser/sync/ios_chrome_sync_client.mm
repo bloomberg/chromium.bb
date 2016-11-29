@@ -10,6 +10,7 @@
 #include "base/command_line.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -347,6 +348,10 @@ IOSChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
           ReadingListModelFactory::GetForBrowserState(browser_state_);
       return reading_list_model->GetModelTypeSyncBridge()->AsWeakPtr();
     }
+    case syncer::AUTOFILL:
+      return autofill::AutocompleteSyncBridge::FromWebDataService(
+                 web_data_service_.get())
+          ->AsWeakPtr();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();

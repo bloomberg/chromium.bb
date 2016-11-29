@@ -152,15 +152,22 @@ void ProfileSyncComponentsFactoryImpl::RegisterCommonDataTypes(
             sync_service->GetLocalDeviceInfoProvider()));
   }
 
-  // Autofill sync is enabled by default.  Register unless explicitly
+  // Autocomplete sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL)) {
-    sync_service->RegisterDataTypeController(
-        base::MakeUnique<AutofillDataTypeController>(
-            db_thread_, error_callback, sync_client_, web_data_service_));
+    if (base::FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<ModelTypeController>(
+              syncer::AUTOFILL, base::Bind(&base::debug::DumpWithoutCrashing),
+              sync_client_, db_thread_));
+    } else {
+      sync_service->RegisterDataTypeController(
+          base::MakeUnique<AutofillDataTypeController>(
+              db_thread_, error_callback, sync_client_, web_data_service_));
+    }
   }
 
-  // Autofill profile sync is enabled by default.  Register unless explicitly
+  // Autofill sync is enabled by default.  Register unless explicitly
   // disabled.
   if (!disabled_types.Has(syncer::AUTOFILL_PROFILE)) {
     sync_service->RegisterDataTypeController(

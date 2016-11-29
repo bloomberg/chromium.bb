@@ -6,10 +6,12 @@
 
 #include "base/bind.h"
 #include "base/callback.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
 #include "build/build_config.h"
+#include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_table.h"
@@ -21,6 +23,7 @@
 #include "components/search_engines/keyword_web_data_service.h"
 #include "components/signin/core/browser/webdata/token_service_table.h"
 #include "components/signin/core/browser/webdata/token_web_data.h"
+#include "components/sync/driver/sync_driver_switches.h"
 #include "components/webdata/common/web_database_service.h"
 #include "components/webdata/common/webdata_constants.h"
 
@@ -41,10 +44,16 @@ void InitSyncableServicesOnDBThread(
 
   // Currently only Autocomplete and Autofill profiles use the new Sync API, but
   // all the database data should migrate to this API over time.
-  autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
-      autofill_web_data.get(), autofill_backend);
-  autofill::AutocompleteSyncableService::FromWebDataService(
-      autofill_web_data.get())->InjectStartSyncFlare(sync_flare);
+  if (base::FeatureList::IsEnabled(switches::kSyncUSSAutocomplete)) {
+    autofill::AutocompleteSyncBridge::CreateForWebDataServiceAndBackend(
+        autofill_web_data.get(), autofill_backend);
+  } else {
+    autofill::AutocompleteSyncableService::CreateForWebDataServiceAndBackend(
+        autofill_web_data.get(), autofill_backend);
+    autofill::AutocompleteSyncableService::FromWebDataService(
+        autofill_web_data.get())
+        ->InjectStartSyncFlare(sync_flare);
+  }
 
   autofill::AutofillProfileSyncableService::CreateForWebDataServiceAndBackend(
       autofill_web_data.get(), autofill_backend, app_locale);

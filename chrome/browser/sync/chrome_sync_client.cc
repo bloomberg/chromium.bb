@@ -38,6 +38,7 @@
 #include "chrome/common/features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "components/autofill/core/browser/webdata/autocomplete_sync_bridge.h"
 #include "components/autofill/core/browser/webdata/autocomplete_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_profile_syncable_service.h"
 #include "components/autofill/core/browser/webdata/autofill_wallet_metadata_syncable_service.h"
@@ -440,6 +441,10 @@ ChromeSyncClient::GetSyncBridgeForModelType(syncer::ModelType type) {
       // Reading List is only supported on iOS at the moment.
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();
+    case syncer::AUTOFILL:
+      return autofill::AutocompleteSyncBridge::FromWebDataService(
+                 web_data_service_.get())
+          ->AsWeakPtr();
     default:
       NOTREACHED();
       return base::WeakPtr<syncer::ModelTypeSyncBridge>();

@@ -117,6 +117,8 @@ static_library("browser") {
     "ui/card_unmask_prompt_view.h",
     "validation.cc",
     "validation.h",
+    "webdata/autocomplete_sync_bridge.cc",
+    "webdata/autocomplete_sync_bridge.h",
     "webdata/autocomplete_syncable_service.cc",
     "webdata/autocomplete_syncable_service.h",
     "webdata/autofill_change.cc",
