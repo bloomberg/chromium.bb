@@ -10,9 +10,7 @@
 
 namespace blink {
 
-CSSAngleValue* CSSAngleValue::create(double value,
-                                     const String& unit,
-                                     ExceptionState& exceptionState) {
+CSSAngleValue* CSSAngleValue::create(double value, const String& unit) {
   CSSPrimitiveValue::UnitType primitiveUnit =
       CSSPrimitiveValue::stringToUnitType(unit);
   DCHECK(CSSPrimitiveValue::isAngle(primitiveUnit));

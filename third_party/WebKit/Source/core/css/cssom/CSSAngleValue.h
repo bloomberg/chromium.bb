@@ -15,9 +15,7 @@ class CORE_EXPORT CSSAngleValue final : public CSSStyleValue {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static CSSAngleValue* create(double value,
-                               const String& unit,
-                               ExceptionState&);
+  static CSSAngleValue* create(double value, const String& unit);
 
   StyleValueType type() const override { return AngleType; }
 
