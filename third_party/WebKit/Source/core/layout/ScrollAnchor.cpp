@@ -93,7 +93,7 @@ static LayoutRect relativeBounds(const LayoutObject* layoutObject,
     // TODO(skobes): Use first and last InlineTextBox only?
     for (InlineTextBox* box = toLayoutText(layoutObject)->firstTextBox(); box;
          box = box->nextTextBox())
-      localBounds.unite(box->calculateBoundaries());
+      localBounds.unite(box->frameRect());
   } else {
     // Only LayoutBox and LayoutText are supported.
     ASSERT_NOT_REACHED();

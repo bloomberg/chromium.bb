@@ -38,8 +38,6 @@ class SVGInlineFlowBox final : public InlineFlowBox {
              LayoutUnit lineTop,
              LayoutUnit lineBottom) const override;
 
-  LayoutRect calculateBoundaries() const override;
-
  private:
   LayoutUnit m_logicalHeight;
 };

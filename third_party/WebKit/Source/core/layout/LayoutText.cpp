@@ -374,7 +374,7 @@ void LayoutText::absoluteRectsForRange(Vector<IntRect>& rects,
     // Note: box->end() returns the index of the last character, not the index
     // past it
     if (start <= box->start() && box->end() < end) {
-      FloatRect r(box->calculateBoundaries());
+      FloatRect r(box->frameRect());
       if (useSelectionHeight) {
         LayoutRect selectionRect = box->localSelectionRect(start, end);
         if (box->isHorizontal()) {
@@ -426,7 +426,7 @@ void LayoutText::quads(Vector<FloatQuad>& quads,
                        ClippingOption option,
                        LocalOrAbsoluteOption localOrAbsolute) const {
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
-    FloatRect boundaries(box->calculateBoundaries());
+    FloatRect boundaries(box->frameRect());
 
     // Shorten the width of this text box if it ends in an ellipsis.
     // FIXME: ellipsisRectForBox should switch to return FloatRect soon with the
@@ -479,7 +479,7 @@ void LayoutText::absoluteQuadsForRange(Vector<FloatQuad>& quads,
     // Note: box->end() returns the index of the last character, not the index
     // past it
     if (start <= box->start() && box->end() < end) {
-      LayoutRect r(box->calculateBoundaries());
+      LayoutRect r(box->frameRect());
       if (useSelectionHeight) {
         LayoutRect selectionRect = box->localSelectionRect(start, end);
         if (box->isHorizontal()) {

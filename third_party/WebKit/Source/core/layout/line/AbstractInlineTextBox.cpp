@@ -100,7 +100,7 @@ LayoutRect AbstractInlineTextBox::localBounds() const {
   if (!m_inlineTextBox || !m_lineLayoutItem)
     return LayoutRect();
 
-  return m_inlineTextBox->calculateBoundaries();
+  return m_inlineTextBox->frameRect();
 }
 
 unsigned AbstractInlineTextBox::len() const {

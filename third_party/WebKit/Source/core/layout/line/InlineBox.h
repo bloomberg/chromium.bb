@@ -169,11 +169,6 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
     m_bitfields.setIsHorizontal(isHorizontal);
   }
 
-  virtual LayoutRect calculateBoundaries() const {
-    ASSERT_NOT_REACHED();
-    return LayoutRect();
-  }
-
   bool isConstructed() { return m_bitfields.constructed(); }
   virtual void setConstructed() { m_bitfields.setConstructed(true); }
 

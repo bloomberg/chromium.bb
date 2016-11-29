@@ -2444,7 +2444,7 @@ void InspectorCSSAgent::visitLayoutTreeNodes(
                 protocol::Array<protocol::CSS::InlineTextBox>::create();
         for (const InlineTextBox* textBox = layoutText->firstTextBox(); textBox;
              textBox = textBox->nextTextBox()) {
-          FloatRect localCoordsTextBoxRect(textBox->calculateBoundaries());
+          FloatRect localCoordsTextBoxRect(textBox->frameRect());
           FloatRect absoluteCoordsTextBoxRect =
               layoutObject->localToAbsoluteQuad(localCoordsTextBoxRect)
                   .boundingBox();

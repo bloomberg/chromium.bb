@@ -51,7 +51,8 @@ class SVGInlineTextBox final : public InlineTextBox {
                                                    int& startPosition,
                                                    int& endPosition) const;
 
-  LayoutRect calculateBoundaries() const override;
+  // Calculate the bounding rect of all text fragments.
+  LayoutRect calculateBoundaries() const;
 
   void clearTextFragments() { m_textFragments.clear(); }
   Vector<SVGTextFragment>& textFragments() { return m_textFragments; }

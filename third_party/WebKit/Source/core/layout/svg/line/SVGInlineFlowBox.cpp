@@ -34,14 +34,4 @@ void SVGInlineFlowBox::paint(const PaintInfo& paintInfo,
   SVGInlineFlowBoxPainter(*this).paint(paintInfo, paintOffset);
 }
 
-LayoutRect SVGInlineFlowBox::calculateBoundaries() const {
-  LayoutRect childRect;
-  for (InlineBox* child = firstChild(); child; child = child->nextOnLine()) {
-    if (!child->isSVGInlineTextBox() && !child->isSVGInlineFlowBox())
-      continue;
-    childRect.unite(child->calculateBoundaries());
-  }
-  return childRect;
-}
-
 }  // namespace blink

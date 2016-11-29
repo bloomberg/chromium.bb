@@ -122,7 +122,7 @@ LayoutRect LayoutSVGInlineText::localCaretRect(InlineBox* box,
 FloatRect LayoutSVGInlineText::floatLinesBoundingBox() const {
   FloatRect boundingBox;
   for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
-    boundingBox.unite(FloatRect(box->calculateBoundaries()));
+    boundingBox.unite(FloatRect(box->frameRect()));
   return boundingBox;
 }
 

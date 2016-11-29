@@ -127,7 +127,7 @@ class CORE_EXPORT InlineTextBox : public InlineBox {
 
  public:
   TextRun constructTextRunForInspector(const ComputedStyle&) const;
-  LayoutRect calculateBoundaries() const override {
+  LayoutRect frameRect() const {
     return LayoutRect(x(), y(), width(), height());
   }
 
