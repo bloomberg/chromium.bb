@@ -18,7 +18,7 @@ const char kSoftwareRenderingListJson[] = LONG_STRING_CONST(
 {
   "name": "software rendering list",
   // Please update the version number whenever you change this file.
-  "version": "12.03",
+  "version": "12.04",
   "entries": [
     {
       "id": 1,
@@ -1407,18 +1407,6 @@ LONG_STRING_CONST(
       },
       "features": [
         "webgl2"
-      ]
-    },
-    {
-      "id": 127,
-      "description": "AMD cards have rendering issues with GPU rasterization on Windows",
-      "cr_bugs": [660897],
-      "os": {
-        "type": "win"
-      },
-      "vendor_id": "0x1002",
-      "features": [
-        "gpu_rasterization"
       ]
     },
     {
