@@ -12,6 +12,10 @@
 #include "base/macros.h"
 #include "url/gurl.h"
 
+namespace net {
+class ScopedTestRoot;
+}
+
 namespace chromeos {
 
 class ForwardingServer;
@@ -35,6 +39,7 @@ class HTTPSForwarder {
  private:
   std::string ssl_host_;
 
+  std::unique_ptr<net::ScopedTestRoot> test_root_;
   std::unique_ptr<ForwardingServer> forwarding_server_;
 
   DISALLOW_COPY_AND_ASSIGN(HTTPSForwarder);
