@@ -50,6 +50,8 @@ complete.
 - Complete overhaul of Lithuanian 8-dots table, thanks to Rimas
   Kudelis
 - New Urdu 6 Dot Grade 1 and 2 Braille tables thanks to Jake Kyle
+- Improvements to Italian 8 dots computer braille, thanks to Simone
+  Dal Maso.
 
 ** Backwards incompatible changes
 None
