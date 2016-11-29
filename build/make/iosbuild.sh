@@ -103,13 +103,14 @@ create_aom_framework_config_shim() {
   local include_guard="AOM_FRAMEWORK_HEADERS_AOM_AOM_CONFIG_H_"
 
   local file_header="/*
- *  Copyright (c) $(date +%Y) The WebM project authors. All Rights Reserved.
+ *  Copyright (c) $(date +%Y), Alliance for Open Media. All rights reserved.
  *
- *  Use of this source code is governed by a BSD-style license
- *  that can be found in the LICENSE file in the root of the source
- *  tree. An additional intellectual property rights grant can be found
- *  in the file PATENTS.  All contributing project authors may
- *  be found in the AUTHORS file in the root of the source tree.
+ * This source code is subject to the terms of the BSD 2 Clause License and
+ * the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License
+ * was not distributed with this source code in the LICENSE file, you can
+ * obtain it at www.aomedia.org/license/software. If the Alliance for Open
+ * Media Patent License 1.0 was not distributed with this source code in the
+ * PATENTS file, you can obtain it at www.aomedia.org/license/patent.
  */
 
 /* GENERATED FILE: DO NOT EDIT! */

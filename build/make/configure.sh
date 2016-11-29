@@ -1506,13 +1506,14 @@ print_webm_license() {
   suffix="$3"
   shift 3
   cat <<EOF > ${destination}
-${prefix} Copyright (c) 2011 The WebM project authors. All Rights Reserved.${suffix}
+${prefix} Copyright (c) 2016, Alliance for Open Media. All rights reserved.${suffix}
 ${prefix} ${suffix}
-${prefix} Use of this source code is governed by a BSD-style license${suffix}
-${prefix} that can be found in the LICENSE file in the root of the source${suffix}
-${prefix} tree. An additional intellectual property rights grant can be found${suffix}
-${prefix} in the file PATENTS.  All contributing project authors may${suffix}
-${prefix} be found in the AUTHORS file in the root of the source tree.${suffix}
+${prefix} This source code is subject to the terms of the BSD 2 Clause License and${suffix}
+${prefix} the Alliance for Open Media Patent License 1.0. If the BSD 2 Clause License${suffix}
+${prefix} was not distributed with this source code in the LICENSE file, you can${suffix}
+${prefix} obtain it at www.aomedia.org/license/software. If the Alliance for Open${suffix}
+${prefix} Media Patent License 1.0 was not distributed with this source code in the${suffix}
+${prefix} PATENTS file, you can obtain it at www.aomedia.org/license/patent.${suffix}
 EOF
   prefix="${saved_prefix}"
 }
