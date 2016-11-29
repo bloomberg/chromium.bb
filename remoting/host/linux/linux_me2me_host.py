@@ -870,11 +870,11 @@ class ParentProcessLogger(object):
       false otherwise.
     """
     # If Ctrl-C is pressed, inform the user that the daemon is still running.
-    # This signal will cause the read loop below to stop with an EINTR IOError.
     def sigint_handler(signum, frame):
       _ = signum, frame
       print("Interrupted. The daemon is still running in the background.",
             file=sys.stderr)
+      sys.exit(1)
 
     signal.signal(signal.SIGINT, sigint_handler)
 
@@ -897,17 +897,13 @@ class ParentProcessLogger(object):
     # Print lines as they're logged to the pipe until EOF is reached or readline
     # is interrupted by one of the signal handlers above.
     host_ready = False
-    try:
-      for line in iter(self._read_file.readline, ''):
-        if line[:4] == "MSG:":
-          sys.stderr.write(line[4:])
-        elif line == "READY\n":
-          host_ready = True
-        else:
-          sys.stderr.write("Unrecognized command: " + line)
-    except IOError as e:
-      if e.errno != errno.EINTR:
-        raise
+    for line in iter(self._read_file.readline, ''):
+      if line[:4] == "MSG:":
+        sys.stderr.write(line[4:])
+      elif line == "READY\n":
+        host_ready = True
+      else:
+        sys.stderr.write("Unrecognized command: " + line)
     print("Log file: %s" % os.environ[LOG_FILE_ENV_VAR], file=sys.stderr)
     return host_ready
 
