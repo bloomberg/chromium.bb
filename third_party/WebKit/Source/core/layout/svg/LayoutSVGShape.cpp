@@ -164,9 +164,9 @@ bool LayoutSVGShape::strokeContains(const FloatPoint& point,
 
 void LayoutSVGShape::updateLocalTransform() {
   SVGGraphicsElement* graphicsElement = toSVGGraphicsElement(element());
-  if (graphicsElement->hasAnimatedLocalTransform()) {
-    m_localTransform.setTransform(
-        graphicsElement->calculateAnimatedLocalTransform());
+  if (graphicsElement->hasTransform(SVGElement::IncludeMotionTransform)) {
+    m_localTransform.setTransform(graphicsElement->calculateTransform(
+        SVGElement::IncludeMotionTransform));
   } else {
     m_localTransform = AffineTransform();
   }

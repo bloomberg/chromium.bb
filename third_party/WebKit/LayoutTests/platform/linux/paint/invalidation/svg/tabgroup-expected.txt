@@ -404,27 +404,27 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [66, 257, 57, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [66, 257, 57, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [66, 257, 57, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [66, 257, 57, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [66, 257, 57, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
@@ -579,27 +579,27 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [129, 257, 45, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [129, 257, 45, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [129, 257, 45, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [129, 257, 45, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [129, 257, 45, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupTriangle__3'",
@@ -699,27 +699,27 @@
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [182, 257, 32, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGInlineText #text",
           "rect": [182, 257, 32, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [182, 257, 32, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGTSpan tspan",
           "rect": [182, 257, 32, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGText text",
           "rect": [182, 257, 32, 29],
-          "reason": "layoutObject insertion"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGPath path id='tabgroupRect__0'",
@@ -1175,43 +1175,43 @@
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'Download'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'Folder'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__1_content'",
@@ -1279,43 +1279,43 @@
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'Your'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'Account'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__2_content'",
@@ -1335,43 +1335,43 @@
     },
     {
       "object": "LayoutSVGText text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "RootInlineBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox 'Help'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGTSpan tspan",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineFlowBox",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGInlineText #text",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "InlineTextBox '& Info'",
-      "reason": "layoutObject insertion"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGHiddenContainer g id='tabgroupTriangle__3_content'",

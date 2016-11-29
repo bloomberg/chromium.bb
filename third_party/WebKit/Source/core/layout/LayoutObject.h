@@ -659,7 +659,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // Per SVG 1.1 objectBoundingBox ignores clipping, masking, filter effects,
   // opacity and stroke-width.
   // This is used for all computation of objectBoundingBox relative units and by
-  // SVGLocatable::getBBox().
+  // SVGGraphicsElement::getBBox().
   // NOTE: Markers are not specifically ignored here by SVG 1.1 spec, but we
   // ignore them since stroke-width is ignored (and marker size can depend on
   // stroke-width). objectBoundingBox is returned local coordinates.
@@ -677,9 +677,8 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   virtual FloatRect visualRectInLocalSVGCoordinates() const;
 
   // This returns the transform applying to the local SVG coordinate space,
-  // which combines the transform attribute value or CSS transform properties,
-  // and animation motion transform.
-  // See SVGGraphicsElement::calculateAnimatedLocalTransform().
+  // which combines the CSS transform properties and animation motion transform.
+  // See SVGElement::calculateTransform().
   // Most callsites want localToSVGParentTransform() instead.
   virtual AffineTransform localSVGTransform() const;
 

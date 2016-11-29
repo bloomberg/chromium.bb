@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [98, 98, 104, 104],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGPath path id='path'",
           "rect": [199, 199, 103, 103],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGPath path id='path'",
-      "reason": "full"
+      "reason": "subtree"
     }
   ]
 }

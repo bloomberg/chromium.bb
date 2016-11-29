@@ -63,6 +63,7 @@ class PLATFORM_EXPORT TransformOperation
     Perspective,
     Interpolated,
     Identity,
+    RotateAroundOrigin,
     None
   };
 

@@ -127,8 +127,8 @@ void LayoutSVGImage::layout() {
 
   bool updateParentBoundaries = false;
   if (m_needsTransformUpdate) {
-    m_localTransform =
-        toSVGImageElement(element())->calculateAnimatedLocalTransform();
+    m_localTransform = toSVGImageElement(element())->calculateTransform(
+        SVGElement::IncludeMotionTransform);
     m_needsTransformUpdate = false;
     updateParentBoundaries = true;
   }

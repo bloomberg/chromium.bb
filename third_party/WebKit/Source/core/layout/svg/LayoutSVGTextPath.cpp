@@ -78,7 +78,8 @@ std::unique_ptr<PathPositionMapper> LayoutSVGTextPath::layoutPath() const {
   // system for the current 'text' element, including any adjustments to the
   // current user coordinate system due to a possible transform attribute on the
   // current 'text' element. http://www.w3.org/TR/SVG/text.html#TextPathElement
-  pathData.transform(pathElement.calculateAnimatedLocalTransform());
+  pathData.transform(
+      pathElement.calculateTransform(SVGElement::IncludeMotionTransform));
 
   return PathPositionMapper::create(pathData);
 }

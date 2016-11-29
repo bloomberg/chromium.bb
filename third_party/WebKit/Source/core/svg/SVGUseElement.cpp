@@ -484,7 +484,7 @@ void SVGUseElement::toClipPath(Path& path) const {
     SVGLengthContext lengthContext(this);
     path.translate(FloatSize(m_x->currentValue()->value(lengthContext),
                              m_y->currentValue()->value(lengthContext)));
-    path.transform(calculateAnimatedLocalTransform());
+    path.transform(calculateTransform(SVGElement::IncludeMotionTransform));
   }
 }
 

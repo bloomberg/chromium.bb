@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGRect rect id='maskRect'",
           "rect": [100, 100, 460, 316],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='maskRect'",
           "rect": [50, 50, 460, 316],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGContainer g id='root'",
@@ -41,7 +41,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='maskRect'",
-      "reason": "full"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGContainer g id='root'",

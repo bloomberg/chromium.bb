@@ -69,6 +69,10 @@ class SVGGradientElement : public SVGElement, public SVGURIReference {
  private:
   bool needsPendingResourceHandling() const final { return false; }
 
+  void collectStyleForPresentationAttribute(const QualifiedName&,
+                                            const AtomicString&,
+                                            MutableStylePropertySet*) override;
+
   void childrenChanged(const ChildrenChange&) final;
 
   Member<SVGAnimatedTransformList> m_gradientTransform;

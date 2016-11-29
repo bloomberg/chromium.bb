@@ -181,8 +181,8 @@ void LayoutSVGText::layout() {
 
   bool updateParentBoundaries = false;
   if (m_needsTransformUpdate) {
-    m_localTransform =
-        toSVGTextElement(node())->calculateAnimatedLocalTransform();
+    m_localTransform = toSVGTextElement(node())->calculateTransform(
+        SVGElement::IncludeMotionTransform);
     m_needsTransformUpdate = false;
     updateParentBoundaries = true;
   }

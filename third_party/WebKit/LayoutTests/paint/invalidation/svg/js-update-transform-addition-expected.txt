@@ -9,7 +9,7 @@
         {
           "object": "LayoutSVGPath polygon id='polygon'",
           "rect": [264, 218, 164, 107],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }
@@ -17,7 +17,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGPath polygon id='polygon'",
-      "reason": "full"
+      "reason": "subtree"
     }
   ]
 }

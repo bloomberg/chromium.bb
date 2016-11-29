@@ -45,9 +45,12 @@ class SVGAnimatedTransformList final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static SVGAnimatedTransformList* create(SVGElement* contextElement,
-                                          const QualifiedName& attributeName) {
-    return new SVGAnimatedTransformList(contextElement, attributeName);
+  static SVGAnimatedTransformList* create(
+      SVGElement* contextElement,
+      const QualifiedName& attributeName,
+      CSSPropertyID cssPropertyId = CSSPropertyInvalid) {
+    return new SVGAnimatedTransformList(contextElement, attributeName,
+                                        cssPropertyId);
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
@@ -56,10 +59,12 @@ class SVGAnimatedTransformList final
 
  protected:
   SVGAnimatedTransformList(SVGElement* contextElement,
-                           const QualifiedName& attributeName)
+                           const QualifiedName& attributeName,
+                           CSSPropertyID cssPropertyId)
       : SVGAnimatedProperty<SVGTransformList>(contextElement,
                                               attributeName,
-                                              SVGTransformList::create()) {}
+                                              SVGTransformList::create(),
+                                              cssPropertyId) {}
 };
 
 }  // namespace blink

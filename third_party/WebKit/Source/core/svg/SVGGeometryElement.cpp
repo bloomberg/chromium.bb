@@ -80,7 +80,7 @@ bool SVGGeometryElement::isPointInStroke(SVGPointTearOff* point) const {
 
 void SVGGeometryElement::toClipPath(Path& path) const {
   path = asPath();
-  path.transform(calculateAnimatedLocalTransform());
+  path.transform(calculateTransform(SVGElement::IncludeMotionTransform));
 
   ASSERT(layoutObject());
   ASSERT(layoutObject()->style());

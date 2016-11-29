@@ -23,6 +23,7 @@
 
 #include "core/dom/Attribute.h"
 #include "core/dom/ElementTraversal.h"
+#include "core/dom/StyleChangeReason.h"
 #include "core/layout/svg/LayoutSVGResourceContainer.h"
 #include "core/svg/SVGStopElement.h"
 #include "core/svg/SVGTransformList.h"
@@ -47,7 +48,8 @@ SVGGradientElement::SVGGradientElement(const QualifiedName& tagName,
       SVGURIReference(this),
       m_gradientTransform(
           SVGAnimatedTransformList::create(this,
-                                           SVGNames::gradientTransformAttr)),
+                                           SVGNames::gradientTransformAttr,
+                                           CSSPropertyTransform)),
       m_spreadMethod(SVGAnimatedEnumeration<SVGSpreadMethodType>::create(
           this,
           SVGNames::spreadMethodAttr,
@@ -69,7 +71,26 @@ DEFINE_TRACE(SVGGradientElement) {
   SVGURIReference::trace(visitor);
 }
 
+void SVGGradientElement::collectStyleForPresentationAttribute(
+    const QualifiedName& name,
+    const AtomicString& value,
+    MutableStylePropertySet* style) {
+  if (name == SVGNames::gradientTransformAttr) {
+    addPropertyToPresentationAttributeStyle(
+        style, CSSPropertyTransform,
+        m_gradientTransform->currentValue()->cssValue());
+    return;
+  }
+  SVGElement::collectStyleForPresentationAttribute(name, value, style);
+}
+
 void SVGGradientElement::svgAttributeChanged(const QualifiedName& attrName) {
+  if (attrName == SVGNames::gradientTransformAttr) {
+    invalidateSVGPresentationAttributeStyle();
+    setNeedsStyleRecalc(LocalStyleChange,
+                        StyleChangeReasonForTracing::fromAttribute(attrName));
+  }
+
   if (attrName == SVGNames::gradientUnitsAttr ||
       attrName == SVGNames::gradientTransformAttr ||
       attrName == SVGNames::spreadMethodAttr ||

@@ -100,7 +100,8 @@ void LayoutSVGForeignObject::layout() {
 
   bool updateCachedBoundariesInParents = false;
   if (m_needsTransformUpdate) {
-    m_localTransform = foreign->calculateAnimatedLocalTransform();
+    m_localTransform =
+        foreign->calculateTransform(SVGElement::IncludeMotionTransform);
     m_needsTransformUpdate = false;
     updateCachedBoundariesInParents = true;
   }

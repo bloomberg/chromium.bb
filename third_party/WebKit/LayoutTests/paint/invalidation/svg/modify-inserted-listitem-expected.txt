@@ -9,12 +9,12 @@
         {
           "object": "LayoutSVGRect rect id='move'",
           "rect": [28, 38, 10, 10],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='move'",
           "rect": [18, 18, 10, 10],
-          "reason": "full"
+          "reason": "subtree"
         }
       ]
     }
@@ -22,7 +22,7 @@
   "objectPaintInvalidations": [
     {
       "object": "LayoutSVGRect rect id='move'",
-      "reason": "full"
+      "reason": "subtree"
     }
   ]
 }

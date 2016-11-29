@@ -312,6 +312,71 @@ AffineTransform SVGElement::localCoordinateSpaceTransform(CTMScope) const {
   return AffineTransform();
 }
 
+bool SVGElement::hasTransform(ApplyMotionTransform applyMotionTransform) const {
+  return (layoutObject() && layoutObject()->styleRef().hasTransform()) ||
+         (applyMotionTransform == IncludeMotionTransform && hasSVGRareData());
+}
+
+AffineTransform SVGElement::calculateTransform(
+    ApplyMotionTransform applyMotionTransform) const {
+  const ComputedStyle* style =
+      layoutObject() ? layoutObject()->style() : nullptr;
+
+  // If CSS property was set, use that, otherwise fallback to attribute (if
+  // set).
+  AffineTransform matrix;
+  if (style && style->hasTransform()) {
+    TransformationMatrix transform;
+    float zoom = style->effectiveZoom();
+
+    // SVGTextElements need special handling for the text positioning code.
+    if (isSVGTextElement(this)) {
+      // Do not take into account SVG's zoom rules, transform-origin, or
+      // percentage values.
+      style->applyTransform(
+          transform, LayoutSize(0, 0), ComputedStyle::ExcludeTransformOrigin,
+          ComputedStyle::IncludeMotionPath,
+          ComputedStyle::IncludeIndependentTransformProperties);
+    } else {
+      // CSS transforms operate with pre-scaled lengths. To make this work with
+      // SVG (which applies the zoom factor globally, at the root level) we
+      //
+      //   * pre-scale the bounding box (to bring it into the same space as the
+      //     other CSS values)
+      //   * invert the zoom factor (to effectively compute the CSS transform
+      //     under a 1.0 zoom)
+      //
+      // Note: objectBoundingBox is an emptyRect for elements like pattern or
+      // clipPath.  See the "Object bounding box units" section of
+      // http://dev.w3.org/csswg/css3-transforms/
+      if (zoom != 1) {
+        FloatRect scaledBBox = layoutObject()->objectBoundingBox();
+        scaledBBox.scale(zoom);
+        transform.scale(1 / zoom);
+        style->applyTransform(
+            transform, scaledBBox, ComputedStyle::IncludeTransformOrigin,
+            ComputedStyle::IncludeMotionPath,
+            ComputedStyle::IncludeIndependentTransformProperties);
+        transform.scale(zoom);
+      } else {
+        style->applyTransform(
+            transform, layoutObject()->objectBoundingBox(),
+            ComputedStyle::IncludeTransformOrigin,
+            ComputedStyle::IncludeMotionPath,
+            ComputedStyle::IncludeIndependentTransformProperties);
+      }
+    }
+    // Flatten any 3D transform.
+    matrix = transform.toAffineTransform();
+  }
+
+  // Apply any "motion transform" contribution if requested (and existing.)
+  if (applyMotionTransform == IncludeMotionTransform && hasSVGRareData())
+    matrix.preMultiply(*svgRareData()->animateMotionTransform());
+
+  return matrix;
+}
+
 Node::InsertionNotificationRequest SVGElement::insertedInto(
     ContainerNode* rootParent) {
   Element::insertedInto(rootParent);

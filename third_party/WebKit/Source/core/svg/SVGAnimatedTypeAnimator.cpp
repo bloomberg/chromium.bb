@@ -52,19 +52,24 @@ void SVGAnimatedTypeAnimator::reset(const SVGElement& contextElement) {
   if (m_animatedProperty) {
     m_type = m_animatedProperty->type();
     m_cssProperty = m_animatedProperty->cssPropertyId();
+
+    if (m_type == AnimatedTransformList) {
+      // Only <animateTransform> is allowed to animate AnimatedTransformList.
+      // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
+      if (!isSVGAnimateTransformElement(*m_animationElement))
+        m_type = AnimatedUnknown;
+      // Because of the syntactic mismatch between the CSS and SVGProperty
+      // representations, disallow CSS animations of transform list for
+      // now. (We also reject this case via
+      // SVGAnimateTransformElement::hasValidAttributeType ATM.)
+      m_cssProperty = CSSPropertyInvalid;
+    }
   } else {
     m_type = SVGElement::animatedPropertyTypeForCSSAttribute(attributeName);
     m_cssProperty = m_type != AnimatedUnknown
                         ? cssPropertyID(attributeName.localName())
                         : CSSPropertyInvalid;
-  }
-
-  // Only <animateTransform> is allowed to animate AnimatedTransformList.
-  // http://www.w3.org/TR/SVG/animate.html#AnimationAttributesAndProperties
-  if (m_type == AnimatedTransformList &&
-      !isSVGAnimateTransformElement(*m_animationElement)) {
-    m_type = AnimatedUnknown;
-    m_cssProperty = CSSPropertyInvalid;
+    DCHECK_NE(m_type, AnimatedTransformList);
   }
 
   DCHECK(m_type != AnimatedPoint && m_type != AnimatedStringList &&

@@ -109,6 +109,7 @@ void toCompositorTransformOperations(
         outTransformOperations->appendPerspective(transform->perspective());
         break;
       }
+      case TransformOperation::RotateAroundOrigin:
       case TransformOperation::Interpolated: {
         TransformationMatrix m;
         operation->apply(m, FloatSize());

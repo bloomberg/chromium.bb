@@ -74,6 +74,8 @@ class SVGTransformList final
   static AnimatedPropertyType classType() { return AnimatedTransformList; }
   AnimatedPropertyType type() const override { return classType(); }
 
+  const CSSValue* cssValue() const;
+
  private:
   SVGTransformList();
 

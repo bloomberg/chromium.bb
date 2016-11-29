@@ -115,10 +115,9 @@ static void setGradientAttributes(SVGGradientElement* element,
         element->gradientUnits()->currentValue()->enumValue());
 
   if (!attributes.hasGradientTransform() &&
-      element->gradientTransform()->isSpecified()) {
-    AffineTransform transform;
-    element->gradientTransform()->currentValue()->concatenate(transform);
-    attributes.setGradientTransform(transform);
+      element->hasTransform(SVGElement::ExcludeMotionTransform)) {
+    attributes.setGradientTransform(
+        element->calculateTransform(SVGElement::ExcludeMotionTransform));
   }
 
   if (!attributes.hasStops()) {

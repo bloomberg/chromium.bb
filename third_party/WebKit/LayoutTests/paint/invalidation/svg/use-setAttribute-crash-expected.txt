@@ -34,7 +34,7 @@
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
           "rect": [7, 7, 27, 27],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGEllipse svg:circle id='circle'",
@@ -72,7 +72,7 @@
     },
     {
       "object": "LayoutSVGEllipse svg:circle id='circle'",
-      "reason": "full"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGContainer svg:use id='use'",

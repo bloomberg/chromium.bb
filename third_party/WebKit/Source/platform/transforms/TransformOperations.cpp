@@ -411,7 +411,8 @@ bool TransformOperations::blendedBoundsForBox(const FloatBox& box,
       case TransformOperation::Matrix:
       case TransformOperation::Matrix3D:
       case TransformOperation::Interpolated:
-        return (false);
+      case TransformOperation::RotateAroundOrigin:
+        return false;
     }
   }
 

@@ -78,4 +78,61 @@ bool RotateTransformOperation::canBlendWith(
   return other.isSameType(*this);
 }
 
+RotateAroundOriginTransformOperation::RotateAroundOriginTransformOperation(
+    double angle,
+    double originX,
+    double originY)
+    : RotateTransformOperation(Rotation(FloatPoint3D(0, 0, 1), angle),
+                               RotateAroundOrigin),
+      m_originX(originX),
+      m_originY(originY) {}
+
+void RotateAroundOriginTransformOperation::apply(
+    TransformationMatrix& transform,
+    const FloatSize& boxSize) const {
+  transform.translate(m_originX, m_originY);
+  RotateTransformOperation::apply(transform, boxSize);
+  transform.translate(-m_originX, -m_originY);
+}
+
+bool RotateAroundOriginTransformOperation::operator==(
+    const TransformOperation& other) const {
+  if (!isSameType(other))
+    return false;
+  const RotateAroundOriginTransformOperation& otherRotate =
+      toRotateAroundOriginTransformOperation(other);
+  const Rotation& otherRotation = otherRotate.m_rotation;
+  return m_rotation.axis == otherRotation.axis &&
+         m_rotation.angle == otherRotation.angle &&
+         m_originX == otherRotate.m_originX &&
+         m_originY == otherRotate.m_originY;
+}
+
+PassRefPtr<TransformOperation> RotateAroundOriginTransformOperation::blend(
+    const TransformOperation* from,
+    double progress,
+    bool blendToIdentity) {
+  if (from && !from->isSameType(*this))
+    return this;
+  if (blendToIdentity) {
+    return RotateAroundOriginTransformOperation::create(
+        angle() * (1 - progress), m_originX, m_originY);
+  }
+  if (!from) {
+    return RotateAroundOriginTransformOperation::create(angle() * progress,
+                                                        m_originX, m_originY);
+  }
+  const RotateAroundOriginTransformOperation& fromRotate =
+      toRotateAroundOriginTransformOperation(*from);
+  return RotateAroundOriginTransformOperation::create(
+      blink::blend(fromRotate.angle(), angle(), progress),
+      blink::blend(fromRotate.m_originX, m_originX, progress),
+      blink::blend(fromRotate.m_originY, m_originY, progress));
+}
+
+PassRefPtr<TransformOperation> RotateAroundOriginTransformOperation::zoom(
+    double factor) {
+  return create(angle(), m_originX * factor, m_originY * factor);
+}
+
 }  // namespace blink

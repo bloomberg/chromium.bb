@@ -24,6 +24,10 @@
 #include "core/svg/SVGTransformList.h"
 
 #include "core/SVGNames.h"
+#include "core/css/CSSFunctionValue.h"
+#include "core/css/CSSIdentifierValue.h"
+#include "core/css/CSSPrimitiveValue.h"
+#include "core/css/CSSValueList.h"
 #include "core/svg/SVGParserUtilities.h"
 #include "core/svg/SVGTransformDistance.h"
 #include "wtf/text/ParsingUtilities.h"
@@ -54,6 +58,105 @@ bool SVGTransformList::concatenate(AffineTransform& result) const {
     result *= it->matrix();
 
   return true;
+}
+
+namespace {
+
+CSSValueID mapTransformFunction(const SVGTransform& transform) {
+  switch (transform.transformType()) {
+    case kSvgTransformMatrix:
+      return CSSValueMatrix;
+    case kSvgTransformTranslate:
+      return CSSValueTranslate;
+    case kSvgTransformScale:
+      return CSSValueScale;
+    case kSvgTransformRotate:
+      return CSSValueRotate;
+    case kSvgTransformSkewx:
+      return CSSValueSkewX;
+    case kSvgTransformSkewy:
+      return CSSValueSkewY;
+    case kSvgTransformUnknown:
+    default:
+      NOTREACHED();
+  }
+  return CSSValueInvalid;
+}
+
+CSSValue* createTransformCSSValue(const SVGTransform& transform) {
+  CSSValueID functionId = mapTransformFunction(transform);
+  CSSFunctionValue* transformValue = CSSFunctionValue::create(functionId);
+  switch (functionId) {
+    case CSSValueRotate: {
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.angle(), CSSPrimitiveValue::UnitType::Degrees));
+      FloatPoint rotationOrigin = transform.rotationCenter();
+      if (!toFloatSize(rotationOrigin).isZero()) {
+        transformValue->append(*CSSPrimitiveValue::create(
+            rotationOrigin.x(), CSSPrimitiveValue::UnitType::UserUnits));
+        transformValue->append(*CSSPrimitiveValue::create(
+            rotationOrigin.y(), CSSPrimitiveValue::UnitType::UserUnits));
+      }
+      break;
+    }
+    case CSSValueSkewX:
+    case CSSValueSkewY:
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.angle(), CSSPrimitiveValue::UnitType::Degrees));
+      break;
+    case CSSValueMatrix:
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().a(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().b(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().c(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().d(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().e(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().f(), CSSPrimitiveValue::UnitType::UserUnits));
+      break;
+    case CSSValueScale:
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().a(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().d(), CSSPrimitiveValue::UnitType::UserUnits));
+      break;
+    case CSSValueTranslate:
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().e(), CSSPrimitiveValue::UnitType::UserUnits));
+      transformValue->append(*CSSPrimitiveValue::create(
+          transform.matrix().f(), CSSPrimitiveValue::UnitType::UserUnits));
+      break;
+    default:
+      NOTREACHED();
+  }
+  return transformValue;
+}
+
+}  // namespace
+
+const CSSValue* SVGTransformList::cssValue() const {
+  // Build a structure of CSSValues from the list we have, mapping functions as
+  // appropriate.
+  // TODO(fs): Eventually we'd want to support the exact same syntax here as in
+  // the property, but there are some issues (crbug.com/577219 for instance)
+  // that complicates things.
+  size_t length = this->length();
+  if (!length)
+    return CSSIdentifierValue::create(CSSValueNone);
+  CSSValueList* list = CSSValueList::createSpaceSeparated();
+  if (length == 1) {
+    list->append(*createTransformCSSValue(*at(0)));
+    return list;
+  }
+  ConstIterator it = begin();
+  ConstIterator itEnd = end();
+  for (; it != itEnd; ++it)
+    list->append(*createTransformCSSValue(**it));
+  return list;
 }
 
 namespace {

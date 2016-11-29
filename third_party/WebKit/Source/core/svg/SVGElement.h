@@ -74,6 +74,10 @@ class CORE_EXPORT SVGElement : public Element {
   }
   static bool isAnimatableCSSProperty(const QualifiedName&);
 
+  enum ApplyMotionTransform { ExcludeMotionTransform, IncludeMotionTransform };
+  bool hasTransform(ApplyMotionTransform) const;
+  AffineTransform calculateTransform(ApplyMotionTransform) const;
+
   enum CTMScope {
     NearestViewportScope,  // Used by SVGGraphicsElement::getCTM()
     ScreenScope,           // Used by SVGGraphicsElement::getScreenCTM()

@@ -9,22 +9,22 @@
         {
           "object": "LayoutSVGRect rect id='clipper'",
           "rect": [0, 100, 300, 200],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='masker'",
           "rect": [0, 0, 300, 100],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='clipper'",
           "rect": [100, 0, 200, 300],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGRect rect id='masker'",
           "rect": [100, 0, 200, 300],
-          "reason": "full"
+          "reason": "subtree"
         },
         {
           "object": "LayoutSVGContainer g",
@@ -46,7 +46,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='masker'",
-      "reason": "full"
+      "reason": "subtree"
     },
     {
       "object": "LayoutSVGContainer g",
@@ -54,7 +54,7 @@
     },
     {
       "object": "LayoutSVGRect rect id='clipper'",
-      "reason": "full"
+      "reason": "subtree"
     }
   ]
 }

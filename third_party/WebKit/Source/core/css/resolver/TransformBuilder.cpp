@@ -229,11 +229,25 @@ TransformOperations TransformBuilder::createTransformOperations(
       case TransformOperation::RotateY:
       case TransformOperation::RotateZ: {
         double angle = firstValue.computeDegrees();
-        double x = transformType == TransformOperation::RotateX;
-        double y = transformType == TransformOperation::RotateY;
-        double z = transformType == TransformOperation::RotateZ;
-        operations.operations().append(
-            RotateTransformOperation::create(x, y, z, angle, transformType));
+        if (transformValue->length() == 1) {
+          double x = transformType == TransformOperation::RotateX;
+          double y = transformType == TransformOperation::RotateY;
+          double z = transformType == TransformOperation::RotateZ;
+          operations.operations().append(
+              RotateTransformOperation::create(x, y, z, angle, transformType));
+        } else {
+          // For SVG 'transform' attributes we generate 3-argument rotate()
+          // functions.
+          DCHECK_EQ(transformValue->length(), 3u);
+          const CSSPrimitiveValue& secondValue =
+              toCSSPrimitiveValue(transformValue->item(1));
+          const CSSPrimitiveValue& thirdValue =
+              toCSSPrimitiveValue(transformValue->item(2));
+          operations.operations().append(
+              RotateAroundOriginTransformOperation::create(
+                  angle, secondValue.computeLength<double>(conversionData),
+                  thirdValue.computeLength<double>(conversionData)));
+        }
         break;
       }
       case TransformOperation::Rotate3D: {

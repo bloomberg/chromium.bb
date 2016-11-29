@@ -105,7 +105,8 @@ SVGTransformChange LayoutSVGTransformableContainer::calculateLocalTransform() {
     return SVGTransformChange::None;
 
   SVGTransformChangeDetector changeDetector(m_localTransform);
-  m_localTransform = element->calculateAnimatedLocalTransform();
+  m_localTransform =
+      element->calculateTransform(SVGElement::IncludeMotionTransform);
   m_localTransform.translate(m_additionalTranslation.width(),
                              m_additionalTranslation.height());
   m_needsTransformUpdate = false;

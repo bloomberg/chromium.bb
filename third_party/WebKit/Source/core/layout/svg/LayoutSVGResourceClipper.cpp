@@ -270,7 +270,8 @@ bool LayoutSVGResourceClipper::hitTestClipContent(
   }
 
   AffineTransform animatedLocalTransform =
-      toSVGClipPathElement(element())->calculateAnimatedLocalTransform();
+      toSVGClipPathElement(element())->calculateTransform(
+          SVGElement::IncludeMotionTransform);
   if (!animatedLocalTransform.isInvertible())
     return false;
 
@@ -304,7 +305,8 @@ FloatRect LayoutSVGResourceClipper::resourceBoundingBox(
     calculateLocalClipBounds();
 
   AffineTransform transform =
-      toSVGClipPathElement(element())->calculateAnimatedLocalTransform();
+      toSVGClipPathElement(element())->calculateTransform(
+          SVGElement::IncludeMotionTransform);
   if (clipPathUnits() == SVGUnitTypes::kSvgUnitTypeObjectboundingbox) {
     transform.translate(referenceBox.x(), referenceBox.y());
     transform.scaleNonUniform(referenceBox.width(), referenceBox.height());

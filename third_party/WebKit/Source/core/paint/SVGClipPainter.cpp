@@ -54,7 +54,8 @@ bool SVGClipPainter::prepareEffect(const LayoutObject& target,
   SVGClipExpansionCycleHelper inClipExpansionChange(m_clip);
 
   AffineTransform animatedLocalTransform =
-      toSVGClipPathElement(m_clip.element())->calculateAnimatedLocalTransform();
+      toSVGClipPathElement(m_clip.element())
+          ->calculateTransform(SVGElement::IncludeMotionTransform);
   // When drawing a clip for non-SVG elements, the CTM does not include the zoom
   // factor.  In this case, we need to apply the zoom scale explicitly - but
   // only for clips with userSpaceOnUse units (the zoom is accounted for
