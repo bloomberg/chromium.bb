@@ -16,6 +16,18 @@ source_set("data_source") {
   ]
 }
 
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_physical_web_data_source.cc",
+    "fake_physical_web_data_source.h",
+  ]
+  deps = [
+    ":data_source",
+    "//base",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [

@@ -257,6 +257,7 @@ source_set("unit_tests") {
     "//components/history/core/test",
     "//components/open_from_clipboard:test_support",
     "//components/physical_web/data_source",
+    "//components/physical_web/data_source:test_support",
     "//components/prefs:test_support",
     "//components/search",
     "//components/search_engines",

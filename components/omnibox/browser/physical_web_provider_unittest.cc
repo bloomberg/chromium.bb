@@ -14,6 +14,7 @@
 #include "components/metrics/proto/omnibox_event.pb.h"
 #include "components/omnibox/browser/mock_autocomplete_provider_client.h"
 #include "components/omnibox/browser/test_scheme_classifier.h"
+#include "components/physical_web/data_source/fake_physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_data_source.h"
 #include "components/physical_web/data_source/physical_web_listener.h"
 #include "grit/components_strings.h"
@@ -23,54 +24,21 @@
 #include "ui/gfx/text_elider.h"
 #include "url/gurl.h"
 
+using physical_web::FakePhysicalWebDataSource;
 using physical_web::PhysicalWebDataSource;
 using physical_web::PhysicalWebListener;
 
 namespace {
 
-// A mock implementation of the Physical Web data source that allows setting
-// metadata for nearby URLs directly.
-class MockPhysicalWebDataSource : public PhysicalWebDataSource {
- public:
-  MockPhysicalWebDataSource() : metadata_(new base::ListValue()) {}
-  ~MockPhysicalWebDataSource() override {}
-
-  void StartDiscovery(bool network_request_enabled) override {}
-  void StopDiscovery() override {}
-
-  std::unique_ptr<base::ListValue> GetMetadata() override {
-    return metadata_->CreateDeepCopy();
-  }
-
-  bool HasUnresolvedDiscoveries() override {
-    return false;
-  }
-
-  void RegisterListener(PhysicalWebListener* physical_web_listener) override {}
-
-  void UnregisterListener(
-      PhysicalWebListener* physical_web_listener) override {}
-
-  // for testing
-  void SetMetadata(std::unique_ptr<base::ListValue> metadata) {
-    metadata_ = std::move(metadata);
-  }
-
- private:
-  std::unique_ptr<base::ListValue> metadata_;
-};
-
-// An autocomplete provider client that embeds the mock Physical Web data
+// An autocomplete provider client that embeds the fake Physical Web data
 // source.
 class FakeAutocompleteProviderClient
     : public testing::NiceMock<MockAutocompleteProviderClient> {
  public:
   FakeAutocompleteProviderClient()
       : physical_web_data_source_(
-            base::MakeUnique<MockPhysicalWebDataSource>()),
-        is_off_the_record_(false)
-  {
-  }
+            base::MakeUnique<FakePhysicalWebDataSource>()),
+        is_off_the_record_(false) {}
 
   const AutocompleteSchemeClassifier& GetSchemeClassifier() const override {
     return scheme_classifier_;
@@ -84,8 +52,8 @@ class FakeAutocompleteProviderClient
     return is_off_the_record_;
   }
 
-  // Convenience method to avoid downcasts when accessing the mock data source.
-  MockPhysicalWebDataSource* GetMockPhysicalWebDataSource() {
+  // Convenience method to avoid downcasts when accessing the fake data source.
+  FakePhysicalWebDataSource* GetFakePhysicalWebDataSource() {
     return physical_web_data_source_.get();
   }
 
@@ -95,7 +63,7 @@ class FakeAutocompleteProviderClient
   }
 
  private:
-  std::unique_ptr<MockPhysicalWebDataSource> physical_web_data_source_;
+  std::unique_ptr<FakePhysicalWebDataSource> physical_web_data_source_;
   TestSchemeClassifier scheme_classifier_;
   bool is_off_the_record_;
 };
@@ -212,8 +180,8 @@ class PhysicalWebProviderTest : public testing::Test {
                             bool should_expect_overflow_item) {
     const size_t metadata_count = metadata_list->GetSize();
 
-    MockPhysicalWebDataSource* data_source =
-        client_->GetMockPhysicalWebDataSource();
+    FakePhysicalWebDataSource* data_source =
+        client_->GetFakePhysicalWebDataSource();
     EXPECT_TRUE(data_source);
 
     data_source->SetMetadata(std::move(metadata_list));
@@ -259,8 +227,8 @@ class PhysicalWebProviderTest : public testing::Test {
 };
 
 TEST_F(PhysicalWebProviderTest, TestEmptyMetadataListCreatesNoMatches) {
-  MockPhysicalWebDataSource* data_source =
-      client_->GetMockPhysicalWebDataSource();
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
   EXPECT_TRUE(data_source);
 
   data_source->SetMetadata(CreateMetadata(0));
@@ -275,8 +243,8 @@ TEST_F(PhysicalWebProviderTest, TestEmptyMetadataListCreatesNoMatches) {
 }
 
 TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
-  MockPhysicalWebDataSource* data_source =
-      client_->GetMockPhysicalWebDataSource();
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
   EXPECT_TRUE(data_source);
 
   // Extract the URL and title before inserting the metadata into the data
@@ -322,8 +290,8 @@ TEST_F(PhysicalWebProviderTest, TestSingleMetadataItemCreatesOneMatch) {
 }
 
 TEST_F(PhysicalWebProviderTest, TestNoMatchesWithUserInput) {
-  MockPhysicalWebDataSource* data_source =
-      client_->GetMockPhysicalWebDataSource();
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
   EXPECT_TRUE(data_source);
 
   data_source->SetMetadata(CreateMetadata(1));
@@ -401,8 +369,8 @@ TEST_F(PhysicalWebProviderTest, TestNoMatchesInIncognito) {
   // Enable incognito mode
   client_->SetOffTheRecord(true);
 
-  MockPhysicalWebDataSource* data_source =
-      client_->GetMockPhysicalWebDataSource();
+  FakePhysicalWebDataSource* data_source =
+      client_->GetFakePhysicalWebDataSource();
   EXPECT_TRUE(data_source);
 
   data_source->SetMetadata(CreateMetadata(1));
