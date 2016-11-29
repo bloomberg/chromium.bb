@@ -43,7 +43,7 @@ public class ReplicaInputConnectionTest extends ContentShellTestBase {
         Handler handler = new Handler(Looper.getMainLooper());
 
         mConnection = new ReplicaInputConnection(getContentViewCore().getContainerView(),
-                mImeAdapter, handler, editable, TextInputType.TEXT, 0, new EditorInfo());
+                mImeAdapter, handler, editable, TextInputType.TEXT, 0, 0, new EditorInfo());
     }
 
     @SmallTest

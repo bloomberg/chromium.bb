@@ -1999,8 +1999,8 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
     @CalledByNative
     private void updateImeAdapter(long nativeImeAdapterAndroid, int textInputType,
-            int textInputFlags, String text, int selectionStart, int selectionEnd,
-            int compositionStart, int compositionEnd, boolean showImeIfNeeded,
+            int textInputFlags, int textInputMode, String text, int selectionStart,
+            int selectionEnd, int compositionStart, int compositionEnd, boolean showImeIfNeeded,
             boolean isNonImeChange) {
         try {
             TraceEvent.begin("ContentViewCore.updateImeAdapter");
@@ -2009,7 +2009,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
 
             mImeAdapter.attach(nativeImeAdapterAndroid);
             mImeAdapter.updateKeyboardVisibility(
-                    textInputType, textInputFlags, showImeIfNeeded);
+                    textInputType, textInputFlags, textInputMode, showImeIfNeeded);
             mImeAdapter.updateState(text, selectionStart, selectionEnd, compositionStart,
                     compositionEnd, isNonImeChange);
 

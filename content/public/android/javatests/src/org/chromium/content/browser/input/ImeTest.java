@@ -1838,11 +1838,11 @@ public class ImeTest extends ContentShellTestBase {
 
         @Override
         public ChromiumBaseInputConnection initializeAndGet(View view, ImeAdapter imeAdapter,
-                int inputType, int inputFlags, int selectionStart, int selectionEnd,
+                int inputType, int inputFlags, int inputMode, int selectionStart, int selectionEnd,
                 EditorInfo outAttrs) {
             mTextInputTypeList.add(inputType);
             mOutAttrs = outAttrs;
-            return mFactory.initializeAndGet(view, imeAdapter, inputType, inputFlags,
+            return mFactory.initializeAndGet(view, imeAdapter, inputType, inputMode, inputFlags,
                     selectionStart, selectionEnd, outAttrs);
         }
 

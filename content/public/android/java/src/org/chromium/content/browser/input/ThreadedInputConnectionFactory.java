@@ -100,15 +100,15 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     }
 
     @Override
-    public ThreadedInputConnection initializeAndGet(
-            View view, ImeAdapter imeAdapter, int inputType, int inputFlags, int selectionStart,
-            int selectionEnd, EditorInfo outAttrs) {
+    public ThreadedInputConnection initializeAndGet(View view, ImeAdapter imeAdapter, int inputType,
+            int inputFlags, int inputMode, int selectionStart, int selectionEnd,
+            EditorInfo outAttrs) {
         ImeUtils.checkOnUiThread();
 
         // Compute outAttrs early in case we early out to prevent reentrancy. (crbug.com/636197)
         // TODO(changwan): move this up to ImeAdapter once ReplicaInputConnection is deprecated.
         ImeUtils.computeEditorInfo(
-                inputType, inputFlags, selectionStart, selectionEnd, outAttrs);
+                inputType, inputFlags, inputMode, selectionStart, selectionEnd, outAttrs);
         if (DEBUG_LOGS) {
             Log.w(TAG, "initializeAndGet. outAttr: " + ImeUtils.getEditorInfoDebugString(outAttrs));
         }

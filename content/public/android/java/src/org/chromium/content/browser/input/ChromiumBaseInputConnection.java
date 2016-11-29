@@ -21,7 +21,7 @@ public interface ChromiumBaseInputConnection extends InputConnection {
      */
     public interface Factory {
         ChromiumBaseInputConnection initializeAndGet(View view, ImeAdapter imeAdapter,
-                int inputType, int inputFlags, int selectionStart, int selectionEnd,
+                int inputType, int inputFlags, int inputMode, int selectionStart, int selectionEnd,
                 EditorInfo outAttrs);
 
         @VisibleForTesting

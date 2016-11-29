@@ -26,6 +26,7 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.blink_public.web.WebInputEventModifier;
 import org.chromium.blink_public.web.WebInputEventType;
+import org.chromium.blink_public.web.WebTextInputMode;
 import org.chromium.content.browser.RenderCoordinates;
 import org.chromium.content.browser.picker.InputDialogContainer;
 import org.chromium.ui.base.ime.TextInputType;
@@ -105,6 +106,7 @@ public class ImeAdapter {
 
     private int mTextInputType = TextInputType.NONE;
     private int mTextInputFlags;
+    private int mTextInputMode = WebTextInputMode.kDefault;
 
     // Keep the current configuration to detect the change when onConfigurationChanged() is called.
     private Configuration mCurrentConfig;
@@ -189,9 +191,9 @@ public class ImeAdapter {
             return null;
         }
         if (mInputConnectionFactory == null) return null;
-        setInputConnection(mInputConnectionFactory.initializeAndGet(
-                mViewEmbedder.getAttachedView(), this, mTextInputType, mTextInputFlags,
-                mLastSelectionStart, mLastSelectionEnd, outAttrs));
+        setInputConnection(mInputConnectionFactory.initializeAndGet(mViewEmbedder.getAttachedView(),
+                this, mTextInputType, mTextInputFlags, mTextInputMode, mLastSelectionStart,
+                mLastSelectionEnd, outAttrs));
         if (DEBUG_LOGS) Log.w(TAG, "onCreateInputConnection: " + mInputConnection);
 
         if (mCursorAnchorInfoController != null) {
@@ -268,20 +270,29 @@ public class ImeAdapter {
      * Shows or hides the keyboard based on passed parameters.
      * @param textInputType Text input type for the currently focused field in renderer.
      * @param textInputFlags Text input flags.
+     * @param textInputMode Text input mode.
      * @param showIfNeeded Whether the keyboard should be shown if it is currently hidden.
      */
-    public void updateKeyboardVisibility(int textInputType,
-            int textInputFlags, boolean showIfNeeded) {
+    public void updateKeyboardVisibility(
+            int textInputType, int textInputFlags, int textInputMode, boolean showIfNeeded) {
         if (DEBUG_LOGS) {
             Log.w(TAG, "updateKeyboardVisibility: type [%d->%d], flags [%d], show [%b], ",
                     mTextInputType, textInputType, textInputFlags, showIfNeeded);
         }
+        boolean needsRestart = false;
         mTextInputFlags = textInputFlags;
+        if (mTextInputMode != textInputMode) {
+            mTextInputMode = textInputMode;
+            needsRestart = true;
+        }
+
         if (mTextInputType != textInputType) {
             mTextInputType = textInputType;
             // No need to restart if we are going to hide anyways.
-            if (textInputType != TextInputType.NONE) restartInput();
+            if (textInputType != TextInputType.NONE) needsRestart = true;
         }
+
+        if (needsRestart) restartInput();
 
         // There is no API for us to get notified of user's dismissal of keyboard.
         // Therefore, we should try to show keyboard even when text input type hasn't changed.
@@ -491,6 +502,7 @@ public class ImeAdapter {
         if (DEBUG_LOGS) Log.w(TAG, "resetAndHideKeyboard");
         mTextInputType = TextInputType.NONE;
         mTextInputFlags = 0;
+        mTextInputMode = WebTextInputMode.kDefault;
         // This will trigger unblocking if necessary.
         hideKeyboard();
     }

@@ -70,11 +70,11 @@ public class ReplicaInputConnection
 
         @Override
         public ReplicaInputConnection initializeAndGet(View view, ImeAdapter imeAdapter,
-                int inputType, int inputFlags, int selectionStart, int selectionEnd,
+                int inputType, int inputFlags, int inputMode, int selectionStart, int selectionEnd,
                 EditorInfo outAttrs) {
             new InputMethodUma().recordProxyViewReplicaInputConnection();
-            return new ReplicaInputConnection(
-                    view, imeAdapter, mHandler, mEditable, inputType, inputFlags, outAttrs);
+            return new ReplicaInputConnection(view, imeAdapter, mHandler, mEditable, inputType,
+                    inputFlags, inputMode, outAttrs);
         }
 
         @Override
@@ -97,7 +97,7 @@ public class ReplicaInputConnection
 
     @VisibleForTesting
     ReplicaInputConnection(View view, ImeAdapter imeAdapter, Handler handler, Editable editable,
-            int inputType, int inputFlags, EditorInfo outAttrs) {
+            int inputType, int inputFlags, int inputMode, EditorInfo outAttrs) {
         super(view, true);
         mImeAdapter = imeAdapter;
         mEditable = editable;
@@ -105,7 +105,8 @@ public class ReplicaInputConnection
 
         int initialSelStart = Selection.getSelectionStart(editable);
         int initialSelEnd = Selection.getSelectionEnd(editable);
-        ImeUtils.computeEditorInfo(inputType, inputFlags, initialSelStart, initialSelEnd, outAttrs);
+        ImeUtils.computeEditorInfo(
+                inputType, inputFlags, inputMode, initialSelStart, initialSelEnd, outAttrs);
 
         if (DEBUG_LOGS) {
             Log.w(TAG, "Constructor called with outAttrs: %s",

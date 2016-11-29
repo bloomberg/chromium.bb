@@ -83,6 +83,7 @@ if (is_android) {
     sources = [
       "./platform/WebDisplayMode.h",
       "./platform/WebInputEvent.h",
+      "./platform/WebTextInputMode.h",
       "./platform/WebTextInputType.h",
       "./platform/modules/remoteplayback/WebRemotePlaybackAvailability.h",
     ]

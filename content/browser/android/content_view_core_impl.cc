@@ -1277,6 +1277,7 @@ void ContentViewCoreImpl::ForceUpdateImeAdapter(long native_ime_adapter) {
 void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
                                            int text_input_type,
                                            int text_input_flags,
+                                           int text_input_mode,
                                            const std::string& text,
                                            int selection_start,
                                            int selection_end,
@@ -1292,8 +1293,9 @@ void ContentViewCoreImpl::UpdateImeAdapter(long native_ime_adapter,
   ScopedJavaLocalRef<jstring> jstring_text = ConvertUTF8ToJavaString(env, text);
   Java_ContentViewCore_updateImeAdapter(
       env, obj, native_ime_adapter, text_input_type, text_input_flags,
-      jstring_text, selection_start, selection_end, composition_start,
-      composition_end, show_ime_if_needed, is_non_ime_change);
+      text_input_mode, jstring_text, selection_start, selection_end,
+      composition_start, composition_end, show_ime_if_needed,
+      is_non_ime_change);
 }
 
 void ContentViewCoreImpl::SetAccessibilityEnabled(

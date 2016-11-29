@@ -780,7 +780,7 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
 
   content_view_core_->UpdateImeAdapter(
       GetNativeImeAdapter(), static_cast<int>(state.type), state.flags,
-      state.value, state.selection_start, state.selection_end,
+      state.mode, state.value, state.selection_start, state.selection_end,
       state.composition_start, state.composition_end, state.show_ime_if_needed,
       state.is_non_ime_change);
 }
