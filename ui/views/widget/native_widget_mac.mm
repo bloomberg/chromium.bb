@@ -689,8 +689,18 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
                                              Widget::Widgets* children) {
   BridgedNativeWidget* bridge =
       NativeWidgetMac::GetBridgeForNativeWindow([native_view window]);
-  if (!bridge)
+  if (!bridge) {
+    // The NSWindow is not itself a views::Widget, but it may have children that
+    // are. Support returning Widgets that are parented to the NSWindow, except:
+    // - Ignore requests for children of an NSView that is not a contentView.
+    // - We do not add a Widget for |native_view| to |children| (there is none).
+    if ([[native_view window] contentView] != native_view)
+      return;
+
+    for (NSWindow* native_child in [[native_view window] childWindows])
+      GetAllChildWidgets([native_child contentView], children);
     return;
+  }
 
   // If |native_view| is a subview of the contentView, it will share an
   // NSWindow, but will itself be a native child of the Widget. That is, adding
@@ -705,6 +715,10 @@ void NativeWidgetPrivate::GetAllChildWidgets(gfx::NativeView native_view,
   if (bridge->native_widget_mac()->GetWidget())
     children->insert(bridge->native_widget_mac()->GetWidget());
 
+  // When the NSWindow *is* a Widget, only consider child_windows(). I.e. do not
+  // look through -[NSWindow childWindows] as done for the (!bridge) case above.
+  // -childWindows does not support hidden windows, and anything in there which
+  // is not in child_windows() would have been added by AppKit.
   for (BridgedNativeWidget* child : bridge->child_windows())
     GetAllChildWidgets(child->ns_view(), children);
 }

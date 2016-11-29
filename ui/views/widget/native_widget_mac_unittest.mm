@@ -692,6 +692,11 @@ Widget* AttachPopupToNativeParent(NSWindow* native_parent) {
 // Tests creating a views::Widget parented off a native NSWindow.
 TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   NSWindow* native_parent = MakeNativeParent();
+
+  Widget::Widgets children;
+  Widget::GetAllChildWidgets([native_parent contentView], &children);
+  EXPECT_TRUE(children.empty());
+
   Widget* child = AttachPopupToNativeParent(native_parent);
   TestWidgetObserver child_observer(child);
 
@@ -718,6 +723,10 @@ TEST_F(NativeWidgetMacTest, NonWidgetParent) {
   EXPECT_EQ(child->GetNativeWindow(),
             [[native_parent childWindows] objectAtIndex:0]);
   EXPECT_EQ(native_parent, [child->GetNativeWindow() parentWindow]);
+
+  Widget::GetAllChildWidgets([native_parent contentView], &children);
+  ASSERT_EQ(1u, children.size());
+  EXPECT_EQ(child, *children.begin());
 
   // Only non-toplevel Widgets are positioned relative to the parent, so the
   // bounds set above should be in screen coordinates.
