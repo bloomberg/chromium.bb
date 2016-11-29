@@ -191,11 +191,9 @@ class CloudPolicyClientTest : public testing::Test {
 
     request_context_ =
         new net::TestURLRequestContextGetter(loop_.task_runner());
-    client_.reset(new CloudPolicyClient(kMachineID, kMachineModel,
-                                        kPolicyVerificationKeyHash,
-                                        &service_,
-                                        request_context_,
-                                        &fake_signing_service_));
+    client_ = base::MakeUnique<CloudPolicyClient>(kMachineID, kMachineModel,
+                                                  &service_, request_context_,
+                                                  &fake_signing_service_);
     client_->AddPolicyTypeToFetch(policy_type_, std::string());
     client_->AddObserver(&observer_);
   }

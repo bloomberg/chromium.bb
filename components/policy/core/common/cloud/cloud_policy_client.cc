@@ -55,13 +55,11 @@ void CloudPolicyClient::Observer::OnRobotAuthCodesFetched(
 CloudPolicyClient::CloudPolicyClient(
     const std::string& machine_id,
     const std::string& machine_model,
-    const std::string& verification_key_hash,
     DeviceManagementService* service,
     scoped_refptr<net::URLRequestContextGetter> request_context,
     SigningService* signing_service)
     : machine_id_(machine_id),
       machine_model_(machine_model),
-      verification_key_hash_(verification_key_hash),
       service_(service),                  // Can be null for unit tests.
       signing_service_(signing_service),
       request_context_(request_context),
@@ -233,8 +231,7 @@ void CloudPolicyClient::FetchPolicy() {
     if (public_key_version_valid_)
       fetch_request->set_public_key_version(public_key_version_);
 
-    if (!verification_key_hash_.empty())
-      fetch_request->set_verification_key_hash(verification_key_hash_);
+    fetch_request->set_verification_key_hash(kPolicyVerificationKeyHash);
 
     // These fields are included only in requests for chrome policy.
     if (IsChromePolicy(type_to_fetch.first)) {

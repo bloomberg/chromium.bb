@@ -14,12 +14,11 @@ namespace em = enterprise_management;
 namespace policy {
 
 MockCloudPolicyClient::MockCloudPolicyClient()
-    : CloudPolicyClient(std::string(),
-                        std::string(),
-                        std::string(),
-                        nullptr,
-                        nullptr,
-                        nullptr) {}
+    : CloudPolicyClient(std::string(), /* machine_id */
+                        std::string(), /* machine_model */
+                        nullptr,       /* service */
+                        nullptr,       /* request_context */
+                        nullptr /* signing_service */) {}
 
 MockCloudPolicyClient::~MockCloudPolicyClient() {}
 

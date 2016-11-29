@@ -13,6 +13,7 @@
 #include "base/files/file_enumerator.h"
 #include "base/files/file_util.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/path_service.h"
 #include "base/sequenced_task_runner.h"
@@ -65,10 +66,11 @@ std::unique_ptr<CloudPolicyClient> CreateClient(
     return std::unique_ptr<CloudPolicyClient>();
   }
 
-  std::unique_ptr<CloudPolicyClient> client(new CloudPolicyClient(
-      std::string(), std::string(), kPolicyVerificationKeyHash,
-      device_management_service, system_request_context,
-      nullptr /* signing_service */));
+  std::unique_ptr<CloudPolicyClient> client =
+      base::MakeUnique<CloudPolicyClient>(
+          std::string() /* machine_id */, std::string() /* machine_model */,
+          device_management_service, system_request_context,
+          nullptr /* signing_service */);
   client->SetupRegistration(policy_data->request_token(),
                             policy_data->device_id());
   return client;

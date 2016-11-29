@@ -264,8 +264,8 @@ std::unique_ptr<CloudPolicyClient> DeviceCloudPolicyInitializer::CreateClient(
                                             &machine_model);
   return base::MakeUnique<CloudPolicyClient>(
       statistics_provider_->GetEnterpriseMachineID(), machine_model,
-      kPolicyVerificationKeyHash, device_management_service,
-      g_browser_process->system_request_context(), signing_service_.get());
+      device_management_service, g_browser_process->system_request_context(),
+      signing_service_.get());
 }
 
 void DeviceCloudPolicyInitializer::TryToCreateClient() {

@@ -73,9 +73,9 @@ UserCloudPolicyManager::CreateCloudPolicyClient(
     DeviceManagementService* device_management_service,
     scoped_refptr<net::URLRequestContextGetter> request_context) {
   return base::MakeUnique<CloudPolicyClient>(
-      std::string(), std::string(), kPolicyVerificationKeyHash,
+      std::string() /* machine_id */, std::string() /* machine_model */,
       device_management_service, request_context,
-      nullptr /* signing_service_ */);
+      nullptr /* signing_service */);
 }
 
 void UserCloudPolicyManager::DisconnectAndRemovePolicy() {

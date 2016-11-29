@@ -84,9 +84,8 @@ class TestingCloudPolicyClientForRemoteCommands : public CloudPolicyClient {
       TestingRemoteCommandsServer* server)
       : CloudPolicyClient(std::string(), /* machine_id */
                           std::string(), /* machine_model */
-                          std::string(), /* verification_key_hash */
-                          nullptr,
-                          nullptr,
+                          nullptr,       /* service */
+                          nullptr,       /* request_context */
                           nullptr /* signing_service */),
         server_(server) {
     dm_token_ = kDMToken;

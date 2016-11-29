@@ -85,13 +85,10 @@ class POLICY_EXPORT CloudPolicyClient {
   // this is appropriate (i.e. device policy, but not user policy). |service|
   // and |signing_service| are weak pointers and it's the caller's
   // responsibility to keep them valid for the lifetime of CloudPolicyClient.
-  // |verification_key_hash| contains an identifier telling the DMServer which
-  // verification key to use. The |signing_service| is used to sign sensitive
-  // requests.
+  // The |signing_service| is used to sign sensitive requests.
   CloudPolicyClient(
       const std::string& machine_id,
       const std::string& machine_model,
-      const std::string& verification_key_hash,
       DeviceManagementService* service,
       scoped_refptr<net::URLRequestContextGetter> request_context,
       SigningService* signing_service);
@@ -377,7 +374,6 @@ class POLICY_EXPORT CloudPolicyClient {
   // Data necessary for constructing policy requests.
   const std::string machine_id_;
   const std::string machine_model_;
-  const std::string verification_key_hash_;
   PolicyTypeSet types_to_fetch_;
   std::vector<std::string> state_keys_to_upload_;
 
