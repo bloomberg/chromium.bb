@@ -32,11 +32,11 @@
             height: 100px;
         }
         .compositor-painted-shadow {
-            -webkit-filter: grayscale(0.5) drop-shadow(-50px -50px 0px gray);
+            filter: grayscale(0.5) drop-shadow(-50px -50px 0px gray);
         }
         .software-painted-shadow {
             /* Safari paints filters in software when drop-shadow is not the last filter in the chain. */
-            -webkit-filter: drop-shadow(-50px -50px 0px gray) grayscale(0.5);
+            filter: drop-shadow(-50px -50px 0px gray) grayscale(0.5);
         }
     </style>
     <script>

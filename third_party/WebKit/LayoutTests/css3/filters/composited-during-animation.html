@@ -8,116 +8,116 @@
     }
 
     img {
-        -webkit-animation-duration: 2s !important;
-        -webkit-animation-timing-function: linear !important;
+        animation-duration: 2s !important;
+        animation-timing-function: linear !important;
     }
 
     #grayscale-box {
-        -webkit-filter: grayscale(1);
+        filter: grayscale(1);
     }
     .animating #grayscale-box {
-        -webkit-animation-name: grayscale-anim;
+        animation-name: grayscale-anim;
     }
 
     #sepia-box {
-        -webkit-filter: sepia(1);
+        filter: sepia(1);
     }
     .animating #sepia-box {
-        -webkit-animation: sepia-anim;
+        animation: sepia-anim;
     }
 
     #saturate-box {
-        -webkit-filter: saturate(1);
+        filter: saturate(1);
     }
     .animating #saturate-box {
-        -webkit-animation: saturate-anim;
+        animation: saturate-anim;
     }
 
     #huerotate-box {
-        -webkit-filter: hue-rotate(90deg);
+        filter: hue-rotate(90deg);
     }
     .animating #huerotate-box {
-        -webkit-animation: huerotate-anim;
+        animation: huerotate-anim;
     }
 
     #invert-box {
-        -webkit-filter: invert(1);
+        filter: invert(1);
     }
     .animating #invert-box {
-        -webkit-animation: invert-anim;
+        animation: invert-anim;
     }
 
     #opacity-box {
-        -webkit-filter: opacity(0);
+        filter: opacity(0);
     }
     .animating #opacity-box {
-        -webkit-animation: opacity-anim;
+        animation: opacity-anim;
     }
 
     #brightness-box {
-        -webkit-filter: brightness(0);
+        filter: brightness(0);
     }
     .animating #brightness-box {
-        -webkit-animation: brightness-anim;
+        animation: brightness-anim;
     }
 
     #contrast-box {
-        -webkit-filter: contrast(0);
+        filter: contrast(0);
     }
     .animating #contrast-box {
-        -webkit-animation: contrast-anim;
+        animation: contrast-anim;
     }
 
     #blur-box {
-        -webkit-filter: blur(10px);
+        filter: blur(10px);
     }
     .animating #blur-box {
-        -webkit-animation: blur-anim;
+        animation: blur-anim;
     }
 
-    @-webkit-keyframes grayscale-anim {
-        from { -webkit-filter: grayscale(0); }
-        to   { -webkit-filter: grayscale(1); }
+    @keyframes grayscale-anim {
+        from { filter: grayscale(0); }
+        to   { filter: grayscale(1); }
     }
 
-    @-webkit-keyframes sepia-anim {
-        from { -webkit-filter: sepia(0); }
-        to   { -webkit-filter: sepia(1); }
+    @keyframes sepia-anim {
+        from { filter: sepia(0); }
+        to   { filter: sepia(1); }
     }
 
-    @-webkit-keyframes saturate-anim {
-        from { -webkit-filter: saturate(0); }
-        to   { -webkit-filter: saturate(1); }
+    @keyframes saturate-anim {
+        from { filter: saturate(0); }
+        to   { filter: saturate(1); }
     }
 
-    @-webkit-keyframes huerotate-anim {
-        from { -webkit-filter: hue-rotate(0); }
-        to   { -webkit-filter: hue-rotate(180deg); }
+    @keyframes huerotate-anim {
+        from { filter: hue-rotate(0); }
+        to   { filter: hue-rotate(180deg); }
     }
 
-    @-webkit-keyframes invert-anim {
-        from { -webkit-filter: invert(0); }
-        to   { -webkit-filter: invert(1); }
+    @keyframes invert-anim {
+        from { filter: invert(0); }
+        to   { filter: invert(1); }
     }
 
-    @-webkit-keyframes opacity-anim {
-        from { -webkit-filter: opacity(1); }
-        to   { -webkit-filter: opacity(0); }
+    @keyframes opacity-anim {
+        from { filter: opacity(1); }
+        to   { filter: opacity(0); }
     }
 
-    @-webkit-keyframes brightness-anim {
-        from { -webkit-filter: brightness(1); }
-        to   { -webkit-filter: brightness(0); }
+    @keyframes brightness-anim {
+        from { filter: brightness(1); }
+        to   { filter: brightness(0); }
     }
 
-    @-webkit-keyframes contrast-anim {
-        from { -webkit-filter: contrast(1); }
-        to   { -webkit-filter: contrast(0); }
+    @keyframes contrast-anim {
+        from { filter: contrast(1); }
+        to   { filter: contrast(0); }
     }
 
-    @-webkit-keyframes blur-anim {
-        from { -webkit-filter: blur(0); }
-        to   { -webkit-filter: blur(20px); }
+    @keyframes blur-anim {
+        from { filter: blur(0); }
+        to   { filter: blur(20px); }
     }
 
   </style>
@@ -126,28 +126,28 @@
 
     const preExpectedValues = [
         // [element-id, property, expected-value]
-        ["grayscale-box", "webkitFilter", 'grayscale(1)'],
-        ["sepia-box", "webkitFilter", 'sepia(1)'],
-        ["saturate-box", "webkitFilter", 'saturate(1)'],
-        ["huerotate-box", "webkitFilter", 'hue-rotate(90deg)'],
-        ["invert-box", "webkitFilter", 'invert(1)'],
-        ["opacity-box", "webkitFilter", 'opacity(0)'],
-        ["brightness-box", "webkitFilter", 'brightness(0)'],
-        ["contrast-box", "webkitFilter", 'contrast(0)'],
-        ["blur-box", "webkitFilter", 'blur(10px)'],
+        ["grayscale-box", "filter", 'grayscale(1)'],
+        ["sepia-box", "filter", 'sepia(1)'],
+        ["saturate-box", "filter", 'saturate(1)'],
+        ["huerotate-box", "filter", 'hue-rotate(90deg)'],
+        ["invert-box", "filter", 'invert(1)'],
+        ["opacity-box", "filter", 'opacity(0)'],
+        ["brightness-box", "filter", 'brightness(0)'],
+        ["contrast-box", "filter", 'contrast(0)'],
+        ["blur-box", "filter", 'blur(10px)'],
     ];
 
     const expectedValues = [
         // [time, element-id, property, expected-value, tolerance]
-        [1, "grayscale-box", "webkitFilter", 'grayscale(0.5)', 0.15],
-        [1, "sepia-box", "webkitFilter", 'sepia(0.5)', 0.15],
-        [1, "saturate-box", "webkitFilter", 'saturate(0.5)', 0.15],
-        [1, "huerotate-box", "webkitFilter", 'hue-rotate(90deg)', 20],
-        [1, "invert-box", "webkitFilter", 'invert(0.5)', 0.15],
-        [1, "opacity-box", "webkitFilter", 'opacity(0.5)', 0.15],
-        [1, "brightness-box", "webkitFilter", 'brightness(0.5)', 0.15],
-        [1, "contrast-box", "webkitFilter", 'contrast(0.5)', 0.15],
-        [1, "blur-box", "webkitFilter", 'blur(10px)', 4],
+        [1, "grayscale-box", "filter", 'grayscale(0.5)', 0.15],
+        [1, "sepia-box", "filter", 'sepia(0.5)', 0.15],
+        [1, "saturate-box", "filter", 'saturate(0.5)', 0.15],
+        [1, "huerotate-box", "filter", 'hue-rotate(90deg)', 20],
+        [1, "invert-box", "filter", 'invert(0.5)', 0.15],
+        [1, "opacity-box", "filter", 'opacity(0.5)', 0.15],
+        [1, "brightness-box", "filter", 'brightness(0.5)', 0.15],
+        [1, "contrast-box", "filter", 'contrast(0.5)', 0.15],
+        [1, "blur-box", "filter", 'blur(10px)', 4],
     ];
 
     function runPreTest() {

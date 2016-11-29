@@ -20,19 +20,19 @@
         }
         .initial-drop-shadow {
             /* Safari paints filters in software when drop-shadow appears before another filter in the chain. */
-            -webkit-filter: drop-shadow(10px 10px 0px black) blur(0);
+            filter: drop-shadow(10px 10px 0px black) blur(0);
         }
         .final-drop-shadow {
-            -webkit-filter: drop-shadow(10px 10px 0px black) blur(25px);
-            -webkit-animation-name: blur-animation;
-            -webkit-animation-duration: 0.1s;
+            filter: drop-shadow(10px 10px 0px black) blur(25px);
+            animation-name: blur-animation;
+            animation-duration: 0.1s;
         }
-        @-webkit-keyframes blur-animation {
+        @keyframes blur-animation {
             from {
-                -webkit-filter: drop-shadow(10px 10px 0px black) blur(0);
+                filter: drop-shadow(10px 10px 0px black) blur(0);
             }
             to {
-                -webkit-filter: drop-shadow(10px 10px 0px black) blur(25px);
+                filter: drop-shadow(10px 10px 0px black) blur(25px);
             }
         }
     </style>
@@ -44,7 +44,7 @@
         {
             var targetElement = document.getElementById("composited-layer");
             if (window.testRunner)
-                targetElement.addEventListener("webkitAnimationEnd", finishTest);
+                targetElement.addEventListener("animationend", finishTest);
             targetElement.className = "final-drop-shadow";
         }
 
