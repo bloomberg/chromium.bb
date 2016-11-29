@@ -1,6 +1,6 @@
 This is a testharness.js-based test.
 PASS IndexedDB IDL tests 
-FAIL Window interface: attribute indexedDB assert_equals: "indexedDB" must have a getter expected "function" but got "undefined"
+PASS Window interface: attribute indexedDB 
 PASS IDBRequest interface: existence and properties of interface object 
 PASS IDBRequest interface object length 
 PASS IDBRequest interface object name 

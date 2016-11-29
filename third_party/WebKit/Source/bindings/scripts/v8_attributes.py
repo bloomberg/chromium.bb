@@ -71,7 +71,7 @@ def attribute_context(interface, attribute, interfaces):
     is_do_not_check_security = 'DoNotCheckSecurity' in extended_attributes
     is_check_security_for_receiver = (
         has_extended_attribute_value(interface, 'CheckSecurity', 'Receiver') and
-        not is_do_not_check_security)
+        is_do_not_check_security)
     is_check_security_for_return_value = (
         has_extended_attribute_value(attribute, 'CheckSecurity', 'ReturnValue'))
     if is_check_security_for_receiver or is_check_security_for_return_value:
@@ -150,7 +150,7 @@ def attribute_context(interface, attribute, interfaces):
         'is_check_security_for_return_value': is_check_security_for_return_value,
         'is_custom_element_callbacks': is_custom_element_callbacks,
         # TODO(yukishiino): Make all DOM attributes accessor-type properties.
-        'is_data_type_property': not ('CachedAccessor' in extended_attributes) and is_data_type_property(interface, attribute),
+        'is_data_type_property': is_data_type_property(interface, attribute),
         'is_getter_raises_exception':  # [RaisesException]
             'RaisesException' in extended_attributes and
             extended_attributes['RaisesException'] in (None, 'Getter'),
@@ -537,9 +537,10 @@ def is_writable(attribute):
 
 
 def is_data_type_property(interface, attribute):
+    if 'CachedAccessor' in attribute.extended_attributes:
+        return False
     return (is_constructor_attribute(attribute) or
-            interface.name == 'Window' or
-            interface.name == 'Location')
+            'DoNotCheckSecurity' in attribute.extended_attributes)
 
 
 # [PutForwards], [Replaceable]

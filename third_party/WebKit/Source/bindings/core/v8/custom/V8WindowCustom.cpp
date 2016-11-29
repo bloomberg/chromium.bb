@@ -65,7 +65,7 @@
 namespace blink {
 
 void V8Window::eventAttributeGetterCustom(
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
   ExceptionState exceptionState(ExceptionState::GetterContext, "event",
                                 "Window", info.Holder(), info.GetIsolate());
@@ -92,7 +92,7 @@ void V8Window::eventAttributeGetterCustom(
 
 void V8Window::eventAttributeSetterCustom(
     v8::Local<v8::Value> value,
-    const v8::PropertyCallbackInfo<void>& info) {
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
   ExceptionState exceptionState(ExceptionState::SetterContext, "event",
                                 "Window", info.Holder(), info.GetIsolate());
@@ -115,7 +115,7 @@ void V8Window::eventAttributeSetterCustom(
 }
 
 void V8Window::frameElementAttributeGetterCustom(
-    const v8::PropertyCallbackInfo<v8::Value>& info) {
+    const v8::FunctionCallbackInfo<v8::Value>& info) {
   LocalDOMWindow* impl = toLocalDOMWindow(V8Window::toImpl(info.Holder()));
 
   if (!BindingSecurity::shouldAllowAccessTo(

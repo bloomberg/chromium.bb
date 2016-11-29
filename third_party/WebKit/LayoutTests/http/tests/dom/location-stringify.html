@@ -3,25 +3,28 @@
 <script>
 function log(str)
 {
-    var li = document.createElement("li");
-    li.appendChild(document.createTextNode(str));
-    var console = document.getElementById("console");
-    console.appendChild(li);
+  var li = document.createElement("li");
+  li.appendChild(document.createTextNode(str));
+  var console = document.getElementById("console");
+  console.appendChild(li);
 }
 
 function assertEqual(message, actual, expected)
 {
-    if (actual != expected)
-        log("\n" + message + ": Failure, actual: " + actual + "; expected: " + expected);
-    else
-        log("\n" + message + ": Success");
+  if (actual != expected)
+    log("\n" + message + ": Failure, actual: " + actual + "; expected: " + expected);
+  else
+    log("\n" + message + ": Success");
 }
 
 function runTests() {
-    if (window.testRunner) {
-        testRunner.dumpAsText();
-    }
-    assertEqual("stringify", JSON.stringify(window.location), '{"hash":"","search":"","pathname":"/dom/location-stringify.html","port":"8000","hostname":"127.0.0.1","host":"127.0.0.1:8000","protocol":"http:","origin":"http://127.0.0.1:8000","href":"http://127.0.0.1:8000/dom/location-stringify.html","ancestorOrigins":{}}');
+  if (window.testRunner) {
+    testRunner.dumpAsText();
+  }
+  assertEqual(
+      "stringify",
+      JSON.stringify(window.location),
+      '{"href":"http://127.0.0.1:8000/dom/location-stringify.html","ancestorOrigins":{},"origin":"http://127.0.0.1:8000","protocol":"http:","host":"127.0.0.1:8000","hostname":"127.0.0.1","port":"8000","pathname":"/dom/location-stringify.html","search":"","hash":""}');
 }
 </script>
 </head>
