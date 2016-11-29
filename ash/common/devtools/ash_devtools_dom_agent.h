@@ -11,7 +11,9 @@
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
 #include "ui/views/view.h"
+#include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_removals_observer.h"
 
 namespace ash {
 namespace devtools {
@@ -19,7 +21,9 @@ namespace devtools {
 class ASH_EXPORT AshDevToolsDOMAgent
     : public NON_EXPORTED_BASE(ui::devtools::UiDevToolsBaseAgent<
                                ui::devtools::protocol::DOM::Metainfo>),
-      public WmWindowObserver {
+      public WmWindowObserver,
+      public views::WidgetRemovalsObserver,
+      public views::ViewObserver {
  public:
   explicit AshDevToolsDOMAgent(ash::WmShell* shell);
   ~AshDevToolsDOMAgent() override;
@@ -35,6 +39,14 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void OnWindowTreeChanged(WmWindow* window,
                            const TreeChangeParams& params) override;
   void OnWindowStackingChanged(WmWindow* window) override;
+
+  // views::WidgetRemovalsObserver
+  void OnWillRemoveView(views::Widget* widget, views::View* view) override;
+
+  // views::ViewObserver
+  void OnChildViewRemoved(views::View* view, views::View* parent) override;
+  void OnChildViewAdded(views::View* view) override;
+  void OnChildViewReordered(views::View*) override;
 
   WmWindow* GetWindowFromNodeId(int nodeId);
   views::Widget* GetWidgetFromNodeId(int nodeId);
@@ -61,9 +73,12 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void RemoveWindowTree(WmWindow* window, bool remove_observer);
   void RemoveWindowNode(WmWindow* window, bool remove_observer);
 
+  // Don't need AddWidgetTree because |widget| will always be inside a window,
+  // so when windows are created, their widget nodes are created as well.
   void RemoveWidgetTree(views::Widget* widget, bool remove_observer);
   void RemoveWidgetNode(views::Widget* widget, bool remove_observer);
 
+  void AddViewTree(views::View* view);
   void RemoveViewTree(views::View* view,
                       views::View* parent,
                       bool remove_observer);
@@ -71,7 +86,7 @@ class ASH_EXPORT AshDevToolsDOMAgent
                       views::View* parent,
                       bool remove_observer);
 
-  void RemoveObserverFromAllWindows();
+  void RemoveObservers();
   void Reset();
 
   ash::WmShell* shell_;

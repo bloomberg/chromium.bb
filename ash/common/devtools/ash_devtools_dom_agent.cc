@@ -66,6 +66,19 @@ WmWindow* FindPreviousSibling(WmWindow* window) {
   return it == siblings.begin() ? nullptr : *std::prev(it);
 }
 
+views::View* FindPreviousSibling(views::View* view) {
+  views::View* parent = view->parent();
+  int view_index = -1;
+  for (int i = 0, count = parent->child_count(); i < count; i++) {
+    if (view == parent->child_at(i)) {
+      view_index = i;
+      break;
+    }
+  }
+  DCHECK_GE(view_index, 0);
+  return view_index == 0 ? nullptr : parent->child_at(view_index - 1);
+}
+
 }  // namespace
 
 AshDevToolsDOMAgent::AshDevToolsDOMAgent(ash::WmShell* shell) : shell_(shell) {
@@ -73,7 +86,7 @@ AshDevToolsDOMAgent::AshDevToolsDOMAgent(ash::WmShell* shell) : shell_(shell) {
 }
 
 AshDevToolsDOMAgent::~AshDevToolsDOMAgent() {
-  RemoveObserverFromAllWindows();
+  RemoveObservers();
 }
 
 ui::devtools::protocol::Response AshDevToolsDOMAgent::disable() {
@@ -116,6 +129,26 @@ void AshDevToolsDOMAgent::OnWindowTreeChanged(WmWindow* window,
 void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
   RemoveWindowTree(window, false);
   AddWindowTree(window);
+}
+
+void AshDevToolsDOMAgent::OnWillRemoveView(views::Widget* widget,
+                                           views::View* view) {
+  if (view == widget->GetRootView())
+    RemoveViewTree(view, nullptr, true);
+}
+
+void AshDevToolsDOMAgent::OnChildViewRemoved(views::View* view,
+                                             views::View* parent) {
+  RemoveViewTree(view, parent, true);
+}
+
+void AshDevToolsDOMAgent::OnChildViewAdded(views::View* view) {
+  AddViewTree(view);
+}
+
+void AshDevToolsDOMAgent::OnChildViewReordered(views::View* view) {
+  RemoveViewTree(view, view->parent(), false);
+  AddViewTree(view);
 }
 
 WmWindow* AshDevToolsDOMAgent::GetWindowFromNodeId(int nodeId) {
@@ -182,7 +215,8 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForRootWidget(
   children->addItem(BuildTreeForView(widget->GetRootView()));
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("Widget", GetAttributes(widget), std::move(children));
-  // TODO(mhashmi): Add WidgetRemovalsObserver here
+  if (!widget->HasRemovalsObserver(this))
+    widget->AddRemovalsObserver(this);
   widget_to_node_id_map_[widget] = node->getNodeId();
   node_id_to_widget_map_[node->getNodeId()] = widget;
   return node;
@@ -196,7 +230,8 @@ std::unique_ptr<DOM::Node> AshDevToolsDOMAgent::BuildTreeForView(
     children->addItem(BuildTreeForView(view->child_at(i)));
   std::unique_ptr<ui::devtools::protocol::DOM::Node> node =
       BuildNode("View", GetAttributes(view), std::move(children));
-  // TODO(mhashmi): Add ViewObserver here
+  if (!view->HasObserver(this))
+    view->AddObserver(this);
   view_to_node_id_map_[view] = node->getNodeId();
   node_id_to_view_map_[node->getNodeId()] = view;
   return node;
@@ -238,6 +273,7 @@ void AshDevToolsDOMAgent::RemoveWindowNode(WmWindow* window,
 
   if (remove_observer)
     window->RemoveObserver(this);
+
   node_id_to_window_map_.erase(node_id_to_window_it);
   window_to_node_id_map_.erase(window_to_node_id_it);
   frontend()->childNodeRemoved(parent_id, node_id);
@@ -261,8 +297,8 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget,
   int parent_id =
       GetNodeIdFromWindow(WmLookup::Get()->GetWindowForWidget(widget));
 
-  // TODO(mhashmi): Add WidgetRemovalsObserver and remove it here based on
-  // |remove_observer|
+  if (remove_observer)
+    widget->RemoveRemovalsObserver(this);
 
   NodeIdToWidgetMap::iterator node_id_to_widget_it =
       node_id_to_widget_map_.find(node_id);
@@ -271,6 +307,15 @@ void AshDevToolsDOMAgent::RemoveWidgetNode(views::Widget* widget,
   widget_to_node_id_map_.erase(widget_to_node_id_it);
   node_id_to_widget_map_.erase(node_id_to_widget_it);
   frontend()->childNodeRemoved(parent_id, node_id);
+}
+
+void AshDevToolsDOMAgent::AddViewTree(views::View* view) {
+  DCHECK(view_to_node_id_map_.count(view->parent()));
+  views::View* prev_sibling = FindPreviousSibling(view);
+  frontend()->childNodeInserted(
+      view_to_node_id_map_[view->parent()],
+      prev_sibling ? view_to_node_id_map_[prev_sibling] : 0,
+      BuildTreeForView(view));
 }
 
 void AshDevToolsDOMAgent::RemoveViewTree(views::View* view,
@@ -296,8 +341,8 @@ void AshDevToolsDOMAgent::RemoveViewNode(views::View* view,
   else  // views::RootView
     parent_id = GetNodeIdFromWidget(view->GetWidget());
 
-  // TODO(mhashmi): Add ViewObserver and remove it here based on
-  // |remove_observer|
+  if (remove_observer)
+    view->RemoveObserver(this);
 
   NodeIdToViewMap::iterator node_id_to_view_it =
       node_id_to_view_map_.find(node_id);
@@ -308,13 +353,17 @@ void AshDevToolsDOMAgent::RemoveViewNode(views::View* view,
   frontend()->childNodeRemoved(parent_id, node_id);
 }
 
-void AshDevToolsDOMAgent::RemoveObserverFromAllWindows() {
+void AshDevToolsDOMAgent::RemoveObservers() {
   for (auto& pair : window_to_node_id_map_)
+    pair.first->RemoveObserver(this);
+  for (auto& pair : widget_to_node_id_map_)
+    pair.first->RemoveRemovalsObserver(this);
+  for (auto& pair : view_to_node_id_map_)
     pair.first->RemoveObserver(this);
 }
 
 void AshDevToolsDOMAgent::Reset() {
-  RemoveObserverFromAllWindows();
+  RemoveObservers();
   window_to_node_id_map_.clear();
   widget_to_node_id_map_.clear();
   view_to_node_id_map_.clear();
