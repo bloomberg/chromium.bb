@@ -11,7 +11,7 @@
 
 namespace blink {
 
-class PointerEvent final : public MouseEvent {
+class CORE_EXPORT PointerEvent final : public MouseEvent {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
@@ -35,6 +35,8 @@ class PointerEvent final : public MouseEvent {
 
   EventDispatchMediator* createMediator() override;
 
+  HeapVector<Member<PointerEvent>> getCoalescedEvents() const;
+
   DECLARE_VIRTUAL_TRACE();
 
  private:
@@ -48,6 +50,8 @@ class PointerEvent final : public MouseEvent {
   long m_tiltY;
   String m_pointerType;
   bool m_isPrimary;
+
+  HeapVector<Member<PointerEvent>> m_coalescedEvents;
 };
 
 class PointerEventDispatchMediator final : public EventDispatchMediator {

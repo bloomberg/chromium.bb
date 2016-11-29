@@ -35,6 +35,10 @@ PointerEvent::PointerEvent(const AtomicString& type,
     m_pointerType = initializer.pointerType();
   if (initializer.hasIsPrimary())
     m_isPrimary = initializer.isPrimary();
+  if (initializer.hasCoalescedEvents()) {
+    for (auto coalescedEvent : initializer.coalescedEvents())
+      m_coalescedEvents.append(coalescedEvent);
+  }
 }
 
 bool PointerEvent::isMouseEvent() const {
@@ -49,7 +53,12 @@ EventDispatchMediator* PointerEvent::createMediator() {
   return PointerEventDispatchMediator::create(this);
 }
 
+HeapVector<Member<PointerEvent>> PointerEvent::getCoalescedEvents() const {
+  return m_coalescedEvents;
+}
+
 DEFINE_TRACE(PointerEvent) {
+  visitor->trace(m_coalescedEvents);
   MouseEvent::trace(visitor);
 }
 

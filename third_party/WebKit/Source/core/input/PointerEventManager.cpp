@@ -28,27 +28,22 @@ size_t toPointerTypeIndex(WebPointerProperties::PointerType t) {
   return static_cast<size_t>(t);
 }
 
-const AtomicString& pointerEventNameForTouchPointState(
-    PlatformTouchPoint::TouchState state) {
-  switch (state) {
-    case PlatformTouchPoint::TouchReleased:
-      return EventTypeNames::pointerup;
-    case PlatformTouchPoint::TouchCancelled:
-      return EventTypeNames::pointercancel;
-    case PlatformTouchPoint::TouchPressed:
-      return EventTypeNames::pointerdown;
-    case PlatformTouchPoint::TouchMoved:
-      return EventTypeNames::pointermove;
-    case PlatformTouchPoint::TouchStationary:
-    // Fall through to default
-    default:
-      NOTREACHED();
-      return emptyAtom;
-  }
-}
-
 bool isInDocument(EventTarget* n) {
   return n && n->toNode() && n->toNode()->isConnected();
+}
+
+Vector<PlatformTouchPoint> getCoalescedPoints(
+    const Vector<PlatformTouchEvent>& coalescedEvents,
+    int id) {
+  Vector<PlatformTouchPoint> relatedPoints;
+  for (const auto& touchEvent : coalescedEvents) {
+    for (auto& point : touchEvent.touchPoints()) {
+      // TODO(nzolghadr): Need to filter out stationary points
+      if (point.id() == id)
+        relatedPoints.append(point);
+    }
+  }
+  return relatedPoints;
 }
 
 }  // namespace
@@ -190,7 +185,8 @@ void PointerEventManager::sendMouseAndPointerBoundaryEvents(
   // to create boundary pointer events and its type will be overridden in
   // |sendBoundaryEvents| function.
   PointerEvent* dummyPointerEvent = m_pointerEventFactory.create(
-      EventTypeNames::mousedown, mouseEvent, m_frame->document()->domWindow());
+      EventTypeNames::mousedown, mouseEvent, Vector<PlatformMouseEvent>(),
+      m_frame->document()->domWindow());
 
   // TODO(crbug/545647): This state should reset with pointercancel too.
   // This function also gets called for compat mouse events of touch at this
@@ -274,7 +270,8 @@ void PointerEventManager::unblockTouchPointers() {
 }
 
 WebInputEventResult PointerEventManager::handleTouchEvents(
-    const PlatformTouchEvent& event) {
+    const PlatformTouchEvent& event,
+    const Vector<PlatformTouchEvent>& coalescedEvents) {
   if (event.type() == PlatformEvent::TouchScrollStarted) {
     blockTouchPointers();
     return WebInputEventResult::HandledSystem;
@@ -312,7 +309,7 @@ WebInputEventResult PointerEventManager::handleTouchEvents(
   }
   UserGestureIndicator holder(possibleGestureToken);
 
-  dispatchTouchPointerEvents(event, touchInfos);
+  dispatchTouchPointerEvents(event, coalescedEvents, touchInfos);
 
   return m_touchEventManager->handleTouchEvent(event, touchInfos);
 }
@@ -375,6 +372,7 @@ void PointerEventManager::computeTouchTargets(
 
 void PointerEventManager::dispatchTouchPointerEvents(
     const PlatformTouchEvent& event,
+    const Vector<PlatformTouchEvent>& coalescedEvents,
     HeapVector<TouchEventManager::TouchInfo>& touchInfos) {
   // Iterate through the touch points, sending PointerEvents to the targets as
   // required.
@@ -384,16 +382,9 @@ void PointerEventManager::dispatchTouchPointerEvents(
     if (touchInfo.touchNode && touchInfo.targetFrame &&
         touchPoint.state() != PlatformTouchPoint::TouchStationary &&
         !m_inCanceledStateForPointerTypeTouch) {
-      FloatPoint pagePoint = touchInfo.targetFrame->view()->rootFrameToContents(
-          touchInfo.point.pos());
-      float scaleFactor = 1.0f / touchInfo.targetFrame->pageZoomFactor();
-      FloatPoint scrollPosition(touchInfo.targetFrame->view()->scrollOffset());
-      FloatPoint framePoint = pagePoint.scaledBy(scaleFactor);
-      framePoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
       PointerEvent* pointerEvent = m_pointerEventFactory.create(
-          pointerEventNameForTouchPointState(touchPoint.state()), touchPoint,
-          event.getModifiers(), touchPoint.radius().scaledBy(scaleFactor),
-          framePoint,
+          touchPoint, getCoalescedPoints(coalescedEvents, touchPoint.id()),
+          event.getModifiers(), touchInfo.targetFrame,
           touchInfo.touchNode ? touchInfo.touchNode->document().domWindow()
                               : nullptr);
 
@@ -448,9 +439,11 @@ WebInputEventResult PointerEventManager::sendTouchPointerEvent(
 WebInputEventResult PointerEventManager::sendMousePointerEvent(
     Node* target,
     const AtomicString& mouseEventType,
-    const PlatformMouseEvent& mouseEvent) {
-  PointerEvent* pointerEvent = m_pointerEventFactory.create(
-      mouseEventType, mouseEvent, m_frame->document()->domWindow());
+    const PlatformMouseEvent& mouseEvent,
+    const Vector<PlatformMouseEvent>& coalescedEvents) {
+  PointerEvent* pointerEvent =
+      m_pointerEventFactory.create(mouseEventType, mouseEvent, coalescedEvents,
+                                   m_frame->document()->domWindow());
 
   // This is for when the mouse is released outside of the page.
   if (pointerEvent->type() == EventTypeNames::pointermove &&

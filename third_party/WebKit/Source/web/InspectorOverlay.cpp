@@ -268,9 +268,13 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
     if (handled)
       return true;
 
-    if (mouseEvent.type() == PlatformEvent::MouseMoved)
+    if (mouseEvent.type() == PlatformEvent::MouseMoved) {
       handled = overlayMainFrame()->eventHandler().handleMouseMoveEvent(
-                    mouseEvent) != WebInputEventResult::NotHandled;
+                    mouseEvent, createPlatformMouseEventVector(
+                                    m_frameImpl->frameView(),
+                                    std::vector<const WebInputEvent*>())) !=
+                WebInputEventResult::NotHandled;
+    }
     if (mouseEvent.type() == PlatformEvent::MousePressed)
       handled = overlayMainFrame()->eventHandler().handleMousePressEvent(
                     mouseEvent) != WebInputEventResult::NotHandled;
@@ -286,7 +290,10 @@ bool InspectorOverlay::handleInputEvent(const WebInputEvent& inputEvent) {
     handled = handleTouchEvent(touchEvent);
     if (handled)
       return true;
-    overlayMainFrame()->eventHandler().handleTouchEvent(touchEvent);
+    overlayMainFrame()->eventHandler().handleTouchEvent(
+        touchEvent,
+        createPlatformTouchEventVector(m_frameImpl->frameView(),
+                                       std::vector<const WebInputEvent*>()));
   }
   if (WebInputEvent::isKeyboardEventType(inputEvent.type)) {
     overlayMainFrame()->eventHandler().keyEvent(

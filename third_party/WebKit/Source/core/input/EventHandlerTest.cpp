@@ -85,7 +85,8 @@ TEST_F(EventHandlerTest, dragSelectionAfterScroll) {
       IntPoint(100, 50), IntPoint(200, 250), WebPointerProperties::Button::Left,
       PlatformEvent::MouseMoved, 1, PlatformEvent::Modifiers::LeftButtonDown,
       WTF::monotonicallyIncreasingTime());
-  document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+  document().frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
 
   page().autoscrollController().animate(WTF::monotonicallyIncreasingTime());
   page().animator().serviceScriptedAnimations(
@@ -189,7 +190,8 @@ TEST_F(EventHandlerTest, draggedInlinePositionTest) {
                                     PlatformEvent::MouseMoved, 1,
                                     PlatformEvent::Modifiers::LeftButtonDown,
                                     WTF::monotonicallyIncreasingTime());
-  document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+  document().frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
 
   EXPECT_EQ(
       IntPoint(12, 29),
@@ -222,7 +224,8 @@ TEST_F(EventHandlerTest, draggedSVGImagePositionTest) {
                                     PlatformEvent::MouseMoved, 1,
                                     PlatformEvent::Modifiers::LeftButtonDown,
                                     WTF::monotonicallyIncreasingTime());
-  document().frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+  document().frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
 
   EXPECT_EQ(
       IntPoint(45, 44),

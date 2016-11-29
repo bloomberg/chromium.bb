@@ -210,7 +210,12 @@ Response InspectorInputAgent::dispatchTouchEvent(
     event.append(touchPoint);
   }
 
-  m_inspectedFrames->root()->eventHandler().handleTouchEvent(event);
+  // TODO: We need to add the support for generating coalesced events in
+  // the devtools.
+  Vector<PlatformTouchEvent> coalescedEvents;
+
+  m_inspectedFrames->root()->eventHandler().handleTouchEvent(event,
+                                                             coalescedEvents);
   return Response::OK();
 }
 

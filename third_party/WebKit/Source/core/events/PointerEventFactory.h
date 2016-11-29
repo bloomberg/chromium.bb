@@ -31,13 +31,13 @@ class CORE_EXPORT PointerEventFactory {
 
   PointerEvent* create(const AtomicString& mouseEventName,
                        const PlatformMouseEvent&,
+                       const Vector<PlatformMouseEvent>&,
                        LocalDOMWindow*);
 
-  PointerEvent* create(const AtomicString& type,
-                       const PlatformTouchPoint&,
+  PointerEvent* create(const PlatformTouchPoint&,
+                       const Vector<PlatformTouchPoint>&,
                        PlatformEvent::Modifiers,
-                       const FloatSize& pointRadius,
-                       const FloatPoint& clientPoint,
+                       LocalFrame*,
                        DOMWindow*);
 
   PointerEvent* createPointerCancelEvent(

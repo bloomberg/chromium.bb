@@ -75,18 +75,98 @@ unsigned short buttonToButtonsBitfield(WebPointerProperties::Button button) {
   return 0;
 }
 
-}  // namespace
-
-const int PointerEventFactory::s_invalidId = 0;
-
-// Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
-const int PointerEventFactory::s_mouseId = 1;
+const AtomicString& pointerEventNameForTouchPointState(
+    PlatformTouchPoint::TouchState state) {
+  switch (state) {
+    case PlatformTouchPoint::TouchReleased:
+      return EventTypeNames::pointerup;
+    case PlatformTouchPoint::TouchCancelled:
+      return EventTypeNames::pointercancel;
+    case PlatformTouchPoint::TouchPressed:
+      return EventTypeNames::pointerdown;
+    case PlatformTouchPoint::TouchMoved:
+      return EventTypeNames::pointermove;
+    case PlatformTouchPoint::TouchStationary:
+    // Fall through to default
+    default:
+      NOTREACHED();
+      return emptyAtom;
+  }
+}
 
 float getPointerEventPressure(float force, int buttons) {
   if (std::isnan(force))
     return buttons ? 0.5 : 0;
   return force;
 }
+
+void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
+                                 LocalFrame* targetFrame,
+                                 PointerEventInit* pointerEventInit) {
+  // This function should not update attributes like pointerId, isPrimary,
+  // and pointerType which is the same among the coalesced events and the
+  // dispatched event.
+
+  if (targetFrame) {
+    FloatPoint pagePoint =
+        targetFrame->view()->rootFrameToContents(touchPoint.pos());
+    float scaleFactor = 1.0f / targetFrame->pageZoomFactor();
+    FloatPoint scrollPosition(targetFrame->view()->scrollOffset());
+    FloatPoint clientPoint = pagePoint.scaledBy(scaleFactor);
+    clientPoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
+
+    pointerEventInit->setClientX(clientPoint.x());
+    pointerEventInit->setClientY(clientPoint.y());
+
+    FloatSize pointRadius = touchPoint.radius().scaledBy(scaleFactor);
+    pointerEventInit->setWidth(pointRadius.width());
+    pointerEventInit->setHeight(pointRadius.height());
+  }
+
+  pointerEventInit->setScreenX(touchPoint.screenPos().x());
+  pointerEventInit->setScreenY(touchPoint.screenPos().y());
+  pointerEventInit->setPressure(
+      getPointerEventPressure(touchPoint.force(), pointerEventInit->buttons()));
+  pointerEventInit->setTiltX(touchPoint.pointerProperties().tiltX);
+  pointerEventInit->setTiltY(touchPoint.pointerProperties().tiltY);
+}
+
+void updateMousePointerEventInit(const PlatformMouseEvent& mouseEvent,
+                                 LocalDOMWindow* view,
+                                 PointerEventInit* pointerEventInit) {
+  // This function should not update attributes like pointerId, isPrimary,
+  // and pointerType which is the same among the coalesced events and the
+  // dispatched event.
+
+  pointerEventInit->setScreenX(mouseEvent.globalPosition().x());
+  pointerEventInit->setScreenY(mouseEvent.globalPosition().y());
+
+  IntPoint locationInFrameZoomed;
+  if (view && view->frame() && view->frame()->view()) {
+    LocalFrame* frame = view->frame();
+    FrameView* frameView = frame->view();
+    IntPoint locationInContents =
+        frameView->rootFrameToContents(mouseEvent.position());
+    locationInFrameZoomed = frameView->contentsToFrame(locationInContents);
+    float scaleFactor = 1 / frame->pageZoomFactor();
+    locationInFrameZoomed.scale(scaleFactor, scaleFactor);
+  }
+
+  pointerEventInit->setClientX(locationInFrameZoomed.x());
+  pointerEventInit->setClientY(locationInFrameZoomed.y());
+
+  pointerEventInit->setPressure(getPointerEventPressure(
+      mouseEvent.pointerProperties().force, pointerEventInit->buttons()));
+  pointerEventInit->setTiltX(mouseEvent.pointerProperties().tiltX);
+  pointerEventInit->setTiltY(mouseEvent.pointerProperties().tiltY);
+}
+
+}  // namespace
+
+const int PointerEventFactory::s_invalidId = 0;
+
+// Mouse id is 1 to behave the same as MS Edge for compatibility reasons.
+const int PointerEventFactory::s_mouseId = 1;
 
 void PointerEventFactory::setIdTypeButtons(
     PointerEventInit& pointerEventInit,
@@ -128,39 +208,26 @@ void PointerEventFactory::setEventSpecificFields(
   pointerEventInit.setDetail(0);
 }
 
-PointerEvent* PointerEventFactory::create(const AtomicString& mouseEventName,
-                                          const PlatformMouseEvent& mouseEvent,
-                                          LocalDOMWindow* view) {
+PointerEvent* PointerEventFactory::create(
+    const AtomicString& mouseEventName,
+    const PlatformMouseEvent& mouseEvent,
+    const Vector<PlatformMouseEvent>& coalescedMouseEvents,
+    LocalDOMWindow* view) {
   DCHECK(mouseEventName == EventTypeNames::mousemove ||
          mouseEventName == EventTypeNames::mousedown ||
          mouseEventName == EventTypeNames::mouseup);
 
   AtomicString pointerEventName =
       pointerEventNameForMouseEventName(mouseEventName);
+  DCHECK(pointerEventName == EventTypeNames::pointermove ||
+         coalescedMouseEvents.isEmpty());
+
   unsigned buttons =
       MouseEvent::platformModifiersToButtons(mouseEvent.getModifiers());
   PointerEventInit pointerEventInit;
 
   setIdTypeButtons(pointerEventInit, mouseEvent.pointerProperties(), buttons);
   setEventSpecificFields(pointerEventInit, pointerEventName);
-
-  pointerEventInit.setScreenX(mouseEvent.globalPosition().x());
-  pointerEventInit.setScreenY(mouseEvent.globalPosition().y());
-
-  IntPoint locationInFrameZoomed;
-  if (view && view->frame() && view->frame()->view()) {
-    LocalFrame* frame = view->frame();
-    FrameView* frameView = frame->view();
-    IntPoint locationInContents =
-        frameView->rootFrameToContents(mouseEvent.position());
-    locationInFrameZoomed = frameView->contentsToFrame(locationInContents);
-    float scaleFactor = 1 / frame->pageZoomFactor();
-    locationInFrameZoomed.scale(scaleFactor, scaleFactor);
-  }
-
-  // Set up initial values for coordinates.
-  pointerEventInit.setClientX(locationInFrameZoomed.x());
-  pointerEventInit.setClientY(locationInFrameZoomed.y());
 
   if (pointerEventName == EventTypeNames::pointerdown ||
       pointerEventName == EventTypeNames::pointerup) {
@@ -176,10 +243,6 @@ PointerEvent* PointerEventFactory::create(const AtomicString& mouseEventName,
     pointerEventInit.setButton(
         static_cast<int>(WebPointerProperties::Button::NoButton));
   }
-  pointerEventInit.setPressure(getPointerEventPressure(
-      mouseEvent.pointerProperties().force, pointerEventInit.buttons()));
-  pointerEventInit.setTiltX(mouseEvent.pointerProperties().tiltX);
-  pointerEventInit.setTiltY(mouseEvent.pointerProperties().tiltY);
 
   UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit,
                                                 mouseEvent.getModifiers());
@@ -194,16 +257,36 @@ PointerEvent* PointerEventFactory::create(const AtomicString& mouseEventName,
 
   pointerEventInit.setView(view);
 
+  updateMousePointerEventInit(mouseEvent, view, &pointerEventInit);
+
+  // Created coalesced events init structure
+  HeapVector<Member<PointerEvent>> coalescedPointerEvents;
+  for (const auto& coalescedMouseEvent : coalescedMouseEvents) {
+    DCHECK_EQ(mouseEvent.pointerProperties().id,
+              coalescedMouseEvent.pointerProperties().id);
+    DCHECK_EQ(mouseEvent.pointerProperties().pointerType,
+              coalescedMouseEvent.pointerProperties().pointerType);
+    PointerEventInit coalescedEventInit = pointerEventInit;
+    updateMousePointerEventInit(coalescedMouseEvent, view, &coalescedEventInit);
+    coalescedPointerEvents.append(
+        PointerEvent::create(pointerEventName, coalescedEventInit));
+  }
+  pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
+
   return PointerEvent::create(pointerEventName, pointerEventInit);
 }
 
-PointerEvent* PointerEventFactory::create(const AtomicString& type,
-                                          const PlatformTouchPoint& touchPoint,
-                                          PlatformEvent::Modifiers modifiers,
-                                          const FloatSize& pointRadius,
-                                          const FloatPoint& clientPoint,
-                                          DOMWindow* view) {
+PointerEvent* PointerEventFactory::create(
+    const PlatformTouchPoint& touchPoint,
+    const Vector<PlatformTouchPoint>& coalescedPoints,
+    PlatformEvent::Modifiers modifiers,
+    LocalFrame* targetFrame,
+    DOMWindow* view) {
   const PlatformTouchPoint::TouchState pointState = touchPoint.state();
+  const AtomicString& type =
+      pointerEventNameForTouchPointState(touchPoint.state());
+
+  DCHECK(type == EventTypeNames::pointermove || coalescedPoints.isEmpty());
 
   bool pointerReleasedOrCancelled =
       pointState == PlatformTouchPoint::TouchReleased ||
@@ -216,25 +299,32 @@ PointerEvent* PointerEventFactory::create(const AtomicString& type,
 
   setIdTypeButtons(pointerEventInit, touchPoint.pointerProperties(),
                    pointerReleasedOrCancelled ? 0 : 1);
-
-  pointerEventInit.setWidth(pointRadius.width());
-  pointerEventInit.setHeight(pointRadius.height());
-  pointerEventInit.setScreenX(touchPoint.screenPos().x());
-  pointerEventInit.setScreenY(touchPoint.screenPos().y());
-  pointerEventInit.setClientX(clientPoint.x());
-  pointerEventInit.setClientY(clientPoint.y());
   pointerEventInit.setButton(static_cast<int>(
       pointerPressedOrReleased ? WebPointerProperties::Button::Left
                                : WebPointerProperties::Button::NoButton));
-  pointerEventInit.setPressure(
-      getPointerEventPressure(touchPoint.force(), pointerEventInit.buttons()));
-  pointerEventInit.setTiltX(touchPoint.pointerProperties().tiltX);
-  pointerEventInit.setTiltY(touchPoint.pointerProperties().tiltY);
+
   pointerEventInit.setView(view);
+  updateTouchPointerEventInit(touchPoint, targetFrame, &pointerEventInit);
 
   UIEventWithKeyState::setFromPlatformModifiers(pointerEventInit, modifiers);
 
   setEventSpecificFields(pointerEventInit, type);
+
+  // Created coalesced events init structure
+  HeapVector<Member<PointerEvent>> coalescedPointerEvents;
+  for (const auto& coalescedTouchPoint : coalescedPoints) {
+    DCHECK_EQ(touchPoint.state(), coalescedTouchPoint.state());
+    DCHECK_EQ(touchPoint.pointerProperties().id,
+              coalescedTouchPoint.pointerProperties().id);
+    DCHECK_EQ(touchPoint.pointerProperties().pointerType,
+              coalescedTouchPoint.pointerProperties().pointerType);
+    PointerEventInit coalescedEventInit = pointerEventInit;
+    updateTouchPointerEventInit(coalescedTouchPoint, targetFrame,
+                                &coalescedEventInit);
+    coalescedPointerEvents.append(
+        PointerEvent::create(type, coalescedEventInit));
+  }
+  pointerEventInit.setCoalescedEvents(coalescedPointerEvents);
 
   return PointerEvent::create(type, pointerEventInit);
 }

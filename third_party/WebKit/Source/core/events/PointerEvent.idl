@@ -16,4 +16,6 @@
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute long      tiltY;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute DOMString pointerType;
     [MeasureAs=PointerEventAttributeCount]   readonly    attribute boolean   isPrimary;
+
+    [RuntimeEnabled=CoalescedEvents] sequence<PointerEvent> getCoalescedEvents();
 };

@@ -648,7 +648,8 @@ WebInputEventResult EventHandler::handleMousePressEvent(
     m_frame->selection().setCaretBlinkingSuspended(true);
 
   WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(
-      EventTypeNames::mousedown, mev.innerNode(), mev.event());
+      EventTypeNames::mousedown, mev.innerNode(), mev.event(),
+      Vector<PlatformMouseEvent>());
 
   if (eventResult == WebInputEventResult::NotHandled && m_frame->view()) {
     FrameView* view = m_frame->view();
@@ -726,11 +727,13 @@ WebInputEventResult EventHandler::handleMousePressEvent(
 }
 
 WebInputEventResult EventHandler::handleMouseMoveEvent(
-    const PlatformMouseEvent& event) {
+    const PlatformMouseEvent& event,
+    const Vector<PlatformMouseEvent>& coalescedEvents) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseMoveEvent");
 
   HitTestResult hoveredNode = HitTestResult();
-  WebInputEventResult result = handleMouseMoveOrLeaveEvent(event, &hoveredNode);
+  WebInputEventResult result =
+      handleMouseMoveOrLeaveEvent(event, coalescedEvents, &hoveredNode);
 
   Page* page = m_frame->page();
   if (!page)
@@ -755,11 +758,13 @@ WebInputEventResult EventHandler::handleMouseMoveEvent(
 void EventHandler::handleMouseLeaveEvent(const PlatformMouseEvent& event) {
   TRACE_EVENT0("blink", "EventHandler::handleMouseLeaveEvent");
 
-  handleMouseMoveOrLeaveEvent(event, 0, false, true);
+  handleMouseMoveOrLeaveEvent(event, Vector<PlatformMouseEvent>(), 0, false,
+                              true);
 }
 
 WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
     const PlatformMouseEvent& mouseEvent,
+    const Vector<PlatformMouseEvent>& coalescedEvents,
     HitTestResult* hoveredNode,
     bool onlyUpdateScrollbars,
     bool forceLeave) {
@@ -775,8 +780,9 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
   m_mouseEventManager->handleSvgPanIfNeeded(false);
 
   if (m_frameSetBeingResized) {
-    return updatePointerTargetAndDispatchEvents(
-        EventTypeNames::mousemove, m_frameSetBeingResized.get(), mouseEvent);
+    return updatePointerTargetAndDispatchEvents(EventTypeNames::mousemove,
+                                                m_frameSetBeingResized.get(),
+                                                mouseEvent, coalescedEvents);
   }
 
   // Send events right to a scrollbar if the mouse is pressed.
@@ -857,8 +863,10 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
     // Event dispatch in sendMouseAndPointerBoundaryEvents may have caused the
     // subframe of the target node to be detached from its FrameView, in which
     // case the event should not be passed.
-    if (newSubframe->view())
-      eventResult = passMouseMoveEventToSubframe(mev, newSubframe, hoveredNode);
+    if (newSubframe->view()) {
+      eventResult = passMouseMoveEventToSubframe(mev, coalescedEvents,
+                                                 newSubframe, hoveredNode);
+    }
   } else {
     if (scrollbar && !m_mouseEventManager->mousePressed()) {
       // Handle hover effects on platforms that support visual feedback on
@@ -879,7 +887,7 @@ WebInputEventResult EventHandler::handleMouseMoveOrLeaveEvent(
     return eventResult;
 
   eventResult = updatePointerTargetAndDispatchEvents(
-      EventTypeNames::mousemove, mev.innerNode(), mev.event());
+      EventTypeNames::mousemove, mev.innerNode(), mev.event(), coalescedEvents);
   if (eventResult != WebInputEventResult::NotHandled)
     return eventResult;
 
@@ -921,7 +929,7 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
     m_lastScrollbarUnderMouse->mouseUp(mouseEvent);
     return updatePointerTargetAndDispatchEvents(
         EventTypeNames::mouseup, m_mouseEventManager->getNodeUnderMouse(),
-        mouseEvent);
+        mouseEvent, Vector<PlatformMouseEvent>());
   }
 
   // Mouse events simulated from touch should not hit-test again.
@@ -959,7 +967,8 @@ WebInputEventResult EventHandler::handleMouseReleaseEvent(
   }
 
   WebInputEventResult eventResult = updatePointerTargetAndDispatchEvents(
-      EventTypeNames::mouseup, mev.innerNode(), mev.event());
+      EventTypeNames::mouseup, mev.innerNode(), mev.event(),
+      Vector<PlatformMouseEvent>());
 
   WebInputEventResult clickEventResult =
       m_mouseEventManager->dispatchMouseClickIfNeeded(mev);
@@ -1248,13 +1257,15 @@ void EventHandler::elementRemoved(EventTarget* target) {
 WebInputEventResult EventHandler::updatePointerTargetAndDispatchEvents(
     const AtomicString& mouseEventType,
     Node* targetNode,
-    const PlatformMouseEvent& mouseEvent) {
+    const PlatformMouseEvent& mouseEvent,
+    const Vector<PlatformMouseEvent>& coalescedEvents) {
   ASSERT(mouseEventType == EventTypeNames::mousedown ||
          mouseEventType == EventTypeNames::mousemove ||
          mouseEventType == EventTypeNames::mouseup);
 
   const auto& eventResult = m_pointerEventManager->sendMousePointerEvent(
-      updateMouseEventTargetNode(targetNode), mouseEventType, mouseEvent);
+      updateMouseEventTargetNode(targetNode), mouseEventType, mouseEvent,
+      coalescedEvents);
   return eventResult;
 }
 
@@ -2059,9 +2070,10 @@ void EventHandler::updateLastScrollbarUnderMouse(Scrollbar* scrollbar,
 }
 
 WebInputEventResult EventHandler::handleTouchEvent(
-    const PlatformTouchEvent& event) {
+    const PlatformTouchEvent& event,
+    const Vector<PlatformTouchEvent>& coalescedEvents) {
   TRACE_EVENT0("blink", "EventHandler::handleTouchEvent");
-  return m_pointerEventManager->handleTouchEvents(event);
+  return m_pointerEventManager->handleTouchEvents(event, coalescedEvents);
 }
 
 WebInputEventResult EventHandler::passMousePressEventToSubframe(
@@ -2077,13 +2089,14 @@ WebInputEventResult EventHandler::passMousePressEventToSubframe(
 
 WebInputEventResult EventHandler::passMouseMoveEventToSubframe(
     MouseEventWithHitTestResults& mev,
+    const Vector<PlatformMouseEvent>& coalescedEvents,
     LocalFrame* subframe,
     HitTestResult* hoveredNode) {
   if (m_mouseEventManager->mouseDownMayStartDrag())
     return WebInputEventResult::NotHandled;
   WebInputEventResult result =
-      subframe->eventHandler().handleMouseMoveOrLeaveEvent(mev.event(),
-                                                           hoveredNode);
+      subframe->eventHandler().handleMouseMoveOrLeaveEvent(
+          mev.event(), coalescedEvents, hoveredNode);
   if (result != WebInputEventResult::NotHandled)
     return result;
   return WebInputEventResult::HandledSystem;

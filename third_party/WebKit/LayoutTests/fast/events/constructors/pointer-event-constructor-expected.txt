@@ -260,6 +260,14 @@ PASS new PointerEvent('eventType').metaKey is false
 PASS new PointerEvent('eventType').button is 0
 PASS new PointerEvent('eventType').buttons is 0
 PASS new PointerEvent('eventType').relatedTarget is null
+--- tests for coalesced events ---
+PASS pe.getCoalescedEvents().length is 2
+PASS pe.pressure is within 0.00001 of 0.1
+PASS pe.getCoalescedEvents()[0].pressure is within 0.00001 of 1
+PASS pe.getCoalescedEvents()[1].pressure is within 0.00001 of 0.5
+PASS pe.pointerId is 1
+PASS pe.getCoalescedEvents()[0].pointerId is 2
+PASS pe.getCoalescedEvents()[1].pointerId is 2
 PASS successfullyParsed is true
 
 TEST COMPLETE

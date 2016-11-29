@@ -10571,7 +10571,7 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
       PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverLinkEvent);
+      mouseMoveOverLinkEvent, Vector<PlatformMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Hand,
@@ -10583,7 +10583,8 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
       IntPoint(18, aTag->offsetTop()), IntPoint(18, aTag->offsetTop()),
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
       PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Pointer,
@@ -10617,7 +10618,8 @@ TEST_F(WebFrameTest, MouseOverLinkAndOverlayScrollbar) {
   EXPECT_TRUE(hitTestResult.innerElement());
   EXPECT_FALSE(hitTestResult.scrollbar());
 
-  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveEvent);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveEvent, Vector<PlatformMouseEvent>());
 
   EXPECT_EQ(
       Cursor::Type::Hand,
@@ -10659,7 +10661,8 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
       IntPoint(1, 1), IntPoint(1, 1), WebPointerProperties::Button::NoButton,
       PlatformEvent::MouseMoved, 0, PlatformEvent::NoModifiers,
       WTF::monotonicallyIncreasingTime());
-  document->frame()->eventHandler().handleMouseMoveEvent(mouseMoveOverDiv);
+  document->frame()->eventHandler().handleMouseMoveEvent(
+      mouseMoveOverDiv, Vector<PlatformMouseEvent>());
 
   // DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);
@@ -10677,7 +10680,7 @@ TEST_F(WebFrameTest, MouseOverCustomScrollbar) {
       WebPointerProperties::Button::NoButton, PlatformEvent::MouseMoved, 0,
       PlatformEvent::NoModifiers, WTF::monotonicallyIncreasingTime());
   document->frame()->eventHandler().handleMouseMoveEvent(
-      mouseMoveOverDivAndScrollbar);
+      mouseMoveOverDivAndScrollbar, Vector<PlatformMouseEvent>());
 
   // Custom not change the DIV :hover
   EXPECT_EQ(document->hoverNode(), scrollbarDiv);

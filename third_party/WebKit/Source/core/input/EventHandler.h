@@ -141,7 +141,9 @@ class CORE_EXPORT EventHandler final
                       ScrollGranularity,
                       Node* startingNode = nullptr);
 
-  WebInputEventResult handleMouseMoveEvent(const PlatformMouseEvent&);
+  WebInputEventResult handleMouseMoveEvent(
+      const PlatformMouseEvent&,
+      const Vector<PlatformMouseEvent>& coalescedEvents);
   void handleMouseLeaveEvent(const PlatformMouseEvent&);
 
   WebInputEventResult handleMousePressEvent(const PlatformMouseEvent&);
@@ -221,7 +223,9 @@ class CORE_EXPORT EventHandler final
 
   void capsLockStateMayHaveChanged();  // Only called by FrameSelection
 
-  WebInputEventResult handleTouchEvent(const PlatformTouchEvent&);
+  WebInputEventResult handleTouchEvent(
+      const PlatformTouchEvent&,
+      const Vector<PlatformTouchEvent>& coalescedEvents);
 
   bool useHandCursor(Node*, bool isOverLink);
 
@@ -257,6 +261,7 @@ class CORE_EXPORT EventHandler final
  private:
   WebInputEventResult handleMouseMoveOrLeaveEvent(
       const PlatformMouseEvent&,
+      const Vector<PlatformMouseEvent>&,
       HitTestResult* hoveredNode = nullptr,
       bool onlyUpdateScrollbars = false,
       bool forceLeave = false);
@@ -302,7 +307,8 @@ class CORE_EXPORT EventHandler final
   WebInputEventResult updatePointerTargetAndDispatchEvents(
       const AtomicString& mouseEventType,
       Node* target,
-      const PlatformMouseEvent&);
+      const PlatformMouseEvent&,
+      const Vector<PlatformMouseEvent>& coalescedEvents);
 
   // Clears drag target and related states. It is called when drag is done or
   // canceled.
@@ -313,6 +319,7 @@ class CORE_EXPORT EventHandler final
       LocalFrame* subframe);
   WebInputEventResult passMouseMoveEventToSubframe(
       MouseEventWithHitTestResults&,
+      const Vector<PlatformMouseEvent>&,
       LocalFrame* subframe,
       HitTestResult* hoveredNode = nullptr);
   WebInputEventResult passMouseReleaseEventToSubframe(

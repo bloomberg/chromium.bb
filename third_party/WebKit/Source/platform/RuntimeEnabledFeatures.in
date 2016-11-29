@@ -32,6 +32,7 @@ AudioOutputDevices status=stable
 AudioVideoTracks status=experimental
 AudioWorklet status=experimental
 Auxclick status=stable
+CoalescedEvents status=experimental
 BackgroundSync status=stable
 BackspaceDefaultHandler status=test
 BroadcastChannel status=stable

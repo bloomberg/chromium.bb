@@ -828,4 +828,28 @@ WebGestureEventBuilder::WebGestureEventBuilder(const LayoutItem layoutItem,
   }
 }
 
+Vector<PlatformMouseEvent> createPlatformMouseEventVector(
+    Widget* widget,
+    const std::vector<const WebInputEvent*>& coalescedEvents) {
+  Vector<PlatformMouseEvent> result;
+  for (const auto& event : coalescedEvents) {
+    DCHECK(WebInputEvent::isMouseEventType(event->type));
+    result.append(PlatformMouseEventBuilder(
+        widget, static_cast<const WebMouseEvent&>(*event)));
+  }
+  return result;
+}
+
+Vector<PlatformTouchEvent> createPlatformTouchEventVector(
+    Widget* widget,
+    const std::vector<const WebInputEvent*>& coalescedEvents) {
+  Vector<PlatformTouchEvent> result;
+  for (const auto& event : coalescedEvents) {
+    DCHECK(WebInputEvent::isTouchEventType(event->type));
+    result.append(PlatformTouchEventBuilder(
+        widget, static_cast<const WebTouchEvent&>(*event)));
+  }
+  return result;
+}
+
 }  // namespace blink

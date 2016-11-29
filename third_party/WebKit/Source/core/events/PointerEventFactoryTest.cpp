@@ -12,6 +12,26 @@
 
 namespace blink {
 
+namespace {
+
+const char* pointerTypeNameForWebPointPointerType(
+    WebPointerProperties::PointerType type) {
+  switch (type) {
+    case WebPointerProperties::PointerType::Unknown:
+      return "";
+    case WebPointerProperties::PointerType::Touch:
+      return "touch";
+    case WebPointerProperties::PointerType::Pen:
+    case WebPointerProperties::PointerType::Eraser:
+      return "pen";
+    case WebPointerProperties::PointerType::Mouse:
+      return "mouse";
+  }
+  NOTREACHED();
+  return "";
+}
+}
+
 class PointerEventFactoryTest : public ::testing::Test {
  protected:
   void SetUp() override;
@@ -24,13 +44,15 @@ class PointerEventFactoryTest : public ::testing::Test {
       int rawId,
       int uniqueId,
       bool isPrimary,
-      PlatformTouchPoint::TouchState = PlatformTouchPoint::TouchPressed);
+      PlatformTouchPoint::TouchState = PlatformTouchPoint::TouchPressed,
+      size_t coalescedEventCount = 0);
   PointerEvent* createAndCheckMouseEvent(
       WebPointerProperties::PointerType,
       int rawId,
       int uniqueId,
       bool isPrimary,
-      PlatformEvent::Modifiers = PlatformEvent::NoModifiers);
+      PlatformEvent::Modifiers = PlatformEvent::NoModifiers,
+      size_t coalescedEventCount = 0);
   void createAndCheckPointerTransitionEvent(PointerEvent*, const AtomicString&);
 
   PointerEventFactory m_pointerEventFactory;
@@ -85,6 +107,8 @@ PointerEvent* PointerEventFactoryTest::createAndCheckTouchCancel(
       m_pointerEventFactory.createPointerCancelEvent(uniqueId, pointerType);
   EXPECT_EQ(uniqueId, pointerEvent->pointerId());
   EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
+  EXPECT_EQ(pointerTypeNameForWebPointPointerType(pointerType),
+            pointerEvent->pointerType());
   return pointerEvent;
 }
 
@@ -105,14 +129,28 @@ PointerEvent* PointerEventFactoryTest::createAndCheckTouchEvent(
     int rawId,
     int uniqueId,
     bool isPrimary,
-    PlatformTouchPoint::TouchState state) {
+    PlatformTouchPoint::TouchState state,
+    size_t coalescedEventCount) {
+  Vector<PlatformTouchPoint> coalescedEvents;
+  for (size_t i = 0; i < coalescedEventCount; i++) {
+    coalescedEvents.append(PointerEventFactoryTest::PlatformTouchPointBuilder(
+        pointerType, rawId, state));
+  }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
-      EventTypeNames::pointerdown,
       PointerEventFactoryTest::PlatformTouchPointBuilder(pointerType, rawId,
                                                          state),
-      PlatformEvent::NoModifiers, FloatSize(), FloatPoint(), nullptr);
+      coalescedEvents, PlatformEvent::NoModifiers, nullptr, nullptr);
   EXPECT_EQ(uniqueId, pointerEvent->pointerId());
   EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
+  const char* expectedPointerType =
+      pointerTypeNameForWebPointPointerType(pointerType);
+  EXPECT_EQ(expectedPointerType, pointerEvent->pointerType());
+  EXPECT_EQ(coalescedEventCount, pointerEvent->getCoalescedEvents().size());
+  for (size_t i = 0; i < coalescedEventCount; i++) {
+    EXPECT_EQ(uniqueId, pointerEvent->getCoalescedEvents()[i]->pointerId());
+    EXPECT_EQ(isPrimary, pointerEvent->getCoalescedEvents()[i]->isPrimary());
+    EXPECT_EQ(expectedPointerType, pointerEvent->pointerType());
+  }
   return pointerEvent;
 }
 
@@ -121,12 +159,30 @@ PointerEvent* PointerEventFactoryTest::createAndCheckMouseEvent(
     int rawId,
     int uniqueId,
     bool isPrimary,
-    PlatformEvent::Modifiers modifiers) {
+    PlatformEvent::Modifiers modifiers,
+    size_t coalescedEventCount) {
+  Vector<PlatformMouseEvent> coalescedEvents;
+  for (size_t i = 0; i < coalescedEventCount; i++) {
+    coalescedEvents.append(PointerEventFactoryTest::PlatformMouseEventBuilder(
+        pointerType, rawId, modifiers));
+  }
   PointerEvent* pointerEvent = m_pointerEventFactory.create(
-      EventTypeNames::mousedown,
-      PlatformMouseEventBuilder(pointerType, rawId, modifiers), nullptr);
+      coalescedEventCount ? EventTypeNames::mousemove
+                          : EventTypeNames::mousedown,
+      PointerEventFactoryTest::PlatformMouseEventBuilder(pointerType, rawId,
+                                                         modifiers),
+      coalescedEvents, nullptr);
   EXPECT_EQ(uniqueId, pointerEvent->pointerId());
   EXPECT_EQ(isPrimary, pointerEvent->isPrimary());
+  const char* expectedPointerType =
+      pointerTypeNameForWebPointPointerType(pointerType);
+  EXPECT_EQ(expectedPointerType, pointerEvent->pointerType());
+  EXPECT_EQ(coalescedEventCount, pointerEvent->getCoalescedEvents().size());
+  for (size_t i = 0; i < coalescedEventCount; i++) {
+    EXPECT_EQ(uniqueId, pointerEvent->getCoalescedEvents()[i]->pointerId());
+    EXPECT_EQ(isPrimary, pointerEvent->getCoalescedEvents()[i]->isPrimary());
+    EXPECT_EQ(expectedPointerType, pointerEvent->pointerType());
+  }
   return pointerEvent;
 }
 
@@ -386,6 +442,15 @@ TEST_F(PointerEventFactoryTest, OutOfRange) {
   }
   createAndCheckTouchCancel(WebPointerProperties::PointerType::Mouse, 0,
                             m_expectedMouseId, true);
+}
+
+TEST_F(PointerEventFactoryTest, CoalescedEvents) {
+  createAndCheckMouseEvent(WebPointerProperties::PointerType::Mouse, 0,
+                           m_expectedMouseId, true, PlatformEvent::NoModifiers,
+                           4);
+  createAndCheckTouchEvent(WebPointerProperties::PointerType::Touch, 0,
+                           m_mappedIdStart, true,
+                           PlatformTouchPoint::TouchMoved, 3);
 }
 
 }  // namespace blink

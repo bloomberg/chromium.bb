@@ -306,7 +306,9 @@ void MouseEventManager::fakeMouseMoveEventTimerFired(TimerBase* timer) {
           KeyboardEventManager::getCurrentModifierState()),
       PlatformMouseEvent::RealOrIndistinguishable,
       monotonicallyIncreasingTime(), WebPointerProperties::PointerType::Mouse);
-  m_frame->eventHandler().handleMouseMoveEvent(fakeMouseMoveEvent);
+  Vector<PlatformMouseEvent> coalescedEvents;
+  m_frame->eventHandler().handleMouseMoveEvent(fakeMouseMoveEvent,
+                                               coalescedEvents);
 }
 
 void MouseEventManager::cancelFakeMouseMoveEvent() {

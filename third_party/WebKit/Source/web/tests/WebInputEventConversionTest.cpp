@@ -617,6 +617,47 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
   }
 
   {
+    WebMouseEvent webMouseEvent1;
+    webMouseEvent1.type = WebInputEvent::MouseMove;
+    webMouseEvent1.x = 100;
+    webMouseEvent1.y = 110;
+    webMouseEvent1.windowX = 100;
+    webMouseEvent1.windowY = 110;
+    webMouseEvent1.globalX = 100;
+    webMouseEvent1.globalY = 110;
+    webMouseEvent1.movementX = 60;
+    webMouseEvent1.movementY = 60;
+
+    WebMouseEvent webMouseEvent2 = webMouseEvent1;
+    webMouseEvent2.y = 140;
+    webMouseEvent2.windowY = 140;
+    webMouseEvent2.globalY = 140;
+    webMouseEvent2.movementY = 30;
+
+    std::vector<const WebInputEvent*> events;
+    events.push_back(&webMouseEvent1);
+    events.push_back(&webMouseEvent2);
+
+    Vector<PlatformMouseEvent> coalescedevents =
+        createPlatformMouseEventVector(view, events);
+    EXPECT_EQ(events.size(), coalescedevents.size());
+
+    EXPECT_EQ(30, coalescedevents[0].position().x());
+    EXPECT_EQ(30, coalescedevents[0].position().y());
+    EXPECT_EQ(100, coalescedevents[0].globalPosition().x());
+    EXPECT_EQ(110, coalescedevents[0].globalPosition().y());
+    EXPECT_EQ(20, coalescedevents[0].movementDelta().x());
+    EXPECT_EQ(20, coalescedevents[0].movementDelta().y());
+
+    EXPECT_EQ(30, coalescedevents[1].position().x());
+    EXPECT_EQ(40, coalescedevents[1].position().y());
+    EXPECT_EQ(100, coalescedevents[1].globalPosition().x());
+    EXPECT_EQ(140, coalescedevents[1].globalPosition().y());
+    EXPECT_EQ(20, coalescedevents[1].movementDelta().x());
+    EXPECT_EQ(10, coalescedevents[1].movementDelta().y());
+  }
+
+  {
     WebGestureEvent webGestureEvent;
     webGestureEvent.type = WebInputEvent::GestureScrollUpdate;
     webGestureEvent.sourceDevice = WebGestureDeviceTouchscreen;
@@ -728,6 +769,46 @@ TEST(WebInputEventConversionTest, InputEventsTransform) {
     EXPECT_FLOAT_EQ(10, platformTouchBuilder.touchPoints()[0].radius().width());
     EXPECT_FLOAT_EQ(10,
                     platformTouchBuilder.touchPoints()[0].radius().height());
+  }
+
+  {
+    WebTouchEvent webTouchEvent1;
+    webTouchEvent1.type = WebInputEvent::TouchMove;
+    webTouchEvent1.touchesLength = 1;
+    webTouchEvent1.touches[0].state = WebTouchPoint::StateMoved;
+    webTouchEvent1.touches[0].screenPosition.x = 100;
+    webTouchEvent1.touches[0].screenPosition.y = 110;
+    webTouchEvent1.touches[0].position.x = 100;
+    webTouchEvent1.touches[0].position.y = 110;
+    webTouchEvent1.touches[0].radiusX = 30;
+    webTouchEvent1.touches[0].radiusY = 30;
+
+    WebTouchEvent webTouchEvent2 = webTouchEvent1;
+    webTouchEvent2.touches[0].screenPosition.x = 130;
+    webTouchEvent2.touches[0].position.x = 130;
+    webTouchEvent2.touches[0].radiusX = 60;
+
+    std::vector<const WebInputEvent*> events;
+    events.push_back(&webTouchEvent1);
+    events.push_back(&webTouchEvent2);
+
+    Vector<PlatformTouchEvent> coalescedevents =
+        createPlatformTouchEventVector(view, events);
+    EXPECT_EQ(events.size(), coalescedevents.size());
+
+    EXPECT_FLOAT_EQ(100, coalescedevents[0].touchPoints()[0].screenPos().x());
+    EXPECT_FLOAT_EQ(110, coalescedevents[0].touchPoints()[0].screenPos().y());
+    EXPECT_FLOAT_EQ(30, coalescedevents[0].touchPoints()[0].pos().x());
+    EXPECT_FLOAT_EQ(30, coalescedevents[0].touchPoints()[0].pos().y());
+    EXPECT_FLOAT_EQ(10, coalescedevents[0].touchPoints()[0].radius().width());
+    EXPECT_FLOAT_EQ(10, coalescedevents[0].touchPoints()[0].radius().height());
+
+    EXPECT_FLOAT_EQ(130, coalescedevents[1].touchPoints()[0].screenPos().x());
+    EXPECT_FLOAT_EQ(110, coalescedevents[1].touchPoints()[0].screenPos().y());
+    EXPECT_FLOAT_EQ(40, coalescedevents[1].touchPoints()[0].pos().x());
+    EXPECT_FLOAT_EQ(30, coalescedevents[1].touchPoints()[0].pos().y());
+    EXPECT_FLOAT_EQ(20, coalescedevents[1].touchPoints()[0].radius().width());
+    EXPECT_FLOAT_EQ(10, coalescedevents[1].touchPoints()[0].radius().height());
   }
 }
 

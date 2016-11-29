@@ -39,6 +39,7 @@
 #include "public/platform/WebInputEvent.h"
 #include "web/WebExport.h"
 #include "wtf/Compiler.h"
+#include <vector>
 
 namespace blink {
 
@@ -135,6 +136,13 @@ class WEB_EXPORT WebGestureEventBuilder
  public:
   WebGestureEventBuilder(const LayoutItem, const GestureEvent&);
 };
+
+Vector<PlatformMouseEvent> WEB_EXPORT
+createPlatformMouseEventVector(Widget*,
+                               const std::vector<const WebInputEvent*>&);
+Vector<PlatformTouchEvent> WEB_EXPORT
+createPlatformTouchEventVector(Widget*,
+                               const std::vector<const WebInputEvent*>&);
 
 }  // namespace blink
 

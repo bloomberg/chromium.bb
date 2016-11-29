@@ -34,11 +34,15 @@ class CORE_EXPORT PointerEventManager
   // that it may cause. It also sends the compat mouse events
   // and sets the newNodeUnderMouse if the capturing is set
   // in this function.
-  WebInputEventResult sendMousePointerEvent(Node* target,
-                                            const AtomicString& type,
-                                            const PlatformMouseEvent&);
+  WebInputEventResult sendMousePointerEvent(
+      Node* target,
+      const AtomicString& type,
+      const PlatformMouseEvent&,
+      const Vector<PlatformMouseEvent>& coalescedEvents);
 
-  WebInputEventResult handleTouchEvents(const PlatformTouchEvent&);
+  WebInputEventResult handleTouchEvents(
+      const PlatformTouchEvent&,
+      const Vector<PlatformTouchEvent>& coalescedEvents);
 
   // Sends boundary events pointerout/leave/over/enter and
   // mouseout/leave/over/enter to the corresponding targets.
@@ -142,8 +146,10 @@ class CORE_EXPORT PointerEventManager
 
   // Sends touch pointer events and sets consumed bits in TouchInfo array
   // based on the return value of pointer event handlers.
-  void dispatchTouchPointerEvents(const PlatformTouchEvent&,
-                                  HeapVector<TouchEventManager::TouchInfo>&);
+  void dispatchTouchPointerEvents(
+      const PlatformTouchEvent&,
+      const Vector<PlatformTouchEvent>& coalescedEvents,
+      HeapVector<TouchEventManager::TouchInfo>&);
 
   // Returns whether the event is consumed or not.
   WebInputEventResult sendTouchPointerEvent(EventTarget*, PointerEvent*);

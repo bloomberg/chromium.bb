@@ -13,4 +13,6 @@ dictionary PointerEventInit : MouseEventInit {
     long      tiltY = 0;
     DOMString pointerType = "";
     boolean   isPrimary = false;
+
+    [RuntimeEnabled=CoalescedEvents] sequence<PointerEvent> coalescedEvents = [];
 };
