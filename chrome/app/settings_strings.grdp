@@ -1577,11 +1577,30 @@
   <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL" desc="Label for the checkbox which enables the OK Google hotword.">
     Enable "Ok Google" to start a voice search.
   </message>
-  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE_LINK" desc="Link which opens page to learn more about the OK Google hotword.">
-    Learn more
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON" desc="Subtext describing when the OK Google hotword may be used.">
+    Say "Ok Google" when the screen is on and unlocked.
   </message>
-  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_DESCRIPTION_LABEL" desc="Label describing when the OK Google hotword may be used.">
-    Say "Ok Google" in a new tab and google.com
+  <if expr="chromeos">
+    <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE" desc="Subtext describing when the OK Google hotword may be used for devices without hardware support.">
+      Say "Ok Google" in a new tab, google.com, and the App Launcher
+    </message>
+  </if>
+  <if expr="not chromeos">
+    <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE" desc="Subtext describing when the OK Google hotword may be used for devices with no hardware support.">
+      Say "Ok Google" in a new tab and google.com
+    </message>
+  </if>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE" desc="In Search Settings, the text for the 'learn more' link next to the OK Google hotword enable checkbox.">
+    Learn more.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL" desc="Text to display when the user has audio history enabled.">
+    Voice and Audio Activity for <ph name="USER_EMAIL">$1<ex>joe@gmail.com</ex></ph>.
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT" desc="Subtext describing why audio history is enabled.">
+    Enabled (required to use "Ok Google")
+  </message>
+  <message name="IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN" desc="Text for button to retrain the OK Google hotword voice model.">
+    Retrain
   </message>
 
   <!-- Search Engines Page -->

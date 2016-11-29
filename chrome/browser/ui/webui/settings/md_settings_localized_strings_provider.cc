@@ -1350,13 +1350,23 @@ void AddSearchStrings(content::WebUIDataSource* html_source) {
       {"searchEnginesManageDescription",
        IDS_SETTINGS_SEARCH_MANAGE_SEARCH_ENGINES_DESCRIPTION},
       {"searchOkGoogleLabel", IDS_SETTINGS_SEARCH_OK_GOOGLE_LABEL},
-      {"searchOkGoogleLearnMoreLink",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE_LINK},
-      {"searchOkGoogleDescriptionLabel",
-       IDS_SETTINGS_SEARCH_OK_GOOGLE_DESCRIPTION_LABEL},
+      {"searchOkGoogleSubtextAlwaysOn",
+       IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_ALWAYS_ON},
+      {"searchOkGoogleSubtextNoHardware",
+       IDS_SETTINGS_SEARCH_OK_GOOGLE_SUBTEXT_NO_HARDWARE},
+      {"searchOkGoogleLearnMore", IDS_SETTINGS_SEARCH_OK_GOOGLE_LEARN_MORE},
+      {"searchOkGoogleAudioHistoryLabel",
+       IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_LABEL},
+      {"searchOkGoogleAudioHistorySubtext",
+       IDS_SETTINGS_SEARCH_OK_GOOGLE_AUDIO_HISTORY_SUBTEXT},
+      {"searchOkGoogleRetrain", IDS_SETTINGS_SEARCH_OK_GOOGLE_RETRAIN},
   };
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
+  html_source->AddString("hotwordLearnMoreUrl",
+                         chrome::kHotwordLearnMoreURL);
+  html_source->AddString("manageAudioHistoryUrl",
+                         chrome::kManageAudioHistoryURL);
 }
 
 void AddSearchEnginesStrings(content::WebUIDataSource* html_source) {

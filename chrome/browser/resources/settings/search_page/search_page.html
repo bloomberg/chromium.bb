@@ -1,8 +1,13 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/neon-animation/neon-animatable.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-icon-button/paper-icon-button-light.html">
 <link rel="import" href="/controls/extension_controlled_indicator.html">
+<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/icons.html">
+<link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/route.html">
 <link rel="import" href="/search_engines_page/search_engines_page.html">
 <link rel="import" href="/search_engines_page/search_engines_browser_proxy.html">
@@ -19,9 +24,18 @@
         display: flex;
         min-height: var(--settings-box-min-height);
       }
+
+      iron-icon {
+        -webkit-padding-end: 16px;
+      }
+ 
+      .indented {
+        -webkit-margin-start: 36px;
+      }
     </style>
     <settings-animated-pages id="pages" section="search">
       <neon-animatable route-path="default">
+        <!-- Omnibox search engine -->
         <div class="settings-box first block">
           <div id="search-wrapper">
             <p class="start">$i18n{searchExplanation}</p>
@@ -49,6 +63,57 @@
             </extension-controlled-indicator>
           </template>
         </div>
+
+        <template is="dom-if" if="[[hotwordInfo_.allowed]]">
+          <!-- Hotword (OK Google) -->
+          <div class="settings-box two-line">
+            <settings-checkbox id="hotwordSearchEnable" class="start"
+                label="$i18n{searchOkGoogleLabel}"
+                sub-label="[[getHotwordSearchEnableSubLabel_(
+                           hotwordInfo_.alwaysOn)]]"
+                pref="{{hotwordSearchEnablePref_}}"
+                on-change="onHotwordSearchEnableChange_">
+              <a href="$i18nRaw{hotwordLearnMoreUrl}" target="_blank"
+                  on-tap="doNothing_">
+                $i18n{searchOkGoogleLearnMore}
+              </a>
+            </settings-checkbox>
+            <div class="secondary-action"
+                hidden$="[[!getShowHotwordSearchRetrain_(hotwordInfo_.*)]]">
+              <paper-button on-tap="onRetrainTap_" class="secondary-button">
+                $i18n{searchOkGoogleRetrain}
+              </paper-button>
+            </div>
+          </div>
+
+          <template is="dom-if"
+              if="[[getShowHotwordError_(hotwordInfo_.*,
+                  hotwordSearchEnablePref_)]]">
+            <div class="settings-box continuation indented">
+              <iron-icon icon="settings:warning"></iron-icon>
+              <div inner-h-t-m-l="[[hotwordInfo_.errorMessage]]"></div>
+            </div>
+          </template>
+
+          <template is="dom-if" if="[[hotwordInfo_.historyEnabled]]">
+            <div class="settings-box two-line continuation indented"
+                on-tap="onManageAudioHistoryTap_" actionable>
+              <div class="start">
+                <div>
+                  [[i18n('searchOkGoogleAudioHistoryLabel',
+                  hotwordInfo_.userName)]]
+                </div>
+                <div class="secondary">
+                  $i18n{searchOkGoogleAudioHistorySubtext}
+                </div>
+              </div>
+              <button class="icon-external" is="paper-icon-button-light">
+              </button>
+            </div>
+          </template>
+        </template>
+
+        <!-- Manage search engines -->
         <div id="subpage-trigger" class="settings-box two-line"
             on-tap="onManageSearchEnginesTap_" actionable>
           <div class="start">

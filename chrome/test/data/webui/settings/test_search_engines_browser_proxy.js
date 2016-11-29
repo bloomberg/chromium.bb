@@ -21,10 +21,25 @@ cr.define('settings_search', function() {
       'searchEngineEditStarted',
       'setDefaultSearchEngine',
       'validateSearchEngineInput',
+      'getHotwordInfo',
+      'setHotwordSearchEnabled',
     ]);
+
+    /** @type {boolean} */
+    this.hotwordSearchEnabled = false;
 
     /** @private {!SearchEnginesInfo} */
     this.searchEnginesInfo_ = {defaults: [], others: [], extensions: []};
+
+    /** @private {!SearchPageHotwordInfo} */
+    this.hotwordInfo_ = {
+      allowed: true,
+      enabled: false,
+      alwaysOn: true,
+      errorMessage: '',
+      userName: 'user@test.org',
+      historyEnabled: false,
+    };
   };
 
   TestSearchEnginesBrowserProxy.prototype = {
@@ -55,14 +70,6 @@ cr.define('settings_search', function() {
       this.methodCalled('searchEngineEditCompleted');
     },
 
-    /**
-     * Sets the response to be returned by |getSearchEnginesList|.
-     * @param {!SearchEnginesInfo}
-     */
-    setSearchEnginesInfo: function(searchEnginesInfo) {
-      this.searchEnginesInfo_ = searchEnginesInfo;
-    },
-
     /** @override */
     getSearchEnginesList: function() {
       this.methodCalled('getSearchEnginesList');
@@ -73,6 +80,37 @@ cr.define('settings_search', function() {
     validateSearchEngineInput: function(fieldName, fieldValue) {
       this.methodCalled('validateSearchEngineInput');
       return Promise.resolve(true);
+    },
+
+    /** @override */
+    getHotwordInfo: function() {
+      this.methodCalled('getHotwordInfo');
+      return Promise.resolve(this.hotwordInfo_);
+    },
+
+    /** @override */
+    setHotwordSearchEnabled: function(enabled) {
+      this.hotwordSearchEnabled = enabled;
+      this.hotwordInfo_.enabled = true;
+      this.hotwordInfo_.historyEnabled = this.hotwordInfo_.alwaysOn;
+      this.methodCalled('setHotwordSearchEnabled');
+    },
+
+    /**
+     * Sets the response to be returned by |getSearchEnginesList|.
+     * @param {!SearchEnginesInfo} searchEnginesInfo
+     */
+    setSearchEnginesInfo: function(searchEnginesInfo) {
+      this.searchEnginesInfo_ = searchEnginesInfo;
+    },
+
+    /**
+     * Sets the response to be returned by |getSearchEnginesList|.
+     * @param {!SearchPageHotwordInfo} hotwordInfo
+     */
+    setHotwordInfo: function(hotwordInfo) {
+      this.hotwordInfo_ = hotwordInfo;
+      cr.webUIListenerCallback('hotword-info-update', this.hotwordInfo_);
     },
   };
 

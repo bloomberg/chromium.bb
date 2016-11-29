@@ -8,12 +8,20 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "chrome/browser/ui/search_engines/edit_search_engine_controller.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/webui/settings/settings_page_ui_handler.h"
+#include "components/prefs/pref_change_registrar.h"
 #include "ui/base/models/table_model_observer.h"
 
 class Profile;
+
+namespace base {
+class DictionaryValue;
+class ListValue;
+class Value;
+}
 
 namespace extensions {
 class Extension;
@@ -71,7 +79,7 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   bool CheckFieldValidity(const std::string& field_name,
                           const std::string& field_value);
 
-  // Called when an edit is cancelled.
+  // Called when an edit is canceled.
   // Called from WebUI.
   void HandleSearchEngineEditCancelled(const base::ListValue* args);
 
@@ -88,10 +96,35 @@ class SearchEnginesHandler : public SettingsPageUIHandler,
   base::DictionaryValue* CreateDictionaryForExtension(
       const extensions::Extension& extension);
 
+  // WebUI call to request a dictionary of hotword related properties.
+  void HandleGetHotwordInfo(const base::ListValue* args);
+
+  // Constructs a SearchPageHotwordInfo dictionary.
+  std::unique_ptr<base::DictionaryValue> GetHotwordInfo();
+
+  // Callback for HotwordService::AudioHistoryHandler::GetAudioHistoryEnabled.
+  void OnGetHotwordAudioHistoryEnabled(
+      std::unique_ptr<base::Value> callback_id,
+      std::unique_ptr<base::DictionaryValue> status,
+      bool success,
+      bool logging_enabled);
+
+  // Calls either ResolveJavascriptCallback or CallJavascriptFunction.
+  void HotwordInfoComplete(const base::Value* callback_id,
+                           const base::DictionaryValue& status);
+
+  // Calls WebUI to send hotword search info updates.
+  void SendHotwordInfo();
+
+  // WebUI call to enable hotword search.
+  void HandleSetHotwordSearchEnabled(const base::ListValue* args);
+
   Profile* const profile_;
 
   KeywordEditorController list_controller_;
   std::unique_ptr<EditSearchEngineController> edit_controller_;
+  PrefChangeRegistrar pref_change_registrar_;
+  base::WeakPtrFactory<SearchEnginesHandler> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchEnginesHandler);
 };

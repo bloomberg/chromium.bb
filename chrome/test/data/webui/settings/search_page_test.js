@@ -98,6 +98,56 @@ cr.define('settings_search_page', function() {
           assertTrue(!!page.$$('extension-controlled-indicator'));
         });
       });
+
+      // Tests the UI when Hotword 'alwaysOn' is true.
+      test('HotwordAlwaysOn', function() {
+        return browserProxy.whenCalled('getHotwordInfo').then(function() {
+          Polymer.dom.flush();
+          assertTrue(page.hotwordInfo_.allowed);
+          assertTrue(page.hotwordInfo_.alwaysOn);
+          assertFalse(page.hotwordInfo_.enabled);
+          assertFalse(browserProxy.hotwordSearchEnabled);
+          assertFalse(page.hotwordSearchEnablePref_.value);
+
+          var checkbox = page.$$('#hotwordSearchEnable');
+          assertTrue(!!checkbox);
+          assertFalse(checkbox.disabled);
+          assertFalse(checkbox.checked);
+          MockInteractions.tap(checkbox.$.checkbox);
+          Polymer.dom.flush();
+          return browserProxy.whenCalled('setHotwordSearchEnabled');
+        }).then(function() {
+          assertTrue(browserProxy.hotwordSearchEnabled);
+        });
+      });
+
+      // Tests the UI when Hotword 'alwaysOn' is false.
+      test('HotwordNotAlwaysOn', function() {
+        return browserProxy.whenCalled('getHotwordInfo').then(function() {
+          browserProxy.setHotwordInfo({
+            allowed: true,
+            enabled: false,
+            alwaysOn: false,
+            errorMessage: '',
+            userName: '',
+            historyEnabled: false,
+          });
+          Polymer.dom.flush();
+          assertTrue(page.hotwordInfo_.allowed);
+          assertFalse(page.hotwordInfo_.alwaysOn);
+          assertFalse(page.hotwordInfo_.enabled);
+
+          var checkbox = page.$$('#hotwordSearchEnable');
+          assertTrue(!!checkbox);
+          assertFalse(checkbox.disabled);
+          assertFalse(checkbox.checked);
+          MockInteractions.tap(checkbox.$.checkbox);
+          Polymer.dom.flush();
+          return browserProxy.whenCalled('setHotwordSearchEnabled');
+        }).then(function() {
+          assertTrue(browserProxy.hotwordSearchEnabled);
+        });
+      });
     });
   }
 

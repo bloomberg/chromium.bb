@@ -333,6 +333,12 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 #endif
 
+  // Search settings.
+  (*s_whitelist)[::prefs::kHotwordSearchEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+  (*s_whitelist)[::prefs::kHotwordAlwaysOnSearchEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Proxy settings.
   (*s_whitelist)[proxy_config::prefs::kProxy] =
       settings_private::PrefType::PREF_TYPE_DICTIONARY;

@@ -32,7 +32,7 @@
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
       <paper-checkbox id="checkbox" checked="{{checked}}"
           disabled="[[controlDisabled_(disabled, pref)]]">
-        <div>[[label]]</div>
+        <div>[[label]] <content></content></div>
         <div class="secondary">[[subLabel]]</div>
       </paper-checkbox>
       <template is="dom-if" if="[[pref.controlledBy]]">
