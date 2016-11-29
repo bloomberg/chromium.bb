@@ -1,0 +1,121 @@
+<html>
+<head>
+<script src="inspector-test.js"></script>
+<script src="debugger-test.js"></script>
+<script src="isolated-filesystem-test.js"></script>
+<script>
+function addScript(url)
+{
+    var script = document.createElement("script");
+    script.setAttribute("src", url);
+    document.head.appendChild(script);
+}
+
+function test()
+{
+    var target = InspectorTest.mainTarget;
+    var persistence = Persistence.persistence;
+    var fileSystemProjectId = Persistence.FileSystemWorkspaceBinding.projectId("file:///var/www");
+
+    function dumpFileSystemUISourceCodesMappings()
+    {
+        var uiSourceCodes = Workspace.workspace.project(fileSystemProjectId).uiSourceCodes();
+        InspectorTest.addResult("UISourceCode uri to url mappings:");
+        for (var uiSourceCode of uiSourceCodes) {
+            var binding = persistence.binding(uiSourceCode);
+            var url = binding ? binding.network.url() : "";
+            InspectorTest.addResult("    " + uiSourceCode.url() + " -> " + url);
+        }
+    }
+
+    InspectorTest.runTestSuite([
+        function testAutomaticMapping(next)
+        {
+            InspectorTest.addResult("Adding file system.");
+            var fs = new InspectorTest.TestFileSystem("file:///var/www");
+            fs.root.mkdir("html").addFile("foo.js", "<foo content>");
+            fs.root.addFile("bar.js", "<bar content>");
+            fs.reportCreated(fileSystemCreated1);
+            var networkUISourceCode;
+
+            function fileSystemCreated1()
+            {
+                InspectorTest.addResult("Adding network resource.");
+                InspectorTest.waitForUISourceCode(scriptsAdded, "resources/bar.js");
+                InspectorTest.evaluateInPage("addScript('resources/html/foo.js')");
+                InspectorTest.evaluateInPage("addScript('resources/bar.js')");
+            }
+
+            function scriptsAdded()
+            {
+                dumpFileSystemUISourceCodesMappings();
+
+                var uiSourceCode = Workspace.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
+                networkUISourceCode = Workspace.workspace.uiSourceCode(Bindings.NetworkProject.projectId(target, InspectorTest.resourceTreeModel.mainFrame, false), "http://127.0.0.1:8000/inspector/resources/html/foo.js");
+                InspectorTest.addResult("Adding mapping between network and file system resources.");
+
+                var fileSystemPath = Persistence.FileSystemWorkspaceBinding.fileSystemPath(uiSourceCode.project().id());
+                Workspace.fileSystemMapping.addMappingForResource(networkUISourceCode.url(), fileSystemPath, uiSourceCode.url());
+                var setting = JSON.stringify(Workspace.fileSystemMapping._fileSystemMappingSetting.get());
+
+                InspectorTest.addResult("Emulate reloading inspector.");
+                fs.reportRemoved();
+                Workspace.fileSystemMapping._fileSystemMappingSetting.set(JSON.parse(setting));
+                Workspace.fileSystemMapping._loadFromSettings();
+                fs.reportCreated(fileSystemCreated2);
+            }
+
+            function fileSystemCreated2()
+            {
+                dumpFileSystemUISourceCodesMappings();
+
+                InspectorTest.addResult("Removing mapping between network and file system resources.");
+                var uiSourceCode = Workspace.workspace.uiSourceCode(fileSystemProjectId, "file:///var/www/html/foo.js");
+                Workspace.fileSystemMapping.removeMappingForURL(uiSourceCode.url());
+
+                InspectorTest.addResult("Emulate reloading inspector.");
+                fs.reportRemoved();
+                fs.reportCreated(fileSystemCreated3);
+            }
+
+            function fileSystemCreated3()
+            {
+                dumpFileSystemUISourceCodesMappings();
+
+                Workspace.fileSystemMapping.removeMappingForURL(networkUISourceCode.url());
+                fs.reportRemoved();
+                next();
+            }
+        },
+
+        function testProjectBasedMapping(next)
+        {
+            InspectorTest.addResult("Adding file system.");
+            var fs = new InspectorTest.TestFileSystem("file:///var/www");
+            fs.root.mkdir("html").addFile("foo.js", "<foo content>");
+            fs.root.mkdir("html2").addFile("bar.js", "<bar content>");
+            fs.root.addFile(".devtools", JSON.stringify({ mappings: [ { folder: "/html/", url: "http://127.0.0.1:8000/inspector/resources/html/" }, { folder: "/html2/", url: "http://127.0.0.1:8000/inspector/resources/html2/" } ]}));
+            fs.reportCreated(fileSystemCreated);
+
+            function fileSystemCreated()
+            {
+                InspectorTest.evaluateInPage("addScript('resources/html/foo.js')");
+                InspectorTest.evaluateInPage("addScript('resources/html2/bar.js')");
+                InspectorTest.waitForUISourceCode(scriptsAdded, "resources/html2/bar.js");
+            }
+
+            function scriptsAdded()
+            {
+                dumpFileSystemUISourceCodesMappings();
+                fs.reportRemoved();
+                next();
+            }
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests file system project mappings.</p>
+</body>
+</html>
