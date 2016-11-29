@@ -1,4 +1,5 @@
 include_rules = [
+  "+services/ui/public/interfaces",
   "+skia/ext",
   "+third_party/iaccessible2",
   "+third_party/skia",

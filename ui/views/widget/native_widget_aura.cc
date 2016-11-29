@@ -11,6 +11,7 @@
 #include "base/strings/string_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -88,8 +89,11 @@ void SetIcon(aura::Window* window,
 ////////////////////////////////////////////////////////////////////////////////
 // NativeWidgetAura, public:
 
-NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate)
+NativeWidgetAura::NativeWidgetAura(internal::NativeWidgetDelegate* delegate,
+                                   bool is_parallel_widget_in_window_manager)
     : delegate_(delegate),
+      is_parallel_widget_in_window_manager_(
+          is_parallel_widget_in_window_manager),
       window_(new aura::Window(this)),
       ownership_(Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET),
       destroying_(false),
@@ -310,7 +314,7 @@ ui::InputMethod* NativeWidgetAura::GetInputMethod() {
 }
 
 void NativeWidgetAura::CenterWindow(const gfx::Size& size) {
-  if (!window_)
+  if (!window_ || is_parallel_widget_in_window_manager_)
     return;
 
   gfx::Rect parent_bounds(window_->parent()->GetBoundsInRootWindow());
@@ -370,7 +374,7 @@ void NativeWidgetAura::GetWindowPlacement(
 }
 
 bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
-  if (!window_)
+  if (!window_ || is_parallel_widget_in_window_manager_)
     return false;
   if (window_->GetTitle() == title)
     return false;
@@ -380,7 +384,8 @@ bool NativeWidgetAura::SetWindowTitle(const base::string16& title) {
 
 void NativeWidgetAura::SetWindowIcons(const gfx::ImageSkia& window_icon,
                                       const gfx::ImageSkia& app_icon) {
-  AssignIconToAuraWindow(window_, window_icon, app_icon);
+  if (!is_parallel_widget_in_window_manager_)
+    AssignIconToAuraWindow(window_, window_icon, app_icon);
 }
 
 void NativeWidgetAura::InitModalType(ui::ModalType modal_type) {
@@ -567,7 +572,7 @@ bool NativeWidgetAura::IsActive() const {
 }
 
 void NativeWidgetAura::SetAlwaysOnTop(bool on_top) {
-  if (window_)
+  if (window_ && !is_parallel_widget_in_window_manager_)
     window_->SetProperty(aura::client::kAlwaysOnTopKey, on_top);
 }
 
@@ -758,6 +763,9 @@ bool NativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 }
 
 void NativeWidgetAura::OnSizeConstraintsChanged() {
+  if (is_parallel_widget_in_window_manager_)
+    return;
+
   window_->SetProperty(aura::client::kCanMaximizeKey,
                        GetWidget()->widget_delegate()->CanMaximize());
   window_->SetProperty(aura::client::kCanMinimizeKey,

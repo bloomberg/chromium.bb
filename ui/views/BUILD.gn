@@ -561,6 +561,7 @@ component("views") {
       "widget/window_reorderer.h",
     ]
     deps += [
+      "//services/ui/public/interfaces",
       "//ui/aura",
       "//ui/touch_selection",
       "//ui/wm",
