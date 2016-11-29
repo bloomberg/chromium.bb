@@ -10,6 +10,7 @@
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
 #include "chrome/install_static/product_install_details.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/blacklist/blacklist.h"
 #include "chrome_elf/crash/crash_helper.h"
 
@@ -28,6 +29,21 @@ void SignalChromeElf() {
   blacklist::ResetBeacon();
 }
 
+extern "C" void GetUserDataDirectoryThunk(wchar_t* user_data_dir,
+                                          size_t user_data_dir_length,
+                                          wchar_t* invalid_user_data_dir,
+                                          size_t invalid_user_data_dir_length) {
+  std::wstring user_data_dir_str, invalid_user_data_dir_str;
+  bool ret = install_static::GetUserDataDirectory(&user_data_dir_str,
+                                                  &invalid_user_data_dir_str);
+  assert(ret);
+  install_static::IgnoreUnused(ret);
+  wcsncpy_s(user_data_dir, user_data_dir_length, user_data_dir_str.c_str(),
+            _TRUNCATE);
+  wcsncpy_s(invalid_user_data_dir, invalid_user_data_dir_length,
+            invalid_user_data_dir_str.c_str(), _TRUNCATE);
+}
+
 // Returns the payload for the ELF's InstallDetails instance. For use by
 // install_static::InstallDetails::InitializeFromPrimaryModule.
 extern "C" const install_static::InstallDetails::Payload*
@@ -39,11 +55,11 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     install_static::InitializeProductDetailsForPrimaryModule();
 
-// CRT on initialization installs an exception filter which calls
-// TerminateProcess. We need to hook CRT's attempt to set an exception.
-// NOTE: Do not hook if ASan is present, or ASan will fail to install
-// its own unhandled exception filter.
 #if !defined(ADDRESS_SANITIZER)
+    // CRT on initialization installs an exception filter which calls
+    // TerminateProcess. We need to hook CRT's attempt to set an exception.
+    // NOTE: Do not hook if ASan is present, or ASan will fail to install
+    // its own unhandled exception filter.
     elf_crash::DisableSetUnhandledExceptionFilter();
 #endif  // !defined (ADDRESS_SANITIZER)
 

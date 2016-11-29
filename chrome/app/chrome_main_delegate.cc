@@ -360,8 +360,39 @@ struct MainFunction {
 };
 
 // Initializes the user data dir. Must be called before InitializeLocalState().
-void InitializeUserDataDir() {
-  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+void InitializeUserDataDir(base::CommandLine* command_line) {
+#if defined(OS_WIN)
+  wchar_t user_data_dir_buf[MAX_PATH], invalid_user_data_dir_buf[MAX_PATH];
+
+  using GetUserDataDirectoryThunkFunction =
+      void (*)(wchar_t*, size_t, wchar_t*, size_t);
+  HMODULE elf_module = GetModuleHandle(chrome::kChromeElfDllName);
+  if (elf_module) {
+    // If we're in a test, chrome_elf won't be loaded.
+    GetUserDataDirectoryThunkFunction get_user_data_directory_thunk =
+        reinterpret_cast<GetUserDataDirectoryThunkFunction>(
+            GetProcAddress(elf_module, "GetUserDataDirectoryThunk"));
+    get_user_data_directory_thunk(
+        user_data_dir_buf, arraysize(user_data_dir_buf),
+        invalid_user_data_dir_buf, arraysize(invalid_user_data_dir_buf));
+    base::FilePath user_data_dir(user_data_dir_buf);
+    if (invalid_user_data_dir_buf[0] != 0) {
+      chrome::SetInvalidSpecifiedUserDataDir(
+          base::FilePath(invalid_user_data_dir_buf));
+      command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+    }
+    CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+                                                 user_data_dir, false, true));
+  } else {
+    // In tests, just respect the flag if given.
+    base::FilePath user_data_dir =
+        command_line->GetSwitchValuePath(switches::kUserDataDir);
+    if (user_data_dir.EndsWithSeparator())
+      user_data_dir = user_data_dir.StripTrailingSeparators();
+    CHECK(PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
+                                                 user_data_dir, false, true));
+  }
+#else  // OS_WIN
   base::FilePath user_data_dir =
       command_line->GetSwitchValuePath(switches::kUserDataDir);
   std::string process_type =
@@ -379,15 +410,10 @@ void InitializeUserDataDir() {
       user_data_dir = base::FilePath::FromUTF8Unsafe(user_data_dir_string);
     }
   }
-#endif
-#if defined(OS_MACOSX) || defined(OS_WIN)
+#endif  // OS_LINUX
+#if defined(OS_MACOSX)
   policy::path_parser::CheckUserDataDirPolicy(&user_data_dir);
-#endif
-
-  // On Windows, trailing separators leave Chrome in a bad state.
-  // See crbug.com/464616.
-  if (user_data_dir.EndsWithSeparator())
-    user_data_dir = user_data_dir.StripTrailingSeparators();
+#endif  // OS_MAC
 
   const bool specified_directory_was_invalid = !user_data_dir.empty() &&
       !PathService::OverrideAndCreateIfNeeded(chrome::DIR_USER_DATA,
@@ -420,6 +446,7 @@ void InitializeUserDataDir() {
   // child or service processes will attempt to use the invalid directory.
   if (specified_directory_was_invalid)
     command_line->AppendSwitchPath(switches::kUserDataDir, user_data_dir);
+#endif  // OS_WIN
 }
 
 #if !defined(OS_ANDROID)
@@ -749,7 +776,7 @@ void ChromeMainDelegate::PreSandboxStartup() {
 
   // Initialize the user data dir for any process type that needs it.
   if (chrome::ProcessNeedsProfileDir(process_type)) {
-    InitializeUserDataDir();
+    InitializeUserDataDir(base::CommandLine::ForCurrentProcess());
 #if defined(OS_WIN) && !defined(CHROME_MULTIPLE_DLL_CHILD)
     if (downgrade::IsMSIInstall()) {
       downgrade::MoveUserDataForFirstRunAfterDowngrade();

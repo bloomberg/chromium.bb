@@ -42,12 +42,13 @@ extern const wchar_t kRtlLocale[];
 // TODO(ananta)
 // https://crbug.com/604923
 // Unify these constants with those defined in content_switches.h.
-extern const char kGpuProcess[];
-extern const char kPpapiPluginProcess[];
-extern const char kRendererProcess[];
-extern const char kUtilityProcess[];
-extern const char kProcessType[];
-extern const char kCrashpadHandler[];
+extern const wchar_t kCrashpadHandler[];
+extern const wchar_t kProcessType[];
+extern const wchar_t kUserDataDirSwitch[];
+extern const wchar_t kUtilityProcess[];
+
+// Used for suppressing warnings.
+template <typename T> inline void IgnoreUnused(T) {}
 
 // Returns true if Chrome is running at system level.
 bool IsSystemInstall();
@@ -67,6 +68,12 @@ bool GetCollectStatsInSample();
 // that will report stats and crashes. Returns true if writing was successful.
 bool SetCollectStatsInSample(bool in_sample);
 
+// Appends "[kCompanyPathName\]kProductPathName[install_suffix]" to |path|,
+// returning a reference to |path|.
+std::wstring& AppendChromeInstallSubDirectory(const InstallConstants& mode,
+                                              bool include_suffix,
+                                              std::wstring* path);
+
 // Returns true if if usage stats reporting is controlled by a mandatory
 // policy. |crash_reporting_enabled| determines whether it's enabled (true) or
 // disabled (false).
@@ -80,20 +87,12 @@ void InitializeProcessType();
 // process. False otherwise.
 bool IsNonBrowserProcess();
 
-// Populates |result| with the default User Data directory for the current
-// user.This may be overidden by a command line option.Returns false if all
-// attempts at locating a User Data directory fail
+// Populates |crash_dir| with the crash dump location, respecting modifications
+// to user-data-dir.
 // TODO(ananta)
 // http://crbug.com/604923
 // Unify this with the Browser Distribution code.
-bool GetDefaultUserDataDirectory(std::wstring* result);
-
-// Populates |crash_dir| with the default crash dump location regardless of
-// whether DIR_USER_DATA or DIR_CRASH_DUMPS has been overridden.
-// TODO(ananta)
-// http://crbug.com/604923
-// Unify this with the Browser Distribution code.
-bool GetDefaultCrashDumpLocation(std::wstring* crash_dir);
+std::wstring GetCrashDumpLocation();
 
 // Returns the contents of the specified |variable_name| from the environment
 // block of the calling process. Returns an empty string if the variable does
@@ -168,8 +167,14 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
 // We assume that the command line |command_line| contains multiple switches
 // with the format --<switch name>=<switch value>. This function returns the
 // value of the |switch_name| passed in.
-std::string GetSwitchValueFromCommandLine(const std::string& command_line,
-                                          const std::string& switch_name);
+std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
+                                           const std::wstring& switch_name);
+
+// Ensures that the given |full_path| exists, and that the tail component is a
+// directory. If the directory does not already exist, it will be created.
+// Returns false if the final component exists but is not a directory, or on
+// failure to create a directory.
+bool RecursiveDirectoryCreate(const std::wstring& full_path);
 
 // Returns the unadorned channel name based on the channel strategy for the
 // install mode.

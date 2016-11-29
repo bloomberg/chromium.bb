@@ -39,65 +39,67 @@ TEST(InstallStaticTest, MatchPattern) {
 // Tests the install_static::GetSwitchValueFromCommandLine function.
 TEST(InstallStaticTest, GetSwitchValueFromCommandLineTest) {
   // Simple case with one switch.
-  std::string value =
-      GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type=bar", "type");
-  EXPECT_EQ("bar", value);
+  std::wstring value =
+      GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=bar", L"type");
+  EXPECT_EQ(L"bar", value);
 
   // Multiple switches with trailing spaces between them.
   value = GetSwitchValueFromCommandLine(
-      "c:\\temp\\bleh.exe --type=bar  --abc=def bleh", "abc");
-  EXPECT_EQ("def", value);
+      L"c:\\temp\\bleh.exe --type=bar  --abc=def bleh", L"abc");
+  EXPECT_EQ(L"def", value);
 
   // Multiple switches with trailing spaces and tabs between them.
   value = GetSwitchValueFromCommandLine(
-      "c:\\temp\\bleh.exe --type=bar \t\t\t --abc=def bleh", "abc");
-  EXPECT_EQ("def", value);
+      L"c:\\temp\\bleh.exe --type=bar \t\t\t --abc=def bleh", L"abc");
+  EXPECT_EQ(L"def", value);
 
   // Non existent switch.
   value = GetSwitchValueFromCommandLine(
-      "c:\\temp\\bleh.exe --foo=bar  --abc=def bleh", "type");
-  EXPECT_EQ("", value);
+      L"c:\\temp\\bleh.exe --foo=bar  --abc=def bleh", L"type");
+  EXPECT_EQ(L"", value);
 
   // Non existent switch.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe", "type");
-  EXPECT_EQ("", value);
+  value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe", L"type");
+  EXPECT_EQ(L"", value);
 
   // Non existent switch.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe type=bar", "type");
-  EXPECT_EQ("", value);
+  value =
+      GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe type=bar", L"type");
+  EXPECT_EQ(L"", value);
 
   // Trailing spaces after the switch.
   value = GetSwitchValueFromCommandLine(
-      "c:\\temp\\bleh.exe --type=bar      \t\t", "type");
-  EXPECT_EQ("bar", value);
+      L"c:\\temp\\bleh.exe --type=bar      \t\t", L"type");
+  EXPECT_EQ(L"bar", value);
 
   // Multiple switches with trailing spaces and tabs between them.
   value = GetSwitchValueFromCommandLine(
-      "c:\\temp\\bleh.exe --type=bar      \t\t --foo=bleh", "foo");
-  EXPECT_EQ("bleh", value);
+      L"c:\\temp\\bleh.exe --type=bar      \t\t --foo=bleh", L"foo");
+  EXPECT_EQ(L"bleh", value);
 
   // Nothing after a switch.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type=", "type");
+  value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=", L"type");
   EXPECT_TRUE(value.empty());
 
   // Whitespace after a switch.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type= ", "type");
+  value =
+      GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type= ", L"type");
   EXPECT_TRUE(value.empty());
 
   // Just tabs after a switch.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type=\t\t\t",
-      "type");
+  value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=\t\t\t",
+                                        L"type");
   EXPECT_TRUE(value.empty());
 
   // Whitespace after the "=" before the value.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type= bar",
-      "type");
-  EXPECT_EQ("bar", value);
+  value =
+      GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type= bar", L"type");
+  EXPECT_EQ(L"bar", value);
 
   // Tabs after the "=" before the value.
-  value = GetSwitchValueFromCommandLine("c:\\temp\\bleh.exe --type=\t\t\tbar",
-      "type");
-  EXPECT_EQ(value, "bar");
+  value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=\t\t\tbar",
+                                        L"type");
+  EXPECT_EQ(value, L"bar");
 }
 
 TEST(InstallStaticTest, BrowserProcessTest) {
@@ -273,11 +275,6 @@ TEST_P(InstallStaticUtilTest, GetChromeChannelName) {
       expected += L"-m";
   }
   EXPECT_EQ(expected, GetChromeChannelName(true));
-}
-
-TEST_P(InstallStaticUtilTest, GetDefaultUserDataDirectory) {
-  std::wstring user_data_directory;
-  ASSERT_TRUE(GetDefaultUserDataDirectory(&user_data_directory));
 }
 
 #if defined(GOOGLE_CHROME_BUILD)

@@ -14,6 +14,7 @@
 #include "base/strings/utf_string_conversions.h"
 #include "base/win/registry.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/install_static/policy_path_parser.h"
 #include "components/policy/policy_constants.h"
 
 namespace {
@@ -32,34 +33,6 @@ bool LoadUserDataDirPolicyFromRegistry(HKEY hive,
   return false;
 }
 
-const WCHAR* kMachineNamePolicyVarName = L"${machine_name}";
-const WCHAR* kUserNamePolicyVarName = L"${user_name}";
-const WCHAR* kWinDocumentsFolderVarName = L"${documents}";
-const WCHAR* kWinLocalAppDataFolderVarName = L"${local_app_data}";
-const WCHAR* kWinRoamingAppDataFolderVarName = L"${roaming_app_data}";
-const WCHAR* kWinProfileFolderVarName = L"${profile}";
-const WCHAR* kWinProgramDataFolderVarName = L"${global_app_data}";
-const WCHAR* kWinProgramFilesFolderVarName = L"${program_files}";
-const WCHAR* kWinWindowsFolderVarName = L"${windows}";
-const WCHAR* kWinClientName = L"${client_name}";
-const WCHAR* kWinSessionName = L"${session_name}";
-
-struct WinFolderNamesToCSIDLMapping {
-  const WCHAR* name;
-  int id;
-};
-
-// Mapping from variable names to Windows CSIDL ids.
-const WinFolderNamesToCSIDLMapping win_folder_mapping[] = {
-    { kWinWindowsFolderVarName,        CSIDL_WINDOWS},
-    { kWinProgramFilesFolderVarName,   CSIDL_PROGRAM_FILES},
-    { kWinProgramDataFolderVarName,    CSIDL_COMMON_APPDATA},
-    { kWinProfileFolderVarName,        CSIDL_PROFILE},
-    { kWinLocalAppDataFolderVarName,   CSIDL_LOCAL_APPDATA},
-    { kWinRoamingAppDataFolderVarName, CSIDL_APPDATA},
-    { kWinDocumentsFolderVarName,      CSIDL_PERSONAL}
-};
-
 }  // namespace
 
 namespace policy {
@@ -70,80 +43,10 @@ namespace path_parser {
 // system settings values.
 base::FilePath::StringType ExpandPathVariables(
     const base::FilePath::StringType& untranslated_string) {
-  base::FilePath::StringType result(untranslated_string);
-  if (result.length() == 0)
-    return result;
-  // Sanitize quotes in case of any around the whole string.
-  if (result.length() > 1 &&
-      ((result.front() == L'"' && result.back() == L'"') ||
-       (result.front() == L'\'' && result.back() == L'\''))) {
-    // Strip first and last char which should be matching quotes now.
-    result = result.substr(1, result.length() - 2);
-  }
-  // First translate all path variables we recognize.
-  for (size_t i = 0; i < arraysize(win_folder_mapping); ++i) {
-    size_t position = result.find(win_folder_mapping[i].name);
-    if (position != std::wstring::npos) {
-      WCHAR path[MAX_PATH];
-      ::SHGetSpecialFolderPath(0, path, win_folder_mapping[i].id, false);
-      std::wstring path_string(path);
-      result.replace(position, wcslen(win_folder_mapping[i].name), path_string);
-    }
-  }
-  // Next translate other windows specific variables.
-  size_t position = result.find(kUserNamePolicyVarName);
-  if (position != std::wstring::npos) {
-    DWORD return_length = 0;
-    ::GetUserName(NULL, &return_length);
-    if (return_length != 0) {
-      std::unique_ptr<WCHAR[]> username(new WCHAR[return_length]);
-      ::GetUserName(username.get(), &return_length);
-      std::wstring username_string(username.get());
-      result.replace(position, wcslen(kUserNamePolicyVarName), username_string);
-    }
-  }
-  position = result.find(kMachineNamePolicyVarName);
-  if (position != std::wstring::npos) {
-    DWORD return_length = 0;
-    ::GetComputerNameEx(ComputerNamePhysicalDnsHostname, NULL, &return_length);
-    if (return_length != 0) {
-      std::unique_ptr<WCHAR[]> machinename(new WCHAR[return_length]);
-      ::GetComputerNameEx(ComputerNamePhysicalDnsHostname,
-                          machinename.get(), &return_length);
-      std::wstring machinename_string(machinename.get());
-      result.replace(
-          position, wcslen(kMachineNamePolicyVarName), machinename_string);
-    }
-  }
-  position = result.find(kWinClientName);
-  if (position != std::wstring::npos) {
-    LPWSTR buffer = NULL;
-    DWORD buffer_length = 0;
-    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
-                                     WTSClientName,
-                                     &buffer, &buffer_length)) {
-      std::wstring clientname_string(buffer);
-      result.replace(position, wcslen(kWinClientName), clientname_string);
-      ::WTSFreeMemory(buffer);
-    }
-  }
-  position = result.find(kWinSessionName);
-  if (position != std::wstring::npos) {
-    LPWSTR buffer = NULL;
-    DWORD buffer_length = 0;
-    if (::WTSQuerySessionInformation(WTS_CURRENT_SERVER, WTS_CURRENT_SESSION,
-                                     WTSWinStationName,
-                                     &buffer, &buffer_length)) {
-      std::wstring sessionname_string(buffer);
-      result.replace(position, wcslen(kWinSessionName), sessionname_string);
-      ::WTSFreeMemory(buffer);
-    }
-  }
-  // TODO(pastarmovj): Consider reorganizing this code once there are even more
-  // variables to be supported. The search for the var and its replacement can
-  // be extracted as common functionality.
-
-  return result;
+  // This is implemented in the install_static library so that it can also be
+  // used by Crashpad initialization code in chrome_elf, which has a very
+  // constrained set of dependencies.
+  return install_static::ExpandPathVariables(untranslated_string);
 }
 
 void CheckUserDataDirPolicy(base::FilePath* user_data_dir) {

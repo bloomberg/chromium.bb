@@ -6,6 +6,7 @@
 
 #include <windows.h>
 #include <assert.h>
+#include <stdlib.h>
 #include <string.h>
 
 #include <algorithm>
@@ -14,6 +15,8 @@
 
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_modes.h"
+#include "chrome/install_static/policy_path_parser.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "chrome_elf/nt_registry/nt_registry.h"
 
 namespace install_static {
@@ -31,12 +34,10 @@ const wchar_t kShowRestart[] = L"CHROME_CRASHED";
 const wchar_t kRestartInfo[] = L"CHROME_RESTART";
 const wchar_t kRtlLocale[] = L"RIGHT_TO_LEFT";
 
-const char kGpuProcess[] = "gpu-process";
-const char kPpapiPluginProcess[] = "ppapi";
-const char kRendererProcess[] = "renderer";
-const char kUtilityProcess[] = "utility";
-const char kProcessType[] = "type";
-const char kCrashpadHandler[] = "crashpad-handler";
+const wchar_t kCrashpadHandler[] = L"crashpad-handler";
+const wchar_t kProcessType[] = L"type";
+const wchar_t kUserDataDirSwitch[] = L"user-data-dir";
+const wchar_t kUtilityProcess[] = L"utility";
 
 namespace {
 
@@ -57,7 +58,6 @@ constexpr wchar_t kRegValueAp[] = L"ap";
 constexpr wchar_t kRegValueUsageStats[] = L"usagestats";
 constexpr wchar_t kMetricsReportingEnabled[] = L"MetricsReportingEnabled";
 
-constexpr wchar_t kUserDataDirname[] = L"User Data";
 constexpr wchar_t kBrowserCrashDumpMetricsSubKey[] =
     L"\\BrowserCrashDumpAttempts";
 
@@ -151,73 +151,17 @@ bool GetValueFromVersionResource(const char* version_resource,
   return false;
 }
 
-bool RecursiveDirectoryCreate(const std::wstring& full_path) {
-  // If the path exists, we've succeeded if it's a directory, failed otherwise.
-  const wchar_t* full_path_str = full_path.c_str();
-  DWORD file_attributes = ::GetFileAttributes(full_path_str);
-  if (file_attributes != INVALID_FILE_ATTRIBUTES) {
-    if ((file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
-      Trace(L"%hs( %ls directory exists )\n", __func__, full_path_str);
-      return true;
-    }
-    Trace(L"%hs( %ls directory conflicts with an existing file. )\n", __func__,
-          full_path_str);
+bool DirectoryExists(const std::wstring& path) {
+  DWORD file_attributes = ::GetFileAttributes(path.c_str());
+  if (file_attributes == INVALID_FILE_ATTRIBUTES)
     return false;
-  }
-
-  // Invariant:  Path does not exist as file or directory.
-
-  // Attempt to create the parent recursively.  This will immediately return
-  // true if it already exists, otherwise will create all required parent
-  // directories starting with the highest-level missing parent.
-  std::wstring parent_path;
-  std::size_t pos = full_path.find_last_of(L"/\\");
-  if (pos != std::wstring::npos) {
-    parent_path = full_path.substr(0, pos);
-    if (!RecursiveDirectoryCreate(parent_path)) {
-      Trace(L"Failed to create one of the parent directories");
-      return false;
-    }
-  }
-  if (!::CreateDirectory(full_path_str, nullptr)) {
-    DWORD error_code = ::GetLastError();
-    if (error_code == ERROR_ALREADY_EXISTS) {
-      DWORD file_attributes = ::GetFileAttributes(full_path_str);
-      if ((file_attributes != INVALID_FILE_ATTRIBUTES) &&
-          ((file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0)) {
-        // This error code ERROR_ALREADY_EXISTS doesn't indicate whether we
-        // were racing with someone creating the same directory, or a file
-        // with the same path.  If the directory exists, we lost the
-        // race to create the same directory.
-        return true;
-      } else {
-        Trace(L"Failed to create directory %ls, last error is %d\n",
-              full_path_str, error_code);
-        return false;
-      }
-    }
-  }
-  return true;
-}
-
-// Appends "[kCompanyPathName\]kProductPathName[install_suffix]" to |path|,
-// returning a reference to |path|.
-std::wstring& AppendChromeInstallSubDirectory(std::wstring* path,
-                                              bool include_suffix) {
-  if (*kCompanyPathName) {
-    path->append(kCompanyPathName);
-    path->push_back(L'\\');
-  }
-  path->append(kProductPathName, kProductPathNameLength);
-  if (!include_suffix)
-    return *path;
-  return path->append(InstallDetails::Get().install_suffix());
+  return (file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0;
 }
 
 std::wstring GetChromeInstallRegistryPath() {
   std::wstring registry_path = L"Software\\";
-  return AppendChromeInstallSubDirectory(&registry_path,
-                                         true /* include_suffix */);
+  return AppendChromeInstallSubDirectory(
+      InstallDetails::Get().mode(), true /* include_suffix */, &registry_path);
 }
 
 // Returns true if the |source| string matches the |pattern|. The pattern
@@ -424,9 +368,25 @@ bool SetCollectStatsInSample(bool in_sample) {
   return success;
 }
 
+// Appends "[kCompanyPathName\]kProductPathName[install_suffix]" to |path|,
+// returning a reference to |path|.
+std::wstring& AppendChromeInstallSubDirectory(const InstallConstants& mode,
+                                              bool include_suffix,
+                                              std::wstring* path) {
+  if (*kCompanyPathName) {
+    path->append(kCompanyPathName);
+    path->push_back(L'\\');
+  }
+  path->append(kProductPathName, kProductPathNameLength);
+  if (!include_suffix)
+    return *path;
+  return path->append(mode.install_suffix);
+}
+
 bool ReportingIsEnforcedByPolicy(bool* crash_reporting_enabled) {
   std::wstring policies_path = L"SOFTWARE\\Policies\\";
-  AppendChromeInstallSubDirectory(&policies_path, false /* !include_suffix */);
+  AppendChromeInstallSubDirectory(InstallDetails::Get().mode(),
+                                  false /* !include_suffix */, &policies_path);
   DWORD value = 0;
 
   // First, try HKLM.
@@ -473,45 +433,15 @@ bool IsNonBrowserProcess() {
   return g_process_type == ProcessType::NON_BROWSER_PROCESS;
 }
 
-bool GetDefaultUserDataDirectory(std::wstring* result) {
-  // This environment variable should be set on Windows Vista and later
-  // (https://msdn.microsoft.com/library/windows/desktop/dd378457.aspx).
-  std::wstring user_data_dir = GetEnvironmentString16(L"LOCALAPPDATA");
-
-  if (user_data_dir.empty()) {
-    // LOCALAPPDATA was not set; fallback to the temporary files path.
-    DWORD size = ::GetTempPath(0, nullptr);
-    if (!size)
-      return false;
-    user_data_dir.resize(size + 1);
-    size = ::GetTempPath(size + 1, &user_data_dir[0]);
-    if (!size || size >= user_data_dir.size())
-      return false;
-    user_data_dir.resize(size);
-  }
-
-  result->swap(user_data_dir);
-  if ((*result)[result->length() - 1] != L'\\')
-    result->push_back(L'\\');
-  AppendChromeInstallSubDirectory(result, true /* include_suffix */);
-  result->push_back(L'\\');
-  result->append(kUserDataDirname);
-  return true;
-}
-
-bool GetDefaultCrashDumpLocation(std::wstring* crash_dir) {
-  // In order to be able to start crash handling very early, we do not rely on
-  // chrome's PathService entries (for DIR_CRASH_DUMPS) being available on
-  // Windows. See https://crbug.com/564398.
-  if (!GetDefaultUserDataDirectory(crash_dir))
-    return false;
-
-  // We have to make sure the user data dir exists on first run. See
-  // http://crbug.com/591504.
-  if (!RecursiveDirectoryCreate(*crash_dir))
-    return false;
-  crash_dir->append(L"\\Crashpad");
-  return true;
+std::wstring GetCrashDumpLocation() {
+  // In order to be able to start crash handling very early and in chrome_elf,
+  // we cannot rely on chrome's PathService entries (for DIR_CRASH_DUMPS) being
+  // available on Windows. See https://crbug.com/564398.
+  std::wstring user_data_dir;
+  bool ret = GetUserDataDirectory(&user_data_dir, nullptr);
+  assert(ret);
+  IgnoreUnused(ret);
+  return user_data_dir.append(L"\\Crashpad");
 }
 
 std::string GetEnvironmentString(const std::string& variable_name) {
@@ -651,46 +581,91 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
   return TokenizeStringT<std::wstring>(str, delimiter, trim_spaces);
 }
 
-std::string GetSwitchValueFromCommandLine(const std::string& command_line,
-                                          const std::string& switch_name) {
+std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
+                                           const std::wstring& switch_name) {
   assert(!command_line.empty());
   assert(!switch_name.empty());
 
-  std::string command_line_copy = command_line;
+  std::wstring command_line_copy = command_line;
   // Remove leading and trailing spaces.
-  TrimT<std::string>(&command_line_copy);
+  TrimT<std::wstring>(&command_line_copy);
 
   // Find the switch in the command line. If we don't find the switch, return
   // an empty string.
-  std::string switch_token = "--";
+  std::wstring switch_token = L"--";
   switch_token += switch_name;
-  switch_token += "=";
+  switch_token += L"=";
   size_t switch_offset = command_line_copy.find(switch_token);
   if (switch_offset == std::string::npos)
-    return std::string();
+    return std::wstring();
 
   // The format is "--<switch name>=blah". Look for a space after the
   // "--<switch name>=" string. If we don't find a space assume that the switch
   // value ends at the end of the command line.
   size_t switch_value_start_offset = switch_offset + switch_token.length();
-  if (std::string(kWhiteSpaces).find(
-          command_line_copy[switch_value_start_offset]) != std::string::npos) {
+  if (std::wstring(kWhiteSpaces16).find(
+          command_line_copy[switch_value_start_offset]) != std::wstring::npos) {
     switch_value_start_offset = command_line_copy.find_first_not_of(
-        GetWhiteSpacesForType<std::string>(), switch_value_start_offset);
-    if (switch_value_start_offset == std::string::npos)
-      return std::string();
+        GetWhiteSpacesForType<std::wstring>(), switch_value_start_offset);
+    if (switch_value_start_offset == std::wstring::npos)
+      return std::wstring();
   }
   size_t switch_value_end_offset =
-      command_line_copy.find_first_of(GetWhiteSpacesForType<std::string>(),
+      command_line_copy.find_first_of(GetWhiteSpacesForType<std::wstring>(),
                                       switch_value_start_offset);
-  if (switch_value_end_offset == std::string::npos)
+  if (switch_value_end_offset == std::wstring::npos)
     switch_value_end_offset = command_line_copy.length();
 
-  std::string switch_value = command_line_copy.substr(
+  std::wstring switch_value = command_line_copy.substr(
       switch_value_start_offset,
       switch_value_end_offset - (switch_offset + switch_token.length()));
-  TrimT<std::string>(&switch_value);
+  TrimT<std::wstring>(&switch_value);
   return switch_value;
+}
+
+bool RecursiveDirectoryCreate(const std::wstring& full_path) {
+  // If the path exists, we've succeeded if it's a directory, failed otherwise.
+  const wchar_t* full_path_str = full_path.c_str();
+  DWORD file_attributes = ::GetFileAttributes(full_path_str);
+  if (file_attributes != INVALID_FILE_ATTRIBUTES) {
+    if ((file_attributes & FILE_ATTRIBUTE_DIRECTORY) != 0) {
+      Trace(L"%hs( %ls directory exists )\n", __func__, full_path_str);
+      return true;
+    }
+    Trace(L"%hs( %ls directory conflicts with an existing file. )\n", __func__,
+          full_path_str);
+    return false;
+  }
+
+  // Invariant:  Path does not exist as file or directory.
+
+  // Attempt to create the parent recursively.  This will immediately return
+  // true if it already exists, otherwise will create all required parent
+  // directories starting with the highest-level missing parent.
+  std::wstring parent_path;
+  std::size_t pos = full_path.find_last_of(L"/\\");
+  if (pos != std::wstring::npos) {
+    parent_path = full_path.substr(0, pos);
+    if (!RecursiveDirectoryCreate(parent_path)) {
+      Trace(L"Failed to create one of the parent directories");
+      return false;
+    }
+  }
+  if (!::CreateDirectory(full_path_str, nullptr)) {
+    DWORD error_code = ::GetLastError();
+    if (error_code == ERROR_ALREADY_EXISTS && DirectoryExists(full_path_str)) {
+      // This error code ERROR_ALREADY_EXISTS doesn't indicate whether we
+      // were racing with someone creating the same directory, or a file
+      // with the same path.  If the directory exists, we lost the
+      // race to create the same directory.
+      return true;
+    } else {
+      Trace(L"Failed to create directory %ls, last error is %d\n",
+            full_path_str, error_code);
+      return false;
+    }
+  }
+  return true;
 }
 
 // This function takes these inputs rather than accessing the module's

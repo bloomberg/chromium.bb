@@ -72,6 +72,8 @@ class InstallDetails {
     return payload_->mode->install_suffix;
   }
 
+  const InstallConstants& mode() const { return *payload_->mode; }
+
   // The app GUID with which this mode is registered with Google Update, or an
   // empty string if this brand does not integrate with Google Update.
   const wchar_t* app_guid() const { return payload_->mode->app_guid; }

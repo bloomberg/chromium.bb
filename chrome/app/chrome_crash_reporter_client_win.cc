@@ -19,6 +19,7 @@
 #include "chrome/common/chrome_result_codes.h"
 #include "chrome/install_static/install_details.h"
 #include "chrome/install_static/install_util.h"
+#include "chrome/install_static/user_data_dir.h"
 #include "components/crash/content/app/crashpad.h"
 #include "components/crash/core/common/crash_keys.h"
 
@@ -252,12 +253,12 @@ void ChromeCrashReporterClient::InitializeCrashReportingForProcess() {
   instance = new ChromeCrashReporterClient();
   ANNOTATE_LEAKING_OBJECT_PTR(instance);
 
-  std::string process_type = install_static::GetSwitchValueFromCommandLine(
-      ::GetCommandLineA(), install_static::kProcessType);
+  std::wstring process_type = install_static::GetSwitchValueFromCommandLine(
+      ::GetCommandLine(), install_static::kProcessType);
   if (process_type != install_static::kCrashpadHandler) {
     crash_reporter::SetCrashReporterClient(instance);
-    crash_reporter::InitializeCrashpadWithEmbeddedHandler(process_type.empty(),
-                                                          process_type);
+    crash_reporter::InitializeCrashpadWithEmbeddedHandler(
+        process_type.empty(), install_static::UTF16ToUTF8(process_type));
   }
 }
 #endif  // NACL_WIN64
@@ -370,14 +371,13 @@ bool ChromeCrashReporterClient::GetCrashDumpLocation(
   if (GetAlternativeCrashDumpLocation(crash_dir))
     return true;
 
-  // TODO(scottmg): Consider supporting --user-data-dir. See
-  // https://crbug.com/565446.
-  return install_static::GetDefaultCrashDumpLocation(crash_dir);
+  *crash_dir = install_static::GetCrashDumpLocation();
+  return true;
 }
 
 bool ChromeCrashReporterClient::GetCrashMetricsLocation(
     base::string16* metrics_dir) {
-  return install_static::GetDefaultUserDataDirectory(metrics_dir);
+  return install_static::GetUserDataDirectory(metrics_dir, nullptr);
 }
 
 // TODO(ananta)
@@ -401,7 +401,7 @@ bool ChromeCrashReporterClient::GetCollectStatsInSample() {
 
 bool ChromeCrashReporterClient::EnableBreakpadForProcess(
     const std::string& process_type) {
-  return process_type == install_static::kRendererProcess ||
-         process_type == install_static::kPpapiPluginProcess ||
-         process_type == install_static::kGpuProcess;
+  // This is not used by Crashpad (at least on Windows).
+  NOTREACHED();
+  return true;
 }

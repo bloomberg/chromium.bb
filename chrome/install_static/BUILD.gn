@@ -26,8 +26,12 @@ static_library("install_static_util") {
     "install_modes.h",
     "install_util.cc",
     "install_util.h",
+    "policy_path_parser.cc",
+    "policy_path_parser.h",
     "product_install_details.cc",
     "product_install_details.h",
+    "user_data_dir.cc",
+    "user_data_dir.h",
   ]
 
   if (is_chrome_branded) {
@@ -57,6 +61,7 @@ test("install_static_unittests") {
     "install_modes_unittest.cc",
     "install_util_unittest.cc",
     "product_install_details_unittest.cc",
+    "user_data_dir_win_unittest.cc",
   ]
   include_dirs = [ "$target_gen_dir" ]
   deps = [

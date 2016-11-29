@@ -197,28 +197,25 @@ std::unique_ptr<metrics::FileMetricsProvider> CreateFileMetricsProvider(
       new metrics::FileMetricsProvider(task_runner,
                                        g_browser_process->local_state()));
 
-  // Register the file holding browser metrics.
   base::FilePath user_data_dir;
   if (base::PathService::Get(chrome::DIR_USER_DATA, &user_data_dir)) {
+    // Register the file holding browser metrics.
     RegisterOrRemovePreviousRunMetricsFile(
         metrics_reporting_enabled, user_data_dir,
         ChromeMetricsServiceClient::kBrowserMetricsName, task_runner,
         file_metrics_provider.get());
-  }
 
-  // Read the Crashpad metrics files.
-  base::FilePath default_user_data_dir;
-  if (chrome::GetDefaultUserDataDirectory(&default_user_data_dir)) {
+    // Register the Crashpad metrics files.
     // Register the data from the previous run if crashpad_handler didn't exit
     // cleanly.
     RegisterOrRemovePreviousRunMetricsFile(
-        metrics_reporting_enabled, default_user_data_dir,
+        metrics_reporting_enabled, user_data_dir,
         kCrashpadHistogramAllocatorName, task_runner,
         file_metrics_provider.get());
     if (metrics_reporting_enabled) {
       base::FilePath active_path;
       base::GlobalHistogramAllocator::ConstructFilePaths(
-          default_user_data_dir, kCrashpadHistogramAllocatorName, nullptr,
+          user_data_dir, kCrashpadHistogramAllocatorName, nullptr,
           &active_path);
       // Register data that will be populated for the current run.
       file_metrics_provider->RegisterSource(
