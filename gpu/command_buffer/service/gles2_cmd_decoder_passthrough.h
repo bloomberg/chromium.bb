@@ -278,8 +278,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
                                                       GLsizei length,
                                                       GLint* params);
 
-  void BuildExtensionsString();
-
   void InsertError(GLenum error, const std::string& message);
   GLenum PopError();
   bool FlushErrors();
@@ -377,9 +375,6 @@ class GLES2DecoderPassthroughImpl : public GLES2Decoder {
   std::unordered_map<GLenum, ActiveQuery> active_queries_;
 
   std::set<GLenum> errors_;
-
-  std::vector<std::string> emulated_extensions_;
-  std::string extension_string_;
 
   // Cache of scratch memory
   std::vector<uint8_t> scratch_memory_;

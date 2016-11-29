@@ -1146,7 +1146,7 @@ error::Error GLES2DecoderPassthroughImpl::DoGetString(GLenum name,
       *result = GetServiceVendorString(feature_info_.get());
       break;
     case GL_EXTENSIONS:
-      *result = extension_string_.c_str();
+      *result = feature_info_->extensions().c_str();
       break;
     default:
       *result = reinterpret_cast<const char*>(glGetString(name));

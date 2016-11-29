@@ -203,18 +203,6 @@ bool GLES2DecoderPassthroughImpl::Initialize(
     InitializeGLDebugLogging();
   }
 
-  emulated_extensions_.push_back("GL_CHROMIUM_async_pixel_transfers");
-  emulated_extensions_.push_back("GL_CHROMIUM_command_buffer_query");
-  emulated_extensions_.push_back("GL_CHROMIUM_command_buffer_latency_query");
-  emulated_extensions_.push_back("GL_CHROMIUM_get_error_query");
-  emulated_extensions_.push_back("GL_CHROMIUM_lose_context");
-  emulated_extensions_.push_back("GL_CHROMIUM_pixel_transfer_buffer_object");
-  emulated_extensions_.push_back("GL_CHROMIUM_resource_safe");
-  emulated_extensions_.push_back("GL_CHROMIUM_strict_attribs");
-  emulated_extensions_.push_back("GL_CHROMIUM_texture_mailbox");
-  emulated_extensions_.push_back("GL_CHROMIUM_trace_marker");
-  BuildExtensionsString();
-
   set_initialized();
   return true;
 }
@@ -581,7 +569,8 @@ error::Error GLES2DecoderPassthroughImpl::PatchGetNumericResults(GLenum pname,
 
   switch (pname) {
     case GL_NUM_EXTENSIONS:
-      *params = *params + static_cast<T>(emulated_extensions_.size());
+      // Currently handled on the client side.
+      params[0] = 0;
       break;
 
     case GL_TEXTURE_BINDING_2D:
@@ -709,16 +698,6 @@ GLES2DecoderPassthroughImpl::PatchGetFramebufferAttachmentParameter(
   }
 
   return error::kNoError;
-}
-
-void GLES2DecoderPassthroughImpl::BuildExtensionsString() {
-  std::ostringstream combined_string_stream;
-  combined_string_stream << reinterpret_cast<const char*>(
-                                glGetString(GL_EXTENSIONS))
-                         << " ";
-  std::copy(emulated_extensions_.begin(), emulated_extensions_.end(),
-            std::ostream_iterator<std::string>(combined_string_stream, " "));
-  extension_string_ = combined_string_stream.str();
 }
 
 void GLES2DecoderPassthroughImpl::InsertError(GLenum error,
