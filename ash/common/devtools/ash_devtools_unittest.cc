@@ -6,9 +6,11 @@
 
 #include "ash/common/test/ash_test.h"
 #include "ash/common/wm_lookup.h"
+#include "ash/common/wm_root_window_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window.h"
 #include "base/strings/stringprintf.h"
+#include "ui/views/widget/native_widget_private.h"
 #include "ui/views/widget/widget.h"
 
 namespace ash {
@@ -120,6 +122,19 @@ class AshDevToolsTest : public AshTest {
   AshDevToolsTest() {}
   ~AshDevToolsTest() override {}
 
+  views::internal::NativeWidgetPrivate* CreateTestNativeWidget() {
+    views::Widget* widget = new views::Widget;
+    views::Widget::InitParams params;
+    params.ownership = views::Widget::InitParams::NATIVE_WIDGET_OWNS_WIDGET;
+    WmShell::Get()
+        ->GetPrimaryRootWindow()
+        ->GetRootWindowController()
+        ->ConfigureWidgetInitParamsForContainer(
+            widget, kShellWindowId_DefaultContainer, &params);
+    widget->Init(params);
+    return widget->native_widget_private();
+  }
+
   void SetUp() override {
     AshTest::SetUp();
     fake_frontend_channel_ = base::MakeUnique<FakeFrontendChannel>();
@@ -194,6 +209,23 @@ TEST_F(AshDevToolsTest, GetDocumentWithWindowWidgetView) {
   Compare(widget->GetRootView(), widget_children->get(0));
   ASSERT_TRUE(widget_children->get(0)->getChildren(nullptr));
   Compare(child_view, widget_children->get(0)->getChildren(nullptr)->get(1));
+}
+
+TEST_F(AshDevToolsTest, GetDocumentNativeWidgetOwnsWidget) {
+  views::internal::NativeWidgetPrivate* native_widget_private =
+      CreateTestNativeWidget();
+  views::Widget* widget = native_widget_private->GetWidget();
+  WmWindow* parent_window = WmLookup::Get()->GetWindowForWidget(widget);
+
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  DOM::Node* parent_node = FindInRoot(parent_window, root.get());
+  ASSERT_TRUE(parent_node);
+  DOM::Node* widget_node = parent_node->getChildren(nullptr)->get(0);
+  Compare(widget, widget_node);
+  // Destroy NativeWidget followed by |widget|
+  widget->CloseNow();
 }
 
 TEST_F(AshDevToolsTest, WindowAddedChildNodeInserted) {
@@ -309,6 +341,137 @@ TEST_F(AshDevToolsTest, WindowStackingChangedChildNodeRemovedAndInserted) {
   parent_window->StackChildAbove(child_window, target_window);
   ExpectChildNodeRemoved(parent_id, child_node->getNodeId());
   ExpectChildNodeInserted(parent_id, sibling_node->getNodeId());
+}
+
+TEST_F(AshDevToolsTest, ViewInserted) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  widget->Show();
+
+  // Initialize DOMAgent
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  DOM::Node* parent_node = FindInRoot(window, root.get());
+  ASSERT_TRUE(parent_node);
+  DOM::Node* widget_node = parent_node->getChildren(nullptr)->get(0);
+  DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
+  Array<DOM::Node>* root_view_children = root_view_node->getChildren(nullptr);
+  ASSERT_TRUE(root_view_children);
+  DOM::Node* sibling_view_node =
+      root_view_children->get(root_view_children->length() - 1);
+
+  widget->GetRootView()->AddChildView(new views::View);
+  ExpectChildNodeInserted(root_view_node->getNodeId(),
+                          sibling_view_node->getNodeId());
+}
+
+TEST_F(AshDevToolsTest, ViewRemoved) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+  // Need to store |view| in unique_ptr because it is removed from the widget
+  // and needs to be destroyed independently
+  std::unique_ptr<views::View> child_view = base::MakeUnique<views::View>();
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  widget->Show();
+  views::View* root_view = widget->GetRootView();
+  root_view->AddChildView(child_view.get());
+
+  // Initialize DOMAgent
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  DOM::Node* parent_node = FindInRoot(window, root.get());
+  ASSERT_TRUE(parent_node);
+  DOM::Node* widget_node = parent_node->getChildren(nullptr)->get(0);
+  DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
+  Array<DOM::Node>* root_view_children = root_view_node->getChildren(nullptr);
+  ASSERT_TRUE(root_view_children);
+  DOM::Node* child_view_node =
+      root_view_children->get(root_view_children->length() - 1);
+
+  Compare(child_view.get(), child_view_node);
+  root_view->RemoveChildView(child_view.get());
+  ExpectChildNodeRemoved(root_view_node->getNodeId(),
+                         child_view_node->getNodeId());
+}
+
+TEST_F(AshDevToolsTest, ViewRearranged) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  widget->Show();
+  views::View* root_view = widget->GetRootView();
+  views::View* parent_view = new views::View;
+  views::View* target_view = new views::View;
+  views::View* child_view = new views::View;
+  root_view->AddChildView(parent_view);
+  root_view->AddChildView(target_view);
+  parent_view->AddChildView(child_view);
+
+  // Initialize DOMAgent
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  DOM::Node* parent_node = FindInRoot(window, root.get());
+  ASSERT_TRUE(parent_node);
+  DOM::Node* widget_node = parent_node->getChildren(nullptr)->get(0);
+  DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
+  Array<DOM::Node>* root_view_children = root_view_node->getChildren(nullptr);
+  ASSERT_TRUE(root_view_children);
+  size_t root_children_size = root_view_children->length();
+  ASSERT_TRUE(root_children_size >= 2);
+  DOM::Node* parent_view_node = root_view_children->get(root_children_size - 2);
+  DOM::Node* target_view_node = root_view_children->get(root_children_size - 1);
+  DOM::Node* child_view_node = parent_view_node->getChildren(nullptr)->get(0);
+
+  Compare(parent_view, parent_view_node);
+  Compare(target_view, target_view_node);
+  Compare(child_view, child_view_node);
+  target_view->AddChildView(child_view);
+  ExpectChildNodeRemoved(parent_view_node->getNodeId(),
+                         child_view_node->getNodeId());
+  ExpectChildNodeInserted(target_view_node->getNodeId(), 0);
+}
+
+TEST_F(AshDevToolsTest, ViewRearrangedRemovedAndInserted) {
+  std::unique_ptr<views::Widget> widget(
+      CreateTestWidget(gfx::Rect(1, 1, 1, 1)));
+  WmWindow* window = WmLookup::Get()->GetWindowForWidget(widget.get());
+  widget->Show();
+  views::View* root_view = widget->GetRootView();
+  views::View* parent_view = new views::View;
+  views::View* target_view = new views::View;
+  views::View* child_view = new views::View;
+  root_view->AddChildView(parent_view);
+  root_view->AddChildView(target_view);
+  parent_view->AddChildView(child_view);
+
+  // Initialize DOMAgent
+  std::unique_ptr<ui::devtools::protocol::DOM::Node> root;
+  dom_agent()->getDocument(&root);
+
+  DOM::Node* parent_node = FindInRoot(window, root.get());
+  ASSERT_TRUE(parent_node);
+  DOM::Node* widget_node = parent_node->getChildren(nullptr)->get(0);
+  DOM::Node* root_view_node = widget_node->getChildren(nullptr)->get(0);
+  Array<DOM::Node>* root_view_children = root_view_node->getChildren(nullptr);
+  ASSERT_TRUE(root_view_children);
+  size_t root_children_size = root_view_children->length();
+  ASSERT_TRUE(root_children_size >= 2);
+  DOM::Node* parent_view_node = root_view_children->get(root_children_size - 2);
+  DOM::Node* target_view_node = root_view_children->get(root_children_size - 1);
+  DOM::Node* child_view_node = parent_view_node->getChildren(nullptr)->get(0);
+
+  Compare(parent_view, parent_view_node);
+  Compare(target_view, target_view_node);
+  Compare(child_view, child_view_node);
+  parent_view->RemoveChildView(child_view);
+  target_view->AddChildView(child_view);
+  ExpectChildNodeRemoved(parent_view_node->getNodeId(),
+                         child_view_node->getNodeId());
+  ExpectChildNodeInserted(target_view_node->getNodeId(), 0);
 }
 
 }  // namespace ash
