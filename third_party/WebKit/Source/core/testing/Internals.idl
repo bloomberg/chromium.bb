@@ -35,6 +35,7 @@
     [RaisesException] DOMString elementLayoutTreeAsText(Element element);
     boolean isPreloaded(DOMString url);
     boolean isPreloadedBy(DOMString url, Document document);
+    boolean isLoading(DOMString url);
     boolean isLoadingFromMemoryCache(DOMString url);
     unsigned long getResourcePriority (DOMString url, Document document);
     DOMString getResourceHeader (DOMString url, DOMString header, Document document);

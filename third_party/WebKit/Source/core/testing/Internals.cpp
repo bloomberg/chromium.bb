@@ -407,6 +407,18 @@ bool Internals::isPreloadedBy(const String& url, Document* document) {
   return document->fetcher()->isPreloadedForTest(document->completeURL(url));
 }
 
+bool Internals::isLoading(const String& url) {
+  if (!contextDocument())
+    return false;
+  const String cacheIdentifier =
+      contextDocument()->fetcher()->getCacheIdentifier();
+  Resource* resource = memoryCache()->resourceForURL(
+      contextDocument()->completeURL(url), cacheIdentifier);
+  // We check loader() here instead of isLoading(), because a multipart
+  // ImageResource lies isLoading() == false after the first part is loaded.
+  return resource && resource->loader();
+}
+
 bool Internals::isLoadingFromMemoryCache(const String& url) {
   if (!contextDocument())
     return false;

@@ -101,6 +101,7 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
 
   bool isPreloaded(const String& url);
   bool isPreloadedBy(const String& url, Document*);
+  bool isLoading(const String& url);
   bool isLoadingFromMemoryCache(const String& url);
   int getResourcePriority(const String& url, Document*);
   String getResourceHeader(const String& url, const String& header, Document*);
