@@ -45,7 +45,7 @@ console-tests.html:17 count: 1 console-message-wrapper console-debug-level > con
 console-tests.html:17 count: 2 console-message-wrapper console-debug-level > console-message
 console-tests.html:18 group console-message-wrapper console-log-level > console-message console-group-title
 console-tests.html:20 1 2 3 console-message-wrapper console-log-level > console-message
-console-tests.html:21 groupCollapsed console-message-wrapper console-log-level collapsed > console-message console-group-title
+console-tests.html:21 groupCollapsed console-message-wrapper console-log-level > console-message console-group-title
 console-tests.html:33 : 1 console-message-wrapper console-debug-level > console-message
 console-tests.html:34 : 1 console-message-wrapper console-debug-level > console-message
 console-tests.html:35 : 1 console-message-wrapper console-debug-level > console-message
