@@ -1316,8 +1316,9 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
   // In case we delete non-active profile, just proceed.
   const base::FilePath last_used_profile =
       GetLastUsedProfileDir(user_data_dir_);
+  const base::FilePath guest_profile_path = GetGuestProfilePath();
   if (last_used_profile != profile_dir &&
-      last_used_profile != GetGuestProfilePath()) {
+      last_used_profile != guest_profile_path) {
     FinishDeletingProfile(profile_dir, last_used_profile);
     return;
   }
@@ -1327,6 +1328,7 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
     Profile* profile = browser->profile();
     base::FilePath cur_path = profile->GetPath();
     if (cur_path != profile_dir &&
+        cur_path != guest_profile_path &&
         !profile->IsLegacySupervised() &&
         !IsProfileDirectoryMarkedForDeletion(cur_path)) {
       OnNewActiveProfileLoaded(profile_dir, cur_path, callback, profile,
@@ -1345,6 +1347,7 @@ void ProfileManager::EnsureActiveProfileExistsBeforeDeletion(
     // Make sure that this profile is not pending deletion, and is not
     // legacy-supervised.
     if (cur_path != profile_dir &&
+        cur_path != guest_profile_path &&
         !entry->IsLegacySupervised() &&
         !IsProfileDirectoryMarkedForDeletion(cur_path)) {
       fallback_profile_path = cur_path;
