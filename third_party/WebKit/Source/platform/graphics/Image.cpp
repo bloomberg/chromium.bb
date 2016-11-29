@@ -88,20 +88,20 @@ Image::SizeAvailability Image::setData(PassRefPtr<SharedBuffer> data,
   return dataChanged(allDataReceived);
 }
 
-void Image::drawTiled(GraphicsContext& ctxt,
-                      const FloatRect& destRect,
-                      const FloatPoint& srcPoint,
-                      const FloatSize& scaledTileSize,
-                      SkBlendMode op,
-                      const FloatSize& repeatSpacing) {
-  FloatSize intrinsicTileSize = FloatSize(size());
+void Image::drawTiledBackground(GraphicsContext& ctxt,
+                                const FloatRect& destRect,
+                                const FloatPoint& srcPoint,
+                                const FloatSize& scaledTileSize,
+                                SkBlendMode op,
+                                const FloatSize& repeatSpacing) {
+  FloatSize intrinsicTileSize(size());
   if (hasRelativeSize()) {
     intrinsicTileSize.setWidth(scaledTileSize.width());
     intrinsicTileSize.setHeight(scaledTileSize.height());
   }
 
-  FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
-                  scaledTileSize.height() / intrinsicTileSize.height());
+  const FloatSize scale(scaledTileSize.width() / intrinsicTileSize.width(),
+                        scaledTileSize.height() / intrinsicTileSize.height());
 
   const FloatRect oneTileRect = computeTileContaining(
       destRect.location(), scaledTileSize, srcPoint, repeatSpacing);
@@ -123,14 +123,13 @@ void Image::drawTiled(GraphicsContext& ctxt,
   startAnimation();
 }
 
-// TODO(cavalcantii): see crbug.com/662504.
-void Image::drawTiled(GraphicsContext& ctxt,
-                      const FloatRect& dstRect,
-                      const FloatRect& srcRect,
-                      const FloatSize& providedTileScaleFactor,
-                      TileRule hRule,
-                      TileRule vRule,
-                      SkBlendMode op) {
+void Image::drawTiledBorder(GraphicsContext& ctxt,
+                            const FloatRect& dstRect,
+                            const FloatRect& srcRect,
+                            const FloatSize& providedTileScaleFactor,
+                            TileRule hRule,
+                            TileRule vRule,
+                            SkBlendMode op) {
   // TODO(cavalcantii): see crbug.com/662513.
   FloatSize tileScaleFactor = providedTileScaleFactor;
   if (vRule == RoundTile) {

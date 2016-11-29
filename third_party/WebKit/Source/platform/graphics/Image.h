@@ -195,19 +195,19 @@ class PLATFORM_EXPORT Image : public ThreadSafeRefCounted<Image> {
  protected:
   Image(ImageObserver* = 0);
 
-  void drawTiled(GraphicsContext&,
-                 const FloatRect& dstRect,
-                 const FloatPoint& srcPoint,
-                 const FloatSize& tileSize,
-                 SkBlendMode,
-                 const FloatSize& repeatSpacing);
-  void drawTiled(GraphicsContext&,
-                 const FloatRect& dstRect,
-                 const FloatRect& srcRect,
-                 const FloatSize& tileScaleFactor,
-                 TileRule hRule,
-                 TileRule vRule,
-                 SkBlendMode);
+  void drawTiledBackground(GraphicsContext&,
+                           const FloatRect& dstRect,
+                           const FloatPoint& srcPoint,
+                           const FloatSize& tileSize,
+                           SkBlendMode,
+                           const FloatSize& repeatSpacing);
+  void drawTiledBorder(GraphicsContext&,
+                       const FloatRect& dstRect,
+                       const FloatRect& srcRect,
+                       const FloatSize& tileScaleFactor,
+                       TileRule hRule,
+                       TileRule vRule,
+                       SkBlendMode);
 
  private:
   RefPtr<SharedBuffer> m_encodedImageData;

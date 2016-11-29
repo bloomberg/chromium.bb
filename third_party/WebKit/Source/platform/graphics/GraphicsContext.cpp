@@ -897,7 +897,8 @@ void GraphicsContext::drawTiledImage(Image* image,
                                      const FloatSize& repeatSpacing) {
   if (contextDisabled() || !image)
     return;
-  image->drawTiled(*this, destRect, srcPoint, tileSize, op, repeatSpacing);
+  image->drawTiledBackground(*this, destRect, srcPoint, tileSize, op,
+                             repeatSpacing);
   m_paintController.setImagePainted();
 }
 
@@ -917,7 +918,8 @@ void GraphicsContext::drawTiledImage(Image* image,
     return;
   }
 
-  image->drawTiled(*this, dest, srcRect, tileScaleFactor, hRule, vRule, op);
+  image->drawTiledBorder(*this, dest, srcRect, tileScaleFactor, hRule, vRule,
+                         op);
   m_paintController.setImagePainted();
 }
 
