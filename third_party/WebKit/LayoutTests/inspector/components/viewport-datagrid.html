@@ -42,6 +42,16 @@ function test()
         InspectorTest.addResult("Collapsed node " + node.data.id);
     }
 
+    function dumpFlattenChildren()
+    {
+        var nodes = dataGrid.rootNode().flattenChildren();
+        InspectorTest.addResult("Checking flattenChildren():");
+        for (var node of nodes) {
+            InspectorTest.addResult("  " + node.data.id);
+        }
+        InspectorTest.addResult("");
+    }
+
     var columns = [{id: "id", title: "ID column", width: "250px"}];
     var dataGrid = new UI.ViewportDataGrid(columns);
     var a = new UI.ViewportDataGridNode({id: "a"});
@@ -74,8 +84,12 @@ function test()
 
     // Appending to tree.
     attach(root, a);
+    // a is collapsed.
     attach(a, aa);
+    expand(a);
+    dumpFlattenChildren();
     attach(a, ab);
+    dumpFlattenChildren();
     attach(root, b);
 
     dumpNodes();
@@ -107,11 +121,16 @@ function test()
     dumpNodes();
     attach(ab, aac);
     aac.revealAndSelect();
+    dumpFlattenChildren();
+    InspectorTest.addResult("Removed children of aa");
     aa.removeChildren();
+    dumpFlattenChildren();
     dumpNodes();
     attach(ab, aac);
     aac.revealAndSelect();
+    dumpFlattenChildren();
     detach(a, aa);
+    dumpFlattenChildren();
     dumpNodes();
     detach(a, ab);
     dumpNodes();

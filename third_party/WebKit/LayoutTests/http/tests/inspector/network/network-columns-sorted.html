@@ -1,0 +1,61 @@
+<html>
+<head>
+<script src="../inspector-test.js"></script>
+<script src="../network-test.js"></script>
+<script>
+function test()
+{
+    InspectorTest.recordNetwork();
+
+    var totalResourceCount = 4;
+    InspectorTest.makeFetch("resources/style.css", {}, ensureAllResources);
+    InspectorTest.makeFetch("resources/abe.png", {}, () => {
+        // Ensures result is cached.
+        InspectorTest.makeFetch("resources/abe.png", {}, ensureAllResources);
+        ensureAllResources();
+    });
+    InspectorTest.makeFetch("missing/foo.bar", {}, ensureAllResources);
+
+    var resourceCount = 0;
+    function ensureAllResources()
+    {
+        if (++resourceCount >= totalResourceCount) {
+            debugger;
+            UI.panels.network._networkLogView._refresh();
+            sortGrid();
+            InspectorTest.completeTest();
+        }
+    }
+
+    function sortGrid()
+    {
+        var logView = UI.panels.network._networkLogView;
+        var dataGrid = logView._dataGrid;
+        var columnsView = logView._columns;
+        InspectorTest.addSniffer(logView, "dataGridSorted", dataGridSorted.bind(null, logView), true);
+
+        dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Ascending);
+        columnsView.sortByCurrentColumn();
+        dataGrid.markColumnAsSortedBy('status', UI.DataGrid.Order.Ascending);
+        columnsView.sortByCurrentColumn();
+        dataGrid.markColumnAsSortedBy('name', UI.DataGrid.Order.Descending);
+        columnsView.sortByCurrentColumn();
+        dataGrid.markColumnAsSortedBy('type', UI.DataGrid.Order.Ascending);
+        columnsView.sortByCurrentColumn();
+    }
+
+    function dataGridSorted(logView)
+    {
+        var nodes = logView._dataGrid.rootNode().flattenChildren();
+        InspectorTest.addResult("Sorted by: " + logView._dataGrid.sortColumnId());
+        for (var node of nodes)
+            InspectorTest.addResult("    " + node.request().name());
+        InspectorTest.addResult("");
+    }
+}
+</script>
+</head>
+<body onload="runTest()">
+<p>Tests network columns are sortable.</p>
+</body>
+</html>
