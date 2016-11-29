@@ -447,7 +447,8 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RapidFire)) {
 }
 
 // Tests removing a frame during a find session.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
+// TODO(crbug.com/657331): Test is flaky on all platforms.
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_RemoveFrame) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
   blink::WebFindOptions options;
@@ -479,7 +480,8 @@ IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(RemoveFrame)) {
 }
 
 // Tests adding a frame during a find session.
-IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, MAYBE(AddFrame)) {
+// TODO(crbug.com/657331): Test is flaky on all platforms.
+IN_PROC_BROWSER_TEST_P(FindRequestManagerTest, DISABLED_AddFrame) {
   LoadMultiFramePage(2 /* height */, GetParam() /* cross_process */);
 
   blink::WebFindOptions options;
