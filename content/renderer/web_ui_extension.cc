@@ -7,6 +7,7 @@
 #include <memory>
 #include <utility>
 
+#include "base/strings/string_util.h"
 #include "base/values.h"
 #include "content/common/view_messages.h"
 #include "content/public/child/v8_value_converter.h"
@@ -21,6 +22,7 @@
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
+#include "third_party/WebKit/public/web/WebUserGestureIndicator.h"
 #include "third_party/WebKit/public/web/WebView.h"
 #include "url/gurl.h"
 #include "v8/include/v8.h"
@@ -93,6 +95,13 @@ void WebUIExtension::Send(gin::Arguments* args) {
   std::string message;
   if (!args->GetNext(&message)) {
     args->ThrowError();
+    return;
+  }
+
+  if (base::EndsWith(message, "RequiringGesture",
+                     base::CompareCase::SENSITIVE) &&
+      !blink::WebUserGestureIndicator::isProcessingUserGesture()) {
+    NOTREACHED();
     return;
   }
 

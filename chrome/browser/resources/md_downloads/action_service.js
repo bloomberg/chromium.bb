@@ -78,12 +78,14 @@ cr.define('downloads', function() {
     },
 
     /** Opens the current local destination for downloads. */
-    openDownloadsFolder: chrome.send.bind(chrome, 'openDownloadsFolder'),
+    openDownloadsFolder: function() {
+      chrome.send('openDownloadsFolderRequiringGesture');
+    },
 
     /**
      * @param {string} id ID of the download to run locally on the user's box.
      */
-    openFile: chromeSendWithId('openFile'),
+    openFile: chromeSendWithId('openFileRequiringGesture'),
 
     /** @param {string} id ID the of the progressing download to pause. */
     pause: chromeSendWithId('pause'),
@@ -98,7 +100,7 @@ cr.define('downloads', function() {
      * @param {string} id ID of the dangerous download to save despite
      *     warnings.
      */
-    saveDangerous: chromeSendWithId('saveDangerous'),
+    saveDangerous: chromeSendWithId('saveDangerousRequiringGesture'),
 
     /**
      * @param {string} searchText What to search for.
