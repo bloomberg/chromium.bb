@@ -2047,13 +2047,10 @@ static void
 drm_output_start_repaint_loop(struct weston_output *output_base)
 {
 	struct drm_output *output = to_drm_output(output_base);
-	struct drm_pending_state *pending_state = NULL;
-	struct drm_output_state *state;
-	struct drm_plane_state *plane_state;
+	struct drm_pending_state *pending_state;
 	struct drm_plane *scanout_plane = output->scanout_plane;
 	struct drm_backend *backend =
 		to_drm_backend(output_base->compositor);
-	uint32_t fb_id;
 	struct timespec ts, tnow;
 	struct timespec vbl2now;
 	int64_t refresh_nsec;
@@ -2109,44 +2106,23 @@ drm_output_start_repaint_loop(struct weston_output *output_base)
 	/* Immediate query didn't provide valid timestamp.
 	 * Use pageflip fallback.
 	 */
-	fb_id = scanout_plane->state_cur->fb->fb_id;
 
 	assert(!output->page_flip_pending);
 	assert(!output->state_last);
 
 	pending_state = drm_pending_state_alloc(backend);
-	state = drm_output_state_duplicate(output->state_cur, pending_state,
-					   DRM_OUTPUT_STATE_PRESERVE_PLANES);
+	drm_output_state_duplicate(output->state_cur, pending_state,
+				   DRM_OUTPUT_STATE_PRESERVE_PLANES);
 
-	if (drmModePageFlip(backend->drm.fd, output->crtc_id, fb_id,
-			    DRM_MODE_PAGE_FLIP_EVENT, output) < 0) {
-		weston_log("queueing pageflip failed: %m\n");
+	ret = drm_pending_state_apply(pending_state);
+	if (ret != 0) {
+		weston_log("applying repaint-start state failed: %m\n");
 		goto finish_frame;
 	}
-
-	if (output->pageflip_timer)
-		wl_event_source_timer_update(output->pageflip_timer,
-		                             backend->pageflip_timeout);
-
-	wl_list_for_each(plane_state, &state->plane_list, link) {
-		if (plane_state->plane->type != WDRM_PLANE_TYPE_OVERLAY)
-			continue;
-
-		vbl.request.type = DRM_VBLANK_RELATIVE | DRM_VBLANK_EVENT;
-		vbl.request.type |= drm_waitvblank_pipe(output);
-		vbl.request.sequence = 1;
-		vbl.request.signal = (unsigned long) plane_state;
-		drmWaitVBlank(backend->drm.fd, &vbl);
-	}
-
-	drm_output_assign_state(state, DRM_STATE_APPLY_ASYNC);
-	drm_pending_state_free(pending_state);
 
 	return;
 
 finish_frame:
-	drm_pending_state_free(pending_state);
-
 	/* if we cannot page-flip, immediately finish frame */
 	weston_output_finish_frame(output_base, NULL,
 				   WP_PRESENTATION_FEEDBACK_INVALID);
