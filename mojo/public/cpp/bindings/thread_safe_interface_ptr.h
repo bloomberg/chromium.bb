@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_
-#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_
+#ifndef MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_
+#define MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_
 
 #include <memory>
 
@@ -20,7 +20,7 @@ namespace mojo {
 struct ThreadSafeInterfacePtrDeleter;
 
 // ThreadSafeInterfacePtr and ThreadSafeAssociatedInterfacePtr are versions of
-// InterfacePtr and AssociatedInterfacePtr that let caller invoke
+// InterfacePtr and AssociatedInterfacePtr that let callers invoke
 // interface methods from any threads. Callbacks are received on the thread that
 // performed the interface call.
 //
@@ -36,6 +36,11 @@ struct ThreadSafeInterfacePtrDeleter;
 // scoped_refptr<frob::ThreadSafeFrobinatorPtr> thread_safe_frobinator =
 //     frob::ThreadSafeFrobinatorPtr::Create(std::move(frobinator));
 // (*thread_safe_frobinator)->FrobinateToTheMax();
+//
+// An alternate way is to create the ThreadSafeInterfacePtr unbound (not
+// associated with an InterfacePtr) and call Bind() at a later time when the
+// InterfacePtr becomes available. Note that you shouldn't call any interface
+// methods on the ThreadSafeInterfacePtr before it is bound.
 
 template <typename Interface, template <typename> class InterfacePtrType>
 class ThreadSafeInterfacePtrBase
@@ -48,13 +53,30 @@ class ThreadSafeInterfacePtrBase
 
   static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
   Create(InterfacePtrType<Interface> interface_ptr) {
+    scoped_refptr<ThreadSafeInterfacePtrBase> ptr(
+        new ThreadSafeInterfacePtrBase());
+    return ptr->Bind(std::move(interface_ptr)) ? ptr : nullptr;
+  }
+
+  // Creates a ThreadSafeInterfacePtrBase with no associated InterfacePtr.
+  // Call Bind() with the InterfacePtr once available.
+  static scoped_refptr<ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>
+  CreateUnbound() {
+    return new ThreadSafeInterfacePtrBase();
+  }
+
+  // Binds a ThreadSafeInterfacePtrBase previously created with CreateUnbound().
+  // This must be called on the thread that |interface_ptr| should be used.
+  bool Bind(InterfacePtrType<Interface> interface_ptr) {
+    DCHECK(!interface_ptr_task_runner_);
     if (!interface_ptr.is_bound()) {
-      LOG(ERROR) << "Attempting to create a ThreadSafe[Associated]InterfacePtr "
-          "from an unbound InterfacePtr.";
-      return nullptr;
+      LOG(ERROR) << "Attempting to bind a ThreadSafe[Associated]InterfacePtr "
+                    "from an unbound InterfacePtr.";
+      return false;
     }
-    return new ThreadSafeInterfacePtrBase(std::move(interface_ptr),
-                                          base::ThreadTaskRunnerHandle::Get());
+    interface_ptr_ = std::move(interface_ptr);
+    interface_ptr_task_runner_ = base::ThreadTaskRunnerHandle::Get();
+    return true;
   }
 
   ~ThreadSafeInterfacePtrBase() override {}
@@ -63,22 +85,16 @@ class ThreadSafeInterfacePtrBase
   Interface* operator->() { return get(); }
   Interface& operator*() { return *get(); }
 
- protected:
-  ThreadSafeInterfacePtrBase(
-      InterfacePtrType<Interface> interface_ptr,
-      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
-      : interface_ptr_task_runner_(task_runner),
-        proxy_(this),
-        interface_ptr_(std::move(interface_ptr)),
-        weak_ptr_factory_(this) {}
-
  private:
   friend class base::RefCountedThreadSafe<
       ThreadSafeInterfacePtrBase<Interface, InterfacePtrType>>;
   friend struct ThreadSafeInterfacePtrDeleter;
 
+  ThreadSafeInterfacePtrBase() : proxy_(this), weak_ptr_factory_(this) {}
+
   void DeleteOnCorrectThread() const {
-    if (!interface_ptr_task_runner_->BelongsToCurrentThread() &&
+    if (interface_ptr_task_runner_ &&
+        !interface_ptr_task_runner_->BelongsToCurrentThread() &&
         interface_ptr_task_runner_->DeleteSoon(FROM_HERE, this)) {
       return;
     }
@@ -172,4 +188,4 @@ using ThreadSafeInterfacePtr =
 
 }  // namespace mojo
 
-#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_BASE_H_
+#endif  // MOJO_PUBLIC_CPP_BINDINGS_THREAD_SAFE_INTERFACE_PTR_H_

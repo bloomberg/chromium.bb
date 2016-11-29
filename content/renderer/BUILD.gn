@@ -262,6 +262,7 @@ target(link_target_type, "renderer") {
     "mojo/blink_interface_registry_impl.h",
     "mojo/interface_provider_js_wrapper.cc",
     "mojo/interface_provider_js_wrapper.h",
+    "mojo/thread_safe_associated_interface_ptr_provider.h",
     "mojo_bindings_controller.cc",
     "mojo_bindings_controller.h",
     "mojo_context_state.cc",

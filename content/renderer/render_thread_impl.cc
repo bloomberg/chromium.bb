@@ -111,6 +111,7 @@
 #include "content/renderer/media/render_media_client.h"
 #include "content/renderer/media/renderer_gpu_video_accelerator_factories.h"
 #include "content/renderer/media/video_capture_impl_manager.h"
+#include "content/renderer/mojo/thread_safe_associated_interface_ptr_provider.h"
 #include "content/renderer/net_info_helper.h"
 #include "content/renderer/p2p/socket_dispatcher.h"
 #include "content/renderer/render_frame_proxy.h"
@@ -581,6 +582,13 @@ mojom::RenderMessageFilter* RenderThreadImpl::current_render_message_filter() {
 }
 
 // static
+const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
+RenderThreadImpl::current_thread_safe_render_message_filter() {
+  DCHECK(current());
+  return current()->thread_safe_render_message_filter();
+}
+
+// static
 void RenderThreadImpl::SetRenderMessageFilterForTesting(
     mojom::RenderMessageFilter* render_message_filter) {
   g_render_message_filter_for_testing = render_message_filter;
@@ -686,6 +694,12 @@ void RenderThreadImpl::Init(
   AddFilter(blob_message_filter_.get());
   db_message_filter_ = new DBMessageFilter();
   AddFilter(db_message_filter_.get());
+
+  thread_safe_associated_interface_ptr_provider_ =
+      base::MakeUnique<ThreadSafeAssociatedInterfacePtrProvider>(channel());
+  thread_safe_render_message_filter_ =
+      thread_safe_associated_interface_ptr_provider_
+          ->CreateInterfacePtr<mojom::RenderMessageFilter>();
 
   vc_manager_.reset(new VideoCaptureImplManager());
 
@@ -2108,6 +2122,11 @@ mojom::RenderMessageFilter* RenderThreadImpl::render_message_filter() {
   if (!render_message_filter_)
     GetChannel()->GetRemoteAssociatedInterface(&render_message_filter_);
   return render_message_filter_.get();
+}
+
+const scoped_refptr<mojom::ThreadSafeRenderMessageFilterAssociatedPtr>&
+RenderThreadImpl::thread_safe_render_message_filter() {
+  return thread_safe_render_message_filter_;
 }
 
 gpu::GpuChannelHost* RenderThreadImpl::GetGpuChannel() {

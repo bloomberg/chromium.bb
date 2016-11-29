@@ -1050,6 +1050,69 @@ TEST_F(AssociatedInterfaceTest, ThreadSafeAssociatedInterfacePtr) {
   run_loop.Run();
 }
 
+struct ForwarderTestContext {
+  IntegerSenderConnectionPtr connection_ptr;
+  std::unique_ptr<IntegerSenderConnectionImpl> interface_impl;
+};
+
+TEST_F(AssociatedInterfaceTest, BindLaterThreadSafeAssociatedInterfacePtr) {
+  // Create a ThreadSafeAssociatedPtr that we'll bind from a different thread.
+  scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr> thread_safe_ptr =
+      ThreadSafeIntegerSenderAssociatedPtr::CreateUnbound();
+
+  // Start the thread from where we'll bind the interface pointer.
+  base::Thread other_thread("service test thread");
+  other_thread.Start();
+  const scoped_refptr<base::SingleThreadTaskRunner>& other_thread_task_runner =
+      other_thread.message_loop()->task_runner();
+  ForwarderTestContext* context = new ForwarderTestContext();
+  {
+    base::RunLoop run_loop;
+    auto run_method = base::Bind(
+        [](const scoped_refptr<base::TaskRunner>& main_task_runner,
+           const base::Closure& quit_closure,
+           const scoped_refptr<ThreadSafeIntegerSenderAssociatedPtr>&
+               thread_safe_ptr,
+           ForwarderTestContext* context) {
+          // We are on the background thread, create the interface ptr.
+          context->interface_impl =
+              base::MakeUnique<IntegerSenderConnectionImpl>(
+                  GetProxy(&(context->connection_ptr)));
+          IntegerSenderAssociatedPtr sender;
+          context->connection_ptr->GetSender(
+              GetProxy(&sender, context->connection_ptr.associated_group()));
+          thread_safe_ptr->Bind(std::move(sender));
+          main_task_runner->PostTask(FROM_HERE, quit_closure);
+        },
+        base::SequencedTaskRunnerHandle::Get(), run_loop.QuitClosure(),
+        thread_safe_ptr, context);
+
+    other_thread_task_runner->PostTask(FROM_HERE, run_method);
+    // Block until the associated pointer is bound.
+    run_loop.Run();
+  }
+
+  {
+    // Now we can call methods on the interface from the main thread.
+    auto echo_callback =
+        base::Bind([](const base::Closure& quit_closure, int32_t result) {
+          EXPECT_EQ(123, result);
+          quit_closure.Run();
+        });
+    base::RunLoop run_loop;
+    (*thread_safe_ptr)
+        ->Echo(123, base::Bind(echo_callback, run_loop.QuitClosure()));
+    // Block until the method callback is called.
+    run_loop.Run();
+  }
+
+  other_thread_task_runner->DeleteSoon(FROM_HERE, context);
+
+  // Reset the pointer now so the InterfacePtr associated resources can be
+  // deleted before the background thread's message loop is invalidated.
+  thread_safe_ptr = nullptr;
+}
+
 }  // namespace
 }  // namespace test
 }  // namespace mojo

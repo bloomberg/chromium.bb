@@ -230,6 +230,19 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   }
 #endif
 
+  template <typename Interface>
+  using AssociatedInterfaceRetrievedCallback =
+      base::Callback<void(mojo::AssociatedInterfacePtr<Interface>)>;
+  // Creates an AssociatedInterfacePtr to |Interface| on the IO thread and
+  // passes it to |callback|, also invoked on the IO thread.
+  template <typename Interface>
+  void RetrieveAssociatedInterfaceOnIOThread(
+      const AssociatedInterfaceRetrievedCallback<Interface>& callback) {
+    context_->ipc_task_runner()->PostTask(
+        FROM_HERE, base::Bind(&Context::RetrieveAssociatedInterface<Interface>,
+                              context_, callback));
+  }
+
   // Called to clear the pointer to the IPC task runner when it's going away.
   void ClearIPCTaskRunner();
 
@@ -238,7 +251,6 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
   // A subclass uses this constructor if it needs to add more information
   // to the internal state.
   explicit ChannelProxy(Context* context);
-
 
   // Used internally to hold state that is referenced on the IPC thread.
   class Context : public base::RefCountedThreadSafe<Context>,
@@ -304,6 +316,14 @@ class IPC_EXPORT ChannelProxy : public Sender, public base::NonThreadSafe {
     void OnSendMessage(std::unique_ptr<Message> message_ptr);
     void OnAddFilter();
     void OnRemoveFilter(MessageFilter* filter);
+    template <typename Interface>
+    void RetrieveAssociatedInterface(
+        const AssociatedInterfaceRetrievedCallback<Interface>& callback) {
+      mojo::AssociatedInterfacePtr<Interface> interface_ptr;
+      channel_->GetAssociatedInterfaceSupport()->GetRemoteAssociatedInterface(
+          &interface_ptr);
+      callback.Run(std::move(interface_ptr));
+    }
 
     // Methods called on the listener thread.
     void AddFilter(MessageFilter* filter);
