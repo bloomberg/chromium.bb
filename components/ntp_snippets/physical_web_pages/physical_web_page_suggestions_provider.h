@@ -10,34 +10,27 @@
 #include <vector>
 
 #include "base/callback_forward.h"
+#include "base/values.h"
 #include "components/ntp_snippets/category.h"
 #include "components/ntp_snippets/category_factory.h"
 #include "components/ntp_snippets/category_status.h"
 #include "components/ntp_snippets/content_suggestion.h"
 #include "components/ntp_snippets/content_suggestions_provider.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
+#include "components/physical_web/data_source/physical_web_listener.h"
 
 namespace ntp_snippets {
 
-// TODO(vitaliii): remove when Physical Web C++ interface is provided.
-struct UrlInfo {
-  UrlInfo();
-  UrlInfo(const UrlInfo& other);
-  ~UrlInfo();
-  base::Time scan_time;
-  GURL site_url;
-  std::string title;
-  std::string description;
-};
-
 // Provides content suggestions from the Physical Web Service.
-class PhysicalWebPageSuggestionsProvider : public ContentSuggestionsProvider {
+class PhysicalWebPageSuggestionsProvider
+    : public ContentSuggestionsProvider,
+      public physical_web::PhysicalWebListener {
  public:
   PhysicalWebPageSuggestionsProvider(
       ContentSuggestionsProvider::Observer* observer,
-      CategoryFactory* category_factory);
+      CategoryFactory* category_factory,
+      physical_web::PhysicalWebDataSource* physical_web_data_source);
   ~PhysicalWebPageSuggestionsProvider() override;
-
-  void OnDisplayableUrlsChanged(const std::vector<UrlInfo>& urls);
 
   // ContentSuggestionsProvider implementation.
   CategoryStatus GetCategoryStatus(Category category) override;
@@ -59,10 +52,27 @@ class PhysicalWebPageSuggestionsProvider : public ContentSuggestionsProvider {
   void ClearDismissedSuggestionsForDebugging(Category category) override;
 
  private:
+  friend class PhysicalWebPageSuggestionsProviderTest;
+
+  // Updates the |category_status_| and notifies the |observer_|, if necessary.
   void NotifyStatusChanged(CategoryStatus new_status);
+
+  // Manually requests all physical web pages and updates the suggestions.
+  void FetchPhysicalWebPages();
+
+  // Converts an Physical Web page to a ContentSuggestion.
+  ContentSuggestion ConvertPhysicalWebPage(
+      const base::DictionaryValue& page) const;
+
+  // PhysicalWebListener implementation.
+  void OnFound(const std::string& url) override;
+  void OnLost(const std::string& url) override;
+  void OnDistanceChanged(const std::string& url,
+                         double distance_estimate) override;
 
   CategoryStatus category_status_;
   const Category provided_category_;
+  physical_web::PhysicalWebDataSource* physical_web_data_source_;
 
   DISALLOW_COPY_AND_ASSIGN(PhysicalWebPageSuggestionsProvider);
 };

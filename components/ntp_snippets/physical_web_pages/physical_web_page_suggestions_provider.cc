@@ -4,6 +4,9 @@
 
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 
+#include <algorithm>
+#include <memory>
+#include <string>
 #include <utility>
 
 #include "base/bind.h"
@@ -14,6 +17,11 @@
 #include "grit/components_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/gfx/image/image.h"
+#include "url/gurl.h"
+
+using base::DictionaryValue;
+using base::ListValue;
+using base::Value;
 
 namespace ntp_snippets {
 
@@ -23,46 +31,23 @@ const size_t kMaxSuggestionsCount = 10;
 
 }  // namespace
 
-// TODO(vitaliii): remove when Physical Web C++ interface is provided.
-UrlInfo::UrlInfo() = default;
-UrlInfo::~UrlInfo() = default;
-UrlInfo::UrlInfo(const UrlInfo& other) = default;
-
 PhysicalWebPageSuggestionsProvider::PhysicalWebPageSuggestionsProvider(
     ContentSuggestionsProvider::Observer* observer,
-    CategoryFactory* category_factory)
+    CategoryFactory* category_factory,
+    physical_web::PhysicalWebDataSource* physical_web_data_source)
     : ContentSuggestionsProvider(observer, category_factory),
-      category_status_(CategoryStatus::AVAILABLE_LOADING),
+      category_status_(CategoryStatus::AVAILABLE),
       provided_category_(category_factory->FromKnownCategory(
-          KnownCategories::PHYSICAL_WEB_PAGES)) {
+          KnownCategories::PHYSICAL_WEB_PAGES)),
+      physical_web_data_source_(physical_web_data_source) {
   observer->OnCategoryStatusChanged(this, provided_category_, category_status_);
+  physical_web_data_source_->RegisterListener(this);
+  // TODO(vitaliii): Rewrite initial fetch once crbug.com/667754 is resolved.
+  FetchPhysicalWebPages();
 }
 
-PhysicalWebPageSuggestionsProvider::~PhysicalWebPageSuggestionsProvider() =
-    default;
-
-void PhysicalWebPageSuggestionsProvider::OnDisplayableUrlsChanged(
-    const std::vector<UrlInfo>& urls) {
-  NotifyStatusChanged(CategoryStatus::AVAILABLE);
-  std::vector<ContentSuggestion> suggestions;
-
-  for (const UrlInfo& url_info : urls) {
-    if (suggestions.size() >= kMaxSuggestionsCount) {
-      break;
-    }
-
-    ContentSuggestion suggestion(provided_category_, url_info.site_url.spec(),
-                                 url_info.site_url);
-
-    suggestion.set_title(base::UTF8ToUTF16(url_info.title));
-    suggestion.set_snippet_text(base::UTF8ToUTF16(url_info.description));
-    suggestion.set_publish_date(url_info.scan_time);
-    suggestion.set_publisher_name(base::UTF8ToUTF16(url_info.site_url.host()));
-    suggestions.push_back(std::move(suggestion));
-  }
-
-  observer()->OnNewSuggestions(this, provided_category_,
-                               std::move(suggestions));
+PhysicalWebPageSuggestionsProvider::~PhysicalWebPageSuggestionsProvider() {
+  physical_web_data_source_->UnregisterListener(this);
 }
 
 CategoryStatus PhysicalWebPageSuggestionsProvider::GetCategoryStatus(
@@ -72,10 +57,12 @@ CategoryStatus PhysicalWebPageSuggestionsProvider::GetCategoryStatus(
 
 CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
     Category category) {
-  // TODO(vitaliii): Use the proper strings once they've been agreed on.
+  // TODO(vitaliii): Use the proper string once it has been agreed on.
+  // TODO(vitaliii): Use a translateable string. (crbug.com/667764)
+  // TODO(vitaliii): Implement More action. (crbug.com/667759)
   return CategoryInfo(
       base::ASCIIToUTF16("Physical web pages"),
-      ContentSuggestionsCardLayout::MINIMAL_CARD,
+      ContentSuggestionsCardLayout::FULL_CARD,
       /*has_more_action=*/false,
       /*has_reload_action=*/false,
       /*has_view_all_action=*/false,
@@ -86,13 +73,13 @@ CategoryInfo PhysicalWebPageSuggestionsProvider::GetCategoryInfo(
 void PhysicalWebPageSuggestionsProvider::DismissSuggestion(
     const ContentSuggestion::ID& suggestion_id) {
   // TODO(vitaliii): Implement this and then
-  // ClearDismissedSuggestionsForDebugging.
+  // ClearDismissedSuggestionsForDebugging. (crbug.com/667766)
 }
 
 void PhysicalWebPageSuggestionsProvider::FetchSuggestionImage(
     const ContentSuggestion::ID& suggestion_id,
     const ImageFetchedCallback& callback) {
-  // TODO(vitaliii): Implement.
+  // TODO(vitaliii): Implement. (crbug.com/667765)
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(callback, gfx::Image()));
 }
@@ -138,7 +125,6 @@ void PhysicalWebPageSuggestionsProvider::ClearDismissedSuggestionsForDebugging(
 ////////////////////////////////////////////////////////////////////////////////
 // Private methods
 
-// Updates the |category_status_| and notifies the |observer_|, if necessary.
 void PhysicalWebPageSuggestionsProvider::NotifyStatusChanged(
     CategoryStatus new_status) {
   if (category_status_ == new_status) {
@@ -146,6 +132,93 @@ void PhysicalWebPageSuggestionsProvider::NotifyStatusChanged(
   }
   category_status_ = new_status;
   observer()->OnCategoryStatusChanged(this, provided_category_, new_status);
+}
+
+void PhysicalWebPageSuggestionsProvider::FetchPhysicalWebPages() {
+  NotifyStatusChanged(CategoryStatus::AVAILABLE);
+  std::unique_ptr<ListValue> page_values =
+      physical_web_data_source_->GetMetadata();
+
+  std::vector<const DictionaryValue*> page_dictionaries;
+  for (const std::unique_ptr<Value>& page_value : *page_values) {
+    const DictionaryValue* page_dictionary;
+    if (!page_value->GetAsDictionary(&page_dictionary)) {
+      LOG(DFATAL) << "Physical Web page is not a dictionary.";
+    }
+    page_dictionaries.push_back(page_dictionary);
+  }
+
+  std::sort(page_dictionaries.begin(), page_dictionaries.end(),
+            [](const DictionaryValue* left, const DictionaryValue* right) {
+              double left_distance, right_distance;
+              bool success = left->GetDouble(physical_web::kDistanceEstimateKey,
+                                             &left_distance);
+              success = right->GetDouble(physical_web::kDistanceEstimateKey,
+                                         &right_distance) &&
+                        success;
+              if (!success) {
+                LOG(DFATAL) << "Distance field is missing.";
+              }
+              return left_distance < right_distance;
+            });
+
+  std::vector<ContentSuggestion> suggestions;
+  for (const DictionaryValue* page_dictionary : page_dictionaries) {
+    suggestions.push_back(ConvertPhysicalWebPage(*page_dictionary));
+    if (suggestions.size() == kMaxSuggestionsCount) {
+      break;
+    }
+  }
+
+  observer()->OnNewSuggestions(this, provided_category_,
+                               std::move(suggestions));
+}
+
+ContentSuggestion PhysicalWebPageSuggestionsProvider::ConvertPhysicalWebPage(
+    const DictionaryValue& page) const {
+  std::string scanned_url, raw_resolved_url, title, description;
+  int scan_timestamp;
+  bool success = page.GetString(physical_web::kScannedUrlKey, &scanned_url);
+  success = page.GetInteger(physical_web::kScanTimestampKey, &scan_timestamp) &&
+            success;
+  success = page.GetString(physical_web::kResolvedUrlKey, &raw_resolved_url) &&
+            success;
+  success = page.GetString(physical_web::kTitleKey, &title) && success;
+  success =
+      page.GetString(physical_web::kDescriptionKey, &description) && success;
+  if (!success) {
+    LOG(DFATAL) << "Expected field is missing.";
+  }
+
+  const GURL resolved_url(raw_resolved_url);
+  ContentSuggestion suggestion(provided_category_, resolved_url.spec(),
+                               resolved_url);
+  DCHECK(base::IsStringUTF8(title));
+  suggestion.set_title(base::UTF8ToUTF16(title));
+  // TODO(vitaliii): Set the time properly once the proper value is provided
+  // (see crbug.com/667722).
+  suggestion.set_publish_date(
+      base::Time::FromTimeT(static_cast<time_t>(scan_timestamp)));
+  suggestion.set_publisher_name(base::UTF8ToUTF16(resolved_url.host()));
+  DCHECK(base::IsStringUTF8(description));
+  suggestion.set_snippet_text(base::UTF8ToUTF16(description));
+  return suggestion;
+}
+
+// PhysicalWebListener implementation.
+void PhysicalWebPageSuggestionsProvider::OnFound(const std::string& url) {
+  FetchPhysicalWebPages();
+}
+
+void PhysicalWebPageSuggestionsProvider::OnLost(const std::string& url) {
+  // TODO(vitaliii): Do not refetch, but just update the current state.
+  FetchPhysicalWebPages();
+}
+
+void PhysicalWebPageSuggestionsProvider::OnDistanceChanged(
+    const std::string& url,
+    double distance_estimate) {
+  FetchPhysicalWebPages();
 }
 
 }  // namespace ntp_snippets

@@ -60,12 +60,14 @@
 #include "components/ntp_snippets/offline_pages/recent_tab_suggestions_provider.h"
 #include "components/ntp_snippets/physical_web_pages/physical_web_page_suggestions_provider.h"
 #include "components/offline_pages/offline_page_model.h"
+#include "components/physical_web/data_source/physical_web_data_source.h"
 
 using content::DownloadManager;
 using ntp_snippets::PhysicalWebPageSuggestionsProvider;
 using ntp_snippets::RecentTabSuggestionsProvider;
 using offline_pages::OfflinePageModel;
 using offline_pages::OfflinePageModelFactory;
+using physical_web::PhysicalWebDataSource;
 #endif  // OS_ANDROID
 
 using bookmarks::BookmarkModel;
@@ -129,10 +131,12 @@ void RegisterBookmarkProvider(BookmarkModel* bookmark_model,
 }
 
 #if defined(OS_ANDROID)
-void RegisterPhysicalWebPageProvider(ContentSuggestionsService* service,
-                                     CategoryFactory* category_factory) {
+void RegisterPhysicalWebPageProvider(
+    ContentSuggestionsService* service,
+    CategoryFactory* category_factory,
+    PhysicalWebDataSource* physical_web_data_source) {
   auto provider = base::MakeUnique<PhysicalWebPageSuggestionsProvider>(
-      service, category_factory);
+      service, category_factory, physical_web_data_source);
   service->RegisterProvider(std::move(provider));
 }
 #endif  // OS_ANDROID
@@ -261,6 +265,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
       OfflinePageModelFactory::GetForBrowserContext(profile);
   DownloadManager* download_manager =
       content::BrowserContext::GetDownloadManager(profile);
+  PhysicalWebDataSource* physical_web_data_source =
+      g_browser_process->GetPhysicalWebDataSource();
 #endif  // OS_ANDROID
   BookmarkModel* bookmark_model =
       BookmarkModelFactory::GetForBrowserContext(profile);
@@ -300,7 +306,8 @@ KeyedService* ContentSuggestionsServiceFactory::BuildServiceInstanceFor(
 #if defined(OS_ANDROID)
   if (base::FeatureList::IsEnabled(
           ntp_snippets::kPhysicalWebPageSuggestionsFeature)) {
-    RegisterPhysicalWebPageProvider(service, category_factory);
+    RegisterPhysicalWebPageProvider(service, category_factory,
+                                    physical_web_data_source);
   }
 #endif  // OS_ANDROID
 
