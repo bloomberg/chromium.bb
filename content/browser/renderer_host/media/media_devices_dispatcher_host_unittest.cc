@@ -251,9 +251,14 @@ class MediaDevicesDispatcherHostTest : public testing::Test {
     }
   }
 
-  std::unique_ptr<MediaDevicesDispatcherHost> host_;
+  // The order of these members is important on teardown:
+  // MediaDevicesDispatcherHost expects to be destroyed on the IO thread while
+  // MediaStreamManager expects to be destroyed after the IO thread has been
+  // uninitialized.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   content::TestBrowserThreadBundle thread_bundle_;
+  std::unique_ptr<MediaDevicesDispatcherHost> host_;
+
   std::unique_ptr<media::AudioManager, media::AudioManagerDeleter>
       audio_manager_;
   content::TestBrowserContext browser_context_;
@@ -326,6 +331,13 @@ TEST_F(MediaDevicesDispatcherHostTest, EnumerateAllDevicesUniqueOrigin) {
       base::Bind(&MediaDevicesDispatcherHostTest::ValidOriginCallback,
                  base::Unretained(this)));
   base::RunLoop().RunUntilIdle();
+#if defined(OS_WIN)
+  // On Windows, the underlying MediaStreamManager uses a separate thread for
+  // video capture which must be flushed to guarantee that the callback bound to
+  // EnumerateDevices above is invoked before the end of this test's body.
+  media_stream_manager_->FlushVideoCaptureThreadForTesting();
+  base::RunLoop().RunUntilIdle();
+#endif
 }
 
 };  // namespace content

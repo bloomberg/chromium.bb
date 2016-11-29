@@ -1757,4 +1757,10 @@ void MediaStreamManager::SetGenerateStreamCallbackForTesting(
   generate_stream_test_callback_ = test_callback;
 }
 
+#if defined(OS_WIN)
+void MediaStreamManager::FlushVideoCaptureThreadForTesting() {
+  video_capture_thread_.FlushForTesting();
+}
+#endif
+
 }  // namespace content
