@@ -165,7 +165,10 @@ TEST_F('CertificateViewerModalUITest', 'testCN', function() {
   this.testCN();
 });
 
-TEST_F('CertificateViewerModalUITestAsync', 'testDetails', function() {
+/**
+ * Disabled due to flakiness on Linux ChromiumOS bot: http://crbug/669597
+ */
+TEST_F('CertificateViewerModalUITestAsync', 'DISABLED_testDetails', function() {
   this.testDetails();
 });
 
