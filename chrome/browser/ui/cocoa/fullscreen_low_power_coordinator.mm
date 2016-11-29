@@ -66,6 +66,7 @@ FullscreenLowPowerCoordinatorCocoa::FullscreenLowPowerCoordinatorCocoa(
       low_power_window_.reset([[FullscreenLowPowerWindow alloc]
           initWithEventTargetWindow:content_window_
                           withLayer:fullscreen_low_power_layer]);
+      [low_power_window_ setAnimationBehavior:NSWindowAnimationBehaviorNone];
     }
   }
 
