@@ -141,11 +141,9 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
 
   // blink::WebURLLoaderClient implementation:
   bool willFollowRedirect(
-      blink::WebURLLoader* loader,
       blink::WebURLRequest& newRequest,
       const blink::WebURLResponse& redirectResponse) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
 
     if (check_redirect_request_priority_)
       EXPECT_EQ(redirect_request_priority, newRequest.getPriority());
@@ -160,18 +158,14 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
     return true;
   }
 
-  void didSendData(blink::WebURLLoader* loader,
-                   unsigned long long bytesSent,
+  void didSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
   }
 
   void didReceiveResponse(
-      blink::WebURLLoader* loader,
       const blink::WebURLResponse& response) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
     EXPECT_FALSE(did_receive_response_);
 
     did_receive_response_ = true;
@@ -180,19 +174,14 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didDownloadData(blink::WebURLLoader* loader,
-                       int dataLength,
-                       int encodedDataLength) override {
+  void didDownloadData(int dataLength, int encodedDataLength) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
   }
 
-  void didReceiveData(blink::WebURLLoader* loader,
-                      const char* data,
+  void didReceiveData(const char* data,
                       int dataLength,
                       int encodedDataLength) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
     // The response should have started, but must not have finished, or failed.
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
@@ -205,18 +194,10 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didReceiveCachedMetadata(blink::WebURLLoader* loader,
-                                const char* data,
-                                int dataLength) override {
-    EXPECT_EQ(loader_.get(), loader);
-  }
-
-  void didFinishLoading(blink::WebURLLoader* loader,
-                        double finishTime,
+  void didFinishLoading(double finishTime,
                         int64_t totalEncodedDataLength,
                         int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
     EXPECT_TRUE(did_receive_response_);
     EXPECT_FALSE(did_finish_);
     did_finish_ = true;
@@ -225,12 +206,10 @@ class TestWebURLLoaderClient : public blink::WebURLLoaderClient {
       loader_.reset();
   }
 
-  void didFail(blink::WebURLLoader* loader,
-               const blink::WebURLError& error,
+  void didFail(const blink::WebURLError& error,
                int64_t totalEncodedDataLength,
                int64_t totalEncodedBodyLength) override {
     EXPECT_TRUE(loader_);
-    EXPECT_EQ(loader_.get(), loader);
     EXPECT_FALSE(did_finish_);
     error_ = error;
 

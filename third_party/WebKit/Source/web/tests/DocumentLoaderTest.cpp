@@ -44,13 +44,11 @@ TEST_F(DocumentLoaderTest, SingleChunk) {
   class TestDelegate : public WebURLLoaderTestDelegate {
    public:
     void didReceiveData(WebURLLoaderClient* originalClient,
-                        WebURLLoader* loader,
                         const char* data,
                         int dataLength,
                         int encodedDataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
-      originalClient->didReceiveData(loader, data, dataLength,
-                                     encodedDataLength);
+      originalClient->didReceiveData(data, dataLength, encodedDataLength);
     }
   } delegate;
 
@@ -69,14 +67,13 @@ TEST_F(DocumentLoaderTest, MultiChunkNoReentrancy) {
   class TestDelegate : public WebURLLoaderTestDelegate {
    public:
     void didReceiveData(WebURLLoaderClient* originalClient,
-                        WebURLLoader* loader,
                         const char* data,
                         int dataLength,
                         int encodedDataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
       // Chunk the reply into one byte chunks.
       for (int i = 0; i < dataLength; ++i)
-        originalClient->didReceiveData(loader, &data[i], 1, 1);
+        originalClient->didReceiveData(&data[i], 1, 1);
     }
   } delegate;
 
@@ -98,20 +95,17 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
    public:
     TestDelegate()
         : m_loaderClient(nullptr),
-          m_loader(nullptr),
           m_dispatchingDidReceiveData(false),
           m_servedReentrantly(false) {}
 
     // WebURLLoaderTestDelegate overrides:
     void didReceiveData(WebURLLoaderClient* originalClient,
-                        WebURLLoader* loader,
                         const char* data,
                         int dataLength,
                         int encodedDataLength) override {
       EXPECT_EQ(34, dataLength) << "foo.html was not served in a single chunk";
 
       m_loaderClient = originalClient;
-      m_loader = loader;
       for (int i = 0; i < dataLength; ++i)
         m_data.push(data[i]);
 
@@ -147,14 +141,13 @@ TEST_F(DocumentLoaderTest, MultiChunkWithReentrancy) {
     void dispatchOneByte() {
       char c = m_data.front();
       m_data.pop();
-      m_loaderClient->didReceiveData(m_loader, &c, 1, 1);
+      m_loaderClient->didReceiveData(&c, 1, 1);
     }
 
     bool servedReentrantly() const { return m_servedReentrantly; }
 
    private:
     WebURLLoaderClient* m_loaderClient;
-    WebURLLoader* m_loader;
     std::queue<char> m_data;
     bool m_dispatchingDidReceiveData;
     bool m_servedReentrantly;

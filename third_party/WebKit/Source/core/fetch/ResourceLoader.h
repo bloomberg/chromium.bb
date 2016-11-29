@@ -88,30 +88,20 @@ class CORE_EXPORT ResourceLoader final
   // A failed load is indicated by 1 didFail(), which can occur at any time
   // before didFinishLoading(), including synchronous inside one of the other
   // callbacks via ResourceLoader::cancel()
-  bool willFollowRedirect(WebURLLoader*,
-                          WebURLRequest&,
+  bool willFollowRedirect(WebURLRequest&,
                           const WebURLResponse& redirectResponse) override;
-  void didSendData(WebURLLoader*,
-                   unsigned long long bytesSent,
+  void didSendData(unsigned long long bytesSent,
                    unsigned long long totalBytesToBeSent) override;
-  void didReceiveResponse(WebURLLoader*, const WebURLResponse&) override;
-  void didReceiveResponse(WebURLLoader*,
-                          const WebURLResponse&,
+  void didReceiveResponse(const WebURLResponse&) override;
+  void didReceiveResponse(const WebURLResponse&,
                           std::unique_ptr<WebDataConsumerHandle>) override;
-  void didReceiveCachedMetadata(WebURLLoader*,
-                                const char* data,
-                                int length) override;
-  void didReceiveData(WebURLLoader*,
-                      const char*,
-                      int,
-                      int encodedDataLength) override;
-  void didDownloadData(WebURLLoader*, int, int) override;
-  void didFinishLoading(WebURLLoader*,
-                        double finishTime,
+  void didReceiveCachedMetadata(const char* data, int length) override;
+  void didReceiveData(const char*, int, int encodedDataLength) override;
+  void didDownloadData(int, int) override;
+  void didFinishLoading(double finishTime,
                         int64_t encodedDataLength,
                         int64_t encodedBodyLength) override;
-  void didFail(WebURLLoader*,
-               const WebURLError&,
+  void didFail(const WebURLError&,
                int64_t encodedDataLength,
                int64_t encodedBodyLength) override;
 

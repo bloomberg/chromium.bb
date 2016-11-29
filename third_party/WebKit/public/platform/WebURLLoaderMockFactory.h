@@ -15,6 +15,7 @@
 namespace blink {
 
 class WebURL;
+class WebURLLoader;
 class WebURLResponse;
 struct WebURLError;
 

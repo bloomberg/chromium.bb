@@ -17,36 +17,32 @@ WebURLLoaderTestDelegate::~WebURLLoaderTestDelegate() {}
 
 void WebURLLoaderTestDelegate::didReceiveResponse(
     WebURLLoaderClient* originalClient,
-    WebURLLoader* loader,
     const WebURLResponse& response) {
-  originalClient->didReceiveResponse(loader, response);
+  originalClient->didReceiveResponse(response);
 }
 
 void WebURLLoaderTestDelegate::didReceiveData(
     WebURLLoaderClient* originalClient,
-    WebURLLoader* loader,
     const char* data,
     int dataLength,
     int encodedDataLength) {
-  originalClient->didReceiveData(loader, data, dataLength, encodedDataLength);
+  originalClient->didReceiveData(data, dataLength, encodedDataLength);
 }
 
 void WebURLLoaderTestDelegate::didFail(WebURLLoaderClient* originalClient,
-                                       WebURLLoader* loader,
                                        const WebURLError& error,
                                        int64_t totalEncodedDataLength,
                                        int64_t totalEncodedBodyLength) {
-  originalClient->didFail(loader, error, totalEncodedDataLength,
+  originalClient->didFail(error, totalEncodedDataLength,
                           totalEncodedBodyLength);
 }
 
 void WebURLLoaderTestDelegate::didFinishLoading(
     WebURLLoaderClient* originalClient,
-    WebURLLoader* loader,
     double finishTime,
     int64_t totalEncodedDataLength,
     int64_t totalEncodedBodyLength) {
-  originalClient->didFinishLoading(loader, finishTime, totalEncodedDataLength,
+  originalClient->didFinishLoading(finishTime, totalEncodedDataLength,
                                    totalEncodedBodyLength);
 }
 

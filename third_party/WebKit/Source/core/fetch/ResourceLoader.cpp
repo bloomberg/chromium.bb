@@ -116,9 +116,7 @@ void ResourceLoader::setDefersLoading(bool defers) {
   m_loader->setDefersLoading(defers);
 }
 
-void ResourceLoader::didDownloadData(WebURLLoader*,
-                                     int length,
-                                     int encodedDataLength) {
+void ResourceLoader::didDownloadData(int length, int encodedDataLength) {
   m_fetcher->didDownloadData(m_resource.get(), length, encodedDataLength);
   m_resource->didDownloadData(length);
 }
@@ -144,7 +142,6 @@ void ResourceLoader::cancelForRedirectAccessCheckError(const KURL& newURL) {
 }
 
 bool ResourceLoader::willFollowRedirect(
-    WebURLLoader*,
     WebURLRequest& passedNewRequest,
     const WebURLResponse& passedRedirectResponse) {
   DCHECK(!passedNewRequest.isNull());
@@ -190,20 +187,16 @@ bool ResourceLoader::willFollowRedirect(
   return true;
 }
 
-void ResourceLoader::didReceiveCachedMetadata(WebURLLoader*,
-                                              const char* data,
-                                              int length) {
+void ResourceLoader::didReceiveCachedMetadata(const char* data, int length) {
   m_resource->setSerializedCachedMetadata(data, length);
 }
 
-void ResourceLoader::didSendData(WebURLLoader*,
-                                 unsigned long long bytesSent,
+void ResourceLoader::didSendData(unsigned long long bytesSent,
                                  unsigned long long totalBytesToBeSent) {
   m_resource->didSendData(bytesSent, totalBytesToBeSent);
 }
 
 void ResourceLoader::didReceiveResponse(
-    WebURLLoader*,
     const WebURLResponse& response,
     std::unique_ptr<WebDataConsumerHandle> handle) {
   DCHECK(!response.isNull());
@@ -211,13 +204,11 @@ void ResourceLoader::didReceiveResponse(
                                 std::move(handle));
 }
 
-void ResourceLoader::didReceiveResponse(WebURLLoader* loader,
-                                        const WebURLResponse& response) {
-  didReceiveResponse(loader, response, nullptr);
+void ResourceLoader::didReceiveResponse(const WebURLResponse& response) {
+  didReceiveResponse(response, nullptr);
 }
 
-void ResourceLoader::didReceiveData(WebURLLoader*,
-                                    const char* data,
+void ResourceLoader::didReceiveData(const char* data,
                                     int length,
                                     int encodedDataLength) {
   CHECK_GE(length, 0);
@@ -231,8 +222,7 @@ void ResourceLoader::didFinishLoadingFirstPartInMultipart() {
                               ResourceFetcher::DidFinishFirstPartInMultipart);
 }
 
-void ResourceLoader::didFinishLoading(WebURLLoader*,
-                                      double finishTime,
+void ResourceLoader::didFinishLoading(double finishTime,
                                       int64_t encodedDataLength,
                                       int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
@@ -242,8 +232,7 @@ void ResourceLoader::didFinishLoading(WebURLLoader*,
                               ResourceFetcher::DidFinishLoading);
 }
 
-void ResourceLoader::didFail(WebURLLoader*,
-                             const WebURLError& error,
+void ResourceLoader::didFail(const WebURLError& error,
                              int64_t encodedDataLength,
                              int64_t encodedBodyLength) {
   m_resource->setEncodedDataLength(encodedDataLength);
@@ -286,10 +275,10 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
   if (!m_loader)
     return;
   if (errorOut.reason) {
-    didFail(0, errorOut, encodedDataLength, encodedBodyLength);
+    didFail(errorOut, encodedDataLength, encodedBodyLength);
     return;
   }
-  didReceiveResponse(0, responseOut);
+  didReceiveResponse(responseOut);
   if (!m_loader)
     return;
   DCHECK_GE(responseOut.toResourceResponse().encodedBodyLength(), 0);
@@ -303,7 +292,7 @@ void ResourceLoader::requestSynchronously(const ResourceRequest& request) {
                               encodedDataLength);
     m_resource->setResourceBuffer(dataOut);
   }
-  didFinishLoading(0, monotonicallyIncreasingTime(), encodedDataLength,
+  didFinishLoading(monotonicallyIncreasingTime(), encodedDataLength,
                    encodedBodyLength);
 }
 

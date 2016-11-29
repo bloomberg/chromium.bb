@@ -37,7 +37,6 @@
 
 namespace blink {
 
-class WebURLLoader;
 class WebURLRequest;
 class WebURLResponse;
 struct WebURLError;
@@ -51,34 +50,29 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   //
   // Implementations should return true to instruct the loader to follow the,
   // redirect, or false otherwise.
-  virtual bool willFollowRedirect(WebURLLoader*,
-                                  WebURLRequest& newRequest,
+  virtual bool willFollowRedirect(WebURLRequest& newRequest,
                                   const WebURLResponse& redirectResponse) {
     return true;
   }
 
   // Called to report upload progress. The bytes reported correspond to
   // the HTTP message body.
-  virtual void didSendData(WebURLLoader*,
-                           unsigned long long bytesSent,
+  virtual void didSendData(unsigned long long bytesSent,
                            unsigned long long totalBytesToBeSent) {}
 
   // Called when response headers are received.
-  virtual void didReceiveResponse(WebURLLoader*, const WebURLResponse&) {}
+  virtual void didReceiveResponse(const WebURLResponse&) {}
 
   // Called when response headers are received.
   virtual void didReceiveResponse(
-      WebURLLoader* loader,
       const WebURLResponse& response,
       std::unique_ptr<WebDataConsumerHandle> handle) {
-    didReceiveResponse(loader, response);
+    didReceiveResponse(response);
   }
 
   // Called when a chunk of response data is downloaded. This is only called
   // if WebURLRequest's downloadToFile flag was set to true.
-  virtual void didDownloadData(WebURLLoader*,
-                               int dataLength,
-                               int encodedDataLength) {}
+  virtual void didDownloadData(int dataLength, int encodedDataLength) {}
 
   // Called when a chunk of response data is received. |dataLength| is the
   // number of bytes pointed to by |data|. |encodedDataLength| is the number
@@ -87,28 +81,23 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderClient {
   // from cache, and -1 if this information is unavailable.
   // TODO(ricea): -1 is problematic for consumers maintaining a running
   //     total. Investigate using 0 for all unavailable cases.
-  virtual void didReceiveData(WebURLLoader*,
-                              const char* data,
+  virtual void didReceiveData(const char* data,
                               int dataLength,
                               int encodedDataLength) {}
 
   // Called when a chunk of renderer-generated metadata is received from the
   // cache.
-  virtual void didReceiveCachedMetadata(WebURLLoader*,
-                                        const char* data,
-                                        int dataLength) {}
+  virtual void didReceiveCachedMetadata(const char* data, int dataLength) {}
 
   // Called when the load completes successfully.
   // |totalEncodedDataLength| may be equal to kUnknownEncodedDataLength.
-  virtual void didFinishLoading(WebURLLoader* loader,
-                                double finishTime,
+  virtual void didFinishLoading(double finishTime,
                                 int64_t totalEncodedDataLength,
                                 int64_t totalEncodedBodyLength) {}
 
   // Called when the load completes with an error.
   // |totalEncodedDataLength| may be equal to kUnknownEncodedDataLength.
-  virtual void didFail(WebURLLoader*,
-                       const WebURLError&,
+  virtual void didFail(const WebURLError&,
                        int64_t totalEncodedDataLength,
                        int64_t totalEncodedBodyLength) {}
 

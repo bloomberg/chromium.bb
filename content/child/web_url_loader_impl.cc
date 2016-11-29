@@ -648,7 +648,7 @@ void WebURLLoaderImpl::Context::SetTaskRunner(
 void WebURLLoaderImpl::Context::OnUploadProgress(uint64_t position,
                                                  uint64_t size) {
   if (client_)
-    client_->didSendData(loader_, position, size);
+    client_->didSendData(position, size);
 }
 
 bool WebURLLoaderImpl::Context::OnReceivedRedirect(
@@ -671,7 +671,7 @@ bool WebURLLoaderImpl::Context::OnReceivedRedirect(
           ? blink::WebURLRequest::SkipServiceWorker::None
           : blink::WebURLRequest::SkipServiceWorker::All);
 
-  bool follow = client_->willFollowRedirect(loader_, new_request, response);
+  bool follow = client_->willFollowRedirect(new_request, response);
   if (!follow) {
     request_ = WebURLRequest();
 
@@ -771,11 +771,11 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
     // will break if one of the following happens:
     //  1) The body data transfer is done (with or without an error).
     //  2) |read_handle| (and its reader) is detached.
-    client_->didReceiveResponse(loader_, response, std::move(read_handle));
+    client_->didReceiveResponse(response, std::move(read_handle));
     // TODO(yhirano): Support ftp listening and multipart
     return;
   } else {
-    client_->didReceiveResponse(loader_, response);
+    client_->didReceiveResponse(response);
   }
 
   // We may have been cancelled after didReceiveResponse, which would leave us
@@ -793,7 +793,7 @@ void WebURLLoaderImpl::Context::OnReceivedResponse(
 void WebURLLoaderImpl::Context::OnDownloadedData(int len,
                                                  int encoded_data_length) {
   if (client_)
-    client_->didDownloadData(loader_, len, encoded_data_length);
+    client_->didDownloadData(len, encoded_data_length);
 }
 
 void WebURLLoaderImpl::Context::OnReceivedData(
@@ -815,7 +815,7 @@ void WebURLLoaderImpl::Context::OnReceivedData(
   } else {
     // We dispatch the data even when |useStreamOnResponse()| is set, in order
     // to make Devtools work.
-    client_->didReceiveData(loader_, payload, data_length, encoded_data_length);
+    client_->didReceiveData(payload, data_length, encoded_data_length);
 
     if (request_.useStreamOnResponse()) {
       // We don't support ftp_listening_delegate_ for now.
@@ -832,7 +832,7 @@ void WebURLLoaderImpl::Context::OnReceivedCachedMetadata(
   TRACE_EVENT_WITH_FLOW0(
       "loading", "WebURLLoaderImpl::Context::OnReceivedCachedMetadata",
       this, TRACE_EVENT_FLAG_FLOW_IN | TRACE_EVENT_FLAG_FLOW_OUT);
-  client_->didReceiveCachedMetadata(loader_, data, len);
+  client_->didReceiveCachedMetadata(data, len);
 }
 
 void WebURLLoaderImpl::Context::OnCompletedRequest(
@@ -857,13 +857,11 @@ void WebURLLoaderImpl::Context::OnCompletedRequest(
         this, TRACE_EVENT_FLAG_FLOW_IN);
 
     if (error_code != net::OK) {
-      client_->didFail(loader_,
-                       CreateWebURLError(request_.url(), stale_copy_in_cache,
+      client_->didFail(CreateWebURLError(request_.url(), stale_copy_in_cache,
                                          error_code, was_ignored_by_handler),
                        total_transfer_size, encoded_body_size);
     } else {
-      client_->didFinishLoading(loader_,
-                                (completion_time - TimeTicks()).InSecondsF(),
+      client_->didFinishLoading((completion_time - TimeTicks()).InSecondsF(),
                                 total_transfer_size, encoded_body_size);
     }
   }
@@ -889,8 +887,7 @@ void WebURLLoaderImpl::Context::CancelBodyStreaming() {
   }
   if (client_) {
     // TODO(yhirano): Set |stale_copy_in_cache| appropriately if possible.
-    client_->didFail(loader_,
-                     CreateWebURLError(request_.url(), false, net::ERR_ABORTED),
+    client_->didFail(CreateWebURLError(request_.url(), false, net::ERR_ABORTED),
                      WebURLLoaderClient::kUnknownEncodedDataLength, 0);
   }
 

@@ -131,7 +131,7 @@ void FtpDirectoryListingResponseDelegate::Init(const GURL& response_url) {
 void FtpDirectoryListingResponseDelegate::SendDataToClient(
     const std::string& data) {
   if (client_) {
-    client_->didReceiveData(loader_, data.data(), data.length(), -1);
+    client_->didReceiveData(data.data(), data.length(), -1);
   }
 }
 

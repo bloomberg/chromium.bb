@@ -506,8 +506,7 @@ void ImageResource::updateImage(bool allDataReceived) {
     if (!errorOccurred())
       setStatus(DecodeError);
     if (!allDataReceived && loader()) {
-      loader()->didFinishLoading(nullptr, monotonicallyIncreasingTime(), size,
-                                 size);
+      loader()->didFinishLoading(monotonicallyIncreasingTime(), size, size);
     }
     memoryCache()->remove(this);
   }

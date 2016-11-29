@@ -48,7 +48,6 @@ class SimRequest final {
 
   // Used by SimNetwork.
   void didReceiveResponse(WebURLLoaderClient*,
-                          WebURLLoader*,
                           const WebURLResponse&);
   void didFail(const WebURLError&);
 

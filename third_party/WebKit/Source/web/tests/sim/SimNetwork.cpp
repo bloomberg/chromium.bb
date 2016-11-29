@@ -38,47 +38,42 @@ void SimNetwork::servePendingRequests() {
 }
 
 void SimNetwork::didReceiveResponse(WebURLLoaderClient* client,
-                                    WebURLLoader* loader,
                                     const WebURLResponse& response) {
   auto it = m_requests.find(response.url().string());
   if (it == m_requests.end()) {
-    client->didReceiveResponse(loader, response);
+    client->didReceiveResponse(response);
     return;
   }
   DCHECK(it->value);
   m_currentRequest = it->value;
-  m_currentRequest->didReceiveResponse(client, loader, response);
+  m_currentRequest->didReceiveResponse(client, response);
 }
 
 void SimNetwork::didReceiveData(WebURLLoaderClient* client,
-                                WebURLLoader* loader,
                                 const char* data,
                                 int dataLength,
                                 int encodedDataLength) {
   if (!m_currentRequest)
-    client->didReceiveData(loader, data, dataLength, encodedDataLength);
+    client->didReceiveData(data, dataLength, encodedDataLength);
 }
 
 void SimNetwork::didFail(WebURLLoaderClient* client,
-                         WebURLLoader* loader,
                          const WebURLError& error,
                          int64_t totalEncodedDataLength,
                          int64_t totalEncodedBodyLength) {
   if (!m_currentRequest) {
-    client->didFail(loader, error, totalEncodedDataLength,
-                    totalEncodedBodyLength);
+    client->didFail(error, totalEncodedDataLength, totalEncodedBodyLength);
     return;
   }
   m_currentRequest->didFail(error);
 }
 
 void SimNetwork::didFinishLoading(WebURLLoaderClient* client,
-                                  WebURLLoader* loader,
                                   double finishTime,
                                   int64_t totalEncodedDataLength,
                                   int64_t totalEncodedBodyLength) {
   if (!m_currentRequest) {
-    client->didFinishLoading(loader, finishTime, totalEncodedDataLength,
+    client->didFinishLoading(finishTime, totalEncodedDataLength,
                              totalEncodedBodyLength);
     return;
   }

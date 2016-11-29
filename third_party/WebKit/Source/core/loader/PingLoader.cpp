@@ -206,13 +206,11 @@ class PingLoaderImpl : public GarbageCollectedFinalized<PingLoaderImpl>,
   void dispose();
 
   // WebURLLoaderClient
-  bool willFollowRedirect(WebURLLoader*,
-                          WebURLRequest&,
-                          const WebURLResponse&) override;
-  void didReceiveResponse(WebURLLoader*, const WebURLResponse&) final;
-  void didReceiveData(WebURLLoader*, const char*, int, int) final;
-  void didFinishLoading(WebURLLoader*, double, int64_t, int64_t) final;
-  void didFail(WebURLLoader*, const WebURLError&, int64_t, int64_t) final;
+  bool willFollowRedirect(WebURLRequest&, const WebURLResponse&) override;
+  void didReceiveResponse(const WebURLResponse&) final;
+  void didReceiveData(const char*, int, int) final;
+  void didFinishLoading(double, int64_t, int64_t) final;
+  void didFail(const WebURLError&, int64_t, int64_t) final;
 
   void timeout(TimerBase*);
 
@@ -291,7 +289,6 @@ void PingLoaderImpl::dispose() {
 }
 
 bool PingLoaderImpl::willFollowRedirect(
-    WebURLLoader*,
     WebURLRequest& passedNewRequest,
     const WebURLResponse& passedRedirectResponse) {
   if (!m_isBeacon)
@@ -333,8 +330,7 @@ bool PingLoaderImpl::willFollowRedirect(
   return true;
 }
 
-void PingLoaderImpl::didReceiveResponse(WebURLLoader*,
-                                        const WebURLResponse& response) {
+void PingLoaderImpl::didReceiveResponse(const WebURLResponse& response) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -346,7 +342,7 @@ void PingLoaderImpl::didReceiveResponse(WebURLLoader*,
   dispose();
 }
 
-void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int) {
+void PingLoaderImpl::didReceiveData(const char*, int, int) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -355,7 +351,7 @@ void PingLoaderImpl::didReceiveData(WebURLLoader*, const char*, int, int) {
   dispose();
 }
 
-void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t, int64_t) {
+void PingLoaderImpl::didFinishLoading(double, int64_t, int64_t) {
   if (LocalFrame* frame = this->frame()) {
     TRACE_EVENT1("devtools.timeline", "ResourceFinish", "data",
                  InspectorResourceFinishEvent::data(m_identifier, 0, true));
@@ -364,8 +360,7 @@ void PingLoaderImpl::didFinishLoading(WebURLLoader*, double, int64_t, int64_t) {
   dispose();
 }
 
-void PingLoaderImpl::didFail(WebURLLoader*,
-                             const WebURLError& resourceError,
+void PingLoaderImpl::didFail(const WebURLError& resourceError,
                              int64_t,
                              int64_t) {
   if (LocalFrame* frame = this->frame()) {

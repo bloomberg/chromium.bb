@@ -9,7 +9,6 @@
 
 namespace blink {
 
-class WebURLLoader;
 class WebURLResponse;
 class WebURLLoaderClient;
 struct WebURLError;
@@ -24,20 +23,16 @@ class BLINK_PLATFORM_EXPORT WebURLLoaderTestDelegate {
   virtual ~WebURLLoaderTestDelegate();
 
   virtual void didReceiveResponse(WebURLLoaderClient* originalClient,
-                                  WebURLLoader*,
                                   const WebURLResponse&);
   virtual void didReceiveData(WebURLLoaderClient* originalClient,
-                              WebURLLoader*,
                               const char* data,
                               int dataLength,
                               int encodedDataLength);
   virtual void didFail(WebURLLoaderClient* originalClient,
-                       WebURLLoader*,
                        const WebURLError&,
                        int64_t totalEncodedDataLength,
                        int64_t totalEncodedBodyLength);
   virtual void didFinishLoading(WebURLLoaderClient* originalClient,
-                                WebURLLoader*,
                                 double finishTime,
                                 int64_t totalEncodedDataLength,
                                 int64_t totalEncodedBodyLength);

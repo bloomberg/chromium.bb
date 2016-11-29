@@ -44,20 +44,19 @@ void WebURLLoaderMock::ServeAsynchronousRequest(
   // to be called which will make the ResourceLoader to delete |this|.
   WeakPtr<WebURLLoaderMock> self = weak_factory_.createWeakPtr();
 
-  delegate->didReceiveResponse(client_, this, response);
+  delegate->didReceiveResponse(client_, response);
   if (!self)
     return;
 
   if (error.reason) {
-    delegate->didFail(client_, this, error, data.size(), 0);
+    delegate->didFail(client_, error, data.size(), 0);
     return;
   }
-  delegate->didReceiveData(client_, this, data.data(), data.size(),
-                           data.size());
+  delegate->didReceiveData(client_, data.data(), data.size(), data.size());
   if (!self)
     return;
 
-  delegate->didFinishLoading(client_, this, 0, data.size(), data.size());
+  delegate->didFinishLoading(client_, 0, data.size(), data.size());
 }
 
 WebURLRequest WebURLLoaderMock::ServeRedirect(
@@ -81,7 +80,7 @@ WebURLRequest WebURLLoaderMock::ServeRedirect(
 
   WeakPtr<WebURLLoaderMock> self = weak_factory_.createWeakPtr();
 
-  bool follow = client_->willFollowRedirect(this, newRequest, redirectResponse);
+  bool follow = client_->willFollowRedirect(newRequest, redirectResponse);
   if (!follow)
     newRequest = WebURLRequest();
 
