@@ -102,7 +102,6 @@ def GenerateResultsDict(test_run_results):
           'losless_snippet': '',
           'output_snippet_base64:': '',
           'tombstones': r.GetTombstones() or '',
-          'logcat_url': r.GetLogcatUrl() or '',
       }
       iteration_data[r.GetName()].append(result_dict)
 
