@@ -1980,7 +1980,6 @@
                'robertshield+watch@chromium.org'],
     'safe_browsing': ['grt+watch@chromium.org'],
     'safe_browsing_db': ['vakh+watch@chromium.org'],
-    'sandbox': ['rickyz+watch@chromium.org'],
     'scheduler': ['scheduler-bugs@chromium.org'],
     'screen_orientation': ['mlamouri+watch-screen-orientation@chromium.org'],
     'service_worker': ['horo+watch@chromium.org',
