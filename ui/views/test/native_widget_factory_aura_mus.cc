@@ -29,7 +29,7 @@ NativeWidget* CreatePlatformNativeWidgetImplAuraMus(
       new TestPlatformNativeWidget<DesktopNativeWidgetAura>(
           widget, type == kStubCapture, destroyed);
   std::map<std::string, std::vector<uint8_t>> mus_properties =
-      MusClient::ConfigurePropertiesFromParams(init_params);
+      MusClient::Get()->ConfigurePropertiesFromParams(init_params);
   desktop_native_widget_aura->SetDesktopWindowTreeHost(
       base::MakeUnique<DesktopWindowTreeHostMus>(
           widget, desktop_native_widget_aura, &mus_properties));

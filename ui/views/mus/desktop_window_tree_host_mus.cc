@@ -130,6 +130,22 @@ DesktopWindowTreeHostMus::~DesktopWindowTreeHostMus() {
   desktop_native_widget_aura_->OnDesktopWindowTreeHostDestroyed(this);
 }
 
+// static
+int DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
+    WidgetDelegate* delegate) {
+  if (!delegate)
+    return ui::mojom::kResizeBehaviorNone;
+
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  if (delegate->CanResize())
+    behavior |= ui::mojom::kResizeBehaviorCanResize;
+  if (delegate->CanMaximize())
+    behavior |= ui::mojom::kResizeBehaviorCanMaximize;
+  if (delegate->CanMinimize())
+    behavior |= ui::mojom::kResizeBehaviorCanMinimize;
+  return behavior;
+}
+
 bool DesktopWindowTreeHostMus::IsDocked() const {
   return window()->GetProperty(aura::client::kShowStateKey) ==
          ui::SHOW_STATE_DOCKED;
@@ -541,6 +557,10 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
                         widget->widget_delegate()->CanMinimize());
   window()->SetProperty(aura::client::kCanResizeKey,
                         widget->widget_delegate()->CanResize());
+  // TODO: replace above keys with kResizeBehaviorKey. http://crbug.com/669290.
+  window()->SetProperty(
+      aura::client::kResizeBehaviorKey,
+      GetResizeBehaviorFromDelegate(widget->widget_delegate()));
 }
 
 void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {

@@ -13,8 +13,8 @@ DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, base::string16*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::ModalType)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::ImageSkia*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::Rect*)
+DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, gfx::Size*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, std::string*)
-DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::InputMethod*)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::WindowShowState)
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, ui::mojom::WindowType);
 DECLARE_EXPORTED_WINDOW_PROPERTY_TYPE(AURA_EXPORT, void*)
@@ -42,8 +42,10 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kMirroringEnabledKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(Window*, kHostWindowKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(ui::ModalType, kModalKey, ui::MODAL_TYPE_NONE);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kNameKey, nullptr);
-// gfx::Rect object for RestoreBoundsKey property is owned by the window
-// and will be freed automatically.
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Size, kPreferredSize, nullptr);
+DEFINE_WINDOW_PROPERTY_KEY(int32_t,
+                           kResizeBehaviorKey,
+                           ui::mojom::kResizeBehaviorNone);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);

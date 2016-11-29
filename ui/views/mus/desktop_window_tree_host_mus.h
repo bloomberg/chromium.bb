@@ -30,6 +30,10 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
       const std::map<std::string, std::vector<uint8_t>>* mus_properties);
   ~DesktopWindowTreeHostMus() override;
 
+  // Returns a bitmask of the resize types. See ui::mojom::kResizeBehavior.
+  // |delegate| may be null.
+  static int32_t GetResizeBehaviorFromDelegate(WidgetDelegate* delegate);
+
  private:
   bool IsDocked() const;
 

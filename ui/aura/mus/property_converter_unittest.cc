@@ -45,6 +45,7 @@ DEFINE_WINDOW_PROPERTY_KEY(int64_t, kTestPropertyKey8, 0);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kTestImagePropertyKey,
                                  nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kTestRectPropertyKey, nullptr);
+DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Size, kTestSizePropertyKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kTestStringPropertyKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(base::string16, kTestString16PropertyKey,
                                  nullptr);
@@ -61,6 +62,7 @@ const char kTestPropertyServerKey8[] = "test-property-server8";
 
 const char kTestImagePropertyServerKey[] = "test-image-property-server";
 const char kTestRectPropertyServerKey[] = "test-rect-property-server";
+const char kTestSizePropertyServerKey[] = "test-size-property-server";
 const char kTestStringPropertyServerKey[] = "test-string-property-server";
 const char kTestString16PropertyServerKey[] = "test-string16-property-server";
 
@@ -89,12 +91,21 @@ void TestPrimitiveProperty(PropertyConverter* property_converter,
       mojo::ConvertTo<std::vector<uint8_t>>(storage_value_1);
   EXPECT_EQ(transport_value1, *transport_value_out.get());
 
+  int64_t decoded_value_1 = 0;
+  EXPECT_TRUE(property_converter->GetPropertyValueFromTransportValue(
+      transport_name, *transport_value_out, &decoded_value_1));
+  EXPECT_EQ(value_1, static_cast<T>(decoded_value_1));
+
   const int64_t storage_value_2 = static_cast<int64_t>(value_2);
   std::vector<uint8_t> transport_value2 =
       mojo::ConvertTo<std::vector<uint8_t>>(storage_value_2);
   property_converter->SetPropertyFromTransportValue(window, transport_name,
                                                     &transport_value2);
   EXPECT_EQ(value_2, window->GetProperty(key));
+  int64_t decoded_value_2 = 0;
+  EXPECT_TRUE(property_converter->GetPropertyValueFromTransportValue(
+      transport_name, transport_value2, &decoded_value_2));
+  EXPECT_EQ(value_2, static_cast<T>(decoded_value_2));
 }
 
 }  // namespace
@@ -212,6 +223,37 @@ TEST_F(PropertyConverterTest, RectProperty) {
   property_converter.SetPropertyFromTransportValue(
       window.get(), kTestRectPropertyServerKey, &transport_value);
   EXPECT_EQ(value_2, *window->GetProperty(kTestRectPropertyKey));
+}
+
+// Verifies property setting behavior for a gfx::Size* property.
+TEST_F(PropertyConverterTest, SizeProperty) {
+  PropertyConverter property_converter;
+  property_converter.RegisterProperty(kTestSizePropertyKey,
+                                      kTestSizePropertyServerKey);
+  EXPECT_EQ(
+      kTestSizePropertyServerKey,
+      property_converter.GetTransportNameForPropertyKey(kTestSizePropertyKey));
+
+  gfx::Size value_1(1, 2);
+  std::unique_ptr<Window> window(CreateNormalWindow(1, root_window(), nullptr));
+  window->SetProperty(kTestSizePropertyKey, new gfx::Size(value_1));
+  EXPECT_EQ(value_1, *window->GetProperty(kTestSizePropertyKey));
+
+  std::string transport_name_out;
+  std::unique_ptr<std::vector<uint8_t>> transport_value_out;
+  EXPECT_TRUE(property_converter.ConvertPropertyForTransport(
+      window.get(), kTestSizePropertyKey, &transport_name_out,
+      &transport_value_out));
+  EXPECT_EQ(kTestSizePropertyServerKey, transport_name_out);
+  EXPECT_EQ(mojo::ConvertTo<std::vector<uint8_t>>(value_1),
+            *transport_value_out.get());
+
+  gfx::Size value_2(1, 3);
+  std::vector<uint8_t> transport_value =
+      mojo::ConvertTo<std::vector<uint8_t>>(value_2);
+  property_converter.SetPropertyFromTransportValue(
+      window.get(), kTestSizePropertyServerKey, &transport_value);
+  EXPECT_EQ(value_2, *window->GetProperty(kTestSizePropertyKey));
 }
 
 // Verifies property setting behavior for a std::string* property.

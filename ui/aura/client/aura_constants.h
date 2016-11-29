@@ -14,7 +14,6 @@
 #include "ui/base/ui_base_types.h"
 
 namespace ui {
-class InputMethod;
 namespace mojom {
 enum class WindowType;
 }
@@ -75,6 +74,13 @@ AURA_EXPORT extern const WindowProperty<ui::ModalType>* const kModalKey;
 
 // A property key to store the name of the window; mostly used for debugging.
 AURA_EXPORT extern const WindowProperty<std::string*>* const kNameKey;
+
+// A property key to store the preferred size of the window.
+AURA_EXPORT extern const WindowProperty<gfx::Size*>* const kPreferredSize;
+
+// A property key to store the resize behavior, which is a bitmask of the
+// ui::mojom::kResizeBehavior values.
+AURA_EXPORT extern const WindowProperty<int32_t>* const kResizeBehaviorKey;
 
 // A property key to store the restore bounds for a window.
 AURA_EXPORT extern const WindowProperty<gfx::Rect*>* const kRestoreBoundsKey;

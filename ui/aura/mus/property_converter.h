@@ -18,6 +18,7 @@
 
 namespace gfx {
 class Rect;
+class Size;
 }
 
 namespace aura {
@@ -29,6 +30,9 @@ namespace aura {
 // Window properties.
 class AURA_EXPORT PropertyConverter {
  public:
+  // All primitive values are stored using this type.
+  using PrimitiveType = int64_t;
+
   PropertyConverter();
   ~PropertyConverter();
 
@@ -52,6 +56,16 @@ class AURA_EXPORT PropertyConverter {
       const std::string& transport_name,
       const std::vector<uint8_t>* transport_data);
 
+  // Returns the value for a particular transport value. All primitives are
+  // serialized as a PrimitiveType, so this function may be used for any
+  // primitive. Returns true on success and sets |value| accordingly. A return
+  // value of false indicates the value isn't known or the property type isn't
+  // primitive.
+  bool GetPropertyValueFromTransportValue(
+      const std::string& transport_name,
+      const std::vector<uint8_t>& transport_data,
+      PrimitiveType* value);
+
   // Register a property to support conversion between mus and aura.
   template<typename T>
   void RegisterProperty(const WindowProperty<T>* property,
@@ -64,6 +78,8 @@ class AURA_EXPORT PropertyConverter {
   void RegisterProperty(const WindowProperty<gfx::ImageSkia*>* property,
                         const char* transport_name);
   void RegisterProperty(const WindowProperty<gfx::Rect*>* property,
+                        const char* transport_name);
+  void RegisterProperty(const WindowProperty<gfx::Size*>* property,
                         const char* transport_name);
   void RegisterProperty(const WindowProperty<std::string*>* property,
                         const char* transport_name);
@@ -82,6 +98,7 @@ class AURA_EXPORT PropertyConverter {
   std::map<const WindowProperty<gfx::ImageSkia*>*, const char*>
       image_properties_;
   std::map<const WindowProperty<gfx::Rect*>*, const char*> rect_properties_;
+  std::map<const WindowProperty<gfx::Size*>*, const char*> size_properties_;
   std::map<const WindowProperty<std::string*>*, const char*> string_properties_;
   std::map<const WindowProperty<base::string16*>*, const char*>
       string16_properties_;

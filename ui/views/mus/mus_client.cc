@@ -27,6 +27,7 @@
 #include "ui/views/mus/screen_mus.h"
 #include "ui/views/views_delegate.h"
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
+#include "ui/views/widget/widget_delegate.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -83,13 +84,58 @@ bool MusClient::ShouldCreateDesktopNativeWidgetAura(
 std::map<std::string, std::vector<uint8_t>>
 MusClient::ConfigurePropertiesFromParams(
     const Widget::InitParams& init_params) {
-  std::map<std::string, std::vector<uint8_t>> mus_properties =
+  using PrimitiveType = aura::PropertyConverter::PrimitiveType;
+  std::map<std::string, std::vector<uint8_t>> properties =
       init_params.mus_properties;
+
   // Widget::InitParams::Type matches ui::mojom::WindowType.
-  mus_properties[ui::mojom::WindowManager::kWindowType_Property] =
+  properties[ui::mojom::WindowManager::kWindowType_Property] =
       mojo::ConvertTo<std::vector<uint8_t>>(
           static_cast<int32_t>(init_params.type));
-  return mus_properties;
+
+  if (!init_params.bounds.IsEmpty()) {
+    properties[ui::mojom::WindowManager::kInitialBounds_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(init_params.bounds);
+  }
+
+  if (!init_params.name.empty()) {
+    properties[ui::mojom::WindowManager::kName_Property] =
+        mojo::ConvertTo<std::vector<uint8_t>>(init_params.name);
+  }
+
+  properties[ui::mojom::WindowManager::kAlwaysOnTop_Property] =
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<PrimitiveType>(init_params.keep_on_top));
+
+  if (!Widget::RequiresNonClientView(init_params.type))
+    return properties;
+
+  if (init_params.delegate) {
+    if (properties.count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
+        0) {
+      properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
+              DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
+                  init_params.delegate)));
+    }
+
+    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+    gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
+    SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
+    if (!app_bitmap.isNull()) {
+      properties[ui::mojom::WindowManager::kAppIcon_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(app_bitmap);
+    }
+    // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
+    gfx::ImageSkia window_icon = init_params.delegate->GetWindowIcon();
+    SkBitmap window_bitmap = window_icon.GetRepresentation(1.f).sk_bitmap();
+    if (!window_bitmap.isNull()) {
+      properties[ui::mojom::WindowManager::kWindowIcon_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(window_bitmap);
+    }
+  }
+
+  return properties;
 }
 
 NativeWidget* MusClient::CreateNativeWidget(

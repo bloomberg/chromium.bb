@@ -44,6 +44,7 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
+#include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/drag_drop_client_mus.h"
 #include "ui/views/mus/drop_target_mus.h"
 #include "ui/views/mus/input_method_mus.h"
@@ -322,20 +323,6 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
 
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
 };
-
-int ResizeBehaviorFromDelegate(WidgetDelegate* delegate) {
-  if (!delegate)
-    return ui::mojom::kResizeBehaviorNone;
-
-  int32_t behavior = ui::mojom::kResizeBehaviorNone;
-  if (delegate->CanResize())
-    behavior |= ui::mojom::kResizeBehaviorCanResize;
-  if (delegate->CanMaximize())
-    behavior |= ui::mojom::kResizeBehaviorCanMaximize;
-  if (delegate->CanMinimize())
-    behavior |= ui::mojom::kResizeBehaviorCanMinimize;
-  return behavior;
-}
 
 // Handles acknowledgment of an input event, either immediately when a nested
 // message loop starts, or upon destruction.
@@ -691,7 +678,8 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
           0) {
     (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
         mojo::ConvertTo<std::vector<uint8_t>>(
-            ResizeBehaviorFromDelegate(init_params.delegate));
+            DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
+                init_params.delegate));
   }
 
   if (init_params.delegate) {
@@ -1339,7 +1327,8 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
 
   window_->SetSharedProperty<int32_t>(
       ui::mojom::WindowManager::kResizeBehavior_Property,
-      ResizeBehaviorFromDelegate(GetWidget()->widget_delegate()));
+      DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
+          GetWidget()->widget_delegate()));
 }
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {
