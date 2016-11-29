@@ -99,6 +99,10 @@ class SpdyFramerVisitorAdapter : public SpdyFramerVisitorInterface {
   // The visitor needs the original SpdyFramer, not the SpdyFramerDecoderAdapter
   // instance.
   void OnError(SpdyFramer* framer) override;
+  void OnCommonHeader(SpdyStreamId stream_id,
+                      size_t length,
+                      uint8_t type,
+                      uint8_t flags) override;
   void OnDataFrameHeader(SpdyStreamId stream_id,
                          size_t length,
                          bool fin) override;

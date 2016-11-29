@@ -48,6 +48,13 @@ void SpdyFramerVisitorAdapter::OnError(SpdyFramer* framer) {
   visitor_->OnError(framer_);
 }
 
+void SpdyFramerVisitorAdapter::OnCommonHeader(SpdyStreamId stream_id,
+                                              size_t length,
+                                              uint8_t type,
+                                              uint8_t flags) {
+  visitor_->OnCommonHeader(stream_id, length, type, flags);
+}
+
 void SpdyFramerVisitorAdapter::OnDataFrameHeader(SpdyStreamId stream_id,
                                                  size_t length,
                                                  bool fin) {
