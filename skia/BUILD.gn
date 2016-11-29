@@ -547,13 +547,8 @@ if (!skia_build_no_opts) {
         "//build/config/compiler:no_chromium_code",
       ]
     }
-
-    # skia_opts_avx and skia_opts_hsw are stubbed out for crbug.com/666707.
     source_set("skia_opts_avx") {
-      #sources = skia_opts.avx_sources
-      sources = [
-        "ext/SkOpts_avx_stub.cc",
-      ]
+      sources = skia_opts.avx_sources
       if (!is_win) {
         cflags = [ "-mavx" ]
       }
@@ -569,10 +564,7 @@ if (!skia_build_no_opts) {
       ]
     }
     source_set("skia_opts_hsw") {
-      #sources = skia_opts.hsw_sources
-      sources = [
-        "ext/SkOpts_hsw_stub.cc",
-      ]
+      sources = skia_opts.hsw_sources
       if (!is_win) {
         cflags = [
           "-mavx2",
