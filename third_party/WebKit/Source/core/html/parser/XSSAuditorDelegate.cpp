@@ -115,7 +115,7 @@ void XSSAuditorDelegate::didBlockScript(const XSSInfo& xssInfo) {
   if (xssInfo.m_didBlockEntirePage)
     frameLoader.stopAllLoaders();
 
-  if (!m_didSendNotifications) {
+  if (!m_didSendNotifications && frameLoader.client()) {
     m_didSendNotifications = true;
 
     frameLoader.client()->didDetectXSS(m_document->url(),
