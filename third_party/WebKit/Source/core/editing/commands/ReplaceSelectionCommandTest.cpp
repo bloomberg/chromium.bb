@@ -51,6 +51,30 @@ TEST_F(ReplaceSelectionCommandTest, pastingEmptySpan) {
   EXPECT_EQ("foo", document().body()->innerHTML()) << "no DOM tree mutation";
 }
 
+// This is a regression test for https://crbug.com/668808
+TEST_F(ReplaceSelectionCommandTest, pasteSpanInText) {
+  document().setDesignMode("on");
+  setBodyContent("<b>text</b>");
+
+  Element* bElement = document().querySelector("b");
+  LocalFrame* frame = document().frame();
+  frame->selection().setSelection(
+      SelectionInDOMTree::Builder()
+          .collapse(Position(bElement->firstChild(), 1))
+          .build());
+
+  DocumentFragment* fragment = document().createDocumentFragment();
+  fragment->parseHTML("<span><div>bar</div></span>", bElement);
+
+  ReplaceSelectionCommand::CommandOptions options = 0;
+  ReplaceSelectionCommand* command =
+      ReplaceSelectionCommand::create(document(), fragment, options);
+
+  EXPECT_TRUE(command->apply()) << "the replace command should have succeeded";
+  EXPECT_EQ("<b>t</b>bar<b>ext</b>", document().body()->innerHTML())
+      << "'bar' should have been inserted";
+}
+
 // This is a regression test for https://crbug.com/121163
 TEST_F(ReplaceSelectionCommandTest, styleTagsInPastedHeadIncludedInContent) {
   document().setDesignMode("on");

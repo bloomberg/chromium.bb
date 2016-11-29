@@ -91,10 +91,13 @@ class CORE_EXPORT ReplaceSelectionCommand final : public CompositeEditCommand {
                        NodeTraversal::lastWithinOrSelf(*m_lastNodeInserted))
                  : 0;
     }
+    Node* refNode() const { return m_refNode.get(); }
+    void setRefNode(Node* node) { m_refNode = node; }
 
    private:
     Member<Node> m_firstNodeInserted;
     Member<Node> m_lastNodeInserted;
+    Member<Node> m_refNode;
   };
 
   Node* insertAsListItems(HTMLElement* listElement,

@@ -406,6 +406,8 @@ ReplaceSelectionCommand::InsertedNodes::willRemoveNodePreservingChildren(
     m_lastNodeInserted = node.lastChild()
                              ? node.lastChild()
                              : NodeTraversal::nextSkippingChildren(node);
+  if (m_refNode.get() == node)
+    m_refNode = NodeTraversal::next(node);
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node) {
@@ -419,6 +421,8 @@ inline void ReplaceSelectionCommand::InsertedNodes::willRemoveNode(Node& node) {
     m_lastNodeInserted =
         NodeTraversal::previousSkippingChildren(*m_lastNodeInserted);
   }
+  if (node.contains(m_refNode))
+    m_refNode = NodeTraversal::nextSkippingChildren(node);
 }
 
 inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(
@@ -428,6 +432,8 @@ inline void ReplaceSelectionCommand::InsertedNodes::didReplaceNode(
     m_firstNodeInserted = &newNode;
   if (m_lastNodeInserted.get() == node)
     m_lastNodeInserted = &newNode;
+  if (m_refNode.get() == node)
+    m_refNode = &newNode;
 }
 
 ReplaceSelectionCommand::ReplaceSelectionCommand(
@@ -1412,39 +1418,40 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
   // 6) Select the replacement if requested, and match style if requested.
 
   InsertedNodes insertedNodes;
-  Node* refNode = fragment.firstChild();
-  DCHECK(refNode);
-  Node* node = refNode->nextSibling();
+  insertedNodes.setRefNode(fragment.firstChild());
+  DCHECK(insertedNodes.refNode());
+  Node* node = insertedNodes.refNode()->nextSibling();
 
-  fragment.removeNode(refNode);
+  fragment.removeNode(insertedNodes.refNode());
 
   Element* blockStart = enclosingBlock(insertionPos.anchorNode());
-  if ((isHTMLListElement(refNode) ||
-       (isLegacyAppleHTMLSpanElement(refNode) &&
-        isHTMLListElement(refNode->firstChild()))) &&
+  if ((isHTMLListElement(insertedNodes.refNode()) ||
+       (isLegacyAppleHTMLSpanElement(insertedNodes.refNode()) &&
+        isHTMLListElement(insertedNodes.refNode()->firstChild()))) &&
       blockStart && blockStart->layoutObject()->isListItem() &&
       hasEditableStyle(*blockStart->parentNode())) {
-    refNode = insertAsListItems(toHTMLElement(refNode), blockStart,
-                                insertionPos, insertedNodes, editingState);
+    insertedNodes.setRefNode(
+        insertAsListItems(toHTMLElement(insertedNodes.refNode()), blockStart,
+                          insertionPos, insertedNodes, editingState));
     if (editingState->isAborted())
       return;
   } else {
-    insertNodeAt(refNode, insertionPos, editingState);
+    insertNodeAt(insertedNodes.refNode(), insertionPos, editingState);
     if (editingState->isAborted())
       return;
-    insertedNodes.respondToNodeInsertion(*refNode);
+    insertedNodes.respondToNodeInsertion(*insertedNodes.refNode());
   }
 
   // Mutation events (bug 22634) may have already removed the inserted content
-  if (!refNode->isConnected())
+  if (!insertedNodes.refNode()->isConnected())
     return;
 
-  bool plainTextFragment = isPlainTextMarkup(refNode);
+  bool plainTextFragment = isPlainTextMarkup(insertedNodes.refNode());
 
   while (node) {
     Node* next = node->nextSibling();
     fragment.removeNode(node);
-    insertNodeAfter(node, refNode, editingState);
+    insertNodeAfter(node, insertedNodes.refNode(), editingState);
     if (editingState->isAborted())
       return;
     insertedNodes.respondToNodeInsertion(*node);
@@ -1453,7 +1460,7 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
     if (!node->isConnected())
       return;
 
-    refNode = node;
+    insertedNodes.setRefNode(node);
     if (node && plainTextFragment)
       plainTextFragment = isPlainTextMarkup(node);
     node = next;
@@ -1523,9 +1530,18 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
   if (editingState->isAborted())
     return;
 
-  removeRedundantStylesAndKeepStyleSpanInline(insertedNodes, editingState);
-  if (editingState->isAborted())
-    return;
+  {
+    // TODO(dominicc): refNode may not be connected, for example in
+    // LayoutTests/editing/inserting/insert-table-in-paragraph-crash.html .
+    // Refactor this so there's a relationship between the conditions
+    // where refNode is dereferenced and refNode is connected.
+    bool refNodeWasConnected = insertedNodes.refNode()->isConnected();
+    removeRedundantStylesAndKeepStyleSpanInline(insertedNodes, editingState);
+    if (editingState->isAborted())
+      return;
+    DCHECK_EQ(insertedNodes.refNode()->isConnected(), refNodeWasConnected)
+        << insertedNodes.refNode();
+  }
 
   if (m_sanitizeFragment && insertedNodes.firstNodeInserted()) {
     applyCommandToComposite(SimplifyMarkupCommand::create(
@@ -1569,8 +1585,8 @@ void ReplaceSelectionCommand::doApply(EditingState* editingState) {
     if (m_shouldMergeEnd &&
         destinationNode != enclosingInline(destinationNode) &&
         enclosingInline(destinationNode)->nextSibling()) {
-      insertNodeBefore(HTMLBRElement::create(document()), refNode,
-                       editingState);
+      insertNodeBefore(HTMLBRElement::create(document()),
+                       insertedNodes.refNode(), editingState);
       if (editingState->isAborted())
         return;
     }
