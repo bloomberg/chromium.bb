@@ -6302,6 +6302,50 @@ TEST_F(LayerTreeHostCommonTest, ScrollChildAndScrollParentDifferentTargets) {
   EXPECT_TRANSFORMATION_MATRIX_EQ(scroll_child->DrawTransform(), scale);
 }
 
+TEST_F(LayerTreeHostCommonTest, TargetBetweenScrollChildandScrollParentTarget) {
+  LayerImpl* root = root_layer_for_testing();
+  LayerImpl* scroll_child_target = AddChildToRoot<LayerImpl>();
+  LayerImpl* scroll_child = AddChild<LayerImpl>(scroll_child_target);
+  LayerImpl* child_of_scroll_child = AddChild<LayerImpl>(scroll_child);
+  LayerImpl* intervening_target = AddChild<LayerImpl>(scroll_child_target);
+  LayerImpl* clip = AddChild<LayerImpl>(intervening_target);
+  LayerImpl* scroll_parent_target = AddChild<LayerImpl>(clip);
+  LayerImpl* scroll_parent = AddChild<LayerImpl>(scroll_parent_target);
+
+  scroll_parent->SetDrawsContent(true);
+  child_of_scroll_child->SetDrawsContent(true);
+
+  scroll_child->test_properties()->scroll_parent = scroll_parent;
+  scroll_parent->test_properties()->scroll_children =
+      base::MakeUnique<std::set<LayerImpl*>>();
+  scroll_parent->test_properties()->scroll_children->insert(scroll_child);
+
+  root->SetBounds(gfx::Size(50, 50));
+  scroll_child_target->SetBounds(gfx::Size(50, 50));
+  scroll_child_target->SetMasksToBounds(true);
+  scroll_child_target->test_properties()->force_render_surface = true;
+  scroll_child->SetBounds(gfx::Size(50, 50));
+  child_of_scroll_child->SetBounds(gfx::Size(50, 50));
+  child_of_scroll_child->test_properties()->force_render_surface = true;
+  intervening_target->SetBounds(gfx::Size(50, 50));
+  intervening_target->test_properties()->force_render_surface = true;
+  clip->SetBounds(gfx::Size(50, 50));
+  clip->SetMasksToBounds(true);
+  scroll_parent_target->SetBounds(gfx::Size(50, 50));
+  scroll_parent_target->SetMasksToBounds(true);
+  scroll_parent_target->test_properties()->force_render_surface = true;
+  scroll_parent->SetBounds(gfx::Size(50, 50));
+
+  ExecuteCalculateDrawProperties(root);
+  PropertyTrees* property_trees = root->layer_tree_impl()->property_trees();
+  ClipNode* clip_node =
+      property_trees->clip_tree.Node(child_of_scroll_child->clip_tree_index());
+  ClipNode* parent_clip_node = property_trees->clip_tree.parent(clip_node);
+  DCHECK_GT(parent_clip_node->target_transform_id,
+            property_trees->transform_tree.TargetId(
+                child_of_scroll_child->transform_tree_index()));
+}
+
 TEST_F(LayerTreeHostCommonTest, SingularTransformSubtreesDoNotDraw) {
   LayerImpl* root = root_layer_for_testing();
   LayerImpl* parent = AddChildToRoot<LayerImpl>();

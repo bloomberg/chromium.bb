@@ -1229,10 +1229,15 @@ static void SetSurfaceClipRect(const ClipNode* parent_clip_node,
     return;
   }
 
-  DCHECK_LT(parent_clip_node->target_transform_id,
-            transform_tree.TargetId(transform_node->id));
-  render_surface->SetClipRect(gfx::ToEnclosingRect(MathUtil::ProjectClippedRect(
-      clip_parent_target_to_target, parent_clip_node->clip_in_target_space)));
+  if (parent_clip_node->target_transform_id <
+      transform_tree.TargetId(transform_node->id)) {
+    render_surface->SetClipRect(gfx::ToEnclosingRect(
+        MathUtil::ProjectClippedRect(clip_parent_target_to_target,
+                                     parent_clip_node->clip_in_target_space)));
+  } else {
+    render_surface->SetClipRect(gfx::ToEnclosingRect(MathUtil::MapClippedRect(
+        clip_parent_target_to_target, parent_clip_node->clip_in_target_space)));
+  }
 }
 
 template <typename LayerType>
