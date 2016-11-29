@@ -477,7 +477,7 @@ def Build(buildroot, board, build_autotest, usepkg, chrome_binhost_only,
     chroot_args: The args to the chroot.
   """
   cmd = ['./build_packages', '--board=%s' % board,
-         '--accept_licenses=@CHROMEOS', '--withdebugsymbols']
+         '--accept_licenses=@CHROMEOS', '--withdebugsymbols', '--withevents']
 
   if not build_autotest:
     cmd.append('--nowithautotest')
