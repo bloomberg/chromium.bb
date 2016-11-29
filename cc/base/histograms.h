@@ -64,8 +64,9 @@ const char* GetClientNameForMetrics();
       /* runtime constant. */                                               \
       UMA_HISTOGRAM_COUNTS(base::StringPrintf(time_histogram, client_name), \
                            time_sample);                                    \
-      UMA_HISTOGRAM_COUNTS(base::StringPrintf(area_histogram, client_name), \
-                           area_sample);                                    \
+      UMA_HISTOGRAM_CUSTOM_COUNTS(                                          \
+          base::StringPrintf(area_histogram, client_name), area_sample, 1,  \
+          100000000, 50);                                                   \
     }                                                                       \
   }
 

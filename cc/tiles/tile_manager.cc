@@ -43,17 +43,17 @@ const bool kUseColorEstimator = true;
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedGeneralRasterTaskTimer,
     "Compositing.%s.RasterTask.RasterUs",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs");
+    "Compositing.%s.RasterTask.RasterPixelsPerMs2");
 
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedSoftwareRasterTaskTimer,
     "Compositing.%s.RasterTask.RasterUs.Software",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs.Software");
+    "Compositing.%s.RasterTask.RasterPixelsPerMs2.Software");
 
 DEFINE_SCOPED_UMA_HISTOGRAM_AREA_TIMER(
     ScopedGpuRasterTaskTimer,
     "Compositing.%s.RasterTask.RasterUs.Gpu",
-    "Compositing.%s.RasterTask.RasterPixelsPerMs.Gpu");
+    "Compositing.%s.RasterTask.RasterPixelsPerMs2.Gpu");
 
 class ScopedRasterTaskTimer {
  public:
