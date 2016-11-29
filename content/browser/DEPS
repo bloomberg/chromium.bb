@@ -75,7 +75,6 @@ include_rules = [
   "+third_party/WebKit/public/platform/mime_registry.mojom.h",
   "+third_party/WebKit/public/platform/modules/background_sync/background_sync.mojom.h",
   "+third_party/WebKit/public/platform/modules/broadcastchannel/broadcast_channel.mojom.h",
-  "+third_party/WebKit/public/platform/modules/imagecapture/image_capture.mojom.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h",
   "+third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h",
   "+third_party/WebKit/public/platform/modules/notifications/WebNotificationConstants.h",

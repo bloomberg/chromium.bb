@@ -33,12 +33,6 @@ mojom("interfaces") {
   ]
 }
 
-mojom("image_capture") {
-  sources = [
-    "image_capture.mojom",
-  ]
-}
-
 mojom("remoting") {
   sources = [
     "remoting.mojom",
