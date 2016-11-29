@@ -5139,55 +5139,52 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
       sourceImageRect == sentinelEmptyRect() ||
       sourceImageRect ==
           IntRect(0, 0, video->videoWidth(), video->videoHeight());
-  if (functionID == TexImage2D && sourceImageRectIsDefault && depth == 1) {
+  if (functionID == TexImage2D && sourceImageRectIsDefault && depth == 1 &&
+      GL_TEXTURE_2D == target && Extensions3DUtil::canUseCopyTextureCHROMIUM(
+                                     target, internalformat, type, level)) {
     DCHECK_EQ(xoffset, 0);
     DCHECK_EQ(yoffset, 0);
     DCHECK_EQ(zoffset, 0);
     // Go through the fast path doing a GPU-GPU textures copy without a readback
     // to system memory if possible.  Otherwise, it will fall back to the normal
     // SW path.
-    if (GL_TEXTURE_2D == target) {
-      if (Extensions3DUtil::canUseCopyTextureCHROMIUM(target, internalformat,
-                                                      type, level) &&
-          video->copyVideoTextureToPlatformTexture(
-              contextGL(), texture->object(), internalformat, type,
-              m_unpackPremultiplyAlpha, m_unpackFlipY)) {
-        return;
-      }
+    if (video->copyVideoTextureToPlatformTexture(
+            contextGL(), texture->object(), internalformat, type,
+            m_unpackPremultiplyAlpha, m_unpackFlipY)) {
+      return;
+    }
 
-      // Try using an accelerated image buffer, this allows YUV conversion to be
-      // done on the GPU.
-      std::unique_ptr<ImageBufferSurface> surface =
-          wrapUnique(new AcceleratedImageBufferSurface(
-              IntSize(video->videoWidth(), video->videoHeight())));
-      if (surface->isValid()) {
-        std::unique_ptr<ImageBuffer> imageBuffer(
-            ImageBuffer::create(std::move(surface)));
-        if (imageBuffer) {
-          // The video element paints an RGBA frame into our surface here. By
-          // using an AcceleratedImageBufferSurface, we enable the
-          // WebMediaPlayer implementation to do any necessary color space
-          // conversion on the GPU (though it
-          // may still do a CPU conversion and upload the results).
-          video->paintCurrentFrame(
-              imageBuffer->canvas(),
-              IntRect(0, 0, video->videoWidth(), video->videoHeight()),
-              nullptr);
+    // Try using an accelerated image buffer, this allows YUV conversion to be
+    // done on the GPU.
+    std::unique_ptr<ImageBufferSurface> surface =
+        wrapUnique(new AcceleratedImageBufferSurface(
+            IntSize(video->videoWidth(), video->videoHeight())));
+    if (surface->isValid()) {
+      std::unique_ptr<ImageBuffer> imageBuffer(
+          ImageBuffer::create(std::move(surface)));
+      if (imageBuffer) {
+        // The video element paints an RGBA frame into our surface here. By
+        // using an AcceleratedImageBufferSurface, we enable the
+        // WebMediaPlayer implementation to do any necessary color space
+        // conversion on the GPU (though it
+        // may still do a CPU conversion and upload the results).
+        video->paintCurrentFrame(
+            imageBuffer->canvas(),
+            IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
 
-          // This is a straight GPU-GPU copy, any necessary color space
-          // conversion was handled in the paintCurrentFrameInContext() call.
+        // This is a straight GPU-GPU copy, any necessary color space
+        // conversion was handled in the paintCurrentFrameInContext() call.
 
-          // Note that copyToPlatformTexture no longer allocates the
-          // destination texture.
-          texImage2DBase(target, level, internalformat, video->videoWidth(),
-                         video->videoHeight(), 0, format, type, nullptr);
+        // Note that copyToPlatformTexture no longer allocates the
+        // destination texture.
+        texImage2DBase(target, level, internalformat, video->videoWidth(),
+                       video->videoHeight(), 0, format, type, nullptr);
 
-          if (imageBuffer->copyToPlatformTexture(
-                  contextGL(), texture->object(), internalformat, type, level,
-                  m_unpackPremultiplyAlpha, m_unpackFlipY, IntPoint(0, 0),
-                  IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
-            return;
-          }
+        if (imageBuffer->copyToPlatformTexture(
+                contextGL(), texture->object(), internalformat, type, level,
+                m_unpackPremultiplyAlpha, m_unpackFlipY, IntPoint(0, 0),
+                IntRect(0, 0, video->videoWidth(), video->videoHeight()))) {
+          return;
         }
       }
     }
