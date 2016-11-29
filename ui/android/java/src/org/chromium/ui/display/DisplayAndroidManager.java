@@ -112,7 +112,7 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         @Override
         public void onConfigurationChanged(Configuration newConfig) {
             updateDeviceDisplayInfo();
-            mIdMap.get(mMainSdkDisplayId).updateFromDisplay(
+            ((PhysicalDisplayAndroid) mIdMap.get(mMainSdkDisplayId)).updateFromDisplay(
                     getDefaultDisplayForContext(getContext()));
         }
 
@@ -171,7 +171,8 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
         @Override
         public void onDisplayChanged(int sdkDisplayId) {
             updateDeviceDisplayInfo();
-            DisplayAndroid displayAndroid = mIdMap.get(sdkDisplayId);
+            PhysicalDisplayAndroid displayAndroid =
+                    (PhysicalDisplayAndroid) mIdMap.get(sdkDisplayId);
             if (displayAndroid != null) {
                 displayAndroid.updateFromDisplay(getDisplayManager().getDisplay(sdkDisplayId));
             }
@@ -180,10 +181,17 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
     private static DisplayAndroidManager sDisplayAndroidManager;
 
+    // Real displays (as in, displays backed by an Android Display and recognized by the OS, though
+    // not necessarily physical displays) on Android start at ID 0, and increment indefinitely as
+    // displays are added. Display IDs are never reused until reboot. To avoid any overlap, start
+    // virtual display ids at a much higher number, and increment them in the same way.
+    private static final int VIRTUAL_DISPLAY_ID_BEGIN = Integer.MAX_VALUE / 2;
+
     private long mNativePointer;
     private int mMainSdkDisplayId;
     private SparseArray<DisplayAndroid> mIdMap;
     private DisplayListenerBackend mBackend;
+    private int mNextVirtualDisplayId = VIRTUAL_DISPLAY_ID_BEGIN;
 
     @SuppressFBWarnings("LI_LAZY_INIT_UPDATE_STATIC")
     /* package */ static DisplayAndroidManager getInstance() {
@@ -278,16 +286,36 @@ import org.chromium.ui.gfx.DeviceDisplayInfo;
 
     private DisplayAndroid addDisplay(Display display) {
         int sdkDisplayId = display.getDisplayId();
-        DisplayAndroid displayAndroid = new DisplayAndroid(display);
+        PhysicalDisplayAndroid displayAndroid = new PhysicalDisplayAndroid(display);
+        assert mIdMap.get(sdkDisplayId) == null;
         mIdMap.put(sdkDisplayId, displayAndroid);
-
         displayAndroid.updateFromDisplay(display);
         return displayAndroid;
     }
 
+    private int getNextVirtualDisplayId() {
+        return mNextVirtualDisplayId++;
+    }
+
+    /* package */ VirtualDisplayAndroid addVirtualDisplay() {
+        VirtualDisplayAndroid display = new VirtualDisplayAndroid(getNextVirtualDisplayId());
+        assert mIdMap.get(display.getDisplayId()) == null;
+        mIdMap.put(display.getDisplayId(), display);
+        updateDisplayOnNativeSide(display);
+        return display;
+    }
+
+    /* package */ void removeVirtualDisplay(VirtualDisplayAndroid display) {
+        DisplayAndroid displayAndroid = mIdMap.get(display.getDisplayId());
+        assert displayAndroid == display;
+
+        if (mNativePointer != 0) nativeRemoveDisplay(mNativePointer, display.getDisplayId());
+        mIdMap.remove(display.getDisplayId());
+    }
+
     /* package */ void updateDisplayOnNativeSide(DisplayAndroid displayAndroid) {
         if (mNativePointer == 0) return;
-        nativeUpdateDisplay(mNativePointer, displayAndroid.getSdkDisplayId(),
+        nativeUpdateDisplay(mNativePointer, displayAndroid.getDisplayId(),
                 displayAndroid.getPhysicalDisplayWidth(), displayAndroid.getPhysicalDisplayHeight(),
                 displayAndroid.getDisplayWidth(), displayAndroid.getDisplayHeight(),
                 displayAndroid.getDipScale(), displayAndroid.getRotationDegrees(),

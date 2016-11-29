@@ -537,7 +537,7 @@ public class WindowAndroid {
      */
     public long getNativePointer() {
         if (mNativeWindowAndroid == 0) {
-            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getSdkDisplayId());
+            mNativeWindowAndroid = nativeInit(mDisplayAndroid.getDisplayId());
         }
         return mNativeWindowAndroid;
     }
