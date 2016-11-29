@@ -25,8 +25,13 @@ const uint64_t kWarmUpFramesBeforeEnteringLowPowerMode = 30;
 @implementation FullscreenLowPowerWindow
 - (id)initWithEventTargetWindow:(NSWindow*)eventTargetWindow
                       withLayer:(CALayer*)layer {
+  // Resizing an NSWindow can be slow, so try to guess the right size at
+  // creation.
+  NSRect screenFrame = [[eventTargetWindow screen] frame];
+  NSRect initialRect = NSMakeRect(
+      0, 0, NSWidth(screenFrame), NSHeight(screenFrame));
   if (self = [super
-          initWithContentRect:NSMakeRect(0, 0, 256, 256)
+          initWithContentRect:initialRect
                     styleMask:NSTitledWindowMask | NSResizableWindowMask |
                               NSFullSizeContentViewWindowMask
                       backing:NSBackingStoreBuffered
@@ -186,6 +191,10 @@ void FullscreenLowPowerCoordinatorCocoa::EnterOrExitLowPowerModeIfNeeded() {
         // Ensure that the window's frame and style are set, and order it behind
         // the main window, so that it's ready to be moved in front.
         state_ = WarmingUp;
+
+        // Changing the size of the Window will also change the size of the
+        // views/layers. Disable implicit animations.
+        ScopedCAActionDisabler disabler;
         [low_power_window_ setStyleMask:[low_power_window_ styleMask] |
                                         NSFullScreenWindowMask];
         [low_power_window_ setFrame:[content_window_ frame]
