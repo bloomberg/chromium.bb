@@ -3690,7 +3690,15 @@ TEST_F(AutofillManagerTest, MAYBE_ImportFormDataCreditCardHTTP) {
 }
 
 // Tests that credit card data are saved when autocomplete=off for CC field.
-TEST_F(AutofillManagerTest, CreditCardSavedWhenAutocompleteOff) {
+// TODO(crbug.com/666704): Flaky on android_n5x_swarming_rel bot.
+#if defined(OS_ANDROID)
+#define MAYBE_CreditCardSavedWhenAutocompleteOff \
+  DISABLED_CreditCardSavedWhenAutocompleteOff
+#else
+#define MAYBE_CreditCardSavedWhenAutocompleteOff \
+  CreditCardSavedWhenAutocompleteOff
+#endif
+TEST_F(AutofillManagerTest, MAYBE_CreditCardSavedWhenAutocompleteOff) {
   // Set up our form data.
   FormData form;
   CreateTestCreditCardFormData(&form, false, false);
