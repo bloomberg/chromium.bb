@@ -116,7 +116,7 @@ cr.define('downloads', function() {
 
       var url = 'chrome://extensions#' + this.data.by_ext_id;
       var name = this.data.by_ext_name;
-      return loadTimeData.getStringF('controlledByUrl', url, name);
+      return loadTimeData.getStringF('controlledByUrl', url, HTMLEscape(name));
     },
 
     /** @private */
