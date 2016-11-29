@@ -1972,7 +1972,7 @@ LayoutSize LayoutBox::offsetFromContainer(const LayoutObject* o) const {
   if (isInFlowPositioned())
     offset += offsetForInFlowPosition();
 
-  offset += topLeftLocationOffset();
+  offset += physicalLocationOffset();
 
   if (o->hasOverflowClip())
     offset -= toLayoutBox(o)->scrolledContentOffset();
@@ -2025,7 +2025,7 @@ void LayoutBox::positionLineBox(InlineBox* box) {
     box->remove(DontMarkLineBoxes);
     box->destroy();
   } else if (isAtomicInlineLevel()) {
-    setLocationAndUpdateOverflowControlsIfNeeded(box->topLeft());
+    setLocationAndUpdateOverflowControlsIfNeeded(box->location());
     setInlineBoxWrapper(box);
   }
 }
@@ -2319,18 +2319,19 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
   }
   LayoutPoint topLeft = rect.location();
   if (container->isBox()) {
-    topLeft.moveBy(topLeftLocation(toLayoutBox(container)));
+    topLeft.moveBy(physicalLocation(toLayoutBox(container)));
     // If the row is the ancestor, however, add its offset back in. In effect,
     // this passes from the joint <td> / <tr> coordinate space to the parent
     // space, then back to <tr> / <td>.
-    if (tableRowContainer)
+    if (tableRowContainer) {
       topLeft.moveBy(
-          -tableRowContainer->topLeftLocation(toLayoutBox(container)));
+          -tableRowContainer->physicalLocation(toLayoutBox(container)));
+    }
   } else if (container->isRuby()) {
     // TODO(wkorman): Generalize Ruby specialization and/or document more
     // clearly. See the accompanying specialization in
     // LayoutInline::mapToVisualRectInAncestorSpace.
-    topLeft.moveBy(topLeftLocation());
+    topLeft.moveBy(physicalLocation());
   } else {
     topLeft.moveBy(location());
   }
@@ -5156,11 +5157,11 @@ LayoutRect LayoutBox::visualOverflowRect() const {
 }
 
 LayoutUnit LayoutBox::offsetLeft(const Element* parent) const {
-  return adjustedPositionRelativeTo(topLeftLocation(), parent).x();
+  return adjustedPositionRelativeTo(physicalLocation(), parent).x();
 }
 
 LayoutUnit LayoutBox::offsetTop(const Element* parent) const {
-  return adjustedPositionRelativeTo(topLeftLocation(), parent).y();
+  return adjustedPositionRelativeTo(physicalLocation(), parent).y();
 }
 
 LayoutPoint LayoutBox::flipForWritingModeForChild(
@@ -5189,7 +5190,7 @@ LayoutBox* LayoutBox::locationContainer() const {
   return toLayoutBox(container);
 }
 
-LayoutPoint LayoutBox::topLeftLocation(
+LayoutPoint LayoutBox::physicalLocation(
     const LayoutBox* flippedBlocksContainer) const {
   const LayoutBox* containerBox;
   if (flippedBlocksContainer) {

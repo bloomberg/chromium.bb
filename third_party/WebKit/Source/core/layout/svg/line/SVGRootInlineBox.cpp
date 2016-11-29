@@ -126,7 +126,7 @@ InlineBox* SVGRootInlineBox::closestLeafChildForPosition(
       continue;
 
     closestLeaf = leaf;
-    if (point.x() < leaf->left() + leaf->logicalWidth())
+    if (point.x() < leaf->x() + leaf->logicalWidth())
       return leaf;
   }
 

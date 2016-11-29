@@ -282,7 +282,7 @@ LayoutRect LayoutInline::localCaretRect(InlineBox* inlineBox,
       localCaretRectForEmptyElement(borderAndPaddingWidth(), LayoutUnit());
 
   if (InlineBox* firstBox = firstLineBox())
-    caretRect.moveBy(firstBox->topLeft());
+    caretRect.moveBy(firstBox->location());
 
   return caretRect;
 }
@@ -609,7 +609,7 @@ void LayoutInline::generateLineBoxRects(GeneratorContext& yield) const {
     generateCulledLineBoxRects(yield, this);
   } else if (InlineFlowBox* curr = firstLineBox()) {
     for (; curr; curr = curr->nextLineBox())
-      yield(LayoutRect(curr->topLeft(), curr->size()));
+      yield(LayoutRect(curr->location(), curr->size()));
   }
 }
 
@@ -784,7 +784,7 @@ void LayoutInline::absoluteQuadsForSelf(Vector<FloatQuad>& quads) const {
 
 LayoutPoint LayoutInline::firstLineBoxTopLeft() const {
   if (InlineBox* firstBox = firstLineBoxIncludingCulling())
-    return firstBox->topLeft();
+    return firstBox->location();
   return LayoutPoint();
 }
 

@@ -356,8 +356,8 @@ class InlineFlowBox : public InlineBox {
   LayoutRect frameRectIncludingLineHeight(LayoutUnit lineTop,
                                           LayoutUnit lineBottom) const {
     if (isHorizontal())
-      return LayoutRect(m_topLeft.x(), lineTop, width(), lineBottom - lineTop);
-    return LayoutRect(lineTop, m_topLeft.y(), lineBottom - lineTop, height());
+      return LayoutRect(x(), lineTop, logicalWidth(), lineBottom - lineTop);
+    return LayoutRect(lineTop, y(), lineBottom - lineTop, logicalWidth());
   }
 
   LayoutRect logicalFrameRectIncludingLineHeight(LayoutUnit lineTop,

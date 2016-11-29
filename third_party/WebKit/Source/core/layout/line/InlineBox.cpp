@@ -213,7 +213,7 @@ void InlineBox::attachLine() {
 }
 
 void InlineBox::move(const LayoutSize& delta) {
-  m_topLeft.move(delta);
+  m_location.move(delta);
 
   if (getLineLayoutItem().isAtomicInlineLevel())
     LineLayoutBox(getLineLayoutItem()).move(delta.width(), delta.height());
@@ -313,7 +313,7 @@ bool InlineBox::canAccommodateEllipsis(bool ltr,
   if (!getLineLayoutItem().isAtomicInlineLevel())
     return true;
 
-  IntRect boxRect(left().toInt(), 0, m_logicalWidth.toInt(), 10);
+  IntRect boxRect(x().toInt(), 0, m_logicalWidth.toInt(), 10);
   IntRect ellipsisRect(ltr ? blockEdge - ellipsisWidth : blockEdge, 0,
                        ellipsisWidth, 10);
   return !(boxRect.intersects(ellipsisRect));
@@ -336,35 +336,16 @@ void InlineBox::clearKnownToHaveNoOverflow() {
     parent()->clearKnownToHaveNoOverflow();
 }
 
-LayoutPoint InlineBox::locationIncludingFlipping() const {
-  return logicalPositionToPhysicalPoint(m_topLeft, size());
+LayoutPoint InlineBox::physicalLocation() const {
+  LayoutRect rect(location(), size());
+  flipForWritingMode(rect);
+  return rect.location();
 }
 
-LayoutPoint InlineBox::logicalPositionToPhysicalPoint(
-    const LayoutPoint& point,
-    const LayoutSize& size) const {
-  if (!UNLIKELY(getLineLayoutItem().hasFlippedBlocksWritingMode()))
-    return LayoutPoint(point.x(), point.y());
-
-  LineLayoutBlockFlow block = root().block();
-  if (block.style()->isHorizontalWritingMode())
-    return LayoutPoint(point.x(),
-                       block.size().height() - size.height() - point.y());
-
-  return LayoutPoint(block.size().width() - size.width() - point.x(),
-                     point.y());
-}
-
-void InlineBox::logicalRectToPhysicalRect(LayoutRect& current) const {
-  if (isHorizontal() && !getLineLayoutItem().hasFlippedBlocksWritingMode())
-    return;
-
-  if (!isHorizontal()) {
-    current = current.transposedRect();
-  }
-  current.setLocation(
-      logicalPositionToPhysicalPoint(current.location(), current.size()));
-  return;
+void InlineBox::logicalRectToPhysicalRect(LayoutRect& rect) const {
+  if (!isHorizontal())
+    rect = rect.transposedRect();
+  flipForWritingMode(rect);
 }
 
 void InlineBox::flipForWritingMode(FloatRect& rect) const {

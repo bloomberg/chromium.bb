@@ -139,11 +139,11 @@ TEST_F(LayoutBoxTest, TopLeftLocationFlipped) {
 
   const LayoutBox* box1 = toLayoutBox(getLayoutObjectByElementId("box1"));
   EXPECT_EQ(LayoutPoint(0, 0), box1->location());
-  EXPECT_EQ(LayoutPoint(500, 0), box1->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(500, 0), box1->physicalLocation());
 
   const LayoutBox* box2 = toLayoutBox(getLayoutObjectByElementId("box2"));
   EXPECT_EQ(LayoutPoint(100, 0), box2->location());
-  EXPECT_EQ(LayoutPoint(300, 0), box2->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(300, 0), box2->physicalLocation());
 }
 
 TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
@@ -162,24 +162,24 @@ TEST_F(LayoutBoxTest, TableRowCellTopLeftLocationFlipped) {
       "  </table>"
       "</div>");
 
-  // location and topLeftLocation of a table row or a table cell should be
+  // location and physicalLocation of a table row or a table cell should be
   // relative to the containing section.
 
   const LayoutBox* row1 = toLayoutBox(getLayoutObjectByElementId("row1"));
   EXPECT_EQ(LayoutPoint(0, 0), row1->location());
-  EXPECT_EQ(LayoutPoint(300, 0), row1->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(300, 0), row1->physicalLocation());
 
   const LayoutBox* cell1 = toLayoutBox(getLayoutObjectByElementId("cell1"));
   EXPECT_EQ(LayoutPoint(0, 0), cell1->location());
-  EXPECT_EQ(LayoutPoint(300, 0), cell1->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(300, 0), cell1->physicalLocation());
 
   const LayoutBox* row2 = toLayoutBox(getLayoutObjectByElementId("row2"));
   EXPECT_EQ(LayoutPoint(100, 0), row2->location());
-  EXPECT_EQ(LayoutPoint(0, 0), row2->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(0, 0), row2->physicalLocation());
 
   const LayoutBox* cell2 = toLayoutBox(getLayoutObjectByElementId("cell2"));
   EXPECT_EQ(LayoutPoint(100, 0), cell2->location());
-  EXPECT_EQ(LayoutPoint(0, 0), cell2->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(0, 0), cell2->physicalLocation());
 }
 
 TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
@@ -199,14 +199,14 @@ TEST_F(LayoutBoxTest, LocationContainerOfSVG) {
   // The foreign object's location is not affected by SVGRoot's writing-mode.
   EXPECT_FALSE(foreign->locationContainer());
   EXPECT_EQ(LayoutRect(44, 77, 100, 80), foreign->frameRect());
-  EXPECT_EQ(LayoutPoint(44, 77), foreign->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(44, 77), foreign->physicalLocation());
   // The writing mode style should be still be inherited.
   EXPECT_TRUE(foreign->hasFlippedBlocksWritingMode());
 
   // The child of the foreign object is affected by writing-mode.
   EXPECT_EQ(foreign, child->locationContainer());
   EXPECT_EQ(LayoutRect(0, 0, 33, 55), child->frameRect());
-  EXPECT_EQ(LayoutPoint(67, 0), child->topLeftLocation());
+  EXPECT_EQ(LayoutPoint(67, 0), child->physicalLocation());
   EXPECT_TRUE(child->hasFlippedBlocksWritingMode());
 }
 

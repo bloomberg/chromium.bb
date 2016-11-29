@@ -812,7 +812,7 @@ void PaintLayer::updateLayerPosition() {
     IntSize newSize = pixelSnappedIntSize(box->size(), box->location());
     didResize = newSize != m_size;
     m_size = newSize;
-    localPoint.moveBy(box->topLeftLocation());
+    localPoint.moveBy(box->physicalLocation());
   }
 
   if (!layoutObject()->isOutOfFlowPositioned() &&
@@ -824,13 +824,13 @@ void PaintLayer::updateLayerPosition() {
       if (curr->isBox() && !curr->isTableRow()) {
         // Rows and cells share the same coordinate space (that of the section).
         // Omit them when computing our xpos/ypos.
-        localPoint.moveBy(toLayoutBox(curr)->topLeftLocation());
+        localPoint.moveBy(toLayoutBox(curr)->physicalLocation());
       }
       curr = curr->parent();
     }
     if (curr->isBox() && curr->isTableRow()) {
       // Put ourselves into the row coordinate space.
-      localPoint.moveBy(-toLayoutBox(curr)->topLeftLocation());
+      localPoint.moveBy(-toLayoutBox(curr)->physicalLocation());
     }
   }
 

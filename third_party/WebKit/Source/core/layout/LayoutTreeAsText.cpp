@@ -439,7 +439,7 @@ static void writeTextRun(TextStream& ts,
   // conversion to floating point. :(
   int x = run.x().toInt();
   int y = run.y().toInt();
-  int logicalWidth = (run.left() + run.logicalWidth()).ceil() - x;
+  int logicalWidth = (run.x() + run.logicalWidth()).ceil() - x;
 
   // FIXME: Table cell adjustment is temporary until results can be updated.
   if (o.containingBlock()->isTableCell())

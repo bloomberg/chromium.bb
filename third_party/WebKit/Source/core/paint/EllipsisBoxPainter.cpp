@@ -33,9 +33,9 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo,
                                        LayoutUnit lineTop,
                                        LayoutUnit lineBottom,
                                        const ComputedStyle& style) {
-  LayoutRect paintRect(m_ellipsisBox.logicalFrameRect());
-  m_ellipsisBox.logicalRectToPhysicalRect(paintRect);
-  paintRect.moveBy(paintOffset);
+  LayoutPoint boxOrigin = m_ellipsisBox.physicalLocation();
+  boxOrigin.moveBy(paintOffset);
+  LayoutRect paintRect(boxOrigin, m_ellipsisBox.size());
 
   GraphicsContext& context = paintInfo.context;
   DisplayItem::Type displayItemType =
@@ -47,8 +47,6 @@ void EllipsisBoxPainter::paintEllipsis(const PaintInfo& paintInfo,
   DrawingRecorder recorder(context, m_ellipsisBox, displayItemType,
                            FloatRect(paintRect));
 
-  LayoutPoint boxOrigin = m_ellipsisBox.locationIncludingFlipping();
-  boxOrigin.moveBy(paintOffset);
   LayoutRect boxRect(boxOrigin,
                      LayoutSize(m_ellipsisBox.logicalWidth(),
                                 m_ellipsisBox.virtualLogicalHeight()));

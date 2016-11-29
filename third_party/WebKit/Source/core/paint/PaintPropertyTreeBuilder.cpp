@@ -856,11 +856,11 @@ static void deriveBorderBoxFromContainerContext(
       (!boxModelObject.isSVG() || boxModelObject.isSVGRoot() ||
        boxModelObject.isSVGForeignObject())) {
     // TODO(pdr): Several calls in this function walk back up the tree to
-    // calculate containers (e.g., topLeftLocation, offsetForInFlowPosition*).
+    // calculate containers (e.g., physicalLocation, offsetForInFlowPosition*).
     // The containing block and other containers can be stored on
     // PaintPropertyTreeBuilderContext instead of recomputing them.
     context.current.paintOffset.moveBy(
-        toLayoutBox(boxModelObject).topLeftLocation());
+        toLayoutBox(boxModelObject).physicalLocation());
     // This is a weird quirk that table cells paint as children of table rows,
     // but their location have the row's location baked-in.
     // Similar adjustment is done in LayoutTableCell::offsetFromContainer().
@@ -868,7 +868,7 @@ static void deriveBorderBoxFromContainerContext(
       LayoutObject* parentRow = boxModelObject.parent();
       DCHECK(parentRow && parentRow->isTableRow());
       context.current.paintOffset.moveBy(
-          -toLayoutBox(parentRow)->topLeftLocation());
+          -toLayoutBox(parentRow)->physicalLocation());
     }
   }
 }

@@ -327,7 +327,7 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
     frameRectChanged();
   }
 
-  // The ancestor box that this object's location and topLeftLocation are
+  // The ancestor box that this object's location and physicalLocation are
   // relative to.
   virtual LayoutBox* locationContainer() const;
 
@@ -1179,14 +1179,13 @@ class CORE_EXPORT LayoutBox : public LayoutBoxModelObject {
       return;
     rect.setX(m_frameRect.width() - rect.maxX());
   }
-  // These represent your location relative to your container as a physical
-  // offset. In layout related methods you almost always want the logical
-  // location (e.g. x() and y()). Passing |container| causes flipped-block
-  // flipping w.r.t. that container, or containingBlock() otherwise.
-  LayoutPoint topLeftLocation(
+
+  // Passing |container| causes flipped-block flipping w.r.t. that container,
+  // or containingBlock() otherwise.
+  LayoutPoint physicalLocation(
       const LayoutBox* flippedBlocksContainer = nullptr) const;
-  LayoutSize topLeftLocationOffset() const {
-    return toLayoutSize(topLeftLocation());
+  LayoutSize physicalLocationOffset() const {
+    return toLayoutSize(physicalLocation());
   }
 
   LayoutRect logicalVisualOverflowRectForPropagation(

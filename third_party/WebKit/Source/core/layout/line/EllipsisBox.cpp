@@ -52,9 +52,9 @@ bool EllipsisBox::nodeAtPoint(HitTestResult& result,
                               const LayoutPoint& accumulatedOffset,
                               LayoutUnit lineTop,
                               LayoutUnit lineBottom) {
-  LayoutPoint adjustedLocation = accumulatedOffset + topLeft();
+  LayoutPoint adjustedLocation = accumulatedOffset + location();
 
-  LayoutPoint boxOrigin = locationIncludingFlipping();
+  LayoutPoint boxOrigin = physicalLocation();
   boxOrigin.moveBy(accumulatedOffset);
   LayoutRect boundsRect(boxOrigin, size());
   if (visibleToHitTestRequest(result.hitTestRequest()) &&

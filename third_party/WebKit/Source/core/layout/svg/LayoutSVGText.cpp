@@ -327,9 +327,9 @@ PositionWithAffinity LayoutSVGText::positionForPoint(
     return createPositionWithAffinity(0);
 
   LayoutPoint clippedPointInContents(pointInContents);
-  clippedPointInContents.moveBy(-rootBox->topLeft());
+  clippedPointInContents.moveBy(-rootBox->location());
   clippedPointInContents.clampNegativeToZero();
-  clippedPointInContents.moveBy(rootBox->topLeft());
+  clippedPointInContents.moveBy(rootBox->location());
 
   ASSERT(!rootBox->nextRootBox());
   ASSERT(childrenInline());

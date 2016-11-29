@@ -411,7 +411,7 @@ bool InlineTextBox::nodeAtPoint(HitTestResult& result,
   if (isLineBreak() || m_truncation == cFullTruncation)
     return false;
 
-  LayoutPoint boxOrigin = locationIncludingFlipping();
+  LayoutPoint boxOrigin = physicalLocation();
   boxOrigin.moveBy(accumulatedOffset);
   LayoutRect rect(boxOrigin, size());
   if (visibleToHitTestRequest(result.hitTestRequest()) &&

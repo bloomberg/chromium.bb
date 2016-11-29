@@ -987,13 +987,13 @@ LayoutPoint LayoutBoxModelObject::adjustedPositionRelativeTo(
         // FIXME: What are we supposed to do inside SVG content?
         referencePoint.move(current->columnOffset(referencePoint));
         if (current->isBox() && !current->isTableRow())
-          referencePoint.moveBy(toLayoutBox(current)->topLeftLocation());
+          referencePoint.moveBy(toLayoutBox(current)->physicalLocation());
       }
 
       if (offsetParentObject->isBox() && offsetParentObject->isBody() &&
           !offsetParentObject->isPositioned()) {
         referencePoint.moveBy(
-            toLayoutBox(offsetParentObject)->topLeftLocation());
+            toLayoutBox(offsetParentObject)->physicalLocation());
       }
     }
 

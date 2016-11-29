@@ -127,12 +127,12 @@ LayoutSize MultiColumnFragmentainerGroup::flowThreadTranslationAtOffset(
 
   LayoutRect portionRect(flowThreadPortionRectAt(columnIndex));
   flowThread->flipForWritingMode(portionRect);
-  portionRect.moveBy(flowThread->topLeftLocation());
+  portionRect.moveBy(flowThread->physicalLocation());
 
   LayoutRect columnRect(columnRectAt(columnIndex));
   columnRect.move(offsetFromColumnSet());
   m_columnSet.flipForWritingMode(columnRect);
-  columnRect.moveBy(m_columnSet.topLeftLocation());
+  columnRect.moveBy(m_columnSet.physicalLocation());
 
   LayoutSize translationRelativeToFlowThread =
       columnRect.location() - portionRect.location();

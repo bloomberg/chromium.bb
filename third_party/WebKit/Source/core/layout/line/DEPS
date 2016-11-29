@@ -15,3 +15,9 @@ include_rules = [
     "!core/layout/VerticalPositionCache.h",
     "!core/layout/shapes/ShapeOutsideInfo.h",
 ]
+
+specific_include_rules = {
+    ".*Test\.cpp": [
+        "+core/layout",
+    ],
+}

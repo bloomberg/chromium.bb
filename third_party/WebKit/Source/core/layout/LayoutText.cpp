@@ -325,9 +325,10 @@ String LayoutText::plainText() const {
 
 void LayoutText::absoluteRects(Vector<IntRect>& rects,
                                const LayoutPoint& accumulatedOffset) const {
-  for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox())
+  for (InlineTextBox* box = firstTextBox(); box; box = box->nextTextBox()) {
     rects.append(enclosingIntRect(LayoutRect(
-        LayoutPoint(accumulatedOffset) + box->topLeft(), box->size())));
+        LayoutPoint(accumulatedOffset) + box->location(), box->size())));
+  }
 }
 
 static FloatRect localQuadForTextBox(InlineTextBox* box,

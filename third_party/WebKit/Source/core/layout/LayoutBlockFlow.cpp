@@ -2425,9 +2425,9 @@ void LayoutBlockFlow::computeSelfHitTestRects(
     return;
 
   for (RootInlineBox* curr = firstRootBox(); curr; curr = curr->nextRootBox()) {
-    LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->top());
+    LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->y());
     LayoutUnit bottom =
-        std::min<LayoutUnit>(curr->lineBottom(), curr->top() + curr->height());
+        std::min<LayoutUnit>(curr->lineBottom(), curr->y() + curr->height());
     LayoutRect rect(layerOffset.x() + curr->x(), layerOffset.y() + top,
                     curr->width(), bottom - top);
     // It's common for this rect to be entirely contained in our box, so exclude
@@ -4512,9 +4512,9 @@ void LayoutBlockFlow::addOutlineRects(
       !hasOverflowClip() && !hasControlClip()) {
     for (RootInlineBox* curr = firstRootBox(); curr;
          curr = curr->nextRootBox()) {
-      LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->top());
-      LayoutUnit bottom = std::min<LayoutUnit>(curr->lineBottom(),
-                                               curr->top() + curr->height());
+      LayoutUnit top = std::max<LayoutUnit>(curr->lineTop(), curr->y());
+      LayoutUnit bottom =
+          std::min<LayoutUnit>(curr->lineBottom(), curr->y() + curr->height());
       LayoutRect rect(additionalOffset.x() + curr->x(),
                       additionalOffset.y() + top, curr->width(), bottom - top);
       if (!rect.isEmpty())

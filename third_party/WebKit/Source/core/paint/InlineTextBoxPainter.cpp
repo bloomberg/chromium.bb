@@ -446,7 +446,7 @@ void InlineTextBoxPainter::paint(const PaintInfo& paintInfo,
       m_inlineTextBox.getLineLayoutItem().styleRef(
           m_inlineTextBox.isFirstLineStyle());
 
-  LayoutPoint boxOrigin(m_inlineTextBox.locationIncludingFlipping());
+  LayoutPoint boxOrigin(m_inlineTextBox.physicalLocation());
   boxOrigin.move(adjustedPaintOffset.x(), adjustedPaintOffset.y());
   LayoutRect boxRect(boxOrigin, LayoutSize(m_inlineTextBox.logicalWidth(),
                                            m_inlineTextBox.logicalHeight()));
