@@ -5,6 +5,7 @@
 #include "platform/scheduler/base/task_queue_impl.h"
 
 #include "base/format_macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/stringprintf.h"
 #include "base/trace_event/blame_context.h"
 #include "platform/scheduler/base/task_queue_manager.h"
@@ -156,7 +157,8 @@ TaskQueueImpl::MainThreadOnly::MainThreadOnly(
       delayed_work_queue(new WorkQueue(task_queue, "delayed")),
       immediate_work_queue(new WorkQueue(task_queue, "immediate")),
       set_index(0),
-      is_enabled(true),
+      is_enabled_refcount(0),
+      voter_refcount(0),
       blame_context(nullptr),
       current_fence(0) {}
 
@@ -184,7 +186,6 @@ bool TaskQueueImpl::RunsTasksOnCurrentThread() const {
   base::AutoLock lock(any_thread_lock_);
   return base::PlatformThread::CurrentId() == thread_id_;
 }
-
 
 bool TaskQueueImpl::PostDelayedTask(const tracked_objects::Location& from_here,
                                     const base::Closure& task,
@@ -332,7 +333,7 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
     // There's no point posting a DoWork for a disabled queue, however we can
     // only tell if it's disabled from the main thread.
     if (base::PlatformThread::CurrentId() == thread_id_) {
-      if (main_thread_only().is_enabled && !BlockedByFenceLocked())
+      if (IsQueueEnabled() && !BlockedByFenceLocked())
         any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
     } else {
       any_thread().task_queue_manager->MaybeScheduleImmediateWork(FROM_HERE);
@@ -342,25 +343,6 @@ void TaskQueueImpl::PushOntoImmediateIncomingQueueLocked(
       posted_from, task, desired_run_time, sequence_number, nestable, sequence_number);
   any_thread().task_queue_manager->DidQueueTask( any_thread().immediate_incoming_queue.back());
   TraceQueueSize(true);
-}
-
-void TaskQueueImpl::SetQueueEnabled(bool enabled) {
-  if (main_thread_only().is_enabled == enabled)
-    return;
-  main_thread_only().is_enabled = enabled;
-  if (!main_thread_only().task_queue_manager)
-    return;
-  if (enabled) {
-    // Note it's the job of the selector to tell the TaskQueueManager if
-    // a DoWork needs posting.
-    main_thread_only().task_queue_manager->selector_.EnableQueue(this);
-  } else {
-    main_thread_only().task_queue_manager->selector_.DisableQueue(this);
-  }
-}
-
-bool TaskQueueImpl::IsQueueEnabled() const {
-  return main_thread_only().is_enabled;
 }
 
 bool TaskQueueImpl::IsEmpty() const {
@@ -506,7 +488,7 @@ void TaskQueueImpl::AsValueInto(base::trace_event::TracedValue* state) const {
       "task_queue_id",
       base::StringPrintf("%" PRIx64, static_cast<uint64_t>(
                                          reinterpret_cast<uintptr_t>(this))));
-  state->SetBoolean("enabled", main_thread_only().is_enabled);
+  state->SetBoolean("enabled", IsQueueEnabled());
   state->SetString("time_domain_name",
                    main_thread_only().time_domain->GetName());
   bool verbose_tracing_enabled = false;
@@ -640,7 +622,7 @@ void TaskQueueImpl::InsertFence(TaskQueue::InsertFencePosition position) {
     }
   }
 
-  if (main_thread_only().is_enabled && task_unblocked) {
+  if (IsQueueEnabled() && task_unblocked) {
     main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
         FROM_HERE);
   }
@@ -665,7 +647,7 @@ void TaskQueueImpl::RemoveFence() {
     }
   }
 
-  if (main_thread_only().is_enabled && task_unblocked) {
+  if (IsQueueEnabled() && task_unblocked) {
     main_thread_only().task_queue_manager->MaybeScheduleImmediateWork(
         FROM_HERE);
   }
@@ -758,6 +740,83 @@ void TaskQueueImpl::TaskAsValueInto(const Task& task,
       "delayed_run_time",
       (task.delayed_run_time - base::TimeTicks()).InMicroseconds() / 1000.0L);
   state->EndDictionary();
+}
+
+TaskQueueImpl::QueueEnabledVoterImpl::QueueEnabledVoterImpl(
+    TaskQueueImpl* task_queue)
+    : task_queue_(task_queue), enabled_(true) {}
+
+TaskQueueImpl::QueueEnabledVoterImpl::~QueueEnabledVoterImpl() {
+  task_queue_->RemoveQueueEnabledVoter(this);
+}
+
+void TaskQueueImpl::QueueEnabledVoterImpl::SetQueueEnabled(bool enabled) {
+  if (enabled_ == enabled)
+    return;
+
+  task_queue_->OnQueueEnabledVoteChanged(enabled);
+  enabled_ = enabled;
+}
+
+void TaskQueueImpl::RemoveQueueEnabledVoter(
+    const QueueEnabledVoterImpl* voter) {
+  // Bail out if we're being called from TaskQueueImpl::UnregisterTaskQueue.
+  if (!main_thread_only().time_domain)
+    return;
+
+  bool was_enabled = IsQueueEnabled();
+  if (voter->enabled_) {
+    main_thread_only().is_enabled_refcount--;
+    DCHECK_GE(main_thread_only().is_enabled_refcount, 0);
+  }
+
+  main_thread_only().voter_refcount--;
+  DCHECK_GE(main_thread_only().voter_refcount, 0);
+
+  bool is_enabled = IsQueueEnabled();
+  if (was_enabled != is_enabled)
+    EnableOrDisableWithSelector(is_enabled);
+}
+
+bool TaskQueueImpl::IsQueueEnabled() const {
+  return main_thread_only().is_enabled_refcount ==
+         main_thread_only().voter_refcount;
+}
+
+void TaskQueueImpl::OnQueueEnabledVoteChanged(bool enabled) {
+  bool was_enabled = IsQueueEnabled();
+  if (enabled) {
+    main_thread_only().is_enabled_refcount++;
+    DCHECK_LE(main_thread_only().is_enabled_refcount,
+              main_thread_only().voter_refcount);
+  } else {
+    main_thread_only().is_enabled_refcount--;
+    DCHECK_GE(main_thread_only().is_enabled_refcount, 0);
+  }
+
+  bool is_enabled = IsQueueEnabled();
+  if (was_enabled != is_enabled)
+    EnableOrDisableWithSelector(is_enabled);
+}
+
+void TaskQueueImpl::EnableOrDisableWithSelector(bool enable) {
+  if (!main_thread_only().task_queue_manager)
+    return;
+
+  if (enable) {
+    // Note it's the job of the selector to tell the TaskQueueManager if
+    // a DoWork needs posting.
+    main_thread_only().task_queue_manager->selector_.EnableQueue(this);
+  } else {
+    main_thread_only().task_queue_manager->selector_.DisableQueue(this);
+  }
+}
+
+std::unique_ptr<TaskQueueImpl::QueueEnabledVoter>
+TaskQueueImpl::CreateQueueEnabledVoter() {
+  main_thread_only().voter_refcount++;
+  main_thread_only().is_enabled_refcount++;
+  return base::MakeUnique<QueueEnabledVoterImpl>(this);
 }
 
 }  // namespace internal

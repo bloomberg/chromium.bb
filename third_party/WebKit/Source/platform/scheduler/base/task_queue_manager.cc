@@ -143,6 +143,7 @@ void TaskQueueManager::UnregisterTaskQueue(
   // freed while any of our structures hold hold a raw pointer to it.
   queues_to_delete_.insert(task_queue);
   queues_.erase(task_queue);
+
   selector_.RemoveQueue(task_queue.get());
 }
 

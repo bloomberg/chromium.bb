@@ -117,9 +117,29 @@ class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {
     bool should_report_when_execution_blocked;
   };
 
-  // Enable or disable task execution for this queue. NOTE this must be called
-  // on the thread this TaskQueue was created by.
-  virtual void SetQueueEnabled(bool enabled) = 0;
+  // An interface that lets the owner vote on whether or not the associated
+  // TaskQueue should be enabled.
+  class QueueEnabledVoter {
+   public:
+    QueueEnabledVoter() {}
+    virtual ~QueueEnabledVoter() {}
+
+    // Votes to enable or disable the associated TaskQueue. The TaskQueue will
+    // only be enabled if all the voters agree it should be enabled, or if there
+    // are no voters.
+    // NOTE this must be called on the thread the associated TaskQueue was
+    // created on.
+    virtual void SetQueueEnabled(bool enabled) = 0;
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(QueueEnabledVoter);
+  };
+
+  // Returns an interface that allows the caller to vote on whether or not this
+  // TaskQueue is enabled. The TaskQueue will be enabled if there are no voters
+  // or if all agree it should be enabled.
+  // NOTE this must be called on the thread this TaskQueue was created by.
+  virtual std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() = 0;
 
   // NOTE this must be called on the thread this TaskQueue was created by.
   virtual bool IsQueueEnabled() const = 0;

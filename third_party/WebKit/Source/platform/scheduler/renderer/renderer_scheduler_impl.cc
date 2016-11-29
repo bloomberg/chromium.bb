@@ -95,6 +95,8 @@ RendererSchedulerImpl::RendererSchedulerImpl(
       compositor_task_runner_(
           helper_.NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::COMPOSITOR)
                                    .SetShouldMonitorQuiescence(true))),
+      compositor_task_runner_enabled_voter_(
+          compositor_task_runner_->CreateQueueEnabledVoter()),
       delayed_update_policy_runner_(
           base::Bind(&RendererSchedulerImpl::UpdatePolicy,
                      base::Unretained(this)),
@@ -141,13 +143,12 @@ RendererSchedulerImpl::~RendererSchedulerImpl() {
       TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"), "RendererScheduler",
       this);
 
-  for (const scoped_refptr<TaskQueue>& loading_queue : loading_task_runners_) {
-    loading_queue->RemoveTaskObserver(
+  for (auto& pair : loading_task_runners_) {
+    pair.first->RemoveTaskObserver(
         &MainThreadOnly().loading_task_cost_estimator);
   }
-  for (const scoped_refptr<TaskQueue>& timer_queue : timer_task_runners_) {
-    timer_queue->RemoveTaskObserver(
-        &MainThreadOnly().timer_task_cost_estimator);
+  for (auto& pair : timer_task_runners_) {
+    pair.first->RemoveTaskObserver(&MainThreadOnly().timer_task_cost_estimator);
   }
 
   if (virtual_time_domain_)
@@ -285,8 +286,9 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewLoadingTaskRunner(
                                .SetTimeDomain(MainThreadOnly().use_virtual_time
                                                   ? GetVirtualTimeDomain()
                                                   : nullptr)));
-  loading_task_runners_.insert(loading_task_queue);
-  loading_task_queue->SetQueueEnabled(
+  auto insert_result = loading_task_runners_.insert(std::make_pair(
+      loading_task_queue, loading_task_queue->CreateQueueEnabledVoter()));
+  insert_result.first->second->SetQueueEnabled(
       MainThreadOnly().current_policy.loading_queue_policy.is_enabled);
   loading_task_queue->SetQueuePriority(
       MainThreadOnly().current_policy.loading_queue_policy.priority);
@@ -310,8 +312,9 @@ scoped_refptr<TaskQueue> RendererSchedulerImpl::NewTimerTaskRunner(
                                .SetTimeDomain(MainThreadOnly().use_virtual_time
                                                   ? GetVirtualTimeDomain()
                                                   : nullptr)));
-  timer_task_runners_.insert(timer_task_queue);
-  timer_task_queue->SetQueueEnabled(
+  auto insert_result = timer_task_runners_.insert(std::make_pair(
+      timer_task_queue, timer_task_queue->CreateQueueEnabledVoter()));
+  insert_result.first->second->SetQueueEnabled(
       MainThreadOnly().current_policy.timer_queue_policy.is_enabled);
   timer_task_queue->SetQueuePriority(
       MainThreadOnly().current_policy.timer_queue_policy.priority);
@@ -1093,17 +1096,18 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   }
 
   ApplyTaskQueuePolicy(compositor_task_runner_.get(),
+                       compositor_task_runner_enabled_voter_.get(),
                        MainThreadOnly().current_policy.compositor_queue_policy,
                        new_policy.compositor_queue_policy);
 
-  for (const scoped_refptr<TaskQueue>& loading_queue : loading_task_runners_) {
-    ApplyTaskQueuePolicy(loading_queue.get(),
+  for (const auto& pair : loading_task_runners_) {
+    ApplyTaskQueuePolicy(pair.first.get(), pair.second.get(),
                          MainThreadOnly().current_policy.loading_queue_policy,
                          new_policy.loading_queue_policy);
   }
 
-  for (const scoped_refptr<TaskQueue>& timer_queue : timer_task_runners_) {
-    ApplyTaskQueuePolicy(timer_queue.get(),
+  for (const auto& pair : timer_task_runners_) {
+    ApplyTaskQueuePolicy(pair.first.get(), pair.second.get(),
                          MainThreadOnly().current_policy.timer_queue_policy,
                          new_policy.timer_queue_policy);
   }
@@ -1113,7 +1117,7 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
   // TODO(alexclarke): We shouldn't have to prioritize the default queue, but it
   // appears to be necessary since the order of loading tasks and IPCs (which
   // are mostly dispatched on the default queue) need to be preserved.
-  ApplyTaskQueuePolicy(helper_.DefaultTaskRunner().get(),
+  ApplyTaskQueuePolicy(helper_.DefaultTaskRunner().get(), nullptr,
                        MainThreadOnly().current_policy.default_queue_policy,
                        new_policy.default_queue_policy);
   if (MainThreadOnly().rail_mode_observer &&
@@ -1137,11 +1141,16 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
 void RendererSchedulerImpl::ApplyTaskQueuePolicy(
     TaskQueue* task_queue,
+    TaskQueue::QueueEnabledVoter* task_queue_enabled_voter,
     const TaskQueuePolicy& old_task_queue_policy,
     const TaskQueuePolicy& new_task_queue_policy) const {
-  if (old_task_queue_policy.is_enabled != new_task_queue_policy.is_enabled) {
-    task_queue->SetQueueEnabled(new_task_queue_policy.is_enabled);
+  if (task_queue_enabled_voter &&
+      old_task_queue_policy.is_enabled != new_task_queue_policy.is_enabled) {
+    task_queue_enabled_voter->SetQueueEnabled(new_task_queue_policy.is_enabled);
   }
+
+  // Make sure if there's no voter that the task queue is enabled.
+  DCHECK(task_queue_enabled_voter || old_task_queue_policy.is_enabled);
 
   if (old_task_queue_policy.priority != new_task_queue_policy.priority)
     task_queue->SetQueuePriority(new_task_queue_policy.priority);
@@ -1274,7 +1283,7 @@ void RendererSchedulerImpl::SuspendTimerQueue() {
 #ifndef NDEBUG
   DCHECK(!default_timer_task_runner_->IsQueueEnabled());
   for (const auto& runner : timer_task_runners_) {
-    DCHECK(!runner->IsQueueEnabled());
+    DCHECK(!runner.first->IsQueueEnabled());
   }
 #endif
 }

@@ -119,7 +119,7 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,
                                   const base::Closure& task,
                                   base::TimeDelta delay) override;
-  void SetQueueEnabled(bool enabled) override;
+  std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() override;
   bool IsQueueEnabled() const override;
   bool IsEmpty() const override;
   size_t GetNumberOfPendingTasks() const override;
@@ -136,13 +136,12 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
   void InsertFence(InsertFencePosition position) override;
   void RemoveFence() override;
   bool BlockedByFence() const override;
+  const char* GetName() const override;
+  QueueType GetQueueType() const override;
 
   // If this returns false then future updates for this queue are not needed
   // unless requested.
   bool MaybeUpdateImmediateWorkQueues();
-
-  const char* GetName() const override;
-  QueueType GetQueueType() const override;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 
@@ -195,6 +194,23 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
 
   EnqueueOrder GetFenceForTest() const;
 
+  class QueueEnabledVoterImpl : public QueueEnabledVoter {
+   public:
+    explicit QueueEnabledVoterImpl(TaskQueueImpl* task_queue);
+    ~QueueEnabledVoterImpl() override;
+
+    // QueueEnabledVoter implementation.
+    void SetQueueEnabled(bool enabled) override;
+
+    TaskQueueImpl* GetTaskQueueForTest() const { return task_queue_.get(); }
+
+   private:
+    friend class TaskQueueImpl;
+
+    scoped_refptr<TaskQueueImpl> task_queue_;
+    bool enabled_;
+  };
+
  private:
   friend class WorkQueue;
   friend class WorkQueueTest;
@@ -234,7 +250,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
     base::ObserverList<base::MessageLoop::TaskObserver> task_observers;
     size_t set_index;
     HeapHandle heap_handle;
-    bool is_enabled;
+    int is_enabled_refcount;
+    int voter_refcount;
     base::trace_event::BlameContext* blame_context;  // Not owned.
     EnqueueOrder current_fence;
     base::TimeTicks scheduled_time_domain_wakeup;
@@ -283,6 +300,10 @@ class BLINK_PLATFORM_EXPORT TaskQueueImpl final : public TaskQueue {
                                base::trace_event::TracedValue* state);
   static void TaskAsValueInto(const Task& task,
                               base::trace_event::TracedValue* state);
+
+  void RemoveQueueEnabledVoter(const QueueEnabledVoterImpl* voter);
+  void OnQueueEnabledVoteChanged(bool enabled);
+  void EnableOrDisableWithSelector(bool enable);
 
   const base::PlatformThreadId thread_id_;
 

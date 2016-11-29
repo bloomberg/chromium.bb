@@ -98,14 +98,23 @@ class TaskQueueSelectorTest : public testing::Test {
 
   static void TestFunction() {}
 
-  void EnableQueue(TaskQueueImpl* queue) {
-    queue->SetQueueEnabled(true);
-    selector_.EnableQueue(queue);
+  void EnableQueue(TaskQueue::QueueEnabledVoter* voter) {
+    TaskQueueImpl::QueueEnabledVoterImpl* voter_impl =
+        static_cast<TaskQueueImpl::QueueEnabledVoterImpl*>(voter);
+
+    voter_impl->SetQueueEnabled(true);
+
+    ASSERT_TRUE(voter_impl->GetTaskQueueForTest()->IsQueueEnabled());
+    selector_.EnableQueue(voter_impl->GetTaskQueueForTest());
   }
 
-  void DisableQueue(TaskQueueImpl* queue) {
-    queue->SetQueueEnabled(false);
-    selector_.DisableQueue(queue);
+  void DisableQueue(TaskQueue::QueueEnabledVoter* voter) {
+    TaskQueueImpl::QueueEnabledVoterImpl* voter_impl =
+        static_cast<TaskQueueImpl::QueueEnabledVoterImpl*>(voter);
+
+    voter_impl->SetQueueEnabled(false);
+    ASSERT_FALSE(voter_impl->GetTaskQueueForTest()->IsQueueEnabled());
+    selector_.DisableQueue(voter_impl->GetTaskQueueForTest());
   }
 
  protected:
@@ -187,11 +196,13 @@ TEST_F(TaskQueueSelectorTest, TestControlPriority) {
 }
 
 TEST_F(TaskQueueSelectorTest, TestObserverWithEnabledQueue) {
-  DisableQueue(task_queues_[1].get());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter1 =
+      task_queues_[1]->CreateQueueEnabledVoter();
+  DisableQueue(voter1.get());
   MockObserver mock_observer;
   selector_.SetTaskQueueSelectorObserver(&mock_observer);
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(1);
-  EnableQueue(task_queues_[1].get());
+  EnableQueue(voter1.get());
 }
 
 TEST_F(TaskQueueSelectorTest,
@@ -209,19 +220,23 @@ TEST_F(TaskQueueSelectorTest, TestDisableEnable) {
 
   size_t queue_order[] = {0, 1, 2, 3, 4};
   PushTasks(queue_order, 5);
-  DisableQueue(task_queues_[2].get());
-  DisableQueue(task_queues_[4].get());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter2 =
+      task_queues_[2]->CreateQueueEnabledVoter();
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter4 =
+      task_queues_[4]->CreateQueueEnabledVoter();
+  DisableQueue(voter2.get());
+  DisableQueue(voter4.get());
   // Disabling a queue should not affect its priority.
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[2]->GetQueuePriority());
   EXPECT_EQ(TaskQueue::NORMAL_PRIORITY, task_queues_[4]->GetQueuePriority());
   EXPECT_THAT(PopTasks(), testing::ElementsAre(0, 1, 3));
 
   EXPECT_CALL(mock_observer, OnTaskQueueEnabled(_)).Times(2);
-  EnableQueue(task_queues_[2].get());
+  EnableQueue(voter2.get());
   selector_.SetQueuePriority(task_queues_[2].get(),
                              TaskQueue::BEST_EFFORT_PRIORITY);
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2));
-  EnableQueue(task_queues_[4].get());
+  EnableQueue(voter4.get());
   EXPECT_THAT(PopTasks(), testing::ElementsAre(4));
 }
 
@@ -229,7 +244,9 @@ TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
   EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
   EXPECT_TRUE(task_queues_[2]->immediate_work_queue()->Empty());
 
-  DisableQueue(task_queues_[2].get());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter2 =
+      task_queues_[2]->CreateQueueEnabledVoter();
+  DisableQueue(voter2.get());
   selector_.SetQueuePriority(task_queues_[2].get(), TaskQueue::HIGH_PRIORITY);
 
   size_t queue_order[] = {0, 1, 2, 3, 4};
@@ -237,7 +254,7 @@ TEST_F(TaskQueueSelectorTest, TestDisableChangePriorityThenEnable) {
 
   EXPECT_TRUE(task_queues_[2]->delayed_work_queue()->Empty());
   EXPECT_FALSE(task_queues_[2]->immediate_work_queue()->Empty());
-  EnableQueue(task_queues_[2].get());
+  EnableQueue(voter2.get());
 
   EXPECT_EQ(TaskQueue::HIGH_PRIORITY, task_queues_[2]->GetQueuePriority());
   EXPECT_THAT(PopTasks(), testing::ElementsAre(2, 0, 1, 3, 4));
@@ -250,9 +267,15 @@ TEST_F(TaskQueueSelectorTest, TestEmptyQueues) {
   // Test only disabled queues.
   size_t queue_order[] = {0};
   PushTasks(queue_order, 1);
-  task_queues_[0]->SetQueueEnabled(false);
-  selector_.DisableQueue(task_queues_[0].get());
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter0 =
+      task_queues_[0]->CreateQueueEnabledVoter();
+  DisableQueue(voter0.get());
   EXPECT_FALSE(selector_.SelectWorkQueueToService(&chosen_work_queue));
+
+  // These tests are unusual since there's no TQM. To avoid a later DCHECK when
+  // deleting the task queue, we re-enable the queue here so the selector
+  // doesn't get out of sync.
+  EnableQueue(voter0.get());
 }
 
 TEST_F(TaskQueueSelectorTest, TestAge) {
@@ -387,7 +410,10 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
 
   scoped_refptr<TaskQueueImpl> task_queue(NewTaskQueueWithBlockReporting());
   selector.AddQueue(task_queue.get());
-  task_queue->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      task_queue->CreateQueueEnabledVoter();
+
+  voter->SetQueueEnabled(false);
   selector.DisableQueue(task_queue.get());
 
   TaskQueueImpl::Task task(FROM_HERE, test_closure_, base::TimeTicks(), 0,
@@ -399,6 +425,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithOneBlockedQueue) {
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
+  voter.reset();
+  selector.EnableQueue(task_queue.get());
   task_queue->UnregisterTaskQueue();
   selector.RemoveQueue(task_queue.get());
 }
@@ -412,10 +440,16 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   scoped_refptr<TaskQueueImpl> task_queue2(NewTaskQueueWithBlockReporting());
   selector.AddQueue(task_queue.get());
   selector.AddQueue(task_queue2.get());
-  task_queue->SetQueueEnabled(false);
-  task_queue2->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      task_queue->CreateQueueEnabledVoter();
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter2 =
+      task_queue2->CreateQueueEnabledVoter();
+
+  voter->SetQueueEnabled(false);
+  voter2->SetQueueEnabled(false);
   selector.DisableQueue(task_queue.get());
   selector.DisableQueue(task_queue2.get());
+
   selector.SetQueuePriority(task_queue2.get(), TaskQueue::CONTROL_PRIORITY);
 
   TaskQueueImpl::Task task1(FROM_HERE, test_closure_, base::TimeTicks(), 0,
@@ -433,6 +467,9 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
   testing::Mock::VerifyAndClearExpectations(&mock_observer);
 
+  voter.reset();
+  selector.EnableQueue(task_queue.get());
+
   // Removing the second queue and selecting again should result in another
   // notification.
   task_queue->UnregisterTaskQueue();
@@ -440,6 +477,8 @@ TEST_F(TaskQueueSelectorTest, TestObserverWithTwoBlockedQueues) {
   EXPECT_CALL(mock_observer, OnTriedToSelectBlockedWorkQueue(_)).Times(1);
   EXPECT_FALSE(selector.SelectWorkQueueToService(&chosen_work_queue));
 
+  voter2.reset();
+  selector.EnableQueue(task_queue2.get());
   task_queue2->UnregisterTaskQueue();
   selector.RemoveQueue(task_queue2.get());
 }

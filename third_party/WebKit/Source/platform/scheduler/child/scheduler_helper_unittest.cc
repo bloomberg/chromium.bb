@@ -216,13 +216,15 @@ TEST_F(SchedulerHelperTest, OnTriedToExecuteBlockedTask) {
   scoped_refptr<TaskQueue> task_queue = scheduler_helper_->NewTaskQueue(
       TaskQueue::Spec(TaskQueue::QueueType::TEST)
           .SetShouldReportWhenExecutionBlocked(true));
-  task_queue->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      task_queue->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   // Trick |task_queue| into posting a DoWork. By default PostTask with a
   // disabled queue won't post a DoWork until we enable the queue.
-  task_queue->SetQueueEnabled(true);
-  task_queue->SetQueueEnabled(false);
+  voter->SetQueueEnabled(true);
+  voter->SetQueueEnabled(false);
 
   EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
   RunUntilIdle();

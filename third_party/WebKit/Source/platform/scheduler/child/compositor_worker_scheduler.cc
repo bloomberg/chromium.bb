@@ -37,7 +37,10 @@ class CompositorWorkerTaskRunnerWrapper : public TaskQueue {
     return task_runner_->PostNonNestableDelayedTask(from_here, task, delay);
   }
 
-  void SetQueueEnabled(bool enabled) override { NOTREACHED(); }
+  std::unique_ptr<QueueEnabledVoter> CreateQueueEnabledVoter() override {
+    NOTREACHED();
+    return nullptr;
+  }
 
   void InsertFence(InsertFencePosition position) override { NOTREACHED(); }
 

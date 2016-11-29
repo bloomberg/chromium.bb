@@ -493,13 +493,15 @@ TEST_F(TaskQueueManagerTest, DenyRunning_BeforePosting) {
   Initialize(1u);
 
   std::vector<EnqueueOrder> run_order;
-  runners_[0]->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  runners_[0]->SetQueueEnabled(true);
+  voter->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -509,12 +511,14 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterPosting) {
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
-  runners_[0]->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
-  runners_[0]->SetQueueEnabled(true);
+  voter->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -524,14 +528,16 @@ TEST_F(TaskQueueManagerTest, DenyRunning_AfterRemovingFence) {
 
   std::vector<EnqueueOrder> run_order;
   runners_[0]->InsertFence(TaskQueue::InsertFencePosition::NOW);
-  runners_[0]->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      runners_[0]->CreateQueueEnabledVoter();
+  voter->SetQueueEnabled(false);
   runners_[0]->PostTask(FROM_HERE, base::Bind(&TestTask, 1, &run_order));
 
   test_task_runner_->RunUntilIdle();
   EXPECT_TRUE(run_order.empty());
 
   runners_[0]->RemoveFence();
-  runners_[0]->SetQueueEnabled(true);
+  voter->SetQueueEnabled(true);
   test_task_runner_->RunUntilIdle();
   EXPECT_THAT(run_order, ElementsAre(1));
 }
@@ -1327,13 +1333,16 @@ TEST_F(TaskQueueManagerTest, OnTriedToExecuteBlockedTask) {
   scoped_refptr<internal::TaskQueueImpl> task_queue =
       manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST)
                                  .SetShouldReportWhenExecutionBlocked(true));
-  task_queue->SetQueueEnabled(false);
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      task_queue->CreateQueueEnabledVoter();
+
+  voter->SetQueueEnabled(false);
   task_queue->PostTask(FROM_HERE, base::Bind(&NopTask));
 
   // Trick |task_queue| into posting a DoWork. By default PostTask with a
   // disabled queue won't post a DoWork until we enable the queue.
-  task_queue->SetQueueEnabled(true);
-  task_queue->SetQueueEnabled(false);
+  voter->SetQueueEnabled(true);
+  voter->SetQueueEnabled(false);
 
   EXPECT_CALL(observer, OnTriedToExecuteBlockedTask(_, _)).Times(1);
   test_task_runner_->RunPendingTasks();
@@ -2073,6 +2082,84 @@ TEST_F(TaskQueueManagerTest, TimeDomainWakeUpOnlyCancelledIfAllUsesCancelled) {
                           start_time + delay4));
 
   EXPECT_THAT(run_times, ElementsAre(start_time + delay3, start_time + delay4));
+}
+
+TEST_F(TaskQueueManagerTest, TaskQueueVoters) {
+  Initialize(1u);
+
+  // The task queue should be initially enabled.
+  EXPECT_TRUE(runners_[0]->IsQueueEnabled());
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter1 =
+      runners_[0]->CreateQueueEnabledVoter();
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter2 =
+      runners_[0]->CreateQueueEnabledVoter();
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter3 =
+      runners_[0]->CreateQueueEnabledVoter();
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter4 =
+      runners_[0]->CreateQueueEnabledVoter();
+
+  // Voters should initially vote for the queue to be enabled.
+  EXPECT_TRUE(runners_[0]->IsQueueEnabled());
+
+  // If any voter wants to disable, the queue is disabled.
+  voter1->SetQueueEnabled(false);
+  EXPECT_FALSE(runners_[0]->IsQueueEnabled());
+
+  // If the voter is deleted then the queue should be re-enabled.
+  voter1.reset();
+  EXPECT_TRUE(runners_[0]->IsQueueEnabled());
+
+  // If any of the remaining voters wants to disable, the queue should be
+  // disabled.
+  voter2->SetQueueEnabled(false);
+  EXPECT_FALSE(runners_[0]->IsQueueEnabled());
+
+  // If another queue votes to disable, nothing happens because it's already
+  // disabled.
+  voter3->SetQueueEnabled(false);
+  EXPECT_FALSE(runners_[0]->IsQueueEnabled());
+
+  // There are two votes to disable, so one of them voting to enable does
+  // nothing.
+  voter2->SetQueueEnabled(true);
+  EXPECT_FALSE(runners_[0]->IsQueueEnabled());
+
+  // IF all queues vote to enable then the queue is enabled.
+  voter3->SetQueueEnabled(true);
+  EXPECT_TRUE(runners_[0]->IsQueueEnabled());
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeEnabledVoterDeleted) {
+  Initialize(1u);
+
+  scoped_refptr<internal::TaskQueueImpl> queue =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      queue->CreateQueueEnabledVoter();
+
+  voter->SetQueueEnabled(true);  // NOP
+  queue->UnregisterTaskQueue();
+
+  // This should complete without DCHECKing.
+  voter.reset();
+}
+
+TEST_F(TaskQueueManagerTest, UnregisterQueueBeforeDisabledVoterDeleted) {
+  Initialize(1u);
+
+  scoped_refptr<internal::TaskQueueImpl> queue =
+      manager_->NewTaskQueue(TaskQueue::Spec(TaskQueue::QueueType::TEST));
+
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> voter =
+      queue->CreateQueueEnabledVoter();
+
+  voter->SetQueueEnabled(false);
+  queue->UnregisterTaskQueue();
+
+  // This should complete without DCHECKing.
+  voter.reset();
 }
 
 }  // namespace scheduler

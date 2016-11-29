@@ -66,7 +66,7 @@ void IdleHelper::Shutdown() {
   is_shutdown_ = true;
   weak_factory_.InvalidateWeakPtrs();
   // Belt & braces, might not be needed.
-  idle_queue_->SetQueueEnabled(false);
+  idle_queue_->InsertFence(TaskQueue::InsertFencePosition::BEGINNING_OF_TIME);
   helper_->RemoveTaskObserver(this);
 }
 

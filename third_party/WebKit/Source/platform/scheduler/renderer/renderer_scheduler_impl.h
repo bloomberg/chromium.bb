@@ -360,9 +360,11 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // Report an intervention to all WebViews in this process.
   void BroadcastIntervention(const std::string& message);
 
-  void ApplyTaskQueuePolicy(TaskQueue* task_queue,
-                            const TaskQueuePolicy& old_task_queue_policy,
-                            const TaskQueuePolicy& new_task_queue_policy) const;
+  void ApplyTaskQueuePolicy(
+      TaskQueue* task_queue,
+      TaskQueue::QueueEnabledVoter* task_queue_enabled_voter,
+      const TaskQueuePolicy& old_task_queue_policy,
+      const TaskQueuePolicy& new_task_queue_policy) const;
 
   static const char* ExpensiveTaskPolicyToString(
       ExpensiveTaskPolicy expensive_task_policy);
@@ -376,8 +378,15 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
 
   const scoped_refptr<TaskQueue> control_task_runner_;
   const scoped_refptr<TaskQueue> compositor_task_runner_;
-  std::set<scoped_refptr<TaskQueue>> loading_task_runners_;
-  std::set<scoped_refptr<TaskQueue>> timer_task_runners_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter>
+      compositor_task_runner_enabled_voter_;
+
+  using TaskQueueVoterMap =
+      std::map<scoped_refptr<TaskQueue>,
+               std::unique_ptr<TaskQueue::QueueEnabledVoter>>;
+
+  TaskQueueVoterMap loading_task_runners_;
+  TaskQueueVoterMap timer_task_runners_;
   std::set<scoped_refptr<TaskQueue>> unthrottled_task_runners_;
   scoped_refptr<TaskQueue> default_loading_task_runner_;
   scoped_refptr<TaskQueue> default_timer_task_runner_;
