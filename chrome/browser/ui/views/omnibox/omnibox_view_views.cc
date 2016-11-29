@@ -153,6 +153,10 @@ void OmniboxViewViews::Init() {
         GetFontList(), this, model(), location_bar_view_));
   }
 
+  // Override the default FocusableBorder from Textfield, since the
+  // LocationBarView will indicate the focus state.
+  SetBorder(views::NullBorder());
+
 #if defined(OS_CHROMEOS)
   chromeos::input_method::InputMethodManager::Get()->
       AddCandidateWindowObserver(this);
