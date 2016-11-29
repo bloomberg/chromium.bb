@@ -27,12 +27,8 @@ namespace {
 // space-delimited list of key:value pairs which correspond to these flags:
 const char kEmbeddedPageVersionFlagName[] = "espv";
 
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
 const uint64_t kEmbeddedPageVersionDefault = 1;
-#elif defined(OS_ANDROID)
-const uint64_t kEmbeddedPageVersionDefault = 1;
-// Use this variant to enable EmbeddedSearch SearchBox API in the results page.
-const uint64_t kEmbeddedSearchEnabledVersion = 2;
 #else
 const uint64_t kEmbeddedPageVersionDefault = 2;
 #endif
@@ -51,24 +47,14 @@ const char kEmbeddedSearchFieldTrialName[] = "EmbeddedSearch";
 // be ignored and Instant Extended will not be enabled by default.
 const char kDisablingSuffix[] = "DISABLED";
 
-#if defined(OS_ANDROID)
-const char kPrefetchSearchResultsFlagName[] = "prefetch_results";
-
-// Controls whether to reuse prerendered Instant Search base page to commit any
-// search query.
-const char kReuseInstantSearchBasePage[] = "reuse_instant_search_base_page";
-#endif
-
 }  // namespace
 
 bool IsInstantExtendedAPIEnabled() {
-#if defined(OS_IOS)
+#if defined(OS_IOS) || defined(OS_ANDROID)
   return false;
-#elif defined(OS_ANDROID)
-  return EmbeddedSearchPageVersion() == kEmbeddedSearchEnabledVersion;
 #else
   return true;
-#endif  // defined(OS_IOS)
+#endif
 }
 
 // Determine what embedded search page version to request from the user's
@@ -158,31 +144,11 @@ std::string ForceInstantResultsParam(bool for_prerender) {
 }
 
 bool ShouldPrefetchSearchResults() {
-  if (!IsInstantExtendedAPIEnabled())
-    return false;
-
-#if defined(OS_ANDROID)
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) &&
-         GetBoolValueForFlagWithDefault(kPrefetchSearchResultsFlagName, false,
-                                        flags);
-#else
-  return true;
-#endif
+  return IsInstantExtendedAPIEnabled();
 }
 
 bool ShouldReuseInstantSearchBasePage() {
-  if (!ShouldPrefetchSearchResults())
-    return false;
-
-#if defined(OS_ANDROID)
-  FieldTrialFlags flags;
-  return GetFieldTrialInfo(&flags) &&
-         GetBoolValueForFlagWithDefault(kReuseInstantSearchBasePage, false,
-                                        flags);
-#else
-  return true;
-#endif
+  return IsInstantExtendedAPIEnabled();
 }
 
 // |url| should either have a secure scheme or have a non-HTTPS base URL that

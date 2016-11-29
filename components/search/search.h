@@ -16,7 +16,8 @@ class TemplateURL;
 
 namespace search {
 
-// Returns whether the Instant Extended API is enabled.
+// Returns whether the Instant Extended API is enabled. This is always true on
+// desktop and false on mobile.
 bool IsInstantExtendedAPIEnabled();
 
 // Returns the value to pass to the &espv CGI parameter when loading the
@@ -70,12 +71,12 @@ std::string InstantExtendedEnabledParam();
 // the returned string to be non-empty.
 std::string ForceInstantResultsParam(bool for_prerender);
 
-// Returns true if 'prefetch_results' flag is set to true in field trials to
-// prefetch high-confidence search suggestions.
+// Returns whether to prefetch high-confidence search suggestions. True iff
+// the Instant Extended API is enabled.
 bool ShouldPrefetchSearchResults();
 
-// Returns true if 'reuse_instant_search_base_page' flag is set to true in field
-// trials to reuse the prerendered page to commit any search query.
+// Returns whether to reuse the prerendered page to commit any search query.
+// True iff the Instant Extended API is enabled.
 bool ShouldReuseInstantSearchBasePage();
 
 // |url| should either have a secure scheme or have a non-HTTPS base URL that
