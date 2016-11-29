@@ -14,25 +14,13 @@
 
 #include "base/files/file_path.h"
 #include "base/macros.h"
-#include "base/memory/singleton.h"
 #include "base/strings/string_piece.h"
 #include "net/http/http_response_headers.h"
 #include "net/quic/core/spdy_utils.h"
 #include "net/spdy/spdy_framer.h"
 #include "url/gurl.h"
 
-namespace base {
-
-template <typename Type>
-struct DefaultSingletonTraits;
-
-}  // namespace base
-
 namespace net {
-
-namespace test {
-class QuicInMemoryCachePeer;
-}  // namespace test
 
 class QuicServer;
 
@@ -139,8 +127,8 @@ class QuicInMemoryCache {
     DISALLOW_COPY_AND_ASSIGN(ResourceFile);
   };
 
-  // Returns the singleton instance of the cache.
-  static QuicInMemoryCache* GetInstance();
+  QuicInMemoryCache();
+  ~QuicInMemoryCache();
 
   // Retrieve a response from this cache for a given host and path..
   // If no appropriate response exists, nullptr is returned.
@@ -194,14 +182,6 @@ class QuicInMemoryCache {
   std::list<ServerPushInfo> GetServerPushResources(std::string request_url);
 
  private:
-  friend struct base::DefaultSingletonTraits<QuicInMemoryCache>;
-  friend class test::QuicInMemoryCachePeer;
-
-  QuicInMemoryCache();
-  ~QuicInMemoryCache();
-
-  void ResetForTests();
-
   void AddResponseImpl(base::StringPiece host,
                        base::StringPiece path,
                        SpecialResponseType response_type,

@@ -23,6 +23,7 @@
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
+#include "net/tools/quic/quic_in_memory_cache.h"
 
 namespace net {
 
@@ -35,11 +36,13 @@ class QuicPacketReader;
 
 class QuicServer : public EpollCallbackInterface {
  public:
-  explicit QuicServer(std::unique_ptr<ProofSource> proof_source);
+  QuicServer(std::unique_ptr<ProofSource> proof_source,
+             QuicInMemoryCache* in_memory_cache);
   QuicServer(std::unique_ptr<ProofSource> proof_source,
              const QuicConfig& config,
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
-             const QuicVersionVector& supported_versions);
+             const QuicVersionVector& supported_versions,
+             QuicInMemoryCache* in_memory_cache);
 
   ~QuicServer() override;
 
@@ -83,6 +86,8 @@ class QuicServer : public EpollCallbackInterface {
 
   QuicVersionManager* version_manager() { return &version_manager_; }
 
+  QuicInMemoryCache* in_memory_cache() { return in_memory_cache_; }
+
  private:
   friend class net::test::QuicServerPeer;
 
@@ -123,6 +128,8 @@ class QuicServer : public EpollCallbackInterface {
   // Point to a QuicPacketReader object on the heap. The reader allocates more
   // space than allowed on the stack.
   std::unique_ptr<QuicPacketReader> packet_reader_;
+
+  QuicInMemoryCache* in_memory_cache_;  // unowned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

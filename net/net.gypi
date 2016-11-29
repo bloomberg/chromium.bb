@@ -1991,8 +1991,6 @@
       'tools/quic/quic_simple_client_test.cc',
       'tools/quic/test_tools/mock_quic_server_session_visitor.cc',
       'tools/quic/test_tools/mock_quic_server_session_visitor.h',
-      'tools/quic/test_tools/quic_in_memory_cache_peer.cc',
-      'tools/quic/test_tools/quic_in_memory_cache_peer.h',
       'tools/tld_cleanup/tld_cleanup_util_unittest.cc',
       'url_request/report_sender_unittest.cc',
       'url_request/sdch_dictionary_fetcher_unittest.cc',

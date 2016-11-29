@@ -64,7 +64,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
                           QuicSession::Visitor* visitor,
                           QuicCryptoServerStream::Helper* helper,
                           const QuicCryptoServerConfig* crypto_config,
-                          QuicCompressedCertsCache* compressed_certs_cache);
+                          QuicCompressedCertsCache* compressed_certs_cache,
+                          QuicInMemoryCache* in_memory_cache);
 
   ~QuicSimpleServerSession() override;
 
@@ -104,6 +105,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   QuicCryptoServerStreamBase* CreateQuicCryptoServerStream(
       const QuicCryptoServerConfig* crypto_config,
       QuicCompressedCertsCache* compressed_certs_cache) override;
+
+  QuicInMemoryCache* in_memory_cache() { return in_memory_cache_; }
 
  private:
   friend class test::QuicSimpleServerSessionPeer;
@@ -149,6 +152,8 @@ class QuicSimpleServerSession : public QuicServerSessionBase {
   // stream_id is always next_outgoing_stream_id_, and the last one is always
   // highest_promised_stream_id_.
   std::deque<PromisedStreamInfo> promised_streams_;
+
+  QuicInMemoryCache* in_memory_cache_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerSession);
 };

@@ -49,17 +49,20 @@ const char kSourceAddressTokenSecret[] = "secret";
 
 const size_t kNumSessionsToCreatePerSocketEvent = 16;
 
-QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source)
+QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source,
+                       QuicInMemoryCache* in_memory_cache)
     : QuicServer(std::move(proof_source),
                  QuicConfig(),
                  QuicCryptoServerConfig::ConfigOptions(),
-                 AllSupportedVersions()) {}
+                 AllSupportedVersions(),
+                 in_memory_cache) {}
 
 QuicServer::QuicServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-    const QuicVersionVector& supported_versions)
+    const QuicVersionVector& supported_versions,
+    QuicInMemoryCache* in_memory_cache)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -70,7 +73,8 @@ QuicServer::QuicServer(
                      std::move(proof_source)),
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),
-      packet_reader_(new QuicPacketReader()) {
+      packet_reader_(new QuicPacketReader()),
+      in_memory_cache_(in_memory_cache) {
   Initialize();
 }
 
@@ -93,8 +97,7 @@ void QuicServer::Initialize() {
   epoll_server_.set_timeout_in_us(50 * 1000);
 
   if (!FLAGS_quic_in_memory_cache_dir.empty()) {
-    QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
-        FLAGS_quic_in_memory_cache_dir);
+    in_memory_cache_->InitializeFromDirectory(FLAGS_quic_in_memory_cache_dir);
   }
 
   QuicEpollClock clock(&epoll_server_);
@@ -148,7 +151,8 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
       std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicEpollAlarmFactory>(
-          new QuicEpollAlarmFactory(&epoll_server_)));
+          new QuicEpollAlarmFactory(&epoll_server_)),
+      in_memory_cache_);
 }
 
 void QuicServer::WaitForEvents() {

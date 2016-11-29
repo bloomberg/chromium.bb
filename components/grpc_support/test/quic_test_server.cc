@@ -41,22 +41,20 @@ const char kHelloTrailerName[] = "hello_trailer";
 const char kHelloTrailerValue[] = "hello trailer value";
 
 base::Thread* g_quic_server_thread = nullptr;
+net::QuicInMemoryCache* g_quic_in_memory_cache = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
 int g_quic_server_port = 0;
 
 void SetupQuicInMemoryCache() {
-  static bool setup_done = false;
-  if (setup_done)
-    return;
-  setup_done = true;
   net::SpdyHeaderBlock headers;
   headers[kHelloHeaderName] = kHelloHeaderValue;
   headers[kStatusHeader] =  kHelloStatus;
   net::SpdyHeaderBlock trailers;
   trailers[kHelloTrailerName] = kHelloTrailerValue;
-  net::QuicInMemoryCache::GetInstance()->AddResponse(
-      base::StringPrintf("%s", kTestServerHost),
-      kHelloPath, std::move(headers), kHelloBodyValue, std::move(trailers));
+  g_quic_in_memory_cache = new net::QuicInMemoryCache();
+  g_quic_in_memory_cache->AddResponse(base::StringPrintf("%s", kTestServerHost),
+                                      kHelloPath, std::move(headers),
+                                      kHelloBodyValue, std::move(trailers));
 }
 
 void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
@@ -74,18 +72,19 @@ void StartQuicServerOnServerThread(const base::FilePath& test_files_root,
       directory.AppendASCII("quic_test.example.com.crt"),
       directory.AppendASCII("quic_test.example.com.key.pkcs8"),
       directory.AppendASCII("quic_test.example.com.key.sct")));
-  g_quic_server =
-      new net::QuicSimpleServer(std::move(proof_source), config,
-                                net::QuicCryptoServerConfig::ConfigOptions(),
-                                net::AllSupportedVersions());
+
+  SetupQuicInMemoryCache();
+
+  g_quic_server = new net::QuicSimpleServer(
+      std::move(proof_source), config,
+      net::QuicCryptoServerConfig::ConfigOptions(), net::AllSupportedVersions(),
+      g_quic_in_memory_cache);
 
   // Start listening on an unbound port.
   int rv = g_quic_server->Listen(
       net::IPEndPoint(net::IPAddress::IPv4AllZeros(), 0));
   CHECK_GE(rv, 0) << "Quic server fails to start";
   g_quic_server_port = g_quic_server->server_address().port();
-
-  SetupQuicInMemoryCache();
 
   server_started_event->Signal();
 }
@@ -95,6 +94,8 @@ void ShutdownOnServerThread(base::WaitableEvent* server_stopped_event) {
   g_quic_server->Shutdown();
   delete g_quic_server;
   g_quic_server = nullptr;
+  delete g_quic_in_memory_cache;
+  g_quic_in_memory_cache = nullptr;
   server_stopped_event->Signal();
 }
 

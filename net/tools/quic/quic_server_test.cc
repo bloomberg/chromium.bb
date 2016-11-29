@@ -32,13 +32,15 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
-      std::unique_ptr<QuicAlarmFactory> alarm_factory)
+      std::unique_ptr<QuicAlarmFactory> alarm_factory,
+      QuicInMemoryCache* in_memory_cache)
       : QuicSimpleDispatcher(config,
                              crypto_config,
                              version_manager,
                              std::move(helper),
                              std::move(session_helper),
-                             std::move(alarm_factory)) {}
+                             std::move(alarm_factory),
+                             in_memory_cache) {}
   ~MockQuicSimpleDispatcher() override {}
 
   MOCK_METHOD0(OnCanWrite, void());
@@ -49,7 +51,9 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
 
 class TestQuicServer : public QuicServer {
  public:
-  TestQuicServer() : QuicServer(CryptoTestUtils::ProofSourceForTesting()) {}
+  TestQuicServer()
+      : QuicServer(CryptoTestUtils::ProofSourceForTesting(),
+                   &in_memory_cache_) {}
 
   ~TestQuicServer() override {}
 
@@ -65,11 +69,13 @@ class TestQuicServer : public QuicServer {
         std::unique_ptr<QuicCryptoServerStream::Helper>(
             new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
         std::unique_ptr<QuicEpollAlarmFactory>(
-            new QuicEpollAlarmFactory(epoll_server())));
+            new QuicEpollAlarmFactory(epoll_server())),
+        &in_memory_cache_);
     return mock_dispatcher_;
   }
 
   MockQuicSimpleDispatcher* mock_dispatcher_;
+  QuicInMemoryCache in_memory_cache_;
 };
 
 class QuicServerEpollInTest : public ::testing::Test {
@@ -155,7 +161,8 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
                 new QuicSimpleCryptoServerStreamHelper(
                     QuicRandom::GetInstance())),
             std::unique_ptr<QuicEpollAlarmFactory>(
-                new QuicEpollAlarmFactory(&eps_))) {
+                new QuicEpollAlarmFactory(&eps_)),
+            &in_memory_cache_) {
     dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1234));
   }
 
@@ -169,6 +176,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
   EpollServer eps_;
+  QuicInMemoryCache in_memory_cache_;
   MockQuicDispatcher dispatcher_;
 };
 

@@ -26,9 +26,13 @@ using std::string;
 
 namespace net {
 
-QuicSimpleServerStream::QuicSimpleServerStream(QuicStreamId id,
-                                               QuicSpdySession* session)
-    : QuicSpdyStream(id, session), content_length_(-1) {}
+QuicSimpleServerStream::QuicSimpleServerStream(
+    QuicStreamId id,
+    QuicSpdySession* session,
+    QuicInMemoryCache* in_memory_cache)
+    : QuicSpdyStream(id, session),
+      content_length_(-1),
+      in_memory_cache_(in_memory_cache) {}
 
 QuicSimpleServerStream::~QuicSimpleServerStream() {}
 
@@ -130,8 +134,7 @@ void QuicSimpleServerStream::SendResponse() {
   auto authority = request_headers_.find(":authority");
   auto path = request_headers_.find(":path");
   if (authority != request_headers_.end() && path != request_headers_.end()) {
-    response = QuicInMemoryCache::GetInstance()->GetResponse(authority->second,
-                                                             path->second);
+    response = in_memory_cache_->GetResponse(authority->second, path->second);
   }
   if (response == nullptr) {
     DVLOG(1) << "Response not found in cache.";
@@ -182,7 +185,7 @@ void QuicSimpleServerStream::SendResponse() {
     }
   }
   std::list<QuicInMemoryCache::ServerPushInfo> resources =
-      QuicInMemoryCache::GetInstance()->GetServerPushResources(request_url);
+      in_memory_cache_->GetServerPushResources(request_url);
   DVLOG(1) << "Found " << resources.size() << " push resources for stream "
            << id();
 

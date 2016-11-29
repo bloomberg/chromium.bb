@@ -29,7 +29,6 @@
 #include "net/test/gtest_util.h"
 #include "net/tools/quic/quic_simple_server_stream.h"
 #include "net/tools/quic/test_tools/mock_quic_server_session_visitor.h"
-#include "net/tools/quic/test_tools/quic_in_memory_cache_peer.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -195,9 +194,9 @@ class QuicSimpleServerSessionTest
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
         SupportedVersions(GetParam()));
-    session_.reset(new QuicSimpleServerSession(config_, connection_, &owner_,
-                                               &stream_helper_, &crypto_config_,
-                                               &compressed_certs_cache_));
+    session_.reset(new QuicSimpleServerSession(
+        config_, connection_, &owner_, &stream_helper_, &crypto_config_,
+        &compressed_certs_cache_, &in_memory_cache_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
@@ -218,6 +217,7 @@ class QuicSimpleServerSessionTest
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   QuicCompressedCertsCache compressed_certs_cache_;
+  QuicInMemoryCache in_memory_cache_;
   std::unique_ptr<QuicSimpleServerSession> session_;
   std::unique_ptr<CryptoHandshakeMessage> handshake_message_;
   QuicConnectionVisitorInterface* visitor_;
@@ -434,9 +434,9 @@ class QuicSimpleServerSessionServerPushTest
     connection_ = new StrictMock<MockQuicConnectionWithSendStreamData>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
         SupportedVersions(GetParam()));
-    session_.reset(new QuicSimpleServerSession(config_, connection_, &owner_,
-                                               &stream_helper_, &crypto_config_,
-                                               &compressed_certs_cache_));
+    session_.reset(new QuicSimpleServerSession(
+        config_, connection_, &owner_, &stream_helper_, &crypto_config_,
+        &compressed_certs_cache_, &in_memory_cache_));
     session_->Initialize();
     // Needed to make new session flow control window and server push work.
     session_->OnConfigNegotiated();
@@ -465,8 +465,6 @@ class QuicSimpleServerSessionServerPushTest
 
     config_.SetMaxStreamsPerConnection(kMaxStreamsForTest, kMaxStreamsForTest);
 
-    QuicInMemoryCachePeer::ResetForTests();
-
     string request_url = "mail.google.com/";
     SpdyHeaderBlock request_headers;
     string resource_host = "www.google.com";
@@ -480,8 +478,7 @@ class QuicSimpleServerSessionServerPushTest
       GURL resource_url = GURL(url);
       string body;
       GenerateBody(&body, body_size);
-      QuicInMemoryCache::GetInstance()->AddSimpleResponse(resource_host, path,
-                                                          200, body);
+      in_memory_cache_.AddSimpleResponse(resource_host, path, 200, body);
       push_resources.push_back(QuicInMemoryCache::ServerPushInfo(
           resource_url, SpdyHeaderBlock(), kDefaultPriority, body));
       // PUSH_PROMISED are sent for all the resources.

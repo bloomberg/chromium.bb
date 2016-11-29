@@ -155,11 +155,6 @@ void QuicInMemoryCache::ResourceFile::HandleXOriginalUrl() {
   SetHostPathFromBase(url);
 }
 
-// static
-QuicInMemoryCache* QuicInMemoryCache::GetInstance() {
-  return base::Singleton<QuicInMemoryCache>::get();
-}
-
 const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
     StringPiece host,
     StringPiece path) const {
@@ -230,12 +225,6 @@ void QuicInMemoryCache::AddSpecialResponse(StringPiece host,
 }
 
 QuicInMemoryCache::QuicInMemoryCache() {}
-
-void QuicInMemoryCache::ResetForTests() {
-  base::AutoLock lock(response_mutex_);
-  responses_.clear();
-  server_push_resources_.clear();
-}
 
 void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   if (cache_directory.empty()) {

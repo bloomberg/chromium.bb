@@ -83,13 +83,15 @@ class TestServerSession : public QuicServerSessionBase {
                     QuicSession::Visitor* visitor,
                     QuicCryptoServerStream::Helper* helper,
                     const QuicCryptoServerConfig* crypto_config,
-                    QuicCompressedCertsCache* compressed_certs_cache)
+                    QuicCompressedCertsCache* compressed_certs_cache,
+                    QuicInMemoryCache* in_memory_cache)
       : QuicServerSessionBase(config,
                               connection,
                               visitor,
                               helper,
                               crypto_config,
-                              compressed_certs_cache) {}
+                              compressed_certs_cache),
+        in_memory_cache_(in_memory_cache) {}
 
   ~TestServerSession() override { delete connection(); };
 
@@ -98,7 +100,8 @@ class TestServerSession : public QuicServerSessionBase {
     if (!ShouldCreateIncomingDynamicStream(id)) {
       return nullptr;
     }
-    QuicSpdyStream* stream = new QuicSimpleServerStream(id, this);
+    QuicSpdyStream* stream =
+        new QuicSimpleServerStream(id, this, in_memory_cache_);
     ActivateStream(base::WrapUnique(stream));
     return stream;
   }
@@ -108,8 +111,8 @@ class TestServerSession : public QuicServerSessionBase {
       return nullptr;
     }
 
-    QuicSpdyStream* stream =
-        new QuicSimpleServerStream(GetNextOutgoingStreamId(), this);
+    QuicSpdyStream* stream = new QuicSimpleServerStream(
+        GetNextOutgoingStreamId(), this, in_memory_cache_);
     stream->SetPriority(priority);
     ActivateStream(base::WrapUnique(stream));
     return stream;
@@ -122,6 +125,9 @@ class TestServerSession : public QuicServerSessionBase {
         crypto_config, compressed_certs_cache,
         FLAGS_enable_quic_stateless_reject_support, this, stream_helper());
   }
+
+ private:
+  QuicInMemoryCache* in_memory_cache_;  // Owned by QuicServerSessionBaseTest.
 };
 
 const size_t kMaxStreamsForTest = 10;
@@ -149,9 +155,9 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
     connection_ = new StrictMock<MockQuicConnection>(
         &helper_, &alarm_factory_, Perspective::IS_SERVER,
         SupportedVersions(GetParam()));
-    session_.reset(new TestServerSession(config_, connection_, &owner_,
-                                         &stream_helper_, &crypto_config_,
-                                         &compressed_certs_cache_));
+    session_.reset(new TestServerSession(
+        config_, connection_, &owner_, &stream_helper_, &crypto_config_,
+        &compressed_certs_cache_, &in_memory_cache_));
     MockClock clock;
     handshake_message_.reset(crypto_config_.AddDefaultConfig(
         QuicRandom::GetInstance(), &clock,
@@ -168,6 +174,7 @@ class QuicServerSessionBaseTest : public ::testing::TestWithParam<QuicVersion> {
   QuicConfig config_;
   QuicCryptoServerConfig crypto_config_;
   QuicCompressedCertsCache compressed_certs_cache_;
+  QuicInMemoryCache in_memory_cache_;
   std::unique_ptr<TestServerSession> session_;
   std::unique_ptr<CryptoHandshakeMessage> handshake_message_;
   QuicConnectionVisitorInterface* visitor_;

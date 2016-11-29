@@ -35,8 +35,8 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
                 new net::test::MockQuicConnectionHelper),
             std::unique_ptr<QuicCryptoServerStream::Helper>(
                 new QuicSimpleServerSessionHelper(QuicRandom::GetInstance())),
-            std::unique_ptr<MockAlarmFactory>(
-                new net::test::MockAlarmFactory)) {
+            std::unique_ptr<MockAlarmFactory>(new net::test::MockAlarmFactory),
+            &in_memory_cache_) {
     dispatcher_.InitializeWithWriter(nullptr);
   }
 
@@ -52,6 +52,7 @@ class QuicChromeServerDispatchPacketTest : public ::testing::Test {
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
   net::test::MockQuicDispatcher dispatcher_;
+  QuicInMemoryCache in_memory_cache_;
 };
 
 TEST_F(QuicChromeServerDispatchPacketTest, DispatchPacket) {

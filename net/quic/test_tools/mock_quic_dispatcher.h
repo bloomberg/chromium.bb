@@ -23,7 +23,8 @@ class MockQuicDispatcher : public QuicSimpleDispatcher {
       QuicVersionManager* version_manager,
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
-      std::unique_ptr<QuicAlarmFactory> alarm_factory);
+      std::unique_ptr<QuicAlarmFactory> alarm_factory,
+      QuicInMemoryCache* in_memory_cache);
 
   ~MockQuicDispatcher() override;
 

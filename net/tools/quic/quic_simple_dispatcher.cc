@@ -14,13 +14,15 @@ QuicSimpleDispatcher::QuicSimpleDispatcher(
     QuicVersionManager* version_manager,
     std::unique_ptr<QuicConnectionHelperInterface> helper,
     std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
-    std::unique_ptr<QuicAlarmFactory> alarm_factory)
+    std::unique_ptr<QuicAlarmFactory> alarm_factory,
+    QuicInMemoryCache* in_memory_cache)
     : QuicDispatcher(config,
                      crypto_config,
                      version_manager,
                      std::move(helper),
                      std::move(session_helper),
-                     std::move(alarm_factory)) {}
+                     std::move(alarm_factory)),
+      in_memory_cache_(in_memory_cache) {}
 
 QuicSimpleDispatcher::~QuicSimpleDispatcher() {}
 
@@ -33,9 +35,9 @@ QuicServerSessionBase* QuicSimpleDispatcher::CreateQuicSession(
       CreatePerConnectionWriter(),
       /* owns_writer= */ true, Perspective::IS_SERVER, GetSupportedVersions());
 
-  QuicServerSessionBase* session =
-      new QuicSimpleServerSession(config(), connection, this, session_helper(),
-                                  crypto_config(), compressed_certs_cache());
+  QuicServerSessionBase* session = new QuicSimpleServerSession(
+      config(), connection, this, session_helper(), crypto_config(),
+      compressed_certs_cache(), in_memory_cache_);
   session->Initialize();
   return session;
 }

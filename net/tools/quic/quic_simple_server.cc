@@ -40,7 +40,8 @@ QuicSimpleServer::QuicSimpleServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
-    const QuicVersionVector& supported_versions)
+    const QuicVersionVector& supported_versions,
+    QuicInMemoryCache* in_memory_cache)
     : version_manager_(supported_versions),
       helper_(
           new QuicChromiumConnectionHelper(&clock_, QuicRandom::GetInstance())),
@@ -55,6 +56,7 @@ QuicSimpleServer::QuicSimpleServer(
       read_pending_(false),
       synchronous_read_count_(0),
       read_buffer_(new IOBufferWithSize(kReadBufferSize)),
+      in_memory_cache_(in_memory_cache),
       weak_factory_(this) {
   Initialize();
 }
@@ -129,7 +131,7 @@ int QuicSimpleServer::Listen(const IPEndPoint& address) {
       std::unique_ptr<QuicConnectionHelperInterface>(helper_),
       std::unique_ptr<QuicCryptoServerStream::Helper>(
           new QuicSimpleServerSessionHelper(QuicRandom::GetInstance())),
-      std::unique_ptr<QuicAlarmFactory>(alarm_factory_)));
+      std::unique_ptr<QuicAlarmFactory>(alarm_factory_), in_memory_cache_));
   QuicSimpleServerPacketWriter* writer =
       new QuicSimpleServerPacketWriter(socket_.get(), dispatcher_.get());
   dispatcher_->InitializeWithWriter(writer);

@@ -31,6 +31,7 @@ namespace {
 static const int kServerPort = 6121;
 
 base::Thread* g_quic_server_thread = nullptr;
+net::QuicInMemoryCache* g_quic_in_memory_cache = nullptr;
 net::QuicSimpleServer* g_quic_server = nullptr;
 
 void StartOnServerThread(const base::FilePath& test_files_root,
@@ -41,8 +42,8 @@ void StartOnServerThread(const base::FilePath& test_files_root,
   // Set up in-memory cache.
   base::FilePath file_dir = test_files_root.Append("quic_data");
   CHECK(base::PathExists(file_dir)) << "Quic data does not exist";
-  net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
-      file_dir.value());
+  g_quic_in_memory_cache = new net::QuicInMemoryCache();
+  g_quic_in_memory_cache->InitializeFromDirectory(file_dir.value());
   net::QuicConfig config;
 
   // Set up server certs.
@@ -53,10 +54,10 @@ void StartOnServerThread(const base::FilePath& test_files_root,
       directory.Append("quic_test.example.com.crt"),
       directory.Append("quic_test.example.com.key.pkcs8"),
       directory.Append("quic_test.example.com.key.sct")));
-  g_quic_server =
-      new net::QuicSimpleServer(std::move(proof_source), config,
-                                net::QuicCryptoServerConfig::ConfigOptions(),
-                                net::AllSupportedVersions());
+  g_quic_server = new net::QuicSimpleServer(
+      std::move(proof_source), config,
+      net::QuicCryptoServerConfig::ConfigOptions(), net::AllSupportedVersions(),
+      g_quic_in_memory_cache);
 
   // Start listening.
   int rv = g_quic_server->Listen(
@@ -70,6 +71,7 @@ void ShutdownOnServerThread() {
   DCHECK(g_quic_server_thread->task_runner()->BelongsToCurrentThread());
   g_quic_server->Shutdown();
   delete g_quic_server;
+  delete g_quic_in_memory_cache;
 }
 
 }  // namespace

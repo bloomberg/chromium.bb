@@ -56,8 +56,9 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 
+  net::QuicInMemoryCache in_memory_cache;
   if (line->HasSwitch("quic_in_memory_cache_dir")) {
-    net::QuicInMemoryCache::GetInstance()->InitializeFromDirectory(
+    in_memory_cache.InitializeFromDirectory(
         line->GetSwitchValueASCII("quic_in_memory_cache_dir"));
   }
 
@@ -83,7 +84,7 @@ int main(int argc, char* argv[]) {
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
       config, net::QuicCryptoServerConfig::ConfigOptions(),
-      net::AllSupportedVersions());
+      net::AllSupportedVersions(), &in_memory_cache);
 
   int rc = server.CreateUDPSocketAndListen(
       net::QuicSocketAddress(net::QuicIpAddress::Any6(), FLAGS_port));
