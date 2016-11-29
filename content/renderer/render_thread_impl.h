@@ -490,6 +490,9 @@ class CONTENT_EXPORT RenderThreadImpl
   std::unique_ptr<base::SharedMemory> AllocateSharedMemory(
       size_t size) override;
 
+  // Purges memory and suspends the renderer.
+  void SuspendRenderer();
+
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
 

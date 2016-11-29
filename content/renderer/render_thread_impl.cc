@@ -1771,9 +1771,7 @@ void RenderThreadImpl::OnProcessPurgeAndSuspend() {
     // and follow MemoryCoordinator's request.
     base::MemoryCoordinatorClientRegistry::GetInstance()->Notify(
         base::MemoryState::SUSPENDED);
-    renderer_scheduler_->SuspendRenderer();
   }
-
   // Since purging is not a synchronous task (e.g. v8 GC, oilpan GC, ...),
   // we need to wait until the task is finished. So wait 15 seconds and
   // update purge+suspend UMA histogram.
@@ -2282,14 +2280,19 @@ void RenderThreadImpl::OnMemoryStateChange(base::MemoryState state) {
       ReleaseFreeMemory();
       break;
     case base::MemoryState::SUSPENDED:
-      OnTrimMemoryImmediately();
-      ReleaseFreeMemory();
-      ClearMemory();
+      SuspendRenderer();
       break;
     case base::MemoryState::UNKNOWN:
       NOTREACHED();
       break;
   }
+}
+
+void RenderThreadImpl::SuspendRenderer() {
+  OnTrimMemoryImmediately();
+  ReleaseFreeMemory();
+  ClearMemory();
+  renderer_scheduler_->SuspendRenderer();
 }
 
 void RenderThreadImpl::ClearMemory() {
