@@ -46,7 +46,7 @@ class ProportionallySizedView : public View {
   explicit ProportionallySizedView(int factor);
   ~ProportionallySizedView() override;
 
-  void set_preferred_width(int width) { preferred_width_ = width; }
+  void SetPreferredWidth(int width);
 
   int GetHeightForWidth(int w) const override;
   gfx::Size GetPreferredSize() const override;

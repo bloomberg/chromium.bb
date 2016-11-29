@@ -27,6 +27,18 @@ views::BoxLayout::Orientation GetOrientation(TriView::Orientation orientation) {
   return views::BoxLayout::kHorizontal;
 }
 
+// A View that will perform a layout if a child view's preferred size changes.
+class RelayoutView : public views::View {
+ public:
+  RelayoutView() {}
+
+  // views::View:
+  void ChildPreferredSizeChanged(View* child) override { Layout(); }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(RelayoutView);
+};
+
 }  // namespace
 
 TriView::TriView() : TriView(0) {}
@@ -44,9 +56,9 @@ TriView::TriView(Orientation orientation, int padding_between_containers)
       start_container_layout_manager_(new SizeRangeLayout),
       center_container_layout_manager_(new SizeRangeLayout),
       end_container_layout_manager_(new SizeRangeLayout) {
-  AddChildView(new views::View);
-  AddChildView(new views::View);
-  AddChildView(new views::View);
+  AddChildView(new RelayoutView);
+  AddChildView(new RelayoutView);
+  AddChildView(new RelayoutView);
 
   GetContainer(Container::START)
       ->SetLayoutManager(GetLayoutManager(Container::START));

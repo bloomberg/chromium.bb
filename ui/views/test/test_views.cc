@@ -35,6 +35,11 @@ ProportionallySizedView::ProportionallySizedView(int factor)
 
 ProportionallySizedView::~ProportionallySizedView() {}
 
+void ProportionallySizedView::SetPreferredWidth(int width) {
+  preferred_width_ = width;
+  PreferredSizeChanged();
+}
+
 int ProportionallySizedView::GetHeightForWidth(int w) const {
   return w * factor_;
 }

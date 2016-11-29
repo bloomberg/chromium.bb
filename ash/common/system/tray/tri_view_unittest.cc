@@ -9,11 +9,25 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/views/layout/box_layout.h"
 #include "ui/views/test/test_layout_manager.h"
 #include "ui/views/test/test_views.h"
 #include "ui/views/view.h"
 
 namespace ash {
+namespace {
+
+// Returns a layout manager that will size views according to their preferred
+// size.
+std::unique_ptr<views::LayoutManager> CreatePreferredSizeLayoutManager() {
+  auto layout = base::MakeUnique<views::BoxLayout>(
+      views::BoxLayout::kHorizontal, 0, 0, 0);
+  layout->set_cross_axis_alignment(
+      views::BoxLayout::CROSS_AXIS_ALIGNMENT_START);
+  return std::move(layout);
+}
+
+}  // namespace
 
 class TriViewTest : public testing::Test {
  public:
@@ -318,6 +332,28 @@ TEST_F(TriViewTest, NonZeroFlexTakesPrecedenceOverMaxSize) {
   EXPECT_EQ(kExpectedCenterSize,
             GetBoundsInHost(GetContainer(TriView::Container::CENTER)).size());
   EXPECT_EQ(kViewSize, GetBoundsInHost(end_child).size());
+}
+
+TEST_F(TriViewTest, ChildViewsPreferredSizeChanged) {
+  const int kHostWidth = 500;
+  const gfx::Size kMinStartSize(100, 10);
+
+  tri_view_->SetBounds(0, 0, kHostWidth, 10);
+  tri_view_->SetMinSize(TriView::Container::START, kMinStartSize);
+  tri_view_->SetContainerLayout(TriView::Container::START,
+                                CreatePreferredSizeLayoutManager());
+  tri_view_->SetFlexForContainer(TriView::Container::CENTER, 1.f);
+  tri_view_->Layout();
+
+  views::ProportionallySizedView* child_view =
+      new views::ProportionallySizedView(1);
+  tri_view_->AddView(TriView::Container::START, child_view);
+
+  child_view->SetPreferredWidth(1);
+  EXPECT_EQ(child_view->GetPreferredSize(), child_view->size());
+
+  child_view->SetPreferredWidth(2);
+  EXPECT_EQ(child_view->GetPreferredSize(), child_view->size());
 }
 
 }  // namespace ash
