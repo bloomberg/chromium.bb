@@ -644,12 +644,6 @@ void FrameView::setContentsSize(const IntSize& size) {
 
   page->chromeClient().contentsSizeChanged(m_frame.get(), size);
   frame().loader().restoreScrollPositionAndViewState();
-
-  if (!RuntimeEnabledFeatures::rootLayerScrollingEnabled()) {
-    // The presence of overflow depends on the contents size. The scroll
-    // properties can change depending on whether overflow scrolling occurs.
-    setNeedsPaintPropertyUpdate();
-  }
 }
 
 void FrameView::adjustViewSize() {
@@ -3574,6 +3568,11 @@ void FrameView::frameRectsChanged() {
     setLayoutSizeInternal(frameRect().size());
 
   setNeedsUpdateViewportIntersection();
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+    // The overflow clip property depends on the frame rect.
+    setNeedsPaintPropertyUpdate();
+  }
+
   for (const auto& child : m_children)
     child->frameRectsChanged();
 }

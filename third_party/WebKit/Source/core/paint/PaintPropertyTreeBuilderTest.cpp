@@ -2931,4 +2931,18 @@ TEST_P(PaintPropertyTreeBuilderTest, DescendantNeedsUpdateAcrossFrames) {
   EXPECT_FALSE(innerDivWithTransform->descendantNeedsPaintPropertyUpdate());
 }
 
+TEST_P(PaintPropertyTreeBuilderTest, UpdatingFrameViewContentClip) {
+  setBodyInnerHTML("hello world.");
+  EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameContentClip()->clipRect());
+  document().view()->resize(800, 599);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRoundedRect(0, 0, 800, 599), frameContentClip()->clipRect());
+  document().view()->resize(800, 600);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRoundedRect(0, 0, 800, 600), frameContentClip()->clipRect());
+  document().view()->resize(5, 5);
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_EQ(FloatRoundedRect(0, 0, 5, 5), frameContentClip()->clipRect());
+}
+
 }  // namespace blink
