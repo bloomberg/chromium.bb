@@ -41,6 +41,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ImageButton;
 
+import org.chromium.base.ObserverList.RewindableIterator;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -65,6 +66,7 @@ import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.tab.EmptyTabObserver;
 import org.chromium.chrome.browser.tab.Tab;
 import org.chromium.chrome.browser.tab.TabObserver;
+import org.chromium.chrome.browser.tab.TabTestUtils;
 import org.chromium.chrome.browser.tabmodel.EmptyTabModelObserver;
 import org.chromium.chrome.browser.tabmodel.TabModel.TabLaunchType;
 import org.chromium.chrome.browser.tabmodel.TabModelSelector;
@@ -1726,6 +1728,10 @@ public class CustomTabActivityTest extends CustomTabActivityTestBase {
         assertEquals("The tab should never be hidden during the reparenting process",
                 0, tabHiddenHelper.getCallCount());
         tabToBeReparented.removeObserver(observer);
+        RewindableIterator<TabObserver> observers = TabTestUtils.getTabObservers(tabToBeReparented);
+        while (observers.hasNext()) {
+            assertFalse(observers.next() instanceof CustomTabObserver);
+        }
         return newActivity;
     }
 

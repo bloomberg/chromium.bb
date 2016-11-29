@@ -176,6 +176,12 @@ public class CustomTabActivity extends ChromeActivity {
             // Finish the activity after we intent out.
             if (getTabModelSelector().getCurrentModel().getCount() == 0) finishAndClose(false);
         }
+
+        @Override
+        public void tabRemoved(Tab tab) {
+            tab.removeObserver(mTabObserver);
+            PageLoadMetrics.removeObserver(mMetricsObserver);
+        }
     };
 
     /**
