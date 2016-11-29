@@ -124,6 +124,7 @@ class CORE_EXPORT StyleEngine final
   void updateStyleSheetsInImport(DocumentStyleSheetCollector& parentCollector);
   void updateActiveStyleSheets(StyleResolverUpdateMode);
   void updateActiveStyle();
+  void markAllTreeScopesDirty() { m_allTreeScopesDirty = true; }
 
   enum ActiveSheetsUpdate { DontUpdateActiveSheets, UpdateActiveSheets };
   String preferredStylesheetSetName() const {
@@ -273,12 +274,15 @@ class CORE_EXPORT StyleEngine final
 
  private:
   StyleEngine(Document&);
+  bool needsActiveStyleSheetUpdate() const {
+    return m_allTreeScopesDirty || m_documentScopeDirty ||
+           m_dirtyTreeScopes.size();
+  }
 
   TreeScopeStyleSheetCollection* ensureStyleSheetCollectionFor(TreeScope&);
   TreeScopeStyleSheetCollection* styleSheetCollectionFor(TreeScope&);
-  bool shouldUpdateDocumentStyleSheetCollection(StyleResolverUpdateMode) const;
-  bool shouldUpdateShadowTreeStyleSheetCollection(
-      StyleResolverUpdateMode) const;
+  bool shouldUpdateDocumentStyleSheetCollection() const;
+  bool shouldUpdateShadowTreeStyleSheetCollection() const;
 
   void markDocumentDirty();
   void markTreeScopeDirty(TreeScope&);
@@ -351,6 +355,7 @@ class CORE_EXPORT StyleEngine final
   StyleSheetCollectionMap m_styleSheetCollectionMap;
 
   bool m_documentScopeDirty = true;
+  bool m_allTreeScopesDirty = false;
   UnorderedTreeScopeSet m_dirtyTreeScopes;
   UnorderedTreeScopeSet m_activeTreeScopes;
   DocumentOrderedList m_treeBoundaryCrossingScopes;

@@ -26,8 +26,7 @@ class StyleEngineTest : public ::testing::Test {
   StyleEngine& styleEngine() { return document().styleEngine(); }
 
   bool isDocumentStyleSheetCollectionClean() {
-    return !styleEngine().shouldUpdateDocumentStyleSheetCollection(
-        AnalyzedStyleUpdate);
+    return !styleEngine().shouldUpdateDocumentStyleSheetCollection();
   }
 
   enum RuleSetInvalidation {

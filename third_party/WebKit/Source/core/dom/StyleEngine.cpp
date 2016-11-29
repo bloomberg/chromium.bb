@@ -255,14 +255,12 @@ void StyleEngine::watchedSelectorsChanged() {
                                      StyleChangeReason::DeclarativeContent));
 }
 
-bool StyleEngine::shouldUpdateDocumentStyleSheetCollection(
-    StyleResolverUpdateMode updateMode) const {
-  return m_documentScopeDirty || updateMode == FullStyleUpdate;
+bool StyleEngine::shouldUpdateDocumentStyleSheetCollection() const {
+  return m_allTreeScopesDirty || m_documentScopeDirty;
 }
 
-bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection(
-    StyleResolverUpdateMode updateMode) const {
-  return !m_dirtyTreeScopes.isEmpty() || updateMode == FullStyleUpdate;
+bool StyleEngine::shouldUpdateShadowTreeStyleSheetCollection() const {
+  return m_allTreeScopesDirty || !m_dirtyTreeScopes.isEmpty();
 }
 
 void StyleEngine::mediaQueryAffectingValueChanged(
@@ -320,13 +318,13 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode) {
 
   TRACE_EVENT0("blink,blink_style", "StyleEngine::updateActiveStyleSheets");
 
-  if (shouldUpdateDocumentStyleSheetCollection(updateMode))
+  if (shouldUpdateDocumentStyleSheetCollection())
     documentStyleSheetCollection().updateActiveStyleSheets(*this, updateMode);
 
-  if (shouldUpdateShadowTreeStyleSheetCollection(updateMode)) {
+  if (shouldUpdateShadowTreeStyleSheetCollection()) {
     UnorderedTreeScopeSet treeScopesRemoved;
 
-    if (updateMode == FullStyleUpdate) {
+    if (m_allTreeScopesDirty) {
       for (TreeScope* treeScope : m_activeTreeScopes)
         updateActiveStyleSheetsInShadow(updateMode, treeScope,
                                         treeScopesRemoved);
@@ -343,6 +341,7 @@ void StyleEngine::updateActiveStyleSheets(StyleResolverUpdateMode updateMode) {
 
   m_dirtyTreeScopes.clear();
   m_documentScopeDirty = false;
+  m_allTreeScopesDirty = false;
 }
 
 void StyleEngine::updateActiveStyleSheets() {
@@ -527,6 +526,8 @@ void StyleEngine::resolverChanged(StyleResolverUpdateMode mode) {
     return;
   }
 
+  if (mode == FullStyleUpdate)
+    markAllTreeScopesDirty();
   m_didCalculateResolver = true;
   updateActiveStyleSheets(mode);
 }
