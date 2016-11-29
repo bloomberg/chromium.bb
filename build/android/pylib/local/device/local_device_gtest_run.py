@@ -25,12 +25,15 @@ _EXTRA_COMMAND_LINE_FILE = (
     'org.chromium.native_test.NativeTest.CommandLineFile')
 _EXTRA_COMMAND_LINE_FLAGS = (
     'org.chromium.native_test.NativeTest.CommandLineFlags')
-_EXTRA_TEST_LIST = (
+_EXTRA_STDOUT_FILE = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
-        '.TestList')
+        '.StdoutFile')
 _EXTRA_TEST = (
     'org.chromium.native_test.NativeTestInstrumentationTestRunner'
         '.Test')
+_EXTRA_TEST_LIST = (
+    'org.chromium.native_test.NativeTestInstrumentationTestRunner'
+        '.TestList')
 
 _MAX_SHARD_SIZE = 256
 _SECONDS_TO_NANOS = int(1e9)
@@ -153,13 +156,22 @@ class _ApkDelegate(object):
       else:
         extras[_EXTRA_TEST] = test[0]
 
-    with command_line_file, test_list_file:
+    stdout_file = device_temp_file.DeviceTempFile(
+        device.adb, dir=device.GetExternalStoragePath(), suffix='.gtest_out')
+    extras[_EXTRA_STDOUT_FILE] = stdout_file.name
+
+    with command_line_file, test_list_file, stdout_file:
       try:
-        return device.StartInstrumentation(
+        device.StartInstrumentation(
             self._component, extras=extras, raw=False, **kwargs)
+      except device_errors.CommandFailedError:
+        logging.exception('gtest shard failed.')
+      except device_errors.CommandTimeoutError:
+        logging.exception('gtest shard timed out.')
       except Exception:
         device.ForceStop(self._package)
         raise
+      return device.ReadFile(stdout_file.name).splitlines()
 
   def PullAppFiles(self, device, files, directory):
     PullAppFilesImpl(device, self._package, files, directory)
