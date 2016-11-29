@@ -774,6 +774,7 @@ DocumentFragment* Range::extractContents(ExceptionState& exceptionState) {
   if (exceptionState.hadException())
     return nullptr;
 
+  EventQueueScope scope;
   return processContents(EXTRACT_CONTENTS, exceptionState);
 }
 

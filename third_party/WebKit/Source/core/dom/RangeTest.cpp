@@ -8,6 +8,8 @@
 #include "core/dom/Element.h"
 #include "core/dom/NodeList.h"
 #include "core/dom/Text.h"
+#include "core/editing/EditingTestBase.h"
+#include "core/frame/Settings.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLDocument.h"
 #include "core/html/HTMLElement.h"
@@ -20,26 +22,7 @@
 
 namespace blink {
 
-class RangeTest : public ::testing::Test {
- protected:
-  void SetUp() override;
-
-  HTMLDocument& document() const;
-
- private:
-  Persistent<HTMLDocument> m_document;
-};
-
-void RangeTest::SetUp() {
-  m_document = HTMLDocument::create();
-  HTMLHtmlElement* html = HTMLHtmlElement::create(*m_document);
-  html->appendChild(HTMLBodyElement::create(*m_document));
-  m_document->appendChild(html);
-}
-
-HTMLDocument& RangeTest::document() const {
-  return *m_document;
-}
+class RangeTest : public EditingTestBase {};
 
 TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
   document().body()->setInnerHTML("<div><select><option>012</option></div>");
@@ -51,6 +34,32 @@ TEST_F(RangeTest, createAdjustedToTreeScopeWithPositionInShadowTree) {
   EXPECT_EQ(static_cast<unsigned>(range->startOffset()),
             selectElement->nodeIndex());
   EXPECT_TRUE(range->collapsed());
+}
+
+TEST_F(RangeTest, extractContentsWithDOMMutationEvent) {
+  document().body()->setInnerHTML("<span><b>abc</b>def</span>");
+  document().settings()->setScriptEnabled(true);
+  Element* const scriptElement = document().createElement("script");
+  scriptElement->setTextContent(
+      "let count = 0;"
+      "const span = document.querySelector('span');"
+      "span.addEventListener('DOMSubtreeModified', () => {"
+      "  if (++count > 1) return;"
+      "  span.firstChild.textContent = 'ABC';"
+      "  span.lastChild.textContent = 'DEF';"
+      "});");
+  document().body()->appendChild(scriptElement);
+
+  Element* const spanElement = document().querySelector("span");
+  Range* const range =
+      Range::create(document(), spanElement, 0, spanElement, 1);
+  Element* const result = document().createElement("div");
+  result->appendChild(range->extractContents(ASSERT_NO_EXCEPTION));
+
+  EXPECT_EQ("<b>abc</b>", result->innerHTML())
+      << "DOM mutation event handler should not affect result.";
+  EXPECT_EQ("<span>DEF</span>", spanElement->outerHTML())
+      << "DOM mutation event handler should be executed.";
 }
 
 TEST_F(RangeTest, SplitTextNodeRangeWithinText) {
