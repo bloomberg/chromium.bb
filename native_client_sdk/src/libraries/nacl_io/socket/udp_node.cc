@@ -436,8 +436,8 @@ Error UdpNode::SetSockOptIPV6(int optname, const void* optval, socklen_t len) {
       memcpy(&sin.sin6_addr, &mreq->ipv6mr_multiaddr, sizeof(struct in6_addr));
 
       PP_Resource net_addr = SockAddrIn6ToResource(&sin, sizeof(sin));
-      int32_t error = UDPInterface()->LeaveGroup(socket_resource_, net_addr,
-                                                 PP_BlockUntilComplete());
+      int32_t error = UDPInterface()->JoinGroup(socket_resource_, net_addr,
+                                                PP_BlockUntilComplete());
       return PPERROR_TO_ERRNO(error);
     }
     case IPV6_LEAVE_GROUP: {
