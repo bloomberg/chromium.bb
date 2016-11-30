@@ -609,9 +609,21 @@ class DeviceTestRunner(TestRunner):
       os.path.join(self.out_dir, 'Documents'),
     ])
 
+  def retrieve_crash_reports(self):
+    """Retrieves crash reports produced by the test."""
+    logs_dir = os.path.join(self.out_dir, 'Logs')
+    os.mkdir(logs_dir)
+    subprocess.check_call([
+      'idevicecrashreport',
+      '--extract',
+      '--udid', self.udid,
+      logs_dir,
+    ])
+
   def tear_down(self):
     """Performs cleanup actions which must occur after every test launch."""
     self.extract_test_data()
+    self.retrieve_crash_reports()
     self.screenshot_desktop()
     self.uninstall_apps()
 
