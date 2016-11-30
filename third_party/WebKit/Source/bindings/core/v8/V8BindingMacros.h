@@ -56,6 +56,9 @@ namespace blink {
        ? alloca(value.As<v8::ArrayBufferView>()->ByteLength())   \
        : nullptr)
 
+// DEPRECATED: These v8Call macros are deprecated.
+// Use To/ToLocal/ToChecked/ToLocalChecked instead.
+// TODO(haraken): Remove these macros.
 template <typename T>
 inline bool v8Call(v8::Maybe<T> maybe, T& outVariable) {
   if (maybe.IsNothing())
@@ -64,11 +67,13 @@ inline bool v8Call(v8::Maybe<T> maybe, T& outVariable) {
   return true;
 }
 
+// DEPRECATED
 inline bool v8CallBoolean(v8::Maybe<bool> maybe) {
   bool result;
   return v8Call(maybe, result) && result;
 }
 
+// DEPRECATED
 template <typename T>
 inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch) {
   bool success = v8Call(maybe, outVariable);
@@ -76,11 +81,13 @@ inline bool v8Call(v8::Maybe<T> maybe, T& outVariable, v8::TryCatch& tryCatch) {
   return success;
 }
 
+// DEPRECATED
 template <typename T>
 inline bool v8Call(v8::MaybeLocal<T> maybeLocal, v8::Local<T>& outVariable) {
   return maybeLocal.ToLocal(&outVariable);
 }
 
+// DEPRECATED
 template <typename T>
 inline bool v8Call(v8::MaybeLocal<T> maybeLocal,
                    v8::Local<T>& outVariable,
