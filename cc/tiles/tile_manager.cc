@@ -386,9 +386,6 @@ void TileManager::FinishTasksAndCleanUp() {
 
   tile_task_manager_->CheckForCompletedTasks();
 
-  // Now that all tasks have been finished, we can clear any |orphan_tasks_|.
-  orphan_tasks_.clear();
-
   FreeResourcesForReleasedTiles();
   CleanUpReleasedTiles();
 
@@ -949,17 +946,6 @@ void TileManager::ScheduleTasks(
   // in |raster_queue_|.
   tile_task_manager_->ScheduleTasks(&graph_);
 
-  // It's now safe to clean up orphan tasks as raster worker pool is not
-  // allowed to keep around unreferenced raster tasks after ScheduleTasks() has
-  // been called.
-  orphan_tasks_.clear();
-
-  // It's also now safe to replace our *_done_task_ tasks.
-  required_for_activation_done_task_ =
-      std::move(required_for_activation_done_task);
-  required_for_draw_done_task_ = std::move(required_for_draw_done_task);
-  all_done_task_ = std::move(all_done_task);
-
   did_check_for_completed_tasks_since_last_schedule_tasks_ = false;
 
   TRACE_EVENT_ASYNC_STEP_INTO1("cc", "ScheduledTasks", this, "running", "state",
@@ -1033,7 +1019,6 @@ void TileManager::OnRasterTaskCompleted(
 
   TileDrawInfo& draw_info = tile->draw_info();
   DCHECK(tile->raster_task_.get());
-  orphan_tasks_.push_back(tile->raster_task_);
   tile->raster_task_ = nullptr;
 
   // Unref all the images.

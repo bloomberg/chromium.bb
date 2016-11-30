@@ -327,12 +327,7 @@ class CC_EXPORT TileManager {
 
   std::vector<Tile*> released_tiles_;
 
-  std::vector<scoped_refptr<TileTask>> orphan_tasks_;
-
   TaskGraph graph_;
-  scoped_refptr<TileTask> required_for_activation_done_task_;
-  scoped_refptr<TileTask> required_for_draw_done_task_;
-  scoped_refptr<TileTask> all_done_task_;
 
   UniqueNotifier more_tiles_need_prepare_check_notifier_;
 
