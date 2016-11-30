@@ -11,37 +11,87 @@
 
 #if !defined(MAC_OS_X_VERSION_10_12_1)
 
-// The TouchBar classes do not exist at all without the 10.12.1 SDK. When
-// compiling with older SDKs, pretend they are NSObject and add categories to
-// NSObject to expose the methods.
-// To alloc one of these classes, use -[NSClassFromString(@"..") alloc].
+#pragma clang assume_nonnull begin
 
-// Incomplete. Add more as necessary.
+@class NSTouchBar, NSTouchBarItem;
+@protocol NSTouchBarDelegate;
 
-typedef NSObject NSCustomTouchBarItem;
-typedef NSObject NSGroupTouchBarItem;
-typedef NSObject NSTouchBar;
-typedef NSObject NSTouchBarItem;
+typedef float NSTouchBarItemPriority;
+static const NSTouchBarItemPriority NSTouchBarItemPriorityHigh = 1000;
+static const NSTouchBarItemPriority NSTouchBarItemPriorityNormal = 0;
+static const NSTouchBarItemPriority NSTouchBarItemPriorityLow = -1000;
+
 typedef NSString* NSTouchBarItemIdentifier;
+typedef NSString* NSTouchBarCustomizationIdentifier;
 
-@protocol NSTouchBarDelegate<NSObject>
+@interface NSTouchBar : NSObject<NSCoding>
+
+- (instancetype)init NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithCoder:(NSCoder*)aDecoder
+    NS_DESIGNATED_INITIALIZER;
+
+@property(copy, nullable)
+    NSTouchBarCustomizationIdentifier customizationIdentifier;
+@property(copy) NSArray* customizationAllowedItemIdentifiers;
+@property(copy) NSArray* customizationRequiredItemIdentifiers;
+@property(copy) NSArray* defaultItemIdentifiers;
+@property(copy, readonly) NSArray* itemIdentifiers;
+@property(copy, nullable) NSTouchBarItemIdentifier principalItemIdentifier;
+@property(copy) NSSet* templateItems;
+@property(nullable, weak) id<NSTouchBarDelegate> delegate;
+
+- (nullable __kindof NSTouchBarItem*)itemForIdentifier:
+    (NSTouchBarItemIdentifier)identifier;
+
+@property(readonly, getter=isVisible) BOOL visible;
+
 @end
 
-@interface NSObject (FakeNSCustomTouchBarItem)
-@property(readwrite, strong) NSView* view;
+@interface NSTouchBarItem : NSObject<NSCoding>
+
+- (instancetype)initWithIdentifier:(NSTouchBarItemIdentifier)identifier
+    NS_DESIGNATED_INITIALIZER;
+- (nullable instancetype)initWithCoder:(NSCoder*)coder
+    NS_DESIGNATED_INITIALIZER;
+- (instancetype)init NS_UNAVAILABLE;
+
+@property(readonly, copy) NSTouchBarItemIdentifier identifier;
+@property NSTouchBarItemPriority visibilityPriority;
+@property(readonly, nullable) NSView* view;
+@property(readonly, nullable) NSViewController* viewController;
+@property(readonly, copy) NSString* customizationLabel;
+@property(readonly, getter=isVisible) BOOL visible;
+
 @end
 
-@interface NSObject (FakeNSGroupTouchBarItem)
+@interface NSGroupTouchBarItem : NSTouchBarItem
+
 + (NSGroupTouchBarItem*)groupItemWithIdentifier:
                             (NSTouchBarItemIdentifier)identifier
                                           items:(NSArray*)items;
+
+@property(strong) NSTouchBar* groupTouchBar;
+@property(readwrite, copy, null_resettable) NSString* customizationLabel;
+
 @end
 
-@interface NSObject (FakeNSTouchBar)
-@property(copy) NSArray* defaultItemIdentifiers;
-@property(copy) NSTouchBarItemIdentifier principalItemIdentifier;
-@property(weak) id<NSTouchBarDelegate> delegate;
+@interface NSCustomTouchBarItem : NSTouchBarItem
+
+@property(readwrite, strong) __kindof NSView* view;
+@property(readwrite, strong, nullable)
+    __kindof NSViewController* viewController;
+@property(readwrite, copy, null_resettable) NSString* customizationLabel;
+
 @end
+
+@protocol NSTouchBarDelegate<NSObject>
+
+@optional
+- (nullable NSTouchBarItem*)touchBar:(NSTouchBar*)touchBar
+               makeItemForIdentifier:(NSTouchBarItemIdentifier)identifier;
+@end
+
+#pragma clang assume_nonnull end
 
 #elif MAC_OS_X_VERSION_MIN_REQUIRED < MAC_OS_X_VERSION_10_12_1
 

@@ -61,7 +61,9 @@ NSString* const kTouchBarCancelId = @"com.google.chrome-CANCEL";
     }
     if ([items count] == 0)
       return nil;
-    return [NSGroupTouchBarItem groupItemWithIdentifier:identifier items:items];
+    return [NSClassFromString(@"NSGroupTouchBarItem")
+        groupItemWithIdentifier:identifier
+                          items:items];
   }
 
   ui::DialogButton type = ui::DIALOG_BUTTON_NONE;
