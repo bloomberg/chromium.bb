@@ -6,22 +6,10 @@ Sorted by: name
     foo.bar
     style.css
 
-Sorted by: status
-    abe.png
-    style.css
-    abe.png
-    foo.bar
-
 Sorted by: name
     style.css
     foo.bar
     abe.png
     abe.png
-
-Sorted by: type
-    abe.png
-    style.css
-    abe.png
-    foo.bar
 
 
