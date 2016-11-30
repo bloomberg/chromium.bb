@@ -93,7 +93,8 @@ html[dir=rtl] .header-bar-item {
 #login-header-bar #add-user-button-text,
 #login-header-bar #guest-user-button-text,
 #login-header-bar #more-settings-button-text,
-#login-header-bar #cancel-multiple-sign-in-button-text {
+#login-header-bar #cancel-multiple-sign-in-button-text,
+#login-header-bar #sign-out-user-button-text {
   -webkit-padding-start: 28px;
   background-position: left center;
   background-repeat: no-repeat;
@@ -105,7 +106,8 @@ html[dir=rtl] #login-header-bar #restart-button-text,
 html[dir=rtl] #login-header-bar #add-user-button-text,
 html[dir=rtl] #login-header-bar #more-settings-button-text,
 html[dir=rtl] #login-header-bar #guest-user-button-text,
-html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text {
+html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text,
+html[dir=rtl] #login-header-bar #sign-out-user-button-text {
   background-position: right center;
 }
 
@@ -136,7 +138,9 @@ html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text {
 }
 
 #login-header-bar #more-settings-button-text {
-  background-image: url(chrome://theme/IDR_ICON_MORE_VERT_WHITE);
+  background-image: -webkit-image-set(
+      url(images/1x/more-settings.svg) 1x,
+      url(images/2x/more-settings.svg) 2x );
 }
 
 #login-header-bar #guest-user-button-text {
@@ -148,6 +152,12 @@ html[dir=rtl] #login-header-bar #cancel-multiple-sign-in-button-text {
 #login-header-bar #cancel-multiple-sign-in-button-text {
   /* TODO(dzhioev): replace with appropriate image when possible. */
   background-image: url(chrome://theme/IDR_PANEL_CLOSE);
+}
+
+#login-header-bar #sign-out-user-button-text {
+  background-image: -webkit-image-set(
+      url(images/1x/signout.svg) 1x,
+      url(images/2x/signout.svg) 2x );
 }
 
 .button-restricted {
