@@ -5506,25 +5506,33 @@ void Document::initSecurityContext(const DocumentInit& initializer) {
 
 void Document::initContentSecurityPolicy(ContentSecurityPolicy* csp) {
   setContentSecurityPolicy(csp ? csp : ContentSecurityPolicy::create());
-  if (m_frame && m_frame->tree().parent() &&
-      m_frame->tree().parent()->isLocalFrame()) {
-    ContentSecurityPolicy* parentCSP = toLocalFrame(m_frame->tree().parent())
-                                           ->document()
-                                           ->contentSecurityPolicy();
 
-    // We inherit the parent frame's CSP for documents with "local" schemes:
-    // 'about', 'blob', 'data', and 'filesystem'. We also inherit the parent
-    // frame's CSP for documents with empty/invalid URLs because we treat
-    // those URLs as 'about:blank' in Blink.
-    //
-    // https://w3c.github.io/webappsec-csp/#initialize-document-csp
-    if (m_url.isEmpty() || m_url.protocolIsAbout() || m_url.protocolIsData() ||
-        m_url.protocolIs("blob") || m_url.protocolIs("filesystem")) {
-      contentSecurityPolicy()->copyStateFrom(parentCSP);
-    } else if (isPluginDocument()) {
-      // Per CSP2, plugin-types for plugin documents in nested browsing
-      // contexts gets inherited from the parent.
-      contentSecurityPolicy()->copyPluginTypesFrom(parentCSP);
+  // We inherit the parent/opener's CSP for documents with "local" schemes:
+  // 'about', 'blob', 'data', and 'filesystem'. We also inherit CSP for
+  // documents with empty/invalid URLs because we treat those URLs as
+  // 'about:blank' in Blink.
+  //
+  // https://w3c.github.io/webappsec-csp/#initialize-document-csp
+  //
+  // TODO(dcheng): This is similar enough to work we're doing in
+  // 'DocumentLoader::ensureWriter' that it might make sense to combine them.
+  if (m_frame) {
+    Frame* inheritFrom = m_frame->tree().parent() ? m_frame->tree().parent()
+                                                  : m_frame->client()->opener();
+    if (inheritFrom && m_frame != inheritFrom) {
+      DCHECK(inheritFrom->securityContext() &&
+             inheritFrom->securityContext()->contentSecurityPolicy());
+      ContentSecurityPolicy* policyToInherit =
+          inheritFrom->securityContext()->contentSecurityPolicy();
+      if (m_url.isEmpty() || m_url.protocolIsAbout() ||
+          m_url.protocolIsData() || m_url.protocolIs("blob") ||
+          m_url.protocolIs("filesystem")) {
+        contentSecurityPolicy()->copyStateFrom(policyToInherit);
+      }
+      // Plugin documents inherit their parent/opener's 'plugin-types' directive
+      // regardless of URL.
+      if (isPluginDocument())
+        contentSecurityPolicy()->copyPluginTypesFrom(policyToInherit);
     }
   }
   contentSecurityPolicy()->bindToExecutionContext(this);
