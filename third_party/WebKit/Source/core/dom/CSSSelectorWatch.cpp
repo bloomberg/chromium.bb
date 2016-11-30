@@ -99,8 +99,9 @@ void CSSSelectorWatch::updateSelectorMatches(
 
     // Count reached 0.
     shouldUpdateTimer = true;
-    if (m_addedSelectors.contains(selector))
-      m_addedSelectors.remove(selector);
+    auto it = m_addedSelectors.find(selector);
+    if (it != m_addedSelectors.end())
+      m_addedSelectors.remove(it);
     else
       m_removedSelectors.add(selector);
   }
@@ -113,8 +114,9 @@ void CSSSelectorWatch::updateSelectorMatches(
       continue;
 
     shouldUpdateTimer = true;
-    if (m_removedSelectors.contains(selector))
-      m_removedSelectors.remove(selector);
+    auto it = m_removedSelectors.find(selector);
+    if (it != m_removedSelectors.end())
+      m_removedSelectors.remove(it);
     else
       m_addedSelectors.add(selector);
   }
