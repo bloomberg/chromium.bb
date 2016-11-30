@@ -53,11 +53,12 @@ std::unique_ptr<NavigationHandleImpl> NavigationHandleImpl::Create(
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
     bool is_same_page,
+    bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu) {
   return std::unique_ptr<NavigationHandleImpl>(new NavigationHandleImpl(
-      url, frame_tree_node, is_renderer_initiated, is_same_page,
+      url, frame_tree_node, is_renderer_initiated, is_same_page, is_srcdoc,
       navigation_start, pending_nav_entry_id, started_from_context_menu));
 }
 
@@ -66,6 +67,7 @@ NavigationHandleImpl::NavigationHandleImpl(
     FrameTreeNode* frame_tree_node,
     bool is_renderer_initiated,
     bool is_same_page,
+    bool is_srcdoc,
     const base::TimeTicks& navigation_start,
     int pending_nav_entry_id,
     bool started_from_context_menu)
@@ -77,6 +79,7 @@ NavigationHandleImpl::NavigationHandleImpl(
       render_frame_host_(nullptr),
       is_renderer_initiated_(is_renderer_initiated),
       is_same_page_(is_same_page),
+      is_srcdoc_(is_srcdoc),
       was_redirected_(false),
       connection_info_(net::HttpResponseInfo::CONNECTION_INFO_UNKNOWN),
       original_url_(url),
@@ -163,6 +166,10 @@ bool NavigationHandleImpl::IsParentMainFrame() {
 
 bool NavigationHandleImpl::IsRendererInitiated() {
   return is_renderer_initiated_;
+}
+
+bool NavigationHandleImpl::IsSrcdoc() {
+  return is_srcdoc_;
 }
 
 bool NavigationHandleImpl::WasServerRedirect() {

@@ -45,8 +45,10 @@
 #include "content/public/common/content_client.h"
 #include "content/public/common/content_constants.h"
 #include "content/public/common/resource_response.h"
+#include "content/public/common/url_constants.h"
 #include "net/base/net_errors.h"
 #include "url/gurl.h"
+#include "url/url_constants.h"
 
 namespace content {
 
@@ -144,6 +146,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
     const base::TimeTicks& navigation_start) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
+  bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
   GURL validated_url(url);
   RenderProcessHost* render_process_host = render_frame_host->GetProcess();
   render_process_host->FilterURL(false, &validated_url);
@@ -166,7 +169,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
   if (delegate_) {
     // Notify the observer about the start of the provisional load.
     delegate_->DidStartProvisionalLoad(render_frame_host, validated_url,
-                                       is_error_page);
+                                       is_error_page, is_iframe_srcdoc);
   }
 
   if (is_error_page || IsBrowserSideNavigationEnabled())
@@ -205,6 +208,7 @@ void NavigatorImpl::DidStartProvisionalLoad(
       validated_url, render_frame_host->frame_tree_node(),
       is_renderer_initiated,
       false,             // is_same_page
+      is_iframe_srcdoc,  // is_srcdoc
       navigation_start, pending_nav_entry_id, started_from_context_menu));
 }
 

@@ -59,7 +59,8 @@ void TestFrameNavigationObserver::WaitForCommit() {
 void TestFrameNavigationObserver::DidStartProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   RenderFrameHostImpl* rfh =
       static_cast<RenderFrameHostImpl*>(render_frame_host);
   if (rfh->frame_tree_node()->frame_tree_node_id() == frame_tree_node_id_) {

@@ -1237,7 +1237,7 @@ void RenderFrameHostImpl::OnDidCommitProvisionalLoad(const IPC::Message& msg) {
   process->FilterURL(false, &validated_params.url);
   process->FilterURL(true, &validated_params.referrer.url);
   for (std::vector<GURL>::iterator it(validated_params.redirects.begin());
-       it != validated_params.redirects.end(); ++it) {
+      it != validated_params.redirects.end(); ++it) {
     process->FilterURL(false, &(*it));
   }
   process->FilterURL(true, &validated_params.searchable_form_url);
@@ -3288,7 +3288,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
 
     return NavigationHandleImpl::Create(
         params.url, frame_tree_node_, is_renderer_initiated,
-        params.was_within_same_page, base::TimeTicks::Now(),
+        params.was_within_same_page, params.is_srcdoc, base::TimeTicks::Now(),
         pending_nav_entry_id, false);  // started_from_context_menu
   }
 
@@ -3340,7 +3340,7 @@ RenderFrameHostImpl::TakeNavigationHandleForCommit(
   // navigation loaded via LoadDataWithBaseURL, propagate the entry id.
   return NavigationHandleImpl::Create(
       params.url, frame_tree_node_, is_renderer_initiated,
-      params.was_within_same_page, base::TimeTicks::Now(),
+      params.was_within_same_page, params.is_srcdoc, base::TimeTicks::Now(),
       entry_id_for_data_nav, false);  // started_from_context_menu
 }
 

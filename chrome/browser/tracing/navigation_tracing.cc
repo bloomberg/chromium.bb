@@ -114,7 +114,8 @@ NavigationTracingObserver::~NavigationTracingObserver() {
 void NavigationTracingObserver::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   if (!render_frame_host->GetParent() && !is_error_page) {
     content::BackgroundTracingManager::GetInstance()->TriggerNamedEvent(
         navigation_handle,

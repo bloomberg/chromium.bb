@@ -37,6 +37,7 @@ void InterstitialPageNavigatorImpl::DidStartProvisionalLoad(
       NavigationHandleImpl::Create(url, render_frame_host->frame_tree_node(),
                                    false,  // is_renderer_initiated
                                    false,  // is_synchronous
+                                   false,  // is_srcdoc
                                    navigation_start,
                                    0,      // pending_nav_entry_id
                                    false)  // started_in_context_menu

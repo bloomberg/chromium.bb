@@ -299,6 +299,9 @@ IPC_STRUCT_BEGIN_WITH_PARENT(FrameHostMsg_DidCommitProvisionalLoad_Params,
   // considered potentially trustworthy.
   IPC_STRUCT_MEMBER(bool, has_potentially_trustworthy_unique_origin)
 
+  // True if the navigation originated as an srcdoc attribute.
+  IPC_STRUCT_MEMBER(bool, is_srcdoc)
+
   // See WebSearchableFormData for a description of these.
   // Not used by PlzNavigate: in that case these fields are sent to the browser
   // in BeginNavigationParams.

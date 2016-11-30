@@ -73,6 +73,9 @@ class CONTENT_EXPORT NavigationHandle {
   //  * using window.history.pushState
   virtual bool IsRendererInitiated() = 0;
 
+  // Whether the navigation is for an iframe with srcdoc attribute.
+  virtual bool IsSrcdoc() = 0;
+
   // Returns the FrameTreeNode ID for the frame in which the navigation is
   // performed. This ID is browser-global and uniquely identifies a frame that
   // hosts content. The identifier is fixed at the creation of the frame and

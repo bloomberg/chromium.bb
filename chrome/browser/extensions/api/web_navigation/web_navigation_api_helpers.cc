@@ -64,6 +64,8 @@ void DispatchEvent(content::BrowserContext* browser_context,
 // Constructs and dispatches an onBeforeNavigate event.
 void DispatchOnBeforeNavigate(content::NavigationHandle* navigation_handle) {
   GURL url(navigation_handle->GetURL());
+  if (navigation_handle->IsSrcdoc())
+    url = GURL(content::kAboutSrcDocURL);
 
   web_navigation::OnBeforeNavigate::Details details;
   details.tab_id =
@@ -93,6 +95,9 @@ void DispatchOnCommitted(events::HistogramValue histogram_value,
   content::RenderFrameHost* frame_host =
       navigation_handle->GetRenderFrameHost();
   ui::PageTransition transition_type = navigation_handle->GetPageTransition();
+
+  if (navigation_handle->IsSrcdoc())
+    url = GURL(content::kAboutSrcDocURL);
 
   std::unique_ptr<base::ListValue> args(new base::ListValue());
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());

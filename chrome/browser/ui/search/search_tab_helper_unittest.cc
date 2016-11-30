@@ -322,7 +322,8 @@ class TabTitleObserver : public content::WebContentsObserver {
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* /* render_frame_host */,
       const GURL& /* validated_url */,
-      bool /* is_error_page */) override {
+      bool /* is_error_page */,
+      bool /* is_iframe_srcdoc */) override {
     title_on_start_ = web_contents()->GetTitle();
   }
 

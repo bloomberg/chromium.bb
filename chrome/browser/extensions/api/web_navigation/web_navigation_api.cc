@@ -320,8 +320,13 @@ void WebNavigationTabObserver::DidFinishLoad(
 
   // A new navigation might have started before the old one completed.
   // Ignore the old navigation completion in that case.
-  if (navigation_state_.GetUrl(render_frame_host) != validated_url)
+  // srcdoc iframes will report a url of about:blank, still let it through.
+  if (navigation_state_.GetUrl(render_frame_host) != validated_url &&
+      (navigation_state_.GetUrl(render_frame_host) !=
+           content::kAboutSrcDocURL ||
+       validated_url != url::kAboutBlankURL)) {
     return;
+  }
 
   // The load might already have finished by the time we finished parsing. For
   // compatibility reasons, we artifically delay the load completed signal until
@@ -394,7 +399,8 @@ void WebNavigationTabObserver::HandleCommit(
   navigation_state_.StartTrackingDocumentLoad(
       navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
       navigation_handle->IsSamePage(),
-      false);  // is_error_page
+      false,  // is_error_page
+      navigation_handle->IsSrcdoc());
 
   events::HistogramValue histogram_value = events::UNKNOWN;
   std::string event_name;
@@ -417,7 +423,8 @@ void WebNavigationTabObserver::HandleError(
     navigation_state_.StartTrackingDocumentLoad(
         navigation_handle->GetRenderFrameHost(), navigation_handle->GetURL(),
         navigation_handle->IsSamePage(),
-        true);  // is_error_page
+        true,  // is_error_page
+        navigation_handle->IsSrcdoc());
   }
 
   helpers::DispatchOnErrorOccurred(navigation_handle);

@@ -190,7 +190,8 @@ public class TabWebContentsObserver extends WebContentsObserver {
 
     @Override
     public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-            boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
+            boolean isMainFrame, String validatedUrl, boolean isErrorPage,
+            boolean isIframeSrcdoc) {
         if (isMainFrame) mTab.didStartPageLoad(validatedUrl, isErrorPage);
 
         mTab.handleDidStartProvisionalLoadForFrame(isMainFrame, validatedUrl);

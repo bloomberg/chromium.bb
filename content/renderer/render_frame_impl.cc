@@ -4810,6 +4810,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.item_sequence_number = item.itemSequenceNumber();
   params.document_sequence_number = item.documentSequenceNumber();
 
+  params.is_srcdoc = params.url == content::kAboutSrcDocURL;
+
   // If the page contained a client redirect (meta refresh, document.loc...),
   // set the referrer appropriately.
   if (ds->isClientRedirect()) {

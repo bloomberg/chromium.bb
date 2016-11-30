@@ -3300,7 +3300,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // nested iframe.
   GURL main_url(embedded_test_server()->GetURL(
       "/navigation_controller/inject_iframe_srcdoc_with_nested_frame.html"));
-  GURL srcdoc_url(content::kAboutSrcDocURL);
+  GURL blank_url(url::kAboutBlankURL);
   GURL inner_url(
       embedded_test_server()->GetURL("/navigation_controller/form.html"));
   EXPECT_TRUE(NavigateToURL(shell(), main_url));
@@ -3315,7 +3315,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   ASSERT_EQ(1U, root->child_at(0)->child_count());
   ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
   EXPECT_EQ(main_url, root->current_url());
-  EXPECT_EQ(srcdoc_url, root->child_at(0)->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
   EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
 
   EXPECT_EQ(1, controller.GetEntryCount());
@@ -3325,7 +3325,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // The entry should have FrameNavigationEntries for the subframes.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     ASSERT_EQ(1U, entry->root_node()->children.size());
-    EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
     EXPECT_EQ(inner_url,
               entry->root_node()->children[0]->children[0]->frame_entry->url());
   }
@@ -3352,10 +3352,12 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
     back_load_observer.Wait();
   }
   ASSERT_EQ(1U, root->child_count());
+  // TODO(creis): This line is unexpectedly failing in PlzNavigate, so the test
+  // is disabled there for now.
   ASSERT_EQ(1U, root->child_at(0)->child_count());
   ASSERT_EQ(0U, root->child_at(0)->child_at(0)->child_count());
   EXPECT_EQ(main_url, root->current_url());
-  EXPECT_EQ(srcdoc_url, root->child_at(0)->current_url());
+  EXPECT_EQ(blank_url, root->child_at(0)->current_url());
 
   // Verify that the inner iframe went to the correct URL.
   EXPECT_EQ(inner_url, root->child_at(0)->child_at(0)->current_url());
@@ -3367,7 +3369,7 @@ IN_PROC_BROWSER_TEST_F(NavigationControllerBrowserTest,
   // The entry should have FrameNavigationEntries for the subframes.
   if (SiteIsolationPolicy::UseSubframeNavigationEntries()) {
     ASSERT_EQ(1U, entry->root_node()->children.size());
-    EXPECT_EQ(srcdoc_url, entry->root_node()->children[0]->frame_entry->url());
+    EXPECT_EQ(blank_url, entry->root_node()->children[0]->frame_entry->url());
     EXPECT_EQ(inner_url,
               entry->root_node()->children[0]->children[0]->frame_entry->url());
   }

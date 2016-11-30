@@ -49,9 +49,10 @@ class TestNavigationObserver::TestWebContentsObserver
 
   void DidStartProvisionalLoadForFrame(RenderFrameHost* render_frame_host,
                                        const GURL& validated_url,
-                                       bool is_error_page) override {
+                                       bool is_error_page,
+                                       bool is_iframe_srcdoc) override {
     parent_->OnDidStartProvisionalLoad(render_frame_host, validated_url,
-                                       is_error_page);
+                                       is_error_page, is_iframe_srcdoc);
   }
 
   void DidFailProvisionalLoad(
@@ -175,7 +176,8 @@ void TestNavigationObserver::OnDidStopLoading(WebContents* web_contents) {
 void TestNavigationObserver::OnDidStartProvisionalLoad(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   last_navigation_succeeded_ = false;
 }
 

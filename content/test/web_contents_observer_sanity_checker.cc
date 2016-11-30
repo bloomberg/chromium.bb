@@ -212,7 +212,8 @@ void WebContentsObserverSanityChecker::DidFinishNavigation(
 void WebContentsObserverSanityChecker::DidStartProvisionalLoadForFrame(
     RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   AssertRenderFrameExists(render_frame_host);
 }
 

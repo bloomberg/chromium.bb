@@ -875,8 +875,22 @@ std::map<std::string, bool> NavigationEntryImpl::GetSubframeUniqueNames(
       // renderer should be allowed to just commit the initial blank frame if
       // that was the default URL.  PageState doesn't matter there, because
       // content injected into about:blank frames doesn't use it.
-      names[child->frame_entry->frame_unique_name()] =
-          child->frame_entry->url() == url::kAboutBlankURL;
+      //
+      // Be careful not to include iframe srcdoc URLs in this check, which do
+      // need their PageState.  The committed URL in that case gets rewritten to
+      // about:blank, but we can detect it via the PageState's URL.
+      //
+      // See https://crbug.com/657896 for details.
+      bool is_about_blank = false;
+      ExplodedPageState exploded_page_state;
+      if (DecodePageState(child->frame_entry->page_state().ToEncodedData(),
+                          &exploded_page_state)) {
+        ExplodedFrameState frame_state = exploded_page_state.top;
+        if (UTF16ToUTF8(frame_state.url_string.string()) == url::kAboutBlankURL)
+          is_about_blank = true;
+      }
+
+      names[child->frame_entry->frame_unique_name()] = is_about_blank;
     }
   }
   return names;

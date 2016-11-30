@@ -570,7 +570,8 @@ class CONTENT_EXPORT WebContentsImpl
   void DidFinishNavigation(NavigationHandle* navigation_handle) override;
   void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
                                const GURL& validated_url,
-                               bool is_error_page) override;
+                               bool is_error_page,
+                               bool is_iframe_srcdoc) override;
   void DidFailProvisionalLoadWithError(RenderFrameHostImpl* render_frame_host,
                                        const GURL& validated_url,
                                        int error_code,

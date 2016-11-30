@@ -506,7 +506,8 @@ void OptionsUI::ProcessAutocompleteSuggestions(
 void OptionsUI::DidStartProvisionalLoadForFrame(
     content::RenderFrameHost* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page) {
+    bool is_error_page,
+    bool is_iframe_srcdoc) {
   load_start_time_ = base::Time::Now();
   if (render_frame_host->GetRenderViewHost() ==
           web_ui()->GetWebContents()->GetRenderViewHost() &&

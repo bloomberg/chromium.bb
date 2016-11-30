@@ -42,7 +42,8 @@ class FrameNavigationState {
   void StartTrackingDocumentLoad(content::RenderFrameHost* frame_host,
                                  const GURL& url,
                                  bool is_same_page,
-                                 bool is_error_page);
+                                 bool is_error_page,
+                                 bool is_iframe_srcdoc);
 
   // Adds the |frame_host| to the set of RenderFrameHosts associated with the
   // WebContents this object is tracking. This method and FrameHostDeleted
@@ -96,6 +97,7 @@ class FrameNavigationState {
     FrameState();
 
     bool error_occurred;  // True if an error has occurred in this frame.
+    bool is_iframe_srcdoc;  // True if the frame is displaying its srcdoc.
     bool is_loading;        // True if there is a document load going on.
     bool is_parsing;  // True if the frame is still parsing.
     GURL url;  // URL of this frame.
