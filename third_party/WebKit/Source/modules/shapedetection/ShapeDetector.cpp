@@ -49,6 +49,11 @@ ShapeDetector::ShapeDetector(LocalFrame& frame) {
   DCHECK(frame.interfaceProvider());
   frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_faceService));
   frame.interfaceProvider()->getInterface(mojo::GetProxy(&m_barcodeService));
+  m_faceService.set_connection_error_handler(convertToBaseCallback(WTF::bind(
+      &ShapeDetector::onFaceServiceConnectionError, wrapWeakPersistent(this))));
+  m_barcodeService.set_connection_error_handler(convertToBaseCallback(
+      WTF::bind(&ShapeDetector::onBarcodeServiceConnectionError,
+                wrapWeakPersistent(this))));
 }
 
 ShapeDetector::ShapeDetector(LocalFrame& frame,
@@ -165,13 +170,13 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
     return promise;
   }
 
-  m_serviceRequests.add(resolver);
   if (detectorType == DetectorType::Face) {
     if (!m_faceService) {
       resolver->reject(DOMException::create(
           NotSupportedError, "Face detection service unavailable."));
       return promise;
     }
+    m_faceServiceRequests.add(resolver);
     m_faceService->Detect(std::move(sharedBufferHandle), img->naturalWidth(),
                           img->naturalHeight(), m_faceDetectorOptions.Clone(),
                           convertToBaseCallback(WTF::bind(
@@ -183,6 +188,7 @@ ScriptPromise ShapeDetector::detectShapesOnImageElement(
           NotSupportedError, "Barcode detection service unavailable."));
       return promise;
     }
+    m_barcodeServiceRequests.add(resolver);
     m_barcodeService->Detect(
         std::move(sharedBufferHandle), img->naturalWidth(),
         img->naturalHeight(),
@@ -308,13 +314,13 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
 
   memcpy(mappedBuffer.get(), data, size);
 
-  m_serviceRequests.add(resolver);
   if (detectorType == DetectorType::Face) {
     if (!m_faceService) {
       resolver->reject(DOMException::create(
           NotSupportedError, "Face detection service unavailable."));
       return promise;
     }
+    m_faceServiceRequests.add(resolver);
     m_faceService->Detect(std::move(sharedBufferHandle), width, height,
                           m_faceDetectorOptions.Clone(),
                           convertToBaseCallback(WTF::bind(
@@ -326,6 +332,7 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
           NotSupportedError, "Barcode detection service unavailable."));
       return promise;
     }
+    m_barcodeServiceRequests.add(resolver);
     m_barcodeService->Detect(
         std::move(sharedBufferHandle), width, height,
         convertToBaseCallback(WTF::bind(&ShapeDetector::onDetectBarcodes,
@@ -341,8 +348,8 @@ ScriptPromise ShapeDetector::detectShapesOnData(DetectorType detectorType,
 void ShapeDetector::onDetectFaces(
     ScriptPromiseResolver* resolver,
     mojom::blink::FaceDetectionResultPtr faceDetectionResult) {
-  if (!m_serviceRequests.contains(resolver))
-    return;
+  DCHECK(m_faceServiceRequests.contains(resolver));
+  m_faceServiceRequests.remove(resolver);
 
   HeapVector<Member<DOMRect>> detectedFaces;
   for (const auto& boundingBox : faceDetectionResult->bounding_boxes) {
@@ -352,15 +359,13 @@ void ShapeDetector::onDetectFaces(
   }
 
   resolver->resolve(detectedFaces);
-  m_serviceRequests.remove(resolver);
 }
 
 void ShapeDetector::onDetectBarcodes(
     ScriptPromiseResolver* resolver,
     Vector<mojom::blink::BarcodeDetectionResultPtr> barcodeDetectionResults) {
-  if (!m_serviceRequests.contains(resolver))
-    return;
-  m_serviceRequests.remove(resolver);
+  DCHECK(m_barcodeServiceRequests.contains(resolver));
+  m_barcodeServiceRequests.remove(resolver);
 
   HeapVector<Member<DetectedBarcode>> detectedBarcodes;
   for (const auto& barcode : barcodeDetectionResults) {
@@ -374,8 +379,27 @@ void ShapeDetector::onDetectBarcodes(
   resolver->resolve(detectedBarcodes);
 }
 
+void ShapeDetector::onFaceServiceConnectionError() {
+  for (const auto& request : m_faceServiceRequests) {
+    request->reject(DOMException::create(NotSupportedError,
+                                         "Face Detection not implemented."));
+  }
+  m_faceServiceRequests.clear();
+  m_faceService.reset();
+}
+
+void ShapeDetector::onBarcodeServiceConnectionError() {
+  for (const auto& request : m_barcodeServiceRequests) {
+    request->reject(DOMException::create(NotSupportedError,
+                                         "Barcode Detection not implemented."));
+  }
+  m_barcodeServiceRequests.clear();
+  m_barcodeService.reset();
+}
+
 DEFINE_TRACE(ShapeDetector) {
-  visitor->trace(m_serviceRequests);
+  visitor->trace(m_faceServiceRequests);
+  visitor->trace(m_barcodeServiceRequests);
 }
 
 }  // namespace blink

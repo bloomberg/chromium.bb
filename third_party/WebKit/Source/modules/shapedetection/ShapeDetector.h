@@ -57,10 +57,15 @@ class MODULES_EXPORT ShapeDetector
   void onDetectBarcodes(ScriptPromiseResolver*,
                         Vector<mojom::blink::BarcodeDetectionResultPtr>);
 
+  // Error handlers for use if mojo service doesn't connect.
+  void onFaceServiceConnectionError();
+  void onBarcodeServiceConnectionError();
+
   mojom::blink::FaceDetectionPtr m_faceService;
   mojom::blink::BarcodeDetectionPtr m_barcodeService;
 
-  HeapHashSet<Member<ScriptPromiseResolver>> m_serviceRequests;
+  HeapHashSet<Member<ScriptPromiseResolver>> m_faceServiceRequests;
+  HeapHashSet<Member<ScriptPromiseResolver>> m_barcodeServiceRequests;
 
  protected:
   mojom::blink::FaceDetectorOptionsPtr m_faceDetectorOptions;
