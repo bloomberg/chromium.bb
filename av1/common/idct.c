@@ -1069,6 +1069,35 @@ void av1_idct64x64_add(const tran_low_t *input, uint8_t *dest, int stride,
 }
 #endif  // CONFIG_TX64X64
 
+#if CONFIG_CB4X4
+void av1_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest, int stride,
+                          int eob, TX_TYPE tx_type, int lossless) {
+  tran_high_t a1 = input[0] >> UNIT_QUANT_SHIFT;
+  tran_high_t b1 = input[1] >> UNIT_QUANT_SHIFT;
+  tran_high_t c1 = input[2] >> UNIT_QUANT_SHIFT;
+  tran_high_t d1 = input[3] >> UNIT_QUANT_SHIFT;
+
+  tran_high_t a2 = a1 + c1;
+  tran_high_t b2 = b1 + d1;
+  tran_high_t c2 = a1 - c1;
+  tran_high_t d2 = b1 - d1;
+
+  (void)tx_type;
+  (void)lossless;
+  (void)eob;
+
+  a1 = (a2 + b2) >> 1;
+  b1 = (a2 - b2) >> 1;
+  c1 = (c2 + d2) >> 1;
+  d1 = (c2 - d2) >> 1;
+
+  dest[0] = clip_pixel_add(dest[0], WRAPLOW(a1));
+  dest[1] = clip_pixel_add(dest[1], WRAPLOW(b1));
+  dest[stride] = clip_pixel_add(dest[stride], WRAPLOW(c1));
+  dest[stride + 1] = clip_pixel_add(dest[stride + 1], WRAPLOW(d1));
+}
+#endif
+
 void av1_inv_txfm_add_4x4(const tran_low_t *input, uint8_t *dest, int stride,
                           int eob, TX_TYPE tx_type, int lossless) {
   if (lossless) {
@@ -2279,6 +2308,11 @@ void inv_txfm_add(const tran_low_t *input, uint8_t *dest, int stride,
       // case.
       av1_inv_txfm_add_4x4(input, dest, stride, eob, tx_type, lossless);
       break;
+#if CONFIG_CB4X4
+    case TX_2X2:
+      av1_inv_txfm_add_2x2(input, dest, stride, eob, tx_type, lossless);
+      break;
+#endif
     default: assert(0 && "Invalid transform size"); break;
   }
 }
