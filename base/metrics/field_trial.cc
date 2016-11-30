@@ -20,6 +20,17 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 
+// On systems that use the zygote process to spawn child processes, we must
+// retrieve the correct fd using the mapping in GlobalDescriptors.
+#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_MACOSX) && \
+    !defined(OS_ANDROID)
+#define POSIX_WITH_ZYGOTE 1
+#endif
+
+#if defined(POSIX_WITH_ZYGOTE)
+#include "base/posix/global_descriptors.h"
+#endif
+
 namespace base {
 
 namespace {
@@ -189,8 +200,17 @@ HANDLE CreateReadOnlyHandle(FieldTrialList::FieldTrialAllocator* allocator) {
   DWORD access = SECTION_MAP_READ | SECTION_QUERY;
   HANDLE dst;
   if (!::DuplicateHandle(process, src, process, &dst, access, true, 0))
-    return nullptr;
+    return kInvalidPlatformFile;
   return dst;
+}
+#endif
+
+#if defined(POSIX_WITH_ZYGOTE)
+int CreateReadOnlyHandle(FieldTrialList::FieldTrialAllocator* allocator) {
+  SharedMemoryHandle new_handle;
+  allocator->shared_memory()->ShareReadOnlyToProcess(GetCurrentProcessHandle(),
+                                                     &new_handle);
+  return SharedMemory::GetFdFromSharedMemoryHandle(new_handle);
 }
 #endif
 
@@ -693,17 +713,24 @@ bool FieldTrialList::CreateTrialsFromString(
 // static
 void FieldTrialList::CreateTrialsFromCommandLine(
     const CommandLine& cmd_line,
-    const char* field_trial_handle_switch) {
+    const char* field_trial_handle_switch,
+    int fd_key) {
   global_->create_trials_from_command_line_called_ = true;
 
-#if defined(OS_WIN) && !defined(OS_NACL)
+#if defined(OS_WIN)
   if (cmd_line.HasSwitch(field_trial_handle_switch)) {
-    std::string arg = cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
-    int field_trial_handle = std::stoi(arg);
-    HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
-    bool result = CreateTrialsFromWindowsHandle(handle);
+    std::string handle_switch =
+        cmd_line.GetSwitchValueASCII(field_trial_handle_switch);
+    bool result = CreateTrialsFromHandleSwitch(handle_switch);
     DCHECK(result);
   }
+#endif
+
+#if defined(POSIX_WITH_ZYGOTE)
+  // If we failed to create trials from the descriptor, fallback to the command
+  // line. Otherwise we're good -- return.
+  if (CreateTrialsFromDescriptor(fd_key))
+    return;
 #endif
 
   if (cmd_line.HasSwitch(switches::kForceFieldTrials)) {
@@ -713,6 +740,26 @@ void FieldTrialList::CreateTrialsFromCommandLine(
     DCHECK(result);
   }
 }
+
+#if defined(POSIX_WITH_ZYGOTE)
+// static
+bool FieldTrialList::CreateTrialsFromDescriptor(int fd_key) {
+  if (!kUseSharedMemoryForFieldTrials)
+    return false;
+
+  if (fd_key == -1)
+    return false;
+
+  int fd = GlobalDescriptors::GetInstance()->MaybeGet(fd_key);
+  if (fd == -1)
+    return false;
+
+  SharedMemoryHandle shm_handle(fd, true);
+  bool result = FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
+  DCHECK(result);
+  return true;
+}
+#endif
 
 #if defined(OS_WIN)
 // static
@@ -728,6 +775,18 @@ void FieldTrialList::AppendFieldTrialHandleIfNeeded(
 }
 #endif
 
+#if defined(OS_POSIX) && !defined(OS_NACL)
+// static
+int FieldTrialList::GetFieldTrialHandle() {
+  if (global_ && kUseSharedMemoryForFieldTrials) {
+    InstantiateFieldTrialAllocatorIfNeeded();
+    // We check for an invalid handle where this gets called.
+    return global_->readonly_allocator_handle_;
+  }
+  return kInvalidPlatformFile;
+}
+#endif
+
 // static
 void FieldTrialList::CopyFieldTrialStateToFlags(
     const char* field_trial_handle_switch,
@@ -738,27 +797,36 @@ void FieldTrialList::CopyFieldTrialStateToFlags(
   if (!global_)
     return;
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE)
   // Use shared memory to pass the state if the feature is enabled, otherwise
   // fallback to passing it via the command line as a string.
   if (kUseSharedMemoryForFieldTrials) {
     InstantiateFieldTrialAllocatorIfNeeded();
     // If the readonly handle didn't get duplicated properly, then fallback to
     // original behavior.
-    if (!global_->readonly_allocator_handle_) {
+    if (global_->readonly_allocator_handle_ == kInvalidPlatformFile) {
       AddForceFieldTrialsFlag(cmd_line);
       return;
     }
 
-    // HANDLE is just typedef'd to void *. We basically cast the handle into an
-    // int (uintptr_t, to be exact), stringify the int, and pass it as a
-    // command-line flag. The child process will do the reverse conversions to
-    // retrieve the handle. See http://stackoverflow.com/a/153077
+    global_->field_trial_allocator_->UpdateTrackingHistograms();
+
+#if defined(OS_WIN)
+    // We need to pass a named anonymous handle to shared memory over the
+    // command line on Windows, since the child doesn't know which of the
+    // handles it inherited it should open. On POSIX, we don't need to do this
+    // -- we dup the fd into a fixed fd kFieldTrialDescriptor, so we can just
+    // look it up there.
+    // PlatformFile is typedef'd to HANDLE which is typedef'd to void *. We
+    // basically cast the handle into an int (uintptr_t, to be exact), stringify
+    // the int, and pass it as a command-line flag. The child process will do
+    // the reverse conversions to retrieve the handle. See
+    // http://stackoverflow.com/a/153077
     auto uintptr_handle =
         reinterpret_cast<uintptr_t>(global_->readonly_allocator_handle_);
     std::string field_trial_handle = std::to_string(uintptr_handle);
     cmd_line->AppendSwitchASCII(field_trial_handle_switch, field_trial_handle);
-    global_->field_trial_allocator_->UpdateTrackingHistograms();
+#endif
     return;
   }
 #endif
@@ -851,9 +919,19 @@ size_t FieldTrialList::GetFieldTrialCount() {
 
 #if defined(OS_WIN)
 // static
-bool FieldTrialList::CreateTrialsFromWindowsHandle(HANDLE handle) {
+bool FieldTrialList::CreateTrialsFromHandleSwitch(
+    const std::string& handle_switch) {
+  int field_trial_handle = std::stoi(handle_switch);
+  HANDLE handle = reinterpret_cast<HANDLE>(field_trial_handle);
   SharedMemoryHandle shm_handle(handle, GetCurrentProcId());
+  return FieldTrialList::CreateTrialsFromSharedMemoryHandle(shm_handle);
+}
+#endif
 
+#if !defined(OS_NACL)
+// static
+bool FieldTrialList::CreateTrialsFromSharedMemoryHandle(
+    SharedMemoryHandle shm_handle) {
   // shm gets deleted when it gets out of scope, but that's OK because we need
   // it only for the duration of this method.
   std::unique_ptr<SharedMemory> shm(new SharedMemory(shm_handle, true));
@@ -909,8 +987,15 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
   if (global_->field_trial_allocator_ != nullptr)
     return;
 
+  SharedMemoryCreateOptions options;
+  options.size = kFieldTrialAllocationSize;
+  options.share_read_only = true;
+
   std::unique_ptr<SharedMemory> shm(new SharedMemory());
-  if (!shm->CreateAndMapAnonymous(kFieldTrialAllocationSize))
+  if (!shm->Create(options))
+    TerminateBecauseOutOfMemory(kFieldTrialAllocationSize);
+
+  if (!shm->Map(kFieldTrialAllocationSize))
     TerminateBecauseOutOfMemory(kFieldTrialAllocationSize);
 
   global_->field_trial_allocator_.reset(
@@ -922,7 +1007,7 @@ void FieldTrialList::InstantiateFieldTrialAllocatorIfNeeded() {
     AddToAllocatorWhileLocked(registered.second);
   }
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(POSIX_WITH_ZYGOTE)
   // Set |readonly_allocator_handle_| so we can pass it to be inherited and
   // via the command line.
   global_->readonly_allocator_handle_ =

@@ -1136,6 +1136,7 @@ TEST(FieldTrialDeathTest, OneTimeRandomizedTrialWithoutFieldTrialList) {
       "");
 }
 
+#if defined(OS_WIN)
 TEST(FieldTrialListTest, TestCopyFieldTrialStateToFlags) {
   base::FieldTrialList field_trial_list(
       base::MakeUnique<base::MockEntropyProvider>());
@@ -1146,13 +1147,10 @@ TEST(FieldTrialListTest, TestCopyFieldTrialStateToFlags) {
 
   base::FieldTrialList::CopyFieldTrialStateToFlags(field_trial_handle,
                                                    &cmd_line);
-#if defined(OS_WIN)
   EXPECT_TRUE(cmd_line.HasSwitch(field_trial_handle) ||
               cmd_line.HasSwitch(switches::kForceFieldTrials));
-#else
-  EXPECT_TRUE(cmd_line.HasSwitch(switches::kForceFieldTrials));
-#endif
 }
+#endif
 
 TEST(FieldTrialListTest, InstantiateAllocator) {
   FieldTrialList field_trial_list(nullptr);

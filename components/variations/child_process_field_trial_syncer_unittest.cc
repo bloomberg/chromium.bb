@@ -54,8 +54,9 @@ std::pair<std::string, std::string> MakeStringPair(const std::string& a,
 TEST(ChildProcessFieldTrialSyncerTest, FieldTrialState) {
   base::MessageLoop message_loop;
   base::FieldTrialList field_trial_list(nullptr);
+  // We don't use the descriptor here anyways so it's ok to pass -1.
   base::FieldTrialList::CreateTrialsFromCommandLine(
-      *base::CommandLine::ForCurrentProcess(), "field_trial_handle_switch");
+      *base::CommandLine::ForCurrentProcess(), "field_trial_handle_switch", -1);
 
   base::FieldTrial* trial1 = base::FieldTrialList::CreateFieldTrial("A", "G1");
   base::FieldTrial* trial2 = base::FieldTrialList::CreateFieldTrial("B", "G2");

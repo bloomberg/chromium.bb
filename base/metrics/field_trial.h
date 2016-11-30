@@ -65,6 +65,7 @@
 
 #include "base/base_export.h"
 #include "base/command_line.h"
+#include "base/files/file.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
@@ -496,16 +497,15 @@ class BASE_EXPORT FieldTrialList {
 
   // Achieves the same thing as CreateTrialsFromString, except wraps the logic
   // by taking in the trials from the command line, either via shared memory
-  // handle or command line argument.
-  // If using shared memory to pass around the list of field trials, then
-  // expects |field_trial_handle_switch| command line argument to
-  // contain the shared memory handle.
-  // If not, then create the trials as before (using the kForceFieldTrials
-  // switch). Needs the |field_trial_handle_switch| argument to be passed in
-  // since base/ can't depend on content/.
-  static void CreateTrialsFromCommandLine(
-      const base::CommandLine& cmd_line,
-      const char* field_trial_handle_switch);
+  // handle or command line argument. A bit of a misnomer since on POSIX we
+  // simply get the trials from opening |fd_key| if using shared memory. On
+  // Windows, we expect the |cmd_line| switch for |field_trial_handle_switch| to
+  // contain the shared memory handle that contains the field trial allocator.
+  // We need the |field_trial_handle_switch| and |fd_key| arguments to be passed
+  // in since base/ can't depend on content/.
+  static void CreateTrialsFromCommandLine(const base::CommandLine& cmd_line,
+                                          const char* field_trial_handle_switch,
+                                          int fd_key);
 
 #if defined(OS_WIN)
   // On Windows, we need to explicitly pass down any handles to be inherited.
@@ -513,6 +513,11 @@ class BASE_EXPORT FieldTrialList {
   // list of handles to be inherited.
   static void AppendFieldTrialHandleIfNeeded(
       base::HandlesToInheritVector* handles);
+#elif defined(OS_POSIX)
+  // On POSIX, we also need to explicitly pass down this file descriptor that
+  // should be shared with the child process. Returns kInvalidPlatformFile if no
+  // handle exists or was not initialized properly.
+  static PlatformFile GetFieldTrialHandle();
 #endif
 
   // Adds a switch to the command line containing the field trial state as a
@@ -558,11 +563,23 @@ class BASE_EXPORT FieldTrialList {
                            DoNotAddSimulatedFieldTrialsToAllocator);
 
 #if defined(OS_WIN)
-  // Takes in |handle| that should have been retrieved from the command line and
-  // creates a SharedMemoryHandle from it, and then calls
-  // CreateTrialsFromSharedMemory(). Returns true on success, false on failure.
-  static bool CreateTrialsFromWindowsHandle(HANDLE handle);
+  // Takes in |handle_switch| from the command line which represents the shared
+  // memory handle for field trials, parses it, and creates the field trials.
+  // Returns true on success, false on failure.
+  static bool CreateTrialsFromHandleSwitch(const std::string& handle_switch);
 #endif
+
+#if defined(OS_POSIX) && !defined(OS_NACL) && !defined(OS_MACOSX) && \
+    !defined(OS_ANDROID)
+  // On POSIX systems that use the zygote, we look up the correct fd that backs
+  // the shared memory segment containing the field trials by looking it up via
+  // an fd key in GlobalDescriptors. Returns true on success, false on failure.
+  static bool CreateTrialsFromDescriptor(int fd_key);
+#endif
+
+  // Takes an unmapped SharedMemoryHandle, creates a SharedMemory object from it
+  // and maps it with the correct size.
+  static bool CreateTrialsFromSharedMemoryHandle(SharedMemoryHandle shm_handle);
 
   // Expects a mapped piece of shared memory |shm| that was created from the
   // browser process's field_trial_allocator and shared via the command line.
@@ -627,12 +644,10 @@ class BASE_EXPORT FieldTrialList {
   // to start passing more data other than field trials.
   std::unique_ptr<FieldTrialAllocator> field_trial_allocator_ = nullptr;
 
-#if defined(OS_WIN)
   // Readonly copy of the handle to the allocator. Needs to be a member variable
   // because it's needed from both CopyFieldTrialStateToFlags() and
   // AppendFieldTrialHandleIfNeeded().
-  HANDLE readonly_allocator_handle_ = nullptr;
-#endif
+  PlatformFile readonly_allocator_handle_ = kInvalidPlatformFile;
 
   // Tracks whether CreateTrialsFromCommandLine() has been called.
   bool create_trials_from_command_line_called_ = false;

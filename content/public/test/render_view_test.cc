@@ -272,8 +272,9 @@ void RenderViewTest::SetUp() {
 #endif
   command_line_.reset(new base::CommandLine(base::CommandLine::NO_PROGRAM));
   field_trial_list_.reset(new base::FieldTrialList(nullptr));
+  // We don't use the descriptor here anyways so it's ok to pass -1.
   base::FieldTrialList::CreateTrialsFromCommandLine(
-      *command_line_, switches::kFieldTrialHandle);
+      *command_line_, switches::kFieldTrialHandle, -1);
   params_.reset(new MainFunctionParams(*command_line_));
   platform_.reset(new RendererMainPlatformDelegate(*params_));
   platform_->PlatformInitialize();

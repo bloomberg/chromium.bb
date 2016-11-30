@@ -144,8 +144,15 @@ void InitializeFieldTrialAndFeatureList(
 
   // Ensure any field trials in browser are reflected into the child
   // process.
+#if defined(OS_POSIX)
+  // On POSIX systems that use the zygote, we get the trials from a shared
+  // memory segment backed by an fd instead of the command line.
   base::FieldTrialList::CreateTrialsFromCommandLine(
-      command_line, switches::kFieldTrialHandle);
+      command_line, switches::kFieldTrialHandle, kFieldTrialDescriptor);
+#else
+  base::FieldTrialList::CreateTrialsFromCommandLine(
+      command_line, switches::kFieldTrialHandle, -1);
+#endif
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
   feature_list->InitializeFromCommandLine(
@@ -478,6 +485,10 @@ class ContentMainRunnerImpl : public ContentMainRunner {
     SetupSignalHandlers();
     g_fds->Set(kMojoIPCChannel,
                kMojoIPCChannel + base::GlobalDescriptors::kBaseDescriptor);
+
+    g_fds->Set(
+        kFieldTrialDescriptor,
+        kFieldTrialDescriptor + base::GlobalDescriptors::kBaseDescriptor);
 #endif  // !OS_ANDROID
 
 #if defined(OS_LINUX) || defined(OS_OPENBSD)

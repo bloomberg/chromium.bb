@@ -164,6 +164,9 @@ void LaunchOnLauncherThread(const NotifyCallback& callback,
   base::ScopedFD mojo_fd(client_handle.release().handle);
   DCHECK(mojo_fd.is_valid());
 
+  int field_trial_handle = base::FieldTrialList::GetFieldTrialHandle();
+  if (field_trial_handle != base::kInvalidPlatformFile)
+    files_to_register->Share(kFieldTrialDescriptor, field_trial_handle);
 #if defined(OS_ANDROID)
   files_to_register->Share(kMojoIPCChannel, mojo_fd.get());
 #else
