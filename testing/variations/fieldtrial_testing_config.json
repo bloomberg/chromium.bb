@@ -444,6 +444,22 @@
             ]
         }
     ],
+    "DefaultBrowserPromptStyle": [
+        {
+            "platforms": [
+                "win"
+            ],
+            "experiments": [
+                {
+                    "name": "ColoredLogoOnWhiteBackground",
+                    "params": {
+                        "IconColor": "Colored",
+                        "InfoBarType": "PageAction"
+                    }
+                }
+            ]
+        }
+    ],
     "DefaultEnableGpuRasterization": [
         {
             "platforms": [
