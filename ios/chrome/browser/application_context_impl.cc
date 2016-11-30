@@ -17,7 +17,6 @@
 #include "base/time/default_tick_clock.h"
 #include "base/tracked_objects.h"
 #include "components/component_updater/component_updater_service.h"
-#include "components/component_updater/component_updater_service.h"
 #include "components/gcm_driver/gcm_client_factory.h"
 #include "components/gcm_driver/gcm_desktop_utils.h"
 #include "components/gcm_driver/gcm_driver.h"
