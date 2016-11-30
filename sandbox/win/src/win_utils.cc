@@ -489,7 +489,8 @@ void* GetProcessBaseAddress(HANDLE process) {
     next_base += mem_info.RegionSize;
     if (!next_base.IsValid())
       return nullptr;
-    current = reinterpret_cast<void*>(next_base.ValueOrDie());
+    current =
+        reinterpret_cast<void*>(static_cast<uintptr_t>(next_base.ValueOrDie()));
   }
 
   return nullptr;
