@@ -13,5 +13,8 @@ cscope.out
 # Directory that might hold site config checkout.
 /config/
 
-# Subcheckout.
+# Chromite virtualenv.
+/.venv/
+
+# Obsolete
 /virtualenv/

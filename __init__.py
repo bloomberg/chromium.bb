@@ -11,7 +11,7 @@ import sys
 # modules in there automatically.  This isn't normal, so don't replicate
 # this pattern elsewhere.
 _chromite_dir = os.path.normpath(os.path.dirname(os.path.realpath(__file__)))
-_venv_dir = os.path.join(_chromite_dir, 'venv', 'venv')
+_venv_dir = os.path.join(_chromite_dir, '.venv')
 _containing_dir = os.path.dirname(_chromite_dir)
 _third_party_dirs = [os.path.join(_chromite_dir, 'third_party')]
 # If chromite is living inside the Chrome checkout under
@@ -38,13 +38,14 @@ for _path in _paths:
       _third_party_dirs.append(_component)
 
 # Some chromite scripts make use of the chromite virtualenv located at
-# $CHROMITE_DIR/venv/venv. If we are in such a virtualenv, we want it to take
+# $CHROMITE_DIR/.venv. If we are in such a virtualenv, we want it to take
 # precedence over third_party.
 # Therefore, we leave sys.path unaltered up to the final element from the
 # virtualenv, and only insert third_party items after that.
-_ins_at = 0
-for _ins_at in range(len(sys.path), 0, -1):
-  if _venv_dir in sys.path[_ins_at - 1]:
+for i, path in reversed(list(enumerate(sys.path))):
+  if _venv_dir in path:
+    _insert_at = i + 1
     break
-
-sys.path = sys.path[:_ins_at] + _third_party_dirs + sys.path[_ins_at:]
+else:
+  _insert_at = 0
+sys.path[_insert_at:_insert_at] = _third_party_dirs

@@ -7,19 +7,28 @@
 from __future__ import print_function
 
 import os
-import six
 
 from chromite.lib import cros_test_lib
+
+_MODULE_DIR = os.path.dirname(os.path.realpath(__file__))
+_VENV_DIR = os.path.abspath(os.path.join(_MODULE_DIR, '..', '.venv'))
+
 
 class VirtualEnvTest(cros_test_lib.TestCase):
   """Test that we are running in a virtualenv."""
 
+
   def testModuleIsFromVenv(self):
-    """Test that the |six| module was provided by virtualenv."""
+    """Test that we import |six| from the virtualenv."""
     # Note: The |six| module is chosen somewhat arbitrarily, but it happens to
     # be provided inside the chromite virtualenv.
+    six = __import__('six')
     req_path = os.path.dirname(os.path.realpath(six.__file__))
-    my_path = os.path.dirname(os.path.realpath(__file__))
-    expected_venv_path = os.path.realpath(
-        os.path.join(my_path, '..', 'venv', 'venv'))
-    self.assertIn(expected_venv_path, req_path)
+    self.assertIn(_VENV_DIR, req_path)
+
+
+  def testInsideVenv(self):
+    """Test that we are inside a virtualenv."""
+    self.assertIn('VIRTUAL_ENV', os.environ)
+    venv_dir = os.environ['VIRTUAL_ENV']
+    self.assertEqual(_VENV_DIR, venv_dir)
