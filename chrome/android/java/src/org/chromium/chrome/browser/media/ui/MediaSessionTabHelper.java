@@ -315,6 +315,13 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         }
 
         @Override
+        public void onShown(Tab tab) {
+            assert tab == mTab;
+            MediaNotificationManager.activateAndroidMediaSession(
+                    tab.getId(), R.id.media_playback_notification);
+        }
+
+        @Override
         public void onDestroyed(Tab tab) {
             assert mTab == tab;
 

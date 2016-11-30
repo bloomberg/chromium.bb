@@ -462,6 +462,19 @@ public class MediaNotificationManager {
     }
 
     /**
+     * Activates the Android MediaSession. This method is used to activate Android MediaSession more
+     * often because some old version of Android might send events to the latest active session
+     * based on when setActive(true) was called and regardless of the current playback state.
+     * @param tabId the id of the tab requesting to reactivate the Android MediaSession.
+     * @param notificationId the id of the notification to reactivate Android MediaSession for.
+     */
+    public static void activateAndroidMediaSession(int tabId, int notificationId) {
+        MediaNotificationManager manager = getManager(notificationId);
+        if (manager == null) return;
+        manager.activateAndroidMediaSession(tabId);
+    }
+
+    /**
      * Scale a given bitmap to a proper size for display.
      * @param icon The bitmap to be resized.
      * @return A scaled icon to be used in media notification. Returns null if |icon| is null.
@@ -744,6 +757,8 @@ public class MediaNotificationManager {
 
         if (mMediaSession == null) mMediaSession = createMediaSession();
 
+        activateAndroidMediaSession(mMediaNotificationInfo.tabId);
+
         try {
             // Tell the MediaRouter about the session, so that Chrome can control the volume
             // on the remote cast device (if any).
@@ -815,6 +830,14 @@ public class MediaNotificationManager {
             mediaSession.setActive(true);
         }
         return mediaSession;
+    }
+
+    private void activateAndroidMediaSession(int tabId) {
+        if (mMediaNotificationInfo == null) return;
+        if (mMediaNotificationInfo.tabId != tabId) return;
+        if (!mMediaNotificationInfo.supportsPlayPause() || mMediaNotificationInfo.isPaused) return;
+        if (mMediaSession == null) return;
+        mMediaSession.setActive(true);
     }
 
     private void setMediaStyleLayoutForNotificationBuilder(NotificationCompat.Builder builder) {
