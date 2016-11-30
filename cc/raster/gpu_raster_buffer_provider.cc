@@ -85,6 +85,7 @@ static void RasterizePicture(SkPicture* picture,
                              bool async_worker_context_enabled,
                              bool use_distance_field_text,
                              bool can_use_lcd_text,
+                             bool ignore_resource_color_space,
                              int msaa_sample_count,
                              ImageDecodeController* image_decode_controller,
                              bool use_image_hijack_canvas) {
@@ -92,7 +93,8 @@ static void RasterizePicture(SkPicture* picture,
 
   ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
       context_provider, resource_lock, async_worker_context_enabled,
-      use_distance_field_text, can_use_lcd_text, msaa_sample_count);
+      use_distance_field_text, can_use_lcd_text, ignore_resource_color_space,
+      msaa_sample_count);
   SkSurface* sk_surface = scoped_surface.sk_surface();
   // Allocating an SkSurface will fail after a lost context.  Pretend we
   // rasterized, as the contents of the resource don't matter anymore.
@@ -270,7 +272,8 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
 
   RasterizePicture(picture.get(), worker_context_provider_, resource_lock,
                    async_worker_context_enabled_, use_distance_field_text,
-                   raster_source->CanUseLCDText(), msaa_sample_count_,
+                   raster_source->CanUseLCDText(),
+                   raster_source->HasImpliedColorSpace(), msaa_sample_count_,
                    raster_source->image_decode_controller(),
                    playback_settings.use_image_hijack_canvas);
 

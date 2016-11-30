@@ -21,6 +21,7 @@
 #include "cc/playback/display_item.h"
 #include "cc/playback/display_item_list_settings.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 
@@ -142,6 +143,18 @@ class CC_EXPORT DisplayItemList
     inputs_.all_items_are_suitable_for_gpu_rasterization = is_suitable;
   }
   bool IsSuitableForGpuRasterization() const;
+
+  void SetImpliedColorSpace(const gfx::ColorSpace& implied_color_space) {
+    inputs_.implied_color_space_specified = true;
+    inputs_.implied_color_space = implied_color_space;
+  }
+  bool HasImpliedColorSpace() const {
+    return inputs_.implied_color_space_specified;
+  }
+  const gfx::ColorSpace& GetImpliedColorSpace() const {
+    return inputs_.implied_color_space;
+  }
+
   int ApproximateOpCount() const;
   size_t ApproximateMemoryUsage() const;
   bool ShouldBeAnalyzedForSolidColor() const;
@@ -215,6 +228,8 @@ class CC_EXPORT DisplayItemList
     std::vector<size_t> begin_item_indices;
     const DisplayItemListSettings settings;
     bool all_items_are_suitable_for_gpu_rasterization = true;
+    bool implied_color_space_specified = false;
+    gfx::ColorSpace implied_color_space;
   };
 
   Inputs inputs_;

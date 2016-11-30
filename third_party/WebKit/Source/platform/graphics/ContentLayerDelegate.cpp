@@ -30,11 +30,13 @@
 #include "platform/graphics/GraphicsContext.h"
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/graphics/paint/PaintController.h"
+#include "platform/image-decoders/ImageDecoder.h"
 #include "platform/tracing/TraceEvent.h"
 #include "platform/tracing/TracedValue.h"
 #include "public/platform/WebDisplayItemList.h"
 #include "public/platform/WebRect.h"
 #include "third_party/skia/include/core/SkPicture.h"
+#include "ui/gfx/color_space.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace blink {
@@ -88,6 +90,12 @@ void ContentLayerDelegate::paintContents(
   paintController.paintArtifact().appendToWebDisplayItemList(
       webDisplayItemList);
 
+  if (!RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    // TODO(ccameron): This color space should come from the GraphicsLayer.
+    // https://crbug.com/667411
+    webDisplayItemList->setImpliedColorSpace(gfx::ColorSpace::FromSkColorSpace(
+        ImageDecoder::globalTargetColorSpace()));
+  }
   paintController.setDisplayItemConstructionIsDisabled(false);
   paintController.setSubsequenceCachingIsDisabled(false);
 }

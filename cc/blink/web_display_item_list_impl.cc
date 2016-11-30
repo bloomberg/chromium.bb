@@ -161,6 +161,11 @@ void WebDisplayItemListImpl::setIsSuitableForGpuRasterization(bool isSuitable) {
   display_item_list_->SetIsSuitableForGpuRasterization(isSuitable);
 }
 
+void WebDisplayItemListImpl::setImpliedColorSpace(
+    const gfx::ColorSpace& implied_color_space) {
+  display_item_list_->SetImpliedColorSpace(implied_color_space);
+}
+
 WebDisplayItemListImpl::~WebDisplayItemListImpl() {
 }
 

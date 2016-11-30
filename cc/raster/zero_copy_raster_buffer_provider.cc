@@ -48,11 +48,15 @@ class RasterBufferImpl : public RasterBuffer {
     // RasterBufferProvider::PlaybackToMemory only supports unsigned strides.
     DCHECK_GE(buffer->stride(0), 0);
 
+    sk_sp<SkColorSpace> raster_color_space =
+        raster_source->HasImpliedColorSpace() ? nullptr
+                                              : lock_.sk_color_space();
+
     // TODO(danakj): Implement partial raster with raster_dirty_rect.
     RasterBufferProvider::PlaybackToMemory(
         buffer->memory(0), resource_->format(), resource_->size(),
         buffer->stride(0), raster_source, raster_full_rect, raster_full_rect,
-        scales, lock_.sk_color_space(), playback_settings);
+        scales, raster_color_space, playback_settings);
     buffer->Unmap();
   }
 

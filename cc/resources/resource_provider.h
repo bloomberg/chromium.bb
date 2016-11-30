@@ -321,6 +321,7 @@ class CC_EXPORT ResourceProvider
                             bool use_mailbox,
                             bool use_distance_field_text,
                             bool can_use_lcd_text,
+                            bool ignore_color_space,
                             int msaa_sample_count);
     ~ScopedSkSurfaceProvider();
 

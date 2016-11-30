@@ -254,6 +254,14 @@ gfx::Size RasterSource::GetSize() const {
   return size_;
 }
 
+bool RasterSource::HasImpliedColorSpace() const {
+  return display_list_->HasImpliedColorSpace();
+}
+
+const gfx::ColorSpace& RasterSource::GetImpliedColorSpace() const {
+  return display_list_->GetImpliedColorSpace();
+}
+
 bool RasterSource::IsSolidColor() const {
   return is_solid_color_;
 }

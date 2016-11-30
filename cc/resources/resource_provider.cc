@@ -1162,6 +1162,7 @@ ResourceProvider::ScopedSkSurfaceProvider::ScopedSkSurfaceProvider(
     bool use_mailbox,
     bool use_distance_field_text,
     bool can_use_lcd_text,
+    bool ignore_color_space,
     int msaa_sample_count)
     : texture_provider_(context_provider->ContextGL(),
                         resource_lock,
@@ -1188,7 +1189,8 @@ ResourceProvider::ScopedSkSurfaceProvider::ScopedSkSurfaceProvider(
         SkSurfaceProps(flags, SkSurfaceProps::kLegacyFontHost_InitType);
   }
   sk_surface_ = SkSurface::MakeFromBackendTextureAsRenderTarget(
-      context_provider->GrContext(), desc, resource_lock->sk_color_space(),
+      context_provider->GrContext(), desc,
+      ignore_color_space ? nullptr : resource_lock->sk_color_space(),
       &surface_props);
 }
 

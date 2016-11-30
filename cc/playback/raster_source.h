@@ -17,6 +17,10 @@
 #include "skia/ext/analysis_canvas.h"
 #include "third_party/skia/include/core/SkPicture.h"
 
+namespace gfx {
+class ColorSpace;
+}
+
 namespace cc {
 class DisplayItemList;
 class DrawImage;
@@ -77,6 +81,14 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
 
   // Returns the size of this raster source.
   gfx::Size GetSize() const;
+
+  // Returns whether or not there was a color space implied by the raster source
+  // when it was created. If this returns true then no color correction is
+  // to be applied at rasterization time, and the result of rasterization is to
+  // be interpreted as being in this color space. If this returns falce, then
+  // then a destination color space must be specified at raster time.
+  bool HasImpliedColorSpace() const;
+  const gfx::ColorSpace& GetImpliedColorSpace() const;
 
   // Populate the given list with all images that may overlap the given
   // rect in layer space. The returned draw images' matrices are modified as if
