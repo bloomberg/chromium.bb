@@ -5868,7 +5868,7 @@ void GLES2DecoderImpl::InvalidateFramebufferImpl(
     GLsizei height,
     const char* function_name,
     FramebufferOperation op) {
-  Framebuffer* framebuffer = GetFramebufferInfoForTarget(GL_FRAMEBUFFER);
+  Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
 
   // Because of performance issues, no-op if the format of the attachment is
   // DEPTH_STENCIL and only one part is intended to be invalidated.

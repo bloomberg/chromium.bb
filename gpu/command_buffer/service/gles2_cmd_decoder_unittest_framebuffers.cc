@@ -3553,6 +3553,92 @@ TEST_P(GLES2DecoderTest, DiscardFramebufferEXTUnsupported) {
             ExecuteImmediateCmd(cmd, sizeof(attachments)));
 }
 
+TEST_P(GLES3DecoderTest, DiscardFramebufferEXTInvalidTarget) {
+  const GLenum target = GL_RED;  // Invalid
+  const GLsizei count = 1;
+  const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+
+  SetupTexture();
+  DoBindFramebuffer(
+      GL_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(GL_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D,
+                         client_texture_id_,
+                         kServiceTextureId,
+                         0,
+                         GL_NO_ERROR);
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  Framebuffer* framebuffer =
+      framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
+  EXPECT_TRUE(framebuffer->IsCleared());
+
+  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, count, _)).Times(0);
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  cmd.Init(target, count, attachments);
+
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_TRUE(framebuffer->IsCleared());
+}
+
+TEST_P(GLES3DecoderTest, DiscardFramebufferEXTUseCorrectTarget) {
+  const GLenum target = GL_READ_FRAMEBUFFER;
+  const GLsizei count = 1;
+  const GLenum attachments[] = {GL_COLOR_ATTACHMENT0};
+
+  SetupTexture();
+  DoBindFramebuffer(
+      GL_READ_FRAMEBUFFER, client_framebuffer_id_, kServiceFramebufferId);
+  DoFramebufferTexture2D(GL_READ_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D,
+                         client_texture_id_,
+                         kServiceTextureId,
+                         0,
+                         GL_NO_ERROR);
+
+  EXPECT_CALL(*gl_, GenFramebuffersEXT(_, _))
+      .WillOnce(SetArgPointee<1>(kServiceFramebufferId + 1))
+      .RetiresOnSaturation();
+  DoBindFramebuffer(GL_DRAW_FRAMEBUFFER, client_framebuffer_id_ + 1,
+                    kServiceFramebufferId + 1);
+  EXPECT_CALL(*gl_, GenTextures(_, _))
+      .WillOnce(SetArgPointee<1>(kServiceTextureId + 1))
+      .RetiresOnSaturation();
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_ + 1, kServiceTextureId + 1);
+  DoTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, 1, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+               kSharedMemoryId, kSharedMemoryOffset);
+  DoFramebufferTexture2D(GL_DRAW_FRAMEBUFFER,
+                         GL_COLOR_ATTACHMENT0,
+                         GL_TEXTURE_2D,
+                         client_texture_id_ + 1,
+                         kServiceTextureId + 1,
+                         0,
+                         GL_NO_ERROR);
+
+  FramebufferManager* framebuffer_manager = group().framebuffer_manager();
+  Framebuffer* framebuffer =
+      framebuffer_manager->GetFramebuffer(client_framebuffer_id_);
+  EXPECT_TRUE(framebuffer->IsCleared());
+  Framebuffer* other_framebuffer =
+      framebuffer_manager->GetFramebuffer(client_framebuffer_id_ + 1);
+  EXPECT_TRUE(other_framebuffer->IsCleared());
+
+  EXPECT_CALL(*gl_, InvalidateFramebuffer(target, count, _))
+      .Times(1)
+      .RetiresOnSaturation();
+  DiscardFramebufferEXTImmediate& cmd =
+      *GetImmediateAs<DiscardFramebufferEXTImmediate>();
+  cmd.Init(target, count, attachments);
+
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, sizeof(attachments)));
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+  EXPECT_FALSE(framebuffer->IsCleared());
+  EXPECT_TRUE(other_framebuffer->IsCleared());
+}
+
 TEST_P(GLES2DecoderManualInitTest,
        DiscardedAttachmentsEXTMarksFramebufferIncomplete) {
   InitState init;

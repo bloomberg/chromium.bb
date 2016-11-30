@@ -4818,6 +4818,11 @@ error::Error GLES2DecoderImpl::HandleDiscardFramebufferEXTImmediate(
   volatile const GLenum* attachments =
       GetImmediateDataAs<volatile const GLenum*>(c, data_size,
                                                  immediate_data_size);
+  if (!validators_->framebuffer_target.IsValid(target)) {
+    LOCAL_SET_GL_ERROR_INVALID_ENUM("glDiscardFramebufferEXT", target,
+                                    "target");
+    return error::kNoError;
+  }
   if (count < 0) {
     LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, "glDiscardFramebufferEXT",
                        "count < 0");

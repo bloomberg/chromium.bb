@@ -2802,8 +2802,8 @@ TEST_F(GLES2ImplementationTest, DiscardFramebufferEXT) {
       data[ii][jj] = static_cast<GLenum>(ii * 1 + jj);
     }
   }
-  expected.cmd.Init(1, 2, &data[0][0]);
-  gl_->DiscardFramebufferEXT(1, 2, &data[0][0]);
+  expected.cmd.Init(GL_FRAMEBUFFER, 2, &data[0][0]);
+  gl_->DiscardFramebufferEXT(GL_FRAMEBUFFER, 2, &data[0][0]);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 

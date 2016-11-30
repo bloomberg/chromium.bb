@@ -297,7 +297,7 @@ GL_APICALL void         GL_APIENTRY glBindTexImage2DCHROMIUM (GLenumTextureBindT
 GL_APICALL void         GL_APIENTRY glReleaseTexImage2DCHROMIUM (GLenumTextureBindTarget target, GLint imageId);
 GL_APICALL void         GL_APIENTRY glTraceBeginCHROMIUM (const char* category_name, const char* trace_name);
 GL_APICALL void         GL_APIENTRY glTraceEndCHROMIUM (void);
-GL_APICALL void         GL_APIENTRY glDiscardFramebufferEXT (GLenum target, GLsizei count, const GLenum* attachments);
+GL_APICALL void         GL_APIENTRY glDiscardFramebufferEXT (GLenumFramebufferTarget target, GLsizei count, const GLenum* attachments);
 GL_APICALL void         GL_APIENTRY glLoseContextCHROMIUM (GLenumResetStatus current, GLenumResetStatus other);
 GL_APICALL GLuint64     GL_APIENTRY glInsertFenceSyncCHROMIUM (void);
 GL_APICALL void         GL_APIENTRY glGenSyncTokenCHROMIUM (GLuint64 fence_sync, GLbyte* sync_token);

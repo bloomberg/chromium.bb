@@ -3221,8 +3221,9 @@ void GLES2Implementation::DiscardFramebufferEXT(GLenum target,
                                                 const GLenum* attachments) {
   GPU_CLIENT_SINGLE_THREAD_CHECK();
   GPU_CLIENT_LOG("[" << GetLogPrefix() << "] glDiscardFramebufferEXT("
-                     << GLES2Util::GetStringEnum(target) << ", " << count
-                     << ", " << static_cast<const void*>(attachments) << ")");
+                     << GLES2Util::GetStringFramebufferTarget(target) << ", "
+                     << count << ", " << static_cast<const void*>(attachments)
+                     << ")");
   GPU_CLIENT_LOG_CODE_BLOCK({
     for (GLsizei i = 0; i < count; ++i) {
       GPU_CLIENT_LOG("  " << i << ": " << attachments[0 + i * 1]);
