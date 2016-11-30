@@ -713,6 +713,10 @@ imported/wpt/svg/linking/scripted [ Skip ]
 # crbug.com/656171: w3c-test-importer fails to import file with non-valid utf8 (004.worker.js).
 crbug.com/656171 imported/wpt/workers/semantics/encodings [ Skip ]
 
+# They have a wrong encoding, and test_parser.py throws UnicodeEncodeError.
+imported/wpt/domxpath/001.html [ Skip ]
+imported/wpt/domxpath/002.html [ Skip ]
+
 # Manual tests that fail as TIMEOUT or NOTRUN. Consider adding wpt_automation.
 imported/wpt/FileAPI/BlobURL/test1-manual.html [ Skip ]
 imported/wpt/FileAPI/BlobURL/test2-manual.html [ Skip ]
