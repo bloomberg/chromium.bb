@@ -1,10 +1,9 @@
-# Linux Open SUSE Build Instructions
+# Building Chromium on openSUSE
 
-This page includes some instruction to build Chromium on openSUSE 11.1 and 11.0.
-Before reading this page you need to learn the
-[Linux Build Instructions](linux_build_instructions.md).
+Generally speaking, follow the [Linux Build Instructions](linux_build_instructions.md).
+However, do the following instead to install the build dependencies:
 
-## How to Install Dependencies:
+## Install the build dependencies:
 
 Use zypper command to install dependencies:
 
@@ -70,9 +69,3 @@ sudo mkdir -p /usr/share/fonts/truetype/ttf-lucida
 sudo find /usr/lib*/jvm/java-1.6.*-sun-*/jre/lib -iname '*.ttf' -print \
      -exec ln -s {} /usr/share/fonts/truetype/ttf-lucida \;
 ```
-
-## Building the software
-
-Please refer to the [Linux Build Instructions](linux_build_instructions.md).
-
-Please update this page if you use different steps.

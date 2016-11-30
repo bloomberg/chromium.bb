@@ -1,52 +1,74 @@
 # iOS Build Instructions
 
-**Note:** Upstreaming of iOS code is still a work in progress. In particular,
-note that **it is not currently possible to build an actual Chromium app.**
-Currently, the buildable binaries are ios\_web\_shell (a minimal wrapper around
-the web layer), and various unit tests.
+**See also [the old version of this page](old_ios_build_instructions.md).**
 
-## Prerequisites
+Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
 
-*   A Mac running 10.11+.
-*   [Xcode] 8.0+.
-*   [depot\_tools].
-*   The current version of the JDK (required for the closure compiler).
+[TOC]
 
-## Getting the source
+## System requirements
 
-To checkout the source, use `fetch ios` command from [depot\_tools] in a new
-empty directory.
+* A 64-bit Mac running 10.11+.
+* [Xcode](https://developer.apple.com/xcode) 8.0+.
+* The OSX 10.10 SDK. Run
+  
+      ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
+ 
+  to check whether you have it.  Building with the 10.11 SDK works too, but
+  the releases currently use the 10.10 SDK.
+* The current version of the JDK (which is required for the Closure compiler).
 
-```shell
-# You can use a different location for your checkout of Chromium on iOS
-# by updating this variable. All shell snippets will refer to it.
-CHROMIUM_IOS="$HOME/chromium_ios"
-mkdir "$CHROMIUM_IOS"
-cd "$CHROMIUM_IOS"
-fetch ios
-```
+## Install `depot_tools`
 
-## Setting up
+Clone the depot_tools repository:
 
-Chromium on iOS is built using the [Ninja](ninja_build.md) tool and
-the [Clang](clang.md) compiler. See both of those pages for further details on
-how to tune the build.
+    $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-Before you build, you may want to [install API keys](api-keys) so that
-Chrome-integrated Google services work. This step is optional if you aren't
-testing those features.
+Add depot_tools to the end of your PATH (you will probably want to put this
+in your ~/.bashrc or ~/.zshrc). Assuming you cloned depot_tools
+to /path/to/depot_tools:
 
-### Quick setup
+    $ export PATH=$PATH:/path/to/depot_tools
 
-To setup the repository for building Chromium on iOS code, it is recommended
-to use the `src/ios/build/tools/setup-gn.py` script that creates a Xcode
-workspace configured to build the different targets for device and simulator.
+## Get the code
 
-```shell
-cd "$CHROMIUM_IOS/src"
-ios/build/tools/setup-gn.py
-open out/build/all.xcworkspace
-```
+Create a chromium directory for the checkout and change to it (you can call
+this whatever you like and put it wherever you like, as
+long as the full path has no spaces):
+    
+    $ mkdir chromium
+    $ cd chromium
+
+Run the `fetch` tool from depot_tools to check out the code and its
+dependencies.
+
+    $ fetch ios
+
+(This is identical to `fetch chromium`, except that it sets `target_os=["ios"]`
+in your `.gclient` file.
+
+If you don't want the full repo history, you can save a lot of time by
+adding the `--no-history` flag to fetch. Expect the command to take
+30 minutes on even a fast connection, and many hours on slower ones.
+
+When fetch completes, it will have created a directory called `src`.
+The remaining instructions assume you are now in that directory:
+
+    $ cd src
+
+*Optional*: You can also [install API keys](https://www.chromium.org/developers/how-tos/api-keys)
+if you want to talk to some of the Google services, but this is not necessary
+for most development and testing purposes.
+
+## Setting up the build
+
+Since the iOS build is a bit more complicated than a desktop build, we
+provide the `ios/build/tools/setup-gn.py`, which will create four
+appropriately configured build directories under `out` for Release and
+Debug device and simulator builds, and generates an appropriate Xcode
+workspace as well. 
+
+This script is run automatically by fetch (as part of `gclient runhooks`).
 
 You can customize the build by editing the file `$HOME/.setup-gn` (create it
 if it does not exists).  Look at `src/ios/build/tools/setup-gn.config` for
@@ -65,40 +87,88 @@ Note: you need to run `setup-gn.py` script every time one of the `BUILD.gn`
 file is updated (either by you or after rebasing). If you forget to run it,
 the list of targets and files in the Xcode solution may be stale.
 
-### Advanced setup
-
-You can run `gn` manually to configure the build yourself. In that case,
-refer to [mac build instructions] for help on how to do that.
-
-To build for iOS, you have to set `target_os` to `"ios"`. Please also note
-that `is_component_build` is not supported when building for iOS and must
-be set to `false`.
+You can also follow the manual instructions on the 
+[mac page](mac_build_instructions.md), but make sure you set the
+GN arg `target_os="ios"`.
 
 ## Running
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
 should run successfully in a local build. As of the time of writing, this is
-only ios\_web\_shell and unit test targets—see the note at the top of this
+only ios_web_shell and unit test targets—see the note at the top of this
 page. Check the bots periodically for updates; more targets (new components)
 will come on line over time.
 
 To run in the simulator from the command line, you can use `iossim`. For
-example, to run a debug build of ios\_web\_shell:
+example, to run a debug build of ios_web_shell:
 
 ```shell
 out/Debug-iphonesimulator/iossim out/Debug-iphonesimulator/ios_web_shell.app
 ```
 
-## Troubleshooting
+## Update your checkout
 
-If your build fails, check the iOS columns of [the Mac
-waterfall](http://build.chromium.org/p/chromium.mac/console) (the last two) to
-see if the bots are green. In general they should be, since failures on those
-bots will close the tree.
+To update an existing checkout, you can run
 
-[Xcode]: https://developer.apple.com/xcode
-[depot\_tools]: https://dev.chromium.org/developers/how-tos/depottools
-[Ninja]: ninja.md
-[Clang]: clang.md
-[api-keys]: https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys
-[mac build instructions]: mac_build_instructions.md
+    $ git rebase-update
+    $ gclient sync
+
+The first command updates the primary Chromium source repository and rebases
+any of your local branches on top of tip-of-tree (aka the Git branch `origin/master`).
+If you don't want to use this script, you can also just use `git pull` or 
+other common Git commands to update the repo.
+
+The second command syncs the subrepositories to the appropriate versions and
+re-runs the hooks as needed.
+
+## Tips, tricks, and troubleshooting
+
+
+If you have problems building, join us in `#chromium` on `irc.freenode.net` and
+ask there. As mentioned above, be sure that the
+[waterfall](http://build.chromium.org/buildbot/waterfall/) is green and the tree
+is open before checking out. This will increase your chances of success.
+
+### Improving performance of `git status`
+
+`git status` is used frequently to determine the status of your checkout.  Due
+to the number of files in Chromium's checkout, `git status` performance can be
+quite variable.  Increasing the system's vnode cache appears to help.  By
+default, this command:
+
+    sysctl -a | egrep kern\..*vnodes
+
+Outputs `kern.maxvnodes: 263168` (263168 is 257 * 1024).  To increase this
+setting:
+
+    sudo sysctl kern.maxvnodes=$((512*1024))
+
+Higher values may be appropriate if you routinely move between different
+Chromium checkouts.  This setting will reset on reboot, the startup setting can
+be set in `/etc/sysctl.conf`:
+
+    echo kern.maxvnodes=$((512*1024)) | sudo tee -a /etc/sysctl.conf
+
+Or edit the file directly.
+
+If your `git --version` reports 2.6 or higher, the following may also improve
+performance of `git status`:
+
+    git update-index --untracked-cache
+
+### Xcode license agreement
+
+If you're getting the error
+
+```
+Agreeing to the Xcode/iOS license requires admin privileges, please re-run as root via sudo.
+```
+
+the Xcode license hasn't been accepted yet which (contrary to the message) any
+user can do by running:
+
+    xcodebuild -license
+
+Only accepting for all users of the machine requires root:
+
+    sudo xcodebuild -license

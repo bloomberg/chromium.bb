@@ -1,96 +1,102 @@
 # Android Build Instructions
 
-**See also [the old version of this page](old_android_build_instructions.md).**
-
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
+**Generally, this page is obsolete and you should look at
+[the new page instead](android_build_instructions.md).**
 
 [TOC]
 
-## System requirements
+## Prerequisites
 
-* A 64-bit Intel machine running Linux with at least 8GB of RAM. More
-  than 16GB is highly recommended.
-* At least 100GB of free disk space.
-* You must have Git and Python installed already.
+A Linux build machine capable of building [Chrome for
+Linux](https://chromium.googlesource.com/chromium/src/+/master/docs/linux_build_instructions_prerequisites.md).
+Other (Mac/Windows) platforms are not supported for Android.
 
-Most development is done on Ubuntu. Other distros may or may not work;
-see the [linux instructions](linux_build_instructions.md) for some suggestions.
+## Getting the code
 
-Building the Android client on Windows or Mac is not supported and doesn't work.
+First, check out and install the [depot\_tools
+package](https://commondatastorage.googleapis.com/chrome-infra-docs/flat/depot_tools/docs/html/depot_tools_tutorial.html#_setting_up).
 
-## Install `depot_tools`
+Then, if you have no existing checkout, create your source directory and
+get the code:
 
-Clone the depot_tools repository:
-
-    $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
-
-Add depot_tools to the end of your PATH (you will probably want to put this
-in your ~/.bashrc or ~/.zshrc). Assuming you cloned depot_tools
-to /path/to/depot_tools:
-
-    $ export PATH=$PATH:/path/to/depot_tools
-
-## Get the code
-
-Create a chromium directory for the checkout and change to it (you can call
-this whatever you like and put it wherever you like, as
-long as the full path has no spaces):
-
-    $ mkdir ~/chromium && cd ~/chromium
-    $ fetch --nohooks android
-
-If you don't want the full repo history, you can save a lot of time by
-adding the `--no-history` flag to fetch.
-
-Expect the command to take 30 minutes on even a fast connection, and many
-hours on slower ones.
-
-If you've already installed the build dependencies on the machine (from another
-checkout, for example), you can omit the `--nohooks` flag and fetch
-will automatically execute `gclient runhooks` at the end.
-
-When fetch completes, it will have created a directory called `src`.
-The remaining instructions assume you are now in that directory:
-
-    $ cd src
-
-### Converting an existing Linux checkout
+```shell
+mkdir ~/chromium && cd ~/chromium
+fetch --nohooks android # This will take 30 minutes on a fast connection
+```
 
 If you have an existing Linux checkout, you can add Android support by
 appending `target_os = ['android']` to your .gclient file (in the
 directory above src):
 
-    $ echo "target_os = [ 'android' ]" >> ../.gclient
+```shell
+cat > .gclient <<EOF
+ solutions = [ ...existing stuff in here... ]
+ target_os = [ 'android' ] # Add this to get Android stuff checked out.
+EOF
+```
 
-Then run gclient sync to pull the new Android dependencies:
+Then run gclient sync to get the Android stuff checked out:
 
-    gclient sync
+```shell
+gclient sync
+```
 
-(This is actually the difference between `fetch android` and `fetch chromium`).
+## (Optional) Check out LKGR
 
-### Install additional build dependencies
+If you want a single build of Chromium in a known good state, sync to
+the LKGR ("last known good revision"). You can find it
+[here](http://chromium-status.appspot.com/lkgr), and the last 100
+[here](http://chromium-status.appspot.com/revisions). Run:
 
-Once you have checked out the code, run
+```shell
+gclient sync --nohooks -r <lkgr-sha1>
+```
 
-    build/install-build-deps-android.sh
+This is not needed for a typical developer workflow; only for one-time
+builds of Chromium.
 
-to get all of the dependencies you need to build on Linux *plus* all of the
-Android-specific dependencies (you need some of the regular Linux dependencies
-because an Android build builds a bunch of the Linux tools and utilities).
+## Configure GN
 
-### Run the hooks
+Create a build directory and set the build flags with:
 
-Once you've run `install-build-deps` at least once, you can now run the
-chromium-specific hooks, which will download additional binaries and other
-things you might need:
+```shell
+gn args out/Default
+```
 
-    $ gclient runhooks
+ You can replace out/Default with another name you choose inside the out
+directory.
 
-*Optional*: You can also [install API keys](https://www.chromium.org/developers/how-tos/api-keys)
-if you want to talk to some of the Google services, but this is not necessary
-for most development and testing purposes.
+Also be aware that some scripts (e.g. tombstones.py, adb_gdb.py)
+require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
 
-### Configure the JDK
+This command will bring up your editor with the GN build args. In this
+file add:
+
+```
+target_os = "android"
+target_cpu = "arm"  # (default)
+is_debug = true  # (default)
+
+# Other args you may want to set:
+is_component_build = true
+is_clang = true
+symbol_level = 1  # Faster build with fewer symbols. -g1 rather than -g2
+enable_incremental_javac = true  # Much faster; experimental
+```
+
+You can also specify `target_cpu` values of "x86" and "mipsel". Re-run
+gn args on that directory to edit the flags in the future. See the [GN
+build
+configuration](https://www.chromium.org/developers/gn-build-configuration)
+page for other flags you may want to set.
+
+### Install build dependencies
+
+Update the system packages required to build by running:
+
+```shell
+./build/install-build-deps-android.sh
+```
 
 Make also sure that OpenJDK 1.7 is selected as default:
 
@@ -101,40 +107,13 @@ Make also sure that OpenJDK 1.7 is selected as default:
 `sudo update-alternatives --config jar`
 `sudo update-alternatives --config jarsigner`
 
-## Setting up the Build
+### Synchronize sub-directories.
 
-Chromium uses [Ninja](https://ninja-build.org) as its main build tool, and
-a tool called [GN](../tools/gn/docs/quick_start.md) to generate
-the .ninja files to do the build. To create a build directory configured
-to build Android, run:
+```shell
+gclient sync
+```
 
-    $ gn gen '--args="target_os="android"' out/Default
-
-* You only have to do run this command once, it will self-update the build
-  files as needed after that.
-* You can replace `out/Default` with another directory name, but we recommend
-  it should still be a subdirectory of `out`.
-* To specify build parameters for GN builds, including release settings,
-  see [GN build configuration](https://www.chromium.org/developers/gn-build-configuration). 
-  The default will be a debug component build matching the current host
-  operating system and CPU.
-* For more info on GN, run `gn help` on the command line or read the
-  [quick start guide](../tools/gn/docs/quick_start.md).
-
-Also be aware that some scripts (e.g. tombstones.py, adb_gdb.py)
-require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
-
-## Build Chromium
-
-Build Chromium with Ninja using the command:
-
-    $ ninja -C out/Default chrome_public_apk
-
-You can get a list of all of the other build targets from GN by running
-`gn ls out/Default` from the command line. To compile one, pass to Ninja
-the GN label with no preceding "//" (so for `//chrome/test:unit_tests`
-use ninja -C out/Default chrome/test:unit_tests`).
-## Installing and Running Chromium on a device
+## Build and install the APKs
 
 If the `adb_install_apk.py` script below fails, make sure aapt is in
 your PATH. If not, add aapt's path to your PATH environment variable (it
@@ -314,9 +293,9 @@ To uninstall:
 out/Default/bin/install_chrome_public_apk_incremental -v --uninstall
 ```
 
-## Tips, tricks, and troubleshooting
+### Miscellaneous
 
-### Rebuilding libchrome.so for a particular release
+#### Rebuilding libchrome.so for a particular release
 
 These instructions are only necessary for Chrome 51 and earlier.
 

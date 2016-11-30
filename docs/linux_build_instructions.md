@@ -1,120 +1,156 @@
-# Linux-specific build instructions
+# Checking out and building Chromium on Linux
 
-## Common checkout instructions
+**See also [the old version of this page](old_linux_build_instructions.md).**
 
-This page covers Linux-specific setup and configuration. The
-[general checkout
-instructions](http://dev.chromium.org/developers/how-tos/get-the-code) cover
-installing depot tools and checking out the code via git.
+Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
 
-## Overview
+[TOC]
 
-Due its complexity, Chromium uses a set of custom tools to check out and build
-rather than configure/make like most projects. You _must_ use gclient and
-ninja, and there is no "install" step provided.
+## System requirements
 
-### System requirements
+*   A 64-bit Intel machine with at least 8GB of RAM. More than 16GB is highly
+    recommended.
+*   At least 100GB of free disk space.
+*   You must have Git and Python installed already.
 
-*   **64-bits**: x86 builds are not supported on Linux.
-*   **Memory**: >16GB is highly recommended.
-*   **Disk space**: Expect a full checkout and build to take nearly 100GB.
-*   **Distribution**: You should be able to build Chromium on any reasonably modern Linux
-    distribution, but there are a lot of distributions and we sometimes break
-    things on one or another. Internally, our development platform has been a
-    variant of Ubuntu 14.04 (Trusty Tahr); we expect you will have the most
-    luck on this platform.
+Most development is done on Ubuntu (currently 14.04, Trusty Tahr).  There are
+some instructions for other distros below, but they are mostly unsupported.
 
-## Software setup
+## Install `depot_tools`
 
-Non-Ubuntu distributions are not officially supported for building and the
-instructions below might be outdated.
+Clone the depot_tools repository:
 
-### Ubuntu
+    $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
 
-Once you have checked out the code, run
-[build/install-build-deps.sh](/build/install-build-deps.sh) The script only
-supports current releases as listed on https://wiki.ubuntu.com/Releases.
-This script is used to set up the canonical builders, and as such is the most
-up to date reference for the required prerequisites.
+Add depot_tools to the end of your PATH (you will probably want to put this
+in your ~/.bashrc or ~/.zshrc). Assuming you cloned depot_tools
+to /path/to/depot_tools:
 
-### Debian
+    $ export PATH=$PATH:/path/to/depot_tools
 
-Follow the Ubuntu instructions above. If you want to install the build-deps
-manually, note that the original packages are for Ubuntu. Here are the Debian
-equivalents:
+## Get the code
 
-*   libexpat-dev -> libexpat1-dev
-*   freetype-dev -> libfreetype6-dev
-*   libbzip2-dev -> libbz2-dev
-*   libcupsys2-dev -> libcups2-dev
+Create a chromium directory for the checkout and change to it (you can call
+this whatever you like and put it wherever you like, as
+long as the full path has no spaces):
+    
+    $ mkdir chromium
+    $ cd chromium
 
-Additionally, if you're building Chromium components for Android, you'll need to
-install the package: lib32z1
+Run the `fetch` tool from depot_tools to check out the code and its
+dependencies.
 
-### openSUSE
+    $ fetch --nohooks chromium
 
-For openSUSE 11.0 and later, see
-[Linux openSUSE Build Instructions](linux_open_suse_build_instructions.md).
+If you don't want the full repo history, you can save a lot of time by
+adding the `--no-history` flag to fetch.
 
-### Fedora
+Expect the command to take 30 minutes on even a fast connection, and many
+hours on slower ones.
 
-Recent systems:
+If you've already installed the build dependencies on the machine (from another
+checkout, for example), you can omit the `--nohooks` flag and fetch
+will automatically execute `gclient runhooks` at the end.
 
-    su -c 'yum install git python bzip2 tar pkgconfig atk-devel alsa-lib-devel \
-    bison binutils brlapi-devel bluez-libs-devel bzip2-devel cairo-devel \
-    cups-devel dbus-devel dbus-glib-devel expat-devel fontconfig-devel \
-    freetype-devel gcc-c++ GConf2-devel glib2-devel glibc.i686 gperf \
-    glib2-devel gtk2-devel gtk3-devel java-1.*.0-openjdk-devel libatomic \
-    libcap-devel libffi-devel libgcc.i686 libgnome-keyring-devel libjpeg-devel \
-    libstdc++.i686 libX11-devel libXScrnSaver-devel libXtst-devel \
-    libxkbcommon-x11-devel ncurses-compat-libs nspr-devel nss-devel pam-devel \
-    pango-devel pciutils-devel pulseaudio-libs-devel zlib.i686 httpd mod_ssl \
-    php php-cli python-psutil wdiff'
+When fetch completes, it will have created a directory called `src`.
+The remaining instructions assume you are now in that directory:
 
-The msttcorefonts packages can be obtained by following the instructions
-present [here](http://www.fedorafaq.org/#installfonts). For the optional
-packages:
+    $ cd src
 
-*   php-cgi is provided by the php-cli package
-*   sun-java6-fonts doesn't exist in Fedora repositories, needs investigating
+### Install additional build dependencies
 
-### Arch Linux
+Once you have checked out the code, and assuming you're using Ubuntu, run
+[build/install-build-deps.sh](/build/install-build-deps.sh)
 
-Most of these packages are probably already installed since they're often used,
-and the parameter --needed ensures that packages up to date are not reinstalled.
+Here are some instructions for what to do instead for
 
-    sudo pacman -S --needed python perl gcc gcc-libs bison flex gperf pkgconfig \
-    nss alsa-lib gconf glib2 gtk2 nspr ttf-ms-fonts freetype2 cairo dbus \
-    libgnome-keyring
+* [Debian](linux_debian_build_instructions.md)
+* [Fedora](linux_fedora_build_instructions.md)
+* [Arch Linux](linux_arch_build_instructions.md)
+* [Open SUSE](linux_open_suse_build_instrctions.md)
+* [Mandriva](linux_mandriva_build_instrctions.md)
 
-For the optional packages on Arch Linux:
+For Gentoo, you can just run `emerge www-client/chromium`.
 
-*   php-cgi is provided with pacman
-*   wdiff is not in the main repository but dwdiff is. You can get wdiff in
-    AUR/yaourt
-*   sun-java6-fonts do not seem to be in main repository or AUR.
+### Run the hooks
 
-### Mandriva
+Once you've run `install-build-deps` at least once, you can now run the
+chromium-specific hooks, which will download additional binaries and other
+things you might need:
 
-    urpmi lib64fontconfig-devel lib64alsa2-devel lib64dbus-1-devel \
-    lib64GConf2-devel lib64freetype6-devel lib64atk1.0-devel lib64gtk+2.0_0-devel \
-    lib64pango1.0-devel lib64cairo-devel lib64nss-devel lib64nspr-devel g++ python \
-    perl bison flex subversion gperf
+    $ gclient runhooks
 
-*   msttcorefonts are not available, you will need to build your own (see
-instructions, not hard to do, see
-[mandriva_msttcorefonts.md](mandriva_msttcorefonts.md)) or use drakfont to
-import the fonts from a windows installation
-*  These packages are for 64 bit, to download the 32 bit packages,
-substitute lib64 with lib
-*  Some of these packages might not be explicitly necessary as they come as
-   dependencies, there is no harm in including them however.
+*Optional*: You can also [install API keys](https://www.chromium.org/developers/how-tos/api-keys)
+if you want to talk to some of the Google services, but this is not necessary
+for most development and testing purposes.
 
-### Gentoo
+## Seting up the Build
 
-    emerge www-client/chromium
+Chromium uses [Ninja](https://ninja-build.org) as its main build tool, and
+a tool called [GN](../tools/gn/docs/quick_start.md) to generate
+the .ninja files to do the build. To create a build directory, run:
 
-## Troubleshooting
+    $ gn gen out/Default
+
+* You only have to do run this command once, it will self-update the build
+  files as needed after that.
+* You can replace `out/Default` with another directory name, but we recommend
+  it should still be a subdirectory of `out`.
+* To specify build parameters for GN builds, including release settings,
+  see [GN build configuration](https://www.chromium.org/developers/gn-build-configuration). 
+  The default will be a debug component build matching the current host
+  operating system and CPU.
+* For more info on GN, run `gn help` on the command line or read the
+  [quick start guide](../tools/gn/docs/quick_start.md).
+
+### Faster builds
+
+See [faster builds on Linux](linux_faster_builds.md) for various tips and
+settings that may speed up your build.
+
+## Build Chromium
+
+Build Chromium (the "chrome" target) with Ninja using the command:
+
+    $ ninja -C out/Default chrome
+
+You can get a list of all of the other build targets from GN by running
+`gn ls out/Default` from the command line. To compile one, pass to Ninja
+the GN label with no preceding "//" (so for `//chrome/test:unit_tests`
+use ninja -C out/Default chrome/test:unit_tests`).
+
+## Run Chromium
+
+Once it is built, you can simply run the browser:
+
+    $ out/Default/chrome
+
+## Running test targets
+
+You can run the tests in the same way. You can also limit which tests are
+run using the `--gtest_filter` arg, e.g.:
+
+    $ ninja -C out/Default unit_tests --gtest_filter="PushClientTest.*"
+
+You can find out more about GoogleTest at its
+[GitHub page](https://github.com/google/googletest).
+
+## Update your checkout
+
+To update an existing checkout, you can run
+
+    $ git rebase-update
+    $ gclient sync
+
+The first command updates the primary Chromium source repository and rebases
+any of your local branches on top of tip-of-tree (aka the Git branch `origin/master`).
+If you don't want to use this script, you can also just use `git pull` or 
+other common Git commands to update the repo.
+
+The second command syncs the subrepositories to the appropriate versions and
+re-runs the hooks as needed.
+
+## Tips, tricks, and troubleshooting
 
 ### Linker Crashes
 
@@ -140,21 +176,18 @@ setting):
 *   Build in component mode (this is for developers only, it will be slower and
     may have broken functionality). `is_component_build = true`
 
-## More links
+### More links
 
-*   [Faster builds on Linux](linux_faster_builds.md)
 *   Information about [building with Clang](clang.md).
-*   You may want to
-    [use a chroot](using_a_linux_chroot.md) to
-    isolate yourself from versioning or packaging conflicts (or to run the
-    layout tests).
+*   You may want to [use a chroot](using_a_linux_chroot.md) to
+    isolate yourself from versioning or packaging conflicts.
 *   Cross-compiling for ARM? See [LinuxChromiumArm](linux_chromium_arm.md).
 *   Want to use Eclipse as your IDE? See
     [LinuxEclipseDev](linux_eclipse_dev.md).
-*   Built version as Default Browser? See
+*   Want to use your built version as your default browser? See
     [LinuxDevBuildAsDefaultBrowser](linux_dev_build_as_default_browser.md).
 
-## Next Steps
+### Next Steps
 
 If you want to contribute to the effort toward a Chromium-based browser for
 Linux, please check out the [Linux Development page](linux_development.md) for

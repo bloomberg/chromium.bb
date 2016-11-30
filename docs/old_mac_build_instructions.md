@@ -1,82 +1,60 @@
 # Mac Build Instructions
 
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
+**Generally, this page is obsolete and you should look at
+[the new page instead](mac_build_instructions.md).**
 
 [TOC]
 
-## System requirements
+Google employee? See [go/building-chrome-mac](https://goto.google.com/building-chrome-mac) for extra tips.
 
-*   A 64-bit Mac running 10.9+.
+## Prerequisites
+
+*   A Mac running 10.9+.
 *   [Xcode](https://developer.apple.com/xcode) 7.3+.
+*   [depot\_tools](http://dev.chromium.org/developers/how-tos/depottools).
 *   The OSX 10.10 SDK. Run
     ```
     ls `xcode-select -p`/Platforms/MacOSX.platform/Developer/SDKs
     ```
     to check whether you have it.  Building with the 10.11 SDK works too, but
     the releases currently use the 10.10 SDK.
-*   Git v
-*   Python 2.7.x.
 
-## Install `depot_tools`
+## Getting the code
 
-Clone the depot_tools repository:
+[Check out the source code](https://www.chromium.org/developers/how-tos/get-the-code)
+using Git.
 
-    $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+Before checking out, go to the
+[waterfall](http://build.chromium.org/buildbot/waterfall/) and check that the
+source tree is open (to avoid pulling a broken tree).
 
-Add depot_tools to the end of your PATH (you will probably want to put this
-in your ~/.bashrc or ~/.zshrc). Assuming you cloned depot_tools
-to /path/to/depot_tools:
-
-    $ export PATH=$PATH:/path/to/depot_tools
-
-## Get the code
-
-Create a chromium directory for the checkout and change to it (you can call
-this whatever you like and put it wherever you like, as
-long as the full path has no spaces):
-    
-    $ mkdir chromium
-    $ cd chromium
-
-Run the `fetch` tool from depot_tools to check out the code and its
-dependencies.
-
-    $ fetch chromium
-
-If you don't want the full repo history, you can save a lot of time by
-adding the `--no-history` flag to fetch. Expect the command to take
-30 minutes on even a fast connection, and many hours on slower ones.
-
-When fetch completes, it will have created a directory called `src`.
-The remaining instructions assume you are now in that directory:
-
-    $ cd src
-
-*Optional*: You can also [install API keys](https://www.chromium.org/developers/how-tos/api-keys)
-if you want to talk to some of the Google services, but this is not necessary
-for most development and testing purposes.
+The path to the build directory should not contain spaces (e.g. not
+`~/Mac OS X/chromium`), as this will cause the build to fail. This includes your
+drive name, the default "Macintosh HD2" for a second drive has a space.
 
 ## Building
 
-Chromium uses [Ninja](https://ninja-build.org) as its main build tool, and
-a tool called [GN](../tools/gn/docs/quick_start.md) to generate
-the .ninja files to do the build. To create a build directory:
+Chromium on OS X is built using the [Ninja](ninja_build.md) tool and
+the [Clang](clang.md) compiler. See both of those pages for further details on
+how to tune the build.
 
-    $ gn gen out/Default
+Run
 
-* You only have to do run this command once, it will self-update the build
-  files as needed after that.
-* You can replace `out/Default` with another directory name, but we recommend
-  it should still be a subdirectory of `out`.
-* To specify build parameters for GN builds, including release settings,
-  see [GN build configuration](https://www.chromium.org/developers/gn-build-configuration). 
-  The default will be a debug component build matching the current host
-  operating system and CPU.
-* For more info on GN, run `gn help` on the command line or read the
-  [quick start guide](../tools/gn/docs/quick_start.md).
+    gn gen out/gn
 
+to generate build files (replace "gn" in "out/gn" with whatever you like), and
+then run
 
-### Faster builds
+    ninja -C out/gn chrome
+
+to build.  You can edit out/gn/args.gn to configure the build.
+
+Before you build, you may want to
+[install API keys](https://sites.google.com/a/chromium.org/dev/developers/how-tos/api-keys)
+so that Chrome-integrated Google services work. This step is optional if you
+aren't testing those features.
+
+## Faster builds
 
 Full rebuilds are about the same speed in Debug and Release, but linking is a
 lot faster in Release builds.
@@ -97,7 +75,7 @@ that opens less quickly.  Component builds work in both debug and release.
 
 Put
 
-    symbol_level = 0
+    symbol_level = 1
 
 in your args.gn to disable debug symbols altogether.  This makes both full
 rebuilds and linking faster (at the cost of not getting symbolized backtraces
@@ -105,21 +83,36 @@ in gdb).
 
 You might also want to [install ccache](ccache_mac.md) to speed up the build.
 
-## Run Chromium
+## Running
 
-Once it is built, you can simply run the browser:
+All build output is located in the `out` directory (in the example above,
+`~/chromium/src/out`).  You can find the applications at
+`gn/Content Shell.app` and `gn/Chromium.app`.
 
-    $ out/Default/chrome
+## Unit Tests
 
-## Running test targets
+We have several unit test targets that build, and tests that run and pass. A
+small subset of these is:
 
-You can run the tests in the same way. You can also limit which tests are
-run using the `--gtest_filter` arg, e.g.:
+*   `unit_tests` from `chrome/chrome.gyp`
+*   `base_unittests` from `base/base.gyp`
+*   `net_unittests` from `net/net.gyp`
+*   `url_unittests` from `url/url.gyp`
 
-    $ ninja -C out/Default unit_tests --gtest_filter="PushClientTest.*"
+When these tests are built, you will find them in the `out/gn`
+directory. You can run them from the command line:
 
-You can find out more about GoogleTest at its
-[GitHub page](https://github.com/google/googletest).
+    ~/chromium/src/out/gn/unit_tests
+
+
+## Coding
+
+According to the
+[Chromium style guide](http://dev.chromium.org/developers/coding-style) code is
+[not allowed to have whitespace on the ends of lines](https://google.github.io/styleguide/cppguide.html#Horizontal_Whitespace).
+
+Run `git cl format` after committing to your local branch and before uploading
+to clang-format your code.
 
 ## Debugging
 
@@ -130,24 +123,13 @@ command line, that is possible without building in Xcode. See
 [Debugging in Xcode](http://www.chromium.org/developers/how-tos/debugging-on-os-x/building-with-ninja-debugging-with-xcode)
 for information on how.
 
-## Update your checkout
+## Contributing
 
-To update an existing checkout, you can run
+Once you’re comfortable with building Chromium, check out
+[Contributing Code](http://dev.chromium.org/developers/contributing-code) for
+information about writing code for Chromium and contributing it.
 
-    $ git rebase-update
-    $ gclient sync
-
-The first command updates the primary Chromium source repository and rebases
-any of your local branches on top of tip-of-tree (aka the Git branch `origin/master`).
-If you don't want to use this script, you can also just use `git pull` or 
-other common Git commands to update the repo.
-
-The second command syncs the subrepositories to the appropriate versions and
-re-runs the hooks as needed.
-
-## Tips, tricks, and troubleshooting
-
-### Using Xcode-Ninja Hybrid
+## Using Xcode-Ninja Hybrid
 
 While using Xcode is unsupported, gn supports a hybrid approach of using ninja
 for building, but Xcode for editing and driving compilation.  Xcode is still
@@ -182,7 +164,7 @@ ask there. As mentioned above, be sure that the
 [waterfall](http://build.chromium.org/buildbot/waterfall/) is green and the tree
 is open before checking out. This will increase your chances of success.
 
-### Improving performance of `git status`
+## Improving performance of `git status`
 
 `git status` is used frequently to determine the status of your checkout.  Due
 to the number of files in Chromium's checkout, `git status` performance can be
@@ -209,7 +191,7 @@ performance of `git status`:
 
     git update-index --untracked-cache
 
-### Xcode license agreement
+## Xcode license agreement
 
 If you're getting the error
 
