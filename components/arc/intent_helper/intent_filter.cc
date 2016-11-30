@@ -18,7 +18,8 @@ IntentFilter::IntentFilter(const mojom::IntentFilterPtr& mojo_intent_filter) {
       authorities_.emplace_back(authorityptr);
     }
   }
-  if (mojo_intent_filter->data_paths.has_value()) {
+  // In order to register a path we need to have at least one authority.
+  if (!authorities_.empty() && mojo_intent_filter->data_paths.has_value()) {
     for (const mojom::PatternMatcherPtr& pattern :
          *mojo_intent_filter->data_paths) {
       paths_.emplace_back(pattern);
@@ -41,12 +42,14 @@ bool IntentFilter::Match(const GURL& url) const {
     return false;
   }
 
-  // Match the authority and the path (if any).
+  // Match the authority and the path. If there are no authorities for this
+  // filter, we can treat this as a match, since we already know this filter
+  // has a http(s) scheme and it doesn't corresponds to a MIME type.
   if (!authorities_.empty()) {
     return MatchDataAuthority(url) && (paths_.empty() || HasDataPath(url));
   }
 
-  return false;
+  return true;
 }
 
 // Transcribed from android's IntentFilter#hasDataPath.
