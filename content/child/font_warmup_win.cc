@@ -150,7 +150,8 @@ class FakeGdiObjectFactory {
     base::AutoLock scoped_lock(objects_lock_);
     curr_handle_++;
     // We don't support wrapping the fake handle value.
-    void* handle = reinterpret_cast<void*>(curr_handle_.ValueOrDie());
+    void* handle = reinterpret_cast<void*>(
+        static_cast<uintptr_t>(curr_handle_.ValueOrDie()));
     scoped_refptr<FakeGdiObject> object(new FakeGdiObject(magic, handle));
     objects_[handle] = object;
     return object;
