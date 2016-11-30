@@ -531,17 +531,26 @@ public class CompositorViewHolder extends CoordinatorLayout
 
     @Override
     public void getVisibleViewport(RectF outRect) {
-        // All of these values are in pixels.
-        float viewportTop = 0;
+        getWindowViewport(outRect);
+
         float bottomControlOffset = 0;
         if (mFullscreenManager != null) {
-            viewportTop = mFullscreenManager.getTopVisibleContentOffset();
+            // All of these values are in pixels.
+            outRect.top += mFullscreenManager.getTopVisibleContentOffset();
             bottomControlOffset = mFullscreenManager.getBottomControlOffset();
         }
-        float viewportBottom =
-                getHeight() - (getBottomControlsHeightPixels() - bottomControlOffset);
+        outRect.bottom -= (getBottomControlsHeightPixels() - bottomControlOffset);
+    }
 
-        outRect.set(0, viewportTop, getWidth(), viewportBottom);
+    @Override
+    public void getViewportFullControls(RectF outRect) {
+        getWindowViewport(outRect);
+
+        if (mFullscreenManager != null) {
+            // All of these values are in pixels.
+            outRect.top += mFullscreenManager.getTopControlsHeight();
+            outRect.bottom -= mFullscreenManager.getBottomControlsHeight();
+        }
     }
 
     @Override

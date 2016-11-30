@@ -78,6 +78,9 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
     private int mFullscreenToken = FullscreenManager.INVALID_TOKEN;
     private boolean mUpdateRequested;
 
+    // Whether or not the last layout was showing the browser controls.
+    private boolean mPreviousLayoutShowingToolbar;
+
     // Used to store the visible viewport and not create a new Rect object every frame.
     private final RectF mCachedVisibleViewport = new RectF();
     private final RectF mCachedWindowViewport = new RectF();
@@ -318,6 +321,12 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
         final int flags = getActiveLayout().getSizingFlags();
         if ((flags & SizingFlags.REQUIRE_FULLSCREEN_SIZE) != 0) {
             mHost.getWindowViewport(rect);
+        } else if ((flags & SizingFlags.USE_PREVIOUS_TOOLBAR_STATE) != 0) {
+            if (mPreviousLayoutShowingToolbar) {
+                mHost.getViewportFullControls(rect);
+            } else {
+                mHost.getWindowViewport(rect);
+            }
         } else {
             mHost.getVisibleViewport(rect);
         }
@@ -385,6 +394,8 @@ public abstract class LayoutManager implements LayoutUpdateHost, LayoutProvider,
 
         ChromeFullscreenManager fullscreenManager = mHost.getFullscreenManager();
         if (fullscreenManager != null) {
+            mPreviousLayoutShowingToolbar = !fullscreenManager.areBrowserControlsOffScreen();
+
             // Release any old fullscreen token we were holding.
             fullscreenManager.getBrowserVisibilityDelegate().hideControlsPersistent(
                     mFullscreenToken);

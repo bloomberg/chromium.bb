@@ -58,6 +58,12 @@ public interface LayoutManagerHost {
     void getVisibleViewport(RectF outRect);
 
     /**
+     * Get the viewport assuming the browser controls are completely shown.
+     * @param outRect The RectF object to write the result to.
+     */
+    void getViewportFullControls(RectF outRect);
+
+    /**
      * @return The height of the screen minus the height of the top and bottom browser controls
      *         when not hidden.
      */

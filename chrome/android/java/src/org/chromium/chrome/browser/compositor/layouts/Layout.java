@@ -82,6 +82,9 @@ public abstract class Layout implements TabContentManager.ThumbnailChangeListene
          */
         public static final int REQUIRE_FULLSCREEN_SIZE = 0x1000;
 
+        /** Use the state of the toolbar from the previous layout. */
+        public static final int USE_PREVIOUS_TOOLBAR_STATE = 0x10000;
+
         /**
          * The layout does not support fullscreen and it should animate the toolbar away.
          * A helper flag to make it easier to specify restrictions.
