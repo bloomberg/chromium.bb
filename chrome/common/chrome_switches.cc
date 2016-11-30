@@ -885,6 +885,10 @@ const char kSpeculativeResourcePrefetchingDisabled[] = "disabled";
 // Speculative resource prefetching is enabled.
 const char kSpeculativeResourcePrefetchingEnabled[] = "enabled";
 
+// Speculative resource prefetching is enabled for external requests.
+const char kSpeculativeResourcePrefetchingEnabledExternal[] =
+    "enabled-external-only";
+
 // Speculative resource prefetching will only learn about resources that need to
 // be prefetched but will not prefetch them.
 const char kSpeculativeResourcePrefetchingLearning[] = "learning";

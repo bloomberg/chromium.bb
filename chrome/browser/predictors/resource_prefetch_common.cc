@@ -21,11 +21,19 @@ namespace predictors {
 
 namespace {
 
-constexpr int kLearningMode = ResourcePrefetchPredictorConfig::URL_LEARNING |
-                              ResourcePrefetchPredictorConfig::HOST_LEARNING;
-constexpr int kPrefetchingMode =
-    ResourcePrefetchPredictorConfig::URL_PREFETCHING |
-    ResourcePrefetchPredictorConfig::HOST_PREFETCHING;
+bool IsPrefetchingEnabledInternal(Profile* profile, int mode, int mask) {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  if ((mode & mask) == 0)
+    return false;
+
+  if (!profile || !profile->GetPrefs() ||
+      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
+          chrome_browser_net::NetworkPredictionStatus::ENABLED) {
+    return false;
+  }
+
+  return true;
+}
 
 }  // namespace
 
@@ -49,10 +57,18 @@ bool IsSpeculativeResourcePrefetchingEnabled(
     if (value == switches::kSpeculativeResourcePrefetchingDisabled) {
       return false;
     } else if (value == switches::kSpeculativeResourcePrefetchingLearning) {
-      config->mode |= kLearningMode;
+      config->mode |= ResourcePrefetchPredictorConfig::LEARNING;
+      return true;
+    } else if (value ==
+               switches::kSpeculativeResourcePrefetchingEnabledExternal) {
+      config->mode |= ResourcePrefetchPredictorConfig::LEARNING |
+                      ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
       return true;
     } else if (value == switches::kSpeculativeResourcePrefetchingEnabled) {
-      config->mode |= kLearningMode | kPrefetchingMode;
+      config->mode |=
+          ResourcePrefetchPredictorConfig::LEARNING |
+          ResourcePrefetchPredictorConfig::PREFETCHING_FOR_NAVIGATION |
+          ResourcePrefetchPredictorConfig::PREFETCHING_FOR_EXTERNAL;
       return true;
     }
   }
@@ -128,42 +144,28 @@ ResourcePrefetchPredictorConfig::~ResourcePrefetchPredictorConfig() {
 }
 
 bool ResourcePrefetchPredictorConfig::IsLearningEnabled() const {
-  return IsURLLearningEnabled() || IsHostLearningEnabled();
+  return (mode & LEARNING) > 0;
 }
 
-bool ResourcePrefetchPredictorConfig::IsPrefetchingEnabled(
+bool ResourcePrefetchPredictorConfig::IsPrefetchingEnabledForSomeOrigin(
     Profile* profile) const {
-  return IsURLPrefetchingEnabled(profile) || IsHostPrefetchingEnabled(profile);
+  int mask = PREFETCHING_FOR_NAVIGATION | PREFETCHING_FOR_EXTERNAL;
+  return IsPrefetchingEnabledInternal(profile, mode, mask);
 }
 
-bool ResourcePrefetchPredictorConfig::IsURLLearningEnabled() const {
-  return (mode & URL_LEARNING) > 0;
-}
-
-bool ResourcePrefetchPredictorConfig::IsHostLearningEnabled() const {
-  return (mode & HOST_LEARNING) > 0;
-}
-
-bool ResourcePrefetchPredictorConfig::IsURLPrefetchingEnabled(
-    Profile* profile) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!profile || !profile->GetPrefs() ||
-      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
-      chrome_browser_net::NetworkPredictionStatus::ENABLED) {
-    return false;
+bool ResourcePrefetchPredictorConfig::IsPrefetchingEnabledForOrigin(
+    Profile* profile,
+    PrefetchOrigin origin) const {
+  int mask = 0;
+  switch (origin) {
+    case PrefetchOrigin::NAVIGATION:
+      mask = PREFETCHING_FOR_NAVIGATION;
+      break;
+    case PrefetchOrigin::EXTERNAL:
+      mask = PREFETCHING_FOR_EXTERNAL;
+      break;
   }
-  return (mode & URL_PREFETCHING) > 0;
-}
-
-bool ResourcePrefetchPredictorConfig::IsHostPrefetchingEnabled(
-    Profile* profile) const {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  if (!profile || !profile->GetPrefs() ||
-      chrome_browser_net::CanPrefetchAndPrerenderUI(profile->GetPrefs()) !=
-      chrome_browser_net::NetworkPredictionStatus::ENABLED) {
-    return false;
-  }
-  return (mode & HOST_PREFETCHING) > 0;
+  return IsPrefetchingEnabledInternal(profile, mode, mask);
 }
 
 bool ResourcePrefetchPredictorConfig::IsLowConfidenceForTest() const {

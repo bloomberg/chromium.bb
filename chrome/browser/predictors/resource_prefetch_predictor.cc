@@ -383,10 +383,6 @@ ResourcePrefetchPredictor::ResourcePrefetchPredictor(
 
   // Some form of learning has to be enabled.
   DCHECK(config_.IsLearningEnabled());
-  if (config_.IsURLPrefetchingEnabled(profile_))
-    DCHECK(config_.IsURLLearningEnabled());
-  if (config_.IsHostPrefetchingEnabled(profile_))
-    DCHECK(config_.IsHostLearningEnabled());
 }
 
 ResourcePrefetchPredictor::~ResourcePrefetchPredictor() {}
@@ -475,17 +471,18 @@ void ResourcePrefetchPredictor::RecordMainFrameLoadComplete(
   }
 }
 
-void ResourcePrefetchPredictor::StartPrefetching(const GURL& url) {
+void ResourcePrefetchPredictor::StartPrefetching(const GURL& url,
+                                                 PrefetchOrigin origin) {
   TRACE_EVENT1("browser", "ResourcePrefetchPredictor::StartPrefetching", "url",
                url.spec());
   if (!prefetch_manager_.get())  // Prefetching not enabled.
     return;
+  if (!config_.IsPrefetchingEnabledForOrigin(profile_, origin))
+    return;
 
   std::vector<GURL> subresource_urls;
-  if (!GetPrefetchData(url, &subresource_urls)) {
-    // No prefetching data at host or URL level.
+  if (!GetPrefetchData(url, &subresource_urls))
     return;
-  }
 
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
@@ -523,7 +520,7 @@ void ResourcePrefetchPredictor::OnMainFrameRequest(
   DCHECK_EQ(INITIALIZED, initialization_state_);
 
   const GURL& main_frame_url = request.navigation_id.main_frame_url;
-  StartPrefetching(main_frame_url);
+  StartPrefetching(main_frame_url, PrefetchOrigin::NAVIGATION);
 
   // Cleanup older navigations.
   CleanupAbandonedNavigations(request.navigation_id);
@@ -617,37 +614,29 @@ bool ResourcePrefetchPredictor::GetPrefetchData(const GURL& main_frame_url,
                                                 std::vector<GURL>* urls) {
   DCHECK(urls);
   DCHECK(urls->empty());
-  bool use_url_data = config_.IsPrefetchingEnabled(profile_) ?
-      config_.IsURLPrefetchingEnabled(profile_) :
-      config_.IsURLLearningEnabled();
-  bool use_host_data = config_.IsPrefetchingEnabled(profile_) ?
-      config_.IsHostPrefetchingEnabled(profile_) :
-      config_.IsHostLearningEnabled();
 
   // Fetch URLs based on a redirect endpoint for URL/host first.
   std::string redirect_endpoint;
-  if (use_url_data &&
-      GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
+  if (GetRedirectEndpoint(main_frame_url.spec(), *url_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *url_table_cache_, urls)) {
     return true;
   }
 
-  if (use_host_data &&
-      GetRedirectEndpoint(main_frame_url.host(), *host_redirect_table_cache_,
+  if (GetRedirectEndpoint(main_frame_url.host(), *host_redirect_table_cache_,
                           &redirect_endpoint) &&
       PopulatePrefetcherRequest(redirect_endpoint, *host_table_cache_, urls)) {
     return true;
   }
 
   // Fallback to fetching URLs based on the incoming URL/host.
-  if (use_url_data && PopulatePrefetcherRequest(main_frame_url.spec(),
-                                                *url_table_cache_, urls)) {
+  if (PopulatePrefetcherRequest(main_frame_url.spec(), *url_table_cache_,
+                                urls)) {
     return true;
   }
 
-  return use_host_data && PopulatePrefetcherRequest(main_frame_url.host(),
-                                                    *host_table_cache_, urls);
+  return PopulatePrefetcherRequest(main_frame_url.host(), *host_table_cache_,
+                                   urls);
 }
 
 bool ResourcePrefetchPredictor::PopulatePrefetcherRequest(
@@ -707,7 +696,7 @@ void ResourcePrefetchPredictor::OnHistoryAndCacheLoaded() {
   DCHECK_EQ(INITIALIZING, initialization_state_);
 
   // Initialize the prefetch manager only if prefetching is enabled.
-  if (config_.IsPrefetchingEnabled(profile_)) {
+  if (config_.IsPrefetchingEnabledForSomeOrigin(profile_)) {
     prefetch_manager_ = new ResourcePrefetcherManager(
         this, config_, profile_->GetRequestContext());
   }
@@ -858,7 +847,7 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   bool should_track_url =
       already_tracking || (url_visit_count >= config_.min_url_visit_count);
 
-  if (should_track_url && config_.IsURLLearningEnabled()) {
+  if (should_track_url) {
     LearnNavigation(url_spec, PREFETCH_KEY_TYPE_URL,
                     summary.subresource_requests, config_.max_urls_to_track,
                     url_table_cache_.get(), summary.initial_url.spec(),
@@ -866,13 +855,10 @@ void ResourcePrefetchPredictor::OnVisitCountLookup(
   }
 
   // Host level data - no cutoff, always learn the navigation if enabled.
-  if (config_.IsHostLearningEnabled()) {
-    const std::string host = summary.main_frame_url.host();
-    LearnNavigation(host, PREFETCH_KEY_TYPE_HOST, summary.subresource_requests,
-                    config_.max_hosts_to_track, host_table_cache_.get(),
-                    summary.initial_url.host(),
-                    host_redirect_table_cache_.get());
-  }
+  const std::string host = summary.main_frame_url.host();
+  LearnNavigation(host, PREFETCH_KEY_TYPE_HOST, summary.subresource_requests,
+                  config_.max_hosts_to_track, host_table_cache_.get(),
+                  summary.initial_url.host(), host_redirect_table_cache_.get());
 
   if (observer_)
     observer_->OnNavigationLearned(url_visit_count, summary);

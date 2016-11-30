@@ -251,6 +251,7 @@ extern const char kSimulateUpgrade[];
 extern const char kSpeculativeResourcePrefetching[];
 extern const char kSpeculativeResourcePrefetchingDisabled[];
 extern const char kSpeculativeResourcePrefetchingEnabled[];
+extern const char kSpeculativeResourcePrefetchingEnabledExternal[];
 extern const char kSpeculativeResourcePrefetchingLearning[];
 extern const char kSSLKeyLogFile[];
 extern const char kStartMaximized[];

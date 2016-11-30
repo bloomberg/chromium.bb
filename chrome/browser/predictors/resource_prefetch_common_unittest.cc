@@ -56,22 +56,19 @@ class ResourcePrefetchCommonTest : public testing::Test {
         switches::kSpeculativeResourcePrefetching, value);
   }
 
-  void TestIsPrefetchEnabled(const ResourcePrefetchPredictorConfig& config) {
+  void TestIsPrefetchEnabledForOrigin(
+      const ResourcePrefetchPredictorConfig& config,
+      PrefetchOrigin origin) {
     EXPECT_TRUE(config.IsLearningEnabled());
-    EXPECT_TRUE(config.IsPrefetchingEnabled(profile_.get()));
-    EXPECT_TRUE(config.IsURLLearningEnabled());
-    EXPECT_TRUE(config.IsHostLearningEnabled());
-    EXPECT_TRUE(config.IsURLPrefetchingEnabled(profile_.get()));
-    EXPECT_TRUE(config.IsHostPrefetchingEnabled(profile_.get()));
+    EXPECT_TRUE(config.IsPrefetchingEnabledForOrigin(profile_.get(), origin));
   }
 
   void TestIsPrefetchLearning(const ResourcePrefetchPredictorConfig& config) {
     EXPECT_TRUE(config.IsLearningEnabled());
-    EXPECT_FALSE(config.IsPrefetchingEnabled(profile_.get()));
-    EXPECT_TRUE(config.IsURLLearningEnabled());
-    EXPECT_TRUE(config.IsHostLearningEnabled());
-    EXPECT_FALSE(config.IsURLPrefetchingEnabled(profile_.get()));
-    EXPECT_FALSE(config.IsHostPrefetchingEnabled(profile_.get()));
+    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
+        profile_.get(), PrefetchOrigin::EXTERNAL));
+    EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
+        profile_.get(), PrefetchOrigin::NAVIGATION));
   }
 
   void TestIsDefaultExtraConfig(const ResourcePrefetchPredictorConfig& config) {
@@ -98,17 +95,15 @@ TEST_F(ResourcePrefetchCommonTest, IsDisabledByDefault) {
       IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
 
   EXPECT_FALSE(config.IsLearningEnabled());
-  EXPECT_FALSE(config.IsPrefetchingEnabled(profile_.get()));
-  EXPECT_FALSE(config.IsURLLearningEnabled());
-  EXPECT_FALSE(config.IsHostLearningEnabled());
-  EXPECT_FALSE(config.IsURLPrefetchingEnabled(profile_.get()));
-  EXPECT_FALSE(config.IsHostPrefetchingEnabled(profile_.get()));
+  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(profile_.get(),
+                                                    PrefetchOrigin::EXTERNAL));
+  EXPECT_FALSE(config.IsLearningEnabled());
 
   TestIsDefaultExtraConfig(config);
 }
 
 TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
-  SetCommandLineValue("learning");
+  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingLearning);
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
   TestIsPrefetchLearning(config);
@@ -116,20 +111,31 @@ TEST_F(ResourcePrefetchCommonTest, EnableLearning) {
 }
 
 TEST_F(ResourcePrefetchCommonTest, EnablePrefetch) {
-  SetCommandLineValue("enabled");
+  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabled);
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchEnabled(config);
+  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
+  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::NAVIGATION);
+  TestIsDefaultExtraConfig(config);
+}
+
+TEST_F(ResourcePrefetchCommonTest, EnablePrefetchExternalOnly) {
+  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabledExternal);
+  ResourcePrefetchPredictorConfig config;
+  EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
+  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
+  EXPECT_FALSE(config.IsPrefetchingEnabledForOrigin(
+      profile_.get(), PrefetchOrigin::NAVIGATION));
   TestIsDefaultExtraConfig(config);
 }
 
 // Verifies whether prefetching is disabled according to the network type. But
 // learning should not be disabled by network.
 TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
-  SetCommandLineValue("enabled");
+  SetCommandLineValue(switches::kSpeculativeResourcePrefetchingEnabled);
   ResourcePrefetchPredictorConfig config;
   EXPECT_TRUE(IsSpeculativeResourcePrefetchingEnabled(profile_.get(), &config));
-  TestIsPrefetchEnabled(config);
+  TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
   TestIsDefaultExtraConfig(config);
 
   // Set preference to WIFI_ONLY: prefetch when not on cellular.
@@ -137,7 +143,7 @@ TEST_F(ResourcePrefetchCommonTest, RespectsNetworkSettings) {
   {
     std::unique_ptr<NetworkChangeNotifier> mock(
         new MockNetworkChangeNotifierWIFI);
-    TestIsPrefetchEnabled(config);
+    TestIsPrefetchEnabledForOrigin(config, PrefetchOrigin::EXTERNAL);
   }
   {
     std::unique_ptr<NetworkChangeNotifier> mock(

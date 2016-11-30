@@ -151,9 +151,9 @@ class ResourcePrefetchPredictor
   // Called when the main frame of a page completes loading.
   void RecordMainFrameLoadComplete(const NavigationID& navigation_id);
 
-  // Starts prefetching if it is enabled and prefetching data exists for the
-  // |main_frame_url| either at the URL or at the host level.
-  void StartPrefetching(const GURL& main_frame_url);
+  // Starts prefetching if it is enabled for |origin| and prefetching data
+  // exists for the |main_frame_url| either at the URL or at the host level.
+  void StartPrefetching(const GURL& main_frame_url, PrefetchOrigin origin);
 
   // Stops prefetching that may be in progress corresponding to
   // |main_frame_url|.

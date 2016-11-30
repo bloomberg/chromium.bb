@@ -47,7 +47,7 @@ static jboolean StartPrefetching(JNIEnv* env,
   if (!predictor)
     return false;
   GURL url = GURL(base::android::ConvertJavaStringToUTF16(env, j_url));
-  predictor->StartPrefetching(url);
+  predictor->StartPrefetching(url, PrefetchOrigin::EXTERNAL);
 
   return true;
 }
