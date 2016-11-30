@@ -1,22 +1,43 @@
-<script src="../../resources/dump-as-markup.js" type="text/javascript"></script>
-<body>
-<div id="test" contenteditable>hello</div>
+<!doctype html>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<script src="../assert_selection.js"></script>
 <script>
+// Test for https://bugs.webkit.org/show_bug.cgi?id=42941
+function populateUndoStack(selection) {
+    const div = selection.document.querySelector('div');
+    selection.document.execCommand('insertParagraph');
+    selection.setBaseAndExtent(div.firstChild, 0, div.firstChild, 2);
+    selection.document.execCommand('bold');
+    selection.document.execCommand('undo');
+    selection.document.execCommand('undo');
+}
 
-var div = document.getElementById('test');
-window.getSelection().setBaseAndExtent(div.firstChild, 2, div.firstChild, 2);
-document.execCommand('InsertParagraph', true, null);
-window.getSelection().setBaseAndExtent(div.firstChild, 0, div.firstChild, 2);
-document.execCommand('bold', false, null);
+test(() => assert_selection(
+    '<div contenteditable>he|llo</div>',
+    selection => populateUndoStack(selection),
+    '<div contenteditable>he|llo</div>'),
+    'undo');
 
-Markup.description("This test splits a text node by inserting a new paragraph and bolds the the first half.\nIf splitTextNode correctly reapplied the split, undo and redo should preserve the style. (See bug 42941).")
-Markup.dump(div, "before undo");
-document.execCommand('undo', false, null);
-document.execCommand('undo', false, null);
-Markup.dump(div, "after undo");
-document.execCommand('redo', false, null);
-document.execCommand('redo', false, null);
-Markup.dump(div, "after redo");
+test(() => assert_selection(
+    '<div contenteditable>he|llo</div>',
+    selection => {
+        populateUndoStack(selection);
+        selection.document.execCommand('redo');
+        selection.document.execCommand('redo');
+    },
+    '<div contenteditable><b>^he|</b><div>llo</div></div>'),
+    'redo');
 
+test(() => assert_selection(
+    '<div contenteditable>he|llo</div>',
+    selection => {
+        const div = selection.document.querySelector('div');
+        populateUndoStack(selection);
+        div.firstChild.remove();
+        selection.document.execCommand('redo');
+        selection.document.execCommand('redo');
+    },
+    '<div contenteditable><div>|hello</div></div>'),
+    'redo with removing node');
 </script>
-</body>
