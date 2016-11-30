@@ -103,7 +103,7 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   gvr::Sizei compositor_size = delegate_->GetWebVRCompositorSurfaceSize();
   left_eye->renderWidth = compositor_size.width / 2;
   left_eye->renderHeight = compositor_size.height;
-  right_eye->renderWidth = left_eye->renderHeight;
+  right_eye->renderWidth = left_eye->renderWidth;
   right_eye->renderHeight = left_eye->renderHeight;
 
   std::string vendor = gvr_api->GetViewerVendor();
