@@ -93,8 +93,6 @@ component("bindings") {
     "lib/no_interface.cc",
     "lib/pipe_control_message_handler.cc",
     "lib/pipe_control_message_proxy.cc",
-    "lib/router.cc",
-    "lib/router.h",
     "lib/scoped_interface_endpoint_handle.cc",
     "lib/serialization.h",
     "lib/serialization_context.cc",

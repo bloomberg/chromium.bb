@@ -275,7 +275,7 @@ class Binding {
   void EnableTestingMode() { internal_state_.EnableTestingMode(); }
 
  private:
-  internal::BindingState<Interface, true, ImplRefTraits> internal_state_;
+  internal::BindingState<Interface, ImplRefTraits> internal_state_;
 
   DISALLOW_COPY_AND_ASSIGN(Binding);
 };

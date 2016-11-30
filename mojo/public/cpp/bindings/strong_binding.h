@@ -19,7 +19,6 @@
 #include "mojo/public/cpp/bindings/filter_chain.h"
 #include "mojo/public/cpp/bindings/interface_ptr.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/message_header_validator.h"
 #include "mojo/public/cpp/system/core.h"
 
@@ -75,9 +74,6 @@ class StrongBinding {
   void Close() { delete this; }
 
   Interface* impl() { return impl_.get(); }
-
-  // Exposed for testing, should not generally be used.
-  internal::Router* internal_router() { return binding_.internal_router(); }
 
   // Sends a message on the underlying message pipe and runs the current
   // message loop until its response is received. This can be used in tests to

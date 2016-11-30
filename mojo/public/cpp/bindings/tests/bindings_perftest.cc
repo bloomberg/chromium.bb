@@ -13,7 +13,6 @@
 #include "mojo/public/cpp/bindings/interface_endpoint_client.h"
 #include "mojo/public/cpp/bindings/lib/message_builder.h"
 #include "mojo/public/cpp/bindings/lib/multiplex_router.h"
-#include "mojo/public/cpp/bindings/lib/router.h"
 #include "mojo/public/cpp/bindings/message.h"
 #include "mojo/public/cpp/test_support/test_support.h"
 #include "mojo/public/cpp/test_support/test_utils.h"
@@ -192,28 +191,6 @@ class PingPongPaddle : public MessageReceiverWithResponderStatus {
   base::Closure quit_closure_;
 };
 
-TEST_F(MojoBindingsPerftest, RouterPingPong) {
-  MessagePipe pipe;
-  internal::Router router0(std::move(pipe.handle0), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get(), 0u);
-  internal::Router router1(std::move(pipe.handle1), FilterChain(), false,
-                           base::ThreadTaskRunnerHandle::Get(), 0u);
-  PingPongPaddle paddle0(&router0);
-  router0.set_incoming_receiver(&paddle0);
-  PingPongPaddle paddle1(&router1);
-  router1.set_incoming_receiver(&paddle1);
-
-  static const uint32_t kWarmUpIterations = 1000;
-  static const uint32_t kTestIterations = 1000000;
-
-  paddle0.Serve(kWarmUpIterations);
-
-  base::TimeDelta duration = paddle0.Serve(kTestIterations);
-
-  test::LogPerfResult("RouterPingPong", nullptr,
-                      kTestIterations / duration.InSecondsF(), "pings/second");
-}
-
 TEST_F(MojoBindingsPerftest, MultiplexRouterPingPong) {
   MessagePipe pipe;
   scoped_refptr<internal::MultiplexRouter> router0(
@@ -269,37 +246,6 @@ class CounterReceiver : public MessageReceiverWithResponderStatus {
  private:
   uint32_t counter_ = 0;
 };
-
-TEST_F(MojoBindingsPerftest, RouterDispatchCost) {
-  MessagePipe pipe;
-  internal::Router router(std::move(pipe.handle0), FilterChain(), false,
-                          base::ThreadTaskRunnerHandle::Get(), 0u);
-  CounterReceiver receiver;
-  router.set_incoming_receiver(&receiver);
-
-  static const uint32_t kIterations[] = {1000, 3000000};
-
-  for (size_t i = 0; i < 2; ++i) {
-    receiver.Reset();
-    base::TimeTicks start_time = base::TimeTicks::Now();
-    for (size_t j = 0; j < kIterations[i]; ++j) {
-      internal::MessageBuilder builder(0, 8);
-      bool result =
-          router.SimulateReceivingMessageForTesting(builder.message());
-      DCHECK(result);
-    }
-
-    base::TimeTicks end_time = base::TimeTicks::Now();
-    base::TimeDelta duration = end_time - start_time;
-    CHECK_EQ(kIterations[i], receiver.counter());
-
-    if (i == 1) {
-      test::LogPerfResult("RouterDispatchCost", nullptr,
-                          kIterations[i] / duration.InSecondsF(),
-                          "times/second");
-    }
-  }
-}
 
 TEST_F(MojoBindingsPerftest, MultiplexRouterDispatchCost) {
   MessagePipe pipe;
