@@ -41,7 +41,9 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
 
 
-</head><body><div hidden="" by-vulcanize=""><dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
+</head><body><div hidden="" by-vulcanize="">
+
+<dom-module id="iron-pages" assetpath="chrome://resources/polymer/v1_0/iron-pages/" css-build="shadow">
 
   <template>
     <style scope="iron-pages">:host {
@@ -184,8 +186,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 </style>
-
-
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
   <template>
     <style scope="iron-icon">:host {
@@ -264,6 +264,46 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     <div id="waves"></div>
   </template>
 </dom-module>
+<style is="custom-style" css-build="shadow">html {
+  --primary-text-color: var(--light-theme-text-color);
+    --primary-background-color: var(--light-theme-background-color);
+    --secondary-text-color: var(--light-theme-secondary-color);
+    --disabled-text-color: var(--light-theme-disabled-color);
+    --divider-color: var(--light-theme-divider-color);
+    --error-color: var(--paper-deep-orange-a700);
+
+    
+    --primary-color: var(--paper-indigo-500);
+    --light-primary-color: var(--paper-indigo-100);
+    --dark-primary-color: var(--paper-indigo-700);
+
+    --accent-color: var(--paper-pink-a200);
+    --light-accent-color: var(--paper-pink-a100);
+    --dark-accent-color: var(--paper-pink-a400);
+
+
+    
+    --light-theme-background-color: #ffffff;
+    --light-theme-base-color: #000000;
+    --light-theme-text-color: var(--paper-grey-900);
+    --light-theme-secondary-color: #737373;  
+    --light-theme-disabled-color: #9b9b9b;  
+    --light-theme-divider-color: #dbdbdb;
+
+    
+    --dark-theme-background-color: var(--paper-grey-900);
+    --dark-theme-base-color: #ffffff;
+    --dark-theme-text-color: #ffffff;
+    --dark-theme-secondary-color: #bcbcbc;  
+    --dark-theme-disabled-color: #646464;  
+    --dark-theme-divider-color: #3c3c3c;
+
+    
+    --text-primary-color: var(--dark-theme-text-color);
+    --default-primary-color: var(--primary-color);
+}
+
+</style>
 <style is="custom-style" css-build="shadow">html {
   --google-red-100: #f4c7c3;
     --google-red-300: #e67c73;
@@ -579,50 +619,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 </style>
-
-
-<style is="custom-style" css-build="shadow">html {
-  --primary-text-color: var(--light-theme-text-color);
-    --primary-background-color: var(--light-theme-background-color);
-    --secondary-text-color: var(--light-theme-secondary-color);
-    --disabled-text-color: var(--light-theme-disabled-color);
-    --divider-color: var(--light-theme-divider-color);
-    --error-color: var(--paper-deep-orange-a700);
-
-    
-    --primary-color: var(--paper-indigo-500);
-    --light-primary-color: var(--paper-indigo-100);
-    --dark-primary-color: var(--paper-indigo-700);
-
-    --accent-color: var(--paper-pink-a200);
-    --light-accent-color: var(--paper-pink-a100);
-    --dark-accent-color: var(--paper-pink-a400);
-
-
-    
-    --light-theme-background-color: #ffffff;
-    --light-theme-base-color: #000000;
-    --light-theme-text-color: var(--paper-grey-900);
-    --light-theme-secondary-color: #737373;  
-    --light-theme-disabled-color: #9b9b9b;  
-    --light-theme-divider-color: #dbdbdb;
-
-    
-    --dark-theme-background-color: var(--paper-grey-900);
-    --dark-theme-base-color: #ffffff;
-    --dark-theme-text-color: #ffffff;
-    --dark-theme-secondary-color: #bcbcbc;  
-    --dark-theme-disabled-color: #646464;  
-    --dark-theme-divider-color: #3c3c3c;
-
-    
-    --text-primary-color: var(--dark-theme-text-color);
-    --default-primary-color: var(--primary-color);
-}
-
-</style>
-
-
 <dom-module id="paper-icon-button" assetpath="chrome://resources/polymer/v1_0/paper-icon-button/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-icon-button">:host {
@@ -652,12 +648,12 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 :host #ink {
-  color: var(--paper-icon-button-ink-color,var(--primary-text-color));;
+  color: var(--paper-icon-button-ink-color,var(--primary-text-color));
         opacity: 0.6;
 }
 
 :host([disabled]) {
-  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));;
+  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));
         pointer-events: none;
         cursor: auto;
 
@@ -766,23 +762,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -1250,8 +1246,6 @@ to {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-spinner-lite" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-spinner-lite">:host {
@@ -1306,23 +1300,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -2197,8 +2191,6 @@ button.more-vert-button div {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="history-toolbar" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-toolbar">[hidden] {
@@ -2487,6 +2479,9 @@ paper-tabs {
   </template>
   </dom-module>
 
+
+
+
 <style is="custom-style" css-build="shadow">html {
   --cr-actionable_-_cursor:  pointer;;
     --cr-focused-item-color: var(--google-grey-300);
@@ -2496,7 +2491,6 @@ paper-tabs {
 }
 
 </style>
-
 <dom-module id="cr-shared-style" assetpath="chrome://resources/cr_elements/" css-build="shadow">
   <template>
     <style scope="cr-shared-style">paper-spinner {
@@ -2680,8 +2674,6 @@ paper-tabs {
 <link rel="import" href="chrome://resources/html/util.html">
 <dom-module id="history-searched-label" assetpath="chrome://history/" css-build="shadow">
   </dom-module>
-
-
 <dom-module id="history-item" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-item">[hidden] {
@@ -3102,8 +3094,6 @@ iron-list {
     </iron-scroll-threshold>
   </template>
   </dom-module>
-
-
 <dom-module id="history-list-container" assetpath="chrome://history/" css-build="shadow">
   <template>
     <style scope="history-list-container">[hidden] {
@@ -3313,38 +3303,6 @@ dialog .body {
     </iron-query-params>
   </template>
   </dom-module>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-<if expr="not chromeos and not is_android">
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'),
-      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
-}
-</if>
-
-</style>
 <style is="custom-style" css-build="shadow">html {
   --paper-font-common-base_-_font-family:  'Roboto', 'Noto', sans-serif; --paper-font-common-base_-_-webkit-font-smoothing:  antialiased;;
 
@@ -3384,6 +3342,38 @@ dialog .body {
 
     --paper-font-code1_-_font-family:  var(--paper-font-common-code_-_font-family); --paper-font-code1_-_-webkit-font-smoothing:  var(--paper-font-common-code_-_-webkit-font-smoothing); --paper-font-code1_-_font-size:  14px; --paper-font-code1_-_font-weight:  500; --paper-font-code1_-_line-height:  20px;;
 }
+
+</style>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+<if expr="not chromeos and not is_android">
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
+}
+</if>
 
 </style>
 <dom-module id="history-side-bar" assetpath="chrome://history/" css-build="shadow">

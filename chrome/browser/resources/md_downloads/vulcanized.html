@@ -62,8 +62,26 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
     }
   </style>
 </head>
-<body><div hidden="" by-vulcanize=""><script src="chrome://resources/js/load_time_data.js"></script>
+<body><div hidden="" by-vulcanize="">
+
+<script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://downloads/strings.js"></script>
+<style>
+/* Copyright 2016 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+:root {
+  /* This is a custom, Chrome-specific color that does not have a --paper or
+   * --google equivalent. */
+  --md-background-color: rgb(241, 241, 241);
+  /* This is --google-blue-700, rewritten as a native custom property for speed.
+   */
+  --md-toolbar-color: rgb(51, 103, 214);
+}
+
+</style>
+
 <dom-module id="iron-list" assetpath="chrome://resources/polymer/v1_0/iron-list/" css-build="shadow">
   <template>
     <style scope="iron-list">:host {
@@ -233,8 +251,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 }
 
 </style>
-
-
 <dom-module id="iron-icon" assetpath="chrome://resources/polymer/v1_0/iron-icon/" css-build="shadow">
   <template>
     <style scope="iron-icon">:host {
@@ -380,8 +396,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-button" assetpath="chrome://resources/polymer/v1_0/paper-button/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-button">:host {
@@ -824,8 +838,6 @@ paper-ripple {
 }
 
 </style>
-
-
 <dom-module id="paper-progress" assetpath="chrome://resources/polymer/v1_0/paper-progress/" css-build="shadow">
   <template>
     <style scope="paper-progress">:host {
@@ -853,7 +865,7 @@ paper-ripple {
 }
 
 #progressContainer, .indeterminate::after {
-  background: var(--paper-progress-container-color,var(--google-grey-300));;
+  background: var(--paper-progress-container-color,var(--google-grey-300));
 }
 
 :host(.transiting) #primaryProgress, :host(.transiting) #secondaryProgress {
@@ -883,19 +895,19 @@ paper-ripple {
 }
 
 #primaryProgress {
-  background: var(--paper-progress-active-color,var(--google-green-500));;
+  background: var(--paper-progress-active-color,var(--google-green-500));
 }
 
 #secondaryProgress {
-  background: var(--paper-progress-secondary-color,var(--google-green-100));;
+  background: var(--paper-progress-secondary-color,var(--google-green-100));
 }
 
 :host([disabled]) #primaryProgress {
-  background: var(--paper-progress-disabled-active-color,var(--google-grey-500));;
+  background: var(--paper-progress-disabled-active-color,var(--google-grey-500));
 }
 
 :host([disabled]) #secondaryProgress {
-  background: var(--paper-progress-disabled-secondary-color,var(--google-grey-300));;
+  background: var(--paper-progress-disabled-secondary-color,var(--google-grey-300));
 }
 
 :host(:not([disabled])) #primaryProgress.indeterminate {
@@ -1312,6 +1324,8 @@ paper-button {
   </dom-module>
 
 
+
+
 <style is="custom-style" css-build="shadow">html {
   --primary-text-color: var(--light-theme-text-color);
     --primary-background-color: var(--light-theme-background-color);
@@ -1350,38 +1364,6 @@ paper-button {
     --text-primary-color: var(--dark-theme-text-color);
     --default-primary-color: var(--primary-color);
 }
-
-</style>
-<style>
-/* Copyright 2015 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-<if expr="not chromeos and not is_android">
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 400;
-  src: local('Roboto'), local('Roboto-Regular'),
-      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 500;
-  src: local('Roboto Medium'), local('Roboto-Medium'),
-      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
-}
-
-@font-face {
-  font-family: 'Roboto';
-  font-style: normal;
-  font-weight: 700;
-  src: local('Roboto Bold'), local('Roboto-Bold'),
-      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
-}
-</if>
 
 </style>
 <style is="custom-style" css-build="shadow">html {
@@ -1425,6 +1407,38 @@ paper-button {
 }
 
 </style>
+<style>
+/* Copyright 2015 The Chromium Authors. All rights reserved.
+ * Use of this source code is governed by a BSD-style license that can be
+ * found in the LICENSE file. */
+
+<if expr="not chromeos and not is_android">
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Roboto'), local('Roboto-Regular'),
+      url("chrome://resources/roboto/roboto-regular.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 500;
+  src: local('Roboto Medium'), local('Roboto-Medium'),
+      url("chrome://resources/roboto/roboto-medium.woff2") format('woff2');
+}
+
+@font-face {
+  font-family: 'Roboto';
+  font-style: normal;
+  font-weight: 700;
+  src: local('Roboto Bold'), local('Roboto-Bold'),
+      url("chrome://resources/roboto/roboto-bold.woff2") format('woff2');
+}
+</if>
+
+</style>
 <dom-module id="paper-item-shared-styles" assetpath="chrome://resources/polymer/v1_0/paper-item/" css-build="shadow">
   <template>
     <style scope="paper-item-shared-styles">:host, .paper-item {
@@ -1454,7 +1468,7 @@ paper-button {
 }
 
 :host([disabled]), .paper-item[disabled] {
-  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));
 
         ;
 }
@@ -1480,8 +1494,6 @@ paper-button {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-item" assetpath="chrome://resources/polymer/v1_0/paper-item/" css-build="shadow">
   <template>
     
@@ -1512,7 +1524,7 @@ paper-button {
 }
 
 :host([disabled]), .paper-item[disabled] {
-  color: var(--paper-item-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-item-disabled-color,var(--disabled-text-color));
 
         ;
 }
@@ -1558,7 +1570,7 @@ paper-button {
 }
 
 .selectable-content > ::content > [disabled] {
-  color: var(--paper-menu-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-menu-disabled-color,var(--disabled-text-color));
 }
 
 .selectable-content > ::content > *:focus {
@@ -1585,8 +1597,6 @@ paper-button {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-menu" assetpath="chrome://resources/polymer/v1_0/paper-menu/" css-build="shadow">
   <template>
     
@@ -1597,7 +1607,7 @@ paper-button {
 }
 
 .selectable-content > ::content > [disabled] {
-  color: var(--paper-menu-disabled-color,var(--disabled-text-color));;
+  color: var(--paper-menu-disabled-color,var(--disabled-text-color));
 }
 
 .selectable-content > ::content > *:focus {
@@ -1625,8 +1635,8 @@ paper-button {
   display: block;
         padding: 8px 0;
 
-        background: var(--paper-menu-background-color,var(--primary-background-color));;
-        color: var(--paper-menu-color,var(--primary-text-color));;
+        background: var(--paper-menu-background-color,var(--primary-background-color));
+        color: var(--paper-menu-color,var(--primary-text-color));
 
         ;
 }
@@ -1669,8 +1679,6 @@ paper-button {
 </dom-module>
 
 <script src="chrome://resources/polymer/v1_0/web-animations-js/web-animations-next-lite.min.js"></script>
-
-
 <dom-module id="iron-dropdown" assetpath="chrome://resources/polymer/v1_0/iron-dropdown/" css-build="shadow">
   <template>
     <style scope="iron-dropdown">:host {
@@ -1720,7 +1728,7 @@ iron-dropdown {
 
         position: relative;
         border-radius: 2px;
-        background-color: var(--paper-menu-button-dropdown-background,var(--primary-background-color));;
+        background-color: var(--paper-menu-button-dropdown-background,var(--primary-background-color));
 
         ;
 }
@@ -1784,12 +1792,12 @@ iron-dropdown {
 }
 
 :host #ink {
-  color: var(--paper-icon-button-ink-color,var(--primary-text-color));;
+  color: var(--paper-icon-button-ink-color,var(--primary-text-color));
         opacity: 0.6;
 }
 
 :host([disabled]) {
-  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));;
+  color: var(--paper-icon-button-disabled-text,var(--disabled-text-color));
         pointer-events: none;
         cursor: auto;
 
@@ -1865,23 +1873,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -2349,8 +2357,6 @@ to {
 </style>
   </template>
 </dom-module>
-
-
 <dom-module id="paper-spinner-lite" assetpath="chrome://resources/polymer/v1_0/paper-spinner/" css-build="shadow">
   <template strip-whitespace="">
     <style scope="paper-spinner-lite">:host {
@@ -2405,23 +2411,23 @@ to {
         height: 100%;
         opacity: 0;
         white-space: nowrap;
-        border-color: var(--paper-spinner-color,var(--google-blue-500));;
+        border-color: var(--paper-spinner-color,var(--google-blue-500));
 }
 
 .layer-1 {
-  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));;
+  border-color: var(--paper-spinner-layer-1-color,var(--google-blue-500));
 }
 
 .layer-2 {
-  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));;
+  border-color: var(--paper-spinner-layer-2-color,var(--google-red-500));
 }
 
 .layer-3 {
-  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));;
+  border-color: var(--paper-spinner-layer-3-color,var(--google-yellow-500));
 }
 
 .layer-4 {
-  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));;
+  border-color: var(--paper-spinner-layer-4-color,var(--google-green-500));
 }
 
 .active .spinner-layer {
@@ -3284,22 +3290,6 @@ paper-item {
     </cr-toolbar>
   </template>
   </dom-module>
-<style>
-/* Copyright 2016 The Chromium Authors. All rights reserved.
- * Use of this source code is governed by a BSD-style license that can be
- * found in the LICENSE file. */
-
-:root {
-  /* This is a custom, Chrome-specific color that does not have a --paper or
-   * --google equivalent. */
-  --md-background-color: rgb(241, 241, 241);
-  /* This is --google-blue-700, rewritten as a native custom property for speed.
-   */
-  --md-toolbar-color: rgb(51, 103, 214);
-}
-
-</style>
-
 <dom-module id="downloads-manager" assetpath="chrome://downloads/" css-build="shadow">
   <template>
     <style scope="downloads-manager">:host {

@@ -17,7 +17,7 @@ def _CheckBowerDependencies(input_api, output_api):
   components_dir = os_path.join(cwd, 'components-chromium')
   bower_json_path = os_path.join(cwd, 'bower.json')
 
-  for f in input_api.AffectedFiles(include_dirs=True):
+  for f in input_api.AffectedFiles():
     p = f.AbsoluteLocalPath()
     if p == bower_json_path or p.startswith(components_dir):
       break
