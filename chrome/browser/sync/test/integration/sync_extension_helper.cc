@@ -12,6 +12,7 @@
 #include "base/files/file_util.h"
 #include "base/guid.h"
 #include "base/logging.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/string_util.h"
 #include "base/values.h"
@@ -339,22 +340,24 @@ scoped_refptr<Extension> CreateExtension(const base::FilePath& base_dir,
       break;
     case Manifest::TYPE_THEME:
       source.Set(extensions::manifest_keys::kTheme,
-                 new base::DictionaryValue());
+                 base::MakeUnique<base::DictionaryValue>());
       break;
     case Manifest::TYPE_HOSTED_APP:
     case Manifest::TYPE_LEGACY_PACKAGED_APP:
-      source.Set(extensions::manifest_keys::kApp, new base::DictionaryValue());
+      source.Set(extensions::manifest_keys::kApp,
+                 base::MakeUnique<base::DictionaryValue>());
       source.SetString(extensions::manifest_keys::kLaunchWebURL,
                        "http://www.example.com");
       break;
     case Manifest::TYPE_PLATFORM_APP: {
-      source.Set(extensions::manifest_keys::kApp, new base::DictionaryValue());
+      source.Set(extensions::manifest_keys::kApp,
+                 base::MakeUnique<base::DictionaryValue>());
       source.Set(extensions::manifest_keys::kPlatformAppBackground,
-                 new base::DictionaryValue());
-      base::ListValue* scripts = new base::ListValue();
+                 base::MakeUnique<base::DictionaryValue>());
+      auto scripts = base::MakeUnique<base::ListValue>();
       scripts->AppendString("main.js");
       source.Set(extensions::manifest_keys::kPlatformAppBackgroundScripts,
-                 scripts);
+                 std::move(scripts));
       break;
     }
     default:
