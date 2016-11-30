@@ -806,8 +806,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     DraftExtension = 0x01,
   };
 
-  class ExtensionTracker : public GarbageCollected<ExtensionTracker>,
-                           public TraceWrapperBase {
+  class ExtensionTracker : public GarbageCollected<ExtensionTracker> {
    public:
     ExtensionTracker(ExtensionFlags flags, const char* const* prefixes)
         : m_draft(flags & DraftExtension), m_prefixes(prefixes) {}
@@ -873,23 +872,17 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
       ExtensionTracker::trace(visitor);
     }
 
-    DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
-      visitor->traceWrappers(m_extension);
-    }
-
    private:
     TypedExtensionTracker(Member<T>& extensionField,
                           ExtensionFlags flags,
                           const char* const* prefixes)
-        : ExtensionTracker(flags, prefixes),
-          m_extensionField(extensionField),
-          m_extension(this, nullptr) {}
+        : ExtensionTracker(flags, prefixes), m_extensionField(extensionField) {}
 
     GC_PLUGIN_IGNORE("http://crbug.com/519953")
     Member<T>& m_extensionField;
     // ExtensionTracker holds it's own reference to the extension to ensure
     // that it is not deleted before this object's destructor is called
-    TraceWrapperMember<T> m_extension;
+    Member<T> m_extension;
   };
 
   bool m_extensionEnabled[WebGLExtensionNameCount];

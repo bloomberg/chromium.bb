@@ -45,8 +45,7 @@ class WebGLFramebuffer final : public WebGLContextObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class WebGLAttachment : public GarbageCollectedFinalized<WebGLAttachment>,
-                          public TraceWrapperBase {
+  class WebGLAttachment : public GarbageCollectedFinalized<WebGLAttachment> {
    public:
     virtual ~WebGLAttachment();
 
