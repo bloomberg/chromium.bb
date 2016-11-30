@@ -267,7 +267,8 @@ void PaintPropertyTreeBuilder::updateTransformForNonRootSVG(
     const LayoutObject& object,
     PaintPropertyTreeBuilderContext& context) {
   DCHECK(object.isSVG() && !object.isSVGRoot());
-  // SVG (other than SVGForeignObject) does not use paint offset internally.
+  // SVG does not use paint offset internally, except for SVGForeignObject which
+  // has different SVG and HTML coordinate spaces.
   DCHECK(object.isSVGForeignObject() ||
          context.current.paintOffset == LayoutPoint());
 
@@ -845,12 +846,7 @@ static void deriveBorderBoxFromContainerContext(
       ASSERT_NOT_REACHED();
   }
 
-  // SVGForeignObject needs paint offset because its viewport offset is baked
-  // into its location(), while its localSVGTransform() doesn't contain the
-  // offset.
-  if (boxModelObject.isBox() &&
-      (!boxModelObject.isSVG() || boxModelObject.isSVGRoot() ||
-       boxModelObject.isSVGForeignObject())) {
+  if (boxModelObject.isBox()) {
     // TODO(pdr): Several calls in this function walk back up the tree to
     // calculate containers (e.g., physicalLocation, offsetForInFlowPosition*).
     // The containing block and other containers can be stored on
