@@ -120,10 +120,23 @@
   // bad happens.
   [cell selectItemWithTag:index];
 
-  if (rightAligned_ &&
-      [cell respondsToSelector:@selector(setUserInterfaceLayoutDirection:)]) {
+  if (rightAligned_) {
     [cell setUserInterfaceLayoutDirection:
-        NSUserInterfaceLayoutDirectionRightToLeft];
+              NSUserInterfaceLayoutDirectionRightToLeft];
+    // setUserInterfaceLayoutDirection for NSMenu is supported on macOS 10.11+.
+    SEL sel = @selector(setUserInterfaceLayoutDirection:);
+    if ([menu_ respondsToSelector:sel]) {
+      NSUserInterfaceLayoutDirection direction =
+          NSUserInterfaceLayoutDirectionRightToLeft;
+      NSMethodSignature* signature =
+          [NSMenu instanceMethodSignatureForSelector:sel];
+      NSInvocation* invocation =
+          [NSInvocation invocationWithMethodSignature:signature];
+      [invocation setTarget:menu_.get()];
+      [invocation setSelector:sel];
+      [invocation setArgument:&direction atIndex:2];
+      [invocation invoke];
+    }
   }
 
   // When popping up a menu near the Dock, Cocoa restricts the menu
