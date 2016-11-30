@@ -196,7 +196,7 @@ TEST_F(SearchIPCRouterTest, IgnoreMessagesFromNonInstantRenderers) {
   EXPECT_CALL(*policy, ShouldProcessFocusOmnibox(is_active_tab)).Times(0);
 
   OnMessageReceived(ChromeViewHostMsg_FocusOmnibox(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
       OMNIBOX_FOCUS_VISIBLE));
 }
 
@@ -213,7 +213,7 @@ TEST_F(SearchIPCRouterTest, ProcessFocusOmniboxMsg) {
       .WillOnce(testing::Return(true));
 
   OnMessageReceived(ChromeViewHostMsg_FocusOmnibox(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
       OMNIBOX_FOCUS_VISIBLE));
 }
 
@@ -230,7 +230,7 @@ TEST_F(SearchIPCRouterTest, IgnoreFocusOmniboxMsg) {
       .WillOnce(testing::Return(false));
 
   OnMessageReceived(ChromeViewHostMsg_FocusOmnibox(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
       OMNIBOX_FOCUS_VISIBLE));
 }
 
@@ -266,7 +266,7 @@ TEST_F(SearchIPCRouterTest, ProcessLogEventMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogEvent(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
       NTP_ALL_TILES_LOADED, delta));
 }
 
@@ -282,7 +282,7 @@ TEST_F(SearchIPCRouterTest, IgnoreLogEventMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogEvent(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
       NTP_ALL_TILES_LOADED, delta));
 }
 
@@ -297,8 +297,8 @@ TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedImpressionMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogMostVisitedImpression(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), 3,
-      NTPLoggingTileSource::SERVER));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      3, NTPLoggingTileSource::SERVER));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedNavigationMsg) {
@@ -312,8 +312,8 @@ TEST_F(SearchIPCRouterTest, ProcessLogMostVisitedNavigationMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_LogMostVisitedNavigation(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), 3,
-      NTPLoggingTileSource::SERVER));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      3, NTPLoggingTileSource::SERVER));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg) {
@@ -327,7 +327,8 @@ TEST_F(SearchIPCRouterTest, ProcessChromeIdentityCheckMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_ChromeIdentityCheck(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), test_identity));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      test_identity));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg) {
@@ -342,7 +343,8 @@ TEST_F(SearchIPCRouterTest, IgnoreChromeIdentityCheckMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_ChromeIdentityCheck(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), test_identity));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      test_identity));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessHistorySyncCheckMsg) {
@@ -355,7 +357,8 @@ TEST_F(SearchIPCRouterTest, ProcessHistorySyncCheckMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_HistorySyncCheck(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo()));
+      contents->GetRenderViewHost()->GetRoutingID(),
+      GetSearchIPCRouterSeqNo()));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreHistorySyncCheckMsg) {
@@ -369,7 +372,8 @@ TEST_F(SearchIPCRouterTest, IgnoreHistorySyncCheckMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_HistorySyncCheck(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo()));
+      contents->GetRenderViewHost()->GetRoutingID(),
+      GetSearchIPCRouterSeqNo()));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessDeleteMostVisitedItemMsg) {
@@ -383,7 +387,8 @@ TEST_F(SearchIPCRouterTest, ProcessDeleteMostVisitedItemMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      item_url));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreDeleteMostVisitedItemMsg) {
@@ -397,7 +402,8 @@ TEST_F(SearchIPCRouterTest, IgnoreDeleteMostVisitedItemMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      item_url));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessUndoMostVisitedDeletionMsg) {
@@ -411,7 +417,8 @@ TEST_F(SearchIPCRouterTest, ProcessUndoMostVisitedDeletionMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      item_url));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreUndoMostVisitedDeletionMsg) {
@@ -425,7 +432,8 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoMostVisitedDeletionMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      item_url));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessUndoAllMostVisitedDeletionsMsg) {
@@ -438,7 +446,8 @@ TEST_F(SearchIPCRouterTest, ProcessUndoAllMostVisitedDeletionsMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo()));
+      contents->GetRenderViewHost()->GetRoutingID(),
+      GetSearchIPCRouterSeqNo()));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
@@ -451,7 +460,8 @@ TEST_F(SearchIPCRouterTest, IgnoreUndoAllMostVisitedDeletionsMsg) {
 
   content::WebContents* contents = web_contents();
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo()));
+      contents->GetRenderViewHost()->GetRoutingID(),
+      GetSearchIPCRouterSeqNo()));
 }
 
 TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
@@ -470,36 +480,37 @@ TEST_F(SearchIPCRouterTest, IgnoreMessageIfThePageIsNotActive) {
   EXPECT_CALL(*mock_delegate(), OnDeleteMostVisitedItem(item_url)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessDeleteMostVisitedItem()).Times(0);
   OnMessageReceived(ChromeViewHostMsg_SearchBoxDeleteMostVisitedItem(
-      contents->GetRoutingID(), page_seq_no, item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), page_seq_no, item_url));
 
   EXPECT_CALL(*mock_delegate(), OnUndoMostVisitedDeletion(item_url)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessUndoMostVisitedDeletion()).Times(0);
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoMostVisitedDeletion(
-      contents->GetRoutingID(), page_seq_no, item_url));
+      contents->GetRenderViewHost()->GetRoutingID(), page_seq_no, item_url));
 
   EXPECT_CALL(*mock_delegate(), OnUndoAllMostVisitedDeletions()).Times(0);
   EXPECT_CALL(*policy, ShouldProcessUndoAllMostVisitedDeletions()).Times(0);
   OnMessageReceived(ChromeViewHostMsg_SearchBoxUndoAllMostVisitedDeletions(
-      contents->GetRoutingID(), page_seq_no));
+      contents->GetRenderViewHost()->GetRoutingID(), page_seq_no));
 
   EXPECT_CALL(*mock_delegate(), FocusOmnibox(OMNIBOX_FOCUS_VISIBLE)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessFocusOmnibox(is_active_tab)).Times(0);
   OnMessageReceived(ChromeViewHostMsg_FocusOmnibox(
-      contents->GetRoutingID(), page_seq_no, OMNIBOX_FOCUS_VISIBLE));
+      contents->GetRenderViewHost()->GetRoutingID(), page_seq_no,
+      OMNIBOX_FOCUS_VISIBLE));
 
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(123);
   EXPECT_CALL(*mock_delegate(), OnLogEvent(NTP_ALL_TILES_LOADED, delta))
       .Times(0);
   EXPECT_CALL(*policy, ShouldProcessLogEvent()).Times(0);
   OnMessageReceived(
-      ChromeViewHostMsg_LogEvent(contents->GetRoutingID(), page_seq_no,
-                                 NTP_ALL_TILES_LOADED, delta));
+      ChromeViewHostMsg_LogEvent(contents->GetRenderViewHost()->GetRoutingID(),
+                                 page_seq_no, NTP_ALL_TILES_LOADED, delta));
 
   base::string16 text;
   EXPECT_CALL(*mock_delegate(), PasteIntoOmnibox(text)).Times(0);
   EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(is_active_tab)).Times(0);
   OnMessageReceived(ChromeViewHostMsg_PasteAndOpenDropdown(
-      contents->GetRoutingID(), page_seq_no, text));
+      contents->GetRenderViewHost()->GetRoutingID(), page_seq_no, text));
 }
 
 TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {
@@ -516,7 +527,8 @@ TEST_F(SearchIPCRouterTest, ProcessPasteAndOpenDropdownMsg) {
   EXPECT_CALL(*policy, ShouldProcessPasteIntoOmnibox(is_active_tab)).Times(1)
       .WillOnce(testing::Return(true));
   OnMessageReceived(ChromeViewHostMsg_PasteAndOpenDropdown(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), text));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      text));
 }
 
 TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
@@ -534,7 +546,8 @@ TEST_F(SearchIPCRouterTest, IgnorePasteAndOpenDropdownMsg) {
       .WillOnce(testing::Return(false));
 
   OnMessageReceived(ChromeViewHostMsg_PasteAndOpenDropdown(
-      contents->GetRoutingID(), GetSearchIPCRouterSeqNo(), text));
+      contents->GetRenderViewHost()->GetRoutingID(), GetSearchIPCRouterSeqNo(),
+      text));
 }
 
 TEST_F(SearchIPCRouterTest, SendSetSuggestionToPrefetch) {
@@ -694,7 +707,7 @@ TEST_F(SearchIPCRouterTest, DoNotSendSubmitMsg) {
 TEST_F(SearchIPCRouterTest, SpuriousMessageTypesIgnored) {
   NavigateAndCommitActiveTab(GURL("chrome-search://foo/bar"));
   SetupMockDelegateAndPolicy();
-  const int routing_id = web_contents()->GetRoutingID();
+  const int routing_id = web_contents()->GetRenderViewHost()->GetRoutingID();
 
   // Construct a series of synthetic messages for each valid IPC message type,
   // ensuring the router ignores them all.

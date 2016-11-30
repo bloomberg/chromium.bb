@@ -32,7 +32,7 @@ void RunTestForURL(const GURL& url,
   HostZoomMapImpl* host_zoom_map = static_cast<HostZoomMapImpl*>(
       HostZoomMap::GetForWebContents(web_contents));
 
-  int view_id = web_contents->GetRoutingID();
+  int view_id = web_contents->GetRenderViewHost()->GetRoutingID();
   int render_process_id = web_contents->GetRenderProcessHost()->GetID();
 
   // Assume caller has set the zoom level to |host_zoom_level| using

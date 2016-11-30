@@ -897,13 +897,6 @@ RenderViewHostImpl* WebContentsImpl::GetRenderViewHost() const {
   return GetRenderManager()->current_host();
 }
 
-int WebContentsImpl::GetRoutingID() const {
-  if (!GetRenderViewHost())
-    return MSG_ROUTING_NONE;
-
-  return GetRenderViewHost()->GetRoutingID();
-}
-
 void WebContentsImpl::CancelActiveAndPendingDialogs() {
   if (dialog_manager_) {
     dialog_manager_->CancelDialogs(this,
@@ -3084,7 +3077,8 @@ int WebContentsImpl::GetMaximumZoomPercent() const {
 }
 
 void WebContentsImpl::SetPageScale(float page_scale_factor) {
-  Send(new ViewMsg_SetPageScale(GetRoutingID(), page_scale_factor));
+  Send(new ViewMsg_SetPageScale(GetRenderViewHost()->GetRoutingID(),
+                                page_scale_factor));
 }
 
 gfx::Size WebContentsImpl::GetPreferredSize() const {
@@ -3603,7 +3597,7 @@ void WebContentsImpl::OnPageScaleFactorChanged(float page_scale_factor) {
 
     if (host_zoom_map && GetRenderProcessHost()) {
       host_zoom_map->SetPageScaleFactorIsOneForView(
-          GetRenderProcessHost()->GetID(), GetRoutingID(),
+          GetRenderProcessHost()->GetID(), GetRenderViewHost()->GetRoutingID(),
           page_scale_factor_is_one_);
     }
   }

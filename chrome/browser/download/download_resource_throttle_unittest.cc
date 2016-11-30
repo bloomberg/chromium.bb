@@ -94,7 +94,7 @@ class DownloadResourceThrottleTest : public ChromeRenderViewHostTestHarness {
         base::Bind(&DownloadResourceThrottleTest::StartThrottleOnIOThread,
                    base::Unretained(this),
                    web_contents()->GetRenderViewHost()->GetProcess()->GetID(),
-                   web_contents()->GetRoutingID()));
+                   web_contents()->GetRenderViewHost()->GetRoutingID()));
     run_loop_->Run();
   }
 

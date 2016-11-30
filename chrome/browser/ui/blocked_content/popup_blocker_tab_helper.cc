@@ -16,6 +16,7 @@
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_details.h"
 #include "content/public/browser/navigation_entry.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "third_party/WebKit/public/web/WebWindowFeatures.h"
 
@@ -125,7 +126,8 @@ void PopupBlockerTabHelper::ShowBlockedPopup(int32_t id) {
 #endif
   if (popup->params.target_contents) {
     popup->params.target_contents->Send(new ChromeViewMsg_SetWindowFeatures(
-        popup->params.target_contents->GetRoutingID(), popup->window_features));
+        popup->params.target_contents->GetRenderViewHost()->GetRoutingID(),
+        popup->window_features));
   }
   blocked_popups_.Remove(id);
   if (blocked_popups_.IsEmpty())

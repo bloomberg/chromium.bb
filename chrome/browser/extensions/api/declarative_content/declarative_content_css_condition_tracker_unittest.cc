@@ -92,8 +92,8 @@ class DeclarativeContentCssConditionTrackerTest
   void SendOnWatchedPageChangeMessage(
       content::WebContents* tab,
       const std::vector<std::string>& selectors) {
-    ExtensionHostMsg_OnWatchedPageChange page_change(tab->GetRoutingID(),
-                                                     selectors);
+    ExtensionHostMsg_OnWatchedPageChange page_change(
+        tab->GetRenderViewHost()->GetRoutingID(), selectors);
     EXPECT_TRUE(GetMockRenderProcessHost(tab)->OnMessageReceived(page_change));
   }
 

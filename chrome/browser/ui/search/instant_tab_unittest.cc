@@ -81,7 +81,8 @@ TEST_F(InstantTabTest, DetermineIfPageSupportsInstant_NonLocal) {
   const IPC::Message* message = process()->sink().GetFirstMessageMatching(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
   ASSERT_TRUE(message != NULL);
-  EXPECT_EQ(web_contents()->GetRoutingID(), message->routing_id());
+  EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
+            message->routing_id());
 }
 
 TEST_F(InstantTabTest, PageURLDoesntBelongToInstantRenderer) {
@@ -118,7 +119,8 @@ TEST_F(InstantTabTest, PageSupportsInstant) {
   const IPC::Message* message = process()->sink().GetFirstMessageMatching(
       ChromeViewMsg_DetermineIfPageSupportsInstant::ID);
   ASSERT_TRUE(message != NULL);
-  EXPECT_EQ(web_contents()->GetRoutingID(), message->routing_id());
+  EXPECT_EQ(web_contents()->GetRenderViewHost()->GetRoutingID(),
+            message->routing_id());
 
   EXPECT_CALL(delegate, InstantSupportDetermined(web_contents(), true));
 

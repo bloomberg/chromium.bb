@@ -282,7 +282,6 @@ class CONTENT_EXPORT WebContentsImpl
   std::vector<RenderFrameHost*> GetAllFrames() override;
   int SendToAllFrames(IPC::Message* message) override;
   RenderViewHostImpl* GetRenderViewHost() const override;
-  int GetRoutingID() const override;
   RenderWidgetHostView* GetRenderWidgetHostView() const override;
   RenderWidgetHostView* GetTopLevelRenderWidgetHostView() override;
   void ClosePage() override;

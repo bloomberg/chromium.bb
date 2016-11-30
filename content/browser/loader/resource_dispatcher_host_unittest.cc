@@ -43,6 +43,7 @@
 #include "content/common/view_messages.h"
 #include "content/public/browser/global_request_id.h"
 #include "content/public/browser/render_process_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/resource_context.h"
 #include "content/public/browser/resource_dispatcher_host_delegate.h"
 #include "content/public/browser/resource_request_info.h"
@@ -1199,8 +1200,8 @@ void ResourceDispatcherHostTest::
   ResourceRequest request = CreateResourceRequest("GET", type, url);
   request.origin_pid = web_contents_->GetRenderProcessHost()->GetID();
   request.render_frame_id = web_contents_->GetMainFrame()->GetRoutingID();
-  ResourceHostMsg_RequestResource msg(web_contents_->GetRoutingID(), request_id,
-                                      request);
+  ResourceHostMsg_RequestResource msg(
+      web_contents_->GetRenderViewHost()->GetRoutingID(), request_id, request);
   OnMessageReceived(msg, web_contents_filter_.get());
   KickOffRequest();
 }
@@ -1237,7 +1238,7 @@ void ResourceDispatcherHostTest::MakeWebContentsAssociatedDownloadRequest(
       std::move(request), Referrer(), browser_context_->GetResourceContext(),
       false,  // is_content_initiated
       web_contents_->GetRenderProcessHost()->GetID(),
-      web_contents_->GetRoutingID(),
+      web_contents_->GetRenderViewHost()->GetRoutingID(),
       web_contents_->GetMainFrame()->GetRoutingID(), false);
 }
 
@@ -2765,7 +2766,8 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContextTransferred) {
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by other methods shouldn't work either.
-  host_.CancelRequestsForProcess(web_contents_->GetRoutingID());
+  host_.CancelRequestsForProcess(
+      web_contents_->GetRenderViewHost()->GetRoutingID());
   EXPECT_EQ(1, host_.pending_requests());
 
   // Cancelling by context should work.

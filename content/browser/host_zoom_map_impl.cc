@@ -422,7 +422,7 @@ bool HostZoomMapImpl::PageScaleFactorIsOneForWebContents(
   base::AutoLock auto_lock(lock_);
   auto found = view_page_scale_factors_are_one_.find(
       RenderViewKey(web_contents_impl.GetRenderProcessHost()->GetID(),
-                    web_contents_impl.GetRoutingID()));
+                    web_contents_impl.GetRenderViewHost()->GetRoutingID()));
   if (found == view_page_scale_factors_are_one_.end())
     return true;
   return found->second;

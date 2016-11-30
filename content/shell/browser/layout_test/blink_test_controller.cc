@@ -921,7 +921,7 @@ void BlinkTestController::OnGetBluetoothManualChooserEvents() {
     return;
   }
   Send(new ShellViewMsg_ReplyBluetoothManualChooserEvents(
-      main_window_->web_contents()->GetRoutingID(),
+      main_window_->web_contents()->GetRenderViewHost()->GetRoutingID(),
       bluetooth_chooser_factory_->GetAndResetEvents()));
 }
 

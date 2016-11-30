@@ -242,12 +242,16 @@ void LaunchURL(
   // If the URL is in whitelist, we launch it without asking the user and
   // without any additional security checks. Since the URL is whitelisted,
   // we assume it can be executed.
+  // TODO(davidsac): External protocol handling needs to be
+  // fixed for OOPIFs.  See https://crbug.com/668289.
   if (is_whitelisted) {
     ExternalProtocolHandler::LaunchUrlWithoutSecurityCheck(
-        url, render_process_id, web_contents->GetRoutingID());
+        url, render_process_id,
+        web_contents->GetRenderViewHost()->GetRoutingID());
   } else {
     ExternalProtocolHandler::LaunchUrlWithDelegate(
-        url, render_process_id, web_contents->GetRoutingID(), page_transition,
+        url, render_process_id,
+        web_contents->GetRenderViewHost()->GetRoutingID(), page_transition,
         has_user_gesture, g_external_protocol_handler_delegate);
   }
 }

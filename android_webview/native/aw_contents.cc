@@ -196,7 +196,8 @@ AwContents::AwContents(std::unique_ptr<WebContents> web_contents)
   if (web_contents_->GetRenderProcessHost() &&
       web_contents_->GetRenderViewHost()) {
     compositor_id.process_id = web_contents_->GetRenderProcessHost()->GetID();
-    compositor_id.routing_id = web_contents_->GetRoutingID();
+    compositor_id.routing_id =
+        web_contents_->GetRenderViewHost()->GetRoutingID();
   }
 
   browser_view_renderer_.SetActiveCompositorID(compositor_id);

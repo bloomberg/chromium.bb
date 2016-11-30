@@ -41,6 +41,7 @@
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/favicon_status.h"
 #include "content/public/browser/render_frame_host.h"
+#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/screen_orientation_provider.h"
 #include "content/public/browser/ssl_host_state_delegate.h"
 #include "content/public/browser/web_contents.h"
@@ -1399,7 +1400,7 @@ void ContentViewCoreImpl::ExtractSmartClipData(JNIEnv* env,
       static_cast<int>((height > 0 && height < dpi_scale()) ?
           1 : (int)(height / dpi_scale())));
   GetWebContents()->Send(new ViewMsg_ExtractSmartClipData(
-      GetWebContents()->GetRoutingID(), rect));
+      GetWebContents()->GetRenderViewHost()->GetRoutingID(), rect));
 }
 
 jint ContentViewCoreImpl::GetCurrentRenderProcessId(

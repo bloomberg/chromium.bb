@@ -145,7 +145,7 @@ TEST_F(SearchTabHelperTest, DetermineIfPageSupportsInstant_NonLocal) {
 
   std::unique_ptr<IPC::Message> response(
       new ChromeViewHostMsg_InstantSupportDetermined(
-          web_contents()->GetRoutingID(),
+          web_contents()->GetRenderViewHost()->GetRoutingID(),
           search_tab_helper->ipc_router().page_seq_no_for_testing(), true));
   search_tab_helper->ipc_router().OnMessageReceived(*response);
 }

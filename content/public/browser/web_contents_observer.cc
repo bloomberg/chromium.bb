@@ -64,7 +64,7 @@ int WebContentsObserver::routing_id() const {
   if (!web_contents_)
     return MSG_ROUTING_NONE;
 
-  return web_contents_->GetRoutingID();
+  return web_contents_->GetRenderViewHost()->GetRoutingID();
 }
 
 void WebContentsObserver::ResetWebContents() {
