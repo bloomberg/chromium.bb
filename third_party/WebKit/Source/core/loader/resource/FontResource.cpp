@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fetch/FontResource.h"
+#include "core/loader/resource/FontResource.h"
 
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceClientWalker.h"

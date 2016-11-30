@@ -60,6 +60,8 @@ blink_core_sources("loader") {
     "appcache/ApplicationCacheHost.h",
     "resource/DocumentResource.cpp",
     "resource/DocumentResource.h",
+    "resource/FontResource.cpp",
+    "resource/FontResource.h",
     "resource/LinkFetchResource.cpp",
     "resource/LinkFetchResource.h",
     "resource/LinkPreloadResourceClients.cpp",

@@ -6,7 +6,7 @@
 #define RemoteFontFaceSource_h
 
 #include "core/css/CSSFontFaceSource.h"
-#include "core/fetch/FontResource.h"
+#include "core/loader/resource/FontResource.h"
 #include "wtf/Allocator.h"
 
 namespace blink {

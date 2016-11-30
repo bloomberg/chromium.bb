@@ -27,8 +27,8 @@
 #define CSSFontFaceSrcValue_h
 
 #include "core/css/CSSValue.h"
-#include "core/fetch/FontResource.h"
 #include "core/fetch/ResourceOwner.h"
+#include "core/loader/resource/FontResource.h"
 #include "platform/weborigin/Referrer.h"
 #include "wtf/PassRefPtr.h"
 #include "wtf/text/WTFString.h"
