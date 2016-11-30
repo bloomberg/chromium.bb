@@ -66,7 +66,8 @@ void ManifestManagerHost::GetManifest(RenderFrameHost* render_frame_host,
     pending_get_callbacks_[render_frame_host] = base::WrapUnique(callbacks);
   }
 
-  int request_id = callbacks->Add(new GetManifestCallback(callback));
+  int request_id =
+      callbacks->Add(base::MakeUnique<GetManifestCallback>(callback));
 
   render_frame_host->Send(new ManifestManagerMsg_RequestManifest(
       render_frame_host->GetRoutingID(), request_id));

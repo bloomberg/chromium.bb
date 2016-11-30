@@ -64,7 +64,7 @@ ScriptPromise PushSubscription::unsubscribe(ScriptState* scriptState) {
 
   webPushProvider->unsubscribe(
       m_serviceWorkerRegistration->webRegistration(),
-      new CallbackPromiseAdapter<bool, PushError>(resolver));
+      WTF::makeUnique<CallbackPromiseAdapter<bool, PushError>>(resolver));
   return promise;
 }
 

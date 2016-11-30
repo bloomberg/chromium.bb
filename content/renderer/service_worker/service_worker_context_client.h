@@ -103,12 +103,15 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
 
   // WebServiceWorkerContextClient overrides.
   blink::WebURL scope() const override;
-  void getClient(const blink::WebString&,
-                 blink::WebServiceWorkerClientCallbacks*) override;
-  void getClients(const blink::WebServiceWorkerClientQueryOptions&,
-                  blink::WebServiceWorkerClientsCallbacks*) override;
-  void openWindow(const blink::WebURL&,
-                  blink::WebServiceWorkerClientCallbacks*) override;
+  void getClient(
+      const blink::WebString&,
+      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
+  void getClients(
+      const blink::WebServiceWorkerClientQueryOptions&,
+      std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>) override;
+  void openWindow(
+      const blink::WebURL&,
+      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
   void setCachedMetadata(const blink::WebURL&,
                          const char* data,
                          size_t size) override;
@@ -188,13 +191,15 @@ class ServiceWorkerContextClient : public blink::WebServiceWorkerContextClient,
       const blink::WebString&,
       blink::WebMessagePortChannelArray*) override;
   void focus(const blink::WebString& uuid,
-             blink::WebServiceWorkerClientCallbacks*) override;
-  void navigate(const blink::WebString& uuid,
-                const blink::WebURL&,
-                blink::WebServiceWorkerClientCallbacks*) override;
-  void skipWaiting(
-      blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) override;
-  void claim(blink::WebServiceWorkerClientsClaimCallbacks* callbacks) override;
+             std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
+  void navigate(
+      const blink::WebString& uuid,
+      const blink::WebURL&,
+      std::unique_ptr<blink::WebServiceWorkerClientCallbacks>) override;
+  void skipWaiting(std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>
+                       callbacks) override;
+  void claim(std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>
+                 callbacks) override;
   void registerForeignFetchScopes(
       const blink::WebVector<blink::WebURL>& sub_scopes,
       const blink::WebVector<blink::WebSecurityOrigin>& origins) override;

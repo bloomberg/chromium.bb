@@ -6,6 +6,8 @@
 #define CONTENT_RENDERER_PUSH_MESSAGING_PUSH_MESSAGING_DISPATCHER_H_
 
 #include <stdint.h>
+
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -47,12 +49,12 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   void subscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
-      blink::WebPushSubscriptionCallbacks* callbacks) override;
+      std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) override;
 
   void DidGetManifest(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const blink::WebPushSubscriptionOptions& options,
-      blink::WebPushSubscriptionCallbacks* callbacks,
+      std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
       const GURL& manifest_url,
       const Manifest& manifest,
       const ManifestDebugInfo&);
@@ -60,7 +62,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   void DoSubscribe(
       blink::WebServiceWorkerRegistration* service_worker_registration,
       const PushSubscriptionOptions& options,
-      blink::WebPushSubscriptionCallbacks* callbacks);
+      std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks);
 
   void OnSubscribeFromDocumentSuccess(int32_t request_id,
                                       const GURL& endpoint,

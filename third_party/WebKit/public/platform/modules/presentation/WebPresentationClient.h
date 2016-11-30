@@ -46,15 +46,15 @@ class WebPresentationClient {
   virtual void setReceiver(WebPresentationReceiver*) = 0;
 
   // Called when the frame requests to start a new session.
-  // The ownership of the |callbacks| argument is transferred to the embedder.
-  virtual void startSession(const WebVector<WebURL>& presentationUrls,
-                            WebPresentationConnectionClientCallbacks*) = 0;
+  virtual void startSession(
+      const WebVector<WebURL>& presentationUrls,
+      std::unique_ptr<WebPresentationConnectionClientCallbacks>) = 0;
 
   // Called when the frame requests to join an existing session.
-  // The ownership of the |callbacks| argument is transferred to the embedder.
-  virtual void joinSession(const WebVector<WebURL>& presentationUrls,
-                           const WebString& presentationId,
-                           WebPresentationConnectionClientCallbacks*) = 0;
+  virtual void joinSession(
+      const WebVector<WebURL>& presentationUrls,
+      const WebString& presentationId,
+      std::unique_ptr<WebPresentationConnectionClientCallbacks>) = 0;
 
   // Called when the frame requests to send String message to an existing
   // session.
@@ -85,10 +85,10 @@ class WebPresentationClient {
                                 const WebString& presentationId) = 0;
 
   // Called when the frame wants to know the availability of a presentation
-  // display for |availabilityUrl|.  The ownership of the callbacks argument
-  // is transferred to the embedder.
-  virtual void getAvailability(const WebURL& availabilityUrl,
-                               WebPresentationAvailabilityCallbacks*) = 0;
+  // display for |availabilityUrl|.
+  virtual void getAvailability(
+      const WebURL& availabilityUrl,
+      std::unique_ptr<WebPresentationAvailabilityCallbacks>) = 0;
 
   // Start listening to changes in presentation displays availability. The
   // observer will be notified in case of a change. The observer is

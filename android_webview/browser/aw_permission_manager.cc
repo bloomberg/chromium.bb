@@ -4,7 +4,9 @@
 
 #include "android_webview/browser/aw_permission_manager.h"
 
+#include <memory>
 #include <string>
+#include <utility>
 
 #include "android_webview/browser/aw_browser_permission_request_delegate.h"
 #include "base/callback.h"
@@ -253,10 +255,10 @@ int AwPermissionManager::RequestPermissions(
 
   const GURL& embedding_origin = LastCommittedOrigin(render_frame_host);
 
-  PendingRequest* pending_request =
-      new PendingRequest(permissions, requesting_origin, embedding_origin,
-                         GetRenderProcessID(render_frame_host),
-                         GetRenderFrameID(render_frame_host), callback);
+  auto pending_request = base::MakeUnique<PendingRequest>(
+      permissions, requesting_origin, embedding_origin,
+      GetRenderProcessID(render_frame_host),
+      GetRenderFrameID(render_frame_host), callback);
   std::vector<bool> should_delegate_requests =
       std::vector<bool>(permissions.size(), true);
   for (size_t i = 0; i < permissions.size(); ++i) {
@@ -275,10 +277,14 @@ int AwPermissionManager::RequestPermissions(
     }
   }
 
-  int request_id = pending_requests_.Add(pending_request);
+  // Keep copy of pointer for performing further operations after ownership is
+  // transferred to pending_requests_
+  PendingRequest* pending_request_raw = pending_request.get();
+  int request_id = pending_requests_.Add(std::move(pending_request));
 
-  AwBrowserPermissionRequestDelegate* delegate = GetDelegate(
-      pending_request->render_process_id, pending_request->render_frame_id);
+  AwBrowserPermissionRequestDelegate* delegate =
+      GetDelegate(pending_request_raw->render_process_id,
+                  pending_request_raw->render_frame_id);
 
   for (size_t i = 0; i < permissions.size(); ++i) {
     if (!should_delegate_requests[i])
@@ -287,27 +293,27 @@ int AwPermissionManager::RequestPermissions(
     if (!delegate) {
       DVLOG(0) << "Dropping permissions request for "
                << static_cast<int>(permissions[i]);
-      pending_request->SetPermissionStatus(permissions[i],
-                                           PermissionStatus::DENIED);
+      pending_request_raw->SetPermissionStatus(permissions[i],
+                                               PermissionStatus::DENIED);
       continue;
     }
 
     switch (permissions[i]) {
       case PermissionType::GEOLOCATION:
         delegate->RequestGeolocationPermission(
-            pending_request->requesting_origin,
+            pending_request_raw->requesting_origin,
             base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
                        request_id, permissions[i]));
         break;
       case PermissionType::PROTECTED_MEDIA_IDENTIFIER:
         delegate->RequestProtectedMediaIdentifierPermission(
-            pending_request->requesting_origin,
+            pending_request_raw->requesting_origin,
             base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
                        request_id, permissions[i]));
         break;
       case PermissionType::MIDI_SYSEX:
         delegate->RequestMIDISysexPermission(
-            pending_request->requesting_origin,
+            pending_request_raw->requesting_origin,
             base::Bind(&OnRequestResponse, weak_ptr_factory_.GetWeakPtr(),
                        request_id, permissions[i]));
         break;
@@ -320,17 +326,17 @@ int AwPermissionManager::RequestPermissions(
       case PermissionType::FLASH:
         NOTIMPLEMENTED() << "RequestPermissions is not implemented for "
                          << static_cast<int>(permissions[i]);
-        pending_request->SetPermissionStatus(permissions[i],
-                                             PermissionStatus::DENIED);
+        pending_request_raw->SetPermissionStatus(permissions[i],
+                                                 PermissionStatus::DENIED);
         break;
       case PermissionType::MIDI:
-        pending_request->SetPermissionStatus(permissions[i],
-                                             PermissionStatus::GRANTED);
+        pending_request_raw->SetPermissionStatus(permissions[i],
+                                                 PermissionStatus::GRANTED);
         break;
       case PermissionType::NUM:
         NOTREACHED() << "PermissionType::NUM was not expected here.";
-        pending_request->SetPermissionStatus(permissions[i],
-                                             PermissionStatus::DENIED);
+        pending_request_raw->SetPermissionStatus(permissions[i],
+                                                 PermissionStatus::DENIED);
         break;
     }
   }
@@ -344,8 +350,8 @@ int AwPermissionManager::RequestPermissions(
   // PermissionType::MIDI is permitted within the previous for-loop, all
   // requests could be already resolved, but still in the |pending_requests_|
   // without invoking the callback.
-  if (pending_request->IsCompleted()) {
-    std::vector<PermissionStatus> results = pending_request->results;
+  if (pending_request_raw->IsCompleted()) {
+    std::vector<PermissionStatus> results = pending_request_raw->results;
     pending_requests_.Remove(request_id);
     callback.Run(results);
     return kNoPendingOperation;

@@ -13,6 +13,7 @@
 #include "public/platform/modules/screen_orientation/WebLockOrientationCallback.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationLockType.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
+#include <memory>
 
 namespace blink {
 
@@ -33,7 +34,8 @@ class MODULES_EXPORT ScreenOrientationController final
   void setOrientation(ScreenOrientation*);
   void notifyOrientationChanged();
 
-  void lock(WebScreenOrientationLockType, WebLockOrientationCallback*);
+  void lock(WebScreenOrientationLockType,
+            std::unique_ptr<WebLockOrientationCallback>);
   void unlock();
 
   static void provideTo(LocalFrame&, WebScreenOrientationClient*);

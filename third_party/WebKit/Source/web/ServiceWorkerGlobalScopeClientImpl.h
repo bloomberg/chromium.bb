@@ -51,10 +51,12 @@ class ServiceWorkerGlobalScopeClientImpl final
   static ServiceWorkerGlobalScopeClient* create(WebServiceWorkerContextClient&);
   ~ServiceWorkerGlobalScopeClientImpl() override;
 
-  void getClient(const WebString&, WebServiceWorkerClientCallbacks*) override;
+  void getClient(const WebString&,
+                 std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void getClients(const WebServiceWorkerClientQueryOptions&,
-                  WebServiceWorkerClientsCallbacks*) override;
-  void openWindow(const WebURL&, WebServiceWorkerClientCallbacks*) override;
+                  std::unique_ptr<WebServiceWorkerClientsCallbacks>) override;
+  void openWindow(const WebURL&,
+                  std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void setCachedMetadata(const WebURL&, const char*, size_t) override;
   void clearCachedMetadata(const WebURL&) override;
 
@@ -96,13 +98,14 @@ class ServiceWorkerGlobalScopeClientImpl final
       const WebCrossOriginServiceWorkerClient&,
       const WebString& message,
       std::unique_ptr<WebMessagePortChannelArray>) override;
-  void skipWaiting(WebServiceWorkerSkipWaitingCallbacks*) override;
-  void claim(WebServiceWorkerClientsClaimCallbacks*) override;
+  void skipWaiting(
+      std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks>) override;
+  void claim(std::unique_ptr<WebServiceWorkerClientsClaimCallbacks>) override;
   void focus(const WebString& clientUUID,
-             WebServiceWorkerClientCallbacks*) override;
+             std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void navigate(const WebString& clientUUID,
                 const WebURL&,
-                WebServiceWorkerClientCallbacks*) override;
+                std::unique_ptr<WebServiceWorkerClientCallbacks>) override;
   void registerForeignFetchScopes(const WebVector<WebURL>& subScopes,
                                   const WebVector<WebSecurityOrigin>&) override;
 

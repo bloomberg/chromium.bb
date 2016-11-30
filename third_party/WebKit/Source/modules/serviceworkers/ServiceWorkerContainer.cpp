@@ -58,6 +58,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerRegistration.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -321,7 +322,8 @@ void ServiceWorkerContainer::registerServiceWorkerImpl(
     }
   }
 
-  m_provider->registerServiceWorker(patternURL, scriptURL, callbacks.release());
+  m_provider->registerServiceWorker(patternURL, scriptURL,
+                                    std::move(callbacks));
 }
 
 ScriptPromise ServiceWorkerContainer::registerServiceWorker(
@@ -413,8 +415,8 @@ ScriptPromise ServiceWorkerContainer::getRegistration(
                                  documentOrigin->toString() + "')."));
     return promise;
   }
-  m_provider->getRegistration(completedURL,
-                              new GetRegistrationCallback(resolver));
+  m_provider->getRegistration(
+      completedURL, WTF::makeUnique<GetRegistrationCallback>(resolver));
 
   return promise;
 }
@@ -451,7 +453,8 @@ ScriptPromise ServiceWorkerContainer::getRegistrations(
     return promise;
   }
 
-  m_provider->getRegistrations(new GetRegistrationsCallback(resolver));
+  m_provider->getRegistrations(
+      WTF::makeUnique<GetRegistrationsCallback>(resolver));
 
   return promise;
 }
@@ -476,9 +479,10 @@ ScriptPromise ServiceWorkerContainer::ready(ScriptState* callerState) {
 
   if (!m_ready) {
     m_ready = createReadyProperty();
-    if (m_provider)
+    if (m_provider) {
       m_provider->getRegistrationForReady(
-          new GetRegistrationForReadyCallback(m_ready.get()));
+          WTF::makeUnique<GetRegistrationForReadyCallback>(m_ready.get()));
+    }
   }
 
   return m_ready->promise(callerState->world());

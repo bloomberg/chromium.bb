@@ -5,6 +5,8 @@
 #ifndef COMPONENTS_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_
 #define COMPONENTS_TEST_RUNNER_MOCK_SCREEN_ORIENTATION_CLIENT_H_
 
+#include <memory>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "components/test_runner/test_runner_export.h"
@@ -36,12 +38,13 @@ class TEST_RUNNER_EXPORT MockScreenOrientationClient
 
  private:
   // From blink::WebScreenOrientationClient.
-  void lockOrientation(blink::WebScreenOrientationLockType orientation,
-                       blink::WebLockOrientationCallback* callback) override;
+  void lockOrientation(
+      blink::WebScreenOrientationLockType orientation,
+      std::unique_ptr<blink::WebLockOrientationCallback> callback) override;
   void unlockOrientation() override;
 
   void UpdateLockSync(blink::WebScreenOrientationLockType,
-                      blink::WebLockOrientationCallback*);
+                      std::unique_ptr<blink::WebLockOrientationCallback>);
   void ResetLockSync();
 
   void UpdateScreenOrientation(blink::WebScreenOrientationType);

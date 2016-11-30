@@ -103,7 +103,7 @@ void PresentationDispatcher::setController(
 
 void PresentationDispatcher::startSession(
     const blink::WebVector<blink::WebURL>& presentationUrls,
-    blink::WebPresentationConnectionClientCallbacks* callback) {
+    std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
@@ -116,13 +116,13 @@ void PresentationDispatcher::startSession(
   // to be destroyed so we transfer its ownership to the mojo callback.
   presentation_service_->StartSession(
       urls, base::Bind(&PresentationDispatcher::OnSessionCreated,
-                       base::Unretained(this), base::Owned(callback)));
+                       base::Unretained(this), base::Passed(&callback)));
 }
 
 void PresentationDispatcher::joinSession(
     const blink::WebVector<blink::WebURL>& presentationUrls,
     const blink::WebString& presentationId,
-    blink::WebPresentationConnectionClientCallbacks* callback) {
+    std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback) {
   DCHECK(callback);
   ConnectToPresentationServiceIfNeeded();
 
@@ -136,7 +136,7 @@ void PresentationDispatcher::joinSession(
   presentation_service_->JoinSession(
       urls, presentationId.utf8(),
       base::Bind(&PresentationDispatcher::OnSessionCreated,
-                 base::Unretained(this), base::Owned(callback)));
+                 base::Unretained(this), base::Passed(&callback)));
 }
 
 void PresentationDispatcher::sendString(const blink::WebURL& presentationUrl,
@@ -244,7 +244,7 @@ void PresentationDispatcher::terminateSession(
 
 void PresentationDispatcher::getAvailability(
     const blink::WebURL& availabilityUrl,
-    blink::WebPresentationAvailabilityCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks) {
   AvailabilityStatus* status = nullptr;
   auto status_it = availability_status_.find(availabilityUrl);
   if (status_it == availability_status_.end()) {
@@ -259,12 +259,11 @@ void PresentationDispatcher::getAvailability(
     base::ThreadTaskRunnerHandle::Get()->PostTask(
         FROM_HERE,
         base::Bind(&blink::WebPresentationAvailabilityCallbacks::onSuccess,
-                   base::Owned(callbacks),
-                   status->last_known_availability));
+                   base::Passed(&callbacks), status->last_known_availability));
     return;
   }
 
-  status->availability_callbacks.Add(callbacks);
+  status->availability_callbacks.Add(std::move(callbacks));
   UpdateListeningState(status);
 }
 
@@ -384,7 +383,7 @@ void PresentationDispatcher::OnDefaultSessionStarted(
 }
 
 void PresentationDispatcher::OnSessionCreated(
-    blink::WebPresentationConnectionClientCallbacks* callback,
+    std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback,
     blink::mojom::PresentationSessionInfoPtr session_info,
     blink::mojom::PresentationErrorPtr error) {
   DCHECK(callback);

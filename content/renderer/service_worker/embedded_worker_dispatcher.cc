@@ -5,6 +5,7 @@
 #include "content/renderer/service_worker/embedded_worker_dispatcher.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/string16.h"
@@ -157,7 +158,7 @@ EmbeddedWorkerDispatcher::StartWorkerContext(
 void EmbeddedWorkerDispatcher::RegisterWorker(
     int embedded_worker_id,
     std::unique_ptr<WorkerWrapper> wrapper) {
-  workers_.AddWithID(wrapper.release(), embedded_worker_id);
+  workers_.AddWithID(std::move(wrapper), embedded_worker_id);
 }
 
 void EmbeddedWorkerDispatcher::UnregisterWorker(int embedded_worker_id) {

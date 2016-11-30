@@ -125,30 +125,27 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
   }
 
   // From WebServiceWorkerCache:
-  void dispatchMatch(CacheMatchCallbacks* callbacks,
+  void dispatchMatch(std::unique_ptr<CacheMatchCallbacks> callbacks,
                      const WebServiceWorkerRequest& webRequest,
                      const QueryParams& queryParams) override {
     m_lastErrorWebCacheMethodCalled = "dispatchMatch";
     checkUrlIfProvided(webRequest.url());
     checkQueryParamsIfProvided(queryParams);
 
-    std::unique_ptr<CacheMatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
     return callbacks->onError(m_error);
   }
 
-  void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks,
+  void dispatchMatchAll(std::unique_ptr<CacheWithResponsesCallbacks> callbacks,
                         const WebServiceWorkerRequest& webRequest,
                         const QueryParams& queryParams) override {
     m_lastErrorWebCacheMethodCalled = "dispatchMatchAll";
     checkUrlIfProvided(webRequest.url());
     checkQueryParamsIfProvided(queryParams);
 
-    std::unique_ptr<CacheWithResponsesCallbacks> ownedCallbacks(
-        wrapUnique(callbacks));
     return callbacks->onError(m_error);
   }
 
-  void dispatchKeys(CacheWithRequestsCallbacks* callbacks,
+  void dispatchKeys(std::unique_ptr<CacheWithRequestsCallbacks> callbacks,
                     const WebServiceWorkerRequest& webRequest,
                     const QueryParams& queryParams) override {
     m_lastErrorWebCacheMethodCalled = "dispatchKeys";
@@ -157,18 +154,15 @@ class ErrorWebCacheForTests : public WebServiceWorkerCache {
       checkQueryParamsIfProvided(queryParams);
     }
 
-    std::unique_ptr<CacheWithRequestsCallbacks> ownedCallbacks(
-        wrapUnique(callbacks));
     return callbacks->onError(m_error);
   }
 
   void dispatchBatch(
-      CacheBatchCallbacks* callbacks,
+      std::unique_ptr<CacheBatchCallbacks> callbacks,
       const WebVector<BatchOperation>& batchOperations) override {
     m_lastErrorWebCacheMethodCalled = "dispatchBatch";
     checkBatchOperationsIfProvided(batchOperations);
 
-    std::unique_ptr<CacheBatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
     return callbacks->onError(m_error);
   }
 
@@ -533,10 +527,9 @@ class MatchTestCache : public NotImplementedErrorCache {
   MatchTestCache(WebServiceWorkerResponse& response) : m_response(response) {}
 
   // From WebServiceWorkerCache:
-  void dispatchMatch(CacheMatchCallbacks* callbacks,
+  void dispatchMatch(std::unique_ptr<CacheMatchCallbacks> callbacks,
                      const WebServiceWorkerRequest& webRequest,
                      const QueryParams& queryParams) override {
-    std::unique_ptr<CacheMatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
     return callbacks->onSuccess(m_response);
   }
 
@@ -573,11 +566,9 @@ class KeysTestCache : public NotImplementedErrorCache {
   KeysTestCache(WebVector<WebServiceWorkerRequest>& requests)
       : m_requests(requests) {}
 
-  void dispatchKeys(CacheWithRequestsCallbacks* callbacks,
+  void dispatchKeys(std::unique_ptr<CacheWithRequestsCallbacks> callbacks,
                     const WebServiceWorkerRequest& webRequest,
                     const QueryParams& queryParams) override {
-    std::unique_ptr<CacheWithRequestsCallbacks> ownedCallbacks(
-        wrapUnique(callbacks));
     return callbacks->onSuccess(m_requests);
   }
 
@@ -623,18 +614,15 @@ class MatchAllAndBatchTestCache : public NotImplementedErrorCache {
   MatchAllAndBatchTestCache(WebVector<WebServiceWorkerResponse>& responses)
       : m_responses(responses) {}
 
-  void dispatchMatchAll(CacheWithResponsesCallbacks* callbacks,
+  void dispatchMatchAll(std::unique_ptr<CacheWithResponsesCallbacks> callbacks,
                         const WebServiceWorkerRequest& webRequest,
                         const QueryParams& queryParams) override {
-    std::unique_ptr<CacheWithResponsesCallbacks> ownedCallbacks(
-        wrapUnique(callbacks));
     return callbacks->onSuccess(m_responses);
   }
 
   void dispatchBatch(
-      CacheBatchCallbacks* callbacks,
+      std::unique_ptr<CacheBatchCallbacks> callbacks,
       const WebVector<BatchOperation>& batchOperations) override {
-    std::unique_ptr<CacheBatchCallbacks> ownedCallbacks(wrapUnique(callbacks));
     return callbacks->onSuccess();
   }
 

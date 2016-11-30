@@ -26,6 +26,7 @@
 #include "wtf/text/StringBuilder.h"
 #include <algorithm>
 #include <memory>
+#include <utility>
 
 using blink::protocol::Array;
 using blink::protocol::CacheStorage::Cache;
@@ -275,9 +276,9 @@ class GetCacheKeysForRequestData
 
     for (size_t i = 0; i < requests.size(); i++) {
       const auto& request = requests[i];
-      auto* cacheRequest =
-          new GetCacheResponsesForRequestData(m_params, request, accumulator);
-      m_cache->dispatchMatch(cacheRequest, request,
+      auto cacheRequest = WTF::makeUnique<GetCacheResponsesForRequestData>(
+          m_params, request, accumulator);
+      m_cache->dispatchMatch(std::move(cacheRequest), request,
                              WebServiceWorkerCache::QueryParams());
     }
   }
@@ -306,9 +307,10 @@ class GetCacheForRequestData
   ~GetCacheForRequestData() override {}
 
   void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
-    auto* cacheRequest = new GetCacheKeysForRequestData(
-        m_params, wrapUnique(cache.release()), std::move(m_callback));
-    cacheRequest->cache()->dispatchKeys(cacheRequest, WebServiceWorkerRequest(),
+    auto cacheRequest = WTF::makeUnique<GetCacheKeysForRequestData>(
+        m_params, std::move(cache), std::move(m_callback));
+    cacheRequest->cache()->dispatchKeys(std::move(cacheRequest),
+                                        WebServiceWorkerRequest(),
                                         WebServiceWorkerCache::QueryParams());
   }
 
@@ -377,13 +379,14 @@ class GetCacheForDeleteEntry
   ~GetCacheForDeleteEntry() override {}
 
   void onSuccess(std::unique_ptr<WebServiceWorkerCache> cache) override {
-    auto* deleteRequest = new DeleteCacheEntry(std::move(m_callback));
+    auto deleteRequest =
+        WTF::makeUnique<DeleteCacheEntry>(std::move(m_callback));
     BatchOperation deleteOperation;
     deleteOperation.operationType = WebServiceWorkerCache::OperationTypeDelete;
     deleteOperation.request.setURL(KURL(ParsedURLString, m_requestSpec));
     Vector<BatchOperation> operations;
     operations.append(deleteOperation);
-    cache.release()->dispatchBatch(deleteRequest,
+    cache.release()->dispatchBatch(std::move(deleteRequest),
                                    WebVector<BatchOperation>(operations));
   }
 
@@ -430,7 +433,7 @@ void InspectorCacheStorageAgent::requestCacheNames(
     return;
   }
   cache->dispatchKeys(
-      new RequestCacheNames(securityOrigin, std::move(callback)));
+      WTF::makeUnique<RequestCacheNames>(securityOrigin, std::move(callback)));
 }
 
 void InspectorCacheStorageAgent::requestEntries(
@@ -450,8 +453,9 @@ void InspectorCacheStorageAgent::requestEntries(
   params.cacheName = cacheName;
   params.pageSize = pageSize;
   params.skipCount = skipCount;
-  cache->dispatchOpen(new GetCacheForRequestData(params, std::move(callback)),
-                      WebString(cacheName));
+  cache->dispatchOpen(
+      WTF::makeUnique<GetCacheForRequestData>(params, std::move(callback)),
+      WebString(cacheName));
 }
 
 void InspectorCacheStorageAgent::deleteCache(
@@ -465,7 +469,7 @@ void InspectorCacheStorageAgent::deleteCache(
     callback->sendFailure(response);
     return;
   }
-  cache->dispatchDelete(new DeleteCache(std::move(callback)),
+  cache->dispatchDelete(WTF::makeUnique<DeleteCache>(std::move(callback)),
                         WebString(cacheName));
 }
 
@@ -481,9 +485,9 @@ void InspectorCacheStorageAgent::deleteEntry(
     callback->sendFailure(response);
     return;
   }
-  cache->dispatchOpen(
-      new GetCacheForDeleteEntry(request, cacheName, std::move(callback)),
-      WebString(cacheName));
+  cache->dispatchOpen(WTF::makeUnique<GetCacheForDeleteEntry>(
+                          request, cacheName, std::move(callback)),
+                      WebString(cacheName));
 }
 
 }  // namespace blink

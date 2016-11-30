@@ -79,7 +79,8 @@ InstanceIDAndroid::~InstanceIDAndroid() {
 void InstanceIDAndroid::GetID(const GetIDCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id = get_id_callbacks_.Add(new GetIDCallback(callback));
+  int32_t request_id =
+      get_id_callbacks_.Add(base::MakeUnique<GetIDCallback>(callback));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getId(env, java_ref_, request_id);
@@ -89,8 +90,8 @@ void InstanceIDAndroid::GetCreationTime(
     const GetCreationTimeCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id =
-      get_creation_time_callbacks_.Add(new GetCreationTimeCallback(callback));
+  int32_t request_id = get_creation_time_callbacks_.Add(
+      base::MakeUnique<GetCreationTimeCallback>(callback));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_getCreationTime(env, java_ref_, request_id);
@@ -103,7 +104,8 @@ void InstanceIDAndroid::GetToken(
     const GetTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id = get_token_callbacks_.Add(new GetTokenCallback(callback));
+  int32_t request_id =
+      get_token_callbacks_.Add(base::MakeUnique<GetTokenCallback>(callback));
 
   std::vector<std::string> options_strings;
   for (const auto& entry : options) {
@@ -124,8 +126,8 @@ void InstanceIDAndroid::DeleteTokenImpl(const std::string& authorized_entity,
                                         const DeleteTokenCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id =
-      delete_token_callbacks_.Add(new DeleteTokenCallback(callback));
+  int32_t request_id = delete_token_callbacks_.Add(
+      base::MakeUnique<DeleteTokenCallback>(callback));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_deleteToken(
@@ -137,7 +139,8 @@ void InstanceIDAndroid::DeleteTokenImpl(const std::string& authorized_entity,
 void InstanceIDAndroid::DeleteIDImpl(const DeleteIDCallback& callback) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
-  int32_t request_id = delete_id_callbacks_.Add(new DeleteIDCallback(callback));
+  int32_t request_id = delete_id_callbacks_.Add(
+      base::MakeUnique<DeleteIDCallback>(DeleteIDCallback(callback)));
 
   JNIEnv* env = AttachCurrentThread();
   Java_InstanceIDBridge_deleteInstanceID(env, java_ref_, request_id);

@@ -100,11 +100,9 @@ void MediaRouterAndroid::CreateRoute(
   bool is_incognito = web_contents
       && web_contents->GetBrowserContext()->IsOffTheRecord();
 
-  MediaRouteRequest* request = new MediaRouteRequest(
-      MediaSource(source_id),
-      presentation_id,
-      callbacks);
-  int route_request_id = route_requests_.Add(request);
+  int route_request_id =
+      route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
+          MediaSource(source_id), presentation_id, callbacks));
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jsource_id =
@@ -158,11 +156,8 @@ void MediaRouterAndroid::JoinRoute(
   DVLOG(2) << "JoinRoute: " << source_id << ", " << presentation_id << ", "
            << origin.spec() << ", " << tab_id;
 
-  MediaRouteRequest* request = new MediaRouteRequest(
-      MediaSource(source_id),
-      presentation_id,
-      callbacks);
-  int request_id = route_requests_.Add(request);
+  int request_id = route_requests_.Add(base::MakeUnique<MediaRouteRequest>(
+      MediaSource(source_id), presentation_id, callbacks));
 
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jsource_id =
@@ -189,7 +184,7 @@ void MediaRouterAndroid::SendRouteMessage(
     const std::string& message,
     const SendRouteMessageCallback& callback) {
   int callback_id = message_callbacks_.Add(
-      new SendRouteMessageCallback(callback));
+      base::MakeUnique<SendRouteMessageCallback>(callback));
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
           base::android::ConvertUTF8ToJavaString(env, route_id);
@@ -203,8 +198,8 @@ void MediaRouterAndroid::SendRouteBinaryMessage(
     const MediaRoute::Id& route_id,
     std::unique_ptr<std::vector<uint8_t>> data,
     const SendRouteMessageCallback& callback) {
-  int callback_id =
-      message_callbacks_.Add(new SendRouteMessageCallback(callback));
+  int callback_id = message_callbacks_.Add(
+      base::MakeUnique<SendRouteMessageCallback>(callback));
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jstring> jroute_id =
       base::android::ConvertUTF8ToJavaString(env, route_id);

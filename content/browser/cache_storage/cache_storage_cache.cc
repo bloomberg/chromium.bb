@@ -1131,15 +1131,15 @@ void CacheStorageCache::PutDidWriteHeaders(
   disk_cache::ScopedEntryPtr entry(std::move(put_context->cache_entry));
   put_context->cache_entry = NULL;
 
-  CacheStorageBlobToDiskCache* blob_to_cache =
-      new CacheStorageBlobToDiskCache();
+  auto blob_to_cache = base::MakeUnique<CacheStorageBlobToDiskCache>();
+  CacheStorageBlobToDiskCache* blob_to_cache_raw = blob_to_cache.get();
   BlobToDiskCacheIDMap::KeyType blob_to_cache_key =
-      active_blob_to_disk_cache_writers_.Add(blob_to_cache);
+      active_blob_to_disk_cache_writers_.Add(std::move(blob_to_cache));
 
   std::unique_ptr<storage::BlobDataHandle> blob_data_handle =
       std::move(put_context->blob_data_handle);
 
-  blob_to_cache->StreamBlobToCache(
+  blob_to_cache_raw->StreamBlobToCache(
       std::move(entry), INDEX_RESPONSE_BODY, request_context_getter_.get(),
       std::move(blob_data_handle),
       base::Bind(&CacheStorageCache::PutDidWriteBlobToCache,

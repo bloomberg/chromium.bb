@@ -4,6 +4,9 @@
 
 #include "content/renderer/push_messaging/push_messaging_dispatcher.h"
 
+#include <memory>
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "content/child/push_messaging/push_provider.h"
@@ -47,7 +50,7 @@ void PushMessagingDispatcher::OnDestruct() {
 void PushMessagingDispatcher::subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
   // If a developer provided an application server key in |options|, skip
@@ -57,28 +60,29 @@ void PushMessagingDispatcher::subscribe(
         ->manifest_manager()
         ->GetManifest(base::Bind(
             &PushMessagingDispatcher::DidGetManifest, base::Unretained(this),
-            service_worker_registration, options, callbacks));
+            service_worker_registration, options, base::Passed(&callbacks)));
   } else {
     PushSubscriptionOptions content_options;
     content_options.user_visible_only = options.userVisibleOnly;
     // Just treat the server key as a string of bytes and pass it to the push
     // service.
     content_options.sender_info = options.applicationServerKey.latin1();
-    DoSubscribe(service_worker_registration, content_options, callbacks);
+    DoSubscribe(service_worker_registration, content_options,
+                std::move(callbacks));
   }
 }
 
 void PushMessagingDispatcher::DidGetManifest(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
-    blink::WebPushSubscriptionCallbacks* callbacks,
+    std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks,
     const GURL& manifest_url,
     const Manifest& manifest,
     const ManifestDebugInfo&) {
   // Get the sender_info from the manifest since it wasn't provided by
   // the caller.
   if (manifest.IsEmpty()) {
-    int request_id = subscription_callbacks_.Add(callbacks);
+    int request_id = subscription_callbacks_.Add(std::move(callbacks));
     OnSubscribeFromDocumentError(
         request_id, PUSH_REGISTRATION_STATUS_MANIFEST_EMPTY_OR_MISSING);
     return;
@@ -91,14 +95,15 @@ void PushMessagingDispatcher::DidGetManifest(
         base::UTF16ToUTF8(manifest.gcm_sender_id.string());
   }
 
-  DoSubscribe(service_worker_registration, content_options, callbacks);
+  DoSubscribe(service_worker_registration, content_options,
+              std::move(callbacks));
 }
 
 void PushMessagingDispatcher::DoSubscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const PushSubscriptionOptions& options,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
-  int request_id = subscription_callbacks_.Add(callbacks);
+    std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
+  int request_id = subscription_callbacks_.Add(std::move(callbacks));
   int64_t service_worker_registration_id =
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)

@@ -8,6 +8,7 @@
 #include "public/platform/WebCallbacks.h"
 #include "public/platform/WebURL.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerError.h"
+#include <memory>
 
 namespace blink {
 
@@ -52,9 +53,10 @@ class WebServiceWorkerRegistration {
   virtual WebURL scope() const { return WebURL(); }
   virtual int64_t registrationId() const = 0;
   virtual void update(WebServiceWorkerProvider*,
-                      WebServiceWorkerUpdateCallbacks*) {}
-  virtual void unregister(WebServiceWorkerProvider*,
-                          WebServiceWorkerUnregistrationCallbacks*) {}
+                      std::unique_ptr<WebServiceWorkerUpdateCallbacks>) {}
+  virtual void unregister(
+      WebServiceWorkerProvider*,
+      std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>) {}
 
   virtual void enableNavigationPreload(
       bool enable,

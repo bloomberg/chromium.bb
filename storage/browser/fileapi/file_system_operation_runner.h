@@ -300,7 +300,7 @@ class STORAGE_EXPORT FileSystemOperationRunner
   void PrepareForRead(OperationID id, const FileSystemURL& url);
 
   // These must be called at the beginning and end of any async operations.
-  OperationHandle BeginOperation(FileSystemOperation* operation,
+  OperationHandle BeginOperation(std::unique_ptr<FileSystemOperation> operation,
                                  base::WeakPtr<BeginOperationScoper> scope);
   void FinishOperation(OperationID id);
 

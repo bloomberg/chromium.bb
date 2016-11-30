@@ -24,6 +24,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/RefPtr.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 namespace {
@@ -120,15 +121,16 @@ ScriptPromise ServiceWorkerRegistrationNotifications::getNotifications(
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  WebNotificationGetCallbacks* callbacks =
-      new CallbackPromiseAdapter<NotificationArray, void>(resolver);
+  auto callbacks =
+      WTF::makeUnique<CallbackPromiseAdapter<NotificationArray, void>>(
+          resolver);
 
   WebNotificationManager* notificationManager =
       Platform::current()->notificationManager();
   DCHECK(notificationManager);
 
   notificationManager->getNotifications(
-      options.tag(), registration.webRegistration(), callbacks);
+      options.tag(), registration.webRegistration(), std::move(callbacks));
   return promise;
 }
 
@@ -189,7 +191,7 @@ void ServiceWorkerRegistrationNotifications::didLoadResources(
 
   notificationManager->showPersistent(
       WebSecurityOrigin(origin.get()), data, loader->getResources(),
-      m_registration->webRegistration(), callbacks.release());
+      m_registration->webRegistration(), std::move(callbacks));
   m_loaders.remove(loader);
 }
 

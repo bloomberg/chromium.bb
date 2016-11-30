@@ -86,28 +86,31 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
       int provider_id,
       const GURL& pattern,
       const GURL& script_url,
-      WebServiceWorkerRegistrationCallbacks* callbacks);
+      std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks);
   // Corresponds to ServiceWorkerRegistration.update().
-  void UpdateServiceWorker(int provider_id,
-                           int64_t registration_id,
-                           WebServiceWorkerUpdateCallbacks* callbacks);
+  void UpdateServiceWorker(
+      int provider_id,
+      int64_t registration_id,
+      std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks);
   // Corresponds to ServiceWorkerRegistration.unregister().
   void UnregisterServiceWorker(
       int provider_id,
       int64_t registration_id,
-      WebServiceWorkerUnregistrationCallbacks* callbacks);
+      std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks);
   // Corresponds to navigator.serviceWorker.getRegistration().
-  void GetRegistration(int provider_id,
-                       const GURL& document_url,
-                       WebServiceWorkerGetRegistrationCallbacks* callbacks);
+  void GetRegistration(
+      int provider_id,
+      const GURL& document_url,
+      std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks);
   // Corresponds to navigator.serviceWorker.getRegistrations().
   void GetRegistrations(
       int provider_id,
-      WebServiceWorkerGetRegistrationsCallbacks* callbacks);
+      std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks);
 
   void GetRegistrationForReady(
       int provider_id,
-      WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks);
+      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
+          callbacks);
 
   // Corresponds to NavigationPreloadManager.enable/disable.
   void EnableNavigationPreload(

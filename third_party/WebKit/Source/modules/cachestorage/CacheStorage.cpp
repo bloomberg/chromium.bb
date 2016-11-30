@@ -16,6 +16,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheStorage.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -237,11 +238,13 @@ ScriptPromise CacheStorage::open(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   const ScriptPromise promise = resolver->promise();
 
-  if (m_webCacheStorage)
+  if (m_webCacheStorage) {
     m_webCacheStorage->dispatchOpen(
-        new WithCacheCallbacks(cacheName, this, resolver), cacheName);
-  else
+        WTF::makeUnique<WithCacheCallbacks>(cacheName, this, resolver),
+        cacheName);
+  } else {
     resolver->reject(createNoImplementationException());
+  }
 
   return promise;
 }
@@ -255,10 +258,12 @@ ScriptPromise CacheStorage::has(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   const ScriptPromise promise = resolver->promise();
 
-  if (m_webCacheStorage)
-    m_webCacheStorage->dispatchHas(new Callbacks(resolver), cacheName);
-  else
+  if (m_webCacheStorage) {
+    m_webCacheStorage->dispatchHas(WTF::makeUnique<Callbacks>(resolver),
+                                   cacheName);
+  } else {
     resolver->reject(createNoImplementationException());
+  }
 
   return promise;
 }
@@ -272,11 +277,12 @@ ScriptPromise CacheStorage::deleteFunction(ScriptState* scriptState,
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   const ScriptPromise promise = resolver->promise();
 
-  if (m_webCacheStorage)
+  if (m_webCacheStorage) {
     m_webCacheStorage->dispatchDelete(
-        new DeleteCallbacks(cacheName, this, resolver), cacheName);
-  else
+        WTF::makeUnique<DeleteCallbacks>(cacheName, this, resolver), cacheName);
+  } else {
     resolver->reject(createNoImplementationException());
+  }
 
   return promise;
 }
@@ -290,7 +296,7 @@ ScriptPromise CacheStorage::keys(ScriptState* scriptState,
   const ScriptPromise promise = resolver->promise();
 
   if (m_webCacheStorage)
-    m_webCacheStorage->dispatchKeys(new KeysCallbacks(resolver));
+    m_webCacheStorage->dispatchKeys(WTF::makeUnique<KeysCallbacks>(resolver));
   else
     resolver->reject(createNoImplementationException());
 
@@ -329,7 +335,8 @@ ScriptPromise CacheStorage::matchImpl(ScriptState* scriptState,
   }
 
   if (m_webCacheStorage)
-    m_webCacheStorage->dispatchMatch(new MatchCallbacks(resolver), webRequest,
+    m_webCacheStorage->dispatchMatch(WTF::makeUnique<MatchCallbacks>(resolver),
+                                     webRequest,
                                      Cache::toWebQueryParams(options));
   else
     resolver->reject(createNoImplementationException());

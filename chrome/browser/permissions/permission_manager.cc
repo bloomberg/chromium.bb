@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <memory>
+#include <utility>
 
 #include "base/callback.h"
 #include "base/memory/ptr_util.h"
@@ -301,9 +302,8 @@ int PermissionManager::RequestPermissions(
       content::WebContents::FromRenderFrameHost(render_frame_host);
   GURL embedding_origin = web_contents->GetLastCommittedURL().GetOrigin();
 
-  PendingRequest* pending_request = new PendingRequest(
-      render_frame_host, permissions, callback);
-  int request_id = pending_requests_.Add(pending_request);
+  int request_id = pending_requests_.Add(base::MakeUnique<PendingRequest>(
+      render_frame_host, permissions, callback));
 
   const PermissionRequestID request(render_frame_host, request_id);
 
@@ -429,7 +429,7 @@ int PermissionManager::SubscribePermissionStatusChange(
   if (subscriptions_.IsEmpty())
     HostContentSettingsMapFactory::GetForProfile(profile_)->AddObserver(this);
 
-  Subscription* subscription = new Subscription();
+  auto subscription = base::MakeUnique<Subscription>();
   subscription->permission = permission;
   subscription->requesting_origin = requesting_origin;
   subscription->embedding_origin = embedding_origin;
@@ -445,7 +445,7 @@ int PermissionManager::SubscribePermissionStatusChange(
                                   subscription->embedding_origin);
   }
 
-  return subscriptions_.Add(subscription);
+  return subscriptions_.Add(std::move(subscription));
 }
 
 void PermissionManager::UnsubscribePermissionStatusChange(int subscription_id) {

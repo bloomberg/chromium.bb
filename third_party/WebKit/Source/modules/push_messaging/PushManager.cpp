@@ -71,11 +71,12 @@ ScriptPromise PushManager::subscribe(ScriptState* scriptState,
                                "Document is detached from window."));
     PushController::clientFrom(document->frame())
         .subscribe(m_registration->webRegistration(), webOptions,
-                   new PushSubscriptionCallbacks(resolver, m_registration));
+                   WTF::makeUnique<PushSubscriptionCallbacks>(resolver,
+                                                              m_registration));
   } else {
     pushProvider()->subscribe(
         m_registration->webRegistration(), webOptions,
-        new PushSubscriptionCallbacks(resolver, m_registration));
+        WTF::makeUnique<PushSubscriptionCallbacks>(resolver, m_registration));
   }
 
   return promise;
@@ -87,7 +88,7 @@ ScriptPromise PushManager::getSubscription(ScriptState* scriptState) {
 
   pushProvider()->getSubscription(
       m_registration->webRegistration(),
-      new PushSubscriptionCallbacks(resolver, m_registration));
+      WTF::makeUnique<PushSubscriptionCallbacks>(resolver, m_registration));
   return promise;
 }
 
@@ -110,7 +111,7 @@ ScriptPromise PushManager::permissionState(
   pushProvider()->getPermissionStatus(
       m_registration->webRegistration(),
       PushSubscriptionOptions::toWeb(options, exceptionState),
-      new PushPermissionStatusCallbacks(resolver));
+      WTF::makeUnique<PushPermissionStatusCallbacks>(resolver));
   return promise;
 }
 

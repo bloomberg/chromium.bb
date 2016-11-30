@@ -16,6 +16,8 @@
 #include "platform/ScopedOrientationChangeIndicator.h"
 #include "public/platform/WebScreenInfo.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationClient.h"
+#include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -165,12 +167,13 @@ void ScreenOrientationController::setOrientation(
   notifyDispatcher();
 }
 
-void ScreenOrientationController::lock(WebScreenOrientationLockType orientation,
-                                       WebLockOrientationCallback* callback) {
+void ScreenOrientationController::lock(
+    WebScreenOrientationLockType orientation,
+    std::unique_ptr<WebLockOrientationCallback> callback) {
   // When detached, the client is no longer valid.
   if (!m_client)
     return;
-  m_client->lockOrientation(orientation, callback);
+  m_client->lockOrientation(orientation, std::move(callback));
 }
 
 void ScreenOrientationController::unlock() {

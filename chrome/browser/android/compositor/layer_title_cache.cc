@@ -8,6 +8,7 @@
 
 #include <memory>
 
+#include "base/memory/ptr_util.h"
 #include "cc/layers/layer.h"
 #include "cc/layers/ui_resource_layer.h"
 #include "chrome/browser/android/compositor/decoration_title.h"
@@ -68,7 +69,7 @@ void LayerTitleCache::UpdateLayer(JNIEnv* env,
     }
   } else {
     layer_cache_.AddWithID(
-        new DecorationTitle(
+        base::MakeUnique<DecorationTitle>(
             resource_manager_, title_resource_id, favicon_resource_id,
             spinner_resource_id_, spinner_incognito_resource_id_, fade_width_,
             favicon_start_padding_, favicon_end_padding_, is_incognito, is_rtl),

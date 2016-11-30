@@ -50,11 +50,11 @@ class NotificationManager : public blink::WebNotificationManager,
       const blink::WebNotificationData& notification_data,
       std::unique_ptr<blink::WebNotificationResources> notification_resources,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebNotificationShowCallbacks* callbacks) override;
+      std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) override;
   void getNotifications(
       const blink::WebString& filter_tag,
       blink::WebServiceWorkerRegistration* service_worker_registration,
-      blink::WebNotificationGetCallbacks* callbacks) override;
+      std::unique_ptr<blink::WebNotificationGetCallbacks> callbacks) override;
   void close(blink::WebNotificationDelegate* delegate) override;
   void closePersistent(const blink::WebSecurityOrigin& origin,
                        const blink::WebString& tag,

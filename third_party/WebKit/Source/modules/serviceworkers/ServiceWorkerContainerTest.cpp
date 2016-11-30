@@ -26,6 +26,7 @@
 #include "wtf/PtrUtil.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
+#include <utility>
 #include <v8.h>
 
 namespace blink {
@@ -126,10 +127,10 @@ class NotReachedWebServiceWorkerProvider : public WebServiceWorkerProvider {
   void registerServiceWorker(
       const WebURL& pattern,
       const WebURL& scriptURL,
-      WebServiceWorkerRegistrationCallbacks* callbacks) override {
+      std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
+      override {
     ADD_FAILURE()
         << "the provider should not be called to register a Service Worker";
-    delete callbacks;
   }
 
   bool validateScopeAndScriptURL(const WebURL& scope,
@@ -284,19 +285,21 @@ class StubWebServiceWorkerProvider {
     void registerServiceWorker(
         const WebURL& pattern,
         const WebURL& scriptURL,
-        WebServiceWorkerRegistrationCallbacks* callbacks) override {
+        std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks)
+        override {
       m_owner.m_registerCallCount++;
       m_owner.m_registerScope = pattern;
       m_owner.m_registerScriptURL = scriptURL;
-      m_registrationCallbacksToDelete.append(wrapUnique(callbacks));
+      m_registrationCallbacksToDelete.append(std::move(callbacks));
     }
 
     void getRegistration(
         const WebURL& documentURL,
-        WebServiceWorkerGetRegistrationCallbacks* callbacks) override {
+        std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks)
+        override {
       m_owner.m_getRegistrationCallCount++;
       m_owner.m_getRegistrationURL = documentURL;
-      m_getRegistrationCallbacksToDelete.append(wrapUnique(callbacks));
+      m_getRegistrationCallbacksToDelete.append(std::move(callbacks));
     }
 
     bool validateScopeAndScriptURL(const WebURL& scope,

@@ -17,6 +17,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerProvider.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -98,7 +99,8 @@ ScriptPromise ServiceWorkerRegistration::update(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
   m_handle->registration()->update(
       client->provider(),
-      new CallbackPromiseAdapter<void, ServiceWorkerErrorForUpdate>(resolver));
+      WTF::makeUnique<
+          CallbackPromiseAdapter<void, ServiceWorkerErrorForUpdate>>(resolver));
   return promise;
 }
 
@@ -116,7 +118,8 @@ ScriptPromise ServiceWorkerRegistration::unregister(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
   m_handle->registration()->unregister(
       client->provider(),
-      new CallbackPromiseAdapter<bool, ServiceWorkerError>(resolver));
+      WTF::makeUnique<CallbackPromiseAdapter<bool, ServiceWorkerError>>(
+          resolver));
   return promise;
 }
 

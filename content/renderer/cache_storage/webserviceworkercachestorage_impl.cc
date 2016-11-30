@@ -4,6 +4,9 @@
 
 #include "content/renderer/cache_storage/webserviceworkercachestorage_impl.h"
 
+#include <memory>
+#include <utility>
+
 #include "content/child/thread_safe_sender.h"
 #include "content/renderer/cache_storage/cache_storage_dispatcher.h"
 #include "third_party/WebKit/public/platform/WebHTTPHeaderVisitor.h"
@@ -24,33 +27,34 @@ WebServiceWorkerCacheStorageImpl::~WebServiceWorkerCacheStorageImpl() {
 }
 
 void WebServiceWorkerCacheStorageImpl::dispatchHas(
-    CacheStorageCallbacks* callbacks,
+    std::unique_ptr<CacheStorageCallbacks> callbacks,
     const blink::WebString& cacheName) {
-  GetDispatcher()->dispatchHas(callbacks, origin_, cacheName);
+  GetDispatcher()->dispatchHas(std::move(callbacks), origin_, cacheName);
 }
 
 void WebServiceWorkerCacheStorageImpl::dispatchOpen(
-    CacheStorageWithCacheCallbacks* callbacks,
+    std::unique_ptr<CacheStorageWithCacheCallbacks> callbacks,
     const blink::WebString& cacheName) {
-  GetDispatcher()->dispatchOpen(callbacks, origin_, cacheName);
+  GetDispatcher()->dispatchOpen(std::move(callbacks), origin_, cacheName);
 }
 
 void WebServiceWorkerCacheStorageImpl::dispatchDelete(
-    CacheStorageCallbacks* callbacks,
+    std::unique_ptr<CacheStorageCallbacks> callbacks,
     const blink::WebString& cacheName) {
-  GetDispatcher()->dispatchDelete(callbacks, origin_, cacheName);
+  GetDispatcher()->dispatchDelete(std::move(callbacks), origin_, cacheName);
 }
 
 void WebServiceWorkerCacheStorageImpl::dispatchKeys(
-    CacheStorageKeysCallbacks* callbacks) {
-  GetDispatcher()->dispatchKeys(callbacks, origin_);
+    std::unique_ptr<CacheStorageKeysCallbacks> callbacks) {
+  GetDispatcher()->dispatchKeys(std::move(callbacks), origin_);
 }
 
 void WebServiceWorkerCacheStorageImpl::dispatchMatch(
-    CacheStorageMatchCallbacks* callbacks,
+    std::unique_ptr<CacheStorageMatchCallbacks> callbacks,
     const blink::WebServiceWorkerRequest& request,
     const blink::WebServiceWorkerCache::QueryParams& query_params) {
-  GetDispatcher()->dispatchMatch(callbacks, origin_, request, query_params);
+  GetDispatcher()->dispatchMatch(std::move(callbacks), origin_, request,
+                                 query_params);
 }
 
 CacheStorageDispatcher* WebServiceWorkerCacheStorageImpl::GetDispatcher()

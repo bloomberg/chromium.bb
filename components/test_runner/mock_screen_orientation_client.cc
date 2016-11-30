@@ -4,6 +4,8 @@
 
 #include "components/test_runner/mock_screen_orientation_client.h"
 
+#include <memory>
+
 #include "base/bind.h"
 #include "base/logging.h"
 #include "base/single_thread_task_runner.h"
@@ -115,10 +117,11 @@ bool MockScreenOrientationClient::IsOrientationAllowedByCurrentLock(
 
 void MockScreenOrientationClient::lockOrientation(
     blink::WebScreenOrientationLockType orientation,
-    blink::WebLockOrientationCallback* callback) {
+    std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&MockScreenOrientationClient::UpdateLockSync,
-                            base::Unretained(this), orientation, callback));
+      FROM_HERE,
+      base::Bind(&MockScreenOrientationClient::UpdateLockSync,
+                 base::Unretained(this), orientation, base::Passed(&callback)));
 }
 
 void MockScreenOrientationClient::unlockOrientation() {
@@ -129,13 +132,12 @@ void MockScreenOrientationClient::unlockOrientation() {
 
 void MockScreenOrientationClient::UpdateLockSync(
     blink::WebScreenOrientationLockType lock,
-    blink::WebLockOrientationCallback* callback) {
+    std::unique_ptr<blink::WebLockOrientationCallback> callback) {
   DCHECK(lock != blink::WebScreenOrientationLockDefault);
   current_lock_ = lock;
   if (!IsOrientationAllowedByCurrentLock(current_orientation_))
     UpdateScreenOrientation(SuitableOrientationForCurrentLock());
   callback->onSuccess();
-  delete callback;
 }
 
 void MockScreenOrientationClient::ResetLockSync() {

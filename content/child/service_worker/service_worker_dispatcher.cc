@@ -121,13 +121,11 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     int provider_id,
     const GURL& pattern,
     const GURL& script_url,
-    WebServiceWorkerRegistrationCallbacks* callbacks) {
+    std::unique_ptr<WebServiceWorkerRegistrationCallbacks> callbacks) {
   DCHECK(callbacks);
 
   if (pattern.possibly_invalid_spec().size() > url::kMaxURLChars ||
       script_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
-    std::unique_ptr<WebServiceWorkerRegistrationCallbacks> owned_callbacks(
-        callbacks);
     std::string error_message(kServiceWorkerRegisterErrorPrefix);
     error_message += "The provided scriptURL or scope is too long.";
     callbacks->onError(
@@ -136,7 +134,7 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
     return;
   }
 
-  int request_id = pending_registration_callbacks_.Add(callbacks);
+  int request_id = pending_registration_callbacks_.Add(std::move(callbacks));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker",
                            "ServiceWorkerDispatcher::RegisterServiceWorker",
                            request_id,
@@ -149,9 +147,9 @@ void ServiceWorkerDispatcher::RegisterServiceWorker(
 void ServiceWorkerDispatcher::UpdateServiceWorker(
     int provider_id,
     int64_t registration_id,
-    WebServiceWorkerUpdateCallbacks* callbacks) {
+    std::unique_ptr<WebServiceWorkerUpdateCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = pending_update_callbacks_.Add(callbacks);
+  int request_id = pending_update_callbacks_.Add(std::move(callbacks));
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_UpdateServiceWorker(
       CurrentWorkerId(), request_id, provider_id, registration_id));
 }
@@ -159,9 +157,9 @@ void ServiceWorkerDispatcher::UpdateServiceWorker(
 void ServiceWorkerDispatcher::UnregisterServiceWorker(
     int provider_id,
     int64_t registration_id,
-    WebServiceWorkerUnregistrationCallbacks* callbacks) {
+    std::unique_ptr<WebServiceWorkerUnregistrationCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = pending_unregistration_callbacks_.Add(callbacks);
+  int request_id = pending_unregistration_callbacks_.Add(std::move(callbacks));
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerDispatcher::UnregisterServiceWorker",
                            request_id, "Registration ID", registration_id);
@@ -172,12 +170,10 @@ void ServiceWorkerDispatcher::UnregisterServiceWorker(
 void ServiceWorkerDispatcher::GetRegistration(
     int provider_id,
     const GURL& document_url,
-    WebServiceWorkerGetRegistrationCallbacks* callbacks) {
+    std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> callbacks) {
   DCHECK(callbacks);
 
   if (document_url.possibly_invalid_spec().size() > url::kMaxURLChars) {
-    std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks> owned_callbacks(
-        callbacks);
     std::string error_message(kServiceWorkerGetRegistrationErrorPrefix);
     error_message += "The provided documentURL is too long.";
     callbacks->onError(
@@ -186,7 +182,8 @@ void ServiceWorkerDispatcher::GetRegistration(
     return;
   }
 
-  int request_id = pending_get_registration_callbacks_.Add(callbacks);
+  int request_id =
+      pending_get_registration_callbacks_.Add(std::move(callbacks));
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerDispatcher::GetRegistration",
                            request_id,
@@ -197,10 +194,12 @@ void ServiceWorkerDispatcher::GetRegistration(
 
 void ServiceWorkerDispatcher::GetRegistrations(
     int provider_id,
-    WebServiceWorkerGetRegistrationsCallbacks* callbacks) {
+    std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks> callbacks) {
   DCHECK(callbacks);
 
-  int request_id = pending_get_registrations_callbacks_.Add(callbacks);
+  int request_id =
+      pending_get_registrations_callbacks_.Add(std::move(callbacks));
+
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerDispatcher::GetRegistrations",
                            request_id);
@@ -210,8 +209,9 @@ void ServiceWorkerDispatcher::GetRegistrations(
 
 void ServiceWorkerDispatcher::GetRegistrationForReady(
     int provider_id,
-    WebServiceWorkerGetRegistrationForReadyCallbacks* callbacks) {
-  int request_id = get_for_ready_callbacks_.Add(callbacks);
+    std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>
+        callbacks) {
+  int request_id = get_for_ready_callbacks_.Add(std::move(callbacks));
   TRACE_EVENT_ASYNC_BEGIN0("ServiceWorker",
                            "ServiceWorkerDispatcher::GetRegistrationForReady",
                            request_id);
@@ -226,7 +226,7 @@ void ServiceWorkerDispatcher::EnableNavigationPreload(
     std::unique_ptr<WebEnableNavigationPreloadCallbacks> callbacks) {
   DCHECK(callbacks);
   int request_id =
-      enable_navigation_preload_callbacks_.Add(callbacks.release());
+      enable_navigation_preload_callbacks_.Add(std::move(callbacks));
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_EnableNavigationPreload(
       CurrentWorkerId(), request_id, provider_id, registration_id, enable));
 }
@@ -237,7 +237,7 @@ void ServiceWorkerDispatcher::GetNavigationPreloadState(
     std::unique_ptr<WebGetNavigationPreloadStateCallbacks> callbacks) {
   DCHECK(callbacks);
   int request_id =
-      get_navigation_preload_state_callbacks_.Add(callbacks.release());
+      get_navigation_preload_state_callbacks_.Add(std::move(callbacks));
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_GetNavigationPreloadState(
       CurrentWorkerId(), request_id, provider_id, registration_id));
 }
@@ -249,7 +249,7 @@ void ServiceWorkerDispatcher::SetNavigationPreloadHeader(
     std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks> callbacks) {
   DCHECK(callbacks);
   int request_id =
-      set_navigation_preload_header_callbacks_.Add(callbacks.release());
+      set_navigation_preload_header_callbacks_.Add(std::move(callbacks));
   thread_safe_sender_->Send(new ServiceWorkerHostMsg_SetNavigationPreloadHeader(
       CurrentWorkerId(), request_id, provider_id, registration_id, value));
 }

@@ -67,14 +67,17 @@ class WebServiceWorkerProvider {
   using WebServiceWorkerGetRegistrationForReadyCallbacks =
       WebCallbacks<std::unique_ptr<WebServiceWorkerRegistration::Handle>, void>;
 
-  virtual void registerServiceWorker(const WebURL& pattern,
-                                     const WebURL& scriptUrl,
-                                     WebServiceWorkerRegistrationCallbacks*) {}
-  virtual void getRegistration(const WebURL& documentURL,
-                               WebServiceWorkerGetRegistrationCallbacks*) {}
-  virtual void getRegistrations(WebServiceWorkerGetRegistrationsCallbacks*) {}
+  virtual void registerServiceWorker(
+      const WebURL& pattern,
+      const WebURL& scriptUrl,
+      std::unique_ptr<WebServiceWorkerRegistrationCallbacks>) {}
+  virtual void getRegistration(
+      const WebURL& documentURL,
+      std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>) {}
+  virtual void getRegistrations(
+      std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>) {}
   virtual void getRegistrationForReady(
-      WebServiceWorkerGetRegistrationForReadyCallbacks*) {}
+      std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>) {}
   virtual bool validateScopeAndScriptURL(const WebURL& scope,
                                          const WebURL& scriptURL,
                                          WebString* errorMessage) {

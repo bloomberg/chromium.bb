@@ -63,6 +63,7 @@
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -166,7 +167,8 @@ ScriptPromise ServiceWorkerGlobalScope::skipWaiting(ScriptState* scriptState) {
   ScriptPromise promise = resolver->promise();
 
   ServiceWorkerGlobalScopeClient::from(executionContext)
-      ->skipWaiting(new CallbackPromiseAdapter<void, void>(resolver));
+      ->skipWaiting(
+          WTF::makeUnique<CallbackPromiseAdapter<void, void>>(resolver));
   return promise;
 }
 

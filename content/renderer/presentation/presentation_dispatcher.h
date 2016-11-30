@@ -70,11 +70,13 @@ class CONTENT_EXPORT PresentationDispatcher
 
   void startSession(
       const blink::WebVector<blink::WebURL>& presentationUrls,
-      blink::WebPresentationConnectionClientCallbacks* callback) override;
+      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback)
+      override;
   void joinSession(
       const blink::WebVector<blink::WebURL>& presentationUrls,
       const blink::WebString& presentationId,
-      blink::WebPresentationConnectionClientCallbacks* callback) override;
+      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback)
+      override;
   void sendString(const blink::WebURL& presentationUrl,
                   const blink::WebString& presentationId,
                   const blink::WebString& message) override;
@@ -92,7 +94,8 @@ class CONTENT_EXPORT PresentationDispatcher
                         const blink::WebString& presentationId) override;
   void getAvailability(
       const blink::WebURL& availabilityUrl,
-      blink::WebPresentationAvailabilityCallbacks* callbacks) override;
+      std::unique_ptr<blink::WebPresentationAvailabilityCallbacks> callbacks)
+      override;
   void startListening(blink::WebPresentationAvailabilityObserver*) override;
   void stopListening(blink::WebPresentationAvailabilityObserver*) override;
   void setDefaultPresentationUrls(
@@ -121,7 +124,7 @@ class CONTENT_EXPORT PresentationDispatcher
       blink::mojom::PresentationSessionInfoPtr session_info) override;
 
   void OnSessionCreated(
-      blink::WebPresentationConnectionClientCallbacks* callback,
+      std::unique_ptr<blink::WebPresentationConnectionClientCallbacks> callback,
       blink::mojom::PresentationSessionInfoPtr session_info,
       blink::mojom::PresentationErrorPtr error);
   void OnReceiverConnectionAvailable(

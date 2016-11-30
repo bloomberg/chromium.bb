@@ -6,6 +6,9 @@
 
 #include <stdint.h>
 
+#include <memory>
+
+#include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -258,7 +261,6 @@ TEST(IDMapTest, OwningPointersDeletesThemOnRemove) {
   int map_external_ids[kCount];
 
   int owned_del_count = 0;
-  DestructorCounter* owned_obj[kCount];
   int map_owned_ids[kCount];
 
   IDMap<DestructorCounter> map_external;
@@ -268,8 +270,8 @@ TEST(IDMapTest, OwningPointersDeletesThemOnRemove) {
     external_obj[i] = new DestructorCounter(&external_del_count);
     map_external_ids[i] = map_external.Add(external_obj[i]);
 
-    owned_obj[i] = new DestructorCounter(&owned_del_count);
-    map_owned_ids[i] = map_owned.Add(owned_obj[i]);
+    map_owned_ids[i] =
+        map_owned.Add(base::MakeUnique<DestructorCounter>(&owned_del_count));
   }
 
   for (int i = 0; i < kCount; ++i) {
@@ -295,7 +297,6 @@ TEST(IDMapTest, OwningPointersDeletesThemOnClear) {
   DestructorCounter* external_obj[kCount];
 
   int owned_del_count = 0;
-  DestructorCounter* owned_obj[kCount];
 
   IDMap<DestructorCounter> map_external;
   IDMap<DestructorCounter, IDMapOwnPointer> map_owned;
@@ -304,8 +305,7 @@ TEST(IDMapTest, OwningPointersDeletesThemOnClear) {
     external_obj[i] = new DestructorCounter(&external_del_count);
     map_external.Add(external_obj[i]);
 
-    owned_obj[i] = new DestructorCounter(&owned_del_count);
-    map_owned.Add(owned_obj[i]);
+    map_owned.Add(base::MakeUnique<DestructorCounter>(&owned_del_count));
   }
 
   EXPECT_EQ(external_del_count, 0);
@@ -332,7 +332,6 @@ TEST(IDMapTest, OwningPointersDeletesThemOnDestruct) {
   DestructorCounter* external_obj[kCount];
 
   int owned_del_count = 0;
-  DestructorCounter* owned_obj[kCount];
 
   {
     IDMap<DestructorCounter> map_external;
@@ -342,8 +341,7 @@ TEST(IDMapTest, OwningPointersDeletesThemOnDestruct) {
       external_obj[i] = new DestructorCounter(&external_del_count);
       map_external.Add(external_obj[i]);
 
-      owned_obj[i] = new DestructorCounter(&owned_del_count);
-      map_owned.Add(owned_obj[i]);
+      map_owned.Add(base::MakeUnique<DestructorCounter>(&owned_del_count));
     }
   }
 

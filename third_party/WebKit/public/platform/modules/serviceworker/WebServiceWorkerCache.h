@@ -12,6 +12,8 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerCacheError.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerRequest.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
+#include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -65,16 +67,16 @@ class WebServiceWorkerCache {
   // Ownership of the Cache*Callbacks methods passes to the
   // WebServiceWorkerCache instance, which will delete it after calling
   // onSuccess or onFailure.
-  virtual void dispatchMatch(CacheMatchCallbacks*,
+  virtual void dispatchMatch(std::unique_ptr<CacheMatchCallbacks>,
                              const WebServiceWorkerRequest&,
                              const QueryParams&) = 0;
-  virtual void dispatchMatchAll(CacheWithResponsesCallbacks*,
+  virtual void dispatchMatchAll(std::unique_ptr<CacheWithResponsesCallbacks>,
                                 const WebServiceWorkerRequest&,
                                 const QueryParams&) = 0;
-  virtual void dispatchKeys(CacheWithRequestsCallbacks*,
+  virtual void dispatchKeys(std::unique_ptr<CacheWithRequestsCallbacks>,
                             const WebServiceWorkerRequest&,
                             const QueryParams&) = 0;
-  virtual void dispatchBatch(CacheBatchCallbacks*,
+  virtual void dispatchBatch(std::unique_ptr<CacheBatchCallbacks>,
                              const WebVector<BatchOperation>&) = 0;
 };
 

@@ -4,6 +4,7 @@
 
 #include "android_webview/native/aw_contents_client_bridge.h"
 
+#include <memory>
 #include <utility>
 
 #include "android_webview/common/devtools_instrumentation.h"
@@ -102,7 +103,7 @@ void AwContentsClientBridge::AllowCertificateError(
   // We need to add the callback before making the call to java side,
   // as it may do a synchronous callback prior to returning.
   int request_id = pending_cert_error_callbacks_.Add(
-      new CertErrorCallback(callback));
+      base::MakeUnique<CertErrorCallback>(callback));
   *cancel_request = !Java_AwContentsClientBridge_allowCertificateError(
       env, obj, cert_error, jcert, jurl, request_id);
   // if the request is cancelled, then cancel the stored callback
@@ -280,7 +281,8 @@ void AwContentsClientBridge::RunJavaScriptDialog(
   }
 
   int callback_id = pending_js_dialog_callbacks_.Add(
-      new content::JavaScriptDialogManager::DialogClosedCallback(callback));
+      base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
+          callback));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
   ScopedJavaLocalRef<jstring> jmessage(
@@ -328,7 +330,8 @@ void AwContentsClientBridge::RunBeforeUnloadDialog(
       l10n_util::GetStringUTF16(IDS_BEFOREUNLOAD_MESSAGEBOX_MESSAGE);
 
   int callback_id = pending_js_dialog_callbacks_.Add(
-      new content::JavaScriptDialogManager::DialogClosedCallback(callback));
+      base::MakeUnique<content::JavaScriptDialogManager::DialogClosedCallback>(
+          callback));
   ScopedJavaLocalRef<jstring> jurl(
       ConvertUTF8ToJavaString(env, origin_url.spec()));
   ScopedJavaLocalRef<jstring> jmessage(

@@ -4,6 +4,7 @@
 
 #include "content/renderer/renderer_blink_platform_impl.h"
 
+#include <memory>
 #include <utility>
 
 #include "base/command_line.h"
@@ -1159,7 +1160,7 @@ void RendererBlinkPlatformImpl::SetMockDeviceOrientationDataForTesting(
 //------------------------------------------------------------------------------
 
 // static
-PlatformEventObserverBase*
+std::unique_ptr<PlatformEventObserverBase>
 RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
     blink::WebPlatformEventType type) {
   RenderThread* thread = RenderThreadImpl::current();
@@ -1172,17 +1173,17 @@ RendererBlinkPlatformImpl::CreatePlatformEventObserverFromType(
 
   switch (type) {
     case blink::WebPlatformEventTypeDeviceMotion:
-      return new DeviceMotionEventPump(thread);
+      return base::MakeUnique<DeviceMotionEventPump>(thread);
     case blink::WebPlatformEventTypeDeviceOrientation:
-      return new DeviceOrientationEventPump(thread);
+      return base::MakeUnique<DeviceOrientationEventPump>(thread);
     case blink::WebPlatformEventTypeDeviceOrientationAbsolute:
-      return new DeviceOrientationAbsoluteEventPump(thread);
+      return base::MakeUnique<DeviceOrientationAbsoluteEventPump>(thread);
     case blink::WebPlatformEventTypeDeviceLight:
-      return new DeviceLightEventPump(thread);
+      return base::MakeUnique<DeviceLightEventPump>(thread);
     case blink::WebPlatformEventTypeGamepad:
-      return new GamepadSharedMemoryReader(thread);
+      return base::MakeUnique<GamepadSharedMemoryReader>(thread);
     case blink::WebPlatformEventTypeScreenOrientation:
-      return new ScreenOrientationObserver();
+      return base::MakeUnique<ScreenOrientationObserver>();
     default:
       // A default statement is required to prevent compilation errors when
       // Blink adds a new type.
@@ -1198,7 +1199,7 @@ void RendererBlinkPlatformImpl::SetPlatformEventObserverForTesting(
     std::unique_ptr<PlatformEventObserverBase> observer) {
   if (platform_event_observers_.Lookup(type))
     platform_event_observers_.Remove(type);
-  platform_event_observers_.AddWithID(observer.release(), type);
+  platform_event_observers_.AddWithID(std::move(observer), type);
 }
 
 blink::InterfaceProvider* RendererBlinkPlatformImpl::interfaceProvider() {
@@ -1210,10 +1211,13 @@ void RendererBlinkPlatformImpl::startListening(
     blink::WebPlatformEventListener* listener) {
   PlatformEventObserverBase* observer = platform_event_observers_.Lookup(type);
   if (!observer) {
-    observer = CreatePlatformEventObserverFromType(type);
-    if (!observer)
+    std::unique_ptr<PlatformEventObserverBase> new_observer =
+        CreatePlatformEventObserverFromType(type);
+    if (!new_observer)
       return;
-    platform_event_observers_.AddWithID(observer, static_cast<int32_t>(type));
+    observer = new_observer.get();
+    platform_event_observers_.AddWithID(std::move(new_observer),
+                                        static_cast<int32_t>(type));
   }
   observer->Start(listener);
 

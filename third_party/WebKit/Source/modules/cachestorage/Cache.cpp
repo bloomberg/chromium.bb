@@ -23,6 +23,7 @@
 #include "platform/Histogram.h"
 #include "public/platform/modules/serviceworker/WebServiceWorkerCache.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -305,7 +306,8 @@ class Cache::BarrierCallbackForPut final
     if (--m_numberOfRemainingOperations != 0)
       return;
     m_cache->webCache()->dispatchBatch(
-        new CallbackPromiseAdapter<void, CacheStorageError>(m_resolver),
+        WTF::makeUnique<CallbackPromiseAdapter<void, CacheStorageError>>(
+            m_resolver),
         m_batchOperations);
   }
 
@@ -531,17 +533,17 @@ ScriptPromise Cache::matchImpl(ScriptState* scriptState,
     resolver->resolve();
     return promise;
   }
-  m_webCache->dispatchMatch(new CacheMatchCallbacks(resolver), webRequest,
-                            toWebQueryParams(options));
+  m_webCache->dispatchMatch(WTF::makeUnique<CacheMatchCallbacks>(resolver),
+                            webRequest, toWebQueryParams(options));
   return promise;
 }
 
 ScriptPromise Cache::matchAllImpl(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   const ScriptPromise promise = resolver->promise();
-  m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver),
-                               WebServiceWorkerRequest(),
-                               WebServiceWorkerCache::QueryParams());
+  m_webCache->dispatchMatchAll(
+      WTF::makeUnique<CacheWithResponsesCallbacks>(resolver),
+      WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
   return promise;
 }
 
@@ -557,8 +559,9 @@ ScriptPromise Cache::matchAllImpl(ScriptState* scriptState,
     resolver->resolve(HeapVector<Member<Response>>());
     return promise;
   }
-  m_webCache->dispatchMatchAll(new CacheWithResponsesCallbacks(resolver),
-                               webRequest, toWebQueryParams(options));
+  m_webCache->dispatchMatchAll(
+      WTF::makeUnique<CacheWithResponsesCallbacks>(resolver), webRequest,
+      toWebQueryParams(options));
   return promise;
 }
 
@@ -608,7 +611,8 @@ ScriptPromise Cache::deleteImpl(ScriptState* scriptState,
     resolver->resolve(false);
     return promise;
   }
-  m_webCache->dispatchBatch(new CacheDeleteCallback(resolver), batchOperations);
+  m_webCache->dispatchBatch(WTF::makeUnique<CacheDeleteCallback>(resolver),
+                            batchOperations);
   return promise;
 }
 
@@ -673,9 +677,9 @@ ScriptPromise Cache::putImpl(ScriptState* scriptState,
 ScriptPromise Cache::keysImpl(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   const ScriptPromise promise = resolver->promise();
-  m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver),
-                           WebServiceWorkerRequest(),
-                           WebServiceWorkerCache::QueryParams());
+  m_webCache->dispatchKeys(
+      WTF::makeUnique<CacheWithRequestsCallbacks>(resolver),
+      WebServiceWorkerRequest(), WebServiceWorkerCache::QueryParams());
   return promise;
 }
 
@@ -691,8 +695,9 @@ ScriptPromise Cache::keysImpl(ScriptState* scriptState,
     resolver->resolve(HeapVector<Member<Request>>());
     return promise;
   }
-  m_webCache->dispatchKeys(new CacheWithRequestsCallbacks(resolver), webRequest,
-                           toWebQueryParams(options));
+  m_webCache->dispatchKeys(
+      WTF::makeUnique<CacheWithRequestsCallbacks>(resolver), webRequest,
+      toWebQueryParams(options));
   return promise;
 }
 

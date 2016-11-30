@@ -5,6 +5,9 @@
 #ifndef CONTENT_RENDERER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_H_
 #define CONTENT_RENDERER_SCREEN_ORIENTATION_SCREEN_ORIENTATION_DISPATCHER_H_
 
+#include <memory>
+#include <utility>
+
 #include "base/compiler_specific.h"
 #include "base/id_map.h"
 #include "base/macros.h"
@@ -40,8 +43,9 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
   void OnDestruct() override;
 
   // blink::WebScreenOrientationClient implementation.
-  void lockOrientation(blink::WebScreenOrientationLockType orientation,
-                       blink::WebLockOrientationCallback* callback) override;
+  void lockOrientation(
+      blink::WebScreenOrientationLockType orientation,
+      std::unique_ptr<blink::WebLockOrientationCallback> callback) override;
   void unlockOrientation() override;
 
   void OnLockOrientationResult(int request_id,

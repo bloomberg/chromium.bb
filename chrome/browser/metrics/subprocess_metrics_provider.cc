@@ -4,6 +4,8 @@
 
 #include "chrome/browser/metrics/subprocess_metrics_provider.h"
 
+#include <utility>
+
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_base.h"
@@ -59,7 +61,7 @@ void SubprocessMetricsProvider::RegisterSubprocessAllocator(
     return;
 
   // Map is "MapOwnPointer" so transfer ownership to it.
-  allocators_by_id_.AddWithID(allocator.release(), id);
+  allocators_by_id_.AddWithID(std::move(allocator), id);
 }
 
 void SubprocessMetricsProvider::DeregisterSubprocessAllocator(int id) {

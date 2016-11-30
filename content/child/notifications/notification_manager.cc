@@ -112,7 +112,7 @@ void NotificationManager::showPersistent(
     const blink::WebNotificationData& notification_data,
     std::unique_ptr<blink::WebNotificationResources> notification_resources,
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebNotificationShowCallbacks* callbacks) {
+    std::unique_ptr<blink::WebNotificationShowCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK_EQ(notification_data.actions.size(),
             notification_resources->actionIcons.size());
@@ -121,9 +121,6 @@ void NotificationManager::showPersistent(
       static_cast<WebServiceWorkerRegistrationImpl*>(
           service_worker_registration)
           ->registrationId();
-
-  std::unique_ptr<blink::WebNotificationShowCallbacks> owned_callbacks(
-      callbacks);
 
   // Verify that the author-provided payload size does not exceed our limit.
   // This is an implementation-defined limit to prevent abuse of notification
@@ -138,7 +135,7 @@ void NotificationManager::showPersistent(
   UMA_HISTOGRAM_COUNTS_1000("Notifications.AuthorDataSize", author_data_size);
 
   if (author_data_size > PlatformNotificationData::kMaximumDeveloperDataSize) {
-    owned_callbacks->onError();
+    callbacks->onError();
     return;
   }
 
@@ -147,7 +144,7 @@ void NotificationManager::showPersistent(
   int request_id =
       notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
 
-  pending_show_notification_requests_.AddWithID(owned_callbacks.release(),
+  pending_show_notification_requests_.AddWithID(std::move(callbacks),
                                                 request_id);
 
   // TODO(mkwst): This is potentially doing the wrong thing with unique
@@ -162,7 +159,7 @@ void NotificationManager::showPersistent(
 void NotificationManager::getNotifications(
     const blink::WebString& filter_tag,
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebNotificationGetCallbacks* callbacks) {
+    std::unique_ptr<blink::WebNotificationGetCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
 
@@ -179,7 +176,8 @@ void NotificationManager::getNotifications(
   int request_id =
       notification_dispatcher_->GenerateNotificationId(CurrentWorkerId());
 
-  pending_get_notification_requests_.AddWithID(callbacks, request_id);
+  pending_get_notification_requests_.AddWithID(std::move(callbacks),
+                                               request_id);
 
   thread_safe_sender_->Send(new PlatformNotificationHostMsg_GetNotifications(
       request_id, service_worker_registration_id, origin,

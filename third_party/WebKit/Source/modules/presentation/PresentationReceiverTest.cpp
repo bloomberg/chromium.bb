@@ -14,6 +14,7 @@
 #include "public/platform/modules/presentation/WebPresentationConnectionClient.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
+#include <memory>
 #include <v8.h>
 
 namespace blink {
@@ -30,19 +31,39 @@ class MockEventListener : public EventListener {
 };
 
 class MockWebPresentationClient : public WebPresentationClient {
+  void startSession(const WebVector<WebURL>& presentationUrls,
+                    std::unique_ptr<WebPresentationConnectionClientCallbacks>
+                        callbacks) override {
+    return startSession_(presentationUrls, callbacks);
+  }
+  void joinSession(const WebVector<WebURL>& presentationUrls,
+                   const WebString& presentationId,
+                   std::unique_ptr<WebPresentationConnectionClientCallbacks>
+                       callbacks) override {
+    return joinSession_(presentationUrls, presentationId, callbacks);
+  }
+
+  void getAvailability(const WebURL& availabilityURL,
+                       std::unique_ptr<WebPresentationAvailabilityCallbacks>
+                           callbacks) override {
+    return getAvailability_(availabilityURL, callbacks);
+  }
+
  public:
   MOCK_METHOD1(setController, void(WebPresentationController*));
 
   MOCK_METHOD1(setReceiver, void(WebPresentationReceiver*));
 
-  MOCK_METHOD2(startSession,
-               void(const WebVector<WebURL>& presentationUrls,
-                    WebPresentationConnectionClientCallbacks*));
+  MOCK_METHOD2(
+      startSession_,
+      void(const WebVector<WebURL>& presentationUrls,
+           std::unique_ptr<WebPresentationConnectionClientCallbacks>&));
 
-  MOCK_METHOD3(joinSession,
-               void(const WebVector<WebURL>& presentationUrls,
-                    const WebString& presentationId,
-                    WebPresentationConnectionClientCallbacks*));
+  MOCK_METHOD3(
+      joinSession_,
+      void(const WebVector<WebURL>& presentationUrls,
+           const WebString& presentationId,
+           std::unique_ptr<WebPresentationConnectionClientCallbacks>&));
 
   MOCK_METHOD3(sendString,
                void(const WebURL& presentationUrl,
@@ -69,9 +90,9 @@ class MockWebPresentationClient : public WebPresentationClient {
                void(const WebURL& presentationUrl,
                     const WebString& presentationId));
 
-  MOCK_METHOD2(getAvailability,
+  MOCK_METHOD2(getAvailability_,
                void(const WebURL& availabilityUrl,
-                    WebPresentationAvailabilityCallbacks*));
+                    std::unique_ptr<WebPresentationAvailabilityCallbacks>&));
 
   MOCK_METHOD1(startListening, void(WebPresentationAvailabilityObserver*));
 

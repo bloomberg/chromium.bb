@@ -45,19 +45,21 @@ class WebNotificationManager {
   // will have their events delivered to a Service Worker rather than the
   // object's delegate. Will take ownership of the WebNotificationShowCallbacks
   // object.
-  virtual void showPersistent(const WebSecurityOrigin&,
-                              const WebNotificationData&,
-                              std::unique_ptr<WebNotificationResources>,
-                              WebServiceWorkerRegistration*,
-                              WebNotificationShowCallbacks*) = 0;
+  virtual void showPersistent(
+      const WebSecurityOrigin&,
+      const WebNotificationData&,
+      std::unique_ptr<WebNotificationResources>,
+      WebServiceWorkerRegistration*,
+      std::unique_ptr<WebNotificationShowCallbacks>) = 0;
 
   // Asynchronously gets the persistent notifications belonging to the Service
   // Worker Registration.  If |filterTag| is not an empty string, only the
   // notification with the given tag will be considered. Will take ownership of
   // the WebNotificationGetCallbacks object.
-  virtual void getNotifications(const WebString& filterTag,
-                                WebServiceWorkerRegistration*,
-                                WebNotificationGetCallbacks*) = 0;
+  virtual void getNotifications(
+      const WebString& filterTag,
+      WebServiceWorkerRegistration*,
+      std::unique_ptr<WebNotificationGetCallbacks>) = 0;
 
   // Closes a notification previously shown, and removes it if being shown.
   virtual void close(WebNotificationDelegate*) = 0;

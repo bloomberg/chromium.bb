@@ -5,6 +5,7 @@
 #include "content/child/push_messaging/push_provider.h"
 
 #include <memory>
+#include <utility>
 
 #include "base/lazy_instance.h"
 #include "base/memory/ptr_util.h"
@@ -103,11 +104,11 @@ void PushProvider::WillStopCurrentWorkerThread() {
 void PushProvider::subscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
   int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
-  subscription_callbacks_.AddWithID(callbacks, request_id);
+  subscription_callbacks_.AddWithID(std::move(callbacks), request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   PushSubscriptionOptions content_options;
@@ -123,13 +124,12 @@ void PushProvider::subscribe(
 
 void PushProvider::unsubscribe(
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushUnsubscribeCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPushUnsubscribeCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
 
   int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
-  unsubscribe_callbacks_.AddWithID(callbacks, request_id);
-
+  unsubscribe_callbacks_.AddWithID(std::move(callbacks), request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   thread_safe_sender_->Send(new PushMessagingHostMsg_Unsubscribe(
@@ -138,11 +138,11 @@ void PushProvider::unsubscribe(
 
 void PushProvider::getSubscription(
     blink::WebServiceWorkerRegistration* service_worker_registration,
-    blink::WebPushSubscriptionCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPushSubscriptionCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
   int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
-  subscription_callbacks_.AddWithID(callbacks, request_id);
+  subscription_callbacks_.AddWithID(std::move(callbacks), request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   thread_safe_sender_->Send(new PushMessagingHostMsg_GetSubscription(
@@ -152,11 +152,11 @@ void PushProvider::getSubscription(
 void PushProvider::getPermissionStatus(
     blink::WebServiceWorkerRegistration* service_worker_registration,
     const blink::WebPushSubscriptionOptions& options,
-    blink::WebPushPermissionStatusCallbacks* callbacks) {
+    std::unique_ptr<blink::WebPushPermissionStatusCallbacks> callbacks) {
   DCHECK(service_worker_registration);
   DCHECK(callbacks);
   int request_id = push_dispatcher_->GenerateRequestId(CurrentWorkerId());
-  permission_status_callbacks_.AddWithID(callbacks, request_id);
+  permission_status_callbacks_.AddWithID(std::move(callbacks), request_id);
   int64_t service_worker_registration_id =
       GetServiceWorkerRegistrationId(service_worker_registration);
   thread_safe_sender_->Send(new PushMessagingHostMsg_GetPermissionStatus(

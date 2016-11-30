@@ -108,7 +108,8 @@ void PopupBlockerTabHelper::AddBlockedPopup(
   if (blocked_popups_.size() >= kMaximumNumberOfPopups)
     return;
 
-  blocked_popups_.Add(new BlockedRequest(params, window_features));
+  blocked_popups_.Add(
+      base::MakeUnique<BlockedRequest>(params, window_features));
   TabSpecificContentSettings::FromWebContents(web_contents())->
       OnContentBlocked(CONTENT_SETTINGS_TYPE_POPUPS);
 }

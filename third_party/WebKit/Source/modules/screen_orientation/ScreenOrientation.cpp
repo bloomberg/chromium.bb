@@ -171,7 +171,7 @@ ScriptPromise ScreenOrientation::lock(ScriptState* state,
   }
 
   controller()->lock(stringToOrientationLock(lockString),
-                     new LockOrientationCallback(resolver));
+                     WTF::makeUnique<LockOrientationCallback>(resolver));
   return promise;
 }
 

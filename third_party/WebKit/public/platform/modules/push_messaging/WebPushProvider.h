@@ -31,23 +31,25 @@ class WebPushProvider {
   // Does not take ownership of the WebServiceWorkerRegistration.
   virtual void subscribe(WebServiceWorkerRegistration*,
                          const WebPushSubscriptionOptions&,
-                         WebPushSubscriptionCallbacks*) = 0;
+                         std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 
   // Takes ownership of the WebPushSubscriptionCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void getSubscription(WebServiceWorkerRegistration*,
-                               WebPushSubscriptionCallbacks*) = 0;
+  virtual void getSubscription(
+      WebServiceWorkerRegistration*,
+      std::unique_ptr<WebPushSubscriptionCallbacks>) = 0;
 
   // Takes ownership of the WebPushPermissionStatusCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
-  virtual void getPermissionStatus(WebServiceWorkerRegistration*,
-                                   const WebPushSubscriptionOptions&,
-                                   WebPushPermissionStatusCallbacks*) = 0;
+  virtual void getPermissionStatus(
+      WebServiceWorkerRegistration*,
+      const WebPushSubscriptionOptions&,
+      std::unique_ptr<WebPushPermissionStatusCallbacks>) = 0;
 
   // Takes ownership if the WebPushUnsubscribeCallbacks.
   // Does not take ownership of the WebServiceWorkerRegistration.
   virtual void unsubscribe(WebServiceWorkerRegistration*,
-                           WebPushUnsubscribeCallbacks*) = 0;
+                           std::unique_ptr<WebPushUnsubscribeCallbacks>) = 0;
 };
 
 }  // namespace blink

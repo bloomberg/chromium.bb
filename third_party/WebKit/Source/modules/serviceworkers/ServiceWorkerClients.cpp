@@ -20,6 +20,7 @@
 #include "wtf/RefPtr.h"
 #include "wtf/Vector.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -114,7 +115,7 @@ ScriptPromise ServiceWorkerClients::get(ScriptState* scriptState,
   ScriptPromise promise = resolver->promise();
 
   ServiceWorkerGlobalScopeClient::from(executionContext)
-      ->getClient(id, new GetCallback(resolver));
+      ->getClient(id, WTF::makeUnique<GetCallback>(resolver));
   return promise;
 }
 
@@ -134,7 +135,8 @@ ScriptPromise ServiceWorkerClients::matchAll(
   webOptions.includeUncontrolled = options.includeUncontrolled();
   ServiceWorkerGlobalScopeClient::from(executionContext)
       ->getClients(webOptions,
-                   new CallbackPromiseAdapter<ClientArray, ServiceWorkerError>(
+                   WTF::makeUnique<
+                       CallbackPromiseAdapter<ClientArray, ServiceWorkerError>>(
                        resolver));
   return promise;
 }
@@ -149,9 +151,11 @@ ScriptPromise ServiceWorkerClients::claim(ScriptState* scriptState) {
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   ScriptPromise promise = resolver->promise();
 
-  WebServiceWorkerClientsClaimCallbacks* callbacks =
-      new CallbackPromiseAdapter<void, ServiceWorkerError>(resolver);
-  ServiceWorkerGlobalScopeClient::from(executionContext)->claim(callbacks);
+  auto callbacks =
+      WTF::makeUnique<CallbackPromiseAdapter<void, ServiceWorkerError>>(
+          resolver);
+  ServiceWorkerGlobalScopeClient::from(executionContext)
+      ->claim(std::move(callbacks));
   return promise;
 }
 
@@ -183,7 +187,7 @@ ScriptPromise ServiceWorkerClients::openWindow(ScriptState* scriptState,
   context->consumeWindowInteraction();
 
   ServiceWorkerGlobalScopeClient::from(context)->openWindow(
-      parsedUrl, new NavigateClientCallback(resolver));
+      parsedUrl, WTF::makeUnique<NavigateClientCallback>(resolver));
   return promise;
 }
 

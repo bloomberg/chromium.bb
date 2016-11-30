@@ -4,6 +4,8 @@
 
 #include "extensions/browser/api/networking_private/networking_private_service_client.h"
 
+#include <utility>
+
 #include "base/base64.h"
 #include "base/bind.h"
 #include "base/sequenced_task_runner.h"
@@ -106,7 +108,8 @@ void NetworkingPrivateServiceClient::OnNetworkChanged(
 NetworkingPrivateServiceClient::ServiceCallbacks*
 NetworkingPrivateServiceClient::AddServiceCallbacks() {
   ServiceCallbacks* service_callbacks = new ServiceCallbacks();
-  service_callbacks->id = callbacks_map_.Add(service_callbacks);
+  service_callbacks->id =
+      callbacks_map_.Add(base::WrapUnique(service_callbacks));
   return service_callbacks;
 }
 

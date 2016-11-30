@@ -122,7 +122,7 @@ void CoreTabHelper::RequestThumbnailForContextNode(
     gfx::Size maximum_size,
     const ContextNodeThumbnailCallback& callback) {
   int callback_id = thumbnail_callbacks_.Add(
-      new ContextNodeThumbnailCallback(callback));
+      base::MakeUnique<ContextNodeThumbnailCallback>(callback));
 
   render_frame_host->Send(
       new ChromeViewMsg_RequestThumbnailForContextNode(

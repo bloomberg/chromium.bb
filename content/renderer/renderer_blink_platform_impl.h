@@ -242,8 +242,8 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   // Factory that takes a type and return PlatformEventObserverBase that matches
   // it.
-  static PlatformEventObserverBase* CreatePlatformEventObserverFromType(
-      blink::WebPlatformEventType type);
+  static std::unique_ptr<PlatformEventObserverBase>
+  CreatePlatformEventObserverFromType(blink::WebPlatformEventType type);
 
   // Use the data previously set via SetMockDevice...DataForTesting() and send
   // them to the registered listener.

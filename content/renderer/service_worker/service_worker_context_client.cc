@@ -429,18 +429,18 @@ blink::WebURL ServiceWorkerContextClient::scope() const {
 
 void ServiceWorkerContextClient::getClient(
     const blink::WebString& id,
-    blink::WebServiceWorkerClientCallbacks* callbacks) {
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->client_callbacks.Add(callbacks);
+  int request_id = context_->client_callbacks.Add(std::move(callbacks));
   Send(new ServiceWorkerHostMsg_GetClient(
       GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(id))));
 }
 
 void ServiceWorkerContextClient::getClients(
     const blink::WebServiceWorkerClientQueryOptions& weboptions,
-    blink::WebServiceWorkerClientsCallbacks* callbacks) {
+    std::unique_ptr<blink::WebServiceWorkerClientsCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->clients_callbacks.Add(callbacks);
+  int request_id = context_->clients_callbacks.Add(std::move(callbacks));
   ServiceWorkerClientQueryOptions options;
   options.client_type = weboptions.clientType;
   options.include_uncontrolled = weboptions.includeUncontrolled;
@@ -450,9 +450,9 @@ void ServiceWorkerContextClient::getClients(
 
 void ServiceWorkerContextClient::openWindow(
     const blink::WebURL& url,
-    blink::WebServiceWorkerClientCallbacks* callbacks) {
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->client_callbacks.Add(callbacks);
+  int request_id = context_->client_callbacks.Add(std::move(callbacks));
   Send(new ServiceWorkerHostMsg_OpenWindow(
       GetRoutingID(), request_id, url));
 }
@@ -841,9 +841,9 @@ void ServiceWorkerContextClient::postMessageToCrossOriginClient(
 
 void ServiceWorkerContextClient::focus(
     const blink::WebString& uuid,
-    blink::WebServiceWorkerClientCallbacks* callback) {
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callback) {
   DCHECK(callback);
-  int request_id = context_->client_callbacks.Add(callback);
+  int request_id = context_->client_callbacks.Add(std::move(callback));
   Send(new ServiceWorkerHostMsg_FocusClient(
       GetRoutingID(), request_id,
       base::UTF16ToUTF8(base::StringPiece16(uuid))));
@@ -852,25 +852,25 @@ void ServiceWorkerContextClient::focus(
 void ServiceWorkerContextClient::navigate(
     const blink::WebString& uuid,
     const blink::WebURL& url,
-    blink::WebServiceWorkerClientCallbacks* callback) {
+    std::unique_ptr<blink::WebServiceWorkerClientCallbacks> callback) {
   DCHECK(callback);
-  int request_id = context_->client_callbacks.Add(callback);
+  int request_id = context_->client_callbacks.Add(std::move(callback));
   Send(new ServiceWorkerHostMsg_NavigateClient(
       GetRoutingID(), request_id, base::UTF16ToUTF8(base::StringPiece16(uuid)),
       url));
 }
 
 void ServiceWorkerContextClient::skipWaiting(
-    blink::WebServiceWorkerSkipWaitingCallbacks* callbacks) {
+    std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->skip_waiting_callbacks.Add(callbacks);
+  int request_id = context_->skip_waiting_callbacks.Add(std::move(callbacks));
   Send(new ServiceWorkerHostMsg_SkipWaiting(GetRoutingID(), request_id));
 }
 
 void ServiceWorkerContextClient::claim(
-    blink::WebServiceWorkerClientsClaimCallbacks* callbacks) {
+    std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks> callbacks) {
   DCHECK(callbacks);
-  int request_id = context_->claim_clients_callbacks.Add(callbacks);
+  int request_id = context_->claim_clients_callbacks.Add(std::move(callbacks));
   Send(new ServiceWorkerHostMsg_ClaimClients(GetRoutingID(), request_id));
 }
 
@@ -888,8 +888,8 @@ void ServiceWorkerContextClient::DispatchSyncEvent(
     const DispatchSyncEventCallback& callback) {
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchSyncEvent");
-  int request_id =
-      context_->sync_event_callbacks.Add(new SyncCallback(callback));
+  int request_id = context_->sync_event_callbacks.Add(
+      base::MakeUnique<SyncCallback>(callback));
 
   // TODO(shimazu): Use typemap when this is moved to blink-side.
   blink::WebServiceWorkerContextProxy::LastChanceOption web_last_chance =
@@ -988,8 +988,8 @@ void ServiceWorkerContextClient::DispatchFetchEvent(
   blink::WebServiceWorkerRequest webRequest;
   TRACE_EVENT0("ServiceWorker",
                "ServiceWorkerContextClient::DispatchFetchEvent");
-  context_->fetch_event_callbacks.AddWithID(new FetchCallback(callback),
-                                            fetch_event_id);
+  context_->fetch_event_callbacks.AddWithID(
+      base::MakeUnique<FetchCallback>(callback), fetch_event_id);
   if (preload_request) {
     context_->preload_requests.AddWithID(std::move(preload_request),
                                          fetch_event_id);

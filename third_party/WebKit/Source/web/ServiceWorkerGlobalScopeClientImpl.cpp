@@ -35,6 +35,7 @@
 #include "public/platform/modules/serviceworker/WebServiceWorkerResponse.h"
 #include "public/web/modules/serviceworker/WebServiceWorkerContextClient.h"
 #include <memory>
+#include <utility>
 
 namespace blink {
 
@@ -47,20 +48,20 @@ ServiceWorkerGlobalScopeClientImpl::~ServiceWorkerGlobalScopeClientImpl() {}
 
 void ServiceWorkerGlobalScopeClientImpl::getClient(
     const WebString& id,
-    WebServiceWorkerClientCallbacks* callbacks) {
-  m_client.getClient(id, callbacks);
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
+  m_client.getClient(id, std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::getClients(
     const WebServiceWorkerClientQueryOptions& options,
-    WebServiceWorkerClientsCallbacks* callbacks) {
-  m_client.getClients(options, callbacks);
+    std::unique_ptr<WebServiceWorkerClientsCallbacks> callbacks) {
+  m_client.getClients(options, std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::openWindow(
     const WebURL& url,
-    WebServiceWorkerClientCallbacks* callbacks) {
-  m_client.openWindow(url, callbacks);
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callbacks) {
+  m_client.openWindow(url, std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::setCachedMetadata(const WebURL& url,
@@ -163,26 +164,26 @@ void ServiceWorkerGlobalScopeClientImpl::postMessageToCrossOriginClient(
 }
 
 void ServiceWorkerGlobalScopeClientImpl::skipWaiting(
-    WebServiceWorkerSkipWaitingCallbacks* callbacks) {
-  m_client.skipWaiting(callbacks);
+    std::unique_ptr<WebServiceWorkerSkipWaitingCallbacks> callbacks) {
+  m_client.skipWaiting(std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::claim(
-    WebServiceWorkerClientsClaimCallbacks* callbacks) {
-  m_client.claim(callbacks);
+    std::unique_ptr<WebServiceWorkerClientsClaimCallbacks> callbacks) {
+  m_client.claim(std::move(callbacks));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::focus(
     const WebString& clientUUID,
-    WebServiceWorkerClientCallbacks* callback) {
-  m_client.focus(clientUUID, callback);
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callback) {
+  m_client.focus(clientUUID, std::move(callback));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::navigate(
     const WebString& clientUUID,
     const WebURL& url,
-    WebServiceWorkerClientCallbacks* callback) {
-  m_client.navigate(clientUUID, url, callback);
+    std::unique_ptr<WebServiceWorkerClientCallbacks> callback) {
+  m_client.navigate(clientUUID, url, std::move(callback));
 }
 
 void ServiceWorkerGlobalScopeClientImpl::registerForeignFetchScopes(

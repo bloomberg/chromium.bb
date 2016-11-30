@@ -142,8 +142,9 @@ ScriptPromise PresentationRequest::start(ScriptState* scriptState) {
   // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
   WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
   presentationUrls[0] = m_url;
-  client->startSession(presentationUrls,
-                       new PresentationConnectionCallbacks(resolver, this));
+  client->startSession(
+      presentationUrls,
+      WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   return resolver->promise();
 }
 
@@ -169,8 +170,9 @@ ScriptPromise PresentationRequest::reconnect(ScriptState* scriptState,
   // TODO(crbug.com/627655): Accept multiple URLs per PresentationRequest.
   WebVector<WebURL> presentationUrls(static_cast<size_t>(1U));
   presentationUrls[0] = m_url;
-  client->joinSession(presentationUrls, id,
-                      new PresentationConnectionCallbacks(resolver, this));
+  client->joinSession(
+      presentationUrls, id,
+      WTF::makeUnique<PresentationConnectionCallbacks>(resolver, this));
   return resolver->promise();
 }
 
@@ -193,7 +195,8 @@ ScriptPromise PresentationRequest::getAvailability(ScriptState* scriptState) {
 
   ScriptPromiseResolver* resolver = ScriptPromiseResolver::create(scriptState);
   client->getAvailability(
-      m_url, new PresentationAvailabilityCallbacks(resolver, m_url));
+      m_url,
+      WTF::makeUnique<PresentationAvailabilityCallbacks>(resolver, m_url));
   return resolver->promise();
 }
 

@@ -56,8 +56,10 @@ ScriptPromise ServiceWorkerWindowClient::focus(ScriptState* scriptState) {
   scriptState->getExecutionContext()->consumeWindowInteraction();
 
   ServiceWorkerGlobalScopeClient::from(scriptState->getExecutionContext())
-      ->focus(uuid(), new CallbackPromiseAdapter<ServiceWorkerWindowClient,
-                                                 ServiceWorkerError>(resolver));
+      ->focus(uuid(),
+              WTF::makeUnique<CallbackPromiseAdapter<ServiceWorkerWindowClient,
+                                                     ServiceWorkerError>>(
+                  resolver));
   return promise;
 }
 
@@ -81,7 +83,7 @@ ScriptPromise ServiceWorkerWindowClient::navigate(ScriptState* scriptState,
   }
 
   ServiceWorkerGlobalScopeClient::from(context)->navigate(
-      uuid(), parsedUrl, new NavigateClientCallback(resolver));
+      uuid(), parsedUrl, WTF::makeUnique<NavigateClientCallback>(resolver));
   return promise;
 }
 

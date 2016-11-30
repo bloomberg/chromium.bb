@@ -4,6 +4,8 @@
 
 #include "chrome/browser/media/cast_transport_host_filter.h"
 
+#include <utility>
+
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/browser_process.h"
@@ -176,7 +178,7 @@ void CastTransportHostFilter::OnNew(int32_t channel_id,
           base::MakeUnique<TransportClient>(channel_id, this),
           std::move(udp_transport), base::ThreadTaskRunnerHandle::Get());
   transport->SetOptions(options);
-  id_map_.AddWithID(transport.release(), channel_id);
+  id_map_.AddWithID(std::move(transport), channel_id);
 }
 
 void CastTransportHostFilter::OnDelete(int32_t channel_id) {
@@ -215,7 +217,7 @@ void CastTransportHostFilter::OnInitializeStream(
         config.rtp_payload_type == media::cast::RtpPayloadType::REMOTE_VIDEO) {
       // Create CastRemotingSender for this RTP stream.
       remoting_sender_map_.AddWithID(
-          new CastRemotingSender(
+          base::MakeUnique<CastRemotingSender>(
               transport, config, kSendEventsInterval,
               base::Bind(&CastTransportHostFilter::OnCastRemotingSenderEvents,
                          weak_factory_.GetWeakPtr(), channel_id)),

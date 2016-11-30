@@ -17,8 +17,13 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 
-// Ownership semantics - own pointer means the pointer is deleted in Remove()
-// & during destruction
+// Ownership semantics:
+// - OwnPointer means we store a unique_ptr that owns the object (so the
+//   object is deleted in Remove() and during destruction).
+// - ExternalPointer means we store a raw pointer and don't own the object
+
+// TODO (http://crbug.com/647091): eliminate this enum, replace OwnPointer
+// mode in callsites with IDMap<unique_ptr<T>>
 enum IDMapOwnershipSemantics {
   IDMapExternalPointer,
   IDMapOwnPointer
@@ -68,30 +73,13 @@ class IDMap {
   void set_check_on_null_data(bool value) { check_on_null_data_ = value; }
 
   // Adds a view with an automatically generated unique ID. See AddWithID.
-  // (This unique_ptr<> variant will not compile in IDMapExternalPointer mode.)
-  KeyType Add(std::unique_ptr<T> data) {
-    return AddInternal(std::move(data));
-  }
+  KeyType Add(V data) { return AddInternal(std::move(data)); }
 
   // Adds a new data member with the specified ID. The ID must not be in
   // the list. The caller either must generate all unique IDs itself and use
   // this function, or allow this object to generate IDs and call Add. These
   // two methods may not be mixed, or duplicate IDs may be generated.
-  // (This unique_ptr<> variant will not compile in IDMapExternalPointer mode.)
-  void AddWithID(std::unique_ptr<T> data, KeyType id) {
-    AddWithIDInternal(std::move(data), id);
-  }
-
-  // http://crbug.com/647091: Raw pointer Add()s in IDMapOwnPointer mode are
-  // deprecated.  Users of IDMapOwnPointer should transition to the unique_ptr
-  // variant above, and the following methods should only be used in
-  // IDMapExternalPointer mode.
-  KeyType Add(T* data) {
-    return AddInternal(V(data));
-  }
-  void AddWithID(T* data, KeyType id) {
-    AddWithIDInternal(V(data), id);
-  }
+  void AddWithID(V data, KeyType id) { AddWithIDInternal(std::move(data), id); }
 
   void Remove(KeyType id) {
     DCHECK(sequence_checker_.CalledOnValidSequence());

@@ -5,9 +5,12 @@
 #include "content/browser/permissions/permission_service_impl.h"
 
 #include <stddef.h>
+
+#include <memory>
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/ptr_util.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/permission_manager.h"
 #include "content/public/browser/permission_type.h"
@@ -130,8 +133,9 @@ void PermissionServiceImpl::RequestPermission(
     return;
   }
 
-  int pending_request_id = pending_requests_.Add(new PendingRequest(
-      base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
+  int pending_request_id =
+      pending_requests_.Add(base::MakeUnique<PendingRequest>(
+          base::Bind(&PermissionRequestResponseCallbackWrapper, callback), 1));
   int id = browser_context->GetPermissionManager()->RequestPermission(
       PermissionDescriptorToPermissionType(permission),
       context_->render_frame_host(), origin.GetURL(), user_gesture,
@@ -182,7 +186,7 @@ void PermissionServiceImpl::RequestPermissions(
     types[i] = PermissionDescriptorToPermissionType(permissions[i]);
 
   int pending_request_id = pending_requests_.Add(
-      new PendingRequest(callback, permissions.size()));
+      base::MakeUnique<PendingRequest>(callback, permissions.size()));
   int id = browser_context->GetPermissionManager()->RequestPermissions(
       types, context_->render_frame_host(), origin.GetURL(), user_gesture,
       base::Bind(&PermissionServiceImpl::OnRequestPermissionsResponse,
@@ -287,13 +291,15 @@ void PermissionServiceImpl::GetNextPermissionChange(
   // We need to pass the id of PendingSubscription in pending_subscriptions_
   // to the callback but SubscribePermissionStatusChange() will also return an
   // id which is different.
-  PendingSubscription* subscription =
-      new PendingSubscription(permission_type, origin, callback);
-  int pending_subscription_id = pending_subscriptions_.Add(subscription);
+  auto subscription =
+      base::MakeUnique<PendingSubscription>(permission_type, origin, callback);
+  PendingSubscription* subscription_raw = subscription.get();
+  int pending_subscription_id =
+      pending_subscriptions_.Add(std::move(subscription));
 
   GURL requesting_origin(origin.Serialize());
   GURL embedding_origin = context_->GetEmbeddingOrigin();
-  subscription->id =
+  subscription_raw->id =
       browser_context->GetPermissionManager()->SubscribePermissionStatusChange(
           permission_type, requesting_origin,
           // If the embedding_origin is empty, we,ll use the |origin| instead.
