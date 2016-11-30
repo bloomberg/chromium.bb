@@ -21,6 +21,48 @@ class ExecutionContext;
 class LocalFrame;
 class ScriptValue;
 
+// ScriptState is an abstraction class that holds all information about script
+// exectuion (e.g., v8::Isolate, v8::Context, DOMWrapperWorld, ExecutionContext
+// etc). If you need any info about the script execution, you're expected to
+// pass around ScriptState in the code base. ScriptState is in a 1:1
+// relationship with v8::Context.
+//
+// When you need ScriptState, you can add [CallWith=ScriptState] to IDL files
+// and pass around ScriptState into a place where you need ScriptState.
+//
+// In some cases, you need ScriptState in code that doesn't have any JavaScript
+// on the stack. Then you can store ScriptState on a C++ object using
+// RefPtr<ScriptState>.
+//
+// class SomeObject {
+//   void someMethod(ScriptState* scriptState) {
+//     m_scriptState = scriptState; // Record the ScriptState.
+//     ...;
+//   }
+//
+//   void asynchronousMethod() {
+//     if (!m_scriptState->contextIsValid()) {
+//       // It's possible that the context is already gone.
+//       return;
+//     }
+//     // Enter the ScriptState.
+//     ScriptState::Scope scope(m_scriptState.get());
+//     // Do V8 related things.
+//     toV8(...);
+//   }
+//   RefPtr<ScriptState> m_scriptState;
+// };
+//
+// You should not store ScriptState on a C++ object that can be accessed
+// by multiple worlds. For example, you can store ScriptState on
+// ScriptPromiseResolver, ScriptValue etc because they can be accessed from one
+// world. However, you cannot store ScriptState on a DOM object that has
+// an IDL interface because the DOM object can be accessed from multiple
+// worlds. If ScriptState of one world "leak"s to another world, you will
+// end up with leaking any JavaScript objects from one Chrome extension
+// to another Chrome extension, which is a severe security bug.
+//
+// Lifetime:
 // ScriptState is created when v8::Context is created.
 // ScriptState is destroyed when v8::Context is garbage-collected and
 // all V8 proxy objects that have references to the ScriptState are destructed.
