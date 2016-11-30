@@ -14,16 +14,11 @@
 #include "chrome/browser/chrome_browser_main.h"
 #include "chrome/browser/ui/ash/ash_init.h"
 #include "chrome/browser/ui/ash/ash_util.h"
-#include "chrome/browser/ui/ash/ime_driver_ash.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_mus.h"
 #include "chrome/browser/ui/views/ash/tab_scrubber.h"
 #include "chrome/browser/ui/views/frame/immersive_context_mus.h"
 #include "chrome/browser/ui/views/frame/immersive_handler_factory_mus.h"
 #include "chrome/common/chrome_switches.h"
-#include "content/public/common/service_manager_connection.h"
-#include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/service_manager/public/cpp/connector.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
 #include "ui/aura/env.h"
 #include "ui/keyboard/content/keyboard.h"
 #include "ui/keyboard/keyboard_controller.h"
@@ -34,23 +29,6 @@
 #include "chrome/browser/ui/views/select_file_dialog_extension.h"
 #include "chrome/browser/ui/views/select_file_dialog_extension_factory.h"
 #endif  // defined(OS_CHROMEOS)
-
-namespace {
-
-void RegisterIMEDriver() {
-  // Instantiate the IME driver and register it to the UI service.
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  ui::mojom::IMEDriverPtr ime_driver_ptr;
-  mojo::MakeStrongBinding(base::MakeUnique<IMEDriver>(),
-                          GetProxy(&ime_driver_ptr));
-  ui::mojom::IMERegistrarPtr ime_registrar;
-  content::ServiceManagerConnection::GetForProcess()
-      ->GetConnector()
-      ->ConnectToInterface("ui", &ime_registrar);
-  ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
-}
-
-}  // namespace
 
 ChromeBrowserMainExtraPartsAsh::ChromeBrowserMainExtraPartsAsh() {}
 
@@ -63,9 +41,6 @@ void ChromeBrowserMainExtraPartsAsh::PreProfileInit() {
   if (chrome::IsRunningInMash()) {
     immersive_context_ = base::MakeUnique<ImmersiveContextMus>();
     immersive_handler_factory_ = base::MakeUnique<ImmersiveHandlerFactoryMus>();
-    // IME driver must be available at login screen, so initialize before
-    // profile.
-    RegisterIMEDriver();
   }
 
 #if defined(OS_CHROMEOS)

@@ -2,8 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/ui/ash/ime_driver_ash.h"
+#include "chrome/browser/ui/views/ime_driver_mus.h"
 
+#include "content/public/browser/browser_thread.h"
+#include "content/public/common/service_manager_connection.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/ime.mojom.h"
 
 namespace {
@@ -45,9 +50,20 @@ class InputMethod : public ui::mojom::InputMethod {
 
 }  // namespace
 
-IMEDriver::IMEDriver() {}
-
 IMEDriver::~IMEDriver() {}
+
+// static
+void IMEDriver::Register() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  ui::mojom::IMEDriverPtr ime_driver_ptr;
+  mojo::MakeStrongBinding(base::WrapUnique(new IMEDriver),
+                          GetProxy(&ime_driver_ptr));
+  ui::mojom::IMERegistrarPtr ime_registrar;
+  content::ServiceManagerConnection::GetForProcess()
+      ->GetConnector()
+      ->ConnectToInterface(ui::mojom::kServiceName, &ime_registrar);
+  ime_registrar->RegisterDriver(std::move(ime_driver_ptr));
+}
 
 void IMEDriver::StartSession(
     int32_t session_id,
@@ -57,6 +73,8 @@ void IMEDriver::StartSession(
       base::MakeUnique<mojo::Binding<ui::mojom::InputMethod>>(
           new InputMethod(std::move(client)), std::move(input_method_request));
 }
+
+IMEDriver::IMEDriver() {}
 
 void IMEDriver::CancelSession(int32_t session_id) {
   input_method_bindings_.erase(session_id);

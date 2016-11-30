@@ -1301,8 +1301,6 @@ split_static_library("ui") {
       "ash/chrome_shell_delegate.h",
       "ash/ime_controller_chromeos.cc",
       "ash/ime_controller_chromeos.h",
-      "ash/ime_driver_ash.cc",
-      "ash/ime_driver_ash.h",
       "ash/keyboard_ui_service.cc",
       "ash/keyboard_ui_service.h",
       "ash/launcher/app_shortcut_launcher_item_controller.cc",
@@ -1892,6 +1890,8 @@ split_static_library("ui") {
       # apart from aura::Window, which is also not supported).
       if (!is_mac) {
         sources += [
+          "views/ime_driver_mus.cc",
+          "views/ime_driver_mus.h",
           "views/tabs/window_finder_mus.cc",
           "views/tabs/window_finder_mus.h",
         ]

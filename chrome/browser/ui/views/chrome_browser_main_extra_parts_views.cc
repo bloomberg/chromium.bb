@@ -6,6 +6,7 @@
 
 #include "chrome/browser/ui/views/chrome_constrained_window_views_client.h"
 #include "chrome/browser/ui/views/chrome_views_delegate.h"
+#include "chrome/browser/ui/views/ime_driver_mus.h"
 #include "components/constrained_window/constrained_window_views.h"
 
 #if defined(USE_AURA)
@@ -62,6 +63,12 @@ void ChromeBrowserMainExtraPartsViews::PreCreateThreads() {
 }
 
 void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
+#if defined(USE_AURA)
+  // IME driver must be available at login screen, so initialize before profile.
+  if (service_manager::ServiceManagerIsRemote())
+    IMEDriver::Register();
+#endif
+
 #if defined(OS_LINUX) && !defined(OS_CHROMEOS)
   // On the Linux desktop, we want to prevent the user from logging in as root,
   // so that we don't destroy the profile. Now that we have some minimal ui
@@ -86,7 +93,7 @@ void ChromeBrowserMainExtraPartsViews::PreProfileInit() {
   base::RunLoop().RunUntilIdle();
 
   exit(EXIT_FAILURE);
-#endif
+#endif  // defined(OS_LINUX) && !defined(OS_CHROMEOS)
 }
 
 void ChromeBrowserMainExtraPartsViews::ServiceManagerConnectionStarted(
