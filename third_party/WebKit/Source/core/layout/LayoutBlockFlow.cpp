@@ -419,23 +419,12 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
 }
 
 DISABLE_CFI_PERF
-inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
-                                             SubtreeLayoutScope& layoutScope) {
-  LayoutUnit oldLeft = logicalLeft();
-  bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
-  relayoutChildren |= logicalWidthChanged;
+void LayoutBlockFlow::resetLayout() {
+  if (!firstChild() && !isAnonymousBlock())
+    setChildrenInline(true);
+  setContainsInlineWithOutlineAndContinuation(false);
 
   rebuildFloatsFromIntruding();
-
-  LayoutState state(*this, logicalWidthChanged);
-
-  if (m_paginationStateChanged) {
-    // We now need a deep layout to clean up struts after pagination, if we
-    // just ceased to be paginated, or, if we just became paginated on the
-    // other hand, we now need the deep layout, to insert pagination struts.
-    m_paginationStateChanged = false;
-    state.setPaginationStateChanged();
-  }
 
   // We use four values, maxTopPos, maxTopNeg, maxBottomPos, and maxBottomNeg,
   // to track our current maximal positive and negative margins. These values
@@ -454,7 +443,7 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
     setHasMarginAfterQuirk(style()->hasMarginAfterQuirk());
   }
 
-  if (state.isPaginated()) {
+  if (view()->layoutState()->isPaginated()) {
     setPaginationStrutPropagatedFromChild(LayoutUnit());
     setFirstForcedBreakOffset(LayoutUnit());
 
@@ -470,23 +459,37 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
     setBreakBefore(LayoutBlock::breakBefore());
     setBreakAfter(LayoutBlock::breakAfter());
   }
+}
+
+DISABLE_CFI_PERF
+inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
+                                             SubtreeLayoutScope& layoutScope) {
+  LayoutUnit oldLeft = logicalLeft();
+  bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
+  relayoutChildren |= logicalWidthChanged;
+
+  LayoutState state(*this, logicalWidthChanged);
+
+  if (m_paginationStateChanged) {
+    // We now need a deep layout to clean up struts after pagination, if we
+    // just ceased to be paginated, or, if we just became paginated on the
+    // other hand, we now need the deep layout, to insert pagination struts.
+    m_paginationStateChanged = false;
+    state.setPaginationStateChanged();
+  }
+
+  LayoutUnit previousHeight = logicalHeight();
+  resetLayout();
 
   LayoutUnit beforeEdge = borderBefore() + paddingBefore();
   LayoutUnit afterEdge =
       borderAfter() + paddingAfter() + scrollbarLogicalHeight();
-  LayoutUnit previousHeight = logicalHeight();
   setLogicalHeight(beforeEdge);
-
-  if (!firstChild() && !isAnonymousBlock())
-    setChildrenInline(true);
 
   TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
 
   bool preferredLogicalWidthsWereDirty = preferredLogicalWidthsDirty();
 
-  // Reset the flag here instead of in layoutInlineChildren() in case that
-  // all inline children are removed from this block.
-  setContainsInlineWithOutlineAndContinuation(false);
   if (childrenInline())
     layoutInlineChildren(relayoutChildren, afterEdge);
   else

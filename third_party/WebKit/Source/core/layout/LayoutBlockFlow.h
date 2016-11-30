@@ -476,6 +476,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
   LayoutSize accumulateInFlowPositionOffsets() const override;
 
  private:
+  void resetLayout();
   bool layoutBlockFlow(bool relayoutChildren,
                        SubtreeLayoutScope&);
   void addOverhangingFloatsFromChildren(LayoutUnit unconstrainedHeight);
