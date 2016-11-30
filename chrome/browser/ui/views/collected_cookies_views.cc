@@ -393,7 +393,7 @@ views::View* CollectedCookiesViews::CreateAllowedPane() {
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
                                       LayoutDelegate::LayoutDistanceType::
-                                          RELATED_CONTROL_HORIZONTAL_SPACING));
+                                          RELATED_BUTTON_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -467,7 +467,7 @@ views::View* CollectedCookiesViews::CreateBlockedPane() {
                         GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, LayoutDelegate::Get()->GetLayoutDistance(
                                       LayoutDelegate::LayoutDistanceType::
-                                          RELATED_CONTROL_HORIZONTAL_SPACING));
+                                          RELATED_BUTTON_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 

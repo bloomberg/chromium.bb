@@ -220,8 +220,17 @@ void DialogClientView::Layout() {
       extra_view_->SetBoundsRect(row_bounds);
     }
 
-    if (height > 0)
-      bounds.Inset(0, 0, 0, height + kRelatedControlVerticalSpacing);
+    if (height > 0) {
+      // If the ViewsDelegate supplies a non-zero top inset, use that;
+      // otherwise, use kRelatedControlVerticalSpacing.
+      int spacing =
+          ViewsDelegate::GetInstance()
+              ? ViewsDelegate::GetInstance()->GetDialogButtonInsets().top()
+              : 0;
+      if (!spacing)
+        spacing = kRelatedControlVerticalSpacing;
+      bounds.Inset(0, 0, 0, height + spacing);
+    }
   }
 
   // Layout the contents view to the top and side edges of the contents bounds.
