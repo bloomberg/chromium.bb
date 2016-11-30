@@ -150,8 +150,11 @@ class InfobarView : public views::View {
 
   // views::View overrides.
   gfx::Size GetPreferredSize() const override {
-    if (!visible())
-      return gfx::Size();
+    // Always return the preferred size, even if not currently visible. This
+    // ensures that the layout manager always reserves space within the view
+    // so it can be made visible when necessary. Otherwise, changing the
+    // visibility of this view would require the entire dialog to be resized,
+    // which is undesirable from both a UX and technical perspective.
 
     // Add space around the banner.
     gfx::Size size(content_->GetPreferredSize());
