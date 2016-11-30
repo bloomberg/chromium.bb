@@ -193,31 +193,41 @@ int GpuMain(const MainFunctionParams& parameters) {
 
   logging::SetLogMessageHandler(GpuProcessLogMessageHandler);
 
+  // We are experiencing what appear to be memory-stomp issues in the GPU
+  // process. These issues seem to be impacting the message loop and listeners
+  // registered to it. Create the message loop on the heap to guard against
+  // this.
+  // TODO(ericrk): Revisit this once we assess its impact on crbug.com/662802
+  // and crbug.com/609252.
+  std::unique_ptr<base::MessageLoop> main_message_loop;
+
 #if defined(OS_WIN)
   // OK to use default non-UI message loop because all GPU windows run on
   // dedicated thread.
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
+  main_message_loop.reset(
+      new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #elif defined(USE_X11)
   // We need a UI loop so that we can grab the Expose events. See GLSurfaceGLX
   // and https://crbug.com/326995.
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
   std::unique_ptr<ui::PlatformEventSource> event_source =
       ui::PlatformEventSource::CreateDefault();
 #elif defined(USE_OZONE) && defined(OZONE_X11)
   // If we might be running Ozone X11 we need a UI loop to grab Expose events.
   // See GLSurfaceGLX and https://crbug.com/326995.
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_UI);
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_UI));
 #elif defined(USE_OZONE)
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_DEFAULT);
+  main_message_loop.reset(
+      new base::MessageLoop(base::MessageLoop::TYPE_DEFAULT));
 #elif defined(OS_LINUX)
 #error "Unsupported Linux platform."
 #elif defined(OS_MACOSX)
   // This is necessary for CoreAnimation layers hosted in the GPU process to be
   // drawn. See http://crbug.com/312462.
   std::unique_ptr<base::MessagePump> pump(new base::MessagePumpCFRunLoop());
-  base::MessageLoop main_message_loop(std::move(pump));
+  main_message_loop.reset(new base::MessageLoop(std::move(pump)));
 #else
-  base::MessageLoop main_message_loop(base::MessageLoop::TYPE_IO);
+  main_message_loop.reset(new base::MessageLoop(base::MessageLoop::TYPE_IO));
 #endif
 
   base::PlatformThread::SetName("CrGpuMain");
