@@ -12,6 +12,7 @@ import org.chromium.android_webview.policy.AwPolicyProvider;
 import org.chromium.base.CommandLine;
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
+import org.chromium.base.PackageUtils;
 import org.chromium.base.PathUtils;
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.library_loader.LibraryLoader;
@@ -74,14 +75,14 @@ public abstract class AwBrowserProcess {
      * Note: it is up to the caller to ensure this is only called once.
      */
     public static void start() {
-        tryObtainingDataDirLockOrDie();
+        final Context appContext = ContextUtils.getApplicationContext();
+        tryObtainingDataDirLock(appContext);
         // We must post to the UI thread to cover the case that the user
         // has invoked Chromium startup by using the (thread-safe)
         // CookieManager rather than creating a WebView.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                final Context appContext = ContextUtils.getApplicationContext();
                 boolean multiProcess = CommandLine.getInstance().hasSwitch(
                         AwSwitches.WEBVIEW_SANDBOXED_RENDERER);
                 if (multiProcess) {
@@ -109,9 +110,32 @@ public abstract class AwBrowserProcess {
         });
     }
 
-    private static void tryObtainingDataDirLockOrDie() {
-        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskReads();
-        StrictMode.allowThreadDiskWrites();
+    private static boolean checkMinAppVersion(Context context, String packageName, int minVersion) {
+        String appName = context.getPackageName();
+        if (packageName.equals(appName)) {
+            int versionCode = PackageUtils.getPackageVersion(context, packageName);
+            if (versionCode < minVersion) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private static void tryObtainingDataDirLock(Context context) {
+        boolean dieOnFailure = true;
+        // Old versions of Facebook apps share the same data dir with multiple processes; current
+        // versions avoid this issue.
+        if (checkMinAppVersion(context, "com.facebook.katana", 34592776)
+                || checkMinAppVersion(context, "com.facebook.lite", 37569469)
+                || checkMinAppVersion(context, "com.instagram.android", 35440022)) {
+            dieOnFailure = false;
+        }
+        // GMS shares the same data dir with multiple processes in some cases; see b/26879632.
+        if ("com.google.android.gms".equals(context.getPackageName())) {
+            dieOnFailure = false;
+        }
+
+        StrictMode.ThreadPolicy oldPolicy = StrictMode.allowThreadDiskWrites();
         try {
             String dataPath = PathUtils.getDataDirectory();
             File lockFile = new File(dataPath, EXCLUSIVE_LOCK_FILE);
@@ -125,8 +149,13 @@ public abstract class AwBrowserProcess {
                 Log.w(TAG, "Failed to create lock file " + lockFile, e);
             }
             if (!success) {
-                Log.w(TAG, "The app may have another WebView opened in a separate process. "
-                        + "This is not recommended and may stop working in future versions.");
+                final String error = "Using WebView from more than one process at once in a single "
+                        + "app is not supported. https://crbug.com/558377";
+                if (dieOnFailure) {
+                    throw new RuntimeException(error);
+                } else {
+                    Log.w(TAG, error);
+                }
             }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
