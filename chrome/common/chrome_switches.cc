@@ -262,10 +262,6 @@ const char kDisableOutOfProcessPac[]        = "disable-out-of-process-pac";
 const char kDisablePermissionActionReporting[] =
     "disable-permission-action-reporting";
 
-// Disables the Permissions Blacklist, which blocks access to permissions
-// for blacklisted sites.
-const char kDisablePermissionsBlacklist[]   = "disable-permissions-blacklist";
-
 // Disable pop-up blocking.
 const char kDisablePopupBlocking[]          = "disable-popup-blocking";
 
@@ -404,10 +400,6 @@ const char kEnableOfflineAutoReloadVisibleOnly[] =
 // users.
 const char kEnablePermissionActionReporting[] =
     "enable-permission-action-reporting";
-
-// Enables the Permissions Blacklist, which blocks access to permissions
-// for blacklisted sites.
-const char kEnablePermissionsBlacklist[] = "enable-permissions-blacklist";
 
 // Enables a number of potentially annoying security features (strict mixed
 // content mode, powerful feature restrictions, etc.)

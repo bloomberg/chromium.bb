@@ -1333,8 +1333,7 @@ const FeatureEntry kFeatureEntries[] = {
                                switches::kDisablePermissionActionReporting)},
     {"enable-permissions-blacklist", IDS_FLAGS_PERMISSIONS_BLACKLIST_NAME,
      IDS_FLAGS_PERMISSIONS_BLACKLIST_DESCRIPTION, kOsAll,
-     ENABLE_DISABLE_VALUE_TYPE(switches::kEnablePermissionsBlacklist,
-                               switches::kDisablePermissionsBlacklist)},
+     FEATURE_VALUE_TYPE(features::kPermissionsBlacklist)},
     {"enable-single-click-autofill", IDS_FLAGS_SINGLE_CLICK_AUTOFILL_NAME,
      IDS_FLAGS_SINGLE_CLICK_AUTOFILL_DESCRIPTION, kOsAll,
      ENABLE_DISABLE_VALUE_TYPE(
