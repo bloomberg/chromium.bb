@@ -117,6 +117,12 @@ Polymer({
       },
       readOnly: true,
     },
+
+    /** @private */
+    showEasyUnlockTurnOffDialog_: {
+      type: Boolean,
+      value: false,
+    },
 </if>
   },
 
@@ -218,6 +224,8 @@ Polymer({
    */
   handleEasyUnlockEnabledStatusChanged_: function(easyUnlockEnabled) {
     this.easyUnlockEnabled_ = easyUnlockEnabled;
+    this.showEasyUnlockTurnOffDialog_ =
+        easyUnlockEnabled && this.showEasyUnlockTurnOffDialog_;
   },
 </if>
 
@@ -329,7 +337,12 @@ Polymer({
 
   /** @private */
   onEasyUnlockTurnOffTap_: function() {
-    this.$$('#easyUnlockTurnOffDialog').open();
+    this.showEasyUnlockTurnOffDialog_ = true;
+  },
+
+  /** @private */
+  onEasyUnlockTurnOffDialogClose_: function() {
+    this.showEasyUnlockTurnOffDialog_ = false;
   },
 </if>
 

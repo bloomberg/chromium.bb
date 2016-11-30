@@ -27,46 +27,34 @@ Polymer({
   behaviors: [I18nBehavior, WebUIListenerBehavior],
 
   properties: {
-    /** @private {!settings.EasyUnlockBrowserProxy} */
-    browserProxy_: Object,
-
     /** @private {!EasyUnlockTurnOffStatus} */
     status_: {
       type: String,
       value: EasyUnlockTurnOffStatus.UNKNOWN,
     },
-
-    /** @private {?WebUIListener} */
-    turnOffStatusWebUiListener_: {
-      type: Object,
-      value: null,
-    },
   },
 
+  /** @private {settings.EasyUnlockBrowserProxy} */
+  browserProxy_: null,
+
   /** @override */
-  ready: function() {
+  attached: function() {
     this.browserProxy_ = settings.EasyUnlockBrowserProxyImpl.getInstance();
 
     this.addWebUIListener(
         'easy-unlock-enabled-status',
         this.handleEasyUnlockEnabledStatusChanged_.bind(this));
-  },
 
-  /**
-   * Opens the dialog.
-   */
-  open: function() {
+    this.addWebUIListener(
+        'easy-unlock-turn-off-flow-status',
+        function(status) { this.status_ = status; }.bind(this));
+
+    // Since the dialog text depends on the status, defer opening until we have
+    // retrieved the turn off status to prevent UI flicker.
     this.getTurnOffStatus_().then(function(status) {
       this.status_ = status;
       this.$.dialog.showModal();
     }.bind(this));
-
-    // The turn off flow status listener should only be active when the dialog
-    // is actually open.
-    assert(this.turnOffStatusWebUiListener_ == null);
-    this.turnOffStatusWebUiListener_ = cr.addWebUIListener(
-        'easy-unlock-turn-off-flow-status',
-        function(status) { this.status_ = status; }.bind(this));
   },
 
   /**
@@ -94,11 +82,6 @@ Polymer({
 
   /** @private */
   onCancelTap_: function() {
-    if (this.turnOffStatusWebUiListener_) {
-      cr.removeWebUIListener(this.turnOffStatusWebUiListener_);
-      this.turnOffStatusWebUiListener_ = null;
-    }
-
     this.browserProxy_.cancelTurnOffFlow();
     this.$.dialog.close();
   },
