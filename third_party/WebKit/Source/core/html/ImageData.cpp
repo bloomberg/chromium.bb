@@ -39,10 +39,10 @@
 namespace blink {
 
 ImageData* ImageData::create(const IntSize& size) {
-  CheckedNumeric<int> dataSize = 4;
+  CheckedNumeric<unsigned> dataSize = 4;
   dataSize *= size.width();
   dataSize *= size.height();
-  if (!dataSize.IsValid() || dataSize.ValueOrDie() < 0)
+  if (!dataSize.IsValid())
     return nullptr;
 
   DOMUint8ClampedArray* byteArray =
@@ -55,14 +55,13 @@ ImageData* ImageData::create(const IntSize& size) {
 
 ImageData* ImageData::create(const IntSize& size,
                              DOMUint8ClampedArray* byteArray) {
-  CheckedNumeric<int> dataSize = 4;
+  CheckedNumeric<unsigned> dataSize = 4;
   dataSize *= size.width();
   dataSize *= size.height();
   if (!dataSize.IsValid())
     return nullptr;
 
-  if (dataSize.ValueOrDie() < 0 ||
-      static_cast<unsigned>(dataSize.ValueOrDie()) > byteArray->length())
+  if (!dataSize.IsValid() || dataSize.ValueOrDie() > byteArray->length())
     return nullptr;
 
   return new ImageData(size, byteArray);
