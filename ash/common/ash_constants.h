@@ -30,6 +30,7 @@ extern const SkColor kChromeOsBootColor;
 
 // The border color of keyboard focus for launcher items and system tray.
 extern const SkColor kFocusBorderColor;
+extern const float kFocusBorderThickness;
 
 }  // namespace ash
 

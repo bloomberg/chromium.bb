@@ -20,6 +20,7 @@
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect.h"
+#include "ui/native_theme/native_theme.h"
 #include "ui/resources/grit/ui_resources.h"
 #include "ui/views/controls/md_slider.h"
 #include "ui/views/controls/non_md_slider.h"
@@ -69,7 +70,6 @@ Slider::Slider(SliderListener* listener)
       initial_animating_value_(0.f),
       value_is_valid_(false),
       accessibility_events_enabled_(true),
-      focus_border_color_(0),
       initial_button_offset_(0) {
   EnableCanvasFlippingForRTLUI(true);
 #if defined(OS_MACOSX)
@@ -167,13 +167,15 @@ void Slider::OnPaintFocus(gfx::Canvas* canvas) {
   if (!HasFocus())
     return;
 
-  if (!focus_border_color_) {
-    canvas->DrawFocusRect(GetLocalBounds());
-  } else if (HasFocus()) {
-    canvas->DrawSolidFocusRect(
-        gfx::Rect(1, 1, width() - 3, height() - 3),
-        focus_border_color_);
-  }
+  // TODO(estade): make this a glow effect instead: crbug.com/658783
+  gfx::Rect focus_bounds = GetLocalBounds();
+  focus_bounds.Inset(gfx::Insets(1));
+  canvas->DrawSolidFocusRect(
+      gfx::RectF(focus_bounds),
+      SkColorSetA(GetNativeTheme()->GetSystemColor(
+                      ui::NativeTheme::kColorId_FocusedBorderColor),
+                  0x99),
+      2.f);
 }
 
 void Slider::OnSliderDragStarted() {

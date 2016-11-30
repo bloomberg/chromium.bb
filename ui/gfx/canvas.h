@@ -428,13 +428,7 @@ class GFX_EXPORT Canvas {
 
   // Draws a |rect| in the specified region with the specified |color| with a
   // with of one logical pixel which might be more device pixels.
-  // DEPRECATED in favor of the RectF version below.
-  // TODO(funkysidd): Remove this (http://crbug.com/553726)
-  void DrawSolidFocusRect(const Rect& rect, SkColor color);
-
-  // Draws a |rect| in the specified region with the specified |color| with a
-  // with of one logical pixel which might be more device pixels.
-  void DrawSolidFocusRect(const RectF& rect, SkColor color);
+  void DrawSolidFocusRect(const RectF& rect, SkColor color, float thickness);
 
   // Tiles the image in the specified region.
   // Parameters are specified relative to current canvas scale not in pixels.

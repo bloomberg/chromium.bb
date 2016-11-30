@@ -472,9 +472,8 @@ void ShelfButton::OnBlur() {
 void ShelfButton::OnPaint(gfx::Canvas* canvas) {
   CustomButton::OnPaint(canvas);
   if (HasFocus()) {
-    gfx::Rect paint_bounds(GetLocalBounds());
-    paint_bounds.Inset(1, 1, 1, 1);
-    canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor);
+    canvas->DrawSolidFocusRect(gfx::RectF(GetLocalBounds()), kFocusBorderColor,
+                               kFocusBorderThickness);
   }
 }
 

@@ -14,6 +14,7 @@
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "ui/gfx/font_list.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/rect_conversions.h"
 #include "ui/gfx/geometry/rect_f.h"
@@ -342,24 +343,16 @@ void Canvas::DrawFocusRect(const RectF& rect) {
   DrawDashedRect(rect, SK_ColorGRAY);
 }
 
-void Canvas::DrawSolidFocusRect(const Rect& rect, SkColor color) {
-  DrawSolidFocusRect(RectF(rect), color);
-}
-
-void Canvas::DrawSolidFocusRect(const RectF& rect, SkColor color) {
+void Canvas::DrawSolidFocusRect(const RectF& rect,
+                                SkColor color,
+                                float thickness) {
   SkPaint paint;
   paint.setColor(color);
-  paint.setStrokeWidth(SK_Scalar1);
-  // Note: We cannot use DrawRect since it would create a path and fill it which
-  // would cause problems near the edge of the canvas.
-  float x1 = std::min(rect.x(), rect.right());
-  float x2 = std::max(rect.x(), rect.right());
-  float y1 = std::min(rect.y(), rect.bottom());
-  float y2 = std::max(rect.y(), rect.bottom());
-  DrawLine(PointF(x1, y1), PointF(x2, y1), paint);
-  DrawLine(PointF(x1, y2), PointF(x2, y2), paint);
-  DrawLine(PointF(x1, y1), PointF(x1, y2), paint);
-  DrawLine(PointF(x2, y1), PointF(x2, y2 + 1.f), paint);
+  paint.setStrokeWidth(SkFloatToScalar(thickness));
+  paint.setStyle(SkPaint::kStroke_Style);
+  gfx::RectF draw_rect = rect;
+  draw_rect.Inset(gfx::InsetsF(thickness / 2));
+  DrawRect(draw_rect, paint);
 }
 
 void Canvas::DrawImageInt(const ImageSkia& image, int x, int y) {

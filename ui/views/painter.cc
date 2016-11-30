@@ -14,6 +14,7 @@
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/insets.h"
+#include "ui/gfx/geometry/insets_f.h"
 #include "ui/gfx/geometry/point.h"
 #include "ui/gfx/geometry/rect_f.h"
 #include "ui/gfx/geometry/size.h"
@@ -119,7 +120,9 @@ void DashedFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
 
 class SolidFocusPainter : public Painter {
  public:
-  SolidFocusPainter(SkColor color, const gfx::Insets& insets);
+  SolidFocusPainter(SkColor color,
+                    SkScalar thickness,
+                    const gfx::InsetsF& insets);
   ~SolidFocusPainter() override;
 
   // Painter:
@@ -128,16 +131,16 @@ class SolidFocusPainter : public Painter {
 
  private:
   const SkColor color_;
-  const gfx::Insets insets_;
+  const SkScalar thickness_;
+  const gfx::InsetsF insets_;
 
   DISALLOW_COPY_AND_ASSIGN(SolidFocusPainter);
 };
 
 SolidFocusPainter::SolidFocusPainter(SkColor color,
-                                     const gfx::Insets& insets)
-    : color_(color),
-      insets_(insets) {
-}
+                                     SkScalar thickness,
+                                     const gfx::InsetsF& insets)
+    : color_(color), thickness_(thickness), insets_(insets) {}
 
 SolidFocusPainter::~SolidFocusPainter() {
 }
@@ -147,9 +150,9 @@ gfx::Size SolidFocusPainter::GetMinimumSize() const {
 }
 
 void SolidFocusPainter::Paint(gfx::Canvas* canvas, const gfx::Size& size) {
-  gfx::Rect rect(size);
+  gfx::RectF rect((gfx::Rect(size)));
   rect.Inset(insets_);
-  canvas->DrawSolidFocusRect(rect, color_);
+  canvas->DrawSolidFocusRect(rect, color_, thickness_);
 }
 
 // GradientPainter ------------------------------------------------------------
@@ -356,7 +359,22 @@ std::unique_ptr<Painter> Painter::CreateDashedFocusPainterWithInsets(
 std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
     SkColor color,
     const gfx::Insets& insets) {
-  return base::MakeUnique<SolidFocusPainter>(color, insets);
+  // Before Canvas::DrawSolidFocusRect correctly inset the rect's bounds based
+  // on the thickness, callers had to add 1 to the bottom and right insets.
+  // Subtract that here so it works the same way with the new
+  // Canvas::DrawSolidFocusRect.
+  const gfx::Insets corrected_insets = insets - gfx::Insets(0, 0, 1, 1);
+  return base::MakeUnique<SolidFocusPainter>(color, SkIntToScalar(1),
+                                             corrected_insets);
+}
+
+// static
+std::unique_ptr<Painter> Painter::CreateSolidFocusPainter(
+    SkColor color,
+    float thickness,
+    const gfx::InsetsF& insets) {
+  return base::MakeUnique<SolidFocusPainter>(color, SkFloatToScalar(thickness),
+                                             insets);
 }
 
 // HorizontalPainter ----------------------------------------------------------

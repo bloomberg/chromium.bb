@@ -21,6 +21,7 @@ class InkDropHostView;
 class InkDropMask;
 class Label;
 class LabelButton;
+class Painter;
 class Separator;
 class Slider;
 class SliderListener;
@@ -106,6 +107,9 @@ class TrayPopupUtils {
   static views::ToggleButton* CreateToggleButton(
       views::ButtonListener* listener,
       int accessible_name_id);
+
+  // Creates a default focus painter used for most things in tray popups.
+  static std::unique_ptr<views::Painter> CreateFocusPainter();
 
   // Sets up |view| to be a sticky header in a tray detail scroll view.
   static void ConfigureAsStickyHeader(views::View* view);

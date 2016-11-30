@@ -583,9 +583,10 @@ gfx::Rect TrayBackgroundView::GetFocusBounds() {
 }
 
 void TrayBackgroundView::OnPaintFocus(gfx::Canvas* canvas) {
-  gfx::Rect paint_bounds(GetFocusBounds());
-  paint_bounds.Inset(2, -2, 3, -2);
-  canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor);
+  gfx::RectF paint_bounds(GetFocusBounds());
+  paint_bounds.Inset(gfx::Insets(2, -2));
+  canvas->DrawSolidFocusRect(paint_bounds, kFocusBorderColor,
+                             kFocusBorderThickness);
 }
 
 void TrayBackgroundView::OnPaint(gfx::Canvas* canvas) {

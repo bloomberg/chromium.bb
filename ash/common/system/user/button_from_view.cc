@@ -89,11 +89,11 @@ void ButtonFromView::OnPaint(gfx::Canvas* canvas) {
   View::OnPaint(canvas);
   if (HasFocus()) {
     gfx::RectF rect(GetLocalBounds());
-    if (MaterialDesignController::IsSystemTrayMenuMaterial())
-      rect.Inset(gfx::InsetsF(0.5f));
-    else
+    bool use_md = MaterialDesignController::IsSystemTrayMenuMaterial();
+    if (!use_md)
       rect.Inset(gfx::InsetsF(tab_frame_inset_));
-    canvas->DrawSolidFocusRect(rect, kFocusBorderColor);
+    canvas->DrawSolidFocusRect(rect, kFocusBorderColor,
+                               use_md ? kFocusBorderThickness : 1);
   }
 }
 

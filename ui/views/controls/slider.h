@@ -65,8 +65,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
     accessibility_events_enabled_ = enabled;
   }
 
-  void set_focus_border_color(SkColor color) { focus_border_color_ = color; }
-
   // Update UI based on control on/off state.
   virtual void UpdateState(bool control_on) = 0;
 
@@ -139,7 +137,6 @@ class VIEWS_EXPORT Slider : public View, public gfx::AnimationDelegate {
   bool value_is_valid_;
   base::string16 accessible_name_;
   bool accessibility_events_enabled_;
-  SkColor focus_border_color_;
 
   // Relative position of the mouse cursor (or the touch point) on the slider's
   // button.

@@ -39,11 +39,9 @@ SystemMenuButton::SystemMenuButton(views::ButtonListener* listener,
 
   SetTooltipText(l10n_util::GetStringUTF16(accessible_name_id));
 
-  // TODO(tdanderson): Update the focus rect color, border thickness, and
-  // location for material design.
   SetFocusForPlatform();
   SetFocusPainter(views::Painter::CreateSolidFocusPainter(
-      kFocusBorderColor, gfx::Insets(1, 1, 1, 1)));
+      kFocusBorderColor, kFocusBorderThickness, gfx::InsetsF()));
 
   SetInkDropMode(InkDropMode::ON);
   set_has_ink_drop_action_on_click(true);

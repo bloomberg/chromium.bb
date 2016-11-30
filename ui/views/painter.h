@@ -19,6 +19,7 @@ namespace gfx {
 class Canvas;
 class ImageSkia;
 class Insets;
+class InsetsF;
 class Rect;
 class Size;
 }
@@ -87,9 +88,14 @@ class VIEWS_EXPORT Painter {
   static std::unique_ptr<Painter> CreateDashedFocusPainter();
   static std::unique_ptr<Painter> CreateDashedFocusPainterWithInsets(
       const gfx::Insets& insets);
+  // Deprecated: used the InsetsF version below.
   static std::unique_ptr<Painter> CreateSolidFocusPainter(
       SkColor color,
       const gfx::Insets& insets);
+  static std::unique_ptr<Painter> CreateSolidFocusPainter(
+      SkColor color,
+      SkScalar thickness,
+      const gfx::InsetsF& insets);
 
   // Returns the minimum size this painter can paint without obvious graphical
   // problems (e.g. overlapping images).
