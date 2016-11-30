@@ -211,7 +211,10 @@ class WTF_EXPORT ScopedLogger {
 // vulnerability from which execution must not continue even in a release build.
 // Please sure to file bugs for these failures using the security template:
 //    http://code.google.com/p/chromium/issues/entry?template=Security%20Bug
-// RELEASE_ASSERT is deprecated.  We should use CHECK() instead.
+//
+// WARNING: CHECK is slower than RELEASE_ASSERT on MSVC. We should not replace
+// RELEASE_ASSERT with CHECK until the performance issue is fixed
+// (crbug.com/596760).
 #if ENABLE(ASSERT)
 #define RELEASE_ASSERT(assertion) ASSERT(assertion)
 #elif defined(ADDRESS_SANITIZER)
