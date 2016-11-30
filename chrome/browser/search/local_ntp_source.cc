@@ -250,6 +250,14 @@ std::string LocalNtpSource::GetMimeType(
   return std::string();
 }
 
+bool LocalNtpSource::AllowCaching() const {
+  // Some resources served by LocalNtpSource, i.e. config.js, are dynamically
+  // generated and could differ on each access. To avoid using old cached
+  // content on reload, disallow caching here. Otherwise, it fails to reflect
+  // newly revised user configurations in the page.
+  return false;
+}
+
 bool LocalNtpSource::ShouldServiceRequest(
     const net::URLRequest* request) const {
   DCHECK(request->url().host_piece() == chrome::kChromeSearchLocalNtpHost);
