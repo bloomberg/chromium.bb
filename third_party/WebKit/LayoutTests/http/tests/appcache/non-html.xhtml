@@ -16,11 +16,12 @@ function log(message)
     document.getElementById("result").innerHTML += message + "&lt;br/>";
 }
 
-function setNetworkEnabled(state)
+function setNetworkEnabled(state, callback)
 {
     var req = new XMLHttpRequest;
-    req.open("GET", "/resources/network-simulator.php?command=" + (state ? "connect" : "disconnect"), false);
+    req.open("GET", "/resources/network-simulator.php?command=" + (state ? "connect" : "disconnect"));
     req.send("");
+    req.onload = callback;
 }
 
 function createFrame()
@@ -38,61 +39,63 @@ function cached()
     applicationCache.removeEventListener('noupdate', cached, false);
     applicationCache.removeEventListener('cached', cached, false);
 
-    setNetworkEnabled(false);
+    setNetworkEnabled(false, () => {
 
-    // Load a resource that does not exist in the cache.
-    try {
-        var req = new XMLHttpRequest();
-        req.open("GET", "/resources/network-simulator.php?path=/appcache/resources/not-in-cache.txt", false);
-        req.send();
-    } catch (e) {
-        if (e.code == DOMException.NETWORK_ERR)
-            hadError = true;
-    }
+        // Load a resource that does not exist in the cache.
+        try {
+            var req = new XMLHttpRequest();
+            req.open("GET", "/resources/network-simulator.php?path=/appcache/resources/not-in-cache.txt", false);
+            req.send();
+        } catch (e) {
+            if (e.code == DOMException.NETWORK_ERR)
+                hadError = true;
+        }
 
-    if (!hadError) {
-        document.getElementById('result').innerHTML = "FAILURE: Did not get the right exception"
-        return;
-    }
-   
-    // Load a resource that exists in the cache.
-    try {
-        var req = new XMLHttpRequest();
-        req.open("GET", "/resources/network-simulator.php?path=/appcache/resources/simple.txt", false);
-        req.send();
-    } catch (e) {
-        document.getElementById('result').innerHTML = "FAILURE: Could not load data from cache"
-        return;
-    }
-        
-    if (req.responseText != 'Hello, World!') {
-        document.getElementById('result').innerHTML = "FAILURE: Did not get correct data from cached resource"
-        return;
-    }
+        if (!hadError) {
+            document.getElementById('result').innerHTML = "FAILURE: Did not get the right exception"
+            return;
+        }
 
-    createFrame();
+        // Load a resource that exists in the cache.
+        try {
+            var req = new XMLHttpRequest();
+            req.open("GET", "/resources/network-simulator.php?path=/appcache/resources/simple.txt", false);
+            req.send();
+        } catch (e) {
+            document.getElementById('result').innerHTML = "FAILURE: Could not load data from cache"
+            return;
+        }
+
+        if (req.responseText != 'Hello, World!') {
+            document.getElementById('result').innerHTML = "FAILURE: Did not get correct data from cached resource"
+            return;
+        }
+
+        createFrame();
+    });
 }
 
 function frameCreated()
 {
-    setNetworkEnabled(true);
-    
-    if (frames[0].document.documentElement.innerHTML.match(/abe\.png/))
-        log("SUCCESS")
-    else
-        log("FAIL: Frame.onload was called, but the image doesn't seem to be loaded.");
-    
-    if (window.testRunner) {
-        applicationCache.onerror = null;
-        testRunner.notifyDone();
-    }
+    setNetworkEnabled(true, () => {
+        if (frames[0].document.documentElement.innerHTML.match(/abe\.png/))
+            log("SUCCESS")
+        else
+            log("FAIL: Frame.onload was called, but the image doesn't seem to be loaded.");
+
+        if (window.testRunner) {
+            applicationCache.onerror = null;
+            testRunner.notifyDone();
+        }
+    });
 }
 
 function error()
 {
     // The simulator was in a wrong state, reset it.
-    setNetworkEnabled(true);
-    window.location.reload();
+    setNetworkEnabled(true, () => {
+        window.location.reload();
+    });
 }
 
 applicationCache.addEventListener('cached', cached, false);

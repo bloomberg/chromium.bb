@@ -21,11 +21,12 @@ function log(message)
     document.getElementById("result").innerHTML += message + "<br>";
 }
 
-function setManifestDeleted(state)
+function setManifestDeleted(state, callback)
 {
     var req = new XMLHttpRequest;
-    req.open("GET", "resources/fail-on-update.php?command=" + (state ? "delete" : "reset"), false);
+    req.open("GET", "resources/fail-on-update.php?command=" + (state ? "delete" : "reset"));
     req.send(null);
+    req.onload = callback;
 }
 
 function test()
@@ -44,12 +45,14 @@ function test2()
     applicationCache.onnoupdate = function() { log("Unexpected noupdate event") }
     applicationCache.oncached = function() { log("Unexpected cached event") }
 
-    setManifestDeleted(true);
-    // The frame will be associated to a cache, but update will obsolete it.
-    var ifr = document.createElement("iframe");
-    ifr.setAttribute("src", "resources/remove-cache-frame.html");
-    document.body.appendChild(ifr);
-    applicationCache.onobsolete = test3;
+    setManifestDeleted(true, () => {
+        // The frame will be associated to a cache, but update will obsolete it.
+        var ifr = document.createElement("iframe");
+        ifr.setAttribute("src", "resources/remove-cache-frame.html");
+        document.body.appendChild(ifr);
+        applicationCache.onobsolete = test3;
+
+    });
 }
 
 function test3()
@@ -69,16 +72,16 @@ function test3()
 
 function test4()
 {
-    setManifestDeleted(false);
+    setManifestDeleted(false, () => {
+        window.removeEventListener("message", test4, false);
+        applicationCache.onupdateready = null;
 
-    window.removeEventListener("message", test4, false);
-    applicationCache.onupdateready = null;
-
-    // The frame will be associated to a cache.
-    var ifr = document.createElement("iframe");
-    ifr.setAttribute("src", "resources/remove-cache-frame-2.html");
-    document.body.appendChild(ifr);
-    window.addEventListener("message", test5, false);
+        // The frame will be associated to a cache.
+        var ifr = document.createElement("iframe");
+        ifr.setAttribute("src", "resources/remove-cache-frame-2.html");
+        document.body.appendChild(ifr);
+        window.addEventListener("message", test5, false);
+    });
 }
 
 function test5()
@@ -95,8 +98,9 @@ function resetManifest()
         return;
     }
 
-    setManifestDeleted(false);
-    location.reload();
+    setManifestDeleted(false, () => {
+        location.reload();
+    });
 }
 
 applicationCache.onupdateready = function() { log("Unexpected updateready event") }

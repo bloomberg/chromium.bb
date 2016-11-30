@@ -8,21 +8,23 @@ if (window.testRunner) {
     testRunner.dumpAsText();
 }
 
-function setNetworkEnabled(state)
+function setNetworkEnabled(state, callback)
 {
     var req = new XMLHttpRequest;
-    req.open("GET", "/resources/network-simulator.php?command=" + (state ? "connect" : "disconnect"), false);
+    req.open("GET", "/resources/network-simulator.php?command=" + (state ? "connect" : "disconnect"));
     req.send("");
+    req.onload = callback;
 }
 
 function test()
 {
     applicationCache.oncached = null;
     applicationCache.onnoupdate = null;
-    setNetworkEnabled(false);
-    var ifr = document.createElement("iframe");
-    ifr.setAttribute("src", "resources/main-resource-redirect-frame.php");
-    document.body.appendChild(ifr);
+    setNetworkEnabled(false, () => {
+        var ifr = document.createElement("iframe");
+        ifr.setAttribute("src", "resources/main-resource-redirect-frame.php");
+        document.body.appendChild(ifr);
+    });
 }
 
 function done()
@@ -36,6 +38,6 @@ function done()
 
 applicationCache.oncached=test;
 applicationCache.onnoupdate=test;
-applicationCache.onerror = function() { setNetworkEnabled(true); window.location.reload(); }
+applicationCache.onerror = function() { setNetworkEnabled(true, () => { window.location.reload(); }); };
 </script>
 </body>
