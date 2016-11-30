@@ -135,12 +135,12 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   void SetUpOnMainThread() override {
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &ResourcePrefetchPredictorBrowserTest::HandleRedirectRequest,
-        base::Unretained(this), base::Unretained(embedded_test_server())));
-    embedded_test_server()->RegisterRequestHandler(base::Bind(
-        &ResourcePrefetchPredictorBrowserTest::HandleResourceRequest,
-        base::Unretained(this), base::Unretained(embedded_test_server())));
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleRedirectRequest,
+                   base::Unretained(this)));
+    embedded_test_server()->RegisterRequestHandler(
+        base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleResourceRequest,
+                   base::Unretained(this)));
     ASSERT_TRUE(embedded_test_server()->Start());
     predictor_ =
         ResourcePrefetchPredictorFactory::GetForProfile(browser()->profile());
@@ -204,10 +204,10 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
         base::FilePath(FILE_PATH_LITERAL("chrome/test/data")));
     https_server()->RegisterRequestHandler(
         base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleRedirectRequest,
-                   base::Unretained(this), base::Unretained(https_server())));
+                   base::Unretained(this)));
     https_server()->RegisterRequestHandler(
         base::Bind(&ResourcePrefetchPredictorBrowserTest::HandleResourceRequest,
-                   base::Unretained(this), base::Unretained(https_server())));
+                   base::Unretained(this)));
     ASSERT_TRUE(https_server()->Start());
   }
 
@@ -261,9 +261,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleResourceRequest(
-      const net::test_server::EmbeddedTestServer* server,
       const net::test_server::HttpRequest& request) const {
-    auto resource_it = resources_.find(server->GetURL(request.relative_url));
+    auto resource_it = resources_.find(request.GetURL());
     if (resource_it == resources_.end())
       return nullptr;
 
@@ -290,9 +289,8 @@ class ResourcePrefetchPredictorBrowserTest : public InProcessBrowserTest {
   }
 
   std::unique_ptr<net::test_server::HttpResponse> HandleRedirectRequest(
-      const net::test_server::EmbeddedTestServer* server,
       const net::test_server::HttpRequest& request) const {
-    auto redirect_it = redirects_.find(server->GetURL(request.relative_url));
+    auto redirect_it = redirects_.find(request.GetURL());
     if (redirect_it == redirects_.end())
       return nullptr;
 
