@@ -5,13 +5,13 @@
     width: 100px;
     height: 100px;
     background-color: green;
-    -webkit-filter: invert(70%);
+    filter: invert(70%);
 }
 </style>
 <script src="../resources/text-based-repaint.js"></script>
 <script>
 function repaintTest() {
-    document.getElementById('composited-box').style.webkitFilter = 'invert(100%)';
+    document.getElementById('composited-box').style.filter = 'invert(100%)';
 }
 window.onload = runRepaintTest;
 </script>

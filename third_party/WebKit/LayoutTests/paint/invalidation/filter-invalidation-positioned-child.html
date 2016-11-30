@@ -4,7 +4,7 @@
   width: 100px;
   height: 100px;
   background-color: green;
-  -webkit-filter: drop-shadow(250px 50px 10px red);
+  filter: drop-shadow(250px 50px 10px red);
 }
 #positioned {
   position: absolute;
@@ -25,7 +25,7 @@ Passes if the all drop shadows change to green.
 <script src="resources/text-based-repaint.js"></script>
 <script>
 function repaintTest() {
-  box.style.webkitFilter = 'drop-shadow(300px 100px 10px green)';
+  box.style.filter = 'drop-shadow(300px 100px 10px green)';
 }
 runRepaintAndPixelTest();
 </script>
