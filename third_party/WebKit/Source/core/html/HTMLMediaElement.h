@@ -34,7 +34,6 @@
 #include "core/dom/ActiveDOMObject.h"
 #include "core/dom/ExceptionCode.h"
 #include "core/events/GenericEventQueue.h"
-#include "core/html/AutoplayExperimentHelper.h"
 #include "core/html/HTMLElement.h"
 #include "core/html/track/TextTrack.h"
 #include "platform/MIMETypeRegistry.h"
@@ -173,8 +172,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   TimeRanges* seekable() const;
   bool ended() const;
   bool autoplay() const;
-  bool shouldAutoplay(
-      const RecordMetricsBehavior = RecordMetricsBehavior::DoNotRecord);
+  bool shouldAutoplay();
   bool loop() const;
   void setLoop(bool);
   ScriptPromise playForBindings(ScriptState*);
@@ -304,10 +302,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   void videoWillBeDrawnToCanvas() const;
 
-  // Temporary callback for crbug.com/487345,402044
-  void notifyPositionMayHaveChanged(const IntRect&);
-  void updatePositionNotificationRegistration();
-
   WebRemotePlaybackClient* remotePlaybackClient() {
     return m_remotePlaybackClient;
   }
@@ -333,8 +327,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   enum DisplayMode { Unknown, Poster, Video };
   DisplayMode getDisplayMode() const { return m_displayMode; }
   virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
-
-  void recordAutoplayMetric(AutoplayMetrics);
 
  private:
   void resetMediaPlayerAndMediaSource();
@@ -532,9 +524,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   void audioTracksTimerFired(TimerBase*);
 
-  // TODO(liberato): remove once autoplay gesture override experiment concludes.
-  void triggerAutoplayViewportCheckForTesting();
-
   void scheduleResolvePlayPromises();
   void scheduleRejectPlayPromises(ExceptionCode);
   void scheduleNotifyPlaying();
@@ -717,18 +706,13 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   AudioSourceProviderImpl m_audioSourceProvider;
 
-  class AutoplayHelperClientImpl;
-
   friend class AutoplayUmaHelper;  // for isAutoplayAllowedPerSettings
   friend class AutoplayUmaHelperTest;
   friend class Internals;
   friend class TrackDisplayUpdateScope;
-  friend class AutoplayExperimentHelper;
   friend class MediaControlsTest;
   friend class HTMLVideoElementTest;
 
-  Member<AutoplayExperimentHelper::Client> m_autoplayHelperClient;
-  Member<AutoplayExperimentHelper> m_autoplayHelper;
   Member<AutoplayUmaHelper> m_autoplayUmaHelper;
 
   WebRemotePlaybackClient* m_remotePlaybackClient;

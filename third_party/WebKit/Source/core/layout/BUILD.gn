@@ -217,7 +217,6 @@ blink_core_sources("layout") {
     "api/LayoutImageItem.h",
     "api/LayoutItem.h",
     "api/LayoutLIItem.h",
-    "api/LayoutMediaItem.h",
     "api/LayoutMenuListItem.h",
     "api/LayoutPartItem.h",
     "api/LayoutProgressItem.h",

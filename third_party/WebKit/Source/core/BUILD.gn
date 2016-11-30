@@ -1173,7 +1173,6 @@ source_set("unit_tests") {
     "frame/csp/CSPSourceTest.cpp",
     "frame/csp/ContentSecurityPolicyTest.cpp",
     "frame/csp/SourceListDirectiveTest.cpp",
-    "html/AutoplayExperimentTest.cpp",
     "html/AutoplayUmaHelperTest.cpp",
     "html/FormDataTest.cpp",
     "html/HTMLDimensionTest.cpp",

@@ -512,9 +512,6 @@ class Internals final : public GarbageCollectedFinalized<Internals>,
 
   void setMediaElementNetworkState(HTMLMediaElement*, int state);
 
-  // TODO(liberato): remove once autoplay gesture override experiment concludes.
-  void triggerAutoplayViewportCheck(HTMLMediaElement*);
-
   // Returns the run state of the node's scroll animator (see
   // ScrollAnimatorCompositorCoordinater::RunState), or -1 if the node does not
   // have a scrollable area.

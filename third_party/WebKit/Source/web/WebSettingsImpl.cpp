@@ -526,10 +526,6 @@ void WebSettingsImpl::setHyperlinkAuditingEnabled(bool enabled) {
   m_settings->setHyperlinkAuditingEnabled(enabled);
 }
 
-void WebSettingsImpl::setAutoplayExperimentMode(const WebString& mode) {
-  m_settings->setAutoplayExperimentMode(mode);
-}
-
 void WebSettingsImpl::setValidationMessageTimerMagnification(int newValue) {
   m_settings->setValidationMessageTimerMagnification(newValue);
 }

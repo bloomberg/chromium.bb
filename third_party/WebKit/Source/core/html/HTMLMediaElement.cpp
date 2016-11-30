@@ -65,7 +65,7 @@
 #include "core/html/track/VideoTrack.h"
 #include "core/html/track/VideoTrackList.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/layout/api/LayoutMediaItem.h"
+#include "core/layout/LayoutMedia.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
 #include "core/loader/FrameLoader.h"
@@ -286,76 +286,6 @@ String preloadTypeToString(WebMediaPlayer::Preload preloadType) {
 
 }  // anonymous namespace
 
-class HTMLMediaElement::AutoplayHelperClientImpl
-    : public AutoplayExperimentHelper::Client {
- public:
-  static AutoplayHelperClientImpl* create(HTMLMediaElement* element) {
-    return new AutoplayHelperClientImpl(element);
-  }
-
-  virtual ~AutoplayHelperClientImpl();
-
-  using RecordMetricsBehavior = HTMLMediaElement::RecordMetricsBehavior;
-
-  double currentTime() const override { return m_element->currentTime(); }
-  double duration() const override { return m_element->duration(); }
-  bool paused() const override { return m_element->paused(); }
-  bool ended() const override { return m_element->ended(); }
-  bool muted() const override { return m_element->muted(); }
-  void setMuted(bool muted) override { m_element->setMuted(muted); }
-  void playInternal() override { m_element->playInternal(); }
-  void pauseInternal() override { m_element->pauseInternal(); }
-  bool isLockedPendingUserGesture() const override {
-    return m_element->isLockedPendingUserGesture();
-  }
-  void unlockUserGesture() override { m_element->unlockUserGesture(); }
-  void recordAutoplayMetric(AutoplayMetrics metric) override {
-    m_element->recordAutoplayMetric(metric);
-  }
-  bool shouldAutoplay() override {
-    return m_element->shouldAutoplay(RecordMetricsBehavior::DoNotRecord);
-  }
-  bool isHTMLVideoElement() const override {
-    return m_element->isHTMLVideoElement();
-  }
-  bool isHTMLAudioElement() const override {
-    return m_element->isHTMLAudioElement();
-  }
-
-  // Document
-  bool isLegacyViewportType() override;
-  PageVisibilityState pageVisibilityState() const override;
-  String autoplayExperimentMode() const override;
-
-  // Frame
-  bool isCrossOrigin() const override {
-    const LocalFrame* frame = m_element->document().frame();
-    return frame && frame->isCrossOriginSubframe();
-  }
-
-  bool isAutoplayAllowedPerSettings() const override;
-
-  // LayoutObject
-  void setRequestPositionUpdates(bool) override;
-  IntRect absoluteBoundingBoxRect() const override;
-
-  DEFINE_INLINE_VIRTUAL_TRACE() {
-    visitor->trace(m_element);
-    Client::trace(visitor);
-  }
-
- private:
-  AutoplayHelperClientImpl(HTMLMediaElement* element) : m_element(element) {}
-
-  Member<HTMLMediaElement> m_element;
-};
-
-void HTMLMediaElement::recordAutoplayMetric(AutoplayMetrics metric) {
-  DEFINE_STATIC_LOCAL(EnumerationHistogram, autoplayHistogram,
-                      ("Blink.MediaElement.Autoplay", NumberOfAutoplayMetrics));
-  autoplayHistogram.count(metric);
-}
-
 MIMETypeRegistry::SupportsType HTMLMediaElement::supportsType(
     const ContentType& contentType) {
   DEFINE_STATIC_LOCAL(const String, codecs, ("codecs"));
@@ -452,9 +382,6 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_videoTracks(this, VideoTrackList::create(*this)),
       m_textTracks(this, nullptr),
       m_audioSourceNode(nullptr),
-      m_autoplayHelperClient(AutoplayHelperClientImpl::create(this)),
-      m_autoplayHelper(
-          AutoplayExperimentHelper::create(m_autoplayHelperClient.get())),
       m_autoplayUmaHelper(AutoplayUmaHelper::create(this)),
       m_remotePlaybackClient(nullptr),
       m_autoplayVisibilityObserver(nullptr) {
@@ -465,8 +392,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
   // If any experiment is enabled, then we want to enable a user gesture by
   // default, otherwise the experiment does nothing.
   if ((document.settings() &&
-       document.settings()->mediaPlaybackRequiresUserGesture()) ||
-      m_autoplayHelper->isExperimentEnabled()) {
+       document.settings()->mediaPlaybackRequiresUserGesture())) {
     m_lockedPendingUserGesture = true;
   }
 
@@ -513,12 +439,10 @@ void HTMLMediaElement::didMoveToNewDocument(Document& oldDocument) {
   // default, otherwise the experiment does nothing.
   bool oldDocumentRequiresUserGesture =
       (oldDocument.settings() &&
-       oldDocument.settings()->mediaPlaybackRequiresUserGesture()) ||
-      m_autoplayHelper->isExperimentEnabled();
+       oldDocument.settings()->mediaPlaybackRequiresUserGesture());
   bool newDocumentRequiresUserGesture =
       (document().settings() &&
-       document().settings()->mediaPlaybackRequiresUserGesture()) ||
-      m_autoplayHelper->isExperimentEnabled();
+       document().settings()->mediaPlaybackRequiresUserGesture());
   if (newDocumentRequiresUserGesture && !oldDocumentRequiresUserGesture) {
     m_lockedPendingUserGesture = true;
   }
@@ -748,7 +672,10 @@ String HTMLMediaElement::canPlayType(const String& mimeType) const {
 void HTMLMediaElement::load() {
   BLINK_MEDIA_LOG << "load(" << (void*)this << ")";
 
-  m_autoplayHelper->loadMethodCalled();
+  if (isLockedPendingUserGesture() &&
+      UserGestureIndicator::utilizeUserGesture()) {
+    unlockUserGesture();
+  }
 
   m_ignorePreloadNone = true;
   invokeLoadAlgorithm();
@@ -1068,8 +995,6 @@ void HTMLMediaElement::loadResource(const WebMediaPlayerSource& source,
 
   // The resource fetch algorithm
   setNetworkState(kNetworkLoading);
-
-  m_autoplayHelper->loadingStarted();
 
   // Set m_currentSrc *before* changing to the cache url, the fact that we are
   // loading from the app cache is an internal detail not exposed through the
@@ -1732,12 +1657,8 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
     }
 
     // Check for autoplay, and record metrics about it if needed.
-    if (shouldAutoplay(RecordMetricsBehavior::DoRecord)) {
+    if (shouldAutoplay()) {
       m_autoplayUmaHelper->onAutoplayInitiated(AutoplaySource::Attribute);
-
-      // If the autoplay experiment says that it's okay to play now,
-      // then don't require a user gesture.
-      m_autoplayHelper->becameReadyToPlay();
 
       if (!isGestureNeededForPlayback()) {
         if (isHTMLVideoElement() && muted() &&
@@ -2112,19 +2033,10 @@ bool HTMLMediaElement::autoplay() const {
   return fastHasAttribute(autoplayAttr);
 }
 
-bool HTMLMediaElement::shouldAutoplay(
-    const RecordMetricsBehavior recordMetrics) {
-  if (m_autoplaying && m_paused && autoplay()) {
-    if (document().isSandboxed(SandboxAutomaticFeatures)) {
-      if (recordMetrics == RecordMetricsBehavior::DoRecord)
-        m_autoplayHelper->recordSandboxFailure();
-      return false;
-    }
-
-    return true;
-  }
-
-  return false;
+bool HTMLMediaElement::shouldAutoplay() {
+  if (document().isSandboxed(SandboxAutomaticFeatures))
+    return false;
+  return m_autoplaying && m_paused && autoplay();
 }
 
 String HTMLMediaElement::preload() const {
@@ -2233,16 +2145,9 @@ ScriptPromise HTMLMediaElement::playForBindings(ScriptState* scriptState) {
 Nullable<ExceptionCode> HTMLMediaElement::play() {
   BLINK_MEDIA_LOG << "play(" << (void*)this << ")";
 
-  m_autoplayHelper->playMethodCalled();
-
   if (!UserGestureIndicator::processingUserGesture()) {
     m_autoplayUmaHelper->onAutoplayInitiated(AutoplaySource::Method);
     if (isGestureNeededForPlayback()) {
-      // If playback is deferred, then don't start playback but don't
-      // fail yet either.
-      if (m_autoplayHelper->isPlaybackDeferred())
-        return nullptr;
-
       // If we're already playing, then this play would do nothing anyway.
       // Call playInternal to handle scheduling the promise resolution.
       if (!m_paused) {
@@ -2250,7 +2155,6 @@ Nullable<ExceptionCode> HTMLMediaElement::play() {
         return nullptr;
       }
 
-      recordAutoplayMetric(PlayMethodFailed);
       String message = ExceptionMessages::failedToExecute(
           "play", "HTMLMediaElement",
           "API can only be initiated by a user gesture.");
@@ -2260,9 +2164,7 @@ Nullable<ExceptionCode> HTMLMediaElement::play() {
     }
   } else {
     UserGestureIndicator::utilizeUserGesture();
-    // We ask the helper to remove the gesture requirement for us, so that
-    // it can record the reason.
-    m_autoplayHelper->unlockUserGesture(GesturelessPlaybackEnabledByPlayMethod);
+    unlockUserGesture();
   }
 
   if (m_error && m_error->code() == MediaError::kMediaErrSrcNotSupported)
@@ -2328,8 +2230,6 @@ void HTMLMediaElement::pauseInternal() {
 
   if (m_networkState == kNetworkEmpty)
     invokeResourceSelectionAlgorithm();
-
-  m_autoplayHelper->pauseMethodCalled();
 
   m_autoplaying = false;
 
@@ -2453,7 +2353,6 @@ void HTMLMediaElement::setMuted(bool muted) {
     unlockUserGesture();
 
   m_muted = muted;
-  m_autoplayHelper->mutedChanged();
 
   scheduleEvent(EventTypeNames::volumechange);
 
@@ -3341,7 +3240,6 @@ void HTMLMediaElement::updatePlayState() {
       webMediaPlayer()->setRate(playbackRate());
       webMediaPlayer()->setVolume(effectiveMediaVolume());
       webMediaPlayer()->play();
-      m_autoplayHelper->playbackStarted();
     }
 
     startPlaybackProgressTimer();
@@ -3349,7 +3247,6 @@ void HTMLMediaElement::updatePlayState() {
   } else {  // Should not be playing right now
     if (isPlaying) {
       webMediaPlayer()->pause();
-      m_autoplayHelper->playbackStopped();
     }
 
     m_playbackProgressTimer.stop();
@@ -3828,8 +3725,6 @@ DEFINE_TRACE(HTMLMediaElement) {
   visitor->trace(m_playPromiseResolveList);
   visitor->trace(m_playPromiseRejectList);
   visitor->trace(m_audioSourceProvider);
-  visitor->trace(m_autoplayHelperClient);
-  visitor->trace(m_autoplayHelper);
   visitor->trace(m_autoplayUmaHelper);
   visitor->trace(m_srcObject);
   visitor->trace(m_autoplayVisibilityObserver);
@@ -3911,9 +3806,6 @@ bool HTMLMediaElement::isGestureNeededForPlayback() const {
     return false;
   }
 
-  if (m_autoplayHelper->isGestureRequirementOverridden())
-    return false;
-
   return true;
 }
 
@@ -3938,23 +3830,6 @@ void HTMLMediaElement::videoWillBeDrawnToCanvas() const {
   UseCounter::count(document(), UseCounter::VideoInCanvas);
   if (m_autoplayUmaHelper->hasSource() && !m_autoplayUmaHelper->isVisible())
     UseCounter::count(document(), UseCounter::HiddenAutoplayedVideoInCanvas);
-}
-
-void HTMLMediaElement::notifyPositionMayHaveChanged(
-    const IntRect& visibleRect) {
-  m_autoplayHelper->positionChanged(visibleRect);
-}
-
-void HTMLMediaElement::updatePositionNotificationRegistration() {
-  m_autoplayHelper->updatePositionNotificationRegistration();
-}
-
-// TODO(liberato): remove once autoplay gesture override experiment concludes.
-void HTMLMediaElement::triggerAutoplayViewportCheckForTesting() {
-  if (FrameView* view = document().view())
-    m_autoplayHelper->positionChanged(
-        view->rootFrameToContents(view->computeVisibleArea()));
-  m_autoplayHelper->triggerAutoplayViewportCheckForTesting();
 }
 
 void HTMLMediaElement::scheduleResolvePlayPromises() {
@@ -4153,48 +4028,6 @@ DEFINE_TRACE(HTMLMediaElement::AudioClientImpl) {
 
 DEFINE_TRACE(HTMLMediaElement::AudioSourceProviderImpl) {
   visitor->trace(m_client);
-}
-
-HTMLMediaElement::AutoplayHelperClientImpl::~AutoplayHelperClientImpl() {}
-
-bool HTMLMediaElement::AutoplayHelperClientImpl::isLegacyViewportType() {
-  return m_element->document().viewportDescription().isLegacyViewportType();
-}
-
-PageVisibilityState
-HTMLMediaElement::AutoplayHelperClientImpl::pageVisibilityState() const {
-  return m_element->document().pageVisibilityState();
-}
-
-String HTMLMediaElement::AutoplayHelperClientImpl::autoplayExperimentMode()
-    const {
-  String mode;
-  if (m_element->document().settings())
-    mode = m_element->document().settings()->autoplayExperimentMode();
-
-  return mode;
-}
-
-bool HTMLMediaElement::AutoplayHelperClientImpl::isAutoplayAllowedPerSettings()
-    const {
-  return m_element->isAutoplayAllowedPerSettings();
-}
-
-void HTMLMediaElement::AutoplayHelperClientImpl::setRequestPositionUpdates(
-    bool request) {
-  if (LayoutObject* layoutObject = m_element->layoutObject()) {
-    LayoutMediaItem layoutMediaItem =
-        LayoutMediaItem(toLayoutMedia(layoutObject));
-    layoutMediaItem.setRequestPositionUpdates(request);
-  }
-}
-
-IntRect HTMLMediaElement::AutoplayHelperClientImpl::absoluteBoundingBoxRect()
-    const {
-  IntRect result;
-  if (LayoutObject* object = m_element->layoutObject())
-    result = object->absoluteBoundingBoxRect();
-  return result;
 }
 
 }  // namespace blink

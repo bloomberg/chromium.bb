@@ -1042,9 +1042,6 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
   settings->setForcePreloadNoneForMediaElements(is_low_end_device);
 #endif
 
-  settings->setAutoplayExperimentMode(
-      blink::WebString::fromUTF8(prefs.autoplay_experiment_mode));
-
   settings->setViewportEnabled(prefs.viewport_enabled);
   settings->setViewportMetaEnabled(prefs.viewport_meta_enabled);
   settings->setShrinksViewportContentToFit(

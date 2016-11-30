@@ -1292,12 +1292,6 @@ void FrameView::invalidatePaintIfNeeded(
 
   if (m_frame->selection().isCaretBoundsDirty())
     m_frame->selection().invalidateCaretRect();
-
-  // Temporary callback for crbug.com/487345,402044
-  // TODO(ojan): Make this more general to be used by PositionObserver
-  // and rAF throttling.
-  IntRect visibleRect = rootFrameToContents(computeVisibleArea());
-  layoutViewItem().sendMediaPositionChangeNotifications(visibleRect);
 }
 
 IntRect FrameView::computeVisibleArea() {

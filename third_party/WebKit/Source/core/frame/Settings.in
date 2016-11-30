@@ -384,9 +384,6 @@ disallowFetchForDocWrittenScriptsInMainFrameOnSlowConnections initial=false
 # frame inserted via document.write, regardless of connection type.
 disallowFetchForDocWrittenScriptsInMainFrame initial=false
 
-# The autoplay gesture override experiment is described in crbug.com/487345 .
-autoplayExperimentMode type=String, initial="off"
-
 # Whether to invalidate device-dependent media queries and restore scroll positions
 # on frame resize assuming device rotation.
 mainFrameResizesAreOrientationChanges initial=false

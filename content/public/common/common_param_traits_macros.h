@@ -239,7 +239,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::WebPreferences)
   IPC_STRUCT_TRAITS_MEMBER(progress_bar_completion)
   IPC_STRUCT_TRAITS_MEMBER(spellcheck_enabled_by_default)
 #endif
-  IPC_STRUCT_TRAITS_MEMBER(autoplay_experiment_mode)
   IPC_STRUCT_TRAITS_MEMBER(default_minimum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(default_maximum_page_scale_factor)
   IPC_STRUCT_TRAITS_MEMBER(hide_download_ui)

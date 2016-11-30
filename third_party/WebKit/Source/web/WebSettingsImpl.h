@@ -64,7 +64,6 @@ class WEB_EXPORT WebSettingsImpl final : NON_EXPORTED_BASE(public WebSettings) {
   void setAlwaysShowContextMenuOnTouch(bool) override;
   void setAntialiased2dCanvasEnabled(bool) override;
   void setAntialiasedClips2dCanvasEnabled(bool) override;
-  void setAutoplayExperimentMode(const WebString&) override;
   void setAutoZoomFocusedNodeToLegibleScale(bool) override;
   void setBrowserSideNavigationEnabled(bool) override;
   void setClobberUserAgentInitialScaleQuirk(bool) override;

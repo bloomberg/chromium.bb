@@ -9,8 +9,6 @@ blink_core_sources("html") {
   split_count = 5
 
   sources = [
-    "AutoplayExperimentHelper.cpp",
-    "AutoplayExperimentHelper.h",
     "AutoplayUmaHelper.cpp",
     "AutoplayUmaHelper.h",
     "ClassList.cpp",

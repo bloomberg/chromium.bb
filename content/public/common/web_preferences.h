@@ -249,10 +249,6 @@ struct CONTENT_EXPORT WebPreferences {
   bool spellcheck_enabled_by_default;
 #endif
 
-  // String that describes how media element autoplay behavior should be
-  // affected by experiment.
-  std::string autoplay_experiment_mode;
-
   // Default (used if the page or UA doesn't override these) values for page
   // scale limits. These are set directly on the WebView so there's no analogue
   // in WebSettings.

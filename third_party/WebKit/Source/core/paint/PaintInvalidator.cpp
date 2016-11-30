@@ -363,13 +363,6 @@ void PaintInvalidator::invalidatePaintIfNeeded(
 
   if (frameView.frame().selection().isCaretBoundsDirty())
     frameView.frame().selection().invalidateCaretRect();
-
-  // Temporary callback for crbug.com/487345,402044
-  // TODO(ojan): Make this more general to be used by PositionObserver
-  // and rAF throttling.
-  IntRect visibleRect =
-      frameView.rootFrameToContents(frameView.computeVisibleArea());
-  layoutView->sendMediaPositionChangeNotifications(visibleRect);
 }
 
 void PaintInvalidator::invalidatePaintIfNeeded(

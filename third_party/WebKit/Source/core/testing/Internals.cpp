@@ -3072,11 +3072,6 @@ void Internals::setMediaElementNetworkState(HTMLMediaElement* mediaElement,
       static_cast<WebMediaPlayer::NetworkState>(state));
 }
 
-// TODO(liberato): remove once autoplay gesture override experiment concludes.
-void Internals::triggerAutoplayViewportCheck(HTMLMediaElement* element) {
-  element->triggerAutoplayViewportCheckForTesting();
-}
-
 String Internals::getScrollAnimationState(Node* node) const {
   if (ScrollableArea* scrollableArea = scrollableAreaForNode(node))
     return scrollableArea->scrollAnimator().runStateAsText();

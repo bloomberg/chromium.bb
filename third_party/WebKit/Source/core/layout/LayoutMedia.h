@@ -57,20 +57,7 @@ class LayoutMedia : public LayoutImage {
 
   const char* name() const override { return "LayoutMedia"; }
 
-  // Temporary callback for crbug.com/587345,402044
-  void notifyPositionMayHaveChanged(const IntRect&);
-
-  // Change whether we want or don't want to receive position change
-  // notifications.  This will cause us to start / stop receiving change
-  // notifications if possible.
-  // Temporary method for crbug.com/587345,402044
-  void setRequestPositionUpdates(bool);
-
  protected:
-  // Temporary overrides for crbug.com/587345,402044
-  void willBeDestroyed() override;
-  void insertedIntoTree() override;
-
   void layout() override;
 
   bool isOfType(LayoutObjectType type) const override {

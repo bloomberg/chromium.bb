@@ -30,7 +30,6 @@
 #include "core/html/HTMLIFrameElement.h"
 #include "core/layout/HitTestResult.h"
 #include "core/layout/LayoutGeometryMap.h"
-#include "core/layout/LayoutMedia.h"
 #include "core/layout/LayoutPart.h"
 #include "core/layout/ViewFragmentationContext.h"
 #include "core/layout/api/LayoutAPIShim.h"
@@ -987,26 +986,6 @@ void LayoutView::willBeDestroyed() {
     layer->setNeedsRepaint();
   LayoutBlockFlow::willBeDestroyed();
   m_compositor.reset();
-}
-
-void LayoutView::registerMediaForPositionChangeNotification(
-    LayoutMedia& media) {
-  if (!m_mediaForPositionNotification.contains(&media))
-    m_mediaForPositionNotification.append(&media);
-}
-
-void LayoutView::unregisterMediaForPositionChangeNotification(
-    LayoutMedia& media) {
-  size_t at = m_mediaForPositionNotification.find(&media);
-  if (at != kNotFound)
-    m_mediaForPositionNotification.remove(at);
-}
-
-void LayoutView::sendMediaPositionChangeNotifications(
-    const IntRect& visibleRect) {
-  for (auto& media : m_mediaForPositionNotification) {
-    media->notifyPositionMayHaveChanged(visibleRect);
-  }
 }
 
 void LayoutView::updateFromStyle() {

@@ -351,9 +351,6 @@
 
     void setMediaElementNetworkState(HTMLMediaElement element, long state);
 
-    // TODO(liberato): remove once autoplay gesture override experiment concludes.
-    void triggerAutoplayViewportCheck(HTMLMediaElement mediaElement);
-
     DOMString getScrollAnimationState(Node node);
 
     DOMString getProgrammaticScrollAnimationState(Node node);

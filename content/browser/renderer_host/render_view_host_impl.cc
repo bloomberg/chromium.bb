@@ -434,21 +434,13 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   // On Android, user gestures are normally required, unless that requirement
   // is disabled with a command-line switch or the equivalent field trial is
   // is set to "Enabled".
-  const std::string autoplay_group_name = base::FieldTrialList::FindFullName(
-      "MediaElementAutoplay");
   prefs.user_gesture_required_for_media_playback = !command_line.HasSwitch(
-      switches::kDisableGestureRequirementForMediaPlayback) &&
-          (autoplay_group_name.empty() || autoplay_group_name != "Enabled");
+      switches::kDisableGestureRequirementForMediaPlayback);
 
   prefs.progress_bar_completion = GetProgressBarCompletionPolicy();
 
   prefs.use_solid_color_scrollbars = true;
 #endif
-
-  // Handle autoplay gesture override experiment.
-  // Note that anything but a well-formed string turns the experiment off.
-  prefs.autoplay_experiment_mode = base::FieldTrialList::FindFullName(
-      "MediaElementGestureOverrideExperiment");
 
   prefs.touch_event_api_enabled =
       !command_line.HasSwitch(switches::kTouchEvents) ||

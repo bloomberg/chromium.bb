@@ -124,7 +124,6 @@ webkit.org/b/84735 [ Win ] http/tests/inspector/change-iframe-src.html [ Slow ]
 crbug.com/504565 [ Mac ] http/tests/inspector/search/sources-search-scope.html [ Slow ]
 crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-crafted-frame-add.html [ Slow ]
 crbug.com/451577 http/tests/inspector/resource-tree/resource-tree-frame-in-crafted-frame.html [ Slow ]
-crbug.com/642023 [ Debug Win7 ] media/video-autoplay-experiment-modes.html [ Slow ]
 
 crbug.com/510337 cssom/cssvalue-comparison.html [ Slow ]
 crbug.com/510337 inspector/elements/styles-1/edit-value-url-with-color.html [ Slow ]

@@ -39,7 +39,6 @@ namespace blink {
 class FrameView;
 class PaintLayerCompositor;
 class LayoutQuote;
-class LayoutMedia;
 class ViewFragmentationContext;
 
 // LayoutView is the root of the layout tree and the Document's LayoutObject.
@@ -232,16 +231,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
     return false;
   }
 
-  // Some LayoutMedias want to know about their viewport visibility for
-  // crbug.com/487345,402044 .  This facility will be removed once those
-  // experiments complete.
-  // TODO(ojan): Merge this with IntersectionObserver once it lands.
-  void registerMediaForPositionChangeNotification(LayoutMedia&);
-  void unregisterMediaForPositionChangeNotification(LayoutMedia&);
-  // Notify all registered LayoutMedias that their position on-screen might
-  // have changed.  visibleRect is the clipping boundary.
-  void sendMediaPositionChangeNotifications(const IntRect& visibleRect);
-
   // The rootLayerScrolls setting will ultimately determine whether FrameView
   // or PaintLayerScrollableArea handle the scroll.
   ScrollResult scroll(ScrollGranularity, const FloatSize&) override;
@@ -318,8 +307,6 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   unsigned m_hitTestCount;
   unsigned m_hitTestCacheHits;
   Persistent<HitTestCache> m_hitTestCache;
-
-  Vector<LayoutMedia*> m_mediaForPositionNotification;
 };
 
 DEFINE_LAYOUT_OBJECT_TYPE_CASTS(LayoutView, isLayoutView());
