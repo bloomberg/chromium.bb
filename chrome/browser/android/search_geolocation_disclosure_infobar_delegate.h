@@ -36,6 +36,10 @@ class SearchGeolocationDisclosureInfoBarDelegate
   static void Create(content::WebContents* web_contents,
                      const GURL& search_url);
 
+  // Determine if there is a search geolocation disclosure infobar already open.
+  static bool IsSearchGeolocationDisclosureOpen(
+      content::WebContents* web_contents);
+
   // The translated text of the message to display.
   const base::string16& message_text() const { return message_text_; }
 

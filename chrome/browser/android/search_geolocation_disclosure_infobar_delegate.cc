@@ -30,6 +30,23 @@ void SearchGeolocationDisclosureInfoBarDelegate::Create(
               web_contents, search_url))));
 }
 
+// static
+bool SearchGeolocationDisclosureInfoBarDelegate::
+    IsSearchGeolocationDisclosureOpen(content::WebContents* web_contents) {
+  InfoBarService* infobar_service =
+      InfoBarService::FromWebContents(web_contents);
+  for (size_t i = 0; i < infobar_service->infobar_count(); ++i) {
+    infobars::InfoBar* existing_infobar = infobar_service->infobar_at(i);
+    if (existing_infobar->delegate()->GetIdentifier() ==
+        infobars::InfoBarDelegate::
+            SEARCH_GEOLOCATION_DISCLOSURE_INFOBAR_DELEGATE) {
+      return true;
+    }
+  }
+
+  return false;
+}
+
 SearchGeolocationDisclosureInfoBarDelegate::
     SearchGeolocationDisclosureInfoBarDelegate(
         content::WebContents* web_contents,
