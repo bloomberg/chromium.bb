@@ -899,16 +899,19 @@ void Editor::reappliedEditing(EditCommandComposition* cmd) {
       InputEvent::InputType::HistoryRedo, nullAtom,
       InputEvent::EventIsComposing::NotComposing);
 
-  // TODO(yosin): Since |dispatchEditableContentChangedEvents()| and
-  // |dispatchInputEventEditableContentChanged()|, we would like to know
-  // such case. Once we have a case, this |DCHECK()| should be replaced
-  // with if-statement.
-  DCHECK(frame().document());
-  VisibleSelection newSelection(cmd->endingSelection());
-  if (newSelection.isValidFor(*frame().document()))
+  // TODO(editing-dev): The use of updateStyleAndLayoutIgnorePendingStylesheets
+  // needs to be audited.  See http://crbug.com/590369 for more details.
+  // In the long term, we should stop editing commands from storing
+  // VisibleSelections as starting and ending selections.
+  frame().document()->updateStyleAndLayoutIgnorePendingStylesheets();
+  const VisibleSelection& newSelection =
+      correctedVisibleSelection(cmd->endingSelection());
+  DCHECK(newSelection.isValidFor(*frame().document())) << newSelection;
+  if (!newSelection.isNone()) {
     changeSelectionAfterCommand(
         newSelection,
         FrameSelection::CloseTyping | FrameSelection::ClearTypingStyle);
+  }
 
   m_lastEditCommand = nullptr;
   m_undoStack->registerUndoStep(cmd);
