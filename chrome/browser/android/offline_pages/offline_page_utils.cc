@@ -185,6 +185,8 @@ void OfflinePageUtils::CheckExistenceOfRequestsWithURL(
     const PagesExistCallback& callback) {
   RequestCoordinator* request_coordinator =
       RequestCoordinatorFactory::GetForBrowserContext(browser_context);
+  if (!request_coordinator)
+    return;
 
   auto request_coordinator_continuation = [](
       const std::string& name_space, const GURL& offline_page_url,

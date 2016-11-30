@@ -34,7 +34,8 @@ Offliner* PrerenderingOfflinerFactory::GetOffliner(
     // Get a pointer to the (unowned) offline page model.
     OfflinePageModel* model =
         OfflinePageModelFactory::GetInstance()->GetForBrowserContext(context_);
-
+    // Ensure we do have a model for saving a page if we prerender it.
+    DCHECK(model) << "No OfflinePageModel for offliner";
     offliner_ = new PrerenderingOffliner(context_, policy, model);
   }
 

@@ -281,6 +281,7 @@ void NetErrorTabHelper::DownloadPageLaterHelper(const GURL& page_url) {
   offline_pages::RequestCoordinator* request_coordinator =
       offline_pages::RequestCoordinatorFactory::GetForBrowserContext(
           web_contents()->GetBrowserContext());
+  DCHECK(request_coordinator) << "No RequestCoordinator for SavePageLater";
   offline_pages::ClientId client_id(
       offline_pages::kAsyncNamespace, base::GenerateGUID());
   request_coordinator->SavePageLater(

@@ -81,10 +81,4 @@ KeyedService* RequestCoordinatorFactory::BuildServiceInstanceFor(
   return request_coordinator;
 }
 
-content::BrowserContext* RequestCoordinatorFactory::GetBrowserContextToUse(
-    content::BrowserContext* context) const {
-  // TODO(petewil): Make sure we support incognito properly.
-  return context;
-}
-
 }  // namespace offline_pages
