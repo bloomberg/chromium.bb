@@ -49,7 +49,7 @@ TEST_F(IntersectionObserverTest, ObserveSchedulesFrame) {
   mainResource.complete("<div id='target'></div>");
 
   IntersectionObserverInit observerInit;
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   TestIntersectionObserverCallback* observerCallback =
       new TestIntersectionObserverCallback(document());
   IntersectionObserver* observer = IntersectionObserver::create(

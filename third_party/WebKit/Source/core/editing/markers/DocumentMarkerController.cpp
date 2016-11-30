@@ -207,7 +207,7 @@ static void updateMarkerRenderedRect(const Node& node,
                                      RenderedDocumentMarker& marker) {
   Range* range = Range::create(node.document());
   // The offsets of the marker may be out-dated, so check for exceptions.
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   range->setStart(&const_cast<Node&>(node), marker.startOffset(),
                   exceptionState);
   if (!exceptionState.hadException())

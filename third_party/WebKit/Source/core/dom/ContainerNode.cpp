@@ -793,7 +793,7 @@ void ContainerNode::childrenChanged(const ChildrenChange& change) {
 }
 
 void ContainerNode::cloneChildNodes(ContainerNode* clone) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   for (Node* n = firstChild(); n && !exceptionState.hadException();
        n = n->nextSibling())
     clone->appendChild(n->cloneNode(true), exceptionState);

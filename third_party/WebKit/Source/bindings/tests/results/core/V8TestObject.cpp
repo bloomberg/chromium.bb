@@ -1808,15 +1808,15 @@ static void testEnumAttributeAttributeSetter(v8::Local<v8::Value> v8Value, const
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
-  TrackExceptionState trackExceptionState;
+  DummyExceptionStateForTesting dummyExceptionState;
   const char* validValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
       "EnumValue3",
   };
-  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", trackExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
+  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
 
@@ -1854,15 +1854,15 @@ static void testEnumOrNullAttributeAttributeSetter(v8::Local<v8::Value> v8Value,
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
-  TrackExceptionState trackExceptionState;
+  DummyExceptionStateForTesting dummyExceptionState;
   const char* validValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
       "EnumValue3",
   };
-  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", trackExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
+  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
 
@@ -5347,15 +5347,15 @@ static void enumForPrivateScriptAttributeSetter(v8::Local<v8::Value> v8Value, co
 
   // Type check per: http://heycam.github.io/webidl/#dfn-attribute-setter
   // Returns undefined without setting the value if the value is invalid.
-  TrackExceptionState trackExceptionState;
+  DummyExceptionStateForTesting dummyExceptionState;
   const char* validValues[] = {
       "",
       "EnumValue1",
       "EnumValue2",
       "EnumValue3",
   };
-  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", trackExceptionState)) {
-    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, trackExceptionState.message()));
+  if (!isValidEnum(cppValue, validValues, WTF_ARRAY_LENGTH(validValues), "TestEnum", dummyExceptionState)) {
+    currentExecutionContext(info.GetIsolate())->addConsoleMessage(ConsoleMessage::create(JSMessageSource, WarningMessageLevel, dummyExceptionState.message()));
     return;
   }
 

@@ -558,7 +558,7 @@ bool DOMSelection::containsNode(const Node* n, bool allowPartial) const {
   const Position startPosition =
       selectedRange.startPosition().toOffsetInAnchor();
   const Position endPosition = selectedRange.endPosition().toOffsetInAnchor();
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   bool nodeFullySelected =
       Range::compareBoundaryPoints(
           parentNode, nodeIndex, startPosition.computeContainerNode(),

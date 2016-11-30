@@ -116,7 +116,7 @@ String createShorthandValue(Document* document,
   CSSStyleSheet* styleSheet = CSSStyleSheet::create(styleSheetContents);
   CSSStyleRule* rule = toCSSStyleRule(styleSheet->item(0));
   CSSStyleDeclaration* style = rule->style();
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   style->setProperty(longhand, newValue, style->getPropertyPriority(longhand),
                      exceptionState);
   return style->getPropertyValue(shorthand);
@@ -1233,7 +1233,7 @@ Response InspectorCSSAgent::setStyleSheetText(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   m_domAgent->history()->perform(
       new SetStyleSheetTextAction(inspectorStyleSheet, text), exceptionState);
   response = InspectorDOMAgent::toResponse(exceptionState);
@@ -1291,7 +1291,7 @@ Response InspectorCSSAgent::setRuleSelector(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ModifyRuleAction* action =
       new ModifyRuleAction(ModifyRuleAction::SetRuleSelector,
                            inspectorStyleSheet, selectorRange, selector);
@@ -1323,7 +1323,7 @@ Response InspectorCSSAgent::setKeyframeKey(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ModifyRuleAction* action = new ModifyRuleAction(
       ModifyRuleAction::SetKeyframeKey, inspectorStyleSheet, keyRange, keyText);
   bool success = m_domAgent->history()->perform(action, exceptionState);
@@ -1394,7 +1394,7 @@ Response InspectorCSSAgent::setStyleTexts(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   int n = actions.size();
   std::unique_ptr<protocol::Array<protocol::CSS::CSSStyle>> serializedStyles =
@@ -1405,7 +1405,7 @@ Response InspectorCSSAgent::setStyleTexts(
     if (!success) {
       for (int j = i - 1; j >= 0; --j) {
         Member<StyleSheetAction> revert = actions.at(j);
-        TrackExceptionState undoExceptionState;
+        DummyExceptionStateForTesting undoExceptionState;
         revert->undo(undoExceptionState);
         ASSERT(!undoExceptionState.hadException());
       }
@@ -1429,7 +1429,7 @@ Response InspectorCSSAgent::setStyleText(
     const SourceRange& range,
     const String& text,
     CSSStyleDeclaration*& result) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   if (inspectorStyleSheet->isInlineStyle()) {
     InspectorStyleSheetForInlineStyle* inlineStyleSheet =
         static_cast<InspectorStyleSheetForInlineStyle*>(inspectorStyleSheet);
@@ -1477,7 +1477,7 @@ Response InspectorCSSAgent::setMediaText(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ModifyRuleAction* action = new ModifyRuleAction(
       ModifyRuleAction::SetMediaRuleText, inspectorStyleSheet, textRange, text);
   bool success = m_domAgent->history()->perform(action, exceptionState);
@@ -1531,7 +1531,7 @@ Response InspectorCSSAgent::addRule(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   AddRuleAction* action =
       new AddRuleAction(inspectorStyleSheet, ruleText, ruleLocation);
   bool success = m_domAgent->history()->perform(action, exceptionState);

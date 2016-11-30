@@ -92,7 +92,7 @@ void SplitTextNodeCommand::doReapply() {
 }
 
 void SplitTextNodeCommand::insertText1AndTrimText2() {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   m_text2->parentNode()->insertBefore(m_text1.get(), m_text2.get(),
                                       exceptionState);
   if (exceptionState.hadException())

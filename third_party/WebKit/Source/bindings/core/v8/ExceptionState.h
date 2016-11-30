@@ -159,7 +159,8 @@ class CORE_EXPORT ExceptionState {
   String m_message;
   const char* m_propertyName;
   const char* m_interfaceName;
-  // The exception is empty when it was thrown through TrackExceptionState.
+  // The exception is empty when it was thrown through
+  // DummyExceptionStateForTesting.
   ScopedPersistent<v8::Value> m_exception;
   v8::Isolate* m_isolate;
 };
@@ -182,17 +183,18 @@ class CORE_EXPORT NonThrowableExceptionState final : public ExceptionState {
   void rethrowV8Exception(v8::Local<v8::Value>) override;
 };
 
-// TrackExceptionState never actually throws an exception, but just records
-// whether a call site tried to throw an exception or not.  Should be used
-// if any exceptions must be ignored.
-class CORE_EXPORT TrackExceptionState final : public ExceptionState {
+// DummyExceptionStateForTesting ignores all thrown exceptions. You should not
+// use DummyExceptionStateForTesting in production code, where you need to
+// handle all exceptions properly. If you really need to ignore exceptions in
+// production code for some special reason, explicitly call clearException().
+class CORE_EXPORT DummyExceptionStateForTesting final : public ExceptionState {
  public:
-  TrackExceptionState()
+  DummyExceptionStateForTesting()
       : ExceptionState(nullptr,
                        ExceptionState::UnknownContext,
                        nullptr,
                        nullptr) {}
-  ~TrackExceptionState() {
+  ~DummyExceptionStateForTesting() {
     // Prevent the base class throw an exception.
     if (hadException()) {
       clearException();

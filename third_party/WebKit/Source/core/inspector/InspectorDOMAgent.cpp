@@ -606,7 +606,7 @@ Response InspectorDOMAgent::querySelector(int nodeId,
   if (!node || !node->isContainerNode())
     return Response::Error("Not a container node");
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   Element* element = toContainerNode(node)->querySelector(
       AtomicString(selectors), exceptionState);
   if (exceptionState.hadException())
@@ -628,7 +628,7 @@ Response InspectorDOMAgent::querySelectorAll(
   if (!node || !node->isContainerNode())
     return Response::Error("Not a container node");
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   StaticElementList* elements = toContainerNode(node)->querySelectorAll(
       AtomicString(selectors), exceptionState);
   if (exceptionState.hadException())
@@ -802,7 +802,7 @@ Response InspectorDOMAgent::setNodeName(int nodeId,
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   Element* newElem = oldElement->document().createElement(AtomicString(tagName),
                                                           exceptionState);
   if (exceptionState.hadException())
@@ -1033,7 +1033,7 @@ Response InspectorDOMAgent::performSearch(
     // XPath evaluation
     for (Document* document : docs) {
       ASSERT(document);
-      TrackExceptionState exceptionState;
+      DummyExceptionStateForTesting exceptionState;
       XPathResult* result = DocumentXPathEvaluator::evaluate(
           *document, whitespaceTrimmedQuery, document, nullptr,
           XPathResult::kOrderedNodeSnapshotType, ScriptValue(), exceptionState);
@@ -1055,7 +1055,7 @@ Response InspectorDOMAgent::performSearch(
 
     // Selector evaluation
     for (Document* document : docs) {
-      TrackExceptionState exceptionState;
+      DummyExceptionStateForTesting exceptionState;
       StaticElementList* elementList = document->querySelectorAll(
           AtomicString(whitespaceTrimmedQuery), exceptionState);
       if (exceptionState.hadException() || !elementList)
@@ -1400,13 +1400,13 @@ Response InspectorDOMAgent::moveTo(int nodeId,
 }
 
 Response InspectorDOMAgent::undo() {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   m_history->undo(exceptionState);
   return InspectorDOMAgent::toResponse(exceptionState);
 }
 
 Response InspectorDOMAgent::redo() {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   m_history->redo(exceptionState);
   return InspectorDOMAgent::toResponse(exceptionState);
 }

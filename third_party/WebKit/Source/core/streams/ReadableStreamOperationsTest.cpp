@@ -203,7 +203,7 @@ TEST(ReadableStreamOperationsTest, GetReader) {
       ReadableStreamOperations::isLocked(scope.getScriptState(), stream));
   ScriptValue reader;
   {
-    TrackExceptionState es;
+    DummyExceptionStateForTesting es;
     reader =
         ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
     ASSERT_FALSE(es.hadException());
@@ -219,7 +219,7 @@ TEST(ReadableStreamOperationsTest, GetReader) {
 
   // Already locked!
   {
-    TrackExceptionState es;
+    DummyExceptionStateForTesting es;
     reader =
         ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
     ASSERT_TRUE(es.hadException());
@@ -312,7 +312,7 @@ TEST(ReadableStreamOperationsTest,
 
   ScriptValue reader;
   {
-    TrackExceptionState es;
+    DummyExceptionStateForTesting es;
     reader =
         ReadableStreamOperations::getReader(scope.getScriptState(), stream, es);
     ASSERT_FALSE(es.hadException());

@@ -265,7 +265,7 @@ v8::Local<v8::Value> WebDocument::registerEmbedderCustomElement(
     WebExceptionCode& ec) {
   v8::Isolate* isolate = v8::Isolate::GetCurrent();
   Document* document = unwrap<Document>();
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ElementRegistrationOptions registrationOptions;
   V8ElementRegistrationOptions::toImpl(isolate, options, registrationOptions,
                                        exceptionState);

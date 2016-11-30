@@ -463,7 +463,7 @@ void InspectorOverlay::drawNodeHighlight() {
 
   String selectors = m_nodeHighlightConfig.selectorList;
   StaticElementList* elements = nullptr;
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ContainerNode* queryBase = m_highlightNode->containingShadowRoot();
   if (!queryBase)
     queryBase = m_highlightNode->ownerDocument();

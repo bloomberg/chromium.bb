@@ -151,7 +151,7 @@ const char kTestConstraint2[] = "valid_and_supported_2";
 static bool parseMandatoryConstraintsDictionary(
     const Dictionary& mandatoryConstraintsDictionary,
     Vector<NameValueStringConstraint>& mandatory) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   const HashMap<String, String>& mandatoryConstraintsHashMap =
       mandatoryConstraintsDictionary.getOwnPropertiesAsStringHashMap(
           exceptionState);
@@ -166,7 +166,7 @@ static bool parseMandatoryConstraintsDictionary(
 static bool parseOptionalConstraintsVectorElement(
     const Dictionary& constraint,
     Vector<NameValueStringConstraint>& optionalConstraintsVector) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   const Vector<String>& localNames =
       constraint.getPropertyNames(exceptionState);
   if (exceptionState.hadException())
@@ -189,7 +189,7 @@ static bool parse(const Dictionary& constraintsDictionary,
   if (constraintsDictionary.isUndefinedOrNull())
     return true;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   const Vector<String>& names =
       constraintsDictionary.getPropertyNames(exceptionState);
   if (exceptionState.hadException())

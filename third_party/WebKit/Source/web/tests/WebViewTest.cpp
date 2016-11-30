@@ -3467,7 +3467,7 @@ TEST_P(WebViewTest, DeleteElementWithRegisteredHandler) {
   registry.didAddEventHandler(*div, EventHandlerRegistry::ScrollEvent);
   EXPECT_TRUE(registry.hasEventHandlers(EventHandlerRegistry::ScrollEvent));
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   div->remove(exceptionState);
 
   // For oilpan we have to force a GC to ensure the event handlers have been

@@ -363,10 +363,10 @@ void maybeSetAndroidPayMethodData(
     payments::mojom::blink::PaymentMethodDataPtr& output,
     ExceptionState& exceptionState) {
   AndroidPayMethodData androidPay;
-  TrackExceptionState trackExceptionState;
+  DummyExceptionStateForTesting dummyExceptionState;
   V8AndroidPayMethodData::toImpl(input.isolate(), input.v8Value(), androidPay,
-                                 trackExceptionState);
-  if (trackExceptionState.hadException())
+                                 dummyExceptionState);
+  if (dummyExceptionState.hadException())
     return;
 
   if (androidPay.hasEnvironment() && androidPay.environment() == "TEST")
@@ -661,7 +661,7 @@ void PaymentRequest::onUpdatePaymentDetails(
     return;
 
   PaymentDetails details;
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   V8PaymentDetails::toImpl(detailsScriptValue.isolate(),
                            detailsScriptValue.v8Value(), details,
                            exceptionState);

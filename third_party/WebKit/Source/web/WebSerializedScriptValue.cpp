@@ -44,7 +44,7 @@ WebSerializedScriptValue WebSerializedScriptValue::fromString(
 
 WebSerializedScriptValue WebSerializedScriptValue::serialize(
     v8::Local<v8::Value> value) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   WebSerializedScriptValue serializedValue = SerializedScriptValue::serialize(
       v8::Isolate::GetCurrent(), value, nullptr, nullptr, exceptionState);
   if (exceptionState.hadException())

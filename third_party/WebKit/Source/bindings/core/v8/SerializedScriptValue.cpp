@@ -79,7 +79,7 @@ PassRefPtr<SerializedScriptValue>
 SerializedScriptValue::serializeAndSwallowExceptions(
     v8::Isolate* isolate,
     v8::Local<v8::Value> value) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   RefPtr<SerializedScriptValue> serialized =
       serialize(isolate, value, nullptr, nullptr, exceptionState);
   if (exceptionState.hadException())

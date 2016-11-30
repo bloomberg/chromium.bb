@@ -251,7 +251,7 @@ class CacheStorageTest : public ::testing::Test {
   v8::Local<v8::Context> context() { return getScriptState()->context(); }
 
   Request* newRequestFromUrl(const String& url) {
-    TrackExceptionState exceptionState;
+    DummyExceptionStateForTesting exceptionState;
     Request* request = Request::create(getScriptState(), url, exceptionState);
     EXPECT_FALSE(exceptionState.hadException());
     return exceptionState.hadException() ? 0 : request;

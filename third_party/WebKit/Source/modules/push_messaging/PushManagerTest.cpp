@@ -33,7 +33,7 @@ TEST(PushManagerTest, ValidSenderKey) {
       ArrayBufferOrArrayBufferView::fromArrayBuffer(DOMArrayBuffer::create(
           kApplicationServerKey, kApplicationServerKeyLength)));
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   WebPushSubscriptionOptions output =
       PushSubscriptionOptions::toWeb(options, exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
@@ -57,7 +57,7 @@ TEST(PushManagerTest, InvalidSenderKeyLength) {
   options.setApplicationServerKey(ArrayBufferOrArrayBufferView::fromArrayBuffer(
       DOMArrayBuffer::create(senderKey, kMaxKeyLength + 1)));
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   WebPushSubscriptionOptions output =
       PushSubscriptionOptions::toWeb(options, exceptionState);
   EXPECT_TRUE(exceptionState.hadException());

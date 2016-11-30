@@ -69,7 +69,7 @@ void MergeIdenticalElementsCommand::doUnapply() {
   if (!parent || !hasEditableStyle(*parent))
     return;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   parent->insertBefore(m_element1.get(), m_element2.get(), exceptionState);
   if (exceptionState.hadException())

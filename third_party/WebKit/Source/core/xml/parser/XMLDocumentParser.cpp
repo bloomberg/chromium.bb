@@ -1011,7 +1011,7 @@ void XMLDocumentParser::startElementNs(const AtomicString& localName,
   }
 
   Vector<Attribute> prefixedAttributes;
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   handleNamespaceAttributes(prefixedAttributes, libxmlNamespaces, nbNamespaces,
                             exceptionState);
   if (exceptionState.hadException()) {
@@ -1195,7 +1195,7 @@ void XMLDocumentParser::processingInstruction(const String& target,
     return;
 
   // ### handle exceptions
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ProcessingInstruction* pi =
       m_currentNode->document().createProcessingInstruction(target, data,
                                                             exceptionState);

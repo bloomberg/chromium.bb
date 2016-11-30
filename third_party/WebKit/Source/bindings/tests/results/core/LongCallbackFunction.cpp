@@ -42,9 +42,9 @@ bool LongCallbackFunction::call(ScriptWrappable* scriptWrappable, int num1, int 
   if (m_callback.isEmpty())
     return false;
 
-  // TODO(bashi): Make sure that using TrackExceptionState is OK.
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
 
   v8::Local<v8::Value> num1Argument = v8::Integer::New(m_scriptState->isolate(), num1);

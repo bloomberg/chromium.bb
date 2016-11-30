@@ -129,7 +129,7 @@ TEST_F(PasswordCredentialTest, CreateFromFormNoPassword) {
                    "value='https://example.com/photo' autocomplete='photo'>"
                    "<input type='text' name='theName' value='friendly name' "
                    "autocomplete='name'>");
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   PasswordCredential* credential =
       PasswordCredential::create(form, exceptionState);
   EXPECT_EQ(nullptr, credential);
@@ -148,7 +148,7 @@ TEST_F(PasswordCredentialTest, CreateFromFormNoId) {
                    "value='https://example.com/photo' autocomplete='photo'>"
                    "<input type='text' name='theName' value='friendly name' "
                    "autocomplete='name'>");
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   PasswordCredential* credential =
       PasswordCredential::create(form, exceptionState);
   EXPECT_EQ(nullptr, credential);

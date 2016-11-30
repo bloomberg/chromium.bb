@@ -63,7 +63,7 @@ TEST_F(FilteredComputedStylePropertyMapTest, NativePropertyAccessors) {
       FilteredComputedStylePropertyMap::create(declaration(), nativeProperties,
                                                emptyCustomProperties);
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   map->get("color", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());
@@ -94,7 +94,7 @@ TEST_F(FilteredComputedStylePropertyMapTest, CustomPropertyAccessors) {
       FilteredComputedStylePropertyMap::create(
           declaration(), emptyNativeProperties, customProperties);
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   map->get("--foo", exceptionState);
   EXPECT_FALSE(exceptionState.hadException());

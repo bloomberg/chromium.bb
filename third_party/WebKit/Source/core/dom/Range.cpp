@@ -388,7 +388,7 @@ short Range::compareBoundaryPoints(const RangeBoundaryPoint& boundaryA,
 }
 
 bool Range::boundaryPointsValid() const {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   return compareBoundaryPoints(m_start, m_end, exceptionState) <= 0 &&
          !exceptionState.hadException();
 }

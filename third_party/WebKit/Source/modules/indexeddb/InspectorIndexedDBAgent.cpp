@@ -161,7 +161,7 @@ class ExecutableWithDatabase
         OpenDatabaseCallback<RequestCallback>::create(this);
     UpgradeDatabaseCallback<RequestCallback>* upgradeCallback =
         UpgradeDatabaseCallback<RequestCallback>::create(this);
-    TrackExceptionState exceptionState;
+    DummyExceptionStateForTesting exceptionState;
     IDBOpenDBRequest* idbOpenDBRequest =
         idbFactory->open(getScriptState(), databaseName, exceptionState);
     if (exceptionState.hadException()) {
@@ -276,7 +276,7 @@ static IDBTransaction* transactionForDatabase(
     IDBDatabase* idbDatabase,
     const String& objectStoreName,
     const String& mode = IndexedDBNames::readonly) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   StringOrStringSequenceOrDOMStringList scope;
   scope.setString(objectStoreName);
   IDBTransaction* idbTransaction =
@@ -289,7 +289,7 @@ static IDBTransaction* transactionForDatabase(
 static IDBObjectStore* objectStoreForTransaction(
     IDBTransaction* idbTransaction,
     const String& objectStoreName) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   IDBObjectStore* idbObjectStore =
       idbTransaction->objectStore(objectStoreName, exceptionState);
   if (exceptionState.hadException())
@@ -299,7 +299,7 @@ static IDBObjectStore* objectStoreForTransaction(
 
 static IDBIndex* indexForObjectStore(IDBObjectStore* idbObjectStore,
                                      const String& indexName) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   IDBIndex* idbIndex = idbObjectStore->index(indexName, exceptionState);
   if (exceptionState.hadException())
     return nullptr;
@@ -505,7 +505,7 @@ class OpenCursorCallback final : public EventListener {
     IDBCursorWithValue* idbCursor = requestResult->idbCursorWithValue();
 
     if (m_skipCount) {
-      TrackExceptionState exceptionState;
+      DummyExceptionStateForTesting exceptionState;
       idbCursor->advance(m_skipCount, exceptionState);
       if (exceptionState.hadException()) {
         m_requestCallback->sendFailure(
@@ -522,7 +522,7 @@ class OpenCursorCallback final : public EventListener {
 
     // Continue cursor before making injected script calls, otherwise
     // transaction might be finished.
-    TrackExceptionState exceptionState;
+    DummyExceptionStateForTesting exceptionState;
     idbCursor->continueFunction(nullptr, nullptr, exceptionState);
     if (exceptionState.hadException()) {
       m_requestCallback->sendFailure(
@@ -735,7 +735,7 @@ void InspectorIndexedDBAgent::requestDatabaseNames(
     return;
   }
   ScriptState::Scope scope(scriptState);
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   IDBRequest* idbRequest =
       idbFactory->getDatabaseNames(scriptState, exceptionState);
   if (exceptionState.hadException()) {
@@ -896,7 +896,7 @@ class ClearObjectStore final
       return;
     }
 
-    TrackExceptionState exceptionState;
+    DummyExceptionStateForTesting exceptionState;
     idbObjectStore->clear(getScriptState(), exceptionState);
     ASSERT(!exceptionState.hadException());
     if (exceptionState.hadException()) {

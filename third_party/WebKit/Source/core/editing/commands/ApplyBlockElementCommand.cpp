@@ -218,7 +218,7 @@ static bool isNewLineAtPosition(const Position& position) {
       offset >= textNode->maxCharacterOffset())
     return false;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   String textAtPosition =
       toText(textNode)->substringData(offset, 1, exceptionState);
   if (exceptionState.hadException())

@@ -219,7 +219,7 @@ bool LayoutEditor::growInside(String propertyName,
   else
     newValue = "5px";
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   elementStyle->setProperty(propertyName, newValue, "important",
                             exceptionState);
   m_element->ownerDocument()->updateStyleAndLayout();
@@ -393,7 +393,7 @@ std::unique_ptr<protocol::DictionaryValue> LayoutEditor::currentSelectorInfo(
 
   object->setArray("medias", std::move(mediaListValue));
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   StaticElementList* elements = ownerDocument->querySelectorAll(
       AtomicString(currentSelectorText), exceptionState);
 

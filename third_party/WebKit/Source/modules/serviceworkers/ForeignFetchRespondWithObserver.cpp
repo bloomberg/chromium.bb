@@ -27,7 +27,7 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(
 void ForeignFetchRespondWithObserver::responseWasFulfilled(
     const ScriptValue& value) {
   ASSERT(getExecutionContext());
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ForeignFetchResponse foreignFetchResponse =
       ScriptValue::to<ForeignFetchResponse>(toIsolate(getExecutionContext()),
                                             value, exceptionState);

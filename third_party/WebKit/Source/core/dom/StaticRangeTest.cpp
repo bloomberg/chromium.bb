@@ -240,7 +240,7 @@ TEST_F(StaticRangeTest, InvalidToRange) {
   EXPECT_EQ(4, staticRange04->endOffset());
 
   // Invalid StaticRange.
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   staticRange04->toRange(exceptionState);
   EXPECT_TRUE(exceptionState.hadException());
 }

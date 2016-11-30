@@ -274,7 +274,7 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageData) {
 
 TEST_F(CanvasRenderingContext2DAPITest, CreateImageDataTooBig) {
   createContext(NonOpaque);
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ImageData* tooBigImageData =
       context2d()->createImageData(1000000, 1000000, exceptionState);
   EXPECT_EQ(nullptr, tooBigImageData);
@@ -284,7 +284,7 @@ TEST_F(CanvasRenderingContext2DAPITest, CreateImageDataTooBig) {
 
 TEST_F(CanvasRenderingContext2DAPITest, GetImageDataTooBig) {
   createContext(NonOpaque);
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ImageData* imageData =
       context2d()->getImageData(0, 0, 1000000, 1000000, exceptionState);
   EXPECT_EQ(nullptr, imageData);

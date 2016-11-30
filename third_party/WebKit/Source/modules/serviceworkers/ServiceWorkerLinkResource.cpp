@@ -79,7 +79,7 @@ void ServiceWorkerLinkResource::process() {
     scopeURL = document.completeURL(scope);
   scopeURL.removeFragmentIdentifier();
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   ServiceWorkerContainer* container = NavigatorServiceWorker::serviceWorker(
       &document, *document.frame()->domWindow()->navigator(), exceptionState);

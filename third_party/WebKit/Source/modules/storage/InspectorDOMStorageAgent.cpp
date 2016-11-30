@@ -106,7 +106,7 @@ Response InspectorDOMStorageAgent::getDOMStorageItems(
   std::unique_ptr<protocol::Array<protocol::Array<String>>> storageItems =
       protocol::Array<protocol::Array<String>>::create();
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   for (unsigned i = 0; i < storageArea->length(exceptionState, frame); ++i) {
     String name(storageArea->key(i, exceptionState, frame));
     response = toResponse(exceptionState);
@@ -136,7 +136,7 @@ Response InspectorDOMStorageAgent::setDOMStorageItem(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   storageArea->setItem(key, value, exceptionState, frame);
   return toResponse(exceptionState);
 }
@@ -150,7 +150,7 @@ Response InspectorDOMStorageAgent::removeDOMStorageItem(
   if (!response.isSuccess())
     return response;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   storageArea->removeItem(key, exceptionState, frame);
   return toResponse(exceptionState);
 }

@@ -52,7 +52,7 @@ void SplitElementCommand::executeApply() {
        node = node->nextSibling())
     children.append(node);
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
 
   ContainerNode* parent = m_element2->parentNode();
   if (!parent || !hasEditableStyle(*parent))

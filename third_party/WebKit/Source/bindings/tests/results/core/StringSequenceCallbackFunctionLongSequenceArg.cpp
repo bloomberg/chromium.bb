@@ -42,9 +42,9 @@ bool StringSequenceCallbackFunctionLongSequenceArg::call(ScriptWrappable* script
   if (m_callback.isEmpty())
     return false;
 
-  // TODO(bashi): Make sure that using TrackExceptionState is OK.
+  // TODO(bashi): Make sure that using DummyExceptionStateForTesting is OK.
   // crbug.com/653769
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   ScriptState::Scope scope(m_scriptState.get());
 
   v8::Local<v8::Value> argArgument = toV8(arg, m_scriptState->context()->Global(), m_scriptState->isolate());

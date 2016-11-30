@@ -609,7 +609,7 @@ void assertPrimaryKeyValidOrInjectable(ScriptState* scriptState,
   // This assertion is about already persisted data, so allow experimental
   // types.
   const bool allowExperimentalTypes = true;
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   IDBKey* expectedKey = createIDBKeyFromValueAndKeyPath(
       isolate, scriptValue.v8Value(), value->keyPath(), exceptionState,
       allowExperimentalTypes);

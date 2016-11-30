@@ -167,25 +167,26 @@ void NonThrowableExceptionState::rethrowV8Exception(v8::Local<v8::Value>) {
   NOTREACHED();
 }
 
-void TrackExceptionState::throwDOMException(const ExceptionCode& ec,
-                                            const String& message) {
+void DummyExceptionStateForTesting::throwDOMException(const ExceptionCode& ec,
+                                                      const String& message) {
   setException(ec, message, v8::Local<v8::Value>());
 }
 
-void TrackExceptionState::throwRangeError(const String& message) {
+void DummyExceptionStateForTesting::throwRangeError(const String& message) {
   setException(V8RangeError, message, v8::Local<v8::Value>());
 }
 
-void TrackExceptionState::throwSecurityError(const String& sanitizedMessage,
-                                             const String&) {
+void DummyExceptionStateForTesting::throwSecurityError(
+    const String& sanitizedMessage,
+    const String&) {
   setException(SecurityError, sanitizedMessage, v8::Local<v8::Value>());
 }
 
-void TrackExceptionState::throwTypeError(const String& message) {
+void DummyExceptionStateForTesting::throwTypeError(const String& message) {
   setException(V8TypeError, message, v8::Local<v8::Value>());
 }
 
-void TrackExceptionState::rethrowV8Exception(v8::Local<v8::Value>) {
+void DummyExceptionStateForTesting::rethrowV8Exception(v8::Local<v8::Value>) {
   setException(kRethrownException, String(), v8::Local<v8::Value>());
 }
 

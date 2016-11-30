@@ -51,7 +51,7 @@ void DeleteFromTextNodeCommand::doApply(EditingState*) {
   if (!hasEditableStyle(*m_node))
     return;
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   m_text = m_node->substringData(m_offset, m_count, exceptionState);
   if (exceptionState.hadException())
     return;

@@ -376,7 +376,7 @@ static bool executeInsertFragment(LocalFrame& frame,
 static bool executeInsertElement(LocalFrame& frame, HTMLElement* content) {
   DCHECK(frame.document());
   DocumentFragment* fragment = DocumentFragment::create(*frame.document());
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   fragment->appendChild(content, exceptionState);
   if (exceptionState.hadException())
     return false;

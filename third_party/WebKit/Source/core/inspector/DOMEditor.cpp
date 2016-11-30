@@ -457,13 +457,13 @@ static Response toResponse(ExceptionState& exceptionState) {
 Response DOMEditor::insertBefore(ContainerNode* parentNode,
                                  Node* node,
                                  Node* anchorNode) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   insertBefore(parentNode, node, anchorNode, exceptionState);
   return toResponse(exceptionState);
 }
 
 Response DOMEditor::removeChild(ContainerNode* parentNode, Node* node) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   removeChild(parentNode, node, exceptionState);
   return toResponse(exceptionState);
 }
@@ -471,13 +471,13 @@ Response DOMEditor::removeChild(ContainerNode* parentNode, Node* node) {
 Response DOMEditor::setAttribute(Element* element,
                                  const String& name,
                                  const String& value) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   setAttribute(element, name, value, exceptionState);
   return toResponse(exceptionState);
 }
 
 Response DOMEditor::removeAttribute(Element* element, const String& name) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   removeAttribute(element, name, exceptionState);
   return toResponse(exceptionState);
 }
@@ -485,13 +485,13 @@ Response DOMEditor::removeAttribute(Element* element, const String& name) {
 Response DOMEditor::setOuterHTML(Node* node,
                                  const String& html,
                                  Node** newNode) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   setOuterHTML(node, html, newNode, exceptionState);
   return toResponse(exceptionState);
 }
 
 Response DOMEditor::replaceWholeText(Text* textNode, const String& text) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   replaceWholeText(textNode, text, exceptionState);
   return toResponse(exceptionState);
 }

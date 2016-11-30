@@ -881,7 +881,7 @@ TEST_F(CanvasRenderingContext2DTest, ImageResourceLifetime) {
   CanvasContextCreationAttributes attributes;
   CanvasRenderingContext2D* context = static_cast<CanvasRenderingContext2D*>(
       canvas->getCanvasRenderingContext("2d", attributes));
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   CanvasImageSourceUnion imageSource;
   imageSource.setImageBitmap(imageBitmapDerived);
   context->drawImage(canvas->getExecutionContext(), imageSource, 0, 0,
@@ -983,7 +983,7 @@ TEST_F(CanvasRenderingContext2DTest, GetImageDataDisablesAcceleration) {
   EXPECT_EQ(1u, getGlobalAcceleratedImageBufferCount());
   EXPECT_EQ(720000, getGlobalGPUMemoryUsage());
 
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   context2d()->getImageData(0, 0, 1, 1, exceptionState);
 
   EXPECT_FALSE(exceptionState.hadException());

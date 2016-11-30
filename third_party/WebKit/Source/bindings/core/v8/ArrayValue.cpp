@@ -65,7 +65,7 @@ bool ArrayValue::get(size_t index, Dictionary& value) const {
 
   // TODO(bashi,yukishiino): Should rethrow the exception.
   // http://crbug.com/666661
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   value = Dictionary(m_isolate, indexedValue, exceptionState);
   return true;
 }

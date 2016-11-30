@@ -102,7 +102,7 @@ TEST_F(AnimationAnimationInputHelpersTest, ParseKeyframePropertyAttributes) {
 }
 
 TEST_F(AnimationAnimationInputHelpersTest, ParseAnimationTimingFunction) {
-  TrackExceptionState exceptionState;
+  DummyExceptionStateForTesting exceptionState;
   timingFunctionThrows("", exceptionState);
   timingFunctionThrows("initial", exceptionState);
   timingFunctionThrows("inherit", exceptionState);
