@@ -313,6 +313,9 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
     connection()->set_debug_visitor(nullptr);
     net_log_.EndEvent(NetLogEventType::QUIC_SESSION);
 
+    UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.AbortedPendingStreamRequests",
+                              stream_requests_.size());
+
     while (!stream_requests_.empty()) {
       StreamRequest* request = stream_requests_.front();
       stream_requests_.pop_front();
@@ -491,6 +494,8 @@ int QuicChromiumClientSession::TryCreateStream(
   }
 
   stream_requests_.push_back(request);
+  UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumPendingStreamRequests",
+                            stream_requests_.size());
   return ERR_IO_PENDING;
 }
 
