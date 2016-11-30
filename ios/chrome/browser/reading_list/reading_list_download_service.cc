@@ -9,11 +9,25 @@
 #include "base/bind.h"
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "components/reading_list/ios/reading_list_entry.h"
 #include "components/reading_list/ios/reading_list_model.h"
 #include "ios/web/public/web_thread.h"
 
 namespace {
+// Status of the download when it ends, for UMA report.
+// These match tools/metrics/histograms/histograms.xml.
+enum UMADownloadStatus {
+  // The download was successful.
+  SUCCESS = 0,
+  // The download failed and it won't be retried.
+  FAILURE = 1,
+  // The download failed and it will be retried.
+  RETRY = 2,
+  // Add new enum above STATUS_MAX.
+  STATUS_MAX
+};
+
 // Number of time the download must fail before the download occurs only in
 // wifi.
 const int kNumberOfFailsBeforeWifiOnly = 5;
@@ -151,12 +165,33 @@ void ReadingListDownloadService::OnDownloadEnd(
       !distilled_path.empty()) {
     reading_list_model_->SetEntryDistilledPath(url, distilled_path);
 
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    if (entry)
+      UMA_HISTOGRAM_COUNTS_100("ReadingList.Download.Failures",
+                               entry->FailedDownloadCounter());
+    UMA_HISTOGRAM_ENUMERATION("ReadingList.Download.Status", SUCCESS,
+                              STATUS_MAX);
+
   } else if (success == URLDownloader::ERROR_RETRY) {
     reading_list_model_->SetEntryDistilledState(url,
                                                 ReadingListEntry::WILL_RETRY);
     ScheduleDownloadEntry(url);
+
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+    if (entry) {
+      if (entry->FailedDownloadCounter() < kNumberOfFailsBeforeStop) {
+        UMA_HISTOGRAM_ENUMERATION("ReadingList.Download.Status", RETRY,
+                                  STATUS_MAX);
+      } else {
+        UMA_HISTOGRAM_ENUMERATION("ReadingList.Download.Status", FAILURE,
+                                  STATUS_MAX);
+      }
+    }
+
   } else if (success == URLDownloader::ERROR_PERMANENT) {
     reading_list_model_->SetEntryDistilledState(url, ReadingListEntry::ERROR);
+    UMA_HISTOGRAM_ENUMERATION("ReadingList.Download.Status", FAILURE,
+                              STATUS_MAX);
   }
 }
 
