@@ -54,31 +54,34 @@
       </g>
     </g>   
     
+    <script xlink:href="../../resources/run-after-layout-and-paint.js"></script>
     <script type="text/ecmascript"><![CDATA[
-      var passed = false;
-      
-      try
-      {
-        var g = document.getElementById("g");
-        var c = document.getElementById("c");
-        var tfm = g.transform.baseVal.getItem(0);
-        var mtx = tfm.matrix;
-        mtx.a = 2;
-        if(tfm.type == SVGTransform.SVG_TRANSFORM_MATRIX)
+      runAfterLayoutAndPaint(function() {
+        var passed = false;
+
+        try
         {
-          passed = true;
+          var g = document.getElementById("g");
+          var c = document.getElementById("c");
+          var tfm = g.transform.baseVal.getItem(0);
+          var mtx = tfm.matrix;
+          mtx.a = 2;
+          if(tfm.type == SVGTransform.SVG_TRANSFORM_MATRIX)
+          {
+            passed = true;
+          }
         }
-      }
-      catch(e) {}
-      
-      if(passed)
-      {
-        c.setAttribute("fill", "lime");
-      }
-      else
-      {
-        c.setAttribute("fill", "red");
-      }
+        catch(e) {}
+
+        if(passed)
+        {
+          c.setAttribute("fill", "lime");
+        }
+        else
+        {
+          c.setAttribute("fill", "red");
+        }
+      }, true);
     ]]></script>
         
   </g>
