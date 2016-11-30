@@ -68,7 +68,8 @@ int LLVMFuzzerTestOneInput(const uint8_t* data, size_t size) {
   CString bytes = fuzzedData.ConsumeRemainingBytes();
   String decodedBytes = decoder.decode(bytes.data(), bytes.length());
   scanner->appendToEnd(decodedBytes);
-  scanner->scanAndPreload(&preloader, documentURL, nullptr);
+  PreloadRequestStream requests = scanner->scan(documentURL, nullptr);
+  preloader.takeAndPreload(requests);
   return 0;
 }
 

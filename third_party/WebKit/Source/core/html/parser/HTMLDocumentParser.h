@@ -40,6 +40,7 @@
 #include "core/html/parser/HTMLTokenizer.h"
 #include "core/html/parser/HTMLTreeBuilderSimulator.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
+#include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/TextResourceDecoder.h"
 #include "core/html/parser/XSSAuditor.h"
 #include "core/html/parser/XSSAuditorDelegate.h"
@@ -217,6 +218,9 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
 
   std::unique_ptr<HTMLPreloadScanner> createPreloadScanner();
 
+  // Let the given HTMLPreloadScanner scan the input it has, and then preloads
+  // resources using the resulting PreloadRequests and |m_preloader|.
+  void scanAndPreload(HTMLPreloadScanner*);
   void fetchQueuedPreloads();
 
   void evaluateAndPreloadScriptForDocumentWrite(const String& source);
@@ -248,8 +252,11 @@ class CORE_EXPORT HTMLDocumentParser : public ScriptableDocumentParser,
   std::unique_ptr<HTMLTokenizer> m_tokenizer;
   Member<HTMLScriptRunner> m_scriptRunner;
   Member<HTMLTreeBuilder> m_treeBuilder;
+
   std::unique_ptr<HTMLPreloadScanner> m_preloadScanner;
+  // A scanner used only for input provided to the insert() method.
   std::unique_ptr<HTMLPreloadScanner> m_insertionPreloadScanner;
+
   std::unique_ptr<WebTaskRunner> m_loadingTaskRunner;
   Member<HTMLParserScheduler> m_parserScheduler;
   HTMLSourceTracker m_sourceTracker;

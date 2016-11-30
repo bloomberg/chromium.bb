@@ -26,17 +26,18 @@
 #ifndef HTMLResourcePreloader_h
 #define HTMLResourcePreloader_h
 
-#include "core/fetch/FetchRequest.h"
-#include "core/fetch/Resource.h"
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/PreloadRequest.h"
 #include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/NetworkHintsInterface.h"
+#include "platform/heap/Heap.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/text/TextPosition.h"
 #include <memory>
 
 namespace blink {
+
+class Document;
 
 class CORE_EXPORT HTMLResourcePreloader final
     : public GarbageCollected<HTMLResourcePreloader>,

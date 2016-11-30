@@ -11,6 +11,7 @@
 #include "core/html/CrossOriginAttribute.h"
 #include "core/html/parser/HTMLParserOptions.h"
 #include "core/html/parser/HTMLResourcePreloader.h"
+#include "core/html/parser/PreloadRequest.h"
 #include "core/testing/DummyPageHolder.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <memory>
@@ -172,7 +173,8 @@ class HTMLPreloadScannerTest : public testing::Test {
     MockHTMLResourcePreloader preloader;
     KURL baseURL(ParsedURLString, testCase.baseURL);
     m_scanner->appendToEnd(String(testCase.inputHTML));
-    m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
+    PreloadRequestStream requests = m_scanner->scan(baseURL, nullptr);
+    preloader.takeAndPreload(requests);
 
     preloader.preloadRequestVerification(
         testCase.type, testCase.preloadedURL, testCase.outputBaseURL,
@@ -183,7 +185,8 @@ class HTMLPreloadScannerTest : public testing::Test {
     MockHTMLResourcePreloader preloader;
     KURL baseURL(ParsedURLString, testCase.baseURL);
     m_scanner->appendToEnd(String(testCase.inputHTML));
-    m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
+    PreloadRequestStream requests = m_scanner->scan(baseURL, nullptr);
+    preloader.takeAndPreload(requests);
     preloader.preconnectRequestVerification(testCase.preconnectedHost,
                                             testCase.crossOrigin);
   }
@@ -192,7 +195,8 @@ class HTMLPreloadScannerTest : public testing::Test {
     MockHTMLResourcePreloader preloader;
     KURL baseURL(ParsedURLString, testCase.baseURL);
     m_scanner->appendToEnd(String(testCase.inputHTML));
-    m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
+    PreloadRequestStream requests = m_scanner->scan(baseURL, nullptr);
+    preloader.takeAndPreload(requests);
 
     preloader.preloadRequestVerification(
         testCase.type, testCase.preloadedURL, testCase.outputBaseURL,
@@ -203,7 +207,8 @@ class HTMLPreloadScannerTest : public testing::Test {
     MockHTMLResourcePreloader preloader;
     KURL baseURL(ParsedURLString, testCase.baseURL);
     m_scanner->appendToEnd(String(testCase.inputHTML));
-    m_scanner->scanAndPreload(&preloader, baseURL, nullptr);
+    PreloadRequestStream requests = m_scanner->scan(baseURL, nullptr);
+    preloader.takeAndPreload(requests);
 
     preloader.nonceRequestVerification(testCase.nonce);
   }

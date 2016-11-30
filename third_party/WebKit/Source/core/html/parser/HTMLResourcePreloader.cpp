@@ -26,8 +26,7 @@
 #include "core/html/parser/HTMLResourcePreloader.h"
 
 #include "core/dom/Document.h"
-#include "core/fetch/CSSStyleSheetResource.h"
-#include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
@@ -76,26 +75,15 @@ void HTMLResourcePreloader::preload(
   // TODO(yoichio): Should preload if document is imported.
   if (!m_document->loader())
     return;
-  FetchRequest request = preload->resourceRequest(m_document);
 
-  // Data URLs are filtered out in the preload scanner.
-  DCHECK(!request.url().protocolIsData());
-
-  if (preload->resourceType() == Resource::Script ||
-      preload->resourceType() == Resource::CSSStyleSheet ||
-      preload->resourceType() == Resource::ImportResource)
-    request.setCharset(preload->charset().isEmpty()
-                           ? m_document->characterSet().getString()
-                           : preload->charset());
-  request.setForPreload(true, preload->discoveryTime());
   int duration = static_cast<int>(
       1000 * (monotonicallyIncreasingTime() - preload->discoveryTime()));
   DEFINE_STATIC_LOCAL(CustomCountHistogram, preloadDelayHistogram,
                       ("WebCore.PreloadDelayMs", 0, 2000, 20));
   preloadDelayHistogram.count(duration);
 
-  Resource* resource =
-      m_document->loader()->startPreload(preload->resourceType(), request);
+  Resource* resource = preload->start(m_document);
+
   if (resource && !resource->isLoaded() &&
       preload->resourceType() == Resource::CSSStyleSheet) {
     Settings* settings = m_document->settings();

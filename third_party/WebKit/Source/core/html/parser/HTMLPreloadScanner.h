@@ -33,6 +33,7 @@
 #include "core/html/parser/CSSPreloadScanner.h"
 #include "core/html/parser/CompactHTMLToken.h"
 #include "core/html/parser/HTMLToken.h"
+#include "core/html/parser/PreloadRequest.h"
 #include "platform/text/SegmentedString.h"
 #include "wtf/PtrUtil.h"
 #include "wtf/Vector.h"
@@ -44,7 +45,6 @@ typedef size_t TokenPreloadScannerCheckpoint;
 
 class HTMLParserOptions;
 class HTMLTokenizer;
-class ResourcePreloader;
 class SegmentedString;
 
 struct ViewportDescriptionWrapper {
@@ -186,9 +186,8 @@ class CORE_EXPORT HTMLPreloadScanner {
   ~HTMLPreloadScanner();
 
   void appendToEnd(const SegmentedString&);
-  void scanAndPreload(ResourcePreloader*,
-                      const KURL& documentBaseElementURL,
-                      ViewportDescriptionWrapper*);
+  PreloadRequestStream scan(const KURL& documentBaseElementURL,
+                            ViewportDescriptionWrapper*);
 
  private:
   HTMLPreloadScanner(const HTMLParserOptions&,

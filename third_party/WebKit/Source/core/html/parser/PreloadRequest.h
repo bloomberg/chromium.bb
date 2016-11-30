@@ -59,9 +59,8 @@ class PreloadRequest {
 
   bool isSafeToSendToAnotherThread() const;
 
-  FetchRequest resourceRequest(Document*);
+  Resource* start(Document*);
 
-  const String& charset() const { return m_charset; }
   double discoveryTime() const { return m_discoveryTime; }
   void setDefer(FetchRequest::DeferOption defer) { m_defer = defer; }
   void setCharset(const String& charset) { m_charset = charset.isolatedCopy(); }

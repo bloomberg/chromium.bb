@@ -367,9 +367,8 @@ void HTMLDocumentParser::notifyPendingTokenizedChunks() {
     // Loop through the chunks to generate preloads before any document.write
     // script evaluation takes place. Preloading these scripts is valuable and
     // comparably cheap, while evaluating JS can be expensive.
-    for (auto& chunk : pendingChunks) {
+    for (auto& chunk : pendingChunks)
       m_preloader->takeAndPreload(chunk->preloads);
-    }
     for (auto& chunk : pendingChunks) {
       for (auto& index : chunk->likelyDocumentWriteScriptIndices) {
         const CompactHTMLToken& token = chunk->tokens->at(index);
@@ -717,8 +716,7 @@ void HTMLDocumentParser::pumpTokenizer() {
         m_preloadScanner = createPreloadScanner();
         m_preloadScanner->appendToEnd(m_input.current());
       }
-      m_preloadScanner->scanAndPreload(
-          m_preloader.get(), document()->validBaseElementURL(), nullptr);
+      scanAndPreload(m_preloadScanner.get());
     }
   }
 
@@ -795,8 +793,7 @@ void HTMLDocumentParser::insert(const SegmentedString& source) {
     if (!m_insertionPreloadScanner)
       m_insertionPreloadScanner = createPreloadScanner();
     m_insertionPreloadScanner->appendToEnd(source);
-    m_insertionPreloadScanner->scanAndPreload(
-        m_preloader.get(), document()->validBaseElementURL(), nullptr);
+    scanAndPreload(m_insertionPreloadScanner.get());
   }
 
   endIfDelayed();
@@ -889,8 +886,7 @@ void HTMLDocumentParser::append(const String& inputSource) {
       m_preloadScanner = createPreloadScanner();
 
     m_preloadScanner->appendToEnd(source);
-    m_preloadScanner->scanAndPreload(
-        m_preloader.get(), document()->validBaseElementURL(), nullptr);
+    scanAndPreload(m_preloadScanner.get());
 
     // Return after the preload scanner, do not actually parse the document.
     return;
@@ -905,8 +901,7 @@ void HTMLDocumentParser::append(const String& inputSource) {
     } else {
       m_preloadScanner->appendToEnd(source);
       if (isWaitingForScripts())
-        m_preloadScanner->scanAndPreload(
-            m_preloader.get(), document()->validBaseElementURL(), nullptr);
+        scanAndPreload(m_preloadScanner.get());
     }
   }
 
@@ -1075,8 +1070,7 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution() {
 void HTMLDocumentParser::appendCurrentInputStreamToPreloadScannerAndScan() {
   ASSERT(m_preloadScanner);
   m_preloadScanner->appendToEnd(m_input.current());
-  m_preloadScanner->scanAndPreload(m_preloader.get(),
-                                   document()->validBaseElementURL(), nullptr);
+  scanAndPreload(m_preloadScanner.get());
 }
 
 void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource) {
@@ -1212,6 +1206,12 @@ std::unique_ptr<HTMLPreloadScanner> HTMLDocumentParser::createPreloadScanner() {
       MediaValuesCached::MediaValuesCachedData(*document()));
 }
 
+void HTMLDocumentParser::scanAndPreload(HTMLPreloadScanner* scanner) {
+  PreloadRequestStream requests =
+      scanner->scan(document()->validBaseElementURL(), nullptr);
+  m_preloader->takeAndPreload(requests);
+}
+
 void HTMLDocumentParser::fetchQueuedPreloads() {
   if (m_pendingCSPMetaToken || !document()->documentElement())
     return;
@@ -1247,10 +1247,11 @@ void HTMLDocumentParser::evaluateAndPreloadScriptForDocumentWrite(
   double duration = monotonicallyIncreasingTimeMS() - startTime;
 
   int currentPreloadCount = document()->loader()->fetcher()->countPreloads();
+
   std::unique_ptr<HTMLPreloadScanner> scanner = createPreloadScanner();
   scanner->appendToEnd(SegmentedString(writtenSource));
-  scanner->scanAndPreload(m_preloader.get(), document()->validBaseElementURL(),
-                          nullptr);
+  scanAndPreload(scanner.get());
+
   int numPreloads =
       document()->loader()->fetcher()->countPreloads() - currentPreloadCount;
 

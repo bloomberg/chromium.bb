@@ -46,7 +46,6 @@
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/parser/HTMLSrcsetParser.h"
 #include "core/html/parser/HTMLTokenizer.h"
-#include "core/html/parser/ResourcePreloader.h"
 #include "core/loader/LinkLoader.h"
 #include "platform/ContentType.h"
 #include "platform/Histogram.h"
@@ -860,9 +859,9 @@ void HTMLPreloadScanner::appendToEnd(const SegmentedString& source) {
   m_source.append(source);
 }
 
-void HTMLPreloadScanner::scanAndPreload(ResourcePreloader* preloader,
-                                        const KURL& startingBaseElementURL,
-                                        ViewportDescriptionWrapper* viewport) {
+PreloadRequestStream HTMLPreloadScanner::scan(
+    const KURL& startingBaseElementURL,
+    ViewportDescriptionWrapper* viewport) {
   // HTMLTokenizer::updateStateFor only works on the main thread.
   ASSERT(isMainThread());
 
@@ -887,10 +886,10 @@ void HTMLPreloadScanner::scanAndPreload(ResourcePreloader* preloader,
     // find them here because the HTMLPreloadScanner is only used for
     // dynamically added markup.
     if (isCSPMetaTag)
-      return;
+      return requests;
   }
 
-  preloader->takeAndPreload(requests);
+  return requests;
 }
 
 CachedDocumentParameters::CachedDocumentParameters(Document* document) {

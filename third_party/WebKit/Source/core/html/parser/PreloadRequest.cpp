@@ -6,8 +6,11 @@
 
 #include "core/dom/Document.h"
 #include "core/fetch/FetchInitiatorInfo.h"
+#include "core/fetch/FetchRequest.h"
 #include "core/fetch/ResourceFetcher.h"
+#include "core/loader/DocumentLoader.h"
 #include "platform/CrossOriginAttributeValue.h"
+#include "platform/weborigin/SecurityPolicy.h"
 
 namespace blink {
 
@@ -24,16 +27,23 @@ KURL PreloadRequest::completeURL(Document* document) {
   return document->completeURL(m_resourceURL);
 }
 
-FetchRequest PreloadRequest::resourceRequest(Document* document) {
+Resource* PreloadRequest::start(Document* document) {
   ASSERT(isMainThread());
+
   FetchInitiatorInfo initiatorInfo;
   initiatorInfo.name = AtomicString(m_initiatorName);
   initiatorInfo.position = m_initiatorPosition;
-  ResourceRequest resourceRequest(completeURL(document));
+
+  const KURL& url = completeURL(document);
+  // Data URLs are filtered out in the preload scanner.
+  DCHECK(!url.protocolIsData());
+
+  ResourceRequest resourceRequest(url);
   resourceRequest.setHTTPReferrer(SecurityPolicy::generateReferrer(
-      m_referrerPolicy, resourceRequest.url(), document->outgoingReferrer()));
+      m_referrerPolicy, url, document->outgoingReferrer()));
   ResourceFetcher::determineRequestContext(resourceRequest, m_resourceType,
                                            false);
+
   FetchRequest request(resourceRequest, initiatorInfo);
 
   if (m_resourceType == Resource::ImportResource) {
@@ -42,9 +52,12 @@ FetchRequest PreloadRequest::resourceRequest(Document* document) {
     request.setCrossOriginAccessControl(securityOrigin,
                                         CrossOriginAttributeAnonymous);
   }
-  if (m_crossOrigin != CrossOriginAttributeNotSet)
+
+  if (m_crossOrigin != CrossOriginAttributeNotSet) {
     request.setCrossOriginAccessControl(document->getSecurityOrigin(),
                                         m_crossOrigin);
+  }
+
   request.setDefer(m_defer);
   request.setResourceWidth(m_resourceWidth);
   request.clientHintsPreferences().updateFrom(m_clientHintsPreferences);
@@ -54,7 +67,16 @@ FetchRequest PreloadRequest::resourceRequest(Document* document) {
 
   if (m_requestType == RequestTypeLinkRelPreload)
     request.setLinkPreload(true);
-  return request;
+
+  if (m_resourceType == Resource::Script ||
+      m_resourceType == Resource::CSSStyleSheet ||
+      m_resourceType == Resource::ImportResource) {
+    request.setCharset(
+        m_charset.isEmpty() ? document->characterSet().getString() : m_charset);
+  }
+  request.setForPreload(true, m_discoveryTime);
+
+  return document->loader()->startPreload(m_resourceType, request);
 }
 
 }  // namespace blink
