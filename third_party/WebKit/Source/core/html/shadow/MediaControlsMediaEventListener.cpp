@@ -17,6 +17,12 @@ MediaControlsMediaEventListener::MediaControlsMediaEventListener(
       EventTypeNames::volumechange, this, false);
   m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::focusin,
                                                     this, false);
+  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::timeupdate,
+                                                    this, false);
+  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::play, this,
+                                                    false);
+  m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::pause, this,
+                                                    false);
 }
 
 bool MediaControlsMediaEventListener::operator==(
@@ -31,9 +37,20 @@ void MediaControlsMediaEventListener::handleEvent(
     m_mediaControls->onVolumeChange();
     return;
   }
-
   if (event->type() == EventTypeNames::focusin) {
     m_mediaControls->onFocusIn();
+    return;
+  }
+  if (event->type() == EventTypeNames::timeupdate) {
+    m_mediaControls->onTimeUpdate();
+    return;
+  }
+  if (event->type() == EventTypeNames::play) {
+    m_mediaControls->onPlay();
+    return;
+  }
+  if (event->type() == EventTypeNames::pause) {
+    m_mediaControls->onPause();
     return;
   }
 

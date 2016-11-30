@@ -419,32 +419,6 @@ bool MediaControls::shouldHideMediaControls(unsigned behaviorFlags) const {
   return true;
 }
 
-void MediaControls::playbackStarted() {
-  BatchedControlUpdate batch(this);
-  updatePlayState();
-  m_timeline->setPosition(mediaElement().currentTime());
-  updateCurrentTimeDisplay();
-
-  startHideMediaControlsTimer();
-}
-
-void MediaControls::playbackProgressed() {
-  m_timeline->setPosition(mediaElement().currentTime());
-  updateCurrentTimeDisplay();
-
-  if (isVisible() && shouldHideMediaControls())
-    makeTransparent();
-}
-
-void MediaControls::playbackStopped() {
-  updatePlayState();
-  m_timeline->setPosition(mediaElement().currentTime());
-  updateCurrentTimeDisplay();
-  makeOpaque();
-
-  stopHideMediaControlsTimer();
-}
-
 void MediaControls::updatePlayState() {
   if (m_isPausedForScrubbing)
     return;
@@ -716,6 +690,38 @@ void MediaControls::onFocusIn() {
 
   show();
   resetHideMediaControlsTimer();
+}
+
+void MediaControls::onTimeUpdate() {
+  m_timeline->setPosition(mediaElement().currentTime());
+  updateCurrentTimeDisplay();
+
+  // 'timeupdate' might be called in a paused state. The controls should not
+  // become transparent in that case.
+  if (mediaElement().paused()) {
+    makeOpaque();
+    return;
+  }
+
+  if (isVisible() && shouldHideMediaControls())
+    makeTransparent();
+}
+
+void MediaControls::onPlay() {
+  updatePlayState();
+  m_timeline->setPosition(mediaElement().currentTime());
+  updateCurrentTimeDisplay();
+
+  startHideMediaControlsTimer();
+}
+
+void MediaControls::onPause() {
+  updatePlayState();
+  m_timeline->setPosition(mediaElement().currentTime());
+  updateCurrentTimeDisplay();
+  makeOpaque();
+
+  stopHideMediaControlsTimer();
 }
 
 void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {

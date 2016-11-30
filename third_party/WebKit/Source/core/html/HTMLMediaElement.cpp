@@ -2524,9 +2524,6 @@ void HTMLMediaElement::playbackProgressTimerFired(TimerBase*) {
   if (!playbackRate())
     return;
 
-  if (!m_paused && mediaControls())
-    mediaControls()->playbackProgressed();
-
   cueTimeline().updateActiveCues(currentTime());
 }
 
@@ -3349,11 +3346,8 @@ void HTMLMediaElement::updatePlayState() {
       m_autoplayHelper->playbackStarted();
     }
 
-    if (mediaControls())
-      mediaControls()->playbackStarted();
     startPlaybackProgressTimer();
     m_playing = true;
-
   } else {  // Should not be playing right now
     if (isPlaying) {
       webMediaPlayer()->pause();
@@ -3365,9 +3359,6 @@ void HTMLMediaElement::updatePlayState() {
     double time = currentTime();
     if (time > m_lastSeekTime)
       addPlayedRange(m_lastSeekTime, time);
-
-    if (mediaControls())
-      mediaControls()->playbackStopped();
   }
 
   if (layoutObject())

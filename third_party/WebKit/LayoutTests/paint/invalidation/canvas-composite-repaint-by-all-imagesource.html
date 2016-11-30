@@ -156,13 +156,15 @@
 
     // we can start this test after the video can be played.
     function startTest() {
-      video.removeEventListener("playing", startTest, true);
       prepareRepaintTest();
       runRepaintTest();
     }
 
     var video = document.getElementById("video");
-    video.addEventListener("playing", startTest, true);
+    video.addEventListener("playing", _ => {
+      // Video controls will do a re-paint when it starts playing.
+      setTimeout(startTest);
+    }, { passive: true, once: true });
     video.play();
 
     var imageElement = document.getElementById('image');

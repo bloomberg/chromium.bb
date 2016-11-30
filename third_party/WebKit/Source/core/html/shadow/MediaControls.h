@@ -48,10 +48,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void hide();
   bool isVisible() const;
 
-  void playbackStarted();
-  void playbackProgressed();
-  void playbackStopped();
-
   void beginScrubbing();
   void endScrubbing();
 
@@ -149,6 +145,9 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   // Methods called by MediaControlsMediaEventListener.
   void onVolumeChange();
   void onFocusIn();
+  void onTimeUpdate();
+  void onPlay();
+  void onPause();
 
   Member<HTMLMediaElement> m_mediaElement;
 
