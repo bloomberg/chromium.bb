@@ -1,5 +1,6 @@
 <html>
 <body>
+<script src="resources/fs-test-util.js"></script>
 <div>This tests basic cross-filesystem operations.</div>
 
 <div id="destination" style="min-height:100px; border: solid 1px black">Drop files here if you test this manually</div>
@@ -58,14 +59,16 @@ function errorCallback(msg)
 
 function setupDestFileSystem(successCallback) {
     webkitRequestFileSystem(window.TEMPORARY, 1024, function (fs) {
-        fs.root.getDirectory(
-            destDirectoryPath,
-            {create:true},
-            function (entry) {
-                destTestDirectory = entry;
-                successCallback();
-            },
-            errorCallback('dest: createDirectory(' + destDirectoryPath + ')'));
+        removeAllInDirectory(fs.root, function() {
+            fs.root.getDirectory(
+                destDirectoryPath,
+                {create:true},
+                function (entry) {
+                    destTestDirectory = entry;
+                    successCallback();
+                },
+              errorCallback(`dest: createDirectory(${destDirectoryPath})`));
+          }, errorCallback('dest: removeAllInDirectory'));
     }, errorCallback('dest: requestFileSystem for PERSISTENT'));
 }
 

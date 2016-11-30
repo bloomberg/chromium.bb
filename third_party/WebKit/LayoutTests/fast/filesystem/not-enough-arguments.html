@@ -39,7 +39,7 @@ function successCallback(fs)
                 shouldThrow("writer.seek()");
                 shouldThrow("writer.truncate()");
 
-                finishJSTest();
+                removeAllInDirectory(fileSystem.root, finishJSTest, finishJSTest);
             });
         });
     });

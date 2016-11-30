@@ -11,4 +11,5 @@ shouldThrow("fileSystem.root.copyTo(null, 'x')");
 entry = fileSystem.root.getFile("/test", { create: true });
 writer = entry.createWriter();
 shouldThrow("writer.write(null)");
+entry.remove();
 finishJSTest();

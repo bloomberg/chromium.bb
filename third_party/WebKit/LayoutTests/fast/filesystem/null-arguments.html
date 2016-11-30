@@ -26,7 +26,7 @@ function successCallback(fs)
             shouldBeNull("writer.error");
             shouldThrow("writer.write(null)");
             shouldBeNull("writer.error");
-            finishJSTest();
+            removeAllInDirectory(fileSystem.root, finishJSTest, finishJSTest);
         });
     });
 }
