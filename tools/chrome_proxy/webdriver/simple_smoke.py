@@ -10,6 +10,7 @@ from common import TestDriver
 
 class SimpleSmoke(IntegrationTest):
 
+  # Simple example integration test.
   def TestCheckPageWithProxy(self):
     with TestDriver() as t:
       t.AddChromeArgs(['--enable-spdy-proxy-auth'])

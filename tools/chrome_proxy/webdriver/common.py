@@ -26,13 +26,14 @@ def ParseFlags():
   parser = argparse.ArgumentParser()
   parser.add_argument('--browser_args', nargs=1, type=str, help='Override '
     'browser flags in code with these flags')
-  parser.add_argument('--via_header_matches', metavar='via_header', nargs=1,
+  parser.add_argument('--via_header_value', metavar='via_header', nargs=1,
     default='1.1 Chrome-Compression-Proxy', help='What the via should match to '
     'be considered valid')
   parser.add_argument('--chrome_exec', nargs=1, type=str, help='The path to '
     'the Chrome or Chromium executable')
   parser.add_argument('chrome_driver', nargs=1, type=str, help='The path to '
-    'the ChromeDriver executable')
+    'the ChromeDriver executable. If not given, the default system chrome '
+    'will be used.')
   # TODO(robertogden) make this a logging statement
   print 'DEBUG: Args=', json.dumps(vars(parser.parse_args(sys.argv[1:])))
   return parser.parse_args(sys.argv[1:])
@@ -64,7 +65,7 @@ class TestDriver:
   def __init__(self):
     self._flags = ParseFlags()
     self._driver = None
-    self.chrome_args = {}
+    self._chrome_args = set()
     self._url = ''
 
   def __enter__(self):
@@ -79,21 +80,21 @@ class TestDriver:
     Overrides any given flags in the code with those given on the command line.
     """
     if self._flags.browser_args and len(self._flags.browser_args) > 0:
-      for a in shlex.split(self._flags.browser_args):
-        self.chrome_args[a] = True
+      for arg in shlex.split(self._flags.browser_args):
+        self._chrome_args.add(arg)
 
   def _StartDriver(self):
     """
     Parses the flags to pass to Chromium, then starts the ChromeDriver.
     """
-    opts = Options()
-    for a in self.chrome_args:
-      opts.add_argument(a)
-    caps = {'loggingPrefs': {'performance': 'INFO'}}
+    options = Options()
+    for arg in self._chrome_args:
+      options.add_argument(arg)
+    capabilities = {'loggingPrefs': {'performance': 'INFO'}}
     if self._flags.chrome_exec:
-      caps['chrome.binary'] = self._flags.chrome_exec
+      capabilities['chrome.binary'] = self._flags.chrome_exec
     driver = webdriver.Chrome(executable_path=self._flags.chrome_driver[0],
-      chrome_options=opts, desired_capabilities=caps)
+      chrome_options=options, desired_capabilities=capabilities)
     driver.command_executor._commands.update({
       'getAvailableLogTypes': ('GET', '/session/$sessionId/log/types'),
       'getLog': ('POST', '/session/$sessionId/log')})
@@ -110,45 +111,35 @@ class TestDriver:
     """
     Adds multiple arguments that will be passed to Chromium at start.
     """
-    if not self.chrome_args:
-      self.chrome_args = {}
-    for a in args:
-      self.chrome_args[a] = True
+    for arg in args:
+      self._chrome_args.add(arg)
 
   def AddChromeArg(self, arg):
     """
     Adds a single argument that will be passed to Chromium at start.
     """
-    if not self.chrome_args:
-      self.chrome_args = {}
-    self.chrome_args[arg] = True
+    self._chrome_args.add(arg)
 
   def RemoveChromeArgs(self, args):
     """
     Removes multiple arguments that will no longer be passed to Chromium at
     start.
     """
-    if not self.chrome_args:
-      self.chrome_args = {}
-      return
-    for a in args:
-      del self.chrome_args[a]
+    for arg in args:
+      self._chrome_args.discard(arg)
 
   def RemoveChromeArg(self, arg):
     """
     Removes a single argument that will no longer be passed to Chromium at
     start.
     """
-    if not self.chrome_args:
-      self.chrome_args = {}
-      return
-    del self.chrome_args[arg]
+    self._chrome_args.discard(arg)
 
   def ClearChromeArgs(self):
     """
     Removes all arguments from Chromium at start.
     """
-    self.chrome_args = {}
+    self._chrome_args.clear()
 
   def ClearCache(self):
     """
@@ -205,6 +196,7 @@ class IntegrationTest:
       try:
         getattr(self, method)()
       except Exception as e:
+        # Uses the Exception tuple from sys.exec_info()
         HandleException(method)
 
   # TODO(robertogden) add some nice assertion functions
