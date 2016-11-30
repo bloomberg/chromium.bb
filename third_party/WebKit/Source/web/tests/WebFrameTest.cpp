@@ -61,7 +61,7 @@
 #include "core/frame/VisualViewport.h"
 #include "core/html/HTMLBodyElement.h"
 #include "core/html/HTMLFormElement.h"
-#include "core/html/HTMLMediaElement.h"
+#include "core/html/HTMLVideoElement.h"
 #include "core/html/ImageDocument.h"
 #include "core/input/EventHandler.h"
 #include "core/layout/HitTestResult.h"
@@ -7600,9 +7600,14 @@ TEST_P(ParameterizedWebFrameTest, FullscreenLayerSize) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Element* divFullscreen = document->getElementById("div1");
   Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), nullptr);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
   webViewImpl->didEnterFullscreen();
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
   webViewImpl->updateAllLifecyclePhases();
   EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
 
   // Verify that the element is sized to the viewport.
   LayoutFullScreen* fullscreenLayoutObject =
@@ -7635,11 +7640,16 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Element* divFullscreen = document->getElementById("div1");
   Fullscreen::requestFullscreen(*divFullscreen, Fullscreen::PrefixedRequest);
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), nullptr);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
   webViewImpl->didEnterFullscreen();
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
   webViewImpl->updateAllLifecyclePhases();
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
 
   // Verify that the viewports are nonscrollable.
-  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
   FrameView* frameView = webViewHelper.webView()->mainFrameImpl()->frameView();
   WebLayer* layoutViewportScrollLayer =
       webViewImpl->compositor()->scrollLayer()->platformLayer();
@@ -7654,9 +7664,14 @@ TEST_F(WebFrameTest, FullscreenLayerNonScrollable) {
   ASSERT_FALSE(visualViewportScrollLayer->userScrollableVertical());
 
   // Verify that the viewports are scrollable upon exiting fullscreen.
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), divFullscreen);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), divFullscreen);
   webViewImpl->didExitFullscreen();
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), nullptr);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), nullptr);
   webViewImpl->updateAllLifecyclePhases();
   EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), nullptr);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document), nullptr);
   ASSERT_TRUE(layoutViewportScrollLayer->userScrollableHorizontal());
   ASSERT_TRUE(layoutViewportScrollLayer->userScrollableVertical());
   ASSERT_TRUE(visualViewportScrollLayer->userScrollableHorizontal());
@@ -7679,12 +7694,21 @@ TEST_P(ParameterizedWebFrameTest, FullscreenMainFrame) {
   UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
   Fullscreen::requestFullscreen(*document->documentElement(),
                                 Fullscreen::PrefixedRequest);
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document), nullptr);
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document),
+            document->documentElement());
   webViewImpl->didEnterFullscreen();
-  webViewImpl->updateAllLifecyclePhases();
-
-  // Verify that the main frame is still scrollable.
   EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document),
             document->documentElement());
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document),
+            document->documentElement());
+  webViewImpl->updateAllLifecyclePhases();
+  EXPECT_EQ(Fullscreen::currentFullScreenElementFrom(*document),
+            document->documentElement());
+  EXPECT_EQ(Fullscreen::fullscreenElementFrom(*document),
+            document->documentElement());
+
+  // Verify that the main frame is still scrollable.
   WebLayer* webScrollLayer =
       webViewImpl->compositor()->scrollLayer()->platformLayer();
   ASSERT_TRUE(webScrollLayer->scrollable());
@@ -7952,6 +7976,57 @@ TEST_P(ParameterizedWebFrameTest, ClearFullscreenConstraintsOnNavigation) {
   EXPECT_EQ(400, layoutViewItem.logicalHeight().floor());
   EXPECT_FLOAT_EQ(0.5, webViewImpl->minimumPageScaleFactor());
   EXPECT_FLOAT_EQ(5.0, webViewImpl->maximumPageScaleFactor());
+}
+
+namespace {
+
+class TestFullscreenWebLayerTreeView : public WebLayerTreeView {
+ public:
+  void setHasTransparentBackground(bool value) override {
+    hasTransparentBackground = value;
+  }
+  bool hasTransparentBackground = false;
+};
+
+class TestFullscreenWebViewClient : public FrameTestHelpers::TestWebViewClient {
+ public:
+  WebLayerTreeView* layerTreeView() override {
+    return &testFullscreenLayerTreeView;
+  }
+  TestFullscreenWebLayerTreeView testFullscreenLayerTreeView;
+};
+
+}  // anonymous namespace
+
+TEST_P(ParameterizedWebFrameTest, OverlayFullscreenVideo) {
+  RuntimeEnabledFeatures::setForceOverlayFullscreenVideoEnabled(true);
+  registerMockedHttpURLLoad("fullscreen_video.html");
+  TestFullscreenWebViewClient webViewClient;
+  FrameTestHelpers::WebViewHelper webViewHelper;
+  WebViewImpl* webViewImpl = webViewHelper.initializeAndLoad(
+      m_baseURL + "fullscreen_video.html", true, nullptr, &webViewClient);
+
+  const TestFullscreenWebLayerTreeView& layerTreeView =
+      webViewClient.testFullscreenLayerTreeView;
+
+  Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+  UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
+  HTMLVideoElement* video =
+      toHTMLVideoElement(document->getElementById("video"));
+  EXPECT_TRUE(video->usesOverlayFullscreenVideo());
+  EXPECT_FALSE(video->isFullscreen());
+  EXPECT_FALSE(layerTreeView.hasTransparentBackground);
+
+  video->enterFullscreen();
+  webViewImpl->didEnterFullscreen();
+  webViewImpl->updateAllLifecyclePhases();
+  EXPECT_TRUE(video->isFullscreen());
+  EXPECT_TRUE(layerTreeView.hasTransparentBackground);
+
+  webViewImpl->didExitFullscreen();
+  webViewImpl->updateAllLifecyclePhases();
+  EXPECT_FALSE(video->isFullscreen());
+  EXPECT_FALSE(layerTreeView.hasTransparentBackground);
 }
 
 TEST_P(ParameterizedWebFrameTest, LayoutBlockPercentHeightDescendants) {

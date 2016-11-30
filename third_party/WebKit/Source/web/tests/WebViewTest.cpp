@@ -32,7 +32,9 @@
 
 #include "bindings/core/v8/V8Document.h"
 #include "core/dom/Document.h"
+#include "core/dom/DocumentUserGestureToken.h"
 #include "core/dom/Element.h"
+#include "core/dom/Fullscreen.h"
 #include "core/editing/FrameSelection.h"
 #include "core/editing/InputMethodController.h"
 #include "core/editing/markers/DocumentMarkerController.h"
@@ -1715,9 +1717,10 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
 
   // Enter fullscreen.
-  Element* element = static_cast<Element*>(
-      webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
-  webViewImpl->enterFullscreenForElement(element);
+  Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+  Element* element = document->getElementById("fullscreenElement");
+  UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
+  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1755,9 +1758,10 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
 
   // Enter fullscreen.
-  Element* element = static_cast<Element*>(
-      webViewImpl->mainFrame()->document().getElementById("fullscreenElement"));
-  webViewImpl->enterFullscreenForElement(element);
+  Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+  Element* element = document->getElementById("fullscreenElement");
+  UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
+  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1771,9 +1775,8 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   // Exit and, without performing a layout, reenter fullscreen again. We
   // shouldn't try to restore the scroll and scale values when we layout to
   // enter fullscreen.
-  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
-  webViewImpl->enterFullscreenForElement(element);
+  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
   webViewImpl->didEnterFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1785,7 +1788,6 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
                    .height());
 
   // When we exit now, we should restore the original scroll value.
-  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
@@ -1813,9 +1815,10 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
   EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
-  Element* element =
-      static_cast<Element*>(webViewImpl->mainFrame()->document().body());
-  webViewImpl->enterFullscreenForElement(element);
+  Document* document = webViewImpl->mainFrameImpl()->frame()->document();
+  Element* element = document->body();
+  UserGestureIndicator gesture(DocumentUserGestureToken::create(document));
+  Fullscreen::requestFullscreen(*element, Fullscreen::PrefixedRequest);
   webViewImpl->didEnterFullscreen();
 
   // Page scale factor must be 1.0 during fullscreen for elements to be sized
@@ -1823,12 +1826,10 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
 
   // Make sure fullscreen nesting doesn't disrupt scroll/scale saving.
-  Element* otherElement =
-      static_cast<Element*>(webViewImpl->mainFrame()->document().head());
-  webViewImpl->enterFullscreenForElement(otherElement);
+  Element* otherElement = document->getElementById("content");
+  Fullscreen::requestFullscreen(*otherElement, Fullscreen::PrefixedRequest);
 
   // Confirm that exiting fullscreen restores the parameters.
-  webViewImpl->exitFullscreen(element->document().frame());
   webViewImpl->didExitFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
