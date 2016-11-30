@@ -49,7 +49,7 @@ ResolveInlineLength(const NGConstraintSpace&,
 CORE_EXPORT LayoutUnit ResolveBlockLength(const NGConstraintSpace&,
                                           const ComputedStyle&,
                                           const Length&,
-                                          LayoutUnit contentSize,
+                                          LayoutUnit content_size,
                                           LengthResolveType);
 
 // Resolves the given length to a layout unit, constraining it by the min
@@ -65,7 +65,7 @@ ComputeInlineSizeForFragment(const NGConstraintSpace&,
 // object.
 CORE_EXPORT LayoutUnit ComputeBlockSizeForFragment(const NGConstraintSpace&,
                                                    const ComputedStyle&,
-                                                   LayoutUnit contentSize);
+                                                   LayoutUnit content_size);
 
 // Based on available inline size, CSS computed column-width, CSS computed
 // column-count and CSS used column-gap, return CSS used column-count.
