@@ -257,6 +257,9 @@ CHAR-LIMIT guidelines:
       <message name="IDS_SEARCH_ENGINE_LOCATION_BLOCKED" desc="The text of a link displayed when location permission for a particular search engine is blocked.">
         Location is blocked
       </message>
+      <message name="IDS_SEARCH_ENGINE_RECENTLY_VISITED" desc="Header for the list of recently visited search engines.">
+        Recently visited
+      </message>
 
       <!-- Autofill preferences -->
       <message name="IDS_PREFS_AUTOFILL" desc="Title for 'Autofill forms' settings, which control what personal data can be automatically filled into web page forms. [CHAR-LIMIT=32]">

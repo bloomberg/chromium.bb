@@ -175,7 +175,7 @@ public final class PrefServiceBridge {
             boolean allowed, Context context) {
         TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
         String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(
-                templateUrlService.getDefaultSearchEngineIndex());
+                templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
         if (allowed && !url.startsWith("https:")) return;
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();

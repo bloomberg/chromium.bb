@@ -84,16 +84,19 @@ public class PreferencesTest extends NativeLibraryTestBase {
     public void testSearchEnginePreference() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
+        final Preferences prefActivity =
+                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
+
         // Set the second search engine as the default using TemplateUrlService.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TemplateUrlService.getInstance().setSearchEngine(1);
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
+                pref.setValueForTesting("1");
             }
         });
 
-        final Preferences prefActivity =
-                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -106,31 +109,38 @@ public class PreferencesTest extends NativeLibraryTestBase {
 
                 // Simulate selecting the third search engine, ensure that TemplateUrlService is
                 // updated, but location permission not granted for the new engine.
-                pref.setValueForTesting("2");
+                String keyword2 = pref.setValueForTesting("2");
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-                assertEquals(2, templateUrlService.getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(2));
+                assertEquals(keyword2,
+                        templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
 
                 // Simulate selecting the fourth search engine and but set a blocked permission
                 // first and ensure that location permission is NOT granted.
-                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(3);
+                String keyword3 = pref.getKeywordFromIndexForTesting(3);
+                String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword3);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
                         url, url, ContentSetting.BLOCK.toInt(), false);
-                pref.setValueForTesting("3");
-                assertEquals(3, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(3));
-                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(2));
+                keyword3 = pref.setValueForTesting("3");
+                assertEquals(keyword3, TemplateUrlService.getInstance()
+                                               .getDefaultSearchEngineTemplateUrl()
+                                               .getKeyword());
+                assertEquals(ContentSetting.BLOCK, locationPermissionForSearchEngine(keyword3));
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(keyword2));
 
                 // Make sure a pre-existing ALLOW value does not get deleted when switching away
                 // from a search engine.
-                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(4);
+                String keyword4 = pref.getKeywordFromIndexForTesting(4);
+                url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword4);
                 WebsitePreferenceBridge.nativeSetGeolocationSettingForOrigin(
                         url, url, ContentSetting.ALLOW.toInt(), false);
-                pref.setValueForTesting("4");
-                assertEquals(4, TemplateUrlService.getInstance().getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(4));
+                keyword4 = pref.setValueForTesting("4");
+                assertEquals(keyword4, TemplateUrlService.getInstance()
+                                               .getDefaultSearchEngineTemplateUrl()
+                                               .getKeyword());
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword4));
                 pref.setValueForTesting("3");
-                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(4));
+                assertEquals(ContentSetting.ALLOW, locationPermissionForSearchEngine(keyword4));
             }
         });
     }
@@ -149,16 +159,18 @@ public class PreferencesTest extends NativeLibraryTestBase {
     public void testSearchEnginePreferenceHttp() throws Exception {
         ensureTemplateUrlServiceLoaded();
 
+        final Preferences prefActivity =
+                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
+
         // Set the first search engine as the default using TemplateUrlService.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                TemplateUrlService.getInstance().setSearchEngine(0);
+                SearchEnginePreference pref =
+                        (SearchEnginePreference) prefActivity.getFragmentForTest();
+                pref.setValueForTesting("0");
             }
         });
-
-        final Preferences prefActivity =
-                startPreferences(getInstrumentation(), SearchEnginePreference.class.getName());
 
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
@@ -170,22 +182,24 @@ public class PreferencesTest extends NativeLibraryTestBase {
                 assertEquals("0", pref.getValueForTesting());
 
                 // Simulate selecting a search engine that uses HTTP.
-                int index = indexOfFirstHttpSearchEngine();
-                pref.setValueForTesting(Integer.toString(index));
+                int index = indexOfFirstHttpSearchEngine(pref);
+                String keyword = pref.setValueForTesting(Integer.toString(index));
 
                 TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-                assertEquals(index, templateUrlService.getDefaultSearchEngineIndex());
-                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(index));
+                assertEquals(keyword,
+                        templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword());
+                assertEquals(ContentSetting.ASK, locationPermissionForSearchEngine(keyword));
             }
         });
     }
 
-    private int indexOfFirstHttpSearchEngine() {
+    private int indexOfFirstHttpSearchEngine(SearchEnginePreference pref) {
         TemplateUrlService templateUrlService = TemplateUrlService.getInstance();
-        List<TemplateUrl> urls = templateUrlService.getLocalizedSearchEngines();
+        List<TemplateUrl> urls = templateUrlService.getSearchEngines();
         int index;
         for (index = 0; index < urls.size(); ++index) {
-            String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(index);
+            String keyword = pref.getKeywordFromIndexForTesting(index);
+            String url = templateUrlService.getSearchEngineUrlFromTemplateUrl(keyword);
             if (url.startsWith("http:")) {
                 return index;
             }
@@ -216,8 +230,8 @@ public class PreferencesTest extends NativeLibraryTestBase {
         onTemplateUrlServiceLoadedHelper.waitForCallback(0);
     }
 
-    private ContentSetting locationPermissionForSearchEngine(int index) {
-        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(index);
+    private ContentSetting locationPermissionForSearchEngine(String keyword) {
+        String url = TemplateUrlService.getInstance().getSearchEngineUrlFromTemplateUrl(keyword);
         GeolocationInfo locationSettings = new GeolocationInfo(url, null, false);
         ContentSetting locationPermission = locationSettings.getContentSetting();
         return locationPermission;

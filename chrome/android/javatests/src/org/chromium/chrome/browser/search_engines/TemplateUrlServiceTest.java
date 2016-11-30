@@ -119,35 +119,40 @@ public class TemplateUrlServiceTest extends NativeLibraryTestBase {
     public void testSetAndGetSearchEngine() throws InterruptedException {
         final TemplateUrlService templateUrlService = waitForTemplateUrlServiceToLoad();
 
-        // Ensure known state of default search index before running test.
-        int searchEngineIndex = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Integer>() {
+        List<TemplateUrl> searchEngines =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<List<TemplateUrl>>() {
                     @Override
-                    public Integer call() throws Exception {
-                        return templateUrlService.getDefaultSearchEngineIndex();
+                    public List<TemplateUrl> call() throws Exception {
+                        return templateUrlService.getSearchEngines();
                     }
                 });
-        assertEquals(0, searchEngineIndex);
+        // Ensure known state of default search index before running test.
+        String searchEngineKeyword =
+                ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword();
+                    }
+                });
+        assertEquals(searchEngines.get(0).getKeyword(), searchEngineKeyword);
 
         // Set search engine index and verified it stuck.
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                List<TemplateUrl> searchEngines =
-                        templateUrlService.getLocalizedSearchEngines();
+                List<TemplateUrl> searchEngines = templateUrlService.getSearchEngines();
                 assertTrue("There must be more than one search engine to change searchEngines",
                         searchEngines.size() > 1);
-                templateUrlService.setSearchEngine(1);
+                templateUrlService.setSearchEngine(searchEngines.get(1).getKeyword());
             }
         });
-        searchEngineIndex = ThreadUtils.runOnUiThreadBlockingNoException(
-                new Callable<Integer>() {
-                    @Override
-                    public Integer call() throws Exception {
-                        return templateUrlService.getDefaultSearchEngineIndex();
-                    }
-                });
-        assertEquals(1, searchEngineIndex);
+        searchEngineKeyword = ThreadUtils.runOnUiThreadBlockingNoException(new Callable<String>() {
+            @Override
+            public String call() throws Exception {
+                return templateUrlService.getDefaultSearchEngineTemplateUrl().getKeyword();
+            }
+        });
+        assertEquals(searchEngines.get(1).getKeyword(), searchEngineKeyword);
     }
 
     private TemplateUrlService waitForTemplateUrlServiceToLoad() throws InterruptedException {
