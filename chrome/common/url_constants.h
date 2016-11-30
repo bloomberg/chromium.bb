@@ -94,6 +94,7 @@ extern const char kChromeUIWelcomeWin10URL[];
 
 #if BUILDFLAG(ANDROID_JAVA_UI)
 extern const char kChromeUIContextualSearchPromoURL[];
+extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeScheme[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];

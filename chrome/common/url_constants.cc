@@ -104,6 +104,7 @@ const char kChromeUIWelcomeWin10URL[] = "chrome://welcome-win10/";
 #if BUILDFLAG(ANDROID_JAVA_UI)
 const char kChromeUIContextualSearchPromoURL[] =
     "chrome://contextual-search-promo";
+const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";
 const char kChromeUINativeScheme[] = "chrome-native";
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
@@ -743,6 +744,9 @@ const char* const kChromeDebugURLs[] = {content::kChromeUIBadCastCrashURL,
                                         content::kChromeUIMemoryExhaustURL,
                                         content::kChromeUIPpapiFlashCrashURL,
                                         content::kChromeUIPpapiFlashHangURL,
+#if BUILDFLAG(ANDROID_JAVA_UI)
+                                        chrome::kChromeUIJavaCrashURL,
+#endif
                                         chrome::kChromeUIQuitURL,
                                         chrome::kChromeUIRestartURL};
 const int kNumberOfChromeDebugURLs =
