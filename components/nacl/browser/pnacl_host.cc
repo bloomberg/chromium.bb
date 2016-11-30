@@ -418,8 +418,8 @@ scoped_refptr<net::DrainableIOBuffer> PnaclHost::CopyFileToBuffer(
   }
 
   buffer = new net::DrainableIOBuffer(
-      new net::IOBuffer(base::CheckedNumeric<size_t>(file_size).ValueOrDie()),
-      base::CheckedNumeric<size_t>(file_size).ValueOrDie());
+      new net::IOBuffer(base::checked_cast<size_t>(file_size)),
+      base::checked_cast<size_t>(file_size));
   if (file->Read(0, buffer->data(), buffer->size()) != file_size) {
     PLOG(ERROR) << "CopyFileToBuffer file read failed";
     buffer = nullptr;
