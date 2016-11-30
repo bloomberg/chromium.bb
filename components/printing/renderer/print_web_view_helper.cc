@@ -984,6 +984,8 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
   // choose to ignore message or safely crash process.
   ++ipc_nesting_level_;
 
+  auto self = weak_ptr_factory_.GetWeakPtr();
+
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintWebViewHelper, message)
 #if BUILDFLAG(ENABLE_BASIC_PRINTING)
@@ -1002,7 +1004,9 @@ bool PrintWebViewHelper::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
 
-  --ipc_nesting_level_;
+  // Check if |this| is still valid. e.g. when OnPrintPages() returns.
+  if (self)
+    --ipc_nesting_level_;
   return handled;
 }
 
