@@ -28,21 +28,26 @@ using CanHandleResolutionCallback = base::Callback<void(bool)>;
 bool ShouldShowInLauncher(const std::string& app_id);
 
 // Launch an app and let the system decides how big and where to place it.
-bool LaunchApp(content::BrowserContext* context, const std::string& app_id);
+bool LaunchApp(content::BrowserContext* context,
+               const std::string& app_id,
+               int event_flags);
 
 // Launch Android Settings app.
-bool LaunchAndroidSettingsApp(content::BrowserContext* context);
+bool LaunchAndroidSettingsApp(content::BrowserContext* context,
+                              int event_flags);
 
 // Launch an app with given layout and let the system decides how big and where
 // to place it.
 bool LaunchApp(content::BrowserContext* context,
                const std::string& app_id,
-               bool landscape_layout);
+               bool landscape_layout,
+               int event_flags);
 
 // Launch an app and place it at the specified coordinates.
 bool LaunchAppWithRect(content::BrowserContext* context,
                        const std::string& app_id,
-                       const gfx::Rect& target_rect);
+                       const gfx::Rect& target_rect,
+                       int event_flags);
 
 // Sets task active.
 void SetTaskActive(int task_id);
@@ -58,9 +63,9 @@ void ShowTalkBackSettings();
 // A false will get returned if the result cannot be determined in which case
 // the callback will not be called.
 bool CanHandleResolution(content::BrowserContext* context,
-    const std::string& app_id,
-    const gfx::Rect& rect,
-    const CanHandleResolutionCallback& callback);
+                         const std::string& app_id,
+                         const gfx::Rect& rect,
+                         const CanHandleResolutionCallback& callback);
 
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);

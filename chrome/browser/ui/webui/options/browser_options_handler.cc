@@ -2008,7 +2008,14 @@ void BrowserOptionsHandler::ShowAndroidAppsSettings(
     return;
   }
 
-  arc::LaunchAndroidSettingsApp(profile);
+  // We only care whether the event came from a keyboard or non-keyboard
+  // (mouse/touch). Set the default flags in such a way that it would appear
+  // that it came from a mouse by default.
+  bool activated_from_keyboard = false;
+  args->GetBoolean(0, &activated_from_keyboard);
+  int flags = activated_from_keyboard ? ui::EF_NONE : ui::EF_LEFT_MOUSE_BUTTON;
+
+  arc::LaunchAndroidSettingsApp(profile, flags);
 }
 
 void BrowserOptionsHandler::ShowAccessibilityTalkBackSettings(

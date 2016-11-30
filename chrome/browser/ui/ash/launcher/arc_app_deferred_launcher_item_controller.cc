@@ -4,6 +4,8 @@
 
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_item_controller.h"
 
+#include <memory>
+
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
@@ -14,8 +16,10 @@
 ArcAppDeferredLauncherItemController::ArcAppDeferredLauncherItemController(
     const std::string& arc_app_id,
     ChromeLauncherController* controller,
+    int event_flags,
     const base::WeakPtr<ArcAppDeferredLauncherController>& host)
     : LauncherItemController(TYPE_APP, arc_app_id, "", controller),
+      event_flags_(event_flags),
       host_(host),
       start_time_(base::Time::Now()) {}
 
