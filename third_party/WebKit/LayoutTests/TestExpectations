@@ -835,8 +835,6 @@ crbug.com/443615 [ Linux Win ] imported/csswg-test/css-shapes-1/shape-outside/su
 
 crbug.com/443379 imported/wpt/gamepad/idlharness.html [ Failure Timeout ]
 
-crbug.com/618178 [ Win10 ] fast/text/international/text-spliced-font.html [ NeedsRebaseline ]
-
 crbug.com/381684 [ Mac Win ] fonts/family-fallback-gardiner.html [ Skip ]
 crbug.com/467635 fast/dom/HTMLImageElement/image-sizes-meta-viewport.html [ Skip ]
 
