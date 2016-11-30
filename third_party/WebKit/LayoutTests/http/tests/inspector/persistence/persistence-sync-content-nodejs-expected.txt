@@ -8,6 +8,7 @@ Initial fileSystem content:
 
  Initial network content:
     (function (exports, require, module, __filename, __dirname) { 
+    
     var express = require("express");
     //TODO
     });
@@ -20,6 +21,7 @@ Binding created: {
 Running: Edit network uiSourceCode
 Network:
     (function (exports, require, module, __filename, __dirname) { 
+    
     var express = require("express");
     network();
     //TODO
@@ -36,6 +38,7 @@ FileSystem:
 Running: Edit fileSystem uiSourceCode
 Network:
     (function (exports, require, module, __filename, __dirname) { 
+    
     var express = require("express");
     filesystem();
     //TODO
