@@ -35,7 +35,7 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
   void SetReadingListModel(ReadingListModel* model,
                            ReadingListStoreDelegate* delegate) override;
 
-  void SaveEntry(const ReadingListEntry& entry, bool read) override;
+  void SaveEntry(const ReadingListEntry& entry) override;
   void RemoveEntry(const ReadingListEntry& entry) override;
 
   // ReadingListModelStorage implementation.
@@ -123,8 +123,7 @@ class ReadingListStore : public syncer::ModelTypeSyncBridge,
                          std::unique_ptr<syncer::MetadataBatch> metadata_batch);
 
   void AddEntryToBatch(syncer::MutableDataBatch* batch,
-                       const ReadingListEntry& entry,
-                       bool read);
+                       const ReadingListEntry& entry);
 
   std::unique_ptr<syncer::ModelTypeStore> store_;
   ReadingListModel* model_;

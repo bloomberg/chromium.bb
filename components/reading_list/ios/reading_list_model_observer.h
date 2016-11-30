@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+class GURL;
 class ReadingListModel;
 class ReadingListEntry;
 
@@ -36,38 +37,45 @@ class ReadingListModelObserver {
   virtual void ReadingListModelBeingDeleted(const ReadingListModel* model) {}
 
   // Invoked when elements are about to be removed from the read or unread list.
-  virtual void ReadingListWillRemoveUnreadEntry(const ReadingListModel* model,
-                                                size_t index) {}
-  virtual void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
-                                              size_t index) {}
-  // Invoked when elements are moved from unread to read or from read to unread.
-  // |index| is the original position  and |read| the origin status. The element
-  // will change list and/or index but will not be deleted.
+  virtual void ReadingListWillRemoveEntry(const ReadingListModel* model,
+                                          const GURL& url) {}
+  // Invoked when elements |MarkEntryUpdated| is called on an entry. This means
+  // that the order of the entry may change and read/unread list may change
+  // too.
   virtual void ReadingListWillMoveEntry(const ReadingListModel* model,
-                                        size_t index,
-                                        bool read) {}
+                                        const GURL& url) {}
 
-  // Invoked when elements are added to the read or the unread list. The new
-  // entries are always added at the beginning. these methods may be called
-  // multiple time (to process changes coming from a synchronization for
-  // example) and they will be executed in call order, the last call will end up
-  // in first position.
-  virtual void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
-                                             const ReadingListEntry& entry) {}
+  // Invoked when elements are added.
+  virtual void ReadingListWillAddEntry(const ReadingListModel* model,
+                                       const ReadingListEntry& entry) {}
 
-  virtual void ReadingListWillAddReadEntry(const ReadingListModel* model,
-                                           const ReadingListEntry& entry) {}
+  // Invoked when elements have been added. This method is called after the
+  // the entry has been added to the model and the entry can now be retrieved
+  // from the model.
+  virtual void ReadingListDidAddEntry(const ReadingListModel* model,
+                                      const GURL& url) {}
 
   // Invoked when an entry is about to change.
-  virtual void ReadingListWillUpdateUnreadEntry(const ReadingListModel* model,
-                                                size_t index) {}
-  virtual void ReadingListWillUpdateReadEntry(const ReadingListModel* model,
-                                              size_t index) {}
+  virtual void ReadingListWillUpdateEntry(const ReadingListModel* model,
+                                          const GURL& url) {}
 
   // Called after all the changes signaled by calls to the "Will" methods are
   // done. All the "Will" methods are called as necessary, then the changes
   // are applied and then this method is called.
   virtual void ReadingListDidApplyChanges(ReadingListModel* model) {}
+
+  // TODO(crbug.com/664924): Remove temporary methods
+  virtual void ReadingListWillRemoveUnreadEntry(const ReadingListModel* model,
+                                                size_t index) {}
+
+  virtual void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
+                                              size_t index) {}
+
+  virtual void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
+                                             const ReadingListEntry& entry) {}
+
+  virtual void ReadingListWillAddReadEntry(const ReadingListModel* model,
+                                           const ReadingListEntry& entry) {}
 
  protected:
   ReadingListModelObserver() {}

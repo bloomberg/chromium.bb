@@ -46,14 +46,10 @@ class ReadingListDownloadService
 
   // ReadingListModelObserver implementation
   void ReadingListModelLoaded(const ReadingListModel* model) override;
-  void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
-                                      size_t index) override;
-  void ReadingListWillRemoveUnreadEntry(const ReadingListModel* model,
-                                        size_t index) override;
-  void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
-                                     const ReadingListEntry& entry) override;
-  void ReadingListWillAddReadEntry(const ReadingListModel* model,
-                                   const ReadingListEntry& entry) override;
+  void ReadingListWillRemoveEntry(const ReadingListModel* model,
+                                  const GURL& url) override;
+  void ReadingListDidAddEntry(const ReadingListModel* model,
+                              const GURL& url) override;
 
  private:
   // Tries to save offline versions of all entries in the reading list that are
@@ -62,21 +58,13 @@ class ReadingListDownloadService
   // Schedule a download of an offline version of the reading list entry,
   // according to the delay of the entry. Must only be called after reading list
   // model is loaded.
-  void ScheduleDownloadEntry(const ReadingListEntry& entry);
-  // Tries to save an offline version of the reading list entry corresponding to
-  // the |url| if it is not yet saved. Must only be called after reading list
-  // model is loaded.
-  void DownloadEntryFromURL(const GURL& url);
-  // Schedule a download of an offline version of the reading list entry
-  // associated to this |url|, according to the delay of the entry. Must only be
-  // called after reading list model is loaded.
-  void ScheduleDownloadEntryFromURL(const GURL& url);
+  void ScheduleDownloadEntry(const GURL& url);
   // Tries to save an offline version of the reading list entry if it is not yet
   // saved. Must only be called after reading list model is loaded.
-  void DownloadEntry(const ReadingListEntry& entry);
+  void DownloadEntry(const GURL& url);
   // Removes the offline version of the reading list entry if it exists. Must
   // only be called after reading list model is loaded.
-  void RemoveDownloadedEntry(const ReadingListEntry& entry);
+  void RemoveDownloadedEntry(const GURL& url);
   // Callback for entry download.
   void OnDownloadEnd(const GURL& url,
                      URLDownloader::SuccessState success,

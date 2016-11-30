@@ -41,7 +41,7 @@ class ReadingListModelStorage {
 
   // Saves or updates an entry. If the entry is not yet in the database, it is
   // created.
-  virtual void SaveEntry(const ReadingListEntry& entry, bool read) = 0;
+  virtual void SaveEntry(const ReadingListEntry& entry) = 0;
 
   // Removed an entry from the storage.
   virtual void RemoveEntry(const ReadingListEntry& entry) = 0;

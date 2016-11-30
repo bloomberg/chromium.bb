@@ -34,39 +34,29 @@ void ReadingListModelBridge::ReadingListModelBeingDeleted(
   model_ = nullptr;
 }
 
-void ReadingListModelBridge::ReadingListWillRemoveUnreadEntry(
+void ReadingListModelBridge::ReadingListWillRemoveEntry(
     const ReadingListModel* model,
-    size_t index) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willRemoveUnreadEntryAtIndex:)]) {
-    [observer_ readingListModel:model willRemoveUnreadEntryAtIndex:index];
+    const GURL& url) {
+  if ([observer_
+          respondsToSelector:@selector(readingListModel:willRemoveEntry:)]) {
+    [observer_ readingListModel:model willRemoveEntry:url];
   }
 }
 
-void ReadingListModelBridge::ReadingListWillRemoveReadEntry(
-    const ReadingListModel* model,
-    size_t index) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willRemoveReadEntryAtIndex:)]) {
-    [observer_ readingListModel:model willRemoveReadEntryAtIndex:index];
-  }
-}
-
-void ReadingListModelBridge::ReadingListWillAddReadEntry(
+void ReadingListModelBridge::ReadingListWillAddEntry(
     const ReadingListModel* model,
     const ReadingListEntry& entry) {
   if ([observer_
-          respondsToSelector:@selector(readingListModel:willAddReadEntry:)]) {
-    [observer_ readingListModel:model willAddReadEntry:entry];
+          respondsToSelector:@selector(readingListModel:willAddEntry:)]) {
+    [observer_ readingListModel:model willAddEntry:entry];
   }
 }
 
-void ReadingListModelBridge::ReadingListWillAddUnreadEntry(
+void ReadingListModelBridge::ReadingListDidAddEntry(
     const ReadingListModel* model,
-    const ReadingListEntry& entry) {
-  if ([observer_
-          respondsToSelector:@selector(readingListModel:willAddUnreadEntry:)]) {
-    [observer_ readingListModel:model willAddUnreadEntry:entry];
+    const GURL& url) {
+  if ([observer_ respondsToSelector:@selector(readingListModel:didAddEntry:)]) {
+    [observer_ readingListModel:model didAddEntry:url];
   }
 }
 
@@ -94,29 +84,18 @@ void ReadingListModelBridge::ReadingListModelCompletedBatchUpdates(
 
 void ReadingListModelBridge::ReadingListWillMoveEntry(
     const ReadingListModel* model,
-    size_t index,
-    bool read) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:
-                                                 willMoveEntry:
-                                                        isRead:)]) {
-    [observer_ readingListModel:model willMoveEntry:index isRead:read];
+    const GURL& url) {
+  if ([observer_
+          respondsToSelector:@selector(readingListModel:willMoveEntry:)]) {
+    [observer_ readingListModel:model willMoveEntry:url];
   }
 }
 
-void ReadingListModelBridge::ReadingListWillUpdateUnreadEntry(
+void ReadingListModelBridge::ReadingListWillUpdateEntry(
     const ReadingListModel* model,
-    size_t index) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willUpdateUnreadEntryAtIndex:)]) {
-    [observer_ readingListModel:model willUpdateUnreadEntryAtIndex:index];
-  }
-}
-
-void ReadingListModelBridge::ReadingListWillUpdateReadEntry(
-    const ReadingListModel* model,
-    size_t index) {
-  if ([observer_ respondsToSelector:@selector(readingListModel:
-                                        willUpdateReadEntryAtIndex:)]) {
-    [observer_ readingListModel:model willUpdateReadEntryAtIndex:index];
+    const GURL& url) {
+  if ([observer_
+          respondsToSelector:@selector(readingListModel:willUpdateEntry:)]) {
+    [observer_ readingListModel:model willUpdateEntry:url];
   }
 }

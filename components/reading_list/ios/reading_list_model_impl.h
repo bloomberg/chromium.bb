@@ -5,6 +5,7 @@
 #ifndef COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_IMPL_H_
 #define COMPONENTS_READING_LIST_IOS_READING_LIST_MODEL_IMPL_H_
 
+#include <map>
 #include <memory>
 
 #include "components/keyed_service/core/keyed_service.h"
@@ -20,6 +21,8 @@ class ReadingListModelImpl : public ReadingListModel,
                              public ReadingListStoreDelegate,
                              public KeyedService {
  public:
+  using ReadingListEntries = std::map<GURL, ReadingListEntry>;
+
   // Initialize a ReadingListModelImpl to load and save data in
   // |persistence_layer|.
   ReadingListModelImpl(std::unique_ptr<ReadingListModelStorage> storage_layer,
@@ -33,8 +36,7 @@ class ReadingListModelImpl : public ReadingListModel,
 
   ~ReadingListModelImpl() override;
 
-  void StoreLoaded(std::unique_ptr<ReadingListEntries> unread,
-                   std::unique_ptr<ReadingListEntries> read) override;
+  void StoreLoaded(std::unique_ptr<ReadingListEntries> entries) override;
 
   // KeyedService implementation.
   void Shutdown() override;
@@ -42,29 +44,27 @@ class ReadingListModelImpl : public ReadingListModel,
   // ReadingListModel implementation.
   bool loaded() const override;
 
+  size_t size() const override;
   size_t unread_size() const override;
   size_t read_size() const override;
 
   bool HasUnseenEntries() const override;
   void ResetUnseenEntries() override;
 
+  const std::vector<GURL> Keys() const override;
+
+  const ReadingListEntry* GetEntryByURL(const GURL& gurl) const override;
   const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const override;
   const ReadingListEntry& GetReadEntryAtIndex(size_t index) const override;
-
-  const ReadingListEntry* GetEntryFromURL(const GURL& gurl,
-                                          bool* read) const override;
-
-  bool CallbackEntryURL(
-      const GURL& url,
-      base::Callback<void(const ReadingListEntry&)> callback) const override;
+  void MarkReadByURL(const GURL& url) override;
+  void MarkUnreadByURL(const GURL& url) override;
 
   void RemoveEntryByURL(const GURL& url) override;
 
   const ReadingListEntry& AddEntry(const GURL& url,
                                    const std::string& title) override;
 
-  void MarkReadByURL(const GURL& url) override;
-  void MarkUnreadByURL(const GURL& url) override;
+  void SetReadStatus(const GURL& url, bool read) override;
 
   void SetEntryTitle(const GURL& url, const std::string& title) override;
   void SetEntryDistilledPath(const GURL& url,
@@ -73,10 +73,9 @@ class ReadingListModelImpl : public ReadingListModel,
       const GURL& url,
       ReadingListEntry::DistillationState state) override;
 
-  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry,
-                    bool read) override;
-  ReadingListEntry* SyncMergeEntry(std::unique_ptr<ReadingListEntry> entry,
-                                   bool read) override;
+  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override;
+  ReadingListEntry* SyncMergeEntry(
+      std::unique_ptr<ReadingListEntry> entry) override;
   void SyncRemoveEntry(const GURL& url) override;
 
   std::unique_ptr<ReadingListModel::ScopedReadingListBatchUpdate>
@@ -106,28 +105,33 @@ class ReadingListModelImpl : public ReadingListModel,
   void SetPersistentHasUnseen(bool has_unseen);
   bool GetPersistentHasUnseen();
 
-  // Returns a mutable pointer to the entry with URL |gurl|. Return nullptr if
-  // no entry is found. If an entry is found, |read| is set to the read status
-  // of the entry.
-  ReadingListEntry* GetMutableEntryFromURL(const GURL& gurl, bool* read) const;
-
-  // Sorts the entries in |read_| and |unread_| according to their |UpdateTime|.
-  void SortEntries();
+  // Returns a mutable pointer to the entry with URL |url|. Return nullptr if
+  // no entry is found.
+  ReadingListEntry* GetMutableEntryFromURL(const GURL& url) const;
 
   // Returns the |storage_layer_| of the model.
   ReadingListModelStorage* StorageLayer();
 
-  // Remove |entry| from the |entries| vector and calls the Move notifications
-  // on observers.
-  void MoveEntryFrom(ReadingListEntries* entries,
-                     const ReadingListEntry& entry,
-                     bool read);
-
   // Remove entry |url| and propagate to store if |from_sync| is false.
   void RemoveEntryByURLImpl(const GURL& url, bool from_sync);
 
-  std::unique_ptr<ReadingListEntries> unread_;
-  std::unique_ptr<ReadingListEntries> read_;
+  void RebuildIndex() const;
+
+  std::unique_ptr<ReadingListEntries> entries_;
+  size_t unread_entry_count_;
+  size_t read_entry_count_;
+
+  // TODO(crbug.com/664924): Remove temporary cache and move it to
+  // ReadingListViewController.
+  struct Cache {
+    Cache();
+    ~Cache();
+    std::vector<GURL> read_entries;
+    std::vector<GURL> unread_entries;
+    bool dirty;
+  };
+  std::unique_ptr<struct Cache> cache_;
+
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;
   bool has_unseen_;

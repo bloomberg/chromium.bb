@@ -115,8 +115,7 @@ void ReadingListWebStateObserver::VerifyIfReadingListEntryStartedLoading() {
   double progress = web_state()->GetLoadingProgress();
   const double kMinimumExpectedProgress = 0.15;
   if (progress < kMinimumExpectedProgress) {
-    const ReadingListEntry* entry =
-        reading_list_model_->GetEntryFromURL(url, nullptr);
+    const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
     if (!entry)
       return;
     // TODO(crbug.com/664124) Actually load offline pages.

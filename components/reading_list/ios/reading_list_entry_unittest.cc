@@ -192,7 +192,7 @@ TEST(ReadingListEntry, AsReadingListSpecifics) {
   int64_t creation_time_us = entry.UpdateTime();
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> pb_entry(
-      entry.AsReadingListSpecifics(false));
+      entry.AsReadingListSpecifics());
   EXPECT_EQ(pb_entry->entry_id(), "http://example.com/");
   EXPECT_EQ(pb_entry->url(), "http://example.com/");
   EXPECT_EQ(pb_entry->title(), "bar");
@@ -200,10 +200,10 @@ TEST(ReadingListEntry, AsReadingListSpecifics) {
   EXPECT_EQ(pb_entry->update_time_us(), entry.UpdateTime());
   EXPECT_EQ(pb_entry->status(), sync_pb::ReadingListSpecifics::UNREAD);
 
-  entry.MarkEntryUpdated();
+  entry.SetRead(true);
   EXPECT_NE(entry.UpdateTime(), creation_time_us);
   std::unique_ptr<sync_pb::ReadingListSpecifics> updated_pb_entry(
-      entry.AsReadingListSpecifics(true));
+      entry.AsReadingListSpecifics());
   EXPECT_EQ(updated_pb_entry->creation_time_us(), creation_time_us);
   EXPECT_EQ(updated_pb_entry->update_time_us(), entry.UpdateTime());
   EXPECT_EQ(updated_pb_entry->status(), sync_pb::ReadingListSpecifics::READ);
@@ -236,7 +236,7 @@ TEST(ReadingListEntry, AsReadingListLocal) {
   int64_t creation_time_us = entry.UpdateTime();
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry(
-      entry.AsReadingListLocal(false));
+      entry.AsReadingListLocal());
   EXPECT_EQ(pb_entry->entry_id(), "http://example.com/");
   EXPECT_EQ(pb_entry->url(), "http://example.com/");
   EXPECT_EQ(pb_entry->title(), "bar");
@@ -251,16 +251,17 @@ TEST(ReadingListEntry, AsReadingListLocal) {
 
   entry.SetDistilledState(ReadingListEntry::WILL_RETRY);
   std::unique_ptr<reading_list::ReadingListLocal> will_retry_pb_entry(
-      entry.AsReadingListLocal(true));
+      entry.AsReadingListLocal());
   EXPECT_EQ(will_retry_pb_entry->distillation_state(),
             reading_list::ReadingListLocal::WILL_RETRY);
   EXPECT_EQ(will_retry_pb_entry->failed_download_counter(), 1);
 
   entry.SetDistilledPath(base::FilePath("distilled/page.html"));
+  entry.SetRead(true);
   entry.MarkEntryUpdated();
   EXPECT_NE(entry.UpdateTime(), creation_time_us);
   std::unique_ptr<reading_list::ReadingListLocal> distilled_pb_entry(
-      entry.AsReadingListLocal(true));
+      entry.AsReadingListLocal());
   EXPECT_EQ(distilled_pb_entry->creation_time_us(), creation_time_us);
   EXPECT_EQ(distilled_pb_entry->update_time_us(), entry.UpdateTime());
   EXPECT_NE(distilled_pb_entry->backoff(), "");
@@ -278,7 +279,7 @@ TEST(ReadingListEntry, FromReadingListLocal) {
   base::Time next_call = base::Time::Now() + entry.TimeUntilNextTry();
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry(
-      entry.AsReadingListLocal(false));
+      entry.AsReadingListLocal());
 
   pb_entry->set_entry_id("http://example.com/");
   pb_entry->set_url("http://example.com/");

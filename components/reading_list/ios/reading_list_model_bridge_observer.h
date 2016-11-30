@@ -15,23 +15,22 @@
 @protocol ReadingListModelBridgeObserver<NSObject>
 
 @required
+
 - (void)readingListModelLoaded:(const ReadingListModel*)model;
 - (void)readingListModelDidApplyChanges:(const ReadingListModel*)model;
 
 @optional
 - (void)readingListModel:(const ReadingListModel*)model
-    willRemoveUnreadEntryAtIndex:(size_t)index;
-- (void)readingListModel:(const ReadingListModel*)model
-    willRemoveReadEntryAtIndex:(size_t)index;
+         willRemoveEntry:(const GURL&)url;
 
 - (void)readingListModel:(const ReadingListModel*)model
-           willMoveEntry:(size_t)unreadIndex
-                  isRead:(BOOL)read;
+           willMoveEntry:(const GURL&)url;
 
 - (void)readingListModel:(const ReadingListModel*)model
-      willAddUnreadEntry:(const ReadingListEntry&)entry;
+            willAddEntry:(const ReadingListEntry&)entry;
+
 - (void)readingListModel:(const ReadingListModel*)model
-        willAddReadEntry:(const ReadingListEntry&)entry;
+             didAddEntry:(const GURL&)url;
 
 - (void)readingListModelBeganBatchUpdates:(const ReadingListModel*)model;
 - (void)readingListModelCompletedBatchUpdates:(const ReadingListModel*)model;
@@ -39,9 +38,7 @@
 - (void)readingListModelBeingDeleted:(const ReadingListModel*)model;
 
 - (void)readingListModel:(const ReadingListModel*)model
-    willUpdateUnreadEntryAtIndex:(size_t)index;
-- (void)readingListModel:(const ReadingListModel*)model
-    willUpdateReadEntryAtIndex:(size_t)index;
+         willUpdateEntry:(const GURL&)url;
 
 @end
 
@@ -61,22 +58,17 @@ class ReadingListModelBridge : public ReadingListModelObserver {
       const ReadingListModel* model) override;
   void ReadingListModelLoaded(const ReadingListModel* model) override;
   void ReadingListModelBeingDeleted(const ReadingListModel* model) override;
-  void ReadingListWillRemoveUnreadEntry(const ReadingListModel* model,
-                                        size_t index) override;
-  void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
-                                      size_t index) override;
+  void ReadingListWillRemoveEntry(const ReadingListModel* model,
+                                  const GURL& url) override;
   void ReadingListWillMoveEntry(const ReadingListModel* model,
-                                size_t index,
-                                bool read) override;
-  void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
-                                     const ReadingListEntry& entry) override;
-  void ReadingListWillAddReadEntry(const ReadingListModel* model,
-                                   const ReadingListEntry& entry) override;
+                                const GURL& url) override;
+  void ReadingListWillAddEntry(const ReadingListModel* model,
+                               const ReadingListEntry& entry) override;
+  void ReadingListDidAddEntry(const ReadingListModel* model,
+                              const GURL& url) override;
   void ReadingListDidApplyChanges(ReadingListModel* model) override;
-  void ReadingListWillUpdateUnreadEntry(const ReadingListModel* model,
-                                        size_t index) override;
-  void ReadingListWillUpdateReadEntry(const ReadingListModel* model,
-                                      size_t index) override;
+  void ReadingListWillUpdateEntry(const ReadingListModel* model,
+                                  const GURL& url) override;
 
   __unsafe_unretained id<ReadingListModelBridgeObserver> observer_;
   ReadingListModel* model_;  // weak

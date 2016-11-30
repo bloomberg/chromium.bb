@@ -22,7 +22,6 @@ class ReadingListSpecifics;
 }
 
 class ReadingListEntry;
-using ReadingListEntries = std::vector<ReadingListEntry>;
 
 // An entry in the reading list. The URL is a unique identifier for an entry, as
 // such it should not be empty and is the only thing considered when comparing
@@ -60,6 +59,8 @@ class ReadingListEntry {
   // automatically increased when the state is set to WILL_RETRY or ERROR from a
   // non-error state.
   int FailedDownloadCounter() const;
+  // The read status of the entry.
+  bool IsRead() const;
 
   // The last update time of the entry. This value may be used to sort the
   // entries. The value is in microseconds since Jan 1st 1970.
@@ -74,12 +75,10 @@ class ReadingListEntry {
 
   // Returns a protobuf encoding the content of this ReadingListEntry for local
   // storage.
-  std::unique_ptr<reading_list::ReadingListLocal> AsReadingListLocal(
-      bool read) const;
+  std::unique_ptr<reading_list::ReadingListLocal> AsReadingListLocal() const;
 
   // Returns a protobuf encoding the content of this ReadingListEntry for sync.
-  std::unique_ptr<sync_pb::ReadingListSpecifics> AsReadingListSpecifics(
-      bool read) const;
+  std::unique_ptr<sync_pb::ReadingListSpecifics> AsReadingListSpecifics() const;
 
   // Created a ReadingListEntry from the protobuf format.
   static std::unique_ptr<ReadingListEntry> FromReadingListLocal(
@@ -110,10 +109,13 @@ class ReadingListEntry {
   void SetDistilledPath(const base::FilePath& path);
   // Sets the state to one of PROCESSING, WILL_RETRY or ERROR.
   void SetDistilledState(DistillationState distilled_state);
+  // Sets the read stat of the entry. Will set the UpdateTime of the entry.
+  void SetRead(bool read);
 
  private:
   ReadingListEntry(const GURL& url,
                    const std::string& title,
+                   bool read,
                    int64_t creation_time,
                    int64_t update_time,
                    ReadingListEntry::DistillationState distilled_state,
@@ -122,6 +124,7 @@ class ReadingListEntry {
                    std::unique_ptr<net::BackoffEntry> backoff);
   GURL url_;
   std::string title_;
+  bool read_;
   base::FilePath distilled_path_;
   DistillationState distilled_state_;
 

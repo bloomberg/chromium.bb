@@ -71,12 +71,12 @@ void ReadingListStore::CommitTransaction() {
   }
 }
 
-void ReadingListStore::SaveEntry(const ReadingListEntry& entry, bool read) {
+void ReadingListStore::SaveEntry(const ReadingListEntry& entry) {
   DCHECK(CalledOnValidThread());
   auto token = EnsureBatchCreated();
 
   std::unique_ptr<reading_list::ReadingListLocal> pb_entry =
-      entry.AsReadingListLocal(read);
+      entry.AsReadingListLocal();
 
   batch_->WriteData(entry.URL().spec(), pb_entry->SerializeAsString());
 
@@ -84,7 +84,7 @@ void ReadingListStore::SaveEntry(const ReadingListEntry& entry, bool read) {
     return;
   }
   std::unique_ptr<sync_pb::ReadingListSpecifics> pb_entry_sync =
-      entry.AsReadingListSpecifics(read);
+      entry.AsReadingListSpecifics();
 
   std::unique_ptr<syncer::MetadataChangeList> metadata_change_list =
       CreateMetadataChangeList();
@@ -124,11 +124,10 @@ void ReadingListStore::OnDatabaseLoad(
         nullptr);
     return;
   }
-  auto read = base::MakeUnique<ReadingListEntries>();
-  auto unread = base::MakeUnique<ReadingListEntries>();
+  auto loaded_entries =
+      base::MakeUnique<ReadingListStoreDelegate::ReadingListEntries>();
 
   for (const syncer::ModelTypeStore::Record& r : *entries.get()) {
-    // for (const reading_list::ReadingListLocal& pb_entry : *entries) {
     reading_list::ReadingListLocal proto;
     if (!proto.ParseFromString(r.value)) {
       continue;
@@ -141,14 +140,12 @@ void ReadingListStore::OnDatabaseLoad(
     if (!entry) {
       continue;
     }
-    if (proto.status() == reading_list::ReadingListLocal::READ) {
-      read->push_back(std::move(*entry));
-    } else {
-      unread->push_back(std::move(*entry));
-    }
+    GURL url = entry->URL();
+    DCHECK(!loaded_entries->count(url));
+    loaded_entries->insert(std::make_pair(url, std::move(*entry)));
   }
 
-  delegate_->StoreLoaded(std::move(unread), std::move(read));
+  delegate_->StoreLoaded(std::move(loaded_entries));
 
   store_->ReadAllMetadata(
       base::Bind(&ReadingListStore::OnReadAllMetadata, base::AsWeakPtr(this)));
@@ -219,38 +216,36 @@ syncer::SyncError ReadingListStore::MergeSyncData(
     const sync_pb::ReadingListSpecifics& specifics =
         kv.second.value().specifics.reading_list();
     // Deserialize entry.
-    bool read = specifics.status() == sync_pb::ReadingListSpecifics::READ;
     std::unique_ptr<ReadingListEntry> entry(
         ReadingListEntry::FromReadingListSpecifics(specifics));
 
-    bool was_read;
     const ReadingListEntry* existing_entry =
-        model_->GetEntryFromURL(entry->URL(), &was_read);
+        model_->GetEntryByURL(entry->URL());
 
     if (!existing_entry) {
       // This entry is new. Add it to the store and model.
       // Convert to local store format and write to store.
       std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-          entry->AsReadingListLocal(read);
+          entry->AsReadingListLocal();
       batch_->WriteData(entry->URL().spec(), entry_pb->SerializeAsString());
 
       // Notify model about updated entry.
-      delegate_->SyncAddEntry(std::move(entry), read);
+      delegate_->SyncAddEntry(std::move(entry));
     } else if (existing_entry->UpdateTime() < entry->UpdateTime()) {
       // The entry from sync is more recent.
       // Merge the local data to it and store it.
       ReadingListEntry* merged_entry =
-          delegate_->SyncMergeEntry(std::move(entry), read);
+          delegate_->SyncMergeEntry(std::move(entry));
 
       // Write to the store.
       std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-          merged_entry->AsReadingListLocal(read);
+          merged_entry->AsReadingListLocal();
       batch_->WriteData(entry->URL().spec(),
                         entry_local_pb->SerializeAsString());
 
       // Send to sync
       std::unique_ptr<sync_pb::ReadingListSpecifics> entry_sync_pb =
-          merged_entry->AsReadingListSpecifics(read);
+          merged_entry->AsReadingListSpecifics();
       auto entity_data = base::MakeUnique<syncer::EntityData>();
       *(entity_data->specifics.mutable_reading_list()) = *entry_sync_pb;
       entity_data->non_unique_name = entry_sync_pb->entry_id();
@@ -265,7 +260,7 @@ syncer::SyncError ReadingListStore::MergeSyncData(
       // Send back the local more recent entry.
       // No need to update
       std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-          existing_entry->AsReadingListSpecifics(was_read);
+          existing_entry->AsReadingListSpecifics();
       auto entity_data = base::MakeUnique<syncer::EntityData>();
       *(entity_data->specifics.mutable_reading_list()) = *entry_pb;
       entity_data->non_unique_name = entry_pb->entry_id();
@@ -276,21 +271,16 @@ syncer::SyncError ReadingListStore::MergeSyncData(
   }
 
   // Commit local only entries to server.
-  int unread_count = model_->unread_size();
-  int read_count = model_->read_size();
-  for (int index = 0; index < unread_count + read_count; index++) {
-    bool read = index >= unread_count;
-    const ReadingListEntry& entry =
-        read ? model_->GetReadEntryAtIndex(index - unread_count)
-             : model_->GetUnreadEntryAtIndex(index);
-    if (synced_entries.count(entry.URL().spec())) {
+  for (const auto& url : model_->Keys()) {
+    const ReadingListEntry* entry = model_->GetEntryByURL(url);
+    if (synced_entries.count(url.spec())) {
       // Entry already exists and has been merged above.
       continue;
     }
 
     // Local entry has later timestamp. It should be committed to server.
     std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-        entry.AsReadingListSpecifics(read);
+        entry->AsReadingListSpecifics();
 
     auto entity_data = base::MakeUnique<syncer::EntityData>();
     *(entity_data->specifics.mutable_reading_list()) = *entry_pb;
@@ -326,38 +316,36 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
       // Deserialize entry.
       const sync_pb::ReadingListSpecifics& specifics =
           change.data().specifics.reading_list();
-      bool read = specifics.status() == sync_pb::ReadingListSpecifics::READ;
       std::unique_ptr<ReadingListEntry> entry(
           ReadingListEntry::FromReadingListSpecifics(specifics));
 
-      bool was_read;
       const ReadingListEntry* existing_entry =
-          model_->GetEntryFromURL(entry->URL(), &was_read);
+          model_->GetEntryByURL(entry->URL());
 
       if (!existing_entry) {
         // This entry is new. Add it to the store and model.
         // Convert to local store format and write to store.
         std::unique_ptr<reading_list::ReadingListLocal> entry_pb =
-            entry->AsReadingListLocal(read);
+            entry->AsReadingListLocal();
         batch_->WriteData(entry->URL().spec(), entry_pb->SerializeAsString());
 
         // Notify model about updated entry.
-        delegate_->SyncAddEntry(std::move(entry), read);
+        delegate_->SyncAddEntry(std::move(entry));
       } else if (existing_entry->UpdateTime() < entry->UpdateTime()) {
         // The entry from sync is more recent.
         // Merge the local data to it and store it.
         ReadingListEntry* merged_entry =
-            delegate_->SyncMergeEntry(std::move(entry), read);
+            delegate_->SyncMergeEntry(std::move(entry));
 
         // Write to the store.
         std::unique_ptr<reading_list::ReadingListLocal> entry_local_pb =
-            merged_entry->AsReadingListLocal(read);
+            merged_entry->AsReadingListLocal();
         batch_->WriteData(merged_entry->URL().spec(),
                           entry_local_pb->SerializeAsString());
 
         // Send to sync
         std::unique_ptr<sync_pb::ReadingListSpecifics> entry_sync_pb =
-            merged_entry->AsReadingListSpecifics(read);
+            merged_entry->AsReadingListSpecifics();
         auto entity_data = base::MakeUnique<syncer::EntityData>();
         *(entity_data->specifics.mutable_reading_list()) = *entry_sync_pb;
         entity_data->non_unique_name = entry_sync_pb->entry_id();
@@ -373,7 +361,7 @@ syncer::SyncError ReadingListStore::ApplySyncChanges(
         // Send back the local more recent entry.
         // No need to update
         std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-            existing_entry->AsReadingListSpecifics(was_read);
+            existing_entry->AsReadingListSpecifics();
         auto entity_data = base::MakeUnique<syncer::EntityData>();
         *(entity_data->specifics.mutable_reading_list()) = *entry_pb;
         entity_data->non_unique_name = entry_pb->entry_id();
@@ -392,12 +380,10 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
                                DataCallback callback) {
   DCHECK(CalledOnValidThread());
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
-  for (std::string url_string : storage_keys) {
-    bool read;
-    const ReadingListEntry* entry =
-        model_->GetEntryFromURL(GURL(url_string), &read);
+  for (const std::string& url_string : storage_keys) {
+    const ReadingListEntry* entry = model_->GetEntryByURL(GURL(url_string));
     if (entry) {
-      AddEntryToBatch(batch.get(), *entry, read);
+      AddEntryToBatch(batch.get(), *entry);
     }
   }
 
@@ -407,25 +393,20 @@ void ReadingListStore::GetData(StorageKeyList storage_keys,
 void ReadingListStore::GetAllData(DataCallback callback) {
   DCHECK(CalledOnValidThread());
   auto batch = base::MakeUnique<syncer::MutableDataBatch>();
-  int unread_count = model_->unread_size();
-  int read_count = model_->read_size();
-  for (int index = 0; index < unread_count + read_count; index++) {
-    bool read = index >= unread_count;
-    const ReadingListEntry& entry =
-        read ? model_->GetReadEntryAtIndex(index - unread_count)
-             : model_->GetUnreadEntryAtIndex(index);
-    AddEntryToBatch(batch.get(), entry, read);
+
+  for (const auto& url : model_->Keys()) {
+    const ReadingListEntry* entry = model_->GetEntryByURL(GURL(url));
+    AddEntryToBatch(batch.get(), *entry);
   }
 
   callback.Run(syncer::SyncError(), std::move(batch));
 }
 
 void ReadingListStore::AddEntryToBatch(syncer::MutableDataBatch* batch,
-                                       const ReadingListEntry& entry,
-                                       bool read) {
+                                       const ReadingListEntry& entry) {
   DCHECK(CalledOnValidThread());
   std::unique_ptr<sync_pb::ReadingListSpecifics> entry_pb =
-      entry.AsReadingListSpecifics(read);
+      entry.AsReadingListSpecifics();
 
   std::unique_ptr<syncer::EntityData> entity_data(new syncer::EntityData());
   *(entity_data->specifics.mutable_reading_list()) = *entry_pb;

@@ -114,14 +114,12 @@ class ReadingListStoreTest : public testing::Test,
   }
 
   // These three mathods handle callbacks from a ReadingListStore.
-  void StoreLoaded(std::unique_ptr<ReadingListEntries> unread,
-                   std::unique_ptr<ReadingListEntries> read) override {}
+  void StoreLoaded(std::unique_ptr<ReadingListEntries> entries) override {}
 
   // Handle sync events.
-  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry,
-                    bool read) override {
+  void SyncAddEntry(std::unique_ptr<ReadingListEntry> entry) override {
     sync_add_called_++;
-    sync_added_[entry->URL().spec()] = read;
+    sync_added_[entry->URL().spec()] = entry->IsRead();
   }
 
   void SyncRemoveEntry(const GURL& gurl) override {
@@ -129,11 +127,11 @@ class ReadingListStoreTest : public testing::Test,
     sync_removed_.insert(gurl.spec());
   }
 
-  ReadingListEntry* SyncMergeEntry(std::unique_ptr<ReadingListEntry> entry,
-                                   bool read) override {
+  ReadingListEntry* SyncMergeEntry(
+      std::unique_ptr<ReadingListEntry> entry) override {
     sync_merge_called_++;
-    sync_merged_[entry->URL().spec()] = read;
-    return model_->SyncMergeEntry(std::move(entry), read);
+    sync_merged_[entry->URL().spec()] = entry->IsRead();
+    return model_->SyncMergeEntry(std::move(entry));
   }
 
   // In memory model type store needs a MessageLoop.
@@ -155,13 +153,13 @@ class ReadingListStoreTest : public testing::Test,
 };
 
 TEST_F(ReadingListStoreTest, CheckEmpties) {
-  EXPECT_EQ(0ul, model_->unread_size());
-  EXPECT_EQ(0ul, model_->read_size());
+  EXPECT_EQ(0ul, model_->size());
 }
 
 TEST_F(ReadingListStoreTest, SaveOneRead) {
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title");
-  reading_list_store_->SaveEntry(entry, true);
+  entry.SetRead(true);
+  reading_list_store_->SaveEntry(entry);
   AssertCounts(1, 0, 0, 0, 0);
   syncer::EntityData* data = put_multimap_["http://read.example.com/"].get();
   const sync_pb::ReadingListSpecifics& specifics =
@@ -173,7 +171,7 @@ TEST_F(ReadingListStoreTest, SaveOneRead) {
 
 TEST_F(ReadingListStoreTest, SaveOneUnread) {
   ReadingListEntry entry(GURL("http://unread.example.com/"), "unread title");
-  reading_list_store_->SaveEntry(entry, false);
+  reading_list_store_->SaveEntry(entry);
   AssertCounts(1, 0, 0, 0, 0);
   syncer::EntityData* data = put_multimap_["http://unread.example.com/"].get();
   const sync_pb::ReadingListSpecifics& specifics =
@@ -186,8 +184,9 @@ TEST_F(ReadingListStoreTest, SaveOneUnread) {
 TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
   syncer::EntityDataMap remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title");
+  entry.SetRead(true);
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
-      entry.AsReadingListSpecifics(true);
+      entry.AsReadingListSpecifics();
 
   syncer::EntityData data;
   data.client_tag_hash = "http://read.example.com/";
@@ -208,8 +207,9 @@ TEST_F(ReadingListStoreTest, SyncMergeOneEntry) {
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneAdd) {
   syncer::EntityDataMap remote_input;
   ReadingListEntry entry(GURL("http://read.example.com/"), "read title");
+  entry.SetRead(true);
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
-      entry.AsReadingListSpecifics(true);
+      entry.AsReadingListSpecifics();
   syncer::EntityData data;
   data.client_tag_hash = "http://read.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;
@@ -234,8 +234,9 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
 
   ReadingListEntry new_entry(GURL("http://unread.example.com/"),
                              "unread title");
+  new_entry.SetRead(true);
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
-      new_entry.AsReadingListSpecifics(true);
+      new_entry.AsReadingListSpecifics();
   syncer::EntityData data;
   data.client_tag_hash = "http://unread.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;
@@ -252,8 +253,11 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneMerge) {
 }
 
 TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
+  // Read entry but with unread URL as it must update the other one.
   ReadingListEntry old_entry(GURL("http://unread.example.com/"),
                              "unread title");
+  old_entry.SetRead(true);
+
   base::test::ios::SpinRunLoopWithMinDelay(
       base::TimeDelta::FromMilliseconds(10));
   syncer::EntityDataMap remote_input;
@@ -261,7 +265,7 @@ TEST_F(ReadingListStoreTest, ApplySyncChangesOneIgnored) {
   AssertCounts(0, 0, 0, 0, 0);
 
   std::unique_ptr<sync_pb::ReadingListSpecifics> specifics =
-      old_entry.AsReadingListSpecifics(true);
+      old_entry.AsReadingListSpecifics();
   syncer::EntityData data;
   data.client_tag_hash = "http://unread.example.com/";
   *data.specifics.mutable_reading_list() = *specifics;

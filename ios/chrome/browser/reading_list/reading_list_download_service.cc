@@ -58,120 +58,86 @@ void ReadingListDownloadService::ReadingListModelLoaded(
   DownloadAllEntries();
 }
 
-void ReadingListDownloadService::ReadingListWillRemoveReadEntry(
+void ReadingListDownloadService::ReadingListWillRemoveEntry(
     const ReadingListModel* model,
-    size_t index) {
+    const GURL& url) {
   DCHECK_EQ(reading_list_model_, model);
-  RemoveDownloadedEntry(model->GetReadEntryAtIndex(index));
+  DCHECK(model->GetEntryByURL(url));
+  RemoveDownloadedEntry(url);
 }
 
-void ReadingListDownloadService::ReadingListWillRemoveUnreadEntry(
+void ReadingListDownloadService::ReadingListDidAddEntry(
     const ReadingListModel* model,
-    size_t index) {
+    const GURL& url) {
   DCHECK_EQ(reading_list_model_, model);
-  RemoveDownloadedEntry(model->GetUnreadEntryAtIndex(index));
-}
-
-void ReadingListDownloadService::ReadingListWillAddUnreadEntry(
-    const ReadingListModel* model,
-    const ReadingListEntry& entry) {
-  DCHECK_EQ(reading_list_model_, model);
-  ScheduleDownloadEntry(entry);
-}
-
-void ReadingListDownloadService::ReadingListWillAddReadEntry(
-    const ReadingListModel* model,
-    const ReadingListEntry& entry) {
-  DCHECK_EQ(reading_list_model_, model);
-  ScheduleDownloadEntry(entry);
+  ScheduleDownloadEntry(url);
 }
 
 void ReadingListDownloadService::DownloadAllEntries() {
   DCHECK(reading_list_model_->loaded());
-  size_t size = reading_list_model_->unread_size();
-  for (size_t i = 0; i < size; i++) {
-    const ReadingListEntry& entry =
-        reading_list_model_->GetUnreadEntryAtIndex(i);
-    this->ScheduleDownloadEntry(entry);
-  }
-  size = reading_list_model_->read_size();
-  for (size_t i = 0; i < size; i++) {
-    const ReadingListEntry& entry = reading_list_model_->GetReadEntryAtIndex(i);
-    this->ScheduleDownloadEntry(entry);
+  for (const auto& url : reading_list_model_->Keys()) {
+    this->ScheduleDownloadEntry(url);
   }
 }
 
-void ReadingListDownloadService::ScheduleDownloadEntry(
-    const ReadingListEntry& entry) {
+void ReadingListDownloadService::ScheduleDownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
-  if (entry.DistilledState() == ReadingListEntry::ERROR ||
-      entry.DistilledState() == ReadingListEntry::PROCESSED)
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
+      entry->DistilledState() == ReadingListEntry::PROCESSED)
     return;
-
+  GURL local_url(url);
   web::WebThread::PostDelayedTask(
       web::WebThread::UI, FROM_HERE,
-      base::Bind(&ReadingListDownloadService::DownloadEntryFromURL,
-                 weak_ptr_factory_.GetWeakPtr(), entry.URL()),
-      entry.TimeUntilNextTry());
+      base::Bind(&ReadingListDownloadService::DownloadEntry,
+                 weak_ptr_factory_.GetWeakPtr(), local_url),
+      entry->TimeUntilNextTry());
 }
 
-void ReadingListDownloadService::ScheduleDownloadEntryFromURL(const GURL& url) {
-  auto download_callback =
-      base::Bind(&ReadingListDownloadService::ScheduleDownloadEntry,
-                 base::Unretained(this));
-  reading_list_model_->CallbackEntryURL(url, download_callback);
-}
-
-void ReadingListDownloadService::DownloadEntryFromURL(const GURL& url) {
-  auto download_callback = base::Bind(
-      &ReadingListDownloadService::DownloadEntry, base::Unretained(this));
-  reading_list_model_->CallbackEntryURL(url, download_callback);
-}
-
-void ReadingListDownloadService::DownloadEntry(const ReadingListEntry& entry) {
+void ReadingListDownloadService::DownloadEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
-  if (entry.DistilledState() == ReadingListEntry::ERROR ||
-      entry.DistilledState() == ReadingListEntry::PROCESSED)
+  const ReadingListEntry* entry = reading_list_model_->GetEntryByURL(url);
+  if (!entry || entry->DistilledState() == ReadingListEntry::ERROR ||
+      entry->DistilledState() == ReadingListEntry::PROCESSED)
     return;
 
   if (net::NetworkChangeNotifier::IsOffline()) {
     // There is no connection, save it for download only if we did not exceed
     // the maximaxum number of tries.
-    if (entry.FailedDownloadCounter() < kNumberOfFailsBeforeWifiOnly)
-      url_to_download_cellular_.push_back(entry.URL());
-    if (entry.FailedDownloadCounter() < kNumberOfFailsBeforeStop)
-      url_to_download_wifi_.push_back(entry.URL());
+    if (entry->FailedDownloadCounter() < kNumberOfFailsBeforeWifiOnly)
+      url_to_download_cellular_.push_back(entry->URL());
+    if (entry->FailedDownloadCounter() < kNumberOfFailsBeforeStop)
+      url_to_download_wifi_.push_back(entry->URL());
     return;
   }
 
   // There is a connection.
-  if (entry.FailedDownloadCounter() < kNumberOfFailsBeforeWifiOnly) {
+  if (entry->FailedDownloadCounter() < kNumberOfFailsBeforeWifiOnly) {
     // Try to download the page, whatever the connection.
-    reading_list_model_->SetEntryDistilledState(entry.URL(),
+    reading_list_model_->SetEntryDistilledState(entry->URL(),
                                                 ReadingListEntry::PROCESSING);
-    url_downloader_->DownloadOfflineURL(entry.URL());
+    url_downloader_->DownloadOfflineURL(entry->URL());
 
-  } else if (entry.FailedDownloadCounter() < kNumberOfFailsBeforeStop) {
+  } else if (entry->FailedDownloadCounter() < kNumberOfFailsBeforeStop) {
     // Try to download the page only if the connection is wifi.
     if (net::NetworkChangeNotifier::GetConnectionType() ==
         net::NetworkChangeNotifier::CONNECTION_WIFI) {
       // The connection is wifi, download the page.
-      reading_list_model_->SetEntryDistilledState(entry.URL(),
+      reading_list_model_->SetEntryDistilledState(entry->URL(),
                                                   ReadingListEntry::PROCESSING);
-      url_downloader_->DownloadOfflineURL(entry.URL());
+      url_downloader_->DownloadOfflineURL(entry->URL());
 
     } else {
       // The connection is not wifi, save it for download when the connection
       // changes to wifi.
-      url_to_download_wifi_.push_back(entry.URL());
+      url_to_download_wifi_.push_back(entry->URL());
     }
   }
 }
 
-void ReadingListDownloadService::RemoveDownloadedEntry(
-    const ReadingListEntry& entry) {
+void ReadingListDownloadService::RemoveDownloadedEntry(const GURL& url) {
   DCHECK(reading_list_model_->loaded());
-  url_downloader_->RemoveOfflineURL(entry.URL());
+  url_downloader_->RemoveOfflineURL(url);
 }
 
 void ReadingListDownloadService::OnDownloadEnd(
@@ -188,8 +154,7 @@ void ReadingListDownloadService::OnDownloadEnd(
   } else if (success == URLDownloader::ERROR_RETRY) {
     reading_list_model_->SetEntryDistilledState(url,
                                                 ReadingListEntry::WILL_RETRY);
-    ScheduleDownloadEntryFromURL(url);
-
+    ScheduleDownloadEntry(url);
   } else if (success == URLDownloader::ERROR_PERMANENT) {
     reading_list_model_->SetEntryDistilledState(url, ReadingListEntry::ERROR);
   }
@@ -209,12 +174,12 @@ void ReadingListDownloadService::OnConnectionTypeChanged(
   if (!had_connection_) {
     had_connection_ = true;
     for (auto& url : url_to_download_cellular_) {
-      ScheduleDownloadEntryFromURL(url);
+      ScheduleDownloadEntry(url);
     }
   }
   if (type == net::NetworkChangeNotifier::CONNECTION_WIFI) {
     for (auto& url : url_to_download_wifi_) {
-      ScheduleDownloadEntryFromURL(url);
+      ScheduleDownloadEntry(url);
     }
   }
 }
