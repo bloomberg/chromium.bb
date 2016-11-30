@@ -179,13 +179,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   String debugName(const GraphicsLayer*) const override;
   DocumentLifecycle& lifecycle() const;
 
-  bool needsUpdateDescendantDependentFlags() const {
-    return m_needsUpdateDescendantDependentFlags;
-  }
-  void setNeedsUpdateDescendantDependentFlags() {
-    m_needsUpdateDescendantDependentFlags = true;
-  }
-
   void updatePotentialCompositingReasonsFromStyle(PaintLayer*);
 
   // Whether the layer could ever be composited.
@@ -274,7 +267,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
   bool m_needsUpdateFixedBackground;
   bool m_isTrackingRasterInvalidations;  // Used for testing.
   bool m_inOverlayFullscreenVideo;
-  bool m_needsUpdateDescendantDependentFlags;
 
   RootLayerAttachment m_rootLayerAttachment;
 

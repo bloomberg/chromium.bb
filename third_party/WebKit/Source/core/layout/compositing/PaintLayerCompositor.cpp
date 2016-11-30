@@ -83,7 +83,6 @@ PaintLayerCompositor::PaintLayerCompositor(LayoutView& layoutView)
       m_isTrackingRasterInvalidations(
           layoutView.frameView()->isTrackingPaintInvalidations()),
       m_inOverlayFullscreenVideo(false),
-      m_needsUpdateDescendantDependentFlags(false),
       m_rootLayerAttachment(RootLayerUnattached) {
   updateAcceleratedCompositingSettings();
 }
@@ -184,23 +183,6 @@ static LayoutVideo* findFullscreenVideoLayoutObject(Document& document) {
   return toLayoutVideo(layoutObject);
 }
 
-// The descendant-dependent flags system is badly broken because we clean dirty
-// bits in upward tree walks, which means we need to call
-// updateDescendantDependentFlags at every node in the tree to fully clean all
-// the dirty bits. While we'll in the process of fixing this issue,
-// updateDescendantDependentFlagsForEntireSubtree provides a big hammer for
-// actually cleaning all the dirty bits in a subtree.
-//
-// FIXME: Remove this function once the descendant-dependent flags system keeps
-// its dirty bits scoped to subtrees.
-void updateDescendantDependentFlagsForEntireSubtree(PaintLayer& layer) {
-  layer.updateDescendantDependentFlags();
-
-  for (PaintLayer* child = layer.firstChild(); child;
-       child = child->nextSibling())
-    updateDescendantDependentFlagsForEntireSubtree(*child);
-}
-
 void PaintLayerCompositor::updateIfNeededRecursive() {
   SCOPED_BLINK_UMA_HISTOGRAM_TIMER("Blink.Compositing.UpdateTime");
   updateIfNeededRecursiveInternal();
@@ -238,10 +220,7 @@ void PaintLayerCompositor::updateIfNeededRecursiveInternal() {
   // InCompositingUpdate.
   enableCompositingModeIfNeeded();
 
-  if (m_needsUpdateDescendantDependentFlags) {
-    updateDescendantDependentFlagsForEntireSubtree(*rootLayer());
-    m_needsUpdateDescendantDependentFlags = false;
-  }
+  rootLayer()->updateDescendantDependentFlags();
 
   m_layoutView.commitPendingSelection();
 

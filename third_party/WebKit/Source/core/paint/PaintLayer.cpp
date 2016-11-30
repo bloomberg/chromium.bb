@@ -640,7 +640,6 @@ void PaintLayer::mapRectToPaintInvalidationBacking(
 }
 
 void PaintLayer::dirtyVisibleContentStatus() {
-  compositor()->setNeedsUpdateDescendantDependentFlags();
   m_isVisibleContentDirty = true;
   if (parent())
     parent()->dirtyAncestorChainVisibleDescendantStatus();
@@ -659,8 +658,6 @@ void PaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility) {
 }
 
 void PaintLayer::dirtyAncestorChainVisibleDescendantStatus() {
-  compositor()->setNeedsUpdateDescendantDependentFlags();
-
   for (PaintLayer* layer = this; layer; layer = layer->parent()) {
     if (layer->m_isVisibleDescendantDirty)
       break;
@@ -704,10 +701,8 @@ void PaintLayer::updateDescendantDependentFlags() {
          child = child->nextSibling()) {
       child->updateDescendantDependentFlags();
 
-      if (child->m_hasVisibleContent || child->m_hasVisibleDescendant) {
+      if (child->m_hasVisibleContent || child->m_hasVisibleDescendant)
         m_hasVisibleDescendant = true;
-        break;
-      }
     }
 
     m_isVisibleDescendantDirty = false;
