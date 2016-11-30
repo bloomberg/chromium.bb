@@ -22,7 +22,7 @@
 
 namespace base {
 
-inline int32_t SaturatedAddition(int32_t a, int32_t b) {
+ALWAYS_INLINE int32_t SaturatedAddition(int32_t a, int32_t b) {
   uint32_t ua = a;
   uint32_t ub = b;
   uint32_t result = ua + ub;
@@ -36,7 +36,7 @@ inline int32_t SaturatedAddition(int32_t a, int32_t b) {
   return result;
 }
 
-inline int32_t SaturatedSubtraction(int32_t a, int32_t b) {
+ALWAYS_INLINE int32_t SaturatedSubtraction(int32_t a, int32_t b) {
   uint32_t ua = a;
   uint32_t ub = b;
   uint32_t result = ua - ub;
@@ -50,25 +50,25 @@ inline int32_t SaturatedSubtraction(int32_t a, int32_t b) {
   return result;
 }
 
-inline int32_t SaturatedNegative(int32_t a) {
+ALWAYS_INLINE int32_t SaturatedNegative(int32_t a) {
   if (UNLIKELY(a == std::numeric_limits<int>::min()))
     return std::numeric_limits<int>::max();
   return -a;
 }
 
-inline int GetMaxSaturatedSetResultForTesting(int fractional_shift) {
+ALWAYS_INLINE int GetMaxSaturatedSetResultForTesting(int fractional_shift) {
   // For C version the set function maxes out to max int, this differs from
   // the ARM asm version, see saturated_arithmetic_arm.h for the equivalent asm
   // version.
   return std::numeric_limits<int>::max();
 }
 
-inline int GetMinSaturatedSetResultForTesting(int fractional_shift) {
+ALWAYS_INLINE int GetMinSaturatedSetResultForTesting(int fractional_shift) {
   return std::numeric_limits<int>::min();
 }
 
 template <int fractional_shift>
-inline int SaturatedSet(int value) {
+ALWAYS_INLINE int SaturatedSet(int value) {
   const int kIntMaxForLayoutUnit =
       std::numeric_limits<int>::max() >> fractional_shift;
 
@@ -85,7 +85,7 @@ inline int SaturatedSet(int value) {
 }
 
 template <int fractional_shift>
-inline int SaturatedSet(unsigned value) {
+ALWAYS_INLINE int SaturatedSet(unsigned value) {
   const unsigned kIntMaxForLayoutUnit =
       std::numeric_limits<int>::max() >> fractional_shift;
 
