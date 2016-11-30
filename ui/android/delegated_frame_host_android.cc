@@ -129,7 +129,6 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
 
     current_frame_ = base::MakeUnique<FrameData>();
     current_frame_->local_frame_id = surface_id_allocator_->GenerateId();
-
     current_frame_->surface_size = surface_size;
     current_frame_->top_controls_height = frame.metadata.top_controls_height;
     current_frame_->top_controls_shown_ratio =
@@ -140,8 +139,10 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         frame.metadata.bottom_controls_shown_ratio;
     current_frame_->has_transparent_background =
         root_pass->has_transparent_background;
-
     current_frame_->viewport_selection = frame.metadata.selection;
+    surface_factory_->SubmitCompositorFrame(current_frame_->local_frame_id,
+                                            std::move(frame), draw_callback);
+
     content_layer_ = CreateSurfaceLayer(
         surface_manager_, cc::SurfaceId(surface_factory_->frame_sink_id(),
                                         current_frame_->local_frame_id),
@@ -149,10 +150,10 @@ void DelegatedFrameHostAndroid::SubmitCompositorFrame(
         !current_frame_->has_transparent_background);
     view_->GetLayer()->AddChild(content_layer_);
     UpdateBackgroundLayer();
+  } else {
+    surface_factory_->SubmitCompositorFrame(current_frame_->local_frame_id,
+                                            std::move(frame), draw_callback);
   }
-
-  surface_factory_->SubmitCompositorFrame(current_frame_->local_frame_id,
-                                          std::move(frame), draw_callback);
 }
 
 cc::FrameSinkId DelegatedFrameHostAndroid::GetFrameSinkId() const {
