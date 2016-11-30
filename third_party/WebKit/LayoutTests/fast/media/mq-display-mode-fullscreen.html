@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>Test the media query "display-mode" features.</title>
-<script src="../../fullscreen/trusted-event.js"></script>
+<script src="../../fullscreen/trusted-click.js"></script>
 <script>
     if (window.testRunner) {
         testRunner.dumpAsText();
@@ -40,7 +40,7 @@
             }
             document.exitFullscreen();
         }
-        trusted_event(function() {
+        trusted_click(function() {
             log("------------- before entering fullscreen -------------");
             testQueries();
             div.webkitRequestFullscreen();

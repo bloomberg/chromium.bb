@@ -2,7 +2,7 @@
 <title>Document.fullscreenElement</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../trusted-event.js"></script>
+<script src="../trusted-click.js"></script>
 <div id="log"></div>
 <script>
 async_test(function(t)
@@ -24,7 +24,7 @@ async_test(function(t)
         });
     });
 
-    trusted_event(t.step_func(function()
+    trusted_click(t.step_func(function()
     {
         assert_equals(document.fullscreenElement, null, "fullscreenElement before requestFullscreen()");
         div.requestFullscreen();

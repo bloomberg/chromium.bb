@@ -2,42 +2,45 @@
 <title>Document#exitFullscreen() vs. Element#requestFullscreen()</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../trusted-event.js"></script>
+<script src="../trusted-click.js"></script>
 <div id="log"></div>
-<div id="target"></div>
+<div id="parent"><div></div></div>
 <script>
 // Adapted from https://github.com/w3c/web-platform-tests/pull/4250
 // TODO(foolip): Remove this test when the above is imported and passing.
 async_test(t => {
-  const target = document.getElementById("target");
-  trusted_request(target);
+  const parent = document.getElementById("parent");
 
   document.onfullscreenchange = t.step_func(() => {
-    document.onfullscreenchange = t.unreached_func("fullscreenchange event");
     // We are now in fullscreen, so exiting requires a resize but requesting
     // does not.
-    trusted_event(t.step_func(() => {
-      // Request fullscreen on the current fullscreen element, to ensure there
-      // is no short circuiting and that both requests fail. Note that the order
-      // of the two fullscreenerror events relative to the fullscreenchange
-      // event isn't tested, as it depends on whether the resize happens before
-      // the next animation frame or not.
+    assert_equals(document.fullscreenElement, parent, "fullscreenElement after fullscreenchange event");
+
+    trusted_click(t.step_func(() => {
+      // Request fullscreen on another element, to avoid any synchronous
+      // short-circuiting on document.fullscreenElement.requestFullscreen(),
+      // which used to be in the spec. Also request both before and after the
+      // exit. Both requests should be silently ignored due to the exit.
 
       let fullscreenchanges = 0;
       document.onfullscreenchange = t.step_func((event) => {
+        assert_equals(document.fullscreenElement, child);
         fullscreenchanges++;
-        if (fullscreenchanges == 3) {
-          assert_equals(document.fullscreenElement, null);
+        if (fullscreenchanges == 3)
           t.done();
-        }
       });
-      document.onfullscreenerror = t.unreached_func("fullscreenerror event");
 
-      assert_equals(document.fullscreenElement, target);
-      target.requestFullscreen();
+      const child = parent.firstChild;
+      child.requestFullscreen();
+      assert_equals(document.fullscreenElement, child, "fullscreenElement after first requestFullscreen()");
       document.exitFullscreen();
-      target.requestFullscreen();
-    }), target);
+      assert_equals(document.fullscreenElement, parent, "fullscreenElement after exitFullscreen()");
+      child.requestFullscreen();
+      assert_equals(document.fullscreenElement, child, "fullscreenElement after second requestFullscreen()");
+    }), parent);
   });
+  document.onfullscreenerror = t.unreached_func("fullscreenerror event");
+
+  trusted_request(parent);
 });
 </script>

@@ -1,6 +1,6 @@
 // Invokes callback from a trusted event.
 // When testing manually, a button is added to the container.
-function trusted_event(callback, container)
+function trusted_click(callback, container)
 {
     var document = container.ownerDocument;
 
@@ -36,5 +36,5 @@ function trusted_event(callback, container)
 function trusted_request(element, container)
 {
     var request = element.requestFullscreen.bind(element);
-    trusted_event(request, container || element.parentNode);
+    trusted_click(request, container || element.parentNode);
 }

@@ -2,7 +2,7 @@
 <title>Fully exit fullscreen with two elements on stack and iframe</title>
 <script src="../../resources/testharness.js"></script>
 <script src="../../resources/testharnessreport.js"></script>
-<script src="../trusted-event.js"></script>
+<script src="../trusted-click.js"></script>
 <script src="fully-exit-fullscreen.js"></script>
 <div id="log"></div>
 <div>
@@ -26,7 +26,7 @@ async_test(function(t)
         {
             assert_equals(document.fullscreenElement, iframe);
             assert_equals(iframeDocument.fullscreenElement, iframeBody);
-            trusted_event(fully_exit_fullscreen.bind(null, iframeDocument), iframeBody);
+            trusted_click(fully_exit_fullscreen.bind(null, iframeDocument), iframeBody);
             iframeDocument.onfullscreenchange = null;
             document.onfullscreenchange = t.step_func(function()
             {
