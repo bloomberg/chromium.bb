@@ -1,5 +1,6 @@
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/html/web_ui_listener_behavior.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-spinner/paper-spinner.html">
@@ -75,7 +76,7 @@
   </template>
 </dom-module>
 
-<dom-module id="add-printer-maually-dialog">
+<dom-module id="add-printer-manually-dialog">
   <template>
     <style include="settings-shared md-select">
       #discoverPrintersButton {
@@ -204,7 +205,7 @@
         <paper-button class="cancel-button" on-tap="onCancelTap_">
           $i18n{cancelButtonText}
         </paper-button>
-        <paper-button class="action-button" on-tap="switchToConfiguringDialog_"
+        <paper-button class="action-button" on-tap="switchToManufacturerDialog_"
             disabled="[[!newPrinter.printerName]]">
           $i18n{addPrinterButtonText}
         </paper-button>
@@ -354,8 +355,8 @@
 
     <!-- Manually Add Printer Dialog -->
     <template is="dom-if" if="[[showManuallyAddDialog_]]" restamp>
-      <add-printer-maually-dialog new-printer="{{newPrinter}}">
-      </add-printer-maually-dialog>
+      <add-printer-manually-dialog new-printer="{{newPrinter}}">
+      </add-printer-manually-dialog>
     </template>
 
     <!-- Configuring Printer Dialog -->

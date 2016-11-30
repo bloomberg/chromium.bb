@@ -1058,6 +1058,41 @@ GEN('#endif');
 GEN('#if defined(OS_CHROMEOS)');
 
 /**
+ * Test fixture for the CUPS printing page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsPrintingPageTest() {}
+
+CrSettingsPrintingPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/printing_page/cups_add_printer_dialog.html',
+
+  /** @override */
+  commandLineSwitches: [{
+    switchName: 'enable-native-cups',
+  }],
+
+  /** @override */
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/assert.js',
+    'test_util.js',
+    'test_browser_proxy.js',
+    'cups_printer_page_tests.js',
+  ]),
+};
+
+TEST_F('CrSettingsPrintingPageTest', 'CupsPrintersTest', function() {
+  mocha.run();
+});
+
+GEN('#endif');
+GEN('#if defined(OS_CHROMEOS)');
+
+/**
  * Test fixture for the Date and Time page.
  * @constructor
  * @extends {CrSettingsBrowserTest}

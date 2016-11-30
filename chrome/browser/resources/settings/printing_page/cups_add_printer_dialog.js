@@ -8,7 +8,7 @@
  * Subdialogs include:
  * - 'add-printer-discovery-dialog' is a dialog showing discovered printers on
  *   the network that are available for setup.
- * - 'add-printer-maually-dialog' is a dialog in which user can manually enter
+ * - 'add-printer-manually-dialog' is a dialog in which user can manually enter
  *   the information to set up a new printer.
  * - 'add-printer-configuring-dialog' is the configuring-in-progress dialog.
  * - 'add-printer-manufacturer-model-dialog' is a dialog in which the user can
@@ -21,7 +21,7 @@
  */
 var AddPrinterDialogs = {
   DISCOVERY: 'add-printer-discovery-dialog',
-  MANUALLY: 'add-printer-maually-dialog',
+  MANUALLY: 'add-printer-manually-dialog',
   CONFIGURING: 'add-printer-configuring-dialog',
   MANUFACTURER: 'add-printer-manufacturer-model-dialog',
 };
@@ -118,7 +118,7 @@ Polymer({
 });
 
 Polymer({
-  is: 'add-printer-maually-dialog',
+  is: 'add-printer-manually-dialog',
 
   properties: {
     /** @type {!CupsPrinterInfo} */
@@ -154,9 +154,9 @@ Polymer({
   },
 
   /** @private */
-  switchToConfiguringDialog_: function() {
+  switchToManufacturerDialog_: function() {
     this.$$('add-printer-dialog').close();
-    this.fire('open-configuring-printer-dialog');
+    this.fire('open-manufacturer-model-dialog');
   },
 
   /** @private */
@@ -212,11 +212,17 @@ Polymer({
             this.manufacturerListChanged_.bind(this));
   },
 
-  /** @private */
+  /**
+   * @param {string} manufacturer The manufacturer for which we are retrieving
+   *     models.
+   * @private
+   */
   selectedManufacturerChanged_: function(manufacturer) {
-    settings.CupsPrintersBrowserProxyImpl.getInstance().
-        getCupsPrinterModelsList(manufacturer).then(
-            this.modelListChanged_.bind(this));
+    if (manufacturer) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance()
+          .getCupsPrinterModelsList(manufacturer)
+          .then(this.modelListChanged_.bind(this));
+    }
   },
 
   /** @private */
@@ -412,19 +418,19 @@ Polymer({
 
   /** @private */
   openConfiguringPrinterDialog_: function() {
-    this.switchDialog_(this.currentDialog_, AddPrinterDialogs.CONFIGURING,
-                       'showConfiguringDialog_');
+    this.switchDialog_(
+        this.currentDialog_, AddPrinterDialogs.CONFIGURING,
+        'showConfiguringDialog_');
     if (this.previousDialog_ == AddPrinterDialogs.DISCOVERY) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersNearbyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().
-          addCupsPrinter(this.selectedPrinter);
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY ||
-               this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
+      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
+          this.selectedPrinter);
+    } else if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.configuringDialogTitle =
           loadTimeData.getString('addPrintersManuallyTitle');
-      settings.CupsPrintersBrowserProxyImpl.getInstance().
-          addCupsPrinter(this.newPrinter);
+      settings.CupsPrintersBrowserProxyImpl.getInstance().addCupsPrinter(
+          this.newPrinter);
     }
   },
 
@@ -492,9 +498,6 @@ Polymer({
 
     if (this.previousDialog_ == AddPrinterDialogs.MANUFACTURER) {
       this.setupFailed = true;
-    } else if (this.previousDialog_ == AddPrinterDialogs.MANUALLY) {
-      this.switchDialog_(this.currentDialog_, AddPrinterDialogs.MANUFACTURER,
-                         'showManufacturerDialog_');
     }
   },
 });
