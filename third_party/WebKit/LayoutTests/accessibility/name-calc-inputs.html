@@ -134,8 +134,8 @@ test(function(t) {
     var axTextInput10 = accessibilityController.accessibleElementById("text10");
     assert_equals(axTextInput10.name, "label-wrapping-text10");
     assert_equals(axTextInput10.nameFrom, "relatedElement");
-    assert_equals(axTextInput10.description, "text10-placeholder");
-    assert_equals(axTextInput10.descriptionFrom, "placeholder");
+    assert_equals(axTextInput10.description, "text10-title");
+    assert_equals(axTextInput10.descriptionFrom, "attribute");
 }, "Text input with placeholder and label-wrapped");
 </script>
 
@@ -152,6 +152,30 @@ test(function(t) {
                   "first-label-for-text11 second-label-for-text11");
     assert_equals(axTextInput11.nameFrom, "relatedElement");
 }, "Text input with multiple label-for");
+</script>
+
+<div class="container">
+    <input id="text12" type="text" title="text12-title" aria-placeholder="text12-aria-placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput12 = accessibilityController.accessibleElementById("text12");
+    assert_equals(axTextInput12.name, "text12-aria-placeholder");
+    assert_equals(axTextInput12.nameFrom, "placeholder");
+}, "Text input with title and aria-placeholder");
+</script>
+
+<div class="container">
+    <input id="text13" type="text" title="text13-title" aria-placeholder="text13-aria-placeholder" placeholder="text13-placeholder">
+</div>
+
+<script>
+test(function(t) {
+    var axTextInput13 = accessibilityController.accessibleElementById("text13");
+    assert_equals(axTextInput13.name, "text13-placeholder");
+    assert_equals(axTextInput13.nameFrom, "placeholder");
+}, "Text input with title and aria-placeholder");
 </script>
 
 <script>

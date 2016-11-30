@@ -55,6 +55,7 @@
 #include "core/html/HTMLTableSectionElement.h"
 #include "core/html/HTMLTextAreaElement.h"
 #include "core/html/LabelsNodeList.h"
+#include "core/html/TextControlElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/html/shadow/MediaControlElements.h"
 #include "core/layout/LayoutBlockFlow.h"
@@ -2369,19 +2370,41 @@ String AXNodeObject::nativeTextAlternative(
       NameSource& source = nameSources->back();
       source.type = nameFrom;
     }
-    HTMLElement* element = toHTMLElement(getNode());
-    const AtomicString& placeholder =
-        element->fastGetAttribute(placeholderAttr);
+    const String placeholder = placeholderFromNativeAttribute();
     if (!placeholder.isEmpty()) {
       textAlternative = placeholder;
       if (nameSources) {
         NameSource& source = nameSources->back();
         source.text = textAlternative;
-        source.attributeValue = placeholder;
+        source.attributeValue = htmlElement->fastGetAttribute(placeholderAttr);
+        *foundTextAlternative = true;
       } else {
         return textAlternative;
       }
     }
+
+    // Also check for aria-placeholder.
+    nameFrom = AXNameFromPlaceholder;
+    if (nameSources) {
+      nameSources->append(
+          NameSource(*foundTextAlternative, aria_placeholderAttr));
+      NameSource& source = nameSources->back();
+      source.type = nameFrom;
+    }
+    const AtomicString& ariaPlaceholder =
+        htmlElement->fastGetAttribute(aria_placeholderAttr);
+    if (!ariaPlaceholder.isEmpty()) {
+      textAlternative = ariaPlaceholder;
+      if (nameSources) {
+        NameSource& source = nameSources->back();
+        source.text = textAlternative;
+        source.attributeValue = ariaPlaceholder;
+        *foundTextAlternative = true;
+      } else {
+        return textAlternative;
+      }
+    }
+
     return textAlternative;
   }
 
@@ -2701,37 +2724,6 @@ String AXNodeObject::description(AXNameFrom nameFrom,
     }
   }
 
-  HTMLElement* htmlElement = nullptr;
-  if (getNode()->isHTMLElement())
-    htmlElement = toHTMLElement(getNode());
-
-  // placeholder, 5.1.2 from:
-  // http://rawgit.com/w3c/aria/master/html-aam/html-aam.html
-  if (nameFrom != AXNameFromPlaceholder && htmlElement &&
-      htmlElement->isTextControl()) {
-    descriptionFrom = AXDescriptionFromPlaceholder;
-    if (descriptionSources) {
-      descriptionSources->append(
-          DescriptionSource(foundDescription, placeholderAttr));
-      DescriptionSource& source = descriptionSources->back();
-      source.type = descriptionFrom;
-    }
-    HTMLElement* element = toHTMLElement(getNode());
-    const AtomicString& placeholder =
-        element->fastGetAttribute(placeholderAttr);
-    if (!placeholder.isEmpty()) {
-      description = placeholder;
-      if (descriptionSources) {
-        DescriptionSource& source = descriptionSources->back();
-        source.text = description;
-        source.attributeValue = placeholder;
-        foundDescription = true;
-      } else {
-        return description;
-      }
-    }
-  }
-
   const HTMLInputElement* inputElement = nullptr;
   if (isHTMLInputElement(getNode()))
     inputElement = toHTMLInputElement(getNode());
@@ -2874,26 +2866,31 @@ String AXNodeObject::description(AXNameFrom nameFrom,
   return String();
 }
 
-String AXNodeObject::placeholder(AXNameFrom nameFrom,
-                                 AXDescriptionFrom descriptionFrom) const {
+String AXNodeObject::placeholder(AXNameFrom nameFrom) const {
   if (nameFrom == AXNameFromPlaceholder)
     return String();
 
-  if (descriptionFrom == AXDescriptionFromPlaceholder)
+  Node* node = getNode();
+  if (!node || !node->isHTMLElement())
     return String();
 
-  if (!getNode())
-    return String();
+  String nativePlaceholder = placeholderFromNativeAttribute();
+  if (!nativePlaceholder.isEmpty())
+    return nativePlaceholder;
 
-  String placeholder;
-  if (isHTMLInputElement(*getNode())) {
-    HTMLInputElement* inputElement = toHTMLInputElement(getNode());
-    placeholder = inputElement->strippedPlaceholder();
-  } else if (isHTMLTextAreaElement(*getNode())) {
-    HTMLTextAreaElement* textAreaElement = toHTMLTextAreaElement(getNode());
-    placeholder = textAreaElement->strippedPlaceholder();
-  }
-  return placeholder;
+  const AtomicString& ariaPlaceholder =
+      toHTMLElement(node)->fastGetAttribute(aria_placeholderAttr);
+  if (!ariaPlaceholder.isEmpty())
+    return ariaPlaceholder;
+
+  return String();
+}
+
+String AXNodeObject::placeholderFromNativeAttribute() const {
+  Node* node = getNode();
+  if (!node || !isTextControlElement(node))
+    return String();
+  return toTextControlElement(node)->strippedPlaceholder();
 }
 
 DEFINE_TRACE(AXNodeObject) {

@@ -348,7 +348,6 @@ enum AXDescriptionFrom {
   AXDescriptionFromUninitialized = -1,
   AXDescriptionFromAttribute = 0,
   AXDescriptionFromContents,
-  AXDescriptionFromPlaceholder,
   AXDescriptionFromRelatedElement,
 };
 
@@ -717,9 +716,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
   // Takes the result of nameFrom and descriptionFrom from calling |name| and
   // |description|, above, and retrieves the placeholder of the object, if
   // present and if it wasn't already exposed by one of the two functions above.
-  virtual String placeholder(AXNameFrom, AXDescriptionFrom) const {
-    return String();
-  }
+  virtual String placeholder(AXNameFrom) const { return String(); }
 
   // Internal functions used by name and description, above.
   typedef HeapHashSet<Member<const AXObject>> AXObjectSet;

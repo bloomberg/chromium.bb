@@ -175,7 +175,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                      AXDescriptionFrom&,
                      DescriptionSources*,
                      AXRelatedObjectVector*) const override;
-  String placeholder(AXNameFrom, AXDescriptionFrom) const override;
+  String placeholder(AXNameFrom) const override;
   bool nameFromLabelElement() const override;
 
   // Location
@@ -234,6 +234,7 @@ class MODULES_EXPORT AXNodeObject : public AXObject {
                                bool* foundTextAlternative) const;
   float stepValueForRange() const;
   bool isDescendantOfElementType(const HTMLQualifiedName& tagName) const;
+  String placeholderFromNativeAttribute() const;
 };
 
 }  // namespace blink

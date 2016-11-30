@@ -3847,6 +3847,7 @@ void BrowserAccessibilityWin::UpdateStep1ComputeWinAttributes() {
 
   win_attributes_->name = GetString16Attribute(ui::AX_ATTR_NAME);
   win_attributes_->description = GetString16Attribute(ui::AX_ATTR_DESCRIPTION);
+  StringAttributeToIA2(ui::AX_ATTR_PLACEHOLDER, "placeholder");
 
   base::string16 value = GetValue();
   // On Windows, the value of a document should be its url.

@@ -1214,6 +1214,11 @@
         "superseded": true
       },
       {
+        "type": "placeholder",
+        "attribute": "aria-placeholder",
+        "superseded": true
+      },
+      {
         "type": "attribute",
         "attribute": "title",
         "superseded": true

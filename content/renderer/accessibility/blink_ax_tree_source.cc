@@ -341,7 +341,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
         ui::AX_ATTR_DESCRIBEDBY_IDS, descriptionObjects, dst);
   }
 
-  blink::WebString web_placeholder = src.placeholder(nameFrom, descriptionFrom);
+  blink::WebString web_placeholder = src.placeholder(nameFrom);
   if (!web_placeholder.isEmpty())
     dst->AddStringAttribute(ui::AX_ATTR_PLACEHOLDER, web_placeholder.utf8());
 

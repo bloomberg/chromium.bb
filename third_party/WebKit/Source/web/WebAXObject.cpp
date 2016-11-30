@@ -985,14 +985,11 @@ WebString WebAXObject::description(
   return result;
 }
 
-WebString WebAXObject::placeholder(WebAXNameFrom nameFrom,
-                                   WebAXDescriptionFrom descriptionFrom) const {
+WebString WebAXObject::placeholder(WebAXNameFrom nameFrom) const {
   if (isDetached())
     return WebString();
 
-  return m_private->placeholder(
-      static_cast<AXNameFrom>(nameFrom),
-      static_cast<AXDescriptionFrom>(descriptionFrom));
+  return m_private->placeholder(static_cast<AXNameFrom>(nameFrom));
 }
 
 bool WebAXObject::supportsRangeValue() const {

@@ -317,7 +317,6 @@ enum WebAXDescriptionFrom {
   WebAXDescriptionFromUninitialized = -1,
   WebAXDescriptionFromAttribute = 0,
   WebAXDescriptionFromContents,
-  WebAXDescriptionFromPlaceholder,
   WebAXDescriptionFromRelatedElement,
 };
 

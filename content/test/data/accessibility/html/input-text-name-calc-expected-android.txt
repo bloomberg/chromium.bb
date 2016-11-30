@@ -4,5 +4,7 @@ android.webkit.WebView focusable focused scrollable
 ++android.widget.EditText clickable editable_text focusable name='AriaLabel2 Title2' input_type=1
 ++android.widget.EditText clickable editable_text focusable name='LabelledBy3 Title3' input_type=1
 ++android.widget.EditText clickable editable_text focusable name='Placeholder4' input_type=1
+++android.widget.EditText clickable editable_text focusable name='ARIA Placeholder4a' input_type=1
+++android.widget.EditText clickable editable_text focusable name='Placeholder4b' input_type=1
 ++android.widget.EditText clickable editable_text focusable name='Placeholder5 Title5' input_type=1
 ++android.widget.EditText clickable editable_text focusable name='LabelledBy6 DescribedBy6' input_type=1

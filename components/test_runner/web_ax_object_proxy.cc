@@ -666,6 +666,7 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       .SetMethod("nameElementAtIndex", &WebAXObjectProxy::NameElementAtIndex)
       .SetProperty("description", &WebAXObjectProxy::Description)
       .SetProperty("descriptionFrom", &WebAXObjectProxy::DescriptionFrom)
+      .SetProperty("placeholder", &WebAXObjectProxy::Placeholder)
       .SetProperty("misspellingsCount", &WebAXObjectProxy::MisspellingsCount)
       .SetMethod("descriptionElementCount",
                  &WebAXObjectProxy::DescriptionElementCount)
@@ -674,12 +675,9 @@ WebAXObjectProxy::GetObjectTemplateBuilder(v8::Isolate* isolate) {
       //
       // NEW bounding rect calculation - low-level interface
       //
-      .SetMethod("offsetContainer",
-                 &WebAXObjectProxy::OffsetContainer)
-      .SetMethod("boundsInContainerX",
-                 &WebAXObjectProxy::BoundsInContainerX)
-      .SetMethod("boundsInContainerY",
-                 &WebAXObjectProxy::BoundsInContainerY)
+      .SetMethod("offsetContainer", &WebAXObjectProxy::OffsetContainer)
+      .SetMethod("boundsInContainerX", &WebAXObjectProxy::BoundsInContainerX)
+      .SetMethod("boundsInContainerY", &WebAXObjectProxy::BoundsInContainerY)
       .SetMethod("boundsInContainerWidth",
                  &WebAXObjectProxy::BoundsInContainerWidth)
       .SetMethod("boundsInContainerHeight",
@@ -1552,14 +1550,20 @@ std::string WebAXObjectProxy::DescriptionFrom() {
       return "attribute";
     case blink::WebAXDescriptionFromContents:
       return "contents";
-    case blink::WebAXDescriptionFromPlaceholder:
-      return "placeholder";
     case blink::WebAXDescriptionFromRelatedElement:
       return "relatedElement";
   }
 
   NOTREACHED();
   return std::string();
+}
+
+std::string WebAXObjectProxy::Placeholder() {
+  accessibility_object_.updateLayoutAndCheckValidity();
+  blink::WebAXNameFrom nameFrom;
+  blink::WebVector<blink::WebAXObject> nameObjects;
+  accessibility_object_.name(nameFrom, nameObjects);
+  return accessibility_object_.placeholder(nameFrom).utf8();
 }
 
 int WebAXObjectProxy::MisspellingsCount() {

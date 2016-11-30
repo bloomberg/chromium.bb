@@ -546,8 +546,6 @@ ui::AXDescriptionFrom AXDescriptionFromFromBlink(
       return ui::AX_DESCRIPTION_FROM_ATTRIBUTE;
     case blink::WebAXDescriptionFromContents:
       return ui::AX_DESCRIPTION_FROM_CONTENTS;
-    case blink::WebAXDescriptionFromPlaceholder:
-      return ui::AX_DESCRIPTION_FROM_PLACEHOLDER;
     case blink::WebAXDescriptionFromRelatedElement:
       return ui::AX_DESCRIPTION_FROM_RELATED_ELEMENT;
   }

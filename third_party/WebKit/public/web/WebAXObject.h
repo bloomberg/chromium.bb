@@ -194,7 +194,7 @@ class WebAXObject {
   // Takes the result of nameFrom and descriptionFrom from calling |name| and
   // |description|, above, and retrieves the placeholder of the object, if
   // present and if it wasn't already exposed by one of the two functions above.
-  BLINK_EXPORT WebString placeholder(WebAXNameFrom, WebAXDescriptionFrom) const;
+  BLINK_EXPORT WebString placeholder(WebAXNameFrom) const;
 
   // The following selection functions get or set the global document
   // selection and can be called on any object in the tree.

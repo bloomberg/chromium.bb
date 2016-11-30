@@ -394,8 +394,6 @@ STATIC_ASSERT_ENUM(WebAXDescriptionFromUninitialized,
                    AXDescriptionFromUninitialized);
 STATIC_ASSERT_ENUM(WebAXDescriptionFromAttribute, AXDescriptionFromAttribute);
 STATIC_ASSERT_ENUM(WebAXDescriptionFromContents, AXDescriptionFromContents);
-STATIC_ASSERT_ENUM(WebAXDescriptionFromPlaceholder,
-                   AXDescriptionFromPlaceholder);
 STATIC_ASSERT_ENUM(WebAXDescriptionFromRelatedElement,
                    AXDescriptionFromRelatedElement);
 

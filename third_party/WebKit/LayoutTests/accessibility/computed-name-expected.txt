@@ -114,6 +114,8 @@ PASS input.computedName is "LabelledBy3"
 PASS input.computedName is "Placeholder4"
 PASS input.computedName is "Placeholder5"
 PASS input.computedName is "LabelledBy6"
+PASS input.computedName is "ARIA Placeholder8"
+PASS input.computedName is "Placeholder9"
 PASS successfullyParsed is true
 
 TEST COMPLETE
