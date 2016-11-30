@@ -36,8 +36,11 @@
 #include "chrome/browser/ui/webui/media_router/media_router_localized_strings_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_resources_provider.h"
 #include "chrome/browser/ui/webui/media_router/media_router_webui_message_handler.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/grit/generated_resources.h"
+#include "components/prefs/pref_service.h"
+#include "components/prefs/scoped_user_pref_update.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/browser/web_ui.h"
 #include "content/public/browser/web_ui_data_source.h"
@@ -47,6 +50,7 @@
 #include "third_party/icu/source/i18n/unicode/coll.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/web_dialogs/web_dialog_delegate.h"
+#include "url/origin.h"
 
 namespace media_router {
 
@@ -507,6 +511,37 @@ void MediaRouterUI::SearchSinksAndCreateRoute(
                  weak_factory_.GetWeakPtr(), cast_mode));
 }
 
+bool MediaRouterUI::UserSelectedTabMirroringForCurrentOrigin() const {
+  const base::ListValue* origins =
+      Profile::FromWebUI(web_ui())->GetPrefs()->GetList(
+          prefs::kMediaRouterTabMirroringSources);
+  return origins->Find(base::StringValue(GetSerializedInitiatorOrigin())) !=
+         origins->end();
+}
+
+void MediaRouterUI::RecordCastModeSelection(MediaCastMode cast_mode) {
+  ListPrefUpdate update(Profile::FromWebUI(web_ui())->GetPrefs(),
+                        prefs::kMediaRouterTabMirroringSources);
+
+  switch (cast_mode) {
+    case MediaCastMode::DEFAULT:
+      update->Remove(base::StringValue(GetSerializedInitiatorOrigin()),
+                     nullptr);
+      break;
+    case MediaCastMode::TAB_MIRROR:
+      update->AppendIfNotPresent(
+          base::MakeUnique<base::StringValue>(GetSerializedInitiatorOrigin()));
+      break;
+    case MediaCastMode::DESKTOP_MIRROR:
+      // Desktop mirroring isn't domain-specific, so we don't record the
+      // selection.
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
+}
+
 void MediaRouterUI::OnResultsUpdated(
     const std::vector<MediaSinkWithCastModes>& sinks) {
   sinks_ = sinks;
@@ -694,6 +729,13 @@ void MediaRouterUI::OnUIInitialDataReceived() {
 
 void MediaRouterUI::UpdateMaxDialogHeight(int height) {
   handler_->UpdateMaxDialogHeight(height);
+}
+
+std::string MediaRouterUI::GetSerializedInitiatorOrigin() const {
+  url::Origin origin = initiator_
+                           ? url::Origin(initiator_->GetLastCommittedURL())
+                           : url::Origin();
+  return origin.Serialize();
 }
 
 }  // namespace media_router

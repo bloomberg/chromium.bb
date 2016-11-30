@@ -19,6 +19,7 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/signin/signin_manager_factory.h"
 #include "chrome/browser/sync/profile_sync_service_factory.h"
+#include "chrome/browser/ui/webui/media_router/media_cast_mode.h"
 #include "chrome/browser/ui/webui/media_router/media_router_ui.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/grit/generated_resources.h"
@@ -419,6 +420,14 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
       cast_modes, media_router_ui_->GetPresentationRequestSourceName()));
   initial_data.Set("castModes", cast_modes_list.release());
 
+  // If the cast mode last chosen for the current origin is tab mirroring,
+  // that should be the cast mode initially selected in the dialog. Otherwise
+  // the initial cast mode should be chosen automatically by the dialog.
+  bool use_tab_mirroring =
+      base::ContainsKey(cast_modes, MediaCastMode::TAB_MIRROR) &&
+      media_router_ui_->UserSelectedTabMirroringForCurrentOrigin();
+  initial_data.SetBoolean("useTabMirroring", use_tab_mirroring);
+
   web_ui()->CallJavascriptFunctionUnsafe(kSetInitialData, initial_data);
   media_router_ui_->UIInitialized();
 }
@@ -696,8 +705,11 @@ void MediaRouterWebUIMessageHandler::OnReportSelectedCastMode(
     DVLOG(1) << "Unable to extract args.";
     return;
   }
+  DCHECK(IsValidCastModeNum(cast_mode_type));
   UMA_HISTOGRAM_SPARSE_SLOWLY("MediaRouter.Ui.Navigate.SourceSelection",
                               cast_mode_type);
+  media_router_ui_->RecordCastModeSelection(
+      static_cast<MediaCastMode>(cast_mode_type));
 }
 
 void MediaRouterWebUIMessageHandler::OnReportSinkCount(

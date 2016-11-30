@@ -1561,16 +1561,8 @@ Polymer({
     if (!clickedMode)
       return;
 
-    this.userHasSelectedCastMode_ = true;
+    this.selectCastMode(clickedMode.type);
     this.fire('cast-mode-selected', {castModeType: clickedMode.type});
-
-    // The list of sinks to show will be the same if the shown cast mode did
-    // not change, regardless of whether the user selected it explicitly.
-    if (clickedMode.type != this.shownCastModeValue_) {
-      this.setShownCastMode_(clickedMode);
-      this.rebuildSinksToShow_();
-    }
-
     this.showSinkList_();
     this.maybeReportUserFirstAction(
         media_router.MediaRouterUserAction.CHANGE_MODE);
@@ -2118,6 +2110,20 @@ Polymer({
     if (searchInputText.length != 0) {
       this.showSearchResults_();
       this.maybeReportFilter_();
+    }
+  },
+
+  /**
+   * Sets the selected cast mode to the one associated with |castModeType|,
+   * and rebuilds sinks to reflect the change.
+   * @param {number} castModeType The type of the selected cast mode.
+   */
+  selectCastMode: function(castModeType) {
+    var castMode = this.findCastModeByType_(castModeType);
+    if (castMode && castModeType != this.shownCastModeValue_) {
+      this.setShownCastMode_(castMode);
+      this.userHasSelectedCastMode_ = true;
+      this.rebuildSinksToShow_();
     }
   },
 

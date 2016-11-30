@@ -126,6 +126,14 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
                                  const std::string& domain,
                                  MediaCastMode cast_mode);
 
+  // Returns true if the cast mode last chosen for the current origin is tab
+  // mirroring.
+  bool UserSelectedTabMirroringForCurrentOrigin() const;
+
+  // Records the cast mode selection for the current origin, unless the cast
+  // mode is MediaCastMode::DESKTOP_MIRROR.
+  void RecordCastModeSelection(MediaCastMode cast_mode);
+
   // Returns the hostname of the default source's parent frame URL.
   std::string GetPresentationRequestSourceName() const;
   std::string GetTruncatedPresentationRequestSourceName() const;
@@ -273,6 +281,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // Returns the default presentation request's frame URL if there is one.
   // Otherwise returns an empty GURL.
   GURL GetFrameURL() const;
+
+  // Returns the serialized origin for |initiator_|, or the serialization of an
+  // opaque origin ("null") if |initiator_| is not set.
+  std::string GetSerializedInitiatorOrigin() const;
 
   // Owned by the |web_ui| passed in the ctor, and guaranteed to be deleted
   // only after it has deleted |this|.
