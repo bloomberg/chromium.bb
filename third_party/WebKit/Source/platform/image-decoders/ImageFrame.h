@@ -218,28 +218,41 @@ class PLATFORM_EXPORT ImageFrame final {
     *dest = SkPackARGB32NoCheck(a, r, g, b);
   }
 
-  // Blend the RGBA pixel provided by |r|, |g|, |b|, |a| over the pixel in
-  // |dest|, without premultiplication, and overwrite |dest| with the result.
-  static inline void blendRGBARaw(PixelData* dest,
-                                  unsigned r,
-                                  unsigned g,
-                                  unsigned b,
-                                  unsigned a) {
-    blendSrcOverDstRaw(dest, SkPackARGB32NoCheck(a, r, g, b));
-  }
+  // Blend the RGBA pixel provided by |red|, |green|, |blue| and |alpha| over
+  // the pixel in |dest|, without premultiplication, and overwrite |dest| with
+  // the result.
+  static void blendRGBARaw(PixelData* dest,
+                           unsigned red,
+                           unsigned green,
+                           unsigned blue,
+                           unsigned alpha);
 
   // Blend the pixel, without premultiplication, in |src| over |dst| and
   // overwrite |src| with the result.
   static void blendSrcOverDstRaw(PixelData* src, PixelData dst);
 
   // Blend the RGBA pixel provided by |r|, |g|, |b|, |a| over the pixel in
-  // |dest| and overwrite |dest| with the result.
+  // |dest| and overwrite |dest| with the result. Premultiply the pixel values
+  // before blending.
   static inline void blendRGBAPremultiplied(PixelData* dest,
                                             unsigned r,
                                             unsigned g,
                                             unsigned b,
                                             unsigned a) {
-    blendSrcOverDstPremultiplied(dest, SkPackARGB32NoCheck(a, r, g, b));
+    // If the new pixel is completely transparent, no operation is necessary
+    // since |dest| contains the background pixel.
+    if (a == 0x0)
+      return;
+
+    // If the new pixel is opaque, no need for blending - just write the pixel.
+    if (a == 0xFF) {
+      setRGBAPremultiply(dest, r, g, b, a);
+      return;
+    }
+
+    PixelData src;
+    setRGBAPremultiply(&src, r, g, b, a);
+    *dest = SkPMSrcOver(src, *dest);
   }
 
   // Blend the pixel in |src| over |dst| and overwrite |src| with the result.
