@@ -24,6 +24,7 @@
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <string.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,7 +33,7 @@
 
 
 static void
-print_device_info(drmDevicePtr device, int i)
+print_device_info(drmDevicePtr device, int i, bool print_revision)
 {
     printf("device[%i]\n", i);
     printf("\tavailable_nodes %04x\n", device->available_nodes);
@@ -56,7 +57,11 @@ print_device_info(drmDevicePtr device, int i)
         printf("\t\t\tdevice_id\t%04x\n", device->deviceinfo.pci->device_id);
         printf("\t\t\tsubvendor_id\t%04x\n", device->deviceinfo.pci->subvendor_id);
         printf("\t\t\tsubdevice_id\t%04x\n", device->deviceinfo.pci->subdevice_id);
-        printf("\t\t\trevision_id\t%02x\n", device->deviceinfo.pci->revision_id);
+        if (print_revision)
+            printf("\t\t\trevision_id\t%02x\n", device->deviceinfo.pci->revision_id);
+        else
+            printf("\t\t\trevision_id\tIGNORED\n");
+
     } else {
         printf("Unknown/unhandled bustype\n");
     }
@@ -70,10 +75,10 @@ main(void)
     drmDevicePtr device;
     int fd, ret, max_devices;
 
-    max_devices = drmGetDevices(NULL, 0);
+    max_devices = drmGetDevices2(0, NULL, 0);
 
     if (max_devices <= 0) {
-        printf("drmGetDevices() has returned %d\n", max_devices);
+        printf("drmGetDevices2() has returned %d\n", max_devices);
         return -1;
     }
 
@@ -83,15 +88,15 @@ main(void)
         return -1;
     }
 
-    ret = drmGetDevices(devices, max_devices);
+    ret = drmGetDevices2(0, devices, max_devices);
     if (ret < 0) {
-        printf("drmGetDevices() returned an error %d\n", ret);
+        printf("drmGetDevices2() returned an error %d\n", ret);
         free(devices);
         return -1;
     }
 
     for (int i = 0; i < ret; i++) {
-        print_device_info(devices[i], i);
+        print_device_info(devices[i], i, false);
 
         for (int j = 0; j < DRM_NODE_MAX; j++) {
             if (devices[i]->available_nodes & 1 << j) {
@@ -102,8 +107,8 @@ main(void)
                     continue;
                 }
 
-                if (drmGetDevice(fd, &device) == 0) {
-                    print_device_info(device, i);
+                if (drmGetDevice2(fd, DRM_DEVICE_GET_PCI_REVISION, &device) == 0) {
+                    print_device_info(device, i, true);
                     drmFreeDevice(&device);
                 }
                 close(fd);
