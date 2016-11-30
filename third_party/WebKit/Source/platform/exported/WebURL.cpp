@@ -31,11 +31,15 @@
 #include "public/platform/WebURL.h"
 
 #include "platform/weborigin/KURL.h"
+#include "wtf/text/StringView.h"
 
 namespace blink {
 
 bool WebURL::protocolIs(const char* protocol) const {
-  return ::blink::protocolIs(m_string, protocol);
+  const url::Component& scheme = m_parsed.scheme;
+  StringView urlView = m_string;
+  // For subtlety why this works in all cases, see KURL::componentString.
+  return m_isValid && StringView(urlView, scheme.begin, scheme.len) == protocol;
 }
 
 WebURL::WebURL(const KURL& url)
