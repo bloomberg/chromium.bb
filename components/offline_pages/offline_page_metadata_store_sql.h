@@ -79,7 +79,7 @@ class OfflinePageMetadataStoreSQL : public OfflinePageMetadataStore {
   void OnResetDone(const ResetCallback& callback, bool success);
 
   // Checks whether a valid DB connection is present and store state is LOADED.
-  bool CheckDb();
+  bool CheckDb() const;
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

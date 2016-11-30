@@ -27,16 +27,17 @@ class MarkAttemptStartedTaskTest : public testing::Test {
 
   void PumpLoop();
 
+  void InitializeStore(RequestQueueStore* store);
   void AddItemToStore(RequestQueueStore* store);
-
-  void AddRequestDone(ItemActionStatus status);
-
   void ChangeRequestsStateCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
+  void InitializeStoreDone(bool success);
+  void AddRequestDone(ItemActionStatus status);
+
   std::unique_ptr<UpdateRequestsResult> result_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -52,6 +53,12 @@ void MarkAttemptStartedTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+void MarkAttemptStartedTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(base::Bind(&MarkAttemptStartedTaskTest::InitializeStoreDone,
+                               base::Unretained(this)));
+  PumpLoop();
+}
+
 void MarkAttemptStartedTaskTest::AddItemToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -62,17 +69,23 @@ void MarkAttemptStartedTaskTest::AddItemToStore(RequestQueueStore* store) {
   PumpLoop();
 }
 
-void MarkAttemptStartedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void MarkAttemptStartedTaskTest::ChangeRequestsStateCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
   result_ = std::move(result);
 }
 
+void MarkAttemptStartedTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
+void MarkAttemptStartedTaskTest::AddRequestDone(ItemActionStatus status) {
+  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
 TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+
   MarkAttemptStartedTask task(
       &store, kRequestId1,
       base::Bind(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,
@@ -89,6 +102,7 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenStoreEmpty) {
 
 TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddItemToStore(&store);
 
   MarkAttemptStartedTask task(
@@ -117,7 +131,9 @@ TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenExists) {
 
 TEST_F(MarkAttemptStartedTaskTest, MarkAttemptStartedWhenItemMissing) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddItemToStore(&store);
+
   MarkAttemptStartedTask task(
       &store, kRequestId2,
       base::Bind(&MarkAttemptStartedTaskTest::ChangeRequestsStateCallback,

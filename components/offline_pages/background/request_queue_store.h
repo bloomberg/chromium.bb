@@ -26,14 +26,18 @@ class RequestQueueStore {
 
   using UpdateCallback = RequestQueue::UpdateCallback;
 
+  typedef base::Callback<void(bool /* success */)> InitializeCallback;
+  typedef base::Callback<void(bool /* success */)> ResetCallback;
   typedef base::Callback<void(
       bool /* success */,
       std::vector<std::unique_ptr<SavePageRequest>> /* requests */)>
       GetRequestsCallback;
   typedef base::Callback<void(ItemActionStatus)> AddCallback;
-  typedef base::Callback<void(bool /* success */)> ResetCallback;
 
   virtual ~RequestQueueStore(){};
+
+  // Initializes the store. Should be called before any other methods.
+  virtual void Initialize(const InitializeCallback& callback) = 0;
 
   // Gets all of the requests from the store.
   virtual void GetRequests(const GetRequestsCallback& callback) = 0;
@@ -60,7 +64,7 @@ class RequestQueueStore {
   virtual void RemoveRequests(const std::vector<int64_t>& request_ids,
                               const UpdateCallback& callback) = 0;
 
-  // Resets the store.
+  // Resets the store (removes any existing data).
   virtual void Reset(const ResetCallback& callback) = 0;
 
   // Gets the store state.

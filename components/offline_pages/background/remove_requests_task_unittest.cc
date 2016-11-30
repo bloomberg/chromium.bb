@@ -30,15 +30,16 @@ class RemoveRequestsTaskTest : public testing::Test {
 
   void PumpLoop();
 
+  void InitializeStore(RequestQueueStore* store);
   void AddRequestsToStore(RequestQueueStore* store);
-
-  void AddRequestDone(ItemActionStatus status);
-
   void RemoveRequestsCallback(std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
+  void InitializeStoreDone(bool succesS);
+  void AddRequestDone(ItemActionStatus status);
+
   std::unique_ptr<UpdateRequestsResult> result_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -52,6 +53,12 @@ RemoveRequestsTaskTest::~RemoveRequestsTaskTest() {}
 
 void RemoveRequestsTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
+}
+
+void RemoveRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(base::Bind(&RemoveRequestsTaskTest::InitializeStoreDone,
+                               base::Unretained(this)));
+  PumpLoop();
 }
 
 void RemoveRequestsTaskTest::AddRequestsToStore(RequestQueueStore* store) {
@@ -69,17 +76,23 @@ void RemoveRequestsTaskTest::AddRequestsToStore(RequestQueueStore* store) {
   PumpLoop();
 }
 
-void RemoveRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void RemoveRequestsTaskTest::RemoveRequestsCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
   result_ = std::move(result);
 }
 
+void RemoveRequestsTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
+void RemoveRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
+  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
 TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
       &store, request_ids,
@@ -97,7 +110,9 @@ TEST_F(RemoveRequestsTaskTest, RemoveWhenStoreEmpty) {
 
 TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddRequestsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1};
   RemoveRequestsTask task(
       &store, request_ids,
@@ -116,7 +131,9 @@ TEST_F(RemoveRequestsTaskTest, RemoveSingleItem) {
 
 TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddRequestsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   RemoveRequestsTask task(
       &store, request_ids,
@@ -139,6 +156,8 @@ TEST_F(RemoveRequestsTaskTest, RemoveMultipleItems) {
 
 TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+
   std::vector<int64_t> request_ids;
   RemoveRequestsTask task(
       &store, request_ids,
@@ -153,7 +172,9 @@ TEST_F(RemoveRequestsTaskTest, DeleteWithEmptyIdList) {
 
 TEST_F(RemoveRequestsTaskTest, RemoveMissingItem) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddRequestsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   RemoveRequestsTask task(
       &store, request_ids,

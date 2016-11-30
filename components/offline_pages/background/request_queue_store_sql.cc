@@ -24,7 +24,7 @@ template class StoreUpdateResult<SavePageRequest>;
 
 namespace {
 
-using StoreStateCallback = base::Callback<void(StoreState)>;
+using SuccessCallback = base::Callback<void(bool)>;
 
 // This is a macro instead of a const so that
 // it can be used inline in other SQL statements below.
@@ -363,28 +363,23 @@ void RemoveRequestsSync(sql::Connection* db,
 void OpenConnectionSync(sql::Connection* db,
                         scoped_refptr<base::SingleThreadTaskRunner> runner,
                         const base::FilePath& path,
-                        const StoreStateCallback& callback) {
-  StoreState state =
-      InitDatabase(db, path) ? StoreState::LOADED : StoreState::FAILED_LOADING;
-  runner->PostTask(FROM_HERE, base::Bind(callback, state));
+                        const SuccessCallback& callback) {
+  bool success = InitDatabase(db, path);
+  runner->PostTask(FROM_HERE, base::Bind(callback, success));
 }
 
 void ResetSync(sql::Connection* db,
                const base::FilePath& db_file_path,
                scoped_refptr<base::SingleThreadTaskRunner> runner,
-               const StoreStateCallback& callback) {
+               const SuccessCallback& callback) {
   // This method deletes the content of the whole store and reinitializes it.
-  bool success = db->Raze();
-  db->Close();
-  StoreState state;
-  if (!success)
-    state = StoreState::FAILED_RESET;
-  if (InitDatabase(db, db_file_path))
-    state = StoreState::LOADED;
-  else
-    state = StoreState::FAILED_LOADING;
-
-  runner->PostTask(FROM_HERE, base::Bind(callback, state));
+  bool success = true;
+  if (db) {
+    success = db->Raze();
+    db->Close();
+  }
+  success = base::DeleteFile(db_file_path, true /* recursive */) && success;
+  runner->PostTask(FROM_HERE, base::Bind(callback, success));
 }
 
 }  // anonymous namespace
@@ -394,31 +389,33 @@ RequestQueueStoreSQL::RequestQueueStoreSQL(
     const base::FilePath& path)
     : background_task_runner_(std::move(background_task_runner)),
       db_file_path_(path.AppendASCII("RequestQueue.db")),
-      weak_ptr_factory_(this) {
-  OpenConnection();
-}
+      state_(StoreState::NOT_LOADED),
+      weak_ptr_factory_(this) {}
 
 RequestQueueStoreSQL::~RequestQueueStoreSQL() {
   if (db_.get())
     background_task_runner_->DeleteSoon(FROM_HERE, db_.release());
 }
 
-bool RequestQueueStoreSQL::CheckDb(const base::Closure& callback) {
-  DCHECK(db_.get());
-  if (!db_.get()) {
-    // Nothing to do, but post a callback instead of calling directly
-    // to preserve the async style behavior to prevent bugs.
-    base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE, callback);
-    return false;
-  }
-  return true;
+void RequestQueueStoreSQL::Initialize(const InitializeCallback& callback) {
+  DCHECK(!db_);
+  db_.reset(new sql::Connection());
+  background_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&OpenConnectionSync, db_.get(),
+                 base::ThreadTaskRunnerHandle::Get(), db_file_path_,
+                 base::Bind(&RequestQueueStoreSQL::OnOpenConnectionDone,
+                            weak_ptr_factory_.GetWeakPtr(), callback)));
 }
 
 void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
   DCHECK(db_.get());
-  std::vector<std::unique_ptr<SavePageRequest>> requests;
-  if (!CheckDb(base::Bind(callback, false, base::Passed(&requests))))
+  if (!CheckDb()) {
+    std::vector<std::unique_ptr<SavePageRequest>> requests;
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, false, base::Passed(&requests)));
     return;
+  }
 
   background_task_runner_->PostTask(
       FROM_HERE, base::Bind(&GetRequestsSync, db_.get(),
@@ -428,7 +425,7 @@ void RequestQueueStoreSQL::GetRequests(const GetRequestsCallback& callback) {
 void RequestQueueStoreSQL::GetRequestsByIds(
     const std::vector<int64_t>& request_ids,
     const UpdateCallback& callback) {
-  if (!db_.get()) {
+  if (!CheckDb()) {
     PostStoreErrorForAllIds(base::ThreadTaskRunnerHandle::Get(), request_ids,
                             callback);
     return;
@@ -442,8 +439,11 @@ void RequestQueueStoreSQL::GetRequestsByIds(
 
 void RequestQueueStoreSQL::AddRequest(const SavePageRequest& request,
                                       const AddCallback& callback) {
-  if (!CheckDb(base::Bind(callback, ItemActionStatus::STORE_ERROR)))
+  if (!CheckDb()) {
+    base::ThreadTaskRunnerHandle::Get()->PostTask(
+        FROM_HERE, base::Bind(callback, ItemActionStatus::STORE_ERROR));
     return;
+  }
 
   background_task_runner_->PostTask(
       FROM_HERE,
@@ -454,7 +454,7 @@ void RequestQueueStoreSQL::AddRequest(const SavePageRequest& request,
 void RequestQueueStoreSQL::UpdateRequests(
     const std::vector<SavePageRequest>& requests,
     const UpdateCallback& callback) {
-  if (!db_.get()) {
+  if (!CheckDb()) {
     PostStoreErrorForAllRequests(base::ThreadTaskRunnerHandle::Get(), requests,
                                  callback);
     return;
@@ -469,7 +469,7 @@ void RequestQueueStoreSQL::UpdateRequests(
 void RequestQueueStoreSQL::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const UpdateCallback& callback) {
-  if (!db_.get()) {
+  if (!CheckDb()) {
     PostStoreErrorForAllIds(base::ThreadTaskRunnerHandle::Get(), request_ids,
                             callback);
     return;
@@ -482,10 +482,6 @@ void RequestQueueStoreSQL::RemoveRequests(
 }
 
 void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {
-  DCHECK(db_.get());
-  if (!CheckDb(base::Bind(callback, false)))
-    return;
-
   background_task_runner_->PostTask(
       FROM_HERE,
       base::Bind(&ResetSync, db_.get(), db_file_path_,
@@ -494,36 +490,28 @@ void RequestQueueStoreSQL::Reset(const ResetCallback& callback) {
                             weak_ptr_factory_.GetWeakPtr(), callback)));
 }
 
-void RequestQueueStoreSQL::OpenConnection() {
-  DCHECK(!db_);
-  db_.reset(new sql::Connection());
-  background_task_runner_->PostTask(
-      FROM_HERE,
-      base::Bind(&OpenConnectionSync, db_.get(),
-                 base::ThreadTaskRunnerHandle::Get(), db_file_path_,
-                 base::Bind(&RequestQueueStoreSQL::OnOpenConnectionDone,
-                            weak_ptr_factory_.GetWeakPtr())));
+StoreState RequestQueueStoreSQL::state() const {
+  return state_;
 }
 
-void RequestQueueStoreSQL::OnOpenConnectionDone(StoreState state) {
+void RequestQueueStoreSQL::OnOpenConnectionDone(
+    const InitializeCallback& callback,
+    bool success) {
   DCHECK(db_.get());
-
-  state_ = state;
-
-  // Unfortunately we were not able to open DB connection.
-  if (state_ != StoreState::LOADED)
-    db_.reset();
+  state_ = success ? StoreState::LOADED : StoreState::FAILED_LOADING;
+  callback.Run(success);
 }
 
 void RequestQueueStoreSQL::OnResetDone(const ResetCallback& callback,
-                                       StoreState state) {
-  // Complete connection initialization post reset.
-  OnOpenConnectionDone(state);
-  callback.Run(state == StoreState::LOADED);
+                                       bool success) {
+  state_ = success ? StoreState::NOT_LOADED : StoreState::FAILED_RESET;
+  db_.reset();
+  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
+                                                base::Bind(callback, success));
 }
 
-StoreState RequestQueueStoreSQL::state() const {
-  return state_;
+bool RequestQueueStoreSQL::CheckDb() const {
+  return db_ && state_ == StoreState::LOADED;
 }
 
 }  // namespace offline_pages

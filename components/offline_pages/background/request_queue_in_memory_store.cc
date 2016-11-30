@@ -13,12 +13,26 @@
 
 namespace offline_pages {
 
-RequestQueueInMemoryStore::RequestQueueInMemoryStore() {}
+RequestQueueInMemoryStore::RequestQueueInMemoryStore()
+    : state_(StoreState::NOT_LOADED), scenario_(TestScenario::SUCCESSFUL) {}
+
+RequestQueueInMemoryStore::RequestQueueInMemoryStore(TestScenario scenario)
+    : state_(StoreState::NOT_LOADED), scenario_(scenario) {}
 
 RequestQueueInMemoryStore::~RequestQueueInMemoryStore() {}
 
+void RequestQueueInMemoryStore::Initialize(const InitializeCallback& callback) {
+  if (scenario_ == TestScenario::SUCCESSFUL)
+    state_ = StoreState::LOADED;
+  else
+    state_ = StoreState::FAILED_LOADING;
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, state_ == StoreState::LOADED));
+}
+
 void RequestQueueInMemoryStore::GetRequests(
     const GetRequestsCallback& callback) {
+  DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::vector<std::unique_ptr<SavePageRequest>> result_requests;
   for (const auto& id_request_pair : requests_) {
     std::unique_ptr<SavePageRequest> request(
@@ -33,6 +47,7 @@ void RequestQueueInMemoryStore::GetRequests(
 void RequestQueueInMemoryStore::GetRequestsByIds(
     const std::vector<int64_t>& request_ids,
     const UpdateCallback& callback) {
+  DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(state()));
 
@@ -59,6 +74,7 @@ void RequestQueueInMemoryStore::GetRequestsByIds(
 
 void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
                                            const AddCallback& callback) {
+  DCHECK_NE(state_, StoreState::NOT_LOADED);
   RequestsMap::iterator iter = requests_.find(request.request_id());
   ItemActionStatus status;
   if (iter == requests_.end()) {
@@ -75,6 +91,7 @@ void RequestQueueInMemoryStore::AddRequest(const SavePageRequest& request,
 void RequestQueueInMemoryStore::UpdateRequests(
     const std::vector<SavePageRequest>& requests,
     const RequestQueue::UpdateCallback& callback) {
+  DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(state()));
 
@@ -99,6 +116,7 @@ void RequestQueueInMemoryStore::UpdateRequests(
 void RequestQueueInMemoryStore::RemoveRequests(
     const std::vector<int64_t>& request_ids,
     const UpdateCallback& callback) {
+  DCHECK_NE(state_, StoreState::NOT_LOADED);
   std::unique_ptr<UpdateRequestsResult> result(
       new UpdateRequestsResult(StoreState::LOADED));
 
@@ -122,13 +140,19 @@ void RequestQueueInMemoryStore::RemoveRequests(
 }
 
 void RequestQueueInMemoryStore::Reset(const ResetCallback& callback) {
-  requests_.clear();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
-                                                base::Bind(callback, true));
+  if (scenario_ != TestScenario::LOAD_FAILED_RESET_FAILED) {
+    requests_.clear();
+    state_ = StoreState::NOT_LOADED;
+    scenario_ = TestScenario::SUCCESSFUL;
+  } else {
+    state_ = StoreState::FAILED_RESET;
+  }
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(callback, state_ == StoreState::NOT_LOADED));
 }
 
 StoreState RequestQueueInMemoryStore::state() const {
-  return StoreState::LOADED;
+  return state_;
 }
 
 }  // namespace offline_pages

@@ -30,16 +30,17 @@ class ChangeRequestsStateTaskTest : public testing::Test {
 
   void PumpLoop();
 
-  void SetUpStore(RequestQueueStore* store);
-
-  void AddRequestDone(ItemActionStatus status);
-
+  void InitializeStore(RequestQueueStore* store);
+  void AddItemsToStore(RequestQueueStore* store);
   void ChangeRequestsStateCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
+  void InitializeStoreDone(bool success);
+  void AddRequestDone(ItemActionStatus status);
+
   std::unique_ptr<UpdateRequestsResult> result_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -55,7 +56,14 @@ void ChangeRequestsStateTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
-void ChangeRequestsStateTaskTest::SetUpStore(RequestQueueStore* store) {
+void ChangeRequestsStateTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(
+      base::Bind(&ChangeRequestsStateTaskTest::InitializeStoreDone,
+                 base::Unretained(this)));
+  PumpLoop();
+}
+
+void ChangeRequestsStateTaskTest::AddItemsToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
@@ -70,17 +78,23 @@ void ChangeRequestsStateTaskTest::SetUpStore(RequestQueueStore* store) {
   PumpLoop();
 }
 
-void ChangeRequestsStateTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void ChangeRequestsStateTaskTest::ChangeRequestsStateCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
   result_ = std::move(result);
 }
 
+void ChangeRequestsStateTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
+void ChangeRequestsStateTaskTest::AddRequestDone(ItemActionStatus status) {
+  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
 TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
@@ -98,7 +112,9 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateWhenStoreEmpty) {
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  InitializeStore(&store);
+  AddItemsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
@@ -118,7 +134,9 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateSingleItem) {
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  InitializeStore(&store);
+  AddItemsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1, kRequestId2};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
@@ -145,6 +163,8 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
 
 TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
+
   std::vector<int64_t> request_ids;
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,
@@ -159,7 +179,9 @@ TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
 
 TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
   RequestQueueInMemoryStore store;
-  SetUpStore(&store);
+  InitializeStore(&store);
+  AddItemsToStore(&store);
+
   std::vector<int64_t> request_ids{kRequestId1, kRequestId3};
   ChangeRequestsStateTask task(
       &store, request_ids, SavePageRequest::RequestState::PAUSED,

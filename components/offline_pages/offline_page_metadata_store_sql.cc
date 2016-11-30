@@ -596,7 +596,7 @@ void OfflinePageMetadataStoreSQL::OnResetDone(const ResetCallback& callback,
                                                 base::Bind(callback, success));
 }
 
-bool OfflinePageMetadataStoreSQL::CheckDb() {
+bool OfflinePageMetadataStoreSQL::CheckDb() const {
   return db_ && state_ == StoreState::LOADED;
 }
 

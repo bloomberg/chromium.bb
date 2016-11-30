@@ -12,6 +12,7 @@
 #include "components/offline_pages/background/add_request_task.h"
 #include "components/offline_pages/background/change_requests_state_task.h"
 #include "components/offline_pages/background/get_requests_task.h"
+#include "components/offline_pages/background/initialize_store_task.h"
 #include "components/offline_pages/background/mark_attempt_aborted_task.h"
 #include "components/offline_pages/background/mark_attempt_completed_task.h"
 #include "components/offline_pages/background/mark_attempt_started_task.h"
@@ -63,7 +64,9 @@ void AddRequestDone(const RequestQueue::AddRequestCallback& callback,
 }  // namespace
 
 RequestQueue::RequestQueue(std::unique_ptr<RequestQueueStore> store)
-    : store_(std::move(store)), weak_ptr_factory_(this) {}
+    : store_(std::move(store)), weak_ptr_factory_(this) {
+  Initialize();
+}
 
 RequestQueue::~RequestQueue() {}
 
@@ -119,8 +122,6 @@ void RequestQueue::MarkAttemptCompleted(int64_t request_id,
   task_queue_.AddTask(std::move(task));
 }
 
-void RequestQueue::PurgeRequests(const PurgeRequestsCallback& callback) {}
-
 void RequestQueue::PickNextRequest(
     PickRequestTask::RequestPickedCallback picked_callback,
     PickRequestTask::RequestNotPickedCallback not_picked_callback,
@@ -135,6 +136,18 @@ void RequestQueue::PickNextRequest(
   // Queue up the picking task, it will call one of the callbacks when it
   // completes.
   task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::Initialize() {
+  std::unique_ptr<Task> task(new InitializeStoreTask(
+      store_.get(), base::Bind(&RequestQueue::InitializeStoreDone,
+                               weak_ptr_factory_.GetWeakPtr())));
+  task_queue_.AddTask(std::move(task));
+}
+
+void RequestQueue::InitializeStoreDone(bool success) {
+  // TODO(fgorski): Result can be ignored for now. Report UMA in future.
+  // No need to pass the result up to RequestCoordinator.
 }
 
 }  // namespace offline_pages

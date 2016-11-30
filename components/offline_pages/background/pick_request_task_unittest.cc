@@ -114,6 +114,8 @@ class PickRequestTaskTest : public testing::Test {
   void TaskCompletionCallback(Task* completed_task);
 
  protected:
+  void InitializeStoreDone(bool success);
+
   std::unique_ptr<RequestQueueStore> store_;
   std::unique_ptr<RequestNotifierStub> notifier_;
   std::unique_ptr<SavePageRequest> last_picked_;
@@ -149,6 +151,10 @@ void PickRequestTaskTest::SetUp() {
   available_request_count_ = 9999;
   task_complete_called_ = false;
   last_picked_.reset();
+
+  store_->Initialize(base::Bind(&PickRequestTaskTest::InitializeStoreDone,
+                                base::Unretained(this)));
+  PumpLoop();
 }
 
 void PickRequestTaskTest::PumpLoop() {
@@ -207,6 +213,10 @@ void PickRequestTaskTest::MakeFactoryAndTask() {
       task_runner_.get(),
       base::Bind(&PickRequestTaskTest::TaskCompletionCallback,
                  base::Unretained(this)));
+}
+
+void PickRequestTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
 }
 
 TEST_F(PickRequestTaskTest, PickFromEmptyQueue) {

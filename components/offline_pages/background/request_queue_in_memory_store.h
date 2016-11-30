@@ -18,10 +18,18 @@ namespace offline_pages {
 // Interface for classes storing save page requests.
 class RequestQueueInMemoryStore : public RequestQueueStore {
  public:
+  enum class TestScenario {
+    SUCCESSFUL,
+    LOAD_FAILED_RESET_SUCCESS,
+    LOAD_FAILED_RESET_FAILED,
+  };
+
   RequestQueueInMemoryStore();
+  explicit RequestQueueInMemoryStore(TestScenario scenario);
   ~RequestQueueInMemoryStore() override;
 
   // RequestQueueStore implementaiton.
+  void Initialize(const InitializeCallback& callback) override;
   void GetRequests(const GetRequestsCallback& callback) override;
   void GetRequestsByIds(const std::vector<int64_t>& request_ids,
                         const UpdateCallback& callback) override;
@@ -31,13 +39,14 @@ class RequestQueueInMemoryStore : public RequestQueueStore {
                       const UpdateCallback& callback) override;
   void RemoveRequests(const std::vector<int64_t>& request_ids,
                       const UpdateCallback& callback) override;
-
   void Reset(const ResetCallback& callback) override;
   StoreState state() const override;
 
  private:
   typedef std::map<int64_t, SavePageRequest> RequestsMap;
   RequestsMap requests_;
+  StoreState state_;
+  TestScenario scenario_;
 
   DISALLOW_COPY_AND_ASSIGN(RequestQueueInMemoryStore);
 };

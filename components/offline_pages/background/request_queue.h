@@ -106,15 +106,9 @@ class RequestQueue {
   }
 
  private:
-  // Callback used by |PurgeRequests|.
-  typedef base::Callback<void(UpdateRequestResult,
-                              int /* removed requests count */)>
-      PurgeRequestsCallback;
-
-  // Purges the queue, removing the requests that are no longer relevant, e.g.
-  // expired request. Result is returned through |callback| carries the number
-  // of removed requests.
-  void PurgeRequests(const PurgeRequestsCallback& callback);
+  // Store initialization functions.
+  void Initialize();
+  void InitializeStoreDone(bool success);
 
   std::unique_ptr<RequestQueueStore> store_;
 

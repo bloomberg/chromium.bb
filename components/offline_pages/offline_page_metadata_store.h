@@ -36,15 +36,14 @@ class OfflinePageMetadataStore {
     LOAD_STATUS_COUNT
   };
 
+  typedef base::Callback<void(bool /* success */)> InitializeCallback;
+  typedef base::Callback<void(bool /* success */)> ResetCallback;
   typedef base::Callback<void(const std::vector<OfflinePageItem>&)>
       LoadCallback;
-  typedef base::Callback<void(bool)> InitializeCallback;
   typedef base::Callback<void(ItemActionStatus)> AddCallback;
   typedef base::Callback<void(std::unique_ptr<OfflinePagesUpdateResult>)>
       UpdateCallback;
-  typedef base::Callback<void(bool)> ResetCallback;
 
-  OfflinePageMetadataStore();
   virtual ~OfflinePageMetadataStore();
 
   // Initializes the store. Should be called before any other methods.

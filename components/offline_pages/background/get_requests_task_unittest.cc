@@ -29,10 +29,8 @@ class GetRequestsTaskTest : public testing::Test {
 
   void PumpLoop();
 
+  void InitializeStore(RequestQueueStore* store);
   void AddItemsToStore(RequestQueueStore* store);
-
-  void AddRequestDone(ItemActionStatus status);
-
   void GetRequestsCallback(
       bool success,
       std::vector<std::unique_ptr<SavePageRequest>> requests);
@@ -46,6 +44,9 @@ class GetRequestsTaskTest : public testing::Test {
   }
 
  private:
+  void InitializeStoreDone(bool success);
+  void AddRequestDone(ItemActionStatus status);
+
   bool callback_called_;
   bool success_;
   std::vector<std::unique_ptr<SavePageRequest>> requests_;
@@ -65,6 +66,12 @@ void GetRequestsTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+void GetRequestsTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(base::Bind(&GetRequestsTaskTest::InitializeStoreDone,
+                               base::Unretained(this)));
+  PumpLoop();
+}
+
 void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
@@ -79,10 +86,6 @@ void GetRequestsTaskTest::AddItemsToStore(RequestQueueStore* store) {
   PumpLoop();
 }
 
-void GetRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void GetRequestsTaskTest::GetRequestsCallback(
     bool success,
     std::vector<std::unique_ptr<SavePageRequest>> requests) {
@@ -91,8 +94,17 @@ void GetRequestsTaskTest::GetRequestsCallback(
   requests_ = std::move(requests);
 }
 
+void GetRequestsTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
+void GetRequestsTaskTest::AddRequestDone(ItemActionStatus status) {
+  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
 TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   GetRequestsTask task(&store,
                        base::Bind(&GetRequestsTaskTest::GetRequestsCallback,
                                   base::Unretained(this)));
@@ -105,6 +117,7 @@ TEST_F(GetRequestsTaskTest, GetFromEmptyStore) {
 
 TEST_F(GetRequestsTaskTest, GetMultipleRequests) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddItemsToStore(&store);
 
   GetRequestsTask task(&store,

@@ -30,6 +30,8 @@ class AddRequestTaskTest : public testing::Test {
   void PumpLoop();
   void ClearResults();
 
+  void InitializeStore(RequestQueueStore* store);
+
   void AddRequestDone(ItemActionStatus status);
 
   void GetRequestsCallback(
@@ -45,6 +47,8 @@ class AddRequestTaskTest : public testing::Test {
   }
 
  private:
+  void InitializeStoreDone(bool success);
+
   bool callback_called_;
   ItemActionStatus status_;
   std::vector<std::unique_ptr<SavePageRequest>> requests_;
@@ -70,6 +74,12 @@ void AddRequestTaskTest::ClearResults() {
   requests_.clear();
 }
 
+void AddRequestTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(base::Bind(&AddRequestTaskTest::InitializeStoreDone,
+                               base::Unretained(this)));
+  PumpLoop();
+}
+
 void AddRequestTaskTest::AddRequestDone(ItemActionStatus status) {
   status_ = status;
   callback_called_ = true;
@@ -81,8 +91,13 @@ void AddRequestTaskTest::GetRequestsCallback(
   requests_ = std::move(requests);
 }
 
+void AddRequestTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
 TEST_F(AddRequestTaskTest, AddSingleRequest) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   base::Time creation_time = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time,
                             true);
@@ -107,6 +122,7 @@ TEST_F(AddRequestTaskTest, AddSingleRequest) {
 
 TEST_F(AddRequestTaskTest, AddMultipleRequests) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);
@@ -146,6 +162,7 @@ TEST_F(AddRequestTaskTest, AddMultipleRequests) {
 
 TEST_F(AddRequestTaskTest, AddDuplicateRequest) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   base::Time creation_time_1 = base::Time::Now();
   SavePageRequest request_1(kRequestId1, kUrl1, kClientId1, creation_time_1,
                             true);

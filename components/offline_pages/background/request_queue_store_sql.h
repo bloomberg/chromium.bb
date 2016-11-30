@@ -32,6 +32,7 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   ~RequestQueueStoreSQL() override;
 
   // RequestQueueStore implementation.
+  void Initialize(const InitializeCallback& callback) override;
   void GetRequests(const GetRequestsCallback& callback) override;
   // Note: current implementation of this method makes a SQL query per ID. This
   // is OK as long as number of IDs stays low, which is a typical case.
@@ -48,15 +49,14 @@ class RequestQueueStoreSQL : public RequestQueueStore {
   StoreState state() const override;
 
  private:
-  // Helper functions to return immediately if no database is found.
-  bool CheckDb(const base::Closure& callback);
+  // Used to finalize DB connection initialization.
+  void OnOpenConnectionDone(const InitializeCallback& callback, bool success);
 
-  // Used to initialize DB connection.
-  void OpenConnection();
-  void OnOpenConnectionDone(StoreState state);
+  // Used to finalize DB connection reset.
+  void OnResetDone(const ResetCallback& callback, bool success);
 
-  // Used to finalize connection reset.
-  void OnResetDone(const ResetCallback& callback, StoreState state);
+  // Helper function to return immediately if no database is found.
+  bool CheckDb() const;
 
   // Background thread where all SQL access should be run.
   scoped_refptr<base::SequencedTaskRunner> background_task_runner_;

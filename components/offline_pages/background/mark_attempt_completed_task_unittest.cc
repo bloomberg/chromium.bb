@@ -28,16 +28,17 @@ class MarkAttemptCompletedTaskTest : public testing::Test {
 
   void PumpLoop();
 
+  void InitializeStore(RequestQueueStore* store);
   void AddStartedItemToStore(RequestQueueStore* store);
-
-  void AddRequestDone(ItemActionStatus status);
-
   void ChangeRequestsStateCallback(
       std::unique_ptr<UpdateRequestsResult> result);
 
   UpdateRequestsResult* last_result() const { return result_.get(); }
 
  private:
+  void InitializeStoreDone(bool success);
+  void AddRequestDone(ItemActionStatus status);
+
   std::unique_ptr<UpdateRequestsResult> result_;
   scoped_refptr<base::TestSimpleTaskRunner> task_runner_;
   base::ThreadTaskRunnerHandle task_runner_handle_;
@@ -53,6 +54,13 @@ void MarkAttemptCompletedTaskTest::PumpLoop() {
   task_runner_->RunUntilIdle();
 }
 
+void MarkAttemptCompletedTaskTest::InitializeStore(RequestQueueStore* store) {
+  store->Initialize(
+      base::Bind(&MarkAttemptCompletedTaskTest::InitializeStoreDone,
+                 base::Unretained(this)));
+  PumpLoop();
+}
+
 void MarkAttemptCompletedTaskTest::AddStartedItemToStore(
     RequestQueueStore* store) {
   base::Time creation_time = base::Time::Now();
@@ -65,17 +73,22 @@ void MarkAttemptCompletedTaskTest::AddStartedItemToStore(
   PumpLoop();
 }
 
-void MarkAttemptCompletedTaskTest::AddRequestDone(ItemActionStatus status) {
-  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
-}
-
 void MarkAttemptCompletedTaskTest::ChangeRequestsStateCallback(
     std::unique_ptr<UpdateRequestsResult> result) {
   result_ = std::move(result);
 }
 
+void MarkAttemptCompletedTaskTest::InitializeStoreDone(bool success) {
+  ASSERT_TRUE(success);
+}
+
+void MarkAttemptCompletedTaskTest::AddRequestDone(ItemActionStatus status) {
+  ASSERT_EQ(ItemActionStatus::SUCCESS, status);
+}
+
 TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenExists) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   AddStartedItemToStore(&store);
 
   MarkAttemptCompletedTask task(
@@ -98,6 +111,7 @@ TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenExists) {
 
 TEST_F(MarkAttemptCompletedTaskTest, MarkAttemptCompletedWhenItemMissing) {
   RequestQueueInMemoryStore store;
+  InitializeStore(&store);
   // Add request 1 to the store.
   AddStartedItemToStore(&store);
   // Try to mark request 2 (not in the store).
