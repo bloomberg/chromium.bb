@@ -354,8 +354,7 @@ typedef enum {
 } COMPOUND_TYPE;
 #endif  // CONFIG_EXT_INTER
 
-// TODO(urvang): Make "CONFIG_ALT_INTRA" work with "CONFIG_FILTER_INTRA".
-
+// TODO(huisu): Consider adding FILTER_SMOOTH_PRED to "FILTER_INTRA_MODE".
 #if CONFIG_FILTER_INTRA
 typedef enum {
   FILTER_DC_PRED,

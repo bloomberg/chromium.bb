@@ -1055,32 +1055,40 @@ void av1_tm_filter_predictor_c(uint8_t *dst, ptrdiff_t stride, int bs,
   filter_intra_predictors_4tap(dst, stride, bs, above, left, TM_PRED);
 }
 
-static void filter_intra_predictors(int mode, uint8_t *dst, ptrdiff_t stride,
-                                    int bs, const uint8_t *above,
-                                    const uint8_t *left) {
+static void filter_intra_predictors(FILTER_INTRA_MODE mode, uint8_t *dst,
+                                    ptrdiff_t stride, int bs,
+                                    const uint8_t *above, const uint8_t *left) {
   switch (mode) {
-    case DC_PRED: av1_dc_filter_predictor(dst, stride, bs, above, left); break;
-    case V_PRED: av1_v_filter_predictor(dst, stride, bs, above, left); break;
-    case H_PRED: av1_h_filter_predictor(dst, stride, bs, above, left); break;
-    case D45_PRED:
+    case FILTER_DC_PRED:
+      av1_dc_filter_predictor(dst, stride, bs, above, left);
+      break;
+    case FILTER_V_PRED:
+      av1_v_filter_predictor(dst, stride, bs, above, left);
+      break;
+    case FILTER_H_PRED:
+      av1_h_filter_predictor(dst, stride, bs, above, left);
+      break;
+    case FILTER_D45_PRED:
       av1_d45_filter_predictor(dst, stride, bs, above, left);
       break;
-    case D135_PRED:
+    case FILTER_D135_PRED:
       av1_d135_filter_predictor(dst, stride, bs, above, left);
       break;
-    case D117_PRED:
+    case FILTER_D117_PRED:
       av1_d117_filter_predictor(dst, stride, bs, above, left);
       break;
-    case D153_PRED:
+    case FILTER_D153_PRED:
       av1_d153_filter_predictor(dst, stride, bs, above, left);
       break;
-    case D207_PRED:
+    case FILTER_D207_PRED:
       av1_d207_filter_predictor(dst, stride, bs, above, left);
       break;
-    case D63_PRED:
+    case FILTER_D63_PRED:
       av1_d63_filter_predictor(dst, stride, bs, above, left);
       break;
-    case TM_PRED: av1_tm_filter_predictor(dst, stride, bs, above, left); break;
+    case FILTER_TM_PRED:
+      av1_tm_filter_predictor(dst, stride, bs, above, left);
+      break;
     default: assert(0);
   }
 }
@@ -1199,39 +1207,39 @@ void av1_highbd_tm_filter_predictor_c(uint16_t *dst, ptrdiff_t stride, int bs,
                                       bd);
 }
 
-static void highbd_filter_intra_predictors(int mode, uint16_t *dst,
-                                           ptrdiff_t stride, int bs,
-                                           const uint16_t *above,
+static void highbd_filter_intra_predictors(FILTER_INTRA_MODE mode,
+                                           uint16_t *dst, ptrdiff_t stride,
+                                           int bs, const uint16_t *above,
                                            const uint16_t *left, int bd) {
   switch (mode) {
-    case DC_PRED:
+    case FILTER_DC_PRED:
       av1_highbd_dc_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case V_PRED:
+    case FILTER_V_PRED:
       av1_highbd_v_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case H_PRED:
+    case FILTER_H_PRED:
       av1_highbd_h_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D45_PRED:
+    case FILTER_D45_PRED:
       av1_highbd_d45_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D135_PRED:
+    case FILTER_D135_PRED:
       av1_highbd_d135_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D117_PRED:
+    case FILTER_D117_PRED:
       av1_highbd_d117_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D153_PRED:
+    case FILTER_D153_PRED:
       av1_highbd_d153_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D207_PRED:
+    case FILTER_D207_PRED:
       av1_highbd_d207_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case D63_PRED:
+    case FILTER_D63_PRED:
       av1_highbd_d63_filter_predictor(dst, stride, bs, above, left, bd);
       break;
-    case TM_PRED:
+    case FILTER_TM_PRED:
       av1_highbd_tm_filter_predictor(dst, stride, bs, above, left, bd);
       break;
     default: assert(0);
