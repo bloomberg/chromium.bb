@@ -503,6 +503,16 @@ config("compiler") {
   }
 }
 
+# This is separate from :compiler (and not even a sub-config there)
+# so that some targets can remove it from the list with:
+#   configs -= [ "//build/config/compiler:pthread" ]
+config("pthread") {
+  if (is_linux) {
+    cflags = [ "-pthread" ]
+    ldflags = [ "-pthread" ]
+  }
+}
+
 # This provides the basic options to select the target CPU and ABI.
 # It is factored out of "compiler" so that special cases can use this
 # without using everything that "compiler" brings in.  Options that
