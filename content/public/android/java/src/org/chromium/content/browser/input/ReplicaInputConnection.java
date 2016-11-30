@@ -93,6 +93,9 @@ public class ReplicaInputConnection
 
         @Override
         public void onViewDetachedFromWindow() {}
+
+        @Override
+        public void destroy() {}
     }
 
     @VisibleForTesting

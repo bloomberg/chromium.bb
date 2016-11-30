@@ -10,6 +10,7 @@ import android.view.View;
 import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.Log;
+import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 
 /**
@@ -30,7 +31,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     // UI message loop until View#hasWindowFocus() is aligned with what IMMS sees.
     private static final int CHECK_REGISTER_RETRY = 1;
 
-    private final Handler mHandler;
+    private Handler mHandler;
     private final InputMethodManagerWrapper mInputMethodManagerWrapper;
     private final InputMethodUma mInputMethodUma;
     private ThreadedInputConnectionProxyView mProxyView;
@@ -56,7 +57,6 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
     ThreadedInputConnectionFactory(InputMethodManagerWrapper inputMethodManagerWrapper) {
         mInputMethodManagerWrapper = inputMethodManagerWrapper;
-        mHandler = createHandler();
         mInputMethodUma = createInputMethodUma();
     }
 
@@ -66,6 +66,25 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
                 new HandlerThread("InputConnectionHandlerThread", HandlerThread.NORM_PRIORITY);
         thread.start();
         return new Handler(thread.getLooper());
+    }
+
+    private void destroyHandler() {
+        if (mHandler == null) return;
+        final Handler handler = mHandler;
+        handler.post(new Runnable() {
+            @Override
+            public void run() {
+                ThreadUtils.postOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        if (handler != null) {
+                            handler.getLooper().quit();
+                        }
+                    }
+                });
+            }
+        });
+        mHandler = null;
     }
 
     @VisibleForTesting
@@ -117,6 +136,8 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         // mServedConnecting.
         if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
 
+        if (mHandler == null) mHandler = createHandler();
+
         if (shouldTriggerDelayedOnCreateInputConnection()) {
             triggerDelayedOnCreateInputConnection(view);
             return null;
@@ -145,6 +166,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
         if (!view.hasWindowFocus()) mCheckInvalidator.invalidate();
 
+        if (mHandler == null) return;
         // We cannot reuse the existing proxy view, if any, due to crbug.com/664402.
         mProxyView = createProxyView(mHandler, view);
 
@@ -173,6 +195,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
 
                 // Step 3: Check that the above hack worked.
                 // Do not check until activation finishes inside InputMethodManager (on IME thread).
+                if (mHandler == null) return;
                 mHandler.post(new Runnable() {
                     @Override
                     public void run() {
@@ -251,6 +274,7 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     public void onViewAttachedToWindow() {
         if (DEBUG_LOGS) Log.d(TAG, "onViewAttachedToWindow");
         if (mProxyView != null) mProxyView.onOriginalViewAttachedToWindow();
+        if (mHandler == null) mHandler = createHandler();
     }
 
     @Override
@@ -258,5 +282,12 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
         if (DEBUG_LOGS) Log.d(TAG, "onViewDetachedFromWindow");
         if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
         if (mProxyView != null) mProxyView.onOriginalViewDetachedFromWindow();
+        destroyHandler();
+    }
+
+    @Override
+    public void destroy() {
+        if (mCheckInvalidator != null) mCheckInvalidator.invalidate();
+        destroyHandler();
     }
 }

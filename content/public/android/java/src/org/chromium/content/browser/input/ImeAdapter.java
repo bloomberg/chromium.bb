@@ -508,6 +508,17 @@ public class ImeAdapter {
     }
 
     /**
+     * Call this when ImeAdapter gets destroyed.
+     */
+    public void destroy() {
+        if (DEBUG_LOGS) Log.w(TAG, "destroy");
+        resetAndHideKeyboard();
+        if (mInputConnectionFactory != null) {
+            mInputConnectionFactory.destroy();
+        }
+    }
+
+    /**
      * Update selection to input method manager.
      *
      * @param selectionStart The selection start.

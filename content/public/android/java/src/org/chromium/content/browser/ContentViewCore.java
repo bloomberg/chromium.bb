@@ -837,7 +837,7 @@ public class ContentViewCore implements AccessibilityStateChangeListener, Displa
         mWebContentsObserver = null;
         setSmartClipDataListener(null);
         setZoomControlsDelegate(null);
-        mImeAdapter.resetAndHideKeyboard();
+        mImeAdapter.destroy();
         // TODO(igsolla): address TODO in ContentViewClient because ContentViewClient is not
         // currently a real Null Object.
         //
