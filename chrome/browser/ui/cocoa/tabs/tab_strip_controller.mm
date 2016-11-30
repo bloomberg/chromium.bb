@@ -2270,25 +2270,33 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
 }
 
 - (void)addCustomWindowControls {
-  BOOL isRTL = cocoa_l10n_util::ShouldDoExperimentalRTLLayout();
+  BOOL shouldFlipWindowControls =
+      cocoa_l10n_util::ShouldFlipWindowControlsInRTL();
   if (!customWindowControls_) {
     // Make the container view.
     CGFloat height = NSHeight([tabStripView_ frame]);
     CGFloat width = [self leadingIndentForControls];
-    CGFloat xOrigin = isRTL ? NSWidth([tabStripView_ frame]) - width : 0;
+    if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout() &&
+        !shouldFlipWindowControls)
+      // The trailing indent is correct in this case, since the controls should
+      // stay on the left.
+      width = [self trailingIndentForControls];
+    CGFloat xOrigin =
+        shouldFlipWindowControls ? NSWidth([tabStripView_ frame]) - width : 0;
     NSRect frame = NSMakeRect(xOrigin, 0, width, height);
     customWindowControls_.reset(
         [[CustomWindowControlsView alloc] initWithFrame:frame]);
     [customWindowControls_
-        setAutoresizingMask:isRTL ? NSViewMinXMargin | NSViewHeightSizable
-                                  : NSViewMaxXMargin | NSViewHeightSizable];
+        setAutoresizingMask:shouldFlipWindowControls
+                                ? NSViewMinXMargin | NSViewHeightSizable
+                                : NSViewMaxXMargin | NSViewHeightSizable];
 
     // Add the traffic light buttons. The horizontal layout was determined by
     // manual inspection on Yosemite.
     CGFloat closeButtonX = 11;
     CGFloat pinnedButtonX = 31;
     CGFloat zoomButtonX = 51;
-    if (isRTL)
+    if (shouldFlipWindowControls)
       std::swap(closeButtonX, zoomButtonX);
 
     NSUInteger styleMask = [[tabStripView_ window] styleMask];
@@ -2321,7 +2329,7 @@ NSRect FlipRectInView(NSView* view, NSRect rect) {
     [customWindowControls_
         addTrackingArea:customWindowControlsTrackingArea_.get()];
   }
-  if (isRTL &&
+  if (shouldFlipWindowControls &&
       NSMaxX([customWindowControls_ frame]) != NSMaxX([tabStripView_ frame])) {
     NSRect frame = [customWindowControls_ frame];
     frame.origin.x =

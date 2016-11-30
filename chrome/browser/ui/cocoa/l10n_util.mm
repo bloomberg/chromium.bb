@@ -5,6 +5,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 
 #include "base/i18n/rtl.h"
+#include "base/mac/mac_util.h"
 #include "base/strings/string_util.h"
 #include "base/strings/sys_string_conversions.h"
 #import "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
@@ -89,6 +90,10 @@ const base::Feature kExperimentalMacRTL{"ExperimentalMacRTL",
 bool ShouldDoExperimentalRTLLayout() {
   return base::i18n::IsRTL() &&
          base::FeatureList::IsEnabled(kExperimentalMacRTL);
+}
+
+bool ShouldFlipWindowControlsInRTL() {
+  return ShouldDoExperimentalRTLLayout() && base::mac::IsAtLeastOS10_12();
 }
 
 }  // namespace cocoa_l10n_util

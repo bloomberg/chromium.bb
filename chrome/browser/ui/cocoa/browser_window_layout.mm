@@ -265,8 +265,11 @@ const CGFloat kLocationBarRightOffset = 35;
   layout.trailingIndent = width - maxX;
 
   if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
-    layout.avatarFrame.origin.x =
-        width - parameters_.avatarSize.width - layout.avatarFrame.origin.x;
+    if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL())
+      layout.avatarFrame.origin.x =
+          width - parameters_.avatarSize.width - layout.avatarFrame.origin.x;
+    else
+      std::swap(layout.leadingIndent, layout.trailingIndent);
   }
 
   output_.tabStripLayout = layout;

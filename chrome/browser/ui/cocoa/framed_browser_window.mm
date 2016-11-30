@@ -58,7 +58,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 // location (frame bottom is moved down so the buttons are moved down as well).
 - (void)adjustTitlebarContainer:(NSView*)titlebarContainer;
 // Adds layout constraints to window buttons, respecting flag returned by
-// |ShouldDoExperimentalRTLLayout| method.
+// |ShouldFlipWindowControlsInRTL| method.
 - (void)setWindowButtonsConstraints;
 // Replaces -[NSThemeFrame addTrackingArea:] with implementation that ignores
 // tracking rect if its size is the same as the size of window buttons rect
@@ -71,7 +71,7 @@ const CGFloat kWindowGradientHeight = 24.0;
 // titlebar container with correct frame.
 - (void)titlebarDidChangeFrameNotification:(NSNotification*)notification;
 // Adds layout constraints to the given window button so it displayed at correct
-// location. This respects flag returned by |ShouldDoExperimentalRTLLayout|
+// location. This respects flag returned by |ShouldFlipWindowControlsInRTL|
 // method.
 - (void)setLeadingOffset:(CGFloat)leadingOffset
                 toButton:(NSWindowButton)buttonType;
@@ -271,11 +271,11 @@ const CGFloat kWindowGradientHeight = 24.0;
   NSButton* button = [self standardWindowButton:buttonType];
   [button setTranslatesAutoresizingMaskIntoConstraints:NO];
 
-  // Do not use leadingAnchor because |ShouldDoExperimentalRTLLayout|
+  // Do not use leadingAnchor because |ShouldFlipWindowControlsInRTL|
   // should determine if current locale is RTL.
   NSLayoutXAxisAnchor* leadingSourceAnchor = [button leftAnchor];
   NSLayoutXAxisAnchor* leadingTargetAnchor = [[button superview] leftAnchor];
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+  if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL()) {
     leadingSourceAnchor = [button rightAnchor];
     leadingTargetAnchor = [[button superview] rightAnchor];
     leadingOffset = -leadingOffset;
@@ -338,7 +338,7 @@ const CGFloat kWindowGradientHeight = 24.0;
       break;
   }
 
-  if (cocoa_l10n_util::ShouldDoExperimentalRTLLayout()) {
+  if (cocoa_l10n_util::ShouldFlipWindowControlsInRTL()) {
     buttonFrame.origin.x =
         NSWidth([self frame]) - buttonFrame.origin.x - NSWidth([button frame]);
   }

@@ -43,6 +43,7 @@
 #include "chrome/browser/ui/cocoa/chrome_style.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
+#include "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/cocoa/profiles/signin_view_controller_delegate_mac.h"
 #import "chrome/browser/ui/cocoa/profiles/user_manager_mac.h"
 #include "chrome/browser/ui/profile_chooser_constants.h"
@@ -1367,7 +1368,10 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
         l10n_util::GetNSString(IDS_PROFILES_NEW_AVATAR_MENU_ACCESSIBLE_NAME)
                              forAttribute:NSAccessibilityHelpAttribute];
 
-    [[self bubble] setAlignment:info_bubble::kAlignTrailingEdgeToAnchorEdge];
+    [[self bubble]
+        setAlignment:cocoa_l10n_util::ShouldFlipWindowControlsInRTL()
+                         ? info_bubble::kAlignTrailingEdgeToAnchorEdge
+                         : info_bubble::kAlignLeadingEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:GetDialogBackgroundColor()];
     [self initMenuContentsWithView:viewMode_];

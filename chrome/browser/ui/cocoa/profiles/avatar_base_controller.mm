@@ -159,7 +159,7 @@ bool ProfileUpdateObserver::HasAvatarError() {
 
   // The new avatar bubble does not have an arrow, and it should be anchored
   // to the edge of the avatar button.
-  int anchorX = cocoa_l10n_util::ShouldDoExperimentalRTLLayout()
+  int anchorX = cocoa_l10n_util::ShouldFlipWindowControlsInRTL()
                     ? NSMinX([anchor bounds]) + kMenuXOffsetAdjust
                     : NSMaxX([anchor bounds]) - kMenuXOffsetAdjust;
   NSPoint point = NSMakePoint(anchorX,
