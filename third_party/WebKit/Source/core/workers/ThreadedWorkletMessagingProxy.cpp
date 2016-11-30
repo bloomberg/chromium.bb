@@ -33,8 +33,10 @@ void evaluateScriptOnWorkletGlobalScope(const String& source,
 
 ThreadedWorkletMessagingProxy::ThreadedWorkletMessagingProxy(
     ExecutionContext* executionContext)
-    : ThreadedMessagingProxyBase(executionContext),
-      m_workletObjectProxy(ThreadedWorkletObjectProxy::create(this)) {}
+    : ThreadedMessagingProxyBase(executionContext), m_weakPtrFactory(this) {
+  m_workletObjectProxy =
+      ThreadedWorkletObjectProxy::create(m_weakPtrFactory.createWeakPtr());
+}
 
 void ThreadedWorkletMessagingProxy::initialize() {
   DCHECK(isParentContextThread());

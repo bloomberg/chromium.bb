@@ -12,21 +12,21 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ExecutionContext;
 class ThreadedWorkletMessagingProxy;
 
 // A proxy to talk to the parent worklet object. This object is created on the
 // main thread, passed on to the worklet thread, and used just to proxy
 // messages to the ThreadedWorkletMessagingProxy on the main thread.
+// ThreadedWorkletMessagingProxy always outlives this proxy.
 class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
   USING_FAST_MALLOC(ThreadedWorkletObjectProxy);
   WTF_MAKE_NONCOPYABLE(ThreadedWorkletObjectProxy);
 
  public:
   static std::unique_ptr<ThreadedWorkletObjectProxy> create(
-      ThreadedWorkletMessagingProxy*);
-  ~ThreadedWorkletObjectProxy() override {}
+      const WeakPtr<ThreadedWorkletMessagingProxy>&);
+  ~ThreadedWorkletObjectProxy() override;
 
   void reportPendingActivity(bool hasPendingActivity);
 
@@ -46,13 +46,15 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
   void didTerminateWorkerThread() override;
 
  protected:
-  ThreadedWorkletObjectProxy(ThreadedWorkletMessagingProxy*);
+  ThreadedWorkletObjectProxy(const WeakPtr<ThreadedWorkletMessagingProxy>&);
 
  private:
   ExecutionContext* getExecutionContext() const;
 
-  // This object always outlives this proxy.
-  ThreadedWorkletMessagingProxy* m_messagingProxy;
+  // No guarantees about the lifetimes of tasks posted by this proxy wrt the
+  // ThreadedWorkletMessagingProxy so a weak pointer must be used when posting
+  // the tasks.
+  WeakPtr<ThreadedWorkletMessagingProxy> m_messagingProxyWeakPtr;
 };
 
 }  // namespace blink

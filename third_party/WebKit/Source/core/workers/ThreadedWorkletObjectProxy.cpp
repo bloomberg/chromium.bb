@@ -18,9 +18,13 @@
 namespace blink {
 
 std::unique_ptr<ThreadedWorkletObjectProxy> ThreadedWorkletObjectProxy::create(
-    ThreadedWorkletMessagingProxy* messagingProxy) {
-  DCHECK(messagingProxy);
-  return wrapUnique(new ThreadedWorkletObjectProxy(messagingProxy));
+    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr) {
+  DCHECK(messagingProxyWeakPtr);
+  return wrapUnique(new ThreadedWorkletObjectProxy(messagingProxyWeakPtr));
+}
+
+ThreadedWorkletObjectProxy::~ThreadedWorkletObjectProxy() {
+  DCHECK(m_messagingProxyWeakPtr);
 }
 
 void ThreadedWorkletObjectProxy::reportConsoleMessage(
@@ -33,8 +37,8 @@ void ThreadedWorkletObjectProxy::reportConsoleMessage(
   getExecutionContext()->postTask(
       BLINK_FROM_HERE, createCrossThreadTask(
                            &ThreadedWorkletMessagingProxy::reportConsoleMessage,
-                           crossThreadUnretained(m_messagingProxy), source,
-                           level, message, passed(location->clone())));
+                           m_messagingProxyWeakPtr, source, level, message,
+                           passed(location->clone())));
 }
 
 void ThreadedWorkletObjectProxy::postMessageToPageInspector(
@@ -47,13 +51,12 @@ void ThreadedWorkletObjectProxy::postMessageToPageInspector(
           BLINK_FROM_HERE,
           createCrossThreadTask(
               &ThreadedWorkletMessagingProxy::postMessageToPageInspector,
-              crossThreadUnretained(m_messagingProxy), message));
+              m_messagingProxyWeakPtr, message));
 }
 
 ParentFrameTaskRunners*
 ThreadedWorkletObjectProxy::getParentFrameTaskRunners() {
-  DCHECK(m_messagingProxy);
-  return m_messagingProxy->getParentFrameTaskRunners();
+  return m_messagingProxyWeakPtr->getParentFrameTaskRunners();
 }
 
 void ThreadedWorkletObjectProxy::didCloseWorkerGlobalScope() {
@@ -62,7 +65,7 @@ void ThreadedWorkletObjectProxy::didCloseWorkerGlobalScope() {
   getExecutionContext()->postTask(
       BLINK_FROM_HERE, createCrossThreadTask(
                            &ThreadedWorkletMessagingProxy::terminateGlobalScope,
-                           crossThreadUnretained(m_messagingProxy)));
+                           m_messagingProxyWeakPtr));
 }
 
 void ThreadedWorkletObjectProxy::didTerminateWorkerThread() {
@@ -73,16 +76,15 @@ void ThreadedWorkletObjectProxy::didTerminateWorkerThread() {
       BLINK_FROM_HERE,
       createCrossThreadTask(
           &ThreadedWorkletMessagingProxy::workerThreadTerminated,
-          crossThreadUnretained(m_messagingProxy)));
+          m_messagingProxyWeakPtr));
 }
 
 ThreadedWorkletObjectProxy::ThreadedWorkletObjectProxy(
-    ThreadedWorkletMessagingProxy* messagingProxy)
-    : m_messagingProxy(messagingProxy) {}
+    const WeakPtr<ThreadedWorkletMessagingProxy>& messagingProxyWeakPtr)
+    : m_messagingProxyWeakPtr(messagingProxyWeakPtr) {}
 
 ExecutionContext* ThreadedWorkletObjectProxy::getExecutionContext() const {
-  DCHECK(m_messagingProxy);
-  return m_messagingProxy->getExecutionContext();
+  return m_messagingProxyWeakPtr->getExecutionContext();
 }
 
 }  // namespace blink

@@ -8,6 +8,7 @@
 #include "core/CoreExport.h"
 #include "core/workers/ThreadedMessagingProxyBase.h"
 #include "core/workers/WorkletGlobalScopeProxy.h"
+#include "wtf/WeakPtr.h"
 
 namespace blink {
 
@@ -32,6 +33,8 @@ class CORE_EXPORT ThreadedWorkletMessagingProxy
 
  private:
   std::unique_ptr<ThreadedWorkletObjectProxy> m_workletObjectProxy;
+
+  WeakPtrFactory<ThreadedWorkletMessagingProxy> m_weakPtrFactory;
 };
 
 }  // namespace blink
