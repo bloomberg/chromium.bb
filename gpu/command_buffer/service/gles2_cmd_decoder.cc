@@ -4225,6 +4225,8 @@ bool GLES2DecoderImpl::CheckFramebufferValid(
     GLenum target,
     GLenum gl_error,
     const char* func_name) {
+  SCOPED_UMA_HISTOGRAM_TIMER("GPU.CheckFramebufferValidDuration");
+
   if (!framebuffer) {
     if (surfaceless_)
       return false;

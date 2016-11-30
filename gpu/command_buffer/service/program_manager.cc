@@ -225,38 +225,6 @@ GLsizeiptr VertexShaderOutputTypeToSize(const sh::Varying& varying) {
   return total.ValueOrDefault(std::numeric_limits<GLsizeiptr>::max());
 }
 
-// Scoped object which logs three UMA stats related to program cleanup when
-// destructed:
-// - GPU.DestroyProgramManagerPrograms.Elapsed - The amount of time spent
-//   destroying programs during ProgramManager::Destroy.
-// - GPU.DestroyProgramManagerPrograms.Programs - The number of progams
-//   destroyed during ProgramManager::Destroy.
-// - GPU.DestroyProgramManagerPrograms.ProgramsPerMs - The number of programs
-//   destroyed per millisecond during ProgramManager::Destroy. Only logged if
-//   both the number of programs and the elapsed time are greater than zero.
-class ProgramDeletionScopedUmaTimeAndRate {
- public:
-  ProgramDeletionScopedUmaTimeAndRate(int32_t count)
-      : count_(count), start_(base::TimeTicks::Now()) {}
-
-  ~ProgramDeletionScopedUmaTimeAndRate() {
-    base::TimeDelta elapsed = base::TimeTicks::Now() - start_;
-    UMA_HISTOGRAM_TIMES("GPU.DestroyProgramManagerPrograms.Elapsed", elapsed);
-    UMA_HISTOGRAM_COUNTS("GPU.DestroyProgramManagerPrograms.Programs", count_);
-
-    double elapsed_ms = elapsed.InMillisecondsF();
-    if (count_ > 0 && elapsed_ms > 0) {
-      double rate = static_cast<double>(count_) / elapsed_ms;
-      UMA_HISTOGRAM_COUNTS("GPU.DestroyProgramManagerPrograms.ProgramsPerMs",
-                           base::saturated_cast<int32_t>(rate));
-    }
-  }
-
- private:
-  const int32_t count_;
-  const base::TimeTicks start_;
-};
-
 }  // anonymous namespace.
 
 Program::UniformInfo::UniformInfo()
@@ -2590,8 +2558,6 @@ ProgramManager::~ProgramManager() {
 void ProgramManager::Destroy(bool have_context) {
   have_context_ = have_context;
 
-  ProgramDeletionScopedUmaTimeAndRate scoped_histogram(
-      base::saturated_cast<int32_t>(programs_.size()));
   while (!programs_.empty()) {
     programs_.erase(programs_.begin());
     if (progress_reporter_)
