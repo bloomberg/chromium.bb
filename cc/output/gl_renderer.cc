@@ -3222,22 +3222,8 @@ void GLRenderer::SetScissorTestRect(const gfx::Rect& scissor_rect) {
 
   // Don't unnecessarily ask the context to change the scissor, because it
   // may cause undesired GPU pipeline flushes.
-  if (scissor_rect == scissor_rect_) {
-#if DCHECK_IS_ON()
-    // GetIntegerv doesn't modify the output array when GL context is lost or
-    // in test mock. Also our GL wrapper requires output to be initialized with
-    // 0 or -1. Assuming lost context if the output is still -1.
-    GLint actual_scissor[4] = {-1};
-    gl_->GetIntegerv(GL_SCISSOR_BOX, actual_scissor);
-    if (actual_scissor[0] == -1)
-      return;
-    DCHECK(scissor_rect.x() == actual_scissor[0] &&
-           scissor_rect.y() == actual_scissor[1] &&
-           scissor_rect.width() == actual_scissor[2] &&
-           scissor_rect.height() == actual_scissor[3]);
-#endif
+  if (scissor_rect == scissor_rect_)
     return;
-  }
 
   scissor_rect_ = scissor_rect;
   FlushTextureQuadCache(SHARED_BINDING);
