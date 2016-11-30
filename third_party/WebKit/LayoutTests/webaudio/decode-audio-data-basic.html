@@ -20,6 +20,7 @@
     // Test files for decodeAudioData
     var validAudioFile = "resources/media/24bit-44khz.wav";
     var invalidAudioFile = "resources/media/invalid-audio-file.txt";
+    var invalidLiveStream = '../media/resources/test-live.webm';
 
     // Decoded data from validAudioFile
     var referenceDecodedAudioBuffer;
@@ -96,6 +97,21 @@
     // Decode a invalid encoded file and verify that the promise is rejected correctly.
     audit.defineTask("decode-invalid-file", function (done) {
       var url = invalidAudioFile;
+      var prefix = "Decode invalid file with promise: ";
+      runDecode(url,
+        function (buffer) {
+          testFailed(prefix + "Incorrectly succeeded in decoding " + url);
+        },
+        function (e) {
+          testPassed(prefix + "Correctly failed to decode " + url + ": " + e.toString());
+        },
+        done);
+    });
+
+    // Decode an invalid file (due to an unknown duration) and verify that the
+    // promise is rejected correctly.
+    audit.defineTask("decode-invalid-file-unknown-duration", function (done) {
+      var url = invalidLiveStream;
       var prefix = "Decode invalid file with promise: ";
       runDecode(url,
         function (buffer) {
@@ -210,7 +226,7 @@
 
     audit.runTasks();
 
-    successfullyParsed = true;      
+    successfullyParsed = true;
   </script>
 </body>
 </html>

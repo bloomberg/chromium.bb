@@ -35,7 +35,12 @@ AudioFileReader::~AudioFileReader() {
 bool AudioFileReader::Open() {
   if (!OpenDemuxer())
     return false;
-  return OpenDecoder();
+  if (!OpenDecoder())
+    return false;
+
+  // If the duration is unknown, fail out; this API can not work with streams of
+  // unknown duration currently.
+  return glue_->format_context()->duration != AV_NOPTS_VALUE;
 }
 
 bool AudioFileReader::OpenDemuxer() {
@@ -248,7 +253,7 @@ int AudioFileReader::Read(AudioBus* audio_bus) {
 base::TimeDelta AudioFileReader::GetDuration() const {
   const AVRational av_time_base = {1, AV_TIME_BASE};
 
-  // Estimated duration in micro seconds.
+  DCHECK_NE(glue_->format_context()->duration, AV_NOPTS_VALUE);
   base::CheckedNumeric<int64_t> estimated_duration_us =
       glue_->format_context()->duration;
 

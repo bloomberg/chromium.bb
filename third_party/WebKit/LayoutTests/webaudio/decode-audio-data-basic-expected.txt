@@ -6,6 +6,7 @@ On success, you will see a series of "PASS" messages, followed by "TEST COMPLETE
 PASS decodeAudioData(null) rejected correctly (with TypeError: Failed to execute 'decodeAudioData' on 'BaseAudioContext': parameter 1 is not of type 'ArrayBuffer'.).
 PASS Decode valid file with promise: Correctly succeeded in decoding resources/media/24bit-44khz.wav
 PASS Decode invalid file with promise: Correctly failed to decode resources/media/invalid-audio-file.txt: EncodingError: Unable to decode audio data
+PASS Decode invalid file with promise: Correctly failed to decode ../media/resources/test-live.webm: EncodingError: Unable to decode audio data
 PASS Decoding valid file with promise and callback: successCallback invoked correctly
 PASS Decoding valid file with promise and callback: Promise correctly fulfilled
 PASS Decoding valid file with promise and callback: Promise and successCallback returned the same buffer

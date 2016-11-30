@@ -135,6 +135,10 @@ TEST_F(AudioFileReaderTest, InvalidFile) {
   RunTestFailingDemux("ten_byte_file");
 }
 
+TEST_F(AudioFileReaderTest, InfiniteDuration) {
+  RunTestFailingDemux("bear-320x240-live.webm");
+}
+
 TEST_F(AudioFileReaderTest, WithVideo) {
   RunTest("bear.ogv",
           "-2.49,-0.75,0.38,1.60,0.70,-1.22,",
