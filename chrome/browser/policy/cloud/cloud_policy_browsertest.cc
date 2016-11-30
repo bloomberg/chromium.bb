@@ -18,6 +18,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/invalidation/profile_invalidation_provider_factory.h"
+#include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
 #include "chrome/browser/policy/profile_policy_connector_factory.h"
 #include "chrome/browser/policy/test/local_policy_test_server.h"
@@ -146,34 +147,6 @@ std::string GetTestPolicy(const char* homepage, int key_version) {
                             homepage,
                             GetTestUser(),
                             key_version);
-}
-
-void GetExpectedDefaultPolicy(PolicyMap* policy_map) {
-  policy_map->Set(key::kNTPContentSuggestionsEnabled, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::WrapUnique(new base::FundamentalValue(false)), nullptr);
-#if defined(OS_CHROMEOS)
-  policy_map->Set(key::kChromeOsMultiProfileUserBehavior,
-                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::StringValue>("primary-only"), nullptr);
-  policy_map->Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
-  policy_map->Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                  POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
-  policy_map->Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
-  policy_map->Set(key::kArcEnabled, POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                  POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
-  policy_map->Set(key::kPacHttpsUrlStrippingEnabled, POLICY_LEVEL_MANDATORY,
-                  POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                  base::MakeUnique<base::FundamentalValue>(false), nullptr);
-#endif
 }
 
 void GetExpectedTestPolicy(PolicyMap* expected, const char* homepage) {
@@ -360,6 +333,29 @@ IN_PROC_BROWSER_TEST_F(CloudPolicyTest, FetchPolicy) {
   EXPECT_TRUE(expected.Equals(policy_service->GetPolicies(
       PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
 }
+
+#if defined(OS_CHROMEOS)
+// ENTERPRISE_DEFAULT policies only are supported on Chrome OS currently.
+IN_PROC_BROWSER_TEST_F(CloudPolicyTest, EnsureDefaultPoliciesSet) {
+  PolicyService* policy_service = GetPolicyService();
+  {
+    base::RunLoop run_loop;
+    // This does the initial fetch and stores the initial key.
+    policy_service->RefreshPolicies(run_loop.QuitClosure());
+    run_loop.Run();
+  }
+
+  PolicyMap default_policy;
+  GetExpectedDefaultPolicy(&default_policy);
+  // Make sure the expected policy has at least one of the policies we're
+  // expecting.
+  EXPECT_TRUE(default_policy.GetValue(key::kEasyUnlockAllowed));
+
+  // Now make sure that these default policies are actually getting injected.
+  EXPECT_TRUE(default_policy.Equals(policy_service->GetPolicies(
+      PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))));
+}
+#endif
 
 IN_PROC_BROWSER_TEST_F(CloudPolicyTest, InvalidatePolicy) {
   PolicyService* policy_service = GetPolicyService();

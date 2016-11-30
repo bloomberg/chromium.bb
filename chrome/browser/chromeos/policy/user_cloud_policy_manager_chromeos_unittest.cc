@@ -19,6 +19,7 @@
 #include "chrome/browser/chromeos/login/users/scoped_user_manager_enabler.h"
 #include "chrome/browser/chromeos/policy/user_cloud_policy_token_forwarder.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
+#include "chrome/browser/policy/cloud/cloud_policy_test_utils.h"
 #include "chrome/browser/prefs/browser_prefs.h"
 #include "chrome/browser/signin/fake_profile_oauth2_token_service_builder.h"
 #include "chrome/browser/signin/profile_oauth2_token_service_factory.h"
@@ -113,24 +114,11 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     chrome::RegisterLocalState(prefs_.registry());
 
     // Set up a policy map for testing.
+    GetExpectedDefaultPolicy(&policy_map_);
     policy_map_.Set(key::kHomepageLocation, POLICY_LEVEL_MANDATORY,
                     POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
                     base::MakeUnique<base::StringValue>("http://chromium.org"),
                     nullptr);
-    policy_map_.Set(
-        key::kChromeOsMultiProfileUserBehavior, POLICY_LEVEL_MANDATORY,
-        POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-        base::MakeUnique<base::StringValue>("primary-only"), nullptr);
-    policy_map_.Set(key::kEasyUnlockAllowed, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER, POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::FundamentalValue>(false), nullptr);
-    policy_map_.Set(key::kCaptivePortalAuthenticationIgnoresProxy,
-                    POLICY_LEVEL_MANDATORY, POLICY_SCOPE_USER,
-                    POLICY_SOURCE_CLOUD,
-                    base::MakeUnique<base::FundamentalValue>(false), nullptr);
-    policy_map_.Set(key::kAllowDinosaurEasterEgg, POLICY_LEVEL_MANDATORY,
-                    POLICY_SCOPE_USER, POLICY_SOURCE_ENTERPRISE_DEFAULT,
-                    base::MakeUnique<base::FundamentalValue>(false), nullptr);
     expected_bundle_.Get(PolicyNamespace(POLICY_DOMAIN_CHROME, std::string()))
         .CopyFrom(policy_map_);
 
@@ -146,6 +134,7 @@ class UserCloudPolicyManagerChromeOSTest : public testing::Test {
     policy_data_.set_policy_type(dm_protocol::kChromeUserPolicyType);
     policy_data_.set_request_token("dmtoken123");
     policy_data_.set_device_id("id987");
+    policy_data_.set_username("user@example.com");
     em::PolicyFetchResponse* policy_response =
         policy_blob_.mutable_policy_response()->add_response();
     ASSERT_TRUE(policy_data_.SerializeToString(
@@ -375,8 +364,7 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFirstFetch) {
                          DM_STATUS_SUCCESS, register_blob_));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingRefreshFetch) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingRefreshFetch) {
   // Tests the initialization of a manager whose Profile is waiting for the
   // initial fetch, when a previously cached policy and DMToken already exist.
   ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
@@ -507,10 +495,8 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchPolicyFetchError) {
   EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchTimeout) {
-  // The blocking fetch should be abandoned after the timeout.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 0));
+TEST_F(UserCloudPolicyManagerChromeOSTest, BlockingFetchTimeout) {
+  ASSERT_NO_FATAL_FAILURE(CreateManager(true, 1000));
 
   // Initialize the CloudPolicyService without any stored data.
   EXPECT_FALSE(manager_->core()->service()->IsInitializationComplete());
@@ -518,19 +504,18 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_BlockingFetchTimeout) {
   EXPECT_TRUE(manager_->core()->service()->IsInitializationComplete());
   EXPECT_FALSE(manager_->core()->client()->is_registered());
 
-  // Running the message loop should trigger the timeout.
+  // Triggering the timeout should invoke our callback.
   EXPECT_CALL(observer_, OnUpdatePolicy(manager_.get())).Times(AtLeast(1));
   EXPECT_FALSE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
-  base::RunLoop().RunUntilIdle();
+  manager_->ForceTimeoutForTest();
   Mock::VerifyAndClearExpectations(&observer_);
   EXPECT_TRUE(manager_->IsInitializationComplete(POLICY_DOMAIN_CHROME));
   EXPECT_TRUE(PolicyBundle().Equals(manager_->policies()));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_NonBlockingFirstFetch) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingFirstFetch) {
   // Tests the first policy fetch request by a Profile that isn't managed.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 0));
 
   // Initialize the CloudPolicyService without any stored data. Since the
   // manager is not waiting for the initial fetch, it will become initialized
@@ -573,11 +558,10 @@ TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_NonBlockingFirstFetch) {
       base::Bind(&base::TestSimpleTaskRunner::RunUntilIdle, task_runner_));
 }
 
-// Test disabled. See crbug.com/534733.
-TEST_F(UserCloudPolicyManagerChromeOSTest, DISABLED_NonBlockingRefreshFetch) {
+TEST_F(UserCloudPolicyManagerChromeOSTest, NonBlockingRefreshFetch) {
   // Tests a non-blocking initial policy fetch for a Profile that already has
   // a cached DMToken.
-  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 1000));
+  ASSERT_NO_FATAL_FAILURE(CreateManager(false, 0));
 
   // Set the initially cached data and initialize the CloudPolicyService.
   // The initial policy fetch is issued using the cached DMToken.

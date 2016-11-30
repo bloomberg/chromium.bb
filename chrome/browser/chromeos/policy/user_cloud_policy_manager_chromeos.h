@@ -105,6 +105,9 @@ class UserCloudPolicyManagerChromeOS : public CloudPolicyManager,
   // CloudPolicyManager:
   void OnStoreLoaded(CloudPolicyStore* cloud_policy_store) override;
 
+  // Helper function to force a policy fetch timeout.
+  void ForceTimeoutForTest();
+
  protected:
   // CloudPolicyManager:
   void GetChromePolicy(PolicyMap* policy_map) override;

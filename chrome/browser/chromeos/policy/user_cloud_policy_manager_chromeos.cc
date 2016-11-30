@@ -119,6 +119,14 @@ UserCloudPolicyManagerChromeOS::UserCloudPolicyManagerChromeOS(
   }
 }
 
+void UserCloudPolicyManagerChromeOS::ForceTimeoutForTest() {
+  DCHECK(policy_fetch_timeout_.IsRunning());
+  // Stop the timer to mimic what happens when a real timer fires, then invoke
+  // the timer callback directly.
+  policy_fetch_timeout_.Stop();
+  OnBlockingFetchTimeout();
+}
+
 UserCloudPolicyManagerChromeOS::~UserCloudPolicyManagerChromeOS() {}
 
 void UserCloudPolicyManagerChromeOS::Connect(
@@ -305,6 +313,7 @@ void UserCloudPolicyManagerChromeOS::OnStoreLoaded(
   em::PolicyData const* const policy_data = cloud_policy_store->policy();
 
   if (policy_data) {
+    DCHECK(policy_data->has_username());
     chromeos::AffiliationIDSet set_of_user_affiliation_ids(
         policy_data->user_affiliation_ids().begin(),
         policy_data->user_affiliation_ids().end());
