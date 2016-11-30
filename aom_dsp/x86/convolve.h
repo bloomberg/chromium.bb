@@ -41,12 +41,19 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
         dst += 16;                                                           \
         w -= 16;                                                             \
       }                                                                      \
-      if (w == 8) {                                                          \
+      while (w >= 8) {                                                       \
         aom_filter_block1d8_##dir##8_##avg##opt(src_start, src_stride, dst,  \
                                                 dst_stride, h, filter);      \
-      } else if (w == 4) {                                                   \
+        src += 8;                                                            \
+        dst += 8;                                                            \
+        w -= 8;                                                              \
+      }                                                                      \
+      while (w >= 4) {                                                       \
         aom_filter_block1d4_##dir##8_##avg##opt(src_start, src_stride, dst,  \
                                                 dst_stride, h, filter);      \
+        src += 4;                                                            \
+        dst += 4;                                                            \
+        w -= 4;                                                              \
       }                                                                      \
     } else {                                                                 \
       while (w >= 16) {                                                      \
@@ -56,13 +63,24 @@ typedef void filter8_1dfunction(const uint8_t *src_ptr, ptrdiff_t src_pitch,
         dst += 16;                                                           \
         w -= 16;                                                             \
       }                                                                      \
-      if (w == 8) {                                                          \
+      while (w >= 8) {                                                       \
         aom_filter_block1d8_##dir##2_##avg##opt(src, src_stride, dst,        \
                                                 dst_stride, h, filter);      \
-      } else if (w == 4) {                                                   \
+        src += 8;                                                            \
+        dst += 8;                                                            \
+        w -= 8;                                                              \
+      }                                                                      \
+      while (w >= 4) {                                                       \
         aom_filter_block1d4_##dir##2_##avg##opt(src, src_stride, dst,        \
                                                 dst_stride, h, filter);      \
+        src += 4;                                                            \
+        dst += 4;                                                            \
+        w -= 4;                                                              \
       }                                                                      \
+    }                                                                        \
+    if (w) {                                                                 \
+      aom_convolve8_##name##_c(src, src_stride, dst, dst_stride, filter_x,   \
+                               x_step_q4, filter_y, y_step_q4, w, h);        \
     }                                                                        \
   }
 
