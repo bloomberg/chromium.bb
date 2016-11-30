@@ -734,13 +734,13 @@ INSTANTIATE_TEST_CASE_P(,
 
 // During this test, we check that when we send rotated video frames, it applies
 // to player's natural size.
-TEST_F(WebMediaPlayerMSTest, RotatedVideoFrame) {
+TEST_F(WebMediaPlayerMSTest, RotationChange) {
   MockMediaStreamVideoRenderer* provider = LoadAndGetFrameProvider(true);
 
-  static int tokens[] = {0, 33, 66};
+  const int kTestBrake = static_cast<int>(FrameType::TEST_BRAKE);
+  static int tokens[] = {0, 33, kTestBrake};
   std::vector<int> timestamps(tokens, tokens + sizeof(tokens) / sizeof(int));
   provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_90);
-
   EXPECT_CALL(*this, DoSetWebLayer(true));
   EXPECT_CALL(*this, DoStartRendering());
   EXPECT_CALL(*this, DoReadyStateChanged(
@@ -751,12 +751,23 @@ TEST_F(WebMediaPlayerMSTest, RotatedVideoFrame) {
               CheckSizeChanged(gfx::Size(kStandardWidth, kStandardHeight)));
   message_loop_controller_.RunAndWaitForStatus(
       media::PipelineStatus::PIPELINE_OK);
-  const blink::WebSize& natural_size = player_->naturalSize();
+  blink::WebSize natural_size = player_->naturalSize();
   // Check that height and width are flipped.
   EXPECT_EQ(kStandardHeight, natural_size.width);
   EXPECT_EQ(kStandardWidth, natural_size.height);
-  testing::Mock::VerifyAndClearExpectations(this);
 
+  // Change rotation.
+  provider->QueueFrames(timestamps, false, false, 17, media::VIDEO_ROTATION_0);
+  EXPECT_CALL(*this, DoSetWebLayer(true));
+  EXPECT_CALL(*this, DoStopRendering());
+  EXPECT_CALL(*this, DoStartRendering());
+  message_loop_controller_.RunAndWaitForStatus(
+      media::PipelineStatus::PIPELINE_OK);
+  natural_size = player_->naturalSize();
+  EXPECT_EQ(kStandardHeight, natural_size.height);
+  EXPECT_EQ(kStandardWidth, natural_size.width);
+
+  testing::Mock::VerifyAndClearExpectations(this);
   EXPECT_CALL(*this, DoSetWebLayer(false));
   EXPECT_CALL(*this, DoStopRendering());
 }

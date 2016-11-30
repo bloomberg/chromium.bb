@@ -163,6 +163,7 @@ class CONTENT_EXPORT WebMediaPlayerMS
   void OnFirstFrameReceived(media::VideoRotation video_rotation,
                             bool is_opaque);
   void OnOpacityChanged(bool is_opaque);
+  void OnRotationChanged(media::VideoRotation video_rotation, bool is_opaque);
 
   // Need repaint due to state change.
   void RepaintInternal();
