@@ -159,6 +159,7 @@ class AlgorithmImplementation {
   //   * Use a stable format (a serialized key must forever be de-serializable,
   //     and be able to survive future migrations to crypto libraries)
   //   * Work for all keys (including ones marked as non-extractable).
+  //   * Gracefully handle invalid inputs
   //
   // Tests to verify structured cloning are available in:
   //   LayoutTests/crypto/clone-*.html
@@ -168,6 +169,25 @@ class AlgorithmImplementation {
   Status SerializeKeyForClone(const blink::WebCryptoKey& key,
                               blink::WebVector<uint8_t>* key_data) const;
 
+  // Deserializes key data from Blink (used for structured cloning).
+  //
+  // The inputs to this function originate from Blink, and may not be
+  // consistent or valid. Implementations must return a failure when processing
+  // invalid or adversarially constructed inputs.
+  //
+  // The ONLY guarantee implementations can assume is that |algorithm.id()|
+  // corresponds with that which the AlgorithmImplementation was registered
+  // under.
+  //
+  // Implementations must be prepared to handle:
+  //
+  // * |type| being invalid for this algorithm's key type(s)
+  // * |algorithm.params()| being inconsistent with the |algorithm.id()|
+  // * |usages| being inconsistent with the key type
+  // * |extractable| being inconsistent with the key type
+  // * |key_data| containing an incorrect serialized format
+  // * Backwards-compatibility: the inputs may have been produced by older
+  //   versions of the code.
   virtual Status DeserializeKeyForClone(
       const blink::WebCryptoKeyAlgorithm& algorithm,
       blink::WebCryptoKeyType type,
