@@ -48,7 +48,7 @@ double MagnetometerReading::z() const {
 
 bool MagnetometerReading::isReadingUpdated(
     const device::SensorReading& previous) const {
-  return previous.values[0] != x() && previous.values[1] != y() &&
+  return previous.values[0] != x() || previous.values[1] != y() ||
          previous.values[2] != z();
 }
 

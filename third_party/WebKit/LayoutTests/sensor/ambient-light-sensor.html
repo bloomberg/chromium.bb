@@ -12,10 +12,15 @@ if (!window.testRunner)
     debug('This test cannot be run without the TestRunner');
 
 const kDefaultReadingValue = 3.1415;
+var readsCount = 0;
 
-function update_sensor_reading(buffer) {
+function update_sensor_reading(buffer, expects_modified_reading) {
   buffer[1] = window.performance.now();
   buffer[2] = kDefaultReadingValue;
+  if (expects_modified_reading)
+    buffer[2] += readsCount;
+
+  readsCount++;
 }
 
 function verify_sensor_reading(reading) {

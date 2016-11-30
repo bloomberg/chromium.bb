@@ -160,30 +160,39 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     return testPromise;
   }, 'Test that addConfiguration and removeConfiguration is called.');
 
+  function checkOnChangeIsCalledAndReadingIsValid(sensor) {
+    let sensorObject = new sensorType({frequency: 60});
+    sensorObject.start();
+    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => {
+          return mockSensor.setUpdateSensorReadingFunction(updateReading);
+        })
+        .then((mockSensor) => {
+          return new Promise((resolve, reject) => {
+            let wrapper = new CallbackWrapper(() => {
+              assert_true(verifyReading(sensorObject.reading));
+              sensorObject.stop();
+              assert_equals(sensorObject.reading, null);
+              resolve(mockSensor);
+            }, reject);
+
+            sensorObject.onchange = wrapper.callback;
+            sensorObject.onerror = reject;
+          });
+        })
+        .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+      return testPromise;
+  }
+
   sensor_test(sensor => {
-  let sensorObject = new sensorType({frequency: 60});
-  sensorObject.start();
-  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
-      .then(mockSensor => {
-        return mockSensor.setUpdateSensorReadingFunction(updateReading);
-      })
-      .then((mockSensor) => {
-        return new Promise((resolve, reject) => {
-          let wrapper = new CallbackWrapper(() => {
-            assert_true(verifyReading(sensorObject.reading));
-            sensorObject.stop();
-            assert_equals(sensorObject.reading, null);
-            resolve(mockSensor);
-          }, reject);
+    return checkOnChangeIsCalledAndReadingIsValid(sensor);
+  }, 'Test that onChange is called and sensor reading is valid (onchange reporting).');
 
-          sensorObject.onchange = wrapper.callback;
-          sensorObject.onerror = reject;
-        });
-      })
-      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
-
-  return testPromise;
-  }, 'Test that onChange is called and sensor reading is valid.');
+  sensor_test(sensor => {
+    sensor.mockSensorProvider.setContinuousReportingMode();
+    return checkOnChangeIsCalledAndReadingIsValid(sensor);
+  }, 'Test that onChange is called and sensor reading is valid (continuous reporting).');
 
   sensor_test(sensor => {
     let sensorObject = new sensorType;
@@ -224,47 +233,101 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
   }, 'Test that sensor receives suspend / resume notifications when page'
       + ' visibility changes.');
 
-sensor_test(sensor => {
-  let sensor1 = new sensorType({frequency: 60});
-  sensor1.start();
+  sensor_test(sensor => {
+    let sensor1 = new sensorType({frequency: 60});
+    sensor1.start();
 
-  let sensor2 = new sensorType({frequency: 20});
-  sensor2.start();
-  let testPromise = sensor.mockSensorProvider.getCreatedSensor()
-      .then(mockSensor => {
-        return mockSensor.setUpdateSensorReadingFunction(update_sensor_reading);
-      })
-      .then((mockSensor) => {
-        return new Promise((resolve, reject) => {
-          let wrapper = new CallbackWrapper(() => {
-            // Reading value is correct.
-            assert_true(verifyReading(sensor1.reading));
+    let sensor2 = new sensorType({frequency: 20});
+    sensor2.start();
+    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => {
+          return mockSensor.setUpdateSensorReadingFunction(updateReading);
+        })
+        .then((mockSensor) => {
+          return new Promise((resolve, reject) => {
+            let wrapper = new CallbackWrapper(() => {
+              // Reading value is correct.
+              assert_true(verifyReading(sensor1.reading));
 
-            // Both sensors share the same reading instance.
-            let reading = sensor1.reading;
-            assert_equals(reading, sensor2.reading);
+              // Both sensors share the same reading instance.
+              let reading = sensor1.reading;
+              assert_equals(reading, sensor2.reading);
 
-            // After first sensor stops its reading is null, reading for second
-            // sensor sensor remains.
-            sensor1.stop();
-            assert_equals(sensor1.reading, null);
-            assert_true(verifyReading(sensor2.reading));
+              // After first sensor stops its reading is null, reading for second
+              // sensor sensor remains.
+              sensor1.stop();
+              assert_equals(sensor1.reading, null);
+              assert_true(verifyReading(sensor2.reading));
 
-            sensor2.stop();
-            assert_equals(sensor2.reading, null);
+              sensor2.stop();
+              assert_equals(sensor2.reading, null);
 
-            // Cached reading remains.
-            assert_true(verifyReading(reading));
-            resolve(mockSensor);
-          }, reject);
+              // Cached reading remains.
+              assert_true(verifyReading(reading));
+              resolve(mockSensor);
+            }, reject);
 
-          sensor1.onchange = wrapper.callback;
-          sensor1.onerror = reject;
-          sensor2.onerror = reject;
-        });
-      })
-      .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+            sensor1.onchange = wrapper.callback;
+            sensor1.onerror = reject;
+            sensor2.onerror = reject;
+          });
+        })
+        .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
 
-  return testPromise;
-}, 'Test that sensor reading is correct.');
+    return testPromise;
+  }, 'Test that sensor reading is correct.');
+
+  function checkFrequencyHintWorks(sensor) {
+    let fastSensor = new sensorType({frequency: 30});
+    let slowSensor = new sensorType({frequency: 9});
+    slowSensor.start();
+
+    let testPromise = sensor.mockSensorProvider.getCreatedSensor()
+        .then(mockSensor => {
+          mockSensor.setExpectsModifiedReading(true);
+          return mockSensor.setUpdateSensorReadingFunction(updateReading);
+        })
+        .then(mockSensor => {
+          return new Promise((resolve, reject) => {
+            let fastSensorNotifiedCounter = 0;
+            let slowSensorNotifiedCounter = 0;
+
+            let fastSensorWrapper = new CallbackWrapper(() => {
+              fastSensorNotifiedCounter++;
+            }, reject);
+
+            let slowSensorWrapper = new CallbackWrapper(() => {
+              slowSensorNotifiedCounter++;
+              if (slowSensorNotifiedCounter == 1) {
+                  fastSensor.start();
+              } else if (slowSensorNotifiedCounter == 2) {
+                // By the moment slow sensor (9 Hz) is notified for the
+                // next time, the fast sensor (30 Hz) has been notified
+                // for int(30/9) = 3 times.
+                assert_equals(fastSensorNotifiedCounter, 3);
+                fastSensor.stop();
+                slowSensor.stop();
+                resolve(mockSensor);
+              }
+            }, reject);
+
+            fastSensor.onchange = fastSensorWrapper.callback;
+            slowSensor.onchange = slowSensorWrapper.callback;
+            fastSensor.onerror = reject;
+            slowSensor.onerror = reject;
+          });
+        })
+        .then(mockSensor => { return mockSensor.removeConfigurationCalled(); });
+
+    return testPromise;
+  }
+
+  sensor_test(sensor => {
+    return checkFrequencyHintWorks(sensor);
+  }, 'Test that frequency hint works (onchange reporting).');
+
+  sensor_test(sensor => {
+    sensor.mockSensorProvider.setContinuousReportingMode();
+    return checkFrequencyHintWorks(sensor);
+  }, 'Test that frequency hint works (continuous reporting).');
 }

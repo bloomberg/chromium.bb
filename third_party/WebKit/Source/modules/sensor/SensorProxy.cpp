@@ -146,6 +146,7 @@ void SensorProxy::RaiseError() {
 }
 
 void SensorProxy::SensorReadingChanged() {
+  DCHECK_EQ(ReportingMode::ON_CHANGE, m_mode);
   updateSensorReading();
 }
 

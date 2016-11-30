@@ -36,6 +36,7 @@ function sensor_mocks(mojo) {
       constructor(stub, handle, offset, size, reportingMode) {
         this.client_ = null;
         this.stub_ = stub;
+        this.expects_modified_reading_ = false;
         this.start_should_fail_ = false;
         this.reporting_mode_ = reportingMode;
         this.sensor_reading_timer_id_ = null;
@@ -67,18 +68,13 @@ function sensor_mocks(mojo) {
       addConfiguration(configuration) {
         assert_not_equals(configuration, null, "Invalid sensor configuration.");
 
-        if (!this.start_should_fail_ && this.update_reading_function_ != null) {
-          let timeout = (1 / configuration.frequency) * 1000;
-          this.sensor_reading_timer_id_ = window.setTimeout(() => {
-            if (this.update_reading_function_)
-              this.update_reading_function_(this.buffer_);
-            if (this.reporting_mode_ === sensor.ReportingMode.ON_CHANGE) {
-              this.client_.sensorReadingChanged();
-            }
-          }, timeout);
-        }
-
         this.active_sensor_configurations_.push(configuration);
+        // Sort using descending order.
+        this.active_sensor_configurations_.sort(
+            (first, second) => { return second.frequency - first.frequency });
+
+        if (!this.start_should_fail_ )
+          this.startReading();
 
         if (this.add_configuration_called_ != null)
           this.add_configuration_called_(this);
@@ -101,17 +97,15 @@ function sensor_mocks(mojo) {
           return sensorResponse(false);
         }
 
-        if (this.sensor_reading_timer_id_ != null
-            && this.active_sensor_configurations_.length === 0) {
-          window.clearTimeout(this.sensor_reading_timer_id_);
-          this.sensor_reading_timer_id_ = null;
-        }
+        if (this.active_sensor_configurations_.length === 0)
+          this.stopReading();
 
         return sensorResponse(true);
       }
 
       // Suspends sensor.
       suspend() {
+        this.stopReading();
         if (this.suspend_called_ != null) {
           this.suspend_called_(this);
         }
@@ -119,6 +113,8 @@ function sensor_mocks(mojo) {
 
       // Resumes sensor.
       resume() {
+        assert_equals(this.sensor_reading_timer_id_, null);
+        this.startReading();
         if (this.resume_called_ != null) {
           this.resume_called_(this);
         }
@@ -128,11 +124,9 @@ function sensor_mocks(mojo) {
 
       // Resets mock Sensor state.
       reset() {
-        if (this.sensor_reading_timer_id_) {
-          window.clearTimeout(this.sensor_reading_timer_id_);
-          this.sensor_reading_timer_id_ = null;
-        }
+        this.stopReading();
 
+        this.expects_modified_reading_ = false;
         this.start_should_fail_ = false;
         this.update_reading_function_ = null;
         this.active_sensor_configurations_ = [];
@@ -164,6 +158,12 @@ function sensor_mocks(mojo) {
         this.start_should_fail_ = should_fail;
       }
 
+      // Sets flags that asks for a modified reading values at each iteration
+      // to initiate 'onchange' event broadcasting.
+      setExpectsModifiedReading(expects_modified_reading) {
+        this.expects_modified_reading_ = expects_modified_reading;
+      }
+
       // Returns resolved promise if suspend() was called, rejected otherwise.
       suspendCalled() {
         return new Promise((resolve, reject) => {
@@ -190,6 +190,29 @@ function sensor_mocks(mojo) {
         return new Promise((resolve, reject) => {
           this.remove_configuration_called_ = resolve;
         });
+      }
+
+      startReading() {
+        if (this.update_reading_function_ != null) {
+          let max_frequency_used =
+              this.active_sensor_configurations_[0].frequency;
+          let timeout = (1 / max_frequency_used) * 1000;
+          this.sensor_reading_timer_id_ = window.setInterval(() => {
+            if (this.update_reading_function_)
+              this.update_reading_function_(this.buffer_,
+                                            this.expects_modified_reading_);
+            if (this.reporting_mode_ === sensor.ReportingMode.ON_CHANGE) {
+              this.client_.sensorReadingChanged();
+            }
+          }, timeout);
+        }
+      }
+
+      stopReading() {
+        if (this.sensor_reading_timer_id_ != null) {
+          window.clearInterval(this.sensor_reading_timer_id_);
+          this.sensor_reading_timer_id_ = null;
+        }
       }
 
     }
@@ -289,6 +312,7 @@ function sensor_mocks(mojo) {
         this.get_sensor_should_fail_ = false;
         this.resolve_func_ = null;
         this.max_frequency_ = 60;
+        this.is_continuous_ = false;
         if (this.stub_)
           bindings.StubBindings(this.stub_).close();
       }
@@ -311,8 +335,8 @@ function sensor_mocks(mojo) {
       }
 
       // Forces sensor to use |reporting_mode| as an update mode.
-      setContinuousReportingMode(reporting_mode) {
-          this.is_continuous_ = reporting_mode;
+      setContinuousReportingMode() {
+          this.is_continuous_ = true;
       }
 
       // Sets the maximum frequency for a concrete sensor.

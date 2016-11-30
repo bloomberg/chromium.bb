@@ -14,12 +14,17 @@ if (!window.testRunner)
 const kDefaultReadingX = 1.12345;
 const kDefaultReadingY = 2.12345;
 const kDefaultReadingZ = 3.12345;
+var readsCount = 0;
 
-function update_sensor_reading(buffer) {
+function update_sensor_reading(buffer, expects_modified_reading) {
   buffer[1] = window.performance.now();
   buffer[2] = kDefaultReadingX;
   buffer[3] = kDefaultReadingY;
   buffer[4] = kDefaultReadingZ;
+  if (expects_modified_reading)
+    buffer[2] += readsCount;
+
+  readsCount++;
 }
 
 function verify_sensor_reading(reading) {
