@@ -177,7 +177,8 @@ CompositedLayerMapping::CompositedLayerMapping(PaintLayer& layer)
       m_isMainFrameLayoutViewLayer(false),
       m_backgroundLayerPaintsFixedRootBackground(false),
       m_scrollingContentsAreEmpty(false),
-      m_backgroundPaintsOntoScrollingContentsLayer(false) {
+      m_backgroundPaintsOntoScrollingContentsLayer(false),
+      m_backgroundPaintsOntoGraphicsLayer(false) {
   if (layer.isRootLayer() && layoutObject()->frame()->isMainFrame())
     m_isMainFrameLayoutViewLayer = true;
 
@@ -362,8 +363,10 @@ void CompositedLayerMapping::
   // We can only paint the background onto the scrolling contents layer if
   // it would be visually correct and we are using composited scrolling meaning
   // we have a scrolling contents layer to paint it into.
+  BackgroundPaintLocation paintLocation =
+      m_owningLayer.backgroundPaintLocation();
   bool shouldPaintOntoScrollingContentsLayer =
-      m_owningLayer.canPaintBackgroundOntoScrollingContentsLayer() &&
+      paintLocation & BackgroundPaintInScrollingContents &&
       m_owningLayer.getScrollableArea()->usesCompositedScrolling();
   if (shouldPaintOntoScrollingContentsLayer !=
       backgroundPaintsOntoScrollingContentsLayer()) {
@@ -376,6 +379,9 @@ void CompositedLayerMapping::
     if (hasScrollingLayer() && !shouldPaintOntoScrollingContentsLayer)
       m_scrollingContentsLayer->setNeedsDisplay();
   }
+  m_backgroundPaintsOntoGraphicsLayer =
+      !m_backgroundPaintsOntoScrollingContentsLayer ||
+      paintLocation & BackgroundPaintInGraphicsLayer;
 }
 
 void CompositedLayerMapping::updateContentsOpaque() {
@@ -409,10 +415,17 @@ void CompositedLayerMapping::updateContentsOpaque() {
           m_owningLayer.backgroundIsKnownToBeOpaqueInRect(
               toLayoutBox(layoutObject())->paddingBoxRect()));
 
-      // When we paint the background onto the scrolling contents layer we are
-      // going to leave a hole in the m_graphicsLayer where the background is so
-      // it is not opaque.
-      m_graphicsLayer->setContentsOpaque(false);
+      if (m_owningLayer.backgroundPaintLocation() &
+          BackgroundPaintInGraphicsLayer) {
+        m_graphicsLayer->setContentsOpaque(
+            m_owningLayer.backgroundIsKnownToBeOpaqueInRect(
+                compositedBounds()));
+      } else {
+        // If we only paint the background onto the scrolling contents layer we
+        // are going to leave a hole in the m_graphicsLayer where the background
+        // is so it is not opaque.
+        m_graphicsLayer->setContentsOpaque(false);
+      }
     } else {
       if (hasScrollingLayer())
         m_scrollingContentsLayer->setContentsOpaque(false);
@@ -3069,7 +3082,7 @@ void CompositedLayerMapping::paintContents(
     if (paintRootBackgroundOntoScrollingContentsLayer) {
       if (graphicsLayer == m_scrollingContentsLayer.get())
         paintLayerFlags &= ~PaintLayerPaintingSkipRootBackground;
-      else
+      else if (!m_backgroundPaintsOntoGraphicsLayer)
         paintLayerFlags |= PaintLayerPaintingSkipRootBackground;
     }
     GraphicsLayerPaintInfo paintInfo;

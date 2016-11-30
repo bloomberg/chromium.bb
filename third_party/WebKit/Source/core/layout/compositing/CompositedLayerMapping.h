@@ -663,6 +663,11 @@ class CORE_EXPORT CompositedLayerMapping final : public GraphicsLayerClient {
   // layer for invalidations.
   unsigned m_backgroundPaintsOntoScrollingContentsLayer : 1;
 
+  // Solid color border boxes may be painted into both the scrolling contents
+  // layer and the graphics layer because the scrolling contents layer is
+  // clipped by the padding box.
+  unsigned m_backgroundPaintsOntoGraphicsLayer : 1;
+
   friend class CompositedLayerMappingTest;
 };
 

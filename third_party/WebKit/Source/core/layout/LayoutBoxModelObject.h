@@ -47,6 +47,12 @@ enum PaintLayerType {
   ForcedPaintLayer
 };
 
+enum : uint32_t {
+  BackgroundPaintInGraphicsLayer = 1 << 0,
+  BackgroundPaintInScrollingContents = 1 << 1
+};
+using BackgroundPaintLocation = uint32_t;
+
 // Modes for some of the line-related functions.
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
 enum LineDirectionMode { HorizontalLine, VerticalLine };
@@ -191,9 +197,9 @@ class CORE_EXPORT LayoutBoxModelObject : public LayoutObject {
   bool hasNonEmptyLayoutSize() const;
   bool usesCompositedScrolling() const;
 
-  // Checks if all of the background's layers can be painted as locally
-  // attached.
-  bool hasLocalEquivalentBackground() const;
+  // Returns which layers backgrounds should be painted into for overflow
+  // scrolling boxes.
+  BackgroundPaintLocation backgroundPaintLocation() const;
 
   // These return the CSS computed padding values.
   LayoutUnit computedCSSPaddingTop() const {

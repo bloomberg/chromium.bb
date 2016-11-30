@@ -2659,13 +2659,15 @@ GraphicsLayer* PaintLayer::graphicsLayerBackingForScrolling() const {
   }
 }
 
-bool PaintLayer::canPaintBackgroundOntoScrollingContentsLayer() const {
-  if (isRootLayer() || !scrollsOverflow() ||
-      !layoutObject()->hasLocalEquivalentBackground())
-    return false;
-
+BackgroundPaintLocation PaintLayer::backgroundPaintLocation() const {
+  BackgroundPaintLocation location =
+      isRootLayer() || !scrollsOverflow()
+          ? BackgroundPaintInGraphicsLayer
+          : layoutObject()->backgroundPaintLocation();
   m_stackingNode->updateLayerListsIfNeeded();
-  return !m_stackingNode->hasNegativeZOrderList();
+  if (m_stackingNode->hasNegativeZOrderList())
+    location = BackgroundPaintInGraphicsLayer;
+  return location;
 }
 
 void PaintLayer::ensureCompositedLayerMapping() {

@@ -111,7 +111,7 @@ bool LayoutBoxModelObject::usesCompositedScrolling() const {
          layer()->getScrollableArea()->usesCompositedScrolling();
 }
 
-bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
+BackgroundPaintLocation LayoutBoxModelObject::backgroundPaintLocation() const {
   bool hasCustomScrollbars = false;
   // TODO(flackr): Detect opaque custom scrollbars which would cover up a
   // border-box background.
@@ -127,14 +127,17 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
   // TODO(flackr): When we correctly clip the scrolling contents layer we can
   // paint locally equivalent backgrounds into it. https://crbug.com/645957
   if (!style()->hasAutoClip())
-    return false;
+    return BackgroundPaintInGraphicsLayer;
 
   // TODO(flackr): Remove this when box shadows are still painted correctly when
   // painting into the composited scrolling contents layer.
   // https://crbug.com/646464
   if (style()->boxShadow())
-    return false;
+    return BackgroundPaintInGraphicsLayer;
 
+  // Assume optimistically that the background can be painted in the scrolling
+  // contents until we find otherwise.
+  BackgroundPaintLocation paintLocation = BackgroundPaintInScrollingContents;
   const FillLayer* layer = &(style()->backgroundLayers());
   for (; layer; layer = layer->next()) {
     if (layer->attachment() == LocalBackgroundAttachment)
@@ -149,15 +152,25 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
         continue;
       // A border box can be treated as a padding box if the border is opaque or
       // there is no border and we don't have custom scrollbars.
-      if (clip == BorderFillBox && !hasCustomScrollbars &&
-          (style()->borderTopWidth() == 0 ||
-           !resolveColor(CSSPropertyBorderTopColor).hasAlpha()) &&
-          (style()->borderLeftWidth() == 0 ||
-           !resolveColor(CSSPropertyBorderLeftColor).hasAlpha()) &&
-          (style()->borderRightWidth() == 0 ||
-           !resolveColor(CSSPropertyBorderRightColor).hasAlpha()) &&
-          (style()->borderBottomWidth() == 0 ||
-           !resolveColor(CSSPropertyBorderBottomColor).hasAlpha())) {
+      if (clip == BorderFillBox) {
+        if (!hasCustomScrollbars &&
+            (style()->borderTopWidth() == 0 ||
+             !resolveColor(CSSPropertyBorderTopColor).hasAlpha()) &&
+            (style()->borderLeftWidth() == 0 ||
+             !resolveColor(CSSPropertyBorderLeftColor).hasAlpha()) &&
+            (style()->borderRightWidth() == 0 ||
+             !resolveColor(CSSPropertyBorderRightColor).hasAlpha()) &&
+            (style()->borderBottomWidth() == 0 ||
+             !resolveColor(CSSPropertyBorderBottomColor).hasAlpha())) {
+          continue;
+        }
+        // If we have an opaque background color only, we can safely paint it
+        // into both the scrolling contents layer and the graphics layer to
+        // preserve LCD text.
+        if (layer == (&style()->backgroundLayers()) &&
+            resolveColor(CSSPropertyBackgroundColor).alpha() < 255)
+          return BackgroundPaintInGraphicsLayer;
+        paintLocation |= BackgroundPaintInGraphicsLayer;
         continue;
       }
       // A content fill box can be treated as a padding fill box if there is no
@@ -168,9 +181,9 @@ bool LayoutBoxModelObject::hasLocalEquivalentBackground() const {
         continue;
       }
     }
-    return false;
+    return BackgroundPaintInGraphicsLayer;
   }
-  return true;
+  return paintLocation;
 }
 
 LayoutBoxModelObject::~LayoutBoxModelObject() {

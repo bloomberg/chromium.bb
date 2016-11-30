@@ -19,10 +19,10 @@ class PaintLayerScrollableAreaTest : public RenderingTest {
   PaintLayerScrollableAreaTest()
       : RenderingTest(EmptyFrameLoaderClient::create()) {}
 
-  bool canPaintBackgroundOntoScrollingContentsLayer(const char* elementId) {
+  BackgroundPaintLocation backgroundPaintLocation(const char* elementId) {
     PaintLayer* paintLayer =
         toLayoutBoxModelObject(getLayoutObjectByElementId(elementId))->layer();
-    return paintLayer->canPaintBackgroundOntoScrollingContentsLayer();
+    return paintLayer->backgroundPaintLocation();
   }
 
  private:
@@ -83,77 +83,101 @@ TEST_F(PaintLayerScrollableAreaTest,
       "1px solid black; outline: 1px solid blue; outline-offset: -2px;'><div "
       "class='spacer'></div></div>"
       "<div id='scroller16' class='scroller' style='background: white; clip: "
-      "rect(0px,10px,10px,0px);'><div class='spacer'></div></div>");
+      "rect(0px,10px,10px,0px);'><div class='spacer'></div></div>"
+      "<div id='scroller17' class='scroller' style='background:"
+      "rgba(255, 255, 255, 0.5) border-box; border: 5px solid "
+      "rgba(0, 0, 0, 0.5);'><div class='spacer'></div></div>");
 
   // #scroller1 cannot paint background into scrolling contents layer because it
   // has a negative z-index child.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller1"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller1"));
 
   // #scroller2 cannot paint background into scrolling contents layer because it
   // has a content-box clip without local attachment.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller2"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller2"));
 
   // #scroller3 can paint background into scrolling contents layer.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller3"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller3"));
 
   // #scroller4 cannot paint background into scrolling contents layer because
   // the background image is not locally attached.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller4"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller4"));
 
   // #scroller5 can paint background into scrolling contents layer because both
   // the image and color are locally attached.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller5"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller5"));
 
   // #scroller6 can paint background into scrolling contents layer because the
   // image is locally attached and even though the color is not, it is filled to
   // the padding box so it will be drawn the same as a locally attached
   // background.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller6"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller6"));
 
   // #scroller7 cannot paint background into scrolling contents layer because
   // the color is filled to the content box and we have padding so it is not
   // equivalent to a locally attached background.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller7"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller7"));
 
   // #scroller8 can paint background into scrolling contents layer because its
   // border-box is equivalent to its padding box since it has no border.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller8"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller8"));
 
   // #scroller9 can paint background into scrolling contents layer because its
   // border is opaque so it completely covers the background outside of the
   // padding-box.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller9"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller9"));
 
-  // #scroller10 cannot paint background into scrolling contents layer because
-  // its border is partially transparent so the background must be drawn to the
+  // #scroller10 paints the background into both layers because its border is
+  // partially transparent so the background must be drawn to the
   // border-box edges.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller10"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer | BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller10"));
 
   // #scroller11 can paint background into scrolling contents layer because its
   // content-box is equivalent to its padding box since it has no padding.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller11"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller11"));
 
   // #scroller12 cannot paint background into scrolling contents layer because
   // it has padding so its content-box is not equivalent to its padding-box.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller12"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller12"));
 
-  // #scroller13 cannot paint background into scrolling contents layer because
-  // it has a custom scrollbar which the background may need to draw under.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller13"));
+  // #scroller13 paints the background into both layers because it has a custom
+  // scrollbar which the background may need to draw under.
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer | BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller13"));
 
   // #scroller14 can paint background into scrolling contents layer because the
   // outline is drawn outside the padding box.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller14"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller14"));
 
   // #scroller15 can paint background into scrolling contents layer because
   // the outline is drawn into the decoration layer which will not be covered
   // up.
-  EXPECT_TRUE(canPaintBackgroundOntoScrollingContentsLayer("scroller15"));
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            backgroundPaintLocation("scroller15"));
 
   // #scroller16 cannot paint background into scrolling contents layer because
   // the scroller has a clip which would not be respected by the scrolling
   // contents layer.
-  EXPECT_FALSE(canPaintBackgroundOntoScrollingContentsLayer("scroller16"));
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller16"));
+
+  // #scroller17 can only be painted once as it is translucent, and it must
+  // be painted in the graphics layer to be under the translucent border.
+  EXPECT_EQ(BackgroundPaintInGraphicsLayer,
+            backgroundPaintLocation("scroller17"));
 }
 
 TEST_F(PaintLayerScrollableAreaTest, OpaqueContainedLayersPromoted) {

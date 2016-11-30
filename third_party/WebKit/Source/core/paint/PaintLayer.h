@@ -501,12 +501,11 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   CompositedLayerMapping* compositedLayerMapping() const;
   GraphicsLayer* graphicsLayerBacking() const;
   GraphicsLayer* graphicsLayerBackingForScrolling() const;
-  // Returns true for layers with scrollable overflow which have a background
-  // that can be painted into the composited scrolling contents layer when it
-  // exist (i.e. the background can scroll with the content). When the
-  // background is also opaque this allows us to composite the scroller even on
-  // low DPI as we can draw with subpixel anti-aliasing.
-  bool canPaintBackgroundOntoScrollingContentsLayer() const;
+  // Returns which GraphicsLayers backgrounds should be painted into for
+  // overflow scrolling boxes. When the background can paint into the scrolling
+  // contents and is also opaque this allows us to composite the scroller even
+  // on low DPI as we can draw with subpixel anti-aliasing.
+  BackgroundPaintLocation backgroundPaintLocation() const;
   // NOTE: If you are using hasCompositedLayerMapping to determine the state of
   // compositing for this layer, (and not just to do bookkeeping related to the
   // mapping like, say, allocating or deallocating a mapping), then you may have

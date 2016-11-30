@@ -924,7 +924,8 @@ TEST_P(CompositedLayerMappingTest,
 
   PaintLayer* layer =
       toLayoutBlock(getLayoutObjectByElementId("container"))->layer();
-  EXPECT_TRUE(layer->canPaintBackgroundOntoScrollingContentsLayer());
+  EXPECT_EQ(BackgroundPaintInScrollingContents,
+            layer->backgroundPaintLocation());
 
   // We currently don't use composited scrolling when the container has a
   // border-radius so even though we can paint the background onto the scrolling
