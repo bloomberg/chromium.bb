@@ -34,8 +34,6 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/base/window_open_disposition.h"
 
-class SkBitmap;
-
 namespace content {
 
 class PageState;

@@ -19,7 +19,6 @@
 #include "services/service_manager/public/interfaces/connector.mojom.h"
 
 namespace service_manager {
-class Connection;
 class Connector;
 }
 

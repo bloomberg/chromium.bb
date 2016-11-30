@@ -39,7 +39,6 @@ class WebMediaConstraints;
 
 namespace media {
 class AudioBus;
-class AudioFifo;
 class AudioParameters;
 }  // namespace media
 

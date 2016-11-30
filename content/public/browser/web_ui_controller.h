@@ -17,7 +17,6 @@ class ListValue;
 namespace content {
 
 class RenderFrameHost;
-class RenderViewHost;
 class WebUI;
 
 // A WebUI page is controller by the embedder's WebUIController object. It

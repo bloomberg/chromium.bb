@@ -28,14 +28,11 @@ class GpuVideoAcceleratorFactories;
 }
 
 namespace rtc {
-class NetworkManager;
-class PacketSocketFactory;
 class Thread;
 }
 
 namespace blink {
 class WebFrame;
-class WebMediaStream;
 class WebRTCPeerConnectionHandler;
 class WebRTCPeerConnectionHandlerClient;
 }

@@ -14,10 +14,6 @@
 #include "ui/events/blink/scoped_web_input_event.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
-namespace cc {
-class InputHandler;
-}
-
 namespace ui {
 class LatencyInfo;
 class SynchronousInputHandlerProxy;

@@ -25,10 +25,6 @@ namespace IPC {
 class MessageFilter;
 }
 
-namespace gpu {
-struct SyncToken;
-}
-
 namespace content {
 class ChildProcessHostDelegate;
 

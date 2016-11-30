@@ -26,7 +26,6 @@
 #include "url/gurl.h"
 
 namespace content {
-class NavigationEntry;
 class NavigationControllerImpl;
 class RenderViewHostImpl;
 class RenderWidgetHostView;

@@ -22,10 +22,6 @@
 #include "base/time/time.h"
 #endif  // OS_ANDROID
 
-namespace blink {
-class WebMediaPlayer;
-}
-
 namespace media {
 
 enum class MediaContentType;

@@ -16,10 +16,6 @@
 #include "content/common/devtools_messages.h"
 #include "content/public/browser/devtools_agent_host.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 
 class BrowserContext;

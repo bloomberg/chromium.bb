@@ -35,9 +35,6 @@
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBDatabaseException.h"
 #include "url/origin.h"
 
-using storage::DatabaseUtil;
-using blink::WebIDBKey;
-
 namespace content {
 
 namespace {

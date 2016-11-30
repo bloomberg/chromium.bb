@@ -20,7 +20,6 @@ class SingleThreadTaskRunner;
 
 namespace blink {
 class WebURL;
-class WebFileWriter;
 class WebFileWriterClient;
 }
 

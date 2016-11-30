@@ -14,10 +14,6 @@
 #include "content/public/browser/android/compositor_client.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace cc {
-class Layer;
-}
-
 namespace content {
 class Compositor;
 

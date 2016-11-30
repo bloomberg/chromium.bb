@@ -13,10 +13,6 @@
 #include "content/browser/loader/resource_handler.h"
 #include "content/public/common/resource_response.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace net {
 class IOBuffer;
 class URLRequest;

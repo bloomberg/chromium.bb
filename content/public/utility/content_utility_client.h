@@ -14,7 +14,6 @@
 
 namespace service_manager {
 class InterfaceRegistry;
-class Service;
 }
 
 namespace content {

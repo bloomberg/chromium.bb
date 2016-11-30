@@ -30,7 +30,6 @@ class Origin;
 namespace content {
 class IndexedDBBlobInfo;
 class IndexedDBCallbacks;
-class IndexedDBConnection;
 class IndexedDBContextImpl;
 class IndexedDBDatabaseCallbacks;
 

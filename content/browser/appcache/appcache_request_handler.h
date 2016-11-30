@@ -22,7 +22,6 @@
 namespace net {
 class NetworkDelegate;
 class URLRequest;
-class URLRequestJob;
 }  // namespace net
 
 namespace content {

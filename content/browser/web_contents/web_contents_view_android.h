@@ -18,7 +18,6 @@
 
 namespace content {
 class ContentViewCoreImpl;
-class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class WebContentsImpl;
 

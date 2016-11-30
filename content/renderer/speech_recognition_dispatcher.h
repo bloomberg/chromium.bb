@@ -29,7 +29,6 @@ class RenderViewImpl;
 class SpeechRecognitionAudioSink;
 #endif
 struct SpeechRecognitionError;
-struct SpeechRecognitionResult;
 
 // SpeechRecognitionDispatcher is a delegate for methods used by WebKit for
 // scripted JS speech APIs. It's the complement of

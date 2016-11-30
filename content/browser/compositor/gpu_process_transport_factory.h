@@ -20,10 +20,6 @@
 #include "gpu/ipc/client/gpu_channel_host.h"
 #include "ui/compositor/compositor.h"
 
-namespace base {
-class Thread;
-}
-
 namespace cc {
 class SingleThreadTaskGraphRunner;
 class SoftwareOutputDevice;

@@ -18,8 +18,6 @@
 #include "net/cookies/cookie_monster.h"
 #include "net/extras/sqlite/sqlite_persistent_cookie_store.h"
 
-class Task;
-
 namespace net {
 class CanonicalCookie;
 }  // namespace net

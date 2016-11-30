@@ -20,7 +20,6 @@
 #include "base/time/time.h"
 
 namespace base {
-class Pickle;
 class PickleIterator;
 }
 

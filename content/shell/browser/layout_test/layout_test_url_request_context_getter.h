@@ -16,7 +16,6 @@
 #include "net/url_request/url_request_job_factory.h"
 
 namespace net {
-class HostResolver;
 class NetworkDelegate;
 class NetLog;
 class ProxyConfigService;

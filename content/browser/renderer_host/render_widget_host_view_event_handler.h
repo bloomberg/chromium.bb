@@ -33,7 +33,6 @@ class TouchSelectionController;
 namespace content {
 struct ContextMenuParams;
 class OverscrollController;
-class RenderViewHost;
 class RenderWidgetHostImpl;
 class RenderWidgetHostViewBase;
 class TouchSelectionControllerClientAura;

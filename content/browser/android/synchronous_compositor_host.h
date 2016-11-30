@@ -35,7 +35,6 @@ namespace content {
 class RenderWidgetHostViewAndroid;
 class SynchronousCompositorClient;
 class SynchronousCompositorBrowserFilter;
-class WebContents;
 struct SyncCompositorCommonRendererParams;
 
 class SynchronousCompositorHost : public SynchronousCompositor {

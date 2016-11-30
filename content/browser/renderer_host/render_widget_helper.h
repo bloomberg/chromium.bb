@@ -22,10 +22,6 @@
 #include "third_party/WebKit/public/web/WebPopupType.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace IPC {
-class Message;
-}
-
 namespace content {
 class ResourceDispatcherHostImpl;
 class SessionStorageNamespace;

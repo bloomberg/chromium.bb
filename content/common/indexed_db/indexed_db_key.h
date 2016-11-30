@@ -15,10 +15,6 @@
 #include "content/common/content_export.h"
 #include "third_party/WebKit/public/platform/modules/indexeddb/WebIDBTypes.h"
 
-namespace blink {
-class WebIDBKey;
-}
-
 namespace content {
 
 class CONTENT_EXPORT IndexedDBKey {

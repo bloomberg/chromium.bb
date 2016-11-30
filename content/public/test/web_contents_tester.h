@@ -18,7 +18,6 @@ class BrowserContext;
 class NavigationData;
 class NavigationHandle;
 class RenderFrameHost;
-class RenderViewHost;
 class WebContents;
 struct Referrer;
 

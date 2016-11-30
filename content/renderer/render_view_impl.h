@@ -73,12 +73,10 @@
 #endif
 
 namespace blink {
-class WebApplicationCacheHost;
 class WebDataSource;
 class WebDateTimeChooserCompletion;
 class WebGestureEvent;
 class WebIconURL;
-class WebImage;
 class WebMouseEvent;
 class WebSpeechRecognizer;
 class WebStorageNamespace;

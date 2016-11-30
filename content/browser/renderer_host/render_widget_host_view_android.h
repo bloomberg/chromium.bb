@@ -42,16 +42,8 @@
 
 class GURL;
 
-namespace cc {
-class Layer;
-}
-
 namespace ui {
 struct DidOverscrollParams;
-}
-
-namespace blink {
-class WebMouseEvent;
 }
 
 namespace ui {

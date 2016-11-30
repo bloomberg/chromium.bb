@@ -60,7 +60,6 @@
 class GURL;
 
 namespace IPC {
-class SyncMessage;
 class SyncMessageFilter;
 }
 
@@ -82,7 +81,6 @@ struct WebPoint;
 
 namespace cc {
 class CompositorFrameSink;
-class FrameSinkId;
 class SwapPromise;
 }
 

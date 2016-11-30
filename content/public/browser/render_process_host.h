@@ -33,7 +33,6 @@ class AudioOutputController;
 }
 
 namespace service_manager {
-class Connection;
 class InterfaceProvider;
 }
 

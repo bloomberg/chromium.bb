@@ -8,7 +8,6 @@
 #include "content/common/content_export.h"
 
 namespace blink {
-class WebGestureEvent;
 class WebMouseEvent;
 }
 

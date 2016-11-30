@@ -20,7 +20,6 @@ namespace content {
 class NavigationResourceHandler;
 class NavigationData;
 class ResourceContext;
-class ResourceHandler;
 class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
 struct ResourceResponse;

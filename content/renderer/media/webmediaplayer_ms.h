@@ -29,7 +29,6 @@ class WebString;
 
 namespace media {
 class MediaLog;
-class VideoFrame;
 enum VideoRotation;
 }
 

@@ -26,7 +26,6 @@ class WebGestureEvent;
 
 namespace gfx {
 class Point;
-class Rect;
 class Size;
 }
 

@@ -30,7 +30,6 @@ namespace content {
 
 class AudioChunk;
 struct SpeechRecognitionError;
-struct SpeechRecognitionResult;
 
 // A speech recognition engine supporting continuous recognition by means of
 // interaction with the Google streaming speech recognition webservice.

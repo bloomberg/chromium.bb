@@ -66,7 +66,6 @@ class ICCProfile;
 
 namespace media {
 class KeySystemProperties;
-class RendererFactory;
 }
 
 namespace service_manager {

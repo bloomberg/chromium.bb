@@ -25,10 +25,6 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace media {
-class VideoFrame;
-}
-
 namespace content {
 
 // Adapter to GpuJpegDecodeAccelerator for VideoCaptureDevice::Client. It takes

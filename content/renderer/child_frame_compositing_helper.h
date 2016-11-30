@@ -22,7 +22,6 @@
 namespace cc {
 struct SurfaceSequence;
 
-class CompositorFrame;
 class Layer;
 }
 

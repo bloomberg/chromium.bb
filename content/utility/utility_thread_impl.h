@@ -19,7 +19,6 @@
 #include "services/service_manager/public/interfaces/service_factory.mojom.h"
 
 namespace content {
-class BlinkPlatformImpl;
 class UtilityBlinkPlatformImpl;
 class UtilityServiceFactory;
 

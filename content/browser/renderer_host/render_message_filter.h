@@ -49,10 +49,6 @@
 class GURL;
 struct FontDescriptor;
 
-namespace base {
-class SharedMemory;
-}
-
 namespace gfx {
 struct GpuMemoryBufferHandle;
 }
@@ -68,7 +64,6 @@ struct MediaLogEvent;
 namespace net {
 class IOBuffer;
 class KeygenHandler;
-class URLRequestContext;
 class URLRequestContextGetter;
 }
 

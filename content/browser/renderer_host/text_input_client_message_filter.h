@@ -13,7 +13,6 @@
 
 namespace gfx {
 class Point;
-class Range;
 class Rect;
 }
 

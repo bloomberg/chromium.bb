@@ -11,7 +11,6 @@
 
 namespace content {
 
-class WebContents;
 class WebContentsImpl;
 class WebContentsViewDelegate;
 

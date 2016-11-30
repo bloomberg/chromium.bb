@@ -16,10 +16,6 @@
 
 class SkCanvas;
 
-namespace gfx {
-class Canvas;
-}
-
 namespace ui {
 class Compositor;
 }

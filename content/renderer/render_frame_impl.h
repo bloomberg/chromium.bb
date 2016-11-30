@@ -94,7 +94,6 @@ struct WebFindOptions;
 namespace gfx {
 class Point;
 class Range;
-class Rect;
 }
 
 namespace media {
@@ -134,7 +133,6 @@ class MediaStreamDispatcher;
 class MediaStreamRendererFactory;
 class MediaPermissionDispatcher;
 class NavigationState;
-class PageState;
 class PepperPluginInstanceImpl;
 class PresentationDispatcher;
 class PushMessagingDispatcher;

@@ -62,7 +62,6 @@ class LocatedEvent;
 #if defined(OS_WIN)
 class OnScreenKeyboardObserver;
 #endif
-class TouchSelectionController;
 }
 
 namespace content {
@@ -70,7 +69,6 @@ namespace content {
 class LegacyRenderWidgetHostHWND;
 #endif
 
-class OverscrollController;
 class RenderFrameHostImpl;
 class RenderWidgetHostImpl;
 class RenderWidgetHostView;

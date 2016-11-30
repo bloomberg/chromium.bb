@@ -21,7 +21,6 @@ struct ViewHostMsg_SelectionBounds_Params;
 namespace content {
 
 class RenderWidgetHostImpl;
-class RenderWidgetHostView;
 class RenderWidgetHostViewBase;
 
 // A class which receives updates of TextInputState from multiple sources and

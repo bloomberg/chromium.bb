@@ -8,7 +8,6 @@
 
 namespace content {
 
-using blink::WebIDBKey;
 using blink::WebIDBKeyType;
 using blink::WebIDBKeyTypeArray;
 using blink::WebIDBKeyTypeBinary;

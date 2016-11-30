@@ -20,7 +20,6 @@ class GURL;
 namespace blink {
 class WebDeviceMotionData;
 class WebDeviceOrientationData;
-class WebGamepad;
 class WebInputEvent;
 class WebLocalFrame;
 struct WebSize;

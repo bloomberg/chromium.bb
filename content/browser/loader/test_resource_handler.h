@@ -15,7 +15,6 @@
 class GURL;
 
 namespace net {
-class URLRequest;
 class URLRequestStatus;
 }
 

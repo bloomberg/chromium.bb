@@ -23,7 +23,6 @@
 namespace ppapi {
 class ArrayBufferVar;
 class V8ObjectVar;
-class Var;
 }
 
 namespace content {

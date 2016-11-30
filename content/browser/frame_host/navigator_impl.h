@@ -23,7 +23,6 @@ namespace content {
 
 class NavigationControllerImpl;
 class NavigatorDelegate;
-class NavigatorTest;
 class ResourceRequestBodyImpl;
 struct LoadCommittedDetails;
 

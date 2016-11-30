@@ -70,7 +70,6 @@ class Thread;
 
 namespace cc {
 class BeginFrameSource;
-class ContextProvider;
 class ImageSerializationProcessor;
 class CompositorFrameSink;
 class TaskGraphRunner;
@@ -116,7 +115,6 @@ class EmbeddedWorkerDispatcher;
 class FrameSwapMessageQueue;
 class IndexedDBDispatcher;
 class InputHandlerManager;
-class MediaStreamCenter;
 class MemoryObserver;
 class MidiMessageFilter;
 class P2PSocketDispatcher;

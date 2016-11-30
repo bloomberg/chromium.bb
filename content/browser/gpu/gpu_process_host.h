@@ -51,7 +51,6 @@ class InterfaceProvider;
 
 namespace content {
 class BrowserChildProcessHostImpl;
-class GpuMainThread;
 class InProcessChildThreadParams;
 class ShaderDiskCache;
 

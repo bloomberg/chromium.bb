@@ -19,7 +19,6 @@
 
 namespace blink {
 class WebElement;
-class WebFrame;
 class WebFrameWidget;
 class WebView;
 struct WebRect;

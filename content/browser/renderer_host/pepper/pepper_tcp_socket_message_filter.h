@@ -45,7 +45,6 @@ namespace ppapi {
 class SocketOptionData;
 
 namespace host {
-class PpapiHost;
 struct ReplyMessageContext;
 }
 }

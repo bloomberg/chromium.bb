@@ -18,7 +18,6 @@
 
 namespace content {
 class RenderFrameHost;
-class RenderViewHost;
 
 class CONTENT_EXPORT WebUIImpl : public WebUI,
                                  public IPC::Listener,
