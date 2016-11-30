@@ -346,6 +346,9 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
   MACROBLOCK *const x = &cpi->td.mb;
   RD_OPT *const rd = &cpi->rd;
   int i;
+#if CONFIG_REF_MV
+  int nmv_ctx;
+#endif
 
   aom_clear_system_state();
 
@@ -356,28 +359,24 @@ void av1_initialize_rd_consts(AV1_COMP *cpi) {
 
   set_block_thresholds(cm, rd);
 
-  if (!frame_is_intra_only(cm)) {
 #if CONFIG_REF_MV
-    int nmv_ctx;
-
-    for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
-      av1_build_nmv_cost_table(
-          x->nmv_vec_cost[nmv_ctx],
-          cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
-                                      : x->nmvcost[nmv_ctx],
-          &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
-    }
-    x->mvcost = x->mv_cost_stack[0];
-    x->nmvjointcost = x->nmv_vec_cost[0];
-    x->mvsadcost = x->mvcost;
-    x->nmvjointsadcost = x->nmvjointcost;
-#else
+  for (nmv_ctx = 0; nmv_ctx < NMV_CONTEXTS; ++nmv_ctx) {
     av1_build_nmv_cost_table(
-        x->nmvjointcost,
-        cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost, &cm->fc->nmvc,
-        cm->allow_high_precision_mv);
-#endif
+        x->nmv_vec_cost[nmv_ctx],
+        cm->allow_high_precision_mv ? x->nmvcost_hp[nmv_ctx]
+                                    : x->nmvcost[nmv_ctx],
+        &cm->fc->nmvc[nmv_ctx], cm->allow_high_precision_mv);
   }
+  x->mvcost = x->mv_cost_stack[0];
+  x->nmvjointcost = x->nmv_vec_cost[0];
+  x->mvsadcost = x->mvcost;
+  x->nmvjointsadcost = x->nmvjointcost;
+#else
+  av1_build_nmv_cost_table(
+      x->nmvjointcost, cm->allow_high_precision_mv ? x->nmvcost_hp : x->nmvcost,
+      &cm->fc->nmvc, cm->allow_high_precision_mv);
+#endif
+
   if (cpi->oxcf.pass != 1) {
     av1_fill_token_costs(x->token_costs, cm->fc->coef_probs);
 
