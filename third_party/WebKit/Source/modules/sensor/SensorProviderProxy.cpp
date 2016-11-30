@@ -14,6 +14,12 @@ namespace blink {
 
 // SensorProviderProxy
 SensorProviderProxy::SensorProviderProxy(LocalFrame* frame) {
+  initialize(frame);
+}
+
+void SensorProviderProxy::initialize(LocalFrame* frame) {
+  DCHECK(!isInitialized());
+
   frame->interfaceProvider()->getInterface(mojo::GetProxy(&m_sensorProvider));
   m_sensorProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&SensorProviderProxy::onSensorProviderConnectionError,
@@ -24,15 +30,20 @@ const char* SensorProviderProxy::supplementName() {
   return "SensorProvider";
 }
 
+// static
 SensorProviderProxy* SensorProviderProxy::from(LocalFrame* frame) {
   DCHECK(frame);
-  SensorProviderProxy* result = static_cast<SensorProviderProxy*>(
+  SensorProviderProxy* providerProxy = static_cast<SensorProviderProxy*>(
       Supplement<LocalFrame>::from(*frame, supplementName()));
-  if (!result) {
-    result = new SensorProviderProxy(frame);
-    Supplement<LocalFrame>::provideTo(*frame, supplementName(), result);
+  if (!providerProxy) {
+    providerProxy = new SensorProviderProxy(frame);
+    Supplement<LocalFrame>::provideTo(*frame, supplementName(), providerProxy);
   }
-  return result;
+
+  if (!providerProxy->isInitialized())
+    providerProxy->initialize(frame);
+
+  return providerProxy;
 }
 
 SensorProviderProxy::~SensorProviderProxy() {}

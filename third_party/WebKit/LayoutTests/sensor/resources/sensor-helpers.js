@@ -53,7 +53,7 @@ function sensor_mocks(mojo) {
         this.resetBuffer();
         bindings.StubBindings(this.stub_).delegate = this;
         bindings.StubBindings(this.stub_).connectionErrorHandler = () => {
-          reset();
+          this.reset();
         };
       }
 
@@ -272,6 +272,9 @@ function sensor_mocks(mojo) {
         this.stub_ = connection.bindHandleToStub(
             pipe, sensor_provider.SensorProvider);
         bindings.StubBindings(this.stub_).delegate = this;
+        bindings.StubBindings(this.stub_).connectionErrorHandler = () => {
+          this.reset();
+        };
       }
 
       // Mock functions
@@ -286,6 +289,8 @@ function sensor_mocks(mojo) {
         this.get_sensor_should_fail_ = false;
         this.resolve_func_ = null;
         this.max_frequency_ = 60;
+        if (this.stub_)
+          bindings.StubBindings(this.stub_).close();
       }
 
       // Sets flag that forces mock SensorProvider to fail when getSensor() is

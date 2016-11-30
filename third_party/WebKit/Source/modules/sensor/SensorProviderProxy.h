@@ -39,12 +39,14 @@ class SensorProviderProxy final
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  friend class SensorProxy;  // To call sensorProvider().
+  friend class SensorProxy;  // To call getSensorProvider().
 
   explicit SensorProviderProxy(LocalFrame*);
   static const char* supplementName();
+  void initialize(LocalFrame*);
+  bool isInitialized() const { return m_sensorProvider; }
 
-  device::mojom::blink::SensorProvider* sensorProvider() const {
+  device::mojom::blink::SensorProvider* getSensorProvider() const {
     return m_sensorProvider.get();
   }
 

@@ -55,7 +55,7 @@ void SensorProxy::initialize() {
   if (m_state != Uninitialized)
     return;
 
-  if (!m_provider->sensorProvider()) {
+  if (!m_provider->getSensorProvider()) {
     handleSensorError();
     return;
   }
@@ -63,8 +63,8 @@ void SensorProxy::initialize() {
   m_state = Initializing;
   auto callback = convertToBaseCallback(
       WTF::bind(&SensorProxy::onSensorCreated, wrapWeakPersistent(this)));
-  m_provider->sensorProvider()->GetSensor(m_type, mojo::GetProxy(&m_sensor),
-                                          callback);
+  m_provider->getSensorProvider()->GetSensor(m_type, mojo::GetProxy(&m_sensor),
+                                             callback);
 }
 
 void SensorProxy::addConfiguration(

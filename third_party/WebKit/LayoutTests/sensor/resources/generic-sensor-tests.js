@@ -17,7 +17,6 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
     return new Promise((resolve, reject) => {
       let wrapper = new CallbackWrapper(event => {
         assert_equals(sensorObject.state, 'errored');
-        console.log(event.error.message);
         assert_equals(event.error.name, 'NotFoundError');
         sensorObject.onerror = null;
         resolve();
@@ -195,12 +194,13 @@ function runGenericSensorTests(sensorType, updateReading, verifyReading) {
         })
         .then(mockSensor => {
           return new Promise((resolve, reject) => {
-            sensorObject.onchange = () => {
-              if (verifyReading(sensorObject.reading)) {
-                resolve(mockSensor);
-              }
-            }
-          sensorObject.onerror = reject;
+            let wrapper = new CallbackWrapper(() => {
+              assert_true(verifyReading(sensorObject.reading));
+              resolve(mockSensor);
+            }, reject);
+
+            sensorObject.onchange = wrapper.callback;
+            sensorObject.onerror = reject;
           });
         })
         .then(mockSensor => {
