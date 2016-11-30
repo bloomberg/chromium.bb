@@ -9,7 +9,7 @@ source_set("ui") {
   ]
   deps = [
     "//base",
-    "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/ui",
   ]
   libs = [ "UIKit.framework" ]
   configs += [ "//build/config/compiler:enable_arc" ]

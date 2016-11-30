@@ -10,12 +10,9 @@ source_set("app") {
     "web_main_runner.h",
   ]
 
-  public_deps = [
-    "//ios/web/app",
-  ]
-
   deps = [
     "//base",
+    "//ios/web/app",
   ]
   configs += [ "//build/config/compiler:enable_arc" ]
 

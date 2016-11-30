@@ -21,6 +21,7 @@ source_set("prefs") {
     "//components/dom_distiller/core",
     "//components/flags_ui",
     "//components/gcm_driver",
+    "//components/metrics",
     "//components/network_time",
     "//components/ntp_snippets",
     "//components/ntp_tiles",

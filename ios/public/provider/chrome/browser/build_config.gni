@@ -9,11 +9,6 @@ _default_ios_launchscreen_assets_target =
 _default_ios_provider_target = "//ios/chrome/browser/providers:provider_factory"
 
 declare_args() {
-  # Control the provider API implementation used by Chromium on iOS. Requires
-  # access to the private Google-internal Chrome on iOS repository if true.
-  # DEPRECATED, will be removed as soon as all downstream code stops using it.
-  use_ios_internal_provider = is_chrome_branded
-
   # Label of the target providing image assets for the launchscreen.  This
   # target must be an asset catalog that contains at least two imagesets, one
   # named "launchscreen_app_logo" and one named "launchscreen_brand_name".

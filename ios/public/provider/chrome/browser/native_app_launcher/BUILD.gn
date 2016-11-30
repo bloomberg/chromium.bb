@@ -20,6 +20,7 @@ source_set("test_support") {
     "fake_native_app_whitelist_manager.mm",
   ]
   deps = [
+    ":native_app_launcher",
     "//base",
     "//ios/public/provider/chrome/browser",
     "//url",

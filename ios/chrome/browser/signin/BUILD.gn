@@ -48,20 +48,8 @@ source_set("signin") {
     "signin_util.mm",
   ]
   deps = [
-    "//components/browser_sync",
-    "//components/sync",
-    "//ios/chrome/browser",
-    "//ios/chrome/browser/bookmarks:bookmarks_utils",
-    "//ios/chrome/browser/browser_state",
-    "//ios/chrome/browser/content_settings",
-    "//ios/chrome/browser/crash_report",
-    "//ios/chrome/browser/ui/commands",
-    "//ios/public/provider/chrome/browser/signin",
-    "//ios/web",
-    "//url",
-  ]
-  public_deps = [
     "//base",
+    "//components/browser_sync",
     "//components/content_settings/core/browser",
     "//components/keyed_service/core",
     "//components/keyed_service/ios",
@@ -70,10 +58,20 @@ source_set("signin") {
     "//components/prefs",
     "//components/signin/core/browser",
     "//components/signin/ios/browser",
+    "//components/sync",
     "//google_apis",
+    "//ios/chrome/browser",
+    "//ios/chrome/browser/bookmarks:bookmarks_utils",
+    "//ios/chrome/browser/browser_state",
+    "//ios/chrome/browser/content_settings",
+    "//ios/chrome/browser/crash_report",
+    "//ios/chrome/browser/ui/commands",
     "//ios/chrome/common",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
+    "//ios/web",
     "//net",
+    "//url",
   ]
 }
 
@@ -88,16 +86,14 @@ source_set("test_support") {
     "fake_signin_manager_builder.h",
   ]
   deps = [
+    ":signin",
+    "//base",
     "//components/signin/core/browser:test_support",
     "//components/signin/ios/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/sync",
-    "//ios/public/provider/chrome/browser/signin",
-  ]
-  public_deps = [
-    ":signin",
-    "//base",
     "//ios/public/provider/chrome/browser",
+    "//ios/public/provider/chrome/browser/signin",
   ]
 }
 

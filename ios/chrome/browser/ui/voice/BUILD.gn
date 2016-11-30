@@ -27,6 +27,7 @@ source_set("unit_tests") {
   ]
 
   deps = [
+    ":voice",
     ":voice_unit_tests_bundle_data",
     "//base",
     "//base/test:test_support",
@@ -34,10 +35,6 @@ source_set("unit_tests") {
     "//ios/web:test_support",
     "//testing/gtest",
     "//url",
-  ]
-
-  public_deps = [
-    ":voice",
   ]
 }
 

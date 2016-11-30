@@ -19,25 +19,6 @@ source_set("browser") {
     "//components/sync_sessions",
   ]
   libs = [ "CoreLocation.framework" ]
-
-  # TODO(sdefresne): remove once downstream has been converted to depends
-  # directly on the sub-targets.
-  public_deps = [
-    "//ios/public/provider/chrome/browser/distribution",
-    "//ios/public/provider/chrome/browser/images",
-    "//ios/public/provider/chrome/browser/native_app_launcher",
-    "//ios/public/provider/chrome/browser/omaha",
-    "//ios/public/provider/chrome/browser/sessions",
-    "//ios/public/provider/chrome/browser/signin",
-    "//ios/public/provider/chrome/browser/ui",
-    "//ios/public/provider/chrome/browser/user_feedback",
-    "//ios/public/provider/chrome/browser/voice",
-  ]
-}
-
-buildflag_header("provider_flags") {
-  header = "provider_flags.h"
-  flags = [ "USE_DEFAULT_IOS_PROVIDER=$use_default_ios_provider" ]
 }
 
 source_set("test_support") {
