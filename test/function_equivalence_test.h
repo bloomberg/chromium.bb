@@ -43,6 +43,13 @@ struct FuncParam {
 };
 
 template <typename T>
+std::ostream &operator<<(std::ostream &os, const FuncParam<T> &p) {
+  return os << "bit_depth:" << p.bit_depth
+            << " function:" << reinterpret_cast<const void *>(p.ref_func)
+            << " function:" << reinterpret_cast<const void *>(p.tst_func);
+}
+
+template <typename T>
 class FunctionEquivalenceTest : public ::testing::TestWithParam<FuncParam<T> > {
  public:
   FunctionEquivalenceTest() : rng_(ACMRandom::DeterministicSeed()) {}
