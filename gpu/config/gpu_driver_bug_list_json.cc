@@ -19,7 +19,7 @@ const char kGpuDriverBugListJson[] = LONG_STRING_CONST(
 {
   "name": "gpu driver bug list",
   // Please update the version number whenever you change this file.
-  "version": "9.20",
+  "version": "9.21",
   "entries": [
     {
       "id": 1,
@@ -2224,6 +2224,15 @@ LONG_STRING_CONST(
       "gl_renderer": "Adreno \\(TM\\) 5.*",
       "disabled_extensions": [
         "GL_EXT_multisampled_render_to_texture"
+      ]
+    },
+    {
+      "id": 206,
+      "description": "Disable KHR_blend_equation_advanced until cc shaders are updated",
+      "cr_bugs": [661715],
+      "disabled_extensions": [
+        "GL_KHR_blend_equation_advanced",
+        "GL_KHR_blend_equation_advanced_coherent"
       ]
     }
   ]
