@@ -242,6 +242,19 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
+    'Win10 Release (New Intel)': {
+      'swarming_dimensions': [
+        {
+          'gpu': '8086:0412',
+          'os': 'Windows-10-10586',
+        },
+      ],
+      'build_config': 'Release',
+      # This bot is a one-off and doesn't have similar slaves in the
+      # swarming pool.
+      'swarming': False,
+      'os_type': 'win',
+    },
     'Win7 Debug (New Intel)': {
       'swarming_dimensions': [
         {
@@ -255,14 +268,14 @@ FYI_WATERFALL = {
       'swarming': False,
       'os_type': 'win',
     },
-    'Win7 Release (AMD R7 240)': {
+    'Win10 Debug (New Intel)': {
       'swarming_dimensions': [
         {
-          'gpu': '1002:6613',
-          'os': 'Windows-2008ServerR2-SP1'
+          'gpu': '8086:0412',
+          'os': 'Windows-10-10586',
         },
       ],
-      'build_config': 'Release',
+      'build_config': 'Debug',
       # This bot is a one-off and doesn't have similar slaves in the
       # swarming pool.
       'swarming': False,
