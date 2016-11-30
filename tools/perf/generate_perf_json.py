@@ -105,14 +105,6 @@ SCRIPT_TESTS = [
     'testers': {
       'chromium.perf': [
         {
-          'name': 'Mac 10.8 Perf',
-          'shards': [3]
-        },
-        {
-          'name': 'Mac 10.9 Perf',
-          'shards': [3]
-        },
-        {
           'name': 'Win 8 Perf',
           'shards': [2]
         },
@@ -293,7 +285,17 @@ def get_waterfall_config():
 
   waterfall = add_tester(
     waterfall, 'Mac 10.11 Perf', 'chromium-rel-mac11',
-    'mac', num_host_shards=5)
+    'mac',
+    swarming=[
+      {
+       'gpu': '8086:0166',
+       'os': 'Mac-10.11',
+       'device_ids': [
+           'build102-b1', 'build103-b1',
+           'build104-b1', 'build105-b1', 'build106-b1'
+          ]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Mac 10.10 Perf', 'chromium-rel-mac10',
     'mac',
@@ -308,9 +310,28 @@ def get_waterfall_config():
     ])
   waterfall = add_tester(
     waterfall, 'Mac Retina Perf',
-    'chromium-rel-mac-retina', 'mac', num_host_shards=5)
+    'chromium-rel-mac-retina', 'mac',
+    swarming=[
+      {
+       'gpu': '8086:0d26',
+       'os': 'Mac-10.11',
+       'device_ids': [
+           'build4-b1', 'build5-b1', 'build6-b1', 'build7-b1', 'build8-b1'
+          ]
+      }
+    ])
   waterfall = add_tester(
-    waterfall, 'Mac HDD Perf', 'chromium-rel-mac-hdd', 'mac', num_host_shards=5)
+    waterfall, 'Mac HDD Perf', 'chromium-rel-mac-hdd', 'mac',
+    swarming=[
+      {
+       'gpu': '10de:08a4',
+       'os': 'Mac-10.10',
+       'device_ids': [
+           'build24-b1', 'build25-b1',
+           'build26-b1', 'build27-b1', 'build28-b1'
+          ]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Mac Pro 10.11 Perf',
     'chromium-rel-mac11-pro', 'mac',
