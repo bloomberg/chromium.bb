@@ -35,7 +35,6 @@
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
 #include "core/frame/PageScaleConstraintsSet.h"
-#include "core/html/HTMLMediaElement.h"
 #include "core/html/HTMLVideoElement.h"
 #include "core/layout/LayoutFullScreen.h"
 #include "platform/RuntimeEnabledFeatures.h"
@@ -80,13 +79,6 @@ void FullscreenController::didEnterFullscreen() {
 
   Fullscreen::from(document).didEnterFullscreenForElement(element);
   DCHECK_EQ(Fullscreen::currentFullScreenElementFrom(document), element);
-
-  if (isHTMLVideoElement(element)) {
-    HTMLVideoElement* videoElement = toHTMLVideoElement(element);
-    if (videoElement->usesOverlayFullscreenVideo() &&
-        m_webViewImpl->layerTreeView())
-      m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
-  }
 }
 
 void FullscreenController::didExitFullscreen() {
@@ -106,12 +98,6 @@ void FullscreenController::didExitFullscreen() {
         m_isCancelingFullscreen = true;
         Fullscreen::fullyExitFullscreen(*document);
         m_isCancelingFullscreen = false;
-
-        // If the video used overlay fullscreen mode, the background was made
-        // transparent. Restore the transparency.
-        if (isHTMLVideoElement(element) && m_webViewImpl->layerTreeView())
-          m_webViewImpl->layerTreeView()->setHasTransparentBackground(
-              m_webViewImpl->isTransparent());
 
         // We need to wait until style and layout are updated in order
         // to propertly restore scroll offsets since content may not be
@@ -177,6 +163,42 @@ void FullscreenController::exitFullscreen(LocalFrame* frame) {
   WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
   if (webFrame && webFrame->client())
     webFrame->client()->exitFullscreen();
+}
+
+void FullscreenController::fullscreenElementChanged(Element* fromElement,
+                                                    Element* toElement) {
+  DCHECK_NE(fromElement, toElement);
+
+  if (toElement) {
+    DCHECK(Fullscreen::isCurrentFullScreenElement(*toElement));
+
+    if (isHTMLVideoElement(*toElement)) {
+      HTMLVideoElement& videoElement = toHTMLVideoElement(*toElement);
+      videoElement.didEnterFullscreen();
+
+      // If the video uses overlay fullscreen mode, make the background
+      // transparent.
+      if (videoElement.usesOverlayFullscreenVideo() &&
+          m_webViewImpl->layerTreeView()) {
+        m_webViewImpl->layerTreeView()->setHasTransparentBackground(true);
+      }
+    }
+  }
+
+  if (fromElement) {
+    DCHECK(!Fullscreen::isCurrentFullScreenElement(*fromElement));
+
+    if (isHTMLVideoElement(*fromElement)) {
+      // If the video used overlay fullscreen mode, restore the transparency.
+      if (m_webViewImpl->layerTreeView()) {
+        m_webViewImpl->layerTreeView()->setHasTransparentBackground(
+            m_webViewImpl->isTransparent());
+      }
+
+      HTMLVideoElement& videoElement = toHTMLVideoElement(*fromElement);
+      videoElement.didExitFullscreen();
+    }
+  }
 }
 
 void FullscreenController::updateSize() {

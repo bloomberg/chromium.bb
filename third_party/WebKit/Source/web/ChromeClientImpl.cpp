@@ -859,6 +859,11 @@ void ChromeClientImpl::exitFullscreen(LocalFrame* frame) {
   m_webView->exitFullscreen(frame);
 }
 
+void ChromeClientImpl::fullscreenElementChanged(Element* fromElement,
+                                                Element* toElement) {
+  m_webView->fullscreenElementChanged(fromElement, toElement);
+}
+
 void ChromeClientImpl::clearCompositedSelection(LocalFrame* frame) {
   LocalFrame* localRoot = frame->localFrameRoot();
   auto client =

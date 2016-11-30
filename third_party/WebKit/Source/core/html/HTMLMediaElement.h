@@ -253,6 +253,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   bool isFullscreen() const;
   void enterFullscreen();
   void exitFullscreen();
+  void didEnterFullscreen();
+  void didExitFullscreen();
   virtual bool usesOverlayFullscreenVideo() const { return false; }
 
   bool hasClosedCaptions() const;
@@ -351,8 +353,6 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   bool canStartSelection() const override { return false; }
 
-  void didBecomeFullscreenElement() final;
-  void willStopBeingFullscreenElement() final;
   bool isInteractiveContent() const final;
 
   // ActiveDOMObject functions.

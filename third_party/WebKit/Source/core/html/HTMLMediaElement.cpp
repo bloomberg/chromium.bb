@@ -1194,10 +1194,8 @@ void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl) {
 
   m_webMediaPlayer->load(loadType(), source, corsMode());
 
-  if (isFullscreen()) {
-    // This handles any transition to or from fullscreen overlay mode.
-    frame->chromeClient().enterFullscreenForElement(this);
-  }
+  if (isFullscreen())
+    m_webMediaPlayer->enteredFullscreen();
 }
 
 void HTMLMediaElement::setPlayerPreload() {
@@ -3491,7 +3489,7 @@ void HTMLMediaElement::exitFullscreen() {
   Fullscreen::exitFullscreen(document());
 }
 
-void HTMLMediaElement::didBecomeFullscreenElement() {
+void HTMLMediaElement::didEnterFullscreen() {
   if (mediaControls())
     mediaControls()->enteredFullscreen();
   // FIXME: There is no embedder-side handling in layout test mode.
@@ -3504,7 +3502,7 @@ void HTMLMediaElement::didBecomeFullscreenElement() {
         CompositingUpdateRebuildTree);
 }
 
-void HTMLMediaElement::willStopBeingFullscreenElement() {
+void HTMLMediaElement::didExitFullscreen() {
   if (mediaControls())
     mediaControls()->exitedFullscreen();
   if (webMediaPlayer())

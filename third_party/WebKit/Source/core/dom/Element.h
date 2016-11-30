@@ -579,9 +579,6 @@ class CORE_EXPORT Element : public ContainerNode {
   LayoutSize minimumSizeForResizing() const;
   void setMinimumSizeForResizing(const LayoutSize&);
 
-  virtual void didBecomeFullscreenElement() {}
-  virtual void willStopBeingFullscreenElement() {}
-
   // Called by the parser when this element's close tag is reached, signaling
   // that all child tags have been parsed and added.  This is needed for
   // <applet> and <object> elements, which can't lay themselves out until they

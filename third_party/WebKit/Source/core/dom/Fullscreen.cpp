@@ -551,12 +551,16 @@ bool Fullscreen::fullscreenEnabled(Document& document) {
 
 void Fullscreen::didEnterFullscreenForElement(Element* element) {
   DCHECK(element);
-  if (!document()->isActive())
+  if (!document()->isActive() || !document()->frame())
+    return;
+
+  if (m_currentFullScreenElement == element)
     return;
 
   if (m_fullScreenLayoutObject)
     m_fullScreenLayoutObject->unwrapLayoutObject();
 
+  Element* previousElement = m_currentFullScreenElement;
   m_currentFullScreenElement = element;
 
   // Create a placeholder block for a the full-screen element, to keep the page
@@ -600,22 +604,20 @@ void Fullscreen::didEnterFullscreenForElement(Element* element) {
   // FIXME: This should not call updateStyleAndLayoutTree.
   document()->updateStyleAndLayoutTree();
 
-  m_currentFullScreenElement->didBecomeFullscreenElement();
-
-  if (document()->frame())
-    document()->frame()->eventHandler().scheduleHoverStateUpdate();
+  document()->frame()->eventHandler().scheduleHoverStateUpdate();
 
   m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
+
+  document()->frame()->chromeClient().fullscreenElementChanged(previousElement,
+                                                               element);
 }
 
 void Fullscreen::didExitFullscreen() {
+  if (!document()->isActive() || !document()->frame())
+    return;
+
   if (!m_currentFullScreenElement)
     return;
-
-  if (!document()->isActive())
-    return;
-
-  m_currentFullScreenElement->willStopBeingFullscreenElement();
 
   if (m_forCrossProcessDescendant)
     m_currentFullScreenElement->setContainsFullScreenElement(false);
@@ -628,10 +630,10 @@ void Fullscreen::didExitFullscreen() {
 
   document()->styleEngine().ensureUAStyleForFullscreen();
   m_currentFullScreenElement->pseudoStateChanged(CSSSelector::PseudoFullScreen);
+  Element* previousElement = m_currentFullScreenElement;
   m_currentFullScreenElement = nullptr;
 
-  if (document()->frame())
-    document()->frame()->eventHandler().scheduleHoverStateUpdate();
+  document()->frame()->eventHandler().scheduleHoverStateUpdate();
 
   // When fullyExitFullscreen is called, we call exitFullscreen on the
   // topDocument(). That means that the events will be queued there. So if we
@@ -643,6 +645,9 @@ void Fullscreen::didExitFullscreen() {
   from(*exitingDocument).m_eventQueueTimer.startOneShot(0, BLINK_FROM_HERE);
 
   m_forCrossProcessDescendant = false;
+
+  document()->frame()->chromeClient().fullscreenElementChanged(previousElement,
+                                                               nullptr);
 }
 
 void Fullscreen::setFullScreenLayoutObject(LayoutFullScreen* layoutObject) {

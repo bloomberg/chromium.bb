@@ -47,11 +47,20 @@ class FullscreenController final
  public:
   static FullscreenController* create(WebViewImpl*);
 
+  // Called by Fullscreen (via ChromeClient) to request entering or exiting
+  // fullscreen.
+  void enterFullscreenForElement(Element*);
+  void exitFullscreen(LocalFrame*);
+
+  // Called by content::RenderWidget (via WebWidget) to notify that we've
+  // entered or exited fullscreen. This can be because we requested it, or it
+  // can be initiated by the browser directly.
   void didEnterFullscreen();
   void didExitFullscreen();
 
-  void enterFullscreenForElement(Element*);
-  void exitFullscreen(LocalFrame*);
+  // Called by Fullscreen (via ChromeClient) to notify that the fullscreen
+  // element has changed.
+  void fullscreenElementChanged(Element*, Element*);
 
   bool isFullscreen() { return m_fullscreenFrame; }
 
