@@ -1193,7 +1193,8 @@ void AddPeopleStrings(content::WebUIDataSource* html_source) {
                           ProfileShortcutManager::IsFeatureEnabled());
 }
 
-void AddPrintingStrings(content::WebUIDataSource* html_source) {
+void AddPrintingStrings(content::WebUIDataSource* html_source,
+                        Profile* profile) {
   LocalizedString localized_strings[] = {
     {"printingPageTitle", IDS_SETTINGS_PRINTING},
     {"printingCloudPrintLearnMoreLabel",
@@ -1274,7 +1275,8 @@ void AddPrintingStrings(content::WebUIDataSource* html_source) {
 #if defined(OS_CHROMEOS)
   html_source->AddBoolean("showCupsPrintingFeatures",
                           base::CommandLine::ForCurrentProcess()->HasSwitch(
-                              ::switches::kEnableNativeCups));
+                              ::switches::kEnableNativeCups) &&
+                              !profile->IsOffTheRecord());
 #endif
 }
 
@@ -1796,7 +1798,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
   AddOnStartupStrings(html_source);
   AddPasswordsAndFormsStrings(html_source);
   AddPeopleStrings(html_source);
-  AddPrintingStrings(html_source);
+  AddPrintingStrings(html_source, profile);
   AddPrivacyStrings(html_source, profile);
   AddResetStrings(html_source);
   AddSearchEnginesStrings(html_source);

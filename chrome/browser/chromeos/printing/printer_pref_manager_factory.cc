@@ -20,6 +20,7 @@ base::LazyInstance<PrinterPrefManagerFactory> g_printer_pref_manager =
 // static
 PrinterPrefManager* PrinterPrefManagerFactory::GetForBrowserContext(
     content::BrowserContext* context) {
+  DCHECK(!context->IsOffTheRecord());
   return static_cast<PrinterPrefManager*>(
       GetInstance()->GetServiceForBrowserContext(context, true));
 }
