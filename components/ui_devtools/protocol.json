@@ -158,8 +158,24 @@
                     ]
                 }
             ],
+            "events": [
+                {
+                    "name": "styleSheetChanged",
+                    "parameters": [
+                        {
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId"
+                        }
+                    ],
+                    "description": "Fired whenever any bounds are updated for any object."
+                }
+            ],
             "domain": "CSS",
             "types": [
+                {
+                     "id": "StyleSheetId",
+                     "type": "string"
+                },
                 {
                     "id": "CSSProperty",
                     "properties": [
@@ -180,6 +196,12 @@
                     "description": "CSS style representation.",
                     "id": "CSSStyle",
                     "properties": [
+                        {
+                            "description": "The css style sheet identifier (absent for user agent stylesheet and user-specified stylesheet rules) this rule came from. For UI devtools, this is simply equivalent to the NodeId.",
+                            "optional": true,
+                            "name": "styleSheetId",
+                            "$ref": "StyleSheetId"
+                        },
                         {
                             "description": "CSS properties in the style.",
                             "items": {

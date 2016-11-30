@@ -8,20 +8,30 @@
 #include "ash/common/wm_shell.h"
 #include "ash/common/wm_window_observer.h"
 #include "base/compiler_specific.h"
+#include "base/observer_list.h"
 #include "components/ui_devtools/DOM.h"
 #include "components/ui_devtools/devtools_base_agent.h"
 #include "ui/views/view.h"
 #include "ui/views/view_observer.h"
 #include "ui/views/widget/widget.h"
+#include "ui/views/widget/widget_observer.h"
 #include "ui/views/widget/widget_removals_observer.h"
 
 namespace ash {
 namespace devtools {
 
+class ASH_EXPORT AshDevToolsDOMAgentObserver {
+ public:
+  virtual void OnWindowBoundsChanged(WmWindow* window) {}
+  virtual void OnWidgetBoundsChanged(views::Widget* widget) {}
+  virtual void OnViewBoundsChanged(views::View* view) {}
+};
+
 class ASH_EXPORT AshDevToolsDOMAgent
     : public NON_EXPORTED_BASE(ui::devtools::UiDevToolsBaseAgent<
                                ui::devtools::protocol::DOM::Metainfo>),
       public WmWindowObserver,
+      public views::WidgetObserver,
       public views::WidgetRemovalsObserver,
       public views::ViewObserver {
  public:
@@ -39,14 +49,22 @@ class ASH_EXPORT AshDevToolsDOMAgent
   void OnWindowTreeChanged(WmWindow* window,
                            const TreeChangeParams& params) override;
   void OnWindowStackingChanged(WmWindow* window) override;
+  void OnWindowBoundsChanged(WmWindow* window,
+                             const gfx::Rect& old_bounds,
+                             const gfx::Rect& new_bounds) override;
 
   // views::WidgetRemovalsObserver
   void OnWillRemoveView(views::Widget* widget, views::View* view) override;
+
+  // views::WidgetObserver
+  void OnWidgetBoundsChanged(views::Widget* widget,
+                             const gfx::Rect& new_bounds) override;
 
   // views::ViewObserver
   void OnChildViewRemoved(views::View* view, views::View* parent) override;
   void OnChildViewAdded(views::View* view) override;
   void OnChildViewReordered(views::View*) override;
+  void OnViewBoundsChanged(views::View* view) override;
 
   WmWindow* GetWindowFromNodeId(int nodeId);
   views::Widget* GetWidgetFromNodeId(int nodeId);
@@ -55,6 +73,9 @@ class ASH_EXPORT AshDevToolsDOMAgent
   int GetNodeIdFromWindow(WmWindow* window);
   int GetNodeIdFromWidget(views::Widget* widget);
   int GetNodeIdFromView(views::View* view);
+
+  void AddObserver(AshDevToolsDOMAgentObserver* observer);
+  void RemoveObserver(AshDevToolsDOMAgentObserver* observer);
 
  private:
   std::unique_ptr<ui::devtools::protocol::DOM::Node> BuildInitialTree();
@@ -105,6 +126,8 @@ class ASH_EXPORT AshDevToolsDOMAgent
   ViewToNodeIdMap view_to_node_id_map_;
   using NodeIdToViewMap = std::unordered_map<int, views::View*>;
   NodeIdToViewMap node_id_to_view_map_;
+
+  base::ObserverList<AshDevToolsDOMAgentObserver> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(AshDevToolsDOMAgent);
 };

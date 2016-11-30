@@ -131,10 +131,23 @@ void AshDevToolsDOMAgent::OnWindowStackingChanged(WmWindow* window) {
   AddWindowTree(window);
 }
 
+void AshDevToolsDOMAgent::OnWindowBoundsChanged(WmWindow* window,
+                                                const gfx::Rect& old_bounds,
+                                                const gfx::Rect& new_bounds) {
+  for (auto& observer : observers_)
+    observer.OnWindowBoundsChanged(window);
+}
+
 void AshDevToolsDOMAgent::OnWillRemoveView(views::Widget* widget,
                                            views::View* view) {
   if (view == widget->GetRootView())
     RemoveViewTree(view, nullptr, true);
+}
+
+void AshDevToolsDOMAgent::OnWidgetBoundsChanged(views::Widget* widget,
+                                                const gfx::Rect& new_bounds) {
+  for (auto& observer : observers_)
+    observer.OnWidgetBoundsChanged(widget);
 }
 
 void AshDevToolsDOMAgent::OnChildViewRemoved(views::View* view,
@@ -149,6 +162,11 @@ void AshDevToolsDOMAgent::OnChildViewAdded(views::View* view) {
 void AshDevToolsDOMAgent::OnChildViewReordered(views::View* view) {
   RemoveViewTree(view, view->parent(), false);
   AddViewTree(view);
+}
+
+void AshDevToolsDOMAgent::OnViewBoundsChanged(views::View* view) {
+  for (auto& observer : observers_)
+    observer.OnViewBoundsChanged(view);
 }
 
 WmWindow* AshDevToolsDOMAgent::GetWindowFromNodeId(int nodeId) {
@@ -179,6 +197,15 @@ int AshDevToolsDOMAgent::GetNodeIdFromWidget(views::Widget* widget) {
 int AshDevToolsDOMAgent::GetNodeIdFromView(views::View* view) {
   DCHECK(view_to_node_id_map_.count(view));
   return view_to_node_id_map_[view];
+}
+
+void AshDevToolsDOMAgent::AddObserver(AshDevToolsDOMAgentObserver* observer) {
+  observers_.AddObserver(observer);
+}
+
+void AshDevToolsDOMAgent::RemoveObserver(
+    AshDevToolsDOMAgentObserver* observer) {
+  observers_.RemoveObserver(observer);
 }
 
 std::unique_ptr<ui::devtools::protocol::DOM::Node>
