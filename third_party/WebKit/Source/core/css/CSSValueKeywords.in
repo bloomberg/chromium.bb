@@ -271,7 +271,7 @@ outside
 inside
 //
 // list-style-type
-// The order here must match the order of the EListStyleType enum in ComputedStyleConstants.h.
+// The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
 //
 disc
 circle
