@@ -42,25 +42,6 @@ XcodeWriter::TargetOsType GetTargetOs(const Args& args) {
   return XcodeWriter::WRITER_TARGET_OS_MACOS;
 }
 
-std::string GetArchs(const Args& args) {
-  const Value* target_cpu_value = args.GetArgOverride(variables::kTargetCpu);
-  if (target_cpu_value) {
-    if (target_cpu_value->type() == Value::STRING) {
-      if (target_cpu_value->string_value() == "x86")
-        return "i386";
-      if (target_cpu_value->string_value() == "x64")
-        return "x86_64";
-      if (target_cpu_value->string_value() == "arm")
-        return "armv7";
-      if (target_cpu_value->string_value() == "armv7")
-        return "armv7";
-      if (target_cpu_value->string_value() == "arm64")
-        return "armv64";
-    }
-  }
-  return "x86_64";
-}
-
 std::string GetBuildScript(const std::string& target_name,
                            const std::string& build_path,
                            const std::string& ninja_extra_args) {
@@ -157,8 +138,7 @@ bool XcodeWriter::RunAndWriteFiles(const std::string& workspace_name,
       attributes["TARGETED_DEVICE_FAMILY"] = "1,2";
       break;
     case XcodeWriter::WRITER_TARGET_OS_MACOS:
-      attributes["ARCHS"] = GetArchs(build_settings->build_args());
-      attributes["SDKROOT"] = "macosx10.11";
+      attributes["SDKROOT"] = "macosx";
       break;
   }
 
