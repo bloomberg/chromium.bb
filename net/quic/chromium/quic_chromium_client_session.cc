@@ -493,6 +493,7 @@ int QuicChromiumClientSession::TryCreateStream(
     return OK;
   }
 
+  request->pending_start_time_ = base::TimeTicks::Now();
   stream_requests_.push_back(request);
   UMA_HISTOGRAM_COUNTS_1000("Net.QuicSession.NumPendingStreamRequests",
                             stream_requests_.size());
@@ -801,6 +802,10 @@ void QuicChromiumClientSession::OnClosedStream() {
       !stream_requests_.empty() && crypto_stream_->encryption_established() &&
       !goaway_received() && !going_away_ && connection()->connected()) {
     StreamRequest* request = stream_requests_.front();
+    // TODO(ckrasic) - analyze data and then add logic to mark QUIC
+    // broken if wait times are excessive.
+    UMA_HISTOGRAM_TIMES("Net.QuicSession.PendingStreamsWaitTime",
+                        base::TimeTicks::Now() - request->pending_start_time_);
     stream_requests_.pop_front();
     request->OnRequestCompleteSuccess(CreateOutgoingReliableStreamImpl());
   }

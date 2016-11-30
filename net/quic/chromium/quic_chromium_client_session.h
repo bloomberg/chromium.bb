@@ -106,6 +106,8 @@ class NET_EXPORT_PRIVATE QuicChromiumClientSession
     base::WeakPtr<QuicChromiumClientSession> session_;
     CompletionCallback callback_;
     QuicChromiumClientStream** stream_;
+    // For tracking how much time pending stream requests wait.
+    base::TimeTicks pending_start_time_;
 
     DISALLOW_COPY_AND_ASSIGN(StreamRequest);
   };
