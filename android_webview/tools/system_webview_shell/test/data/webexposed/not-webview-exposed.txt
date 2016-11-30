@@ -68,7 +68,6 @@ interface HTMLInputElement : HTMLElement
     attribute chrome                   # crbug.com/618471
     method gc
     method webkitResolveLocalFileSystemURL
-    getter onerror
 
 # TODO(timvolodine): check screen orientation lock api
 # TODO(timvolodine): check notifications in service workers
