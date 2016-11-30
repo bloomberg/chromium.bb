@@ -82,8 +82,8 @@ TEST_P(AV1DenoiserTest, BitexactCheck) {
         motion_magnitude_random));
 
     // Test bitexactness.
-    for (int h = 0; h < (4 << b_height_log2_lookup[bs_]); ++h) {
-      for (int w = 0; w < (4 << b_width_log2_lookup[bs_]); ++w) {
+    for (int h = 0; h < block_size_high[bs_]; ++h) {
+      for (int w = 0; w < block_size_wide[bs_]; ++w) {
         EXPECT_EQ(avg_block_c[h * 64 + w], avg_block_sse2[h * 64 + w]);
       }
     }

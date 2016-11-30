@@ -460,8 +460,8 @@ static void get_energy_distribution_fine(const AV1_COMP *cpi, BLOCK_SIZE bsize,
                                          uint8_t *src, int src_stride,
                                          uint8_t *dst, int dst_stride,
                                          double *hordist, double *verdist) {
-  int bw = 4 << (b_width_log2_lookup[bsize]);
-  int bh = 4 << (b_height_log2_lookup[bsize]);
+  int bw = block_size_wide[bsize];
+  int bh = block_size_high[bsize];
   unsigned int esq[16] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
   unsigned int var[16];
   double total = 0;
