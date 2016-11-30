@@ -20,6 +20,9 @@
   <message name="IDS_AUTOFILL_WARNING_INSECURE_CONNECTION" desc="Warning text to show when credit card autofill is disabled because the website is not using a secure connection.">
     Automatic credit card filling is disabled because this form does not use a secure connection.
   </message>
+  <message name="IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE" desc="The text displayed with http bad warning message in the Autofill popup to direct the user to the Chrome security connection help center page.">
+    Learn more
+  </message>
   <message name="IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE" desc="Chrome can help the user fill credit card web forms by showing a pop-up with text suggestions next to a focused credit card text field. If the form is on an insecure site (e.g., http://), this text is shown on top of those suggestions.">
     Payment not secure
   </message>

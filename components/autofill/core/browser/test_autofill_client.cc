@@ -126,4 +126,6 @@ bool TestAutofillClient::ShouldShowSigninPromo() {
 
 void TestAutofillClient::StartSigninFlow() {}
 
+void TestAutofillClient::ShowHttpNotSecureExplanation() {}
+
 }  // namespace autofill

@@ -80,6 +80,8 @@ class MockAutofillClient : public TestAutofillClient {
 
   MOCK_METHOD0(StartSigninFlow, void());
 
+  MOCK_METHOD0(ShowHttpNotSecureExplanation, void());
+
  private:
   DISALLOW_COPY_AND_ASSIGN(MockAutofillClient);
 };
@@ -669,6 +671,15 @@ TEST_F(AutofillExternalDelegateUnitTest, SigninPromoMenuItem) {
   EXPECT_CALL(autofill_client_, HideAutofillPopup());
   external_delegate_->DidAcceptSuggestion(
       base::string16(), POPUP_ITEM_ID_CREDIT_CARD_SIGNIN_PROMO, 0);
+}
+
+// Test that autofill client will open the security indicator help center url
+// after the user accepted the http warning message suggestion item.
+TEST_F(AutofillExternalDelegateUnitTest, HttpWarningMessageItem) {
+  EXPECT_CALL(autofill_client_, ShowHttpNotSecureExplanation());
+  EXPECT_CALL(autofill_client_, HideAutofillPopup());
+  external_delegate_->DidAcceptSuggestion(
+      base::string16(), POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE, 0);
 }
 
 MATCHER_P(CreditCardMatches, card, "") {

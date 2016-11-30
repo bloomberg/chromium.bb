@@ -189,6 +189,9 @@ class AutofillClient {
   // Starts the signin flow. Should not be called if ShouldShowSigninPromo()
   // returns false.
   virtual void StartSigninFlow() = 0;
+
+  // Shows the explanation of http not secure warning message.
+  virtual void ShowHttpNotSecureExplanation() = 0;
 };
 
 }  // namespace autofill

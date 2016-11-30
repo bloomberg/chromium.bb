@@ -230,8 +230,8 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
 
       autofill::Suggestion password_field_http_warning_suggestion(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE),
-          std::string(), icon_str,
-          autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
+          icon_str, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
       suggestions.insert(suggestions.begin(),
                          password_field_http_warning_suggestion);
     }
@@ -267,6 +267,8 @@ void PasswordAutofillManager::OnPopupHidden() {
 void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
                                                   int identifier) {
   ClearPreviewedForm();
+  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE)
+    return;
   bool success =
       PreviewSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
   DCHECK(success);
@@ -275,9 +277,13 @@ void PasswordAutofillManager::DidSelectSuggestion(const base::string16& value,
 void PasswordAutofillManager::DidAcceptSuggestion(const base::string16& value,
                                                   int identifier,
                                                   int position) {
-  bool success =
-      FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
-  DCHECK(success);
+  if (identifier == autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+    autofill_client_->ShowHttpNotSecureExplanation();
+  } else {
+    bool success =
+        FillSuggestion(form_data_key_, GetUsernameFromSuggestion(value));
+    DCHECK(success);
+  }
   autofill_client_->HideAutofillPopup();
 }
 

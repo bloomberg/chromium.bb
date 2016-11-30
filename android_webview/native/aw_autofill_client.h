@@ -106,6 +106,7 @@ class AwAutofillClient : public autofill::AutofillClient,
   bool IsContextSecure(const GURL& form_origin) override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
+  void ShowHttpNotSecureExplanation() override;
 
   void Dismissed(JNIEnv* env,
                  const base::android::JavaParamRef<jobject>& obj);

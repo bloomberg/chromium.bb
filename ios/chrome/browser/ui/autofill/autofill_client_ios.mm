@@ -197,4 +197,8 @@ void AutofillClientIOS::StartSigninFlow() {
   NOTIMPLEMENTED();
 }
 
+void AutofillClientIOS::ShowHttpNotSecureExplanation() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace autofill

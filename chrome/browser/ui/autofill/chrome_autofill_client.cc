@@ -75,6 +75,13 @@ DEFINE_WEB_CONTENTS_USER_DATA_KEY(autofill::ChromeAutofillClient);
 
 namespace autofill {
 
+namespace {
+
+const char kSecurityIndicatorHelpCenterUrl[] =
+    "https://support.google.com/chrome/answer/95617?hl=en";
+
+}  // anonymous namespace
+
 ChromeAutofillClient::ChromeAutofillClient(content::WebContents* web_contents)
     : content::WebContentsObserver(web_contents),
       unmask_controller_(
@@ -390,6 +397,13 @@ void ChromeAutofillClient::StartSigninFlow() {
           signin::ManageAccountsParams(),
           signin_metrics::AccessPoint::ACCESS_POINT_AUTOFILL_DROPDOWN);
 #endif
+}
+
+void ChromeAutofillClient::ShowHttpNotSecureExplanation() {
+  web_contents()->OpenURL(content::OpenURLParams(
+      GURL(kSecurityIndicatorHelpCenterUrl), content::Referrer(),
+      WindowOpenDisposition::NEW_FOREGROUND_TAB, ui::PAGE_TRANSITION_LINK,
+      false /* is_renderer_initiated */));
 }
 
 }  // namespace autofill

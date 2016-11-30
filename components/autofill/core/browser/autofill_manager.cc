@@ -190,6 +190,8 @@ Suggestion CreateHttpWarningMessageSuggestionItem(const GURL& source_url) {
       l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE));
   cc_field_http_warning_suggestion.frontend_id =
       POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
+  cc_field_http_warning_suggestion.label =
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE);
   cc_field_http_warning_suggestion.icon =
       (source_url.is_valid() && source_url.SchemeIs("http"))
           ? base::ASCIIToUTF16("httpWarning")

@@ -91,6 +91,7 @@ class AutofillClientIOS : public AutofillClient {
   bool IsContextSecure(const GURL& form_origin) override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
+  void ShowHttpNotSecureExplanation() override;
 
  private:
   ios::ChromeBrowserState* browser_state_;

@@ -210,6 +210,8 @@ bool AwAutofillClient::ShouldShowSigninPromo() {
 
 void AwAutofillClient::StartSigninFlow() {}
 
+void AwAutofillClient::ShowHttpNotSecureExplanation() {}
+
 void AwAutofillClient::Dismissed(JNIEnv* env,
                                  const JavaParamRef<jobject>& obj) {
   anchor_view_.Reset();

@@ -70,6 +70,7 @@ class TestAutofillClient : public AutofillClient {
   bool IsContextSecure(const GURL& form_origin) override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
+  void ShowHttpNotSecureExplanation() override;
 
   void SetPrefs(std::unique_ptr<PrefService> prefs) {
     prefs_ = std::move(prefs);

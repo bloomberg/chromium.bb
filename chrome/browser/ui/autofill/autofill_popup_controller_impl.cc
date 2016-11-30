@@ -463,12 +463,9 @@ bool AutofillPopupControllerImpl::RemoveSelectedLine() {
 }
 
 bool AutofillPopupControllerImpl::CanAccept(int id) {
-  // TODO(lshang): Make POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE clickable
-  // and redirect to chrome security connection help center page.
   return id != POPUP_ITEM_ID_SEPARATOR &&
          id != POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE &&
-         id != POPUP_ITEM_ID_TITLE &&
-         id != POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
+         id != POPUP_ITEM_ID_TITLE;
 }
 
 bool AutofillPopupControllerImpl::HasSuggestions() {

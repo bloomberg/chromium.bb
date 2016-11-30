@@ -71,6 +71,7 @@ class MockAutofillClient : public autofill::TestAutofillClient {
                     const std::vector<Suggestion>& suggestions,
                     base::WeakPtr<autofill::AutofillPopupDelegate> delegate));
   MOCK_METHOD0(HideAutofillPopup, void());
+  MOCK_METHOD0(ShowHttpNotSecureExplanation, void());
 };
 
 }  // namespace
@@ -628,6 +629,14 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);
+
+  // Accepting the warning message should trigger a call to open the url and
+  // hide the popup.
+  EXPECT_CALL(*autofill_client, ShowHttpNotSecureExplanation());
+  EXPECT_CALL(*autofill_client, HideAutofillPopup());
+  password_autofill_manager_->DidAcceptSuggestion(
+      base::string16(), autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE,
+      0);
 }
 
 TEST_F(PasswordAutofillManagerTest, SecurePasswordFieldHttpWarningMessage) {

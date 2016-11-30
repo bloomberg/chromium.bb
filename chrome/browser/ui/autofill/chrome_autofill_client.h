@@ -80,6 +80,7 @@ class ChromeAutofillClient
   bool IsContextSecure(const GURL& form_origin) override;
   bool ShouldShowSigninPromo() override;
   void StartSigninFlow() override;
+  void ShowHttpNotSecureExplanation() override;
 
   // content::WebContentsObserver implementation.
   void MainFrameWasResized(bool width_changed) override;
