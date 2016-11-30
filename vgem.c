@@ -8,6 +8,9 @@
 #include "helpers.h"
 #include "util.h"
 
+#define MESA_LLVMPIPE_TILE_ORDER 6
+#define MESA_LLVMPIPE_TILE_SIZE (1 << MESA_LLVMPIPE_TILE_ORDER)
+
 static struct supported_combination combos[2] = {
 	{DRM_FORMAT_ABGR8888, DRM_FORMAT_MOD_NONE,
 		BO_USE_RENDERING | BO_USE_SW_READ_OFTEN | BO_USE_SW_WRITE_OFTEN},
@@ -19,6 +22,18 @@ static int vgem_init(struct driver *drv)
 {
 	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
 	return 0;
+}
+
+static int vgem_bo_create(struct bo *bo, uint32_t width, uint32_t height,
+			  uint32_t format, uint32_t flags)
+{
+	int ret = drv_dumb_bo_create(bo, ALIGN(width, MESA_LLVMPIPE_TILE_SIZE),
+				     ALIGN(height, MESA_LLVMPIPE_TILE_SIZE),
+				     format, flags);
+	bo->width = width;
+	bo->height = height;
+
+	return ret;
 }
 
 static uint32_t vgem_resolve_format(uint32_t format)
@@ -38,7 +53,7 @@ struct backend backend_vgem =
 {
 	.name = "vgem",
 	.init = vgem_init,
-	.bo_create = drv_dumb_bo_create,
+	.bo_create = vgem_bo_create,
 	.bo_destroy = drv_dumb_bo_destroy,
 	.bo_map = drv_dumb_bo_map,
 	.resolve_format = vgem_resolve_format,
