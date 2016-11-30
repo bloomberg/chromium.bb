@@ -2372,6 +2372,7 @@ interface HTMLMediaElement : HTMLElement
     getter played
     getter preload
     getter readyState
+    getter remote
     getter seekable
     getter seeking
     getter sinkId
@@ -4142,6 +4143,19 @@ interface ReadableStream
     method constructor
     method getReader
     method tee
+interface RemotePlayback : EventTarget
+    attribute @@toStringTag
+    getter onconnect
+    getter onconnecting
+    getter ondisconnect
+    getter state
+    method cancelWatchAvailability
+    method constructor
+    method prompt
+    method watchAvailability
+    setter onconnect
+    setter onconnecting
+    setter ondisconnect
 interface Request
     attribute @@toStringTag
     getter bodyUsed

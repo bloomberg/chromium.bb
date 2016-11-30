@@ -193,7 +193,7 @@ PushMessaging status=stable
 QuotaPromise status=experimental
 ReducedReferrerGranularity
 ReloadwithoutSubResourceCacheRevalidation
-RemotePlayback status=experimental
+RemotePlayback status=stable
 RenderingPipelineThrottling status=stable
 RenderingPipelineThrottlingLoadingIframes status=stable
 RenderUnicodeControlCharacters status=stable
