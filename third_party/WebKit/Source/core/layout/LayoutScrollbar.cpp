@@ -292,10 +292,12 @@ void LayoutScrollbar::updateScrollbarPart(ScrollbarPart partType,
     partLayoutObject = LayoutScrollbarPart::createAnonymous(
         &owningLayoutObject()->document(), m_scrollableArea, this, partType);
     m_parts.set(partType, partLayoutObject);
+    setNeedsPaintInvalidation(partType);
   } else if (partLayoutObject && !needLayoutObject) {
     m_parts.remove(partType);
     partLayoutObject->destroy();
-    partLayoutObject = 0;
+    partLayoutObject = nullptr;
+    setNeedsPaintInvalidation(partType);
   }
 
   if (partLayoutObject)
