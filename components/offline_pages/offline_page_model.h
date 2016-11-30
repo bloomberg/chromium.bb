@@ -20,9 +20,6 @@
 #include "components/offline_pages/offline_page_types.h"
 
 class GURL;
-namespace base {
-class Time;
-}  // namespace base
 
 namespace offline_pages {
 
@@ -154,10 +151,6 @@ class OfflinePageModel : public base::SupportsUserData {
   // Gets all offline pages.
   virtual void GetAllPages(const MultipleOfflinePageItemCallback& callback) = 0;
 
-  // Gets all offline pages including expired ones.
-  virtual void GetAllPagesWithExpired(
-      const MultipleOfflinePageItemCallback& callback) = 0;
-
   // Gets all offline ids where the offline page has the matching client id.
   virtual void GetOfflineIdsForClientId(
       const ClientId& client_id,
@@ -174,12 +167,6 @@ class OfflinePageModel : public base::SupportsUserData {
       const GURL& url,
       URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) = 0;
-
-  // Marks pages with |offline_ids| as expired and deletes the associated
-  // archive files.
-  virtual void ExpirePages(const std::vector<int64_t>& offline_ids,
-                           const base::Time& expiration_time,
-                           const base::Callback<void(bool)>& callback) = 0;
 
   // Returns the policy controller.
   virtual ClientPolicyController* GetPolicyController() = 0;

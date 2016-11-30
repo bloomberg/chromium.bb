@@ -89,8 +89,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback) override;
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
-  void GetAllPagesWithExpired(
-      const MultipleOfflinePageItemCallback& callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
@@ -101,9 +99,6 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const GURL& url,
       URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) override;
-  void ExpirePages(const std::vector<int64_t>& offline_ids,
-                   const base::Time& expiration_time,
-                   const base::Callback<void(bool)>& callback) override;
   ClientPolicyController* GetPolicyController() override;
 
   // Methods for testing only:
@@ -143,6 +138,11 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
       const MultipleOfflinePageItemCallback& callback) const;
   void MarkPageAccessedWhenLoadDone(int64_t offline_id);
 
+  // Check the consistency between metadata store and archives on disk,
+  // would delete the metadata entries which don't have an associated
+  // archive and the archives which doesn't have a metadata in the store.
+  // The expired pages (from previous versions) would also be cleared
+  // during this process.
   void CheckMetadataConsistency();
 
   // Callback for loading pages from the offline page metadata store.
@@ -194,14 +194,14 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   // Callbacks for checking metadata consistency.
   void CheckMetadataConsistencyForArchivePaths(
       const std::set<base::FilePath>& archive_paths);
-  // Callback called after headless archives deleted. Orphaned archives are
-  // archives files on disk which are not pointed to by any of the page items
-  // in metadata store.
-  void ExpirePagesMissingArchiveFile(
+  // Callbacks which would be called after orphaned archives are deleted.
+  // Orphaned archives are the files on disk which are not pointed to by any of
+  // the page entries in the metadata store.
+  void DeletePagesMissingArchiveFile(
       const std::set<base::FilePath>& archive_paths);
-  void OnExpirePagesMissingArchiveFileDone(
+  void OnDeletePagesMissingArchiveFileDone(
       const std::vector<int64_t>& offline_ids,
-      bool success);
+      DeletePageResult result);
   void DeleteOrphanedArchives(const std::set<base::FilePath>& archive_paths);
   void OnDeleteOrphanedArchivesDone(const std::vector<base::FilePath>& archives,
                                     bool success);
@@ -231,16 +231,12 @@ class OfflinePageModelImpl : public OfflinePageModel, public KeyedService {
   void DoDeleteCachedPagesByURLPredicate(const UrlPredicate& predicate,
                                          const DeletePageCallback& callback);
 
-  // Callback completing page expiration.
-  void OnExpirePageDone(const base::Time& expiration_time,
-                        std::unique_ptr<OfflinePagesUpdateResult> result);
-
-  // Clears expired pages if there are any.
+  // Clears expired pages if there are any or we're running out of storage.
   void ClearStorageIfNeeded(
       const OfflinePageStorageManager::ClearStorageCallback& callback);
 
   // Callback completing storage clearing.
-  void OnStorageCleared(size_t expired_page_count,
+  void OnStorageCleared(size_t cleared_page_count,
                         OfflinePageStorageManager::ClearStorageResult result);
 
   // Post task to clear storage.

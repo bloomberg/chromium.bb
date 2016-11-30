@@ -37,14 +37,6 @@ class OfflinePageModelQueryTest : public testing::Test {
   ClientPolicyController policy_;
   OfflinePageModelQueryBuilder builder_;
 
-  const OfflinePageItem expired_page() {
-    OfflinePageItem expiredTestItem(GURL("https://ktestitem1.com"), 3,
-                                    kClientId1, base::FilePath(), 3);
-    expiredTestItem.expiration_time = base::Time::Now();
-
-    return expiredTestItem;
-  }
-
   const OfflinePageItem download_page() {
     return OfflinePageItem(GURL("https://download.com"), 4,
                            {kDownloadNamespace, "id1"}, base::FilePath(), 4);
@@ -81,13 +73,11 @@ TEST_F(OfflinePageModelQueryTest, DefaultValues) {
   std::unique_ptr<OfflinePageModelQuery> query = builder_.Build(&policy_);
 
   EXPECT_NE(nullptr, query.get());
-  EXPECT_FALSE(query->GetAllowExpired());
   EXPECT_EQ(Requirement::UNSET, query->GetRestrictedToOfflineIds().first);
   EXPECT_FALSE(query->GetRestrictedToNamespaces().first);
 
   EXPECT_TRUE(query->Matches(kTestItem1));
   EXPECT_TRUE(query->Matches(kTestItem2));
-  EXPECT_FALSE(query->Matches(expired_page()));
 }
 
 TEST_F(OfflinePageModelQueryTest, OfflinePageIdsSet_Exclude) {
@@ -286,18 +276,6 @@ TEST_F(OfflinePageModelQueryTest, UrlsReplace) {
 
   EXPECT_FALSE(query->Matches(kTestItem1));
   EXPECT_TRUE(query->Matches(kTestItem2));
-}
-
-TEST_F(OfflinePageModelQueryTest, AllowExpired) {
-  std::unique_ptr<OfflinePageModelQuery> query =
-      builder_.AllowExpiredPages(true).Build(&policy_);
-
-  EXPECT_NE(nullptr, query.get());
-  EXPECT_TRUE(query->GetAllowExpired());
-
-  EXPECT_TRUE(query->Matches(kTestItem1));
-  EXPECT_TRUE(query->Matches(kTestItem2));
-  EXPECT_TRUE(query->Matches(expired_page()));
 }
 
 TEST_F(OfflinePageModelQueryTest, RequireSupportedByDownload_Only) {

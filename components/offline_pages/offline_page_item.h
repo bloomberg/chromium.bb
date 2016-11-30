@@ -56,9 +56,6 @@ struct OfflinePageItem {
 
   bool operator==(const OfflinePageItem& other) const;
 
-  // Returns whether the offline page is expired.
-  bool IsExpired() const;
-
   // The URL of the page. This is the last committed URL. In the case that
   // redirects occur, access |original_url| for the original URL.
   GURL url;
@@ -78,8 +75,6 @@ struct OfflinePageItem {
   base::Time creation_time;
   // The time when the offline archive was last accessed.
   base::Time last_access_time;
-  // The time when the offline page was expired.
-  base::Time expiration_time;
   // Number of times that the offline archive has been accessed.
   int access_count;
   // The title of the page at the time it was saved.

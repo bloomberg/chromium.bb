@@ -40,16 +40,12 @@ class OfflinePageModelQuery {
   std::pair<Requirement, std::set<ClientId>> GetRestrictedToClientIds() const;
   std::pair<Requirement, std::set<GURL>> GetRestrictedToUrls() const;
 
-  bool GetAllowExpired() const;
-
   // This is the workhorse function that is used by the in-memory offline page
   // model, given a page it will find out whether that page matches the query.
   bool Matches(const OfflinePageItem& page) const;
 
  private:
   friend class OfflinePageModelQueryBuilder;
-
-  bool allow_expired_ = false;
 
   std::unique_ptr<std::set<std::string>> restricted_to_namespaces_;
 
@@ -61,7 +57,7 @@ class OfflinePageModelQuery {
 };
 
 // Used to create an offline page model query.  QueryBuilders without
-// modifications create queries that allow all pages that are not expired.
+// modifications create queries that allow all pages.
 // Can restrict results by policies provided by |ClientPolicyController|, or by
 // individual features of pages. Each restriction comes with a |Requirement|
 // that can be used to specify whether the input restriction should include or
@@ -110,10 +106,6 @@ class OfflinePageModelQueryBuilder {
   OfflinePageModelQueryBuilder& RequireRestrictedToOriginalTab(
       Requirement original_tab);
 
-  // Resets whether we return expired pages.  If called multiple times the bit
-  // is overwritten and |allow_expired| from the last call is saved.
-  OfflinePageModelQueryBuilder& AllowExpiredPages(bool allow_expired);
-
   // Builds the query using the namespace policies provided by |controller|
   // This resets the internal state.  |controller| should not be |nullptr|.
   std::unique_ptr<OfflinePageModelQuery> Build(
@@ -134,8 +126,6 @@ class OfflinePageModelQueryBuilder {
   Requirement supported_by_download_ = Requirement::UNSET;
   Requirement shown_as_recently_visited_site_ = Requirement::UNSET;
   Requirement restricted_to_original_tab_ = Requirement::UNSET;
-
-  bool allow_expired_ = false;
 
   DISALLOW_COPY_AND_ASSIGN(OfflinePageModelQueryBuilder);
 };

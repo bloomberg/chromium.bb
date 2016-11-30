@@ -47,7 +47,6 @@ const int64_t kTestFileSize = 876543LL;
 const char* kTestPage1ClientId = "1234";
 const char* kTestPage2ClientId = "5678";
 const char* kTestPage3ClientId = "7890";
-const char* kTestPage4ClientId = "9876";
 
 void HasDuplicatesCallback(bool* out_has_duplicates,
                            base::Time* out_latest_saved_time,
@@ -168,9 +167,6 @@ void OfflinePageUtilsTest::SetLastPathCreatedByArchiver(
     const base::FilePath& file_path) {}
 
 void OfflinePageUtilsTest::CreateOfflinePages() {
-  OfflinePageModel* model =
-      OfflinePageModelFactory::GetForBrowserContext(profile());
-
   // Create page 1.
   std::unique_ptr<OfflinePageTestArchiver> archiver(BuildArchiver(
       kTestPage1Url, base::FilePath(FILE_PATH_LITERAL("page1.mhtml"))));
@@ -184,17 +180,6 @@ void OfflinePageUtilsTest::CreateOfflinePages() {
                            base::FilePath(FILE_PATH_LITERAL("page2.mhtml")));
   client_id.id = kTestPage2ClientId;
   SavePage(kTestPage2Url, client_id, std::move(archiver));
-
-  // Create page 4 - expired page.
-  archiver = BuildArchiver(kTestPage4Url,
-                           base::FilePath(FILE_PATH_LITERAL("page4.mhtml")));
-  client_id.id = kTestPage4ClientId;
-  SavePage(kTestPage4Url, client_id, std::move(archiver));
-  RunUntilIdle();
-  model->ExpirePages(
-      std::vector<int64_t>({offline_id()}), base::Time::Now(),
-      base::Bind(&OfflinePageUtilsTest::OnExpirePageDone, AsWeakPtr()));
-  RunUntilIdle();
 }
 
 void OfflinePageUtilsTest::CreateRequests() {

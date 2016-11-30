@@ -123,9 +123,6 @@ void DownloadUIAdapter::DeleteItem(const std::string& guid) {
 
   std::vector<int64_t> page_ids;
   page_ids.push_back(it->second->offline_id);
-  // TODO(dimich): This should be ExpirePages(...Now()..) when Expire is
-  // firing Observer method. The resulting Observer notification will update
-  // local cache.
   model_->DeletePagesByOfflineId(
       page_ids, base::Bind(&DownloadUIAdapter::OnDeletePagesDone,
                            weak_ptr_factory_.GetWeakPtr()));

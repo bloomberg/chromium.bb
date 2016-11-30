@@ -33,7 +33,6 @@ bool CreateOfflinePagesTable(sql::Connection* db) {
                       " file_size INTEGER NOT NULL,"
                       " last_access_time INTEGER NOT NULL,"
                       " access_count INTEGER NOT NULL,"
-                      " expiration_time INTEGER NOT NULL DEFAULT 0,"
                       " client_namespace VARCHAR NOT NULL,"
                       " client_id VARCHAR NOT NULL,"
                       " online_url VARCHAR NOT NULL,"
@@ -76,12 +75,12 @@ bool UpgradeFrom53(sql::Connection* db) {
   const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path) "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path) "
       "SELECT "
       "offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path "
       "FROM temp_" OFFLINE_PAGES_TABLE_NAME;
   return UpgradeWithQuery(db, kSql);
 }
@@ -90,12 +89,12 @@ bool UpgradeFrom54(sql::Connection* db) {
   const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path, title) "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title) "
       "SELECT "
       "offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path, title "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title "
       "FROM temp_" OFFLINE_PAGES_TABLE_NAME;
   return UpgradeWithQuery(db, kSql);
 }
@@ -104,12 +103,26 @@ bool UpgradeFrom55(sql::Connection* db) {
   const char kSql[] =
       "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path, title) "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title) "
       "SELECT "
       "offline_id, creation_time, file_size, last_access_time, "
-      "access_count, expiration_time, client_namespace, client_id, "
-      "online_url, file_path, title "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title "
+      "FROM temp_" OFFLINE_PAGES_TABLE_NAME;
+  return UpgradeWithQuery(db, kSql);
+}
+
+bool UpgradeFrom56(sql::Connection* db) {
+  const char kSql[] =
+      "INSERT INTO " OFFLINE_PAGES_TABLE_NAME
+      " (offline_id, creation_time, file_size, last_access_time, "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title, original_url) "
+      "SELECT "
+      "offline_id, creation_time, file_size, last_access_time, "
+      "access_count, client_namespace, client_id, online_url, "
+      "file_path, title, original_url "
       "FROM temp_" OFFLINE_PAGES_TABLE_NAME;
   return UpgradeWithQuery(db, kSql);
 }
@@ -127,7 +140,8 @@ bool CreateSchema(sql::Connection* db) {
   }
 
   // Upgrade section. Details are described in the header file.
-  if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "expiration_time")) {
+  if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "expiration_time") &&
+      !db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "title")) {
     if (!UpgradeFrom52(db))
       return false;
   } else if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "title")) {
@@ -138,6 +152,9 @@ bool CreateSchema(sql::Connection* db) {
       return false;
   } else if (!db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "original_url")) {
     if (!UpgradeFrom55(db))
+      return false;
+  } else if (db->DoesColumnExist(OFFLINE_PAGES_TABLE_NAME, "expiration_time")) {
+    if (!UpgradeFrom56(db))
       return false;
   }
 
@@ -183,18 +200,15 @@ OfflinePageItem MakeOfflinePageItem(sql::Statement* statement) {
   base::Time last_access_time =
       base::Time::FromInternalValue(statement->ColumnInt64(3));
   int access_count = statement->ColumnInt(4);
-  base::Time expiration_time =
-      base::Time::FromInternalValue(statement->ColumnInt64(5));
-  ClientId client_id(statement->ColumnString(6), statement->ColumnString(7));
-  GURL url(statement->ColumnString(8));
-  base::FilePath path(GetPathFromUTF8String(statement->ColumnString(9)));
-  base::string16 title = statement->ColumnString16(10);
-  GURL original_url(statement->ColumnString(11));
+  ClientId client_id(statement->ColumnString(5), statement->ColumnString(6));
+  GURL url(statement->ColumnString(7));
+  base::FilePath path(GetPathFromUTF8String(statement->ColumnString(8)));
+  base::string16 title = statement->ColumnString16(9);
+  GURL original_url(statement->ColumnString(10));
 
   OfflinePageItem item(url, id, client_id, path, file_size, creation_time);
   item.last_access_time = last_access_time;
   item.access_count = access_count;
-  item.expiration_time = expiration_time;
   item.title = title;
   item.original_url = original_url;
   return item;
@@ -207,9 +221,9 @@ ItemActionStatus Insert(sql::Connection* db, const OfflinePageItem& item) {
       "INSERT OR IGNORE INTO " OFFLINE_PAGES_TABLE_NAME
       " (offline_id, online_url, client_namespace, client_id, file_path, "
       "file_size, creation_time, last_access_time, access_count, "
-      "expiration_time, title, original_url)"
+      "title, original_url)"
       " VALUES "
-      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+      " (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
   statement.BindInt64(0, item.offline_id);
@@ -221,9 +235,8 @@ ItemActionStatus Insert(sql::Connection* db, const OfflinePageItem& item) {
   statement.BindInt64(6, item.creation_time.ToInternalValue());
   statement.BindInt64(7, item.last_access_time.ToInternalValue());
   statement.BindInt(8, item.access_count);
-  statement.BindInt64(9, item.expiration_time.ToInternalValue());
-  statement.BindString16(10, item.title);
-  statement.BindString(11, item.original_url.spec());
+  statement.BindString16(9, item.title);
+  statement.BindString(10, item.original_url.spec());
   if (!statement.Run())
     return ItemActionStatus::STORE_ERROR;
   if (db->GetLastChangeCount() == 0)
@@ -236,7 +249,7 @@ bool Update(sql::Connection* db, const OfflinePageItem& item) {
       "UPDATE OR IGNORE " OFFLINE_PAGES_TABLE_NAME
       " SET online_url = ?, client_namespace = ?, client_id = ?, file_path = ?,"
       " file_size = ?, creation_time = ?, last_access_time = ?,"
-      " access_count = ?, expiration_time = ?, title = ?, original_url = ?"
+      " access_count = ?, title = ?, original_url = ?"
       " WHERE offline_id = ?";
 
   sql::Statement statement(db->GetCachedStatement(SQL_FROM_HERE, kSql));
@@ -248,10 +261,9 @@ bool Update(sql::Connection* db, const OfflinePageItem& item) {
   statement.BindInt64(5, item.creation_time.ToInternalValue());
   statement.BindInt64(6, item.last_access_time.ToInternalValue());
   statement.BindInt(7, item.access_count);
-  statement.BindInt64(8, item.expiration_time.ToInternalValue());
-  statement.BindString16(9, item.title);
-  statement.BindString(10, item.original_url.spec());
-  statement.BindInt64(11, item.offline_id);
+  statement.BindString16(8, item.title);
+  statement.BindString(9, item.original_url.spec());
+  statement.BindInt64(10, item.offline_id);
   return statement.Run() && db->GetLastChangeCount() > 0;
 }
 

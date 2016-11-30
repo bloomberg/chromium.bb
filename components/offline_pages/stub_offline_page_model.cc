@@ -36,8 +36,6 @@ void StubOfflinePageModel::CheckPagesExistOffline(
     const CheckPagesExistOfflineCallback& callback) {}
 void StubOfflinePageModel::GetAllPages(
     const MultipleOfflinePageItemCallback& callback) {}
-void StubOfflinePageModel::GetAllPagesWithExpired(
-    const MultipleOfflinePageItemCallback& callback) {}
 void StubOfflinePageModel::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {}
@@ -48,10 +46,6 @@ void StubOfflinePageModel::GetPagesByURL(
     const GURL& url,
     URLSearchMode url_search_mode,
     const MultipleOfflinePageItemCallback& callback) {}
-void StubOfflinePageModel::ExpirePages(
-    const std::vector<int64_t>& offline_ids,
-    const base::Time& expiration_time,
-    const base::Callback<void(bool)>& callback) {}
 ClientPolicyController* StubOfflinePageModel::GetPolicyController() {
   return &policy_controller_;
 }

@@ -1117,66 +1117,18 @@ TEST_F(OfflinePageModelImplTest, DownloadMetrics) {
       "OfflinePages.DownloadDeletedPageDuplicateCount", 2, 1);
 }
 
-TEST_F(OfflinePageModelImplTest, ExpirePages) {
-  // We will save 3 pages and then expire 2 of them.
-  std::pair<SavePageResult, int64_t> saved_pages[3];
-  saved_pages[0] = SavePage(kTestUrl, kTestClientId1);
-  saved_pages[1] = SavePage(kTestUrl2, kTestClientId2);
-  saved_pages[2] = SavePage(kTestUrl3, kTestClientId3);
-
-  for (const auto& save_result : saved_pages) {
-    ASSERT_EQ(OfflinePageModel::SavePageResult::SUCCESS,
-              std::get<0>(save_result));
-  }
-
-  // First two pages will be expired.
-  std::vector<int64_t> pages_to_expire = {std::get<1>(saved_pages[0]),
-                                          std::get<1>(saved_pages[1])};
-  // Pages are marked as expired if they have an expiration_time set.
-  base::Time expiration_time =
-      base::Time::Now() + base::TimeDelta::FromMinutes(5);
-
-  model()->ExpirePages(
-      pages_to_expire, expiration_time,
-      base::Bind(&OfflinePageModelImplTest::OnPagesExpired, AsWeakPtr()));
-  PumpLoop();
-
-  const std::vector<OfflinePageItem>& offline_pages = GetAllPages();
-  for (const auto& offline_page : offline_pages) {
-    if (std::find(pages_to_expire.begin(), pages_to_expire.end(),
-                  offline_page.offline_id) != pages_to_expire.end()) {
-      EXPECT_EQ(expiration_time, offline_page.expiration_time);
-      EXPECT_TRUE(offline_page.IsExpired());
-    } else {
-      EXPECT_EQ(base::Time(), offline_page.expiration_time);
-      EXPECT_FALSE(offline_page.IsExpired());
-    }
-  }
-  EXPECT_TRUE(last_expire_page_result());
-}
-
 TEST_F(OfflinePageModelImplTest, GetPagesByClientIds) {
-  // We will save 3 pages.  One will be expired.
+  // We will save 2 pages.
   std::pair<SavePageResult, int64_t> saved_pages[3];
   saved_pages[0] = SavePage(kTestUrl, kTestClientId1);
   saved_pages[1] = SavePage(kTestUrl2, kTestClientId2);
-  saved_pages[2] = SavePage(kTestUrl3, kTestClientId3);
 
   for (const auto& save_result : saved_pages) {
     ASSERT_EQ(OfflinePageModel::SavePageResult::SUCCESS,
               std::get<0>(save_result));
   }
 
-  std::vector<int64_t> pages_to_expire = {std::get<1>(saved_pages[0])};
-  // Pages are marked as expired if they have an expiration_time set.
-  base::Time expiration_time =
-      base::Time::Now() + base::TimeDelta::FromMinutes(5);
-  model()->ExpirePages(
-      pages_to_expire, expiration_time,
-      base::Bind(&OfflinePageModelImplTest::OnPagesExpired, AsWeakPtr()));
-  PumpLoop();
-
-  std::vector<ClientId> client_ids = {kTestClientId1, kTestClientId2};
+  std::vector<ClientId> client_ids = {kTestClientId2};
   std::vector<OfflinePageItem> offline_pages = GetPagesByClientIds(client_ids);
   EXPECT_EQ(1U, offline_pages.size());
 

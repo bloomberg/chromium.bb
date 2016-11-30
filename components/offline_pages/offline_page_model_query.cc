@@ -61,19 +61,12 @@ OfflinePageModelQueryBuilder::RequireRestrictedToOriginalTab(
   return *this;
 }
 
-OfflinePageModelQueryBuilder& OfflinePageModelQueryBuilder::AllowExpiredPages(
-    bool allow_expired) {
-  allow_expired_ = allow_expired;
-  return *this;
-}
-
 std::unique_ptr<OfflinePageModelQuery> OfflinePageModelQueryBuilder::Build(
     ClientPolicyController* controller) {
   DCHECK(controller);
 
   auto query = base::MakeUnique<OfflinePageModelQuery>();
 
-  query->allow_expired_ = allow_expired_;
   query->urls_ = std::make_pair(
       urls_.first, std::set<GURL>(urls_.second.begin(), urls_.second.end()));
   urls_ = std::make_pair(Requirement::UNSET, std::vector<GURL>());
@@ -165,14 +158,7 @@ OfflinePageModelQuery::GetRestrictedToUrls() const {
   return urls_;
 }
 
-bool OfflinePageModelQuery::GetAllowExpired() const {
-  return allow_expired_;
-}
-
 bool OfflinePageModelQuery::Matches(const OfflinePageItem& item) const {
-  if (!allow_expired_ && item.IsExpired())
-    return false;
-
   switch (offline_ids_.first) {
     case Requirement::UNSET:
       break;

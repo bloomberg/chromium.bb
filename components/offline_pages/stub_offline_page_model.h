@@ -46,8 +46,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
       const std::set<GURL>& urls,
       const CheckPagesExistOfflineCallback& callback) override;
   void GetAllPages(const MultipleOfflinePageItemCallback& callback) override;
-  void GetAllPagesWithExpired(
-      const MultipleOfflinePageItemCallback& callback) override;
   void GetOfflineIdsForClientId(
       const ClientId& client_id,
       const MultipleOfflineIdCallback& callback) override;
@@ -58,9 +56,6 @@ class StubOfflinePageModel : public OfflinePageModel, public KeyedService {
       const GURL& url,
       URLSearchMode url_search_mode,
       const MultipleOfflinePageItemCallback& callback) override;
-  void ExpirePages(const std::vector<int64_t>& offline_ids,
-                   const base::Time& expiration_time,
-                   const base::Callback<void(bool)>& callback) override;
   ClientPolicyController* GetPolicyController() override;
   bool is_loaded() const override;
   OfflineEventLogger* GetLogger() override;

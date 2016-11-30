@@ -42,7 +42,7 @@ class ClientPolicyController;
 class OfflinePageModel;
 
 // This class is used for storage management of offline pages. It provides
-// a ClearPagesIfNeeded method which is used to clear expired offline pages
+// a ClearPagesIfNeeded method which is used to clear outdated offline pages
 // based on last_access_time and lifetime policy of its namespace.
 // It has its own throttle mechanism so calling the method would not be
 // guaranteed to clear the pages immediately.
@@ -52,11 +52,12 @@ class OfflinePageModel;
 class OfflinePageStorageManager {
  public:
   enum class ClearStorageResult {
-    SUCCESS,                     // Cleared successfully.
-    UNNECESSARY,                 // No expired pages.
-    EXPIRE_FAILURE,              // Expiration failed.
-    DELETE_FAILURE,              // Deletion failed.
-    EXPIRE_AND_DELETE_FAILURES,  // Both expiration and deletion failed.
+    SUCCESS,                                // Cleared successfully.
+    UNNECESSARY,                            // No expired pages.
+    DEPRECATED_EXPIRE_FAILURE,              // Expiration failed. (DEPRECATED)
+    DELETE_FAILURE,                         // Deletion failed.
+    DEPRECATED_EXPIRE_AND_DELETE_FAILURES,  // Both expiration and deletion
+                                            // failed. (DEPRECATED)
     // NOTE: always keep this entry at the end. Add new result types only
     // immediately above this line. Make sure to update the corresponding
     // histogram enum accordingly.
@@ -64,8 +65,8 @@ class OfflinePageStorageManager {
   };
 
   // Callback used when calling ClearPagesIfNeeded.
-  // size_t: the number of expired pages.
-  // ClearStorageResult: result of expiring pages in storage.
+  // size_t: the number of cleared pages.
+  // ClearStorageResult: result of clearing pages in storage.
   typedef base::Callback<void(size_t, ClearStorageResult)> ClearStorageCallback;
 
   explicit OfflinePageStorageManager(OfflinePageModel* model,
@@ -87,11 +88,11 @@ class OfflinePageStorageManager {
  private:
   // Enum indicating how to clear the pages.
   enum class ClearMode {
-    // Using normal expiration logic to expire pages. Will reduce the storage
+    // Using normal expiration logic to clear pages. Will reduce the storage
     // usage down below the threshold.
     DEFAULT,
-    // No need to expire any page (no pages in the model or no expired
-    // pages and we're not exceeding the storage limit.)
+    // No need to clear any page (no pages in the model or no expired pages and
+    // we're not exceeding the storage limit.)
     NOT_NEEDED,
   };
 
@@ -106,32 +107,22 @@ class OfflinePageStorageManager {
       const ArchiveManager::StorageStats& storage_stats,
       const MultipleOfflinePageItemResult& pages);
 
-  // Callback called after expired pages have been deleted.
-  void OnPagesExpired(const ClearStorageCallback& callback,
-                      size_t pages_to_clear,
-                      const std::vector<int64_t>& page_ids_to_remove,
-                      bool expiration_succeeded);
+  // Callback called after clearing expired pages from model.
+  void OnExpiredPagesCleared(const ClearStorageCallback& callback,
+                             size_t pages_cleared,
+                             DeletePageResult result);
 
-  // Callback called after clearing outdated pages from model.
-  void OnOutdatedPagesCleared(const ClearStorageCallback& callback,
-                              size_t pages_cleared,
-                              bool expiration_succeeded,
-                              DeletePageResult result);
-
-  // Gets offline IDs of both pages that should be expired and the ones that
-  // need to be removed from metadata store. |page_ids_to_expire| will have
-  // the pages to be expired, |page_ids_to_remove| will have the pages to be
-  // removed.
+  // Gets offline IDs of pages that should be cleared based on current |stats|
+  // and return the IDs in |page_ids_to_clear|.
   void GetPageIdsToClear(const MultipleOfflinePageItemResult& pages,
                          const ArchiveManager::StorageStats& stats,
-                         std::vector<int64_t>* page_ids_to_expire,
-                         std::vector<int64_t>* page_ids_to_remove);
+                         std::vector<int64_t>* page_ids_to_clear);
 
   // Determines if manager should clear pages.
   ClearMode ShouldClearPages(const ArchiveManager::StorageStats& storage_stats);
 
-  // Returns true if |page| is expired comparing to |clear_time_|.
-  bool ShouldBeExpired(const OfflinePageItem& page) const;
+  // Returns true if |page| is should be cleared based on |clear_time_|.
+  bool IsExpired(const OfflinePageItem& page) const;
 
   // Returns true if we're currently doing a cleanup.
   bool IsInProgress() const;

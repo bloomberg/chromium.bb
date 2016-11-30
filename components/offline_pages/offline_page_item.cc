@@ -66,15 +66,10 @@ bool OfflinePageItem::operator==(const OfflinePageItem& other) const {
          file_path == other.file_path &&
          creation_time == other.creation_time &&
          last_access_time == other.last_access_time &&
-         expiration_time == other.expiration_time &&
          access_count == other.access_count &&
          title == other.title &&
          flags == other.flags &&
          original_url == other.original_url;
-}
-
-bool OfflinePageItem::IsExpired() const {
-  return creation_time < expiration_time;
 }
 
 }  // namespace offline_pages

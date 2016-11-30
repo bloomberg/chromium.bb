@@ -380,7 +380,7 @@ void OfflinePageModelImpl::MarkPageAccessedWhenLoadDone(int64_t offline_id) {
   DCHECK(is_loaded_);
 
   auto iter = offline_pages_.find(offline_id);
-  if (iter == offline_pages_.end() || iter->second.IsExpired())
+  if (iter == offline_pages_.end())
     return;
 
   // Make a copy of the cached item and update it. The cached item should only
@@ -414,7 +414,7 @@ void OfflinePageModelImpl::DoDeletePagesByOfflineId(
   std::vector<base::FilePath> paths_to_delete;
   for (const auto& offline_id : offline_ids) {
     auto iter = offline_pages_.find(offline_id);
-    if (iter != offline_pages_.end() && !iter->second.IsExpired()) {
+    if (iter != offline_pages_.end()) {
       paths_to_delete.push_back(iter->second.file_path);
     }
   }
@@ -435,10 +435,8 @@ void OfflinePageModelImpl::DeletePagesByClientIds(
     const std::vector<ClientId>& client_ids,
     const DeletePageCallback& callback) {
   OfflinePageModelQueryBuilder builder;
-  builder
-      .SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
-                    client_ids)
-      .AllowExpiredPages(true);
+  builder.SetClientIds(OfflinePageModelQuery::Requirement::INCLUDE_MATCHING,
+                       client_ids);
   auto delete_pages = base::Bind(&OfflinePageModelImpl::DeletePages,
                                  weak_ptr_factory_.GetWeakPtr(), callback);
   RunWhenLoaded(base::Bind(
@@ -551,17 +549,6 @@ void OfflinePageModelImpl::GetAllPages(
                  base::Passed(builder.Build(GetPolicyController())), callback));
 }
 
-void OfflinePageModelImpl::GetAllPagesWithExpired(
-    const MultipleOfflinePageItemCallback& callback) {
-  OfflinePageModelQueryBuilder builder;
-  builder.AllowExpiredPages(true);
-
-  RunWhenLoaded(
-      base::Bind(&OfflinePageModelImpl::GetPagesMatchingQueryWhenLoadDone,
-                 weak_ptr_factory_.GetWeakPtr(),
-                 base::Passed(builder.Build(GetPolicyController())), callback));
-}
-
 void OfflinePageModelImpl::GetOfflineIdsForClientId(
     const ClientId& client_id,
     const MultipleOfflineIdCallback& callback) {
@@ -585,10 +572,8 @@ const std::vector<int64_t> OfflinePageModelImpl::MaybeGetOfflineIdsForClientId(
   // We want only all pages, including those marked for deletion.
   // TODO(fgorski): actually use an index rather than linear scan.
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.client_id == client_id &&
-        !id_page_pair.second.IsExpired()) {
+    if (id_page_pair.second.client_id == client_id)
       results.push_back(id_page_pair.second.offline_id);
-    }
   }
   return results;
 }
@@ -645,8 +630,6 @@ void OfflinePageModelImpl::GetPagesByURLWhenLoadDone(
       url.ReplaceComponents(remove_params);
 
   for (const auto& id_page_pair : offline_pages_) {
-    if (id_page_pair.second.IsExpired())
-      continue;
     // First, search by last committed URL with fragment stripped.
     if (url_without_fragment ==
             id_page_pair.second.url.ReplaceComponents(remove_params)) {
@@ -670,65 +653,6 @@ void OfflinePageModelImpl::CheckMetadataConsistency() {
   archive_manager_->GetAllArchives(
       base::Bind(&OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths,
                  weak_ptr_factory_.GetWeakPtr()));
-}
-
-void OfflinePageModelImpl::ExpirePages(
-    const std::vector<int64_t>& offline_ids,
-    const base::Time& expiration_time,
-    const base::Callback<void(bool)>& callback) {
-  std::vector<base::FilePath> paths_to_delete;
-  std::vector<OfflinePageItem> items_to_update;
-  for (int64_t offline_id : offline_ids) {
-    auto iter = offline_pages_.find(offline_id);
-    if (iter == offline_pages_.end())
-      continue;
-
-    OfflinePageItem offline_page = iter->second;
-    paths_to_delete.push_back(offline_page.file_path);
-    offline_page.expiration_time = expiration_time;
-
-    items_to_update.push_back(offline_page);
-  }
-
-  store_->UpdateOfflinePages(
-      items_to_update,
-      base::Bind(&OfflinePageModelImpl::OnExpirePageDone,
-                 weak_ptr_factory_.GetWeakPtr(), expiration_time));
-
-  if (paths_to_delete.empty()) {
-    callback.Run(true);
-    return;
-  }
-  archive_manager_->DeleteMultipleArchives(paths_to_delete, callback);
-}
-
-void OfflinePageModelImpl::OnExpirePageDone(
-    const base::Time& expiration_time,
-    std::unique_ptr<OfflinePagesUpdateResult> result) {
-  UMA_HISTOGRAM_BOOLEAN("OfflinePages.ExpirePage.StoreUpdateResult",
-                        result->updated_items.size() > 0);
-  for (const auto& expired_page : result->updated_items) {
-    const auto& iter = offline_pages_.find(expired_page.offline_id);
-    if (iter == offline_pages_.end())
-      continue;
-
-    iter->second.expiration_time = expiration_time;
-    ClientId client_id = iter->second.client_id;
-    offline_event_logger_.RecordPageExpired(
-        std::to_string(expired_page.offline_id));
-    base::HistogramBase* histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(client_id, "OfflinePages.ExpirePage.PageLifetime"),
-        1, base::TimeDelta::FromDays(30).InMinutes(), 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add((expiration_time - iter->second.creation_time).InMinutes());
-    histogram = base::Histogram::FactoryGet(
-        AddHistogramSuffix(client_id,
-                           "OfflinePages.ExpirePage.TimeSinceLastAccess"),
-        1, base::TimeDelta::FromDays(30).InMinutes(), 50,
-        base::HistogramBase::kUmaTargetedHistogramFlag);
-    histogram->Add(
-        (expiration_time - iter->second.last_access_time).InMinutes());
-  }
 }
 
 ClientPolicyController* OfflinePageModelImpl::GetPolicyController() {
@@ -1045,11 +969,11 @@ void OfflinePageModelImpl::InformDeletePageDone(
 
 void OfflinePageModelImpl::CheckMetadataConsistencyForArchivePaths(
     const std::set<base::FilePath>& archive_paths) {
-  ExpirePagesMissingArchiveFile(archive_paths);
+  DeletePagesMissingArchiveFile(archive_paths);
   DeleteOrphanedArchives(archive_paths);
 }
 
-void OfflinePageModelImpl::ExpirePagesMissingArchiveFile(
+void OfflinePageModelImpl::DeletePagesMissingArchiveFile(
     const std::set<base::FilePath>& archive_paths) {
   std::vector<int64_t> ids_of_pages_missing_archive_file;
   for (const auto& id_page_pair : offline_pages_) {
@@ -1060,20 +984,22 @@ void OfflinePageModelImpl::ExpirePagesMissingArchiveFile(
   if (ids_of_pages_missing_archive_file.empty())
     return;
 
-  ExpirePages(
-      ids_of_pages_missing_archive_file, GetCurrentTime(),
-      base::Bind(&OfflinePageModelImpl::OnExpirePagesMissingArchiveFileDone,
+  DeletePagesByOfflineId(
+      ids_of_pages_missing_archive_file,
+      base::Bind(&OfflinePageModelImpl::OnDeletePagesMissingArchiveFileDone,
                  weak_ptr_factory_.GetWeakPtr(),
                  ids_of_pages_missing_archive_file));
 }
 
-void OfflinePageModelImpl::OnExpirePagesMissingArchiveFileDone(
+void OfflinePageModelImpl::OnDeletePagesMissingArchiveFileDone(
     const std::vector<int64_t>& offline_ids,
-    bool success) {
+    DeletePageResult result) {
   UMA_HISTOGRAM_COUNTS("OfflinePages.Consistency.PagesMissingArchiveFileCount",
                        static_cast<int32_t>(offline_ids.size()));
-  UMA_HISTOGRAM_BOOLEAN(
-      "OfflinePages.Consistency.ExpirePagesMissingArchiveFileResult", success);
+  UMA_HISTOGRAM_ENUMERATION(
+      "OfflinePages.Consistency.DeletePagesMissingArchiveFileResult",
+      static_cast<int>(result),
+      static_cast<int>(DeletePageResult::RESULT_COUNT));
 }
 
 void OfflinePageModelImpl::DeleteOrphanedArchives(
@@ -1120,14 +1046,14 @@ void OfflinePageModelImpl::ClearStorageIfNeeded(
   storage_manager_->ClearPagesIfNeeded(callback);
 }
 
-void OfflinePageModelImpl::OnStorageCleared(size_t expired_page_count,
+void OfflinePageModelImpl::OnStorageCleared(size_t deleted_page_count,
                                             ClearStorageResult result) {
   UMA_HISTOGRAM_ENUMERATION("OfflinePages.ClearStorageResult",
                             static_cast<int>(result),
                             static_cast<int>(ClearStorageResult::RESULT_COUNT));
-  if (expired_page_count > 0) {
-    UMA_HISTOGRAM_COUNTS("OfflinePages.ExpirePage.BatchSize",
-                         static_cast<int32_t>(expired_page_count));
+  if (deleted_page_count > 0) {
+    UMA_HISTOGRAM_COUNTS("OfflinePages.ClearStorageBatchSize",
+                         static_cast<int32_t>(deleted_page_count));
   }
 }
 

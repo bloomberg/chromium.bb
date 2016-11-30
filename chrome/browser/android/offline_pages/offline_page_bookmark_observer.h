@@ -38,11 +38,11 @@ class OfflinePageBookmarkObserver
                            const std::set<GURL>& removed_urls) override;
 
  private:
-  // Does work for actual expiring.
-  void DoExpireRemovedBookmarkPages(const MultipleOfflineIdResult& offline_ids);
+  // Does work for actual deleting removed bookmark pages.
+  void DoDeleteRemovedBookmarkPages(const MultipleOfflineIdResult& offline_ids);
 
-  // Callback for expiring removed bookmark pages.
-  void OnExpireRemovedBookmarkPagesDone(bool result);
+  // Callback for deleting removed bookmark pages.
+  void OnDeleteRemovedBookmarkPagesDone(DeletePageResult result);
 
   content::BrowserContext* context_;
 
