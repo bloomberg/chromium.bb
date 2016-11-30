@@ -248,6 +248,12 @@ cr.define('settings_people_page_sync_page', function() {
 
         // Make sure the checkbox is enabled and checked.
         var link = syncPage.$.paymentLearnMore;
+
+        // Suppress opening a new tab, since then the test will continue running
+        // on a background tab (which has throttled timers) and will timeout.
+        link.target = '';
+        link.href = '#';
+
         assertEquals('PAPER-CHECKBOX', link.parentNode.nodeName);
         assertFalse(link.parentNode.disabled);
         assertTrue(link.parentNode.checked);
