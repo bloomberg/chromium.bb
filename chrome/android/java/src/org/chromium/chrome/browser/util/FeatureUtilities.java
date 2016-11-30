@@ -27,6 +27,7 @@ import org.chromium.chrome.browser.ApplicationLifetime;
 import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.chrome.browser.ChromeSwitches;
 import org.chromium.chrome.browser.download.DownloadUtils;
+import org.chromium.chrome.browser.firstrun.FirstRunGlueImpl;
 import org.chromium.chrome.browser.instantapps.InstantAppsHandler;
 import org.chromium.chrome.browser.preferences.ChromePreferenceManager;
 import org.chromium.chrome.browser.tabmodel.DocumentModeAssassin;
@@ -191,6 +192,7 @@ public class FeatureUtilities {
         InstantAppsHandler.getInstance().cacheInstantAppsEnabled();
         ChromeWebApkHost.cacheEnabledStateForNextLaunch();
         cacheChromeHomeEnabled();
+        FirstRunGlueImpl.cacheFirstRunPrefs();
     }
 
     /**
