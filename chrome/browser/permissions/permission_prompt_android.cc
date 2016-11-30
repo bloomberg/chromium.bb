@@ -68,7 +68,6 @@ gfx::NativeWindow PermissionPromptAndroid::GetNativeWindow() {
 }
 
 void PermissionPromptAndroid::Closing() {
-  infobar_ = nullptr;
   if (delegate_)
     delegate_->Closing();
 }

@@ -78,6 +78,11 @@ bool GroupedPermissionInfoBarDelegate::Cancel() {
   return true;
 }
 
+void GroupedPermissionInfoBarDelegate::InfoBarDismissed() {
+  if (permission_prompt_)
+    permission_prompt_->Closing();
+}
+
 void GroupedPermissionInfoBarDelegate::PermissionPromptDestroyed() {
   permission_prompt_ = nullptr;
 }

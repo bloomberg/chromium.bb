@@ -51,6 +51,7 @@ class GroupedPermissionInfoBarDelegate : public ConfirmInfoBarDelegate {
   base::string16 GetMessageText() const override;
   bool Accept() override;
   bool Cancel() override;
+  void InfoBarDismissed() override;
 
   void PermissionPromptDestroyed();
 

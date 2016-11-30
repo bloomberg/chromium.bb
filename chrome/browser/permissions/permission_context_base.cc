@@ -224,26 +224,26 @@ void PermissionContextBase::PermissionDecided(
     const BrowserPermissionCallback& callback,
     bool persist,
     ContentSetting content_setting) {
-#if !defined(OS_ANDROID)
-  // Infobar persistence and its related UMA is tracked on the infobar
-  // controller directly.
-  PermissionRequestGestureType gesture_type =
-      user_gesture ? PermissionRequestGestureType::GESTURE
-                   : PermissionRequestGestureType::NO_GESTURE;
-  DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
-         content_setting == CONTENT_SETTING_BLOCK ||
-         content_setting == CONTENT_SETTING_DEFAULT);
-  if (content_setting == CONTENT_SETTING_ALLOW) {
-    PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
-                                         requesting_origin, profile_);
-  } else if (content_setting == CONTENT_SETTING_BLOCK) {
-    PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
-                                        requesting_origin, profile_);
-  } else {
-    PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
+  if (PermissionRequestManager::IsEnabled()) {
+    // Infobar persistence and its related UMA is tracked on the infobar
+    // controller directly.
+    PermissionRequestGestureType gesture_type =
+        user_gesture ? PermissionRequestGestureType::GESTURE
+                     : PermissionRequestGestureType::NO_GESTURE;
+    DCHECK(content_setting == CONTENT_SETTING_ALLOW ||
+           content_setting == CONTENT_SETTING_BLOCK ||
+           content_setting == CONTENT_SETTING_DEFAULT);
+    if (content_setting == CONTENT_SETTING_ALLOW) {
+      PermissionUmaUtil::PermissionGranted(permission_type_, gesture_type,
                                            requesting_origin, profile_);
+    } else if (content_setting == CONTENT_SETTING_BLOCK) {
+      PermissionUmaUtil::PermissionDenied(permission_type_, gesture_type,
+                                          requesting_origin, profile_);
+    } else {
+      PermissionUmaUtil::PermissionDismissed(permission_type_, gesture_type,
+                                             requesting_origin, profile_);
+    }
   }
-#endif
 
   // Check if we should convert a dismiss decision into a block decision. This
   // is gated on enabling the kBlockPromptsIfDismissedOften feature.
