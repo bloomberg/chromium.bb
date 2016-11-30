@@ -148,11 +148,6 @@ public interface TabObserver {
      */
     void onContextualActionBarVisibilityChanged(Tab tab, boolean visible);
 
-    /**
-     * Called when the WebContents Instant support is disabled.
-     */
-    void onWebContentsInstantSupportDisabled();
-
     // WebContentsDelegateAndroid methods ---------------------------------------------------------
 
     /**

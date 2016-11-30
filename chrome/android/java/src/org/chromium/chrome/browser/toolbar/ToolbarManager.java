@@ -308,11 +308,6 @@ public class ToolbarManager implements ToolbarTabController, UrlFocusChangeListe
             }
 
             @Override
-            public void onWebContentsInstantSupportDisabled() {
-                mLocationBar.setUrlToPageUrl();
-            }
-
-            @Override
             public void onDidNavigateMainFrame(Tab tab, String url, String baseUrl,
                     boolean isNavigationToDifferentPage, boolean isFragmentNavigation,
                     int statusCode) {

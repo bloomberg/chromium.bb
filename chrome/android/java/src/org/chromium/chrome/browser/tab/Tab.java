@@ -2317,15 +2317,6 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
     }
 
     /**
-     * A helper method to allow subclasses to handle the Instant support
-     * disabled event.
-     */
-    @CalledByNative
-    private void onWebContentsInstantSupportDisabled() {
-        for (TabObserver observer : mObservers) observer.onWebContentsInstantSupportDisabled();
-    }
-
-    /**
      * @return The {@link WindowAndroid} associated with this {@link Tab}.
      */
     public WindowAndroid getWindowAndroid() {

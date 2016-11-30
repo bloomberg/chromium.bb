@@ -26,12 +26,9 @@
 #include "chrome/browser/profiles/incognito_helpers.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
@@ -46,7 +43,6 @@
 #include "components/omnibox/browser/omnibox_log.h"
 #include "components/omnibox/browser/search_provider.h"
 #include "components/prefs/pref_service.h"
-#include "components/search/search.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/toolbar/toolbar_model.h"
 #include "components/url_formatter/url_formatter.h"
@@ -342,31 +338,7 @@ void AutocompleteControllerAndroid::InitJNI(JNIEnv* env, jobject obj) {
 
 void AutocompleteControllerAndroid::OnResultChanged(
     bool default_match_changed) {
-  if (!autocomplete_controller_)
-    return;
-
-  const AutocompleteResult& result = autocomplete_controller_->result();
-  const AutocompleteResult::const_iterator default_match(
-      result.default_match());
-  if ((default_match != result.end()) && default_match_changed &&
-      search::IsInstantExtendedAPIEnabled() &&
-      search::ShouldPrefetchSearchResults()) {
-    InstantSuggestion prefetch_suggestion;
-    // If the default match should be prefetched, do that.
-    if (SearchProvider::ShouldPrefetch(*default_match)) {
-      prefetch_suggestion.text = default_match->contents;
-      prefetch_suggestion.metadata =
-          SearchProvider::GetSuggestMetadata(*default_match);
-    }
-    // Send the prefetch suggestion unconditionally to the Instant search base
-    // page. If there is no suggestion to prefetch, we need to send a blank
-    // query to clear the prefetched results.
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(profile_);
-    if (prerenderer)
-      prerenderer->Prerender(prefetch_suggestion);
-  }
-  if (!inside_synchronous_start_)
+  if (autocomplete_controller_ && !inside_synchronous_start_)
     NotifySuggestionsReceived(autocomplete_controller_->result());
 }
 

@@ -37,9 +37,6 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_android.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/search/instant_service.h"
-#include "chrome/browser/search/instant_service_factory.h"
-#include "chrome/browser/search/search.h"
 #include "chrome/browser/sessions/session_tab_helper.h"
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
@@ -51,12 +48,9 @@
 #include "chrome/browser/ui/android/tab_model/tab_model_list.h"
 #include "chrome/browser/ui/android/view_android_helper.h"
 #include "chrome/browser/ui/blocked_content/popup_blocker_tab_helper.h"
-#include "chrome/browser/ui/search/instant_search_prerenderer.h"
-#include "chrome/browser/ui/search/search_tab_helper.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper.h"
 #include "chrome/browser/ui/tab_helpers.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/common/search/instant_types.h"
 #include "chrome/common/url_constants.h"
 #include "components/bookmarks/browser/bookmark_model.h"
 #include "components/bookmarks/browser/bookmark_node.h"
@@ -268,45 +262,6 @@ void TabAndroid::SwapTabContents(content::WebContents* old_contents,
                            did_finish_load);
 }
 
-void TabAndroid::DefaultSearchProviderChanged(
-    bool google_base_url_domain_changed) {
-  // TODO(kmadhusu): Move this function definition to a common place and update
-  // BrowserInstantController::DefaultSearchProviderChanged to use the same.
-  if (!web_contents())
-    return;
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(GetProfile());
-  if (!instant_service)
-    return;
-
-  // Send new search URLs to the renderer.
-  content::RenderProcessHost* rph = web_contents()->GetRenderProcessHost();
-  instant_service->SendSearchURLsToRenderer(rph);
-
-  // Reload the contents to ensure that it gets assigned to a non-previledged
-  // renderer.
-  if (!instant_service->IsInstantProcess(rph->GetID()))
-    return;
-  web_contents()->GetController().Reload(false);
-
-  // As the reload was not triggered by the user we don't want to close any
-  // infobars. We have to tell the InfoBarService after the reload, otherwise it
-  // would ignore this call when
-  // WebContentsObserver::DidStartNavigationToPendingEntry is invoked.
-  InfoBarService::FromWebContents(web_contents())->set_ignore_next_reload();
-}
-
-void TabAndroid::OnWebContentsInstantSupportDisabled(
-    const content::WebContents* contents) {
-  DCHECK(contents);
-  if (web_contents() != contents)
-    return;
-
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_Tab_onWebContentsInstantSupportDisabled(env, weak_java_tab_.get(env));
-}
-
 void TabAndroid::Observe(int type,
                          const content::NotificationSource& source,
                          const content::NotificationDetails& details) {
@@ -385,7 +340,6 @@ void TabAndroid::InitWebContents(
   ViewAndroidHelper::FromWebContents(web_contents())->
       SetViewAndroid(web_contents()->GetNativeView());
   CoreTabHelper::FromWebContents(web_contents())->set_delegate(this);
-  SearchTabHelper::FromWebContents(web_contents())->set_delegate(this);
   web_contents_delegate_ =
       base::MakeUnique<android::TabWebContentsDelegateAndroid>(
           env, jweb_contents_delegate);
@@ -413,11 +367,6 @@ void TabAndroid::InitWebContents(
   // Verify that the WebContents this tab represents matches the expected
   // off the record state.
   CHECK_EQ(GetProfile()->IsOffTheRecord(), incognito);
-
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(GetProfile());
-  if (instant_service)
-    instant_service->AddObserver(this);
 
   if (!blimp_contents_)
     content_layer_->InsertChild(web_contents_->GetNativeView()->GetLayer(), 0);
@@ -493,11 +442,6 @@ void TabAndroid::DestroyWebContents(JNIEnv* env,
   if (favicon_driver)
     favicon_driver->RemoveObserver(this);
 
-  InstantService* instant_service =
-      InstantServiceFactory::GetForProfile(GetProfile());
-  if (instant_service)
-    instant_service->RemoveObserver(this);
-
   web_contents()->SetDelegate(NULL);
 
   if (delete_native) {
@@ -566,21 +510,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
     bool prefetched_page_loaded = HasPrerenderedUrl(gurl);
     // Getting the load status before MaybeUsePrerenderedPage() b/c it resets.
     chrome::NavigateParams params(web_contents());
-    InstantSearchPrerenderer* prerenderer =
-        InstantSearchPrerenderer::GetForProfile(GetProfile());
-    if (prerenderer) {
-      const base::string16& search_terms =
-          search::ExtractSearchTermsFromURL(GetProfile(), gurl);
-      if (!search_terms.empty() &&
-          prerenderer->CanCommitQuery(web_contents_.get(), search_terms)) {
-        EmbeddedSearchRequestParams request_params(gurl);
-        prerenderer->Commit(search_terms, request_params);
-
-        if (prerenderer->UsePrerenderedPage(gurl, &params))
-          return FULL_PRERENDERED_PAGE_LOAD;
-      }
-      prerenderer->Cancel();
-    }
     if (prerender_manager->MaybeUsePrerenderedPage(gurl, &params)) {
       return prefetched_page_loaded ?
           FULL_PRERENDERED_PAGE_LOAD : PARTIAL_PRERENDERED_PAGE_LOAD;
@@ -622,16 +551,6 @@ TabAndroid::TabLoadStatus TabAndroid::LoadUrl(
       load_params.referrer = content::Referrer(
           GURL(base::android::ConvertJavaStringToUTF8(env, j_referrer_url)),
           static_cast<blink::WebReferrerPolicy>(referrer_policy));
-    }
-    const base::string16 search_terms =
-        search::ExtractSearchTermsFromURL(GetProfile(), gurl);
-    SearchTabHelper* search_tab_helper =
-        SearchTabHelper::FromWebContents(web_contents_.get());
-    if (!search_terms.empty() && search_tab_helper &&
-        search_tab_helper->SupportsInstant()) {
-      EmbeddedSearchRequestParams request_params(gurl);
-      search_tab_helper->Submit(search_terms, request_params);
-      return DEFAULT_PAGE_LOAD;
     }
     load_params.is_renderer_initiated = is_renderer_initiated;
     load_params.should_replace_current_entry = should_replace_current_entry;

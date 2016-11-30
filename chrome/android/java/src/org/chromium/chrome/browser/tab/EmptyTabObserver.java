@@ -67,9 +67,6 @@ public class EmptyTabObserver implements TabObserver {
     public void onContextualActionBarVisibilityChanged(Tab tab, boolean visible) { }
 
     @Override
-    public void onWebContentsInstantSupportDisabled() { }
-
-    @Override
     public void onLoadStarted(Tab tab, boolean toDifferentDocument) { }
 
     @Override

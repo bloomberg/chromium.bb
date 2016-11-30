@@ -15,9 +15,7 @@
 #include "base/callback_forward.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "chrome/browser/search/instant_service_observer.h"
 #include "chrome/browser/sync/glue/synced_tab_delegate_android.h"
-#include "chrome/browser/ui/search/search_tab_helper_delegate.h"
 #include "chrome/browser/ui/tab_contents/core_tab_helper_delegate.h"
 #include "components/favicon/core/favicon_driver_observer.h"
 #include "components/infobars/core/infobar_manager.h"
@@ -57,8 +55,6 @@ class PrerenderManager;
 }
 
 class TabAndroid : public CoreTabHelperDelegate,
-                   public InstantServiceObserver,
-                   public SearchTabHelperDelegate,
                    public content::NotificationObserver,
                    public favicon::FaviconDriverObserver {
  public:
@@ -134,14 +130,6 @@ class TabAndroid : public CoreTabHelperDelegate,
                        content::WebContents* new_contents,
                        bool did_start_load,
                        bool did_finish_load) override;
-
-  // Overridden from InstantServiceObserver:
-  void DefaultSearchProviderChanged(
-      bool google_base_url_domain_changed) override;
-
-  // Overridden from SearchTabHelperDelegate:
-  void OnWebContentsInstantSupportDisabled(
-      const content::WebContents* web_contents) override;
 
   // Overridden from NotificationObserver:
   void Observe(int type,
