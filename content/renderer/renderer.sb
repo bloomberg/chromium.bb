@@ -13,6 +13,9 @@
 (allow mach-lookup (global-name "com.apple.FontServer"))
 (allow mach-lookup (global-name "com.apple.fonts"))
 
+; Allow read-only connection to launchservicesd. https://crbug.com/533537
+(allow mach-lookup (global-name "com.apple.lsd.mapdb"))
+
 (allow file-read*
   (regex #"^/System/Library/ColorSync($|/)")  ; https://crbug.com/46648
   (regex #"^/System/Library/Keyboard Layouts($|/)")  ; https://crbug.com/152566
