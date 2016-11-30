@@ -35,6 +35,12 @@ void IMEServerImpl::AddBinding(mojom::IMEServerRequest request) {
 }
 
 void IMEServerImpl::OnDriverChanged(mojom::IMEDriverPtr driver) {
+  // TODO(moshayedi): crbug.com/669681. Handle switching drivers properly. For
+  // now we only register the first driver to avoid clients of the previous
+  // driver from hanging.
+  if (driver_)
+    return;
+
   // TODO(moshayedi): crbug.com/664267. Make sure this is the driver we
   // requested at OnGotCatalogEntries().
   driver_ = std::move(driver);

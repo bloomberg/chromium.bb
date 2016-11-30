@@ -77,12 +77,7 @@ class InputMethodMusTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(InputMethodMusTest);
 };
 
-// Disabled as deadlocks. See http://crbug.com/668181.
-TEST_F(InputMethodMusTest, DISABLED_DispatchKeyEvent) {
-  // test_ime_driver will register itself as the current IMEDriver. It echoes
-  // back the character key events it receives.
-  EXPECT_TRUE(connector()->Connect("test_ime_driver"));
-
+TEST_F(InputMethodMusTest, DispatchKeyEvent) {
   TestInputMethodDelegate input_method_delegate;
   InputMethodMus input_method(&input_method_delegate, nullptr);
   input_method.Init(connector());
