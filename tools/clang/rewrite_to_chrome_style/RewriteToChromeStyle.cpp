@@ -51,6 +51,13 @@ const char kBlinkFieldPrefix[] = "m_";
 const char kBlinkStaticMemberPrefix[] = "s_";
 const char kGeneratedFileRegex[] = "^gen/|/gen/";
 
+template <typename MatcherType, typename NodeType>
+bool IsMatching(const MatcherType& matcher,
+                const NodeType& node,
+                clang::ASTContext& context) {
+  return !match(matcher, node, context).empty();
+}
+
 const clang::ast_matchers::internal::
     VariadicDynCastAllOfMatcher<clang::Expr, clang::UnresolvedMemberExpr>
         unresolvedMemberExpr;
@@ -212,6 +219,21 @@ bool IsBlacklistedMethod(const clang::CXXMethodDecl& decl) {
   return false;
 }
 
+bool IsBlacklistedFunctionOrMethodName(llvm::StringRef name) {
+  static const char* kBlacklistedNames[] = {
+      // From IsBlacklistedFunction:
+      "swap",
+      // From IsBlacklistedMethod:
+      "trace", "traceImpl", "lock", "unlock", "try_lock", "begin", "end",
+      "rbegin", "rend", "disable",
+  };
+  for (const auto& b : kBlacklistedNames) {
+    if (name == b)
+      return true;
+  }
+  return false;
+}
+
 AST_MATCHER(clang::FunctionDecl, isBlacklistedFunction) {
   return IsBlacklistedFunction(Node);
 }
@@ -322,7 +344,7 @@ bool GetNameForDecl(const clang::FunctionDecl& decl,
   // return type.
   auto conflict_matcher =
       functionDecl(returns(type_containing_same_name_as_function));
-  if (!match(conflict_matcher, decl, context).empty())
+  if (IsMatching(conflict_matcher, decl, context))
     name = "Get" + name;
 
   return true;
@@ -536,40 +558,37 @@ struct TargetNodeTraits<clang::UnresolvedMemberExpr> {
   static const char* GetType() { return "UnresolvedMemberExpr"; }
 };
 
-template <typename DeclNode, typename TargetNode>
+template <>
+struct TargetNodeTraits<clang::UnresolvedUsingValueDecl> {
+  static clang::SourceLocation GetLoc(
+      const clang::UnresolvedUsingValueDecl& decl) {
+    return decl.getNameInfo().getLoc();
+  }
+  static const char* GetName() { return "decl"; }
+  static const char* GetType() { return "UnresolvedUsingValueDecl"; }
+};
+
+template <typename TargetNode>
 class RewriterBase : public MatchFinder::MatchCallback {
  public:
   explicit RewriterBase(std::set<Replacement>* replacements)
       : replacements_(replacements) {}
 
-  void run(const MatchFinder::MatchResult& result) override {
-    const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
-    // If false, there's no name to be renamed.
-    if (!decl->getIdentifier())
-      return;
-    clang::SourceLocation decl_loc =
-        TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
-    if (decl_loc.isMacroID()) {
-      // Get the location of the spelling of the declaration. If token pasting
-      // was used this will be in "scratch space" and we don't know how to get
-      // from there back to/ the actual macro with the foo##bar text. So just
-      // don't replace in that case.
-      clang::SourceLocation spell =
-          result.SourceManager->getSpellingLoc(decl_loc);
-      if (strcmp(result.SourceManager->getBufferName(spell),
-                 "<scratch space>") == 0)
-        return;
-    }
-    clang::ASTContext* context = result.Context;
-    std::string new_name;
-    if (!GetNameForDecl(*decl, *context, new_name))
-      return;  // If false, the name was not suitable for renaming.
-    llvm::StringRef old_name = decl->getName();
+  const TargetNode& GetTargetNode(const MatchFinder::MatchResult& result) {
+    const TargetNode* target_node = result.Nodes.getNodeAs<TargetNode>(
+        TargetNodeTraits<TargetNode>::GetName());
+    assert(target_node);
+    return *target_node;
+  }
+
+  void AddReplacement(const MatchFinder::MatchResult& result,
+                      llvm::StringRef old_name,
+                      std::string new_name) {
     if (old_name == new_name)
       return;
-    clang::SourceLocation loc = TargetNodeTraits<TargetNode>::GetLoc(
-        *result.Nodes.getNodeAs<TargetNode>(
-            TargetNodeTraits<TargetNode>::GetName()));
+
+    clang::SourceLocation loc =
+        TargetNodeTraits<TargetNode>::GetLoc(GetTargetNode(result));
     clang::CharSourceRange range = clang::CharSourceRange::getTokenRange(loc);
     replacements_->emplace(*result.SourceManager, range, new_name);
     replacement_names_.emplace(old_name.str(), std::move(new_name));
@@ -585,35 +604,143 @@ class RewriterBase : public MatchFinder::MatchCallback {
   std::unordered_map<std::string, std::string> replacement_names_;
 };
 
-using FieldDeclRewriter = RewriterBase<clang::FieldDecl, clang::NamedDecl>;
-using VarDeclRewriter = RewriterBase<clang::VarDecl, clang::NamedDecl>;
-using MemberRewriter = RewriterBase<clang::FieldDecl, clang::MemberExpr>;
-using DeclRefRewriter = RewriterBase<clang::VarDecl, clang::DeclRefExpr>;
-using FieldDeclRefRewriter = RewriterBase<clang::FieldDecl, clang::DeclRefExpr>;
-using FunctionDeclRewriter =
-    RewriterBase<clang::FunctionDecl, clang::NamedDecl>;
-using FunctionRefRewriter =
-    RewriterBase<clang::FunctionDecl, clang::DeclRefExpr>;
-using ConstructorInitializerRewriter =
-    RewriterBase<clang::FieldDecl, clang::CXXCtorInitializer>;
+template <typename DeclNode, typename TargetNode>
+class DeclRewriterBase : public RewriterBase<TargetNode> {
+ public:
+  using Base = RewriterBase<TargetNode>;
 
-using MethodDeclRewriter = RewriterBase<clang::CXXMethodDecl, clang::NamedDecl>;
+  explicit DeclRewriterBase(std::set<Replacement>* replacements)
+      : Base(replacements) {}
+
+  void run(const MatchFinder::MatchResult& result) override {
+    const DeclNode* decl = result.Nodes.getNodeAs<DeclNode>("decl");
+    assert(decl);
+    // If false, there's no name to be renamed.
+    if (!decl->getIdentifier())
+      return;
+    clang::SourceLocation decl_loc =
+        TargetNodeTraits<clang::NamedDecl>::GetLoc(*decl);
+    if (decl_loc.isMacroID()) {
+      // Get the location of the spelling of the declaration. If token pasting
+      // was used this will be in "scratch space" and we don't know how to get
+      // from there back to/ the actual macro with the foo##bar text. So just
+      // don't replace in that case.
+      clang::SourceLocation spell =
+          result.SourceManager->getSpellingLoc(decl_loc);
+      if (result.SourceManager->getBufferName(spell) == "<scratch space>")
+        return;
+    }
+    clang::ASTContext* context = result.Context;
+    std::string new_name;
+    if (!GetNameForDecl(*decl, *context, new_name))
+      return;  // If false, the name was not suitable for renaming.
+    llvm::StringRef old_name = decl->getName();
+    Base::AddReplacement(result, old_name, std::move(new_name));
+  }
+};
+
+using FieldDeclRewriter = DeclRewriterBase<clang::FieldDecl, clang::NamedDecl>;
+using VarDeclRewriter = DeclRewriterBase<clang::VarDecl, clang::NamedDecl>;
+using MemberRewriter = DeclRewriterBase<clang::FieldDecl, clang::MemberExpr>;
+using DeclRefRewriter = DeclRewriterBase<clang::VarDecl, clang::DeclRefExpr>;
+using FieldDeclRefRewriter =
+    DeclRewriterBase<clang::FieldDecl, clang::DeclRefExpr>;
+using FunctionDeclRewriter =
+    DeclRewriterBase<clang::FunctionDecl, clang::NamedDecl>;
+using FunctionRefRewriter =
+    DeclRewriterBase<clang::FunctionDecl, clang::DeclRefExpr>;
+using ConstructorInitializerRewriter =
+    DeclRewriterBase<clang::FieldDecl, clang::CXXCtorInitializer>;
+
+using MethodDeclRewriter =
+    DeclRewriterBase<clang::CXXMethodDecl, clang::NamedDecl>;
 using MethodRefRewriter =
-    RewriterBase<clang::CXXMethodDecl, clang::DeclRefExpr>;
+    DeclRewriterBase<clang::CXXMethodDecl, clang::DeclRefExpr>;
 using MethodMemberRewriter =
-    RewriterBase<clang::CXXMethodDecl, clang::MemberExpr>;
+    DeclRewriterBase<clang::CXXMethodDecl, clang::MemberExpr>;
 
 using EnumConstantDeclRewriter =
-    RewriterBase<clang::EnumConstantDecl, clang::NamedDecl>;
+    DeclRewriterBase<clang::EnumConstantDecl, clang::NamedDecl>;
 using EnumConstantDeclRefRewriter =
-    RewriterBase<clang::EnumConstantDecl, clang::DeclRefExpr>;
+    DeclRewriterBase<clang::EnumConstantDecl, clang::DeclRefExpr>;
 
 using UnresolvedLookupRewriter =
-    RewriterBase<clang::NamedDecl, clang::UnresolvedLookupExpr>;
+    DeclRewriterBase<clang::NamedDecl, clang::UnresolvedLookupExpr>;
 using UnresolvedMemberRewriter =
-    RewriterBase<clang::NamedDecl, clang::UnresolvedMemberExpr>;
+    DeclRewriterBase<clang::NamedDecl, clang::UnresolvedMemberExpr>;
 
-using UsingDeclRewriter = RewriterBase<clang::UsingDecl, clang::NamedDecl>;
+using UsingDeclRewriter = DeclRewriterBase<clang::UsingDecl, clang::NamedDecl>;
+
+clang::DeclarationName GetUnresolvedName(
+    const clang::UnresolvedMemberExpr& expr) {
+  return expr.getMemberName();
+}
+
+clang::DeclarationName GetUnresolvedName(
+    const clang::UnresolvedUsingValueDecl& decl) {
+  return decl.getDeclName();
+}
+
+template <typename TargetNode>
+class UnresolvedRewriterBase : public RewriterBase<TargetNode> {
+ public:
+  using Base = RewriterBase<TargetNode>;
+
+  explicit UnresolvedRewriterBase(std::set<Replacement>* replacements)
+      : RewriterBase<TargetNode>(replacements) {}
+
+  void run(const MatchFinder::MatchResult& result) override {
+    const TargetNode& expr = Base::GetTargetNode(result);
+    llvm::StringRef old_name = GetUnresolvedName(expr).getAsString();
+    std::string new_name;
+    if (GuessNameForUnresolvedDependentNode(expr, *result.Context, old_name,
+                                            new_name)) {
+      Base::AddReplacement(result, old_name, std::move(new_name));
+    }
+  }
+
+ private:
+  // This method calculates a new name for nodes that depend on template
+  // parameters (http://en.cppreference.com/w/cpp/language/dependent_name).  The
+  // renaming is based on crude heuristics, because such nodes are not bound to
+  // a specific decl until template instantiation - at the point of rename, one
+  // cannot tell whether the node will eventually resolve to a field / method /
+  // constant / etc.
+  bool GuessNameForUnresolvedDependentNode(const TargetNode& node,
+                                           clang::ASTContext& context,
+                                           llvm::StringRef old_name,
+                                           std::string& new_name) {
+    // |m_fieldName| -> |field_name_|.
+    if (old_name.startswith(kBlinkFieldPrefix)) {
+      std::string field_name = old_name.str().substr(strlen(kBlinkFieldPrefix));
+      if (field_name.find('_') == std::string::npos) {
+        new_name = CamelCaseToUnderscoreCase(field_name) + "_";
+        return true;
+      }
+    }
+
+    // |T::myMethod(...)| -> |T::MyMethod(...)|.
+    if ((old_name.find('_') == std::string::npos) &&
+        !IsBlacklistedFunctionOrMethodName(old_name)) {
+      new_name = old_name;
+      new_name[0] = clang::toUppercase(new_name[0]);
+      return true;
+    }
+
+    // In the future we can consider more heuristics:
+    // - "s_" and "g_" prefixes
+    // - "ALL_CAPS"
+    // - |T::myStaticField| -> |T::kMyStaticField|
+    //   (but have to be careful not to rename |value| in WTF/TypeTraits.h?)
+    return false;
+  }
+};
+
+using UnresolvedDependentMemberRewriter =
+    UnresolvedRewriterBase<clang::UnresolvedMemberExpr>;
+
+using UnresolvedUsingValueDeclRewriter =
+    UnresolvedRewriterBase<clang::UnresolvedUsingValueDecl>;
 
 }  // namespace
 
@@ -885,7 +1012,7 @@ int main(int argc, const char* argv[]) {
   match_finder.addMatcher(unresolved_lookup_matcher,
                           &unresolved_lookup_rewriter);
 
-  // Unresolved member expressions ========
+  // Unresolved member expressions (for non-dependent fields / methods) ========
   // Similar to unresolved lookup expressions, but for methods in a member
   // context, e.g. var_with_templated_type.Method().
   auto unresolved_member_matcher = expr(id(
@@ -898,6 +1025,36 @@ int main(int argc, const char* argv[]) {
   UnresolvedMemberRewriter unresolved_member_rewriter(&replacements);
   match_finder.addMatcher(unresolved_member_matcher,
                           &unresolved_member_rewriter);
+
+  // Unresolved using value decls ========
+  // Example:
+  //  template <typename T>
+  //  class BaseClass {
+  //   public:
+  //    unsigned long m_size;
+  //  };
+  //  template <typename T>
+  //  class DerivedClass : protected BaseClass<T> {
+  //   private:
+  //    using Base = BaseClass<T>;
+  //    using Base::m_size;  // <- |m_size| here is matched by
+  //    void method() {      //    |unresolved_using_value_decl_matcher|.
+  //      m_size = 123;  // <- |m_size| here is matched by
+  //    }                //    |unresolved_dependent_using_matcher|.
+  //  };
+  auto unresolved_dependent_using_matcher =
+      expr(id("expr", unresolvedMemberExpr(allOverloadsMatch(allOf(
+                          in_blink_namespace, unresolvedUsingValueDecl())))));
+  UnresolvedDependentMemberRewriter unresolved_dependent_member_rewriter(
+      &replacements);
+  match_finder.addMatcher(unresolved_dependent_using_matcher,
+                          &unresolved_dependent_member_rewriter);
+  auto unresolved_using_value_decl_matcher =
+      decl(id("decl", unresolvedUsingValueDecl(in_blink_namespace)));
+  UnresolvedUsingValueDeclRewriter unresolved_using_value_decl_rewriter(
+      &replacements);
+  match_finder.addMatcher(unresolved_using_value_decl_matcher,
+                          &unresolved_using_value_decl_rewriter);
 
   // Using declarations ========
   // Given

@@ -119,6 +119,25 @@ void Test() {
 
 }  // test_template_arg_is_method_template_in_non_member_context
 
+namespace test_inherited_field {
+
+template <typename T>
+class BaseClass {
+ public:
+  unsigned long size_;
+};
+
+template <typename T>
+class DerivedClass : protected BaseClass<T> {
+ private:
+  using Base = BaseClass<T>;
+  // https://crbug.com/640016: Need to rewrite |m_size| into |size_|.
+  using Base::size_;
+  void Method() { size_ = 123; }
+};
+
+}  // namespace test_inherited_field
+
 namespace test_template_arg_is_method_template_in_member_context {
 
 struct Class {
