@@ -147,25 +147,12 @@ DEFINE_TRACE(ImageResource) {
 }
 
 void ImageResource::checkNotify() {
-  // Don't notify observers and clients of completion if this ImageResource is
+  // Don't notify clients of completion if this ImageResource is
   // about to be reloaded.
   if (m_isSchedulingReload || shouldReloadBrokenPlaceholder())
     return;
 
-  notifyObserversInternal();
   Resource::checkNotify();
-}
-
-void ImageResource::notifyObserversInternal() {
-  if (isLoading())
-    return;
-
-  for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer)) {
-      markObserverFinished(observer);
-      observer->imageNotifyFinished(this);
-    }
-  }
 }
 
 void ImageResource::markObserverFinished(ImageResourceObserver* observer) {
@@ -208,7 +195,8 @@ void ImageResource::addObserver(ImageResourceObserver* observer) {
     observer->imageChanged(this);
   }
 
-  if (isLoaded() && !m_isSchedulingReload && !shouldReloadBrokenPlaceholder()) {
+  if (isLoaded() && m_observers.contains(observer) && !m_isSchedulingReload &&
+      !shouldReloadBrokenPlaceholder()) {
     markObserverFinished(observer);
     observer->imageNotifyFinished(this);
   }
@@ -423,14 +411,22 @@ LayoutSize ImageResource::imageSize(
   return size;
 }
 
-void ImageResource::notifyObservers(const IntRect* changeRect) {
+void ImageResource::notifyObservers(NotifyFinishOption notifyingFinishOption,
+                                    const IntRect* changeRect) {
   for (auto* observer : m_finishedObservers.asVector()) {
     if (m_finishedObservers.contains(observer))
       observer->imageChanged(this, changeRect);
   }
   for (auto* observer : m_observers.asVector()) {
-    if (m_observers.contains(observer))
+    if (m_observers.contains(observer)) {
       observer->imageChanged(this, changeRect);
+      if (notifyingFinishOption == ShouldNotifyFinish &&
+          m_observers.contains(observer) && !m_isSchedulingReload &&
+          !shouldReloadBrokenPlaceholder()) {
+        markObserverFinished(observer);
+        observer->imageNotifyFinished(this);
+      }
+    }
   }
 }
 
@@ -513,7 +509,7 @@ void ImageResource::updateImage(bool allDataReceived) {
 
   // It would be nice to only redraw the decoded band of the image, but with the
   // current design (decoding delayed until painting) that seems hard.
-  notifyObservers();
+  notifyObservers(allDataReceived ? ShouldNotifyFinish : DoNotNotifyFinish);
 }
 
 void ImageResource::updateImageAndClearBuffer() {
@@ -544,7 +540,7 @@ void ImageResource::error(const ResourceError& error) {
     m_multipartParser->cancel();
   clear();
   Resource::error(error);
-  notifyObservers();
+  notifyObservers(ShouldNotifyFinish);
 }
 
 void ImageResource::responseReceived(
@@ -599,7 +595,7 @@ bool ImageResource::shouldPauseAnimation(const blink::Image* image) {
 void ImageResource::animationAdvanced(const blink::Image* image) {
   if (!image || image != m_image)
     return;
-  notifyObservers();
+  notifyObservers(DoNotNotifyFinish);
 }
 
 void ImageResource::updateImageAnimationPolicy() {
@@ -662,7 +658,7 @@ void ImageResource::reloadIfLoFiOrPlaceholder(
     // here.
   } else {
     clear();
-    notifyObservers();
+    notifyObservers(DoNotNotifyFinish);
   }
 
   setStatus(NotStarted);
@@ -677,7 +673,7 @@ void ImageResource::changedInRect(const blink::Image* image,
                                   const IntRect& rect) {
   if (!image || image != m_image)
     return;
-  notifyObservers(&rect);
+  notifyObservers(DoNotNotifyFinish, &rect);
 }
 
 void ImageResource::onePartInMultipartReceived(
@@ -697,7 +693,8 @@ void ImageResource::onePartInMultipartReceived(
     // Notify finished when the first part ends.
     if (!errorOccurred())
       setStatus(Cached);
-    // We notify clients/observers of finish here, and they will not be
+    // We notify clients and observers of finish in checkNotify() and
+    // updateImageAndClearBuffer(), respectively, and they will not be
     // notified again in Resource::finish()/error().
     checkNotify();
     if (loader())

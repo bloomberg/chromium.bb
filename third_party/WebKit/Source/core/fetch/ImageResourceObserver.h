@@ -42,9 +42,8 @@ class CORE_EXPORT ImageResourceObserver {
   // is the changed rect of the image.
   virtual void imageChanged(ImageResource*, const IntRect* = 0) {}
 
-  // Called just before ResourceClient::notifyFinished() would be called. This
-  // is to avoid an ImageResourceObserver from being also a ResourceClient just
-  // to be notified for load finish.
+  // Called just after imageChanged() if all image data is received or errored.
+  // TODO(hiroshige): Merge imageNotifyFinished() into imageChanged().
   virtual void imageNotifyFinished(ImageResource*) {}
 
   // Called to find out if this client wants to actually display the image. Used

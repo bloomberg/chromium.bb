@@ -83,6 +83,7 @@ class MockImageResourceClient final : public MockResourceClient,
   void dispose() override;
 
   int imageChangedCount() const { return m_imageChangedCount; }
+  int imageNotifyFinishedCount() const { return m_imageNotifyFinishedCount; }
 
   size_t encodedSizeOnLastImageChanged() const {
     return m_encodedSizeOnLastImageChanged;

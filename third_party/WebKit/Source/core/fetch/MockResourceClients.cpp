@@ -77,8 +77,6 @@ void MockImageResourceClient::imageNotifyFinished(ImageResource* image) {
 }
 
 bool MockImageResourceClient::notifyFinishedCalled() const {
-  EXPECT_EQ(m_notifyFinishedCalled ? 1 : 0, m_imageNotifyFinishedCount);
-
   return m_notifyFinishedCalled;
 }
 

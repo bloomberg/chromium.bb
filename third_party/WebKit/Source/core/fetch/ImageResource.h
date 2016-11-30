@@ -190,8 +190,9 @@ class CORE_EXPORT ImageResource final
   void updateImage(bool allDataReceived);
   void updateImageAndClearBuffer();
   void clearImage();
+  enum NotifyFinishOption { ShouldNotifyFinish, DoNotNotifyFinish };
   // If not null, changeRect is the changed part of the image.
-  void notifyObservers(const IntRect* changeRect = nullptr);
+  void notifyObservers(NotifyFinishOption, const IntRect* changeRect = nullptr);
 
   void ensureImage();
 
