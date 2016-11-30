@@ -299,7 +299,7 @@ class SyncService : public DataTypeEncryptionHandler {
   // This function is used by about_sync_util.cc to help populate the about:sync
   // page.  It returns a ListValue rather than a DictionaryValue in part to make
   // it easier to iterate over its elements when constructing that page.
-  virtual base::Value* GetTypeStatusMap() = 0;
+  virtual std::unique_ptr<base::Value> GetTypeStatusMap() = 0;
 
   virtual const GURL& sync_service_url() const = 0;
 

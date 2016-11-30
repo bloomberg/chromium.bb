@@ -1844,11 +1844,11 @@ void ProfileSyncService::GetModelSafeRoutingInfo(
   }
 }
 
-base::Value* ProfileSyncService::GetTypeStatusMap() {
-  std::unique_ptr<base::ListValue> result(new base::ListValue());
+std::unique_ptr<base::Value> ProfileSyncService::GetTypeStatusMap() {
+  auto result = base::MakeUnique<base::ListValue>();
 
   if (!backend_.get() || !backend_initialized_) {
-    return result.release();
+    return std::move(result);
   }
 
   DataTypeStatusTable::TypeErrorMap error_map =
@@ -1946,7 +1946,7 @@ base::Value* ProfileSyncService::GetTypeStatusMap() {
 
     result->Append(std::move(type_status));
   }
-  return result.release();
+  return std::move(result);
 }
 
 void ProfileSyncService::ConsumeCachedPassphraseIfPossible() {

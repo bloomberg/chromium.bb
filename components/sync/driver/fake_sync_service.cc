@@ -174,8 +174,8 @@ SyncCycleSnapshot FakeSyncService::GetLastCycleSnapshot() const {
   return SyncCycleSnapshot();
 }
 
-base::Value* FakeSyncService::GetTypeStatusMap() {
-  return new base::ListValue();
+std::unique_ptr<base::Value> FakeSyncService::GetTypeStatusMap() {
+  return base::MakeUnique<base::ListValue>();
 }
 
 const GURL& FakeSyncService::sync_service_url() const {

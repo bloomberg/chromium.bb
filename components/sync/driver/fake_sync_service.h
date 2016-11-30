@@ -71,7 +71,7 @@ class FakeSyncService : public SyncService {
   base::string16 GetLastSyncedTimeString() const override;
   std::string GetBackendInitializationStateString() const override;
   SyncCycleSnapshot GetLastCycleSnapshot() const override;
-  base::Value* GetTypeStatusMap() override;
+  std::unique_ptr<base::Value> GetTypeStatusMap() override;
   const GURL& sync_service_url() const override;
   std::string unrecoverable_error_message() const override;
   tracked_objects::Location unrecoverable_error_location() const override;
