@@ -87,8 +87,7 @@ class MimeHandlerStreamManager::EmbedderObserver
   void DidStartProvisionalLoadForFrame(
       content::RenderFrameHost* render_frame_host,
       const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) override;
+      bool is_error_page) override;
   void WebContentsDestroyed() override;
   void DidStartNavigation(
       content::NavigationHandle* navigation_handle) override;
@@ -209,8 +208,7 @@ void MimeHandlerStreamManager::EmbedderObserver::RenderProcessGone(
 void MimeHandlerStreamManager::EmbedderObserver::
     DidStartProvisionalLoadForFrame(content::RenderFrameHost* render_frame_host,
                                     const GURL& validated_url,
-                                    bool is_error_page,
-                                    bool is_iframe_srcdoc) {
+                                    bool is_error_page) {
   if (!IsTrackedRenderFrameHost(render_frame_host))
     return;
   // With PlzNavigate we get a provisional load notification for the URL we are

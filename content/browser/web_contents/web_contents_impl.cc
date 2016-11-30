@@ -118,7 +118,6 @@
 #include "content/public/common/content_switches.h"
 #include "content/public/common/page_zoom.h"
 #include "content/public/common/result_codes.h"
-#include "content/public/common/url_constants.h"
 #include "content/public/common/url_utils.h"
 #include "content/public/common/web_preferences.h"
 #include "device/geolocation/geolocation_service_context.h"
@@ -3286,18 +3285,17 @@ void WebContentsImpl::DidFinishNavigation(NavigationHandle* navigation_handle) {
 void WebContentsImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& validated_url,
-    bool is_error_page,
-    bool is_iframe_srcdoc) {
+    bool is_error_page) {
   // Notify observers about the start of the provisional load.
   for (auto& observer : observers_) {
     observer.DidStartProvisionalLoadForFrame(render_frame_host, validated_url,
-                                             is_error_page, is_iframe_srcdoc);
+                                             is_error_page);
   }
 
   // Notify accessibility if this is a reload.
   NavigationEntry* entry = controller_.GetVisibleEntry();
-  if (entry && ui::PageTransitionCoreTypeIs(
-          entry->GetTransitionType(), ui::PAGE_TRANSITION_RELOAD)) {
+  if (entry && ui::PageTransitionCoreTypeIs(entry->GetTransitionType(),
+                                            ui::PAGE_TRANSITION_RELOAD)) {
     FrameTreeNode* ftn = render_frame_host->frame_tree_node();
     BrowserAccessibilityManager* manager =
         ftn->current_frame_host()->browser_accessibility_manager();

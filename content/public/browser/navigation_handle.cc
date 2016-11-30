@@ -33,7 +33,6 @@ NavigationHandle::CreateNavigationHandleForTesting(
                    ->frame_tree_node(),
           true,   // is_renderer_initiated
           false,  // is_same_page
-          false,  // is_srcdoc
           base::TimeTicks::Now(), 0,
           false);  // started_from_context_menu
   handle_impl->set_render_frame_host(

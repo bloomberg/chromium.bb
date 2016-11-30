@@ -626,8 +626,8 @@ bool ChildProcessSecurityPolicyImpl::CanRequestURL(
     return false;  // Can't request invalid URLs.
 
   if (IsPseudoScheme(url.scheme())) {
-    // Every child process can request <about:blank>.
-    if (base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL))
+    // Every child process can request <about:blank> and <about:srcdoc>.
+    if (url == url::kAboutBlankURL || url == kAboutSrcDocURL)
       return true;
     // URLs like <about:version>, <about:crash>, <view-source:...> shouldn't be
     // requestable by any child process.  Also, this case covers
@@ -664,9 +664,10 @@ bool ChildProcessSecurityPolicyImpl::CanCommitURL(int child_id,
   if (!url.is_valid())
     return false;  // Can't commit invalid URLs.
 
-  // Of all the pseudo schemes, only about:blank is allowed to commit.
+  // Of all the pseudo schemes, only about:blank and about:srcdoc are allowed to
+  // commit.
   if (IsPseudoScheme(url.scheme()))
-    return base::LowerCaseEqualsASCII(url.spec(), url::kAboutBlankURL);
+    return url == url::kAboutBlankURL || url == kAboutSrcDocURL;
 
   // Blob and filesystem URLs require special treatment; validate the inner
   // origin they embed.
@@ -716,6 +717,10 @@ bool ChildProcessSecurityPolicyImpl::CanSetAsOriginHeader(int child_id,
     DCHECK(IsPseudoScheme(url.scheme()));
     return true;
   }
+
+  // about:srcdoc cannot be used as an origin
+  if (url == kAboutSrcDocURL)
+    return false;
 
   // If this process can commit |url|, it can use |url| as an origin for
   // outbound requests.

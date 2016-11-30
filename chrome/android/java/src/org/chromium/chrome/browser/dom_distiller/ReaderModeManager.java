@@ -441,8 +441,7 @@ public class ReaderModeManager extends TabModelSelectorTabObserver
         return new WebContentsObserver(webContents) {
             @Override
             public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-                    boolean isMainFrame, String validatedUrl, boolean isErrorPage,
-                    boolean isIframeSrcdoc) {
+                    boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
                 if (!isMainFrame) return;
                 // If there is a navigation in the current tab, hide the bar. It will show again
                 // once the distillability test is successful.

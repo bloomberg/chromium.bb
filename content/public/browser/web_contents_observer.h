@@ -200,9 +200,8 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   // |render_frame_host| is the RenderFrameHost for which the provisional load
   // is happening.
   //
-  // Since the URL validation will strip error URLs, or srcdoc URLs, the boolean
-  // flags |is_error_page| and |is_iframe_srcdoc| will indicate that the not
-  // validated URL was either an error page or an iframe srcdoc.
+  // Since the URL validation will strip error URLs, the boolean flag
+  // |is_error_page| will indicate that the not validated URL was an error page.
   //
   // Note that during a cross-process navigation, several provisional loads
   // can be on-going in parallel.
@@ -211,8 +210,7 @@ class CONTENT_EXPORT WebContentsObserver : public IPC::Listener,
   virtual void DidStartProvisionalLoadForFrame(
       RenderFrameHost* render_frame_host,
       const GURL& validated_url,
-      bool is_error_page,
-      bool is_iframe_srcdoc) {}
+      bool is_error_page) {}
 
   // This method is invoked when the provisional load was successfully
   // committed.

@@ -287,8 +287,7 @@ public class OverlayPanelContent {
 
                     @Override
                     public void didStartProvisionalLoadForFrame(long frameId, long parentFrameId,
-                            boolean isMainFrame, String validatedUrl, boolean isErrorPage,
-                            boolean isIframeSrcdoc) {
+                            boolean isMainFrame, String validatedUrl, boolean isErrorPage) {
                         if (isMainFrame) {
                             mContentDelegate.onMainFrameLoadStarted(validatedUrl,
                                     !TextUtils.equals(validatedUrl, mLoadedUrl));
