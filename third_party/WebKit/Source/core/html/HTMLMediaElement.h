@@ -93,6 +93,10 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   static bool isMediaStreamURL(const String& url);
   static bool isHLSURL(const KURL&);
 
+  // If HTMLMediaElement is using MediaTracks (either placeholder or provided
+  // by the page).
+  static bool mediaTracksEnabledInternally();
+
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();

@@ -329,6 +329,11 @@ bool HTMLMediaElement::isHLSURL(const KURL& url) {
   return url.getString().contains("m3u8");
 }
 
+bool HTMLMediaElement::mediaTracksEnabledInternally() {
+  return RuntimeEnabledFeatures::audioVideoTracksEnabled() ||
+         RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled();
+}
+
 HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
                                    Document& document)
     : HTMLElement(tagName, document),
@@ -2459,7 +2464,7 @@ void HTMLMediaElement::audioTrackChanged(AudioTrack* track) {
   BLINK_MEDIA_LOG << "audioTrackChanged(" << (void*)this
                   << ") trackId= " << String(track->id())
                   << " enabled=" << boolString(track->enabled());
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(mediaTracksEnabledInternally());
 
   audioTracks().scheduleChangeEvent();
 
@@ -2514,7 +2519,7 @@ void HTMLMediaElement::selectedVideoTrackChanged(VideoTrack* track) {
   BLINK_MEDIA_LOG << "selectedVideoTrackChanged(" << (void*)this
                   << ") selectedTrackId="
                   << (track->selected() ? String(track->id()) : "none");
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(mediaTracksEnabledInternally());
 
   if (track->selected())
     videoTracks().trackSelected(track->id());
@@ -3744,29 +3749,27 @@ DEFINE_TRACE_WRAPPERS(HTMLMediaElement) {
 }
 
 void HTMLMediaElement::createPlaceholderTracksIfNecessary() {
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled() &&
-      !RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled()) {
+  if (!mediaTracksEnabledInternally())
     return;
-  }
 
   // Create a placeholder audio track if the player says it has audio but it
   // didn't explicitly announce the tracks.
-  if (hasAudio() && !audioTracks().length())
+  if (hasAudio() && !audioTracks().length()) {
     addAudioTrack("audio", WebMediaPlayerClient::AudioTrackKindMain,
-                  "Audio Track", "", true);
+                  "Audio Track", "", false);
+  }
 
   // Create a placeholder video track if the player says it has video but it
   // didn't explicitly announce the tracks.
-  if (hasVideo() && !videoTracks().length())
+  if (hasVideo() && !videoTracks().length()) {
     addVideoTrack("video", WebMediaPlayerClient::VideoTrackKindMain,
-                  "Video Track", "", true);
+                  "Video Track", "", false);
+  }
 }
 
 void HTMLMediaElement::selectInitialTracksIfNecessary() {
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled() &&
-      !RuntimeEnabledFeatures::backgroundVideoTrackOptimizationEnabled()) {
+  if (!mediaTracksEnabledInternally())
     return;
-  }
 
   // Enable the first audio track if an audio track hasn't been enabled yet.
   if (audioTracks().length() > 0 && !audioTracks().hasEnabledTrack())

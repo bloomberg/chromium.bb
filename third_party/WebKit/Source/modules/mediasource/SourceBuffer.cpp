@@ -269,12 +269,12 @@ void SourceBuffer::setTimestampOffset(double offset,
 }
 
 AudioTrackList& SourceBuffer::audioTracks() {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(HTMLMediaElement::mediaTracksEnabledInternally());
   return *m_audioTracks;
 }
 
 VideoTrackList& SourceBuffer::videoTracks() {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(HTMLMediaElement::mediaTracksEnabledInternally());
   return *m_videoTracks;
 }
 
@@ -569,7 +569,7 @@ void SourceBuffer::removedFromMediaSource() {
     abortIfUpdating();
   }
 
-  if (RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
+  if (HTMLMediaElement::mediaTracksEnabledInternally()) {
     DCHECK(m_source);
     if (m_source->mediaElement()->audioTracks().length() > 0 ||
         m_source->mediaElement()->videoTracks().length() > 0) {
@@ -592,7 +592,7 @@ double SourceBuffer::highestPresentationTimestamp() {
 }
 
 void SourceBuffer::removeMediaTracks() {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(HTMLMediaElement::mediaTracksEnabledInternally());
   // Spec:
   // http://w3c.github.io/media-source/#widl-MediaSource-removeSourceBuffer-void-SourceBuffer-sourceBuffer
   DCHECK(m_source);
@@ -756,7 +756,7 @@ bool SourceBuffer::initializationSegmentReceived(
   DCHECK(m_source->mediaElement());
   DCHECK(m_updating);
 
-  if (!RuntimeEnabledFeatures::audioVideoTracksEnabled()) {
+  if (!HTMLMediaElement::mediaTracksEnabledInternally()) {
     if (!m_firstInitializationSegmentReceived) {
       m_source->setSourceBufferActive(this, true);
       m_firstInitializationSegmentReceived = true;

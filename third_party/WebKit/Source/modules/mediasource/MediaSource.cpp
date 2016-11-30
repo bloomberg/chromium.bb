@@ -465,7 +465,7 @@ TimeRanges* MediaSource::seekable() const {
 }
 
 void MediaSource::onTrackChanged(TrackBase* track) {
-  DCHECK(RuntimeEnabledFeatures::audioVideoTracksEnabled());
+  DCHECK(HTMLMediaElement::mediaTracksEnabledInternally());
   SourceBuffer* sourceBuffer =
       SourceBufferTrackBaseSupplement::sourceBuffer(*track);
   if (!sourceBuffer)
