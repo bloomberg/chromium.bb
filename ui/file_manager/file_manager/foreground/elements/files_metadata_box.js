@@ -46,6 +46,15 @@ var FilesMetadataBox = Polymer({
       type: Number,
       observer: 'metadataUpdated_',
     },
+    /**
+     * Exif information parsed by exif_parser.js or null if there is no
+     * information.
+     * @type {?Object}
+     */
+    ifd: {
+      type: Object,
+      observer: 'metadataUpdated_',
+    },
 
     // Whether the size is the middle of loading.
     isSizeLoading: Boolean,
@@ -72,6 +81,7 @@ var FilesMetadataBox = Polymer({
     this.mediaDuration = 0;
     this.mediaGenre = '';
     this.mediaTrack = 0;
+    this.ifd = null;
 
     this.isSizeLoading = false;
   },
@@ -108,7 +118,8 @@ var FilesMetadataBox = Polymer({
     this.hasFileSpecificInfo_ =
         !!(this.imageWidth && this.imageHeight || this.mediaTitle ||
            this.mediaArtist || this.mediaAlbum || this.mediaDuration ||
-           this.mediaGenre || this.mediaTrack);
+           this.mediaGenre || this.mediaTrack ||
+           this.ifd);
   },
 
   /**
@@ -141,6 +152,17 @@ var FilesMetadataBox = Polymer({
     if (imageWidth && imageHeight)
       return imageWidth + " x " + imageHeight;
     return '';
+  },
+
+  /**
+   * @param {?Object} ifd
+   * @return {string}
+   *
+   * @private
+   */
+  deviceModel_: function(ifd) {
+    var id = 272;
+    return (ifd && ifd.image && ifd.image[id] && ifd.image[id].value) || '';
   },
 
 });

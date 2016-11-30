@@ -138,6 +138,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
           .get(
               [entry],
               [
+                'ifd',
                 'imageHeight',
                 'imageWidth',
                 'mediaAlbum',
@@ -149,6 +150,7 @@ MetadataBoxController.prototype.onGeneralMetadataLoaded_ = function(
               ])
           .then(function(items) {
             var item = items[0];
+            this.metadataBox_.ifd = item.ifd || null;
             this.metadataBox_.imageHeight = item.imageHeight || 0;
             this.metadataBox_.imageWidth = item.imageWidth || 0;
             this.metadataBox_.mediaAlbum = item.mediaAlbum || '';
