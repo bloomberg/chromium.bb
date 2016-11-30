@@ -40,7 +40,7 @@ content::MockRenderProcessHost*
 DeclarativeContentConditionTrackerTest::GetMockRenderProcessHost(
     content::WebContents* contents) {
   return static_cast<content::MockRenderProcessHost*>(
-      contents->GetRenderViewHost()->GetProcess());
+      contents->GetMainFrame()->GetProcess());
 }
 
 const void* DeclarativeContentConditionTrackerTest::GeneratePredicateGroupID() {

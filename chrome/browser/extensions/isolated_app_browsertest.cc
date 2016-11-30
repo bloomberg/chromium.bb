@@ -15,8 +15,8 @@
 #include "chrome/common/url_constants.h"
 #include "chrome/test/base/ui_test_utils.h"
 #include "content/public/browser/notification_types.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/site_instance.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/test/browser_test_utils.h"
@@ -33,7 +33,6 @@
 using content::ExecuteScript;
 using content::ExecuteScriptAndExtractString;
 using content::NavigationController;
-using content::RenderViewHost;
 using content::WebContents;
 
 namespace extensions {
@@ -119,8 +118,9 @@ class IsolatedAppTest : public ExtensionBrowserTest {
     content::BrowserContext* browser_context = contents->GetBrowserContext();
     ExtensionRegistry* registry = ExtensionRegistry::Get(browser_context);
     std::set<std::string> extension_ids =
-        ProcessMap::Get(browser_context)->GetExtensionsInProcess(
-            contents->GetRenderViewHost()->GetProcess()->GetID());
+        ProcessMap::Get(browser_context)
+            ->GetExtensionsInProcess(
+                contents->GetMainFrame()->GetProcess()->GetID());
     for (std::set<std::string>::iterator iter = extension_ids.begin();
          iter != extension_ids.end(); ++iter) {
       const Extension* installed_app =

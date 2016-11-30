@@ -364,7 +364,7 @@ TEST_F(PrintPreviewDialogControllerUnitTest, MultiplePreviewDialogsClose) {
   // preview controller should exit cleanly and not crash.
   content::MockRenderProcessHost* rph =
       static_cast<content::MockRenderProcessHost*>(
-          web_contents_2->GetRenderViewHost()->GetProcess());
+          web_contents_2->GetMainFrame()->GetProcess());
   rph->SimulateCrash();
 }
 }  // namespace printing

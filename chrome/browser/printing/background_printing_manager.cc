@@ -112,8 +112,9 @@ void BackgroundPrintingManager::DeletePreviewContents(
                     content::Source<WebContents>(preview_contents));
   printing_contents_map_.erase(i);
 
-  // ... and mortally wound the contents. (Deletion immediately is not a good
-  // idea in case this was called from RenderViewGone.)
+  // ... and mortally wound the contents. Deletion immediately is not a good
+  // idea in case this was triggered by |preview_contents| far up the
+  // callstack. (Trace where the NOTIFICATION_PRINT_JOB_RELEASED comes from.)
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, preview_contents);
 }
 

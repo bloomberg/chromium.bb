@@ -202,7 +202,7 @@ class InstantSearchPrerendererTest : public InstantUnitTestBase {
   bool MessageWasSent(uint32_t id) {
     content::MockRenderProcessHost* process =
         static_cast<content::MockRenderProcessHost*>(
-            prerender_contents()->GetRenderViewHost()->GetProcess());
+            prerender_contents()->GetMainFrame()->GetProcess());
     return process->sink().GetFirstMessageMatching(id) != NULL;
   }
 
@@ -428,15 +428,15 @@ TEST_F(InstantSearchPrerendererTest,
 }
 
 class ReuseInstantSearchBasePageTest : public InstantSearchPrerendererTest {
-  public:
-   ReuseInstantSearchBasePageTest() {}
+ public:
+  ReuseInstantSearchBasePageTest() {}
 
-  protected:
-   void SetUp() override {
+ protected:
+  void SetUp() override {
     ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial("EmbeddedSearch",
                                                        "Group1 strk:20"));
     InstantUnitTestBase::SetUp();
-   }
+  }
 };
 
 TEST_F(ReuseInstantSearchBasePageTest, CanCommitQuery) {
@@ -513,7 +513,7 @@ TEST_F(TestUsePrerenderPage, SetEmbeddedSearchRequestParams) {
       WindowOpenDisposition::CURRENT_TAB, url);
   content::MockRenderProcessHost* process =
       static_cast<content::MockRenderProcessHost*>(
-          prerender_contents()->GetRenderViewHost()->GetProcess());
+          prerender_contents()->GetMainFrame()->GetProcess());
   const IPC::Message* message = process->sink().GetFirstMessageMatching(
       ChromeViewMsg_SearchBoxSubmit::ID);
   ASSERT_TRUE(message);

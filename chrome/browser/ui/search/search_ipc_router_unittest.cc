@@ -122,7 +122,7 @@ class SearchIPCRouterTest : public BrowserWithTestWindowTest {
 
   content::MockRenderProcessHost* process() {
     return static_cast<content::MockRenderProcessHost*>(
-        web_contents()->GetRenderViewHost()->GetProcess());
+        web_contents()->GetMainFrame()->GetProcess());
   }
 
   SearchTabHelper* GetSearchTabHelper(

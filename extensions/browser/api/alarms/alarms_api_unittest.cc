@@ -294,9 +294,9 @@ TEST_F(ExtensionAlarmsTest, CreateDupe) {
 
 TEST_F(ExtensionAlarmsTest, CreateDelayBelowMinimum) {
   // Create an alarm with delay below the minimum accepted value.
-  IPC::TestSink& sink =
-      static_cast<content::MockRenderProcessHost*>(
-          contents()->GetRenderViewHost()->GetProcess())->sink();
+  IPC::TestSink& sink = static_cast<content::MockRenderProcessHost*>(
+                            contents()->GetMainFrame()->GetProcess())
+                            ->sink();
   size_t initial_message_count = sink.message_count();
   CreateAlarm("[\"negative\", {\"delayInMinutes\": -0.2}]");
   // A new message should have been added.

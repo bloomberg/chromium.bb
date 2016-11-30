@@ -826,20 +826,18 @@ void BlinkTestController::OnCaptureSessionHistory() {
   std::vector<std::vector<PageState> > session_histories;
   std::vector<unsigned> current_entry_indexes;
 
-  RenderViewHost* render_view_host =
-      main_window_->web_contents()->GetRenderViewHost();
+  RenderFrameHost* render_frame_host =
+      main_window_->web_contents()->GetMainFrame();
 
-  for (std::vector<Shell*>::iterator window = Shell::windows().begin();
-       window != Shell::windows().end();
-       ++window) {
-    WebContents* web_contents = (*window)->web_contents();
+  for (auto* window : Shell::windows()) {
+    WebContents* web_contents = window->web_contents();
     // Only capture the history from windows in the same process as the main
     // window. During layout tests, we only use two processes when an
     // devtools window is open.
-    if (render_view_host->GetProcess() !=
-        web_contents->GetRenderViewHost()->GetProcess()) {
+    auto* process = web_contents->GetMainFrame()->GetProcess();
+    if (render_frame_host->GetProcess() != process)
       continue;
-    }
+
     routing_ids.push_back(web_contents->GetRenderViewHost()->GetRoutingID());
     current_entry_indexes.push_back(
         web_contents->GetController().GetCurrentEntryIndex());
@@ -857,6 +855,8 @@ void BlinkTestController::OnCaptureSessionHistory() {
     session_histories.push_back(history);
   }
 
+  RenderViewHost* render_view_host =
+      main_window_->web_contents()->GetRenderViewHost();
   Send(new ShellViewMsg_SessionHistory(render_view_host->GetRoutingID(),
                                        routing_ids,
                                        session_histories,

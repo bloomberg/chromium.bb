@@ -8,9 +8,9 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/render_process_host_impl.h"
 #include "content/common/child_process_messages.h"
+#include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/render_process_host.h"
 #include "content/public/browser/render_process_host_observer.h"
-#include "content/public/browser/render_view_host.h"
 #include "content/public/browser/web_contents.h"
 #include "content/public/common/content_switches.h"
 #include "content/public/common/url_constants.h"
@@ -80,7 +80,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
   RenderProcessHost* rph =
-      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+      shell()->web_contents()->GetMainFrame()->GetProcess();
 
   host_destructions_ = 0;
   process_exits_ = 0;
@@ -108,7 +108,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
   RenderProcessHost* rph =
-      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+      shell()->web_contents()->GetMainFrame()->GetProcess();
   // Make it believe it's a guest.
   reinterpret_cast<RenderProcessHostImpl*>(rph)->
       set_is_for_guests_only_for_testing(true);
@@ -182,7 +182,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest,
   ShellCloser shell_closer(shell(), &logging_string);
   ObserverLogger observer_logger(&logging_string);
   RenderProcessHost* rph =
-      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+      shell()->web_contents()->GetMainFrame()->GetProcess();
 
   // Ensure that the ShellCloser observer is first, so that it will have first
   // dibs on the ProcessExited callback.
@@ -216,7 +216,7 @@ IN_PROC_BROWSER_TEST_F(RenderProcessHostTest, KillProcessOnBadMojoMessage) {
   GURL test_url = embedded_test_server()->GetURL("/simple_page.html");
   NavigateToURL(shell(), test_url);
   RenderProcessHost* rph =
-      shell()->web_contents()->GetRenderViewHost()->GetProcess();
+      shell()->web_contents()->GetMainFrame()->GetProcess();
 
   host_destructions_ = 0;
   process_exits_ = 0;
