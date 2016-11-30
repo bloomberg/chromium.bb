@@ -16,6 +16,7 @@
 #include "ash/wm/window_util.h"
 #include "base/compiler_specific.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -433,7 +434,10 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDrag) {
                                      target.get());
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
-  target->SetProperty(aura::client::kCanMaximizeKey, true);
+  target->SetProperty(aura::client::kResizeBehaviorKey,
+                      ui::mojom::kResizeBehaviorCanResize |
+                          ui::mojom::kResizeBehaviorCanMaximize |
+                          ui::mojom::kResizeBehaviorCanMinimize);
 
   gfx::Point end = location;
 
@@ -499,8 +503,8 @@ TEST_F(ToplevelWindowEventHandlerTest,
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
   gfx::Point location(5, 5);
-  target->SetProperty(aura::client::kCanMaximizeKey, true);
-  target->SetProperty(aura::client::kCanMinimizeKey, false);
+  target->SetProperty(aura::client::kResizeBehaviorKey,
+                      ui::mojom::kResizeBehaviorCanMaximize);
 
   gfx::Point end = location;
   end.Offset(0, 100);
@@ -543,7 +547,8 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragForUnresizableWindow) {
   gfx::Rect old_bounds = target->bounds();
   gfx::Point location(5, 5);
 
-  target->SetProperty(aura::client::kCanResizeKey, false);
+  target->SetProperty(aura::client::kResizeBehaviorKey,
+                      ui::mojom::kResizeBehaviorNone);
 
   gfx::Point end = location;
 
@@ -589,7 +594,6 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragMultipleWindows) {
   ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(),
                                      target.get());
   gfx::Point location(5, 5);
-  target->SetProperty(aura::client::kCanMaximizeKey, true);
 
   // Send some touch events to start dragging |target|.
   generator.MoveTouch(location);

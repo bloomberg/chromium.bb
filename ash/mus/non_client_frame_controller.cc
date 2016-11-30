@@ -398,21 +398,18 @@ base::string16 NonClientFrameController::GetWindowTitle() const {
 }
 
 bool NonClientFrameController::CanResize() const {
-  return window_ &&
-         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanResize) !=
-             0;
+  return window_ && (::ash::mus::GetResizeBehavior(window_) &
+                     ui::mojom::kResizeBehaviorCanResize);
 }
 
 bool NonClientFrameController::CanMaximize() const {
-  return window_ &&
-         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanMaximize) !=
-             0;
+  return window_ && (::ash::mus::GetResizeBehavior(window_) &
+                     ui::mojom::kResizeBehaviorCanMaximize);
 }
 
 bool NonClientFrameController::CanMinimize() const {
-  return window_ &&
-         (GetResizeBehavior(window_) & ui::mojom::kResizeBehaviorCanMinimize) !=
-             0;
+  return window_ && (::ash::mus::GetResizeBehavior(window_) &
+                     ui::mojom::kResizeBehaviorCanMinimize);
 }
 
 bool NonClientFrameController::ShouldShowWindowTitle() const {

@@ -12,6 +12,7 @@ include_rules = [
   "+media",
   "+mojo/public",
   "+services/service_manager/public",
+  "+services/ui/public",
   "+skia/ext",
   "+third_party/cros_system_api",
   "+third_party/skia",

@@ -5,6 +5,7 @@
 #include "ui/views/widget/widget_delegate.h"
 
 #include "base/strings/utf_string_conversions.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/views/view.h"
 #include "ui/views/views_delegate.h"
@@ -52,6 +53,17 @@ bool WidgetDelegate::CanMaximize() const {
 
 bool WidgetDelegate::CanMinimize() const {
   return false;
+}
+
+int32_t WidgetDelegate::GetResizeBehavior() const {
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  if (CanResize())
+    behavior |= ui::mojom::kResizeBehaviorCanResize;
+  if (CanMaximize())
+    behavior |= ui::mojom::kResizeBehaviorCanMaximize;
+  if (CanMinimize())
+    behavior |= ui::mojom::kResizeBehaviorCanMinimize;
+  return behavior;
 }
 
 bool WidgetDelegate::CanActivate() const {

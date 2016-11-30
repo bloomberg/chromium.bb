@@ -115,8 +115,7 @@ MusClient::ConfigurePropertiesFromParams(
         0) {
       properties[ui::mojom::WindowManager::kResizeBehavior_Property] =
           mojo::ConvertTo<std::vector<uint8_t>>(static_cast<PrimitiveType>(
-              DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
-                  init_params.delegate)));
+              init_params.delegate->GetResizeBehavior()));
     }
 
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].

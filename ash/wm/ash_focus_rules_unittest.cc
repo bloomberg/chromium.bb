@@ -14,6 +14,7 @@
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/views/test/widget_test.h"
@@ -132,8 +133,10 @@ class LockScreenAshFocusRulesTest : public AshTestBase {
     aura::client::ParentWindowWithContext(window, container,
                                           gfx::Rect(0, 0, 400, 400));
 
-    window->SetProperty(aura::client::kCanMaximizeKey, true);
-    window->SetProperty(aura::client::kCanMinimizeKey, true);
+    window->SetProperty(aura::client::kResizeBehaviorKey,
+                        ui::mojom::kResizeBehaviorCanMaximize |
+                            ui::mojom::kResizeBehaviorCanMinimize |
+                            ui::mojom::kResizeBehaviorCanResize);
     return window;
   }
 

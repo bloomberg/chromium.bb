@@ -116,7 +116,7 @@ bool WindowState::ShouldBeExcludedFromMru() const {
 }
 
 bool WindowState::CanMaximize() const {
-  // Window must have the kCanMaximizeKey and have no maximum width or height.
+  // Window must allow maximization and have no maximum width or height.
   if (!window_->CanMaximize())
     return false;
 

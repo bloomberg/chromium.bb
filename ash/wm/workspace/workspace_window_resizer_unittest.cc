@@ -21,6 +21,7 @@
 #include "base/command_line.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
@@ -551,7 +552,9 @@ TEST_P(WorkspaceWindowResizerTest, Edge) {
   // http://crbug.com/292238.
   // Window is wide enough not to get docked right away.
   window_->SetBounds(gfx::Rect(20, 30, 400, 60));
-  window_->SetProperty(aura::client::kCanMaximizeKey, true);
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorCanResize |
+                           ui::mojom::kResizeBehaviorCanMaximize);
   wm::WindowState* window_state = wm::GetWindowState(window_.get());
 
   {
@@ -626,7 +629,8 @@ TEST_P(WorkspaceWindowResizerTest, Edge) {
 // Check that non resizable windows will not get resized.
 TEST_P(WorkspaceWindowResizerTest, NonResizableWindows) {
   window_->SetBounds(gfx::Rect(20, 30, 50, 60));
-  window_->SetProperty(aura::client::kCanResizeKey, false);
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorNone);
 
   std::unique_ptr<WindowResizer> resizer(
       CreateResizerForTest(window_.get(), gfx::Point(), HTCAPTION));
@@ -1439,10 +1443,11 @@ TEST_P(WorkspaceWindowResizerTest, MagneticallyResize_LEFT) {
   EXPECT_EQ("99,200 21x30", window_->bounds().ToString());
 }
 
-// Test that the user user moved window flag is getting properly set.
+// Test that the user moved window flag is getting properly set.
 TEST_P(WorkspaceWindowResizerTest, CheckUserWindowManagedFlags) {
   window_->SetBounds(gfx::Rect(0, 50, 400, 200));
-  window_->SetProperty(aura::client::kCanMaximizeKey, true);
+  window_->SetProperty(aura::client::kResizeBehaviorKey,
+                       ui::mojom::kResizeBehaviorCanMaximize);
 
   std::vector<aura::Window*> no_attached_windows;
   // Check that an abort doesn't change anything.

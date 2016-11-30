@@ -12,6 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "build/build_config.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "third_party/skia/include/core/SkRegion.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/capture_client.h"
@@ -768,12 +769,10 @@ void NativeWidgetAura::OnSizeConstraintsChanged() {
   if (is_parallel_widget_in_window_manager_)
     return;
 
-  window_->SetProperty(aura::client::kCanMaximizeKey,
-                       GetWidget()->widget_delegate()->CanMaximize());
-  window_->SetProperty(aura::client::kCanMinimizeKey,
-                       GetWidget()->widget_delegate()->CanMinimize());
-  window_->SetProperty(aura::client::kCanResizeKey,
-                       GetWidget()->widget_delegate()->CanResize());
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  if (GetWidget()->widget_delegate())
+    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
+  window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
 }
 
 void NativeWidgetAura::RepostNativeEvent(gfx::NativeEvent native_event) {
@@ -792,10 +791,10 @@ gfx::Size NativeWidgetAura::GetMinimumSize() const {
 }
 
 gfx::Size NativeWidgetAura::GetMaximumSize() const {
-  // If a window have a maximum size, the window should not be
-  // maximizable.
+  // A window should not have a maximum size and also be maximizable.
   DCHECK(delegate_->GetMaximumSize().IsEmpty() ||
-         !window_->GetProperty(aura::client::kCanMaximizeKey));
+         !(window_->GetProperty(aura::client::kResizeBehaviorKey) &
+           ui::mojom::kResizeBehaviorCanMaximize));
   return delegate_->GetMaximumSize();
 }
 

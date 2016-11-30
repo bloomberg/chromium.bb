@@ -25,6 +25,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/memory/ptr_util.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -633,15 +634,18 @@ bool WmWindowAura::HasRestoreBounds() const {
 }
 
 bool WmWindowAura::CanMaximize() const {
-  return window_->GetProperty(aura::client::kCanMaximizeKey);
+  return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+          ui::mojom::kResizeBehaviorCanMaximize) != 0;
 }
 
 bool WmWindowAura::CanMinimize() const {
-  return window_->GetProperty(aura::client::kCanMinimizeKey);
+  return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+          ui::mojom::kResizeBehaviorCanMinimize) != 0;
 }
 
 bool WmWindowAura::CanResize() const {
-  return window_->GetProperty(aura::client::kCanResizeKey);
+  return (window_->GetProperty(aura::client::kResizeBehaviorKey) &
+          ui::mojom::kResizeBehaviorCanResize) != 0;
 }
 
 bool WmWindowAura::CanActivate() const {

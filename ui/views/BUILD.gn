@@ -398,6 +398,7 @@ component("views") {
   deps = [
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//services/ui/public/interfaces",
     "//skia",
     "//third_party/icu",
     "//ui/accessibility",
@@ -881,6 +882,7 @@ source_set("views_unittests_sources") {
     "//base:i18n",
     "//base/test:test_support",
     "//cc",
+    "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",
     "//third_party/icu",

@@ -27,6 +27,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/values.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -130,9 +131,10 @@ class MaximizeModeWindowManagerTest : public test::AshTestBase {
     }
     aura::Window* window = aura::test::CreateTestWindowWithDelegateAndType(
         delegate, type, 0, bounds, NULL);
-    window->SetProperty(aura::client::kCanMaximizeKey, can_maximize);
-    if (!can_resize)
-      window->SetProperty(aura::client::kCanResizeKey, false);
+    int32_t behavior = ui::mojom::kResizeBehaviorNone;
+    behavior |= can_resize ? ui::mojom::kResizeBehaviorCanResize : 0;
+    behavior |= can_maximize ? ui::mojom::kResizeBehaviorCanMaximize : 0;
+    window->SetProperty(aura::client::kResizeBehaviorKey, behavior);
     aura::Window* container = Shell::GetContainer(
         Shell::GetPrimaryRootWindow(), wm::kSwitchableWindowContainerIds[0]);
     container->AddChild(window);

@@ -24,6 +24,7 @@
 #include "ash/test/ash_test_helper.h"
 #include "ash/test/test_shell_delegate.h"
 #include "base/command_line.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/screen_position_client.h"
 #include "ui/aura/client/window_parenting_client.h"
@@ -290,8 +291,11 @@ aura::Window* AshTestBase::CreateTestWindowInShellWithDelegateAndType(
     window->SetBounds(gfx::Rect(origin, bounds.size()));
     aura::client::ParentWindowWithContext(window, root, bounds);
   }
-  window->SetProperty(aura::client::kCanMaximizeKey, true);
-  window->SetProperty(aura::client::kCanMinimizeKey, true);
+  window->SetProperty(aura::client::kResizeBehaviorKey,
+                      ui::mojom::kResizeBehaviorCanMaximize |
+                          ui::mojom::kResizeBehaviorCanMinimize |
+                          ui::mojom::kResizeBehaviorCanResize);
+
   return window;
 }
 

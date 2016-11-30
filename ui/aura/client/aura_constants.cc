@@ -32,9 +32,6 @@ DEFINE_WINDOW_PROPERTY_KEY(bool, kAnimationsDisabledKey, false);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::ImageSkia, kAppIconKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kAppIdKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(int, kAppType, 0);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kCanMaximizeKey, false);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kCanMinimizeKey, false);
-DEFINE_WINDOW_PROPERTY_KEY(bool, kCanResizeKey, true);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kConstrainedWindowKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kDrawAttentionKey, false);
 DEFINE_WINDOW_PROPERTY_KEY(bool, kExcludeFromMruKey, false);
@@ -45,7 +42,7 @@ DEFINE_OWNED_WINDOW_PROPERTY_KEY(std::string, kNameKey, nullptr);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Size, kPreferredSize, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(int32_t,
                            kResizeBehaviorKey,
-                           ui::mojom::kResizeBehaviorNone);
+                           ui::mojom::kResizeBehaviorCanResize);
 DEFINE_OWNED_WINDOW_PROPERTY_KEY(gfx::Rect, kRestoreBoundsKey, nullptr);
 DEFINE_WINDOW_PROPERTY_KEY(
     ui::WindowShowState, kRestoreShowStateKey, ui::SHOW_STATE_DEFAULT);

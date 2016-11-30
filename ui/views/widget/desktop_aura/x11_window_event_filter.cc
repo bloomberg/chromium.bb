@@ -9,6 +9,7 @@
 #include <X11/Xatom.h>
 #include <X11/Xlib.h>
 
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_delegate.h"
@@ -85,7 +86,8 @@ void X11WindowEventFilter::OnMouseEvent(ui::MouseEvent* event) {
     if (event->IsLeftMouseButton() && event->native_event()) {
       const gfx::Point x_root_location =
           ui::EventSystemLocationFromNative(event->native_event());
-      if (target->GetProperty(aura::client::kCanResizeKey) &&
+      if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
+           ui::mojom::kResizeBehaviorCanResize) &&
           DispatchHostWindowDragMovement(component, x_root_location)) {
         event->StopPropagation();
       }
@@ -114,7 +116,8 @@ void X11WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
         window_tree_host_->Minimize();
         break;
       case LinuxUI::MIDDLE_CLICK_ACTION_TOGGLE_MAXIMIZE:
-        if (target->GetProperty(aura::client::kCanMaximizeKey))
+        if (target->GetProperty(aura::client::kResizeBehaviorKey) &
+            ui::mojom::kResizeBehaviorCanMaximize)
           ToggleMaximizedState();
         break;
     }
@@ -125,7 +128,8 @@ void X11WindowEventFilter::OnClickedCaption(ui::MouseEvent* event,
 
   if (event->IsLeftMouseButton() && event->flags() & ui::EF_IS_DOUBLE_CLICK) {
     click_component_ = HTNOWHERE;
-    if (target->GetProperty(aura::client::kCanMaximizeKey) &&
+    if ((target->GetProperty(aura::client::kResizeBehaviorKey) &
+         ui::mojom::kResizeBehaviorCanMaximize) &&
         previous_click_component == HTCAPTION) {
       // Our event is a double click in the caption area in a window that can be
       // maximized. We are responsible for dispatching this as a minimize/

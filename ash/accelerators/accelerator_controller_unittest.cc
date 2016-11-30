@@ -29,6 +29,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/test/user_action_tester.cc"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/test/test_windows.h"
@@ -722,7 +723,8 @@ TEST_F(AcceleratorControllerTest, DontRepeatToggleFullscreen) {
   widget->Init(params);
   widget->Show();
   widget->Activate();
-  widget->GetNativeView()->SetProperty(aura::client::kCanMaximizeKey, true);
+  widget->GetNativeView()->SetProperty(aura::client::kResizeBehaviorKey,
+                                       ui::mojom::kResizeBehaviorCanMaximize);
 
   ui::test::EventGenerator& generator = GetEventGenerator();
   wm::WindowState* window_state = wm::GetWindowState(widget->GetNativeView());

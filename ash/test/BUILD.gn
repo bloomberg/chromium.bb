@@ -142,6 +142,7 @@ static_library("test_support_common") {
     "//components/signin/core/account_id",
     "//components/user_manager:user_manager",
     "//device/bluetooth",
+    "//services/ui/public/interfaces",
     "//skia",
     "//testing/gtest",
     "//ui/accessibility",

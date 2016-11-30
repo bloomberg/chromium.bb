@@ -8,6 +8,7 @@
 #include "base/macros.h"
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
@@ -943,12 +944,10 @@ bool DesktopNativeWidgetAura::IsTranslucentWindowOpacitySupported() const {
 }
 
 void DesktopNativeWidgetAura::OnSizeConstraintsChanged() {
-  content_window_->SetProperty(aura::client::kCanMaximizeKey,
-                               GetWidget()->widget_delegate()->CanMaximize());
-  content_window_->SetProperty(aura::client::kCanMinimizeKey,
-                               GetWidget()->widget_delegate()->CanMinimize());
-  content_window_->SetProperty(aura::client::kCanResizeKey,
-                               GetWidget()->widget_delegate()->CanResize());
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  if (GetWidget()->widget_delegate())
+    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
+  content_window_->SetProperty(aura::client::kResizeBehaviorKey, behavior);
   desktop_window_tree_host_->SizeConstraintsChanged();
 }
 

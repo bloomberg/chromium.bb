@@ -21,6 +21,7 @@
 #include "chrome/test/base/in_process_browser_test.h"
 #include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/app_window/native_app_window.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_delegate.h"
@@ -34,8 +35,7 @@ namespace {
 // WidgetDelegateView which allows the widget to be maximized.
 class MaximizableWidgetDelegate : public views::WidgetDelegateView {
  public:
-  MaximizableWidgetDelegate() {
-  }
+  MaximizableWidgetDelegate() {}
   ~MaximizableWidgetDelegate() override {}
 
   bool CanMaximize() const override { return true; }
@@ -141,7 +141,8 @@ IN_PROC_BROWSER_TEST_P(AcceleratorCommandsFullscreenBrowserTest,
   // 2) ToggleFullscreen() should have no effect on windows which cannot be
   // maximized.
   ash::WmWindowAura::GetAuraWindow(window_state->window())
-      ->SetProperty(aura::client::kCanMaximizeKey, false);
+      ->SetProperty(aura::client::kResizeBehaviorKey,
+                    ui::mojom::kResizeBehaviorNone);
   ash::accelerators::ToggleFullscreen();
   EXPECT_TRUE(IsInitialShowState(window_state));
 

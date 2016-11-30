@@ -30,6 +30,7 @@
 #include "ui/aura/client/window_parenting_client.h"
 #include "ui/aura/layout_manager.h"
 #include "ui/aura/mus/mus_util.h"
+#include "ui/aura/mus/property_converter.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_property.h"
 #include "ui/base/hit_test.h"
@@ -44,7 +45,6 @@
 #include "ui/views/corewm/tooltip_aura.h"
 #include "ui/views/corewm/tooltip_controller.h"
 #include "ui/views/drag_utils.h"
-#include "ui/views/mus/desktop_window_tree_host_mus.h"
 #include "ui/views/mus/drag_drop_client_mus.h"
 #include "ui/views/mus/drop_target_mus.h"
 #include "ui/views/mus/input_method_mus.h"
@@ -665,24 +665,27 @@ void NativeWidgetMus::ConfigurePropertiesForNewWindow(
         mojo::ConvertTo<std::vector<uint8_t>>(init_params.name);
   }
   (*properties)[ui::mojom::WindowManager::kAlwaysOnTop_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(init_params.keep_on_top);
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<aura::PropertyConverter::PrimitiveType>(
+              init_params.keep_on_top));
 
   if (!Widget::RequiresNonClientView(init_params.type))
     return;
 
   (*properties)[ui::mojom::WindowManager::kWindowType_Property] =
-      mojo::ConvertTo<std::vector<uint8_t>>(static_cast<int32_t>(
-          mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
-  if (init_params.delegate &&
-      properties->count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
-          0) {
-    (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
-        mojo::ConvertTo<std::vector<uint8_t>>(
-            DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
-                init_params.delegate));
-  }
+      mojo::ConvertTo<std::vector<uint8_t>>(
+          static_cast<aura::PropertyConverter::PrimitiveType>(
+              mojo::ConvertTo<ui::mojom::WindowType>(init_params.type)));
 
   if (init_params.delegate) {
+    if (properties->count(ui::mojom::WindowManager::kResizeBehavior_Property) ==
+        0) {
+      (*properties)[ui::mojom::WindowManager::kResizeBehavior_Property] =
+          mojo::ConvertTo<std::vector<uint8_t>>(
+              static_cast<aura::PropertyConverter::PrimitiveType>(
+                  init_params.delegate->GetResizeBehavior()));
+    }
+
     // TODO(crbug.com/667566): Support additional scales or gfx::Image[Skia].
     gfx::ImageSkia app_icon = init_params.delegate->GetWindowAppIcon();
     SkBitmap app_bitmap = app_icon.GetRepresentation(1.f).sk_bitmap();
@@ -1325,10 +1328,11 @@ void NativeWidgetMus::OnSizeConstraintsChanged() {
   if (!window_ || is_parallel_widget_in_window_manager())
     return;
 
+  int32_t behavior = ui::mojom::kResizeBehaviorNone;
+  if (GetWidget()->widget_delegate())
+    behavior = GetWidget()->widget_delegate()->GetResizeBehavior();
   window_->SetSharedProperty<int32_t>(
-      ui::mojom::WindowManager::kResizeBehavior_Property,
-      DesktopWindowTreeHostMus::GetResizeBehaviorFromDelegate(
-          GetWidget()->widget_delegate()));
+      ui::mojom::WindowManager::kResizeBehavior_Property, behavior);
 }
 
 void NativeWidgetMus::RepostNativeEvent(gfx::NativeEvent native_event) {

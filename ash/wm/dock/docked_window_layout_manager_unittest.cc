@@ -19,6 +19,7 @@
 #include "ash/wm/window_state_aura.h"
 #include "ash/wm/window_util.h"
 #include "base/strings/string_number_conversions.h"
+#include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "ui/aura/client/aura_constants.h"
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window.h"
@@ -581,7 +582,8 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsWidthNew) {
 // Tests that a first non-resizable window added to the dock is not resized.
 TEST_P(DockedWindowLayoutManagerTest, TwoWindowsWidthNonResizableFirst) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
-  w1->SetProperty(aura::client::kCanResizeKey, false);
+  w1->SetProperty(aura::client::kResizeBehaviorKey,
+                  ui::mojom::kResizeBehaviorNone);
   std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 280, 202)));
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // The first window should not get resized.
@@ -596,7 +598,8 @@ TEST_P(DockedWindowLayoutManagerTest, TwoWindowsWidthNonResizableFirst) {
 TEST_P(DockedWindowLayoutManagerTest, TwoWindowsWidthNonResizableSecond) {
   std::unique_ptr<aura::Window> w1(CreateTestWindow(gfx::Rect(0, 0, 201, 201)));
   std::unique_ptr<aura::Window> w2(CreateTestWindow(gfx::Rect(0, 0, 280, 202)));
-  w2->SetProperty(aura::client::kCanResizeKey, false);
+  w2->SetProperty(aura::client::kResizeBehaviorKey,
+                  ui::mojom::kResizeBehaviorNone);
   DragToVerticalPositionAndToEdge(DOCKED_EDGE_RIGHT, w1.get(), 20);
   // The first window should get resized to ideal width.
   EXPECT_EQ(ideal_width(), w1->bounds().width());
