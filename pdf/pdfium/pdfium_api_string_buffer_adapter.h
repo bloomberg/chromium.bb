@@ -42,8 +42,7 @@ class PDFiumAPIStringBufferAdapter {
 
   template <typename IntType>
   void Close(IntType actual_size) {
-    base::CheckedNumeric<size_t> unsigned_size = actual_size;
-    Close(unsigned_size.ValueOrDie());
+    Close(base::checked_cast<size_t>(actual_size));
   }
 
  private:
@@ -88,8 +87,7 @@ class PDFiumAPIStringBufferSizeInBytesAdapter {
 
   template <typename IntType>
   void Close(IntType actual_size) {
-    base::CheckedNumeric<size_t> unsigned_size = actual_size;
-    Close(unsigned_size.ValueOrDie());
+    Close(base::checked_cast<size_t>(actual_size));
   }
 
  private:
