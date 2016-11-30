@@ -123,8 +123,8 @@ bool mapKeyCodeForScroll(int keyCode,
 
 }  // namespace
 
-KeyboardEventManager::KeyboardEventManager(LocalFrame* frame,
-                                           ScrollManager* scrollManager)
+KeyboardEventManager::KeyboardEventManager(LocalFrame& frame,
+                                           ScrollManager& scrollManager)
     : m_frame(frame), m_scrollManager(scrollManager) {}
 
 DEFINE_TRACE(KeyboardEventManager) {

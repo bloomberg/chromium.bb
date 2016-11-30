@@ -38,7 +38,7 @@ class CORE_EXPORT MouseEventManager final
   USING_GARBAGE_COLLECTED_MIXIN(MouseEventManager);
 
  public:
-  MouseEventManager(LocalFrame*, ScrollManager*);
+  MouseEventManager(LocalFrame&, ScrollManager&);
   virtual ~MouseEventManager();
   DECLARE_TRACE();
 

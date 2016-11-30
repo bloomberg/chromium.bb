@@ -85,7 +85,7 @@ class ChangedTouches final {
 
 }  // namespace
 
-TouchEventManager::TouchEventManager(LocalFrame* frame) : m_frame(frame) {
+TouchEventManager::TouchEventManager(LocalFrame& frame) : m_frame(frame) {
   clear();
 }
 

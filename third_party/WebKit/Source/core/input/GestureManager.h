@@ -26,11 +26,11 @@ class CORE_EXPORT GestureManager
   WTF_MAKE_NONCOPYABLE(GestureManager);
 
  public:
-  GestureManager(LocalFrame*,
-                 ScrollManager*,
-                 MouseEventManager*,
-                 PointerEventManager*,
-                 SelectionController*);
+  GestureManager(LocalFrame&,
+                 ScrollManager&,
+                 MouseEventManager&,
+                 PointerEventManager&,
+                 SelectionController&);
   DECLARE_TRACE();
 
   void clear();

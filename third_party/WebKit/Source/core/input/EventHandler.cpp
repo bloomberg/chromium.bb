@@ -35,6 +35,7 @@
 #include "core/dom/DOMNodeIds.h"
 #include "core/dom/Document.h"
 #include "core/dom/DocumentUserGestureToken.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/TouchList.h"
 #include "core/dom/shadow/FlatTreeTraversal.h"
 #include "core/dom/shadow/ShadowRoot.h"
@@ -160,24 +161,31 @@ class OptionalCursor {
   Cursor m_cursor;
 };
 
-EventHandler::EventHandler(LocalFrame* frame)
+EventHandler::EventHandler(LocalFrame& frame)
     : m_frame(frame),
-      m_selectionController(SelectionController::create(*frame)),
-      m_hoverTimer(this, &EventHandler::hoverTimerFired),
-      m_cursorUpdateTimer(this, &EventHandler::cursorUpdateTimerFired),
+      m_selectionController(SelectionController::create(frame)),
+      m_hoverTimer(TaskRunnerHelper::get(TaskType::UserInteraction, &frame),
+                   this,
+                   &EventHandler::hoverTimerFired),
+      m_cursorUpdateTimer(TaskRunnerHelper::get(TaskType::Internal, &frame),
+                          this,
+                          &EventHandler::cursorUpdateTimerFired),
       m_eventHandlerWillResetCapturingMouseEventsNode(0),
       m_shouldOnlyFireDragOverEvent(false),
       m_scrollManager(new ScrollManager(frame)),
-      m_mouseEventManager(new MouseEventManager(frame, m_scrollManager)),
-      m_keyboardEventManager(new KeyboardEventManager(frame, m_scrollManager)),
+      m_mouseEventManager(new MouseEventManager(frame, *m_scrollManager)),
+      m_keyboardEventManager(new KeyboardEventManager(frame, *m_scrollManager)),
       m_pointerEventManager(
-          new PointerEventManager(frame, m_mouseEventManager)),
+          new PointerEventManager(frame, *m_mouseEventManager)),
       m_gestureManager(new GestureManager(frame,
-                                          m_scrollManager,
-                                          m_mouseEventManager,
-                                          m_pointerEventManager,
-                                          m_selectionController)),
-      m_activeIntervalTimer(this, &EventHandler::activeIntervalTimerFired) {}
+                                          *m_scrollManager,
+                                          *m_mouseEventManager,
+                                          *m_pointerEventManager,
+                                          *m_selectionController)),
+      m_activeIntervalTimer(
+          TaskRunnerHelper::get(TaskType::UserInteraction, &frame),
+          this,
+          &EventHandler::activeIntervalTimerFired) {}
 
 DEFINE_TRACE(EventHandler) {
   visitor->trace(m_frame);
@@ -1684,6 +1692,7 @@ GestureEventWithHitTestResults EventHandler::targetGestureEvent(
   if (shouldKeepActiveForMinInterval) {
     m_lastDeferredTapElement =
         eventWithHitTestResults.hitTestResult().innerElement();
+    // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
     m_activeIntervalTimer.startOneShot(minimumActiveInterval - activeInterval,
                                        BLINK_FROM_HERE);
   }
@@ -1894,6 +1903,7 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
 }
 
 void EventHandler::scheduleHoverStateUpdate() {
+  // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!m_hoverTimer.isActive())
     m_hoverTimer.startOneShot(0, BLINK_FROM_HERE);
 }
@@ -1903,6 +1913,7 @@ void EventHandler::scheduleCursorUpdate() {
   // timer competing which eachother (since there's only one mouse cursor).
   ASSERT(m_frame == m_frame->localFrameRoot());
 
+  // TODO(https://crbug.com/668758): Use a normal BeginFrame update for this.
   if (!m_cursorUpdateTimer.isActive())
     m_cursorUpdateTimer.startOneShot(cursorUpdateInterval, BLINK_FROM_HERE);
 }
@@ -1929,7 +1940,6 @@ void EventHandler::resizeScrollableAreaDestroyed() {
 
 void EventHandler::hoverTimerFired(TimerBase*) {
   TRACE_EVENT0("input", "EventHandler::hoverTimerFired");
-  m_hoverTimer.stop();
 
   ASSERT(m_frame);
   ASSERT(m_frame->document());
@@ -1949,7 +1959,6 @@ void EventHandler::hoverTimerFired(TimerBase*) {
 
 void EventHandler::activeIntervalTimerFired(TimerBase*) {
   TRACE_EVENT0("input", "EventHandler::activeIntervalTimerFired");
-  m_activeIntervalTimer.stop();
 
   if (m_frame && m_frame->document() && m_lastDeferredTapElement) {
     // FIXME: Enable condition when http://crbug.com/226842 lands

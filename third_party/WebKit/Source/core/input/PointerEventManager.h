@@ -27,7 +27,7 @@ class CORE_EXPORT PointerEventManager
   WTF_MAKE_NONCOPYABLE(PointerEventManager);
 
  public:
-  PointerEventManager(LocalFrame*, MouseEventManager*);
+  PointerEventManager(LocalFrame&, MouseEventManager&);
   DECLARE_TRACE();
 
   // Sends the mouse pointer events and the boundary events

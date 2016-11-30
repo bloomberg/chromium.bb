@@ -19,11 +19,11 @@
 
 namespace blink {
 
-GestureManager::GestureManager(LocalFrame* frame,
-                               ScrollManager* scrollManager,
-                               MouseEventManager* mouseEventManager,
-                               PointerEventManager* pointerEventManager,
-                               SelectionController* selectionController)
+GestureManager::GestureManager(LocalFrame& frame,
+                               ScrollManager& scrollManager,
+                               MouseEventManager& mouseEventManager,
+                               PointerEventManager& pointerEventManager,
+                               SelectionController& selectionController)
     : m_frame(frame),
       m_scrollManager(scrollManager),
       m_mouseEventManager(mouseEventManager),

@@ -74,8 +74,8 @@ const double kTextDragDelay = 0.0;
 
 enum class DragInitiator { Mouse, Touch };
 
-MouseEventManager::MouseEventManager(LocalFrame* frame,
-                                     ScrollManager* scrollManager)
+MouseEventManager::MouseEventManager(LocalFrame& frame,
+                                     ScrollManager& scrollManager)
     : m_frame(frame),
       m_scrollManager(scrollManager),
       m_fakeMouseMoveEventTimer(

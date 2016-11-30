@@ -48,8 +48,8 @@ Vector<PlatformTouchPoint> getCoalescedPoints(
 
 }  // namespace
 
-PointerEventManager::PointerEventManager(LocalFrame* frame,
-                                         MouseEventManager* mouseEventManager)
+PointerEventManager::PointerEventManager(LocalFrame& frame,
+                                         MouseEventManager& mouseEventManager)
     : m_frame(frame),
       m_touchEventManager(new TouchEventManager(frame)),
       m_mouseEventManager(mouseEventManager) {

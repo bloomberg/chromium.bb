@@ -28,7 +28,7 @@
 
 namespace blink {
 
-ScrollManager::ScrollManager(LocalFrame* frame) : m_frame(frame) {
+ScrollManager::ScrollManager(LocalFrame& frame) : m_frame(frame) {
   clear();
 }
 

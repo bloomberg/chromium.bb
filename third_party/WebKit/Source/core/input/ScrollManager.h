@@ -37,7 +37,7 @@ class CORE_EXPORT ScrollManager
   WTF_MAKE_NONCOPYABLE(ScrollManager);
 
  public:
-  explicit ScrollManager(LocalFrame*);
+  explicit ScrollManager(LocalFrame&);
   DECLARE_TRACE();
 
   void clear();

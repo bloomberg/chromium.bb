@@ -42,7 +42,7 @@ class CORE_EXPORT TouchEventManager
     String region;
   };
 
-  explicit TouchEventManager(LocalFrame*);
+  explicit TouchEventManager(LocalFrame&);
   DECLARE_TRACE();
 
   // Does the hit-testing again if the original hit test result was not inside

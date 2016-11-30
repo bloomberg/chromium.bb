@@ -35,7 +35,7 @@ class CORE_EXPORT KeyboardEventManager
       WebInputEvent::AltKey;
 #endif
 
-  KeyboardEventManager(LocalFrame*, ScrollManager*);
+  KeyboardEventManager(LocalFrame&, ScrollManager&);
   DECLARE_TRACE();
 
   bool handleAccessKey(const WebKeyboardEvent&);

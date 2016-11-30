@@ -84,7 +84,7 @@ class CORE_EXPORT EventHandler final
   WTF_MAKE_NONCOPYABLE(EventHandler);
 
  public:
-  explicit EventHandler(LocalFrame*);
+  explicit EventHandler(LocalFrame&);
   DECLARE_TRACE();
 
   void clear();
@@ -351,12 +351,12 @@ class CORE_EXPORT EventHandler final
 
   const Member<SelectionController> m_selectionController;
 
-  Timer<EventHandler> m_hoverTimer;
+  TaskRunnerTimer<EventHandler> m_hoverTimer;
 
   // TODO(rbyers): Mouse cursor update is page-wide, not per-frame.  Page-wide
   // state should move out of EventHandler to a new PageEventHandler class.
   // crbug.com/449649
-  Timer<EventHandler> m_cursorUpdateTimer;
+  TaskRunnerTimer<EventHandler> m_cursorUpdateTimer;
 
   Member<Node> m_capturingMouseEventsNode;
   bool m_eventHandlerWillResetCapturingMouseEventsNode;
@@ -381,7 +381,7 @@ class CORE_EXPORT EventHandler final
 
   bool m_longTapShouldInvokeContextMenu;
 
-  Timer<EventHandler> m_activeIntervalTimer;
+  TaskRunnerTimer<EventHandler> m_activeIntervalTimer;
   double m_lastShowPressTimestamp;
   Member<Element> m_lastDeferredTapElement;
 
