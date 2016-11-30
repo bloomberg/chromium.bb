@@ -203,8 +203,6 @@ class AlignedAllocator : public std::allocator<T> {
     return std::numeric_limits<size_t>::max() / sizeof(T);
   }
 };
-typedef std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
-    AlignedCharVector;
 
 struct TestStream {
   TestStream()
@@ -227,7 +225,8 @@ struct TestStream {
   // A vector used to prepare aligned input buffers of |in_filename|. This
   // makes sure starting addresses of YUV planes are aligned to
   // kPlatformBufferAlignment bytes.
-  AlignedCharVector aligned_in_file_data;
+  std::vector<char, AlignedAllocator<char, kPlatformBufferAlignment>>
+      aligned_in_file_data;
 
   // Byte size of a frame of |aligned_in_file_data|.
   size_t aligned_buffer_size;
@@ -875,37 +874,7 @@ void VideoFrameQualityValidator::VerifyOutputFrame(
       << "difference = " << difference << "  > decode similarity threshold";
 }
 
-// Base class for all VEA Clients in this file
-class VEAClientBase : public VideoEncodeAccelerator::Client {
- public:
-  ~VEAClientBase() override { LOG_ASSERT(!has_encoder()); }
-  void NotifyError(VideoEncodeAccelerator::Error error) override {
-    DCHECK(thread_checker_.CalledOnValidThread());
-    SetState(CS_ERROR);
-  }
-
- protected:
-  VEAClientBase(ClientStateNotification<ClientState>* note)
-      : note_(note), next_output_buffer_id_(0) {}
-
-  bool has_encoder() { return encoder_.get(); }
-
-  virtual void SetState(ClientState new_state) = 0;
-
-  std::unique_ptr<VideoEncodeAccelerator> encoder_;
-
-  // Used to notify another thread about the state. VEAClientBase does not own
-  // this.
-  ClientStateNotification<ClientState>* note_;
-
-  // All methods of this class should be run on the same thread.
-  base::ThreadChecker thread_checker_;
-
-  ScopedVector<base::SharedMemory> output_shms_;
-  int32_t next_output_buffer_id_;
-};
-
-class VEAClient : public VEAClientBase {
+class VEAClient : public VideoEncodeAccelerator::Client {
  public:
   VEAClient(TestStream* test_stream,
             ClientStateNotification<ClientState>* note,
@@ -917,6 +886,7 @@ class VEAClient : public VEAClientBase {
             bool mid_stream_framerate_switch,
             bool verify_output,
             bool verify_output_timestamp);
+  ~VEAClient() override;
   void CreateEncoder();
   void DestroyEncoder();
 
@@ -931,17 +901,19 @@ class VEAClient : public VEAClientBase {
                             size_t payload_size,
                             bool key_frame,
                             base::TimeDelta timestamp) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
 
  private:
   void BitstreamBufferReadyOnMainThread(int32_t bitstream_buffer_id,
                                         size_t payload_size,
                                         bool key_frame,
                                         base::TimeDelta timestamp);
+  bool has_encoder() { return encoder_.get(); }
 
   // Return the number of encoded frames per second.
   double frames_per_second();
 
-  void SetState(ClientState new_state) override;
+  void SetState(ClientState new_state);
 
   // Set current stream parameters to given |bitrate| at |framerate|.
   void SetStreamParameters(unsigned int bitrate, unsigned int framerate);
@@ -1006,8 +978,12 @@ class VEAClient : public VEAClientBase {
   void VerifyOutputTimestamp(base::TimeDelta timestamp);
 
   ClientState state_;
+  std::unique_ptr<VideoEncodeAccelerator> encoder_;
 
   TestStream* test_stream_;
+
+  // Used to notify another thread about the state. VEAClient does not own this.
+  ClientStateNotification<ClientState>* note_;
 
   // Ids assigned to VideoFrames.
   std::set<int32_t> inputs_at_client_;
@@ -1023,7 +999,9 @@ class VEAClient : public VEAClientBase {
 
   // Ids for output BitstreamBuffers.
   typedef std::map<int32_t, base::SharedMemory*> IdToSHM;
+  ScopedVector<base::SharedMemory> output_shms_;
   IdToSHM output_buffers_at_client_;
+  int32_t next_output_buffer_id_;
 
   // Current offset into input stream.
   off_t pos_in_input_stream_;
@@ -1091,6 +1069,9 @@ class VEAClient : public VEAClientBase {
   // The time when the last encoded frame is ready.
   base::TimeTicks last_frame_ready_time_;
 
+  // All methods of this class should be run on the same thread.
+  base::ThreadChecker thread_checker_;
+
   // Requested bitrate in bits per second.
   unsigned int requested_bitrate_;
 
@@ -1141,10 +1122,11 @@ VEAClient::VEAClient(TestStream* test_stream,
                      bool mid_stream_framerate_switch,
                      bool verify_output,
                      bool verify_output_timestamp)
-    : VEAClientBase(note),
-      state_(CS_CREATED),
+    : state_(CS_CREATED),
       test_stream_(test_stream),
+      note_(note),
       next_input_id_(0),
+      next_output_buffer_id_(0),
       pos_in_input_stream_(0),
       num_required_input_buffers_(0),
       output_buffer_size_(0),
@@ -1196,6 +1178,10 @@ VEAClient::VEAClient(TestStream* test_stream,
   UpdateTestStreamData(mid_stream_bitrate_switch, mid_stream_framerate_switch);
 
   thread_checker_.DetachFromThread();
+}
+
+VEAClient::~VEAClient() {
+  LOG_ASSERT(!has_encoder());
 }
 
 void VEAClient::CreateEncoder() {
@@ -1416,6 +1402,11 @@ void VEAClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
       FROM_HERE, base::Bind(&VEAClient::BitstreamBufferReadyOnMainThread,
                             base::Unretained(this), bitstream_buffer_id,
                             payload_size, key_frame, timestamp));
+}
+
+void VEAClient::NotifyError(VideoEncodeAccelerator::Error error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  SetState(CS_ERROR);
 }
 
 void VEAClient::BitstreamBufferReadyOnMainThread(int32_t bitstream_buffer_id,
@@ -1768,9 +1759,12 @@ void VEAClient::WriteIvfFrameHeader(int frame_index, size_t frame_size) {
       reinterpret_cast<char*>(&header), sizeof(header)));
 }
 
-// Base class for simple VEA Clients
-class SimpleVEAClientBase : public VEAClientBase {
+// This client is only used to make sure the encoder does not return an encoded
+// frame before getting any input.
+class VEANoInputClient : public VideoEncodeAccelerator::Client {
  public:
+  explicit VEANoInputClient(ClientStateNotification<ClientState>* note);
+  ~VEANoInputClient() override;
   void CreateEncoder();
   void DestroyEncoder();
 
@@ -1778,53 +1772,70 @@ class SimpleVEAClientBase : public VEAClientBase {
   void RequireBitstreamBuffers(unsigned int input_count,
                                const gfx::Size& input_coded_size,
                                size_t output_buffer_size) override;
+  void BitstreamBufferReady(int32_t bitstream_buffer_id,
+                            size_t payload_size,
+                            bool key_frame,
+                            base::TimeDelta timestamp) override;
+  void NotifyError(VideoEncodeAccelerator::Error error) override;
 
- protected:
-  SimpleVEAClientBase(ClientStateNotification<ClientState>* note,
-                      const int width,
-                      const int height);
+ private:
+  bool has_encoder() { return encoder_.get(); }
 
-  void SetState(ClientState new_state) override;
+  void SetState(ClientState new_state);
 
   // Provide the encoder with a new output buffer.
   void FeedEncoderWithOutput(base::SharedMemory* shm, size_t output_size);
 
-  const int width_;
-  const int height_;
-  const int bitrate_;
-  const int fps_;
+  std::unique_ptr<VideoEncodeAccelerator> encoder_;
+
+  // Used to notify another thread about the state. VEAClient does not own this.
+  ClientStateNotification<ClientState>* note_;
+
+  // All methods of this class should be run on the same thread.
+  base::ThreadChecker thread_checker_;
+
+  // Ids for output BitstreamBuffers.
+  ScopedVector<base::SharedMemory> output_shms_;
+  int32_t next_output_buffer_id_;
+
+  // The timer used to monitor the encoder doesn't return an output buffer in
+  // a period of time.
+  std::unique_ptr<base::Timer> timer_;
 };
 
-SimpleVEAClientBase::SimpleVEAClientBase(
-    ClientStateNotification<ClientState>* note,
-    const int width,
-    const int height)
-    : VEAClientBase(note),
-      width_(width),
-      height_(height),
-      bitrate_(200000),
-      fps_(30) {
+VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
+    : note_(note), next_output_buffer_id_(0) {
   thread_checker_.DetachFromThread();
 }
 
-void SimpleVEAClientBase::CreateEncoder() {
+VEANoInputClient::~VEANoInputClient() {
+  LOG_ASSERT(!has_encoder());
+}
+
+void VEANoInputClient::CreateEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   LOG_ASSERT(!has_encoder());
   LOG_ASSERT(g_env->test_streams_.size());
+
+  const int kDefaultWidth = 320;
+  const int kDefaultHeight = 240;
+  const int kDefaultBitrate = 200000;
+  const int kDefaultFps = 30;
 
   std::unique_ptr<VideoEncodeAccelerator> encoders[] = {
       CreateFakeVEA(), CreateV4L2VEA(), CreateVaapiVEA(), CreateVTVEA(),
       CreateMFVEA()};
 
-  gfx::Size visible_size(width_, height_);
+  // The test case is no input. Use default visible size, bitrate, and fps.
+  gfx::Size visible_size(kDefaultWidth, kDefaultHeight);
   for (auto& encoder : encoders) {
     if (!encoder)
       continue;
     encoder_ = std::move(encoder);
     if (encoder_->Initialize(kInputFormat, visible_size,
                              g_env->test_streams_[0]->requested_profile,
-                             bitrate_, this)) {
-      encoder_->RequestEncodingParametersChange(bitrate_, fps_);
+                             kDefaultBitrate, this)) {
+      encoder_->RequestEncodingParametersChange(kDefaultBitrate, kDefaultFps);
       SetState(CS_INITIALIZED);
       return;
     }
@@ -1834,20 +1845,16 @@ void SimpleVEAClientBase::CreateEncoder() {
   SetState(CS_ERROR);
 }
 
-void SimpleVEAClientBase::DestroyEncoder() {
+void VEANoInputClient::DestroyEncoder() {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!has_encoder())
     return;
   // Clear the objects that should be destroyed on the same thread as creation.
   encoder_.reset();
+  timer_.reset();
 }
 
-void SimpleVEAClientBase::SetState(ClientState new_state) {
-  DVLOG(4) << "Changing state to " << new_state;
-  note_->Notify(new_state);
-}
-
-void SimpleVEAClientBase::RequireBitstreamBuffers(
+void VEANoInputClient::RequireBitstreamBuffers(
     unsigned int input_count,
     const gfx::Size& input_coded_size,
     size_t output_size) {
@@ -1861,59 +1868,6 @@ void SimpleVEAClientBase::RequireBitstreamBuffers(
     output_shms_.push_back(shm);
     FeedEncoderWithOutput(shm, output_size);
   }
-}
-
-void SimpleVEAClientBase::FeedEncoderWithOutput(base::SharedMemory* shm,
-                                                size_t output_size) {
-  if (!has_encoder())
-    return;
-
-  base::SharedMemoryHandle dup_handle;
-  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
-
-  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
-                                   output_size);
-  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
-}
-
-// This client is only used to make sure the encoder does not return an encoded
-// frame before getting any input.
-class VEANoInputClient : public SimpleVEAClientBase {
- public:
-  explicit VEANoInputClient(ClientStateNotification<ClientState>* note);
-  void DestroyEncoder();
-
-  // VideoDecodeAccelerator::Client implementation.
-  void RequireBitstreamBuffers(unsigned int input_count,
-                               const gfx::Size& input_coded_size,
-                               size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32_t bitstream_buffer_id,
-                            size_t payload_size,
-                            bool key_frame,
-                            base::TimeDelta timestamp) override;
-
- private:
-  // The timer used to monitor the encoder doesn't return an output buffer in
-  // a period of time.
-  std::unique_ptr<base::Timer> timer_;
-};
-
-VEANoInputClient::VEANoInputClient(ClientStateNotification<ClientState>* note)
-    : SimpleVEAClientBase(note, 320, 240) {}
-
-void VEANoInputClient::DestroyEncoder() {
-  SimpleVEAClientBase::DestroyEncoder();
-  // Clear the objects that should be destroyed on the same thread as creation.
-  timer_.reset();
-}
-
-void VEANoInputClient::RequireBitstreamBuffers(
-    unsigned int input_count,
-    const gfx::Size& input_coded_size,
-    size_t output_size) {
-  SimpleVEAClientBase::RequireBitstreamBuffers(input_count, input_coded_size,
-                                               output_size);
-
   // Timer is used to make sure there is no output frame in 100ms.
   timer_.reset(new base::Timer(FROM_HERE,
                                base::TimeDelta::FromMilliseconds(100),
@@ -1931,79 +1885,27 @@ void VEANoInputClient::BitstreamBufferReady(int32_t bitstream_buffer_id,
   SetState(CS_ERROR);
 }
 
-// This client is only used to test input frame with the size of U and V planes
-// unaligned to cache line.
-// To have both width and height divisible by 16 but not 32 will make the size
-// of U/V plane (width * height / 4) unaligned to 128-byte cache line.
-class VEACacheLineUnalignedInputClient : public SimpleVEAClientBase {
- public:
-  explicit VEACacheLineUnalignedInputClient(
-      ClientStateNotification<ClientState>* note);
-
-  // VideoDecodeAccelerator::Client implementation.
-  void RequireBitstreamBuffers(unsigned int input_count,
-                               const gfx::Size& input_coded_size,
-                               size_t output_buffer_size) override;
-  void BitstreamBufferReady(int32_t bitstream_buffer_id,
-                            size_t payload_size,
-                            bool key_frame,
-                            base::TimeDelta timestamp) override;
-
- private:
-  // Feed the encoder with one input frame.
-  void FeedEncoderWithOneInput(const gfx::Size& input_coded_size);
-};
-
-VEACacheLineUnalignedInputClient::VEACacheLineUnalignedInputClient(
-    ClientStateNotification<ClientState>* note)
-    : SimpleVEAClientBase(note, 368, 368) {
-}  // 368 is divisible by 16 but not 32
-
-void VEACacheLineUnalignedInputClient::RequireBitstreamBuffers(
-    unsigned int input_count,
-    const gfx::Size& input_coded_size,
-    size_t output_size) {
-  SimpleVEAClientBase::RequireBitstreamBuffers(input_count, input_coded_size,
-                                               output_size);
-
-  FeedEncoderWithOneInput(input_coded_size);
-}
-
-void VEACacheLineUnalignedInputClient::BitstreamBufferReady(
-    int32_t bitstream_buffer_id,
-    size_t payload_size,
-    bool key_frame,
-    base::TimeDelta timestamp) {
+void VEANoInputClient::NotifyError(VideoEncodeAccelerator::Error error) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  // It's enough to encode just one frame. If plane size is not aligned,
-  // VideoEncodeAccelerator::Encode will fail.
-  SetState(CS_FINISHED);
+  SetState(CS_ERROR);
 }
 
-void VEACacheLineUnalignedInputClient::FeedEncoderWithOneInput(
-    const gfx::Size& input_coded_size) {
+void VEANoInputClient::SetState(ClientState new_state) {
+  DVLOG(4) << "Changing state to " << new_state;
+  note_->Notify(new_state);
+}
+
+void VEANoInputClient::FeedEncoderWithOutput(base::SharedMemory* shm,
+                                             size_t output_size) {
   if (!has_encoder())
     return;
 
-  AlignedCharVector aligned_plane[] = {
-      AlignedCharVector(
-          VideoFrame::PlaneSize(kInputFormat, 0, input_coded_size).GetArea()),
-      AlignedCharVector(
-          VideoFrame::PlaneSize(kInputFormat, 1, input_coded_size).GetArea()),
-      AlignedCharVector(
-          VideoFrame::PlaneSize(kInputFormat, 2, input_coded_size).GetArea())};
-  uint8_t* frame_data_y = reinterpret_cast<uint8_t*>(&aligned_plane[0][0]);
-  uint8_t* frame_data_u = reinterpret_cast<uint8_t*>(&aligned_plane[1][0]);
-  uint8_t* frame_data_v = reinterpret_cast<uint8_t*>(&aligned_plane[2][0]);
+  base::SharedMemoryHandle dup_handle;
+  LOG_ASSERT(shm->ShareToProcess(base::GetCurrentProcessHandle(), &dup_handle));
 
-  scoped_refptr<VideoFrame> video_frame = VideoFrame::WrapExternalYuvData(
-      kInputFormat, input_coded_size, gfx::Rect(input_coded_size),
-      input_coded_size, input_coded_size.width(), input_coded_size.width() / 2,
-      input_coded_size.width() / 2, frame_data_y, frame_data_u, frame_data_v,
-      base::TimeDelta().FromMilliseconds(base::Time::kMillisecondsPerSecond /
-                                         fps_));
-
-  encoder_->Encode(video_frame, false);
+  BitstreamBuffer bitstream_buffer(next_output_buffer_id_++, dup_handle,
+                                   output_size);
+  encoder_->UseOutputBitstreamBuffer(bitstream_buffer);
 }
 
 // Test parameters:
@@ -2089,51 +1991,6 @@ TEST_P(VideoEncodeAcceleratorTest, TestSimpleEncode) {
   encoder_thread.Stop();
 }
 
-// Test parameters:
-// - Test type
-//   0: No input test
-//   1: Cache line-unaligned test
-class VideoEncodeAcceleratorSimpleTest : public ::testing::TestWithParam<int> {
-};
-
-template <class TestClient>
-void SimpleTestFunc() {
-  std::unique_ptr<ClientStateNotification<ClientState>> note(
-      new ClientStateNotification<ClientState>());
-  std::unique_ptr<TestClient> client(new TestClient(note.get()));
-  base::Thread encoder_thread("EncoderThread");
-  ASSERT_TRUE(encoder_thread.Start());
-
-  encoder_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestClient::CreateEncoder, base::Unretained(client.get())));
-
-  // Encoder must pass through states in this order.
-  enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
-                                          CS_FINISHED};
-
-  for (const auto& state : state_transitions) {
-    EXPECT_EQ(state, note->Wait());
-  }
-
-  encoder_thread.task_runner()->PostTask(
-      FROM_HERE,
-      base::Bind(&TestClient::DestroyEncoder, base::Unretained(client.get())));
-
-  // This ensures all tasks have finished.
-  encoder_thread.Stop();
-}
-
-TEST_P(VideoEncodeAcceleratorSimpleTest, TestSimpleEncode) {
-  const int test_type = GetParam();
-  ASSERT_LT(test_type, 2) << "Invalid test type=" << test_type;
-
-  if (test_type == 0)
-    SimpleTestFunc<VEANoInputClient>();
-  else if (test_type == 1)
-    SimpleTestFunc<VEACacheLineUnalignedInputClient>();
-}
-
 #if defined(OS_CHROMEOS)
 INSTANTIATE_TEST_CASE_P(
     SimpleEncode,
@@ -2192,13 +2049,32 @@ INSTANTIATE_TEST_CASE_P(
     ::testing::Values(
         std::make_tuple(1, false, 0, false, false, false, false, false, true)));
 
-INSTANTIATE_TEST_CASE_P(NoInputTest,
-                        VideoEncodeAcceleratorSimpleTest,
-                        ::testing::Values(0));
+TEST(VEANoInputTest, CheckOutput) {
+  std::unique_ptr<ClientStateNotification<ClientState>> note(
+      new ClientStateNotification<ClientState>());
+  std::unique_ptr<VEANoInputClient> client(new VEANoInputClient(note.get()));
+  base::Thread encoder_thread("EncoderThread");
+  ASSERT_TRUE(encoder_thread.Start());
 
-INSTANTIATE_TEST_CASE_P(CacheLineUnalignedInputTest,
-                        VideoEncodeAcceleratorSimpleTest,
-                        ::testing::Values(1));
+  encoder_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VEANoInputClient::CreateEncoder,
+                            base::Unretained(client.get())));
+
+  // Encoder must pass through states in this order.
+  enum ClientState state_transitions[] = {CS_INITIALIZED, CS_ENCODING,
+                                          CS_FINISHED};
+
+  for (const auto& state : state_transitions) {
+    ASSERT_EQ(state, note->Wait());
+  }
+
+  encoder_thread.task_runner()->PostTask(
+      FROM_HERE, base::Bind(&VEANoInputClient::DestroyEncoder,
+                            base::Unretained(client.get())));
+
+  // This ensures all tasks have finished.
+  encoder_thread.Stop();
+}
 
 #elif defined(OS_MACOSX) || defined(OS_WIN)
 INSTANTIATE_TEST_CASE_P(
