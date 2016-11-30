@@ -287,8 +287,8 @@ void AppCacheInternalsUI::Proxy::OnResponseInfoLoaded(
     const int64_t kLimit = 100 * 1000;
     int64_t amount_to_read =
         std::min(kLimit, response_info->response_data_size());
-    scoped_refptr<net::IOBuffer> response_data(new net::IOBuffer(
-        base::CheckedNumeric<size_t>(amount_to_read).ValueOrDie()));
+    scoped_refptr<net::IOBuffer> response_data(
+        new net::IOBuffer(base::checked_cast<size_t>(amount_to_read)));
     std::unique_ptr<AppCacheResponseReader> reader(
         appcache_service_->storage()->CreateResponseReader(
             GURL(response_enquiry.manifest_url), response_enquiry.response_id));

@@ -284,7 +284,7 @@ void AppCacheResponseReader::OnIOComplete(int result) {
       if (metadata_size > 0) {
         reading_metadata_size_ = metadata_size;
         info_buffer_->http_info->metadata = new net::IOBufferWithSize(
-            base::CheckedNumeric<size_t>(metadata_size).ValueOrDie());
+            base::checked_cast<size_t>(metadata_size));
         ReadRaw(kResponseMetadataIndex, 0,
                 info_buffer_->http_info->metadata.get(), metadata_size);
         return;
