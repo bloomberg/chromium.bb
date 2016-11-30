@@ -8,28 +8,10 @@
 #include "base/bind.h"
 #include "base/bind_helpers.h"
 #include "base/logging.h"
+#include "base/post_task_and_reply_with_result_internal.h"
 #include "base/task_runner.h"
 
 namespace base {
-
-namespace internal {
-
-// Adapts a function that produces a result via a return value to
-// one that returns via an output parameter.
-template <typename ReturnType>
-void ReturnAsParamAdapter(const Callback<ReturnType(void)>& func,
-                          ReturnType* result) {
-  *result = func.Run();
-}
-
-// Adapts a T* result to a callblack that expects a T.
-template <typename TaskReturnType, typename ReplyArgType>
-void ReplyAdapter(const Callback<void(ReplyArgType)>& callback,
-                  TaskReturnType* result) {
-  callback.Run(std::move(*result));
-}
-
-}  // namespace internal
 
 // When you have these methods
 //

@@ -616,6 +616,7 @@ component("base") {
     "posix/safe_strerror.h",
     "posix/unix_domain_socket_linux.cc",
     "posix/unix_domain_socket_linux.h",
+    "post_task_and_reply_with_result_internal.h",
     "power_monitor/power_monitor.cc",
     "power_monitor/power_monitor.h",
     "power_monitor/power_monitor_device_source.cc",
