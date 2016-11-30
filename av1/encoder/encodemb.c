@@ -654,7 +654,7 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   }
 #endif
 #if !CONFIG_PVQ
-  if (p->eobs[block]) {
+  if (p->eobs[block] && !xd->lossless[xd->mi[0]->mbmi.segment_id]) {
     *a = *l = av1_optimize_b(cm, x, plane, block, tx_size, ctx) > 0;
   } else {
     *a = *l = p->eobs[block] > 0;

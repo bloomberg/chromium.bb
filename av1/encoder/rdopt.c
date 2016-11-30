@@ -1230,7 +1230,7 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
                     coeff_ctx, AV1_XFORM_QUANT_FP);
 #endif  // CONFIG_NEW_QUANT
 #if !CONFIG_PVQ
-    if (x->plane[plane].eobs[block])
+    if (x->plane[plane].eobs[block] && !xd->lossless[mbmi->segment_id])
       av1_optimize_b(cm, x, plane, block, tx_size, coeff_ctx);
 #endif
     dist_block(args->cpi, x, plane, block, blk_row, blk_col, tx_size,
