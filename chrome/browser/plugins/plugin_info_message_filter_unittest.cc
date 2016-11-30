@@ -10,9 +10,12 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_feature_list.h"
 #include "build/build_config.h"
 #include "chrome/browser/content_settings/host_content_settings_map_factory.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_utils.h"
+#include "chrome/common/chrome_features.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/test/base/testing_profile.h"
@@ -88,6 +91,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
   PluginInfoMessageFilterTest()
       : foo_plugin_path_(FILE_PATH_LITERAL("/path/to/foo")),
         bar_plugin_path_(FILE_PATH_LITERAL("/path/to/bar")),
+        fake_flash_path_(FILE_PATH_LITERAL("/path/to/fake/flash")),
         context_(0, &profile_),
         host_content_settings_map_(
             HostContentSettingsMapFactory::GetForProfile(&profile_)) {}
@@ -112,6 +116,15 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
     bar_plugin.mime_types.push_back(mime_type);
     bar_plugin.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_IN_PROCESS;
     PluginService::GetInstance()->RegisterInternalPlugin(bar_plugin, false);
+
+    content::WebPluginInfo fake_flash(
+        base::ASCIIToUTF16(content::kFlashPluginName), fake_flash_path_,
+        base::ASCIIToUTF16("100.0"),
+        base::ASCIIToUTF16("Fake Flash Description."));
+    mime_type.mime_type = content::kFlashPluginSwfMimeType;
+    fake_flash.mime_types.push_back(mime_type);
+    fake_flash.type = content::WebPluginInfo::PLUGIN_TYPE_PEPPER_OUT_OF_PROCESS;
+    PluginService::GetInstance()->RegisterInternalPlugin(fake_flash, false);
 
     PluginService::GetInstance()->SetFilter(&filter_);
 
@@ -162,6 +175,7 @@ class PluginInfoMessageFilterTest : public ::testing::Test {
 
   base::FilePath foo_plugin_path_;
   base::FilePath bar_plugin_path_;
+  base::FilePath fake_flash_path_;
   FakePluginServiceFilter filter_;
 
  private:
@@ -221,6 +235,45 @@ TEST_F(PluginInfoMessageFilterTest, FindEnabledPlugin) {
     EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kNotFound, status);
     EXPECT_EQ(FILE_PATH_LITERAL(""), plugin.path.value());
   }
+}
+
+TEST_F(PluginInfoMessageFilterTest, PreferHtmlOverPlugins) {
+  base::test::ScopedFeatureList feature_list;
+  feature_list.InitAndEnableFeature(features::kPreferHtmlOverPlugins);
+
+  // The HTML5 By Default feature hides Flash using the plugin filter.
+  filter_.set_plugin_enabled(fake_flash_path_, false);
+
+  // Make a real HTTP origin, as all Flash content from non-HTTP and non-FILE
+  // origins are blocked.
+  url::Origin main_frame_origin(GURL("http://example.com"));
+
+  ChromeViewHostMsg_GetPluginInfo_Status status;
+  content::WebPluginInfo plugin;
+  std::string actual_mime_type;
+  EXPECT_TRUE(context()->FindEnabledPlugin(
+      0, GURL(), main_frame_origin, content::kFlashPluginSwfMimeType, &status,
+      &plugin, &actual_mime_type, NULL));
+  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml,
+            status);
+
+  PluginMetadata::SecurityStatus security_status =
+      PluginMetadata::SECURITY_STATUS_UP_TO_DATE;
+  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
+                                security_status, content::kFlashPluginName,
+                                &status);
+  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml,
+            status);
+
+  // Now block plugins.
+  HostContentSettingsMapFactory::GetForProfile(profile())
+      ->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_PLUGINS,
+                                 CONTENT_SETTING_BLOCK);
+
+  context()->DecidePluginStatus(GURL(), main_frame_origin, plugin,
+                                security_status, content::kFlashPluginName,
+                                &status);
+  EXPECT_EQ(ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading, status);
 }
 
 TEST_F(PluginInfoMessageFilterTest, GetPluginContentSetting) {

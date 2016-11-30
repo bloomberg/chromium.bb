@@ -243,8 +243,10 @@ void PluginInfoMessageFilter::PluginsLoaded(
                                  params.main_frame_origin, params.mime_type,
                                  &output->status, &output->plugin,
                                  &output->actual_mime_type, &plugin_metadata)) {
-    context_.DecidePluginStatus(params, output->plugin, plugin_metadata.get(),
-                                &output->status);
+    context_.DecidePluginStatus(
+        params.url, params.main_frame_origin, output->plugin,
+        plugin_metadata->GetSecurityStatus(output->plugin),
+        plugin_metadata->identifier(), &output->status);
   }
 
   if (output->status == ChromeViewHostMsg_GetPluginInfo_Status::kNotFound) {
@@ -303,14 +305,13 @@ void PluginInfoMessageFilter::OnIsInternalPluginAvailableForMimeType(
 #endif  // BUILDFLAG(ENABLE_PEPPER_CDMS)
 
 void PluginInfoMessageFilter::Context::DecidePluginStatus(
-    const GetPluginInfo_Params& params,
+    const GURL& url,
+    const url::Origin& main_frame_origin,
     const WebPluginInfo& plugin,
-    const PluginMetadata* plugin_metadata,
+    PluginMetadata::SecurityStatus security_status,
+    const std::string& plugin_identifier,
     ChromeViewHostMsg_GetPluginInfo_Status* status) const {
-  PluginMetadata::SecurityStatus plugin_status =
-      plugin_metadata->GetSecurityStatus(plugin);
-
-  if (plugin_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
+  if (security_status == PluginMetadata::SECURITY_STATUS_FULLY_TRUSTED) {
     *status = ChromeViewHostMsg_GetPluginInfo_Status::kAllowed;
     return;
   }
@@ -321,9 +322,9 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // Check plugin content settings. The primary URL is the top origin URL and
   // the secondary URL is the plugin URL.
   PluginUtils::GetPluginContentSetting(
-      host_content_settings_map_, plugin, params.main_frame_origin, params.url,
-      plugin_metadata->identifier(), &plugin_setting,
-      &uses_default_content_setting, &is_managed);
+      host_content_settings_map_, plugin, main_frame_origin, url,
+      plugin_identifier, &plugin_setting, &uses_default_content_setting,
+      &is_managed);
 
   // TODO(tommycli): Remove once we deprecate the plugin ASK policy.
   bool legacy_ask_user = plugin_setting == CONTENT_SETTING_ASK;
@@ -334,9 +335,19 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   DCHECK(plugin_setting != CONTENT_SETTING_DEFAULT);
   DCHECK(plugin_setting != CONTENT_SETTING_ASK);
 
+  if (*status ==
+      ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml) {
+    if (plugin_setting == CONTENT_SETTING_BLOCK) {
+      *status = is_managed && !legacy_ask_user
+                    ? ChromeViewHostMsg_GetPluginInfo_Status::kBlockedByPolicy
+                    : ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading;
+    }
+    return;
+  }
+
 #if BUILDFLAG(ENABLE_PLUGIN_INSTALLATION)
   // Check if the plugin is outdated.
-  if (plugin_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
+  if (security_status == PluginMetadata::SECURITY_STATUS_OUT_OF_DATE &&
       !allow_outdated_plugins_.GetValue()) {
     if (allow_outdated_plugins_.IsManaged()) {
       *status = ChromeViewHostMsg_GetPluginInfo_Status::kOutdatedDisallowed;
@@ -360,10 +371,10 @@ void PluginInfoMessageFilter::Context::DecidePluginStatus(
   // If an app has explicitly made internal resources available by listing them
   // in |accessible_resources| in the manifest, then allow them to be loaded by
   // plugins inside a guest-view.
-  if (params.url.SchemeIs(extensions::kExtensionScheme) && !is_managed &&
+  if (url.SchemeIs(extensions::kExtensionScheme) && !is_managed &&
       plugin_setting == CONTENT_SETTING_BLOCK &&
-      IsPluginLoadingAccessibleResourceInWebView(
-          extension_registry_, render_process_id_, params.url)) {
+      IsPluginLoadingAccessibleResourceInWebView(extension_registry_,
+                                                 render_process_id_, url)) {
     plugin_setting = CONTENT_SETTING_ALLOW;
   }
 #endif  // BUILDFLAG(ENABLE_EXTENSIONS)
@@ -455,6 +466,10 @@ bool PluginInfoMessageFilter::Context::FindEnabledPlugin(
       // via chrome://plugins. That should be fine since chrome://plugins is
       // going away, but we should verify before launching HBD.
       *status = ChromeViewHostMsg_GetPluginInfo_Status::kFlashHiddenPreferHtml;
+
+      // In the Prefer HTML case, the plugin is actually enabled, but hidden.
+      // It will still be blocked in the body of DecidePluginStatus.
+      enabled = true;
     }
   }
 

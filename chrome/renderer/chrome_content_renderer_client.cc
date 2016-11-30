@@ -846,6 +846,14 @@ WebPlugin* ChromeContentRendererClient::CreatePlugin(
         observer->DidBlockContentType(content_type, group_name);
         break;
       }
+      case ChromeViewHostMsg_GetPluginInfo_Status::kBlockedNoLoading: {
+        placeholder = create_blocked_plugin(
+            IDR_BLOCKED_PLUGIN_HTML,
+            l10n_util::GetStringFUTF16(IDS_PLUGIN_BLOCKED_NO_LOADING,
+                                       group_name));
+        observer->DidBlockContentType(content_type, group_name);
+        break;
+      }
       case ChromeViewHostMsg_GetPluginInfo_Status::kComponentUpdateRequired: {
         placeholder = create_blocked_plugin(
             IDR_BLOCKED_PLUGIN_HTML,

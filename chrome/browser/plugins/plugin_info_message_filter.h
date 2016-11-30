@@ -14,6 +14,7 @@
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
 #include "base/sequenced_task_runner_helpers.h"
+#include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "components/content_settings/core/common/content_settings.h"
 #include "components/prefs/pref_member.h"
@@ -25,7 +26,6 @@ struct ChromeViewHostMsg_GetPluginInfo_Output;
 enum class ChromeViewHostMsg_GetPluginInfo_Status;
 class GURL;
 class HostContentSettingsMap;
-class PluginMetadata;
 class Profile;
 
 namespace base {
@@ -62,9 +62,11 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
     ~Context();
 
     void DecidePluginStatus(
-        const GetPluginInfo_Params& params,
+        const GURL& url,
+        const url::Origin& main_frame_origin,
         const content::WebPluginInfo& plugin,
-        const PluginMetadata* plugin_metadata,
+        PluginMetadata::SecurityStatus security_status,
+        const std::string& plugin_identifier,
         ChromeViewHostMsg_GetPluginInfo_Status* status) const;
     bool FindEnabledPlugin(
         int render_frame_id,

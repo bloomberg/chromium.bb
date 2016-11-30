@@ -7183,6 +7183,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PLUGIN_BLOCKED_BY_POLICY" desc="The placeholder text for a plugin blocked by enterprise policy.">
         <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is blocked by enterprise policy
       </message>
+      <message name="IDS_PLUGIN_BLOCKED_NO_LOADING" desc="The placeholder text for a blocked plugin that cannot be manually loaded by the user.">
+        <ph name="PLUGIN_NAME">$1<ex>Flash</ex></ph> is blocked
+      </message>
       <if expr="chromeos">
         <message name="IDS_NACL_PLUGIN_BLOCKED" desc="The placeholder text for a blocked plugin.">
           This plugin is not supported on this device

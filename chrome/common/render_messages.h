@@ -39,10 +39,16 @@
 // These are only used internally, so the order does not matter.
 enum class ChromeViewHostMsg_GetPluginInfo_Status {
   kAllowed,
+  // Plugin is blocked, but still can be manually loaded via context menu.
   kBlocked,
+  // Plugin is blocked by policy, so it cannot be manually loaded.
   kBlockedByPolicy,
+  // Plugin is blocked, and cannot be manually loaded via context menu.
+  kBlockedNoLoading,
   kComponentUpdateRequired,
   kDisabled,
+  // Flash is blocked, but user can click on the placeholder to trigger the
+  // Flash permission prompt.
   kFlashHiddenPreferHtml,
   kNotFound,
   kOutdatedBlocked,
