@@ -10,7 +10,10 @@ function getStyleURL() {
 
 function getScriptURL() {
   // The file is empty, so JS errors will not be generated upon execution.
-  return getServerURL('empty.html?as-script');
+  //
+  // We load from '127.0.0.1', as that is a whitelistable source of script
+  // from outside the extension's package.
+  return getServerURL('empty.html?as-script', '127.0.0.1');
 }
 
 function getFontURL() {
@@ -203,12 +206,6 @@ runTests([
         'onHeadersReceived', 'onResponseStarted', 'onCompleted']],
       getScriptFilter());
 
-    // This tab is an extension, and the default Content Security Policy forbids
-    // injecting external scripts in the page. So we just load the script in a
-    // frame via a data:-URL (which is not subject to the extension's CSP).
-    //
-    // data-URLs are not visible to the webRequest API, so we don't have to
-    // include the frame in the expectations - this is a nice side effect.
     var frame = document.createElement('iframe');
     frame.src = 'data:text/html,<script src="' + getScriptURL() + '"></script>';
     document.body.appendChild(frame);

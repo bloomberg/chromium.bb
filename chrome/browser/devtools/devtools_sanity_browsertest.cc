@@ -978,6 +978,12 @@ IN_PROC_BROWSER_TEST_F(DevToolsExtensionTest,
   dir->WriteManifest(extensions::DictionaryBuilder()
                          .Set("name", "Devtools Panel")
                          .Set("version", "1")
+                         // Whitelist the script we stuff into the 'blob:' URL:
+                         .Set("content_security_policy",
+                              "script-src 'self' "
+                              "'sha256-95xJWHeV+"
+                              "1zjAKQufDVW0misgmR4gCjgpipP2LJ5iis='; "
+                              "object-src 'none'")
                          .Set("manifest_version", 2)
                          .Set("devtools_page", "devtools.html")
                          .ToJSON());

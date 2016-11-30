@@ -367,19 +367,6 @@ static inline bool isValidNamePart(UChar32 c) {
   return true;
 }
 
-static bool shouldInheritSecurityOriginFromOwner(const KURL& url) {
-  // http://www.whatwg.org/specs/web-apps/current-work/#origin-0
-  //
-  // If a Document has the address "about:blank"
-  //     The origin of the Document is the origin it was assigned when its
-  //     browsing context was created.
-  //
-  // Note: We generalize this to all "blank" URLs and invalid URLs because we
-  // treat all of these URLs as about:blank.
-  //
-  return url.isEmpty() || url.protocolIsAbout();
-}
-
 static Widget* widgetForElement(const Element& focusedElement) {
   LayoutObject* layoutObject = focusedElement.layoutObject();
   if (!layoutObject || !layoutObject->isLayoutPart())
@@ -5524,7 +5511,15 @@ void Document::initContentSecurityPolicy(ContentSecurityPolicy* csp) {
     ContentSecurityPolicy* parentCSP = toLocalFrame(m_frame->tree().parent())
                                            ->document()
                                            ->contentSecurityPolicy();
-    if (shouldInheritSecurityOriginFromOwner(m_url)) {
+
+    // We inherit the parent frame's CSP for documents with "local" schemes:
+    // 'about', 'blob', 'data', and 'filesystem'. We also inherit the parent
+    // frame's CSP for documents with empty/invalid URLs because we treat
+    // those URLs as 'about:blank' in Blink.
+    //
+    // https://w3c.github.io/webappsec-csp/#initialize-document-csp
+    if (m_url.isEmpty() || m_url.protocolIsAbout() || m_url.protocolIsData() ||
+        m_url.protocolIs("blob") || m_url.protocolIs("filesystem")) {
       contentSecurityPolicy()->copyStateFrom(parentCSP);
     } else if (isPluginDocument()) {
       // Per CSP2, plugin-types for plugin documents in nested browsing

@@ -397,6 +397,7 @@ void DocumentLoader::cancelLoadAfterXFrameOptionsOrCSPDenied(
   // TODO(mkwst):  Remove this once XFO moves to the browser.
   // https://crbug.com/555418.
   clearMainResourceHandle();
+  m_contentSecurityPolicy.clear();
   KURL blockedURL = SecurityOrigin::urlWithUniqueSecurityOrigin();
   m_originalRequest.setURL(blockedURL);
   m_request.setURL(blockedURL);
