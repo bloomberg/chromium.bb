@@ -37,10 +37,8 @@
 
 #include "platform/image-decoders/jpeg/JPEGImageDecoder.h"
 
-#include "platform/Histogram.h"
 #include "platform/PlatformInstrumentation.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <memory>
 
 extern "C" {
@@ -430,15 +428,6 @@ class JPEGImageReader final {
 
         m_state = JPEG_START_DECOMPRESS;
 
-        {
-          DEFINE_THREAD_SAFE_STATIC_LOCAL(
-              blink::CustomCountHistogram, dimensionsLocationHistogram,
-              new blink::CustomCountHistogram(
-                  "Blink.DecodedImage.EffectiveDimensionsLocation.JPEG", 0,
-                  50000, 50));
-          dimensionsLocationHistogram.count(m_nextReadPosition -
-                                            m_info.src->bytes_in_buffer - 1);
-        }
         // We can fill in the size now that the header is available.
         if (!m_decoder->setSize(m_info.image_width, m_info.image_height))
           return false;

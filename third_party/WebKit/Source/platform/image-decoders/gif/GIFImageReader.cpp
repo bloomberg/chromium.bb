@@ -74,9 +74,7 @@ mailing address.
 
 #include "platform/image-decoders/gif/GIFImageReader.h"
 
-#include "platform/Histogram.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <string.h>
 
 using blink::GIFImageDecoder;
@@ -729,39 +727,6 @@ bool GIFImageReader::parseData(size_t dataPosition,
         // set to zero, since usually the first frame completely fills
         // the image.
         if (currentFrameIsFirstFrame()) {
-          int yCanvasExpansion = (m_screenHeight < yOffset + height)
-                                     ? yOffset + height - m_screenHeight
-                                     : 0;
-          int xCanvasExpansion = (m_screenWidth < xOffset + width)
-                                     ? xOffset + width - m_screenWidth
-                                     : 0;
-          DEFINE_THREAD_SAFE_STATIC_LOCAL(
-              blink::BooleanHistogram, canvasExpandedHistogram,
-              new blink::BooleanHistogram(
-                  "Blink.DecodedImage.CanvasExpanded.GIF"));
-          canvasExpandedHistogram.count(xCanvasExpansion > 0 ||
-                                        yCanvasExpansion > 0);
-          if (yCanvasExpansion > 0) {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(
-                blink::CustomCountHistogram, yCanvasExpansionHistogram,
-                new blink::CustomCountHistogram(
-                    "Blink.DecodedImage.YCanvasExpansion.GIF", 0, 10000, 50));
-            yCanvasExpansionHistogram.count(yCanvasExpansion);
-          }
-          if (xCanvasExpansion > 0) {
-            DEFINE_THREAD_SAFE_STATIC_LOCAL(
-                blink::CustomCountHistogram, xCanvasExpansionHistogram,
-                new blink::CustomCountHistogram(
-                    "Blink.DecodedImage.XCanvasExpansion.GIF", 0, 10000, 50));
-            xCanvasExpansionHistogram.count(xCanvasExpansion);
-          }
-          DEFINE_THREAD_SAFE_STATIC_LOCAL(
-              blink::CustomCountHistogram, dimensionsLocationHistogram,
-              new blink::CustomCountHistogram(
-                  "Blink.DecodedImage.EffectiveDimensionsLocation.GIF", 0,
-                  50000, 50));
-          dimensionsLocationHistogram.count(dataPosition - 1);
-
           m_screenHeight = std::max(m_screenHeight, yOffset + height);
           m_screenWidth = std::max(m_screenWidth, xOffset + width);
         }

@@ -30,10 +30,8 @@
 
 #include "platform/image-decoders/ico/ICOImageDecoder.h"
 
-#include "platform/Histogram.h"
 #include "platform/image-decoders/png/PNGImageDecoder.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/Threading.h"
 #include <algorithm>
 
 namespace blink {
@@ -270,12 +268,6 @@ bool ICOImageDecoder::processDirectoryEntries() {
     if (i->m_imageOffset < m_decodedOffset)
       return setFailed();
   }
-
-  DEFINE_THREAD_SAFE_STATIC_LOCAL(
-      blink::CustomCountHistogram, dimensionsLocationHistogram,
-      new blink::CustomCountHistogram(
-          "Blink.DecodedImage.EffectiveDimensionsLocation.ICO", 0, 50000, 50));
-  dimensionsLocationHistogram.count(m_decodedOffset - 1);
 
   // Arrange frames in decreasing quality order.
   std::sort(m_dirEntries.begin(), m_dirEntries.end(), compareEntries);
