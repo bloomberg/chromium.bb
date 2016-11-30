@@ -11,7 +11,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace base {
-class MessageLoop;
 class SingleThreadTaskRunner;
 }
 

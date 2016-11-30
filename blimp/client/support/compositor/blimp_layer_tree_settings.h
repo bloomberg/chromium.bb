@@ -5,16 +5,8 @@
 #ifndef BLIMP_CLIENT_SUPPORT_COMPOSITOR_BLIMP_LAYER_TREE_SETTINGS_H_
 #define BLIMP_CLIENT_SUPPORT_COMPOSITOR_BLIMP_LAYER_TREE_SETTINGS_H_
 
-namespace base {
-class CommandLine;
-}
-
 namespace cc {
 class LayerTreeSettings;
-}
-
-namespace gfx {
-class Size;
 }
 
 namespace blimp {

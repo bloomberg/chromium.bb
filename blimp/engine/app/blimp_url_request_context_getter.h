@@ -14,16 +14,13 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace base {
-class MessageLoop;
 class SingleThreadTaskRunner;
 }
 
 namespace net {
 class HostResolver;
-class NetworkDelegate;
 class NetLog;
 class ProxyConfigService;
-class ProxyService;
 }
 
 namespace blimp {

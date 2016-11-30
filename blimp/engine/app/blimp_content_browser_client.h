@@ -8,10 +8,6 @@
 #include "base/macros.h"
 #include "content/public/browser/content_browser_client.h"
 
-namespace content {
-class GeolocationDelegate;
-}  // namespace content
-
 namespace blimp {
 namespace engine {
 

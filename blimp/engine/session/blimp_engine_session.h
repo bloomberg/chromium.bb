@@ -53,10 +53,7 @@ class FocusController;
 
 namespace blimp {
 
-class BlimpConnection;
 class BlimpMessage;
-class BlimpMessageThreadPipe;
-class BlobCache;
 class HeliumBlobSenderDelegate;
 class ThreadPipeManager;
 class SettingsManager;
@@ -65,7 +62,6 @@ namespace engine {
 
 class BlimpBrowserContext;
 class BlimpEngineConfig;
-class BlimpFocusClient;
 class BlimpScreen;
 class BlimpWindowTreeHost;
 class EngineNetworkComponents;

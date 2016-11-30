@@ -24,7 +24,6 @@ class ImeMessage;
 class InputMessage;
 class NavigationMessage;
 class RenderWidgetMessage;
-class SettingsMessage;
 class SizeMessage;
 class TabControlMessage;
 

@@ -15,8 +15,6 @@
 namespace blimp {
 namespace client {
 
-class BlimpNavigationControllerDelegate;
-
 class BlimpNavigationControllerImplAndroid {
  public:
   static bool RegisterJni(JNIEnv* env);

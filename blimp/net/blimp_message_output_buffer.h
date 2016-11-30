@@ -19,8 +19,6 @@
 
 namespace blimp {
 
-class BlimpConnection;
-
 // Provides a FIFO buffer for reliable, ordered message delivery.
 // Messages are retained for redelivery until they are acknowledged by the
 // receiving end (via BlimpMessageCheckpointObserver).

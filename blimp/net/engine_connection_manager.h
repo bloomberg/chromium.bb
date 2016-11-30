@@ -17,8 +17,6 @@
 
 namespace blimp {
 
-class BlimpConnection;
-class BlimpTransport;
 class BlimpEngineTransport;
 
 // Coordinates the channel creation and authentication workflows for

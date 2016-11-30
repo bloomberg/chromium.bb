@@ -22,10 +22,6 @@
 #include "base/android/jni_android.h"
 #endif  // defined(OS_ANDROID)
 
-namespace base {
-class SupportsUserData;
-}
-
 namespace blimp {
 namespace client {
 class CompositorDependencies;

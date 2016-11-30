@@ -10,12 +10,6 @@
 #include "base/memory/weak_ptr.h"
 #include "blimp/client/support/compositor/blimp_embedder_compositor.h"
 
-class SkBitmap;
-
-namespace cc {
-class CopyOutputResult;
-}  // namespace cc
-
 namespace blimp {
 namespace client {
 class CompositorDependencies;

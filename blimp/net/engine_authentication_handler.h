@@ -17,7 +17,6 @@
 namespace blimp {
 
 class BlimpConnection;
-class BlimpMessage;
 
 // Authenticates connections and passes successfully authenticated connections
 // to |connection_handler|.

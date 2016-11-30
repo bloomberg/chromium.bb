@@ -22,11 +22,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/native_widget_types.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-class Thread;
-}  // namespace base
-
 namespace cc {
 class AnimationHost;
 class InputHandler;
@@ -39,15 +34,11 @@ class ContextProvider;
 class CopyOutputRequest;
 class Layer;
 class LayerTreeHostInProcess;
-class LayerTreeSettings;
-class LocalFrameid;
-class Surface;
 class SurfaceFactory;
 class SurfaceIdAllocator;
 }  // namespace cc
 
 namespace blimp {
-class BlimpMessage;
 
 namespace client {
 

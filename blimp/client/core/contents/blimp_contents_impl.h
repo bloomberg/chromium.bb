@@ -29,7 +29,6 @@ class BlimpContentsImplAndroid;
 
 class BlimpCompositorDependencies;
 class BlimpContentsObserver;
-class BlimpNavigationController;
 class ImeFeature;
 class NavigationFeature;
 class RenderWidgetFeature;

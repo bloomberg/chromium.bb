@@ -15,7 +15,6 @@
 #include "url/gurl.h"
 
 namespace base {
-class FilePath;
 class SingleThreadTaskRunner;
 class Value;
 }

@@ -15,7 +15,6 @@ class SkBitmap;
 namespace blimp {
 namespace client {
 
-class BlimpContentsObserver;
 class BlimpNavigationControllerDelegate;
 
 class BlimpNavigationControllerImpl

@@ -13,10 +13,6 @@
 #include "base/android/scoped_java_ref.h"
 #endif
 
-namespace cc {
-class Layer;
-}  // namespace cc
-
 namespace blimp {
 namespace client {
 

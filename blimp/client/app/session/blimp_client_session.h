@@ -19,17 +19,9 @@
 #include "blimp/common/proto/blimp_message.pb.h"
 #include "blimp/net/blimp_message_processor.h"
 
-namespace net {
-class IPEndPoint;
-}
-
 namespace blimp {
 
-class BlimpMessageProcessor;
-class BlimpMessageThreadPipe;
 class BlobChannelReceiver;
-class BrowserConnectionHandler;
-class ClientConnectionManager;
 class HeliumBlobReceiverDelegate;
 class ThreadPipeManager;
 

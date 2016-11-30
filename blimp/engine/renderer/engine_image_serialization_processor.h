@@ -18,10 +18,6 @@
 #include "third_party/libwebp/webp/encode.h"
 #include "third_party/skia/include/core/SkPixelSerializer.h"
 
-namespace content {
-class RenderFrame;
-}  // class content
-
 namespace blimp {
 namespace engine {
 

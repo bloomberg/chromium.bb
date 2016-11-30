@@ -14,7 +14,6 @@
 
 namespace blimp {
 
-class BlimpConnection;
 class BlimpMessageProcessor;
 
 // Creates MessageProcessors that receive outgoing messages and put them

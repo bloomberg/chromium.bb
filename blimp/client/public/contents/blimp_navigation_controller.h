@@ -11,8 +11,6 @@
 namespace blimp {
 namespace client {
 
-class BlimpContentsObserver;
-
 // The BlimpNavigationController maintains the back-forward list for a
 // BlimpContents and manages all navigation within that list.
 //

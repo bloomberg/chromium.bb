@@ -18,7 +18,6 @@ class WebGestureEvent;
 namespace blimp {
 
 class BlimpMessage;
-class BlimpMessageProcessor;
 
 // Handles creating serialized InputMessage protos from a stream of
 // WebGestureEvents.  This class may be stateful to optimize the size of the

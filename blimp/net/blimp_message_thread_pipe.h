@@ -17,7 +17,6 @@ class SequencedTaskRunner;
 
 namespace blimp {
 
-class BlimpMessage;
 class BlimpMessageProcessor;
 
 // Uni-directional MessageProcessor "pipe" that accepts messages on

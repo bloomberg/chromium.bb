@@ -16,8 +16,6 @@
 namespace blimp {
 namespace client {
 
-class AssignmentSource;
-
 class BlimpClientSessionAndroid : public BlimpClientSession {
  public:
   static bool RegisterJni(JNIEnv* env);

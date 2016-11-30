@@ -10,8 +10,6 @@
 #include "blimp/engine/mojo/font_fetcher.mojom.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 
-class SkStream;
-
 namespace blimp {
 namespace engine {
 

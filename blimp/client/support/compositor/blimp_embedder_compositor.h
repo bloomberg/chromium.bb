@@ -19,7 +19,6 @@ class AnimationHost;
 class ContextProvider;
 class Display;
 class LayerTreeHost;
-class SurfaceManager;
 }  // namespace cc
 
 namespace blimp {

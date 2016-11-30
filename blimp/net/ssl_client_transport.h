@@ -21,16 +21,12 @@
 #include "net/http/transport_security_state.h"
 
 namespace net {
-class ClientSocketFactory;
 class NetLog;
-class StreamSocket;
 class TCPClientSocket;
 class TransportSecurityState;
 }  // namespace net
 
 namespace blimp {
-
-class BlimpConnection;
 
 // Creates and connects SSL socket connections to an Engine.
 class BLIMP_NET_EXPORT SSLClientTransport : public TCPClientTransport {

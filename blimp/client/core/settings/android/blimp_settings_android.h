@@ -16,7 +16,6 @@
 namespace blimp {
 namespace client {
 
-class BlimpClientContextImplAndroid;
 class BlimpSettingsDelegate;
 
 // JNI bridge between AboutBlimpPreferences.java and native code.

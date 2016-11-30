@@ -11,14 +11,6 @@
 #include "base/threading/thread_restrictions.h"
 #include "content/public/test/browser_test_base.h"
 
-namespace base {
-class RunLoop;
-}
-
-namespace content {
-class WebContents;
-}
-
 namespace blimp {
 namespace client {
 struct Assignment;

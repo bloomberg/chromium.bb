@@ -9,10 +9,6 @@
 #include "base/memory/ref_counted.h"
 #include "blimp/client/public/compositor/compositor_dependencies.h"
 
-namespace cc {
-class ContextProvider;
-}
-
 namespace blimp {
 namespace client {
 
