@@ -7226,6 +7226,11 @@ error::Error GLES2DecoderImpl::HandleDeleteProgram(
 error::Error GLES2DecoderImpl::DoClear(GLbitfield mask) {
   const char* func_name = "glClear";
   DCHECK(!ShouldDeferDraws());
+  if (mask &
+      ~(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT | GL_STENCIL_BUFFER_BIT)) {
+    LOCAL_SET_GL_ERROR(GL_INVALID_VALUE, func_name, "invalid mask");
+    return error::kNoError;
+  }
   if (CheckBoundDrawFramebufferValid(func_name)) {
     ApplyDirtyState();
     if (workarounds().gl_clear_broken) {

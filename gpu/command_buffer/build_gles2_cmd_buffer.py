@@ -2492,6 +2492,9 @@ _FUNCTION_INFO = {
     'decoder_func': 'DoClear',
     'defer_draws': True,
     'trace_level': 2,
+    'valid_args': {
+      '0': 'GL_COLOR_BUFFER_BIT'
+    },
   },
   'ClearBufferiv': {
     'type': 'PUT',

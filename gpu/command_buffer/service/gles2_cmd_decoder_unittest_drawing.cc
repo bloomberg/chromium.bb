@@ -2349,5 +2349,13 @@ TEST_P(GLES3DecoderTest, DrawNoProgram) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
+TEST_P(GLES2DecoderTest, ClearInvalidValue) {
+  EXPECT_CALL(*gl_, Clear(_)).Times(0);
+  Clear cmd;
+  cmd.Init(0xffffffff);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
 }  // namespace gles2
 }  // namespace gpu

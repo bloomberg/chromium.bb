@@ -222,10 +222,10 @@ TEST_P(GLES2DecoderTest1, CheckFramebufferStatusInvalidArgsBadSharedMemoryId) {
 }
 
 TEST_P(GLES2DecoderTest1, ClearValidArgs) {
-  EXPECT_CALL(*gl_, Clear(1));
+  EXPECT_CALL(*gl_, Clear(GL_COLOR_BUFFER_BIT));
   SpecializedSetup<cmds::Clear, 0>(true);
   cmds::Clear cmd;
-  cmd.Init(1);
+  cmd.Init(GL_COLOR_BUFFER_BIT);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }

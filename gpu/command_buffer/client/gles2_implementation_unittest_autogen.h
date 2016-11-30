@@ -189,9 +189,9 @@ TEST_F(GLES2ImplementationTest, Clear) {
     cmds::Clear cmd;
   };
   Cmds expected;
-  expected.cmd.Init(1);
+  expected.cmd.Init(GL_COLOR_BUFFER_BIT);
 
-  gl_->Clear(1);
+  gl_->Clear(GL_COLOR_BUFFER_BIT);
   EXPECT_EQ(0, memcmp(&expected, commands_, sizeof(expected)));
 }
 
