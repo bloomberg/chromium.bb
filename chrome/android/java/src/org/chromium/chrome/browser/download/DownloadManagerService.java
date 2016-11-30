@@ -1182,7 +1182,7 @@ public class DownloadManagerService extends BroadcastReceiver implements
                 mDownloadManagerDelegate.removeCompletedDownload(downloadGuid);
                 return null;
             }
-        }.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }.executeOnExecutor(AsyncTask.SERIAL_EXECUTOR);
     }
 
     /**

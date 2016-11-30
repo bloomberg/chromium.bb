@@ -26,6 +26,7 @@ public class DownloadManagerDelegate {
     private static final String TAG = "DownloadDelegate";
     private static final long INVALID_SYSTEM_DOWNLOAD_ID = -1;
     private static final String DOWNLOAD_ID_MAPPINGS_FILE_NAME = "download_id_mappings";
+    private static final Object sLock = new Object();
     protected final Context mContext;
 
     public DownloadManagerDelegate(Context context) {
@@ -38,10 +39,12 @@ public class DownloadManagerDelegate {
      * @param downloadGuid Download GUID.
      */
     private void addDownloadIdMapping(long downloadId, String downloadGuid) {
-        SharedPreferences sharedPrefs = getSharedPreferences();
-        SharedPreferences.Editor editor = sharedPrefs.edit();
-        editor.putLong(downloadGuid, downloadId);
-        editor.apply();
+        synchronized (sLock) {
+            SharedPreferences sharedPrefs = getSharedPreferences();
+            SharedPreferences.Editor editor = sharedPrefs.edit();
+            editor.putLong(downloadGuid, downloadId);
+            editor.apply();
+        }
     }
 
     /**
@@ -51,12 +54,15 @@ public class DownloadManagerDelegate {
      *         INVALID_SYSTEM_DOWNLOAD_ID if it is not found.
      */
     private long removeDownloadIdMapping(String downloadGuid) {
-        SharedPreferences sharedPrefs = getSharedPreferences();
-        long downloadId = sharedPrefs.getLong(downloadGuid, INVALID_SYSTEM_DOWNLOAD_ID);
-        if (downloadId != INVALID_SYSTEM_DOWNLOAD_ID) {
-            SharedPreferences.Editor editor = sharedPrefs.edit();
-            editor.remove(downloadGuid);
-            editor.apply();
+        long downloadId = INVALID_SYSTEM_DOWNLOAD_ID;
+        synchronized (sLock) {
+            SharedPreferences sharedPrefs = getSharedPreferences();
+            downloadId = sharedPrefs.getLong(downloadGuid, INVALID_SYSTEM_DOWNLOAD_ID);
+            if (downloadId != INVALID_SYSTEM_DOWNLOAD_ID) {
+                SharedPreferences.Editor editor = sharedPrefs.edit();
+                editor.remove(downloadGuid);
+                editor.apply();
+            }
         }
         return downloadId;
     }
