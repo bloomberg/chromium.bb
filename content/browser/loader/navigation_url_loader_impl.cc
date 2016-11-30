@@ -15,6 +15,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/stream_handle.h"
@@ -87,11 +88,15 @@ void NavigationURLLoaderImpl::NotifyResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     const SSLStatus& ssl_status,
-    std::unique_ptr<NavigationData> navigation_data) {
+    std::unique_ptr<NavigationData> navigation_data,
+    const GlobalRequestID& request_id,
+    bool is_download,
+    bool is_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   delegate_->OnResponseStarted(response, std::move(body), ssl_status,
-                               std::move(navigation_data));
+                               std::move(navigation_data), request_id,
+                               is_download, is_stream);
 }
 
 void NavigationURLLoaderImpl::NotifyRequestFailed(bool in_cache,

@@ -23,6 +23,7 @@
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/content_browser_client.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_controller.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
@@ -373,7 +374,10 @@ void NavigationRequest::OnResponseStarted(
     const scoped_refptr<ResourceResponse>& response,
     std::unique_ptr<StreamHandle> body,
     const SSLStatus& ssl_status,
-    std::unique_ptr<NavigationData> navigation_data) {
+    std::unique_ptr<NavigationData> navigation_data,
+    const GlobalRequestID& request_id,
+    bool is_download,
+    bool is_stream) {
   DCHECK(state_ == STARTED);
   state_ = RESPONSE_STARTED;
 
@@ -431,12 +435,10 @@ void NavigationRequest::OnResponseStarted(
   body_ = std::move(body);
 
   // Check if the navigation should be allowed to proceed.
-  // TODO(clamy): pass the right values for request_id, is_download and
-  // is_stream.
   navigation_handle_->WillProcessResponse(
       render_frame_host, response->head.headers.get(),
-      response->head.connection_info, ssl_status, GlobalRequestID(),
-      common_params_.should_replace_current_entry, false, false,
+      response->head.connection_info, ssl_status, request_id,
+      common_params_.should_replace_current_entry, is_download, is_stream,
       base::Closure(),
       base::Bind(&NavigationRequest::OnWillProcessResponseChecksComplete,
                  base::Unretained(this)));

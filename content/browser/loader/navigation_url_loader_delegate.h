@@ -19,6 +19,7 @@ namespace content {
 
 class NavigationData;
 class StreamHandle;
+struct GlobalRequestID;
 struct ResourceResponse;
 struct SSLStatus;
 
@@ -38,7 +39,10 @@ class CONTENT_EXPORT NavigationURLLoaderDelegate {
       const scoped_refptr<ResourceResponse>& response,
       std::unique_ptr<StreamHandle> body_stream,
       const SSLStatus& ssl_status,
-      std::unique_ptr<NavigationData> navigation_data) = 0;
+      std::unique_ptr<NavigationData> navigation_data,
+      const GlobalRequestID& request_id,
+      bool is_download,
+      bool is_stream) = 0;
 
   // Called if the request fails before receving a response. |net_error| is a
   // network error code for the failure. |has_stale_copy_in_cache| is true if

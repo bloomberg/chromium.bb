@@ -13,6 +13,7 @@
 #include "content/browser/service_worker/service_worker_navigation_handle_core.h"
 #include "content/common/navigation_params.h"
 #include "content/public/browser/browser_thread.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/navigation_ui_data.h"
 #include "content/public/browser/ssl_status.h"
@@ -100,7 +101,10 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
     ResourceResponse* response,
     std::unique_ptr<StreamHandle> body,
     const SSLStatus& ssl_status,
-    std::unique_ptr<NavigationData> navigation_data) {
+    std::unique_ptr<NavigationData> navigation_data,
+    const GlobalRequestID& request_id,
+    bool is_download,
+    bool is_stream) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   TRACE_EVENT_ASYNC_END0("navigation", "Navigation redirectDelay", this);
   TRACE_EVENT_ASYNC_END2("navigation", "Navigation timeToResponseStarted", this,
@@ -119,7 +123,8 @@ void NavigationURLLoaderImplCore::NotifyResponseStarted(
       BrowserThread::UI, FROM_HERE,
       base::Bind(&NavigationURLLoaderImpl::NotifyResponseStarted, loader_,
                  response->DeepCopy(), base::Passed(&body), ssl_status,
-                 base::Passed(&navigation_data)));
+                 base::Passed(&navigation_data), request_id, is_download,
+                 is_stream));
 }
 
 void NavigationURLLoaderImplCore::NotifyRequestFailed(bool in_cache,

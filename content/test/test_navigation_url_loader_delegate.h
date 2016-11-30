@@ -54,11 +54,13 @@ class TestNavigationURLLoaderDelegate : public NavigationURLLoaderDelegate {
   void OnRequestRedirected(
       const net::RedirectInfo& redirect_info,
       const scoped_refptr<ResourceResponse>& response) override;
-  void OnResponseStarted(
-      const scoped_refptr<ResourceResponse>& response,
-      std::unique_ptr<StreamHandle> body,
-      const SSLStatus& ssl_status,
-      std::unique_ptr<NavigationData> navigation_data) override;
+  void OnResponseStarted(const scoped_refptr<ResourceResponse>& response,
+                         std::unique_ptr<StreamHandle> body,
+                         const SSLStatus& ssl_status,
+                         std::unique_ptr<NavigationData> navigation_data,
+                         const GlobalRequestID& request_id,
+                         bool is_download,
+                         bool is_stream) override;
   void OnRequestFailed(bool in_cache, int net_error) override;
   void OnRequestStarted(base::TimeTicks timestamp) override;
 

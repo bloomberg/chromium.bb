@@ -7,6 +7,7 @@
 #include <utility>
 
 #include "content/browser/loader/navigation_url_loader_delegate.h"
+#include "content/public/browser/global_request_id.h"
 #include "content/public/browser/navigation_data.h"
 #include "content/public/browser/ssl_status.h"
 #include "content/public/browser/stream_handle.h"
@@ -56,7 +57,8 @@ void TestNavigationURLLoader::CallOnResponseStarted(
     std::unique_ptr<StreamHandle> body,
     std::unique_ptr<NavigationData> navigation_data) {
   delegate_->OnResponseStarted(response, std::move(body), SSLStatus(),
-                               std::move(navigation_data));
+                               std::move(navigation_data), GlobalRequestID(),
+                               false, false);
 }
 
 TestNavigationURLLoader::~TestNavigationURLLoader() {}

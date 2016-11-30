@@ -129,7 +129,9 @@ bool NavigationResourceHandler::OnResponseStarted(ResourceResponse* response,
   }
 
   core_->NotifyResponseStarted(response, writer_.stream()->CreateHandle(),
-                               ssl_status, std::move(cloned_data));
+                               ssl_status, std::move(cloned_data),
+                               info->GetGlobalRequestID(), info->IsDownload(),
+                               info->is_stream());
   // Don't defer stream based requests. This includes requests initiated via
   // mime type sniffing, etc.
   // TODO(ananta)

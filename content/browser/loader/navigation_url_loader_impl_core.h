@@ -22,6 +22,7 @@ class NavigationData;
 class ResourceContext;
 class ServiceWorkerNavigationHandleCore;
 class StreamHandle;
+struct GlobalRequestID;
 struct ResourceResponse;
 struct SSLStatus;
 
@@ -61,7 +62,10 @@ class NavigationURLLoaderImplCore {
   void NotifyResponseStarted(ResourceResponse* response,
                              std::unique_ptr<StreamHandle> body,
                              const SSLStatus& ssl_status,
-                             std::unique_ptr<NavigationData> navigation_data);
+                             std::unique_ptr<NavigationData> navigation_data,
+                             const GlobalRequestID& request_id,
+                             bool is_download,
+                             bool is_stream);
 
   // Notifies |loader_| on the UI thread that the request failed.
   void NotifyRequestFailed(bool in_cache, int net_error);
