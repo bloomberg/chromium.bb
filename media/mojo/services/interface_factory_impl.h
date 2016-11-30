@@ -10,6 +10,7 @@
 #include "base/macros.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
 #include "media/mojo/services/mojo_cdm_service_context.h"
+#include "media/mojo/services/strong_binding_set.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
@@ -53,13 +54,23 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
 
   MojoCdmServiceContext cdm_service_context_;
 
+#if defined(ENABLE_MOJO_AUDIO_DECODER)
+  StrongBindingSet<mojom::AudioDecoder> audio_decoder_bindings_;
+#endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
+
+#if defined(ENABLE_MOJO_AUDIO_DECODER)
+  StrongBindingSet<mojom::VideoDecoder> video_decoder_bindings_;
+#endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
+
 #if defined(ENABLE_MOJO_RENDERER)
   std::unique_ptr<RendererFactory> renderer_factory_;
+  StrongBindingSet<mojom::Renderer> renderer_bindings_;
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
 #if defined(ENABLE_MOJO_CDM)
   std::unique_ptr<CdmFactory> cdm_factory_;
   service_manager::mojom::InterfaceProviderPtr interfaces_;
+  StrongBindingSet<mojom::ContentDecryptionModule> cdm_bindings_;
 #endif  // defined(ENABLE_MOJO_CDM)
 
   scoped_refptr<MediaLog> media_log_;

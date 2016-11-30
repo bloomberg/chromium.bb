@@ -285,9 +285,11 @@ void MojoRendererService::InitiateScopedSurfaceRequest(
     // This may cause |this| to be destructed.
     DCHECK(!bad_message_cb_.is_null());
     bad_message_cb_.Run();
+
     return;
   }
 
   callback.Run(initiate_surface_request_cb_.Run());
 }
+
 }  // namespace media

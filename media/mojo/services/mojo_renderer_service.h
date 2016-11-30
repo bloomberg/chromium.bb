@@ -40,9 +40,7 @@ class MEDIA_MOJO_EXPORT MojoRendererService
  public:
   using InitiateSurfaceRequestCB = base::Callback<base::UnguessableToken()>;
 
-  // |mojo_cdm_service_context| can be used to find the CDM to support
-  // encrypted media. If null, encrypted media is not supported.
-  // NOTE: The MojoRendererService will be uniquely owned by a StrongBinding,
+  // Helper function to bind MojoRendererService with a StrongBinding,
   // which is safely accessible via the returned StrongBindingPtr.
   static mojo::StrongBindingPtr<mojom::Renderer> Create(
       base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
@@ -51,6 +49,15 @@ class MEDIA_MOJO_EXPORT MojoRendererService
       std::unique_ptr<media::Renderer> renderer,
       InitiateSurfaceRequestCB initiate_surface_request_cb,
       mojo::InterfaceRequest<mojom::Renderer> request);
+
+  // |mojo_cdm_service_context| can be used to find the CDM to support
+  // encrypted media. If null, encrypted media is not supported.
+  MojoRendererService(
+      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
+      scoped_refptr<AudioRendererSink> audio_sink,
+      std::unique_ptr<VideoRendererSink> video_sink,
+      std::unique_ptr<media::Renderer> renderer,
+      InitiateSurfaceRequestCB initiate_surface_request_cb);
 
   ~MojoRendererService() final;
 
@@ -69,6 +76,10 @@ class MEDIA_MOJO_EXPORT MojoRendererService
   void InitiateScopedSurfaceRequest(
       const InitiateScopedSurfaceRequestCallback& callback) final;
 
+  void set_bad_message_cb(base::Closure bad_message_cb) {
+    bad_message_cb_ = bad_message_cb;
+  }
+
  private:
   enum State {
     STATE_UNINITIALIZED,
@@ -77,17 +88,6 @@ class MEDIA_MOJO_EXPORT MojoRendererService
     STATE_PLAYING,
     STATE_ERROR
   };
-
-  MojoRendererService(
-      base::WeakPtr<MojoCdmServiceContext> mojo_cdm_service_context,
-      scoped_refptr<AudioRendererSink> audio_sink,
-      std::unique_ptr<VideoRendererSink> video_sink,
-      std::unique_ptr<media::Renderer> renderer,
-      InitiateSurfaceRequestCB initiate_surface_request_cb);
-
-  void set_bad_message_cb(base::Closure bad_message_cb) {
-    bad_message_cb_ = bad_message_cb;
-  }
 
   // RendererClient implementation.
   void OnError(PipelineStatus status) final;

@@ -81,6 +81,7 @@ component("services") {
     "mojo_renderer_service.h",
     "mojo_video_decoder_service.cc",
     "mojo_video_decoder_service.h",
+    "strong_binding_set.h",
     "test_mojo_media_client.cc",
     "test_mojo_media_client.h",
   ]
