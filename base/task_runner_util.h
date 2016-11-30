@@ -26,12 +26,7 @@ void ReturnAsParamAdapter(const Callback<ReturnType(void)>& func,
 template <typename TaskReturnType, typename ReplyArgType>
 void ReplyAdapter(const Callback<void(ReplyArgType)>& callback,
                   TaskReturnType* result) {
-  // TODO(ajwong): Remove this conditional and add a DCHECK to enforce that
-  // |reply| must be non-null in PostTaskAndReplyWithResult() below after
-  // current code that relies on this API softness has been removed.
-  // http://crbug.com/162712
-  if (!callback.is_null())
-    callback.Run(std::move(*result));
+  callback.Run(std::move(*result));
 }
 
 }  // namespace internal
@@ -56,6 +51,8 @@ bool PostTaskAndReplyWithResult(
     const tracked_objects::Location& from_here,
     const Callback<TaskReturnType(void)>& task,
     const Callback<void(ReplyArgType)>& reply) {
+  DCHECK(task);
+  DCHECK(reply);
   TaskReturnType* result = new TaskReturnType();
   return task_runner->PostTaskAndReply(
       from_here,
