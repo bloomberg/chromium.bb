@@ -88,6 +88,7 @@ function addProvidedVolume(volumeManager, extensionId, volumeId) {
       '',           // deviceType
       '',           // devicePath
       false,        // isReadonly
+      false,        // isReadonlyRemovableDevice
       {isCurrentProfile: true, displayName: ''},  // profile
       '',           // label
       extensionId,  // extensionId

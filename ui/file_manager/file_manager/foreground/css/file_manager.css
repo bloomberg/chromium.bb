@@ -2415,3 +2415,16 @@ files-toggle-ripple {
 paper-input-container:unresolved {
   display: none;
 }
+
+#drop-label {
+  background-color: rgba(0, 0, 0, 0.8);
+  border-radius: 2px;
+  color: white;
+  display: none;  /* hidden until activaed */
+  font-size: 12px;
+  height: 24px;
+  line-height: 24px;
+  padding: 0 8px;
+  position: absolute;
+  z-index: 1000;  /* same height as files-tooltip */
+}

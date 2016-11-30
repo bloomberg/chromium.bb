@@ -187,6 +187,13 @@ function FileTransferController(doc,
   this.dropTarget_ = null;
 
   /**
+   * The element for showing a label while dragging files.
+   * @type {Element}
+   * @private
+   */
+  this.dropLabel_ = null;
+
+  /**
    * @type {number}
    */
   this.navigateTimer_ = 0;
@@ -217,6 +224,15 @@ function FileTransferController(doc,
  * @private
  */
 FileTransferController.DRAG_THUMBNAIL_SIZE_ = 64;
+
+/**
+ * Y coordinate of the label to describe drop action, relative to mouse cursor.
+ *
+ * @type {number}
+ * @const
+ * @private
+ */
+FileTransferController.DRAG_LABEL_Y_OFFSET_ = -32;
 
 /**
  * Converts list of urls to list of Entries with granting R/W permissions to
@@ -822,8 +838,22 @@ FileTransferController.prototype.onDragOver_ =
   var entry = this.destinationEntry_;
   if (!entry && !onlyIntoDirectories)
     entry = this.directoryModel_.getCurrentDirEntry();
-  event.dataTransfer.dropEffect = this.selectDropEffect_(event, entry);
+  var effectAndLabel = this.selectDropEffect_(event, entry);
+  event.dataTransfer.dropEffect = effectAndLabel.getDropEffect();
   event.preventDefault();
+  var label = effectAndLabel.getLabel();
+  if (!this.dropLabel_) {
+    this.dropLabel_ = document.querySelector("div#drop-label");
+  }
+  if (label) {
+    this.dropLabel_.innerText = label;
+    this.dropLabel_.style.left = event.pageX + 'px';
+    this.dropLabel_.style.top =
+        (event.pageY + FileTransferController.DRAG_LABEL_Y_OFFSET_) + 'px';
+    this.dropLabel_.style.display = 'block';
+  } else {
+    this.dropLabel_.style.display = 'none';
+  }
 };
 
 /**
@@ -887,6 +917,9 @@ FileTransferController.prototype.onDragLeave_ = function(list, event) {
     this.clearDropTarget_();
     this.lastEnteredTarget_ = null;
   }
+  if (this.dropLabel_) {
+    this.dropLabel_.style.display = 'none';
+  }
 };
 
 /**
@@ -906,7 +939,7 @@ FileTransferController.prototype.onDrop_ =
   event.preventDefault();
   this.paste(event.dataTransfer,
              /** @type {DirectoryEntry} */ (destinationEntry),
-             this.selectDropEffect_(event, destinationEntry));
+             this.selectDropEffect_(event, destinationEntry).getDropEffect());
   this.clearDropTarget_();
 };
 
@@ -929,9 +962,7 @@ FileTransferController.prototype.setDropTarget_ =
   // Set the new drop target.
   this.dropTarget_ = domElement;
 
-  if (!domElement ||
-      !destinationEntry.isDirectory ||
-      !this.canPasteOrDrop_(clipboardData, destinationEntry)) {
+  if (!domElement || !destinationEntry.isDirectory) {
     return;
   }
 
@@ -1283,35 +1314,50 @@ FileTransferController.prototype.onFileSelectionChangedThrottled_ = function() {
 /**
  * @param {!Event} event Drag event.
  * @param {DirectoryEntry|FakeEntry} destinationEntry Destination entry.
- * @return {string}  Returns the appropriate drop query type ('none', 'move'
- *     or copy') to the current modifiers status and the destination.
+ * @return {DropEffectAndLabel} Returns the appropriate drop query type
+ *     ('none', 'move' or copy') to the current modifiers status and the
+ *     destination, as well as label message to describe why the operation is
+ *     not allowed.
  * @private
  */
 FileTransferController.prototype.selectDropEffect_ =
     function(event, destinationEntry) {
   if (!destinationEntry)
-    return 'none';
+    return new DropEffectAndLabel(DropEffectType.NONE, null);
   var destinationLocationInfo =
       this.volumeManager_.getLocationInfo(destinationEntry);
   if (!destinationLocationInfo)
-    return 'none';
-  if (destinationLocationInfo.isReadOnly)
-    return 'none';
+    return new DropEffectAndLabel(DropEffectType.NONE, null);
+  if (destinationLocationInfo.isReadOnly) {
+    if (destinationLocationInfo.isSpecialSearchRoot) {
+      // The location is a fake entry that corresponds to special search.
+      return new DropEffectAndLabel(DropEffectType.NONE, null);
+    }
+    if (destinationLocationInfo.volumeInfo.isReadOnlyRemovableDevice) {
+      return new DropEffectAndLabel(DropEffectType.NONE,
+                                    strf('DEVICE_WRITE_PROTECTED'));
+    }
+    // The disk device is not write-protected but read-only.
+    // Currently, the only remaining possibility is that write access to
+    // removable drives is restricted by device policy.
+    return new DropEffectAndLabel(DropEffectType.NONE,
+                                  strf('DEVICE_ACCESS_RESTRICTED'));
+  }
   if (util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'move')) {
     if (!util.isDropEffectAllowed(event.dataTransfer.effectAllowed, 'copy'))
-      return 'move';
+      return new DropEffectAndLabel(DropEffectType.MOVE, null);
     // TODO(mtomasz): Use volumeId instead of comparing roots, as soon as
     // volumeId gets unique.
     if (this.getSourceRootURL_(event.dataTransfer) ===
             destinationLocationInfo.volumeInfo.fileSystem.root.toURL() &&
         !event.ctrlKey) {
-      return 'move';
+      return new DropEffectAndLabel(DropEffectType.MOVE, null);
     }
     if (event.shiftKey) {
-      return 'move';
+      return new DropEffectAndLabel(DropEffectType.MOVE, null);
     }
   }
-  return 'copy';
+  return new DropEffectAndLabel(DropEffectType.COPY, null);
 };
 
 /**

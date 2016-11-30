@@ -273,6 +273,7 @@ function testVolumeInfoListWhenReady(callback) {
       /* deviceType */ null,
       /* devicePath */ null,
       /* isReadOnly */ false,
+      /* isReadOnlyRemovableDevice */ false,
       /* profile */ {},
       /* label */ null,
       /* extensionid */ null,

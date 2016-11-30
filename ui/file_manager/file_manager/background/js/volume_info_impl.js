@@ -20,6 +20,8 @@
  * @param {(string|undefined)} devicePath Identifier of the device that the
  *     volume belongs to. Can be undefined.
  * @param {boolean} isReadOnly True if the volume is read only.
+ * @param {boolean} isReadOnlyRemovableDevice True if the volume is read only
+ *     removable device.
  * @param {!{displayName:string, isCurrentProfile:boolean}} profile Profile
  *     information.
  * @param {string} label Label of the volume.
@@ -38,6 +40,7 @@ function VolumeInfoImpl(
     deviceType,
     devicePath,
     isReadOnly,
+    isReadOnlyRemovableDevice,
     profile,
     label,
     extensionId,
@@ -83,6 +86,7 @@ function VolumeInfoImpl(
   this.deviceType_ = deviceType;
   this.devicePath_ = devicePath;
   this.isReadOnly_ = isReadOnly;
+  this.isReadOnlyRemovableDevice_ = isReadOnlyRemovableDevice;
   this.profile_ = Object.freeze(profile);
   this.extensionId_ = extensionId;
   this.hasMedia_ = hasMedia;
@@ -146,6 +150,12 @@ VolumeInfoImpl.prototype = /** @struct */ {
    */
   get isReadOnly() {
     return this.isReadOnly_;
+  },
+  /**
+   * @return {boolean} Whether the device is read-only removable device or not.
+   */
+  get isReadOnlyRemovableDevice() {
+    return this.isReadOnlyRemovableDevice_;
   },
   /**
    * @return {!{displayName:string, isCurrentProfile:boolean}} Profile data.

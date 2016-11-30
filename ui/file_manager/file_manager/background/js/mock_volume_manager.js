@@ -123,7 +123,8 @@ MockVolumeManager.createMockVolumeInfo = function(type, volumeId, label) {
       '',      // error
       '',      // deviceType
       '',      // devicePath
-      false,   // isReadonly
+      false,   // isReadOnly
+      false,   // isReadOnlyRemovableDevice
       {isCurrentProfile: true, displayName: ''},  // profile
       label,   // label
       '',      // extensionId
@@ -255,6 +256,7 @@ MockVolumeManagerWrapper.createMockVolumeInfo =
       '',     // deviceType
       '',     // devicePath
       false,  // isReadonly
+      false,  // isReadOnlyRemovableDevice
       {isCurrentProfile: true, displayName: ''},  // profile
       label,  // label
       '',     // extensionId
