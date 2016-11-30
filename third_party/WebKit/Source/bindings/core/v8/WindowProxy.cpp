@@ -301,8 +301,16 @@ void WindowProxy::createContext() {
   // still some edge cases
   // that this fails to catch during frame detach.
   if (m_frame->isLocalFrame() &&
-      !toLocalFrame(m_frame)->loader().documentLoader())
+      !toLocalFrame(m_frame)->loader().documentLoader()) {
+    // TODO(yukishiino): Remove this if-clause entirely once we are sure that
+    // it's safe.  There seems no case that we hit this if-clause.  Plus,
+    // createContext() is responsible just to create a new v8::Context, and it's
+    // technically possible to create it without a document loader.
+    // If we really want to limit the context creation under some condition,
+    // it must come with the right reason described in a comment.
+    NOTREACHED();
     return;
+  }
 
   // Create a new v8::Context with the window object as the global object
   // (aka the inner global).  Reuse the global proxy object (aka the outer
@@ -311,8 +319,7 @@ void WindowProxy::createContext() {
   // the global object.
   v8::Local<v8::ObjectTemplate> globalTemplate =
       V8Window::domTemplate(m_isolate, *m_world)->InstanceTemplate();
-  if (globalTemplate.IsEmpty())
-    return;
+  CHECK(!globalTemplate.IsEmpty());
 
   // FIXME: It's not clear what the right thing to do for remote frames is.
   // The extensions registered don't generally seem to make sense for remote
@@ -344,8 +351,8 @@ void WindowProxy::createContext() {
         v8::Context::New(m_isolate, &extensionConfiguration, globalTemplate,
                          m_globalProxy.newLocal(m_isolate));
   }
-  if (context.IsEmpty())
-    return;
+  CHECK(!context.IsEmpty());
+
   m_scriptState = ScriptState::create(context, m_world);
 }
 
