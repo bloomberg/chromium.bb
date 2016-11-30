@@ -1932,10 +1932,10 @@ void LayoutBlockFlow::layoutInlineChildren(bool relayoutChildren,
         } else if (o->isFloating()) {
           layoutState.floats().append(FloatWithRect(box));
           if (box->needsLayout()) {
-            box->layout();
-            // Dirty any lineboxes potentially affected by the float, but don't
-            // search outside this object as we are only interested in dirtying
-            // lineboxes to which we may attach the float.
+            // Be sure to at least mark the first line affected by the float as
+            // dirty, so that the float gets relaid out. Otherwise we'll miss
+            // it. After float layout, if it turns out that it changed size,
+            // any lines after this line will be deleted and relaid out.
             dirtyLinesFromChangedChild(box, MarkOnlyThis);
           }
         } else if (isFullLayout || o->needsLayout()) {
