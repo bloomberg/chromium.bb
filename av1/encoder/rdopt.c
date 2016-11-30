@@ -1173,10 +1173,8 @@ static void block_rd_txfm(int plane, int block, int blk_row, int blk_col,
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const AV1_COMMON *cm = &args->cpi->common;
   int64_t rd1, rd2, rd;
-#if !CONFIG_PVQ
   int coeff_ctx = combine_entropy_contexts(*(args->t_above + blk_col),
                                            *(args->t_left + blk_row));
-#endif
   RD_STATS this_rd_stats;
   av1_init_rd_stats(&this_rd_stats);
 
