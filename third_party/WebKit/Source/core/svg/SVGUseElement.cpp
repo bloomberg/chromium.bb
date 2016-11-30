@@ -128,7 +128,8 @@ Node::InsertionNotificationRequest SVGUseElement::insertedInto(
 void SVGUseElement::removedFrom(ContainerNode* rootParent) {
   SVGGraphicsElement::removedFrom(rootParent);
   if (rootParent->isConnected()) {
-    clearShadowTree();
+    clearInstanceRoot();
+    removeAllOutgoingReferences();
     cancelShadowTreeRecreation();
   }
 }
