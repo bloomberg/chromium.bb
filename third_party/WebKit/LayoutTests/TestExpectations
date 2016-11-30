@@ -1680,8 +1680,8 @@ crbug.com/602693 imported/wpt/service-workers/stub-4.7.4.1-fetch-event-section.h
 
 # Bug(dpranke)
 # crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-event-redirect.https.html [ Pass Timeout ]
-# crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
-# crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
+crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-inscope.https.html [ Timeout ]
+crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content-to-outscope.https.html [ Timeout ]
 
 # Untriaged service-worker timeout. Is it crbug.com/618616?
 # Bug(dpranke)
