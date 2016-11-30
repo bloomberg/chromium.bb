@@ -1342,6 +1342,29 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
       specialize "aom_highbd_sad${w}x${h}_avg", qw/sse2/;
     }
   }
+  specialize qw/aom_highbd_sad128x128 avx2/;
+  specialize qw/aom_highbd_sad128x64  avx2/;
+  specialize qw/aom_highbd_sad64x128  avx2/;
+  specialize qw/aom_highbd_sad64x64   avx2/;
+  specialize qw/aom_highbd_sad64x32   avx2/;
+  specialize qw/aom_highbd_sad32x64   avx2/;
+  specialize qw/aom_highbd_sad32x32   avx2/;
+  specialize qw/aom_highbd_sad32x16   avx2/;
+  specialize qw/aom_highbd_sad16x32   avx2/;
+  specialize qw/aom_highbd_sad16x16   avx2/;
+  specialize qw/aom_highbd_sad16x8    avx2/;
+
+  specialize qw/aom_highbd_sad128x128_avg avx2/;
+  specialize qw/aom_highbd_sad128x64_avg  avx2/;
+  specialize qw/aom_highbd_sad64x128_avg  avx2/;
+  specialize qw/aom_highbd_sad64x64_avg   avx2/;
+  specialize qw/aom_highbd_sad64x32_avg   avx2/;
+  specialize qw/aom_highbd_sad32x64_avg   avx2/;
+  specialize qw/aom_highbd_sad32x32_avg   avx2/;
+  specialize qw/aom_highbd_sad32x16_avg   avx2/;
+  specialize qw/aom_highbd_sad16x32_avg   avx2/;
+  specialize qw/aom_highbd_sad16x16_avg   avx2/;
+  specialize qw/aom_highbd_sad16x8_avg    avx2/;
 }
 
 #
@@ -1472,6 +1495,17 @@ if (aom_config("CONFIG_AOM_HIGHBITDEPTH") eq "yes") {
       specialize "aom_highbd_sad${w}x${h}x4d", qw/sse2/;
     }
   }
+  specialize qw/aom_highbd_sad128x128x4d avx2/;
+  specialize qw/aom_highbd_sad128x64x4d  avx2/;
+  specialize qw/aom_highbd_sad64x128x4d  avx2/;
+  specialize qw/aom_highbd_sad64x64x4d   avx2/;
+  specialize qw/aom_highbd_sad64x32x4d   avx2/;
+  specialize qw/aom_highbd_sad32x64x4d   avx2/;
+  specialize qw/aom_highbd_sad32x32x4d   avx2/;
+  specialize qw/aom_highbd_sad32x16x4d   avx2/;
+  specialize qw/aom_highbd_sad16x32x4d   avx2/;
+  specialize qw/aom_highbd_sad16x16x4d   avx2/;
+  specialize qw/aom_highbd_sad16x8x4d    avx2/;
 }
 
 #
