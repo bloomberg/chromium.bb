@@ -481,8 +481,20 @@ PP_Bool FakeURLRequestInfoInterface::SetProperty(PP_Resource request,
 PP_Bool FakeURLRequestInfoInterface::AppendDataToBody(PP_Resource request,
                                                       const void* data,
                                                       uint32_t len) {
-  // AppendDataToBody to be supported.
-  return PP_FALSE;
+  FakeURLRequestInfoResource* request_resource =
+      core_interface_->resource_manager()->Get<FakeURLRequestInfoResource>(
+          request);
+  if (request_resource == NULL)
+    return PP_FALSE;
+
+  request_resource->body.append(static_cast<const char*>(data), len);
+
+  char len_string[64] = {0};
+  snprintf(len_string, sizeof(len_string), "%u", len);
+
+  SetHeader("Content-Length", len_string, &request_resource->headers);
+
+  return PP_TRUE;
 }
 
 FakeURLResponseInfoInterface::FakeURLResponseInfoInterface(

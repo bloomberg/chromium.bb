@@ -48,6 +48,7 @@ class FakeURLRequestInfoResource : public FakeResource {
   std::string url;
   std::string method;
   std::string headers;
+  std::string body;
 };
 
 class FakeURLResponseInfoResource : public FakeResource {
@@ -64,5 +65,8 @@ int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result);
 bool GetHeaderValue(const std::string& headers,
                     const std::string& key,
                     std::string* out_value);
+void SetHeader(const std::string& key,
+               const std::string& value,
+               std::string* out_headers);
 
 #endif  // LIBRARIES_NACL_IO_TEST_FAKE_UTIL_H_

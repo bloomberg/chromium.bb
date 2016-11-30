@@ -29,6 +29,35 @@ int32_t RunCompletionCallback(PP_CompletionCallback* callback, int32_t result) {
   return result;
 }
 
+void SetHeader(const std::string& key,
+               const std::string& value,
+               std::string* out_headers) {
+  std::string old_value;
+  if (!GetHeaderValue(*out_headers, key, &old_value)) {
+    *out_headers += key + ": " + value + "\n";
+    return;
+  }
+
+  size_t offset = 0;
+  while (offset != std::string::npos) {
+    // Find the next colon; this separates the key from the value.
+    size_t colon = out_headers->find(':', offset);
+
+    // Find the newline; this separates the value from the next header.
+    size_t newline = out_headers->find('\n', offset);
+    if (strncasecmp(key.c_str(), &out_headers->data()[offset], key.size()) ==
+        0) {
+      *out_headers = out_headers->substr(0, colon) + ": " + value +
+                     out_headers->substr(newline);
+
+      return;
+    }
+
+    // Key doesn't match, skip to next header.
+    offset = newline + 1;
+  }
+}
+
 bool GetHeaderValue(const std::string& headers,
                     const std::string& key,
                     std::string* out_value) {
