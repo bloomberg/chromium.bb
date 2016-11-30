@@ -81,40 +81,7 @@ static_assert(static_cast<int>(PP_INPUTEVENT_MODIFIER_ISRIGHT) ==
                   static_cast<int>(WebInputEvent::IsRight),
               "IsRight should match");
 
-bool IsStylusEvent(const WebInputEvent& event) {
-  switch (event.type) {
-    case WebInputEvent::MouseDown:
-    case WebInputEvent::MouseUp:
-    case WebInputEvent::MouseMove: {
-      const WebMouseEvent& mouse_event =
-          static_cast<const WebMouseEvent&>(event);
-      using PointerType = blink::WebPointerProperties::PointerType;
-      return mouse_event.pointerType == PointerType::Pen ||
-             mouse_event.pointerType == PointerType::Eraser;
-    }
-    default:
-      return false;
-  }
-}
-
 PP_InputEvent_Type ConvertEventTypes(const WebInputEvent& event) {
-  if (IsStylusEvent(event)) {
-    const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
-    if (mouse_event.button != blink::WebMouseEvent::Button::Left &&
-        !(mouse_event.modifiers & blink::WebInputEvent::LeftButtonDown))
-      return PP_INPUTEVENT_TYPE_UNDEFINED;
-
-    switch (event.type) {
-      case WebInputEvent::MouseDown:
-        return PP_INPUTEVENT_TYPE_TOUCHSTART;
-      case WebInputEvent::MouseUp:
-        return PP_INPUTEVENT_TYPE_TOUCHEND;
-      case WebInputEvent::MouseMove:
-        return PP_INPUTEVENT_TYPE_TOUCHMOVE;
-      default:
-        return PP_INPUTEVENT_TYPE_UNDEFINED;
-    }
-  }
   switch (event.type) {
     case WebInputEvent::MouseDown:
       return PP_INPUTEVENT_TYPE_MOUSEDOWN;
@@ -219,29 +186,6 @@ void AppendCharEvent(const WebInputEvent& event,
   }
 }
 
-void AppendStylusTouchEvent(const WebInputEvent& event,
-                            std::vector<InputEventData>* result_events) {
-  const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
-
-  InputEventData result = GetEventWithCommonFieldsAndType(event);
-  result.event_modifiers = ConvertEventModifiers(event.modifiers);
-  if (result.event_type == PP_INPUTEVENT_TYPE_UNDEFINED)
-    return;
-
-  PP_TouchPoint touch_point;
-  touch_point.id = 0;
-  touch_point.position.x = mouse_event.x;
-  touch_point.position.y = mouse_event.y;
-  touch_point.pressure = mouse_event.force;
-
-  result.changed_touches.push_back(touch_point);
-  result.target_touches.push_back(touch_point);
-  if (result.event_type != PP_INPUTEVENT_TYPE_TOUCHEND)
-    result.touches.push_back(touch_point);
-
-  result_events->push_back(result);
-}
-
 void AppendMouseEvent(const WebInputEvent& event,
                       std::vector<InputEventData>* result_events) {
   static_assert(static_cast<int>(WebMouseEvent::Button::NoButton) ==
@@ -260,13 +204,6 @@ void AppendMouseEvent(const WebInputEvent& event,
   const WebMouseEvent& mouse_event = static_cast<const WebMouseEvent&>(event);
   InputEventData result = GetEventWithCommonFieldsAndType(event);
   result.event_modifiers = ConvertEventModifiers(mouse_event.modifiers);
-  if (mouse_event.pointerType ==
-      blink::WebPointerProperties::PointerType::Pen) {
-    result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISPEN;
-  } else if (mouse_event.pointerType ==
-      blink::WebPointerProperties::PointerType::Eraser) {
-    result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISERASER;
-  }
   if (mouse_event.type == WebInputEvent::MouseDown ||
       mouse_event.type == WebInputEvent::MouseMove ||
       mouse_event.type == WebInputEvent::MouseUp) {
@@ -334,6 +271,17 @@ void AppendTouchEvent(const WebInputEvent& event,
       reinterpret_cast<const WebTouchEvent&>(event);
 
   InputEventData result = GetEventWithCommonFieldsAndType(event);
+
+  if (touch_event.touchesLength == 1) {
+    if (touch_event.touches[0].pointerType ==
+        blink::WebPointerProperties::PointerType::Pen) {
+      result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISPEN;
+    } else if (touch_event.touches[0].pointerType ==
+               blink::WebPointerProperties::PointerType::Eraser) {
+      result.event_modifiers |= PP_INPUTEVENT_MODIFIER_ISERASER;
+    }
+  }
+
   SetPPTouchPoints(
       touch_event.touches, touch_event.touchesLength, ACTIVE, &result.touches);
   SetPPTouchPoints(touch_event.touches,
@@ -636,11 +584,7 @@ void CreateInputEventData(const WebInputEvent& event,
     case WebInputEvent::MouseEnter:
     case WebInputEvent::MouseLeave:
     case WebInputEvent::ContextMenu:
-      if (IsStylusEvent(event)) {
-        AppendStylusTouchEvent(event, result);
-      } else {
-        AppendMouseEvent(event, result);
-      }
+      AppendMouseEvent(event, result);
       break;
     case WebInputEvent::MouseWheel:
       AppendMouseWheelEvent(event, result);
@@ -809,11 +753,7 @@ PP_InputEvent_Class ClassifyInputEvent(const WebInputEvent& event) {
     case WebInputEvent::MouseEnter:
     case WebInputEvent::MouseLeave:
     case WebInputEvent::ContextMenu:
-      if (IsStylusEvent(event)) {
-        return PP_INPUTEVENT_CLASS_TOUCH;
-      } else {
-        return PP_INPUTEVENT_CLASS_MOUSE;
-      }
+      return PP_INPUTEVENT_CLASS_MOUSE;
     case WebInputEvent::MouseWheel:
       return PP_INPUTEVENT_CLASS_WHEEL;
     case WebInputEvent::RawKeyDown:

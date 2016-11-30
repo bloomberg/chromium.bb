@@ -678,9 +678,10 @@ WebKeyboardEventBuilder::WebKeyboardEventBuilder(const KeyboardEvent& event) {
 
 static WebTouchPoint toWebTouchPoint(const Touch* touch,
                                      const LayoutItem layoutItem,
-                                     WebTouchPoint::State state) {
+                                     WebTouchPoint::State state,
+                                     WebPointerProperties::PointerType type) {
   WebTouchPoint point;
-  point.pointerType = WebPointerProperties::PointerType::Touch;
+  point.pointerType = type;
   point.id = touch->identifier();
   point.screenPosition = touch->screenLocation();
   point.position = convertAbsoluteLocationForLayoutObjectFloat(
@@ -703,11 +704,13 @@ static unsigned indexOfTouchPointWithId(const WebTouchPoint* touchPoints,
   return std::numeric_limits<unsigned>::max();
 }
 
-static void addTouchPointsUpdateStateIfNecessary(WebTouchPoint::State state,
-                                                 TouchList* touches,
-                                                 WebTouchPoint* touchPoints,
-                                                 unsigned* touchPointsLength,
-                                                 const LayoutItem layoutItem) {
+static void addTouchPointsUpdateStateIfNecessary(
+    WebTouchPoint::State state,
+    TouchList* touches,
+    WebTouchPoint* touchPoints,
+    unsigned* touchPointsLength,
+    const LayoutItem layoutItem,
+    WebPointerProperties::PointerType pointerType) {
   unsigned initialTouchPointsLength = *touchPointsLength;
   for (unsigned i = 0; i < touches->length(); ++i) {
     const unsigned pointIndex = *touchPointsLength;
@@ -720,7 +723,8 @@ static void addTouchPointsUpdateStateIfNecessary(WebTouchPoint::State state,
     if (existingPointIndex != std::numeric_limits<unsigned>::max()) {
       touchPoints[existingPointIndex].state = state;
     } else {
-      touchPoints[pointIndex] = toWebTouchPoint(touch, layoutItem, state);
+      touchPoints[pointIndex] =
+          toWebTouchPoint(touch, layoutItem, state, pointerType);
       ++(*touchPointsLength);
     }
   }
@@ -753,15 +757,16 @@ WebTouchEventBuilder::WebTouchEventBuilder(const LayoutItem layoutItem,
        i < event.touches()->length() &&
        i < static_cast<unsigned>(WebTouchEvent::kTouchesLengthCap);
        ++i) {
-    touches[i] = toWebTouchPoint(event.touches()->item(i), layoutItem,
-                                 WebTouchPoint::StateStationary);
+    touches[i] =
+        toWebTouchPoint(event.touches()->item(i), layoutItem,
+                        WebTouchPoint::StateStationary, event.pointerType());
     ++touchesLength;
   }
   // If any existing points are also in the change list, we should update
   // their state, otherwise just add the new points.
-  addTouchPointsUpdateStateIfNecessary(toWebTouchPointState(event.type()),
-                                       event.changedTouches(), touches,
-                                       &touchesLength, layoutItem);
+  addTouchPointsUpdateStateIfNecessary(
+      toWebTouchPointState(event.type()), event.changedTouches(), touches,
+      &touchesLength, layoutItem, event.pointerType());
 }
 
 WebGestureEventBuilder::WebGestureEventBuilder(const LayoutItem layoutItem,

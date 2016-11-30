@@ -81,6 +81,8 @@ class ChangedTouches final {
   using EventTargetSet = HeapHashSet<Member<EventTarget>>;
   // Set of targets involved in m_touches.
   EventTargetSet m_targets;
+
+  WebPointerProperties::PointerType m_pointerType;
 };
 
 }  // namespace
@@ -164,6 +166,8 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
         changedTouches[pointState].m_touches = TouchList::create();
       changedTouches[pointState].m_touches->append(touch);
       changedTouches[pointState].m_targets.add(touchInfo.touchNode);
+      changedTouches[pointState].m_pointerType =
+          point.pointerProperties().pointerType;
     }
   }
 
@@ -185,14 +189,14 @@ WebInputEventResult TouchEventManager::dispatchTouchEvents(
         static_cast<PlatformTouchPoint::TouchState>(state)));
     for (const auto& eventTarget : changedTouches[state].m_targets) {
       EventTarget* touchEventTarget = eventTarget;
-      TouchEvent* touchEvent =
-          TouchEvent::create(touches, touchesByTarget.get(touchEventTarget),
-                             changedTouches[state].m_touches.get(), eventName,
-                             touchEventTarget->toNode()->document().domWindow(),
-                             event.getModifiers(), event.cancelable(),
-                             event.causesScrollingIfUncanceled(),
-                             event.touchStartOrFirstTouchMove(),
-                             event.timestamp(), m_currentTouchAction);
+      TouchEvent* touchEvent = TouchEvent::create(
+          touches, touchesByTarget.get(touchEventTarget),
+          changedTouches[state].m_touches.get(), eventName,
+          touchEventTarget->toNode()->document().domWindow(),
+          event.getModifiers(), event.cancelable(),
+          event.causesScrollingIfUncanceled(),
+          event.touchStartOrFirstTouchMove(), event.timestamp(),
+          m_currentTouchAction, changedTouches[state].m_pointerType);
 
       DispatchEventResult domDispatchResult =
           touchEventTarget->dispatchEvent(touchEvent);

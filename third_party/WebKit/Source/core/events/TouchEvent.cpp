@@ -212,7 +212,8 @@ TouchEvent::TouchEvent(TouchList* touches,
                        bool causesScrollingIfUncanceled,
                        bool firstTouchMoveOrStart,
                        double platformTimeStamp,
-                       TouchAction currentTouchAction)
+                       TouchAction currentTouchAction,
+                       WebPointerProperties::PointerType pointerType)
     // Pass a sourceCapabilities including the ability to fire touchevents when
     // creating this touchevent, which is always created from input device
     // capabilities from EventHandler.
@@ -231,7 +232,8 @@ TouchEvent::TouchEvent(TouchList* touches,
       m_causesScrollingIfUncanceled(causesScrollingIfUncanceled),
       m_firstTouchMoveOrStart(firstTouchMoveOrStart),
       m_defaultPreventedBeforeCurrentTarget(false),
-      m_currentTouchAction(currentTouchAction) {}
+      m_currentTouchAction(currentTouchAction),
+      m_pointerType(pointerType) {}
 
 TouchEvent::TouchEvent(const AtomicString& type,
                        const TouchEventInit& initializer)
@@ -242,7 +244,8 @@ TouchEvent::TouchEvent(const AtomicString& type,
       m_causesScrollingIfUncanceled(false),
       m_firstTouchMoveOrStart(false),
       m_defaultPreventedBeforeCurrentTarget(false),
-      m_currentTouchAction(TouchActionAuto) {}
+      m_currentTouchAction(TouchActionAuto),
+      m_pointerType(WebPointerProperties::PointerType::Unknown) {}
 
 TouchEvent::~TouchEvent() {}
 
