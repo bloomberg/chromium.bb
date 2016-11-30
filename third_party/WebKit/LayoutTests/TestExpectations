@@ -1877,3 +1877,5 @@ Bug(dpranke) imported/wpt/service-workers/service-worker/xhr.https.html [ Failur
 Bug(dpranke) imported/wpt/webrtc/simplecall.html [ Failure ]
 Bug(dpranke) imported/wpt/workers/Worker_cross_origin_security_err.htm [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/service-worker/register-closed-window.https.html [ Timeout ]
+
+crbug.com/669753 http/tests/inspector/network/network-columns-sorted.html [ Failure Pass ]
