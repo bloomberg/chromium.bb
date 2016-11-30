@@ -394,10 +394,10 @@ void av1_tokenize_palette_sb(const AV1_COMP *cpi,
   int i, j;
   int this_rate = 0;
   uint8_t color_order[PALETTE_MAX_SIZE];
-  const int rows = (4 * num_4x4_blocks_high_lookup[bsize]) >>
-                   (xd->plane[plane != 0].subsampling_y);
-  const int cols = (4 * num_4x4_blocks_wide_lookup[bsize]) >>
-                   (xd->plane[plane != 0].subsampling_x);
+  const int rows =
+      block_size_high[bsize] >> (xd->plane[plane != 0].subsampling_y);
+  const int cols =
+      block_size_wide[bsize] >> (xd->plane[plane != 0].subsampling_x);
   const aom_prob(*const probs)[PALETTE_COLOR_CONTEXTS][PALETTE_COLORS - 1] =
       plane == 0 ? av1_default_palette_y_color_prob
                  : av1_default_palette_uv_color_prob;

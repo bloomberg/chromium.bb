@@ -914,8 +914,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       mi_step = AOMMIN(xd->n8_w, num_8x8_blocks_wide_lookup[mbmi->sb_type]);
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
-        int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
-        int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+        int bw = block_size_wide[mbmi->sb_type];
+        int bh = block_size_high[mbmi->sb_type];
         int mv_row = mbmi->mv[0].as_mv.row;
         int mv_col = mbmi->mv[0].as_mv.col;
         int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
@@ -969,8 +969,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
       mi_step = AOMMIN(xd->n8_h, num_8x8_blocks_high_lookup[mbmi->sb_type]);
 
       if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
-        int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
-        int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+        int bw = block_size_wide[mbmi->sb_type];
+        int bh = block_size_high[mbmi->sb_type];
         int mv_row = mbmi->mv[0].as_mv.row;
         int mv_col = mbmi->mv[0].as_mv.col;
         int cr_offset = i * 8 + AOMMAX(bh, 8) / 2 - 1;
@@ -1020,8 +1020,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
     MB_MODE_INFO *mbmi = &mi->mbmi;
 
     if (mbmi->ref_frame[0] == ref_frame && mbmi->ref_frame[1] == NONE) {
-      int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
-      int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+      int bw = block_size_wide[mbmi->sb_type];
+      int bh = block_size_high[mbmi->sb_type];
       int mv_row = mbmi->mv[0].as_mv.row;
       int mv_col = mbmi->mv[0].as_mv.col;
       int cr_offset = -AOMMAX(bh, 8) / 2 - 1;
@@ -1070,8 +1070,8 @@ int findSamples(const AV1_COMMON *cm, MACROBLOCKD *xd, int mi_row, int mi_col,
   } else {
     MODE_INFO *mi = xd->mi[0];
     MB_MODE_INFO *mbmi = &mi->mbmi;
-    int bw = num_4x4_blocks_wide_lookup[mbmi->sb_type] * 4;
-    int bh = num_4x4_blocks_high_lookup[mbmi->sb_type] * 4;
+    int bw = block_size_wide[mbmi->sb_type];
+    int bh = block_size_high[mbmi->sb_type];
     int mv_row = mbmi->mv[0].as_mv.row;
     int mv_col = mbmi->mv[0].as_mv.col;
     int cr_offset = AOMMAX(bh, 8) / 2 - 1;

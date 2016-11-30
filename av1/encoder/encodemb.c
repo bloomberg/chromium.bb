@@ -38,8 +38,8 @@ void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
-  const int bw = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
-  const int bh = 4 * num_4x4_blocks_high_lookup[plane_bsize];
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -482,7 +482,7 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   uint16_t *const eob = &p->eobs[block];
-  const int diff_stride = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
+  const int diff_stride = block_size_wide[plane_bsize];
 #if CONFIG_AOM_QM
   int seg_id = xd->mi[0]->mbmi.segment_id;
   const qm_val_t *qmatrix = pd->seg_qmatrix[seg_id][!is_inter][tx_size];

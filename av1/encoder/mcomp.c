@@ -2562,8 +2562,8 @@ int av1_find_best_masked_sub_pixel_tree_up(
   int idx, best_idx = -1;
   unsigned int cost_array[5];
   int kr, kc;
-  const int w = 4 * num_4x4_blocks_wide_lookup[mbmi->sb_type];
-  const int h = 4 * num_4x4_blocks_high_lookup[mbmi->sb_type];
+  const int w = block_size_wide[mbmi->sb_type];
+  const int h = block_size_high[mbmi->sb_type];
   int offset;
   int y_stride;
   const uint8_t *y;
@@ -3064,8 +3064,8 @@ int av1_find_best_obmc_sub_pixel_tree_up(
   int idx, best_idx = -1;
   unsigned int cost_array[5];
   int kr, kc;
-  const int w = 4 * num_4x4_blocks_wide_lookup[mbmi->sb_type];
-  const int h = 4 * num_4x4_blocks_high_lookup[mbmi->sb_type];
+  const int w = block_size_wide[mbmi->sb_type];
+  const int h = block_size_high[mbmi->sb_type];
   int offset;
   int y_stride;
   const uint8_t *y;

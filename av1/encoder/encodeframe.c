@@ -676,7 +676,7 @@ static void init_variance_tree(VAR_TREE *const vt,
 
   if (bsize > leaf_size) {
     const BLOCK_SIZE subsize = get_subsize(bsize, PARTITION_SPLIT);
-    const int px = num_4x4_blocks_wide_lookup[subsize] * 4;
+    const int px = block_size_wide[subsize];
 
     init_variance_tree(vt->split[0],
 #if CONFIG_AOM_HIGHBITDEPTH

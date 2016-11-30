@@ -293,8 +293,8 @@ static void init_wedge_signs() {
   BLOCK_SIZE sb_type;
   memset(wedge_signflip_lookup, 0, sizeof(wedge_signflip_lookup));
   for (sb_type = BLOCK_4X4; sb_type < BLOCK_SIZES; ++sb_type) {
-    const int bw = 4 * num_4x4_blocks_wide_lookup[sb_type];
-    const int bh = 4 * num_4x4_blocks_high_lookup[sb_type];
+    const int bw = block_size_wide[sb_type];
+    const int bh = block_size_high[sb_type];
     const wedge_params_type wedge_params = wedge_params_lookup[sb_type];
     const int wbits = wedge_params.bits;
     const int wtypes = 1 << wbits;
@@ -317,8 +317,8 @@ static void init_wedge_masks() {
   memset(wedge_masks, 0, sizeof(wedge_masks));
   for (bsize = BLOCK_4X4; bsize < BLOCK_SIZES; ++bsize) {
     const uint8_t *mask;
-    const int bw = 4 * num_4x4_blocks_wide_lookup[bsize];
-    const int bh = 4 * num_4x4_blocks_high_lookup[bsize];
+    const int bw = block_size_wide[bsize];
+    const int bh = block_size_high[bsize];
     const wedge_params_type *wedge_params = &wedge_params_lookup[bsize];
     const int wbits = wedge_params->bits;
     const int wtypes = 1 << wbits;
@@ -390,8 +390,7 @@ static void build_masked_compound_wedge(uint8_t *dst, int dst_stride,
   const uint8_t *mask =
       av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
   aom_blend_a64_mask(dst, dst_stride, src0, src0_stride, src1, src1_stride,
-                     mask, 4 * num_4x4_blocks_wide_lookup[sb_type], h, w, subh,
-                     subw);
+                     mask, block_size_wide[sb_type], h, w, subh, subw);
 }
 
 #if CONFIG_AOM_HIGHBITDEPTH
@@ -405,9 +404,9 @@ static void build_masked_compound_wedge_highbd(
   const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
   const uint8_t *mask =
       av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
-  aom_highbd_blend_a64_mask(
-      dst_8, dst_stride, src0_8, src0_stride, src1_8, src1_stride, mask,
-      4 * num_4x4_blocks_wide_lookup[sb_type], h, w, subh, subw, bd);
+  aom_highbd_blend_a64_mask(dst_8, dst_stride, src0_8, src0_stride, src1_8,
+                            src1_stride, mask, block_size_wide[sb_type], h, w,
+                            subh, subw, bd);
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
@@ -732,9 +731,8 @@ void av1_build_inter_predictor_sub8x8(MACROBLOCKD *xd, int plane, int i, int ir,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   MODE_INFO *const mi = xd->mi[0];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
-  const int width = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
-  const int height = 4 * num_4x4_blocks_high_lookup[plane_bsize];
-
+  const int width = block_size_wide[plane_bsize];
+  const int height = block_size_high[plane_bsize];
   uint8_t *const dst = &pd->dst.buf[(ir * pd->dst.stride + ic) << 2];
   int ref;
   const int is_compound = has_second_ref(&mi->mbmi);
@@ -774,8 +772,8 @@ static void build_inter_predictors_for_planes(MACROBLOCKD *xd, BLOCK_SIZE bsize,
   const int mi_y = mi_row * MI_SIZE;
   for (plane = plane_from; plane <= plane_to; ++plane) {
     const struct macroblockd_plane *pd = &xd->plane[plane];
-    const int bw = 4 * num_4x4_blocks_wide_lookup[bsize] >> pd->subsampling_x;
-    const int bh = 4 * num_4x4_blocks_high_lookup[bsize] >> pd->subsampling_y;
+    const int bw = block_size_wide[bsize] >> pd->subsampling_x;
+    const int bh = block_size_high[bsize] >> pd->subsampling_y;
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
       const PARTITION_TYPE bp = bsize - xd->mi[0]->mbmi.sb_type;
@@ -1102,8 +1100,8 @@ void av1_build_inter_predictors_sb_extend(MACROBLOCKD *xd,
         get_plane_block_size(bsize, &xd->plane[plane]);
     const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-    const int bw = 4 * num_4x4_w;
-    const int bh = 4 * num_4x4_h;
+    const int bw = block_size_wide[plane_bsize];
+    const int bh = block_size_high[plane_bsize];
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
       int x, y;
@@ -1610,8 +1608,8 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
                                uint8_t *comppred, int compstride,
                                const uint8_t *interpred, int interstride,
                                const uint8_t *intrapred, int intrastride) {
-  const int bw = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
-  const int bh = 4 * num_4x4_blocks_high_lookup[plane_bsize];
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
   const int size_scale = ii_size_scales[plane_bsize];
   int i, j;
 
@@ -1621,9 +1619,9 @@ static void combine_interintra(INTERINTRA_MODE mode, int use_wedge_interintra,
           av1_get_contiguous_soft_mask(wedge_index, wedge_sign, bsize);
       const int subw = 2 * num_4x4_blocks_wide_lookup[bsize] == bw;
       const int subh = 2 * num_4x4_blocks_high_lookup[bsize] == bh;
-      aom_blend_a64_mask(
-          comppred, compstride, intrapred, intrastride, interpred, interstride,
-          mask, 4 * num_4x4_blocks_wide_lookup[bsize], bh, bw, subh, subw);
+      aom_blend_a64_mask(comppred, compstride, intrapred, intrastride,
+                         interpred, interstride, mask, block_size_wide[bsize],
+                         bh, bw, subh, subw);
     }
     return;
   }
@@ -1722,8 +1720,8 @@ static void combine_interintra_highbd(
     int wedge_sign, BLOCK_SIZE bsize, BLOCK_SIZE plane_bsize,
     uint8_t *comppred8, int compstride, const uint8_t *interpred8,
     int interstride, const uint8_t *intrapred8, int intrastride, int bd) {
-  const int bw = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
-  const int bh = 4 * num_4x4_blocks_high_lookup[plane_bsize];
+  const int bw = block_size_wide[plane_bsize];
+  const int bh = block_size_high[plane_bsize];
   const int size_scale = ii_size_scales[plane_bsize];
   int i, j;
 
@@ -2055,8 +2053,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
         get_plane_block_size(bsize, &xd->plane[plane]);
     const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-    const int bw = 4 * num_4x4_w;
-    const int bh = 4 * num_4x4_h;
+    const int bw = block_size_wide;
+    const int bh = block_size_high;
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
       int x, y;

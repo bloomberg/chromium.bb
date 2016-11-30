@@ -45,8 +45,8 @@ TEST_P(AV1SubtractBlockTest, SimpleSubtract) {
   // FIXME(rbultje) split in its own file
   for (BLOCK_SIZE bsize = BLOCK_4X4; bsize < BLOCK_SIZES;
        bsize = static_cast<BLOCK_SIZE>(static_cast<int>(bsize) + 1)) {
-    const int block_width = 4 * num_4x4_blocks_wide_lookup[bsize];
-    const int block_height = 4 * num_4x4_blocks_high_lookup[bsize];
+    const int block_width = block_size_wide[bsize];
+    const int block_height = block_size_high[bsize];
     int16_t *diff = reinterpret_cast<int16_t *>(
         aom_memalign(16, sizeof(*diff) * block_width * block_height * 2));
     uint8_t *pred = reinterpret_cast<uint8_t *>(

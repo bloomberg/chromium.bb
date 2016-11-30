@@ -1853,8 +1853,8 @@ static int rd_pick_palette_intra_sby(
   int rate_overhead = 0;
   MACROBLOCKD *const xd = &x->e_mbd;
   MODE_INFO *const mic = xd->mi[0];
-  const int rows = 4 * num_4x4_blocks_high_lookup[bsize];
-  const int cols = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int rows = block_size_high[bsize];
+  const int cols = block_size_wide[bsize];
   int this_rate, colors, n;
   RD_STATS tokenonly_rd_stats;
   int64_t this_rd;
@@ -2816,8 +2816,8 @@ static int64_t rd_pick_intra_sby_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   int64_t this_distortion, this_rd;
   TX_SIZE best_tx = TX_4X4;
 #if CONFIG_EXT_INTRA || CONFIG_PALETTE
-  const int rows = 4 * num_4x4_blocks_high_lookup[bsize];
-  const int cols = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int rows = block_size_high[bsize];
+  const int cols = block_size_wide[bsize];
 #endif  // CONFIG_EXT_INTRA || CONFIG_PALETTE
 #if CONFIG_EXT_INTRA
   const int intra_filter_ctx = av1_get_pred_context_intra_interp(xd);
@@ -3737,10 +3737,8 @@ static void rd_pick_palette_intra_sbuv(
   MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int rows =
-      (4 * num_4x4_blocks_high_lookup[bsize]) >> (xd->plane[1].subsampling_y);
-  const int cols =
-      (4 * num_4x4_blocks_wide_lookup[bsize]) >> (xd->plane[1].subsampling_x);
+  const int rows = block_size_high[bsize] >> (xd->plane[1].subsampling_y);
+  const int cols = block_size_wide[bsize] >> (xd->plane[1].subsampling_x);
   int this_rate;
   int64_t this_rd;
   int colors_u, colors_v, colors;
@@ -4057,10 +4055,8 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
   od_encode_checkpoint(&x->daala_enc, &buf);
 #endif
 #if CONFIG_PALETTE
-  const int rows =
-      (4 * num_4x4_blocks_high_lookup[bsize]) >> (xd->plane[1].subsampling_y);
-  const int cols =
-      (4 * num_4x4_blocks_wide_lookup[bsize]) >> (xd->plane[1].subsampling_x);
+  const int rows = block_size_high[bsize] >> (xd->plane[1].subsampling_y);
+  const int cols = block_size_wide[bsize] >> (xd->plane[1].subsampling_x);
   PALETTE_MODE_INFO palette_mode_info;
   PALETTE_MODE_INFO *const pmi = &xd->mi[0]->mbmi.palette_mode_info;
   uint8_t *best_palette_color_map = NULL;
@@ -4847,8 +4843,8 @@ static void joint_motion_search(const AV1_COMP *cpi, MACROBLOCK *x,
                                 int_mv single_newmv[TOTAL_REFS_PER_FRAME],
                                 int *rate_mv, const int block) {
   const AV1_COMMON *const cm = &cpi->common;
-  const int pw = 4 * num_4x4_blocks_wide_lookup[bsize];
-  const int ph = 4 * num_4x4_blocks_high_lookup[bsize];
+  const int pw = block_size_wide[bsize];
+  const int ph = block_size_high[bsize];
   MACROBLOCKD *xd = &x->e_mbd;
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   const int refs[2] = { mbmi->ref_frame[0],
@@ -5445,8 +5441,8 @@ static int64_t rd_pick_best_sub8x8_mode(
               const int try_second =
                   x->second_best_mv.as_int != INVALID_MV &&
                   x->second_best_mv.as_int != x->best_mv.as_int;
-              const int pw = 4 * num_4x4_blocks_wide_lookup[bsize];
-              const int ph = 4 * num_4x4_blocks_high_lookup[bsize];
+              const int pw = block_size_wide[bsize];
+              const int ph = block_size_high[bsize];
               // Use up-sampled reference frames.
               struct buf_2d backup_pred = pd->pre[0];
               const YV12_BUFFER_CONFIG *upsampled_ref =
@@ -6244,8 +6240,8 @@ static void single_motion_search(const AV1_COMP *const cpi, MACROBLOCK *x,
           int best_mv_var;
           const int try_second = x->second_best_mv.as_int != INVALID_MV &&
                                  x->second_best_mv.as_int != x->best_mv.as_int;
-          const int pw = 4 * num_4x4_blocks_wide_lookup[bsize];
-          const int ph = 4 * num_4x4_blocks_high_lookup[bsize];
+          const int pw = block_size_wide[bsize];
+          const int ph = block_size_high[bsize];
           // Use up-sampled reference frames.
           struct macroblockd_plane *const pd = &xd->plane[0];
           struct buf_2d backup_pred = pd->pre[ref_idx];
@@ -6481,7 +6477,7 @@ static void do_masked_motion_search_indexed(const AV1_COMP *const cpi,
   MB_MODE_INFO *mbmi = &xd->mi[0]->mbmi;
   BLOCK_SIZE sb_type = mbmi->sb_type;
   const uint8_t *mask;
-  const int mask_stride = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int mask_stride = block_size_wide[bsize];
   mask = av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
 
   if (which == 0 || which == 2)
@@ -6684,8 +6680,8 @@ static int64_t pick_wedge(const AV1_COMP *const cpi, const MACROBLOCK *const x,
                           int *const best_wedge_index) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const src = &x->plane[0].src;
-  const int bw = 4 * num_4x4_blocks_wide_lookup[bsize];
-  const int bh = 4 * num_4x4_blocks_high_lookup[bsize];
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
   const int N = bw * bh;
   int rate;
   int64_t dist;
@@ -6759,8 +6755,8 @@ static int64_t pick_wedge_fixed_sign(
     const int wedge_sign, int *const best_wedge_index) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   const struct buf_2d *const src = &x->plane[0].src;
-  const int bw = 4 * num_4x4_blocks_wide_lookup[bsize];
-  const int bh = 4 * num_4x4_blocks_high_lookup[bsize];
+  const int bw = block_size_wide[bsize];
+  const int bh = block_size_high[bsize];
   const int N = bw * bh;
   int rate;
   int64_t dist;
@@ -6816,7 +6812,7 @@ static int64_t pick_interinter_wedge(const AV1_COMP *const cpi,
                                      const uint8_t *const p1) {
   const MACROBLOCKD *const xd = &x->e_mbd;
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
-  const int bw = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int bw = block_size_wide[bsize];
 
   int64_t rd;
   int wedge_index = -1;
@@ -6890,7 +6886,7 @@ static int64_t handle_inter_mode(
   int rate_mv = 0;
 #if CONFIG_EXT_INTER
   int pred_exists = 1;
-  const int bw = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int bw = block_size_wide[bsize];
   int mv_idx = (this_mode == NEWFROMNEARMV) ? 1 : 0;
   int_mv single_newmv[TOTAL_REFS_PER_FRAME];
   const unsigned int *const interintra_mode_cost =
@@ -8156,10 +8152,8 @@ static void restore_uv_color_map(const AV1_COMP *const cpi, MACROBLOCK *x) {
   MB_MODE_INFO *const mbmi = &xd->mi[0]->mbmi;
   PALETTE_MODE_INFO *const pmi = &mbmi->palette_mode_info;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int rows =
-      (4 * num_4x4_blocks_high_lookup[bsize]) >> (xd->plane[1].subsampling_y);
-  const int cols =
-      (4 * num_4x4_blocks_wide_lookup[bsize]) >> (xd->plane[1].subsampling_x);
+  const int rows = block_size_high[bsize] >> (xd->plane[1].subsampling_y);
+  const int cols = block_size_wide[bsize] >> (xd->plane[1].subsampling_x);
   int src_stride = x->plane[1].src.stride;
   const uint8_t *const src_u = x->plane[1].src.buf;
   const uint8_t *const src_v = x->plane[2].src.buf;
@@ -8494,8 +8488,8 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
 #endif
 
 #if CONFIG_PALETTE || CONFIG_EXT_INTRA
-  const int rows = 4 * num_4x4_blocks_high_lookup[bsize];
-  const int cols = 4 * num_4x4_blocks_wide_lookup[bsize];
+  const int rows = block_size_high[bsize];
+  const int cols = block_size_wide[bsize];
 #endif  // CONFIG_PALETTE || CONFIG_EXT_INTRA
 #if CONFIG_PALETTE
   int palette_ctx = 0;

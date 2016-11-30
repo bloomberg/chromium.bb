@@ -1871,10 +1871,10 @@ static void write_modes_b(AV1_COMP *cpi, const TileInfo *const tile,
 #if CONFIG_PALETTE
   for (plane = 0; plane <= 1; ++plane) {
     if (m->mbmi.palette_mode_info.palette_size[plane] > 0) {
-      const int rows = (4 * num_4x4_blocks_high_lookup[m->mbmi.sb_type]) >>
-                       (xd->plane[plane].subsampling_y);
-      const int cols = (4 * num_4x4_blocks_wide_lookup[m->mbmi.sb_type]) >>
-                       (xd->plane[plane].subsampling_x);
+      const int rows =
+          block_size_high[m->mbmi.sb_type] >> (xd->plane[plane].subsampling_y);
+      const int cols =
+          block_size_wide[m->mbmi.sb_type] >> (xd->plane[plane].subsampling_x);
       assert(*tok < tok_end);
       pack_palette_tokens(w, tok, m->mbmi.palette_mode_info.palette_size[plane],
                           rows * cols - 1);

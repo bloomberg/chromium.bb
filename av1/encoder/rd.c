@@ -717,7 +717,7 @@ int av1_raster_block_offset(BLOCK_SIZE plane_bsize, int raster_block,
 
 int16_t *av1_raster_block_offset_int16(BLOCK_SIZE plane_bsize, int raster_block,
                                        int16_t *base) {
-  const int stride = 4 * num_4x4_blocks_wide_lookup[plane_bsize];
+  const int stride = block_size_wide[plane_bsize];
   return base + av1_raster_block_offset(plane_bsize, raster_block, stride);
 }
 

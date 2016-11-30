@@ -311,10 +311,10 @@ void av1_decode_palette_tokens(MACROBLOCKD *const xd, int plane,
   const MODE_INFO *const mi = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mi->mbmi;
   const BLOCK_SIZE bsize = mbmi->sb_type;
-  const int rows = (4 * num_4x4_blocks_high_lookup[bsize]) >>
-                   (xd->plane[plane != 0].subsampling_y);
-  const int cols = (4 * num_4x4_blocks_wide_lookup[bsize]) >>
-                   (xd->plane[plane != 0].subsampling_x);
+  const int rows =
+      (block_size_high[bsize]) >> (xd->plane[plane != 0].subsampling_y);
+  const int cols =
+      (block_size_wide[bsize]) >> (xd->plane[plane != 0].subsampling_x);
   uint8_t color_order[PALETTE_MAX_SIZE];
   const int n = mbmi->palette_mode_info.palette_size[plane != 0];
   int i, j;
