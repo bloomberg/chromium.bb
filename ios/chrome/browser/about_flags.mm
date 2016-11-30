@@ -246,6 +246,16 @@ void AppendSwitchesFromExperimentalSettings(base::CommandLine* command_line) {
     command_line->AppendSwitch(switches::kDisableSpotlightActions);
   }
 
+  // Populate command line flag for the Rename "Save Image" to "Download Image"
+  // experiment.
+  NSString* enableDownloadRenaming =
+      [defaults stringForKey:@"EnableDownloadRenaming"];
+  if ([enableDownloadRenaming isEqualToString:@"Enabled"]) {
+    command_line->AppendSwitch(switches::kEnableDownloadImageRenaming);
+  } else if ([enableDownloadRenaming isEqualToString:@"Disabled"]) {
+    command_line->AppendSwitch(switches::kDisableDownloadImageRenaming);
+  }
+
   // Freeform commandline flags.  These are added last, so that any flags added
   // earlier in this function take precedence.
   if ([defaults boolForKey:@"EnableFreeformCommandLineFlags"]) {

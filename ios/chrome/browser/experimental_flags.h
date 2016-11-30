@@ -58,6 +58,8 @@ bool IsMDMIntegrationEnabled();
 // Whether the back-forward navigation uses pending index.
 bool IsPendingIndexNavigationEnabled();
 
+// Whether "Save Image" should be renamed as "Download Image".
+bool IsDownloadRenamingEnabled();
 }  // namespace experimental_flags
 
 #endif  // IOS_CHROME_BROWSER_EXPERIMENTAL_FLAGS_H_

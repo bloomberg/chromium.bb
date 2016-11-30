@@ -31,6 +31,8 @@ NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
 NSString* const kPendingIndexNavigationEnabled =
     @"PendingIndexNavigationEnabled";
+const base::Feature kIOSDownloadImageRenaming{
+    "IOSDownloadImageRenaming", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace
 
 namespace experimental_flags {
@@ -185,6 +187,19 @@ bool IsMDMIntegrationEnabled() {
 bool IsPendingIndexNavigationEnabled() {
   return [[NSUserDefaults standardUserDefaults]
       boolForKey:kPendingIndexNavigationEnabled];
+}
+
+bool IsDownloadRenamingEnabled() {
+  // Check if the experimental flag is forced on or off.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(switches::kEnableDownloadImageRenaming)) {
+    return true;
+  } else if (command_line->HasSwitch(switches::kDisableDownloadImageRenaming)) {
+    return false;
+  }
+
+  // Check if the finch experiment is turned on.
+  return base::FeatureList::IsEnabled(kIOSDownloadImageRenaming);
 }
 
 }  // namespace experimental_flags

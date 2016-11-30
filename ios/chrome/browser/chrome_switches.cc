@@ -55,6 +55,9 @@ const char kDisableTabSwitcher[] = "disable-tab-switcher";
 // Disables Physical Web scanning for nearby URLs.
 const char kDisableIOSPhysicalWeb[] = "disable-ios-physical-web";
 
+// Enables the string change from "Save Image" to "Download Image".
+const char kDisableDownloadImageRenaming[] = "disable-download-image-renaming";
+
 // Enables all bookmarks view in bookmark manager.
 const char kEnableAllBookmarksView[] = "enable-all-bookmarks-view";
 
@@ -103,6 +106,9 @@ const char kEnableTabSwitcher[] = "enable-tab-switcher";
 
 // Enables Physical Web scanning for nearby URLs.
 const char kEnableIOSPhysicalWeb[] = "enable-ios-physical-web";
+
+// Enables the string change from "Save Image" to "Download Image".
+const char kEnableDownloadImageRenaming[] = "enable-download-image-renaming";
 
 // Forces additional Chrome Variation Ids that will be sent in X-Client-Data
 // header, specified as a 64-bit encoded list of numeric experiment ids. Ids
