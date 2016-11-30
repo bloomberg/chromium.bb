@@ -50,8 +50,19 @@ class _MainLoop(object):
   def loop_forever(self):
     while True:
       self.loop_once()
-      time.sleep(self._interval)
+      _force_sleep(self._interval)
       self._cycles = (self._cycles + 1) % 60
+
+
+def _force_sleep(secs):
+  """Force sleep for at least the given number of seconds."""
+  now = time.time()
+  finished_time = now + secs
+  while now < finished_time:
+    remaining = finished_time - now
+    logger.debug('Sleeping for %d, %d remaining', secs, remaining)
+    time.sleep(remaining)
+    now = time.time()
 
 
 def collect_metrics(cycles):
