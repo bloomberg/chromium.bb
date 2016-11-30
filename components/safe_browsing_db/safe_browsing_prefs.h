@@ -56,6 +56,15 @@ enum ExtendedReportingLevel {
 };
 
 // Determines which opt-in text should be used based on the currently active
+// preference. Will return either |extended_reporting_pref| if the legacy
+// Extended Reporting pref is active, or |scout_pref| if the Scout pref is
+// active. Used for Android.
+std::string ChooseOptInTextPreference(
+    const PrefService& prefs,
+    const std::string& extended_reporting_pref,
+    const std::string& scout_pref);
+
+// Determines which opt-in text should be used based on the currently active
 // preference. Will return either |extended_reporting_resource| if the legacy
 // Extended Reporting pref is active, or |scout_resource| if the Scout pref is
 // active.
@@ -83,6 +92,9 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs);
 // This should be used to decide if any of the reporting preferences are set,
 // regardless of which specific one is set.
 bool IsExtendedReportingEnabled(const PrefService& prefs);
+
+// Returns whether the currently-active Extended Reporting pref is Scout.
+bool IsScout(const PrefService& prefs);
 
 // Updates UMA metrics about Safe Browsing Extended Reporting states.
 void RecordExtendedReportingMetrics(const PrefService& prefs);

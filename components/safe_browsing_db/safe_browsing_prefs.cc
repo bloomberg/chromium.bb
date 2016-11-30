@@ -14,11 +14,6 @@ const char kForceScoutGroupValueTrue[] = "true";
 // Switch value which force the ScoutGroupSelected pref to false.
 const char kForceScoutGroupValueFalse[] = "false";
 
-// Returns if Scout is the currently-active pref.
-bool IsScout(const std::string& pref) {
-  return pref == prefs::kSafeBrowsingScoutReportingEnabled;
-}
-
 }  // namespace
 
 namespace prefs {
@@ -40,12 +35,17 @@ const base::Feature kCanShowScoutOptIn{"CanShowScoutOptIn",
 const base::Feature kOnlyShowScoutOptIn{"OnlyShowScoutOptIn",
                                         base::FEATURE_DISABLED_BY_DEFAULT};
 
+std::string ChooseOptInTextPreference(
+    const PrefService& prefs,
+    const std::string& extended_reporting_pref,
+    const std::string& scout_pref) {
+  return IsScout(prefs) ? scout_pref : extended_reporting_pref;
+}
+
 int ChooseOptInTextResource(const PrefService& prefs,
                             int extended_reporting_resource,
                             int scout_resource) {
-  return IsScout(GetExtendedReportingPrefName(prefs))
-             ? scout_resource
-             : extended_reporting_resource;
+  return IsScout(prefs) ? scout_resource : extended_reporting_resource;
 }
 
 bool ExtendedReportingPrefExists(const PrefService& prefs) {
@@ -56,8 +56,7 @@ ExtendedReportingLevel GetExtendedReportingLevel(const PrefService& prefs) {
   if (!IsExtendedReportingEnabled(prefs)) {
     return SBER_LEVEL_OFF;
   } else {
-    return IsScout(GetExtendedReportingPrefName(prefs)) ? SBER_LEVEL_SCOUT
-                                                        : SBER_LEVEL_LEGACY;
+    return IsScout(prefs) ? SBER_LEVEL_SCOUT : SBER_LEVEL_LEGACY;
   }
 }
 
@@ -140,6 +139,11 @@ void InitializeSafeBrowsingPrefs(PrefService* prefs) {
 
 bool IsExtendedReportingEnabled(const PrefService& prefs) {
   return prefs.GetBoolean(GetExtendedReportingPrefName(prefs));
+}
+
+bool IsScout(const PrefService& prefs) {
+  return GetExtendedReportingPrefName(prefs) ==
+         prefs::kSafeBrowsingScoutReportingEnabled;
 }
 
 void RecordExtendedReportingMetrics(const PrefService& prefs) {

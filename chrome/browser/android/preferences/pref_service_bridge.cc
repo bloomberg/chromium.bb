@@ -314,6 +314,11 @@ static jboolean GetSearchSuggestManaged(JNIEnv* env,
   return GetPrefService()->IsManagedPreference(prefs::kSearchSuggestEnabled);
 }
 
+static jboolean IsScoutExtendedReportingActive(
+    JNIEnv* env, const JavaParamRef<jobject>& obj) {
+  return safe_browsing::IsScout(*GetPrefService());
+}
+
 static jboolean GetSafeBrowsingExtendedReportingEnabled(
     JNIEnv* env,
     const JavaParamRef<jobject>& obj) {
