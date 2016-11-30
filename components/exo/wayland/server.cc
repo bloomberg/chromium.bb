@@ -73,6 +73,7 @@
 #include "ui/gfx/buffer_types.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
+#include "ui/wm/core/coordinate_conversion.h"
 
 #if defined(USE_OZONE)
 #include <drm_fourcc.h>
@@ -911,7 +912,39 @@ void shell_surface_set_transient(wl_client* client,
                                  int x,
                                  int y,
                                  uint32_t flags) {
-  NOTIMPLEMENTED();
+  ShellSurface* shell_surface = GetUserDataAs<ShellSurface>(resource);
+  if (shell_surface->enabled())
+    return;
+
+  // Parent widget can be found by locating the closest ancestor with a widget.
+  views::Widget* parent_widget = nullptr;
+  aura::Window* parent_window =
+      GetUserDataAs<Surface>(parent_resource)->window();
+  while (parent_window) {
+    parent_widget = views::Widget::GetWidgetForNativeWindow(parent_window);
+    if (parent_widget)
+      break;
+    parent_window = parent_window->parent();
+  }
+
+  gfx::Point origin(x, y);
+
+  // Set parent if found and it is associated with a shell surface.
+  if (parent_widget &&
+      ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())) {
+    wm::ConvertPointToScreen(
+        ShellSurface::GetMainSurface(parent_widget->GetNativeWindow())
+            ->window(),
+        &origin);
+    // Shell surface widget delegate implementation of GetContentsView()
+    // returns a pointer to the shell surface instance.
+    shell_surface->SetParent(static_cast<ShellSurface*>(
+        parent_widget->widget_delegate()->GetContentsView()));
+  }
+
+  shell_surface->SetOrigin(origin);
+  shell_surface->SetActivatable(!(flags & WL_SHELL_SURFACE_TRANSIENT_INACTIVE));
+  shell_surface->SetEnabled(true);
 }
 
 void shell_surface_set_fullscreen(wl_client* client,

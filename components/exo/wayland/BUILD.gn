@@ -50,6 +50,7 @@ source_set("wayland") {
     "//ui/events:dom_keycode_converter",
     "//ui/events:events_base",
     "//ui/views",
+    "//ui/wm:wm",
   ]
 
   if (use_ozone) {

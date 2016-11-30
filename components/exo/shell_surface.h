@@ -160,6 +160,12 @@ class ShellSurface : public SurfaceDelegate,
   // Set top inset for surface.
   void SetTopInset(int height);
 
+  // Set origin in screen coordinate space.
+  void SetOrigin(const gfx::Point& origin);
+
+  // Set activatable state for surface.
+  void SetActivatable(bool activatable);
+
   // Sets the main surface for the window.
   static void SetMainSurface(aura::Window* window, Surface* surface);
 
@@ -268,8 +274,8 @@ class ShellSurface : public SurfaceDelegate,
   views::Widget* widget_ = nullptr;
   Surface* surface_;
   aura::Window* parent_;
-  const gfx::Rect initial_bounds_;
-  const bool activatable_;
+  gfx::Rect initial_bounds_;
+  bool activatable_ = true;
   // Container Window Id (see ash/public/cpp/shell_window_ids.h)
   const int container_;
   bool pending_show_widget_ = false;

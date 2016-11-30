@@ -609,6 +609,19 @@ void ShellSurface::SetTopInset(int height) {
   pending_top_inset_height_ = height;
 }
 
+void ShellSurface::SetOrigin(const gfx::Point& origin) {
+  TRACE_EVENT1("exo", "ShellSurface::SetOrigin", "origin", origin.ToString());
+
+  initial_bounds_ = gfx::Rect(origin, gfx::Size(1, 1));
+}
+
+void ShellSurface::SetActivatable(bool activatable) {
+  TRACE_EVENT1("exo", "ShellSurface::SetActivatable", "activatable",
+               activatable);
+
+  activatable_ = activatable;
+}
+
 // static
 void ShellSurface::SetMainSurface(aura::Window* window, Surface* surface) {
   window->SetProperty(kMainSurfaceKey, surface);
