@@ -718,6 +718,12 @@ void USBDevice::asyncClose(ScriptPromiseResolver* resolver) {
 
 void USBDevice::onDeviceOpenedOrClosed(bool opened) {
   m_opened = opened;
+  if (!m_opened) {
+    m_claimedInterfaces.clearAll();
+    m_selectedAlternates.fill(0);
+    m_inEndpoints.clearAll();
+    m_outEndpoints.clearAll();
+  }
   m_deviceStateChangeInProgress = false;
 }
 

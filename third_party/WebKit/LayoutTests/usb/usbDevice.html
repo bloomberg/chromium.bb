@@ -231,10 +231,34 @@ usb_test(usb => {
     return device.open()
       .then(() => device.selectConfiguration(1))
       .then(() => device.claimInterface(0))
-      .then(() => device.releaseInterface(0))
-      .then(() => device.close());
+      .then(() => {
+        assert_true(device.configuration.interfaces[0].claimed);
+        return device.releaseInterface(0);
+      })
+      .then(() => {
+        assert_false(device.configuration.interfaces[0].claimed);
+        return device.close();
+      });
   });
 }, 'an interface can be claimed and released');
+
+usb_test(usb => {
+  usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
+  return navigator.usb.getDevices().then(devices => {
+    assert_equals(1, devices.length);
+    let device = devices[0];
+    return device.open()
+      .then(() => device.selectConfiguration(1))
+      .then(() => device.claimInterface(0))
+      .then(() => {
+        assert_true(device.configuration.interfaces[0].claimed);
+        return device.close(0);
+      })
+      .then(() => {
+        assert_false(device.configuration.interfaces[0].claimed);
+      });
+  });
+}, 'interfaces are released on close');
 
 usb_test(usb => {
   usb.mockDeviceManager.addMockDevice(usb.fakeDevices[0]);
