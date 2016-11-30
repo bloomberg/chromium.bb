@@ -13,7 +13,9 @@ import org.chromium.device.BatteryStatus;
 import org.chromium.device.battery.BatteryStatusManager.BatteryStatusCallback;
 import org.chromium.services.service_manager.InterfaceFactory;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 
 /**
  * Factory that creates instances of BatteryMonitor implementations and notifies them about battery
@@ -33,7 +35,8 @@ public class BatteryMonitorFactory implements InterfaceFactory<BatteryMonitor> {
         public void onBatteryStatusChanged(BatteryStatus batteryStatus) {
             ThreadUtils.assertOnUiThread();
 
-            for (BatteryMonitorImpl monitor : mSubscribedMonitors) {
+            List<BatteryMonitorImpl> monitors = new ArrayList<>(mSubscribedMonitors);
+            for (BatteryMonitorImpl monitor : monitors) {
                 monitor.didChange(batteryStatus);
             }
         }
