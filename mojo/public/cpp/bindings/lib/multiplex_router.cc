@@ -335,8 +335,16 @@ MultiplexRouter::~MultiplexRouter() {
     // because it may remove the corresponding value from the map.
     ++iter;
 
-    DCHECK(endpoint->closed());
-    UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
+    if (!endpoint->closed()) {
+      // This happens when a NotifyPeerEndpointClosed message been received, but
+      // (1) the interface ID hasn't been used to create local endpoint handle;
+      // and (2) a NotifyEndpointClosedBeforeSent hasn't been received.
+      DCHECK(!endpoint->client());
+      DCHECK(endpoint->peer_closed());
+      UpdateEndpointStateMayRemove(endpoint, ENDPOINT_CLOSED);
+    } else {
+      UpdateEndpointStateMayRemove(endpoint, PEER_ENDPOINT_CLOSED);
+    }
   }
 
   DCHECK(endpoints_.empty());

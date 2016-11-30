@@ -108,9 +108,17 @@ SyncHandleRegistry::SyncHandleRegistry() {
 SyncHandleRegistry::~SyncHandleRegistry() {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  // This object may be destructed after the thread local storage slot used by
+  // |g_current_sync_handle_watcher| is reset during thread shutdown.
+  // For example, another slot in the thread local storage holds a referrence to
+  // this object, and that slot is cleaned up after
+  // |g_current_sync_handle_watcher|.
+  if (!g_current_sync_handle_watcher.Pointer()->Get())
+    return;
+
   // If this breaks, it is likely that the global variable is bulit into and
   // accessed from multiple modules.
-  CHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
+  DCHECK_EQ(this, g_current_sync_handle_watcher.Pointer()->Get());
 
   g_current_sync_handle_watcher.Pointer()->Set(nullptr);
 }
