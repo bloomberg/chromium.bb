@@ -26,7 +26,8 @@ NavigationHandle::CreateNavigationHandleForTesting(
     const GURL& url,
     RenderFrameHost* render_frame_host,
     bool committed,
-    net::Error error) {
+    net::Error error,
+    bool has_user_gesture) {
   std::unique_ptr<NavigationHandleImpl> handle_impl =
       NavigationHandleImpl::Create(
           url, static_cast<RenderFrameHostImpl*>(render_frame_host)
@@ -35,6 +36,7 @@ NavigationHandle::CreateNavigationHandleForTesting(
           false,  // is_same_page
           false,  // is_srcdoc
           base::TimeTicks::Now(), 0,
+          has_user_gesture ? NavigationGestureUser : NavigationGestureAuto,
           false);  // started_from_context_menu
   handle_impl->set_render_frame_host(
       static_cast<RenderFrameHostImpl*>(render_frame_host));

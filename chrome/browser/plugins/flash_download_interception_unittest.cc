@@ -88,9 +88,10 @@ TEST_F(FlashDownloadInterceptionTest, NavigationThrottleCancelsNavigation) {
 
   std::unique_ptr<NavigationHandle> handle =
       NavigationHandle::CreateNavigationHandleForTesting(
-          GURL("https://get.adobe.com/flashplayer"), main_rfh());
+          GURL("https://get.adobe.com/flashplayer"), main_rfh(),
+          false /* committed */, net::OK, true /* has_user_gesture */);
 
-  handle->CallWillStartRequestForTesting(true, content::Referrer(), true,
+  handle->CallWillStartRequestForTesting(true, content::Referrer(),
                                          ui::PAGE_TRANSITION_LINK, false);
   std::unique_ptr<NavigationThrottle> throttle =
       FlashDownloadInterception::MaybeCreateThrottleFor(handle.get());

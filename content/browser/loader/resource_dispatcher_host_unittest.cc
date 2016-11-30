@@ -1082,7 +1082,7 @@ class ResourceDispatcherHostTest : public testing::TestWithParam<TestConfig>,
       // Make a navigation request.
       TestNavigationURLLoaderDelegate delegate;
       BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                         false, REQUEST_CONTEXT_TYPE_LOCATION);
+                                         REQUEST_CONTEXT_TYPE_LOCATION);
       CommonNavigationParams common_params;
       common_params.url = url;
       std::unique_ptr<NavigationRequestInfo> request_info(
@@ -2639,7 +2639,7 @@ TEST_P(ResourceDispatcherHostTest, CancelRequestsForContext) {
     // Create a NavigationRequest.
     TestNavigationURLLoaderDelegate delegate;
     BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
-                                       false, REQUEST_CONTEXT_TYPE_LOCATION);
+                                       REQUEST_CONTEXT_TYPE_LOCATION);
     CommonNavigationParams common_params;
     common_params.url = download_url;
     std::unique_ptr<NavigationRequestInfo> request_info(

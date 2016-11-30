@@ -15,6 +15,7 @@
 #include "build/build_config.h"
 #include "content/common/content_export.h"
 #include "content/common/frame_message_enums.h"
+#include "content/common/navigation_gesture.h"
 #include "content/common/resource_request_body_impl.h"
 #include "content/public/common/page_state.h"
 #include "content/public/common/referrer.h"
@@ -57,6 +58,7 @@ struct CONTENT_EXPORT CommonNavigationParams {
       const Referrer& referrer,
       ui::PageTransition transition,
       FrameMsg_Navigate_Type::Value navigation_type,
+      NavigationGesture gesture,
       bool allow_download,
       bool should_replace_current_entry,
       base::TimeTicks ui_timestamp,
@@ -83,6 +85,9 @@ struct CONTENT_EXPORT CommonNavigationParams {
 
   // Type of navigation.
   FrameMsg_Navigate_Type::Value navigation_type;
+
+  // Indicates the gesture type.
+  NavigationGesture gesture;
 
   // Allows the URL to be downloaded (true by default).
   // Avoid downloading when in view-source mode.
@@ -144,7 +149,6 @@ struct CONTENT_EXPORT BeginNavigationParams {
   BeginNavigationParams();
   BeginNavigationParams(std::string headers,
                         int load_flags,
-                        bool has_user_gesture,
                         bool skip_service_worker,
                         RequestContextType request_context_type);
   BeginNavigationParams(const BeginNavigationParams& other);
@@ -154,9 +158,6 @@ struct CONTENT_EXPORT BeginNavigationParams {
 
   // net::URLRequest load flags (net::LOAD_NORMAL) by default).
   int load_flags;
-
-  // True if the request was user initiated.
-  bool has_user_gesture;
 
   // True if the ServiceWorker should be skipped.
   bool skip_service_worker;
@@ -232,8 +233,7 @@ struct CONTENT_EXPORT RequestNavigationParams {
                           int current_history_list_offset,
                           int current_history_list_length,
                           bool is_view_source,
-                          bool should_clear_history_list,
-                          bool has_user_gesture);
+                          bool should_clear_history_list);
   RequestNavigationParams(const RequestNavigationParams& other);
   ~RequestNavigationParams();
 
@@ -324,9 +324,6 @@ struct CONTENT_EXPORT RequestNavigationParams {
   // This parameter is not used in the current navigation architecture, where
   // it will always be equal to kInvalidServiceWorkerProviderId.
   int service_worker_provider_id;
-
-  // True if the navigation originated due to a user gesture.
-  bool has_user_gesture;
 
 #if defined(OS_ANDROID)
   // The real content of the data: URL. Only used in Android WebView for

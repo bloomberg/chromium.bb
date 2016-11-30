@@ -515,7 +515,7 @@ void RenderViewTest::SetFocused(const blink::WebNode& node) {
 void RenderViewTest::Reload(const GURL& url) {
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_LINK, FrameMsg_Navigate_Type::RELOAD,
-      true, false, base::TimeTicks(),
+      NavigationGestureAuto, true, false, base::TimeTicks(),
       FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
       LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
   RenderViewImpl* impl = static_cast<RenderViewImpl*>(view_);
@@ -650,9 +650,9 @@ void RenderViewTest::GoToOffset(int offset,
 
   CommonNavigationParams common_params(
       url, Referrer(), ui::PAGE_TRANSITION_FORWARD_BACK,
-      FrameMsg_Navigate_Type::NORMAL, true, false, base::TimeTicks(),
-      FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(), GURL(),
-      LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
+      FrameMsg_Navigate_Type::NORMAL, NavigationGestureAuto, true, false,
+      base::TimeTicks(), FrameMsg_UILoadMetricsReportType::NO_REPORT, GURL(),
+      GURL(), LOFI_UNSPECIFIED, base::TimeTicks::Now(), "GET", nullptr);
   RequestNavigationParams request_params;
   request_params.page_state = state;
   request_params.nav_entry_id = pending_offset + 1;

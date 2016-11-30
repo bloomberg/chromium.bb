@@ -69,10 +69,10 @@ class ExtensionNavigationThrottleUnitTest
                      NavigationThrottle::ThrottleCheckResult expected_result) {
     std::unique_ptr<content::NavigationHandle> handle =
         content::NavigationHandle::CreateNavigationHandleForTesting(url, host);
-    EXPECT_EQ(expected_result, handle->CallWillStartRequestForTesting(
-                                   false, //not post
-                                   content::Referrer(), false,
-                                   ui::PAGE_TRANSITION_LINK, false))
+    EXPECT_EQ(expected_result,
+              handle->CallWillStartRequestForTesting(
+                  false,  // not post
+                  content::Referrer(), ui::PAGE_TRANSITION_LINK, false))
         << url;
   }
 

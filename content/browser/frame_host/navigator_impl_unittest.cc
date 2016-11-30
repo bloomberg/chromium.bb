@@ -184,7 +184,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // The navigation is immediately started as there's no need to wait for
   // beforeUnload to be executed.
   EXPECT_EQ(NavigationRequest::STARTED, request->state());
-  EXPECT_FALSE(request->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureAuto, request->common_params().gesture);
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
@@ -229,7 +229,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   // The navigation is immediately started as there's no need to wait for
   // beforeUnload to be executed.
   EXPECT_EQ(NavigationRequest::STARTED, request->state());
-  EXPECT_FALSE(request->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureAuto, request->common_params().gesture);
   EXPECT_EQ(kUrl2, request->common_params().url);
   EXPECT_FALSE(request->browser_initiated());
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
@@ -619,7 +619,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   ASSERT_TRUE(request2);
   EXPECT_EQ(kUrl2, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
-  EXPECT_TRUE(request2->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureUser, request2->common_params().gesture);
 
   // Confirm that the first loader got destroyed.
   EXPECT_FALSE(loader1);
@@ -671,7 +671,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   ASSERT_TRUE(request1);
   EXPECT_EQ(kUrl1, request1->common_params().url);
   EXPECT_FALSE(request1->browser_initiated());
-  EXPECT_TRUE(request1->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureUser, request1->common_params().gesture);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
@@ -686,7 +686,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   EXPECT_EQ(request1, request2);
   EXPECT_EQ(kUrl1, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
-  EXPECT_TRUE(request2->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureUser, request2->common_params().gesture);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
@@ -777,7 +777,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   ASSERT_TRUE(request1);
   EXPECT_EQ(kUrl1, request1->common_params().url);
   EXPECT_FALSE(request1->browser_initiated());
-  EXPECT_FALSE(request1->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureAuto, request1->common_params().gesture);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {
@@ -792,7 +792,7 @@ TEST_F(NavigatorTestWithBrowserSideNavigation,
   NavigationRequest* request2 = node->navigation_request();
   EXPECT_EQ(kUrl2, request2->common_params().url);
   EXPECT_FALSE(request2->browser_initiated());
-  EXPECT_FALSE(request2->begin_params().has_user_gesture);
+  EXPECT_EQ(NavigationGestureAuto, request2->common_params().gesture);
   if (SiteIsolationPolicy::AreCrossProcessFramesPossible()) {
     EXPECT_TRUE(GetSpeculativeRenderFrameHost(node));
   } else {

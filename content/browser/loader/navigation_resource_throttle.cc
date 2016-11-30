@@ -97,7 +97,6 @@ void CheckWillStartRequestOnUIThread(
     const scoped_refptr<content::ResourceRequestBodyImpl>&
         resource_request_body,
     const Referrer& sanitized_referrer,
-    bool has_user_gesture,
     ui::PageTransition transition,
     bool is_external_protocol,
     RequestContextType request_context_type) {
@@ -108,8 +107,8 @@ void CheckWillStartRequestOnUIThread(
     return;
 
   navigation_handle->WillStartRequest(
-      method, resource_request_body, sanitized_referrer, has_user_gesture,
-      transition, is_external_protocol, request_context_type,
+      method, resource_request_body, sanitized_referrer, transition,
+      is_external_protocol, request_context_type,
       base::Bind(&SendCheckResultToIOThread, callback));
 }
 
@@ -214,8 +213,8 @@ void NavigationResourceThrottle::WillStartRequest(bool* defer) {
                  Referrer::SanitizeForRequest(
                      request_->url(), Referrer(GURL(request_->referrer()),
                                                info->GetReferrerPolicy())),
-                 info->HasUserGesture(), info->GetPageTransition(),
-                 is_external_protocol, request_context_type_));
+                 info->GetPageTransition(), is_external_protocol,
+                 request_context_type_));
   *defer = true;
 }
 

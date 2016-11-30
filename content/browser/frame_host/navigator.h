@@ -49,10 +49,10 @@ class CONTENT_EXPORT Navigator : public base::RefCounted<Navigator> {
   // Notifications coming from the RenderFrameHosts ----------------------------
 
   // The RenderFrameHostImpl started a provisional load.
-  virtual void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const base::TimeTicks& navigation_start) {};
+  virtual void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                                       const GURL& url,
+                                       const base::TimeTicks& navigation_start,
+                                       NavigationGesture gesture){};
 
   // The RenderFrameHostImpl has failed a provisional load.
   virtual void DidFailProvisionalLoadWithError(

@@ -110,7 +110,7 @@ void TestRenderFrameHost::SimulateNavigationStart(const GURL& url) {
   }
 
   OnDidStartLoading(true);
-  OnDidStartProvisionalLoad(url, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(url, base::TimeTicks::Now(), NavigationGestureUser);
   SimulateWillStartRequest(ui::PAGE_TRANSITION_LINK);
 }
 
@@ -199,7 +199,8 @@ void TestRenderFrameHost::SimulateNavigationError(const GURL& url,
 void TestRenderFrameHost::SimulateNavigationErrorPageCommit() {
   CHECK(navigation_handle());
   GURL error_url = GURL(kUnreachableWebDataURL);
-  OnDidStartProvisionalLoad(error_url, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(error_url, base::TimeTicks::Now(),
+                            NavigationGestureUser);
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
   params.nav_entry_id = 0;
   params.did_create_new_entry = true;
@@ -307,7 +308,8 @@ void TestRenderFrameHost::SendNavigateWithParameters(
   // DidStartProvisionalLoad may delete the pending entry that holds |url|,
   // so we keep a copy of it to use below.
   GURL url_copy(url);
-  OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now());
+  OnDidStartProvisionalLoad(url_copy, base::TimeTicks::Now(),
+                            NavigationGestureUser);
   SimulateWillStartRequest(transition);
 
   FrameHostMsg_DidCommitProvisionalLoad_Params params;
@@ -396,13 +398,14 @@ void TestRenderFrameHost::SendRendererInitiatedNavigationRequest(
   InitializeRenderFrameIfNeeded();
 
   if (IsBrowserSideNavigationEnabled()) {
-    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL,
-                                       has_user_gesture, false,
+    BeginNavigationParams begin_params(std::string(), net::LOAD_NORMAL, false,
                                        REQUEST_CONTEXT_TYPE_HYPERLINK);
     CommonNavigationParams common_params;
     common_params.url = url;
     common_params.referrer = Referrer(GURL(), blink::WebReferrerPolicyDefault);
     common_params.transition = ui::PAGE_TRANSITION_LINK;
+    common_params.gesture =
+        has_user_gesture ? NavigationGestureUser : NavigationGestureAuto;
     OnBeginNavigation(common_params, begin_params);
   }
 }
@@ -485,7 +488,7 @@ void TestRenderFrameHost::SimulateWillStartRequest(
     return;
   navigation_handle()->CallWillStartRequestForTesting(
       false /* is_post */, Referrer(GURL(), blink::WebReferrerPolicyDefault),
-      true /* user_gesture */, transition, false /* is_external_protocol */);
+      transition, false /* is_external_protocol */);
 }
 
 }  // namespace content

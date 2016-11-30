@@ -210,7 +210,8 @@ class CONTENT_EXPORT NavigationHandle {
       const GURL& url,
       RenderFrameHost* render_frame_host,
       bool committed = false,
-      net::Error error = net::OK);
+      net::Error error = net::OK,
+      bool has_user_gesture = false);
 
   // Registers a NavigationThrottle for tests. The throttle can
   // modify the request, pause the request or cancel the request. This will
@@ -226,7 +227,6 @@ class CONTENT_EXPORT NavigationHandle {
   virtual NavigationThrottle::ThrottleCheckResult
   CallWillStartRequestForTesting(bool is_post,
                                  const Referrer& sanitized_referrer,
-                                 bool has_user_gesture,
                                  ui::PageTransition transition,
                                  bool is_external_protocol) = 0;
 

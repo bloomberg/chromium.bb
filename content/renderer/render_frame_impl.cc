@@ -640,13 +640,16 @@ CommonNavigationParams MakeCommonNavigationParams(
       ? FrameMsg_Navigate_Type::RELOAD
       : FrameMsg_Navigate_Type::NORMAL;
 
+  NavigationGesture gesture = info.urlRequest.hasUserGesture()
+                                  ? NavigationGestureUser
+                                  : NavigationGestureAuto;
   const RequestExtraData* extra_data =
       static_cast<RequestExtraData*>(info.urlRequest.getExtraData());
   DCHECK(extra_data);
   return CommonNavigationParams(
       info.urlRequest.url(), referrer, extra_data->transition_type(),
-      navigation_type, true, info.replacesCurrentHistoryItem, ui_timestamp,
-      report_type, GURL(), GURL(),
+      navigation_type, gesture, true, info.replacesCurrentHistoryItem,
+      ui_timestamp, report_type, GURL(), GURL(),
       static_cast<LoFiState>(info.urlRequest.getLoFiState()),
       base::TimeTicks::Now(), info.urlRequest.httpMethod().latin1(),
       GetRequestBodyForWebURLRequest(info.urlRequest));
@@ -3377,10 +3380,11 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
   NavigationStateImpl* navigation_state = static_cast<NavigationStateImpl*>(
       document_state->navigation_state());
   bool is_top_most = !frame->parent();
+  NavigationGesture gesture = WebUserGestureIndicator::isProcessingUserGesture()
+                                  ? NavigationGestureUser
+                                  : NavigationGestureAuto;
   if (is_top_most) {
-    render_view_->set_navigation_gesture(
-        WebUserGestureIndicator::isProcessingUserGesture() ?
-            NavigationGestureUser : NavigationGestureAuto);
+    render_view_->set_navigation_gesture(gesture);
   } else if (ds->replacesCurrentHistoryItem()) {
     // Subframe navigations that don't add session history items must be
     // marked with AUTO_SUBFRAME. See also didFailProvisionalLoad for how we
@@ -3398,7 +3402,7 @@ void RenderFrameImpl::didStartProvisionalLoad(blink::WebLocalFrame* frame) {
     observer.DidStartProvisionalLoad();
 
   Send(new FrameHostMsg_DidStartProvisionalLoad(
-      routing_id_, ds->request().url(), navigation_start));
+      routing_id_, ds->request().url(), navigation_start, gesture));
 }
 
 void RenderFrameImpl::didReceiveServerRedirectForProvisionalLoad(
@@ -4776,8 +4780,8 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   params.searchable_form_url = internal_data->searchable_form_url();
   params.searchable_form_encoding = internal_data->searchable_form_encoding();
 
-  params.gesture = render_view_->navigation_gesture_;
-  render_view_->navigation_gesture_ = NavigationGestureUnknown;
+  params.gesture = render_view_->navigation_gesture();
+  render_view_->set_navigation_gesture(NavigationGestureUnknown);
 
   // Make navigation state a part of the DidCommitProvisionalLoad message so
   // that committed entry has it at all times.
@@ -5018,8 +5022,9 @@ void RenderFrameImpl::OnCommitNavigation(
   // If the request was initiated in the context of a user gesture then make
   // sure that the navigation also executes in the context of a user gesture.
   std::unique_ptr<blink::WebScopedUserGesture> gesture(
-      request_params.has_user_gesture ? new blink::WebScopedUserGesture(frame_)
-                                      : nullptr);
+      (common_params.gesture == NavigationGestureUser)
+          ? new blink::WebScopedUserGesture(frame_)
+          : nullptr);
 
   NavigateInternal(common_params, StartNavigationParams(), request_params,
                    std::move(stream_override));
@@ -5748,7 +5753,7 @@ void RenderFrameImpl::NavigateInternal(
   bool has_history_navigation_in_frame = false;
 
 #if defined(OS_ANDROID)
-  request.setHasUserGesture(request_params.has_user_gesture);
+  request.setHasUserGesture(common_params.gesture == NavigationGestureUser);
 #endif
 
   if (browser_side_navigation) {
@@ -6116,7 +6121,6 @@ void RenderFrameImpl::BeginNavigation(const NavigationPolicyInfo& info) {
   BeginNavigationParams begin_navigation_params(
       GetWebURLRequestHeaders(info.urlRequest),
       GetLoadFlagsForWebURLRequest(info.urlRequest),
-      info.urlRequest.hasUserGesture(),
       info.urlRequest.skipServiceWorker() !=
           blink::WebURLRequest::SkipServiceWorker::None,
       GetRequestContextTypeForWebURLRequest(info.urlRequest));

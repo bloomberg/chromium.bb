@@ -691,8 +691,12 @@ CommonNavigationParams NavigationEntryImpl::ConstructCommonNavigationParams(
   else
     method = (post_body.get() || GetHasPostData()) ? "POST" : "GET";
 
+  NavigationGesture gesture = NavigationGestureAuto;
+#if defined(OS_ANDROID)
+  gesture = has_user_gesture() ? NavigationGestureUser : NavigationGestureAuto;
+#endif
   return CommonNavigationParams(
-      dest_url, dest_referrer, GetTransitionType(), navigation_type,
+      dest_url, dest_referrer, GetTransitionType(), navigation_type, gesture,
       !IsViewSourceMode(), should_replace_entry(), ui_timestamp, report_type,
       GetBaseURLForDataURL(), GetHistoryURLForDataURL(), lofi_state,
       navigation_start, method, post_body ? post_body : post_data_);
@@ -734,17 +738,13 @@ RequestNavigationParams NavigationEntryImpl::ConstructRequestNavigationParams(
     current_length_to_send = 0;
   }
 
-  bool user_gesture = false;
-#if defined(OS_ANDROID)
-  user_gesture = has_user_gesture();
-#endif
   RequestNavigationParams request_params(
       GetIsOverridingUserAgent(), redirects, GetCanLoadLocalResources(),
       frame_entry.page_state(), GetUniqueID(), is_same_document_history_load,
       is_history_navigation_in_new_child, subframe_unique_names,
       has_committed_real_load, intended_as_new_entry, pending_offset_to_send,
       current_offset_to_send, current_length_to_send, IsViewSourceMode(),
-      should_clear_history_list(), user_gesture);
+      should_clear_history_list());
 #if defined(OS_ANDROID)
   if (GetDataURLAsString() &&
       GetDataURLAsString()->size() <= kMaxLengthOfDataURLString) {

@@ -26,10 +26,10 @@ class CONTENT_EXPORT InterstitialPageNavigatorImpl : public Navigator {
 
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
-  void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const base::TimeTicks& navigation_start) override;
+  void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                               const GURL& url,
+                               const base::TimeTicks& navigation_start,
+                               NavigationGesture gesture) override;
   void DidNavigate(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidCommitProvisionalLoad_Params& input_params,

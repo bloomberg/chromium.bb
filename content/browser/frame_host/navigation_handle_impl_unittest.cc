@@ -68,8 +68,12 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
   void SetUp() override {
     RenderViewHostImplTestHarness::SetUp();
     test_handle_ = NavigationHandleImpl::Create(
-        GURL(), main_test_rfh()->frame_tree_node(), true, false, false,
-        base::TimeTicks::Now(), 0, false);
+        GURL(), main_test_rfh()->frame_tree_node(),
+        true,   // is_renderer_initiated
+        false,  // is_same_page
+        false,  // is_srcdoc
+        base::TimeTicks::Now(), 0, NavigationGestureAuto,
+        false);  // started_from_context_menu
     EXPECT_EQ(REQUEST_CONTEXT_TYPE_UNSPECIFIED,
               test_handle_->request_context_type_);
     contents()->GetMainFrame()->InitializeRenderFrameIfNeeded();
@@ -108,7 +112,7 @@ class NavigationHandleImplTest : public RenderViewHostImplTestHarness {
     // It's safe to use base::Unretained since the NavigationHandle is owned by
     // the NavigationHandleImplTest.
     test_handle_->WillStartRequest(
-        "GET", nullptr, Referrer(), false, ui::PAGE_TRANSITION_LINK, false,
+        "GET", nullptr, Referrer(), ui::PAGE_TRANSITION_LINK, false,
         REQUEST_CONTEXT_TYPE_LOCATION,
         base::Bind(&NavigationHandleImplTest::UpdateThrottleCheckResult,
                    base::Unretained(this)));

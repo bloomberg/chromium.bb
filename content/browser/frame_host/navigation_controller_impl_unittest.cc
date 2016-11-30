@@ -3490,8 +3490,8 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   // can show them in new tabs when it is safe.
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url1, false);
   main_test_rfh()->PrepareForCommit();
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1,
-                                     base::TimeTicks::Now());
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), url1, base::TimeTicks::Now(), NavigationGestureAuto);
 
   // Simulate what happens if a BrowserURLHandler rewrites the URL, causing
   // the virtual URL to differ from the URL.
@@ -3505,8 +3505,8 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   // If the user clicks another link, we should replace the pending entry.
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url2,
-                                     base::TimeTicks::Now());
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), url2, base::TimeTicks::Now(), NavigationGestureAuto);
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetURL());
   EXPECT_EQ(url2, controller.GetPendingEntry()->GetVirtualURL());
 
@@ -3516,23 +3516,24 @@ TEST_F(NavigationControllerTest, RendererInitiatedPendingEntries) {
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetVirtualURL());
 
   // We should not replace the pending entry for an error URL.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1,
-                                     base::TimeTicks::Now());
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), url1, base::TimeTicks::Now(), NavigationGestureAuto);
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
   navigator->DidStartProvisionalLoad(
-      main_test_rfh(), GURL(kUnreachableWebDataURL), base::TimeTicks::Now());
+      main_test_rfh(), GURL(kUnreachableWebDataURL), base::TimeTicks::Now(),
+      NavigationGestureAuto);
   EXPECT_EQ(url1, controller.GetPendingEntry()->GetURL());
 
   // We should remember if the pending entry will replace the current one.
   // http://crbug.com/308444.
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url1,
-                                     base::TimeTicks::Now());
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), url1, base::TimeTicks::Now(), NavigationGestureAuto);
   controller.GetPendingEntry()->set_should_replace_entry(true);
 
   main_test_rfh()->SendRendererInitiatedNavigationRequest(url2, false);
   main_test_rfh()->PrepareForCommit();
-  navigator->DidStartProvisionalLoad(main_test_rfh(), url2,
-                                     base::TimeTicks::Now());
+  navigator->DidStartProvisionalLoad(
+      main_test_rfh(), url2, base::TimeTicks::Now(), NavigationGestureAuto);
   EXPECT_TRUE(controller.GetPendingEntry()->should_replace_entry());
   main_test_rfh()->SendNavigateWithReplacement(0, false, url2);
   EXPECT_EQ(url2, controller.GetLastCommittedEntry()->GetURL());

@@ -40,10 +40,10 @@ class CONTENT_EXPORT NavigatorImpl : public Navigator {
   // Navigator implementation.
   NavigatorDelegate* GetDelegate() override;
   NavigationController* GetController() override;
-  void DidStartProvisionalLoad(
-      RenderFrameHostImpl* render_frame_host,
-      const GURL& url,
-      const base::TimeTicks& navigation_start) override;
+  void DidStartProvisionalLoad(RenderFrameHostImpl* render_frame_host,
+                               const GURL& url,
+                               const base::TimeTicks& navigation_start,
+                               NavigationGesture gesture) override;
   void DidFailProvisionalLoadWithError(
       RenderFrameHostImpl* render_frame_host,
       const FrameHostMsg_DidFailProvisionalLoadWithError_Params& params)

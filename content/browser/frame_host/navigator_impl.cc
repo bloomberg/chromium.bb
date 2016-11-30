@@ -143,7 +143,8 @@ NavigationController* NavigatorImpl::GetController() {
 void NavigatorImpl::DidStartProvisionalLoad(
     RenderFrameHostImpl* render_frame_host,
     const GURL& url,
-    const base::TimeTicks& navigation_start) {
+    const base::TimeTicks& navigation_start,
+    NavigationGesture gesture) {
   bool is_main_frame = render_frame_host->frame_tree_node()->IsMainFrame();
   bool is_error_page = (url.spec() == kUnreachableWebDataURL);
   bool is_iframe_srcdoc = (url.spec() == kAboutSrcDocURL);
@@ -209,7 +210,8 @@ void NavigatorImpl::DidStartProvisionalLoad(
       is_renderer_initiated,
       false,             // is_same_page
       is_iframe_srcdoc,  // is_srcdoc
-      navigation_start, pending_nav_entry_id, started_from_context_menu));
+      navigation_start, pending_nav_entry_id, gesture,
+      started_from_context_menu));
 }
 
 void NavigatorImpl::DidFailProvisionalLoadWithError(
@@ -969,8 +971,9 @@ void NavigatorImpl::OnBeginNavigation(
   // request is not user-initiated.
   if (ongoing_navigation_request &&
       (ongoing_navigation_request->browser_initiated() ||
-       ongoing_navigation_request->begin_params().has_user_gesture) &&
-      !begin_params.has_user_gesture) {
+       ongoing_navigation_request->common_params().gesture ==
+           NavigationGestureUser) &&
+      common_params.gesture != NavigationGestureUser) {
     RenderFrameHost* current_frame_host =
         frame_tree_node->render_manager()->current_frame_host();
     current_frame_host->Send(

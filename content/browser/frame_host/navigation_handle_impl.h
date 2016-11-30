@@ -85,6 +85,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       bool is_srcdoc,
       const base::TimeTicks& navigation_start,
       int pending_nav_entry_id,
+      NavigationGesture gesture,
       bool started_from_context_menu);
   ~NavigationHandleImpl() override;
 
@@ -119,7 +120,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   NavigationThrottle::ThrottleCheckResult CallWillStartRequestForTesting(
       bool is_post,
       const Referrer& sanitized_referrer,
-      bool has_user_gesture,
       ui::PageTransition transition,
       bool is_external_protocol) override;
   NavigationThrottle::ThrottleCheckResult CallWillRedirectRequestForTesting(
@@ -208,7 +208,6 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
       const std::string& method,
       scoped_refptr<content::ResourceRequestBodyImpl> resource_request_body,
       const Referrer& sanitized_referrer,
-      bool has_user_gesture,
       ui::PageTransition transition,
       bool is_external_protocol,
       RequestContextType request_context_type,
@@ -309,6 +308,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
                        bool is_srcdoc,
                        const base::TimeTicks& navigation_start,
                        int pending_nav_entry_id,
+                       NavigationGesture gesture,
                        bool started_from_context_menu);
 
   NavigationThrottle::ThrottleCheckResult CheckWillStartRequest();
@@ -342,7 +342,7 @@ class CONTENT_EXPORT NavigationHandleImpl : public NavigationHandle {
   GURL url_;
   scoped_refptr<SiteInstance> starting_site_instance_;
   Referrer sanitized_referrer_;
-  bool has_user_gesture_;
+  NavigationGesture gesture_;
   ui::PageTransition transition_;
   bool is_external_protocol_;
   net::Error net_error_code_;

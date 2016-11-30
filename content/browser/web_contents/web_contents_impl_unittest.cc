@@ -432,9 +432,8 @@ TEST_F(WebContentsImplTest, DirectNavigationToViewSourceWebUI) {
   InitNavigateParams(&params, entry_id, true, kRewrittenURL,
                      ui::PAGE_TRANSITION_TYPED);
   main_test_rfh()->PrepareForCommit();
-  main_test_rfh()->OnMessageReceived(
-      FrameHostMsg_DidStartProvisionalLoad(1, kRewrittenURL,
-                                           base::TimeTicks::Now()));
+  main_test_rfh()->OnMessageReceived(FrameHostMsg_DidStartProvisionalLoad(
+      1, kRewrittenURL, base::TimeTicks::Now(), NavigationGestureAuto));
   main_test_rfh()->SendNavigateWithParams(&params);
 
   // This is the virtual URL.
