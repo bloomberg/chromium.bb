@@ -60,6 +60,11 @@ class AURA_EXPORT WindowManagerClient {
       const gfx::Vector2d& offset,
       const gfx::Insets& hit_area) = 0;
 
+  // Requests the client embedded in |window| to close the window. Only
+  // applicable to top-level windows. If a client is not embedded in |window|,
+  // this does nothing.
+  virtual void RequestClose(Window* window) = 0;
+
  protected:
   virtual ~WindowManagerClient() {}
 };
@@ -107,6 +112,12 @@ class AURA_EXPORT WindowManagerDelegate {
       const std::set<Window*>& client_windows,
       bool janky) = 0;
 
+  // When a new display is added OnWmWillCreateDisplay() is called, and then
+  // OnWmNewDisplay(). OnWmWillCreateDisplay() is intended to add the display
+  // to the set of displays (see Screen).
+  virtual void OnWmWillCreateDisplay(const display::Display& display) = 0;
+
+  // Called when a WindowTreeHostMus is created for a new display
   // Called when a display is added. |window_tree_host| is the WindowTreeHost
   // for the new display.
   virtual void OnWmNewDisplay(
@@ -130,6 +141,12 @@ class AURA_EXPORT WindowManagerDelegate {
       const base::Callback<void(bool)>& on_done) = 0;
 
   virtual void OnWmCancelMoveLoop(Window* window) = 0;
+
+  // Called when then client changes the client area of a window.
+  virtual void OnWmSetClientArea(
+      Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) = 0;
 
  protected:
   virtual ~WindowManagerDelegate() {}

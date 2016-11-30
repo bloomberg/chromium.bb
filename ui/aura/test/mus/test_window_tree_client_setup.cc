@@ -46,7 +46,7 @@ void TestWindowTreeClientSetup::CommonInit(
     WindowManagerDelegate* window_manager_delegate) {
   window_tree_.reset(new TestWindowTree);
   window_tree_client_ = base::MakeUnique<WindowTreeClient>(
-      window_tree_delegate, window_manager_delegate, nullptr);
+      nullptr, window_tree_delegate, window_manager_delegate);
   window_tree_->set_client(window_tree_client_.get());
 }
 

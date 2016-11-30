@@ -178,6 +178,8 @@ void AuraTestBase::OnWmClientJankinessChanged(
     const std::set<Window*>& client_windows,
     bool janky) {}
 
+void AuraTestBase::OnWmWillCreateDisplay(const display::Display& display) {}
+
 void AuraTestBase::OnWmNewDisplay(
     std::unique_ptr<WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
@@ -204,6 +206,11 @@ void AuraTestBase::OnWmPerformMoveLoop(
     const base::Callback<void(bool)>& on_done) {}
 
 void AuraTestBase::OnWmCancelMoveLoop(Window* window) {}
+
+void AuraTestBase::OnWmSetClientArea(
+    Window* window,
+    const gfx::Insets& insets,
+    const std::vector<gfx::Rect>& additional_client_areas) {}
 
 client::CaptureClient* AuraTestBase::GetCaptureClient() {
   return helper_->capture_client();

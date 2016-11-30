@@ -85,16 +85,19 @@ class AURA_EXPORT WindowTreeClient
       public client::TransientWindowClientObserver {
  public:
   explicit WindowTreeClient(
+      service_manager::Connector* connector,
       WindowTreeClientDelegate* delegate,
       WindowManagerDelegate* window_manager_delegate = nullptr,
       ui::mojom::WindowTreeClientRequest request = nullptr);
   ~WindowTreeClient() override;
 
   // Establishes the connection by way of the WindowTreeFactory.
-  void ConnectViaWindowTreeFactory(service_manager::Connector* connector);
+  void ConnectViaWindowTreeFactory();
 
   // Establishes the connection by way of WindowManagerWindowTreeFactory.
-  void ConnectAsWindowManager(service_manager::Connector* connector);
+  void ConnectAsWindowManager();
+
+  service_manager::Connector* connector() { return connector_; }
 
   bool connected() const { return tree_ != nullptr; }
   ClientSpecificId client_id() const { return client_id_; }
@@ -119,9 +122,6 @@ class AURA_EXPORT WindowTreeClient
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);
 
-  // TODO: this should move to WindowManager.
-  void RequestClose(Window* window);
-
   void AttachCompositorFrameSink(
       Id window_id,
       ui::mojom::CompositorFrameSinkType type,
@@ -132,6 +132,9 @@ class AURA_EXPORT WindowTreeClient
 
   // Returns the root of this connection.
   std::set<Window*> GetRoots();
+
+  // Returns true if the specified window was created by this client.
+  bool WasCreatedByThisClient(const WindowMus* window) const;
 
   // Returns the current location of the mouse on screen. Note: this method may
   // race the asynchronous initialization; but in that case we return (0, 0).
@@ -178,9 +181,6 @@ class AURA_EXPORT WindowTreeClient
   void RegisterWindowMus(WindowMus* window);
 
   WindowMus* GetWindowByServerId(Id id);
-
-  // Returns true if the specified window was created by this client.
-  bool WasCreatedByThisClient(const WindowMus* window) const;
 
   // Returns the oldest InFlightChange that matches |change|.
   InFlightChange* GetOldestInFlightChangeMatching(const InFlightChange& change);
@@ -411,6 +411,7 @@ class AURA_EXPORT WindowTreeClient
       Window* window,
       const gfx::Vector2d& offset,
       const gfx::Insets& hit_area) override;
+  void RequestClose(Window* window) override;
 
   // Overriden from WindowTreeHostMusDelegate:
   void OnWindowTreeHostBoundsWillChange(WindowTreeHostMus* window_tree_host,
@@ -450,6 +451,9 @@ class AURA_EXPORT WindowTreeClient
     return reinterpret_cast<base::subtle::Atomic32*>(
         cursor_location_mapping_.get());
   }
+
+  // This may be null in tests.
+  service_manager::Connector* connector_;
 
   // This is set once and only once when we get OnEmbed(). It gives the unique
   // id for this client.

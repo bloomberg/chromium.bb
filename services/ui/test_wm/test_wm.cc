@@ -62,9 +62,10 @@ class TestWM : public service_manager::Service,
     compositor_context_factory_ =
         base::MakeUnique<aura::MusContextFactory>(gpu_service_.get());
     aura_env_->set_context_factory(compositor_context_factory_.get());
-    window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(this, this);
+    window_tree_client_ = base::MakeUnique<aura::WindowTreeClient>(
+        context()->connector(), this, this);
     aura_env_->SetWindowTreeClient(window_tree_client_.get());
-    window_tree_client_->ConnectAsWindowManager(context()->connector());
+    window_tree_client_->ConnectAsWindowManager();
   }
 
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -126,6 +127,7 @@ class TestWM : public service_manager::Service,
                                   bool janky) override {
     // Don't care.
   }
+  void OnWmWillCreateDisplay(const display::Display& display) override {}
   void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override {
     // Only handles a single root.
@@ -154,6 +156,10 @@ class TestWM : public service_manager::Service,
     // Don't care.
   }
   void OnWmCancelMoveLoop(aura::Window* window) override {}
+  void OnWmSetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override {}
 
   // Dummy screen required to be the screen instance.
   std::unique_ptr<display::test::TestScreen> test_screen_;

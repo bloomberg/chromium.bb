@@ -145,10 +145,12 @@ float ScaleFactorForDisplay(Window* window) {
 }  // namespace
 
 WindowTreeClient::WindowTreeClient(
+    service_manager::Connector* connector,
     WindowTreeClientDelegate* delegate,
     WindowManagerDelegate* window_manager_delegate,
     mojo::InterfaceRequest<ui::mojom::WindowTreeClient> request)
-    : client_id_(0),
+    : connector_(connector),
+      client_id_(0),
       next_window_id_(1),
       next_change_id_(1),
       delegate_(delegate),
@@ -199,25 +201,23 @@ WindowTreeClient::~WindowTreeClient() {
   client::GetTransientWindowClient()->RemoveObserver(this);
 }
 
-void WindowTreeClient::ConnectViaWindowTreeFactory(
-    service_manager::Connector* connector) {
+void WindowTreeClient::ConnectViaWindowTreeFactory() {
   // The client id doesn't really matter, we use 101 purely for debugging.
   client_id_ = 101;
 
   ui::mojom::WindowTreeFactoryPtr factory;
-  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
   SetWindowTree(std::move(window_tree));
 }
 
-void WindowTreeClient::ConnectAsWindowManager(
-    service_manager::Connector* connector) {
+void WindowTreeClient::ConnectAsWindowManager() {
   DCHECK(window_manager_delegate_);
 
   ui::mojom::WindowManagerWindowTreeFactoryPtr factory;
-  connector->ConnectToInterface(ui::mojom::kServiceName, &factory);
+  connector_->ConnectToInterface(ui::mojom::kServiceName, &factory);
   ui::mojom::WindowTreePtr window_tree;
   factory->CreateWindowTree(GetProxy(&window_tree),
                             binding_.CreateInterfacePtrAndBind());
@@ -266,13 +266,6 @@ void WindowTreeClient::Embed(
   tree_->Embed(window_id, std::move(client), flags, callback);
 }
 
-void WindowTreeClient::RequestClose(Window* window) {
-  DCHECK(window);
-  if (window_manager_internal_client_)
-    window_manager_internal_client_->WmRequestClose(
-        WindowMus::Get(window)->server_id());
-}
-
 void WindowTreeClient::AttachCompositorFrameSink(
     Id window_id,
     ui::mojom::CompositorFrameSinkType type,
@@ -291,13 +284,6 @@ void WindowTreeClient::RegisterWindowMus(WindowMus* window) {
 WindowMus* WindowTreeClient::GetWindowByServerId(Id id) {
   IdToWindowMap::const_iterator it = windows_.find(id);
   return it != windows_.end() ? it->second : nullptr;
-}
-
-bool WindowTreeClient::WasCreatedByThisClient(const WindowMus* window) const {
-  // Windows created via CreateTopLevelWindow() are not owned by us, but have
-  // our client id. const_cast is required by set.
-  return HiWord(window->server_id()) == client_id_ &&
-         roots_.count(const_cast<WindowMus*>(window)) == 0;
 }
 
 InFlightChange* WindowTreeClient::GetOldestInFlightChangeMatching(
@@ -475,6 +461,8 @@ WindowTreeHost* WindowTreeClient::WmNewDisplayAddedImpl(
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn) {
   DCHECK(window_manager_delegate_);
+
+  window_manager_delegate_->OnWmWillCreateDisplay(display);
 
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       CreateWindowTreeHost(WindowMusType::DISPLAY, root_data, display.id());
@@ -733,6 +721,13 @@ std::set<Window*> WindowTreeClient::GetRoots() {
   return roots;
 }
 
+bool WindowTreeClient::WasCreatedByThisClient(const WindowMus* window) const {
+  // Windows created via CreateTopLevelWindow() are not owned by us, but have
+  // our client id. const_cast is required by set.
+  return HiWord(window->server_id()) == client_id_ &&
+         roots_.count(const_cast<WindowMus*>(window)) == 0;
+}
+
 gfx::Point WindowTreeClient::GetCursorScreenPoint() {
   // We raced initialization. Return (0, 0).
   if (!cursor_location_memory())
@@ -932,16 +927,20 @@ void WindowTreeClient::OnClientAreaChanged(
     uint32_t window_id,
     const gfx::Insets& new_client_area,
     const std::vector<gfx::Rect>& new_additional_client_areas) {
-  // TODO: client area.
-  // TODO(riajiang): Convert from pixel to DIP. (http://crbug.com/600815)
-  /*
-  Window* window = GetWindowByServerId(window_id);
-  if (window) {
-    WindowPrivate(window).LocalSetClientArea(
-        new_client_area,
-        new_additional_client_areas);
+  WindowMus* window = GetWindowByServerId(window_id);
+  if (!window)
+    return;
+
+  float device_scale_factor = ScaleFactorForDisplay(window->GetWindow());
+  std::vector<gfx::Rect> new_additional_client_areas_in_dip;
+  for (const gfx::Rect& area : new_additional_client_areas) {
+    new_additional_client_areas_in_dip.push_back(
+        gfx::ConvertRectToDIP(device_scale_factor, area));
   }
-  */
+  window_manager_delegate_->OnWmSetClientArea(
+      window->GetWindow(),
+      gfx::ConvertInsetsToDIP(device_scale_factor, new_client_area),
+      new_additional_client_areas_in_dip);
 }
 
 void WindowTreeClient::OnTransientWindowAdded(uint32_t window_id,
@@ -1468,6 +1467,13 @@ void WindowTreeClient::SetUnderlaySurfaceOffsetAndExtendedHitArea(
         WindowMus::Get(window)->server_id(), offset.x(), offset.y(),
         gfx::ConvertInsetsToDIP(ScaleFactorForDisplay(window), hit_area));
   }
+}
+
+void WindowTreeClient::RequestClose(Window* window) {
+  DCHECK(window);
+  if (window_manager_internal_client_)
+    window_manager_internal_client_->WmRequestClose(
+        WindowMus::Get(window)->server_id());
 }
 
 void WindowTreeClient::OnWindowTreeHostBoundsWillChange(

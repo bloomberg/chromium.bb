@@ -104,6 +104,7 @@ class AuraTestBase : public testing::Test,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
                                   bool janky) override;
+  void OnWmWillCreateDisplay(const display::Display& display) override;
   void OnWmNewDisplay(std::unique_ptr<WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override;
   void OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) override;
@@ -115,6 +116,10 @@ class AuraTestBase : public testing::Test,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
   void OnWmCancelMoveLoop(Window* window) override;
+  void OnWmSetClientArea(
+      Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override;
   client::CaptureClient* GetCaptureClient() override;
   PropertyConverter* GetPropertyConverter() override;
 

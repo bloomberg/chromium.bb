@@ -172,7 +172,7 @@ void MusClient::RemoveObserver(MusClientObserver* observer) {
 MusClient::MusClient(service_manager::Connector* connector,
                      const service_manager::Identity& identity,
                      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner)
-    : connector_(connector), identity_(identity) {
+    : identity_(identity) {
   DCHECK(!instance_);
   instance_ = this;
   // TODO(msw): Avoid this... use some default value? Allow clients to extend?
@@ -186,9 +186,9 @@ MusClient::MusClient(service_manager::Connector* connector,
   aura::Env::GetInstance()->set_context_factory(
       compositor_context_factory_.get());
   window_tree_client_ =
-      base::MakeUnique<aura::WindowTreeClient>(this, nullptr, nullptr);
+      base::MakeUnique<aura::WindowTreeClient>(connector, this);
   aura::Env::GetInstance()->SetWindowTreeClient(window_tree_client_.get());
-  window_tree_client_->ConnectViaWindowTreeFactory(connector_);
+  window_tree_client_->ConnectViaWindowTreeFactory();
 
   pointer_watcher_event_router_ =
       base::MakeUnique<PointerWatcherEventRouter2>(window_tree_client_.get());

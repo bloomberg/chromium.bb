@@ -80,8 +80,6 @@ class VIEWS_MUS_EXPORT MusClient
   static std::map<std::string, std::vector<uint8_t>>
   ConfigurePropertiesFromParams(const Widget::InitParams& init_params);
 
-  service_manager::Connector* connector() { return connector_; }
-
   aura::WindowTreeClient* window_tree_client() {
     return window_tree_client_.get();
   }
@@ -128,7 +126,6 @@ class VIEWS_MUS_EXPORT MusClient
 
   static MusClient* instance_;
 
-  service_manager::Connector* connector_;
   service_manager::Identity identity_;
 
   base::ObserverList<MusClientObserver> observer_list_;
