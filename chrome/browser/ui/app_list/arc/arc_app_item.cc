@@ -46,7 +46,7 @@ const char* ArcAppItem::GetItemType() const {
 }
 
 void ArcAppItem::Activate(int event_flags) {
-  if (!arc::LaunchApp(profile(), id()))
+  if (!arc::LaunchApp(profile(), id(), event_flags))
     return;
 
   // Manually close app_list view because focus is not changed on ARC app start,

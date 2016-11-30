@@ -171,7 +171,7 @@ void LauncherControllerHelper::LaunchApp(const std::string& app_id,
                                          int event_flags) {
   const ArcAppListPrefs* arc_prefs = GetArcAppListPrefs();
   if (arc_prefs && arc_prefs->IsRegistered(app_id)) {
-    arc::LaunchApp(profile_, app_id);
+    arc::LaunchApp(profile_, app_id, event_flags);
     return;
   }
 

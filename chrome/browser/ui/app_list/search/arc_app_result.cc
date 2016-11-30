@@ -47,7 +47,7 @@ void ArcAppResult::ExecuteLaunchCommand(int event_flags) {
 void ArcAppResult::Open(int event_flags) {
   RecordHistogram(APP_SEARCH_RESULT);
 
-  if (!arc::LaunchApp(profile(), app_id()))
+  if (!arc::LaunchApp(profile(), app_id(), event_flags))
     return;
 
   // Manually close app_list view because focus is not changed on ARC app start,
