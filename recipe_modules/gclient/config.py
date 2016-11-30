@@ -394,14 +394,19 @@ def chromium_webrtc(c):
 
 @config_ctx(includes=['chromium_webrtc'])
 def chromium_webrtc_tot(c):
-  """Configures ToT revisions for WebRTC and Libjingle for Chromium.
+  """Configures WebRTC ToT revision for Chromium src/third_party/webrtc.
 
-  Sets up ToT instead of the DEPS-pinned revision for WebRTC and Libjingle.
+  Sets up ToT instead of the DEPS-pinned revision for WebRTC.
   This is used for some bots to provide data about which revisions are green to
   roll into Chromium.
   """
   c.revisions['src'] = 'HEAD'
   c.revisions['src/third_party/webrtc'] = 'HEAD'
+
+  # Needed to get the testers to properly sync the right revision.
+  c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
+  c.parent_got_revision_mapping['parent_got_webrtc_revision'] = (
+      'got_webrtc_revision')
 
 @config_ctx()
 def webrtc_test_resources(c):
