@@ -26,7 +26,7 @@
 #ifndef StyleFetchedImageSet_h
 #define StyleFetchedImageSet_h
 
-#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "core/style/StyleImage.h"
 #include "platform/geometry/LayoutSize.h"
 #include "platform/weborigin/KURL.h"
@@ -38,9 +38,9 @@ class CSSImageSetValue;
 
 // This class keeps one cached image and has access to a set of alternatives.
 
-class StyleFetchedImageSet final : public StyleImage, private ResourceClient {
+class StyleFetchedImageSet final : public StyleImage,
+                                   public ImageResourceObserver {
   USING_PRE_FINALIZER(StyleFetchedImageSet, dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(StyleFetchedImageSet);
 
  public:
   static StyleFetchedImageSet* create(ImageResource* image,

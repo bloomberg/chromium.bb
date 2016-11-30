@@ -41,14 +41,14 @@ StyleFetchedImageSet::StyleFetchedImageSet(ImageResource* image,
       m_imageSetValue(value),
       m_url(url) {
   m_isImageResourceSet = true;
-  m_bestFitImage->addClient(this);
+  m_bestFitImage->addObserver(this);
   ThreadState::current()->registerPreFinalizer(this);
 }
 
 StyleFetchedImageSet::~StyleFetchedImageSet() {}
 
 void StyleFetchedImageSet::dispose() {
-  m_bestFitImage->removeClient(this);
+  m_bestFitImage->removeObserver(this);
   m_bestFitImage = nullptr;
 }
 
@@ -139,7 +139,6 @@ DEFINE_TRACE(StyleFetchedImageSet) {
   visitor->trace(m_bestFitImage);
   visitor->trace(m_imageSetValue);
   StyleImage::trace(visitor);
-  ResourceClient::trace(visitor);
 }
 
 }  // namespace blink
