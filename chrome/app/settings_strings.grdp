@@ -2127,9 +2127,6 @@
     <message name="IDS_SETTINGS_CHANGE_PICTURE_TAKE_PHOTO" desc="The text on the button to take photo of the current user.">
       Take photo
     </message>
-    <message name="IDS_SETTINGS_CHANGE_PICTURE_PHOTO_FROM_CAMERA" desc="The accessible text on the icon in the user image grid for a camera photo, when a photo has been captured.">
-      Photo from internal camera
-    </message>
     <message name="IDS_SETTINGS_CHANGE_PICTURE_DISCARD_PHOTO" desc="The text on the button to discard the captured photo of the current user.">
       Discard photo
     </message>

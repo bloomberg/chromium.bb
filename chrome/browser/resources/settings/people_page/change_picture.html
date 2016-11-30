@@ -109,7 +109,8 @@
               data-type$="[[selectionTypesEnum_.PROFILE]]"
               src="[[profileImageUrl_]]" title="$i18n{profilePhotoLoading}">
           <img id="oldImage" data-type$="[[selectionTypesEnum_.OLD]]"
-              src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]">
+              src="[[oldImageUrl_]]" hidden="[[!oldImageUrl_]]"
+              title="$i18n{oldPhoto}">
           <template is="dom-repeat" items="[[defaultImages_]]">
             <img data-type$="[[selectionTypesEnum_.DEFAULT]]"
                 data-default-image-index$="[[index]]" src="[[item.url]]"
