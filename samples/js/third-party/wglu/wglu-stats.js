@@ -446,7 +446,7 @@ var WGLUStats = (function() {
     };
   }
 
-  var now = /*( performance && performance.now ) ? performance.now.bind( performance ) :*/ Date.now;
+  var now = (window.performance && performance.now) ? performance.now.bind(performance) : Date.now;
 
   var Stats = function(gl) {
     this.gl = gl;
