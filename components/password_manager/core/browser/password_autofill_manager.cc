@@ -218,11 +218,20 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
     if (!is_context_secure &&
         choice == security_state::switches::
                       kMarkHttpWithPasswordsOrCcWithChipAndFormWarning) {
+      std::string icon_str;
+
+      // Show http info icon for http sites.
+      if (origin.is_valid() && origin.SchemeIs("http")) {
+        icon_str = "httpWarning";
+      } else {
+        // Show https_invalid icon for broken https sites.
+        icon_str = "httpsInvalid";
+      }
+
       autofill::Suggestion password_field_http_warning_suggestion(
-          l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE));
-      password_field_http_warning_suggestion.frontend_id =
-          autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
+          l10n_util::GetStringUTF8(IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE),
+          std::string(), icon_str,
+          autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
       suggestions.insert(suggestions.begin(),
                          password_field_http_warning_suggestion);
     }

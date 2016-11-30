@@ -183,6 +183,21 @@ bool IsCreditCardExpirationType(ServerFieldType type) {
          type == CREDIT_CARD_EXP_DATE_4_DIGIT_YEAR;
 }
 
+// Create http bad warning message at the top of autofill popup list showing
+// "Payment not secure" when users are on http sites or broken https sites.
+Suggestion CreateHttpWarningMessageSuggestionItem(const GURL& source_url) {
+  Suggestion cc_field_http_warning_suggestion(
+      l10n_util::GetStringUTF16(IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE));
+  cc_field_http_warning_suggestion.frontend_id =
+      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
+  cc_field_http_warning_suggestion.icon =
+      (source_url.is_valid() && source_url.SchemeIs("http"))
+          ? base::ASCIIToUTF16("httpWarning")
+          : base::ASCIIToUTF16("httpsInvalid");
+
+  return cc_field_http_warning_suggestion;
+}
+
 }  // namespace
 
 AutofillManager::AutofillManager(
@@ -576,12 +591,9 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         // On top of the explanation message, first show a "Payment not secure"
         // message.
         if (IsCreditCardAutofillHttpWarningEnabled()) {
-          Suggestion cc_field_http_warning_suggestion(l10n_util::GetStringUTF16(
-              IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE));
-          cc_field_http_warning_suggestion.frontend_id =
-              POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE;
           suggestions.insert(suggestions.begin(),
-                             cc_field_http_warning_suggestion);
+                             CreateHttpWarningMessageSuggestionItem(
+                                 form_structure->source_url()));
         }
       } else {
         bool section_is_autofilled =

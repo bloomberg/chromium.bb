@@ -15,6 +15,10 @@
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/native_widget_types.h"
 
+namespace gfx {
+class ImageSkia;
+}
+
 namespace autofill {
 
 // Helper class which keeps tracks of popup bounds and related view information.
@@ -62,6 +66,9 @@ class AutofillPopupLayoutModel {
 
   // Returns the value font color of the row item according to its |index|.
   SkColor GetValueFontColorForRow(size_t index) const;
+
+  // Returns the icon image of the item at |index| in the popup.
+  gfx::ImageSkia GetIconImage(size_t index) const;
 #endif
 
   // Convert a y-coordinate to the closest line.

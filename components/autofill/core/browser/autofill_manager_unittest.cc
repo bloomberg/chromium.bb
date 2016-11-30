@@ -1629,7 +1629,8 @@ TEST_F(AutofillManagerTest,
       kDefaultPageID,
       Suggestion(l10n_util::GetStringUTF8(
                      IDS_AUTOFILL_CREDIT_CARD_HTTP_WARNING_MESSAGE),
-                 "", "", POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE),
+                 "", "httpWarning",
+                 POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE),
       Suggestion(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_WARNING_INSECURE_CONNECTION),
           "", "", POPUP_ITEM_ID_INSECURE_CONTEXT_PAYMENT_DISABLED_MESSAGE));

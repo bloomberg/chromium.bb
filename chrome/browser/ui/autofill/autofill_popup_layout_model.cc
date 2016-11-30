@@ -16,8 +16,12 @@
 #include "components/grit/components_scaled_resources.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/color_palette.h"
+#include "ui/gfx/color_utils.h"
 #include "ui/gfx/font_list.h"
 #include "ui/gfx/geometry/rect_conversions.h"
+#include "ui/gfx/image/image_skia.h"
+#include "ui/gfx/paint_vector_icon.h"
+#include "ui/gfx/vector_icons_public.h"
 
 namespace autofill {
 
@@ -32,6 +36,8 @@ const size_t kSeparatorHeight = 1;
 #if !defined(OS_ANDROID)
 // Size difference between the normal font and the smaller font, in pixels.
 const int kSmallerFontSizeDelta = -1;
+
+const int kHttpWarningIconWidth = 16;
 #endif
 
 const struct {
@@ -47,6 +53,8 @@ const struct {
     {"mirCC", IDR_AUTOFILL_CC_MIR},
     {"visaCC", IDR_AUTOFILL_CC_VISA},
 #if defined(OS_ANDROID)
+    {"httpWarning", IDR_AUTOFILL_HTTP_WARNING},
+    {"httpsInvalid", IDR_AUTOFILL_HTTPS_INVALID_WARNING},
     {"scanCreditCardIcon", IDR_AUTOFILL_CC_SCAN_NEW},
     {"settings", IDR_AUTOFILL_SETTINGS},
 #endif
@@ -119,10 +127,7 @@ int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
   // Add the Autofill icon size, if required.
   const base::string16& icon = suggestions[row].icon;
   if (!icon.empty()) {
-    int icon_width = ui::ResourceBundle::GetSharedInstance()
-                         .GetImageNamed(GetIconResourceID(icon))
-                         .Width();
-    row_size += icon_width + kIconPadding;
+    row_size += GetIconImage(row).width() + kIconPadding;
   }
 
   // Add the padding at the end.
@@ -192,6 +197,29 @@ SkColor AutofillPopupLayoutModel::GetValueFontColorForRow(size_t index) const {
     default:
       return kValueTextColor;
   }
+}
+
+gfx::ImageSkia AutofillPopupLayoutModel::GetIconImage(size_t index) const {
+  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+  const base::string16& icon_str = suggestions[index].icon;
+
+  // For http warning message, get icon images from VectorIconId, which is the
+  // same as security indicator icons in location bar.
+  if (suggestions[index].frontend_id ==
+      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+    if (icon_str == base::ASCIIToUTF16("httpWarning")) {
+      return gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTP,
+                                   kHttpWarningIconWidth, gfx::kChromeIconGrey);
+    }
+    DCHECK_EQ(icon_str, base::ASCIIToUTF16("httpsInvalid"));
+    return gfx::CreateVectorIcon(gfx::VectorIconId::LOCATION_BAR_HTTPS_INVALID,
+                                 kHttpWarningIconWidth, gfx::kGoogleRed700);
+  }
+
+  // For other suggestion entries, get icon from PNG files.
+  int icon_id = GetIconResourceID(icon_str);
+  DCHECK_NE(-1, icon_id);
+  return *ui::ResourceBundle::GetSharedInstance().GetImageSkiaNamed(icon_id);
 }
 #endif
 

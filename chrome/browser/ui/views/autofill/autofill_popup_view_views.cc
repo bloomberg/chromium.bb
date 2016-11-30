@@ -9,7 +9,6 @@
 #include "chrome/browser/ui/autofill/popup_constants.h"
 #include "components/autofill/core/browser/popup_item_ids.h"
 #include "components/autofill/core/browser/suggestion.h"
-#include "ui/base/resource/resource_bundle.h"
 #include "ui/events/keycodes/keyboard_codes.h"
 #include "ui/gfx/canvas.h"
 #include "ui/gfx/geometry/point.h"
@@ -90,22 +89,19 @@ void AutofillPopupViewViews::DrawAutofillEntry(gfx::Canvas* canvas,
              : entry_rect.right() - AutofillPopupLayoutModel::kEndPadding;
 
   // Draw the Autofill icon, if one exists
-  ui::ResourceBundle& rb = ui::ResourceBundle::GetSharedInstance();
   int row_height = controller_->layout_model().GetRowBounds(index).height();
   if (!controller_->GetSuggestionAt(index).icon.empty()) {
-    int icon = controller_->layout_model().GetIconResourceID(
-        controller_->GetSuggestionAt(index).icon);
-    DCHECK_NE(-1, icon);
-    const gfx::ImageSkia* image = rb.GetImageSkiaNamed(icon);
-    int icon_y = entry_rect.y() + (row_height - image->height()) / 2;
+    const gfx::ImageSkia image =
+        controller_->layout_model().GetIconImage(index);
+    int icon_y = entry_rect.y() + (row_height - image.height()) / 2;
 
-    x_align_left += is_rtl ? 0 : -image->width();
+    x_align_left += is_rtl ? 0 : -image.width();
 
-    canvas->DrawImageInt(*image, x_align_left, icon_y);
+    canvas->DrawImageInt(image, x_align_left, icon_y);
 
-    x_align_left +=
-        is_rtl ? image->width() + AutofillPopupLayoutModel::kIconPadding
-               : -AutofillPopupLayoutModel::kIconPadding;
+    x_align_left += is_rtl
+                        ? image.width() + AutofillPopupLayoutModel::kIconPadding
+                        : -AutofillPopupLayoutModel::kIconPadding;
   }
 
   // Draw the label text.

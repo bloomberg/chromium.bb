@@ -76,6 +76,9 @@ LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT, R.drawable.cvc_icon)
 LINK_RESOURCE_ID(IDR_CREDIT_CARD_CVC_HINT_AMEX, R.drawable.cvc_icon_amex)
 LINK_RESOURCE_ID(IDR_AUTOFILL_SETTINGS,
                  org.chromium.chrome.R.drawable.ic_settings)
+LINK_RESOURCE_ID(IDR_AUTOFILL_HTTP_WARNING, R.drawable.omnibox_info)
+LINK_RESOURCE_ID(IDR_AUTOFILL_HTTPS_INVALID_WARNING,
+                 R.drawable.omnibox_https_invalid)
 
 // PaymentRequest images.
 LINK_RESOURCE_ID(IDR_AUTOFILL_PR_AMEX, R.drawable.pr_amex)
