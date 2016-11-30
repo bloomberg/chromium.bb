@@ -3069,10 +3069,12 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
 - (BOOL)handleWindowHistoryGoMessage:(base::DictionaryValue*)message
                              context:(NSDictionary*)context {
-  int delta;
-  message->GetInteger("value", &delta);
-  [self goDelta:delta];
-  return YES;
+  int delta = 0;
+  if (message->GetInteger("value", &delta)) {
+    [self goDelta:delta];
+    return YES;
+  }
+  return NO;
 }
 
 - (BOOL)handleWindowHistoryWillChangeStateMessage:(base::DictionaryValue*)unused
