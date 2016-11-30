@@ -8893,6 +8893,7 @@ static int64_t handle_inter_mode(
     if (!is_comp_pred && mbmi->motion_mode == SIMPLE_TRANSLATION)
       single_skippable[this_mode][refs[0]] = rd_stats->skip;
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
+
 #if CONFIG_GLOBAL_MOTION
     if (this_mode == ZEROMV
 #if CONFIG_EXT_INTER
@@ -8902,6 +8903,21 @@ static int64_t handle_inter_mode(
       rd_stats->rate += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[0]);
       if (is_comp_pred)
         rd_stats->rate += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[1]);
+      if (is_nontrans_global_motion(xd)) {
+        rd_stats->rate -= rs;
+#if CONFIG_DUAL_FILTER
+        mbmi->interp_filter[0] = cm->interp_filter == SWITCHABLE
+                                     ? EIGHTTAP_REGULAR
+                                     : cm->interp_filter;
+        mbmi->interp_filter[1] = cm->interp_filter == SWITCHABLE
+                                     ? EIGHTTAP_REGULAR
+                                     : cm->interp_filter;
+#else
+        mbmi->interp_filter = cm->interp_filter == SWITCHABLE
+                                  ? EIGHTTAP_REGULAR
+                                  : cm->interp_filter;
+#endif  // CONFIG_DUAL_FILTER
+      }
     }
 #endif  // CONFIG_GLOBAL_MOTION
 
@@ -11046,6 +11062,30 @@ PALETTE_EXIT:
   *mbmi = best_mbmode;
   x->skip |= best_skip2;
 
+// Note: this section is needed since the mode may have been forced to
+// ZEROMV by the all-zero mode handling of ref-mv.
+#if CONFIG_GLOBAL_MOTION
+  if (mbmi->mode == ZEROMV
+#if CONFIG_EXT_INTER
+      || mbmi->mode == ZERO_ZEROMV
+#endif  // CONFIG_EXT_INTER
+      ) {
+    if (is_nontrans_global_motion(xd)) {
+#if CONFIG_DUAL_FILTER
+      mbmi->interp_filter[0] = cm->interp_filter == SWITCHABLE
+                                   ? EIGHTTAP_REGULAR
+                                   : cm->interp_filter;
+      mbmi->interp_filter[1] = cm->interp_filter == SWITCHABLE
+                                   ? EIGHTTAP_REGULAR
+                                   : cm->interp_filter;
+#else
+      mbmi->interp_filter = cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR
+                                                            : cm->interp_filter;
+#endif  // CONFIG_DUAL_FILTER
+    }
+  }
+#endif  // CONFIG_GLOBAL_MOTION
+
 #if CONFIG_REF_MV
   for (i = 0; i < 1 + has_second_ref(mbmi); ++i) {
     if (mbmi->mode != NEWMV)
@@ -11977,6 +12017,29 @@ void av1_rd_pick_inter_mode_sub8x8(const struct AV1_COMP *cpi,
     mbmi->mv[0].as_int = xd->mi[0]->bmi[3].as_mv[0].as_int;
     mbmi->mv[1].as_int = xd->mi[0]->bmi[3].as_mv[1].as_int;
   }
+
+// Note: this section is needed since the mode may have been forced to ZEROMV
+#if CONFIG_GLOBAL_MOTION
+  if (mbmi->mode == ZEROMV
+#if CONFIG_EXT_INTER
+      || mbmi->mode == ZERO_ZEROMV
+#endif  // CONFIG_EXT_INTER
+      ) {
+    if (is_nontrans_global_motion(xd)) {
+#if CONFIG_DUAL_FILTER
+      mbmi->interp_filter[0] = cm->interp_filter == SWITCHABLE
+                                   ? EIGHTTAP_REGULAR
+                                   : cm->interp_filter;
+      mbmi->interp_filter[1] = cm->interp_filter == SWITCHABLE
+                                   ? EIGHTTAP_REGULAR
+                                   : cm->interp_filter;
+#else
+      mbmi->interp_filter = cm->interp_filter == SWITCHABLE ? EIGHTTAP_REGULAR
+                                                            : cm->interp_filter;
+#endif  // CONFIG_DUAL_FILTER
+    }
+  }
+#endif  // CONFIG_GLOBAL_MOTION
 
   for (i = 0; i < REFERENCE_MODES; ++i) {
     if (best_pred_rd[i] == INT64_MAX)

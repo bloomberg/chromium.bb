@@ -1200,7 +1200,10 @@ static void update_state(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_WARPED_MOTION
           && mbmi->motion_mode != WARPED_CAUSAL
 #endif  // CONFIG_WARPED_MOTION
-          ) {
+#if CONFIG_GLOBAL_MOTION
+          && !is_nontrans_global_motion(xd)
+#endif  // CONFIG_GLOBAL_MOTION
+              ) {
 #if CONFIG_DUAL_FILTER
         update_filter_type_count(td->counts, xd, mbmi);
 #else
@@ -1377,6 +1380,9 @@ static void update_state_supertx(const AV1_COMP *const cpi, ThreadData *td,
 #if CONFIG_DUAL_FILTER
         && av1_is_interp_needed(xd)
 #endif
+#if CONFIG_GLOBAL_MOTION
+        && !is_nontrans_global_motion(xd)
+#endif  // CONFIG_GLOBAL_MOTION
             ) {
 #if CONFIG_DUAL_FILTER
       update_filter_type_count(td->counts, xd, mbmi);

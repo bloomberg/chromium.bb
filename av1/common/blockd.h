@@ -1100,6 +1100,46 @@ static INLINE void av1_get_block_dimensions(BLOCK_SIZE bsize, int plane,
   if (cols_within_bounds) *cols_within_bounds = block_cols >> pd->subsampling_x;
 }
 
+#if CONFIG_GLOBAL_MOTION
+static INLINE int is_nontrans_global_motion(const MACROBLOCKD *xd) {
+  const MODE_INFO *mi = xd->mi[0];
+  const MB_MODE_INFO *const mbmi = &mi->mbmi;
+  int ref;
+#if CONFIG_CB4X4
+  const int unify_bsize = 1;
+#else
+  const int unify_bsize = 0;
+#endif
+
+  // First check if all modes are ZEROMV
+  if (mbmi->sb_type >= BLOCK_8X8 || unify_bsize) {
+#if CONFIG_EXT_INTER
+    if (mbmi->mode != ZEROMV && mbmi->mode != ZERO_ZEROMV) return 0;
+#else
+    if (mbmi->mode != ZEROMV) return 0;
+#endif  // CONFIG_EXT_INTER
+  } else {
+#if CONFIG_EXT_INTER
+    if (mi->bmi[0].as_mode != ZEROMV || mi->bmi[1].as_mode != ZEROMV ||
+        mi->bmi[2].as_mode != ZEROMV || mi->bmi[3].as_mode != ZEROMV ||
+        mi->bmi[0].as_mode != ZERO_ZEROMV ||
+        mi->bmi[1].as_mode != ZERO_ZEROMV ||
+        mi->bmi[2].as_mode != ZERO_ZEROMV || mi->bmi[3].as_mode != ZERO_ZEROMV)
+      return 0;
+#else
+    if (mi->bmi[0].as_mode != ZEROMV || mi->bmi[1].as_mode != ZEROMV ||
+        mi->bmi[2].as_mode != ZEROMV || mi->bmi[3].as_mode != ZEROMV)
+      return 0;
+#endif  // CONFIG_EXT_INTER
+  }
+  // Now check if all global motion is non translational
+  for (ref = 0; ref < 1 + has_second_ref(mbmi); ++ref) {
+    if (xd->global_motion[mbmi->ref_frame[ref]].wmtype <= TRANSLATION) return 0;
+  }
+  return 1;
+}
+#endif  // CONFIG_GLOBAL_MOTION
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif

@@ -1458,6 +1458,7 @@ static void decode_token_and_recon_block(AV1Decoder *const pbi,
   MB_MODE_INFO *mbmi;
 
   mbmi = set_offsets(cm, xd, bsize, mi_row, mi_col, bw, bh, x_mis, y_mis);
+
 #if CONFIG_DELTA_Q
   if (cm->delta_q_present_flag) {
     int i;

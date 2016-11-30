@@ -22,7 +22,7 @@
 #define SEARCH_SZ 9
 #define SEARCH_SZ_BY2 ((SEARCH_SZ - 1) / 2)
 
-#define THRESHOLD_NCC 0.80
+#define THRESHOLD_NCC 0.75
 
 static double compute_variance(unsigned char *im, int stride, int x, int y,
                                double *mean) {
