@@ -109,12 +109,19 @@ void ClearBrowsingDataHandler::OnJavascriptAllowed() {
 
   if (sync_service_)
     sync_service_observer_.Add(sync_service_);
+
+  DCHECK(counters_.empty());
+  for (const std::string& pref : kCounterPrefs) {
+    AddCounter(
+        BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref));
+  }
 }
 
 void ClearBrowsingDataHandler::OnJavascriptDisallowed() {
   profile_pref_registrar_.RemoveAll();
   sync_service_observer_.RemoveAll();
   task_observer_.reset();
+  counters_.clear();
 }
 
 void ClearBrowsingDataHandler::HandleClearBrowsingData(
@@ -259,13 +266,8 @@ void ClearBrowsingDataHandler::HandleInitialize(const base::ListValue* args) {
   const base::Value* callback_id;
   CHECK(args->Get(0, &callback_id));
 
+  // Needed because WebUI doesn't handle renderer crashes. See crbug.com/610450.
   task_observer_.reset();
-  counters_.clear();
-
-  for (const std::string& pref : kCounterPrefs) {
-    AddCounter(
-        BrowsingDataCounterFactory::GetForProfileAndPref(profile_, pref));
-  }
 
   OnStateChanged();
   RefreshHistoryNotice();
