@@ -41,3 +41,16 @@ TEST(OfflineURLUtilsTest, FileURLForDistilledURLTest) {
   EXPECT_TRUE(resource_url.SchemeIsFile());
   EXPECT_EQ("/profile_path/Offline/MD5/", resource_url.path());
 }
+
+TEST(OfflineURLUtilsTest, IsOfflineURL) {
+  EXPECT_FALSE(reading_list::IsOfflineURL(GURL()));
+  EXPECT_FALSE(reading_list::IsOfflineURL(GURL("chrome://")));
+  EXPECT_FALSE(reading_list::IsOfflineURL(GURL("chrome://offline-foobar")));
+  EXPECT_FALSE(reading_list::IsOfflineURL(GURL("http://offline/")));
+  EXPECT_FALSE(reading_list::IsOfflineURL(GURL("http://chrome://offline/")));
+  EXPECT_TRUE(reading_list::IsOfflineURL(GURL("chrome://offline")));
+  EXPECT_TRUE(reading_list::IsOfflineURL(GURL("chrome://offline/")));
+  EXPECT_TRUE(reading_list::IsOfflineURL(GURL("chrome://offline/foobar")));
+  EXPECT_TRUE(
+      reading_list::IsOfflineURL(GURL("chrome://offline/foobar?foo=bar")));
+}

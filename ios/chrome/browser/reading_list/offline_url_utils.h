@@ -23,6 +23,9 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
                             const base::FilePath& profile_path,
                             GURL* resources_root_url);
 
+// Returns whether the URL points to a chrome offline URL.
+bool IsOfflineURL(const GURL& url);
+
 }  // namespace reading_list
 
 #endif  // IOS_CHROME_BROWSER_READING_LIST_OFFLINE_URL_UTILS_H_

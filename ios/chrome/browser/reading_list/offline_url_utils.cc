@@ -35,4 +35,8 @@ GURL FileURLForDistilledURL(const GURL& distilled_url,
   }
   return file_url;
 }
+
+bool IsOfflineURL(const GURL& url) {
+  return url.SchemeIs(kChromeUIScheme) && url.host() == kChromeUIOfflineHost;
+}
 }
