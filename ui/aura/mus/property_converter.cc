@@ -39,6 +39,8 @@ PropertyConverter::PropertyConverter() {
   RegisterProperty(client::kNameKey, ui::mojom::WindowManager::kName_Property);
   RegisterProperty(client::kPreferredSize,
                    ui::mojom::WindowManager::kPreferredSize_Property);
+  RegisterProperty(client::kResizeBehaviorKey,
+                   ui::mojom::WindowManager::kResizeBehavior_Property);
   RegisterProperty(client::kRestoreBoundsKey,
                    ui::mojom::WindowManager::kRestoreBounds_Property);
   RegisterProperty(client::kShowStateKey,
