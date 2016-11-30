@@ -1766,13 +1766,13 @@
           Leaving this policy not set will allow the users to choose the proxy settings on their own.''',
           'arc_support': '''You cannot force Android apps to use a proxy. A subset of proxy settings is made available to Android apps, which they may voluntarily choose to honor:
 
-          If you choose "never use a proxy server," Android apps are informed that no proxy is configured.
+          If you choose to never use a proxy server, Android apps are informed that no proxy is configured.
 
-          If you choose "use system proxy settings" or "fixed server proxy," Android apps are provided with the http proxy server address and port.
+          If you choose to use system proxy settings or a fixed server proxy, Android apps are provided with the http proxy server address and port.
 
-          If you choose "auto detect proxy server," the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
+          If you choose to auto detect the proxy server, the script URL "http://wpad/wpad.dat" is provided to Android apps. No other part of the proxy auto-detection protocol is used.
 
-          If you choose ".pac proxy script," the script URL is provided to Android apps.''',
+          If you choose to use a .pac proxy script, the script URL is provided to Android apps.''',
         },
         {
           'name': 'ProxyServerMode',
