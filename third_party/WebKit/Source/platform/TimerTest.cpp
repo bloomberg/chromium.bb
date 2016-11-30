@@ -74,6 +74,55 @@ class TimerTest : public testing::Test {
   TestingPlatformSupportWithMockScheduler m_platform;
 };
 
+class OnHeapTimerOwner final
+    : public GarbageCollectedFinalized<OnHeapTimerOwner> {
+ public:
+  class Record final : public RefCounted<Record> {
+   public:
+    static PassRefPtr<Record> create() { return adoptRef(new Record); }
+
+    bool timerHasFired() const { return m_timerHasFired; }
+    bool isDisposed() const { return m_isDisposed; }
+    bool ownerIsDestructed() const { return m_ownerIsDestructed; }
+    void setTimerHasFired() { m_timerHasFired = true; }
+    void dispose() { m_isDisposed = true; }
+    void setOwnerIsDestructed() { m_ownerIsDestructed = true; }
+
+   private:
+    Record() = default;
+
+    bool m_timerHasFired = false;
+    bool m_isDisposed = false;
+    bool m_ownerIsDestructed = false;
+  };
+
+  explicit OnHeapTimerOwner(PassRefPtr<Record> record)
+      : m_timer(this, &OnHeapTimerOwner::fired), m_record(record) {}
+  ~OnHeapTimerOwner() { m_record->setOwnerIsDestructed(); }
+
+  void startOneShot(double interval, const WebTraceLocation& caller) {
+    m_timer.startOneShot(interval, caller);
+  }
+
+  DEFINE_INLINE_TRACE() {}
+
+ private:
+  void fired(TimerBase*) {
+    EXPECT_FALSE(m_record->isDisposed());
+    m_record->setTimerHasFired();
+  }
+
+  Timer<OnHeapTimerOwner> m_timer;
+  RefPtr<Record> m_record;
+};
+
+class GCForbiddenScope final {
+ public:
+  STACK_ALLOCATED();
+  GCForbiddenScope() { ThreadState::current()->enterGCForbiddenScope(); }
+  ~GCForbiddenScope() { ThreadState::current()->leaveGCForbiddenScope(); }
+};
+
 TEST_F(TimerTest, StartOneShot_Zero) {
   Timer<TimerTest> timer(this, &TimerTest::countingTask);
   timer.startOneShot(0, BLINK_FROM_HERE);
@@ -495,6 +544,56 @@ TEST_F(TimerTest, UserSuppliedWebTaskRunner) {
 
   // Make sure the task was posted on taskRunner.
   EXPECT_FALSE(taskRunner->IsEmpty());
+}
+
+TEST_F(TimerTest, RunOnHeapTimer) {
+  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
+  Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
+
+  owner->startOneShot(0, BLINK_FROM_HERE);
+
+  EXPECT_FALSE(record->timerHasFired());
+  m_platform.runUntilIdle();
+  EXPECT_TRUE(record->timerHasFired());
+}
+
+TEST_F(TimerTest, DestructOnHeapTimer) {
+  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
+  Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
+
+  record->dispose();
+  owner->startOneShot(0, BLINK_FROM_HERE);
+
+  owner = nullptr;
+  ThreadState::current()->collectGarbage(
+      BlinkGC::NoHeapPointersOnStack, BlinkGC::GCWithSweep, BlinkGC::ForcedGC);
+  EXPECT_TRUE(record->ownerIsDestructed());
+
+  EXPECT_FALSE(record->timerHasFired());
+  m_platform.runUntilIdle();
+  EXPECT_FALSE(record->timerHasFired());
+}
+
+TEST_F(TimerTest, MarkOnHeapTimerAsUnreachable) {
+  RefPtr<OnHeapTimerOwner::Record> record = OnHeapTimerOwner::Record::create();
+  Persistent<OnHeapTimerOwner> owner = new OnHeapTimerOwner(record);
+
+  record->dispose();
+  owner->startOneShot(0, BLINK_FROM_HERE);
+
+  owner = nullptr;
+  ThreadState::current()->collectGarbage(BlinkGC::NoHeapPointersOnStack,
+                                         BlinkGC::GCWithoutSweep,
+                                         BlinkGC::ForcedGC);
+  EXPECT_FALSE(record->ownerIsDestructed());
+
+  {
+    GCForbiddenScope scope;
+    EXPECT_FALSE(record->timerHasFired());
+    m_platform.runUntilIdle();
+    EXPECT_FALSE(record->timerHasFired());
+    EXPECT_FALSE(record->ownerIsDestructed());
+  }
 }
 
 }  // namespace
