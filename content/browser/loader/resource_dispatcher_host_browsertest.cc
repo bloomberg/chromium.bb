@@ -268,12 +268,13 @@ std::unique_ptr<net::test_server::HttpResponse> CancelOnRequest(
 // response to call to AsyncResourceHandler::OnResponseComplete.
 IN_PROC_BROWSER_TEST_F(ResourceDispatcherHostBrowserTest,
                        SyncXMLHttpRequest_Cancelled) {
-  ASSERT_TRUE(embedded_test_server()->Start());
-  WaitForLoadStop(shell()->web_contents());
-
   embedded_test_server()->RegisterRequestHandler(
       base::Bind(&CancelOnRequest, "/hung",
                  shell()->web_contents()->GetRenderProcessHost()->GetID()));
+
+  ASSERT_TRUE(embedded_test_server()->Start());
+  WaitForLoadStop(shell()->web_contents());
+
   NavigateToURL(shell(), embedded_test_server()->GetURL(
                              "/sync_xmlhttprequest_cancelled.html"));
 
