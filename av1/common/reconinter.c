@@ -2053,8 +2053,8 @@ void av1_build_inter_predictors_for_planes_single_buf(
         get_plane_block_size(bsize, &xd->plane[plane]);
     const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
     const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
-    const int bw = block_size_wide;
-    const int bh = block_size_high;
+    const int bw = block_size_wide[plane_bsize];
+    const int bh = block_size_high[plane_bsize];
 
     if (xd->mi[0]->mbmi.sb_type < BLOCK_8X8) {
       int x, y;
