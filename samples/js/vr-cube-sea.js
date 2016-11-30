@@ -197,7 +197,11 @@ window.VRCubeSea = (function () {
       mat4.multiply(this.heroModelViewMat, modelViewMat, this.heroRotationMat);
       gl.uniformMatrix4fv(program.uniform.modelViewMat, false, this.heroModelViewMat);
 
-      mat3.normalFromMat4(this.normalMat, this.heroRotationMat);
+      // We know that the additional model matrix is a pure rotation,
+      // so we can just use the non-position parts of the matrix
+      // directly, this is cheaper than the transpose+inverse that
+      // normalFromMat4 would do.
+      mat3.fromMat4(this.normalMat, this.heroRotationMat);
       gl.uniformMatrix3fv(program.uniform.normalMat, false, this.normalMat);
 
       gl.drawElements(gl.TRIANGLES, this.heroCount, gl.UNSIGNED_SHORT, this.heroOffset * 2);
