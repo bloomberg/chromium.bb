@@ -1086,10 +1086,10 @@ void av1_inv_txfm_add_2x2(const tran_low_t *input, uint8_t *dest, int stride,
   (void)lossless;
   (void)eob;
 
-  a1 = (a2 + b2) >> 1;
-  b1 = (a2 - b2) >> 1;
-  c1 = (c2 + d2) >> 1;
-  d1 = (c2 - d2) >> 1;
+  a1 = (a2 + b2) >> 2;
+  b1 = (a2 - b2) >> 2;
+  c1 = (c2 + d2) >> 2;
+  d1 = (c2 - d2) >> 2;
 
   dest[0] = clip_pixel_add(dest[0], WRAPLOW(a1));
   dest[1] = clip_pixel_add(dest[1], WRAPLOW(b1));
