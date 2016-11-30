@@ -112,10 +112,9 @@ class WebGLConformanceExpectations(GpuTestExpectations):
     # ========================
     # Fails on all platforms
 
-    # Test that needs to be fixed in the WebGL CTS
-    # https://github.com/KhronosGroup/WebGL/issues/2173
-    self.Fail('conformance/misc/bad-arguments-test.html',
-        bug=2173) # WebGL issue number
+    # Need to add detection of feedback loops with multiple render targets.
+    self.Fail('conformance/extensions/webgl-draw-buffers-feedback-loop.html',
+        bug=1619) # angle bug ID
 
     # We need to add WebGL 1 check in command buffer that format/type from
     # TexSubImage2D have to match the current texture's.
