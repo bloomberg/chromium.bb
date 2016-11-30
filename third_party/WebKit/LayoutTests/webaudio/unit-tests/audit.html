@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>A simple unit testing for audio-test-utils.js and testharness.js</title>
+  <script src="../../resources/testharness.js"></script>
+  <script src="../../resources/testharnessreport.js"></script>
+  <script src="../resources/audit.js"></script>
+</head>
+<body>
+  <script>
+    var audit = Audit.createTaskRunner();
+
+    // Basic assertion testing.
+    audit.define('basic', function (task, should) {
+      task.describe('Simple unit tests for basic assertions.');
+
+      should(OfflineAudioContext, 'OfflineAudioContext').exist();
+
+      should(function () { var foo = 0; }, 'Setting foo to 0').notThrow();
+      should(function () { var foo = bar; }).throw('ReferenceError');
+
+      should(3 < 5, '3 < 5').beTrue();
+      should(false).beFalse();
+
+      should(1).beEqualTo(1)
+      should(1).notBeEqualTo(2)
+      should(typeof AudioContext.prototype).beEqualTo('object');
+
+      should(2).beGreaterThan(1);
+      should(2).beGreaterThanOrEqualTo(2);
+
+      should(1).beLessThan(2);
+      should(1).beLessThanOrEqualTo(1);
+
+      let oac = new OfflineAudioContext(1, 128, 44100);
+
+      Promise.all([
+          should(oac.startRendering(), 'Start OAC rendering').beResolved(),
+          should(oac.decodeAudioData()).beRejected()
+          ]).then(function () {
+            task.done();
+          });
+    });
+
+
+    // Advanced, mostly array-based numerical testing. Note that some codes
+    // are commented out to avoid the trybot failure. These failures are
+    // intentional, to demonstrate how the detailed failure report works.
+    audit.define('numerical', function (task, should) {
+      task.describe('Numerical assertion unit test.');
+
+      should(2.3).beCloseTo(2, { threshold: 0.3 });
+
+      should([1, 1, 1]).beConstantValueOf(1);
+      // should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49]).beConstantValueOf(5);
+
+      should([1, 1, 1]).beEqualToArray([1, 1, 1]);
+      // should([1, 8, 11, 18, 6, 5, 5, 5, 123, 49])
+      //   .beEqualToArray([1, 8, 10, 18, 6, 5, 6, 5, 123, 48]);
+
+      should([1, 1, 1, 1, 2, 2, 3, 3, 3])
+        .containValues([1, 2, 3], 'one, two, three');
+      // should([1, 1, 1, 1, 2, 2, 3, 3, 3]).containValues([1, 3, 2]);
+
+      should([0.5, 0.5, 0.55, 0.5, 0.45, 0.5]).notGlitch(0.06);
+      // should([0.5, 0.5, 0.55, 0.5, 0.45, 0.5]).notGlitch(0.04);
+
+      // should([0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.9])
+      //   .beCloseToArray([0.7, 0.6, 0.5, 0.4, 0.3, 0.2, 0.1], {
+      //       absoluteThreshold: 0.02,
+      //       relativeThreshold: 0.1
+      //     });
+
+      task.done();
+    });
+
+
+    audit.run();
+  </script>
+</body>
+</html>
