@@ -454,9 +454,12 @@ var WGLUStats = (function() {
     this.sevenSegmentText = new SevenSegmentText(gl);
 
     this.startTime = now();
-    this.prevTime = this.startTime;
+    this.prevFrameTime = this.startTime;
+    this.prevGraphUpdateTime = this.startTime;
     this.frames = 0;
-    this.fps = 0;
+    this.fpsAverage = 0;
+    this.fpsSum = 0;
+    this.fpsMin = 0;
 
     this.orthoProjMatrix = new Float32Array(16);
     this.orthoViewMatrix = new Float32Array(16);
@@ -542,31 +545,46 @@ var WGLUStats = (function() {
   Stats.prototype.end = function() {
     var time = now();
 
+    var frameFps = 1000 / (time - this.prevFrameTime);
+    this.prevFrameTime = time;
+    this.fpsMin = this.frames ? Math.min(this.fpsMin, frameFps) : frameFps;
+    this.fpsSum += frameFps;
     this.frames++;
 
-    if (time > this.prevTime + 250) {
-      this.fps = Math.round((this.frames * 1000) / (time - this.prevTime));
+    if (time > this.prevGraphUpdateTime + 250) {
+      this.fpsAverage = Math.round(this.fpsSum / this.frames);
 
-      this.updateGraph(this.fps);
+      // Draw both average and minimum FPS for this period
+      // so that dropped frames are more clearly visible.
+      this.updateGraph(this.fpsMin, this.fpsAverage);
 
-      this.prevTime = time;
+      this.prevGraphUpdateTime = time;
       this.frames = 0;
+      this.fpsMin = 0;
+      this.fpsSum = 0;
     }
   };
 
-  Stats.prototype.updateGraph = function(value) {
+  Stats.prototype.updateGraph = function(valueLow, valueHigh) {
     var gl = this.gl;
 
-    var color = fpsToRGB(value);
+    var color = fpsToRGB(valueLow);
+    // Draw a range from the low to high value. Artificially widen the
+    // range a bit to ensure that near-equal values still remain
+    // visible - the logic here should match that used by the
+    // "60 FPS line" setup below. Hitting 60fps consistently will
+    // keep the top half of the 60fps background line visible.
+    var y0 = fpsToY(valueLow - 1);
+    var y1 = fpsToY(valueHigh + 1);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.fpsVertBuffer);
 
     // Update the current segment with the new FPS value
     var updateVerts = [
-      segmentToX(this.lastSegment), fpsToY(value), 0.02, color.r, color.g, color.b,
-      segmentToX(this.lastSegment+1), fpsToY(value), 0.02, color.r, color.g, color.b,
-      segmentToX(this.lastSegment), fpsToY(0), 0.02, color.r, color.g, color.b,
-      segmentToX(this.lastSegment+1), fpsToY(0), 0.02, color.r, color.g, color.b,
+      segmentToX(this.lastSegment), y1, 0.02, color.r, color.g, color.b,
+      segmentToX(this.lastSegment+1), y1, 0.02, color.r, color.g, color.b,
+      segmentToX(this.lastSegment), y0, 0.02, color.r, color.g, color.b,
+      segmentToX(this.lastSegment+1), y0, 0.02, color.r, color.g, color.b,
     ];
 
     // Re-shape the next segment into the green "progress" line
@@ -619,7 +637,7 @@ var WGLUStats = (function() {
     gl.drawElements(gl.TRIANGLES, this.fpsIndexCount, gl.UNSIGNED_SHORT, 0);
 
     mat4_multiply(this.modelViewMatrix, modelViewMat, this.textMatrix);
-    this.sevenSegmentText.render(projectionMat, this.modelViewMatrix, this.fps + " FP5");
+    this.sevenSegmentText.render(projectionMat, this.modelViewMatrix, this.fpsAverage + " FP5");
   }
 
   Stats.prototype.renderOrtho = function(x, y, width, height) {
