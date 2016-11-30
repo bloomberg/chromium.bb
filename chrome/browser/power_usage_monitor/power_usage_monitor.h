@@ -61,7 +61,8 @@ class PowerUsageMonitor : public base::PowerObserver,
   // system boot.
   void Start();
 
-  void SetSystemInterfaceForTest(std::unique_ptr<SystemInterface> interface);
+  void SetSystemInterfaceForTest(
+      std::unique_ptr<SystemInterface> system_interface);
 
   // Overridden from base::PowerObserver:
   void OnPowerStateChange(bool on_battery_power) override;

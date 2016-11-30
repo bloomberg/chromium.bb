@@ -228,8 +228,8 @@ void PowerUsageMonitor::OnRenderProcessNotification(int type, int rph_id) {
 }
 
 void PowerUsageMonitor::SetSystemInterfaceForTest(
-    std::unique_ptr<SystemInterface> interface) {
-  system_interface_ = std::move(interface);
+    std::unique_ptr<SystemInterface> system_interface) {
+  system_interface_ = std::move(system_interface);
 }
 
 void PowerUsageMonitor::OnPowerStateChange(bool on_battery_power) {}
