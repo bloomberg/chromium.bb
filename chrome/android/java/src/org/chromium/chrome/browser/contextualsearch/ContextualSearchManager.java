@@ -616,10 +616,10 @@ public class ContextualSearchManager implements ContextualSearchManagementDelega
      */
     @CalledByNative
     private void onSurroundingTextAvailable(final String afterText) {
-        if (mSearchPanel.isShowing()) {
-            mSearchPanel.setSearchContext(
-                    mSelectionController.getSelectedText(), afterText);
-        }
+        // TODO(donnd): check if panel has been requested to show.
+        // We used to call mSearchPanel.isShowing() here, but that's unreliable (crbug.com/669600).
+        mSearchPanel.setSearchContext(
+                mSelectionController.getSelectedText(), afterText);
     }
 
     /**

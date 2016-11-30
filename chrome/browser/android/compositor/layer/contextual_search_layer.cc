@@ -631,7 +631,7 @@ void ContextualSearchLayer::SetupTextLayer(float bar_top,
   // fade out and the Term will fade in.
 
   search_context_->SetOpacity(context_opacity);
-  bar_text_->SetOpacity(1.f - context_opacity);
+  bar_text_->SetOpacity(search_term_opacity);
 
   // If there is no caption, just vertically center the Search Term.
   float term_top = (layer_height - term_height) / 2;
