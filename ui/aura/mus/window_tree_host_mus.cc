@@ -33,12 +33,12 @@ bool IsUsingTestContext() {
 
 WindowTreeHostMus::WindowTreeHostMus(
     std::unique_ptr<WindowPortMus> window_port,
-    WindowTreeHostMusDelegate* delegate,
+    WindowTreeClient* window_tree_client,
     int64_t display_id,
     const std::map<std::string, std::vector<uint8_t>>* properties)
     : WindowTreeHostPlatform(std::move(window_port)),
       display_id_(display_id),
-      delegate_(delegate) {
+      delegate_(window_tree_client) {
   // TODO(sky): find a cleaner way to set this! Better solution is to likely
   // have constructor take aura::Window.
   WindowPortMus::Get(window())->window_ = window();
@@ -75,6 +75,8 @@ WindowTreeHostMus::WindowTreeHostMus(
       false));  // Do not advertise accelerated widget; already set manually.
 
   input_method_ = base::MakeUnique<InputMethodMus>(this, window());
+  input_method_->Init(window_tree_client->connector());
+  SetSharedInputMethod(input_method_.get());
 
   compositor()->SetHostHasTransparentBackground(true);
 

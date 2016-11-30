@@ -33,7 +33,8 @@ InputMethodMus::InputMethodMus(ui::internal::InputMethodDelegate* delegate,
 InputMethodMus::~InputMethodMus() {}
 
 void InputMethodMus::Init(service_manager::Connector* connector) {
-  connector->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
+  if (connector)
+    connector->ConnectToInterface(ui::mojom::kServiceName, &ime_server_);
 }
 
 void InputMethodMus::DispatchKeyEvent(
@@ -124,8 +125,10 @@ void InputMethodMus::OnDidChangeFocusedClient(
   UpdateTextInputType();
 
   text_input_client_ = base::MakeUnique<TextInputClientImpl>(focused);
-  ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
-                            GetProxy(&input_method_));
+  if (ime_server_) {
+    ime_server_->StartSession(text_input_client_->CreateInterfacePtrAndBind(),
+                              GetProxy(&input_method_));
+  }
 }
 
 void InputMethodMus::UpdateTextInputType() {

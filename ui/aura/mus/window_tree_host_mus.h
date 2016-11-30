@@ -32,10 +32,10 @@ class AURA_EXPORT WindowTreeHostMus : public aura::WindowTreeHostPlatform {
  public:
   WindowTreeHostMus(
       std::unique_ptr<WindowPortMus> window_port,
-      WindowTreeHostMusDelegate* delegate,
+      WindowTreeClient* window_tree_client,
       int64_t display_id,
       const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
-  WindowTreeHostMus(
+  explicit WindowTreeHostMus(
       WindowTreeClient* window_tree_client,
       const std::map<std::string, std::vector<uint8_t>>* properties = nullptr);
 

@@ -64,6 +64,7 @@ class AURA_EXPORT InputMethodMus : public ui::InputMethodBase {
   // for tests.
   Window* window_;
 
+  // May be null in tests.
   ui::mojom::IMEServerPtr ime_server_;
   ui::mojom::InputMethodPtr input_method_;
   std::unique_ptr<TextInputClientImpl> text_input_client_;
