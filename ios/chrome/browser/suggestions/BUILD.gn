@@ -21,7 +21,6 @@ source_set("suggestions") {
     "//components/suggestions",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/net",
-    "//ios/chrome/browser/net",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/sync",
     "//ios/chrome/browser/webp_transcode",
