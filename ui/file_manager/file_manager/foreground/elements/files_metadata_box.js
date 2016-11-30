@@ -165,4 +165,36 @@ var FilesMetadataBox = Polymer({
     return (ifd && ifd.image && ifd.image[id] && ifd.image[id].value) || '';
   },
 
+  /**
+   * Returns geolocation as a string in the form of 'latitude, longitude',
+   * where the values have 3 decimal precision. Negative latitude indicates
+   * south latitude and negative longitude indicates west longitude.
+   * @param {?Object} ifd
+   * @return {string}
+   *
+   * @private
+   */
+  geography_: function(ifd) {
+    var gps = ifd && ifd.gps;
+    if (!gps || !gps[1] || !gps[2] || !gps[3] || !gps[4])
+      return '';
+
+    var parseRationale = function(r) {
+      var num = parseInt(r[0], 10);
+      var den = parseInt(r[1], 10);
+      return num / den;
+    };
+
+    var computeCorrdinate = function(value) {
+      return parseRationale(value[0]) + parseRationale(value[1]) / 60 +
+          parseRationale(value[2]) / 3600;
+    };
+
+    var latitude =
+        computeCorrdinate(gps[2].value) * (gps[1].value === 'N\0' ? 1 : -1);
+    var longitude =
+        computeCorrdinate(gps[4].value) * (gps[3].value === 'E\0' ? 1 : -1);
+
+    return Number(latitude).toFixed(3) + ', ' + Number(longitude).toFixed(3);
+  },
 });
