@@ -887,35 +887,6 @@ StyleOffsetRotation StyleBuilderConverter::convertOffsetRotation(
   return result;
 }
 
-template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
-Length StyleBuilderConverter::convertPositionLength(StyleResolverState& state,
-                                                    const CSSValue& value) {
-  if (value.isValuePair()) {
-    const CSSValuePair& pair = toCSSValuePair(value);
-    Length length = StyleBuilderConverter::convertLength(state, pair.second());
-    if (toCSSIdentifierValue(pair.first()).getValueID() == cssValueFor0)
-      return length;
-    DCHECK_EQ(toCSSIdentifierValue(pair.first()).getValueID(), cssValueFor100);
-    return length.subtractFromOneHundredPercent();
-  }
-
-  if (value.isIdentifierValue()) {
-    switch (toCSSIdentifierValue(value).getValueID()) {
-      case cssValueFor0:
-        return Length(0, Percent);
-      case cssValueFor100:
-        return Length(100, Percent);
-      case CSSValueCenter:
-        return Length(50, Percent);
-      default:
-        ASSERT_NOT_REACHED();
-    }
-  }
-
-  return StyleBuilderConverter::convertLength(state,
-                                              toCSSPrimitiveValue(value));
-}
-
 LengthPoint StyleBuilderConverter::convertPosition(StyleResolverState& state,
                                                    const CSSValue& value) {
   const CSSValuePair& pair = toCSSValuePair(value);

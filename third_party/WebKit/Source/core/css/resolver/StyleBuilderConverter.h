@@ -31,6 +31,7 @@
 #include "core/css/CSSStringValue.h"
 #include "core/css/CSSValue.h"
 #include "core/css/CSSValueList.h"
+#include "core/css/CSSValuePair.h"
 #include "core/css/resolver/StyleResolverState.h"
 #include "core/style/QuotesData.h"
 #include "core/style/ShadowList.h"
@@ -240,6 +241,35 @@ T StyleBuilderConverter::convertLineWidth(StyleResolverState& state,
     return 1.0;
   return clampTo<T>(roundForImpreciseConversion<T>(result),
                     defaultMinimumForClamp<T>(), defaultMaximumForClamp<T>());
+}
+
+template <CSSValueID cssValueFor0, CSSValueID cssValueFor100>
+Length StyleBuilderConverter::convertPositionLength(StyleResolverState& state,
+                                                    const CSSValue& value) {
+  if (value.isValuePair()) {
+    const CSSValuePair& pair = toCSSValuePair(value);
+    Length length = StyleBuilderConverter::convertLength(state, pair.second());
+    if (toCSSIdentifierValue(pair.first()).getValueID() == cssValueFor0)
+      return length;
+    DCHECK_EQ(toCSSIdentifierValue(pair.first()).getValueID(), cssValueFor100);
+    return length.subtractFromOneHundredPercent();
+  }
+
+  if (value.isIdentifierValue()) {
+    switch (toCSSIdentifierValue(value).getValueID()) {
+      case cssValueFor0:
+        return Length(0, Percent);
+      case cssValueFor100:
+        return Length(100, Percent);
+      case CSSValueCenter:
+        return Length(50, Percent);
+      default:
+        NOTREACHED();
+    }
+  }
+
+  return StyleBuilderConverter::convertLength(state,
+                                              toCSSPrimitiveValue(value));
 }
 
 template <CSSValueID IdForNone>
