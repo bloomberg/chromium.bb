@@ -3084,6 +3084,11 @@ keyboard_handle_enter(void *data, struct wl_keyboard *keyboard,
 	struct input *input = data;
 	struct window *window;
 
+	if (!surface) {
+		/* enter event for a window we've just destroyed */
+		return;
+	}
+
 	input->display->serial = serial;
 	input->keyboard_focus = wl_surface_get_user_data(surface);
 
