@@ -59,11 +59,11 @@ ContextMenuContentType* ContextMenuContentTypeFactory::CreateInternal(
     content::WebContents* web_contents,
     const content::ContextMenuParams& params) {
 #if BUILDFLAG(ENABLE_EXTENSIONS)
-  if (extensions::WebViewGuest::FromWebContents(web_contents))
-    return new ContextMenuContentTypeWebView(web_contents, params);
-
   if (chrome::IsRunningInForcedAppMode())
     return new ContextMenuContentTypeAppMode(web_contents, params);
+
+  if (extensions::WebViewGuest::FromWebContents(web_contents))
+    return new ContextMenuContentTypeWebView(web_contents, params);
 
   const extensions::ViewType view_type = extensions::GetViewType(web_contents);
 
