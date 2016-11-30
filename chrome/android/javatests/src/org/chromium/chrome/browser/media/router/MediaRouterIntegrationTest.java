@@ -360,6 +360,6 @@ public class MediaRouterIntegrationTest extends ChromeActivityTestCaseBase<Chrom
                     routeSelectionDialog.cancel();
                 }
             });
-        checkStartFailed(webContents, "AbortError", "Dialog closed.");
+        checkStartFailed(webContents, "NotAllowedError", "Dialog closed.");
     }
 }

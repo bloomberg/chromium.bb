@@ -20,7 +20,7 @@ DOMException* PresentationError::take(ScriptPromiseResolver*,
       code = NotFoundError;
       break;
     case WebPresentationError::ErrorTypeSessionRequestCancelled:
-      code = AbortError;
+      code = NotAllowedError;
       break;
     case WebPresentationError::ErrorTypeAvailabilityNotSupported:
       code = NotSupportedError;

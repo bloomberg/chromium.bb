@@ -597,7 +597,7 @@ IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
       MediaRouterDialogControllerImpl::GetOrCreateForWebContents(web_contents);
   EXPECT_TRUE(controller->IsShowingMediaRouterDialog());
   controller->HideMediaRouterDialog();
-  CheckStartFailed(web_contents, "AbortError", "Dialog closed.");
+  CheckStartFailed(web_contents, "NotAllowedError", "Dialog closed.");
 }
 
 IN_PROC_BROWSER_TEST_F(MediaRouterIntegrationBrowserTest,
