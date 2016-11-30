@@ -28,80 +28,20 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include "core/fetch/FetchContext.h"
-#include "core/fetch/ImageResource.h"
 #include "core/fetch/MemoryCache.h"
-#include "core/fetch/MockFetchContext.h"
+
+#include "core/fetch/FetchRequest.h"
+#include "core/fetch/ImageResource.h"
+#include "core/fetch/MemoryCacheCorrectnessTestHelper.h"
 #include "core/fetch/RawResource.h"
 #include "core/fetch/Resource.h"
-#include "core/fetch/ResourceFetcher.h"
 #include "platform/network/ResourceRequest.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "wtf/RefPtr.h"
 
 namespace blink {
 
-// An URL for the original request.
-const char kResourceURL[] = "http://resource.com/";
-
-// The origin time of our first request.
-const char kOriginalRequestDateAsString[] = "Thu, 25 May 1977 18:30:00 GMT";
-const double kOriginalRequestDateAsDouble = 233433000.;
-
-const char kOneDayBeforeOriginalRequest[] = "Wed, 24 May 1977 18:30:00 GMT";
-const char kOneDayAfterOriginalRequest[] = "Fri, 26 May 1977 18:30:00 GMT";
-
-class CachingCorrectnessTest : public ::testing::Test {
+class MemoryCacheCorrectnessTest : public MemoryCacheCorrectnessTestHelper {
  protected:
-  static void advanceClock(double seconds) { s_timeElapsed += seconds; }
-
-  Resource* resourceFromResourceResponse(ResourceResponse response,
-                                         Resource::Type type = Resource::Raw) {
-    if (response.url().isNull())
-      response.setURL(KURL(ParsedURLString, kResourceURL));
-    Resource* resource = nullptr;
-    switch (type) {
-      case Resource::Raw:
-        resource = RawResource::create(ResourceRequest(response.url()), type);
-        break;
-      case Resource::Image:
-        resource = ImageResource::create(ResourceRequest(response.url()));
-        break;
-      default:
-        EXPECT_TRUE(false) << "'Unreachable' code was reached";
-        return nullptr;
-    }
-    resource->setResponse(response);
-    resource->finish();
-    // Because we didn't give any real data, an image will have set its status
-    // to DecodeError. Override it so the resource is cacaheable for testing
-    // purposes.
-    if (type == Resource::Image)
-      resource->setStatus(Resource::Cached);
-    memoryCache()->add(resource);
-
-    return resource;
-  }
-
-  Resource* resourceFromResourceRequest(ResourceRequest request) {
-    if (request.url().isNull())
-      request.setURL(KURL(ParsedURLString, kResourceURL));
-    Resource* resource = RawResource::create(request, Resource::Raw);
-    resource->setResponse(ResourceResponse(KURL(ParsedURLString, kResourceURL),
-                                           "text/html", 0, nullAtom, String()));
-    resource->finish();
-    memoryCache()->add(resource);
-
-    return resource;
-  }
-
-  Resource* fetch() {
-    ResourceRequest resourceRequest(KURL(ParsedURLString, kResourceURL));
-    resourceRequest.setRequestContext(WebURLRequest::RequestContextInternal);
-    FetchRequest fetchRequest(resourceRequest, FetchInitiatorInfo());
-    return RawResource::fetch(fetchRequest, fetcher());
-  }
-
   Resource* fetchImage() {
     FetchRequest fetchRequest(
         ResourceRequest(KURL(ParsedURLString, kResourceURL)),
@@ -109,42 +49,23 @@ class CachingCorrectnessTest : public ::testing::Test {
     return ImageResource::fetch(fetchRequest, fetcher());
   }
 
-  ResourceFetcher* fetcher() const { return m_fetcher.get(); }
-
  private:
-  static double returnMockTime() {
-    return kOriginalRequestDateAsDouble + s_timeElapsed;
+  Resource* createResource(const ResourceRequest& request,
+                           Resource::Type type) override {
+    switch (type) {
+      case Resource::Raw:
+        return RawResource::create(request, type);
+      case Resource::Image:
+        return ImageResource::create(request);
+      default:
+        EXPECT_TRUE(false) << "'Unreachable' code was reached";
+        break;
+    }
+    return nullptr;
   }
-
-  virtual void SetUp() {
-    // Save the global memory cache to restore it upon teardown.
-    m_globalMemoryCache = replaceMemoryCacheForTesting(MemoryCache::create());
-
-    m_fetcher = ResourceFetcher::create(
-        MockFetchContext::create(MockFetchContext::kShouldNotLoadNewResource));
-
-    s_timeElapsed = 0.0;
-    m_originalTimeFunction = setTimeFunctionsForTesting(returnMockTime);
-  }
-
-  virtual void TearDown() {
-    memoryCache()->evictResources();
-
-    // Yield the ownership of the global memory cache back.
-    replaceMemoryCacheForTesting(m_globalMemoryCache.release());
-
-    setTimeFunctionsForTesting(m_originalTimeFunction);
-  }
-
-  Persistent<MemoryCache> m_globalMemoryCache;
-  Persistent<ResourceFetcher> m_fetcher;
-  TimeFunction m_originalTimeFunction;
-  static double s_timeElapsed;
 };
 
-double CachingCorrectnessTest::s_timeElapsed;
-
-TEST_F(CachingCorrectnessTest, FreshFromLastModified) {
+TEST_F(MemoryCacheCorrectnessTest, FreshFromLastModified) {
   ResourceResponse fresh200Response;
   fresh200Response.setHTTPStatusCode(200);
   fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -161,7 +82,7 @@ TEST_F(CachingCorrectnessTest, FreshFromLastModified) {
   EXPECT_EQ(fresh200, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshFromExpires) {
+TEST_F(MemoryCacheCorrectnessTest, FreshFromExpires) {
   ResourceResponse fresh200Response;
   fresh200Response.setHTTPStatusCode(200);
   fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -177,7 +98,7 @@ TEST_F(CachingCorrectnessTest, FreshFromExpires) {
   EXPECT_EQ(fresh200, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshFromMaxAge) {
+TEST_F(MemoryCacheCorrectnessTest, FreshFromMaxAge) {
   ResourceResponse fresh200Response;
   fresh200Response.setHTTPStatusCode(200);
   fresh200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -195,7 +116,7 @@ TEST_F(CachingCorrectnessTest, FreshFromMaxAge) {
 
 // The strong validator causes a revalidation to be launched, and the proxy and
 // original resources leak because of their reference loop.
-TEST_F(CachingCorrectnessTest, DISABLED_ExpiredFromLastModified) {
+TEST_F(MemoryCacheCorrectnessTest, DISABLED_ExpiredFromLastModified) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -211,7 +132,7 @@ TEST_F(CachingCorrectnessTest, DISABLED_ExpiredFromLastModified) {
   EXPECT_NE(expired200, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, ExpiredFromExpires) {
+TEST_F(MemoryCacheCorrectnessTest, ExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -229,7 +150,7 @@ TEST_F(CachingCorrectnessTest, ExpiredFromExpires) {
 
 // If the image hasn't been loaded in this "document" before, then it shouldn't
 // have list of available images logic.
-TEST_F(CachingCorrectnessTest, NewImageExpiredFromExpires) {
+TEST_F(MemoryCacheCorrectnessTest, NewImageExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -249,7 +170,7 @@ TEST_F(CachingCorrectnessTest, NewImageExpiredFromExpires) {
 // If the image has been loaded in this "document" before, then it should have
 // list of available images logic, and so normal cache testing should be
 // bypassed.
-TEST_F(CachingCorrectnessTest, ReuseImageExpiredFromExpires) {
+TEST_F(MemoryCacheCorrectnessTest, ReuseImageExpiredFromExpires) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -272,7 +193,7 @@ TEST_F(CachingCorrectnessTest, ReuseImageExpiredFromExpires) {
   EXPECT_EQ(expired200, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, ExpiredFromMaxAge) {
+TEST_F(MemoryCacheCorrectnessTest, ExpiredFromMaxAge) {
   ResourceResponse expired200Response;
   expired200Response.setHTTPStatusCode(200);
   expired200Response.setHTTPHeaderField("Date", kOriginalRequestDateAsString);
@@ -288,7 +209,7 @@ TEST_F(CachingCorrectnessTest, ExpiredFromMaxAge) {
   EXPECT_NE(expired200, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshButNoCache) {
+TEST_F(MemoryCacheCorrectnessTest, FreshButNoCache) {
   ResourceResponse fresh200NocacheResponse;
   fresh200NocacheResponse.setHTTPStatusCode(200);
   fresh200NocacheResponse.setHTTPHeaderField(HTTPNames::Date,
@@ -309,7 +230,7 @@ TEST_F(CachingCorrectnessTest, FreshButNoCache) {
   EXPECT_NE(fresh200Nocache, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, RequestWithNoCahe) {
+TEST_F(MemoryCacheCorrectnessTest, RequestWithNoCahe) {
   ResourceRequest noCacheRequest;
   noCacheRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-cache");
   Resource* noCacheResource = resourceFromResourceRequest(noCacheRequest);
@@ -317,7 +238,7 @@ TEST_F(CachingCorrectnessTest, RequestWithNoCahe) {
   EXPECT_NE(noCacheResource, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshButNoStore) {
+TEST_F(MemoryCacheCorrectnessTest, FreshButNoStore) {
   ResourceResponse fresh200NostoreResponse;
   fresh200NostoreResponse.setHTTPStatusCode(200);
   fresh200NostoreResponse.setHTTPHeaderField(HTTPNames::Date,
@@ -338,7 +259,7 @@ TEST_F(CachingCorrectnessTest, FreshButNoStore) {
   EXPECT_NE(fresh200Nostore, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, RequestWithNoStore) {
+TEST_F(MemoryCacheCorrectnessTest, RequestWithNoStore) {
   ResourceRequest noStoreRequest;
   noStoreRequest.setHTTPHeaderField(HTTPNames::Cache_Control, "no-store");
   Resource* noStoreResource = resourceFromResourceRequest(noStoreRequest);
@@ -348,7 +269,7 @@ TEST_F(CachingCorrectnessTest, RequestWithNoStore) {
 
 // FIXME: Determine if ignoring must-revalidate for blink is correct behaviour.
 // See crbug.com/340088 .
-TEST_F(CachingCorrectnessTest, DISABLED_FreshButMustRevalidate) {
+TEST_F(MemoryCacheCorrectnessTest, DISABLED_FreshButMustRevalidate) {
   ResourceResponse fresh200MustRevalidateResponse;
   fresh200MustRevalidateResponse.setHTTPStatusCode(200);
   fresh200MustRevalidateResponse.setHTTPHeaderField(
@@ -369,7 +290,7 @@ TEST_F(CachingCorrectnessTest, DISABLED_FreshButMustRevalidate) {
   EXPECT_NE(fresh200MustRevalidate, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect) {
+TEST_F(MemoryCacheCorrectnessTest, FreshWithFreshRedirect) {
   KURL redirectUrl(ParsedURLString, kResourceURL);
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
@@ -409,7 +330,7 @@ TEST_F(CachingCorrectnessTest, FreshWithFreshRedirect) {
   EXPECT_EQ(firstResource, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect) {
+TEST_F(MemoryCacheCorrectnessTest, FreshWithStaleRedirect) {
   KURL redirectUrl(ParsedURLString, kResourceURL);
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
@@ -448,7 +369,7 @@ TEST_F(CachingCorrectnessTest, FreshWithStaleRedirect) {
   EXPECT_NE(firstResource, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, PostToSameURLTwice) {
+TEST_F(MemoryCacheCorrectnessTest, PostToSameURLTwice) {
   ResourceRequest request1(KURL(ParsedURLString, kResourceURL));
   request1.setHTTPMethod(HTTPNames::POST);
   Resource* resource1 =
@@ -465,7 +386,7 @@ TEST_F(CachingCorrectnessTest, PostToSameURLTwice) {
   EXPECT_NE(resource1, resource2);
 }
 
-TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh) {
+TEST_F(MemoryCacheCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   KURL redirectUrl(ParsedURLString, kResourceURL);
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
@@ -506,7 +427,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectNotImplicitlyFresh) {
   EXPECT_NE(firstResource, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
+TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
   KURL redirectUrl(ParsedURLString, kResourceURL);
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
@@ -546,7 +467,7 @@ TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshMaxAge) {
   EXPECT_EQ(firstResource, fetched);
 }
 
-TEST_F(CachingCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
+TEST_F(MemoryCacheCorrectnessTest, 302RedirectExplicitlyFreshExpires) {
   KURL redirectUrl(ParsedURLString, kResourceURL);
   const char redirectTargetUrlString[] = "http://redirect-target.com";
   KURL redirectTargetUrl(ParsedURLString, redirectTargetUrlString);
