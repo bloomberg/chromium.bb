@@ -8,4 +8,21 @@ source_set("native_app_launcher") {
     "native_app_types.h",
     "native_app_whitelist_manager.h",
   ]
+  configs += [ "//build/config/compiler:enable_arc" ]
+}
+
+source_set("test_support") {
+  testonly = true
+  sources = [
+    "fake_native_app_metadata.h",
+    "fake_native_app_metadata.mm",
+    "fake_native_app_whitelist_manager.h",
+    "fake_native_app_whitelist_manager.mm",
+  ]
+  deps = [
+    "//base",
+    "//ios/public/provider/chrome/browser",
+    "//url",
+  ]
+  configs += [ "//build/config/compiler:enable_arc" ]
 }

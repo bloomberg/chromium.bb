@@ -53,6 +53,7 @@ source_set("test_support") {
     "//ios/public/provider/chrome/browser",
     "//ios/public/provider/chrome/browser/distribution:test_support",
     "//ios/public/provider/chrome/browser/images:test_support",
+    "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
     "//ios/public/provider/chrome/browser/sessions:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
@@ -69,6 +70,7 @@ source_set("test_support") {
   public_deps = [
     "//ios/public/provider/chrome/browser/distribution:test_support",
     "//ios/public/provider/chrome/browser/images:test_support",
+    "//ios/public/provider/chrome/browser/native_app_launcher:test_support",
     "//ios/public/provider/chrome/browser/omaha:test_support",
     "//ios/public/provider/chrome/browser/sessions:test_support",
     "//ios/public/provider/chrome/browser/signin:test_support",
