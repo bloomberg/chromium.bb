@@ -38,9 +38,9 @@ class LoadingMobile(perf_benchmark.PerfBenchmark):
     return 'loading.mobile'
 
   def CreateStorySet(self, options):
-    return page_sets.LoadingMobileStorySet(cache_temperatures=[
-          cache_temperature.ANY])
-
+    return page_sets.LoadingMobileStorySet(
+        cache_temperatures=[cache_temperature.ANY],
+        traffic_settings=[traffic_setting.NONE, traffic_setting.REGULAR_3G])
 
 
 # Disabled because we do not plan on running CT benchmarks on the perf
