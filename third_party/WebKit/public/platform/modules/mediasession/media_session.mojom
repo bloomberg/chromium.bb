@@ -17,6 +17,8 @@ enum MediaSessionAction {
      NEXT_TRACK,
      SEEK_BACKWARD,
      SEEK_FORWARD,
+
+     LAST = SEEK_FORWARD,
 };
 
 // Album art in MediaMetadata

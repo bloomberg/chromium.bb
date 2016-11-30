@@ -39,6 +39,11 @@ import org.chromium.blink.mojom.MediaSessionAction;
 import org.chromium.chrome.R;
 import org.chromium.content_public.common.MediaMetadata;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
 /**
@@ -50,6 +55,9 @@ import javax.annotation.Nullable;
 public class MediaNotificationManager {
     private static final String TAG = "MediaNotification";
 
+    @VisibleForTesting
+    static final int CUSTOM_MEDIA_SESSION_ACTION_STOP = MediaSessionAction.LAST + 1;
+
     // MediaStyle large icon size for pre-N.
     private static final int PRE_N_LARGE_ICON_SIZE_DP = 128;
     // MediaStyle large icon size for N.
@@ -58,7 +66,10 @@ public class MediaNotificationManager {
     private static final int N_LARGE_ICON_SIZE_DP = 94;
 
     // The maximum number of actions in CompactView media notification.
-    private static final int MAXIMUM_NUM_ACTIONS_IN_COMPACT_VIEW = 3;
+    private static final int COMPACT_VIEW_ACTIONS_COUNT = 3;
+
+    // The maximum number of actions in BigView media notification.
+    private static final int BIG_VIEW_ACTIONS_COUNT = isRunningN() ? 5 : 3;
 
     // We're always used on the UI thread but the LOCK is required by lint when creating the
     // singleton.
@@ -66,6 +77,62 @@ public class MediaNotificationManager {
 
     // Maps the notification ids to their corresponding notification managers.
     private static SparseArray<MediaNotificationManager> sManagers;
+
+    private final Context mContext;
+
+    // ListenerService running for the notification. Only non-null when showing.
+    private ListenerService mService;
+
+    private SparseArray<MediaButtonInfo> mActionToButtonInfo;
+
+    private NotificationCompat.Builder mNotificationBuilder;
+
+    private Bitmap mNotificationIcon;
+    private Bitmap mDefaultLargeIcon;
+
+    // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
+    private MediaNotificationInfo mMediaNotificationInfo;
+
+    private MediaSessionCompat mMediaSession;
+
+    private final MediaSessionCompat.Callback mMediaSessionCallback =
+            new MediaSessionCompat.Callback() {
+                @Override
+                public void onPlay() {
+                    MediaNotificationManager.this.onPlay(
+                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                }
+
+                @Override
+                public void onPause() {
+                    MediaNotificationManager.this.onPause(
+                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
+                }
+
+                @Override
+                public void onSkipToPrevious() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.PREVIOUS_TRACK);
+                }
+
+                @Override
+                public void onSkipToNext() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.NEXT_TRACK);
+                }
+
+                @Override
+                public void onFastForward() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.SEEK_FORWARD);
+                }
+
+                @Override
+                public void onRewind() {
+                    MediaNotificationManager.this.onMediaSessionAction(
+                            MediaSessionAction.SEEK_BACKWARD);
+                }
+            };
 
     /**
      * Service used to transform intent requests triggered from the notification into
@@ -87,6 +154,10 @@ public class MediaNotificationManager {
                 "MediaNotificationManager.ListenerService.PREVIOUS_TRACK";
         private static final String ACTION_NEXT_TRACK =
                 "MediaNotificationManager.ListenerService.NEXT_TRACK";
+        private static final String ACTION_SEEK_FORWARD =
+                "MediaNotificationManager.ListenerService.SEEK_FORWARD";
+        private static final String ACTION_SEEK_BACKWARD =
+                "MediaNotificationmanager.ListenerService.SEEK_BACKWARD";
 
         @Override
         public IBinder onBind(Intent intent) {
@@ -161,6 +232,12 @@ public class MediaNotificationManager {
                     case KeyEvent.KEYCODE_MEDIA_NEXT:
                         manager.onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
                         break;
+                    case KeyEvent.KEYCODE_MEDIA_FAST_FORWARD:
+                        manager.onMediaSessionAction(MediaSessionAction.SEEK_FORWARD);
+                        break;
+                    case KeyEvent.KEYCODE_MEDIA_REWIND:
+                        manager.onMediaSessionAction(MediaSessionAction.SEEK_BACKWARD);
+                        break;
                     default:
                         break;
                 }
@@ -180,6 +257,10 @@ public class MediaNotificationManager {
                 manager.onMediaSessionAction(MediaSessionAction.PREVIOUS_TRACK);
             } else if (ACTION_NEXT_TRACK.equals(action)) {
                 manager.onMediaSessionAction(MediaSessionAction.NEXT_TRACK);
+            } else if (ACTION_SEEK_FORWARD.equals(action)) {
+                manager.onMediaSessionAction(MediaSessionAction.SEEK_FORWARD);
+            } else if (ACTION_SEEK_BACKWARD.equals(action)) {
+                manager.onMediaSessionAction(MediaSessionAction.SEEK_BACKWARD);
             }
         }
     }
@@ -460,62 +541,54 @@ public class MediaNotificationManager {
         return Build.VERSION.SDK_INT >= Build.VERSION_CODES.N;
     }
 
-    private final Context mContext;
+    /**
+     * The class containing all the information for adding a button in the notification for an
+     * action.
+     */
+    private static final class MediaButtonInfo {
+        /** The resource ID of this media button icon. */
+        public int iconResId;
 
-    // ListenerService running for the notification. Only non-null when showing.
-    private ListenerService mService;
+        /** The resource ID of this media button description. */
+        public int descriptionResId;
 
-    private final String mPlayDescription;
-    private final String mPauseDescription;
-    private final String mStopDescription;
-    private final String mPreviousTrackDescription;
-    private final String mNextTrackDescription;
+        /** The intent string to be fired when this media button is clicked. */
+        public String intentString;
 
-    private NotificationCompat.Builder mNotificationBuilder;
-
-    private Bitmap mNotificationIcon;
-    private Bitmap mDefaultLargeIcon;
-
-    // |mMediaNotificationInfo| should be not null if and only if the notification is showing.
-    private MediaNotificationInfo mMediaNotificationInfo;
-
-    private MediaSessionCompat mMediaSession;
-
-    private final MediaSessionCompat.Callback mMediaSessionCallback =
-            new MediaSessionCompat.Callback() {
-                @Override
-                public void onPlay() {
-                    MediaNotificationManager.this.onPlay(
-                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                }
-
-                @Override
-                public void onPause() {
-                    MediaNotificationManager.this.onPause(
-                            MediaNotificationListener.ACTION_SOURCE_MEDIA_SESSION);
-                }
-
-                @Override
-                public void onSkipToPrevious() {
-                    MediaNotificationManager.this.onMediaSessionAction(
-                            MediaSessionAction.PREVIOUS_TRACK);
-                }
-
-                @Override
-                public void onSkipToNext() {
-                    MediaNotificationManager.this.onMediaSessionAction(
-                            MediaSessionAction.NEXT_TRACK);
-                }
-            };
-
+        public MediaButtonInfo(int buttonResId, int descriptionResId, String intentString) {
+            this.iconResId = buttonResId;
+            this.descriptionResId = descriptionResId;
+            this.intentString = intentString;
+        }
+    }
     private MediaNotificationManager(Context context, int notificationId) {
         mContext = context;
-        mPlayDescription = context.getResources().getString(R.string.accessibility_play);
-        mPauseDescription = context.getResources().getString(R.string.accessibility_pause);
-        mStopDescription = context.getResources().getString(R.string.accessibility_stop);
-        mPreviousTrackDescription =
-                context.getResources().getString(R.string.accessibility_previous_track);
-        mNextTrackDescription = context.getResources().getString(R.string.accessibility_next_track);
+
+        mActionToButtonInfo = new SparseArray<>();
+
+        mActionToButtonInfo.put(MediaSessionAction.PLAY,
+                new MediaButtonInfo(R.drawable.ic_media_control_play, R.string.accessibility_play,
+                        ListenerService.ACTION_PLAY));
+        mActionToButtonInfo.put(MediaSessionAction.PAUSE,
+                new MediaButtonInfo(R.drawable.ic_media_control_pause, R.string.accessibility_pause,
+                        ListenerService.ACTION_PAUSE));
+        mActionToButtonInfo.put(CUSTOM_MEDIA_SESSION_ACTION_STOP,
+                new MediaButtonInfo(R.drawable.ic_media_control_stop, R.string.accessibility_stop,
+                        ListenerService.ACTION_STOP));
+        mActionToButtonInfo.put(MediaSessionAction.PREVIOUS_TRACK,
+                new MediaButtonInfo(R.drawable.ic_media_control_skip_previous,
+                        R.string.accessibility_previous_track,
+                        ListenerService.ACTION_PREVIOUS_TRACK));
+        mActionToButtonInfo.put(MediaSessionAction.NEXT_TRACK,
+                new MediaButtonInfo(R.drawable.ic_media_control_skip_next,
+                        R.string.accessibility_next_track, ListenerService.ACTION_NEXT_TRACK));
+        mActionToButtonInfo.put(MediaSessionAction.SEEK_FORWARD,
+                new MediaButtonInfo(R.drawable.ic_media_control_fast_forward,
+                        R.string.accessibility_seek_forward, ListenerService.ACTION_SEEK_FORWARD));
+        mActionToButtonInfo.put(MediaSessionAction.SEEK_BACKWARD,
+                new MediaButtonInfo(R.drawable.ic_media_control_fast_rewind,
+                        R.string.accessibility_seek_backward,
+                        ListenerService.ACTION_SEEK_BACKWARD));
     }
 
     /**
@@ -708,6 +781,12 @@ public class MediaNotificationManager {
         if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.NEXT_TRACK)) {
             actions |= PlaybackStateCompat.ACTION_SKIP_TO_NEXT;
         }
+        if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.SEEK_FORWARD)) {
+            actions |= PlaybackStateCompat.ACTION_FAST_FORWARD;
+        }
+        if (mMediaNotificationInfo.mediaSessionActions.contains(MediaSessionAction.SEEK_BACKWARD)) {
+            actions |= PlaybackStateCompat.ACTION_REWIND;
+        }
         return actions;
     }
 
@@ -761,47 +840,45 @@ public class MediaNotificationManager {
     }
 
     private void addNotificationButtons(NotificationCompat.Builder builder) {
+        Set<Integer> actions = new HashSet<>();
+
+        // TODO(zqzhang): handle other actions when play/pause is not supported? See
+        // https://crbug.com/667500
+        if (mMediaNotificationInfo.supportsPlayPause()) {
+            actions.addAll(mMediaNotificationInfo.mediaSessionActions);
+            if (mMediaNotificationInfo.isPaused) {
+                actions.remove(MediaSessionAction.PAUSE);
+                actions.add(MediaSessionAction.PLAY);
+            } else {
+                actions.remove(MediaSessionAction.PLAY);
+                actions.add(MediaSessionAction.PAUSE);
+            }
+        }
+
+        if (mMediaNotificationInfo.supportsStop()) {
+            actions.add(CUSTOM_MEDIA_SESSION_ACTION_STOP);
+        }
+
+        List<Integer> bigViewActions = computeBigViewActions(actions);
+
+        for (int action : bigViewActions) {
+            MediaButtonInfo buttonInfo = mActionToButtonInfo.get(action);
+            builder.addAction(buttonInfo.iconResId,
+                    mContext.getResources().getString(buttonInfo.descriptionResId),
+                    createPendingIntent(buttonInfo.intentString));
+        }
+
         // Only apply MediaStyle when NotificationInfo supports play/pause.
         if (mMediaNotificationInfo.supportsPlayPause()) {
             NotificationCompat.MediaStyle style = new NotificationCompat.MediaStyle();
             style.setMediaSession(mMediaSession.getSessionToken());
 
-            int numAddedActions = 0;
+            int[] compactViewActionIndices = computeCompactViewActionIndices(bigViewActions);
 
-            if (mMediaNotificationInfo.mediaSessionActions.contains(
-                        MediaSessionAction.PREVIOUS_TRACK)) {
-                builder.addAction(R.drawable.ic_media_control_skip_previous,
-                        mPreviousTrackDescription,
-                        createPendingIntent(ListenerService.ACTION_PREVIOUS_TRACK));
-                ++numAddedActions;
-            }
-            if (mMediaNotificationInfo.isPaused) {
-                builder.addAction(R.drawable.ic_media_control_play, mPlayDescription,
-                        createPendingIntent(ListenerService.ACTION_PLAY));
-            } else {
-                // If we're here, the notification supports play/pause button and is playing.
-                builder.addAction(R.drawable.ic_media_control_pause, mPauseDescription,
-                        createPendingIntent(ListenerService.ACTION_PAUSE));
-            }
-            ++numAddedActions;
-            if (mMediaNotificationInfo.mediaSessionActions.contains(
-                        MediaSessionAction.NEXT_TRACK)) {
-                builder.addAction(R.drawable.ic_media_control_skip_next, mNextTrackDescription,
-                        createPendingIntent(ListenerService.ACTION_NEXT_TRACK));
-                ++numAddedActions;
-            }
-            numAddedActions = Math.min(numAddedActions, MAXIMUM_NUM_ACTIONS_IN_COMPACT_VIEW);
-            int[] compactViewActions = new int[numAddedActions];
-            for (int i = 0; i < numAddedActions; ++i) compactViewActions[i] = i;
-            style.setShowActionsInCompactView(compactViewActions);
+            style.setShowActionsInCompactView(compactViewActionIndices);
             style.setCancelButtonIntent(createPendingIntent(ListenerService.ACTION_CANCEL));
             style.setShowCancelButton(true);
             builder.setStyle(style);
-        }
-
-        if (mMediaNotificationInfo.supportsStop()) {
-            builder.addAction(R.drawable.ic_media_control_stop, mStopDescription,
-                    createPendingIntent(ListenerService.ACTION_STOP));
         }
     }
 
@@ -831,5 +908,138 @@ public class MediaNotificationManager {
             return artist + album;
         }
         return artist + " - " + album;
+    }
+
+    /**
+     * Compute the actions to be shown in BigView media notification.
+     *
+     * The method assumes STOP cannot coexist with switch track actions and seeking actions. It also
+     * assumes PLAY and PAUSE cannot coexist.
+     *
+     * TODO(zqzhang): get UX feedback to decide which actions to select when the number of actions
+     * is greater than that can be displayed. See https://crbug.com/667500
+     */
+    private List<Integer> computeBigViewActions(Set<Integer> actions) {
+        // STOP cannot coexist with switch track actions and seeking actions.
+        assert !actions.contains(CUSTOM_MEDIA_SESSION_ACTION_STOP)
+                || !(actions.contains(MediaSessionAction.PREVIOUS_TRACK)
+                        && actions.contains(MediaSessionAction.NEXT_TRACK)
+                        && actions.contains(MediaSessionAction.SEEK_BACKWARD)
+                        && actions.contains(MediaSessionAction.SEEK_FORWARD));
+        // PLAY and PAUSE cannot coexist.
+        assert !actions.contains(MediaSessionAction.PLAY)
+                || !actions.contains(MediaSessionAction.PAUSE);
+
+        int[] actionByOrder = {
+                MediaSessionAction.PREVIOUS_TRACK,
+                MediaSessionAction.SEEK_BACKWARD,
+                MediaSessionAction.PLAY,
+                MediaSessionAction.PAUSE,
+                MediaSessionAction.SEEK_FORWARD,
+                MediaSessionAction.NEXT_TRACK,
+                CUSTOM_MEDIA_SESSION_ACTION_STOP,
+        };
+
+        // First, select at most |BIG_VIEW_ACTIONS_COUNT| actions by priority.
+        Set<Integer> selectedActions;
+        if (actions.size() <= BIG_VIEW_ACTIONS_COUNT) {
+            selectedActions = actions;
+        } else {
+            selectedActions = new HashSet<>();
+            if (actions.contains(CUSTOM_MEDIA_SESSION_ACTION_STOP)) {
+                selectedActions.add(CUSTOM_MEDIA_SESSION_ACTION_STOP);
+            } else {
+                if (actions.contains(MediaSessionAction.PLAY)) {
+                    selectedActions.add(MediaSessionAction.PLAY);
+                } else {
+                    selectedActions.add(MediaSessionAction.PAUSE);
+                }
+                if (actions.contains(MediaSessionAction.PREVIOUS_TRACK)
+                        && actions.contains(MediaSessionAction.NEXT_TRACK)) {
+                    selectedActions.add(MediaSessionAction.PREVIOUS_TRACK);
+                    selectedActions.add(MediaSessionAction.NEXT_TRACK);
+                } else {
+                    selectedActions.add(MediaSessionAction.SEEK_BACKWARD);
+                    selectedActions.add(MediaSessionAction.SEEK_FORWARD);
+                }
+            }
+        }
+
+        // Second, sort the selected actions.
+        List<Integer> sortedActions = new ArrayList<>();
+        for (int action : actionByOrder) {
+            if (selectedActions.contains(action)) sortedActions.add(action);
+        }
+
+        return sortedActions;
+    }
+
+    /**
+     * Compute the actions to be shown in CompactView media notification.
+     *
+     * The method assumes STOP cannot coexist with switch track actions and seeking actions. It also
+     * assumes PLAY and PAUSE cannot coexist.
+     *
+     * Actions in pairs are preferred if there are more actions than |COMPACT_VIEW_ACTIONS_COUNT|.
+     */
+    @VisibleForTesting
+    static int[] computeCompactViewActionIndices(List<Integer> actions) {
+        // STOP cannot coexist with switch track actions and seeking actions.
+        assert !actions.contains(CUSTOM_MEDIA_SESSION_ACTION_STOP)
+                || !(actions.contains(MediaSessionAction.PREVIOUS_TRACK)
+                        && actions.contains(MediaSessionAction.NEXT_TRACK)
+                        && actions.contains(MediaSessionAction.SEEK_BACKWARD)
+                        && actions.contains(MediaSessionAction.SEEK_FORWARD));
+        // PLAY and PAUSE cannot coexist.
+        assert !actions.contains(MediaSessionAction.PLAY)
+                || !actions.contains(MediaSessionAction.PAUSE);
+
+        if (actions.size() <= COMPACT_VIEW_ACTIONS_COUNT) {
+            // If the number of actions is less than |COMPACT_VIEW_ACTIONS_COUNT|, just return an
+            // array of 0, 1, ..., |actions.size()|-1.
+            int[] actionsArray = new int[actions.size()];
+            for (int i = 0; i < actions.size(); ++i) actionsArray[i] = i;
+            return actionsArray;
+        }
+
+        if (actions.contains(CUSTOM_MEDIA_SESSION_ACTION_STOP)) {
+            List<Integer> compactActions = new ArrayList<>();
+            if (actions.contains(MediaSessionAction.PLAY)) {
+                compactActions.add(actions.indexOf(MediaSessionAction.PLAY));
+            }
+            compactActions.add(actions.indexOf(CUSTOM_MEDIA_SESSION_ACTION_STOP));
+            return convertIntegerListToIntArray(compactActions);
+        }
+
+        int[] actionsArray = new int[COMPACT_VIEW_ACTIONS_COUNT];
+        if (actions.contains(MediaSessionAction.PREVIOUS_TRACK)
+                && actions.contains(MediaSessionAction.NEXT_TRACK)) {
+            actionsArray[0] = actions.indexOf(MediaSessionAction.PREVIOUS_TRACK);
+            if (actions.contains(MediaSessionAction.PLAY)) {
+                actionsArray[1] = actions.indexOf(MediaSessionAction.PLAY);
+            } else {
+                actionsArray[1] = actions.indexOf(MediaSessionAction.PAUSE);
+            }
+            actionsArray[2] = actions.indexOf(MediaSessionAction.NEXT_TRACK);
+            return actionsArray;
+        }
+
+        assert actions.contains(MediaSessionAction.SEEK_BACKWARD)
+                && actions.contains(MediaSessionAction.SEEK_FORWARD);
+        actionsArray[0] = actions.indexOf(MediaSessionAction.SEEK_BACKWARD);
+        if (actions.contains(MediaSessionAction.PLAY)) {
+            actionsArray[1] = actions.indexOf(MediaSessionAction.PLAY);
+        } else {
+            actionsArray[1] = actions.indexOf(MediaSessionAction.PAUSE);
+        }
+        actionsArray[2] = actions.indexOf(MediaSessionAction.SEEK_FORWARD);
+
+        return actionsArray;
+    }
+
+    static int[] convertIntegerListToIntArray(List<Integer> intList) {
+        int[] intArray = new int[intList.size()];
+        for (int i = 0; i < intList.size(); ++i) intArray[i] = i;
+        return intArray;
     }
 }

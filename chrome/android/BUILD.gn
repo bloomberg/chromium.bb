@@ -348,6 +348,7 @@ junit_binary("chrome_junit_tests") {
     "//device/geolocation:geolocation_java",
     "//net/android:net_java",
     "//third_party/WebKit/public:blink_headers_java",
+    "//third_party/WebKit/public:mojo_bindings_java",
     "//third_party/android_tools:android_support_annotations_java",
     "//third_party/android_tools:android_support_v7_mediarouter_java",
     "//third_party/android_tools:android_support_v7_recyclerview_java",

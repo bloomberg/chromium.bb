@@ -1477,6 +1477,7 @@ chrome_junit_test_java_sources = [
   "junit/src/org/chromium/chrome/browser/media/router/cast/JSONTestUtils.java",
   "junit/src/org/chromium/chrome/browser/media/router/cast/MediaSourceTest.java",
   "junit/src/org/chromium/chrome/browser/media/router/cast/TestUtils.java",
+  "junit/src/org/chromium/chrome/browser/media/ui/MediaNotificationButtonComputationTest.java",
   "junit/src/org/chromium/chrome/browser/notifications/NotificationPlatformBridgeUnitTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/NativePageFactoryTest.java",
   "junit/src/org/chromium/chrome/browser/ntp/TitleUtilTest.java",

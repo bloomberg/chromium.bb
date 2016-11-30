@@ -1878,20 +1878,26 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_CAST_ERROR_PLAYING_VIDEO" desc="The message shown to the user when playing a video to the Chromecast fails.">
         Cannot play video on <ph name="SCREEN_NAME">%1$s<ex>Living Room TV</ex></ph>.
       </message>
-      <message name="IDS_ACCESSIBILITY_PLAY" desc="Content description for the play button that starts playing the media.">
+      <message name="IDS_ACCESSIBILITY_PLAY" desc="The play button that starts playing the media.">
         Play
       </message>
-      <message name="IDS_ACCESSIBILITY_PAUSE" desc="Content description for the pause button that pauses playing the media.">
+      <message name="IDS_ACCESSIBILITY_PAUSE" desc="The pause button that pauses playing the media.">
         Pause
       </message>
-      <message name="IDS_ACCESSIBILITY_STOP" desc="Content description for the stop button that stops playing the media.">
+      <message name="IDS_ACCESSIBILITY_STOP" desc="The stop button that stops playing the media.">
         Stop
       </message>
-      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="Content description for the previous track button that switches media to the previous track.">
+      <message name="IDS_ACCESSIBILITY_PREVIOUS_TRACK" desc="The previous track button that switches media to the previous track.">
         Previous track
       </message>
-      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="Content description for the next track button that switches media to the next track.">
+      <message name="IDS_ACCESSIBILITY_NEXT_TRACK" desc="The next track button that switches media to the next track.">
         Next track
+      </message>
+      <message name="IDS_ACCESSIBILITY_SEEK_FORWARD" desc="The seek forward button that seeks media to a later position.">
+        Seek forward
+      </message>
+      <message name="IDS_ACCESSIBILITY_SEEK_BACKWARD" desc="The seek backward button that seeks media to an earlier position.">
+        Seek backward
       </message>
 
       <!-- New Tab Page strings -->
@@ -2753,7 +2759,7 @@ You can control the Physical Web in Chrome Settings.
       <message name="IDS_WEBAPK_UNKNOWN_SOURCES_SETTINGS_BUTTON" desc="Button label for opening Android Settings from dialog warning user that installation from Unknown sources is required for WebAPK experiment.">
         Settings
       </message>
-      
+
       <!-- Keyboard shortcuts in Android N-->
       <message name="IDS_KEYBOARD_SHORTCUT_OPEN_NEW_TAB" desc="A text label that appears next to the keyboard shortcut to open a new tab in Chrome. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
         Open a new tab
@@ -2799,7 +2805,7 @@ You can control the Physical Web in Chrome Settings.
       </message>
       <message name="IDS_KEYBOARD_SHORTCUT_ZOOM_OUT" desc="A text label that appears next to the keyboard shortcut that will decrease everything on the page. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
         Make everything on the page smaller
-      </message> 
+      </message>
       <message name="IDS_KEYBOARD_SHORTCUT_RESET_ZOOM" desc="A text label that appears next to the keyboard shortcut that will reset the zoom back to the original size. The shortcut description is shown in a system dialog along with all other supported shortcuts. [CHAR-LIMIT=50]">
         Return everything on the page to default size
       </message>
@@ -2820,7 +2826,7 @@ You can control the Physical Web in Chrome Settings.
       </message>
       <message name="IDS_KEYBOARD_SHORTCUT_WEBPAGE_GROUP_HEADER" desc="A text label that appears above a list of shortcuts that are related to manipulation of the current tab window. This group is part of several groups of keyboard shortcuts all shown in a dialog.">
         Webpage shortcuts
-      </message> 
+      </message>
     </messages>
   </release>
 </grit>
