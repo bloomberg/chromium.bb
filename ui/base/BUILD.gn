@@ -52,6 +52,7 @@ buildflag_header("ui_features") {
   flags = [
     "ENABLE_HIDPI=$enable_hidpi",
     "USE_XKBCOMMON=$use_xkbcommon",
+    "MAC_VIEWS_BROWSER=$mac_views_browser",
   ]
 }
 

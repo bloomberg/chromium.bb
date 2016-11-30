@@ -6,6 +6,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/base/resource/resource_bundle.h"
+#include "ui/base/ui_features.h"
 #include "ui/gfx/color_utils.h"
 #include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/vector_icons_public.h"
@@ -26,6 +27,12 @@ const bool PlatformStyle::kTextDragVerticallyDragsToEnd = true;
 const bool PlatformStyle::kTreeViewHasFocusRing = true;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = true;
 const bool PlatformStyle::kUseRipples = false;
+
+// On Mac, the Cocoa browser window does not flip its UI in RTL (e.g. bookmark
+// star remains on the right, padlock on the left). So bubbles should open in
+// the same direction as in LTR by default, unless the entire browser is views.
+const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault =
+    BUILDFLAG(MAC_VIEWS_BROWSER);
 
 const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
     CustomButton::NOTIFY_ON_PRESS;

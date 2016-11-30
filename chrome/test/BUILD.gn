@@ -18,6 +18,7 @@ import("//ppapi/features/features.gni")
 import("//remoting/remoting_enable.gni")
 import("//services/service_manager/public/service_manifest.gni")
 import("//testing/test.gni")
+import("//ui/base/ui_features.gni")
 import("//v8/gni/v8.gni")
 
 if (is_android) {

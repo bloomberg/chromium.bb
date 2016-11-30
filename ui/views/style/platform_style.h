@@ -57,6 +57,10 @@ class VIEWS_EXPORT PlatformStyle {
   // Whether ripples should be used for visual feedback on control activation.
   static const bool kUseRipples;
 
+  // Whether to mirror the arrow of bubble dialogs in RTL, such that the bubble
+  // opens in the opposite direction.
+  static const bool kMirrorBubbleArrowInRTLByDefault;
+
   // Creates an ImageSkia containing the image to use for the combobox arrow.
   // The |is_enabled| argument is true if the control the arrow is for is
   // enabled, and false if the control is disabled. The |style| argument is the

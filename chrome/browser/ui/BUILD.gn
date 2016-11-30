@@ -12,6 +12,7 @@ import("//extensions/features/features.gni")
 import("//media/media_options.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
+import("//ui/base/ui_features.gni")
 
 config("ui_warnings") {
   if (is_clang) {

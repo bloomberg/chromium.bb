@@ -5,6 +5,9 @@
 declare_args() {
   # Optional system library.
   use_xkbcommon = false
+
+  # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
+  mac_views_browser = false
 }
 
 enable_hidpi = is_mac || is_win || is_linux

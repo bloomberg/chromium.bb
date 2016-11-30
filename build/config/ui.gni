@@ -33,9 +33,6 @@ declare_args() {
   # of a replacement for GDI or GTK.
   use_aura = is_win || is_linux
 
-  # Whether the entire browser uses toolkit-views on Mac instead of Cocoa.
-  mac_views_browser = false
-
   # Whether we should use glib, a low level C utility library.
   use_glib = is_linux
 

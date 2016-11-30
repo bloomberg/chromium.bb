@@ -45,6 +45,7 @@ const CustomButton::NotifyAction PlatformStyle::kMenuNotifyActivationAction =
 const bool PlatformStyle::kTreeViewHasFocusRing = false;
 const bool PlatformStyle::kTreeViewSelectionPaintsEntireRow = false;
 const bool PlatformStyle::kUseRipples = true;
+const bool PlatformStyle::kMirrorBubbleArrowInRTLByDefault = true;
 
 // static
 gfx::ImageSkia PlatformStyle::CreateComboboxArrow(bool is_enabled,

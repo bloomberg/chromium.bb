@@ -14,6 +14,7 @@
 #include "ui/views/bubble/bubble_frame_view.h"
 #include "ui/views/focus/view_storage.h"
 #include "ui/views/layout/layout_constants.h"
+#include "ui/views/style/platform_style.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/widget/widget_observer.h"
 #include "ui/views/window/dialog_client_view.h"
@@ -208,7 +209,7 @@ BubbleDialogDelegateView::BubbleDialogDelegateView(View* anchor_view,
       anchor_view_storage_id_(ViewStorage::GetInstance()->CreateStorageID()),
       anchor_widget_(NULL),
       arrow_(arrow),
-      mirror_arrow_in_rtl_(true),
+      mirror_arrow_in_rtl_(PlatformStyle::kMirrorBubbleArrowInRTLByDefault),
       shadow_(BubbleBorder::SMALL_SHADOW),
       color_explicitly_set_(false),
       margins_(kPanelVertMargin,

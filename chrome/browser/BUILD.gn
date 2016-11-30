@@ -16,6 +16,7 @@ import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
 import("//third_party/protobuf/proto_library.gni")
+import("//ui/base/ui_features.gni")
 
 # //build/config/android/rules.gni imports //tools/grit/grit_rule.gni, which
 # produces a conflict for the "grit" template so we have to only include one.
