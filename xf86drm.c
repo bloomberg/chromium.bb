@@ -2947,7 +2947,8 @@ static int drmGetMaxNodeName(void)
 }
 
 static int drmParsePciDeviceInfo(int maj, int min,
-                                 drmPciDeviceInfoPtr device)
+                                 drmPciDeviceInfoPtr device,
+                                 uint32_t flags)
 {
 #ifdef __linux__
     char path[PATH_MAX + 1];
@@ -3000,7 +3001,8 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
 
 static int drmProcessPciDevice(drmDevicePtr *device,
                                const char *node, int node_type,
-                               int maj, int min, bool fetch_deviceinfo)
+                               int maj, int min, bool fetch_deviceinfo,
+                               uint32_t flags)
 {
     const int max_node_str = ALIGN(drmGetMaxNodeName(), sizeof(void *));
     int ret, i;
@@ -3039,7 +3041,7 @@ static int drmProcessPciDevice(drmDevicePtr *device,
         addr += sizeof(drmPciBusInfo);
         (*device)->deviceinfo.pci = (drmPciDeviceInfoPtr)addr;
 
-        ret = drmParsePciDeviceInfo(maj, min, (*device)->deviceinfo.pci);
+        ret = drmParsePciDeviceInfo(maj, min, (*device)->deviceinfo.pci, flags);
         if (ret)
             goto free_device;
     }
@@ -3095,6 +3097,7 @@ int drmGetDevice(int fd, drmDevicePtr *device)
     int ret, i, node_count;
     int max_count = 16;
     dev_t find_rdev;
+    uint32_t flags = 0;
 
     if (fd == -1 || device == NULL)
         return -EINVAL;
@@ -3142,7 +3145,7 @@ int drmGetDevice(int fd, drmDevicePtr *device)
 
         switch (subsystem_type) {
         case DRM_BUS_PCI:
-            ret = drmProcessPciDevice(&d, node, node_type, maj, min, true);
+            ret = drmProcessPciDevice(&d, node, node_type, maj, min, true, flags);
             if (ret)
                 goto free_devices;
 
@@ -3216,6 +3219,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     int maj, min;
     int ret, i, node_count, device_count;
     int max_count = 16;
+    uint32_t flags = 0;
 
     local_devices = calloc(max_count, sizeof(drmDevicePtr));
     if (local_devices == NULL)
@@ -3251,7 +3255,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
         switch (subsystem_type) {
         case DRM_BUS_PCI:
             ret = drmProcessPciDevice(&device, node, node_type,
-                                      maj, min, devices != NULL);
+                                      maj, min, devices != NULL, flags);
             if (ret)
                 goto free_devices;
 
