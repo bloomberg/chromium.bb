@@ -181,6 +181,7 @@ class GFX_EXPORT ColorSpace {
 
   friend class ICCProfile;
   friend class ColorSpaceToColorSpaceTransform;
+  friend class ColorSpaceWin;
   friend struct IPC::ParamTraits<gfx::ColorSpace>;
   FRIEND_TEST_ALL_PREFIXES(SimpleColorSpace, GetColorSpace);
 };

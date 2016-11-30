@@ -35,16 +35,19 @@
 #include "base/stl_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/trace_event.h"
+#include "base/win/scoped_co_mem.h"
 #include "base/win/windows_version.h"
 #include "build/build_config.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_driver_bug_workarounds.h"
+#include "media/base/media_switches.h"
 #include "media/base/win/mf_helpers.h"
 #include "media/base/win/mf_initializer.h"
 #include "media/gpu/dxva_picture_buffer_win.h"
 #include "media/video/video_decode_accelerator.h"
 #include "third_party/angle/include/EGL/egl.h"
 #include "third_party/angle/include/EGL/eglext.h"
+#include "ui/gfx/color_space_win.h"
 #include "ui/gl/gl_bindings.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_fence.h"
@@ -519,6 +522,7 @@ DXVAVideoDecodeAccelerator::DXVAVideoDecodeAccelerator(
   weak_ptr_ = weak_this_factory_.GetWeakPtr();
   memset(&input_stream_info_, 0, sizeof(input_stream_info_));
   memset(&output_stream_info_, 0, sizeof(output_stream_info_));
+  use_color_info_ = base::FeatureList::IsEnabled(kVideoBlitColorAccuracy);
 }
 
 DXVAVideoDecodeAccelerator::~DXVAVideoDecodeAccelerator() {
@@ -702,7 +706,92 @@ bool DXVAVideoDecodeAccelerator::CreateD3DDevManager() {
   // CopyOutputSampleDataToPictureBuffer).
   hr = query_->Issue(D3DISSUE_END);
   RETURN_ON_HR_FAILURE(hr, "Failed to issue END test query", false);
+
+  CreateVideoProcessor();
   return true;
+}
+
+bool DXVAVideoDecodeAccelerator::CreateVideoProcessor() {
+  if (!use_color_info_)
+    return false;
+
+  // TODO(Hubbe): Don't try again if we tried and failed already.
+  if (video_processor_service_.get())
+    return true;
+  HRESULT hr = DXVA2CreateVideoService(d3d9_device_ex_.get(),
+                                       IID_IDirectXVideoProcessorService,
+                                       video_processor_service_.ReceiveVoid());
+  RETURN_ON_HR_FAILURE(hr, "DXVA2CreateVideoService failed", false);
+
+  // TODO(Hubbe): Use actual video settings.
+  DXVA2_VideoDesc inputDesc;
+  inputDesc.SampleWidth = 1920;
+  inputDesc.SampleHeight = 1080;
+  inputDesc.SampleFormat.VideoChromaSubsampling =
+      DXVA2_VideoChromaSubsampling_MPEG2;
+  inputDesc.SampleFormat.NominalRange = DXVA2_NominalRange_16_235;
+  inputDesc.SampleFormat.VideoTransferMatrix = DXVA2_VideoTransferMatrix_BT709;
+  inputDesc.SampleFormat.VideoLighting = DXVA2_VideoLighting_dim;
+  inputDesc.SampleFormat.VideoPrimaries = DXVA2_VideoPrimaries_BT709;
+  inputDesc.SampleFormat.VideoTransferFunction = DXVA2_VideoTransFunc_709;
+  inputDesc.SampleFormat.SampleFormat = DXVA2_SampleProgressiveFrame;
+  inputDesc.Format = (D3DFORMAT)MAKEFOURCC('N', 'V', '1', '2');
+  inputDesc.InputSampleFreq.Numerator = 30;
+  inputDesc.InputSampleFreq.Denominator = 1;
+  inputDesc.OutputFrameFreq.Numerator = 30;
+  inputDesc.OutputFrameFreq.Denominator = 1;
+
+  UINT guid_count = 0;
+  base::win::ScopedCoMem<GUID> guids;
+  hr = video_processor_service_->GetVideoProcessorDeviceGuids(
+      &inputDesc, &guid_count, &guids);
+  RETURN_ON_HR_FAILURE(hr, "GetVideoProcessorDeviceGuids failed", false);
+
+  for (UINT g = 0; g < guid_count; g++) {
+    DXVA2_VideoProcessorCaps caps;
+    hr = video_processor_service_->GetVideoProcessorCaps(
+        guids[g], &inputDesc, D3DFMT_X8R8G8B8, &caps);
+    if (hr)
+      continue;
+
+    if (!(caps.VideoProcessorOperations & DXVA2_VideoProcess_YUV2RGB))
+      continue;
+
+    base::win::ScopedCoMem<D3DFORMAT> formats;
+    UINT format_count = 0;
+    hr = video_processor_service_->GetVideoProcessorRenderTargets(
+        guids[g], &inputDesc, &format_count, &formats);
+    if (hr)
+      continue;
+
+    UINT f;
+    for (f = 0; f < format_count; f++) {
+      if (formats[f] == D3DFMT_X8R8G8B8) {
+        break;
+      }
+    }
+    if (f == format_count)
+      continue;
+
+    // Create video processor
+    hr = video_processor_service_->CreateVideoProcessor(
+        guids[g], &inputDesc, D3DFMT_X8R8G8B8, 0, processor_.Receive());
+    if (hr)
+      continue;
+
+    DXVA2_ValueRange range;
+    processor_->GetProcAmpRange(DXVA2_ProcAmp_Brightness, &range);
+    default_procamp_values_.Brightness = range.DefaultValue;
+    processor_->GetProcAmpRange(DXVA2_ProcAmp_Contrast, &range);
+    default_procamp_values_.Contrast = range.DefaultValue;
+    processor_->GetProcAmpRange(DXVA2_ProcAmp_Hue, &range);
+    default_procamp_values_.Hue = range.DefaultValue;
+    processor_->GetProcAmpRange(DXVA2_ProcAmp_Saturation, &range);
+    default_procamp_values_.Saturation = range.DefaultValue;
+
+    return true;
+  }
+  return false;
 }
 
 bool DXVAVideoDecodeAccelerator::CreateDX11DevManager() {
@@ -1785,18 +1874,7 @@ void DXVAVideoDecodeAccelerator::ProcessPendingSamples() {
 
       pending_sample->picture_buffer_id = index->second->id();
       index->second->set_bound();
-
-      // We only propagate the input color space if we can give the raw YUV data
-      // back to the browser process. When we cannot return the YUV data, we
-      // have to do a copy to an RGBA texture, which makes proper color
-      // management difficult as some fidelity is lost. Also, we currently let
-      // the drivers decide how to actually do the YUV to RGB conversion, which
-      // means that even if we wanted to try to color-adjust the RGB output, we
-      // don't actually know exactly what color space it is in anymore.
-      // TODO(hubbe): Figure out a way to always return the raw YUV data.
-      if (share_nv12_textures_ || copy_nv12_textures_) {
-        index->second->set_color_space(pending_sample->color_space);
-      }
+      index->second->set_color_space(pending_sample->color_space);
 
       if (share_nv12_textures_) {
         main_thread_task_runner_->PostTask(
@@ -2247,23 +2325,65 @@ bool DXVAVideoDecodeAccelerator::OutputSamplesPresent() {
   return !pending_output_samples_.empty();
 }
 
-void DXVAVideoDecodeAccelerator::CopySurface(IDirect3DSurface9* src_surface,
-                                             IDirect3DSurface9* dest_surface,
-                                             int picture_buffer_id,
-                                             int input_buffer_id) {
+void DXVAVideoDecodeAccelerator::CopySurface(
+    IDirect3DSurface9* src_surface,
+    IDirect3DSurface9* dest_surface,
+    int picture_buffer_id,
+    int input_buffer_id,
+    const gfx::ColorSpace& color_space) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopySurface");
   if (!decoder_thread_task_runner_->BelongsToCurrentThread()) {
     decoder_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&DXVAVideoDecodeAccelerator::CopySurface,
                               base::Unretained(this), src_surface, dest_surface,
-                              picture_buffer_id, input_buffer_id));
+                              picture_buffer_id, input_buffer_id, color_space));
     return;
   }
 
-  HRESULT hr = d3d9_device_ex_->StretchRect(src_surface, NULL, dest_surface,
-                                            NULL, D3DTEXF_NONE);
-  RETURN_ON_HR_FAILURE(hr, "Colorspace conversion via StretchRect failed", );
+  HRESULT hr;
+  if (processor_) {
+    D3DSURFACE_DESC src_desc;
+    src_surface->GetDesc(&src_desc);
+    int width = src_desc.Width;
+    int height = src_desc.Height;
+    RECT rect = {0, 0, width, height};
+    DXVA2_VideoSample sample = {0};
+    sample.End = 1000;
+    if (use_color_info_) {
+      sample.SampleFormat = gfx::ColorSpaceWin::GetExtendedFormat(color_space);
+    } else {
+      sample.SampleFormat.SampleFormat = DXVA2_SampleProgressiveFrame;
+    }
 
+    sample.SrcSurface = src_surface;
+    sample.SrcRect = rect;
+    sample.DstRect = rect;
+    sample.PlanarAlpha = DXVA2_Fixed32OpaqueAlpha();
+
+    DXVA2_VideoProcessBltParams params = {0};
+    params.TargetFrame = 0;
+    params.TargetRect = rect;
+    params.ConstrictionSize = {width, height};
+    params.BackgroundColor = {0, 0, 0, 0xFFFF};
+    params.ProcAmpValues = default_procamp_values_;
+
+    params.Alpha = DXVA2_Fixed32OpaqueAlpha();
+
+    hr = processor_->VideoProcessBlt(dest_surface, &params, &sample, 1, NULL);
+    if (hr != S_OK) {
+      LOG(ERROR) << "VideoProcessBlt failed with code " << hr
+                 << "  E_INVALIDARG= " << E_INVALIDARG;
+
+      // Release the processor and fall back to StretchRect()
+      processor_ = NULL;
+    }
+  }
+
+  if (!processor_) {
+    hr = d3d9_device_ex_->StretchRect(src_surface, NULL, dest_surface, NULL,
+                                      D3DTEXF_NONE);
+    RETURN_ON_HR_FAILURE(hr, "Colorspace conversion via StretchRect failed", );
+  }
   // Ideally, this should be done immediately before the draw call that uses
   // the texture. Flush it once here though.
   hr = query_->Issue(D3DISSUE_END);
@@ -2320,8 +2440,9 @@ void DXVAVideoDecodeAccelerator::CopySurfaceComplete(
   RETURN_AND_NOTIFY_ON_FAILURE(result, "Failed to complete copying surface",
                                PLATFORM_FAILURE, );
 
-  NotifyPictureReady(picture_buffer->id(), input_buffer_id,
-                     picture_buffer->color_space());
+  NotifyPictureReady(
+      picture_buffer->id(), input_buffer_id,
+      copy_nv12_textures_ ? picture_buffer->color_space() : gfx::ColorSpace());
 
   {
     base::AutoLock lock(decoder_lock_);
@@ -2400,7 +2521,8 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
     base::win::ScopedComPtr<IDXGIKeyedMutex> dest_keyed_mutex,
     uint64_t keyed_mutex_value,
     int picture_buffer_id,
-    int input_buffer_id) {
+    int input_buffer_id,
+    const gfx::ColorSpace& color_space) {
   TRACE_EVENT0("media", "DXVAVideoDecodeAccelerator::CopyTexture");
   DCHECK(main_thread_task_runner_->BelongsToCurrentThread());
 
@@ -2421,8 +2543,8 @@ void DXVAVideoDecodeAccelerator::CopyTexture(
   src_texture->GetDesc(&source_desc);
 
   // Set up the input and output types for the video processor MFT.
-  if (!InitializeDX11VideoFormatConverterMediaType(source_desc.Width,
-                                                   source_desc.Height)) {
+  if (!InitializeDX11VideoFormatConverterMediaType(
+          source_desc.Width, source_desc.Height, color_space)) {
     RETURN_AND_NOTIFY_ON_FAILURE(
         false, "Failed to initialize media types for convesion.",
         PLATFORM_FAILURE, );
@@ -2587,9 +2709,12 @@ void DXVAVideoDecodeAccelerator::FlushDecoder(int iterations,
 
 bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
     int width,
-    int height) {
-  if (!dx11_video_format_converter_media_type_needs_init_)
+    int height,
+    const gfx::ColorSpace& color_space) {
+  if (!dx11_video_format_converter_media_type_needs_init_ &&
+      (!use_color_info_ || color_space == dx11_converter_color_space_)) {
     return true;
+  }
 
   CHECK(video_format_converter_mft_.get());
 
@@ -2623,6 +2748,17 @@ bool DXVAVideoDecodeAccelerator::InitializeDX11VideoFormatConverterMediaType(
   hr = MFSetAttributeSize(media_type.get(), MF_MT_FRAME_SIZE, width, height);
   RETURN_AND_NOTIFY_ON_HR_FAILURE(hr, "Failed to set media type attributes",
                                   PLATFORM_FAILURE, false);
+
+  if (use_color_info_) {
+    DXVA2_ExtendedFormat format =
+        gfx::ColorSpaceWin::GetExtendedFormat(color_space);
+    media_type->SetUINT32(MF_MT_YUV_MATRIX, format.VideoTransferMatrix);
+    media_type->SetUINT32(MF_MT_VIDEO_NOMINAL_RANGE, format.NominalRange);
+    media_type->SetUINT32(MF_MT_VIDEO_PRIMARIES, format.VideoPrimaries);
+    media_type->SetUINT32(MF_MT_TRANSFER_FUNCTION,
+                          format.VideoTransferFunction);
+    dx11_converter_color_space_ = color_space;
+  }
 
   hr = video_format_converter_mft_->SetInputType(0, media_type.get(), 0);
   if (FAILED(hr))

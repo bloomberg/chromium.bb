@@ -62,6 +62,8 @@ component("gfx") {
     "color_palette.h",
     "color_space.cc",
     "color_space.h",
+    "color_space_win.cc",
+    "color_space_win.h",
     "color_transform.cc",
     "color_transform.h",
     "color_utils.cc",

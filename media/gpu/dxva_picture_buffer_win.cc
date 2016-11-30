@@ -293,7 +293,7 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
     decoder_dx11_texture_ = dx11_texture;
     decoder->CopyTexture(dx11_texture, dx11_decoding_texture_.get(),
                          dx11_keyed_mutex_, keyed_mutex_value_, id(),
-                         input_buffer_id);
+                         input_buffer_id, color_space_);
     return true;
   }
   D3DSURFACE_DESC surface_desc;
@@ -329,7 +329,8 @@ bool PbufferPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   decoder_surface_ = dest_surface;
 
   decoder->CopySurface(decoder_surface_.get(), target_surface_.get(), id(),
-                       input_buffer_id);
+                       input_buffer_id, color_space_);
+  color_space_ = gfx::ColorSpace();
   return true;
 }
 
@@ -611,7 +612,7 @@ bool EGLStreamCopyPictureBuffer::CopyOutputSampleDataToPictureBuffer(
   dx11_decoding_texture_ = dx11_texture;
   decoder->CopyTexture(dx11_texture, decoder_copy_texture_.get(),
                        dx11_keyed_mutex_, keyed_mutex_value_, id(),
-                       input_buffer_id);
+                       input_buffer_id, color_space_);
   // The texture copy will acquire the current keyed mutex value and release
   // with the value + 1.
   keyed_mutex_value_++;

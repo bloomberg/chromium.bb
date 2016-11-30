@@ -167,6 +167,10 @@ const base::Feature kUseNewMediaCache{"use-new-media-cache",
 const base::Feature kVideoColorManagement{"video-color-management",
                                           base::FEATURE_DISABLED_BY_DEFAULT};
 
+// Inform video blitter of video color space.
+const base::Feature kVideoBlitColorAccuracy{"video-blit-color-accuracy",
+                                            base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables support for External Clear Key (ECK) key system for testing on
 // supported platforms. On platforms that do not support ECK, this feature has
 // no effect.
