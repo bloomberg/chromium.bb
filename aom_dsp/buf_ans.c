@@ -40,3 +40,20 @@ void aom_buf_ans_grow(struct BufAnsCoder *c) {
   c->buf = new_buf;
   c->size = new_size;
 }
+
+void aom_buf_ans_flush(struct BufAnsCoder *const c) {
+  int offset;
+  for (offset = c->offset - 1; offset >= 0; --offset) {
+    if (c->buf[offset].method == ANS_METHOD_RANS) {
+      struct rans_sym sym;
+      sym.prob = c->buf[offset].prob;
+      sym.cum_prob = c->buf[offset].val_start;
+      rans_write(&c->ans, &sym);
+    } else {
+      uabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
+                 (AnsP8)c->buf[offset].prob);
+    }
+  }
+  c->offset = 0;
+  c->output_bytes += ans_write_end(&c->ans);
+}

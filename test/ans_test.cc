@@ -56,7 +56,7 @@ bool check_uabs(const PvVec &pv_vec, uint8_t *buf) {
   for (PvVec::const_iterator it = pv_vec.begin(); it != pv_vec.end(); ++it) {
     buf_uabs_write(&a, it->second, 256 - it->first);
   }
-  buf_ans_flush(&a);
+  aom_buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
   int offset = buf_ans_write_end(&a);
   aom_buf_ans_free(&a);
@@ -125,7 +125,7 @@ bool check_rans(const std::vector<int> &sym_vec, const rans_sym *const tab,
        it != sym_vec.end(); ++it) {
     buf_rans_write(&a, &tab[*it]);
   }
-  buf_ans_flush(&a);
+  aom_buf_ans_flush(&a);
   std::clock_t enc_time = std::clock() - start;
   int offset = buf_ans_write_end(&a);
   aom_buf_ans_free(&a);

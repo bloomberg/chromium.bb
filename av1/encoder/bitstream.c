@@ -3536,7 +3536,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       buf_ans_write_init(buf_ans, buf->data + data_offset);
       write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
       assert(tok == tok_end);
-      buf_ans_flush(buf_ans);
+      aom_buf_ans_flush(buf_ans);
       tile_size = buf_ans_write_end(buf_ans);
 #endif  // !CONFIG_ANS
 
@@ -3685,7 +3685,7 @@ static uint32_t write_tiles(AV1_COMP *const cpi, uint8_t *const dst,
       buf_ans_write_init(buf_ans, dst + total_size);
       write_modes(cpi, &tile_info, buf_ans, &tok, tok_end);
       assert(tok == tok_end);
-      buf_ans_flush(buf_ans);
+      aom_buf_ans_flush(buf_ans);
       tile_size = buf_ans_write_end(buf_ans);
 #else
       aom_start_encode(&mode_bc, dst + total_size);
@@ -4327,7 +4327,7 @@ static uint32_t write_compressed_header(AV1_COMP *cpi, uint8_t *data) {
 #endif
 #endif
 #if CONFIG_ANS
-  buf_ans_flush(header_bc);
+  aom_buf_ans_flush(header_bc);
   header_size = buf_ans_write_end(header_bc);
   assert(header_size <= 0xffff);
   return header_size;

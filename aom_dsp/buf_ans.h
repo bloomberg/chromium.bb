@@ -52,6 +52,8 @@ void aom_buf_ans_free(struct BufAnsCoder *c);
 
 void aom_buf_ans_grow(struct BufAnsCoder *c);
 
+void aom_buf_ans_flush(struct BufAnsCoder *const c);
+
 static INLINE void buf_ans_write_init(struct BufAnsCoder *const c,
                                       uint8_t *const output_buffer) {
   c->offset = 0;
@@ -81,23 +83,6 @@ static INLINE void buf_rans_write(struct BufAnsCoder *const c,
   c->buf[c->offset].val_start = sym->cum_prob;
   c->buf[c->offset].prob = sym->prob;
   ++c->offset;
-}
-
-static INLINE void buf_ans_flush(struct BufAnsCoder *const c) {
-  int offset;
-  for (offset = c->offset - 1; offset >= 0; --offset) {
-    if (c->buf[offset].method == ANS_METHOD_RANS) {
-      struct rans_sym sym;
-      sym.prob = c->buf[offset].prob;
-      sym.cum_prob = c->buf[offset].val_start;
-      rans_write(&c->ans, &sym);
-    } else {
-      uabs_write(&c->ans, (uint8_t)c->buf[offset].val_start,
-                 (AnsP8)c->buf[offset].prob);
-    }
-  }
-  c->offset = 0;
-  c->output_bytes += ans_write_end(&c->ans);
 }
 
 static INLINE void buf_uabs_write_bit(struct BufAnsCoder *c, int bit) {
