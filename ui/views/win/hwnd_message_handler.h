@@ -307,8 +307,8 @@ class VIEWS_EXPORT HWNDMessageHandler :
   // Lock or unlock the window from being able to redraw itself in response to
   // updates to its invalid region.
   class ScopedRedrawLock;
-  void LockUpdates(bool force);
-  void UnlockUpdates(bool force);
+  void LockUpdates();
+  void UnlockUpdates();
 
   // Stops ignoring SetWindowPos() requests (see below).
   void StopIgnoringPosChanges() { ignore_window_pos_changes_ = false; }

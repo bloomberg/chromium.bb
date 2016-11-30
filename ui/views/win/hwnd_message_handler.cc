@@ -256,6 +256,20 @@ const int kSynthesizedMouseTouchMessagesTimeDifference = 500;
 // it doesn't guard against direct visiblility changes, and multiple locks may
 // exist simultaneously to handle certain nested Windows messages.
 //
+// This lock is disabled when DirectComposition is used and there's a child
+// rendering window, as the WS_CLIPCHILDREN on the parent window should
+// prevent the glitched rendering and making the window contents non-visible
+// can cause a them to disappear for a frame.
+//
+// We normally skip locked updates when Aero is on for two reasons:
+// 1. Because it isn't necessary. However, for windows without WS_CAPTION a
+//    close button may still be drawn, so the resize lock remains enabled for
+//    them. See http://crrev.com/130323
+// 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
+//    attempting to present a child window's backbuffer onscreen. When these
+//    two actions race with one another, the child window will either flicker
+//    or will simply stop updating entirely.
+//
 // IMPORTANT: Do not use this scoping object for large scopes or periods of
 //            time! IT WILL PREVENT THE WINDOW FROM BEING REDRAWN! (duh).
 //
@@ -264,18 +278,20 @@ const int kSynthesizedMouseTouchMessagesTimeDifference = 500;
 class HWNDMessageHandler::ScopedRedrawLock {
  public:
   explicit ScopedRedrawLock(HWNDMessageHandler* owner)
-    : owner_(owner),
-      hwnd_(owner_->hwnd()),
-      was_visible_(owner_->IsVisible()),
-      cancel_unlock_(false),
-      force_(!(GetWindowLong(hwnd_, GWL_STYLE) & WS_CAPTION)) {
-    if (was_visible_ && ::IsWindow(hwnd_))
-      owner_->LockUpdates(force_);
+      : owner_(owner),
+        hwnd_(owner_->hwnd()),
+        cancel_unlock_(false),
+        should_lock_(owner_->IsVisible() && !owner->HasChildRenderingWindow() &&
+                     ::IsWindow(hwnd_) &&
+                     (!(GetWindowLong(hwnd_, GWL_STYLE) & WS_CAPTION) ||
+                      !ui::win::IsAeroGlassEnabled())) {
+    if (should_lock_)
+      owner_->LockUpdates();
   }
 
   ~ScopedRedrawLock() {
-    if (!cancel_unlock_ && was_visible_ && ::IsWindow(hwnd_))
-      owner_->UnlockUpdates(force_);
+    if (!cancel_unlock_ && should_lock_ && ::IsWindow(hwnd_))
+      owner_->UnlockUpdates();
   }
 
   // Cancel the unlock operation, call this if the Widget is being destroyed.
@@ -286,12 +302,10 @@ class HWNDMessageHandler::ScopedRedrawLock {
   HWNDMessageHandler* owner_;
   // The owner's HWND, cached to avoid action after window destruction.
   HWND hwnd_;
-  // Records the HWND visibility at the time of creation.
-  bool was_visible_;
   // A flag indicating that the unlock operation was canceled.
   bool cancel_unlock_;
-  // If true, perform the redraw lock regardless of Aero state.
-  bool force_;
+  // If false, don't use redraw lock.
+  const bool should_lock_;
 
   DISALLOW_COPY_AND_ASSIGN(ScopedRedrawLock);
 };
@@ -1224,21 +1238,15 @@ LRESULT HWNDMessageHandler::DefWindowProcWithRedrawLock(UINT message,
   return result;
 }
 
-void HWNDMessageHandler::LockUpdates(bool force) {
-  // We skip locked updates when Aero is on for two reasons:
-  // 1. Because it isn't necessary
-  // 2. Because toggling the WS_VISIBLE flag may occur while the GPU process is
-  //    attempting to present a child window's backbuffer onscreen. When these
-  //    two actions race with one another, the child window will either flicker
-  //    or will simply stop updating entirely.
-  if ((force || !ui::win::IsAeroGlassEnabled()) && ++lock_updates_count_ == 1) {
+void HWNDMessageHandler::LockUpdates() {
+  if (++lock_updates_count_ == 1) {
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) & ~WS_VISIBLE);
   }
 }
 
-void HWNDMessageHandler::UnlockUpdates(bool force) {
-  if ((force || !ui::win::IsAeroGlassEnabled()) && --lock_updates_count_ <= 0) {
+void HWNDMessageHandler::UnlockUpdates() {
+  if (--lock_updates_count_ <= 0) {
     SetWindowLong(hwnd(), GWL_STYLE,
                   GetWindowLong(hwnd(), GWL_STYLE) | WS_VISIBLE);
     lock_updates_count_ = 0;
