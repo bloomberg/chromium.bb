@@ -189,6 +189,8 @@ class WebrtcTransport::PeerConnectionWrapper
     rtc_config.rtcp_mux_policy =
         webrtc::PeerConnectionInterface::kRtcpMuxPolicyRequire;
 
+    rtc_config.media_config.video.periodic_alr_bandwidth_probing = true;
+
     peer_connection_ = peer_connection_factory_->CreatePeerConnection(
         rtc_config, &constraints, std::move(port_allocator), nullptr, this);
   }
