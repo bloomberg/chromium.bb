@@ -221,6 +221,7 @@ blink_core_sources("css") {
     "SelectorChecker.h",
     "SelectorFilter.cpp",
     "SelectorFilter.h",
+    "StyleAutoColor.h",
     "StyleColor.cpp",
     "StyleColor.h",
     "StyleMedia.cpp",

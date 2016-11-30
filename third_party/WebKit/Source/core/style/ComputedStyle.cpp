@@ -1129,7 +1129,11 @@ void ComputedStyle::updatePropertySpecificDifferences(
                 m_rareInheritedData->m_textDecorationSkip !=
                     other.m_rareInheritedData->m_textDecorationSkip ||
                 m_rareInheritedData->appliedTextDecorations !=
-                    other.m_rareInheritedData->appliedTextDecorations)) {
+                    other.m_rareInheritedData->appliedTextDecorations ||
+                m_rareInheritedData->caretColor() !=
+                    other.m_rareInheritedData->caretColor() ||
+                m_rareInheritedData->visitedLinkCaretColor() !=
+                    other.m_rareInheritedData->visitedLinkCaretColor())) {
       diff.setTextDecorationOrColorChanged();
     }
   }
@@ -2073,6 +2077,14 @@ Color ComputedStyle::colorIncludingFallback(int colorProperty,
           visitedLink ? visitedLinkBorderBottomColor() : borderBottomColor();
       borderStyle = borderBottomStyle();
       break;
+    case CSSPropertyCaretColor: {
+      StyleAutoColor autoColor =
+          visitedLink ? visitedLinkCaretColor() : caretColor();
+      // TODO(rego): We may want to adjust the caret color if it's the same than
+      // the background to ensure good visibility and contrast.
+      result = autoColor.toStyleColor();
+      break;
+    }
     case CSSPropertyColor:
       result = visitedLink ? visitedLinkColor() : color();
       break;

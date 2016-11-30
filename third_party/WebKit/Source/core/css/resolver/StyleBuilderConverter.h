@@ -137,6 +137,9 @@ class StyleBuilderConverter {
   static StyleColor convertStyleColor(StyleResolverState&,
                                       const CSSValue&,
                                       bool forVisitedLink = false);
+  static StyleAutoColor convertStyleAutoColor(StyleResolverState&,
+                                              const CSSValue&,
+                                              bool forVisitedLink = false);
   static float convertTextStrokeWidth(StyleResolverState&, const CSSValue&);
   static TextSizeAdjust convertTextSizeAdjust(StyleResolverState&,
                                               const CSSValue&);

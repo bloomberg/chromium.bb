@@ -2477,6 +2477,11 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR(m_rareInheritedData, userSelect, s);
   }
 
+  // caret-color
+  void setCaretColor(const StyleAutoColor& c) {
+    SET_VAR_WITH_SETTER(m_rareInheritedData, caretColor, setCaretColor, c);
+  }
+
   // Font properties.
   const Font& font() const;
   void setFont(const Font&);
@@ -3859,6 +3864,10 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     SET_VAR_WITH_SETTER(m_rareInheritedData, visitedLinkTextStrokeColor,
                         setVisitedLinkTextStrokeColor, v);
   }
+  void setVisitedLinkCaretColor(const StyleAutoColor& v) {
+    SET_VAR_WITH_SETTER(m_rareInheritedData, visitedLinkCaretColor,
+                        setVisitedLinkCaretColor, v);
+  }
 
   void inheritUnicodeBidiFrom(const ComputedStyle& parent) {
     m_nonInheritedData.m_unicodeBidi = parent.m_nonInheritedData.m_unicodeBidi;
@@ -3907,6 +3916,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     return m_surround->border.bottom().color();
   }
   StyleColor backgroundColor() const { return m_background->color(); }
+  StyleAutoColor caretColor() const {
+    return m_rareInheritedData->caretColor();
+  }
   Color color() const;
   StyleColor columnRuleColor() const {
     return m_rareNonInheritedData->m_multiCol->m_rule.color();
@@ -3922,6 +3934,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   StyleColor textStrokeColor() const {
     return m_rareInheritedData->textStrokeColor();
+  }
+  StyleAutoColor visitedLinkCaretColor() const {
+    return m_rareInheritedData->visitedLinkCaretColor();
   }
   Color visitedLinkColor() const;
   StyleColor visitedLinkBackgroundColor() const {

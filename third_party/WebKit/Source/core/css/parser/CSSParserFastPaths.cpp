@@ -138,6 +138,7 @@ static CSSValue* parseSimpleLengthValue(CSSPropertyID propertyId,
 
 static inline bool isColorPropertyID(CSSPropertyID propertyId) {
   switch (propertyId) {
+    case CSSPropertyCaretColor:
     case CSSPropertyColor:
     case CSSPropertyBackgroundColor:
     case CSSPropertyBorderBottomColor:

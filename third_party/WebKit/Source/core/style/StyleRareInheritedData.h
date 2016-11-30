@@ -26,6 +26,7 @@
 #define StyleRareInheritedData_h
 
 #include "core/CoreExport.h"
+#include "core/css/StyleAutoColor.h"
 #include "core/css/StyleColor.h"
 #include "core/style/TextSizeAdjust.h"
 #include "platform/Length.h"
@@ -87,6 +88,13 @@ class CORE_EXPORT StyleRareInheritedData
     return m_textEmphasisColorIsCurrentColor ? StyleColor::currentColor()
                                              : StyleColor(m_textEmphasisColor);
   }
+  StyleAutoColor caretColor() const {
+    if (m_caretColorIsCurrentColor)
+      return StyleAutoColor::currentColor();
+    if (m_caretColorIsAuto)
+      return StyleAutoColor::autoColor();
+    return StyleAutoColor(m_caretColor);
+  }
   StyleColor visitedLinkTextStrokeColor() const {
     return m_visitedLinkTextStrokeColorIsCurrentColor
                ? StyleColor::currentColor()
@@ -102,6 +110,13 @@ class CORE_EXPORT StyleRareInheritedData
                ? StyleColor::currentColor()
                : StyleColor(m_visitedLinkTextEmphasisColor);
   }
+  StyleAutoColor visitedLinkCaretColor() const {
+    if (m_visitedLinkCaretColorIsCurrentColor)
+      return StyleAutoColor::currentColor();
+    if (m_visitedLinkCaretColorIsAuto)
+      return StyleAutoColor::autoColor();
+    return StyleAutoColor(m_visitedLinkCaretColor);
+  }
 
   void setTextStrokeColor(const StyleColor& color) {
     m_textStrokeColor = color.resolve(Color());
@@ -115,6 +130,11 @@ class CORE_EXPORT StyleRareInheritedData
     m_textEmphasisColor = color.resolve(Color());
     m_textEmphasisColorIsCurrentColor = color.isCurrentColor();
   }
+  void setCaretColor(const StyleAutoColor& color) {
+    m_caretColor = color.resolve(Color());
+    m_caretColorIsCurrentColor = color.isCurrentColor();
+    m_caretColorIsAuto = color.isAutoColor();
+  }
   void setVisitedLinkTextStrokeColor(const StyleColor& color) {
     m_visitedLinkTextStrokeColor = color.resolve(Color());
     m_visitedLinkTextStrokeColorIsCurrentColor = color.isCurrentColor();
@@ -127,15 +147,22 @@ class CORE_EXPORT StyleRareInheritedData
     m_visitedLinkTextEmphasisColor = color.resolve(Color());
     m_visitedLinkTextEmphasisColorIsCurrentColor = color.isCurrentColor();
   }
+  void setVisitedLinkCaretColor(const StyleAutoColor& color) {
+    m_visitedLinkCaretColor = color.resolve(Color());
+    m_visitedLinkCaretColorIsCurrentColor = color.isCurrentColor();
+    m_visitedLinkCaretColorIsAuto = color.isAutoColor();
+  }
 
   Color m_textStrokeColor;
   float textStrokeWidth;
   Color m_textFillColor;
   Color m_textEmphasisColor;
+  Color m_caretColor;
 
   Color m_visitedLinkTextStrokeColor;
   Color m_visitedLinkTextFillColor;
   Color m_visitedLinkTextEmphasisColor;
+  Color m_visitedLinkCaretColor;
 
   RefPtr<ShadowList>
       textShadow;  // Our text shadow information for shadowed text drawing.
@@ -154,9 +181,13 @@ class CORE_EXPORT StyleRareInheritedData
   unsigned m_textStrokeColorIsCurrentColor : 1;
   unsigned m_textFillColorIsCurrentColor : 1;
   unsigned m_textEmphasisColorIsCurrentColor : 1;
+  unsigned m_caretColorIsCurrentColor : 1;
+  unsigned m_caretColorIsAuto : 1;
   unsigned m_visitedLinkTextStrokeColorIsCurrentColor : 1;
   unsigned m_visitedLinkTextFillColorIsCurrentColor : 1;
   unsigned m_visitedLinkTextEmphasisColorIsCurrentColor : 1;
+  unsigned m_visitedLinkCaretColorIsCurrentColor : 1;
+  unsigned m_visitedLinkCaretColorIsAuto : 1;
 
   unsigned textSecurity : 2;          // ETextSecurity
   unsigned userModify : 2;            // EUserModify (editing)

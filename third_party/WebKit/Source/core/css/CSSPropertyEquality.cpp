@@ -116,6 +116,9 @@ bool CSSPropertyEquality::propertiesEqual(CSSPropertyID prop,
       return a.bottom() == b.bottom();
     case CSSPropertyBoxShadow:
       return dataEquivalent(a.boxShadow(), b.boxShadow());
+    case CSSPropertyCaretColor:
+      return a.caretColor() == b.caretColor() &&
+             a.visitedLinkCaretColor() == b.visitedLinkCaretColor();
     case CSSPropertyClip:
       return a.clip() == b.clip();
     case CSSPropertyColor:

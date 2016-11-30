@@ -92,6 +92,7 @@ static inline bool isValidVisitedLinkProperty(CSSPropertyID id) {
     case CSSPropertyBorderRightColor:
     case CSSPropertyBorderTopColor:
     case CSSPropertyBorderBottomColor:
+    case CSSPropertyCaretColor:
     case CSSPropertyColor:
     case CSSPropertyFill:
     case CSSPropertyOutlineColor:
@@ -1039,6 +1040,37 @@ void StyleBuilderFunctions::applyInheritCSSPropertyPosition(
     StyleResolverState& state) {
   if (!state.parentNode()->isDocumentNode())
     state.style()->setPosition(state.parentStyle()->position());
+}
+
+void StyleBuilderFunctions::applyInitialCSSPropertyCaretColor(
+    StyleResolverState& state) {
+  StyleAutoColor color = StyleAutoColor::autoColor();
+  if (state.applyPropertyToRegularStyle())
+    state.style()->setCaretColor(color);
+  if (state.applyPropertyToVisitedLinkStyle())
+    state.style()->setVisitedLinkCaretColor(color);
+}
+
+void StyleBuilderFunctions::applyInheritCSSPropertyCaretColor(
+    StyleResolverState& state) {
+  StyleAutoColor color = state.parentStyle()->caretColor();
+  if (state.applyPropertyToRegularStyle())
+    state.style()->setCaretColor(color);
+  if (state.applyPropertyToVisitedLinkStyle())
+    state.style()->setVisitedLinkCaretColor(color);
+}
+
+void StyleBuilderFunctions::applyValueCSSPropertyCaretColor(
+    StyleResolverState& state,
+    const CSSValue& value) {
+  if (state.applyPropertyToRegularStyle()) {
+    state.style()->setCaretColor(
+        StyleBuilderConverter::convertStyleAutoColor(state, value));
+  }
+  if (state.applyPropertyToVisitedLinkStyle()) {
+    state.style()->setVisitedLinkCaretColor(
+        StyleBuilderConverter::convertStyleAutoColor(state, value, true));
+  }
 }
 
 }  // namespace blink

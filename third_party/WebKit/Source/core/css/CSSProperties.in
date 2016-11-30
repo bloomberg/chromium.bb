@@ -203,6 +203,7 @@ break-before type_name=EBreak
 break-inside type_name=EBreak
 buffered-rendering svg
 caption-side inherited, keyword_only, keywords=[top|bottom|left|right]
+caret-color inherited, custom_all
 clear
 clip interpolable, converter=convertClip, custom_all
 clip-path interpolable, converter=convertClipPath

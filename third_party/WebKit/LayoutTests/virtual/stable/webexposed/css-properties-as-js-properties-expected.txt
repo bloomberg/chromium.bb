@@ -71,6 +71,7 @@ breakBefore
 breakInside
 bufferedRendering
 captionSide
+caretColor
 clear
 clip
 clipPath

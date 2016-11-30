@@ -39,7 +39,7 @@ struct SameSizeAsStyleRareInheritedData
   void* styleImage;
   Color firstColor;
   float firstFloat;
-  Color colors[5];
+  Color colors[7];
   void* ownPtrs[1];
   AtomicString atomicStrings[3];
   void* refPtrs[1];
@@ -71,9 +71,13 @@ StyleRareInheritedData::StyleRareInheritedData()
       m_textStrokeColorIsCurrentColor(true),
       m_textFillColorIsCurrentColor(true),
       m_textEmphasisColorIsCurrentColor(true),
+      m_caretColorIsCurrentColor(false),
+      m_caretColorIsAuto(true),
       m_visitedLinkTextStrokeColorIsCurrentColor(true),
       m_visitedLinkTextFillColorIsCurrentColor(true),
       m_visitedLinkTextEmphasisColorIsCurrentColor(true),
+      m_visitedLinkCaretColorIsCurrentColor(false),
+      m_visitedLinkCaretColorIsAuto(true),
       textSecurity(ComputedStyle::initialTextSecurity()),
       userModify(READ_ONLY),
       wordBreak(ComputedStyle::initialWordBreak()),
@@ -114,9 +118,11 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       textStrokeWidth(o.textStrokeWidth),
       m_textFillColor(o.m_textFillColor),
       m_textEmphasisColor(o.m_textEmphasisColor),
+      m_caretColor(o.m_caretColor),
       m_visitedLinkTextStrokeColor(o.m_visitedLinkTextStrokeColor),
       m_visitedLinkTextFillColor(o.m_visitedLinkTextFillColor),
       m_visitedLinkTextEmphasisColor(o.m_visitedLinkTextEmphasisColor),
+      m_visitedLinkCaretColor(o.m_visitedLinkCaretColor),
       textShadow(o.textShadow),
       highlight(o.highlight),
       cursorData(o.cursorData),
@@ -127,12 +133,17 @@ StyleRareInheritedData::StyleRareInheritedData(const StyleRareInheritedData& o)
       m_textStrokeColorIsCurrentColor(o.m_textStrokeColorIsCurrentColor),
       m_textFillColorIsCurrentColor(o.m_textFillColorIsCurrentColor),
       m_textEmphasisColorIsCurrentColor(o.m_textEmphasisColorIsCurrentColor),
+      m_caretColorIsCurrentColor(o.m_caretColorIsCurrentColor),
+      m_caretColorIsAuto(o.m_caretColorIsAuto),
       m_visitedLinkTextStrokeColorIsCurrentColor(
           o.m_visitedLinkTextStrokeColorIsCurrentColor),
       m_visitedLinkTextFillColorIsCurrentColor(
           o.m_visitedLinkTextFillColorIsCurrentColor),
       m_visitedLinkTextEmphasisColorIsCurrentColor(
           o.m_visitedLinkTextEmphasisColorIsCurrentColor),
+      m_visitedLinkCaretColorIsCurrentColor(
+          o.m_visitedLinkCaretColorIsCurrentColor),
+      m_visitedLinkCaretColorIsAuto(o.m_visitedLinkCaretColorIsAuto),
       textSecurity(o.textSecurity),
       userModify(o.userModify),
       wordBreak(o.wordBreak),
@@ -178,9 +189,11 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          textStrokeWidth == o.textStrokeWidth &&
          m_textFillColor == o.m_textFillColor &&
          m_textEmphasisColor == o.m_textEmphasisColor &&
+         m_caretColor == o.m_caretColor &&
          m_visitedLinkTextStrokeColor == o.m_visitedLinkTextStrokeColor &&
          m_visitedLinkTextFillColor == o.m_visitedLinkTextFillColor &&
          m_visitedLinkTextEmphasisColor == o.m_visitedLinkTextEmphasisColor &&
+         m_visitedLinkCaretColor == o.m_visitedLinkCaretColor &&
          tapHighlightColor == o.tapHighlightColor && shadowDataEquivalent(o) &&
          highlight == o.highlight &&
          dataEquivalent(cursorData.get(), o.cursorData.get()) &&
@@ -190,12 +203,17 @@ bool StyleRareInheritedData::operator==(const StyleRareInheritedData& o) const {
          m_textFillColorIsCurrentColor == o.m_textFillColorIsCurrentColor &&
          m_textEmphasisColorIsCurrentColor ==
              o.m_textEmphasisColorIsCurrentColor &&
+         m_caretColorIsCurrentColor == o.m_caretColorIsCurrentColor &&
+         m_caretColorIsAuto == o.m_caretColorIsAuto &&
          m_visitedLinkTextStrokeColorIsCurrentColor ==
              o.m_visitedLinkTextStrokeColorIsCurrentColor &&
          m_visitedLinkTextFillColorIsCurrentColor ==
              o.m_visitedLinkTextFillColorIsCurrentColor &&
          m_visitedLinkTextEmphasisColorIsCurrentColor ==
              o.m_visitedLinkTextEmphasisColorIsCurrentColor &&
+         m_visitedLinkCaretColorIsCurrentColor ==
+             o.m_visitedLinkCaretColorIsCurrentColor &&
+         m_visitedLinkCaretColorIsAuto == o.m_visitedLinkCaretColorIsAuto &&
          textSecurity == o.textSecurity && userModify == o.userModify &&
          wordBreak == o.wordBreak && overflowWrap == o.overflowWrap &&
          lineBreak == o.lineBreak && userSelect == o.userSelect &&

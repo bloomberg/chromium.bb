@@ -1110,6 +1110,20 @@ StyleColor StyleBuilderConverter::convertStyleColor(StyleResolverState& state,
                                                              forVisitedLink);
 }
 
+StyleAutoColor StyleBuilderConverter::convertStyleAutoColor(
+    StyleResolverState& state,
+    const CSSValue& value,
+    bool forVisitedLink) {
+  if (value.isIdentifierValue()) {
+    if (toCSSIdentifierValue(value).getValueID() == CSSValueCurrentcolor)
+      return StyleAutoColor::currentColor();
+    if (toCSSIdentifierValue(value).getValueID() == CSSValueAuto)
+      return StyleAutoColor::autoColor();
+  }
+  return state.document().textLinkColors().colorFromCSSValue(value, Color(),
+                                                             forVisitedLink);
+}
+
 float StyleBuilderConverter::convertTextStrokeWidth(StyleResolverState& state,
                                                     const CSSValue& value) {
   if (value.isIdentifierValue() && toCSSIdentifierValue(value).getValueID()) {

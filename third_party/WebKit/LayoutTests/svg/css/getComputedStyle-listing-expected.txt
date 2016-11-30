@@ -115,6 +115,7 @@ break-before: auto
 break-inside: auto
 buffered-rendering: auto
 caption-side: top
+caret-color: auto
 clear: none
 clip: auto
 clip-path: none

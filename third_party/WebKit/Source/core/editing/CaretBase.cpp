@@ -187,7 +187,8 @@ void CaretBase::paintCaret(Node* node,
     layoutObject->flipForWritingMode(drawingRect);
   drawingRect.moveBy(paintOffset);
 
-  const Color caretColor = node->layoutObject()->resolveColor(CSSPropertyColor);
+  const Color caretColor =
+      node->layoutObject()->resolveColor(CSSPropertyCaretColor);
   IntRect paintRect = pixelSnappedIntRect(drawingRect);
   DrawingRecorder drawingRecorder(context, *this, DisplayItem::kCaret,
                                   paintRect);

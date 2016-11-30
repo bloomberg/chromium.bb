@@ -3597,6 +3597,10 @@ const CSSValue* CSSPropertyParser::parseSingleValue(
     case CSSPropertyColor:
     case CSSPropertyBackgroundColor:
       return consumeColor(m_range, m_context.mode(), inQuirksMode());
+    case CSSPropertyCaretColor:
+      if (m_range.peek().id() == CSSValueAuto)
+        return consumeIdent(m_range);
+      return consumeColor(m_range, m_context.mode());
     case CSSPropertyWebkitBorderStartWidth:
     case CSSPropertyWebkitBorderEndWidth:
     case CSSPropertyWebkitBorderBeforeWidth:

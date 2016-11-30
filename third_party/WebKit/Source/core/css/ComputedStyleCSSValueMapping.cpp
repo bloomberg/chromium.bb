@@ -2205,6 +2205,12 @@ const CSSValue* ComputedStyleCSSValueMapping::get(
       return valueForShadowList(style.boxShadow(), style, true);
     case CSSPropertyCaptionSide:
       return CSSIdentifierValue::create(style.captionSide());
+    case CSSPropertyCaretColor:
+      if (style.caretColor().isCurrentColor())
+        return CSSIdentifierValue::create(CSSValueCurrentcolor);
+      if (style.caretColor().isAutoColor())
+        return CSSIdentifierValue::create(CSSValueAuto);
+      return CSSColorValue::create(style.caretColor().color().rgb());
     case CSSPropertyClear:
       return CSSIdentifierValue::create(style.clear());
     case CSSPropertyColor:
