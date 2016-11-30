@@ -26,7 +26,6 @@ template <class T> class scoped_refptr;
 
 namespace base {
 class SharedMemory;
-class SingleThreadTaskRunner;
 }
 
 namespace gpu {

@@ -24,7 +24,6 @@ namespace media {
 
 class Demuxer;
 class Renderer;
-class VideoFrame;
 
 class MEDIA_EXPORT Pipeline {
  public:

@@ -21,7 +21,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class MediaLog;
-class TextRenderer;
 
 // Pipeline runs the media pipeline.  Filters are created and called on the
 // task runner injected into this object. Pipeline works like a state

@@ -15,7 +15,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace media {
-class AudioBus;
 class AudioParameters;
 
 // A fake audio worker.  Using a provided message loop, FakeAudioWorker will

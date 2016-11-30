@@ -24,7 +24,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class CdmContext;
-class DecoderBuffer;
 class DecryptingDemuxerStream;
 class MediaLog;
 

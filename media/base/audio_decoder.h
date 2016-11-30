@@ -21,7 +21,6 @@ namespace media {
 
 class AudioBuffer;
 class CdmContext;
-class DemuxerStream;
 
 class MEDIA_EXPORT AudioDecoder {
  public:

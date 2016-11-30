@@ -33,7 +33,6 @@ namespace cast {
 
 class CastEnvironment;
 class CastReceiver;
-class UdpTransport;
 class InProcessReceiver;
 
 // Common base functionality for an in-process Cast receiver.  This is meant to

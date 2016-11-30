@@ -16,7 +16,6 @@
 #include "media/video/video_decode_accelerator.h"
 
 namespace gpu {
-class GpuChannel;
 class GpuChannelManager;
 }
 

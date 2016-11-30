@@ -27,7 +27,6 @@ namespace media {
 
 struct CdmConfig;
 class CdmFactory;
-class KeySystems;
 class MediaPermission;
 
 class MEDIA_BLINK_EXPORT WebEncryptedMediaClientImpl

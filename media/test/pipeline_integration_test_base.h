@@ -24,10 +24,6 @@
 #include "media/renderers/video_renderer_impl.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace media {
 
 class AudioDecoder;

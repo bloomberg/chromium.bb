@@ -28,7 +28,6 @@ class SharedMemory;
 }
 
 namespace gfx {
-class Rect;
 class Size;
 }
 

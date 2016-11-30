@@ -19,8 +19,6 @@ class SurfaceTexture;
 
 namespace media {
 
-class AVDACodecImage;
-
 // Shared state to allow communication between the AVDA and the
 // GLImages that configure GL for drawing the frames.
 class AVDASharedState : public base::RefCounted<AVDASharedState> {

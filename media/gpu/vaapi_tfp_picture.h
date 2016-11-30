@@ -17,10 +17,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gl/gl_bindings.h"
 
-namespace gfx {
-class GLContextGLX;
-}
-
 namespace gl {
 class GLImageGLX;
 }

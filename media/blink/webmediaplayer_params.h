@@ -22,7 +22,6 @@ class TaskRunner;
 
 namespace blink {
 class WebContentDecryptionModule;
-class WebMediaPlayerClient;
 }
 
 namespace media {

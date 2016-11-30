@@ -23,10 +23,6 @@
 
 struct AcceleratedVideoEncoderMsg_Encode_Params;
 
-namespace base {
-class SharedMemory;
-}  // namespace base
-
 namespace gpu {
 struct GpuPreferences;
 }  // namespace gpu

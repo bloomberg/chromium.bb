@@ -23,7 +23,6 @@ namespace media {
 class EncryptionScheme;
 class H264Parser;
 struct H264SPS;
-class OffsetByteQueue;
 }
 
 namespace media {

@@ -18,7 +18,6 @@ namespace media {
 
 class DemuxerStreamProvider;
 class RendererClient;
-class VideoFrame;
 
 class MEDIA_EXPORT Renderer {
  public:

@@ -25,10 +25,6 @@
 
 using base::ResetAndReturn;
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 
 typedef base::Callback<void(int)> BytesDecodedCB;

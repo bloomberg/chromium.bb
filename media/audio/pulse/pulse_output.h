@@ -31,7 +31,6 @@
 #include "media/base/audio_parameters.h"
 
 struct pa_context;
-struct pa_operation;
 struct pa_stream;
 struct pa_threaded_mainloop;
 

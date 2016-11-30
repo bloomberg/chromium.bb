@@ -20,8 +20,6 @@
 
 namespace media {
 
-class AudioManager;
-
 // This class sends a sound to the audio manager.
 class MEDIA_EXPORT AudioStreamHandler : public base::NonThreadSafe {
  public:

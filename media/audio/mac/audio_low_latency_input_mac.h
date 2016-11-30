@@ -58,9 +58,7 @@
 
 namespace media {
 
-class AudioBus;
 class AudioManagerMac;
-class DataBuffer;
 
 class MEDIA_EXPORT AUAudioInputStream
     : public AgcAudioStream<AudioInputStream> {

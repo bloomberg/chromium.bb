@@ -18,7 +18,6 @@ struct CreateVideoEncoderParams;
 
 namespace gpu {
 class GpuChannel;
-class GpuCommandBufferStub;
 }
 
 namespace media {

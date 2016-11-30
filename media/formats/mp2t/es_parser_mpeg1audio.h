@@ -22,9 +22,6 @@
 
 namespace media {
 class AudioTimestampHelper;
-class BitReader;
-class OffsetByteQueue;
-class StreamParserBuffer;
 }
 
 namespace media {

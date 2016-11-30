@@ -30,8 +30,6 @@ namespace media {
 class VideoFrame;
 
 namespace cast {
-class AudioSender;
-class VideoSender;
 
 class VideoFrameInput : public base::RefCountedThreadSafe<VideoFrameInput> {
  public:

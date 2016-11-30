@@ -16,10 +16,6 @@
 #include "media/cast/common/rtp_time.h"
 #include "media/cast/net/rtp/packet_storage.h"
 
-namespace base {
-class TickClock;
-}
-
 namespace media {
 namespace cast {
 

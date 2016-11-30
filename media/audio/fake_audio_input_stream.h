@@ -20,7 +20,6 @@ namespace media {
 
 class AudioBus;
 class AudioManagerBase;
-class SimpleSource;
 
 // This class acts as a fake audio input stream. The default is to generate a
 // beeping sound unless --use-file-for-fake-audio-capture=<file> is specified,

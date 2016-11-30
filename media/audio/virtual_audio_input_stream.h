@@ -26,7 +26,6 @@ class SingleThreadTaskRunner;
 namespace media {
 
 class LoopbackAudioConverter;
-class VirtualAudioOutputStream;
 
 // VirtualAudioInputStream converts and mixes audio from attached
 // VirtualAudioOutputStreams into a single stream. It will continuously render

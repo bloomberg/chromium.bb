@@ -27,8 +27,6 @@
 #include "media/cdm/player_tracker_impl.h"
 #include "url/gurl.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }

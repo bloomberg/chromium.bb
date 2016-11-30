@@ -18,7 +18,6 @@
 
 namespace midi {
 
-class MidiManagerUsb;
 class UsbMidiDevice;
 
 // Delegate class for UsbMidiDevice.

@@ -14,12 +14,6 @@
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace service_manager {
-namespace mojom {
-class InterfaceProvider;
-}
-}
-
 namespace media {
 
 class CdmFactory;

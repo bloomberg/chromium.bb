@@ -14,10 +14,6 @@
 #include "media/base/audio_converter.h"
 #include "media/base/audio_shifter.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 
 class VirtualAudioInputStream;

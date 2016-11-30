@@ -16,7 +16,6 @@ class SingleThreadTaskRunner;
 }
 
 namespace blink {
-class WebInbandTextTrackClient;
 class WebMediaPlayerClient;
 }
 

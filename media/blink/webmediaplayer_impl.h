@@ -70,7 +70,6 @@ class GLES2Interface;
 
 namespace media {
 class ChunkDemuxer;
-class GpuVideoAcceleratorFactories;
 class MediaKeys;
 class MediaLog;
 class UrlIndex;
@@ -78,7 +77,6 @@ class VideoFrameCompositor;
 class WatchTimeReporter;
 class WebAudioSourceProviderImpl;
 class WebMediaPlayerDelegate;
-class WebTextTrackImpl;
 
 // The canonical implementation of blink::WebMediaPlayer that's backed by
 // Pipeline. Handles normal resource loading, Media Source, and

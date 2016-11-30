@@ -20,10 +20,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/gpu_memory_buffer.h"
 
-namespace gl {
-class GLImage;
-}
-
 namespace media {
 
 class VASurface;

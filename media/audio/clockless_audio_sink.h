@@ -12,12 +12,7 @@
 #include "base/time/time.h"
 #include "media/base/audio_renderer_sink.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
-class AudioBus;
 class ClocklessAudioSinkThread;
 
 // Implementation of an AudioRendererSink that consumes the audio as fast as

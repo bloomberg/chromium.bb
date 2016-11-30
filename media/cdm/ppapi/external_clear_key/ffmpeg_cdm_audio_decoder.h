@@ -20,7 +20,6 @@ struct AVCodecContext;
 struct AVFrame;
 
 namespace media {
-class AudioBus;
 class AudioTimestampHelper;
 }
 

@@ -471,10 +471,6 @@ class MEDIA_GPU_EXPORT V4L2SliceVideoDecodeAccelerator
   DISALLOW_COPY_AND_ASSIGN(V4L2SliceVideoDecodeAccelerator);
 };
 
-class V4L2H264Picture;
-class V4L2VP8Picture;
-class V4L2VP9Picture;
-
 }  // namespace media
 
 #endif  // MEDIA_GPU_V4L2_SLICE_VIDEO_DECODE_ACCELERATOR_H_

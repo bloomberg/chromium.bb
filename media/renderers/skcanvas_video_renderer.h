@@ -28,7 +28,6 @@ class RectF;
 }
 
 namespace media {
-class VideoImageGenerator;
 
 // Handles rendering of VideoFrames to SkCanvases.
 class MEDIA_EXPORT SkCanvasVideoRenderer {

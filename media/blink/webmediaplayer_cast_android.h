@@ -22,7 +22,6 @@ class WebURL;
 namespace media {
 
 class VideoFrame;
-class WebMediaPlayerDelegate;
 class WebMediaPlayerImpl;
 
 // This shim allows WebMediaPlayer to act sufficiently similar to

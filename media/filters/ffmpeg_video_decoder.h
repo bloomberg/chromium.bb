@@ -19,10 +19,6 @@
 struct AVCodecContext;
 struct AVFrame;
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 
 class DecoderBuffer;

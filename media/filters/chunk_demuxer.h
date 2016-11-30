@@ -28,8 +28,6 @@
 
 namespace media {
 
-class FFmpegURLProtocol;
-
 class MEDIA_EXPORT ChunkDemuxerStream : public DemuxerStream {
  public:
   typedef std::deque<scoped_refptr<StreamParserBuffer> > BufferQueue;

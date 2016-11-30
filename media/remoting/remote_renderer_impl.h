@@ -25,7 +25,6 @@
 
 namespace media {
 
-class BalancedMediaTaskRunnerFactory;
 class RemotingRendererController;
 class Renderer;
 

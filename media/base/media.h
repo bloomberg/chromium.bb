@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "media/base/media_export.h"
 
-namespace base {
-class FilePath;
-}
-
 namespace media {
 
 // Initializes media libraries (e.g. ffmpeg) as well as CPU specific media

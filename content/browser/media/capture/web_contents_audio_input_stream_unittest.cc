@@ -43,7 +43,6 @@ using media::AudioParameters;
 using media::AudioPushSink;
 using media::SineWaveAudioSource;
 using media::VirtualAudioInputStream;
-using media::VirtualAudioOutputStream;
 
 namespace content {
 
