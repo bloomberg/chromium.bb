@@ -6,6 +6,7 @@
 
 """Loops Custom Tabs tests and outputs the results into a CSV file."""
 
+import collections
 import contextlib
 import logging
 import optparse
@@ -38,7 +39,7 @@ _COMMAND_LINE_PATH = '/data/local/tmp/chrome-command-line'
 _TEST_APP_PACKAGE_NAME = 'org.chromium.customtabsclient.test'
 
 # Command line arguments for Chrome.
-_CHROME_ARGS = [
+CHROME_ARGS = [
     # Disable backgound network requests that may pollute WPR archive, pollute
     # HTTP cache generation, and introduce noise in loading performance.
     '--disable-background-networking',
@@ -67,7 +68,7 @@ def ResetChromeLocalState(device):
 
 
 def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
-            delay_to_launch_url, cold, chrome_args):
+            delay_to_launch_url, cold, chrome_args, reset_chrome_state):
   """Runs a test on a device once.
 
   Args:
@@ -79,6 +80,8 @@ def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
     delay_to_launch_url: (int) Delay to launchUrl() in ms.
     cold: (bool) Whether the page cache should be dropped.
     chrome_args: ([str]) List of arguments to pass to Chrome.
+    reset_chrome_state: (bool) Whether to reset the Chrome local state before
+                        the run.
 
   Returns:
     The output line (str), like this (one line only):
@@ -110,7 +113,8 @@ def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
     device.ForceStop(_CHROME_PACKAGE)
     device.ForceStop(_TEST_APP_PACKAGE_NAME)
 
-    ResetChromeLocalState(device)
+    if reset_chrome_state:
+      ResetChromeLocalState(device)
 
     if cold:
       cache_control.CacheControl(device).DropRamCaches()
@@ -125,6 +129,30 @@ def RunOnce(device, url, warmup, speculation_mode, delay_to_may_launch_url,
     logcat_monitor.Stop()
     logcat_monitor.Close()
     return match.group(1) if match is not None else None
+
+
+Result = collections.namedtuple('Result', ['warmup', 'speculation_mode',
+                                           'delay_to_may_launch_url',
+                                           'delay_to_launch_url',
+                                           'commit', 'plt',
+                                           'first_contentful_paint'])
+
+
+def ParseResult(result_line):
+  """Parses a result line, and returns it.
+
+  Args:
+    result_line: (str) A result line, as returned by RunOnce().
+
+  Returns:
+    An instance of Result.
+  """
+  tokens = result_line.strip().split(',')
+  assert len(tokens) == 8
+  intent_sent_timestamp = int(tokens[4])
+  return Result(bool(tokens[0]), tokens[1], int(tokens[2]), int(tokens[3]),
+                int(tokens[5]) - intent_sent_timestamp,
+                int(tokens[6]) - intent_sent_timestamp, int(tokens[7]))
 
 
 def LoopOnDevice(device, configs, output_filename, wpr_archive_path=None,
@@ -157,7 +185,7 @@ def LoopOnDevice(device, configs, output_filename, wpr_archive_path=None,
                          config['speculation_mode'],
                          config['delay_to_may_launch_url'],
                          config['delay_to_launch_url'], config['cold'],
-                         chrome_args)
+                         chrome_args, reset_chrome_state=True)
         if result is not None:
           out.write(result + '\n')
           out.flush()
