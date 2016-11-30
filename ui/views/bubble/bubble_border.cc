@@ -222,7 +222,8 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     // misalignment in scale factors greater than 1.
     // TODO(estade): when it becomes possible to provide px bounds instead of
     // dip bounds, fix this.
-    const gfx::Insets border_insets = gfx::Insets(kBorderThicknessDip);
+    const gfx::Insets border_insets =
+        shadow_ == NO_ASSETS ? gfx::Insets() : gfx::Insets(kBorderThicknessDip);
     const gfx::Insets shadow_insets = GetInsets() - border_insets;
     contents_bounds.Inset(-border_insets);
     if (arrow_ == TOP_RIGHT) {
@@ -238,6 +239,9 @@ gfx::Rect BubbleBorder::GetBounds(const gfx::Rect& anchor_rect,
     } else if (arrow_ == RIGHT_CENTER) {
       contents_bounds += LeftCenter(anchor_rect) - RightCenter(contents_bounds);
     }
+    // With NO_ASSETS, there should be further insets, but the same logic is
+    // used to position the bubble origin according to |anchor_rect|.
+    DCHECK(shadow_ != NO_ASSETS || shadow_insets.IsEmpty());
     contents_bounds.Inset(-shadow_insets);
     // |arrow_offset_| is used to adjust bubbles that would normally be
     // partially offscreen.
@@ -369,7 +373,6 @@ gfx::Insets BubbleBorder::GetInsets() const {
     gfx::Insets blur(kLargeShadowBlur);
     gfx::Insets offset(-kLargeShadowVerticalOffset, 0,
                        kLargeShadowVerticalOffset, 0);
-    gfx::Insets border(kBorderThicknessDip);
     return blur + offset;
   }
 

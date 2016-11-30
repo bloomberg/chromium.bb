@@ -242,6 +242,17 @@ size_t CalculatePositionsInFrame(
   return NSZeroRect;
 }
 
+- (NSRect)backgroundFrameForDecoration:(LocationBarDecoration*)decoration
+                               inFrame:(NSRect)cellFrame
+                      isLeftDecoration:(BOOL*)isLeftDecoration {
+  NSRect decorationFrame =
+      [self frameForDecoration:decoration inFrame:cellFrame];
+  *isLeftDecoration =
+      std::find(leftDecorations_.begin(), leftDecorations_.end(), decoration) !=
+      leftDecorations_.end();
+  return decoration->GetBackgroundFrame(decorationFrame);
+}
+
 // Overriden to account for the decorations.
 - (NSRect)textFrameForFrame:(NSRect)cellFrame {
   // Get the frame adjusted for decorations.
