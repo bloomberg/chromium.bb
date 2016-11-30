@@ -77,6 +77,11 @@ class AdjustAndMarkTrait<T, false> {
       // but test and appropriately handle them should they occur
       // in release builds.
       //
+      // If you hit this assert, it means that you're creating an object
+      // graph that causes too many recursions, which might cause a stack
+      // overflow. To break the recursions, you need to add
+      // WILL_NOT_BE_EAGERLY_TRACED_CLASS() to classes that hold pointers
+      // that lead to many recursions.
       DCHECK(visitor->heap().stackFrameDepth().isAcceptableStackUse());
       if (LIKELY(visitor->heap().stackFrameDepth().isSafeToRecurse())) {
         if (visitor->ensureMarked(t)) {
