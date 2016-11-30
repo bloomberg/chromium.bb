@@ -10,6 +10,7 @@ window.VRCubeSea = (function () {
   var cubeSeaVS = [
     "uniform mat4 projectionMat;",
     "uniform mat4 modelViewMat;",
+    "uniform mat3 normalMat;",
     "attribute vec3 position;",
     "attribute vec2 texCoord;",
     "attribute vec3 normal;",
@@ -21,7 +22,8 @@ window.VRCubeSea = (function () {
     "const vec3 lightColor = vec3(0.75, 0.75, 0.75);",
 
     "void main() {",
-    "  float lightFactor = max(dot(normalize(lightDir), normal), 0.0);",
+    "  vec3 normalRotated = normalMat * normal;",
+    "  float lightFactor = max(dot(normalize(lightDir), normalRotated), 0.0);",
     "  vLight = ambientColor + (lightColor * lightFactor);",
     "  vTexCoord = texCoord;",
     "  gl_Position = projectionMat * modelViewMat * vec4( position, 1.0 );",
@@ -43,6 +45,9 @@ window.VRCubeSea = (function () {
     this.gl = gl;
 
     this.statsMat = mat4.create();
+    this.normalMat = mat3.create();
+    this.heroRotationMat = mat4.create();
+    this.heroModelViewMat = mat4.create();
 
     this.texture = texture;
 
@@ -60,13 +65,13 @@ window.VRCubeSea = (function () {
     var cubeIndices = [];
 
     // Build a single cube.
-    function appendCube (x, y, z) {
+    function appendCube (x, y, z, size) {
       if (!x && !y && !z) {
         // Don't create a cube in the center.
         return;
       }
 
-      var size = 0.2;
+      if (!size) size = 0.2;
       // Bottom
       var idx = cubeVerts.length / 8.0;
       cubeIndices.push(idx, idx + 1, idx + 2);
@@ -140,6 +145,16 @@ window.VRCubeSea = (function () {
       }
     }
 
+    this.indexCount = cubeIndices.length;
+
+    // Add some "hero cubes" for separate animation.
+    this.heroOffset = cubeIndices.length;
+    appendCube(0, 0.25, -0.8, 0.05);
+    appendCube(0.8, 0.25, 0, 0.05);
+    appendCube(0, 0.25, 0.8, 0.05);
+    appendCube(-0.8, 0.25, 0, 0.05);
+    this.heroCount = cubeIndices.length - this.heroOffset;
+
     this.vertBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertBuffer);
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(cubeVerts), gl.STATIC_DRAW);
@@ -147,11 +162,9 @@ window.VRCubeSea = (function () {
     this.indexBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
     gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, new Uint16Array(cubeIndices), gl.STATIC_DRAW);
-
-    this.indexCount = cubeIndices.length;
   };
 
-  CubeSea.prototype.render = function (projectionMat, modelViewMat, stats) {
+  CubeSea.prototype.render = function (projectionMat, modelViewMat, stats, timestamp) {
     var gl = this.gl;
     var program = this.program;
 
@@ -159,6 +172,8 @@ window.VRCubeSea = (function () {
 
     gl.uniformMatrix4fv(program.uniform.projectionMat, false, projectionMat);
     gl.uniformMatrix4fv(program.uniform.modelViewMat, false, modelViewMat);
+    mat3.identity(this.normalMat);
+    gl.uniformMatrix3fv(program.uniform.normalMat, false, this.normalMat);
 
     gl.bindBuffer(gl.ARRAY_BUFFER, this.vertBuffer);
     gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
@@ -176,6 +191,17 @@ window.VRCubeSea = (function () {
     gl.bindTexture(gl.TEXTURE_2D, this.texture);
 
     gl.drawElements(gl.TRIANGLES, this.indexCount, gl.UNSIGNED_SHORT, 0);
+
+    if (timestamp) {
+      mat4.fromRotation(this.heroRotationMat, timestamp / 2000, [0, 1, 0]);
+      mat4.multiply(this.heroModelViewMat, modelViewMat, this.heroRotationMat);
+      gl.uniformMatrix4fv(program.uniform.modelViewMat, false, this.heroModelViewMat);
+
+      mat3.normalFromMat4(this.normalMat, this.heroRotationMat);
+      gl.uniformMatrix3fv(program.uniform.normalMat, false, this.normalMat);
+
+      gl.drawElements(gl.TRIANGLES, this.heroCount, gl.UNSIGNED_SHORT, this.heroOffset * 2);
+    }
 
     if (stats) {
       // To ensure that the FPS counter is visible in VR mode we have to

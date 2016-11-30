@@ -155,11 +155,11 @@ found in the LICENSE file.
 
           // Left eye.
           gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
-          cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats);
+          cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats, t);
 
           // Right eye.
           gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
-          cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats);
+          cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats, t);
 
           gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
           stats.renderOrtho();
@@ -167,7 +167,7 @@ found in the LICENSE file.
           // No VRDisplay found. Render a normal mono view to the entire canvas.
           gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
           mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width/webglCanvas.height, 0.1, 1024.0);
-          cubeSea.render(projectionMat, identityMat, stats);
+          cubeSea.render(projectionMat, identityMat, stats, t);
           stats.renderOrtho();
         }
 

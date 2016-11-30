@@ -235,16 +235,16 @@ found in the LICENSE file.
 
           if (vrDisplay.isPresenting) {
             gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
-            cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats);
+            cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats, t);
 
             gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
-            cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats);
+            cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats, t);
 
             vrDisplay.submitFrame();
           } else {
             gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
             mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
-            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats);
+            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats, t);
             stats.renderOrtho();
           }
         } else {
@@ -254,7 +254,7 @@ found in the LICENSE file.
           gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
           mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
           mat4.identity(viewMat);
-          cubeSea.render(projectionMat, viewMat, stats);
+          cubeSea.render(projectionMat, viewMat, stats, t);
 
           stats.renderOrtho();
         }

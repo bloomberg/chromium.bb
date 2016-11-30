@@ -287,10 +287,10 @@ found in the LICENSE file.
           if (vrDisplay.isPresenting) {
             // When presenting render a stereo view.
             gl.viewport(0, 0, webglCanvas.width * 0.5, webglCanvas.height);
-            cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats);
+            cubeSea.render(frameData.leftProjectionMatrix, frameData.leftViewMatrix, stats, t);
 
             gl.viewport(webglCanvas.width * 0.5, 0, webglCanvas.width * 0.5, webglCanvas.height);
-            cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats);
+            cubeSea.render(frameData.rightProjectionMatrix, frameData.rightViewMatrix, stats, t);
 
             // If we're currently presenting to the VRDisplay we need to
             // explicitly indicate we're done rendering.
@@ -301,7 +301,7 @@ found in the LICENSE file.
             gl.viewport(0, 0, webglCanvas.width, webglCanvas.height);
             // It's best to use our own projection matrix in this case, but we can use the left eye's view matrix
             mat4.perspective(projectionMat, Math.PI*0.4, webglCanvas.width / webglCanvas.height, 0.1, 1024.0);
-            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats);
+            cubeSea.render(projectionMat, frameData.leftViewMatrix, stats, t);
             stats.renderOrtho();
           }
         } else {
