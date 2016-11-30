@@ -102,6 +102,11 @@ void {{class_name}}::{{method_name}}(std::unique_ptr<{{method_name}}Params> para
 void Domain::Handle{{method_name}}Response(base::Callback<void(std::unique_ptr<{{method_name}}Result>)> callback, const base::Value& response) {
   if (callback.is_null())
     return;
+  // This is an error response.
+  if (response.IsType(base::Value::TYPE_NULL)) {
+    callback.Run(nullptr);
+    return;
+  }
   ErrorReporter errors;
   std::unique_ptr<{{method_name}}Result> result = {{method_name}}Result::Parse(response, &errors);
   DCHECK(!errors.HasErrors());

@@ -10,6 +10,7 @@
 #include "content/public/common/url_constants.h"
 #include "content/public/test/browser_test.h"
 #include "headless/lib/browser/headless_web_contents_impl.h"
+#include "headless/public/devtools/domains/dom.h"
 #include "headless/public/devtools/domains/emulation.h"
 #include "headless/public/devtools/domains/inspector.h"
 #include "headless/public/devtools/domains/network.h"
@@ -745,5 +746,42 @@ class HeadlessDevToolsClientAttachTest
 };
 
 HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsClientAttachTest);
+
+class HeadlessDevToolsMethodCallErrorTest
+    : public HeadlessAsyncDevTooledBrowserTest,
+      public page::Observer {
+ public:
+  void RunDevTooledTest() override {
+    EXPECT_TRUE(embedded_test_server()->Start());
+    devtools_client_->GetPage()->AddObserver(this);
+    devtools_client_->GetPage()->Enable();
+    devtools_client_->GetPage()->Navigate(
+        embedded_test_server()->GetURL("/hello.html").spec());
+  }
+
+  void OnLoadEventFired(const page::LoadEventFiredParams& params) override {
+    devtools_client_->GetPage()->GetExperimental()->RemoveObserver(this);
+    devtools_client_->GetDOM()->GetDocument(
+        base::Bind(&HeadlessDevToolsMethodCallErrorTest::OnGetDocument,
+                   base::Unretained(this)));
+  }
+
+  void OnGetDocument(std::unique_ptr<dom::GetDocumentResult> result) {
+    devtools_client_->GetDOM()->QuerySelector(
+        dom::QuerySelectorParams::Builder()
+            .SetNodeId(result->GetRoot()->GetNodeId())
+            .SetSelector("<o_O>")
+            .Build(),
+        base::Bind(&HeadlessDevToolsMethodCallErrorTest::OnQuerySelector,
+                   base::Unretained(this)));
+  }
+
+  void OnQuerySelector(std::unique_ptr<dom::QuerySelectorResult> result) {
+    EXPECT_EQ(nullptr, result);
+    FinishAsynchronousTest();
+  }
+};
+
+HEADLESS_ASYNC_DEVTOOLED_TEST_F(HeadlessDevToolsMethodCallErrorTest);
 
 }  // namespace headless
