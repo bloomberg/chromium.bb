@@ -2946,7 +2946,7 @@ static int drmGetMaxNodeName(void)
            3 /* length of the node number */;
 }
 
-static int drmParsePciDeviceInfo(const char *d_name,
+static int drmParsePciDeviceInfo(int maj, int min,
                                  drmPciDeviceInfoPtr device)
 {
 #ifdef __linux__
@@ -2954,7 +2954,7 @@ static int drmParsePciDeviceInfo(const char *d_name,
     unsigned char config[64];
     int fd, ret;
 
-    snprintf(path, PATH_MAX, "/sys/class/drm/%s/device/config", d_name);
+    snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/config", maj, min);
     fd = open(path, O_RDONLY);
     if (fd < 0)
         return -errno;
@@ -2998,7 +2998,7 @@ void drmFreeDevices(drmDevicePtr devices[], int count)
             drmFreeDevice(&devices[i]);
 }
 
-static int drmProcessPciDevice(drmDevicePtr *device, const char *d_name,
+static int drmProcessPciDevice(drmDevicePtr *device,
                                const char *node, int node_type,
                                int maj, int min, bool fetch_deviceinfo)
 {
@@ -3039,7 +3039,7 @@ static int drmProcessPciDevice(drmDevicePtr *device, const char *d_name,
         addr += sizeof(drmPciBusInfo);
         (*device)->deviceinfo.pci = (drmPciDeviceInfoPtr)addr;
 
-        ret = drmParsePciDeviceInfo(d_name, (*device)->deviceinfo.pci);
+        ret = drmParsePciDeviceInfo(maj, min, (*device)->deviceinfo.pci);
         if (ret)
             goto free_device;
     }
@@ -3142,8 +3142,7 @@ int drmGetDevice(int fd, drmDevicePtr *device)
 
         switch (subsystem_type) {
         case DRM_BUS_PCI:
-            ret = drmProcessPciDevice(&d, dent->d_name, node, node_type,
-                                      maj, min, true);
+            ret = drmProcessPciDevice(&d, node, node_type, maj, min, true);
             if (ret)
                 goto free_devices;
 
@@ -3251,7 +3250,7 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
 
         switch (subsystem_type) {
         case DRM_BUS_PCI:
-            ret = drmProcessPciDevice(&device, dent->d_name, node, node_type,
+            ret = drmProcessPciDevice(&device, node, node_type,
                                       maj, min, devices != NULL);
             if (ret)
                 goto free_devices;
