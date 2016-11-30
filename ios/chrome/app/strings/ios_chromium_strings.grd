@@ -2,12 +2,7 @@
 
 <!--
 This file contains definition of resources that will be translated for each
-locale.  The variables is_win, is_macosx, is_linux, is_ios and is_posix are
-available for making strings OS specific.  Other platform defines such as
-use_titlecase are declared in build/common.gypi.
-
-The strings in this file are specific to iOS, thus is_ios will be true and
-all other OS specific variables will be false.
+locale.  The strings in this file are specific to iOS.
 -->
 
 <grit base_dir="." latest_public_release="0" current_release="1"
@@ -130,12 +125,6 @@ all other OS specific variables will be false.
   </translations>
   <release seq="1" allow_pseudo="false">
     <messages fallback_to_english="true">
-      <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
-        Chromium
-      </message>
-      <message name="IDS_IOS_SHORT_PRODUCT_NAME" desc="The Chrome application short name.">
-        Chromium
-      </message>
       <message name="IDS_IOS_ABOUT_PRODUCT_NAME" desc="The menu item to access information about the application.">
         About Chromium
       </message>
@@ -145,32 +134,156 @@ all other OS specific variables will be false.
       <message name="IDS_IOS_ABOUT_VERSION_COPYRIGHT" desc="Copyright information on the about pages">
         Copyright <ph name="YEAR">$1</ph> The Chromium Authors. All rights reserved.
       </message>
+      <message name="IDS_IOS_ACCOUNT_CONSISTENCY_SETUP_TITLE" desc="Title of the screen where users select an account to use. [Length: 20em] [iOS only]">
+        Sign in to Chromium
+      </message>
+      <message name="IDS_IOS_APP_RATING_PROMO_STRING" desc="Text displayed for the rate this app promo. [iOS only]">
+        Enjoying Chromium? <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Rate this app<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
+      </message>
       <message name="IDS_IOS_AUTOFILL_DESCRIBE_LOCAL_COPY" desc="Text label that describes a Wallet credit card which has been copied to the local Chromium instance. Title case. [Length: 20em] [iOS only]">
-        Copied to Chrome
+        Copied to Chromium
+      </message>
+      <message name="IDS_IOS_BANDWIDTH_MANAGEMENT_DESCRIPTION_LEARN_MORE" desc="Description text bandwidth management panel in settings with explicit Learn More link [iOS only]">
+        Chromium has features that help you manage your internet data and how quickly you're able to load webpages.
+<ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_BOOKMARK_PROMO_MESSAGE" desc="Text of the promo panel for the new bookmarks UI. [Length: 90em.] [iOS only]">
+        To get your bookmarks on all your devices, sign in to Chromium.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_DESCRIPTION" desc="Description of the dialog informing the user that their Chromium browsing history was deleted, but other forms of history can still be found on Google My Activity.">
+        The selected data has been removed from Chromium and synced devices. Your Google Account may have other forms of browsing history like searches and activity from other Google services at history.google.com.
+      </message>
+      <message name="IDS_IOS_CLEAR_BROWSING_DATA_HISTORY_NOTICE_TITLE" desc="Title of a dialog that informs the user that the deletion of Chromium's browsing data has been completed.">
+        Cleared Chromium data
       </message>
       <message name="IDS_IOS_DISCONNECT_DIALOG_TITLE" desc="The title of the disconnect dialog [Length: 30em].">
         Sign out of Chromium?
       </message>
+      <message name="IDS_IOS_FIRSTRUN_AGREE_TO_TERMS" desc="Label containing a link to the Terms of Service, displayed in the first run flow. [Length: 70em] [iOS only]">
+        By using this application, you agree to Chromium’s <ph name="BEGIN_LINK">BEGIN_LINK</ph>Terms of Service<ph name="END_LINK">END_LINK</ph>.
+      </message>
+      <message name="IDS_IOS_FIRSTRUN_NEW_OPT_IN_LABEL" desc="User metrics opt-in label [Length: 80em] [iOS only]">
+        Help make Chromium better by sending usage statistics and crash reports to Google.
+      </message>
       <message name="IDS_IOS_FIRSTRUN_TERMS_TITLE" desc="Title for the Terms of Service page shown to user on First Run. [Length: 30em]">
         Chromium Terms of Service
+      </message>
+      <message name="IDS_IOS_FIRSTRUN_WELCOME_TO_CHROME" desc="Title on the Welcome to Chromium screen presented to the user on First Run. [iOS only]">
+        Welcome to Chromium
       </message>
       <message name="IDS_IOS_LOCATION_AUTHORIZATION_ALERT" desc="Specifies the reason for sending the user's location to Google [Length: unlimited] [iOS only].">
           Get a better Google experience in Chromium based on your location.
       </message>
+      <message name="IDS_IOS_LOCATION_WHEN_IN_USE_USAGE_DESCRIPTION" desc="Specifies the reason for accessing the user's location information while the app is in use [Length: unlimited] [iOS only].">
+        Get a better experience in Chromium based on your location.
+      </message>
+      <message name="IDS_IOS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used.">
+        Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.
+      </message>
+      <message name="IDS_IOS_MANAGED_DISCONNECT_DIALOG_INFO" desc="Message explaini ng that signing out of a managed account will clear all the Chromium data.[Length: 200em, may be line wrapped to multiple lines at run time.].">
+        You are signing out of an account managed by <ph name="SIGNOUT_MANAGED_DOMAIN">$1<ex>google.com</ex></ph>. This will delete your Chromium data from this device, but your data will remain in your Google account.
+      </message>
+      <message name="IDS_IOS_MANAGED_SIGNIN_SUBTITLE" desc="The subtitle of the Sign in to a managed account dialog. [300em]">
+        You are signing in with an account managed by <ph name="DOMAIN">$1<ex>doe.com</ex></ph> and giving its administrator control over your Chromium data. Your data will become permanently tied to this account. Signing out of Chromium will delete your data from this device, but it will remain stored in your Google Account.
+      </message>
+      <message name="IDS_IOS_MANAGED_SWITCH_SUBTITLE" desc="The subtitle of the Switch from a managed account dialog. [300em]">
+        You are switching sync accounts from <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph> to <ph name="USER_EMAIL2">$2<ex>johndoe@gmail.com</ex></ph>. Your existing Chromium data is managed by <ph name="DOMAIN">$3<ex>doe.com</ex></ph>. This will delete your data from this device, but your data will remain in <ph name="USER_EMAIL1">$1<ex>john@doe.com</ex></ph>.
+      </message>
+      <message name="IDS_IOS_MOVE_TO_DOCK_FASTER_ACCESS" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
+        For faster access, <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>move Chromium to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_MOVE_TO_DOCK_LOVE_CHROME" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
+        Love Chromium? <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Move it to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_MOVE_TO_DOCK_TIP" desc="Text displayed on the New Tab Page for the move Chromium to the dock promo. [iOS only]">
+        Tip: <ph name="BEGIN_LINK"><ex>BEGIN_LINK</ex>BEGIN_LINK</ph>Move Chromium to your dock<ph name="END_LINK"><ex>END_LINK</ex>END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_OPEN_TABS_NO_SESSION_INSTRUCTIONS" desc="Information about sync displayed when the user has signed in on mobile but not on desktop">
+        Access the tabs you have open on your computer, right here. Just open Chromium on your computer, go to the menu, and select “Sign in to Chromium…”
+      </message>
+      <message name="IDS_IOS_OPEN_TABS_SYNC_IS_OFF_MOBILE" desc="Short paragraph(s) encouraging the user to enable sync on device [Length: 300em, may be line wrapped to multiple lines at run time.]">
+        Tabs that you've opened in Chromium on your other devices will appear here.
+      </message>
+      <message name="IDS_IOS_OPTIONS_ACCOUNTS_SIGNOUT" desc="Title of the button to sign out of Chromium [iOS only] [60em]">
+        Sign out of Chromium
+      </message>
+      <message name="IDS_IOS_OPTIONS_ENABLE_PHYSICAL_WEB_DETAILS" desc="The detailed description of an option to enable scanning for nearby devices broadcasting URLs.">
+        Discover web pages sent by nearby objects. When Bluetooth is turned on, Chromium can gather web pages associated with objects around you and send them anonymously to Google to find the most useful ones. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_OPTIONS_PRIVACY_FOOTER" desc="Footer for the clear browsing data dialog [Length: 300em] [iOS only]">
+        Chromium may use web services to improve your browsing experience. You may optionally disable these services. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
+      <message name="IDS_IOS_PAGE_INFO_SECURITY_TAB_SECURE_IDENTITY" desc="The text of the identity section for iOS.">
+        Chromiums verified that <ph name="ISSUER">$1<ex>VeriSign</ex></ph> issued this website's certificate.
+      </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_SAVE_PASSWORD_PROMPT" desc="Info bar message to save a password. [Length: 60em]">
         Do you want Chromium to save your password for this site?
+      </message>
+      <message name="IDS_IOS_PRODUCT_NAME" desc="The Chrome application name">
+        Chromium
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_CAMERA_IN_USE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is in use by another application. [Length: 140em] [iOS only]">
+        Chromium can't use your camera because it's in use by another application
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_DETAIL" desc="Body of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The text instructs the user how to change the permissions setting. [Length: 140em] [iOS only]">
+        Open Settings &gt; Privacy &gt; Camera &gt; Chromium and turn on the camera.
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE" desc="Title of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. The body of this dialog instructs the user how to change the permissions setting. [Length: 50em] [iOS only]">
+        Start using Chromium QR scanner
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_CAMERA_PERMISSIONS_HELP_TITLE_GO_TO_SETTINGS" desc="Title of modal dialog shown when the user tries to open the QR scanner but the application lacks permission to use the camera. [Length: 40em] [iOS only]">
+        Turn on Chromium QR scanner
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_CAMERA_UNAVAILABLE_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner but the camera is unavailable. [Length: 140em] [iOS only]">
+        Chromium can't use your camera right now
+      </message>
+      <message name="IDS_IOS_QR_SCANNER_MULTIPLE_FOREGROUND_APPS_ALERT_DETAIL" desc="Body of a modal dialog shown when the user tries to open the QR scanner in a Split View mode, when the camera is unavailable. [Length: 140em] [iOS only]">
+        Chromium can't use your camera in Split View mode
+      </message>
+      <message name="IDS_IOS_RECENT_TABS_SIGNIN_PROMO" desc="Description of the recent tabs screen where users can sign in. [Length: 80em]">
+        To get your tabs from your other devices, sign in to Chromium.
+      </message>
+      <message name="IDS_IOS_SAFE_MODE_NAMED_TWEAKS_FOUND" desc="The message indicating a 3rd party tweak has been found that is known to crash Chromium.  After the ':', we will list the names of the libraries. [Length: 140em]">
+        Some add-ons cause Chromium to crash. Please uninstall:
+      </message>
+      <message name="IDS_IOS_SAFE_MODE_TWEAKS_FOUND" desc="The message indicating one or more 3rd party tweaks have been found, but none that we know specifically cause crashes. [Length: 140em]">
+        Some add-ons cause Chromium to crash. Please try uninstalling them.
       </message>
       <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE" desc="Message to inform user that Save Image failed due to insufficient privilege in Privacy Settings. Directs user to adjust Privacy Settings for Chrome. This message is displayed as the message body in an alert box with a single OK button. [Length: 120em]">
         Chromium does not have access to your photos or videos. Enable access in iOS Settings &gt; Privacy &gt; Photos.
       </message>
+      <message name="IDS_IOS_SAVE_IMAGE_PRIVACY_ALERT_MESSAGE_GO_TO_SETTINGS" desc="Body of the alert shown when the user tries to save an image but we lack permission to use the photos. This body tells the user he'll be redirected to the Settings app. [Length: 100em] [iOS only].">
+        To save images, tap on Settings to let Chromium use your photos
+      </message>
+      <message name="IDS_IOS_SHORT_PRODUCT_NAME" desc="The Chrome application short name.">
+        Chromium
+      </message>
+      <message name="IDS_IOS_SIGNED_IN_ACCOUNTS_VIEW_INFO" desc="The information text on the Signed In Accounts view. [iOS only] [200em]">
+        Chromium saves you time by bringing your accounts to the web. You can add or remove accounts in Settings.
+      </message>
+      <message name="IDS_IOS_SIGN_IN_TO_CHROME_SETTING_TITLE" desc="The title for the setting item to Sign in to Chromium [iOS only]">
+        Sign in to Chromium
+      </message>
+      <message name="IDS_IOS_TAB_SWITCHER_NO_TABS_TO_SYNC_PROMO" desc="The title of the paragraph IDS_OPEN_TABS_NO_SESSION_INSTRUCTIONS_IOS. The paragraph explains that tabs opened on other devices where the user is signed in will appear here, in the Tab Switcher. [iOS only]">
+        Use Chromium Everywhere
+      </message>
+      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_BUTTON" desc="Title of the button to sign in. [Length: 20em] [iOS only]">
+          Sign in to Chromium
+      </message>
+      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_PROMO" desc="The message explaining that signing in an account will allow presenting tabs from other devices. [iOS only]">
+        To get your tabs from your other devices, sign in to Chromium.
+      </message>
+      <message name="IDS_IOS_TAB_SWITCHER_SIGN_IN_ACCOUNT_TITLE" desc="Title of the paragraph explaining that signing in an account will allow presenting tabs from other devices. [Length: 20em] [iOS only]">
+          Sign in to Chromium
+      </message>
       <message name="IDS_IOS_TRANSLATE_INFOBAR_NEVER_MESSAGE" desc="Message for the Translate infobar to allow the user to opt out. [Length: 250em]">
         Would you like Chromium to offer to translate <ph name="LANGUAGE_NAME">$1<ex>French</ex></ph> pages from this site next time?
       </message>
+      <message name="IDS_IOS_TRANSLATE_SETTING_DESCRIPTION" desc="Description for the Translate setting. [Length: unlimited] [iOS only]">
+        When this feature is turned on, Chromium will offer to translate pages written in other languages using Google Translate. <ph name="BEGIN_LINK">BEGIN_LINK</ph>Learn more<ph name="END_LINK">END_LINK</ph>
+      </message>
       <message name="IDS_IOS_UPGRADE_AVAILABLE" desc="Text to inform the user of the presence of a new version of the application">
         Chromium just got better! A new version is available.
-      </message>
-      <message name="IDS_IOS_LOGIN_ERROR_AUTHENTICATING_HOSTED" desc="Couldn't sign in because hosted account is used.">
-        Your account does not work on Chromium. Please contact your domain administrator or use a regular Google Account to sign in.
       </message>
     </messages>
   </release>
