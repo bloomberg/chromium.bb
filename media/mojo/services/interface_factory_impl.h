@@ -52,9 +52,9 @@ class InterfaceFactoryImpl : public mojom::InterfaceFactory {
   StrongBindingSet<mojom::AudioDecoder> audio_decoder_bindings_;
 #endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
 
-#if defined(ENABLE_MOJO_AUDIO_DECODER)
+#if defined(ENABLE_MOJO_VIDEO_DECODER)
   StrongBindingSet<mojom::VideoDecoder> video_decoder_bindings_;
-#endif  // defined(ENABLE_MOJO_AUDIO_DECODER)
+#endif  // defined(ENABLE_MOJO_VIDEO_DECODER)
 
 #if defined(ENABLE_MOJO_RENDERER)
   std::unique_ptr<RendererFactory> renderer_factory_;
