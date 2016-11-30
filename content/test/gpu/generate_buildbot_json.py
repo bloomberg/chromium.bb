@@ -864,7 +864,12 @@ COMMON_GTESTS = {
         ],
       },
     ],
-    'desktop_args': ['--use-gpu-in-tests']
+    'desktop_args': [
+      '--use-gpu-in-tests',
+      # ANGLE test retries deliberately disabled to prevent flakiness.
+      # http://crbug.com/669196
+      '--test-launcher-retry-limit=0'
+    ]
   },
   'angle_unittests': {
     'tester_configs': [
@@ -872,7 +877,12 @@ COMMON_GTESTS = {
         'allow_on_android': True,
       }
     ],
-    'desktop_args': ['--use-gpu-in-tests']
+    'desktop_args': [
+      '--use-gpu-in-tests',
+      # ANGLE test retries deliberately disabled to prevent flakiness.
+      # http://crbug.com/669196
+      '--test-launcher-retry-limit=0'
+    ]
   },
   # Until the media-only tests are extracted from content_unittests,
   # and audio_unittests and content_unittests can be run on the commit
