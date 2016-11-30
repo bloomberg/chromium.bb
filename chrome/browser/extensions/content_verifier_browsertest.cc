@@ -6,6 +6,7 @@
 #include <set>
 #include <string>
 
+#include "base/bind_helpers.h"
 #include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -14,6 +15,7 @@
 #include "base/strings/string_split.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/extensions/browsertest_util.h"
+#include "chrome/browser/extensions/chrome_content_verifier_delegate.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_management_test_util.h"
 #include "chrome/browser/extensions/extension_service.h"
@@ -748,6 +750,68 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
   }
   EXPECT_FALSE(disable_reasons & Extension::DISABLE_CORRUPTED);
   EXPECT_TRUE(registry->enabled_extensions().Contains(id_));
+}
+
+namespace {
+
+// A helper for intercepting the normal action that
+// ChromeContentVerifierDelegate would take on discovering corruption, letting
+// us track the delay for each consecutive reinstall.
+class DelayTracker {
+ public:
+  DelayTracker() {}
+
+  const std::vector<base::TimeDelta>& calls() { return calls_; }
+
+  void ReinstallAction(base::TimeDelta delay) { calls_.push_back(delay); }
+
+ private:
+  std::vector<base::TimeDelta> calls_;
+
+  DISALLOW_COPY_AND_ASSIGN(DelayTracker);
+};
+
+}  // namespace
+
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, Backoff) {
+  ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
+  ExtensionSystem* system = ExtensionSystem::Get(profile());
+  ExtensionService* service = system->extension_service();
+  ContentVerifier* verifier = system->content_verifier();
+
+  // Wait for the extension to be installed by the policy we set up in
+  // SetUpInProcessBrowserTestFixture.
+  if (!registry->GetInstalledExtension(id_)) {
+    RegistryObserver registry_observer(registry);
+    EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+  }
+
+  // Setup to intercept reinstall action, so we can see what the delay would
+  // have been for the real action.
+  DelayTracker delay_tracker;
+  base::Callback<void(base::TimeDelta)> action = base::Bind(
+      &DelayTracker::ReinstallAction, base::Unretained(&delay_tracker));
+  ChromeContentVerifierDelegate::set_policy_reinstall_action_for_test(&action);
+
+  // Do 4 iterations of disabling followed by reinstall.
+  const size_t iterations = 4;
+  for (size_t i = 0; i < iterations; i++) {
+    RegistryObserver registry_observer(registry);
+    verifier->VerifyFailed(id_, ContentVerifyJob::HASH_MISMATCH);
+    EXPECT_TRUE(registry_observer.WaitForUnload(id_));
+    // Trigger reinstall manually (since we overrode default reinstall action).
+    service->CheckForExternalUpdates();
+    EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+  }
+  const std::vector<base::TimeDelta>& calls = delay_tracker.calls();
+
+  // Assert that the first reinstall action happened with a delay of 0, and
+  // then kept growing each additional time.
+  ASSERT_EQ(iterations, calls.size());
+  EXPECT_EQ(base::TimeDelta(), delay_tracker.calls()[0]);
+  for (size_t i = 1; i < delay_tracker.calls().size(); i++) {
+    EXPECT_LT(calls[i - 1], calls[i]);
+  }
 }
 
 }  // namespace extensions
