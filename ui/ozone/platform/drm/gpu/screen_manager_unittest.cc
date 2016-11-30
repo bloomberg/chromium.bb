@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <drm_fourcc.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -499,7 +500,7 @@ TEST_F(ScreenManagerTest, EnableControllerWhenWindowHasBuffer) {
   window->Initialize(buffer_generator_.get());
   window->SetBounds(GetPrimaryBounds());
   scoped_refptr<ui::ScanoutBuffer> buffer = buffer_generator_->Create(
-      drm_, gfx::BufferFormat::BGRA_8888, GetPrimaryBounds().size());
+      drm_, DRM_FORMAT_XRGB8888, GetPrimaryBounds().size());
   window->SchedulePageFlip(
       std::vector<ui::OverlayPlane>(1, ui::OverlayPlane(buffer)),
       base::Bind(&EmptySwapCallback));

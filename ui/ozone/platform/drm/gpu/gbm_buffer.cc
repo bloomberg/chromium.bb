@@ -28,14 +28,14 @@ namespace ui {
 
 GbmBuffer::GbmBuffer(const scoped_refptr<GbmDevice>& gbm,
                      gbm_bo* bo,
-                     gfx::BufferFormat format,
-                     gfx::BufferUsage usage,
+                     uint32_t format,
+                     uint32_t flags,
                      std::vector<base::ScopedFD>&& fds,
                      const gfx::Size& size,
                      const std::vector<gfx::NativePixmapPlane>&& planes)
-    : GbmBufferBase(gbm, bo, format, usage),
+    : GbmBufferBase(gbm, bo, format, flags),
       format_(format),
-      usage_(usage),
+      flags_(flags),
       fds_(std::move(fds)),
       size_(size),
       planes_(std::move(planes)) {}
@@ -94,36 +94,21 @@ gfx::Size GbmBuffer::GetSize() const {
 // static
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
     const scoped_refptr<GbmDevice>& gbm,
-    gfx::BufferFormat format,
+    uint32_t format,
     const gfx::Size& size,
-    gfx::BufferUsage usage) {
+    uint32_t flags) {
   TRACE_EVENT2("drm", "GbmBuffer::CreateBuffer", "device",
                gbm->device_path().value(), "size", size.ToString());
 
-  unsigned flags = 0;
-  switch (usage) {
-    case gfx::BufferUsage::GPU_READ:
-      break;
-    case gfx::BufferUsage::SCANOUT:
-      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
-      break;
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
-    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
-      flags = GBM_BO_USE_LINEAR;
-      break;
-  }
-
-  gbm_bo* bo = gbm_bo_create(gbm->device(), size.width(), size.height(),
-                             GetFourCCFormatFromBufferFormat(format), flags);
+  gbm_bo* bo =
+      gbm_bo_create(gbm->device(), size.width(), size.height(), format, flags);
   if (!bo)
     return nullptr;
 
   std::vector<base::ScopedFD> fds;
   std::vector<gfx::NativePixmapPlane> planes;
 
-  DCHECK_EQ(gbm_bo_get_num_planes(bo),
-            gfx::NumberOfPlanesForBufferFormat(format));
-  for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
+  for (size_t i = 0; i < gbm_bo_get_num_planes(bo); ++i) {
     // The fd returned by gbm_bo_get_fd is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
     base::ScopedFD fd(gbm_bo_get_plane_fd(bo, i));
@@ -144,8 +129,8 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
         gbm_bo_get_plane_size(bo, i), gbm_bo_get_plane_format_modifier(bo, i));
   }
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format, usage, std::move(fds), size, std::move(planes)));
-  if (usage == gfx::BufferUsage::SCANOUT && !buffer->GetFramebufferId())
+      gbm, bo, format, flags, std::move(fds), size, std::move(planes)));
+  if (flags & GBM_BO_USE_SCANOUT && !buffer->GetFramebufferId())
     return nullptr;
 
   return buffer;
@@ -154,7 +139,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBuffer(
 // static
 scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     const scoped_refptr<GbmDevice>& gbm,
-    gfx::BufferFormat format,
+    uint32_t format,
     const gfx::Size& size,
     std::vector<base::ScopedFD>&& fds,
     const std::vector<gfx::NativePixmapPlane>& planes) {
@@ -163,13 +148,11 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
   DCHECK_LE(fds.size(), planes.size());
   DCHECK_EQ(planes[0].offset, 0);
 
-  uint32_t fourcc_format = GetFourCCFormatFromBufferFormat(format);
-
   // Use scanout if supported.
-  bool use_scanout = gbm_device_is_format_supported(
-                         gbm->device(), fourcc_format,
-                         GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING) &&
-                     (planes.size() == 1);
+  bool use_scanout =
+      gbm_device_is_format_supported(
+          gbm->device(), format, GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING) &&
+      (planes.size() == 1);
 
   gbm_bo* bo = nullptr;
   if (use_scanout) {
@@ -178,7 +161,7 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     fd_data.width = size.width();
     fd_data.height = size.height();
     fd_data.stride = planes[0].stride;
-    fd_data.format = fourcc_format;
+    fd_data.format = format;
 
     // The fd passed to gbm_bo_import is not ref-counted and need to be
     // kept open for the lifetime of the buffer.
@@ -190,10 +173,11 @@ scoped_refptr<GbmBuffer> GbmBuffer::CreateBufferFromFds(
     }
   }
 
+  uint32_t flags = GBM_BO_USE_RENDERING;
+  if (use_scanout)
+    flags |= GBM_BO_USE_SCANOUT;
   scoped_refptr<GbmBuffer> buffer(new GbmBuffer(
-      gbm, bo, format,
-      use_scanout ? gfx::BufferUsage::SCANOUT : gfx::BufferUsage::GPU_READ,
-      std::move(fds), size, std::move(planes)));
+      gbm, bo, format, flags, std::move(fds), size, std::move(planes)));
   // If scanout support for buffer is expected then make sure we managed to
   // create a framebuffer for it as otherwise using it for scanout will fail.
   if (use_scanout && !buffer->GetFramebufferId())
@@ -214,8 +198,11 @@ void GbmPixmap::SetProcessingCallback(
 
 gfx::NativePixmapHandle GbmPixmap::ExportHandle() {
   gfx::NativePixmapHandle handle;
-  for (size_t i = 0;
-       i < gfx::NumberOfPlanesForBufferFormat(buffer_->GetFormat()); ++i) {
+  gfx::BufferFormat format =
+      ui::GetBufferFormatFromFourCCFormat(buffer_->GetFormat());
+  // TODO(dcastagna): Use gbm_bo_get_num_planes once all the formats we use are
+  // supported by gbm.
+  for (size_t i = 0; i < gfx::NumberOfPlanesForBufferFormat(format); ++i) {
     // Some formats (e.g: YVU_420) might have less than one fd per plane.
     if (i < buffer_->GetFdCount()) {
       base::ScopedFD scoped_fd(HANDLE_EINTR(dup(buffer_->GetFd(i))));
@@ -265,7 +252,7 @@ uint64_t GbmPixmap::GetDmaBufModifier(size_t plane) const {
 }
 
 gfx::BufferFormat GbmPixmap::GetBufferFormat() const {
-  return buffer_->GetFormat();
+  return ui::GetBufferFormatFromFourCCFormat(buffer_->GetFormat());
 }
 
 gfx::Size GbmPixmap::GetBufferSize() const {
@@ -277,7 +264,7 @@ bool GbmPixmap::ScheduleOverlayPlane(gfx::AcceleratedWidget widget,
                                      gfx::OverlayTransform plane_transform,
                                      const gfx::Rect& display_bounds,
                                      const gfx::RectF& crop_rect) {
-  DCHECK(buffer_->GetUsage() == gfx::BufferUsage::SCANOUT);
+  DCHECK(buffer_->GetFlags() & GBM_BO_USE_SCANOUT);
   OverlayPlane::ProcessBufferCallback processing_callback;
   if (!processing_callback_.is_null())
     processing_callback = base::Bind(&GbmPixmap::ProcessBuffer, this);
@@ -298,10 +285,8 @@ scoped_refptr<ScanoutBuffer> GbmPixmap::ProcessBuffer(const gfx::Size& size,
       format != processed_pixmap_->buffer()->GetFramebufferPixelFormat()) {
     // Release any old processed pixmap.
     processed_pixmap_ = nullptr;
-    gfx::BufferFormat buffer_format = GetBufferFormatFromFourCCFormat(format);
-
     scoped_refptr<GbmBuffer> buffer = GbmBuffer::CreateBuffer(
-        buffer_->drm().get(), buffer_format, size, buffer_->GetUsage());
+        buffer_->drm().get(), format, size, buffer_->GetFlags());
     if (!buffer)
       return nullptr;
 

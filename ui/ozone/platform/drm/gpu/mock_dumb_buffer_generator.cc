@@ -15,7 +15,7 @@ MockDumbBufferGenerator::~MockDumbBufferGenerator() {}
 
 scoped_refptr<ScanoutBuffer> MockDumbBufferGenerator::Create(
     const scoped_refptr<DrmDevice>& drm,
-    gfx::BufferFormat format,
+    uint32_t format,
     const gfx::Size& size) {
   scoped_refptr<DrmBuffer> buffer(new DrmBuffer(drm));
   SkImageInfo info = SkImageInfo::MakeN32Premul(size.width(), size.height());

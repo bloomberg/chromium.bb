@@ -14,12 +14,14 @@ namespace ui {
 
 GbmBufferBase::GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
                              gbm_bo* bo,
-                             gfx::BufferFormat format,
-                             gfx::BufferUsage usage)
+                             uint32_t format,
+                             uint32_t flags)
     : drm_(drm), bo_(bo) {
-  if (usage == gfx::BufferUsage::SCANOUT) {
-    framebuffer_pixel_format_ = GetFourCCFormatForFramebuffer(format);
+  if (flags & GBM_BO_USE_SCANOUT) {
+    DCHECK(bo_);
+    framebuffer_pixel_format_ = format;
 
+    // TODO(dcastagna): Add multi-planar support.
     uint32_t handles[4] = {0};
     handles[0] = gbm_bo_get_handle(bo).u32;
     uint32_t strides[4] = {0};

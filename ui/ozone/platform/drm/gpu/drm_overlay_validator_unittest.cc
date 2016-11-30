@@ -54,9 +54,7 @@ class DrmOverlayValidatorTest : public testing::Test {
 
   scoped_refptr<ui::ScanoutBuffer> ProcessBuffer(const gfx::Size& size,
                                                  uint32_t format) {
-    gfx::BufferFormat buffer_format =
-        ui::GetBufferFormatFromFourCCFormat(format);
-    return buffer_generator_->Create(drm_, buffer_format, size);
+    return buffer_generator_->Create(drm_, format, size);
   }
 
   scoped_refptr<ui::ScanoutBuffer> ReturnNullBuffer(const gfx::Size& size,
@@ -135,8 +133,9 @@ void DrmOverlayValidatorTest::SetUp() {
   scoped_refptr<ui::DrmDevice> drm =
       window_->GetController()->GetAllocationDrmDevice();
   for (const auto& param : overlay_params_) {
-    scoped_refptr<ui::ScanoutBuffer> scanout_buffer =
-        buffer_generator_->Create(drm, param.format, param.buffer_size);
+    scoped_refptr<ui::ScanoutBuffer> scanout_buffer = buffer_generator_->Create(
+        drm, ui::GetFourCCFormatForFramebuffer(param.format),
+        param.buffer_size);
     ui::OverlayPlane plane(std::move(scanout_buffer), param.plane_z_order,
                            param.transform, param.display_rect, param.crop_rect,
                            process_buffer_handler_);

@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_window.h"
 
+#include <drm_fourcc.h>
 #include <stdint.h>
 
 #include <memory>
@@ -169,7 +170,7 @@ TEST_F(DrmWindowTest, CheckCallbackOnFailedSwap) {
   ui::MockDumbBufferGenerator buffer_generator;
   ui::DrmWindow* window = screen_manager_->GetWindow(kDefaultWidgetHandle);
   ui::OverlayPlane plane(
-      buffer_generator.Create(drm_, gfx::BufferFormat::BGRX_8888, window_size));
+      buffer_generator.Create(drm_, DRM_FORMAT_XRGB8888, window_size));
 
   drm_->set_page_flip_expectation(false);
 

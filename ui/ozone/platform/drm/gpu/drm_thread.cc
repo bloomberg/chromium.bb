@@ -4,6 +4,7 @@
 
 #include "ui/ozone/platform/drm/gpu/drm_thread.h"
 
+#include <gbm.h>
 #include <utility>
 
 #include "base/command_line.h"
@@ -11,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/cpp/connection.h"
+#include "ui/ozone/platform/drm/common/drm_util.h"
 #include "ui/ozone/platform/drm/gpu/drm_buffer.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_generator.h"
 #include "ui/ozone/platform/drm/gpu/drm_device_manager.h"
@@ -35,11 +37,11 @@ class GbmBufferGenerator : public ScanoutBufferGenerator {
 
   // ScanoutBufferGenerator:
   scoped_refptr<ScanoutBuffer> Create(const scoped_refptr<DrmDevice>& drm,
-                                      gfx::BufferFormat format,
+                                      uint32_t format,
                                       const gfx::Size& size) override {
     scoped_refptr<GbmDevice> gbm(static_cast<GbmDevice*>(drm.get()));
     return GbmBuffer::CreateBuffer(gbm, format, size,
-                                   gfx::BufferUsage::SCANOUT);
+                                   GBM_BO_USE_SCANOUT | GBM_BO_USE_LINEAR);
   }
 
  protected:
@@ -108,7 +110,22 @@ void DrmThread::CreateBuffer(gfx::AcceleratedWidget widget,
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);
-  *buffer = GbmBuffer::CreateBuffer(gbm, format, size, usage);
+
+  uint32_t flags = 0;
+  switch (usage) {
+    case gfx::BufferUsage::GPU_READ:
+      break;
+    case gfx::BufferUsage::SCANOUT:
+      flags = GBM_BO_USE_SCANOUT | GBM_BO_USE_RENDERING;
+      break;
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE:
+    case gfx::BufferUsage::GPU_READ_CPU_READ_WRITE_PERSISTENT:
+      flags = GBM_BO_USE_LINEAR;
+      break;
+  }
+
+  *buffer = GbmBuffer::CreateBuffer(
+      gbm, ui::GetFourCCFormatFromBufferFormat(format), size, flags);
 }
 
 void DrmThread::CreateBufferFromFds(
@@ -121,8 +138,9 @@ void DrmThread::CreateBufferFromFds(
   scoped_refptr<GbmDevice> gbm =
       static_cast<GbmDevice*>(device_manager_->GetDrmDevice(widget).get());
   DCHECK(gbm);
-  *buffer =
-      GbmBuffer::CreateBufferFromFds(gbm, format, size, std::move(fds), planes);
+  *buffer = GbmBuffer::CreateBufferFromFds(
+      gbm, ui::GetFourCCFormatFromBufferFormat(format), size, std::move(fds),
+      planes);
 }
 
 void DrmThread::GetScanoutFormats(

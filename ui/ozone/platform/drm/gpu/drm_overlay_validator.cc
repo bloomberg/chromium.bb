@@ -43,9 +43,8 @@ scoped_refptr<ScanoutBuffer> GetBufferForPageFlipTest(
     }
   }
 
-  gfx::BufferFormat buffer_format = GetBufferFormatFromFourCCFormat(format);
   scoped_refptr<ScanoutBuffer> scanout_buffer =
-      buffer_generator->Create(drm_device, buffer_format, size);
+      buffer_generator->Create(drm_device, format, size);
   reusable_buffers->push_back(scanout_buffer);
 
   return scanout_buffer;

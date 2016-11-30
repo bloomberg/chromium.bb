@@ -49,7 +49,7 @@ class ScanoutBufferGenerator {
 
   virtual scoped_refptr<ScanoutBuffer> Create(
       const scoped_refptr<DrmDevice>& drm,
-      gfx::BufferFormat format,
+      uint32_t format,
       const gfx::Size& size) = 0;
 };
 

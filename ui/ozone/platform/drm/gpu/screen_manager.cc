@@ -344,8 +344,9 @@ OverlayPlane ScreenManager::GetModesetBuffer(
 
   gfx::BufferFormat format = ui::DisplaySnapshot::PrimaryFormat();
   scoped_refptr<DrmDevice> drm = controller->GetAllocationDrmDevice();
+  uint32_t fourcc_format = ui::GetFourCCFormatForFramebuffer(format);
   scoped_refptr<ScanoutBuffer> buffer =
-      buffer_generator_->Create(drm, format, bounds.size());
+      buffer_generator_->Create(drm, fourcc_format, bounds.size());
   if (!buffer) {
     LOG(ERROR) << "Failed to create scanout buffer";
     return OverlayPlane(nullptr, 0, gfx::OVERLAY_TRANSFORM_INVALID, gfx::Rect(),

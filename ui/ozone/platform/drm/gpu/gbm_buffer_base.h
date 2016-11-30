@@ -36,8 +36,8 @@ class GbmBufferBase : public ScanoutBuffer {
  protected:
   GbmBufferBase(const scoped_refptr<GbmDevice>& drm,
                 gbm_bo* bo,
-                gfx::BufferFormat format,
-                gfx::BufferUsage usage);
+                uint32_t format,
+                uint32_t flags);
   ~GbmBufferBase() override;
 
  private:
