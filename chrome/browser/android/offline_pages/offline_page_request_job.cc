@@ -312,10 +312,9 @@ RequestResult AccessOfflineFile(
 
   // If the page is being loaded on a slow network, only use the offline page
   // if it was created within the past day.
-  // TODO(romax): Make the constant be policy driven.
   if (network_state == NetworkState::PROHIBITIVELY_SLOW_NETWORK &&
       base::Time::Now() - offline_page->creation_time >
-          base::TimeDelta::FromDays(1)) {
+          previews::params::OfflinePreviewFreshnessDuration()) {
     return RequestResult::PAGE_NOT_FRESH;
   }
 

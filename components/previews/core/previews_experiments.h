@@ -39,6 +39,10 @@ base::TimeDelta HostIndifferentBlackListPerHostDuration();
 // The amount of time after any opt out that no previews should be shown.
 base::TimeDelta SingleOptOutDuration();
 
+// The amount of time that an offline page is considered fresh enough to be
+// shown as a preview.
+base::TimeDelta OfflinePreviewFreshnessDuration();
+
 }  // namespace params
 
 enum class PreviewsType {

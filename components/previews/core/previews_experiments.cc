@@ -59,6 +59,11 @@ const char kHostIndifferentBlackListDurationInDays[] =
 const char kSingleOptOutDurationInSeconds[] =
     "single_opt_out_duration_in_seconds";
 
+// The amount of time that an offline page is considered fresh enough to be
+// shown as a preview.
+const char kOfflinePreviewFreshnessDurationInDays[] =
+    "offline_preview_freshness_duration_in_days";
+
 // The string that corresponds to enabled for the variation param experiments.
 const char kExperimentEnabled[] = "true";
 
@@ -151,6 +156,15 @@ base::TimeDelta SingleOptOutDuration() {
     return base::TimeDelta::FromSeconds(60 * 5);
   }
   return base::TimeDelta::FromSeconds(duration);
+}
+
+base::TimeDelta OfflinePreviewFreshnessDuration() {
+  std::string param_value = ParamValue(kOfflinePreviewFreshnessDurationInDays);
+  int duration;
+  if (!base::StringToInt(param_value, &duration)) {
+    return base::TimeDelta::FromDays(7);
+  }
+  return base::TimeDelta::FromDays(duration);
 }
 
 }  // namespace params
