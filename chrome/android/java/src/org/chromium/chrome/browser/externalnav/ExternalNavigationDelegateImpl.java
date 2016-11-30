@@ -552,8 +552,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
 
     @Override
     public boolean isSerpReferrer(String referrerUrl, Tab tab) {
-        if (tab == null || tab.getWebContents() == null
-                || referrerUrl == null || !referrerUrl.contains("www.google")) {
+        if (tab == null || tab.getWebContents() == null) {
             return false;
         }
 
