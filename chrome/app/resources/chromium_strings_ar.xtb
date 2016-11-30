@@ -25,6 +25,7 @@
 <translation id="1779356040007214683">‏لجعل Chromium أكثر أمانًا، تم تعطيل بعض الإضافات غير المدرجة في <ph name="IDS_EXTENSION_WEB_STORE_TITLE" /> والتي ربما تمت إضافتها بدون علمك.</translation>
 <translation id="1808667845054772817">‏إعادة تثبيت Chromium</translation>
 <translation id="1816404578968201294">‏يحتاج Chromium الوصول إلى الموقع لمشاركته مع هذا الموقع.</translation>
+<translation id="1838412507805038478">‏لقد تحقق Chromium من أن <ph name="ISSUER" /> أصدر شهادة موقع الويب هذه.</translation>
 <translation id="1869480248812203386">‏يمكنك المساعدة في جعل Chromium أكثر أمانًا وأسهل استخدامًا بإبلاغ Google تلقائيًا بتفاصيل أي مخاطر أمنية محتملة.</translation>
 <translation id="1881322772814446296">‏أنت تسجل الدخول باستخدام حساب يخضع للإدارة وتتيح للمشرف إمكانية التحكم في ملفك الشخصي على Chromium. وستكون بياناتك في Chromium مثل تطبيقاتك وإشاراتك المرجعية وسجلك وكلمات المرور التابعة لك والإعدادات الأخرى مرتبطة دائمًا بالمستخدم <ph name="USER_NAME" />. ستتمكن من حذف هذه البيانات عبر لوحة تحكم حسابات Google، ولكنك لن تتمكن من إقران هذه البيانات بحساب آخر. ويُمكنك اختيار إنشاء ملف شخصي جديد للإبقاء على بياناتك الحالية في Chromium بشكل مستقل. <ph name="LEARN_MORE" /></translation>
 <translation id="1929939181775079593">‏لا يستجيب Chromium. هل تريد إعادة التشغيل الآن؟</translation>
@@ -242,6 +243,7 @@
 <translation id="81770708095080097">‏هذا الملف ضار، لذلك فقد حظره Chromium.</translation>
 <translation id="8269379391216269538">‏المساعدة في تحسين Chromium</translation>
 <translation id="8290862415967981663">‏قد يكون هذا الملف ضارًا، لذلك فقد حظره Chromium.</translation>
+<translation id="8340674089072921962">‏كان <ph name="USER_EMAIL_ADDRESS" /> يستخدم Chromium مسبقًا</translation>
 <translation id="8453117565092476964">‏أرشيف أداة التثبيت تالف أو غير صالح. الرجاء إعادة تنزيل Chromium.</translation>
 <translation id="8493179195440786826">‏إصدار Chromium قديم</translation>
 <translation id="85843667276690461">‏الحصول على مساعدة بشأن استخدام Chromium</translation>

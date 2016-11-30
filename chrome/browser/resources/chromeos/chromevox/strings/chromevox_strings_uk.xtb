@@ -105,10 +105,12 @@
 <translation id="2089387485033699258">uk</translation>
 <translation id="2091933974477985526">Попередня область тексту для редагування</translation>
 <translation id="2100350898815792233">Усі розділові знаки</translation>
+<translation id="2110480898214777136">Перехід із початку в кінець або з кінця на початок сторінки, діалогового вікна чи іншого контейнера</translation>
 <translation id="2119965627982867824">лічильник</translation>
 <translation id="2121067395472282800">клавіша доступу: <ph name="KEY" /></translation>
 <translation id="2155457205053847599">Змініть поточний 6-крапковий шрифт Брайля, вибравши опцію зі списку нижче.</translation>
 <translation id="2169714232367507776">Натиснути поточний елемент</translation>
+<translation id="2179452035581866348">ChromeVox використовує звуки, щоб надавати вам важливу та додаткову інформацію. За допомогою цих звуків можна швидше переходити між елементами. Вивчивши ці звуки, ви зможете вимкнути голосові описи й отримувати потрібну інформацію про сторінку лише на основі звуків. Нижче перелічено всі звуки та їх значення.</translation>
 <translation id="2188751878842439466">{COUNT,plural, =1{права кругла дужка}one{# права кругла дужка}few{# праві круглі дужки}many{# правих круглих дужок}other{# close parens}}</translation>
 <translation id="2199994615414171367">Математичний – назад</translation>
 <translation id="2220529011494928058">Повідомити про проблему</translation>
@@ -119,8 +121,10 @@
 <translation id="2318372665160196757">Головний</translation>
 <translation id="2329324941084714723">Панель вкладок</translation>
 <translation id="2344193891939537199">Елемент керування для вибору дати та часу</translation>
+<translation id="2347456970887948350">Посилання</translation>
 <translation id="2359897517538099099">Не в режимі таблиці.</translation>
 <translation id="241124561063364910">а потім –</translation>
+<translation id="2416512023405990736">Невибрана опція</translation>
 <translation id="2417569100218200841">Інформація про вміст</translation>
 <translation id="2422937916923936891">Прапорець пункту меню</translation>
 <translation id="2428534162001909979">Меню команд</translation>
@@ -213,6 +217,7 @@
 <translation id="3223701887221307104"><ph name="NAME" />, вкладка</translation>
 <translation id="3226035351387556942">прапорець</translation>
 <translation id="3229375994964697375">Натиснуте посилання</translation>
+<translation id="3232388865800379423">Кнопка спливаючої підказки</translation>
 <translation id="323731244387692321">Відкрити довідку клавіатури ChromeVox</translation>
 <translation id="3241052487511142956">Попереднє натиснуте посилання</translation>
 <translation id="3286390186030710347">Повзунок</translation>
@@ -221,6 +226,7 @@
 <translation id="3311969765485641742">Натисніть Alt+Shift+A, щоб переглянути попередження</translation>
 <translation id="3312997241656799641">Наступне натиснуте посилання</translation>
 <translation id="3313245066383501820">Клавіша-модифікатор ChromeVox</translation>
+<translation id="3317212938060708859">Повзунок</translation>
 <translation id="3321460131042519426">Увімкнути перенесення слів</translation>
 <translation id="3322936298410871309">Попередній заголовок рівня 1</translation>
 <translation id="3323447499041942178">Текстове поле</translation>
@@ -279,6 +285,7 @@
 <translation id="3457000393508828486">Частково натиснуто</translation>
 <translation id="3458865416877308321"><ph name="NAME" />, вимкнено</translation>
 <translation id="3462439746547587373"><ph name="NAME" />, кнопка</translation>
+<translation id="3466530247399808663">Натискання недійсної клавіші</translation>
 <translation id="3473644018603298796">виділено: <ph name="COUNT" /></translation>
 <translation id="3486232535569802404">Від <ph name="V1" /> до <ph name="V2" /></translation>
 <translation id="3492609944033322585">{COUNT,plural, =1{права квадратна дужка}one{# права квадратна дужка}few{# праві квадратні дужки}many{# правих квадратних дужок}other{# right brackets}}</translation>
@@ -286,6 +293,7 @@
 <translation id="3494946239022273294">пункт меню</translation>
 <translation id="3497063866483065785">{COUNT,plural, =1{знак запитання}one{# знак запитання}few{# знаки запитання}many{# знаків запитання}other{# question marks}}</translation>
 <translation id="3514822174137761109">{COUNT,plural, =1{знак вставки}one{# знак вставки}few{# знаки вставки}many{# знаків вставки}other{# carets}}</translation>
+<translation id="352577523970648069">Текстове поле, яке можна редагувати</translation>
 <translation id="3568702578574425662"><ph name="NAME" />, прапорець не поставлено</translation>
 <translation id="3599054940393788245">Не для математичних виразів</translation>
 <translation id="3616113530831147358">Звук</translation>
@@ -325,10 +333,12 @@
 <translation id="4047216625641135770">Виділений текст</translation>
 <translation id="404803211695627272"><ph name="V1" /> – <ph name="V2" /></translation>
 <translation id="4054936709456751127">стан</translation>
+<translation id="4058278702844053247">Триває завантаження сторінки</translation>
 <translation id="4065205963140826639">Спробуйте знайти кнопку "Далі", натискаючи Search і стрілку вправо, а потім активуйте кнопку, натиснувши Search та пробіл.</translation>
 <translation id="4081085052247739398">{COUNT,plural, =1{ТИЛЬДА}one{# тильда}few{# тильди}many{# тильд}other{# tildes}}</translation>
 <translation id="409334809956508737">Попередній об’єкт</translation>
 <translation id="4099274309791143834">містить вкладене меню</translation>
+<translation id="4101527861445851766">Вибрана опція</translation>
 <translation id="4107807507418787238">Немає клітинки нижче.</translation>
 <translation id="4116415223832267137">Сповіщення</translation>
 <translation id="4147126331795725888">Немає наступного елемента керування.</translation>
@@ -338,6 +348,7 @@
 <translation id="4173994908659439270">Немає наступного текстового поля для редагування.</translation>
 <translation id="4176463684765177261">Вимкнено</translation>
 <translation id="4188530942454211480">Попереднє речення</translation>
+<translation id="4191918948604314587">Кнопка</translation>
 <translation id="4202186506458631436">Перемістити праворуч</translation>
 <translation id="4206289001967551965">Усередині таблиці</translation>
 <translation id="4215733775853809057">Наступний повзунок</translation>
@@ -461,6 +472,7 @@
 <translation id="5374320867641260420">Немає наступної кнопки.</translation>
 <translation id="5382299583965267720">Немає наступного заголовка рівня 1.</translation>
 <translation id="5402367795255837559">Команди Брайля</translation>
+<translation id="5402791055281059602">Сповіщення в модальному вікні</translation>
 <translation id="5407530583102765689">{COUNT,plural, =1{крапка з комою}one{# крапка з комою}few{# крапки з комою}many{# крапок із комою}other{# semicolons}}</translation>
 <translation id="5411891038905756502">Немає попередньої точки переходу.</translation>
 <translation id="5417034931411865818">Натиснути елемент під клавішею напрямку $1</translation>
@@ -554,6 +566,7 @@
 <translation id="6119955456199054975">Кінець клітинки.</translation>
 <translation id="6122013438240733403">кнопка</translation>
 <translation id="6129953537138746214">Пробіл</translation>
+<translation id="6132506484792346370">Вікно зі списком або комбіноване вікно</translation>
 <translation id="6138576064440631958">Хорда $1</translation>
 <translation id="6142308968191113180">Заголовок 4</translation>
 <translation id="6169420925157477918">Зображення з докладним описом</translation>
@@ -567,6 +580,7 @@
 <translation id="6282062888058716985">навігація</translation>
 <translation id="6290434000785343030">Немає наступного комбінованого вікна.</translation>
 <translation id="6307969636681130414">Натиснуто</translation>
+<translation id="6322856989298155004">Звуки</translation>
 <translation id="6324551002951139333">Виявлено граматичну помилку</translation>
 <translation id="6348657800373377022">Комбіноване вікно</translation>
 <translation id="6350358010104919766">{COUNT,plural, =1{маркер списку}one{# маркер списку}few{# маркери списку}many{# маркерів списку}other{# маркера списку}}</translation>
@@ -597,6 +611,7 @@
 <translation id="6657128831881431364">Індикатор перебігу</translation>
 <translation id="6659594942844771486">Вкладка</translation>
 <translation id="667999046851023355">Документ</translation>
+<translation id="6688209025607531203">Сповіщення в немодальному вікні</translation>
 <translation id="6697092096875747123">Попереднє комбіноване вікно</translation>
 <translation id="6702609185760332517">{COUNT,plural, =1{знак оклику}one{# знак оклику}few{# знаки оклику}many{# знаків оклику}other{# знаку оклику}}</translation>
 <translation id="6710213216561001401">Попереднє</translation>

@@ -95,6 +95,7 @@
 <translation id="1966710179511230534">الرجاء تحديث تفاصيل تسجيل الدخول.</translation>
 <translation id="1974060860693918893">إعدادات متقدمة</translation>
 <translation id="1984937141057606926">مسموح باستثناء الجهات الخارجية</translation>
+<translation id="1993768208584545658">يريد <ph name="SITE" /> الاقتران</translation>
 <translation id="1994173015038366702">‏عنوان URL للموقع</translation>
 <translation id="200815880754187296">تطبيقات أخرى بحجم <ph name="KILOBYTES" /> كيلوبايت</translation>
 <translation id="2020194265157481222">الاسم الوارد في البطاقة مطلوب</translation>
@@ -263,6 +264,7 @@
 <translation id="3950820424414687140">تسجيل الدخول</translation>
 <translation id="3967822245660637423">اكتمل التنزيل</translation>
 <translation id="397583555483684758">توقفت المزامنة</translation>
+<translation id="3985215325736559418">هل تريد تنزيل <ph name="FILE_NAME" /> مرة أخرى؟</translation>
 <translation id="3988213473815854515">الموقع مسموح به</translation>
 <translation id="3997476611815694295">سعة تخزين غير مهمة</translation>
 <translation id="4002066346123236978">العنوان</translation>
@@ -353,6 +355,7 @@
 <translation id="4996978546172906250">مشاركة عن طريق</translation>
 <translation id="5000922062037820727">محظور (موصى به)</translation>
 <translation id="5005498671520578047">نسخ كلمة المرور</translation>
+<translation id="5011311129201317034">يريد <ph name="SITE" /> الاتصال</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">سماح</translation>
 <translation id="5040262127954254034">الخصوصية</translation>
@@ -606,6 +609,7 @@
 <translation id="7682287625158474539">الشحن</translation>
 <translation id="7698359219371678927">إنشاء بريد إلكتروني في <ph name="APP_NAME" /></translation>
 <translation id="771135159654932189">‏الاطلاع على عناوين URL المجاورة</translation>
+<translation id="7746006994124500250">التنزيل معلق...</translation>
 <translation id="7764225426217299476">إضافة عنوان</translation>
 <translation id="7765158879357617694">نقل</translation>
 <translation id="7769602470925380267">قبول وتسجيل الخروج</translation>

@@ -95,6 +95,7 @@
 <translation id="1966710179511230534">Оновіть свої дані для входу.</translation>
 <translation id="1974060860693918893">Розширені</translation>
 <translation id="1984937141057606926">Заборонено лише сторонні файли cookie</translation>
+<translation id="1993768208584545658">Сайт <ph name="SITE" /> хоче підключитися до пристрою</translation>
 <translation id="1994173015038366702">URL-адреса сайту</translation>
 <translation id="200815880754187296"><ph name="KILOBYTES" /> Кб використовується іншими додатками</translation>
 <translation id="2020194265157481222">Потрібно вказати ім’я на кредитній картці</translation>
@@ -263,6 +264,7 @@
 <translation id="3950820424414687140">Увійти</translation>
 <translation id="3967822245660637423">Завантажено</translation>
 <translation id="397583555483684758">Синхронізація перестала працювати</translation>
+<translation id="3985215325736559418">Завантажити файл "<ph name="FILE_NAME" />" повторно?</translation>
 <translation id="3988213473815854515">Доступ до геоданих надано</translation>
 <translation id="3997476611815694295">Неважливі дані</translation>
 <translation id="4002066346123236978">Назва</translation>
@@ -352,6 +354,7 @@
 <translation id="4996978546172906250">Надіслати через</translation>
 <translation id="5000922062037820727">Заблоковано (рекомендується)</translation>
 <translation id="5005498671520578047">Копіювати пароль</translation>
+<translation id="5011311129201317034">Сайт <ph name="SITE" /> хоче підключитися</translation>
 <translation id="5016205925109358554">Serif</translation>
 <translation id="5039804452771397117">Дозволити</translation>
 <translation id="5040262127954254034">Конфіденційність</translation>
@@ -605,6 +608,7 @@
 <translation id="7682287625158474539">Адреса для надсилання</translation>
 <translation id="7698359219371678927">Створити електронну адресу в додатку <ph name="APP_NAME" /></translation>
 <translation id="771135159654932189">Веб-сторінки поблизу</translation>
+<translation id="7746006994124500250">Очікується завантаження…</translation>
 <translation id="7764225426217299476">Додати адресу</translation>
 <translation id="7765158879357617694">Перемістити</translation>
 <translation id="7769602470925380267">Прийняти та вийти</translation>
