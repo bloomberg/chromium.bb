@@ -164,9 +164,13 @@ DrawingBuffer::~DrawingBuffer() {
   m_contextProvider.reset();
 }
 
-void DrawingBuffer::markContentsChanged() {
-  m_contentsChanged = true;
-  m_contentsChangeCommitted = false;
+bool DrawingBuffer::markContentsChanged() {
+  if (m_contentsChangeCommitted || !m_contentsChanged) {
+    m_contentsChangeCommitted = false;
+    m_contentsChanged = true;
+    return true;
+  }
+  return false;
 }
 
 bool DrawingBuffer::bufferClearNeeded() const {

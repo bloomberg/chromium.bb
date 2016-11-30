@@ -162,7 +162,9 @@ class PLATFORM_EXPORT DrawingBuffer
     return m_discardFramebufferSupported;
   }
 
-  void markContentsChanged();
+  // Returns false if the contents had previously been marked as changed and
+  // have not yet been committed.
+  bool markContentsChanged();
   void setBufferClearNeeded(bool);
   bool bufferClearNeeded() const;
   void setIsHidden(bool);

@@ -1334,7 +1334,9 @@ void WebGLRenderingContextBase::markContextChanged(
   if (m_framebufferBinding || isContextLost())
     return;
 
-  drawingBuffer()->markContentsChanged();
+  if (!drawingBuffer()->markContentsChanged() && m_markedCanvasDirty) {
+    return;
+  }
 
   if (!canvas())
     return;
