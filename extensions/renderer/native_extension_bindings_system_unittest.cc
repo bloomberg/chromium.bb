@@ -111,7 +111,8 @@ class NativeExtensionBindingsSystemUnittest : public APIBindingTest {
 };
 
 TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
-  scoped_refptr<Extension> extension = CreateExtension("foo", {"idle"});
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", {"idle", "power"});
   RegisterExtension(extension->id());
 
   v8::HandleScope handle_scope(isolate());
@@ -185,6 +186,78 @@ TEST_F(NativeExtensionBindingsSystemUnittest, Basic) {
       context->Global(), context, "responseState");
   ASSERT_TRUE(result_value);
   EXPECT_EQ("\"active\"", ValueToString(*result_value));
+
+  // Sanity-check that another API also exists as expected.
+  v8::Local<v8::Value> power_api =
+      V8ValueFromScriptSource(context, "chrome.power");
+  ASSERT_FALSE(power_api.IsEmpty());
+  ASSERT_TRUE(power_api->IsObject());
+  v8::Local<v8::Value> request_keep_awake = GetPropertyFromObject(
+      power_api.As<v8::Object>(), context, "requestKeepAwake");
+  ASSERT_FALSE(request_keep_awake.IsEmpty());
+  EXPECT_TRUE(request_keep_awake->IsFunction());
+}
+
+// Tests that referencing the same API multiple times returns the same object;
+// i.e. chrome.foo === chrome.foo.
+TEST_F(NativeExtensionBindingsSystemUnittest, APIObjectsAreEqual) {
+  scoped_refptr<Extension> extension = CreateExtension("foo", {"idle"});
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Value> first_idle_object =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  ASSERT_FALSE(first_idle_object.IsEmpty());
+  EXPECT_TRUE(first_idle_object->IsObject());
+  EXPECT_FALSE(first_idle_object->IsUndefined());
+  v8::Local<v8::Value> second_idle_object =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  EXPECT_TRUE(first_idle_object == second_idle_object);
+}
+
+// Tests that referencing APIs after the context data is disposed is safe (and
+// returns undefined).
+TEST_F(NativeExtensionBindingsSystemUnittest,
+       ReferencingAPIAfterDisposingContext) {
+  scoped_refptr<Extension> extension =
+      CreateExtension("foo", {"idle", "power"});
+
+  RegisterExtension(extension->id());
+
+  v8::HandleScope handle_scope(isolate());
+  v8::Local<v8::Context> context = ContextLocal();
+
+  ScriptContext* script_context = CreateScriptContext(
+      context, extension.get(), Feature::BLESSED_EXTENSION_CONTEXT);
+  script_context->set_url(extension->url());
+
+  bindings_system()->UpdateBindingsForContext(script_context);
+
+  v8::Local<v8::Value> first_idle_object =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  ASSERT_FALSE(first_idle_object.IsEmpty());
+  EXPECT_TRUE(first_idle_object->IsObject());
+
+  DisposeContext();
+
+  // Check an API that was instantiated....
+  v8::Local<v8::Value> second_idle_object =
+      V8ValueFromScriptSource(context, "chrome.idle");
+  ASSERT_FALSE(second_idle_object.IsEmpty());
+  EXPECT_TRUE(second_idle_object->IsUndefined());
+  // ... and also one that wasn't.
+  v8::Local<v8::Value> power_object =
+      V8ValueFromScriptSource(context, "chrome.power");
+  ASSERT_FALSE(power_object.IsEmpty());
+  EXPECT_TRUE(power_object->IsUndefined());
 }
 
 }  // namespace extensions

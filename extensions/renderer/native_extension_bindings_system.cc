@@ -13,12 +13,25 @@
 #include "extensions/renderer/script_context.h"
 #include "extensions/renderer/script_context_set.h"
 #include "gin/converter.h"
+#include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebDocument.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 
 namespace extensions {
 
 namespace {
+
+const char kBindingsSystemPerContextKey[] = "extension_bindings_system";
+
+struct BindingsSystemPerContextData : public base::SupportsUserData::Data {
+  BindingsSystemPerContextData(
+      base::WeakPtr<NativeExtensionBindingsSystem> bindings_system)
+      : bindings_system(bindings_system) {}
+  ~BindingsSystemPerContextData() override {}
+
+  v8::Global<v8::Object> api_object;
+  base::WeakPtr<NativeExtensionBindingsSystem> bindings_system;
+};
 
 // If a 'chrome' property exists on the context's global and is an object,
 // returns that.
@@ -87,7 +100,8 @@ NativeExtensionBindingsSystem::NativeExtensionBindingsSystem(
       api_system_(base::Bind(&CallJsFunction),
                   base::Bind(&GetAPISchema),
                   base::Bind(&NativeExtensionBindingsSystem::SendRequest,
-                             base::Unretained(this))) {}
+                             base::Unretained(this))),
+      weak_factory_(this) {}
 
 NativeExtensionBindingsSystem::~NativeExtensionBindingsSystem() {}
 
@@ -103,6 +117,19 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
   v8::Local<v8::Object> chrome = GetOrCreateChrome(v8_context);
   if (chrome.IsEmpty())
     return;
+
+  gin::PerContextData* per_context_data = gin::PerContextData::From(v8_context);
+  DCHECK(per_context_data);
+  BindingsSystemPerContextData* data =
+      static_cast<BindingsSystemPerContextData*>(
+          per_context_data->GetUserData(kBindingsSystemPerContextKey));
+  if (!data) {
+    auto api_data = base::MakeUnique<BindingsSystemPerContextData>(
+        weak_factory_.GetWeakPtr());
+    data = api_data.get();
+    per_context_data->SetUserData(kBindingsSystemPerContextKey,
+                                  api_data.release());
+  }
 
   const FeatureProvider* api_feature_provider =
       FeatureProvider::GetAPIFeatures();
@@ -124,18 +151,18 @@ void NativeExtensionBindingsSystem::UpdateBindingsForContext(
       continue;
     }
 
+    // TODO(devlin): UpdateBindingsForContext can be called during context
+    // creation, but also when e.g. permissions change. We need to be checking
+    // for whether or not the API already exists on the object as well as
+    // if we need to remove any existing APIs.
     if (!context->IsAnyFeatureAvailableToContext(*map_entry.second,
                                                  CheckAliasStatus::NOT_ALLOWED))
       continue;
 
-    // TODO(devlin): Make this lazy by adding a getter.
-    v8::Local<v8::Object> api_object = api_system_.CreateAPIInstance(
-        map_entry.first, v8_context, v8_context->GetIsolate(),
-        base::Bind(&IsAPIMethodAvailable, context));
-    v8::Maybe<bool> success = chrome->CreateDataProperty(
-        v8_context,
-        gin::StringToSymbol(v8_context->GetIsolate(), map_entry.first),
-        api_object);
+    v8::Local<v8::String> api_name =
+        gin::StringToSymbol(v8_context->GetIsolate(), map_entry.first);
+    v8::Maybe<bool> success = chrome->SetAccessor(
+        v8_context, api_name, &GetAPIHelper, nullptr, api_name);
     if (!success.IsJust() || !success.FromJust()) {
       LOG(ERROR) << "Failed to create API on Chrome object.";
       return;
@@ -165,6 +192,59 @@ void NativeExtensionBindingsSystem::HandleResponse(
 
 RequestSender* NativeExtensionBindingsSystem::GetRequestSender() {
   return nullptr;
+}
+
+// static
+void NativeExtensionBindingsSystem::GetAPIHelper(
+    v8::Local<v8::Name> name,
+    const v8::PropertyCallbackInfo<v8::Value>& info) {
+  v8::Isolate* isolate = info.GetIsolate();
+  v8::HandleScope handle_scope(isolate);
+  v8::Local<v8::Context> context = info.Holder()->CreationContext();
+  gin::PerContextData* per_context_data = gin::PerContextData::From(context);
+  if (!per_context_data)
+    return;  // Context is shutting down.
+  BindingsSystemPerContextData* data =
+      static_cast<BindingsSystemPerContextData*>(
+          per_context_data->GetUserData(kBindingsSystemPerContextKey));
+  CHECK(data);
+  if (!data->bindings_system) {
+    NOTREACHED() << "Context outlived bindings system.";
+    return;
+  }
+
+  v8::Local<v8::Object> apis;
+  if (data->api_object.IsEmpty()) {
+    apis = v8::Object::New(isolate);
+    data->api_object = v8::Global<v8::Object>(isolate, apis);
+  } else {
+    apis = data->api_object.Get(isolate);
+  }
+
+  // We use info.Data() to store a real name here instead of using the provided
+  // one to handle any weirdness from the caller (non-existent strings, etc).
+  v8::Local<v8::String> api_name = info.Data().As<v8::String>();
+  v8::Local<v8::Value> result;
+  v8::Maybe<bool> has_property = apis->HasRealNamedProperty(context, api_name);
+  if (!has_property.IsJust())
+    return;
+
+  if (has_property.FromJust()) {
+    result = apis->GetRealNamedProperty(context, api_name).ToLocalChecked();
+  } else {
+    std::string api_name_string;
+    CHECK(gin::Converter<std::string>::FromV8(isolate, api_name,
+                                              &api_name_string));
+    result = data->bindings_system->api_system_.CreateAPIInstance(
+        api_name_string, context, isolate,
+        base::Bind(&IsAPIMethodAvailable,
+                   ScriptContextSet::GetContextByV8Context(context)));
+    v8::Maybe<bool> success =
+        apis->CreateDataProperty(context, api_name, result);
+    if (!success.IsJust() || !success.FromJust())
+      return;
+  }
+  info.GetReturnValue().Set(result);
 }
 
 void NativeExtensionBindingsSystem::SendRequest(

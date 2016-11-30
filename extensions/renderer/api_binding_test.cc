@@ -38,6 +38,15 @@ void APIBindingTest::SetUp() {
 }
 
 void APIBindingTest::TearDown() {
+  auto run_garbage_collection = [this]() {
+    // '5' is a magic number stolen from Blink; arbitrarily large enough to
+    // hopefully clean up all the various paths.
+    for (int i = 0; i < 5; ++i) {
+      isolate()->RequestGarbageCollectionForTesting(
+          v8::Isolate::kFullGarbageCollection);
+    }
+  };
+
   if (context_holder_) {
     // Check for leaks - a weak handle to a context is invalidated on context
     // destruction, so resetting the context should reset the handle.
@@ -53,15 +62,14 @@ void APIBindingTest::TearDown() {
 
     // Garbage collect everything so that we find any issues where we might be
     // double-freeing.
-    // '5' is a magic number stolen from Blink; arbitrarily large enough to
-    // hopefully clean up all the various paths.
-    for (int i = 0; i < 5; ++i) {
-      isolate()->RequestGarbageCollectionForTesting(
-          v8::Isolate::kFullGarbageCollection);
-    }
+    run_garbage_collection();
 
     // The context should have been deleted.
     ASSERT_TRUE(weak_context.IsEmpty());
+  } else {
+    // The context was already deleted (as through DisposeContext()), but we
+    // still need to garbage collect.
+    run_garbage_collection();
   }
 
   isolate()->Exit();

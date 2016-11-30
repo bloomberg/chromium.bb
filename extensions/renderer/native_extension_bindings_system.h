@@ -9,6 +9,7 @@
 #include <string>
 
 #include "base/callback.h"
+#include "base/memory/weak_ptr.h"
 #include "extensions/renderer/api_bindings_system.h"
 #include "extensions/renderer/extension_bindings_system.h"
 #include "v8/include/v8.h"
@@ -53,11 +54,17 @@ class NativeExtensionBindingsSystem : public ExtensionBindingsSystem {
   void SendRequest(std::unique_ptr<APIBindingsSystem::Request> request,
                    v8::Local<v8::Context> context);
 
+  // Getter callback for an extension API, since APIs are constructed lazily.
+  static void GetAPIHelper(v8::Local<v8::Name> name,
+                           const v8::PropertyCallbackInfo<v8::Value>& info);
+
   // Handler to send IPCs. Abstracted out for testing purposes.
   SendIPCMethod send_ipc_;
 
   // The APIBindingsSystem associated with this class.
   APIBindingsSystem api_system_;
+
+  base::WeakPtrFactory<NativeExtensionBindingsSystem> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeExtensionBindingsSystem);
 };
