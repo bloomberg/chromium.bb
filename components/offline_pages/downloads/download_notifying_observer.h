@@ -48,6 +48,8 @@ class DownloadNotifyingObserver : public RequestCoordinator::Observer,
 
   bool IsVisibleInUI(const ClientId& id);
 
+  void NotifyRequestStateChange(const SavePageRequest& request);
+
   // Used to issue notifications related to save page requests.
   std::unique_ptr<OfflinePageDownloadNotifier> notifier_;
   // Used to determine policy-related permissions. Not owned.

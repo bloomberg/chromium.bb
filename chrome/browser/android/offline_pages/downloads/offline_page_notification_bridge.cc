@@ -56,8 +56,7 @@ void OfflinePageNotificationBridge::NotifyDownloadProgress(
   Java_OfflinePageNotificationBridge_notifyDownloadProgress(
       env, GetApplicationContext(), ConvertUTF8ToJavaString(env, item.guid),
       ConvertUTF8ToJavaString(env, item.url.spec()),
-      item.start_time.ToJavaTime(), GetDisplayName(item),
-      item.is_offlining);
+      item.start_time.ToJavaTime(), GetDisplayName(item));
 }
 
 void OfflinePageNotificationBridge::NotifyDownloadPaused(

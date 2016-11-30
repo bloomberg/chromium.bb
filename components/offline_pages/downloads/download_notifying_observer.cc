@@ -47,17 +47,21 @@ void DownloadNotifyingObserver::OnAdded(const SavePageRequest& request) {
   DCHECK(notifier_.get());
   if (!IsVisibleInUI(request.client_id()))
     return;
+
+  // Calling Progress ensures notification is created in lieu of specific
+  // Add/Create call.
   notifier_->NotifyDownloadProgress(DownloadUIItem(request));
+
+  // Now we need to update the notification if it is not active/offlining.
+  if (request.request_state() != SavePageRequest::RequestState::OFFLINING)
+    NotifyRequestStateChange(request);
 }
 
 void DownloadNotifyingObserver::OnChanged(const SavePageRequest& request) {
   DCHECK(notifier_.get());
   if (!IsVisibleInUI(request.client_id()))
     return;
-  if (request.request_state() == SavePageRequest::RequestState::PAUSED)
-    notifier_->NotifyDownloadPaused(DownloadUIItem(request));
-  else
-    notifier_->NotifyDownloadProgress(DownloadUIItem(request));
+  NotifyRequestStateChange(request);
 }
 
 void DownloadNotifyingObserver::OnCompleted(
@@ -77,6 +81,20 @@ void DownloadNotifyingObserver::OnCompleted(
 bool DownloadNotifyingObserver::IsVisibleInUI(const ClientId& page) {
   return policy_controller_->IsSupportedByDownload(page.name_space) &&
          base::IsValidGUID(page.id);
+}
+
+// Calls the appropriate notifier method depending upon the state of the
+// request. For example, an AVAILABLE request is not active (aka, pending)
+// which the notifier understands as an Interrupted operation vs. one that
+// has Progress or is Paused.
+void DownloadNotifyingObserver::NotifyRequestStateChange(
+    const SavePageRequest& request) {
+  if (request.request_state() == SavePageRequest::RequestState::PAUSED)
+    notifier_->NotifyDownloadPaused(DownloadUIItem(request));
+  else if (request.request_state() == SavePageRequest::RequestState::AVAILABLE)
+    notifier_->NotifyDownloadInterrupted(DownloadUIItem(request));
+  else
+    notifier_->NotifyDownloadProgress(DownloadUIItem(request));
 }
 
 }  // namespace offline_pages

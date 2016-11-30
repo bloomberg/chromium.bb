@@ -128,15 +128,36 @@ void DownloadNotifyingObserverTest::SetUp() {
                                                 policy_controller_.get()));
 }
 
-TEST_F(DownloadNotifyingObserverTest, OnAdded) {
+TEST_F(DownloadNotifyingObserverTest, OnAddedAsAvailable) {
   SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
                           kTestCreationTime, kTestUserRequested);
+  request.set_request_state(SavePageRequest::RequestState::AVAILABLE);
   observer()->OnAdded(request);
-  EXPECT_EQ(LastNotificationType::DOWNLOAD_PROGRESS,
+  EXPECT_EQ(LastNotificationType::DOWNLOAD_INTERRUPTED,
             notifier()->last_notification_type());
   EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
   EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
   EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+}
+
+TEST_F(DownloadNotifyingObserverTest, OnAddedAsOffling) {
+  SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
+                          kTestCreationTime, kTestUserRequested);
+  request.set_request_state(SavePageRequest::RequestState::OFFLINING);
+  observer()->OnAdded(request);
+  EXPECT_EQ(LastNotificationType::DOWNLOAD_PROGRESS,
+            notifier()->last_notification_type());
+  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
+}
+
+TEST_F(DownloadNotifyingObserverTest, OnAddedAsPaused) {
+  SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
+                          kTestCreationTime, kTestUserRequested);
+  request.set_request_state(SavePageRequest::RequestState::PAUSED);
+  observer()->OnAdded(request);
+  EXPECT_EQ(LastNotificationType::DOWNLOAD_PAUSED,
+            notifier()->last_notification_type());
+  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
 }
 
 TEST_F(DownloadNotifyingObserverTest, OnChangedToPaused) {
@@ -155,6 +176,18 @@ TEST_F(DownloadNotifyingObserverTest, OnChangedToAvailable) {
   SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
                           kTestCreationTime, kTestUserRequested);
   request.set_request_state(SavePageRequest::RequestState::AVAILABLE);
+  observer()->OnChanged(request);
+  EXPECT_EQ(LastNotificationType::DOWNLOAD_INTERRUPTED,
+            notifier()->last_notification_type());
+  EXPECT_EQ(kTestGuid, notifier()->download_item()->guid);
+  EXPECT_EQ(GURL(kTestUrl), notifier()->download_item()->url);
+  EXPECT_EQ(kTestCreationTime, notifier()->download_item()->start_time);
+}
+
+TEST_F(DownloadNotifyingObserverTest, OnChangedToOfflining) {
+  SavePageRequest request(kTestOfflineId, GURL(kTestUrl), kTestClientId,
+                          kTestCreationTime, kTestUserRequested);
+  request.set_request_state(SavePageRequest::RequestState::OFFLINING);
   observer()->OnChanged(request);
   EXPECT_EQ(LastNotificationType::DOWNLOAD_PROGRESS,
             notifier()->last_notification_type());

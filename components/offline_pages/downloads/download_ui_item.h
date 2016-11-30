@@ -44,9 +44,6 @@ struct DownloadUIItem {
 
   // The size of the offline copy.
   int64_t total_bytes;
-
-  // Whether the page is currently being offlined.
-  bool is_offlining;
 };
 
 }  // namespace offline_pages

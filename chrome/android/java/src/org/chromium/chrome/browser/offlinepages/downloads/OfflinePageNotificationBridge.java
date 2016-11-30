@@ -68,17 +68,16 @@ public class OfflinePageNotificationBridge {
      * @param url URL of the page to download.
      * @param startTime Time of the request.
      * @param displayName Name to be displayed on notification.
-     * @param isOfflining Whether the page is being offlined.
      */
     @CalledByNative
     public static void notifyDownloadProgress(
-            Context context, String guid, String url, long startTime, String displayName,
-            boolean isOfflining) {
+            Context context, String guid, String url, long startTime, String displayName) {
         DownloadNotifier notifier = getDownloadNotifier(context);
         if (notifier == null) return;
 
+        // Use -1 percentage for interdeterminate progress bar (until we have better value).
         // TODO(qinmin): get the download percentage from native code,
-        int percentage = isOfflining ? 0 : -1;
+        int percentage = -1;
         DownloadInfo downloadInfo = new DownloadInfo.Builder()
                                             .setIsOfflinePage(true)
                                             .setDownloadGuid(guid)

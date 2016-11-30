@@ -13,11 +13,23 @@ struct OfflinePageDownloadNotifier {
  public:
   virtual ~OfflinePageDownloadNotifier() = default;
 
+  // Reports that |item| has completed successfully.
   virtual void NotifyDownloadSuccessful(const DownloadUIItem& item) = 0;
+
+  // Reports that |item| has completed unsuccessfully.
   virtual void NotifyDownloadFailed(const DownloadUIItem& item) = 0;
+
+  // Reports that |item| is active and possibly making progress.
   virtual void NotifyDownloadProgress(const DownloadUIItem& item) = 0;
+
+  // Reports that |item| has been paused (and so it is not active).
   virtual void NotifyDownloadPaused(const DownloadUIItem& item) = 0;
+
+  // Reports that any progress on |item| has been interrupted. It is pending
+  // or available for another attempt when conditions allows.
   virtual void NotifyDownloadInterrupted(const DownloadUIItem& item) = 0;
+
+  // Reports that |item| has been canceled.
   virtual void NotifyDownloadCanceled(const DownloadUIItem& item) = 0;
 };
 
