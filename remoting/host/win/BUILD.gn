@@ -430,7 +430,7 @@ executable("remoting_desktop") {
   ]
 
   if (is_official_build) {
-    deps += [ ":dpi_aware_uiaccess_require_admin_exe_manifest" ]
+    deps += [ ":dpi_aware_elevated_exe_manifest" ]
   } else {
     deps += [ ":dpi_aware_exe_manifest" ]
   }
