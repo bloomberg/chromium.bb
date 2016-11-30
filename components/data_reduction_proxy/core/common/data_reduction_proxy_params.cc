@@ -260,19 +260,6 @@ bool ShouldForceEnableDataReductionProxy() {
       data_reduction_proxy::switches::kEnableDataReductionProxy);
 }
 
-bool ShouldUseSecureProxyByDefault() {
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          data_reduction_proxy::switches::
-              kDataReductionProxyStartSecureDisabled))
-    return false;
-
-  if (FieldTrialList::FindFullName("DataReductionProxySecureProxyAfterCheck") ==
-      kEnabled)
-    return false;
-
-  return true;
-}
-
 int GetFieldTrialParameterAsInteger(const std::string& group,
                                     const std::string& param_name,
                                     int default_value,

@@ -59,11 +59,6 @@ const char kDataReductionProxySecureProxyCheckURL[] =
 const char kDataReductionProxyServerExperimentsDisabled[] =
     "data-reduction-proxy-server-experiments-disabled";
 
-// Starts the secure Data Reduction Proxy in the disabled state until the secure
-// proxy check succeeds.
-const char kDataReductionProxyStartSecureDisabled[] =
-    "data-reduction-proxy-secure-proxy-disabled";
-
 // Sets a URL to fetch to warm up the data reduction proxy on startup and
 // network changes.
 const char kDataReductionProxyWarmupURL[] = "data-reduction-proxy-warmup-url";

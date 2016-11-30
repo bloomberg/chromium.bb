@@ -199,11 +199,6 @@ class DataReductionProxyConfig
   net::ProxyConfig ProxyConfigIgnoringHoldback() const;
 
  protected:
-  // Virtualized for mocking. Records UMA containing the result of requesting
-  // the secure proxy check.
-  virtual void RecordSecureProxyCheckFetchResult(
-      SecureProxyCheckFetchResult result);
-
   // Virtualized for mocking. Returns the list of network interfaces in use.
   // |interfaces| can be null.
   virtual void GetNetworkList(net::NetworkInterfaceList* interfaces,

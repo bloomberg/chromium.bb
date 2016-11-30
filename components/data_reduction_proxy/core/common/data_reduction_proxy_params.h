@@ -131,10 +131,6 @@ GURL GetConfigServiceURL();
 // command line.
 bool ShouldForceEnableDataReductionProxy();
 
-// Returns true if the secure Data Reduction Proxy should be used until the
-// secure proxy check fails.
-bool ShouldUseSecureProxyByDefault();
-
 // Retrieves the int stored in |param_name| from the field trial group
 // |group|. If the value is not present, cannot be parsed, or is less than
 // |min_value|, returns |default_value|.

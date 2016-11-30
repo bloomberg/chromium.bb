@@ -201,6 +201,14 @@ void RecordAutoLoFiRequestHeaderStateChange(bool previous_header_low,
   }
 }
 
+//  Records UMA containing the result of requesting the secure proxy check.
+void RecordSecureProxyCheckFetchResult(
+    data_reduction_proxy::SecureProxyCheckFetchResult result) {
+  UMA_HISTOGRAM_ENUMERATION(
+      kUMAProxyProbeURL, result,
+      data_reduction_proxy::SECURE_PROXY_CHECK_FETCH_RESULT_COUNT);
+}
+
 }  // namespace
 
 namespace data_reduction_proxy {
@@ -276,7 +284,7 @@ DataReductionProxyConfig::DataReductionProxyConfig(
     std::unique_ptr<DataReductionProxyConfigValues> config_values,
     DataReductionProxyConfigurator* configurator,
     DataReductionProxyEventCreator* event_creator)
-    : secure_proxy_allowed_(params::ShouldUseSecureProxyByDefault()),
+    : secure_proxy_allowed_(true),
       unreachable_(false),
       enabled_by_user_(false),
       config_values_(std::move(config_values)),
@@ -652,9 +660,10 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
     int http_response_code) {
   bool success_response =
       base::StartsWith(response, "OK", base::CompareCase::SENSITIVE);
-  if (event_creator_)
+  if (event_creator_) {
     event_creator_->EndSecureProxyCheck(net_log_with_source_, status.error(),
                                         http_response_code, success_response);
+  }
 
   if (!status.is_success()) {
     if (status.error() == net::ERR_INTERNET_DISCONNECTED) {
@@ -668,38 +677,25 @@ void DataReductionProxyConfig::HandleSecureProxyCheckResponse(
                                 std::abs(status.error()));
   }
 
-  if (success_response) {
-    DVLOG(1) << "The data reduction proxy is unrestricted.";
-
-    if (enabled_by_user_) {
-      if (!secure_proxy_allowed_) {
-        secure_proxy_allowed_ = true;
-        // The user enabled the proxy, but sometime previously in the session,
-        // the network operator had blocked the secure proxy check and
-        // restricted the user. The current network doesn't block the secure
-        // proxy check, so don't restrict the proxy configurations.
-        ReloadConfig();
-        RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ENABLED);
-      } else {
-        RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
-      }
-    }
-    secure_proxy_allowed_ = true;
+  bool secure_proxy_allowed_past = secure_proxy_allowed_;
+  secure_proxy_allowed_ = success_response;
+  if (!enabled_by_user_)
     return;
+
+  if (secure_proxy_allowed_ != secure_proxy_allowed_past)
+    ReloadConfig();
+
+  // Record the result.
+  if (secure_proxy_allowed_past && secure_proxy_allowed_) {
+    RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ALREADY_ENABLED);
+  } else if (secure_proxy_allowed_past && !secure_proxy_allowed_) {
+    RecordSecureProxyCheckFetchResult(FAILED_PROXY_DISABLED);
+  } else if (!secure_proxy_allowed_past && secure_proxy_allowed_) {
+    RecordSecureProxyCheckFetchResult(SUCCEEDED_PROXY_ENABLED);
+  } else {
+    DCHECK(!secure_proxy_allowed_past && !secure_proxy_allowed_);
+    RecordSecureProxyCheckFetchResult(FAILED_PROXY_ALREADY_DISABLED);
   }
-  DVLOG(1) << "The data reduction proxy is restricted to the configured "
-           << "fallback proxy.";
-  if (enabled_by_user_) {
-    if (secure_proxy_allowed_) {
-      // Restrict the proxy.
-      secure_proxy_allowed_ = false;
-      ReloadConfig();
-      RecordSecureProxyCheckFetchResult(FAILED_PROXY_DISABLED);
-    } else {
-      RecordSecureProxyCheckFetchResult(FAILED_PROXY_ALREADY_DISABLED);
-    }
-  }
-  secure_proxy_allowed_ = false;
 }
 
 void DataReductionProxyConfig::OnIPAddressChanged() {
@@ -711,7 +707,7 @@ void DataReductionProxyConfig::OnIPAddressChanged() {
     // quality prediction accuracy if there was a change in the IP address.
     network_quality_at_last_query_ = NETWORK_QUALITY_AT_LAST_QUERY_UNKNOWN;
 
-    bool should_use_secure_proxy = params::ShouldUseSecureProxyByDefault();
+    bool should_use_secure_proxy = true;
     if (!should_use_secure_proxy && secure_proxy_allowed_) {
       secure_proxy_allowed_ = false;
       RecordSecureProxyCheckFetchResult(PROXY_DISABLED_BEFORE_CHECK);
@@ -752,12 +748,6 @@ void DataReductionProxyConfig::AddDefaultProxyBypassRules() {
   // IPV6 probe addresses.
   configurator_->AddHostPatternToBypass("*-ds.metric.gstatic.com");
   configurator_->AddHostPatternToBypass("*-v4.metric.gstatic.com");
-}
-
-void DataReductionProxyConfig::RecordSecureProxyCheckFetchResult(
-    SecureProxyCheckFetchResult result) {
-  UMA_HISTOGRAM_ENUMERATION(kUMAProxyProbeURL, result,
-                            SECURE_PROXY_CHECK_FETCH_RESULT_COUNT);
 }
 
 void DataReductionProxyConfig::SecureProxyCheck(

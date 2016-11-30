@@ -277,57 +277,6 @@ TEST_F(DataReductionProxyParamsTest, IsTamperDetectionEnabled) {
   }
 }
 
-TEST_F(DataReductionProxyParamsTest, SecureProxyCheckDefault) {
-  struct {
-    bool command_line_set;
-    bool experiment_enabled;
-    bool in_trial_group;
-    bool expected_use_by_default;
-  } test_cases[]{
-      {
-       false, false, false, true,
-      },
-      {
-       true, false, false, false,
-      },
-      {
-       true, true, false, false,
-      },
-      {
-       true, true, true, false,
-      },
-      {
-       false, true, true, false,
-      },
-      {
-       false, true, false, true,
-      },
-  };
-
-  int test_index = 0;
-  for (const auto& test_case : test_cases) {
-    // Reset all flags.
-    base::CommandLine::ForCurrentProcess()->InitFromArgv(0, NULL);
-
-    base::FieldTrialList trial_list(nullptr);
-    if (test_case.command_line_set) {
-      base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-          switches::kDataReductionProxyStartSecureDisabled, "");
-    }
-
-    if (test_case.experiment_enabled) {
-      ASSERT_TRUE(base::FieldTrialList::CreateFieldTrial(
-          "DataReductionProxySecureProxyAfterCheck",
-          test_case.in_trial_group ? "Enabled" : "Disabled"));
-    }
-
-    EXPECT_EQ(test_case.expected_use_by_default,
-              params::ShouldUseSecureProxyByDefault())
-        << test_index;
-    test_index++;
-  }
-}
-
 // Tests if Lo-Fi field trial is set correctly.
 TEST_F(DataReductionProxyParamsTest, LoFiEnabledFieldTrial) {
   const struct {
