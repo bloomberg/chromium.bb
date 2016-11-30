@@ -179,10 +179,10 @@ bool InputEventFilter::OnMessageReceived(const IPC::Message& message) {
       return false;
   }
 
-  CHECK(target_task_runner_->PostTask(
+  bool postedTask = target_task_runner_->PostTask(
       FROM_HERE, base::Bind(&InputEventFilter::ForwardToHandler, this, message,
-                            received_time)))
-      << "PostTask failed";
+                            received_time));
+  LOG_IF(WARNING, !postedTask) << "PostTask failed";
   return true;
 }
 
