@@ -60,12 +60,8 @@ RenderWidgetHostImpl* TextInputManager::GetActiveWidget() const {
                         : nullptr;
 }
 
-const TextInputState* TextInputManager::GetTextInputState(
-    RenderWidgetHostViewBase* view) const {
-  DCHECK(!view || IsRegistered(view));
-  if (!view)
-    view = active_view_;
-  return !!view ? &text_input_state_map_.at(view) : nullptr;
+const TextInputState* TextInputManager::GetTextInputState() const {
+  return !!active_view_ ? &text_input_state_map_.at(active_view_) : nullptr;
 }
 
 const TextInputManager::SelectionRegion* TextInputManager::GetSelectionRegion(

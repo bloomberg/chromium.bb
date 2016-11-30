@@ -638,6 +638,27 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
   reset_state_observer.Wait();
 }
 
+// This test verifies that if we have a focused <input> in the main frame and
+// the tab is closed, TextInputManager handles unregistering itself and
+// notifying the observers properly (see https://crbug.com/669375).
+IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
+                       ClosingTabWillNotCrash) {
+  CreateIframePage("a()");
+  content::RenderFrameHost* main_frame = GetFrame(IndexVector{});
+  AddInputFieldToFrame(main_frame, "text", "", false);
+
+  // Focus the input and wait for state update.
+  TextInputManagerTypeObserver observer(active_contents(),
+                                        ui::TEXT_INPUT_TYPE_TEXT);
+  SimulateKeyPress(active_contents(), ui::DomKey::TAB, ui::DomCode::TAB,
+                   ui::VKEY_TAB, false, false, false, false);
+  observer.Wait();
+
+  // Now destroy the tab. We should exit without crashing.
+  browser()->tab_strip_model()->CloseWebContentsAt(
+      0, TabStripModel::CLOSE_USER_GESTURE);
+}
+
 // The following test verifies that when the active widget changes value, it is
 // always from nullptr to non-null or vice versa.
 IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
@@ -846,7 +867,6 @@ IN_PROC_BROWSER_TEST_F(SitePerProcessTextInputManagerTest,
     verifier.Wait();
   }
 }
-
 
 // TODO(ekaramad): The following tests are specifically written for Aura and are
 // based on InputMethodObserver. Write similar tests for Mac/Android/Mus

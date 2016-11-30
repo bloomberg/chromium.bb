@@ -767,8 +767,12 @@ void RenderWidgetHostViewAndroid::OnUpdateTextInputStateCalled(
     RenderWidgetHostViewBase* updated_view,
     bool did_change_state) {
   DCHECK_EQ(text_input_manager_, text_input_manager);
+  // If there are no active widgets, the TextInputState.type should be reported
+  // as none.
   const TextInputState& state =
-      *GetTextInputManager()->GetTextInputState(updated_view);
+      GetTextInputManager()->GetActiveWidget()
+          ? *GetTextInputManager()->GetTextInputState()
+          : TextInputState();
   if (state.is_non_ime_change && updated_view->GetRenderWidgetHost()) {
     // Sends an acknowledgement to the renderer of a processed IME event.
     updated_view->GetRenderWidgetHost()->Send(

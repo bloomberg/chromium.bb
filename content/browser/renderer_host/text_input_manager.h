@@ -37,7 +37,12 @@ class CONTENT_EXPORT TextInputManager {
     // Called when a view has called UpdateTextInputState on TextInputManager.
     // If the call has led to a change in TextInputState, |did_update_state| is
     // true. In some plaforms, we need this update even when the state has not
-    // changed (e.g., Aura for updating IME).
+    // changed (e.g., Aura for updating IME). Also note that |updated_view| is
+    // the view which has most recently received an update in TextInputState.
+    // |updated_view| should not be used to obtain any IME state since this
+    // observer method might have been called in the process of unregistering
+    // |active_view_| from TextInputManager (which in turn is a result of either
+    // destroying |active_view_| or TextInputManager).
     virtual void OnUpdateTextInputStateCalled(
         TextInputManager* text_input_manager,
         RenderWidgetHostViewBase* updated_view,
@@ -123,12 +128,10 @@ class CONTENT_EXPORT TextInputManager {
   // Users of these methods should not hold on to the pointers as they become
   // dangling if the TextInputManager or |active_view_| are destroyed.
 
-  // Returns the currently stored TextInputState for |view|. A state of nullptr
-  // can be interpreted as a ui::TextInputType of ui::TEXT_INPUT_TYPE_NONE for
-  // the view. If |view| is null and there is an |active_view_|, the state for
-  // |active_view_| is returned.
-  const TextInputState* GetTextInputState(
-      RenderWidgetHostViewBase* view = nullptr) const;
+  // Returns the currently stored TextInputState for |active_view_|. A state of
+  // nullptr can be interpreted as a ui::TextInputType of
+  // ui::TEXT_INPUT_TYPE_NONE.
+  const TextInputState* GetTextInputState() const;
 
   // Returns the selection bounds information for |view|. If |view| == nullptr,
   // it will return the corresponding information for |active_view_| or nullptr
