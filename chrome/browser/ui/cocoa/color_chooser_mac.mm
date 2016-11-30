@@ -139,7 +139,16 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
     nonUserChange_ = NO;
     return;
   }
+  nonUserChange_ = NO;
   NSColor* color = [panel color];
+  if ([[color colorSpaceName] isEqualToString:NSNamedColorSpace]) {
+    color = [color colorUsingColorSpace:[NSColorSpace genericRGBColorSpace]];
+    // Some colors in "Developer" palette in "Color Palettes" tab can't be
+    // converted to RGB. We just ignore such colors.
+    // TODO(tkent): We should notice the rejection to users.
+    if (!color)
+      return;
+  }
   if ([color colorSpace] == [NSColorSpace genericRGBColorSpace]) {
     // genericRGB -> deviceRGB conversion isn't ignorable.  We'd like to use RGB
     // values shown in NSColorPanel UI.
@@ -154,7 +163,6 @@ void ColorChooserMac::SetSelectedColor(SkColor color) {
     chooser_->DidChooseColorInColorPanel(skia::NSDeviceColorToSkColor(
         [[panel color] colorUsingColorSpaceName:NSDeviceRGBColorSpace]));
   }
-  nonUserChange_ = NO;
 }
 
 - (void)setColor:(NSColor*)color {
