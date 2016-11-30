@@ -264,12 +264,11 @@ def parse_args(args):
             optparse.make_option(
                 "--child-processes",
                 help="Number of drivers to run in parallel."),
-            # TODO(tkent): Remove --enable-wptserve.
             optparse.make_option(
                 "--enable-wptserve",
                 dest="enable_wptserve",
                 action="store_true",
-                default=True,
+                default=False,
                 help="Enable running web-platform-tests using WPTserve instead of Apache."),
             optparse.make_option(
                 "--disable-breakpad",
