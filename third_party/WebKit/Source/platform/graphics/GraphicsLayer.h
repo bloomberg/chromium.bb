@@ -305,7 +305,7 @@ class PLATFORM_EXPORT GraphicsLayer : public WebLayerScrollClient,
   // can be batched before updating.
   void addChildInternal(GraphicsLayer*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool hasAncestor(GraphicsLayer*) const;
 #endif
 

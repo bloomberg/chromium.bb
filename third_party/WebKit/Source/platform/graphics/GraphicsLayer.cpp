@@ -137,7 +137,7 @@ GraphicsLayer::~GraphicsLayer() {
   removeFromParent();
 
   rasterInvalidationTrackingMap().remove(this);
-  ASSERT(!m_parent);
+  DCHECK(!m_parent);
 }
 
 LayoutRect GraphicsLayer::visualRect() const {
@@ -163,11 +163,13 @@ void GraphicsLayer::clearPreferredRasterBounds() {
 }
 
 void GraphicsLayer::setParent(GraphicsLayer* layer) {
-  ASSERT(!layer || !layer->hasAncestor(this));
+#if DCHECK_IS_ON()
+  DCHECK(!layer || !layer->hasAncestor(this));
+#endif
   m_parent = layer;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 bool GraphicsLayer::hasAncestor(GraphicsLayer* ancestor) const {
   for (GraphicsLayer* curr = parent(); curr; curr = curr->parent()) {
@@ -197,7 +199,7 @@ bool GraphicsLayer::setChildren(const GraphicsLayerVector& newChildren) {
 }
 
 void GraphicsLayer::addChildInternal(GraphicsLayer* childLayer) {
-  ASSERT(childLayer != this);
+  DCHECK_NE(childLayer, this);
 
   if (childLayer->parent())
     childLayer->removeFromParent();
@@ -216,7 +218,7 @@ void GraphicsLayer::addChild(GraphicsLayer* childLayer) {
 
 void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer,
                                   GraphicsLayer* sibling) {
-  ASSERT(childLayer != this);
+  DCHECK_NE(childLayer, this);
   childLayer->removeFromParent();
 
   bool found = false;
@@ -239,7 +241,7 @@ void GraphicsLayer::addChildBelow(GraphicsLayer* childLayer,
 void GraphicsLayer::removeAllChildren() {
   while (!m_children.isEmpty()) {
     GraphicsLayer* curLayer = m_children.back();
-    ASSERT(curLayer->parent());
+    DCHECK(curLayer->parent());
     curLayer->removeFromParent();
   }
 }
@@ -304,7 +306,7 @@ void GraphicsLayer::paint(const IntRect* interestRect,
 bool GraphicsLayer::paintWithoutCommit(
     const IntRect* interestRect,
     GraphicsContext::DisabledMode disabledMode) {
-  ASSERT(drawsContent());
+  DCHECK(drawsContent());
 
   if (!m_client)
     return false;
@@ -427,7 +429,7 @@ void GraphicsLayer::registerContentsLayer(WebLayer* layer) {
 }
 
 void GraphicsLayer::unregisterContentsLayer(WebLayer* layer) {
-  ASSERT(s_registeredLayerSet);
+  DCHECK(s_registeredLayerSet);
   if (!s_registeredLayerSet->contains(layer->id()))
     CRASH();
   s_registeredLayerSet->remove(layer->id());
@@ -436,7 +438,7 @@ void GraphicsLayer::unregisterContentsLayer(WebLayer* layer) {
 void GraphicsLayer::setContentsTo(WebLayer* layer) {
   bool childrenChanged = false;
   if (layer) {
-    ASSERT(s_registeredLayerSet);
+    DCHECK(s_registeredLayerSet);
     if (!s_registeredLayerSet->contains(layer->id()))
       CRASH();
     if (m_contentsLayerId != layer->id()) {
@@ -459,7 +461,7 @@ void GraphicsLayer::setContentsTo(WebLayer* layer) {
 }
 
 void GraphicsLayer::setupContentsLayer(WebLayer* contentsLayer) {
-  ASSERT(contentsLayer);
+  DCHECK(contentsLayer);
   m_contentsLayer = contentsLayer;
   m_contentsLayerId = m_contentsLayer->id();
 
@@ -657,9 +659,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
   if (m_opacity != 1)
     json->setDouble("opacity", m_opacity);
 
-  if (m_blendMode != WebBlendModeNormal)
+  if (m_blendMode != WebBlendModeNormal) {
     json->setString("blendMode",
                     compositeOperatorName(CompositeSourceOver, m_blendMode));
+  }
 
   if (m_isRootForIsolatedGroup)
     json->setBoolean("isolate", m_isRootForIsolatedGroup);
@@ -688,9 +691,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
   if (!m_contentsVisible)
     json->setBoolean("contentsVisible", m_contentsVisible);
 
-  if (!m_backfaceVisibility)
+  if (!m_backfaceVisibility) {
     json->setString("backfaceVisibility",
                     m_backfaceVisibility ? "visible" : "hidden");
+  }
 
   if (m_hasPreferredRasterBounds) {
     json->setArray("preferredRasterBounds",
@@ -700,9 +704,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
   if (flags & LayerTreeIncludesDebugInfo)
     json->setString("client", pointerAsString(m_client));
 
-  if (m_backgroundColor.alpha())
+  if (m_backgroundColor.alpha()) {
     json->setString("backgroundColor",
                     m_backgroundColor.nameForLayoutTreeAsText());
+  }
 
   if (!m_transform.isIdentity())
     json->setArray("transform", transformAsJSONArray(m_transform));
@@ -742,10 +747,11 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
     std::unique_ptr<JSONArray> compositingReasonsJSON = JSONArray::create();
     for (size_t i = 0; i < kNumberOfCompositingReasons; ++i) {
       if (m_debugInfo.getCompositingReasons() &
-          kCompositingReasonStringMap[i].reason)
+          kCompositingReasonStringMap[i].reason) {
         compositingReasonsJSON->pushString(
             debug ? kCompositingReasonStringMap[i].description
                   : kCompositingReasonStringMap[i].shortName);
+      }
     }
     json->setArray("compositingReasons", std::move(compositingReasonsJSON));
 
@@ -753,10 +759,11 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerAsJSONInternal(
         JSONArray::create();
     for (size_t i = 0; i < kNumberOfSquashingDisallowedReasons; ++i) {
       if (m_debugInfo.getSquashingDisallowedReasons() &
-          kSquashingDisallowedReasonStringMap[i].reason)
+          kSquashingDisallowedReasonStringMap[i].reason) {
         squashingDisallowedReasonsJSON->pushString(
             debug ? kSquashingDisallowedReasonStringMap[i].description
                   : kSquashingDisallowedReasonStringMap[i].shortName);
+      }
     }
     json->setArray("squashingDisallowedReasons",
                    std::move(squashingDisallowedReasonsJSON));
@@ -772,9 +779,10 @@ std::unique_ptr<JSONObject> GraphicsLayer::layerTreeAsJSONInternal(
 
   if (m_children.size()) {
     std::unique_ptr<JSONArray> childrenJSON = JSONArray::create();
-    for (size_t i = 0; i < m_children.size(); i++)
+    for (size_t i = 0; i < m_children.size(); i++) {
       childrenJSON->pushObject(
           m_children[i]->layerTreeAsJSONInternal(flags, renderingContextMap));
+    }
     json->setArray("children", std::move(childrenJSON));
   }
 
@@ -821,7 +829,7 @@ String GraphicsLayer::debugName(cc::Layer* layer) const {
   } else if (layer == ccLayerForWebLayer(m_layer->layer())) {
     name = m_client->debugName(this);
   } else {
-    ASSERT_NOT_REACHED();
+    NOTREACHED();
   }
   return name;
 }
@@ -847,7 +855,7 @@ void GraphicsLayer::setPosition(const FloatPoint& point) {
 void GraphicsLayer::setSize(const FloatSize& size) {
   // We are receiving negative sizes here that cause assertions to fail in the
   // compositor. Clamp them to 0 to avoid those assertions.
-  // FIXME: This should be an ASSERT instead, as negative sizes should not exist
+  // FIXME: This should be an DCHECK instead, as negative sizes should not exist
   // in WebCore.
   FloatSize clampedSize = size;
   if (clampedSize.width() < 0 || clampedSize.height() < 0)
@@ -1113,7 +1121,7 @@ void GraphicsLayer::setPaintingPhase(GraphicsLayerPaintingPhase phase) {
 }
 
 void GraphicsLayer::addLinkHighlight(LinkHighlight* linkHighlight) {
-  ASSERT(linkHighlight && !m_linkHighlights.contains(linkHighlight));
+  DCHECK(linkHighlight && !m_linkHighlights.contains(linkHighlight));
   m_linkHighlights.append(linkHighlight);
   linkHighlight->layer()->setLayerClient(this);
   updateChildList();
