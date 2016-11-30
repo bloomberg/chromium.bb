@@ -258,9 +258,6 @@ class AndroidPort(base.Port):
 
     FALLBACK_PATHS = {'icecreamsandwich': ['android'] + linux.LinuxPort.latest_platform_fallback_path()}
 
-    # Android has aac and mp3 codecs built in.
-    PORT_HAS_AUDIO_CODECS_BUILT_IN = True
-
     BUILD_REQUIREMENTS_URL = 'https://www.chromium.org/developers/how-tos/android-build-instructions'
 
     def __init__(self, host, port_name, **kwargs):

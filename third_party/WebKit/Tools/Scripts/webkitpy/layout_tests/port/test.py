@@ -461,7 +461,7 @@ class TestPort(Port):
     def webkit_base(self):
         return '/test.checkout'
 
-    def _skipped_tests_for_unsupported_features(self, test_list):
+    def skipped_layout_tests(self, _):
         return set(['failures/expected/skip_text.html',
                     'failures/unexpected/skip_pass.html',
                     'virtual/skipped/failures/expected'])

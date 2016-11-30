@@ -232,16 +232,6 @@ class PortTestCase(unittest.TestCase):
         self.assertEqual(diff_txt, port._wdiff_error_html)
         self.assertFalse(port.wdiff_available())
 
-    def test_missing_symbol_to_skipped_tests(self):
-        # Test that we get the chromium skips and not the webkit default skips
-        port = self.make_port()
-        skip_dict = port._missing_symbol_to_skipped_tests()
-        if port.PORT_HAS_AUDIO_CODECS_BUILT_IN:
-            self.assertEqual(skip_dict, {})
-        else:
-            self.assertTrue('ff_mp3_decoder' in skip_dict)
-        self.assertFalse('WebGLShader' in skip_dict)
-
     def test_test_configuration(self):
         port = self.make_port()
         self.assertTrue(port.test_configuration())
@@ -322,28 +312,6 @@ class PortTestCase(unittest.TestCase):
         ordered_dict = port.expectations_dict()
         self.assertEqual(ordered_dict.keys()[-2:], options.additional_expectations)  # pylint: disable=E1101
         self.assertEqual(ordered_dict.values()[-2:], ['foo', 'bar'])
-
-    def test_skipped_directories_for_symbols(self):
-        # This first test confirms that the commonly found symbols result in the expected skipped directories.
-        port = self.make_port()
-        self.assertEqual(
-            set(port._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html'])),
-            set([
-                "webaudio/codec-tests/mp3",
-                "webaudio/codec-tests/aac",
-            ]))
-
-        self.make_port()
-        # Test that the nm string parsing actually works:
-        port._symbols_string = lambda: """
-000000000124f498 s __ZZN7WebCore13ff_mp3_decoder12replaceChildEPS0_S1_E19__PRETTY_FUNCTION__
-000000000124f500 s __ZZN7WebCore13ff_mp3_decoder13addChildAboveEPS0_S1_E19__PRETTY_FUNCTION__
-000000000124f670 s __ZZN7WebCore13ff_mp3_decoder13addChildBelowEPS0_S1_E19__PRETTY_FUNCTION__
-"""
-        # Note 'compositing' is not in the list of skipped directories (hence the parsing of GraphicsLayer worked):
-        self.assertEqual(
-            set(port._skipped_tests_for_unsupported_features(test_list=['webaudio/codec-tests/mp3/foo.html'])),
-            set(["webaudio/codec-tests/aac"]))
 
     def test_path_to_apache_config_file(self):
         # Specific behavior may vary by port, so unit test sub-classes may override this.

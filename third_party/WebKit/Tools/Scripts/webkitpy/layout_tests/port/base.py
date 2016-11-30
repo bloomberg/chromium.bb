@@ -30,16 +30,13 @@
 test infrastructure (the Port and Driver classes).
 """
 
-from functools import reduce  # pylint: disable=redefined-builtin
 import cgi
 import collections
 import difflib
 import errno
 import functools
-import itertools
 import json
 import logging
-import operator
 import optparse
 import re
 import sys
@@ -81,9 +78,6 @@ class Port(object):
     ALL_BUILD_TYPES = ('debug', 'release')
 
     CONTENT_SHELL_NAME = 'content_shell'
-
-    # True if the port as aac and mp3 codecs built in.
-    PORT_HAS_AUDIO_CODECS_BUILT_IN = False
 
     ALL_SYSTEMS = (
 
@@ -968,9 +962,9 @@ class Port(object):
     def perf_tests_dir(self):
         return self._webkit_finder.perf_tests_dir()
 
-    def skipped_layout_tests(self, test_list):
-        """Returns tests skipped outside of the TestExpectations files."""
-        return set(self._skipped_tests_for_unsupported_features(test_list))
+    def skipped_layout_tests(self, _):
+        # TODO(qyearsley): Remove this method.
+        return set()
 
     def skips_test(self, test, generic_expectations, full_expectations):
         """Checks whether the given test is skipped for this port.
@@ -1729,44 +1723,6 @@ class Port(object):
         if self.should_use_wptserve(test_input.test_name):
             return False
         return True
-
-    def _symbols_string(self):
-        return ''
-
-    # Ports which use compile-time feature detection should define this method and return
-    # a dictionary mapping from symbol substrings to possibly disabled test directories.
-    # When the symbol substrings are not matched, the directories will be skipped.
-    # If ports don't ever enable certain features, then those directories can just be
-    # in the Skipped list instead of compile-time-checked here.
-    def _missing_symbol_to_skipped_tests(self):
-        if self.PORT_HAS_AUDIO_CODECS_BUILT_IN:
-            return {}
-        else:
-            return {
-                "ff_mp3_decoder": ["webaudio/codec-tests/mp3"],
-                "ff_aac_decoder": ["webaudio/codec-tests/aac"],
-            }
-
-    def _has_test_in_directories(self, directory_lists, test_list):
-        if not test_list:
-            return False
-
-        directories = itertools.chain.from_iterable(directory_lists)
-        for directory, test in itertools.product(directories, test_list):
-            if test.startswith(directory):
-                return True
-        return False
-
-    def _skipped_tests_for_unsupported_features(self, test_list):
-        # Only check the symbols of there are tests in the test_list that might get skipped.
-        # This is a performance optimization to avoid the calling nm.
-        # Runtime feature detection not supported, fallback to static detection:
-        # Disable any tests for symbols missing from the executable or libraries.
-        if self._has_test_in_directories(self._missing_symbol_to_skipped_tests().values(), test_list):
-            symbols_string = self._symbols_string()
-            return reduce(operator.add, [directories for symbol_substring, directories in self._missing_symbol_to_skipped_tests(
-            ).items() if symbol_substring not in symbols_string], [])
-        return []
 
     def _convert_path(self, path):
         """Handles filename conversion for subprocess command line args."""

@@ -171,7 +171,7 @@ crbug.com/381840 virtual/prefer_compositing_to_lcd_text/compositing/overflow/ove
 # Stack overflow crashes on Win
 crbug.com/601669 [ Win ] svg/as-image/svg-nested.html [ WontFix ]
 
-# GPU rasterization antialiases differently. 
+# GPU rasterization antialiases differently.
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size-diff.html [ WontFix ]
 crbug.com/665014 virtual/gpu-rasterization/images/cross-fade-svg-size.html [ WontFix ]
 
@@ -185,3 +185,8 @@ crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
 
 # wasm tests. Currently under virtual/enable_wasm
 crbug.com/642912 http/tests/wasm/ [ WontFix ]
+
+# These tests require audio codecs which are generally not available;
+# these tests can still be run manually with --skiped=ignore.
+webaudio/codec-tests/mp3 [ WontFix ]
+webaudio/codec-tests/aac [ WontFix ]
