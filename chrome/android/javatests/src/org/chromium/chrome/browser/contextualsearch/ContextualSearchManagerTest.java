@@ -2722,6 +2722,7 @@ public class ContextualSearchManagerTest extends ChromeActivityTestCaseBase<Chro
      */
     @SmallTest
     @Feature({"ContextualSearch"})
+    @RetryOnFailure
     // NOTE: Remove the flag so we will run just this test with onLine detection enabled.
     @CommandLineFlags.Remove(ContextualSearchFieldTrial.ONLINE_DETECTION_DISABLED)
     public void testNetworkDisconnectedDeactivatesSearch()
