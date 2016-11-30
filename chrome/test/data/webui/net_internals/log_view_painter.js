@@ -1310,7 +1310,7 @@ function painterTestHexEncodedBytes() {
       'params': {
         'source_dependency': {
           'id': 634,
-          'type': EventSourceType.CONNECT_JOB
+          'type': EventSourceType.TRANSPORT_CONNECT_JOB
         }
       },
       'phase': EventPhase.PHASE_BEGIN,
@@ -1417,7 +1417,8 @@ function painterTestHexEncodedBytes() {
 
   testCase.expectedText =
 't=1338865016932 [st=  0] +SOCKET_ALIVE  [dt=?]\n' +
-'                          --> source_dependency = 634 (CONNECT_JOB)\n' +
+'                          --> source_dependency = 634 (TRANSPORT_CONNECT_JOB' +
+    ')\n' +
 't=1338865016933 [st=  1]   +TCP_CONNECT  [dt=5]\n' +
 '                            --> address_list = ["184.30.253.15:80"]\n' +
 't=1338865016934 [st=  2]      TCP_CONNECT_ATTEMPT  [dt=3]\n' +
