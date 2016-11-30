@@ -151,13 +151,19 @@ public class DownloadNotificationService extends Service {
         cancelOffTheRecordNotifications();
         pauseAllDownloads();
         if (!mDownloadSharedPreferenceEntries.isEmpty()) {
+            boolean scheduleAutoResumption = false;
             boolean allowMeteredConnection = false;
             for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
-                if (mDownloadSharedPreferenceEntries.get(i).canDownloadWhileMetered) {
-                    allowMeteredConnection = true;
+                DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
+                if (entry.isAutoResumable) {
+                    scheduleAutoResumption = true;
+                    if (mDownloadSharedPreferenceEntries.get(i).canDownloadWhileMetered) {
+                        allowMeteredConnection = true;
+                        break;
+                    }
                 }
             }
-            if (mNumAutoResumptionAttemptLeft > 0) {
+            if (scheduleAutoResumption && mNumAutoResumptionAttemptLeft > 0) {
                 DownloadResumptionScheduler.getDownloadResumptionScheduler(mContext).schedule(
                         allowMeteredConnection);
             }
@@ -288,7 +294,7 @@ public class DownloadNotificationService extends Service {
         int itemType = isOfflinePage ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
                                      : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD;
         addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(notificationId,
-                isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName, itemType));
+                isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName, itemType, true));
         if (startTime > 0) builder.setWhen(startTime);
         Intent cancelIntent = buildActionIntent(
                 ACTION_DOWNLOAD_CANCEL, notificationId, downloadGuid, fileName, isOfflinePage);
@@ -342,6 +348,8 @@ public class DownloadNotificationService extends Service {
             notifyDownloadFailed(downloadGuid, entry.fileName);
             return;
         }
+        // If download is already paused, do nothing.
+        if (!entry.isAutoResumable) return;
         // If download is interrupted due to network disconnection, show download pending state.
         if (isAutoResumable) {
             notifyDownloadPending(entry.downloadGuid, entry.fileName, entry.isOffTheRecord,
@@ -370,12 +378,10 @@ public class DownloadNotificationService extends Service {
                 mContext.getResources().getString(R.string.download_notification_resume_button),
                 buildPendingIntent(resumeIntent, entry.notificationId));
         updateNotification(entry.notificationId, builder.build());
-        // If download is not auto resumable, there is no need to keep it in SharedPreferences.
-        // Keep off the record downloads in SharedPreferences so we can cancel it when browser is
-        // killed.
-        if (!entry.isOffTheRecord) {
-            removeSharedPreferenceEntry(downloadGuid);
-        }
+        // Update the SharedPreference entry with the new isAutoResumable value.
+        addOrReplaceSharedPreferenceEntry(new DownloadSharedPreferenceEntry(entry.notificationId,
+                entry.isOffTheRecord, entry.canDownloadWhileMetered, entry.downloadGuid,
+                entry.fileName, entry.itemType, isAutoResumable));
         mDownloadsInProgress.remove(downloadGuid);
     }
 
@@ -566,7 +572,7 @@ public class DownloadNotificationService extends Service {
                 intent, EXTRA_DOWNLOAD_IS_OFFLINE_PAGE, false);
         return new DownloadSharedPreferenceEntry(notificationId, isOffTheRecord, metered, guid,
                 fileName, isOfflinePage ? DownloadSharedPreferenceEntry.ITEM_TYPE_OFFLINE_PAGE
-                        : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD);
+                        : DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true);
     }
 
     /**
@@ -590,6 +596,7 @@ public class DownloadNotificationService extends Service {
                 // is not metered previously.
                 entry.canDownloadWhileMetered = metered;
             }
+            entry.isAutoResumable = true;
             // Update the SharedPreference entry.
             addOrReplaceSharedPreferenceEntry(entry);
         } else if (intent.getAction() == ACTION_DOWNLOAD_RESUME_ALL
@@ -766,6 +773,7 @@ public class DownloadNotificationService extends Service {
         if (!DownloadManagerService.hasDownloadManagerService()) return;
         for (int i = 0; i < mDownloadSharedPreferenceEntries.size(); ++i) {
             DownloadSharedPreferenceEntry entry = mDownloadSharedPreferenceEntries.get(i);
+            if (!entry.isAutoResumable) continue;
             if (mDownloadsInProgress.contains(entry.downloadGuid)) continue;
             if (!entry.canDownloadWhileMetered && isNetworkMetered) continue;
             notifyDownloadPending(entry.downloadGuid, entry.fileName, false,

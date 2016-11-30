@@ -21,7 +21,7 @@ public class DownloadSharedPreferenceEntry {
     // Current version of the DownloadSharedPreferenceEntry. When changing the SharedPreference,
     // we need to change the version number too.
     @VisibleForTesting
-    static final int VERSION = 3;
+    static final int VERSION = 4;
     public static final int ITEM_TYPE_DOWNLOAD = 1;
     public static final int ITEM_TYPE_OFFLINE_PAGE = 2;
 
@@ -31,18 +31,24 @@ public class DownloadSharedPreferenceEntry {
     public final String fileName;
     public final String downloadGuid;
     public final int itemType;
+    // This can only be false for paused downloads. For downloads that are pending or in progress,
+    // isAutoResumable should always be true.
+    public boolean isAutoResumable;
 
     static final DownloadSharedPreferenceEntry INVALID_ENTRY =
-            new DownloadSharedPreferenceEntry(-1, false, false, null, "", ITEM_TYPE_DOWNLOAD);
+            new DownloadSharedPreferenceEntry(-1, false, false, null, "", ITEM_TYPE_DOWNLOAD,
+                    false);
 
     DownloadSharedPreferenceEntry(int notificationId, boolean isOffTheRecord,
-            boolean canDownloadWhileMetered, String guid, String fileName, int itemType) {
+            boolean canDownloadWhileMetered, String guid, String fileName, int itemType,
+            boolean isAutoResumable) {
         this.notificationId = notificationId;
         this.isOffTheRecord = isOffTheRecord;
         this.canDownloadWhileMetered = canDownloadWhileMetered;
         this.downloadGuid = guid;
         this.fileName = fileName;
         this.itemType = itemType;
+        this.isAutoResumable = isAutoResumable;
     }
 
     /**
@@ -61,10 +67,15 @@ public class DownloadSharedPreferenceEntry {
         } catch (NumberFormatException nfe) {
             Log.w(TAG, "Exception while parsing pending download:" + sharedPrefString);
         }
-        if (version <= 0 || version > 3) return INVALID_ENTRY;
+        if (version <= 0 || version > 4) return INVALID_ENTRY;
 
-        // Expected number of items for version 1 and 2 is 6, version 3 is 7.
-        int expectedItemsNumber = (version == 3 ? 7 : 6);
+        // Expected number of items for version 1 and 2 is 6, version 3 is 7, version 4 is 8.
+        int expectedItemsNumber = 6;
+        if (version == 3) {
+            expectedItemsNumber = 7;
+        } else if (version == 4) {
+            expectedItemsNumber = 8;
+        }
         String[] values = sharedPrefString.split(",", expectedItemsNumber);
         if (values.length != expectedItemsNumber) return INVALID_ENTRY;
 
@@ -90,6 +101,10 @@ public class DownloadSharedPreferenceEntry {
         ++currentIndex;
 
         boolean canDownloadWhileMetered = "1".equals(values[currentIndex++]);
+        boolean isAutoResumable = true;
+        if (version > 3) {
+            isAutoResumable = "1".equals(values[currentIndex++]);
+        }
 
         String guid = values[currentIndex++];
         if (!isValidGUID(guid)) return INVALID_ENTRY;
@@ -97,7 +112,8 @@ public class DownloadSharedPreferenceEntry {
         String fileName = values[currentIndex++];
 
         return new DownloadSharedPreferenceEntry(
-                id, isOffTheRecord, canDownloadWhileMetered, guid, fileName, itemType);
+                id, isOffTheRecord, canDownloadWhileMetered, guid, fileName, itemType,
+                isAutoResumable);
     }
 
     /**
@@ -106,7 +122,8 @@ public class DownloadSharedPreferenceEntry {
      */
     String getSharedPreferenceString() {
         return VERSION + "," + notificationId + "," + itemType + "," + (isOffTheRecord ? "1" : "0")
-                + "," + (canDownloadWhileMetered ? "1" : "0") + "," + downloadGuid + "," + fileName;
+                + "," + (canDownloadWhileMetered ? "1" : "0") + ","
+                + (isAutoResumable ? "1" : "0") + "," + downloadGuid + "," + fileName;
     }
 
     /**
@@ -155,7 +172,8 @@ public class DownloadSharedPreferenceEntry {
                 && notificationId == other.notificationId
                 && itemType == other.itemType
                 && isOffTheRecord == other.isOffTheRecord
-                && canDownloadWhileMetered == other.canDownloadWhileMetered;
+                && canDownloadWhileMetered == other.canDownloadWhileMetered
+                && isAutoResumable == other.isAutoResumable;
     }
 
     @Override
@@ -163,6 +181,7 @@ public class DownloadSharedPreferenceEntry {
         int hash = 31;
         hash = 37 * hash + (isOffTheRecord ? 1 : 0);
         hash = 37 * hash + (canDownloadWhileMetered ? 1 : 0);
+        hash = 37 * hash + (isAutoResumable ? 1 : 0);
         hash = 37 * hash + notificationId;
         hash = 37 * hash + itemType;
         hash = 37 * hash + downloadGuid.hashCode();

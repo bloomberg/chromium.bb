@@ -140,10 +140,10 @@ public class DownloadNotificationServiceTest extends
                 getSystemContext().getApplicationContext());
         DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
         setupService();
-        Set<String> notifications = new HashSet<String>();
+        Set<String> notifications = new HashSet<>();
         notifications.add(
                 new DownloadSharedPreferenceEntry(1, false, true, UUID.randomUUID().toString(),
-                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
                         .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
@@ -177,6 +177,31 @@ public class DownloadNotificationServiceTest extends
     }
 
     /**
+     * Tests that download resumption task is not scheduled when there is no auto resumable
+     * download in SharedPreferences.
+     */
+    @SmallTest
+    @Feature({"Download"})
+    public void testResumptionNotScheduledWithoutAutoResumableDownload() throws Exception {
+        MockDownloadResumptionScheduler scheduler = new MockDownloadResumptionScheduler(
+                getSystemContext().getApplicationContext());
+        DownloadResumptionScheduler.setDownloadResumptionScheduler(scheduler);
+        setupService();
+        Set<String> notifications = new HashSet<>();
+        notifications.add(
+                new DownloadSharedPreferenceEntry(1, false, true, UUID.randomUUID().toString(),
+                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, false)
+                        .getSharedPreferenceString());
+        SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
+        SharedPreferences.Editor editor = sharedPrefs.edit();
+        editor.putStringSet(
+                DownloadNotificationService.PENDING_DOWNLOAD_NOTIFICATIONS, notifications);
+        editor.apply();
+        startNotificationService();
+        assertFalse(scheduler.mScheduled);
+    }
+
+    /**
      * Tests that creating the service without launching chrome will pause all ongoing downloads.
      */
     @SmallTest
@@ -185,14 +210,14 @@ public class DownloadNotificationServiceTest extends
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
-        Set<String> notifications = new HashSet<String>();
+        Set<String> notifications = new HashSet<>();
         notifications.add(
                 new DownloadSharedPreferenceEntry(1, false, true, UUID.randomUUID().toString(),
-                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        "test1", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
                         .getSharedPreferenceString());
         notifications.add(
                 new DownloadSharedPreferenceEntry(2, false, true, UUID.randomUUID().toString(),
-                        "test2", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
+                        "test2", DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
                         .getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 ContextUtils.getAppSharedPreferences();
@@ -218,15 +243,15 @@ public class DownloadNotificationServiceTest extends
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
-        Set<String> notifications = new HashSet<String>();
+        Set<String> notifications = new HashSet<>();
         String guid1 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(3, false, true, guid1, "success",
-                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
-                                  .getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
+                        .getSharedPreferenceString());
         String guid2 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed",
-                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
-                                  .getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
+                        .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
@@ -277,7 +302,7 @@ public class DownloadNotificationServiceTest extends
     }
 
     /**
-     * Tests resume all pending downloads.
+     * Tests resume all pending downloads. Only auto resumable downloads can resume.
      */
     @SmallTest
     @Feature({"Download"})
@@ -285,15 +310,19 @@ public class DownloadNotificationServiceTest extends
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
-        Set<String> notifications = new HashSet<String>();
+        Set<String> notifications = new HashSet<>();
         String guid1 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(3, false, false, guid1, "success",
-                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
-                                  .getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
+                        .getSharedPreferenceString());
         String guid2 = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(4, false, true, guid2, "failed",
-                                  DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD)
-                                  .getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
+                        .getSharedPreferenceString());
+        String guid3 = UUID.randomUUID().toString();
+        notifications.add(new DownloadSharedPreferenceEntry(5, false, true, guid3, "nonresumable",
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, false)
+                        .getSharedPreferenceString());
         SharedPreferences sharedPrefs = ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();
         editor.putStringSet(
@@ -332,10 +361,11 @@ public class DownloadNotificationServiceTest extends
         setupService();
         Context mockContext = new AdvancedMockContext(getSystemContext());
         getService().setContext(mockContext);
-        Set<String> notifications = new HashSet<String>();
+        Set<String> notifications = new HashSet<>();
         String uuid = UUID.randomUUID().toString();
         notifications.add(new DownloadSharedPreferenceEntry(1, true, true, uuid, "test1",
-                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD).getSharedPreferenceString());
+                DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, true)
+                        .getSharedPreferenceString());
         SharedPreferences sharedPrefs =
                 ContextUtils.getAppSharedPreferences();
         SharedPreferences.Editor editor = sharedPrefs.edit();

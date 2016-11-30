@@ -8,13 +8,14 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-import org.chromium.base.BaseChromiumApplication;
-import org.chromium.base.test.util.Feature;
-import org.chromium.testing.local.LocalRobolectricTestRunner;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.robolectric.annotation.Config;
 import org.robolectric.shadows.multidex.ShadowMultiDex;
+
+import org.chromium.base.BaseChromiumApplication;
+import org.chromium.base.test.util.Feature;
+import org.chromium.testing.local.LocalRobolectricTestRunner;
 
 import java.util.UUID;
 
@@ -129,15 +130,42 @@ public class DownloadSharedPreferenceEntryTest {
 
     @Test
     @Feature({"Download"})
+    public void testParseFromStringVersion4_Download() {
+        String uuid = newUUID();
+        String notificationString = "4,2,1,0,1,1," + uuid + ",test,2.pdf";
+        DownloadSharedPreferenceEntry entry =
+                DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(2, entry.notificationId);
+        assertEquals(DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, entry.itemType);
+        assertFalse(entry.isOffTheRecord);
+        assertTrue(entry.canDownloadWhileMetered);
+        assertTrue(entry.isAutoResumable);
+        assertEquals(uuid, entry.downloadGuid);
+        assertEquals("test,2.pdf", entry.fileName);
+
+        String uuid2 = newUUID();
+        notificationString = "4,3,1,1,0,0," + uuid2 + ",test,4.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(3, entry.notificationId);
+        assertEquals(DownloadSharedPreferenceEntry.ITEM_TYPE_DOWNLOAD, entry.itemType);
+        assertTrue(entry.isOffTheRecord);
+        assertFalse(entry.canDownloadWhileMetered);
+        assertFalse(entry.isAutoResumable);
+        assertEquals(uuid2, entry.downloadGuid);
+        assertEquals("test,4.pdf", entry.fileName);
+    }
+
+    @Test
+    @Feature({"Download"})
     public void testGetSharedPreferencesString() {
         String uuid = newUUID();
-        String notificationString = "3,2,2,0,1," + uuid + ",test,2.pdf";
+        String notificationString = "4,2,2,0,1,1," + uuid + ",test,2.pdf";
         DownloadSharedPreferenceEntry entry =
                 DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(notificationString, entry.getSharedPreferenceString());
 
         String uuid2 = newUUID();
-        notificationString = "3,3,2,1,0," + uuid2 + ",test,4.pdf";
+        notificationString = "4,3,2,1,0,0," + uuid2 + ",test,4.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(notificationString, entry.getSharedPreferenceString());
     }
@@ -152,8 +180,8 @@ public class DownloadSharedPreferenceEntryTest {
                 DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
-        // Version 4 is invalid.
-        notificationString = "4,2,0,1," + uuid + ",test,2.pdf";
+        // Version 4 has to have 8 field.
+        notificationString = "4,2,0,1,0," + uuid + ",test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
@@ -173,18 +201,23 @@ public class DownloadSharedPreferenceEntryTest {
     public void testParseFromStringNotEnoughValues() {
         String uuid = newUUID();
         // Version 1 requires at least 6.
-        String notificationString = "1,2,0," + uuid + ",test,2.pdf";
+        String notificationString = "1,2,0," + uuid + ",test.pdf";
         DownloadSharedPreferenceEntry entry =
                 DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
         // Version 2 requires at least 6.
-        notificationString = "2,2,0," + uuid + ",test,2.pdf";
+        notificationString = "2,2,0," + uuid + ",test.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
         // Version 3 requires at least 7.
-        notificationString = "3,2,2,0," + uuid + ",test,2.pdf";
+        notificationString = "3,2,2,0," + uuid + ",test.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
+        // Version 4 requires at least 8.
+        notificationString = "4,2,2,0,1," + uuid + ",test.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
     }
@@ -209,6 +242,11 @@ public class DownloadSharedPreferenceEntryTest {
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
+        // Notification ID missing in version 4.
+        notificationString = "4,,2,0,1,1," + uuid + ",test,2.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
         // Not able to parse notification ID in version 1.
         notificationString = "1,xxx,0,1," + uuid + ",test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
@@ -223,6 +261,12 @@ public class DownloadSharedPreferenceEntryTest {
         notificationString = "3,xxx,2,0,1," + uuid + ",test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
+        // Not able to parse notification ID in version 4.
+        notificationString = "4,xxx,2,0,1,1," + uuid + ",test,2.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
     }
 
     @Test
@@ -271,6 +315,11 @@ public class DownloadSharedPreferenceEntryTest {
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
 
+        // GUID missing in version 4.
+        notificationString = "4,2,2,0,1,1,,test,2.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
         // Not able to parse GUID in version 1.
         notificationString = "1,2,0,1,xxx,test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
@@ -285,5 +334,34 @@ public class DownloadSharedPreferenceEntryTest {
         notificationString = "3,2,2,0,1,xxx,test,2.pdf";
         entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
         assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+
+        // Not able to parse GUID in version 4.
+        notificationString = "4,2,2,0,1,1,xxx,test,2.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(DownloadSharedPreferenceEntry.INVALID_ENTRY, entry);
+    }
+
+    @Test
+    @Feature({"Download"})
+    public void testConvertFromEarlierVersions() {
+        // Convert from version 1.
+        String uuid = newUUID();
+        String notificationString = "1,1,1,0," + uuid + ",test.pdf";
+        String v4NotificationString = "4,1,1,0,0,1," + uuid + ",test.pdf";
+        DownloadSharedPreferenceEntry entry =
+                DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(v4NotificationString, entry.getSharedPreferenceString());
+
+        // Convert from version 2.
+        notificationString = "2,1,1,0," + uuid + ",test.pdf";
+        v4NotificationString = "4,1,1,1,0,1," + uuid + ",test.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(v4NotificationString, entry.getSharedPreferenceString());
+
+        // Convert from version 3.
+        notificationString = "3,2,1,1,0," + uuid + ",test.pdf";
+        v4NotificationString = "4,2,1,1,0,1," + uuid + ",test.pdf";
+        entry = DownloadSharedPreferenceEntry.parseFromString(notificationString);
+        assertEquals(v4NotificationString, entry.getSharedPreferenceString());
     }
 }
