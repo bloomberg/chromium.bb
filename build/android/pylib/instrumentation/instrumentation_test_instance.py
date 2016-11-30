@@ -487,16 +487,14 @@ class InstrumentationTestInstance(test_instance.TestInstance):
       assert self._suite.endswith('_incremental')
       self._suite = self._suite[:-len('_incremental')]
 
-    self._test_jar = os.path.join(
-        constants.GetOutDirectory(), constants.SDK_BUILD_TEST_JAVALIB_DIR,
-        '%s.jar' % self._suite)
+    self._test_jar = args.test_jar
     self._test_support_apk = apk_helper.ToHelper(os.path.join(
         constants.GetOutDirectory(), constants.SDK_BUILD_TEST_JAVALIB_DIR,
         '%sSupport.apk' % self._suite))
 
     if not os.path.exists(self._test_apk.path):
       error_func('Unable to find test APK: %s' % self._test_apk.path)
-    if not os.path.exists(self._test_jar):
+    if not self._test_jar or not os.path.exists(self._test_jar):
       error_func('Unable to find test JAR: %s' % self._test_jar)
 
     self._test_package = self._test_apk.GetPackageName()

@@ -514,7 +514,11 @@ template("test_runner_script") {
       if (_incremental_install) {
         _test_apk = "@FileArg($_rebased_apk_build_config:deps_info:incremental_apk_path)"
       }
-      test_runner_args += [ "--test-apk=$_test_apk" ]
+      test_runner_args += [
+        "--test-apk=$_test_apk",
+        "--test-jar",
+        rebase_path(invoker.test_jar, root_build_dir),
+      ]
       if (defined(invoker.apk_under_test)) {
         deps += [ "${invoker.apk_under_test}__build_config" ]
         _apk_under_test_build_config =

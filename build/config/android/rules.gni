@@ -1346,7 +1346,7 @@ if (enable_java_templates) {
   #   android_manifest: Path to AndroidManifest.xml.
   #   android_manifest_dep: Target that generates AndroidManifest (if applicable)
   #   chromium_code: If true, extra analysis warning/errors will be enabled.
-  #   create_dist_ijar: Whether to define the "${target_name}_dist_ijar" target
+  #   dist_ijar_path: Path to create "${target_name}_dist_ijar" target
   #     (used by instrumentation_test_apk).
   #   data_deps: List of dependencies needed at runtime. These will be built but
   #     won't change the generated .apk in any way (in fact they may be built
@@ -1794,9 +1794,8 @@ if (enable_java_templates) {
     # TODO(cjhopman): This is only ever needed to calculate the list of tests to
     # run. See build/android/pylib/instrumentation/test_jar.py. We should be
     # able to just do that calculation at build time instead.
-    if (defined(invoker.create_dist_ijar) && invoker.create_dist_ijar) {
-      _dist_ijar_path = "$root_build_dir/test.lib.java/" +
-                        get_path_info(_final_apk_path, "name") + ".jar"
+    if (defined(invoker.dist_ijar_path)) {
+      _dist_ijar_path = invoker.dist_ijar_path
       action("${_template_name}_dist_ijar") {
         script = "//build/android/gyp/create_dist_jar.py"
         depfile = "$target_gen_dir/$target_name.d"
@@ -2259,10 +2258,13 @@ if (enable_java_templates) {
   #     ]
   #   }
   template("instrumentation_test_apk") {
+    assert(defined(invoker.apk_name))
     testonly = true
     _apk_target_name = "${target_name}__apk"
     _test_runner_target_name = "${target_name}__test_runner_script"
     _install_script_name = "install_$target_name"
+    _dist_ijar_path =
+        "$root_build_dir/test.lib.java/" + invoker.apk_name + ".jar"
 
     test_runner_script(_test_runner_target_name) {
       forward_variables_from(invoker,
@@ -2278,6 +2280,7 @@ if (enable_java_templates) {
       test_name = invoker.target_name
       test_type = "instrumentation"
       apk_target = ":$_apk_target_name"
+      test_jar = _dist_ijar_path
     }
 
     test_runner_script("${_test_runner_target_name}_incremental") {
@@ -2294,6 +2297,7 @@ if (enable_java_templates) {
       test_name = "${invoker.target_name}_incremental"
       test_type = "instrumentation"
       apk_target = ":$_apk_target_name"
+      test_jar = _dist_ijar_path
       incremental_install = true
     }
 
@@ -2324,7 +2328,7 @@ if (enable_java_templates) {
         proguard_configs += [ "//testing/android/proguard_for_test.flags" ]
       }
 
-      create_dist_ijar = true
+      dist_ijar_path = _dist_ijar_path
       if (defined(invoker.run_findbugs_override)) {
         # Only allow findbugs when there are java files.
         run_findbugs_override =
