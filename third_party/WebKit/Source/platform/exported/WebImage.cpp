@@ -47,7 +47,7 @@ WebImage WebImage::fromData(const WebData& data, const WebSize& desiredSize) {
   RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
   std::unique_ptr<ImageDecoder> decoder(
       ImageDecoder::create(buffer, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::ColorSpaceIgnored));
+                           ImageDecoder::ColorSpaceIgnored, nullptr));
   if (!decoder || !decoder->isSizeAvailable())
     return WebImage();
 
@@ -86,7 +86,7 @@ WebVector<WebImage> WebImage::framesFromData(const WebData& data) {
   RefPtr<SharedBuffer> buffer = PassRefPtr<SharedBuffer>(data);
   std::unique_ptr<ImageDecoder> decoder(
       ImageDecoder::create(buffer, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::ColorSpaceIgnored));
+                           ImageDecoder::ColorSpaceIgnored, nullptr));
   if (!decoder || !decoder->isSizeAvailable())
     return WebVector<WebImage>();
 

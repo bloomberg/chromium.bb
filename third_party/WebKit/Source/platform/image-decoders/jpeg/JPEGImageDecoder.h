@@ -37,7 +37,10 @@ class PLATFORM_EXPORT JPEGImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(JPEGImageDecoder);
 
  public:
-  JPEGImageDecoder(AlphaOption, ColorSpaceOption, size_t maxDecodedBytes);
+  JPEGImageDecoder(AlphaOption,
+                   ColorSpaceOption,
+                   sk_sp<SkColorSpace>,
+                   size_t maxDecodedBytes);
   ~JPEGImageDecoder() override;
 
   // ImageDecoder:

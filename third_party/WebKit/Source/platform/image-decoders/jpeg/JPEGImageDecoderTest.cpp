@@ -47,9 +47,9 @@ static const size_t LargeEnoughSize = 1000 * 1000;
 namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder(size_t maxDecodedBytes) {
-  return wrapUnique(new JPEGImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                         ImageDecoder::ColorSpaceApplied,
-                                         maxDecodedBytes));
+  return wrapUnique(new JPEGImageDecoder(
+      ImageDecoder::AlphaNotPremultiplied, ImageDecoder::ColorSpaceTransformed,
+      ImageDecoder::targetColorSpaceForTesting(), maxDecodedBytes));
 }
 
 std::unique_ptr<ImageDecoder> createDecoder() {

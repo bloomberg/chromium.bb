@@ -41,7 +41,10 @@ class PLATFORM_EXPORT WEBPImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(WEBPImageDecoder);
 
  public:
-  WEBPImageDecoder(AlphaOption, ColorSpaceOption, size_t maxDecodedBytes);
+  WEBPImageDecoder(AlphaOption,
+                   ColorSpaceOption,
+                   sk_sp<SkColorSpace>,
+                   size_t maxDecodedBytes);
   ~WEBPImageDecoder() override;
 
   // ImageDecoder:

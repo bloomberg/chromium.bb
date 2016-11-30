@@ -50,14 +50,14 @@ void WebImageDecoder::init(Type type) {
 
   switch (type) {
     case TypeBMP:
-      m_private =
-          new BMPImageDecoder(ImageDecoder::AlphaPremultiplied,
-                              ImageDecoder::ColorSpaceApplied, maxDecodedBytes);
+      m_private = new BMPImageDecoder(
+          ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceTransformed,
+          ImageDecoder::targetColorSpaceForTesting(), maxDecodedBytes);
       break;
     case TypeICO:
-      m_private =
-          new ICOImageDecoder(ImageDecoder::AlphaPremultiplied,
-                              ImageDecoder::ColorSpaceApplied, maxDecodedBytes);
+      m_private = new ICOImageDecoder(
+          ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceTransformed,
+          ImageDecoder::targetColorSpaceForTesting(), maxDecodedBytes);
       break;
   }
 }

@@ -2748,7 +2748,8 @@ void WebGLImageConversion::ImageExtractor::extractImage(bool premultiplyAlpha,
     std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
         m_image->data(), true, ImageDecoder::AlphaNotPremultiplied,
         ignoreColorSpace ? ImageDecoder::ColorSpaceIgnored
-                         : ImageDecoder::ColorSpaceApplied));
+                         : ImageDecoder::ColorSpaceTransformed,
+        ignoreColorSpace ? nullptr : ImageDecoder::globalTargetColorSpace()));
     if (!decoder || !decoder->frameCount())
       return;
     ImageFrame* frame = decoder->frameBufferAtIndex(0);

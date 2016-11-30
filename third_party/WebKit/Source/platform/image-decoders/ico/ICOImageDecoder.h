@@ -44,7 +44,10 @@ class PLATFORM_EXPORT ICOImageDecoder final : public ImageDecoder {
   WTF_MAKE_NONCOPYABLE(ICOImageDecoder);
 
  public:
-  ICOImageDecoder(AlphaOption, ColorSpaceOption, size_t maxDecodedBytes);
+  ICOImageDecoder(AlphaOption,
+                  ColorSpaceOption,
+                  sk_sp<SkColorSpace>,
+                  size_t maxDecodedBytes);
   ~ICOImageDecoder() override;
 
   // ImageDecoder:

@@ -277,7 +277,7 @@ static PassRefPtr<StaticBitmapImage> cropImage(
     const ParsedOptions& parsedOptions,
     AlphaDisposition imageFormat = PremultiplyAlpha,
     ImageDecoder::ColorSpaceOption colorSpaceOp =
-        ImageDecoder::ColorSpaceApplied) {
+        ImageDecoder::ColorSpaceTransformed) {
   ASSERT(image);
   IntRect imgRect(IntPoint(), IntSize(image->width(), image->height()));
   const IntRect srcRect = intersection(imgRect, parsedOptions.cropRect);
@@ -312,7 +312,9 @@ static PassRefPtr<StaticBitmapImage> cropImage(
         image->data(), true,
         parsedOptions.premultiplyAlpha ? ImageDecoder::AlphaPremultiplied
                                        : ImageDecoder::AlphaNotPremultiplied,
-        colorSpaceOp));
+        colorSpaceOp, colorSpaceOp == ImageDecoder::ColorSpaceTransformed
+                          ? ImageDecoder::globalTargetColorSpace()
+                          : nullptr));
     if (!decoder)
       return nullptr;
     skiaImage = ImageBitmap::getSkImageFromDecoder(std::move(decoder));
@@ -393,7 +395,7 @@ ImageBitmap::ImageBitmap(HTMLImageElement* image,
                         ImageDecoder::ColorSpaceIgnored);
   } else {
     m_image = cropImage(input.get(), parsedOptions, PremultiplyAlpha,
-                        ImageDecoder::ColorSpaceApplied);
+                        ImageDecoder::ColorSpaceTransformed);
   }
   if (!m_image)
     return;

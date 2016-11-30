@@ -27,6 +27,7 @@
 
 #include "platform/graphics/ImageSource.h"
 
+#include "platform/RuntimeEnabledFeatures.h"
 #include "platform/graphics/DeferredImageDecoder.h"
 #include "platform/image-decoders/ImageDecoder.h"
 #include "third_party/skia/include/core/SkImage.h"
@@ -56,9 +57,16 @@ bool ImageSource::setData(PassRefPtr<SharedBuffer> passData,
     return true;
   }
 
-  m_decoder = DeferredImageDecoder::create(data, allDataReceived,
-                                           ImageDecoder::AlphaPremultiplied,
-                                           ImageDecoder::ColorSpaceApplied);
+  if (RuntimeEnabledFeatures::colorCorrectRenderingEnabled()) {
+    m_decoder = DeferredImageDecoder::create(
+        data, allDataReceived, ImageDecoder::AlphaPremultiplied,
+        ImageDecoder::ColorSpaceTagged, nullptr);
+  } else {
+    m_decoder = DeferredImageDecoder::create(
+        data, allDataReceived, ImageDecoder::AlphaPremultiplied,
+        ImageDecoder::ColorSpaceTransformed,
+        ImageDecoder::globalTargetColorSpace());
+  }
 
   // Insufficient data is not a failure.
   return m_decoder || !ImageDecoder::hasSufficientDataToSniffImageType(*data);

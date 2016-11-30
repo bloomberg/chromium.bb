@@ -71,8 +71,15 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
     PassRefPtr<SegmentReader> passData,
     bool dataComplete,
     AlphaOption alphaOption,
-    ColorSpaceOption colorOptions) {
+    ColorSpaceOption colorOptions,
+    sk_sp<SkColorSpace> targetColorSpace) {
   RefPtr<SegmentReader> data = passData;
+
+  // Ensure that the color space options are consistent.
+  if (colorOptions == ColorSpaceTransformed)
+    DCHECK(targetColorSpace);
+  else
+    DCHECK(!targetColorSpace);
 
   // We need at least kLongestSignatureLength bytes to run the signature
   // matcher.
@@ -94,37 +101,41 @@ std::unique_ptr<ImageDecoder> ImageDecoder::create(
   std::unique_ptr<ImageDecoder> decoder;
   switch (sniffResult) {
     case SniffResult::JPEG:
-      decoder.reset(
-          new JPEGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new JPEGImageDecoder(alphaOption, colorOptions,
+                                         std::move(targetColorSpace),
+                                         maxDecodedBytes));
       break;
     case SniffResult::PNG:
-      decoder.reset(
-          new PNGImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new PNGImageDecoder(alphaOption, colorOptions,
+                                        std::move(targetColorSpace),
+                                        maxDecodedBytes));
       break;
     case SniffResult::GIF:
-      decoder.reset(
-          new GIFImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new GIFImageDecoder(alphaOption, colorOptions,
+                                        std::move(targetColorSpace),
+                                        maxDecodedBytes));
       break;
     case SniffResult::WEBP:
-      decoder.reset(
-          new WEBPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new WEBPImageDecoder(alphaOption, colorOptions,
+                                         std::move(targetColorSpace),
+                                         maxDecodedBytes));
       break;
     case SniffResult::ICO:
-      decoder.reset(
-          new ICOImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new ICOImageDecoder(alphaOption, colorOptions,
+                                        std::move(targetColorSpace),
+                                        maxDecodedBytes));
       break;
     case SniffResult::BMP:
-      decoder.reset(
-          new BMPImageDecoder(alphaOption, colorOptions, maxDecodedBytes));
+      decoder.reset(new BMPImageDecoder(alphaOption, colorOptions,
+                                        std::move(targetColorSpace),
+                                        maxDecodedBytes));
       break;
     case SniffResult::Invalid:
       break;
   }
 
-  if (decoder) {
+  if (decoder)
     decoder->setData(data.release(), dataComplete);
-    decoder->m_targetColorSpace = globalTargetColorSpace();
-  }
 
   return decoder;
 }
@@ -273,7 +284,7 @@ bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
   if (requiredPreviousFrameIndex == kNotFound) {
     // This frame doesn't rely on any previous data.
     if (!buffer->setSizeAndColorSpace(size().width(), size().height(),
-                                      colorSpace())) {
+                                      colorSpaceForSkImages())) {
       return setFailed();
     }
   } else {
@@ -459,12 +470,13 @@ sk_sp<SkColorSpace> ImageDecoder::globalTargetColorSpace() {
   return sk_sp<SkColorSpace>(gTargetColorSpace);
 }
 
-sk_sp<SkColorSpace> ImageDecoder::colorSpace() const {
-  // TODO(ccameron): This should always return a non-null SkColorSpace. This is
-  // disabled for now because specifying a non-renderable color space results in
-  // errors.
-  // https://bugs.chromium.org/p/skia/issues/detail?id=5907
-  if (!RuntimeEnabledFeatures::colorCorrectRenderingEnabled())
+// static
+sk_sp<SkColorSpace> ImageDecoder::targetColorSpaceForTesting() {
+  return globalTargetColorSpace();
+}
+
+sk_sp<SkColorSpace> ImageDecoder::colorSpaceForSkImages() const {
+  if (m_colorSpaceOption != ColorSpaceTagged)
     return nullptr;
 
   if (m_embeddedColorSpace)
@@ -481,7 +493,7 @@ void ImageDecoder::setEmbeddedColorProfile(const char* iccData,
 }
 
 void ImageDecoder::setEmbeddedColorSpace(sk_sp<SkColorSpace> colorSpace) {
-  DCHECK(!m_ignoreColorSpace);
+  DCHECK(!ignoresColorSpace());
   DCHECK(!m_hasHistogrammedColorSpace);
 
   m_embeddedColorSpace = colorSpace;

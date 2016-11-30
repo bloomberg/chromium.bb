@@ -67,7 +67,7 @@ class SkiaImageDecoder final : public SkImageDeserializer {
         SegmentReader::createFromSkData(SkData::MakeWithoutCopy(data, length));
     std::unique_ptr<ImageDecoder> imageDecoder = ImageDecoder::create(
         segmentReader.release(), true, ImageDecoder::AlphaPremultiplied,
-        ImageDecoder::ColorSpaceIgnored);
+        ImageDecoder::ColorSpaceIgnored, nullptr);
     if (!imageDecoder)
       return nullptr;
 

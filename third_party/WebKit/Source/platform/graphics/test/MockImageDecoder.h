@@ -67,7 +67,8 @@ class MockImageDecoder : public ImageDecoder {
 
   MockImageDecoder(MockImageDecoderClient* client)
       : ImageDecoder(AlphaPremultiplied,
-                     ColorSpaceApplied,
+                     ColorSpaceTransformed,
+                     targetColorSpaceForTesting(),
                      noDecodedImageByteLimit),
         m_client(client) {}
 
@@ -112,7 +113,7 @@ class MockImageDecoder : public ImageDecoder {
 
   void initializeNewFrame(size_t index) override {
     m_frameBufferCache[index].setSizeAndColorSpace(
-        size().width(), size().height(), colorSpace());
+        size().width(), size().height(), colorSpaceForSkImages());
     m_frameBufferCache[index].setHasAlpha(false);
   }
 

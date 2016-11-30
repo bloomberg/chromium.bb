@@ -289,10 +289,6 @@ class PLATFORM_EXPORT ImageFrame final {
   // True if the pixels changed, but the bitmap has not yet been notified.
   bool m_pixelsChanged;
 
-  // The color space of the image. This will never be null. If a color profile
-  // was not embedded in the image, this will be set to sRGB.
-  sk_sp<SkColorSpace> m_colorSpace;
-
   // The frame that must be decoded before this frame can be decoded.
   // WTF::kNotFound if this frame doesn't require any previous frame.
   // This is used by ImageDecoder::clearCacheExceptFrame(), and will never

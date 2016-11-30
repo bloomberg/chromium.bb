@@ -118,8 +118,12 @@ namespace blink {
 
 WEBPImageDecoder::WEBPImageDecoder(AlphaOption alphaOption,
                                    ColorSpaceOption colorOptions,
+                                   sk_sp<SkColorSpace> targetColorSpace,
                                    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes),
       m_decoder(0),
       m_formatFlags(0),
       m_frameBackgroundHasAlpha(false),
@@ -484,7 +488,7 @@ bool WEBPImageDecoder::decodeSingleFrame(const uint8_t* dataBytes,
 
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
     if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
-                                     colorSpace()))
+                                     colorSpaceForSkImages()))
       return setFailed();
     buffer.setStatus(ImageFrame::FramePartial);
     // The buffer is transparent outside the decoded area while the image is

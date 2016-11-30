@@ -119,7 +119,7 @@ bool BMPImageReader::decodeBMP(bool onlySize) {
   if (m_buffer->getStatus() == ImageFrame::FrameEmpty) {
     if (!m_buffer->setSizeAndColorSpace(m_parent->size().width(),
                                         m_parent->size().height(),
-                                        m_parent->colorSpace())) {
+                                        m_parent->colorSpaceForSkImages())) {
       return m_parent->setFailed();  // Unable to allocate.
     }
     m_buffer->setStatus(ImageFrame::FramePartial);

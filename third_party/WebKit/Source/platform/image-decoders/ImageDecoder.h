@@ -86,7 +86,22 @@ class PLATFORM_EXPORT ImageDecoder {
 
   enum AlphaOption { AlphaPremultiplied, AlphaNotPremultiplied };
 
-  enum ColorSpaceOption { ColorSpaceApplied, ColorSpaceIgnored };
+  enum ColorSpaceOption {
+    // The embedded color profile is ignored entirely. The hasEmbeddedColorSpace
+    // method will always return false. No transformations are applied to the
+    // pixel data. SkImages created will have no assocated SkColorSpace.
+    ColorSpaceIgnored,
+    // The image will be transformed to the specified target color space. The
+    // hasEmbeddedColorSpace method will return the truth. SkImages created by
+    // this decoder will have no associated SkColorSpace.
+    // TODO(ccameron): This transform is applied only if the image has an
+    // embedded color profile, but should be applied always.
+    ColorSpaceTransformed,
+    // The image will not be transformed (to the extent possible). SkImages
+    // created by this decoder will have the SkColorSpace of the embedded
+    // color profile (or sRGB if there was no embedded color profile).
+    ColorSpaceTagged,
+  };
 
   virtual ~ImageDecoder() {}
 
@@ -97,13 +112,16 @@ class PLATFORM_EXPORT ImageDecoder {
   static std::unique_ptr<ImageDecoder> create(PassRefPtr<SegmentReader> data,
                                               bool dataComplete,
                                               AlphaOption,
-                                              ColorSpaceOption);
-  static std::unique_ptr<ImageDecoder> create(PassRefPtr<SharedBuffer> data,
-                                              bool dataComplete,
-                                              AlphaOption alphaoption,
-                                              ColorSpaceOption colorOptions) {
+                                              ColorSpaceOption,
+                                              sk_sp<SkColorSpace>);
+  static std::unique_ptr<ImageDecoder> create(
+      PassRefPtr<SharedBuffer> data,
+      bool dataComplete,
+      AlphaOption alphaoption,
+      ColorSpaceOption colorOptions,
+      sk_sp<SkColorSpace> targetColorSpace) {
     return create(SegmentReader::createFromSharedBuffer(std::move(data)),
-                  dataComplete, alphaoption, colorOptions);
+                  dataComplete, alphaoption, colorOptions, targetColorSpace);
   }
 
   virtual String filenameExtension() const = 0;
@@ -206,7 +224,11 @@ class PLATFORM_EXPORT ImageDecoder {
 
   ImageOrientation orientation() const { return m_orientation; }
 
-  bool ignoresColorSpace() const { return m_ignoreColorSpace; }
+  bool ignoresColorSpace() const {
+    return m_colorSpaceOption == ColorSpaceIgnored;
+  }
+  ColorSpaceOption colorSpaceOption() const { return m_colorSpaceOption; }
+  sk_sp<SkColorSpace> targetColorSpace() const { return m_targetColorSpace; }
 
   // Set the target color profile into which all images with embedded color
   // profiles should be converted. Note that only the first call to this
@@ -214,10 +236,13 @@ class PLATFORM_EXPORT ImageDecoder {
   static void setGlobalTargetColorProfile(const WebVector<char>&);
   static sk_sp<SkColorSpace> globalTargetColorSpace();
 
-  // This returns the color space of this image. If the image had no embedded
-  // color profile, this will return sRGB. Returns nullptr if color correct
-  // rendering is not enabled.
-  sk_sp<SkColorSpace> colorSpace() const;
+  // A target color space to be used by tests.
+  static sk_sp<SkColorSpace> targetColorSpaceForTesting();
+
+  // This returns the color space that will be included in the SkImageInfo of
+  // SkImages created from this decoder. This will be nullptr unless the
+  // decoder was created with the option ColorSpaceTagged.
+  sk_sp<SkColorSpace> colorSpaceForSkImages() const;
 
   // This returns whether or not the image included a not-ignored embedded
   // color space. This is independent of whether or not that space's transform
@@ -269,9 +294,11 @@ class PLATFORM_EXPORT ImageDecoder {
  protected:
   ImageDecoder(AlphaOption alphaOption,
                ColorSpaceOption colorOptions,
+               sk_sp<SkColorSpace> targetColorSpace,
                size_t maxDecodedBytes)
       : m_premultiplyAlpha(alphaOption == AlphaPremultiplied),
-        m_ignoreColorSpace(colorOptions == ColorSpaceIgnored),
+        m_colorSpaceOption(colorOptions),
+        m_targetColorSpace(std::move(targetColorSpace)),
         m_maxDecodedBytes(maxDecodedBytes),
         m_purgeAggressively(false) {}
 
@@ -335,7 +362,8 @@ class PLATFORM_EXPORT ImageDecoder {
   RefPtr<SegmentReader> m_data;  // The encoded data.
   Vector<ImageFrame, 1> m_frameBufferCache;
   const bool m_premultiplyAlpha;
-  const bool m_ignoreColorSpace;
+  const ColorSpaceOption m_colorSpaceOption;
+  const sk_sp<SkColorSpace> m_targetColorSpace;
   ImageOrientation m_orientation;
 
   // The maximum amount of memory a decoded image should require. Ideally,
@@ -380,7 +408,6 @@ class PLATFORM_EXPORT ImageDecoder {
   bool m_failed = false;
   bool m_hasHistogrammedColorSpace = false;
 
-  sk_sp<SkColorSpace> m_targetColorSpace = nullptr;
   sk_sp<SkColorSpace> m_embeddedColorSpace = nullptr;
   bool m_sourceToTargetColorTransformNeedsUpdate = false;
   std::unique_ptr<SkColorSpaceXform> m_sourceToTargetColorTransform;

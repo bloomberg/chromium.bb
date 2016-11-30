@@ -39,6 +39,7 @@ class PLATFORM_EXPORT PNGImageDecoder final : public ImageDecoder {
  public:
   PNGImageDecoder(AlphaOption,
                   ColorSpaceOption,
+                  sk_sp<SkColorSpace>,
                   size_t maxDecodedBytes,
                   size_t offset = 0);
   ~PNGImageDecoder() override;

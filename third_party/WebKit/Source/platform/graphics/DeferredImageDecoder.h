@@ -53,7 +53,8 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
       PassRefPtr<SharedBuffer> data,
       bool dataComplete,
       ImageDecoder::AlphaOption,
-      ImageDecoder::ColorSpaceOption);
+      ImageDecoder::ColorSpaceOption,
+      sk_sp<SkColorSpace> targetColorSpace);
 
   static std::unique_ptr<DeferredImageDecoder> createForTesting(
       std::unique_ptr<ImageDecoder>);
@@ -106,6 +107,7 @@ class PLATFORM_EXPORT DeferredImageDecoder final {
   IntSize m_size;
   int m_repetitionCount;
   bool m_hasEmbeddedColorSpace = false;
+  sk_sp<SkColorSpace> m_colorSpaceForSkImages;
   bool m_canYUVDecode;
   bool m_hasHotSpot;
   IntPoint m_hotSpot;

@@ -103,11 +103,14 @@ static bool updateYUVComponentSizes(ImageDecoder* decoder,
   return true;
 }
 
-ImageFrameGenerator::ImageFrameGenerator(const SkISize& fullSize,
-                                         sk_sp<SkColorSpace> colorSpace,
-                                         bool isMultiFrame)
+ImageFrameGenerator::ImageFrameGenerator(
+    const SkISize& fullSize,
+    bool isMultiFrame,
+    ImageDecoder::ColorSpaceOption decoderColorSpaceOption,
+    sk_sp<SkColorSpace> decoderTargetColorSpace)
     : m_fullSize(fullSize),
-      m_colorSpace(std::move(colorSpace)),
+      m_decoderColorSpaceOption(decoderColorSpaceOption),
+      m_decoderTargetColorSpace(std::move(decoderTargetColorSpace)),
       m_isMultiFrame(isMultiFrame),
       m_decodeFailed(false),
       m_yuvDecodingFailed(false),
@@ -174,9 +177,9 @@ bool ImageFrameGenerator::decodeToYUV(SegmentReader* data,
     return false;
   }
 
-  std::unique_ptr<ImageDecoder> decoder =
-      ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::ColorSpaceApplied);
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
+      data, true, ImageDecoder::AlphaPremultiplied, m_decoderColorSpaceOption,
+      m_decoderTargetColorSpace);
   // getYUVComponentSizes was already called and was successful, so
   // ImageDecoder::create must succeed.
   ASSERT(decoder);
@@ -296,9 +299,9 @@ bool ImageFrameGenerator::decode(SegmentReader* data,
       *decoder = m_imageDecoderFactory->create().release();
 
     if (!*decoder) {
-      *decoder = ImageDecoder::create(data, allDataReceived,
-                                      ImageDecoder::AlphaPremultiplied,
-                                      ImageDecoder::ColorSpaceApplied)
+      *decoder = ImageDecoder::create(
+                     data, allDataReceived, ImageDecoder::AlphaPremultiplied,
+                     m_decoderColorSpaceOption, m_decoderTargetColorSpace)
                      .release();
       // The newly created decoder just grabbed the data.  No need to reset it.
       shouldCallSetData = false;
@@ -366,9 +369,9 @@ bool ImageFrameGenerator::getYUVComponentSizes(SegmentReader* data,
   if (m_yuvDecodingFailed)
     return false;
 
-  std::unique_ptr<ImageDecoder> decoder =
-      ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
-                           ImageDecoder::ColorSpaceApplied);
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
+      data, true, ImageDecoder::AlphaPremultiplied, m_decoderColorSpaceOption,
+      m_decoderTargetColorSpace);
   if (!decoder)
     return false;
 

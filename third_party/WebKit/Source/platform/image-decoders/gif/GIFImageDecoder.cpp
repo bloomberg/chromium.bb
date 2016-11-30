@@ -34,8 +34,12 @@ namespace blink {
 
 GIFImageDecoder::GIFImageDecoder(AlphaOption alphaOption,
                                  ColorSpaceOption colorOptions,
+                                 sk_sp<SkColorSpace> targetColorSpace,
                                  size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes),
       m_repetitionCount(cAnimationLoopOnce) {}
 
 GIFImageDecoder::~GIFImageDecoder() {}

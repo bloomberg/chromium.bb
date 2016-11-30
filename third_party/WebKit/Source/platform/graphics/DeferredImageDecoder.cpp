@@ -61,12 +61,13 @@ std::unique_ptr<DeferredImageDecoder> DeferredImageDecoder::create(
     PassRefPtr<SharedBuffer> passData,
     bool dataComplete,
     ImageDecoder::AlphaOption alphaOption,
-    ImageDecoder::ColorSpaceOption colorOptions) {
+    ImageDecoder::ColorSpaceOption colorOptions,
+    sk_sp<SkColorSpace> targetColorSpace) {
   RefPtr<SharedBuffer> data = passData;
 
   std::unique_ptr<ImageDecoder> actualDecoder =
-      ImageDecoder::create(data, dataComplete, alphaOption, colorOptions);
-
+      ImageDecoder::create(data, dataComplete, alphaOption, colorOptions,
+                           std::move(targetColorSpace));
   if (!actualDecoder)
     return nullptr;
 
@@ -267,6 +268,7 @@ void DeferredImageDecoder::activateLazyDecoding() {
   m_canYUVDecode = RuntimeEnabledFeatures::decodeToYUVEnabled() &&
                    (m_filenameExtension == "jpg");
   m_hasEmbeddedColorSpace = m_actualDecoder->hasEmbeddedColorSpace();
+  m_colorSpaceForSkImages = m_actualDecoder->colorSpaceForSkImages();
 
   const bool isSingleFrame =
       m_actualDecoder->repetitionCount() == cAnimationNone ||
@@ -275,7 +277,8 @@ void DeferredImageDecoder::activateLazyDecoding() {
       SkISize::Make(m_actualDecoder->decodedSize().width(),
                     m_actualDecoder->decodedSize().height());
   m_frameGenerator = ImageFrameGenerator::create(
-      decodedSize, m_actualDecoder->colorSpace(), !isSingleFrame);
+      decodedSize, !isSingleFrame, m_actualDecoder->colorSpaceOption(),
+      m_actualDecoder->targetColorSpace());
 }
 
 void DeferredImageDecoder::prepareLazyDecodedFrames() {
@@ -326,7 +329,7 @@ sk_sp<SkImage> DeferredImageDecoder::createFrameImageAtIndex(
   SkImageInfo info = SkImageInfo::MakeN32(
       decodedSize.width(), decodedSize.height(),
       knownToBeOpaque ? kOpaque_SkAlphaType : kPremul_SkAlphaType,
-      m_frameGenerator->getColorSpace());
+      m_colorSpaceForSkImages);
 
   DecodingImageGenerator* generator = new DecodingImageGenerator(
       m_frameGenerator, info, segmentReader.release(), m_allDataReceived, index,

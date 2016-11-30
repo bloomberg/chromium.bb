@@ -44,8 +44,12 @@ static const size_t sizeOfDirEntry = 16;
 
 ICOImageDecoder::ICOImageDecoder(AlphaOption alphaOption,
                                  ColorSpaceOption colorOptions,
+                                 sk_sp<SkColorSpace> targetColorSpace,
                                  size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes),
       m_fastReader(nullptr),
       m_decodedOffset(0),
       m_dirEntriesCount(0),
@@ -212,8 +216,8 @@ bool ICOImageDecoder::decodeAtIndex(size_t index) {
     AlphaOption alphaOption =
         m_premultiplyAlpha ? AlphaPremultiplied : AlphaNotPremultiplied;
     m_pngDecoders[index] = wrapUnique(
-        new PNGImageDecoder(alphaOption, m_colorSpaceOption, m_maxDecodedBytes,
-                            dirEntry.m_imageOffset));
+        new PNGImageDecoder(alphaOption, m_colorSpaceOption, m_targetColorSpace,
+                            m_maxDecodedBytes, dirEntry.m_imageOffset));
     setDataForPNGDecoderAtIndex(index);
   }
   // Fail if the size the PNGImageDecoder calculated does not match the size

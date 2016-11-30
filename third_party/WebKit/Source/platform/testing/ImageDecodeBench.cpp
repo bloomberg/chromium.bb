@@ -258,10 +258,11 @@ PassRefPtr<SharedBuffer> readFile(const char* fileName) {
 bool decodeImageData(SharedBuffer* data,
                      bool colorCorrection,
                      size_t packetSize) {
-  std::unique_ptr<ImageDecoder> decoder =
-      ImageDecoder::create(data, true, ImageDecoder::AlphaPremultiplied,
-                           colorCorrection ? ImageDecoder::ColorSpaceApplied
-                                           : ImageDecoder::ColorSpaceIgnored);
+  std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
+      data, true, ImageDecoder::AlphaPremultiplied,
+      colorCorrection ? ImageDecoder::ColorSpaceTransformed
+                      : ImageDecoder::ColorSpaceIgnored,
+      colorCorrection ? ImageDecoder::targetColorSpaceForTesting() : nullptr);
   if (!packetSize) {
     bool allDataReceived = true;
     decoder->setData(data, allDataReceived);

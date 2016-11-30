@@ -14,9 +14,10 @@ namespace blink {
 namespace {
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(new ICOImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                        ImageDecoder::ColorSpaceApplied,
-                                        ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(new ICOImageDecoder(
+      ImageDecoder::AlphaNotPremultiplied, ImageDecoder::ColorSpaceTransformed,
+      ImageDecoder::targetColorSpaceForTesting(),
+      ImageDecoder::noDecodedImageByteLimit));
 }
 }
 

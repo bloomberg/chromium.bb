@@ -42,8 +42,12 @@ static const size_t sizeOfFileHeader = 14;
 
 BMPImageDecoder::BMPImageDecoder(AlphaOption alphaOption,
                                  ColorSpaceOption colorOptions,
+                                 sk_sp<SkColorSpace> targetColorSpace,
                                  size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes),
       m_decodedOffset(0) {}
 
 void BMPImageDecoder::onSetData(SegmentReader* data) {

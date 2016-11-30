@@ -711,8 +711,12 @@ void term_source(j_decompress_ptr jd) {
 
 JPEGImageDecoder::JPEGImageDecoder(AlphaOption alphaOption,
                                    ColorSpaceOption colorOptions,
+                                   sk_sp<SkColorSpace> targetColorSpace,
                                    size_t maxDecodedBytes)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes) {}
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes) {}
 
 JPEGImageDecoder::~JPEGImageDecoder() {}
 
@@ -934,7 +938,7 @@ bool JPEGImageDecoder::outputScanlines() {
            static_cast<JDIMENSION>(m_decodedSize.height()));
 
     if (!buffer.setSizeAndColorSpace(info->output_width, info->output_height,
-                                     colorSpace()))
+                                     colorSpaceForSkImages()))
       return setFailed();
 
     // The buffer is transparent outside the decoded area while the image is

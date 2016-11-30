@@ -27,6 +27,7 @@
 #define ImageFrameGenerator_h
 
 #include "platform/PlatformExport.h"
+#include "platform/image-decoders/ImageDecoder.h"
 #include "platform/image-decoders/SegmentReader.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkSize.h"
@@ -62,11 +63,14 @@ class PLATFORM_EXPORT ImageFrameGenerator final
   WTF_MAKE_NONCOPYABLE(ImageFrameGenerator);
 
  public:
-  static PassRefPtr<ImageFrameGenerator> create(const SkISize& fullSize,
-                                                sk_sp<SkColorSpace> colorSpace,
-                                                bool isMultiFrame = false) {
+  static PassRefPtr<ImageFrameGenerator> create(
+      const SkISize& fullSize,
+      bool isMultiFrame,
+      ImageDecoder::ColorSpaceOption decoderColorSpaceOption,
+      sk_sp<SkColorSpace> decoderTargetColorSpace) {
     return adoptRef(
-        new ImageFrameGenerator(fullSize, std::move(colorSpace), isMultiFrame));
+        new ImageFrameGenerator(fullSize, isMultiFrame, decoderColorSpaceOption,
+                                std::move(decoderTargetColorSpace)));
   }
 
   ~ImageFrameGenerator();
@@ -94,7 +98,6 @@ class PLATFORM_EXPORT ImageFrameGenerator final
                    const size_t rowBytes[3]);
 
   const SkISize& getFullSize() const { return m_fullSize; }
-  sk_sp<SkColorSpace> getColorSpace() const { return m_colorSpace; }
 
   bool isMultiFrame() const { return m_isMultiFrame; }
   bool decodeFailed() const { return m_decodeFailed; }
@@ -108,8 +111,9 @@ class PLATFORM_EXPORT ImageFrameGenerator final
 
  private:
   ImageFrameGenerator(const SkISize& fullSize,
-                      sk_sp<SkColorSpace>,
-                      bool isMultiFrame);
+                      bool isMultiFrame,
+                      ImageDecoder::ColorSpaceOption decoderColorSpaceOption,
+                      sk_sp<SkColorSpace> decoderTargetColorSpace);
 
   friend class ImageFrameGeneratorTest;
   friend class DeferredImageDecoderTest;
@@ -135,7 +139,10 @@ class PLATFORM_EXPORT ImageFrameGenerator final
               SkBitmap::Allocator*);
 
   const SkISize m_fullSize;
-  sk_sp<SkColorSpace> m_colorSpace;
+
+  // Parameters used to create internal ImageDecoder objects.
+  const ImageDecoder::ColorSpaceOption m_decoderColorSpaceOption;
+  const sk_sp<SkColorSpace> m_decoderTargetColorSpace;
 
   const bool m_isMultiFrame;
   bool m_decodeFailed;

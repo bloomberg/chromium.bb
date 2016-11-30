@@ -279,13 +279,17 @@ void ImageBitmapFactories::ImageBitmapLoader::decodeImageOnDecoderThread(
   ImageDecoder::AlphaOption alphaOp = ImageDecoder::AlphaPremultiplied;
   if (premultiplyAlphaOption == "none")
     alphaOp = ImageDecoder::AlphaNotPremultiplied;
-  ImageDecoder::ColorSpaceOption colorSpaceOp = ImageDecoder::ColorSpaceApplied;
+  ImageDecoder::ColorSpaceOption colorSpaceOp =
+      ImageDecoder::ColorSpaceTransformed;
   if (colorSpaceConversionOption == "none")
     colorSpaceOp = ImageDecoder::ColorSpaceIgnored;
   std::unique_ptr<ImageDecoder> decoder(ImageDecoder::create(
       SegmentReader::createFromSkData(SkData::MakeWithoutCopy(
           arrayBuffer->data(), arrayBuffer->byteLength())),
-      true, alphaOp, colorSpaceOp));
+      true, alphaOp, colorSpaceOp,
+      colorSpaceOp == ImageDecoder::ColorSpaceTransformed
+          ? ImageDecoder::globalTargetColorSpace()
+          : nullptr));
   sk_sp<SkImage> frame;
   if (decoder) {
     frame = ImageBitmap::getSkImageFromDecoder(std::move(decoder));

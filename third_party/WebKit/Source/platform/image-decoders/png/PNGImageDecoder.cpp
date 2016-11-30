@@ -47,9 +47,13 @@ namespace blink {
 
 PNGImageDecoder::PNGImageDecoder(AlphaOption alphaOption,
                                  ColorSpaceOption colorOptions,
+                                 sk_sp<SkColorSpace> targetColorSpace,
                                  size_t maxDecodedBytes,
                                  size_t offset)
-    : ImageDecoder(alphaOption, colorOptions, maxDecodedBytes),
+    : ImageDecoder(alphaOption,
+                   colorOptions,
+                   std::move(targetColorSpace),
+                   maxDecodedBytes),
       m_offset(offset) {}
 
 PNGImageDecoder::~PNGImageDecoder() {}
@@ -152,7 +156,7 @@ void PNGImageDecoder::headerAvailable() {
       colorType == PNG_COLOR_TYPE_GRAY_ALPHA)
     png_set_gray_to_rgb(png);
 
-  if ((colorType & PNG_COLOR_MASK_COLOR) && !m_ignoreColorSpace) {
+  if ((colorType & PNG_COLOR_MASK_COLOR) && !ignoresColorSpace()) {
     // We only support color profiles for color PALETTE and RGB[A] PNG.
     // Supporting color profiles for gray-scale images is slightly tricky, at
     // least using the CoreGraphics ICC library, because we expand gray-scale
@@ -178,7 +182,7 @@ void PNGImageDecoder::headerAvailable() {
     const double inverseGamma = 0.45455;
     const double defaultGamma = 2.2;
     double gamma;
-    if (!m_ignoreColorSpace && png_get_gAMA(png, info, &gamma)) {
+    if (!ignoresColorSpace() && png_get_gAMA(png, info, &gamma)) {
       const double maxGamma = 21474.83;
       if ((gamma <= 0.0) || (gamma > maxGamma)) {
         gamma = inverseGamma;
@@ -226,7 +230,7 @@ void PNGImageDecoder::rowAvailable(unsigned char* rowBuffer,
   if (buffer.getStatus() == ImageFrame::FrameEmpty) {
     png_structp png = m_reader->pngPtr();
     if (!buffer.setSizeAndColorSpace(size().width(), size().height(),
-                                     colorSpace())) {
+                                     colorSpaceForSkImages())) {
       longjmp(JMPBUF(png), 1);
       return;
     }

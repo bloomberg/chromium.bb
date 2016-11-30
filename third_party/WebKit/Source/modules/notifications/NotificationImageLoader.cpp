@@ -105,7 +105,8 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
 
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
         m_data, true /* dataComplete */, ImageDecoder::AlphaPremultiplied,
-        ImageDecoder::ColorSpaceApplied);
+        ImageDecoder::ColorSpaceTransformed,
+        ImageDecoder::globalTargetColorSpace());
     if (decoder) {
       // The |ImageFrame*| is owned by the decoder.
       ImageFrame* imageFrame = decoder->frameBufferAtIndex(0);

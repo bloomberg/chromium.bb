@@ -46,9 +46,10 @@ namespace {
 const char layoutTestResourcesDir[] = "LayoutTests/images/resources";
 
 std::unique_ptr<ImageDecoder> createDecoder() {
-  return wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                        ImageDecoder::ColorSpaceApplied,
-                                        ImageDecoder::noDecodedImageByteLimit));
+  return wrapUnique(new GIFImageDecoder(
+      ImageDecoder::AlphaNotPremultiplied, ImageDecoder::ColorSpaceTransformed,
+      ImageDecoder::targetColorSpaceForTesting(),
+      ImageDecoder::noDecodedImageByteLimit));
 }
 
 void testRepetitionCount(const char* dir,
@@ -367,11 +368,13 @@ TEST(GIFImageDecoderTest, bitmapAlphaType) {
       SharedBuffer::create(fullData->data(), kTruncateSize);
 
   std::unique_ptr<ImageDecoder> premulDecoder = wrapUnique(new GIFImageDecoder(
-      ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceApplied,
+      ImageDecoder::AlphaPremultiplied, ImageDecoder::ColorSpaceTransformed,
+      ImageDecoder::targetColorSpaceForTesting(),
       ImageDecoder::noDecodedImageByteLimit));
   std::unique_ptr<ImageDecoder> unpremulDecoder =
       wrapUnique(new GIFImageDecoder(ImageDecoder::AlphaNotPremultiplied,
-                                     ImageDecoder::ColorSpaceApplied,
+                                     ImageDecoder::ColorSpaceTransformed,
+                                     ImageDecoder::targetColorSpaceForTesting(),
                                      ImageDecoder::noDecodedImageByteLimit));
 
   // Partially decoded frame => the frame alpha type is unknown and should
