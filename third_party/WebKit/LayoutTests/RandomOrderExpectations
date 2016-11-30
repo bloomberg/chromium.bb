@@ -74,8 +74,6 @@ crbug.com/664844 media/track/track-cue-rendering-tree-is-removed-properly.html [
 crbug.com/664844 media/track/track-default-attribute.html [ Pass Failure ]
 crbug.com/664844 media/track/track-kind-user-preference.html [ Pass Failure ]
 crbug.com/664846 paint/invalidation/background-resize-height.html [ Pass Failure ]
-crbug.com/664848 storage/domstorage/events/basic.html [ Pass Failure ]
-crbug.com/664848 storage/domstorage/events/case-sensitive.html [ Pass Failure ]
 crbug.com/664849 svg/dom/transform-parser.html [ Pass Failure ]
 crbug.com/669693 svg/text/combining-character-queries.html [ Pass Failure ]
 crbug.com/664850 virtual/display_list_2d_canvas/fast/canvas/canvas-createImageBitmap-webgl.html [ Pass Failure ]

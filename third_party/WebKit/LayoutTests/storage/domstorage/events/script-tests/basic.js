@@ -15,7 +15,17 @@ function test(storageString, callback)
     evalAndLog("storage.clear()");
     shouldBe("storage.length", "0");
 
-    runAfterNStorageEvents(step1, 0);
+    iframe.onload = onload;
+    iframe.src = "about:blank";
+}
+
+function onload()
+{
+    iframe.contentWindow.onstorage = function (e) {
+        window.parent.storageEventList.push(e);
+    };
+
+    step1();
 }
 
 function step1()
@@ -79,7 +89,7 @@ function step5()
     shouldBeEqualToString("storageEventList[6].oldValue", "BAR");
     shouldBeNull("storageEventList[6].newValue");
     evalAndLog("storage.clear()");
- 
+
     runAfterNStorageEvents(step6, 8);
 }
 
@@ -89,7 +99,7 @@ function step6()
     shouldBeNull("storageEventList[7].key");
     shouldBeNull("storageEventList[7].oldValue");
     shouldBeNull("storageEventList[7].newValue");
- 
+
     completionCallback();
 }
 

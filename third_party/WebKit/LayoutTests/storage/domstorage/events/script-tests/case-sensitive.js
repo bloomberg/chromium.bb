@@ -15,6 +15,16 @@ function test(storageString, callback)
     evalAndLog("storage.clear()");
     shouldBe("storage.length", "0");
 
+    iframe.onload = onload;
+    iframe.src = "about:blank";
+}
+
+function onload()
+{
+    iframe.contentWindow.onstorage = function (e) {
+        window.parent.storageEventList.push(e);
+    };
+
     debug("");
     debug("Verify storage events are case sensitive");
     evalAndLog("storage.foo = 'test'");

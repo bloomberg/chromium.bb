@@ -8,9 +8,6 @@ storage.clear()
 PASS storage.length is 0
 iframe.onload = step1
 iframe.src = 'resources/setattribute-event-handler.html'
-PASS successfullyParsed is true
-
-TEST COMPLETE
 Reset storage event list
 storageEventList = new Array()
 storage.setItem('FOO', 'BAR')
@@ -96,10 +93,7 @@ PASS storageEventList.length is 8
 PASS storageEventList[7].key is null
 PASS storageEventList[7].oldValue is null
 PASS storageEventList[7].newValue is null
-
-
 PASS successfullyParsed is true
 
 TEST COMPLETE
-
 
