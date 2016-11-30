@@ -2948,7 +2948,8 @@ static int drmGetMaxNodeName(void)
 
 #ifdef __linux__
 static int parse_separate_sysfs_files(int maj, int min,
-                                      drmPciDeviceInfoPtr device)
+                                      drmPciDeviceInfoPtr device,
+                                      bool ignore_revision)
 {
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof((a)[0]))
     static const char *attrs[] = {
@@ -2963,7 +2964,7 @@ static int parse_separate_sysfs_files(int maj, int min,
     FILE *fp;
     int ret;
 
-    for (unsigned i = 0; i < ARRAY_SIZE(attrs); i++) {
+    for (unsigned i = ignore_revision ? 1 : 0; i < ARRAY_SIZE(attrs); i++) {
         snprintf(path, PATH_MAX, "/sys/dev/char/%d:%d/device/%s", maj, min,
                  attrs[i]);
         fp = fopen(path, "r");
@@ -2977,7 +2978,7 @@ static int parse_separate_sysfs_files(int maj, int min,
 
     }
 
-    device->revision_id = data[0] & 0xff;
+    device->revision_id = ignore_revision ? 0xff : data[0] & 0xff;
     device->vendor_id = data[1] & 0xffff;
     device->device_id = data[2] & 0xffff;
     device->subvendor_id = data[3] & 0xffff;
@@ -3018,7 +3019,10 @@ static int drmParsePciDeviceInfo(int maj, int min,
                                  uint32_t flags)
 {
 #ifdef __linux__
-    if (parse_separate_sysfs_files(maj, min, device))
+    if (!(flags & DRM_DEVICE_GET_PCI_REVISION))
+        return parse_separate_sysfs_files(maj, min, device, true);
+
+    if (parse_separate_sysfs_files(maj, min, device, false))
         return parse_config_sysfs_file(maj, min, device);
 
     return 0;
@@ -3125,16 +3129,27 @@ static void drmFoldDuplicatedDevices(drmDevicePtr local_devices[], int count)
     }
 }
 
+/* Check that the given flags are valid returning 0 on success */
+static int
+drm_device_validate_flags(uint32_t flags)
+{
+        return (flags & ~DRM_DEVICE_GET_PCI_REVISION);
+}
+
 /**
  * Get information about the opened drm device
  *
  * \param fd file descriptor of the drm device
+ * \param flags feature/behaviour bitmask
  * \param device the address of a drmDevicePtr where the information
  *               will be allocated in stored
  *
  * \return zero on success, negative error code otherwise.
+ *
+ * \note Unlike drmGetDevice it does not retrieve the pci device revision field
+ * unless the DRM_DEVICE_GET_PCI_REVISION \p flag is set.
  */
-int drmGetDevice(int fd, drmDevicePtr *device)
+int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device)
 {
     drmDevicePtr *local_devices;
     drmDevicePtr d;
@@ -3147,7 +3162,9 @@ int drmGetDevice(int fd, drmDevicePtr *device)
     int ret, i, node_count;
     int max_count = 16;
     dev_t find_rdev;
-    uint32_t flags = 0;
+
+    if (drm_device_validate_flags(flags))
+        return -EINVAL;
 
     if (fd == -1 || device == NULL)
         return -EINVAL;
@@ -3246,8 +3263,23 @@ free_locals:
 }
 
 /**
+ * Get information about the opened drm device
+ *
+ * \param fd file descriptor of the drm device
+ * \param device the address of a drmDevicePtr where the information
+ *               will be allocated in stored
+ *
+ * \return zero on success, negative error code otherwise.
+ */
+int drmGetDevice(int fd, drmDevicePtr *device)
+{
+    return drmGetDevice2(fd, DRM_DEVICE_GET_PCI_REVISION, device);
+}
+
+/**
  * Get drm devices on the system
  *
+ * \param flags feature/behaviour bitmask
  * \param devices the array of devices with drmDevicePtr elements
  *                can be NULL to get the device number first
  * \param max_devices the maximum number of devices for the array
@@ -3256,8 +3288,11 @@ free_locals:
  *         if devices is NULL - total number of devices available on the system,
  *         alternatively the number of devices stored in devices[], which is
  *         capped by the max_devices.
+ *
+ * \note Unlike drmGetDevices it does not retrieve the pci device revision field
+ * unless the DRM_DEVICE_GET_PCI_REVISION \p flag is set.
  */
-int drmGetDevices(drmDevicePtr devices[], int max_devices)
+int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices)
 {
     drmDevicePtr *local_devices;
     drmDevicePtr device;
@@ -3269,7 +3304,9 @@ int drmGetDevices(drmDevicePtr devices[], int max_devices)
     int maj, min;
     int ret, i, node_count, device_count;
     int max_count = 16;
-    uint32_t flags = 0;
+
+    if (drm_device_validate_flags(flags))
+        return -EINVAL;
 
     local_devices = calloc(max_count, sizeof(drmDevicePtr));
     if (local_devices == NULL)
@@ -3355,6 +3392,23 @@ free_devices:
 free_locals:
     free(local_devices);
     return ret;
+}
+
+/**
+ * Get drm devices on the system
+ *
+ * \param devices the array of devices with drmDevicePtr elements
+ *                can be NULL to get the device number first
+ * \param max_devices the maximum number of devices for the array
+ *
+ * \return on error - negative error code,
+ *         if devices is NULL - total number of devices available on the system,
+ *         alternatively the number of devices stored in devices[], which is
+ *         capped by the max_devices.
+ */
+int drmGetDevices(drmDevicePtr devices[], int max_devices)
+{
+    return drmGetDevices2(DRM_DEVICE_GET_PCI_REVISION, devices, max_devices);
 }
 
 char *drmGetDeviceNameFromFd2(int fd)

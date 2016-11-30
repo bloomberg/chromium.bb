@@ -801,6 +801,10 @@ extern void drmFreeDevice(drmDevicePtr *device);
 extern int drmGetDevices(drmDevicePtr devices[], int max_devices);
 extern void drmFreeDevices(drmDevicePtr devices[], int count);
 
+#define DRM_DEVICE_GET_PCI_REVISION (1 << 0)
+extern int drmGetDevice2(int fd, uint32_t flags, drmDevicePtr *device);
+extern int drmGetDevices2(uint32_t flags, drmDevicePtr devices[], int max_devices);
+
 #if defined(__cplusplus)
 }
 #endif
