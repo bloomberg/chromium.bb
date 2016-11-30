@@ -10,6 +10,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/mus_types.h"
 
 namespace display {
@@ -28,7 +29,7 @@ namespace aura {
 
 class Window;
 class WindowTreeClient;
-class WindowTreeHost;
+class WindowTreeHostMus;
 
 // Use to access implementation details of WindowTreeClient.
 class WindowTreeClientPrivate {
@@ -40,7 +41,10 @@ class WindowTreeClientPrivate {
   // Calls OnEmbed() on the WindowTreeClient.
   void OnEmbed(ui::mojom::WindowTree* window_tree);
 
-  WindowTreeHost* CallWmNewDisplayAdded(const display::Display& display);
+  WindowTreeHostMus* CallWmNewDisplayAdded(const display::Display& display);
+  WindowTreeHostMus* CallWmNewDisplayAdded(const display::Display& display,
+                                           ui::mojom::WindowDataPtr root_data,
+                                           bool parent_drawn);
 
   // Pretends that |event| has been received from the window server.
   void CallOnWindowInputEvent(Window* window, std::unique_ptr<ui::Event> event);

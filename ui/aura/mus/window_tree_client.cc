@@ -361,6 +361,12 @@ std::unique_ptr<WindowTreeHostMus> WindowTreeClient::CreateWindowTreeHost(
   if (!window_data.is_null()) {
     SetLocalPropertiesFromServerProperties(
         WindowMus::Get(window_tree_host->window()), window_data);
+    if (window_data->visible) {
+      SetWindowVisibleFromServer(WindowMus::Get(window_tree_host->window()),
+                                 true);
+    }
+    SetWindowBoundsFromServer(WindowMus::Get(window_tree_host->window()),
+                              window_data->bounds);
   }
   return window_tree_host;
 }
@@ -456,7 +462,7 @@ void WindowTreeClient::OnEmbedImpl(ui::mojom::WindowTree* window_tree,
   delegate_->OnEmbed(std::move(window_tree_host));
 }
 
-WindowTreeHost* WindowTreeClient::WmNewDisplayAddedImpl(
+WindowTreeHostMus* WindowTreeClient::WmNewDisplayAddedImpl(
     const display::Display& display,
     ui::mojom::WindowDataPtr root_data,
     bool parent_drawn) {
@@ -467,7 +473,7 @@ WindowTreeHost* WindowTreeClient::WmNewDisplayAddedImpl(
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       CreateWindowTreeHost(WindowMusType::DISPLAY, root_data, display.id());
 
-  WindowTreeHost* window_tree_host_ptr = window_tree_host.get();
+  WindowTreeHostMus* window_tree_host_ptr = window_tree_host.get();
   window_manager_delegate_->OnWmNewDisplay(std::move(window_tree_host),
                                            display);
   return window_tree_host_ptr;

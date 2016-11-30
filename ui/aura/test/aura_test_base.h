@@ -5,6 +5,9 @@
 #ifndef UI_AURA_TEST_AURA_TEST_BASE_H_
 #define UI_AURA_TEST_AURA_TEST_BASE_H_
 
+#include <memory>
+#include <vector>
+
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -134,7 +137,7 @@ class AuraTestBase : public testing::Test,
   base::MessageLoopForUI message_loop_;
   PropertyConverter property_converter_;
   std::unique_ptr<AuraTestHelper> helper_;
-  std::unique_ptr<WindowTreeHostMus> window_tree_host_mus_;
+  std::vector<std::unique_ptr<WindowTreeHostMus>> window_tree_hosts_;
 
   DISALLOW_COPY_AND_ASSIGN(AuraTestBase);
 };

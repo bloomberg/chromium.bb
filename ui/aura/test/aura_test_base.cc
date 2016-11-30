@@ -92,6 +92,8 @@ void AuraTestBase::TearDown() {
   // and these tasks if un-executed would upset Valgrind.
   RunAllPendingInMessageLoop();
 
+  window_tree_hosts_.clear();
+
   helper_->TearDown();
   ui::TerminateContextFactoryForTests();
   ui::ShutdownInputMethodForTesting();
@@ -184,12 +186,18 @@ void AuraTestBase::OnWmNewDisplay(
     std::unique_ptr<WindowTreeHostMus> window_tree_host,
     const display::Display& display) {
   // Take ownership of the WindowTreeHost.
-  window_tree_host_mus_ = std::move(window_tree_host);
+  window_tree_hosts_.push_back(std::move(window_tree_host));
 }
 
 void AuraTestBase::OnWmDisplayRemoved(WindowTreeHostMus* window_tree_host) {
-  if (window_tree_host_mus_.get() == window_tree_host)
-    window_tree_host_mus_.reset();
+  for (auto iter = window_tree_hosts_.begin(); iter != window_tree_hosts_.end();
+       ++iter) {
+    if (iter->get() == window_tree_host) {
+      window_tree_hosts_.erase(iter);
+      return;
+    }
+  }
+  NOTREACHED();
 }
 
 void AuraTestBase::OnWmDisplayModified(const display::Display& display) {}

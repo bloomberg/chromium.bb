@@ -57,7 +57,6 @@ struct WindowPortPropertyData;
 class WindowTreeClientDelegate;
 class WindowTreeClientPrivate;
 class WindowTreeClientObserver;
-class WindowTreeHost;
 class WindowTreeHostMus;
 
 namespace client {
@@ -238,9 +237,9 @@ class AURA_EXPORT WindowTreeClient
                    bool drawn);
 
   // Called by WmNewDisplayAdded().
-  WindowTreeHost* WmNewDisplayAddedImpl(const display::Display& display,
-                                        ui::mojom::WindowDataPtr root_data,
-                                        bool parent_drawn);
+  WindowTreeHostMus* WmNewDisplayAddedImpl(const display::Display& display,
+                                           ui::mojom::WindowDataPtr root_data,
+                                           bool parent_drawn);
 
   std::unique_ptr<EventResultCallback> CreateEventResultCallback(
       int32_t event_id);

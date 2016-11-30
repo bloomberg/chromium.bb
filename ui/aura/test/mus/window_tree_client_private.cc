@@ -32,7 +32,7 @@ void WindowTreeClientPrivate::OnEmbed(ui::mojom::WindowTree* window_tree) {
                                  display_id, focused_window_id, true);
 }
 
-WindowTreeHost* WindowTreeClientPrivate::CallWmNewDisplayAdded(
+WindowTreeHostMus* WindowTreeClientPrivate::CallWmNewDisplayAdded(
     const display::Display& display) {
   ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
   root_data->parent_id = 0;
@@ -40,6 +40,13 @@ WindowTreeHost* WindowTreeClientPrivate::CallWmNewDisplayAdded(
   root_data->visible = true;
   root_data->bounds = gfx::Rect(display.bounds().size());
   const bool parent_drawn = true;
+  return CallWmNewDisplayAdded(display, std::move(root_data), parent_drawn);
+}
+
+WindowTreeHostMus* WindowTreeClientPrivate::CallWmNewDisplayAdded(
+    const display::Display& display,
+    ui::mojom::WindowDataPtr root_data,
+    bool parent_drawn) {
   return tree_client_impl_->WmNewDisplayAddedImpl(display, std::move(root_data),
                                                   parent_drawn);
 }

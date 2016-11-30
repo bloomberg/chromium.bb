@@ -1341,4 +1341,27 @@ TEST_F(WindowTreeClientClientTest, OnWindowDeletedDoesntNotifyServer) {
   EXPECT_FALSE(window_tree()->has_change());
 }
 
+TEST_F(WindowTreeClientWmTest, NewWindowTreeHostIsConfiguredCorrectly) {
+  display::Display display(201);
+  display.set_bounds(gfx::Rect(1, 2, 101, 102));
+
+  ui::mojom::WindowDataPtr root_data(ui::mojom::WindowData::New());
+  root_data->parent_id = 0;
+  root_data->window_id = 101;
+  root_data->visible = true;
+  root_data->bounds = display.bounds();
+  const bool parent_drawn = true;
+
+  // AuraTestBase ends up owning WindowTreeHost.
+  WindowTreeHostMus* window_tree_host =
+      WindowTreeClientPrivate(window_tree_client_impl())
+          .CallWmNewDisplayAdded(display, std::move(root_data), parent_drawn);
+  EXPECT_EQ(display.bounds(), window_tree_host->GetBoundsInPixels());
+  // The root window of the WindowTreeHost always has an origin of 0,0.
+  EXPECT_EQ(gfx::Rect(display.bounds().size()),
+            window_tree_host->window()->bounds());
+  EXPECT_TRUE(window_tree_host->window()->IsVisible());
+  EXPECT_EQ(display.id(), window_tree_host->display_id());
+}
+
 }  // namespace aura

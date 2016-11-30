@@ -25,7 +25,8 @@
 #include "ui/aura/test/test_focus_client.h"
 #include "ui/aura/window.h"
 #include "ui/display/display.h"
-#include "ui/display/test/test_screen.h"
+#include "ui/display/display_list.h"
+#include "ui/display/screen_base.h"
 #include "ui/wm/core/capture_controller.h"
 #include "ui/wm/core/wm_state.h"
 
@@ -55,8 +56,8 @@ class TestWM : public service_manager::Service,
   void OnStart() override {
     CHECK(!started_);
     started_ = true;
-    test_screen_ = base::MakeUnique<display::test::TestScreen>();
-    display::Screen::SetScreenInstance(test_screen_.get());
+    screen_ = base::MakeUnique<display::ScreenBase>();
+    display::Screen::SetScreenInstance(screen_.get());
     aura_env_ = aura::Env::CreateInstance(aura::Env::Mode::MUS);
     gpu_service_ = ui::GpuService::Create(context()->connector(), nullptr);
     compositor_context_factory_ =
@@ -127,7 +128,12 @@ class TestWM : public service_manager::Service,
                                   bool janky) override {
     // Don't care.
   }
-  void OnWmWillCreateDisplay(const display::Display& display) override {}
+  void OnWmWillCreateDisplay(const display::Display& display) override {
+    // This class only deals with one display.
+    DCHECK_EQ(0u, screen_->display_list().displays().size());
+    screen_->display_list().AddDisplay(display,
+                                       display::DisplayList::Type::PRIMARY);
+  }
   void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
                       const display::Display& display) override {
     // Only handles a single root.
@@ -161,8 +167,7 @@ class TestWM : public service_manager::Service,
       const gfx::Insets& insets,
       const std::vector<gfx::Rect>& additional_client_areas) override {}
 
-  // Dummy screen required to be the screen instance.
-  std::unique_ptr<display::test::TestScreen> test_screen_;
+  std::unique_ptr<display::ScreenBase> screen_;
 
   std::unique_ptr<aura::Env> aura_env_;
   ::wm::WMState wm_state_;

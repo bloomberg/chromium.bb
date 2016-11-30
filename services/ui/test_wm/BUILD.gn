@@ -20,7 +20,6 @@ service("test_wm") {
     "//ui/aura",
     "//ui/aura:test_support",
     "//ui/display",
-    "//ui/display:test_support",
     "//ui/gfx/geometry/mojo",
     "//ui/wm",
   ]
