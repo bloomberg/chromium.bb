@@ -45,4 +45,15 @@ void SampleDomainAndRegistryFromGURL(RapporService* rappor_service,
       GetDomainAndRegistrySampleFromGURL(gurl));
 }
 
+RapporService* (*g_GetDefaultService)() = nullptr;
+
+RapporService* GetDefaultService() {
+  return (g_GetDefaultService != nullptr) ? g_GetDefaultService() : nullptr;
+}
+
+void SetDefaultServiceAccessor(RapporService* (*getDefaultService)()) {
+  DCHECK(g_GetDefaultService == nullptr);
+  g_GetDefaultService = getDefaultService;
+}
+
 }  // namespace rappor

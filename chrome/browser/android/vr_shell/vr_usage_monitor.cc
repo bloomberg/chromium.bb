@@ -9,11 +9,6 @@
 #include "components/rappor/rappor_utils.h"
 #include "content/public/browser/browser_thread.h"
 
-// There is a dependency cycle between chrome/brower and
-// chrome/browser/android/vr_shell.  To temporarily fix and unblock tests,
-// don't send rappor events.
-#define ALLOW_SENDING_RAPPOR_EVENTS 0
-
 namespace vr_shell {
 
 // minimum duration: 7 seconds for video, no minimum for headset/vr modes
@@ -84,32 +79,27 @@ inline const char* HistogramNameFromSessionType(SessionEventName name) {
 void SendRapporEnteredMode(const GURL& origin, VRMode mode) {
   switch (mode) {
     case VRMode::VR_FULLSCREEN:
-#if ALLOW_SENDING_RAPPOR_EVENTS
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), "VR.FullScreenMode", origin);
-#endif
+      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
+                                              "VR.FullScreenMode", origin);
     default:
       break;
   }
 }
 
 void SendRapporEnteredVideoMode(const GURL& origin, VRMode mode) {
-#if ALLOW_SENDING_RAPPOR_EVENTS
   switch (mode) {
     case VRMode::VR_BROWSER:
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), "VR.Video.Browser", origin);
+      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
+                                              "VR.Video.Browser", origin);
     case VRMode::WEBVR:
-      rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), "VR.Video.WebVR", origin);
+      rappor::SampleDomainAndRegistryFromGURL(rappor::GetDefaultService(),
+                                              "VR.Video.WebVR", origin);
     case VRMode::VR_FULLSCREEN:
       rappor::SampleDomainAndRegistryFromGURL(
-          g_browser_process->rappor_service(), "VR.Video.FullScreenMode",
-          origin);
+          rappor::GetDefaultService(), "VR.Video.FullScreenMode", origin);
     default:
       break;
   }
-#endif
 }
 }  // namespace
 

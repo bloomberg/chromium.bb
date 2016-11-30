@@ -33,6 +33,11 @@ void SampleDomainAndRegistryFromGURL(RapporService* rappor_service,
                                      const std::string& metric,
                                      const GURL& gurl);
 
+// Returns NULL if there is no default service.
+RapporService* GetDefaultService();
+
+void SetDefaultServiceAccessor(RapporService* (*getDefaultService)());
+
 }  // namespace rappor
 
 #endif  // COMPONENTS_RAPPOR_RAPPOR_UTILS_H_

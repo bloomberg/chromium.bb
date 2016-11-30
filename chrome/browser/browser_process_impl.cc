@@ -98,6 +98,7 @@
 #include "components/prefs/json_pref_store.h"
 #include "components/prefs/pref_registry_simple.h"
 #include "components/prefs/pref_service.h"
+#include "components/rappor/rappor_utils.h"
 #include "components/safe_json/safe_json_parser.h"
 #include "components/signin/core/common/profile_management_switches.h"
 #include "components/subresource_filter/content/browser/content_ruleset_service_delegate.h"
@@ -198,6 +199,12 @@ using content::ChildProcessSecurityPolicy;
 using content::PluginService;
 using content::ResourceDispatcherHost;
 
+rappor::RapporService* GetBrowserRapporService() {
+  if (g_browser_process != nullptr)
+    return g_browser_process->rappor_service();
+  return nullptr;
+}
+
 BrowserProcessImpl::BrowserProcessImpl(
     base::SequencedTaskRunner* local_state_task_runner,
     const base::CommandLine& command_line)
@@ -216,6 +223,7 @@ BrowserProcessImpl::BrowserProcessImpl(
       local_state_task_runner_(local_state_task_runner),
       cached_default_web_client_state_(shell_integration::UNKNOWN_DEFAULT) {
   g_browser_process = this;
+  rappor::SetDefaultServiceAccessor(&GetBrowserRapporService);
   platform_part_.reset(new BrowserProcessPlatformPart());
 
 #if BUILDFLAG(ENABLE_PRINTING)

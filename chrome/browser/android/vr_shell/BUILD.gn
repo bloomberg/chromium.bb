@@ -58,6 +58,7 @@ if (current_cpu == "arm" || current_cpu == "arm64") {
       ":vr_shell_jni_headers",
       "//base",
       "//cc",
+      "//components/rappor",
       "//content/public/browser",
       "//content/public/common",
       "//device/vr",
