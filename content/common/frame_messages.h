@@ -40,7 +40,6 @@
 #include "content/public/common/resource_response.h"
 #include "content/public/common/stop_find_action.h"
 #include "content/public/common/three_d_api_types.h"
-#include "content/public/common/transition_element.h"
 #include "ipc/ipc_message_macros.h"
 #include "ipc/ipc_platform_file.h"
 #include "ppapi/features/features.h"
@@ -177,11 +176,6 @@ IPC_STRUCT_TRAITS_BEGIN(content::FrameOwnerProperties)
   IPC_STRUCT_TRAITS_MEMBER(allow_fullscreen)
   IPC_STRUCT_TRAITS_MEMBER(required_csp)
   IPC_STRUCT_TRAITS_MEMBER(delegated_permissions)
-IPC_STRUCT_TRAITS_END()
-
-IPC_STRUCT_TRAITS_BEGIN(content::TransitionElement)
-  IPC_STRUCT_TRAITS_MEMBER(id)
-  IPC_STRUCT_TRAITS_MEMBER(rect)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::PageImportanceSignals)
@@ -692,28 +686,6 @@ IPC_MESSAGE_ROUTED4(FrameMsg_JavaScriptExecuteRequestInIsolatedWorld,
                     bool, /* if true, a reply is requested */
                     int /* world_id */)
 
-// Requests a navigation to the supplied markup, in an iframe with sandbox
-// attributes.
-IPC_MESSAGE_ROUTED1(FrameMsg_SetupTransitionView,
-                    std::string /* markup */)
-
-// Tells the renderer to hide the elements specified by the supplied CSS
-// selector, and activates any exiting-transition stylesheets.
-IPC_MESSAGE_ROUTED2(FrameMsg_BeginExitTransition,
-                    std::string /* css_selector */,
-                    bool /* exit_to_native_app */)
-
-// Tell the renderer to revert the exit transition done before
-IPC_MESSAGE_ROUTED0(FrameMsg_RevertExitTransition)
-
-// Tell the renderer to hide transition elements.
-IPC_MESSAGE_ROUTED1(FrameMsg_HideTransitionElements,
-                    std::string /* css_selector */)
-
-// Tell the renderer to hide transition elements.
-IPC_MESSAGE_ROUTED1(FrameMsg_ShowTransitionElements,
-                    std::string /* css_selector */)
-
 // Tells the renderer to reload the frame, optionally bypassing the cache while
 // doing so.
 IPC_MESSAGE_ROUTED1(FrameMsg_Reload,
@@ -737,10 +709,6 @@ IPC_MESSAGE_ROUTED1(FrameMsg_TextSurroundingSelectionRequest,
 // Requests information about currently focused text input element from the
 // renderer.
 IPC_MESSAGE_ROUTED1(FrameMsg_FocusedFormFieldDataRequest, int /* request_id */)
-
-// Tells the renderer to insert a link to the specified stylesheet. This is
-// needed to support navigation transitions.
-IPC_MESSAGE_ROUTED1(FrameMsg_AddStyleSheetByURL, std::string)
 
 // Change the accessibility mode in the renderer process.
 IPC_MESSAGE_ROUTED1(FrameMsg_SetAccessibilityMode,
