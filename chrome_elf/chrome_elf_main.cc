@@ -55,13 +55,9 @@ BOOL APIENTRY DllMain(HMODULE module, DWORD reason, LPVOID reserved) {
   if (reason == DLL_PROCESS_ATTACH) {
     install_static::InitializeProductDetailsForPrimaryModule();
 
-#if !defined(ADDRESS_SANITIZER)
     // CRT on initialization installs an exception filter which calls
     // TerminateProcess. We need to hook CRT's attempt to set an exception.
-    // NOTE: Do not hook if ASan is present, or ASan will fail to install
-    // its own unhandled exception filter.
     elf_crash::DisableSetUnhandledExceptionFilter();
-#endif  // !defined (ADDRESS_SANITIZER)
 
     install_static::InitializeProcessType();
 

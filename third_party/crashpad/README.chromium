@@ -35,4 +35,4 @@ $ cd "${CRASHPAD_DIR}"
 $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
-None.
+- Have crashpad call ASan's crash handler if present
