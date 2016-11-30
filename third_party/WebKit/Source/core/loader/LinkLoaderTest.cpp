@@ -46,12 +46,12 @@ class MockLinkLoaderClient final
  private:
   explicit MockLinkLoaderClient(bool shouldLoad) : m_shouldLoad(shouldLoad) {}
 
-  bool m_shouldLoad;
+  const bool m_shouldLoad;
 };
 
 class NetworkHintsMock : public NetworkHintsInterface {
  public:
-  NetworkHintsMock() : m_didDnsPrefetch(false), m_didPreconnect(false) {}
+  NetworkHintsMock() {}
 
   void dnsPrefetchHost(const String& host) const override {
     m_didDnsPrefetch = true;
@@ -71,10 +71,10 @@ class NetworkHintsMock : public NetworkHintsInterface {
   bool isCrossOrigin() { return m_isCrossOrigin; }
 
  private:
-  mutable bool m_didDnsPrefetch;
-  mutable bool m_didPreconnect;
-  mutable bool m_isHTTPS;
-  mutable bool m_isCrossOrigin;
+  mutable bool m_didDnsPrefetch = false;
+  mutable bool m_didPreconnect = false;
+  mutable bool m_isHTTPS = false;
+  mutable bool m_isCrossOrigin = false;
 };
 
 TEST(LinkLoaderTest, Preload) {
