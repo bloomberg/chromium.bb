@@ -47,25 +47,36 @@ class MockPlatform : public TestingPlatformSupport {
 
 }  // namespace
 
-TEST(IdleDeadline, deadlineInFuture) {
-  setTimeFunctionsForTesting([] { return 1.0; });
+class IdleDeadlineTest : public testing::Test {
+ public:
+  void SetUp() override {
+    m_originalTimeFunction = setTimeFunctionsForTesting([] { return 1.0; });
+  }
+
+  void TearDown() override {
+    setTimeFunctionsForTesting(m_originalTimeFunction);
+  }
+
+ private:
+  TimeFunction m_originalTimeFunction;
+};
+
+TEST_F(IdleDeadlineTest, deadlineInFuture) {
   IdleDeadline* deadline =
       IdleDeadline::create(1.25, IdleDeadline::CallbackType::CalledWhenIdle);
   // Note: the deadline is computed with reduced resolution.
   EXPECT_FLOAT_EQ(249.995, deadline->timeRemaining());
 }
 
-TEST(IdleDeadline, deadlineInPast) {
-  setTimeFunctionsForTesting([] { return 1.0; });
+TEST_F(IdleDeadlineTest, deadlineInPast) {
   IdleDeadline* deadline =
       IdleDeadline::create(0.75, IdleDeadline::CallbackType::CalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
 }
 
-TEST(IdleDeadline, yieldForHighPriorityWork) {
+TEST_F(IdleDeadlineTest, yieldForHighPriorityWork) {
   MockPlatform platform;
 
-  setTimeFunctionsForTesting([] { return 1.0; });
   IdleDeadline* deadline =
       IdleDeadline::create(1.25, IdleDeadline::CallbackType::CalledWhenIdle);
   EXPECT_FLOAT_EQ(0, deadline->timeRemaining());
