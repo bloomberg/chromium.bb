@@ -12,6 +12,7 @@
 #include "core/dom/ScriptedAnimationController.h"
 #include "core/frame/UseCounter.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/loader/DocumentLoader.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "modules/vr/NavigatorVR.h"
 #include "modules/vr/VRController.h"
@@ -41,11 +42,20 @@ VREye stringToVREye(const String& whichEye) {
 
 class VRDisplayFrameRequestCallback : public FrameRequestCallback {
  public:
-  VRDisplayFrameRequestCallback(VRDisplay* vrDisplay)
-      : m_vrDisplay(vrDisplay) {}
+  VRDisplayFrameRequestCallback(VRDisplay* vrDisplay) : m_vrDisplay(vrDisplay) {
+    m_useLegacyTimeBase = true;
+  }
   ~VRDisplayFrameRequestCallback() override {}
   void handleEvent(double highResTimeMs) override {
-    m_vrDisplay->serviceScriptedAnimations(highResTimeMs);
+    Document* doc = m_vrDisplay->document();
+    if (!doc)
+      return;
+
+    // Need to divide by 1000 here because serviceScriptedAnimations expects
+    // time to be given in seconds.
+    m_vrDisplay->serviceScriptedAnimations(
+        doc->loader()->timing().pseudoWallTimeToMonotonicTime(highResTimeMs /
+                                                              1000.0));
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {
@@ -602,6 +612,10 @@ void VRDisplay::submitFrame() {
 
   m_display->SubmitFrame(m_framePose.Clone());
   m_canUpdateFramePose = true;
+}
+
+Document* VRDisplay::document() {
+  return m_navigatorVR->document();
 }
 
 void VRDisplay::OnPresentChange() {

@@ -79,6 +79,8 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
 
   void submitFrame();
 
+  Document* document();
+
   DECLARE_VIRTUAL_TRACE();
 
  protected:
