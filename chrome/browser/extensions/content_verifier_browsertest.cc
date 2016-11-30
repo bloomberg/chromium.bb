@@ -707,11 +707,10 @@ class ContentVerifierPolicyTest : public ContentVerifierTest {
   DownloaderTestDelegate downloader_;
 };
 
-// Disabled due to flakiness (crbug.com/668067)
 // We want to test what happens at startup with a corroption-disabled policy
 // force installed extension. So we set that up in the PRE test here.
 IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
-                       DISABLED_PRE_PolicyCorruptedOnStartup) {
+                       PRE_PolicyCorruptedOnStartup) {
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
   RegistryObserver registry_observer(registry);
 
@@ -732,22 +731,23 @@ IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
   EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
 }
 
-// Disabled due to flakiness (crbug.com/668067)
 // Now actually test what happens on the next startup after the PRE test above.
-IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest,
-                       DISABLED_PolicyCorruptedOnStartup) {
-  // Expect that the extension is still disabled for corruption.
+IN_PROC_BROWSER_TEST_F(ContentVerifierPolicyTest, PolicyCorruptedOnStartup) {
+  // Depdending on timing, the extension may have already been reinstalled
+  // between SetUpInProcessBrowserTestFixture and now (usually not during local
+  // testing on a developer machine, but sometimes on a heavily loaded system
+  // such as the build waterfall / trybots). If the reinstall didn't already
+  // happen, wait for it.
   ExtensionPrefs* prefs = ExtensionPrefs::Get(profile());
-  int reasons = prefs->GetDisableReasons(id_);
-  EXPECT_TRUE(reasons & Extension::DISABLE_CORRUPTED);
-
-  // Now expect that it gets reinstalled (because a job should have been kicked
-  // off by the installed extension loading code).
   ExtensionRegistry* registry = ExtensionRegistry::Get(profile());
-  RegistryObserver registry_observer(registry);
-  EXPECT_TRUE(registry_observer.WaitForInstall(id_));
-  reasons = prefs->GetDisableReasons(id_);
-  EXPECT_FALSE(reasons & Extension::DISABLE_CORRUPTED);
+  int disable_reasons = prefs->GetDisableReasons(id_);
+  if (disable_reasons & Extension::DISABLE_CORRUPTED) {
+    RegistryObserver registry_observer(registry);
+    EXPECT_TRUE(registry_observer.WaitForInstall(id_));
+    disable_reasons = prefs->GetDisableReasons(id_);
+  }
+  EXPECT_FALSE(disable_reasons & Extension::DISABLE_CORRUPTED);
+  EXPECT_TRUE(registry->enabled_extensions().Contains(id_));
 }
 
 }  // namespace extensions
