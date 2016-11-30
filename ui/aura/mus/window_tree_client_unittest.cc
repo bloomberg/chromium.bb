@@ -449,18 +449,22 @@ class InputEventBasicTestWindowDelegate : public test::TestWindowDelegate {
 
   bool got_move() const { return got_move_; }
   bool was_acked() const { return was_acked_; }
+  const gfx::Point& last_event_location() const { return last_event_location_; }
 
   // TestWindowDelegate::
   void OnMouseEvent(ui::MouseEvent* event) override {
     was_acked_ = test_window_tree_->WasEventAcked(kEventId);
     if (event->type() == ui::ET_MOUSE_MOVED)
       got_move_ = true;
+    last_event_location_ = event->location();
+    event->SetHandled();
   }
 
  private:
   TestWindowTree* test_window_tree_;
   bool was_acked_ = false;
   bool got_move_ = false;
+  gfx::Point last_event_location_;
 
   DISALLOW_COPY_AND_ASSIGN(InputEventBasicTestWindowDelegate);
 };
@@ -479,19 +483,25 @@ TEST_F(WindowTreeClientClientTest, InputEventBasic) {
   Window child(&window_delegate);
   child.Init(ui::LAYER_NOT_DRAWN);
   top_level->AddChild(&child);
-  child.SetBounds(gfx::Rect(0, 0, 100, 100));
+  child.SetBounds(gfx::Rect(10, 10, 100, 100));
   child.Show();
   EXPECT_FALSE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
+  const gfx::Point event_location_in_child(2, 3);
   std::unique_ptr<ui::Event> ui_event(
-      new ui::MouseEvent(ui::ET_MOUSE_MOVED, gfx::Point(), gfx::Point(),
-                         ui::EventTimeForNow(), ui::EF_NONE, 0));
+      new ui::MouseEvent(ui::ET_MOUSE_MOVED, event_location_in_child,
+                         gfx::Point(), ui::EventTimeForNow(), ui::EF_NONE, 0));
   window_tree_client()->OnWindowInputEvent(
-      InputEventBasicTestWindowDelegate::kEventId, server_id(top_level),
+      InputEventBasicTestWindowDelegate::kEventId, server_id(&child),
       ui::Event::Clone(*ui_event.get()), 0);
-  EXPECT_TRUE(window_tree()->WasEventAcked(1));
+  EXPECT_TRUE(window_tree()->WasEventAcked(
+      InputEventBasicTestWindowDelegate::kEventId));
+  EXPECT_EQ(ui::mojom::EventResult::HANDLED,
+            window_tree()->GetEventResult(
+                InputEventBasicTestWindowDelegate::kEventId));
   EXPECT_TRUE(window_delegate.got_move());
   EXPECT_FALSE(window_delegate.was_acked());
+  EXPECT_EQ(event_location_in_child, window_delegate.last_event_location());
 }
 
 class WindowTreeClientPointerObserverTest : public WindowTreeClientClientTest {

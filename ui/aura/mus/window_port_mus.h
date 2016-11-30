@@ -238,7 +238,7 @@ class AURA_EXPORT WindowPortMus : public WindowPort, public WindowMus {
   ServerChangeIdType next_server_change_id_ = 0;
   ServerChanges server_changes_;
 
-  SurfaceIdHandler* surface_id_handler_;
+  SurfaceIdHandler* surface_id_handler_ = nullptr;
   std::unique_ptr<SurfaceInfo> surface_info_;
 
   ui::mojom::Cursor predefined_cursor_ = ui::mojom::Cursor::CURSOR_NULL;

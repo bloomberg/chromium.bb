@@ -1100,8 +1100,19 @@ void WindowTreeClient::OnWindowInputEvent(uint32_t event_id,
     return;
   }
 
-  EventAckHandler ack_handler(CreateEventResultCallback(event_id));
   WindowTreeHostMus* host = GetWindowTreeHostMus(window);
+  DCHECK(host);
+
+  // The location of the event is relative to |window|. As the event is handed
+  // to WindowTreeHost we need it to be relative to WindowTreeHost.
+  if (event->IsLocatedEvent()) {
+    gfx::Point host_location = event->AsLocatedEvent()->location();
+    aura::Window::ConvertPointToTarget(window->GetWindow(), host->window(),
+                                       &host_location);
+    event->AsLocatedEvent()->set_location(host_location);
+  }
+
+  EventAckHandler ack_handler(CreateEventResultCallback(event_id));
   // TODO(moshayedi): crbug.com/617222. No need to convert to ui::MouseEvent or
   // ui::TouchEvent once we have proper support for pointer events.
   if (event->IsMousePointerEvent()) {

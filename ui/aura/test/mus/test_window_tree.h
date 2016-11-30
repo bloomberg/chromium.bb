@@ -7,7 +7,7 @@
 
 #include <stdint.h>
 
-#include <set>
+#include <vector>
 
 #include "base/macros.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -51,6 +51,10 @@ class TestWindowTree : public ui::mojom::WindowTree {
   uint32_t window_id() const { return window_id_; }
 
   bool WasEventAcked(uint32_t event_id) const;
+
+  // Returns the result of the specified event. UNHANDLED if |event_id| was
+  // not acked (use WasEventAcked() to determine if the event was acked).
+  ui::mojom::EventResult GetEventResult(uint32_t event_id) const;
 
   base::Optional<std::vector<uint8_t>> GetLastPropertyValue();
 
@@ -190,7 +194,11 @@ class TestWindowTree : public ui::mojom::WindowTree {
                          const gfx::Point& cursor_location) override;
   void CancelWindowMove(uint32_t window_id) override;
 
-  std::set<uint32_t> acked_events_;
+  struct AckedEvent {
+    uint32_t event_id;
+    ui::mojom::EventResult result;
+  };
+  std::vector<AckedEvent> acked_events_;
   uint32_t window_id_ = 0u;
 
   base::Optional<std::vector<uint8_t>> last_property_value_;
