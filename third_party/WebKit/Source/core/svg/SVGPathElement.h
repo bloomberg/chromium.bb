@@ -22,7 +22,6 @@
 #define SVGPathElement_h
 
 #include "core/SVGNames.h"
-#include "core/svg/SVGAnimatedNumber.h"
 #include "core/svg/SVGAnimatedPath.h"
 #include "core/svg/SVGGeometryElement.h"
 #include "platform/heap/Handle.h"
@@ -45,8 +44,7 @@ class SVGPathElement final : public SVGGeometryElement {
   unsigned getPathSegAtLength(float distance);
 
   SVGAnimatedPath* path() const { return m_path.get(); }
-  SVGAnimatedNumber* pathLength() const { return m_pathLength.get(); }
-  float pathLengthScaleFactor() const;
+  float computePathLength() const override;
   const SVGPathByteStream& pathByteStream() const {
     return stylePath()->byteStream();
   }
@@ -71,7 +69,6 @@ class SVGPathElement final : public SVGGeometryElement {
 
   void invalidateMPathDependencies();
 
-  Member<SVGAnimatedNumber> m_pathLength;
   Member<SVGAnimatedPath> m_path;
 };
 

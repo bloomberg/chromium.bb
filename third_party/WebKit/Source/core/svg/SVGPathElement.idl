@@ -27,7 +27,5 @@
 // http://www.w3.org/TR/SVG2/paths.html#InterfaceSVGPathElement
 
 interface SVGPathElement : SVGGeometryElement {
-    [Measure] readonly attribute SVGAnimatedNumber pathLength;
-
     unsigned long getPathSegAtLength(float distance);
 };

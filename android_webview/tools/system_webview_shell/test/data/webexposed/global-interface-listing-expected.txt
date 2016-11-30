@@ -3947,6 +3947,7 @@ interface SVGForeignObjectElement : SVGGraphicsElement
 interface SVGGElement : SVGGraphicsElement
     method constructor
 interface SVGGeometryElement : SVGGraphicsElement
+    getter pathLength
     method constructor
     method getPointAtLength
     method getTotalLength
@@ -4102,7 +4103,6 @@ interface SVGNumberList
     method removeItem
     method replaceItem
 interface SVGPathElement : SVGGeometryElement
-    getter pathLength
     method constructor
     method getPathSegAtLength
 interface SVGPatternElement : SVGElement

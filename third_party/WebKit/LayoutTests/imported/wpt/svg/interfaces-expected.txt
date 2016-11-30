@@ -31,7 +31,7 @@ PASS SVGGeometryElement interface object length
 PASS SVGGeometryElement interface object name 
 FAIL SVGGeometryElement interface: existence and properties of interface prototype object assert_equals: class string of SVGGeometryElement.prototype expected "[object SVGGeometryElementPrototype]" but got "[object SVGGeometryElement]"
 PASS SVGGeometryElement interface: existence and properties of interface prototype object's "constructor" property 
-FAIL SVGGeometryElement interface: attribute pathLength assert_true: The prototype object must have a property "pathLength" expected true got false
+PASS SVGGeometryElement interface: attribute pathLength 
 PASS SVGGeometryElement interface: operation isPointInFill(DOMPoint) 
 PASS SVGGeometryElement interface: operation isPointInStroke(DOMPoint) 
 PASS SVGGeometryElement interface: operation getTotalLength() 
@@ -1509,7 +1509,7 @@ PASS SVGRectElement interface: rect must inherit property "width" with the prope
 PASS SVGRectElement interface: rect must inherit property "height" with the proper type (3) 
 PASS SVGRectElement interface: rect must inherit property "rx" with the proper type (4) 
 PASS SVGRectElement interface: rect must inherit property "ry" with the proper type (5) 
-FAIL SVGGeometryElement interface: rect must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: rect must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: rect must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on rect with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: rect must inherit property "isPointInStroke" with the proper type (2) 
@@ -1607,7 +1607,7 @@ PASS Stringification of circle
 PASS SVGCircleElement interface: circle must inherit property "cx" with the proper type (0) 
 PASS SVGCircleElement interface: circle must inherit property "cy" with the proper type (1) 
 PASS SVGCircleElement interface: circle must inherit property "r" with the proper type (2) 
-FAIL SVGGeometryElement interface: circle must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: circle must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: circle must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on circle with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: circle must inherit property "isPointInStroke" with the proper type (2) 
@@ -1707,7 +1707,7 @@ PASS SVGEllipseElement interface: ellipse must inherit property "cx" with the pr
 PASS SVGEllipseElement interface: ellipse must inherit property "cy" with the proper type (1) 
 PASS SVGEllipseElement interface: ellipse must inherit property "rx" with the proper type (2) 
 PASS SVGEllipseElement interface: ellipse must inherit property "ry" with the proper type (3) 
-FAIL SVGGeometryElement interface: ellipse must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: ellipse must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: ellipse must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on ellipse with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: ellipse must inherit property "isPointInStroke" with the proper type (2) 
@@ -1807,7 +1807,7 @@ PASS SVGLineElement interface: line must inherit property "x1" with the proper t
 PASS SVGLineElement interface: line must inherit property "y1" with the proper type (1) 
 PASS SVGLineElement interface: line must inherit property "x2" with the proper type (2) 
 PASS SVGLineElement interface: line must inherit property "y2" with the proper type (3) 
-FAIL SVGGeometryElement interface: line must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: line must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: line must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on line with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: line must inherit property "isPointInStroke" with the proper type (2) 
@@ -1934,7 +1934,7 @@ PASS SVGPolylineElement must be primary interface of polyline
 PASS Stringification of polyline 
 PASS SVGPolylineElement interface: polyline must inherit property "points" with the proper type (0) 
 PASS SVGPolylineElement interface: polyline must inherit property "animatedPoints" with the proper type (1) 
-FAIL SVGGeometryElement interface: polyline must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: polyline must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: polyline must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on polyline with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: polyline must inherit property "isPointInStroke" with the proper type (2) 
@@ -2030,7 +2030,7 @@ PASS SVGPolygonElement must be primary interface of polygon
 PASS Stringification of polygon 
 PASS SVGPolygonElement interface: polygon must inherit property "points" with the proper type (0) 
 PASS SVGPolygonElement interface: polygon must inherit property "animatedPoints" with the proper type (1) 
-FAIL SVGGeometryElement interface: polygon must inherit property "pathLength" with the proper type (0) assert_inherits: property "pathLength" not found in prototype chain
+PASS SVGGeometryElement interface: polygon must inherit property "pathLength" with the proper type (0) 
 PASS SVGGeometryElement interface: polygon must inherit property "isPointInFill" with the proper type (1) 
 PASS SVGGeometryElement interface: calling isPointInFill(DOMPoint) on polygon with too few arguments must throw TypeError 
 PASS SVGGeometryElement interface: polygon must inherit property "isPointInStroke" with the proper type (2) 

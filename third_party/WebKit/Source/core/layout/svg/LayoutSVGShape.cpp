@@ -79,10 +79,9 @@ void LayoutSVGShape::createPath() {
 }
 
 float LayoutSVGShape::dashScaleFactor() const {
-  if (!isSVGPathElement(element()) ||
-      !styleRef().svgStyle().strokeDashArray()->size())
+  if (!styleRef().svgStyle().strokeDashArray()->size())
     return 1;
-  return toSVGPathElement(*element()).pathLengthScaleFactor();
+  return toSVGGeometryElement(*element()).pathLengthScaleFactor();
 }
 
 void LayoutSVGShape::updateShapeFromElement() {

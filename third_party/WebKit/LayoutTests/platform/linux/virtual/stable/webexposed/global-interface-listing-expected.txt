@@ -4744,6 +4744,7 @@ interface SVGGElement : SVGGraphicsElement
     method constructor
 interface SVGGeometryElement : SVGGraphicsElement
     attribute @@toStringTag
+    getter pathLength
     method constructor
     method getPointAtLength
     method getTotalLength
@@ -4916,7 +4917,6 @@ interface SVGNumberList
     method replaceItem
 interface SVGPathElement : SVGGeometryElement
     attribute @@toStringTag
-    getter pathLength
     method constructor
     method getPathSegAtLength
 interface SVGPatternElement : SVGElement

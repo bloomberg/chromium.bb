@@ -39,10 +39,39 @@
 
 namespace blink {
 
+class SVGAnimatedPathLength final : public SVGAnimatedNumber {
+ public:
+  static SVGAnimatedPathLength* create(SVGGeometryElement* contextElement) {
+    return new SVGAnimatedPathLength(contextElement);
+  }
+
+  SVGParsingError setBaseValueAsString(const String& value) override {
+    SVGParsingError parseStatus =
+        SVGAnimatedNumber::setBaseValueAsString(value);
+    if (parseStatus == SVGParseStatus::NoError && baseValue()->value() < 0)
+      parseStatus = SVGParseStatus::NegativeValue;
+    return parseStatus;
+  }
+
+ private:
+  explicit SVGAnimatedPathLength(SVGGeometryElement* contextElement)
+      : SVGAnimatedNumber(contextElement,
+                          SVGNames::pathLengthAttr,
+                          SVGNumber::create()) {}
+};
+
 SVGGeometryElement::SVGGeometryElement(const QualifiedName& tagName,
                                        Document& document,
                                        ConstructionType constructionType)
-    : SVGGraphicsElement(tagName, document, constructionType) {}
+    : SVGGraphicsElement(tagName, document, constructionType),
+      m_pathLength(SVGAnimatedPathLength::create(this)) {
+  addToPropertyMap(m_pathLength);
+}
+
+DEFINE_TRACE(SVGGeometryElement) {
+  visitor->trace(m_pathLength);
+  SVGGraphicsElement::trace(visitor);
+}
 
 bool SVGGeometryElement::isPointInFill(SVGPointTearOff* point) const {
   document().updateStyleAndLayoutIgnorePendingStylesheets();
@@ -103,6 +132,25 @@ SVGPointTearOff* SVGGeometryElement::getPointAtLength(float length) {
     point = asPath().pointAtLength(length);
   return SVGPointTearOff::create(SVGPoint::create(point), 0,
                                  PropertyIsNotAnimVal);
+}
+
+float SVGGeometryElement::computePathLength() const {
+  return asPath().length();
+}
+
+float SVGGeometryElement::pathLengthScaleFactor() const {
+  if (!pathLength()->isSpecified())
+    return 1;
+  float authorPathLength = pathLength()->currentValue()->value();
+  if (authorPathLength < 0)
+    return 1;
+  if (!authorPathLength)
+    return 0;
+  DCHECK(layoutObject());
+  float computedPathLength = computePathLength();
+  if (!computedPathLength)
+    return 1;
+  return computedPathLength / authorPathLength;
 }
 
 LayoutObject* SVGGeometryElement::createLayoutObject(const ComputedStyle&) {

@@ -871,7 +871,6 @@ class CORE_EXPORT UseCounter {
     V8SVGClipPathElement_ClipPathUnits_AttributeGetter = 1110,
     SVG1DOMFitToViewBox = 1111,
     SVG1DOMCursorElement = 1112,
-    V8SVGPathElement_PathLength_AttributeGetter = 1113,
     SVG1DOMSVGElement = 1114,
     SVG1DOMImageElement = 1115,
     SVG1DOMForeignObjectElement = 1116,
