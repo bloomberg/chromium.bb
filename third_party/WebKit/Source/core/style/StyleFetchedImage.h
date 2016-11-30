@@ -24,7 +24,7 @@
 #ifndef StyleFetchedImage_h
 #define StyleFetchedImage_h
 
-#include "core/fetch/ResourceClient.h"
+#include "core/fetch/ImageResourceObserver.h"
 #include "core/style/StyleImage.h"
 #include "platform/weborigin/KURL.h"
 
@@ -33,9 +33,9 @@ namespace blink {
 class Document;
 class ImageResource;
 
-class StyleFetchedImage final : public StyleImage, private ResourceClient {
+class StyleFetchedImage final : public StyleImage,
+                                public ImageResourceObserver {
   USING_PRE_FINALIZER(StyleFetchedImage, dispose);
-  USING_GARBAGE_COLLECTED_MIXIN(StyleFetchedImage);
 
  public:
   static StyleFetchedImage* create(ImageResource* image,
@@ -60,7 +60,7 @@ class StyleFetchedImage final : public StyleImage, private ResourceClient {
   bool usesImageContainerSize() const override;
   void addClient(LayoutObject*) override;
   void removeClient(LayoutObject*) override;
-  void notifyFinished(Resource*) override;
+  void imageNotifyFinished(ImageResource*) override;
   String debugName() const override { return "StyleFetchedImage"; }
   PassRefPtr<Image> image(const LayoutObject&,
                           const IntSize&,
