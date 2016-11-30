@@ -1833,9 +1833,13 @@ if (enable_java_templates) {
         forward_variables_from(invoker,
                                [
                                  "alternative_android_sdk_jar",
+                                 "deps",
                                  "proguard_jar_path",
                                ])
-        deps = [
+        if (!defined(deps)) {
+          deps = []
+        }
+        deps += [
           ":$build_config_target",
           ":$java_target",
           ":$process_resources_target",
