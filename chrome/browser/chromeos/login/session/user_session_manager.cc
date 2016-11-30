@@ -1736,12 +1736,6 @@ void UserSessionManager::RespectLocalePreferenceWrapper(
   if (browser_shutdown::IsTryingToQuit())
     return;
 
-  // InputEventsBlocker is not available in Mash
-  if (chrome::IsRunningInMash()) {
-    callback.Run();
-    return;
-  }
-
   const user_manager::User* const user =
       ProfileHelper::Get()->GetUserByProfile(profile);
   locale_util::SwitchLanguageCallback locale_switched_callback(base::Bind(
