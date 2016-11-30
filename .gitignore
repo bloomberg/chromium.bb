@@ -2,11 +2,8 @@
 *.pyc
 *~
 *.swp
-buildbot/cbuildbot.log
-buildbot/revisions.pfq
 .project
 .pydevproject
-buildbot/.completed_stages
 
 # source cross-reference files.
 tags
@@ -14,4 +11,7 @@ tags
 cscope.out
 
 # Directory that might hold site config checkout.
-config/
+/config/
+
+# Subcheckout.
+/virtualenv/
