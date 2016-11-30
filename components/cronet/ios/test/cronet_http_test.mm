@@ -202,6 +202,40 @@ TEST_F(HttpTest, SdchDisabledByDefault) {
   EXPECT_FALSE([[delegate_ responseBody] containsString:@"sdch"]);
 }
 
+// Verify that explictly setting Accept-Encoding request header to 'gzip,sdch"
+// is passed to the server and does not trigger any failures. This behavior may
+// In the future Cronet may not allow caller to set Accept-Encoding header and
+// could limit it to set of internally suported and enabled encodings, matching
+// behavior of Cronet on Android.
+TEST_F(HttpTest, AcceptEncodingSdchIsAllowed) {
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
+  NSMutableURLRequest* mutableRequest =
+      [[NSURLRequest requestWithURL:url] mutableCopy];
+  [mutableRequest addValue:@"gzip,sdch" forHTTPHeaderField:@"Accept-Encoding"];
+  NSURLSessionDataTask* task = [session_ dataTaskWithRequest:mutableRequest];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:@"gzip,sdch"]);
+}
+
+// Verify that explictly setting Accept-Encoding request header to 'foo,bar"
+// is passed to the server and does not trigger any failures. This behavior may
+// In the future Cronet may not allow caller to set Accept-Encoding header and
+// could limit it to set of internally suported and enabled encodings, matching
+// behavior of Cronet on Android.
+TEST_F(HttpTest, AcceptEncodingFooBarIsAllowed) {
+  NSURL* url =
+      net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Encoding")));
+  NSMutableURLRequest* mutableRequest =
+      [[NSURLRequest requestWithURL:url] mutableCopy];
+  [mutableRequest addValue:@"foo,bar" forHTTPHeaderField:@"Accept-Encoding"];
+  NSURLSessionDataTask* task = [session_ dataTaskWithRequest:mutableRequest];
+  StartDataTaskAndWaitForCompletion(task);
+  EXPECT_EQ(nil, [delegate_ error]);
+  EXPECT_TRUE([[delegate_ responseBody] containsString:@"foo,bar"]);
+}
+
 TEST_F(HttpTest, NSURLSessionAcceptLanguage) {
   NSURL* url =
       net::NSURLWithGURL(GURL(TestServer::GetEchoHeaderURL("Accept-Language")));
