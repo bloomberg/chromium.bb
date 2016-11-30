@@ -1414,11 +1414,11 @@
     ],
 
     'ubsan_release_bot': [
-      'ubsan', 'release_bot',
+      'ubsan', 'ubsan_no_recover_hack', 'release_bot',
     ],
 
     'ubsan_vptr_edge_release_bot': [
-      'ubsan_vptr', 'edge', 'release_bot',
+      'ubsan_vptr', 'ubsan_no_recover_hack', 'edge', 'release_bot',
     ],
 
     'ubsan_vptr_release_bot': [
