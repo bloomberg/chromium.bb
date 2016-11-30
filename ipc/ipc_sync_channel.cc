@@ -45,9 +45,8 @@ void OnSyncHandleReady(bool* signal, bool* error, MojoResult result) {
 // is only used in cases where failure should be impossible) and runs
 // |callback|.
 void RunOnHandleReady(const base::Closure& callback, MojoResult result) {
-  DCHECK(result == MOJO_RESULT_OK || result == MOJO_RESULT_ABORTED);
-  if (result == MOJO_RESULT_OK)
-    callback.Run();
+  DCHECK_EQ(result, MOJO_RESULT_OK);
+  callback.Run();
 }
 
 class PumpMessagesEvent {
@@ -679,11 +678,9 @@ void SyncChannel::WaitForReplyWithNestedMessageLoop(SyncContext* context) {
 }
 
 void SyncChannel::OnDispatchHandleReady(MojoResult result) {
-  DCHECK(result == MOJO_RESULT_OK || result == MOJO_RESULT_ABORTED);
-  if (result == MOJO_RESULT_OK) {
-    sync_context()->GetDispatchEvent()->Reset();
-    sync_context()->DispatchMessages();
-  }
+  DCHECK_EQ(result, MOJO_RESULT_OK);
+  sync_context()->GetDispatchEvent()->Reset();
+  sync_context()->DispatchMessages();
 }
 
 void SyncChannel::StartWatching() {

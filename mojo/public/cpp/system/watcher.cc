@@ -7,44 +7,9 @@
 #include "base/bind.h"
 #include "base/location.h"
 #include "base/macros.h"
-#include "base/message_loop/message_loop.h"
 #include "mojo/public/c/system/functions.h"
 
 namespace mojo {
-
-class Watcher::MessageLoopObserver
-    : public base::MessageLoop::DestructionObserver {
- public:
-  explicit MessageLoopObserver(Watcher* watcher) : watcher_(watcher) {
-    base::MessageLoop::current()->AddDestructionObserver(this);
-  }
-
-  ~MessageLoopObserver() override {
-    StopObservingIfNecessary();
-  }
-
- private:
-  // base::MessageLoop::DestructionObserver:
-  void WillDestroyCurrentMessageLoop() override {
-    StopObservingIfNecessary();
-    if (watcher_->IsWatching()) {
-      // TODO(yzshen): Remove this notification. crbug.com/604762
-      watcher_->OnHandleReady(MOJO_RESULT_ABORTED);
-    }
-  }
-
-  void StopObservingIfNecessary() {
-    if (is_observing_) {
-      is_observing_ = false;
-      base::MessageLoop::current()->RemoveDestructionObserver(this);
-    }
-  }
-
-  bool is_observing_ = true;
-  Watcher* watcher_;
-
-  DISALLOW_COPY_AND_ASSIGN(MessageLoopObserver);
-};
 
 Watcher::Watcher(scoped_refptr<base::SingleThreadTaskRunner> runner)
     : task_runner_(std::move(runner)),
@@ -72,7 +37,6 @@ MojoResult Watcher::Start(Handle handle,
   DCHECK(!IsWatching());
   DCHECK(!callback.is_null());
 
-  message_loop_observer_.reset(new MessageLoopObserver(this));
   callback_ = callback;
   handle_ = handle;
   MojoResult result = MojoWatch(handle_.value(), signals,
@@ -81,7 +45,6 @@ MojoResult Watcher::Start(Handle handle,
   if (result != MOJO_RESULT_OK) {
     handle_.set_value(kInvalidHandleValue);
     callback_.Reset();
-    message_loop_observer_.reset();
     DCHECK(result == MOJO_RESULT_FAILED_PRECONDITION ||
            result == MOJO_RESULT_INVALID_ARGUMENT);
     return result;
@@ -99,7 +62,6 @@ void Watcher::Cancel() {
 
   MojoResult result =
       MojoCancelWatch(handle_.value(), reinterpret_cast<uintptr_t>(this));
-  message_loop_observer_.reset();
   // |result| may be MOJO_RESULT_INVALID_ARGUMENT if |handle_| has closed, but
   // OnHandleReady has not yet been called.
   DCHECK(result == MOJO_RESULT_INVALID_ARGUMENT || result == MOJO_RESULT_OK);
@@ -112,7 +74,6 @@ void Watcher::OnHandleReady(MojoResult result) {
 
   ReadyCallback callback = callback_;
   if (result == MOJO_RESULT_CANCELLED) {
-    message_loop_observer_.reset();
     handle_.set_value(kInvalidHandleValue);
     callback_.Reset();
   }
