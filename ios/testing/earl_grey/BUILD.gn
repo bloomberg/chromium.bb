@@ -8,6 +8,7 @@ config("earl_grey_support_config") {
 }
 
 source_set("earl_grey_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   deps = [
