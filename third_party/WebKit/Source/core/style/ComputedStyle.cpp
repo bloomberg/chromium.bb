@@ -1210,6 +1210,17 @@ void ComputedStyle::updateIsStackingContext(bool isDocumentElement,
   if (isStackingContext())
     return;
 
+  // Force a stacking context for transform-style: preserve-3d. This happens
+  // even if preserves-3d is ignored due to a 'grouping property' being present
+  // which requires flattening. See ComputedStyle::usedTransformStyle3D() and
+  // ComputedStyle::hasGroupingProperty().
+  // This is legacy behavior that is left ambiguous in the official specs.
+  // See crbug.com/663650 for more details."
+  if (transformStyle3D() == TransformStyle3DPreserve3D) {
+    setIsStackingContext(true);
+    return;
+  }
+
   if (isDocumentElement || isInTopLayer || styleType() == PseudoIdBackdrop ||
       hasOpacity() || hasTransformRelatedProperty() || hasMask() ||
       clipPath() || boxReflect() || hasFilterInducingProperty() ||
