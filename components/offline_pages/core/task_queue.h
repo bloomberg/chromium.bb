@@ -43,7 +43,7 @@ class TaskQueue {
   // Checks whether there are any tasks to run, as well as whether no task is
   // currently running. When both are met, it will start the next task in the
   // queue.
-  void MaybeStartTask();
+  void StartTaskIfAvailable();
 
   // Callback for informing the queue that a task was completed.
   void TaskCompleted(Task* task);

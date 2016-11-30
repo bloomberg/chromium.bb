@@ -19,7 +19,9 @@ namespace offline_pages {
 // * Derive your new task from offline_pages::Task.
 // * Implement your task with as many async operations on the controlled
 //   resource as is required. (In general the smaller the task the better.)
-// * Whenever the task is terminated, call |Complete|.
+// * Whenever the task is terminated, call |Task::TaskComplete|. This step is
+//   mandatory to ensure |TaskQueue| can pick another task. It should be called
+//   once, but in every situation when task is exited.
 // * To schedule task for execution call |TaskQueue::AddTask|.
 //
 // If there is a chance that a task callback will come after the task is
@@ -37,8 +39,6 @@ class Task {
   // first step of the task should be implemented by overloading this method.
   // The task should define an additional method for every asynchronous step,
   // with each step setting up the next step as a callback.
-  // TODO(fgorski): Consider alternative: protected RunImpl(), so that we can
-  // add things like UMA in the Run method.
   virtual void Run() = 0;
 
   // Sets the callback normally used by |TaskQueue| for testing. See

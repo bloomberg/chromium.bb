@@ -18,7 +18,7 @@ void TaskQueue::AddTask(std::unique_ptr<Task> task) {
       base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&TaskQueue::TaskCompleted, weak_ptr_factory_.GetWeakPtr()));
   tasks_.push(std::move(task));
-  MaybeStartTask();
+  StartTaskIfAvailable();
 }
 
 bool TaskQueue::HasPendingTasks() const {
@@ -29,7 +29,7 @@ bool TaskQueue::HasRunningTask() const {
   return current_task_.get() != nullptr;
 }
 
-void TaskQueue::MaybeStartTask() {
+void TaskQueue::StartTaskIfAvailable() {
   DVLOG(2) << "running? " << HasRunningTask() << ", pending? "
            << HasPendingTasks() << " " << __func__;
   if (HasRunningTask() || !HasPendingTasks())
@@ -44,7 +44,7 @@ void TaskQueue::TaskCompleted(Task* task) {
   DCHECK_EQ(task, current_task_.get());
   if (task == current_task_.get()) {
     current_task_.reset(nullptr);
-    MaybeStartTask();
+    StartTaskIfAvailable();
   }
 }
 
