@@ -6,7 +6,6 @@
         "browser": [
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::ShellHandler",
-          "mojom::ImageDecoder",
           "net::interfaces::ProxyResolverFactory",
           "safe_json::mojom::SafeJsonParser"
         ]
