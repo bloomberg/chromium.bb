@@ -372,6 +372,14 @@ privateScriptController.installClass('HTMLMarqueeElement', function(HTMLMarqueeE
     };
 
     HTMLMarqueeElementPrototype.start = function() {
+        // User script must not run in a SVGImage, but it's okay to run user
+        // agent's script such as <marquee>.  However, a function scheduled with
+        // requestAnimationFrame is indistinguishable if it's scheduled by user
+        // script or user agent's script.  Thus we disallow scheduling a task
+        // in svg (not limited to SVGImage) entirely.
+        if (document.rootElement instanceof SVGElement)
+            return;
+
         if (this.continueCallback_)
             return;
         this.continueCallback_ = requestAnimationFrame(function() {
