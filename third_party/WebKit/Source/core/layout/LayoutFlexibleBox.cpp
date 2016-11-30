@@ -70,6 +70,8 @@ LayoutFlexibleBox::LayoutFlexibleBox(Element* element)
       m_numberOfInFlowChildrenOnFirstLine(-1),
       m_hasDefiniteHeight(SizeDefiniteness::Unknown) {
   DCHECK(!childrenInline());
+  if (!isAnonymous())
+    UseCounter::count(document(), UseCounter::CSSFlexibleBox);
 }
 
 LayoutFlexibleBox::~LayoutFlexibleBox() {}

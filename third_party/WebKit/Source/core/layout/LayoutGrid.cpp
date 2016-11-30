@@ -25,6 +25,7 @@
 
 #include "core/layout/LayoutGrid.h"
 
+#include "core/frame/UseCounter.h"
 #include "core/layout/LayoutState.h"
 #include "core/layout/TextAutosizer.h"
 #include "core/paint/GridPainter.h"
@@ -464,6 +465,8 @@ struct GridItemsSpanGroupRange {
 LayoutGrid::LayoutGrid(Element* element)
     : LayoutBlock(element), m_grid(this), m_gridIsDirty(true) {
   ASSERT(!childrenInline());
+  if (!isAnonymous())
+    UseCounter::count(document(), UseCounter::CSSGridLayout);
 }
 
 LayoutGrid::~LayoutGrid() {}

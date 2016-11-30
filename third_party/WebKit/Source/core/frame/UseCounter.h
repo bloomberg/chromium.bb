@@ -1381,6 +1381,10 @@ class CORE_EXPORT UseCounter {
     CustomElementRegistryDefine = 1689,
     LinkHeaderServiceWorker = 1690,
     CSSShadowPiercingDescendantCombinator = 1691,
+    // The above items are available in M56 branch.
+
+    CSSFlexibleBox = 1692,
+    CSSGridLayout = 1693,
 
     // Add new features immediately above this line. Don't change assigned
     // numbers of any item, and don't reuse removed slots.
