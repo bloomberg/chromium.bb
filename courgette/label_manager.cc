@@ -177,8 +177,8 @@ void LabelManager::Read(RvaVisitor* rva_visitor) {
   labels_.reserve(num_distinct_rva);
   for (CRV it(rvas.begin(), rvas.end()); it.has_more(); it.advance()) {
     labels_.push_back(Label(*it.cur()));
-    base::CheckedNumeric<uint32_t> count = it.repeat();
-    labels_.back().count_ = count.ValueOrDie();
+    labels_.back().count_ =
+        base::checked_cast<decltype(labels_.back().count_)>(it.repeat());
   }
 }
 
