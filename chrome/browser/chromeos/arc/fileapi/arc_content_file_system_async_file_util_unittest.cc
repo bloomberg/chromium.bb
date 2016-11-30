@@ -12,7 +12,7 @@
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
 #include "chrome/browser/chromeos/fileapi/external_file_url_util.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
-#include "components/arc/test/fake_intent_helper_instance.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "storage/browser/fileapi/file_system_url.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -24,11 +24,10 @@ namespace {
 constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
 constexpr int64_t kSize = 123456;
 
-class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
+class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
  public:
-  void GetFileSizeDeprecated(
-      const std::string& url,
-      const GetFileSizeDeprecatedCallback& callback) override {
+  void GetFileSize(const std::string& url,
+                   const GetFileSizeCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
     base::ThreadTaskRunnerHandle::Get()->PostTask(FROM_HERE,
                                                   base::Bind(callback, kSize));
@@ -38,7 +37,7 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
 class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
  public:
   ArcContentFileSystemAsyncFileUtilTest() {
-    fake_arc_bridge_service_.intent_helper()->SetInstance(&intent_helper_);
+    fake_arc_bridge_service_.file_system()->SetInstance(&file_system_);
   }
 
   ~ArcContentFileSystemAsyncFileUtilTest() override = default;
@@ -58,7 +57,7 @@ class ArcContentFileSystemAsyncFileUtilTest : public testing::Test {
 
   content::TestBrowserThreadBundle thread_bundle_;
   FakeArcBridgeService fake_arc_bridge_service_;
-  ArcIntentHelperInstanceTestImpl intent_helper_;
+  ArcFileSystemInstanceTestImpl file_system_;
   ArcContentFileSystemAsyncFileUtil async_file_util_;
 
  private:

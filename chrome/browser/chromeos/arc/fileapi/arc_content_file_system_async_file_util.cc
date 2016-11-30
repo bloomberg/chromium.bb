@@ -6,7 +6,7 @@
 
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_url_util.h"
-#include "chrome/browser/chromeos/arc/fileapi/intent_helper_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "net/base/net_errors.h"
 #include "storage/browser/blob/shareable_file_reference.h"
@@ -73,7 +73,7 @@ void ArcContentFileSystemAsyncFileUtil::GetFileInfo(
     int fields,
     const GetFileInfoCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  intent_helper_util::GetFileSizeOnIOThread(
+  file_system_instance_util::GetFileSizeOnIOThread(
       FileSystemUrlToArcUrl(url), base::Bind(&OnGetFileSize, callback));
 }
 

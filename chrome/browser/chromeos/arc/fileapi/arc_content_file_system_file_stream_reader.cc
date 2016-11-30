@@ -4,7 +4,7 @@
 
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 
-#include "chrome/browser/chromeos/arc/fileapi/intent_helper_util.h"
+#include "chrome/browser/chromeos/arc/fileapi/arc_file_system_instance_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/file_stream.h"
@@ -44,7 +44,7 @@ int ArcContentFileSystemFileStreamReader::Read(
                      << offset_;
     return net::ERR_FAILED;
   }
-  intent_helper_util::OpenFileToReadOnIOThread(
+  file_system_instance_util::OpenFileToReadOnIOThread(
       arc_url_,
       base::Bind(&ArcContentFileSystemFileStreamReader::OnOpenFile,
                  weak_ptr_factory_.GetWeakPtr(), make_scoped_refptr(buffer),
@@ -55,7 +55,7 @@ int ArcContentFileSystemFileStreamReader::Read(
 int64_t ArcContentFileSystemFileStreamReader::GetLength(
     const net::Int64CompletionCallback& callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::IO);
-  intent_helper_util::GetFileSizeOnIOThread(
+  file_system_instance_util::GetFileSizeOnIOThread(
       arc_url_, base::Bind(&OnGetFileSize, callback));
   return net::ERR_IO_PENDING;
 }

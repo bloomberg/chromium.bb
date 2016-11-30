@@ -11,7 +11,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/chromeos/arc/fileapi/arc_content_file_system_file_stream_reader.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
-#include "components/arc/test/fake_intent_helper_instance.h"
+#include "components/arc/test/fake_file_system_instance.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "mojo/edk/embedder/embedder.h"
 #include "net/base/io_buffer.h"
@@ -25,16 +25,15 @@ namespace {
 constexpr char kArcUrl[] = "content://org.chromium.foo/bar";
 constexpr char kData[] = "abcdefghijklmnopqrstuvwxyz";
 
-class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
+class ArcFileSystemInstanceTestImpl : public FakeFileSystemInstance {
  public:
-  explicit ArcIntentHelperInstanceTestImpl(const base::FilePath& file_path)
+  explicit ArcFileSystemInstanceTestImpl(const base::FilePath& file_path)
       : file_path_(file_path) {}
 
-  ~ArcIntentHelperInstanceTestImpl() override = default;
+  ~ArcFileSystemInstanceTestImpl() override = default;
 
-  void GetFileSizeDeprecated(
-      const std::string& url,
-      const GetFileSizeDeprecatedCallback& callback) override {
+  void GetFileSize(const std::string& url,
+                   const GetFileSizeCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
     base::File::Info info;
     EXPECT_TRUE(base::GetFileInfo(file_path_, &info));
@@ -42,9 +41,8 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
         FROM_HERE, base::Bind(callback, info.size));
   }
 
-  void OpenFileToReadDeprecated(
-      const std::string& url,
-      const OpenFileToReadDeprecatedCallback& callback) override {
+  void OpenFileToRead(const std::string& url,
+                      const OpenFileToReadCallback& callback) override {
     EXPECT_EQ(kArcUrl, url);
 
     base::File file(file_path_, base::File::FLAG_OPEN | base::File::FLAG_READ);
@@ -65,7 +63,7 @@ class ArcIntentHelperInstanceTestImpl : public FakeIntentHelperInstance {
  private:
   base::FilePath file_path_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperInstanceTestImpl);
+  DISALLOW_COPY_AND_ASSIGN(ArcFileSystemInstanceTestImpl);
 };
 
 class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
@@ -82,16 +80,16 @@ class ArcContentFileSystemFileStreamReaderTest : public testing::Test {
     base::FilePath path = temp_dir_.GetPath().AppendASCII("bar");
     ASSERT_TRUE(base::WriteFile(path, kData, arraysize(kData)));
 
-    intent_helper_.reset(new ArcIntentHelperInstanceTestImpl(path));
+    file_system_.reset(new ArcFileSystemInstanceTestImpl(path));
 
-    fake_arc_bridge_service_.intent_helper()->SetInstance(intent_helper_.get());
+    fake_arc_bridge_service_.file_system()->SetInstance(file_system_.get());
   }
 
  private:
   base::ScopedTempDir temp_dir_;
   content::TestBrowserThreadBundle thread_bundle_;
   FakeArcBridgeService fake_arc_bridge_service_;
-  std::unique_ptr<ArcIntentHelperInstanceTestImpl> intent_helper_;
+  std::unique_ptr<ArcFileSystemInstanceTestImpl> file_system_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcContentFileSystemFileStreamReaderTest);
 };

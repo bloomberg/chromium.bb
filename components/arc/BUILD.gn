@@ -185,6 +185,8 @@ static_library("arc_test_support") {
     "test/fake_arc_session.h",
     "test/fake_bluetooth_instance.cc",
     "test/fake_bluetooth_instance.h",
+    "test/fake_file_system_instance.cc",
+    "test/fake_file_system_instance.h",
     "test/fake_intent_helper_instance.cc",
     "test/fake_intent_helper_instance.h",
     "test/fake_notifications_instance.cc",
