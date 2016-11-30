@@ -11,7 +11,6 @@
 #include "ui/compositor/layer.h"
 #include "ui/compositor/layer_animation_sequence.h"
 #include "ui/compositor/scoped_layer_animation_settings.h"
-#include "ui/gfx/animation/animation.h"
 #include "ui/gfx/geometry/point_conversions.h"
 #include "ui/gfx/geometry/vector2d_f.h"
 
@@ -96,10 +95,6 @@ int kAnimationDurationInMs[] = {
 
 // Returns the InkDropState sub animation duration for the given |state|.
 base::TimeDelta GetAnimationDuration(InkDropSubAnimations state) {
-  // Ink drop animations are controlled by the system animation settings for
-  // accessibility reasons."See https://crbug.com/658384.
-  if (!gfx::Animation::ShouldRenderRichAnimation())
-    return base::TimeDelta();
   return base::TimeDelta::FromMilliseconds(
       (views::InkDropRipple::UseFastAnimations()
            ? 1
