@@ -11,8 +11,8 @@
 
 namespace blink {
 
-BarcodeDetector* BarcodeDetector::create(ScriptState* scriptState) {
-  return new BarcodeDetector(*scriptState->domWindow()->frame());
+BarcodeDetector* BarcodeDetector::create(Document& document) {
+  return new BarcodeDetector(*document.frame());
 }
 
 BarcodeDetector::BarcodeDetector(LocalFrame& frame) : ShapeDetector(frame) {}

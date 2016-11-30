@@ -6,7 +6,7 @@
 
 [
     Constructor(optional FaceDetectorOptions faceDetectorOptions),
-    ConstructorCallWith=ScriptState,
+    ConstructorCallWith=Document,
     RuntimeEnabled=ShapeDetection,
 ] interface FaceDetector {
     [CallWith=ScriptState] Promise<sequence<DetectedObject>> detect(CanvasImageSource image);

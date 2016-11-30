@@ -11,9 +11,9 @@
 
 namespace blink {
 
-FaceDetector* FaceDetector::create(ScriptState* scriptState,
+FaceDetector* FaceDetector::create(Document& document,
                                    const FaceDetectorOptions& options) {
-  return new FaceDetector(*scriptState->domWindow()->frame(), options);
+  return new FaceDetector(*document.frame(), options);
 }
 
 FaceDetector::FaceDetector(LocalFrame& frame,

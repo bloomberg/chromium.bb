@@ -21,7 +21,7 @@ class MODULES_EXPORT FaceDetector final : public ShapeDetector,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static FaceDetector* create(ScriptState*, const FaceDetectorOptions&);
+  static FaceDetector* create(Document&, const FaceDetectorOptions&);
 
   ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
   DECLARE_VIRTUAL_TRACE();

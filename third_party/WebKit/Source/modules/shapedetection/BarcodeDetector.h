@@ -21,7 +21,7 @@ class MODULES_EXPORT BarcodeDetector final : public ShapeDetector,
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static BarcodeDetector* create(ScriptState*);
+  static BarcodeDetector* create(Document&);
 
   ScriptPromise detect(ScriptState*, const CanvasImageSourceUnion&);
   DECLARE_VIRTUAL_TRACE();
