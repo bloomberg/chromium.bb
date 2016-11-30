@@ -649,11 +649,11 @@ void SelectionController::setNonDirectionalSelectionIfNeeded(
                            granularity);
 }
 
-bool SelectionController::setCaretAtHitTestResult(
+void SelectionController::setCaretAtHitTestResult(
     const HitTestResult& hitTestResult) {
   Node* innerNode = hitTestResult.innerNode();
   if (!innerNode)
-    return false;
+    return;
 
   const VisiblePositionInFlatTree& visibleHitPos =
       visiblePositionOfHitTestResult(hitTestResult);
@@ -663,7 +663,7 @@ bool SelectionController::setCaretAtHitTestResult(
                 PositionInFlatTree::firstPositionInOrBeforeNode(innerNode))
           : visibleHitPos;
 
-  return updateSelectionForMouseDownDispatchingSelectStart(
+  updateSelectionForMouseDownDispatchingSelectStart(
       innerNode,
       expandSelectionToRespectUserSelectAll(
           innerNode, createVisibleSelection(
