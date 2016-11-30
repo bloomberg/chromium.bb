@@ -30,7 +30,7 @@ public class DeviceFormFactor {
     /**
      * @param context {@link Context} used to get the Application Context.
      * @return Whether the app should treat the device as a tablet for layout. This method is not
-     *                 affected by Android N multi-window.
+     *         affected by Android N multi-window.
      */
     @CalledByNative
     public static boolean isTablet(Context context) {
@@ -104,5 +104,16 @@ public class DeviceFormFactor {
             sMinimumTabletWidthPx = null;
         }
         sDensity = currentDensity;
+    }
+
+    /**
+     * Sets whether the device is a tablet.
+     * @param isTablet Whether the app should treat the device as a tablet for layout.
+     * @param isLargeTablet Whether the app should treat the device as a large tablet for layout.
+     *                      If this is true, isTablet should also be true.
+     */
+    public static void setIsTablet(boolean isTablet, boolean isLargeTablet) {
+        sIsTablet = isTablet;
+        sIsLargeTablet = isLargeTablet;
     }
 }
