@@ -55,11 +55,12 @@ ContentSettingBubbleControllerTest::CreateBubbleController(
   [parent_ setReleasedWhenClosed:NO];
   [parent_ orderFront:nil];
 
-  ContentSettingBubbleController* controller = [ContentSettingBubbleController
-      showForModel:bubble
-       webContents:web_contents()
-      parentWindow:parent_
-        anchoredAt:NSMakePoint(50, 20)];
+  ContentSettingBubbleController* controller =
+      [ContentSettingBubbleController showForModel:bubble
+                                       webContents:web_contents()
+                                      parentWindow:parent_
+                                        decoration:nullptr
+                                        anchoredAt:NSMakePoint(50, 20)];
 
   EXPECT_TRUE(controller);
   EXPECT_TRUE([[controller window] isVisible]);

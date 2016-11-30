@@ -126,8 +126,7 @@ const CGFloat kBackgroundFrameYInset = 2.0;
 const CGFloat LocationBarDecoration::kOmittedWidth = 0.0;
 const SkColor LocationBarDecoration::kMaterialDarkModeTextColor = 0xCCFFFFFF;
 
-LocationBarDecoration::LocationBarDecoration()
-    : tracking_area_owner_(nil), state_(LocationBarDecorationState::NORMAL) {
+LocationBarDecoration::LocationBarDecoration() {
   accessibility_view_.reset(
       [[DecorationAccessibilityView alloc] initWithOwner:this]);
   [accessibility_view_.get() setHidden:YES];
@@ -170,17 +169,17 @@ void LocationBarDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
 void LocationBarDecoration::DrawWithBackgroundInFrame(NSRect frame,
                                                       NSView* control_view) {
   // Draw the background if available.
-  if (state_ != LocationBarDecorationState::NORMAL &&
+  if ((active_ || state_ != DecorationMouseState::NONE) &&
       HasHoverAndPressEffect()) {
     bool in_dark_mode = [[control_view window] inIncognitoModeWithSystemTheme];
 
     SkColor background_color;
-    if (state_ == LocationBarDecorationState::HOVER) {
-      background_color =
-          in_dark_mode ? kHoverDarkBackgroundColor : kHoverBackgroundColor;
-    } else {
+    if (active_ || state_ == DecorationMouseState::PRESSED) {
       background_color =
           in_dark_mode ? kPressedDarkBackgroundColor : kPressedBackgroundColor;
+    } else {
+      background_color =
+          in_dark_mode ? kHoverDarkBackgroundColor : kHoverBackgroundColor;
     }
 
     [skia::SkColorToSRGBNSColor(background_color) setFill];
@@ -226,8 +225,8 @@ CrTrackingArea* LocationBarDecoration::SetupTrackingArea(NSRect frame,
   tracking_area_owner_ = control_view;
 
   state_ = [tracking_area_ mouseInsideTrackingAreaForView:control_view]
-               ? LocationBarDecorationState::HOVER
-               : LocationBarDecorationState::NORMAL;
+               ? DecorationMouseState::HOVER
+               : DecorationMouseState::NONE;
 
   return tracking_area_.get();
 }
@@ -269,31 +268,42 @@ bool LocationBarDecoration::OnMousePressed(NSRect frame, NSPoint location) {
 }
 
 void LocationBarDecoration::OnMouseDown() {
-  state_ = LocationBarDecorationState::PRESSED;
+  state_ = DecorationMouseState::PRESSED;
   UpdateDecorationState();
 }
 
 void LocationBarDecoration::OnMouseUp() {
   DCHECK(tracking_area_owner_);
   state_ = [tracking_area_ mouseInsideTrackingAreaForView:tracking_area_owner_]
-               ? LocationBarDecorationState::HOVER
-               : LocationBarDecorationState::NORMAL;
+               ? DecorationMouseState::HOVER
+               : DecorationMouseState::NONE;
   UpdateDecorationState();
 }
 
 void LocationBarDecoration::OnMouseEntered() {
-  state_ = LocationBarDecorationState::HOVER;
+  state_ = DecorationMouseState::HOVER;
   UpdateDecorationState();
 }
 
 void LocationBarDecoration::OnMouseExited() {
-  state_ = LocationBarDecorationState::NORMAL;
+  state_ = DecorationMouseState::NONE;
+  UpdateDecorationState();
+}
+
+void LocationBarDecoration::SetActive(bool active) {
+  if (active_ == active)
+    return;
+
+  active_ = active;
+  state_ = [tracking_area_ mouseInsideTrackingAreaForView:tracking_area_owner_]
+               ? DecorationMouseState::HOVER
+               : DecorationMouseState::NONE;
   UpdateDecorationState();
 }
 
 void LocationBarDecoration::UpdateDecorationState() {
-  DCHECK(tracking_area_owner_);
-  [tracking_area_owner_ setNeedsDisplay:YES];
+  if (tracking_area_owner_)
+    [tracking_area_owner_ setNeedsDisplay:YES];
 }
 
 NSMenu* LocationBarDecoration::GetMenu() {

@@ -165,9 +165,6 @@ class NotificationBridge;
 // Point on the save credit card icon for the save credit card bubble.
 - (NSPoint)saveCreditCardBubblePoint;
 
-// Point on the translate icon for the Translate bubble.
-- (NSPoint)translateBubblePoint;
-
 // Returns the desired toolbar height for the given compression factor.
 - (CGFloat)desiredHeightForCompression:(CGFloat)compressByHeight;
 

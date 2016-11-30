@@ -18,6 +18,7 @@
 #import "chrome/browser/ui/cocoa/l10n_util.h"
 #include "chrome/browser/ui/content_settings/content_setting_bubble_model.h"
 #include "chrome/browser/ui/content_settings/content_setting_media_menu_model.h"
+#import "chrome/browser/ui/cocoa/location_bar/content_setting_decoration.h"
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "content/public/browser/plugin_service.h"
@@ -204,6 +205,7 @@ class ContentSettingBubbleWebContentsObserverBridge
 - (id)initWithModel:(ContentSettingBubbleModel*)settingsBubbleModel
         webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
+         decoration:(ContentSettingDecoration*)decoration
          anchoredAt:(NSPoint)anchoredAt;
 - (NSString*)getNibPathForModel:(ContentSettingBubbleModel*)model;
 - (NSButton*)hyperlinkButtonWithFrame:(NSRect)frame
@@ -229,16 +231,18 @@ class ContentSettingBubbleWebContentsObserverBridge
 @implementation ContentSettingBubbleController
 
 + (ContentSettingBubbleController*)
-    showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
-     webContents:(content::WebContents*)webContents
-    parentWindow:(NSWindow*)parentWindow
-      anchoredAt:(NSPoint)anchor {
+showForModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
+ webContents:(content::WebContents*)webContents
+parentWindow:(NSWindow*)parentWindow
+  decoration:(ContentSettingDecoration*)decoration
+  anchoredAt:(NSPoint)anchor {
   // Autoreleases itself on bubble close.
   return [[ContentSettingBubbleController alloc]
-             initWithModel:contentSettingBubbleModel
-               webContents:webContents
-              parentWindow:parentWindow
-                anchoredAt:anchor];
+      initWithModel:contentSettingBubbleModel
+        webContents:webContents
+       parentWindow:parentWindow
+         decoration:decoration
+         anchoredAt:anchor];
 }
 
 struct ContentTypeToNibPath {
@@ -263,6 +267,7 @@ const ContentTypeToNibPath kNibPaths[] = {
 - (id)initWithModel:(ContentSettingBubbleModel*)contentSettingBubbleModel
         webContents:(content::WebContents*)webContents
        parentWindow:(NSWindow*)parentWindow
+         decoration:(ContentSettingDecoration*)decoration
          anchoredAt:(NSPoint)anchoredAt {
   // This method takes ownership of |contentSettingBubbleModel| in all cases.
   std::unique_ptr<ContentSettingBubbleModel> model(contentSettingBubbleModel);
@@ -278,6 +283,7 @@ const ContentTypeToNibPath kNibPaths[] = {
                               parentWindow:parentWindow
                                 anchoredAt:anchoredAt])) {
     contentSettingBubbleModel_.reset(model.release());
+    decoration_ = decoration;
     [self showWindow:nil];
   }
   return self;
@@ -875,6 +881,10 @@ const ContentTypeToNibPath kNibPaths[] = {
 
 - (content_setting_bubble::MediaMenuPartsMap*)mediaMenus {
   return &mediaMenus_;
+}
+
+- (LocationBarDecoration*)decorationForBubble {
+  return decoration_;
 }
 
 @end  // ContentSettingBubbleController

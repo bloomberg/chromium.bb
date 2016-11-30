@@ -106,21 +106,13 @@ class LocationBarViewMac : public LocationBar,
   // Checks if the bookmark star should be enabled or not.
   bool IsStarEnabled() const;
 
-  // Get the point in window coordinates on the star for the bookmark bubble to
-  // aim at. Only works if IsStarEnabled returns YES.
-  NSPoint GetBookmarkBubblePoint() const;
+  // Get the point in window coordinates in the |decoration| at which the
+  // associate bubble aims.
+  NSPoint GetBubblePointForDecoration(LocationBarDecoration* decoration) const;
 
   // Get the point in window coordinates in the save credit card icon for the
   //  save credit card bubble to aim at.
   NSPoint GetSaveCreditCardBubblePoint() const;
-
-  // Get the point in window coordinates on the star for the Translate bubble to
-  // aim at.
-  NSPoint GetTranslateBubblePoint() const;
-
-  // Get the point in window coordinates in the lock icon for the Manage
-  // Passwords bubble to aim at.
-  NSPoint GetManagePasswordsBubblePoint() const;
 
   // Get the point in window coordinates in the security icon at which the page
   // info bubble aims.
@@ -199,8 +191,17 @@ class LocationBarViewMac : public LocationBar,
   // Returns true if the location bar is dark.
   bool IsLocationBarDark() const;
 
+  // Returns the decoration for the page info bubble.
+  LocationBarDecoration* GetPageInfoDecoration() const;
+
   ManagePasswordsDecoration* manage_passwords_decoration() {
     return manage_passwords_decoration_.get();
+  }
+
+  StarDecoration* star_decoration() const { return star_decoration_.get(); }
+
+  TranslateDecoration* translate_decoration() const {
+    return translate_decoration_.get();
   }
 
   Browser* browser() const { return browser_; }

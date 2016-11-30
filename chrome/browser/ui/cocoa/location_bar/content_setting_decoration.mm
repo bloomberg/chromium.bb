@@ -312,6 +312,7 @@ bool ContentSettingDecoration::OnMousePressed(NSRect frame, NSPoint location) {
     [ContentSettingBubbleController showForModel:model
                                      webContents:web_contents
                                     parentWindow:[field window]
+                                      decoration:this
                                       anchoredAt:anchor];
   }
 
@@ -386,7 +387,7 @@ void ContentSettingDecoration::DrawInFrame(NSRect frame, NSView* control_view) {
     DrawAttributedString(animated_text_, remainder);
 
     // Draw the divider if available.
-    if (state() == LocationBarDecorationState::NORMAL) {
+    if (state() == DecorationMouseState::NONE && !active()) {
       NSBezierPath* line = [NSBezierPath bezierPath];
       [line setLineWidth:1];
       [line moveToPoint:NSMakePoint(NSMaxX(background_rect) - kDividerPadding,

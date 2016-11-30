@@ -25,7 +25,9 @@
 // Decorations are more like Cocoa cells, except implemented in C++ to
 // allow more similarity to the other platform implementations.
 
-enum class LocationBarDecorationState { NORMAL, HOVER, PRESSED };
+// This enum class represents the state of the decoration's interactions
+// with the mouse.
+enum class DecorationMouseState { NONE, HOVER, PRESSED };
 
 class LocationBarDecoration {
  public:
@@ -102,6 +104,10 @@ class LocationBarDecoration {
   void OnMouseEntered();
   void OnMouseExited();
 
+  // Sets the active state of the decoration. If the state has changed, call
+  // UpdateDecorationState().
+  void SetActive(bool active);
+
   // Called to get the right-click menu, return |nil| for no menu.
   virtual NSMenu* GetMenu();
 
@@ -134,7 +140,9 @@ class LocationBarDecoration {
   // to the private DecorationAccessibilityView helper class.
   void OnAccessibilityViewAction();
 
-  LocationBarDecorationState state() { return state_; }
+  DecorationMouseState state() const { return state_; }
+
+  bool active() const { return active_; }
 
   // Width returned by |GetWidthForSpace()| when the item should be
   // omitted for this width;
@@ -162,6 +170,10 @@ class LocationBarDecoration {
   void UpdateDecorationState();
 
   bool visible_ = false;
+
+  // True if the decoration is active.
+  bool active_ = false;
+
   base::scoped_nsobject<NSView> accessibility_view_;
 
   // The decoration's tracking area. Only set if the decoration accepts a mouse
@@ -169,14 +181,14 @@ class LocationBarDecoration {
   base::scoped_nsobject<CrTrackingArea> tracking_area_;
 
   // The view that |tracking_area_| is added to.
-  NSView* tracking_area_owner_;
+  NSView* tracking_area_owner_ = nullptr;
 
   // Delegate object that handles mouseEntered: and mouseExited: events from
   // the tracking area.
   base::scoped_nsobject<DecorationMouseTrackingDelegate> tracking_delegate_;
 
   // The state of the decoration.
-  LocationBarDecorationState state_;
+  DecorationMouseState state_ = DecorationMouseState::NONE;
 
   DISALLOW_COPY_AND_ASSIGN(LocationBarDecoration);
 };

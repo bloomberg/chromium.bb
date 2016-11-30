@@ -418,30 +418,20 @@ bool LocationBarViewMac::IsStarEnabled() const {
          !IsBookmarkStarHiddenByExtension();
 }
 
-NSPoint LocationBarViewMac::GetBookmarkBubblePoint() const {
-  DCHECK(IsStarEnabled());
-  return [field_ bubblePointForDecoration:star_decoration_.get()];
+NSPoint LocationBarViewMac::GetBubblePointForDecoration(
+    LocationBarDecoration* decoration) const {
+  if (decoration == star_decoration_.get())
+    DCHECK(IsStarEnabled());
+
+  return [field_ bubblePointForDecoration:decoration];
 }
 
 NSPoint LocationBarViewMac::GetSaveCreditCardBubblePoint() const {
   return [field_ bubblePointForDecoration:save_credit_card_decoration_.get()];
 }
 
-NSPoint LocationBarViewMac::GetTranslateBubblePoint() const {
-  return [field_ bubblePointForDecoration:translate_decoration_.get()];
-}
-
-NSPoint LocationBarViewMac::GetManagePasswordsBubblePoint() const {
-  return [field_ bubblePointForDecoration:manage_passwords_decoration_.get()];
-}
-
 NSPoint LocationBarViewMac::GetPageInfoBubblePoint() const {
-  if (security_state_bubble_decoration_->IsVisible()) {
-    return [field_
-        bubblePointForDecoration:security_state_bubble_decoration_.get()];
-  } else {
-    return [field_ bubblePointForDecoration:location_icon_decoration_.get()];
-  }
+  return [field_ bubblePointForDecoration:GetPageInfoDecoration()];
 }
 
 void LocationBarViewMac::OnDecorationsChanged() {
@@ -723,6 +713,13 @@ bool LocationBarViewMac::ShouldShowSecurityState() const {
 
 bool LocationBarViewMac::IsLocationBarDark() const {
   return [[field_ window] inIncognitoModeWithSystemTheme];
+}
+
+LocationBarDecoration* LocationBarViewMac::GetPageInfoDecoration() const {
+  if (security_state_bubble_decoration_->IsVisible())
+    return security_state_bubble_decoration_.get();
+
+  return location_icon_decoration_.get();
 }
 
 NSImage* LocationBarViewMac::GetKeywordImage(const base::string16& keyword) {

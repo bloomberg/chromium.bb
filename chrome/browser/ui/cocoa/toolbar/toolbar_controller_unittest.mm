@@ -16,6 +16,8 @@
 #include "chrome/browser/ui/browser_list_observer.h"
 #include "chrome/browser/ui/cocoa/cocoa_profile_test.h"
 #import "chrome/browser/ui/cocoa/image_button_cell.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 #import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
 #import "chrome/browser/ui/cocoa/view_resizer_pong.h"
 #include "chrome/common/pref_names.h"
@@ -345,7 +347,10 @@ TEST_F(ToolbarControllerTest, BookmarkBubblePoint) {
 }
 
 TEST_F(ToolbarControllerTest, TranslateBubblePoint) {
-  const NSPoint translatePoint = [bar_ translateBubblePoint];
+  LocationBarViewMac* locationBarBridge = [bar_ locationBarBridge];
+  LocationBarDecoration* decoration = locationBarBridge->translate_decoration();
+  const NSPoint translatePoint =
+      locationBarBridge->GetBubblePointForDecoration(decoration);
   const NSRect barFrame =
       [[bar_ view] convertRect:[[bar_ view] bounds] toView:nil];
   EXPECT_TRUE(NSPointInRect(translatePoint, barFrame));

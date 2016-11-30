@@ -8,7 +8,7 @@
 
 #include "base/mac/scoped_nsobject.h"
 #include "chrome/browser/translate/chrome_translate_client.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 #include "components/translate/core/common/translate_errors.h"
 
 @class BrowserWindowController;
@@ -26,7 +26,7 @@ class WebContents;
 // allows us to translate a foreign page into user-selected language,
 // revert this, and configure the translate setting.
 @interface TranslateBubbleController
-    : BaseBubbleController<NSTextViewDelegate> {
+    : OmniboxDecorationBubbleController<NSTextViewDelegate> {
  @private
   content::WebContents* webContents_;
   std::unique_ptr<TranslateBubbleModel> model_;

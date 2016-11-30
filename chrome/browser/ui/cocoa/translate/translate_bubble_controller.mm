@@ -18,7 +18,8 @@
 #import "chrome/browser/ui/cocoa/hover_close_button.h"
 #import "chrome/browser/ui/cocoa/info_bubble_view.h"
 #import "chrome/browser/ui/cocoa/info_bubble_window.h"
-#import "chrome/browser/ui/cocoa/toolbar/toolbar_controller.h"
+#import "chrome/browser/ui/cocoa/location_bar/location_bar_view_mac.h"
+#import "chrome/browser/ui/cocoa/location_bar/translate_decoration.h"
 #include "chrome/browser/ui/translate/language_combobox_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_model.h"
 #include "chrome/browser/ui/translate/translate_bubble_view_state_transition.h"
@@ -211,12 +212,22 @@ const CGFloat kContentWidth = kWindowWidth - 2 * kFramePadding;
 }
 
 - (void)showWindow:(id)sender {
-  BrowserWindowController* controller = [[self parentWindow] windowController];
-  NSPoint anchorPoint = [[controller toolbarController] translateBubblePoint];
-  anchorPoint =
-      ui::ConvertPointFromWindowToScreen([self parentWindow], anchorPoint);
-  [self setAnchorPoint:anchorPoint];
+  LocationBarViewMac* locationBar =
+      [[[self parentWindow] windowController] locationBarBridge];
+  if (locationBar) {
+    NSPoint anchorPoint =
+        locationBar->GetBubblePointForDecoration([self decorationForBubble]);
+    anchorPoint =
+        ui::ConvertPointFromWindowToScreen([self parentWindow], anchorPoint);
+    [self setAnchorPoint:anchorPoint];
+  }
   [super showWindow:sender];
+}
+
+- (LocationBarDecoration*)decorationForBubble {
+  LocationBarViewMac* locationBar =
+      [[[self parentWindow] windowController] locationBarBridge];
+  return locationBar ? locationBar->translate_decoration() : nullptr;
 }
 
 - (void)switchView:(TranslateBubbleModel::ViewState)viewState {

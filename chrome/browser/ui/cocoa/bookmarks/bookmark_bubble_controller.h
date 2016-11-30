@@ -7,9 +7,9 @@
 #include <memory>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/bookmarks/bookmark_model_observer_for_cocoa.h"
 #import "chrome/browser/ui/cocoa/has_weak_browser_pointer.h"
+#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 
 @class BookmarkBubbleController;
 @class BubbleSyncPromoController;
@@ -26,7 +26,7 @@ class ManagedBookmarkService;
 // add or remove it as a bookmark.  This bubble allows for editing of
 // the bookmark in various ways (name, folder, etc.)
 @interface BookmarkBubbleController
-    : BaseBubbleController<HasWeakBrowserPointer> {
+    : OmniboxDecorationBubbleController<HasWeakBrowserPointer> {
  @private
   // |managed_|, |model_| and |node_| are weak and owned by the current
   // browser's profile.

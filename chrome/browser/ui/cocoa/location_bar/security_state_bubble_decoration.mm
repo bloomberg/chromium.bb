@@ -228,7 +228,7 @@ void SecurityStateBubbleDecoration::DrawInFrame(NSRect frame,
     [text drawInRect:text_rect];
 
     // Draw the divider.
-    if (state() == LocationBarDecorationState::NORMAL) {
+    if (state() == DecorationMouseState::NONE && !active()) {
       NSBezierPath* line = [NSBezierPath bezierPath];
       [line setLineWidth:line_width];
       [line moveToPoint:NSMakePoint(NSMaxX(decoration_frame) - DividerPadding(),

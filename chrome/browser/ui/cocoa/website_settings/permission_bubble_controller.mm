@@ -263,6 +263,15 @@ const NSInteger kFullscreenLeftOffset = 40;
   return self;
 }
 
+- (LocationBarDecoration*)decorationForBubble {
+  if (![self hasVisibleLocationBar])
+    return nullptr;
+
+  LocationBarViewMac* location_bar =
+      [[self.parentWindow windowController] locationBarBridge];
+  return location_bar->GetPageInfoDecoration();
+}
+
 + (NSPoint)getAnchorPointForBrowser:(Browser*)browser {
   NSPoint anchor;
   NSWindow* parentWindow = browser->window()->GetNativeWindow();

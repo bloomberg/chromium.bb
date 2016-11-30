@@ -8,7 +8,7 @@
 #import <Cocoa/Cocoa.h>
 
 #include "base/mac/scoped_nsobject.h"
-#import "chrome/browser/ui/cocoa/base_bubble_controller.h"
+#import "chrome/browser/ui/cocoa/omnibox_decoration_bubble_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/base_passwords_content_view_controller.h"
 #import "chrome/browser/ui/cocoa/passwords/pending_password_view_controller.h"
 #include "chrome/browser/ui/passwords/manage_passwords_bubble_model.h"
@@ -17,7 +17,7 @@
 // views according to user interaction and updates the password management state
 // accordingly.
 @interface ManagePasswordsBubbleController
-    : BaseBubbleController<BasePasswordsContentViewDelegate> {
+    : OmniboxDecorationBubbleController<BasePasswordsContentViewDelegate> {
  @private
   ManagePasswordsBubbleModel* model_;
   base::scoped_nsobject<BasePasswordsContentViewController> currentController_;
