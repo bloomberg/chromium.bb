@@ -324,7 +324,7 @@ ARC_BUCKET_URL = 'gs://chromeos-arc-images/builds'
 ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
-    'SDK_TOOLS': 'googlestorage_acl_cts.txt',
+    'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
 
