@@ -4101,8 +4101,7 @@ void WebGLRenderingContextBase::readPixelsHelper(GLint x,
   }
   if (!validateReadPixelsFuncParameters(
           width, height, format, type, pixels,
-          static_cast<long long>(pixels->byteLength() -
-                                 offsetInBytes.ValueOrDie()))) {
+          (pixels->byteLength() - offsetInBytes).ValueOrDie())) {
     return;
   }
   clearIfComposited();

@@ -2660,7 +2660,7 @@ GLenum WebGLImageConversion::computeImageSizeInBytes(
   }
 
   unsigned padding = 0;
-  unsigned residual = checkedValue.ValueOrDie() % params.alignment;
+  unsigned residual = (checkedValue % params.alignment).ValueOrDie();
   if (residual) {
     padding = params.alignment - residual;
     checkedValue += padding;
@@ -2675,7 +2675,7 @@ GLenum WebGLImageConversion::computeImageSizeInBytes(
   rows += height;
   if (!rows.IsValid())
     return GL_INVALID_VALUE;
-  checkedValue *= (rows.ValueOrDie() - 1);
+  checkedValue *= (rows - 1);
   // Last row is not affected by ROW_LENGTH parameter.
   checkedValue += lastRowSize;
   if (!checkedValue.IsValid())
