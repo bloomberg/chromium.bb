@@ -715,18 +715,16 @@ COMMON_GTESTS = {
     ],
   },
 
-  'angle_deqp_gles2_tests': {
+  'angle_deqp_gles2_d3d11_tests': {
     'tester_configs': [
       {
-        'allow_on_android': True,
         'fyi_only': True,
         # Run this on the optional tryservers.
         'run_on_optional': True,
-        # Run only on the Win7 and Linux Release NVIDIA 32- and 64-bit bots
-        # (and trybots) for the time being, at least until more capacity is
-        # added. Also run on the AMD R7 240 bots.
-        # Also run on Nexus 5X swarmed bots.
-        'build_configs': ['Release', 'Release_x64', 'android-chromium'],
+        # Run only on the Win7 NVIDIA/AMD R7 240 32- and 64-bit bots (and
+        # trybots) for the time being, at least until more capacity is
+        # added.
+        'build_configs': ['Release', 'Release_x64'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
@@ -736,14 +734,29 @@ COMMON_GTESTS = {
             'gpu': '1002:6613',
             'os': 'Windows-2008ServerR2-SP1'
           },
+        ],
+      },
+    ],
+    'desktop_swarming': {
+      'shards': 4,
+    },
+    'test': 'angle_deqp_gles2_tests',
+    'args': ['--deqp-egl-display-type=angle-d3d11']
+  },
+
+  'angle_deqp_gles2_gl_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
+        # Run only on the Linux Release NVIDIA 32- and 64-bit bots (and
+        # trybots) for the time being, at least until more capacity is added.
+        'build_configs': ['Release', 'Release_x64'],
+        'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
             'os': 'Linux'
-          },
-          {
-            'device_type': 'bullhead',
-            'device_os': 'M',
-            'os': 'Android'
           },
         ],
       },
@@ -751,25 +764,71 @@ COMMON_GTESTS = {
     'desktop_swarming': {
       'shards': 4,
     },
+    'test': 'angle_deqp_gles2_tests',
+    'args': ['--deqp-egl-display-type=angle-gl'],
+  },
+
+  'angle_deqp_gles2_gles_tests': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+        'fyi_only': True,
+        # Run this on the optional tryservers.
+        'run_on_optional': True,
+        # Run on Nexus 5X swarmed bots.
+        'build_configs': ['android-chromium'],
+        'swarming_dimension_sets': [
+          {
+            'device_type': 'bullhead',
+            'device_os': 'M',
+            'os': 'Android'
+          }
+        ],
+      },
+    ],
+    'test': 'angle_deqp_gles2_tests',
+    # Only pass the display type to desktop. The Android runner doesn't support
+    # passing args to the executable but only one display type is supported on
+    # Android anyways.
+    'desktop_args': ['--deqp-egl-display-type=angle-gles'],
     'android_args': ['--enable-xml-result-parsing']
   },
 
-  'angle_deqp_gles3_tests': {
+  'angle_deqp_gles3_d3d11_tests': {
     'tester_configs': [
       {
         'fyi_only': True,
         # TODO(jmadill): Run this on the optional tryservers.
         'run_on_optional': False,
-        # Run only on the Win7 and Linux Release NVIDIA 32-bit bots
-        # (and trybots) for the time being, at least until more capacity is
-        # added.
+        # Run only on the Win7 Release NVIDIA 32-bit bots (and trybots) for the
+        # time being, at least until more capacity is added.
         # TODO(jmadill): Run on the Win AMD R7 240 bots once they are swarmed.
         'build_configs': ['Release'],
         'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
             'os': 'Windows-2008ServerR2-SP1'
-          },
+          }
+        ],
+      }
+    ],
+    'swarming': {
+      'shards': 12,
+    },
+    'test': 'angle_deqp_gles3_tests',
+    'args': ['--deqp-egl-display-type=angle-d3d11']
+  },
+
+  'angle_deqp_gles3_gl_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        # TODO(jmadill): Run this on the optional tryservers.
+        'run_on_optional': False,
+        # Run only on the Linux Release NVIDIA 32-bit bots (and trybots) for
+        # the time being, at least until more capacity is added.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
           {
             'gpu': '10de:104a',
             'os': 'Linux'
@@ -779,7 +838,9 @@ COMMON_GTESTS = {
     ],
     'swarming': {
       'shards': 12,
-    }
+    },
+    'test': 'angle_deqp_gles3_tests',
+    'args': ['--deqp-egl-display-type=angle-gl']
   },
 
   # Until we have more capacity, run angle_end2end_tests only on the
@@ -1277,7 +1338,10 @@ def generate_gtest(tester_name, tester_config, test, test_config, is_fyi):
     if is_android(tester_config):
       # Override the isolate target to get rid of any "_apk" suffix
       # that would be added by the recipes.
-      result['override_isolate_target'] = test
+      if 'test' in result:
+        result['override_isolate_target'] = result['test']
+      else:
+        result['override_isolate_target'] = result['name']
       # Integrate with the unified logcat system.
       result['swarming'].update({
         'cipd_packages': [
