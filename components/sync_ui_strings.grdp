@@ -25,6 +25,9 @@
     <message name="IDS_SYNC_DATATYPE_TYPED_URLS" desc="History, one of the data types that we allow syncing.">
       History
     </message>
+    <message name="IDS_SYNC_DATATYPE_READING_LIST" desc="Reading List, one of the data types that we allow syncing">
+      Reading List
+    </message>
     <message name="IDS_SYNC_EMPTY_PASSPHRASE_ERROR" desc="Error message when the passphrase is empty.">
       Empty passphrase is not allowed.
     </message>

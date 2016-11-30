@@ -44,6 +44,7 @@ class SyncSetupService : public KeyedService {
     kSyncOpenTabs,
     kSyncAutofill,
     kSyncPreferences,
+    kSyncReadingList,
     kNumberOfSyncableDatatypes
   } SyncableDatatype;
 
