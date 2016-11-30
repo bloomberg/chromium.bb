@@ -105,6 +105,57 @@ void ShowSSLClientCertificateSelector(
 
 }  // namespace chrome
 
+namespace {
+
+// These ClearTableViewDataSources... functions help work around a bug in macOS
+// 10.12 where SFChooseIdentityPanel leaks a window and some views, including
+// an NSTableView. Future events may make cause the table view to query its
+// dataSource, which will have been deallocated.
+//
+// NSTableView.dataSource becomes a zeroing weak reference starting in 10.11,
+// so this workaround can be removed once we're on the 10.11 SDK.
+//
+// See https://crbug.com/653093 and rdar://29409207 for more information.
+
+#if !defined(MAC_OS_X_VERSION_10_11) || \
+    MAC_OS_X_VERSION_MAX_ALLOWED < MAC_OS_X_VERSION_10_11
+
+void ClearTableViewDataSources(NSView* view) {
+  if (auto table_view = base::mac::ObjCCast<NSTableView>(view)) {
+    table_view.dataSource = nil;
+  } else {
+    for (NSView* subview in view.subviews) {
+      ClearTableViewDataSources(subview);
+    }
+  }
+}
+
+void ClearTableViewDataSourcesIfWindowStillExists(NSWindow* leaked_window) {
+  for (NSWindow* window in [NSApp windows]) {
+    // If the window is still in the window list...
+    if (window == leaked_window) {
+      // ...search it for table views.
+      ClearTableViewDataSources(window.contentView);
+      break;
+    }
+  }
+}
+
+void ClearTableViewDataSourcesIfNeeded(NSWindow* leaked_window) {
+  // Let the autorelease pool drain before deciding if the window was leaked.
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
+      FROM_HERE, base::Bind(ClearTableViewDataSourcesIfWindowStillExists,
+                            base::Unretained(leaked_window)));
+}
+
+#else
+
+void ClearTableViewDataSourcesIfNeeded(NSWindow*) {}
+
+#endif  // MAC_OS_X_VERSION_10_11
+
+}  // namespace
+
 @implementation SSLClientCertificateSelectorCocoa
 
 - (id)initWithBrowserContext:(const content::BrowserContext*)browserContext
@@ -121,7 +172,7 @@ void ShowSSLClientCertificateSelector(
   return self;
 }
 
-- (void)sheetDidEnd:(NSWindow*)parent
+- (void)sheetDidEnd:(NSWindow*)sheet
          returnCode:(NSInteger)returnCode
             context:(void*)context {
   net::X509Certificate* cert = NULL;
@@ -134,6 +185,9 @@ void ShowSSLClientCertificateSelector(
     else
       NOTREACHED();
   }
+
+  // See comment at definition; this works around a 10.12 bug.
+  ClearTableViewDataSourcesIfNeeded(sheet);
 
   if (!closePending_) {
     // If |closePending_| is already set, |closeSheetWithAnimation:| was called
