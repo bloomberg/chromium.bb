@@ -6,9 +6,7 @@ module web_cache.mojom;
 
 interface WebCache {
   // Set cache capacity values.
-  SetCacheCapacities(uint64 min_dead_capacity,
-                     uint64 max_dead_capacity,
-                     uint64 capacity);
+  SetCacheCapacity(uint64 capacity);
   // Clear cache.
   ClearCache(bool on_navigation);
 };

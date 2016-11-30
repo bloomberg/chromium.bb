@@ -82,12 +82,7 @@ class WebCacheManager : public content::NotificationObserver {
   // Periodically, renderers should inform the cache manager of their current
   // statistics.  The more up-to-date the cache manager's statistics, the
   // better it can allocate cache resources.
-  void ObserveStats(int renderer_id,
-                    uint64_t min_dead_capacity,
-                    uint64_t max_dead_capacity,
-                    uint64_t capacity,
-                    uint64_t live_size,
-                    uint64_t dead_size);
+  void ObserveStats(int renderer_id, uint64_t capacity, uint64_t size);
 
   // The global limit on the number of bytes in all the in-memory caches.
   uint64_t global_size_limit() const { return global_size_limit_; }
@@ -123,11 +118,8 @@ class WebCacheManager : public content::NotificationObserver {
   struct RendererInfo {
     // The access time for this renderer.
     base::Time access;
-    uint64_t min_dead_capacity;
-    uint64_t max_dead_capacity;
     uint64_t capacity;
-    uint64_t live_size;
-    uint64_t dead_size;
+    uint64_t size;
   };
 
   typedef std::map<int, RendererInfo> StatsMap;
@@ -175,14 +167,6 @@ class WebCacheManager : public content::NotificationObserver {
 
     // Allow each renderer to keep its current set of cached resources.
     KEEP_CURRENT,
-
-    // Allow each renderer to keep cache resources it believes are currently
-    // being used, with some extra allocation to store new objects.
-    KEEP_LIVE_WITH_HEADROOM,
-
-    // Allow each renderer to keep cache resources it believes are currently
-    // being used, but instruct the renderer to discard all other data.
-    KEEP_LIVE,
   };
 
   // Helper functions for devising an allocation strategy
@@ -191,15 +175,12 @@ class WebCacheManager : public content::NotificationObserver {
   // in the given parameters.
   void GatherStats(const std::set<int>& renderers,
                    uint64_t* capacity,
-                   uint64_t* live_size,
-                   uint64_t* dead_size);
+                   uint64_t* size);
 
   // Get the amount of memory that would be required to implement |tactic|
   // using the specified allocation tactic.  This function defines the
   // semantics for each of the tactics.
-  static uint64_t GetSize(AllocationTactic tactic,
-                          uint64_t live_size,
-                          uint64_t dead_size);
+  static uint64_t GetSize(AllocationTactic tactic, uint64_t size);
 
   // Attempt to use the specified tactics to compute an allocation strategy
   // and place the result in |strategy|.  |active_stats| and |inactive_stats|
@@ -209,11 +190,9 @@ class WebCacheManager : public content::NotificationObserver {
   // Returns |true| on success and |false| on failure.  Does not modify
   // |strategy| on failure.
   bool AttemptTactic(AllocationTactic active_tactic,
-                     uint64_t active_live_size,
-                     uint64_t active_dead_size,
+                     uint64_t active_size,
                      AllocationTactic inactive_tactic,
-                     uint64_t inactive_live_size,
-                     uint64_t inactive_dead_size,
+                     uint64_t inactive_size,
                      AllocationStrategy* strategy);
 
   // For each renderer in |renderers|, computes its allocation according to

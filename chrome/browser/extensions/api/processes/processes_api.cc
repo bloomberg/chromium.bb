@@ -60,7 +60,7 @@ std::unique_ptr<api::processes::Cache> CreateCacheData(
     const blink::WebCache::ResourceTypeStat& stat) {
   std::unique_ptr<api::processes::Cache> cache(new api::processes::Cache());
   cache->size = static_cast<double>(stat.size);
-  cache->live_size = static_cast<double>(stat.liveSize);
+  cache->live_size = static_cast<double>(stat.size);
   return cache;
 }
 

@@ -191,7 +191,7 @@ class TaskManagerValuesStringifier {
 
   base::string16 GetWebCacheStatText(
       const blink::WebCache::ResourceTypeStat& stat) {
-    return FormatAllocatedAndUsedMemory(stat.size, stat.liveSize);
+    return GetMemoryUsageText(stat.size, false);
   }
 
   const base::string16& n_a_string() const { return n_a_string_; }

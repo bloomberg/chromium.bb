@@ -350,12 +350,9 @@ IPC_MESSAGE_ROUTED0(ChromeViewHostMsg_DownloadPageLater)
 // Misc messages
 // These are messages sent from the renderer to the browser process.
 
-IPC_MESSAGE_CONTROL5(ChromeViewHostMsg_UpdatedCacheStats,
-                     uint64_t /* min_dead_capacity */,
-                     uint64_t /* max_dead_capacity */,
+IPC_MESSAGE_CONTROL2(ChromeViewHostMsg_UpdatedCacheStats,
                      uint64_t /* capacity */,
-                     uint64_t /* live_size */,
-                     uint64_t /* dead_size */)
+                     uint64_t /* size */)
 
 // Tells the browser that content in the current page was blocked due to the
 // user's content settings.

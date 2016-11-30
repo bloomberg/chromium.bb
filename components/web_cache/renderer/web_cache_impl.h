@@ -35,9 +35,7 @@ class WebCacheImpl : public mojom::WebCache {
   };
 
   // mojom::WebCache methods:
-  void SetCacheCapacities(uint64_t min_dead_capacity,
-                          uint64_t max_dead_capacity,
-                          uint64_t capacity) override;
+  void SetCacheCapacity(uint64_t capacity) override;
   // If |on_navigation| is true, the clearing is delayed until the next
   // navigation event.
   void ClearCache(bool on_navigation) override;

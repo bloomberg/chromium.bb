@@ -143,15 +143,10 @@ void ChromeRenderMessageFilter::OnNavigationHint(
       base::Bind(&DidStartServiceWorkerForNavigationHint));
 }
 
-void ChromeRenderMessageFilter::OnUpdatedCacheStats(
-    uint64_t min_dead_capacity,
-    uint64_t max_dead_capacity,
-    uint64_t capacity,
-    uint64_t live_size,
-    uint64_t dead_size) {
-  web_cache::WebCacheManager::GetInstance()->ObserveStats(
-      render_process_id_, min_dead_capacity, max_dead_capacity, capacity,
-      live_size, dead_size);
+void ChromeRenderMessageFilter::OnUpdatedCacheStats(uint64_t capacity,
+                                                    uint64_t size) {
+  web_cache::WebCacheManager::GetInstance()->ObserveStats(render_process_id_,
+                                                          capacity, size);
 }
 
 void ChromeRenderMessageFilter::OnAllowDatabase(

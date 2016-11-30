@@ -40,13 +40,10 @@ static void ToResourceTypeStat(const MemoryCache::TypeStatistic& from,
                                WebCache::ResourceTypeStat& to) {
   to.count = from.count;
   to.size = from.size;
-  // TODO(hiroshige): remove |liveSize| as it is no longer meaningful.
-  to.liveSize = from.size;
   to.decodedSize = from.decodedSize;
 }
 
-// TODO(hiroshige): remove parameters that are no longer meaningful.
-void WebCache::setCapacities(size_t, size_t, size_t capacity) {
+void WebCache::setCapacity(size_t capacity) {
   MemoryCache* cache = memoryCache();
   if (cache)
     cache->setCapacity(static_cast<unsigned>(capacity));
@@ -63,12 +60,8 @@ void WebCache::getUsageStats(UsageStats* result) {
 
   MemoryCache* cache = memoryCache();
   if (cache) {
-    // TODO(hiroshige): remove members that are no longer meaningful.
-    result->minDeadCapacity = 0;
-    result->maxDeadCapacity = 0;
     result->capacity = cache->capacity();
-    result->liveSize = cache->size();
-    result->deadSize = 0;
+    result->size = cache->size();
   } else
     memset(result, 0, sizeof(UsageStats));
 }

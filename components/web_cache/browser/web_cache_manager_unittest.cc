@@ -54,14 +54,12 @@ class WebCacheManagerTest : public testing::Test {
                           std::set<int> renderers,
                           WebCacheManager::RendererInfo* stats) {
     memset(stats, 0, sizeof(WebCacheManager::RendererInfo));
-    h->GatherStats(renderers, &stats->capacity, &stats->live_size,
-                   &stats->dead_size);
+    h->GatherStats(renderers, &stats->capacity, &stats->size);
   }
   static uint64_t GetSize(int tactic,
                           const WebCacheManager::RendererInfo& stats) {
     return WebCacheManager::GetSize(
-        static_cast<WebCacheManager::AllocationTactic>(tactic), stats.live_size,
-        stats.dead_size);
+        static_cast<WebCacheManager::AllocationTactic>(tactic), stats.size);
   }
   static bool AttemptTactic(WebCacheManager* h,
                             int active_tactic,
@@ -71,9 +69,9 @@ class WebCacheManagerTest : public testing::Test {
                             std::list<std::pair<int, uint64_t>>* strategy) {
     return h->AttemptTactic(
         static_cast<WebCacheManager::AllocationTactic>(active_tactic),
-        active_stats.live_size, active_stats.dead_size,
+        active_stats.size,
         static_cast<WebCacheManager::AllocationTactic>(inactive_tactic),
-        inactive_stats.live_size, inactive_stats.dead_size, strategy);
+        inactive_stats.size, strategy);
   }
   static void AddToStrategy(WebCacheManager* h,
                             std::set<int> renderers,
@@ -88,16 +86,13 @@ class WebCacheManagerTest : public testing::Test {
 
   static bool RendererInfoEqual(const WebCacheManager::RendererInfo& lhs,
                                 const WebCacheManager::RendererInfo& rhs) {
-    return lhs.capacity == rhs.capacity && lhs.live_size == rhs.live_size &&
-           lhs.dead_size == rhs.dead_size;
+    return lhs.capacity == rhs.capacity && lhs.size == rhs.size;
   }
 
   enum {
     DIVIDE_EVENLY = WebCacheManager::DIVIDE_EVENLY,
     KEEP_CURRENT_WITH_HEADROOM = WebCacheManager::KEEP_CURRENT_WITH_HEADROOM,
     KEEP_CURRENT = WebCacheManager::KEEP_CURRENT,
-    KEEP_LIVE_WITH_HEADROOM = WebCacheManager::KEEP_LIVE_WITH_HEADROOM,
-    KEEP_LIVE = WebCacheManager::KEEP_LIVE,
   };
 
   WebCacheManager* manager() { return &manager_; }
@@ -116,12 +111,12 @@ const int WebCacheManagerTest::kRendererID2 = 245;
 
 // static
 const WebCacheManager::RendererInfo WebCacheManagerTest::kStats = {
-    base::Time(), 0, 1024 * 1024, 1024 * 1024, 256 * 1024, 512,
+    base::Time(), 1024 * 1024, 256 * 1024 + 512,
 };
 
 // static
 const WebCacheManager::RendererInfo WebCacheManagerTest::kStats2 = {
-    base::Time(), 0, 2 * 1024 * 1024, 2 * 1024 * 1024, 2 * 256 * 1024, 2 * 512,
+    base::Time(), 2 * 1024 * 1024, 2 * 256 * 1024 + 2 * 512,
 };
 
 TEST_F(WebCacheManagerTest, AddRemoveRendererTest) {
@@ -160,9 +155,7 @@ TEST_F(WebCacheManagerTest, ObserveStatsTest) {
 
   EXPECT_EQ(1U, stats(manager()).size());
 
-  manager()->ObserveStats(kRendererID, kStats.min_dead_capacity,
-                          kStats.max_dead_capacity, kStats.capacity,
-                          kStats.live_size, kStats.dead_size);
+  manager()->ObserveStats(kRendererID, kStats.capacity, kStats.size);
 
   EXPECT_EQ(1U, stats(manager()).size());
   EXPECT_TRUE(RendererInfoEqual(kStats, stats(manager())[kRendererID]));
@@ -183,12 +176,8 @@ TEST_F(WebCacheManagerTest, GatherStatsTest) {
   manager()->Add(kRendererID);
   manager()->Add(kRendererID2);
 
-  manager()->ObserveStats(kRendererID, kStats.min_dead_capacity,
-                          kStats.max_dead_capacity, kStats.capacity,
-                          kStats.live_size, kStats.dead_size);
-  manager()->ObserveStats(kRendererID2, kStats2.min_dead_capacity,
-                          kStats2.max_dead_capacity, kStats2.capacity,
-                          kStats2.live_size, kStats2.dead_size);
+  manager()->ObserveStats(kRendererID, kStats.capacity, kStats.size);
+  manager()->ObserveStats(kRendererID2, kStats2.capacity, kStats2.size);
 
   std::set<int> renderer_set;
   renderer_set.insert(kRendererID);
@@ -202,11 +191,8 @@ TEST_F(WebCacheManagerTest, GatherStatsTest) {
   GatherStats(manager(), renderer_set, &stats);
 
   WebCacheManager::RendererInfo expected_stats = kStats;
-  expected_stats.min_dead_capacity += kStats2.min_dead_capacity;
-  expected_stats.max_dead_capacity += kStats2.max_dead_capacity;
   expected_stats.capacity += kStats2.capacity;
-  expected_stats.live_size += kStats2.live_size;
-  expected_stats.dead_size += kStats2.dead_size;
+  expected_stats.size += kStats2.size;
 
   EXPECT_TRUE(RendererInfoEqual(expected_stats, stats));
 
@@ -218,8 +204,6 @@ TEST_F(WebCacheManagerTest, GetSizeTest) {
   EXPECT_EQ(0U, GetSize(DIVIDE_EVENLY, kStats));
   EXPECT_LT(256 * 1024u + 512, GetSize(KEEP_CURRENT_WITH_HEADROOM, kStats));
   EXPECT_EQ(256 * 1024u + 512, GetSize(KEEP_CURRENT, kStats));
-  EXPECT_LT(256 * 1024u, GetSize(KEEP_LIVE_WITH_HEADROOM, kStats));
-  EXPECT_EQ(256 * 1024u, GetSize(KEEP_LIVE, kStats));
 }
 
 TEST_F(WebCacheManagerTest, AttemptTacticTest) {
@@ -229,18 +213,12 @@ TEST_F(WebCacheManagerTest, AttemptTacticTest) {
   manager()->ObserveActivity(kRendererID);
   SimulateInactivity(manager(), kRendererID2);
 
-  manager()->ObserveStats(kRendererID, kStats.min_dead_capacity,
-                          kStats.max_dead_capacity, kStats.capacity,
-                          kStats.live_size, kStats.dead_size);
-  manager()->ObserveStats(kRendererID2, kStats2.min_dead_capacity,
-                          kStats2.max_dead_capacity, kStats2.capacity,
-                          kStats2.live_size, kStats2.dead_size);
-
-  manager()->SetGlobalSizeLimit(kStats.live_size + kStats.dead_size +
-                                kStats2.live_size + kStats2.dead_size / 2);
+  manager()->ObserveStats(kRendererID, kStats.capacity, kStats.size);
+  manager()->ObserveStats(kRendererID2, kStats2.capacity, kStats2.size);
 
   AllocationStrategy strategy;
 
+  manager()->SetGlobalSizeLimit(kStats.size + kStats2.size - 1);
   EXPECT_FALSE(AttemptTactic(manager(),
                              KEEP_CURRENT,
                              kStats,
@@ -249,20 +227,17 @@ TEST_F(WebCacheManagerTest, AttemptTacticTest) {
                              &strategy));
   EXPECT_TRUE(strategy.empty());
 
-  EXPECT_TRUE(AttemptTactic(manager(),
-                            KEEP_CURRENT,
-                            kStats,
-                            KEEP_LIVE,
-                            kStats2,
-                            &strategy));
+  manager()->SetGlobalSizeLimit(kStats.size + kStats2.size);
+  EXPECT_TRUE(AttemptTactic(manager(), KEEP_CURRENT, kStats, KEEP_CURRENT,
+                            kStats2, &strategy));
   EXPECT_EQ(2U, strategy.size());
 
   AllocationStrategy::iterator iter = strategy.begin();
   while (iter != strategy.end()) {
     if (iter->first == kRendererID)
-      EXPECT_LE(kStats.live_size + kStats.dead_size, iter->second);
+      EXPECT_LE(kStats.size, iter->second);
     else if (iter->first == kRendererID2)
-      EXPECT_LE(kStats2.live_size, iter->second);
+      EXPECT_LE(kStats2.size, iter->second);
     else
       ADD_FAILURE();   // Unexpected entry in strategy.
     ++iter;
@@ -280,12 +255,8 @@ TEST_F(WebCacheManagerTest, AddToStrategyTest) {
   renderer_set.insert(kRendererID);
   renderer_set.insert(kRendererID2);
 
-  manager()->ObserveStats(kRendererID, kStats.min_dead_capacity,
-                          kStats.max_dead_capacity, kStats.capacity,
-                          kStats.live_size, kStats.dead_size);
-  manager()->ObserveStats(kRendererID2, kStats2.min_dead_capacity,
-                          kStats2.max_dead_capacity, kStats2.capacity,
-                          kStats2.live_size, kStats2.dead_size);
+  manager()->ObserveStats(kRendererID, kStats.capacity, kStats.size);
+  manager()->ObserveStats(kRendererID2, kStats2.capacity, kStats2.size);
 
   const uint64_t kExtraBytesToAllocate = 10 * 1024;
 
@@ -304,17 +275,16 @@ TEST_F(WebCacheManagerTest, AddToStrategyTest) {
     total_bytes += iter->second;
 
     if (iter->first == kRendererID)
-      EXPECT_LE(kStats.live_size + kStats.dead_size, iter->second);
+      EXPECT_LE(kStats.size, iter->second);
     else if (iter->first == kRendererID2)
-      EXPECT_LE(kStats2.live_size + kStats2.dead_size, iter->second);
+      EXPECT_LE(kStats2.size, iter->second);
     else
       ADD_FAILURE();  // Unexpected entry in strategy.
     ++iter;
   }
 
-  uint64_t expected_total_bytes = kExtraBytesToAllocate + kStats.live_size +
-                                  kStats.dead_size + kStats2.live_size +
-                                  kStats2.dead_size;
+  uint64_t expected_total_bytes =
+      kExtraBytesToAllocate + kStats.size + kStats2.size;
 
   EXPECT_GE(expected_total_bytes, total_bytes);
 

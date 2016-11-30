@@ -114,11 +114,8 @@ class RendererResourceDelegate : public content::ResourceDispatcherDelegate {
     WebCache::UsageStats stats;
     WebCache::getUsageStats(&stats);
     RenderThread::Get()->Send(new ChromeViewHostMsg_UpdatedCacheStats(
-        static_cast<uint64_t>(stats.minDeadCapacity),
-        static_cast<uint64_t>(stats.maxDeadCapacity),
         static_cast<uint64_t>(stats.capacity),
-        static_cast<uint64_t>(stats.liveSize),
-        static_cast<uint64_t>(stats.deadSize)));
+        static_cast<uint64_t>(stats.size)));
   }
 
   base::WeakPtrFactory<RendererResourceDelegate> weak_factory_;

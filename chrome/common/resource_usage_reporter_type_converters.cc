@@ -18,7 +18,6 @@ chrome::mojom::ResourceTypeStatPtr StatToMojo(
       chrome::mojom::ResourceTypeStat::New();
   stat->count = obj.count;
   stat->size = obj.size;
-  stat->live_size = obj.liveSize;
   stat->decoded_size = obj.decodedSize;
   return stat;
 }
@@ -28,7 +27,6 @@ blink::WebCache::ResourceTypeStat StatFromMojo(
   blink::WebCache::ResourceTypeStat stat;
   stat.count = base::saturated_cast<size_t>(obj.count);
   stat.size = base::saturated_cast<size_t>(obj.size);
-  stat.liveSize = base::saturated_cast<size_t>(obj.live_size);
   stat.decodedSize = base::saturated_cast<size_t>(obj.decoded_size);
   return stat;
 }
