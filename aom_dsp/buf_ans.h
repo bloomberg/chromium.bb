@@ -71,6 +71,9 @@ static INLINE void buf_uabs_write(struct BufAnsCoder *const c, uint8_t val,
   c->buf[c->offset].val_start = val;
   c->buf[c->offset].prob = prob;
   ++c->offset;
+#if ANS_MAX_SYMBOLS
+  if (c->offset == ANS_MAX_SYMBOLS) aom_buf_ans_flush(c);
+#endif
 }
 
 static INLINE void buf_rans_write(struct BufAnsCoder *const c,
@@ -83,6 +86,9 @@ static INLINE void buf_rans_write(struct BufAnsCoder *const c,
   c->buf[c->offset].val_start = sym->cum_prob;
   c->buf[c->offset].prob = sym->prob;
   ++c->offset;
+#if ANS_MAX_SYMBOLS
+  if (c->offset == ANS_MAX_SYMBOLS) aom_buf_ans_flush(c);
+#endif
 }
 
 static INLINE void buf_uabs_write_bit(struct BufAnsCoder *c, int bit) {

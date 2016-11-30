@@ -89,6 +89,9 @@ static INLINE int ans_write_end(struct AnsCoder *const ans) {
       ans->buf[i] = ans->buf[ans_size - 1 - i];
       ans->buf[ans_size - 1 - i] = tmp;
     }
+    ans->buf += ans_size;
+    ans->buf_offset = 0;
+    ans->state = L_BASE;
   }
 #endif
   return ans_size;

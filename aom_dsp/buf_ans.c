@@ -43,6 +43,10 @@ void aom_buf_ans_grow(struct BufAnsCoder *c) {
 
 void aom_buf_ans_flush(struct BufAnsCoder *const c) {
   int offset;
+#if ANS_MAX_SYMBOLS
+  if (c->offset == 0) return;
+#endif
+  assert(c->offset > 0);
   for (offset = c->offset - 1; offset >= 0; --offset) {
     if (c->buf[offset].method == ANS_METHOD_RANS) {
       struct rans_sym sym;
