@@ -182,6 +182,8 @@ component("net") {
         "base/crypto_module_nss.cc",
         "base/keygen_handler_nss.cc",
         "cert/cert_database_nss.cc",
+        "cert/internal/cert_issuer_source_nss.cc",
+        "cert/internal/cert_issuer_source_nss.h",
         "cert/internal/trust_store_nss.cc",
         "cert/internal/trust_store_nss.h",
         "cert/nss_cert_database.cc",
@@ -1325,6 +1327,7 @@ test("net_unittests") {
 
   if (!use_nss_certs) {
     sources -= [
+      "cert/internal/cert_issuer_source_nss_unittest.cc",
       "cert/internal/trust_store_nss_unittest.cc",
       "cert/nss_cert_database_unittest.cc",
       "ssl/client_cert_store_nss_unittest.cc",

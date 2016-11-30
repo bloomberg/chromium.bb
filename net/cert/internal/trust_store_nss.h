@@ -15,10 +15,6 @@ namespace net {
 
 // TrustStoreNSS is an implementation of TrustStore which uses NSS to find trust
 // anchors for path building.
-// TODO(mattm): also implement CertIssuerSource to return intermediates in NSS
-// DB? Or have a separate CertIssuerSourceNSS for that?  (implementing both in
-// the same class could be more efficient with some caching/etc. Need to be
-// careful about caching between different pathbuilder instances though.)
 class NET_EXPORT TrustStoreNSS : public TrustStore {
  public:
   // Creates a TrustStoreNSS which will find anchors that are trusted for

@@ -28,6 +28,7 @@
 
 #if defined(USE_NSS_CERTS)
 #include "base/threading/thread_task_runner_handle.h"
+#include "net/cert/internal/cert_issuer_source_nss.h"
 #include "net/cert/internal/trust_store_nss.h"
 #endif
 
@@ -273,6 +274,10 @@ bool VerifyUsingPathBuilder(
   net::CertPathBuilder path_builder(target_cert, &trust_store,
                                     &signature_policy, time, &result);
   path_builder.AddCertIssuerSource(&intermediate_cert_issuer_source);
+#if defined(USE_NSS_CERTS)
+  net::CertIssuerSourceNSS cert_issuer_source_nss;
+  path_builder.AddCertIssuerSource(&cert_issuer_source_nss);
+#endif
 
   // Initialize an AIA fetcher, that uses a separate thread for running the
   // networking message loop.
