@@ -917,6 +917,46 @@ IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
       net::URLRequestMockHTTPJob::GetMockUrl(kEmptyPage));
 }
 
+// Verifies that the reporting checkbox is still shown if the page is reloaded
+// while the interstitial is showing.
+IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest,
+                       ReloadWhileInterstitialShowing) {
+  // Start navigation to bad page (kEmptyPage), which will be blocked before it
+  // is committed.
+  const GURL url = SetupWarningAndNavigate();
+
+  // Checkbox should be showing.
+  EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
+
+  WebContents* tab = browser()->tab_strip_model()->GetActiveWebContents();
+  ASSERT_TRUE(tab);
+  // Security indicator should be showing.
+  ExpectSecurityIndicatorDowngrade(tab, 0u);
+
+  // Check navigation entry state.
+  const NavigationController& controller = tab->GetController();
+  ASSERT_TRUE(controller.GetVisibleEntry());
+  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
+  ASSERT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
+
+  // "Reload" the tab.
+  SetupWarningAndNavigate();
+
+  // Checkbox should be showing.
+  EXPECT_EQ(VISIBLE, GetVisibility("extended-reporting-opt-in"));
+
+  // TODO(crbug.com/666172): Security indicator should be showing.
+  // Call |ExpectSecurityIndicatorDowngrade(tab, 0u);| here once the bug is
+  // fixed.
+
+  // Check navigation entry state.
+  ASSERT_TRUE(controller.GetVisibleEntry());
+  EXPECT_EQ(url, controller.GetVisibleEntry()->GetURL());
+  ASSERT_TRUE(controller.GetPendingEntry());
+  EXPECT_EQ(url, controller.GetPendingEntry()->GetURL());
+}
+
 IN_PROC_BROWSER_TEST_P(SafeBrowsingBlockingPageBrowserTest, LearnMore) {
   SetupWarningAndNavigate();
   EXPECT_TRUE(ClickAndWaitForDetach("learn-more-link"));

@@ -458,19 +458,11 @@ void SafeBrowsingBlockingPage::ShowBlockingPage(
   DVLOG(1) << __func__ << " " << unsafe_resource.url.spec();
   WebContents* web_contents = unsafe_resource.web_contents_getter.Run();
 
-  InterstitialPage* interstitial =
-      InterstitialPage::GetInterstitialPage(web_contents);
-  if (interstitial && !unsafe_resource.is_subresource) {
-    // There is already an interstitial showing and we are about to display a
-    // new one for the main frame. Just hide the current one, it is now
-    // irrelevent
-    interstitial->DontProceed();
-    interstitial = NULL;
-  }
-
-  if (!interstitial) {
-    // There are no interstitial currently showing in that tab, go ahead and
-    // show this interstitial.
+  if (!InterstitialPage::GetInterstitialPage(web_contents) ||
+      !unsafe_resource.is_subresource) {
+    // There is no interstitial currently showing in that tab, or we are about
+    // to display a new one for the main frame. If there is already an
+    // interstitial, showing the new one will automatically hide the old one.
     content::NavigationEntry* entry =
         unsafe_resource.GetNavigationEntryForResource();
     SafeBrowsingBlockingPage* blocking_page =
