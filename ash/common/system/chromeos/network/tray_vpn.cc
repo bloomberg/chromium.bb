@@ -119,7 +119,7 @@ class VpnDefaultView : public TrayItemMore,
       *image = gfx::CreateVectorIcon(
           kNetworkVpnIcon, TrayPopupItemStyle::GetIconColor(
                                GetNativeTheme(),
-                               vpn->IsConnectedState()
+                               vpn && vpn->IsConnectedState()
                                    ? TrayPopupItemStyle::ColorStyle::ACTIVE
                                    : TrayPopupItemStyle::ColorStyle::INACTIVE));
     } else {
