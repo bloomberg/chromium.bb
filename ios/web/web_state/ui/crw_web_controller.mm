@@ -1706,14 +1706,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   [_delegate webWillAddPendingURL:requestURL transition:transition];
   // Add or update pending url.
-  // There is a crash being reported when accessing |_webStateImpl| in the
-  // condition below.  This CHECK was added in order to ascertain whether this
-  // is caused by a null WebState.  If the crash is still reported after the
-  // addition of this CHECK, it is likely that |_webStateImpl| has been
-  // corrupted.
-  // TODO(crbug.com/593852): Remove this check once we know the cause of the
-  // crash.
-  CHECK(_webStateImpl);
   if (_webStateImpl->GetNavigationManagerImpl().GetPendingItem()) {
     // Update the existing pending entry.
     // Typically on PAGE_TRANSITION_CLIENT_REDIRECT.
