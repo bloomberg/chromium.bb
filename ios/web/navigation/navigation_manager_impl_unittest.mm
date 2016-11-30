@@ -308,6 +308,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(3));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(INT_MIN, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-1000000000, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 2 and test API from that state.
   [session_controller() goToEntryAtIndex:2];
@@ -321,6 +330,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483647, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999999, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Go to entry at index 4 and test API from that state.
   [session_controller() goToEntryAtIndex:4];
@@ -334,6 +352,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483646, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999998, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry.
   [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
@@ -350,6 +377,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483645, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999997, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Now test with pending item index.
   [session_controller() discardNonCommittedEntries];
@@ -368,6 +404,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(2));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(3));
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(3));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(INT_MIN, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-1000000000, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000002, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 2 and test API from that state.
   [session_controller() setPendingEntryIndex:2];
@@ -381,6 +426,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(4, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483647, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999999, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000003, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Set pending index to 4 and committed entry to 1 and test.
   [session_controller() goToEntryAtIndex:1];
@@ -395,6 +449,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483646, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999998, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 
   // Test with existing transient entry.
   [session_controller() addTransientEntryWithURL:GURL("http://www.url.com")];
@@ -411,6 +474,15 @@ TEST_F(NavigationManagerTest, OffsetsWithoutPendingIndex) {
   EXPECT_EQ(5, navigation_manager()->GetIndexForOffset(1));
   EXPECT_FALSE(navigation_manager()->CanGoToOffset(2));
   EXPECT_EQ(6, navigation_manager()->GetIndexForOffset(2));
+  // Test with large values.
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MAX));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(INT_MIN));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(-1000000000));
+  EXPECT_FALSE(navigation_manager()->CanGoToOffset(1000000000));
+  EXPECT_EQ(INT_MAX, navigation_manager()->GetIndexForOffset(INT_MAX));
+  EXPECT_EQ(-2147483645, navigation_manager()->GetIndexForOffset(INT_MIN));
+  EXPECT_EQ(-999999997, navigation_manager()->GetIndexForOffset(-1000000000));
+  EXPECT_EQ(1000000004, navigation_manager()->GetIndexForOffset(1000000000));
 }
 
 }  // namespace web

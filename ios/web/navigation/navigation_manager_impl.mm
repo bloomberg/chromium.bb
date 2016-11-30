@@ -350,7 +350,7 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
       offset++;
     }
 
-    while (offset < 0) {
+    while (offset < 0 && result > 0) {
       // To stop the user getting 'stuck' on redirecting pages they weren't
       // even aware existed, it is necessary to pass over pages that would
       // immediately result in a redirect (the entry *before* the redirected
@@ -361,6 +361,11 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
       --result;
       ++offset;
     }
+    // Result may be out of bounds, so stop trying to skip redirect items and
+    // simply add the remainder.
+    result += offset;
+    if (result > GetItemCount() /* overflow */)
+      result = INT_MIN;
   } else if (offset > 0) {
     if (GetPendingItem() && [session_controller_ pendingEntryIndex] == -1) {
       // Chrome for iOS does not allow forward navigation if there is another
@@ -372,8 +377,7 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
       // pending index.
       return INT_MAX;
     }
-
-    while (offset > 0) {
+    while (offset > 0 && result < GetItemCount()) {
       ++result;
       --offset;
       // As with going back, skip over redirects.
@@ -381,6 +385,11 @@ int NavigationManagerImpl::GetIndexForOffset(int offset) const {
         ++result;
       }
     }
+    // Result may be out of bounds, so stop trying to skip redirect items and
+    // simply add the remainder.
+    result += offset;
+    if (result < 0 /* overflow */)
+      result = INT_MAX;
   }
 
   return result;
