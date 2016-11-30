@@ -26,6 +26,10 @@ if HAVE_ETNAVIV
 SUBDIRS += etnaviv
 endif
 
+if HAVE_NOUVEAU
+SUBDIRS += nouveau
+endif
+
 AM_CFLAGS = \
 	$(WARN_CFLAGS)\
 	-I $(top_srcdir)/include/drm \
@@ -33,16 +37,11 @@ AM_CFLAGS = \
 
 LDADD = $(top_builddir)/libdrm.la
 
-check_PROGRAMS = \
-	drmdevice
-
-if HAVE_NOUVEAU
-SUBDIRS += nouveau
-endif
-
 TESTS = \
 	drmsl \
 	hash \
 	random
 
-check_PROGRAMS += $(TESTS)
+check_PROGRAMS = \
+	$(TESTS) \
+	drmdevice
