@@ -15,17 +15,17 @@ class Magnetometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Magnetometer* create(ScriptState*,
+  static Magnetometer* create(ExecutionContext*,
                               const SensorOptions&,
                               ExceptionState&);
-  static Magnetometer* create(ScriptState*, ExceptionState&);
+  static Magnetometer* create(ExecutionContext*, ExceptionState&);
 
   MagnetometerReading* reading() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Magnetometer(ScriptState*, const SensorOptions&, ExceptionState&);
+  Magnetometer(ExecutionContext*, const SensorOptions&, ExceptionState&);
   // Sensor overrides.
   std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
 };

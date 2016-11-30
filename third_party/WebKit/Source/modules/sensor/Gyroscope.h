@@ -15,15 +15,17 @@ class Gyroscope final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Gyroscope* create(ScriptState*, const SensorOptions&, ExceptionState&);
-  static Gyroscope* create(ScriptState*, ExceptionState&);
+  static Gyroscope* create(ExecutionContext*,
+                           const SensorOptions&,
+                           ExceptionState&);
+  static Gyroscope* create(ExecutionContext*, ExceptionState&);
 
   GyroscopeReading* reading() const;
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Gyroscope(ScriptState*, const SensorOptions&, ExceptionState&);
+  Gyroscope(ExecutionContext*, const SensorOptions&, ExceptionState&);
   // Sensor overrides.
   std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
 };

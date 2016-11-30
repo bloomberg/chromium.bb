@@ -8,7 +8,7 @@
 [
     RuntimeEnabled=Sensor,
     Constructor(optional AccelerometerOptions sensorOptions),
-    ConstructorCallWith=ScriptState,
+    ConstructorCallWith=ExecutionContext,
     RaisesException=Constructor,
 ] interface Accelerometer : Sensor {
     readonly attribute AccelerometerReading? reading;

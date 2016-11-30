@@ -16,10 +16,10 @@ class Accelerometer final : public Sensor {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  static Accelerometer* create(ScriptState*,
+  static Accelerometer* create(ExecutionContext*,
                                const AccelerometerOptions&,
                                ExceptionState&);
-  static Accelerometer* create(ScriptState*, ExceptionState&);
+  static Accelerometer* create(ExecutionContext*, ExceptionState&);
 
   AccelerometerReading* reading() const;
   bool includesGravity() const;
@@ -27,7 +27,9 @@ class Accelerometer final : public Sensor {
   DECLARE_VIRTUAL_TRACE();
 
  private:
-  Accelerometer(ScriptState*, const AccelerometerOptions&, ExceptionState&);
+  Accelerometer(ExecutionContext*,
+                const AccelerometerOptions&,
+                ExceptionState&);
   // Sensor overrides.
   std::unique_ptr<SensorReadingFactory> createSensorReadingFactory() override;
   AccelerometerOptions m_accelerometerOptions;

@@ -12,22 +12,22 @@ using device::mojom::blink::SensorType;
 
 namespace blink {
 
-Accelerometer* Accelerometer::create(ScriptState* scriptState,
+Accelerometer* Accelerometer::create(ExecutionContext* executionContext,
                                      const AccelerometerOptions& options,
                                      ExceptionState& exceptionState) {
-  return new Accelerometer(scriptState, options, exceptionState);
+  return new Accelerometer(executionContext, options, exceptionState);
 }
 
 // static
-Accelerometer* Accelerometer::create(ScriptState* scriptState,
+Accelerometer* Accelerometer::create(ExecutionContext* executionContext,
                                      ExceptionState& exceptionState) {
-  return create(scriptState, AccelerometerOptions(), exceptionState);
+  return create(executionContext, AccelerometerOptions(), exceptionState);
 }
 
-Accelerometer::Accelerometer(ScriptState* scriptState,
+Accelerometer::Accelerometer(ExecutionContext* executionContext,
                              const AccelerometerOptions& options,
                              ExceptionState& exceptionState)
-    : Sensor(scriptState,
+    : Sensor(executionContext,
              options,
              exceptionState,
              options.includeGravity() ? SensorType::ACCELEROMETER

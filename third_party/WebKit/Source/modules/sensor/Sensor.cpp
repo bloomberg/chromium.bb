@@ -18,25 +18,25 @@ using namespace device::mojom::blink;
 
 namespace blink {
 
-Sensor::Sensor(ScriptState* scriptState,
+Sensor::Sensor(ExecutionContext* executionContext,
                const SensorOptions& sensorOptions,
                ExceptionState& exceptionState,
                SensorType type)
     : ActiveScriptWrappable(this),
-      ContextLifecycleObserver(scriptState->getExecutionContext()),
+      ContextLifecycleObserver(executionContext),
       m_sensorOptions(sensorOptions),
       m_type(type),
       m_state(Sensor::SensorState::Idle) {
   // Check secure context.
   String errorMessage;
-  if (!scriptState->getExecutionContext()->isSecureContext(errorMessage)) {
+  if (!executionContext->isSecureContext(errorMessage)) {
     exceptionState.throwDOMException(SecurityError, errorMessage);
     return;
   }
 
   // Check top-level browsing context.
-  if (!scriptState->domWindow() || !scriptState->domWindow()->frame() ||
-      !scriptState->domWindow()->frame()->isMainFrame()) {
+  if (!toDocument(executionContext)->domWindow()->frame() ||
+      !toDocument(executionContext)->frame()->isMainFrame()) {
     exceptionState.throwSecurityError(
         "Must be in a top-level browsing context");
     return;
@@ -54,7 +54,7 @@ Sensor::Sensor(ScriptState* scriptState,
       m_sensorOptions.setFrequency(SensorConfiguration::kMaxAllowedFrequency);
       ConsoleMessage* consoleMessage = ConsoleMessage::create(
           JSMessageSource, InfoMessageLevel, "Frequency is limited to 60 Hz.");
-      scriptState->getExecutionContext()->addConsoleMessage(consoleMessage);
+      executionContext->addConsoleMessage(consoleMessage);
     }
   }
 }

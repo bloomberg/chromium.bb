@@ -18,7 +18,7 @@
 namespace blink {
 
 class ExceptionState;
-class ScriptState;
+class ExecutionContext;
 class SensorReading;
 class SensorUpdateNotificationStrategy;
 
@@ -60,7 +60,7 @@ class Sensor : public EventTargetWithInlineData,
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  Sensor(ScriptState*,
+  Sensor(ExecutionContext*,
          const SensorOptions&,
          ExceptionState&,
          device::mojom::blink::SensorType);

@@ -11,22 +11,25 @@ using device::mojom::blink::SensorType;
 namespace blink {
 
 // static
-Magnetometer* Magnetometer::create(ScriptState* scriptState,
+Magnetometer* Magnetometer::create(ExecutionContext* executionContext,
                                    const SensorOptions& options,
                                    ExceptionState& exceptionState) {
-  return new Magnetometer(scriptState, options, exceptionState);
+  return new Magnetometer(executionContext, options, exceptionState);
 }
 
 // static
-Magnetometer* Magnetometer::create(ScriptState* scriptState,
+Magnetometer* Magnetometer::create(ExecutionContext* executionContext,
                                    ExceptionState& exceptionState) {
-  return create(scriptState, SensorOptions(), exceptionState);
+  return create(executionContext, SensorOptions(), exceptionState);
 }
 
-Magnetometer::Magnetometer(ScriptState* scriptState,
+Magnetometer::Magnetometer(ExecutionContext* executionContext,
                            const SensorOptions& options,
                            ExceptionState& exceptionState)
-    : Sensor(scriptState, options, exceptionState, SensorType::MAGNETOMETER) {}
+    : Sensor(executionContext,
+             options,
+             exceptionState,
+             SensorType::MAGNETOMETER) {}
 
 MagnetometerReading* Magnetometer::reading() const {
   return static_cast<MagnetometerReading*>(Sensor::reading());
