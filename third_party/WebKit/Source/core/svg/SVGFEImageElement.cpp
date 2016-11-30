@@ -44,7 +44,7 @@ DEFINE_NODE_FACTORY(SVGFEImageElement)
 
 SVGFEImageElement::~SVGFEImageElement() {
   if (m_cachedImage) {
-    m_cachedImage->removeClient(this);
+    m_cachedImage->removeObserver(this);
     m_cachedImage = nullptr;
   }
 }
@@ -54,7 +54,6 @@ DEFINE_TRACE(SVGFEImageElement) {
   visitor->trace(m_cachedImage);
   SVGFilterPrimitiveStandardAttributes::trace(visitor);
   SVGURIReference::trace(visitor);
-  ResourceClient::trace(visitor);
 }
 
 bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const {
@@ -66,7 +65,7 @@ bool SVGFEImageElement::currentFrameHasSingleSecurityOrigin() const {
 
 void SVGFEImageElement::clearResourceReferences() {
   if (m_cachedImage) {
-    m_cachedImage->removeClient(this);
+    m_cachedImage->removeObserver(this);
     m_cachedImage = nullptr;
   }
 
@@ -79,7 +78,7 @@ void SVGFEImageElement::fetchImageResource() {
   m_cachedImage = ImageResource::fetch(request, document().fetcher());
 
   if (m_cachedImage)
-    m_cachedImage->addClient(this);
+    m_cachedImage->addObserver(this);
 }
 
 void SVGFEImageElement::buildPendingResource() {
@@ -136,7 +135,7 @@ void SVGFEImageElement::removedFrom(ContainerNode* rootParent) {
     clearResourceReferences();
 }
 
-void SVGFEImageElement::notifyFinished(Resource*) {
+void SVGFEImageElement::imageNotifyFinished(ImageResource*) {
   if (!isConnected())
     return;
 
