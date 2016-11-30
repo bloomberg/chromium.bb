@@ -135,6 +135,15 @@ cr.define('print_preview', function() {
     },
 
     /**
+     * @return {boolean} Whether the selected destination is valid.
+     */
+    isSelectedDestinationValid: function() {
+      return this.selectedDestination &&
+             this.selectedDestination.id &&
+             this.selectedDestination.origin;
+    },
+
+    /**
      * @return {?Array<!RecentDestination>} The AppState.NUM_DESTINATIONS_ most
      *     recent destinations.
      */

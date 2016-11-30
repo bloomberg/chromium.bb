@@ -311,68 +311,40 @@ cr.define('print_preview', function() {
     /** @override */
     enterDocument: function() {
       print_preview.Component.prototype.enterDocument.call(this);
+
       this.tracker.add(
           assert(this.openSystemDialogButton_),
           'click',
           this.onOpenSystemDialogButtonClick_.bind(this));
 
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.INITIALIZE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.TICKET_CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.CAPABILITIES_CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_,
-          print_preview.PrintTicketStore.EventType.DOCUMENT_CHANGE,
-          this.onTicketChange_.bind(this));
+      var TicketStoreEvent = print_preview.PrintTicketStore.EventType;
+      [
+        TicketStoreEvent.INITIALIZE,
+        TicketStoreEvent.TICKET_CHANGE,
+        TicketStoreEvent.CAPABILITIES_CHANGE,
+        TicketStoreEvent.DOCUMENT_CHANGE
+      ].forEach(function(eventType) {
+        this.tracker.add(this.printTicketStore_, eventType,
+            this.onTicketChange_.bind(this));
+      }.bind(this));
 
-      this.tracker.add(
-          this.printTicketStore_.color,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.cssBackground,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
+      [
+        this.printTicketStore_.color,
+        this.printTicketStore_.cssBackground,
         this.printTicketStore_.customMargins,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.fitToPage,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.headerFooter,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.landscape,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.marginsType,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.pageRange,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.selectionOnly,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
-      this.tracker.add(
-          this.printTicketStore_.scaling,
-          print_preview.ticket_items.TicketItem.EventType.CHANGE,
-          this.onTicketChange_.bind(this));
+        this.printTicketStore_.fitToPage,
+        this.printTicketStore_.headerFooter,
+        this.printTicketStore_.landscape,
+        this.printTicketStore_.marginsType,
+        this.printTicketStore_.pageRange,
+        this.printTicketStore_.selectionOnly,
+        this.printTicketStore_.scaling
+      ].forEach(function(setting) {
+        this.tracker.add(
+            setting,
+            print_preview.ticket_items.TicketItem.EventType.CHANGE,
+            this.onTicketChange_.bind(this));
+      }.bind(this));
 
       if (this.checkPluginCompatibility_()) {
         this.previewGenerator_ = new print_preview.PreviewGenerator(

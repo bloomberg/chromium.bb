@@ -655,15 +655,6 @@ cr.define('print_preview', function() {
              this.cloudPrintInterface_.isCloudDestinationSearchInProgress;
     },
 
-    /**
-     * @return {boolean} Whether the selected destination is valid.
-     */
-    selectedDestinationValid_: function() {
-      return this.appState_.selectedDestination &&
-             this.appState_.selectedDestination.id &&
-             this.appState_.selectedDestination.origin;
-    },
-
     /*
      * Initializes the destination store. Sets the initially selected
      * destination. If any inserted destinations match this ID, that destination
@@ -684,7 +675,7 @@ cr.define('print_preview', function() {
       this.systemDefaultDestinationId_ = systemDefaultDestinationId;
       this.createLocalPdfPrintDestination_();
 
-      if (!this.selectedDestinationValid_()) {
+      if (!this.appState_.isSelectedDestinationValid()) {
         var destinationMatch = this.convertToDestinationMatch_(
             serializedDefaultDestinationSelectionRulesStr);
         if (destinationMatch) {
@@ -694,7 +685,7 @@ cr.define('print_preview', function() {
       }
 
       if (!this.systemDefaultDestinationId_ &&
-          !this.selectedDestinationValid_()) {
+          !this.appState_.isSelectedDestinationValid()) {
         this.selectPdfDestination_();
         return;
       }
@@ -949,7 +940,7 @@ cr.define('print_preview', function() {
      * @private
      */
     convertPreselectedToDestinationMatch_: function() {
-      if (this.selectedDestinationValid_()) {
+      if (this.appState_.isSelectedDestinationValid()) {
         return this.createExactDestinationMatch_(
             this.appState_.selectedDestination.origin,
             this.appState_.selectedDestination.id);
