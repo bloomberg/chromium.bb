@@ -5038,7 +5038,13 @@ if (!is_android && !is_ios && !is_chromecast) {
     }
 
     if (is_linux || is_win) {
-      data += [ "$root_out_dir/chrome_100_percent.pak" ]
+      data += [
+        "$root_out_dir/chrome_100_percent.pak",
+        "$root_out_dir/chrome_200_percent.pak",
+        "$root_out_dir/locales/en-US.pak",
+        "$root_out_dir/locales/fr.pak",
+        "$root_out_dir/resources.pak",
+      ]
     }
 
     # This target should not require the Chrome executable to run.
