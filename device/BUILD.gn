@@ -280,6 +280,7 @@ if (is_android) {
     java_files = [
       "gamepad/android/junit/src/org/chromium/device/gamepad/GamepadMappingsTest.java",
       "generic_sensor/android/junit/src/org/chromium/device/sensors/PlatformSensorAndProviderTest.java",
+      "nfc/android/junit/src/org/chromium/device/nfc/NFCTest.java",
     ]
     deps = [
       "//base:base_java",
@@ -287,6 +288,9 @@ if (is_android) {
       "//device/gamepad:java",
       "//device/generic_sensor:java",
       "//device/generic_sensor/public/interfaces:interfaces_java",
+      "//device/nfc:mojo_bindings_java",
+      "//device/nfc/android:java",
+      "//mojo/public/java:bindings_java",
       "//third_party/android_tools:android_support_annotations_java",
     ]
     srcjar_deps = [ "//device/gamepad:java_enums_srcjar" ]

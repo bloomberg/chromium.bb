@@ -17,7 +17,7 @@ import java.io.IOException;
 /**
  * Utility class that provides I/O operations for NFC tags.
  */
-public final class NfcTagHandler {
+public class NfcTagHandler {
     private final TagTechnology mTech;
     private final TagTechnologyHandler mTechHandler;
     private boolean mWasConnected;
@@ -49,7 +49,7 @@ public final class NfcTagHandler {
     private interface TagTechnologyHandler {
         public void write(NdefMessage message)
                 throws IOException, TagLostException, FormatException;
-        // TODO(crbug.com/625589): add read method for nfc.watch.
+        public NdefMessage read() throws IOException, TagLostException, FormatException;
     }
 
     /**
@@ -66,6 +66,10 @@ public final class NfcTagHandler {
         public void write(NdefMessage message)
                 throws IOException, TagLostException, FormatException {
             mNdef.writeNdefMessage(message);
+        }
+
+        public NdefMessage read() throws IOException, TagLostException, FormatException {
+            return mNdef.getNdefMessage();
         }
     }
 
@@ -84,9 +88,13 @@ public final class NfcTagHandler {
                 throws IOException, TagLostException, FormatException {
             mNdefFormattable.format(message);
         }
+
+        public NdefMessage read() throws IOException, TagLostException, FormatException {
+            return NfcTypeConverter.emptyNdefMessage();
+        }
     }
 
-    private NfcTagHandler(TagTechnology tech, TagTechnologyHandler handler) {
+    protected NfcTagHandler(TagTechnology tech, TagTechnologyHandler handler) {
         mTech = tech;
         mTechHandler = handler;
     }
@@ -102,6 +110,13 @@ public final class NfcTagHandler {
     }
 
     /**
+     * Checks if NFC tag is connected.
+     */
+    public boolean isConnected() {
+        return mTech.isConnected();
+    }
+
+    /**
      * Closes connection.
      */
     public void close() throws IOException {
@@ -113,6 +128,10 @@ public final class NfcTagHandler {
      */
     public void write(NdefMessage message) throws IOException, TagLostException, FormatException {
         mTechHandler.write(message);
+    }
+
+    public NdefMessage read() throws IOException, TagLostException, FormatException {
+        return mTechHandler.read();
     }
 
     /**

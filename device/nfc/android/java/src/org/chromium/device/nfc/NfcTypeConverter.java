@@ -4,6 +4,7 @@
 
 package org.chromium.device.nfc;
 
+import android.net.Uri;
 import android.nfc.NdefMessage;
 import android.nfc.NdefRecord;
 import android.os.Build;
@@ -15,6 +16,7 @@ import org.chromium.device.nfc.mojom.NfcRecordType;
 
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -35,8 +37,6 @@ public final class NfcTypeConverter {
      * Converts mojo NfcMessage to android.nfc.NdefMessage
      */
     public static NdefMessage toNdefMessage(NfcMessage message) throws InvalidNfcMessageException {
-        if (message == null || message.data.length == 0) throw new InvalidNfcMessageException();
-
         try {
             List<NdefRecord> records = new ArrayList<NdefRecord>();
             for (int i = 0; i < message.data.length; ++i) {
@@ -50,6 +50,31 @@ public final class NfcTypeConverter {
                 | IllegalArgumentException e) {
             throw new InvalidNfcMessageException();
         }
+    }
+
+    /**
+     * Converts android.nfc.NdefMessage to mojo NfcMessage
+     */
+    public static NfcMessage toNfcMessage(NdefMessage ndefMessage)
+            throws UnsupportedEncodingException {
+        NdefRecord[] ndefRecords = ndefMessage.getRecords();
+        NfcMessage nfcMessage = new NfcMessage();
+        List<NfcRecord> nfcRecords = new ArrayList<NfcRecord>();
+
+        for (int i = 0; i < ndefRecords.length; i++) {
+            if ((ndefRecords[i].getTnf() == NdefRecord.TNF_EXTERNAL_TYPE)
+                    && (Arrays.equals(ndefRecords[i].getType(), WEBNFC_URN.getBytes("UTF-8")))) {
+                nfcMessage.url = new String(ndefRecords[i].getPayload(), "UTF-8");
+                continue;
+            }
+
+            NfcRecord nfcRecord = toNfcRecord(ndefRecords[i]);
+            if (nfcRecord != null) nfcRecords.add(nfcRecord);
+        }
+
+        nfcMessage.data = new NfcRecord[nfcRecords.size()];
+        nfcRecords.toArray(nfcMessage.data);
+        return nfcMessage;
     }
 
     /**
@@ -91,5 +116,110 @@ public final class NfcTypeConverter {
             default:
                 throw new InvalidNfcMessageException();
         }
+    }
+
+    /**
+     * Converts android.nfc.NdefRecord to mojo NfcRecord
+     */
+    private static NfcRecord toNfcRecord(NdefRecord ndefRecord)
+            throws UnsupportedEncodingException {
+        switch (ndefRecord.getTnf()) {
+            case NdefRecord.TNF_EMPTY:
+                return createEmptyRecord();
+            case NdefRecord.TNF_MIME_MEDIA:
+                return createMIMERecord(
+                        new String(ndefRecord.getType(), "UTF-8"), ndefRecord.getPayload());
+            case NdefRecord.TNF_ABSOLUTE_URI:
+                return createURLRecord(ndefRecord.toUri());
+            case NdefRecord.TNF_WELL_KNOWN:
+                return createWellKnownRecord(ndefRecord);
+        }
+        return null;
+    }
+
+    /**
+     * Constructs empty NdefMessage
+     */
+    public static NdefMessage emptyNdefMessage() {
+        return new NdefMessage(new NdefRecord(NdefRecord.TNF_EMPTY, null, null, null));
+    }
+
+    /**
+     * Constructs empty NfcRecord
+     */
+    private static NfcRecord createEmptyRecord() {
+        NfcRecord nfcRecord = new NfcRecord();
+        nfcRecord.recordType = NfcRecordType.EMPTY;
+        nfcRecord.mediaType = "";
+        nfcRecord.data = new byte[0];
+        return nfcRecord;
+    }
+
+    /**
+     * Constructs URL NfcRecord
+     */
+    private static NfcRecord createURLRecord(Uri uri) {
+        if (uri == null) return null;
+        NfcRecord nfcRecord = new NfcRecord();
+        nfcRecord.recordType = NfcRecordType.URL;
+        nfcRecord.mediaType = TEXT_MIME;
+        nfcRecord.data = uri.toString().getBytes();
+        return nfcRecord;
+    }
+
+    /**
+     * Constructs MIME or JSON NfcRecord
+     */
+    private static NfcRecord createMIMERecord(String mediaType, byte[] payload) {
+        NfcRecord nfcRecord = new NfcRecord();
+        if (mediaType.equals(JSON_MIME)) {
+            nfcRecord.recordType = NfcRecordType.JSON;
+        } else {
+            nfcRecord.recordType = NfcRecordType.OPAQUE_RECORD;
+        }
+        nfcRecord.mediaType = mediaType;
+        nfcRecord.data = payload;
+        return nfcRecord;
+    }
+
+    /**
+     * Constructs TEXT NfcRecord
+     */
+    private static NfcRecord createTextRecord(byte[] text) {
+        // Check that text byte array is not empty.
+        if (text.length == 0) {
+            return null;
+        }
+
+        NfcRecord nfcRecord = new NfcRecord();
+        nfcRecord.recordType = NfcRecordType.TEXT;
+        nfcRecord.mediaType = TEXT_MIME;
+        // According to NFCForum-TS-RTD_Text_1.0 specification, section 3.2.1 Syntax.
+        // First byte of the payload is status byte, defined in Table 3: Status Byte Encodings.
+        // 0-5: lang code length
+        // 6  : must be zero
+        // 8  : 0 - text is in UTF-8 encoding, 1 - text is in UTF-16 encoding.
+        int langCodeLength = (text[0] & (byte) 0x3F);
+        int textBodyStartPos = langCodeLength + 1;
+        if (textBodyStartPos > text.length) {
+            return null;
+        }
+        nfcRecord.data = Arrays.copyOfRange(text, textBodyStartPos, text.length);
+        return nfcRecord;
+    }
+
+    /**
+     * Constructs well known type (TEXT or URI) NfcRecord
+     */
+    private static NfcRecord createWellKnownRecord(NdefRecord record) {
+        if (Arrays.equals(record.getType(), NdefRecord.RTD_URI)) {
+            return createURLRecord(record.toUri());
+        }
+
+        if (Arrays.equals(record.getType(), NdefRecord.RTD_TEXT)) {
+            return createTextRecord(record.getPayload());
+        }
+
+        return null;
     }
 }
