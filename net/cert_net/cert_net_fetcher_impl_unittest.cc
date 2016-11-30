@@ -180,15 +180,9 @@ WARN_UNUSED_RESULT std::unique_ptr<CertNetFetcher::Request> StartRequest(
                                  CertNetFetcher::DEFAULT);
 }
 
-// Flaky on Android. See http://crbug.com/646147.
-#if defined(OS_ANDROID)
-#define MAYBE_ParallelFetchNoDuplicates DISABLED_ParallelFetchNoDuplicates
-#else
-#define MAYBE_ParallelFetchNoDuplicates ParallelFetchNoDuplicates
-#endif
 // Fetch a few unique URLs using GET in parallel. Each URL has a different body
 // and Content-Type.
-TEST_F(CertNetFetcherImplTest, MAYBE_ParallelFetchNoDuplicates) {
+TEST_F(CertNetFetcherImplTest, ParallelFetchNoDuplicates) {
   ASSERT_TRUE(test_server_.Start());
 
   auto fetcher = CreateFetcher();
@@ -385,16 +379,9 @@ TEST_F(CertNetFetcherImplTest, CancelHttpsNotAllowed) {
   request.reset();
 }
 
-// Flaky on Android. See http://crbug.com/646147.
-#if defined(OS_ANDROID)
-#define MAYBE_CancelBeforeRunningMessageLoop \
-  DISABLED_CancelBeforeRunningMessageLoop
-#else
-#define MAYBE_CancelBeforeRunningMessageLoop CancelBeforeRunningMessageLoop
-#endif
 // Start a few requests, and cancel one of them before running the message loop
 // again.
-TEST_F(CertNetFetcherImplTest, MAYBE_CancelBeforeRunningMessageLoop) {
+TEST_F(CertNetFetcherImplTest, CancelBeforeRunningMessageLoop) {
   ASSERT_TRUE(test_server_.Start());
 
   auto fetcher = CreateFetcher();
@@ -463,15 +450,9 @@ TEST_F(CertNetFetcherImplTest, CancelAfterRunningMessageLoop) {
   VerifySuccess("-cert.crt-\n", request1.get());
 }
 
-// Flaky on Android. See http://crbug.com/646147.
-#if defined(OS_ANDROID)
-#define MAYBE_ParallelFetchDuplicates DISABLED_ParallelFetchDuplicates
-#else
-#define MAYBE_ParallelFetchDuplicates ParallelFetchDuplicates
-#endif
 // Fetch the same URLs in parallel and verify that only 1 request is made per
 // URL.
-TEST_F(CertNetFetcherImplTest, MAYBE_ParallelFetchDuplicates) {
+TEST_F(CertNetFetcherImplTest, ParallelFetchDuplicates) {
   ASSERT_TRUE(test_server_.Start());
 
   auto fetcher = CreateFetcher();
@@ -513,14 +494,8 @@ TEST_F(CertNetFetcherImplTest, MAYBE_ParallelFetchDuplicates) {
   EXPECT_EQ(2, NumCreatedRequests());
 }
 
-// Flaky on Android. See http://crbug.com/646147.
-#if defined(OS_ANDROID)
-#define MAYBE_CancelThenStart DISABLED_CancelThenStart
-#else
-#define MAYBE_CancelThenStart CancelThenStart
-#endif
 // Cancel a request and then start another one for the same URL.
-TEST_F(CertNetFetcherImplTest, MAYBE_CancelThenStart) {
+TEST_F(CertNetFetcherImplTest, CancelThenStart) {
   ASSERT_TRUE(test_server_.Start());
 
   auto fetcher = CreateFetcher();
