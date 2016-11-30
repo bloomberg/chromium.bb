@@ -17,7 +17,7 @@
 #include "base/files/file_util.h"
 #include "base/stl_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "build/build_config.h"
 #include "content/public/browser/browser_thread.h"
@@ -378,12 +378,13 @@ void ThumbnailCache::CompressThumbnailIfNecessary(
   gfx::Size encoded_size = GetEncodedSize(
       raw_data_size, ui_resource_provider_->SupportsETC1NonPowerOfTwo());
 
-  base::WorkerPool::PostTask(FROM_HERE,
-                             base::Bind(&ThumbnailCache::CompressionTask,
-                                        bitmap,
-                                        encoded_size,
-                                        post_compression_task),
-                             true);
+  base::PostTaskWithTraits(
+      FROM_HERE, base::TaskTraits()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN),
+      base::Bind(&ThumbnailCache::CompressionTask, bitmap, encoded_size,
+                 post_compression_task));
 }
 
 void ThumbnailCache::ReadNextThumbnail() {
@@ -775,11 +776,11 @@ void ThumbnailCache::ReadTask(
   }
 
   if (decompress) {
-    base::WorkerPool::PostTask(
+    base::PostTaskWithTraits(
         FROM_HERE,
+        base::TaskTraits().WithPriority(base::TaskPriority::BACKGROUND),
         base::Bind(post_read_task, std::move(compressed_data), scale,
-                   content_size),
-        true);
+                   content_size));
   } else {
     content::BrowserThread::PostTask(
         content::BrowserThread::UI,
