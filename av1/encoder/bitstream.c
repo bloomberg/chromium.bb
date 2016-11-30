@@ -4094,9 +4094,14 @@ static void write_global_motion(AV1_COMP *cpi, aom_writer *w) {
   AV1_COMMON *const cm = &cpi->common;
   int frame;
   for (frame = LAST_FRAME; frame <= ALTREF_FRAME; ++frame) {
+#if !CONFIG_REF_MV
+    // With ref-mv, clearing unused global motion models here is
+    // unsafe, and we need to rely on the recode loop to do it
+    // instead. See av1_find_mv_refs for details.
     if (!cpi->global_motion_used[frame]) {
       set_default_gmparams(&cm->global_motion[frame]);
     }
+#endif
     write_global_motion_params(&cm->global_motion[frame],
                                cm->fc->global_motion_types_prob, w);
     /*

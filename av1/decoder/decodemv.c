@@ -1479,14 +1479,26 @@ static void read_inter_block_mode_info(AV1Decoder *const pbi,
 
     if (xd->ref_mv_count[ref_frame] < 2) {
       MV_REFERENCE_FRAME rf[2];
+      int_mv zeromv[2];
       av1_set_ref_frame(rf, ref_frame);
+#if CONFIG_GLOBAL_MOTION
+      zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]]).as_int;
+      zeromv[1].as_int =
+          (rf[1] != NONE)
+              ? gm_get_motion_vector(&cm->global_motion[rf[1]]).as_int
+              : 0;
+#else
+      zeromv[0].as_int = zeromv[1].as_int = 0;
+#endif
       for (ref = 0; ref < 2; ++ref) {
         lower_mv_precision(&ref_mvs[rf[ref]][0].as_mv, allow_hp);
         lower_mv_precision(&ref_mvs[rf[ref]][1].as_mv, allow_hp);
       }
 
-      if (ref_mvs[rf[0]][0].as_int != 0 || ref_mvs[rf[0]][1].as_int != 0 ||
-          ref_mvs[rf[1]][0].as_int != 0 || ref_mvs[rf[1]][1].as_int != 0)
+      if (ref_mvs[rf[0]][0].as_int != zeromv[0].as_int ||
+          ref_mvs[rf[0]][1].as_int != zeromv[0].as_int ||
+          ref_mvs[rf[1]][0].as_int != zeromv[1].as_int ||
+          ref_mvs[rf[1]][1].as_int != zeromv[1].as_int)
         inter_mode_ctx[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
     }
   }

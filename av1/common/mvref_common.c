@@ -499,7 +499,8 @@ static void find_mv_refs_idx(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                              MODE_INFO *mi, MV_REFERENCE_FRAME ref_frame,
                              int_mv *mv_ref_list, int block, int mi_row,
                              int mi_col, find_mv_refs_sync sync,
-                             void *const data, int16_t *mode_context) {
+                             void *const data, int16_t *mode_context,
+                             int_mv zeromv) {
   const int *ref_sign_bias = cm->ref_frame_sign_bias;
   int i, refmv_count = 0;
 #if !CONFIG_REF_MV
@@ -661,7 +662,7 @@ Done:
   if (mode_context)
     mode_context[ref_frame] = counter_to_context[context_counter];
   for (i = refmv_count; i < MAX_MV_REF_CANDIDATES; ++i)
-    mv_ref_list[i].as_int = 0;
+    mv_ref_list[i].as_int = zeromv.as_int;
 }
 
 #if CONFIG_EXT_INTER
@@ -745,11 +746,12 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                       int_mv *mv_ref_list, int mi_row, int mi_col,
                       find_mv_refs_sync sync, void *const data,
                       int16_t *mode_context) {
+  int_mv zeromv[2];
 #if CONFIG_REF_MV
-#if !CONFIG_GLOBAL_MOTION
-  int idx;
+  int idx, all_zero = 1;
 #endif
-  int all_zero = 1;
+#if CONFIG_GLOBAL_MOTION
+  MV_REFERENCE_FRAME rf[2];
 #endif
 #if CONFIG_EXT_INTER
   av1_update_mv_context(xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
@@ -759,33 +761,51 @@ void av1_find_mv_refs(const AV1_COMMON *cm, const MACROBLOCKD *xd,
                         mode_context);
 #endif  // CONFIG_REF_MV
 #endif  // CONFIG_EXT_INTER
+
+#if CONFIG_GLOBAL_MOTION
+  av1_set_ref_frame(rf, ref_frame);
+  zeromv[0].as_int = gm_get_motion_vector(&cm->global_motion[rf[0]]).as_int;
+  zeromv[1].as_int =
+      (rf[1] != NONE) ? gm_get_motion_vector(&cm->global_motion[rf[1]]).as_int
+                      : 0;
+#else
+  zeromv[0].as_int = zeromv[1].as_int = 0;
+#endif
+
 #if CONFIG_REF_MV
   if (ref_frame <= ALTREF_FRAME)
-    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
-                     sync, data, mode_context);
-#else
-  find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col, sync,
-                   data, mode_context);
 #endif  // CONFIG_REF_MV
+    find_mv_refs_idx(cm, xd, mi, ref_frame, mv_ref_list, -1, mi_row, mi_col,
+                     sync, data, mode_context, zeromv[0]);
 
 #if CONFIG_REF_MV
   setup_ref_mv_list(cm, xd, ref_frame, ref_mv_count, ref_mv_stack, mv_ref_list,
                     -1, mi_row, mi_col, mode_context);
-
-#if CONFIG_GLOBAL_MOTION
-  if ((*ref_mv_count >= 2) || (ref_frame <= ALTREF_FRAME)) all_zero = 0;
-#else
+  /* Note: If global motion is enabled, then we want to set the ALL_ZERO flag
+     iff all of the MVs we could generate with NEARMV/NEARESTMV are equivalent
+     to the global motion vector.
+     Note: For the following to work properly, the encoder can't throw away
+     any global motion models after calling this function, even if they are
+     unused. Instead we rely on the recode loop: If any non-IDENTITY model
+     is unused, the whole frame will be re-encoded without it.
+     The problem is that, otherwise, we can end up in the following situation:
+     * Encoder has a global motion model with nonzero translational part,
+       and all candidate MVs are zero. So the ALL_ZERO flag is unset.
+     * Encoder throws away global motion because it is never used.
+     * Decoder sees that there is no global motion and all candidate MVs are
+       zero, so sets the ALL_ZERO flag.
+     * This leads to an encode/decode mismatch.
+  */
   if (*ref_mv_count >= 2) {
     for (idx = 0; idx < AOMMIN(3, *ref_mv_count); ++idx) {
-      if (ref_mv_stack[idx].this_mv.as_int != 0) all_zero = 0;
+      if (ref_mv_stack[idx].this_mv.as_int != zeromv[0].as_int) all_zero = 0;
       if (ref_frame > ALTREF_FRAME)
-        if (ref_mv_stack[idx].comp_mv.as_int != 0) all_zero = 0;
+        if (ref_mv_stack[idx].comp_mv.as_int != zeromv[1].as_int) all_zero = 0;
     }
   } else if (ref_frame <= ALTREF_FRAME) {
     for (idx = 0; idx < MAX_MV_REF_CANDIDATES; ++idx)
-      if (mv_ref_list[idx].as_int != 0) all_zero = 0;
+      if (mv_ref_list[idx].as_int != zeromv[0].as_int) all_zero = 0;
   }
-#endif
 
   if (all_zero) mode_context[ref_frame] |= (1 << ALL_ZERO_FLAG_OFFSET);
 #endif
@@ -818,6 +838,7 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
   MODE_INFO *const mi = xd->mi[0];
   b_mode_info *bmi = mi->bmi;
   int n;
+  int_mv zeromv;
 #if CONFIG_REF_MV
   CANDIDATE_MV tmp_mv;
   uint8_t idx;
@@ -828,8 +849,13 @@ void av1_append_sub8x8_mvs_for_idx(const AV1_COMMON *cm, MACROBLOCKD *xd,
 
   assert(MAX_MV_REF_CANDIDATES == 2);
 
+#if CONFIG_GLOBAL_MOTION
+  zeromv.as_int = gm_get_motion_vector(&cm->global_motion[ref]).as_int;
+#else
+  zeromv.as_int = 0;
+#endif
   find_mv_refs_idx(cm, xd, mi, mi->mbmi.ref_frame[ref], mv_list, block, mi_row,
-                   mi_col, NULL, NULL, NULL);
+                   mi_col, NULL, NULL, NULL, zeromv);
 
 #if CONFIG_REF_MV
   scan_blk_mbmi(cm, xd, mi_row, mi_col, block, rf, -1, 0, ref_mv_stack,

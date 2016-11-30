@@ -2889,7 +2889,11 @@ static int recode_loop_test_global_motion(AV1_COMP *cpi) {
     if (cm->global_motion[i].wmtype != IDENTITY &&
         cpi->global_motion_used[i] < MIN_GLOBAL_MOTION_BLKS) {
       set_default_gmparams(&cm->global_motion[i]);
+#if CONFIG_REF_MV
+      recode = 1;
+#else
       recode |= (cpi->global_motion_used[i] > 0);
+#endif
     }
   }
   return recode;
