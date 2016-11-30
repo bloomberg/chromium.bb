@@ -1251,8 +1251,7 @@ static void build_intra_predictors_high(
   const uint16_t *above_ref = ref - ref_stride;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
-  const int is_dr_mode = mode != DC_PRED && mode != TM_PRED &&
-                         xd->mi[0]->mbmi.sb_type >= BLOCK_8X8;
+  const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   const FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
@@ -1411,8 +1410,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   int need_above_left = extend_modes[mode] & NEED_ABOVELEFT;
 #if CONFIG_EXT_INTRA
   int p_angle = 0;
-  const int is_dr_mode = mode != DC_PRED && mode != TM_PRED &&
-                         xd->mi[0]->mbmi.sb_type >= BLOCK_8X8;
+  const int is_dr_mode = av1_is_directional_mode(mode, xd->mi[0]->mbmi.sb_type);
 #endif  // CONFIG_EXT_INTRA
 #if CONFIG_FILTER_INTRA
   const FILTER_INTRA_MODE_INFO *filter_intra_mode_info =
@@ -1531,8 +1529,7 @@ static void build_intra_predictors(const MACROBLOCKD *xd, const uint8_t *ref,
   }
 #endif  // CONFIG_FILTER_INTRA
 #if CONFIG_EXT_INTRA
-  if (mode != DC_PRED && mode != TM_PRED &&
-      xd->mi[0]->mbmi.sb_type >= BLOCK_8X8) {
+  if (is_dr_mode) {
     INTRA_FILTER filter = INTRA_FILTER_LINEAR;
     if (plane == 0 && av1_is_intra_filter_switchable(p_angle))
       filter = xd->mi[0]->mbmi.intra_filter;

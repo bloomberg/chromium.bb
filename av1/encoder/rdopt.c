@@ -4079,11 +4079,11 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
 
     mbmi->uv_mode = mode;
 #if CONFIG_EXT_INTRA
-    is_directional_mode = (mode != DC_PRED && mode != TM_PRED);
+    is_directional_mode = av1_is_directional_mode(mode, mbmi->sb_type);
     rate_overhead = cpi->intra_uv_mode_cost[mbmi->mode][mode] +
                     write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1, 0);
     mbmi->angle_delta[1] = 0;
-    if (mbmi->sb_type >= BLOCK_8X8 && is_directional_mode) {
+    if (is_directional_mode) {
       if (!rd_pick_intra_angle_sbuv(
               cpi, x, &this_rate, &tokenonly_rd_stats.rate,
               &tokenonly_rd_stats.dist, &tokenonly_rd_stats.skip, bsize,
@@ -4099,7 +4099,7 @@ static int64_t rd_pick_intra_sbuv_mode(const AV1_COMP *const cpi, MACROBLOCK *x,
     }
     this_rate =
         tokenonly_rd_stats.rate + cpi->intra_uv_mode_cost[mbmi->mode][mode];
-    if (mbmi->sb_type >= BLOCK_8X8 && is_directional_mode)
+    if (is_directional_mode)
       this_rate += write_uniform_cost(2 * MAX_ANGLE_DELTAS + 1,
                                       MAX_ANGLE_DELTAS + mbmi->angle_delta[1]);
 #else

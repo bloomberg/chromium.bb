@@ -48,4 +48,15 @@ static const INTERINTRA_MODE intra_to_interintra_mode[INTRA_MODES] = {
 extern int av1_filter_intra_taps_4[TX_SIZES][INTRA_MODES][4];
 #endif  // CONFIG_FILTER_INTRA
 
+#if CONFIG_EXT_INTRA
+static INLINE int av1_is_directional_mode(PREDICTION_MODE mode,
+                                          BLOCK_SIZE bsize) {
+  return mode != DC_PRED && mode != TM_PRED &&
+#if CONFIG_ALT_INTRA
+         mode != SMOOTH_PRED &&
+#endif  // CONFIG_ALT_INTRA
+         bsize >= BLOCK_8X8;
+}
+#endif  // CONFIG_EXT_INTRA
+
 #endif  // AV1_COMMON_RECONINTRA_H_

@@ -12,6 +12,9 @@
 #include "av1/common/common.h"
 #include "av1/common/pred_common.h"
 #include "av1/common/reconinter.h"
+#if CONFIG_EXT_INTRA
+#include "av1/common/reconintra.h"
+#endif  // CONFIG_EXT_INTRA
 #include "av1/common/seg_common.h"
 
 // Returns a context number for the given MB prediction signal
@@ -112,7 +115,7 @@ static INTRA_FILTER get_ref_intra_filter(const MB_MODE_INFO *ref_mbmi) {
         default: break;
       }
     } else {
-      if (mode != DC_PRED && mode != TM_PRED) {
+      if (av1_is_directional_mode(mode, ref_mbmi->sb_type)) {
         int p_angle =
             mode_to_angle_map[mode] + ref_mbmi->angle_delta[0] * ANGLE_STEP;
         if (av1_is_intra_filter_switchable(p_angle)) {
