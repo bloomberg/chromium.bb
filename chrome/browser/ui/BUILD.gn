@@ -3251,6 +3251,8 @@ split_static_library("ui") {
         "ash/launcher/arc_app_deferred_launcher_controller.h",
         "ash/launcher/arc_app_deferred_launcher_item_controller.cc",
         "ash/launcher/arc_app_deferred_launcher_item_controller.h",
+        "ash/launcher/arc_app_shelf_id.cc",
+        "ash/launcher/arc_app_shelf_id.h",
         "ash/launcher/arc_app_window_launcher_controller.cc",
         "ash/launcher/arc_app_window_launcher_controller.h",
         "ash/launcher/arc_app_window_launcher_item_controller.cc",
