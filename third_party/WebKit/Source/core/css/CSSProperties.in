@@ -352,7 +352,7 @@ text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-shadow interpolable, inherited, converter=convertShadow
 text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeAdjust
-text-transform inherited
+text-transform inherited, keyword_only, keywords=[none|capitalize|uppercase|lowercase]
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>, type_name=TouchAction

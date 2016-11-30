@@ -353,8 +353,6 @@ enum class ETextAlign : unsigned {
   End,
 };
 
-enum class ETextTransform : unsigned { Capitalize, Uppercase, Lowercase, None };
-
 static const size_t TextDecorationBits = 4;
 enum TextDecoration {
   TextDecorationNone = 0x0,

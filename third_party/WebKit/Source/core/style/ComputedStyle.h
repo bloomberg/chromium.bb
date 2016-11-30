@@ -216,7 +216,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
       return (m_listStyleType == other.m_listStyleType) &&
              (m_textAlign == other.m_textAlign) &&
-             (m_textTransform == other.m_textTransform) &&
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
@@ -231,7 +230,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
     unsigned m_listStyleType : 7;      // EListStyleType
     unsigned m_textAlign : 4;          // ETextAlign
-    unsigned m_textTransform : 2;      // ETextTransform
     unsigned m_hasSimpleUnderline : 1;  // True if 'underline solid' is the only
                                         // text decoration on this element.
     unsigned m_cursorStyle : 6;     // ECursor
@@ -362,8 +360,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     m_inheritedData.m_listStyleType =
         static_cast<unsigned>(initialListStyleType());
     m_inheritedData.m_textAlign = static_cast<unsigned>(initialTextAlign());
-    m_inheritedData.m_textTransform =
-        static_cast<unsigned>(initialTextTransform());
     m_inheritedData.m_hasSimpleUnderline = false;
     m_inheritedData.m_cursorStyle = static_cast<unsigned>(initialCursor());
     m_inheritedData.m_direction = initialDirection();
@@ -2277,15 +2273,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setTextSizeAdjust(TextSizeAdjust sizeAdjust) {
     SET_VAR(m_rareInheritedData, m_textSizeAdjust, sizeAdjust);
-  }
-
-  // text-transform (aka -epub-text-transform)
-  static ETextTransform initialTextTransform() { return ETextTransform::None; }
-  ETextTransform textTransform() const {
-    return static_cast<ETextTransform>(m_inheritedData.m_textTransform);
-  }
-  void setTextTransform(ETextTransform v) {
-    m_inheritedData.m_textTransform = static_cast<unsigned>(v);
   }
 
   // white-space inherited
