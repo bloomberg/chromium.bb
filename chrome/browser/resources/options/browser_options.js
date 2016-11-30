@@ -870,10 +870,7 @@ cr.define('options', function() {
         });
 
         $('android-apps-settings-link').addEventListener('click', function(e) {
-            // MouseEvent.detail indicates the current click count (or tap
-            // count, in the case of touch events) in the 'click' event.
-            var activatedFromKeyboard = e.detail == 0;
-            chrome.send('showAndroidAppsSettings', [activatedFromKeyboard]);
+            chrome.send('showAndroidAppsSettings');
         });
       }
     },

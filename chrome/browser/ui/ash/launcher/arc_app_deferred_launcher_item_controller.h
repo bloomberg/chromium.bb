@@ -15,22 +15,16 @@
 class ArcAppDeferredLauncherController;
 class ChromeLauncherController;
 
-// ArcAppDeferredLauncherItemController displays the icon of the ARC app that
-// cannot be launched immediately (due to ARC not being ready) on Chrome OS'
-// shelf, with an overlaid spinner to provide visual feedback.
 class ArcAppDeferredLauncherItemController : public LauncherItemController {
  public:
   ArcAppDeferredLauncherItemController(
       const std::string& arc_app_id,
       ChromeLauncherController* controller,
-      int event_flags,
       const base::WeakPtr<ArcAppDeferredLauncherController>& host);
 
   ~ArcAppDeferredLauncherItemController() override;
 
   base::TimeDelta GetActiveTime() const;
-
-  int event_flags() const { return event_flags_; }
 
   // ash::ShelfItemDelegate
   ash::ShelfItemDelegate::PerformedAction ItemSelected(
@@ -50,10 +44,6 @@ class ArcAppDeferredLauncherItemController : public LauncherItemController {
   ChromeLauncherAppMenuItems GetApplicationList(int event_flags) override;
 
  private:
-  // The flags of the event that caused the ARC app to be activated. These will
-  // be propagated to the launch event once the app is actually launched.
-  const int event_flags_;
-
   base::WeakPtr<ArcAppDeferredLauncherController> host_;
   const base::Time start_time_;
 

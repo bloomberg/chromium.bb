@@ -131,7 +131,7 @@ void ArcAppDeferredLauncherController::OnAppReadyChanged(
 
   Close(app_id);
 
-  arc::LaunchApp(observed_profile_, app_id, it->second->event_flags());
+  arc::LaunchApp(observed_profile_, app_id);
 }
 
 void ArcAppDeferredLauncherController::OnAppRemoved(const std::string& app_id) {
@@ -179,8 +179,7 @@ void ArcAppDeferredLauncherController::RegisterNextUpdate() {
 }
 
 void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
-    const std::string& app_id,
-    int event_flags) {
+    const std::string& app_id) {
   const arc::ArcSessionManager* arc_session_manager =
       arc::ArcSessionManager::Get();
   DCHECK(arc_session_manager);
@@ -204,8 +203,8 @@ void ArcAppDeferredLauncherController::RegisterDeferredLaunch(
   }
 
   ArcAppDeferredLauncherItemController* controller =
-      new ArcAppDeferredLauncherItemController(
-          shelf_app_id, owner_, event_flags, weak_ptr_factory_.GetWeakPtr());
+      new ArcAppDeferredLauncherItemController(shelf_app_id, owner_,
+                                               weak_ptr_factory_.GetWeakPtr());
   if (shelf_id == 0) {
     owner_->CreateAppLauncherItem(controller, shelf_app_id,
                                   ash::STATUS_RUNNING);

@@ -105,7 +105,6 @@
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/screen.h"
-#include "ui/events/event_constants.h"
 #include "ui/views/widget/widget.h"
 
 using base::ASCIIToUTF16;
@@ -821,7 +820,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
   }
 
   // Creates app window and set optional Arc application id.
-  views::Widget* CreateArcWindow(const std::string& window_app_id) {
+  views::Widget* CreateArcWindow(std::string& window_app_id) {
     views::Widget::InitParams params(views::Widget::InitParams::TYPE_WINDOW);
     params.bounds = gfx::Rect(5, 5, 20, 20);
     params.context = GetContext();
@@ -1205,7 +1204,7 @@ class MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest
 };
 
 class ChromeLauncherControllerImplMultiProfileWithArcTest
-    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest {  // NOLINT(whitespace/line_length)
+    : public MultiProfileMultiBrowserShelfLayoutChromeLauncherControllerImplTest {
  protected:
   ChromeLauncherControllerImplMultiProfileWithArcTest() {
     auto_start_arc_test_ = true;
@@ -1784,11 +1783,11 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcDeferredLaunch) {
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id3));
 
-  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
-  arc::LaunchApp(profile(), arc_app_id1, ui::EF_LEFT_MOUSE_BUTTON);
-  arc::LaunchApp(profile(), arc_app_id2, ui::EF_LEFT_MOUSE_BUTTON);
-  arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON);
-  arc::LaunchApp(profile(), arc_app_id3, ui::EF_LEFT_MOUSE_BUTTON);
+  arc::LaunchApp(profile(), arc_app_id1);
+  arc::LaunchApp(profile(), arc_app_id1);
+  arc::LaunchApp(profile(), arc_app_id2);
+  arc::LaunchApp(profile(), arc_app_id3);
+  arc::LaunchApp(profile(), arc_app_id3);
 
   const ash::ShelfID shelf_id_app_1 =
       launcher_controller_->GetShelfIDForAppID(arc_app_id1);
@@ -1946,7 +1945,7 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
 }
 
 // Test race creation/deletion of Arc app.
-// TODO(khmel): Remove after moving everything to wayland protocol.
+// TODO (khmel): Remove after moving everything to wayland protocol.
 TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   InitLauncherController();
 
@@ -3966,7 +3965,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
       ArcAppTest::GetAppId(arc_test_.fake_default_apps()[0]);
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
-  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
   EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
@@ -3976,7 +3975,7 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));
 
-  EXPECT_TRUE(arc::LaunchApp(profile(), app_id, ui::EF_LEFT_MOUSE_BUTTON));
+  EXPECT_TRUE(arc::LaunchApp(profile(), app_id));
   EXPECT_TRUE(arc_test_.arc_session_manager()->IsArcEnabled());
 
   EXPECT_NE(ash::kInvalidShelfID,

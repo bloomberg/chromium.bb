@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_UI_ASH_LAUNCHER_ARC_APP_DEFERRED_LAUNCHER_CONTROLLER_H_
 
 #include <map>
-#include <string>
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
@@ -18,9 +17,6 @@
 class ArcAppDeferredLauncherItemController;
 class ChromeLauncherControllerImpl;
 
-// ArcAppDeferredLauncherController displays visual feedback that the ARC
-// application the user has just activated is waiting for ARC to be ready, and
-// will be asynchronously launched as soon as it can.
 class ArcAppDeferredLauncherController
     : public ArcAppListPrefs::Observer,
       public arc::ArcSessionManager::Observer {
@@ -33,10 +29,8 @@ class ArcAppDeferredLauncherController
 
   base::TimeDelta GetActiveTime(const std::string& app_id) const;
 
-  // Registers deferred ARC app launch. |app_id| is the app to be launched, and
-  // |event_flags| describes the original event flags that triggered the app's
-  // activation.
-  void RegisterDeferredLaunch(const std::string& app_id, int event_flags);
+  // Registers deferred Arc app launch.
+  void RegisterDeferredLaunch(const std::string& app_id);
 
   // Applies spinning effect if requested app is handled by deferred controller.
   void MaybeApplySpinningEffect(const std::string& app_id,
