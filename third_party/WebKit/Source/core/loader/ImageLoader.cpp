@@ -510,14 +510,7 @@ void ImageLoader::imageNotifyFinished(ImageResource* resource) {
     updatedHasPendingEvent();
     return;
   }
-  if (resource->wasCanceled()) {
-    m_hasPendingLoadEvent = false;
-    // Only consider updating the protection ref-count of the Element
-    // immediately before returning from this function as doing so might result
-    // in the destruction of this ImageLoader.
-    updatedHasPendingEvent();
-    return;
-  }
+  DCHECK(!resource->wasCanceled());
   loadEventSender().dispatchEventSoon(this);
 }
 
