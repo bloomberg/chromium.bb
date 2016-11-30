@@ -163,7 +163,7 @@ found in the LICENSE file.
       }
 
       // Main rendering loop
-      function onAnimationFrame () {
+      function onAnimationFrame (t) {
         stats.begin();
 
         // The normal requestAnimationFrame is used here because the scene is
@@ -178,10 +178,10 @@ found in the LICENSE file.
           vrDisplay.getFrameData(frameData);
 
           // Render the scene using the view matrix for one of the eyes.
-          cubeSea.render(projectionMat, frameData.leftViewMatrix, stats);
+          cubeSea.render(projectionMat, frameData.leftViewMatrix, stats, t);
         } else {
           // If no VRDisplay was found render the scene using an identity matrix.
-          cubeSea.render(projectionMat, identityMat, stats);
+          cubeSea.render(projectionMat, identityMat, stats, t);
         }
 
         // Render the FPS counter.
