@@ -167,17 +167,21 @@ class PersistentBase {
  protected:
   NO_SANITIZE_ADDRESS
   T* atomicGet() {
-    return reinterpret_cast<T*>(
-        acquireLoad(reinterpret_cast<void* volatile*>(&m_raw)));
+    return reinterpret_cast<T*>(acquireLoad(reinterpret_cast<void* volatile*>(
+        const_cast<typename std::remove_const<T>::type**>(&m_raw))));
   }
 
  private:
   NO_SANITIZE_ADDRESS
   void assign(T* ptr) {
-    if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration)
-      releaseStore(reinterpret_cast<void* volatile*>(&m_raw), ptr);
-    else
+    if (crossThreadnessConfiguration == CrossThreadPersistentConfiguration) {
+      releaseStore(
+          reinterpret_cast<void* volatile*>(
+              const_cast<typename std::remove_const<T>::type**>(&m_raw)),
+          const_cast<typename std::remove_const<T>::type*>(ptr));
+    } else {
       m_raw = ptr;
+    }
     checkPointer();
     if (m_raw) {
       if (!m_persistentNode)
