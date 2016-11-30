@@ -7,7 +7,6 @@
 #include "base/run_loop.h"
 #include "chrome/browser/search_engines/template_url_service_factory.h"
 #include "chrome/test/base/testing_profile.h"
-#include "components/search_engines/default_search_pref_test_util.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 
@@ -28,28 +27,6 @@ TemplateURLServiceFactoryTestUtil::~TemplateURLServiceFactoryTestUtil() {
 void TemplateURLServiceFactoryTestUtil::VerifyLoad() {
   model()->Load();
   base::RunLoop().RunUntilIdle();
-}
-
-void TemplateURLServiceFactoryTestUtil::SetManagedDefaultSearchPreferences(
-    bool enabled,
-    const std::string& name,
-    const std::string& keyword,
-    const std::string& search_url,
-    const std::string& suggest_url,
-    const std::string& icon_url,
-    const std::string& encodings,
-    const std::string& alternate_url,
-    const std::string& search_terms_replacement_key) {
-  DefaultSearchPrefTestUtil::SetManagedPref(
-      profile_->GetTestingPrefService(),
-      enabled, name, keyword, search_url, suggest_url, icon_url, encodings,
-      alternate_url, search_terms_replacement_key);
-}
-
-void
-TemplateURLServiceFactoryTestUtil::RemoveManagedDefaultSearchPreferences() {
-  DefaultSearchPrefTestUtil::RemoveManagedPref(
-      profile_->GetTestingPrefService());
 }
 
 TemplateURLService* TemplateURLServiceFactoryTestUtil::model() const {

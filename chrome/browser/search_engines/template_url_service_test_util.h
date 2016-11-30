@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/strings/string16.h"
+#include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service_observer.h"
 
 class GURL;
@@ -19,6 +20,15 @@ class KeywordWebDataService;
 class TemplateURLService;
 class TestingProfile;
 class TestingSearchTermsData;
+
+// Sets the managed preferences for the default search provider.
+// enabled arg enables/disables use of managed engine by DefaultSearchManager.
+void SetManagedDefaultSearchPreferences(const TemplateURLData& managed_data,
+                                        bool enabled,
+                                        TestingProfile* profile);
+
+// Removes all the managed preferences for the default search provider.
+void RemoveManagedDefaultSearchPreferences(TestingProfile* profile);
 
 class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
  public:
@@ -54,24 +64,6 @@ class TemplateURLServiceTestUtil : public TemplateURLServiceObserver {
 
   // Sets the google base url.  |base_url| must be valid.
   void SetGoogleBaseURL(const GURL& base_url);
-
-  // Sets the managed preferences for the default search provider and trigger
-  // notification. If |alternate_url| is empty, uses an empty list of alternate
-  // URLs, otherwise uses a list containing a single entry.
-  void SetManagedDefaultSearchPreferences(
-      bool enabled,
-      const std::string& name,
-      const std::string& keyword,
-      const std::string& search_url,
-      const std::string& suggest_url,
-      const std::string& icon_url,
-      const std::string& encodings,
-      const std::string& alternate_url,
-      const std::string& search_terms_replacement_key);
-
-  // Removes all the managed preferences for the default search provider and
-  // triggers notification.
-  void RemoveManagedDefaultSearchPreferences();
 
   KeywordWebDataService* web_data_service() { return web_data_service_.get(); }
   TemplateURLService* model() { return model_.get(); }

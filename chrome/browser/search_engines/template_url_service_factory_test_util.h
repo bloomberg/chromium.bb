@@ -22,24 +22,6 @@ class TemplateURLServiceFactoryTestUtil {
   // Makes sure the load was successful.
   void VerifyLoad();
 
-  // Set the managed preferences for the default search provider and trigger
-  // notification. If |alternate_url| is empty, uses an empty list of alternate
-  // URLs, otherwise use a list containing a single entry.
-  void SetManagedDefaultSearchPreferences(
-      bool enabled,
-      const std::string& name,
-      const std::string& keyword,
-      const std::string& search_url,
-      const std::string& suggest_url,
-      const std::string& icon_url,
-      const std::string& encodings,
-      const std::string& alternate_url,
-      const std::string& search_terms_replacement_key);
-
-  // Remove all the managed preferences for the default search provider and
-  // trigger notification.
-  void RemoveManagedDefaultSearchPreferences();
-
   // Returns the TemplateURLService.
   TemplateURLService* model() const;
 

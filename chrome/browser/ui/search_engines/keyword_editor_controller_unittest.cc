@@ -8,10 +8,12 @@
 #include "base/strings/utf_string_conversions.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/search_engines/template_url_service_factory_test_util.h"
+#include "chrome/browser/search_engines/template_url_service_test_util.h"
 #include "chrome/browser/ui/search_engines/keyword_editor_controller.h"
 #include "chrome/browser/ui/search_engines/template_url_table_model.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/search_engines/template_url.h"
+#include "components/search_engines/template_url_data.h"
 #include "components/search_engines/template_url_service.h"
 #include "components/sync_preferences/testing_pref_service_syncable.h"
 #include "content/public/test/test_browser_thread_bundle.h"
@@ -83,15 +85,11 @@ class KeywordEditorControllerTest : public testing::Test,
   }
 
   void SimulateDefaultSearchIsManaged(const std::string& url) {
-    util_.SetManagedDefaultSearchPreferences(true,
-                                             "managed",
-                                             "managed",
-                                             url,
-                                             std::string(),
-                                             std::string(),
-                                             std::string(),
-                                             std::string(),
-                                             std::string());
+    TemplateURLData managed_engine;
+    managed_engine.SetShortName(ASCIIToUTF16("managed"));
+    managed_engine.SetKeyword(ASCIIToUTF16("managed"));
+    managed_engine.SetURL(url);
+    SetManagedDefaultSearchPreferences(managed_engine, true, &profile_);
   }
 
   TemplateURLTableModel* table_model() { return controller_->table_model(); }

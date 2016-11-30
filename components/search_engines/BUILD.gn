@@ -98,8 +98,6 @@ static_library("search_engines") {
 static_library("test_support") {
   testonly = true
   sources = [
-    "default_search_pref_test_util.cc",
-    "default_search_pref_test_util.h",
     "testing_search_terms_data.cc",
     "testing_search_terms_data.h",
   ]

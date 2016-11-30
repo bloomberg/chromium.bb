@@ -41,6 +41,10 @@ using base::TimeDelta;
 
 namespace {
 
+// A prepopulated ID to set for engines we want to show in the default list.
+// This must simply be greater than 0.
+static constexpr int kPrepopulatedId = 999999;
+
 // QueryHistoryCallbackImpl ---------------------------------------------------
 
 struct QueryHistoryCallbackImpl {
@@ -128,6 +132,19 @@ void ExpectSimilar(const TemplateURL* expected, const TemplateURL* actual) {
             actual->search_terms_replacement_key());
 }
 
+std::unique_ptr<TemplateURLData> CreateTestSearchEngine() {
+  auto result = base::MakeUnique<TemplateURLData>();
+  result->SetShortName(ASCIIToUTF16("test1"));
+  result->SetKeyword(ASCIIToUTF16("test.com"));
+  result->SetURL("http://test.com/search?t={searchTerms}");
+  result->favicon_url = GURL("http://test.com/icon.jpg");
+  result->prepopulate_id = kPrepopulatedId;
+  result->input_encodings = {"UTF-16", "UTF-32"};
+  result->alternate_urls = {"http://test.com/search#t={searchTerms}"};
+  result->search_terms_replacement_key = "espv";
+  return result;
+}
+
 }  // namespace
 
 
@@ -136,10 +153,6 @@ void ExpectSimilar(const TemplateURL* expected, const TemplateURL* actual) {
 class TemplateURLServiceTest : public testing::Test {
  public:
   TemplateURLServiceTest();
-
-  // A prepopulated ID to set for engines we want to show in the default list.
-  // This must simply be greater than 0.
-  static constexpr int kPrepopulatedId = 999999;
 
   // testing::Test:
   void SetUp() override;
@@ -849,31 +862,12 @@ TEST_F(TemplateURLServiceTest, RepairPrepopulatedSearchEngines) {
 
 TEST_F(TemplateURLServiceTest, RepairSearchEnginesWithManagedDefault) {
   // Set a managed preference that establishes a default search provider.
-  const char kName[] = "test1";
-  const char kKeyword[] = "test.com";
-  const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
-  const char kIconURL[] = "http://test.com/icon.jpg";
-  const char kEncodings[] = "UTF-16;UTF-32";
-  const char kAlternateURL[] = "http://test.com/search#t={searchTerms}";
-  const char kSearchTermsReplacementKey[] = "espv";
-  test_util()->SetManagedDefaultSearchPreferences(true, kName, kKeyword,
-                                                  kSearchURL, std::string(),
-                                                  kIconURL, kEncodings,
-                                                  kAlternateURL,
-                                                  kSearchTermsReplacementKey);
+  std::unique_ptr<TemplateURLData> managed = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed, true, test_util()->profile());
   test_util()->VerifyLoad();
+
   // Verify that the default manager we are getting is the managed one.
-  TemplateURLData data;
-  data.SetShortName(ASCIIToUTF16(kName));
-  data.SetKeyword(ASCIIToUTF16(kKeyword));
-  data.SetURL(kSearchURL);
-  data.favicon_url = GURL(kIconURL);
-  data.prepopulate_id = kPrepopulatedId;
-  data.input_encodings = base::SplitString(
-      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  data.alternate_urls.push_back(kAlternateURL);
-  data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  std::unique_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
+  auto expected_managed_default = base::MakeUnique<TemplateURL>(*managed);
   EXPECT_TRUE(model()->is_default_search_managed());
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
@@ -1230,64 +1224,38 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   EXPECT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
 
   // Set a managed preference that establishes a default search provider.
-  const char kName[] = "test1";
-  const char kKeyword[] = "test.com";
-  const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
-  const char kIconURL[] = "http://test.com/icon.jpg";
-  const char kEncodings[] = "UTF-16;UTF-32";
-  const char kAlternateURL[] = "http://test.com/search#t={searchTerms}";
-  const char kSearchTermsReplacementKey[] = "espv";
-  test_util()->SetManagedDefaultSearchPreferences(true, kName, kKeyword,
-      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
-      kSearchTermsReplacementKey);
+  std::unique_ptr<TemplateURLData> managed = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed, true, test_util()->profile());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
 
   // Verify that the default manager we are getting is the managed one.
-  TemplateURLData data;
-  data.SetShortName(ASCIIToUTF16(kName));
-  data.SetKeyword(ASCIIToUTF16(kKeyword));
-  data.SetURL(kSearchURL);
-  data.favicon_url = GURL(kIconURL);
-  data.prepopulate_id = kPrepopulatedId;
-  data.input_encodings = base::SplitString(
-      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  data.alternate_urls.push_back(kAlternateURL);
-  data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  std::unique_ptr<TemplateURL> expected_managed_default1(new TemplateURL(data));
+  auto expected_managed_default1 = base::MakeUnique<TemplateURL>(*managed);
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default1.get(), actual_managed_default);
   EXPECT_TRUE(model()->ShowInDefaultList(actual_managed_default));
 
   // Update the managed preference and check that the model has changed.
-  const char kNewName[] = "test2";
-  const char kNewKeyword[] = "other.com";
-  const char kNewSearchURL[] = "http://other.com/search?t={searchTerms}";
-  const char kNewSuggestURL[] = "http://other.com/suggest?t={searchTerms}";
-  test_util()->SetManagedDefaultSearchPreferences(true, kNewName, kNewKeyword,
-      kNewSearchURL, kNewSuggestURL, std::string(), std::string(),
-      std::string(), std::string());
+  TemplateURLData managed2;
+  managed2.SetShortName(ASCIIToUTF16("test2"));
+  managed2.SetKeyword(ASCIIToUTF16("other.com"));
+  managed2.SetURL("http://other.com/search?t={searchTerms}");
+  managed2.suggestions_url = "http://other.com/suggest?t={searchTerms}";
+  SetManagedDefaultSearchPreferences(managed2, true, test_util()->profile());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
 
   // Verify that the default manager we are now getting is the correct one.
-  TemplateURLData data2;
-  data2.SetShortName(ASCIIToUTF16(kNewName));
-  data2.SetKeyword(ASCIIToUTF16(kNewKeyword));
-  data2.SetURL(kNewSearchURL);
-  data2.suggestions_url = kNewSuggestURL;
-  data2.prepopulate_id = kPrepopulatedId;
-  std::unique_ptr<TemplateURL> expected_managed_default2(
-      new TemplateURL(data2));
+  auto expected_managed_default2 = base::MakeUnique<TemplateURL>(managed2);
   actual_managed_default = model()->GetDefaultSearchProvider();
   ExpectSimilar(expected_managed_default2.get(), actual_managed_default);
   EXPECT_EQ(model()->ShowInDefaultList(actual_managed_default), true);
 
   // Remove all the managed prefs and check that we are no longer managed.
-  test_util()->RemoveManagedDefaultSearchPreferences();
+  RemoveManagedDefaultSearchPreferences(test_util()->profile());
   VerifyObserverFired();
   EXPECT_FALSE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
@@ -1299,18 +1267,14 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   EXPECT_EQ(model()->ShowInDefaultList(actual_final_managed_default), true);
 
   // Disable the default search provider through policy.
-  test_util()->SetManagedDefaultSearchPreferences(false, std::string(),
-      std::string(), std::string(), std::string(), std::string(),
-      std::string(), std::string(), std::string());
+  SetManagedDefaultSearchPreferences(managed2, false, test_util()->profile());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(NULL == model()->GetDefaultSearchProvider());
   EXPECT_EQ(initial_count + 1, model()->GetTemplateURLs().size());
 
   // Re-enable it.
-  test_util()->SetManagedDefaultSearchPreferences(true, kName, kKeyword,
-      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
-      kSearchTermsReplacementKey);
+  SetManagedDefaultSearchPreferences(*managed, true, test_util()->profile());
   VerifyObserverFired();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_EQ(initial_count + 2, model()->GetTemplateURLs().size());
@@ -1325,7 +1289,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
   // This checks against regressions of http://crbug.com/67180
 
   // First, remove the preferences, reset the model, and set a default.
-  test_util()->RemoveManagedDefaultSearchPreferences();
+  RemoveManagedDefaultSearchPreferences(test_util()->profile());
   test_util()->ResetModel(true);
   TemplateURL* new_default =
       model()->GetTemplateURLForKeyword(ASCIIToUTF16("key1"));
@@ -1335,9 +1299,7 @@ TEST_F(TemplateURLServiceTest, TestManagedDefaultSearch) {
 
   // Now reset the model again but load it after setting the preferences.
   test_util()->ResetModel(false);
-  test_util()->SetManagedDefaultSearchPreferences(false, std::string(),
-      std::string(), std::string(), std::string(), std::string(),
-      std::string(), std::string(), std::string());
+  SetManagedDefaultSearchPreferences(*managed, false, test_util()->profile());
   test_util()->VerifyLoad();
   EXPECT_TRUE(model()->is_default_search_managed());
   EXPECT_TRUE(model()->GetDefaultSearchProvider() == NULL);
@@ -1476,28 +1438,11 @@ TEST_F(TemplateURLServiceTest, ExtensionEnginesNotPersist) {
 
 TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
   // Set a managed preference that establishes a default search provider.
-  const char kName[] = "test";
-  const char kKeyword[] = "test.com";
-  const char kSearchURL[] = "http://test.com/search?t={searchTerms}";
-  const char kIconURL[] = "http://test.com/icon.jpg";
-  const char kEncodings[] = "UTF-16;UTF-32";
-  const char kAlternateURL[] = "http://test.com/search#t={searchTerms}";
-  const char kSearchTermsReplacementKey[] = "espv";
-  test_util()->SetManagedDefaultSearchPreferences(
-      true, kName, kKeyword, kSearchURL, std::string(), kIconURL, kEncodings,
-      kAlternateURL, kSearchTermsReplacementKey);
+  std::unique_ptr<TemplateURLData> managed = CreateTestSearchEngine();
+  SetManagedDefaultSearchPreferences(*managed, true, test_util()->profile());
   test_util()->VerifyLoad();
   // Verify that the default manager we are getting is the managed one.
-  TemplateURLData data;
-  data.SetShortName(ASCIIToUTF16(kName));
-  data.SetKeyword(ASCIIToUTF16(kKeyword));
-  data.SetURL(kSearchURL);
-  data.favicon_url = GURL(kIconURL);
-  data.input_encodings = base::SplitString(
-      kEncodings, ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
-  data.alternate_urls.push_back(kAlternateURL);
-  data.search_terms_replacement_key = kSearchTermsReplacementKey;
-  std::unique_ptr<TemplateURL> expected_managed_default(new TemplateURL(data));
+  auto expected_managed_default = base::MakeUnique<TemplateURL>(*managed);
   EXPECT_TRUE(model()->is_default_search_managed());
   const TemplateURL* actual_managed_default =
       model()->GetDefaultSearchProvider();
@@ -1507,8 +1452,8 @@ TEST_F(TemplateURLServiceTest, ExtensionEngineVsPolicy) {
       model(), "ext1", "ext1", "http://www.ext1.com/s?q={searchTerms}",
       std::string(), std::string(), std::string(), true, kPrepopulatedId,
       "UTF-8", Time(), Time(), TemplateURL::NORMAL_CONTROLLED_BY_EXTENSION);
-  std::unique_ptr<TemplateURL::AssociatedExtensionInfo> extension_info(
-      new TemplateURL::AssociatedExtensionInfo("ext1"));
+  auto extension_info =
+      base::MakeUnique<TemplateURL::AssociatedExtensionInfo>("ext1");
   extension_info->wants_to_be_default_engine = true;
   TemplateURL* ext_dse_ptr = model()->AddExtensionControlledTURL(
       std::move(ext_dse), std::move(extension_info));

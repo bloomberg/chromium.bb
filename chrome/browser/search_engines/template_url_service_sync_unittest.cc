@@ -1663,16 +1663,16 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   ASSERT_TRUE(model()->GetDefaultSearchProvider());
 
   // Change the default search provider to a managed one.
-  const char kName[] = "manageddefault";
-  const char kSearchURL[] = "http://manageddefault.com/search?t={searchTerms}";
-  const char kIconURL[] = "http://manageddefault.com/icon.jpg";
-  const char kEncodings[] = "UTF-16;UTF-32";
-  const char kAlternateURL[] =
-      "http://manageddefault.com/search#t={searchTerms}";
-  const char kSearchTermsReplacementKey[] = "espv";
-  test_util_a_->SetManagedDefaultSearchPreferences(true, kName, kName,
-      kSearchURL, std::string(), kIconURL, kEncodings, kAlternateURL,
-      kSearchTermsReplacementKey);
+  TemplateURLData managed;
+  managed.SetShortName(ASCIIToUTF16("manageddefault"));
+  managed.SetKeyword(ASCIIToUTF16("manageddefault"));
+  managed.SetURL("http://manageddefault.com/search?t={searchTerms}");
+  managed.favicon_url = GURL("http://manageddefault.com/icon.jpg");
+  managed.input_encodings = {"UTF-16", "UTF-32"};
+  managed.alternate_urls = {"http://manageddefault.com/search#t={searchTerms}"};
+  managed.search_terms_replacement_key = "espv";
+
+  SetManagedDefaultSearchPreferences(managed, true, test_util_a_->profile());
   const TemplateURL* dsp_turl = model()->GetDefaultSearchProvider();
 
   EXPECT_TRUE(model()->is_default_search_managed());
@@ -1701,7 +1701,7 @@ TEST_F(TemplateURLServiceSyncTest, SyncWithManagedDefaultSearch) {
   // from Sync.
   const TemplateURL* expected_default =
       model()->GetTemplateURLForGUID("newdefault");
-  test_util_a_->RemoveManagedDefaultSearchPreferences();
+  RemoveManagedDefaultSearchPreferences(test_util_a_->profile());
 
   EXPECT_EQ(expected_default, model()->GetDefaultSearchProvider());
 }
