@@ -251,6 +251,32 @@ int GetSwitchValueAsInt(const base::CommandLine& command_line,
   return value;
 }
 
+// This function is for forwarding metrics usage pref changes to the metrics
+// service on the appropriate thread.
+// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
+void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
+                                       int message_size,
+                                       bool is_cellular) {
+  BrowserThread::PostTask(
+      BrowserThread::UI,
+      FROM_HERE,
+      base::Bind([](const std::string& service_name,
+                    int message_size,
+                    bool is_cellular) {
+                   // Some unit tests use IOThread but do not initialize
+                   // MetricsService. In that case it's fine to skip the update.
+                   auto metrics_service = g_browser_process->metrics_service();
+                   if (metrics_service) {
+                     metrics_service->UpdateMetricsUsagePrefs(service_name,
+                                                              message_size,
+                                                              is_cellular);
+                   }
+                 },
+                 service_name,
+                 message_size,
+                 is_cellular));
+}
+
 }  // namespace
 
 class SystemURLRequestContextGetter : public net::URLRequestContextGetter {
@@ -405,14 +431,6 @@ IOThread::IOThread(
   if (value)
     value->GetAsBoolean(&http_09_on_non_default_ports_enabled_);
 
-  // Some unit tests use IOThread but do not initialize MetricsService. In that
-  // case it is fine not to have |metrics_data_use_forwarder_|.
-  if (g_browser_process->metrics_service()) {
-    // Callback for updating data use prefs should be obtained on UI thread.
-    metrics_data_use_forwarder_ =
-        g_browser_process->metrics_service()->GetDataUseForwardingCallback();
-  }
-
   chrome_browser_net::SetGlobalSTHDistributor(
       std::unique_ptr<net::ct::STHDistributor>(new net::ct::STHDistributor()));
 
@@ -531,7 +549,7 @@ void IOThread::Init() {
 
   globals_->system_network_delegate =
       globals_->data_use_ascriber->CreateNetworkDelegate(
-          std::move(chrome_network_delegate), metrics_data_use_forwarder_);
+          std::move(chrome_network_delegate), GetMetricsDataUseForwarder());
 
   globals_->host_resolver = CreateGlobalHostResolver(net_log_);
 
@@ -1078,7 +1096,6 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   return context;
 }
 
-const metrics::UpdateUsagePrefCallbackType&
-IOThread::GetMetricsDataUseForwarder() {
-  return metrics_data_use_forwarder_;
+metrics::UpdateUsagePrefCallbackType IOThread::GetMetricsDataUseForwarder() {
+  return base::Bind(&UpdateMetricsUsagePrefsOnUIThread);
 }

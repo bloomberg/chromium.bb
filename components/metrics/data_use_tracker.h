@@ -10,9 +10,6 @@
 #include "base/callback.h"
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
-#include "base/memory/weak_ptr.h"
-#include "base/sequenced_task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "base/time/time.h"
 #include "components/prefs/pref_registry_simple.h"
@@ -38,10 +35,10 @@ class DataUseTracker {
   // Registers data use prefs using provided |registry|.
   static void RegisterPrefs(PrefRegistrySimple* registry);
 
-  // Returns a callback to data use pref updating function. Should be called on
-  // UI thread.
-  UpdateUsagePrefCallbackType GetDataUseForwardingCallback(
-      scoped_refptr<base::SequencedTaskRunner> ui_task_runner);
+  // Updates data usage tracking prefs with the specified values.
+  void UpdateMetricsUsagePrefs(const std::string& service_name,
+                               int message_size,
+                               bool is_cellular);
 
   // Returns whether a log with provided |log_bytes| can be uploaded according
   // to data use ratio and UMA quota provided by variations.
@@ -52,12 +49,6 @@ class DataUseTracker {
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckRemoveExpiredEntries);
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckComputeTotalDataUse);
   FRIEND_TEST_ALL_PREFIXES(DataUseTrackerTest, CheckCanUploadUMALog);
-
-  // Updates data usage prefs on UI thread according to what Prefservice
-  // expects.
-  void UpdateMetricsUsagePrefsOnUIThread(const std::string& service_name,
-                                         int message_size,
-                                         bool is_cellular);
 
   // Updates provided |pref_name| for a current date with the given message
   // size.
@@ -89,8 +80,6 @@ class DataUseTracker {
   PrefService* local_state_;
 
   base::ThreadChecker thread_checker_;
-
-  base::WeakPtrFactory<DataUseTracker> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(DataUseTracker);
 };

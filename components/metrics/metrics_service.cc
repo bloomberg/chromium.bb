@@ -538,14 +538,15 @@ void MetricsService::PushExternalLog(const std::string& log) {
   log_manager_.StoreLog(log, MetricsLog::ONGOING_LOG);
 }
 
-UpdateUsagePrefCallbackType MetricsService::GetDataUseForwardingCallback() {
+void MetricsService::UpdateMetricsUsagePrefs(const std::string& service_name,
+                                             int message_size,
+                                             bool is_cellular) {
   DCHECK(IsSingleThreaded());
-
   if (data_use_tracker_) {
-    return data_use_tracker_->GetDataUseForwardingCallback(
-        base::ThreadTaskRunnerHandle::Get());
+    data_use_tracker_->UpdateMetricsUsagePrefs(service_name,
+                                               message_size,
+                                               is_cellular);
   }
-  return UpdateUsagePrefCallbackType();
 }
 
 void MetricsService::MergeHistogramDeltas() {

@@ -239,7 +239,7 @@ class IOThread : public content::BrowserThreadDelegate {
   base::TimeTicks creation_time() const;
 
   // Returns the callback for updating data use prefs.
-  const metrics::UpdateUsagePrefCallbackType& GetMetricsDataUseForwarder();
+  metrics::UpdateUsagePrefCallbackType GetMetricsDataUseForwarder();
 
   // Registers the |observer| for new STH notifications.
   void RegisterSTHObserver(net::ct::STHObserver* observer);
@@ -398,10 +398,6 @@ class IOThread : public content::BrowserThreadDelegate {
   bool http_09_on_non_default_ports_enabled_;
 
   const base::TimeTicks creation_time_;
-
-  // Callback for updating data use prefs which needs to be initialized on UI
-  // thread and passed to |DataUseNetworkDelegate|.
-  metrics::UpdateUsagePrefCallbackType metrics_data_use_forwarder_;
 
   base::WeakPtrFactory<IOThread> weak_factory_;
 

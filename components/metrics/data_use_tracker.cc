@@ -22,24 +22,10 @@ namespace {
 const int kDefaultUMAWeeklyQuotaBytes = 204800;
 const double kDefaultUMARatio = 0.05;
 
-// This function is for forwarding metrics usage pref changes to the appropriate
-// callback on the appropriate thread.
-// TODO(gayane): Reduce the frequency of posting tasks from IO to UI thread.
-void UpdateMetricsUsagePrefs(
-    const UpdateUsagePrefCallbackType& update_on_ui_callback,
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner,
-    const std::string& service_name,
-    int message_size,
-    bool is_cellular) {
-  ui_task_runner->PostTask(
-      FROM_HERE, base::Bind(update_on_ui_callback, service_name, message_size,
-                            is_cellular));
-}
-
 }  // namespace
 
 DataUseTracker::DataUseTracker(PrefService* local_state)
-    : local_state_(local_state), weak_ptr_factory_(this) {}
+    : local_state_(local_state) {}
 
 DataUseTracker::~DataUseTracker() {}
 
@@ -59,15 +45,17 @@ void DataUseTracker::RegisterPrefs(PrefRegistrySimple* registry) {
   registry->RegisterDictionaryPref(metrics::prefs::kUmaCellDataUse);
 }
 
-UpdateUsagePrefCallbackType DataUseTracker::GetDataUseForwardingCallback(
-    scoped_refptr<base::SequencedTaskRunner> ui_task_runner) {
-  DCHECK(ui_task_runner->RunsTasksOnCurrentThread());
+void DataUseTracker::UpdateMetricsUsagePrefs(const std::string& service_name,
+                                             int message_size,
+                                             bool is_cellular) {
+  DCHECK(thread_checker_.CalledOnValidThread());
 
-  return base::Bind(
-      &UpdateMetricsUsagePrefs,
-      base::Bind(&DataUseTracker::UpdateMetricsUsagePrefsOnUIThread,
-                 weak_ptr_factory_.GetWeakPtr()),
-      ui_task_runner);
+  if (!is_cellular)
+    return;
+
+  UpdateUsagePref(prefs::kUserCellDataUse, message_size);
+  if (service_name == "UMA")
+    UpdateUsagePref(prefs::kUmaCellDataUse, message_size);
 }
 
 bool DataUseTracker::ShouldUploadLogOnCellular(int log_bytes) {
@@ -96,20 +84,6 @@ bool DataUseTracker::ShouldUploadLogOnCellular(int log_bytes) {
   return new_uma_total_data_use /
              static_cast<double>(log_bytes + user_total_data_use) <=
          uma_ratio;
-}
-
-void DataUseTracker::UpdateMetricsUsagePrefsOnUIThread(
-    const std::string& service_name,
-    int message_size,
-    bool is_celllular) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  if (!is_celllular)
-    return;
-
-  UpdateUsagePref(prefs::kUserCellDataUse, message_size);
-  if (service_name == "UMA")
-    UpdateUsagePref(prefs::kUmaCellDataUse, message_size);
 }
 
 void DataUseTracker::UpdateUsagePref(const std::string& pref_name,
