@@ -19,7 +19,9 @@ crbug.com/364398 fast/frames/viewsource/viewsource-incomplete-token.html [ Leak 
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-script.html [ Leak ]
 crbug.com/364398 fast/frames/viewsource/viewsource-unfinished-textarea.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
+crbug.com/364398 virtual/mojo-loading/http/tests/security/xssAuditor/viewsource-onmouseover.html [ Leak ]
 crbug.com/364398 http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
+crbug.com/364398 virtual/mojo-loading/http/tests/security/xssAuditor/viewsource-script-tag.html [ Leak ]
 
 # FIXME: The below tests fails when the leak detector is disabled.
 crbug.com/366029 compositing/fixed-body-background-positioned.html [ Failure Pass ]
@@ -41,6 +43,7 @@ crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-custom
 
 crbug.com/327574 permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 http/tests/permissionclient/image-permissions.html [ Leak ]
+crbug.com/327574 virtual/mojo-loading/http/tests/permissionclient/image-permissions.html [ Leak ]
 crbug.com/327574 fast/loader/data-images-with-images-disabled.html [ Leak ]
 crbug.com/629058 plugins/fullscreen-plugins-dont-reload.html [ Leak ]
 
@@ -55,6 +58,7 @@ crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ L
 crbug.com/414163 [ Debug ] inspector/sources/debugger/promise-tracker.html [ Crash ]
 
 crbug.com/480769 http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
+crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Crash ]
 
 crbug.com/662477 imported/wpt/html/webappapis/idle-callbacks/cancel-invoked.html [ Leak ]
 crbug.com/662477 imported/wpt/html/webappapis/scripting/events/onerroreventhandler.html [ Leak ]
@@ -80,11 +84,17 @@ crbug.com/506752 storage/indexeddb/ [ Skip ]
 # Untriaged but known leaks of ActiveDOMObject (http).
 # -----------------------------------------------------------------
 crbug.com/506754 http/tests/cachestorage/window/cache-put.html [ Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/cachestorage/window/cache-put.html [ Leak ]
 crbug.com/506754 http/tests/inspector/network/network-xhr-replay.html [ Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/inspector/network/network-xhr-replay.html [ Leak ]
 crbug.com/506754 http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/inspector/service-workers/service-worker-agents.html [ Crash Leak ]
 crbug.com/506754 http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/security/cross-origin-indexeddb-allowed.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
+crbug.com/506754 virtual/mojo-loading/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/disable-mojo-service-worker/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
 crbug.com/506754 virtual/disable-mojo-service-worker/http/tests/serviceworker/chromium/window-close-during-registration.html [ Leak ]
 crbug.com/506754 virtual/service-worker-navigation-preload/http/tests/serviceworker/chromium/resolve-after-window-close.html [ Leak ]
@@ -99,6 +109,7 @@ crbug.com/451577 [ Linux ] inspector/extensions/extensions-sidebar.html [ Slow ]
 
 crbug.com/578297 [ Linux ] virtual/threaded/printing/webgl-oversized-printing.html [ Slow ]
 crbug.com/578297 [ Linux ] http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Slow ]
+crbug.com/578297 [ Linux ] virtual/mojo-loading/http/tests/media/media-source/mediasource-appendstream-quota-exceeded.html [ Slow ]
 
 # -----------------------------------------------------------------
 # Leaks in imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/*

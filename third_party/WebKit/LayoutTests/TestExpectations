@@ -373,6 +373,7 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-m
 # virtual/service-worker-navigation-preload only.
 crbug.com/649558 http/tests/serviceworker/navigation-preload/ [ Skip ]
 crbug.com/649558 virtual/disable-mojo-service-worker/http/tests/serviceworker/navigation-preload/ [ Skip ]
+crbug.com/649558 virtual/mojo-loading/http/tests/serviceworker/navigation-preload/ [ Skip ]
 
 # Run these tests with under virtual/scalefactor... only.
 crbug.com/567837 fast/hidpi/static [ Skip ]
@@ -400,21 +401,28 @@ crbug.com/492664 [ Win ] imported/csswg-test/css-writing-modes-3/bidi-plaintext-
 crbug.com/267206 [ Mac ] virtual/rootlayerscrolls/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/280342 [ Linux Win ] http/tests/media/progress-events-generated-correctly.html [ Failure ]
+crbug.com/280342 [ Linux Win ] virtual/mojo-loading/http/tests/media/progress-events-generated-correctly.html [ Failure ]
 
 crbug.com/520739 [ Mac ] http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
+crbug.com/520739 [ Mac ] virtual/mojo-loading/http/tests/websocket/close-code-and-reason.html [ Failure Pass Timeout ]
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
 crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
+crbug.com/522647 virtual/mojo-loading/http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
 crbug.com/521858 [ Win7 ] http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
+crbug.com/521858 [ Win7 ] virtual/mojo-loading/http/tests/security/media-element-audio-source-node-same-origin.html [ Failure Pass ]
 crbug.com/521853 [ Win ] http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
+crbug.com/521853 [ Win ] virtual/mojo-loading/http/tests/inspector/search/sources-search-scope.html [ Failure Pass ]
 crbug.com/520170 [ Win ] fast/dom/timer-throttling-hidden-page.html [ Failure Pass ]
 crbug.com/520174 fast/events/message-port-start-and-close-different-microtask.html [ Failure Pass ]
 crbug.com/652536 fast/events/mouse-cursor-change-after-image-load.html [ Failure Pass ]
 crbug.com/520188 [ Win ] http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
+crbug.com/520188 [ Win ] virtual/mojo-loading/http/tests/local/fileapi/file-last-modified-after-delete.html [ Failure Pass ]
 crbug.com/520611 [ Debug ] fast/filesystem/workers/file-writer-events-shared-worker.html [ Failure Pass ]
 crbug.com/520613 http/tests/cache/freshness-header.html [ Failure Pass ]
+crbug.com/520613 virtual/mojo-loading/http/tests/cache/freshness-header.html [ Failure Pass ]
 crbug.com/520194 http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 crbug.com/520194 virtual/mojo-loading/http/tests/xmlhttprequest/timeout/xmlhttprequest-timeout-worker-overridesexpires.html [ Failure Pass ]
 
@@ -434,6 +442,7 @@ crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/scro
 crbug.com/410974 virtual/threaded/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Pass Failure ]
 
 crbug.com/518883 crbug.com/390452 http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
+crbug.com/518883 crbug.com/390452 virtual/mojo-loading/http/tests/security/isolatedWorld/media-query-wrapper-leaks.html [ Failure Pass Timeout ]
 crbug.com/518987 http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518987 virtual/mojo-loading/http/tests/xmlhttprequest/navigation-abort-detaches-frame.html [ Pass Timeout ]
 crbug.com/518988 [ Win7 ] http/tests/xmlhttprequest/xmlhttprequest-50ms-download-dispatch.html [ Failure Pass ]
@@ -452,6 +461,7 @@ crbug.com/636053 [ Mac Win ] virtual/threaded/printing/thead-repeats-at-top-of-e
 
 crbug.com/636239 [ Win7 ] media/video-zoom-controls.html [ Failure ]
 crbug.com/520189 [ Mac ] http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
+crbug.com/520189 [ Mac ] virtual/mojo-loading/http/tests/misc/submit-post-keygen.html [ Pass Timeout ]
 
 crbug.com/432129 fast/html/marquee-scroll.html [ Failure Pass ]
 crbug.com/248938 [ Win Debug ] virtual/threaded/animations/transition-and-animation-2.html [ Timeout ]
@@ -533,6 +543,7 @@ crbug.com/543110 [ Mac ] fast/text/international/text-shaping-arabic.html [ Fail
 
 # This directly has manual tests that don't have to run with run-webkit-tests
 crbug.com/359838 http/tests/ManualTests/ [ Skip ]
+crbug.com/359838 virtual/mojo-loading/http/tests/ManualTests/ [ Skip ]
 
 # Will be re-enabled and rebaselined once we remove the '--enable-file-cookies' flag.
 crbug.com/470482 fast/cookies/local-file-can-set-cookies.html [ Skip ]
@@ -542,6 +553,7 @@ crbug.com/264138 dom/xhtml/level3/core/nodecomparedocumentposition38.xhtml [ Fai
 
 crbug.com/410145 [ Win ] fast/table/column-in-inline.html [ Failure ]
 crbug.com/411164 [ Win ] http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
+crbug.com/411164 [ Win ] virtual/mojo-loading/http/tests/security/powerfulFeatureRestrictions/serviceworker-on-insecure-origin.html [ Pass ]
 
 # In imported/wpt/html/, we prefer checking in failure
 # expectation files. The following tests with [ Failure ] don't have failure
@@ -601,6 +613,7 @@ crbug.com/552494 virtual/prefer_compositing_to_lcd_text/scrollbars/overflow-scro
 crbug.com/552494 virtual/rootlayerscrolls/scrollbars/overflow-scrollbar-combinations.html [ Pass Failure ]
 
 crbug.com/659456 http/tests/inspector/persistence/automapping-sourcemap.html [ Pass Failure ]
+crbug.com/659456 virtual/mojo-loading/http/tests/inspector/persistence/automapping-sourcemap.html [ Pass Failure ]
 
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphen-min-preferred-width-mock.html [ Skip ]
 crbug.com/605840 [ Linux Win ] fast/text/hyphens/hyphens-auto.html [ Skip ]
@@ -856,11 +869,13 @@ crbug.com/267206 [ Mac ] fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeo
 crbug.com/267206 [ Mac ] virtual/scroll_customization/fast/scrolling/scrollbar-tickmarks-hittest.html [ Timeout ]
 
 crbug.com/524160 [ Debug ] http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
+crbug.com/524160 [ Debug ] virtual/mojo-loading/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Timeout ]
 
 # Run the tests with the default MSE buffer sizes in the main test suite and the tests for 1MB buffers set via command line in a virtual test suite
 # with the --mse-audio-buffer-size-limit=1048576 and --mse-video-buffer-size-limit=1048576 command-line parameters.
 crbug.com/630342 virtual/mse-1mb-buffers/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-default-buffers.html [ Skip ]
 crbug.com/630342 http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
+crbug.com/630342 virtual/mojo-loading/http/tests/media/media-source/stream_memory_tests/mediasource-appendbuffer-quota-exceeded-1mb-buffers.html [ Skip ]
 
 # On these platforms (all but Android) media tests don't currently use gpu-accelerated (proprietary) codecs, so no
 # benefit to running them again with gpu acceleration enabled.
@@ -871,7 +886,9 @@ crbug.com/253763 fast/text-autosizing/first-line-scale-factor.html [ Failure ]
 crbug.com/390377 [ Release ] fast/dom/private_script_unittest.html [ Skip ]
 
 crbug.com/613887 http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
+crbug.com/613887 virtual/mojo-loading/http/tests/preload/meta-viewport-link-headers.html [ Failure Pass ]
 crbug.com/564403 [ Win Debug ] http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
+crbug.com/564403 [ Win Debug ] virtual/mojo-loading/http/tests/inspector/service-workers/service-worker-manager.html [ Failure Pass Timeout ]
 
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas.html [ Skip ]
 crbug.com/306222 fast/hidpi/image-srcset-relative-svg-canvas-2x.html [ Skip ]
@@ -896,6 +913,13 @@ crbug.com/528062 [ Win ] http/tests/security/XFrameOptions/x-frame-options-cache
 crbug.com/528062 [ Win ] http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/cached-frame.html [ Failure ]
 crbug.com/528062 [ Win ] http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/css/missing-repaint-after-slow-style-sheet.pl [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-data-blob.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/local/blob/send-hybrid-blob.html [ Failure Timeout ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/XFrameOptions/x-frame-options-cached.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/contentSecurityPolicy/cached-frame-csp.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/cached-frame.html [ Failure ]
+crbug.com/528062 [ Win ] virtual/mojo-loading/http/tests/security/xssAuditor/chunked-big-script.html [ Failure ]
 
 crbug.com/392706 virtual/threaded/animations/play-state-initially-paused.html [ Failure ]
 
@@ -948,10 +972,13 @@ crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scro
 crbug.com/665577 [ Linux Win ] virtual/threaded/fast/scroll-behavior/smooth-scroll/track-scroll.html [ Pass Failure ]
 
 crbug.com/480769 http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
+crbug.com/480769 virtual/mojo-loading/http/tests/inspector/service-workers/service-workers-redundant.html [ Pass Failure ]
 
 crbug.com/569901 [ Debug ] http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
+crbug.com/569901 [ Debug ] virtual/mojo-loading/http/tests/serviceworker/navigation-redirect.html [ Pass Failure ]
 
 crbug.com/599670 [ Win Linux ] http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
+crbug.com/599670 [ Win Linux ] virtual/mojo-loading/http/tests/inspector/resource-parameters-ipv6.html [ Failure Pass ]
 
 crbug.com/472330 fast/borders/border-image-outset-split-inline-vertical-lr.html [ Failure ]
 crbug.com/472330 fast/writing-mode/box-shadow-vertical-lr.html [ Failure ]
@@ -959,6 +986,7 @@ crbug.com/472330 fast/writing-mode/box-shadow-vertical-rl.html [ Failure ]
 
 # Flaky on Win10 and Win7
 crbug.com/619539 [ Win ] http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
+crbug.com/619539 [ Win ] virtual/mojo-loading/http/tests/workers/terminate-during-sync-operation-file.html [ Pass Timeout ]
 
 # Temporary until we start generating Trusty baselines.
 crbug.com/498021 [ Linux ] fast/text/unicode-fallback-font.html [ Failure ]
@@ -977,6 +1005,7 @@ crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 # TODO(yangguo): these tests need to be rebaselined after V8 change lands.
 crbug.com/666223 fast/workers/constructor-proto.html [ NeedsManualRebaseline ]
 crbug.com/666223 http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ NeedsManualRebaseline ]
+crbug.com/666223 virtual/mojo-loading/http/tests/w3c/webperf/approved/navigation-timing/html/idlharness.html [ NeedsManualRebaseline ]
 crbug.com/666223 imported/wpt/WebIDL/ecmascript-binding/es-exceptions/constructor-object.html [ NeedsManualRebaseline ]
 crbug.com/666223 imported/wpt/dom/interfaces.html [ NeedsManualRebaseline ]
 crbug.com/666223 inspector/sources/debugger-ui/watch-expressions-preserve-expansion.html [ NeedsManualRebaseline ]
@@ -1161,6 +1190,7 @@ crbug.com/479533 accessibility/show-context-menu-shadowdom.html [ Skip ]
 crbug.com/483653 accessibility/scroll-containers.html [ Skip ]
 
 crbug.com/491764 http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
+crbug.com/491764 virtual/mojo-loading/http/tests/inspector/service-workers/user-agent-override.html [ Pass Timeout ]
 
 # Fails with leak detector.
 crbug.com/622915 [ Linux ] ietestcenter/css3/grid/grid-column-003.htm [ Skip ]
@@ -1181,6 +1211,7 @@ crbug.com/321237 [ Win ] fast/selectors/004.html [ Failure ]
 crbug.com/501659 fast/xsl/xslt-missing-namespace-in-xslt.xml [ Failure ]
 
 crbug.com/501659 http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
+crbug.com/501659 virtual/mojo-loading/http/tests/security/xss-DENIED-xml-external-entity.xhtml [ Failure ]
 crbug.com/501659 fast/css/stylesheet-candidate-nodes-crash.xhtml [ Failure ]
 
 crbug.com/505387 [ Win ] virtual/prefer_compositing_to_lcd_text/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
@@ -1196,6 +1227,7 @@ crbug.com/509025 [ Mac10.10 ] fast/forms/textarea/textarea-newline.html [ Failur
 crbug.com/545140 [ Mac10.10 Mac10.11 Retina ] fast/encoding/denormalised-voiced-japanese-chars.html [ Failure ]
 
 crbug.com/636248 [ Mac ] http/tests/security/img-crossorigin-no-credentials-prompt.html [ Failure Pass ]
+crbug.com/636248 [ Mac ] virtual/mojo-loading/http/tests/security/img-crossorigin-no-credentials-prompt.html [ Failure Pass ]
 
 crbug.com/509025 [ Mac10.10 ] fast/events/context-no-deselect.html [ Failure ]
 crbug.com/509025 [ Mac10.10 ] virtual/rootlayerscrolls/scrollbars/rtl/overflow-scroll-rtl.html [ Failure ]
@@ -1270,6 +1302,7 @@ crbug.com/567230 [ Debug ] virtual/threaded/animations/restart-not-visible.html 
 crbug.com/567419 inspector/elements/styles-2/metrics-box-sizing.html [ Skip ]
 
 crbug.com/457273 [ Mac ] http/tests/websocket/close.html [ Pass Timeout ]
+crbug.com/457273 [ Mac ] virtual/mojo-loading/http/tests/websocket/close.html [ Pass Timeout ]
 
 crbug.com/596752 virtual/threaded/inspector/tracing/decode-resize.html [ Pass Failure ]
 
@@ -1282,22 +1315,32 @@ crbug.com/524646 [ Mac10.10 ] fast/dom/shadow/shadowdom-for-button.html [ Failur
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
 crbug.com/538717 [ Win Mac Linux ] http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-window.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-worker.html [ Failure Pass Timeout ]
+crbug.com/538717 [ Win Mac Linux ] virtual/mojo-loading/http/tests/permissions/chromium/test-request-multiple-sharedworker.html [ Failure Pass Timeout ]
 
 crbug.com/543369 [ Linux ] fast/forms/select-popup/popup-menu-appearance-tall.html [ Failure ]
 
 crbug.com/546215 [ Android ] fast/inline-block/overflow-clip.html [ Failure ]
 
 crbug.com/548765 http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
+crbug.com/548765 virtual/mojo-loading/http/tests/inspector/console-fetch-logging.html [ Failure Pass ]
 
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display.html [ Pass Failure ]
 crbug.com/564109 [ Win7 ]  http/tests/webfont/font-display-intervention.html [ Pass Failure ]
+crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display.html [ Pass Failure ]
+crbug.com/564109 [ Win7 ]  virtual/mojo-loading/http/tests/webfont/font-display-intervention.html [ Pass Failure ]
 
 crbug.com/575766 http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
+crbug.com/575766 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-frame-add.html [ Timeout Pass ]
 crbug.com/581468 http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
+crbug.com/581468 virtual/mojo-loading/http/tests/inspector/resource-tree/resource-tree-non-unique-url.html [ Pass Failure ]
 
 crbug.com/399951 http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
+crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecounters.html [ Pass Failure ]
 
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
+crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
 crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
@@ -1305,8 +1348,10 @@ crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.h
 crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
 
 crbug.com/577380 [ Linux Debug ] http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
+crbug.com/577380 [ Linux Debug ] virtual/mojo-loading/http/tests/serviceworker/chromium/registration-stress.html [ Failure ]
 
 crbug.com/634264 http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
+crbug.com/634264 virtual/mojo-loading/http/tests/security/xss-DENIED-cross-origin-stack-overflow.html [ Crash Timeout ]
 
 crbug.com/594672 fast/events/iframe-object-onload.html [ Failure Pass ]
 crbug.com/594672 fast/events/scale-and-scroll-iframe-body.html [ Failure Pass ]
@@ -1320,11 +1365,14 @@ crbug.com/453002 [ Win ] fast/text/orientation-sideways.html [ Failure Pass ]
 # DocumentWriteEvaluator is still experimental
 crbug.com/599115 http/tests/preload/document-write [ Failure ]
 crbug.com/599115 http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
+crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write [ Failure ]
+crbug.com/599115 virtual/mojo-loading/http/tests/preload/document-write/document_write_no_preload.html [ Pass ]
 
 crbug.com/600261 imported/wpt/mediacapture-streams/GUM-deny.https.html [ Failure ]
 crbug.com/600261 imported/wpt/mediacapture-streams/MediaStream-MediaElement-srcObject.https.html [ Failure ]
 
 crbug.com/605525 [ Win ] http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
+crbug.com/605525 [ Win ] virtual/mojo-loading/http/tests/xmlhttprequest/redirect-cross-origin-post.html [ Failure Pass ]
 
 crbug.com/600248 imported/wpt/web-animations/interfaces/AnimationEffectTiming/endDelay.html [ Pass Failure ]
 crbug.com/600248 imported/wpt/web-animations/interfaces/Animation/constructor.html [ Failure Timeout ]
@@ -1393,10 +1441,14 @@ crbug.com/487344 media/video-display-toggle.html [ Failure ]
 crbug.com/487344 media/video-empty-source.html [ Failure ]
 crbug.com/487344 media/video-no-audio.html [ Failure ]
 crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
+crbug.com/638621 [ Win ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
+crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
+crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
 
 crbug.com/613659 imported/wpt/quirks-mode/percentage-height-calculation.html [ Failure ]
 crbug.com/613661 imported/wpt/quirks-mode/table-cell-nowrap-minimum-width-calculation.html [ Failure ]
@@ -1421,6 +1473,7 @@ crbug.com/638618 inspector/editor/text-editor-search-switch-editor.html [ Skip ]
 # this tested without the feature by using the virtual test. See
 # virtual/stable/http/tests/navigation/beacon-cross-origin-redirect-blob-expected.txt
 crbug.com/490015 http/tests/navigation/beacon-cross-origin-redirect-blob.html [ Skip ]
+crbug.com/490015 virtual/mojo-loading/http/tests/navigation/beacon-cross-origin-redirect-blob.html [ Skip ]
 # This test doesn't need to be run with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simple-type.html [ Skip ]
 # This test fails with the stable release mode.
@@ -1495,6 +1548,7 @@ crbug.com/662264 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-ori
 crbug.com/645640 inspector/extensions/extensions-eval.html [ NeedsManualRebaseline ]
 
 crbug.com/652187 [ Win7 Debug ] http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
+crbug.com/652187 [ Win7 Debug ] virtual/mojo-loading/http/tests/inspector/network/network-disable-cache-preloads.php [ Failure ]
 
 crbug.com/658414 [ Win7 Debug ] virtual/gpu/fast/canvas/canvas-lose-restore-googol-size.html [ Failure Pass ]
 
@@ -1569,6 +1623,11 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onprogres
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-progress-events.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Timeout ]
+
+crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-fetch.html [ Failure ]
+crbug.com/669357 virtual/mojo-loading/http/tests/inspector-protocol/network-data-length.html [ Failure ]
+crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-datareceived.html [ Failure ]
+crbug.com/669357 virtual/mojo-loading/http/tests/local/formdata/upload-events.html [ Failure ]
 
 # TODO(yhirano): There is an entry for the base test, but this test is flakier
 # than that. Fix this test so that we can move the entry to the base test
@@ -1676,6 +1735,7 @@ crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints
 
 # TODO(mgiuca): This was previously marked as [ NeedsRebaseline ] for [ Precise ] only.
 crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
+crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
 
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 

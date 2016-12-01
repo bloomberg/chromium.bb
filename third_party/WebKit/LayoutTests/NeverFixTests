@@ -12,6 +12,7 @@
 
 # Perf tests are really slow in debug builds and there are few benefits in running them.
 [ Debug ] http/tests/perf [ WontFix ]
+[ Debug ] virtual/mojo-loading/http/tests/perf [ WontFix ]
 
 # This test verifies that a mismatch reftest will fail if both results are the
 # same.  Because the whole point is that this test should fail when run, it's
@@ -93,6 +94,12 @@ media/stable [ WontFix ]
 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ WontFix ]
 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ WontFix ]
 [ Android ] http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-av-audio-bitrate.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-av-framesize.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-av-video-bitrate.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-bitrate.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-framerate.html [ WontFix ]
+[ Android ] virtual/mojo-loading/http/tests/media/media-source/mediasource-config-change-mp4-v-framesize.html [ WontFix ]
 
 # Only run fake-Android tests on Linux
 [ Mac Win ] virtual/android [ WontFix ]
@@ -159,6 +166,7 @@ imported/csswg-test/css21/linebox/line-height-126.xht [ WontFix ]
 # We could fix this test for us and upstream it if the test shell user agent
 # would let us differentiate test_shell and WebKit DumpTreeNode.
 crbug.com/7482 [ Win Mac ] http/tests/misc/timer-vs-loading.html [ WontFix ]
+crbug.com/7482 [ Win Mac ] virtual/mojo-loading/http/tests/misc/timer-vs-loading.html [ WontFix ]
 
 # On Linux bold emoji are already supported.
 crbug.com/551843 [ Linux ] fast/text/fallback-traits-fixup.html [ WontFix ]
@@ -185,6 +193,7 @@ crbug.com/627953 [ Android Linux Mac ] fast/text/symbol-cmap.html [ WontFix ]
 
 # wasm tests. Currently under virtual/enable_wasm
 crbug.com/642912 http/tests/wasm/ [ WontFix ]
+crbug.com/642912 virtual/mojo-loading/http/tests/wasm/ [ WontFix ]
 
 # These tests require audio codecs which are generally not available;
 # these tests can still be run manually with --skiped=ignore.
