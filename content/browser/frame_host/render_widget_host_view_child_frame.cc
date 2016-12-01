@@ -519,7 +519,7 @@ void RenderWidgetHostViewChildFrame::ProcessGestureEvent(
 
 gfx::Point RenderWidgetHostViewChildFrame::TransformPointToRootCoordSpace(
     const gfx::Point& point) {
-  if (!frame_connector_)
+  if (!frame_connector_ || !local_frame_id_.is_valid())
     return point;
 
   return frame_connector_->TransformPointToRootCoordSpace(
