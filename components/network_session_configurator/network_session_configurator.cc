@@ -316,8 +316,6 @@ void ConfigureQuicParams(base::StringPiece quic_trial_group,
         ShouldQuicDisableDiskCache(quic_trial_params);
     params->quic_prefer_aes = ShouldQuicPreferAes(quic_trial_params);
     params->quic_force_hol_blocking = ShouldForceHolBlocking(quic_trial_params);
-    // Default to disabling port selection on all channels.
-    params->enable_quic_port_selection = false;
     params->quic_connection_options =
         GetQuicConnectionOptions(quic_trial_params);
     params->quic_close_sessions_on_ip_change =

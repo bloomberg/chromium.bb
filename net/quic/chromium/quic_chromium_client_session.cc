@@ -359,18 +359,15 @@ QuicChromiumClientSession::~QuicChromiumClientSession() {
   if (round_trip_handshakes < 0 || !stream_factory_)
     return;
 
-  bool port_selected = stream_factory_->enable_port_selection();
   SSLInfo ssl_info;
   // QUIC supports only secure urls.
   if (GetSSLInfo(&ssl_info) && ssl_info.cert.get()) {
-    if (!port_selected) {
-      UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
-                                  round_trip_handshakes, 1, 3, 4);
-      if (require_confirmation_) {
-        UMA_HISTOGRAM_CUSTOM_COUNTS(
-            "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTPS",
-            round_trip_handshakes, 1, 3, 4);
-      }
+    UMA_HISTOGRAM_CUSTOM_COUNTS("Net.QuicSession.ConnectRandomPortForHTTPS",
+                                round_trip_handshakes, 1, 3, 4);
+    if (require_confirmation_) {
+      UMA_HISTOGRAM_CUSTOM_COUNTS(
+          "Net.QuicSession.ConnectRandomPortRequiringConfirmationForHTTPS",
+          round_trip_handshakes, 1, 3, 4);
     }
   }
   const QuicConnectionStats stats = connection()->GetStats();

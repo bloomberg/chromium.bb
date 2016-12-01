@@ -396,7 +396,6 @@ void IOSChromeIOThread::Init() {
   }
 
   params_.ignore_certificate_errors = false;
-  params_.enable_quic_port_selection = false;
   params_.enable_user_alternate_protocol_ports = false;
 
   std::string quic_user_agent_id = ::GetChannelString();

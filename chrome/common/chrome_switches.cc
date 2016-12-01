@@ -279,10 +279,6 @@ const char kDisablePushApiBackgroundMode[] = "disable-push-api-background-mode";
 // Disables the QUIC protocol.
 const char kDisableQuic[] = "disable-quic";
 
-// Disable use of Chromium's port selection for the ephemeral port via bind().
-// This only has an effect if QUIC protocol is enabled.
-const char kDisableQuicPortSelection[] = "disable-quic-port-selection";
-
 // Disable settings in a separate browser window per profile
 // (see SettingsWindowEnabled() below).
 const char kDisableSettingsWindow[]          = "disable-settings-window";
@@ -425,10 +421,6 @@ const char kEnablePushApiBackgroundMode[] = "enable-push-api-background-mode";
 
 // Enables the QUIC protocol.  This is a temporary testing flag.
 const char kEnableQuic[] = "enable-quic";
-
-// Enable use of Chromium's port selection for the ephemeral port via bind().
-// This only has an effect if the QUIC protocol is enabled.
-const char kEnableQuicPortSelection[] = "enable-quic-port-selection";
 
 // Switches 'Save as...' context and app menu labels to 'Download...'.
 const char kEnableSaveAsMenuLabelExperiment[] = "saveas-menu-label";

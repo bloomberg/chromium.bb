@@ -947,12 +947,6 @@ void IOThread::ConfigureParamsFromFieldTrialsAndCommandLine(
   if (command_line.HasSwitch(switches::kDisableHttp2))
     params->enable_http2 = false;
 
-  if (command_line.HasSwitch(switches::kDisableQuicPortSelection)) {
-    params->enable_quic_port_selection = false;
-  } else if (command_line.HasSwitch(switches::kEnableQuicPortSelection)) {
-    params->enable_quic_port_selection = true;
-  }
-
   if (params->enable_quic) {
     if (command_line.HasSwitch(switches::kQuicConnectionOptions)) {
       params->quic_connection_options =

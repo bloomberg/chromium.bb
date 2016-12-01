@@ -243,7 +243,6 @@ class QuicStreamFactoryTestBase {
         url3_(kServer3Url),
         url4_(kServer4Url),
         privacy_mode_(PRIVACY_MODE_DISABLED),
-        enable_port_selection_(true),
         always_require_handshake_confirmation_(false),
         disable_connection_pooling_(false),
         load_server_info_timeout_srtt_multiplier_(0.0f),
@@ -284,10 +283,10 @@ class QuicStreamFactoryTestBase {
         /*SocketPerformanceWatcherFactory*/ nullptr,
         &crypto_client_stream_factory_, &random_generator_, clock_,
         kDefaultMaxPacketSize, string(), SupportedVersions(version_),
-        enable_port_selection_, always_require_handshake_confirmation_,
-        disable_connection_pooling_, load_server_info_timeout_srtt_multiplier_,
-        enable_connection_racing_, enable_non_blocking_io_, disable_disk_cache_,
-        prefer_aes_, receive_buffer_size_, delay_tcp_race_,
+        always_require_handshake_confirmation_, disable_connection_pooling_,
+        load_server_info_timeout_srtt_multiplier_, enable_connection_racing_,
+        enable_non_blocking_io_, disable_disk_cache_, prefer_aes_,
+        receive_buffer_size_, delay_tcp_race_,
         /*max_server_configs_stored_in_properties*/ 0,
         close_sessions_on_ip_change_,
         disable_quic_on_timeout_with_open_streams_,
@@ -735,7 +734,6 @@ class QuicStreamFactoryTestBase {
   TestCompletionCallback callback_;
 
   // Variables to configure QuicStreamFactory.
-  bool enable_port_selection_;
   bool always_require_handshake_confirmation_;
   bool disable_connection_pooling_;
   double load_server_info_timeout_srtt_multiplier_;
@@ -1511,41 +1509,6 @@ TEST_P(QuicStreamFactoryTest, CancelCreate) {
 
   EXPECT_TRUE(socket_data.AllReadDataConsumed());
   EXPECT_TRUE(socket_data.AllWriteDataConsumed());
-}
-
-TEST_P(QuicStreamFactoryTest, CreateConsistentEphemeralPort) {
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  // Sequentially connect to the default host, then another host, and then the
-  // default host.  Verify that the default host gets a consistent ephemeral
-  // port, that is different from the other host's connection.
-
-  string other_server_name = kServer2HostName;
-  EXPECT_NE(kDefaultServerHostName, other_server_name);
-  HostPortPair host_port_pair2(other_server_name, kDefaultServerPort);
-
-  int original_port = GetSourcePortForNewSession(host_port_pair_);
-  EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_pair2));
-  EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_pair_));
-}
-
-TEST_P(QuicStreamFactoryTest, GoAwayDisablesConsistentEphemeralPort) {
-  Initialize();
-  ProofVerifyDetailsChromium verify_details = DefaultProofVerifyDetails();
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-  crypto_client_stream_factory_.AddProofVerifyDetails(&verify_details);
-
-  // Get a session to the host using the port suggester.
-  int original_port = GetSourcePortForNewSessionAndGoAway(host_port_pair_);
-  // Verify that the port is different after the goaway.
-  EXPECT_NE(original_port, GetSourcePortForNewSession(host_port_pair_));
-  // Since the previous session did not goaway we should see the original port.
-  EXPECT_EQ(original_port, GetSourcePortForNewSession(host_port_pair_));
 }
 
 TEST_P(QuicStreamFactoryTest, CloseAllSessions) {

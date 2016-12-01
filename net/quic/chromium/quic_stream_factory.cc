@@ -35,7 +35,6 @@
 #include "net/quic/chromium/bidirectional_stream_quic_impl.h"
 #include "net/quic/chromium/crypto/channel_id_chromium.h"
 #include "net/quic/chromium/crypto/proof_verifier_chromium.h"
-#include "net/quic/chromium/port_suggester.h"
 #include "net/quic/chromium/quic_chromium_alarm_factory.h"
 #include "net/quic/chromium/quic_chromium_connection_helper.h"
 #include "net/quic/chromium/quic_chromium_packet_reader.h"
@@ -719,7 +718,6 @@ QuicStreamFactory::QuicStreamFactory(
     size_t max_packet_length,
     const std::string& user_agent_id,
     const QuicVersionVector& supported_versions,
-    bool enable_port_selection,
     bool always_require_handshake_confirmation,
     bool disable_connection_pooling,
     float load_server_info_timeout_srtt_multiplier,
@@ -765,7 +763,6 @@ QuicStreamFactory::QuicStreamFactory(
                                     transport_security_state,
                                     cert_transparency_verifier))),
       supported_versions_(supported_versions),
-      enable_port_selection_(enable_port_selection),
       always_require_handshake_confirmation_(
           always_require_handshake_confirmation),
       disable_connection_pooling_(disable_connection_pooling),
@@ -797,7 +794,6 @@ QuicStreamFactory::QuicStreamFactory(
       force_hol_blocking_(force_hol_blocking),
       race_cert_verification_(race_cert_verification),
       quic_do_not_fragment_(quic_do_not_fragment),
-      port_seed_(random_generator_->RandUint64()),
       check_persisted_supports_quic_(true),
       has_initialized_data_(false),
       num_push_streams_created_(0),
@@ -1619,37 +1615,17 @@ int QuicStreamFactory::CreateSession(
   }
   TRACE_EVENT0("net", "QuicStreamFactory::CreateSession");
   IPEndPoint addr = *address_list.begin();
-  bool enable_port_selection = enable_port_selection_;
-  if (enable_port_selection && base::ContainsKey(gone_away_aliases_, key)) {
-    // Disable port selection when the server is going away.
-    // There is no point in trying to return to the same server, if
-    // that server is no longer handling requests.
-    enable_port_selection = false;
-    gone_away_aliases_.erase(key);
-  }
   const QuicServerId& server_id = key.server_id();
-  scoped_refptr<PortSuggester> port_suggester =
-      new PortSuggester(server_id.host_port_pair(), port_seed_);
-  DatagramSocket::BindType bind_type =
-      enable_port_selection ? DatagramSocket::RANDOM_BIND
-                            :            // Use our callback.
-          DatagramSocket::DEFAULT_BIND;  // Use OS to randomize.
-
+  DatagramSocket::BindType bind_type = DatagramSocket::DEFAULT_BIND;
   std::unique_ptr<DatagramClientSocket> socket(
       client_socket_factory_->CreateDatagramClientSocket(
-          bind_type, base::Bind(&PortSuggester::SuggestPort, port_suggester),
-          net_log.net_log(), net_log.source()));
+          bind_type, RandIntCallback(), net_log.net_log(), net_log.source()));
 
   // Passing in kInvalidNetworkHandle binds socket to default network.
   int rv = ConfigureSocket(socket.get(), addr,
                            NetworkChangeNotifier::kInvalidNetworkHandle);
   if (rv != OK)
     return rv;
-
-  if (enable_port_selection)
-    DCHECK_LE(1u, port_suggester->call_count());
-  else
-    DCHECK_EQ(0u, port_suggester->call_count());
 
   if (!helper_.get()) {
     helper_.reset(
