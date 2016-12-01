@@ -377,7 +377,6 @@ class WindowServer : public ServerWindowDelegate,
       display_compositor_client_binding_;
   // State for rendering into a Surface.
   cc::mojom::DisplayCompositorPtr display_compositor_;
-  cc::mojom::DisplayCompositorRequest display_compositor_request_;
 
   DISALLOW_COPY_AND_ASSIGN(WindowServer);
 };

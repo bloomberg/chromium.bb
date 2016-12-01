@@ -19,6 +19,7 @@ struct SyncToken;
 class GPU_EXPORT GpuMemoryBufferManager {
  public:
   GpuMemoryBufferManager();
+  virtual ~GpuMemoryBufferManager();
 
   // Creates a GpuMemoryBuffer that can be shared with another process.
   virtual std::unique_ptr<gfx::GpuMemoryBuffer> CreateGpuMemoryBuffer(
@@ -36,9 +37,6 @@ class GPU_EXPORT GpuMemoryBufferManager {
   // Associates destruction sync point with |buffer|.
   virtual void SetDestructionSyncToken(gfx::GpuMemoryBuffer* buffer,
                                        const gpu::SyncToken& sync_token) = 0;
-
- protected:
-  virtual ~GpuMemoryBufferManager();
 };
 
 }  // namespace gpu

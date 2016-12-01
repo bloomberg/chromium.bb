@@ -64,7 +64,12 @@ class GpuServiceProxy : public mojom::GpuService {
   mojo::BindingSet<mojom::GpuService> bindings_;
   gpu::GPUInfo gpu_info_;
   std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  GpuMain gpu_main_;
+
+  mojom::GpuMainPtr gpu_main_;
+
+  // TODO(fsamuel): GpuServiceProxy should not be holding onto |gpu_main_impl|
+  // because that will live in another process soon.
+  std::unique_ptr<GpuMain> gpu_main_impl_;
 
   DISALLOW_COPY_AND_ASSIGN(GpuServiceProxy);
 };

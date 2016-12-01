@@ -8,12 +8,14 @@
 #include <stdint.h>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "cc/ipc/display_compositor.mojom.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/local_frame_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_manager.h"
 #include "cc/surfaces/surface_observer.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/ipc/common/surface_handle.h"
 #include "gpu/ipc/in_process_command_buffer.h"
 #include "ipc/ipc_channel_handle.h"
@@ -21,6 +23,7 @@
 #include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 
 namespace gpu {
+class GpuMemoryBufferManager;
 class ImageFactory;
 }
 
@@ -33,7 +36,6 @@ namespace ui {
 
 class DisplayCompositorClient;
 class GpuCompositorFrameSink;
-class MusGpuMemoryBufferManager;
 
 // The DisplayCompositor object is an object global to the Window Server app
 // that holds the SurfaceServer and allocates new Surfaces namespaces.
@@ -45,7 +47,7 @@ class DisplayCompositor : public cc::SurfaceObserver,
  public:
   DisplayCompositor(
       scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-      std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
+      std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
       gpu::ImageFactory* image_factory,
       cc::mojom::DisplayCompositorRequest request,
       cc::mojom::DisplayCompositorClientPtr client);
@@ -95,7 +97,7 @@ class DisplayCompositor : public cc::SurfaceObserver,
                      std::unique_ptr<GpuCompositorFrameSink>,
                      cc::FrameSinkIdHash>
       compositor_frame_sinks_;
-  std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
   cc::mojom::DisplayCompositorClientPtr client_;
 
@@ -108,6 +110,8 @@ class DisplayCompositor : public cc::SurfaceObserver,
                      std::vector<cc::LocalFrameId>,
                      cc::FrameSinkIdHash>
       temp_references_;
+
+  base::ThreadChecker thread_checker_;
 
   mojo::Binding<cc::mojom::DisplayCompositor> binding_;
 

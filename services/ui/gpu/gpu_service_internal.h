@@ -10,6 +10,7 @@
 #include "base/threading/non_thread_safe.h"
 #include "base/threading/thread.h"
 #include "build/build_config.h"
+#include "gpu/command_buffer/client/gpu_memory_buffer_manager.h"
 #include "gpu/command_buffer/service/gpu_preferences.h"
 #include "gpu/config/gpu_info.h"
 #include "gpu/ipc/common/surface_handle.h"
@@ -21,7 +22,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/gpu/interfaces/gpu_service_internal.mojom.h"
-#include "services/ui/surfaces/display_compositor.h"
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
@@ -46,21 +46,17 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
                            public mojom::GpuServiceInternal,
                            public base::NonThreadSafe {
  public:
+  GpuServiceInternal(const gpu::GPUInfo& gpu_info,
+                     std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
+                     gpu::GpuMemoryBufferFactory* memory_buffer_factory,
+                     scoped_refptr<base::SingleThreadTaskRunner> io_runner);
+
   ~GpuServiceInternal() override;
 
-  void Add(mojom::GpuServiceInternalRequest request);
-
-  void DestroyDisplayCompositor();
+  void Bind(mojom::GpuServiceInternalRequest request);
 
  private:
   friend class GpuMain;
-
-  GpuServiceInternal(
-      const gpu::GPUInfo& gpu_info,
-      std::unique_ptr<gpu::GpuWatchdogThread> watchdog,
-      gpu::GpuMemoryBufferFactory* memory_buffer_factory,
-      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
-      scoped_refptr<base::SingleThreadTaskRunner> compositor_task_runner);
 
   gfx::GpuMemoryBufferHandle CreateGpuMemoryBufferFromeHandle(
       gfx::GpuMemoryBufferHandle buffer_handle,
@@ -68,6 +64,20 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       const gfx::Size& size,
       gfx::BufferFormat format,
       int client_id);
+
+  gpu::SyncPointManager* sync_point_manager() {
+    return owned_sync_point_manager_.get();
+  }
+
+  gpu::gles2::MailboxManager* mailbox_manager() {
+    return gpu_channel_manager_->mailbox_manager();
+  }
+
+  gl::GLShareGroup* share_group() {
+    return gpu_channel_manager_->share_group();
+  }
+
+  const gpu::GPUInfo& gpu_info() const { return gpu_info_; }
 
   // gpu::GpuChannelManagerDelegate:
   void DidCreateOffscreenContext(const GURL& active_url) override;
@@ -85,9 +95,9 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
       gpu::SurfaceHandle child_window) override;
 #endif
   void SetActiveURL(const GURL& url) override;
+  void Initialize();
 
   // mojom::GpuServiceInternal:
-  void Initialize(const InitializeCallback& callback) override;
   void EstablishGpuChannel(
       int32_t client_id,
       uint64_t client_tracing_id,
@@ -104,19 +114,8 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   void DestroyGpuMemoryBuffer(gfx::GpuMemoryBufferId id,
                               int client_id,
                               const gpu::SyncToken& sync_token) override;
-  void CreateDisplayCompositor(
-      cc::mojom::DisplayCompositorRequest request,
-      cc::mojom::DisplayCompositorClientPtr client) override;
-
-  void CreateDisplayCompositorOnCompositorThread(
-      mojom::GpuServiceInternalPtrInfo gpu_service_info,
-      cc::mojom::DisplayCompositorRequest request,
-      cc::mojom::DisplayCompositorClientPtrInfo client_info);
-
-  void DestroyDisplayCompositorOnCompositorThread();
 
   scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
-  scoped_refptr<base::SingleThreadTaskRunner> compositor_runner_;
 
   // An event that will be signalled when we shutdown.
   base::WaitableEvent shutdown_event_;
@@ -130,13 +129,6 @@ class GpuServiceInternal : public gpu::GpuChannelManagerDelegate,
   // Information about the GPU, such as device and vendor ID.
   gpu::GPUInfo gpu_info_;
 
-  std::unique_ptr<ui::DisplayCompositor> display_compositor_;
-
-  // The message-pipe used by the DisplayCompositor to request gpu memory
-  // buffers.
-  mojom::GpuServiceInternalPtr gpu_internal_;
-
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_command_service_;
   std::unique_ptr<gpu::SyncPointManager> owned_sync_point_manager_;
   std::unique_ptr<gpu::GpuChannelManager> gpu_channel_manager_;
   std::unique_ptr<media::MediaGpuChannelManager> media_gpu_channel_manager_;

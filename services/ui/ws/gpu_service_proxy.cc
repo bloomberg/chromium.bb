@@ -31,11 +31,12 @@ GpuServiceProxy::GpuServiceProxy(GpuServiceProxyDelegate* delegate)
     : delegate_(delegate),
       next_client_id_(kInternalGpuChannelClientId + 1),
       main_thread_task_runner_(base::ThreadTaskRunnerHandle::Get()) {
-  gpu_main_.OnStart();
+  gpu_main_impl_ = base::MakeUnique<GpuMain>(GetProxy(&gpu_main_));
+  gpu_main_impl_->OnStart();
   // TODO(sad): Once GPU process is split, this would look like:
-  //   connector->ConnectToInterface("gpu", &gpu_service_);
-  gpu_main_.Create(GetProxy(&gpu_service_));
-  gpu_service_->Initialize(
+  //   connector->ConnectToInterface("gpu", &gpu_main_);
+  gpu_main_->CreateGpuService(
+      GetProxy(&gpu_service_),
       base::Bind(&GpuServiceProxy::OnInitialized, base::Unretained(this)));
   gpu_memory_buffer_manager_ = base::MakeUnique<MusGpuMemoryBufferManager>(
       gpu_service_.get(), next_client_id_++);
@@ -51,7 +52,7 @@ void GpuServiceProxy::Add(mojom::GpuServiceRequest request) {
 void GpuServiceProxy::CreateDisplayCompositor(
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client) {
-  gpu_service_->CreateDisplayCompositor(std::move(request), std::move(client));
+  gpu_main_->CreateDisplayCompositor(std::move(request), std::move(client));
 }
 
 void GpuServiceProxy::OnInitialized(const gpu::GPUInfo& gpu_info) {

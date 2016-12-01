@@ -12,8 +12,6 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 import "ui/gfx/mojo/buffer_types.mojom";
 
 interface GpuServiceInternal {
-  Initialize() => (gpu.mojom.GpuInfo gpu_info);
-
   // Tells the GPU service to create a new channel for communication with a
   // client. The GPU service responds with an IPC handle.
   EstablishGpuChannel(int32 client_id,
@@ -33,9 +31,4 @@ interface GpuServiceInternal {
   DestroyGpuMemoryBuffer(gfx.mojom.GpuMemoryBufferId id,
                          int32 client_id,
                          gpu.mojom.SyncToken sync_token);
-
-  // Tells the GPU process to create a display compositor.
-  CreateDisplayCompositor(
-    cc.mojom.DisplayCompositor& display_compositor,
-    cc.mojom.DisplayCompositorClient display_compositor_client);
 };

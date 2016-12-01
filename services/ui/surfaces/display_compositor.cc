@@ -16,7 +16,7 @@ namespace ui {
 
 DisplayCompositor::DisplayCompositor(
     scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service,
-    std::unique_ptr<MusGpuMemoryBufferManager> gpu_memory_buffer_manager,
+    std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager,
     gpu::ImageFactory* image_factory,
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client)
@@ -34,6 +34,7 @@ void DisplayCompositor::CreateCompositorFrameSink(
     cc::mojom::MojoCompositorFrameSinkRequest request,
     cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
     cc::mojom::MojoCompositorFrameSinkClientPtr client) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // We cannot create more than one CompositorFrameSink with a given
   // |frame_sink_id|.
   DCHECK_EQ(0u, compositor_frame_sinks_.count(frame_sink_id));
@@ -52,11 +53,13 @@ void DisplayCompositor::CreateCompositorFrameSink(
 }
 
 void DisplayCompositor::AddRootSurfaceReference(const cc::SurfaceId& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   AddSurfaceReference(manager_.GetRootSurfaceId(), child_id);
 }
 
 void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
                                             const cc::SurfaceId& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   auto vector_iter = temp_references_.find(child_id.frame_sink_id());
 
   // If there are no temporary references for the FrameSinkId then we can just
@@ -107,17 +110,20 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
 
 void DisplayCompositor::RemoveRootSurfaceReference(
     const cc::SurfaceId& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   RemoveSurfaceReference(manager_.GetRootSurfaceId(), child_id);
 }
 
 void DisplayCompositor::RemoveSurfaceReference(const cc::SurfaceId& parent_id,
                                                const cc::SurfaceId& child_id) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(kylechar): Each remove reference can trigger GC, it would be better if
   // we GC only once if removing multiple references.
   manager_.RemoveSurfaceReference(parent_id, child_id);
 }
 
 DisplayCompositor::~DisplayCompositor() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Remove all temporary references on shutdown.
   for (auto& map_entry : temp_references_) {
     const cc::FrameSinkId& frame_sink_id = map_entry.first;
@@ -133,6 +139,7 @@ DisplayCompositor::~DisplayCompositor() {
 void DisplayCompositor::OnCompositorFrameSinkClientConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (destroy_compositor_frame_sink)
     compositor_frame_sinks_.erase(frame_sink_id);
   // TODO(fsamuel): Tell the display compositor host that the client connection
@@ -143,6 +150,7 @@ void DisplayCompositor::OnCompositorFrameSinkClientConnectionLost(
 void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
     const cc::FrameSinkId& frame_sink_id,
     bool destroy_compositor_frame_sink) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (destroy_compositor_frame_sink)
     compositor_frame_sinks_.erase(frame_sink_id);
 }
@@ -150,6 +158,7 @@ void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
 void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                          const gfx::Size& frame_size,
                                          float device_scale_factor) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // We can get into a situation where multiple CompositorFrames arrive for a
   // CompositorFrameSink before the DisplayCompositorClient can add any
   // references for the frame. When the second frame with a new size arrives,
