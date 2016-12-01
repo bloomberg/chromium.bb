@@ -237,7 +237,7 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
     headers_[":version"] = "HTTP/1.1";
     headers_[":status"] = "200 Ok";
     headers_["content-length"] = "11";
-    framer_ = std::unique_ptr<SpdyFramer>(new SpdyFramer(HTTP2));
+    framer_ = std::unique_ptr<SpdyFramer>(new SpdyFramer);
     framer_->set_visitor(&visitor_);
     EXPECT_EQ(version(), session_.connection()->version());
     EXPECT_TRUE(headers_stream_ != nullptr);

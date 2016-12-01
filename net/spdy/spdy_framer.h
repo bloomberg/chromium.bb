@@ -52,15 +52,14 @@ class SpdyFramerPeer;
 // Conveniently handles converstion to/from wire format.
 class NET_EXPORT_PRIVATE SettingsFlagsAndId {
  public:
-  static SettingsFlagsAndId FromWireFormat(SpdyMajorVersion version,
-                                           uint32_t wire);
+  static SettingsFlagsAndId FromWireFormat(uint32_t wire);
 
   SettingsFlagsAndId() : flags_(0), id_(0) {}
 
   // TODO(hkhalil): restrict to enums instead of free-form ints.
   SettingsFlagsAndId(uint8_t flags, uint32_t id);
 
-  uint32_t GetWireFormat(SpdyMajorVersion version) const;
+  uint32_t GetWireFormat() const;
 
   uint32_t id() const { return id_; }
   uint8_t flags() const { return flags_; }
@@ -171,14 +170,13 @@ class NET_EXPORT_PRIVATE SpdyFramerVisitorInterface {
   // Note that header block data is not included. See OnHeaderFrameStart().
   // |stream_id| The stream receiving the header.
   // |has_priority| Whether or not the headers frame included a priority value,
-  //     and, if protocol version == HTTP2, stream dependency info.
+  //     and stream dependency info.
   // |weight| If |has_priority| is true, then weight (in the range [1, 256])
   //     for the receiving stream, otherwise 0.
-  // |parent_stream_id| If |has_priority| is true and protocol
-  //     version == HTTP2, the parent stream of the receiving stream, else 0.
-  // |exclusive| If |has_priority| is true and protocol
-  //     version == HTTP2, the exclusivity of dependence on the parent stream,
-  //     else false.
+  // |parent_stream_id| If |has_priority| is true the parent stream of the
+  //     receiving stream, else 0.
+  // |exclusive| If |has_priority| is true the exclusivity of dependence on the
+  //     parent stream, else false.
   // |fin| Whether FIN flag is set in frame headers.
   // |end| False if HEADERs frame is to be followed by a CONTINUATION frame,
   //     or true if not.
@@ -339,17 +337,14 @@ class NET_EXPORT_PRIVATE SpdyFramer {
       const SpdyHeaderBlock& header_block) const;
 
   // Retrieve serialized length of SpdyHeaderBlock.
-  static size_t GetSerializedLength(
-      const SpdyMajorVersion spdy_version,
-      const SpdyHeaderBlock* headers);
+  static size_t GetSerializedLength(const SpdyHeaderBlock* headers);
 
-  // Create a new Framer, provided a SPDY version.
-  explicit SpdyFramer(SpdyMajorVersion version);
+  SpdyFramer();
 
   // Used recursively from the above constructor in order to support
   // instantiating a SpdyFramerDecoderAdapter selected via flags or some other
   // means.
-  SpdyFramer(SpdyMajorVersion version, DecoderAdapterFactoryFn adapter_factory);
+  explicit SpdyFramer(DecoderAdapterFactoryFn adapter_factory);
 
   virtual ~SpdyFramer();
 
@@ -521,8 +516,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   static const char* StatusCodeToString(int status_code);
   static const char* FrameTypeToString(SpdyFrameType type);
 
-  SpdyMajorVersion protocol_version() const { return protocol_version_; }
-
   // Did the most recent frame header appear to be an HTTP/1.x (or earlier)
   // response (i.e. start with "HTTP/")?
   bool probable_http_response() const;
@@ -614,9 +607,7 @@ class NET_EXPORT_PRIVATE SpdyFramer {
   // HPACK data is re-encoded as SPDY3 and re-entrantly delivered through
   // |ProcessControlFrameHeaderBlock()|. |is_hpack_header_block| controls
   // whether data is treated as HPACK- vs SPDY3-encoded.
-  size_t ProcessControlFrameHeaderBlock(const char* data,
-                                        size_t len,
-                                        bool is_hpack_header_block);
+  size_t ProcessControlFrameHeaderBlock(const char* data, size_t len);
   size_t ProcessDataFramePaddingLength(const char* data, size_t len);
   size_t ProcessFramePadding(const char* data, size_t len);
   size_t ProcessDataFramePayload(const char* data, size_t len);
@@ -765,9 +756,6 @@ class NET_EXPORT_PRIVATE SpdyFramer {
 
   // Optional decoder to use instead of this instance.
   std::unique_ptr<SpdyFramerDecoderAdapter> decoder_adapter_;
-
-  // The protocol version to be spoken/understood by this framer.
-  const SpdyMajorVersion protocol_version_;
 
   // The flags field of the frame currently being read.
   uint8_t current_frame_flags_;

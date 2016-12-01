@@ -27,8 +27,6 @@ QuicTestPacketMaker::QuicTestPacketMaker(QuicVersion version,
       connection_id_(connection_id),
       clock_(clock),
       host_(host),
-      spdy_request_framer_(HTTP2),
-      spdy_response_framer_(HTTP2),
       perspective_(perspective) {}
 
 QuicTestPacketMaker::~QuicTestPacketMaker() {}

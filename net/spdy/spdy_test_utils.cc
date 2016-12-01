@@ -94,15 +94,11 @@ void CompareCharArraysWithHexError(const string& description,
       << HexDumpWithMarks(actual, actual_len, marks.get(), max_len);
 }
 
-void SetFrameFlags(SpdySerializedFrame* frame,
-                   uint8_t flags,
-                   SpdyMajorVersion spdy_version) {
+void SetFrameFlags(SpdySerializedFrame* frame, uint8_t flags) {
   frame->data()[4] = flags;
 }
 
-void SetFrameLength(SpdySerializedFrame* frame,
-                    size_t length,
-                    SpdyMajorVersion spdy_version) {
+void SetFrameLength(SpdySerializedFrame* frame, size_t length) {
   CHECK_GT(1u << 14, length);
   {
     int32_t wire_length = base::HostToNet32(length);

@@ -31,15 +31,7 @@
 
 namespace net {
 
-// The major versions of SPDY. Major version differences indicate
-// framer-layer incompatibility, as opposed to minor version numbers
-// which indicate application-layer incompatibility. It is NOT guaranteed
-// that the enum value SPDYn maps to the integer n.
-enum SpdyMajorVersion {
-  HTTP2 = 2,
-};
-
-// A SPDY stream id is a 31 bit entity.
+// A stream id is a 31 bit entity.
 typedef uint32_t SpdyStreamId;
 
 // Specifies the stream ID used to denote the current session (for
@@ -259,24 +251,16 @@ class NET_EXPORT_PRIVATE SpdyConstants {
  public:
   // Returns true if a given on-the-wire enumeration of a frame type is valid
   // for a given protocol version, false otherwise.
-  static bool IsValidFrameType(SpdyMajorVersion version, int frame_type_field);
+  static bool IsValidFrameType(int frame_type_field);
 
-  // Parses a frame type from an on-the-wire enumeration of a given protocol
-  // version.
+  // Parses a frame type from an on-the-wire enumeration.
   // Behavior is undefined for invalid frame type fields; consumers should first
   // use IsValidFrameType() to verify validity of frame type fields.
-  static SpdyFrameType ParseFrameType(SpdyMajorVersion version,
-                                      int frame_type_field);
+  static SpdyFrameType ParseFrameType(int frame_type_field);
 
-  // Serializes a given frame type to the on-the-wire enumeration value for the
-  // given protocol version.
-  // Returns -1 on failure (I.E. Invalid frame type for the given version).
-  static int SerializeFrameType(SpdyMajorVersion version,
-                                SpdyFrameType frame_type);
-
-  // Returns the frame type for non-control (i.e. data) frames
-  // in the given SPDY version.
-  static int DataFrameType(SpdyMajorVersion version);
+  // Serializes a given frame type to the on-the-wire enumeration value.
+  // Returns -1 on failure (I.E. Invalid frame type).
+  static int SerializeFrameType(SpdyFrameType frame_type);
 
   // (HTTP/2) All standard frame types except WINDOW_UPDATE are
   // (stream-specific xor connection-level). Returns false iff we know
@@ -285,86 +269,65 @@ class NET_EXPORT_PRIVATE SpdyConstants {
                                         SpdyFrameType frame_type_field);
 
   // Returns true if a given on-the-wire enumeration of a setting id is valid
-  // for a given protocol version, false otherwise.
-  static bool IsValidSettingId(SpdyMajorVersion version, int setting_id_field);
+  // false otherwise.
+  static bool IsValidSettingId(int setting_id_field);
 
-  // Parses a setting id from an on-the-wire enumeration of a given protocol
-  // version.
+  // Parses a setting id from an on-the-wire enumeration
   // Behavior is undefined for invalid setting id fields; consumers should first
   // use IsValidSettingId() to verify validity of setting id fields.
-  static SpdySettingsIds ParseSettingId(SpdyMajorVersion version,
-                                        int setting_id_field);
+  static SpdySettingsIds ParseSettingId(int setting_id_field);
 
-  // Serializes a given setting id to the on-the-wire enumeration value for the
-  // given protocol version.
-  // Returns -1 on failure (I.E. Invalid setting id for the given version).
-  static int SerializeSettingId(SpdyMajorVersion version, SpdySettingsIds id);
+  // Serializes a given setting id to the on-the-wire enumeration value.
+  // Returns -1 on failure (I.E. Invalid setting id).
+  static int SerializeSettingId(SpdySettingsIds id);
 
   // Returns true if a given on-the-wire enumeration of a RST_STREAM status code
-  // is valid for a given protocol version, false otherwise.
-  static bool IsValidRstStreamStatus(SpdyMajorVersion version,
-                                     int rst_stream_status_field);
+  // is valid, false otherwise.
+  static bool IsValidRstStreamStatus(int rst_stream_status_field);
 
-  // Parses a RST_STREAM status code from an on-the-wire enumeration of a given
-  // protocol version.
+  // Parses a RST_STREAM status code from an on-the-wire enumeration.
   // Behavior is undefined for invalid RST_STREAM status code fields; consumers
   // should first use IsValidRstStreamStatus() to verify validity of RST_STREAM
   // status code fields..
-  static SpdyRstStreamStatus ParseRstStreamStatus(SpdyMajorVersion version,
-                                                  int rst_stream_status_field);
+  static SpdyRstStreamStatus ParseRstStreamStatus(int rst_stream_status_field);
 
   // Serializes a given RST_STREAM status code to the on-the-wire enumeration
-  // value for the given protocol version.
+  // value.
   // Returns -1 on failure (I.E. Invalid RST_STREAM status code for the given
   // version).
-  static int SerializeRstStreamStatus(SpdyMajorVersion version,
-                                      SpdyRstStreamStatus rst_stream_status);
+  static int SerializeRstStreamStatus(SpdyRstStreamStatus rst_stream_status);
 
   // Returns true if a given on-the-wire enumeration of a GOAWAY status code is
-  // valid for the given protocol version, false otherwise.
-  static bool IsValidGoAwayStatus(SpdyMajorVersion version,
-                                  int goaway_status_field);
+  // valid, false otherwise.
+  static bool IsValidGoAwayStatus(int goaway_status_field);
 
-  // Parses a GOAWAY status from an on-the-wire enumeration of a given protocol
-  // version.
+  // Parses a GOAWAY status from an on-the-wire enumeration.
   // Behavior is undefined for invalid GOAWAY status fields; consumers should
   // first use IsValidGoAwayStatus() to verify validity of GOAWAY status fields.
-  static SpdyGoAwayStatus ParseGoAwayStatus(SpdyMajorVersion version,
-                                            int goaway_status_field);
+  static SpdyGoAwayStatus ParseGoAwayStatus(int goaway_status_field);
 
-  // Serializes a given GOAWAY status to the on-the-wire enumeration value for
-  // the given protocol version.
+  // Serializes a given GOAWAY status to the on-the-wire enumeration value.
   // Returns -1 on failure (I.E. Invalid GOAWAY status for the given version).
-  static int SerializeGoAwayStatus(SpdyMajorVersion version,
-                                   SpdyGoAwayStatus status);
+  static int SerializeGoAwayStatus(SpdyGoAwayStatus status);
 
-  // Size, in bytes, of the data frame header. Future versions of SPDY
-  // will likely vary this, so we allow for the flexibility of a function call
-  // for this value as opposed to a constant.
-  static size_t GetDataFrameMinimumSize(SpdyMajorVersion version);
-
+  // Frame type for non-control (i.e. data) frames.
+  static const int kDataFrameType;
+  // Size, in bytes, of the data frame header.
+  static const size_t kDataFrameMinimumSize;
   // Number of octets in the frame header.
-  static size_t GetFrameHeaderSize(SpdyMajorVersion version);
-
+  static const size_t kFrameHeaderSize;
   // Maximum possible configurable size of a frame in octets.
-  static size_t GetMaxFrameSizeLimit(SpdyMajorVersion version);
-
-  // Returns the size of a header block size field. Valid only for SPDY 3.
-  static size_t GetSizeOfSizeField();
-
-  // Returns the per-header overhead for block size accounting in bytes.
-  static size_t GetPerHeaderOverhead(SpdyMajorVersion version);
-
-  // Returns the size (in bytes) of a wire setting ID and value.
-  static size_t GetSettingSize(SpdyMajorVersion version);
-
+  static const size_t kMaxFrameSizeLimit;
+  // Size of a header block size field. Valid only for SPDY 3.
+  static const size_t kSizeOfSizeField;
+  // Per-header overhead for block size accounting in bytes.
+  static const size_t kPerHeaderOverhead;
   // Initial window size for a stream in bytes.
-  static int32_t GetInitialStreamWindowSize(SpdyMajorVersion version);
-
+  static const int32_t kInitialStreamWindowSize;
   // Initial window size for a session in bytes.
-  static int32_t GetInitialSessionWindowSize(SpdyMajorVersion version);
-
-  static std::string GetVersionString(SpdyMajorVersion version);
+  static const int32_t kInitialSessionWindowSize;
+  // The NPN string for HTTP2, "h2".
+  static const char kHttp2Npn[];
 };
 
 // Variant type (i.e. tagged union) that is either a SPDY 3.x priority value,
@@ -465,7 +428,7 @@ typedef StreamPrecedence<SpdyStreamId> SpdyStreamPrecedence;
 
 class SpdyFrameVisitor;
 
-// Intermediate representation for SPDY frames.
+// Intermediate representation for HTTP2 frames.
 class NET_EXPORT_PRIVATE SpdyFrameIR {
  public:
   virtual ~SpdyFrameIR() {}
@@ -685,7 +648,6 @@ class NET_EXPORT_PRIVATE SpdyPingIR : public SpdyFrameIR {
   explicit SpdyPingIR(SpdyPingId id) : id_(id), is_ack_(false) {}
   SpdyPingId id() const { return id_; }
 
-  // ACK logic is valid only for SPDY versions 4 and above.
   bool is_ack() const { return is_ack_; }
   void set_is_ack(bool is_ack) { is_ack_ = is_ack; }
 

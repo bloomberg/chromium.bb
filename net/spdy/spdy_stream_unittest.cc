@@ -1281,7 +1281,7 @@ TEST_F(SpdyStreamTest, ReceivedBytes) {
   EXPECT_EQ(kDefaultUrl, stream->GetUrlFromHeaders().spec());
 
   int64_t reply_frame_len = reply.size();
-  int64_t data_header_len = SpdyConstants::GetDataFrameMinimumSize(HTTP2);
+  int64_t data_header_len = SpdyConstants::kDataFrameMinimumSize;
   int64_t data_frame_len = data_header_len + kPostBodyLength;
   int64_t response_len = reply_frame_len + data_frame_len;
 

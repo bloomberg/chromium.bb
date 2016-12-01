@@ -12,7 +12,7 @@ namespace net {
 
 TEST(SpdyFrameBuilderTest, GetWritableBuffer) {
   const size_t kBuilderSize = 10;
-  SpdyFrameBuilder builder(kBuilderSize, HTTP2);
+  SpdyFrameBuilder builder(kBuilderSize);
   char* writable_buffer = builder.GetWritableBuffer(kBuilderSize);
   memset(writable_buffer, ~1, kBuilderSize);
   EXPECT_TRUE(builder.Seek(kBuilderSize));
@@ -27,10 +27,10 @@ TEST(SpdyFrameBuilderTest, RewriteLength) {
   // Create an empty SETTINGS frame both via framer and manually via builder.
   // The one created via builder is initially given the incorrect length, but
   // then is corrected via RewriteLength().
-  SpdyFramer framer(HTTP2);
+  SpdyFramer framer;
   SpdySettingsIR settings_ir;
   SpdySerializedFrame expected(framer.SerializeSettings(settings_ir));
-  SpdyFrameBuilder builder(expected.size() + 1, HTTP2);
+  SpdyFrameBuilder builder(expected.size() + 1);
   builder.BeginNewFrame(framer, SETTINGS, 0, 0);
   EXPECT_TRUE(builder.GetWritableBuffer(1) != NULL);
   builder.RewriteLength(framer);
@@ -42,10 +42,10 @@ TEST(SpdyFrameBuilderTest, RewriteLength) {
 TEST(SpdyFrameBuilderTest, OverwriteFlags) {
   // Create a HEADERS frame both via framer and manually via builder with
   // different flags set, then make them match using OverwriteFlags().
-  SpdyFramer framer(HTTP2);
+  SpdyFramer framer;
   SpdyHeadersIR headers_ir(1);
   SpdySerializedFrame expected(framer.SerializeHeaders(headers_ir));
-  SpdyFrameBuilder builder(expected.size(), HTTP2);
+  SpdyFrameBuilder builder(expected.size());
   builder.BeginNewFrame(framer, HEADERS, 0, 1);
   builder.OverwriteFlags(framer, HEADERS_FLAG_END_HEADERS);
   SpdySerializedFrame built(builder.take());

@@ -13,13 +13,8 @@
 
 namespace net {
 
-SpdyFrameBuilder::SpdyFrameBuilder(size_t size, SpdyMajorVersion version)
-    : buffer_(new char[size]),
-      capacity_(size),
-      length_(0),
-      offset_(0),
-      version_(version) {
-}
+SpdyFrameBuilder::SpdyFrameBuilder(size_t size)
+    : buffer_(new char[size]), capacity_(size), length_(0), offset_(0) {}
 
 SpdyFrameBuilder::~SpdyFrameBuilder() {
 }
@@ -44,13 +39,11 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
                                      SpdyFrameType type,
                                      uint8_t flags,
                                      SpdyStreamId stream_id) {
-  DCHECK(SpdyConstants::IsValidFrameType(
-      version_, SpdyConstants::SerializeFrameType(version_, type)));
+  DCHECK(
+      SpdyConstants::IsValidFrameType(SpdyConstants::SerializeFrameType(type)));
   DCHECK_EQ(0u, stream_id & ~kStreamIdMask);
-  DCHECK_EQ(HTTP2, framer.protocol_version());
   bool success = true;
-  size_t frame_header_length =
-      SpdyConstants::GetFrameHeaderSize(framer.protocol_version());
+  size_t frame_header_length = SpdyConstants::kFrameHeaderSize;
   if (length_ > 0) {
     // Update length field for previous frame.
     OverwriteLength(framer, length_ - frame_header_length);
@@ -67,7 +60,7 @@ bool SpdyFrameBuilder::BeginNewFrame(const SpdyFramer& framer,
   // Don't check for length limits here because this may be larger than the
   // actual frame length.
   success &= WriteUInt24(capacity_ - offset_ - frame_header_length);
-  success &= WriteUInt8(SpdyConstants::SerializeFrameType(version_, type));
+  success &= WriteUInt8(SpdyConstants::SerializeFrameType(type));
   success &= WriteUInt8(flags);
   success &= WriteUInt32(stream_id);
   DCHECK_EQ(framer.GetDataFrameMinimumSize(), length_);
@@ -124,7 +117,6 @@ bool SpdyFrameBuilder::OverwriteLength(const SpdyFramer& framer,
 }
 
 bool SpdyFrameBuilder::OverwriteFlags(const SpdyFramer& framer, uint8_t flags) {
-  DCHECK_EQ(HTTP2, framer.protocol_version());
   bool success = false;
   const size_t old_length = length_;
   // Flags are the fifth octet in the frame prefix.

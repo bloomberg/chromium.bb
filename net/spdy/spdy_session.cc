@@ -144,7 +144,7 @@ std::unique_ptr<base::Value> NetLogSpdySettingCallback(
     uint32_t value,
     NetLogCaptureMode /* capture_mode */) {
   std::unique_ptr<base::DictionaryValue> dict(new base::DictionaryValue());
-  dict->SetInteger("id", SpdyConstants::SerializeSettingId(HTTP2, id));
+  dict->SetInteger("id", SpdyConstants::SerializeSettingId(id));
   dict->SetInteger("flags", flags);
   dict->SetInteger("value", value);
   return std::move(dict);
@@ -161,8 +161,8 @@ std::unique_ptr<base::Value> NetLogSpdySendSettingsCallback(
     const SpdySettingsFlags flags = it->second.first;
     const uint32_t value = it->second.second;
     settings_list->AppendString(base::StringPrintf(
-        "[id:%u flags:%u value:%u]",
-        SpdyConstants::SerializeSettingId(HTTP2, id), flags, value));
+        "[id:%u flags:%u value:%u]", SpdyConstants::SerializeSettingId(id),
+        flags, value));
   }
   dict->Set("settings", std::move(settings_list));
   return std::move(dict);

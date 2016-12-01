@@ -20,8 +20,7 @@ size_t kGoAwayDebugDataMaxSize = 1024;
 }  // namespace
 
 BufferedSpdyFramer::BufferedSpdyFramer()
-    : spdy_framer_(HTTP2),
-      visitor_(NULL),
+    : visitor_(NULL),
       header_buffer_valid_(false),
       header_stream_id_(SpdyFramer::kInvalidStream),
       frames_received_(0) {}

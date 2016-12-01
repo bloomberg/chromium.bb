@@ -35,15 +35,14 @@ class MockSpdyHeadersHandler : public SpdyHeadersHandlerInterface {
   MOCK_METHOD2(OnHeader, void(StringPiece key, StringPiece value));
 };
 
-class SpdyHeadersBlockParserTest :
-    public ::testing::TestWithParam<SpdyMajorVersion> {
+class SpdyHeadersBlockParserTest : public ::testing::Test {
  public:
   ~SpdyHeadersBlockParserTest() override {}
 
  protected:
   void SetUp() override {
     // Create a parser using the mock handler.
-    parser_.reset(new SpdyHeadersBlockParser(HTTP2, &handler_));
+    parser_.reset(new SpdyHeadersBlockParser(&handler_));
   }
 
   // Create a header block with a specified number of headers.
@@ -225,7 +224,7 @@ TEST_F(SpdyHeadersBlockParserTest, LargeBlocksDiscardedTest) {
     EXPECT_EQ(SpdyHeadersBlockParser::HEADER_BLOCK_TOO_LARGE,
               parser_->get_error());
   }
-  parser_.reset(new SpdyHeadersBlockParser(HTTP2, &handler_));
+  parser_.reset(new SpdyHeadersBlockParser(&handler_));
   // Header block with one header, which has a too-long key.
   {
     string headers = EncodeLength(1) + EncodeLength(

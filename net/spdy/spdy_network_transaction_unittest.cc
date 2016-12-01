@@ -3239,9 +3239,9 @@ TEST_F(SpdyNetworkTransactionTest, CorruptFrameSessionError) {
   SpdySerializedFrame reply_wrong_length(
       spdy_util_.ConstructSpdyGetReply(nullptr, 0, 1));
   size_t right_size =
-      reply_wrong_length.size() - SpdyConstants::GetFrameHeaderSize(HTTP2);
+      reply_wrong_length.size() - SpdyConstants::kFrameHeaderSize;
   size_t wrong_size = right_size - 4;
-  test::SetFrameLength(&reply_wrong_length, wrong_size, HTTP2);
+  test::SetFrameLength(&reply_wrong_length, wrong_size);
 
   MockRead reads[] = {
       MockRead(ASYNC, reply_wrong_length.data(), reply_wrong_length.size() - 4,
@@ -3287,7 +3287,7 @@ TEST_F(SpdyNetworkTransactionTest, GoAwayOnFrameSizeError) {
   // Read WINDOW_UPDATE with incorrectly-sized payload.
   SpdySerializedFrame bad_window_update(
       spdy_util_.ConstructSpdyWindowUpdate(1, 1));
-  test::SetFrameLength(&bad_window_update, bad_window_update.size() - 1, HTTP2);
+  test::SetFrameLength(&bad_window_update, bad_window_update.size() - 1);
   MockRead reads[] = {CreateMockRead(bad_window_update, 1)};
 
   SequencedSocketData data(reads, arraysize(reads), writes, arraysize(writes));

@@ -116,8 +116,7 @@ const size_t SpdyFramer::kControlFrameBufferSize = 19;
   } while (false)
 #endif
 
-SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(SpdyMajorVersion version,
-                                                      uint32_t wire) {
+SettingsFlagsAndId SettingsFlagsAndId::FromWireFormat(uint32_t wire) {
   return SettingsFlagsAndId(base::NetToHost32(wire) >> 24,
                             base::NetToHost32(wire) & 0x00ffffff);
 }
@@ -127,7 +126,7 @@ SettingsFlagsAndId::SettingsFlagsAndId(uint8_t flags, uint32_t id)
   SPDY_BUG_IF(id > (1u << 24)) << "HTTP2 setting ID too large: " << id;
 }
 
-uint32_t SettingsFlagsAndId::GetWireFormat(SpdyMajorVersion version) const {
+uint32_t SettingsFlagsAndId::GetWireFormat() const {
   return base::HostToNet32(id_ & 0x00ffffff) | base::HostToNet32(flags_ << 24);
 }
 
@@ -142,18 +141,15 @@ bool SpdyFramerVisitorInterface::OnRstStreamFrameData(
   return true;
 }
 
-SpdyFramer::SpdyFramer(SpdyMajorVersion version,
-                       SpdyFramer::DecoderAdapterFactoryFn adapter_factory)
+SpdyFramer::SpdyFramer(SpdyFramer::DecoderAdapterFactoryFn adapter_factory)
     : current_frame_buffer_(kControlFrameBufferSize),
       expect_continuation_(0),
       visitor_(NULL),
       debug_visitor_(NULL),
       header_handler_(nullptr),
-      protocol_version_(version),
       enable_compression_(true),
       probable_http_response_(false),
       end_stream_when_done_(false) {
-  DCHECK(protocol_version_ == HTTP2);
   // TODO(bnc): The way kMaxControlFrameSize is currently interpreted, it
   // includes the frame header, whereas kSpdyInitialFrameSizeLimit does not.
   // Therefore this assertion is unnecessarily strict.
@@ -161,13 +157,12 @@ SpdyFramer::SpdyFramer(SpdyMajorVersion version,
                 "Our send limit should be at most our receive limit");
   Reset();
 
-  if (version == HTTP2 && adapter_factory != nullptr) {
+  if (adapter_factory != nullptr) {
     decoder_adapter_ = adapter_factory(this);
   }
 }
 
-SpdyFramer::SpdyFramer(SpdyMajorVersion version)
-    : SpdyFramer(version, &DecoderAdapterFactory) {}
+SpdyFramer::SpdyFramer() : SpdyFramer(&DecoderAdapterFactory) {}
 
 SpdyFramer::~SpdyFramer() {
 }
@@ -235,12 +230,12 @@ SpdyFramer::SpdyState SpdyFramer::state() const {
 }
 
 size_t SpdyFramer::GetDataFrameMinimumSize() const {
-  return SpdyConstants::GetDataFrameMinimumSize(protocol_version_);
+  return SpdyConstants::kDataFrameMinimumSize;
 }
 
 // Size, in bytes, of the control frame header.
 size_t SpdyFramer::GetFrameHeaderSize() const {
-  return SpdyConstants::GetFrameHeaderSize(protocol_version_);
+  return SpdyConstants::kFrameHeaderSize;
 }
 
 // TODO(jamessynge): Rename this to GetRstStreamSize as the frame is fixed size.
@@ -284,14 +279,12 @@ size_t SpdyFramer::GetWindowUpdateSize() const {
 }
 
 size_t SpdyFramer::GetBlockedSize() const {
-  DCHECK_EQ(HTTP2, protocol_version_);
   // Size, in bytes, of a BLOCKED frame.
   // The BLOCKED frame has no payload beyond the control frame header.
   return GetFrameHeaderSize();
 }
 
 size_t SpdyFramer::GetPushPromiseMinimumSize() const {
-  DCHECK_EQ(HTTP2, protocol_version_);
   // Size, in bytes, of a PUSH_PROMISE frame, sans the embedded header block.
   // Calculated as frame prefix + 4 (promised stream id)
   return GetFrameHeaderSize() + 4;
@@ -323,21 +316,12 @@ size_t SpdyFramer::GetFrameMinimumSize() const {
 }
 
 size_t SpdyFramer::GetFrameMaximumSize() const {
-  if (protocol_version_ == HTTP2) {
-    return send_frame_size_limit_ +
-           SpdyConstants::GetFrameHeaderSize(protocol_version_);
-  } else {
-    return SpdyConstants::GetMaxFrameSizeLimit(protocol_version_);
-  }
+  return send_frame_size_limit_ + SpdyConstants::kFrameHeaderSize;
 }
 
 size_t SpdyFramer::GetDataFrameMaximumPayload() const {
-  if (protocol_version_ == HTTP2) {
-    return std::min(kMaxDataPayloadSendSize,
-                    GetFrameMaximumSize() - GetDataFrameMinimumSize());
-  } else {
-    return GetFrameMaximumSize() - GetDataFrameMinimumSize();
-  }
+  return std::min(kMaxDataPayloadSendSize,
+                  GetFrameMaximumSize() - GetDataFrameMinimumSize());
 }
 
 const char* SpdyFramer::StateToString(int state) {
@@ -557,8 +541,7 @@ size_t SpdyFramer::ProcessInput(const char* data, size_t len) {
       }
 
       case SPDY_CONTROL_FRAME_HEADER_BLOCK: {
-        int bytes_read = ProcessControlFrameHeaderBlock(
-            data, len, protocol_version_ == HTTP2);
+        int bytes_read = ProcessControlFrameHeaderBlock(data, len);
         len -= bytes_read;
         data += bytes_read;
         break;
@@ -666,8 +649,8 @@ void SpdyFramer::SpdySettingsScratch::Reset() {
 SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
                                               int frame_type_field,
                                               size_t payload_length_field) {
-  if (!SpdyConstants::IsValidFrameType(protocol_version_, frame_type_field)) {
-    // In HTTP2 we ignore unknown frame types for extensibility, as long as
+  if (!SpdyConstants::IsValidFrameType(frame_type_field)) {
+    // We ignore unknown frame types for extensibility, as long as
     // the rest of the control frame header is valid.
     // We rely on the visitor to check validity of current_frame_stream_id_.
     bool valid_stream =
@@ -693,35 +676,31 @@ SpdyFrameType SpdyFramer::ValidateFrameHeader(bool is_control_frame,
     return DATA;
   }
 
-  SpdyFrameType frame_type =
-      SpdyConstants::ParseFrameType(protocol_version_, frame_type_field);
+  SpdyFrameType frame_type = SpdyConstants::ParseFrameType(frame_type_field);
 
-  if (protocol_version_ == HTTP2) {
-    if (!SpdyConstants::IsValidHTTP2FrameStreamId(current_frame_stream_id_,
-                                                  frame_type)) {
-      DLOG(ERROR) << "The framer received an invalid streamID of "
-                  << current_frame_stream_id_ << " for a frame of type "
-                  << FrameTypeToString(frame_type);
-      set_error(SPDY_INVALID_STREAM_ID);
-      return frame_type;
-    }
-
-    // Ensure that we see a CONTINUATION frame iff we expect to.
-    if ((frame_type == CONTINUATION) != (expect_continuation_ != 0)) {
-      if (expect_continuation_ != 0) {
-        DLOG(ERROR) << "The framer was expecting to receive a CONTINUATION "
-                    << "frame, but instead received a frame of type "
-                    << FrameTypeToString(frame_type);
-      } else {
-        DLOG(ERROR) << "The framer received an unexpected CONTINUATION frame.";
-      }
-      set_error(SPDY_UNEXPECTED_FRAME);
-      return frame_type;
-    }
+  if (!SpdyConstants::IsValidHTTP2FrameStreamId(current_frame_stream_id_,
+                                                frame_type)) {
+    DLOG(ERROR) << "The framer received an invalid streamID of "
+                << current_frame_stream_id_ << " for a frame of type "
+                << FrameTypeToString(frame_type);
+    set_error(SPDY_INVALID_STREAM_ID);
+    return frame_type;
   }
 
-  if (protocol_version_ == HTTP2 &&
-      payload_length_field > recv_frame_size_limit_) {
+  // Ensure that we see a CONTINUATION frame iff we expect to.
+  if ((frame_type == CONTINUATION) != (expect_continuation_ != 0)) {
+    if (expect_continuation_ != 0) {
+      DLOG(ERROR) << "The framer was expecting to receive a CONTINUATION "
+                  << "frame, but instead received a frame of type "
+                  << FrameTypeToString(frame_type);
+    } else {
+      DLOG(ERROR) << "The framer received an unexpected CONTINUATION frame.";
+    }
+    set_error(SPDY_UNEXPECTED_FRAME);
+    return frame_type;
+  }
+
+  if (payload_length_field > recv_frame_size_limit_) {
     set_error(SPDY_OVERSIZED_PAYLOAD);
   }
 
@@ -750,8 +729,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
                          current_frame_buffer_.len());
   bool is_control_frame = false;
 
-  int control_frame_type_field =
-      SpdyConstants::DataFrameType(protocol_version_);
+  int control_frame_type_field = SpdyConstants::kDataFrameType;
   // ProcessControlFrameHeader() will set current_frame_type_ to the
   // correct value if this is a valid control frame.
   current_frame_type_ = DATA;
@@ -765,8 +743,7 @@ size_t SpdyFramer::ProcessCommonHeader(const char* data, size_t len) {
   // We check control_frame_type_field's validity in
   // ProcessControlFrameHeader().
   control_frame_type_field = control_frame_type_field_uint8;
-  is_control_frame = control_frame_type_field !=
-                     SpdyConstants::SerializeFrameType(protocol_version_, DATA);
+  is_control_frame = control_frame_type_field != SpdyConstants::kDataFrameType;
 
   current_frame_length_ = length_field + GetFrameHeaderSize();
 
@@ -853,12 +830,10 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
         DLOG(WARNING) << "Invalid length for SETTINGS frame: "
                       << current_frame_length_;
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
-      } else if (protocol_version_ == HTTP2 &&
-                 current_frame_flags_ & SETTINGS_FLAG_ACK &&
+      } else if (current_frame_flags_ & SETTINGS_FLAG_ACK &&
                  current_frame_length_ > GetSettingsMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
-      } else if (protocol_version_ == HTTP2 &&
-                 current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
+      } else if (current_frame_flags_ & ~SETTINGS_FLAG_ACK) {
         VLOG(1) << "Undefined frame flags for SETTINGS frame: " << hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ &= SETTINGS_FLAG_ACK;
@@ -869,8 +844,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       if (current_frame_length_ != GetPingSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME_SIZE);
       } else {
-        if (protocol_version_ == HTTP2 &&
-            current_frame_flags_ & ~PING_FLAG_ACK) {
+        if (current_frame_flags_ & ~PING_FLAG_ACK) {
           VLOG(1) << "Undefined frame flags for PING frame: " << hex
                   << static_cast<int>(current_frame_flags_);
           current_frame_flags_ &= PING_FLAG_ACK;
@@ -881,8 +855,7 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       {
       // For HTTP/2, optional opaque data may be appended to the
       // GOAWAY frame, thus there is only a minimal length restriction.
-      if (protocol_version_ == HTTP2 &&
-          current_frame_length_ < GetGoAwayMinimumSize()) {
+      if (current_frame_length_ < GetGoAwayMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
         } else if (current_frame_flags_ != 0) {
           VLOG(1) << "Undefined frame flags for GOAWAY frame: " << hex
@@ -894,18 +867,16 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     case HEADERS:
       {
         size_t min_size = GetHeadersMinimumSize();
-        if (protocol_version_ == HTTP2 &&
-            (current_frame_flags_ & HEADERS_FLAG_PRIORITY)) {
+        if (current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
           min_size += 4;
         }
         if (current_frame_length_ < min_size) {
           // TODO(mlavan): check here for HEADERS with no payload?
           // (not allowed in HTTP2)
           set_error(SPDY_INVALID_CONTROL_FRAME);
-        } else if (protocol_version_ == HTTP2 &&
-                   current_frame_flags_ &
-                       ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
-                         HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED)) {
+        } else if (current_frame_flags_ &
+                   ~(CONTROL_FLAG_FIN | HEADERS_FLAG_PRIORITY |
+                     HEADERS_FLAG_END_HEADERS | HEADERS_FLAG_PADDED)) {
           VLOG(1) << "Undefined frame flags for HEADERS frame: " << hex
                   << static_cast<int>(current_frame_flags_);
           current_frame_flags_ &=
@@ -935,10 +906,8 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
     case PUSH_PROMISE:
       if (current_frame_length_ < GetPushPromiseMinimumSize()) {
         set_error(SPDY_INVALID_CONTROL_FRAME);
-      } else if (protocol_version_ == HTTP2 &&
-                 current_frame_flags_ &
-                     ~(PUSH_PROMISE_FLAG_END_PUSH_PROMISE |
-                       HEADERS_FLAG_PADDED)) {
+      } else if (current_frame_flags_ &
+                 ~(PUSH_PROMISE_FLAG_END_PUSH_PROMISE | HEADERS_FLAG_PADDED)) {
         VLOG(1) << "Undefined frame flags for PUSH_PROMISE frame: " << hex
                 << static_cast<int>(current_frame_flags_);
         current_frame_flags_ &=
@@ -1010,21 +979,17 @@ void SpdyFramer::ProcessControlFrameHeader(int control_frame_type_field) {
       break;
     case HEADERS:
       frame_size_without_variable_data = GetHeadersMinimumSize();
-      if (protocol_version_ == HTTP2) {
-        if (current_frame_flags_ & HEADERS_FLAG_PADDED) {
-          frame_size_without_variable_data += kPadLengthFieldSize;
-        }
-        if (current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
+      if (current_frame_flags_ & HEADERS_FLAG_PADDED) {
+        frame_size_without_variable_data += kPadLengthFieldSize;
+      }
+      if (current_frame_flags_ & HEADERS_FLAG_PRIORITY) {
         frame_size_without_variable_data +=
-            kPriorityDependencyPayloadSize +
-            kPriorityWeightPayloadSize;
-        }
+            kPriorityDependencyPayloadSize + kPriorityWeightPayloadSize;
       }
       break;
     case PUSH_PROMISE:
       frame_size_without_variable_data = GetPushPromiseMinimumSize();
-      if (protocol_version_ == HTTP2 &&
-          current_frame_flags_ & PUSH_PROMISE_FLAG_PADDED) {
+      if (current_frame_flags_ & PUSH_PROMISE_FLAG_PADDED) {
         frame_size_without_variable_data += kPadLengthFieldSize;
       }
       break;
@@ -1079,7 +1044,6 @@ size_t SpdyFramer::UpdateCurrentFrameBuffer(const char** data, size_t* len,
 }
 
 size_t SpdyFramer::GetSerializedLength(
-    const SpdyMajorVersion spdy_version,
     const SpdyHeaderBlock* headers) {
   const size_t num_name_value_pairs_size = sizeof(uint32_t);
   const size_t length_of_name_size = num_name_value_pairs_size;
@@ -1120,14 +1084,12 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
             set_error(SPDY_INVALID_CONTROL_FRAME);
             return original_len - len;
           }
-          if (protocol_version_ == HTTP2 &&
-              !(current_frame_flags_ & HEADERS_FLAG_END_HEADERS) &&
+          if (!(current_frame_flags_ & HEADERS_FLAG_END_HEADERS) &&
               current_frame_type_ == HEADERS) {
             expect_continuation_ = current_frame_stream_id_;
             end_stream_when_done_ = current_frame_flags_ & CONTROL_FLAG_FIN;
           }
-          if (protocol_version_ == HTTP2 &&
-              current_frame_flags_ & HEADERS_FLAG_PADDED) {
+          if (current_frame_flags_ & HEADERS_FLAG_PADDED) {
             uint8_t pad_payload_len = 0;
             DCHECK_EQ(remaining_padding_payload_length_, 0u);
             successful_read = reader.ReadUInt8(&pad_payload_len);
@@ -1139,7 +1101,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
           int weight = 0;
           uint32_t parent_stream_id = 0;
           bool exclusive = false;
-          if (protocol_version_ == HTTP2 && has_priority) {
+          if (has_priority) {
             uint32_t stream_dependency;
             successful_read = reader.ReadUInt32(&stream_dependency);
             DCHECK(successful_read);
@@ -1170,14 +1132,12 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
         break;
       case PUSH_PROMISE:
         {
-          DCHECK_EQ(HTTP2, protocol_version_);
           if (current_frame_stream_id_ == 0) {
             set_error(SPDY_INVALID_CONTROL_FRAME);
             return original_len - len;
           }
           bool successful_read = true;
-          if (protocol_version_ == HTTP2 &&
-              current_frame_flags_ & PUSH_PROMISE_FLAG_PADDED) {
+          if (current_frame_flags_ & PUSH_PROMISE_FLAG_PADDED) {
             DCHECK_EQ(remaining_padding_payload_length_, 0u);
             uint8_t pad_payload_len = 0;
             successful_read = reader.ReadUInt8(&pad_payload_len);
@@ -1261,8 +1221,7 @@ size_t SpdyFramer::ProcessControlFrameBeforeHeaderBlock(const char* data,
 // visitor or decompresses and then passes directly to the visitor, via
 // IncrementallyDeliverControlFrameHeaderData()
 size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
-                                                  size_t data_len,
-                                                  bool is_hpack_header_block) {
+                                                  size_t data_len) {
   DCHECK_EQ(SPDY_CONTROL_FRAME_HEADER_BLOCK, state_);
 
   bool processed_successfully = true;
@@ -1278,16 +1237,10 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
 
   size_t process_bytes = std::min(
       data_len, remaining_data_length_ - remaining_padding_payload_length_);
-  if (is_hpack_header_block) {
-    if (!GetHpackDecoder()->HandleControlFrameHeadersData(data,
-                                                          process_bytes)) {
-      // TODO(jgraettinger): Finer-grained HPACK error codes.
-      set_error(SPDY_DECOMPRESS_FAILURE);
-      processed_successfully = false;
-    }
-  } else if (process_bytes > 0) {
-    processed_successfully = IncrementallyDeliverControlFrameHeaderData(
-        current_frame_stream_id_, data, process_bytes);
+  if (!GetHpackDecoder()->HandleControlFrameHeadersData(data, process_bytes)) {
+    // TODO(jgraettinger): Finer-grained HPACK error codes.
+    set_error(SPDY_DECOMPRESS_FAILURE);
+    processed_successfully = false;
   }
   remaining_data_length_ -= process_bytes;
 
@@ -1295,23 +1248,16 @@ size_t SpdyFramer::ProcessControlFrameHeaderBlock(const char* data,
   if (remaining_data_length_ == remaining_padding_payload_length_ &&
       processed_successfully) {
     if (expect_continuation_ == 0) {
-      if (is_hpack_header_block) {
-        size_t compressed_len = 0;
-        if (GetHpackDecoder()->HandleControlFrameHeadersComplete(
-                &compressed_len)) {
-          visitor_->OnHeaderFrameEnd(current_frame_stream_id_, true);
-          if (state_ == SPDY_ERROR) {
-            return data_len;
-          }
-        } else {
-          set_error(SPDY_DECOMPRESS_FAILURE);
-          processed_successfully = false;
-        }
-      } else {
+      size_t compressed_len = 0;
+      if (GetHpackDecoder()->HandleControlFrameHeadersComplete(
+              &compressed_len)) {
         visitor_->OnHeaderFrameEnd(current_frame_stream_id_, true);
         if (state_ == SPDY_ERROR) {
           return data_len;
         }
+      } else {
+        set_error(SPDY_DECOMPRESS_FAILURE);
+        processed_successfully = false;
       }
     }
     if (processed_successfully) {
@@ -1340,8 +1286,7 @@ size_t SpdyFramer::ProcessSettingsFrameHeader(const char* data, size_t len) {
     remaining_data_length_ -= bytes_read;
   }
   if (remaining_control_header_ == 0) {
-    if (protocol_version_ == HTTP2 &&
-        current_frame_flags_ & SETTINGS_FLAG_ACK) {
+    if (current_frame_flags_ & SETTINGS_FLAG_ACK) {
       visitor_->OnSettingsAck();
       CHANGE_STATE(SPDY_FRAME_COMPLETE);
     } else {
@@ -1417,12 +1362,12 @@ bool SpdyFramer::ProcessSetting(const char* data) {
   value = base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data + 2)));
 
   // Validate id.
-  if (!SpdyConstants::IsValidSettingId(protocol_version_, id_field)) {
+  if (!SpdyConstants::IsValidSettingId(id_field)) {
     DLOG(WARNING) << "Unknown SETTINGS ID: " << id_field;
-    // In HTTP2 we ignore unknown settings for extensibility.
+    // Ignore unknown settings for extensibility.
     return true;
   }
-  id = SpdyConstants::ParseSettingId(protocol_version_, id_field);
+  id = SpdyConstants::ParseSettingId(id_field);
 
   // Validation succeeded. Pass on to visitor.
   visitor_->OnSetting(id, flags, value);
@@ -1443,8 +1388,7 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
     switch (current_frame_type_) {
       case PING: {
           SpdyPingId id = 0;
-          bool is_ack = protocol_version_ == HTTP2 &&
-                        (current_frame_flags_ & PING_FLAG_ACK);
+          bool is_ack = current_frame_flags_ & PING_FLAG_ACK;
           bool successful_read = true;
           successful_read = reader.ReadUInt64(&id);
           DCHECK(successful_read);
@@ -1463,13 +1407,11 @@ size_t SpdyFramer::ProcessControlFramePayload(const char* data, size_t len) {
         }
         break;
       case BLOCKED: {
-          DCHECK_EQ(HTTP2, protocol_version_);
           DCHECK(reader.IsDoneReading());
           visitor_->OnBlocked(current_frame_stream_id_);
         }
         break;
       case PRIORITY: {
-          DCHECK_EQ(HTTP2, protocol_version_);
           uint32_t stream_dependency;
           uint32_t parent_stream_id;
           bool exclusive;
@@ -1531,15 +1473,12 @@ size_t SpdyFramer::ProcessGoAwayFramePayload(const char* data, size_t len) {
       uint32_t status_raw = GOAWAY_OK;
       successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      if (SpdyConstants::IsValidGoAwayStatus(protocol_version_, status_raw)) {
-        status =
-            SpdyConstants::ParseGoAwayStatus(protocol_version_, status_raw);
+      if (SpdyConstants::IsValidGoAwayStatus(status_raw)) {
+        status = SpdyConstants::ParseGoAwayStatus(status_raw);
       } else {
-        if (protocol_version_ == HTTP2) {
-          // Treat unrecognized status codes as INTERNAL_ERROR as
-          // recommended by the HTTP/2 spec.
-          status = GOAWAY_INTERNAL_ERROR;
-        }
+        // Treat unrecognized status codes as INTERNAL_ERROR as
+        // recommended by the HTTP/2 spec.
+        status = GOAWAY_INTERNAL_ERROR;
       }
       // Finished parsing the GOAWAY header, call frame handler.
       visitor_->OnGoAway(current_frame_stream_id_, status);
@@ -1592,16 +1531,12 @@ size_t SpdyFramer::ProcessRstStreamFramePayload(const char* data, size_t len) {
       uint32_t status_raw = status;
       bool successful_read = reader.ReadUInt32(&status_raw);
       DCHECK(successful_read);
-      if (SpdyConstants::IsValidRstStreamStatus(protocol_version_,
-                                                status_raw)) {
-        status =
-            SpdyConstants::ParseRstStreamStatus(protocol_version_, status_raw);
+      if (SpdyConstants::IsValidRstStreamStatus(status_raw)) {
+        status = SpdyConstants::ParseRstStreamStatus(status_raw);
       } else {
-        if (protocol_version_ == HTTP2) {
-          // Treat unrecognized status codes as INTERNAL_ERROR as
-          // recommended by the HTTP/2 spec.
-          status = RST_STREAM_INTERNAL_ERROR;
-        }
+        // Treat unrecognized status codes as INTERNAL_ERROR as
+        // recommended by the HTTP/2 spec.
+        status = RST_STREAM_INTERNAL_ERROR;
       }
       // Finished parsing the RST_STREAM header, call frame handler.
       visitor_->OnRstStream(current_frame_stream_id_, status);
@@ -1795,7 +1730,7 @@ bool SpdyFramer::ParseHeaderBlockInBuffer(const char* header_data,
     const char* begin = temp.data();
     const char* end = begin;
     std::advance(end, temp.size());
-    if (protocol_version_ == HTTP2 && std::any_of(begin, end, isupper)) {
+    if (std::any_of(begin, end, isupper)) {
       DVLOG(1) << "Malformed header: Header name " << temp
                << " contains upper-case characters.";
       return false;
@@ -1867,7 +1802,7 @@ SpdySerializedFrame SpdyFramer::SpdyHeaderFrameIterator::NextFrame() {
       // use GetSerializedLength() for an apples-to-apples comparision of
       // compression performance between HPACK and SPDY w/ deflate.
       size_t debug_payload_len =
-          framer_->GetSerializedLength(HTTP2, &headers_ir_->header_block());
+          framer_->GetSerializedLength(&headers_ir_->header_block());
       framer_->debug_visitor_->OnSendCompressedFrame(headers_ir_->stream_id(),
                                                      HEADERS, debug_payload_len,
                                                      debug_total_size_);
@@ -1901,7 +1836,7 @@ SpdySerializedFrame SpdyFramer::SerializeData(const SpdyDataIR& data_ir) const {
   const size_t size_with_padding = num_padding_fields + data_ir.data_len() +
                                    data_ir.padding_payload_len() +
                                    GetDataFrameMinimumSize();
-  SpdyFrameBuilder builder(size_with_padding, protocol_version_);
+  SpdyFrameBuilder builder(size_with_padding);
   builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
   if (data_ir.padded()) {
     builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
@@ -1924,25 +1859,19 @@ SpdySerializedFrame SpdyFramer::SerializeDataFrameHeaderWithPaddingLengthField(
 
   size_t frame_size = GetDataFrameMinimumSize();
   size_t num_padding_fields = 0;
-  if (protocol_version_ == HTTP2) {
-    if (data_ir.padded()) {
-      flags |= DATA_FLAG_PADDED;
-      ++num_padding_fields;
-    }
+  if (data_ir.padded()) {
+    flags |= DATA_FLAG_PADDED;
+    ++num_padding_fields;
     frame_size += num_padding_fields;
   }
 
-  SpdyFrameBuilder builder(frame_size, protocol_version_);
+  SpdyFrameBuilder builder(frame_size);
   builder.BeginNewFrame(*this, DATA, flags, data_ir.stream_id());
-  if (protocol_version_ == HTTP2) {
-    if (data_ir.padded()) {
-      builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
-    }
-    builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
-                                       data_ir.padding_payload_len());
-  } else {
-    builder.OverwriteLength(*this, data_ir.data_len());
+  if (data_ir.padded()) {
+    builder.WriteUInt8(data_ir.padding_payload_len() & 0xff);
   }
+  builder.OverwriteLength(*this, num_padding_fields + data_ir.data_len() +
+                                     data_ir.padding_payload_len());
   DCHECK_EQ(frame_size, builder.length());
   return builder.take();
 }
@@ -1955,12 +1884,12 @@ SpdySerializedFrame SpdyFramer::SerializeRstStream(
   // commented but left in place to simplify future patching.
   // Compute the output buffer size, taking opaque data into account.
   size_t expected_length = GetRstStreamMinimumSize();
-  SpdyFrameBuilder builder(expected_length, protocol_version_);
+  SpdyFrameBuilder builder(expected_length);
 
   builder.BeginNewFrame(*this, RST_STREAM, 0, rst_stream.stream_id());
 
-  builder.WriteUInt32(SpdyConstants::SerializeRstStreamStatus(
-      protocol_version_, rst_stream.status()));
+  builder.WriteUInt32(
+      SpdyConstants::SerializeRstStreamStatus(rst_stream.status()));
 
   DCHECK_EQ(expected_length, builder.length());
   return builder.take();
@@ -1979,11 +1908,11 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
   // Size, in bytes, of this SETTINGS frame.
   const size_t size = GetSettingsMinimumSize() +
                       (values->size() * setting_size);
-  SpdyFrameBuilder builder(size, protocol_version_);
+  SpdyFrameBuilder builder(size);
   builder.BeginNewFrame(*this, SETTINGS, flags, 0);
 
   // If this is an ACK, payload should be empty.
-  if (protocol_version_ == HTTP2 && settings.is_ack()) {
+  if (settings.is_ack()) {
     return builder.take();
   }
 
@@ -1991,8 +1920,7 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
        it != values->end();
        ++it) {
-    int setting_id =
-        SpdyConstants::SerializeSettingId(protocol_version_, it->first);
+    int setting_id = SpdyConstants::SerializeSettingId(it->first);
     DCHECK_GE(setting_id, 0);
     builder.WriteUInt16(static_cast<uint16_t>(setting_id));
     builder.WriteUInt32(it->second.value);
@@ -2002,7 +1930,7 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
 }
 
 SpdySerializedFrame SpdyFramer::SerializePing(const SpdyPingIR& ping) const {
-  SpdyFrameBuilder builder(GetPingSize(), protocol_version_);
+  SpdyFrameBuilder builder(GetPingSize());
   uint8_t flags = 0;
   if (ping.is_ack()) {
     flags |= PING_FLAG_ACK;
@@ -2017,10 +1945,8 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
     const SpdyGoAwayIR& goaway) const {
   // Compute the output buffer size, take opaque data into account.
   size_t expected_length = GetGoAwayMinimumSize();
-  if (protocol_version_ == HTTP2) {
-    expected_length += goaway.description().size();
-  }
-  SpdyFrameBuilder builder(expected_length, protocol_version_);
+  expected_length += goaway.description().size();
+  SpdyFrameBuilder builder(expected_length);
 
   // Serialize the GOAWAY frame.
   builder.BeginNewFrame(*this, GOAWAY, 0, 0);
@@ -2029,11 +1955,10 @@ SpdySerializedFrame SpdyFramer::SerializeGoAway(
   builder.WriteUInt32(goaway.last_good_stream_id());
 
   // GOAWAY frames also specify the error status code.
-  builder.WriteUInt32(
-      SpdyConstants::SerializeGoAwayStatus(protocol_version_, goaway.status()));
+  builder.WriteUInt32(SpdyConstants::SerializeGoAwayStatus(goaway.status()));
 
-  // In HTTP2, GOAWAY frames may also specify opaque data.
-  if ((protocol_version_ == HTTP2) && (goaway.description().size() > 0)) {
+  // GOAWAY frames may also specify opaque data.
+  if (!goaway.description().empty()) {
     builder.WriteBytes(goaway.description().data(),
                        goaway.description().size());
   }
@@ -2047,22 +1972,20 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
   if (headers.fin()) {
     flags |= CONTROL_FLAG_FIN;
   }
-  if (protocol_version_ == HTTP2) {
-    // This will get overwritten if we overflow into a CONTINUATION frame.
-    flags |= HEADERS_FLAG_END_HEADERS;
-    if (headers.has_priority()) {
-      flags |= HEADERS_FLAG_PRIORITY;
-    }
-    if (headers.padded()) {
-      flags |= HEADERS_FLAG_PADDED;
-    }
+  // This will get overwritten if we overflow into a CONTINUATION frame.
+  flags |= HEADERS_FLAG_END_HEADERS;
+  if (headers.has_priority()) {
+    flags |= HEADERS_FLAG_PRIORITY;
+  }
+  if (headers.padded()) {
+    flags |= HEADERS_FLAG_PADDED;
   }
 
   // The size of this frame, including padding (if there is any) and
   // variable-length header block.
   size_t size = GetHeadersMinimumSize();
 
-  if (protocol_version_ == HTTP2 && headers.padded()) {
+  if (headers.padded()) {
     size += kPadLengthFieldSize;
     size += headers.padding_payload_len();
   }
@@ -2087,7 +2010,7 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
     flags &= ~HEADERS_FLAG_END_HEADERS;
   }
 
-  SpdyFrameBuilder builder(size, protocol_version_);
+  SpdyFrameBuilder builder(size);
   builder.BeginNewFrame(*this, HEADERS, flags, headers.stream_id());
   DCHECK_EQ(GetHeadersMinimumSize(), builder.length());
 
@@ -2109,8 +2032,7 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
     // HTTP2 uses HPACK for header compression. However, continue to
     // use GetSerializedLength() for an apples-to-apples comparision of
     // compression performance between HPACK and SPDY w/ deflate.
-    const size_t payload_len =
-        GetSerializedLength(protocol_version_, &(headers.header_block()));
+    const size_t payload_len = GetSerializedLength(&(headers.header_block()));
     debug_visitor_->OnSendCompressedFrame(headers.stream_id(),
                                           HEADERS,
                                           payload_len,
@@ -2122,7 +2044,7 @@ SpdySerializedFrame SpdyFramer::SerializeHeaders(const SpdyHeadersIR& headers) {
 
 SpdySerializedFrame SpdyFramer::SerializeWindowUpdate(
     const SpdyWindowUpdateIR& window_update) const {
-  SpdyFrameBuilder builder(GetWindowUpdateSize(), protocol_version_);
+  SpdyFrameBuilder builder(GetWindowUpdateSize());
   builder.BeginNewFrame(*this, WINDOW_UPDATE, kNoFlags,
                         window_update.stream_id());
   builder.WriteUInt32(window_update.delta());
@@ -2132,15 +2054,13 @@ SpdySerializedFrame SpdyFramer::SerializeWindowUpdate(
 
 SpdySerializedFrame SpdyFramer::SerializeBlocked(
     const SpdyBlockedIR& blocked) const {
-  DCHECK_EQ(HTTP2, protocol_version_);
-  SpdyFrameBuilder builder(GetBlockedSize(), protocol_version_);
+  SpdyFrameBuilder builder(GetBlockedSize());
   builder.BeginNewFrame(*this, BLOCKED, kNoFlags, blocked.stream_id());
   return builder.take();
 }
 
 SpdySerializedFrame SpdyFramer::SerializePushPromise(
     const SpdyPushPromiseIR& push_promise) {
-  DCHECK_EQ(HTTP2, protocol_version_);
   uint8_t flags = 0;
   // This will get overwritten if we overflow into a CONTINUATION frame.
   flags |= PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
@@ -2168,7 +2088,7 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
     flags &= ~PUSH_PROMISE_FLAG_END_PUSH_PROMISE;
   }
 
-  SpdyFrameBuilder builder(size, protocol_version_);
+  SpdyFrameBuilder builder(size);
   builder.BeginNewFrame(*this,
                         PUSH_PROMISE,
                         flags,
@@ -2197,7 +2117,7 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
     // use GetSerializedLength() for an apples-to-apples comparision of
     // compression performance between HPACK and SPDY w/ deflate.
     const size_t payload_len =
-        GetSerializedLength(protocol_version_, &(push_promise.header_block()));
+        GetSerializedLength(&(push_promise.header_block()));
     debug_visitor_->OnSendCompressedFrame(push_promise.stream_id(),
                                           PUSH_PROMISE,
                                           payload_len,
@@ -2210,10 +2130,8 @@ SpdySerializedFrame SpdyFramer::SerializePushPromise(
 SpdySerializedFrame SpdyFramer::SerializeHeadersGivenEncoding(
     const SpdyHeadersIR& headers,
     const string& encoding) const {
-  DCHECK_EQ(HTTP2, protocol_version_);
-
   size_t frame_size = GetHeaderFrameSizeSansBlock(headers) + encoding.size();
-  SpdyFrameBuilder builder(frame_size, protocol_version_);
+  SpdyFrameBuilder builder(frame_size);
   builder.BeginNewFrame(*this, HEADERS, SerializeHeaderFrameFlags(headers),
                         headers.stream_id());
   DCHECK_EQ(GetFrameHeaderSize(), builder.length());
@@ -2241,11 +2159,9 @@ SpdySerializedFrame SpdyFramer::SerializeHeadersGivenEncoding(
 
 SpdySerializedFrame SpdyFramer::SerializeContinuation(
     const SpdyContinuationIR& continuation) const {
-  DCHECK_EQ(HTTP2, protocol_version_);
-
   const string& encoding = continuation.encoding();
   size_t frame_size = GetContinuationMinimumSize() + encoding.size();
-  SpdyFrameBuilder builder(frame_size, protocol_version_);
+  SpdyFrameBuilder builder(frame_size);
   uint8_t flags = continuation.end_headers() ? HEADERS_FLAG_END_HEADERS : 0;
   builder.BeginNewFrame(*this, CONTINUATION, flags, continuation.stream_id());
   DCHECK_EQ(GetFrameHeaderSize(), builder.length());
@@ -2255,15 +2171,13 @@ SpdySerializedFrame SpdyFramer::SerializeContinuation(
 }
 
 SpdySerializedFrame SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
-  DCHECK_EQ(HTTP2, protocol_version_);
-
   size_t size = GetAltSvcMinimumSize();
   size += altsvc_ir.origin().length();
   string value = SpdyAltSvcWireFormat::SerializeHeaderFieldValue(
       altsvc_ir.altsvc_vector());
   size += value.length();
 
-  SpdyFrameBuilder builder(size, protocol_version_);
+  SpdyFrameBuilder builder(size);
   builder.BeginNewFrame(*this, ALTSVC, kNoFlags, altsvc_ir.stream_id());
 
   builder.WriteUInt16(altsvc_ir.origin().length());
@@ -2275,10 +2189,9 @@ SpdySerializedFrame SpdyFramer::SerializeAltSvc(const SpdyAltSvcIR& altsvc_ir) {
 
 SpdySerializedFrame SpdyFramer::SerializePriority(
     const SpdyPriorityIR& priority) const {
-  DCHECK_EQ(HTTP2, protocol_version_);
   size_t size = GetPrioritySize();
 
-  SpdyFrameBuilder builder(size, protocol_version_);
+  SpdyFrameBuilder builder(size);
   builder.BeginNewFrame(*this, PRIORITY, kNoFlags, priority.stream_id());
 
   builder.WriteUInt32(PackStreamDependencyValues(priority.exclusive(),
@@ -2350,7 +2263,6 @@ SpdySerializedFrame SpdyFramer::SerializeFrame(const SpdyFrameIR& frame) {
 }
 
 size_t SpdyFramer::GetNumberRequiredContinuationFrames(size_t size) {
-  DCHECK_EQ(HTTP2, protocol_version_);
   DCHECK_GT(size, kMaxControlFrameSize);
   size_t overflow = size - kMaxControlFrameSize;
   size_t payload_size = kMaxControlFrameSize - GetContinuationMinimumSize();
@@ -2444,7 +2356,6 @@ void SpdyFramer::WritePayloadWithContinuation(SpdyFrameBuilder* builder,
 }
 
 HpackEncoder* SpdyFramer::GetHpackEncoder() {
-  DCHECK_EQ(HTTP2, protocol_version_);
   if (hpack_encoder_.get() == nullptr) {
     hpack_encoder_.reset(new HpackEncoder(ObtainHpackHuffmanTable()));
   }
@@ -2452,7 +2363,6 @@ HpackEncoder* SpdyFramer::GetHpackEncoder() {
 }
 
 HpackDecoderInterface* SpdyFramer::GetHpackDecoder() {
-  DCHECK_EQ(HTTP2, protocol_version_);
   if (hpack_decoder_.get() == nullptr) {
     hpack_decoder_.reset(new HpackDecoder());
   }

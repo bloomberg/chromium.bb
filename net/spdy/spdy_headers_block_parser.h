@@ -29,8 +29,7 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
 
   // Constructor. The handler's OnHeader will be called for every key
   // value pair that we parsed from the headers block.
-  SpdyHeadersBlockParser(SpdyMajorVersion spdy_version,
-                         SpdyHeadersHandlerInterface* handler);
+  explicit SpdyHeadersBlockParser(SpdyHeadersHandlerInterface* handler);
 
   virtual ~SpdyHeadersBlockParser();
 
@@ -56,8 +55,6 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
     UNEXPECTED_STREAM_ID,
   };
   ParserError get_error() const { return error_; }
-
-  SpdyMajorVersion spdy_version() const { return spdy_version_; }
 
   // Returns the maximal number of headers in a SPDY headers block.
   static size_t MaxNumberOfHeaders();
@@ -113,8 +110,6 @@ class NET_EXPORT_PRIVATE SpdyHeadersBlockParser {
   SpdyStreamId stream_id_;
 
   ParserError error_;
-
-  const SpdyMajorVersion spdy_version_;
 };
 
 }  // namespace net

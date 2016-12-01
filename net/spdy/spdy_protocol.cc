@@ -45,29 +45,27 @@ SpdyPriority Http2WeightToSpdy3Priority(int weight) {
   return static_cast<SpdyPriority>(7.f - (weight - 1) / kSteps);
 }
 
-bool SpdyConstants::IsValidFrameType(SpdyMajorVersion version,
-                                     int frame_type_field) {
+bool SpdyConstants::IsValidFrameType(int frame_type_field) {
   // Check for recognized extensions.
-  if (frame_type_field == SerializeFrameType(version, ALTSVC) ||
-      frame_type_field == SerializeFrameType(version, BLOCKED)) {
+  if (frame_type_field == SerializeFrameType(ALTSVC) ||
+      frame_type_field == SerializeFrameType(BLOCKED)) {
     return true;
   }
 
   // DATA is the first valid frame.
-  if (frame_type_field < SerializeFrameType(version, DATA)) {
+  if (frame_type_field < SerializeFrameType(DATA)) {
     return false;
   }
 
   // CONTINUATION is the last valid frame.
-  if (frame_type_field > SerializeFrameType(version, CONTINUATION)) {
+  if (frame_type_field > SerializeFrameType(CONTINUATION)) {
     return false;
   }
 
   return true;
 }
 
-SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion /*version*/,
-                                            int frame_type_field) {
+SpdyFrameType SpdyConstants::ParseFrameType(int frame_type_field) {
   switch (frame_type_field) {
     case 0:
       return DATA;
@@ -98,11 +96,10 @@ SpdyFrameType SpdyConstants::ParseFrameType(SpdyMajorVersion /*version*/,
   return DATA;
 }
 
-int SpdyConstants::SerializeFrameType(SpdyMajorVersion /*version*/,
-                                      SpdyFrameType frame_type) {
+int SpdyConstants::SerializeFrameType(SpdyFrameType frame_type) {
   switch (frame_type) {
     case DATA:
-      return 0;
+      return kDataFrameType;
     case HEADERS:
       return 1;
     case PRIORITY:
@@ -130,10 +127,6 @@ int SpdyConstants::SerializeFrameType(SpdyMajorVersion /*version*/,
       SPDY_BUG << "Serializing unhandled frame type " << frame_type;
       return -1;
   }
-}
-
-int SpdyConstants::DataFrameType(SpdyMajorVersion version) {
-  return SerializeFrameType(version, DATA);
 }
 
 bool SpdyConstants::IsValidHTTP2FrameStreamId(
@@ -165,25 +158,21 @@ bool SpdyConstants::IsValidHTTP2FrameStreamId(
   }
 }
 
-bool SpdyConstants::IsValidSettingId(SpdyMajorVersion version,
-                                     int setting_id_field) {
+bool SpdyConstants::IsValidSettingId(int setting_id_field) {
   // HEADER_TABLE_SIZE is the first valid setting id.
-  if (setting_id_field <
-      SerializeSettingId(version, SETTINGS_HEADER_TABLE_SIZE)) {
+  if (setting_id_field < SerializeSettingId(SETTINGS_HEADER_TABLE_SIZE)) {
     return false;
   }
 
   // MAX_HEADER_LIST_SIZE is the last valid setting id.
-  if (setting_id_field >
-      SerializeSettingId(version, SETTINGS_MAX_HEADER_LIST_SIZE)) {
+  if (setting_id_field > SerializeSettingId(SETTINGS_MAX_HEADER_LIST_SIZE)) {
     return false;
   }
 
   return true;
 }
 
-SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion /*version*/,
-                                              int setting_id_field) {
+SpdySettingsIds SpdyConstants::ParseSettingId(int setting_id_field) {
   switch (setting_id_field) {
     case 1:
       return SETTINGS_HEADER_TABLE_SIZE;
@@ -202,8 +191,7 @@ SpdySettingsIds SpdyConstants::ParseSettingId(SpdyMajorVersion /*version*/,
   return SETTINGS_UPLOAD_BANDWIDTH;
 }
 
-int SpdyConstants::SerializeSettingId(SpdyMajorVersion /*version*/,
-                                      SpdySettingsIds id) {
+int SpdyConstants::SerializeSettingId(SpdySettingsIds id) {
   switch (id) {
     case SETTINGS_HEADER_TABLE_SIZE:
       return 1;
@@ -223,11 +211,9 @@ int SpdyConstants::SerializeSettingId(SpdyMajorVersion /*version*/,
   }
 }
 
-bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
-                                           int rst_stream_status_field) {
+bool SpdyConstants::IsValidRstStreamStatus(int rst_stream_status_field) {
   // NO_ERROR is the first valid status code.
-  if (rst_stream_status_field <
-      SerializeRstStreamStatus(version, RST_STREAM_NO_ERROR)) {
+  if (rst_stream_status_field < SerializeRstStreamStatus(RST_STREAM_NO_ERROR)) {
     return false;
   }
 
@@ -244,7 +230,7 @@ bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
 
   // HTTP_1_1_REQUIRED is the last valid status code.
   if (rst_stream_status_field >
-      SerializeRstStreamStatus(version, RST_STREAM_HTTP_1_1_REQUIRED)) {
+      SerializeRstStreamStatus(RST_STREAM_HTTP_1_1_REQUIRED)) {
     return false;
   }
 
@@ -252,7 +238,6 @@ bool SpdyConstants::IsValidRstStreamStatus(SpdyMajorVersion version,
 }
 
 SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
-    SpdyMajorVersion /*version*/,
     int rst_stream_status_field) {
   switch (rst_stream_status_field) {
     case 0:
@@ -286,7 +271,6 @@ SpdyRstStreamStatus SpdyConstants::ParseRstStreamStatus(
 }
 
 int SpdyConstants::SerializeRstStreamStatus(
-    SpdyMajorVersion /*version*/,
     SpdyRstStreamStatus rst_stream_status) {
   switch (rst_stream_status) {
     case RST_STREAM_NO_ERROR:
@@ -319,24 +303,21 @@ int SpdyConstants::SerializeRstStreamStatus(
   }
 }
 
-bool SpdyConstants::IsValidGoAwayStatus(SpdyMajorVersion version,
-                                        int goaway_status_field) {
+bool SpdyConstants::IsValidGoAwayStatus(int goaway_status_field) {
   // GOAWAY_NO_ERROR is the first valid status.
-  if (goaway_status_field < SerializeGoAwayStatus(version, GOAWAY_NO_ERROR)) {
+  if (goaway_status_field < SerializeGoAwayStatus(GOAWAY_NO_ERROR)) {
     return false;
   }
 
   // GOAWAY_HTTP_1_1_REQUIRED is the last valid status.
-  if (goaway_status_field >
-      SerializeGoAwayStatus(version, GOAWAY_HTTP_1_1_REQUIRED)) {
+  if (goaway_status_field > SerializeGoAwayStatus(GOAWAY_HTTP_1_1_REQUIRED)) {
     return false;
   }
 
   return true;
 }
 
-SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion /*version*/,
-                                                  int goaway_status_field) {
+SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(int goaway_status_field) {
   switch (goaway_status_field) {
     case 0:
       return GOAWAY_NO_ERROR;
@@ -372,8 +353,7 @@ SpdyGoAwayStatus SpdyConstants::ParseGoAwayStatus(SpdyMajorVersion /*version*/,
   return GOAWAY_PROTOCOL_ERROR;
 }
 
-int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion /*version*/,
-                                         SpdyGoAwayStatus status) {
+int SpdyConstants::SerializeGoAwayStatus(SpdyGoAwayStatus status) {
   switch (status) {
     case GOAWAY_NO_ERROR:
       return 0;
@@ -409,47 +389,24 @@ int SpdyConstants::SerializeGoAwayStatus(SpdyMajorVersion /*version*/,
   }
 }
 
-size_t SpdyConstants::GetFrameHeaderSize(SpdyMajorVersion /*version*/) {
-  return 9;
-}
+const int SpdyConstants::kDataFrameType = 0;
 
-size_t SpdyConstants::GetDataFrameMinimumSize(SpdyMajorVersion version) {
-  return GetFrameHeaderSize(version);
-}
+const size_t SpdyConstants::kFrameHeaderSize = 9;
 
-size_t SpdyConstants::GetMaxFrameSizeLimit(SpdyMajorVersion version) {
-  return kSpdyMaxFrameSizeLimit + GetFrameHeaderSize(version);
-}
+const size_t SpdyConstants::kDataFrameMinimumSize = kFrameHeaderSize;
 
-size_t SpdyConstants::GetSizeOfSizeField() {
-  return sizeof(uint32_t);
-}
+const size_t SpdyConstants::kMaxFrameSizeLimit =
+    kSpdyMaxFrameSizeLimit + kFrameHeaderSize;
 
-size_t SpdyConstants::GetPerHeaderOverhead(SpdyMajorVersion version) {
-  return (version == net::HTTP2) ? 32 : 0;
-}
+const size_t SpdyConstants::kSizeOfSizeField = sizeof(uint32_t);
 
-size_t SpdyConstants::GetSettingSize(SpdyMajorVersion version) {
-  return 6;
-}
+const size_t SpdyConstants::kPerHeaderOverhead = 32;
 
-int32_t SpdyConstants::GetInitialStreamWindowSize(SpdyMajorVersion version) {
-  return 64 * 1024 - 1;
-}
+const int32_t SpdyConstants::kInitialStreamWindowSize = 64 * 1024 - 1;
 
-int32_t SpdyConstants::GetInitialSessionWindowSize(SpdyMajorVersion version) {
-  return 64 * 1024 - 1;
-}
+const int32_t SpdyConstants::kInitialSessionWindowSize = 64 * 1024 - 1;
 
-std::string SpdyConstants::GetVersionString(SpdyMajorVersion version) {
-  switch (version) {
-    case HTTP2:
-      return "h2";
-    default:
-      SPDY_BUG << "Unsupported SPDY major version: " << version;
-      return "h2";
-  }
-}
+const char SpdyConstants::kHttp2Npn[] = "h2";
 
 SpdyFrameWithHeaderBlockIR::SpdyFrameWithHeaderBlockIR(
     SpdyStreamId stream_id,

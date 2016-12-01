@@ -21,7 +21,6 @@
 #include "net/spdy/spdy_protocol.h"
 
 using base::StringPiece;
-using net::HTTP2;
 using net::SpdyFrameType;
 using std::string;
 
@@ -299,7 +298,7 @@ class QuicHeadersStream::SpdyFramerVisitor
   }
 
  private:
-  void CloseConnection(const std::string& details) {
+  void CloseConnection(const string& details) {
     if (stream_->IsConnected()) {
       stream_->CloseConnectionWithDetails(QUIC_INVALID_HEADERS_STREAM_DATA,
                                           details);
@@ -324,7 +323,6 @@ QuicHeadersStream::QuicHeadersStream(QuicSpdySession* session)
       supports_push_promise_(session->perspective() == Perspective::IS_CLIENT),
       cur_max_timestamp_(QuicTime::Zero()),
       prev_max_timestamp_(QuicTime::Zero()),
-      spdy_framer_(HTTP2),
       spdy_framer_visitor_(new SpdyFramerVisitor(this)) {
   spdy_framer_.set_visitor(spdy_framer_visitor_.get());
   spdy_framer_.set_debug_visitor(spdy_framer_visitor_.get());
@@ -377,8 +375,8 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
     QuicStreamOffset offset,
     bool fin,
     QuicAckListenerInterface* ack_notifier_delegate) {
-  const size_t max_len = kSpdyInitialFrameSizeLimit -
-                         SpdyConstants::GetDataFrameMinimumSize(HTTP2);
+  const size_t max_len =
+      kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize;
 
   QuicConsumedData result(0, false);
   size_t total_length = iov.total_length;
