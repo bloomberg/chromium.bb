@@ -20,9 +20,13 @@
 #include "media/formats/mp4/avc.h"
 #include "media/formats/mp4/box_reader.h"
 #include "media/formats/mp4/fourccs.h"
+#include "media/media_features.h"
 
 namespace media {
 namespace mp4 {
+
+// Size in bytes needed to store largest IV.
+const int kInitializationVectorSize = 16;
 
 enum TrackType { kInvalid = 0, kVideo, kAudio, kText, kHint };
 
@@ -91,7 +95,7 @@ struct MEDIA_EXPORT SampleEncryptionEntry {
   // anywhere.
   bool GetTotalSizeOfSubsamples(size_t* total_size) const;
 
-  uint8_t initialization_vector[16];
+  uint8_t initialization_vector[kInitializationVectorSize];
   std::vector<SubsampleEntry> subsamples;
 };
 
@@ -129,6 +133,12 @@ struct MEDIA_EXPORT TrackEncryption : Box {
   bool is_encrypted;
   uint8_t default_iv_size;
   std::vector<uint8_t> default_kid;
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  uint8_t default_crypt_byte_block;
+  uint8_t default_skip_byte_block;
+  uint8_t default_constant_iv_size;
+  uint8_t default_constant_iv[kInitializationVectorSize];
+#endif
 };
 
 struct MEDIA_EXPORT SchemeInfo : Box {
@@ -143,6 +153,8 @@ struct MEDIA_EXPORT ProtectionSchemeInfo : Box {
   OriginalFormat format;
   SchemeType type;
   SchemeInfo info;
+
+  bool HasSupportedScheme() const;
 };
 
 struct MEDIA_EXPORT MovieHeader : Box {
@@ -289,10 +301,17 @@ struct MEDIA_EXPORT CencSampleEncryptionInfoEntry {
   CencSampleEncryptionInfoEntry();
   CencSampleEncryptionInfoEntry(const CencSampleEncryptionInfoEntry& other);
   ~CencSampleEncryptionInfoEntry();
+  bool Parse(BoxReader* reader);
 
   bool is_encrypted;
   uint8_t iv_size;
   std::vector<uint8_t> key_id;
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  uint8_t crypt_byte_block;
+  uint8_t skip_byte_block;
+  uint8_t constant_iv_size;
+  uint8_t constant_iv[kInitializationVectorSize];
+#endif
 };
 
 struct MEDIA_EXPORT SampleGroupDescription : Box {  // 'sgpd'.

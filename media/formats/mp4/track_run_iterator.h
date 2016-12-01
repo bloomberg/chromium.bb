@@ -17,6 +17,7 @@
 #include "media/base/media_log.h"
 #include "media/base/stream_parser_buffer.h"
 #include "media/formats/mp4/box_definitions.h"
+#include "media/media_features.h"
 
 namespace media {
 
@@ -99,6 +100,9 @@ class MEDIA_EXPORT TrackRunIterator {
   bool IsSampleEncrypted(size_t sample_index) const;
   uint8_t GetIvSize(size_t sample_index) const;
   const std::vector<uint8_t>& GetKeyId(size_t sample_index) const;
+#if BUILDFLAG(ENABLE_CBCS_ENCRYPTION_SCHEME)
+  bool ApplyConstantIv(size_t sample_index, SampleEncryptionEntry* entry) const;
+#endif
 
   const Movie* moov_;
   scoped_refptr<MediaLog> media_log_;
