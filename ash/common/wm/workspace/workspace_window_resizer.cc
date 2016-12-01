@@ -439,12 +439,8 @@ void WorkspaceWindowResizer::CompleteDrag() {
                                        GetTarget()->GetBounds())) {
         // Set the window to WINDOW_STATE_TYPE_NORMAL but keep the
         // window at the bounds that the user has moved/resized the
-        // window to. ClearRestoreBounds() is used instead of
-        // SaveCurrentBoundsForRestore() because most of the restore
-        // logic is skipped because we are still in the middle of a
-        // drag.  TODO(pkotwicz): Fix this and use
-        // SaveCurrentBoundsForRestore().
-        window_state()->ClearRestoreBounds();
+        // window to.
+        window_state()->SaveCurrentBoundsForRestore();
         window_state()->Restore();
       }
     } else if (!dock_layout_->is_dragged_window_docked()) {

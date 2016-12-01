@@ -5,6 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/common/wm/window_state.h"
+#include "ash/common/wm/wm_event.h"
 #include "ash/common/wm/workspace_controller.h"
 #include "ash/public/cpp/shell_window_ids.h"
 #include "ash/root_window_controller.h"
@@ -24,6 +25,8 @@
 #include "ui/aura/test/test_window_delegate.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
+#include "ui/display/display_layout_builder.h"
+#include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/event.h"
 #include "ui/events/test/event_generator.h"
@@ -764,6 +767,46 @@ TEST_F(ToplevelWindowEventHandlerTest, GestureDragCaptureLoss) {
   EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
             move_client->RunMoveLoop(window.get(), gfx::Vector2d(),
                                      aura::client::WINDOW_MOVE_SOURCE_TOUCH));
+}
+
+// Tests that dragging a snapped window to another display updates the window's
+// bounds correctly.
+TEST_F(ToplevelWindowEventHandlerTest, DragSnappedWindowToExternalDisplay) {
+  if (!SupportsMultipleDisplays())
+    return;
+
+  UpdateDisplay("940x550,940x550");
+  int64_t primary_id = display::Screen::GetScreen()->GetPrimaryDisplay().id();
+  int64_t secondary_id = display_manager()->GetSecondaryDisplay().id();
+  display::DisplayLayoutBuilder builder(primary_id);
+  builder.SetSecondaryPlacement(secondary_id, display::DisplayPlacement::TOP,
+                                0);
+  display_manager()->SetLayoutForCurrentDisplays(builder.Build());
+
+  const gfx::Size initial_window_size(330, 230);
+  std::unique_ptr<aura::Window> w1(CreateTestWindowInShellWithDelegateAndType(
+      new TestWindowDelegate(HTCAPTION), ui::wm::WINDOW_TYPE_NORMAL, 0,
+      gfx::Rect(initial_window_size)));
+
+  // Snap the window to the right.
+  wm::WindowState* window_state = wm::GetWindowState(w1.get());
+  ASSERT_TRUE(window_state->CanSnap());
+  const wm::WMEvent event(wm::WM_EVENT_CYCLE_SNAP_DOCK_RIGHT);
+  window_state->OnWMEvent(&event);
+  ASSERT_TRUE(window_state->IsSnapped());
+
+  // Drag the window to the secondary display.
+  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
+  generator.DragMouseTo(472, -462);
+
+  // Expect the window is no longer snapped and its size was restored to the
+  // initial size.
+  EXPECT_FALSE(window_state->IsSnapped());
+  EXPECT_EQ(initial_window_size.ToString(), w1->bounds().size().ToString());
+
+  // The window is now fully contained in the secondary display.
+  EXPECT_TRUE(display_manager()->GetSecondaryDisplay().bounds().Contains(
+      w1->GetBoundsInScreen()));
 }
 
 // Showing the resize shadows when the mouse is over the window edges is tested

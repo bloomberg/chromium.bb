@@ -682,8 +682,13 @@ void DefaultState::UpdateBoundsFromState(WindowState* window_state,
         bounds_in_parent = window->GetBounds();
       }
       // Make sure that part of the window is always visible.
-      wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
-                                                      &bounds_in_parent);
+      if (!window_state->is_dragged()) {
+        // Avoid doing this while the window is being dragged as its root
+        // window hasn't been updated yet in the case of dragging to another
+        // display. crbug.com/666836.
+        wm::AdjustBoundsToEnsureMinimumWindowVisibility(work_area_in_parent,
+                                                        &bounds_in_parent);
+      }
       break;
     }
     case WINDOW_STATE_TYPE_MAXIMIZED:
