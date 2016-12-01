@@ -9,8 +9,10 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
+#include "base/timer/timer.h"
 #include "ui/display/display_export.h"
 #include "ui/display/fake_display_snapshot.h"
 #include "ui/display/types/fake_display_controller.h"
@@ -122,10 +124,17 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   void OnConfigurationChanged();
 
  private:
+  // Performs callback for Configure().
+  void ConfigureDone();
+
   base::ObserverList<ui::NativeDisplayObserver> observers_;
   std::vector<std::unique_ptr<ui::DisplaySnapshot>> displays_;
 
-  // If |Initialize()| has been called.
+  // Add delay before finished Configure().
+  base::OneShotTimer configure_timer_;
+  base::Closure configure_callback_;
+
+  // If Initialize() has been called.
   bool initialized_ = false;
 
   // The next available display id.

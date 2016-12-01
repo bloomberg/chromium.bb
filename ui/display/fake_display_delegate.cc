@@ -15,6 +15,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_split.h"
 #include "base/strings/stringprintf.h"
+#include "base/time/time.h"
 #include "ui/display/display.h"
 #include "ui/display/display_switches.h"
 #include "ui/display/types/display_constants.h"
@@ -30,6 +31,9 @@ const uint16_t kReservedManufacturerID = 1 << 15;
 
 // A random product name hash.
 const uint32_t kProductCodeHash = base::Hash("Very Generic Display");
+
+// Delay for Configure() in milliseconds.
+constexpr int64_t kConfigureDisplayDelayMs = 200;
 
 }  // namespace
 
@@ -142,15 +146,25 @@ void FakeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
                                     const ui::DisplayMode* mode,
                                     const gfx::Point& origin,
                                     const ui::ConfigureCallback& callback) {
-  // Check the display mode is appropriate for the display snapshot.
-  for (const auto& existing_mode : output.modes()) {
-    if (existing_mode.get() == mode) {
-      callback.Run(true);
-      return;
+  bool configure_success = false;
+
+  if (!mode) {
+    // This is a request to turn off the display.
+    configure_success = true;
+  } else {
+    // Check that |mode| is appropriate for the display snapshot.
+    for (const auto& existing_mode : output.modes()) {
+      if (existing_mode.get() == mode) {
+        configure_success = true;
+        break;
+      }
     }
   }
 
-  callback.Run(false);
+  configure_callback_ = base::Bind(callback, configure_success);
+  configure_timer_.Start(
+      FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
+      this, &FakeDisplayDelegate::ConfigureDone);
 }
 
 void FakeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
@@ -197,7 +211,7 @@ void FakeDisplayDelegate::RemoveObserver(ui::NativeDisplayObserver* observer) {
 }
 
 FakeDisplayController* FakeDisplayDelegate::GetFakeDisplayController() {
-  return static_cast<FakeDisplayController*>(this);
+  return this;
 }
 
 bool FakeDisplayDelegate::InitializeFromSpecString(const std::string& str) {
@@ -230,6 +244,12 @@ void FakeDisplayDelegate::OnConfigurationChanged() {
 
   for (ui::NativeDisplayObserver& observer : observers_)
     observer.OnConfigurationChanged();
+}
+
+void FakeDisplayDelegate::ConfigureDone() {
+  DCHECK(!configure_callback_.is_null());
+  configure_callback_.Run();
+  configure_callback_.Reset();
 }
 
 }  // namespace display
