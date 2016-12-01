@@ -972,23 +972,6 @@ crbug.com/498021 [ Linux ] fast/encoding/invalid-UTF-8.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/emoticons.html [ Failure ]
 crbug.com/498021 [ Linux ] fast/text/international/hindi-spacing.html [ Failure ]
 
-
-# TODO(qyearsley): Remove these and get new correct baselines for linux after
-# after https://codereview.chromium.org/2514253002 lands.
-crbug.com/660580 [ Linux ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
-crbug.com/660580 [ Linux ] fast/text/complex-text-opacity.html [ Skip ]
-crbug.com/660580 [ Linux ] fast/text/font-fallback.html [ Skip ]
-crbug.com/660580 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Skip ]
-crbug.com/660580 [ Linux ] fast/text/international/complex-joining-using-gpos.html [ Skip ]
-crbug.com/660580 [ Linux ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Skip ]
-crbug.com/660580 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Skip ]
-crbug.com/660580 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Skip ]
-crbug.com/660580 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Skip ]
-crbug.com/660580 [ Linux ] transforms/2d/hindi-rotated.html [ Skip ]
-crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Skip ]
-crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Skip ]
-crbug.com/660580 [ Linux ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
-
 crbug.com/649159 imported/wpt/shadow-dom/slotchange-event.html [ Failure ]
 
 # TODO(yangguo): these tests need to be rebaselined after V8 change lands.
