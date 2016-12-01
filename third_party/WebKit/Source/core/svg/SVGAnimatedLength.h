@@ -54,6 +54,10 @@ class SVGAnimatedLength : public SVGAnimatedProperty<SVGLength>,
   void setDefaultValueAsString(const String&);
   SVGParsingError setBaseValueAsString(const String&) override;
 
+  const CSSValue* cssValue() const {
+    return &currentValue()->asCSSPrimitiveValue();
+  }
+
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:

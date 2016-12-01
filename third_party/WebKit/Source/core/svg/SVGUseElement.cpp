@@ -180,15 +180,16 @@ void SVGUseElement::collectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_x)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyX, m_x->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_y)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyY, m_y->currentValue()->asCSSPrimitiveValue());
-  else
+  if (property == m_x) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyX,
+                                            m_x->cssValue());
+  } else if (property == m_y) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyY,
+                                            m_y->cssValue());
+  } else {
     SVGGraphicsElement::collectStyleForPresentationAttribute(name, value,
                                                              style);
+  }
 }
 
 bool SVGUseElement::isStructurallyExternal() const {

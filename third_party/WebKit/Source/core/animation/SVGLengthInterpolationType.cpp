@@ -26,10 +26,10 @@ SVGLengthInterpolationType::neutralInterpolableValue() {
 
 InterpolationValue SVGLengthInterpolationType::convertSVGLength(
     const SVGLength& length) {
-  const CSSPrimitiveValue* primitiveValue = length.asCSSPrimitiveValue();
+  const CSSPrimitiveValue& primitiveValue = length.asCSSPrimitiveValue();
 
   CSSLengthArray lengthArray;
-  primitiveValue->accumulateLengthArray(lengthArray);
+  primitiveValue.accumulateLengthArray(lengthArray);
 
   std::unique_ptr<InterpolableList> listOfValues =
       InterpolableList::create(CSSPrimitiveValue::LengthUnitTypeCount);

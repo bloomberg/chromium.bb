@@ -82,18 +82,19 @@ void SVGCircleElement::collectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_cx)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_cy)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_r)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyR, m_r->currentValue()->asCSSPrimitiveValue());
-  else
+  if (property == m_cx) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyCx,
+                                            m_cx->cssValue());
+  } else if (property == m_cy) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyCy,
+                                            m_cy->cssValue());
+  } else if (property == m_r) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyR,
+                                            m_r->cssValue());
+  } else {
     SVGGeometryElement::collectStyleForPresentationAttribute(name, value,
                                                              style);
+  }
 }
 
 void SVGCircleElement::svgAttributeChanged(const QualifiedName& attrName) {

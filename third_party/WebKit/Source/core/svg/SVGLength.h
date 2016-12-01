@@ -66,7 +66,7 @@ class SVGLength final : public SVGPropertyBase {
     m_value = CSSPrimitiveValue::create(value, m_value->typeWithCalcResolved());
   }
 
-  const CSSPrimitiveValue* asCSSPrimitiveValue() const { return m_value.get(); }
+  const CSSPrimitiveValue& asCSSPrimitiveValue() const { return *m_value; }
 
   // Resolves LengthTypePercentage into a normalized floating point number (full
   // value is 1.0).

@@ -95,21 +95,22 @@ void SVGEllipseElement::collectStyleForPresentationAttribute(
     const AtomicString& value,
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
-  if (property == m_cx)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyCx, m_cx->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_cy)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyCy, m_cy->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_rx)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyRx, m_rx->currentValue()->asCSSPrimitiveValue());
-  else if (property == m_ry)
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyRy, m_ry->currentValue()->asCSSPrimitiveValue());
-  else
+  if (property == m_cx) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyCx,
+                                            m_cx->cssValue());
+  } else if (property == m_cy) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyCy,
+                                            m_cy->cssValue());
+  } else if (property == m_rx) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyRx,
+                                            m_rx->cssValue());
+  } else if (property == m_ry) {
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyRy,
+                                            m_ry->cssValue());
+  } else {
     SVGGeometryElement::collectStyleForPresentationAttribute(name, value,
                                                              style);
+  }
 }
 
 void SVGEllipseElement::svgAttributeChanged(const QualifiedName& attrName) {

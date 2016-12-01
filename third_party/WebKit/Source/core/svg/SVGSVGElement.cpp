@@ -238,21 +238,20 @@ void SVGSVGElement::collectStyleForPresentationAttribute(
     MutableStylePropertySet* style) {
   SVGAnimatedPropertyBase* property = propertyFromAttribute(name);
   if (property == m_x) {
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyX, m_x->currentValue()->asCSSPrimitiveValue());
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyX,
+                                            m_x->cssValue());
   } else if (property == m_y) {
-    addPropertyToPresentationAttributeStyle(
-        style, CSSPropertyY, m_y->currentValue()->asCSSPrimitiveValue());
+    addPropertyToPresentationAttributeStyle(style, CSSPropertyY,
+                                            m_y->cssValue());
   } else if (isOutermostSVGSVGElement() &&
              (property == m_width || property == m_height)) {
-    if (property == m_width)
-      addPropertyToPresentationAttributeStyle(
-          style, CSSPropertyWidth,
-          m_width->currentValue()->asCSSPrimitiveValue());
-    else if (property == m_height)
-      addPropertyToPresentationAttributeStyle(
-          style, CSSPropertyHeight,
-          m_height->currentValue()->asCSSPrimitiveValue());
+    if (property == m_width) {
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyWidth,
+                                              m_width->cssValue());
+    } else if (property == m_height) {
+      addPropertyToPresentationAttributeStyle(style, CSSPropertyHeight,
+                                              m_height->cssValue());
+    }
   } else {
     SVGGraphicsElement::collectStyleForPresentationAttribute(name, value,
                                                              style);
