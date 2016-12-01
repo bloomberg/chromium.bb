@@ -20,7 +20,7 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
                                     v8::Local<v8::Object> prototypeObject,
                                     v8::Local<v8::Function> interfaceObject) {
   // TODO(iclelland): Generate all of this logic at compile-time, based on the
-  // configuration of origin trial enabled attibutes and interfaces in IDL
+  // configuration of origin trial enabled attributes and interfaces in IDL
   // files. (crbug.com/615060)
   ExecutionContext* executionContext = scriptState->getExecutionContext();
   if (!executionContext)
@@ -36,6 +36,14 @@ void installConditionalFeaturesCore(const WrapperTypeInfo* wrapperTypeInfo,
       V8HTMLLinkElement::installLinkServiceWorker(
           isolate, world, v8::Local<v8::Object>(), prototypeObject,
           interfaceObject);
+    }
+  } else if (wrapperTypeInfo == &V8Window::wrapperTypeInfo) {
+    v8::Local<v8::Object> instanceObject = scriptState->context()->Global();
+    if (RuntimeEnabledFeatures::longTaskObserverEnabled() ||
+        (originTrialContext &&
+         originTrialContext->isTrialEnabled("LongTaskObserver"))) {
+      V8Window::installLongTaskObserver(isolate, world, instanceObject,
+                                        prototypeObject, interfaceObject);
     }
   }
 }
