@@ -351,6 +351,9 @@ void CancelTerminate() {
 }
 
 - (void)sendEvent:(NSEvent*)event {
+  base::debug::ScopedCrashKey crash_key(
+      crash_keys::mac::kNSEvent, base::SysNSStringToUTF8([event description]));
+
   base::mac::CallWithEHFrame(^{
     switch (event.type) {
       case NSLeftMouseDown:

@@ -130,6 +130,9 @@ extern const char kNSExceptionTrace[];
 // target-action.
 extern const char kSendAction[];
 
+// In the CrApplication, records information about the current event.
+extern const char kNSEvent[];
+
 }  // namespace mac
 #endif
 

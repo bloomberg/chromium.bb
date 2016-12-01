@@ -82,6 +82,8 @@ const char kNSExceptionTrace[] = "nsexception_bt";
 
 const char kSendAction[] = "sendaction";
 
+const char kNSEvent[] = "nsevent";
+
 }  // namespace mac
 #endif
 
@@ -156,6 +158,7 @@ size_t RegisterChromeCrashKeys() {
     { mac::kNSException, kMediumSize },
     { mac::kNSExceptionTrace, kMediumSize },
     { mac::kSendAction, kMediumSize },
+    { mac::kNSEvent, kMediumSize },
     { mac::kZombie, kMediumSize },
     { mac::kZombieTrace, kMediumSize },
     // content/:
