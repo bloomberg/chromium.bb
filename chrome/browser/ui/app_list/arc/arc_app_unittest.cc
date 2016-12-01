@@ -372,6 +372,8 @@ class ArcDefaulAppTest : public ArcAppModelBuilderTest {
   // ArcAppModelBuilderTest:
   void OnBeforeArcTestSetup() override {
     ArcDefaultAppList::UseTestAppsDirectory();
+    arc::ArcPackageSyncableServiceFactory::GetInstance()->SetTestingFactory(
+        profile_.get(), nullptr);
   }
 
  private:
@@ -1181,11 +1183,13 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   }
 
   // And now default apps are ready.
+  std::map<std::string, bool> oem_states;
   for (const auto& default_app : fake_default_apps()) {
-    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(
-        ArcAppTest::GetAppId(default_app));
+    const std::string app_id = ArcAppTest::GetAppId(default_app);
+    std::unique_ptr<ArcAppListPrefs::AppInfo> app_info = prefs->GetApp(app_id);
     ASSERT_TRUE(app_info);
     EXPECT_TRUE(app_info->ready);
+    oem_states[app_id] = prefs->IsOem(app_id);
   }
 
   // Uninstall first default package. Default app should go away.
@@ -1198,6 +1202,33 @@ TEST_F(ArcDefaulAppTest, DefaultApps) {
   all_apps = fake_default_apps();
   all_apps.erase(all_apps.begin());
   ValidateHaveApps(all_apps);
+
+  // Sign-out and sign-in again. Removed default app should not appear.
+  arc_test()->TearDown();
+  ResetBuilder();
+  ArcAppListPrefsFactory::GetInstance()->RecreateServiceInstanceForTesting(
+      profile_.get());
+  arc_test()->SetUp(profile_.get());
+  CreateBuilder();
+
+  // Prefs are changed.
+  prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  ValidateHaveApps(all_apps);
+
+  // Install deleted default app again.
+  std::vector<arc::mojom::AppInfo> package_apps;
+  package_apps.push_back(fake_default_apps()[0]);
+  app_instance()->SendPackageAppListRefreshed(
+      fake_default_apps()[0].package_name, package_apps);
+  ValidateHaveApps(fake_default_apps());
+
+  // Validate that OEM state is preserved.
+  for (const auto& default_app : fake_default_apps()) {
+    const std::string app_id = ArcAppTest::GetAppId(default_app);
+    EXPECT_EQ(oem_states[app_id], prefs->IsOem(app_id));
+  }
 }
 
 TEST_F(ArcDefaulAppForManagedUserTest, DefaultAppsForManagedUser) {

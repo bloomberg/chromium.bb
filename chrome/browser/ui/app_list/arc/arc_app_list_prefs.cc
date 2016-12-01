@@ -859,6 +859,7 @@ void ArcAppListPrefs::AddOrUpdatePackagePrefs(
   package_dict->SetString(kLastBackupAndroidId, id_str);
   package_dict->SetString(kLastBackupTime, time_str);
   package_dict->SetBoolean(kSystem, package.system);
+  package_dict->SetBoolean(kUninstalled, false);
 }
 
 void ArcAppListPrefs::RemovePackageFromPrefs(PrefService* prefs,
@@ -962,6 +963,7 @@ void ArcAppListPrefs::OnPackageAppListRefreshed(
 
   std::unordered_set<std::string> apps_to_remove =
       GetAppsForPackage(package_name);
+  default_apps_.MaybeMarkPackageUninstalled(package_name, false);
   for (const auto& app : apps) {
     apps_to_remove.erase(GetAppId(app->package_name, app->activity));
     AddApp(*app);
@@ -1193,8 +1195,14 @@ std::vector<std::string> ArcAppListPrefs::GetPackagesFromPrefs(
       prefs_->GetDictionary(prefs::kArcPackages);
   for (base::DictionaryValue::Iterator package(*package_prefs);
        !package.IsAtEnd(); package.Advance()) {
+    const base::DictionaryValue* package_info;
+    if (!package.value().GetAsDictionary(&package_info)) {
+      NOTREACHED();
+      continue;
+    }
+
     bool uninstalled = false;
-    package_prefs->GetBoolean(kSystem, &uninstalled);
+    package_info->GetBoolean(kUninstalled, &uninstalled);
     if (installed != !uninstalled)
       continue;
 
