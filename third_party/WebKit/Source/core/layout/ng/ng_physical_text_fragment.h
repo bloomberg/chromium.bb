@@ -16,7 +16,7 @@ namespace blink {
 class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
  public:
   NGPhysicalTextFragment(NGPhysicalSize size, NGPhysicalSize overflow)
-      : NGPhysicalFragmentBase(size, overflow, FragmentText) {}
+      : NGPhysicalFragmentBase(size, overflow, kFragmentText) {}
 
   DEFINE_INLINE_TRACE_AFTER_DISPATCH() {
     NGPhysicalFragmentBase::traceAfterDispatch(visitor);
@@ -26,8 +26,8 @@ class CORE_EXPORT NGPhysicalTextFragment final : public NGPhysicalFragmentBase {
 DEFINE_TYPE_CASTS(NGPhysicalTextFragment,
                   NGPhysicalFragmentBase,
                   text,
-                  text->Type() == NGPhysicalFragmentBase::FragmentText,
-                  text.Type() == NGPhysicalFragmentBase::FragmentText);
+                  text->Type() == NGPhysicalFragmentBase::kFragmentText,
+                  text.Type() == NGPhysicalFragmentBase::kFragmentText);
 
 }  // namespace blink
 

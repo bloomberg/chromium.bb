@@ -19,7 +19,7 @@ class NGFragmentBase;
 class NGPhysicalFragmentBase;
 class NGPhysicalFragment;
 
-enum NGLayoutStatus { NotFinished, ChildAlgorithmRequired, NewFragment };
+enum NGLayoutStatus { kNotFinished, kChildAlgorithmRequired, kNewFragment };
 
 // Base class for all LayoutNG algorithms.
 class CORE_EXPORT NGLayoutAlgorithm
@@ -44,7 +44,7 @@ class CORE_EXPORT NGLayoutAlgorithm
                                 NGPhysicalFragmentBase**,
                                 NGLayoutAlgorithm**) = 0;
 
-  enum MinAndMaxState { Success, Pending, NotImplemented };
+  enum MinAndMaxState { kSuccess, kPending, kNotImplemented };
 
   // Computes the min-content and max-content intrinsic sizes for the given box.
   // The result will not take any min-width. max-width or width properties into
@@ -55,7 +55,7 @@ class CORE_EXPORT NGLayoutAlgorithm
   // A Pending return value has the same meaning as a false return from layout,
   // i.e. it is a request to call this function again.
   virtual MinAndMaxState ComputeMinAndMaxContentSizes(MinAndMaxContentSizes*) {
-    return NotImplemented;
+    return kNotImplemented;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}

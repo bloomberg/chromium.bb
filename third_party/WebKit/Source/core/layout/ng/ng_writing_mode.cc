@@ -12,14 +12,14 @@ namespace blink {
 NGWritingMode FromPlatformWritingMode(WritingMode mode) {
   switch (mode) {
     case TopToBottomWritingMode:
-      return HorizontalTopBottom;
+      return kHorizontalTopBottom;
     case RightToLeftWritingMode:
-      return VerticalRightLeft;
+      return kVerticalRightLeft;
     case LeftToRightWritingMode:
-      return VerticalLeftRight;
+      return kVerticalLeftRight;
     default:
       NOTREACHED();
-      return HorizontalTopBottom;
+      return kHorizontalTopBottom;
   }
 }
 

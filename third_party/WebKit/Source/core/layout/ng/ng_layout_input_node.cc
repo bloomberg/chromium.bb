@@ -20,7 +20,7 @@ NGLayoutAlgorithm* NGLayoutInputNode::AlgorithmForInputNode(
   // At least for now, this should never be called on LegacyInline
   // children. However, there will be other kinds of input_node so
   // it makes sense to do this here.
-  DCHECK(input_node->Type() == LegacyBlock);
+  DCHECK(input_node->Type() == kLegacyBlock);
   NGBlockNode* block = toNGBlockNode(input_node);
 
   if (block->HasInlineChildren())

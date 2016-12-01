@@ -30,8 +30,8 @@ class CORE_EXPORT NGFragment final : public NGFragmentBase {
 DEFINE_TYPE_CASTS(NGFragment,
                   NGFragmentBase,
                   fragment,
-                  fragment->Type() == NGPhysicalFragmentBase::FragmentBox,
-                  fragment.Type() == NGPhysicalFragmentBase::FragmentBox);
+                  fragment->Type() == NGPhysicalFragmentBase::kFragmentBox,
+                  fragment.Type() == NGPhysicalFragmentBase::kFragmentBox);
 
 }  // namespace blink
 

@@ -15,17 +15,17 @@ namespace blink {
 
 // TODO(glebl@): unused, delete.
 enum NGExclusionType {
-  NGClearNone = 0,
-  NGClearFloatLeft = 1,
-  NGClearFloatRight = 2,
-  NGClearFragment = 4
+  kNGClearNone = 0,
+  kNGClearFloatLeft = 1,
+  kNGClearFloatRight = 2,
+  kNGClearFragment = 4
 };
 
 enum NGFragmentationType {
-  FragmentNone,
-  FragmentPage,
-  FragmentColumn,
-  FragmentRegion
+  kFragmentNone,
+  kFragmentPage,
+  kFragmentColumn,
+  kFragmentRegion
 };
 
 // The NGPhysicalConstraintSpace contains the underlying data for the

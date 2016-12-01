@@ -9,34 +9,35 @@
 namespace blink {
 
 LayoutUnit NGFragmentBase::InlineSize() const {
-  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->Width()
-                                              : physical_fragment_->Height();
+  return writing_mode_ == kHorizontalTopBottom ? physical_fragment_->Width()
+                                               : physical_fragment_->Height();
 }
 
 LayoutUnit NGFragmentBase::BlockSize() const {
-  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->Height()
-                                              : physical_fragment_->Width();
+  return writing_mode_ == kHorizontalTopBottom ? physical_fragment_->Height()
+                                               : physical_fragment_->Width();
 }
 
 LayoutUnit NGFragmentBase::InlineOverflow() const {
-  return writing_mode_ == HorizontalTopBottom
+  return writing_mode_ == kHorizontalTopBottom
              ? physical_fragment_->WidthOverflow()
              : physical_fragment_->HeightOverflow();
 }
 
 LayoutUnit NGFragmentBase::BlockOverflow() const {
-  return writing_mode_ == HorizontalTopBottom
+  return writing_mode_ == kHorizontalTopBottom
              ? physical_fragment_->HeightOverflow()
              : physical_fragment_->WidthOverflow();
 }
 
 LayoutUnit NGFragmentBase::InlineOffset() const {
-  return writing_mode_ == HorizontalTopBottom ? physical_fragment_->LeftOffset()
-                                              : physical_fragment_->TopOffset();
+  return writing_mode_ == kHorizontalTopBottom
+             ? physical_fragment_->LeftOffset()
+             : physical_fragment_->TopOffset();
 }
 
 LayoutUnit NGFragmentBase::BlockOffset() const {
-  return writing_mode_ == HorizontalTopBottom
+  return writing_mode_ == kHorizontalTopBottom
              ? physical_fragment_->TopOffset()
              : physical_fragment_->LeftOffset();
 }

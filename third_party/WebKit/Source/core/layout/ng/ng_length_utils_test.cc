@@ -28,7 +28,7 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      int block_size,
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
-    NGConstraintSpaceBuilder builder(HorizontalTopBottom);
+    NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     builder
         .SetAvailableSize(
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
@@ -37,13 +37,13 @@ class NGLengthUtilsTest : public ::testing::Test {
         .SetIsFixedSizeInline(fixed_inline)
         .SetIsFixedSizeBlock(fixed_block);
 
-    return new NGConstraintSpace(HorizontalTopBottom, LTR,
+    return new NGConstraintSpace(kHorizontalTopBottom, LTR,
                                  builder.ToConstraintSpace());
   }
 
   LayoutUnit ResolveInlineLength(
       const Length& length,
-      LengthResolveType type = LengthResolveType::ContentSize,
+      LengthResolveType type = LengthResolveType::kContentSize,
       const WTF::Optional<MinAndMaxContentSizes>& sizes = WTF::nullopt) {
     NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200, 300);
     return ::blink::ResolveInlineLength(*constraintSpace, *style_, sizes,
@@ -52,7 +52,7 @@ class NGLengthUtilsTest : public ::testing::Test {
 
   LayoutUnit ResolveBlockLength(
       const Length& length,
-      LengthResolveType type = LengthResolveType::ContentSize,
+      LengthResolveType type = LengthResolveType::kContentSize,
       LayoutUnit contentSize = LayoutUnit()) {
     NGConstraintSpace* constraintSpace = ConstructConstraintSpace(200, 300);
     return ::blink::ResolveBlockLength(*constraintSpace, *style_, length,
@@ -82,30 +82,30 @@ TEST_F(NGLengthUtilsTest, testResolveInlineLength) {
   EXPECT_EQ(LayoutUnit(60), ResolveInlineLength(Length(30, Percent)));
   EXPECT_EQ(LayoutUnit(150), ResolveInlineLength(Length(150, Fixed)));
   EXPECT_EQ(LayoutUnit(0),
-            ResolveInlineLength(Length(Auto), LengthResolveType::MinSize));
+            ResolveInlineLength(Length(Auto), LengthResolveType::kMinSize));
   EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length(Auto)));
   EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length(FillAvailable)));
 
   EXPECT_EQ(LayoutUnit(200),
-            ResolveInlineLength(Length(Auto), LengthResolveType::MaxSize));
+            ResolveInlineLength(Length(Auto), LengthResolveType::kMaxSize));
   EXPECT_EQ(LayoutUnit(200), ResolveInlineLength(Length(FillAvailable),
-                                                 LengthResolveType::MaxSize));
+                                                 LengthResolveType::kMaxSize));
   MinAndMaxContentSizes sizes;
   sizes.min_content = LayoutUnit(30);
   sizes.max_content = LayoutUnit(40);
   EXPECT_EQ(LayoutUnit(30),
             ResolveInlineLength(Length(MinContent),
-                                LengthResolveType::ContentSize, sizes));
+                                LengthResolveType::kContentSize, sizes));
   EXPECT_EQ(LayoutUnit(40),
             ResolveInlineLength(Length(MaxContent),
-                                LengthResolveType::ContentSize, sizes));
+                                LengthResolveType::kContentSize, sizes));
   EXPECT_EQ(LayoutUnit(40),
             ResolveInlineLength(Length(FitContent),
-                                LengthResolveType::ContentSize, sizes));
+                                LengthResolveType::kContentSize, sizes));
   sizes.max_content = LayoutUnit(800);
   EXPECT_EQ(LayoutUnit(200),
             ResolveInlineLength(Length(FitContent),
-                                LengthResolveType::ContentSize, sizes));
+                                LengthResolveType::kContentSize, sizes));
 #ifndef NDEBUG
   // This should fail a DCHECK.
   EXPECT_DEATH(ResolveInlineLength(Length(FitContent)), "Check failed");
@@ -119,10 +119,10 @@ TEST_F(NGLengthUtilsTest, testResolveBlockLength) {
   EXPECT_EQ(LayoutUnit(300), ResolveBlockLength(Length(FillAvailable)));
 
   EXPECT_EQ(LayoutUnit(0),
-            ResolveBlockLength(Length(Auto), LengthResolveType::ContentSize));
+            ResolveBlockLength(Length(Auto), LengthResolveType::kContentSize));
   EXPECT_EQ(LayoutUnit(300),
             ResolveBlockLength(Length(FillAvailable),
-                               LengthResolveType::ContentSize));
+                               LengthResolveType::kContentSize));
 }
 
 TEST_F(NGLengthUtilsTest, testComputeInlineSizeForFragment) {
@@ -277,7 +277,7 @@ TEST_F(NGLengthUtilsTest, testMargins) {
   NGConstraintSpace* constraintSpace(ConstructConstraintSpace(200, 300));
 
   NGBoxStrut margins =
-      ComputeMargins(*constraintSpace, *style_, HorizontalTopBottom, LTR);
+      ComputeMargins(*constraintSpace, *style_, kHorizontalTopBottom, LTR);
 
   EXPECT_EQ(LayoutUnit(20), margins.block_start);
   EXPECT_EQ(LayoutUnit(52), margins.inline_end);
@@ -325,11 +325,11 @@ TEST_F(NGLengthUtilsTest, testAutoMargins) {
   style_->setMarginRight(Length(Auto));
   style_->setMarginLeft(Length(Auto));
 
-  NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
   builder.SetInlineSize(LayoutUnit(150));
   NGPhysicalFragment* physical_fragment = builder.ToFragment();
   NGFragment* fragment =
-      new NGFragment(HorizontalTopBottom, LTR, physical_fragment);
+      new NGFragment(kHorizontalTopBottom, LTR, physical_fragment);
 
   NGConstraintSpace* constraint_space(ConstructConstraintSpace(200, 300));
 

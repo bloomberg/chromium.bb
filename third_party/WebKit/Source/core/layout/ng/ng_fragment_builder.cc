@@ -10,7 +10,7 @@ namespace blink {
 
 NGFragmentBuilder::NGFragmentBuilder(
     NGPhysicalFragmentBase::NGFragmentType type)
-    : type_(type), writing_mode_(HorizontalTopBottom), direction_(LTR) {}
+    : type_(type), writing_mode_(kHorizontalTopBottom), direction_(LTR) {}
 
 NGFragmentBuilder& NGFragmentBuilder::SetWritingMode(
     NGWritingMode writing_mode) {
@@ -45,7 +45,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
 
 NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragmentBase* child,
                                                NGLogicalOffset offset) {
-  DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox)
+  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentBox)
       << "Only box fragments can have children";
   children_.append(child->PhysicalFragment());
   offsets_.append(offset);
@@ -68,7 +68,7 @@ NGFragmentBuilder& NGFragmentBuilder::SetMarginStrutBlockEnd(
 
 NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   // TODO(layout-ng): Support text fragments
-  DCHECK_EQ(type_, NGPhysicalFragmentBase::FragmentBox);
+  DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentBox);
   DCHECK_EQ(offsets_.size(), children_.size());
 
   NGPhysicalSize physical_size = size_.ConvertToPhysical(writing_mode_);

@@ -221,7 +221,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       space_builder_ =
           new NGConstraintSpaceBuilder(constraint_space_->WritingMode());
       if (Style().specifiesColumns()) {
-        space_builder_->SetFragmentationType(FragmentColumn);
+        space_builder_->SetFragmentationType(kFragmentColumn);
         adjusted_inline_size =
             ResolveUsedColumnInlineSize(adjusted_inline_size, Style());
       }
@@ -232,7 +232,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
 
       content_size_ = border_and_padding_.block_start;
 
-      builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::FragmentBox);
+      builder_ = new NGFragmentBuilder(NGPhysicalFragmentBase::kFragmentBox);
       builder_->SetDirection(constraint_space_->Direction());
       builder_->SetWritingMode(constraint_space_->WritingMode());
       builder_->SetInlineSize(inline_size).SetBlockSize(block_size);
@@ -241,20 +241,20 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
         space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
 
       state_ = kStateChildLayout;
-      return NotFinished;
+      return kNotFinished;
     }
     case kStateChildLayout: {
       if (current_child_) {
         if (!LayoutCurrentChild())
-          return NotFinished;
+          return kNotFinished;
         current_child_ = current_child_->NextSibling();
         if (current_child_) {
           space_for_current_child_ = CreateConstraintSpaceForCurrentChild();
-          return NotFinished;
+          return kNotFinished;
         }
       }
       state_ = kStateFinalize;
-      return NotFinished;
+      return kNotFinished;
     }
     case kStateFinalize: {
       content_size_ += border_and_padding_.block_end;
@@ -268,12 +268,12 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
           .SetBlockOverflow(content_size_);
       *fragment_out = builder_->ToFragment();
       state_ = kStateInit;
-      return NewFragment;
+      return kNewFragment;
     }
   };
   NOTREACHED();
   *fragment_out = nullptr;
-  return NewFragment;
+  return kNewFragment;
 }
 
 bool NGBlockLayoutAlgorithm::LayoutCurrentChild() {
@@ -398,12 +398,12 @@ NGLogicalOffset NGBlockLayoutAlgorithm::PositionFloatFragment(
       space_for_current_child_, fragment, margins);
   DCHECK(!opportunity.IsEmpty()) << "Opportunity is empty but it shouldn't be";
 
-  NGExclusion::Type exclusion_type = NGExclusion::NG_FLOAT_LEFT;
+  NGExclusion::Type exclusion_type = NGExclusion::kFloatLeft;
   // Calculate the float offset if needed.
   LayoutUnit float_offset;
   if (CurrentChildStyle().floating() == EFloat::Right) {
     float_offset = opportunity.size.inline_size - fragment.InlineSize();
-    exclusion_type = NGExclusion::NG_FLOAT_RIGHT;
+    exclusion_type = NGExclusion::kFloatRight;
   }
 
   // Add the float as an exclusion.

@@ -25,7 +25,7 @@ namespace blink {
 class CORE_EXPORT NGPhysicalFragmentBase
     : public GarbageCollectedFinalized<NGPhysicalFragmentBase> {
  public:
-  enum NGFragmentType { FragmentBox = 0, FragmentText = 1 };
+  enum NGFragmentType { kFragmentBox = 0, kFragmentText = 1 };
 
   NGFragmentType Type() const { return static_cast<NGFragmentType>(type_); }
 

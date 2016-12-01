@@ -10,14 +10,14 @@
 namespace blink {
 
 DEFINE_TRACE(NGPhysicalFragmentBase) {
-  if (Type() == FragmentText)
+  if (Type() == kFragmentText)
     static_cast<NGPhysicalTextFragment*>(this)->traceAfterDispatch(visitor);
   else
     static_cast<NGPhysicalFragment*>(this)->traceAfterDispatch(visitor);
 }
 
 void NGPhysicalFragmentBase::finalizeGarbageCollectedObject() {
-  if (Type() == FragmentText)
+  if (Type() == kFragmentText)
     static_cast<NGPhysicalTextFragment*>(this)->~NGPhysicalTextFragment();
   else
     static_cast<NGPhysicalFragment*>(this)->~NGPhysicalFragment();

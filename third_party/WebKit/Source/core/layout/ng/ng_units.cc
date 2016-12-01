@@ -14,8 +14,8 @@ LayoutUnit MinAndMaxContentSizes::ShrinkToFit(LayoutUnit available_size) const {
 }
 
 NGPhysicalSize NGLogicalSize::ConvertToPhysical(NGWritingMode mode) const {
-  return mode == HorizontalTopBottom ? NGPhysicalSize(inline_size, block_size)
-                                     : NGPhysicalSize(block_size, inline_size);
+  return mode == kHorizontalTopBottom ? NGPhysicalSize(inline_size, block_size)
+                                      : NGPhysicalSize(block_size, inline_size);
 }
 
 bool NGLogicalSize::operator==(const NGLogicalSize& other) const {
@@ -24,8 +24,8 @@ bool NGLogicalSize::operator==(const NGLogicalSize& other) const {
 }
 
 NGLogicalSize NGPhysicalSize::ConvertToLogical(NGWritingMode mode) const {
-  return mode == HorizontalTopBottom ? NGLogicalSize(width, height)
-                                     : NGLogicalSize(height, width);
+  return mode == kHorizontalTopBottom ? NGLogicalSize(width, height)
+                                      : NGLogicalSize(height, width);
 }
 
 bool NGLogicalRect::IsEmpty() const {
@@ -58,14 +58,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
     NGPhysicalSize outer_size,
     NGPhysicalSize inner_size) const {
   switch (mode) {
-    case HorizontalTopBottom:
+    case kHorizontalTopBottom:
       if (direction == LTR)
         return NGPhysicalOffset(inline_offset, block_offset);
       else
         return NGPhysicalOffset(
             outer_size.width - inline_offset - inner_size.width, block_offset);
-    case VerticalRightLeft:
-    case SidewaysRightLeft:
+    case kVerticalRightLeft:
+    case kSidewaysRightLeft:
       if (direction == LTR)
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width, inline_offset);
@@ -73,14 +73,14 @@ NGPhysicalOffset NGLogicalOffset::ConvertToPhysical(
         return NGPhysicalOffset(
             outer_size.width - block_offset - inner_size.width,
             outer_size.height - inline_offset - inner_size.height);
-    case VerticalLeftRight:
+    case kVerticalLeftRight:
       if (direction == LTR)
         return NGPhysicalOffset(block_offset, inline_offset);
       else
         return NGPhysicalOffset(
             block_offset,
             outer_size.height - inline_offset - inner_size.height);
-    case SidewaysLeftRight:
+    case kSidewaysLeftRight:
       if (direction == LTR)
         return NGPhysicalOffset(
             block_offset,
@@ -150,17 +150,17 @@ NGBoxStrut NGPhysicalBoxStrut::ConvertToLogical(NGWritingMode writing_mode,
                                                 TextDirection direction) const {
   NGBoxStrut strut;
   switch (writing_mode) {
-    case HorizontalTopBottom:
+    case kHorizontalTopBottom:
       strut = {left, right, top, bottom};
       break;
-    case VerticalRightLeft:
-    case SidewaysRightLeft:
+    case kVerticalRightLeft:
+    case kSidewaysRightLeft:
       strut = {top, bottom, right, left};
       break;
-    case VerticalLeftRight:
+    case kVerticalLeftRight:
       strut = {top, bottom, left, right};
       break;
-    case SidewaysLeftRight:
+    case kSidewaysLeftRight:
       strut = {bottom, top, left, right};
       break;
   }

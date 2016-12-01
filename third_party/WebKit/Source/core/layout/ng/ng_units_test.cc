@@ -18,52 +18,52 @@ TEST(NGUnitsTest, ConvertLogicalOffsetToPhysicalOffset) {
   NGPhysicalSize inner_size(LayoutUnit(5), LayoutUnit(65));
   NGPhysicalOffset offset;
 
-  offset = logical_offset.ConvertToPhysical(HorizontalTopBottom, LTR,
+  offset = logical_offset.ConvertToPhysical(kHorizontalTopBottom, LTR,
                                             outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(20), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(HorizontalTopBottom, RTL,
+  offset = logical_offset.ConvertToPhysical(kHorizontalTopBottom, RTL,
                                             outer_size, inner_size);
   EXPECT_EQ(LayoutUnit(275), offset.left);
   EXPECT_EQ(LayoutUnit(30), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(VerticalRightLeft, LTR, outer_size,
+  offset = logical_offset.ConvertToPhysical(kVerticalRightLeft, LTR, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(VerticalRightLeft, RTL, outer_size,
+  offset = logical_offset.ConvertToPhysical(kVerticalRightLeft, RTL, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(SidewaysRightLeft, LTR, outer_size,
+  offset = logical_offset.ConvertToPhysical(kSidewaysRightLeft, LTR, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(SidewaysRightLeft, RTL, outer_size,
+  offset = logical_offset.ConvertToPhysical(kSidewaysRightLeft, RTL, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(265), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(VerticalLeftRight, LTR, outer_size,
+  offset = logical_offset.ConvertToPhysical(kVerticalLeftRight, LTR, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(VerticalLeftRight, RTL, outer_size,
+  offset = logical_offset.ConvertToPhysical(kVerticalLeftRight, RTL, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(SidewaysLeftRight, LTR, outer_size,
+  offset = logical_offset.ConvertToPhysical(kSidewaysLeftRight, LTR, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(315), offset.top);
 
-  offset = logical_offset.ConvertToPhysical(SidewaysLeftRight, RTL, outer_size,
+  offset = logical_offset.ConvertToPhysical(kSidewaysLeftRight, RTL, outer_size,
                                             inner_size);
   EXPECT_EQ(LayoutUnit(30), offset.left);
   EXPECT_EQ(LayoutUnit(20), offset.top);
@@ -75,27 +75,27 @@ TEST(NGUnitsTest, ConvertPhysicalStrutToLogical) {
   LayoutUnit left{5}, right{10}, top{15}, bottom{20};
   NGPhysicalBoxStrut physical{left, right, top, bottom};
 
-  NGBoxStrut logical = physical.ConvertToLogical(HorizontalTopBottom, LTR);
+  NGBoxStrut logical = physical.ConvertToLogical(kHorizontalTopBottom, LTR);
   EXPECT_EQ(left, logical.inline_start);
   EXPECT_EQ(top, logical.block_start);
 
-  logical = physical.ConvertToLogical(HorizontalTopBottom, RTL);
+  logical = physical.ConvertToLogical(kHorizontalTopBottom, RTL);
   EXPECT_EQ(right, logical.inline_start);
   EXPECT_EQ(top, logical.block_start);
 
-  logical = physical.ConvertToLogical(VerticalLeftRight, LTR);
+  logical = physical.ConvertToLogical(kVerticalLeftRight, LTR);
   EXPECT_EQ(top, logical.inline_start);
   EXPECT_EQ(left, logical.block_start);
 
-  logical = physical.ConvertToLogical(VerticalLeftRight, RTL);
+  logical = physical.ConvertToLogical(kVerticalLeftRight, RTL);
   EXPECT_EQ(bottom, logical.inline_start);
   EXPECT_EQ(left, logical.block_start);
 
-  logical = physical.ConvertToLogical(VerticalRightLeft, LTR);
+  logical = physical.ConvertToLogical(kVerticalRightLeft, LTR);
   EXPECT_EQ(top, logical.inline_start);
   EXPECT_EQ(right, logical.block_start);
 
-  logical = physical.ConvertToLogical(VerticalRightLeft, RTL);
+  logical = physical.ConvertToLogical(kVerticalRightLeft, RTL);
   EXPECT_EQ(bottom, logical.inline_start);
   EXPECT_EQ(right, logical.block_start);
 }

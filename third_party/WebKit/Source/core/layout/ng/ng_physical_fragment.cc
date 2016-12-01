@@ -16,7 +16,7 @@ NGPhysicalFragment::NGPhysicalFragment(
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
     Vector<NGLogicalOffset> out_of_flow_offsets,
     NGMarginStrut margin_strut)
-    : NGPhysicalFragmentBase(size, overflow, FragmentBox),
+    : NGPhysicalFragmentBase(size, overflow, kFragmentBox),
       margin_strut_(margin_strut) {
   children_.swap(children);
   out_of_flow_descendants_.swap(out_of_flow_descendants);

@@ -108,7 +108,7 @@ class CORE_EXPORT NGConstraintSpace final
   void Subtract(const NGFragment*);
 
   NGLayoutOpportunityIterator* LayoutOpportunities(
-      unsigned clear = NGClearNone,
+      unsigned clear = kNGClearNone,
       bool for_inline_or_bfc = false);
 
   DEFINE_INLINE_VIRTUAL_TRACE() { visitor->trace(physical_space_); }

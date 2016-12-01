@@ -31,9 +31,9 @@ NGPhysicalConstraintSpace::NGPhysicalConstraintSpace(
 void NGPhysicalConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
   NGExclusion* exclusion_ptr = new NGExclusion(exclusion);
   exclusions_.append(WTF::wrapUnique(exclusion_ptr));
-  if (exclusion.type == NGExclusion::NG_FLOAT_LEFT) {
+  if (exclusion.type == NGExclusion::kFloatLeft) {
     last_left_float_exclusion_ = exclusions_.rbegin()->get();
-  } else if (exclusion.type == NGExclusion::NG_FLOAT_RIGHT) {
+  } else if (exclusion.type == NGExclusion::kFloatRight) {
     last_right_float_exclusion_ = exclusions_.rbegin()->get();
   }
 }

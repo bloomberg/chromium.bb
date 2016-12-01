@@ -25,18 +25,18 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     style_->setBorderBottomStyle(EBorderStyle::BorderStyleSolid);
     style_->setBoxSizing(EBoxSizing::BoxSizingBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
-    NGConstraintSpaceBuilder builder(HorizontalTopBottom);
+    NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
     ltr_space_ = new NGConstraintSpace(
-        HorizontalTopBottom, LTR,
+        kHorizontalTopBottom, LTR,
         builder.SetAvailableSize(container_size_).ToConstraintSpace());
     rtl_space_ = new NGConstraintSpace(
-        HorizontalTopBottom, RTL,
+        kHorizontalTopBottom, RTL,
         builder.SetAvailableSize(container_size_).ToConstraintSpace());
     vertical_lr_space_ = new NGConstraintSpace(
-        VerticalLeftRight, LTR,
+        kVerticalLeftRight, LTR,
         builder.SetAvailableSize(container_size_).ToConstraintSpace());
     vertical_rl_space_ = new NGConstraintSpace(
-        VerticalLeftRight, LTR,
+        kVerticalLeftRight, LTR,
         builder.SetAvailableSize(container_size_).ToConstraintSpace());
   }
 

@@ -23,13 +23,13 @@
 namespace blink {
 
 NGBlockNode::NGBlockNode(LayoutObject* layout_object)
-    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyBlock),
+    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyBlock),
       layout_box_(toLayoutBox(layout_object)) {
   DCHECK(layout_box_);
 }
 
 NGBlockNode::NGBlockNode(ComputedStyle* style)
-    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyBlock),
+    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyBlock),
       layout_box_(nullptr),
       style_(style) {
   DCHECK(style_);
@@ -110,11 +110,11 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   // TODO(cbiesinger): For orthogonal children, we need to always synthesize.
   NGLayoutAlgorithm::MinAndMaxState state =
       minmax_algorithm_->ComputeMinAndMaxContentSizes(sizes);
-  if (state == NGLayoutAlgorithm::Success)
+  if (state == NGLayoutAlgorithm::kSuccess)
     return true;
-  if (state == NGLayoutAlgorithm::Pending)
+  if (state == NGLayoutAlgorithm::kPending)
     return false;
-  DCHECK_EQ(state, NGLayoutAlgorithm::NotImplemented);
+  DCHECK_EQ(state, NGLayoutAlgorithm::kNotImplemented);
 
   // TODO(cbiesinger): Replace the loops below with a state machine like in
   // Layout.
@@ -309,7 +309,7 @@ NGPhysicalFragment* NGBlockNode::RunOldLayout(
   LayoutRect overflow = layout_box_->layoutOverflowRect();
   // TODO(layout-ng): This does not handle writing modes correctly (for
   // overflow)
-  NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
   builder.SetInlineSize(layout_box_->logicalWidth())
       .SetBlockSize(layout_box_->logicalHeight())
       .SetDirection(layout_box_->styleRef().direction())

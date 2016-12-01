@@ -170,11 +170,11 @@ struct CORE_EXPORT NGExclusion {
   enum Type {
     // Undefined exclusion type.
     // At this moment it's also used to represent CSS3 exclusion.
-    NG_EXCLUSION_TYPE_UNDEFINED = 0,
+    kExclusionTypeUndefined = 0,
     // Exclusion that is created by LEFT float.
-    NG_FLOAT_LEFT = 1,
+    kFloatLeft = 1,
     // Exclusion that is created by RIGHT float.
-    NG_FLOAT_RIGHT = 2
+    kFloatRight = 2
   };
 
   // Rectangle in logical coordinates the represents this exclusion.

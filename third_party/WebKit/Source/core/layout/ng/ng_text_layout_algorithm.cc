@@ -25,7 +25,7 @@ NGLayoutStatus NGTextLayoutAlgorithm::Layout(
     NGLayoutAlgorithm**) {
   // TODO(layout-dev): implement.
   *fragment_out = nullptr;
-  return NewFragment;
+  return kNewFragment;
 }
 
 DEFINE_TRACE(NGTextLayoutAlgorithm) {

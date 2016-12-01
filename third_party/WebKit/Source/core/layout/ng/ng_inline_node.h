@@ -123,8 +123,8 @@ class NGLayoutInlineItem {
 DEFINE_TYPE_CASTS(NGInlineNode,
                   NGLayoutInputNode,
                   node,
-                  node->Type() == NGLayoutInputNode::LegacyInline,
-                  node.Type() == NGLayoutInputNode::LegacyInline);
+                  node->Type() == NGLayoutInputNode::kLegacyInline,
+                  node.Type() == NGLayoutInputNode::kLegacyInline);
 
 }  // namespace blink
 

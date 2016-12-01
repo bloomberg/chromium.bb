@@ -28,10 +28,10 @@ NGLayoutStatus NGInlineLayoutAlgorithm::Layout(
     NGFragmentBase*,
     NGPhysicalFragmentBase** fragment_out,
     NGLayoutAlgorithm**) {
-  NGFragmentBuilder builder(NGPhysicalFragmentBase::FragmentBox);
+  NGFragmentBuilder builder(NGPhysicalFragmentBase::kFragmentBox);
 
   *fragment_out = builder.ToFragment();
-  return NewFragment;
+  return kNewFragment;
 }
 
 DEFINE_TRACE(NGInlineLayoutAlgorithm) {

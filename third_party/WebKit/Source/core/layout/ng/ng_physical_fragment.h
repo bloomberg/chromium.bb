@@ -54,8 +54,8 @@ WILL_NOT_BE_EAGERLY_TRACED_CLASS(NGPhysicalFragment);
 DEFINE_TYPE_CASTS(NGPhysicalFragment,
                   NGPhysicalFragmentBase,
                   fragment,
-                  fragment->Type() == NGPhysicalFragmentBase::FragmentBox,
-                  fragment.Type() == NGPhysicalFragmentBase::FragmentBox);
+                  fragment->Type() == NGPhysicalFragmentBase::kFragmentBox,
+                  fragment.Type() == NGPhysicalFragmentBase::kFragmentBox);
 
 }  // namespace blink
 

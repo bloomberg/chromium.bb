@@ -20,7 +20,7 @@ class NGLayoutAlgorithm;
 class CORE_EXPORT NGLayoutInputNode
     : public GarbageCollectedFinalized<NGLayoutInputNode> {
  public:
-  enum NGLayoutInputNodeType { LegacyBlock = 0, LegacyInline = 1 };
+  enum NGLayoutInputNodeType { kLegacyBlock = 0, kLegacyInline = 1 };
 
   virtual ~NGLayoutInputNode(){};
 

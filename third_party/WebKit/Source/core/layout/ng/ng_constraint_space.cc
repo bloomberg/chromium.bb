@@ -103,30 +103,30 @@ bool NGConstraintSpace::IsNewFormattingContext() const {
 }
 
 bool NGConstraintSpace::InlineTriggersScrollbar() const {
-  return writing_mode_ == HorizontalTopBottom
+  return writing_mode_ == kHorizontalTopBottom
              ? physical_space_->width_direction_triggers_scrollbar_
              : physical_space_->height_direction_triggers_scrollbar_;
 }
 
 bool NGConstraintSpace::BlockTriggersScrollbar() const {
-  return writing_mode_ == HorizontalTopBottom
+  return writing_mode_ == kHorizontalTopBottom
              ? physical_space_->height_direction_triggers_scrollbar_
              : physical_space_->width_direction_triggers_scrollbar_;
 }
 
 bool NGConstraintSpace::FixedInlineSize() const {
-  return writing_mode_ == HorizontalTopBottom ? physical_space_->fixed_width_
-                                              : physical_space_->fixed_height_;
+  return writing_mode_ == kHorizontalTopBottom ? physical_space_->fixed_width_
+                                               : physical_space_->fixed_height_;
 }
 
 bool NGConstraintSpace::FixedBlockSize() const {
-  return writing_mode_ == HorizontalTopBottom ? physical_space_->fixed_height_
-                                              : physical_space_->fixed_width_;
+  return writing_mode_ == kHorizontalTopBottom ? physical_space_->fixed_height_
+                                               : physical_space_->fixed_width_;
 }
 
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
   return static_cast<NGFragmentationType>(
-      writing_mode_ == HorizontalTopBottom
+      writing_mode_ == kHorizontalTopBottom
           ? physical_space_->height_direction_fragmentation_type_
           : physical_space_->width_direction_fragmentation_type_);
 }

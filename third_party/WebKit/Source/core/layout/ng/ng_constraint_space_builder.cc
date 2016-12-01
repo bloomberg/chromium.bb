@@ -12,7 +12,7 @@ NGConstraintSpaceBuilder::NGConstraintSpaceBuilder(NGWritingMode writing_mode)
       is_fixed_size_block_(false),
       is_inline_direction_triggers_scrollbar_(false),
       is_block_direction_triggers_scrollbar_(false),
-      fragmentation_type_(NGFragmentationType::FragmentNone),
+      fragmentation_type_(NGFragmentationType::kFragmentNone),
       is_new_fc_(false) {}
 
 NGConstraintSpaceBuilder& NGConstraintSpaceBuilder::SetAvailableSize(
@@ -74,18 +74,18 @@ NGPhysicalConstraintSpace* NGConstraintSpaceBuilder::ToConstraintSpace() {
       percentage_resolution_size_.ConvertToPhysical(
           static_cast<NGWritingMode>(writing_mode_));
 
-  if (writing_mode_ == HorizontalTopBottom) {
+  if (writing_mode_ == kHorizontalTopBottom) {
     return new NGPhysicalConstraintSpace(
         available_size, percentage_resolution_size, is_fixed_size_inline_,
         is_fixed_size_block_, is_inline_direction_triggers_scrollbar_,
-        is_block_direction_triggers_scrollbar_, FragmentNone,
+        is_block_direction_triggers_scrollbar_, kFragmentNone,
         static_cast<NGFragmentationType>(fragmentation_type_), is_new_fc_);
   } else {
     return new NGPhysicalConstraintSpace(
         available_size, percentage_resolution_size, is_fixed_size_block_,
         is_fixed_size_inline_, is_block_direction_triggers_scrollbar_,
         is_inline_direction_triggers_scrollbar_,
-        static_cast<NGFragmentationType>(fragmentation_type_), FragmentNone,
+        static_cast<NGFragmentationType>(fragmentation_type_), kFragmentNone,
         is_new_fc_);
   }
 }

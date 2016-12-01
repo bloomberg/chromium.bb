@@ -21,10 +21,10 @@ struct NGBoxStrut;
 class NGFragmentBase;
 
 enum class LengthResolveType {
-  MinSize,
-  MaxSize,
-  ContentSize,
-  MarginBorderPaddingSize
+  kMinSize,
+  kMaxSize,
+  kContentSize,
+  kMarginBorderPaddingSize
 };
 
 #define NGSizeIndefinite LayoutUnit(-1)

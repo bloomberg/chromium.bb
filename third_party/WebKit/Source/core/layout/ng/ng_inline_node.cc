@@ -26,7 +26,7 @@ namespace blink {
 
 NGInlineNode::NGInlineNode(LayoutObject* start_inline,
                            ComputedStyle* block_style)
-    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
+    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
       start_inline_(start_inline),
       last_inline_(nullptr),
       block_style_(block_style) {
@@ -35,7 +35,7 @@ NGInlineNode::NGInlineNode(LayoutObject* start_inline,
 }
 
 NGInlineNode::NGInlineNode()
-    : NGLayoutInputNode(NGLayoutInputNodeType::LegacyInline),
+    : NGLayoutInputNode(NGLayoutInputNodeType::kLegacyInline),
       start_inline_(nullptr),
       last_inline_(nullptr),
       block_style_(nullptr) {}
