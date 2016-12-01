@@ -1,7 +1,14 @@
-# Android Build Instructions
+# Checking out and building Chromium for Android
+
+There are instructions for other platforms linked from the 
+[get the code](get_the_code.md) page.
 
 **See also [the old version of this page](old_android_build_instructions.md).**
 
+## Instructions for Google Employees
+
+Are you a Google employee? See
+[go/building-chrome](https://goto.google.com/building-chrome) instead.
 Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
@@ -121,7 +128,7 @@ $ sudo update-alternatives --config jar
 $ sudo update-alternatives --config jarsigner
 ```
 
-## Setting up the Build
+## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
 with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`

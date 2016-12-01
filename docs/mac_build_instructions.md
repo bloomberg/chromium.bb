@@ -1,6 +1,14 @@
-# Mac Build Instructions
+# Checking out and building Chromium for Mac
 
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
+There are instructions for other platforms linked from the 
+[get the code](get_the_code.md) page.
+
+**See also [the old version of this page](old_mac_build_instructions.md).**
+
+## Instructions for Google Employees
+
+Are you a Google employee? See
+[go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
 
@@ -69,7 +77,7 @@ keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
 build to talk to some Google services, but this is not necessary for most
 development and testing purposes.
 
-## Building
+## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
 with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`
@@ -128,6 +136,19 @@ in gdb).
 
 You might also want to [install ccache](ccache_mac.md) to speed up the build.
 
+## Build Chromium
+
+Build Chromium (the "chrome" target) with Ninja using the command:
+
+```shell
+$ ninja -C out/Default chrome
+```
+
+You can get a list of all of the other build targets from GN by running `gn ls
+out/Default` from the command line. To compile one, pass the GN label to Ninja
+with no preceding "//" (so, for `//chrome/test:unit_tests` use `ninja -C
+out/Default chrome/test:unit_tests`).
+
 ## Run Chromium
 
 Once it is built, you can simply run the browser:
@@ -142,7 +163,7 @@ You can run the tests in the same way. You can also limit which tests are
 run using the `--gtest_filter` arg, e.g.:
 
 ```
-$ ninja -C out/Default unit_tests --gtest_filter="PushClientTest.*"
+$ out/Default/unit_tests --gtest_filter="PushClientTest.*"
 ```
 
 You can find out more about GoogleTest at its

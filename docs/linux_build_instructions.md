@@ -1,8 +1,14 @@
 # Checking out and building Chromium on Linux
 
+There are instructions for other platforms linked from the 
+[get the code](get_the_code.md) page.
+
 **See also [the old version of this page](old_linux_build_instructions.md).**
 
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
+## Instructions for Google Employees
+
+Are you a Google employee? See
+[go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
 
@@ -97,7 +103,7 @@ keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
 build to talk to some Google services, but this is not necessary for most
 development and testing purposes.
 
-## Setting up the Build
+## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
 with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`
@@ -151,7 +157,7 @@ You can run the tests in the same way. You can also limit which tests are
 run using the `--gtest_filter` arg, e.g.:
 
 ```shell
-$ ninja -C out/Default unit_tests --gtest_filter="PushClientTest.*"
+$ out/Default/unit_tests --gtest_filter="PushClientTest.*"
 ```
 
 You can find out more about GoogleTest at its

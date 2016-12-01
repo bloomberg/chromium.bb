@@ -1,8 +1,14 @@
-# Checking out and building Chromium on Windows
+# Checking out and Building Chromium for Windows
+
+There are instructions for other platforms linked from the 
+[get the code](get_the_code.md) page.
 
 **See also [the old version of this page](old_linux_build_instructions.md).**
 
-Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
+## Instructions for Google Employees
+
+Are you a Google employee? See
+[go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
 
@@ -15,12 +21,6 @@ Google employee? See [go/building-chrome](https://goto.google.com/building-chrom
 * Windows 7 or newer.
 
 ## Setting up Windows
-
-### System locale
-
-You must set your Windows system locale to English, or else you may get
-build errors about "The file contains a character that cannot be
-represented in the current code page."
 
 ### Visual Studio
 
@@ -37,12 +37,12 @@ and select:
 You must have the 10586 SDK installed or else you will hit compile errors such
 as redefined macros.
 
-Install Windows Driver Kit (WDK) 10, or use some other method to get the
-Debugging Tools for Windows.
+Install the Windows SDK 10, and choose Debugging Tools For Windows when you
+install this in order to get windbg.
 
 ## Install `depot_tools`
 
-Download the (depot_tools bundle)[https://storage.googleapis.com/chrome-infra/depot_tools.zip]
+Download the [depot_tools bundle](https://storage.googleapis.com/chrome-infra/depot_tools.zip)
 and extract it somewhere.
 
 *** note
@@ -65,7 +65,8 @@ Without Administrator access:
 
 Control Panel → User Accounts → User Accounts → Change my environment variables
 
-Add a PATH user variable: C:\src\depot_tools;%PATH%.
+Add a PATH user variable (or modify the existing one to include):
+`C:\src\depot_tools`.
 
 Also, add a DEPOT_TOOLS_WIN_TOOLCHAIN system variable in the same way, and set
 it to 0. This tells depot_tools to use your locally installed version of Visual
@@ -122,7 +123,7 @@ keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
 build to talk to some Google services, but this is not necessary for most
 development and testing purposes.
 
-## Building
+## Setting up the build
 
 Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
 with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`
@@ -151,8 +152,9 @@ argument to `gn gen` when you generate your output directory (as described on
 the [get the code](http://dev.chromium.org/developers/how-tos/get-the-code)
 page):
 
-```gn gen --ide=vs out\Default
-devenv out\Default\all.sln
+```shell
+$ gn gen --ide=vs out\Default
+$ devenv out\Default\all.sln
 ```
 
 GN will produce a file `all.sln` in your build directory. It will internally
@@ -167,7 +169,9 @@ for only the code you're interested in, although this will also limit what
 files appear in the project explorer. A minimal solution that will let you
 compile and run Chrome in the IDE but will not show any source files is:
 
-```gn gen --ide=vs --filters=//chrome out\Default```
+```
+$ gn gen --ide=vs --filters=//chrome out\Default
+```
 
 There are other options for controlling how the solution is generated, run `gn
 help gen` for the current documentation.
@@ -185,7 +189,9 @@ be recompiled.
 
 Build Chromium (the "chrome" target) with Ninja using the command:
 
-    $ ninja -C out\Default chrome
+```shell
+$ ninja -C out\Default chrome
+```
 
 You can get a list of all of the other build targets from GN by running
 `gn ls out/Default` from the command line. To compile one, pass to Ninja
@@ -196,14 +202,20 @@ use ninja -C out/Default chrome/test:unit_tests`).
 
 Once it is built, you can simply run the browser:
 
-    $ out\Default\chrome.exe
+```shell
+$ out\Default\chrome.exe
+```
+
+(The ".exe" suffix in the command is actually optional).
 
 ## Running test targets
 
 You can run the tests in the same way. You can also limit which tests are
 run using the `--gtest_filter` arg, e.g.:
 
-    $ ninja -C out\Default unit_tests --gtest_filter="PushClientTest.*"
+```shell
+$ out\Default\unit_tests.exe --gtest_filter="PushClientTest.*"
+```
 
 You can find out more about GoogleTest at its
 [GitHub page](https://github.com/google/googletest).
@@ -212,8 +224,10 @@ You can find out more about GoogleTest at its
 
 To update an existing checkout, you can run
 
-    $ git rebase-update
-    $ gclient sync
+```shell
+$ git rebase-update
+$ gclient sync
+```
 
 The first command updates the primary Chromium source repository and rebases
 any of your local branches on top of tip-of-tree (aka the Git branch `origin/master`).

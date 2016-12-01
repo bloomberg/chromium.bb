@@ -1,7 +1,14 @@
-# iOS Build Instructions
+# Checking out and building Chromium for iOS
+
+There are instructions for other platforms linked from the 
+[get the code](get_the_code.md) page.
 
 **See also [the old version of this page](old_ios_build_instructions.md).**
 
+## Instructions for Google Employees
+
+Are you a Google employee? See
+[go/building-chrome](https://goto.google.com/building-chrome) instead.
 Google employee? See [go/building-chrome](https://goto.google.com/building-chrome) instead.
 
 [TOC]
@@ -101,7 +108,7 @@ You can also follow the manual instructions on the
 [Mac page](mac_build_instructions.md), but make sure you set the
 GN arg `target_os="ios"`.
 
-## Running
+## Running `ios_web_shell`
 
 Any target that is built and runs on the bots (see [below](#Troubleshooting))
 should run successfully in a local build. As of the time of writing, this is
