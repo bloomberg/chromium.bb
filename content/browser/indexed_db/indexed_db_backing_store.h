@@ -19,6 +19,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/memory/weak_ptr.h"
 #include "base/strings/string_piece.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
@@ -90,9 +91,13 @@ class CONTENT_EXPORT IndexedDBBackingStore
     DISALLOW_COPY_AND_ASSIGN(RecordIdentifier);
   };
 
+  enum class BlobWriteResult { FAILURE_ASYNC, SUCCESS_ASYNC, SUCCESS_SYNC };
+
   class BlobWriteCallback : public base::RefCounted<BlobWriteCallback> {
    public:
-    virtual void Run(bool succeeded) = 0;
+    // TODO(dmurph): Make all calls to this method async after measuring
+    // performance.
+    virtual leveldb::Status Run(BlobWriteResult result) = 0;
 
    protected:
     friend class base::RefCounted<BlobWriteCallback>;
@@ -281,6 +286,8 @@ class CONTENT_EXPORT IndexedDBBackingStore
     // indicate that the committing_transaction_count_ on the backing store
     // has been bumped, and journal cleaning should be deferred.
     bool committing_;
+
+    base::WeakPtrFactory<Transaction> ptr_factory_;
 
     DISALLOW_COPY_AND_ASSIGN(Transaction);
   };

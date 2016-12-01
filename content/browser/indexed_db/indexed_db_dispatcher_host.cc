@@ -100,61 +100,6 @@ bool IndexedDBDispatcherHost::OnMessageReceived(const IPC::Message& message) {
   return false;
 }
 
-bool IndexedDBDispatcherHost::RegisterTransactionId(int64_t host_transaction_id,
-                                                    const url::Origin& origin) {
-  if (base::ContainsKey(transaction_size_map_, host_transaction_id))
-    return false;
-  transaction_size_map_[host_transaction_id] = 0;
-  transaction_origin_map_[host_transaction_id] = origin;
-  return true;
-}
-
-bool IndexedDBDispatcherHost::GetTransactionSize(int64_t host_transaction_id,
-                                                 int64_t* transaction_size) {
-  const auto it = transaction_size_map_.find(host_transaction_id);
-  if (it == transaction_size_map_.end())
-    return false;
-  *transaction_size = it->second;
-  return true;
-}
-
-void IndexedDBDispatcherHost::AddToTransaction(int64_t host_transaction_id,
-                                               int64_t value_length) {
-  transaction_size_map_[host_transaction_id] += value_length;
-}
-
-int64_t IndexedDBDispatcherHost::HostTransactionId(int64_t transaction_id) {
-  // Inject the renderer process id into the transaction id, to
-  // uniquely identify this transaction, and effectively bind it to
-  // the renderer that initiated it. The lower 32 bits of
-  // transaction_id are guaranteed to be unique within that renderer.
-  base::ProcessId pid = peer_pid();
-  DCHECK(!(transaction_id >> 32)) << "Transaction ids can only be 32 bits";
-  static_assert(sizeof(base::ProcessId) <= sizeof(int32_t),
-                "Process ID must fit in 32 bits");
-
-  return transaction_id | (static_cast<uint64_t>(pid) << 32);
-}
-
-int64_t IndexedDBDispatcherHost::RendererTransactionId(
-    int64_t host_transaction_id) {
-  DCHECK(host_transaction_id >> 32 == peer_pid())
-      << "Invalid renderer target for transaction id";
-  return host_transaction_id & 0xffffffff;
-}
-
-// static
-uint32_t IndexedDBDispatcherHost::TransactionIdToRendererTransactionId(
-    int64_t host_transaction_id) {
-  return host_transaction_id & 0xffffffff;
-}
-
-// static
-uint32_t IndexedDBDispatcherHost::TransactionIdToProcessId(
-    int64_t host_transaction_id) {
-  return (host_transaction_id >> 32) & 0xffffffff;
-}
-
 std::string IndexedDBDispatcherHost::HoldBlobData(
     const IndexedDBBlobInfo& blob_info) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
@@ -286,15 +231,12 @@ void IndexedDBDispatcherHost::OpenOnIDBThread(
   base::TimeTicks begin_time = base::TimeTicks::Now();
   base::FilePath indexed_db_path = indexed_db_context_->data_path();
 
-  int64_t host_transaction_id = HostTransactionId(transaction_id);
-
   // TODO(dgrogan): Don't let a non-existing database be opened (and therefore
   // created) if this origin is already over quota.
   callbacks->SetConnectionOpenStartTime(begin_time);
-  callbacks->set_host_transaction_id(host_transaction_id);
   std::unique_ptr<IndexedDBPendingConnection> connection =
       base::MakeUnique<IndexedDBPendingConnection>(
-          callbacks, database_callbacks, ipc_process_id_, host_transaction_id,
+          callbacks, database_callbacks, ipc_process_id_, transaction_id,
           version);
   DCHECK(request_context_getter_);
   context()->GetIDBFactory()->Open(name, std::move(connection),
@@ -312,17 +254,6 @@ void IndexedDBDispatcherHost::DeleteDatabaseOnIDBThread(
   DCHECK(request_context_getter_);
   context()->GetIDBFactory()->DeleteDatabase(
       name, request_context_getter_, callbacks, origin, indexed_db_path);
-}
-
-void IndexedDBDispatcherHost::FinishTransaction(int64_t host_transaction_id,
-                                                bool committed) {
-  DCHECK(indexed_db_context_->TaskRunner()->RunsTasksOnCurrentThread());
-  if (committed) {
-    context()->TransactionComplete(
-        transaction_origin_map_[host_transaction_id]);
-  }
-  transaction_origin_map_.erase(host_transaction_id);
-  transaction_size_map_.erase(host_transaction_id);
 }
 
 }  // namespace content

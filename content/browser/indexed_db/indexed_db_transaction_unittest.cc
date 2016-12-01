@@ -5,6 +5,7 @@
 #include "content/browser/indexed_db/indexed_db_transaction.h"
 
 #include <stdint.h>
+#include <memory>
 
 #include "base/bind.h"
 #include "base/logging.h"
@@ -20,6 +21,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace content {
+const int kFakeProcessId = 10;
 
 class AbortObserver {
  public:
@@ -90,11 +92,11 @@ TEST_F(IndexedDBTransactionTest, Timeout) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope,
-      blink::WebIDBTransactionModeReadWrite,
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, blink::WebIDBTransactionModeReadWrite,
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
   db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
@@ -136,10 +138,11 @@ TEST_F(IndexedDBTransactionTest, NoTimeoutReadOnly) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope, blink::WebIDBTransactionModeReadOnly,
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, blink::WebIDBTransactionModeReadOnly,
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
   db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
@@ -168,10 +171,11 @@ TEST_P(IndexedDBTransactionTestMode, ScheduleNormalTask) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope, GetParam(),
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, GetParam(),
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -229,10 +233,11 @@ TEST_P(IndexedDBTransactionTestMode, TaskFails) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope, GetParam(),
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, GetParam(),
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -292,11 +297,12 @@ TEST_F(IndexedDBTransactionTest, SchedulePreemptiveTask) {
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope,
-      blink::WebIDBTransactionModeVersionChange,
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope,
+          blink::WebIDBTransactionModeVersionChange,
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
 
   EXPECT_FALSE(transaction->HasPendingTasks());
   EXPECT_TRUE(transaction->IsTaskQueueEmpty());
@@ -353,10 +359,11 @@ TEST_P(IndexedDBTransactionTestMode, AbortTasks) {
   const leveldb::Status commit_failure = leveldb::Status::Corruption("Ouch.");
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope, GetParam(),
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_failure));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, GetParam(),
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_failure)));
   db_->TransactionCreated(transaction.get());
 
   AbortObserver observer;
@@ -382,10 +389,11 @@ TEST_P(IndexedDBTransactionTestMode, AbortPreemptive) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope, GetParam(),
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+  std::unique_ptr<IndexedDBTransaction> transaction =
+      std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+          id, connection.get(), scope, GetParam(),
+          new IndexedDBFakeBackingStore::FakeTransaction(commit_success)));
   db_->TransactionCreated(transaction.get());
 
   // No conflicting transactions, so coordinator will start it immediately:
@@ -433,11 +441,15 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
   const leveldb::Status commit_success = leveldb::Status::OK();
   std::unique_ptr<IndexedDBConnection> connection(
       base::MakeUnique<IndexedDBConnection>(
-          db_, new MockIndexedDBDatabaseCallbacks()));
-  scoped_refptr<IndexedDBTransaction> transaction = new IndexedDBTransaction(
-      id, connection->GetWeakPtr(), scope,
-      blink::WebIDBTransactionModeReadWrite,
-      new IndexedDBFakeBackingStore::FakeTransaction(commit_success));
+          kFakeProcessId, db_, new MockIndexedDBDatabaseCallbacks()));
+
+  base::WeakPtr<IndexedDBTransaction> transaction =
+      connection->AddTransactionForTesting(
+          std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+              id, connection.get(), scope,
+              blink::WebIDBTransactionModeReadWrite,
+              new IndexedDBFakeBackingStore::FakeTransaction(commit_success))));
+  ASSERT_TRUE(transaction);
   db_->TransactionCreated(transaction.get());
 
   EXPECT_EQ(0UL, transaction->pending_observers_.size());
@@ -459,7 +471,7 @@ TEST_F(IndexedDBTransactionTest, IndexedDBObserver) {
 
   // After commit, observer moved to connection's active observer.
   transaction->Commit();
-  EXPECT_EQ(0UL, transaction->pending_observers_.size());
+  EXPECT_FALSE(transaction);
   EXPECT_EQ(1UL, connection->active_observers().size());
 
   // Observer does not exist, so no change to active_observers.

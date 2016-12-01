@@ -17,6 +17,7 @@
 namespace content {
 class IndexedDBDatabaseError;
 class IndexedDBDispatcherHost;
+class IndexedDBTransaction;
 
 class CONTENT_EXPORT IndexedDBDatabaseCallbacks
     : public base::RefCounted<IndexedDBDatabaseCallbacks> {
@@ -28,9 +29,9 @@ class CONTENT_EXPORT IndexedDBDatabaseCallbacks
   virtual void OnForcedClose();
   virtual void OnVersionChange(int64_t old_version, int64_t new_version);
 
-  virtual void OnAbort(int64_t host_transaction_id,
+  virtual void OnAbort(const IndexedDBTransaction& transaction,
                        const IndexedDBDatabaseError& error);
-  virtual void OnComplete(int64_t host_transaction_id);
+  virtual void OnComplete(const IndexedDBTransaction& transaction);
   virtual void OnDatabaseChange(
       ::indexed_db::mojom::ObserverChangesPtr changes);
 

@@ -13,7 +13,6 @@
 #include <vector>
 
 #include "base/macros.h"
-#include "base/memory/ref_counted.h"
 #include "content/browser/indexed_db/list_set.h"
 
 namespace content {
@@ -27,7 +26,7 @@ class IndexedDBTransactionCoordinator {
   ~IndexedDBTransactionCoordinator();
 
   // Called by transactions as they start and finish.
-  void DidCreateTransaction(scoped_refptr<IndexedDBTransaction> transaction);
+  void DidCreateTransaction(IndexedDBTransaction* transaction);
   void DidFinishTransaction(IndexedDBTransaction* transaction);
 
   bool IsRunningVersionChangeTransaction() const;
@@ -47,8 +46,8 @@ class IndexedDBTransactionCoordinator {
   // Transactions in different states are grouped below.
   // list_set is used to provide stable ordering; required by spec
   // for the queue, convenience for diagnostics for the rest.
-  list_set<scoped_refptr<IndexedDBTransaction>> queued_transactions_;
-  list_set<scoped_refptr<IndexedDBTransaction>> started_transactions_;
+  list_set<IndexedDBTransaction*> queued_transactions_;
+  list_set<IndexedDBTransaction*> started_transactions_;
 
   DISALLOW_COPY_AND_ASSIGN(IndexedDBTransactionCoordinator);
 };

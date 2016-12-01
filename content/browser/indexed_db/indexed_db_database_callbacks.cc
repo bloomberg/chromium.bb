@@ -7,6 +7,7 @@
 #include "content/browser/indexed_db/indexed_db_context_impl.h"
 #include "content/browser/indexed_db/indexed_db_database_error.h"
 #include "content/browser/indexed_db/indexed_db_dispatcher_host.h"
+#include "content/browser/indexed_db/indexed_db_transaction.h"
 
 using ::indexed_db::mojom::DatabaseCallbacksAssociatedPtrInfo;
 
@@ -67,33 +68,33 @@ void IndexedDBDatabaseCallbacks::OnVersionChange(int64_t old_version,
                  base::Unretained(io_helper_.get()), old_version, new_version));
 }
 
-void IndexedDBDatabaseCallbacks::OnAbort(int64_t host_transaction_id,
-                                         const IndexedDBDatabaseError& error) {
+void IndexedDBDatabaseCallbacks::OnAbort(
+    const IndexedDBTransaction& transaction,
+    const IndexedDBDatabaseError& error) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!dispatcher_host_)
     return;
 
-  dispatcher_host_->FinishTransaction(host_transaction_id, false);
   DCHECK(io_helper_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&IOThreadHelper::SendAbort, base::Unretained(io_helper_.get()),
-                 dispatcher_host_->RendererTransactionId(host_transaction_id),
-                 error));
+                 transaction.id(), error));
 }
 
-void IndexedDBDatabaseCallbacks::OnComplete(int64_t host_transaction_id) {
+void IndexedDBDatabaseCallbacks::OnComplete(
+    const IndexedDBTransaction& transaction) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!dispatcher_host_)
     return;
 
-  dispatcher_host_->FinishTransaction(host_transaction_id, true);
+  dispatcher_host_->context()->TransactionComplete(
+      transaction.database()->origin());
   DCHECK(io_helper_);
   BrowserThread::PostTask(
       BrowserThread::IO, FROM_HERE,
       base::Bind(&IOThreadHelper::SendComplete,
-                 base::Unretained(io_helper_.get()),
-                 dispatcher_host_->RendererTransactionId(host_transaction_id)));
+                 base::Unretained(io_helper_.get()), transaction.id()));
 }
 
 void IndexedDBDatabaseCallbacks::OnDatabaseChange(

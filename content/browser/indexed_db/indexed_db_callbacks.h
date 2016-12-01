@@ -59,7 +59,7 @@ class CONTENT_EXPORT IndexedDBCallbacks
                          const content::IndexedDBDatabaseMetadata& metadata);
 
   // IndexedDBDatabase::OpenCursor
-  virtual void OnSuccess(scoped_refptr<IndexedDBCursor> cursor,
+  virtual void OnSuccess(std::unique_ptr<IndexedDBCursor> cursor,
                          const IndexedDBKey& key,
                          const IndexedDBKey& primary_key,
                          IndexedDBValue* value);
@@ -99,10 +99,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
 
   void SetConnectionOpenStartTime(const base::TimeTicks& start_time);
 
-  void set_host_transaction_id(int64_t host_transaction_id) {
-    host_transaction_id_ = host_transaction_id;
-  }
-
  protected:
   virtual ~IndexedDBCallbacks();
 
@@ -118,7 +114,6 @@ class CONTENT_EXPORT IndexedDBCallbacks
   scoped_refptr<IndexedDBDispatcherHost> dispatcher_host_;
 
   // IndexedDBDatabase callbacks ------------------------
-  int64_t host_transaction_id_;
   url::Origin origin_;
   bool database_sent_ = false;
 

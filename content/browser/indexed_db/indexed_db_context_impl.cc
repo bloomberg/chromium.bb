@@ -236,13 +236,8 @@ base::ListValue* IndexedDBContextImpl::GetAllOriginsDetails() {
           }
 
           transaction_info->SetDouble(
-              "pid",
-              IndexedDBDispatcherHost::TransactionIdToProcessId(
-                  transaction->id()));
-          transaction_info->SetDouble(
-              "tid",
-              IndexedDBDispatcherHost::TransactionIdToRendererTransactionId(
-                  transaction->id()));
+              "pid", transaction->connection()->child_process_id());
+          transaction_info->SetDouble("tid", transaction->id());
           transaction_info->SetDouble(
               "age",
               (base::Time::Now() - transaction->diagnostics().creation_time)

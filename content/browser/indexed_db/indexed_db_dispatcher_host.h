@@ -21,7 +21,6 @@
 #include "content/public/browser/browser_message_filter.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "storage/browser/blob/blob_data_handle.h"
-#include "url/gurl.h"
 
 namespace url {
 class Origin;
@@ -50,31 +49,12 @@ class IndexedDBDispatcherHost
   void OnDestruct() const override;
   bool OnMessageReceived(const IPC::Message& message) override;
 
-  void FinishTransaction(int64_t host_transaction_id, bool committed);
-
   // A shortcut for accessing our context.
   IndexedDBContextImpl* context() const { return indexed_db_context_.get(); }
   storage::BlobStorageContext* blob_storage_context() const {
     return blob_storage_context_->context();
   }
   int ipc_process_id() const { return ipc_process_id_; }
-
-  bool RegisterTransactionId(int64_t host_transaction_id,
-                             const url::Origin& origin);
-  bool GetTransactionSize(int64_t host_transaction_id,
-                          int64_t* transaction_size);
-  void AddToTransaction(int64_t host_transaction_id, int64_t value_length);
-
-  // These are called to map a 32-bit front-end (renderer-specific) transaction
-  // id to and from a back-end ("host") transaction id that encodes the process
-  // id in the high 32 bits. The mapping is host-specific and ids are validated.
-  int64_t HostTransactionId(int64_t transaction_id);
-  int64_t RendererTransactionId(int64_t host_transaction_id);
-
-  // These are called to decode a host transaction ID, for diagnostic purposes.
-  static uint32_t TransactionIdToRendererTransactionId(
-      int64_t host_transaction_id);
-  static uint32_t TransactionIdToProcessId(int64_t host_transaction_id);
 
   std::string HoldBlobData(const IndexedDBBlobInfo& blob_info);
   void DropBlobData(const std::string& uuid);
@@ -87,10 +67,6 @@ class IndexedDBDispatcherHost
   // Friends to enable OnDestruct() delegation.
   friend class BrowserThread;
   friend class base::DeleteHelper<IndexedDBDispatcherHost>;
-
-  // Used in nested classes.
-  typedef std::map<int64_t, int64_t> TransactionIDToSizeMap;
-  typedef std::map<int64_t, url::Origin> TransactionIDToOriginMap;
 
   ~IndexedDBDispatcherHost() override;
 
@@ -138,8 +114,6 @@ class IndexedDBDispatcherHost
 
   // Only access on IndexedDB thread.
   bool is_open_ = true;
-  TransactionIDToSizeMap transaction_size_map_;
-  TransactionIDToOriginMap transaction_origin_map_;
 
   // Used to set file permissions for blob storage.
   int ipc_process_id_;

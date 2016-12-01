@@ -5,6 +5,8 @@
 #ifndef CONTENT_BROWSER_INDEXED_DB_CURSOR_IMPL_H_
 #define CONTENT_BROWSER_INDEXED_DB_CURSOR_IMPL_H_
 
+#include <memory>
+
 #include "base/memory/ref_counted.h"
 #include "content/common/indexed_db/indexed_db.mojom.h"
 
@@ -20,7 +22,7 @@ class IndexedDBKey;
 
 class CursorImpl : public ::indexed_db::mojom::Cursor {
  public:
-  CursorImpl(scoped_refptr<IndexedDBCursor> cursor,
+  CursorImpl(std::unique_ptr<IndexedDBCursor> cursor,
              const url::Origin& origin,
              scoped_refptr<IndexedDBDispatcherHost> dispatcher_host);
   ~CursorImpl() override;

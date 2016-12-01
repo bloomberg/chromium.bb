@@ -469,7 +469,7 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
 
   // Open at version 2, then close.
   {
-    scoped_refptr<MockIndexedDBCallbacks> callbacks(
+    scoped_refptr<UpgradeNeededCallbacks> callbacks(
         new UpgradeNeededCallbacks());
     std::unique_ptr<IndexedDBPendingConnection> connection(
         base::MakeUnique<IndexedDBPendingConnection>(
@@ -483,7 +483,8 @@ TEST_F(IndexedDBFactoryTest, DatabaseFailedOpen) {
     // Pump the message loop so the upgrade transaction can run.
     base::RunLoop().RunUntilIdle();
     EXPECT_TRUE(callbacks->connection());
-    callbacks->connection()->database()->Commit(transaction_id);
+    callbacks->connection()->database()->Commit(
+        callbacks->connection()->GetTransaction(transaction_id));
 
     callbacks->connection()->Close();
     EXPECT_FALSE(factory()->IsDatabaseOpen(origin, db_name));

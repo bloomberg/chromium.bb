@@ -18,7 +18,7 @@ IndexedDBTransactionCoordinator::~IndexedDBTransactionCoordinator() {
 }
 
 void IndexedDBTransactionCoordinator::DidCreateTransaction(
-    scoped_refptr<IndexedDBTransaction> transaction) {
+    IndexedDBTransaction* transaction) {
   DCHECK(!queued_transactions_.count(transaction));
   DCHECK(!started_transactions_.count(transaction));
   DCHECK_EQ(IndexedDBTransaction::CREATED, transaction->state());
@@ -65,12 +65,11 @@ bool IndexedDBTransactionCoordinator::IsActive(
 std::vector<const IndexedDBTransaction*>
 IndexedDBTransactionCoordinator::GetTransactions() const {
   std::vector<const IndexedDBTransaction*> result;
-
-  for (const auto& transaction : started_transactions_)
-    result.push_back(transaction.get());
-  for (const auto& transaction : queued_transactions_)
-    result.push_back(transaction.get());
-
+  result.reserve(started_transactions_.size() + queued_transactions_.size());
+  result.insert(result.end(), started_transactions_.begin(),
+                started_transactions_.end());
+  result.insert(result.end(), queued_transactions_.begin(),
+                queued_transactions_.end());
   return result;
 }
 
@@ -98,9 +97,9 @@ void IndexedDBTransactionCoordinator::ProcessQueuedTransactions() {
 
   auto it = queued_transactions_.begin();
   while (it != queued_transactions_.end()) {
-    scoped_refptr<IndexedDBTransaction> transaction = *it;
+    IndexedDBTransaction* transaction = *it;
     ++it;
-    if (CanStartTransaction(transaction.get(), locked_scope)) {
+    if (CanStartTransaction(transaction, locked_scope)) {
       DCHECK_EQ(IndexedDBTransaction::CREATED, transaction->state());
       queued_transactions_.erase(transaction);
       started_transactions_.insert(transaction);

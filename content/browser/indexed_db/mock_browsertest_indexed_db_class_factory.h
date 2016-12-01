@@ -46,9 +46,9 @@ class MockBrowserTestIndexedDBClassFactory : public IndexedDBClassFactory {
       scoped_refptr<IndexedDBBackingStore> backing_store,
       scoped_refptr<IndexedDBFactory> factory,
       const IndexedDBDatabase::Identifier& unique_identifier) override;
-  IndexedDBTransaction* CreateIndexedDBTransaction(
+  std::unique_ptr<IndexedDBTransaction> CreateIndexedDBTransaction(
       int64_t id,
-      base::WeakPtr<IndexedDBConnection> connection,
+      IndexedDBConnection* connection,
       const std::set<int64_t>& scope,
       blink::WebIDBTransactionMode mode,
       IndexedDBBackingStore::Transaction* backing_store_transaction) override;

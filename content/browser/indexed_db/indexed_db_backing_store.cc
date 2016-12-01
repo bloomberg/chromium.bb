@@ -2268,7 +2268,7 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
       ++iter_;
       WriteNextFile();
     } else {
-      callback_->Run(false);
+      callback_->Run(BlobWriteResult::FAILURE_ASYNC);
     }
   }
 
@@ -2290,11 +2290,11 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
     }
     if (iter_ == blobs_.end()) {
       DCHECK(!self_ref_.get());
-      callback_->Run(true);
+      callback_->Run(BlobWriteResult::SUCCESS_ASYNC);
       return;
     } else {
       if (!backing_store_->WriteBlobFile(database_id_, *iter_, this)) {
-        callback_->Run(false);
+        callback_->Run(BlobWriteResult::FAILURE_ASYNC);
         return;
       }
       waiting_for_callback_ = true;
@@ -2307,6 +2307,9 @@ class IndexedDBBackingStore::Transaction::ChainedBlobWriterImpl
   WriteDescriptorVec::const_iterator iter_;
   int64_t database_id_;
   IndexedDBBackingStore* backing_store_;
+  // Callback result is useless as call stack is no longer transaction's
+  // operations queue. Errors are instead handled in
+  // IndexedDBTransaction::BlobWriteComplete.
   scoped_refptr<IndexedDBBackingStore::BlobWriteCallback> callback_;
   std::unique_ptr<FileWriterDelegate> delegate_;
   bool aborted_;
@@ -4045,8 +4048,10 @@ IndexedDBBackingStore::OpenIndexCursor(
 
 IndexedDBBackingStore::Transaction::Transaction(
     IndexedDBBackingStore* backing_store)
-    : backing_store_(backing_store), database_id_(-1), committing_(false) {
-}
+    : backing_store_(backing_store),
+      database_id_(-1),
+      committing_(false),
+      ptr_factory_(this) {}
 
 IndexedDBBackingStore::Transaction::~Transaction() {
   DCHECK(!committing_);
@@ -4215,7 +4220,7 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseOne(
     // This call will zero out new_blob_entries and new_files_to_write.
     WriteNewBlobs(&new_blob_entries, &new_files_to_write, callback);
   } else {
-    callback->Run(true);
+    return callback->Run(BlobWriteResult::SUCCESS_SYNC);
   }
 
   return leveldb::Status::OK();
@@ -4320,22 +4325,36 @@ leveldb::Status IndexedDBBackingStore::Transaction::CommitPhaseTwo() {
 class IndexedDBBackingStore::Transaction::BlobWriteCallbackWrapper
     : public IndexedDBBackingStore::BlobWriteCallback {
  public:
-  BlobWriteCallbackWrapper(IndexedDBBackingStore::Transaction* transaction,
-                           scoped_refptr<BlobWriteCallback> callback)
-      : transaction_(transaction), callback_(callback) {}
-  void Run(bool succeeded) override {
+  BlobWriteCallbackWrapper(
+      base::WeakPtr<IndexedDBBackingStore::Transaction> transaction,
+      void* tracing_end_ptr,
+      scoped_refptr<BlobWriteCallback> callback)
+      : transaction_(std::move(transaction)),
+        tracing_end_ptr_(tracing_end_ptr),
+        callback_(callback) {}
+  leveldb::Status Run(BlobWriteResult result) override {
+    DCHECK_NE(result, BlobWriteResult::SUCCESS_SYNC);
     IDB_ASYNC_TRACE_END("IndexedDBBackingStore::Transaction::WriteNewBlobs",
-                        transaction_);
-    callback_->Run(succeeded);
-    if (succeeded)  // Else it's already been deleted during rollback.
-      transaction_->chained_blob_writer_ = NULL;
+                        tracing_end_ptr_);
+    leveldb::Status leveldb_result = callback_->Run(result);
+    switch (result) {
+      case BlobWriteResult::FAILURE_ASYNC:
+        break;
+      case BlobWriteResult::SUCCESS_ASYNC:
+      case BlobWriteResult::SUCCESS_SYNC:
+        if (transaction_)
+          transaction_->chained_blob_writer_ = nullptr;
+        break;
+    }
+    return leveldb_result;
   }
 
  private:
   ~BlobWriteCallbackWrapper() override {}
   friend class base::RefCounted<IndexedDBBackingStore::BlobWriteCallback>;
 
-  IndexedDBBackingStore::Transaction* transaction_;
+  base::WeakPtr<IndexedDBBackingStore::Transaction> transaction_;
+  const void* const tracing_end_ptr_;
   scoped_refptr<BlobWriteCallback> callback_;
 
   DISALLOW_COPY_AND_ASSIGN(BlobWriteCallbackWrapper);
@@ -4358,12 +4377,11 @@ void IndexedDBBackingStore::Transaction::WriteNewBlobs(
       transaction_->Put(blob_entry_iter.first.Encode(),
                         &blob_entry_iter.second);
   }
-  // Creating the writer will start it going asynchronously.
-  chained_blob_writer_ =
-      new ChainedBlobWriterImpl(database_id_,
-                                backing_store_,
-                                new_files_to_write,
-                                new BlobWriteCallbackWrapper(this, callback));
+  // Creating the writer will start it going asynchronously. The transaction
+  // can be destructed before the callback is triggered.
+  chained_blob_writer_ = new ChainedBlobWriterImpl(
+      database_id_, backing_store_, new_files_to_write,
+      new BlobWriteCallbackWrapper(ptr_factory_.GetWeakPtr(), this, callback));
 }
 
 void IndexedDBBackingStore::Transaction::Rollback() {
@@ -4378,7 +4396,7 @@ void IndexedDBBackingStore::Transaction::Rollback() {
     chained_blob_writer_->Abort();
     chained_blob_writer_ = NULL;
   }
-  if (transaction_.get() == NULL)
+  if (!transaction_)
     return;
   transaction_->Rollback();
   transaction_ = NULL;

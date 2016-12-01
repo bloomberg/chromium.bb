@@ -37,17 +37,15 @@ scoped_refptr<IndexedDBDatabase> IndexedDBClassFactory::CreateIndexedDBDatabase(
   return new IndexedDBDatabase(name, backing_store, factory, unique_identifier);
 }
 
-IndexedDBTransaction* IndexedDBClassFactory::CreateIndexedDBTransaction(
+std::unique_ptr<IndexedDBTransaction>
+IndexedDBClassFactory::CreateIndexedDBTransaction(
     int64_t id,
-    base::WeakPtr<IndexedDBConnection> connection,
+    IndexedDBConnection* connection,
     const std::set<int64_t>& scope,
     blink::WebIDBTransactionMode mode,
     IndexedDBBackingStore::Transaction* backing_store_transaction) {
-  // The transaction adds itself to |connection|'s database's transaction
-  // coordinator, which owns the object.
-  IndexedDBTransaction* transaction = new IndexedDBTransaction(
-      id, std::move(connection), scope, mode, backing_store_transaction);
-  return transaction;
+  return std::unique_ptr<IndexedDBTransaction>(new IndexedDBTransaction(
+      id, connection, scope, mode, backing_store_transaction));
 }
 
 scoped_refptr<LevelDBTransaction>

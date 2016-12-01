@@ -218,7 +218,7 @@ IndexedDBFakeBackingStore::FakeTransaction::FakeTransaction(
 void IndexedDBFakeBackingStore::FakeTransaction::Begin() {}
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseOne(
     scoped_refptr<BlobWriteCallback> callback) {
-  callback->Run(true);
+  callback->Run(IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC);
   return leveldb::Status::OK();
 }
 leveldb::Status IndexedDBFakeBackingStore::FakeTransaction::CommitPhaseTwo() {

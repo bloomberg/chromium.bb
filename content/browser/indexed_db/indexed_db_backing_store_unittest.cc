@@ -375,9 +375,18 @@ class IndexedDBBackingStoreTest : public testing::Test {
 class TestCallback : public IndexedDBBackingStore::BlobWriteCallback {
  public:
   TestCallback() : called(false), succeeded(false) {}
-  void Run(bool succeeded_in) override {
+  leveldb::Status Run(IndexedDBBackingStore::BlobWriteResult result) override {
     called = true;
-    succeeded = succeeded_in;
+    switch (result) {
+      case IndexedDBBackingStore::BlobWriteResult::FAILURE_ASYNC:
+        succeeded = false;
+        break;
+      case IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC:
+      case IndexedDBBackingStore::BlobWriteResult::SUCCESS_SYNC:
+        succeeded = true;
+        break;
+    }
+    return leveldb::Status::OK();
   }
   bool called;
   bool succeeded;

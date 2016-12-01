@@ -7,16 +7,16 @@
 namespace content {
 
 IndexedDBPendingConnection::IndexedDBPendingConnection(
-    scoped_refptr<IndexedDBCallbacks> callbacks_in,
-    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks_in,
-    int child_process_id_in,
-    int64_t transaction_id_in,
-    int64_t version_in)
-    : callbacks(callbacks_in),
-      database_callbacks(database_callbacks_in),
-      child_process_id(child_process_id_in),
-      transaction_id(transaction_id_in),
-      version(version_in) {}
+    scoped_refptr<IndexedDBCallbacks> callbacks,
+    scoped_refptr<IndexedDBDatabaseCallbacks> database_callbacks,
+    int child_process_id,
+    int64_t transaction_id,
+    int64_t version)
+    : callbacks(callbacks),
+      database_callbacks(database_callbacks),
+      child_process_id(child_process_id),
+      transaction_id(transaction_id),
+      version(version) {}
 
 IndexedDBPendingConnection::IndexedDBPendingConnection(
     const IndexedDBPendingConnection& other) = default;
