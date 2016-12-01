@@ -497,7 +497,8 @@ suite('<history-list>', function() {
     });
   });
 
-  test('focus and keyboard nav', function(done) {
+  // Test is very flaky on all platforms, http://crbug.com/669227.
+  test.skip('focus and keyboard nav', function(done) {
     app.historyResult(createHistoryInfo(), TEST_HISTORY_RESULTS);
     PolymerTest.flushTasks().then(function() {
       var items = polymerSelectAll(element, 'history-item');
