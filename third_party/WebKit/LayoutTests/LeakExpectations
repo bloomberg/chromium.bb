@@ -37,6 +37,8 @@ crbug.com/301515 fast/workers/worker-terminate.html [ Leak ]
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/touch-scroll-customization.html [ Leak ]
 crbug.com/410974 virtual/scroll_customization/fast/scroll-behavior/scroll-customization/scrollstate-distribute-to-scroll-chain-descendant.html [ Leak ]
 
+crbug.com/670324 fast/speech/scripted/speechrecognition-restart-onend.html [ Leak ]
+
 # -----------------------------------------------------------------
 # Untriaged but known real leaks.
 # -----------------------------------------------------------------
