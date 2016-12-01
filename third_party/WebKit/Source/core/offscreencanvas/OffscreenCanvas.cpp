@@ -93,7 +93,10 @@ PassRefPtr<Image> OffscreenCanvas::getSourceImageForCanvas(
     const FloatSize& size) const {
   if (!m_context) {
     *status = InvalidSourceImageStatus;
-    return nullptr;
+    sk_sp<SkSurface> surface =
+        SkSurface::MakeRasterN32Premul(m_size.width(), m_size.height());
+    return surface ? StaticBitmapImage::create(surface->makeImageSnapshot())
+                   : nullptr;
   }
   if (!size.width() || !size.height()) {
     *status = ZeroSizeCanvasSourceImageStatus;
