@@ -175,7 +175,7 @@ bool OffscreenCanvas::originClean() const {
 bool OffscreenCanvas::isPaintable() const {
   if (!m_context)
     return ImageBuffer::canCreateImageBuffer(m_size);
-  return m_context->isPaintable();
+  return m_context->isPaintable() && m_size.width() && m_size.height();
 }
 
 bool OffscreenCanvas::isAccelerated() const {
