@@ -131,12 +131,19 @@ typedef struct {
 
 // Convert a global motion translation vector (which may have more bits than a
 // regular motion vector) into a motion vector
-static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm) {
+static INLINE int_mv gm_get_motion_vector(const WarpedMotionParams *gm,
+                                          int allow_hp) {
   int_mv res;
-  res.as_mv.row = (int16_t)ROUND_POWER_OF_TWO_SIGNED(gm->wmmat[1],
-                                                     WARPEDMODEL_PREC_BITS - 3);
-  res.as_mv.col = (int16_t)ROUND_POWER_OF_TWO_SIGNED(gm->wmmat[0],
-                                                     WARPEDMODEL_PREC_BITS - 3);
+  res.as_mv.row = allow_hp ? (int16_t)ROUND_POWER_OF_TWO_SIGNED(
+                                 gm->wmmat[1], WARPEDMODEL_PREC_BITS - 3)
+                           : (int16_t)ROUND_POWER_OF_TWO_SIGNED(
+                                 gm->wmmat[1], WARPEDMODEL_PREC_BITS - 2) *
+                                 2;
+  res.as_mv.col = allow_hp ? (int16_t)ROUND_POWER_OF_TWO_SIGNED(
+                                 gm->wmmat[0], WARPEDMODEL_PREC_BITS - 3)
+                           : (int16_t)ROUND_POWER_OF_TWO_SIGNED(
+                                 gm->wmmat[0], WARPEDMODEL_PREC_BITS - 2) *
+                                 2;
   return res;
 }
 
