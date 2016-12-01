@@ -255,30 +255,10 @@ class USBDevicesFormatter : public ChromePermissionMessageFormatter {
 
 }  // namespace
 
-// Convenience constructors to allow inline initialization of the permission
-// ID sets.
-// TODO(treib): Once we're allowed to use uniform initialization (and
-// std::initializer_list), get rid of this helper.
-class ChromePermissionMessageRule::PermissionIDSetInitializer
-    : public std::set<APIPermission::ID> {
- public:
-  template <typename... IDs>
-  PermissionIDSetInitializer(IDs... ids) {
-    // This effectively calls insert() with each of the ids.
-    ExpandHelper(insert(ids)...);
-  }
-
-  virtual ~PermissionIDSetInitializer() {}
-
- private:
-  template <typename... Args>
-  void ExpandHelper(Args&&...) {}
-};
-
 ChromePermissionMessageRule::ChromePermissionMessageRule(
     int message_id,
-    const PermissionIDSetInitializer& required,
-    const PermissionIDSetInitializer& optional)
+    const std::initializer_list<APIPermission::ID>& required,
+    const std::initializer_list<APIPermission::ID>& optional)
     : ChromePermissionMessageRule(
           new DefaultPermissionMessageFormatter(message_id),
           required,
@@ -286,8 +266,8 @@ ChromePermissionMessageRule::ChromePermissionMessageRule(
 
 ChromePermissionMessageRule::ChromePermissionMessageRule(
     ChromePermissionMessageFormatter* formatter,
-    const PermissionIDSetInitializer& required,
-    const PermissionIDSetInitializer& optional)
+    const std::initializer_list<APIPermission::ID>& required,
+    const std::initializer_list<APIPermission::ID>& optional)
     : required_permissions_(required),
       optional_permissions_(optional),
       formatter_(formatter) {
