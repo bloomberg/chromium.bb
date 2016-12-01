@@ -400,6 +400,8 @@ void CertificateProviderService::OnExtensionUnloaded(
 
   for (auto callback : sign_requests_.RemoveAllRequests(extension_id))
     callback.Run(net::ERR_FAILED, std::vector<uint8_t>());
+
+  pin_dialog_manager_.ExtensionUnloaded(extension_id);
 }
 
 void CertificateProviderService::GetCertificatesFromExtensions(

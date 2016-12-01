@@ -112,6 +112,8 @@ bool DefaultDelegate::DispatchSignRequestToExtension(
     return false;
 
   api_cp::SignRequest request;
+  service_->pin_dialog_manager()->AddSignRequestId(extension_id, request_id);
+  request.sign_request_id = request_id;
   switch (hash) {
     case net::SSLPrivateKey::Hash::MD5_SHA1:
       request.hash = api_cp::HASH_MD5_SHA1;

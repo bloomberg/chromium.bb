@@ -1210,6 +1210,8 @@ enum HistogramValue {
   SYSTEM_DISPLAY_TOUCHCALIBRATIONSTART,
   SYSTEM_DISPLAY_TOUCHCALIBRATIONSET,
   SYSTEM_DISPLAY_TOUCHCALIBRATIONRESET,
+  CERTIFICATEPROVIDER_REQUESTPIN,
+  CERTIFICATEPROVIDER_STOPPINREQUEST,
   // Last entry: Add new entries above, then run:
   // python tools/metrics/histograms/update_extension_histograms.py
   ENUM_BOUNDARY

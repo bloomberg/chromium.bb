@@ -19,6 +19,7 @@
 #include "base/threading/thread_checker.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_info.h"
 #include "chrome/browser/chromeos/certificate_provider/certificate_requests.h"
+#include "chrome/browser/chromeos/certificate_provider/pin_dialog_manager.h"
 #include "chrome/browser/chromeos/certificate_provider/sign_requests.h"
 #include "chrome/browser/chromeos/certificate_provider/thread_safe_certificate_map.h"
 #include "components/keyed_service/core/keyed_service.h"
@@ -150,6 +151,8 @@ class CertificateProviderService : public KeyedService {
   // corresponding notification of the ExtensionRegistry is triggered.
   void OnExtensionUnloaded(const std::string& extension_id);
 
+  PinDialogManager* pin_dialog_manager() { return &pin_dialog_manager_; }
+
  private:
   class CertKeyProviderImpl;
   class CertificateProviderImpl;
@@ -190,6 +193,10 @@ class CertificateProviderService : public KeyedService {
   // An instance of net::ClientKeyStore::CertKeyProvider that is registered at
   // the net::ClientKeyStore singleton.
   std::unique_ptr<CertKeyProviderImpl> cert_key_provider_;
+
+  // The object to manage the dialog displayed when requestPin is called by the
+  // extension.
+  PinDialogManager pin_dialog_manager_;
 
   // State about all pending sign requests.
   certificate_provider::SignRequests sign_requests_;

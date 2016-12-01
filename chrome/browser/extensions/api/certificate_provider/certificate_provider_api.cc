@@ -19,10 +19,35 @@
 #include "net/cert/x509_certificate.h"
 #include "net/ssl/ssl_private_key.h"
 
-namespace extensions {
+namespace api_cp = extensions::api::certificate_provider;
+namespace api_cpi = extensions::api::certificate_provider_internal;
 
-namespace api_cp = api::certificate_provider;
-namespace api_cpi = api::certificate_provider_internal;
+namespace {
+
+chromeos::RequestPinView::RequestPinErrorType GetErrorTypeForView(
+    api_cp::PinRequestErrorType error_type) {
+  switch (error_type) {
+    case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_INVALID_PIN:
+      return chromeos::RequestPinView::RequestPinErrorType::INVALID_PIN;
+    case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_INVALID_PUK:
+      return chromeos::RequestPinView::RequestPinErrorType::INVALID_PUK;
+    case api_cp::PinRequestErrorType::
+        PIN_REQUEST_ERROR_TYPE_MAX_ATTEMPTS_EXCEEDED:
+      return chromeos::RequestPinView::RequestPinErrorType::
+          MAX_ATTEMPTS_EXCEEDED;
+    case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_UNKNOWN_ERROR:
+      return chromeos::RequestPinView::RequestPinErrorType::UNKNOWN_ERROR;
+    case api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_NONE:
+      return chromeos::RequestPinView::RequestPinErrorType::NONE;
+  }
+
+  NOTREACHED();
+  return chromeos::RequestPinView::RequestPinErrorType::NONE;
+}
+
+}  // namespace
+
+namespace extensions {
 
 namespace {
 
@@ -33,7 +58,16 @@ const char kErrorUnknownKeyType[] = "Key type unknown.";
 const char kErrorAborted[] = "Request was aborted.";
 const char kErrorTimeout[] = "Request timed out, reply rejected.";
 
+// requestPin constants.
+const char kNoActiveDialog[] = "No active dialog from extension.";
+const char kInvalidId[] = "Invalid signRequestId";
+const char kOtherFlowInProgress[] = "Other flow in progress";
+const char kPreviousDialogActive[] = "Previous request not finished";
+const char kNoUserInput[] = "No user input received";
+
 }  // namespace
+
+const int api::certificate_provider::kMaxClosedDialogsPer10Mins = 2;
 
 CertificateProviderInternalReportCertificatesFunction::
     ~CertificateProviderInternalReportCertificatesFunction() {}
@@ -146,6 +180,152 @@ bool CertificateProviderInternalReportCertificatesFunction::
     }
   }
   return true;
+}
+
+CertificateProviderStopPinRequestFunction::
+    ~CertificateProviderStopPinRequestFunction() {}
+
+ExtensionFunction::ResponseAction
+CertificateProviderStopPinRequestFunction::Run() {
+  std::unique_ptr<api_cp::RequestPin::Params> params(
+      api_cp::RequestPin::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+  if (params->details.error_type ==
+      api_cp::PinRequestErrorType::PIN_REQUEST_ERROR_TYPE_NONE) {
+    bool dialog_closed =
+        service->pin_dialog_manager()->CloseDialog(extension_id());
+    if (!dialog_closed) {
+      // This might happen if the user closed the dialog while extension was
+      // processing the input.
+      return RespondNow(Error(kNoActiveDialog));
+    }
+
+    return RespondNow(NoArguments());
+  }
+
+  // Extension provided an error, which means it intends to notify the user with
+  // the error and not allow any more input.
+  chromeos::RequestPinView::RequestPinErrorType error_type =
+      GetErrorTypeForView(params->details.error_type);
+  chromeos::PinDialogManager::StopPinRequestResponse update_response =
+      service->pin_dialog_manager()->UpdatePinDialog(
+          extension()->id(), error_type,
+          false,  // Don't accept any input.
+          base::Bind(&CertificateProviderStopPinRequestFunction::DialogClosed,
+                     this));
+  switch (update_response) {
+    case chromeos::PinDialogManager::StopPinRequestResponse::NO_ACTIVE_DIALOG:
+      return RespondNow(Error(kNoActiveDialog));
+    case chromeos::PinDialogManager::StopPinRequestResponse::NO_USER_INPUT:
+      return RespondNow(Error(kNoUserInput));
+    case chromeos::PinDialogManager::StopPinRequestResponse::STOPPED:
+      return RespondLater();
+  }
+
+  NOTREACHED();
+  return RespondLater();
+}
+
+void CertificateProviderStopPinRequestFunction::DialogClosed(
+    const base::string16& value) {
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  Respond(NoArguments());
+  service->pin_dialog_manager()->OnPinDialogClosed();
+}
+
+CertificateProviderRequestPinFunction::
+    ~CertificateProviderRequestPinFunction() {}
+
+bool CertificateProviderRequestPinFunction::ShouldSkipQuotaLimiting() const {
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  return !service->pin_dialog_manager()->LastPinDialogClosed(extension_id());
+}
+
+void CertificateProviderRequestPinFunction::GetQuotaLimitHeuristics(
+    extensions::QuotaLimitHeuristics* heuristics) const {
+  QuotaLimitHeuristic::Config short_limit_config = {
+      api::certificate_provider::kMaxClosedDialogsPer10Mins,
+      base::TimeDelta::FromMinutes(10)};
+  heuristics->push_back(base::MakeUnique<QuotaService::TimedLimit>(
+      short_limit_config, new QuotaLimitHeuristic::SingletonBucketMapper(),
+      "MAX_PIN_DIALOGS_CLOSED_PER_10_MINUTES"));
+}
+
+ExtensionFunction::ResponseAction CertificateProviderRequestPinFunction::Run() {
+  std::unique_ptr<api_cp::RequestPin::Params> params(
+      api_cp::RequestPin::Params::Create(*args_));
+  EXTENSION_FUNCTION_VALIDATE(params);
+
+  api_cp::PinRequestType pin_request_type =
+      params->details.request_type ==
+              api_cp::PinRequestType::PIN_REQUEST_TYPE_NONE
+          ? api_cp::PinRequestType::PIN_REQUEST_TYPE_PIN
+          : params->details.request_type;
+
+  chromeos::RequestPinView::RequestPinErrorType error_type =
+      GetErrorTypeForView(params->details.error_type);
+
+  chromeos::RequestPinView::RequestPinCodeType code_type =
+      (pin_request_type == api_cp::PinRequestType::PIN_REQUEST_TYPE_PIN)
+          ? chromeos::RequestPinView::RequestPinCodeType::PIN
+          : chromeos::RequestPinView::RequestPinCodeType::PUK;
+
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+
+  int attempts_left =
+      params->details.attempts_left ? *params->details.attempts_left : -1;
+  chromeos::PinDialogManager::RequestPinResponse result =
+      service->pin_dialog_manager()->ShowPinDialog(
+          extension()->id(), extension()->name(),
+          params->details.sign_request_id, code_type, error_type, attempts_left,
+          base::Bind(&CertificateProviderRequestPinFunction::OnInputReceived,
+                     this));
+  switch (result) {
+    case chromeos::PinDialogManager::RequestPinResponse::SUCCESS:
+      return RespondLater();
+    case chromeos::PinDialogManager::RequestPinResponse::INVALID_ID:
+      return RespondNow(Error(kInvalidId));
+    case chromeos::PinDialogManager::RequestPinResponse::OTHER_FLOW_IN_PROGRESS:
+      return RespondNow(Error(kOtherFlowInProgress));
+    case chromeos::PinDialogManager::RequestPinResponse::
+        DIALOG_DISPLAYED_ALREADY:
+      return RespondNow(Error(kPreviousDialogActive));
+  }
+
+  NOTREACHED();
+  return RespondNow(Error(kPreviousDialogActive));
+}
+
+void CertificateProviderRequestPinFunction::OnInputReceived(
+    const base::string16& value) {
+  std::unique_ptr<base::ListValue> create_results(new base::ListValue());
+  chromeos::CertificateProviderService* const service =
+      chromeos::CertificateProviderServiceFactory::GetForBrowserContext(
+          browser_context());
+  DCHECK(service);
+  if (!value.empty()) {
+    api::certificate_provider::PinResponseDetails details;
+    details.user_input.reset(new std::string(value.begin(), value.end()));
+    create_results->Append(details.ToValue());
+  }
+
+  Respond(ArgumentList(std::move(create_results)));
 }
 
 CertificateProviderInternalReportSignatureFunction::
