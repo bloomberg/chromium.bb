@@ -1212,16 +1212,12 @@ int ChromeBrowserMainParts::PreCreateThreadsImpl() {
 
   // Task Scheduler initialization needs to be here for the following reasons:
   //   * After |SetupFieldTrials()|: Initialization uses variations.
-  //   * Before |SetupMetrics()|: |SetupMetrics()| uses the blocking pool. The
-  //         Task Scheduler must do any necessary redirection before then.
   //   * Near the end of |PreCreateThreads()|: The TaskScheduler needs to be
   //         created before any other threads are (by contract) but it creates
   //         threads itself so instantiating it earlier is also incorrect.
   // To maintain scoping symmetry, if this line is moved, the corresponding
   // shutdown call may also need to be moved.
   task_scheduler_util::InitializeDefaultBrowserTaskScheduler();
-
-  SetupMetrics();
 
   // ChromeOS needs ResourceBundle::InitSharedInstance to be called before this.
   // This also instantiates the IOThread which requests the metrics service and
@@ -1417,6 +1413,10 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
 
   SCOPED_UMA_HISTOGRAM_LONG_TIMER("Startup.PreMainMessageLoopRunImplLongTime");
   const base::TimeTicks start_time_step1 = base::TimeTicks::Now();
+
+  // This must occur at PreMainMessageLoopRun because |SetupMetrics()| uses the
+  // blocking pool, which is disabled until the CreateThreads phase of startup.
+  SetupMetrics();
 
 #if defined(OS_WIN)
   // Windows parental controls calls can be slow, so we do an early init here
