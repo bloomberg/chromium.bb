@@ -191,44 +191,46 @@ CGFloat kMinWidth = 320.0;
                          alignment:NSLeftTextAlignment];
   NSSize headingSize = [heading frame].size;
 
+  NSSize extraViewIconSize = NSZeroSize;
+  NSSize extraViewTextSize = NSZeroSize;
+
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
       extra_view_info = delegate_->GetExtraViewInfo();
 
-  gfx::VectorIconId resource_id = extra_view_info->resource_id;
+  if (extra_view_info) {
+    gfx::VectorIconId resource_id = extra_view_info->resource_id;
+    // The extra view icon is optional.
+    if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
+      NSImage* image = gfx::Image(gfx::CreateVectorIcon(resource_id, 16,
+                                                        gfx::kChromeIconGrey))
+                           .ToNSImage();
+      NSRect frame = NSMakeRect(0, 0, image.size.width, image.size.height);
+      iconView_ = [[[NSImageView alloc] initWithFrame:frame] autorelease];
+      [iconView_ setImage:image];
+      extraViewIconSize = frame.size;
 
-  NSSize extraViewIconSize = NSZeroSize;
-  // The extra view icon is optional.
-  if (resource_id != gfx::VectorIconId::VECTOR_ICON_NONE) {
-    NSImage* image =
-        gfx::Image(gfx::CreateVectorIcon(resource_id, 16, gfx::kChromeIconGrey))
-            .ToNSImage();
-    NSRect frame = NSMakeRect(0, 0, image.size.width, image.size.height);
-    iconView_ = [[[NSImageView alloc] initWithFrame:frame] autorelease];
-    [iconView_ setImage:image];
-    extraViewIconSize = frame.size;
-
-    [[[self window] contentView] addSubview:iconView_];
-  }
-
-  NSSize extraViewTextSize = NSZeroSize;
-  const base::string16& text = extra_view_info->text;
-  if (!text.empty()) {  // The extra view text is optional.
-    if (extra_view_info->is_text_linked) {
-      NSAttributedString* linkString =
-          [self attributedStringWithString:text
-                                  fontSize:13.0
-                                 alignment:NSLeftTextAlignment];
-      link_ = [HyperlinkButtonCell buttonWithString:linkString.string];
-      [link_ setTarget:self];
-      [link_ setAction:@selector(onButtonClicked:)];
-      [[[self window] contentView] addSubview:link_];
-      [link_ sizeToFit];
-    } else {
-      label_ = [self addTextFieldWithString:text
-                                   fontSize:13.0
-                                  alignment:NSLeftTextAlignment];
+      [[[self window] contentView] addSubview:iconView_];
     }
-    extraViewTextSize = label_ ? [label_ frame].size : [link_ frame].size;
+
+    const base::string16& text = extra_view_info->text;
+    if (!text.empty()) {  // The extra view text is optional.
+      if (extra_view_info->is_text_linked) {
+        NSAttributedString* linkString =
+            [self attributedStringWithString:text
+                                    fontSize:13.0
+                                   alignment:NSLeftTextAlignment];
+        link_ = [HyperlinkButtonCell buttonWithString:linkString.string];
+        [link_ setTarget:self];
+        [link_ setAction:@selector(onButtonClicked:)];
+        [[[self window] contentView] addSubview:link_];
+        [link_ sizeToFit];
+      } else {
+        label_ = [self addTextFieldWithString:text
+                                     fontSize:13.0
+                                    alignment:NSLeftTextAlignment];
+      }
+      extraViewTextSize = label_ ? [label_ frame].size : [link_ frame].size;
+    }
   }
 
   base::string16 cancelStr = delegate_->GetDismissButtonText();

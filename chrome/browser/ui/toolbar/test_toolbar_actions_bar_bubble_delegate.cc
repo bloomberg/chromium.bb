@@ -32,7 +32,10 @@ class TestToolbarActionsBarBubbleDelegate::DelegateImpl
   }
   std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
   GetExtraViewInfo() override {
-    return base::MakeUnique<ExtraViewInfo>(parent_->extra_view_info_);
+    if (parent_->info_)
+      return base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>(
+          *parent_->info_);
+    return nullptr;
   }
   std::string GetAnchorActionId() override { return std::string(); }
   void OnBubbleShown() override {
@@ -57,8 +60,7 @@ TestToolbarActionsBarBubbleDelegate::TestToolbarActionsBarBubbleDelegate(
       heading_(heading),
       body_(body),
       action_(action),
-      close_on_deactivate_(true) {
-}
+      close_on_deactivate_(true) {}
 
 TestToolbarActionsBarBubbleDelegate::~TestToolbarActionsBarBubbleDelegate() {
   // If the bubble didn't close, it means that it still owns the DelegateImpl,

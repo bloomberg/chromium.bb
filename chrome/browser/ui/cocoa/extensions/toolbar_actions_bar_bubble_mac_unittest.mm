@@ -6,6 +6,7 @@
 #import "base/mac/foundation_util.h"
 #import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
+#include "base/memory/ptr_util.h"
 #include "base/strings/utf_string_conversions.h"
 #import "chrome/browser/ui/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/ui/cocoa/extensions/toolbar_actions_bar_bubble_mac.h"
@@ -112,10 +113,12 @@ void ToolbarActionsBarBubbleMacTest::TestBubbleButton(
       HeadingString(), BodyString(), ActionString());
   delegate.set_dismiss_button_text(DismissString());
 
-  ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info_linked_text;
-  extra_view_info_linked_text.text = LearnMoreString();
-  extra_view_info_linked_text.is_text_linked = true;
-  delegate.set_extra_view_info(extra_view_info_linked_text);
+  std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+      extra_view_info_linked_text =
+          base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
+  extra_view_info_linked_text->text = LearnMoreString();
+  extra_view_info_linked_text->is_text_linked = true;
+  delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
   ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
   base::scoped_nsobject<WindowObserver> windowObserver(
@@ -201,10 +204,12 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     TestToolbarActionsBarBubbleDelegate delegate(
         HeadingString(), BodyString(), ActionString());
 
-    ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info_linked_text;
-    extra_view_info_linked_text.text = LearnMoreString();
-    extra_view_info_linked_text.is_text_linked = true;
-    delegate.set_extra_view_info(extra_view_info_linked_text);
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+        extra_view_info_linked_text =
+            base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
+    extra_view_info_linked_text->text = LearnMoreString();
+    extra_view_info_linked_text->is_text_linked = true;
+    delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
     delegate.set_dismiss_button_text(DismissString());
     ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
@@ -253,17 +258,35 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     chrome::testing::NSRunLoopRunAllPending();
   }
 
+  // Test with a null extra view.
+  {
+    TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
+                                                 ActionString());
+    ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
+    EXPECT_TRUE([bubble actionButton]);
+    EXPECT_FALSE([bubble iconView]);
+    EXPECT_FALSE([bubble label]);
+    EXPECT_FALSE([bubble link]);
+    EXPECT_FALSE([bubble dismissButton]);
+    EXPECT_FALSE([bubble itemList]);
+
+    [bubble close];
+    chrome::testing::NSRunLoopRunAllPending();
+  }
+
   // Test with an extra view of a (unlinked) text and icon and action button.
   {
     TestToolbarActionsBarBubbleDelegate delegate(HeadingString(), BodyString(),
                                                  ActionString());
 
-    ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info;
-    extra_view_info.resource_id = gfx::VectorIconId::BUSINESS;
-    extra_view_info.text =
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+        extra_view_info =
+            base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
+    extra_view_info->resource_id = gfx::VectorIconId::BUSINESS;
+    extra_view_info->text =
         l10n_util::GetStringUTF16(IDS_EXTENSIONS_INSTALLED_BY_ADMIN);
-    extra_view_info.is_text_linked = false;
-    delegate.set_extra_view_info(extra_view_info);
+    extra_view_info->is_text_linked = false;
+    delegate.set_extra_view_info(std::move(extra_view_info));
 
     ToolbarActionsBarBubbleMac* bubble = CreateAndShowBubble(&delegate);
     EXPECT_TRUE([bubble actionButton]);
@@ -282,10 +305,12 @@ TEST_F(ToolbarActionsBarBubbleMacTest, ToolbarActionsBarBubbleLayout) {
     TestToolbarActionsBarBubbleDelegate delegate(
         HeadingString(), BodyString(), ActionString());
 
-    ToolbarActionsBarBubbleDelegate::ExtraViewInfo extra_view_info_linked_text;
-    extra_view_info_linked_text.text = LearnMoreString();
-    extra_view_info_linked_text.is_text_linked = true;
-    delegate.set_extra_view_info(extra_view_info_linked_text);
+    std::unique_ptr<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>
+        extra_view_info_linked_text =
+            base::MakeUnique<ToolbarActionsBarBubbleDelegate::ExtraViewInfo>();
+    extra_view_info_linked_text->text = LearnMoreString();
+    extra_view_info_linked_text->is_text_linked = true;
+    delegate.set_extra_view_info(std::move(extra_view_info_linked_text));
 
     delegate.set_dismiss_button_text(DismissString());
     delegate.set_item_list_text(ItemListString());
