@@ -34,12 +34,30 @@
 #include "av1/encoder/pvq_encoder.h"
 #endif
 
+// Check if one needs to use c version subtraction.
+static int check_subtract_block_size(int w, int h) { return w < 4 || h < 4; }
+
 void av1_subtract_plane(MACROBLOCK *x, BLOCK_SIZE bsize, int plane) {
   struct macroblock_plane *const p = &x->plane[plane];
   const struct macroblockd_plane *const pd = &x->e_mbd.plane[plane];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
   const int bw = block_size_wide[plane_bsize];
   const int bh = block_size_high[plane_bsize];
+
+  if (check_subtract_block_size(bw, bh)) {
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      aom_highbd_subtract_block_c(bh, bw, p->src_diff, bw, p->src.buf,
+                                  p->src.stride, pd->dst.buf, pd->dst.stride,
+                                  x->e_mbd.bd);
+      return;
+    }
+#endif  // CONFIG_AOM_HIGHBITDEPTH
+    aom_subtract_block_c(bh, bw, p->src_diff, bw, p->src.buf, p->src.stride,
+                         pd->dst.buf, pd->dst.stride);
+
+    return;
+  }
 
 #if CONFIG_AOM_HIGHBITDEPTH
   if (x->e_mbd.cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
@@ -940,18 +958,35 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   mode = plane == 0 ? get_y_mode(xd->mi[0], block) : mbmi->uv_mode;
   av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);
+
+  if (check_subtract_block_size(tx1d_width, tx1d_height)) {
 #if CONFIG_AOM_HIGHBITDEPTH
-  if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
-    aom_highbd_subtract_block(tx1d_height, tx1d_width, src_diff, diff_stride,
-                              src, src_stride, dst, dst_stride, xd->bd);
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      aom_highbd_subtract_block_c(tx1d_height, tx1d_width, src_diff,
+                                  diff_stride, src, src_stride, dst, dst_stride,
+                                  xd->bd);
+    } else {
+      aom_subtract_block_c(tx1d_height, tx1d_width, src_diff, diff_stride, src,
+                           src_stride, dst, dst_stride);
+    }
+#else
+    aom_subtract_block_c(tx1d_height, tx1d_width, src_diff, diff_stride, src,
+                         src_stride, dst, dst_stride);
+#endif  // CONFIG_AOM_HIGHBITDEPTH
   } else {
+#if CONFIG_AOM_HIGHBITDEPTH
+    if (xd->cur_buf->flags & YV12_FLAG_HIGHBITDEPTH) {
+      aom_highbd_subtract_block(tx1d_height, tx1d_width, src_diff, diff_stride,
+                                src, src_stride, dst, dst_stride, xd->bd);
+    } else {
+      aom_subtract_block(tx1d_height, tx1d_width, src_diff, diff_stride, src,
+                         src_stride, dst, dst_stride);
+    }
+#else
     aom_subtract_block(tx1d_height, tx1d_width, src_diff, diff_stride, src,
                        src_stride, dst, dst_stride);
-  }
-#else
-  aom_subtract_block(tx1d_height, tx1d_width, src_diff, diff_stride, src,
-                     src_stride, dst, dst_stride);
 #endif  // CONFIG_AOM_HIGHBITDEPTH
+  }
 
   a = &args->ta[blk_col];
   l = &args->tl[blk_row];
