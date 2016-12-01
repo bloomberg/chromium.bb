@@ -954,7 +954,7 @@ TEST_F(AudioVideoPipelineDeviceTest, FlacPlayback_Optional) {
 TEST_F(AudioVideoPipelineDeviceTest, H264Playback) {
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePtsAndVSync);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForVideoOnly("bear.h264", true /* raw_h264 */);
   PauseBeforeEos();
   Start();
@@ -986,7 +986,7 @@ TEST_F(AudioVideoPipelineDeviceTest, Vp8Playback) {
 TEST_F(AudioVideoPipelineDeviceTest, WebmPlayback) {
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePtsAndVSync);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForFile("bear-640x360.webm");
   PauseBeforeEos();
   Start();
@@ -1138,7 +1138,7 @@ TEST_F(AudioVideoPipelineDeviceTest, FlacPlayback_WithEffectsStreams_Optional) {
 TEST_F(AudioVideoPipelineDeviceTest, H264Playback_WithEffectsStreams) {
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePtsAndVSync);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForVideoOnly("bear.h264", true /* raw_h264 */);
   PauseBeforeEos();
   AddEffectsStreams();
@@ -1173,7 +1173,7 @@ TEST_F(AudioVideoPipelineDeviceTest, Vp8Playback_WithEffectsStreams) {
 TEST_F(AudioVideoPipelineDeviceTest, WebmPlayback_WithEffectsStreams) {
   std::unique_ptr<base::MessageLoop> message_loop(new base::MessageLoop());
 
-  set_sync_type(MediaPipelineDeviceParams::kModeIgnorePtsAndVSync);
+  set_sync_type(MediaPipelineDeviceParams::kModeSyncPts);
   ConfigureForFile("bear-640x360.webm");
   PauseBeforeEos();
   AddEffectsStreams();
