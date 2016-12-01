@@ -2480,7 +2480,7 @@ class _GerritChangelistImpl(_ChangelistCodereviewBase):
       gerrit_util.DeletePendingChangeEdit(self._GetGerritHost(),
                                           self.GetIssue())
     gerrit_util.SetCommitMessage(self._GetGerritHost(), self.GetIssue(),
-                                 description)
+                                 description, notify='NONE')
 
   def CloseIssue(self):
     gerrit_util.AbandonChange(self._GetGerritHost(), self.GetIssue(), msg='')
