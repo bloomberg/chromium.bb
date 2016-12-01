@@ -5,6 +5,7 @@
 #include "chrome/browser/android/search_geolocation_disclosure_infobar_delegate.h"
 
 #include "base/memory/ptr_util.h"
+#include "base/metrics/histogram_macros.h"
 #include "chrome/browser/android/android_theme_resources.h"
 #include "chrome/browser/infobars/infobar_service.h"
 #include "chrome/browser/profiles/profile.h"
@@ -15,12 +16,29 @@
 #include "content/public/browser/web_contents.h"
 #include "ui/base/l10n/l10n_util.h"
 
+// This enum is used in histograms, and is thus append only. Do not remove or
+// re-order items.
+enum class SearchGeolocationDisclosureInfoBarDelegate::DisclosureResult {
+  IGNORED = 0,
+  SETTINGS_CLICKED,
+  DISMISSED,
+  COUNT,
+};
+
 SearchGeolocationDisclosureInfoBarDelegate::
-    ~SearchGeolocationDisclosureInfoBarDelegate() {}
+    ~SearchGeolocationDisclosureInfoBarDelegate() {
+  UMA_HISTOGRAM_ENUMERATION(
+      "GeolocationDisclosure.DisclosureResult",
+      static_cast<base::HistogramBase::Sample>(result_),
+      static_cast<base::HistogramBase::Sample>(DisclosureResult::COUNT));
+  UMA_HISTOGRAM_MEDIUM_TIMES("GeolocationDisclosure.InfoBarVisibleTime",
+                             base::Time::Now() - creation_time_);
+}
 
 // static
 void SearchGeolocationDisclosureInfoBarDelegate::Create(
-    content::WebContents* web_contents, const GURL& search_url) {
+    content::WebContents* web_contents,
+    const GURL& search_url) {
   InfoBarService* infobar_service =
       InfoBarService::FromWebContents(web_contents);
   // Add the new delegate.
@@ -47,11 +65,20 @@ bool SearchGeolocationDisclosureInfoBarDelegate::
   return false;
 }
 
+void SearchGeolocationDisclosureInfoBarDelegate::RecordSettingsClicked() {
+  result_ = DisclosureResult::SETTINGS_CLICKED;
+  // This counts as a dismissed so the dialog isn't shown again.
+  pref_service_->SetBoolean(prefs::kSearchGeolocationDisclosureDismissed, true);
+}
+
 SearchGeolocationDisclosureInfoBarDelegate::
     SearchGeolocationDisclosureInfoBarDelegate(
         content::WebContents* web_contents,
         const GURL& search_url)
-    : infobars::InfoBarDelegate(), search_url_(search_url) {
+    : infobars::InfoBarDelegate(),
+      search_url_(search_url),
+      result_(DisclosureResult::IGNORED),
+      creation_time_(base::Time::Now()) {
   pref_service_ = Profile::FromBrowserContext(web_contents->GetBrowserContext())
                       ->GetPrefs();
   base::string16 link = l10n_util::GetStringUTF16(
@@ -63,6 +90,7 @@ SearchGeolocationDisclosureInfoBarDelegate::
 }
 
 void SearchGeolocationDisclosureInfoBarDelegate::InfoBarDismissed() {
+  result_ = DisclosureResult::DISMISSED;
   pref_service_->SetBoolean(prefs::kSearchGeolocationDisclosureDismissed, true);
 }
 

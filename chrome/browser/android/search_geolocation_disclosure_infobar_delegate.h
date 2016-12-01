@@ -16,6 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
+#include "base/time/time.h"
 #include "build/build_config.h"
 #include "components/infobars/core/infobar_delegate.h"
 #include "ui/gfx/range/range.h"
@@ -40,6 +41,8 @@ class SearchGeolocationDisclosureInfoBarDelegate
   static bool IsSearchGeolocationDisclosureOpen(
       content::WebContents* web_contents);
 
+  void RecordSettingsClicked();
+
   // The translated text of the message to display.
   const base::string16& message_text() const { return message_text_; }
 
@@ -50,6 +53,8 @@ class SearchGeolocationDisclosureInfoBarDelegate
   const GURL& search_url() const { return search_url_; }
 
  private:
+  enum class DisclosureResult;
+
   explicit SearchGeolocationDisclosureInfoBarDelegate(
       content::WebContents* web_contents,
       const GURL& search_url);
@@ -71,6 +76,12 @@ class SearchGeolocationDisclosureInfoBarDelegate
 
   // The pref service to record prefs in.
   PrefService* pref_service_;
+
+  // The result of showing the disclosure.
+  DisclosureResult result_;
+
+  // The time the infobar was created.
+  base::Time creation_time_;
 
   DISALLOW_COPY_AND_ASSIGN(SearchGeolocationDisclosureInfoBarDelegate);
 };
