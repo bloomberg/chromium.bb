@@ -43,7 +43,7 @@ static void MakeAsyncCopyRequest(
       cc::CopyOutputRequest::CreateBitmapRequest(callback);
 
   const display::Display& display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(window);
   float device_scale_factor = display.device_scale_factor();
   gfx::Rect source_rect_in_pixel =
       gfx::ScaleToEnclosingRect(source_rect, device_scale_factor);

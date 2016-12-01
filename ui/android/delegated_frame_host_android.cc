@@ -17,7 +17,8 @@
 #include "ui/android/context_provider_factory.h"
 #include "ui/android/view_android.h"
 #include "ui/android/window_android_compositor.h"
-#include "ui/gfx/android/device_display_info.h"
+#include "ui/display/display.h"
+#include "ui/display/screen.h"
 #include "ui/gfx/geometry/dip_util.h"
 
 namespace ui {
@@ -214,8 +215,10 @@ void DelegatedFrameHostAndroid::UpdateBackgroundColor(SkColor color) {
 void DelegatedFrameHostAndroid::UpdateContainerSizeinDIP(
     const gfx::Size& size_in_dip) {
   container_size_in_dip_ = size_in_dip;
-  background_layer_->SetBounds(gfx::ConvertSizeToPixel(
-      gfx::DeviceDisplayInfo().GetDIPScale(), container_size_in_dip_));
+  float device_scale_factor = display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(view_).device_scale_factor();
+  background_layer_->SetBounds(
+      gfx::ConvertSizeToPixel(device_scale_factor, container_size_in_dip_));
   UpdateBackgroundLayer();
 }
 
@@ -256,7 +259,8 @@ void DelegatedFrameHostAndroid::UpdateBackgroundLayer() {
   bool background_is_drawable = false;
 
   if (current_frame_) {
-    float device_scale_factor = gfx::DeviceDisplayInfo().GetDIPScale();
+    float device_scale_factor = display::Screen::GetScreen()
+        ->GetDisplayNearestWindow(view_).device_scale_factor();
     gfx::Size content_size_in_dip = gfx::ConvertSizeToDIP(
         device_scale_factor, current_frame_->surface_size);
     background_is_drawable =

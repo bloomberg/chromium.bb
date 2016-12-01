@@ -101,6 +101,13 @@ var api = (function() {
   }
 
   /**
+   * Sets the CSS size for this page.
+   */
+  function setUiCssSize(width, height, dpr) {
+    chrome.send('setUiCssSize', [width, height, dpr]);
+  }
+
+  /**
    * Represents updates to UI element properties. Any properties set on this
    * object are relayed to an underlying native element via scene command.
    * Properties that are not set on this object are left unchanged.
@@ -306,5 +313,6 @@ var api = (function() {
     Animation: Animation,
     doAction: doAction,
     domLoaded: domLoaded,
+    setUiCssSize: setUiCssSize,
   };
 })();

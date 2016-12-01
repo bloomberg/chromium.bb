@@ -91,7 +91,7 @@ public class WindowAndroid {
     protected HashMap<Integer, String> mIntentErrors;
 
     // We track all animations over content and provide a drawing placeholder for them.
-    private HashSet<Animator> mAnimationsOverContent = new HashSet<Animator>();
+    private HashSet<Animator> mAnimationsOverContent = new HashSet<>();
     private View mAnimationPlaceholderView;
 
     private ViewGroup mKeyboardAccessoryView;
@@ -116,7 +116,7 @@ public class WindowAndroid {
         public void keyboardVisibilityChanged(boolean isShowing);
     }
     private LinkedList<KeyboardVisibilityListener> mKeyboardVisibilityListeners =
-            new LinkedList<KeyboardVisibilityListener>();
+            new LinkedList<>();
 
     private final VSyncMonitor.Listener mVSyncListener = new VSyncMonitor.Listener() {
         @Override
@@ -166,18 +166,26 @@ public class WindowAndroid {
     /**
      * @param context The application context.
      */
-    @SuppressLint("UseSparseArrays")
     public WindowAndroid(Context context) {
+        this(context, DisplayAndroid.getNonMultiDisplay(context));
+    }
+
+    /**
+     * @param context The application context.
+     * @param display
+     */
+    @SuppressLint("UseSparseArrays")
+    protected WindowAndroid(Context context, DisplayAndroid display) {
         mApplicationContext = context.getApplicationContext();
         // context does not have the same lifetime guarantees as an application context so we can't
         // hold a strong reference to it.
-        mContextRef = new WeakReference<Context>(context);
-        mOutstandingIntents = new SparseArray<IntentCallback>();
-        mIntentErrors = new HashMap<Integer, String>();
+        mContextRef = new WeakReference<>(context);
+        mOutstandingIntents = new SparseArray<>();
+        mIntentErrors = new HashMap<>();
         mVSyncMonitor = new VSyncMonitor(context, mVSyncListener);
         mAccessibilityManager = (AccessibilityManager) mApplicationContext.getSystemService(
                 Context.ACCESSIBILITY_SERVICE);
-        mDisplayAndroid = DisplayAndroid.getNonMultiDisplay(context);
+        mDisplayAndroid = display;
     }
 
     @CalledByNative
@@ -411,7 +419,7 @@ public class WindowAndroid {
      *         this is in the context of a WebView that was not created using an Activity).
      */
     public WeakReference<Activity> getActivity() {
-        return new WeakReference<Activity>(null);
+        return new WeakReference<>(null);
     }
 
     /**
@@ -614,7 +622,7 @@ public class WindowAndroid {
 
         // Clone the list in case a listener tries to remove itself during the callback.
         LinkedList<KeyboardVisibilityListener> listeners =
-                new LinkedList<KeyboardVisibilityListener>(mKeyboardVisibilityListeners);
+                new LinkedList<>(mKeyboardVisibilityListeners);
         for (KeyboardVisibilityListener listener : listeners) {
             listener.keyboardVisibilityChanged(isShowing);
         }
@@ -663,7 +671,7 @@ public class WindowAndroid {
      */
     public WeakReference<Context> getContext() {
         // Return a new WeakReference to prevent clients from releasing our internal WeakReference.
-        return new WeakReference<Context>(mContextRef.get());
+        return new WeakReference<>(mContextRef.get());
     }
 
     /**

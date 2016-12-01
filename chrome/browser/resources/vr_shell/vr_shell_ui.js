@@ -10,8 +10,10 @@ var vrShellUi = (function() {
 
   let uiRootElement = document.querySelector('#ui');
   let uiStyle = window.getComputedStyle(uiRootElement);
-  let scaleFactor = uiStyle.getPropertyValue('--scaleFactor');
   /** @const */ var ANIM_DURATION = 150;
+
+  // This value should match the one in VrShellImpl.java
+  /** @const */ var UI_DPR = 1.2;
 
   function getStyleFloat(style, property) {
     let value = parseFloat(style.getPropertyValue(property));
@@ -70,8 +72,7 @@ var vrShellUi = (function() {
       let pixelHeight = Math.ceil(rect.bottom) - pixelY;
 
       let element = new api.UiElement(pixelX, pixelY, pixelWidth, pixelHeight);
-      element.setSize(scaleFactor * pixelWidth / 1000,
-          scaleFactor * pixelHeight / 1000);
+      element.setSize(pixelWidth / 1000, pixelHeight / 1000);
 
       // Pull additional custom properties from CSS.
       let style = window.getComputedStyle(domElement);
@@ -414,6 +415,9 @@ var vrShellUi = (function() {
       this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.omnibox.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
+
+      api.setUiCssSize(uiRootElement.clientWidth, uiRootElement.clientHeight,
+          UI_DPR);
     }
 
     setSecureOrigin(secure) {

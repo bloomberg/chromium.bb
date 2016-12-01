@@ -460,8 +460,9 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
     Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
 
     // Check to see if the canvas is still the current fullscreen
-    // element once every 5 seconds.
-    m_fullscreenCheckTimer.startRepeating(5.0, BLINK_FROM_HERE);
+    // element once every 2 seconds.
+    m_fullscreenCheckTimer.startRepeating(2.0, BLINK_FROM_HERE);
+    m_reenteredFullscreen = false;
   }
 
   if (doc) {
@@ -653,18 +654,38 @@ void VRDisplay::OnDeactivate(
 }
 
 void VRDisplay::onFullscreenCheck(TimerBase*) {
+  if (!m_isPresenting) {
+    m_fullscreenCheckTimer.stop();
+    return;
+  }
   // TODO: This is a temporary measure to track if fullscreen mode has been
   // exited by the UA. If so we need to end VR presentation. Soon we won't
   // depend on the Fullscreen API to fake VR presentation, so this will
   // become unnessecary. Until that point, though, this seems preferable to
   // adding a bunch of notification plumbing to Fullscreen.
   if (!Fullscreen::isCurrentFullScreenElement(*m_layer.source())) {
-    m_isPresenting = false;
-    OnPresentChange();
-    m_fullscreenCheckTimer.stop();
-    if (!m_display)
+    // TODO(mthiesse): Due to asynchronous resizing, we might get kicked out of
+    // fullscreen when changing display parameters upon entering WebVR. So one
+    // time only, we reenter fullscreen after having left it; otherwise we exit
+    // presentation.
+    if (m_reenteredFullscreen) {
+      m_isPresenting = false;
+      OnPresentChange();
+      m_fullscreenCheckTimer.stop();
+      if (m_display)
+        m_display->ExitPresent();
       return;
-    m_display->ExitPresent();
+    }
+    m_reenteredFullscreen = true;
+    auto canvas = m_layer.source();
+    Document* doc = m_navigatorVR->document();
+    std::unique_ptr<UserGestureIndicator> gestureIndicator;
+    if (doc) {
+      gestureIndicator =
+          wrapUnique(new UserGestureIndicator(DocumentUserGestureToken::create(
+              doc, UserGestureToken::Status::PossiblyExistingGesture)));
+    }
+    Fullscreen::requestFullscreen(*canvas, Fullscreen::UnprefixedRequest);
   }
 }
 

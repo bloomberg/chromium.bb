@@ -148,6 +148,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   bool m_animationCallbackRequested;
   bool m_inAnimationFrame;
   bool m_displayBlurred;
+  bool m_reenteredFullscreen;
 
   device::mojom::blink::VRDisplayPtr m_display;
 

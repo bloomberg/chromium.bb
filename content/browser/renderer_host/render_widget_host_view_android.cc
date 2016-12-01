@@ -561,7 +561,7 @@ void RenderWidgetHostViewAndroid::GetScaledContentBitmap(
   DCHECK_LE(src_subrect.width() + src_subrect.x(), bounds.width());
   DCHECK_LE(src_subrect.height() + src_subrect.y(), bounds.height());
   const display::Display& display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
   float device_scale_factor = display.device_scale_factor();
   DCHECK_GT(device_scale_factor, 0);
   gfx::Size dst_size(
@@ -1001,7 +1001,7 @@ void RenderWidgetHostViewAndroid::CopyFromCompositingSurface(
 
   base::TimeTicks start_time = base::TimeTicks::Now();
   const display::Display& display =
-      display::Screen::GetScreen()->GetPrimaryDisplay();
+      display::Screen::GetScreen()->GetDisplayNearestWindow(GetNativeView());
   float device_scale_factor = display.device_scale_factor();
   gfx::Size dst_size_in_pixel =
       gfx::ConvertRectToPixel(device_scale_factor, gfx::Rect(dst_size)).size();

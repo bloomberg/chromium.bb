@@ -103,18 +103,21 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void SetWebVRRenderSurfaceSize(int width, int height) override;
   gvr::Sizei GetWebVRCompositorSurfaceSize() override;
 
-  void ContentSurfaceChanged(
+  void SurfacesChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      jint width,
-      jint height,
-      const base::android::JavaParamRef<jobject>& surface);
-  void UiSurfaceChanged(
+      const base::android::JavaParamRef<jobject>& content_surface,
+      const base::android::JavaParamRef<jobject>& ui_surface);
+
+  void ContentBoundsChanged(
       JNIEnv* env,
       const base::android::JavaParamRef<jobject>& object,
-      jint width,
-      jint height,
-      const base::android::JavaParamRef<jobject>& surface);
+      jint width, jint height, jfloat dpr);
+
+  void UIBoundsChanged(
+      JNIEnv* env,
+      const base::android::JavaParamRef<jobject>& object,
+      jint width, jint height, jfloat dpr);
 
   // Called from non-render thread to queue a callback onto the render thread.
   // The render thread checks for callbacks and processes them between frames.
@@ -122,6 +125,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   // Perform a UI action triggered by the javascript API.
   void DoUiAction(const UiAction action);
+
+  void SetContentCssSize(float width, float height, float dpr);
+  void SetUiCssSize(float width, float height, float dpr);
 
  private:
   ~VrShell() override;
@@ -145,6 +151,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // content::WebContentsObserver implementation.
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
+  void MainFrameWasResized(bool width_changed) override;
 
   // samplerExternalOES texture data for UI content image.
   jint ui_texture_id_ = 0;
@@ -191,11 +198,11 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   gvr::Vec3f target_point_;
   const ContentRectangle* target_element_ = nullptr;
   VrInputManager* current_input_target_ = nullptr;
-  int ui_tex_width_ = 0;
-  int ui_tex_height_ = 0;
-  int content_tex_width_ = 0;
-  int content_tex_height_ = 0;
-  gvr::Sizei content_tex_pixels_for_webvr_ = {0, 0};
+  int ui_tex_css_width_ = 0;
+  int ui_tex_css_height_ = 0;
+  int content_tex_css_width_ = 0;
+  int content_tex_css_height_ = 0;
+  gvr::Sizei content_tex_physical_size_ = {0, 0};
 
   // The pose ring buffer size must be a power of two to avoid glitches when
   // the pose index wraps around. It should be large enough to handle the

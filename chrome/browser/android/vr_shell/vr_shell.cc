@@ -141,7 +141,6 @@ blink::WebMouseEvent MakeMouseEvent(WebInputEvent::Type type,
 
   return mouse_event;
 }
-
 }  // namespace
 
 namespace vr_shell {
@@ -214,7 +213,7 @@ void VrShell::SetDelegate(JNIEnv* env,
     const base::android::JavaParamRef<jobject>& delegate) {
   base::AutoLock lock(gvr_init_lock_);
   delegate_ = VrShellDelegate::GetNativeDelegate(env, delegate);
-  if (gvr_api_) {
+  if (swap_chain_.get()) {
     main_thread_task_runner_->PostTask(
         FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
                               delegate_->GetDeviceProvider(),
@@ -232,8 +231,6 @@ enum class ViewerType {
 void VrShell::GvrInit(JNIEnv* env,
                       const JavaParamRef<jobject>& obj,
                       jlong native_gvr_api) {
-  base::AutoLock lock(gvr_init_lock_);
-
   // set the initial webvr state
   metrics_helper_->SetVRActive(true);
 
@@ -269,6 +266,7 @@ void VrShell::InitializeGl(JNIEnv* env,
                            const JavaParamRef<jobject>& obj,
                            jint content_texture_handle,
                            jint ui_texture_handle) {
+  base::AutoLock lock(gvr_init_lock_);
   CHECK(gl::GetGLImplementation() != gl::kGLImplementationNone ||
         gl::init::InitializeGLOneOff());
 
@@ -344,6 +342,13 @@ void VrShell::InitializeGl(JNIEnv* env,
   buffer_viewport_list_->GetBufferViewport(GVR_RIGHT_EYE,
                                            webvr_right_viewport_.get());
   webvr_right_viewport_->SetSourceBufferIndex(kFramePrimaryBuffer);
+
+  if (delegate_) {
+    main_thread_task_runner_->PostTask(
+        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
+                              delegate_->GetDeviceProvider(),
+                              weak_ptr_factory_.GetWeakPtr()));
+  }
 }
 
 void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
@@ -462,7 +467,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       closest_element_distance = distance_to_plane;
       Rectf pixel_rect;
       if (plane->content_quad) {
-        pixel_rect = {0, 0, content_tex_width_, content_tex_height_};
+        pixel_rect = {0, 0, content_tex_css_width_, content_tex_css_height_};
       } else {
         pixel_rect = {plane->copy_rect.x, plane->copy_rect.y,
                       plane->copy_rect.width, plane->copy_rect.height};
@@ -707,7 +712,7 @@ gvr::Sizei VrShell::GetWebVRCompositorSurfaceSize() {
   // This is a stopgap while we're using the WebVR compositor rendering path.
   // TODO(klausw,crbug.com/655722): Remove this method and member once we're
   // using a separate WebVR render surface.
-  return content_tex_pixels_for_webvr_;
+  return content_tex_physical_size_;
 }
 
 
@@ -753,12 +758,12 @@ void VrShell::DrawElements(
       copy_rect = {0, 0, 1, 1};
       texture_handle = content_texture_id_;
     } else {
-      copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_width_;
-      copy_rect.y = static_cast<float>(rect->copy_rect.y) / ui_tex_height_;
+      copy_rect.x = static_cast<float>(rect->copy_rect.x) / ui_tex_css_width_;
+      copy_rect.y = static_cast<float>(rect->copy_rect.y) / ui_tex_css_height_;
       copy_rect.width = static_cast<float>(rect->copy_rect.width) /
-          ui_tex_width_;
+          ui_tex_css_width_;
       copy_rect.height = static_cast<float>(rect->copy_rect.height) /
-          ui_tex_height_;
+          ui_tex_css_height_;
       texture_handle = ui_texture_id_;
     }
     gvr::Mat4f transform = MatrixMul(render_matrix, rect->transform.to_world);
@@ -929,46 +934,32 @@ gvr::GvrApi* VrShell::gvr_api() {
   return gvr_api_.get();
 }
 
-void VrShell::ContentSurfaceChanged(JNIEnv* env,
-                                    const JavaParamRef<jobject>& object,
-                                    jint width,
-                                    jint height,
-                                    const JavaParamRef<jobject>& surface) {
-  TRACE_EVENT0("gpu", "VrShell::ContentSurfaceChanged");
-  // If we have a delegate, must trigger "ready" callback one time only.
-  // Do so the first time we got a nonzero size. (This assumes it doesn't
-  // change, but once we get resize ability we'll no longer need this hack.)
-  // TODO(klausw,crbug.com/655722): remove when we have surface support.
-  bool delegate_not_ready = delegate_ && !content_tex_pixels_for_webvr_.width;
-
-  content_compositor_->SurfaceChanged((int)width, (int)height, surface);
-  content_tex_pixels_for_webvr_.width = width;
-  content_tex_pixels_for_webvr_.height = height;
-  float scale_factor = display::Screen::GetScreen()
-      ->GetPrimaryDisplay().device_scale_factor();
-  content_tex_width_ = width / scale_factor;
-  content_tex_height_ = height / scale_factor;
-
-  // TODO(klausw,crbug.com/655722): move this back to GvrInit once we have
-  // our own WebVR surface.
-  if (delegate_ && delegate_not_ready) {
-    main_thread_task_runner_->PostTask(
-        FROM_HERE, base::Bind(&device::GvrDeviceProvider::OnGvrDelegateReady,
-                              delegate_->GetDeviceProvider(),
-                              weak_ptr_factory_.GetWeakPtr()));
-  }
+void VrShell::SurfacesChanged(JNIEnv* env,
+                              const JavaParamRef<jobject>& object,
+                              const JavaParamRef<jobject>& content_surface,
+                              const JavaParamRef<jobject>& ui_surface) {
+  content_compositor_->SurfaceChanged(content_surface);
+  ui_compositor_->SurfaceChanged(ui_surface);
 }
 
-void VrShell::UiSurfaceChanged(JNIEnv* env,
-                               const JavaParamRef<jobject>& object,
-                               jint width,
-                               jint height,
-                               const JavaParamRef<jobject>& surface) {
-  ui_compositor_->SurfaceChanged((int)width, (int)height, surface);
-  float scale_factor = display::Screen::GetScreen()
-      ->GetPrimaryDisplay().device_scale_factor();
-  ui_tex_width_ = width / scale_factor;
-  ui_tex_height_ = height / scale_factor;
+void VrShell::ContentBoundsChanged(JNIEnv* env,
+                                   const JavaParamRef<jobject>& object,
+                                   jint width, jint height, jfloat dpr) {
+  TRACE_EVENT0("gpu", "VrShell::ContentBoundsChanged");
+  content_tex_physical_size_.width = width;
+  content_tex_physical_size_.height = height;
+  // TODO(mthiesse): Synchronize with GL thread, and update tex css size in
+  // response to MainFrameWasResized, not here.
+  content_tex_css_width_ = width / dpr;
+  content_tex_css_height_ = height / dpr;
+
+  content_compositor_->SetWindowBounds(width, height);
+}
+
+void VrShell::UIBoundsChanged(JNIEnv* env,
+                              const JavaParamRef<jobject>& object,
+                              jint width, jint height, jfloat dpr) {
+  ui_compositor_->SetWindowBounds(width, height);
 }
 
 UiScene* VrShell::GetScene() {
@@ -1033,6 +1024,25 @@ void VrShell::DoUiAction(const UiAction action) {
 void VrShell::RenderViewHostChanged(content::RenderViewHost* old_host,
                                     content::RenderViewHost* new_host) {
   new_host->GetWidget()->GetView()->SetBackgroundColor(SK_ColorTRANSPARENT);
+}
+
+void VrShell::MainFrameWasResized(bool width_changed) {
+  display::Display display = display::Screen::GetScreen()
+      ->GetDisplayNearestWindow(ui_contents_->GetNativeView());
+  // TODO(mthiesse): Synchronize with GL thread.
+  ui_tex_css_width_ = display.size().width();
+  ui_tex_css_height_ = display.size().height();
+}
+
+void VrShell::SetContentCssSize(float width, float height, float dpr) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_setContentCssSize(env, j_vr_shell_.obj(), width, height,
+                                     dpr);
+}
+
+void VrShell::SetUiCssSize(float width, float height, float dpr) {
+  JNIEnv* env = base::android::AttachCurrentThread();
+  Java_VrShellImpl_setUiCssSize(env, j_vr_shell_.obj(), width, height, dpr);
 }
 
 // ----------------------------------------------------------------------------

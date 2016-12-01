@@ -17,6 +17,7 @@ import org.chromium.base.ApplicationStatus;
 import org.chromium.base.Callback;
 import org.chromium.ui.base.AndroidPermissionDelegate;
 import org.chromium.ui.base.WindowAndroid;
+import org.chromium.ui.display.DisplayAndroid;
 
 import java.lang.ref.WeakReference;
 import java.util.Arrays;
@@ -25,12 +26,11 @@ import java.util.Arrays;
  * The class provides the WindowAndroid's implementation which requires Activity Instance. It is
  * only intended to be used when in VR.
  */
-public class VrWindowAndroid
-        extends WindowAndroid
+public class VrWindowAndroid extends WindowAndroid
         implements ApplicationStatus.ActivityStateListener {
 
-    public VrWindowAndroid(Context context) {
-        super(context);
+    public VrWindowAndroid(Context context, DisplayAndroid display) {
+        super(context, display);
         Activity activity = activityFromContext(context);
         if (activity == null) {
             throw new IllegalArgumentException("Context is not and does not wrap an Activity");

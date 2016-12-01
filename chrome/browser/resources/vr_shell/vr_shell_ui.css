@@ -7,13 +7,11 @@ html {
 }
 
 #ui {
-  --scaleFactor: 4;
   left: 0;
+  max-width: 1920px;
   position: absolute;
   top: 0;
-  transform: scale(0.25, 0.25);
   transform-origin: left top;
-  width: 400%;
 }
 
 /* This class manages the position of elements on the texture page.
@@ -30,12 +28,6 @@ html {
   justify-content: center;
 }
 
-/* Permanent security warning for WebVR. */
-#webvr-not-secure-permanent {
-  height: 128px;
-  width: 512px;
-}
-
 #webvr-not-secure-permanent .webvr-not-secure-icon {
   display: inline-block;
   margin: 20px 0;
@@ -48,11 +40,9 @@ html {
   vertical-align: middle;
 }
 
-/* This is a single-line (nowrap) short message. The width has some elasticity
- * for translations, and the underlying string had a request to translators
- * to keep it short. The maximum is based on the fixed-size container DIV,
- * excess will be clipped. There's space for about twice the length of the
- * English "Not secure" message. */
+/* This is a single-line (nowrap) short message. The width is elastic for
+ * translations, and the underlying string had a request to translators
+ * to keep it short. */
 #webvr-not-secure-permanent .webvr-box {
   background-color: white;
   border-radius: 6px;
@@ -61,22 +51,13 @@ html {
   color: #444;
   font-size: 26px;
   height: 78px;
-  max-width: 472px;
   min-width: 226px;
   overflow: hidden;
   padding: 0 20px;
   white-space: nowrap;
 }
 
-/* Transient security warning for WebVR. */
-#webvr-not-secure-transient {
-  height: 256px;
-  width: 512px;
-}
-
-/* This uses fixed width but the height has some elasticity for translations.
- * The maximum is based on the fixed-size container DIV, excess will be
- * clipped. */
+/* This uses fixed width but the height is elastic for translations. */
 #webvr-not-secure-transient > div {
   background-color: rgba(26, 26, 26, 0.8);
   border-radius: 6px;
@@ -87,7 +68,6 @@ html {
   font-size: 26px;
   justify-content: center;
   line-height: 1.4;
-  max-height: 210px;
   min-height: 160px;
   overflow: hidden;
   padding: 20px;
@@ -143,6 +123,9 @@ html {
   --tranX: 0;
   --tranY: -0.65;
   --tranZ: -1.2;
+  height: 164px;
+  overflow: hidden;
+  width: 512px;
 }
 
 #omni {
@@ -156,6 +139,7 @@ html {
   margin-bottom: 60px;
   margin-top: 0;
   opacity: 1;
+  overflow: hidden;
   transition: opacity 500ms ease, margin-top 500ms ease;
   white-space: nowrap;
   width: 512px;
