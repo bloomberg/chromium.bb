@@ -440,7 +440,7 @@ column-width interpolable, converter=convertComputedLength<float>, custom_all
 -webkit-user-drag
 -webkit-user-modify inherited
 user-select inherited
-white-space inherited
+white-space inherited, independent
 widows interpolable, inherited, type_name=short
 width interpolable, initial=initialSize, converter=convertLengthSizing, typedom_types=[Length], keywords=[auto], supports_percentage
 will-change custom_all

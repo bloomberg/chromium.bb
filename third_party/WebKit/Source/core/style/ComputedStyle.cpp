@@ -239,6 +239,8 @@ void ComputedStyle::propagateIndependentInheritedProperties(
     setPointerEvents(parentStyle.pointerEvents());
   if (m_nonInheritedData.m_isVisibilityInherited)
     setVisibility(parentStyle.visibility());
+  if (m_nonInheritedData.m_isWhiteSpaceInherited)
+    setWhiteSpace(parentStyle.whiteSpace());
 }
 
 StyleSelfAlignmentData resolvedSelfAlignment(
@@ -426,6 +428,8 @@ void ComputedStyle::copyNonInheritedFromCached(const ComputedStyle& other) {
       other.m_nonInheritedData.m_isPointerEventsInherited;
   m_nonInheritedData.m_isVisibilityInherited =
       other.m_nonInheritedData.m_isVisibilityInherited;
+  m_nonInheritedData.m_isWhiteSpaceInherited =
+      other.m_nonInheritedData.m_isWhiteSpaceInherited;
 
   if (m_svgStyle != other.m_svgStyle)
     m_svgStyle.access()->copyNonInheritedFromCached(other.m_svgStyle.get());

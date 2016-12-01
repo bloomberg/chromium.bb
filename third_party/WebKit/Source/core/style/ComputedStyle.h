@@ -210,7 +210,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
       // These must match the properties tagged 'independent' in
       // CSSProperties.in.
       // TODO(sashab): Generate this function.
-      return (m_pointerEvents == other.m_pointerEvents);
+      return (m_pointerEvents == other.m_pointerEvents) &&
+             (m_whiteSpace == other.m_whiteSpace);
     }
 
     inline bool compareEqualNonIndependent(const InheritedData& other) const {
@@ -219,7 +220,6 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
              (m_hasSimpleUnderline == other.m_hasSimpleUnderline) &&
              (m_cursorStyle == other.m_cursorStyle) &&
              (m_direction == other.m_direction) &&
-             (m_whiteSpace == other.m_whiteSpace) &&
              (m_borderCollapse == other.m_borderCollapse) &&
              (m_boxDirection == other.m_boxDirection) &&
              (m_rtlOrdering == other.m_rtlOrdering) &&
@@ -348,6 +348,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // InheritedFlags
     unsigned m_isPointerEventsInherited : 1;
     unsigned m_isVisibilityInherited : 1;
+    unsigned m_isWhiteSpaceInherited : 1;
 
     // If you add more style bits here, you will also need to update
     // ComputedStyle::copyNonInheritedFromCached() 68 bits
@@ -406,6 +407,7 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
     // All independently inherited properties default to being inherited.
     m_nonInheritedData.m_isPointerEventsInherited = true;
     m_nonInheritedData.m_isVisibilityInherited = true;
+    m_nonInheritedData.m_isWhiteSpaceInherited = true;
   }
 
  private:
@@ -2282,6 +2284,9 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
   void setWhiteSpace(EWhiteSpace v) {
     m_inheritedData.m_whiteSpace = static_cast<unsigned>(v);
+  }
+  void setWhiteSpaceIsInherited(bool isInherited) {
+    m_nonInheritedData.m_isWhiteSpaceInherited = isInherited;
   }
 
   // word-break inherited (aka -epub-word-break)
