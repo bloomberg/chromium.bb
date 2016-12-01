@@ -177,18 +177,6 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   friend struct base::DefaultLazyInstanceTraits<AVDACodecAllocator>;
   friend class AVDACodecAllocatorTest;
 
-  // Things that our unit test needs.  We guarantee that we'll access none of
-  // it, from any thread, after we are destructed.
-  struct TestInformation {
-    TestInformation();
-    ~TestInformation();
-    // Optional clock source.
-    std::unique_ptr<base::TickClock> tick_clock_;
-
-    // Optional event that we'll signal when stopping the AUTO_CODEC thread.
-    std::unique_ptr<base::WaitableEvent> stop_event_;
-  };
-
   struct OwnerRecord {
     AVDACodecAllocatorClient* owner = nullptr;
     AVDACodecAllocatorClient* waiter = nullptr;
@@ -220,8 +208,9 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
     HangDetector hang_detector;
   };
 
-  // |test_info| is owned by the unit test.
-  AVDACodecAllocator(TestInformation* test_info = nullptr);
+  // |tick_clock| and |stop_event| are for tests only.
+  AVDACodecAllocator(base::TickClock* tick_clock = nullptr,
+                     base::WaitableEvent* stop_event = nullptr);
   ~AVDACodecAllocator();
 
   void OnMediaCodecAndSurfaceReleased(int surface_id);
@@ -245,8 +234,7 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
 
   base::ThreadChecker thread_checker_;
 
-  // Optional, used for unit testing.  We do not own this.
-  TestInformation* test_info_;
+  base::WaitableEvent* stop_event_for_testing_;
 
   // For canceling pending StopThreadTask()s.
   base::WeakPtrFactory<AVDACodecAllocator> weak_this_factory_;

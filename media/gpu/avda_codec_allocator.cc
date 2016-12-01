@@ -49,9 +49,6 @@ void DeleteMediaCodecAndSignal(std::unique_ptr<VideoCodecBridge> codec,
 CodecConfig::CodecConfig() {}
 CodecConfig::~CodecConfig() {}
 
-AVDACodecAllocator::TestInformation::TestInformation() {}
-AVDACodecAllocator::TestInformation::~TestInformation() {}
-
 AVDACodecAllocator::HangDetector::HangDetector(base::TickClock* tick_clock)
     : tick_clock_(tick_clock) {}
 
@@ -120,6 +117,13 @@ void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   clients_.erase(client);
+  if (!clients_.empty()) {
+    // If we aren't stopping, then signal immediately.
+    if (stop_event_for_testing_)
+      stop_event_for_testing_->Signal();
+    return;
+  }
+
   // Post a task to stop the thread through the thread's task runner and back
   // to this thread. This ensures that all pending tasks are run first. If the
   // thread is hung we don't post a task to avoid leaking an unbounded number
@@ -128,23 +132,15 @@ void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
   // guaranteed to not run StopThreadTask() when the thread is hung because if
   // an AVDA queues tasks after DoNothing(), the StopThreadTask() reply will
   // be canceled by invalidating its weak pointer.
-  base::WaitableEvent* event =
-      (test_info_ ? test_info_->stop_event_.get() : nullptr);
-  if (!clients_.empty()) {
-    // If we aren't stopping, then signal immediately.
-    if (event)
-      event->Signal();
-    return;
-  }
-
   for (size_t i = 0; i < threads_.size(); i++) {
     if (threads_[i]->thread.IsRunning() &&
         !threads_[i]->hang_detector.IsThreadLikelyHung()) {
       threads_[i]->thread.task_runner()->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing),
-          base::Bind(&AVDACodecAllocator::StopThreadTask,
-                     weak_this_factory_.GetWeakPtr(), i,
-                     (i == TaskType::AUTO_CODEC ? event : nullptr)));
+          base::Bind(
+              &AVDACodecAllocator::StopThreadTask,
+              weak_this_factory_.GetWeakPtr(), i,
+              (i == TaskType::AUTO_CODEC ? stop_event_for_testing_ : nullptr)));
     }
   }
 }
@@ -370,21 +366,17 @@ base::Thread& AVDACodecAllocator::GetThreadForTesting(TaskType task_type) {
   return threads_[task_type]->thread;
 }
 
-AVDACodecAllocator::AVDACodecAllocator(TestInformation* test_info)
-    : test_info_(test_info), weak_this_factory_(this) {
-  // If we're not provided with one, use real time.
-  // Note that we'll leak this, but that's okay since we're a singleton.
-  base::TickClock* tick_clock = nullptr;
-  if (!test_info_)
-    tick_clock = new base::DefaultTickClock();
-  else
-    tick_clock = test_info_->tick_clock_.get();
+AVDACodecAllocator::AVDACodecAllocator(base::TickClock* tick_clock,
+                                       base::WaitableEvent* stop_event)
+    : stop_event_for_testing_(stop_event), weak_this_factory_(this) {
+  // We leak the clock we create, but that's okay because we're a singleton.
+  auto clock = tick_clock ? tick_clock : new base::DefaultTickClock();
 
   // Create threads with names / indices that match up with TaskType.
   DCHECK_EQ(threads_.size(), TaskType::AUTO_CODEC);
-  threads_.push_back(new ThreadAndHangDetector("AVDAAutoThread", tick_clock));
+  threads_.push_back(new ThreadAndHangDetector("AVDAAutoThread", clock));
   DCHECK_EQ(threads_.size(), TaskType::SW_CODEC);
-  threads_.push_back(new ThreadAndHangDetector("AVDASWThread", tick_clock));
+  threads_.push_back(new ThreadAndHangDetector("AVDASWThread", clock));
 }
 
 AVDACodecAllocator::~AVDACodecAllocator() {

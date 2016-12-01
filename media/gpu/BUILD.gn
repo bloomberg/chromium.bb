@@ -408,6 +408,7 @@ source_set("android_video_decode_accelerator_unittests") {
     ]
     deps = [
       ":gpu",
+      "//base/test:test_support",
       "//gpu:test_support",
       "//media/base/android",
       "//testing/gmock",
