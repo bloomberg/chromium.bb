@@ -35,12 +35,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ash_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "aura_unittests"
       },
       {
@@ -248,15 +242,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "keyboard_unittests"
-      },
-      {
-        "args": [
-          "--override-use-gl-with-osmesa-for-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mash_unittests"
       },
       {
         "swarming": {
@@ -557,12 +542,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ash_content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_unittests"
       },
       {
         "swarming": {
@@ -1022,12 +1001,6 @@
         "swarming": {
           "can_use_on_swarming_builders": true
         },
-        "test": "ash_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
         "test": "aura_unittests"
       },
       {
@@ -1241,15 +1214,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "keyboard_unittests"
-      },
-      {
-        "args": [
-          "--override-use-gl-with-osmesa-for-tests"
-        ],
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "mash_unittests"
       },
       {
         "swarming": {
@@ -1504,12 +1468,6 @@
           "can_use_on_swarming_builders": true
         },
         "test": "ash_content_unittests"
-      },
-      {
-        "swarming": {
-          "can_use_on_swarming_builders": true
-        },
-        "test": "ash_unittests"
       },
       {
         "swarming": {
