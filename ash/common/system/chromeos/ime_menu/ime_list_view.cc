@@ -144,6 +144,12 @@ class ImeListItemView : public ActionableView {
     return true;
   }
 
+  void OnFocus() override {
+    ActionableView::OnFocus();
+    if (ime_list_view_ && ime_list_view_->scroll_content())
+      ime_list_view_->scroll_content()->ScrollRectToVisible(bounds());
+  }
+
   // views::View:
   void OnNativeThemeChanged(const ui::NativeTheme* theme) override {
     UpdateStyle();
