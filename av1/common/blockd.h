@@ -825,6 +825,11 @@ static INLINE TX_SIZE get_uv_tx_size(const MB_MODE_INFO *mbmi,
     return uvsupertx_size_lookup[txsize_sqr_map[mbmi->tx_size]]
                                 [pd->subsampling_x][pd->subsampling_y];
 #endif  // CONFIG_SUPERTX
+
+#if CONFIG_CB4X4
+  assert(mbmi->tx_size > TX_2X2);
+#endif
+
   uv_txsize = uv_txsize_lookup[mbmi->sb_type][mbmi->tx_size][pd->subsampling_x]
                               [pd->subsampling_y];
   assert(uv_txsize != TX_INVALID);
