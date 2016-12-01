@@ -25,9 +25,9 @@ class CHROMEOS_EXPORT FakeAuthPolicyClient : public AuthPolicyClient {
                     const std::string& user,
                     int password_fd,
                     const JoinCallback& callback) override;
-  void RefreshDevicePolicy(const RefreshPolicyCallback& calllback) override;
+  void RefreshDevicePolicy(const RefreshPolicyCallback& callback) override;
   void RefreshUserPolicy(const std::string& account_id,
-                         const RefreshPolicyCallback& calllback) override;
+                         const RefreshPolicyCallback& callback) override;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FakeAuthPolicyClient);

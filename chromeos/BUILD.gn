@@ -30,6 +30,7 @@ component("chromeos") {
     "//base",
     "//base:i18n",
     "//base/third_party/dynamic_annotations",
+    "//chrome/browser/chromeos:device_policy_proto",
     "//components/device_event_log",
     "//components/onc",
     "//components/policy/proto",
