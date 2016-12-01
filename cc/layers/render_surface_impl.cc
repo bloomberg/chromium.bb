@@ -35,6 +35,7 @@ RenderSurfaceImpl::RenderSurfaceImpl(LayerImpl* owning_layer)
     : owning_layer_(owning_layer),
       layer_tree_impl_(owning_layer->layer_tree_impl()),
       stable_effect_id_(owning_layer->id()),
+      effect_tree_index_(EffectTree::kInvalidNodeId),
       surface_property_changed_(false),
       ancestor_property_changed_(false),
       contributes_to_drawn_surface_(false),
@@ -159,8 +160,10 @@ int RenderSurfaceImpl::ClipTreeIndex() const {
 }
 
 int RenderSurfaceImpl::EffectTreeIndex() const {
-  return layer_tree_impl_->property_trees()
-      ->effect_id_to_index_map[stable_effect_id_];
+  DCHECK_EQ(effect_tree_index_,
+            layer_tree_impl_->property_trees()
+                ->effect_id_to_index_map[stable_effect_id_]);
+  return effect_tree_index_;
 }
 
 const EffectNode* RenderSurfaceImpl::OwningEffectNode() const {

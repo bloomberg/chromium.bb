@@ -1071,8 +1071,11 @@ void ComputeVisibleRects(LayerImpl* root_layer,
                                 can_render_to_separate_surface, layer);
     EffectNode* node =
         property_trees->effect_tree.Node(layer->effect_tree_index());
-    if (node->owner_id == layer->id())
+    if (node->owner_id == layer->id()) {
       node->render_surface = layer->render_surface();
+      if (node->render_surface)
+        node->render_surface->set_effect_tree_index(node->id);
+    }
 #if DCHECK_IS_ON()
     if (can_render_to_separate_surface)
       ValidateRenderSurfaceForLayer(layer);

@@ -152,6 +152,8 @@ class CC_EXPORT RenderSurfaceImpl {
 
   int TransformTreeIndex() const;
   int ClipTreeIndex() const;
+
+  void set_effect_tree_index(int index) { effect_tree_index_ = index; }
   int EffectTreeIndex() const;
 
  private:
@@ -164,6 +166,7 @@ class CC_EXPORT RenderSurfaceImpl {
 
   LayerTreeImpl* layer_tree_impl_;
   int stable_effect_id_;
+  int effect_tree_index_;
 
   // Container for properties that render surfaces need to compute before they
   // can be drawn.

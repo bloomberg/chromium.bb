@@ -39,16 +39,23 @@ TEST(RenderSurfaceTest, VerifySurfaceChangesAreTrackedProperly) {
 
   FakeImplTaskRunnerProvider task_runner_provider;
   TestTaskGraphRunner task_graph_runner;
+  std::unique_ptr<CompositorFrameSink> compositor_frame_sink =
+      FakeCompositorFrameSink::Create3d();
   FakeLayerTreeHostImpl host_impl(&task_runner_provider, &task_graph_runner);
   std::unique_ptr<LayerImpl> owning_layer =
       LayerImpl::Create(host_impl.active_tree(), 1);
-  owning_layer->SetHasRenderSurface(true);
-  ASSERT_TRUE(owning_layer->render_surface());
-  RenderSurfaceImpl* render_surface = owning_layer->render_surface();
+  owning_layer->test_properties()->force_render_surface = true;
   gfx::Rect test_rect(3, 4, 5, 6);
   host_impl.active_tree()->ResetAllChangeTracking();
   host_impl.active_tree()->SetRootLayerForTesting(std::move(owning_layer));
-  host_impl.active_tree()->BuildPropertyTreesForTesting();
+  host_impl.SetVisible(true);
+  host_impl.InitializeRenderer(compositor_frame_sink.get());
+  host_impl.active_tree()->BuildLayerListAndPropertyTreesForTesting();
+  host_impl.active_tree()->UpdateDrawProperties(false /* update_lcd_text */);
+
+  RenderSurfaceImpl* render_surface =
+      host_impl.active_tree()->root_layer_for_testing()->render_surface();
+  ASSERT_TRUE(render_surface);
 
   // Currently, the content_rect, clip_rect, and
   // owning_layer->layerPropertyChanged() are the only sources of change.
