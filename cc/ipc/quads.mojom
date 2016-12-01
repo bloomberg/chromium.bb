@@ -63,6 +63,7 @@ struct SurfaceQuadState {
 
 struct TextureQuadState {
   uint32 resource_id;
+  gfx.mojom.Size resource_size_in_pixels;
   bool premultiplied_alpha;
   gfx.mojom.PointF uv_top_left;
   gfx.mojom.PointF uv_bottom_right;

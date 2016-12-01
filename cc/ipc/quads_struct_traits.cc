@@ -113,8 +113,15 @@ bool StructTraits<cc::mojom::TextureQuadStateDataView, cc::DrawQuad>::Read(
     cc::mojom::TextureQuadStateDataView data,
     cc::DrawQuad* out) {
   cc::TextureDrawQuad* quad = static_cast<cc::TextureDrawQuad*>(out);
+
   quad->resources.ids[cc::TextureDrawQuad::kResourceIdIndex] =
       data.resource_id();
+  if (!data.ReadResourceSizeInPixels(
+          &quad->overlay_resources
+               .size_in_pixels[cc::TextureDrawQuad::kResourceIdIndex])) {
+    return false;
+  }
+
   quad->resources.count = 1;
   quad->premultiplied_alpha = data.premultiplied_alpha();
   if (!data.ReadUvTopLeft(&quad->uv_top_left) ||

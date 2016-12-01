@@ -247,6 +247,11 @@ struct StructTraits<cc::mojom::TextureQuadStateDataView, cc::DrawQuad> {
     return quad->resource_id();
   }
 
+  static const gfx::Size& resource_size_in_pixels(const cc::DrawQuad& input) {
+    const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
+    return quad->resource_size_in_pixels();
+  }
+
   static bool premultiplied_alpha(const cc::DrawQuad& input) {
     const cc::TextureDrawQuad* quad = cc::TextureDrawQuad::MaterialCast(&input);
     return quad->premultiplied_alpha;

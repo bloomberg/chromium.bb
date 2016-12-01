@@ -472,9 +472,12 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   const bool y_flipped = true;
   const bool nearest_neighbor = true;
   const bool secure_output_only = true;
+  const bool needs_blending = true;
+  const gfx::Size resource_size_in_pixels5(1234, 5678);
   TextureDrawQuad* texture_draw_quad =
       render_pass->CreateAndAppendDrawQuad<TextureDrawQuad>();
-  texture_draw_quad->SetNew(sqs, rect5, rect5, rect5, resource_id5,
+  texture_draw_quad->SetAll(sqs, rect5, rect5, rect5, needs_blending,
+                            resource_id5, resource_size_in_pixels5,
                             premultiplied_alpha, uv_top_left, uv_bottom_right,
                             background_color, vertex_opacity, y_flipped,
                             nearest_neighbor, secure_output_only);
@@ -539,7 +542,10 @@ TEST_F(StructTraitsTest, QuadListBasic) {
   EXPECT_EQ(rect5, out_texture_draw_quad->rect);
   EXPECT_EQ(rect5, out_texture_draw_quad->opaque_rect);
   EXPECT_EQ(rect5, out_texture_draw_quad->visible_rect);
+  EXPECT_EQ(needs_blending, out_texture_draw_quad->needs_blending);
   EXPECT_EQ(resource_id5, out_texture_draw_quad->resource_id());
+  EXPECT_EQ(resource_size_in_pixels5,
+            out_texture_draw_quad->resource_size_in_pixels());
   EXPECT_EQ(premultiplied_alpha, out_texture_draw_quad->premultiplied_alpha);
   EXPECT_EQ(uv_top_left, out_texture_draw_quad->uv_top_left);
   EXPECT_EQ(uv_bottom_right, out_texture_draw_quad->uv_bottom_right);
