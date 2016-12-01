@@ -212,7 +212,7 @@ making sure to incorporate coverage for all writing modes when appropriate.
 
 Values are generally transformed into flipped block-flow coordinates via a set
 of methods on the involved layout objects. See in particular
-`flipForWritingMode()`, `flipForWritingModeForChild()`, and `topLeftLocation()`.
+`flipForWritingMode()`, `flipForWritingModeForChild()`.
 
 `InlineBox::flipForWritingMode()` variants flip the input value within the
 inline box's containing block.
@@ -225,9 +225,21 @@ the referenced box, offsetting for the specified child box's current x-position
 and width. This is useful for a common pattern wherein we build up a point
 location starting with the current location of the (child) box.
 
-`LayoutBox::topLeftLocation()` performs flipping as needed. If the containing
-block is not passed to the method, looking it up requires walking up the layout
-tree, which can be expensive.
+For `LayoutBox` and `InlineBox` classes and subclasses:
+
+* `physicalLocation()` returns the physical location of a box or inline in the
+containing block. `(0,0)` is the top-left corner of the containing
+block. Flipping is performed on the values as needed. For `LayoutBox`, if the
+containing block is not passed to `physicalLocation()`, looking it up requires
+walking up the layout tree, which can be
+expensive. `InlineBox::physicalLocation()` is expensive only if the `InlineBox`
+is in flipped block-flow writing mode.
+* `location()` returns the location of a box or inline in the "physical
+coordinates with flipped block-flow direction" coordinate space. `(0,0)` is the
+top-left corner of the containing block for `writing-mode` in normal blocks
+direction (`horizontal-tb` and `vertical-lr`), and is the top-right corner of
+the containing block for `writing-mode` in flipped block-flow direction
+(`vertical-rl`).
 
 Note there are two primary similar, but slightly different, methods regarding
 finding the containing block for an element:
@@ -237,7 +249,7 @@ defined by CSS.
 * `LayoutObject::containingBlock()` which returns the enclosing non-anonymous
 block for an element. If the containing block is a relatively positioned inline,
 it returns that inline's enclosing non-anonymous block. This is the one used by
-`topLeftLocation()`.
+`physicalLocation()`.
 
 There are other containing block methods in `LayoutObject` for special purposes
 such as fixed position, absolute position, and paint invalidation.  Code will

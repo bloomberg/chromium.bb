@@ -220,7 +220,7 @@ class CORE_EXPORT InlineBox : public DisplayItemClient {
 
   // x() is the location of the box in the containing block's "physical
   // coordinates with flipped block-flow direction".
-  // See../README.md#Coordinate-Spaces for the definition.
+  // See ../README.md#Coordinate-Spaces for the definition.
   void setX(LayoutUnit x) { m_location.setX(x); }
   LayoutUnit x() const { return m_location.x(); }
 
