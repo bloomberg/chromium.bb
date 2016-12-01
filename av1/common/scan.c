@@ -14,6 +14,12 @@
 #include "av1/common/common_data.h"
 #include "av1/common/scan.h"
 
+#if CONFIG_CB4X4
+DECLARE_ALIGNED(16, static const int16_t, default_scan_2x2[4]) = {
+  0, 1, 2, 3,
+};
+#endif
+
 DECLARE_ALIGNED(16, static const int16_t, default_scan_4x4[16]) = {
   0, 4, 1, 5, 8, 2, 12, 9, 3, 6, 13, 10, 7, 14, 11, 15,
 };
@@ -1322,6 +1328,13 @@ DECLARE_ALIGNED(16, static const int16_t, default_scan_64x64[4096]) = {
   4095,
 };
 #endif  // CONFIG_TX64X64
+
+#if CONFIG_CB4X4
+DECLARE_ALIGNED(16, static const int16_t,
+                default_scan_2x2_neighbors[5 * MAX_NEIGHBORS]) = {
+  0, 0, 0, 0, 0, 1, 1, 2, 0, 0,
+};
+#endif
 
 // Neighborhood 2-tuples for various scans and blocksizes,
 // in {top, left} order for each position in corresponding scan order.
@@ -3780,6 +3793,11 @@ DECLARE_ALIGNED(16, static const int16_t,
 };
 #endif  // CONFIG_TX64X64
 
+#if CONFIG_CB4X4
+DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_2x2[4]) = { 0, 1, 2,
+                                                                        3 };
+#endif
+
 DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_4x4[16]) = {
   0, 2, 5, 8, 1, 3, 9, 12, 4, 7, 11, 14, 6, 10, 13, 15,
 };
@@ -5086,7 +5104,7 @@ DECLARE_ALIGNED(16, static const int16_t, av1_default_iscan_64x64[4096]) = {
 
 const SCAN_ORDER av1_default_scan_orders[TX_SIZES] = {
 #if CONFIG_CB4X4
-  { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+  { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
 #endif
   { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
   { default_scan_8x8, av1_default_iscan_8x8, default_scan_8x8_neighbors },
@@ -5101,10 +5119,10 @@ const SCAN_ORDER av1_intra_scan_orders[TX_SIZES][TX_TYPES] = {
 #if CONFIG_CB4X4
   {
       // TX_2X2
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { row_scan_4x4, av1_row_iscan_4x4, row_scan_4x4_neighbors },
-      { col_scan_4x4, av1_col_iscan_4x4, col_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
 #if CONFIG_EXT_TX
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
