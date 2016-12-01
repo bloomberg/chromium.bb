@@ -419,7 +419,8 @@ static void build_masked_compound_wedge_highbd(
   // pass in subsampling factors directly.
   const int subh = (2 << b_height_log2_lookup[sb_type]) == h;
   const int subw = (2 << b_width_log2_lookup[sb_type]) == w;
-  const uint8_t *mask = av1_get_compound_type_mask(comp_data, sb_type, 0);
+  const uint8_t *mask =
+      av1_get_contiguous_soft_mask(wedge_index, wedge_sign, sb_type);
   aom_highbd_blend_a64_mask(dst_8, dst_stride, src0_8, src0_stride, src1_8,
                             src1_stride, mask, block_size_wide[sb_type], h, w,
                             subh, subw, bd);
