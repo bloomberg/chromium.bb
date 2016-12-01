@@ -217,21 +217,24 @@ void PPB_Audio_Shared::CallRun(void* self) {
 }
 
 void PPB_Audio_Shared::Run() {
-  int pending_data = 0;
-  while (sizeof(pending_data) ==
-         socket_->Receive(&pending_data, sizeof(pending_data))) {
+  int control_signal = 0;
+  while (sizeof(control_signal) ==
+         socket_->Receive(&control_signal, sizeof(control_signal))) {
     // |buffer_index_| must track the number of Receive() calls.  See the Send()
     // call below for why this is important.
     ++buffer_index_;
-    if (pending_data < 0)
+    if (control_signal < 0)
       break;
 
     {
       TRACE_EVENT0("audio", "PPB_Audio_Shared::FireRenderCallback");
-      PP_TimeDelta latency =
-          static_cast<double>(pending_data) / bytes_per_second_;
-      callback_.Run(
-          client_buffer_.get(), client_buffer_size_bytes_, latency, user_data_);
+      media::AudioOutputBuffer* buffer =
+          reinterpret_cast<media::AudioOutputBuffer*>(shared_memory_->memory());
+      base::TimeDelta delay =
+          base::TimeDelta::FromMicroseconds(buffer->params.delay);
+
+      callback_.Run(client_buffer_.get(), client_buffer_size_bytes_,
+                    delay.InSecondsF(), user_data_);
     }
 
     // Deinterleave the audio data into the shared memory as floats.

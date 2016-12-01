@@ -18,6 +18,7 @@
 #include "build/build_config.h"
 #include "content/browser/renderer_host/media/media_stream_manager.h"
 #include "content/public/common/content_switches.h"
+#include "media/audio/audio_device_thread.h"
 #include "media/base/audio_parameters.h"
 
 using media::AudioBus;
@@ -140,20 +141,41 @@ std::unique_ptr<AudioSyncReader> AudioSyncReader::Create(
 }
 
 // media::AudioOutputController::SyncReader implementations.
-void AudioSyncReader::UpdatePendingBytes(uint32_t bytes,
-                                         uint32_t frames_skipped) {
-  // Increase the number of skipped frames stored in shared memory. We don't
-  // send it over the socket since sending more than 4 bytes might lead to being
-  // descheduled. The reading side will zero it when consumed.
+void AudioSyncReader::RequestMoreData(base::TimeDelta delay,
+                                      base::TimeTicks delay_timestamp,
+                                      int prior_frames_skipped) {
+  // We don't send arguments over the socket since sending more than 4
+  // bytes might lead to being descheduled. The reading side will zero
+  // them when consumed.
   AudioOutputBuffer* buffer =
       reinterpret_cast<AudioOutputBuffer*>(shared_memory_->memory());
-  buffer->params.frames_skipped += frames_skipped;
+  // Increase the number of skipped frames stored in shared memory.
+  buffer->params.frames_skipped += prior_frames_skipped;
+  buffer->params.delay = delay.InMicroseconds();
+  buffer->params.delay_timestamp
+      = (delay_timestamp - base::TimeTicks()).InMicroseconds();
 
   // Zero out the entire output buffer to avoid stuttering/repeating-buffers
   // in the anomalous case if the renderer is unable to keep up with real-time.
   output_bus_->Zero();
 
-  socket_->Send(&bytes, sizeof(bytes));
+  uint32_t control_signal = 0;
+  if (delay.is_max()) {
+    // std::numeric_limits<uint32_t>::max() is a special signal which is
+    // returned after the browser stops the output device in response to a
+    // renderer side request.
+    control_signal = std::numeric_limits<uint32_t>::max();
+  }
+
+  size_t sent_bytes = socket_->Send(&control_signal, sizeof(control_signal));
+  if (sent_bytes != sizeof(control_signal)) {
+    const std::string error_message = "ASR: No room in socket buffer.";
+    LOG(WARNING) << error_message;
+    MediaStreamManager::SendMessageToNativeLog(error_message);
+    TRACE_EVENT_INSTANT0("audio",
+                         "AudioSyncReader: No room in socket buffer",
+                         TRACE_EVENT_SCOPE_THREAD);
+  }
   ++buffer_index_;
 }
 

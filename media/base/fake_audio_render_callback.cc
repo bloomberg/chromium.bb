@@ -7,6 +7,7 @@
 
 #include <cmath>
 
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/fake_audio_render_callback.h"
 
 namespace media {
@@ -22,9 +23,12 @@ FakeAudioRenderCallback::FakeAudioRenderCallback(double step)
 
 FakeAudioRenderCallback::~FakeAudioRenderCallback() {}
 
-int FakeAudioRenderCallback::Render(AudioBus* audio_bus,
-                                    uint32_t frames_delayed,
-                                    uint32_t frames_skipped) {
+int FakeAudioRenderCallback::Render(base::TimeDelta delay,
+                                    base::TimeTicks delay_timestamp,
+                                    int prior_frames_skipped,
+                                    AudioBus* audio_bus) {
+  const int kSampleRate = 48000;
+  auto frames_delayed = AudioTimestampHelper::TimeToFrames(delay, kSampleRate);
   return RenderInternal(audio_bus, frames_delayed, volume_);
 }
 

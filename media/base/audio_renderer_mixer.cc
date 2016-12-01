@@ -12,6 +12,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/audio_timestamp_helper.h"
 
 namespace media {
 
@@ -162,9 +163,10 @@ bool AudioRendererMixer::CurrentThreadIsRenderingThread() {
   return audio_sink_->CurrentThreadIsRenderingThread();
 }
 
-int AudioRendererMixer::Render(AudioBus* audio_bus,
-                               uint32_t frames_delayed,
-                               uint32_t frames_skipped) {
+int AudioRendererMixer::Render(base::TimeDelta delay,
+                               base::TimeTicks delay_timestamp,
+                               int prior_frames_skipped,
+                               AudioBus* audio_bus) {
   TRACE_EVENT0("audio", "AudioRendererMixer::Render");
   base::AutoLock auto_lock(lock_);
 
@@ -179,6 +181,8 @@ int AudioRendererMixer::Render(AudioBus* audio_bus,
     playing_ = false;
   }
 
+  uint32_t frames_delayed =
+      AudioTimestampHelper::TimeToFrames(delay, output_params_.sample_rate());
   master_converter_.ConvertWithDelay(frames_delayed, audio_bus);
   return audio_bus->frames();
 }

@@ -16,6 +16,7 @@
 #include "base/threading/platform_thread.h"
 #include "base/time/time.h"
 #include "base/trace_event/trace_event.h"
+#include "media/base/audio_timestamp_helper.h"
 
 using base::TimeDelta;
 
@@ -174,7 +175,7 @@ void AudioOutputController::DoPlay() {
     return;
 
   // Ask for first packet.
-  sync_reader_->UpdatePendingBytes(0, 0);
+  sync_reader_->RequestMoreData(base::TimeDelta(), base::TimeTicks(), 0);
 
   state_ = kPlaying;
 
@@ -227,7 +228,7 @@ void AudioOutputController::DoPause() {
   // Let the renderer know we've stopped.  Necessary to let PPAPI clients know
   // audio has been shutdown.  TODO(dalecurtis): This stinks.  PPAPI should have
   // a better way to know when it should exit PPB_Audio_Shared::Run().
-  sync_reader_->UpdatePendingBytes(std::numeric_limits<uint32_t>::max(), 0);
+  sync_reader_->RequestMoreData(base::TimeDelta::Max(), base::TimeTicks(), 0);
 
   handler_->OnPaused();
 }
@@ -308,12 +309,10 @@ int AudioOutputController::OnMoreData(base::TimeDelta delay,
 
   sync_reader_->Read(dest);
 
-  const int total_bytes_delay =
-      delay.InSecondsF() * params_.GetBytesPerSecond();
   const int frames = dest->frames();
-  sync_reader_->UpdatePendingBytes(
-      total_bytes_delay + frames * params_.GetBytesPerFrame(),
-      prior_frames_skipped);
+  delay += AudioTimestampHelper::FramesToTime(frames, params_.sample_rate());
+
+  sync_reader_->RequestMoreData(delay, delay_timestamp, prior_frames_skipped);
 
   bool need_to_duplicate = false;
   {

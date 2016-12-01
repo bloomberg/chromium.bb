@@ -39,14 +39,13 @@ class AudioOutputDevice::AudioThreadCallback
   void MapSharedMemory() override;
 
   // Called whenever we receive notifications about pending data.
-  void Process(uint32_t pending_data) override;
+  void Process(uint32_t control_signal) override;
 
   // Returns whether the current thread is the audio device thread or not.
   // Will always return true if DCHECKs are not enabled.
   bool CurrentThreadIsAudioDeviceThread();
 
  private:
-  const int bytes_per_frame_;
   AudioRendererSink::RenderCallback* render_callback_;
   std::unique_ptr<AudioBus> output_bus_;
   uint64_t callback_num_;
@@ -431,7 +430,6 @@ AudioOutputDevice::AudioThreadCallback::AudioThreadCallback(
     int memory_length,
     AudioRendererSink::RenderCallback* render_callback)
     : AudioDeviceThread::Callback(audio_parameters, memory, memory_length, 1),
-      bytes_per_frame_(audio_parameters.GetBytesPerFrame()),
       render_callback_(render_callback),
       callback_num_(0) {}
 
@@ -451,10 +449,7 @@ void AudioOutputDevice::AudioThreadCallback::MapSharedMemory() {
 }
 
 // Called whenever we receive notifications about pending data.
-void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
-  // Convert the number of pending bytes in the render buffer into frames.
-  double frames_delayed = static_cast<double>(pending_data) / bytes_per_frame_;
-
+void AudioOutputDevice::AudioThreadCallback::Process(uint32_t control_signal) {
   callback_num_++;
   TRACE_EVENT1("audio", "AudioOutputDevice::FireRenderCallback",
                "callback_num", callback_num_);
@@ -472,16 +467,22 @@ void AudioOutputDevice::AudioThreadCallback::Process(uint32_t pending_data) {
   uint32_t frames_skipped = buffer->params.frames_skipped;
   buffer->params.frames_skipped = 0;
 
-  DVLOG(4) << __func__ << " pending_data:" << pending_data
-           << " frames_delayed(pre-round):" << frames_delayed
+  base::TimeDelta delay =
+      base::TimeDelta::FromMicroseconds(buffer->params.delay);
+
+  base::TimeTicks delay_timestamp =
+      base::TimeTicks() +
+      base::TimeDelta::FromMicroseconds(buffer->params.delay_timestamp);
+
+  DVLOG(4) << __func__ << " delay:" << delay << " delay_timestamp:" << delay
            << " frames_skipped:" << frames_skipped;
 
   // Update the audio-delay measurement, inform about the number of skipped
   // frames, and ask client to render audio.  Since |output_bus_| is wrapping
   // the shared memory the Render() call is writing directly into the shared
   // memory.
-  render_callback_->Render(output_bus_.get(), std::round(frames_delayed),
-                           frames_skipped);
+  render_callback_->Render(delay, delay_timestamp, frames_skipped,
+                           output_bus_.get());
 }
 
 bool AudioOutputDevice::AudioThreadCallback::

@@ -167,7 +167,6 @@ WebRtcAudioRenderer::WebRtcAudioRenderer(
       source_(NULL),
       play_ref_count_(0),
       start_ref_count_(0),
-      audio_delay_milliseconds_(0),
       sink_params_(kFormat, kChannelLayout, 0, kBitsPerSample, 0),
       output_device_id_(device_id),
       security_origin_(security_origin) {
@@ -268,7 +267,7 @@ void WebRtcAudioRenderer::EnterPlayState() {
     state_ = PLAYING;
 
     if (audio_fifo_) {
-      audio_delay_milliseconds_ = 0;
+      audio_delay_ = base::TimeDelta();
       audio_fifo_->Clear();
     }
   }
@@ -401,35 +400,26 @@ void WebRtcAudioRenderer::SwitchOutputDevice(
   callback.Run(media::OUTPUT_DEVICE_STATUS_OK);
 }
 
-int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
-                                uint32_t frames_delayed,
-                                uint32_t frames_skipped) {
+int WebRtcAudioRenderer::Render(base::TimeDelta delay,
+                                base::TimeTicks delay_timestamp,
+                                int prior_frames_skipped,
+                                media::AudioBus* audio_bus) {
   DCHECK(sink_->CurrentThreadIsRenderingThread());
   base::AutoLock auto_lock(lock_);
   if (!source_)
     return 0;
 
-  // TODO(grunell): Converting from frames to milliseconds will potentially lose
-  // hundreds of microseconds which may cause audio video drift. Update
-  // this class and all usage of render delay msec -> frames (possibly even
-  // using a double type for frames). See http://crbug.com/586540
-  uint32_t audio_delay_milliseconds = static_cast<double>(frames_delayed) *
-                                      base::Time::kMillisecondsPerSecond /
-                                      sink_params_.sample_rate();
-
   DVLOG(2) << "WebRtcAudioRenderer::Render()";
-  DVLOG(2) << "audio_delay_milliseconds: " << audio_delay_milliseconds;
+  DVLOG(2) << "audio_delay: " << delay;
 
-  DCHECK_LE(audio_delay_milliseconds, static_cast<uint32_t>(INT_MAX));
-  audio_delay_milliseconds_ = static_cast<int>(audio_delay_milliseconds);
+  audio_delay_ = delay;
 
   // If there are skipped frames, pull and throw away the same amount. We always
   // pull 10 ms of data from the source (see PrepareSink()), so the fifo is only
   // required if the number of frames to drop doesn't correspond to 10 ms.
-  if (frames_skipped > 0) {
-    const uint32_t source_frames_per_buffer =
-        static_cast<uint32_t>(sink_params_.sample_rate() / 100);
-    if (!audio_fifo_ && frames_skipped != source_frames_per_buffer) {
+  if (prior_frames_skipped > 0) {
+    const int source_frames_per_buffer = sink_params_.sample_rate() / 100;
+    if (!audio_fifo_ && prior_frames_skipped != source_frames_per_buffer) {
       audio_fifo_.reset(new media::AudioPullFifo(
           kChannels, source_frames_per_buffer,
           base::Bind(&WebRtcAudioRenderer::SourceCallback,
@@ -437,7 +427,7 @@ int WebRtcAudioRenderer::Render(media::AudioBus* audio_bus,
     }
 
     std::unique_ptr<media::AudioBus> drop_bus =
-        media::AudioBus::Create(audio_bus->channels(), frames_skipped);
+        media::AudioBus::Create(audio_bus->channels(), prior_frames_skipped);
     if (audio_fifo_)
       audio_fifo_->Consume(drop_bus.get(), drop_bus->frames());
     else
@@ -467,7 +457,7 @@ void WebRtcAudioRenderer::SourceCallback(
            << fifo_frame_delay << ", "
            << audio_bus->frames() << ")";
 
-  int output_delay_milliseconds = audio_delay_milliseconds_;
+  int output_delay_milliseconds = audio_delay_.InMilliseconds();
   // TODO(grunell): This integer division by sample_rate will cause loss of
   // partial milliseconds, and may cause avsync drift. http://crbug.com/586540
   output_delay_milliseconds += fifo_frame_delay *

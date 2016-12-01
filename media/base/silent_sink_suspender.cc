@@ -35,9 +35,10 @@ SilentSinkSuspender::~SilentSinkSuspender() {
   fake_sink_.Stop();
 }
 
-int SilentSinkSuspender::Render(AudioBus* dest,
-                                uint32_t frames_delayed,
-                                uint32_t frames_skipped) {
+int SilentSinkSuspender::Render(base::TimeDelta delay,
+                                base::TimeTicks delay_timestamp,
+                                int prior_frames_skipped,
+                                AudioBus* dest) {
   // Lock required since AudioRendererSink::Pause() is not synchronous, we need
   // to discard these calls during the transition to the fake sink.
   base::AutoLock al(transition_lock_);
@@ -52,8 +53,8 @@ int SilentSinkSuspender::Render(AudioBus* dest,
   // the audio data for a future transition out of silence.
   if (!dest) {
     DCHECK(is_using_fake_sink_);
-    DCHECK_EQ(frames_delayed, 0u);
-    DCHECK_EQ(frames_skipped, 0u);
+    DCHECK_EQ(delay, base::TimeDelta());
+    DCHECK_EQ(prior_frames_skipped, 0);
 
     // If we have no buffers or a transition is pending, one or more extra
     // Render() calls have occurred in before TransitionSinks() can run, so we
@@ -72,7 +73,7 @@ int SilentSinkSuspender::Render(AudioBus* dest,
   }
 
   // Pass-through to client and request rendering.
-  callback_->Render(dest, frames_delayed, frames_skipped);
+  callback_->Render(delay, delay_timestamp, prior_frames_skipped, dest);
 
   // Check for silence or real audio data and transition if necessary.
   if (!dest->AreFramesZero()) {
@@ -123,7 +124,8 @@ void SilentSinkSuspender::TransitionSinks(bool use_fake_sink) {
     }
     fake_sink_.Start(
         base::Bind(base::IgnoreResult(&SilentSinkSuspender::Render),
-                   base::Unretained(this), nullptr, 0, 0));
+                   base::Unretained(this), base::TimeDelta(),
+                   base::TimeTicks::Now(), 0, nullptr));
   } else {
     fake_sink_.Stop();
 

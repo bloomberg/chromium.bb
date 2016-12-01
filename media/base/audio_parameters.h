@@ -41,6 +41,8 @@ struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioInputBufferParameters {
 };
 struct MEDIA_EXPORT ALIGNAS(PARAMETERS_ALIGNMENT) AudioOutputBufferParameters {
   uint32_t frames_skipped;
+  int64_t delay;
+  int64_t delay_timestamp;
 };
 #undef PARAMETERS_ALIGNMENT
 #if defined(OS_WIN)

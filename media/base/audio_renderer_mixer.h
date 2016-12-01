@@ -64,9 +64,10 @@ class MEDIA_EXPORT AudioRendererMixer
       std::map<int, std::unique_ptr<LoopbackAudioConverter>>;
 
   // AudioRendererSink::RenderCallback implementation.
-  int Render(AudioBus* audio_bus,
-             uint32_t frames_delayed,
-             uint32_t frames_skipped) override;
+  int Render(base::TimeDelta delay,
+             base::TimeTicks delay_timestamp,
+             int prior_frames_skipped,
+             AudioBus* audio_bus) override;
   void OnRenderError() override;
 
   bool is_master_sample_rate(int sample_rate) {

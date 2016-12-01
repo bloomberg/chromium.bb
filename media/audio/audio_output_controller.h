@@ -88,14 +88,14 @@ class MEDIA_EXPORT AudioOutputController
    public:
     virtual ~SyncReader() {}
 
-    // Notify the synchronous reader the number of bytes in the
-    // AudioOutputController not yet played. This is used by SyncReader to
-    // prepare more data and perform synchronization. Also inform about if any
-    // frames has been skipped by the renderer (typically the OS). The renderer
-    // source can handle this appropriately depending on the type of source. An
-    // ordinary file playout would ignore this.
-    virtual void UpdatePendingBytes(uint32_t bytes,
-                                    uint32_t frames_skipped) = 0;
+    // This is used by SyncReader to prepare more data and perform
+    // synchronization. Also inform about output delay at a certain moment and
+    // if any frames have been skipped by the renderer (typically the OS). The
+    // renderer source can handle this appropriately depending on the type of
+    // source. An ordinary file playout would ignore this.
+    virtual void RequestMoreData(base::TimeDelta delay,
+                                 base::TimeTicks delay_timestamp,
+                                 int prior_frames_skipped) = 0;
 
     // Attempts to completely fill |dest|, zeroing |dest| if the request can not
     // be fulfilled (due to timeout).

@@ -341,16 +341,16 @@ class AudioRendererImplTest : public ::testing::Test, public RendererClient {
   // buffer. Returns true if and only if all of |requested_frames| were able
   // to be consumed.
   bool ConsumeBufferedData(OutputFrames requested_frames,
-                           uint32_t frames_delayed) {
+                           base::TimeDelta delay) {
     std::unique_ptr<AudioBus> bus =
         AudioBus::Create(kChannels, requested_frames.value);
     int frames_read = 0;
-    EXPECT_TRUE(sink_->Render(bus.get(), frames_delayed, &frames_read));
+    EXPECT_TRUE(sink_->Render(bus.get(), delay, &frames_read));
     return frames_read == requested_frames.value;
   }
 
   bool ConsumeBufferedData(OutputFrames requested_frames) {
-    return ConsumeBufferedData(requested_frames, 0);
+    return ConsumeBufferedData(requested_frames, base::TimeDelta());
   }
 
   base::TimeTicks ConvertMediaTime(base::TimeDelta timestamp,
@@ -812,7 +812,7 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
   std::unique_ptr<AudioBus> bus = AudioBus::Create(hardware_params_);
   int frames_read = 0;
   for (int i = 0; i < std::floor(kBuffers); ++i) {
-    EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+    EXPECT_TRUE(sink_->Render(bus.get(), base::TimeDelta(), &frames_read));
     EXPECT_EQ(frames_read, bus->frames());
     for (int j = 0; j < bus->frames(); ++j)
       ASSERT_FLOAT_EQ(0.0f, bus->channel(0)[j]);
@@ -821,7 +821,7 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForEarlyStartTime) {
   }
 
   // Verify the last buffer is half silence and half real data.
-  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_TRUE(sink_->Render(bus.get(), base::TimeDelta(), &frames_read));
   EXPECT_EQ(frames_read, bus->frames());
   const int zero_frames =
       bus->frames() * (kBuffers - static_cast<int>(kBuffers));
@@ -840,20 +840,20 @@ TEST_F(AudioRendererImplTest, RenderingDelayedForSuspend) {
   // Verify the first buffer is real data.
   int frames_read = 0;
   std::unique_ptr<AudioBus> bus = AudioBus::Create(hardware_params_);
-  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_TRUE(sink_->Render(bus.get(), base::TimeDelta(), &frames_read));
   EXPECT_NE(0, frames_read);
   for (int i = 0; i < bus->frames(); ++i)
     ASSERT_NE(0.0f, bus->channel(0)[i]);
 
   // Verify after suspend we get silence.
   renderer_->OnSuspend();
-  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_TRUE(sink_->Render(bus.get(), base::TimeDelta(), &frames_read));
   EXPECT_EQ(0, frames_read);
 
   // Verify after resume we get audio.
   bus->Zero();
   renderer_->OnResume();
-  EXPECT_TRUE(sink_->Render(bus.get(), 0, &frames_read));
+  EXPECT_TRUE(sink_->Render(bus.get(), base::TimeDelta(), &frames_read));
   EXPECT_NE(0, frames_read);
   for (int i = 0; i < bus->frames(); ++i)
     ASSERT_NE(0.0f, bus->channel(0)[i]);
@@ -1042,7 +1042,7 @@ TEST_F(AudioRendererImplTest, TimeSourceBehavior) {
       std::round(delay_frames * kOutputMicrosPerFrame));
 
   frames_to_consume.value = frames_buffered().value / 16;
-  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_frames));
+  EXPECT_TRUE(ConsumeBufferedData(frames_to_consume, delay_time));
 
   // Verify time is adjusted for the current delay.
   current_time = tick_clock_->NowTicks() + delay_time;

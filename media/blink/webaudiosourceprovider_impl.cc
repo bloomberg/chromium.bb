@@ -11,6 +11,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
+#include "media/base/audio_timestamp_helper.h"
 #include "media/base/bind_to_current_loop.h"
 #include "third_party/WebKit/public/platform/WebAudioSourceProviderClient.h"
 
@@ -69,9 +70,10 @@ class WebAudioSourceProviderImpl::TeeFilter
   // AudioRendererSink::RenderCallback implementation.
   // These are forwarders to |renderer_| and are here to allow for a client to
   // get a copy of the rendered audio by SetCopyAudioCallback().
-  int Render(AudioBus* audio_bus,
-             uint32_t frames_delayed,
-             uint32_t frames_skipped) override;
+  int Render(base::TimeDelta delay,
+             base::TimeTicks delay_timestamp,
+             int prior_frames_skipped,
+             AudioBus* dest) override;
   void OnRenderError() override;
 
   bool IsInitialized() const { return !!renderer_; }
@@ -162,7 +164,8 @@ void WebAudioSourceProviderImpl::provideInput(
 
   DCHECK(client_);
   DCHECK_EQ(tee_filter_->channels(), bus_wrapper_->channels());
-  const int frames = tee_filter_->Render(bus_wrapper_.get(), 0, 0);
+  const int frames = tee_filter_->Render(
+      base::TimeDelta(), base::TimeTicks::Now(), 0, bus_wrapper_.get());
   if (frames < incoming_number_of_frames)
     bus_wrapper_->ZeroFramesPartial(frames, incoming_number_of_frames - frames);
 
@@ -260,7 +263,8 @@ void WebAudioSourceProviderImpl::ClearCopyAudioCallback() {
 }
 
 int WebAudioSourceProviderImpl::RenderForTesting(AudioBus* audio_bus) {
-  return tee_filter_->Render(audio_bus, 0, 0);
+  return tee_filter_->Render(base::TimeDelta(), base::TimeTicks::Now(), 0,
+                             audio_bus);
 }
 
 void WebAudioSourceProviderImpl::OnSetFormat() {
@@ -272,15 +276,19 @@ void WebAudioSourceProviderImpl::OnSetFormat() {
   client_->setFormat(tee_filter_->channels(), tee_filter_->sample_rate());
 }
 
-int WebAudioSourceProviderImpl::TeeFilter::Render(AudioBus* audio_bus,
-                                                  uint32_t frames_delayed,
-                                                  uint32_t frames_skipped) {
+int WebAudioSourceProviderImpl::TeeFilter::Render(
+    base::TimeDelta delay,
+    base::TimeTicks delay_timestamp,
+    int prior_frames_skipped,
+    AudioBus* audio_bus) {
   DCHECK(IsInitialized());
 
-  const int num_rendered_frames =
-      renderer_->Render(audio_bus, frames_delayed, frames_skipped);
+  const int num_rendered_frames = renderer_->Render(
+      delay, delay_timestamp, prior_frames_skipped, audio_bus);
 
   if (!copy_audio_bus_callback_.is_null()) {
+    const int64_t frames_delayed =
+        AudioTimestampHelper::TimeToFrames(delay, sample_rate_);
     std::unique_ptr<AudioBus> bus_copy =
         AudioBus::Create(audio_bus->channels(), audio_bus->frames());
     audio_bus->CopyTo(bus_copy.get());

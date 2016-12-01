@@ -754,18 +754,22 @@ bool AudioRendererImpl::IsBeforeStartTime(
          (buffer->timestamp() + buffer->duration()) < start_timestamp_;
 }
 
-int AudioRendererImpl::Render(AudioBus* audio_bus,
-                              uint32_t frames_delayed,
-                              uint32_t frames_skipped) {
+int AudioRendererImpl::Render(base::TimeDelta delay,
+                              base::TimeTicks delay_timestamp,
+                              int prior_frames_skipped,
+                              AudioBus* audio_bus) {
   const int frames_requested = audio_bus->frames();
-  DVLOG(4) << __func__ << " frames_delayed:" << frames_delayed
-           << " frames_skipped:" << frames_skipped
+  DVLOG(4) << __func__ << " delay:" << delay
+           << " prior_frames_skipped:" << prior_frames_skipped
            << " frames_requested:" << frames_requested;
 
   int frames_written = 0;
   {
     base::AutoLock auto_lock(lock_);
     last_render_time_ = tick_clock_->NowTicks();
+
+    int64_t frames_delayed = AudioTimestampHelper::TimeToFrames(
+        delay, audio_parameters_.sample_rate());
 
     if (!stop_rendering_time_.is_null()) {
       audio_clock_->CompensateForSuspendedWrites(

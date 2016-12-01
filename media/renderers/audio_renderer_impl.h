@@ -151,11 +151,12 @@ class MEDIA_EXPORT AudioRendererImpl
   // Render() updates the pipeline's playback timestamp. If Render() is
   // not called at the same rate as audio samples are played, then the reported
   // timestamp in the pipeline will be ahead of the actual audio playback. In
-  // this case |frames_delayed| should be used to indicate when in the future
+  // this case |delay| should be used to indicate when in the future
   // should the filled buffer be played.
-  int Render(AudioBus* audio_bus,
-             uint32_t frames_delayed,
-             uint32_t frames_skipped) override;
+  int Render(base::TimeDelta delay,
+             base::TimeTicks delay_timestamp,
+             int prior_frames_skipped,
+             AudioBus* dest) override;
   void OnRenderError() override;
 
   // Helper methods that schedule an asynchronous read from the decoder as long

@@ -532,25 +532,33 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
   SyncSocketSource(base::SyncSocket* socket, const AudioParameters& params)
       : socket_(socket), params_(params) {
     // Setup AudioBus wrapping data we'll receive over the sync socket.
-    data_size_ = AudioBus::CalculateMemorySize(params);
+    packet_size_ = AudioBus::CalculateMemorySize(params);
     data_.reset(static_cast<float*>(
-        base::AlignedAlloc(data_size_, AudioBus::kChannelAlignment)));
-    audio_bus_ = AudioBus::WrapMemory(params, data_.get());
+        base::AlignedAlloc(packet_size_ + sizeof(AudioOutputBufferParameters),
+                           AudioBus::kChannelAlignment)));
+    audio_bus_ = AudioBus::WrapMemory(params, output_buffer()->audio);
   }
   ~SyncSocketSource() override {}
 
   // AudioSourceCallback::OnMoreData implementation:
   int OnMoreData(base::TimeDelta delay,
-                 base::TimeTicks /* delay_timestamp */,
+                 base::TimeTicks delay_timestamp,
                  int /* prior_frames_skipped */,
                  AudioBus* dest) override {
-    uint32_t total_bytes_delay =
-        delay.InSecondsF() * params_.GetBytesPerSecond();
-    socket_->Send(&total_bytes_delay, sizeof(total_bytes_delay));
-    uint32_t size = socket_->Receive(data_.get(), data_size_);
+    uint32_t control_signal = 0;
+    socket_->Send(&control_signal, sizeof(control_signal));
+    output_buffer()->params.delay = delay.InMicroseconds();
+    output_buffer()->params.delay_timestamp =
+        (delay_timestamp - base::TimeTicks()).InMicroseconds();
+    uint32_t size = socket_->Receive(data_.get(), packet_size_);
+
     DCHECK_EQ(static_cast<size_t>(size) % sizeof(*audio_bus_->channel(0)), 0U);
     audio_bus_->CopyTo(dest);
     return audio_bus_->frames();
+  }
+  int packet_size() const { return packet_size_; }
+  AudioOutputBuffer* output_buffer() const {
+    return reinterpret_cast<AudioOutputBuffer*>(data_.get());
   }
 
   // AudioSourceCallback::OnError implementation:
@@ -559,7 +567,7 @@ class SyncSocketSource : public AudioOutputStream::AudioSourceCallback {
  private:
   base::SyncSocket* socket_;
   const AudioParameters params_;
-  int data_size_;
+  int packet_size_;
   std::unique_ptr<float, base::AlignedFreeDeleter> data_;
   std::unique_ptr<AudioBus> audio_bus_;
 };
@@ -571,7 +579,7 @@ struct SyncThreadContext {
   int frames;
   double sine_freq;
   uint32_t packet_size_bytes;
-  int bytes_per_second;
+  AudioOutputBuffer* buffer;
 };
 
 // This thread provides the data that the SyncSocketSource above needs
@@ -592,17 +600,17 @@ DWORD __stdcall SyncSocketThread(void* context) {
   SineWaveAudioSource sine(1, ctx.sine_freq, ctx.sample_rate);
   const int kTwoSecFrames = ctx.sample_rate * 2;
 
-  uint32_t total_bytes_delay = 0;
-  int times = 0;
+  uint32_t control_signal = 0;
   for (int ix = 0; ix < kTwoSecFrames; ix += ctx.frames) {
-    if (ctx.socket->Receive(&total_bytes_delay, sizeof(total_bytes_delay)) == 0)
+    if (ctx.socket->Receive(&control_signal, sizeof(control_signal)) == 0)
       break;
-    if ((times > 0) && (total_bytes_delay < 1000)) __debugbreak();
-    base::TimeDelta delay = base::TimeDelta::FromSecondsD(
-        static_cast<double>(total_bytes_delay) / ctx.bytes_per_second);
-    sine.OnMoreData(delay, base::TimeTicks::Now(), 0, audio_bus.get());
+    base::TimeDelta delay =
+        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay);
+    base::TimeTicks delay_timestamp =
+        base::TimeTicks() +
+        base::TimeDelta::FromMicroseconds(ctx.buffer->params.delay_timestamp);
+    sine.OnMoreData(delay, delay_timestamp, 0, audio_bus.get());
     ctx.socket->Send(data.get(), ctx.packet_size_bytes);
-    ++times;
   }
 
   return 0;
@@ -638,11 +646,11 @@ TEST_F(WinAudioTest, SyncSocketBasic) {
   SyncThreadContext thread_context;
   thread_context.sample_rate = params.sample_rate();
   thread_context.sine_freq = 200.0;
-  thread_context.packet_size_bytes = AudioBus::CalculateMemorySize(params);
+  thread_context.packet_size_bytes = source.packet_size();
   thread_context.frames = params.frames_per_buffer();
   thread_context.channels = params.channels();
   thread_context.socket = &sockets[1];
-  thread_context.bytes_per_second = params.GetBytesPerSecond();
+  thread_context.buffer = source.output_buffer();
 
   HANDLE thread = ::CreateThread(NULL, 0, SyncSocketThread,
                                  &thread_context, 0, NULL);

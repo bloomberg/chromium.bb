@@ -47,16 +47,18 @@ const char kDefaultDeviceId[] = "";
 const char kNonDefaultDeviceId[] = "valid-nondefault-device-id";
 const char kUnauthorizedDeviceId[] = "unauthorized-device-id";
 const int kAuthTimeoutForTestingMs = 500;
+const int kOutputDelayMs = 20;
 
 class MockRenderCallback : public AudioRendererSink::RenderCallback {
  public:
   MockRenderCallback() {}
   virtual ~MockRenderCallback() {}
 
-  MOCK_METHOD3(Render,
-               int(AudioBus* dest,
-                   uint32_t frames_delayed,
-                   uint32_t frames_skipped));
+  MOCK_METHOD4(Render,
+               int(base::TimeDelta delay,
+                   base::TimeTicks timestamp,
+                   int prior_frames_skipped,
+                   AudioBus* dest));
   MOCK_METHOD0(OnRenderError, void());
 };
 
@@ -79,8 +81,17 @@ class MockAudioOutputIPC : public AudioOutputIPC {
   MOCK_METHOD1(SetVolume, void(double volume));
 };
 
-ACTION_P2(SendPendingBytes, socket, pending_bytes) {
-  socket->Send(&pending_bytes, sizeof(pending_bytes));
+ACTION_P2(RequestMoreData, socket, shared_memory) {
+  AudioOutputBuffer* buffer =
+      reinterpret_cast<AudioOutputBuffer*>(shared_memory->memory());
+  buffer->params.frames_skipped = 0;
+  buffer->params.delay =
+      base::TimeDelta::FromMilliseconds(kOutputDelayMs).InMicroseconds();
+  buffer->params.delay_timestamp =
+      (base::TimeTicks::Now() - base::TimeTicks()).InMicroseconds();
+
+  constexpr int kControlSignal = 0;
+  socket->Send(&kControlSignal, sizeof(kControlSignal));
 }
 
 // Used to terminate a loop from a different thread than the loop belongs to.
@@ -227,10 +238,8 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // Respond by asking for some audio data.  This should ask our callback
   // to provide some audio data that AudioOutputDevice then writes into the
   // shared memory section.
-  const int kMemorySize = CalculateMemorySize();
-
   EXPECT_CALL(*audio_output_ipc_, PlayStream())
-      .WillOnce(SendPendingBytes(&browser_socket_, kMemorySize));
+      .WillOnce(RequestMoreData(&browser_socket_, &shared_memory_));
 
   // We expect calls to our audio renderer callback, which returns the number
   // of frames written to the memory section.
@@ -240,7 +249,9 @@ void AudioOutputDeviceTest::ExpectRenderCallback() {
   // So, for the sake of this test, we consider the call to Render a sign
   // of success and quit the loop.
   const int kNumberOfFramesToProcess = 0;
-  EXPECT_CALL(callback_, Render(_, _, _))
+  EXPECT_CALL(
+      callback_,
+      Render(base::TimeDelta::FromMilliseconds(kOutputDelayMs), _, _, _))
       .WillOnce(DoAll(QuitLoop(io_loop_.task_runner()),
                       Return(kNumberOfFramesToProcess)));
 }

@@ -62,8 +62,10 @@ class MockAudioOutputControllerSyncReader
  public:
   MockAudioOutputControllerSyncReader() {}
 
-  MOCK_METHOD2(UpdatePendingBytes,
-               void(uint32_t bytes, uint32_t frames_skipped));
+  MOCK_METHOD3(RequestMoreData,
+               void(base::TimeDelta delay,
+                    base::TimeTicks delay_timestamp,
+                    int prior_frames_skipped));
   MOCK_METHOD1(Read, void(AudioBus* dest));
   MOCK_METHOD0(Close, void());
 
@@ -142,7 +144,7 @@ class AudioOutputControllerTest : public testing::Test {
 
     // During playback, the mock pretends to provide audio data rendered and
     // sent from the render process.
-    EXPECT_CALL(mock_sync_reader_, UpdatePendingBytes(_, _)).Times(AtLeast(1));
+    EXPECT_CALL(mock_sync_reader_, RequestMoreData(_, _, _)).Times(AtLeast(1));
     EXPECT_CALL(mock_sync_reader_, Read(_)).WillRepeatedly(PopulateBuffer());
     controller_->Play();
     base::RunLoop().RunUntilIdle();
