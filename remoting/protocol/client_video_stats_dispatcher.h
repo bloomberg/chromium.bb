@@ -17,7 +17,6 @@
 namespace remoting {
 namespace protocol {
 
-class ClientStub;
 class VideoStatsStub;
 
 class ClientVideoStatsDispatcher : public ChannelDispatcherBase {

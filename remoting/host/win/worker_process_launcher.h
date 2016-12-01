@@ -20,7 +20,6 @@
 #include "net/base/backoff_entry.h"
 
 namespace base {
-class SingleThreadTaskRunner;
 class TimeDelta;
 } // namespace base
 

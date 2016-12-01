@@ -25,16 +25,13 @@ namespace remoting {
 
 namespace protocol {
 class ClipboardEvent;
-class CursorShapeInfo;
 class PerformanceTracker;
-class FrameConsumer;
 class VideoRenderer;
 }  // namespace protocol
 
 class AudioPlayerAndroid;
 class ChromotingJniRuntime;
 class JniClient;
-class DisplayHandler;
 class JniPairingSecretFetcher;
 
 // ChromotingJniInstance is scoped to the session.

@@ -14,6 +14,10 @@
 #include "base/memory/ref_counted.h"
 #include "remoting/host/desktop_environment.h"
 
+namespace base {
+class SingleThreadTaskRunner;
+}
+
 namespace webrtc {
 
 class DesktopCaptureOptions;

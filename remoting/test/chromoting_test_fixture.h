@@ -11,17 +11,11 @@
 #include "base/threading/thread_checker.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-namespace base {
-class RunLoop;
-class Timer;
-}
-
 namespace remoting {
 namespace test {
 
 class ConnectionTimeObserver;
 class TestChromotingClient;
-struct HostInfo;
 
 // Provides chromoting connection capabilities for tests to use. Performance
 // metrics of the established connection are readily available to calculate

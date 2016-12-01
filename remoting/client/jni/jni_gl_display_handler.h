@@ -23,8 +23,6 @@ class VideoRenderer;
 }  // namespace protocol
 
 class ChromotingJniRuntime;
-class DualBufferFrameConsumer;
-class EglThreadContext;
 
 // Handles OpenGL display operations. Draws desktop and cursor on the OpenGL
 // surface. The handler should be used and destroyed on the UI thread. It also

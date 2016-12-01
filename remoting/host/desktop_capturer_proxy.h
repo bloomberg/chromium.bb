@@ -23,10 +23,6 @@ class DesktopCaptureOptions;
 
 namespace remoting {
 
-namespace protocol {
-class CursorShapeInfo;
-}  // namespace protocol
-
 // DesktopCapturerProxy is responsible for calling webrtc::DesktopCapturer on
 // the capturer thread and then returning results to the caller's thread.
 // GetSourceList() and SelectSource() functions are not implemented by this

@@ -34,10 +34,6 @@
 #include "remoting/protocol/video_stream.h"
 #include "third_party/webrtc/modules/desktop_capture/desktop_geometry.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace remoting {
 
 class AudioStream;

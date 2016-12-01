@@ -29,7 +29,6 @@ class ScopedClosureRunner;
 
 namespace webrtc {
 class DesktopFrame;
-class SharedDesktopFrame;
 }  // namespace webrtc
 
 namespace remoting {

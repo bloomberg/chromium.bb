@@ -7,12 +7,7 @@
 
 #include <string>
 
-namespace net {
-class IPEndPoint;
-}  // namespace net
-
 namespace remoting {
-class SignalStrategy;
 
 namespace protocol {
 struct TransportRoute;

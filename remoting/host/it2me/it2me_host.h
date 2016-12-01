@@ -31,7 +31,6 @@ class ChromotingHost;
 class ChromotingHostContext;
 class DesktopEnvironmentFactory;
 class HostEventLogger;
-class HostNPScriptObject;
 class HostStatusLogger;
 class PolicyWatcher;
 class RegisterSupportHostRequest;

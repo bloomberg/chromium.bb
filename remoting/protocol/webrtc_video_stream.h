@@ -23,8 +23,6 @@
 namespace webrtc {
 class MediaStreamInterface;
 class PeerConnectionInterface;
-class PeerConnectionFactoryInterface;
-class VideoTrackInterface;
 }  // namespace webrtc
 
 namespace remoting {
@@ -33,7 +31,6 @@ namespace protocol {
 class HostVideoStatsDispatcher;
 class WebrtcFrameScheduler;
 class WebrtcTransport;
-class WebrtcVideoCapturerAdapter;
 
 class WebrtcVideoStream : public VideoStream,
                           public webrtc::DesktopCapturer::Callback,

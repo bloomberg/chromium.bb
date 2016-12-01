@@ -16,7 +16,6 @@ class InputEvent;
 namespace remoting {
 
 namespace protocol {
-class InputStub;
 class InputEventTracker;
 } // namespace protocol
 

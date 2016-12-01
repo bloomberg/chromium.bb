@@ -8,8 +8,6 @@
 #include "remoting/protocol/video_renderer.h"
 
 namespace webrtc {
-class DesktopSize;
-class DesktopVector;
 class DesktopRegion;
 }  // namespace webrtc
 
@@ -19,12 +17,6 @@ class View;
 }  // namespace pp
 
 namespace remoting {
-
-class ClientContext;
-
-namespace protocol {
-class FrameStatsConsumer;
-}  // namespace protocol
 
 // Interface for video renderers that render video in pepper plugin.
 class PepperVideoRenderer : public protocol::VideoRenderer {

@@ -30,7 +30,6 @@ namespace protocol {
 
 class MessagePipe;
 class VideoRenderer;
-class WebrtcTransport;
 struct ClientFrameStats;
 struct HostFrameStats;
 

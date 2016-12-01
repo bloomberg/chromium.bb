@@ -29,7 +29,6 @@
 
 namespace base {
 class TimeDelta;
-class SingleThreadTaskRunner;
 }  // namespace base
 
 namespace remoting {

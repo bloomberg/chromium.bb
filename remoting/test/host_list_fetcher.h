@@ -15,9 +15,6 @@
 #include "net/url_request/url_fetcher_delegate.h"
 #include "remoting/test/host_info.h"
 
-namespace net {
-class UrlFetcher;
-}
 namespace remoting {
 class URLRequestContextGetter;
 }

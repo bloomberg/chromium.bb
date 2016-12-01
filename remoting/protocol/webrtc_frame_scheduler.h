@@ -14,7 +14,6 @@ namespace remoting {
 namespace protocol {
 
 struct HostFrameStats;
-class VideoChannelStateObserver;
 class WebrtcDummyVideoEncoderFactory;
 
 // An abstract interface for frame schedulers, which are responsible for

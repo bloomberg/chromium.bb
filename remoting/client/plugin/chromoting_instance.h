@@ -44,7 +44,6 @@ class DictionaryValue;
 
 namespace pp {
 class InputEvent;
-class Module;
 class VarDictionary;
 }  // namespace pp
 

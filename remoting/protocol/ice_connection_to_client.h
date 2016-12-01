@@ -26,8 +26,6 @@ class AudioWriter;
 class HostControlDispatcher;
 class HostEventDispatcher;
 class HostVideoDispatcher;
-class VideoFeedbackStub;
-class VideoFramePump;
 
 // This class represents a remote viewer connection to the chromoting
 // host. It sets up all protocol channels and connects them to the

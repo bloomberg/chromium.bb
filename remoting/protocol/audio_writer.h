@@ -14,14 +14,9 @@
 #include "remoting/protocol/audio_stub.h"
 #include "remoting/protocol/channel_dispatcher_base.h"
 
-namespace net {
-class StreamSocket;
-}  // namespace net
-
 namespace remoting {
 namespace protocol {
 
-class Session;
 class SessionConfig;
 
 class AudioWriter : public ChannelDispatcherBase,

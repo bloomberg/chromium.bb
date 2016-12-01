@@ -20,7 +20,6 @@
 namespace remoting {
 
 class ClientContext;
-class XmppSignalStrategy;
 
 namespace protocol {
 class ClipboardStub;

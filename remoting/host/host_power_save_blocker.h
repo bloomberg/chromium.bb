@@ -21,7 +21,6 @@ class SingleThreadTaskRunner;
 
 namespace remoting {
 
-class AutoThreadTaskRunner;
 class HostStatusMonitor;
 
 // A HostStatusObserver to block screen saver from taking effect during the

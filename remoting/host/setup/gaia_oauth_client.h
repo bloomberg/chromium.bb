@@ -14,10 +14,6 @@
 
 #include "remoting/host/setup/oauth_client.h"
 
-namespace net {
-class URLRequestContext;
-}
-
 namespace remoting {
 
 // A wrapper around gaia::GaiaOAuthClient that provides a more

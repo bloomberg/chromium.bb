@@ -14,7 +14,6 @@
 namespace remoting {
 namespace protocol {
 
-class EventMessage;
 class InputStub;
 
 // HostEventDispatcher dispatches incoming messages on the event

@@ -18,7 +18,6 @@
 #include "remoting/host/native_messaging/native_messaging_writer.h"
 
 namespace base {
-class DictionaryValue;
 class Value;
 }  // namespace base
 

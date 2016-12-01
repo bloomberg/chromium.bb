@@ -30,6 +30,7 @@ class TransportChannelImpl;
 namespace remoting {
 namespace protocol {
 
+class P2PDatagramSocket;
 class TransportContext;
 
 class IceTransportChannel : public sigslot::has_slots<> {

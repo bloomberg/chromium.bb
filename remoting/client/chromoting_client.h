@@ -37,10 +37,8 @@ class TransportContext;
 class VideoRenderer;
 }  // namespace protocol
 
-class AudioDecodeScheduler;
 class ClientContext;
 class ClientUserInterface;
-class FrameConsumerProxy;
 
 class ChromotingClient : public SignalStrategy::Listener,
                          public protocol::ConnectionToHost::HostEventCallback,

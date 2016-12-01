@@ -18,7 +18,6 @@ class DesktopFrame;
 namespace remoting {
 
 class GlCanvas;
-class GlRenderLayer;
 
 // This class draws the desktop on the canvas.
 class GlDesktop {

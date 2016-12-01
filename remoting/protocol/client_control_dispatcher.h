@@ -16,8 +16,6 @@ namespace remoting {
 namespace protocol {
 
 class ClientStub;
-class ControlMessage;
-class Session;
 
 // ClientControlDispatcher dispatches incoming messages on the control
 // channel to ClientStub, ClipboardStub or CursorShapeStub.

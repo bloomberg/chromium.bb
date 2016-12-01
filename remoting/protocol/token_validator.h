@@ -14,8 +14,6 @@
 
 namespace remoting {
 
-class RsaKeyPair;
-
 namespace protocol {
 
 // The |TokenValidator| encapsulates the parameters to be sent to the client

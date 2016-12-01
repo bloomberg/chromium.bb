@@ -10,8 +10,6 @@
 
 namespace remoting {
 
-class DaemonInstallerWin;
-
 class DaemonControllerDelegateWin : public DaemonController::Delegate {
  public:
   DaemonControllerDelegateWin();

@@ -26,7 +26,6 @@ class ChannelProxy;
 namespace remoting {
 
 class AutoThreadTaskRunner;
-class DesktopEnvironment;
 class DesktopEnvironmentFactory;
 class DesktopSessionAgent;
 

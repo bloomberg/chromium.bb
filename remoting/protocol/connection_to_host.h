@@ -20,7 +20,6 @@ namespace remoting {
 namespace protocol {
 
 class AudioStub;
-class Authenticator;
 class ClientStub;
 class ClipboardStub;
 class HostStub;

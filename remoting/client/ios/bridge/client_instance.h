@@ -35,7 +35,6 @@
 namespace remoting {
 
 // class AudioPlayerIos;
-class AudioConsumer;
 class ClientProxy;
 class ClientStatusLogger;
 class FrameConsumerBridge;

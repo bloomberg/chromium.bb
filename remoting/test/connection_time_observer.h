@@ -12,7 +12,6 @@
 
 namespace base {
 class TimeDelta;
-class Timer;
 }
 
 namespace remoting {

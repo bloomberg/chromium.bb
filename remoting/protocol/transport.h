@@ -18,17 +18,10 @@ namespace buzz {
 class XmlElement;
 }  // namespace buzz
 
-namespace webrtc {
-class PeerConnectionInterface;
-}  // namespace webrtc
-
 namespace remoting {
 namespace protocol {
 
 class Authenticator;
-class DatagramChannelFactory;
-class P2PDatagramSocket;
-class StreamChannelFactory;
 
 enum class TransportRole {
   SERVER,

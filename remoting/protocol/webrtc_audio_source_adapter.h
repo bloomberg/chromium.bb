@@ -19,8 +19,6 @@ class AudioTrackSinkInterface;
 
 namespace remoting {
 
-class AudioPacket;
-
 namespace protocol {
 
 class AudioSource;

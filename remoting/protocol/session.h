@@ -12,17 +12,10 @@
 #include "remoting/protocol/session_config.h"
 #include "remoting/protocol/transport.h"
 
-namespace buzz {
-class XmlElement;
-}  // namespace buzz
-
 namespace remoting {
 namespace protocol {
 
-class Authenicator;
-class StreamChannelFactory;
 class Transport;
-struct TransportRoute;
 
 // Session is responsible for initializing and authenticating both incoming and
 // outgoing connections. It uses TransportInfoSink interface to pass

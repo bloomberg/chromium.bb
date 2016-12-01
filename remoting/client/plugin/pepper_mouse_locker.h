@@ -19,8 +19,6 @@ class Instance;
 
 namespace remoting {
 
-class PepperInputHandler;
-
 class PepperMouseLocker : public pp::MouseLock,
                           public protocol::CursorShapeStub {
  public:

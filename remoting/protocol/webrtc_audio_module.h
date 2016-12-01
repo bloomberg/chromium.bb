@@ -17,8 +17,6 @@ class SingleThreadTaskRunner;
 namespace remoting {
 namespace protocol {
 
-class AudioStub;
-
 // Audio module passed to WebRTC. It doesn't access actual audio devices, but it
 // provides all functionality we need to ensure that audio streaming works
 // properly in WebRTC. Particularly it's responsible for calling AudioTransport

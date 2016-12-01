@@ -17,7 +17,6 @@
 namespace base {
 class RunLoop;
 class Timer;
-class Lock;
 }
 
 namespace remoting {

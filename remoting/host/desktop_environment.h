@@ -14,20 +14,12 @@
 #include "base/memory/weak_ptr.h"
 #include "remoting/host/desktop_environment_options.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}  // namespace base
-
 namespace webrtc {
 class DesktopCapturer;
 class MouseCursorMonitor;
 }  // namespace webrtc
 
 namespace remoting {
-
-namespace protocol {
-class ClientStub;
-}  // namespace protocol
 
 class AudioCapturer;
 class ClientSessionControl;

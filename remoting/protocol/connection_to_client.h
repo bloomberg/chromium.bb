@@ -17,8 +17,6 @@ class DesktopCapturer;
 
 namespace remoting {
 
-class VideoEncoder;
-
 namespace protocol {
 
 class AudioStream;

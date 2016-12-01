@@ -18,7 +18,6 @@ class AudioControl;
 class Capabilities;
 class ClientResolution;
 class ExtensionMessage;
-class PairingResponse;
 class PairingRequest;
 class VideoControl;
 

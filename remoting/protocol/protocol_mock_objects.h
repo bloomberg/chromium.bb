@@ -34,6 +34,9 @@
 #include "third_party/webrtc/libjingle/xmllite/xmlelement.h"
 
 namespace remoting {
+
+class VideoEncoder;
+
 namespace protocol {
 
 class MockAuthenticator : public Authenticator {

@@ -24,7 +24,6 @@ class IqSender;
 namespace protocol {
 
 class JingleSession;
-class TransportFactory;
 
 // JingleSessionManager and JingleSession implement the subset of the
 // Jingle protocol used in Chromoting. JingleSessionManager provides

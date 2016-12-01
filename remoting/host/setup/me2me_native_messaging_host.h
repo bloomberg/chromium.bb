@@ -25,10 +25,6 @@ class SingleThreadTaskRunner;
 class Value;
 }  // namespace base
 
-namespace gaia {
-class GaiaOAuthClient;
-}  // namespace gaia
-
 namespace remoting {
 
 namespace protocol {
