@@ -23,6 +23,7 @@
 #include "aom_dsp/aom_filter.h"
 #include "aom_mem/aom_mem.h"
 #include "aom_ports/mem.h"
+#include "av1/common/filter.h"
 
 namespace {
 
@@ -631,13 +632,18 @@ TEST_P(ConvolveTest, Copy2D) {
           << "(" << x << "," << y << ")";
 }
 
-const int kNumFilterBanks = 4;
+const int kNumFilterBanks = SWITCHABLE_FILTERS;
 const int kNumFilters = 16;
 
 TEST(ConvolveTest, FiltersWontSaturateWhenAddedPairwise) {
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
-        av1_filter_kernels[static_cast<InterpFilter>(filter_bank)];
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+    const InterpFilterParams filter_params =
+        av1_get_interp_filter_params(filter_bank);
+    if (filter_params.taps != SUBPEL_TAPS) continue;
+#endif
     for (int i = 0; i < kNumFilters; i++) {
       const int p0 = filters[i][0] + filters[i][1];
       const int p1 = filters[i][2] + filters[i][3];
@@ -675,7 +681,12 @@ TEST_P(ConvolveTest, MatchesReferenceSubpixelFilter) {
 
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
-        av1_filter_kernels[static_cast<InterpFilter>(filter_bank)];
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+    const InterpFilterParams filter_params =
+        av1_get_interp_filter_params(filter_bank);
+    if (filter_params.taps != SUBPEL_TAPS) continue;
+#endif
 
     for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
       for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
@@ -752,7 +763,12 @@ TEST_P(ConvolveTest, MatchesReferenceAveragingSubpixelFilter) {
 
   for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
     const InterpKernel *filters =
-        av1_filter_kernels[static_cast<InterpFilter>(filter_bank)];
+        (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+    const InterpFilterParams filter_params =
+        av1_get_interp_filter_params(filter_bank);
+    if (filter_params.taps != SUBPEL_TAPS) continue;
+#endif
 
     for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
       for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
@@ -849,7 +865,12 @@ TEST_P(ConvolveTest, FilterExtremes) {
 
       for (int filter_bank = 0; filter_bank < kNumFilterBanks; ++filter_bank) {
         const InterpKernel *filters =
-            av1_filter_kernels[static_cast<InterpFilter>(filter_bank)];
+            (const InterpKernel *)av1_get_interp_filter_kernel(filter_bank);
+#if CONFIG_EXT_INTERP || CONFIG_DUAL_FILTER
+        const InterpFilterParams filter_params =
+            av1_get_interp_filter_params(filter_bank);
+        if (filter_params.taps != SUBPEL_TAPS) continue;
+#endif
         for (int filter_x = 0; filter_x < kNumFilters; ++filter_x) {
           for (int filter_y = 0; filter_y < kNumFilters; ++filter_y) {
             wrapper_filter_block2d_8_c(in, kInputStride, filters[filter_x],
@@ -891,7 +912,8 @@ TEST_P(ConvolveTest, FilterExtremes) {
 TEST_P(ConvolveTest, CheckScalingFiltering) {
   uint8_t *const in = input();
   uint8_t *const out = output();
-  const InterpKernel *const eighttap = av1_filter_kernels[EIGHTTAP];
+  const InterpKernel *const eighttap =
+      (const InterpKernel *)av1_get_interp_filter_kernel(EIGHTTAP_REGULAR);
 
   SetConstantInput(127);
 
