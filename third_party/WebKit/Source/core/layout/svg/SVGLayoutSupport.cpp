@@ -520,7 +520,7 @@ SubtreeContentTransformScope::~SubtreeContentTransformScope() {
   m_savedContentTransformation.copyTransformTo(s_currentContentTransformation);
 }
 
-AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(
+float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(
     const LayoutObject* layoutObject) {
   AffineTransform transform;
   while (layoutObject) {
@@ -529,44 +529,10 @@ AffineTransform SVGLayoutSupport::deprecatedCalculateTransformToLayer(
       break;
     layoutObject = layoutObject->parent();
   }
-
-  // Continue walking up the layer tree, accumulating CSS transforms.
-  // FIXME: this queries layer compositing state - which is not
-  // supported during layout. Hence, the result may not include all CSS
-  // transforms.
-  PaintLayer* layer = layoutObject ? layoutObject->enclosingLayer() : 0;
-  while (layer && layer->isAllowedToQueryCompositingState()) {
-    // We can stop at compositing layers, to match the backing resolution.
-    // FIXME: should we be computing the transform to the nearest composited
-    // layer, or the nearest composited layer that does not paint into its
-    // ancestor? I think this is the nearest composited ancestor since we will
-    // inherit its transforms in the composited layer tree.
-    if (layer->compositingState() != NotComposited)
-      break;
-
-    if (TransformationMatrix* layerTransform = layer->transform())
-      transform = layerTransform->toAffineTransform() * transform;
-
-    layer = layer->parent();
-  }
-
-  return transform;
-}
-
-float SVGLayoutSupport::calculateScreenFontSizeScalingFactor(
-    const LayoutObject* layoutObject) {
-  ASSERT(layoutObject);
-
-  // FIXME: trying to compute a device space transform at record time is wrong.
-  // All clients should be updated to avoid relying on this information, and the
-  // method should be removed.
-  AffineTransform ctm =
-      deprecatedCalculateTransformToLayer(layoutObject) *
-      SubtreeContentTransformScope::currentContentTransformation();
-  ctm.scale(
-      layoutObject->document().frameHost()->deviceScaleFactorDeprecated());
-
-  return clampTo<float>(sqrt((ctm.xScaleSquared() + ctm.yScaleSquared()) / 2));
+  transform.multiply(
+      SubtreeContentTransformScope::currentContentTransformation());
+  return clampTo<float>(
+      sqrt((transform.xScaleSquared() + transform.yScaleSquared()) / 2));
 }
 
 static inline bool compareCandidateDistance(const SearchCandidate& r1,

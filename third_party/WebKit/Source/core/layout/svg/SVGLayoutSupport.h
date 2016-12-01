@@ -145,8 +145,6 @@ class CORE_EXPORT SVGLayoutSupport {
   static bool computeHasNonIsolatedBlendingDescendants(const LayoutObjectType*);
   static bool isIsolationRequired(const LayoutObject*);
 
-  static AffineTransform deprecatedCalculateTransformToLayer(
-      const LayoutObject*);
   static float calculateScreenFontSizeScalingFactor(const LayoutObject*);
 
   static LayoutObject* findClosestLayoutSVGText(LayoutObject*,
