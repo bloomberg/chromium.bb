@@ -451,8 +451,7 @@ public class CronetPerfTestActivity extends Activity {
                 }
 
                 @Override
-                public void onFailed(
-                        UrlRequest request, UrlResponseInfo info, UrlRequestException e) {
+                public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException e) {
                     System.out.println("Async request failed with " + e);
                     mFailed = true;
                 }

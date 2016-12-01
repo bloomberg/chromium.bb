@@ -11,10 +11,10 @@ import android.os.Build;
 
 import android.util.Log;
 
+import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UploadDataSink;
-import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.Closeable;
@@ -452,7 +452,7 @@ final class JavaUrlRequest extends UrlRequestBase {
         });
     }
 
-    private void enterErrorState(final UrlRequestException error) {
+    private void enterErrorState(final CronetException error) {
         if (setTerminalState(State.ERROR)) {
             fireDisconnect();
             fireCloseUploadDataProvider();
@@ -482,19 +482,19 @@ final class JavaUrlRequest extends UrlRequestBase {
     /** Ends the request with an error, caused by an exception thrown from user code. */
     private void enterUserErrorState(final Throwable error) {
         enterErrorState(
-                new UrlRequestException("Exception received from UrlRequest.Callback", error));
+                new CallbackExceptionImpl("Exception received from UrlRequest.Callback", error));
     }
 
     /** Ends the request with an error, caused by an exception thrown from user code. */
     private void enterUploadErrorState(final Throwable error) {
         enterErrorState(
-                new UrlRequestException("Exception received from UploadDataProvider", error));
+                new CallbackExceptionImpl("Exception received from UploadDataProvider", error));
     }
 
     private void enterCronetErrorState(final Throwable error) {
         // TODO(clm) mapping from Java exception (UnknownHostException, for example) to net error
         // code goes here.
-        enterErrorState(new UrlRequestException("System error", error));
+        enterErrorState(new CronetExceptionImpl("System error", error));
     }
 
     /**
@@ -827,7 +827,7 @@ final class JavaUrlRequest extends UrlRequestBase {
             try {
                 mUserExecutor.execute(userErrorSetting(runnable));
             } catch (RejectedExecutionException e) {
-                enterErrorState(new UrlRequestException("Exception posting task to executor", e));
+                enterErrorState(new CronetExceptionImpl("Exception posting task to executor", e));
             }
         }
 
@@ -889,7 +889,7 @@ final class JavaUrlRequest extends UrlRequestBase {
             });
         }
 
-        void onFailed(final UrlResponseInfo urlResponseInfo, final UrlRequestException e) {
+        void onFailed(final UrlResponseInfo urlResponseInfo, final CronetException e) {
             closeResponseChannel();
             Runnable runnable = new Runnable() {
                 @Override

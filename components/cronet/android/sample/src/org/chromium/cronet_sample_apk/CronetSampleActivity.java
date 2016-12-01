@@ -15,9 +15,9 @@ import android.widget.TextView;
 
 import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetException;
 import org.chromium.net.UploadDataProviders;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.ByteArrayOutputStream;
@@ -92,7 +92,7 @@ public class CronetSampleActivity extends Activity {
         }
 
         @Override
-        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
             Log.i(TAG, "****** onFailed, error is: %s", error.getMessage());
 
             final String url = mUrl;

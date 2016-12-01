@@ -46,7 +46,7 @@ public abstract class UploadDataProvider implements Closeable {
      * @throws IOException if any IOException occurred during the process.
      *         {@link UrlRequest.Callback#onFailed} will be called with the
      *         thrown exception set as the cause of the
-     *         {@link UrlRequestException}.
+     *         {@link CallbackException}.
      */
     public abstract void read(UploadDataSink uploadDataSink, ByteBuffer byteBuffer)
             throws IOException;
@@ -72,7 +72,7 @@ public abstract class UploadDataProvider implements Closeable {
      * @throws IOException if any IOException occurred during the process.
      *         {@link UrlRequest.Callback#onFailed} will be called with the
      *         thrown exception set as the cause of the
-     *         {@link UrlRequestException}.
+     *         {@link CallbackException}.
      */
     public abstract void rewind(UploadDataSink uploadDataSink) throws IOException;
 

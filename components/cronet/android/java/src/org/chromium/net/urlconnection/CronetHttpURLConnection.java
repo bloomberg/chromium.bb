@@ -8,8 +8,8 @@ import android.util.Pair;
 
 import org.chromium.base.Log;
 import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetException;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestException;
 import org.chromium.net.UrlResponseInfo;
 
 import java.io.FileNotFoundException;
@@ -44,7 +44,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
     private CronetInputStream mInputStream;
     private CronetOutputStream mOutputStream;
     private UrlResponseInfo mResponseInfo;
-    private UrlRequestException mException;
+    private CronetException mException;
     private boolean mOnRedirectCalled = false;
     private boolean mHasResponse = false;
     private List<Map.Entry<String, String>> mResponseHeadersList;
@@ -479,8 +479,7 @@ public class CronetHttpURLConnection extends HttpURLConnection {
         }
 
         @Override
-        public void onFailed(
-                UrlRequest request, UrlResponseInfo info, UrlRequestException exception) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException exception) {
             if (exception == null) {
                 throw new IllegalStateException(
                         "Exception cannot be null in onFailed.");

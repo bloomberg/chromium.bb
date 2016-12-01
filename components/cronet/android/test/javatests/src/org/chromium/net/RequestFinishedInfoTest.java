@@ -206,8 +206,8 @@ public class RequestFinishedInfoTest extends CronetTestBase {
         assertTrue(requestInfo.getAnnotations().isEmpty());
         assertEquals(RequestFinishedInfo.FAILED, requestInfo.getFinishedReason());
         assertNotNull(requestInfo.getException());
-        assertEquals(UrlRequestException.ERROR_CONNECTION_REFUSED,
-                requestInfo.getException().getErrorCode());
+        assertEquals(NetworkException.ERROR_CONNECTION_REFUSED,
+                ((NetworkException) requestInfo.getException()).getErrorCode());
         RequestFinishedInfo.Metrics metrics = requestInfo.getMetrics();
         assertNotNull("RequestFinishedInfo.getMetrics() must not be null", metrics);
         // The failure is occasionally fast enough that time reported is 0, so just check for null

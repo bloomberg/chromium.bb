@@ -120,7 +120,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
         }
 
         @Override
-        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
             super.onFailed(request, info, error);
             mCronetEngine.shutdown();
             mCallbackCompletionBlock.open();
@@ -785,8 +785,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             }
 
             @Override
-            public void onFailed(
-                    UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+            public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
                 throw new RuntimeException("Unexpected");
             }
         }
@@ -837,8 +836,7 @@ public class CronetUrlRequestContextTest extends CronetTestBase {
             }
 
             @Override
-            public void onFailed(
-                    UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+            public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
                 throw new RuntimeException("Unexpected");
             }
         }

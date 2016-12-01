@@ -10,11 +10,11 @@ import android.test.suitebuilder.annotation.SmallTest;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.base.test.util.Feature;
 import org.chromium.net.CronetEngine;
+import org.chromium.net.CronetException;
 import org.chromium.net.CronetTestBase;
 import org.chromium.net.CronetTestFramework;
 import org.chromium.net.MockUrlRequestJobFactory;
 import org.chromium.net.NativeTestServer;
-import org.chromium.net.UrlRequestException;
 
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -271,8 +271,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             secondConnection.getResponseCode();
             fail();
         } catch (IOException e) {
-            assertTrue(e instanceof java.net.ConnectException
-                    || e instanceof UrlRequestException);
+            assertTrue(e instanceof java.net.ConnectException || e instanceof CronetException);
             assertTrue((e.getMessage().contains("ECONNREFUSED")
                     || (e.getMessage().contains("Connection refused"))
                     || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
@@ -297,8 +296,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             urlConnection.getResponseCode();
             fail();
         } catch (IOException e) {
-            assertTrue(e instanceof java.net.ConnectException
-                    || e instanceof UrlRequestException);
+            assertTrue(e instanceof java.net.ConnectException || e instanceof CronetException);
             assertTrue((e.getMessage().contains("ECONNREFUSED")
                     || (e.getMessage().contains("Connection refused"))
                     || e.getMessage().contains("net::ERR_CONNECTION_REFUSED")));
@@ -322,7 +320,7 @@ public class CronetHttpURLConnectionTest extends CronetTestBase {
             fail();
         } catch (java.net.UnknownHostException e) {
             // Expected.
-        } catch (UrlRequestException e) {
+        } catch (CronetException e) {
             // Expected.
         }
         checkExceptionsAreThrown(urlConnection);

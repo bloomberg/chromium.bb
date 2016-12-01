@@ -10,13 +10,14 @@ import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNIAdditionalImport;
 import org.chromium.base.annotations.JNINamespace;
 import org.chromium.base.annotations.NativeClassQualifiedName;
+import org.chromium.net.CallbackException;
+import org.chromium.net.CronetException;
 import org.chromium.net.InlineExecutionProhibitedException;
-import org.chromium.net.QuicException;
+import org.chromium.net.NetworkException;
 import org.chromium.net.RequestFinishedInfo;
 import org.chromium.net.RequestPriority;
 import org.chromium.net.UploadDataProvider;
 import org.chromium.net.UrlRequest;
-import org.chromium.net.UrlRequestException;
 
 import java.nio.ByteBuffer;
 import java.util.AbstractMap;
@@ -82,7 +83,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     private final Collection<Object> mRequestAnnotations;
     @RequestFinishedInfoImpl.FinishedReason
     private int mFinishedReason;
-    private UrlRequestException mException;
+    private CronetException mException;
     private final boolean mDisableCache;
     private final boolean mDisableConnectionMigration;
 
@@ -368,7 +369,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
             // request's failure, since failWithException does not enforce that onFailed() is not
             // executed inline.
             failWithException(
-                    new UrlRequestException("Exception posting task to executor", failException));
+                    new CronetExceptionImpl("Exception posting task to executor", failException));
         }
     }
 
@@ -429,8 +430,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * Only called on the Executor.
      */
     private void onCallbackException(Exception e) {
-        UrlRequestException requestError =
-                new UrlRequestException("Exception received from UrlRequest.Callback", e);
+        CallbackException requestError =
+                new CallbackExceptionImpl("Exception received from UrlRequest.Callback", e);
         Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in CalledByNative method", e);
         failWithException(requestError);
     }
@@ -439,8 +440,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * Called when UploadDataProvider encounters an error.
      */
     void onUploadException(Throwable e) {
-        UrlRequestException uploadError =
-                new UrlRequestException("Exception received from UploadDataProvider", e);
+        CallbackException uploadError =
+                new CallbackExceptionImpl("Exception received from UploadDataProvider", e);
         Log.e(CronetUrlRequestContext.LOG_TAG, "Exception in upload method", e);
         failWithException(uploadError);
     }
@@ -448,7 +449,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
     /**
      * Fails the request with an exception. Can be called on any thread.
      */
-    private void failWithException(final UrlRequestException exception) {
+    private void failWithException(final CronetException exception) {
         mException = exception;
         synchronized (mUrlRequestAdapterLock) {
             if (isDoneLocked()) {
@@ -579,7 +580,7 @@ public final class CronetUrlRequest extends UrlRequestBase {
         mResponseInfo.setReceivedBytesCount(mReceivedBytesCountFromRedirects + receivedBytesCount);
         if (byteBuffer.position() != initialPosition || byteBuffer.limit() != initialLimit) {
             failWithException(
-                    new UrlRequestException("ByteBuffer modified externally during read", null));
+                    new CronetExceptionImpl("ByteBuffer modified externally during read", null));
             return;
         }
         if (mOnReadCompletedTask == null) {
@@ -626,8 +627,8 @@ public final class CronetUrlRequest extends UrlRequestBase {
      * Called when error has occured, no callbacks will be called afterwards.
      *
      * @param errorCode Error code represented by {@code UrlRequestError} that should be mapped
-     *                  to one of {@link UrlRequestException#ERROR_LISTENER_EXCEPTION_THROWN
-     *                  UrlRequestException.ERROR_*}.
+     *                  to one of {@link NetworkException#ERROR_HOSTNAME_NOT_RESOLVED
+     *                  NetworkException.ERROR_*}.
      * @param nativeError native net error code.
      * @param errorString textual representation of the error code.
      * @param receivedBytesCount number of bytes received.
@@ -641,12 +642,12 @@ public final class CronetUrlRequest extends UrlRequestBase {
             mResponseInfo.setReceivedBytesCount(
                     mReceivedBytesCountFromRedirects + receivedBytesCount);
         }
-        if (errorCode == UrlRequestException.ERROR_QUIC_PROTOCOL_FAILED) {
-            failWithException(new QuicException(
+        if (errorCode == NetworkException.ERROR_QUIC_PROTOCOL_FAILED) {
+            failWithException(new QuicExceptionImpl(
                     "Exception in CronetUrlRequest: " + errorString, nativeError, nativeQuicError));
         } else {
             int javaError = mapUrlRequestErrorToApiErrorCode(errorCode);
-            failWithException(new UrlRequestException(
+            failWithException(new NetworkExceptionImpl(
                     "Exception in CronetUrlRequest: " + errorString, javaError, nativeError));
         }
     }
@@ -724,30 +725,28 @@ public final class CronetUrlRequest extends UrlRequestBase {
 
     private int mapUrlRequestErrorToApiErrorCode(int errorCode) {
         switch (errorCode) {
-            case UrlRequestError.LISTENER_EXCEPTION_THROWN:
-                return UrlRequestException.ERROR_LISTENER_EXCEPTION_THROWN;
             case UrlRequestError.HOSTNAME_NOT_RESOLVED:
-                return UrlRequestException.ERROR_HOSTNAME_NOT_RESOLVED;
+                return NetworkException.ERROR_HOSTNAME_NOT_RESOLVED;
             case UrlRequestError.INTERNET_DISCONNECTED:
-                return UrlRequestException.ERROR_INTERNET_DISCONNECTED;
+                return NetworkException.ERROR_INTERNET_DISCONNECTED;
             case UrlRequestError.NETWORK_CHANGED:
-                return UrlRequestException.ERROR_NETWORK_CHANGED;
+                return NetworkException.ERROR_NETWORK_CHANGED;
             case UrlRequestError.TIMED_OUT:
-                return UrlRequestException.ERROR_TIMED_OUT;
+                return NetworkException.ERROR_TIMED_OUT;
             case UrlRequestError.CONNECTION_CLOSED:
-                return UrlRequestException.ERROR_CONNECTION_CLOSED;
+                return NetworkException.ERROR_CONNECTION_CLOSED;
             case UrlRequestError.CONNECTION_TIMED_OUT:
-                return UrlRequestException.ERROR_CONNECTION_TIMED_OUT;
+                return NetworkException.ERROR_CONNECTION_TIMED_OUT;
             case UrlRequestError.CONNECTION_REFUSED:
-                return UrlRequestException.ERROR_CONNECTION_REFUSED;
+                return NetworkException.ERROR_CONNECTION_REFUSED;
             case UrlRequestError.CONNECTION_RESET:
-                return UrlRequestException.ERROR_CONNECTION_RESET;
+                return NetworkException.ERROR_CONNECTION_RESET;
             case UrlRequestError.ADDRESS_UNREACHABLE:
-                return UrlRequestException.ERROR_ADDRESS_UNREACHABLE;
+                return NetworkException.ERROR_ADDRESS_UNREACHABLE;
             case UrlRequestError.QUIC_PROTOCOL_FAILED:
-                return UrlRequestException.ERROR_QUIC_PROTOCOL_FAILED;
+                return NetworkException.ERROR_QUIC_PROTOCOL_FAILED;
             case UrlRequestError.OTHER:
-                return UrlRequestException.ERROR_OTHER;
+                return NetworkException.ERROR_OTHER;
             default:
                 Log.e(CronetUrlRequestContext.LOG_TAG, "Unknown error code: " + errorCode);
                 return errorCode;

@@ -64,13 +64,18 @@ public class VersionSafeCallbacks {
         }
 
         @Override
-        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
             mWrappedCallback.onFailed(request, info, error);
         }
 
         @Override
         public void onCanceled(UrlRequest request, UrlResponseInfo info) {
             mWrappedCallback.onCanceled(request, info);
+        }
+
+        @Override
+        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+            mWrappedCallback.onFailed(request, info, error);
         }
     }
 

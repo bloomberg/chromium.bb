@@ -15,8 +15,6 @@ import static junit.framework.Assert.assertTrue;
 
 import static org.chromium.net.CronetTestBase.assertContains;
 
-import org.chromium.net.impl.UrlRequestError;
-
 import java.nio.ByteBuffer;
 import java.util.ArrayList;
 import java.util.concurrent.ExecutorService;
@@ -33,7 +31,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     public ArrayList<UrlResponseInfo> mRedirectResponseInfoList = new ArrayList<UrlResponseInfo>();
     public ArrayList<String> mRedirectUrlList = new ArrayList<String>();
     public UrlResponseInfo mResponseInfo;
-    public UrlRequestException mError;
+    public CronetException mError;
 
     public ResponseStep mResponseStep = ResponseStep.NOTHING;
 
@@ -50,7 +48,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     // that advance it.
     private boolean mAutoAdvance = true;
     // Whether an exception is thrown by maybeThrowCancelOrPause().
-    private boolean mListenerExceptionThrown;
+    private boolean mCallbackExceptionThrown;
 
     // Whether to permit calls on the network thread.
     private boolean mAllowDirectExecutor = false;
@@ -239,7 +237,7 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
     }
 
     @Override
-    public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+    public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
         // If the failure is because of prohibited direct execution, the test shouldn't fail
         // since the request already did.
         if (error.getCause() instanceof InlineExecutionProhibitedException) {
@@ -253,14 +251,12 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         assertFalse(mOnErrorCalled);
         assertFalse(mOnCanceledCalled);
         assertNull(mError);
-        if (mListenerExceptionThrown) {
-            assertEquals(UrlRequestError.LISTENER_EXCEPTION_THROWN, error.getErrorCode());
-            assertEquals(0, error.getCronetInternalErrorCode());
+        if (mCallbackExceptionThrown) {
+            assertTrue(error instanceof CallbackException);
             assertContains("Exception received from UrlRequest.Callback", error.getMessage());
             assertNotNull(error.getCause());
             assertTrue(error.getCause() instanceof IllegalStateException);
             assertContains("Listener Exception.", error.getCause().getMessage());
-            assertFalse(error.immediatelyRetryable());
         }
 
         mResponseStep = ResponseStep.ON_FAILED;
@@ -326,8 +322,8 @@ class TestUrlRequestCallback extends UrlRequest.Callback {
         }
 
         if (mFailureType == FailureType.THROW_SYNC) {
-            assertFalse(mListenerExceptionThrown);
-            mListenerExceptionThrown = true;
+            assertFalse(mCallbackExceptionThrown);
+            mCallbackExceptionThrown = true;
             throw new IllegalStateException("Listener Exception.");
         }
         Runnable task = new Runnable() {

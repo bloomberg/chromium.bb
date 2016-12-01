@@ -145,7 +145,7 @@ public abstract class UrlRequest {
          * @param newLocationUrl Location where request is redirected.
          * @throws Exception if an error occurs while processing a redirect. {@link #onFailed}
          *         will be called with the thrown exception set as the cause of the
-         *         {@link UrlRequestException}.
+         *         {@link CallbackException}.
          */
         public abstract void onRedirectReceived(
                 UrlRequest request, UrlResponseInfo info, String newLocationUrl) throws Exception;
@@ -165,7 +165,7 @@ public abstract class UrlRequest {
          * @param info Response information.
          * @throws Exception if an error occurs while processing response start. {@link #onFailed}
          *         will be called with the thrown exception set as the cause of the
-         *         {@link UrlRequestException}.
+         *         {@link CallbackException}.
          */
         public abstract void onResponseStarted(UrlRequest request, UrlResponseInfo info)
                 throws Exception;
@@ -190,7 +190,7 @@ public abstract class UrlRequest {
          *         the received data. The buffer's limit is not changed.
          * @throws Exception if an error occurs while processing a read completion.
          *         {@link #onFailed} will be called with the thrown exception set as the cause of
-         *         the {@link UrlRequestException}.
+         *         the {@link CallbackException}.
          */
         public abstract void onReadCompleted(
                 UrlRequest request, UrlResponseInfo info, ByteBuffer byteBuffer) throws Exception;
@@ -214,8 +214,11 @@ public abstract class UrlRequest {
          *         received.
          * @param error information about error.
          */
-        public abstract void onFailed(
-                UrlRequest request, UrlResponseInfo info, UrlRequestException error);
+        public void onFailed(UrlRequest request, UrlResponseInfo info, CronetException error) {
+            // TODO(mef): Remove fallback to legacy api and make this method abstract
+            // after complete transition to CronetException.
+            onFailed(request, info, new UrlRequestException(error));
+        }
 
         /**
          * Invoked if request was canceled via {@link UrlRequest#cancel}. Once
@@ -227,6 +230,16 @@ public abstract class UrlRequest {
          *         received.
          */
         public void onCanceled(UrlRequest request, UrlResponseInfo info) {}
+
+        /**
+         * @deprecated Use {@code onFailed} instead.
+         * {@hide This method will be removed after complete transition to CronetException}.
+         */
+        @Deprecated
+        // TODO(mef): Remove this after complete transition to CronetException.
+        public void onFailed(UrlRequest request, UrlResponseInfo info, UrlRequestException error) {
+            assert false;
+        }
     }
 
     /**

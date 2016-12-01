@@ -294,11 +294,11 @@ public abstract class RequestFinishedInfo {
     public abstract UrlResponseInfo getResponseInfo();
 
     /**
-     * If the request failed, returns the same {@link UrlRequestException} provided to
+     * If the request failed, returns the same {@link CronetException} provided to
      * {@link UrlRequest.Callback#onFailed}.
      *
-     * @return the request's {@link UrlRequestException}, if the request failed
+     * @return the request's {@link CronetException}, if the request failed
      */
     @Nullable
-    public abstract UrlRequestException getException();
+    public abstract CronetException getException();
 }

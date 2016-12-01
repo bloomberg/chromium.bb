@@ -330,8 +330,10 @@ public class BidirectionalStreamQuicTest extends CronetTestBase {
         // Server terminated on us, so the stream must fail.
         // QUIC reports this as ERR_QUIC_PROTOCOL_ERROR. Sometimes we get ERR_CONNECTION_REFUSED.
         assertNotNull(callback.mError);
-        assertTrue(NetError.ERR_QUIC_PROTOCOL_ERROR == callback.mError.getCronetInternalErrorCode()
-                || NetError.ERR_CONNECTION_REFUSED == callback.mError.getCronetInternalErrorCode());
+        assertTrue(callback.mError instanceof NetworkException);
+        NetworkException networkError = (NetworkException) callback.mError;
+        assertTrue(NetError.ERR_QUIC_PROTOCOL_ERROR == networkError.getCronetInternalErrorCode()
+                || NetError.ERR_CONNECTION_REFUSED == networkError.getCronetInternalErrorCode());
     }
 
     @SmallTest

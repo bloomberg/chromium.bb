@@ -1,23 +1,17 @@
-// Copyright 2014 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 package org.chromium.net;
 
-import java.io.IOException;
-
 /**
- * @deprecated Use {@link CronetException} instead.
- * {@hide This class will be removed after complete transition to CronetException}.
+ * Exception passed to {@link UrlRequest.Callback#onFailed UrlRequest.Callback.onFailed()} when
+ * Cronet fails to process a network request. In this case {@link #getErrorCode} and
+ * {@link #getCronetInternalErrorCode} can be used to get more information about the specific
+ * type of failure. If {@link #getErrorCode} returns {@link #ERROR_QUIC_PROTOCOL_FAILED},
+ * this exception can be cast to a {@link QuicException} which can provide further details.
  */
-@Deprecated
-public class UrlRequestException extends IOException {
-    /**
-     * Error code indicating this class wraps an exception thrown by {@link UrlRequest.Callback} or
-     * {@link UploadDataProvider}. Wrapped exception can be retrieved using
-     * {@link IOException#getCause}.
-     */
-    public static final int ERROR_LISTENER_EXCEPTION_THROWN = 0;
+public abstract class NetworkException extends CronetException {
     /**
      * Error code indicating the host being sent the request could not be resolved to an IP address.
      */
@@ -68,30 +62,24 @@ public class UrlRequestException extends IOException {
      */
     public static final int ERROR_OTHER = 11;
 
-    // Error code, one of ERROR_*
-    private final int mErrorCode;
-    // Cronet internal error code.
-    private final int mCronetInternalErrorCode;
-
-    public UrlRequestException(CronetException error) {
-        super(error.getMessage(), error.getCause());
-        if (error instanceof NetworkException) {
-            mErrorCode = ((NetworkException) error).getErrorCode();
-            mCronetInternalErrorCode = ((NetworkException) error).getCronetInternalErrorCode();
-        } else {
-            mErrorCode = 0;
-            mCronetInternalErrorCode = ERROR_LISTENER_EXCEPTION_THROWN;
-        }
+    /**
+     * Constructs an exception that is caused by a network error.
+     *
+     * @param message explanation of failure.
+     * @param cause the cause (which is saved for later retrieval by the {@link
+     *         java.io.IOException#getCause getCause()} method). A null value is permitted, and
+     *         indicates that the cause is nonexistent or unknown.
+     */
+    protected NetworkException(String message, Throwable cause) {
+        super(message, cause);
     }
 
     /**
-     * Returns error code, one of {@link #ERROR_LISTENER_EXCEPTION_THROWN ERROR_*}.
+     * Returns error code, one of {@link #ERROR_HOSTNAME_NOT_RESOLVED ERROR_*}.
      *
-     * @return error code, one of {@link #ERROR_LISTENER_EXCEPTION_THROWN ERROR_*}.
+     * @return error code, one of {@link #ERROR_HOSTNAME_NOT_RESOLVED ERROR_*}.
      */
-    public int getErrorCode() {
-        return mErrorCode;
-    }
+    public abstract int getErrorCode();
 
     /**
      * Returns a Cronet internal error code. This may provide more specific error
@@ -102,9 +90,7 @@ public class UrlRequestException extends IOException {
      *
      * @return Cronet internal error code.
      */
-    public int getCronetInternalErrorCode() {
-        return mCronetInternalErrorCode;
-    }
+    public abstract int getCronetInternalErrorCode();
 
     /**
      * Returns {@code true} if retrying this request right away might succeed, {@code false}
@@ -113,28 +99,10 @@ public class UrlRequestException extends IOException {
      * network configuration, but {@code false} when {@code getErrorCode()} returns
      * {@link #ERROR_INTERNET_DISCONNECTED} because retrying the request right away will
      * encounter the same failure (instead retrying should be delayed until device regains
-     * network connectivity). Returns {@code false} when {@code getErrorCode()} returns
-     * {@link #ERROR_LISTENER_EXCEPTION_THROWN}.
+     * network connectivity).
      *
      * @return {@code true} if retrying this request right away might succeed, {@code false}
      *         otherwise.
      */
-    public boolean immediatelyRetryable() {
-        switch (mErrorCode) {
-            case ERROR_LISTENER_EXCEPTION_THROWN:
-            case ERROR_HOSTNAME_NOT_RESOLVED:
-            case ERROR_INTERNET_DISCONNECTED:
-            case ERROR_CONNECTION_REFUSED:
-            case ERROR_ADDRESS_UNREACHABLE:
-            case ERROR_OTHER:
-            default:
-                return false;
-            case ERROR_NETWORK_CHANGED:
-            case ERROR_TIMED_OUT:
-            case ERROR_CONNECTION_CLOSED:
-            case ERROR_CONNECTION_TIMED_OUT:
-            case ERROR_CONNECTION_RESET:
-                return true;
-        }
-    }
+    public abstract boolean immediatelyRetryable();
 }
