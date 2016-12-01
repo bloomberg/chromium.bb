@@ -1367,11 +1367,13 @@ class ActiveProfileObserverBridge : public AvatarMenuObserver,
     [window accessibilitySetOverrideValue:
         l10n_util::GetNSString(IDS_PROFILES_NEW_AVATAR_MENU_ACCESSIBLE_NAME)
                              forAttribute:NSAccessibilityHelpAttribute];
-
+    BOOL shouldUseLeadingEdgeForBubble =
+        cocoa_l10n_util::ShouldDoExperimentalRTLLayout() &&
+        !cocoa_l10n_util::ShouldFlipWindowControlsInRTL();
     [[self bubble]
-        setAlignment:cocoa_l10n_util::ShouldFlipWindowControlsInRTL()
-                         ? info_bubble::kAlignTrailingEdgeToAnchorEdge
-                         : info_bubble::kAlignLeadingEdgeToAnchorEdge];
+        setAlignment:shouldUseLeadingEdgeForBubble
+                         ? info_bubble::kAlignLeadingEdgeToAnchorEdge
+                         : info_bubble::kAlignTrailingEdgeToAnchorEdge];
     [[self bubble] setArrowLocation:info_bubble::kNoArrow];
     [[self bubble] setBackgroundColor:GetDialogBackgroundColor()];
     [self initMenuContentsWithView:viewMode_];
