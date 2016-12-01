@@ -11,6 +11,7 @@ deployed with your code.
 
 from __future__ import print_function
 
+import collections
 import contextlib
 import datetime
 import ssl
@@ -44,6 +45,10 @@ MetricCall = namedtuple(
     'metric_name metric_args metric_kwargs '
     'method method_args method_kwargs '
     'reset_after')
+
+
+class MetricsException(Exception):
+  """A generic exception raised by the Metrics classes in this module."""
 
 
 class ProxyMetric(object):
@@ -128,6 +133,12 @@ def Gauge(name, reset_after=False):
 
 
 @_Metric
+def CumulativeMetric(name, reset_after=False):
+  """Returns a metric handle for a cumulative float named |name|."""
+  return ts_mon.CumulativeMetric(name)
+
+
+@_Metric
 def String(name, reset_after=False):
   """Returns a metric handle for a string named |name|."""
   return ts_mon.StringMetric(name)
@@ -179,6 +190,26 @@ def SecondsDistribution(name, reset_after=False):
   return ts_mon.CumulativeDistributionMetric(
       name, bucketer=b, units=ts_mon.MetricsDataUnits.SECONDS)
 
+@_Metric
+def PercentageDistribution(name, num_buckets=1000, reset_after=False):
+  """Returns a metric handle for a cumulative distribution for percentage.
+
+  The distribution handle returned by this method is better suited for reporting
+  percentage values than the default one. The bucketing is optimized for values
+  in [0,100].
+
+  Args:
+    name: The name of this metric.
+    num_buckets: This metric buckets the percentage values before
+        reporting. This argument controls the number of the bucket the range
+        [0,100] is divided in. The default gives you 0.1% resolution.
+    reset_after: Should the metric be reset after reporting.
+  """
+  # The last bucket actually covers [100, 100 + 1.0/num_buckets), so it
+  # corresponds to values that exactly match 100%.
+  bucket_width = 100.0 / num_buckets
+  b = ts_mon.FixedWidthBucketer(bucket_width, num_buckets)
+  return ts_mon.CumulativeDistributionMetric(name, bucketer=b)
 
 @contextlib.contextmanager
 def SecondsTimer(name, fields=None):
@@ -226,6 +257,135 @@ def SecondsTimerDecorator(name, fields=None):
     return wrapper
 
   return decorator
+
+
+class RuntimeBreakdownTimer(object):
+  """Record the time of an operation and the breakdown into sub-steps.
+
+  Usage:
+    with RuntimeBreakdownTimer('timer/name', fields={'foo':'bar'}) as timer:
+      with timer.Step('first_step'):
+        doFirstStep()
+      with timer.Step('second_step'):
+        doSecondStep()
+      # The time spent next will show up under .../timer/name/breakdown_no_step
+      doSomeNonStepWork()
+
+  This will emit the following metrics:
+  - .../timer/name/total_duration - A SecondsDistribution metric for the time
+        spent inside the outer with block.
+  - .../timer/name/breakdown/first_step and
+    .../timer/name/breakdown/second_step - PercentageDistribution metrics for
+        the fraction of time devoted to each substep.
+  - .../timer/name/breakdown_unaccounted - PercentageDistribution metric for the
+        fraction of time that is not accounted for in any of the substeps.
+  - .../timer/name/bucketing_loss - PercentageDistribution metric buckets values
+        before reporting them as distributions. This causes small errors in the
+        reported values because they are rounded to the reported buckets lower
+        bound. This is a CumulativeMetric measuring the total rounding error
+        accrued in reporting all the percentages. The worst case bucketing loss
+        for x steps is (x+1)/10. So, if you time across 9 steps, you should
+        expect no more than 1% rounding error.
+
+  NB: This helper can only be used if the field values are known at the
+  beginning of the outer context and do not change as a result of any of the
+  operations timed.
+  """
+
+  PERCENT_BUCKET_COUNT = 1000
+
+  _StepMetrics = collections.namedtuple('_StepMetrics', ['name', 'time_s'])
+
+  def __init__(self, name, fields=None):
+    self._name = name
+    self._fields = fields
+    self._outer_t0 = None
+    self._total_time_s = 0
+    self._inside_step = False
+    self._step_metrics = []
+
+  def __enter__(self):
+    self._outer_t0 = datetime.datetime.now()
+    return self
+
+  def __exit__(self, _type, _value, _traceback):
+    self._RecordTotalTime()
+
+    outer_timer = SecondsDistribution('%s/total_duration' % (self._name,))
+    outer_timer.add(self._total_time_s, fields=self._fields)
+
+    for name, percent in self._GetStepBreakdowns().iteritems():
+      step_metric = PercentageDistribution(
+          '%s/breakdown/%s' % (self._name, name),
+          num_buckets=self.PERCENT_BUCKET_COUNT)
+      step_metric.add(percent, fields=self._fields)
+
+    unaccounted_metric = PercentageDistribution(
+        '%s/breakdown_unaccounted' % self._name,
+        num_buckets=self.PERCENT_BUCKET_COUNT)
+    unaccounted_metric.add(self._GetUnaccountedBreakdown(), fields=self._fields)
+
+    bucketing_loss_metric = CumulativeMetric('%s/bucketing_loss' % self._name)
+    bucketing_loss_metric.increment_by(self._GetBucketingLoss(),
+                                       fields=self._fields)
+
+  @contextlib.contextmanager
+  def Step(self, step_name):
+    """Start a new step named step_name in the timed operation.
+
+    Note that it is not possible to start a step inside a step. i.e.,
+
+    with RuntimeBreakdownTimer('timer') as timer:
+      with timer.Step('outer_step'):
+        with timer.Step('inner_step'):
+          # will by design raise an exception.
+
+    Args:
+      step_name: The name of the step being timed.
+    """
+    if self._inside_step:
+      raise MetricsException('Attempted to create a nested Step.')
+
+    self._inside_step = True
+    t0 = datetime.datetime.now()
+    try:
+      yield
+    finally:
+      self._inside_step = False
+      step_time_s = (datetime.datetime.now() - t0).total_seconds()
+      self._step_metrics.append(self._StepMetrics(step_name, step_time_s))
+
+  def _GetStepBreakdowns(self):
+    """Returns percentage of time spent in each step.
+
+    Must be called after |_RecordTotalTime|.
+    """
+    if not self._total_time_s:
+      return {}
+    return {x.name: (x.time_s * 100.0) / self._total_time_s
+            for x in self._step_metrics}
+
+  def _GetUnaccountedBreakdown(self):
+    """Returns the percentage time spent outside of all steps.
+
+    Must be called after |_RecordTotalTime|.
+    """
+    breakdown_percentages = sum(self._GetStepBreakdowns().itervalues())
+    return max(0, 100 - breakdown_percentages)
+
+  def _GetBucketingLoss(self):
+    """Compute the actual loss in reported percentages due to bucketing.
+
+    Must be called after |_RecordTotalTime|.
+    """
+    reported = self._GetStepBreakdowns().values()
+    reported.append(self._GetUnaccountedBreakdown())
+    bucket_width = 100.0 / self.PERCENT_BUCKET_COUNT
+    return sum(x % bucket_width for x in reported)
+
+  def _RecordTotalTime(self):
+    self._total_time_s = (
+        datetime.datetime.now() - self._outer_t0).total_seconds()
 
 
 def Flush(reset_after=()):

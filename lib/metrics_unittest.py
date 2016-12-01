@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import datetime
 import mock
 import tempfile
 
@@ -135,3 +136,98 @@ class TestSecondsTimer(cros_test_lib.MockTestCase):
       pass
     self.assertEqual(metrics.SecondsDistribution.call_count, 1)
     self.assertEqual(self._mockMetric.add.call_count, 1)
+
+
+class TestRuntimeBreakdownTimer(cros_test_lib.MockTestCase):
+  """Tests the behaviour of RuntimeBreakdownTimer."""
+
+  def setUp(self):
+    # Only patch metrics.datetime because we don't want to affect calls to
+    # functions from the unittest running framework itself.
+    self.datetime_mock = self.PatchObject(metrics, 'datetime')
+    self.datetime_mock.datetime.now.side_effect = self._GetFakeTime
+    # An arbitrary, but fixed, seed time.
+    self._fake_time = datetime.datetime(1, 2, 3)
+
+    metric_mock = self.PatchObject(metrics, 'SecondsDistribution',
+                                   autospec=True)
+    self._mockSecondsDistribution = metric_mock.return_value
+
+    metric_mock = self.PatchObject(metrics, 'PercentageDistribution',
+                                   autospec=True)
+    self._mockPercentageDistribution = metric_mock.return_value
+
+    metric_mock = self.PatchObject(metrics, 'CumulativeMetric', autospec=True)
+    self._mockCumulativeMetric = metric_mock.return_value
+
+  def testSucessfulBreakdown(self):
+    """Tests that the context manager emits expected breakdowns."""
+    with metrics.RuntimeBreakdownTimer('fubar') as runtime:
+      with runtime.Step('step1'):
+        self._IncrementFakeTime(4)
+      with runtime.Step('step2'):
+        self._IncrementFakeTime(1)
+      self._IncrementFakeTime(5)
+
+    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.SecondsDistribution.call_args[0][0],
+                     'fubar/total_duration')
+    self.assertEqual(self._mockSecondsDistribution.add.call_count, 1)
+    self.assertEqual(self._mockSecondsDistribution.add.call_args[0][0], 10.0)
+
+    self.assertEqual(metrics.PercentageDistribution.call_count, 3)
+    breakdown_names = [x[0][0] for x in
+                       metrics.PercentageDistribution.call_args_list]
+    self.assertEqual(set(breakdown_names),
+                     {'fubar/breakdown/step1', 'fubar/breakdown/step2',
+                      'fubar/breakdown_unaccounted'})
+    breakdown_values = [x[0][0] for x in
+                        self._mockPercentageDistribution.add.call_args_list]
+    self.assertEqual(set(breakdown_values), {40.0, 10.0, 50.0})
+
+    self.assertEqual(metrics.CumulativeMetric.call_count, 1)
+    self.assertEqual(metrics.CumulativeMetric.call_args[0][0],
+                     'fubar/bucketing_loss')
+
+  def testBucketingLossApproximately(self):
+    """Tests that we report the bucketing loss correctly."""
+    with metrics.RuntimeBreakdownTimer('fubar') as runtime:
+      for i in range(300):
+        with runtime.Step('step%d' % i):
+          self._IncrementFakeTime(1)
+
+    self.assertEqual(metrics.SecondsDistribution.call_count, 1)
+    self.assertEqual(metrics.SecondsDistribution.call_args[0][0],
+                     'fubar/total_duration')
+    self.assertEqual(self._mockSecondsDistribution.add.call_count, 1)
+    self.assertEqual(self._mockSecondsDistribution.add.call_args[0][0], 300.0)
+
+    self.assertEqual(metrics.CumulativeMetric.call_count, 1)
+    self.assertEqual(metrics.CumulativeMetric.call_args[0][0],
+                     'fubar/bucketing_loss')
+    self.assertEqual(self._mockCumulativeMetric.increment_by.call_count, 1)
+    # Each steps is roughly 1/300 ~ .33%.
+    # Our bucket resolution is 0.1 % so we expect to lose ~ 0.033% each report.
+    # Total # of reports = 300. So we'll lose ~9.99%
+    # Let's loosely bound that number to allow for floating point computation
+    # errors.
+    error = self._mockCumulativeMetric.increment_by.call_args[0][0]
+    self.assertGreater(error, 9.6)
+    self.assertLess(error, 10.2)
+
+  def testNestedStepsRaise(self):
+    """Tests that trying to enter nested .Step contexts raises."""
+    with self.assertRaises(metrics.MetricsException):
+      self._EnterNestedSteps()
+
+  def _EnterNestedSteps(self):
+    with metrics.RuntimeBreakdownTimer('fubar') as runtime:
+      with runtime.Step('step1'):
+        with runtime.Step('step2'):
+          pass
+
+  def _GetFakeTime(self):
+    return self._fake_time
+
+  def _IncrementFakeTime(self, seconds):
+    self._fake_time = self._fake_time + datetime.timedelta(seconds=seconds)
