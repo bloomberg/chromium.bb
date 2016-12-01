@@ -29,5 +29,7 @@ void drv_insert_supported_combination(struct driver *drv, uint32_t format,
 void drv_insert_combinations(struct driver *drv,
 			     struct supported_combination *combos,
 			     uint32_t size);
+void drv_modify_supported_combination(struct driver *drv, uint32_t format,
+			              uint64_t usage, uint64_t modifier);
 int drv_add_kms_flags(struct driver *drv);
 #endif

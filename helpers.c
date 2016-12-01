@@ -276,11 +276,42 @@ uint32_t drv_log_base2(uint32_t value)
 	return ret;
 }
 
+/* Inserts a combination into list -- caller should have lock on driver. */
 void drv_insert_supported_combination(struct driver *drv, uint32_t format,
 			              uint64_t usage, uint64_t modifier)
 {
-	int found = 0;
 	struct combination_list_element *elem;
+
+	elem = calloc(1, sizeof(*elem));
+	elem->combination.format = format;
+	elem->combination.modifier = modifier;
+	elem->combination.usage = usage;
+	LIST_ADD(&elem->link, &drv->backend->combinations);
+}
+
+void drv_insert_combinations(struct driver *drv, struct supported_combination *combos,
+			     uint32_t size)
+{
+	unsigned int i;
+
+	pthread_mutex_lock(&drv->driver_lock);
+
+	for (i = 0; i < size; i++)
+		drv_insert_supported_combination(drv, combos[i].format,
+						 combos[i].usage,
+						 combos[i].modifier);
+
+	pthread_mutex_unlock(&drv->driver_lock);
+}
+
+void drv_modify_supported_combination(struct driver *drv, uint32_t format,
+				      uint64_t usage, uint64_t modifier)
+{
+	/*
+	 * Attempts to add the specified usage to an existing {format, modifier}
+	 * pair. If the pair is not present, a new combination is created.
+	 */
+	int found = 0;
 
 	pthread_mutex_lock(&drv->driver_lock);
 
@@ -293,27 +324,11 @@ void drv_insert_supported_combination(struct driver *drv, uint32_t format,
 		}
 	}
 
-	if (found)
-		goto out;
 
-	elem = calloc(1, sizeof(*elem));
-	elem->combination.format = format;
-	elem->combination.modifier = modifier;
-	elem->combination.usage = usage;
-	LIST_ADD(&elem->link, &drv->backend->combinations);
+	if (!found)
+		drv_insert_supported_combination(drv, format, usage, modifier);
 
-out:
 	pthread_mutex_unlock(&drv->driver_lock);
-}
-
-void drv_insert_combinations(struct driver *drv, struct supported_combination *combos,
-			     uint32_t size)
-{
-	unsigned int i;
-	for (i = 0; i < size; i++)
-		drv_insert_supported_combination(drv, combos[i].format,
-						 combos[i].usage,
-						 combos[i].modifier);
 }
 
 int drv_add_kms_flags(struct driver *drv)
@@ -332,12 +347,10 @@ int drv_add_kms_flags(struct driver *drv)
 	 * combination here. Note that the kernel disregards the alpha component
 	 * of ARGB unless it's an overlay plane.
 	 */
-	drv_insert_supported_combination(drv, DRM_FORMAT_XRGB8888,
-					 DRV_BO_USE_SCANOUT,
-					 0);
-	drv_insert_supported_combination(drv, DRM_FORMAT_ARGB8888,
-					 DRV_BO_USE_SCANOUT,
-					 0);
+	drv_modify_supported_combination(drv, DRM_FORMAT_XRGB8888,
+					 DRV_BO_USE_SCANOUT, 0);
+	drv_modify_supported_combination(drv, DRM_FORMAT_ARGB8888,
+					 DRV_BO_USE_SCANOUT, 0);
 
 	/*
 	 * The ability to return universal planes is only complete on
@@ -389,7 +402,7 @@ int drv_add_kms_flags(struct driver *drv)
 		}
 
 		for (j = 0; j < plane->count_formats; j++)
-			drv_insert_supported_combination(drv, plane->formats[j],
+			drv_modify_supported_combination(drv, plane->formats[j],
 							 usage, 0);
 
 		drmModeFreeObjectProperties(props);
