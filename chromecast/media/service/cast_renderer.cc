@@ -209,16 +209,6 @@ base::TimeDelta CastRenderer::GetMediaTime() {
   return pipeline_->GetMediaTime();
 }
 
-bool CastRenderer::HasAudio() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return pipeline_->HasAudio();
-}
-
-bool CastRenderer::HasVideo() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return pipeline_->HasVideo();
-}
-
 void CastRenderer::OnVideoResolutionPolicyChanged() {
   DCHECK(task_runner_->BelongsToCurrentThread());
   if (!video_resolution_policy_)

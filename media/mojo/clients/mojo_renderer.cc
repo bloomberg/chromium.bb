@@ -228,32 +228,6 @@ base::TimeDelta MojoRenderer::GetMediaTime() {
   return media_time_interpolator_.GetInterpolatedTime();
 }
 
-bool MojoRenderer::HasAudio() {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(remote_renderer_.is_bound());
-
-  if (demuxer_stream_provider_->GetType() == DemuxerStreamProvider::Type::URL) {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  return !!demuxer_stream_provider_->GetStream(DemuxerStream::AUDIO);
-}
-
-bool MojoRenderer::HasVideo() {
-  DVLOG(1) << __FUNCTION__;
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  DCHECK(remote_renderer_.is_bound());
-
-  if (demuxer_stream_provider_->GetType() == DemuxerStreamProvider::Type::URL) {
-    NOTIMPLEMENTED();
-    return false;
-  }
-
-  return !!demuxer_stream_provider_->GetStream(DemuxerStream::VIDEO);
-}
-
 void MojoRenderer::OnTimeUpdate(base::TimeDelta time,
                                 base::TimeDelta max_time,
                                 base::TimeTicks capture_time) {

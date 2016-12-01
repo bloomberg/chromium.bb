@@ -59,8 +59,6 @@ class MEDIA_EXPORT RendererImpl : public Renderer {
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   base::TimeDelta GetMediaTime() final;
-  bool HasAudio() final;
-  bool HasVideo() final;
 
   void RestartStreamPlayback(DemuxerStream* stream,
                              bool enabled,

@@ -171,8 +171,6 @@ class PipelineImplTest : public ::testing::Test {
     EXPECT_CALL(*renderer_, Initialize(_, _, _))
         .WillOnce(
             DoAll(SaveArg<1>(&renderer_client_), PostCallback<2>(PIPELINE_OK)));
-    EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(audio_stream()));
-    EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(video_stream()));
   }
 
   void AddTextStream() {
@@ -909,9 +907,6 @@ class PipelineTeardownTest : public PipelineImplTest {
     streams.push_back(audio_stream());
     streams.push_back(video_stream());
     SetDemuxerExpectations(&streams, base::TimeDelta::FromSeconds(3000));
-
-    EXPECT_CALL(*renderer_, HasAudio()).WillRepeatedly(Return(true));
-    EXPECT_CALL(*renderer_, HasVideo()).WillRepeatedly(Return(true));
 
     if (state == kInitRenderer) {
       if (stop_or_error == kStop) {

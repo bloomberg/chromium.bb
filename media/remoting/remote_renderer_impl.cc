@@ -218,16 +218,6 @@ base::TimeDelta RemoteRendererImpl::GetMediaTime() {
   return current_media_time_;
 }
 
-bool RemoteRendererImpl::HasAudio() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return audio_demuxer_stream_adapter_ ? true : false;
-}
-
-bool RemoteRendererImpl::HasVideo() {
-  DCHECK(media_task_runner_->BelongsToCurrentThread());
-  return video_demuxer_stream_adapter_ ? true : false;
-}
-
 // static
 void RemoteRendererImpl::OnDataPipeCreatedOnMainThread(
     scoped_refptr<base::SingleThreadTaskRunner> media_task_runner,

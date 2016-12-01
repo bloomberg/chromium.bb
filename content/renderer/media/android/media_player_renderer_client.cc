@@ -104,24 +104,6 @@ base::TimeDelta MediaPlayerRendererClient::GetMediaTime() {
   return mojo_renderer_->GetMediaTime();
 }
 
-bool MediaPlayerRendererClient::HasAudio() {
-  // We do not know whether or not the media has Audio before starting playback.
-  // Conservatively assume we do.
-  // TODO(tguilbert): Consider using MIME types to determine presence of audio.
-  // Alternatively, consider piping the HasAudio() from the MediaPlayerRenderer
-  // through the mojo::Renderer interface.
-  return true;
-}
-
-bool MediaPlayerRendererClient::HasVideo() {
-  // We do not know whether or not the media has Video before starting playback.
-  // Conservatively assume we do.
-  // TODO(tguilbert): Consider using MIME types to determine presence of video.
-  // Alternatively, consider piping the HasVideo() from the MediaPlayerRenderer
-  // through the mojo::Renderer interface.
-  return true;
-}
-
 void MediaPlayerRendererClient::OnFrameAvailable() {
   DCHECK(compositor_task_runner_->BelongsToCurrentThread());
   sink_->PaintSingleFrame(stream_texture_wrapper_->GetCurrentFrame(), true);

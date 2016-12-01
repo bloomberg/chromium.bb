@@ -310,16 +310,6 @@ base::TimeDelta RendererImpl::GetMediaTime() {
   return time_source_->CurrentMediaTime();
 }
 
-bool RendererImpl::HasAudio() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return audio_renderer_ != NULL;
-}
-
-bool RendererImpl::HasVideo() {
-  DCHECK(task_runner_->BelongsToCurrentThread());
-  return video_renderer_ != NULL;
-}
-
 void RendererImpl::DisableUnderflowForTesting() {
   DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());

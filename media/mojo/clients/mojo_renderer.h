@@ -56,8 +56,6 @@ class MojoRenderer : public Renderer, public mojom::RendererClient {
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
-  bool HasAudio() override;
-  bool HasVideo() override;
 
   using ReceiveSurfaceRequestTokenCB =
       base::Callback<void(const base::UnguessableToken&)>;

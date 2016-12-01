@@ -57,12 +57,6 @@ class MEDIA_EXPORT Renderer {
   // Returns the current media time.
   virtual base::TimeDelta GetMediaTime() = 0;
 
-  // Returns whether |this| renders audio.
-  virtual bool HasAudio() = 0;
-
-  // Returns whether |this| renders video.
-  virtual bool HasVideo() = 0;
-
  private:
   DISALLOW_COPY_AND_ASSIGN(Renderer);
 };

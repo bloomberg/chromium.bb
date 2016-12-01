@@ -62,8 +62,6 @@ class CONTENT_EXPORT MediaPlayerRenderer : public media::Renderer,
   void SetPlaybackRate(double playback_rate) override;
   void SetVolume(float volume) override;
   base::TimeDelta GetMediaTime() override;
-  bool HasAudio() override;
-  bool HasVideo() override;
 
   // media::MediaPlayerManager implementation
   media::MediaResourceGetter* GetMediaResourceGetter() override;

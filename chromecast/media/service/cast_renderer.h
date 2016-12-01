@@ -45,8 +45,6 @@ class CastRenderer : public ::media::Renderer,
   void SetPlaybackRate(double playback_rate) final;
   void SetVolume(float volume) final;
   base::TimeDelta GetMediaTime() final;
-  bool HasAudio() final;
-  bool HasVideo() final;
 
   // VideoResolutionPolicy::Observer implementation.
   void OnVideoResolutionPolicyChanged() override;

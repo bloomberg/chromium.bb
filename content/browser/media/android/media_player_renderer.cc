@@ -167,14 +167,6 @@ base::TimeDelta MediaPlayerRenderer::GetMediaTime() {
   return media_player_->GetCurrentTime();
 }
 
-bool MediaPlayerRenderer::HasAudio() {
-  return media_player_->HasAudio();
-}
-
-bool MediaPlayerRenderer::HasVideo() {
-  return media_player_->HasVideo();
-}
-
 media::MediaResourceGetter* MediaPlayerRenderer::GetMediaResourceGetter() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (!media_resource_getter_.get()) {
