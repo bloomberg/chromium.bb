@@ -40,7 +40,6 @@
 #include "chrome/browser/safe_browsing/sandboxed_zip_analyzer.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
@@ -52,6 +51,7 @@
 #include "components/google/core/browser/google_util.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/download_item.h"
@@ -1538,11 +1538,12 @@ void DownloadProtectionService::SetEnabled(bool enabled) {
 
 void DownloadProtectionService::ParseManualBlacklistFlag() {
   base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
-  if (!command_line->HasSwitch(switches::kSbManualDownloadBlacklist))
+  if (!command_line->HasSwitch(
+          safe_browsing::switches::kSbManualDownloadBlacklist))
     return;
 
-  std::string flag_val =
-      command_line->GetSwitchValueASCII(switches::kSbManualDownloadBlacklist);
+  std::string flag_val = command_line->GetSwitchValueASCII(
+      safe_browsing::switches::kSbManualDownloadBlacklist);
   for (const std::string& hash_hex : base::SplitString(
            flag_val, ",", base::TRIM_WHITESPACE, base::SPLIT_WANT_NONEMPTY)) {
     std::vector<uint8_t> bytes;
@@ -1551,7 +1552,7 @@ void DownloadProtectionService::ParseManualBlacklistFlag() {
           std::string(bytes.begin(), bytes.end()));
     } else {
       LOG(FATAL) << "Bad sha256 hex value '" << hash_hex << "' found in --"
-                 << switches::kSbManualDownloadBlacklist;
+                 << safe_browsing::switches::kSbManualDownloadBlacklist;
     }
   }
 }

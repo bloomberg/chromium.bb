@@ -161,8 +161,6 @@ const base::FilePath::CharType kPreviewsOptOutDBFilename[] =
 const base::FilePath::CharType kProtectedPreferencesFilenameDeprecated[] =
     FPL("Protected Preferences");
 const base::FilePath::CharType kReadmeFilename[] = FPL("README");
-const base::FilePath::CharType kSafeBrowsingBaseFilename[] =
-    FPL("Safe Browsing");
 const base::FilePath::CharType kSecurePreferencesFilename[] =
     FPL("Secure Preferences");
 const base::FilePath::CharType kServiceStateFileName[] = FPL("Service State");

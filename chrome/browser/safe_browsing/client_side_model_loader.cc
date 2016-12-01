@@ -16,11 +16,11 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/time/time.h"
 #include "chrome/browser/safe_browsing/protocol_manager.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/client_model.pb.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
-#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
+#include "components/safe_browsing/common/safebrowsing_messages.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/http/http_status_code.h"
@@ -195,7 +195,7 @@ void ModelLoader::EndFetch(ClientModelStatus status, base::TimeDelta max_age) {
 
 void ModelLoader::ScheduleFetch(int64_t delay_ms) {
   if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kSbDisableAutoUpdate))
+          safe_browsing::switches::kSbDisableAutoUpdate))
     return;
   base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
       FROM_HERE,

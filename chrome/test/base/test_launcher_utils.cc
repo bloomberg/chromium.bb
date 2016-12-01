@@ -16,6 +16,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "components/os_crypt/os_crypt_switches.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "content/public/common/content_switches.h"
 
 #if defined(USE_AURA)
@@ -45,7 +46,7 @@ void PrepareBrowserCommandLineForTests(base::CommandLine* command_line) {
     command_line->AppendSwitchASCII(switches::kLoggingLevel, "0");  // info
 
   // Disable safebrowsing autoupdate.
-  command_line->AppendSwitch(switches::kSbDisableAutoUpdate);
+  command_line->AppendSwitch(safe_browsing::switches::kSbDisableAutoUpdate);
 
   // Don't install default apps.
   command_line->AppendSwitch(switches::kDisableDefaultApps);

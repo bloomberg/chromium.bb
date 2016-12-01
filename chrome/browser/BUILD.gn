@@ -2007,6 +2007,7 @@ split_static_library("browser") {
     deps += [
       "//chrome/browser/safe_browsing:chunk_proto",
       "//chrome/common/safe_browsing:proto",
+      "//components/safe_browsing/common:common",
       "//components/safe_browsing_db:metadata_proto",
     ]
     if (safe_browsing_mode == 1) {

@@ -9,6 +9,7 @@
 
 #include "ipc/ipc_message_macros.h"
 #include "url/gurl.h"
+#include "url/ipc/url_param_traits.h"
 
 #define IPC_MESSAGE_START SafeBrowsingMsgStart
 

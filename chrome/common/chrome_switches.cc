@@ -820,32 +820,6 @@ const char kRestoreLastSession[]            = "restore-last-session";
 // See http://crbug.com/120416 for how to remove this switch.
 const char kSavePageAsMHTML[]               = "save-page-as-mhtml";
 
-// If present, safebrowsing only performs update when
-// SafeBrowsingProtocolManager::ForceScheduleNextUpdate() is explicitly called.
-// This is used for testing only.
-const char kSbDisableAutoUpdate[] = "safebrowsing-disable-auto-update";
-
-// TODO(lzheng): Remove this flag once the feature works fine
-// (http://crbug.com/74848).
-//
-// Disables safebrowsing feature that checks download url and downloads
-// content's hash to make sure the content are not malicious.
-const char kSbDisableDownloadProtection[] =
-    "safebrowsing-disable-download-protection";
-
-// Disables safebrowsing feature that checks for blacklisted extensions.
-const char kSbDisableExtensionBlacklist[] =
-    "safebrowsing-disable-extension-blacklist";
-
-// List of comma-separated sha256 hashes of executable files which the
-// download-protection service should treat as "dangerous."  For a file to
-// show a warning, it also must be considered a dangerous filetype and not
-// be whitelisted otherwise (by signature or URL) and must be on a supported
-// OS. Hashes are in hex. This is used for manual testing when looking
-// for ways to by-pass download protection.
-const char kSbManualDownloadBlacklist[] =
-    "safebrowsing-manual-download-blacklist";
-
 // Causes the process to run as a service process.
 const char kServiceProcess[]                = "service";
 

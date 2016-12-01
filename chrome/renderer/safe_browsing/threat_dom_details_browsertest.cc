@@ -7,8 +7,8 @@
 #include <memory>
 
 #include "base/strings/stringprintf.h"
-#include "chrome/common/safe_browsing/safebrowsing_messages.h"
 #include "chrome/test/base/chrome_render_view_test.h"
+#include "components/safe_browsing/common/safebrowsing_messages.h"
 #include "content/public/renderer/render_view.h"
 #include "net/base/escape.h"
 #include "third_party/WebKit/public/web/WebRuntimeFeatures.h"

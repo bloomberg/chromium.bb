@@ -33,13 +33,13 @@
 #include "chrome/browser/safe_browsing/incident_reporting/incident_reporting_service.h"
 #include "chrome/browser/safe_browsing/local_database_manager.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/safe_browsing/binary_feature_extractor.h"
 #include "chrome/common/safe_browsing/csd.pb.h"
 #include "chrome/common/safe_browsing/file_type_policies_test_util.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/history/core/browser/history_service.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/test_database_manager.h"
@@ -2252,7 +2252,7 @@ class DownloadProtectionServiceFlagTest : public DownloadProtectionServiceTest {
     blacklisted_hash_ = std::string(bytes.begin(), bytes.end());
 
     base::CommandLine::ForCurrentProcess()->AppendSwitchASCII(
-        switches::kSbManualDownloadBlacklist,
+        safe_browsing::switches::kSbManualDownloadBlacklist,
         blacklisted_hash_hex_);
 
     DownloadProtectionServiceTest::SetUp();

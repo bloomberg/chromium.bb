@@ -28,11 +28,11 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/util.h"
 #include "components/safe_browsing_db/v4_protocol_manager_util.h"
@@ -287,20 +287,20 @@ LocalSafeBrowsingDatabaseManager::LocalSafeBrowsingDatabaseManager(
   DCHECK(sb_service_.get() != NULL);
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
-  enable_download_protection_ =
-      !cmdline->HasSwitch(switches::kSbDisableDownloadProtection);
+  enable_download_protection_ = !cmdline->HasSwitch(
+      safe_browsing::switches::kSbDisableDownloadProtection);
 
   // We only download the csd-whitelist if client-side phishing detection is
   // enabled.
   enable_csd_whitelist_ =
-      !cmdline->HasSwitch(switches::kDisableClientSidePhishingDetection);
+      !cmdline->HasSwitch(::switches::kDisableClientSidePhishingDetection);
 
   // We download the download-whitelist if download protection is enabled.
   enable_download_whitelist_ = enable_download_protection_;
 
   // TODO(kalman): there really shouldn't be a flag for this.
-  enable_extension_blacklist_ =
-      !cmdline->HasSwitch(switches::kSbDisableExtensionBlacklist);
+  enable_extension_blacklist_ = !cmdline->HasSwitch(
+      safe_browsing::switches::kSbDisableExtensionBlacklist);
 
   // The client-side IP blacklist feature is tightly integrated with client-side
   // phishing protection for now.

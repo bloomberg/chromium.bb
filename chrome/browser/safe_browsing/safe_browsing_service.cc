@@ -29,14 +29,14 @@
 #include "chrome/browser/profiles/profile_manager.h"
 #include "chrome/browser/safe_browsing/ping_manager.h"
 #include "chrome/browser/safe_browsing/ui_manager.h"
-#include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/safe_browsing/file_type_policies.h"
-#include "chrome/common/url_constants.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/prefs/pref_service.h"
+#include "components/safe_browsing/common/safebrowsing_constants.h"
+#include "components/safe_browsing/common/safebrowsing_switches.h"
 #include "components/safe_browsing_db/database_manager.h"
 #include "components/safe_browsing_db/safe_browsing_prefs.h"
 #include "components/safe_browsing_db/v4_get_hash_protocol_manager.h"
@@ -269,7 +269,7 @@ base::FilePath SafeBrowsingService::GetBaseFilename() {
   base::FilePath path;
   bool result = PathService::Get(chrome::DIR_USER_DATA, &path);
   DCHECK(result);
-  return path.Append(chrome::kSafeBrowsingBaseFilename);
+  return path.Append(safe_browsing::kSafeBrowsingBaseFilename);
 }
 
 
@@ -470,8 +470,8 @@ SafeBrowsingProtocolConfig SafeBrowsingService::GetProtocolConfig() const {
 
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   config.disable_auto_update =
-      cmdline->HasSwitch(switches::kSbDisableAutoUpdate) ||
-      cmdline->HasSwitch(switches::kDisableBackgroundNetworking);
+      cmdline->HasSwitch(safe_browsing::switches::kSbDisableAutoUpdate) ||
+      cmdline->HasSwitch(::switches::kDisableBackgroundNetworking);
   config.url_prefix = kSbDefaultURLPrefix;
   config.backup_connect_error_url_prefix = kSbBackupConnectErrorURLPrefix;
   config.backup_http_error_url_prefix = kSbBackupHttpErrorURLPrefix;
@@ -485,7 +485,7 @@ SafeBrowsingService::GetV4ProtocolConfig() const {
   base::CommandLine* cmdline = base::CommandLine::ForCurrentProcess();
   return V4ProtocolConfig(
       GetProtocolConfigClientName(),
-      cmdline->HasSwitch(switches::kDisableBackgroundNetworking),
+      cmdline->HasSwitch(::switches::kDisableBackgroundNetworking),
       google_apis::GetAPIKey(), SafeBrowsingProtocolManagerHelper::Version());
 }
 

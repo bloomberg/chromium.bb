@@ -1,0 +1,21 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+source_set("common") {
+  sources = [
+    "safebrowsing_constants.cc",
+    "safebrowsing_constants.h",
+    "safebrowsing_message_generator.cc",
+    "safebrowsing_message_generator.h",
+    "safebrowsing_messages.h",
+    "safebrowsing_switches.cc",
+    "safebrowsing_switches.h",
+  ]
+
+  deps = [
+    "//base",
+    "//ipc",
+    "//url/ipc:url_ipc",
+  ]
+}

@@ -189,6 +189,7 @@ static_library("renderer") {
       "safe_browsing/threat_dom_details.cc",
       "safe_browsing/threat_dom_details.h",
     ]
+    deps += [ "//components/safe_browsing/common:common" ]
     if (safe_browsing_mode == 1) {
       sources += [
         "safe_browsing/feature_extractor_clock.cc",

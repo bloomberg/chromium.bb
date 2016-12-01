@@ -126,7 +126,6 @@ static_library("common") {
     "render_messages.h",
     "resource_usage_reporter_type_converters.cc",
     "resource_usage_reporter_type_converters.h",
-    "safe_browsing/safebrowsing_messages.h",
     "search/instant_types.cc",
     "search/instant_types.h",
     "search/ntp_logging_events.h",
