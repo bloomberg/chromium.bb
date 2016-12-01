@@ -287,12 +287,12 @@ TEST(FeaturesGenerationTest, FeaturesTest) {
     comparator.CompareFeature(feature);
   }
   {
-    Feature* feature = GetAPIFeature("complex_alias");
+    Feature* feature = provider.GetFeature("complex_alias");
     ASSERT_EQ("", feature->alias());
     ASSERT_EQ("complex_alias_source", feature->source());
   }
   {
-    Feature* feature = GetAPIFeature("complex_alias_source");
+    Feature* feature = provider.GetFeature("complex_alias_source");
     ASSERT_EQ("complex_alias", feature->alias());
     ASSERT_EQ("", feature->source());
   }
