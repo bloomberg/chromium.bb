@@ -25,7 +25,7 @@
 #include "net/http/http_status_code.h"
 #include "net/http/http_util.h"
 #include "net/proxy/proxy_server.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/ssl/ssl_info.h"
 #include "net/url_request/redirect_info.h"
 #include "net/url_request/url_request_context.h"

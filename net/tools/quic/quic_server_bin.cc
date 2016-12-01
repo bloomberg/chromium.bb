@@ -13,9 +13,9 @@
 #include "base/run_loop.h"
 #include "base/strings/string_number_conversions.h"
 #include "net/quic/chromium/crypto/proof_source_chromium.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_socket_address.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_server.h"
 
 // The port the quic server will listen on.
@@ -48,7 +48,7 @@ int main(int argc, char* argv[]) {
         "Options:\n"
         "-h, --help                  show this help message and exit\n"
         "--port=<port>               specify the port to listen on\n"
-        "--quic_in_memory_cache_dir  directory containing response data\n"
+        "--quic_response_cache_dir  directory containing response data\n"
         "                            to load\n"
         "--certificate_file=<file>   path to the certificate chain\n"
         "--key_file=<file>           path to the pkcs8 private key\n";
@@ -56,10 +56,10 @@ int main(int argc, char* argv[]) {
     exit(0);
   }
 
-  net::QuicInMemoryCache in_memory_cache;
-  if (line->HasSwitch("quic_in_memory_cache_dir")) {
-    in_memory_cache.InitializeFromDirectory(
-        line->GetSwitchValueASCII("quic_in_memory_cache_dir"));
+  net::QuicHttpResponseCache response_cache;
+  if (line->HasSwitch("quic_response_cache_dir")) {
+    response_cache.InitializeFromDirectory(
+        line->GetSwitchValueASCII("quic_response_cache_dir"));
   }
 
   if (line->HasSwitch("port")) {
@@ -84,7 +84,7 @@ int main(int argc, char* argv[]) {
       CreateProofSource(line->GetSwitchValuePath("certificate_file"),
                         line->GetSwitchValuePath("key_file")),
       config, net::QuicCryptoServerConfig::ConfigOptions(),
-      net::AllSupportedVersions(), &in_memory_cache);
+      net::AllSupportedVersions(), &response_cache);
 
   int rc = server.CreateUDPSocketAndListen(
       net::QuicSocketAddress(net::QuicIpAddress::Any6(), FLAGS_port));

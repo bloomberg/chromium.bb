@@ -20,10 +20,11 @@
 #include "net/quic/core/crypto/quic_crypto_server_config.h"
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_framer.h"
+#include "net/quic/core/quic_version_manager.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/tools/epoll_server/epoll_server.h"
 #include "net/tools/quic/quic_default_packet_writer.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 
 namespace net {
 
@@ -37,12 +38,12 @@ class QuicPacketReader;
 class QuicServer : public EpollCallbackInterface {
  public:
   QuicServer(std::unique_ptr<ProofSource> proof_source,
-             QuicInMemoryCache* in_memory_cache);
+             QuicHttpResponseCache* response_cache);
   QuicServer(std::unique_ptr<ProofSource> proof_source,
              const QuicConfig& config,
              const QuicCryptoServerConfig::ConfigOptions& server_config_options,
              const QuicVersionVector& supported_versions,
-             QuicInMemoryCache* in_memory_cache);
+             QuicHttpResponseCache* response_cache);
 
   ~QuicServer() override;
 
@@ -86,7 +87,7 @@ class QuicServer : public EpollCallbackInterface {
 
   QuicVersionManager* version_manager() { return &version_manager_; }
 
-  QuicInMemoryCache* in_memory_cache() { return in_memory_cache_; }
+  QuicHttpResponseCache* response_cache() { return response_cache_; }
 
  private:
   friend class net::test::QuicServerPeer;
@@ -129,7 +130,7 @@ class QuicServer : public EpollCallbackInterface {
   // space than allowed on the stack.
   std::unique_ptr<QuicPacketReader> packet_reader_;
 
-  QuicInMemoryCache* in_memory_cache_;  // unowned.
+  QuicHttpResponseCache* response_cache_;  // unowned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicServer);
 };

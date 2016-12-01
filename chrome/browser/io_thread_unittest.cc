@@ -30,7 +30,8 @@
 #include "net/http/http_auth_scheme.h"
 #include "net/http/http_network_session.h"
 #include "net/quic/chromium/quic_stream_factory.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_tag.h"
+#include "net/quic/core/quic_versions.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 

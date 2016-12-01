@@ -15,7 +15,7 @@
 #include "net/quic/core/congestion_control/windowed_filter.h"
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_bandwidth.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 #include "net/quic/core/quic_unacked_packet_map.h"
 

@@ -307,12 +307,16 @@ void QuicClientBase::WaitForStreamToClose(QuicStreamId id) {
   }
 }
 
-void QuicClientBase::WaitForCryptoHandshakeConfirmed() {
+bool QuicClientBase::WaitForCryptoHandshakeConfirmed() {
   DCHECK(connected());
 
   while (connected() && !session_->IsCryptoHandshakeConfirmed()) {
     WaitForEvents();
   }
+
+  // If the handshake fails due to a timeout, the connection will be closed.
+  LOG_IF(ERROR, !connected()) << "Handshake with server failed.";
+  return connected();
 }
 
 bool QuicClientBase::connected() const {

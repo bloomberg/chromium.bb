@@ -1,32 +1,119 @@
-// Copyright (c) 2012 The Chromium Authors. All rights reserved.
+// Copyright (c) 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/frames/quic_frame.h"
 
-#include <sstream>
-
-#include "base/stl_util.h"
-#include "net/quic/core/quic_flags.h"
-#include "net/quic/core/quic_utils.h"
-#include "net/quic/test_tools/quic_test_utils.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace net {
 namespace test {
 namespace {
 
-TEST(QuicProtocolTest, MakeQuicTag) {
-  QuicTag tag = MakeQuicTag('A', 'B', 'C', 'D');
-  char bytes[4];
-  memcpy(bytes, &tag, 4);
-  EXPECT_EQ('A', bytes[0]);
-  EXPECT_EQ('B', bytes[1]);
-  EXPECT_EQ('C', bytes[2]);
-  EXPECT_EQ('D', bytes[3]);
+using testing::_;
+
+TEST(QuicFramesTest, AckFrameToString) {
+  QuicAckFrame frame;
+  frame.largest_observed = 2;
+  frame.ack_delay_time = QuicTime::Delta::FromMicroseconds(3);
+  frame.packets.Add(4);
+  frame.packets.Add(5);
+  frame.received_packet_times = {
+      {6, QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(7)}};
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ(
+      "{ largest_observed: 2, ack_delay_time: 3, "
+      "packets: [ 4 5  ], received_packets: [ 6 at 7  ] }\n",
+      stream.str());
 }
 
-TEST(QuicProtocolTest, IsAwaitingPacket) {
+TEST(QuicFramesTest, PaddingFrameToString) {
+  QuicPaddingFrame frame;
+  frame.num_padding_bytes = 1;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ num_padding_bytes: 1 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, RstStreamFrameToString) {
+  QuicRstStreamFrame frame;
+  frame.stream_id = 1;
+  frame.error_code = QUIC_STREAM_CANCELLED;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ stream_id: 1, error_code: 6 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, ConnectionCloseFrameToString) {
+  QuicConnectionCloseFrame frame;
+  frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
+  frame.error_details = "No recent network activity.";
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ(
+      "{ error_code: 25, error_details: 'No recent network activity.' }\n",
+      stream.str());
+}
+
+TEST(QuicFramesTest, GoAwayFrameToString) {
+  QuicGoAwayFrame frame;
+  frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
+  frame.last_good_stream_id = 2;
+  frame.reason_phrase = "Reason";
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ(
+      "{ error_code: 25, last_good_stream_id: 2, reason_phrase: 'Reason' }\n",
+      stream.str());
+}
+
+TEST(QuicFramesTest, WindowUpdateFrameToString) {
+  QuicWindowUpdateFrame frame;
+  std::ostringstream stream;
+  frame.stream_id = 1;
+  frame.byte_offset = 2;
+  stream << frame;
+  EXPECT_EQ("{ stream_id: 1, byte_offset: 2 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, BlockedFrameToString) {
+  QuicBlockedFrame frame;
+  frame.stream_id = 1;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ stream_id: 1 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, StreamFrameToString) {
+  QuicStreamFrame frame;
+  frame.stream_id = 1;
+  frame.fin = false;
+  frame.offset = 2;
+  frame.data_length = 3;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ stream_id: 1, fin: 0, offset: 2, length: 3 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, StopWaitingFrameToString) {
+  QuicStopWaitingFrame frame;
+  frame.least_unacked = 2;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ least_unacked: 2 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, PathCloseFrameToString) {
+  QuicPathCloseFrame frame;
+  frame.path_id = 1;
+  std::ostringstream stream;
+  stream << frame;
+  EXPECT_EQ("{ path_id: 1 }\n", stream.str());
+}
+
+TEST(QuicFramesTest, IsAwaitingPacket) {
   QuicAckFrame ack_frame1;
   ack_frame1.largest_observed = 10u;
   ack_frame1.packets.Add(1, 11);
@@ -45,119 +132,6 @@ TEST(QuicProtocolTest, IsAwaitingPacket) {
 
   ack_frame2.packets.Remove(50);
   EXPECT_TRUE(IsAwaitingPacket(ack_frame2, 50u, 20u));
-}
-
-TEST(QuicProtocolTest, AckFrameToString) {
-  QuicAckFrame frame;
-  frame.largest_observed = 2;
-  frame.ack_delay_time = QuicTime::Delta::FromMicroseconds(3);
-  frame.packets.Add(4);
-  frame.packets.Add(5);
-  frame.received_packet_times = {
-      {6, QuicTime::Zero() + QuicTime::Delta::FromMicroseconds(7)}};
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ(
-      "{ largest_observed: 2, ack_delay_time: 3, "
-      "packets: [ 4 5  ], received_packets: [ 6 at 7  ] }\n",
-      stream.str());
-}
-
-TEST(QuicProtocolTest, PaddingFrameToString) {
-  QuicPaddingFrame frame;
-  frame.num_padding_bytes = 1;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ num_padding_bytes: 1 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, RstStreamFrameToString) {
-  QuicRstStreamFrame frame;
-  frame.stream_id = 1;
-  frame.error_code = QUIC_STREAM_CANCELLED;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1, error_code: 6 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, ConnectionCloseFrameToString) {
-  QuicConnectionCloseFrame frame;
-  frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
-  frame.error_details = "No recent network activity.";
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ(
-      "{ error_code: 25, error_details: 'No recent network activity.' }\n",
-      stream.str());
-}
-
-TEST(QuicProtocolTest, GoAwayFrameToString) {
-  QuicGoAwayFrame frame;
-  frame.error_code = QUIC_NETWORK_IDLE_TIMEOUT;
-  frame.last_good_stream_id = 2;
-  frame.reason_phrase = "Reason";
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ(
-      "{ error_code: 25, last_good_stream_id: 2, reason_phrase: 'Reason' }\n",
-      stream.str());
-}
-
-TEST(QuicProtocolTest, WindowUpdateFrameToString) {
-  QuicWindowUpdateFrame frame;
-  std::ostringstream stream;
-  frame.stream_id = 1;
-  frame.byte_offset = 2;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1, byte_offset: 2 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, BlockedFrameToString) {
-  QuicBlockedFrame frame;
-  frame.stream_id = 1;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, StreamFrameToString) {
-  QuicStreamFrame frame;
-  frame.stream_id = 1;
-  frame.fin = false;
-  frame.offset = 2;
-  frame.data_length = 3;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ stream_id: 1, fin: 0, offset: 2, length: 3 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, StopWaitingFrameToString) {
-  QuicStopWaitingFrame frame;
-  frame.least_unacked = 2;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ least_unacked: 2 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, PathCloseFrameToString) {
-  QuicPathCloseFrame frame;
-  frame.path_id = 1;
-  std::ostringstream stream;
-  stream << frame;
-  EXPECT_EQ("{ path_id: 1 }\n", stream.str());
-}
-
-TEST(QuicProtocolTest, QuicVersionManager) {
-  QuicFlagSaver flags;
-  FLAGS_quic_enable_version_36_v3 = false;
-  QuicVersionManager manager(AllSupportedVersions());
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  FLAGS_quic_enable_version_36_v3 = true;
-  EXPECT_EQ(FilterSupportedVersions(AllSupportedVersions()),
-            manager.GetSupportedVersions());
-  EXPECT_EQ(QUIC_VERSION_36, manager.GetSupportedVersions()[0]);
-  EXPECT_EQ(QUIC_VERSION_35, manager.GetSupportedVersions()[1]);
 }
 
 // Tests that a queue contains the expected data after calls to Add().

@@ -38,7 +38,7 @@ class QuicTestServer : public QuicServer {
         QuicCryptoServerStream::Helper* helper,
         const QuicCryptoServerConfig* crypto_config,
         QuicCompressedCertsCache* compressed_certs_cache,
-        QuicInMemoryCache* in_memory_cache) = 0;
+        QuicHttpResponseCache* response_cache) = 0;
   };
 
   // Factory for creating QuicSimpleServerStreams.
@@ -50,7 +50,7 @@ class QuicTestServer : public QuicServer {
     virtual QuicSimpleServerStream* CreateStream(
         QuicStreamId id,
         QuicSpdySession* session,
-        QuicInMemoryCache* in_memory_cache) = 0;
+        QuicHttpResponseCache* response_cache) = 0;
   };
 
   class CryptoStreamFactory {
@@ -64,11 +64,11 @@ class QuicTestServer : public QuicServer {
   };
 
   QuicTestServer(std::unique_ptr<ProofSource> proof_source,
-                 QuicInMemoryCache* in_memory_cache);
+                 QuicHttpResponseCache* response_cache);
   QuicTestServer(std::unique_ptr<ProofSource> proof_source,
                  const QuicConfig& config,
                  const QuicVersionVector& supported_versions,
-                 QuicInMemoryCache* in_memory_cache);
+                 QuicHttpResponseCache* response_cache);
 
   // Create a custom dispatcher which creates custom sessions.
   QuicDispatcher* CreateQuicDispatcher() override;
@@ -99,7 +99,7 @@ class ImmediateGoAwaySession : public QuicSimpleServerSession {
                          QuicCryptoServerStream::Helper* helper,
                          const QuicCryptoServerConfig* crypto_config,
                          QuicCompressedCertsCache* compressed_certs_cache,
-                         QuicInMemoryCache* in_memory_cache);
+                         QuicHttpResponseCache* response_cache);
 
   // Override to send GoAway.
   void OnStreamFrame(const QuicStreamFrame& frame) override;

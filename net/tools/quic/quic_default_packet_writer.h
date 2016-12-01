@@ -38,7 +38,7 @@ class NET_EXPORT_PRIVATE QuicDefaultPacketWriter : public QuicPacketWriter {
   void set_fd(int fd) { fd_ = fd; }
 
  protected:
-  virtual void set_write_blocked(bool is_blocked);
+  void set_write_blocked(bool is_blocked);
   int fd() { return fd_; }
 
  private:

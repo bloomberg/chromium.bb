@@ -6,7 +6,7 @@
 #define NET_TOOLS_QUIC_QUIC_PROCESS_PACKET_INTERFACE_H_
 
 #include "base/macros.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {

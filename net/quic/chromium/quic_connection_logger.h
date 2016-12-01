@@ -17,7 +17,7 @@
 #include "net/log/net_log_with_source.h"
 #include "net/quic/core/crypto/crypto_handshake_message.h"
 #include "net/quic/core/quic_connection.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_spdy_session.h"
 #include "net/socket/socket_performance_watcher.h"
 

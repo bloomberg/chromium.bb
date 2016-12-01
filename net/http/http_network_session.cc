@@ -26,7 +26,7 @@
 #include "net/quic/core/crypto/quic_random.h"
 #include "net/quic/core/quic_clock.h"
 #include "net/quic/core/quic_crypto_client_stream_factory.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_tag.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/socket/client_socket_factory.h"

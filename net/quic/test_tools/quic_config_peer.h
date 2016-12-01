@@ -9,7 +9,7 @@
 
 #include "base/macros.h"
 #include "net/quic/core/quic_config.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 
 namespace net {
 

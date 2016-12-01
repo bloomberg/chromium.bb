@@ -98,7 +98,8 @@ BbrSender::BbrSender(const QuicClock* clock,
       probe_rtt_round_passed_(false),
       last_sample_is_app_limited_(false),
       recovery_state_(NOT_IN_RECOVERY),
-      end_recovery_at_(0) {
+      end_recovery_at_(0),
+      recovery_window_(max_congestion_window_) {
   EnterStartupMode();
 }
 

@@ -18,7 +18,7 @@
 #include "net/quic/core/congestion_control/tcp_cubic_sender_base.h"
 #include "net/quic/core/quic_bandwidth.h"
 #include "net/quic/core/quic_connection_stats.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 
 namespace net {

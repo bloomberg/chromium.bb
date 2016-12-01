@@ -129,7 +129,7 @@ bool QuicMultipathSentPacketManager::HasPendingRetransmissions() const {
   return path_manager != nullptr && path_manager->HasPendingRetransmissions();
 }
 
-PendingRetransmission
+QuicPendingRetransmission
 QuicMultipathSentPacketManager::NextPendingRetransmission() {
   // TODO(fayang): Move pending_retransmissions_ from path sent packet manager
   // to multipath sent packet manager.
@@ -138,9 +138,9 @@ QuicMultipathSentPacketManager::NextPendingRetransmission() {
   if (path_manager == nullptr) {
     OnUnrecoverablePathError(kDefaultPathId);
     QuicFrames retransmittable_frames;
-    return PendingRetransmission(kInvalidPathId, 0u, NOT_RETRANSMISSION,
-                                 retransmittable_frames, false, 0,
-                                 ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER);
+    return QuicPendingRetransmission(
+        kInvalidPathId, 0u, NOT_RETRANSMISSION, retransmittable_frames, false,
+        0, ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER);
   }
   return path_manager->NextPendingRetransmission();
 }
@@ -519,6 +519,16 @@ void QuicMultipathSentPacketManager::OnApplicationLimited() {
     }
     path_manager_info.manager->OnApplicationLimited();
   }
+}
+
+const SendAlgorithmInterface* QuicMultipathSentPacketManager::GetSendAlgorithm()
+    const {
+  QuicSentPacketManagerInterface* path_manager =
+      MaybeGetSentPacketManagerForActivePath(kDefaultPathId);
+  if (path_manager == nullptr) {
+    return nullptr;
+  }
+  return path_manager->GetSendAlgorithm();
 }
 
 }  // namespace net

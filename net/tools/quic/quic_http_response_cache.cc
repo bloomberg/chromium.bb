@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 
 #include <utility>
 
@@ -24,26 +24,29 @@ using std::string;
 
 namespace net {
 
-QuicInMemoryCache::ServerPushInfo::ServerPushInfo(GURL request_url,
-                                                  SpdyHeaderBlock headers,
-                                                  net::SpdyPriority priority,
-                                                  string body)
+QuicHttpResponseCache::ServerPushInfo::ServerPushInfo(
+    GURL request_url,
+    SpdyHeaderBlock headers,
+    net::SpdyPriority priority,
+    string body)
     : request_url(request_url),
       headers(std::move(headers)),
       priority(priority),
       body(body) {}
 
-QuicInMemoryCache::ServerPushInfo::ServerPushInfo(const ServerPushInfo& other)
+QuicHttpResponseCache::ServerPushInfo::ServerPushInfo(
+    const ServerPushInfo& other)
     : request_url(other.request_url),
       headers(other.headers.Clone()),
       priority(other.priority),
       body(other.body) {}
 
-QuicInMemoryCache::Response::Response() : response_type_(REGULAR_RESPONSE) {}
+QuicHttpResponseCache::Response::Response()
+    : response_type_(REGULAR_RESPONSE) {}
 
-QuicInMemoryCache::Response::~Response() {}
+QuicHttpResponseCache::Response::~Response() {}
 
-void QuicInMemoryCache::ResourceFile::Read() {
+void QuicHttpResponseCache::ResourceFile::Read() {
   base::ReadFileToString(FilePath(file_name_), &file_contents_);
 
   // First read the headers.
@@ -121,12 +124,14 @@ void QuicInMemoryCache::ResourceFile::Read() {
       StringPiece(file_contents_.data() + start, file_contents_.size() - start);
 }
 
-QuicInMemoryCache::ResourceFile::ResourceFile(const base::FilePath& file_name)
+QuicHttpResponseCache::ResourceFile::ResourceFile(
+    const base::FilePath& file_name)
     : file_name_(file_name), file_name_string_(file_name.AsUTF8Unsafe()) {}
 
-QuicInMemoryCache::ResourceFile::~ResourceFile() {}
+QuicHttpResponseCache::ResourceFile::~ResourceFile() {}
 
-void QuicInMemoryCache::ResourceFile::SetHostPathFromBase(StringPiece base) {
+void QuicHttpResponseCache::ResourceFile::SetHostPathFromBase(
+    StringPiece base) {
   size_t path_start = base.find_first_of('/');
   DCHECK_LT(0UL, path_start);
   host_ = base.substr(0, path_start);
@@ -138,7 +143,7 @@ void QuicInMemoryCache::ResourceFile::SetHostPathFromBase(StringPiece base) {
   }
 }
 
-StringPiece QuicInMemoryCache::ResourceFile::RemoveScheme(StringPiece url) {
+StringPiece QuicHttpResponseCache::ResourceFile::RemoveScheme(StringPiece url) {
   if (base::StartsWith(url, "https://", base::CompareCase::INSENSITIVE_ASCII)) {
     url.remove_prefix(8);
   } else if (base::StartsWith(url, "http://",
@@ -148,14 +153,14 @@ StringPiece QuicInMemoryCache::ResourceFile::RemoveScheme(StringPiece url) {
   return url;
 }
 
-void QuicInMemoryCache::ResourceFile::HandleXOriginalUrl() {
+void QuicHttpResponseCache::ResourceFile::HandleXOriginalUrl() {
   StringPiece url(x_original_url_);
   // Remove the protocol so we can add it below.
   url = RemoveScheme(url);
   SetHostPathFromBase(url);
 }
 
-const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
+const QuicHttpResponseCache::Response* QuicHttpResponseCache::GetResponse(
     StringPiece host,
     StringPiece path) const {
   base::AutoLock lock(response_mutex_);
@@ -172,12 +177,12 @@ const QuicInMemoryCache::Response* QuicInMemoryCache::GetResponse(
   return it->second.get();
 }
 
-typedef QuicInMemoryCache::ServerPushInfo ServerPushInfo;
+typedef QuicHttpResponseCache::ServerPushInfo ServerPushInfo;
 
-void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
-                                          StringPiece path,
-                                          int response_code,
-                                          StringPiece body) {
+void QuicHttpResponseCache::AddSimpleResponse(StringPiece host,
+                                              StringPiece path,
+                                              int response_code,
+                                              StringPiece body) {
   SpdyHeaderBlock response_headers;
   response_headers[":status"] = IntToString(response_code);
   response_headers["content-length"] =
@@ -185,7 +190,7 @@ void QuicInMemoryCache::AddSimpleResponse(StringPiece host,
   AddResponse(host, path, std::move(response_headers), body);
 }
 
-void QuicInMemoryCache::AddSimpleResponseWithServerPushResources(
+void QuicHttpResponseCache::AddSimpleResponseWithServerPushResources(
     StringPiece host,
     StringPiece path,
     int response_code,
@@ -195,43 +200,45 @@ void QuicInMemoryCache::AddSimpleResponseWithServerPushResources(
   MaybeAddServerPushResources(host, path, push_resources);
 }
 
-void QuicInMemoryCache::AddDefaultResponse(Response* response) {
+void QuicHttpResponseCache::AddDefaultResponse(Response* response) {
   base::AutoLock lock(response_mutex_);
   default_response_.reset(response);
 }
 
-void QuicInMemoryCache::AddResponse(StringPiece host,
-                                    StringPiece path,
-                                    SpdyHeaderBlock response_headers,
-                                    StringPiece response_body) {
+void QuicHttpResponseCache::AddResponse(StringPiece host,
+                                        StringPiece path,
+                                        SpdyHeaderBlock response_headers,
+                                        StringPiece response_body) {
   AddResponseImpl(host, path, REGULAR_RESPONSE, std::move(response_headers),
                   response_body, SpdyHeaderBlock());
 }
 
-void QuicInMemoryCache::AddResponse(StringPiece host,
-                                    StringPiece path,
-                                    SpdyHeaderBlock response_headers,
-                                    StringPiece response_body,
-                                    SpdyHeaderBlock response_trailers) {
+void QuicHttpResponseCache::AddResponse(StringPiece host,
+                                        StringPiece path,
+                                        SpdyHeaderBlock response_headers,
+                                        StringPiece response_body,
+                                        SpdyHeaderBlock response_trailers) {
   AddResponseImpl(host, path, REGULAR_RESPONSE, std::move(response_headers),
                   response_body, std::move(response_trailers));
 }
 
-void QuicInMemoryCache::AddSpecialResponse(StringPiece host,
-                                           StringPiece path,
-                                           SpecialResponseType response_type) {
+void QuicHttpResponseCache::AddSpecialResponse(
+    StringPiece host,
+    StringPiece path,
+    SpecialResponseType response_type) {
   AddResponseImpl(host, path, response_type, SpdyHeaderBlock(), "",
                   SpdyHeaderBlock());
 }
 
-QuicInMemoryCache::QuicInMemoryCache() {}
+QuicHttpResponseCache::QuicHttpResponseCache() {}
 
-void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
+void QuicHttpResponseCache::InitializeFromDirectory(
+    const string& cache_directory) {
   if (cache_directory.empty()) {
     QUIC_BUG << "cache_directory must not be empty.";
     return;
   }
-  VLOG(1) << "Attempting to initialize QuicInMemoryCache from directory: "
+  VLOG(1) << "Attempting to initialize QuicHttpResponseCache from directory: "
           << cache_directory;
   FilePath directory(FilePath::FromUTF8Unsafe(cache_directory));
   base::FileEnumerator file_list(directory, true, base::FileEnumerator::FILES);
@@ -279,7 +286,7 @@ void QuicInMemoryCache::InitializeFromDirectory(const string& cache_directory) {
   }
 }
 
-std::list<ServerPushInfo> QuicInMemoryCache::GetServerPushResources(
+std::list<ServerPushInfo> QuicHttpResponseCache::GetServerPushResources(
     string request_url) {
   base::AutoLock lock(response_mutex_);
 
@@ -293,19 +300,19 @@ std::list<ServerPushInfo> QuicInMemoryCache::GetServerPushResources(
   return resources;
 }
 
-QuicInMemoryCache::~QuicInMemoryCache() {
+QuicHttpResponseCache::~QuicHttpResponseCache() {
   {
     base::AutoLock lock(response_mutex_);
     responses_.clear();
   }
 }
 
-void QuicInMemoryCache::AddResponseImpl(StringPiece host,
-                                        StringPiece path,
-                                        SpecialResponseType response_type,
-                                        SpdyHeaderBlock response_headers,
-                                        StringPiece response_body,
-                                        SpdyHeaderBlock response_trailers) {
+void QuicHttpResponseCache::AddResponseImpl(StringPiece host,
+                                            StringPiece path,
+                                            SpecialResponseType response_type,
+                                            SpdyHeaderBlock response_headers,
+                                            StringPiece response_body,
+                                            SpdyHeaderBlock response_trailers) {
   base::AutoLock lock(response_mutex_);
 
   DCHECK(!host.empty()) << "Host must be populated, e.g. \"www.google.com\"";
@@ -323,11 +330,11 @@ void QuicInMemoryCache::AddResponseImpl(StringPiece host,
   responses_[key] = std::move(new_response);
 }
 
-string QuicInMemoryCache::GetKey(StringPiece host, StringPiece path) const {
+string QuicHttpResponseCache::GetKey(StringPiece host, StringPiece path) const {
   return host.as_string() + path.as_string();
 }
 
-void QuicInMemoryCache::MaybeAddServerPushResources(
+void QuicHttpResponseCache::MaybeAddServerPushResources(
     StringPiece request_host,
     StringPiece request_path,
     std::list<ServerPushInfo> push_resources) {
@@ -366,8 +373,9 @@ void QuicInMemoryCache::MaybeAddServerPushResources(
   }
 }
 
-bool QuicInMemoryCache::PushResourceExistsInCache(string original_request_url,
-                                                  ServerPushInfo resource) {
+bool QuicHttpResponseCache::PushResourceExistsInCache(
+    string original_request_url,
+    ServerPushInfo resource) {
   base::AutoLock lock(response_mutex_);
   auto resource_range =
       server_push_resources_.equal_range(original_request_url);

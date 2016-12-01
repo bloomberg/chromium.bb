@@ -34,6 +34,7 @@
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packet_generator.h"
+#include "net/quic/core/quic_pending_retransmission.h"
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_utils.h"
 
@@ -1443,7 +1444,7 @@ void QuicConnection::WritePendingRetransmissions() {
   // Keep writing as long as there's a pending retransmission which can be
   // written.
   while (sent_packet_manager_->HasPendingRetransmissions()) {
-    const PendingRetransmission pending =
+    const QuicPendingRetransmission pending =
         sent_packet_manager_->NextPendingRetransmission();
     if (!CanWrite(HAS_RETRANSMITTABLE_DATA)) {
       break;

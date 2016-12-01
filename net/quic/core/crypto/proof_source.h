@@ -12,7 +12,7 @@
 #include "base/memory/ref_counted.h"
 #include "net/base/net_export.h"
 #include "net/quic/core/crypto/quic_crypto_proof.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 
 namespace net {

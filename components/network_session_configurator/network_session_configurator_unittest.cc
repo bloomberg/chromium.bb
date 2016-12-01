@@ -12,7 +12,7 @@
 #include "base/test/mock_entropy_provider.h"
 #include "components/variations/variations_associated_data.h"
 #include "net/http/http_stream_factory.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace test {

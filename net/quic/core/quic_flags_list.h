@@ -156,3 +156,7 @@ QUIC_FLAG(bool, FLAGS_quic_allow_chlo_buffering, true)
 // If true, fix version manager bug, in which version flag does not really
 // help.
 QUIC_FLAG(bool, FLAGS_quic_fix_version_manager, false)
+
+// Add a new client connection options field to QuicOptions which is only used
+// to configure client side features, such as congestion control.
+QUIC_FLAG(bool, FLAGS_quic_client_connection_options, true)

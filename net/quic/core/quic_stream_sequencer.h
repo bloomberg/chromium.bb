@@ -11,7 +11,7 @@
 
 #include "base/macros.h"
 #include "net/base/net_export.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_stream_sequencer_buffer.h"
 
 namespace net {

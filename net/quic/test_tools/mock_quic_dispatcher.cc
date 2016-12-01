@@ -16,14 +16,14 @@ MockQuicDispatcher::MockQuicDispatcher(
     std::unique_ptr<QuicConnectionHelperInterface> helper,
     std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
     std::unique_ptr<QuicAlarmFactory> alarm_factory,
-    QuicInMemoryCache* in_memory_cache)
+    QuicHttpResponseCache* response_cache)
     : QuicSimpleDispatcher(config,
                            crypto_config,
                            version_manager,
                            std::move(helper),
                            std::move(session_helper),
                            std::move(alarm_factory),
-                           in_memory_cache) {}
+                           response_cache) {}
 
 MockQuicDispatcher::~MockQuicDispatcher() {}
 

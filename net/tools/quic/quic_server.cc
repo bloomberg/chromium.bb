@@ -20,12 +20,12 @@
 #include "net/quic/core/quic_clock.h"
 #include "net/quic/core/quic_crypto_stream.h"
 #include "net/quic/core/quic_data_reader.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/tools/quic/quic_dispatcher.h"
 #include "net/tools/quic/quic_epoll_alarm_factory.h"
 #include "net/tools/quic/quic_epoll_clock.h"
 #include "net/tools/quic/quic_epoll_connection_helper.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_packet_reader.h"
 #include "net/tools/quic/quic_simple_crypto_server_stream_helper.h"
 #include "net/tools/quic/quic_simple_dispatcher.h"
@@ -37,10 +37,10 @@
 namespace net {
 namespace {
 
-// Specifies the directory used during QuicInMemoryCache
+// Specifies the directory used during QuicHttpResponseCache
 // construction to seed the cache. Cache directory can be
 // generated using `wget -p --save-headers <url>`
-std::string FLAGS_quic_in_memory_cache_dir = "";
+std::string FLAGS_quic_response_cache_dir = "";
 
 const int kEpollFlags = EPOLLIN | EPOLLOUT | EPOLLET;
 const char kSourceAddressTokenSecret[] = "secret";
@@ -50,19 +50,19 @@ const char kSourceAddressTokenSecret[] = "secret";
 const size_t kNumSessionsToCreatePerSocketEvent = 16;
 
 QuicServer::QuicServer(std::unique_ptr<ProofSource> proof_source,
-                       QuicInMemoryCache* in_memory_cache)
+                       QuicHttpResponseCache* response_cache)
     : QuicServer(std::move(proof_source),
                  QuicConfig(),
                  QuicCryptoServerConfig::ConfigOptions(),
                  AllSupportedVersions(),
-                 in_memory_cache) {}
+                 response_cache) {}
 
 QuicServer::QuicServer(
     std::unique_ptr<ProofSource> proof_source,
     const QuicConfig& config,
     const QuicCryptoServerConfig::ConfigOptions& crypto_config_options,
     const QuicVersionVector& supported_versions,
-    QuicInMemoryCache* in_memory_cache)
+    QuicHttpResponseCache* response_cache)
     : port_(0),
       fd_(-1),
       packets_dropped_(0),
@@ -74,7 +74,7 @@ QuicServer::QuicServer(
       crypto_config_options_(crypto_config_options),
       version_manager_(supported_versions),
       packet_reader_(new QuicPacketReader()),
-      in_memory_cache_(in_memory_cache) {
+      response_cache_(response_cache) {
   Initialize();
 }
 
@@ -96,8 +96,8 @@ void QuicServer::Initialize() {
 
   epoll_server_.set_timeout_in_us(50 * 1000);
 
-  if (!FLAGS_quic_in_memory_cache_dir.empty()) {
-    in_memory_cache_->InitializeFromDirectory(FLAGS_quic_in_memory_cache_dir);
+  if (!FLAGS_quic_response_cache_dir.empty()) {
+    response_cache_->InitializeFromDirectory(FLAGS_quic_response_cache_dir);
   }
 
   QuicEpollClock clock(&epoll_server_);
@@ -152,7 +152,7 @@ QuicDispatcher* QuicServer::CreateQuicDispatcher() {
           new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
       std::unique_ptr<QuicEpollAlarmFactory>(
           new QuicEpollAlarmFactory(&epoll_server_)),
-      in_memory_cache_);
+      response_cache_);
 }
 
 void QuicServer::WaitForEvents() {

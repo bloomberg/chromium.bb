@@ -17,7 +17,7 @@
 #include "net/quic/core/crypto/null_decrypter.h"
 #include "net/quic/core/crypto/quic_decrypter.h"
 #include "net/quic/core/crypto/quic_encrypter.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_framer_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
@@ -1115,9 +1115,7 @@ TEST_P(QuicFramerTest, PacketNumberDecreasesThenIncreases) {
   header.public_header.version_flag = false;
   header.packet_number = kPacketNumber - 2;
 
-  QuicPaddingFrame padding_frame;
-  QuicFrames frames;
-  frames.push_back(QuicFrame(padding_frame));
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
 
@@ -1618,7 +1616,7 @@ TEST_P(QuicFramerTest, RejectPublicHeader) {
   ASSERT_FALSE(visitor_.header_.get());
 }
 
-TEST_P(QuicFramerTest, NewAckFrameOneAckBlock) {
+TEST_P(QuicFramerTest, AckFrameOneAckBlock) {
   // clang-format off
   unsigned char packet[] = {
       // public flags (8 byte connection_id)
@@ -1687,7 +1685,7 @@ TEST_P(QuicFramerTest, NewAckFrameOneAckBlock) {
   }
 }
 
-TEST_P(QuicFramerTest, NewAckFrameTwoTimeStampsMultipleAckBlocks) {
+TEST_P(QuicFramerTest, AckFrameTwoTimeStampsMultipleAckBlocks) {
   // clang-format off
   unsigned char packet[] = {
       // public flags (8 byte connection_id)
@@ -2551,10 +2549,7 @@ TEST_P(QuicFramerTest, BuildPaddingFramePacket) {
   header.public_header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicPaddingFrame padding_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(padding_frame));
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -2595,10 +2590,7 @@ TEST_P(QuicFramerTest, Build4ByteSequenceNumberPaddingFramePacket) {
   header.public_header.packet_number_length = PACKET_4BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
-  QuicPaddingFrame padding_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(padding_frame));
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -2638,10 +2630,7 @@ TEST_P(QuicFramerTest, Build2ByteSequenceNumberPaddingFramePacket) {
   header.public_header.packet_number_length = PACKET_2BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
-  QuicPaddingFrame padding_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(padding_frame));
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -2681,10 +2670,7 @@ TEST_P(QuicFramerTest, Build1ByteSequenceNumberPaddingFramePacket) {
   header.public_header.packet_number_length = PACKET_1BYTE_PACKET_NUMBER;
   header.packet_number = kPacketNumber;
 
-  QuicPaddingFrame padding_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(padding_frame));
+  QuicFrames frames = {QuicFrame(QuicPaddingFrame())};
 
   // clang-format off
   unsigned char packet[kMaxPacketSize] = {
@@ -2726,8 +2712,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacket) {
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stream_frame));
+  QuicFrames frames = {QuicFrame(&stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -2771,9 +2756,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithVersionFlag) {
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stream_frame));
+  QuicFrames frames = {QuicFrame(&stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -2818,9 +2801,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithMultipathFlag) {
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stream_frame));
+  QuicFrames frames = {QuicFrame(&stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -2868,9 +2849,7 @@ TEST_P(QuicFramerTest, BuildStreamFramePacketWithBothVersionAndMultipathFlag) {
 
   QuicStreamFrame stream_frame(kStreamId, true, kStreamOffset,
                                StringPiece("hello world!"));
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stream_frame));
+  QuicFrames frames = {QuicFrame(&stream_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -2932,7 +2911,7 @@ TEST_P(QuicFramerTest, BuildVersionNegotiationPacket) {
                                       arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildNewAckFramePacketOneAckBlock) {
+TEST_P(QuicFramerTest, BuildAckFramePacketOneAckBlock) {
   QuicPacketHeader header;
   header.public_header.connection_id = kConnectionId;
   header.public_header.reset_flag = false;
@@ -2945,8 +2924,7 @@ TEST_P(QuicFramerTest, BuildNewAckFramePacketOneAckBlock) {
   ack_frame.ack_delay_time = QuicTime::Delta::Zero();
   ack_frame.packets.Add(1, kSmallLargestObserved + 1);
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&ack_frame));
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -2979,7 +2957,7 @@ TEST_P(QuicFramerTest, BuildNewAckFramePacketOneAckBlock) {
                                       arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildNewAckFramePacketMultipleAckBlocks) {
+TEST_P(QuicFramerTest, BuildAckFramePacketMultipleAckBlocks) {
   QuicPacketHeader header;
   header.public_header.connection_id = kConnectionId;
   header.public_header.reset_flag = false;
@@ -2995,8 +2973,7 @@ TEST_P(QuicFramerTest, BuildNewAckFramePacketMultipleAckBlocks) {
   ack_frame.packets.Add(900, kSmallMissingPacket);
   ack_frame.packets.Add(kSmallMissingPacket + 1, kSmallLargestObserved + 1);
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&ack_frame));
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3047,7 +3024,7 @@ TEST_P(QuicFramerTest, BuildNewAckFramePacketMultipleAckBlocks) {
                                       arraysize(packet));
 }
 
-TEST_P(QuicFramerTest, BuildNewAckFramePacketMaxAckBlocks) {
+TEST_P(QuicFramerTest, BuildAckFramePacketMaxAckBlocks) {
   QuicPacketHeader header;
   header.public_header.connection_id = kConnectionId;
   header.public_header.reset_flag = false;
@@ -3064,8 +3041,7 @@ TEST_P(QuicFramerTest, BuildNewAckFramePacketMaxAckBlocks) {
   }
   ack_frame.packets.Add(600, kSmallLargestObserved + 1);
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&ack_frame));
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3179,8 +3155,7 @@ TEST_P(QuicFramerTest, BuildNewStopWaitingPacket) {
   QuicStopWaitingFrame stop_waiting_frame;
   stop_waiting_frame.least_unacked = kLeastUnacked;
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&stop_waiting_frame));
+  QuicFrames frames = {QuicFrame(&stop_waiting_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3243,8 +3218,7 @@ TEST_P(QuicFramerTest, BuildRstFramePacketQuic) {
   };
   // clang-format on
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&rst_frame));
+  QuicFrames frames = {QuicFrame(&rst_frame)};
 
   std::unique_ptr<QuicPacket> data(BuildDataPacket(header, frames));
   ASSERT_TRUE(data != nullptr);
@@ -3265,8 +3239,7 @@ TEST_P(QuicFramerTest, BuildCloseFramePacket) {
   close_frame.error_code = static_cast<QuicErrorCode>(0x05060708);
   close_frame.error_details = "because I can";
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&close_frame));
+  QuicFrames frames = {QuicFrame(&close_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3313,8 +3286,7 @@ TEST_P(QuicFramerTest, BuildGoAwayPacket) {
   goaway_frame.last_good_stream_id = kStreamId;
   goaway_frame.reason_phrase = "because I can";
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&goaway_frame));
+  QuicFrames frames = {QuicFrame(&goaway_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3362,8 +3334,7 @@ TEST_P(QuicFramerTest, BuildWindowUpdatePacket) {
   window_update_frame.stream_id = kStreamId;
   window_update_frame.byte_offset = 0x1122334455667788;
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&window_update_frame));
+  QuicFrames frames = {QuicFrame(&window_update_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3404,8 +3375,7 @@ TEST_P(QuicFramerTest, BuildBlockedPacket) {
   QuicBlockedFrame blocked_frame;
   blocked_frame.stream_id = kStreamId;
 
-  QuicFrames frames;
-  frames.push_back(QuicFrame(&blocked_frame));
+  QuicFrames frames = {QuicFrame(&blocked_frame)};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3440,10 +3410,7 @@ TEST_P(QuicFramerTest, BuildPingPacket) {
   header.public_header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicPingFrame ping_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(ping_frame));
+  QuicFrames frames = {QuicFrame(QuicPingFrame())};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3517,10 +3484,7 @@ TEST_P(QuicFramerTest, BuildMtuDiscoveryPacket) {
   header.public_header.version_flag = false;
   header.packet_number = kPacketNumber;
 
-  QuicMtuDiscoveryFrame mtu_discovery_frame;
-
-  QuicFrames frames;
-  frames.push_back(QuicFrame(mtu_discovery_frame));
+  QuicFrames frames = {QuicFrame(QuicMtuDiscoveryFrame())};
 
   // clang-format off
   unsigned char packet[] = {
@@ -3928,11 +3892,7 @@ TEST_P(QuicFramerTest, AckTruncationLargePacket) {
   QuicAckFrame ack_frame;
   // Create a packet with just the ack.
   ack_frame = MakeAckFrameWithAckBlocks(300, 0u);
-  QuicFrame frame;
-  frame.type = ACK_FRAME;
-  frame.ack_frame = &ack_frame;
-  QuicFrames frames;
-  frames.push_back(frame);
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
   std::unique_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
@@ -3963,11 +3923,7 @@ TEST_P(QuicFramerTest, AckTruncationSmallPacket) {
   // Create a packet with just the ack.
   QuicAckFrame ack_frame;
   ack_frame = MakeAckFrameWithAckBlocks(300, 0u);
-  QuicFrame frame;
-  frame.type = ACK_FRAME;
-  frame.ack_frame = &ack_frame;
-  QuicFrames frames;
-  frames.push_back(frame);
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   // Build an ack packet with truncation due to limit in number of nack ranges.
   std::unique_ptr<QuicPacket> raw_ack_packet(
@@ -4001,11 +3957,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   ack_frame.packets.Add(1, ack_frame.largest_observed);
 
   // Create a packet with just the ack.
-  QuicFrame frame;
-  frame.type = ACK_FRAME;
-  frame.ack_frame = &ack_frame;
-  QuicFrames frames;
-  frames.push_back(frame);
+  QuicFrames frames = {QuicFrame(&ack_frame)};
 
   std::unique_ptr<QuicPacket> raw_ack_packet(BuildDataPacket(header, frames));
   ASSERT_TRUE(raw_ack_packet != nullptr);
@@ -4023,9 +3975,7 @@ TEST_P(QuicFramerTest, CleanTruncation) {
   // Test for clean truncation of the ack by comparing the length of the
   // original packets to the re-serialized packets.
   frames.clear();
-  frame.type = ACK_FRAME;
-  frame.ack_frame = visitor_.ack_frames_[0].get();
-  frames.push_back(frame);
+  frames.push_back(QuicFrame(visitor_.ack_frames_[0].get()));
 
   size_t original_raw_length = raw_ack_packet->length();
   raw_ack_packet.reset(BuildDataPacket(header, frames));

@@ -326,6 +326,7 @@ QuicConfig::QuicConfig()
       max_idle_time_before_crypto_handshake_(QuicTime::Delta::Zero()),
       max_undecryptable_packets_(0),
       connection_options_(kCOPT, PRESENCE_OPTIONAL),
+      client_connection_options_(kCLOP, PRESENCE_OPTIONAL),
       idle_network_timeout_seconds_(kICSL, PRESENCE_REQUIRED),
       silent_close_(kSCLS, PRESENCE_OPTIONAL),
       max_streams_per_connection_(kMSPC, PRESENCE_OPTIONAL),
@@ -390,6 +391,23 @@ bool QuicConfig::HasClientSentConnectionOption(QuicTag tag,
     return true;
   }
   return false;
+}
+
+void QuicConfig::SetClientConnectionOptions(
+    const QuicTagVector& client_connection_options) {
+  client_connection_options_.SetSendValues(client_connection_options);
+}
+
+bool QuicConfig::HasClientRequestedIndependentOption(
+    QuicTag tag,
+    Perspective perspective) const {
+  if (perspective == Perspective::IS_SERVER) {
+    return (HasReceivedConnectionOptions() &&
+            ContainsQuicTag(ReceivedConnectionOptions(), tag));
+  }
+
+  return (client_connection_options_.HasSendValues() &&
+          ContainsQuicTag(client_connection_options_.GetSendValues(), tag));
 }
 
 void QuicConfig::SetIdleNetworkTimeout(

@@ -272,7 +272,7 @@ void QuicPacketCreator::CopyToBuffer(QuicIOVector iov,
 }
 
 void QuicPacketCreator::ReserializeAllFrames(
-    const PendingRetransmission& retransmission,
+    const QuicPendingRetransmission& retransmission,
     char* buffer,
     size_t buffer_len) {
   DCHECK(queued_frames_.empty());
@@ -335,11 +335,6 @@ void QuicPacketCreator::OnSerializedPacket() {
 
   delegate_->OnSerializedPacket(&packet_);
   ClearPacket();
-  // Maximum packet size may be only enacted while no packet is currently being
-  // constructed, so here we have a good opportunity to actually change it.
-  if (CanSetMaxPacketLength()) {
-    SetMaxPacketLength(max_packet_length_);
-  }
 }
 
 void QuicPacketCreator::ClearPacket() {

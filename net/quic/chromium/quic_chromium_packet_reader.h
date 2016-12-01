@@ -11,7 +11,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/net_export.h"
 #include "net/log/net_log_with_source.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 #include "net/socket/datagram_client_socket.h"
 

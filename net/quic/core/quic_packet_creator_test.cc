@@ -197,16 +197,16 @@ class QuicPacketCreatorTest : public ::testing::TestWithParam<TestParams> {
     return ::net::test::MakeIOVector(s, &iov_);
   }
 
-  PendingRetransmission CreateRetransmission(
+  QuicPendingRetransmission CreateRetransmission(
       const QuicFrames& retransmittable_frames,
       bool has_crypto_handshake,
       int num_padding_bytes,
       EncryptionLevel encryption_level,
       QuicPacketNumberLength packet_number_length) {
-    return PendingRetransmission(1u, 1u, NOT_RETRANSMISSION,
-                                 retransmittable_frames, has_crypto_handshake,
-                                 num_padding_bytes, encryption_level,
-                                 packet_number_length);
+    return QuicPendingRetransmission(1u, 1u, NOT_RETRANSMISSION,
+                                     retransmittable_frames,
+                                     has_crypto_handshake, num_padding_bytes,
+                                     encryption_level, packet_number_length);
   }
 
   static const QuicStreamOffset kOffset = 1u;
@@ -276,7 +276,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSequenceNumberLength) {
   QuicFrames frames;
   frames.push_back(QuicFrame(stream_frame));
   char buffer[kMaxPacketSize];
-  PendingRetransmission retransmission(CreateRetransmission(
+  QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE, PACKET_1BYTE_PACKET_NUMBER));
   EXPECT_CALL(delegate_, OnSerializedPacket(_))
@@ -311,7 +311,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeCryptoFrameWithForwardSecurity) {
   frames.push_back(QuicFrame(stream_frame));
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
   char buffer[kMaxPacketSize];
-  PendingRetransmission retransmission(CreateRetransmission(
+  QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
@@ -329,7 +329,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFrameWithForwardSecurity) {
   frames.push_back(QuicFrame(stream_frame));
   creator_.set_encryption_level(ENCRYPTION_FORWARD_SECURE);
   char buffer[kMaxPacketSize];
-  PendingRetransmission retransmission(CreateRetransmission(
+  QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, false /* has_crypto_handshake */, 0 /* no padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
@@ -348,7 +348,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPadding) {
   QuicFrames frames;
   frames.push_back(frame);
   char buffer[kMaxPacketSize];
-  PendingRetransmission retransmission(CreateRetransmission(
+  QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
       ENCRYPTION_NONE,
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
@@ -371,7 +371,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSpecifiedPadding) {
     QuicFrames frames;
     frames.push_back(frame);
     char buffer[kMaxPacketSize];
-    PendingRetransmission retransmission(CreateRetransmission(
+    QuicPendingRetransmission retransmission(CreateRetransmission(
         frames, false /* has_crypto_handshake */,
         kNumPaddingBytes1 /* padding bytes */, ENCRYPTION_NONE,
         QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
@@ -385,7 +385,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithSpecifiedPadding) {
   QuicFrames frames;
   frames.push_back(frame);
   char buffer[kMaxPacketSize];
-  PendingRetransmission retransmission(CreateRetransmission(
+  QuicPendingRetransmission retransmission(CreateRetransmission(
       frames, false /* has_crypto_handshake */,
       kNumPaddingBytes2 /* padding bytes */, ENCRYPTION_NONE,
       QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));
@@ -413,7 +413,7 @@ TEST_P(QuicPacketCreatorTest, ReserializeFramesWithFullPacketAndPadding) {
     QuicFrames frames;
     frames.push_back(frame);
     char buffer[kMaxPacketSize];
-    PendingRetransmission retransmission(CreateRetransmission(
+    QuicPendingRetransmission retransmission(CreateRetransmission(
         frames, true /* has_crypto_handshake */, -1 /* needs full padding */,
         ENCRYPTION_NONE,
         QuicPacketCreatorPeer::GetPacketNumberLength(&creator_)));

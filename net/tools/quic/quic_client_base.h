@@ -20,7 +20,7 @@
 #include "net/quic/core/quic_config.h"
 #include "net/quic/core/quic_connection.h"
 #include "net/quic/core/quic_packet_writer.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/platform/api/quic_socket_address.h"
 #include "net/tools/quic/quic_client_session.h"
 #include "net/tools/quic/quic_spdy_client_stream.h"
@@ -133,7 +133,8 @@ class QuicClientBase : public QuicClientPushPromiseIndex::Delegate,
   void WaitForStreamToClose(QuicStreamId id);
 
   // Wait for events until the handshake is confirmed.
-  void WaitForCryptoHandshakeConfirmed();
+  // Returns true if the crypto handshake succeeds, false otherwise.
+  bool WaitForCryptoHandshakeConfirmed() WARN_UNUSED_RESULT;
 
   // Wait up to 50ms, and handle any events which occur.
   // Returns true if there are any outstanding requests.

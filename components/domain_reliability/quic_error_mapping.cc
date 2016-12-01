@@ -255,7 +255,7 @@ const struct QuicErrorMapping {
 };
 
 // Must be updated any time a net::QuicErrorCode is deprecated in
-// net/quic/core/quic_protocol.h.
+// net/quic/core/quic_packets.h.
 const int kDeprecatedQuicErrorCount = 4;
 const int kActiveQuicErrorCount =
     net::QUIC_LAST_ERROR - kDeprecatedQuicErrorCount;

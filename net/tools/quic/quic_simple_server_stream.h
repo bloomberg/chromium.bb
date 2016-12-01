@@ -10,10 +10,10 @@
 #include <string>
 
 #include "base/macros.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/spdy/spdy_framer.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 
 namespace net {
 
@@ -28,7 +28,7 @@ class QuicSimpleServerStream : public QuicSpdyStream {
  public:
   QuicSimpleServerStream(QuicStreamId id,
                          QuicSpdySession* session,
-                         QuicInMemoryCache* in_memory_cache);
+                         QuicHttpResponseCache* response_cache);
   ~QuicSimpleServerStream() override;
 
   // QuicSpdyStream
@@ -83,7 +83,7 @@ class QuicSimpleServerStream : public QuicSpdyStream {
   int64_t content_length_;
   std::string body_;
 
-  QuicInMemoryCache* in_memory_cache_;  // Not owned.
+  QuicHttpResponseCache* response_cache_;  // Not owned.
 
   DISALLOW_COPY_AND_ASSIGN(QuicSimpleServerStream);
 };

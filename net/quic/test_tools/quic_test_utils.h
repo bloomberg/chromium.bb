@@ -26,7 +26,7 @@
 #include "net/quic/core/quic_connection_close_delegate_interface.h"
 #include "net/quic/core/quic_framer.h"
 #include "net/quic/core/quic_iovector.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_sent_packet_manager_interface.h"
 #include "net/quic/core/quic_server_session_base.h"
 #include "net/quic/core/quic_session.h"
@@ -915,7 +915,7 @@ class MockSentPacketManager : public QuicSentPacketManagerInterface {
   MOCK_METHOD0(MaybeRetransmitTailLossProbe, bool(void));
   MOCK_METHOD0(NeuterUnencryptedPackets, void(void));
   MOCK_CONST_METHOD0(HasPendingRetransmissions, bool(void));
-  MOCK_METHOD0(NextPendingRetransmission, PendingRetransmission(void));
+  MOCK_METHOD0(NextPendingRetransmission, QuicPendingRetransmission(void));
   MOCK_CONST_METHOD0(HasUnackedPackets, bool(void));
   MOCK_CONST_METHOD1(GetLeastUnacked, QuicPacketNumber(QuicPathId));
   MOCK_METHOD6(OnPacketSent,
@@ -950,6 +950,7 @@ class MockSentPacketManager : public QuicSentPacketManagerInterface {
   MOCK_CONST_METHOD0(GetConsecutiveRtoCount, size_t(void));
   MOCK_CONST_METHOD0(GetConsecutiveTlpCount, size_t(void));
   MOCK_METHOD0(OnApplicationLimited, void(void));
+  MOCK_CONST_METHOD0(GetSendAlgorithm, const SendAlgorithmInterface*(void));
 };
 
 class MockConnectionCloseDelegate

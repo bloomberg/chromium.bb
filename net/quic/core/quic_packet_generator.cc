@@ -298,7 +298,7 @@ QuicPacketGenerator::SerializeVersionNegotiationPacket(
 }
 
 void QuicPacketGenerator::ReserializeAllFrames(
-    const PendingRetransmission& retransmission,
+    const QuicPendingRetransmission& retransmission,
     char* buffer,
     size_t buffer_len) {
   packet_creator_.ReserializeAllFrames(retransmission, buffer, buffer_len);

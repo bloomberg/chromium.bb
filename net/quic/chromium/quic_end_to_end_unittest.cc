@@ -36,7 +36,7 @@
 #include "net/test/cert_test_util.h"
 #include "net/test/gtest_util.h"
 #include "net/test/test_data_directory.h"
-#include "net/tools/quic/quic_in_memory_cache.h"
+#include "net/tools/quic/quic_http_response_cache.h"
 #include "net/tools/quic/quic_simple_server.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -179,7 +179,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
     server_config_options_.token_binding_params = QuicTagVector{kTB10, kP256};
     server_.reset(new QuicSimpleServer(
         CryptoTestUtils::ProofSourceForTesting(), server_config_,
-        server_config_options_, AllSupportedVersions(), &in_memory_cache_));
+        server_config_options_, AllSupportedVersions(), &response_cache_));
     server_->Listen(server_address_);
     server_address_ = server_->server_address();
     server_->StartReading();
@@ -192,8 +192,8 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
                   int response_code,
                   StringPiece response_detail,
                   StringPiece body) {
-    in_memory_cache_.AddSimpleResponse("test.example.com", path, response_code,
-                                       body);
+    response_cache_.AddSimpleResponse("test.example.com", path, response_code,
+                                      body);
   }
 
   // Populates |request_body_| with |length_| ASCII bytes.
@@ -248,7 +248,7 @@ class QuicEndToEndTest : public ::testing::TestWithParam<TestParams> {
   std::string request_body_;
   std::unique_ptr<UploadDataStream> upload_data_stream_;
   std::unique_ptr<QuicSimpleServer> server_;
-  QuicInMemoryCache in_memory_cache_;
+  QuicHttpResponseCache response_cache_;
   IPEndPoint server_address_;
   std::string server_hostname_;
   QuicConfig server_config_;

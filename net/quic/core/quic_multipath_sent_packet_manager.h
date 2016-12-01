@@ -9,7 +9,7 @@
 
 #include "net/base/net_export.h"
 #include "net/quic/core/quic_connection_close_delegate_interface.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_sent_packet_manager.h"
 #include "net/quic/core/quic_sent_packet_manager_interface.h"
 
@@ -74,7 +74,7 @@ class NET_EXPORT_PRIVATE QuicMultipathSentPacketManager
 
   // Retrieves the next pending retransmission.  Caller must ensure that
   // there are pending retransmissions prior to calling this function.
-  PendingRetransmission NextPendingRetransmission() override;
+  QuicPendingRetransmission NextPendingRetransmission() override;
 
   // Returns true if the any path has unacked packets.
   bool HasUnackedPackets() const override;
@@ -166,6 +166,8 @@ class NET_EXPORT_PRIVATE QuicMultipathSentPacketManager
   size_t GetConsecutiveTlpCount() const override;
 
   void OnApplicationLimited() override;
+
+  const SendAlgorithmInterface* GetSendAlgorithm() const override;
 
  private:
   friend class test::QuicConnectionPeer;

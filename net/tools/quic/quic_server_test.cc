@@ -33,14 +33,14 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
       std::unique_ptr<QuicConnectionHelperInterface> helper,
       std::unique_ptr<QuicCryptoServerStream::Helper> session_helper,
       std::unique_ptr<QuicAlarmFactory> alarm_factory,
-      QuicInMemoryCache* in_memory_cache)
+      QuicHttpResponseCache* response_cache)
       : QuicSimpleDispatcher(config,
                              crypto_config,
                              version_manager,
                              std::move(helper),
                              std::move(session_helper),
                              std::move(alarm_factory),
-                             in_memory_cache) {}
+                             response_cache) {}
   ~MockQuicSimpleDispatcher() override {}
 
   MOCK_METHOD0(OnCanWrite, void());
@@ -52,8 +52,8 @@ class MockQuicSimpleDispatcher : public QuicSimpleDispatcher {
 class TestQuicServer : public QuicServer {
  public:
   TestQuicServer()
-      : QuicServer(CryptoTestUtils::ProofSourceForTesting(),
-                   &in_memory_cache_) {}
+      : QuicServer(CryptoTestUtils::ProofSourceForTesting(), &response_cache_) {
+  }
 
   ~TestQuicServer() override {}
 
@@ -70,12 +70,12 @@ class TestQuicServer : public QuicServer {
             new QuicSimpleCryptoServerStreamHelper(QuicRandom::GetInstance())),
         std::unique_ptr<QuicEpollAlarmFactory>(
             new QuicEpollAlarmFactory(epoll_server())),
-        &in_memory_cache_);
+        &response_cache_);
     return mock_dispatcher_;
   }
 
   MockQuicSimpleDispatcher* mock_dispatcher_;
-  QuicInMemoryCache in_memory_cache_;
+  QuicHttpResponseCache response_cache_;
 };
 
 class QuicServerEpollInTest : public ::testing::Test {
@@ -162,7 +162,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
                     QuicRandom::GetInstance())),
             std::unique_ptr<QuicEpollAlarmFactory>(
                 new QuicEpollAlarmFactory(&eps_)),
-            &in_memory_cache_) {
+            &response_cache_) {
     dispatcher_.InitializeWithWriter(new QuicDefaultPacketWriter(1234));
   }
 
@@ -176,7 +176,7 @@ class QuicServerDispatchPacketTest : public ::testing::Test {
   QuicCryptoServerConfig crypto_config_;
   QuicVersionManager version_manager_;
   EpollServer eps_;
-  QuicInMemoryCache in_memory_cache_;
+  QuicHttpResponseCache response_cache_;
   MockQuicDispatcher dispatcher_;
 };
 

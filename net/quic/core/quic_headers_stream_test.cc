@@ -255,6 +255,13 @@ class QuicHeadersStreamTest : public ::testing::TestWithParam<TestParamsTuple> {
     return QuicConsumedData(consumed, false);
   }
 
+  QuicConsumedData SaveIovShort(const QuicIOVector& data) {
+    const iovec* iov = data.iov;
+    int consumed = 1;
+    saved_data_.append(static_cast<char*>(iov[0].iov_base), consumed);
+    return QuicConsumedData(consumed, false);
+  }
+
   QuicConsumedData SaveIovAndNotifyAckListener(
       const QuicIOVector& data,
       QuicAckListenerInterface* ack_listener) {
@@ -937,7 +944,6 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
   QuicStreamId id = kClientDataStreamId1;
   QuicStreamOffset offset = 0;
   struct iovec iov;
-  string data;
 
   // This test will issue a write that will require fragmenting into
   // multiple HTTP/2 DATA frames.
@@ -946,7 +952,7 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
       kSpdyInitialFrameSizeLimit * kMinDataFrames + 1024;
   // Set headers stream send window large enough for data written below.
   headers_stream_->flow_controller()->UpdateSendWindowOffset(data_len * 2 * 4);
-  test::GenerateBody(&data, data_len);
+  string data(data_len, 'a');
 
   for (bool fin : {true, false}) {
     for (bool use_ack_listener : {true, false}) {
@@ -986,6 +992,66 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
       saved_payloads_.clear();
     }
   }
+}
+
+TEST_P(QuicHeadersStreamTest, WritevStreamDataFinOnly) {
+  FLAGS_quic_bugfix_fhol_writev_fin_only_v2 = true;
+  struct iovec iov;
+  string data;
+
+  EXPECT_CALL(session_,
+              WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+      .WillOnce(WithArgs<2, 5>(
+          Invoke(this, &QuicHeadersStreamTest::SaveIovAndNotifyAckListener)));
+
+  QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
+      kClientDataStreamId1, MakeIOVector(data, &iov), 0, true, nullptr);
+
+  EXPECT_EQ(consumed_data.bytes_consumed, 0u);
+  EXPECT_EQ(consumed_data.fin_consumed, true);
+}
+
+TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
+  FLAGS_quic_bugfix_fhol_writev_fin_only_v2 = true;
+  QuicStreamId id = kClientDataStreamId1;
+  QuicStreamOffset offset = 0;
+  struct iovec iov;
+
+  // This test will issue a write that will require fragmenting into
+  // multiple HTTP/2 DATA frames.  It will ensure that only 1 frame
+  // will go out in the case that the underlying session becomes write
+  // blocked.  Buffering is required to preserve framing, but the
+  // amount of buffering is limited to one HTTP/2 data frame.
+  const int kMinDataFrames = 4;
+  const size_t data_len = kSpdyInitialFrameSizeLimit * kMinDataFrames + 1024;
+  // Set headers stream send window large enough for data written below.
+  headers_stream_->flow_controller()->UpdateSendWindowOffset(data_len * 2 * 4);
+  string data(data_len, 'a');
+
+  bool fin = true;
+  // So force the underlying |WritevData| to consume only 1 byte.
+  // In that case, |WritevStreamData| should consume just one
+  // HTTP/2 data frame's worth of data.
+  EXPECT_CALL(session_,
+              WritevData(headers_stream_, kHeadersStreamId, _, _, false, _))
+      .WillOnce(
+          WithArgs<2>(Invoke(this, &QuicHeadersStreamTest::SaveIovShort)));
+
+  QuicConsumedData consumed_data = headers_stream_->WritevStreamData(
+      id, MakeIOVector(data, &iov), offset, fin, nullptr);
+
+  // bytes_consumed is max HTTP/2 data frame size minus the HTTP/2
+  // data header size.
+  EXPECT_EQ(consumed_data.bytes_consumed,
+            kSpdyInitialFrameSizeLimit - SpdyConstants::kDataFrameMinimumSize);
+  EXPECT_EQ(consumed_data.fin_consumed, false);
+
+  // If session already blocked, then bytes_consumed should be zero.
+  consumed_data = headers_stream_->WritevStreamData(
+      id, MakeIOVector(data, &iov), offset, fin, nullptr);
+
+  EXPECT_EQ(consumed_data.bytes_consumed, 0u);
+  EXPECT_EQ(consumed_data.fin_consumed, false);
 }
 
 }  // namespace

@@ -42,7 +42,7 @@
 #include "net/quic/core/quic_packet_creator.h"
 #include "net/quic/core/quic_packet_generator.h"
 #include "net/quic/core/quic_packet_writer.h"
-#include "net/quic/core/quic_protocol.h"
+#include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_received_packet_manager.h"
 #include "net/quic/core/quic_sent_packet_manager_interface.h"
 #include "net/quic/core/quic_time.h"
