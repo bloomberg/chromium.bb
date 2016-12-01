@@ -12,8 +12,11 @@
 #include "components/autofill/core/common/password_form.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/canvas.h"
+#include "ui/gfx/color_palette.h"
 #include "ui/gfx/image/image.h"
+#include "ui/gfx/paint_vector_icon.h"
 #include "ui/gfx/path.h"
+#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
@@ -69,6 +72,7 @@ CredentialsItemView::CredentialsItemView(
       form_(form),
       upper_label_(nullptr),
       lower_label_(nullptr),
+      info_icon_(nullptr),
       hover_color_(hover_color),
       weak_ptr_factory_(this) {
   set_notify_enter_exit_on_child(true);
@@ -103,6 +107,16 @@ CredentialsItemView::CredentialsItemView(
     lower_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     lower_label_->SetMultiLine(true);
     AddChildView(lower_label_);
+  }
+
+  if (form_->is_public_suffix_match) {
+    info_icon_ = new views::ImageView;
+    info_icon_->SetImage(gfx::CreateVectorIcon(gfx::VectorIconId::INFO_OUTLINE,
+                                               kInfoIconSize,
+                                               gfx::kChromeIconGrey));
+    info_icon_->SetTooltipText(
+        base::UTF8ToUTF16(form_->origin.GetOrigin().spec()));
+    AddChildView(info_icon_);
   }
 
   if (!upper_text.empty() && !lower_text.empty())
@@ -172,6 +186,12 @@ void CredentialsItemView::Layout() {
   if (lower_label_) {
     label_origin.Offset(0, upper_size.height());
     lower_label_->SetBoundsRect(gfx::Rect(label_origin, lower_size));
+  }
+  if (info_icon_) {
+    info_icon_->SizeToPreferredSize();
+    info_icon_->SetPosition(
+        gfx::Point(child_area.right() - info_icon_->width(),
+                   child_area.CenterPoint().y() - info_icon_->height() / 2));
   }
 }
 

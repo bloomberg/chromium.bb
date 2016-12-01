@@ -62,6 +62,7 @@ class CredentialsItemView : public AccountAvatarFetcherDelegate,
   views::ImageView* image_view_;
   views::Label* upper_label_;
   views::Label* lower_label_;
+  views::ImageView* info_icon_;
 
   SkColor hover_color_;
 

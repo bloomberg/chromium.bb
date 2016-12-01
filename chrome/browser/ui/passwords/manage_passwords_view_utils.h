@@ -29,6 +29,10 @@ class Profile;
 // The desired width and height in pixels for an account avatar.
 constexpr int kAvatarImageSize = 32;
 
+// The desired width and height for the 'i' icon used for the PSL matches in the
+// account chooser.
+constexpr int kInfoIconSize = 16;
+
 // Crops and scales |image_skia| to the desired size for an account avatar.
 gfx::ImageSkia ScaleImageForAccountAvatar(gfx::ImageSkia image_skia);
 
