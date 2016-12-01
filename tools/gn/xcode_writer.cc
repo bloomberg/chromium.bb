@@ -31,6 +31,16 @@
 
 namespace {
 
+struct SafeEnvironmentVariableInfo {
+  const char* name;
+  bool capture_at_generation;
+};
+
+SafeEnvironmentVariableInfo kSafeEnvironmentVariables[] = {
+    {"HOME", true}, {"LANG", true},    {"PATH", true},
+    {"USER", true}, {"TMPDIR", false},
+};
+
 XcodeWriter::TargetOsType GetTargetOs(const Args& args) {
   const Value* target_os_value = args.GetArgOverride(variables::kTargetOs);
   if (target_os_value) {
@@ -43,13 +53,31 @@ XcodeWriter::TargetOsType GetTargetOs(const Args& args) {
 }
 
 std::string GetBuildScript(const std::string& target_name,
-                           const std::string& build_path,
-                           const std::string& ninja_extra_args) {
+                           const std::string& ninja_extra_args,
+                           base::Environment* environment) {
   std::stringstream script;
   script << "echo note: \"Compile and copy " << target_name << " via ninja\"\n"
          << "exec ";
-  if (!build_path.empty())
-    script << "env PATH=\"" << build_path << "\" ";
+
+  // Launch ninja with a sanitized environment (Xcode sets many environment
+  // variable overridding settings, including the SDK, thus breaking hermetic
+  // build).
+  script << "env -i ";
+  for (size_t i = 0; i < arraysize(kSafeEnvironmentVariables); ++i) {
+    const auto& variable = kSafeEnvironmentVariables[i];
+    script << variable.name << "=\"";
+
+    std::string value;
+    if (variable.capture_at_generation)
+      environment->GetVar(variable.name, &value);
+
+    if (!value.empty())
+      script << value;
+    else
+      script << "$" << variable.name;
+    script << "\" ";
+  }
+
   script << "ninja -C .";
   if (!ninja_extra_args.empty())
     script << " " << ninja_extra_args;
@@ -253,10 +281,9 @@ void XcodeWriter::CreateProductsProject(
 
   std::string build_path;
   std::unique_ptr<base::Environment> env(base::Environment::Create());
-  env->GetVar("PATH", &build_path);
 
   main_project->AddAggregateTarget(
-      "All", GetBuildScript(root_target, build_path, ninja_extra_args));
+      "All", GetBuildScript(root_target, ninja_extra_args, env.get()));
 
   for (const Target* target : targets) {
     switch (target->output_type()) {
@@ -269,8 +296,8 @@ void XcodeWriter::CreateProductsProject(
             target->output_name().empty() ? target->label().name()
                                           : target->output_name(),
             "com.apple.product-type.tool",
-            GetBuildScript(target->label().name(), build_path,
-                           ninja_extra_args));
+            GetBuildScript(target->label().name(), ninja_extra_args,
+                           env.get()));
         break;
 
       case Target::CREATE_BUNDLE:
@@ -284,8 +311,8 @@ void XcodeWriter::CreateProductsProject(
                            .value(),
                        build_settings->build_dir()),
             target->bundle_data().product_type(),
-            GetBuildScript(target->label().name(), build_path,
-                           ninja_extra_args));
+            GetBuildScript(target->label().name(), ninja_extra_args,
+                           env.get()));
         break;
 
       default:
