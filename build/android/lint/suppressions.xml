@@ -315,7 +315,7 @@ Still reading?
     <ignore regexp="blimp/client/app/android/java/res/values/dimens.xml"/>
     <ignore regexp="blimp/client/app/android/java/res/xml/about_blimp_preferences.xml"/>
     <ignore regexp="blimp/client/app/android/java/res/xml/blimp_preferences.xml"/>
-    <ignore regexp="blimp/client/core/resources/android/java/res/*" />    
+    <ignore regexp="blimp/client/core/resources/android/java/res/*" />
     <!-- TODO(crbug.com/635567): Fix this properly. -->
     <ignore regexp="chrome/android/java/res/drawable-hdpi/*"/>
     <ignore regexp="chrome/android/java/res/drawable-hdpi/amex_card.png"/>
@@ -459,6 +459,10 @@ Still reading?
     <ignore regexp="content/shell/android/linker_test_apk/res/layout/test_activity.xml"/>
     <!-- TODO(crbug.com/635567): Fix this properly. -->
     <ignore regexp="content/shell/android/shell_apk/res/values/strings.xml"/>
+  </issue>
+  <!-- TODO(crbug.com/669629): Remove this when the Chromecast dependency on old layout code is removed. -->
+  <issue id="UseCompoundDrawables">
+    <ignore regexp="chromecast/internal/android/prebuilt/settings/res/layout-v17/setup_activity_progress.xml"/>
   </issue>
   <issue id="UselessParent">
     <ignore regexp="android_webview/tools/system_webview_shell/apk/res/layout/activity_webview_browser.xml"/>
