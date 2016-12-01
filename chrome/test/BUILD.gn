@@ -5027,6 +5027,8 @@ if (!is_android && !is_ios && !is_chromecast) {
     ]
 
     data = [
+      "//chrome/test/data/extensions/api_test",
+
       # Needed for isolate script to execute.
       "//testing/scripts/common.py",
       "//testing/xvfb.py",
