@@ -35,7 +35,8 @@ class ArcKioskAppService
   void OnAppReadyChanged(const std::string& id, bool ready) override;
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
-                     const std::string& activity) override;
+                     const std::string& activity,
+                     const std::string& intent) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnPackageListInitialRefreshed() override;
 

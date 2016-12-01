@@ -126,7 +126,8 @@ class ArcAppListPrefs
     // initial activity.
     virtual void OnTaskCreated(int32_t task_id,
                                const std::string& package_name,
-                               const std::string& activity) {}
+                               const std::string& activity,
+                               const std::string& intent) {}
     // Notifies that task has been destroyed.
     virtual void OnTaskDestroyed(int32_t task_id) {}
     // Notifies that task has been activated and moved to the front.
@@ -278,7 +279,8 @@ class ArcAppListPrefs
   void OnTaskCreated(int32_t task_id,
                      const std::string& package_name,
                      const std::string& activity,
-                     const base::Optional<std::string>& name) override;
+                     const base::Optional<std::string>& name,
+                     const base::Optional<std::string>& intent) override;
   void OnTaskDestroyed(int32_t task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnNotificationsEnabledChanged(const std::string& package_name,

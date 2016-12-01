@@ -75,7 +75,8 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void OnAppRemoved(const std::string& app_id) override;
   void OnTaskCreated(int task_id,
                      const std::string& package_name,
-                     const std::string& activity) override;
+                     const std::string& activity,
+                     const std::string& intent) override;
   void OnTaskDestroyed(int task_id) override;
   void OnTaskSetActive(int32_t task_id) override;
   void OnTaskOrientationLockRequested(

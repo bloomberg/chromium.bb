@@ -382,6 +382,7 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   EXPECT_FALSE(delegate->IsAppOpen(app_id));
   // Simulate task creation so the app is marked as running/open.
   std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
-  app_host()->OnTaskCreated(0, info->package_name, info->activity, info->name);
+  app_host()->OnTaskCreated(0, info->package_name, info->activity, info->name,
+                            info->intent_uri);
   EXPECT_TRUE(delegate->IsAppOpen(app_id));
 }

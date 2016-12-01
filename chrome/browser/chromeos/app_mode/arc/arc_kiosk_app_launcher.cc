@@ -31,7 +31,8 @@ ArcKioskAppLauncher::~ArcKioskAppLauncher() {
 
 void ArcKioskAppLauncher::OnTaskCreated(int32_t task_id,
                                         const std::string& package_name,
-                                        const std::string& activity) {
+                                        const std::string& activity,
+                                        const std::string& intent) {
   std::unique_ptr<ArcAppListPrefs::AppInfo> app = prefs_->GetApp(app_id_);
   if (!app || app->package_name != package_name || app->activity != activity)
     return;

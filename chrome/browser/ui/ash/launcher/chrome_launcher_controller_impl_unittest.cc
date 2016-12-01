@@ -867,7 +867,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
                            int32_t task_id) {
     ArcAppListPrefs* const prefs = arc_test_.arc_app_list_prefs();
     prefs->OnTaskCreated(task_id, appinfo.package_name, appinfo.activity,
-                         appinfo.name);
+                         appinfo.name, std::string());
   }
 
   void NotifyOnTaskOrientationLockRequested(int32_t task_id,
@@ -1865,13 +1865,15 @@ TEST_F(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
 
   std::string window_app_id1("org.chromium.arc.1");
   views::Widget* arc_window1 = CreateArcWindow(window_app_id1);
-  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id1));
 
   std::string window_app_id2("org.chromium.arc.2");
   views::Widget* arc_window2 = CreateArcWindow(window_app_id2);
-  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1]);
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
 
@@ -1885,7 +1887,8 @@ TEST_F(ChromeLauncherControllerImplMultiProfileWithArcTest, ArcMultiUser) {
 
   std::string window_app_id3("org.chromium.arc.3");
   views::Widget* arc_window3 = CreateArcWindow(window_app_id3);
-  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[2]);
+  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[2],
+                                            std::string());
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id3));
 
@@ -1920,11 +1923,13 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
   std::string window_app_id2("org.chromium.arc.2");
   std::string window_app_id3("org.chromium.arc.3");
   CreateArcWindow(window_app_id1);
-  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id));
   CreateArcWindow(window_app_id2);
-  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[0],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id));
   arc_test_.app_instance()->SendTaskDestroyed(1);
@@ -1936,7 +1941,8 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRunningApp) {
 
   // Stopping bridge removes apps.
   CreateArcWindow(window_app_id3);
-  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(3, arc_test_.fake_apps()[0],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id));
   arc_test_.StopArcInstance();
@@ -1962,7 +1968,8 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
   EXPECT_EQ(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id1));
   ASSERT_TRUE(arc_window);
-  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id1));
   arc_test_.app_instance()->SendTaskDestroyed(1);
@@ -1975,7 +1982,8 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcRaceCreateClose) {
 
   // Arc window created after and closed before mojom notification.
   std::string window_app_id2("org.chromium.arc.2");
-  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1]);
+  arc_test_.app_instance()->SendTaskCreated(2, arc_test_.fake_apps()[1],
+                                            std::string());
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(arc_app_id2));
   arc_window = CreateArcWindow(window_app_id2);
@@ -2001,7 +2009,8 @@ TEST_F(ChromeLauncherControllerImplWithArcTest, ArcWindowRecreation) {
   std::string window_app_id("org.chromium.arc.1");
   views::Widget* arc_window = CreateArcWindow(window_app_id);
   ASSERT_TRUE(arc_window);
-  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_apps()[0],
+                                            std::string());
   const ash::ShelfID shelf_id =
       launcher_controller_->GetShelfIDForAppID(arc_app_id);
   EXPECT_NE(ash::kInvalidShelfID, shelf_id);
@@ -3985,8 +3994,8 @@ TEST_F(ChromeLauncherControllerArcDefaultAppsTest, DefaultApps) {
 
   std::string window_app_id("org.chromium.arc.1");
   CreateArcWindow(window_app_id);
-  arc_test_.app_instance()->SendTaskCreated(1,
-                                            arc_test_.fake_default_apps()[0]);
+  arc_test_.app_instance()->SendTaskCreated(1, arc_test_.fake_default_apps()[0],
+                                            std::string());
 
   EXPECT_NE(ash::kInvalidShelfID,
             launcher_controller_->GetShelfIDForAppID(app_id));

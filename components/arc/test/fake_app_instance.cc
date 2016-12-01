@@ -93,8 +93,13 @@ void FakeAppInstance::SendAppAdded(const mojom::AppInfo& app) {
 }
 
 void FakeAppInstance::SendTaskCreated(int32_t taskId,
-                                      const mojom::AppInfo& app) {
-  app_host_->OnTaskCreated(taskId, app.package_name, app.activity, app.name);
+                                      const mojom::AppInfo& app,
+                                      const std::string& intent) {
+  app_host_->OnTaskCreated(taskId,
+                           app.package_name,
+                           app.activity,
+                           app.name,
+                           intent);
 }
 
 void FakeAppInstance::SendTaskDestroyed(int32_t taskId) {

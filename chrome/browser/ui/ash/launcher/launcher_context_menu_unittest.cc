@@ -211,7 +211,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   // Arc app is running.
   std::string window_app_id1("org.chromium.arc.1");
   CreateArcWindow(window_app_id1);
-  arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0]);
+  arc_test().app_instance()->SendTaskCreated(1, arc_test().fake_apps()[0],
+                                             std::string());
   menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
 
   EXPECT_FALSE(
@@ -225,7 +226,8 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   const std::string app_id2 = ArcAppTest::GetAppId(arc_test().fake_apps()[1]);
   std::string window_app_id2("org.chromium.arc.2");
   CreateArcWindow(window_app_id2);
-  arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1]);
+  arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
+                                             std::string());
   item.id = controller()->GetShelfIDForAppID(app_id2);
   ASSERT_TRUE(item.id);
   menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));

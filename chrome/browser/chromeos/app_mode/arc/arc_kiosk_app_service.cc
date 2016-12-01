@@ -50,7 +50,8 @@ void ArcKioskAppService::OnArcKioskAppsChanged() {
 
 void ArcKioskAppService::OnTaskCreated(int32_t task_id,
                                        const std::string& package_name,
-                                       const std::string& activity) {
+                                       const std::string& activity,
+                                       const std::string& intent) {
   // Store task id of the app to stop it later when needed.
   if (app_info_ && package_name == app_info_->package_name &&
       activity == app_info_->activity) {

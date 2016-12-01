@@ -1113,7 +1113,7 @@ TEST_F(ArcAppModelBuilderTest, NonLaunchableApp) {
 
   EXPECT_FALSE(prefs->IsRegistered(app_id));
   EXPECT_FALSE(FindArcItem(app_id));
-  app_instance()->SendTaskCreated(0, fake_apps()[0]);
+  app_instance()->SendTaskCreated(0, fake_apps()[0], std::string());
   // App should not appear now in the model but should be registered.
   EXPECT_FALSE(FindArcItem(app_id));
   EXPECT_TRUE(prefs->IsRegistered(app_id));

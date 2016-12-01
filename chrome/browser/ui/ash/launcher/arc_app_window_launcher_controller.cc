@@ -455,7 +455,8 @@ void ArcAppWindowLauncherController::OnAppRemoved(
 void ArcAppWindowLauncherController::OnTaskCreated(
     int task_id,
     const std::string& package_name,
-    const std::string& activity_name) {
+    const std::string& activity_name,
+    const std::string& intent) {
   DCHECK(!GetAppWindowForTask(task_id));
   const std::string arc_app_id =
       ArcAppListPrefs::GetAppId(package_name, activity_name);

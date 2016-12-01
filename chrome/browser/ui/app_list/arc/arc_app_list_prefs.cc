@@ -1066,10 +1066,15 @@ void ArcAppListPrefs::OnIcon(const std::string& app_id,
 void ArcAppListPrefs::OnTaskCreated(int32_t task_id,
                                     const std::string& package_name,
                                     const std::string& activity,
-                                    const base::Optional<std::string>& name) {
+                                    const base::Optional<std::string>& name,
+                                    const base::Optional<std::string>& intent) {
   MaybeAddNonLaunchableApp(name, package_name, activity);
-  for (auto& observer : observer_list_)
-    observer.OnTaskCreated(task_id, package_name, activity);
+  for (auto& observer : observer_list_) {
+    observer.OnTaskCreated(task_id,
+                           package_name,
+                           activity,
+                           intent.value_or(std::string()));
+  }
 }
 
 void ArcAppListPrefs::OnTaskDestroyed(int32_t task_id) {
