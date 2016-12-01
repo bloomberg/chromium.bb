@@ -293,13 +293,12 @@ namespace arc {
 ArcNetHostImpl::ArcNetHostImpl(ArcBridgeService* bridge_service)
     : ArcService(bridge_service), binding_(this), weak_factory_(this) {
   arc_bridge_service()->net()->AddObserver(this);
-  GetStateHandler()->AddObserver(this, FROM_HERE);
 }
 
 ArcNetHostImpl::~ArcNetHostImpl() {
   DCHECK(thread_checker_.CalledOnValidThread());
   arc_bridge_service()->net()->RemoveObserver(this);
-  if (chromeos::NetworkHandler::IsInitialized()) {
+  if (observing_network_state_) {
     GetStateHandler()->RemoveObserver(this, FROM_HERE);
   }
 }
@@ -312,6 +311,19 @@ void ArcNetHostImpl::OnInstanceReady() {
   auto* instance = arc_bridge_service()->net()->GetInstanceForMethod("Init");
   DCHECK(instance);
   instance->Init(std::move(host));
+
+  if (chromeos::NetworkHandler::IsInitialized()) {
+    GetStateHandler()->AddObserver(this, FROM_HERE);
+    observing_network_state_ = true;
+  }
+}
+
+void ArcNetHostImpl::OnInstanceClosed() {
+  if (!observing_network_state_)
+    return;
+
+  GetStateHandler()->RemoveObserver(this, FROM_HERE);
+  observing_network_state_ = false;
 }
 
 void ArcNetHostImpl::GetNetworksDeprecated(
@@ -647,7 +659,9 @@ void ArcNetHostImpl::DeviceListChanged() {
 }
 
 void ArcNetHostImpl::OnShuttingDown() {
+  DCHECK(observing_network_state_);
   GetStateHandler()->RemoveObserver(this, FROM_HERE);
+  observing_network_state_ = false;
 }
 
 }  // namespace arc

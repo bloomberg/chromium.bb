@@ -80,6 +80,7 @@ class ArcNetHostImpl : public ArcService,
 
   // Overridden from ArcBridgeService::InterfaceObserver<mojom::NetInstance>:
   void OnInstanceReady() override;
+  void OnInstanceClosed() override;
 
  private:
   void DefaultNetworkSuccessCallback(const std::string& service_path,
@@ -102,6 +103,10 @@ class ArcNetHostImpl : public ArcService,
       const mojom::NetHost::CreateNetworkCallback& mojo_callback,
       const std::string& error_name,
       std::unique_ptr<base::DictionaryValue> error_data);
+
+  // True if the chrome::NetworkStateHandler is currently being observed for
+  // state changes.
+  bool observing_network_state_ = false;
 
   std::string cached_service_path_;
   std::string cached_guid_;

@@ -227,11 +227,6 @@ ArcProcessService* ArcProcessService::Get() {
   return g_arc_process_service;
 }
 
-void ArcProcessService::OnInstanceReady() {
-  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
-  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(&Reset, nspid_to_pid_));
-}
-
 void ArcProcessService::RequestSystemProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -245,12 +240,19 @@ bool ArcProcessService::RequestAppProcessList(
     RequestProcessListCallback callback) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
+  // Since several services call this class to get information about the ARC
+  // process list, it can produce a lot of logspam when the board is ARC-ready
+  // but the user has not opted into ARC. This redundant check avoids that
+  // logspam.
+  if (!instance_ready_)
+    return false;
+
   mojom::ProcessInstance* process_instance =
       arc_bridge_service()->process()->GetInstanceForMethod(
           "RequestProcessList");
-  if (!process_instance) {
+  if (!process_instance)
     return false;
-  }
+
   process_instance->RequestProcessList(
       base::Bind(&ArcProcessService::OnReceiveProcessList,
                  weak_ptr_factory_.GetWeakPtr(), callback));
@@ -271,6 +273,17 @@ void ArcProcessService::OnReceiveProcessList(
 
 scoped_refptr<base::SingleThreadTaskRunner> ArcProcessService::GetTaskRunner() {
   return heavy_task_thread_.task_runner();
+}
+
+void ArcProcessService::OnInstanceReady() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  GetTaskRunner()->PostTask(FROM_HERE, base::Bind(&Reset, nspid_to_pid_));
+  instance_ready_ = true;
+}
+
+void ArcProcessService::OnInstanceClosed() {
+  DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  instance_ready_ = false;
 }
 
 inline ArcProcessService::NSPidToPidMap::NSPidToPidMap() {}

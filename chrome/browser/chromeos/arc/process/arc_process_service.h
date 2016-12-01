@@ -59,9 +59,6 @@ class ArcProcessService
   // Returns nullptr before the global instance is ready.
   static ArcProcessService* Get();
 
-  // InstanceHolder<mojom::ProcessInstance>::Observer overrides.
-  void OnInstanceReady() override;
-
   // Returns true if ARC IPC is ready for process list request,
   // otherwise false.
   bool RequestAppProcessList(RequestProcessListCallback callback);
@@ -102,6 +99,13 @@ class ArcProcessService
       std::vector<mojom::RunningAppProcessInfoPtr> instance_processes);
 
   scoped_refptr<base::SingleThreadTaskRunner> GetTaskRunner();
+
+  // InstanceHolder<mojom::ProcessInstance>::Observer overrides.
+  void OnInstanceReady() override;
+  void OnInstanceClosed() override;
+
+  // Whether ARC is ready to request its process list.
+  bool instance_ready_ = false;
 
   // There are some expensive tasks such as traverse whole process tree that
   // we can't do it on the UI thread. Thus we need an additional thread to
