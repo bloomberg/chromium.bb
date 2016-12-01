@@ -431,6 +431,26 @@ bool IsTabDetachingInFullscreenEnabled() {
   [super dealloc];
 }
 
+// Hack to address crbug.com/667274
+// On TouchBar MacBooks, the touch bar machinery retains a reference
+// to the browser window controller (which is an NSTouchBarProvider by
+// default) but doesn't release it if Chrome quits before it takes the
+// key window (for example, quitting from the Dock icon context menu.)
+//
+// If the window denies being a touch bar provider, it's never added
+// to the set of providers and the reference is never taken. This
+// prevents us from providing a touch bar from the window directly
+// but descendant responders can still provide one.
+//
+// rdar://29467717
+- (BOOL)conformsToProtocol:(Protocol*)protocol {
+  if ([protocol isEqual:NSProtocolFromString(@"NSFunctionBarProvider")] ||
+      [protocol isEqual:NSProtocolFromString(@"NSTouchBarProvider")]) {
+    return NO;
+  }
+  return [super conformsToProtocol:protocol];
+}
+
 - (gfx::Rect)enforceMinWindowSize:(gfx::Rect)bounds {
   gfx::Rect checkedBounds = bounds;
 
