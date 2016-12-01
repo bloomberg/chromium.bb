@@ -735,6 +735,7 @@ static const TX_SIZE txsize_sqr_up_map[TX_SIZES_ALL] = {
   TX_32X32,  // TX_32X16
 };
 
+/* clang-format off */
 static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
   TX_4X4,    // ONLY_4X4
   TX_8X8,    // ALLOW_8X8
@@ -744,9 +745,10 @@ static const TX_SIZE tx_mode_to_biggest_tx_size[TX_MODES] = {
   TX_64X64,  // ALLOW_64X64
   TX_64X64,  // TX_MODE_SELECT
 #else
-  TX_32X32,    // TX_MODE_SELECT
+  TX_32X32,  // TX_MODE_SELECT
 #endif  // CONFIG_TX64X64
 };
+/* clang-format on */
 
 static const BLOCK_SIZE ss_size_lookup[BLOCK_SIZES][2][2] = {
 //  ss_x == 0    ss_x == 0        ss_x == 1      ss_x == 1
