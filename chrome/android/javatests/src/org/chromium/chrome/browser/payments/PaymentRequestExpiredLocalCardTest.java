@@ -112,4 +112,48 @@ public class PaymentRequestExpiredLocalCardTest extends PaymentRequestTestBase {
 
         clickInCardEditorAndWait(R.id.payments_edit_done_button, mReadyToPay);
     }
+
+    /**
+     * Tests the different card unmask error messages for an expired card.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testPromptErrorMessages()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Click pay to get to the card unmask prompt.
+        triggerUIAndWait(mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+
+        // Set valid arguments.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"10", "26", "123"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(""));
+
+        // Set an invalid expiration date.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"10", "14", "123"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(
+                "Check your expiration date and try again"));
+
+        // Set an invalid CVC and expiration date.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"10", "14", "12312"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(
+                "Check your expiration date and CVC and try again"));
+
+        // Set an invalid CVC.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"10", "26", "12312"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals("Check your CVC and try again"));
+
+        // Set valid arguments again.
+        setTextInExpiredCardUnmaskDialogAndWait(
+                new int[] {R.id.expiration_month, R.id.expiration_year, R.id.card_unmask_input},
+                new String[] {"10", "26", "123"}, mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(""));
+    }
 }

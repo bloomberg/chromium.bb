@@ -218,4 +218,28 @@ public class PaymentRequestFreeShippingTest extends PaymentRequestTestBase {
                             "PaymentRequest.RequestedInformation", i));
         }
     }
+
+    /**
+     * Tests the different card unmask error messages for a non expired card.
+     */
+    @MediumTest
+    @Feature({"Payments"})
+    public void testPromptErrorMessages()
+            throws InterruptedException, ExecutionException, TimeoutException {
+        // Click pay to get to the card unmask prompt.
+        triggerUIAndWait(mReadyToPay);
+        clickAndWait(R.id.button_primary, mReadyForUnmaskInput);
+
+        // Set valid arguments.
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(""));
+
+        // Set an invalid CVC.
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123123", mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals("Check your CVC and try again"));
+
+        // Set valid arguments again.
+        setTextInCardUnmaskDialogAndWait(R.id.card_unmask_input, "123", mUnmaskValidationDone);
+        assertTrue(getUnmaskPromptErrorMessage().equals(""));
+    }
 }

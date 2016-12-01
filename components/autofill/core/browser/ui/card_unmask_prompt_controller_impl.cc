@@ -83,7 +83,7 @@ void CardUnmaskPromptControllerImpl::OnVerificationResult(
 
     case AutofillClient::TRY_AGAIN_FAILURE: {
       error_message = l10n_util::GetStringUTF16(
-          IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN);
+          IDS_AUTOFILL_CARD_UNMASK_PROMPT_ERROR_TRY_AGAIN_CVC);
       break;
     }
 
@@ -219,15 +219,11 @@ base::string16 CardUnmaskPromptControllerImpl::GetWindowTitle() const {
   // The iOS UI has less room for the title so it shows a shorter string.
   return l10n_util::GetStringUTF16(IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE);
 #else
-  int ids;
-  if (reason_ == AutofillClient::UNMASK_FOR_AUTOFILL &&
-      ShouldRequestExpirationDate()) {
-    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_UPDATE_TITLE;
-  }
-  else {
-    ids = IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE;
-  }
-  return l10n_util::GetStringFUTF16(ids, card_.TypeAndLastFourDigits());
+  return l10n_util::GetStringFUTF16(
+      ShouldRequestExpirationDate()
+          ? IDS_AUTOFILL_CARD_UNMASK_PROMPT_EXPIRED_TITLE
+          : IDS_AUTOFILL_CARD_UNMASK_PROMPT_TITLE,
+      card_.TypeAndLastFourDigits());
 #endif
 }
 

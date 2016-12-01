@@ -80,6 +80,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     protected final PaymentsCallbackHelper<PaymentRequestUI> mResultReady;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyForUnmaskInput;
     protected final PaymentsCallbackHelper<CardUnmaskPrompt> mReadyToUnmask;
+    protected final PaymentsCallbackHelper<CardUnmaskPrompt> mUnmaskValidationDone;
     protected final CallbackHelper mReadyToEdit;
     protected final CallbackHelper mEditorValidationError;
     protected final CallbackHelper mEditorTextUpdate;
@@ -104,6 +105,7 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         mResultReady = new PaymentsCallbackHelper<>();
         mReadyForUnmaskInput = new PaymentsCallbackHelper<>();
         mReadyToUnmask = new PaymentsCallbackHelper<>();
+        mUnmaskValidationDone = new PaymentsCallbackHelper<>();
         mReadyToEdit = new CallbackHelper();
         mEditorValidationError = new CallbackHelper();
         mEditorTextUpdate = new CallbackHelper();
@@ -443,6 +445,11 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         });
     }
 
+    /** Returns the error message visible to the user in the credit card unmask prompt. */
+    protected String getUnmaskPromptErrorMessage() {
+        return mCardUnmaskPrompt.getErrorMessage();
+    }
+
     /** Selects the spinner value in the editor UI for credit cards. */
     protected void setSpinnerSelectionsInCardEditorAndWait(final int[] selections,
             CallbackHelper helper) throws InterruptedException, TimeoutException {
@@ -529,8 +536,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId))
-                        .setText(input);
+                EditText editText =
+                        ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceId));
+                editText.setText(input);
+                editText.getOnFocusChangeListener().onFocusChange(null, false);
             }
         });
         helper.waitForCallback(callCount);
@@ -546,8 +555,10 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
             @Override
             public void run() {
                 for (int i = 0; i < resourceIds.length; ++i) {
-                    ((EditText) mCardUnmaskPrompt.getDialogForTest().findViewById(resourceIds[i]))
-                            .setText(values[i]);
+                    EditText editText = ((EditText) mCardUnmaskPrompt.getDialogForTest()
+                            .findViewById(resourceIds[i]));
+                    editText.setText(values[i]);
+                    editText.getOnFocusChangeListener().onFocusChange(null, false);
                 }
             }
         });
@@ -673,6 +684,12 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
     public void onCardUnmaskPromptReadyToUnmask(CardUnmaskPrompt prompt) {
         ThreadUtils.assertOnUiThread();
         mReadyToUnmask.notifyCalled(prompt);
+    }
+
+    @Override
+    public void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt) {
+        ThreadUtils.assertOnUiThread();
+        mUnmaskValidationDone.notifyCalled(prompt);
     }
 
     /**

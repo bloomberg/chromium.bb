@@ -14,6 +14,7 @@ import android.graphics.PorterDuffColorFilter;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.os.Handler;
+import android.support.annotation.IntDef;
 import android.support.v4.view.MarginLayoutParamsCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AlertDialog;
@@ -22,6 +23,7 @@ import android.text.TextWatcher;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.view.accessibility.AccessibilityEvent;
 import android.view.inputmethod.InputMethodManager;
@@ -38,6 +40,8 @@ import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.chrome.R;
 
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
 import java.util.Calendar;
 
 /**
@@ -72,6 +76,26 @@ public class CardUnmaskPrompt
     private int mThisYear;
     private int mThisMonth;
     private boolean mValidationWaitsForCalendarTask;
+
+    private String mCvcErrorMessage;
+    private String mExpirationErrorMessage;
+    private String mCvcAndExpirationErrorMessage;
+
+    private boolean mFinishedTypingMonth;
+    private boolean mFinishedTypingYear;
+    private boolean mFinishedTypingCvc;
+
+    public static final int ERROR_TYPE_EXPIRATION = 1;
+    public static final int ERROR_TYPE_CVC = 2;
+    public static final int ERROR_TYPE_BOTH = 3;
+
+    @Retention(RetentionPolicy.SOURCE)
+    @IntDef({
+        ERROR_TYPE_EXPIRATION,
+        ERROR_TYPE_CVC,
+        ERROR_TYPE_BOTH
+    })
+    public @interface ErrorType {}
 
     /**
      * An interface to handle the interaction with an CardUnmaskPrompt object.
@@ -118,6 +142,11 @@ public class CardUnmaskPrompt
          * Called when clicking "Verify" or "Continue" (the positive button) is possible.
          */
         void onCardUnmaskPromptReadyToUnmask(CardUnmaskPrompt prompt);
+
+        /**
+         * Called when the input values in the unmask prompt have been validated.
+         */
+        void onCardUnmaskPromptValidationDone(CardUnmaskPrompt prompt);
     }
 
     public CardUnmaskPrompt(Context context, CardUnmaskPromptDelegate delegate, String title,
@@ -164,6 +193,46 @@ public class CardUnmaskPrompt
         mThisYear = -1;
         mThisMonth = -1;
         if (mShouldRequestExpirationDate) new CalendarTask().execute();
+
+        // Create the observers to be notified when the user has finished editing the input fields.
+        mCardUnmaskInput.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && !mCardUnmaskInput.getText().toString().isEmpty()
+                        && !mFinishedTypingCvc) {
+                    mFinishedTypingCvc = true;
+                    validate();
+                }
+            }
+        });
+        mMonthInput.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && !mMonthInput.getText().toString().isEmpty()
+                        && !mFinishedTypingMonth) {
+                    mFinishedTypingMonth = true;
+                    validate();
+                }
+            }
+        });
+        mYearInput.setOnFocusChangeListener(new OnFocusChangeListener() {
+            @Override
+            public void onFocusChange(View v, boolean hasFocus) {
+                if (!hasFocus && !mYearInput.getText().toString().isEmpty()
+                        && !mFinishedTypingYear) {
+                    mFinishedTypingYear = true;
+                    validate();
+                }
+            }
+        });
+
+        Resources resources = context.getResources();
+        mCvcErrorMessage =
+                resources.getString(R.string.autofill_card_unmask_prompt_error_try_again_cvc);
+        mExpirationErrorMessage = resources.getString(
+                R.string.autofill_card_unmask_prompt_error_try_again_expiration);
+        mCvcAndExpirationErrorMessage = resources.getString(
+                R.string.autofill_card_unmask_prompt_error_try_again_cvc_and_expiration);
     }
 
     /**
@@ -229,20 +298,20 @@ public class CardUnmaskPrompt
         mVerificationProgressBar.setVisibility(View.VISIBLE);
         mVerificationView.setText(R.string.autofill_card_unmask_verification_in_progress);
         mVerificationView.announceForAccessibility(mVerificationView.getText());
-        setInputError(null);
+        clearInputError();
     }
 
     public void verificationFinished(String errorMessage, boolean allowRetry) {
         if (errorMessage != null) {
             setOverlayVisibility(View.GONE);
             if (allowRetry) {
-                setInputError(errorMessage);
+                setInputError(errorMessage, ERROR_TYPE_BOTH);
                 setInputsEnabled(true);
                 setInitialFocus();
 
                 if (!mShouldRequestExpirationDate) mNewCardLink.setVisibility(View.VISIBLE);
             } else {
-                setInputError(null);
+                clearInputError();
                 setNoRetryError(errorMessage);
             }
         } else {
@@ -276,9 +345,23 @@ public class CardUnmaskPrompt
 
     private void validate() {
         Button positiveButton = mDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-        positiveButton.setEnabled(areInputsValid());
-        if (positiveButton.isEnabled() && sObserverForTest != null) {
-            sObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
+
+        boolean hasValidExpiration = isExpirationDateValid();
+        boolean hasValidCvc = isCvcValid();
+
+        // Since the CVC input field is the last one, users won't necessarily focus out of it. It
+        // should be considered as finished once the CVC becomes valid.
+        if (hasValidCvc) mFinishedTypingCvc = true;
+
+        positiveButton.setEnabled(hasValidExpiration && hasValidCvc);
+        showDetailedErrorMessage(hasValidExpiration, hasValidCvc);
+
+        if (sObserverForTest != null) {
+            sObserverForTest.onCardUnmaskPromptValidationDone(this);
+
+            if (positiveButton.isEnabled()) {
+                sObserverForTest.onCardUnmaskPromptReadyToUnmask(this);
+            }
         }
     }
 
@@ -362,7 +445,7 @@ public class CardUnmaskPrompt
         assert mShouldRequestExpirationDate;
         mNewCardLink.setVisibility(View.GONE);
         mCardUnmaskInput.setText(null);
-        setInputError(null);
+        clearInputError();
         mMonthInput.requestFocus();
     }
 
@@ -377,26 +460,51 @@ public class CardUnmaskPrompt
         }
     }
 
-    private boolean areInputsValid() {
-        if (mShouldRequestExpirationDate) {
-            if (mThisYear == -1 || mThisMonth == -1) {
-                mValidationWaitsForCalendarTask = true;
-                return false;
-            }
+    private void showDetailedErrorMessage(boolean hasValidExpiration, boolean hasValidCvc) {
+        // Only show an expiration date error if the user has finished typing both the month and
+        // year fields.
+        boolean shouldShowExpirationError =
+                !hasValidExpiration && mFinishedTypingMonth && mFinishedTypingYear;
 
-            int month = -1;
-            try {
-                month = Integer.parseInt(mMonthInput.getText().toString());
-                if (month < 1 || month > 12) return false;
-            } catch (NumberFormatException e) {
-                return false;
-            }
+        // Only show a CVC error if the user has fininshed typing.
+        boolean shouldShowCvcError = !hasValidCvc && mFinishedTypingCvc;
 
-            int year = getFourDigitYear();
-            if (year < mThisYear || year > mThisYear + 10) return false;
-
-            if (year == mThisYear && month < mThisMonth) return false;
+        if (shouldShowExpirationError && shouldShowCvcError) {
+            setInputError(mCvcAndExpirationErrorMessage, ERROR_TYPE_BOTH);
+        } else if (shouldShowExpirationError) {
+            setInputError(mExpirationErrorMessage, ERROR_TYPE_EXPIRATION);
+        } else if (shouldShowCvcError) {
+            setInputError(mCvcErrorMessage, ERROR_TYPE_CVC);
+        } else {
+            clearInputError();
         }
+    }
+
+    private boolean isExpirationDateValid() {
+        if (!mShouldRequestExpirationDate) return true;
+
+        if (mThisYear == -1 || mThisMonth == -1) {
+            mValidationWaitsForCalendarTask = true;
+            return false;
+        }
+
+        int month = -1;
+        try {
+            month = Integer.parseInt(mMonthInput.getText().toString());
+            if (month < 1 || month > 12) return false;
+        } catch (NumberFormatException e) {
+            return false;
+        }
+
+        int year = getFourDigitYear();
+        if (year < mThisYear || year > mThisYear + 10) return false;
+
+        if (year == mThisYear && month < mThisMonth) return false;
+
+        return true;
+    }
+
+    private boolean isCvcValid() {
         return mDelegate.checkUserInputValidity(mCardUnmaskInput.getText().toString());
     }
 
@@ -436,35 +544,58 @@ public class CardUnmaskPrompt
     }
 
     /**
-     * Sets the error message on the cvc input.
+     * Sets the error message on the inputs.
      * @param message The error message to show, or null if the error state should be cleared.
      */
-    private void setInputError(String message) {
+    private void setInputError(String message, @ErrorType int errorType) {
+        assert message != null;
+
+        // Set the message to display;
         mErrorMessage.setText(message);
-        mErrorMessage.setVisibility(message == null ? View.GONE : View.VISIBLE);
+        mErrorMessage.setVisibility(View.VISIBLE);
 
         // A null message is passed in during card verification, which also makes an announcement.
         // Announcing twice in a row may cancel the first announcement.
-        if (message != null) {
-            mErrorMessage.announceForAccessibility(message);
-        }
+        mErrorMessage.announceForAccessibility(message);
 
         // The rest of this code makes L-specific assumptions about the background being used to
         // draw the TextInput.
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
 
-        ColorFilter filter = null;
-        if (message != null) {
-            filter = new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(
-                    mDialog.getContext().getResources(),
-                    R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
-        }
+        ColorFilter filter = new PorterDuffColorFilter(ApiCompatibilityUtils.getColor(
+                mDialog.getContext().getResources(),
+                R.color.input_underline_error_color), PorterDuff.Mode.SRC_IN);
 
-        // TODO(estade): it would be nicer if the error were specific enough to tell us which input
-        // was invalid.
-        updateColorForInput(mCardUnmaskInput, filter);
-        updateColorForInput(mMonthInput, filter);
-        updateColorForInput(mYearInput, filter);
+        if (errorType == ERROR_TYPE_BOTH) {
+            updateColorForInput(mCardUnmaskInput, filter);
+            updateColorForInput(mMonthInput, filter);
+            updateColorForInput(mYearInput, filter);
+        } else if (errorType == ERROR_TYPE_CVC) {
+            updateColorForInput(mCardUnmaskInput, filter);
+            updateColorForInput(mMonthInput, null);
+            updateColorForInput(mYearInput, null);
+        } else if (errorType == ERROR_TYPE_EXPIRATION) {
+            updateColorForInput(mMonthInput, filter);
+            updateColorForInput(mYearInput, filter);
+            updateColorForInput(mCardUnmaskInput, null);
+        }
+    }
+
+    /**
+     * Removes the error message on the inputs.
+     */
+    private void clearInputError() {
+        mErrorMessage.setText(null);
+        mErrorMessage.setVisibility(View.GONE);
+
+        // The rest of this code makes L-specific assumptions about the background being used to
+        // draw the TextInput.
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.LOLLIPOP) return;
+
+        // Remove the highlight on the input fields.
+        updateColorForInput(mMonthInput, null);
+        updateColorForInput(mYearInput, null);
+        updateColorForInput(mCardUnmaskInput, null);
     }
 
     /**
@@ -509,5 +640,10 @@ public class CardUnmaskPrompt
     @VisibleForTesting
     public AlertDialog getDialogForTest() {
         return mDialog;
+    }
+
+    @VisibleForTesting
+    public String getErrorMessage() {
+        return mErrorMessage.getText().toString();
     }
 }
