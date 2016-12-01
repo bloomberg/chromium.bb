@@ -76,41 +76,6 @@ SCRIPT_TESTS = [
       ],
     }
   },
-  {
-    'args': [
-      'load_library_perf_tests',
-      '--test-launcher-print-test-stdio=always'
-    ],
-    'name': 'load_library_perf_tests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Win 8 Perf',
-          'shards': [2]
-        },
-      ]
-    }
-  },
-  {
-    'args': [
-      'performance_browser_tests',
-      '--test-launcher-print-test-stdio=always',
-      '--gtest_filter=TabCapturePerformanceTest.*:CastV2PerformanceTest.*',
-      '--test-launcher-jobs=1',
-      '--enable-gpu'
-    ],
-    'name': 'performance_browser_tests',
-    'script': 'gtest_perf_test.py',
-    'testers': {
-      'chromium.perf': [
-        {
-          'name': 'Win 8 Perf',
-          'shards': [2]
-        },
-      ]
-    }
-  },
 ]
 
 
@@ -198,11 +163,56 @@ def get_waterfall_config():
     'android', target_bits=32, num_device_shards=7, num_host_shards=3)
 
   waterfall = add_tester(
-    waterfall, 'Win Zenbook Perf', 'win-zenbook', 'win', num_host_shards=5)
+    waterfall, 'Win Zenbook Perf', 'win-zenbook', 'win',
+    swarming=[
+      {
+       'gpu': '8086:161e',
+       'os': 'Windows-10-10240',
+       'device_ids': [
+           'build30-b1', 'build31-b1',
+           'build32-b1', 'build33-b1', 'build34-b1'
+          ]
+      }
+    ])
   waterfall = add_tester(
-    waterfall, 'Win 10 Perf', 'chromium-rel-win10', 'win', num_host_shards=5)
+    waterfall, 'Win 10 High-DPI Perf', 'win-high-dpi', 'win',
+    swarming=[
+      {
+       'gpu': '8086:1616',
+       'os': 'Windows-10-10240',
+       'device_ids': [
+           'build117-b1', 'build118-b1',
+           'build119-b1', 'build120-b1', 'build121-b1'
+          ]
+      }
+    ])
   waterfall = add_tester(
-    waterfall, 'Win 8 Perf', 'chromium-rel-win8-dual', 'win', num_host_shards=5)
+    waterfall, 'Win 10 Perf', 'chromium-rel-win10', 'win',
+    swarming=[
+      {
+       'gpu': '102b:0534',
+       'os': 'Windows-10-10240',
+       'device_ids': [
+           'build132-m1', 'build133-m1',
+           'build134-m1', 'build135-m1', 'build136-m1'
+          ]
+      }
+    ])
+  waterfall = add_tester(
+    waterfall, 'Win 8 Perf', 'chromium-rel-win8-dual', 'win',
+    swarming=[
+      {
+       'gpu': '102b:0532',
+       'os': 'Windows-2012ServerR2-SP0',
+       'device_ids': [
+           'build143-m1', 'build144-m1',
+           'build145-m1', 'build146-m1', 'build147-m1'
+          ],
+       'perf_tests': [
+         ('load_library_perf_tests', 2),
+         ('performance_browser_tests', 2)]
+      }
+    ])
   waterfall = add_tester(
     waterfall, 'Win 7 Perf', 'chromium-rel-win7-dual',
     'win', target_bits=32,
