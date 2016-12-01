@@ -29,7 +29,6 @@
 
 #include "core/fetch/ResourceLoader.h"
 
-#include "core/fetch/CSSStyleSheetResource.h"
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceFetcher.h"
 #include "platform/SharedBuffer.h"

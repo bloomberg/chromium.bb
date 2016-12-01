@@ -27,7 +27,7 @@
 #define CSSStyleSheetResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/StyleSheetResource.h"
+#include "core/loader/resource/StyleSheetResource.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

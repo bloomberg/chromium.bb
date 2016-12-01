@@ -8,9 +8,9 @@
 #include "core/dom/Node.h"
 #include "core/dom/StyleEngine.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/fetch/StyleSheetResource.h"
-#include "core/fetch/StyleSheetResourceClient.h"
 #include "core/html/LinkResource.h"
+#include "core/loader/resource/StyleSheetResource.h"
+#include "core/loader/resource/StyleSheetResourceClient.h"
 
 namespace blink {
 

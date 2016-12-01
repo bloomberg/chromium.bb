@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "core/fetch/CSSStyleSheetResource.h"
+#include "core/loader/resource/CSSStyleSheetResource.h"
 
 #include "core/css/CSSCrossfadeValue.h"
 #include "core/css/CSSImageValue.h"

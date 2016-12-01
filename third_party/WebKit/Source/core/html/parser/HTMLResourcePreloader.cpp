@@ -31,6 +31,7 @@
 #include "core/frame/Deprecation.h"
 #include "core/frame/Settings.h"
 #include "core/loader/DocumentLoader.h"
+#include "core/loader/resource/CSSStyleSheetResource.h"
 #include "platform/Histogram.h"
 #include "public/platform/Platform.h"
 #include <memory>

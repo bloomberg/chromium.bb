@@ -7,8 +7,6 @@ import("//third_party/WebKit/Source/core/core.gni")
 blink_core_sources("fetch") {
   sources = [
     "AccessControlStatus.h",
-    "CSSStyleSheetResource.cpp",
-    "CSSStyleSheetResource.h",
     "CachedMetadata.cpp",
     "CachedMetadata.h",
     "CachedMetadataHandler.h",

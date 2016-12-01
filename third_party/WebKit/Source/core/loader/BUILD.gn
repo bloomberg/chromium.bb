@@ -58,6 +58,8 @@ blink_core_sources("loader") {
     "appcache/ApplicationCache.h",
     "appcache/ApplicationCacheHost.cpp",
     "appcache/ApplicationCacheHost.h",
+    "resource/CSSStyleSheetResource.cpp",
+    "resource/CSSStyleSheetResource.h",
     "resource/DocumentResource.cpp",
     "resource/DocumentResource.h",
     "resource/FontResource.cpp",
@@ -68,6 +70,8 @@ blink_core_sources("loader") {
     "resource/LinkPreloadResourceClients.h",
     "resource/ScriptResource.cpp",
     "resource/ScriptResource.h",
+    "resource/StyleSheetResource.h",
+    "resource/StyleSheetResourceClient.h",
     "resource/XSLStyleSheetResource.cpp",
     "resource/XSLStyleSheetResource.h",
   ]

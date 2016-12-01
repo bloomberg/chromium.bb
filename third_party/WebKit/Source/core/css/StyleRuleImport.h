@@ -23,7 +23,7 @@
 #define StyleRuleImport_h
 
 #include "core/css/StyleRule.h"
-#include "core/fetch/StyleSheetResourceClient.h"
+#include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {

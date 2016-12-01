@@ -25,8 +25,8 @@
 #include "core/dom/CharacterData.h"
 #include "core/dom/StyleEngineContext.h"
 #include "core/fetch/ResourceOwner.h"
-#include "core/fetch/StyleSheetResource.h"
-#include "core/fetch/StyleSheetResourceClient.h"
+#include "core/loader/resource/StyleSheetResource.h"
+#include "core/loader/resource/StyleSheetResourceClient.h"
 
 namespace blink {
 

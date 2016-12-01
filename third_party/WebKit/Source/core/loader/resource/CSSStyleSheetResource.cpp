@@ -24,14 +24,14 @@
     sheets and html pages from the web. It has a memory cache for these objects.
 */
 
-#include "core/fetch/CSSStyleSheetResource.h"
+#include "core/loader/resource/CSSStyleSheetResource.h"
 
 #include "core/css/StyleSheetContents.h"
 #include "core/fetch/FetchRequest.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/fetch/ResourceClientWalker.h"
 #include "core/fetch/ResourceFetcher.h"
-#include "core/fetch/StyleSheetResourceClient.h"
+#include "core/loader/resource/StyleSheetResourceClient.h"
 #include "platform/SharedBuffer.h"
 #include "wtf/CurrentTime.h"
 

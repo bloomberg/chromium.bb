@@ -26,7 +26,7 @@
 #ifndef XSLStyleSheetResource_h
 #define XSLStyleSheetResource_h
 
-#include "core/fetch/StyleSheetResource.h"
+#include "core/loader/resource/StyleSheetResource.h"
 
 namespace blink {
 
