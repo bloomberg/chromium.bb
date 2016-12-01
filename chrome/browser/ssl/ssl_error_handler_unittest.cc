@@ -223,6 +223,10 @@ class SSLErrorHandlerDateInvalidTest : public ChromeRenderViewHostTestHarness {
     error_handler_.reset(
         new SSLErrorHandlerForTest(profile(), web_contents(), ssl_info_));
     error_handler_->SetNetworkTimeTrackerForTest(tracker_.get());
+
+    // Fix flakiness in case system time is off and triggers a bad clock
+    // interstitial. https://crbug.com/666821#c50
+    ssl_errors::SetBuildTimeForTesting(base::Time::Now());
   }
 
   void TearDown() override {
