@@ -87,7 +87,7 @@ static void RasterizePicture(SkPicture* picture,
                              bool can_use_lcd_text,
                              bool ignore_resource_color_space,
                              int msaa_sample_count,
-                             ImageDecodeController* image_decode_controller,
+                             ImageDecodeCache* image_decode_cache,
                              bool use_image_hijack_canvas) {
   ScopedGpuRaster gpu_raster(context_provider);
 
@@ -106,10 +106,10 @@ static void RasterizePicture(SkPicture* picture,
   SkCanvas* canvas = sk_surface->getCanvas();
   std::unique_ptr<ImageHijackCanvas> hijack_canvas;
   if (use_image_hijack_canvas) {
-    DCHECK(image_decode_controller);
+    DCHECK(image_decode_cache);
     const SkImageInfo& info = canvas->imageInfo();
-    hijack_canvas.reset(new ImageHijackCanvas(info.width(), info.height(),
-                                              image_decode_controller));
+    hijack_canvas.reset(
+        new ImageHijackCanvas(info.width(), info.height(), image_decode_cache));
     SkIRect raster_bounds;
     canvas->getClipDeviceBounds(&raster_bounds);
     hijack_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
@@ -274,7 +274,7 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
                    async_worker_context_enabled_, use_distance_field_text,
                    raster_source->CanUseLCDText(),
                    raster_source->HasImpliedColorSpace(), msaa_sample_count_,
-                   raster_source->image_decode_controller(),
+                   raster_source->image_decode_cache(),
                    playback_settings.use_image_hijack_canvas);
 
   const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();

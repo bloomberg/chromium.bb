@@ -10,7 +10,7 @@
 
 #include "cc/test/fake_recording_source.h"
 #include "cc/test/skia_common.h"
-#include "cc/tiles/software_image_decode_controller.h"
+#include "cc/tiles/software_image_decode_cache.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkPixelRef.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
@@ -581,10 +581,10 @@ TEST(RasterSourceTest, ImageHijackCanvasRespectsSharedCanvasTransform) {
   bool can_use_lcd = true;
   scoped_refptr<RasterSource> raster_source =
       recording_source->CreateRasterSource(can_use_lcd);
-  SoftwareImageDecodeController controller(
+  SoftwareImageDecodeCache controller(
       ResourceFormat::RGBA_8888,
       LayerTreeSettings().software_decoded_image_budget_bytes);
-  raster_source->set_image_decode_controller(&controller);
+  raster_source->set_image_decode_cache(&controller);
 
   SkBitmap bitmap;
   bitmap.allocN32Pixels(size.width() * 0.5f, size.height() * 0.25f);

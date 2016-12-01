@@ -12,7 +12,7 @@
 #include "cc/base/cc_export.h"
 #include "cc/playback/draw_image.h"
 #include "cc/raster/tile_task.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 
 namespace cc {
 
@@ -21,23 +21,23 @@ class CC_EXPORT ImageManager {
   ImageManager();
   ~ImageManager();
 
-  void SetImageDecodeController(ImageDecodeController* controller);
+  void SetImageDecodeCache(ImageDecodeCache* controller);
   void GetTasksForImagesAndRef(
       std::vector<DrawImage>* images,
       std::vector<scoped_refptr<TileTask>>* tasks,
-      const ImageDecodeController::TracingInfo& tracing_info);
+      const ImageDecodeCache::TracingInfo& tracing_info);
   void UnrefImages(const std::vector<DrawImage>& images);
   void ReduceMemoryUsage();
   std::vector<scoped_refptr<TileTask>> SetPredecodeImages(
       std::vector<DrawImage> predecode_images,
-      const ImageDecodeController::TracingInfo& tracing_info);
+      const ImageDecodeCache::TracingInfo& tracing_info);
 
  private:
-  ImageDecodeController* controller_ = nullptr;
+  ImageDecodeCache* cache_ = nullptr;
   std::vector<DrawImage> predecode_locked_images_;
 
   // Debugging information for crbug.com/650234.
-  size_t num_times_controller_was_set_ = 0;
+  size_t num_times_cache_was_set_ = 0;
 
   DISALLOW_COPY_AND_ASSIGN(ImageManager);
 };

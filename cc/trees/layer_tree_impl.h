@@ -37,7 +37,7 @@ class ContextProvider;
 class DebugRectHistory;
 class FrameRateCounter;
 class HeadsUpDisplayLayerImpl;
-class ImageDecodeController;
+class ImageDecodeCache;
 class LayerTreeDebugState;
 class LayerTreeImpl;
 class LayerTreeSettings;
@@ -77,7 +77,7 @@ class CC_EXPORT LayerTreeImpl {
   ContextProvider* context_provider() const;
   ResourceProvider* resource_provider() const;
   TileManager* tile_manager() const;
-  ImageDecodeController* image_decode_controller() const;
+  ImageDecodeCache* image_decode_cache() const;
   FrameRateCounter* frame_rate_counter() const;
   MemoryHistory* memory_history() const;
   gfx::Size device_viewport_size() const;

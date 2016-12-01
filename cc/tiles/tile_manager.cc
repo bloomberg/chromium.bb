@@ -395,12 +395,12 @@ void TileManager::FinishTasksAndCleanUp() {
   signals_check_notifier_.Cancel();
   task_set_finished_weak_ptr_factory_.InvalidateWeakPtrs();
 
-  image_manager_.SetImageDecodeController(nullptr);
+  image_manager_.SetImageDecodeCache(nullptr);
   locked_image_tasks_.clear();
 }
 
 void TileManager::SetResources(ResourcePool* resource_pool,
-                               ImageDecodeController* image_decode_controller,
+                               ImageDecodeCache* image_decode_cache,
                                TaskGraphRunner* task_graph_runner,
                                RasterBufferProvider* raster_buffer_provider,
                                size_t scheduled_raster_task_limit,
@@ -411,7 +411,7 @@ void TileManager::SetResources(ResourcePool* resource_pool,
   use_gpu_rasterization_ = use_gpu_rasterization;
   scheduled_raster_task_limit_ = scheduled_raster_task_limit;
   resource_pool_ = resource_pool;
-  image_manager_.SetImageDecodeController(image_decode_controller);
+  image_manager_.SetImageDecodeCache(image_decode_cache);
   tile_task_manager_ = TileTaskManagerImpl::Create(task_graph_runner);
   raster_buffer_provider_ = raster_buffer_provider;
 }
@@ -892,8 +892,8 @@ void TileManager::ScheduleTasks(
   // TODO(vmpstr): SOON is misleading here, but these images can come from
   // several diffent tiles. Rethink what we actually want to trace here. Note
   // that I'm using SOON, since it can't be NOW (these are prepaint).
-  ImageDecodeController::TracingInfo tracing_info(prepare_tiles_count_,
-                                                  TilePriority::SOON);
+  ImageDecodeCache::TracingInfo tracing_info(prepare_tiles_count_,
+                                             TilePriority::SOON);
   std::vector<scoped_refptr<TileTask>> new_locked_image_tasks =
       image_manager_.SetPredecodeImages(std::move(new_locked_images),
                                         tracing_info);
@@ -994,7 +994,7 @@ scoped_refptr<TileTask> TileManager::CreateRasterTask(
   playback_settings.use_image_hijack_canvas = !images.empty();
 
   // Get the tasks for the required images.
-  ImageDecodeController::TracingInfo tracing_info(
+  ImageDecodeCache::TracingInfo tracing_info(
       prepare_tiles_count_, prioritized_tile.priority().priority_bin);
   image_manager_.GetTasksForImagesAndRef(&images, &decode_tasks, tracing_info);
 
@@ -1164,7 +1164,7 @@ void TileManager::CheckIfMoreTilesNeedToBePrepared() {
   // images since we're technically going idle here at least for this frame.
   if (global_state_.tree_priority != SMOOTHNESS_TAKES_PRIORITY) {
     image_manager_.SetPredecodeImages(std::vector<DrawImage>(),
-                                      ImageDecodeController::TracingInfo());
+                                      ImageDecodeCache::TracingInfo());
     locked_image_tasks_.clear();
   }
 

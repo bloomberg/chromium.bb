@@ -9,30 +9,30 @@ namespace cc {
 ImageManager::ImageManager() = default;
 ImageManager::~ImageManager() = default;
 
-void ImageManager::SetImageDecodeController(ImageDecodeController* controller) {
+void ImageManager::SetImageDecodeCache(ImageDecodeCache* cache) {
   // We can only switch from null to non-null and back.
   // CHECK to debug crbug.com/650234.
-  CHECK(controller || controller_);
-  CHECK(!controller || !controller_);
+  CHECK(cache || cache_);
+  CHECK(!cache || !cache_);
 
-  if (!controller) {
+  if (!cache) {
     SetPredecodeImages(std::vector<DrawImage>(),
-                       ImageDecodeController::TracingInfo());
+                       ImageDecodeCache::TracingInfo());
   }
-  controller_ = controller;
+  cache_ = cache;
   // Debugging information for crbug.com/650234.
-  ++num_times_controller_was_set_;
+  ++num_times_cache_was_set_;
 }
 
 void ImageManager::GetTasksForImagesAndRef(
     std::vector<DrawImage>* images,
     std::vector<scoped_refptr<TileTask>>* tasks,
-    const ImageDecodeController::TracingInfo& tracing_info) {
-  DCHECK(controller_);
+    const ImageDecodeCache::TracingInfo& tracing_info) {
+  DCHECK(cache_);
   for (auto it = images->begin(); it != images->end();) {
     scoped_refptr<TileTask> task;
     bool need_to_unref_when_finished =
-        controller_->GetTaskForImageAndRef(*it, tracing_info, &task);
+        cache_->GetTaskForImageAndRef(*it, tracing_info, &task);
     if (task)
       tasks->push_back(std::move(task));
 
@@ -45,19 +45,19 @@ void ImageManager::GetTasksForImagesAndRef(
 
 void ImageManager::UnrefImages(const std::vector<DrawImage>& images) {
   // Debugging information for crbug.com/650234.
-  CHECK(controller_) << num_times_controller_was_set_;
+  CHECK(cache_) << num_times_cache_was_set_;
   for (auto image : images)
-    controller_->UnrefImage(image);
+    cache_->UnrefImage(image);
 }
 
 void ImageManager::ReduceMemoryUsage() {
-  DCHECK(controller_);
-  controller_->ReduceCacheUsage();
+  DCHECK(cache_);
+  cache_->ReduceCacheUsage();
 }
 
 std::vector<scoped_refptr<TileTask>> ImageManager::SetPredecodeImages(
     std::vector<DrawImage> images,
-    const ImageDecodeController::TracingInfo& tracing_info) {
+    const ImageDecodeCache::TracingInfo& tracing_info) {
   std::vector<scoped_refptr<TileTask>> new_tasks;
   GetTasksForImagesAndRef(&images, &new_tasks, tracing_info);
   UnrefImages(predecode_locked_images_);

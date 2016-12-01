@@ -34,14 +34,13 @@ FakeTileManager::FakeTileManager(TileManagerClient* client)
                   base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */),
-      image_decode_controller_(
+      image_decode_cache_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
-  SetResources(nullptr, &image_decode_controller_,
-               g_synchronous_task_graph_runner.Pointer(),
-               g_fake_raster_buffer_provider.Pointer(),
-               std::numeric_limits<size_t>::max(),
-               false /* use_gpu_rasterization */);
+  SetResources(
+      nullptr, &image_decode_cache_, g_synchronous_task_graph_runner.Pointer(),
+      g_fake_raster_buffer_provider.Pointer(),
+      std::numeric_limits<size_t>::max(), false /* use_gpu_rasterization */);
   SetTileTaskManagerForTesting(base::MakeUnique<FakeTileTaskManagerImpl>());
 }
 
@@ -51,10 +50,10 @@ FakeTileManager::FakeTileManager(TileManagerClient* client,
                   base::ThreadTaskRunnerHandle::Get().get(),
                   std::numeric_limits<size_t>::max(),
                   false /* use_partial_raster */),
-      image_decode_controller_(
+      image_decode_cache_(
           ResourceFormat::RGBA_8888,
           LayerTreeSettings().software_decoded_image_budget_bytes) {
-  SetResources(resource_pool, &image_decode_controller_,
+  SetResources(resource_pool, &image_decode_cache_,
                g_synchronous_task_graph_runner.Pointer(),
                g_fake_raster_buffer_provider.Pointer(),
                std::numeric_limits<size_t>::max(),

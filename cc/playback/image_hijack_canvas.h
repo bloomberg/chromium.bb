@@ -10,13 +10,13 @@
 
 namespace cc {
 
-class ImageDecodeController;
+class ImageDecodeCache;
 
 class ImageHijackCanvas : public SkNWayCanvas {
  public:
   ImageHijackCanvas(int width,
                     int height,
-                    ImageDecodeController* image_decode_controller);
+                    ImageDecodeCache* image_decode_cache);
 
  private:
   // Ensure that pictures are unpacked by this canvas, instead of being
@@ -39,7 +39,7 @@ class ImageHijackCanvas : public SkNWayCanvas {
                        const SkRect& dst,
                        const SkPaint* paint) override;
 
-  ImageDecodeController* image_decode_controller_;
+  ImageDecodeCache* image_decode_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageHijackCanvas);
 };

@@ -36,7 +36,7 @@ class TracedValue;
 }
 
 namespace cc {
-class ImageDecodeController;
+class ImageDecodeCache;
 
 class CC_EXPORT TileManagerClient {
  public:
@@ -119,7 +119,7 @@ class CC_EXPORT TileManager {
   // FinishTasksAndCleanUp must be called in between consecutive calls to
   // SetResources.
   void SetResources(ResourcePool* resource_pool,
-                    ImageDecodeController* image_decode_controller,
+                    ImageDecodeCache* image_decode_cache,
                     TaskGraphRunner* task_graph_runner,
                     RasterBufferProvider* raster_buffer_provider,
                     size_t scheduled_raster_task_limit,

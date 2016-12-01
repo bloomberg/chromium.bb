@@ -41,7 +41,7 @@ RasterSource::RasterSource(const RecordingSource* other, bool can_use_lcd_text)
       slow_down_raster_scale_factor_for_debug_(
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(false),
-      image_decode_controller_(nullptr) {}
+      image_decode_cache_(nullptr) {}
 
 RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
     : display_list_(other->display_list_),
@@ -58,8 +58,7 @@ RasterSource::RasterSource(const RasterSource* other, bool can_use_lcd_text)
           other->slow_down_raster_scale_factor_for_debug_),
       should_attempt_to_use_distance_field_text_(
           other->should_attempt_to_use_distance_field_text_),
-      image_decode_controller_(other->image_decode_controller_) {
-}
+      image_decode_cache_(other->image_decode_cache_) {}
 
 RasterSource::~RasterSource() {
 }
@@ -95,8 +94,7 @@ void RasterSource::PlaybackToCanvas(SkCanvas* raster_canvas,
   } else if (settings.use_image_hijack_canvas) {
     const SkImageInfo& info = raster_canvas->imageInfo();
 
-    ImageHijackCanvas canvas(info.width(), info.height(),
-                             image_decode_controller_);
+    ImageHijackCanvas canvas(info.width(), info.height(), image_decode_cache_);
     // Before adding the canvas, make sure that the ImageHijackCanvas is aware
     // of the current transform and clip, which may affect the clip bounds.
     // Since we query the clip bounds of the current canvas to get the list of

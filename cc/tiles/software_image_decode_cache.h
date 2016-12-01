@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_
-#define CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_
+#ifndef CC_TILES_SOFTWARE_IMAGE_DECODE_CACHE_H_
+#define CC_TILES_SOFTWARE_IMAGE_DECODE_CACHE_H_
 
 #include <stdint.h>
 
@@ -24,23 +24,23 @@
 #include "cc/playback/decoded_draw_image.h"
 #include "cc/playback/draw_image.h"
 #include "cc/resources/resource_format.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 #include "ui/gfx/geometry/rect.h"
 
 namespace cc {
 
-// ImageDecodeControllerKey is a class that gets a cache key out of a given draw
+// ImageDecodeCacheKey is a class that gets a cache key out of a given draw
 // image. That is, this key uniquely identifies an image in the cache. Note that
 // it's insufficient to use SkImage's unique id, since the same image can appear
 // in the cache multiple times at different scales and filter qualities.
-class CC_EXPORT ImageDecodeControllerKey {
+class CC_EXPORT ImageDecodeCacheKey {
  public:
-  static ImageDecodeControllerKey FromDrawImage(const DrawImage& image);
+  static ImageDecodeCacheKey FromDrawImage(const DrawImage& image);
 
-  ImageDecodeControllerKey(const ImageDecodeControllerKey& other);
+  ImageDecodeCacheKey(const ImageDecodeCacheKey& other);
 
-  bool operator==(const ImageDecodeControllerKey& other) const {
+  bool operator==(const ImageDecodeCacheKey& other) const {
     // The image_id always has to be the same. However, after that all original
     // decodes are the same, so if we can use the original decode, return true.
     // If not, then we have to compare every field.
@@ -52,7 +52,7 @@ class CC_EXPORT ImageDecodeControllerKey {
              filter_quality_ == other.filter_quality_));
   }
 
-  bool operator!=(const ImageDecodeControllerKey& other) const {
+  bool operator!=(const ImageDecodeCacheKey& other) const {
     return !(*this == other);
   }
 
@@ -78,12 +78,12 @@ class CC_EXPORT ImageDecodeControllerKey {
   std::string ToString() const;
 
  private:
-  ImageDecodeControllerKey(uint32_t image_id,
-                           const gfx::Rect& src_rect,
-                           const gfx::Size& size,
-                           SkFilterQuality filter_quality,
-                           bool can_use_original_decode,
-                           bool should_use_subrect);
+  ImageDecodeCacheKey(uint32_t image_id,
+                      const gfx::Rect& src_rect,
+                      const gfx::Size& size,
+                      SkFilterQuality filter_quality,
+                      bool can_use_original_decode,
+                      bool should_use_subrect);
 
   uint32_t image_id_;
   gfx::Rect src_rect_;
@@ -94,26 +94,26 @@ class CC_EXPORT ImageDecodeControllerKey {
   size_t hash_;
 };
 
-// Hash function for the above ImageDecodeControllerKey.
-struct ImageDecodeControllerKeyHash {
-  size_t operator()(const ImageDecodeControllerKey& key) const {
+// Hash function for the above ImageDecodeCacheKey.
+struct ImageDecodeCacheKeyHash {
+  size_t operator()(const ImageDecodeCacheKey& key) const {
     return key.get_hash();
   }
 };
 
-class CC_EXPORT SoftwareImageDecodeController
-    : public ImageDecodeController,
+class CC_EXPORT SoftwareImageDecodeCache
+    : public ImageDecodeCache,
       public base::trace_event::MemoryDumpProvider,
       public base::MemoryCoordinatorClient {
  public:
-  using ImageKey = ImageDecodeControllerKey;
-  using ImageKeyHash = ImageDecodeControllerKeyHash;
+  using ImageKey = ImageDecodeCacheKey;
+  using ImageKeyHash = ImageDecodeCacheKeyHash;
 
-  SoftwareImageDecodeController(ResourceFormat format,
-                                size_t locked_memory_limit_bytes);
-  ~SoftwareImageDecodeController() override;
+  SoftwareImageDecodeCache(ResourceFormat format,
+                           size_t locked_memory_limit_bytes);
+  ~SoftwareImageDecodeCache() override;
 
-  // ImageDecodeController overrides.
+  // ImageDecodeCache overrides.
   bool GetTaskForImageAndRef(const DrawImage& image,
                              const TracingInfo& tracing_info,
                              scoped_refptr<TileTask>* task) override;
@@ -161,7 +161,7 @@ class CC_EXPORT SoftwareImageDecodeController
     const base::DiscardableMemory* memory() const { return memory_.get(); }
 
     // An ID which uniquely identifies this DecodedImage within the image decode
-    // controller. Used in memory tracing.
+    // cache. Used in memory tracing.
     uint64_t tracing_id() const { return tracing_id_; }
     // Mark this image as being used in either a draw or as a source for a
     // scaled image. Either case represents this decode as being valuable and
@@ -205,9 +205,8 @@ class CC_EXPORT SoftwareImageDecodeController
     base::CheckedNumeric<size_t> current_usage_bytes_;
   };
 
-  using ImageMRUCache = base::HashingMRUCache<ImageKey,
-                                              std::unique_ptr<DecodedImage>,
-                                              ImageKeyHash>;
+  using ImageMRUCache = base::
+      HashingMRUCache<ImageKey, std::unique_ptr<DecodedImage>, ImageKeyHash>;
 
   // Looks for the key in the cache and returns true if it was found and was
   // successfully locked (or if it was already locked). Note that if this
@@ -295,4 +294,4 @@ class CC_EXPORT SoftwareImageDecodeController
 
 }  // namespace cc
 
-#endif  // CC_TILES_SOFTWARE_IMAGE_DECODE_CONTROLLER_H_
+#endif  // CC_TILES_SOFTWARE_IMAGE_DECODE_CACHE_H_

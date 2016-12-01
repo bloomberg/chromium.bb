@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILES_GPU_IMAGE_DECODE_CONTROLLER_H_
-#define CC_TILES_GPU_IMAGE_DECODE_CONTROLLER_H_
+#ifndef CC_TILES_GPU_IMAGE_DECODE_CACHE_H_
+#define CC_TILES_GPU_IMAGE_DECODE_CACHE_H_
 
 #include <memory>
 #include <unordered_map>
@@ -16,7 +16,7 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "cc/base/cc_export.h"
 #include "cc/resources/resource_format.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
 
 namespace cc {
@@ -25,11 +25,11 @@ class ContextProvider;
 
 // OVERVIEW:
 //
-// GpuImageDecodeController handles the decode and upload of images that will
+// GpuImageDecodeCache handles the decode and upload of images that will
 // be used by Skia's GPU raster path. It also maintains a cache of these
 // decoded/uploaded images for later re-use.
 //
-// Generally, when an image is required for raster, GpuImageDecodeController
+// Generally, when an image is required for raster, GpuImageDecodeCache
 // creates two tasks, one to decode the image, and one to upload the image to
 // the GPU. These tasks are completed before the raster task which depends on
 // the image. We need to seperate decode and upload tasks, as decode can occur
@@ -74,7 +74,7 @@ class ContextProvider;
 //
 // REF COUNTING:
 //
-// In dealing with the two caches in GpuImageDecodeController, there are three
+// In dealing with the two caches in GpuImageDecodeCache, there are three
 // ref-counting concepts in use:
 //   1) ImageData upload/decode ref-counts.
 //      These ref-counts represent the overall number of references to the
@@ -94,17 +94,17 @@ class ContextProvider;
 //      keeps an ImageData alive while it is present in either the
 //      |persistent_cache_| or |in_use_cache_|.
 //
-class CC_EXPORT GpuImageDecodeController
-    : public ImageDecodeController,
+class CC_EXPORT GpuImageDecodeCache
+    : public ImageDecodeCache,
       public base::trace_event::MemoryDumpProvider,
       public base::MemoryCoordinatorClient {
  public:
-  explicit GpuImageDecodeController(ContextProvider* context,
-                                    ResourceFormat decode_format,
-                                    size_t max_gpu_image_bytes);
-  ~GpuImageDecodeController() override;
+  explicit GpuImageDecodeCache(ContextProvider* context,
+                               ResourceFormat decode_format,
+                               size_t max_gpu_image_bytes);
+  ~GpuImageDecodeCache() override;
 
-  // ImageDecodeController overrides.
+  // ImageDecodeCache overrides.
 
   // Finds the existing uploaded image for the provided DrawImage. Creates an
   // upload task to upload the image if an exsiting image does not exist.
@@ -282,7 +282,7 @@ class CC_EXPORT GpuImageDecodeController
   void DecodeImageIfNecessary(const DrawImage& draw_image,
                               ImageData* image_data);
 
-  scoped_refptr<GpuImageDecodeController::ImageData> CreateImageData(
+  scoped_refptr<GpuImageDecodeCache::ImageData> CreateImageData(
       const DrawImage& image);
   SkImageInfo CreateImageInfoForDrawImage(const DrawImage& draw_image,
                                           int upload_scale_mip_level) const;
@@ -331,4 +331,4 @@ class CC_EXPORT GpuImageDecodeController
 
 }  // namespace cc
 
-#endif  // CC_TILES_GPU_IMAGE_DECODE_CONTROLLER_H_
+#endif  // CC_TILES_GPU_IMAGE_DECODE_CACHE_H_

@@ -36,7 +36,7 @@
 #include "cc/scheduler/commit_earlyout_reason.h"
 #include "cc/scheduler/draw_result.h"
 #include "cc/scheduler/video_frame_controller.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/tile_manager.h"
 #include "cc/trees/layer_tree_mutator.h"
 #include "cc/trees/layer_tree_settings.h"
@@ -404,9 +404,7 @@ class CC_EXPORT LayerTreeHostImpl
     return settings_.create_low_res_tiling && !use_gpu_rasterization_;
   }
   ResourcePool* resource_pool() { return resource_pool_.get(); }
-  ImageDecodeController* image_decode_controller() {
-    return image_decode_controller_.get();
-  }
+  ImageDecodeCache* image_decode_cache() { return image_decode_cache_.get(); }
 
   virtual void WillBeginImplFrame(const BeginFrameArgs& args);
   virtual void DidFinishImplFrame();
@@ -711,7 +709,7 @@ class CC_EXPORT LayerTreeHostImpl
   GpuRasterizationStatus gpu_rasterization_status_;
   std::unique_ptr<RasterBufferProvider> raster_buffer_provider_;
   std::unique_ptr<ResourcePool> resource_pool_;
-  std::unique_ptr<ImageDecodeController> image_decode_controller_;
+  std::unique_ptr<ImageDecodeCache> image_decode_cache_;
 
   GlobalStateThatImpactsTilePriority global_tile_state_;
 

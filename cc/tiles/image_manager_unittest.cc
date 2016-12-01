@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 #include "cc/tiles/image_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
 
-class TestableController : public ImageDecodeController {
+class TestableCache : public ImageDecodeCache {
  public:
   bool GetTaskForImageAndRef(const DrawImage& image,
                              const TracingInfo& tracing_info,
@@ -37,21 +37,21 @@ class TestableController : public ImageDecodeController {
   int number_of_refs_ = 0;
 };
 
-TEST(ImageManagerTest, NullControllerUnrefsImages) {
-  TestableController controller;
+TEST(ImageManagerTest, NullCacheUnrefsImages) {
+  TestableCache cache;
   ImageManager manager;
-  manager.SetImageDecodeController(&controller);
+  manager.SetImageDecodeCache(&cache);
 
   std::vector<DrawImage> images(10);
-  ImageDecodeController::TracingInfo tracing_info;
+  ImageDecodeCache::TracingInfo tracing_info;
 
   ASSERT_EQ(10u, images.size());
   auto tasks = manager.SetPredecodeImages(std::move(images), tracing_info);
   EXPECT_EQ(0u, tasks.size());
-  EXPECT_EQ(10, controller.number_of_refs());
+  EXPECT_EQ(10, cache.number_of_refs());
 
-  manager.SetImageDecodeController(nullptr);
-  EXPECT_EQ(0, controller.number_of_refs());
+  manager.SetImageDecodeCache(nullptr);
+  EXPECT_EQ(0, cache.number_of_refs());
 }
 
 }  // namespace cc

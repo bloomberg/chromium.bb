@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/software_image_decode_controller.h"
+#include "cc/tiles/software_image_decode_cache.h"
 
 #include <inttypes.h>
 #include <stdint.h>
@@ -57,46 +57,46 @@ const float kMemoryRatioToSubrect = 0.5f;
 class AutoRemoveKeyFromTaskMap {
  public:
   AutoRemoveKeyFromTaskMap(
-      std::unordered_map<SoftwareImageDecodeController::ImageKey,
+      std::unordered_map<SoftwareImageDecodeCache::ImageKey,
                          scoped_refptr<TileTask>,
-                         SoftwareImageDecodeController::ImageKeyHash>* task_map,
-      const SoftwareImageDecodeController::ImageKey& key)
+                         SoftwareImageDecodeCache::ImageKeyHash>* task_map,
+      const SoftwareImageDecodeCache::ImageKey& key)
       : task_map_(task_map), key_(key) {}
   ~AutoRemoveKeyFromTaskMap() { task_map_->erase(key_); }
 
  private:
-  std::unordered_map<SoftwareImageDecodeController::ImageKey,
+  std::unordered_map<SoftwareImageDecodeCache::ImageKey,
                      scoped_refptr<TileTask>,
-                     SoftwareImageDecodeController::ImageKeyHash>* task_map_;
-  const SoftwareImageDecodeController::ImageKey& key_;
+                     SoftwareImageDecodeCache::ImageKeyHash>* task_map_;
+  const SoftwareImageDecodeCache::ImageKey& key_;
 };
 
 class AutoDrawWithImageFinished {
  public:
-  AutoDrawWithImageFinished(SoftwareImageDecodeController* controller,
+  AutoDrawWithImageFinished(SoftwareImageDecodeCache* cache,
                             const DrawImage& draw_image,
                             const DecodedDrawImage& decoded_draw_image)
-      : controller_(controller),
+      : cache_(cache),
         draw_image_(draw_image),
         decoded_draw_image_(decoded_draw_image) {}
   ~AutoDrawWithImageFinished() {
-    controller_->DrawWithImageFinished(draw_image_, decoded_draw_image_);
+    cache_->DrawWithImageFinished(draw_image_, decoded_draw_image_);
   }
 
  private:
-  SoftwareImageDecodeController* controller_;
+  SoftwareImageDecodeCache* cache_;
   const DrawImage& draw_image_;
   const DecodedDrawImage& decoded_draw_image_;
 };
 
 class ImageDecodeTaskImpl : public TileTask {
  public:
-  ImageDecodeTaskImpl(SoftwareImageDecodeController* controller,
-                      const SoftwareImageDecodeController::ImageKey& image_key,
+  ImageDecodeTaskImpl(SoftwareImageDecodeCache* cache,
+                      const SoftwareImageDecodeCache::ImageKey& image_key,
                       const DrawImage& image,
-                      const ImageDecodeController::TracingInfo& tracing_info)
+                      const ImageDecodeCache::TracingInfo& tracing_info)
       : TileTask(true),
-        controller_(controller),
+        cache_(cache),
         image_key_(image_key),
         image_(image),
         tracing_info_(tracing_info) {}
@@ -109,27 +109,25 @@ class ImageDecodeTaskImpl : public TileTask {
     devtools_instrumentation::ScopedImageDecodeTask image_decode_task(
         image_.image().get(),
         devtools_instrumentation::ScopedImageDecodeTask::SOFTWARE);
-    controller_->DecodeImage(image_key_, image_);
+    cache_->DecodeImage(image_key_, image_);
   }
 
   // Overridden from TileTask:
-  void OnTaskCompleted() override {
-    controller_->RemovePendingTask(image_key_);
-  }
+  void OnTaskCompleted() override { cache_->RemovePendingTask(image_key_); }
 
  protected:
   ~ImageDecodeTaskImpl() override {}
 
  private:
-  SoftwareImageDecodeController* controller_;
-  SoftwareImageDecodeController::ImageKey image_key_;
+  SoftwareImageDecodeCache* cache_;
+  SoftwareImageDecodeCache::ImageKey image_key_;
   DrawImage image_;
-  const ImageDecodeController::TracingInfo tracing_info_;
+  const ImageDecodeCache::TracingInfo tracing_info_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecodeTaskImpl);
 };
 
-SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
+SkSize GetScaleAdjustment(const ImageDecodeCacheKey& key) {
   // If the requested filter quality did not require scale, then the adjustment
   // is identity.
   if (key.can_use_original_decode() || key.should_use_subrect()) {
@@ -146,7 +144,7 @@ SkSize GetScaleAdjustment(const ImageDecodeControllerKey& key) {
   }
 }
 
-SkFilterQuality GetDecodedFilterQuality(const ImageDecodeControllerKey& key) {
+SkFilterQuality GetDecodedFilterQuality(const ImageDecodeCacheKey& key) {
   return std::min(key.filter_quality(), kLow_SkFilterQuality);
 }
 
@@ -175,7 +173,7 @@ void RecordLockExistingCachedImageHistogram(TilePriority::PriorityBin bin,
 
 }  // namespace
 
-SoftwareImageDecodeController::SoftwareImageDecodeController(
+SoftwareImageDecodeCache::SoftwareImageDecodeCache(
     ResourceFormat format,
     size_t locked_memory_limit_bytes)
     : decoded_images_(ImageMRUCache::NO_AUTO_EVICT),
@@ -187,14 +185,14 @@ SoftwareImageDecodeController::SoftwareImageDecodeController(
   // Don't register a dump provider in these cases.
   if (base::ThreadTaskRunnerHandle::IsSet()) {
     base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-        this, "cc::SoftwareImageDecodeController",
+        this, "cc::SoftwareImageDecodeCache",
         base::ThreadTaskRunnerHandle::Get());
   }
   // Register this component with base::MemoryCoordinatorClientRegistry.
   base::MemoryCoordinatorClientRegistry::GetInstance()->Register(this);
 }
 
-SoftwareImageDecodeController::~SoftwareImageDecodeController() {
+SoftwareImageDecodeCache::~SoftwareImageDecodeCache() {
   DCHECK_EQ(0u, decoded_images_ref_counts_.size());
   DCHECK_EQ(0u, at_raster_decoded_images_ref_counts_.size());
 
@@ -205,7 +203,7 @@ SoftwareImageDecodeController::~SoftwareImageDecodeController() {
   base::MemoryCoordinatorClientRegistry::GetInstance()->Unregister(this);
 }
 
-bool SoftwareImageDecodeController::GetTaskForImageAndRef(
+bool SoftwareImageDecodeCache::GetTaskForImageAndRef(
     const DrawImage& image,
     const TracingInfo& tracing_info,
     scoped_refptr<TileTask>* task) {
@@ -218,7 +216,7 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   // the cache.
   ImageKey key = ImageKey::FromDrawImage(image);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::GetTaskForImageAndRef", "key",
+               "SoftwareImageDecodeCache::GetTaskForImageAndRef", "key",
                key.ToString());
 
   // If the target size is empty, we can skip this image during draw (and thus
@@ -290,10 +288,9 @@ bool SoftwareImageDecodeController::GetTaskForImageAndRef(
   return true;
 }
 
-void SoftwareImageDecodeController::RefImage(const ImageKey& key) {
+void SoftwareImageDecodeCache::RefImage(const ImageKey& key) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::RefImage", "key",
-               key.ToString());
+               "SoftwareImageDecodeCache::RefImage", "key", key.ToString());
   lock_.AssertAcquired();
   int ref = ++decoded_images_ref_counts_[key];
   if (ref == 1) {
@@ -302,7 +299,7 @@ void SoftwareImageDecodeController::RefImage(const ImageKey& key) {
   }
 }
 
-void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
+void SoftwareImageDecodeCache::UnrefImage(const DrawImage& image) {
   // When we unref the image, there are several situations we need to consider:
   // 1. The ref did not reach 0, which means we have to keep the image locked.
   // 2. The ref reached 0, we should unlock it.
@@ -311,8 +308,7 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   //   2b. Unlock the image but keep it in list.
   const ImageKey& key = ImageKey::FromDrawImage(image);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::UnrefImage", "key",
-               key.ToString());
+               "SoftwareImageDecodeCache::UnrefImage", "key", key.ToString());
 
   base::AutoLock lock(lock_);
   auto ref_count_it = decoded_images_ref_counts_.find(key);
@@ -336,9 +332,9 @@ void SoftwareImageDecodeController::UnrefImage(const DrawImage& image) {
   SanityCheckState(__LINE__, true);
 }
 
-void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
-                                                const DrawImage& image) {
-  TRACE_EVENT1("cc", "SoftwareImageDecodeController::DecodeImage", "key",
+void SoftwareImageDecodeCache::DecodeImage(const ImageKey& key,
+                                           const DrawImage& image) {
+  TRACE_EVENT1("cc", "SoftwareImageDecodeCache::DecodeImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);
   AutoRemoveKeyFromTaskMap remove_key_from_task_map(&pending_image_tasks_, key);
@@ -395,12 +391,11 @@ void SoftwareImageDecodeController::DecodeImage(const ImageKey& key,
   SanityCheckState(__LINE__, true);
 }
 
-std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::DecodeImageInternal(
-    const ImageKey& key,
-    const DrawImage& draw_image) {
+std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
+SoftwareImageDecodeCache::DecodeImageInternal(const ImageKey& key,
+                                              const DrawImage& draw_image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::DecodeImageInternal", "key",
+               "SoftwareImageDecodeCache::DecodeImageInternal", "key",
                key.ToString());
   sk_sp<const SkImage> image = draw_image.image();
   if (!image)
@@ -421,11 +416,11 @@ SoftwareImageDecodeController::DecodeImageInternal(
   }
 }
 
-DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
+DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDraw(
     const DrawImage& draw_image) {
   ImageKey key = ImageKey::FromDrawImage(draw_image);
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::GetDecodedImageForDraw", "key",
+               "SoftwareImageDecodeCache::GetDecodedImageForDraw", "key",
                key.ToString());
   // If the target size is empty, we can skip this image draw.
   if (key.target_size().IsEmpty())
@@ -434,11 +429,11 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDraw(
   return GetDecodedImageForDrawInternal(key, draw_image);
 }
 
-DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
+DecodedDrawImage SoftwareImageDecodeCache::GetDecodedImageForDrawInternal(
     const ImageKey& key,
     const DrawImage& draw_image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::GetDecodedImageForDrawInternal",
+               "SoftwareImageDecodeCache::GetDecodedImageForDrawInternal",
                "key", key.ToString());
   base::AutoLock lock(lock_);
   auto decoded_images_it = decoded_images_.Get(key);
@@ -530,15 +525,14 @@ DecodedDrawImage SoftwareImageDecodeController::GetDecodedImageForDrawInternal(
   return decoded_draw_image;
 }
 
-std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::GetOriginalImageDecode(
-    sk_sp<const SkImage> image) {
+std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
+SoftwareImageDecodeCache::GetOriginalImageDecode(sk_sp<const SkImage> image) {
   SkImageInfo decoded_info =
       CreateImageInfo(image->width(), image->height(), format_);
   std::unique_ptr<base::DiscardableMemory> decoded_pixels;
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeController::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
                  "allocate decoded pixels");
     decoded_pixels =
         base::DiscardableMemoryAllocator::GetInstance()
@@ -547,7 +541,7 @@ SoftwareImageDecodeController::GetOriginalImageDecode(
   }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeController::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
                  "read pixels");
     bool result = image->readPixels(decoded_info, decoded_pixels->data(),
                                     decoded_info.minRowBytes(), 0, 0,
@@ -563,10 +557,9 @@ SoftwareImageDecodeController::GetOriginalImageDecode(
                                         next_tracing_id_.GetNext());
 }
 
-std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::GetSubrectImageDecode(
-    const ImageKey& key,
-    sk_sp<const SkImage> image) {
+std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
+SoftwareImageDecodeCache::GetSubrectImageDecode(const ImageKey& key,
+                                                sk_sp<const SkImage> image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
   gfx::Rect full_image_rect(image->width(), image->height());
@@ -592,7 +585,7 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
   std::unique_ptr<base::DiscardableMemory> subrect_pixels;
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeController::GetSubrectImageDecode - "
+                 "SoftwareImageDecodeCache::GetSubrectImageDecode - "
                  "allocate subrect pixels");
     // TODO(vmpstr): This is using checked math to diagnose a problem reported
     // in crbug.com/662217. If this is causing crashes, then it should be fixed
@@ -605,7 +598,7 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
   }
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeController::GetOriginalImageDecode - "
+                 "SoftwareImageDecodeCache::GetOriginalImageDecode - "
                  "read pixels");
     bool result = decoded_draw_image.image()->readPixels(
         subrect_info, subrect_pixels->data(), subrect_info.minRowBytes(),
@@ -620,10 +613,9 @@ SoftwareImageDecodeController::GetSubrectImageDecode(
                        next_tracing_id_.GetNext()));
 }
 
-std::unique_ptr<SoftwareImageDecodeController::DecodedImage>
-SoftwareImageDecodeController::GetScaledImageDecode(
-    const ImageKey& key,
-    sk_sp<const SkImage> image) {
+std::unique_ptr<SoftwareImageDecodeCache::DecodedImage>
+SoftwareImageDecodeCache::GetScaledImageDecode(const ImageKey& key,
+                                               sk_sp<const SkImage> image) {
   // Construct a key to use in GetDecodedImageForDrawInternal().
   // This allows us to reuse an image in any cache if available.
   gfx::Rect full_image_rect(image->width(), image->height());
@@ -660,7 +652,7 @@ SoftwareImageDecodeController::GetScaledImageDecode(
   {
     TRACE_EVENT0(
         TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-        "SoftwareImageDecodeController::ScaleImage - allocate scaled pixels");
+        "SoftwareImageDecodeCache::ScaleImage - allocate scaled pixels");
     scaled_pixels = base::DiscardableMemoryAllocator::GetInstance()
                         ->AllocateLockedDiscardableMemory(
                             scaled_info.minRowBytes() * scaled_info.height());
@@ -671,7 +663,7 @@ SoftwareImageDecodeController::GetScaledImageDecode(
          key.filter_quality() == kMedium_SkFilterQuality);
   {
     TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-                 "SoftwareImageDecodeController::ScaleImage - scale pixels");
+                 "SoftwareImageDecodeCache::ScaleImage - scale pixels");
     bool result =
         decoded_pixmap.scalePixels(scaled_pixmap, key.filter_quality());
     DCHECK(result) << key.ToString();
@@ -683,11 +675,11 @@ SoftwareImageDecodeController::GetScaledImageDecode(
       next_tracing_id_.GetNext());
 }
 
-void SoftwareImageDecodeController::DrawWithImageFinished(
+void SoftwareImageDecodeCache::DrawWithImageFinished(
     const DrawImage& image,
     const DecodedDrawImage& decoded_image) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::DrawWithImageFinished", "key",
+               "SoftwareImageDecodeCache::DrawWithImageFinished", "key",
                ImageKey::FromDrawImage(image).ToString());
   ImageKey key = ImageKey::FromDrawImage(image);
   if (!decoded_image.image())
@@ -700,18 +692,18 @@ void SoftwareImageDecodeController::DrawWithImageFinished(
   SanityCheckState(__LINE__, false);
 }
 
-void SoftwareImageDecodeController::RefAtRasterImage(const ImageKey& key) {
+void SoftwareImageDecodeCache::RefAtRasterImage(const ImageKey& key) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::RefAtRasterImage", "key",
+               "SoftwareImageDecodeCache::RefAtRasterImage", "key",
                key.ToString());
   DCHECK(at_raster_decoded_images_.Peek(key) !=
          at_raster_decoded_images_.end());
   ++at_raster_decoded_images_ref_counts_[key];
 }
 
-void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
+void SoftwareImageDecodeCache::UnrefAtRasterImage(const ImageKey& key) {
   TRACE_EVENT1(TRACE_DISABLED_BY_DEFAULT("cc.debug"),
-               "SoftwareImageDecodeController::UnrefAtRasterImage", "key",
+               "SoftwareImageDecodeCache::UnrefAtRasterImage", "key",
                key.ToString());
   base::AutoLock lock(lock_);
 
@@ -757,8 +749,8 @@ void SoftwareImageDecodeController::UnrefAtRasterImage(const ImageKey& key) {
   }
 }
 
-void SoftwareImageDecodeController::ReduceCacheUsage() {
-  TRACE_EVENT0("cc", "SoftwareImageDecodeController::ReduceCacheUsage");
+void SoftwareImageDecodeCache::ReduceCacheUsage() {
+  TRACE_EVENT0("cc", "SoftwareImageDecodeCache::ReduceCacheUsage");
   base::AutoLock lock(lock_);
   size_t num_to_remove = (decoded_images_.size() > max_items_in_cache_)
                              ? (decoded_images_.size() - max_items_in_cache_)
@@ -775,20 +767,19 @@ void SoftwareImageDecodeController::ReduceCacheUsage() {
   }
 }
 
-void SoftwareImageDecodeController::RemovePendingTask(const ImageKey& key) {
+void SoftwareImageDecodeCache::RemovePendingTask(const ImageKey& key) {
   base::AutoLock lock(lock_);
   pending_image_tasks_.erase(key);
 }
 
-bool SoftwareImageDecodeController::OnMemoryDump(
+bool SoftwareImageDecodeCache::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
   base::AutoLock lock(lock_);
 
   if (args.level_of_detail == MemoryDumpLevelOfDetail::BACKGROUND) {
-    std::string dump_name =
-        base::StringPrintf("cc/image_memory/controller_0x%" PRIXPTR,
-                           reinterpret_cast<uintptr_t>(this));
+    std::string dump_name = base::StringPrintf(
+        "cc/image_memory/cache_0x%" PRIXPTR, reinterpret_cast<uintptr_t>(this));
     MemoryAllocatorDump* dump = pmd->CreateAllocatorDump(dump_name);
     dump->AddScalar("locked_size", MemoryAllocatorDump::kUnitsBytes,
                     locked_images_budget_.GetCurrentUsageSafe());
@@ -802,7 +793,7 @@ bool SoftwareImageDecodeController::OnMemoryDump(
   return true;
 }
 
-void SoftwareImageDecodeController::DumpImageMemoryForCache(
+void SoftwareImageDecodeCache::DumpImageMemoryForCache(
     const ImageMRUCache& cache,
     const char* cache_name,
     base::trace_event::ProcessMemoryDump* pmd) const {
@@ -810,7 +801,7 @@ void SoftwareImageDecodeController::DumpImageMemoryForCache(
 
   for (const auto& image_pair : cache) {
     std::string dump_name = base::StringPrintf(
-        "cc/image_memory/controller_0x%" PRIXPTR "/%s/image_%" PRIu64 "_id_%d",
+        "cc/image_memory/cache_0x%" PRIXPTR "/%s/image_%" PRIu64 "_id_%d",
         reinterpret_cast<uintptr_t>(this), cache_name,
         image_pair.second->tracing_id(), image_pair.first.image_id());
     // CreateMemoryAllocatorDump will automatically add tracking values for the
@@ -826,8 +817,7 @@ void SoftwareImageDecodeController::DumpImageMemoryForCache(
   }
 }
 
-void SoftwareImageDecodeController::SanityCheckState(int line,
-                                                     bool lock_acquired) {
+void SoftwareImageDecodeCache::SanityCheckState(int line, bool lock_acquired) {
 #if DCHECK_IS_ON()
   if (!lock_acquired) {
     base::AutoLock lock(lock_);
@@ -856,9 +846,8 @@ void SoftwareImageDecodeController::SanityCheckState(int line,
 #endif  // DCHECK_IS_ON()
 }
 
-// SoftwareImageDecodeControllerKey
-ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
-    const DrawImage& image) {
+// SoftwareImageDecodeCacheKey
+ImageDecodeCacheKey ImageDecodeCacheKey::FromDrawImage(const DrawImage& image) {
   const SkSize& scale = image.scale();
   // If the src_rect falls outside of the image, we need to clip it since
   // otherwise we might end up with uninitialized memory in the decode process.
@@ -953,18 +942,17 @@ ImageDecodeControllerKey ImageDecodeControllerKey::FromDrawImage(
     target_size.set_height(src_rect.height() * mip_target_size.height());
   }
 
-  return ImageDecodeControllerKey(image.image()->uniqueID(), src_rect,
-                                  target_size, quality, can_use_original_decode,
-                                  should_use_subrect);
+  return ImageDecodeCacheKey(image.image()->uniqueID(), src_rect, target_size,
+                             quality, can_use_original_decode,
+                             should_use_subrect);
 }
 
-ImageDecodeControllerKey::ImageDecodeControllerKey(
-    uint32_t image_id,
-    const gfx::Rect& src_rect,
-    const gfx::Size& target_size,
-    SkFilterQuality filter_quality,
-    bool can_use_original_decode,
-    bool should_use_subrect)
+ImageDecodeCacheKey::ImageDecodeCacheKey(uint32_t image_id,
+                                         const gfx::Rect& src_rect,
+                                         const gfx::Size& target_size,
+                                         SkFilterQuality filter_quality,
+                                         bool can_use_original_decode,
+                                         bool should_use_subrect)
     : image_id_(image_id),
       src_rect_(src_rect),
       target_size_(target_size),
@@ -989,10 +977,10 @@ ImageDecodeControllerKey::ImageDecodeControllerKey(
   }
 }
 
-ImageDecodeControllerKey::ImageDecodeControllerKey(
-    const ImageDecodeControllerKey& other) = default;
+ImageDecodeCacheKey::ImageDecodeCacheKey(const ImageDecodeCacheKey& other) =
+    default;
 
-std::string ImageDecodeControllerKey::ToString() const {
+std::string ImageDecodeCacheKey::ToString() const {
   std::ostringstream str;
   str << "id[" << image_id_ << "] src_rect[" << src_rect_.x() << ","
       << src_rect_.y() << " " << src_rect_.width() << "x" << src_rect_.height()
@@ -1005,7 +993,7 @@ std::string ImageDecodeControllerKey::ToString() const {
 }
 
 // DecodedImage
-SoftwareImageDecodeController::DecodedImage::DecodedImage(
+SoftwareImageDecodeCache::DecodedImage::DecodedImage(
     const SkImageInfo& info,
     std::unique_ptr<base::DiscardableMemory> memory,
     const SkSize& src_rect_offset,
@@ -1020,7 +1008,7 @@ SoftwareImageDecodeController::DecodedImage::DecodedImage(
       pixmap, [](const void* pixels, void* context) {}, nullptr);
 }
 
-SoftwareImageDecodeController::DecodedImage::~DecodedImage() {
+SoftwareImageDecodeCache::DecodedImage::~DecodedImage() {
   DCHECK(!locked_);
   // lock_count | used  | last lock failed | result state
   // ===========+=======+==================+==================
@@ -1063,7 +1051,7 @@ SoftwareImageDecodeController::DecodedImage::~DecodedImage() {
                         usage_stats_.first_lock_wasted);
 }
 
-bool SoftwareImageDecodeController::DecodedImage::Lock() {
+bool SoftwareImageDecodeCache::DecodedImage::Lock() {
   DCHECK(!locked_);
   bool success = memory_->Lock();
   if (!success) {
@@ -1075,7 +1063,7 @@ bool SoftwareImageDecodeController::DecodedImage::Lock() {
   return true;
 }
 
-void SoftwareImageDecodeController::DecodedImage::Unlock() {
+void SoftwareImageDecodeCache::DecodedImage::Unlock() {
   DCHECK(locked_);
   memory_->Unlock();
   locked_ = false;
@@ -1084,35 +1072,32 @@ void SoftwareImageDecodeController::DecodedImage::Unlock() {
 }
 
 // MemoryBudget
-SoftwareImageDecodeController::MemoryBudget::MemoryBudget(size_t limit_bytes)
+SoftwareImageDecodeCache::MemoryBudget::MemoryBudget(size_t limit_bytes)
     : limit_bytes_(limit_bytes), current_usage_bytes_(0u) {}
 
-size_t SoftwareImageDecodeController::MemoryBudget::AvailableMemoryBytes()
-    const {
+size_t SoftwareImageDecodeCache::MemoryBudget::AvailableMemoryBytes() const {
   size_t usage = GetCurrentUsageSafe();
   return usage >= limit_bytes_ ? 0u : (limit_bytes_ - usage);
 }
 
-void SoftwareImageDecodeController::MemoryBudget::AddUsage(size_t usage) {
+void SoftwareImageDecodeCache::MemoryBudget::AddUsage(size_t usage) {
   current_usage_bytes_ += usage;
 }
 
-void SoftwareImageDecodeController::MemoryBudget::SubtractUsage(size_t usage) {
+void SoftwareImageDecodeCache::MemoryBudget::SubtractUsage(size_t usage) {
   DCHECK_GE(current_usage_bytes_.ValueOrDefault(0u), usage);
   current_usage_bytes_ -= usage;
 }
 
-void SoftwareImageDecodeController::MemoryBudget::ResetUsage() {
+void SoftwareImageDecodeCache::MemoryBudget::ResetUsage() {
   current_usage_bytes_ = 0;
 }
 
-size_t SoftwareImageDecodeController::MemoryBudget::GetCurrentUsageSafe()
-    const {
+size_t SoftwareImageDecodeCache::MemoryBudget::GetCurrentUsageSafe() const {
   return current_usage_bytes_.ValueOrDie();
 }
 
-void SoftwareImageDecodeController::OnMemoryStateChange(
-    base::MemoryState state) {
+void SoftwareImageDecodeCache::OnMemoryStateChange(base::MemoryState state) {
   {
     base::AutoLock hold(lock_);
     switch (state) {

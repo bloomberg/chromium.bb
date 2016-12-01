@@ -67,10 +67,10 @@
 #include "cc/resources/ui_resource_bitmap.h"
 #include "cc/scheduler/delay_based_time_source.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
-#include "cc/tiles/gpu_image_decode_controller.h"
+#include "cc/tiles/gpu_image_decode_cache.h"
 #include "cc/tiles/picture_layer_tiling.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
-#include "cc/tiles/software_image_decode_controller.h"
+#include "cc/tiles/software_image_decode_cache.h"
 #include "cc/trees/damage_tracker.h"
 #include "cc/trees/draw_property_utils.h"
 #include "cc/trees/latency_info_swap_promise_monitor.h"
@@ -286,7 +286,7 @@ LayerTreeHostImpl::~LayerTreeHostImpl() {
   DCHECK(!resource_provider_);
   DCHECK(!resource_pool_);
   DCHECK(!single_thread_synchronous_task_graph_runner_);
-  DCHECK(!image_decode_controller_);
+  DCHECK(!image_decode_cache_);
 
   if (input_handler_client_) {
     input_handler_client_->WillShutdown();
@@ -1236,8 +1236,8 @@ void LayerTreeHostImpl::UpdateTileManagerMemoryPolicy(
     // allow the image decode controller to retain resources. We handle the
     // equal to 0 case in NotifyAllTileTasksComplete to avoid interrupting
     // running work.
-    if (image_decode_controller_)
-      image_decode_controller_->SetShouldAggressivelyFreeResources(false);
+    if (image_decode_cache_)
+      image_decode_cache_->SetShouldAggressivelyFreeResources(false);
   }
 
   DCHECK(resource_pool_);
@@ -1320,8 +1320,8 @@ void LayerTreeHostImpl::NotifyAllTileTasksCompleted() {
     // contexts of visibility change. This ensures that the imaged decode
     // controller has released all Skia refs at the time Skia's cleanup
     // executes (within worker context's cleanup).
-    if (image_decode_controller_)
-      image_decode_controller_->SetShouldAggressivelyFreeResources(true);
+    if (image_decode_cache_)
+      image_decode_cache_->SetShouldAggressivelyFreeResources(true);
     SetContextVisibility(false);
   }
 }
@@ -2106,12 +2106,12 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
                                         &resource_pool_);
 
   if (use_gpu_rasterization_) {
-    image_decode_controller_ = base::MakeUnique<GpuImageDecodeController>(
+    image_decode_cache_ = base::MakeUnique<GpuImageDecodeCache>(
         compositor_frame_sink_->worker_context_provider(),
         settings_.renderer_settings.preferred_tile_format,
         settings_.gpu_decoded_image_budget_bytes);
   } else {
-    image_decode_controller_ = base::MakeUnique<SoftwareImageDecodeController>(
+    image_decode_cache_ = base::MakeUnique<SoftwareImageDecodeCache>(
         settings_.renderer_settings.preferred_tile_format,
         settings_.software_decoded_image_budget_bytes);
   }
@@ -2127,12 +2127,12 @@ void LayerTreeHostImpl::CreateTileManagerResources() {
   }
 
   // TODO(vmpstr): Initialize tile task limit at ctor time.
-  tile_manager_.SetResources(
-      resource_pool_.get(), image_decode_controller_.get(), task_graph_runner,
-      raster_buffer_provider_.get(),
-      is_synchronous_single_threaded_ ? std::numeric_limits<size_t>::max()
-                                      : settings_.scheduled_raster_task_limit,
-      use_gpu_rasterization_);
+  tile_manager_.SetResources(resource_pool_.get(), image_decode_cache_.get(),
+                             task_graph_runner, raster_buffer_provider_.get(),
+                             is_synchronous_single_threaded_
+                                 ? std::numeric_limits<size_t>::max()
+                                 : settings_.scheduled_raster_task_limit,
+                             use_gpu_rasterization_);
   UpdateTileManagerMemoryPolicy(ActualManagedMemoryPolicy());
 }
 
@@ -2237,7 +2237,7 @@ void LayerTreeHostImpl::CleanUpTileManagerAndUIResources() {
   tile_manager_.FinishTasksAndCleanUp();
   resource_pool_ = nullptr;
   single_thread_synchronous_task_graph_runner_ = nullptr;
-  image_decode_controller_ = nullptr;
+  image_decode_cache_ = nullptr;
 
   // We've potentially just freed a large number of resources on our various
   // contexts. Flushing now helps ensure these are cleaned up quickly

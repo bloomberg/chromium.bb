@@ -339,10 +339,10 @@ void SoftwareRenderer::DrawPictureQuad(const DrawingFrame* frame,
   playback_settings.playback_to_shared_canvas = true;
   // Indicates whether content rasterization should happen through an
   // ImageHijackCanvas, which causes image decodes to be managed by an
-  // ImageDecodeController. PictureDrawQuads are used for resourceless software
-  // draws, while a GPU ImageDecodeController may be in use by the compositor
+  // ImageDecodeCache. PictureDrawQuads are used for resourceless software
+  // draws, while a GPU ImageDecodeCache may be in use by the compositor
   // providing the RasterSource. So we disable the image hijack canvas to avoid
-  // trying to use the GPU ImageDecodeController while doing a software draw.
+  // trying to use the GPU ImageDecodeCache while doing a software draw.
   playback_settings.use_image_hijack_canvas = false;
   if (needs_transparency || disable_image_filtering) {
     // TODO(aelias): This isn't correct in all cases. We should detect these

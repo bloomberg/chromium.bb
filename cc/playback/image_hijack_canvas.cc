@@ -6,7 +6,7 @@
 
 #include "base/optional.h"
 #include "cc/playback/discardable_image_map.h"
-#include "cc/tiles/image_decode_controller.h"
+#include "cc/tiles/image_decode_cache.h"
 
 namespace cc {
 namespace {
@@ -19,18 +19,18 @@ SkIRect RoundOutRect(const SkRect& rect) {
 
 class ScopedDecodedImageLock {
  public:
-  ScopedDecodedImageLock(ImageDecodeController* image_decode_controller,
+  ScopedDecodedImageLock(ImageDecodeCache* image_decode_cache,
                          sk_sp<const SkImage> image,
                          const SkRect& src_rect,
                          const SkMatrix& matrix,
                          const SkPaint* paint)
-      : image_decode_controller_(image_decode_controller),
+      : image_decode_cache_(image_decode_cache),
         draw_image_(std::move(image),
                     RoundOutRect(src_rect),
                     paint ? paint->getFilterQuality() : kNone_SkFilterQuality,
                     matrix),
         decoded_draw_image_(
-            image_decode_controller_->GetDecodedImageForDraw(draw_image_)) {
+            image_decode_cache_->GetDecodedImageForDraw(draw_image_)) {
     DCHECK(draw_image_.image()->isLazyGenerated());
     if (paint) {
       decoded_paint_ = *paint;
@@ -39,8 +39,8 @@ class ScopedDecodedImageLock {
   }
 
   ~ScopedDecodedImageLock() {
-    image_decode_controller_->DrawWithImageFinished(draw_image_,
-                                                    decoded_draw_image_);
+    image_decode_cache_->DrawWithImageFinished(draw_image_,
+                                               decoded_draw_image_);
   }
 
   const DecodedDrawImage& decoded_image() const { return decoded_draw_image_; }
@@ -49,7 +49,7 @@ class ScopedDecodedImageLock {
   }
 
  private:
-  ImageDecodeController* image_decode_controller_;
+  ImageDecodeCache* image_decode_cache_;
   DrawImage draw_image_;
   DecodedDrawImage decoded_draw_image_;
   base::Optional<SkPaint> decoded_paint_;
@@ -57,12 +57,10 @@ class ScopedDecodedImageLock {
 
 }  // namespace
 
-ImageHijackCanvas::ImageHijackCanvas(
-    int width,
-    int height,
-    ImageDecodeController* image_decode_controller)
-    : SkNWayCanvas(width, height),
-      image_decode_controller_(image_decode_controller) {}
+ImageHijackCanvas::ImageHijackCanvas(int width,
+                                     int height,
+                                     ImageDecodeCache* image_decode_cache)
+    : SkNWayCanvas(width, height), image_decode_cache_(image_decode_cache) {}
 
 void ImageHijackCanvas::onDrawPicture(const SkPicture* picture,
                                       const SkMatrix* matrix,
@@ -84,7 +82,7 @@ void ImageHijackCanvas::onDrawImage(const SkImage* image,
   SkMatrix ctm = getTotalMatrix();
 
   ScopedDecodedImageLock scoped_lock(
-      image_decode_controller_, sk_ref_sp(image),
+      image_decode_cache_, sk_ref_sp(image),
       SkRect::MakeIWH(image->width(), image->height()), ctm, paint);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
@@ -124,7 +122,7 @@ void ImageHijackCanvas::onDrawImageRect(const SkImage* image,
   matrix.setRectToRect(*src, dst, SkMatrix::kFill_ScaleToFit);
   matrix.postConcat(getTotalMatrix());
 
-  ScopedDecodedImageLock scoped_lock(image_decode_controller_, sk_ref_sp(image),
+  ScopedDecodedImageLock scoped_lock(image_decode_cache_, sk_ref_sp(image),
                                      *src, matrix, paint);
   const DecodedDrawImage& decoded_image = scoped_lock.decoded_image();
   if (!decoded_image.image())
