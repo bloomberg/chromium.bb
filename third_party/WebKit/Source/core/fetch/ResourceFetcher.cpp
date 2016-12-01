@@ -451,6 +451,7 @@ void ResourceFetcher::moveCachedNonBlockingResourceToBlocking(
   // to not-block even after being preloaded and discovered.
   if (resource && resource->loader() &&
       resource->isLoadEventBlockingResourceType() &&
+      m_nonBlockingLoaders.contains(resource->loader()) &&
       resource->isLinkPreload() && !request.forPreload()) {
     m_nonBlockingLoaders.remove(resource->loader());
     m_loaders.add(resource->loader());
@@ -1280,6 +1281,9 @@ void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier,
 }
 
 void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader) {
+  DCHECK(loader);
+  // TODO(yoav): Convert CHECK to DCHECK if no crash reports come in.
+  CHECK(m_loaders.contains(loader));
   m_nonBlockingLoaders.add(loader);
   m_loaders.remove(loader);
 }
@@ -1324,6 +1328,7 @@ bool ResourceFetcher::startLoad(Resource* resource) {
 }
 
 void ResourceFetcher::removeResourceLoader(ResourceLoader* loader) {
+  DCHECK(loader);
   if (m_loaders.contains(loader))
     m_loaders.remove(loader);
   else if (m_nonBlockingLoaders.contains(loader))

@@ -615,4 +615,30 @@ TEST_F(ResourceFetcherTest, Revalidate304) {
   EXPECT_NE(resource, newResource);
 }
 
+TEST_F(ResourceFetcherTest, LinkPreloadImageMultipleFetchersAndMove) {
+  ResourceFetcher* fetcher = ResourceFetcher::create(
+      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+  ResourceFetcher* fetcher2 = ResourceFetcher::create(
+      MockFetchContext::create(MockFetchContext::kShouldLoadNewResource));
+
+  KURL url(ParsedURLString, "http://127.0.0.1:8000/foo.png");
+  URLTestHelpers::registerMockedURLLoad(url, testImageFilename, "image/png");
+
+  FetchRequest fetchRequestOriginal = FetchRequest(url, FetchInitiatorInfo());
+  fetchRequestOriginal.setLinkPreload(true);
+  Resource* resource = ImageResource::fetch(fetchRequestOriginal, fetcher);
+  ASSERT_TRUE(resource);
+  EXPECT_TRUE(resource->isLinkPreload());
+  fetcher->preloadStarted(resource);
+
+  // Image created by parser on the second fetcher
+  FetchRequest fetchRequest2 = FetchRequest(url, FetchInitiatorInfo());
+  Resource* newResource2 = ImageResource::fetch(fetchRequest2, fetcher2);
+  Persistent<MockResourceClient> client2 = new MockResourceClient(newResource2);
+  EXPECT_EQ(resource, newResource2);
+  EXPECT_FALSE(fetcher2->isFetching());
+  Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
+  Platform::current()->getURLLoaderMockFactory()->unregisterURL(url);
+}
+
 }  // namespace blink
