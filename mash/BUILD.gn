@@ -17,6 +17,7 @@ group("all") {
     "//mash/login",
     "//mash/screenlock",
     "//mash/session",
+    "//mash/simple_wm",
     "//mash/task_viewer",
   ]
 

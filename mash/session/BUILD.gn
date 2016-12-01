@@ -17,6 +17,7 @@ source_set("lib") {
   deps = [
     "//base",
     "//content/public/common:service_names",
+    "//mash/common",
     "//mash/login/public/interfaces",
     "//mash/quick_launch/public/interfaces:constants",
     "//mash/screenlock/public/interfaces:constants",

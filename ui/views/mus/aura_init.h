@@ -43,8 +43,12 @@ class VIEWS_MUS_EXPORT AuraInit {
     // Indicates AuraInit should target using aura with mus.
     AURA_MUS,
 
+    // Indicates AuraInit should target using aura with mus, for a Window
+    // Manager client.
+    AURA_MUS_WINDOW_MANAGER,
+
     // Indicates AuraInit should target using ui::Window.
-    UI,
+    UI
   };
 
   // |resource_file| is the file to load strings and 1x icons from.

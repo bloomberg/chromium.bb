@@ -8,6 +8,7 @@
 #include "base/command_line.h"
 #include "base/message_loop/message_loop.h"
 #include "content/public/common/service_names.mojom.h"
+#include "mash/common/config.h"
 #include "mash/login/public/interfaces/constants.mojom.h"
 #include "mash/login/public/interfaces/login.mojom.h"
 #include "mash/quick_launch/public/interfaces/constants.mojom.h"
@@ -99,7 +100,7 @@ void Session::Create(const service_manager::Identity& remote_identity,
 
 void Session::StartWindowManager() {
   StartRestartableService(
-      "ash",
+      common::GetWindowManagerServiceName(),
       base::Bind(&Session::StartWindowManager,
                  base::Unretained(this)));
 }

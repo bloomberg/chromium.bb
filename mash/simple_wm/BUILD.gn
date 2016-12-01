@@ -5,33 +5,50 @@
 import("//build/config/ui.gni")
 import("//services/service_manager/public/cpp/service.gni")
 import("//services/service_manager/public/service_manifest.gni")
-import("//mojo/public/tools/bindings/mojom.gni")
 import("//tools/grit/repack.gni")
 
-service("login") {
+service("simple_wm") {
+  testonly = true
+
   sources = [
-    "login.cc",
-    "login.h",
     "main.cc",
   ]
 
   deps = [
-    "//ash/public/cpp",
-    "//ash/public/interfaces",
+    ":lib",
     "//base",
-    "//mash/common",
-    "//mash/init/public/interfaces",
-    "//mash/login/public/interfaces",
-    "//mojo/public/cpp/bindings",
     "//services/service_manager/public/cpp",
-    "//services/tracing/public/cpp",
-    "//services/ui/public/cpp",
-    "//services/ui/public/interfaces",
-    "//ui/views",
     "//ui/views/mus:for_mojo_application",
   ]
 
   resources = [ "$root_out_dir/views_mus_resources.pak" ]
+}
+
+source_set("lib") {
+  testonly = true
+  sources = [
+    "simple_wm.cc",
+    "simple_wm.h",
+  ]
+
+  deps = [
+    "//base",
+    "//services/service_manager/public/cpp",
+    "//services/ui/public/cpp",
+    "//services/ui/public/interfaces",
+    "//ui/aura",
+    "//ui/aura:test_support",
+    "//ui/display",
+    "//ui/display:test_support",
+    "//ui/gfx/geometry/mojo",
+    "//ui/views",
+    "//ui/views/mus:mus",
+    "//ui/wm",
+  ]
+
+  public_deps = [
+    "//skia",  # Due to use of Sk types in service header.
+  ]
 
   data_deps = [
     ":manifest",
@@ -40,6 +57,6 @@ service("login") {
 }
 
 service_manifest("manifest") {
-  name = "login"
+  name = "simple_wm"
   source = "manifest.json"
 }

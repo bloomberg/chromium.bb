@@ -55,9 +55,10 @@ AuraInit::AuraInit(service_manager::Connector* connector,
                    Mode mode)
     : resource_file_(resource_file),
       resource_file_200_(resource_file_200),
-      env_(aura::Env::CreateInstance(mode == Mode::AURA_MUS
-                                         ? aura::Env::Mode::MUS
-                                         : aura::Env::Mode::LOCAL)),
+      env_(aura::Env::CreateInstance(
+          (mode == Mode::AURA_MUS || mode == Mode::AURA_MUS_WINDOW_MANAGER)
+              ? aura::Env::Mode::MUS
+              : aura::Env::Mode::LOCAL)),
       views_delegate_(new MusViewsDelegate) {
   if (mode == Mode::AURA_MUS) {
     mus_client_ =

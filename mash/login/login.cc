@@ -13,6 +13,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "mash/common/config.h"
 #include "mash/init/public/interfaces/constants.mojom.h"
 #include "mash/init/public/interfaces/init.mojom.h"
 #include "mash/login/public/interfaces/login.mojom.h"
@@ -117,7 +118,8 @@ class UI : public views::WidgetDelegateView,
   void ButtonPressed(views::Button* sender, const ui::Event& event) override;
 
   void StartWindowManager(const service_manager::Identity& identity) {
-    mash_wm_connection_ = connector_->Connect("ash");
+    mash_wm_connection_ =
+        connector_->Connect(common::GetWindowManagerServiceName());
     mash_wm_connection_->SetConnectionLostClosure(
         base::Bind(&UI::StartWindowManager, base::Unretained(this), identity));
     window_manager_connection_ =
