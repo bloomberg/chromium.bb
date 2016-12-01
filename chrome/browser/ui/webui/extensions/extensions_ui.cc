@@ -107,6 +107,8 @@ content::WebUIDataSource* CreateMdExtensionsSource() {
                              IDS_MANAGE_EXTENSIONS_SETTING_WINDOWS_TITLE);
   source->AddLocalizedString("toolbarTitle", IDS_MD_EXTENSIONS_TOOLBAR_TITLE);
   source->AddLocalizedString("search", IDS_MD_EXTENSIONS_SEARCH);
+  // TODO(dpapad): Use a single merged string resource for "Clear search".
+  source->AddLocalizedString("clearSearch", IDS_DOWNLOAD_CLEAR_SEARCH);
   source->AddLocalizedString("sidebarApps", IDS_MD_EXTENSIONS_SIDEBAR_APPS);
   source->AddLocalizedString("sidebarExtensions",
                              IDS_MD_EXTENSIONS_SIDEBAR_EXTENSIONS);

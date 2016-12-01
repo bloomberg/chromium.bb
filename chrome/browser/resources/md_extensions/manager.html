@@ -1,4 +1,4 @@
-<link rel="import" href="chrome://resources/cr_elements/cr_search_field/cr_search_field.html">
+<link rel="import" href="chrome://resources/cr_elements/cr_toolbar/cr_toolbar.html">
 <link rel="import" href="chrome://resources/html/cr.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -15,6 +15,7 @@
 <link rel="import" href="chrome://extensions/pack_dialog.html">
 <link rel="import" href="chrome://extensions/service.html">
 <link rel="import" href="chrome://extensions/sidebar.html">
+<link rel="stylesheet" href="chrome://resources/css/md_colors.css">
 
 <dom-module id="extensions-manager">
   <template>
@@ -33,45 +34,37 @@
         };
       }
 
+      extensions-sidebar {
+        flex-basis: 256px;
+      }
+
       #pages {
         -webkit-margin-start: 30px;
+        flex-grow: 1;
         overflow-y: auto;
         padding-bottom: 30px;
-        width: 100%;
       }
 
       extensions-item {
         display: inline-block;
       }
 
-      .paper-header {
-        align-items: center;
-        background: rgb(63, 85, 102);
-        color: white;
-        display: flex;
-        height: 56px;
-      }
-
-      .paper-header cr-search-field {
-        -webkit-padding-end: 10px;
-      }
-
-      .paper-header h1 {
-        -webkit-margin-start: 24px;
-        flex: 1;
-        font-size: 107.7%;
-        font-weight: normal;
-        margin-bottom: 0;
-        margin-top: 0;
+      cr-toolbar {
+        /* TODO(tsergeant): Remove the extra 30px margin from #pages so the
+           search field aligns with History. */
+        --cr-toolbar-field-margin: 286px;
+        background: var(--md-toolbar-color);
+        font-size: 13px;
       }
     </style>
     <extensions-drop-overlay></extensions-drop-overlay>
     <paper-header-panel id="panel">
-      <div class="paper-header">
-        <h1>$i18n{toolbarTitle}</h1>
-        <cr-search-field label="$i18n{search}"
-            on-search-changed="onFilterChanged_"></cr-search-field>
-      </div>
+      <cr-toolbar class="paper-header"
+          page-name="$i18n{toolbarTitle}"
+          search-prompt="$i18n{search}"
+          clear-label="$i18n{clearSearch}"
+          on-search-changed="onFilterChanged_">
+      </cr-toolbar>
       <extensions-sidebar in-dev-mode="[[inDevMode]]">
       </extensions-sidebar>
       <neon-animated-pages id="pages" selected="0">

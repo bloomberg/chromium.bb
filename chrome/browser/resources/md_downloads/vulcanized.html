@@ -3076,6 +3076,7 @@ input[type='search']::-webkit-search-decoration, input[type='search']::-webkit-s
     <style scope="cr-toolbar">:host {
   --cr-toolbar-field-width: 580px;
         --cr-toolbar-height: 56px;
+        align-items: center;
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
@@ -3111,8 +3112,7 @@ h1 {
 }
 
 #centeredContent {
-  -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
-        display: flex;
+  display: flex;
         flex: 1 1 0;
         justify-content: center;
 }
@@ -3128,6 +3128,10 @@ h1 {
 :host(:not([narrow_])) #leftContent {
   max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
         -webkit-padding-start: var(--cr-toolbar-left-content-wide_-_-webkit-padding-start); flex: var(--cr-toolbar-left-content-wide_-_flex); max-width: var(--cr-toolbar-left-content-wide_-_max-width, calc((100% - var(--cr-toolbar-field-width)) / 2)); position: var(--cr-toolbar-left-content-wide_-_position);
+}
+
+:host(:not([narrow_])) #centeredContent {
+  -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
 }
 
 :host(:not([narrow_])) #rightContent {

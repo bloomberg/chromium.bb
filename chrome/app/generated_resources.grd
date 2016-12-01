@@ -4600,7 +4600,7 @@ Data associated with this app will be removed from this device.
           Extensions &amp; Apps
         </message>
         <message name="IDS_MD_EXTENSIONS_SEARCH" desc="The text displayed in the search box on the chrome://extensions page.">
-          Search
+          Search extensions
         </message>
         <message name="IDS_MD_EXTENSIONS_SHORTCUT_NOT_SET" desc="The label to indicate that an extension has no shortcut set for a given command.">
           Not set

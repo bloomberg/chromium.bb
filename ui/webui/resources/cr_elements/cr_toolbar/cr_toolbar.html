@@ -9,6 +9,7 @@
       :host {
         --cr-toolbar-field-width: 580px;
         --cr-toolbar-height: 56px;
+        align-items: center;
         color: #fff;
         display: flex;
         height: var(--cr-toolbar-height);
@@ -44,7 +45,6 @@
       }
 
       #centeredContent {
-        -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
         display: flex;
         flex: 1 1 0;
         justify-content: center;
@@ -63,6 +63,10 @@
            (width of window - width of search field) / 2. */
         max-width: calc((100% - var(--cr-toolbar-field-width)) / 2);
         @apply(--cr-toolbar-left-content-wide);
+      }
+
+      :host(:not([narrow_])) #centeredContent {
+        -webkit-margin-start: var(--cr-toolbar-field-margin, 0);
       }
 
       :host(:not([narrow_])) #rightContent {
