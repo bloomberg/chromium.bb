@@ -107,7 +107,7 @@ void OpaqueBrowserFrameViewLayout::SetButtonOrdering(
 gfx::Rect OpaqueBrowserFrameViewLayout::GetBoundsForTabStrip(
     const gfx::Size& tabstrip_preferred_size,
     int available_width) const {
-  int x = leading_button_start_ + GetLayoutInsets(AVATAR_ICON).right();
+  int x = leading_button_start_ + GetLayoutConstant(AVATAR_ICON_PADDING);
   available_width -= x + NewTabCaptionSpacing() + trailing_button_start_;
   return gfx::Rect(x, GetTabStripInsetsTop(false), std::max(0, available_width),
                    tabstrip_preferred_size.height());
@@ -369,19 +369,19 @@ void OpaqueBrowserFrameViewLayout::LayoutIncognitoIcon(views::View* host) {
   trailing_button_start_ = std::max(trailing_button_start_, min_button_width);
 
   if (incognito_icon_) {
-    const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
+    const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
     const gfx::Size size(delegate_->GetIncognitoAvatarIcon().size());
-    const int incognito_width = insets.left() + size.width();
+    const int incognito_width = pad + size.width();
     int x;
     if (ShouldIncognitoIconBeOnRight()) {
       trailing_button_start_ += incognito_width;
       x = host->width() - trailing_button_start_;
     } else {
-      x = leading_button_start_ + insets.left();
+      x = leading_button_start_ + pad;
       leading_button_start_ += incognito_width;
     }
-    const int bottom = GetTabStripInsetsTop(false) +
-        delegate_->GetTabStripHeight() - insets.bottom();
+    const int bottom =
+        GetTabStripInsetsTop(false) + delegate_->GetTabStripHeight() - pad;
     incognito_icon_->SetBounds(x, bottom - size.height(), size.width(),
                                size.height());
   }

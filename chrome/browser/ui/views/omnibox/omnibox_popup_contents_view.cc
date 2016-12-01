@@ -38,6 +38,8 @@ namespace {
 base::LazyInstance<gfx::ImageSkia> g_top_shadow = LAZY_INSTANCE_INITIALIZER;
 base::LazyInstance<gfx::ImageSkia> g_bottom_shadow = LAZY_INSTANCE_INITIALIZER;
 
+const int kPopupVerticalPadding = 4;
+
 }  // namespace
 
 class OmniboxPopupContentsView::AutocompletePopupWidget
@@ -147,7 +149,7 @@ gfx::Rect OmniboxPopupContentsView::GetPopupBounds() const {
 
 void OmniboxPopupContentsView::LayoutChildren() {
   gfx::Rect contents_rect = GetContentsBounds();
-  contents_rect.Inset(GetLayoutInsets(OMNIBOX_DROPDOWN));
+  contents_rect.Inset(gfx::Insets(kPopupVerticalPadding, 0));
   contents_rect.Inset(start_margin_, g_top_shadow.Get().height(), end_margin_,
                       0);
 
@@ -434,7 +436,7 @@ int OmniboxPopupContentsView::CalculatePopupHeight() {
   // Add enough space on the top and bottom so it looks like there is the same
   // amount of space between the text and the popup border as there is in the
   // interior between each row of text.
-  return popup_height + GetLayoutInsets(OMNIBOX_DROPDOWN).height() +
+  return popup_height + kPopupVerticalPadding * 2 +
          g_top_shadow.Get().height() + g_bottom_shadow.Get().height();
 }
 

@@ -29,6 +29,8 @@ int GetLayoutConstant(LayoutConstant constant) {
 
   const int mode = ui::MaterialDesignController::GetMode();
   switch (constant) {
+    case AVATAR_ICON_PADDING:
+      return 4;
     case FIND_BAR_TOOLBAR_OVERLAP:
       return kFindBarVerticalOffset[mode];
     case LOCATION_BAR_BORDER_THICKNESS:
@@ -59,6 +61,8 @@ int GetLayoutConstant(LayoutConstant constant) {
       return kTabHeight[mode];
     case TAB_PINNED_CONTENT_WIDTH:
       return kTabPinnedContentWidth[mode];
+    case TOOLBAR_BUTTON_PADDING:
+      return 6;
     case TOOLBAR_ELEMENT_PADDING:
       return kToolbarElementPadding[mode];
     case TOOLBAR_LOCATION_BAR_RIGHT_PADDING:
@@ -71,41 +75,12 @@ int GetLayoutConstant(LayoutConstant constant) {
 }
 
 gfx::Insets GetLayoutInsets(LayoutInset inset) {
-  const int kAvatarLeftPadding[] = {4, 4};
-  const int kAvatarRightPadding[] = {4, 4};
-  const int kAvatarBottomPadding[] = {4, 4};
-  const int kOmniboxDropdownIconPadding[] = {4, 8};
-  const int kOmniboxDropdownPadding[] = {4, 4};
-  const int kOmniboxDropdownTextPadding[] = {3, 3};
-  const int kTabBottomPadding[] = {1, 1};
-  const int kTabHorizontalPadding[] = {16, 18};
-  const int kTabTopPadding[] = {1, 1};
-  const int kToolbarBottomPadding[] = {5, 5};
-  const int kToolbarButtonPadding[] = {6, 6};
-  const int kToolbarLeftPadding[] = {4, 8};
-  const int kToolbarRightPadding[] = {4, 8};
-  const int kToolbarTopPadding[] = {4, 4};
-
-  const int mode = ui::MaterialDesignController::GetMode();
   switch (inset) {
-    case AVATAR_ICON:
-      return gfx::Insets(0, kAvatarLeftPadding[mode],
-                         kAvatarBottomPadding[mode], kAvatarRightPadding[mode]);
-    case OMNIBOX_DROPDOWN:
-      return gfx::Insets(kOmniboxDropdownPadding[mode], 0);
-    case OMNIBOX_DROPDOWN_ICON:
-      return gfx::Insets(kOmniboxDropdownIconPadding[mode], 0);
-    case OMNIBOX_DROPDOWN_TEXT:
-      return gfx::Insets(kOmniboxDropdownTextPadding[mode], 0);
-    case TAB:
-      return gfx::Insets(kTabTopPadding[mode], kTabHorizontalPadding[mode],
-                         kTabBottomPadding[mode], kTabHorizontalPadding[mode]);
-    case TOOLBAR:
-      return gfx::Insets(kToolbarTopPadding[mode], kToolbarLeftPadding[mode],
-                         kToolbarBottomPadding[mode],
-                         kToolbarRightPadding[mode]);
-    case TOOLBAR_BUTTON:
-      return gfx::Insets(kToolbarButtonPadding[mode]);
+    case TAB: {
+      const bool hybrid = ui::MaterialDesignController::GetMode() ==
+                          ui::MaterialDesignController::MATERIAL_HYBRID;
+      return gfx::Insets(1, hybrid ? 18 : 16);
+    }
   }
   NOTREACHED();
   return gfx::Insets();

@@ -109,8 +109,8 @@ void AppMenuButton::RemoveMenuListener(views::MenuListener* listener) {
 
 gfx::Size AppMenuButton::GetPreferredSize() const {
   gfx::Size size(image()->GetPreferredSize());
-  gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
-  size.Enlarge(insets.width(), insets.height());
+  const int pad = GetLayoutConstant(TOOLBAR_BUTTON_PADDING);
+  size.Enlarge(pad * 2, pad * 2);
   return size;
 }
 

@@ -64,8 +64,8 @@ gfx::Size ToolbarButton::GetPreferredSize() const {
         label_size.width() + GetLayoutConstant(LOCATION_BAR_HORIZONTAL_PADDING),
         0);
   }
-  gfx::Insets insets(GetLayoutInsets(TOOLBAR_BUTTON));
-  size.Enlarge(insets.width(), insets.height());
+  const int pad = GetLayoutConstant(TOOLBAR_BUTTON_PADDING);
+  size.Enlarge(2 * pad, 2 * pad);
   return size;
 }
 
@@ -150,7 +150,7 @@ std::unique_ptr<views::LabelButtonBorder> ToolbarButton::CreateDefaultBorder()
       views::LabelButton::CreateDefaultBorder();
 
   if (ThemeServiceFactory::GetForProfile(profile_)->UsingSystemTheme())
-    border->set_insets(GetLayoutInsets(TOOLBAR_BUTTON));
+    border->set_insets(gfx::Insets(GetLayoutConstant(TOOLBAR_BUTTON_PADDING)));
 
   return border;
 }

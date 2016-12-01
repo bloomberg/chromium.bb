@@ -371,11 +371,11 @@ void BrowserNonClientFrameViewMus::TabStripDeleted(TabStrip* tab_strip) {
 }
 
 int BrowserNonClientFrameViewMus::GetTabStripLeftInset() const {
-  const gfx::Insets insets(GetLayoutInsets(AVATAR_ICON));
+  const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
   const int avatar_right = profile_indicator_icon()
-      ? (insets.left() + GetIncognitoAvatarIcon().width())
+      ? (pad + GetIncognitoAvatarIcon().width())
       : 0;
-  return avatar_right + insets.right() + frame_values().normal_insets.left();
+  return avatar_right + pad + frame_values().normal_insets.left();
 }
 
 int BrowserNonClientFrameViewMus::GetTabStripRightInset() const {
@@ -424,9 +424,9 @@ void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
   DCHECK(browser_view()->IsTabStripVisible());
 #endif
   gfx::ImageSkia incognito_icon = GetIncognitoAvatarIcon();
-  gfx::Insets avatar_insets = GetLayoutInsets(AVATAR_ICON);
-  int avatar_bottom = GetTopInset(false) + browser_view()->GetTabStripHeight() -
-                      avatar_insets.bottom();
+  const int pad = GetLayoutConstant(AVATAR_ICON_PADDING);
+  int avatar_bottom =
+      GetTopInset(false) + browser_view()->GetTabStripHeight() - pad;
   int avatar_y = avatar_bottom - incognito_icon.height();
 
   // Hide the incognito icon in immersive fullscreen when the tab light bar is
@@ -435,8 +435,7 @@ void BrowserNonClientFrameViewMus::LayoutIncognitoButton() {
   bool avatar_visible = !UseImmersiveLightbarHeaderStyle();
   int avatar_height = avatar_visible ? incognito_icon.height() : 0;
 
-  gfx::Rect avatar_bounds(avatar_insets.left(), avatar_y,
-                          incognito_icon.width(), avatar_height);
+  gfx::Rect avatar_bounds(pad, avatar_y, incognito_icon.width(), avatar_height);
   profile_indicator_icon()->SetBoundsRect(avatar_bounds);
   profile_indicator_icon()->SetVisible(avatar_visible);
 }

@@ -30,6 +30,7 @@
 #include "third_party/skia/include/core/SkColor.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/base/l10n/l10n_util.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/base/theme_provider.h"
 #include "ui/gfx/canvas.h"
@@ -687,10 +688,12 @@ int OmniboxResultView::GetAnswerLineHeight() const {
 }
 
 int OmniboxResultView::GetContentLineHeight() const {
+  using Md = ui::MaterialDesignController;
+  const int kIconVerticalPad = Md::GetMode() == Md::MATERIAL_HYBRID ? 8 : 4;
+  const int kTextVerticalPad = 3;
   return std::max(
-      LocationBarView::kIconWidth +
-          GetLayoutInsets(OMNIBOX_DROPDOWN_ICON).height(),
-      GetTextHeight() + GetLayoutInsets(OMNIBOX_DROPDOWN_TEXT).height());
+      LocationBarView::kIconWidth + 2 * kIconVerticalPad,
+      GetTextHeight() + 2 * kTextVerticalPad);
 }
 
 std::unique_ptr<gfx::RenderText> OmniboxResultView::CreateAnswerLine(

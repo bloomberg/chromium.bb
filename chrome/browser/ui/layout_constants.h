@@ -9,6 +9,9 @@
 #include "ui/gfx/geometry/size.h"
 
 enum LayoutConstant {
+  // The padding on the left, right, and bottom of the avatar icon.
+  AVATAR_ICON_PADDING,
+
   // Vertical offset from top of content to the top of find bar.
   FIND_BAR_TOOLBAR_OVERLAP,
 
@@ -58,6 +61,9 @@ enum LayoutConstant {
   // Width available for content inside a pinned tab.
   TAB_PINNED_CONTENT_WIDTH,
 
+  // Padding inside toolbar button, between its border and image.
+  TOOLBAR_BUTTON_PADDING,
+
   // Additional horizontal padding between the elements in the toolbar.
   TOOLBAR_ELEMENT_PADDING,
 
@@ -70,31 +76,8 @@ enum LayoutConstant {
 };
 
 enum LayoutInset {
-  // The padding between the avatar icon and the frame border on the left, the
-  // tabstrip on the right, and the toolbar on the bottom.
-  AVATAR_ICON,
-
-  // The padding above the top row and below the bottom row in the omnibox
-  // dropdown.
-  OMNIBOX_DROPDOWN,
-
-  // In an omnibox dropdown row, the minimum distance between the icon and the
-  // row edge.
-  OMNIBOX_DROPDOWN_ICON,
-
-  // In an omnibox dropdown row, the minimum distance between the text and the
-  // row edge.
-  OMNIBOX_DROPDOWN_TEXT,
-
   // The padding inside the tab bounds that defines the tab contents region.
   TAB,
-
-  // The minimum padding of the toolbar.  The edge graphics have some built-in
-  // spacing, shadowing, so this accounts for that as well.
-  TOOLBAR,
-
-  // The spacing between a ToolbarButton's image and its border.
-  TOOLBAR_BUTTON,
 };
 
 enum LayoutSize {
