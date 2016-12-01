@@ -26,6 +26,13 @@
 
 namespace content {
 
+namespace {
+uint32_t GetCurrentCursorPositionInFrame(blink::WebLocalFrame* localFrame) {
+  blink::WebRange range = localFrame->selectionRange();
+  return range.isNull() ? 0U : static_cast<uint32_t>(range.startOffset());
+}
+}
+
 TextInputClientObserver::TextInputClientObserver(RenderWidget* render_widget)
     : render_widget_(render_widget) {}
 
@@ -133,8 +140,11 @@ void TextInputClientObserver::OnFirstRectForCharacterRange(gfx::Range range) {
     // See crbug.com/304341
     if (frame) {
       blink::WebRect web_rect;
-      frame->firstRectForCharacterRange(range.start(), range.length(),
-                                        web_rect);
+      // When request range is invalid we will try to obtain it from current
+      // frame selection. The fallback value will be 0.
+      uint32_t start = range.IsValid() ? range.start()
+                                       : GetCurrentCursorPositionInFrame(frame);
+      frame->firstRectForCharacterRange(start, range.length(), web_rect);
       rect = web_rect;
     }
   }
