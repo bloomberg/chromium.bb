@@ -9,6 +9,7 @@
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/wm_shelf.h"
 #include "ash/common/shelf/wm_shelf_util.h"
+#include "ash/common/system/status_area_widget.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/system/tray/tray_bubble_wrapper.h"
@@ -96,6 +97,7 @@ class WebNotificationBubbleWrapper {
  public:
   // Takes ownership of |bubble| and creates |bubble_wrapper_|.
   WebNotificationBubbleWrapper(WebNotificationTray* tray,
+                               TrayBackgroundView* anchor_tray,
                                message_center::MessageBubbleBase* bubble) {
     bubble_.reset(bubble);
     views::TrayBubbleView::AnchorAlignment anchor_alignment =
@@ -103,8 +105,8 @@ class WebNotificationBubbleWrapper {
     views::TrayBubbleView::InitParams init_params =
         bubble->GetInitParams(anchor_alignment);
     views::TrayBubbleView* bubble_view = views::TrayBubbleView::Create(
-        tray->GetBubbleAnchor(), tray, &init_params);
-    bubble_view->set_anchor_view_insets(tray->GetBubbleAnchorInsets());
+        anchor_tray->GetBubbleAnchor(), tray, &init_params);
+    bubble_view->set_anchor_view_insets(anchor_tray->GetBubbleAnchorInsets());
     bubble_wrapper_.reset(new TrayBubbleWrapper(tray, bubble_view));
     bubble->InitializeContents(bubble_view);
   }
@@ -373,8 +375,18 @@ bool WebNotificationTray::ShowMessageCenterInternal(bool show_settings) {
       std::max(0, max_height - GetTrayConstant(TRAY_SPACING)));
   if (show_settings)
     message_center_bubble->SetSettingsVisible();
-  message_center_bubble_.reset(
-      new WebNotificationBubbleWrapper(this, message_center_bubble));
+
+  // For vertical shelf alignments, anchor to the WebNotificationTray, but for
+  // horizontal (i.e. bottom) shelves, anchor to the system tray.
+  TrayBackgroundView* anchor_tray = this;
+  if (shelf_alignment() == SHELF_ALIGNMENT_BOTTOM) {
+    anchor_tray = WmShelf::ForWindow(status_area_window_)
+                      ->GetStatusAreaWidget()
+                      ->system_tray();
+  }
+
+  message_center_bubble_.reset(new WebNotificationBubbleWrapper(
+      this, anchor_tray, message_center_bubble));
 
   system_tray_->SetHideNotifications(true);
   shelf()->UpdateAutoHideState();
