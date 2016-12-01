@@ -439,7 +439,10 @@ read_and_dump_property(struct weston_wm *wm,
 	free(reply);
 }
 
-/* We reuse some predefined, but otherwise useles atoms */
+/* We reuse some predefined, but otherwise useles atoms
+ * as local type placeholders that never touch the X11 server,
+ * to make weston_wm_window_read_properties() less exceptional.
+ */
 #define TYPE_WM_PROTOCOLS	XCB_ATOM_CUT_BUFFER0
 #define TYPE_MOTIF_WM_HINTS	XCB_ATOM_CUT_BUFFER1
 #define TYPE_NET_WM_STATE	XCB_ATOM_CUT_BUFFER2
@@ -452,23 +455,23 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	const struct weston_desktop_xwayland_interface *xwayland_interface =
 		wm->server->compositor->xwayland_interface;
 
-#define F(field) offsetof(struct weston_wm_window, field)
+#define F(field) (&window->field)
 	const struct {
 		xcb_atom_t atom;
 		xcb_atom_t type;
-		int offset;
+		void *ptr;
 	} props[] = {
-		{ XCB_ATOM_WM_CLASS, XCB_ATOM_STRING, F(class) },
-		{ XCB_ATOM_WM_NAME, XCB_ATOM_STRING, F(name) },
-		{ XCB_ATOM_WM_TRANSIENT_FOR, XCB_ATOM_WINDOW, F(transient_for) },
-		{ wm->atom.wm_protocols, TYPE_WM_PROTOCOLS, F(protocols) },
-		{ wm->atom.wm_normal_hints, TYPE_WM_NORMAL_HINTS, F(protocols) },
-		{ wm->atom.net_wm_state, TYPE_NET_WM_STATE },
-		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM, F(type) },
-		{ wm->atom.net_wm_name, XCB_ATOM_STRING, F(name) },
-		{ wm->atom.net_wm_pid, XCB_ATOM_CARDINAL, F(pid) },
-		{ wm->atom.motif_wm_hints, TYPE_MOTIF_WM_HINTS, 0 },
-		{ wm->atom.wm_client_machine, XCB_ATOM_WM_CLIENT_MACHINE, F(machine) },
+		{ XCB_ATOM_WM_CLASS,           XCB_ATOM_STRING,            F(class) },
+		{ XCB_ATOM_WM_NAME,            XCB_ATOM_STRING,            F(name) },
+		{ XCB_ATOM_WM_TRANSIENT_FOR,   XCB_ATOM_WINDOW,            F(transient_for) },
+		{ wm->atom.wm_protocols,       TYPE_WM_PROTOCOLS,          NULL },
+		{ wm->atom.wm_normal_hints,    TYPE_WM_NORMAL_HINTS,       NULL },
+		{ wm->atom.net_wm_state,       TYPE_NET_WM_STATE,          NULL },
+		{ wm->atom.net_wm_window_type, XCB_ATOM_ATOM,              F(type) },
+		{ wm->atom.net_wm_name,        XCB_ATOM_STRING,            F(name) },
+		{ wm->atom.net_wm_pid,         XCB_ATOM_CARDINAL,          F(pid) },
+		{ wm->atom.motif_wm_hints,     TYPE_MOTIF_WM_HINTS,        NULL },
+		{ wm->atom.wm_client_machine,  XCB_ATOM_WM_CLIENT_MACHINE, F(machine) },
 	};
 #undef F
 
@@ -507,7 +510,7 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 			continue;
 		}
 
-		p = ((char *) window + props[i].offset);
+		p = props[i].ptr;
 
 		switch (props[i].type) {
 		case XCB_ATOM_WM_CLIENT_MACHINE:
@@ -600,6 +603,11 @@ weston_wm_window_read_properties(struct weston_wm_window *window)
 	if (window->shsurf && window->pid > 0)
 		xwayland_interface->set_pid(window->shsurf, window->pid);
 }
+
+#undef TYPE_WM_PROTOCOLS
+#undef TYPE_MOTIF_WM_HINTS
+#undef TYPE_NET_WM_STATE
+#undef TYPE_WM_NORMAL_HINTS
 
 static void
 weston_wm_window_get_frame_size(struct weston_wm_window *window,
