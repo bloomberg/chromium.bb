@@ -7,9 +7,9 @@ import("//testing/test.gni")
 
 source_set("display") {
   sources = [
-    "platform_screen.cc",
-    "platform_screen.h",
-    "platform_screen_delegate.h",
+    "screen_manager.cc",
+    "screen_manager.h",
+    "screen_manager_delegate.h",
     "viewport_metrics.cc",
     "viewport_metrics.h",
   ]
@@ -23,8 +23,8 @@ source_set("display") {
 
   if (use_ozone && is_chromeos) {
     sources += [
-      "platform_screen_ozone.cc",
-      "platform_screen_ozone.h",
+      "screen_manager_ozone.cc",
+      "screen_manager_ozone.h",
     ]
 
     deps += [
@@ -35,8 +35,8 @@ source_set("display") {
     ]
   } else {
     sources += [
-      "platform_screen_stub.cc",
-      "platform_screen_stub.h",
+      "screen_manager_stub.cc",
+      "screen_manager_stub.h",
     ]
   }
 }
@@ -44,7 +44,7 @@ source_set("display") {
 if (use_ozone && is_chromeos) {
   test("display_service_unittests") {
     sources = [
-      "platform_screen_ozone_unittests.cc",
+      "screen_manager_ozone_unittests.cc",
     ]
 
     deps = [

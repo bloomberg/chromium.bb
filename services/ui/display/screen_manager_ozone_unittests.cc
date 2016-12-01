@@ -9,8 +9,8 @@
 #include "base/logging.h"
 #include "base/memory/ptr_util.h"
 #include "base/strings/string_number_conversions.h"
-#include "services/ui/display/platform_screen.h"
-#include "services/ui/display/platform_screen_ozone.h"
+#include "services/ui/display/screen_manager.h"
+#include "services/ui/display/screen_manager_ozone.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -63,15 +63,15 @@ std::unique_ptr<DisplaySnapshot> MakeSnapshot(int64_t id,
 }
 
 // Test delegate to track what functions calls the delegate receives.
-class TestPlatformScreenDelegate : public PlatformScreenDelegate {
+class TestScreenManagerDelegate : public ScreenManagerDelegate {
  public:
-  TestPlatformScreenDelegate() {}
-  ~TestPlatformScreenDelegate() override {}
+  TestScreenManagerDelegate() {}
+  ~TestScreenManagerDelegate() override {}
 
   const std::vector<DisplayState>& added() const { return added_; }
   const std::vector<DisplayState>& modified() const { return modified_; }
 
-  // Returns a string containing the function calls that PlatformScreenDelegate
+  // Returns a string containing the function calls that ScreenManagerDelegate
   // has received in the order they occured. Each function call will be in the
   // form "<action>(<id>)" and multiple function calls will be separated by ";".
   // For example, if display 2 was added then display 1 was modified, changes()
@@ -113,20 +113,20 @@ class TestPlatformScreenDelegate : public PlatformScreenDelegate {
   std::vector<DisplayState> modified_;
   std::string changes_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformScreenDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TestScreenManagerDelegate);
 };
 
 }  // namespace
 
 // Test fixture with helpers to act like ui::DisplayConfigurator and send
-// OnDisplayModeChanged() to PlatformScreenOzone.
-class PlatformScreenOzoneTest : public testing::Test {
+// OnDisplayModeChanged() to ScreenManagerOzone.
+class ScreenManagerOzoneTest : public testing::Test {
  public:
-  PlatformScreenOzoneTest() {}
-  ~PlatformScreenOzoneTest() override {}
+  ScreenManagerOzoneTest() {}
+  ~ScreenManagerOzoneTest() override {}
 
-  PlatformScreenOzone* platform_screen() { return platform_screen_.get(); }
-  TestPlatformScreenDelegate* delegate() { return &delegate_; }
+  ScreenManagerOzone* screen_manager() { return screen_manager_.get(); }
+  TestScreenManagerDelegate* delegate() { return &delegate_; }
 
   // Adds a display snapshot with specified ID and default size.
   void AddDisplay(int64_t id) { return AddDisplay(id, gfx::Size(1024, 768)); }
@@ -174,7 +174,7 @@ class PlatformScreenOzoneTest : public testing::Test {
     for (auto& snapshot : snapshots_) {
       snapshots_ptrs.push_back(snapshot.get());
     }
-    platform_screen_->OnDisplayModeChanged(snapshots_ptrs);
+    screen_manager_->OnDisplayModeChanged(snapshots_ptrs);
   }
 
  private:
@@ -193,8 +193,8 @@ class PlatformScreenOzoneTest : public testing::Test {
 
     testing::Test::SetUp();
     ui::OzonePlatform::InitializeForUI();
-    platform_screen_ = base::MakeUnique<PlatformScreenOzone>();
-    platform_screen_->Init(&delegate_);
+    screen_manager_ = base::MakeUnique<ScreenManagerOzone>();
+    screen_manager_->Init(&delegate_);
 
     // Have all tests start with a 1024x768 display by default.
     AddDisplay(1, gfx::Size(1024, 768));
@@ -212,22 +212,22 @@ class PlatformScreenOzoneTest : public testing::Test {
   void TearDown() override {
     snapshots_.clear();
     delegate_.Reset();
-    platform_screen_.reset();
+    screen_manager_.reset();
   }
 
-  TestPlatformScreenDelegate delegate_;
-  std::unique_ptr<PlatformScreenOzone> platform_screen_;
+  TestScreenManagerDelegate delegate_;
+  std::unique_ptr<ScreenManagerOzone> screen_manager_;
   std::vector<std::unique_ptr<DisplaySnapshot>> snapshots_;
 };
 
-TEST_F(PlatformScreenOzoneTest, AddDisplay) {
+TEST_F(ScreenManagerOzoneTest, AddDisplay) {
   AddDisplay(2);
 
   // Check that display 2 was added.
   EXPECT_EQ("Added(2)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, RemoveDisplay) {
+TEST_F(ScreenManagerOzoneTest, RemoveDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
@@ -237,7 +237,7 @@ TEST_F(PlatformScreenOzoneTest, RemoveDisplay) {
   EXPECT_EQ("Removed(2)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, RemoveFirstDisplay) {
+TEST_F(ScreenManagerOzoneTest, RemoveFirstDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
@@ -251,7 +251,7 @@ TEST_F(PlatformScreenOzoneTest, RemoveFirstDisplay) {
   EXPECT_THAT(delegate()->modified()[0], DisplayOrigin("0,0"));
 }
 
-TEST_F(PlatformScreenOzoneTest, RemoveMultipleDisplay) {
+TEST_F(ScreenManagerOzoneTest, RemoveMultipleDisplay) {
   AddDisplay(2);
   AddDisplay(3);
   delegate()->Reset();
@@ -264,7 +264,7 @@ TEST_F(PlatformScreenOzoneTest, RemoveMultipleDisplay) {
   EXPECT_EQ("Removed(2);Modified(3);Removed(3)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, ModifyDisplaySize) {
+TEST_F(ScreenManagerOzoneTest, ModifyDisplaySize) {
   const gfx::Size size1(1920, 1200);
   const gfx::Size size2(1680, 1050);
 
@@ -286,7 +286,7 @@ TEST_F(PlatformScreenOzoneTest, ModifyDisplaySize) {
   EXPECT_EQ("Modified(2)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, ModifyFirstDisplaySize) {
+TEST_F(ScreenManagerOzoneTest, ModifyFirstDisplaySize) {
   const gfx::Size size(1920, 1200);
 
   AddDisplay(2, size);
@@ -309,7 +309,7 @@ TEST_F(PlatformScreenOzoneTest, ModifyFirstDisplaySize) {
   EXPECT_THAT(delegate()->modified()[1], DisplayOrigin("1920,0"));
 }
 
-TEST_F(PlatformScreenOzoneTest, RemovePrimaryDisplay) {
+TEST_F(ScreenManagerOzoneTest, RemovePrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
@@ -319,7 +319,7 @@ TEST_F(PlatformScreenOzoneTest, RemovePrimaryDisplay) {
   EXPECT_EQ("Primary(2);Removed(1);Modified(2)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, RemoveLastDisplay) {
+TEST_F(ScreenManagerOzoneTest, RemoveLastDisplay) {
   RemoveDisplay(1);
 
   // Check that display 1 is removed and no updates for the primary display are
@@ -327,23 +327,23 @@ TEST_F(PlatformScreenOzoneTest, RemoveLastDisplay) {
   EXPECT_EQ("Removed(1)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, SwapPrimaryDisplay) {
+TEST_F(ScreenManagerOzoneTest, SwapPrimaryDisplay) {
   AddDisplay(2);
   delegate()->Reset();
 
-  platform_screen()->SwapPrimaryDisplay();
+  screen_manager()->SwapPrimaryDisplay();
   EXPECT_EQ("Primary(2)", delegate()->changes());
 }
 
-TEST_F(PlatformScreenOzoneTest, SwapPrimaryThreeDisplays) {
+TEST_F(ScreenManagerOzoneTest, SwapPrimaryThreeDisplays) {
   AddDisplay(2);
   AddDisplay(3);
   EXPECT_EQ("Added(2);Added(3)", delegate()->changes());
   delegate()->Reset();
 
-  platform_screen()->SwapPrimaryDisplay();
-  platform_screen()->SwapPrimaryDisplay();
-  platform_screen()->SwapPrimaryDisplay();
+  screen_manager()->SwapPrimaryDisplay();
+  screen_manager()->SwapPrimaryDisplay();
+  screen_manager()->SwapPrimaryDisplay();
   EXPECT_EQ("Primary(2);Primary(3);Primary(1)", delegate()->changes());
 }
 

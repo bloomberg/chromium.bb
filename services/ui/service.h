@@ -41,7 +41,7 @@
 #endif
 
 namespace display {
-class PlatformScreen;
+class ScreenManager;
 }
 
 namespace gfx {
@@ -181,7 +181,7 @@ class Service
 
   // Manages display hardware and handles display management. May register Mojo
   // interfaces and must outlive service_manager::InterfaceRegistry.
-  std::unique_ptr<display::PlatformScreen> platform_screen_;
+  std::unique_ptr<display::ScreenManager> screen_manager_;
 
   std::unique_ptr<ws::TouchController> touch_controller_;
   IMERegistrarImpl ime_registrar_;

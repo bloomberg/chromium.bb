@@ -6,7 +6,7 @@
 
 #include <utility>
 
-#include "services/ui/display/platform_screen.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/user_display_manager_delegate.h"
@@ -158,7 +158,7 @@ void UserDisplayManager::CallOnDisplays(
   // TODO(kylechar): Pass internal display id to clients here.
   observer->OnDisplays(
       GetAllDisplays().PassStorage(),
-      display::PlatformScreen::GetInstance()->GetPrimaryDisplayId(),
+      display::ScreenManager::GetInstance()->GetPrimaryDisplayId(),
       display::kInvalidDisplayId);
 }
 

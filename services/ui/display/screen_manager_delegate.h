@@ -2,24 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef SERVICES_UI_DISPLAY_PLATFORM_SCREEN_DELEGATE_H_
-#define SERVICES_UI_DISPLAY_PLATFORM_SCREEN_DELEGATE_H_
+#ifndef SERVICES_UI_DISPLAY_SCREEN_MANAGER_DELEGATE_H_
+#define SERVICES_UI_DISPLAY_SCREEN_MANAGER_DELEGATE_H_
 
 #include <stdint.h>
 
-namespace gfx {
-class Rect;
-class Size;
-}
-
 namespace display {
 
-class PlatformScreen;
 struct ViewportMetrics;
 
-// The PlatformScreenDelegate will be informed of changes to the physical
-// and/or virtual displays by PlatformScreen.
-class PlatformScreenDelegate {
+// The ScreenManagerDelegate will be informed of changes to the display or
+// screen state by ScreenManager.
+class ScreenManagerDelegate {
  public:
   // Called when a display is added. |id| is the display id of the new display
   // and |metrics| contains display viewport information.
@@ -38,9 +32,9 @@ class PlatformScreenDelegate {
   virtual void OnPrimaryDisplayChanged(int64_t primary_display_id) = 0;
 
  protected:
-  virtual ~PlatformScreenDelegate() {}
+  virtual ~ScreenManagerDelegate() {}
 };
 
 }  // namespace display
 
-#endif  // SERVICES_UI_DISPLAY_PLATFORM_SCREEN_DELEGATE_H_
+#endif  // SERVICES_UI_DISPLAY_SCREEN_MANAGER_DELEGATE_H_

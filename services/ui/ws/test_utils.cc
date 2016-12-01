@@ -86,18 +86,17 @@ ClientWindowId NextUnusedClientWindowId(WindowTree* tree) {
 
 }  // namespace
 
-// TestPlatformScreen  -------------------------------------------------
+// TestScreenManager  -------------------------------------------------
 
-TestPlatformScreen::TestPlatformScreen() {}
+TestScreenManager::TestScreenManager() {}
 
-TestPlatformScreen::~TestPlatformScreen() {}
+TestScreenManager::~TestScreenManager() {}
 
-int64_t TestPlatformScreen::AddDisplay() {
+int64_t TestScreenManager::AddDisplay() {
   return AddDisplay(MakeViewportMetrics(0, 0, 100, 100, 1.0f));
 }
 
-int64_t TestPlatformScreen::AddDisplay(
-    const display::ViewportMetrics& metrics) {
+int64_t TestScreenManager::AddDisplay(const display::ViewportMetrics& metrics) {
   // Generate a unique display id.
   int64_t display_id = display_ids_.empty() ? 1 : *display_ids_.rbegin() + 1;
   display_ids_.insert(display_id);
@@ -113,27 +112,26 @@ int64_t TestPlatformScreen::AddDisplay(
   return display_id;
 }
 
-void TestPlatformScreen::ModifyDisplay(
-    int64_t id,
-    const display::ViewportMetrics& metrics) {
+void TestScreenManager::ModifyDisplay(int64_t id,
+                                      const display::ViewportMetrics& metrics) {
   DCHECK(display_ids_.count(id) == 1);
   delegate_->OnDisplayModified(id, metrics);
 }
 
-void TestPlatformScreen::RemoveDisplay(int64_t id) {
+void TestScreenManager::RemoveDisplay(int64_t id) {
   DCHECK(display_ids_.count(id) == 1);
   delegate_->OnDisplayRemoved(id);
   display_ids_.erase(id);
 }
 
-void TestPlatformScreen::Init(display::PlatformScreenDelegate* delegate) {
+void TestScreenManager::Init(display::ScreenManagerDelegate* delegate) {
   // Reset
   delegate_ = delegate;
   display_ids_.clear();
   primary_display_id_ = display::kInvalidDisplayId;
 }
 
-int64_t TestPlatformScreen::GetPrimaryDisplayId() const {
+int64_t TestScreenManager::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 

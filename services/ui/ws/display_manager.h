@@ -10,7 +10,7 @@
 #include <set>
 
 #include "base/macros.h"
-#include "services/ui/display/platform_screen_delegate.h"
+#include "services/ui/display/screen_manager_delegate.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/user_id.h"
 #include "services/ui/ws/user_id_tracker_observer.h"
@@ -29,7 +29,7 @@ class WindowServer;
 // between displays that do yet have an accelerated widget (pending), vs
 // those that do.
 class DisplayManager : public UserIdTrackerObserver,
-                       public display::PlatformScreenDelegate {
+                       public display::ScreenManagerDelegate {
  public:
   DisplayManager(WindowServer* window_server, UserIdTracker* user_id_tracker);
   ~DisplayManager() override;
@@ -81,7 +81,7 @@ class DisplayManager : public UserIdTrackerObserver,
   void OnActiveUserIdChanged(const UserId& previously_active_id,
                              const UserId& active_id) override;
 
-  // display::PlatformScreenDelegate:
+  // display::ScreenManagerDelegate:
   void OnDisplayAdded(int64_t id,
                       const display::ViewportMetrics& metrics) override;
   void OnDisplayRemoved(int64_t id) override;

@@ -1355,10 +1355,10 @@ TEST_F(WindowTreeShutdownTest, DontSendMessagesDuringShutdown) {
     // Create a tree with one window.
     WindowServerTestHelper ws_test_helper;
     WindowServer* window_server = ws_test_helper.window_server();
-    TestPlatformScreen platform_screen;
-    platform_screen.Init(window_server->display_manager());
+    TestScreenManager screen_manager;
+    screen_manager.Init(window_server->display_manager());
     window_server->user_id_tracker()->AddUserId(kTestUserId1);
-    platform_screen.AddDisplay();
+    screen_manager.AddDisplay();
 
     AddWindowManager(window_server, kTestUserId1);
     window_server->user_id_tracker()->SetActiveUserId(kTestUserId1);

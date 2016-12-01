@@ -13,7 +13,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/message_loop/message_loop.h"
-#include "services/ui/display/platform_screen.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
@@ -41,14 +41,14 @@ namespace test {
 
 // Collection of utilities useful in creating mus tests.
 
-// Test PlatformDisplay instance that allows adding/modifying/removing displays.
+// Test ScreenManager instance that allows adding/modifying/removing displays.
 // Tracks display ids to perform some basic verification that no duplicates are
 // added and display was added before being modified or removed. Display ids
 // reset when Init() is called.
-class TestPlatformScreen : public display::PlatformScreen {
+class TestScreenManager : public display::ScreenManager {
  public:
-  TestPlatformScreen();
-  ~TestPlatformScreen() override;
+  TestScreenManager();
+  ~TestScreenManager() override;
 
   // Adds a new display with default metrics, generates a unique display id and
   // returns it. Calls OnDisplayAdded() on delegate.
@@ -64,18 +64,18 @@ class TestPlatformScreen : public display::PlatformScreen {
   // Calls OnDisplayRemoved() on delegate.
   void RemoveDisplay(int64_t id);
 
-  // display::PlatformScreen:
+  // display::ScreenManager:
   void AddInterfaces(service_manager::InterfaceRegistry* registry) override {}
-  void Init(display::PlatformScreenDelegate* delegate) override;
+  void Init(display::ScreenManagerDelegate* delegate) override;
   void RequestCloseDisplay(int64_t display_id) override {}
   int64_t GetPrimaryDisplayId() const override;
 
  private:
-  display::PlatformScreenDelegate* delegate_;
+  display::ScreenManagerDelegate* delegate_;
   int64_t primary_display_id_ = display::kInvalidDisplayId;
   std::set<int64_t> display_ids_;
 
-  DISALLOW_COPY_AND_ASSIGN(TestPlatformScreen);
+  DISALLOW_COPY_AND_ASSIGN(TestScreenManager);
 };
 
 // -----------------------------------------------------------------------------

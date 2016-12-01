@@ -48,8 +48,8 @@ class CursorTest : public testing::Test {
  protected:
   // testing::Test:
   void SetUp() override {
-    platform_screen_.Init(window_server()->display_manager());
-    platform_screen_.AddDisplay();
+    screen_manager_.Init(window_server()->display_manager());
+    screen_manager_.AddDisplay();
 
     // As a side effect, this allocates Displays.
     AddWindowManager(window_server(), kTestId1);
@@ -103,7 +103,7 @@ class CursorTest : public testing::Test {
 
  private:
   WindowServerTestHelper ws_test_helper_;
-  TestPlatformScreen platform_screen_;
+  TestScreenManager screen_manager_;
   DISALLOW_COPY_AND_ASSIGN(CursorTest);
 };
 

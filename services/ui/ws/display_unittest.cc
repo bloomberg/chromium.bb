@@ -103,19 +103,19 @@ class DisplayTest : public testing::Test {
   TestWindowServerDelegate* window_server_delegate() {
     return ws_test_helper_.window_server_delegate();
   }
-  TestPlatformScreen& platform_screen() { return platform_screen_; }
+  TestScreenManager& screen_manager() { return screen_manager_; }
 
  protected:
   // testing::Test:
   void SetUp() override {
-    platform_screen_.Init(window_server()->display_manager());
+    screen_manager_.Init(window_server()->display_manager());
     window_server()->user_id_tracker()->AddUserId(kTestId1);
     window_server()->user_id_tracker()->AddUserId(kTestId2);
   }
 
  private:
   WindowServerTestHelper ws_test_helper_;
-  TestPlatformScreen platform_screen_;
+  TestScreenManager screen_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayTest);
 };
@@ -123,7 +123,7 @@ class DisplayTest : public testing::Test {
 TEST_F(DisplayTest, CreateDisplay) {
   AddWindowManager(window_server(), kTestId1);
   const int64_t display_id =
-      platform_screen().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
+      screen_manager().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
 
   ASSERT_EQ(1u, display_manager()->displays().size());
   Display* display = display_manager()->GetDisplayById(display_id);
@@ -144,7 +144,7 @@ TEST_F(DisplayTest, CreateDisplay) {
 TEST_F(DisplayTest, CreateDisplayBeforeWM) {
   // Add one display, no WM exists yet.
   const int64_t display_id =
-      platform_screen().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
+      screen_manager().AddDisplay(MakeViewportMetrics(0, 0, 1024, 768, 1.0f));
   EXPECT_EQ(1u, display_manager()->displays().size());
 
   Display* display = display_manager()->GetDisplayById(display_id);
@@ -170,7 +170,7 @@ TEST_F(DisplayTest, CreateDisplayBeforeWM) {
 
 TEST_F(DisplayTest, CreateDisplayWithTwoWindowManagers) {
   AddWindowManager(window_server(), kTestId1);
-  const int64_t display_id = platform_screen().AddDisplay();
+  const int64_t display_id = screen_manager().AddDisplay();
   Display* display = display_manager()->GetDisplayById(display_id);
 
   // There should be only be one WM at this point.
@@ -201,7 +201,7 @@ TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
   EXPECT_EQ("0,0 512x384", metrics.bounds.ToString());
   EXPECT_EQ("1024x768", metrics.pixel_size.ToString());
 
-  const int64_t display_id = platform_screen().AddDisplay(metrics);
+  const int64_t display_id = screen_manager().AddDisplay(metrics);
   Display* display = display_manager()->GetDisplayById(display_id);
 
   // The root ServerWindow bounds should be in PP.
@@ -209,7 +209,7 @@ TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
 
   ViewportMetrics modified_metrics = metrics;
   modified_metrics.work_area.set_height(metrics.work_area.height() - 48);
-  platform_screen().ModifyDisplay(display_id, modified_metrics);
+  screen_manager().ModifyDisplay(display_id, modified_metrics);
 
   // The root ServerWindow should still be in PP after updating the work area.
   EXPECT_EQ("0,0 1024x768", display->root_window()->bounds().ToString());
@@ -218,7 +218,7 @@ TEST_F(DisplayTest, CreateDisplayWithDeviceScaleFactor) {
 TEST_F(DisplayTest, Destruction) {
   AddWindowManager(window_server(), kTestId1);
 
-  int64_t display_id = platform_screen().AddDisplay();
+  int64_t display_id = screen_manager().AddDisplay();
 
   // Add a second WM.
   AddWindowManager(window_server(), kTestId2);
@@ -240,14 +240,14 @@ TEST_F(DisplayTest, Destruction) {
   }
 
   EXPECT_FALSE(window_server_delegate()->got_on_no_more_displays());
-  platform_screen().RemoveDisplay(display_id);
+  screen_manager().RemoveDisplay(display_id);
   // There is still one tree left.
   EXPECT_EQ(1u, window_server()->num_trees());
   EXPECT_TRUE(window_server_delegate()->got_on_no_more_displays());
 }
 
 TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
-  const int64_t display_id = platform_screen().AddDisplay();
+  const int64_t display_id = screen_manager().AddDisplay();
 
   AddWindowManager(window_server(), kTestId1);
   AddWindowManager(window_server(), kTestId2);
@@ -290,7 +290,7 @@ TEST_F(DisplayTest, EventStateResetOnUserSwitch) {
 
 // Verifies capture fails when wm is inactive and succeeds when wm is active.
 TEST_F(DisplayTest, SetCaptureFromWindowManager) {
-  const int64_t display_id = platform_screen().AddDisplay();
+  const int64_t display_id = screen_manager().AddDisplay();
   AddWindowManager(window_server(), kTestId1);
   AddWindowManager(window_server(), kTestId2);
   window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
@@ -318,7 +318,7 @@ TEST_F(DisplayTest, SetCaptureFromWindowManager) {
 }
 
 TEST_F(DisplayTest, FocusFailsForInactiveUser) {
-  const int64_t display_id = platform_screen().AddDisplay();
+  const int64_t display_id = screen_manager().AddDisplay();
   AddWindowManager(window_server(), kTestId1);
   TestWindowTreeClient* window_tree_client1 =
       window_server_delegate()->last_client();
@@ -353,8 +353,8 @@ TEST_F(DisplayTest, FocusFailsForInactiveUser) {
 
 // Verifies a single tree is used for multiple displays.
 TEST_F(DisplayTest, MultipleDisplays) {
-  platform_screen().AddDisplay();
-  platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
+  screen_manager().AddDisplay();
   AddWindowManager(window_server(), kTestId1);
   window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
   ASSERT_EQ(1u, window_server_delegate()->bindings()->size());
@@ -382,8 +382,8 @@ TEST_F(DisplayTest, MultipleDisplays) {
 // Assertions around destroying a secondary display.
 TEST_F(DisplayTest, DestroyingDisplayDoesntDelete) {
   AddWindowManager(window_server(), kTestId1);
-  platform_screen().AddDisplay();
-  const int64_t secondary_display_id = platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
+  const int64_t secondary_display_id = screen_manager().AddDisplay();
   window_server()->user_id_tracker()->SetActiveUserId(kTestId1);
   ASSERT_EQ(1u, window_server_delegate()->bindings()->size());
   WindowTree* tree = (*window_server_delegate()->bindings())[0]->tree();
@@ -404,7 +404,7 @@ TEST_F(DisplayTest, DestroyingDisplayDoesntDelete) {
   TestWindowManager* test_window_manager =
       window_server_delegate()->last_binding()->window_manager();
   EXPECT_FALSE(test_window_manager->got_display_removed());
-  platform_screen().RemoveDisplay(secondary_display_id);
+  screen_manager().RemoveDisplay(secondary_display_id);
 
   // Destroying the display should result in the following:
   // . The WindowManager should be told it was removed with the right id.

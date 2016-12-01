@@ -24,7 +24,7 @@
 #include "services/tracing/public/cpp/provider.h"
 #include "services/ui/clipboard/clipboard_impl.h"
 #include "services/ui/common/switches.h"
-#include "services/ui/display/platform_screen.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/ime/ime_registrar_impl.h"
 #include "services/ui/ime/ime_server_impl.h"
 #include "services/ui/ws/accessibility_manager.h"
@@ -87,7 +87,7 @@ struct Service::UserState {
 
 Service::Service()
     : test_config_(false),
-      platform_screen_(display::PlatformScreen::Create()),
+      screen_manager_(display::ScreenManager::Create()),
       ime_registrar_(&ime_server_) {}
 
 Service::~Service() {
@@ -187,7 +187,7 @@ void Service::OnStart() {
   // so keep this line below both of those.
   input_device_server_.RegisterAsObserver();
 
-  // Gpu must be running before the PlatformScreen can be initialized.
+  // Gpu must be running before the ScreenManager can be initialized.
   window_server_.reset(new ws::WindowServer(this));
 
   // DeviceDataManager must be initialized before TouchController. On non-Linux
@@ -220,7 +220,7 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
   if (input_device_server_.IsRegisteredAsObserver())
     input_device_server_.AddInterface(registry);
 
-  platform_screen_->AddInterfaces(registry);
+  screen_manager_->AddInterfaces(registry);
 
 #if defined(USE_OZONE)
   ui::OzonePlatform::GetInstance()->AddInterfaces(registry);
@@ -230,7 +230,7 @@ bool Service::OnConnect(const service_manager::ServiceInfo& remote_info,
 }
 
 void Service::StartDisplayInit() {
-  platform_screen_->Init(window_server_->display_manager());
+  screen_manager_->Init(window_server_->display_manager());
 }
 
 void Service::OnFirstDisplayReady() {

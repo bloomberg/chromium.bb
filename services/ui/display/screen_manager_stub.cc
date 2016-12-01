@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/platform_screen_stub.h"
+#include "services/ui/display/screen_manager_stub.h"
 
 #include <memory>
 
@@ -39,40 +39,39 @@ ViewportMetrics DefaultViewportMetrics() {
 }  // namespace
 
 // static
-std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::MakeUnique<PlatformScreenStub>();
+std::unique_ptr<ScreenManager> ScreenManager::Create() {
+  return base::MakeUnique<ScreenManagerStub>();
 }
 
-PlatformScreenStub::PlatformScreenStub()
-    : weak_ptr_factory_(this) {}
+ScreenManagerStub::ScreenManagerStub() : weak_ptr_factory_(this) {}
 
-PlatformScreenStub::~PlatformScreenStub() {}
+ScreenManagerStub::~ScreenManagerStub() {}
 
-void PlatformScreenStub::FixedSizeScreenConfiguration() {
+void ScreenManagerStub::FixedSizeScreenConfiguration() {
   delegate_->OnDisplayAdded(display_id_, display_metrics_);
 }
 
-void PlatformScreenStub::AddInterfaces(
+void ScreenManagerStub::AddInterfaces(
     service_manager::InterfaceRegistry* registry) {}
 
-void PlatformScreenStub::Init(PlatformScreenDelegate* delegate) {
+void ScreenManagerStub::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
   display_metrics_ = DefaultViewportMetrics();
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, base::Bind(&PlatformScreenStub::FixedSizeScreenConfiguration,
+      FROM_HERE, base::Bind(&ScreenManagerStub::FixedSizeScreenConfiguration,
                             weak_ptr_factory_.GetWeakPtr()));
 }
 
-void PlatformScreenStub::RequestCloseDisplay(int64_t display_id) {
+void ScreenManagerStub::RequestCloseDisplay(int64_t display_id) {
   if (display_id == display_id_) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(
-        FROM_HERE, base::Bind(&PlatformScreenDelegate::OnDisplayRemoved,
+        FROM_HERE, base::Bind(&ScreenManagerDelegate::OnDisplayRemoved,
                               base::Unretained(delegate_), display_id));
   }
 }
 
-int64_t PlatformScreenStub::GetPrimaryDisplayId() const {
+int64_t ScreenManagerStub::GetPrimaryDisplayId() const {
   return display_id_;
 }
 

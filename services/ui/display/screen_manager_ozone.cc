@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/display/platform_screen_ozone.h"
+#include "services/ui/display/screen_manager_ozone.h"
 
 #include <memory>
 #include <utility>
@@ -55,25 +55,25 @@ float FindDeviceScaleFactor(float dpi) {
 }  // namespace
 
 // static
-std::unique_ptr<PlatformScreen> PlatformScreen::Create() {
-  return base::MakeUnique<PlatformScreenOzone>();
+std::unique_ptr<ScreenManager> ScreenManager::Create() {
+  return base::MakeUnique<ScreenManagerOzone>();
 }
 
-PlatformScreenOzone::PlatformScreenOzone() {}
+ScreenManagerOzone::ScreenManagerOzone() {}
 
-PlatformScreenOzone::~PlatformScreenOzone() {
+ScreenManagerOzone::~ScreenManagerOzone() {
   // We are shutting down and don't want to make anymore display changes.
   fake_display_controller_ = nullptr;
   display_configurator_.RemoveObserver(this);
 }
 
-void PlatformScreenOzone::AddInterfaces(
+void ScreenManagerOzone::AddInterfaces(
     service_manager::InterfaceRegistry* registry) {
   registry->AddInterface<mojom::DisplayController>(this);
   registry->AddInterface<mojom::TestDisplayController>(this);
 }
 
-void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
+void ScreenManagerOzone::Init(ScreenManagerDelegate* delegate) {
   DCHECK(delegate);
   delegate_ = delegate;
 
@@ -96,24 +96,24 @@ void PlatformScreenOzone::Init(PlatformScreenDelegate* delegate) {
   display_configurator_.ForceInitialConfigure(kChromeOsBootColor);
 }
 
-void PlatformScreenOzone::RequestCloseDisplay(int64_t display_id) {
+void ScreenManagerOzone::RequestCloseDisplay(int64_t display_id) {
   if (!fake_display_controller_ || wait_for_display_config_update_)
     return;
 
   CachedDisplayIterator iter = GetCachedDisplayIterator(display_id);
   if (iter != cached_displays_.end()) {
-    // Tell the NDD to remove the display. PlatformScreen will get an update
+    // Tell the NDD to remove the display. ScreenManager will get an update
     // that the display configuration has changed and the display will be gone.
     wait_for_display_config_update_ =
         fake_display_controller_->RemoveDisplay(iter->id);
   }
 }
 
-int64_t PlatformScreenOzone::GetPrimaryDisplayId() const {
+int64_t ScreenManagerOzone::GetPrimaryDisplayId() const {
   return primary_display_id_;
 }
 
-void PlatformScreenOzone::ToggleAddRemoveDisplay() {
+void ScreenManagerOzone::ToggleAddRemoveDisplay() {
   if (!fake_display_controller_ || wait_for_display_config_update_)
     return;
 
@@ -129,7 +129,7 @@ void PlatformScreenOzone::ToggleAddRemoveDisplay() {
   }
 }
 
-void PlatformScreenOzone::ToggleDisplayResolution() {
+void ScreenManagerOzone::ToggleDisplayResolution() {
   DisplayInfo& display = cached_displays_[0];
 
   // Toggle the display size to use.
@@ -147,7 +147,7 @@ void PlatformScreenOzone::ToggleDisplayResolution() {
   display_configurator_.OnConfigurationChanged();
 }
 
-void PlatformScreenOzone::SwapPrimaryDisplay() {
+void ScreenManagerOzone::SwapPrimaryDisplay() {
   const size_t num_displays = cached_displays_.size();
   if (num_displays <= 1)
     return;
@@ -171,9 +171,9 @@ void PlatformScreenOzone::SwapPrimaryDisplay() {
   delegate_->OnPrimaryDisplayChanged(primary_display_id_);
 }
 
-void PlatformScreenOzone::SetDisplayWorkArea(int64_t display_id,
-                                             const gfx::Size& size,
-                                             const gfx::Insets& insets) {
+void ScreenManagerOzone::SetDisplayWorkArea(int64_t display_id,
+                                            const gfx::Size& size,
+                                            const gfx::Insets& insets) {
   CachedDisplayIterator iter = GetCachedDisplayIterator(display_id);
   if (iter == cached_displays_.end()) {
     NOTREACHED() << display_id;
@@ -194,12 +194,12 @@ void PlatformScreenOzone::SetDisplayWorkArea(int64_t display_id,
   }
 }
 
-PlatformScreenOzone::DisplayInfo::DisplayInfo() = default;
-PlatformScreenOzone::DisplayInfo::DisplayInfo(const DisplayInfo& other) =
+ScreenManagerOzone::DisplayInfo::DisplayInfo() = default;
+ScreenManagerOzone::DisplayInfo::DisplayInfo(const DisplayInfo& other) =
     default;
-PlatformScreenOzone::DisplayInfo::~DisplayInfo() = default;
+ScreenManagerOzone::DisplayInfo::~DisplayInfo() = default;
 
-void PlatformScreenOzone::ProcessRemovedDisplays(
+void ScreenManagerOzone::ProcessRemovedDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   std::vector<int64_t> current_ids;
   for (ui::DisplaySnapshot* snapshot : snapshots)
@@ -216,7 +216,7 @@ void PlatformScreenOzone::ProcessRemovedDisplays(
   }
 }
 
-void PlatformScreenOzone::ProcessModifiedDisplays(
+void ScreenManagerOzone::ProcessModifiedDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   for (ui::DisplaySnapshot* snapshot : snapshots) {
     auto iter = GetCachedDisplayIterator(snapshot->display_id());
@@ -234,7 +234,7 @@ void PlatformScreenOzone::ProcessModifiedDisplays(
   }
 }
 
-void PlatformScreenOzone::UpdateCachedDisplays() {
+void ScreenManagerOzone::UpdateCachedDisplays() {
   // Walk through cached displays after processing the snapshots to find any
   // removed or modified displays. This ensures that we only send one update per
   // display to the delegate.
@@ -264,7 +264,7 @@ void PlatformScreenOzone::UpdateCachedDisplays() {
   }
 }
 
-void PlatformScreenOzone::AddNewDisplays(
+void ScreenManagerOzone::AddNewDisplays(
     const ui::DisplayConfigurator::DisplayStateList& snapshots) {
   for (ui::DisplaySnapshot* snapshot : snapshots) {
     const int64_t id = snapshot->display_id();
@@ -298,15 +298,15 @@ void PlatformScreenOzone::AddNewDisplays(
   }
 }
 
-PlatformScreenOzone::CachedDisplayIterator
-PlatformScreenOzone::GetCachedDisplayIterator(int64_t display_id) {
+ScreenManagerOzone::CachedDisplayIterator
+ScreenManagerOzone::GetCachedDisplayIterator(int64_t display_id) {
   return std::find_if(cached_displays_.begin(), cached_displays_.end(),
                       [display_id](const DisplayInfo& display_info) {
                         return display_info.id == display_id;
                       });
 }
 
-ViewportMetrics PlatformScreenOzone::MetricsFromSnapshot(
+ViewportMetrics ScreenManagerOzone::MetricsFromSnapshot(
     const ui::DisplaySnapshot& snapshot,
     const gfx::Point& origin) {
   const ui::DisplayMode* current_mode = snapshot.current_mode();
@@ -325,7 +325,7 @@ ViewportMetrics PlatformScreenOzone::MetricsFromSnapshot(
   return metrics;
 }
 
-void PlatformScreenOzone::OnDisplayModeChanged(
+void ScreenManagerOzone::OnDisplayModeChanged(
     const ui::DisplayConfigurator::DisplayStateList& displays) {
   ProcessRemovedDisplays(displays);
   ProcessModifiedDisplays(displays);
@@ -348,28 +348,28 @@ void PlatformScreenOzone::OnDisplayModeChanged(
   wait_for_display_config_update_ = false;
 }
 
-void PlatformScreenOzone::OnDisplayModeChangeFailed(
+void ScreenManagerOzone::OnDisplayModeChangeFailed(
     const ui::DisplayConfigurator::DisplayStateList& displays,
     ui::MultipleDisplayState failed_new_state) {
   LOG(ERROR) << "OnDisplayModeChangeFailed from DisplayConfigurator";
   wait_for_display_config_update_ = false;
 }
 
-void PlatformScreenOzone::Create(
+void ScreenManagerOzone::Create(
     const service_manager::Identity& remote_identity,
     mojom::DisplayControllerRequest request) {
   controller_bindings_.AddBinding(this, std::move(request));
 }
 
-ui::MultipleDisplayState PlatformScreenOzone::GetStateForDisplayIds(
+ui::MultipleDisplayState ScreenManagerOzone::GetStateForDisplayIds(
     const ui::DisplayConfigurator::DisplayStateList& display_states) const {
   return (display_states.size() == 1
               ? ui::MULTIPLE_DISPLAY_STATE_SINGLE
               : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED);
 }
 
-bool PlatformScreenOzone::GetResolutionForDisplayId(int64_t display_id,
-                                                    gfx::Size* size) const {
+bool ScreenManagerOzone::GetResolutionForDisplayId(int64_t display_id,
+                                                   gfx::Size* size) const {
   for (const DisplayInfo& display : cached_displays_) {
     if (display.id == display_id) {
       *size = display.requested_size;
@@ -380,7 +380,7 @@ bool PlatformScreenOzone::GetResolutionForDisplayId(int64_t display_id,
   return false;
 }
 
-void PlatformScreenOzone::Create(
+void ScreenManagerOzone::Create(
     const service_manager::Identity& remote_identity,
     mojom::TestDisplayControllerRequest request) {
   test_bindings_.AddBinding(this, std::move(request));

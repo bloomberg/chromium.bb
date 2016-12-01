@@ -5,7 +5,7 @@
 #include "services/ui/ws/platform_display_default.h"
 
 #include "gpu/ipc/client/gpu_channel_host.h"
-#include "services/ui/display/platform_screen.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/platform_display_init_params.h"
 #include "services/ui/ws/server_window.h"
 #include "ui/base/cursor/cursor_loader.h"
@@ -212,7 +212,7 @@ void PlatformDisplayDefault::DispatchEvent(ui::Event* event) {
 }
 
 void PlatformDisplayDefault::OnCloseRequest() {
-  display::PlatformScreen::GetInstance()->RequestCloseDisplay(GetId());
+  display::ScreenManager::GetInstance()->RequestCloseDisplay(GetId());
 }
 
 void PlatformDisplayDefault::OnClosed() {}

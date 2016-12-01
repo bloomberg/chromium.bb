@@ -17,7 +17,7 @@
 #include "services/ui/common/task_runner_test_base.h"
 #include "services/ui/common/types.h"
 #include "services/ui/common/util.h"
-#include "services/ui/display/platform_screen.h"
+#include "services/ui/display/screen_manager.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/ids.h"
 #include "services/ui/ws/server_window.h"
@@ -110,22 +110,22 @@ class UserDisplayManagerTest : public TaskRunnerTestBase {
     return ws_test_helper_.window_server_delegate();
   }
 
-  TestPlatformScreen& platform_screen() { return platform_screen_; }
+  TestScreenManager& screen_manager() { return screen_manager_; }
 
  private:
   // testing::Test:
   void SetUp() override {
     TaskRunnerTestBase::SetUp();
-    platform_screen_.Init(window_server()->display_manager());
+    screen_manager_.Init(window_server()->display_manager());
   }
 
   WindowServerTestHelper ws_test_helper_;
-  TestPlatformScreen platform_screen_;
+  TestScreenManager screen_manager_;
   DISALLOW_COPY_AND_ASSIGN(UserDisplayManagerTest);
 };
 
 TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
-  platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
@@ -153,7 +153,7 @@ TEST_F(UserDisplayManagerTest, OnlyNotifyWhenFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
-  platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
@@ -175,7 +175,7 @@ TEST_F(UserDisplayManagerTest, AddObserverAfterFrameDecorationsSet) {
 }
 
 TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
-  platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
@@ -195,7 +195,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Add another display.
-  const int64_t second_display_id = platform_screen().AddDisplay();
+  const int64_t second_display_id = screen_manager().AddDisplay();
   RunUntilIdle();
 
   // Observer should be notified immediately as frame decorations were set.
@@ -203,7 +203,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
             display_manager_observer1.GetAndClearObserverCalls());
 
   // Remove the display and verify observer is notified.
-  platform_screen().RemoveDisplay(second_display_id);
+  screen_manager().RemoveDisplay(second_display_id);
   RunUntilIdle();
 
   EXPECT_EQ("OnDisplayRemoved 2",
@@ -211,7 +211,7 @@ TEST_F(UserDisplayManagerTest, AddRemoveDisplay) {
 }
 
 TEST_F(UserDisplayManagerTest, NegativeCoordinates) {
-  platform_screen().AddDisplay();
+  screen_manager().AddDisplay();
 
   TestDisplayManagerObserver display_manager_observer1;
   DisplayManager* display_manager = window_server()->display_manager();
