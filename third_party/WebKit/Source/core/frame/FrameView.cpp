@@ -1462,7 +1462,7 @@ void FrameView::addBackgroundAttachmentFixedObject(LayoutObject* object) {
         this);
 
   // Ensure main thread scrolling reasons are recomputed.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     setNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
     object->setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
@@ -1478,7 +1478,7 @@ void FrameView::removeBackgroundAttachmentFixedObject(LayoutObject* object) {
         this);
 
   // Ensure main thread scrolling reasons are recomputed.
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     setNeedsPaintPropertyUpdate();
     // The object's scroll properties are not affected by its own background.
     object->setAncestorsNeedPaintPropertyUpdateForMainThreadScrolling();
@@ -2718,11 +2718,12 @@ void FrameView::updateAllLifecyclePhases() {
 
 // TODO(chrishtr): add a scrolling update lifecycle phase.
 void FrameView::updateLifecycleToCompositingCleanPlusScrolling() {
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled())
+  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
     updateAllLifecyclePhasesExceptPaint();
-  else
+  } else {
     frame().localFrameRoot()->view()->updateLifecyclePhasesInternal(
         DocumentLifecycle::CompositingClean);
+  }
 }
 
 void FrameView::updateAllLifecyclePhasesExceptPaint() {
@@ -3005,7 +3006,7 @@ void FrameView::synchronizedPaintRecursively(GraphicsLayer* graphicsLayer) {
 void FrameView::pushPaintArtifactToCompositor() {
   TRACE_EVENT0("blink", "FrameView::pushPaintArtifactToCompositor");
 
-  ASSERT(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(RuntimeEnabledFeatures::slimmingPaintV2Enabled());
 
   Page* page = frame().page();
   if (!page)
@@ -3116,7 +3117,7 @@ void FrameView::invalidateTreeIfNeededRecursive() {
 }
 
 void FrameView::invalidateTreeIfNeededRecursiveInternal() {
-  DCHECK(!RuntimeEnabledFeatures::slimmingPaintV2Enabled());
+  DCHECK(!RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled());
   CHECK(layoutView());
 
   // We need to stop recursing here since a child frame view might not be
@@ -3562,7 +3563,7 @@ void FrameView::frameRectsChanged() {
     setLayoutSizeInternal(frameRect().size());
 
   setNeedsUpdateViewportIntersection();
-  if (RuntimeEnabledFeatures::slimmingPaintV2Enabled()) {
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled()) {
     // The overflow clip property depends on the frame rect.
     setNeedsPaintPropertyUpdate();
   }
