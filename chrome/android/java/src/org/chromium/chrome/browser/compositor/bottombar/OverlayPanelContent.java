@@ -252,7 +252,6 @@ public class OverlayPanelContent {
 
                     @Override
                     public View acquireView() {
-                        assert false : "Shold not reach here";
                         return null;
                     }
 
