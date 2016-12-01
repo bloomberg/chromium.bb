@@ -2818,7 +2818,40 @@ static char *drmGetMinorNameForFD(int fd, int type)
 out_close_dir:
     closedir(sysdir);
 #else
-#warning "Missing implementation of drmGetMinorNameForFD"
+    struct stat sbuf;
+    char buf[PATH_MAX + 1];
+    const char *dev_name;
+    unsigned int maj, min;
+    int n;
+
+    if (fstat(fd, &sbuf))
+        return NULL;
+
+    maj = major(sbuf.st_rdev);
+    min = minor(sbuf.st_rdev);
+
+    if (maj != DRM_MAJOR || !S_ISCHR(sbuf.st_mode))
+        return NULL;
+
+    switch (type) {
+    case DRM_NODE_PRIMARY:
+        dev_name = DRM_DEV_NAME;
+        break;
+    case DRM_NODE_CONTROL:
+        dev_name = DRM_CONTROL_DEV_NAME;
+        break;
+    case DRM_NODE_RENDER:
+        dev_name = DRM_RENDER_DEV_NAME;
+        break;
+    default:
+        return NULL;
+    };
+
+    n = snprintf(buf, sizeof(buf), dev_name, DRM_DIR_NAME, min);
+    if (n == -1 || n >= sizeof(buf))
+        return NULL;
+
+    return strdup(buf);
 #endif
     return NULL;
 }
