@@ -11,10 +11,8 @@
 namespace chromecast {
 namespace shell {
 
-CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session,
-                                   content::WebContents* web_contents)
+CastMediaBlocker::CastMediaBlocker(content::MediaSession* media_session)
     : content::MediaSessionObserver(media_session),
-      content::WebContentsObserver(web_contents),
       blocked_(false),
       paused_by_user_(true),
       suspended_(true),

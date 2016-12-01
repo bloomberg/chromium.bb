@@ -44,7 +44,7 @@ class CastMediaBlockerBrowserTest : public CastBrowserTest {
     WaitForLoadStop(web_contents_);
 
     blocker_ = base::MakeUnique<CastMediaBlocker>(
-        content::MediaSession::Get(web_contents_), web_contents_);
+        content::MediaSession::Get(web_contents_));
   }
 
   void BlockAndTestPlayerState(const std::string& media_type, bool blocked) {

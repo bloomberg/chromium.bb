@@ -14,14 +14,9 @@ namespace shell {
 
 // This class implements a blocking mode for web applications and is used in
 // Chromecast internal code. Media is unblocked by default.
-//
-// TODO(derekjchow): Remove the inheritance from WebContentsObserver.
-// See http://crbug.com/660331
-class CastMediaBlocker : public content::MediaSessionObserver,
-                         content::WebContentsObserver {
+class CastMediaBlocker : public content::MediaSessionObserver {
  public:
-  CastMediaBlocker(content::MediaSession* media_session,
-                   content::WebContents* web_contents);
+  explicit CastMediaBlocker(content::MediaSession* media_session);
   ~CastMediaBlocker() override;
 
   // Sets if the web contents is allowed to play media or not. If media is
