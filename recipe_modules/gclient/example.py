@@ -42,6 +42,7 @@ TEST_CONFIGS = [
   'master_deps',
   'mojo',
   'nacl',
+  'ndk_next',
   'pdfium',
   'perf',
   'recipes_py',

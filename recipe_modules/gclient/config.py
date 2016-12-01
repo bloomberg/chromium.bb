@@ -591,3 +591,8 @@ def chromedriver(c):
   c.solutions[0].custom_deps[
       'src/chrome/test/chromedriver/third_party/java_tests'] = (
           ChromiumGitURL(c, 'chromium', 'deps', 'webdriver'))
+
+@config_ctx()
+def ndk_next(c):
+  c.revisions['src/third_party/android_tools/ndk'] = 'origin/next'
+
