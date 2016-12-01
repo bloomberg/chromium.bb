@@ -151,7 +151,6 @@ class TestDriver:
       'chrome.benchmarking.clearPredictorCache();chrome.benchmarking.'
       'clearHostResolverCache();}')
 
-  # TODO(robertogden) use a smart page instead
   def SetURL(self, url):
     """
     Sets the URL that the browser will navigate to during the test.
