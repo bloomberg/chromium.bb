@@ -50,7 +50,6 @@ Polymer({
           queryingDisabled: false,
           _range: HistoryRange.ALL_TIME,
           searchTerm: '',
-          // TODO(calamity): Make history toolbar buttons change the offset
           groupedOffset: 0,
 
           set range(val) { this._range = Number(val); },

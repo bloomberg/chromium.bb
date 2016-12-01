@@ -24,6 +24,7 @@ Polymer({
 
   observers: [
     'searchTermChanged_(queryState.searchTerm)',
+    'groupedOffsetChanged_(queryState.groupedOffset)',
   ],
 
   listeners: {
@@ -35,7 +36,7 @@ Polymer({
   /**
    * @param {HistoryQuery} info An object containing information about the
    *    query.
-   * @param {!Array<HistoryEntry>} results A list of results.
+   * @param {!Array<!HistoryEntry>} results A list of results.
    */
   historyResult: function(info, results) {
     this.initializeResults_(info, results);
@@ -152,6 +153,15 @@ Polymer({
     if (oldRange == undefined)
       return;
 
+    this.set('queryState.groupedOffset', 0);
+
+    // Reset the results on range change to prevent stale results from being
+    // processed into the incoming range's UI.
+    if (this.queryResult.info) {
+      this.set('queryResult.results', []);
+      this.historyResult(this.queryResult.info, []);
+    }
+
     this.queryHistory(false);
     this.fire('history-view-changed');
   },
@@ -162,6 +172,11 @@ Polymer({
     // TODO(tsergeant): Ignore incremental searches in this metric.
     if (this.queryState.searchTerm)
       md_history.BrowserService.getInstance().recordAction('Search');
+  },
+
+  /** @private */
+  groupedOffsetChanged_: function() {
+    this.queryHistory(false);
   },
 
   /** @private */

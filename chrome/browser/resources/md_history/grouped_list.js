@@ -82,6 +82,7 @@ Polymer({
     return domains;
   },
 
+  /** @private */
   updateGroupedHistoryData_: function() {
     if (this.historyData.length == 0) {
       this.groupedHistoryData_ = [];

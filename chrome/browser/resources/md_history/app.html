@@ -96,17 +96,20 @@
         query-state="{{queryState_}}">
     </history-router>
     <history-toolbar id="toolbar"
+        grouped-offset="{{queryState_.groupedOffset}}"
+        grouped-range="{{queryState_.range}}"
+        has-drawer="[[hasDrawer_]]"
+        is-grouped-mode="{{grouped_}}"
+        query-end-time="[[queryResult_.info.queryEndTime]]"
+        has-more-results="[[!queryResult_.info.finished]]"
+        query-start-time="[[queryResult_.info.queryStartTime]]"
+        querying="[[queryState_.querying]]"
+        search-term="{{queryState_.searchTerm}}"
+        show-menu-promo="[[showMenuPromo_]]"
+        show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]"
         spinner-active="[[shouldShowSpinner_(queryState_.querying,
                                              queryState_.incremental,
-                                             queryState_.searchTerm)]]"
-        is-grouped-mode="{{grouped_}}"
-        grouped-range="{{queryState_.range}}"
-        search-term="{{queryState_.searchTerm}}"
-        query-start-time="[[queryResult_.info.queryStartTime]]"
-        query-end-time="[[queryResult_.info.queryEndTime]]"
-        has-drawer="[[hasDrawer_]]"
-        show-sync-notice="[[showSyncNotice_(hasSyncedResults, selectedPage_)]]"
-        show-menu-promo="[[showMenuPromo_]]">
+                                             queryState_.searchTerm)]]">
     </history-toolbar>
 
     <div id="main-container">

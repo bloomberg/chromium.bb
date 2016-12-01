@@ -234,14 +234,23 @@
           <span id="grouped-date">
             {{getHistoryInterval_(queryStartTime, queryEndTime)}}
           </span>
-          <paper-icon-button icon="history:today" alt="$i18n{rangeToday}"
-              title="$i18n{rangeToday}"></paper-icon-button>
-          <paper-icon-button icon="history:chevron-left"
-              alt="$i18n{rangePrevious}" title="$i18n{rangePrevious}"
-              class="rtl-reversible"></paper-icon-button>
-          <paper-icon-button icon="cr:chevron-right"
-              alt="$i18n{rangeNext}" title="$i18n{rangeNext}"
-              class="rtl-reversible"></paper-icon-button>
+          <paper-icon-button id="today-button" icon="history:today"
+              alt="$i18n{rangeToday}"
+              title="$i18n{rangeToday}"
+              on-tap="onTodayTap_"
+              disabled="[[isToday_(groupedOffset)]]"></paper-icon-button>
+          <paper-icon-button id="prev-button" icon="history:chevron-left"
+              alt="$i18n{rangePrevious}"
+              title="$i18n{rangePrevious}"
+              class="rtl-reversible"
+              on-tap="onPrevTap_"
+              disabled="[[!hasMoreResults]]"></paper-icon-button>
+          <paper-icon-button id="next-button" icon="cr:chevron-right"
+              alt="$i18n{rangeNext}"
+              title="$i18n{rangeNext}"
+              class="rtl-reversible"
+              on-tap="onNextTap_"
+              disabled="[[isToday_(groupedOffset)]]"></paper-icon-button>
         </div>
       </div>
     </template>
