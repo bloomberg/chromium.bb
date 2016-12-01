@@ -4,7 +4,9 @@
 
 #include "chrome/browser/chromeos/login/users/affiliation.h"
 
+#include "base/command_line.h"
 #include "chrome/browser/chromeos/policy/device_local_account.h"
+#include "components/policy/core/common/policy_switches.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 
 namespace chromeos {
@@ -37,6 +39,14 @@ bool IsUserAffiliated(const AffiliationIDSet& user_affiliation_ids,
   }
 
   if (policy::IsDeviceLocalAccountUser(email, NULL)) {
+    return true;
+  }
+
+  // Not all test servers correctly support affiliation ids so far, so
+  // this is a work-around.
+  // TODO(antrim): remove this once all test servers support affiliation ids.
+  base::CommandLine* command_line = base::CommandLine::ForCurrentProcess();
+  if (command_line->HasSwitch(policy::switches::kUserAlwaysAffiliated)) {
     return true;
   }
 

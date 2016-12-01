@@ -19,5 +19,9 @@ const char kDisableComponentCloudPolicy[]   = "disable-component-cloud-policy";
 // produce verification signatures.
 const char kDisablePolicyKeyVerification[]  = "disable-policy-key-verification";
 
+// Always treat user as affiliated.
+// TODO(antrim): Remove once test servers correctly produce affiliation ids.
+const char kUserAlwaysAffiliated[]  = "user-always-affiliated";
+
 }  // namespace switches
 }  // namespace policy
