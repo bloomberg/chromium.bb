@@ -20,10 +20,6 @@ namespace content {
 class BrowserContext;
 }
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace chromecast {
 
 class CastService {

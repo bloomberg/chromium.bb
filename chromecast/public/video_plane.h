@@ -7,7 +7,6 @@
 
 namespace chromecast {
 struct RectF;
-struct Size;
 
 namespace media {
 

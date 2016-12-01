@@ -15,7 +15,6 @@
 
 namespace base {
 class SingleThreadTaskRunner;
-class Thread;
 }  // namespace base
 
 namespace chromecast {

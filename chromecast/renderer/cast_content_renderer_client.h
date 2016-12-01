@@ -11,10 +11,6 @@
 #include "build/build_config.h"
 #include "content/public/renderer/content_renderer_client.h"
 
-namespace IPC {
-class MessageFilter;
-}
-
 namespace network_hints {
 class PrescientNetworkingDispatcher;
 }  // namespace network_hints
@@ -25,8 +21,6 @@ class MediaCapsObserverImpl;
 }
 
 namespace shell {
-class CastGinRunner;
-class CastRenderThreadObserver;
 
 void ExecuteJavaScript(content::RenderFrame* render_frame, int resourceId);
 

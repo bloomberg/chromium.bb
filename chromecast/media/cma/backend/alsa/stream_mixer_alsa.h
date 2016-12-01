@@ -28,7 +28,6 @@ class AudioBus;
 namespace chromecast {
 namespace media {
 class AlsaWrapper;
-class StreamMixerAlsaInputImpl;
 
 // Mixer implementation. The mixer has one or more input queues; these can be
 // added/removed at any time. When an input source pushes frames to an input

@@ -10,8 +10,6 @@
 
 namespace chromecast {
 
-class TaskRunnerImpl;
-
 namespace media {
 
 class CastAudioMixer;

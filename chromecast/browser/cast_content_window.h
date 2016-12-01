@@ -20,10 +20,6 @@ class BrowserContext;
 class WebContents;
 }
 
-namespace gfx {
-class Size;
-}
-
 namespace chromecast {
 namespace shell {
 

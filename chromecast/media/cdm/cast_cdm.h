@@ -24,10 +24,6 @@
 #include "media/base/player_tracker.h"
 #include "media/cdm/json_web_key.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace media {
 class PlayerTrackerImpl;
 }

@@ -16,7 +16,6 @@ class PrefRegistrySimple;
 
 namespace content {
 class RenderProcessHost;
-class WebContents;
 }
 
 namespace metrics {

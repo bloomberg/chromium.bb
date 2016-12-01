@@ -11,8 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "base/observer_list_threadsafe.h"
 
-class GURL;
-
 namespace base {
 class SingleThreadTaskRunner;
 }

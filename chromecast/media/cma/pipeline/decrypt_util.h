@@ -8,10 +8,6 @@
 #include "base/callback.h"
 #include "base/memory/ref_counted.h"
 
-namespace crypto {
-class SymmetricKey;
-}
-
 namespace chromecast {
 namespace media {
 

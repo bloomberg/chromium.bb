@@ -16,7 +16,6 @@ struct Size;
 
 namespace media {
 class CastDecoderBuffer;
-class DecryptContext;
 
 // Interface for platform-specific output of media.
 // A new MediaPipelineBackend will be instantiated for each media player

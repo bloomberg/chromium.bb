@@ -20,7 +20,6 @@ namespace chromecast {
 namespace media {
 
 class CastAudioManager;
-class CastAudioOutputStream;
 
 // CastAudioMixer mixes multiple AudioOutputStreams and passes the mixed
 // stream down to a single AudioOutputStream to be rendered by the CMA backend.

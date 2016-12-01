@@ -16,10 +16,6 @@ namespace base {
 class SingleThreadTaskRunner;
 }  // namespace base
 
-namespace media {
-class MediaLog;
-}  // namespace media
-
 namespace chromecast {
 class TaskRunnerImpl;
 

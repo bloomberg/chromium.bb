@@ -11,8 +11,6 @@
 
 namespace chromecast {
 
-class NetworkChangeNotifierCast;
-
 class NetworkChangeNotifierFactoryCast
     : public net::NetworkChangeNotifierFactory {
  public:

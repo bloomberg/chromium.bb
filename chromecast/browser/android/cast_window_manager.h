@@ -12,10 +12,6 @@
 
 class CastWindowAndroid;
 
-namespace content {
-class BrowserContext;
-}
-
 namespace chromecast {
 namespace shell {
 

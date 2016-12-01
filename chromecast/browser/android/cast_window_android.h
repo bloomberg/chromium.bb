@@ -29,7 +29,6 @@ class GURL;
 
 namespace content {
 class BrowserContext;
-class SiteInstance;
 class WebContents;
 }  // namespace content
 

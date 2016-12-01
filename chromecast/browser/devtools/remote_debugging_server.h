@@ -15,8 +15,6 @@
 namespace chromecast {
 namespace shell {
 
-class CastDevToolsManagerDelegate;
-
 class RemoteDebuggingServer {
  public:
   explicit RemoteDebuggingServer(bool start_immediately);

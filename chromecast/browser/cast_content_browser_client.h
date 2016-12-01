@@ -21,10 +21,6 @@ namespace breakpad {
 class CrashHandlerHostLinux;
 }
 
-namespace media {
-class BrowserCdmFactory;
-}
-
 namespace metrics {
 class MetricsService;
 }
