@@ -161,9 +161,15 @@ enum BeaconType {
   }
   pendingStart_ = NO;
   started_ = NO;
+  if (onLostDetectionEnabled_ && [devices_ count]) {
+    [delegate_ scannerUpdatedDevices:self];
+  }
 }
 
 - (NSArray*)devices {
+  if (![self bluetoothEnabled]) {
+    return [NSArray array];
+  }
   return [devices_ sortedArrayUsingComparator:^(id obj1, id obj2) {
     PhysicalWebDevice* device1 = obj1;
     PhysicalWebDevice* device2 = obj2;
@@ -266,11 +272,6 @@ enum BeaconType {
 }
 
 - (void)reallyStop {
-  if (updateTimer_.get()) {
-    [updateTimer_ invalidate];
-    updateTimer_.reset();
-  }
-
   [centralManager_ stopScan];
 }
 
@@ -321,12 +322,19 @@ enum BeaconType {
   // For unknown reasons, when scanning for longer periods (on the order of
   // minutes), the scanner is less reliable at detecting all nearby URLs. As a
   // workaround, we restart the scanner each time we check for lost URLs.
-  NSArray* serviceUUIDs = @[
-    [CBUUID UUIDWithString:kUriBeaconServiceUUID],
-    [CBUUID UUIDWithString:kEddystoneBeaconServiceUUID]
-  ];
-  [centralManager_ stopScan];
-  [centralManager_ scanForPeripheralsWithServices:serviceUUIDs options:nil];
+  if (!pendingStart_) {
+    NSArray* serviceUUIDs = @[
+      [CBUUID UUIDWithString:kUriBeaconServiceUUID],
+      [CBUUID UUIDWithString:kEddystoneBeaconServiceUUID]
+    ];
+    [centralManager_ stopScan];
+    [centralManager_ scanForPeripheralsWithServices:serviceUUIDs options:nil];
+  }
+
+  if (updateTimer_.get() && pendingStart_ && [devices_ count] == 0) {
+    [updateTimer_ invalidate];
+    updateTimer_.reset();
+  }
 }
 
 #pragma mark -
@@ -339,7 +347,6 @@ enum BeaconType {
   } else {
     if (started_ && !pendingStart_) {
       pendingStart_ = YES;
-      [self reallyStop];
     }
   }
   [delegate_ scannerBluetoothStatusUpdated:self];
