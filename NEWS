@@ -54,6 +54,8 @@ complete.
   Dal Maso.
 - New table ~unicode-braille.utb~ that helps to back translate braille
   input to unicode braille output, thanks to Leonard de Ruijter.
+- Add a new Turkish braille table for grade 2 that should replace the
+  old ~tr.ctb~ table, thanks to Arend Arends.
 
 ** Backwards incompatible changes
 None
