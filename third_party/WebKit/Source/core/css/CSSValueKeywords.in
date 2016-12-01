@@ -246,6 +246,7 @@ bottom
 -webkit-baseline-middle
 //
 // text-align
+// The order of this enum must match the order found in CSSParserFastPaths::isValidKeywordPropertyAndValue().
 //
 -webkit-auto
 left
@@ -359,6 +360,7 @@ contents
 -webkit-inline-flex
 //
 // cursor
+// The order of this enum must match the order found in CSSPropertyParser::consumeCursor().
 //
 auto
 crosshair
