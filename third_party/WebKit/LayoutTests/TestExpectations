@@ -796,6 +796,8 @@ crbug.com/492664 imported/csswg-test/css-writing-modes-3/line-box-direction-vrl-
 crbug.com/637255 [ Win10 ] media/video-transformed.html [ Pass Failure ]
 crbug.com/637255 [ Win10 ] media/video-layer-crash.html [ Pass Failure ]
 
+crbug.com/670307 virtual/threaded/http/tests/worklet/animation-worklet-import.html [ Skip ]
+
 # These tests pass but images do not match because tests are stricter than the spec.
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-001.html [ Failure ]
 crbug.com/492664 imported/csswg-test/css-writing-modes-3/text-combine-upright-value-all-002.html [ Failure ]
