@@ -31,7 +31,6 @@ public interface ChromiumBaseInputConnection extends InputConnection {
         void onViewFocusChanged(boolean gainFocus);
         void onViewAttachedToWindow();
         void onViewDetachedFromWindow();
-        void destroy();
     }
 
     /**

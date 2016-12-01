@@ -134,8 +134,6 @@ public class ThreadedInputConnectionFactoryTest {
         mInputMethodManager = Mockito.mock(InputMethodManager.class);
 
         mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));
-        // Needed to access handler's looper even before we initialize handler.
-        mFactory.createHandler();
         mFactory.onWindowFocusChanged(true);
 
         when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE))
