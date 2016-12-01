@@ -139,8 +139,9 @@ void MediaStreamTrack::stopTrack(ExceptionState& exceptionState) {
 }
 
 MediaStreamTrack* MediaStreamTrack::clone(ExecutionContext* context) {
-  MediaStreamComponent* clonedComponent =
-      MediaStreamComponent::create(component()->source());
+  // TODO(pbos): Make sure m_readyState and m_stopped carries over on cloned
+  // tracks.
+  MediaStreamComponent* clonedComponent = component()->clone();
   MediaStreamTrack* clonedTrack =
       MediaStreamTrack::create(context, clonedComponent);
   MediaStreamCenter::instance().didCreateMediaStreamTrack(clonedComponent);

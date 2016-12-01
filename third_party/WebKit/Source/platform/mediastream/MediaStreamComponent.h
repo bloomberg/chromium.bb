@@ -66,6 +66,8 @@ class PLATFORM_EXPORT MediaStreamComponent final
   static MediaStreamComponent* create(MediaStreamSource*);
   static MediaStreamComponent* create(const String& id, MediaStreamSource*);
 
+  MediaStreamComponent* clone() const;
+
   // |m_trackData| may hold pointers to GC objects indirectly, and it may touch
   // eagerly finalized objects in destruction.
   // So this class runs pre-finalizer to finalize |m_trackData| promptly.
@@ -93,6 +95,10 @@ class PLATFORM_EXPORT MediaStreamComponent final
 
  private:
   MediaStreamComponent(const String& id, MediaStreamSource*);
+  MediaStreamComponent(const String& id,
+                       MediaStreamSource*,
+                       bool enabled,
+                       bool muted);
 
   // AudioSourceProviderImpl wraps a WebAudioSourceProvider::provideInput()
   // calls into chromium to get a rendered audio stream.

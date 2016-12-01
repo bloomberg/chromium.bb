@@ -50,9 +50,25 @@ MediaStreamComponent* MediaStreamComponent::create(const String& id,
 
 MediaStreamComponent::MediaStreamComponent(const String& id,
                                            MediaStreamSource* source)
-    : m_source(source), m_id(id), m_enabled(true), m_muted(false) {
+    : MediaStreamComponent(id, source, true, false) {}
+
+MediaStreamComponent::MediaStreamComponent(const String& id,
+                                           MediaStreamSource* source,
+                                           bool enabled,
+                                           bool muted)
+    : m_source(source), m_id(id), m_enabled(enabled), m_muted(muted) {
   DCHECK(m_id.length());
   ThreadState::current()->registerPreFinalizer(this);
+}
+
+MediaStreamComponent* MediaStreamComponent::clone() const {
+  MediaStreamComponent* clonedComponent = new MediaStreamComponent(
+      createCanonicalUUIDString(), source(), m_enabled, m_muted);
+  // TODO(pbos): Clone |m_trackData| as well.
+  // TODO(pbos): Move properties from MediaStreamTrack here so that they are
+  // also cloned. Part of crbug:669212 since stopped is currently not carried
+  // over, nor is ended().
+  return clonedComponent;
 }
 
 void MediaStreamComponent::dispose() {

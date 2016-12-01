@@ -1,0 +1,39 @@
+<!DOCTYPE HTML>
+<script src="../../resources/testharness.js"></script>
+<script src="../../resources/testharnessreport.js"></script>
+<canvas id="canvas"/>
+<script>
+
+createTrack = function() {
+  ac = new AudioContext();
+  var osc = ac.createOscillator();
+  var dest = ac.createMediaStreamDestination();
+  osc.connect(dest);
+  return dest.stream.getAudioTracks()[0];
+}
+
+test(t => {
+  track = createTrack();
+  var original_id = track.id;
+  track_clone = track.clone();
+  assert_not_equals(track.id, track_clone.id);
+}, "Cloned MediaStreamTracks have new IDs");
+
+test(t => {
+  track = createTrack();
+  assert_true(track.enabled);
+  track.enabled = false;
+  assert_false(track.enabled);
+
+  track_clone = track.clone();
+  assert_false(track_clone.enabled,
+               "Clones of disabled tracks should still be disabled.");
+  track_clone.enabled = true;
+  assert_not_equals(track.enabled, track_clone.enabled,
+                    "Tracks enabled status should not be linked.");
+}, "Clones of disabled MediaStreamTracks are still disabled.");
+
+// TODO(pbos): Add tests that make sure muted and stopped properties are
+// carried over. Part of crbug:669212.
+
+</script>
