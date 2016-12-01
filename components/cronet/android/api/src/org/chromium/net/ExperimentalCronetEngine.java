@@ -170,6 +170,17 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
             return this;
         }
 
+        /**
+         * Sets experimental options to be used in Cronet.
+         *
+         * @param options JSON formatted experimental options.
+         * @return the builder to facilitate chaining.
+         */
+        public Builder setExperimentalOptions(String options) {
+            mBuilderDelegate.setExperimentalOptions(options);
+            return this;
+        }
+
         @VisibleForTesting
         ICronetEngineBuilder getBuilderDelegate() {
             return mBuilderDelegate;
@@ -236,12 +247,6 @@ public abstract class ExperimentalCronetEngine extends CronetEngine {
         @Override
         public Builder enablePublicKeyPinningBypassForLocalTrustAnchors(boolean value) {
             super.enablePublicKeyPinningBypassForLocalTrustAnchors(value);
-            return this;
-        }
-
-        @Override
-        public Builder setExperimentalOptions(String options) {
-            super.setExperimentalOptions(options);
             return this;
         }
 

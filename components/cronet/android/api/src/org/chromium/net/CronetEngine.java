@@ -276,17 +276,6 @@ public abstract class CronetEngine {
         }
 
         /**
-         * Sets experimental options to be used in Cronet.
-         *
-         * @param options JSON formatted experimental options.
-         * @return the builder to facilitate chaining.
-         */
-        public Builder setExperimentalOptions(String options) {
-            mBuilderDelegate.setExperimentalOptions(options);
-            return this;
-        }
-
-        /**
          * Build a {@link CronetEngine} using this builder's configuration.
          * @return constructed {@link CronetEngine}.
          */
