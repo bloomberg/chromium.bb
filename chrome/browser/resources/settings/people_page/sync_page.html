@@ -148,10 +148,13 @@
         </paper-checkbox>
       </div>
 
-      <div class="settings-box two-line single-column" actionable
+      <div class="settings-box two-line" actionable
           on-tap="onManageSyncedDataTap_">
-        <div>$i18n{manageSyncedDataTitle}</div>
-        <div class="secondary">$i18n{manageSyncedDataDescription}</div>
+        <div class="start">
+          $i18n{manageSyncedDataTitle}
+          <div class="secondary">$i18n{manageSyncedDataDescription}</div>
+        </div>
+        <button class="icon-external" is="paper-icon-button-light"></button>
       </div>
 
       <div class="settings-box two-line single-column">
