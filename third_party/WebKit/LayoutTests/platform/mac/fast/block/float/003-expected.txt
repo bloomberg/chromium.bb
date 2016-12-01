@@ -5,11 +5,8 @@ layer at (0,0) size 800x600
     LayoutBlockFlow {BODY} at (8,8) size 784x576
       LayoutBlockFlow (floating) {DIV} at (664,0) size 120x200 [bgcolor=#FF0000]
       LayoutBlockFlow {OL} at (0,0) size 784x0
-      LayoutBlockFlow {P} at (0,0) size 784x108
-        LayoutText {#text} at (0,0) size 663x108
-          text run at (0,0) width 644: "Vatican approves policy on sex abuse in clergy. The Vatican gave its approval Monday to the revised"
-          text run at (0,18) width 641: "U.S. bishops' policy to combat sex abuse in the clergy, declaring the need to restore the image of the"
-          text run at (0,36) width 623: "priesthood in a scandal that has rocked the Roman Catholic Church. The policy allows bishops to"
-          text run at (0,54) width 663: "conduct a confidential, preliminary inquiry when a molestation claim is made to determine whether it is"
-          text run at (0,72) width 650: "plausible. If it is, the accused priest is to be put on leave and then must go before a clerical tribunal to"
-          text run at (0,90) width 211: "determine his guilt or innocence."
+      LayoutBlockFlow {P} at (0,0) size 784x54
+        LayoutText {#text} at (0,0) size 632x54
+          text run at (0,0) width 632: "Capitalise on low hanging fruit to identify a ballpark value added activity to beta test. Override the"
+          text run at (0,18) width 618: "digital divide with additional clickthroughs from DevOps. Nanotechnology immersion along the"
+          text run at (0,36) width 503: "information highway will close the loop on focusing solely on the bottom line."
