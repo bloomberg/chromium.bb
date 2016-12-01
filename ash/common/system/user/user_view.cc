@@ -305,7 +305,8 @@ class ActiveUserBorder : public views::Border {
   }
 
   gfx::Insets GetInsets() const override {
-    return gfx::Insets(kMenuSeparatorVerticalPadding, 0,
+    return gfx::Insets(kMenuSeparatorVerticalPadding,
+                       kMenuExtraMarginFromLeftEdge,
                        kMenuSeparatorVerticalPadding * 2, 0);
   }
 
@@ -339,8 +340,7 @@ UserView::UserView(SystemTrayItem* owner, LoginStatus login, UserIndex index)
   AddUserCard(login);
 
   if (UseMd()) {
-    auto* layout = new views::BoxLayout(views::BoxLayout::kHorizontal,
-                                        kMenuExtraMarginFromLeftEdge, 0, 0);
+    auto layout = new views::BoxLayout(views::BoxLayout::kHorizontal, 0, 0, 0);
     SetLayoutManager(layout);
     layout->set_cross_axis_alignment(
         views::BoxLayout::CROSS_AXIS_ALIGNMENT_CENTER);

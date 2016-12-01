@@ -5,8 +5,15 @@
 #ifndef ASH_COMMON_SYSTEM_USER_USER_CARD_VIEW_H_
 #define ASH_COMMON_SYSTEM_USER_USER_CARD_VIEW_H_
 
+#include "ash/common/system/chromeos/media_security/media_capture_observer.h"
 #include "base/macros.h"
 #include "ui/views/view.h"
+
+namespace views {
+class BoxLayout;
+class ImageView;
+class Label;
+}
 
 namespace ash {
 
@@ -16,26 +23,33 @@ namespace tray {
 
 // The view displaying information about the user, such as user's avatar, email
 // address, name, and more. View has no borders.
-class UserCardView : public views::View {
+class UserCardView : public views::View, public MediaCaptureObserver {
  public:
   // |max_width| takes effect only if |login_status| is LOGGED_IN_PUBLIC.
   UserCardView(LoginStatus login_status, int max_width, int user_index);
   ~UserCardView() override;
 
-  // views::View overrides.
+  // View:
   void PaintChildren(const ui::PaintContext& context) override;
   void GetAccessibleNodeData(ui::AXNodeData* node_data) override;
+
+  // MediaCaptureObserver:
+  void OnMediaCaptureChanged() override;
 
  private:
   // Creates the content for the public mode.
   void AddPublicModeUserContent(int max_width);
 
   void AddUserContent(LoginStatus login_status);
-  void AddUserContentMd(LoginStatus login_status);
+  void AddUserContentMd(views::BoxLayout* layout, LoginStatus login_status);
 
   bool is_active_user() const { return !user_index_; }
 
   int user_index_;
+
+  views::Label* user_name_;
+  views::Label* media_capture_label_;
+  views::ImageView* media_capture_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(UserCardView);
 };
