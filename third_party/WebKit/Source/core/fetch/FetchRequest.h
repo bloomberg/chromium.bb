@@ -39,6 +39,8 @@
 namespace blink {
 class SecurityOrigin;
 
+// A FetchRequest is a "parameter object" for ResourceFetcher::requestResource
+// to avoid the method having too many arguments.
 class CORE_EXPORT FetchRequest {
   STACK_ALLOCATED();
 
