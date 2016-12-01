@@ -31,8 +31,6 @@ class URLRequestJobFactory;
 
 namespace android_webview {
 
-class AwNetworkDelegate;
-
 class AwURLRequestContextGetter : public net::URLRequestContextGetter {
  public:
   AwURLRequestContextGetter(

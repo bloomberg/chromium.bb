@@ -19,8 +19,6 @@
 #include "base/memory/weak_ptr.h"
 #include "base/strings/string16.h"
 
-class GURL;
-
 namespace content {
 class StoragePartition;
 }

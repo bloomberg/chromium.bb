@@ -12,8 +12,6 @@
 
 #include "base/callback_forward.h"
 
-class GURL;
-
 namespace net {
 class HttpResponseHeaders;
 class URLRequest;

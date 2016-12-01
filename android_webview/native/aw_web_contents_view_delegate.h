@@ -15,8 +15,6 @@ class WebContents;
 
 namespace android_webview {
 
-class AwContents;
-
 class AwWebContentsViewDelegate : public content::WebContentsViewDelegate {
  public:
   static content::WebContentsViewDelegate* Create(

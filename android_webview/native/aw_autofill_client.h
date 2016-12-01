@@ -20,14 +20,11 @@
 #include "ui/android/view_android.h"
 
 namespace autofill {
-class AutofillMetrics;
 class AutofillPopupDelegate;
 class CardUnmaskDelegate;
 class CreditCard;
 class FormStructure;
-class PasswordGenerator;
 class PersonalDataManager;
-struct FormData;
 }
 
 namespace content {

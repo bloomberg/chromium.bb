@@ -18,10 +18,8 @@
 struct AwDrawGLInfo;
 
 namespace cc {
-class Display;
 class SurfaceFactory;
 class SurfaceIdAllocator;
-class SurfaceManager;
 }
 
 namespace android_webview {

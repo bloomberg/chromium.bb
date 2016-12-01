@@ -16,8 +16,6 @@
 #include "ui/gfx/geometry/size.h"
 #include "ui/gfx/geometry/size_f.h"
 
-class GURL;
-
 namespace content {
 struct FrameNavigateParams;
 struct LoadCommittedDetails;

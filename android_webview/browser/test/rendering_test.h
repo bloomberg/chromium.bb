@@ -39,8 +39,6 @@ class BrowserViewRenderer;
 class CompositorFrameConsumer;
 class CompositorFrameProducer;
 class FakeWindow;
-class RenderThreadManager;
-struct ParentCompositorDrawConstraints;
 
 class RenderingTest : public testing::Test,
                       public BrowserViewRendererClient,

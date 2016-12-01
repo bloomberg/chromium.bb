@@ -17,7 +17,6 @@ class MessageLoop;
 
 namespace android_webview {
 
-class AwBrowserContext;
 class AwContentBrowserClient;
 
 class AwBrowserMainParts : public content::BrowserMainParts {

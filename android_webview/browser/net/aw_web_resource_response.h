@@ -13,7 +13,6 @@
 
 namespace net {
 class HttpResponseHeaders;
-class NetworkDelegate;
 class URLRequest;
 }
 

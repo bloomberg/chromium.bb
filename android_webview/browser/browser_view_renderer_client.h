@@ -15,7 +15,6 @@ class TouchHandleDrawable;
 }
 
 namespace android_webview {
-struct ParentCompositorDrawConstraints;
 
 class BrowserViewRendererClient {
  public:

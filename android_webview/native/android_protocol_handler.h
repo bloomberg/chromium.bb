@@ -10,7 +10,6 @@
 #include "base/android/jni_android.h"
 
 namespace net {
-class URLRequestContext;
 class URLRequestInterceptor;
 }  // namespace net
 

@@ -12,10 +12,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 
-class GURL;
-
 namespace content {
-class ResourceRequestInfo;
 class WebContents;
 }
 
@@ -24,8 +21,6 @@ class URLRequest;
 }
 
 namespace android_webview {
-
-class AwWebResourceResponse;
 
 class AwContentsIoThreadClientImpl : public AwContentsIoThreadClient {
  public:

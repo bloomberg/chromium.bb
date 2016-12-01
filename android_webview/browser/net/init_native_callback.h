@@ -19,7 +19,6 @@ class URLRequestInterceptor;
 }  // namespace net
 
 namespace android_webview {
-class AwBrowserContext;
 
 // Gets the TaskRunner that the CookieStore must be called on.
 scoped_refptr<base::SingleThreadTaskRunner> GetCookieStoreTaskRunner();

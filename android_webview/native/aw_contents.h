@@ -30,7 +30,6 @@
 
 class SkBitmap;
 class TabContents;
-struct AwDrawGLInfo;
 
 namespace content {
 class WebContents;
@@ -43,7 +42,6 @@ class AwContentsClientBridge;
 class AwGLFunctor;
 class AwPdfExporter;
 class AwWebContentsDelegate;
-class HardwareRenderer;
 class PermissionRequestHandler;
 
 // Native side of java-class of same name.

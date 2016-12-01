@@ -9,7 +9,6 @@
 #include "net/base/network_delegate_impl.h"
 
 namespace net {
-class ProxyInfo;
 class URLRequest;
 }
 

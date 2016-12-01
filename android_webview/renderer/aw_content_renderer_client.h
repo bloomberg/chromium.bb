@@ -17,7 +17,6 @@
 
 #if BUILDFLAG(ENABLE_SPELLCHECK)
 class SpellCheck;
-class SpellCheckProvider;
 #endif
 
 namespace visitedlink {

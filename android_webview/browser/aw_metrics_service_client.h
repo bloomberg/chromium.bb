@@ -21,7 +21,6 @@ class FilePath;
 }
 
 namespace metrics {
-struct ClientInfo;
 class MetricsStateManager;
 }
 

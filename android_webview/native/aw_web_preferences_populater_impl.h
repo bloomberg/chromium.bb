@@ -10,8 +10,6 @@
 
 namespace android_webview {
 
-class AwSettings;
-
 class AwWebPreferencesPopulaterImpl : public AwWebPreferencesPopulater {
  public:
   AwWebPreferencesPopulaterImpl();

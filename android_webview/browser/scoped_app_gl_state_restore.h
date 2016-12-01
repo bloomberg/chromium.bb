@@ -7,10 +7,6 @@
 
 #include "base/macros.h"
 
-namespace gl {
-class GLContext;
-}
-
 namespace android_webview {
 
 namespace internal {

@@ -29,9 +29,7 @@ class Transform;
 
 namespace android_webview {
 
-class AwGLSurface;
 class ParentOutputSurface;
-class ScopedAppGLStateRestore;
 
 class SurfacesInstance : public base::RefCounted<SurfacesInstance>,
                          public cc::DisplayClient,
