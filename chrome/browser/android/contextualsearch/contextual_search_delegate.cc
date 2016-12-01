@@ -558,18 +558,16 @@ void ContextualSearchDelegate::DecodeSearchTermFromJsonResponse(
       base::FeatureList::IsEnabled(
           chrome::android::kContextualSearchSingleActions)) {
     // Any Contextual Cards integration.
-    // For testing purposes check if there was a Contextual Cards backend
-    // failure and flag that in the log.
+    // For testing purposes check if there was a diagnostic from Contextual
+    // Cards and output that into the log.
     // TODO(donnd): remove after full Contextual Cards integration.
-    bool contextual_cards_backend_responded = true;
-    dict->GetBoolean("coca_responded", &contextual_cards_backend_responded);
-    if (!contextual_cards_backend_responded) {
-      DVLOG(0) << "";
-      DVLOG(0) << "!!! CONTEXTUAL SEARCH WARNING !!!";
-      DVLOG(0)
-          << "The Contextual Cards backend did not respond to this "
-             "request!!! The backend server may not be configured or is down.";
-      DVLOG(0) << "";
+    std::string contextual_cards_diagnostic;
+    dict->GetString("diagnostic", &contextual_cards_diagnostic);
+    if (contextual_cards_diagnostic.empty()) {
+      DVLOG(0) << "No diagnostic data in the response.";
+    } else {
+      DVLOG(0) << "The Contextual Cards backend response: ";
+      DVLOG(0) << contextual_cards_diagnostic;
     }
   }
 }
