@@ -253,7 +253,7 @@ ScoredHistoryMatches URLIndexPrivateData::HistoryItemsForTerms(
     for (SearchTermCacheMap::iterator cache_iter = search_term_cache_.begin();
          cache_iter != search_term_cache_.end(); ) {
       if (!cache_iter->second.used_)
-        search_term_cache_.erase(cache_iter++);
+        cache_iter = search_term_cache_.erase(cache_iter);
       else
         ++cache_iter;
     }
@@ -497,6 +497,7 @@ URLIndexPrivateData::~URLIndexPrivateData() {}
 
 HistoryIDSet URLIndexPrivateData::HistoryIDSetFromWords(
     const String16Vector& unsorted_words) {
+  SCOPED_UMA_HISTOGRAM_TIMER("Omnibox.HistoryQuickHistoryIDSetFromWords");
   // Break the terms down into individual terms (words), get the candidate
   // set for each term, and intersect each to get a final candidate list.
   // Note that a single 'term' from the user's perspective might be
@@ -605,7 +606,7 @@ HistoryIDSet URLIndexPrivateData::HistoryIDsForTerm(
     for (WordIDSet::iterator word_set_iter = word_id_set.begin();
          word_set_iter != word_id_set.end(); ) {
       if (word_list_[*word_set_iter].find(term) == base::string16::npos)
-        word_id_set.erase(word_set_iter++);
+        word_set_iter = word_id_set.erase(word_set_iter);
       else
         ++word_set_iter;
     }
