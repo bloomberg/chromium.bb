@@ -442,6 +442,7 @@ void ShelfButton::Layout() {
       gfx::Rect(button_bounds.x() + x_offset, button_bounds.y() + y_offset,
                 icon_width, icon_height);
   icon_view_bounds.Inset(insets_shadows);
+  icon_view_bounds.AdjustToFit(gfx::Rect(size()));
   icon_view_->SetBoundsRect(icon_view_bounds);
 
   // Icon size has been incorrect when running
