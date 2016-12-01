@@ -3061,7 +3061,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	struct drm_output *output = to_drm_output(output_base);
 	struct drm_output_state *state;
 	struct drm_plane_state *plane_state;
-	struct weston_view *ev, *next;
+	struct weston_view *ev;
 	pixman_region32_t overlap, surface_overlap;
 	struct weston_plane *primary, *next_plane;
 	bool picked_scanout = false;
@@ -3087,7 +3087,7 @@ drm_assign_planes(struct weston_output *output_base, void *repaint_data)
 	pixman_region32_init(&overlap);
 	primary = &output_base->compositor->primary_plane;
 
-	wl_list_for_each_safe(ev, next, &output_base->compositor->view_list, link) {
+	wl_list_for_each(ev, &output_base->compositor->view_list, link) {
 		struct weston_surface *es = ev->surface;
 
 		/* Test whether this buffer can ever go into a plane:
