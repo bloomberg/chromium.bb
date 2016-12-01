@@ -998,6 +998,9 @@ TRYSERVER_BUILDBUCKET_BUCKET = 'master.chromiumos.tryserver'
 CHROMEOS_BUILDBUCKET_BUCKET = 'master.chromeos'
 CHROMIUMOS_BUILDBUCKET_BUCKET = 'master.chromiumos'
 
+# Build retry limit on buildbucket
+BUILDBUCKET_BUILD_RETRY_LIMIT = 2
+
 # TODO(nxia): consolidate all run.metadata key constants,
 # add a unit test to avoid duplicated keys in run_metadata
 

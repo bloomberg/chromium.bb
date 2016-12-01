@@ -6,6 +6,7 @@
 
 from __future__ import print_function
 
+import collections
 import cPickle
 import datetime
 import fnmatch
@@ -49,6 +50,10 @@ REMOTE_NAME_ATTR = 'name'
 PALADIN_COMMIT_ELEMENT = 'pending_commit'
 PALADIN_PROJECT_ATTR = 'project'
 
+# Namedtupe to store buildbucket related info.
+BuildbucketInfo = collections.namedtuple(
+    'BuildbucketInfo',
+    ['buildbucket_id', 'retry', 'status', 'result'])
 
 class FilterManifestException(Exception):
   """Exception thrown when failing to filter the internal manifest."""
@@ -446,16 +451,15 @@ class SlaveStatus(object):
       start_time: datetime.datetime object of when the build started.
       builders_array: List of the expected builders.
       previous_completed: Set of builders that have finished already.
-      build_info_dict: A dict mapping build config name to its buildbucket
-          information dict(current buildbucket_id, current created_ts, retry #).
-          See buildbucket_lib.GetScheduledBuildDict for details.
+      build_info_dict: A dict mapping build config name to its BuildbucketInfo.
+          See BuildSpecsManager.GetSlaveStatusesFromBuildbucket for details.
     """
     self.status = status
     self.start_time = start_time
     self.builders_array = builders_array
     self.previous_completed = previous_completed
     self.completed = None
-
+    self.builds_to_retry = None
     self.build_info_dict = build_info_dict
 
     # Dict mapping status to the set of builds in this status.
@@ -465,12 +469,10 @@ class SlaveStatus(object):
 
   def _SetStatusBuildsDict(self):
     """Set status_buildset_dict by sorting the builds into their status set."""
-    for build, status_dict in self.status.iteritems():
-      status = status_dict.get('status')
-
-      if status is not None:
-        self.status_buildset_dict.setdefault(status, set())
-        self.status_buildset_dict[status].add(build)
+    for build, info in self.build_info_dict.iteritems():
+      if info.status is not None:
+        self.status_buildset_dict.setdefault(info.status, set())
+        self.status_buildset_dict[info.status].add(build)
 
   def GetBuildbucketBuilds(self, build_status):
     """Get the buildbucket builds which are in the build_status status.
@@ -490,39 +492,99 @@ class SlaveStatus(object):
     return self.status_buildset_dict.get(build_status, set())
 
   def GetMissing(self):
-    """Returns the missing builders.
+    """Returns the missing builds.
+
+    For builds scheduled by Buildbucket, missing refers to builds without
+    'status' from Buildbucket.
+    For builds not scheduled by Buildbucket, missing refers builds without
+    reporting status to CIDB.
 
     Returns:
-      A list of the missing builders
+      A set of the config names of missing builds.
     """
-    return list(set(self.builders_array) - set(self.status.keys()))
+    if self.build_info_dict is not None:
+      return set(build for build, info in self.build_info_dict.iteritems()
+                 if info.status is None)
+    else:
+      return set(self.builders_array) - set(self.status.keys())
+
+  def GetRetriableBuilds(self, completed_builds):
+    """Get retriable builds from completed builds.
+
+    Args:
+      completed_builds: a set of builds with 'COMPLETED' status in Buildbucket.
+
+    Returns:
+      A set of config names of retriable builds.
+    """
+    assert self.build_info_dict is not None
+
+    builds_to_retry = set()
+
+    for build in completed_builds - self.previous_completed:
+      build_result = self.build_info_dict[build].result
+      if build_result == constants.BUILDBUCKET_BUILDER_RESULT_SUCCESS:
+        logging.info('Not retriable build %s completed with result %s.',
+                     build, build_result)
+        continue
+
+      build_retry = self.build_info_dict[build].retry
+      if build_retry >= constants.BUILDBUCKET_BUILD_RETRY_LIMIT:
+        logging.info('Not retriable build %s reached the build retry limit %d.',
+                     build, constants.BUILDBUCKET_BUILD_RETRY_LIMIT)
+        continue
+
+      # If build is in self.status, it means a build tuple has been
+      # inserted into CIDB buildTable.
+      if build in self.status:
+        logging.info('Not retriable build %s started already.', build)
+        continue
+
+      builds_to_retry.add(build)
+
+    return builds_to_retry
 
   def GetCompleted(self):
-    """Returns the builders that have completed.
+    """Returns the builds that have completed and will not be retried.
 
     Returns:
-      A list of the completed builders.
+      A set of config names of completed and not retriable builds.
     """
-    if not self.completed:
+    if self.completed is None:
       if self.build_info_dict is not None:
-        self.completed = self.GetBuildbucketBuilds(
+        completed_all = self.GetBuildbucketBuilds(
             constants.BUILDBUCKET_BUILDER_STATUS_COMPLETED)
+
+        self.builds_to_retry = self.GetRetriableBuilds(completed_all)
+
+        self.completed = completed_all - self.builds_to_retry
       else:
         self.completed = set(
             b for b, s in self.status.iteritems()
             if s in constants.BUILDER_COMPLETED_STATUSES and
             b in self.builders_array)
 
-    # Logging of the newly complete builders.
-    for builder in sorted(self.completed - self.previous_completed):
-      status = (self.status[builder].get('result')
-                if self.build_info_dict is not None
-                else self.status[builder])
-      logging.info('Build config %s completed with status "%s".',
-                   builder, status)
+      # Logging of the newly complete builders.
+      for builder in sorted(self.completed - self.previous_completed):
+        status = (self.build_info_dict[builder].result
+                  if self.build_info_dict is not None
+                  else self.status[builder])
+        logging.info('Build config %s completed with status "%s".',
+                     builder, status)
 
-    self.previous_completed.update(self.completed)
+      self.previous_completed.update(self.completed)
+
     return self.completed
+
+  def GetBuildsToRetry(self):
+    """Get the config names of the builds to retry.
+
+    Returns:
+      A set config names of builds to be retried.
+    """
+    # Run GetCompleted() to make sure the result is processed.
+    self.GetCompleted()
+    return self.builds_to_retry
 
   def Completed(self):
     """Returns a bool if all builders have completed successfully.
@@ -879,30 +941,33 @@ class BuildSpecsManager(object):
       status_dict[d['build_config']] = d['status']
     return status_dict
 
-  def GetSlaveStatusesFromBuildbucket(self, build_info_dict):
-    """Get statues of slaves recorded in the build_info_dict
+  def GetSlaveStatusesFromBuildbucket(self):
+    """Get statues of slaves recorded in the build_info_dict from Buildbucket.
 
-    Args:
-      build_info_dict: A dict mapping build config name to its buildbucket
-          information dict(current buildbucket_id, current created_ts, retry #).
-          See buildbucket_lib.GetScheduledBuildDict for details.
+    Get build_info_dict (mapping build->build_info('buildbucket_id', 'retry'))
+    from metadata. For each build in the build_info_dict, get its 'status'
+    and 'result' by sending GetBuildRequest to Buildbucket and return an
+    updated_build_info_dict.
 
     Returns:
-      A dict mapping the slave name to a status dict. The status dict contains
-      'status' and 'result'. When 'status' is 'SCHEDULED' or 'STARTED',
-      'result' is None.
+       A dict mapping build config name to its BuildbucketInfo.
     """
     assert self.buildbucket_client is not None, 'buildbucket_client is None'
 
-    status_dict = {}
+    build_info_dict = buildbucket_lib.GetBuildInfoDict(self.metadata)
+    updated_build_info_dict = {}
+
     for build_config, info in build_info_dict.iteritems():
+      buildbucket_id = info['buildbucket_id']
+      retry = info['retry']
+      status = None
+      result = None
+
       try:
-        buildbucket_id = info['buildbucket_id']
         content = self.buildbucket_client.GetBuildRequest(
             buildbucket_id, self.dry_run)
         status = buildbucket_lib.GetBuildStatus(content)
         result = buildbucket_lib.GetBuildResult(content)
-        status_dict[build_config] = {'status': status, 'result': result}
       except buildbucket_lib.BuildbucketResponseException as e:
         # If we have a temporary issue accessing the build status from the
         # Buildbucket, log the error and continue with other builds.
@@ -910,7 +975,10 @@ class BuildSpecsManager(object):
         logging.error('Failed to get status for build %s id %s: %s',
                       build_config, buildbucket_id, e)
 
-    return status_dict
+      updated_build_info_dict[build_config] = BuildbucketInfo(
+          buildbucket_id, retry, status, result)
+
+    return updated_build_info_dict
 
   def GetSlaveStatus(self, start_time, builders_array, builders_completed,
                      master_build_id):
@@ -932,16 +1000,70 @@ class BuildSpecsManager(object):
     if (self.config is not None and
         self.metadata is not None and
         config_lib.UseBuildbucketScheduler(self.config)):
-      build_info_dict = buildbucket_lib.GetBuildInfoDict(self.metadata)
+      build_info_dict = self.GetSlaveStatusesFromBuildbucket()
 
       return SlaveStatus(
-          self.GetSlaveStatusesFromBuildbucket(build_info_dict),
+          self.GetSlaveStatusesFromCIDB(master_build_id),
           start_time, builders_array, builders_completed,
           build_info_dict=build_info_dict)
     else:
       return SlaveStatus(
           self.GetSlaveStatusesFromCIDB(master_build_id),
           start_time, builders_array, builders_completed)
+
+  def RetryBuilds(self, builds, build_info_dict):
+    """Retry builds with Buildbucket.
+
+    Args:
+      builds: config names of the builds to retry with Buildbucket.
+      build_info_dict: A dict mapping build config name to its BuildbucketInfo.
+          See GetSlaveStatusesFromBuildbucket for details.
+    """
+    assert builds is not None
+
+    new_scheduled_slaves = []
+    for build in builds:
+      try:
+        buildbucket_id = build_info_dict[build].buildbucket_id
+        build_retry = build_info_dict[build].retry
+
+        logging.info('Going to retry build %s buildbucket_id %s '
+                     'with retry # %d',
+                     build, buildbucket_id, build_retry + 1)
+
+        content = self.buildbucket_client.RetryBuildRequest(
+            buildbucket_id, dryrun=self.dry_run)
+
+        new_buildbucket_id = buildbucket_lib.GetBuildId(content)
+        new_created_ts = buildbucket_lib.GetBuildCreated_ts(content)
+        new_scheduled_slaves.append((build, new_buildbucket_id, new_created_ts))
+
+        logging.info('Retried build %s buildbucket_id %s created_ts %s',
+                     build, new_buildbucket_id, new_created_ts)
+      except buildbucket_lib.BuildbucketResponseException as e:
+        logging.error('Failed to retry build %s buildbucket_id %s: %s',
+                      build, buildbucket_id, e)
+
+    if new_scheduled_slaves:
+      self.metadata.ExtendKeyListWithList(
+          constants.METADATA_SCHEDULED_SLAVES, new_scheduled_slaves)
+
+  def ShouldWait(self, slave_status):
+    """Whether to retry builds and to wait on other slaves.
+
+    Args:
+      slave_status: Instance of SlaveStatus presenting statues of slaves.
+
+    Returns:
+      Boolean indicating whether to wait on other slaves.
+    """
+    should_wait = slave_status.ShouldWait()
+    builds_to_retry = slave_status.GetBuildsToRetry()
+
+    if should_wait and builds_to_retry:
+      self.RetryBuilds(builds_to_retry, slave_status.build_info_dict)
+
+    return should_wait
 
   def GetBuildersStatus(self, master_build_id, builders_array, timeout=3 * 60):
     """Get the statuses of the slave builders of the master.
@@ -969,7 +1091,7 @@ class BuildSpecsManager(object):
     builds_timed_out = False
     try:
       timeout_util.WaitForSuccess(
-          lambda statuses: statuses.ShouldWait(),
+          self.ShouldWait,
           lambda: self.GetSlaveStatus(
               start_time, builders_array, builders_completed,
               master_build_id),
