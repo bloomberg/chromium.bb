@@ -106,11 +106,11 @@ const CGFloat kToolbarVerticalOffset = -22;
     case FullscreenToolbarStyle::TOOLBAR_NONE:
       return kHideFraction;
     case FullscreenToolbarStyle::TOOLBAR_HIDDEN:
-      if ([self mustShowFullscreenToolbar])
-        return kShowFraction;
-
       if (animationController_->IsAnimationRunning())
         return animationController_->GetToolbarFractionFromProgress();
+
+      if ([self mustShowFullscreenToolbar])
+        return kShowFraction;
 
       return [menubarTracker_ menubarFraction];
   }
