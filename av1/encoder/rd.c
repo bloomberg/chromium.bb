@@ -557,6 +557,9 @@ static void get_entropy_contexts_plane(
 
   int i;
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2:
+#endif
     case TX_4X4:
       memcpy(t_above, above, sizeof(ENTROPY_CONTEXT) * num_4x4_w);
       memcpy(t_left, left, sizeof(ENTROPY_CONTEXT) * num_4x4_h);
