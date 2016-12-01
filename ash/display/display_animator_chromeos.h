@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/timer/timer.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace aura {
 class Window;

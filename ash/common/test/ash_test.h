@@ -11,7 +11,7 @@
 #include "ash/public/cpp/shell_window_ids.h"
 #include "base/macros.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/window_types.h"

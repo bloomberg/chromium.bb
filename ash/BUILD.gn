@@ -886,6 +886,7 @@ component("ash") {
     "//ui/base/ime",
     "//ui/compositor",
     "//ui/display",
+    "//ui/display/manager",
     "//ui/display/types",
     "//ui/events",
     "//ui/events:events_base",

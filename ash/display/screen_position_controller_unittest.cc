@@ -16,7 +16,7 @@
 #include "ui/aura/window_tracker.h"
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/events/test/event_generator.h"

@@ -171,7 +171,7 @@ source_set("app_shell_lib") {
     deps += [
       "//chromeos",
       "//ui/chromeos",
-      "//ui/display",
+      "//ui/display/manager",
     ]
   }
 

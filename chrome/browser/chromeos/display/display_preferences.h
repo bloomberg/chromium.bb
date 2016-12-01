@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "third_party/cros_system_api/dbus/service_constants.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 
 class PrefRegistrySimple;
 

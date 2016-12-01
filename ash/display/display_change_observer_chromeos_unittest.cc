@@ -6,8 +6,8 @@
 
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/fake_display_snapshot.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/types/display_mode.h"
 

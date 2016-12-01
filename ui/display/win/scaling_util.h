@@ -8,7 +8,7 @@
 #include <stdint.h>
 
 #include "ui/display/display_export.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/win/display_info.h"
 
 namespace gfx {

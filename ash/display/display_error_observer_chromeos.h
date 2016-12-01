@@ -9,7 +9,7 @@
 #include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/strings/string16.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace ash {
 

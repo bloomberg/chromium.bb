@@ -32,7 +32,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/layout.h"
 #include "ui/compositor/reflector.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"

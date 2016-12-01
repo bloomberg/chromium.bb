@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "ui/display/display.h"
 #include "ui/display/display_export.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/types/display_constants.h"
 
 namespace gfx {

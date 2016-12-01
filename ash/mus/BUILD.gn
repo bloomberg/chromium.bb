@@ -88,6 +88,7 @@ source_set("lib") {
     "//content/public/common:service_names",
     "//ui/app_list/presenter",
     "//ui/app_list/presenter:mojom",
+    "//ui/display/manager",
     "//ui/keyboard",
     "//ui/keyboard:mojom",
     "//ui/message_center",

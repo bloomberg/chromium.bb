@@ -135,10 +135,10 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 #if defined(USE_X11)
-#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
+#include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #endif
 
 #if defined(USE_OZONE)

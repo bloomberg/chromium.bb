@@ -14,7 +14,7 @@
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/dbus/power_manager_client.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #endif
 
 namespace ash {

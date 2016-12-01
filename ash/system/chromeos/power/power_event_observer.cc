@@ -14,7 +14,7 @@
 #include "ui/aura/window_tree_host.h"
 #include "ui/base/user_activity/user_activity_detector.h"
 #include "ui/compositor/compositor.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace ash {
 

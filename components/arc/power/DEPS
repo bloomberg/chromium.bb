@@ -1,4 +1,4 @@
 include_rules = [
   "+ash",
-  "+ui/display/chromeos",
+  "+ui/display/manager/chromeos",
 ]

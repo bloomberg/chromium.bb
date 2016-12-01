@@ -9,7 +9,7 @@
 #include "base/json/json_reader.h"
 #include "base/values.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 
 namespace ash {
 

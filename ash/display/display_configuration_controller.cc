@@ -8,7 +8,7 @@
 #include "ash/display/display_util.h"
 #include "ash/rotator/screen_rotation_animator.h"
 #include "base/time/time.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 
 #if defined(OS_CHROMEOS)

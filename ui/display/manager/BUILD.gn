@@ -1,0 +1,77 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+import("//build/config/ui.gni")
+
+component("manager") {
+  sources = [
+    "chromeos/apply_content_protection_task.cc",
+    "chromeos/apply_content_protection_task.h",
+    "chromeos/configure_displays_task.cc",
+    "chromeos/configure_displays_task.h",
+    "chromeos/display_configurator.cc",
+    "chromeos/display_configurator.h",
+    "chromeos/display_layout_manager.h",
+    "chromeos/display_snapshot_virtual.cc",
+    "chromeos/display_snapshot_virtual.h",
+    "chromeos/display_util.cc",
+    "chromeos/display_util.h",
+    "chromeos/query_content_protection_task.cc",
+    "chromeos/query_content_protection_task.h",
+    "chromeos/touchscreen_util.cc",
+    "chromeos/touchscreen_util.h",
+    "chromeos/update_display_configuration_task.cc",
+    "chromeos/update_display_configuration_task.h",
+    "display_layout_store.cc",
+    "display_layout_store.h",
+    "display_manager.cc",
+    "display_manager.h",
+    "display_manager_export.h",
+    "display_manager_utilities.cc",
+    "display_manager_utilities.h",
+    "managed_display_info.cc",
+    "managed_display_info.h",
+  ]
+
+  public_deps = [
+    "//ui/display",
+  ]
+
+  deps = [
+    "//base",
+    "//ui/base",
+    "//ui/display/util",
+    "//ui/events/devices",
+  ]
+
+  defines = [ "DISPLAY_MANAGER_IMPLEMENTATION" ]
+
+  if (use_x11) {
+    deps += [ "//ui/gfx/x" ]
+  }
+
+  if (is_chromeos && use_x11) {
+    sources += [
+      "chromeos/x11/display_mode_x11.cc",
+      "chromeos/x11/display_mode_x11.h",
+      "chromeos/x11/display_snapshot_x11.cc",
+      "chromeos/x11/display_snapshot_x11.h",
+      "chromeos/x11/display_util_x11.cc",
+      "chromeos/x11/display_util_x11.h",
+      "chromeos/x11/native_display_delegate_x11.cc",
+      "chromeos/x11/native_display_delegate_x11.h",
+      "chromeos/x11/native_display_event_dispatcher_x11.cc",
+      "chromeos/x11/native_display_event_dispatcher_x11.h",
+    ]
+
+    configs += [
+      "//build/config/linux:x11",
+      "//build/config/linux:xext",
+      "//build/config/linux:xi",
+      "//build/config/linux:xrandr",
+    ]
+
+    deps += [ "//ui/events/platform" ]
+  }
+}

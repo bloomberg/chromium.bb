@@ -55,7 +55,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/base/hit_test.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/test/display_manager_test_api.h"
 #include "ui/events/event_utils.h"

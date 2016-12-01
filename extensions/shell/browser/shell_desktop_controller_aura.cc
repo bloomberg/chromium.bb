@@ -47,7 +47,7 @@
 #include "ui/display/types/display_snapshot.h"
 
 #if defined(USE_X11)
-#include "ui/display/chromeos/x11/native_display_delegate_x11.h"
+#include "ui/display/manager/chromeos/x11/native_display_delegate_x11.h"
 #endif
 
 #if defined(USE_OZONE)

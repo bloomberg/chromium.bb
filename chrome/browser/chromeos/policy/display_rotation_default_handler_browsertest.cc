@@ -33,7 +33,7 @@
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 
 namespace em = enterprise_management;

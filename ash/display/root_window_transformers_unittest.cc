@@ -20,7 +20,7 @@
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tracker.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/screen.h"

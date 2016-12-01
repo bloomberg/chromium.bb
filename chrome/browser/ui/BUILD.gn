@@ -596,6 +596,7 @@ split_static_library("ui") {
     "//ui/compositor",
     "//ui/content_accelerators",
     "//ui/display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/events:gesture_detection",
     "//ui/gfx",

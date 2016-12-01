@@ -16,9 +16,9 @@
 #include "components/quirks/quirks_manager.h"
 #include "net/url_request/url_request_context_getter.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/chromeos/test/action_logger_util.h"
-#include "ui/display/chromeos/test/test_native_display_delegate.h"
 #include "ui/display/fake_display_snapshot.h"
+#include "ui/display/manager/chromeos/test/action_logger_util.h"
+#include "ui/display/manager/chromeos/test/test_native_display_delegate.h"
 
 namespace ash {
 

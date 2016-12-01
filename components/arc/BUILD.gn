@@ -95,7 +95,7 @@ static_library("arc") {
     "//ui/aura",
     "//ui/base:base",
     "//ui/base/ime",
-    "//ui/display:display",
+    "//ui/display/manager",
     "//ui/events",
     "//ui/events:dom_keycode_converter",
     "//ui/keyboard:keyboard",

@@ -13,7 +13,7 @@
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/aura/window.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/screen.h"

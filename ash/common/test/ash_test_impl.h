@@ -8,7 +8,7 @@
 #include <memory>
 #include <string>
 
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/views/widget/widget.h"
 #include "ui/wm/public/window_types.h"
 

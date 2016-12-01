@@ -10,7 +10,7 @@
 #include "base/memory/weak_ptr.h"
 #include "ui/aura/window.h"
 #include "ui/aura/window_observer.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace chromeos {
 

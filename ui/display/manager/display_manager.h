@@ -19,14 +19,14 @@
 #include "base/memory/weak_ptr.h"
 #include "base/observer_list.h"
 #include "ui/display/display.h"
-#include "ui/display/display_export.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/display_observer.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/manager/display_manager_export.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/types/display_constants.h"
 
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #endif
 
 namespace gfx {
@@ -47,13 +47,13 @@ class DisplayManagerTestApi;
 
 // DisplayManager maintains the current display configurations,
 // and notifies observers when configuration changes.
-class DISPLAY_EXPORT DisplayManager
+class DISPLAY_MANAGER_EXPORT DisplayManager
 #if defined(OS_CHROMEOS)
     : public ui::DisplayConfigurator::SoftwareMirroringController
 #endif
 {
  public:
-  class DISPLAY_EXPORT Delegate {
+  class DISPLAY_MANAGER_EXPORT Delegate {
    public:
     virtual ~Delegate() {}
 

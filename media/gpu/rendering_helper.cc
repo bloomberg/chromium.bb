@@ -47,7 +47,7 @@
 
 #if defined(USE_OZONE)
 #if defined(OS_CHROMEOS)
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/types/native_display_delegate.h"
 #endif  // defined(OS_CHROMEOS)
 #include "ui/ozone/public/ozone_platform.h"

@@ -39,7 +39,7 @@
 #include "ui/compositor/layer_animator.h"
 #include "ui/compositor/scoped_animation_duration_scale_mode.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"

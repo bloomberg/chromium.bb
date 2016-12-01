@@ -16,7 +16,7 @@
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/threading/thread_checker.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 
 namespace base {

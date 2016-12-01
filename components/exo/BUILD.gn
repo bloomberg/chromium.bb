@@ -57,6 +57,7 @@ source_set("exo") {
     "//skia",
     "//ui/aura",
     "//ui/compositor",
+    "//ui/display/manager",
     "//ui/gfx",
     "//ui/gfx/geometry",
     "//ui/gl",

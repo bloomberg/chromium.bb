@@ -12,7 +12,7 @@
 #include "components/arc/common/power.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace arc {
 

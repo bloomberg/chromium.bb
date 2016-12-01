@@ -19,8 +19,8 @@
 #include "services/ui/display/viewport_metrics.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
-#include "ui/display/chromeos/display_configurator.h"
 #include "ui/display/display.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/display/types/fake_display_controller.h"
 

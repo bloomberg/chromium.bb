@@ -9,7 +9,7 @@
 
 #include "base/strings/string_split.h"
 #include "ui/display/display.h"
-#include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/display_layout_builder.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/manager/display_manager_utilities.h"
 #include "ui/display/manager/managed_display_info.h"

@@ -15,7 +15,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ref_counted.h"
 #include "ui/display/display.h"
-#include "ui/display/display_export.h"
+#include "ui/display/manager/display_manager_export.h"
 #include "ui/display/types/display_constants.h"
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
@@ -24,7 +24,7 @@ namespace display {
 
 // A struct that represents all the data required for touch calibration for the
 // display.
-struct DISPLAY_EXPORT TouchCalibrationData {
+struct DISPLAY_MANAGER_EXPORT TouchCalibrationData {
   // CalibrationPointPair.first -> display point
   // CalibrationPointPair.second -> touch point
   using CalibrationPointPair = std::pair<gfx::Point, gfx::Point>;
@@ -43,7 +43,7 @@ struct DISPLAY_EXPORT TouchCalibrationData {
 };
 
 // A class that represents the display's mode info.
-class DISPLAY_EXPORT ManagedDisplayMode
+class DISPLAY_MANAGER_EXPORT ManagedDisplayMode
     : public base::RefCounted<ManagedDisplayMode> {
  public:
   ManagedDisplayMode();
@@ -98,7 +98,7 @@ class DISPLAY_EXPORT ManagedDisplayMode
 // ManagedDisplayInfo contains metadata for each display. This is used to create
 // |Display| as well as to maintain extra infomation to manage displays in ash
 // environment. This class is intentionally made copiable.
-class DISPLAY_EXPORT ManagedDisplayInfo {
+class DISPLAY_MANAGER_EXPORT ManagedDisplayInfo {
  public:
   using ManagedDisplayModeList = std::vector<scoped_refptr<ManagedDisplayMode>>;
 
@@ -393,7 +393,7 @@ class DISPLAY_EXPORT ManagedDisplayInfo {
 
 // Resets the synthesized display id for testing. This
 // is necessary to avoid overflowing the output index.
-void DISPLAY_EXPORT ResetDisplayIdForTest();
+void DISPLAY_MANAGER_EXPORT ResetDisplayIdForTest();
 
 }  // namespace display
 

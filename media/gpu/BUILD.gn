@@ -341,6 +341,7 @@ if (is_win || is_android || is_chromeos) {
       "//media",
       "//testing/gtest",
       "//ui/base",
+      "//ui/display/manager",
       "//ui/gfx",
       "//ui/gfx:test_support",
       "//ui/gfx/geometry",

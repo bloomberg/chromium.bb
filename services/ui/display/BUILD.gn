@@ -30,6 +30,7 @@ source_set("display") {
     deps += [
       "//services/ui/public/interfaces/display",
       "//skia",
+      "//ui/display/manager",
       "//ui/ozone",
     ]
   } else {

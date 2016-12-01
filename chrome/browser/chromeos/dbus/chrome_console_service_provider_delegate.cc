@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/dbus/chrome_console_service_provider_delegate.h"
 
 #include "ash/shell.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace chromeos {
 

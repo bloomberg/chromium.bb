@@ -12,12 +12,12 @@
 
 #include "base/macros.h"
 #include "ui/display/display.h"
-#include "ui/display/display_export.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
+#include "ui/display/manager/display_manager_export.h"
 
 namespace display {
 
-class DISPLAY_EXPORT DisplayLayoutStore {
+class DISPLAY_MANAGER_EXPORT DisplayLayoutStore {
  public:
   DisplayLayoutStore();
   ~DisplayLayoutStore();

@@ -43,7 +43,7 @@ static_library("test_support") {
     # TODO: this is for ui/wm/public/window_types.h, which is in aura.
     # http://crbug.com/654078.
     "//ui/aura",
-    "//ui/display",
+    "//ui/display/manager",
     "//ui/gfx/geometry",
     "//ui/views",
     "//ui/wm",

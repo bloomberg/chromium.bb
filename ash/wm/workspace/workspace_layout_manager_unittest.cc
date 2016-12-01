@@ -36,7 +36,7 @@
 #include "base/run_loop.h"
 #include "ui/base/ui_base_switches.h"
 #include "ui/base/ui_base_types.h"
-#include "ui/display/manager/display_layout.h"
+#include "ui/display/display_layout.h"
 #include "ui/display/manager/display_manager.h"
 #include "ui/display/screen.h"
 #include "ui/display/test/display_manager_test_api.h"

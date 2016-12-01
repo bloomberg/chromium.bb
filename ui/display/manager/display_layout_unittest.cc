@@ -8,8 +8,8 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
-#include "ui/display/manager/display_layout.h"
-#include "ui/display/manager/display_layout_builder.h"
+#include "ui/display/display_layout.h"
+#include "ui/display/display_layout_builder.h"
 
 namespace display {
 

@@ -8,7 +8,7 @@
 #include "ash/shell.h"
 #include "base/memory/ptr_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/display/chromeos/display_configurator.h"
+#include "ui/display/manager/chromeos/display_configurator.h"
 
 namespace chromeos {
 
