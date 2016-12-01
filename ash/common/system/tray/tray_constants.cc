@@ -38,6 +38,8 @@ const int kTrayLabelItemVerticalPaddingVerticalAlignment = 4;
 
 const int kTrayMenuBottomRowPadding = 5;
 const int kTrayMenuBottomRowPaddingBetweenItems = -1;
+const int kTrayMenuMinimumWidth = 300;
+const int kTrayMenuMinimumWidthMd = 352;
 
 const int kTrayPopupAutoCloseDelayInSeconds = 2;
 const int kTrayPopupAutoCloseDelayForTextInSeconds = 5;

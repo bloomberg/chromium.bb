@@ -116,10 +116,6 @@ class PaddingTrayItem : public SystemTrayItem {
 
 }  // namespace
 
-// The minimum width of the system tray menu.
-const int kMinimumSystemTrayMenuWidth = 300;
-const int kMinimumSystemTrayMenuWidthMd = 352;
-
 // Class to initialize and manage the SystemTrayBubble and TrayBubbleWrapper
 // instances for a bubble.
 
@@ -578,11 +574,11 @@ void SystemTray::ShowItems(const std::vector<SystemTrayItem*>& items,
     full_system_tray_menu_ = items.size() > 1;
 
     // The menu width is fixed for all languages in material design.
-    int menu_width = kMinimumSystemTrayMenuWidthMd;
+    int menu_width = kTrayMenuMinimumWidthMd;
     if (!MaterialDesignController::IsSystemTrayMenuMaterial()) {
       // The menu width is fixed, and it is a per language setting.
       menu_width = std::max(
-          kMinimumSystemTrayMenuWidth,
+          kTrayMenuMinimumWidth,
           WmShell::Get()->system_tray_delegate()->GetSystemTrayMenuWidth());
     }
 

@@ -114,8 +114,8 @@ class ImeTitleView : public views::View, public views::ButtonListener {
     SetLayoutManager(box_layout);
     title_label_ =
         new views::Label(l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_IME));
-    title_label_->SetBorder(
-        views::CreateEmptyBorder(0, kMenuEdgeEffectivePadding, 0, 0));
+    title_label_->SetBorder(views::CreateEmptyBorder(
+        0, kMenuEdgeEffectivePadding, kTrayMenuBottomRowPadding, 0));
     title_label_->SetHorizontalAlignment(gfx::ALIGN_LEFT);
     AddChildView(title_label_);
     box_layout->SetFlexForView(title_label_, 1);
@@ -324,9 +324,12 @@ ImeMenuTray::~ImeMenuTray() {
 }
 
 void ImeMenuTray::ShowImeMenuBubble() {
+  int minimum_menu_width = MaterialDesignController::IsSystemTrayMenuMaterial()
+                               ? kTrayMenuMinimumWidthMd
+                               : kTrayMenuMinimumWidth;
   should_block_shelf_auto_hide_ = true;
   views::TrayBubbleView::InitParams init_params(
-      GetAnchorAlignment(), kTrayPopupMinWidth, kTrayPopupMaxWidth);
+      GetAnchorAlignment(), minimum_menu_width, minimum_menu_width);
   init_params.can_activate = true;
   init_params.close_on_deactivate = true;
 
@@ -357,10 +360,10 @@ void ImeMenuTray::ShowImeMenuBubble() {
                                              height_range.end());
   } else if (current_height > height_range.end()) {
     ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(kTrayPopupMaxWidth, height_range.end()));
+        gfx::Size(minimum_menu_width, height_range.end()));
   } else if (current_height < height_range.start()) {
     ime_list_view_->scroller()->SetFixedSize(
-        gfx::Size(kTrayPopupMaxWidth, height_range.start()));
+        gfx::Size(minimum_menu_width, height_range.start()));
   }
   bubble_view->AddChildView(ime_list_view_);
 
