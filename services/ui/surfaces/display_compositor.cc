@@ -9,7 +9,6 @@
 #include "gpu/command_buffer/client/shared_memory_limits.h"
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/surfaces/gpu_compositor_frame_sink.h"
 
 namespace ui {

@@ -10,6 +10,7 @@
 #include "gpu/ipc/gpu_in_process_thread_service.h"
 #include "gpu/ipc/service/gpu_memory_buffer_factory.h"
 #include "gpu/ipc/service/gpu_watchdog_thread.h"
+#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 #include "services/ui/gpu/gpu_service_internal.h"
 
 namespace {
