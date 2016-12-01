@@ -23,12 +23,6 @@ extern "C" {
 #include "device/hid/hid_device_info.h"
 #include "device/hid/hid_service.h"
 
-namespace base {
-namespace win {
-class MessageWindow;
-}
-}
-
 namespace device {
 
 class HidServiceWin : public HidService, public DeviceMonitorWin::Observer {

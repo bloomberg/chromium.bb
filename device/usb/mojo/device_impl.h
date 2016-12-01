@@ -20,10 +20,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "mojo/public/cpp/bindings/interface_request.h"
 
-namespace net {
-class IOBuffer;
-}
-
 namespace device {
 namespace usb {
 

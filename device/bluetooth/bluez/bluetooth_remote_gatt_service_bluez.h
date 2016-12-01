@@ -22,7 +22,6 @@
 
 namespace device {
 
-class BluetoothAdapter;
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristic;
 

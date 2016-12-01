@@ -17,7 +17,6 @@
 
 namespace dbus {
 class Bus;
-class ObjectPath;
 class Response;
 class ErrorResponse;
 }  // namespace dbus

@@ -23,8 +23,6 @@ class SingleThreadTaskRunner;
 
 namespace device {
 
-class HidConnection;
-
 class HidServiceMac : public HidService {
  public:
   HidServiceMac(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);

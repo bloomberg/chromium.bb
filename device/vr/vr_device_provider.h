@@ -10,7 +10,6 @@
 namespace device {
 
 class VRDevice;
-class VRServiceImpl;
 
 class VRDeviceProvider {
  public:

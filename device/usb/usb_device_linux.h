@@ -23,7 +23,6 @@ class SequencedTaskRunner;
 
 namespace device {
 
-struct UsbConfigDescriptor;
 struct UsbDeviceDescriptor;
 
 class UsbDeviceLinux : public UsbDevice {

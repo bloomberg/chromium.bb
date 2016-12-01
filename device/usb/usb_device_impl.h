@@ -30,10 +30,6 @@ namespace base {
 class SequencedTaskRunner;
 }
 
-namespace dbus {
-class FileDescriptor;
-}
-
 namespace device {
 
 class UsbDeviceHandleImpl;

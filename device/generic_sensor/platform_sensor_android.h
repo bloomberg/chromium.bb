@@ -9,10 +9,6 @@
 #include "base/android/scoped_java_ref.h"
 #include "base/memory/ref_counted.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
 class PlatformSensorAndroid : public PlatformSensor {

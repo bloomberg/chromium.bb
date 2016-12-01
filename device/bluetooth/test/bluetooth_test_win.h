@@ -16,7 +16,6 @@
 
 namespace device {
 class BluetoothAdapterWin;
-class BluetoothRemoteGattCharacteristicWin;
 
 // Windows implementation of BluetoothTestBase.
 class BluetoothTestWin : public BluetoothTestBase,

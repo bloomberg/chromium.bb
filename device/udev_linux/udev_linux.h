@@ -48,7 +48,6 @@
 extern "C" {
 struct udev;
 struct udev_device;
-struct udev_monitor;
 }
 
 namespace device {

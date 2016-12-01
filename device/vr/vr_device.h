@@ -9,14 +9,6 @@
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"
 
-namespace blink {
-struct WebHMDSensorState;
-}
-
-namespace ui {
-class BaseWindow;
-}
-
 namespace device {
 
 class VRDisplayImpl;

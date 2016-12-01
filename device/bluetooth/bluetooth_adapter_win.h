@@ -26,7 +26,6 @@
 
 namespace base {
 class SequencedTaskRunner;
-class Thread;
 }  // namespace base
 
 namespace device {

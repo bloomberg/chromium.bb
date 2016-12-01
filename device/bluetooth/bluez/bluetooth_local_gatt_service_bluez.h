@@ -16,13 +16,6 @@
 #include "device/bluetooth/bluez/bluetooth_gatt_service_bluez.h"
 #include "device/bluetooth/bluez/bluetooth_local_gatt_characteristic_bluez.h"
 
-namespace device {
-
-class BluetoothAdapter;
-class BluetoothDevice;
-
-}  // namespace device
-
 namespace bluez {
 
 class BluetoothAdapterBlueZ;

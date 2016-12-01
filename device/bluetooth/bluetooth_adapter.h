@@ -36,7 +36,6 @@ class BluetoothRemoteGattDescriptor;
 class BluetoothRemoteGattService;
 class BluetoothSocket;
 class BluetoothUUID;
-struct BluetoothAdapterDeleter;
 enum class UMABluetoothDiscoverySessionOutcome;
 
 // BluetoothAdapter represents a local Bluetooth adapter which may be used to

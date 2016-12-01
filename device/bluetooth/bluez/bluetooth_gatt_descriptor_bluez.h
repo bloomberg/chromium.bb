@@ -13,8 +13,6 @@
 
 namespace bluez {
 
-class BluetoothGattCharacteristicBlueZ;
-
 // The BluetoothGattDescriptorBlueZ class implements BluetoothGattDescriptor for
 // GATT characteristic descriptors for platforms that use BlueZ.
 class BluetoothGattDescriptorBlueZ

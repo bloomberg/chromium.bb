@@ -17,8 +17,6 @@
 
 namespace device {
 
-class GamepadService;
-
 // Data fetcher that returns canned data for the gamepad provider.
 class MockGamepadDataFetcher : public GamepadDataFetcher {
  public:

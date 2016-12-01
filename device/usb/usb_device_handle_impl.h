@@ -38,7 +38,6 @@ struct EndpointMapValue {
 };
 
 class UsbContext;
-struct UsbConfigDescriptor;
 class UsbDeviceImpl;
 
 typedef libusb_device_handle* PlatformUsbDeviceHandle;

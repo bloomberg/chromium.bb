@@ -11,10 +11,6 @@
 #include "base/mac/scoped_ioobject.h"
 #include "device/generic_sensor/platform_sensor.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
 namespace device {
 
 // Implementation of PlatformSensor for macOS to query the ambient light sensor.

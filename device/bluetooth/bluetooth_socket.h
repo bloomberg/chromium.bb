@@ -18,7 +18,6 @@ class IOBuffer;
 namespace device {
 
 class BluetoothDevice;
-class BluetoothUUID;
 
 // BluetoothSocket represents a socket to a specific service on a
 // BluetoothDevice.  BluetoothSocket objects are ref counted and may outlive

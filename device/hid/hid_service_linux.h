@@ -17,8 +17,6 @@
 
 namespace device {
 
-class HidConnection;
-
 class HidServiceLinux : public HidService {
  public:
   HidServiceLinux(scoped_refptr<base::SingleThreadTaskRunner> ui_task_runner);

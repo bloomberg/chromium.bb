@@ -16,7 +16,6 @@ namespace device {
 
 class BluetoothDevice;
 class BluetoothRemoteGattCharacteristic;
-class BluetoothRemoteGattDescriptor;
 
 // BluetoothRemoteGattService represents a remote GATT service.
 //

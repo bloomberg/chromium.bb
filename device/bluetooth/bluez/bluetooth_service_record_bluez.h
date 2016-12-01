@@ -13,10 +13,6 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluez/bluetooth_service_attribute_value_bluez.h"
 
-namespace base {
-class Value;
-}
-
 namespace bluez {
 
 class DEVICE_BLUETOOTH_EXPORT BluetoothServiceRecordBlueZ {

@@ -17,9 +17,6 @@
 
 namespace device {
 
-class BluetoothRemoteGattDescriptor;
-class BluetoothGattNotifySession;
-
 // BluetoothGattCharacteristic represents a local or remote GATT characteristic.
 // A GATT characteristic is a basic data element used to construct a GATT
 // service. Hence, instances of a BluetoothGattCharacteristic are associated

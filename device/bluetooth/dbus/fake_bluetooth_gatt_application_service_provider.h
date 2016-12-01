@@ -19,8 +19,6 @@
 
 namespace bluez {
 
-class BluetoothLocalGattCharacteristicBlueZ;
-class BluetoothLocalGattDescriptorBlueZ;
 class BluetoothLocalGattServiceBlueZ;
 
 // FakeBluetoothGattApplicationServiceProvider simulates behavior of a local

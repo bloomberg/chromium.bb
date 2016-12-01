@@ -12,8 +12,6 @@
 
 namespace device {
 
-class BluetoothAdapterAndroid;
-
 // Android implementation of BluetoothTestBase.
 class BluetoothTestAndroid : public BluetoothTestBase {
  public:

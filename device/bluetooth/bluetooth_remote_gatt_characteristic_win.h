@@ -16,7 +16,6 @@
 
 namespace device {
 
-class BluetoothAdapterWin;
 class BluetoothRemoteGattDescriptorWin;
 class BluetoothRemoteGattServiceWin;
 class BluetoothTaskManagerWin;

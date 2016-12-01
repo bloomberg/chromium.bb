@@ -26,10 +26,6 @@
 #include "device/bluetooth/bluetooth_export.h"
 #include "device/bluetooth/bluetooth_uuid.h"
 
-namespace base {
-class BinaryValue;
-}
-
 namespace device {
 
 class BluetoothAdapter;
