@@ -2280,7 +2280,7 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   CRWSessionEntry* fromEntry = self.sessionController.currentEntry;
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
-  if (![userDefaults boolForKey:@"PendingIndexNavigationDisabled"]) {
+  if ([userDefaults boolForKey:@"PendingIndexNavigationEnabled"]) {
     [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
 
     BOOL sameDocumentNavigation =
