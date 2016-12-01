@@ -354,7 +354,11 @@ struct GPU_EXPORT ContextState {
 
   void InitStateManual(const ContextState* prev_state) const;
 
-  bool framebuffer_srgb_;
+  // EnableDisableFramebufferSRGB is called at very high frequency. Cache the
+  // true value of FRAMEBUFFER_SRGB, if we know it, to elide some of these
+  // calls.
+  bool framebuffer_srgb_valid_ = false;
+  bool framebuffer_srgb_ = false;
 
   // Generic vertex attrib base types: FLOAT, INT, or UINT.
   // Each base type is encoded into 2 bits, the lowest 2 bits for location 0,

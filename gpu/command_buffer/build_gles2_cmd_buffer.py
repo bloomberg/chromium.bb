@@ -76,6 +76,8 @@ _CAPABILITY_FLAGS = [
   {'name': 'cull_face'},
   {'name': 'depth_test', 'state_flag': 'framebuffer_state_.clear_state_dirty'},
   {'name': 'dither', 'default': True},
+  {'name': 'framebuffer_srgb_ext', 'default': True,
+   'extension_flag': 'ext_srgb_write_control'},
   {'name': 'polygon_offset_fill'},
   {'name': 'sample_alpha_to_coverage'},
   {'name': 'sample_coverage'},

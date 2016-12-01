@@ -221,7 +221,6 @@ ContextState::ContextState(FeatureInfo* feature_info,
       pack_reverse_row_order(false),
       ignore_cached_state(false),
       fbo_binding_for_scissor_workaround_dirty(false),
-      framebuffer_srgb_(false),
       feature_info_(feature_info),
       error_state_(ErrorState::Create(error_state_client, logger)) {
   Initialize();
@@ -505,15 +504,8 @@ void ContextState::RestoreState(const ContextState* prev_state) {
   RestoreIndexedUniformBufferBindings(prev_state);
   RestoreGlobalState(prev_state);
 
-  if (!prev_state) {
-    if (feature_info_->feature_flags().desktop_srgb_support) {
-      framebuffer_srgb_ = false;
-      glDisable(GL_FRAMEBUFFER_SRGB);
-    }
-  } else if (framebuffer_srgb_ != prev_state->framebuffer_srgb_) {
-    // FRAMEBUFFER_SRGB will be restored lazily at render time.
-    framebuffer_srgb_ = prev_state->framebuffer_srgb_;
-  }
+  // FRAMEBUFFER_SRGB will be restored lazily at render time.
+  framebuffer_srgb_valid_ = false;
 }
 
 ErrorState* ContextState::GetErrorState() {
@@ -706,10 +698,11 @@ PixelStoreParams ContextState::GetUnpackParams(Dimension dimension) {
 }
 
 void ContextState::EnableDisableFramebufferSRGB(bool enable) {
-  if (framebuffer_srgb_ == enable)
+  if (framebuffer_srgb_valid_ && framebuffer_srgb_ == enable)
     return;
   EnableDisable(GL_FRAMEBUFFER_SRGB, enable);
   framebuffer_srgb_ = enable;
+  framebuffer_srgb_valid_ = true;
 }
 
 void ContextState::InitStateManual(const ContextState*) const {

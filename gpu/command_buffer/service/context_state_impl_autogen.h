@@ -21,6 +21,8 @@ ContextState::EnableFlags::EnableFlags()
       cached_depth_test(false),
       dither(true),
       cached_dither(true),
+      framebuffer_srgb_ext(true),
+      cached_framebuffer_srgb_ext(true),
       polygon_offset_fill(false),
       cached_polygon_offset_fill(false),
       sample_alpha_to_coverage(false),
@@ -167,6 +169,13 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
     if (prev_state->enable_flags.cached_dither != enable_flags.cached_dither) {
       EnableDisable(GL_DITHER, enable_flags.cached_dither);
     }
+    if (feature_info_->feature_flags().ext_srgb_write_control) {
+      if (prev_state->enable_flags.cached_framebuffer_srgb_ext !=
+          enable_flags.cached_framebuffer_srgb_ext) {
+        EnableDisable(GL_FRAMEBUFFER_SRGB_EXT,
+                      enable_flags.cached_framebuffer_srgb_ext);
+      }
+    }
     if (prev_state->enable_flags.cached_polygon_offset_fill !=
         enable_flags.cached_polygon_offset_fill) {
       EnableDisable(GL_POLYGON_OFFSET_FILL,
@@ -219,6 +228,10 @@ void ContextState::InitCapabilities(const ContextState* prev_state) const {
     EnableDisable(GL_CULL_FACE, enable_flags.cached_cull_face);
     EnableDisable(GL_DEPTH_TEST, enable_flags.cached_depth_test);
     EnableDisable(GL_DITHER, enable_flags.cached_dither);
+    if (feature_info_->feature_flags().ext_srgb_write_control) {
+      EnableDisable(GL_FRAMEBUFFER_SRGB_EXT,
+                    enable_flags.cached_framebuffer_srgb_ext);
+    }
     EnableDisable(GL_POLYGON_OFFSET_FILL,
                   enable_flags.cached_polygon_offset_fill);
     EnableDisable(GL_SAMPLE_ALPHA_TO_COVERAGE,
@@ -433,6 +446,8 @@ bool ContextState::GetEnabled(GLenum cap) const {
       return enable_flags.depth_test;
     case GL_DITHER:
       return enable_flags.dither;
+    case GL_FRAMEBUFFER_SRGB_EXT:
+      return enable_flags.framebuffer_srgb_ext;
     case GL_POLYGON_OFFSET_FILL:
       return enable_flags.polygon_offset_fill;
     case GL_SAMPLE_ALPHA_TO_COVERAGE:
@@ -833,6 +848,12 @@ bool ContextState::GetStateAsGLint(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLint>(enable_flags.dither);
+      }
+      return true;
+    case GL_FRAMEBUFFER_SRGB_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLint>(enable_flags.framebuffer_srgb_ext);
       }
       return true;
     case GL_POLYGON_OFFSET_FILL:
@@ -1267,6 +1288,12 @@ bool ContextState::GetStateAsGLfloat(GLenum pname,
       *num_written = 1;
       if (params) {
         params[0] = static_cast<GLfloat>(enable_flags.dither);
+      }
+      return true;
+    case GL_FRAMEBUFFER_SRGB_EXT:
+      *num_written = 1;
+      if (params) {
+        params[0] = static_cast<GLfloat>(enable_flags.framebuffer_srgb_ext);
       }
       return true;
     case GL_POLYGON_OFFSET_FILL:

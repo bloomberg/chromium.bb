@@ -435,6 +435,13 @@ void GLES2DecoderTestBase::InitDecoderWithCommandLine(
       .Times(1)
       .RetiresOnSaturation();
 
+  if (group_->feature_info()->feature_flags().ext_srgb_write_control ||
+      group_->feature_info()->feature_flags().desktop_srgb_support) {
+    EXPECT_CALL(*gl_, Disable(GL_FRAMEBUFFER_SRGB))
+        .Times(1)
+        .RetiresOnSaturation();
+  }
+
   // TODO(boliu): Remove OS_ANDROID once crbug.com/259023 is fixed and the
   // workaround has been reverted.
 #if !defined(OS_ANDROID)
