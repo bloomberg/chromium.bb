@@ -51,6 +51,13 @@ Histogram* HistogramFactoryGetCounts(
           base::HistogramBase::kUmaTargetedHistogramFlag));
 }
 
+Histogram* HistogramFactoryGetCountsLinear(
+    const std::string& name, int min, int max, int bucket_count) {
+  return reinterpret_cast<Histogram*>(
+      base::LinearHistogram::FactoryGet(name, min, max, bucket_count,
+          base::HistogramBase::kUmaTargetedHistogramFlag));
+}
+
 Histogram* HistogramFactoryGetEnumeration(
     const std::string& name, int boundary) {
   return reinterpret_cast<Histogram*>(
