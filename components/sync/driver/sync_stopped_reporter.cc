@@ -9,6 +9,7 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/stringprintf.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/sync/protocol/sync.pb.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_status_code.h"
@@ -72,6 +73,8 @@ void SyncStoppedReporter::ReportSyncStopped(const std::string& access_token,
   fetcher_->SetLoadFlags(net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
                          net::LOAD_DO_NOT_SAVE_COOKIES |
                          net::LOAD_DO_NOT_SEND_COOKIES);
+  data_use_measurement::DataUseUserData::AttachToFetcher(
+      fetcher_.get(), data_use_measurement::DataUseUserData::SYNC);
   fetcher_->Start();
   timer_.Start(FROM_HERE, base::TimeDelta::FromSeconds(kRequestTimeoutSeconds),
                this, &SyncStoppedReporter::OnTimeout);
