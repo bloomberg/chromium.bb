@@ -43,6 +43,7 @@ android_library("cast_shell_java") {
     "//base:base_java",
     "//chromecast/base:base_java",
     "//content/public/android:content_java",
+    "//device/geolocation:geolocation_java",
     "//media/base/android:media_java",
     "//net/android:net_java",
 

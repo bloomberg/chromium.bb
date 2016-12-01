@@ -445,8 +445,12 @@ if (is_android) {
     apk_name = "CastShell"
     android_manifest = "$root_gen_dir/cast_shell_manifest/AndroidManifest.xml"
     android_manifest_dep = "//chromecast/browser/android:cast_shell_manifest"
+
+    shared_libraries = [ "//chromecast/android:libcast_shell_android" ]
+
     deps = [
       ":cast_shell_apk_assets",
+      "//base:base_java",
       "//chromecast/android:libcast_shell_android",
       "//chromecast/browser/android:cast_shell_java",
     ]

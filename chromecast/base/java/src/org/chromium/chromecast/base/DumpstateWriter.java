@@ -4,6 +4,7 @@
 
 package org.chromium.chromecast.base;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -16,9 +17,11 @@ import java.util.Map;
  */
 @JNINamespace("chromecast")
 public final class DumpstateWriter {
-    private Map<String, String> mDumpValues;
+    private static final String TAG = "DumpstateWriter";
 
     private static DumpstateWriter sDumpstateWriter;
+
+    private Map<String, String> mDumpValues;
 
     public DumpstateWriter() {
         sDumpstateWriter = this;
@@ -34,8 +37,8 @@ public final class DumpstateWriter {
     @CalledByNative
     private static void addDumpValue(String name, String value) {
         if (sDumpstateWriter == null) {
-            throw new IllegalStateException(
-                    "DumpstateWriter must be created before adding values.");
+            Log.w(TAG, "DumpstateWriter must be created before adding values: %s: %s", name, value);
+            return;
         }
         sDumpstateWriter.mDumpValues.put(name, value);
     }
