@@ -249,7 +249,7 @@ DataReductionProxyIOData::CreateNetworkDelegate(
 }
 
 std::unique_ptr<DataReductionProxyDelegate>
-DataReductionProxyIOData::CreateProxyDelegateForTesting() const {
+DataReductionProxyIOData::CreateProxyDelegate() const {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   return base::MakeUnique<DataReductionProxyDelegate>(
       config_.get(), configurator_.get(), event_creator_.get(),

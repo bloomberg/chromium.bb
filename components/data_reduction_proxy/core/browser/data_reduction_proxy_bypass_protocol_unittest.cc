@@ -778,8 +778,7 @@ class DataReductionProxyBypassProtocolEndToEndTest : public testing::Test {
             .WithMockClientSocketFactory(mock_socket_factory_.get())
             .WithURLRequestContext(context_.get())
             .Build();
-    proxy_delegate_ =
-        drp_test_context_->io_data()->CreateProxyDelegateForTesting();
+    proxy_delegate_ = drp_test_context_->io_data()->CreateProxyDelegate();
     context_->set_proxy_delegate(proxy_delegate_.get());
   }
 
