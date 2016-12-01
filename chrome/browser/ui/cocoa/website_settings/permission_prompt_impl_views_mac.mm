@@ -4,7 +4,6 @@
 
 #include "base/memory/ptr_util.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #include "chrome/browser/ui/browser_window.h"
 #import "chrome/browser/ui/cocoa/browser_window_controller.h"
@@ -13,6 +12,7 @@
 #import "chrome/browser/ui/cocoa/website_settings/permission_bubble_controller.h"
 #include "chrome/browser/ui/views/website_settings/permission_prompt_impl.h"
 #import "ui/base/cocoa/cocoa_base_utils.h"
+#include "ui/base/material_design/material_design_controller.h"
 #import "ui/gfx/mac/coordinate_conversion.h"
 
 // Implementation of PermissionPromptImpl's anchor methods for Cocoa
@@ -35,9 +35,10 @@ views::BubbleBorder::Arrow PermissionPromptImpl::GetAnchorArrow() {
 // static
 std::unique_ptr<PermissionPrompt> PermissionPrompt::Create(
     content::WebContents* web_contents) {
-  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     return base::WrapUnique(new PermissionPromptImpl(
         chrome::FindBrowserWithWebContents(web_contents)));
+  }
   return base::MakeUnique<PermissionBubbleCocoa>(
       chrome::FindBrowserWithWebContents(web_contents));
 }

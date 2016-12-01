@@ -26,6 +26,7 @@
 #include "content/public/browser/notification_source.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "ui/base/l10n/l10n_util_mac.h"
+#include "ui/base/material_design/material_design_controller.h"
 #include "ui/gfx/image/image_skia.h"
 #include "ui/gfx/image/image_skia_util_mac.h"
 
@@ -639,14 +640,14 @@ namespace chrome {
 
 // Declared in browser_dialogs.h.
 task_manager::TaskManagerTableModel* ShowTaskManager(Browser* browser) {
-  if (chrome::ToolkitViewsDialogsEnabled())
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     return chrome::ShowTaskManagerViews(browser);
 
   return task_manager::TaskManagerMac::Show();
 }
 
 void HideTaskManager() {
-  if (chrome::ToolkitViewsDialogsEnabled()) {
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial()) {
     chrome::HideTaskManagerViews();
     return;
   }

@@ -22,6 +22,7 @@
 #include "content/public/browser/web_contents.h"
 #include "net/url_request/url_request.h"
 #include "third_party/google_toolbox_for_mac/src/AppKit/GTMUILocalizerAndLayoutTweaker.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using autofill::PasswordForm;
 using content::BrowserThread;
@@ -134,7 +135,7 @@ class LoginHandlerMac : public LoginHandler,
 // static
 LoginHandler* LoginHandler::Create(net::AuthChallengeInfo* auth_info,
                                    net::URLRequest* request) {
-  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     return chrome::CreateLoginHandlerViews(auth_info, request);
   return new LoginHandlerMac(auth_info, request);
 }

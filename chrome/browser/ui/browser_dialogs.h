@@ -25,10 +25,6 @@ class GURL;
 class LoginHandler;
 class Profile;
 
-namespace base {
-struct Feature;
-}
-
 namespace bookmarks {
 class BookmarkBubbleObserver;
 }
@@ -65,14 +61,6 @@ class WebDialogDelegate;
 }
 
 namespace chrome {
-
-#if defined(OS_MACOSX)
-// Makes ToolkitViewsDialogsEnabled() available to chrome://flags.
-extern const base::Feature kMacViewsNativeDialogs;
-
-// Makes ToolkitViewsWebUIDialogsEnabled() available to chrome://flags.
-extern const base::Feature kMacViewsWebUIDialogs;
-#endif  // OS_MACOSX
 
 // Shows or hides the Task Manager. |browser| can be NULL when called from Ash.
 // Returns a pointer to the underlying TableModel, which can be ignored, or used
@@ -121,14 +109,6 @@ content::ColorChooser* ShowColorChooser(content::WebContents* web_contents,
                                         SkColor initial_color);
 
 #if defined(OS_MACOSX)
-
-// For Mac, returns true if Chrome should show an equivalent toolkit-views based
-// dialog instead of a native-looking Cocoa dialog.
-bool ToolkitViewsDialogsEnabled();
-
-// For Mac, returns true if Chrome should show an equivalent toolkit-views based
-// dialog instead of a WebUI-styled Cocoa dialog.
-bool ToolkitViewsWebUIDialogsEnabled();
 
 // Shows a Views website settings bubble at the given anchor point.
 void ShowWebsiteSettingsBubbleViewsAtPoint(

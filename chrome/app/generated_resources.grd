@@ -5459,7 +5459,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Material Design in the rest of the browser's native UI
       </message>
       <message name="IDS_FLAGS_SECONDARY_UI_MD_DESCRIPTION" desc="Description of the flag which enables or disables material design in the rest of the native UI of the browser (beyond top chrome).">
-        Extends the --top-chrome-md setting to secondary UI (bubbles, dialogs, etc.).
+        Extends the --top-chrome-md setting to secondary UI (bubbles, dialogs, etc.). On Mac, this enables MacViews, which uses toolkit-views for native browser dialogs.
       </message>
       <message name="IDS_FLAGS_SCROLL_PREDICTION_DESCRIPTION" desc="Description of the flag to enable scroll prediction.">
         Predicts the finger's future position during scrolls allowing time to render the frame before the finger is there.
@@ -6818,18 +6818,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
         <message name="IDS_FLAGS_APP_WINDOW_CYCLING_DESCRIPTION" desc="Description of flag to enable or disable custom Cmd+` App window cycling on Mac.">
           Changes the behavior of Cmd+` when a Chrome App becomes active. When enabled, Chrome Apps will not be cycled when Cmd+` is pressed from a browser window, and browser windows will not be cycled when a Chrome App is active.
-        </message>
-        <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_DIALOGS_NAME" desc="Name of the flag to enable toolkit-views for native-looking browser dialogs on Mac." translateable="false">
-          Toolkit-Views Native-style Browser Dialogs.
-        </message>
-        <message name="IDS_FLAGS_MAC_VIEWS_NATIVE_DIALOGS_DESCRIPTION" desc="Description of the flag to enable toolkit-views for native-looking browser dialogs on Mac." translateable="false">
-          Use toolkit-views dialogs in place of the native Cocoa dialogs that use unaltered OSX-style buttons.
-        </message>
-        <message name="IDS_FLAGS_MAC_VIEWS_WEBUI_DIALOGS_NAME" desc="Name of the flag to enable toolkit-views for WebUI-themed browser dialogs on Mac." translateable="false">
-          Toolkit-Views WebUI-style Browser Dialogs.
-        </message>
-        <message name="IDS_FLAGS_MAC_VIEWS_WEBUI_DIALOGS_DESCRIPTION" desc="Description of the flag to enable toolkit-views for WebUI-themed browser dialogs on Mac." translateable="false">
-          Use toolkit-views dialogs in place of the native Cocoa dialogs that use square, grey, webui-style buttons.
         </message>
       </if>
       <if expr="chromeos">

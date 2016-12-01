@@ -59,9 +59,6 @@ void ShowBookmarkBubbleViewsAtPoint(const gfx::Point& anchor_point,
 }
 
 task_manager::TaskManagerTableModel* ShowTaskManagerViews(Browser* browser) {
-  // On platforms other than Mac, the Views task manager is shown unless
-  // explicitly disabled. Assume that running with ToolkitViewsDialogsEnabled()
-  // on Mac also means the Views task manager is desired.
   return task_manager::TaskManagerView::Show(browser);
 }
 

@@ -14,13 +14,13 @@
 #include "chrome/browser/extensions/api/experience_sampling_private/experience_sampling.h"
 #include "chrome/browser/extensions/extension_install_prompt_show_params.h"
 #include "chrome/browser/ui/browser.h"
-#include "chrome/browser/ui/browser_dialogs.h"
 #include "chrome/browser/ui/browser_finder.h"
 #import "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_sheet.h"
 #include "chrome/browser/ui/cocoa/constrained_window/constrained_window_custom_window.h"
 #import "chrome/browser/ui/cocoa/extensions/windowed_install_dialog_controller.h"
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "content/public/browser/web_contents.h"
+#include "ui/base/material_design/material_design_controller.h"
 
 using extensions::ExperienceSamplingEvent;
 
@@ -113,7 +113,7 @@ void ExtensionInstallDialogController::OnPromptButtonClicked(
 // static
 ExtensionInstallPrompt::ShowDialogCallback
 ExtensionInstallPrompt::GetDefaultShowDialogCallback() {
-  if (chrome::ToolkitViewsWebUIDialogsEnabled())
+  if (ui::MaterialDesignController::IsSecondaryUiMaterial())
     return ExtensionInstallPrompt::GetViewsShowDialogCallback();
   return base::Bind(&ShowExtensionInstallDialogImpl);
 }
