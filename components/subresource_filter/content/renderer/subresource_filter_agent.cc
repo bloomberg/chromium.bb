@@ -80,6 +80,7 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadCommitted() {
 void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   DCHECK(filter_for_last_committed_load_);
   const auto& statistics = filter_for_last_committed_load_->statistics();
+
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total",
       statistics.num_loads_total);

@@ -64,11 +64,25 @@ class SubresourceFilterAgentUnderTest : public SubresourceFilterAgent {
   DISALLOW_COPY_AND_ASSIGN(SubresourceFilterAgentUnderTest);
 };
 
-const char kTestFirstURL[] = "http://example.com/alpha";
-const char kTestSecondURL[] = "http://example.com/beta";
-const char kTestFirstURLPathSuffix[] = "alpha";
-const char kTestSecondURLPathSuffix[] = "beta";
-const char kTestBothURLsPathSuffix[] = "a";
+constexpr const char kTestFirstURL[] = "http://example.com/alpha";
+constexpr const char kTestSecondURL[] = "http://example.com/beta";
+constexpr const char kTestFirstURLPathSuffix[] = "alpha";
+constexpr const char kTestSecondURLPathSuffix[] = "beta";
+constexpr const char kTestBothURLsPathSuffix[] = "a";
+
+// Histogram names.
+constexpr const char kDocumentLoadRulesetIsAvailable[] =
+    "SubresourceFilter.DocumentLoad.RulesetIsAvailable";
+constexpr const char kDocumentLoadActivationState[] =
+    "SubresourceFilter.DocumentLoad.ActivationState";
+constexpr const char kSubresourcesEvaluated[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated";
+constexpr const char kSubresourcesTotal[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total";
+constexpr const char kSubresourcesMatchedRules[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules";
+constexpr const char kSubresourcesDisallowed[] =
+    "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed";
 
 }  // namespace
 
@@ -299,16 +313,14 @@ TEST_F(SubresourceFilterAgentTest, Disabled_HistogramSamples) {
   FinishLoad();
 
   histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(ActivationState::DISABLED), 1);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0);
+      kDocumentLoadActivationState, static_cast<int>(ActivationState::DISABLED),
+      1);
+  histogram_tester.ExpectTotalCount(kDocumentLoadRulesetIsAvailable, 0);
+
+  histogram_tester.ExpectTotalCount(kSubresourcesTotal, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesMatchedRules, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesDisallowed, 0);
 }
 
 TEST_F(SubresourceFilterAgentTest,
@@ -318,18 +330,14 @@ TEST_F(SubresourceFilterAgentTest,
   FinishLoad();
 
   histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(ActivationState::ENABLED), 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 0, 1);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules", 0);
-  histogram_tester.ExpectTotalCount(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0);
+      kDocumentLoadActivationState, static_cast<int>(ActivationState::ENABLED),
+      1);
+  histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 0, 1);
+
+  histogram_tester.ExpectTotalCount(kSubresourcesTotal, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesMatchedRules, 0);
+  histogram_tester.ExpectTotalCount(kSubresourcesDisallowed, 0);
 }
 
 TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
@@ -356,25 +364,18 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
   FinishLoad();
 
   histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(ActivationState::ENABLED), 2);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 2);
-  EXPECT_THAT(histogram_tester.GetAllSamples(
-                  "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total"),
+      kDocumentLoadActivationState, static_cast<int>(ActivationState::ENABLED),
+      2);
+  histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 2);
+
+  EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesTotal),
               ::testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated"),
-      ::testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules"),
-      ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
-  EXPECT_THAT(
-      histogram_tester.GetAllSamples(
-          "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed"),
-      ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesEvaluated),
+              ::testing::ElementsAre(base::Bucket(2, 1), base::Bucket(3, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesMatchedRules),
+              ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+  EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesDisallowed),
+              ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
 }
 
 TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
@@ -393,19 +394,15 @@ TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
   ExpectLoadAllowed(kTestSecondURL, true);
   FinishLoad();
 
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.ActivationState",
-      static_cast<int>(ActivationState::DRYRUN), 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.RulesetIsAvailable", 1, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Total", 3, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Evaluated", 3, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules", 2, 1);
-  histogram_tester.ExpectUniqueSample(
-      "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed", 0, 1);
+  histogram_tester.ExpectUniqueSample(kDocumentLoadActivationState,
+                                      static_cast<int>(ActivationState::DRYRUN),
+                                      1);
+  histogram_tester.ExpectUniqueSample(kDocumentLoadRulesetIsAvailable, 1, 1);
+
+  histogram_tester.ExpectUniqueSample(kSubresourcesTotal, 3, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesEvaluated, 3, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesMatchedRules, 2, 1);
+  histogram_tester.ExpectUniqueSample(kSubresourcesDisallowed, 0, 1);
 }
 
 }  // namespace subresource_filter
