@@ -498,6 +498,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     attribute @@toStringTag
 [Worker]     getter canvas
 [Worker]     getter fillStyle
+[Worker]     getter globalAlpha
 [Worker]     getter globalCompositeOperation
 [Worker]     getter imageSmoothingEnabled
 [Worker]     getter imageSmoothingQuality
@@ -547,6 +548,7 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method transform
 [Worker]     method translate
 [Worker]     setter fillStyle
+[Worker]     setter globalAlpha
 [Worker]     setter globalCompositeOperation
 [Worker]     setter imageSmoothingEnabled
 [Worker]     setter imageSmoothingQuality
