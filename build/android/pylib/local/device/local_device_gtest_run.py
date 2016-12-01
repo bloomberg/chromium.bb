@@ -382,6 +382,8 @@ class LocalDeviceGtestRun(local_device_test_run.LocalDeviceTestRun):
       flags = self._test_instance.test_arguments or ''
       if self._test_instance.enable_xml_result_parsing:
         flags += ' --gtest_output=xml:%s' % device_tmp_results_file.name
+      if self._test_instance.gtest_also_run_disabled_tests:
+        flags += ' --gtest_also_run_disabled_tests'
 
       output = self._delegate.Run(
           test, device, flags=flags,

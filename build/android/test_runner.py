@@ -266,7 +266,8 @@ def AddJavaTestOptions(argument_group):
       dest='test_filter',
       help=('Test filter (if not fully qualified, will run all matches).'))
   argument_group.add_argument(
-      '--repeat', dest='repeat', type=int, default=0,
+      '--repeat', '--gtest_repeat', '--gtest-repeat', dest='repeat',
+      type=int, default=0,
       help='Number of times to repeat the specified set of tests.')
   argument_group.add_argument(
       '--break-on-failure', '--break_on_failure',
