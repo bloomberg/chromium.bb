@@ -105,12 +105,13 @@ class NativeRunnerDelegateImpl : public service_manager::NativeRunnerDelegate {
 
     // When launching the browser process, ensure that we don't inherit the
     // --mash flag so it proceeds with the normal content/browser startup path.
-    base::CommandLine::StringVector argv(command_line->argv());
-    auto iter =
-        std::find(argv.begin(), argv.end(), FILE_PATH_LITERAL("--mash"));
-    if (iter != argv.end())
-      argv.erase(iter);
-    *command_line = base::CommandLine(argv);
+    // Eliminate all copies in case the developer passed more than one.
+    base::CommandLine::StringVector new_argv;
+    for (const base::CommandLine::StringType& arg : command_line->argv()) {
+      if (arg != FILE_PATH_LITERAL("--mash"))
+        new_argv.push_back(arg);
+    }
+    *command_line = base::CommandLine(new_argv);
   }
 
   DISALLOW_COPY_AND_ASSIGN(NativeRunnerDelegateImpl);
