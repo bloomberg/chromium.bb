@@ -9,3 +9,5 @@ per-file .gitignore=*
 per-file DEPS=*
 per-file PRESUBMIT*.py=dpranke@chromium.org
 per-file PRESUBMIT*.py=thakis@chromium.org
+
+# COMPONENT: Blink
