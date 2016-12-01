@@ -34,7 +34,7 @@ class AppWebMessagePortServiceImpl : public AppWebMessagePortService {
   // AppWebMessagePortService implementation
 
   void CreateMessageChannel(JNIEnv* env,
-                            jobjectArray ports,
+                            const base::android::JavaRef<jobjectArray>& ports,
                             WebContents* web_contents) override;
   void CleanupPort(int message_port_id) override;
 
@@ -73,7 +73,7 @@ class AppWebMessagePortServiceImpl : public AppWebMessagePortService {
       int* port1,
       int* port2);
   void OnMessageChannelCreated(
-      base::android::ScopedJavaGlobalRef<jobjectArray>* ports,
+      const base::android::JavaRef<jobjectArray>& ports,
       int* port1,
       int* port2);
   void AddPort(int message_port_id, AppWebMessagePortMessageFilter* filter);

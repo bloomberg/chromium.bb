@@ -21,6 +21,7 @@ using base::android::AttachCurrentThread;
 using base::android::ConvertJavaStringToUTF16;
 using base::android::ConvertUTF16ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ToJavaIntArray;
@@ -48,7 +49,7 @@ void AppWebMessagePortServiceImpl::Init(JNIEnv* env, jobject obj) {
 
 void AppWebMessagePortServiceImpl::CreateMessageChannel(
     JNIEnv* env,
-    jobjectArray ports,
+    const JavaRef<jobjectArray>& ports,
     WebContents* web_contents) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   RenderFrameHostImpl* rfh =
@@ -56,9 +57,6 @@ void AppWebMessagePortServiceImpl::CreateMessageChannel(
   int routing_id = web_contents->GetMainFrame()->GetRoutingID();
   scoped_refptr<AppWebMessagePortMessageFilter> filter =
       rfh->GetAppWebMessagePortMessageFilter(routing_id);
-  ScopedJavaGlobalRef<jobjectArray>* j_ports =
-      new ScopedJavaGlobalRef<jobjectArray>();
-  j_ports->Reset(env, ports);
 
   int* portId1 = new int;
   int* portId2 = new int;
@@ -67,8 +65,9 @@ void AppWebMessagePortServiceImpl::CreateMessageChannel(
       base::Bind(&AppWebMessagePortServiceImpl::CreateMessageChannelOnIOThread,
                  base::Unretained(this), filter, portId1, portId2),
       base::Bind(&AppWebMessagePortServiceImpl::OnMessageChannelCreated,
-                 base::Unretained(this), base::Owned(j_ports),
-                 base::Owned(portId1), base::Owned(portId2)));
+                 base::Unretained(this),
+                 ScopedJavaGlobalRef<jobjectArray>(ports), base::Owned(portId1),
+                 base::Owned(portId2)));
 }
 
 void AppWebMessagePortServiceImpl::OnConvertedWebToAppMessage(
@@ -211,7 +210,7 @@ void AppWebMessagePortServiceImpl::CreateMessageChannelOnIOThread(
 }
 
 void AppWebMessagePortServiceImpl::OnMessageChannelCreated(
-    ScopedJavaGlobalRef<jobjectArray>* ports,
+    const JavaRef<jobjectArray>& ports,
     int* port1,
     int* port2) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
@@ -220,7 +219,7 @@ void AppWebMessagePortServiceImpl::OnMessageChannelCreated(
   if (obj.is_null())
     return;
   Java_AppWebMessagePortService_onMessageChannelCreated(env, obj, *port1,
-                                                        *port2, *ports);
+                                                        *port2, ports);
 }
 
 // Adds a new port to the message port service.

@@ -23,6 +23,7 @@
 #include "ui/gfx/codec/png_codec.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;
@@ -30,9 +31,8 @@ using base::android::ConvertJavaStringToUTF16;
 
 namespace {
 
-void OnLargeIconAvailable(
-    ScopedJavaGlobalRef<jobject>* j_callback,
-    const favicon_base::LargeIconResult& result) {
+void OnLargeIconAvailable(const JavaRef<jobject>& j_callback,
+                          const favicon_base::LargeIconResult& result) {
   JNIEnv* env = AttachCurrentThread();
 
   // Convert the result to a Java Bitmap.
@@ -51,7 +51,7 @@ void OnLargeIconAvailable(
     fallback = *result.fallback_icon_style;
 
   Java_LargeIconCallback_onLargeIconAvailable(
-      env, j_callback->obj(), j_bitmap, fallback.background_color,
+      env, j_callback, j_bitmap, fallback.background_color,
       fallback.is_default_background_color);
 }
 
@@ -87,12 +87,8 @@ jboolean LargeIconBridge::GetLargeIconForURL(
   if (!large_icon_service)
     return false;
 
-  ScopedJavaGlobalRef<jobject>* j_global_callback =
-      new ScopedJavaGlobalRef<jobject>();
-  j_global_callback->Reset(env, j_callback);
-
-  favicon_base::LargeIconCallback callback_runner =
-      base::Bind(&OnLargeIconAvailable, base::Owned(j_global_callback));
+  favicon_base::LargeIconCallback callback_runner = base::Bind(
+      &OnLargeIconAvailable, ScopedJavaGlobalRef<jobject>(env, j_callback));
 
   large_icon_service->GetLargeIconOrFallbackStyle(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),

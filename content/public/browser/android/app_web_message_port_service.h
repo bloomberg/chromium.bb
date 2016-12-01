@@ -8,6 +8,7 @@
 #include <jni.h>
 #include <vector>
 
+#include "base/android/scoped_java_ref.h"
 #include "base/values.h"
 
 namespace content {
@@ -18,9 +19,10 @@ class AppWebMessagePortService {
  public:
   virtual ~AppWebMessagePortService() {}
 
-  virtual void CreateMessageChannel(JNIEnv* env,
-                                    jobjectArray ports,
-                                    WebContents* web_contents) = 0;
+  virtual void CreateMessageChannel(
+      JNIEnv* env,
+      const base::android::JavaRef<jobjectArray>& ports,
+      WebContents* web_contents) = 0;
 
   virtual void CleanupPort(int message_port_id) = 0;
 };

@@ -72,6 +72,7 @@ using base::android::CheckException;
 using base::android::ConvertJavaStringToUTF8;
 using base::android::ConvertUTF8ToJavaString;
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::ScopedJavaGlobalRef;
 using content::BrowserThread;
@@ -737,7 +738,7 @@ static void MarkOriginAsImportantForTesting(
 }
 
 static void ShowNoticeAboutOtherFormsOfBrowsingHistory(
-    ScopedJavaGlobalRef<jobject>* listener,
+    const JavaRef<jobject>& listener,
     bool show) {
   JNIEnv* env = AttachCurrentThread();
   UMA_HISTOGRAM_BOOLEAN(
@@ -745,17 +746,17 @@ static void ShowNoticeAboutOtherFormsOfBrowsingHistory(
   if (!show)
     return;
   Java_OtherFormsOfBrowsingHistoryListener_showNoticeAboutOtherFormsOfBrowsingHistory(
-      env, listener->obj());
+      env, listener);
 }
 
 static void EnableDialogAboutOtherFormsOfBrowsingHistory(
-    ScopedJavaGlobalRef<jobject>* listener,
+    const JavaRef<jobject>& listener,
     bool enabled) {
   JNIEnv* env = AttachCurrentThread();
   if (!enabled)
     return;
   Java_OtherFormsOfBrowsingHistoryListener_enableDialogAboutOtherFormsOfBrowsingHistory(
-      env, listener->obj());
+      env, listener);
 }
 
 static void RequestInfoAboutOtherFormsOfBrowsingHistory(
@@ -767,7 +768,7 @@ static void RequestInfoAboutOtherFormsOfBrowsingHistory(
       ProfileSyncServiceFactory::GetForProfile(GetOriginalProfile()),
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
       base::Bind(&ShowNoticeAboutOtherFormsOfBrowsingHistory,
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
+                 ScopedJavaGlobalRef<jobject>(env, listener)));
 
   // The one-time notice in the dialog.
   browsing_data::ShouldPopupDialogAboutOtherFormsOfBrowsingHistory(
@@ -775,7 +776,7 @@ static void RequestInfoAboutOtherFormsOfBrowsingHistory(
       WebHistoryServiceFactory::GetForProfile(GetOriginalProfile()),
       chrome::GetChannel(),
       base::Bind(&EnableDialogAboutOtherFormsOfBrowsingHistory,
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, listener))));
+                 ScopedJavaGlobalRef<jobject>(env, listener)));
 }
 
 static void SetAutoplayEnabled(JNIEnv* env,

@@ -627,11 +627,10 @@ void WebContentsAndroid::GetContentBitmap(
     jfloat width,
     jfloat height) {
   RenderWidgetHostViewAndroid* view = GetRenderWidgetHostViewAndroid();
-  const ReadbackRequestCallback result_callback =
-      base::Bind(&WebContentsAndroid::OnFinishGetContentBitmap,
-                 weak_factory_.GetWeakPtr(),
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, obj)),
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(env, jcallback)));
+  const ReadbackRequestCallback result_callback = base::Bind(
+      &WebContentsAndroid::OnFinishGetContentBitmap, weak_factory_.GetWeakPtr(),
+      ScopedJavaGlobalRef<jobject>(env, obj),
+      ScopedJavaGlobalRef<jobject>(env, jcallback));
   SkColorType pref_color_type = gfx::ConvertToSkiaColorType(color_type);
   if (!view || pref_color_type == kUnknown_SkColorType) {
     result_callback.Run(SkBitmap(), READBACK_FAILED);
@@ -665,10 +664,8 @@ int WebContentsAndroid::DownloadImage(
       url, is_fav_icon, max_bitmap_size, bypass_cache,
       base::Bind(&WebContentsAndroid::OnFinishDownloadImage,
                  weak_factory_.GetWeakPtr(),
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(
-                     env, obj)),
-                 base::Owned(new ScopedJavaGlobalRef<jobject>(
-                     env, jcallback))));
+                 ScopedJavaGlobalRef<jobject>(env, obj),
+                 ScopedJavaGlobalRef<jobject>(env, jcallback)));
 }
 
 void WebContentsAndroid::DismissTextHandles(
@@ -680,21 +677,21 @@ void WebContentsAndroid::DismissTextHandles(
 }
 
 void WebContentsAndroid::OnFinishGetContentBitmap(
-    ScopedJavaGlobalRef<jobject>* obj,
-    ScopedJavaGlobalRef<jobject>* callback,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jobject>& callback,
     const SkBitmap& bitmap,
     ReadbackResponse response) {
   JNIEnv* env = base::android::AttachCurrentThread();
   ScopedJavaLocalRef<jobject> java_bitmap;
   if (response == READBACK_SUCCESS)
     java_bitmap = gfx::ConvertToJavaBitmap(&bitmap);
-  Java_WebContentsImpl_onGetContentBitmapFinished(env, *obj, *callback,
+  Java_WebContentsImpl_onGetContentBitmapFinished(env, obj, callback,
                                                   java_bitmap, response);
 }
 
 void WebContentsAndroid::OnFinishDownloadImage(
-    base::android::ScopedJavaGlobalRef<jobject>* obj,
-    base::android::ScopedJavaGlobalRef<jobject>* callback,
+    const JavaRef<jobject>& obj,
+    const JavaRef<jobject>& callback,
     int id,
     int http_status_code,
     const GURL& url,
@@ -720,7 +717,7 @@ void WebContentsAndroid::OnFinishDownloadImage(
                                                 size.height());
   }
   Java_WebContentsImpl_onDownloadImageFinished(
-      env, *obj, *callback, id, http_status_code, jurl, jbitmaps, jsizes);
+      env, obj, callback, id, http_status_code, jurl, jbitmaps, jsizes);
 }
 
 void WebContentsAndroid::SetMediaSession(

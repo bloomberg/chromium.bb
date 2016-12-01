@@ -401,13 +401,13 @@ void AwContents::DocumentHasImages(JNIEnv* env,
 }
 
 namespace {
-void GenerateMHTMLCallback(ScopedJavaGlobalRef<jobject>* callback,
+void GenerateMHTMLCallback(const JavaRef<jobject>& callback,
                            const base::FilePath& path,
                            int64_t size) {
   JNIEnv* env = AttachCurrentThread();
   // Android files are UTF8, so the path conversion below is safe.
   Java_AwContents_generateMHTMLCallback(
-      env, ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()), size, *callback);
+      env, ConvertUTF8ToJavaString(env, path.AsUTF8Unsafe()), size, callback);
 }
 }  // namespace
 
@@ -416,12 +416,11 @@ void AwContents::GenerateMHTML(JNIEnv* env,
                                const JavaParamRef<jstring>& jpath,
                                const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
-  j_callback->Reset(env, callback);
   base::FilePath target_path(ConvertJavaStringToUTF8(env, jpath));
   web_contents_->GenerateMHTML(
       content::MHTMLGenerationParams(target_path),
-      base::Bind(&GenerateMHTMLCallback, base::Owned(j_callback), target_path));
+      base::Bind(&GenerateMHTMLCallback,
+                 ScopedJavaGlobalRef<jobject>(env, callback), target_path));
 }
 
 void AwContents::CreatePdfExporter(JNIEnv* env,
@@ -1138,13 +1137,13 @@ void AwContents::EnableOnNewPicture(JNIEnv* env,
 namespace {
 void InvokeVisualStateCallback(const JavaObjectWeakGlobalRef& java_ref,
                                jlong request_id,
-                               ScopedJavaGlobalRef<jobject>* callback,
+                               const JavaRef<jobject>& callback,
                                bool result) {
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jobject> obj = java_ref.get(env);
   if (obj.is_null())
      return;
-  Java_AwContents_invokeVisualStateCallback(env, obj, *callback, request_id);
+  Java_AwContents_invokeVisualStateCallback(env, obj, callback, request_id);
 }
 }  // namespace
 
@@ -1154,11 +1153,9 @@ void AwContents::InsertVisualStateCallback(
     jlong request_id,
     const JavaParamRef<jobject>& callback) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  ScopedJavaGlobalRef<jobject>* j_callback = new ScopedJavaGlobalRef<jobject>();
-  j_callback->Reset(env, callback);
   web_contents_->GetMainFrame()->InsertVisualStateCallback(
       base::Bind(&InvokeVisualStateCallback, java_ref_, request_id,
-                 base::Owned(j_callback)));
+                 ScopedJavaGlobalRef<jobject>(env, callback)));
 }
 
 void AwContents::ClearView(JNIEnv* env, const JavaParamRef<jobject>& obj) {

@@ -36,6 +36,7 @@
 #include "ui/gfx/image/image_skia_rep.h"
 
 using base::android::JavaParamRef;
+using base::android::JavaRef;
 using base::android::ScopedJavaGlobalRef;
 using base::android::ScopedJavaLocalRef;
 using base::android::AttachCurrentThread;
@@ -46,7 +47,7 @@ using base::android::ConvertUTF8ToJavaString;
 namespace {
 
 void OnLocalFaviconAvailable(
-    ScopedJavaGlobalRef<jobject>* j_favicon_image_callback,
+    const JavaRef<jobject>& j_favicon_image_callback,
     const favicon_base::FaviconRawBitmapResult& result) {
   JNIEnv* env = AttachCurrentThread();
 
@@ -64,8 +65,8 @@ void OnLocalFaviconAvailable(
   }
 
   // Call java side OnLocalFaviconAvailable method.
-  Java_FaviconImageCallback_onFaviconAvailable(
-      env, j_favicon_image_callback->obj(), j_favicon_bitmap, j_icon_url);
+  Java_FaviconImageCallback_onFaviconAvailable(env, j_favicon_image_callback,
+                                               j_favicon_bitmap, j_icon_url);
 }
 
 size_t GetLargestSizeIndex(const std::vector<gfx::Size>& sizes) {
@@ -165,12 +166,9 @@ jboolean FaviconHelper::GetLocalFaviconImageForURL(
   if (!favicon_service)
     return false;
 
-  ScopedJavaGlobalRef<jobject>* j_scoped_favicon_callback =
-      new ScopedJavaGlobalRef<jobject>();
-  j_scoped_favicon_callback->Reset(env, j_favicon_image_callback);
-
-  favicon_base::FaviconRawBitmapCallback callback_runner = base::Bind(
-      &OnLocalFaviconAvailable, base::Owned(j_scoped_favicon_callback));
+  favicon_base::FaviconRawBitmapCallback callback_runner =
+      base::Bind(&OnLocalFaviconAvailable,
+                 ScopedJavaGlobalRef<jobject>(j_favicon_image_callback));
 
   favicon_service->GetRawFaviconForPageURL(
       GURL(ConvertJavaStringToUTF16(env, j_page_url)),

@@ -41,27 +41,21 @@ enum ConnectivityCheckResult {
   CONNECTIVITY_CHECK_RESULT_END = 5
 };
 
-void ExecuteCallback(jobject callback, ConnectivityCheckResult result) {
+void ExecuteCallback(const base::android::JavaRef<jobject>& callback,
+                     ConnectivityCheckResult result) {
   CHECK(result >= CONNECTIVITY_CHECK_RESULT_UNKNOWN);
   CHECK(result < CONNECTIVITY_CHECK_RESULT_END);
   Java_ConnectivityChecker_executeCallback(base::android::AttachCurrentThread(),
                                            callback, result);
 }
 
-void ExecuteCallbackFromRef(
-    base::android::ScopedJavaGlobalRef<jobject>* callback,
-    ConnectivityCheckResult result) {
-  ExecuteCallback(callback->obj(), result);
-}
-
 void PostCallback(JNIEnv* env,
-                  jobject j_callback,
+                  const base::android::JavaRef<jobject>& j_callback,
                   ConnectivityCheckResult result) {
   base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE,
-      base::Bind(&ExecuteCallbackFromRef,
-                 base::Owned(new base::android::ScopedJavaGlobalRef<jobject>(
-                     env, j_callback)),
+      base::Bind(&ExecuteCallback,
+                 base::android::ScopedJavaGlobalRef<jobject>(j_callback),
                  result));
 }
 
@@ -119,10 +113,9 @@ void ConnectivityChecker::OnURLFetchComplete(const net::URLFetcher* source) {
 
   bool connected = status.is_success() && response_code == net::HTTP_NO_CONTENT;
   if (connected) {
-    ExecuteCallback(java_callback_.obj(), CONNECTIVITY_CHECK_RESULT_CONNECTED);
+    ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_CONNECTED);
   } else {
-    ExecuteCallback(java_callback_.obj(),
-                    CONNECTIVITY_CHECK_RESULT_NOT_CONNECTED);
+    ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_NOT_CONNECTED);
   }
 
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
@@ -164,7 +157,7 @@ void ConnectivityChecker::OnTimeout() {
     return;
   is_being_destroyed_ = true;
   url_fetcher_.reset();
-  ExecuteCallback(java_callback_.obj(), CONNECTIVITY_CHECK_RESULT_TIMEOUT);
+  ExecuteCallback(java_callback_, CONNECTIVITY_CHECK_RESULT_TIMEOUT);
   base::ThreadTaskRunnerHandle::Get()->DeleteSoon(FROM_HERE, this);
 }
 

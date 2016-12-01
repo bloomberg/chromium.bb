@@ -190,20 +190,18 @@ class CONTENT_EXPORT WebContentsAndroid
  private:
   RenderWidgetHostViewAndroid* GetRenderWidgetHostViewAndroid();
 
-  void OnFinishGetContentBitmap(
-      base::android::ScopedJavaGlobalRef<jobject>* obj,
-      base::android::ScopedJavaGlobalRef<jobject>* callback,
-      const SkBitmap& bitmap,
-      ReadbackResponse response);
+  void OnFinishGetContentBitmap(const base::android::JavaRef<jobject>& obj,
+                                const base::android::JavaRef<jobject>& callback,
+                                const SkBitmap& bitmap,
+                                ReadbackResponse response);
 
-  void OnFinishDownloadImage(
-      base::android::ScopedJavaGlobalRef<jobject>* obj,
-      base::android::ScopedJavaGlobalRef<jobject>* callback,
-      int id,
-      int http_status_code,
-      const GURL& url,
-      const std::vector<SkBitmap>& bitmaps,
-      const std::vector<gfx::Size>& sizes);
+  void OnFinishDownloadImage(const base::android::JavaRef<jobject>& obj,
+                             const base::android::JavaRef<jobject>& callback,
+                             int id,
+                             int http_status_code,
+                             const GURL& url,
+                             const std::vector<SkBitmap>& bitmaps,
+                             const std::vector<gfx::Size>& sizes);
 
   WebContentsImpl* web_contents_;
   NavigationControllerAndroid navigation_controller_;
