@@ -118,6 +118,29 @@ bool DisplayInfoProvider::OverscanCalibrationComplete(const std::string& id) {
   return false;
 }
 
+bool DisplayInfoProvider::TouchCalibrationStart(const std::string& id) {
+  NOTREACHED();  // Implemented on Chrome OS only in override.
+  return false;
+}
+
+bool DisplayInfoProvider::TouchCalibrationSet(
+    const std::string& id,
+    const api::system_display::TouchCalibrationPairQuad& pairs,
+    const api::system_display::Bounds& bounds) {
+  NOTREACHED();  // Implemented on Chrome OS only in override.
+  return false;
+}
+
+bool DisplayInfoProvider::TouchCalibrationReset(const std::string& id) {
+  NOTREACHED();  // Implemented on Chrome OS only in override.
+  return false;
+}
+
+bool DisplayInfoProvider::IsTouchCalibrationActive(const std::string& id) {
+  NOTREACHED(); // Implemented on Chrome OS only in override.
+  return false;
+}
+
 DisplayInfoProvider::DisplayInfoProvider() {
 }
 

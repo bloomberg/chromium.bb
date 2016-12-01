@@ -20,10 +20,12 @@ namespace extensions {
 
 namespace api {
 namespace system_display {
+struct Bounds;
 struct DisplayLayout;
 struct DisplayProperties;
 struct DisplayUnitInfo;
 struct Insets;
+struct TouchCalibrationPairQuad;
 }
 }
 
@@ -70,6 +72,16 @@ class DisplayInfoProvider {
       const api::system_display::Insets& delta);
   virtual bool OverscanCalibrationReset(const std::string& id);
   virtual bool OverscanCalibrationComplete(const std::string& id);
+
+  // Implements touch calibration methods. See system_display.idl. This returns
+  // false if |id| is invalid.
+  virtual bool TouchCalibrationStart(const std::string& id);
+  virtual bool TouchCalibrationSet(
+      const std::string& id,
+      const api::system_display::TouchCalibrationPairQuad& pairs,
+      const api::system_display::Bounds& bounds);
+  virtual bool TouchCalibrationReset(const std::string& id);
+  virtual bool IsTouchCalibrationActive(const std::string& id);
 
  protected:
   DisplayInfoProvider();

@@ -33,6 +33,36 @@ namespace system.display {
     long bottom;
   };
 
+  dictionary Point {
+    // The x-coordinate of the point.
+    long x;
+
+    // The y-coordinate of the point.
+    long y;
+  };
+
+  dictionary TouchCalibrationPair {
+    // The coordinates of the display point.
+    Point displayPoint;
+
+    // The coordinates of the touch point corresponding to the display point.
+    Point touchPoint;
+  };
+
+  dictionary TouchCalibrationPairQuad {
+    // First pair of touch and display point required for touch calibration.
+    TouchCalibrationPair pair1;
+
+    // Second pair of touch and display point required for touch calibration.
+    TouchCalibrationPair pair2;
+
+    // Third pair of touch and display point required for touch calibration.
+    TouchCalibrationPair pair3;
+
+    // Fourth pair of touch and display point required for touch calibration.
+    TouchCalibrationPair pair4;
+  };
+
   dictionary DisplayMode {
     // The display mode width in device independent (user visible) pixels.
     long width;
@@ -242,6 +272,28 @@ namespace system.display {
     // and hiding the overlay.
     // |id|: The display's unique identifier.
     static void overscanCalibrationComplete(DOMString id);
+
+    // Starts touch calibration for a display. This will show an overlay on the
+    // screen and initialize the UX for touch calibration. If touch calibration
+    // for display |id| is already in progress this will throw an error.
+    // |id|: The display's unique identifier.
+    static void touchCalibrationStart(DOMString id);
+
+    // Sets the touch calibration pairs for a display. These |pairs| would be
+    // used to calibrate the touch screen for display |id|. If touch calibration
+    // for display |id| is in progress this will do nothing.
+    // |id|: The display's unique identifier.
+    // |pairs|: The pairs of point used to calibrate the display.
+    // |bounds|: Bounds of the display when the touch calibration was performed.
+    //     |bounds.left| and |bounds.top| values are ignored.
+    static void touchCalibrationSet(DOMString id,
+                                    TouchCalibrationPairQuad pairs,
+                                    Bounds bounds);
+
+    // Resets the touch calibration for the display and removes the saved
+    // calibration data.
+    // |id|: The display's unique identifier.
+    static void touchCalibrationReset(DOMString id);
   };
 
   interface Events {

@@ -138,4 +138,46 @@ SystemDisplayOverscanCalibrationCompleteFunction::Run() {
   return RespondNow(NoArguments());
 }
 
+ExtensionFunction::ResponseAction
+SystemDisplayTouchCalibrationStartFunction::Run() {
+  std::unique_ptr<display::TouchCalibrationStart::Params> params(
+      display::TouchCalibrationStart::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->IsTouchCalibrationActive(params->id)) {
+    return RespondNow(Error(
+        "Another touch calibration is already active."));
+  }
+  if (!DisplayInfoProvider::Get()->TouchCalibrationStart(params->id))
+    return RespondNow(Error("Invalid display ID: " + params->id));
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+SystemDisplayTouchCalibrationSetFunction::Run() {
+  std::unique_ptr<display::TouchCalibrationSet::Params> params(
+      display::TouchCalibrationSet::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->IsTouchCalibrationActive(params->id)) {
+    return RespondNow(Error(
+        "Another touch calibration is already active."));
+  }
+  if (!DisplayInfoProvider::Get()->TouchCalibrationSet(params->id,
+                                                       params->pairs,
+                                                       params->bounds)) {
+    return RespondNow(Error("Invalid display ID: " + params->id));
+  }
+  return RespondNow(NoArguments());
+}
+
+ExtensionFunction::ResponseAction
+SystemDisplayTouchCalibrationResetFunction::Run() {
+  std::unique_ptr<display::TouchCalibrationReset::Params> params(
+      display::TouchCalibrationReset::Params::Create(*args_));
+  if (!DisplayInfoProvider::Get()->IsTouchCalibrationActive(params->id)) {
+    return RespondNow(Error(
+        "Another touch calibration is already active."));
+  }
+  if (!DisplayInfoProvider::Get()->TouchCalibrationReset(params->id))
+    return RespondNow(Error("Invalid display ID: " + params->id));
+  return RespondNow(NoArguments());
+}
+
 }  // namespace extensions

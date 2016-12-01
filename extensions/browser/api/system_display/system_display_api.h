@@ -121,6 +121,39 @@ class SystemDisplayOverscanCalibrationCompleteFunction
   ResponseAction Run() override;
 };
 
+class SystemDisplayTouchCalibrationStartFunction
+    : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationStart",
+                             SYSTEM_DISPLAY_TOUCHCALIBRATIONSTART);
+
+ protected:
+  ~SystemDisplayTouchCalibrationStartFunction() override {}
+  ResponseAction Run() override;
+};
+
+class SystemDisplayTouchCalibrationSetFunction
+    : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationSet",
+                              SYSTEM_DISPLAY_TOUCHCALIBRATIONSET);
+
+ protected:
+  ~SystemDisplayTouchCalibrationSetFunction() override {}
+  ResponseAction Run() override;
+};
+
+class SystemDisplayTouchCalibrationResetFunction
+    : public SystemDisplayFunction {
+ public:
+  DECLARE_EXTENSION_FUNCTION("system.display.touchCalibrationReset",
+                              SYSTEM_DISPLAY_TOUCHCALIBRATIONRESET);
+
+ protected:
+  ~SystemDisplayTouchCalibrationResetFunction() override {}
+  ResponseAction Run() override;
+};
+
 }  // namespace extensions
 
 #endif  // EXTENSIONS_BROWSER_API_SYSTEM_DISPLAY_SYSTEM_DISPLAY_API_H_
