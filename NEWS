@@ -52,6 +52,8 @@ complete.
 - New Urdu 6 Dot Grade 1 and 2 Braille tables thanks to Jake Kyle
 - Improvements to Italian 8 dots computer braille, thanks to Simone
   Dal Maso.
+- New table ~unicode-braille.utb~ that helps to back translate braille
+  input to unicode braille output, thanks to Leonard de Ruijter.
 
 ** Backwards incompatible changes
 None
