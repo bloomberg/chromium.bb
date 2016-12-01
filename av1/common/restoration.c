@@ -640,7 +640,8 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
   int i, j;
   int h_start, h_end, v_start, v_end;
   uint8_t *data_p;
-  int64_t dat[RESTORATION_TILEPELS_MAX];
+  int64_t *dat = (int64_t *)tmpbuf;
+  tmpbuf = (uint8_t *)tmpbuf + RESTORATION_TILEPELS_MAX * sizeof(*dat);
 
   if (rst->rsi->sgrproj_info[tile_idx].level == 0) return;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
@@ -876,7 +877,8 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   int i, j;
   int h_start, h_end, v_start, v_end;
   uint16_t *data_p;
-  int64_t dat[RESTORATION_TILEPELS_MAX];
+  int64_t *dat = (int64_t *)tmpbuf;
+  tmpbuf = (uint8_t *)tmpbuf + RESTORATION_TILEPELS_MAX * sizeof(*dat);
 
   if (rst->rsi->sgrproj_info[tile_idx].level == 0) return;
   av1_get_rest_tile_limits(tile_idx, 0, 0, rst->nhtiles, rst->nvtiles,
