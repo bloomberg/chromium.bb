@@ -375,6 +375,17 @@ WebInputEventResult GestureManager::sendContextMenuEventForGesture(
       PlatformMouseEvent::FromTouch, WTF::monotonicallyIncreasingTime(),
       WebPointerProperties::PointerType::Mouse);
 
+  if (!m_suppressMouseEventsFromGestures && m_frame->view()) {
+    HitTestRequest request(HitTestRequest::Active);
+    LayoutPoint documentPoint =
+        m_frame->view()->rootFrameToContents(targetedEvent.event().position());
+    MouseEventWithHitTestResults mev =
+        m_frame->document()->performMouseEventHitTest(request, documentPoint,
+                                                      mouseEvent);
+    m_mouseEventManager->handleMouseFocus(
+        mev.hitTestResult(),
+        InputDeviceCapabilities::firesTouchEventsSourceCapabilities());
+  }
   return m_frame->eventHandler().sendContextMenuEvent(mouseEvent);
 }
 
