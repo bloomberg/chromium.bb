@@ -22,15 +22,19 @@ namespace blink {
 
 class FindFrameViewPropertiesNeedingUpdateScope {
  public:
-  FindFrameViewPropertiesNeedingUpdateScope(FrameView* frameView)
+  FindFrameViewPropertiesNeedingUpdateScope(
+      FrameView* frameView,
+      PaintPropertyTreeBuilderContext& context)
       : m_frameView(frameView),
-        m_neededPaintPropertyUpdate(frameView->needsPaintPropertyUpdate()) {
-    // No need to check when already marked as needing an update.
-    if (m_neededPaintPropertyUpdate)
+        m_neededPaintPropertyUpdate(frameView->needsPaintPropertyUpdate()),
+        m_neededForcedSubtreeUpdate(context.forceSubtreeUpdate) {
+    // No need to check if an update was already needed.
+    if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
     // Mark the properties as needing an update to ensure they are rebuilt.
-    m_frameView->setNeedsPaintPropertyUpdate();
+    m_frameView->setOnlyThisNeedsPaintPropertyUpdateForTesting();
+
     if (auto* preTranslation = m_frameView->preTranslation())
       m_preTranslation = preTranslation->clone();
     if (auto* contentClip = m_frameView->contentClip())
@@ -42,8 +46,8 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   }
 
   ~FindFrameViewPropertiesNeedingUpdateScope() {
-    // No need to check when already marked as needing an update.
-    if (m_neededPaintPropertyUpdate)
+    // No need to check if an update was already needed.
+    if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
     // If paint properties are not marked as needing an update but still change,
@@ -52,6 +56,7 @@ class FindFrameViewPropertiesNeedingUpdateScope {
     DCHECK_PTR_VAL_EQ(m_contentClip, m_frameView->contentClip());
     DCHECK_PTR_VAL_EQ(m_scrollTranslation, m_frameView->scrollTranslation());
     DCHECK_PTR_VAL_EQ(m_scroll, m_frameView->scroll());
+
     // Restore original clean bit.
     m_frameView->clearNeedsPaintPropertyUpdate();
   }
@@ -59,6 +64,7 @@ class FindFrameViewPropertiesNeedingUpdateScope {
  private:
   Persistent<FrameView> m_frameView;
   bool m_neededPaintPropertyUpdate;
+  bool m_neededForcedSubtreeUpdate;
   RefPtr<TransformPaintPropertyNode> m_preTranslation;
   RefPtr<ClipPaintPropertyNode> m_contentClip;
   RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
@@ -67,22 +73,27 @@ class FindFrameViewPropertiesNeedingUpdateScope {
 
 class FindObjectPropertiesNeedingUpdateScope {
  public:
-  FindObjectPropertiesNeedingUpdateScope(const LayoutObject& object)
+  FindObjectPropertiesNeedingUpdateScope(
+      const LayoutObject& object,
+      PaintPropertyTreeBuilderContext& context)
       : m_object(object),
-        m_neededPaintPropertyUpdate(object.needsPaintPropertyUpdate()) {
-    // No need to check when already marked as needing an update.
-    if (m_neededPaintPropertyUpdate)
+        m_neededPaintPropertyUpdate(object.needsPaintPropertyUpdate()),
+        m_neededForcedSubtreeUpdate(context.forceSubtreeUpdate) {
+    // No need to check if an update was already needed.
+    if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
     // Mark the properties as needing an update to ensure they are rebuilt.
-    const_cast<LayoutObject&>(m_object).setNeedsPaintPropertyUpdate();
+    const_cast<LayoutObject&>(m_object)
+        .setOnlyThisNeedsPaintPropertyUpdateForTesting();
+
     if (const auto* properties = m_object.paintProperties())
       m_properties = properties->clone();
   }
 
   ~FindObjectPropertiesNeedingUpdateScope() {
-    // No need to check when already marked as needing an update.
-    if (m_neededPaintPropertyUpdate)
+    // No need to check if an update was already needed.
+    if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
     // If paint properties are not marked as needing an update but still change,
@@ -135,6 +146,7 @@ class FindObjectPropertiesNeedingUpdateScope {
  private:
   const LayoutObject& m_object;
   bool m_neededPaintPropertyUpdate;
+  bool m_neededForcedSubtreeUpdate;
   std::unique_ptr<const ObjectPaintProperties> m_properties;
 };
 

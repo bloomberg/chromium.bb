@@ -77,6 +77,11 @@ struct PaintPropertyTreeBuilderContext {
   const ClipPaintPropertyNode* inputClipOfCurrentEffect = nullptr;
 
   bool isUnderMultiColumnSpanner = false;
+
+  // True if a change has forced all properties in a subtree to be updated. This
+  // can be set due to paint offset changes or when the structure of the
+  // property tree changes (i.e., a node is added or removed).
+  bool forceSubtreeUpdate = false;
 };
 
 // Creates paint property tree nodes for special things in the layout tree.
@@ -113,9 +118,8 @@ class PaintPropertyTreeBuilder {
                             PaintPropertyTreeBuilderContext&);
   static void updateLocalBorderBoxContext(const LayoutObject&,
                                           PaintPropertyTreeBuilderContext&);
-  static void updateScrollbarPaintOffset(
-      const LayoutObject&,
-      const PaintPropertyTreeBuilderContext&);
+  static void updateScrollbarPaintOffset(const LayoutObject&,
+                                         PaintPropertyTreeBuilderContext&);
   static void updateOverflowClip(const LayoutObject&,
                                  PaintPropertyTreeBuilderContext&);
   static void updatePerspective(const LayoutObject&,

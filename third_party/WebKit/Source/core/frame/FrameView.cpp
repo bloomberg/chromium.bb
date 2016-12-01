@@ -1294,6 +1294,12 @@ void FrameView::invalidatePaintIfNeeded(
     m_frame->selection().invalidateCaretRect();
 }
 
+void FrameView::setNeedsPaintPropertyUpdate() {
+  m_needsPaintPropertyUpdate = true;
+  if (LayoutObject* owner = frame().ownerLayoutObject())
+    owner->setNeedsPaintPropertyUpdate();
+}
+
 IntRect FrameView::computeVisibleArea() {
   // Return our clipping bounds in the root frame.
   IntRect us(frameRect());

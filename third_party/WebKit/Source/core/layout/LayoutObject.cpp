@@ -2735,9 +2735,6 @@ void LayoutObject::willBeRemovedFromTree() {
 void LayoutObject::setNeedsPaintPropertyUpdate() {
   m_bitfields.setNeedsPaintPropertyUpdate(true);
 
-  // Mark all ancestors as having a descendant needing paint property updates.
-  // |paintInvalidationParent()| is used to ensure we continue marking across
-  // frame boundaries.
   LayoutObject* ancestor = paintInvalidationParent();
   while (ancestor && !ancestor->descendantNeedsPaintPropertyUpdate()) {
     ancestor->m_bitfields.setDescendantNeedsPaintPropertyUpdate(true);

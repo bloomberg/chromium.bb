@@ -20,7 +20,6 @@ struct PrePaintTreeWalkContext {
         paintInvalidatorContext(treeBuilderContext,
                                 parentContext.paintInvalidatorContext) {}
 
-  bool needToUpdatePaintPropertySubtree = false;
   PaintPropertyTreeBuilderContext treeBuilderContext;
   PaintInvalidatorContext paintInvalidatorContext;
 };
@@ -36,75 +35,65 @@ void PrePaintTreeWalk::walk(FrameView& rootFrame) {
   m_paintInvalidator.processPendingDelayedPaintInvalidations();
 }
 
-void PrePaintTreeWalk::walk(FrameView& frameView,
+bool PrePaintTreeWalk::walk(FrameView& frameView,
                             const PrePaintTreeWalkContext& context) {
-  if (frameView.shouldThrottleRendering())
-    return;
+  if (frameView.shouldThrottleRendering()) {
+    // The walk was interrupted by throttled rendering so this subtree was not
+    // fully updated.
+    return false;
+  }
 
   PrePaintTreeWalkContext localContext(context);
-
-  // Check whether we need to update the paint property trees.
-  if (!localContext.needToUpdatePaintPropertySubtree) {
-    if (context.paintInvalidatorContext.forcedSubtreeInvalidationFlags) {
-      // forcedSubtreeInvalidationFlags will be true if locations have changed
-      // which will affect paint properties (e.g., PaintOffset).
-      localContext.needToUpdatePaintPropertySubtree = true;
-    } else if (frameView.needsPaintPropertyUpdate()) {
-      localContext.needToUpdatePaintPropertySubtree = true;
-    }
-  }
-  // Paint properties can depend on their ancestor properties so ensure the
-  // entire subtree is rebuilt on any changes.
-  // TODO(pdr): Add additional granularity to the needs update approach such as
-  // the ability to do local updates that don't change the subtree.
-  if (localContext.needToUpdatePaintPropertySubtree)
-    frameView.setNeedsPaintPropertyUpdate();
-
   m_propertyTreeBuilder.updateProperties(frameView,
                                          localContext.treeBuilderContext);
-
   m_paintInvalidator.invalidatePaintIfNeeded(
       frameView, localContext.paintInvalidatorContext);
 
-  if (LayoutView* layoutView = frameView.layoutView())
-    walk(*layoutView, localContext);
-
+  LayoutView* view = frameView.layoutView();
+  bool descendantsFullyUpdated = view ? walk(*view, localContext) : true;
+  if (descendantsFullyUpdated) {
 #if DCHECK_IS_ON()
-  frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
+    frameView.layoutView()->assertSubtreeClearedPaintInvalidationFlags();
 #endif
-
-  frameView.clearNeedsPaintPropertyUpdate();
+    // If descendants were not fully updated, do not clear flags. During the
+    // next PrePaintTreeWalk, these flags will be used again.
+    frameView.clearNeedsPaintPropertyUpdate();
+  }
+  return descendantsFullyUpdated;
 }
 
-void PrePaintTreeWalk::walk(const LayoutObject& object,
+bool PrePaintTreeWalk::walk(const LayoutObject& object,
                             const PrePaintTreeWalkContext& context) {
-  PrePaintTreeWalkContext localContext(context);
-
-  // Check whether we need to update the paint property trees.
-  if (!localContext.needToUpdatePaintPropertySubtree) {
-    if (context.paintInvalidatorContext.forcedSubtreeInvalidationFlags) {
-      // forcedSubtreeInvalidationFlags will be true if locations have changed
-      // which will affect paint properties (e.g., PaintOffset).
-      localContext.needToUpdatePaintPropertySubtree = true;
-    } else if (object.needsPaintPropertyUpdate()) {
-      localContext.needToUpdatePaintPropertySubtree = true;
-    } else if (object.mayNeedPaintInvalidation()) {
-      // mayNeedpaintInvalidation will be true when locations change which will
-      // affect paint properties (e.g., PaintOffset).
-      localContext.needToUpdatePaintPropertySubtree = true;
-    } else if (object.shouldDoFullPaintInvalidation()) {
-      // shouldDoFullPaintInvalidation will be true when locations or overflow
-      // changes which will affect paint properties (e.g., PaintOffset, scroll).
-      localContext.needToUpdatePaintPropertySubtree = true;
-    }
+  // Early out from the treewalk if possible.
+  if (!object.needsPaintPropertyUpdate() &&
+      !object.descendantNeedsPaintPropertyUpdate() &&
+      !context.treeBuilderContext.forceSubtreeUpdate &&
+      !context.paintInvalidatorContext.forcedSubtreeInvalidationFlags &&
+      !object
+           .shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState()) {
+    // Even though the subtree was not walked, we know that a walk will not
+    // change anything and can return true as if the subtree was fully updated.
+    return true;
   }
 
-  // Paint properties can depend on their ancestor properties so ensure the
-  // entire subtree is rebuilt on any changes.
-  // TODO(pdr): Add additional granularity to the needs update approach such as
-  // the ability to do local updates that don't change the subtree.
-  if (localContext.needToUpdatePaintPropertySubtree)
+  PrePaintTreeWalkContext localContext(context);
+
+  // TODO(pdr): These should be removable once paint offset changes mark an
+  // object as needing a paint property update. Below, we temporarily re-use
+  // paint invalidation flags to detect paint offset changes.
+  if (localContext.paintInvalidatorContext.forcedSubtreeInvalidationFlags) {
+    // forcedSubtreeInvalidationFlags will be true if locations have changed
+    // which will affect paint properties (e.g., PaintOffset).
+    localContext.treeBuilderContext.forceSubtreeUpdate = true;
+  } else if (object.shouldDoFullPaintInvalidation()) {
+    // shouldDoFullPaintInvalidation will be true when locations or overflow
+    // changes which will affect paint properties (e.g., PaintOffset, scroll).
     object.getMutableForPainting().setNeedsPaintPropertyUpdate();
+  } else if (object.mayNeedPaintInvalidation()) {
+    // mayNeedpaintInvalidation will be true when locations change which will
+    // affect paint properties (e.g., PaintOffset).
+    object.getMutableForPainting().setNeedsPaintPropertyUpdate();
+  }
 
   // TODO(pdr): Ensure multi column works with incremental property tree
   // construction.
@@ -114,13 +103,18 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
     // positioned descendants if their containers are between the multi-column
     // container and the spanner. See PaintPropertyTreeBuilder for details.
     localContext.treeBuilderContext.isUnderMultiColumnSpanner = true;
-    walk(*toLayoutMultiColumnSpannerPlaceholder(object)
-              .layoutObjectInFlowThread(),
-         localContext);
-    object.getMutableForPainting().clearPaintInvalidationFlags();
-    object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
-    object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
-    return;
+    bool descendantsFullyUpdated =
+        walk(*toLayoutMultiColumnSpannerPlaceholder(object)
+                  .layoutObjectInFlowThread(),
+             localContext);
+    if (descendantsFullyUpdated) {
+      // If descendants were not fully updated, do not clear flags. During the
+      // next PrePaintTreeWalk, these flags will be used again.
+      object.getMutableForPainting().clearPaintInvalidationFlags();
+      object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
+      object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
+    }
+    return descendantsFullyUpdated;
   }
 
   m_propertyTreeBuilder.updatePropertiesForSelf(
@@ -130,12 +124,15 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
   m_propertyTreeBuilder.updatePropertiesForChildren(
       object, localContext.treeBuilderContext);
 
+  bool descendantsFullyUpdated = true;
   for (const LayoutObject* child = object.slowFirstChild(); child;
        child = child->nextSibling()) {
     // Column spanners are walked through their placeholders. See above.
     if (child->isColumnSpanAll())
       continue;
-    walk(*child, localContext);
+    bool childFullyUpdated = walk(*child, localContext);
+    if (!childFullyUpdated)
+      descendantsFullyUpdated = false;
   }
 
   if (object.isLayoutPart()) {
@@ -147,14 +144,21 @@ void PrePaintTreeWalk::walk(const LayoutObject& object,
           widget->frameRect().location();
       localContext.treeBuilderContext.current.paintOffset =
           roundedIntPoint(localContext.treeBuilderContext.current.paintOffset);
-      walk(*toFrameView(widget), localContext);
+      bool frameFullyUpdated = walk(*toFrameView(widget), localContext);
+      if (!frameFullyUpdated)
+        descendantsFullyUpdated = false;
     }
     // TODO(pdr): Investigate RemoteFrameView (crbug.com/579281).
   }
 
-  object.getMutableForPainting().clearPaintInvalidationFlags();
-  object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
-  object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
+  if (descendantsFullyUpdated) {
+    // If descendants were not updated, do not clear flags. During the next
+    // PrePaintTreeWalk, these flags will be used again.
+    object.getMutableForPainting().clearPaintInvalidationFlags();
+    object.getMutableForPainting().clearNeedsPaintPropertyUpdate();
+    object.getMutableForPainting().clearDescendantNeedsPaintPropertyUpdate();
+  }
+  return descendantsFullyUpdated;
 }
 
 }  // namespace blink

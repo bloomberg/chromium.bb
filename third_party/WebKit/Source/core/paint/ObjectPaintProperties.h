@@ -142,6 +142,7 @@ class CORE_EXPORT ObjectPaintProperties {
               paintOffset, PropertyTreeState(transform, clip, effect, scroll)));
     }
   }
+  void clearLocalBorderBoxProperties() { m_localBorderBoxProperties = nullptr; }
 
   // This is the complete set of property nodes and paint offset that can be
   // used to paint the contents of this object. It is similar to
@@ -150,75 +151,98 @@ class CORE_EXPORT ObjectPaintProperties {
   // invalidation.
   ObjectPaintProperties::PropertyTreeStateWithOffset contentsProperties() const;
 
-  void clearPaintOffsetTranslation() { m_paintOffsetTranslation = nullptr; }
-  void clearTransform() { m_transform = nullptr; }
-  void clearEffect() { m_effect = nullptr; }
-  void clearCssClip() { m_cssClip = nullptr; }
-  void clearCssClipFixedPosition() { m_cssClipFixedPosition = nullptr; }
-  void clearInnerBorderRadiusClip() { m_innerBorderRadiusClip = nullptr; }
-  void clearOverflowClip() { m_overflowClip = nullptr; }
-  void clearLocalBorderBoxProperties() { m_localBorderBoxProperties = nullptr; }
-  void clearPerspective() { m_perspective = nullptr; }
-  void clearSvgLocalToBorderBoxTransform() {
-    m_svgLocalToBorderBoxTransform = nullptr;
+  // True if an existing property was deleted, false otherwise.
+  bool clearPaintOffsetTranslation() { return clear(m_paintOffsetTranslation); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearTransform() { return clear(m_transform); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearEffect() { return clear(m_effect); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearCssClip() { return clear(m_cssClip); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearCssClipFixedPosition() { return clear(m_cssClipFixedPosition); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearInnerBorderRadiusClip() { return clear(m_innerBorderRadiusClip); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearOverflowClip() { return clear(m_overflowClip); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearPerspective() { return clear(m_perspective); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearSvgLocalToBorderBoxTransform() {
+    return clear(m_svgLocalToBorderBoxTransform);
   }
-  void clearScrollTranslation() { m_scrollTranslation = nullptr; }
-  void clearScrollbarPaintOffset() { m_scrollbarPaintOffset = nullptr; }
-  void clearScroll() { m_scroll = nullptr; }
+  // True if an existing property was deleted, false otherwise.
+  bool clearScrollTranslation() { return clear(m_scrollTranslation); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearScrollbarPaintOffset() { return clear(m_scrollbarPaintOffset); }
+  // True if an existing property was deleted, false otherwise.
+  bool clearScroll() { return clear(m_scroll); }
 
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updatePaintOffsetTranslation(Args&&... args) {
-    updateProperty(m_paintOffsetTranslation, std::forward<Args>(args)...);
+  bool updatePaintOffsetTranslation(Args&&... args) {
+    return update(m_paintOffsetTranslation, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateTransform(Args&&... args) {
-    updateProperty(m_transform, std::forward<Args>(args)...);
+  bool updateTransform(Args&&... args) {
+    return update(m_transform, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updatePerspective(Args&&... args) {
-    updateProperty(m_perspective, std::forward<Args>(args)...);
+  bool updatePerspective(Args&&... args) {
+    return update(m_perspective, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateSvgLocalToBorderBoxTransform(Args&&... args) {
+  bool updateSvgLocalToBorderBoxTransform(Args&&... args) {
     DCHECK(!scrollTranslation()) << "SVG elements cannot scroll so there "
                                     "should never be both a scroll translation "
                                     "and an SVG local to border box transform.";
-    updateProperty(m_svgLocalToBorderBoxTransform, std::forward<Args>(args)...);
+    return update(m_svgLocalToBorderBoxTransform, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateScrollTranslation(Args&&... args) {
+  bool updateScrollTranslation(Args&&... args) {
     DCHECK(!svgLocalToBorderBoxTransform())
         << "SVG elements cannot scroll so there should never be both a scroll "
            "translation and an SVG local to border box transform.";
-    updateProperty(m_scrollTranslation, std::forward<Args>(args)...);
+    return update(m_scrollTranslation, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateScrollbarPaintOffset(Args&&... args) {
-    updateProperty(m_scrollbarPaintOffset, std::forward<Args>(args)...);
+  bool updateScrollbarPaintOffset(Args&&... args) {
+    return update(m_scrollbarPaintOffset, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateScroll(Args&&... args) {
-    updateProperty(m_scroll, std::forward<Args>(args)...);
+  bool updateScroll(Args&&... args) {
+    return update(m_scroll, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateEffect(Args&&... args) {
-    updateProperty(m_effect, std::forward<Args>(args)...);
+  bool updateEffect(Args&&... args) {
+    return update(m_effect, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateCssClip(Args&&... args) {
-    updateProperty(m_cssClip, std::forward<Args>(args)...);
+  bool updateCssClip(Args&&... args) {
+    return update(m_cssClip, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateCssClipFixedPosition(Args&&... args) {
-    updateProperty(m_cssClipFixedPosition, std::forward<Args>(args)...);
+  bool updateCssClipFixedPosition(Args&&... args) {
+    return update(m_cssClipFixedPosition, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateInnerBorderRadiusClip(Args&&... args) {
-    updateProperty(m_innerBorderRadiusClip, std::forward<Args>(args)...);
+  bool updateInnerBorderRadiusClip(Args&&... args) {
+    return update(m_innerBorderRadiusClip, std::forward<Args>(args)...);
   }
+  // True if a new property was created, false if an existing one was updated.
   template <typename... Args>
-  void updateOverflowClip(Args&&... args) {
-    updateProperty(m_overflowClip, std::forward<Args>(args)...);
+  bool updateOverflowClip(Args&&... args) {
+    return update(m_overflowClip, std::forward<Args>(args)...);
   }
 
 #if DCHECK_IS_ON()
@@ -266,12 +290,25 @@ class CORE_EXPORT ObjectPaintProperties {
  private:
   ObjectPaintProperties() {}
 
+  // True if an existing property was deleted, false otherwise.
+  template <typename PaintPropertyNode>
+  bool clear(RefPtr<PaintPropertyNode>& field) {
+    if (field) {
+      field = nullptr;
+      return true;
+    }
+    return false;
+  }
+
+  // True if a new property was created, false if an existing one was updated.
   template <typename PaintPropertyNode, typename... Args>
-  void updateProperty(RefPtr<PaintPropertyNode>& field, Args&&... args) {
-    if (field)
+  bool update(RefPtr<PaintPropertyNode>& field, Args&&... args) {
+    if (field) {
       field->update(std::forward<Args>(args)...);
-    else
-      field = PaintPropertyNode::create(std::forward<Args>(args)...);
+      return false;
+    }
+    field = PaintPropertyNode::create(std::forward<Args>(args)...);
+    return true;
   }
 
   RefPtr<TransformPaintPropertyNode> m_paintOffsetTranslation;

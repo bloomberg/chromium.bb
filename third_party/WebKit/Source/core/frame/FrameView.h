@@ -727,11 +727,18 @@ class CORE_EXPORT FrameView final
 
   // Paint properties (e.g., m_preTranslation, etc.) are built from the
   // FrameView's state (e.g., x(), y(), etc.) as well as inherited context.
-  // When these inputs change, setNeedsPaintPropertyUpdate will cause a property
-  // tree update during the next document lifecycle update.
-  // TODO(pdr): Add additional granularity such as the ability to signal that
-  // only a local paint property update is needed.
-  void setNeedsPaintPropertyUpdate() { m_needsPaintPropertyUpdate = true; }
+  // When these inputs change, setNeedsPaintPropertyUpdate will cause a paint
+  // property tree update during the next document lifecycle update.
+  // setNeedsPaintPropertyUpdate also sets the owning layout tree as needing a
+  // paint property update.
+  void setNeedsPaintPropertyUpdate();
+#if DCHECK_IS_ON()
+  // Similar to setNeedsPaintPropertyUpdate() but does not set the owning layout
+  // tree as needing a paint property update.
+  void setOnlyThisNeedsPaintPropertyUpdateForTesting() {
+    m_needsPaintPropertyUpdate = true;
+  }
+#endif
   void clearNeedsPaintPropertyUpdate() {
     DCHECK_EQ(lifecycle().state(), DocumentLifecycle::InPrePaint);
     m_needsPaintPropertyUpdate = false;

@@ -437,6 +437,7 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
   LayoutRect source(LayoutRect::infiniteIntRect());
   bool success = false;
   const auto* properties = m_layer.layoutObject()->paintProperties();
+  DCHECK(properties && properties->localBorderBoxProperties());
   PropertyTreeState propertyTreeState =
       properties->localBorderBoxProperties()->propertyTreeState;
 
@@ -445,6 +446,7 @@ ClipRect PaintLayerClipper::clipRectWithGeometryMapper(
 
   const auto* ancestorProperties =
       context.rootLayer->layoutObject()->paintProperties();
+  DCHECK(ancestorProperties && ancestorProperties->localBorderBoxProperties());
   PropertyTreeState destinationPropertyTreeState =
       ancestorProperties->localBorderBoxProperties()->propertyTreeState;
   if (!context.rootLayer->clipper().shouldRespectOverflowClip(context)) {

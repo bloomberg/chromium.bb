@@ -1737,10 +1737,16 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   // tree update during the next document lifecycle update.
   //
   // In addition to tracking if an object needs its own paint properties
-  // updated, |descendantNeedsPaintPropertyUpdate| is used to track if any
-  // descendant needs an update too. This bit is up the tree, crossing frames,
-  // when calling |setNeedsPaintPropertyUpdate|.
+  // updated, setNeedsPaintPropertyUpdate marks all ancestors as having a
+  // descendant needing a paint property update too.
   void setNeedsPaintPropertyUpdate();
+#if DCHECK_IS_ON()
+  // Same as setNeedsPaintPropertyUpdate() but does not mark ancestors as
+  // having a descendant needing a paint property update.
+  void setOnlyThisNeedsPaintPropertyUpdateForTesting() {
+    m_bitfields.setNeedsPaintPropertyUpdate(true);
+  }
+#endif
   bool needsPaintPropertyUpdate() const {
     return m_bitfields.needsPaintPropertyUpdate();
   }

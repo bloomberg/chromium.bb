@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "core/html/HTMLIFrameElement.h"
 #include "core/layout/LayoutTestHelper.h"
 #include "core/layout/LayoutTreeAsText.h"
 #include "core/layout/api/LayoutViewItem.h"
@@ -2929,6 +2930,16 @@ TEST_P(PaintPropertyTreeBuilderTest, DescendantNeedsUpdateAcrossFrames) {
   EXPECT_FALSE(divWithTransform->descendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(childLayoutView->descendantNeedsPaintPropertyUpdate());
   EXPECT_FALSE(innerDivWithTransform->descendantNeedsPaintPropertyUpdate());
+
+  // A child frame marked as needing a paint property update should not be
+  // skipped if the owning layout tree does not need an update.
+  FrameView* childFrameView = childDocument().view();
+  childFrameView->setNeedsPaintPropertyUpdate();
+  EXPECT_TRUE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  frameView->updateAllLifecyclePhases();
+  EXPECT_FALSE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(frameView->needsPaintPropertyUpdate());
+  EXPECT_FALSE(childFrameView->needsPaintPropertyUpdate());
 }
 
 TEST_P(PaintPropertyTreeBuilderTest, UpdatingFrameViewContentClip) {
@@ -2943,6 +2954,79 @@ TEST_P(PaintPropertyTreeBuilderTest, UpdatingFrameViewContentClip) {
   document().view()->resize(5, 5);
   document().view()->updateAllLifecyclePhases();
   EXPECT_EQ(FloatRoundedRect(0, 0, 5, 5), frameContentClip()->clipRect());
+}
+
+TEST_P(PaintPropertyTreeBuilderTest, BuildingStopsAtThrottledFrames) {
+  setBodyInnerHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='transform' style='transform: translate3d(4px, 5px, 6px);'>"
+      "</div>"
+      "<iframe id='iframe' sandbox></iframe>");
+  setChildFrameHTML(
+      "<style>body { margin: 0; }</style>"
+      "<div id='iframeTransform'"
+      "  style='transform: translate3d(4px, 5px, 6px);'/>");
+
+  // Move the child frame offscreen so it becomes available for throttling.
+  auto* iframe = toHTMLIFrameElement(document().getElementById("iframe"));
+  iframe->setAttribute(HTMLNames::styleAttr, "transform: translateY(5555px)");
+  document().view()->updateAllLifecyclePhases();
+  // Ensure intersection observer notifications get delivered.
+  testing::runPendingTasks();
+  EXPECT_FALSE(document().view()->isHiddenForThrottling());
+  EXPECT_TRUE(childDocument().view()->isHiddenForThrottling());
+
+  auto* transform = document().getElementById("transform")->layoutObject();
+  auto* iframeLayoutView = childDocument().layoutView();
+  auto* iframeTransform =
+      childDocument().getElementById("iframeTransform")->layoutObject();
+
+  // Invalidate properties in the iframe and ensure ancestors are marked.
+  iframeTransform->setNeedsPaintPropertyUpdate();
+  EXPECT_FALSE(document().layoutView()->needsPaintPropertyUpdate());
+  EXPECT_TRUE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(transform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(transform->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeLayoutView->needsPaintPropertyUpdate());
+  EXPECT_TRUE(iframeLayoutView->descendantNeedsPaintPropertyUpdate());
+  EXPECT_TRUE(iframeTransform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeTransform->descendantNeedsPaintPropertyUpdate());
+
+  transform->setNeedsPaintPropertyUpdate();
+  EXPECT_TRUE(transform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(transform->descendantNeedsPaintPropertyUpdate());
+
+  {
+    DocumentLifecycle::AllowThrottlingScope throttlingScope(
+        document().lifecycle());
+    EXPECT_FALSE(document().view()->shouldThrottleRendering());
+    EXPECT_TRUE(childDocument().view()->shouldThrottleRendering());
+
+    // A lifecycle update should update all properties except those with
+    // actively throttled descendants.
+    document().view()->updateAllLifecyclePhases();
+    EXPECT_FALSE(document().layoutView()->needsPaintPropertyUpdate());
+    EXPECT_TRUE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+    EXPECT_FALSE(transform->needsPaintPropertyUpdate());
+    EXPECT_FALSE(transform->descendantNeedsPaintPropertyUpdate());
+    EXPECT_FALSE(iframeLayoutView->needsPaintPropertyUpdate());
+    EXPECT_TRUE(iframeLayoutView->descendantNeedsPaintPropertyUpdate());
+    EXPECT_TRUE(iframeTransform->needsPaintPropertyUpdate());
+    EXPECT_FALSE(iframeTransform->descendantNeedsPaintPropertyUpdate());
+  }
+
+  EXPECT_FALSE(document().view()->shouldThrottleRendering());
+  EXPECT_FALSE(childDocument().view()->shouldThrottleRendering());
+  // Once unthrottled, a lifecycel update should update all properties.
+  document().view()->updateAllLifecyclePhases();
+  EXPECT_FALSE(document().layoutView()->needsPaintPropertyUpdate());
+  EXPECT_FALSE(document().layoutView()->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(transform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(transform->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeLayoutView->needsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeLayoutView->descendantNeedsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeTransform->needsPaintPropertyUpdate());
+  EXPECT_FALSE(iframeTransform->descendantNeedsPaintPropertyUpdate());
 }
 
 }  // namespace blink
