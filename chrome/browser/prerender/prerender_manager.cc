@@ -1261,8 +1261,10 @@ void PrerenderManager::RecordNetworkBytes(Origin origin,
 }
 
 bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
-  if (origin == ORIGIN_OFFLINE)
+  if (origin == ORIGIN_OFFLINE ||
+      origin == ORIGIN_EXTERNAL_REQUEST_FORCED_CELLULAR) {
     return false;
+  }
 
   // The group name should contain expiration time formatted as:
   //   "ExperimentYes_expires_YYYY-MM-DDTHH:MM:SSZ".
@@ -1271,6 +1273,16 @@ bool PrerenderManager::IsPrerenderSilenceExperiment(Origin origin) const {
   const char kExperimentPrefix[] = "ExperimentYes";
   if (!base::StartsWith(group_name, kExperimentPrefix,
                         base::CompareCase::INSENSITIVE_ASCII)) {
+    // The experiment group was not set, use 2016-12-14 PST as the day of the
+    // experiment.
+    base::Time experiment_start;
+    if (!base::Time::FromString("2016-12-14-08:00:00Z", &experiment_start))
+      NOTREACHED();
+    base::Time current_time = GetCurrentTime();
+    if ((experiment_start <= current_time) &&
+        (current_time < experiment_start + base::TimeDelta::FromDays(1))) {
+      return true;
+    }
     return false;
   }
   const char kExperimentPrefixWithExpiration[] = "ExperimentYes_expires_";
