@@ -1767,8 +1767,6 @@ crbug.com/667953 [ Linux Debug ] virtual/android/media/mediadocument/media-docum
 crbug.com/664782 images/huge-image-viewport-scale.html [ NeedsRebaseline ]
 crbug.com/664782 virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
 
-crbug.com/661497 inspector/console/console-log-side-effects.html [ NeedsRebaseline ]
-
 crbug.com/475556 virtual/stable/webexposed/global-interface-listing.html [ NeedsRebaseline ]
 
 # [css-ui] Imported tests from W3C suite.
