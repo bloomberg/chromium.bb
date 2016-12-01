@@ -84,14 +84,14 @@ id ExecuteScriptOnInterstitial(WebState* web_state, NSString* script) {
   __block id script_result = nil;
   __block bool did_finish = false;
   web::ExecuteScriptForTesting(interstitial, script, ^(id result, NSError*) {
-    script_result = [[result copy] autorelease];
+    script_result = [result copy];
     did_finish = true;
   });
   BOOL suceeded = WaitUntilConditionOrTimeout(kWaitForJSCompletionTimeout, ^{
     return did_finish;
   });
   GREYAssert(suceeded, @"Script execution timed out");
-  return script_result;
+  return [script_result autorelease];
 }
 
 }  // namespace web
