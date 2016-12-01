@@ -35,6 +35,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <signal.h>
+#include <assert.h>
 #include <X11/Xcursor/Xcursor.h>
 #include <linux/input.h>
 
@@ -125,6 +126,11 @@ struct motif_wm_hints {
 #define _NET_WM_MOVERESIZE_MOVE_KEYBOARD    10   /* move via keyboard */
 #define _NET_WM_MOVERESIZE_CANCEL           11   /* cancel operation */
 
+struct weston_output_weak_ref {
+	struct weston_output *output;
+	struct wl_listener destroy_listener;
+};
+
 struct weston_wm_window {
 	struct weston_wm *wm;
 	xcb_window_t id;
@@ -148,6 +154,7 @@ struct weston_wm_window {
 	int width, height;
 	int x, y;
 	bool pos_dirty;
+	struct weston_output_weak_ref legacy_fullscreen_output;
 	int saved_width, saved_height;
 	int decorate;
 	int override_redirect;
@@ -169,6 +176,11 @@ weston_wm_set_net_active_window(struct weston_wm *wm, xcb_window_t window);
 
 static void
 weston_wm_window_schedule_repaint(struct weston_wm_window *window);
+
+static int
+legacy_fullscreen(struct weston_wm *wm,
+		  struct weston_wm_window *window,
+		  struct weston_output **output_ret);
 
 static void
 xserver_map_shell_surface(struct weston_wm_window *window,
@@ -206,6 +218,47 @@ wm_log_continue(const char *fmt, ...)
 #else
 	return 0;
 #endif
+}
+
+static void
+weston_output_weak_ref_init(struct weston_output_weak_ref *ref)
+{
+	ref->output = NULL;
+}
+
+static void
+weston_output_weak_ref_clear(struct weston_output_weak_ref *ref)
+{
+	if (!ref->output)
+		return;
+
+	wl_list_remove(&ref->destroy_listener.link);
+	ref->output = NULL;
+}
+
+static void
+weston_output_weak_ref_handle_destroy(struct wl_listener *listener, void *data)
+{
+	struct weston_output_weak_ref *ref;
+
+	ref = wl_container_of(listener, ref, destroy_listener);
+	assert(ref->output == data);
+
+	weston_output_weak_ref_clear(ref);
+}
+
+static void
+weston_output_weak_ref_set(struct weston_output_weak_ref *ref,
+			   struct weston_output *output)
+{
+	weston_output_weak_ref_clear(ref);
+
+	if (!output)
+		return;
+
+	ref->destroy_listener.notify = weston_output_weak_ref_handle_destroy;
+	wl_signal_add(&output->destroy_signal, &ref->destroy_listener);
+	ref->output = output;
 }
 
 static bool __attribute__ ((warn_unused_result))
@@ -951,6 +1004,7 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	xcb_map_request_event_t *map_request =
 		(xcb_map_request_event_t *) event;
 	struct weston_wm_window *window;
+	struct weston_output *output;
 
 	if (our_resource(wm, map_request->window)) {
 		wm_log("XCB_MAP_REQUEST (window %d, ours)\n",
@@ -973,6 +1027,12 @@ weston_wm_handle_map_request(struct weston_wm *wm, xcb_generic_event_t *event)
 	weston_wm_window_set_wm_state(window, ICCCM_NORMAL_STATE);
 	weston_wm_window_set_net_wm_state(window);
 	weston_wm_window_set_virtual_desktop(window, 0);
+
+	if (legacy_fullscreen(wm, window, &output)) {
+		window->fullscreen = 1;
+		weston_output_weak_ref_set(&window->legacy_fullscreen_output,
+					   output);
+	}
 
 	xcb_map_window(wm->conn, map_request->window);
 	xcb_map_window(wm->conn, window->frame_id);
@@ -1206,6 +1266,7 @@ weston_wm_window_create(struct weston_wm *wm,
 	window->x = x;
 	window->y = y;
 	window->pos_dirty = false;
+	weston_output_weak_ref_init(&window->legacy_fullscreen_output);
 
 	geometry_reply = xcb_get_geometry_reply(wm->conn, geometry_cookie, NULL);
 	/* technically we should use XRender and check the visual format's
@@ -1221,6 +1282,8 @@ static void
 weston_wm_window_destroy(struct weston_wm_window *window)
 {
 	struct weston_wm *wm = window->wm;
+
+	weston_output_weak_ref_clear(&window->legacy_fullscreen_output);
 
 	if (window->repaint_source)
 		wl_event_source_remove(window->repaint_source);
@@ -2521,7 +2584,6 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 		wm->server->compositor->xwayland;
 	const struct weston_desktop_xwayland_interface *xwayland_interface =
 		wm->server->compositor->xwayland_interface;
-	struct weston_output *output;
 	struct weston_wm_window *parent;
 
 	weston_wm_window_read_properties(window);
@@ -2565,11 +2627,9 @@ xserver_map_shell_surface(struct weston_wm_window *window,
 	if (window->fullscreen) {
 		window->saved_width = window->width;
 		window->saved_height = window->height;
-		xwayland_interface->set_fullscreen(window->shsurf, NULL);
+		xwayland_interface->set_fullscreen(window->shsurf,
+						   window->legacy_fullscreen_output.output);
 		return;
-	} else if (legacy_fullscreen(wm, window, &output)) {
-		window->fullscreen = 1;
-		xwayland_interface->set_fullscreen(window->shsurf, output);
 	} else if (window->override_redirect) {
 		xwayland_interface->set_xwayland(window->shsurf,
 						 window->x, window->y);
