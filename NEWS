@@ -54,6 +54,7 @@ complete.
   Dal Maso.
 - New table ~unicode-braille.utb~ that helps to back translate braille
   input to unicode braille output, thanks to Leonard de Ruijter.
+- Improvements to the Chinese braille table thanks to Coscell Kao.
 
 ** Backwards incompatible changes
 None
