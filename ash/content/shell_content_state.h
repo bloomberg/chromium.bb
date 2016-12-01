@@ -5,8 +5,8 @@
 #ifndef ASH_CONTENT_SHELL_CONTENT_STATE_H_
 #define ASH_CONTENT_SHELL_CONTENT_STATE_H_
 
-#include "ash/common/session/session_types.h"
 #include "ash/content/ash_with_content_export.h"
+#include "ash/public/cpp/session_types.h"
 #include "base/macros.h"
 
 #if defined(OS_CHROMEOS)

@@ -5,7 +5,7 @@
 #ifndef ASH_COMMON_MEDIA_DELEGATE_H_
 #define ASH_COMMON_MEDIA_DELEGATE_H_
 
-#include "ash/common/session/session_types.h"
+#include "ash/public/cpp/session_types.h"
 
 namespace ash {
 

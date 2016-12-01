@@ -6,7 +6,7 @@
 #define ASH_COMMON_SESSION_SESSION_STATE_DELEGATE_H_
 
 #include "ash/ash_export.h"
-#include "ash/common/session/session_types.h"
+#include "ash/public/cpp/session_types.h"
 #include "components/session_manager/session_manager_types.h"
 
 class AccountId;

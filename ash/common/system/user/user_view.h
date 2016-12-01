@@ -7,9 +7,9 @@
 
 #include <memory>
 
-#include "ash/common/session/session_types.h"
 #include "ash/common/system/tray/tray_constants.h"
 #include "ash/common/system/user/tray_user.h"
+#include "ash/public/cpp/session_types.h"
 #include "base/macros.h"
 #include "ui/views/controls/button/button.h"
 #include "ui/views/focus/focus_manager.h"

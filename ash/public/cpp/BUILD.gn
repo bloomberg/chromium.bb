@@ -5,6 +5,7 @@
 # C++ headers and sources that can be used outside ash.
 source_set("cpp") {
   sources = [
+    "session_types.h",
     "shelf_types.h",
     "shell_window_ids.cc",
     "shell_window_ids.h",
