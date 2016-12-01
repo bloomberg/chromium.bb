@@ -1160,6 +1160,9 @@ if (enable_java_templates) {
   #     will be added to the javac classpath.
   #   jar_path: Path to the prebuilt jar.
   #   jar_dep: Target that builds jar_path (optional).
+  #   main_class: When specified, a wrapper script is created within
+  #     $root_build_dir/bin to launch the binary with the given class as the
+  #     entrypoint.
   #   output_name: File name for the output .jar (not including extension).
   #     Defaults to the input .jar file name.
   #   proguard_preprocess: If true, proguard preprocessing will be run. This can
