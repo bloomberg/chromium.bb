@@ -238,6 +238,7 @@ Polymer({
     e = /** @type {cr.ui.CanExecuteEvent} */(e);
     switch (e.command.id) {
       case 'find-command':
+      case 'toggle-grouped':
         e.canExecute = true;
         break;
       case 'slash-command':
@@ -258,6 +259,8 @@ Polymer({
       this.focusToolbarSearchField();
     if (e.command.id == 'delete-command')
       this.deleteSelected();
+    if (e.command.id == 'toggle-grouped')
+      this.grouped_ = !this.grouped_;
   },
 
   /**
