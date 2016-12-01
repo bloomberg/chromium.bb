@@ -101,6 +101,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool IsAnimatingClosed() const override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
+  bool ShouldUpdateWindowTransparency() const override;
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;

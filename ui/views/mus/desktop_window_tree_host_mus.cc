@@ -135,8 +135,6 @@ bool DesktopWindowTreeHostMus::IsDocked() const {
          ui::SHOW_STATE_DOCKED;
 }
 
-// TODO(erg): In addition to being called on system events, this also needs to
-// be called after window size changed.
 void DesktopWindowTreeHostMus::SendClientAreaToServer() {
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
@@ -177,6 +175,9 @@ void DesktopWindowTreeHostMus::SetBoundsInDIP(const gfx::Rect& bounds_in_dip) {
 
 void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
                                     const Widget::InitParams& params) {
+  // Needed so we don't render over the non-client area the window manager
+  // renders to.
+  content_window->layer()->SetFillsBoundsOpaquely(false);
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
 }
@@ -540,6 +541,11 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
   window()->SetProperty(aura::client::kResizeBehaviorKey, behavior);
 }
 
+bool DesktopWindowTreeHostMus::ShouldUpdateWindowTransparency() const {
+  // Needed so the window manager can render the client decorations.
+  return false;
+}
+
 void DesktopWindowTreeHostMus::OnWindowManagerFrameValuesChanged() {
   NonClientView* non_client_view =
       native_widget_delegate_->AsWidget()->non_client_view();
@@ -579,7 +585,12 @@ void DesktopWindowTreeHostMus::SetBoundsInPixels(
       size.SetToMin(max_size_in_pixels);
     final_bounds_in_pixels.set_size(size);
   }
+  const gfx::Rect old_bounds_in_pixels = GetBoundsInPixels();
   WindowTreeHostMus::SetBoundsInPixels(final_bounds_in_pixels);
+  if (old_bounds_in_pixels.size() != final_bounds_in_pixels.size()) {
+    SendClientAreaToServer();
+    SendHitTestMaskToServer();
+  }
 }
 
 void DesktopWindowTreeHostMus::OnWindowInitialized(aura::Window* window) {}

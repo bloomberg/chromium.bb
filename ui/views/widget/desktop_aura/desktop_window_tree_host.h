@@ -158,6 +158,10 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
 
   // Called when the window's size constraints change.
   virtual void SizeConstraintsChanged() = 0;
+
+  // Returns true if the transparency of the DesktopNativeWidgetAura's
+  // |content_window_| should change.
+  virtual bool ShouldUpdateWindowTransparency() const = 0;
 };
 
 }  // namespace views

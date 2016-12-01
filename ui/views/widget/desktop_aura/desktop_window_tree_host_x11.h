@@ -152,6 +152,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostX11
   bool IsAnimatingClosed() const override;
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
+  bool ShouldUpdateWindowTransparency() const override;
 
   // Overridden from aura::WindowTreeHost:
   gfx::Transform GetRootTransform() const override;

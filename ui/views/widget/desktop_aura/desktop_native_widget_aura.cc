@@ -1185,6 +1185,9 @@ void DesktopNativeWidgetAura::OnHostMovedInPixels(
 // DesktopNativeWidgetAura, private:
 
 void DesktopNativeWidgetAura::UpdateWindowTransparency() {
+  if (!desktop_window_tree_host_->ShouldUpdateWindowTransparency())
+    return;
+
   content_window_->SetTransparent(
       desktop_window_tree_host_->ShouldWindowContentsBeTransparent());
   // Regardless of transparency or not, this root content window will always

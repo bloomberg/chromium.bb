@@ -1462,9 +1462,21 @@ void WindowTree::SetClientArea(Id transport_window_id,
                                    transport_additional_client_areas) {
   ServerWindow* window =
       GetWindowByClientId(ClientWindowId(transport_window_id));
-  if (!window || !access_policy_->CanSetClientArea(window))
+  DVLOG(3) << "SetClientArea client window_id=" << transport_window_id
+           << " global window_id="
+           << (window ? WindowIdToTransportId(window->id()) : 0)
+           << " insets=" << insets.top() << " " << insets.left() << " "
+           << insets.bottom() << " " << insets.right();
+  if (!window) {
+    DVLOG(1) << "SetClientArea failed, no window";
     return;
+  }
+  if (!access_policy_->CanSetClientArea(window)) {
+    DVLOG(1) << "SetClientArea failed, access denied";
+    return;
+  }
 
+  Operation op(this, window_server_, OperationType::SET_CLIENT_AREA);
   window->SetClientArea(insets, transport_additional_client_areas.value_or(
                                     std::vector<gfx::Rect>()));
 }

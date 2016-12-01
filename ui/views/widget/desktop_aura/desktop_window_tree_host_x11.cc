@@ -1167,6 +1167,10 @@ void DesktopWindowTreeHostX11::SizeConstraintsChanged() {
   UpdateMinAndMaxSize();
 }
 
+bool DesktopWindowTreeHostX11::ShouldUpdateWindowTransparency() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 

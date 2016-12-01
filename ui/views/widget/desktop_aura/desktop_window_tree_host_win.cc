@@ -484,6 +484,10 @@ void DesktopWindowTreeHostWin::SizeConstraintsChanged() {
   message_handler_->SizeConstraintsChanged();
 }
 
+bool DesktopWindowTreeHostWin::ShouldUpdateWindowTransparency() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, WindowTreeHost implementation:
 
