@@ -31,6 +31,11 @@
       <message name="IDS_SAD_TAB_RELOAD_LABEL" desc="Button label in the sad tab page for reloading a page." formatter_data="android_java">
         Reload
       </message>
+      <if expr="is_android">
+        <message name="IDS_SAD_TAB_SEND_FEEDBACK_LABEL" desc="Button label in the sad tab page for sending feedback. This label replaces the reload button after a crash happens twice in a row." formatter_data="android_java">
+          Send Feedback
+        </message>
+      </if>
 
       <!-- New Tab -->
       <message name="IDS_NEW_TAB_TITLE"

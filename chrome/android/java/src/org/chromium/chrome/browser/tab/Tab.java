@@ -365,6 +365,12 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
      */
     private View mSadTabView;
 
+    /**
+     * Counts the number of successive refreshes on the sad tab page. The count is is reset after a
+     * successful page load.
+     */
+    private int mSadTabSuccessiveRefreshCounter;
+
     private final int mDefaultThemeColor;
     private int mThemeColor;
 
@@ -1669,6 +1675,9 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                     "Navigation.IsMobileOptimized", mContentViewCore.getIsMobileOptimizedHint());
         }
 
+        // Reset the succressiveRefresh counter after successfully loading a page.
+        mSadTabSuccessiveRefreshCounter = 0;
+
         if (mTabUma != null) mTabUma.onPageLoadFinished();
 
         for (TabObserver observer : mObservers) observer.onPageLoadFinished(this);
@@ -1876,18 +1885,29 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
                             Profile.getLastUsedProfile(), null);
                 }
             };
-            OnClickListener reloadButtonAction = new OnClickListener() {
+
+            // If the tab has crashed twice in a row change the button to "Send Feedback" and
+            // change the onClickListener.
+            final boolean showSendFeedbackButton = mSadTabSuccessiveRefreshCounter >= 1;
+            OnClickListener buttonAction = new OnClickListener() {
+
                 @Override
-                public void onClick(View view) {
-                    reload();
+                public void onClick(View v) {
+                    if (showSendFeedbackButton) {
+                        getActivity().startHelpAndFeedback(Tab.this, "MobileSadTabFeedback");
+                    } else {
+                        reload();
+                    }
                 }
             };
 
             // Make sure we are not adding the "Aw, snap" view over an existing one.
             assert mSadTabView == null;
-            mSadTabView = SadTabViewFactory.createSadTabView(
-                    mThemedApplicationContext, suggestionAction, reloadButtonAction);
 
+            mSadTabView = SadTabViewFactory.createSadTabView(mThemedApplicationContext,
+                    suggestionAction, buttonAction, showSendFeedbackButton
+                            ? R.string.sad_tab_send_feedback_label : R.string.sad_tab_reload_label);
+            mSadTabSuccessiveRefreshCounter++;
             // Show the sad tab inside ContentView.
             getContentViewCore().getContainerView().addView(
                     mSadTabView, new FrameLayout.LayoutParams(
@@ -1909,6 +1929,16 @@ public class Tab implements ViewGroup.OnHierarchyChangeListener,
             notifyContentChanged();
         }
         mSadTabView = null;
+    }
+
+    /**
+     * Removes any existing sad tab view and shows it again. This "reloads" the tab without
+     * going through any formal loading logic.
+     */
+    @VisibleForTesting
+    public void reloadSadTabForTesting() {
+        removeSadTabIfPresent();
+        showSadTab();
     }
 
     /**

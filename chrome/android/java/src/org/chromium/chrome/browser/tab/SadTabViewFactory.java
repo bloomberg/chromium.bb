@@ -5,6 +5,7 @@
 package org.chromium.chrome.browser.tab;
 
 import android.content.Context;
+import android.support.annotation.StringRes;
 import android.text.method.LinkMovementMethod;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,16 +22,18 @@ import org.chromium.ui.text.SpanApplier.SpanInfo;
  * A factory class for creating the "Sad Tab" view, which is shown in place of a crashed renderer.
  */
 public class SadTabViewFactory {
+
     /**
      * @param context Context of the resulting Sad Tab view.
      * @param suggestionAction Action to be executed when user clicks "try these suggestions".
      * @param reloadButtonAction Action to be executed when Reload button is pressed.
      *                           (e.g., refreshing the page)
+     * @param buttonTextId The string resource for the button text label.
      * @return A "Sad Tab" view instance which is used in place of a crashed renderer.
      */
     public static View createSadTabView(
             Context context, final OnClickListener suggestionAction,
-            OnClickListener reloadButtonAction) {
+            OnClickListener reloadButtonAction, @StringRes int buttonTextId) {
         // Inflate Sad tab and initialize.
         LayoutInflater inflater = (LayoutInflater) context.getSystemService(
                 Context.LAYOUT_INFLATER_SERVICE);
@@ -41,6 +44,7 @@ public class SadTabViewFactory {
         messageText.setMovementMethod(LinkMovementMethod.getInstance());
 
         Button reloadButton = (Button) sadTabView.findViewById(R.id.sad_tab_reload_button);
+        reloadButton.setText(buttonTextId);
         reloadButton.setOnClickListener(reloadButtonAction);
 
         return sadTabView;

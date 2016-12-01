@@ -9837,6 +9837,14 @@ should be able to be added at any place in this file.
   <description>Please enter the description of this user action.</description>
 </action>
 
+<action name="MobileSadTabFeedback">
+  <owner>jwanda@chromium.org</owner>
+  <description>
+    The user pressed the Send Feedback button on a tab that is displaying the
+    sad view.
+  </description>
+</action>
+
 <action name="MobileSettingsStorageClearAll">
   <owner>dmurph@chromium.org</owner>
   <description>
