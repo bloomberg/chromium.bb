@@ -5,8 +5,11 @@
 #include "core/paint/PaintTiming.h"
 
 #include "core/dom/Document.h"
+#include "core/frame/FrameView.h"
+#include "core/frame/LocalFrame.h"
 #include "core/loader/DocumentLoader.h"
 #include "platform/tracing/TraceEvent.h"
+#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 
@@ -63,6 +66,16 @@ void PaintTiming::markFirstImagePaint() {
       "blink.user_timing,rail", "firstImagePaint",
       TraceEvent::toTraceTimestamp(m_firstImagePaint), "frame", frame());
   notifyPaintTimingChanged();
+}
+
+void PaintTiming::markFirstMeaningfulPaintCandidate() {
+  if (m_firstMeaningfulPaintCandidate)
+    return;
+  m_firstMeaningfulPaintCandidate = monotonicallyIncreasingTime();
+  if (m_document->frame() && m_document->frame()->view() &&
+      !m_document->frame()->view()->parent()) {
+    m_document->frame()->frameScheduler()->onFirstMeaningfulPaint();
+  }
 }
 
 void PaintTiming::setFirstMeaningfulPaint(double stamp) {

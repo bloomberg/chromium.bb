@@ -89,4 +89,20 @@ TEST_F(FirstMeaningfulPaintDetectorTest, TwoLayoutsSignificantFirst) {
   EXPECT_LT(paintTiming().firstMeaningfulPaint(), afterLayout1);
 }
 
+TEST_F(FirstMeaningfulPaintDetectorTest, FirstMeaningfulPaintCandidate) {
+  paintTiming().markFirstPaint();
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
+  simulateLayoutAndPaint(1);
+  double afterPaint = monotonicallyIncreasingTime();
+  // The first candidate gets ignored.
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), 0.0);
+  simulateLayoutAndPaint(10);
+  // The second candidate gets reported.
+  EXPECT_GT(paintTiming().firstMeaningfulPaintCandidate(), afterPaint);
+  double candidate = paintTiming().firstMeaningfulPaintCandidate();
+  // The third candidate gets ignored since we already saw the first candidate.
+  simulateLayoutAndPaint(10);
+  EXPECT_EQ(paintTiming().firstMeaningfulPaintCandidate(), candidate);
+}
+
 }  // namespace blink

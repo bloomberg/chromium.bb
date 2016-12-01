@@ -95,6 +95,13 @@ void FirstMeaningfulPaintDetector::notifyPaint() {
       "loading", "firstMeaningfulPaintCandidate",
       TraceEvent::toTraceTimestamp(m_provisionalFirstMeaningfulPaint), "frame",
       document()->frame());
+  // Ignore the first meaningful paint candidate as this generally is the first
+  // contentful paint itself.
+  if (!m_seenFirstMeaningfulPaintCandidate) {
+    m_seenFirstMeaningfulPaintCandidate = true;
+    return;
+  }
+  m_paintTiming->markFirstMeaningfulPaintCandidate();
 }
 
 void FirstMeaningfulPaintDetector::checkNetworkStable() {

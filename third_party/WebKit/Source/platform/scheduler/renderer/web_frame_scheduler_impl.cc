@@ -220,6 +220,10 @@ void WebFrameSchedulerImpl::setSuspended(bool frame_suspended) {
     timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
 }
 
+void WebFrameSchedulerImpl::onFirstMeaningfulPaint() {
+  renderer_scheduler_->OnFirstMeaningfulPaint();
+}
+
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {
   if (!page_visible_)
     return true;

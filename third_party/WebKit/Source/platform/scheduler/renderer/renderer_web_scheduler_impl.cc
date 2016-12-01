@@ -43,9 +43,5 @@ RendererWebSchedulerImpl::createWebViewScheduler(
           timerThrottlingForBackgroundTabsEnabled()));
 }
 
-void RendererWebSchedulerImpl::onNavigationStarted() {
-  renderer_scheduler_->OnNavigationStarted();
-}
-
 }  // namespace scheduler
 }  // namespace blink

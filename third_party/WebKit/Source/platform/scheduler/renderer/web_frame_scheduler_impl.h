@@ -49,6 +49,7 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   void didStartLoading(unsigned long identifier) override;
   void didStopLoading(unsigned long identifier) override;
   void setDocumentParsingInBackground(bool background_parser_active) override;
+  void onFirstMeaningfulPaint() override;
 
   void AsValueInto(base::trace_event::TracedValue* state) const;
 

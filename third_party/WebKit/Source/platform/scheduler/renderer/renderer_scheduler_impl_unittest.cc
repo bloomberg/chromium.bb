@@ -3403,6 +3403,42 @@ TEST_F(RendererSchedulerImplTest, TestIdleRAILMode) {
   scheduler_->SetRAILModeObserver(nullptr);
 }
 
+TEST_F(RendererSchedulerImplTest, TestLoadRAILMode) {
+  MockRAILModeObserver observer;
+  scheduler_->SetRAILModeObserver(&observer);
+  EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
+  EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
+
+  scheduler_->OnNavigationStarted();
+  EXPECT_EQ(v8::PERFORMANCE_LOAD, RAILMode());
+  EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
+  scheduler_->OnFirstMeaningfulPaint();
+  EXPECT_EQ(UseCase::NONE, ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(v8::PERFORMANCE_ANIMATION, RAILMode());
+  scheduler_->SetRAILModeObserver(nullptr);
+}
+
+TEST_F(RendererSchedulerImplTest, InputTerminatesLoadRAILMode) {
+  MockRAILModeObserver observer;
+  scheduler_->SetRAILModeObserver(&observer);
+  EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_ANIMATION));
+  EXPECT_CALL(observer, OnRAILModeChanged(v8::PERFORMANCE_LOAD));
+
+  scheduler_->OnNavigationStarted();
+  EXPECT_EQ(v8::PERFORMANCE_LOAD, RAILMode());
+  EXPECT_EQ(UseCase::LOADING, ForceUpdatePolicyAndGetCurrentUseCase());
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollBegin),
+      RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  scheduler_->DidHandleInputEventOnCompositorThread(
+      FakeInputEvent(blink::WebInputEvent::GestureScrollUpdate),
+      RendererScheduler::InputEventState::EVENT_CONSUMED_BY_COMPOSITOR);
+  EXPECT_EQ(UseCase::COMPOSITOR_GESTURE,
+            ForceUpdatePolicyAndGetCurrentUseCase());
+  EXPECT_EQ(v8::PERFORMANCE_ANIMATION, RAILMode());
+  scheduler_->SetRAILModeObserver(nullptr);
+}
+
 TEST_F(RendererSchedulerImplTest, UnthrottledTaskRunner) {
   // Ensure neither suspension nor timer task throttling affects an unthrottled
   // task runner.

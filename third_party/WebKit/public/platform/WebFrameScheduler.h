@@ -67,6 +67,10 @@ class BLINK_PLATFORM_EXPORT WebFrameScheduler {
   // tells the scheduler not to advance virtual time if it's using the
   // DETERMINISTIC_LOADING policy.
   virtual void setDocumentParsingInBackground(bool) {}
+
+  // Tells the scheduler that the first meaningful paint has occured for this
+  // frame.
+  virtual void onFirstMeaningfulPaint() {}
 };
 
 }  // namespace blink

@@ -95,9 +95,6 @@ class BLINK_PLATFORM_EXPORT WebScheduler {
   // Tells the scheduler that a navigation task is no longer pending.
   virtual void removePendingNavigation(NavigatingFrameType) = 0;
 
-  // Tells the scheduler that an expected navigation was started.
-  virtual void onNavigationStarted() = 0;
-
 #ifdef INSIDE_BLINK
   // Helpers for posting bound functions as tasks.
   typedef Function<void(double deadlineSeconds)> IdleTask;

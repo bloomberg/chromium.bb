@@ -65,7 +65,7 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     // listeners to find out the actual gesture type. To minimize touch latency,
     // only input handling work should run in this state.
     TOUCHSTART,
-    // The page is loading.
+    // A page is loading.
     LOADING,
     // A continuous gesture (e.g., scroll) which is being handled by the main
     // thread.
@@ -190,6 +190,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     return task_queue_throttler_.get();
   }
 
+  void OnFirstMeaningfulPaint();
+
   // base::trace_event::TraceLog::EnabledStateObserver implementation:
   void OnTraceLogEnabled() override;
   void OnTraceLogDisabled() override;
@@ -287,10 +289,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
   // The amount of time which idle periods can continue being scheduled when the
   // renderer has been hidden, before going to sleep for good.
   static const int kEndIdleWhenHiddenDelayMillis = 10000;
-
-  // The amount of time for which loading tasks will be prioritized over
-  // other tasks during the initial page load.
-  static const int kRailsInitialLoadingPrioritizationMillis = 1000;
 
   // The amount of time in milliseconds we have to respond to user input as
   // defined by RAILS.
@@ -451,7 +449,6 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     ~AnyThread();
 
     base::TimeTicks last_idle_period_end_time;
-    base::TimeTicks rails_loading_priority_deadline;
     base::TimeTicks fling_compositor_escalation_deadline;
     UserModel user_model;
     bool awaiting_touch_start_response;
@@ -460,6 +457,8 @@ class BLINK_PLATFORM_EXPORT RendererSchedulerImpl
     bool last_gesture_was_compositor_driven;
     bool default_gesture_prevented;
     bool have_seen_touchstart;
+    bool waiting_for_meaningful_paint;
+    bool have_seen_input_since_navigation;
   };
 
   struct CompositorThreadOnly {

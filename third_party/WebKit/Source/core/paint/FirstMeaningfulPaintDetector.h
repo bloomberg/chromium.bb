@@ -64,6 +64,7 @@ class CORE_EXPORT FirstMeaningfulPaintDetector
   double m_maxSignificanceSoFar = 0.0;
   double m_accumulatedSignificanceWhileHavingBlankText = 0.0;
   unsigned m_prevLayoutObjectCount = 0;
+  bool m_seenFirstMeaningfulPaintCandidate = false;
   Timer<FirstMeaningfulPaintDetector> m_networkStableTimer;
 };
 

@@ -47,7 +47,6 @@ class BLINK_PLATFORM_EXPORT WebSchedulerImpl : public WebScheduler {
   void addPendingNavigation(WebScheduler::NavigatingFrameType type) override {}
   void removePendingNavigation(
       WebScheduler::NavigatingFrameType type) override {}
-  void onNavigationStarted() override {}
 
  private:
   static void runIdleTask(std::unique_ptr<WebThread::IdleTask> task,

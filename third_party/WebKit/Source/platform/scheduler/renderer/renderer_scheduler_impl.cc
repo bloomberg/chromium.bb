@@ -223,7 +223,9 @@ RendererSchedulerImpl::AnyThread::AnyThread()
       begin_main_frame_on_critical_path(false),
       last_gesture_was_compositor_driven(false),
       default_gesture_prevented(true),
-      have_seen_touchstart(false) {}
+      have_seen_touchstart(false),
+      waiting_for_meaningful_paint(false),
+      have_seen_input_since_navigation(false) {}
 
 RendererSchedulerImpl::AnyThread::~AnyThread() {}
 
@@ -645,6 +647,7 @@ void RendererSchedulerImpl::UpdateForInputEventOnCompositorThread(
       AnyThread().awaiting_touch_start_response;
 
   AnyThread().user_model.DidStartProcessingInputEvent(type, now);
+  AnyThread().have_seen_input_since_navigation = true;
 
   if (input_event_state == InputEventState::EVENT_CONSUMED_BY_COMPOSITOR)
     AnyThread().user_model.DidFinishProcessingInputEvent(now);
@@ -1004,8 +1007,8 @@ void RendererSchedulerImpl::UpdatePolicyLocked(UpdateType update_type) {
 
     case UseCase::LOADING:
       new_policy.rail_mode = v8::PERFORMANCE_LOAD;
-      new_policy.loading_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
-      new_policy.default_queue_policy.priority = TaskQueue::HIGH_PRIORITY;
+      // TODO(skyostil): Experiment with increasing loading and default queue
+      // priorities and throttling rendering frame rate.
       break;
 
     default:
@@ -1216,8 +1219,13 @@ RendererSchedulerImpl::UseCase RendererSchedulerImpl::ComputeCurrentUseCase(
     }
   }
 
-  // TODO(alexclarke): return UseCase::LOADING if signals suggest the system is
-  // in the initial 1s of RAIL loading.
+  // Occasionally the meaningful paint fails to be detected, so as a fallback we
+  // treat the presence of input as an indirect signal that there is meaningful
+  // content on the page.
+  if (AnyThread().waiting_for_meaningful_paint &&
+      !AnyThread().have_seen_input_since_navigation) {
+    return UseCase::LOADING;
+  }
   return UseCase::NONE;
 }
 
@@ -1362,6 +1370,10 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetBoolean("renderer_hidden", MainThreadOnly().renderer_hidden);
   state->SetBoolean("have_seen_a_begin_main_frame",
                     MainThreadOnly().have_seen_a_begin_main_frame);
+  state->SetBoolean("waiting_for_meaningful_paint",
+                    AnyThread().waiting_for_meaningful_paint);
+  state->SetBoolean("have_seen_input_since_navigation",
+                    AnyThread().have_seen_input_since_navigation);
   state->SetBoolean(
       "have_reported_blocking_intervention_in_current_policy",
       MainThreadOnly().have_reported_blocking_intervention_in_current_policy);
@@ -1375,10 +1387,6 @@ RendererSchedulerImpl::AsValueLocked(base::TimeTicks optional_now) const {
   state->SetInteger("timer_queue_suspend_count",
                     MainThreadOnly().timer_queue_suspend_count);
   state->SetDouble("now", (optional_now - base::TimeTicks()).InMillisecondsF());
-  state->SetDouble(
-      "rails_loading_priority_deadline",
-      (AnyThread().rails_loading_priority_deadline - base::TimeTicks())
-          .InMillisecondsF());
   state->SetDouble(
       "fling_compositor_escalation_deadline",
       (AnyThread().fling_compositor_escalation_deadline - base::TimeTicks())
@@ -1514,11 +1522,15 @@ void RendererSchedulerImpl::OnNavigationStarted() {
   TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
                "RendererSchedulerImpl::OnNavigationStarted");
   base::AutoLock lock(any_thread_lock_);
-  AnyThread().rails_loading_priority_deadline =
-      helper_.scheduler_tqm_delegate()->NowTicks() +
-      base::TimeDelta::FromMilliseconds(
-          kRailsInitialLoadingPrioritizationMillis);
   ResetForNavigationLocked();
+}
+
+void RendererSchedulerImpl::OnFirstMeaningfulPaint() {
+  TRACE_EVENT0(TRACE_DISABLED_BY_DEFAULT("renderer.scheduler"),
+               "RendererSchedulerImpl::OnFirstMeaningfulPaint");
+  base::AutoLock lock(any_thread_lock_);
+  AnyThread().waiting_for_meaningful_paint = false;
+  UpdatePolicyLocked(UpdateType::MAY_EARLY_OUT_IF_POLICY_UNCHANGED);
 }
 
 void RendererSchedulerImpl::SuspendTimerQueueWhenBackgrounded() {
@@ -1546,6 +1558,8 @@ void RendererSchedulerImpl::ResetForNavigationLocked() {
   any_thread_lock_.AssertAcquired();
   AnyThread().user_model.Reset(helper_.scheduler_tqm_delegate()->NowTicks());
   AnyThread().have_seen_touchstart = false;
+  AnyThread().waiting_for_meaningful_paint = true;
+  AnyThread().have_seen_input_since_navigation = false;
   MainThreadOnly().loading_task_cost_estimator.Clear();
   MainThreadOnly().timer_task_cost_estimator.Clear();
   MainThreadOnly().idle_time_estimator.Clear();
