@@ -905,6 +905,9 @@ Handoff must also be enabled in the General section of Settings, and your device
       <message name="IDS_IOS_PAGE_INFO_SECURITY_BUTTON_ACCESSIBILITY_LABEL" desc="The accessibility text for the page security info button">
         Page Security Info
       </message>
+      <message name="IDS_IOS_PAGE_LOADED_ACCESSIBILITY_ANNOUNCEMENT" desc="The accessibility announcement when a page has loaded. [Length: unlimited] [iOS only]">
+        Webpage loaded
+      </message>
       <message name="IDS_IOS_PASSWORD_MANAGER_BLACKLIST_BUTTON" desc="Button text for the 'Save Password' infobar's 'Never remember for this site' option [Length: 10em]">
         Never
       </message>
