@@ -1448,8 +1448,8 @@ crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] http/tests/media/video-buffered-ra
 crbug.com/487344 [ Mac10.10 Mac10.11 Retina ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
 crbug.com/638621 [ Win ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure ]
-crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
-crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Timeout ]
+crbug.com/646644 [ Mac10.9 ] http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
+crbug.com/646644 [ Mac10.9 ] virtual/mojo-loading/http/tests/media/video-buffered-range-contains-currentTime.html [ Failure Timeout ]
 
 crbug.com/637930 http/tests/media/video-buffered.html [ Pass Failure ]
 crbug.com/637930 virtual/mojo-loading/http/tests/media/video-buffered.html [ Pass Failure ]
