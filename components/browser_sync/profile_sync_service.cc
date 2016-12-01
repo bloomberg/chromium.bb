@@ -543,7 +543,7 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
                      url_request_context_, network_time_update_callback_);
 
   backend_->Initialize(
-      this, sync_thread_.get(), GetJsEventHandler(), sync_service_url_,
+      this, sync_thread_->task_runner(), GetJsEventHandler(), sync_service_url_,
       local_device_->GetSyncUserAgent(), credentials, delete_stale_data,
       enable_local_sync_backend, local_sync_backend_folder,
       base::MakeUnique<syncer::SyncManagerFactory>(),

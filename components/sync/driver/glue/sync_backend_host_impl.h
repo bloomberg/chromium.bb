@@ -62,7 +62,6 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   SyncBackendHostImpl(
       const std::string& name,
       SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<SyncPrefs>& sync_prefs,
       const base::FilePath& sync_folder);
@@ -71,7 +70,7 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   // SyncBackendHost implementation.
   void Initialize(
       SyncFrontend* frontend,
-      base::Thread* sync_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
       const WeakHandle<JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,
@@ -288,17 +287,10 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
   void ClearServerDataDoneOnFrontendLoop(
       const SyncManager::ClearServerDataCallback& frontend_callback);
 
-  // A reference to the TaskRUnner used to construct |this|, so we know how to
-  // safely talk back to the SyncFrontend.
-  scoped_refptr<base::SingleThreadTaskRunner> const frontend_task_runner_;
-
   SyncClient* const sync_client_;
 
-  // A pointer to the sync thread.
-  base::Thread* sync_thread_;
-
-  // The UI thread's task runner.
-  const scoped_refptr<base::SingleThreadTaskRunner> ui_thread_;
+  // The task runner where all the sync engine operations happen.
+  scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner_;
 
   // Name used for debugging (set from profile_->GetDebugName()).
   const std::string name_;
@@ -346,6 +338,9 @@ class SyncBackendHostImpl : public SyncBackendHost, public InvalidationHandler {
 
   invalidation::InvalidationService* invalidator_;
   bool invalidation_handler_registered_;
+
+  // Checks that we're on the same thread this was constructed on (UI thread).
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<SyncBackendHostImpl> weak_ptr_factory_;
 

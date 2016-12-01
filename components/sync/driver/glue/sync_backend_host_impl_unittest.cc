@@ -167,8 +167,7 @@ class SyncBackendHostTest : public testing::Test {
     sync_prefs_ = base::MakeUnique<SyncPrefs>(&pref_service_);
     sync_thread_.StartAndWaitForTesting();
     backend_ = base::MakeUnique<SyncBackendHostImpl>(
-        "dummyDebugName", &sync_client_, base::ThreadTaskRunnerHandle::Get(),
-        nullptr, sync_prefs_->AsWeakPtr(),
+        "dummyDebugName", &sync_client_, nullptr, sync_prefs_->AsWeakPtr(),
         temp_dir_.GetPath().Append(base::FilePath(kTestSyncDir)));
     credentials_.account_id = "user@example.com";
     credentials_.email = "user@example.com";
@@ -213,9 +212,10 @@ class SyncBackendHostTest : public testing::Test {
                        base::Unretained(network_resources_.get()), nullptr,
                        base::Bind(&EmptyNetworkTimeUpdate));
     backend_->Initialize(
-        &mock_frontend_, &sync_thread_, WeakHandle<JsEventHandler>(),
-        GURL(std::string()), std::string(), credentials_, true, false,
-        base::FilePath(), std::move(fake_manager_factory_),
+        &mock_frontend_, sync_thread_.task_runner(),
+        WeakHandle<JsEventHandler>(), GURL(std::string()), std::string(),
+        credentials_, true, false, base::FilePath(),
+        std::move(fake_manager_factory_),
         MakeWeakHandle(test_unrecoverable_error_handler_.GetWeakPtr()),
         base::Closure(), http_post_provider_factory_getter,
         std::move(saved_nigori_state_));

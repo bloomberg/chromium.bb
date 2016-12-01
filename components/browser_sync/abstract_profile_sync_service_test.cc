@@ -36,7 +36,6 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
   SyncBackendHostForProfileSyncTest(
       const base::FilePath& temp_dir,
       syncer::SyncClient* sync_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
       invalidation::InvalidationService* invalidator,
       const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
       const base::Closure& callback);
@@ -69,14 +68,12 @@ class SyncBackendHostForProfileSyncTest : public SyncBackendHostImpl {
 SyncBackendHostForProfileSyncTest::SyncBackendHostForProfileSyncTest(
     const base::FilePath& temp_dir,
     syncer::SyncClient* sync_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& ui_thread,
     invalidation::InvalidationService* invalidator,
     const base::WeakPtr<syncer::SyncPrefs>& sync_prefs,
     const base::Closure& callback)
     : SyncBackendHostImpl(
           "dummy_debug_name",
           sync_client,
-          ui_thread,
           invalidator,
           sync_prefs,
           temp_dir.Append(base::FilePath(FILE_PATH_LITERAL("test")))),
@@ -197,7 +194,6 @@ void AbstractProfileSyncServiceTest::CreateSyncService(
   EXPECT_CALL(*components, CreateSyncBackendHost(_, _, _, _))
       .WillOnce(Return(new SyncBackendHostForProfileSyncTest(
           temp_dir_.GetPath(), sync_service_->GetSyncClient(),
-          base::ThreadTaskRunnerHandle::Get(),
           profile_sync_service_bundle_.fake_invalidation_service(),
           sync_service_->sync_prefs()->AsWeakPtr(),
           initialization_success_callback)));

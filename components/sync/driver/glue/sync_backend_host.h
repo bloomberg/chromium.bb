@@ -11,7 +11,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "base/threading/thread.h"
+#include "base/single_thread_task_runner.h"
 #include "components/sync/base/model_type.h"
 #include "components/sync/base/weak_handle.h"
 #include "components/sync/driver/backend_data_type_configurer.h"
@@ -54,7 +54,7 @@ class SyncBackendHost : public BackendDataTypeConfigurer {
   // backend instance. May be null.
   virtual void Initialize(
       SyncFrontend* frontend,
-      base::Thread* sync_thread,
+      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
       const WeakHandle<JsEventHandler>& event_handler,
       const GURL& service_url,
       const std::string& sync_user_agent,

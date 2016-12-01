@@ -11,6 +11,7 @@
 #include "base/location.h"
 #include "base/memory/ptr_util.h"
 #include "base/single_thread_task_runner.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_manager.h"
 #include "components/data_use_measurement/core/data_use_user_data.h"
 #include "components/invalidation/public/invalidation_util.h"
@@ -55,7 +56,7 @@ namespace syncer {
 class EngineComponentsFactory;
 
 DoInitializeOptions::DoInitializeOptions(
-    base::MessageLoop* sync_loop,
+    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
     SyncBackendRegistrar* registrar,
     const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
     const scoped_refptr<ExtensionsActivity>& extensions_activity,
@@ -76,7 +77,7 @@ DoInitializeOptions::DoInitializeOptions(
     const base::Closure& report_unrecoverable_error_function,
     std::unique_ptr<SyncEncryptionHandler::NigoriState> saved_nigori_state,
     const std::map<ModelType, int64_t>& invalidation_versions)
-    : sync_loop(sync_loop),
+    : sync_task_runner(std::move(sync_task_runner)),
       registrar(registrar),
       workers(workers),
       extensions_activity(extensions_activity),
@@ -111,18 +112,14 @@ DoConfigureSyncerTypes::~DoConfigureSyncerTypes() {}
 SyncBackendHostCore::SyncBackendHostCore(
     const std::string& name,
     const base::FilePath& sync_data_folder_path,
-    bool has_sync_setup_completed,
     const base::WeakPtr<SyncBackendHostImpl>& backend)
     : name_(name),
       sync_data_folder_path_(sync_data_folder_path),
       host_(backend),
-      sync_loop_(nullptr),
-      registrar_(nullptr),
-      has_sync_setup_completed_(has_sync_setup_completed),
-      forward_protocol_events_(false),
-      forward_type_info_(false),
       weak_ptr_factory_(this) {
   DCHECK(backend.get());
+  // This is constructed on the UI thread but used from the sync thread.
+  thread_checker_.DetachFromThread();
 }
 
 SyncBackendHostCore::~SyncBackendHostCore() {
@@ -132,7 +129,7 @@ SyncBackendHostCore::~SyncBackendHostCore() {
 bool SyncBackendHostCore::OnMemoryDump(
     const base::trace_event::MemoryDumpArgs& args,
     base::trace_event::ProcessMemoryDump* pmd) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!sync_manager_)
     return false;
   sync_manager_->OnMemoryDump(pmd);
@@ -141,17 +138,14 @@ bool SyncBackendHostCore::OnMemoryDump(
 
 void SyncBackendHostCore::OnSyncCycleCompleted(
     const SyncCycleSnapshot& snapshot) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
-
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop,
              snapshot);
 }
 
 void SyncBackendHostCore::DoRefreshTypes(ModelTypeSet types) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->RefreshTypes(types);
 }
 
@@ -160,7 +154,7 @@ void SyncBackendHostCore::OnInitializationComplete(
     const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
     bool success,
     const ModelTypeSet restored_types) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!success) {
     DoDestroySyncManager(STOP_SYNC);
@@ -177,7 +171,7 @@ void SyncBackendHostCore::OnInitializationComplete(
 
   // Sync manager initialization is complete, so we can schedule recurring
   // SaveChanges.
-  sync_loop_->task_runner()->PostTask(
+  base::ThreadTaskRunnerHandle::Get()->PostTask(
       FROM_HERE, base::Bind(&SyncBackendHostCore::StartSavingChanges,
                             weak_ptr_factory_.GetWeakPtr()));
 
@@ -217,9 +211,7 @@ void SyncBackendHostCore::OnInitializationComplete(
 }
 
 void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop,
              status);
@@ -228,55 +220,47 @@ void SyncBackendHostCore::OnConnectionStatusChange(ConnectionStatus status) {
 void SyncBackendHostCore::OnPassphraseRequired(
     PassphraseRequiredReason reason,
     const sync_pb::EncryptedData& pending_keys) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyPassphraseRequired, reason,
              pending_keys);
 }
 
 void SyncBackendHostCore::OnPassphraseAccepted() {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyPassphraseAccepted);
 }
 
 void SyncBackendHostCore::OnBootstrapTokenUpdated(
     const std::string& bootstrap_token,
     BootstrapTokenType type) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE, &SyncBackendHostImpl::PersistEncryptionBootstrapToken,
              bootstrap_token, type);
 }
 
 void SyncBackendHostCore::OnEncryptedTypesChanged(ModelTypeSet encrypted_types,
                                                   bool encrypt_everything) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // NOTE: We're in a transaction.
   host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyEncryptedTypesChanged,
              encrypted_types, encrypt_everything);
 }
 
 void SyncBackendHostCore::OnEncryptionComplete() {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // NOTE: We're in a transaction.
   host_.Call(FROM_HERE, &SyncBackendHostImpl::NotifyEncryptionComplete);
 }
 
 void SyncBackendHostCore::OnCryptographerStateChanged(
     Cryptographer* cryptographer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Do nothing.
 }
 
 void SyncBackendHostCore::OnPassphraseTypeChanged(PassphraseType type,
                                                   base::Time passphrase_time) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandlePassphraseTypeChangedOnFrontendLoop,
              type, passphrase_time);
@@ -284,6 +268,7 @@ void SyncBackendHostCore::OnPassphraseTypeChanged(PassphraseType type,
 
 void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
     const SyncEncryptionHandler::NigoriState& nigori_state) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop,
@@ -293,6 +278,7 @@ void SyncBackendHostCore::OnLocalSetPassphraseEncryption(
 void SyncBackendHostCore::OnCommitCountersUpdated(
     ModelType type,
     const CommitCounters& counters) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop,
@@ -302,6 +288,7 @@ void SyncBackendHostCore::OnCommitCountersUpdated(
 void SyncBackendHostCore::OnUpdateCountersUpdated(
     ModelType type,
     const UpdateCounters& counters) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop,
@@ -311,6 +298,7 @@ void SyncBackendHostCore::OnUpdateCountersUpdated(
 void SyncBackendHostCore::OnStatusCountersUpdated(
     ModelType type,
     const StatusCounters& counters) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(
       FROM_HERE,
       &SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop,
@@ -319,22 +307,21 @@ void SyncBackendHostCore::OnStatusCountersUpdated(
 
 void SyncBackendHostCore::OnActionableError(
     const SyncProtocolError& sync_error) {
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop,
              sync_error);
 }
 
 void SyncBackendHostCore::OnMigrationRequested(ModelTypeSet types) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE,
              &SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop,
              types);
 }
 
 void SyncBackendHostCore::OnProtocolEvent(const ProtocolEvent& event) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (forward_protocol_events_) {
     std::unique_ptr<ProtocolEvent> event_clone(event.Clone());
     host_.Call(FROM_HERE,
@@ -344,13 +331,13 @@ void SyncBackendHostCore::OnProtocolEvent(const ProtocolEvent& event) {
 }
 
 void SyncBackendHostCore::DoOnInvalidatorStateChange(InvalidatorState state) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->SetInvalidatorEnabled(state == INVALIDATIONS_ENABLED);
 }
 
 void SyncBackendHostCore::DoOnIncomingInvalidation(
     const ObjectIdInvalidationMap& invalidation_map) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   ObjectIdSet ids = invalidation_map.GetObjectIds();
   for (const invalidation::ObjectId& object_id : ids) {
@@ -387,9 +374,7 @@ void SyncBackendHostCore::DoOnIncomingInvalidation(
 
 void SyncBackendHostCore::DoInitialize(
     std::unique_ptr<DoInitializeOptions> options) {
-  DCHECK(!sync_loop_);
-  sync_loop_ = options->sync_loop;
-  DCHECK(sync_loop_);
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Finish initializing the HttpBridgeFactory.  We do this here because
   // building the user agent may block on some platforms.
@@ -443,12 +428,12 @@ void SyncBackendHostCore::DoInitialize(
   args.saved_nigori_state = std::move(options->saved_nigori_state);
   sync_manager_->Init(&args);
   base::trace_event::MemoryDumpManager::GetInstance()->RegisterDumpProvider(
-      this, "SyncDirectory", sync_loop_->task_runner());
+      this, "SyncDirectory", base::ThreadTaskRunnerHandle::Get());
 }
 
 void SyncBackendHostCore::DoUpdateCredentials(
     const SyncCredentials& credentials) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   // UpdateCredentials can be called during backend initialization, possibly
   // when backend initialization has failed but hasn't notified the UI thread
   // yet. In that case, the sync manager may have been destroyed on the sync
@@ -461,20 +446,20 @@ void SyncBackendHostCore::DoUpdateCredentials(
 void SyncBackendHostCore::DoStartSyncing(
     const ModelSafeRoutingInfo& routing_info,
     base::Time last_poll_time) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->StartSyncingNormally(routing_info, last_poll_time);
 }
 
 void SyncBackendHostCore::DoSetEncryptionPassphrase(
     const std::string& passphrase,
     bool is_explicit) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->GetEncryptionHandler()->SetEncryptionPassphrase(passphrase,
                                                                  is_explicit);
 }
 
 void SyncBackendHostCore::DoInitialProcessControlTypes() {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   DVLOG(1) << "Initilalizing Control Types";
 
@@ -511,12 +496,12 @@ void SyncBackendHostCore::DoInitialProcessControlTypes() {
 
 void SyncBackendHostCore::DoSetDecryptionPassphrase(
     const std::string& passphrase) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->GetEncryptionHandler()->SetDecryptionPassphrase(passphrase);
 }
 
 void SyncBackendHostCore::DoEnableEncryptEverything() {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->GetEncryptionHandler()->EnableEncryptEverything();
 }
 
@@ -542,7 +527,7 @@ void SyncBackendHostCore::ShutdownOnUIThread() {
 }
 
 void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   DoDestroySyncManager(reason);
 
@@ -556,7 +541,7 @@ void SyncBackendHostCore::DoShutdown(ShutdownReason reason) {
 }
 
 void SyncBackendHostCore::DoDestroySyncManager(ShutdownReason reason) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   base::trace_event::MemoryDumpManager::GetInstance()->UnregisterDumpProvider(
       this);
   if (sync_manager_) {
@@ -574,7 +559,7 @@ void SyncBackendHostCore::DoConfigureSyncer(
     const ModelSafeRoutingInfo routing_info,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task,
     const base::Closure& retry_callback) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!ready_task.is_null());
   DCHECK(!retry_callback.is_null());
   base::Closure chained_ready_task(base::Bind(
@@ -592,7 +577,7 @@ void SyncBackendHostCore::DoConfigureSyncer(
 void SyncBackendHostCore::DoFinishConfigureDataTypes(
     ModelTypeSet types_to_config,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
 
   // Update the enabled types for the bridge and sync manager.
   ModelSafeRoutingInfo routing_info;
@@ -612,13 +597,13 @@ void SyncBackendHostCore::DoFinishConfigureDataTypes(
 
 void SyncBackendHostCore::DoRetryConfiguration(
     const base::Closure& retry_callback) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE, &SyncBackendHostImpl::RetryConfigurationOnFrontendLoop,
              retry_callback);
 }
 
 void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   forward_protocol_events_ = true;
 
   if (sync_manager_) {
@@ -637,10 +622,12 @@ void SyncBackendHostCore::SendBufferedProtocolEventsAndEnableForwarding() {
 }
 
 void SyncBackendHostCore::DisableProtocolEventForwarding() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   forward_protocol_events_ = false;
 }
 
 void SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sync_manager_);
 
   forward_type_info_ = true;
@@ -651,6 +638,7 @@ void SyncBackendHostCore::EnableDirectoryTypeDebugInfoForwarding() {
 }
 
 void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(sync_manager_);
 
   if (!forward_type_info_)
@@ -663,7 +651,7 @@ void SyncBackendHostCore::DisableDirectoryTypeDebugInfoForwarding() {
 }
 
 void SyncBackendHostCore::DeleteSyncDataFolder() {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (base::DirectoryExists(sync_data_folder_path_)) {
     if (!base::DeleteFile(sync_data_folder_path_, true))
       SLOG(DFATAL) << "Could not delete the Sync Data folder.";
@@ -671,10 +659,7 @@ void SyncBackendHostCore::DeleteSyncDataFolder() {
 }
 
 void SyncBackendHostCore::StartSavingChanges() {
-  // We may already be shut down.
-  if (!sync_loop_)
-    return;
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(!save_changes_timer_.get());
   save_changes_timer_ = base::MakeUnique<base::RepeatingTimer>();
   save_changes_timer_->Start(
@@ -683,13 +668,13 @@ void SyncBackendHostCore::StartSavingChanges() {
 }
 
 void SyncBackendHostCore::SaveChanges() {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->SaveChanges();
 }
 
 void SyncBackendHostCore::DoClearServerData(
     const SyncManager::ClearServerDataCallback& frontend_callback) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   const SyncManager::ClearServerDataCallback callback =
       base::Bind(&SyncBackendHostCore::ClearServerDataDone,
                  weak_ptr_factory_.GetWeakPtr(), frontend_callback);
@@ -698,13 +683,13 @@ void SyncBackendHostCore::DoClearServerData(
 
 void SyncBackendHostCore::DoOnCookieJarChanged(bool account_mismatch,
                                                bool empty_jar) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   sync_manager_->OnCookieJarChanged(account_mismatch, empty_jar);
 }
 
 void SyncBackendHostCore::ClearServerDataDone(
     const base::Closure& frontend_callback) {
-  DCHECK(sync_loop_->task_runner()->BelongsToCurrentThread());
+  DCHECK(thread_checker_.CalledOnValidThread());
   host_.Call(FROM_HERE, &SyncBackendHostImpl::ClearServerDataDoneOnFrontendLoop,
              frontend_callback);
 }

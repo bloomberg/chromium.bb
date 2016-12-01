@@ -14,6 +14,8 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/single_thread_task_runner.h"
+#include "base/threading/thread_checker.h"
 #include "base/timer/timer.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/invalidation/public/invalidation.h"
@@ -32,7 +34,7 @@ class SyncBackendHostImpl;
 // Utility struct for holding initialization options.
 struct DoInitializeOptions {
   DoInitializeOptions(
-      base::MessageLoop* sync_loop,
+      scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
       SyncBackendRegistrar* registrar,
       const std::vector<scoped_refptr<ModelSafeWorker>>& workers,
       const scoped_refptr<ExtensionsActivity>& extensions_activity,
@@ -55,7 +57,7 @@ struct DoInitializeOptions {
       const std::map<ModelType, int64_t>& invalidation_versions);
   ~DoInitializeOptions();
 
-  base::MessageLoop* sync_loop;
+  scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner;
   SyncBackendRegistrar* registrar;
   std::vector<scoped_refptr<ModelSafeWorker>> workers;
   scoped_refptr<ExtensionsActivity> extensions_activity;
@@ -101,7 +103,6 @@ class SyncBackendHostCore
  public:
   SyncBackendHostCore(const std::string& name,
                       const base::FilePath& sync_data_folder_path,
-                      bool has_sync_setup_completed,
                       const base::WeakPtr<SyncBackendHostImpl>& backend);
 
   // MemoryDumpProvider implementation.
@@ -277,13 +278,9 @@ class SyncBackendHostCore
   // Our parent SyncBackendHost.
   WeakHandle<SyncBackendHostImpl> host_;
 
-  // The loop where all the sync backend operations happen.
-  // Non-null only between calls to DoInitialize() and ~Core().
-  base::MessageLoop* sync_loop_;
-
   // Our parent's registrar (not owned).  Non-null only between
   // calls to DoInitialize() and DoShutdown().
-  SyncBackendRegistrar* registrar_;
+  SyncBackendRegistrar* registrar_ = nullptr;
 
   // The timer used to periodically call SaveChanges.
   std::unique_ptr<base::RepeatingTimer> save_changes_timer_;
@@ -308,21 +305,20 @@ class SyncBackendHostCore
   CancelationSignal release_request_context_signal_;
   CancelationSignal stop_syncing_signal_;
 
-  // Matches the value of SyncPref's IsFirstSetupComplete() flag at init time.
-  // Should not be used for anything except for UMAs and logging.
-  const bool has_sync_setup_completed_;
-
   // Set when we've been asked to forward sync protocol events to the frontend.
-  bool forward_protocol_events_;
+  bool forward_protocol_events_ = false;
 
   // Set when the forwarding of per-type debug counters is enabled.
-  bool forward_type_info_;
+  bool forward_type_info_ = false;
 
   // A map of data type -> invalidation version to track the most recently
   // received invalidation version for each type.
   // This allows dropping any invalidations with versions older than those
   // most recently received for that data type.
   std::map<ModelType, int64_t> last_invalidation_versions_;
+
+  // Checks that we are on the sync thread.
+  base::ThreadChecker thread_checker_;
 
   base::WeakPtrFactory<SyncBackendHostCore> weak_ptr_factory_;
 

@@ -16,7 +16,7 @@ SyncBackendHostMock::~SyncBackendHostMock() {}
 
 void SyncBackendHostMock::Initialize(
     SyncFrontend* frontend,
-    base::Thread* sync_thread,
+    scoped_refptr<base::SingleThreadTaskRunner> sync_task_runner,
     const WeakHandle<JsEventHandler>& event_handler,
     const GURL& service_url,
     const std::string& sync_user_agent,
