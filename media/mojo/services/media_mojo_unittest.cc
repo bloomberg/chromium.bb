@@ -19,8 +19,11 @@
 #include "media/mojo/interfaces/content_decryption_module.mojom.h"
 #include "media/mojo/interfaces/decryptor.mojom.h"
 #include "media/mojo/interfaces/interface_factory.mojom.h"
+#include "media/mojo/interfaces/media_service.mojom.h"
 #include "media/mojo/interfaces/renderer.mojom.h"
 #include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
+#include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -65,7 +68,7 @@ class MockRendererClient : public mojom::RendererClient {
 class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
-      : ServiceTest("media_mojo_unittests"),
+      : ServiceTest("media_mojo_shell_unittests"),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override {}
@@ -74,10 +77,19 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
     ServiceTest::SetUp();
 
     connection_ = connector()->Connect("media");
-    connection_->SetConnectionLostClosure(base::Bind(
-        &MediaServiceTest::ConnectionClosed, base::Unretained(this)));
+    media::mojom::MediaServicePtr media_service;
+    connection_->GetInterface(&media_service);
 
-    connection_->GetInterface(&interface_factory_);
+    auto registry =
+        base::MakeUnique<service_manager::InterfaceRegistry>(std::string());
+    service_manager::mojom::InterfaceProviderPtr interfaces;
+    registry->Bind(GetProxy(&interfaces), service_manager::Identity(),
+                   service_manager::InterfaceProviderSpec(),
+                   service_manager::Identity(),
+                   service_manager::InterfaceProviderSpec());
+
+    media_service->CreateInterfaceFactory(mojo::GetProxy(&interface_factory_),
+                                          std::move(interfaces));
 
     run_loop_.reset(new base::RunLoop());
   }
@@ -135,6 +147,7 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   MOCK_METHOD0(ConnectionClosed, void());
 
  protected:
+  std::unique_ptr<service_manager::Connection> connection_;
   std::unique_ptr<base::RunLoop> run_loop_;
 
   mojom::InterfaceFactoryPtr interface_factory_;
@@ -148,8 +161,6 @@ class MediaServiceTest : public service_manager::test::ServiceTest {
   std::unique_ptr<MojoDemuxerStreamImpl> mojo_video_stream_;
 
  private:
-  std::unique_ptr<service_manager::Connection> connection_;
-
   DISALLOW_COPY_AND_ASSIGN(MediaServiceTest);
 };
 
@@ -190,6 +201,9 @@ TEST_F(MediaServiceTest, InitializeRenderer_InvalidConfig) {
 #endif  // defined(ENABLE_MOJO_RENDERER)
 
 TEST_F(MediaServiceTest, Lifetime) {
+  connection_->SetConnectionLostClosure(
+      base::Bind(&MediaServiceTest::ConnectionClosed, base::Unretained(this)));
+
   // Disconnecting CDM and Renderer services doesn't terminate the app.
   cdm_.reset();
   renderer_.reset();

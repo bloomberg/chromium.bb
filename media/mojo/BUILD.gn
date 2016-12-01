@@ -25,7 +25,7 @@ source_set("unit_tests") {
     "//media/mojo/clients",
     "//media/mojo/common",
     "//media/mojo/interfaces",
-    "//media/mojo/services",
+    "//media/mojo/services:lib",
     "//services/service_manager/tests:interfaces",
     "//testing/gmock",
     "//testing/gtest",

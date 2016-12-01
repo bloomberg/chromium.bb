@@ -5,7 +5,7 @@
     "service_manager:connector": {
       "requires": {
         "*": [ "app" ],
-        "media": [ "media:interface_factory" ]
+        "media": [ "media:media" ]
       }
     }
   }

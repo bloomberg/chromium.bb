@@ -4,8 +4,7 @@
   "interface_provider_specs": {
     "service_manager:connector": {
       "provides": {
-        "media:media": [ "media::mojom::MediaService" ],
-        "media:interface_factory": [ "media::mojom::InterfaceFactory" ]
+        "media:media": [ "media::mojom::MediaService" ]
       },
       "requires": {
         "*": [ "app" ]

@@ -49,6 +49,15 @@ config("mojo_media_config") {
 component("services") {
   output_name = "media_mojo_services"
 
+  public_deps = [
+    ":lib",
+  ]
+}
+
+# TODO(xhwang): Add this intermediate target because ServiceTest doesn't support
+# services that depend on shared libraries in component build.
+# See http://crbug.com/670094
+source_set("lib") {
   sources = [
     "demuxer_stream_provider_shim.cc",
     "demuxer_stream_provider_shim.h",
@@ -126,14 +135,18 @@ service("media") {
   ]
 
   public_deps = [
-    ":services",
     "//base",
     "//media",
   ]
 
   deps = [
+    ":lib",
     "//mojo/public/c/system",
     "//services/service_manager/public/cpp",
+  ]
+
+  data_deps = [
+    ":media_manifest",
   ]
 }
 
@@ -157,8 +170,8 @@ test("media_mojo_shell_unittests") {
   ]
 
   data_deps = [
-    "//media/mojo/services:test_manifest",
-    "//media/mojo/services:media",
+    ":media",
+    ":test_manifest",
   ]
 }
 
