@@ -257,7 +257,7 @@ CSSPreloaderResourceClient::CSSPreloaderResourceClient(
                    : ScanOnly),
       m_preloader(preloader),
       m_resource(toCSSStyleSheetResource(resource)) {
-  m_resource->addClient(this);
+  m_resource->addClient(this, Resource::DontMarkAsReferenced);
 }
 
 CSSPreloaderResourceClient::~CSSPreloaderResourceClient() {}

@@ -58,6 +58,7 @@ TEST_F(CSSPreloadScannerTest, ScanFromResourceClient) {
   const char* data = "@import url('http://127.0.0.1/preload.css');";
   resource->appendData(data, strlen(data));
 
+  EXPECT_EQ(Resource::PreloadNotReferenced, resource->getPreloadResult());
   EXPECT_EQ(1u, resourceClient->m_preloads.size());
   EXPECT_EQ("http://127.0.0.1/preload.css",
             resourceClient->m_preloads.front()->resourceURL());
