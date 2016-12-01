@@ -34,10 +34,24 @@ namespace WTF {
 
 struct AtomicStringHash;
 
+// An AtomicString instance represents a string, and multiple AtomicString
+// instances can share their string storage if the strings are
+// identical. Comparing two AtomicString instances is much faster than comparing
+// two String instances because we just check string storage identity.
+//
+// AtomicString instances are not thread-safe. An AtomicString instance created
+// in a thread must be used only in the creator thread.  If multiple threads
+// access a single AtomicString instance, we have race condition of a reference
+// count in StringImpl, and would hit a runtime CHECK in
+// AtomicStringTable::remove().
+//
+// Exception: nullAtom and emptyAtom, are shared in multiple threads, and are
+// never stored in AtomicStringTable.
 class WTF_EXPORT AtomicString {
   USING_FAST_MALLOC(AtomicString);
 
  public:
+  // The function is defined in StringStatics.cpp.
   static void init();
 
   AtomicString() {}
