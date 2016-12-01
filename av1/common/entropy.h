@@ -219,6 +219,12 @@ static INLINE int get_entropy_context(TX_SIZE tx_size, const ENTROPY_CONTEXT *a,
   ENTROPY_CONTEXT above_ec = 0, left_ec = 0;
 
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2:
+      above_ec = a[0] != 0;
+      left_ec = l[0] != 0;
+      break;
+#endif
     case TX_4X4:
       above_ec = a[0] != 0;
       left_ec = l[0] != 0;
