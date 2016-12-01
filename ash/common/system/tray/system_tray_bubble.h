@@ -66,6 +66,9 @@ class SystemTrayBubble {
   void RecordVisibleRowMetrics();
 
  private:
+  // Updates the bottom padding of the |bubble_view_| based on the
+  // |bubble_type_|.
+  void UpdateBottomPadding();
   void CreateItemViews(LoginStatus login_status);
 
   ash::SystemTray* tray_;

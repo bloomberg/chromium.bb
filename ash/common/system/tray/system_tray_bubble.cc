@@ -45,6 +45,9 @@ int GetDetailedBubbleMaxHeight() {
 // detailed view or vice versa.
 const int kSwipeDelayMS = 150;
 
+// Extra bottom padding when showing the BUBBLE_TYPE_DEFAULT view.
+const int kDefaultViewBottomPadding = 4;
+
 // Implicit animation observer that deletes itself and the layer at the end of
 // the animation.
 class AnimationObserverDeleteLayer : public ui::ImplicitAnimationObserver {
@@ -150,6 +153,7 @@ void SystemTrayBubble::UpdateView(
     return;
   }
 
+  UpdateBottomPadding();
   bubble_view_->GetWidget()->GetContentsView()->Layout();
   // Make sure that the bubble is large enough for the default view.
   if (bubble_type_ == BUBBLE_TYPE_DEFAULT) {
@@ -197,6 +201,7 @@ void SystemTrayBubble::InitView(views::View* anchor,
   }
 
   bubble_view_ = TrayBubbleView::Create(anchor, tray_, init_params);
+  UpdateBottomPadding();
   bubble_view_->set_adjust_if_offscreen(false);
   CreateItemViews(login_status);
 
@@ -299,6 +304,15 @@ void SystemTrayBubble::RecordVisibleRowMetrics() {
       UMA_HISTOGRAM_ENUMERATION("Ash.SystemMenu.DefaultView.VisibleRows",
                                 pair.first, SystemTrayItem::UMA_COUNT);
     }
+  }
+}
+
+void SystemTrayBubble::UpdateBottomPadding() {
+  if (bubble_type_ == BUBBLE_TYPE_DEFAULT &&
+      MaterialDesignController::IsSystemTrayMenuMaterial()) {
+    bubble_view_->SetBottomPadding(kDefaultViewBottomPadding);
+  } else {
+    bubble_view_->SetBottomPadding(0);
   }
 }
 

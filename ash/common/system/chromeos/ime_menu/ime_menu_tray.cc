@@ -340,8 +340,6 @@ void ImeMenuTray::ShowImeMenuBubble() {
   // In the material design, we will add a title item with a separator on the
   // top of the IME menu.
   if (MaterialDesignController::IsSystemTrayMenuMaterial()) {
-    bubble_view->SetLayoutManager(
-        new views::BoxLayout(views::BoxLayout::kVertical, 0, 0, 0));
     bubble_view->AddChildView(
         new ImeTitleView(!ShouldShowEmojiHandwritingVoiceButtons()));
   } else {

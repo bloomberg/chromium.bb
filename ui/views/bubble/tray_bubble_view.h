@@ -13,6 +13,7 @@
 #include "ui/views/views_export.h"
 
 namespace views {
+class BoxLayout;
 class View;
 class Widget;
 }
@@ -102,6 +103,9 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
   // Sets the maximum bubble height and resizes the bubble.
   void SetMaxHeight(int height);
 
+  // Sets the bottom padding that child views will be laid out within.
+  void SetBottomPadding(int padding);
+
   // Sets the bubble width.
   void SetWidth(int width);
 
@@ -145,7 +149,6 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
   // Overridden from views::BubbleDialogDelegateView.
   int GetDialogButtons() const override;
-  void Init() override;
 
   // Overridden from views::View.
   void ChildPreferredSizeChanged(View* child) override;
@@ -154,6 +157,7 @@ class VIEWS_EXPORT TrayBubbleView : public views::BubbleDialogDelegateView,
 
  private:
   InitParams params_;
+  BoxLayout* layout_;
   Delegate* delegate_;
   int preferred_width_;
   // |bubble_border_| and |owned_bubble_border_| point to the same thing, but

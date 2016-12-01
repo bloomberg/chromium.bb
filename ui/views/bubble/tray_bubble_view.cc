@@ -192,6 +192,7 @@ TrayBubbleView::TrayBubbleView(View* anchor,
     : BubbleDialogDelegateView(anchor,
                                GetArrowAlignment(init_params.anchor_alignment)),
       params_(init_params),
+      layout_(new BottomAlignedBoxLayout(this)),
       delegate_(delegate),
       preferred_width_(init_params.min_width),
       bubble_border_(new BubbleBorder(arrow(),
@@ -211,6 +212,9 @@ TrayBubbleView::TrayBubbleView(View* anchor,
 
   bubble_content_mask_.reset(
       new TrayBubbleContentMask(bubble_border_->GetBorderCornerRadius()));
+
+  layout_->SetDefaultFlex(1);
+  SetLayoutManager(layout_);
 }
 
 TrayBubbleView::~TrayBubbleView() {
@@ -243,6 +247,10 @@ void TrayBubbleView::SetMaxHeight(int height) {
     SizeToContents();
 }
 
+void TrayBubbleView::SetBottomPadding(int padding) {
+  layout_->set_inside_border_insets(gfx::Insets(0, 0, padding, 0));
+}
+
 void TrayBubbleView::SetWidth(int width) {
   width = std::max(std::min(width, params_.max_width), params_.min_width);
   if (preferred_width_ == width)
@@ -258,12 +266,6 @@ gfx::Insets TrayBubbleView::GetBorderInsets() const {
 
 int TrayBubbleView::GetDialogButtons() const {
   return ui::DIALOG_BUTTON_NONE;
-}
-
-void TrayBubbleView::Init() {
-  BoxLayout* layout = new BottomAlignedBoxLayout(this);
-  layout->SetDefaultFlex(1);
-  SetLayoutManager(layout);
 }
 
 void TrayBubbleView::OnBeforeBubbleWidgetInit(Widget::InitParams* params,
