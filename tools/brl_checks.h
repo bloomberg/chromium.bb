@@ -1,3 +1,15 @@
+/* liblouis Braille Translation and Back-Translation Library
+
+Copyright (C) 2012 James Teh <jamie@nvaccess.org>
+Copyright (C) 2014 Mesar Hameed <mesar.hameed@gmail.com>
+Copyright (C) 2015 Mike Gray <mgray@aph.org>
+Copyright (C) 2010-2016 Swiss Library for the Blind, Visually Impaired and Print Disabled
+
+Copying and distribution of this file, with or without modification,
+are permitted in any medium without royalty provided the copyright
+notice and this notice are preserved. This file is offered as-is,
+without any warranty. */
+
 /* Functionality to check a translation. This is mostly needed for the
    tests in ../tests but it is also needed for lou_checkyaml. So this
    functionality is packaged up in what automake calls a convenience
