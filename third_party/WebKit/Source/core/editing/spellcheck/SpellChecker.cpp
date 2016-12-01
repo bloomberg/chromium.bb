@@ -72,10 +72,6 @@ bool isPositionInTextArea(const Position& position) {
   return isHTMLTextAreaElement(textControl);
 }
 
-bool isSelectionInTextFormControl(const VisibleSelection& selection) {
-  return !!enclosingTextControl(selection.start());
-}
-
 static bool isSpellCheckingEnabledFor(const Position& position) {
   if (position.isNull())
     return false;
@@ -900,16 +896,9 @@ void SpellChecker::respondToChangedSelection(
 
   VisibleSelection newAdjacentWords;
   const VisibleSelection newSelection = frame().selection().selection();
-  if (isSelectionInTextFormControl(newSelection)) {
-    const Position newStart = newSelection.start();
-    newAdjacentWords.setWithoutValidation(
-        TextControlElement::startOfWord(newStart),
-        TextControlElement::endOfWord(newStart));
-  } else {
-    if (newSelection.isContentEditable()) {
-      newAdjacentWords =
-          createVisibleSelection(selectWord(newSelection.visibleStart()));
-    }
+  if (newSelection.isContentEditable()) {
+    newAdjacentWords =
+        createVisibleSelection(selectWord(newSelection.visibleStart()));
   }
 
   // When typing we check spelling elsewhere, so don't redo it here.
