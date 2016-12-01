@@ -27,6 +27,7 @@
 #include "base/time/time.h"
 #include "chrome/browser/chromeos/arc/process/arc_process.h"
 #include "chrome/browser/chromeos/arc/process/arc_process_service.h"
+#include "chrome/browser/memory/memory_kills_monitor.h"
 #include "chrome/browser/memory/tab_stats.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/browser/ui/browser_list.h"
@@ -36,7 +37,6 @@
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/common/process.mojom.h"
-#include "components/arc/metrics/oom_kills_histogram.h"
 #include "components/exo/shell_surface.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
@@ -273,36 +273,6 @@ int TabManagerDelegate::MemoryStat::EstimatedMemoryFreedKB(
   return mem_usage.priv;
 }
 
-class TabManagerDelegate::UmaReporter {
- public:
-  UmaReporter() : total_kills_(0) {}
-  ~UmaReporter() {}
-
-  void ReportKill(const int memory_freed);
-
- private:
-  base::Time last_kill_time_;
-  int total_kills_;
-};
-
-void TabManagerDelegate::UmaReporter::ReportKill(const int memory_freed) {
-  base::Time now = base::Time::Now();
-  const TimeDelta time_delta =
-      last_kill_time_.is_null() ?
-      TimeDelta::FromSeconds(arc::kMaxOomMemoryKillTimeDeltaSecs) :
-      (now - last_kill_time_);
-  UMA_HISTOGRAM_OOM_KILL_TIME_INTERVAL(
-            "Arc.LowMemoryKiller.TimeDelta", time_delta);
-  last_kill_time_ = now;
-
-  ++total_kills_;
-  UMA_HISTOGRAM_CUSTOM_COUNTS(
-      "Arc.LowMemoryKiller.Count", total_kills_, 1, 1000, 1001);
-
-  UMA_HISTOGRAM_MEMORY_KB("Arc.LowMemoryKiller.FreedSize",
-                          memory_freed);
-}
-
 TabManagerDelegate::TabManagerDelegate(
     const base::WeakPtr<TabManager>& tab_manager)
   : TabManagerDelegate(tab_manager, new MemoryStat()) {
@@ -314,7 +284,6 @@ TabManagerDelegate::TabManagerDelegate(
     : tab_manager_(tab_manager),
       focused_process_(new FocusedProcess()),
       mem_stat_(mem_stat),
-      uma_(new UmaReporter()),
       weak_ptr_factory_(this) {
   registrar_.Add(this, content::NOTIFICATION_RENDERER_PROCESS_CLOSED,
                  content::NotificationService::AllBrowserContextsAndSources());
@@ -631,7 +600,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
           mem_stat_->EstimatedMemoryFreedKB(it->app()->pid());
       if (KillArcProcess(it->app()->nspid())) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
-        uma_->ReportKill(estimated_memory_freed_kb);
+        MemoryKillsMonitor::LogLowMemoryKill("APP", estimated_memory_freed_kb);
         VLOG(2) << "Killed " << *it;
       }
     } else {
@@ -643,7 +612,7 @@ void TabManagerDelegate::LowMemoryKillImpl(
           mem_stat_->EstimatedMemoryFreedKB(it->tab()->renderer_handle);
       if (KillTab(tab_id)) {
         target_memory_to_free_kb -= estimated_memory_freed_kb;
-        uma_->ReportKill(estimated_memory_freed_kb);
+        MemoryKillsMonitor::LogLowMemoryKill("TAB", estimated_memory_freed_kb);
         VLOG(2) << "Killed " << *it;
       }
     }

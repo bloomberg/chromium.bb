@@ -97,7 +97,6 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
 
   class Candidate;
   class FocusedProcess;
-  class UmaReporter;
 
   friend std::ostream& operator<<(std::ostream& out,
                                   const Candidate& candidate);
@@ -168,9 +167,6 @@ class TabManagerDelegate : public aura::client::ActivationChangeObserver,
 
   // Util for getting system memory status.
   std::unique_ptr<TabManagerDelegate::MemoryStat> mem_stat_;
-
-  // Reports UMA histograms.
-  std::unique_ptr<UmaReporter> uma_;
 
   // Weak pointer factory used for posting tasks to other threads.
   base::WeakPtrFactory<TabManagerDelegate> weak_ptr_factory_;

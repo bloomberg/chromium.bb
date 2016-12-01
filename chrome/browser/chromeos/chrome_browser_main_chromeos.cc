@@ -354,6 +354,10 @@ void ChromeBrowserMainPartsChromeos::PreEarlyInitialization() {
     chrome::SetChannel(channel);
 #endif
 
+  // Start monitoring OOM kills.
+  memory_kills_monitor_ = base::MakeUnique<memory::MemoryKillsMonitor::Handle>(
+      memory::MemoryKillsMonitor::StartMonitoring());
+
   ChromeBrowserMainPartsLinux::PreEarlyInitialization();
 }
 

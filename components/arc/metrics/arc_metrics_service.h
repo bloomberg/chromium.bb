@@ -15,7 +15,6 @@
 #include "components/arc/common/metrics.mojom.h"
 #include "components/arc/common/process.mojom.h"
 #include "components/arc/instance_holder.h"
-#include "components/arc/metrics/oom_kills_monitor.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace arc {
@@ -72,8 +71,6 @@ class ArcMetricsService
   ProcessObserver process_observer_;
   base::ThreadChecker thread_checker_;
   base::RepeatingTimer timer_;
-
-  OomKillsMonitor::Handle oom_kills_monitor_handle_;
 
   base::TimeTicks arc_start_time_;
 
