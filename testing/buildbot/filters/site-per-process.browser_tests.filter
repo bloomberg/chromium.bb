@@ -18,3 +18,6 @@
 
 # crbug.com/669299: Wrong view frame source with --site-per-process
 -ChromeNavigationBrowserTest.TestViewFrameSource
+
+# crbug.com/670362: Flaky failure (expected MouseDown not found)
+-DevToolsPixelOutputTests.TestLatencyInfoInstrumentation
