@@ -19,12 +19,10 @@
 namespace {
 
 const int kTestMode = 0;
-const int kSuperframeSyntax = 1;
-const int kTileCols = 2;
-const int kTileRows = 3;
+const int kTileCols = 1;
+const int kTileRows = 2;
 
-typedef std::tr1::tuple<libaom_test::TestMode, int, int, int>
-    SuperframeTestParam;
+typedef std::tr1::tuple<libaom_test::TestMode, int, int> SuperframeTestParam;
 
 class SuperframeTest
     : public ::libaom_test::EncoderTest,
@@ -38,11 +36,9 @@ class SuperframeTest
     InitializeConfig();
     const SuperframeTestParam input = GET_PARAM(1);
     const libaom_test::TestMode mode = std::tr1::get<kTestMode>(input);
-    const int syntax = std::tr1::get<kSuperframeSyntax>(input);
     SetMode(mode);
     sf_count_ = 0;
     sf_count_max_ = INT_MAX;
-    is_av1_style_superframe_ = syntax;
     n_tile_cols_ = std::tr1::get<kTileCols>(input);
     n_tile_rows_ = std::tr1::get<kTileRows>(input);
   }
@@ -67,7 +63,7 @@ class SuperframeTest
     const uint8_t marker = buffer[pkt->data.frame.sz - 1];
     const int frames = (marker & 0x7) + 1;
     const int mag = ((marker >> 3) & 3) + 1;
-    const unsigned int index_sz = 2 + mag * (frames - is_av1_style_superframe_);
+    const unsigned int index_sz = 2 + mag * (frames - 1);
     if ((marker & 0xe0) == 0xc0 && pkt->data.frame.sz >= index_sz &&
         buffer[pkt->data.frame.sz - index_sz] == marker) {
       // frame is a superframe. strip off the index.
@@ -89,7 +85,6 @@ class SuperframeTest
     return pkt;
   }
 
-  int is_av1_style_superframe_;
   int sf_count_;
   int sf_count_max_;
   aom_codec_cx_pkt_t modified_pkt_;
@@ -130,7 +125,6 @@ const int tile_row_values[] = { 1, 2, 32 };
 AV1_INSTANTIATE_TEST_CASE(
     SuperframeTest,
     ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
-                       ::testing::Values(1),
                        ::testing::ValuesIn(tile_col_values),
                        ::testing::ValuesIn(tile_row_values)));
 #else
@@ -138,8 +132,7 @@ AV1_INSTANTIATE_TEST_CASE(
 AV1_INSTANTIATE_TEST_CASE(
     SuperframeTest,
     ::testing::Combine(::testing::Values(::libaom_test::kTwoPassGood),
-                       ::testing::Values(1), ::testing::Values(0),
-                       ::testing::Values(0)));
+                       ::testing::Values(0), ::testing::Values(0)));
 #endif  // !CONFIG_ANS
 #endif  // CONFIG_EXT_TILE
 }  // namespace
