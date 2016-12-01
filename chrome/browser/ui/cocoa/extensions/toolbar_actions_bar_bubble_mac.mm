@@ -318,27 +318,27 @@ CGFloat kMinWidth = 320.0;
         dismissButtonSize.height)];
     currentMaxWidth -= (dismissButtonSize.width + kButtonPadding);
   }
-  if (label_ || link_) {
-    CGFloat extraViewTextHeight =
-        currentHeight + (buttonStripHeight - extraViewTextSize.height) / 2.0;
-    NSRect frame = NSMakeRect(currentMaxWidth - extraViewTextSize.width,
-                              extraViewTextHeight, extraViewTextSize.width,
-                              extraViewTextSize.height);
-    if (link_) {
-      [link_ setFrame:frame];
-    } else {
-      [label_ setFrame:frame];
-    }
-    currentMaxWidth -= extraViewTextSize.width + kButtonPadding;
-  }
+  int leftAlignXPos = kHorizontalPadding;
   if (iconView_) {
     CGFloat extraViewIconHeight =
         currentHeight + (buttonStripHeight - extraViewIconSize.height) / 2.0;
 
     [iconView_
-        setFrame:NSMakeRect(kHorizontalPadding, extraViewIconHeight,
+        setFrame:NSMakeRect(leftAlignXPos, extraViewIconHeight,
                             extraViewIconSize.width, extraViewIconSize.height)];
-    currentMaxWidth -= extraViewIconSize.width + kButtonPadding;
+    leftAlignXPos += extraViewIconSize.width + kButtonPadding;
+  }
+  if (label_ || link_) {
+    CGFloat extraViewTextHeight =
+        currentHeight + (buttonStripHeight - extraViewTextSize.height) / 2.0;
+    NSRect frame =
+        NSMakeRect(leftAlignXPos, extraViewTextHeight, extraViewTextSize.width,
+                   extraViewTextSize.height);
+    if (link_) {
+      [link_ setFrame:frame];
+    } else {
+      [label_ setFrame:frame];
+    }
   }
   // Buttons have some inherit padding of their own, so we don't need quite as
   // much space here.
