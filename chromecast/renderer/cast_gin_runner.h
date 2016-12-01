@@ -7,27 +7,30 @@
 
 #include "base/macros.h"
 #include "base/supports_user_data.h"
-#include "content/public/renderer/render_frame_observer.h"
 #include "gin/runner.h"
-
-namespace {
-const char kCastContextData[] = "CastContextData";
-}
 
 namespace blink {
 class WebFrame;
+}
+
+namespace content {
+class RenderFrame;
+}
+
+namespace gin {
+class PerContextData;
 }
 
 namespace chromecast {
 namespace shell {
 
 // Implementation of gin::Runner that forwards Runner functions to WebFrame.
-class CastGinRunner : public gin::Runner,
-                      public base::SupportsUserData::Data,
-                      public content::RenderFrameObserver {
+// This class is lazily created per RenderFrame with the Get function and it's
+// lifetime is managed by the gin::PerContextData associated with the frame.
+class CastGinRunner : public gin::Runner, public base::SupportsUserData::Data {
  public:
-  // Does not take ownership of ContextHolder.
-  CastGinRunner(content::RenderFrame* render_frame);
+  // Gets or creates the CastGinRunner for this RenderFrame
+  static CastGinRunner* Get(content::RenderFrame* render_frame);
   ~CastGinRunner() override;
 
   // gin:Runner implementation:
@@ -39,15 +42,8 @@ class CastGinRunner : public gin::Runner,
                             v8::Local<v8::Value> argv[]) override;
   gin::ContextHolder* GetContextHolder() override;
 
-  // content::RenderFrameObserver implementation:
-  void WillReleaseScriptContext(v8::Local<v8::Context> context,
-                                int world_id) override;
-  void DidClearWindowObject() override;
-  void OnDestruct() override;
-
  private:
-  void RemoveUserDataFromMainWorldContext();
-  void RemoveUserData(v8::Local<v8::Context> context);
+  CastGinRunner(blink::WebFrame* frame, gin::PerContextData* context_data);
 
   // Frame to execute script in.
   blink::WebFrame* const frame_;

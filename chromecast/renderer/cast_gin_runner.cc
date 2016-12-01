@@ -7,36 +7,45 @@
 #include "content/public/renderer/render_frame.h"
 #include "gin/per_context_data.h"
 #include "third_party/WebKit/public/web/WebFrame.h"
+#include "third_party/WebKit/public/web/WebKit.h"
 #include "third_party/WebKit/public/web/WebLocalFrame.h"
 #include "third_party/WebKit/public/web/WebScriptSource.h"
 
 namespace chromecast {
 namespace shell {
 
-CastGinRunner::CastGinRunner(content::RenderFrame* render_frame)
-    : content::RenderFrameObserver(render_frame),
-      frame_(render_frame->GetWebFrame()),
-      context_holder_(
-          gin::PerContextData::From(frame_->mainWorldScriptContext())
-              ->context_holder()) {
+namespace {
+const void* kCastContextData;
+const void* kCastGinRunnerKey = static_cast<const void*>(&kCastContextData);
+}
+
+// static
+CastGinRunner* CastGinRunner::Get(content::RenderFrame* render_frame) {
+  DCHECK(render_frame);
+  blink::WebFrame* frame = render_frame->GetWebFrame();
+  v8::HandleScope handle_scope(blink::mainThreadIsolate());
+  gin::PerContextData* context_data =
+      gin::PerContextData::From(frame->mainWorldScriptContext());
+  CastGinRunner* runner =
+      static_cast<CastGinRunner*>(context_data->GetUserData(kCastGinRunnerKey));
+  return runner ? runner : new CastGinRunner(frame, context_data);
+}
+
+CastGinRunner::CastGinRunner(blink::WebFrame* frame,
+                             gin::PerContextData* context_data)
+    : frame_(frame), context_holder_(context_data->context_holder()) {
   DCHECK(frame_);
   DCHECK(context_holder_);
-  gin::PerContextData* context_data =
-      gin::PerContextData::From(frame_->mainWorldScriptContext());
 
-  v8::Isolate::Scope isolate_scope(context_holder_->isolate());
-  v8::HandleScope handle_scope(context_holder_->isolate());
-
-  context_data->SetUserData(kCastContextData, this);
+  // context_data takes ownership of this class.
+  context_data->SetUserData(kCastGinRunnerKey, this);
 
   // Note: this installs the runner globally. If we need to support more than
   // one runner at a time we'll have to revisit this.
   context_data->set_runner(this);
 }
 
-CastGinRunner::~CastGinRunner() {
-  RemoveUserData(render_frame()->GetWebFrame()->mainWorldScriptContext());
-}
+CastGinRunner::~CastGinRunner() {}
 
 void CastGinRunner::Run(const std::string& source,
                         const std::string& resource_name) {
@@ -54,32 +63,6 @@ v8::Local<v8::Value> CastGinRunner::Call(v8::Local<v8::Function> function,
 
 gin::ContextHolder* CastGinRunner::GetContextHolder() {
   return context_holder_;
-}
-
-void CastGinRunner::WillReleaseScriptContext(v8::Local<v8::Context> context,
-                                             int world_id) {
-  RemoveUserDataFromMainWorldContext();
-}
-
-void CastGinRunner::DidClearWindowObject() {
-  RemoveUserDataFromMainWorldContext();
-}
-
-void CastGinRunner::OnDestruct() {
-  RemoveUserDataFromMainWorldContext();
-}
-
-void CastGinRunner::RemoveUserDataFromMainWorldContext() {
-  v8::HandleScope handle_scope(context_holder_->isolate());
-  RemoveUserData(render_frame()->GetWebFrame()->mainWorldScriptContext());
-}
-
-void CastGinRunner::RemoveUserData(v8::Local<v8::Context> context) {
-  gin::PerContextData* context_data = gin::PerContextData::From(context);
-  if (!context_data)
-    return;
-
-  context_data->RemoveUserData(kCastContextData);
 }
 
 }  // namespace shell

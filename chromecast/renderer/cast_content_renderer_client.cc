@@ -148,8 +148,7 @@ void CastContentRendererClient::RunScriptsAtDocumentStart(
   v8::Local<v8::Context> context =
       render_frame->GetWebFrame()->mainWorldScriptContext();
 
-  // CastGinRunner manages its own lifetime.
-  CastGinRunner* runner = new CastGinRunner(render_frame);
+  CastGinRunner* runner = CastGinRunner::Get(render_frame);
   gin::Runner::Scope scoper(runner);
 
   // Initialize AMD API for Mojo.
