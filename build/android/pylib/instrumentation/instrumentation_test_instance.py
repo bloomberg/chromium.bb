@@ -442,9 +442,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
     self._store_tombstones = False
     self._initializeTombstonesAttributes(args)
 
-    self._should_save_logcat = None
-    self._initializeLogAttributes(args)
-
   def _initializeApkAttributes(self, args, error_func):
     if args.apk_under_test:
       apk_under_test_path = args.apk_under_test
@@ -595,9 +592,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   def _initializeTombstonesAttributes(self, args):
     self._store_tombstones = args.store_tombstones
 
-  def _initializeLogAttributes(self, args):
-    self._should_save_logcat = bool(args.json_results_file)
-
   @property
   def additional_apks(self):
     return self._additional_apks
@@ -629,10 +623,6 @@ class InstrumentationTestInstance(test_instance.TestInstance):
   @property
   def flags(self):
     return self._flags
-
-  @property
-  def should_save_logcat(self):
-    return self._should_save_logcat
 
   @property
   def package_info(self):
