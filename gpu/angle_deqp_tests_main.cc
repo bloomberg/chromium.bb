@@ -19,7 +19,14 @@ int RunHelper(base::TestSuite* test_suite) {
 
 }  // namespace
 
+// Defined in angle_deqp_gtest.cpp. Declared here so we don't need to make a
+// header that we import in Chromium.
+namespace angle {
+void InitTestHarness(int* argc, char** argv);
+}
+
 int main(int argc, char** argv) {
+  angle::InitTestHarness(&argc, argv);
   base::CommandLine::Init(argc, argv);
   base::TestSuite test_suite(argc, argv);
   int rt = base::LaunchUnitTestsSerially(

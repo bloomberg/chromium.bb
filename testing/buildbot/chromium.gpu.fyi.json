@@ -4385,6 +4385,24 @@
         "args": [
           "--deqp-egl-display-type=angle-gl"
         ],
+        "name": "angle_deqp_gles31_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Linux"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-gl"
+        ],
         "name": "angle_deqp_gles3_gl_tests",
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -13446,6 +13464,24 @@
           "shards": 4
         },
         "test": "angle_deqp_gles2_tests",
+        "use_xvfb": false
+      },
+      {
+        "args": [
+          "--deqp-egl-display-type=angle-gl"
+        ],
+        "name": "angle_deqp_gles31_gl_tests",
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ],
+          "shards": 4
+        },
+        "test": "angle_deqp_gles31_tests",
         "use_xvfb": false
       },
       {

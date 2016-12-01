@@ -856,6 +856,34 @@ COMMON_GTESTS = {
     'args': ['--deqp-egl-display-type=angle-gl']
   },
 
+  'angle_deqp_gles31_gl_tests': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'run_on_optional': False,
+        # Run on the Win/Linux Release NVIDIA bots.
+        'build_configs': ['Release'],
+        'swarming_dimension_sets': [
+          {
+            'gpu': '10de:104a',
+            'os': 'Windows-2008ServerR2-SP1'
+          },
+          {
+            'gpu': '10de:104a',
+            'os': 'Linux'
+          }
+        ],
+      }
+    ],
+    'swarming': {
+      # TODO(geofflang): Increase the number of shards as more tests start to
+      # pass and runtime increases.
+      'shards': 4,
+    },
+    'test': 'angle_deqp_gles31_tests',
+    'args': ['--deqp-egl-display-type=angle-gl']
+  },
+
   # Until we have more capacity, run angle_end2end_tests only on the
   # FYI waterfall, the ANGLE trybots (which mirror the FYI waterfall),
   # and the optional trybots (mainly used during ANGLE rolls).
