@@ -314,7 +314,8 @@ class ChromiumOSFlashUpdaterRunErrorTest(ChromiumOSErrorTest):
       self.PatchObject(dev_server_wrapper.DevServerWrapper, 'Start')
       self.PatchObject(dev_server_wrapper.DevServerWrapper, 'GetDevServerURL')
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
-                       side_effect=cros_build_lib.RunCommandError('fail', ''))
+                       side_effect=cros_build_lib.RunCommandError(
+                           'fail', CommandErrorResult()))
       self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
                        'RevertBootPartition')
       with mock.patch('os.path.join', return_value=''):
@@ -347,7 +348,8 @@ class ChromiumOSFlashUpdaterRunErrorTest(ChromiumOSErrorTest):
       CrOS_AU = auto_updater.ChromiumOSFlashUpdater(
           device, self.payload_dir, do_rootfs_update=False)
       self.PatchObject(remote_access.ChromiumOSDevice, 'RunCommand',
-                       side_effect=cros_build_lib.RunCommandError('fail', ''))
+                       side_effect=cros_build_lib.RunCommandError(
+                           'fail', CommandErrorResult()))
       self.PatchObject(auto_updater.ChromiumOSFlashUpdater,
                        'ResetStatefulPartition')
       with mock.patch('os.path.join', return_value=''):

@@ -67,6 +67,7 @@ ChromiumOSUpdater adds:
 from __future__ import print_function
 
 import cStringIO
+import json
 import os
 import re
 import shutil
@@ -106,6 +107,12 @@ MAX_RETRY = 5
 
 # The timeout limit for retrying transfer tasks.
 DELAY_SEC_FOR_RETRY = 5
+
+# Third-party package directory on devserver
+THIRD_PARTY_PKG_DIR = '/usr/lib/python2.7/dist-packages/'
+
+# Third-party package list
+THIRD_PARTY_PKG_LIST = ['cherrypy', 'google/protobuf']
 
 
 class ChromiumOSUpdateError(Exception):
@@ -156,8 +163,9 @@ class ChromiumOSFlashUpdater(BaseUpdater):
 
 
   def __init__(self, device, payload_dir, dev_dir='', tempdir=None,
-               do_rootfs_update=True, do_stateful_update=True, reboot=True,
-               disable_verification=False, clobber_stateful=False, yes=False):
+               original_payload_dir=None, do_rootfs_update=True,
+               do_stateful_update=True, reboot=True, disable_verification=False,
+               clobber_stateful=False, yes=False):
     """Initialize a ChromiumOSFlashUpdater for auto-update a chromium OS device.
 
     Args:
@@ -168,6 +176,11 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring devserver package, and
           reserve devserver and update engine logs.
+      original_payload_dir: The directory containing payloads whose version is
+          the same as current host's rootfs partition. If it's None, will first
+          try installing the matched stateful.tgz with the host's rootfs
+          Partition when restoring stateful. Otherwise, install the target
+          stateful.tgz.
       do_rootfs_update: whether to do rootfs partition update. The default is
           True.
       do_stateful_update: whether to do stateful partition update. The default
@@ -188,6 +201,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
       self.tempdir = tempfile.mkdtemp(prefix='cros-update')
 
     self.dev_dir = dev_dir
+    self.original_payload_dir = original_payload_dir
 
     # Update setting
     self._cmd_kwargs = {}
@@ -201,6 +215,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     # Device's directories
     self.device_dev_dir = os.path.join(self.device.work_dir, 'src')
     self.device_static_dir = os.path.join(self.device.work_dir, 'static')
+    self.device_restore_dir = os.path.join(self.device.work_dir, 'old')
     self.stateful_update_bin = None
 
 
@@ -379,15 +394,102 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     if status != UPDATE_STATUS_IDLE:
       raise RootfsUpdateError('Update engine is not idle. Status: %s' % status)
 
+
+  def _CheckDeviceHasPython2(self):
+    """Check whether |device| has python version >= 2.7."""
+    version_check = self.device.RunCommand(
+        ['python', '-c', '"import sys; print (sys.version_info >= (2,7))"'],
+        capture_output=True, log_output=True).output.strip()
+    return version_check == 'True'
+
+
+  def _GetDevicePythonSysPath(self):
+    """Get python sys.path of the given |device|."""
+    sys_path = self.device.RunCommand(
+        ['python', '-c', '"import json, sys; json.dump(sys.path, sys.stdout)"'],
+        capture_output=True, log_output=True).output
+    return json.loads(sys_path)
+
+
+  def _FindDevicePythonPackagesDir(self):
+    """Find the python packages directory for the given |device|."""
+    third_party_host_dir = ''
+    sys_path = self._GetDevicePythonSysPath()
+    for p in sys_path:
+      if p.endswith('site-packages') or p.endswith('dist-packages'):
+        third_party_host_dir = p
+        break
+
+    if not third_party_host_dir:
+      raise ChromiumOSUpdateError(
+          'Cannot find proper site-packages/dist-packages directory from '
+          'sys.path for storing packages: %s' % sys_path)
+
+    return third_party_host_dir
+
+
+  def _CopyPythonFilesToTemp(self, source_python_dir, dest_temp_dir):
+    """Copy filtered python files to tempdir.
+
+    Args;
+      source_python_dir: The source python directory that is used to copy from.
+      dest_temp_dir: The dest temp directory that is used to copy to.
+    """
+    shutil.copytree(
+        source_python_dir, dest_temp_dir,
+        ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static', '*~'))
+
+
+  def _TransferRequiredPackage(self):
+    """Transfer third-party packages related to devserver package."""
+    logging.info('Copying third-party packages to device...')
+
+    # Only transfer third-party package when current python version on host is
+    # older than 2.7.
+    try:
+      if self._CheckDeviceHasPython2():
+        return
+
+      # Copy third-party packages to pythonX.X/site(dist)-packages
+      third_party_host_dir = self._FindDevicePythonPackagesDir()
+      package_dir = os.path.join(self.tempdir, 'third_party')
+      osutils.RmDir(package_dir, ignore_missing=True)
+      for package in THIRD_PARTY_PKG_LIST:
+        self._CopyPythonFilesToTemp(
+            os.path.join(THIRD_PARTY_PKG_DIR, package),
+            os.path.join(package_dir, package))
+
+        self.device.CopyToDevice(
+            os.path.join(package_dir, os.path.split(package)[0]),
+            third_party_host_dir, log_output=True, **self._cmd_kwargs)
+    except cros_build_lib.RunCommandError as e:
+      # There's a chance that the DUT doesn't have any basic lib before
+      # provisioning, like python. These commands will fail first, but succeed
+      # after stateful partition is restored. So we choose not to raise error
+      # here.
+      logging.debug(
+          'Cannot transfer third-party packages to host due to: %s', e)
+
+  def _EnsureDeviceDirectory(self, directory):
+    """Mkdir the directory no matther whether this directory exists on host.
+
+    Args:
+      directory: the directory to be made on the device.
+    """
+    self.device.RunCommand(['mkdir', '-p', directory], **self._cmd_kwargs)
+
   def TransferDevServerPackage(self):
     """Transfer devserver package to work directory of the remote device."""
     logging.info('Copying devserver package to device...')
     src_dir = os.path.join(self.tempdir, 'src')
     osutils.RmDir(src_dir, ignore_missing=True)
-    shutil.copytree(
-        ds_wrapper.DEVSERVER_PKG_DIR, src_dir,
-        ignore=shutil.ignore_patterns('*.pyc', 'tmp*', '.*', 'static', '*~'))
+    self._CopyPythonFilesToTemp(ds_wrapper.DEVSERVER_PKG_DIR, src_dir)
+    # Make sure the device.work_dir exist after any installation and reboot.
+    self._EnsureDeviceDirectory(self.device.work_dir)
     self.device.CopyToWorkDir(src_dir, log_output=True, **self._cmd_kwargs)
+
+    if self.original_payload_dir:
+      self._TransferRequiredPackage()
 
   def TransferRootfsUpdate(self):
     """Transfer files for rootfs update.
@@ -395,8 +497,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     Copy the update payload to the remote device for rootfs update.
     """
     device_payload_dir = os.path.join(self.device_static_dir, 'pregenerated')
-    self.device.RunCommand(['mkdir', '-p', device_payload_dir],
-                           **self._cmd_kwargs)
+    self._EnsureDeviceDirectory(device_payload_dir)
     logging.info('Copying rootfs payload to device...')
     payload = os.path.join(self.payload_dir, ds_wrapper.ROOTFS_FILENAME)
     self.device.CopyToDevice(payload, device_payload_dir, log_output=True,
@@ -420,7 +521,15 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     else:
       self.stateful_update_bin = stateful_update_bin
 
-    logging.info('Copying stateful payload to device...')
+    if self.original_payload_dir:
+      logging.info('Copying original stateful payload to device...')
+      original_payload = os.path.join(
+          self.original_payload_dir, ds_wrapper.STATEFUL_FILENAME)
+      self._EnsureDeviceDirectory(self.device_restore_dir)
+      self.device.CopyToDevice(original_payload, self.device_restore_dir,
+                               log_output=True, **self._cmd_kwargs)
+
+    logging.info('Copying target stateful payload to device...')
     payload = os.path.join(self.payload_dir, ds_wrapper.STATEFUL_FILENAME)
     self.device.CopyToWorkDir(payload, log_output=True, **self._cmd_kwargs)
 
@@ -521,12 +630,21 @@ class ChromiumOSFlashUpdater(BaseUpdater):
           follow_symlinks=True,
           **self._cmd_kwargs_omit_error)
 
-  def UpdateStateful(self):
-    """Update the stateful partition of the device."""
+  def UpdateStateful(self, use_original_build=False):
+    """Update the stateful partition of the device.
+
+    Args:
+      use_original_build: True if we use stateful.tgz of original build for
+        stateful update, otherwise, as default, False.
+    """
     msg = 'Updating stateful partition'
+    if self.original_payload_dir and use_original_build:
+      payload_dir = self.device_restore_dir
+    else:
+      payload_dir = self.device.work_dir
     cmd = ['sh',
            self.stateful_update_bin,
-           os.path.join(self.device.work_dir, ds_wrapper.STATEFUL_FILENAME)]
+           os.path.join(payload_dir, ds_wrapper.STATEFUL_FILENAME)]
 
     if self._clobber_stateful:
       cmd.append('--stateful_change=clean')
@@ -538,7 +656,7 @@ class ChromiumOSFlashUpdater(BaseUpdater):
     except cros_build_lib.RunCommandError as e:
       logging.error('Stateful update failed.')
       self.ResetStatefulPartition()
-      error_msg = 'Failed to perform stateful partition update: %r'
+      error_msg = 'Failed to perform stateful partition update: %s'
       raise StatefulUpdateError(error_msg % e)
 
   def RunUpdateRootfs(self):
@@ -645,8 +763,8 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
   REBOOT_TIMEOUT = 480
 
   def __init__(self, device, build_name, payload_dir, dev_dir='',
-               log_file=None, tempdir=None, clobber_stateful=True,
-               local_devserver=False, yes=False):
+               log_file=None, tempdir=None, original_payload_dir=None,
+               clobber_stateful=True, local_devserver=False, yes=False):
     """Initialize a ChromiumOSUpdater for auto-update a chromium OS device.
 
     Args:
@@ -659,6 +777,11 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
           the tempdir for cros flash is /tmp/cros-flash****/, used to
           temporarily keep files when transferring devserver package, and
           reserve devserver and update engine logs.
+      original_payload_dir: The directory containing payloads whose version is
+          the same as current host's rootfs partition. If it's None, will first
+          try installing the matched stateful.tgz with the host's rootfs
+          Partition when restoring stateful. Otherwise, install the target
+          stateful.tgz.
       clobber_stateful: whether to do a clean stateful update. The default is
           True for CrOS update.
       local_devserver: Indecate whether users use their local devserver.
@@ -669,6 +792,7 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """
     super(ChromiumOSUpdater, self).__init__(
         device, payload_dir, dev_dir=dev_dir, tempdir=tempdir,
+        original_payload_dir=original_payload_dir,
         clobber_stateful=clobber_stateful, yes=yes)
 
     if log_file:
@@ -919,14 +1043,11 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
     """Post-check for stateful update for CrOS host."""
     logging.debug('Start post check for stateful update...')
     self.device.Reboot(timeout_sec=self.REBOOT_TIMEOUT)
-    check_file_cmd = 'test -f %s'
-    for folder in self.REMOTE_STATEFUL_PATH_TO_CHECK:
-      test_file_path = os.path.join(folder, self.REMOTE_STATEFUL_TEST_FILENAME)
-      result = self.device.RunCommand([check_file_cmd % test_file_path],
-                                      **self._cmd_kwargs_omit_error)
-
+    for folder in self.STATEFUL_FOLDER_TO_CHECK:
+      test_file_path = os.path.join(folder, self.STATEFUL_TEST_FILE)
       # If stateful update succeeds, these test files should not exist.
-      if result.returncode == 0:
+      if self.device.IfFileExists(test_file_path,
+                                  **self._cmd_kwargs_omit_error):
         raise StatefulUpdateError('failed to post-check stateful update.')
 
   def PreSetupRootfsUpdate(self):
@@ -937,13 +1058,35 @@ class ChromiumOSUpdater(ChromiumOSFlashUpdater):
                            **self._cmd_kwargs_omit_error)
     self._ResetUpdateEngine()
 
+  def _IfDevserverPackageInstalled(self):
+    """Check whether devserver package is well installed.
+
+    There's a chance that devserver package is removed in the middle of
+    auto-update process. This function double check it and transfer it if it's
+    removed.
+    """
+    logging.info('Checking whether devserver files are still on the device...')
+    try:
+      devserver_bin = os.path.join(self.device_dev_dir,
+                                   self.DEVSERVER_FILENAME)
+      if not self.device.IfFileExists(
+          devserver_bin, **self._cmd_kwargs_omit_error):
+        self.TransferDevServerPackage()
+        self.TransferStatefulUpdate()
+
+      return True
+    except cros_build_lib.RunCommandError as e:
+      logging.warning('Failed to verify whether packages still exist: %s', e)
+      return False
+
   def RestoreStateful(self):
     """Restore stateful partition for device."""
     logging.warning('Restoring the stateful partition')
     self.PreSetupStatefulUpdate()
-    self.UpdateStateful()
+    use_original_build = bool(self.original_payload_dir)
+    self.UpdateStateful(use_original_build=use_original_build)
     self.PostCheckStatefulUpdate()
-    if self._CanRunDevserver():
+    if self._IfDevserverPackageInstalled() and self._CanRunDevserver():
       logging.info('Stateful partition restored.')
     else:
       raise ChromiumOSUpdateError('Unable to restore stateful partition.')
