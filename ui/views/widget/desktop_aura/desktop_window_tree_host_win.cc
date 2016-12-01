@@ -488,6 +488,10 @@ bool DesktopWindowTreeHostWin::ShouldUpdateWindowTransparency() const {
   return true;
 }
 
+bool DesktopWindowTreeHostWin::ShouldUseDesktopNativeCursorManager() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostWin, WindowTreeHost implementation:
 

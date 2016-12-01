@@ -16,6 +16,10 @@
 #include "ui/views/widget/desktop_aura/desktop_window_tree_host.h"
 #include "ui/views/widget/widget.h"
 
+namespace wm {
+class CursorManager;
+}
+
 namespace views {
 
 class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
@@ -102,6 +106,7 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
   bool ShouldUpdateWindowTransparency() const override;
+  bool ShouldUseDesktopNativeCursorManager() const override;
 
   // MusClientObserver:
   void OnWindowManagerFrameValuesChanged() override;
@@ -130,6 +135,8 @@ class VIEWS_MUS_EXPORT DesktopWindowTreeHostMus
   std::set<DesktopWindowTreeHostMus*> children_;
 
   bool is_active_ = false;
+
+  std::unique_ptr<wm::CursorManager> cursor_manager_;
 
   // Used so that Close() isn't immediate.
   base::WeakPtrFactory<DesktopWindowTreeHostMus> close_widget_factory_;

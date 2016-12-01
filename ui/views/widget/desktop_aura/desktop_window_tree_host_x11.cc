@@ -1171,6 +1171,10 @@ bool DesktopWindowTreeHostX11::ShouldUpdateWindowTransparency() const {
   return true;
 }
 
+bool DesktopWindowTreeHostX11::ShouldUseDesktopNativeCursorManager() const {
+  return true;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // DesktopWindowTreeHostX11, aura::WindowTreeHost implementation:
 

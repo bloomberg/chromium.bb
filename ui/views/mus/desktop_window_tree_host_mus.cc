@@ -6,9 +6,11 @@
 
 #include "base/memory/ptr_util.h"
 #include "ui/aura/client/aura_constants.h"
+#include "ui/aura/client/cursor_client.h"
 #include "ui/aura/client/drag_drop_client.h"
 #include "ui/aura/client/focus_client.h"
 #include "ui/aura/env.h"
+#include "ui/aura/mus/window_port_mus.h"
 #include "ui/aura/mus/window_tree_host_mus.h"
 #include "ui/aura/window.h"
 #include "ui/base/hit_test.h"
@@ -20,6 +22,8 @@
 #include "ui/views/widget/desktop_aura/desktop_native_widget_aura.h"
 #include "ui/views/widget/native_widget_aura.h"
 #include "ui/views/widget/widget_delegate.h"
+#include "ui/wm/core/cursor_manager.h"
+#include "ui/wm/core/native_cursor_manager.h"
 #include "ui/wm/core/window_util.h"
 #include "ui/wm/public/activation_client.h"
 
@@ -106,6 +110,62 @@ class ClientSideNonClientFrameView : public NonClientFrameView {
   DISALLOW_COPY_AND_ASSIGN(ClientSideNonClientFrameView);
 };
 
+class NativeCursorManagerMus : public wm::NativeCursorManager {
+ public:
+  explicit NativeCursorManagerMus(aura::Window* window) : window_(window) {}
+  ~NativeCursorManagerMus() override {}
+
+  // wm::NativeCursorManager:
+  void SetDisplay(const display::Display& display,
+                  wm::NativeCursorManagerDelegate* delegate) override {
+    // We ignore this entirely, as cursor are set on the client.
+  }
+
+  void SetCursor(gfx::NativeCursor cursor,
+                 wm::NativeCursorManagerDelegate* delegate) override {
+    aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
+        ui::mojom::Cursor(cursor.native_type()));
+    delegate->CommitCursor(cursor);
+  }
+
+  void SetVisibility(bool visible,
+                     wm::NativeCursorManagerDelegate* delegate) override {
+    delegate->CommitVisibility(visible);
+
+    if (visible) {
+      SetCursor(delegate->GetCursor(), delegate);
+    } else {
+      aura::WindowPortMus::Get(window_)->SetPredefinedCursor(
+          ui::mojom::Cursor::NONE);
+    }
+  }
+
+  void SetCursorSet(ui::CursorSetType cursor_set,
+                    wm::NativeCursorManagerDelegate* delegate) override {
+    // TODO(erg): For now, ignore the difference between SET_NORMAL and
+    // SET_LARGE here. This feels like a thing that mus should decide instead.
+    //
+    // Also, it's NOTIMPLEMENTED() in the desktop version!? Including not
+    // acknowledging the call in the delegate.
+    NOTIMPLEMENTED();
+  }
+
+  void SetMouseEventsEnabled(
+      bool enabled,
+      wm::NativeCursorManagerDelegate* delegate) override {
+    // TODO(erg): How do we actually implement this?
+    //
+    // Mouse event dispatch is potentially done in a different process,
+    // definitely in a different mojo service. Each app is fairly locked down.
+    delegate->CommitMouseEventsEnabled(enabled);
+    NOTIMPLEMENTED();
+  }
+
+ private:
+  aura::Window* window_;
+
+  DISALLOW_COPY_AND_ASSIGN(NativeCursorManagerMus);
+};
 }  // namespace
 
 DesktopWindowTreeHostMus::DesktopWindowTreeHostMus(
@@ -180,6 +240,10 @@ void DesktopWindowTreeHostMus::Init(aura::Window* content_window,
   content_window->layer()->SetFillsBoundsOpaquely(false);
   if (!params.bounds.IsEmpty())
     SetBoundsInDIP(params.bounds);
+
+  cursor_manager_ = base::MakeUnique<wm::CursorManager>(
+      base::MakeUnique<NativeCursorManagerMus>(window()));
+  aura::client::SetCursorClient(window(), cursor_manager_.get());
 }
 
 void DesktopWindowTreeHostMus::OnNativeWidgetCreated(
@@ -543,6 +607,11 @@ void DesktopWindowTreeHostMus::SizeConstraintsChanged() {
 
 bool DesktopWindowTreeHostMus::ShouldUpdateWindowTransparency() const {
   // Needed so the window manager can render the client decorations.
+  return false;
+}
+
+bool DesktopWindowTreeHostMus::ShouldUseDesktopNativeCursorManager() const {
+  // We manage the cursor ourself.
   return false;
 }
 

@@ -162,6 +162,11 @@ class VIEWS_EXPORT DesktopWindowTreeHost {
   // Returns true if the transparency of the DesktopNativeWidgetAura's
   // |content_window_| should change.
   virtual bool ShouldUpdateWindowTransparency() const = 0;
+
+  // A return value of true indicates DesktopNativeCursorManager should be
+  // used, a return value of false indicates the DesktopWindowTreeHost manages
+  // cursors itself.
+  virtual bool ShouldUseDesktopNativeCursorManager() const = 0;
 };
 
 }  // namespace views

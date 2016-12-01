@@ -105,6 +105,7 @@ class VIEWS_EXPORT DesktopWindowTreeHostWin
   bool IsTranslucentWindowOpacitySupported() const override;
   void SizeConstraintsChanged() override;
   bool ShouldUpdateWindowTransparency() const override;
+  bool ShouldUseDesktopNativeCursorManager() const override;
 
   // Overridden from aura::WindowTreeHost:
   ui::EventSource* GetEventSource() override;

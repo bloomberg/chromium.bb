@@ -58,6 +58,9 @@ void WindowPortMus::SetImeVisibility(bool visible,
 }
 
 void WindowPortMus::SetPredefinedCursor(ui::mojom::Cursor cursor_id) {
+  if (cursor_id == predefined_cursor_)
+    return;
+
   window_tree_client_->SetPredefinedCursor(this, predefined_cursor_, cursor_id);
   predefined_cursor_ = cursor_id;
 }

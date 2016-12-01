@@ -307,6 +307,9 @@ class VIEWS_EXPORT DesktopNativeWidgetAura
   // See class documentation for Widget in widget.h for a note about type.
   Widget::InitParams::Type widget_type_;
 
+  // See DesktopWindowTreeHost::ShouldUseDesktopNativeCursorManager().
+  bool use_desktop_native_cursor_manager_ = false;
+
   // The following factory is used for calls to close the NativeWidgetAura
   // instance.
   base::WeakPtrFactory<DesktopNativeWidgetAura> close_widget_factory_;

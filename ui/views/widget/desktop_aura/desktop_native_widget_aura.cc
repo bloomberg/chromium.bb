@@ -326,14 +326,16 @@ void DesktopNativeWidgetAura::OnHostClosed() {
 
 void DesktopNativeWidgetAura::OnDesktopWindowTreeHostDestroyed(
     aura::WindowTreeHost* host) {
-  // We explicitly do NOT clear the cursor client property. Since the cursor
-  // manager is a singleton, it can outlive any window hierarchy, and it's
-  // important that objects attached to this destroying window hierarchy have
-  // an opportunity to deregister their observers from the cursor manager.
-  // They may want to do this when they are notified that they're being
-  // removed from the window hierarchy, which happens soon after this
-  // function when DesktopWindowTreeHost* calls DestroyDispatcher().
-  native_cursor_manager_->RemoveHost(host);
+  if (use_desktop_native_cursor_manager_) {
+    // We explicitly do NOT clear the cursor client property. Since the cursor
+    // manager is a singleton, it can outlive any window hierarchy, and it's
+    // important that objects attached to this destroying window hierarchy have
+    // an opportunity to deregister their observers from the cursor manager.
+    // They may want to do this when they are notified that they're being
+    // removed from the window hierarchy, which happens soon after this
+    // function when DesktopWindowTreeHost* calls DestroyDispatcher().
+    native_cursor_manager_->RemoveHost(host);
+  }
 
   aura::client::SetScreenPositionClient(host->window(), NULL);
   position_client_.reset();
@@ -447,17 +449,21 @@ void DesktopNativeWidgetAura::InitNativeWidget(
   root_window_event_filter_.reset(new wm::CompoundEventFilter);
   host_->window()->AddPreTargetHandler(root_window_event_filter_.get());
 
-  // The host's dispatcher must be added to |native_cursor_manager_| before
-  // OnNativeWidgetCreated() is called.
-  cursor_reference_count_++;
-  if (!native_cursor_manager_)
-    native_cursor_manager_ = new DesktopNativeCursorManager();
-  if (!cursor_manager_) {
-    cursor_manager_ = new wm::CursorManager(
-        std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));
+  use_desktop_native_cursor_manager_ =
+      desktop_window_tree_host_->ShouldUseDesktopNativeCursorManager();
+  if (use_desktop_native_cursor_manager_) {
+    // The host's dispatcher must be added to |native_cursor_manager_| before
+    // OnNativeWidgetCreated() is called.
+    cursor_reference_count_++;
+    if (!native_cursor_manager_)
+      native_cursor_manager_ = new DesktopNativeCursorManager();
+    if (!cursor_manager_) {
+      cursor_manager_ = new wm::CursorManager(
+          std::unique_ptr<wm::NativeCursorManager>(native_cursor_manager_));
+    }
+    native_cursor_manager_->AddHost(host());
+    aura::client::SetCursorClient(host_->window(), cursor_manager_);
   }
-  native_cursor_manager_->AddHost(host());
-  aura::client::SetCursorClient(host_->window(), cursor_manager_);
 
   desktop_window_tree_host_->OnNativeWidgetCreated(params);
 
