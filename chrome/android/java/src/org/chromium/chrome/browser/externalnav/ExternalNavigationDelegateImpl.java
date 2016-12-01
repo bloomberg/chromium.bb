@@ -551,10 +551,8 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
     }
 
     @Override
-    public boolean isSerpReferrer(String referrerUrl, Tab tab) {
-        if (tab == null || tab.getWebContents() == null) {
-            return false;
-        }
+    public boolean isSerpReferrer(Tab tab) {
+        if (tab == null || tab.getWebContents() == null) return false;
 
         NavigationController nController = tab.getWebContents().getNavigationController();
         int index = nController.getLastCommittedEntryIndex();
@@ -584,7 +582,7 @@ public class ExternalNavigationDelegateImpl implements ExternalNavigationDelegat
                     ChromeLauncherActivity.isCustomTabIntent(resolvedIntent));
         } else if (!isIncomingRedirect) {
             // Check if the navigation is coming from SERP and skip instant app handling.
-            if (isSerpReferrer(referrerUrl, tab)) return false;
+            if (isSerpReferrer(tab)) return false;
             return handler.handleNavigation(
                     getAvailableContext(), url,
                     TextUtils.isEmpty(referrerUrl) ? null : Uri.parse(referrerUrl),

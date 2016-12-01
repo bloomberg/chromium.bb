@@ -457,7 +457,7 @@ public class ExternalNavigationHandler {
         boolean isDirectInstantAppsIntent = isExternalProtocol
                 && SUPERVISOR_PKG.equals(intent.getPackage());
         boolean shouldProxyForInstantApps = isDirectInstantAppsIntent
-                && mDelegate.isSerpReferrer(params.getReferrerUrl(), params.getTab());
+                && mDelegate.isSerpReferrer(params.getTab());
         if (shouldProxyForInstantApps) {
             intent.putExtra(InstantAppsHandler.IS_GOOGLE_SEARCH_REFERRER, true);
         } else if (isDirectInstantAppsIntent) {

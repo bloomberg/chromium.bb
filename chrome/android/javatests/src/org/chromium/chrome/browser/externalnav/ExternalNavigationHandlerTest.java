@@ -1210,7 +1210,7 @@ public class ExternalNavigationHandlerTest extends NativeLibraryTestBase {
         }
 
         @Override
-        public boolean isSerpReferrer(String referrerUrl, Tab tab) {
+        public boolean isSerpReferrer(Tab tab) {
             return false;
         }
 
