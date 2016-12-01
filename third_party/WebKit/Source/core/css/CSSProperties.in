@@ -23,11 +23,11 @@
 // The property is a shorthand for several other properties.
 
 
-// keyword_only
+// - keyword_only
 // These properties only store keyword values. This is used when
 // generating the ComputedStyle storage for the property. The initial
-// value for this property on a ComputedStyle is the first keyword in
-// the specified list of keywords.
+// value for this property on a ComputedStyle is specified with the
+// initial_keyword flag below.
 // TODO(sashab, meade): Remove this once TypedOM types are specified for
 // every property, since this value can be inferred from that.
 
@@ -36,6 +36,11 @@
 // This specifies all valid keyword values for the property.
 // TODO(sashab): Once all properties are represented here, delete
 // CSSValueKeywords.in and use this list instead.
+
+
+// - initial_keyword
+// This specifies the initial keyword value for the keyword_only
+// property.
 
 
 // Flags which go into CSSOMTypes:
@@ -202,7 +207,7 @@ break-after type_name=EBreak
 break-before type_name=EBreak
 break-inside type_name=EBreak
 buffered-rendering svg
-caption-side inherited, keyword_only, keywords=[top|bottom|left|right]
+caption-side inherited, keyword_only, keywords=[top|bottom|left|right], initial_keyword=top
 caret-color inherited, custom_all
 clear
 clip interpolable, converter=convertClip, custom_all
@@ -222,7 +227,7 @@ cy interpolable, svg, converter=convertLength
 d interpolable, svg, converter=convertPathOrNone
 display
 dominant-baseline inherited, svg
-empty-cells inherited, type_name=EEmptyCells, keyword_only, keywords=[show|hide]
+empty-cells inherited, type_name=EEmptyCells, keyword_only, keywords=[show|hide], initial_keyword=show
 fill interpolable, inherited, svg, setter=setFillPaint, custom_all
 fill-opacity interpolable, inherited, svg, converter=convertNumberOrPercentage
 fill-rule inherited, svg, type_name=WindRule
@@ -232,7 +237,7 @@ flex-direction
 flex-grow interpolable, type_name=float
 flex-shrink interpolable, type_name=float
 flex-wrap
-float type_name=EFloat, name_for_methods=Floating, keyword_only, keywords=[none|left|right]
+float type_name=EFloat, name_for_methods=Floating, keyword_only, keywords=[none|left|right], initial_keyword=none
 flood-color interpolable, svg, converter=convertColor
 flood-opacity interpolable, svg, converter=convertNumberOrPercentage
 grid-auto-columns runtime_flag=CSSGridLayout, converter=convertGridTrackSizeList
@@ -260,7 +265,7 @@ letter-spacing interpolable, inherited, initial=initialLetterWordSpacing, conver
 lighting-color interpolable, svg, converter=convertColor
 line-height interpolable, inherited, getter=specifiedLineHeight, converter=convertLineHeight
 list-style-image interpolable, inherited, custom_value, typedom_types=[Image]
-list-style-position inherited, keyword_only, keywords=[outside|inside]
+list-style-position inherited, keyword_only, keywords=[outside|inside], initial_keyword=outside
 list-style-type inherited
 margin-bottom interpolable, initial=initialMargin, converter=convertQuirkyLength
 margin-left interpolable, initial=initialMargin, converter=convertQuirkyLength
@@ -353,7 +358,7 @@ text-justify runtime_flag=CSS3Text, inherited, type_name=TextJustify
 text-overflow type_name=TextOverflow
 text-shadow interpolable, inherited, converter=convertShadow
 text-size-adjust inherited, converter=convertTextSizeAdjust, type_name=TextSizeAdjust
-text-transform inherited, keyword_only, keywords=[none|capitalize|uppercase|lowercase]
+text-transform inherited, keyword_only, keywords=[capitalize|uppercase|lowercase|none], initial_keyword=none
 text-underline-position runtime_flag=CSS3TextDecorations, inherited, type_name=TextUnderlinePosition
 top typedom_types=[Length], keywords=[auto], supports_percentage, interpolable, initial=initialOffset, converter=convertLengthOrAuto
 touch-action converter=convertFlags<TouchAction>, type_name=TouchAction
@@ -366,7 +371,7 @@ scale runtime_flag=CSSIndependentTransformProperties, converter=convertScale, in
 unicode-bidi
 vector-effect svg
 vertical-align interpolable, custom_inherit, custom_value
-visibility interpolable, inherited, independent, keyword_only, keywords=[visible|hidden|collapse]
+visibility interpolable, inherited, independent, keyword_only, keywords=[visible|hidden|collapse], initial_keyword=visible
 x interpolable, svg, converter=convertLength
 y interpolable, svg, converter=convertLength
 -webkit-appearance type_name=ControlPart

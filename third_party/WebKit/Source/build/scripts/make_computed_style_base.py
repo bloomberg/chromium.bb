@@ -11,6 +11,7 @@ import in_generator
 import template_expander
 import make_style_builder
 
+from name_utilities import camel_case
 
 class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
     def __init__(self, in_file_path):
@@ -27,7 +28,7 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
             if property['keyword_only']:
                 enum_name = property['type_name']
                 # From the Blink style guide: Enum members should use InterCaps with an initial capital letter. [names-enum-members]
-                enum_values = [k.title() for k in property['keywords']]
+                enum_values = [camel_case(k) for k in property['keywords']]
                 self._computed_enums[enum_name] = enum_values
 
         # A list of fields
@@ -60,8 +61,11 @@ class ComputedStyleBaseWriter(make_style_builder.StyleBuilderWriter):
                 field_name = 'm_' + property_name_lower
                 bits_needed = math.log(len(property['keywords']), 2)
                 type_name = property['type_name']
-                # For now, assume the default value is the first enum value.
-                default_value = type_name + '::' + self._computed_enums[type_name][0]
+
+                assert property['initial_keyword'] is not None, \
+                    ('MakeComputedStyleBase requires an initial keyword for keyword_only values, none specified '
+                     'for property ' + property['name'])
+                default_value = type_name + '::' + camel_case(property['initial_keyword'])
 
                 self._fields.append(Field(
                     name=field_name,

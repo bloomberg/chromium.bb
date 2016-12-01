@@ -34,6 +34,7 @@ class CSSProperties(in_generator.Writer):
         # Typed OM annotations.
         'typedom_types': [],
         'keywords': [],
+        'initial_keyword': None,
         'keyword_only': False,
         'supports_percentage': False,
         'supports_multiple': False,
