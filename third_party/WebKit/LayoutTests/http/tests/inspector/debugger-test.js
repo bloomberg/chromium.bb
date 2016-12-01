@@ -689,16 +689,18 @@ InspectorTest.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame)
         var disabled = textEditor.hasLineClass(lineNumber, "cm-breakpoint-disabled");
         var conditional = textEditor.hasLineClass(lineNumber, "cm-breakpoint-conditional")
         InspectorTest.addResult("breakpoint at " + lineNumber + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
-    }
-    var bookmarks = textEditor.bookmarks(textEditor.fullRange(), Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
-    bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
-    bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
-    for (var bookmark of bookmarks) {
-        var position = bookmark.position();
-        var element = bookmark[Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest];
-        var disabled = element.classList.contains("cm-inline-disabled");
-        var conditional = element.classList.contains("cm-inline-conditional");
-        InspectorTest.addResult("  inline breakpoint at (" + position.startLine + ", " + position.startColumn + ")" + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
+
+        var range = new Common.TextRange(lineNumber, 0, lineNumber, textEditor.line(lineNumber).length);
+        var bookmarks = textEditor.bookmarks(range, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
+        bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
+        bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
+        for (var bookmark of bookmarks) {
+            var position = bookmark.position();
+            var element = bookmark[Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest];
+            var disabled = element.classList.contains("cm-inline-disabled");
+            var conditional = element.classList.contains("cm-inline-conditional");
+            InspectorTest.addResult("  inline breakpoint at (" + position.startLine + ", " + position.startColumn + ")" + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
+        }
     }
 }
 
