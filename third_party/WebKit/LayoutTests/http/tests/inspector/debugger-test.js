@@ -643,19 +643,40 @@ InspectorTest.evaluateOnCurrentCallFrame = function(code)
     return new Promise(succ => InspectorTest.debuggerModel.evaluateOnSelectedCallFrame(code, "console", false, true, false, false, InspectorTest.safeWrap(succ)));
 }
 
-InspectorTest.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame)
+InspectorTest.prepareSourceFrameForBreakpointTest = function(sourceFrame)
 {
-    return new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointDecorationsUpdatedForTest", resolveIfAllBreakpointsResolved.bind(null, resolve)));
+    var symbol = Symbol('waitedDecorations');
+    sourceFrame[symbol] = 0;
+    InspectorTest.addSniffer(sourceFrame.__proto__, "_willAddInlineDecorationsForTest", () => sourceFrame[symbol]++, true);
+    InspectorTest.addSniffer(sourceFrame.__proto__, "_didAddInlineDecorationsForTest", (updateWasScheduled) => {
+        sourceFrame[symbol]--;
+        if (!updateWasScheduled)
+            sourceFrame._breakpointDecorationsUpdatedForTest();
+    }, true);
+    sourceFrame._waitingForPossibleLocationsForTest = () => !!sourceFrame[symbol];
+}
 
-    function resolveIfAllBreakpointsResolved(resolve)
+InspectorTest.waitJavaScriptSourceFrameBreakpoints = function(sourceFrame, inline)
+{
+    if (!sourceFrame._waitingForPossibleLocationsForTest) {
+        InspectorTest.addResult("Error: source frame should be prepared with InspectorTest.prepareSourceFrameForBreakpointTest function.");
+        InspectorTest.completeTest();
+        return;
+    }
+    return waitUpdate().then(checkIfReady);
+    function waitUpdate()
     {
+        return new Promise(resolve => InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointDecorationsUpdatedForTest", resolve));
+    }
+    function checkIfReady()
+    {
+        if (sourceFrame._waitingForPossibleLocationsForTest())
+            return waitUpdate().then(checkIfReady);
         for (var breakpoint of Bindings.breakpointManager._allBreakpoints()) {
-            if (breakpoint._fakePrimaryLocation && breakpoint.enabled()) {
-                InspectorTest.addSniffer(sourceFrame.__proto__, "_breakpointDecorationsUpdatedForTest", resolveIfAllBreakpointsResolved.bind(null, resolve));
-                return;
-            }
+            if (breakpoint._fakePrimaryLocation && breakpoint.enabled())
+                return waitUpdate().then(checkIfReady);
         }
-        resolve();
+        return Promise.resolve();
     }
 }
 
@@ -669,6 +690,26 @@ InspectorTest.dumpJavaScriptSourceFrameBreakpoints = function(sourceFrame)
         var conditional = textEditor.hasLineClass(lineNumber, "cm-breakpoint-conditional")
         InspectorTest.addResult("breakpoint at " + lineNumber + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
     }
+    var bookmarks = textEditor.bookmarks(textEditor.fullRange(), Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
+    bookmarks = bookmarks.filter(bookmark => !!bookmark.position());
+    bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
+    for (var bookmark of bookmarks) {
+        var position = bookmark.position();
+        var element = bookmark[Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest];
+        var disabled = element.classList.contains("cm-inline-disabled");
+        var conditional = element.classList.contains("cm-inline-conditional");
+        InspectorTest.addResult("  inline breakpoint at (" + position.startLine + ", " + position.startColumn + ")" + (disabled ? " disabled" : "") + (conditional ? " conditional" : ""));
+    }
+}
+
+InspectorTest.clickJavaScriptSourceFrameBreakpoint = function(sourceFrame, lineNumber, index)
+{
+    var textEditor = sourceFrame._textEditor;
+    var lineLength = textEditor.line(lineNumber).length;
+    var lineRange = new Common.TextRange(lineNumber, 0, lineNumber, lineLength);
+    var bookmarks = textEditor.bookmarks(lineRange, Sources.JavaScriptSourceFrame.BreakpointDecoration._bookmarkSymbol);
+    bookmarks.sort((bookmark1, bookmark2) => bookmark1.position().startColumn - bookmark2.position().startColumn);
+    bookmarks[index][Sources.JavaScriptSourceFrame.BreakpointDecoration._elementSymbolForTest].click();
 }
 
 };

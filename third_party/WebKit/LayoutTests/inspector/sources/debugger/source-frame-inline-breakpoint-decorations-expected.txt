@@ -1,0 +1,30 @@
+Checks that JavaScriptSourceFrame show inline breakpoints correctly
+
+
+Running: testAddRemoveBreakpoint
+Setting breakpoint
+breakpoint at 3
+  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 56) disabled
+Toggle breakpoint
+
+Running: testAddRemoveBreakpointInLineWithOneLocation
+Setting breakpoint
+breakpoint at 5
+Toggle breakpoint
+
+Running: clickByInlineBreakpoint
+Setting breakpoint
+breakpoint at 3
+  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 56) disabled
+Click by second breakpoint
+breakpoint at 3
+  inline breakpoint at (3, 49)
+  inline breakpoint at (3, 56)
+Click by first breakpoint
+breakpoint at 3
+  inline breakpoint at (3, 49) disabled
+  inline breakpoint at (3, 56)
+Click by second breakpoint
+

@@ -1,0 +1,112 @@
+<html>
+<head>
+<script src="../../../http/tests/inspector/inspector-test.js"></script>
+<script src="../../../http/tests/inspector/debugger-test.js"></script>
+<script>
+function foo()
+{
+    var p = Promise.resolve().then(() => console.log(42))
+        .then(() => console.log(239));
+    return p;
+}
+//# sourceURL=foo.js
+</script>
+<script>
+
+function test()
+{
+    function waitAndDumpDecorations(sourceFrame)
+    {
+        return InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame)
+            .then(() => InspectorTest.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
+    }
+
+    Runtime.experiments.enableForTest("inlineBreakpoints");
+    Bindings.breakpointManager._storage._breakpoints = {};
+    InspectorTest.runDebuggerTestSuite([
+        function testAddRemoveBreakpoint(next)
+        {
+            var javaScriptSourceFrame;
+            InspectorTest.showScriptSource("foo.js", addBreakpoint);
+
+            function addBreakpoint(sourceFrame)
+            {
+                javaScriptSourceFrame = sourceFrame;              
+                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
+                InspectorTest.addResult("Setting breakpoint");
+                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 3, "", true)
+                    .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(removeBreakpoint));
+            }
+
+            function removeBreakpoint()
+            {
+                InspectorTest.addResult("Toggle breakpoint");
+                waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
+                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 3);
+            }
+        },
+
+        function testAddRemoveBreakpointInLineWithOneLocation(next)
+        {
+            var javaScriptSourceFrame;
+            InspectorTest.showScriptSource("foo.js", addBreakpoint);
+
+            function addBreakpoint(sourceFrame)
+            {
+                javaScriptSourceFrame = sourceFrame;              
+                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
+                InspectorTest.addResult("Setting breakpoint");
+                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 5, "", true)
+                    .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(removeBreakpoint));
+            }
+
+            function removeBreakpoint()
+            {
+                InspectorTest.addResult("Toggle breakpoint");
+                InspectorTest.toggleBreakpoint(javaScriptSourceFrame, 5);
+                waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
+            }            
+        },
+
+        function clickByInlineBreakpoint(next) {
+            var javaScriptSourceFrame;
+            InspectorTest.showScriptSource("foo.js", addBreakpoint);
+
+            function addBreakpoint(sourceFrame)
+            {
+                javaScriptSourceFrame = sourceFrame;
+                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
+                InspectorTest.addResult("Setting breakpoint");
+                InspectorTest.createNewBreakpoint(javaScriptSourceFrame, 3, "", true)
+                    .then(() => waitAndDumpDecorations(javaScriptSourceFrame).then(clickBySecondLocation));
+            }
+
+            function clickBySecondLocation()
+            {
+                InspectorTest.addResult("Click by second breakpoint");
+                waitAndDumpDecorations(javaScriptSourceFrame).then(clickByFirstLocation);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1);
+            }
+
+            function clickByFirstLocation()
+            {
+                InspectorTest.addResult("Click by first breakpoint");
+                waitAndDumpDecorations(javaScriptSourceFrame).then(clickBySecondLocationAgain);
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 0);
+            }
+
+            function clickBySecondLocationAgain()
+            {
+                InspectorTest.addResult("Click by second breakpoint");
+                waitAndDumpDecorations(javaScriptSourceFrame).then(() => next());
+                InspectorTest.clickJavaScriptSourceFrameBreakpoint(javaScriptSourceFrame, 3, 1);
+            }
+        }
+    ]);
+};
+</script>
+</head>
+<body onload="runTest()">
+<p>Checks that JavaScriptSourceFrame show inline breakpoints correctly</p>
+</body>
+</html>

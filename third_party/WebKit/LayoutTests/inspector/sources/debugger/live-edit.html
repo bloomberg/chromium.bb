@@ -109,10 +109,13 @@ function test()
 
         function testBreakpointsUpdated(next)
         {
+            var testSourceFrame;
             InspectorTest.showScriptSource("edit-me.js", didShowScriptSource);
 
             function didShowScriptSource(sourceFrame)
             {
+                testSourceFrame = sourceFrame;
+                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.waitJavaScriptSourceFrameBreakpoints(sourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 2, "", true);
             }
@@ -124,10 +127,10 @@ function test()
 
             function didEditScriptSource()
             {
-                var breakpoints = panel.visibleView._breakpoints;
-                for (var lineNumber in breakpoints)
-                    InspectorTest.assertEquals("5", lineNumber);
-                next();
+                InspectorTest.waitJavaScriptSourceFrameBreakpoints(testSourceFrame)
+                    .then(() => InspectorTest.dumpJavaScriptSourceFrameBreakpoints(testSourceFrame))
+                    .then(() => Bindings.breakpointManager._allBreakpoints().map(breakpoint => breakpoint.remove()))
+                    .then(next);
             }
         },
 
@@ -140,6 +143,7 @@ function test()
             function didShowScriptSource(sourceFrame)
             {
                 testSourceFrame = sourceFrame;
+                InspectorTest.prepareSourceFrameForBreakpointTest(sourceFrame);
                 InspectorTest.waitJavaScriptSourceFrameBreakpoints(testSourceFrame).then(breakpointAdded);
                 InspectorTest.setBreakpoint(sourceFrame, 3, "", true);
             }
