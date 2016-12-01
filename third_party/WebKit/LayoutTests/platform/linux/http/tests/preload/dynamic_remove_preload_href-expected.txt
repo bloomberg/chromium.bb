@@ -1,0 +1,5 @@
+CONSOLE WARNING: line 14: <link rel=preload> has an invalid `href` value
+This is a testharness.js-based test.
+FAIL Makes sure that dynamically removed preloaded resource stop downloading assert_equals: expected 3 but got 4
+Harness: the test ran to completion.
+
