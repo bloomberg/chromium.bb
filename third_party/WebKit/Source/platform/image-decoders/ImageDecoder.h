@@ -267,10 +267,21 @@ class PLATFORM_EXPORT ImageDecoder {
 
   bool failed() const { return m_failed; }
 
-  // Clears decoded pixel data from all frames except the provided frame.
+  // Clears decoded pixel data from all frames except the provided frame. If
+  // subsequent frames depend on this frame's required previous frame, then that
+  // frame is also kept in cache to prevent re-decoding from the beginning.
   // Callers may pass WTF::kNotFound to clear all frames.
   // Note: If |m_frameBufferCache| contains only one frame, it won't be cleared.
   // Returns the number of bytes of frame data actually cleared.
+  //
+  // This is a virtual method because MockImageDecoder needs to override it in
+  // order to run the test ImageFrameGeneratorTest::clearMultiFrameDecode.
+  //
+  // @TODO  Let MockImageDecoder override ImageFrame::clearFrameBuffer instead,
+  //        so this method can be made non-virtual. It is used in the test
+  //        ImageFrameGeneratorTest::clearMultiFrameDecode. The test needs to
+  //        be modified since two frames may be kept in cache, instead of
+  //        always just one, with this clearCacheExceptFrame implementation.
   virtual size_t clearCacheExceptFrame(size_t);
 
   // If the image has a cursor hot-spot, stores it in the argument
@@ -378,6 +389,26 @@ class PLATFORM_EXPORT ImageDecoder {
   // If that happens, m_purgeAggressively is set to true. This signals
   // future decodes to purge old frames as it goes.
   void updateAggressivePurging(size_t index);
+
+  // The method is only relevant for multi-frame images.
+  //
+  // This method indicates whether the provided frame has enough data to decode
+  // successive frames that depend on it. It is used by clearCacheExceptFrame
+  // to determine which frame to keep in cache when the indicated frame is not
+  // yet sufficiently decoded.
+  //
+  // The default condition is that the frame status needs to be FramePartial or
+  // FrameComplete, since the data of previous frames is copied in
+  // initFrameBuffer() before setting the status to FramePartial. For WebP,
+  // however, the status needs to be FrameComplete since the complete buffer is
+  // used to do alpha blending in WEBPImageDecoder::applyPostProcessing().
+  //
+  // Before calling this, verify that frame |index| exists by checking that
+  // |index| is smaller than |m_frameBufferCache|.size().
+  virtual bool frameStatusSufficientForSuccessors(size_t index) {
+    DCHECK(index < m_frameBufferCache.size());
+    return m_frameBufferCache[index].getStatus() != ImageFrame::FrameEmpty;
+  }
 
  private:
   enum class SniffResult { JPEG, PNG, GIF, WEBP, ICO, BMP, Invalid };

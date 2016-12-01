@@ -227,7 +227,40 @@ size_t ImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
   if (m_frameBufferCache.size() <= 1)
     return 0;
 
-  return clearCacheExceptTwoFrames(clearExceptFrame, kNotFound);
+  // We expect that after this call, we'll be asked to decode frames after this
+  // one. So we want to avoid clearing frames such that those requests would
+  // force re-decoding from the beginning of the image. There are two cases in
+  // which preserving |clearCacheExcept| frame is not enough to avoid that:
+  //
+  // 1. |clearExceptFrame| is not yet sufficiently decoded to decode subsequent
+  //    frames. We need the previous frame to sufficiently decode this frame.
+  // 2. The disposal method of |clearExceptFrame| is DisposeOverwritePrevious.
+  //    In that case, we need to keep the required previous frame in the cache
+  //    to prevent re-decoding that frame when |clearExceptFrame| is disposed.
+  //
+  // If either 1 or 2 is true, store the required previous frame in
+  // |clearExceptFrame2| so it won't be cleared.
+  size_t clearExceptFrame2 = kNotFound;
+  if (clearExceptFrame < m_frameBufferCache.size()) {
+    const ImageFrame& frame = m_frameBufferCache[clearExceptFrame];
+    if (!frameStatusSufficientForSuccessors(clearExceptFrame) ||
+        frame.getDisposalMethod() == ImageFrame::DisposeOverwritePrevious)
+      clearExceptFrame2 = frame.requiredPreviousFrameIndex();
+  }
+
+  // Now |clearExceptFrame2| indicates the frame that |clearExceptFrame|
+  // depends on, as described above. But if decoding is skipping forward past
+  // intermediate frames, this frame may be insufficiently decoded. So we need
+  // to keep traversing back through the required previous frames until we find
+  // the nearest ancestor that is sufficiently decoded. Preserving that will
+  // minimize the amount of future decoding needed.
+  while (clearExceptFrame2 < m_frameBufferCache.size() &&
+         !frameStatusSufficientForSuccessors(clearExceptFrame2)) {
+    clearExceptFrame2 =
+        m_frameBufferCache[clearExceptFrame2].requiredPreviousFrameIndex();
+  }
+
+  return clearCacheExceptTwoFrames(clearExceptFrame, clearExceptFrame2);
 }
 
 size_t ImageDecoder::clearCacheExceptTwoFrames(size_t clearExceptFrame1,

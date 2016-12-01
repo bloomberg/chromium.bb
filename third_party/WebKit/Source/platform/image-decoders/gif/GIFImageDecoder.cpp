@@ -233,42 +233,6 @@ bool GIFImageDecoder::frameComplete(size_t frameIndex) {
   return true;
 }
 
-size_t GIFImageDecoder::clearCacheExceptFrame(size_t clearExceptFrame) {
-  // We expect that after this call, we'll be asked to decode frames after
-  // this one.  So we want to avoid clearing frames such that those requests
-  // would force re-decoding from the beginning of the image.
-  //
-  // When |clearExceptFrame| is e.g. DisposeKeep, simply not clearing that
-  // frame is sufficient, as the next frame will be based on it, and in
-  // general future frames can't be based on anything previous.
-  //
-  // However, if this frame is DisposeOverwritePrevious, then subsequent
-  // frames will depend on this frame's required previous frame.  In this
-  // case, we need to preserve both this frame and that one.
-  size_t clearExceptFrame2 = kNotFound;
-  if (clearExceptFrame < m_frameBufferCache.size()) {
-    const ImageFrame& frame = m_frameBufferCache[clearExceptFrame];
-    if ((frame.getStatus() != ImageFrame::FrameEmpty) &&
-        (frame.getDisposalMethod() == ImageFrame::DisposeOverwritePrevious)) {
-      clearExceptFrame2 = clearExceptFrame;
-      clearExceptFrame = frame.requiredPreviousFrameIndex();
-    }
-  }
-
-  // Now |clearExceptFrame| indicates the frame that future frames will
-  // depend on.  But if decoding is skipping forward past intermediate frames,
-  // this frame may be FrameEmpty.  So we need to keep traversing back through
-  // the required previous frames until we find the nearest non-empty
-  // ancestor.  Preserving that will minimize the amount of future decoding
-  // needed.
-  while ((clearExceptFrame < m_frameBufferCache.size()) &&
-         (m_frameBufferCache[clearExceptFrame].getStatus() ==
-          ImageFrame::FrameEmpty))
-    clearExceptFrame =
-        m_frameBufferCache[clearExceptFrame].requiredPreviousFrameIndex();
-  return clearCacheExceptTwoFrames(clearExceptFrame, clearExceptFrame2);
-}
-
 void GIFImageDecoder::clearFrameBuffer(size_t frameIndex) {
   if (m_reader &&
       m_frameBufferCache[frameIndex].getStatus() == ImageFrame::FramePartial) {
