@@ -268,7 +268,7 @@
 
   // Arguments for the find() and findAll() methods.
   [nocompile, noinline_doc] dictionary FindParams {
-    automation.RoleType? role;
+    RoleType? role;
 
     // A map of $(ref:automation.StateType) to boolean, indicating for each
     // state whether it should be set or not. For example:

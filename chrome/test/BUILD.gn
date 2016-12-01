@@ -3017,9 +3017,15 @@ js2gtest("unit_tests_js") {
     "//ui/webui/resources/js/cr.js",
   ]
   if (is_chromeos) {
-    sources += [ "../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs" ]
-    extra_js_files +=
-        [ "../browser/resources/chromeos/braille_ime/braille_ime.js" ]
+    sources += [
+      "../browser/resources/chromeos/braille_ime/braille_ime_unittest.gtestjs",
+      "../browser/resources/chromeos/select_to_speak/select_to_speak_unittest.gtestjs",
+    ]
+    extra_js_files += [
+      "../browser/resources/chromeos/braille_ime/braille_ime.js",
+      "../browser/resources/chromeos/select_to_speak/select_to_speak.js",
+      "../browser/resources/chromeos/select_to_speak/test_support.js",
+    ]
   }
 }
 

@@ -25,7 +25,7 @@ run_jsbundler("select_to_speak_copied_files") {
   mode = "copy"
   dest_dir = select_to_speak_out_dir
   sources = [
-    "background.js",
+    "select_to_speak.js",
   ]
   rewrite_rules = [
     rebase_path(".", root_build_dir) + ":",
