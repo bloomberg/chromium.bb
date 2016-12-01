@@ -1,0 +1,33 @@
+This is a testharness.js-based test.
+PASS Setting bottom to auto 
+PASS Setting bottom to initial 
+PASS Setting bottom to inherit 
+PASS Setting bottom to unset 
+PASS Setting bottom to CSSSimpleLength with value 1px 
+PASS Setting bottom to CSSSimpleLength with value 2% 
+PASS Setting bottom to CSSSimpleLength with value 3em 
+PASS Setting bottom to CSSCalcLength with value calc(10% + 1px) 
+PASS Setting bottom to invalid value CSSNumberValue throws 
+PASS Setting bottom to invalid value null throws 
+PASS Setting bottom to invalid value undefined throws 
+PASS Setting bottom to invalid value true throws 
+PASS Setting bottom to invalid value false throws 
+PASS Setting bottom to invalid value 1 throws 
+PASS Setting bottom to invalid value hello throws 
+PASS Setting bottom to invalid value [object Object] throws 
+PASS Setting bottom to invalid value CSSKeywordValue throws 
+FAIL Getting bottom when it is set to auto assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting bottom when it is set to initial assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting bottom when it is set to inherit assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting bottom when it is set to unset assert_true: result instanceof CSSKeywordValue: expected true got false
+PASS Getting bottom with a CSSSimpleLength whose value is 1px 
+PASS Getting bottom with a CSSSimpleLength whose value is 2% 
+PASS Getting bottom with a CSSSimpleLength whose value is 3em 
+FAIL Getting bottom with a CSSCalcLength whose value is calc(10% + 1px) assert_equals: typeof result expected "CSSCalcLength" but got "CSSStyleValue"
+PASS getAll for single-valued bottom 
+PASS Delete bottom removes the value form the styleMap 
+PASS bottom shows up in getProperties 
+PASS Setting bottom to a sequence throws 
+PASS Appending to bottom throws 
+Harness: the test ran to completion.
+

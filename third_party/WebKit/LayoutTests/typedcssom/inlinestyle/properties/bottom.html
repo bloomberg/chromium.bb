@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='property-suite.js'></script>
+
+<div id="testElement"></div>
+
+<script>
+
+runInlineStylePropertyMapTests({
+  property: 'bottom',
+  validKeywords: [
+    'auto'
+  ],
+  validObjects: [
+    new CSSSimpleLength(1, 'px'),
+    new CSSSimpleLength(2, 'percent'),
+    new CSSSimpleLength(3, 'em'),
+    new CSSCalcLength({px: 1, percent: 10}),
+  ],
+  supportsMultiple: false,
+  invalidObjects: [new CSSNumberValue(1)]
+});
+
+</script>

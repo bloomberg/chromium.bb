@@ -1,0 +1,36 @@
+This is a testharness.js-based test.
+PASS Setting animation-direction to normal 
+PASS Setting animation-direction to reverse 
+PASS Setting animation-direction to alternate 
+PASS Setting animation-direction to alternate-reverse 
+PASS Setting animation-direction to initial 
+PASS Setting animation-direction to inherit 
+PASS Setting animation-direction to unset 
+PASS Setting animation-direction to invalid value CSSSimpleLength throws 
+PASS Setting animation-direction to invalid value null throws 
+PASS Setting animation-direction to invalid value undefined throws 
+PASS Setting animation-direction to invalid value true throws 
+PASS Setting animation-direction to invalid value false throws 
+PASS Setting animation-direction to invalid value 1 throws 
+PASS Setting animation-direction to invalid value hello throws 
+PASS Setting animation-direction to invalid value [object Object] throws 
+PASS Setting animation-direction to invalid value CSSKeywordValue throws 
+FAIL Getting animation-direction when it is set to normal assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to reverse assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to alternate assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to alternate-reverse assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to initial assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to inherit assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL Getting animation-direction when it is set to unset assert_true: result instanceof CSSKeywordValue: expected true got false
+FAIL getAll for single-valued animation-direction assert_equals: Returned type is incorrect: expected "CSSKeywordValue" but got "CSSStyleValue"
+FAIL getAll for list-valued animation-direction assert_equals: Expected getAll to return an array containing two instances of CSSStyleValue expected 2 but got 1
+PASS Delete animation-direction removes the value form the styleMap 
+PASS animation-direction shows up in getProperties 
+FAIL Set animation-direction to a sequence assert_equals: expected "normal, normal" but got "normal normal"
+PASS Set animation-direction to a sequence containing an invalid type 
+FAIL Appending a CSSKeywordValue to animation-direction assert_equals: expected "normal, normal" but got "normal normal"
+FAIL Append a sequence to animation-direction assert_equals: expected "normal, normal" but got "normal normal"
+PASS Appending an invalid value to animation-direction 
+PASS Append a sequence containing an invalid value to animation-direction 
+Harness: the test ran to completion.
+

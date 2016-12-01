@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<script src='../../../resources/testharness.js'></script>
+<script src='../../../resources/testharnessreport.js'></script>
+<script src='property-suite.js'></script>
+
+<script>
+
+runInlineStylePropertyMapTests( {
+  property: 'animation-direction',
+  validKeywords: [
+    'normal',
+    'reverse',
+    'alternate',
+    'alternate-reverse',
+  ],
+  validObjects: [],
+  supportsMultiple: true,
+  invalidObjects: [new CSSSimpleLength(4, 'px')]
+});
+
+</script>
+

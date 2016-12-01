@@ -124,7 +124,7 @@
 
 // Animation Priority properties
 animation-delay custom_all
-animation-direction custom_all
+animation-direction keywords=[normal|reverse|alternate|alternate-reverse], supports_multiple, custom_all
 animation-duration custom_all
 animation-fill-mode custom_all
 animation-iteration-count keywords=[infinite], supports_multiple, custom_all
