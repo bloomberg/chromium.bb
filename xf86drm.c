@@ -2887,6 +2887,8 @@ static int drmParseSubsystemType(int maj, int min)
         return DRM_BUS_PCI;
 
     return -EINVAL;
+#elif defined(__OpenBSD__)
+	return DRM_BUS_PCI;
 #else
 #warning "Missing implementation of drmParseSubsystemType"
     return -EINVAL;
