@@ -30,10 +30,36 @@ class DataUseRecorder {
 
   // Returns the actual data used by the entity being tracked.
   DataUse& data_use() { return data_use_; }
+  const base::hash_set<net::URLRequest*>& pending_url_requests() const {
+    return pending_url_requests_;
+  }
+  const net::URLRequest* main_url_request() const { return main_url_request_; }
+
+  void set_main_url_request(const net::URLRequest* request) {
+    main_url_request_ = request;
+  }
 
   // Returns whether data use is complete and no additional data can be used
   // by the entity tracked by this recorder. For example,
   bool IsDataUseComplete();
+
+  // Adds |request| to the list of pending URLRequests that ascribe data use to
+  // this recorder.
+  void AddPendingURLRequest(net::URLRequest* request);
+
+  // Clears the list of pending URLRequests that ascribe data use to this
+  // recorder.
+  void RemoveAllPendingURLRequests();
+
+  // Returns whether there are any pending URLRequests whose data use is tracked
+  // by this DataUseRecorder.
+  bool HasPendingURLRequest(net::URLRequest* request);
+
+  // Merge another DataUseRecorder to this instance.
+  void MergeFrom(DataUseRecorder* other);
+
+ private:
+  friend class DataUseAscriber;
 
   // Methods for tracking data use sources. These sources can initiate
   // URLRequests directly or indirectly. The entity whose data use is being
@@ -45,16 +71,6 @@ class DataUseRecorder {
   bool HasPendingDataSource(void* source);
   void RemovePendingDataSource(void* source);
 
-  // Returns whether there are any pending URLRequests whose data use is tracked
-  // by this DataUseRecorder.
-  bool HasPendingURLRequest(const net::URLRequest* request);
-
-  // Method to merge another DataUseRecorder to this instance.
-  void MergeWith(DataUseRecorder* other);
-
- private:
-  friend class DataUseAscriber;
-
   // Network Delegate methods:
   void OnBeforeUrlRequest(net::URLRequest* request);
   void OnUrlRequestDestroyed(net::URLRequest* request);
@@ -62,11 +78,15 @@ class DataUseRecorder {
   void OnNetworkBytesReceived(net::URLRequest* request, int64_t bytes_received);
 
   // Pending URLRequests whose data is being tracked by this DataUseRecorder.
-  base::hash_set<const net::URLRequest*> pending_url_requests_;
+  base::hash_set<net::URLRequest*> pending_url_requests_;
 
   // Data sources other than URLRequests, whose data is being tracked by this
   // DataUseRecorder.
   base::hash_set<const void*> pending_data_sources_;
+
+  // The main frame URLRequest for page loads. Null if this is not tracking a
+  // page load.
+  const net::URLRequest* main_url_request_;
 
   // The network data use measured by this DataUseRecorder.
   DataUse data_use_;

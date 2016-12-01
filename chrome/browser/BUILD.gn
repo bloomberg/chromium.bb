@@ -288,6 +288,8 @@ split_static_library("browser") {
     "data_use_measurement/chrome_data_use_ascriber_service.h",
     "data_use_measurement/chrome_data_use_ascriber_service_factory.cc",
     "data_use_measurement/chrome_data_use_ascriber_service_factory.h",
+    "data_use_measurement/chrome_data_use_recorder.cc",
+    "data_use_measurement/chrome_data_use_recorder.h",
     "data_use_measurement/data_use_web_contents_observer.cc",
     "data_use_measurement/data_use_web_contents_observer.h",
     "defaults.cc",

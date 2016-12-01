@@ -7,6 +7,8 @@
 
 #include <list>
 #include <memory>
+#include <string>
+#include <tuple>
 #include <unordered_map>
 #include <utility>
 
@@ -14,6 +16,7 @@
 #include "base/hash.h"
 #include "base/macros.h"
 #include "base/supports_user_data.h"
+#include "chrome/browser/data_use_measurement/chrome_data_use_recorder.h"
 #include "components/data_use_measurement/core/data_use_ascriber.h"
 #include "content/public/browser/global_request_id.h"
 #include "url/gurl.h"
@@ -52,14 +55,10 @@ class ChromeDataUseAscriber : public DataUseAscriber {
   ~ChromeDataUseAscriber() override;
 
   // DataUseAscriber implementation:
-  DataUseRecorder* GetDataUseRecorder(net::URLRequest* request) override;
-
-  // Called before a request is sent.
+  ChromeDataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
+                                            bool can_create_new) override;
   void OnBeforeUrlRequest(net::URLRequest* request) override;
-
-  // Called when a URLRequest is being destroyed.
   void OnUrlRequestDestroyed(net::URLRequest* request) override;
-
   std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
       const override;
 
@@ -91,21 +90,14 @@ class ChromeDataUseAscriber : public DataUseAscriber {
       bool is_same_page_navigation,
       void* navigation_handle);
 
-  // Called when a main frame navigation is redirected.
-  void DidRedirectMainFrameNavigation(GURL gurl,
-                                      int render_process_id,
-                                      int render_frame_id,
-                                      void* navigation_handle);
 
  private:
-  // Use as a key in the render frame map. Corresponds to a unique
-  // RenderFrameHost.
-  typedef std::pair<int, int> RenderFrameHostID;
+  friend class ChromeDataUseAscriberTest;
 
   // Entry in the |data_use_recorders_| list which owns all instances of
   // DataUseRecorder.
-  typedef std::list<std::unique_ptr<data_use_measurement::DataUseRecorder>>::
-      iterator DataUseRecorderEntry;
+  typedef std::list<ChromeDataUseRecorder> DataUseRecorderList;
+  typedef DataUseRecorderList::iterator DataUseRecorderEntry;
 
   struct GlobalRequestIDHash {
    public:
@@ -128,13 +120,22 @@ class ChromeDataUseAscriber : public DataUseAscriber {
     DataUseRecorderEntry entry_;
   };
 
-  void DeletePendingNavigationEntry(content::GlobalRequestID global_request_id);
+  DataUseRecorderEntry GetDataUseRecorderEntry(net::URLRequest* request,
+                                               bool can_create_new);
+
+  void OnDataUseCompleted(DataUseRecorderEntry entry);
+
+  DataUseRecorderEntry CreateNewDataUseRecorder(net::URLRequest* request);
+
+  bool IsRecorderInPendingNavigationMap(net::URLRequest* request);
+
+  bool IsRecorderInRenderFrameMap(net::URLRequest* request);
 
   // Owner for all instances of DataUseRecorder. An instance is kept in this
   // list if any entity (render frame hosts, URLRequests, pending navigations)
   // that ascribe data use to the instance exists, and deleted when all
   // ascribing entities go away.
-  std::list<std::unique_ptr<DataUseRecorder>> data_use_recorders_;
+  DataUseRecorderList data_use_recorders_;
 
   // Map from RenderFrameHost to the DataUseRecorderEntry in
   // |data_use_recorders_| that the frame ascribe data use to.

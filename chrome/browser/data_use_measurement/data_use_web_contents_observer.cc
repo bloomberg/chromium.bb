@@ -72,9 +72,4 @@ void DataUseWebContentsObserver::ReadyToCommitNavigation(
   service_->ReadyToCommitNavigation(navigation_handle);
 }
 
-void DataUseWebContentsObserver::DidRedirectNavigation(
-    content::NavigationHandle* navigation_handle) {
-  service_->DidRedirectNavigation(navigation_handle);
-}
-
 }  // namespace data_use_measurement

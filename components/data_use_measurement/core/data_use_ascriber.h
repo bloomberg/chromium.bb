@@ -39,24 +39,22 @@ class DataUseAscriber {
 
   // Returns the DataUseRecorder to which data usage for the given URL should
   // be ascribed. If no existing DataUseRecorder exists, a new one will be
-  // created.
-  virtual DataUseRecorder* GetDataUseRecorder(net::URLRequest* request) = 0;
+  // created only if |can_create_new| is true.
+  virtual DataUseRecorder* GetDataUseRecorder(net::URLRequest* request,
+                                              bool can_create_new) = 0;
+
+  // Returns a URLRequestClassifier that can classify requests for metrics
+  // recording.
+  virtual std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
+      const = 0;
 
   // Methods called by DataUseNetworkDelegate to propagate data use information:
   virtual void OnBeforeUrlRequest(net::URLRequest* request);
-
-  virtual void OnBeforeRedirect(net::URLRequest* request,
-                                const GURL& new_location);
-
   virtual void OnNetworkBytesSent(net::URLRequest* request, int64_t bytes_sent);
-
   virtual void OnNetworkBytesReceived(net::URLRequest* request,
                                       int64_t bytes_received);
-
+  virtual void OnUrlRequestCompleted(net::URLRequest* request, bool started);
   virtual void OnUrlRequestDestroyed(net::URLRequest* request);
-
-  virtual std::unique_ptr<URLRequestClassifier> CreateURLRequestClassifier()
-      const = 0;
 };
 
 }  // namespace data_use_measurement

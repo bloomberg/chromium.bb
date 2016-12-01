@@ -19,6 +19,7 @@ namespace data_use_measurement {
 class DataUse {
  public:
   DataUse();
+  DataUse(const DataUse& other);
   ~DataUse();
 
   // Merge data use from another instance.
@@ -46,8 +47,6 @@ class DataUse {
 
   int64_t total_bytes_sent_;
   int64_t total_bytes_received_;
-
-  DISALLOW_COPY_AND_ASSIGN(DataUse);
 };
 
 }  // namespace data_use_measurement

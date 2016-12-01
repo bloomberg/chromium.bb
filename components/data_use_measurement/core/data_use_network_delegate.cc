@@ -37,7 +37,6 @@ void DataUseNetworkDelegate::OnBeforeURLRequestInternal(
 void DataUseNetworkDelegate::OnBeforeRedirectInternal(
     net::URLRequest* request,
     const GURL& new_location) {
-  ascriber_->OnBeforeRedirect(request, new_location);
   data_use_measurement_.OnBeforeRedirect(*request, new_location);
 }
 
@@ -55,14 +54,14 @@ void DataUseNetworkDelegate::OnNetworkBytesSentInternal(
   data_use_measurement_.OnNetworkBytesSent(*request, bytes_sent);
 }
 
-void DataUseNetworkDelegate::OnURLRequestDestroyedInternal(
-    net::URLRequest* request) {
-  ascriber_->OnUrlRequestDestroyed(request);
-}
-
 void DataUseNetworkDelegate::OnCompletedInternal(net::URLRequest* request,
                                                  bool started) {
   data_use_measurement_.OnCompleted(*request, started);
+}
+
+void DataUseNetworkDelegate::OnURLRequestDestroyedInternal(
+    net::URLRequest* request) {
+  ascriber_->OnUrlRequestDestroyed(request);
 }
 
 }  // namespace data_use_measurement

@@ -22,31 +22,30 @@ std::unique_ptr<net::NetworkDelegate> DataUseAscriber::CreateNetworkDelegate(
 }
 
 void DataUseAscriber::OnBeforeUrlRequest(net::URLRequest* request) {
-  DataUseRecorder* recorder = GetDataUseRecorder(request);
+  DataUseRecorder* recorder = GetDataUseRecorder(request, true);
   if (recorder)
     recorder->OnBeforeUrlRequest(request);
 }
 
-void DataUseAscriber::OnBeforeRedirect(net::URLRequest* request,
-                                       const GURL& new_location) {}
-
 void DataUseAscriber::OnNetworkBytesSent(net::URLRequest* request,
                                          int64_t bytes_sent) {
-  DataUseRecorder* recorder = GetDataUseRecorder(request);
+  DataUseRecorder* recorder = GetDataUseRecorder(request, false);
   if (recorder)
     recorder->OnNetworkBytesSent(request, bytes_sent);
 }
 
 void DataUseAscriber::OnNetworkBytesReceived(net::URLRequest* request,
                                              int64_t bytes_received) {
-  DataUseRecorder* recorder = GetDataUseRecorder(request);
+  DataUseRecorder* recorder = GetDataUseRecorder(request, false);
   if (recorder)
     recorder->OnNetworkBytesReceived(request, bytes_received);
 }
 
+void DataUseAscriber::OnUrlRequestCompleted(net::URLRequest* request,
+                                            bool started) {}
+
 void DataUseAscriber::OnUrlRequestDestroyed(net::URLRequest* request) {
-  DataUseRecorder* recorder = GetDataUseRecorder(request);
-  // TODO(kundaji): Enforce DCHECK(recorder).
+  DataUseRecorder* recorder = GetDataUseRecorder(request, true);
   if (recorder)
     recorder->OnUrlRequestDestroyed(request);
 }

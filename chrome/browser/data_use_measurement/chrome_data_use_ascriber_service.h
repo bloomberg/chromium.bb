@@ -53,11 +53,6 @@ class ChromeDataUseAscriberService : public KeyedService {
   // methods cannot be called on the IO thread, so the pointer is cast to void*.
   void ReadyToCommitNavigation(content::NavigationHandle* navigation_handle);
 
-  // Called when a navigation is redirected. Propagates main frame navigation
-  // redirect to the |ascriber_| on the IO thread. NavigationHandle methods
-  // cannot be called on the IO thread, so the pointer is cast to void*.
-  void DidRedirectNavigation(content::NavigationHandle* navigation_handle);
-
  private:
   friend class ChromeDataUseAscriberServiceTest;
 
