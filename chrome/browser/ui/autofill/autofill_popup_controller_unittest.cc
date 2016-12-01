@@ -445,7 +445,8 @@ TEST_F(AutofillPopupControllerUnitTest, ElideText) {
               0)) +
       gfx::GetStringWidth(
           suggestions[0].label,
-          autofill_popup_controller_->layout_model().GetLabelFontList()) -
+          autofill_popup_controller_->layout_model().GetLabelFontListForRow(
+              0)) -
       25;
 
   autofill_popup_controller_->ElideValueAndLabelForRow(0, popup_max_width);

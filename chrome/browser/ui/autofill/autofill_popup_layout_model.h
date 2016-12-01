@@ -32,8 +32,16 @@ class AutofillPopupLayoutModel {
   // in pixels.
   static const int kNamePadding = 15;
 
-  // The amount of padding between icons in pixels.
+  // The minimum amount of padding between the Autofill http warning message
+  // name and subtext, in pixels.
+  static const int kHttpWarningNamePadding = 8;
+
+  // The amount of padding around icons in pixels.
   static const int kIconPadding = 5;
+
+  // The amount of horizontal padding around icons in pixels for HTTP warning
+  // message.
+  static const int kHttpWarningIconPadding = 8;
 
   // The amount of padding at the end of the popup in pixels.
   static const int kEndPadding = 8;
@@ -62,7 +70,7 @@ class AutofillPopupLayoutModel {
   // The same font can vary based on the type of data it is showing at the row
   // |index|.
   const gfx::FontList& GetValueFontListForRow(size_t index) const;
-  const gfx::FontList& GetLabelFontList() const;
+  const gfx::FontList& GetLabelFontListForRow(size_t index) const;
 
   // Returns the value font color of the row item according to its |index|.
   SkColor GetValueFontColorForRow(size_t index) const;

@@ -59,6 +59,7 @@ using autofill::AutofillPopupLayoutModel;
                     bounds:(NSRect)bounds;
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
+                 index:(size_t)index
             rightAlign:(BOOL)rightAlign
                 bounds:(NSRect)bounds
            textYOffset:(CGFloat)textYOffset;
@@ -184,6 +185,7 @@ using autofill::AutofillPopupLayoutModel;
   x = [self drawIconAtIndex:index atX:x rightAlign:!isRTL bounds:bounds];
   [self drawSubtext:subtext
                 atX:x
+              index:index
          rightAlign:!isRTL
              bounds:bounds
         textYOffset:textYOffset];
@@ -242,12 +244,13 @@ using autofill::AutofillPopupLayoutModel;
 
 - (CGFloat)drawSubtext:(NSString*)subtext
                    atX:(CGFloat)x
+                 index:(size_t)index
             rightAlign:(BOOL)rightAlign
                 bounds:(NSRect)bounds
            textYOffset:(CGFloat)textYOffset {
   NSDictionary* subtextAttributes = [NSDictionary
       dictionaryWithObjectsAndKeys:controller_->layout_model()
-                                       .GetLabelFontList()
+                                       .GetLabelFontListForRow(index)
                                        .GetPrimaryFont()
                                        .GetNativeFont(),
                                    NSFontAttributeName, [self subtextColor],

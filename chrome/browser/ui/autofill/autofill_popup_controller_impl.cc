@@ -327,7 +327,7 @@ int AutofillPopupControllerImpl::GetElidedValueWidthForRow(size_t row) {
 
 int AutofillPopupControllerImpl::GetElidedLabelWidthForRow(size_t row) {
   return gfx::GetStringWidth(GetElidedLabelAt(row),
-                             layout_model_.GetLabelFontList());
+                             layout_model_.GetLabelFontListForRow(row));
 }
 #endif
 
@@ -510,8 +510,8 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
     int available_width) {
   int value_width = gfx::GetStringWidth(
       suggestions_[row].value, layout_model_.GetValueFontListForRow(row));
-  int label_width = gfx::GetStringWidth(suggestions_[row].label,
-                                        layout_model_.GetLabelFontList());
+  int label_width = gfx::GetStringWidth(
+      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row));
   int total_text_length = value_width + label_width;
 
   // The line can have no strings if it represents a UI element, such as
@@ -526,9 +526,9 @@ void AutofillPopupControllerImpl::ElideValueAndLabelForRow(
       value_size, gfx::ELIDE_TAIL);
 
   int label_size = available_width * label_width / total_text_length;
-  elided_labels_[row] =
-      gfx::ElideText(suggestions_[row].label, layout_model_.GetLabelFontList(),
-                     label_size, gfx::ELIDE_TAIL);
+  elided_labels_[row] = gfx::ElideText(
+      suggestions_[row].label, layout_model_.GetLabelFontListForRow(row),
+      label_size, gfx::ELIDE_TAIL);
 }
 #endif
 

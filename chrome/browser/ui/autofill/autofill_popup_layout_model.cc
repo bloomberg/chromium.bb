@@ -118,16 +118,19 @@ int AutofillPopupLayoutModel::GetDesiredPopupWidth() const {
 int AutofillPopupLayoutModel::RowWidthWithoutText(int row,
                                                   bool with_label) const {
   std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+  bool is_warning_message = (suggestions[row].frontend_id ==
+                             POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
 
   int row_size = kEndPadding;
 
   if (with_label)
-    row_size += kNamePadding;
+    row_size += is_warning_message ? kHttpWarningNamePadding : kNamePadding;
 
   // Add the Autofill icon size, if required.
   const base::string16& icon = suggestions[row].icon;
   if (!icon.empty()) {
-    row_size += GetIconImage(row).width() + kIconPadding;
+    row_size += GetIconImage(row).width() +
+                (is_warning_message ? kHttpWarningIconPadding : kIconPadding);
   }
 
   // Add the padding at the end.
@@ -183,7 +186,13 @@ const gfx::FontList& AutofillPopupLayoutModel::GetValueFontListForRow(
   return normal_font_list_;
 }
 
-const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontList() const {
+const gfx::FontList& AutofillPopupLayoutModel::GetLabelFontListForRow(
+    size_t index) const {
+  std::vector<autofill::Suggestion> suggestions = delegate_->GetSuggestions();
+  if (suggestions[index].frontend_id ==
+      POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE)
+    return normal_font_list_;
+
   return smaller_font_list_;
 }
 
