@@ -11,6 +11,7 @@ import("//media/media_options.gni")
 import("//net/features.gni")
 import("//ppapi/features/features.gni")
 import("//printing/features/features.gni")
+import("//ui/base/ui_features.gni")
 
 # Please keep features in alphabetical order.
 declare_args() {
@@ -99,6 +100,7 @@ chrome_grit_defines = [
   "enable_vr_shell=$enable_vr_shell",
   "enable_webrtc=$enable_webrtc",
   "enable_webvr=$enable_webvr",
+  "mac_views_browser=$mac_views_browser",
   "safe_browsing_mode=$safe_browsing_mode",
   "use_vulcanize=$use_vulcanize",
 ]

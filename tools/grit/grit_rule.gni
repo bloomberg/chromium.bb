@@ -92,7 +92,6 @@ import("//build/config/crypto.gni")
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
 import("//third_party/closure_compiler/closure_args.gni")
-import("//ui/base/ui_features.gni")
 
 assert(!enable_resource_whitelist_generation || is_android,
        "resource whitelist generation only works on android")
@@ -257,12 +256,6 @@ if (enable_notifications) {
   grit_defines += [
     "-D",
     "enable_notifications",
-  ]
-}
-if (mac_views_browser) {
-  grit_defines += [
-    "-D",
-    "mac_views_browser",
   ]
 }
 
