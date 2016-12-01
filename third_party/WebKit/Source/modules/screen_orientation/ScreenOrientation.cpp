@@ -12,7 +12,7 @@
 #include "core/frame/LocalFrame.h"
 #include "modules/EventTargetModules.h"
 #include "modules/screen_orientation/LockOrientationCallback.h"
-#include "modules/screen_orientation/ScreenOrientationController.h"
+#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "public/platform/modules/screen_orientation/WebScreenOrientationType.h"
 
 // This code assumes that WebScreenOrientationType values are included in
@@ -98,7 +98,7 @@ ScreenOrientation* ScreenOrientation::create(LocalFrame* frame) {
   // Check if the ScreenOrientationController is supported for the
   // frame. It will not be for all LocalFrames, or the frame may
   // have been detached.
-  if (!ScreenOrientationController::from(*frame))
+  if (!ScreenOrientationControllerImpl::from(*frame))
     return nullptr;
 
   ScreenOrientation* orientation = new ScreenOrientation(frame);
@@ -182,11 +182,11 @@ void ScreenOrientation::unlock() {
   controller()->unlock();
 }
 
-ScreenOrientationController* ScreenOrientation::controller() {
+ScreenOrientationControllerImpl* ScreenOrientation::controller() {
   if (!frame())
     return 0;
 
-  return ScreenOrientationController::from(*frame());
+  return ScreenOrientationControllerImpl::from(*frame());
 }
 
 DEFINE_TRACE(ScreenOrientation) {

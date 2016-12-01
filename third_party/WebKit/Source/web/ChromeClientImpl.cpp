@@ -60,7 +60,7 @@
 #include "modules/mediastream/UserMediaController.h"
 #include "modules/presentation/PresentationController.h"
 #include "modules/push_messaging/PushController.h"
-#include "modules/screen_orientation/ScreenOrientationController.h"
+#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 #include "modules/vr/VRController.h"
 #include "platform/Cursor.h"
 #include "platform/FileChooser.h"
@@ -1165,8 +1165,8 @@ void ChromeClientImpl::installSupplements(LocalFrame& frame) {
   if (RuntimeEnabledFeatures::webBluetoothEnabled())
     BluetoothSupplement::provideTo(frame, client->bluetooth());
 
-  ScreenOrientationController::provideTo(frame,
-                                         client->webScreenOrientationClient());
+  ScreenOrientationControllerImpl::provideTo(
+      frame, client->webScreenOrientationClient());
   if (RuntimeEnabledFeatures::presentationEnabled())
     PresentationController::provideTo(frame, client->presentationClient());
   if (RuntimeEnabledFeatures::audioOutputDevicesEnabled())

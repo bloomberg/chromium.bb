@@ -89,6 +89,8 @@ blink_core_sources("frame") {
     "RootFrameViewport.h",
     "Screen.cpp",
     "Screen.h",
+    "ScreenOrientationController.cpp",
+    "ScreenOrientationController.h",
     "Settings.cpp",
     "SettingsDelegate.cpp",
     "SettingsDelegate.h",

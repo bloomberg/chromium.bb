@@ -19,7 +19,7 @@ class ExecutionContext;
 class LocalFrame;
 class ScriptPromise;
 class ScriptState;
-class ScreenOrientationController;
+class ScreenOrientationControllerImpl;
 
 class ScreenOrientation final : public EventTargetWithInlineData,
                                 public DOMWindowProperty {
@@ -54,7 +54,7 @@ class ScreenOrientation final : public EventTargetWithInlineData,
  private:
   explicit ScreenOrientation(LocalFrame*);
 
-  ScreenOrientationController* controller();
+  ScreenOrientationControllerImpl* controller();
 
   WebScreenOrientationType m_type;
   unsigned short m_angle;

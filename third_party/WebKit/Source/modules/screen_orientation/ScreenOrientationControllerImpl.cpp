@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "modules/screen_orientation/ScreenOrientationController.h"
+#include "modules/screen_orientation/ScreenOrientationControllerImpl.h"
 
 #include "core/events/Event.h"
 #include "core/frame/FrameHost.h"
@@ -21,23 +21,22 @@
 
 namespace blink {
 
-ScreenOrientationController::~ScreenOrientationController() {}
+ScreenOrientationControllerImpl::~ScreenOrientationControllerImpl() = default;
 
-void ScreenOrientationController::provideTo(
+void ScreenOrientationControllerImpl::provideTo(
     LocalFrame& frame,
     WebScreenOrientationClient* client) {
-  ScreenOrientationController* controller =
-      new ScreenOrientationController(frame, client);
-  Supplement<LocalFrame>::provideTo(frame, supplementName(), controller);
+  ScreenOrientationController::provideTo(
+      frame, new ScreenOrientationControllerImpl(frame, client));
 }
 
-ScreenOrientationController* ScreenOrientationController::from(
+ScreenOrientationControllerImpl* ScreenOrientationControllerImpl::from(
     LocalFrame& frame) {
-  return static_cast<ScreenOrientationController*>(
-      Supplement<LocalFrame>::from(frame, supplementName()));
+  return static_cast<ScreenOrientationControllerImpl*>(
+      ScreenOrientationController::from(frame));
 }
 
-ScreenOrientationController::ScreenOrientationController(
+ScreenOrientationControllerImpl::ScreenOrientationControllerImpl(
     LocalFrame& frame,
     WebScreenOrientationClient* client)
     : DOMWindowProperty(&frame),
@@ -45,15 +44,11 @@ ScreenOrientationController::ScreenOrientationController(
       m_client(client),
       m_dispatchEventTimer(
           this,
-          &ScreenOrientationController::dispatchEventTimerFired) {}
-
-const char* ScreenOrientationController::supplementName() {
-  return "ScreenOrientationController";
-}
+          &ScreenOrientationControllerImpl::dispatchEventTimerFired) {}
 
 // Compute the screen orientation using the orientation angle and the screen
 // width / height.
-WebScreenOrientationType ScreenOrientationController::computeOrientation(
+WebScreenOrientationType ScreenOrientationControllerImpl::computeOrientation(
     const IntRect& rect,
     uint16_t rotation) {
   // Bypass orientation detection in layout tests to get consistent results.
@@ -78,15 +73,15 @@ WebScreenOrientationType ScreenOrientationController::computeOrientation(
       return isTallDisplay ? WebScreenOrientationLandscapeSecondary
                            : WebScreenOrientationPortraitPrimary;
     default:
-      ASSERT_NOT_REACHED();
+      NOTREACHED();
       return WebScreenOrientationPortraitPrimary;
   }
 }
 
-void ScreenOrientationController::updateOrientation() {
-  ASSERT(m_orientation);
-  ASSERT(frame());
-  ASSERT(frame()->host());
+void ScreenOrientationControllerImpl::updateOrientation() {
+  DCHECK(m_orientation);
+  DCHECK(frame());
+  DCHECK(frame()->host());
 
   ChromeClient& chromeClient = frame()->host()->chromeClient();
   WebScreenInfo screenInfo = chromeClient.screenInfo();
@@ -97,17 +92,17 @@ void ScreenOrientationController::updateOrientation() {
     orientationType = computeOrientation(chromeClient.screenInfo().rect,
                                          screenInfo.orientationAngle);
   }
-  ASSERT(orientationType != WebScreenOrientationUndefined);
+  DCHECK(orientationType != WebScreenOrientationUndefined);
 
   m_orientation->setType(orientationType);
   m_orientation->setAngle(screenInfo.orientationAngle);
 }
 
-bool ScreenOrientationController::isActiveAndVisible() const {
+bool ScreenOrientationControllerImpl::isActiveAndVisible() const {
   return m_orientation && m_client && page() && page()->isPageVisible();
 }
 
-void ScreenOrientationController::pageVisibilityChanged() {
+void ScreenOrientationControllerImpl::pageVisibilityChanged() {
   notifyDispatcher();
 
   if (!isActiveAndVisible())
@@ -131,7 +126,7 @@ void ScreenOrientationController::pageVisibilityChanged() {
     notifyOrientationChanged();
 }
 
-void ScreenOrientationController::notifyOrientationChanged() {
+void ScreenOrientationControllerImpl::notifyOrientationChanged() {
   if (!isActiveAndVisible())
     return;
 
@@ -151,15 +146,15 @@ void ScreenOrientationController::notifyOrientationChanged() {
   if (!m_dispatchEventTimer.isActive())
     m_dispatchEventTimer.startOneShot(0, BLINK_FROM_HERE);
 
-  // ... and child frames, if they have a ScreenOrientationController.
+  // ... and child frames, if they have a ScreenOrientationControllerImpl.
   for (size_t i = 0; i < childFrames.size(); ++i) {
-    if (ScreenOrientationController* controller =
-            ScreenOrientationController::from(*childFrames[i]))
+    if (ScreenOrientationControllerImpl* controller =
+            ScreenOrientationControllerImpl::from(*childFrames[i]))
       controller->notifyOrientationChanged();
   }
 }
 
-void ScreenOrientationController::setOrientation(
+void ScreenOrientationControllerImpl::setOrientation(
     ScreenOrientation* orientation) {
   m_orientation = orientation;
   if (m_orientation)
@@ -167,7 +162,7 @@ void ScreenOrientationController::setOrientation(
   notifyDispatcher();
 }
 
-void ScreenOrientationController::lock(
+void ScreenOrientationControllerImpl::lock(
     WebScreenOrientationLockType orientation,
     std::unique_ptr<WebLockOrientationCallback> callback) {
   // When detached, the client is no longer valid.
@@ -176,14 +171,14 @@ void ScreenOrientationController::lock(
   m_client->lockOrientation(orientation, std::move(callback));
 }
 
-void ScreenOrientationController::unlock() {
+void ScreenOrientationControllerImpl::unlock() {
   // When detached, the client is no longer valid.
   if (!m_client)
     return;
   m_client->unlockOrientation();
 }
 
-void ScreenOrientationController::dispatchEventTimerFired(TimerBase*) {
+void ScreenOrientationControllerImpl::dispatchEventTimerFired(TimerBase*) {
   if (!m_orientation)
     return;
 
@@ -191,35 +186,35 @@ void ScreenOrientationController::dispatchEventTimerFired(TimerBase*) {
   m_orientation->dispatchEvent(Event::create(EventTypeNames::change));
 }
 
-void ScreenOrientationController::didUpdateData() {
+void ScreenOrientationControllerImpl::didUpdateData() {
   // Do nothing.
 }
 
-void ScreenOrientationController::registerWithDispatcher() {
+void ScreenOrientationControllerImpl::registerWithDispatcher() {
   ScreenOrientationDispatcher::instance().addController(this);
 }
 
-void ScreenOrientationController::unregisterWithDispatcher() {
+void ScreenOrientationControllerImpl::unregisterWithDispatcher() {
   ScreenOrientationDispatcher::instance().removeController(this);
 }
 
-bool ScreenOrientationController::hasLastData() {
+bool ScreenOrientationControllerImpl::hasLastData() {
   return true;
 }
 
-void ScreenOrientationController::frameDestroyed() {
+void ScreenOrientationControllerImpl::frameDestroyed() {
   m_client = nullptr;
   DOMWindowProperty::frameDestroyed();
 }
 
-void ScreenOrientationController::notifyDispatcher() {
+void ScreenOrientationControllerImpl::notifyDispatcher() {
   if (m_orientation && page()->isPageVisible())
     startUpdating();
   else
     stopUpdating();
 }
 
-DEFINE_TRACE(ScreenOrientationController) {
+DEFINE_TRACE(ScreenOrientationControllerImpl) {
   visitor->trace(m_orientation);
   DOMWindowProperty::trace(visitor);
   Supplement<LocalFrame>::trace(visitor);
