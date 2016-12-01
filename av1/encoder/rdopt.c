@@ -8611,13 +8611,10 @@ void av1_rd_pick_inter_mode_sb(const AV1_COMP *cpi, TileDataEnc *tile_data,
     if (mbmi_ext->ref_mv_count[ref_frame] < 2) {
       MV_REFERENCE_FRAME rf[2];
       av1_set_ref_frame(rf, ref_frame);
-      if (mbmi_ext->ref_mvs[rf[0]][0].as_int !=
-              frame_mv[ZEROMV][rf[0]].as_int ||
-          mbmi_ext->ref_mvs[rf[0]][1].as_int !=
-              frame_mv[ZEROMV][rf[0]].as_int ||
-          mbmi_ext->ref_mvs[rf[1]][0].as_int !=
-              frame_mv[ZEROMV][rf[1]].as_int ||
-          mbmi_ext->ref_mvs[rf[1]][1].as_int != frame_mv[ZEROMV][rf[1]].as_int)
+      if (mbmi_ext->ref_mvs[rf[0]][0].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[0]][1].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[1]][0].as_int != 0 ||
+          mbmi_ext->ref_mvs[rf[1]][1].as_int != 0)
         mbmi_ext->mode_context[ref_frame] &= ~(1 << ALL_ZERO_FLAG_OFFSET);
     }
   }
@@ -9972,34 +9969,27 @@ PALETTE_EXIT:
   }
 
 #if CONFIG_REF_MV
-  {
+  if (best_mbmode.ref_frame[0] > INTRA_FRAME && best_mbmode.mv[0].as_int == 0 &&
+#if CONFIG_EXT_INTER
+      (best_mbmode.ref_frame[1] <= INTRA_FRAME)
+#else
+      (best_mbmode.ref_frame[1] == NONE || best_mbmode.mv[1].as_int == 0)
+#endif  // CONFIG_EXT_INTER
+          ) {
     int8_t ref_frame_type = av1_ref_frame_type(best_mbmode.ref_frame);
     int16_t mode_ctx = mbmi_ext->mode_context[ref_frame_type];
+
     if (mode_ctx & (1 << ALL_ZERO_FLAG_OFFSET)) {
-      int_mv zeromv[2];
+      best_mbmode.mode = ZEROMV;
 #if CONFIG_GLOBAL_MOTION
-      const MV_REFERENCE_FRAME refs[2] = { best_mbmode.ref_frame[0],
-                                           best_mbmode.ref_frame[1] };
-      zeromv[0].as_int =
-          gm_get_motion_vector(&cm->global_motion[refs[0]]).as_int;
-      zeromv[1].as_int =
-          gm_get_motion_vector(&cm->global_motion[refs[1]]).as_int;
-      lower_mv_precision(&zeromv[0].as_mv, cm->allow_high_precision_mv);
-      lower_mv_precision(&zeromv[1].as_mv, cm->allow_high_precision_mv);
-#else
-      zeromv[0].as_int = zeromv[1].as_int = 0;
-#endif  // CONFIG_GLOBAL_MOTION
-      if (best_mbmode.ref_frame[0] > INTRA_FRAME &&
-          best_mbmode.mv[0].as_int == zeromv[0].as_int &&
-#if CONFIG_EXT_INTER
-          (best_mbmode.ref_frame[1] <= INTRA_FRAME)
-#else
-          (best_mbmode.ref_frame[1] == NONE ||
-           best_mbmode.mv[1].as_int == zeromv[1].as_int)
-#endif  // CONFIG_EXT_INTER
-              ) {
-        best_mbmode.mode = ZEROMV;
-      }
+      best_mbmode.mv[0].as_int =
+          gm_get_motion_vector(&cm->global_motion[best_mbmode.ref_frame[0]])
+              .as_int;
+      if (best_mbmode.ref_frame[1] != NONE)
+        best_mbmode.mv[1].as_int =
+            gm_get_motion_vector(&cm->global_motion[best_mbmode.ref_frame[1]])
+                .as_int;
+#endif
     }
   }
 #endif
