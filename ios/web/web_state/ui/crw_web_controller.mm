@@ -2281,17 +2281,30 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   NSUserDefaults* userDefaults = [NSUserDefaults standardUserDefaults];
   if ([userDefaults boolForKey:@"PendingIndexNavigationEnabled"]) {
-    [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
-
     BOOL sameDocumentNavigation =
         [sessionController isSameDocumentNavigationBetweenEntry:fromEntry
                                                        andEntry:entries[index]];
     if (sameDocumentNavigation) {
       [self.sessionController goToEntryAtIndex:index];
+
+      // Implementation of |webWillFinishHistoryNavigationFromEntry:| expects
+      // that NavigationManager has either a pending item or already made the
+      // navigation. Hence this delegate must be called after changing current
+      // navigation item. TODO(crbug.com/670149): Remove this delegate method as
+      // CRWWebController does not need to delegate setting Desktop User Agent.
+      [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
       [self updateHTML5HistoryState];
     } else {
       [sessionController discardNonCommittedEntries];
       [sessionController setPendingEntryIndex:index];
+
+      // Implementation of |webWillFinishHistoryNavigationFromEntry:| expects
+      // that NavigationManager has either a pending item or already made the
+      // navigation. Hence this delegate must be called after changing pending
+      // navigation index. TODO(crbug.com/670149): Remove this delegate method
+      // as CRWWebController does not need to delegate setting Desktop User
+      // Agent.
+      [_delegate webWillFinishHistoryNavigationFromEntry:fromEntry];
 
       web::NavigationItemImpl* pendingItem =
           sessionController.pendingEntry.navigationItemImpl;
