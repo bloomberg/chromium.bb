@@ -110,6 +110,10 @@ class Pbkdf2Implementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
+    if (algorithm.paramsType() != blink::WebCryptoKeyAlgorithmParamsTypeNone ||
+        type != blink::WebCryptoKeyTypeSecret)
+      return Status::ErrorUnexpected();
+
     // NOTE: Unlike ImportKeyRaw(), this does not enforce extractable==false.
     // This is intentional. Although keys cannot currently be created with
     // extractable==true, earlier implementations permitted this, so

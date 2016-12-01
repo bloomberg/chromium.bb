@@ -795,6 +795,16 @@ TEST(V8ScriptValueSerializerForModulesTest, DecodeCryptoKeyInvalid) {
                   .deserialize()
                   ->IsNull());
 
+  // Algorithm ID / params type mismatch (AES params, RSA-OEAP ID).
+  EXPECT_TRUE(
+      V8ScriptValueDeserializerForModules(
+          scriptState,
+          serializedValue({0xff, 0x09, 0x3f, 0x00, 0x4b, 0x01, 0x0a, 0x10, 0x04,
+                           0x10, 0x7e, 0x25, 0xb2, 0xe8, 0x62, 0x3e, 0xd7, 0x83,
+                           0x70, 0xa2, 0xae, 0x98, 0x79, 0x1b, 0xc5, 0xf7}))
+          .deserialize()
+          ->IsNull());
+
   // Invalid asymmetric key type.
   EXPECT_TRUE(
       V8ScriptValueDeserializerForModules(

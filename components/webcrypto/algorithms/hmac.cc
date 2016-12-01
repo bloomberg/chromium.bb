@@ -291,6 +291,10 @@ class HmacImplementation : public AlgorithmImplementation {
                                 blink::WebCryptoKeyUsageMask usages,
                                 const CryptoData& key_data,
                                 blink::WebCryptoKey* key) const override {
+    if (algorithm.paramsType() != blink::WebCryptoKeyAlgorithmParamsTypeHmac ||
+        type != blink::WebCryptoKeyTypeSecret)
+      return Status::ErrorUnexpected();
+
     return CreateWebCryptoSecretKey(key_data, algorithm, extractable, usages,
                                     key);
   }

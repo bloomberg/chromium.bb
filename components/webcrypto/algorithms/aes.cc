@@ -199,6 +199,10 @@ Status AesAlgorithm::DeserializeKeyForClone(
     blink::WebCryptoKeyUsageMask usages,
     const CryptoData& key_data,
     blink::WebCryptoKey* key) const {
+  if (algorithm.paramsType() != blink::WebCryptoKeyAlgorithmParamsTypeAes ||
+      type != blink::WebCryptoKeyTypeSecret)
+    return Status::ErrorUnexpected();
+
   return ImportKeyRaw(key_data, SynthesizeImportAlgorithmForClone(algorithm),
                       extractable, usages, key);
 }

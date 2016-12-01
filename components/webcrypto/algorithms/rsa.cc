@@ -532,6 +532,9 @@ Status RsaHashedAlgorithm::DeserializeKeyForClone(
     blink::WebCryptoKeyUsageMask usages,
     const CryptoData& key_data,
     blink::WebCryptoKey* key) const {
+  if (algorithm.paramsType() != blink::WebCryptoKeyAlgorithmParamsTypeRsaHashed)
+    return Status::ErrorUnexpected();
+
   blink::WebCryptoAlgorithm import_algorithm =
       SynthesizeImportAlgorithmForClone(algorithm);
 
