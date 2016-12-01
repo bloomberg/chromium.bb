@@ -86,10 +86,6 @@ const int kStackedDistance = 36;
 const int kMaximizedWindowInset = 10;  // DIPs.
 
 #if defined(USE_ASH)
-void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
-  ash::wm::GetWindowState(window)->set_window_position_managed(value);
-}
-
 // Returns true if |tab_strip| browser window is docked.
 bool IsDockedOrSnapped(const TabStrip* tab_strip) {
   DCHECK(tab_strip);
@@ -98,9 +94,6 @@ bool IsDockedOrSnapped(const TabStrip* tab_strip) {
   return window_state->IsDocked() || window_state->IsSnapped();
 }
 #else
-void SetWindowPositionManaged(gfx::NativeWindow window, bool value) {
-}
-
 bool IsDockedOrSnapped(const TabStrip* tab_strip) {
   return false;
 }
@@ -136,18 +129,6 @@ void OffsetX(int x_offset, std::vector<gfx::Rect>* rects) {
   for (size_t i = 0; i < rects->size(); ++i)
     (*rects)[i].set_x((*rects)[i].x() + x_offset);
 }
-
-// WidgetObserver implementation that resets the window position managed
-// property on Show.
-// We're forced to do this here since BrowserFrameAsh resets the 'window
-// position managed' property during a show and we need the property set to
-// false before WorkspaceLayoutManager sees the visibility change.
-class WindowPositionManagedUpdater : public views::WidgetObserver {
- public:
-  void OnWidgetVisibilityChanged(views::Widget* widget, bool visible) override {
-    SetWindowPositionManaged(widget->GetNativeWindow(), false);
-  }
-};
 
 // EscapeTracker installs an event monitor and runs a callback when it receives
 // the escape key.
@@ -236,7 +217,6 @@ TabDragController::~TabDragController() {
   if (move_loop_widget_) {
     if (added_observer_to_move_loop_widget_)
       move_loop_widget_->RemoveObserver(this);
-    SetWindowPositionManaged(move_loop_widget_->GetNativeWindow(), true);
   }
 
   if (source_tabstrip_)
@@ -615,10 +595,6 @@ TabDragController::DragBrowserToNewTabStrip(
       browser_widget->ReleaseCapture();
     else
       target_tabstrip->GetWidget()->SetCapture(attached_tabstrip_);
-
-    // The window is going away. Since the drag is still on going we don't want
-    // that to effect the position of any windows.
-    SetWindowPositionManaged(browser_widget->GetNativeWindow(), false);
 
 #if !defined(OS_LINUX) || defined(OS_CHROMEOS)
     // EndMoveLoop is going to snap the window back to its original location.
@@ -1059,10 +1035,7 @@ void TabDragController::DetachIntoNewBrowserAndRunMoveLoop(
   AdjustBrowserAndTabBoundsForDrag(last_tabstrip_width,
                                    point_in_screen,
                                    &drag_bounds);
-  WindowPositionManagedUpdater updater;
-  dragged_widget->AddObserver(&updater);
   browser->window()->Show();
-  dragged_widget->RemoveObserver(&updater);
   dragged_widget->SetVisibilityChangedAnimationsEnabled(true);
   // Activate may trigger a focus loss, destroying us.
   {
@@ -1113,7 +1086,7 @@ void TabDragController::RunMoveLoop(const gfx::Vector2d& drag_offset) {
     return;
   if (move_loop_widget_) {
     move_loop_widget_->RemoveObserver(this);
-    move_loop_widget_ = NULL;
+    move_loop_widget_ = nullptr;
   }
   is_dragging_window_ = false;
   waiting_for_run_loop_to_exit_ = false;
@@ -1352,11 +1325,6 @@ void TabDragController::EndDragImpl(EndDragType type) {
 
   if (is_dragging_window_) {
     waiting_for_run_loop_to_exit_ = true;
-
-    if (type == NORMAL || (type == TAB_DESTROYED && drag_data_.size() > 1)) {
-      SetWindowPositionManaged(GetAttachedBrowserWidget()->GetNativeWindow(),
-                               true);
-    }
 
     // End the nested drag loop.
     GetAttachedBrowserWidget()->EndMoveLoop();
@@ -1768,7 +1736,6 @@ Browser* TabDragController::CreateBrowserForDrag(
   create_params.initial_bounds = new_bounds;
   Browser* browser = new Browser(create_params);
   is_dragging_new_browser_ = true;
-  SetWindowPositionManaged(browser->window()->GetNativeWindow(), false);
   // If the window is created maximized then the bounds we supplied are ignored.
   // We need to reset them again so they are honored.
   browser->window()->SetBounds(new_bounds);
