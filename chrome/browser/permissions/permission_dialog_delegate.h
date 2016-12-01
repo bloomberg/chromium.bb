@@ -12,7 +12,6 @@
 #include "base/macros.h"
 #include "chrome/browser/permissions/permission_util.h"
 #include "content/public/browser/permission_type.h"
-#include "content/public/browser/web_contents_observer.h"
 
 using base::android::JavaParamRef;
 using base::android::ScopedJavaLocalRef;
@@ -25,6 +24,7 @@ class MediaStreamDevicesController;
 class GURL;
 class PermissionInfoBarDelegate;
 class Profile;
+class TabAndroid;
 
 // Delegate class for displaying a permission prompt as a modal dialog. Used as
 // the native to Java interface to allow Java to communicate the user's
@@ -35,7 +35,7 @@ class Profile;
 // GroupedPermissionInfoBarDelegate, which will then source all of its data from
 // an underlying PermissionPromptAndroid object. At that time, this class will
 // also change to wrap a PermissionPromptAndroid.
-class PermissionDialogDelegate : content::WebContentsObserver {
+class PermissionDialogDelegate {
  public:
   using PermissionSetCallback = base::Callback<void(bool, PermissionAction)>;
 
@@ -72,11 +72,13 @@ class PermissionDialogDelegate : content::WebContentsObserver {
 
  private:
   PermissionDialogDelegate(
-      content::WebContents* web_contents,
+      TabAndroid* tab,
       std::unique_ptr<PermissionInfoBarDelegate> infobar_delegate_);
-  ~PermissionDialogDelegate() override;
+  ~PermissionDialogDelegate();
 
   ScopedJavaLocalRef<jobject> CreateJavaDelegate(JNIEnv* env);
+
+  TabAndroid* tab_;
 
   // The InfoBarDelegate which this class is wrapping.
   // TODO(dominickn,lshang) replace this with PermissionPromptAndroid as the
