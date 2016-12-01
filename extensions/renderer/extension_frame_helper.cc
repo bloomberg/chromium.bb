@@ -345,7 +345,6 @@ void ExtensionFrameHelper::OnExtensionDispatchOnConnect(
 }
 
 void ExtensionFrameHelper::OnExtensionDeliverMessage(int target_id,
-                                                     int source_tab_id,
                                                      const Message& message) {
   MessagingBindings::DeliverMessage(
       extension_dispatcher_->script_context_set(), target_id, message,

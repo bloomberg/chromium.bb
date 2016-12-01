@@ -600,9 +600,8 @@ IPC_MESSAGE_ROUTED5(ExtensionMsg_DispatchOnConnect,
                     std::string /* tls_channel_id */)
 
 // Deliver a message sent with ExtensionHostMsg_PostMessage.
-IPC_MESSAGE_ROUTED3(ExtensionMsg_DeliverMessage,
+IPC_MESSAGE_ROUTED2(ExtensionMsg_DeliverMessage,
                     int /* target_port_id */,
-                    int /* source_tab_id */,
                     extensions::Message)
 
 // Dispatch the Port.onDisconnect event for message channels.

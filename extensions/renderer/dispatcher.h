@@ -156,7 +156,6 @@ class Dispatcher : public content::RenderThreadObserver,
   void OnActivateExtension(const std::string& extension_id);
   void OnCancelSuspend(const std::string& extension_id);
   void OnDeliverMessage(int target_port_id,
-                        int source_tab_id,
                         const Message& message);
   void OnDispatchOnConnect(int target_port_id,
                            const std::string& channel_name,

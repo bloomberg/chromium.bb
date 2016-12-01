@@ -98,11 +98,6 @@ class ExtensionMessagePort : public MessageService::MessagePort {
   // when the frame is removed or unloaded.
   std::set<content::RenderFrameHost*> frames_;
 
-  // The ID of the tab where the channel was created. This is saved so that any
-  // onMessage events can be run in the scope of the tab.
-  // Only set on receiver ports (if the opener was a tab). -1 if invalid.
-  int opener_tab_id_;
-
   // Whether the renderer acknowledged creation of the port. This is used to
   // distinguish abnormal port closure (e.g. no receivers) from explicit port
   // closure (e.g. by the port.disconnect() JavaScript method in the renderer).

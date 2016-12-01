@@ -1000,7 +1000,6 @@ void Dispatcher::OnCancelSuspend(const std::string& extension_id) {
 }
 
 void Dispatcher::OnDeliverMessage(int target_port_id,
-                                  int source_tab_id,
                                   const Message& message) {
   MessagingBindings::DeliverMessage(*script_context_set_, target_port_id,
                                     message,
