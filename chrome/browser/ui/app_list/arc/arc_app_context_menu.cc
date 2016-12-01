@@ -4,9 +4,11 @@
 
 #include "chrome/browser/ui/app_list/arc/arc_app_context_menu.h"
 
+#include "base/bind.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/app_context_menu_delegate.h"
 #include "chrome/browser/ui/app_list/app_list_controller_delegate.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_dialog.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
@@ -82,30 +84,13 @@ void ArcAppContextMenu::ExecuteCommand(int command_id, int event_flags) {
           ArcAppWindowLauncherController::GetShelfAppIdFromArcAppId(app_id()));
       break;
     case UNINSTALL:
-      UninstallPackage();
+      arc::ShowArcAppUninstallDialog(profile(), controller(), app_id());
       break;
     case SHOW_APP_INFO:
       ShowPackageInfo();
       break;
     default:
       app_list::AppContextMenu::ExecuteCommand(command_id, event_flags);
-  }
-}
-
-void ArcAppContextMenu::UninstallPackage() {
-  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile());
-  DCHECK(arc_prefs);
-  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_prefs->GetApp(app_id());
-  if (!app_info) {
-    VLOG(2) << "Package being uninstalled does not exist: " << app_id() << ".";
-    return;
-  }
-  if (app_info->shortcut) {
-    // for shortcut we just remove the shortcut instead of the package
-    arc_prefs->RemoveApp(app_id());
-  } else {
-    arc::UninstallPackage(app_info->package_name);
   }
 }
 

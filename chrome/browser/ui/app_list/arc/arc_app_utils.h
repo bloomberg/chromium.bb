@@ -11,6 +11,8 @@
 #include "components/arc/common/app.mojom.h"
 #include "ui/gfx/geometry/rect.h"
 
+class Profile;
+
 namespace content {
 class BrowserContext;
 }
@@ -69,6 +71,9 @@ bool CanHandleResolution(content::BrowserContext* context,
 
 // Uninstalls the package in ARC.
 void UninstallPackage(const std::string& package_name);
+
+// Uninstalls Arc app or removes shortcut.
+void UninstallArcApp(const std::string& app_id, Profile* profile);
 
 // Removes cached app shortcut icon in ARC.
 void RemoveCachedIcon(const std::string& icon_resource_id);

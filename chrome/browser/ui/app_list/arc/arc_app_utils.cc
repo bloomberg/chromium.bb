@@ -12,6 +12,7 @@
 #include "base/json/json_writer.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/values.h"
+#include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
@@ -390,6 +391,22 @@ void UninstallPackage(const std::string& package_name) {
     return;
 
   app_instance->UninstallPackage(package_name);
+}
+
+void UninstallArcApp(const std::string& app_id, Profile* profile) {
+  ArcAppListPrefs* arc_prefs = ArcAppListPrefs::Get(profile);
+  DCHECK(arc_prefs);
+  std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
+      arc_prefs->GetApp(app_id);
+  if (!app_info) {
+    VLOG(2) << "Package being uninstalled does not exist: " << app_id << ".";
+    return;
+  }
+  // For shortcut we just remove the shortcut instead of the package.
+  if (app_info->shortcut)
+    arc_prefs->RemoveApp(app_id);
+  else
+    UninstallPackage(app_info->package_name);
 }
 
 void RemoveCachedIcon(const std::string& icon_resource_id) {

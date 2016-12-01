@@ -34,7 +34,6 @@ class ArcAppContextMenu : public app_list::AppContextMenu {
 
  private:
   void IsAppOpen();
-  void UninstallPackage();
   void ShowPackageInfo();
 
   DISALLOW_COPY_AND_ASSIGN(ArcAppContextMenu);

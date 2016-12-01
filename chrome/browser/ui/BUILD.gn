@@ -3220,6 +3220,7 @@ split_static_library("ui") {
       sources += [
         "app_list/arc/arc_app_context_menu.cc",
         "app_list/arc/arc_app_context_menu.h",
+        "app_list/arc/arc_app_dialog.h",
         "app_list/arc/arc_app_icon.cc",
         "app_list/arc/arc_app_icon.h",
         "app_list/arc/arc_app_icon_loader.cc",
@@ -3260,6 +3261,7 @@ split_static_library("ui") {
         "ash/launcher/arc_launcher_context_menu.h",
         "ash/launcher/launcher_arc_app_updater.cc",
         "ash/launcher/launcher_arc_app_updater.h",
+        "views/arc_app_dialog_view.cc",
       ]
     }
     if (is_desktop_linux) {
