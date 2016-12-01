@@ -14,6 +14,7 @@
 #include "base/metrics/histogram_macros.h"
 #include "base/sequence_token.h"
 #include "base/synchronization/condition_variable.h"
+#include "base/task_scheduler/scoped_set_task_priority_for_current_thread.h"
 #include "base/threading/sequenced_task_runner_handle.h"
 #include "base/threading/thread_restrictions.h"
 #include "base/threading/thread_task_runner_handle.h"
@@ -230,9 +231,10 @@ bool TaskTracker::RunTask(std::unique_ptr<Task> task,
         ThreadRestrictions::SetWaitAllowed(task->traits.with_wait());
 
     {
-      // Set up SequenceToken as expected for the scope of the task.
       ScopedSetSequenceTokenForCurrentThread
           scoped_set_sequence_token_for_current_thread(sequence_token);
+      ScopedSetTaskPriorityForCurrentThread
+          scoped_set_task_priority_for_current_thread(task->traits.priority());
 
       // Set up TaskRunnerHandle as expected for the scope of the task.
       std::unique_ptr<SequencedTaskRunnerHandle> sequenced_task_runner_handle;
