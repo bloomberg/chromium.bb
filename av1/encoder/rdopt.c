@@ -1133,6 +1133,11 @@ static uint64_t sum_squares_2d(const int16_t *diff, int diff_stride,
                                TX_SIZE tx_size) {
   uint64_t sse;
   switch (tx_size) {
+#if CONFIG_CB4X4
+    case TX_2X2:
+      sse = aom_sum_squares_2d_i16_c(diff, diff_stride, tx_size_wide[tx_size]);
+      break;
+#endif
     case TX_4X8:
       sse = aom_sum_squares_2d_i16(diff, diff_stride, 4) +
             aom_sum_squares_2d_i16(diff + 4 * diff_stride, diff_stride, 4);
