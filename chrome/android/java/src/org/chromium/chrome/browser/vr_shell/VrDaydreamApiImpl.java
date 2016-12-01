@@ -83,4 +83,12 @@ public class VrDaydreamApiImpl implements VrDaydreamApi {
         daydreamApi.close();
         return type == GvrApi.ViewerType.DAYDREAM;
     }
+
+    @Override
+    public void launchVrHomescreen() {
+        DaydreamApi daydreamApi = DaydreamApi.create(mActivity);
+        if (daydreamApi == null) return;
+        daydreamApi.launchVrHomescreen();
+        daydreamApi.close();
+    }
 }

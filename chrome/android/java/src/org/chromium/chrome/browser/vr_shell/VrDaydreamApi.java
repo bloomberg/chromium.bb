@@ -57,4 +57,9 @@ public interface VrDaydreamApi {
      * @return Whether the current Viewer is a Daydream Viewer.
      */
     Boolean isDaydreamCurrentViewer();
+
+    /**
+     * Launch the stereoscopic, 3D VR launcher homescreen.
+     */
+    void launchVrHomescreen();
 }

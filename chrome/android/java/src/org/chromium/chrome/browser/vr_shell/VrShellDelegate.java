@@ -84,6 +84,7 @@ public class VrShellDelegate {
     private boolean mRequestedWebVR;
     private long mLastVRExit;
     private boolean mListeningForWebVrActivate;
+    private boolean mListeningForWebVrActivateBeforePause;
 
     public VrShellDelegate(ChromeTabbedActivity activity) {
         mActivity = activity;
@@ -149,8 +150,16 @@ public class VrShellDelegate {
     public void enterVRFromIntent(Intent intent) {
         if (!mVrAvailable) return;
         assert isVrIntent(intent);
-        if (mListeningForWebVrActivate && !mRequestedWebVR) {
+        if (mListeningForWebVrActivateBeforePause && !mRequestedWebVR) {
             nativeDisplayActivate(mNativeVrShellDelegate);
+            return;
+        }
+        // Normally, if the active page doesn't have a vrdisplayactivate listener, and WebVR was not
+        // presenting and VrShell was not enabled, we shouldn't enter VR and Daydream Homescreen
+        // should show after DON flow. But due to a failure in unregisterDaydreamIntent, we still
+        // try to enterVR. Here we detect this case and force switch to Daydream Homescreen.
+        if (!mListeningForWebVrActivateBeforePause && !mRequestedWebVR && !isVrShellEnabled()) {
+            mVrDaydreamApi.launchVrHomescreen();
             return;
         }
         if (enterVR()) {
@@ -277,7 +286,7 @@ public class VrShellDelegate {
      */
     public void maybeResumeVR() {
         if (!mVrAvailable) return;
-        if (isVrShellEnabled() || mListeningForWebVrActivate) {
+        if (isVrShellEnabled() || mListeningForWebVrActivateBeforePause) {
             registerDaydreamIntent();
         }
         // If this is still set, it means the user backed out of the DON flow, and we won't be
@@ -323,6 +332,14 @@ public class VrShellDelegate {
         if (!mVrAvailable) return;
         unregisterDaydreamIntent();
 
+        // When the active web page has a vrdisplayactivate event handler,
+        // mListeningForWebVrActivate should be set to true, which means a vrdisplayactive event
+        // should be fired once DON flow finished. However, DON flow will pause our activity, which
+        // makes the active page becomes invisible. And the event fires before the active page
+        // becomes visible again after DON finished. So here we remember the value of
+        // mListeningForWebVrActivity before pause and use this value to decide if vrdisplayactivate
+        // event should be dispatched in enterVRFromIntent.
+        mListeningForWebVrActivateBeforePause = mListeningForWebVrActivate;
         if (mNonPresentingGvrContext != null) {
             mNonPresentingGvrContext.pause();
         }

@@ -92,9 +92,11 @@ DEFINE_TRACE(NavigatorVR) {
 
   Supplement<Navigator>::trace(visitor);
   DOMWindowProperty::trace(visitor);
+  PageVisibilityObserver::trace(visitor);
 }
 
-NavigatorVR::NavigatorVR(LocalFrame* frame) : DOMWindowProperty(frame) {
+NavigatorVR::NavigatorVR(LocalFrame* frame)
+    : DOMWindowProperty(frame), PageVisibilityObserver(frame->page()) {
   frame->localDOMWindow()->registerEventListenerObserver(this);
 }
 
@@ -119,10 +121,20 @@ void NavigatorVR::dispatchVRGestureEvent(VRDisplayEvent* event) {
   }
 }
 
+void NavigatorVR::pageVisibilityChanged() {
+  if (!page())
+    return;
+  if (m_controller) {
+    m_controller->setListeningForActivate(page()->isPageVisible() &&
+                                          m_listeningForActivate);
+  }
+}
+
 void NavigatorVR::didAddEventListener(LocalDOMWindow* window,
                                       const AtomicString& eventType) {
   if (eventType == EventTypeNames::vrdisplayactivate) {
     controller()->setListeningForActivate(true);
+    m_listeningForActivate = true;
   } else if (eventType == EventTypeNames::vrdisplayconnect) {
     // If the page is listening for connection events make sure we've created a
     // controller so that we'll be notified of new devices.
@@ -135,12 +147,14 @@ void NavigatorVR::didRemoveEventListener(LocalDOMWindow* window,
   if (eventType == EventTypeNames::vrdisplayactivate &&
       !window->hasEventListeners(EventTypeNames::vrdisplayactivate)) {
     controller()->setListeningForActivate(false);
+    m_listeningForActivate = false;
   }
 }
 
 void NavigatorVR::didRemoveAllEventListeners(LocalDOMWindow* window) {
   if (m_controller) {
     m_controller->setListeningForActivate(false);
+    m_listeningForActivate = false;
   }
 }
 
