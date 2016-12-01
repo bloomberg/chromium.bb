@@ -8,6 +8,70 @@
  */
 
 /**
+ * Model of a volume slider and a mute switch and its user interaction.
+ * @constructor
+ * @struct
+ */
+function VolumeModel() {
+  /**
+   * @type {boolean}
+   */
+  this.isMuted_ = false;
+
+  /**
+   * The volume level in [0..1].
+   * @type {number}
+   */
+  this.volume_ = 0.5;
+};
+
+/**
+ * After unmuting, the volume should be non-zero value to avoid that the mute
+ * button gives no response to user.
+ */
+VolumeModel.MIN_VOLUME_AFTER_UNMUTE = 0.01;
+
+/**
+ * @return {number} the value to be set as the volume level of a media element.
+ */
+VolumeModel.prototype.getMediaVolume = function() {
+  return this.isMuted_ ? 0 : this.volume_;
+};
+
+/**
+ * Handles operation to the volume level slider.
+ * @param {number} value new position of the slider in [0..1].
+ */
+VolumeModel.prototype.onVolumeChanged = function(value) {
+  if (value == 0) {
+    this.isMuted_ = true;
+  } else {
+    this.isMuted_ = false;
+    this.volume_ = value;
+  }
+};
+
+/**
+ * Toggles the mute state.
+ */
+VolumeModel.prototype.toggleMute = function() {
+  this.isMuted_ = !this.isMuted_;
+  if (!this.isMuted_) {
+    this.volume_ = Math.max(VolumeModel.MIN_VOLUME_AFTER_UNMUTE, this.volume_);
+  }
+};
+
+/**
+ * Sets the status of the model.
+ * @param {number} volume the volume level in [0..1].
+ * @param {boolean} mute whether to mute the sound.
+ */
+VolumeModel.prototype.set = function(volume, mute) {
+  this.volume_ = volume;
+  this.isMuted_ = mute;
+};
+
+/**
  * @param {!HTMLElement} containerElement The container for the controls.
  * @param {function(Event)} onMediaError Function to display an error message.
  * @constructor
@@ -24,7 +88,11 @@ function MediaControls(containerElement, onMediaError) {
   this.onMediaProgressBound_ = this.onMediaProgress_.bind(this);
   this.onMediaError_ = onMediaError || function() {};
 
-  this.savedVolume_ = 1;  // 100% volume.
+  /**
+   * @type {VolumeModel}
+   * @private
+   */
+  this.volumeModel_ = new VolumeModel();
 
   /**
    * @type {HTMLElement}
@@ -493,6 +561,8 @@ MediaControls.STORAGE_PREFIX = 'videoplayer-';
 
 MediaControls.KEY_NORMALIZED_VOLUME =
     MediaControls.STORAGE_PREFIX + 'normalized-volume';
+MediaControls.KEY_MUTED =
+    MediaControls.STORAGE_PREFIX + 'muted';
 
 /**
  * @param {HTMLElement=} opt_parent Parent element for the controls.
@@ -522,18 +592,24 @@ MediaControls.prototype.initVolumeControls = function(opt_parent) {
 };
 
 MediaControls.prototype.loadVolumeControlState = function() {
-  chrome.storage.local.get([MediaControls.KEY_NORMALIZED_VOLUME],
+  chrome.storage.local.get([MediaControls.KEY_NORMALIZED_VOLUME,
+                            MediaControls.KEY_MUTED],
       function(retrieved) {
         var normalizedVolume = (MediaControls.KEY_NORMALIZED_VOLUME
                                  in retrieved)
             ? retrieved[MediaControls.KEY_NORMALIZED_VOLUME] : 1;
-        this.volume_.value = this.volume_.max * normalizedVolume;
+        var isMuted = (MediaControls.KEY_MUTED in retrieved)
+            ? retrieved[MediaControls.KEY_MUTED] : false;
+        this.volumeModel_.set(normalizedVolume, isMuted);
+        this.reflectVolumeToUi_();
       }.bind(this));
 };
 
 MediaControls.prototype.saveVolumeControlState = function() {
   var valuesToStore = {};
-  valuesToStore[MediaControls.KEY_NORMALIZED_VOLUME] = this.media_.volume;
+  valuesToStore[MediaControls.KEY_NORMALIZED_VOLUME] =
+      this.volumeModel_.volume_;
+  valuesToStore[MediaControls.KEY_MUTED] = this.volumeModel_.isMuted_;
   chrome.storage.local.set(valuesToStore);
 };
 
@@ -542,17 +618,9 @@ MediaControls.prototype.saveVolumeControlState = function() {
  * @private
  */
 MediaControls.prototype.onSoundButtonClick_ = function() {
-  if (this.media_.volume == 0) {
-    this.volume_.value = (this.savedVolume_ || 1) * this.volume_.max;
-    this.soundButton_.setAttribute('aria-label',
-        str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
-  } else {
-    this.savedVolume_ = this.media_.volume;
-    this.volume_.value = 0;
-    this.soundButton_.setAttribute('aria-label',
-        str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL'));
-  }
-  this.onVolumeChange_(this.volume_.ratio);
+  this.volumeModel_.toggleMute();
+  this.saveVolumeControlState();
+  this.reflectVolumeToUi_();
 };
 
 /**
@@ -568,6 +636,23 @@ MediaControls.getVolumeLevel_ = function(value) {
 };
 
 /**
+ * Reflects volume model to the UI elements.
+ * @private
+ */
+MediaControls.prototype.reflectVolumeToUi_ = function() {
+  this.soundButton_.setAttribute('level',
+      MediaControls.getVolumeLevel_(this.volumeModel_.getMediaVolume()));
+  this.soundButton_.setAttribute('aria-label', this.volumeModel_.isMuted_
+                                 ? str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL')
+                                 : str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
+  this.volume_.value = this.volumeModel_.getMediaVolume() * this.volume_.max
+  if (this.media_) {
+    this.media_.volume = this.volumeModel_.getMediaVolume();
+  }
+}
+
+/**
+ * Handles change event of the volume slider.
  * @param {number} value Volume [0..1].
  * @private
  */
@@ -575,12 +660,9 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
   if (!this.media_)
     return;  // Media is detached.
 
-  this.media_.volume = value;
-  this.soundButton_.setAttribute('level', MediaControls.getVolumeLevel_(value));
-  this.soundButton_.setAttribute('aria-label',
-      value === 0 ? str('MEDIA_PLAYER_UNMUTE_BUTTON_LABEL')
-                  : str('MEDIA_PLAYER_MUTE_BUTTON_LABEL'));
+  this.volumeModel_.onVolumeChanged(value);
   this.saveVolumeControlState();
+  this.reflectVolumeToUi_();
 };
 
 /**
@@ -588,7 +670,7 @@ MediaControls.prototype.onVolumeChange_ = function(value) {
  */
 MediaControls.prototype.onVolumeDrag_ = function() {
   if (this.media_.volume !== 0) {
-    this.savedVolume_ = this.media_.volume;
+    this.volumeModel_.onVolumeChanged(this.media_.volume);;
   }
 };
 
@@ -680,10 +762,10 @@ MediaControls.prototype.attachMedia = function(mediaElement) {
   this.onMediaDuration_();
   this.onMediaPlay_(this.isPlaying());
   this.onMediaProgress_();
-  if (this.volume_) {
-    /* Copy the user selected volume to the new media element. */
-    this.savedVolume_ = this.media_.volume = this.volume_.ratio;
-  }
+
+  // Reflect the user specified volume to the media.
+  this.media_.volume = this.volumeModel_.getMediaVolume();
+
   if (this.media_.textTracks && this.media_.textTracks.length > 0) {
     this.attachTextTrack_(this.media_.textTracks[0]);
   } else {
