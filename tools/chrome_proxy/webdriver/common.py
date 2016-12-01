@@ -77,16 +77,30 @@ class TestDriver:
 
   def _OverrideChromeArgs(self):
     """
-    Overrides any given flags in the code with those given on the command line.
+    Overrides any given arguments in the code with those given on the command
+    line. Arguments that need to be overridden may contain different values for
+    a flag given in the code. In that case, check by the flag whether to
+    override the argument.
     """
+    def GetDictKey(argument):
+      return argument.split('=', 1)[0]
     if self._flags.browser_args and len(self._flags.browser_args) > 0:
-      for arg in shlex.split(self._flags.browser_args):
-        self._chrome_args.add(arg)
+      # Build a dict of flags mapped to the whole argument.
+      original_args = {}
+      for arg in self._chrome_args:
+          original_args[GetDictKey(arg)] = arg
+      # Override by flag.
+      for override_arg in shlex.split(self._flags.browser_args[0]):
+        arg_key = GetDictKey(override_arg)
+        if arg_key in original_args:
+          self._chrome_args.remove(original_args[arg_key])
+        self._chrome_args.add(override_arg)
 
   def _StartDriver(self):
     """
     Parses the flags to pass to Chromium, then starts the ChromeDriver.
     """
+    self._OverrideChromeArgs()
     options = Options()
     for arg in self._chrome_args:
       options.add_argument(arg)
