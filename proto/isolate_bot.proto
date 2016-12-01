@@ -13,10 +13,10 @@ syntax = "proto3";
 
 package luci.swarming.bot;
 
-service BotFileService {
+service FileService {
   rpc Contains(ContainsRequest) returns (ContainsReply);
-  rpc PutBlobs(stream PutBlobsRequest) returns (PutBlobsReply);
-  rpc GetBlobs(GetBlobsRequest) returns (stream GetBlobsReply);
+  rpc PushBlobs(stream PushBlobsRequest) returns (PushBlobsReply);
+  rpc FetchBlobs(FetchBlobsRequest) returns (stream FetchBlobsReply);
 }
 
 message ContainsRequest {
@@ -27,19 +27,19 @@ message ContainsReply {
   BlobStatus status = 1;
 }
 
-message PutBlobsRequest {
+message PushBlobsRequest {
   BlobChunk data = 1;
 }
 
-message PutBlobsReply {
+message PushBlobsReply {
   BlobStatus status = 1;
 }
 
-message GetBlobsRequest {
+message FetchBlobsRequest {
   repeated ContentDigest digest = 1;
 }
 
-message GetBlobsReply {
+message FetchBlobsReply {
   BlobStatus status = 1;
   BlobChunk data = 2;
 }
@@ -62,10 +62,9 @@ message BlobStatus {
     UNKNOWN = 0;
     INVALID_ARGUMENT = 1; // The client behaved incorrectly. error_detail should
                           // have more information.
-    MISSING_DIGEST = 2;   // Missing a node on tree download.
+    MISSING_DIGEST = 2;   // Missing a requested node
     DIGEST_MISMATCH = 3;  // Upload only error, when requested digest does not
                           // match the server side computed one.
-    NODE_PARSE_ERROR = 4; // Failed to parse digested data as node.
   }
   ErrorCode error = 2;
   string error_detail = 3;

@@ -19,7 +19,7 @@ DESCRIPTOR = _descriptor.FileDescriptor(
   name='isolate_bot.proto',
   package='luci.swarming.bot',
   syntax='proto3',
-  serialized_pb=_b('\n\x11isolate_bot.proto\x12\x11luci.swarming.bot\"C\n\x0f\x43ontainsRequest\x12\x30\n\x06\x64igest\x18\x01 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\">\n\rContainsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\"=\n\x0fPutBlobsRequest\x12*\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x1c.luci.swarming.bot.BlobChunk\">\n\rPutBlobsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\"C\n\x0fGetBlobsRequest\x12\x30\n\x06\x64igest\x18\x01 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\"j\n\rGetBlobsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\x12*\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x1c.luci.swarming.bot.BlobChunk\"[\n\tBlobChunk\x12\x30\n\x06\x64igest\x18\x01 \x01(\x0b\x32 .luci.swarming.bot.ContentDigest\x12\x0e\n\x06offset\x18\x02 \x01(\x03\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"D\n\rContentDigest\x12\x0e\n\x06\x64igest\x18\x01 \x01(\x0c\x12\x12\n\nsize_bytes\x18\x02 \x01(\x03\x12\x0f\n\x07version\x18\x03 \x01(\x05\"\x96\x02\n\nBlobStatus\x12\x11\n\tsucceeded\x18\x01 \x01(\x08\x12\x36\n\x05\x65rror\x18\x02 \x01(\x0e\x32\'.luci.swarming.bot.BlobStatus.ErrorCode\x12\x14\n\x0c\x65rror_detail\x18\x03 \x01(\t\x12\x38\n\x0emissing_digest\x18\x04 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\"m\n\tErrorCode\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x14\n\x10INVALID_ARGUMENT\x10\x01\x12\x12\n\x0eMISSING_DIGEST\x10\x02\x12\x13\n\x0f\x44IGEST_MISMATCH\x10\x03\x12\x14\n\x10NODE_PARSE_ERROR\x10\x04\x32\x8a\x02\n\x0e\x42otFileService\x12P\n\x08\x43ontains\x12\".luci.swarming.bot.ContainsRequest\x1a .luci.swarming.bot.ContainsReply\x12R\n\x08PutBlobs\x12\".luci.swarming.bot.PutBlobsRequest\x1a .luci.swarming.bot.PutBlobsReply(\x01\x12R\n\x08GetBlobs\x12\".luci.swarming.bot.GetBlobsRequest\x1a .luci.swarming.bot.GetBlobsReply0\x01\x62\x06proto3')
+  serialized_pb=_b('\n\x11isolate_bot.proto\x12\x11luci.swarming.bot\"C\n\x0f\x43ontainsRequest\x12\x30\n\x06\x64igest\x18\x01 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\">\n\rContainsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\">\n\x10PushBlobsRequest\x12*\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\x1c.luci.swarming.bot.BlobChunk\"?\n\x0ePushBlobsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\"E\n\x11\x46\x65tchBlobsRequest\x12\x30\n\x06\x64igest\x18\x01 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\"l\n\x0f\x46\x65tchBlobsReply\x12-\n\x06status\x18\x01 \x01(\x0b\x32\x1d.luci.swarming.bot.BlobStatus\x12*\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\x1c.luci.swarming.bot.BlobChunk\"[\n\tBlobChunk\x12\x30\n\x06\x64igest\x18\x01 \x01(\x0b\x32 .luci.swarming.bot.ContentDigest\x12\x0e\n\x06offset\x18\x02 \x01(\x03\x12\x0c\n\x04\x64\x61ta\x18\x03 \x01(\x0c\"D\n\rContentDigest\x12\x0e\n\x06\x64igest\x18\x01 \x01(\x0c\x12\x12\n\nsize_bytes\x18\x02 \x01(\x03\x12\x0f\n\x07version\x18\x03 \x01(\x05\"\x80\x02\n\nBlobStatus\x12\x11\n\tsucceeded\x18\x01 \x01(\x08\x12\x36\n\x05\x65rror\x18\x02 \x01(\x0e\x32\'.luci.swarming.bot.BlobStatus.ErrorCode\x12\x14\n\x0c\x65rror_detail\x18\x03 \x01(\t\x12\x38\n\x0emissing_digest\x18\x04 \x03(\x0b\x32 .luci.swarming.bot.ContentDigest\"W\n\tErrorCode\x12\x0b\n\x07UNKNOWN\x10\x00\x12\x14\n\x10INVALID_ARGUMENT\x10\x01\x12\x12\n\x0eMISSING_DIGEST\x10\x02\x12\x13\n\x0f\x44IGEST_MISMATCH\x10\x03\x32\x90\x02\n\x0b\x46ileService\x12P\n\x08\x43ontains\x12\".luci.swarming.bot.ContainsRequest\x1a .luci.swarming.bot.ContainsReply\x12U\n\tPushBlobs\x12#.luci.swarming.bot.PushBlobsRequest\x1a!.luci.swarming.bot.PushBlobsReply(\x01\x12X\n\nFetchBlobs\x12$.luci.swarming.bot.FetchBlobsRequest\x1a\".luci.swarming.bot.FetchBlobsReply0\x01\x62\x06proto3')
 )
 _sym_db.RegisterFileDescriptor(DESCRIPTOR)
 
@@ -47,15 +47,11 @@ _BLOBSTATUS_ERRORCODE = _descriptor.EnumDescriptor(
       name='DIGEST_MISMATCH', index=3, number=3,
       options=None,
       type=None),
-    _descriptor.EnumValueDescriptor(
-      name='NODE_PARSE_ERROR', index=4, number=4,
-      options=None,
-      type=None),
   ],
   containing_type=None,
   options=None,
-  serialized_start=810,
-  serialized_end=919,
+  serialized_start=816,
+  serialized_end=903,
 )
 _sym_db.RegisterEnumDescriptor(_BLOBSTATUS_ERRORCODE)
 
@@ -122,15 +118,15 @@ _CONTAINSREPLY = _descriptor.Descriptor(
 )
 
 
-_PUTBLOBSREQUEST = _descriptor.Descriptor(
-  name='PutBlobsRequest',
-  full_name='luci.swarming.bot.PutBlobsRequest',
+_PUSHBLOBSREQUEST = _descriptor.Descriptor(
+  name='PushBlobsRequest',
+  full_name='luci.swarming.bot.PushBlobsRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='data', full_name='luci.swarming.bot.PutBlobsRequest.data', index=0,
+      name='data', full_name='luci.swarming.bot.PushBlobsRequest.data', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -149,19 +145,19 @@ _PUTBLOBSREQUEST = _descriptor.Descriptor(
   oneofs=[
   ],
   serialized_start=173,
-  serialized_end=234,
+  serialized_end=235,
 )
 
 
-_PUTBLOBSREPLY = _descriptor.Descriptor(
-  name='PutBlobsReply',
-  full_name='luci.swarming.bot.PutBlobsReply',
+_PUSHBLOBSREPLY = _descriptor.Descriptor(
+  name='PushBlobsReply',
+  full_name='luci.swarming.bot.PushBlobsReply',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='status', full_name='luci.swarming.bot.PutBlobsReply.status', index=0,
+      name='status', full_name='luci.swarming.bot.PushBlobsReply.status', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -179,20 +175,20 @@ _PUTBLOBSREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=236,
-  serialized_end=298,
+  serialized_start=237,
+  serialized_end=300,
 )
 
 
-_GETBLOBSREQUEST = _descriptor.Descriptor(
-  name='GetBlobsRequest',
-  full_name='luci.swarming.bot.GetBlobsRequest',
+_FETCHBLOBSREQUEST = _descriptor.Descriptor(
+  name='FetchBlobsRequest',
+  full_name='luci.swarming.bot.FetchBlobsRequest',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='digest', full_name='luci.swarming.bot.GetBlobsRequest.digest', index=0,
+      name='digest', full_name='luci.swarming.bot.FetchBlobsRequest.digest', index=0,
       number=1, type=11, cpp_type=10, label=3,
       has_default_value=False, default_value=[],
       message_type=None, enum_type=None, containing_type=None,
@@ -210,27 +206,27 @@ _GETBLOBSREQUEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=300,
-  serialized_end=367,
+  serialized_start=302,
+  serialized_end=371,
 )
 
 
-_GETBLOBSREPLY = _descriptor.Descriptor(
-  name='GetBlobsReply',
-  full_name='luci.swarming.bot.GetBlobsReply',
+_FETCHBLOBSREPLY = _descriptor.Descriptor(
+  name='FetchBlobsReply',
+  full_name='luci.swarming.bot.FetchBlobsReply',
   filename=None,
   file=DESCRIPTOR,
   containing_type=None,
   fields=[
     _descriptor.FieldDescriptor(
-      name='status', full_name='luci.swarming.bot.GetBlobsReply.status', index=0,
+      name='status', full_name='luci.swarming.bot.FetchBlobsReply.status', index=0,
       number=1, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
       is_extension=False, extension_scope=None,
       options=None),
     _descriptor.FieldDescriptor(
-      name='data', full_name='luci.swarming.bot.GetBlobsReply.data', index=1,
+      name='data', full_name='luci.swarming.bot.FetchBlobsReply.data', index=1,
       number=2, type=11, cpp_type=10, label=1,
       has_default_value=False, default_value=None,
       message_type=None, enum_type=None, containing_type=None,
@@ -248,8 +244,8 @@ _GETBLOBSREPLY = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=369,
-  serialized_end=475,
+  serialized_start=373,
+  serialized_end=481,
 )
 
 
@@ -293,8 +289,8 @@ _BLOBCHUNK = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=477,
-  serialized_end=568,
+  serialized_start=483,
+  serialized_end=574,
 )
 
 
@@ -338,8 +334,8 @@ _CONTENTDIGEST = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=570,
-  serialized_end=638,
+  serialized_start=576,
+  serialized_end=644,
 )
 
 
@@ -391,27 +387,27 @@ _BLOBSTATUS = _descriptor.Descriptor(
   extension_ranges=[],
   oneofs=[
   ],
-  serialized_start=641,
-  serialized_end=919,
+  serialized_start=647,
+  serialized_end=903,
 )
 
 _CONTAINSREQUEST.fields_by_name['digest'].message_type = _CONTENTDIGEST
 _CONTAINSREPLY.fields_by_name['status'].message_type = _BLOBSTATUS
-_PUTBLOBSREQUEST.fields_by_name['data'].message_type = _BLOBCHUNK
-_PUTBLOBSREPLY.fields_by_name['status'].message_type = _BLOBSTATUS
-_GETBLOBSREQUEST.fields_by_name['digest'].message_type = _CONTENTDIGEST
-_GETBLOBSREPLY.fields_by_name['status'].message_type = _BLOBSTATUS
-_GETBLOBSREPLY.fields_by_name['data'].message_type = _BLOBCHUNK
+_PUSHBLOBSREQUEST.fields_by_name['data'].message_type = _BLOBCHUNK
+_PUSHBLOBSREPLY.fields_by_name['status'].message_type = _BLOBSTATUS
+_FETCHBLOBSREQUEST.fields_by_name['digest'].message_type = _CONTENTDIGEST
+_FETCHBLOBSREPLY.fields_by_name['status'].message_type = _BLOBSTATUS
+_FETCHBLOBSREPLY.fields_by_name['data'].message_type = _BLOBCHUNK
 _BLOBCHUNK.fields_by_name['digest'].message_type = _CONTENTDIGEST
 _BLOBSTATUS.fields_by_name['error'].enum_type = _BLOBSTATUS_ERRORCODE
 _BLOBSTATUS.fields_by_name['missing_digest'].message_type = _CONTENTDIGEST
 _BLOBSTATUS_ERRORCODE.containing_type = _BLOBSTATUS
 DESCRIPTOR.message_types_by_name['ContainsRequest'] = _CONTAINSREQUEST
 DESCRIPTOR.message_types_by_name['ContainsReply'] = _CONTAINSREPLY
-DESCRIPTOR.message_types_by_name['PutBlobsRequest'] = _PUTBLOBSREQUEST
-DESCRIPTOR.message_types_by_name['PutBlobsReply'] = _PUTBLOBSREPLY
-DESCRIPTOR.message_types_by_name['GetBlobsRequest'] = _GETBLOBSREQUEST
-DESCRIPTOR.message_types_by_name['GetBlobsReply'] = _GETBLOBSREPLY
+DESCRIPTOR.message_types_by_name['PushBlobsRequest'] = _PUSHBLOBSREQUEST
+DESCRIPTOR.message_types_by_name['PushBlobsReply'] = _PUSHBLOBSREPLY
+DESCRIPTOR.message_types_by_name['FetchBlobsRequest'] = _FETCHBLOBSREQUEST
+DESCRIPTOR.message_types_by_name['FetchBlobsReply'] = _FETCHBLOBSREPLY
 DESCRIPTOR.message_types_by_name['BlobChunk'] = _BLOBCHUNK
 DESCRIPTOR.message_types_by_name['ContentDigest'] = _CONTENTDIGEST
 DESCRIPTOR.message_types_by_name['BlobStatus'] = _BLOBSTATUS
@@ -430,33 +426,33 @@ ContainsReply = _reflection.GeneratedProtocolMessageType('ContainsReply', (_mess
   ))
 _sym_db.RegisterMessage(ContainsReply)
 
-PutBlobsRequest = _reflection.GeneratedProtocolMessageType('PutBlobsRequest', (_message.Message,), dict(
-  DESCRIPTOR = _PUTBLOBSREQUEST,
+PushBlobsRequest = _reflection.GeneratedProtocolMessageType('PushBlobsRequest', (_message.Message,), dict(
+  DESCRIPTOR = _PUSHBLOBSREQUEST,
   __module__ = 'isolate_bot_pb2'
-  # @@protoc_insertion_point(class_scope:luci.swarming.bot.PutBlobsRequest)
+  # @@protoc_insertion_point(class_scope:luci.swarming.bot.PushBlobsRequest)
   ))
-_sym_db.RegisterMessage(PutBlobsRequest)
+_sym_db.RegisterMessage(PushBlobsRequest)
 
-PutBlobsReply = _reflection.GeneratedProtocolMessageType('PutBlobsReply', (_message.Message,), dict(
-  DESCRIPTOR = _PUTBLOBSREPLY,
+PushBlobsReply = _reflection.GeneratedProtocolMessageType('PushBlobsReply', (_message.Message,), dict(
+  DESCRIPTOR = _PUSHBLOBSREPLY,
   __module__ = 'isolate_bot_pb2'
-  # @@protoc_insertion_point(class_scope:luci.swarming.bot.PutBlobsReply)
+  # @@protoc_insertion_point(class_scope:luci.swarming.bot.PushBlobsReply)
   ))
-_sym_db.RegisterMessage(PutBlobsReply)
+_sym_db.RegisterMessage(PushBlobsReply)
 
-GetBlobsRequest = _reflection.GeneratedProtocolMessageType('GetBlobsRequest', (_message.Message,), dict(
-  DESCRIPTOR = _GETBLOBSREQUEST,
+FetchBlobsRequest = _reflection.GeneratedProtocolMessageType('FetchBlobsRequest', (_message.Message,), dict(
+  DESCRIPTOR = _FETCHBLOBSREQUEST,
   __module__ = 'isolate_bot_pb2'
-  # @@protoc_insertion_point(class_scope:luci.swarming.bot.GetBlobsRequest)
+  # @@protoc_insertion_point(class_scope:luci.swarming.bot.FetchBlobsRequest)
   ))
-_sym_db.RegisterMessage(GetBlobsRequest)
+_sym_db.RegisterMessage(FetchBlobsRequest)
 
-GetBlobsReply = _reflection.GeneratedProtocolMessageType('GetBlobsReply', (_message.Message,), dict(
-  DESCRIPTOR = _GETBLOBSREPLY,
+FetchBlobsReply = _reflection.GeneratedProtocolMessageType('FetchBlobsReply', (_message.Message,), dict(
+  DESCRIPTOR = _FETCHBLOBSREPLY,
   __module__ = 'isolate_bot_pb2'
-  # @@protoc_insertion_point(class_scope:luci.swarming.bot.GetBlobsReply)
+  # @@protoc_insertion_point(class_scope:luci.swarming.bot.FetchBlobsReply)
   ))
-_sym_db.RegisterMessage(GetBlobsReply)
+_sym_db.RegisterMessage(FetchBlobsReply)
 
 BlobChunk = _reflection.GeneratedProtocolMessageType('BlobChunk', (_message.Message,), dict(
   DESCRIPTOR = _BLOBCHUNK,
@@ -487,7 +483,7 @@ from grpc.framework.common import cardinality
 from grpc.framework.interfaces.face import utilities as face_utilities
 
 
-class BotFileServiceStub(object):
+class FileServiceStub(object):
 
   def __init__(self, channel):
     """Constructor.
@@ -496,119 +492,119 @@ class BotFileServiceStub(object):
       channel: A grpc.Channel.
     """
     self.Contains = channel.unary_unary(
-        '/luci.swarming.bot.BotFileService/Contains',
+        '/luci.swarming.bot.FileService/Contains',
         request_serializer=ContainsRequest.SerializeToString,
         response_deserializer=ContainsReply.FromString,
         )
-    self.PutBlobs = channel.stream_unary(
-        '/luci.swarming.bot.BotFileService/PutBlobs',
-        request_serializer=PutBlobsRequest.SerializeToString,
-        response_deserializer=PutBlobsReply.FromString,
+    self.PushBlobs = channel.stream_unary(
+        '/luci.swarming.bot.FileService/PushBlobs',
+        request_serializer=PushBlobsRequest.SerializeToString,
+        response_deserializer=PushBlobsReply.FromString,
         )
-    self.GetBlobs = channel.unary_stream(
-        '/luci.swarming.bot.BotFileService/GetBlobs',
-        request_serializer=GetBlobsRequest.SerializeToString,
-        response_deserializer=GetBlobsReply.FromString,
+    self.FetchBlobs = channel.unary_stream(
+        '/luci.swarming.bot.FileService/FetchBlobs',
+        request_serializer=FetchBlobsRequest.SerializeToString,
+        response_deserializer=FetchBlobsReply.FromString,
         )
 
 
-class BotFileServiceServicer(object):
+class FileServiceServicer(object):
 
   def Contains(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def PutBlobs(self, request_iterator, context):
+  def PushBlobs(self, request_iterator, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
-  def GetBlobs(self, request, context):
+  def FetchBlobs(self, request, context):
     context.set_code(grpc.StatusCode.UNIMPLEMENTED)
     context.set_details('Method not implemented!')
     raise NotImplementedError('Method not implemented!')
 
 
-def add_BotFileServiceServicer_to_server(servicer, server):
+def add_FileServiceServicer_to_server(servicer, server):
   rpc_method_handlers = {
       'Contains': grpc.unary_unary_rpc_method_handler(
           servicer.Contains,
           request_deserializer=ContainsRequest.FromString,
           response_serializer=ContainsReply.SerializeToString,
       ),
-      'PutBlobs': grpc.stream_unary_rpc_method_handler(
-          servicer.PutBlobs,
-          request_deserializer=PutBlobsRequest.FromString,
-          response_serializer=PutBlobsReply.SerializeToString,
+      'PushBlobs': grpc.stream_unary_rpc_method_handler(
+          servicer.PushBlobs,
+          request_deserializer=PushBlobsRequest.FromString,
+          response_serializer=PushBlobsReply.SerializeToString,
       ),
-      'GetBlobs': grpc.unary_stream_rpc_method_handler(
-          servicer.GetBlobs,
-          request_deserializer=GetBlobsRequest.FromString,
-          response_serializer=GetBlobsReply.SerializeToString,
+      'FetchBlobs': grpc.unary_stream_rpc_method_handler(
+          servicer.FetchBlobs,
+          request_deserializer=FetchBlobsRequest.FromString,
+          response_serializer=FetchBlobsReply.SerializeToString,
       ),
   }
   generic_handler = grpc.method_handlers_generic_handler(
-      'luci.swarming.bot.BotFileService', rpc_method_handlers)
+      'luci.swarming.bot.FileService', rpc_method_handlers)
   server.add_generic_rpc_handlers((generic_handler,))
 
 
-class BetaBotFileServiceServicer(object):
+class BetaFileServiceServicer(object):
   def Contains(self, request, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-  def PutBlobs(self, request_iterator, context):
+  def PushBlobs(self, request_iterator, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
-  def GetBlobs(self, request, context):
+  def FetchBlobs(self, request, context):
     context.code(beta_interfaces.StatusCode.UNIMPLEMENTED)
 
 
-class BetaBotFileServiceStub(object):
+class BetaFileServiceStub(object):
   def Contains(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
   Contains.future = None
-  def PutBlobs(self, request_iterator, timeout, metadata=None, with_call=False, protocol_options=None):
+  def PushBlobs(self, request_iterator, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
-  PutBlobs.future = None
-  def GetBlobs(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
+  PushBlobs.future = None
+  def FetchBlobs(self, request, timeout, metadata=None, with_call=False, protocol_options=None):
     raise NotImplementedError()
 
 
-def beta_create_BotFileService_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
+def beta_create_FileService_server(servicer, pool=None, pool_size=None, default_timeout=None, maximum_timeout=None):
   request_deserializers = {
-    ('luci.swarming.bot.BotFileService', 'Contains'): ContainsRequest.FromString,
-    ('luci.swarming.bot.BotFileService', 'GetBlobs'): GetBlobsRequest.FromString,
-    ('luci.swarming.bot.BotFileService', 'PutBlobs'): PutBlobsRequest.FromString,
+    ('luci.swarming.bot.FileService', 'Contains'): ContainsRequest.FromString,
+    ('luci.swarming.bot.FileService', 'FetchBlobs'): FetchBlobsRequest.FromString,
+    ('luci.swarming.bot.FileService', 'PushBlobs'): PushBlobsRequest.FromString,
   }
   response_serializers = {
-    ('luci.swarming.bot.BotFileService', 'Contains'): ContainsReply.SerializeToString,
-    ('luci.swarming.bot.BotFileService', 'GetBlobs'): GetBlobsReply.SerializeToString,
-    ('luci.swarming.bot.BotFileService', 'PutBlobs'): PutBlobsReply.SerializeToString,
+    ('luci.swarming.bot.FileService', 'Contains'): ContainsReply.SerializeToString,
+    ('luci.swarming.bot.FileService', 'FetchBlobs'): FetchBlobsReply.SerializeToString,
+    ('luci.swarming.bot.FileService', 'PushBlobs'): PushBlobsReply.SerializeToString,
   }
   method_implementations = {
-    ('luci.swarming.bot.BotFileService', 'Contains'): face_utilities.unary_unary_inline(servicer.Contains),
-    ('luci.swarming.bot.BotFileService', 'GetBlobs'): face_utilities.unary_stream_inline(servicer.GetBlobs),
-    ('luci.swarming.bot.BotFileService', 'PutBlobs'): face_utilities.stream_unary_inline(servicer.PutBlobs),
+    ('luci.swarming.bot.FileService', 'Contains'): face_utilities.unary_unary_inline(servicer.Contains),
+    ('luci.swarming.bot.FileService', 'FetchBlobs'): face_utilities.unary_stream_inline(servicer.FetchBlobs),
+    ('luci.swarming.bot.FileService', 'PushBlobs'): face_utilities.stream_unary_inline(servicer.PushBlobs),
   }
   server_options = beta_implementations.server_options(request_deserializers=request_deserializers, response_serializers=response_serializers, thread_pool=pool, thread_pool_size=pool_size, default_timeout=default_timeout, maximum_timeout=maximum_timeout)
   return beta_implementations.server(method_implementations, options=server_options)
 
 
-def beta_create_BotFileService_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
+def beta_create_FileService_stub(channel, host=None, metadata_transformer=None, pool=None, pool_size=None):
   request_serializers = {
-    ('luci.swarming.bot.BotFileService', 'Contains'): ContainsRequest.SerializeToString,
-    ('luci.swarming.bot.BotFileService', 'GetBlobs'): GetBlobsRequest.SerializeToString,
-    ('luci.swarming.bot.BotFileService', 'PutBlobs'): PutBlobsRequest.SerializeToString,
+    ('luci.swarming.bot.FileService', 'Contains'): ContainsRequest.SerializeToString,
+    ('luci.swarming.bot.FileService', 'FetchBlobs'): FetchBlobsRequest.SerializeToString,
+    ('luci.swarming.bot.FileService', 'PushBlobs'): PushBlobsRequest.SerializeToString,
   }
   response_deserializers = {
-    ('luci.swarming.bot.BotFileService', 'Contains'): ContainsReply.FromString,
-    ('luci.swarming.bot.BotFileService', 'GetBlobs'): GetBlobsReply.FromString,
-    ('luci.swarming.bot.BotFileService', 'PutBlobs'): PutBlobsReply.FromString,
+    ('luci.swarming.bot.FileService', 'Contains'): ContainsReply.FromString,
+    ('luci.swarming.bot.FileService', 'FetchBlobs'): FetchBlobsReply.FromString,
+    ('luci.swarming.bot.FileService', 'PushBlobs'): PushBlobsReply.FromString,
   }
   cardinalities = {
     'Contains': cardinality.Cardinality.UNARY_UNARY,
-    'GetBlobs': cardinality.Cardinality.UNARY_STREAM,
-    'PutBlobs': cardinality.Cardinality.STREAM_UNARY,
+    'FetchBlobs': cardinality.Cardinality.UNARY_STREAM,
+    'PushBlobs': cardinality.Cardinality.STREAM_UNARY,
   }
   stub_options = beta_implementations.stub_options(host=host, metadata_transformer=metadata_transformer, request_serializers=request_serializers, response_deserializers=response_deserializers, thread_pool=pool, thread_pool_size=pool_size)
-  return beta_implementations.dynamic_stub(channel, 'luci.swarming.bot.BotFileService', cardinalities, options=stub_options)
+  return beta_implementations.dynamic_stub(channel, 'luci.swarming.bot.FileService', cardinalities, options=stub_options)
 # @@protoc_insertion_point(module_scope)

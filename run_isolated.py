@@ -117,6 +117,7 @@ def get_as_zip_package(executable=True):
   assert BASE_DIR
   package = zip_package.ZipPackage(root=BASE_DIR)
   package.add_python_file(THIS_FILE_PATH, '__main__.py' if executable else None)
+  package.add_python_file(os.path.join(BASE_DIR, 'isolate_storage.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'isolated_format.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'isolateserver.py'))
   package.add_python_file(os.path.join(BASE_DIR, 'auth.py'))
@@ -306,8 +307,7 @@ def link_outputs_to_outdir(run_dir, out_dir, outputs):
           os.path.join(run_dir, o),
           file_path.HARDLINK_WITH_FALLBACK)
     except OSError as e:
-      # TODO(aludwin): surface this error
-      sys.stderr.write('<Could not return file %s: %s>' % (o, e))
+      logging.info("Couldn't collect output file %s: %s", o, e)
 
 
 def delete_and_upload(storage, out_dir, leak_temp_dir):

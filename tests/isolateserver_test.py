@@ -26,6 +26,7 @@ import net_utils
 import auth
 import isolated_format
 import isolateserver
+import isolate_storage
 import test_utils
 from depot_tools import auto_stub
 from depot_tools import fix_encoding
@@ -125,7 +126,7 @@ class FakeItem(isolateserver.Item):
     return zlib.compress(self.data, self.compression_level)
 
 
-class MockedStorageApi(isolateserver.StorageApi):
+class MockedStorageApi(isolate_storage.StorageApi):
   def __init__(
       self, missing_hashes, push_side_effect=None, namespace='default'):
     self.missing_hashes = missing_hashes
@@ -539,7 +540,7 @@ class IsolateServerStorageApiTest(TestCase):
     server = 'http://example.com'
     namespace ='default'
     self.expected_requests([self.mock_server_details_request(server)])
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     caps = storage._server_capabilities
     self.assertEqual({'server_version': 'such a good version'}, caps)
 
@@ -550,7 +551,7 @@ class IsolateServerStorageApiTest(TestCase):
     item = isolateserver_mock.hash_content(data)
     self.expected_requests(
         [self.mock_fetch_request(server, namespace, item, data)])
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     fetched = ''.join(storage.fetch(item))
     self.assertEqual(data, fetched)
 
@@ -560,7 +561,7 @@ class IsolateServerStorageApiTest(TestCase):
     item = isolateserver_mock.hash_content('something')
     self.expected_requests(
         [self.mock_fetch_request(server, namespace, item)[:-1] + (None,)])
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     with self.assertRaises(IOError):
       _ = ''.join(storage.fetch(item))
 
@@ -580,7 +581,7 @@ class IsolateServerStorageApiTest(TestCase):
     for _content_range_header in good_content_range_headers:
       self.expected_requests([self.mock_fetch_request(
           server, namespace, item, data, offset=offset)])
-      storage = isolateserver.IsolateServer(server, namespace)
+      storage = isolate_storage.IsolateServer(server, namespace)
       fetched = ''.join(storage.fetch(item, offset))
       self.assertEqual(data[offset:], fetched)
 
@@ -614,7 +615,7 @@ class IsolateServerStorageApiTest(TestCase):
               request_headers={'Range': 'bytes=%d-' % offset},
               response_headers={'Content-Range': content_range_header}),
       ])
-      storage = isolateserver.IsolateServer(server, namespace)
+      storage = isolate_storage.IsolateServer(server, namespace)
       with self.assertRaises(IOError):
         _ = ''.join(storage.fetch(item, offset))
 
@@ -637,7 +638,7 @@ class IsolateServerStorageApiTest(TestCase):
       ),
     ]
     self.expected_requests(requests)
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -663,7 +664,7 @@ class IsolateServerStorageApiTest(TestCase):
       ),
     ]
     self.expected_requests(requests)
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -704,7 +705,7 @@ class IsolateServerStorageApiTest(TestCase):
       ),
     ]
     self.expected_requests(requests)
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     missing = storage.contains([item])
     self.assertEqual([item], missing.keys())
     push_state = missing[item]
@@ -737,7 +738,7 @@ class IsolateServerStorageApiTest(TestCase):
     self._requests = [
       self.mock_contains_request(server, namespace, request, response),
     ]
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     result = storage.contains(files)
     self.assertEqual(set(missing), set(result.keys()))
     for i, (_item, push_state) in enumerate(result.iteritems()):
@@ -750,7 +751,7 @@ class IsolateServerStorageApiTest(TestCase):
     namespace = 'default'
     self.expected_requests([self.mock_contains_request(
         server, namespace, {'items': []}, None)])
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
@@ -759,7 +760,7 @@ class IsolateServerStorageApiTest(TestCase):
     namespace = 'default'
     self.expected_requests([self.mock_contains_request(
         server, namespace, {'items': []}, None)])
-    storage = isolateserver.IsolateServer(server, namespace)
+    storage = isolate_storage.IsolateServer(server, namespace)
     with self.assertRaises(isolated_format.MappingError):
       storage.contains([])
 
