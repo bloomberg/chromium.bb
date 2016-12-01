@@ -184,6 +184,7 @@ public class ContextualSearchBarControl
         mContextControl.destroy();
         mSearchTermControl.destroy();
         mCaptionControl.destroy();
+        mQuickActionControl.destroy();
     }
 
     /**
