@@ -9,6 +9,7 @@ import android.content.ComponentCallbacks2;
 import android.content.Context;
 import android.content.res.Configuration;
 
+import org.chromium.base.Log;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
 
@@ -17,6 +18,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("content")
 class MemoryMonitorAndroid {
+    private static final String TAG = "MemoryMonitorAndroid";
     private static final ActivityManager.MemoryInfo sMemoryInfo =
             new ActivityManager.MemoryInfo();
     private static ComponentCallbacks2 sCallbacks = null;
@@ -36,7 +38,19 @@ class MemoryMonitorAndroid {
     private static void getMemoryInfo(Context context, long outPtr) {
         ActivityManager am = (ActivityManager) context.getSystemService(
                 Context.ACTIVITY_SERVICE);
-        am.getMemoryInfo(sMemoryInfo);
+        try {
+            am.getMemoryInfo(sMemoryInfo);
+        } catch (RuntimeException e) {
+            // RuntimeException can be thrown when the system is going to
+            // restart. Pass arbitrary values to the callback.
+            Log.e(TAG,
+                    "Failed to get memory info due to a runtime exception: %s",
+                    e);
+            sMemoryInfo.availMem = 1;
+            sMemoryInfo.lowMemory = true;
+            sMemoryInfo.threshold = 1;
+            sMemoryInfo.totalMem = 1;
+        }
         nativeGetMemoryInfoCallback(
                 sMemoryInfo.availMem, sMemoryInfo.lowMemory,
                 sMemoryInfo.threshold, sMemoryInfo.totalMem, outPtr);
