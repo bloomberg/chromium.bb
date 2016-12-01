@@ -158,6 +158,10 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
       m_box.mustInvalidateBackgroundOrBorderPaintOnHeightChange())
     return PaintInvalidationBorderBoxChange;
 
+  // Needs to repaint frame boundaries.
+  if (m_box.isFrameSet())
+    return PaintInvalidationBorderBoxChange;
+
   return PaintInvalidationIncremental;
 }
 

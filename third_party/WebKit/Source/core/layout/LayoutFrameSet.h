@@ -139,6 +139,10 @@ class LayoutFrameSet final : public LayoutBox {
   void startResizing(GridAxis&, int position);
   void continueResizing(GridAxis&, int position);
 
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
+    return false;
+  }
+
   LayoutObjectChildList m_children;
 
   GridAxis m_rows;

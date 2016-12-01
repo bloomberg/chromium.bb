@@ -1,0 +1,329 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [600, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [0, 0, 600, 500],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 600, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [153, 0, 294, 500],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [453, 0, 147, 500],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [0, 0, 147, 500],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutFrameSet FRAMESET",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 250],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [0, 0, 600, 250],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [153, 0, 294, 250],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 200, 250],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [103, 0, 194, 250],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [453, 0, 147, 250],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [0, 0, 147, 250],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [303, 0, 97, 250],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutFrameSet FRAMESET",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "location change"
+    },
+    {
+      "object": "HorizontalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "location change"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [400, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [0, 0, 400, 600],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 250, 400, 350],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [103, 0, 194, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [303, 0, 97, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [0, 0, 97, 600],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutFrameSet FRAMESET",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    }
+  ]
+}
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutFrameSet FRAMESET",
+          "rect": [0, 0, 800, 600],
+          "reason": "border box change"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [400, 0, 400, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [203, 0, 394, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [603, 0, 197, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [0, 0, 197, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [103, 0, 194, 600],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutFrame FRAME",
+          "rect": [303, 0, 97, 600],
+          "reason": "forced by layout"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutFrameSet FRAMESET",
+      "reason": "border box change"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutFrame FRAME",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "location change"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "location change"
+    }
+  ]
+}
+
