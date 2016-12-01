@@ -13,7 +13,7 @@ Represents a class registered by the author through `PaintWorkletGlobalScope#reg
 Specifically this class holds onto the javascript constructor and paint functions of the class via
 persistent handles. This class keeps these functions alive so they don't get garbage collected.
 
-The `CSSPaintDefinition` also holds onto an instance of the paint class va a persistent handle. This
+The `CSSPaintDefinition` also holds onto an instance of the paint class via a persistent handle. This
 instance is lazily created upon first use. If the constructor throws for some reason the constructor
 is marked as invalid and will always produce invalid images.
 
