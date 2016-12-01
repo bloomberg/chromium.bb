@@ -361,6 +361,12 @@ crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-columns.
 crbug.com/635619 virtual/layout_ng/fast/block/float/trailing-float-with-content.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/vertical-move-relayout.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/width-update-after-clear.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-2.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-3.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-4.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-5.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top-6.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/avoid-floats-when-negative-margin-top.html [ Skip ]
 # ====== LayoutNG-only failures until here ======
 
 # Requires ServiceWorkerNavigationPreload feature enabled. Run under
