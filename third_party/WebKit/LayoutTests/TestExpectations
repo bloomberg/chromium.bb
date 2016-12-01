@@ -1627,6 +1627,7 @@ crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onprogres
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-progress-events.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Timeout ]
+crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob-sync.html [ Pass Timeout ]
 
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector/network/network-fetch.html [ Failure ]
 crbug.com/669357 virtual/mojo-loading/http/tests/inspector-protocol/network-data-length.html [ Failure ]
