@@ -75,6 +75,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/power_manager_client.h"
+#include "chromeos/dbus/upstart_client.h"
 #include "chromeos/login/auth/key.h"
 #include "chromeos/login/auth/user_context.h"
 #include "chromeos/network/network_state.h"
@@ -1198,12 +1199,17 @@ void SigninScreenHandler::HandleToggleEnrollmentScreen() {
 }
 
 void SigninScreenHandler::HandleToggleEnrollmentAd() {
+  // TODO(rsorokin): Cleanup enrollment flow for Active Directory. (see
+  // crbug.com/668491).
   if (chrome::GetChannel() == version_info::Channel::BETA ||
       chrome::GetChannel() == version_info::Channel::STABLE) {
     return;
   }
   base::CommandLine::ForCurrentProcess()->AppendSwitch(
       chromeos::switches::kEnableAd);
+  chromeos::DBusThreadManager::Get()
+      ->GetUpstartClient()
+      ->StartAuthPolicyService();
   HandleToggleEnrollmentScreen();
 }
 
