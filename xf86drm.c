@@ -102,6 +102,22 @@
 #define DRM_MAJOR 226 /* Linux */
 #endif
 
+#ifdef __OpenBSD__
+struct drm_pciinfo {
+	uint16_t	domain;
+	uint8_t		bus;
+	uint8_t		dev;
+	uint8_t		func;
+	uint16_t	vendor_id;
+	uint16_t	device_id;
+	uint16_t	subvendor_id;
+	uint16_t	subdevice_id;
+	uint8_t		revision_id;
+};
+
+#define DRM_IOCTL_GET_PCIINFO	DRM_IOR(0x15, struct drm_pciinfo)
+#endif
+
 #define DRM_MSG_VERBOSITY 3
 
 #define memclear(s) memset(&s, 0, sizeof(s))
@@ -3059,6 +3075,31 @@ static int drmParsePciDeviceInfo(int maj, int min,
 
     if (parse_separate_sysfs_files(maj, min, device, false))
         return parse_config_sysfs_file(maj, min, device);
+
+    return 0;
+#elif defined(__OpenBSD__)
+    struct drm_pciinfo pinfo;
+    int fd, type;
+
+    type = drmGetMinorType(min);
+    if (type == -1)
+        return -ENODEV;
+
+    fd = drmOpenMinor(min, 0, type);
+    if (fd < 0)
+        return -errno;
+
+    if (drmIoctl(fd, DRM_IOCTL_GET_PCIINFO, &pinfo)) {
+        close(fd);
+        return -errno;
+    }
+    close(fd);
+
+    device->vendor_id = pinfo.vendor_id;
+    device->device_id = pinfo.device_id;
+    device->revision_id = pinfo.revision_id;
+    device->subvendor_id = pinfo.subvendor_id;
+    device->subdevice_id = pinfo.subdevice_id;
 
     return 0;
 #else
