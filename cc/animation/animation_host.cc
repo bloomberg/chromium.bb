@@ -154,9 +154,10 @@ void AnimationHost::UnregisterPlayerForElement(ElementId element_id,
   if (element_animations->IsEmpty()) {
     element_animations->ClearAffectedElementTypes();
     element_to_animations_map_.erase(element_animations->element_id());
-    DidDeactivateElementAnimations(element_animations.get());
     element_animations->SetAnimationHost(nullptr);
   }
+
+  DeactivateAnimationPlayer(player);
 }
 
 void AnimationHost::SetMutatorHostClient(MutatorHostClient* client) {
@@ -270,7 +271,7 @@ bool AnimationHost::SupportsScrollAnimations() const {
 }
 
 bool AnimationHost::NeedsAnimateLayers() const {
-  return !active_element_to_animations_map_.empty();
+  return !active_players_.empty();
 }
 
 bool AnimationHost::ActivateAnimations() {
@@ -278,10 +279,9 @@ bool AnimationHost::ActivateAnimations() {
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::ActivateAnimations");
-  ElementToAnimationsMap active_element_animations_map_copy =
-      active_element_to_animations_map_;
-  for (auto& it : active_element_animations_map_copy)
-    it.second->ActivateAnimations();
+  PlayersList active_active_players_copy = active_players_;
+  for (auto& it : active_active_players_copy)
+    it->ActivateAnimations();
 
   return true;
 }
@@ -291,10 +291,9 @@ bool AnimationHost::AnimateLayers(base::TimeTicks monotonic_time) {
     return false;
 
   TRACE_EVENT0("cc", "AnimationHost::AnimateLayers");
-  ElementToAnimationsMap active_element_animations_map_copy =
-      active_element_to_animations_map_;
-  for (auto& it : active_element_animations_map_copy)
-    it.second->Animate(monotonic_time);
+  PlayersList active_active_players_copy = active_players_;
+  for (auto& it : active_active_players_copy)
+    it->Animate(monotonic_time);
 
   return true;
 }
@@ -307,10 +306,9 @@ bool AnimationHost::UpdateAnimationState(bool start_ready_animations,
   auto animation_events = static_cast<AnimationEvents*>(mutator_events);
 
   TRACE_EVENT0("cc", "AnimationHost::UpdateAnimationState");
-  ElementToAnimationsMap active_element_animations_map_copy =
-      active_element_to_animations_map_;
-  for (auto& it : active_element_animations_map_copy)
-    it.second->UpdateState(start_ready_animations, animation_events);
+  PlayersList active_active_players_copy = active_players_;
+  for (auto& it : active_active_players_copy)
+    it->UpdateState(start_ready_animations, animation_events);
 
   return true;
 }
@@ -365,7 +363,7 @@ bool AnimationHost::ScrollOffsetAnimationWasInterrupted(
     ElementId element_id) const {
   auto element_animations = GetElementAnimationsForElementId(element_id);
   return element_animations
-             ? element_animations->scroll_offset_animation_was_interrupted()
+             ? element_animations->ScrollOffsetAnimationWasInterrupted()
              : false;
 }
 
@@ -559,22 +557,24 @@ void AnimationHost::ScrollAnimationAbort(bool needs_completion) {
   return scroll_offset_animations_impl_->ScrollAnimationAbort(needs_completion);
 }
 
-void AnimationHost::DidActivateElementAnimations(
-    ElementAnimations* element_animations) {
-  DCHECK(element_animations->element_id());
-  active_element_to_animations_map_[element_animations->element_id()] =
-      element_animations;
+void AnimationHost::ActivateAnimationPlayer(
+    scoped_refptr<AnimationPlayer> player) {
+  DCHECK(std::find(active_players_.begin(), active_players_.end(), player) ==
+         active_players_.end());
+  active_players_.push_back(player);
 }
 
-void AnimationHost::DidDeactivateElementAnimations(
-    ElementAnimations* element_animations) {
-  DCHECK(element_animations->element_id());
-  active_element_to_animations_map_.erase(element_animations->element_id());
+void AnimationHost::DeactivateAnimationPlayer(
+    scoped_refptr<AnimationPlayer> player) {
+  auto to_erase =
+      std::find(active_players_.begin(), active_players_.end(), player);
+  if (to_erase != active_players_.end())
+    active_players_.erase(to_erase);
 }
 
-const AnimationHost::ElementToAnimationsMap&
-AnimationHost::active_element_animations_for_testing() const {
-  return active_element_to_animations_map_;
+const AnimationHost::PlayersList& AnimationHost::active_players_for_testing()
+    const {
+  return active_players_;
 }
 
 const AnimationHost::ElementToAnimationsMap&

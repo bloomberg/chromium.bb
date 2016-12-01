@@ -12,7 +12,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "cc/animation/animation.h"
 #include "cc/animation/animation_host.h"
-#include "cc/animation/element_animations.h"
+#include "cc/animation/animation_player.h"
 #include "cc/animation/timing_function.h"
 #include "cc/base/switches.h"
 #include "cc/blimp/remote_compositor_bridge.h"
@@ -239,9 +239,8 @@ class LayerTreeHostImplForTesting : public LayerTreeHostImpl {
   void UpdateAnimationState(bool start_ready_animations) override {
     LayerTreeHostImpl::UpdateAnimationState(start_ready_animations);
     bool has_unfinished_animation = false;
-    for (const auto& it :
-         animation_host()->active_element_animations_for_testing()) {
-      if (it.second->HasActiveAnimation()) {
+    for (const auto& it : animation_host()->active_players_for_testing()) {
+      if (it->HasActiveAnimation()) {
         has_unfinished_animation = true;
         break;
       }

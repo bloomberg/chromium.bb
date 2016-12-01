@@ -7,6 +7,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <vector>
 
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -49,6 +50,7 @@ class CC_ANIMATION_EXPORT AnimationHost
       std::unordered_map<ElementId,
                          scoped_refptr<ElementAnimations>,
                          ElementIdHash>;
+  using PlayersList = std::vector<scoped_refptr<AnimationPlayer>>;
 
   static std::unique_ptr<AnimationHost> CreateMainInstance();
   static std::unique_ptr<AnimationHost> CreateForTesting(
@@ -169,15 +171,15 @@ class CC_ANIMATION_EXPORT AnimationHost
   // This should only be called from the main thread.
   ScrollOffsetAnimations& scroll_offset_animations() const;
 
-  // Registers the given element animations as active. An active element
-  // animations is one that has a running animation that needs to be ticked.
-  void DidActivateElementAnimations(ElementAnimations* element_animations);
+  // Registers the given animation player as active. An active animation
+  // player is one that has a running animation that needs to be ticked.
+  void ActivateAnimationPlayer(scoped_refptr<AnimationPlayer> player);
 
-  // Unregisters the given element animations. When this happens, the
-  // element animations will no longer be ticked (since it's not active).
-  void DidDeactivateElementAnimations(ElementAnimations* element_animations);
+  // Unregisters the given animation player. When this happens, the
+  // animation player will no longer be ticked (since it's not active).
+  void DeactivateAnimationPlayer(scoped_refptr<AnimationPlayer> player);
 
-  const ElementToAnimationsMap& active_element_animations_for_testing() const;
+  const PlayersList& active_players_for_testing() const;
   const ElementToAnimationsMap& all_element_animations_for_testing() const;
 
  private:
@@ -190,7 +192,7 @@ class CC_ANIMATION_EXPORT AnimationHost
   void EraseTimeline(scoped_refptr<AnimationTimeline> timeline);
 
   ElementToAnimationsMap element_to_animations_map_;
-  ElementToAnimationsMap active_element_to_animations_map_;
+  PlayersList active_players_;
 
   // A list of all timelines which this host owns.
   using IdToTimelineMap =

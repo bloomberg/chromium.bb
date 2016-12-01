@@ -19,6 +19,7 @@
 namespace cc {
 
 class AnimationDelegate;
+class AnimationEvents;
 class AnimationHost;
 class AnimationTimeline;
 struct AnimationEvent;
@@ -74,6 +75,12 @@ class CC_ANIMATION_EXPORT AnimationPlayer
                        bool needs_completion);
 
   void PushPropertiesTo(AnimationPlayer* player_impl);
+
+  void Animate(base::TimeTicks monotonic_time);
+  void UpdateState(bool start_ready_animations, AnimationEvents* events);
+
+  void UpdateActivation(ActivationType type);
+  void Deactivate();
 
   // AnimationDelegate routing.
   bool NotifyAnimationStarted(const AnimationEvent& event);
@@ -152,6 +159,17 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   void GetPropertyAnimationState(PropertyAnimationState* pending_state,
                                  PropertyAnimationState* active_state) const;
 
+  // When a scroll animation is removed on the main thread, its compositor
+  // thread counterpart continues producing scroll deltas until activation.
+  // These scroll deltas need to be cleared at activation, so that the active
+  // element's scroll offset matches the offset provided by the main thread
+  // rather than a combination of this offset and scroll deltas produced by
+  // the removed animation. This is to provide the illusion of synchronicity to
+  // JS that simultaneously removes an animation and sets the scroll offset.
+  bool scroll_offset_animation_was_interrupted() const {
+    return scroll_offset_animation_was_interrupted_;
+  }
+
  private:
   friend class base::RefCounted<AnimationPlayer>;
 
@@ -194,6 +212,11 @@ class CC_ANIMATION_EXPORT AnimationPlayer
   // Only try to start animations when new animations are added or when the
   // previous attempt at starting animations failed to start all animations.
   bool needs_to_start_animations_;
+
+  // This is used to ensure that we don't spam the animation host.
+  bool is_active_;
+
+  bool scroll_offset_animation_was_interrupted_;
 
   DISALLOW_COPY_AND_ASSIGN(AnimationPlayer);
 };
