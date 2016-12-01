@@ -473,6 +473,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     private void startMarginAnimation(boolean enter, boolean showIncognito) {
+        // Any outstanding animations must be cancelled to avoid race condition.
+        cancelAnimation(this, Property.INNER_MARGIN_PERCENT);
+
         float start = mInnerMarginPercent;
         float end = enter && showIncognito ? 1.0f : 0.0f;
         if (start != end) {
@@ -481,6 +484,9 @@ public class StackLayout extends Layout implements Animatable<StackLayout.Proper
     }
 
     private void startYOffsetAnimation(boolean enter) {
+        // Any outstanding animations must be cancelled to avoid race condition.
+        cancelAnimation(this, Property.STACK_OFFSET_Y_PERCENT);
+
         float start = mStackOffsetYPercent;
         float end = enter ? 1.f : 0.f;
         if (start != end) {
