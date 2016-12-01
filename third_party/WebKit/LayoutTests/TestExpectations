@@ -501,6 +501,8 @@ crbug.com/248938 virtual/threaded/animations/fill-mode-multiple-keyframes.html [
 
 crbug.com/659123 [ Mac ] fast/css/text-overflow-ellipsis-button.html [ Pass Failure ]
 
+crbug.com/670295 virtual/mojo-loading/http/tests/preload/external_css_import_preload.html [ Pass Failure ]
+
 # TODO(oshima): Mac Android are currently not supported.
 crbug.com/567837 [ Mac Android ] virtual/scalefactor200withzoom/fast/hidpi/static [ Skip ]
 
