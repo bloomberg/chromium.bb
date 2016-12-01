@@ -32,23 +32,39 @@
            TOOLBAR_IDR_THREE_STATE(BACK), to add its variations to the array.
            The easiest way to find the use of a given resource ID:
            'git grep TOOLBAR_IDR_.*BACK' -->
+      <structure type="chrome_scaled_image" name="IDR_IOS_CHECKMARK" file="checkmark.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_CONTEXTUAL_SEARCH_HEADER" file="contextual_search_header.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_CONTROLLED_SETTING_MANDATORY" file="controlled_setting_mandatory.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_ERROR" file="error.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_AUTOLOGIN" file="infobar_autologin.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_RESTORE_SESSION" file="infobar_restore_session.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_SAVE_PASSWORD" file="infobar_save_password.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_INFOBAR_TRANSLATE" file="infobar_translate.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_LOCATION_BAR_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR" file="omnibox/omnibox_clear.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_OTR" file="omnibox/omnibox_incognito_clear.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_OTR_PRESSED" file="omnibox/omnibox_incognito_clear_pressed.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_CLEAR_PRESSED" file="omnibox/omnibox_clear_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY" file="omnibox_history.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HISTORY_INCOGNITO" file="omnibox_history_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP" file="omnibox_http.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP_INCOGNITO" file="omnibox_http_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_INVALID" file="omnibox_https_invalid.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_POLICY_WARNING" file="controlled_setting_mandatory.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTPS_VALID" file="omnibox_https_valid.png" />
-      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_HTTP_INCOGNITO" file="omnibox_http_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND" file="omnibox/append_ios.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_HIGHLIGHTED" file="omnibox/append_highlighted_ios.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO" file="omnibox/append_incognito_ios.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_KEYBOARD_VIEW_APPEND_INCOGNITO_HIGHLIGHTED" file="omnibox/append_incognito_highlighted_ios.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_OFFLINE" file="omnibox_offline.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_PHYSICAL_WEB" file="omnibox/physical_web_ios.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH" file="omnibox_search.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_SEARCH_INCOGNITO" file="omnibox_search_incognito.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR" file="omnibox_star.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_OMNIBOX_STAR_INCOGNITO" file="omnibox_star_incognito.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_BAD" file="omnibox/pageinfo_bad.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_GOOD" file="omnibox/pageinfo_good.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_PAGEINFO_INFO" file="omnibox/pageinfo_info.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_PROMO_INFO" file="promo_info.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_SETTINGS_INFO_24" file="settings_info_24.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_DARK_BACK" file="toolbar_dark_back.png" />
@@ -91,11 +107,11 @@
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_OVERVIEW_DISABLED" file="toolbar_light_overview_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_OVERVIEW_PRESSED" file="toolbar_light_overview_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_RELOAD" file="toolbar_light_reload.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_RELOAD_DISABLED" file="toolbar_light_reload_disabled.png" />
+      <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_RELOAD_PRESSED" file="toolbar_light_reload_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_SHARE" file="toolbar_light_share.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_SHARE_DISABLED" file="toolbar_light_share_disabled.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_SHARE_PRESSED" file="toolbar_light_share_pressed.png" />
-      <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_RELOAD_DISABLED" file="toolbar_light_reload_disabled.png" />
-      <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_RELOAD_PRESSED" file="toolbar_light_reload_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_STAR" file="toolbar_light_star.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_STAR_PRESSED" file="toolbar_light_star_pressed.png" />
       <structure type="chrome_scaled_image" name="IDR_IOS_TOOLBAR_LIGHT_STOP" file="toolbar_light_stop.png" />
