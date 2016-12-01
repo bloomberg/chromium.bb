@@ -1579,15 +1579,14 @@ void av1_predict_intra_block(const MACROBLOCKD *xd, int wpx, int hpx,
   const BLOCK_SIZE bsize = xd->mi[0]->mbmi.sb_type;
   const struct macroblockd_plane *const pd = &xd->plane[plane];
   const int txw = tx_size_wide_unit[tx_size];
-  const int txh = tx_size_high_unit[tx_size];
   const int have_top = row_off || xd->up_available;
   const int have_left = col_off || xd->left_available;
   const int x = col_off * 4;
   const int y = row_off * 4;
   const int mi_row = -xd->mb_to_top_edge >> (3 + MI_SIZE_LOG2);
   const int mi_col = -xd->mb_to_left_edge >> (3 + MI_SIZE_LOG2);
-  const int txwpx = 4 * txw;
-  const int txhpx = 4 * txh;
+  const int txwpx = tx_size_wide[tx_size];
+  const int txhpx = tx_size_high[tx_size];
   // Distance between the right edge of this prediction block to
   // the frame right edge
   const int xr =
