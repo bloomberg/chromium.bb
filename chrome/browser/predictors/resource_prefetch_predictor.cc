@@ -217,11 +217,12 @@ bool ResourcePrefetchPredictor::IsHandledResourceType(
 content::ResourceType ResourcePrefetchPredictor::GetResourceType(
     content::ResourceType resource_type,
     const std::string& mime_type) {
-  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE} to a small set of
-  // mime types, because these resource types don't communicate how the
+  // Restricts content::RESOURCE_TYPE_{PREFETCH,SUB_RESOURCE,XHR} to a small set
+  // of mime types, because these resource types don't communicate how the
   // resources will be used.
   if (resource_type == content::RESOURCE_TYPE_PREFETCH ||
-      resource_type == content::RESOURCE_TYPE_SUB_RESOURCE) {
+      resource_type == content::RESOURCE_TYPE_SUB_RESOURCE ||
+      resource_type == content::RESOURCE_TYPE_XHR) {
     return GetResourceTypeFromMimeType(mime_type,
                                        content::RESOURCE_TYPE_LAST_TYPE);
   }

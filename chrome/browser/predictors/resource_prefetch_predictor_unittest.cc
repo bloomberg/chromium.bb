@@ -1163,6 +1163,12 @@ TEST_F(ResourcePrefetchPredictorTest, HandledResourceTypes) {
       content::RESOURCE_TYPE_PREFETCH, "application/font-woff"));
   EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
       content::RESOURCE_TYPE_PREFETCH, "font/woff2"));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_XHR, ""));
+  EXPECT_FALSE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_XHR, "bogus/mime-type"));
+  EXPECT_TRUE(ResourcePrefetchPredictor::IsHandledResourceType(
+      content::RESOURCE_TYPE_XHR, "application/javascript"));
 }
 
 TEST_F(ResourcePrefetchPredictorTest, ShouldRecordRequestMainFrame) {
