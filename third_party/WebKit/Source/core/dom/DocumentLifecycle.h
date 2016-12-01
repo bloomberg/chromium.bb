@@ -36,6 +36,10 @@
 #include "wtf/Assertions.h"
 #include "wtf/Noncopyable.h"
 
+#if DCHECK_IS_ON()
+#include "wtf/Forward.h"
+#endif
+
 namespace blink {
 
 class CORE_EXPORT DocumentLifecycle {
@@ -206,9 +210,11 @@ class CORE_EXPORT DocumentLifecycle {
 
   bool throttlingAllowed() const;
 
+#if DCHECK_IS_ON()
+  WTF::String toString() const;
+#endif
  private:
 #if DCHECK_IS_ON()
-  static const char* stateAsDebugString(const LifecycleState);
   bool canAdvanceTo(LifecycleState) const;
   bool canRewindTo(LifecycleState) const;
 #endif

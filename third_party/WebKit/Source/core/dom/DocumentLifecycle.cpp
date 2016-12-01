@@ -33,6 +33,10 @@
 #include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/Assertions.h"
 
+#if DCHECK_IS_ON()
+#include "wtf/text/WTFString.h"
+#endif
+
 namespace blink {
 
 static DocumentLifecycle::DeprecatedTransition* s_deprecatedTransitionStack = 0;
@@ -288,40 +292,12 @@ bool DocumentLifecycle::canRewindTo(LifecycleState nextState) const {
          m_state == PrePaintClean || m_state == PaintClean;
 }
 
-#endif
-
-void DocumentLifecycle::advanceTo(LifecycleState nextState) {
-#if DCHECK_IS_ON()
-  DCHECK(canAdvanceTo(nextState)) << "Cannot advance document lifecycle from "
-                                  << stateAsDebugString(m_state) << " to "
-                                  << stateAsDebugString(nextState) << ".";
-#endif
-  m_state = nextState;
-}
-
-void DocumentLifecycle::ensureStateAtMost(LifecycleState state) {
-  DCHECK(state == VisualUpdatePending || state == StyleClean ||
-         state == LayoutClean);
-  if (m_state <= state)
-    return;
-#if DCHECK_IS_ON()
-  DCHECK(canRewindTo(state)) << "Cannot rewind document lifecycle from "
-                             << stateAsDebugString(m_state) << " to "
-                             << stateAsDebugString(state) << ".";
-#endif
-  m_state = state;
-}
-
-bool DocumentLifecycle::throttlingAllowed() const {
-  return s_allowThrottlingCount;
-}
-
-#if DCHECK_IS_ON()
 #define DEBUG_STRING_CASE(StateName) \
-  case StateName:                    \
+  case DocumentLifecycle::StateName: \
     return #StateName
 
-const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state) {
+static WTF::String stateAsDebugString(
+    const DocumentLifecycle::LifecycleState& state) {
   switch (state) {
     DEBUG_STRING_CASE(Uninitialized);
     DEBUG_STRING_CASE(Inactive);
@@ -349,6 +325,36 @@ const char* DocumentLifecycle::stateAsDebugString(const LifecycleState state) {
   NOTREACHED();
   return "Unknown";
 }
+
+WTF::String DocumentLifecycle::toString() const {
+  return stateAsDebugString(m_state);
+}
 #endif
+
+void DocumentLifecycle::advanceTo(LifecycleState nextState) {
+#if DCHECK_IS_ON()
+  DCHECK(canAdvanceTo(nextState)) << "Cannot advance document lifecycle from "
+                                  << stateAsDebugString(m_state) << " to "
+                                  << stateAsDebugString(nextState) << ".";
+#endif
+  m_state = nextState;
+}
+
+void DocumentLifecycle::ensureStateAtMost(LifecycleState state) {
+  DCHECK(state == VisualUpdatePending || state == StyleClean ||
+         state == LayoutClean);
+  if (m_state <= state)
+    return;
+#if DCHECK_IS_ON()
+  DCHECK(canRewindTo(state)) << "Cannot rewind document lifecycle from "
+                             << stateAsDebugString(m_state) << " to "
+                             << stateAsDebugString(state) << ".";
+#endif
+  m_state = state;
+}
+
+bool DocumentLifecycle::throttlingAllowed() const {
+  return s_allowThrottlingCount;
+}
 
 }  // namespace blink
