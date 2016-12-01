@@ -203,9 +203,8 @@ class V4LocalDatabaseManager : public SafeBrowsingDatabaseManager {
   bool HandleCheck(std::unique_ptr<PendingCheck> check);
 
   // Checks |stores_to_check| in database synchronously for hash prefixes
-  // matching |hash|. Returns false if the database isn't ready or if there's no
-  // match; true otherwise. This is used for lists that have full hash
-  // information in the database.
+  // matching |hash|. Returns true if there's a match; false otherwise. This is
+  // used for lists that have full hash information in the database.
   bool HandleHashSynchronously(const FullHash& hash,
                                const StoresToCheck& stores_to_check);
 

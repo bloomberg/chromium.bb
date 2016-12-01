@@ -39,31 +39,39 @@ ListInfos GetListInfos() {
   //   for it, it can be changed to true.
   // - The list doesn't have hash prefixes to match. All requests lead to full
   //   hash checks. For instance: GetChromeUrlApiId()
+
+#if defined(GOOGLE_CHROME_BUILD)
+  const bool kSyncOnlyOnChromeBuilds = true;
+#else
+  const bool kSyncOnlyOnChromeBuilds = false;
+#endif
+  const bool kSyncAlways = true;
+  const bool kSyncNever = false;
   return ListInfos({
-      ListInfo(false, "CertCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "CertCsdDownloadWhitelist.store",
                GetCertCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(false, "ChromeFilenameClientIncident.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "ChromeFilenameClientIncident.store",
                GetChromeFilenameClientIncidentId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(true, "IpMalware.store", GetIpMalwareId(),
+      ListInfo(kSyncAlways, "IpMalware.store", GetIpMalwareId(),
                SB_THREAT_TYPE_UNUSED),
-      ListInfo(false, "UrlCsdDownloadWhitelist.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdDownloadWhitelist.store",
                GetUrlCsdDownloadWhitelistId(), SB_THREAT_TYPE_UNUSED),
-      ListInfo(false, "UrlCsdWhitelist.store", GetUrlCsdWhitelistId(),
-               SB_THREAT_TYPE_UNUSED),
-      ListInfo(true, "UrlSoceng.store", GetUrlSocEngId(),
+      ListInfo(kSyncOnlyOnChromeBuilds, "UrlCsdWhitelist.store",
+               GetUrlCsdWhitelistId(), SB_THREAT_TYPE_UNUSED),
+      ListInfo(kSyncAlways, "UrlSoceng.store", GetUrlSocEngId(),
                SB_THREAT_TYPE_URL_PHISHING),
-      ListInfo(true, "UrlMalware.store", GetUrlMalwareId(),
+      ListInfo(kSyncAlways, "UrlMalware.store", GetUrlMalwareId(),
                SB_THREAT_TYPE_URL_MALWARE),
-      ListInfo(true, "UrlUws.store", GetUrlUwsId(),
+      ListInfo(kSyncAlways, "UrlUws.store", GetUrlUwsId(),
                SB_THREAT_TYPE_URL_UNWANTED),
-      ListInfo(true, "UrlMalBin.store", GetUrlMalBinId(),
+      ListInfo(kSyncAlways, "UrlMalBin.store", GetUrlMalBinId(),
                SB_THREAT_TYPE_BINARY_MALWARE_URL),
-      ListInfo(true, "ChromeExtMalware.store", GetChromeExtensionMalwareId(),
+      ListInfo(kSyncAlways, "ChromeExtMalware.store", GetChromeExtMalwareId(),
                SB_THREAT_TYPE_EXTENSION),
-      ListInfo(false, "ChromeUrlClientIncident.store",
+      ListInfo(kSyncOnlyOnChromeBuilds, "ChromeUrlClientIncident.store",
                GetChromeUrlClientIncidentId(),
                SB_THREAT_TYPE_BLACKLISTED_RESOURCE),
-      ListInfo(false, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
+      ListInfo(kSyncNever, "", GetChromeUrlApiId(), SB_THREAT_TYPE_API_ABUSE),
   });
 }
 
@@ -221,7 +229,7 @@ bool V4LocalDatabaseManager::CheckExtensionIDs(
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       client, ClientCallbackType::CHECK_EXTENSION_IDS,
-      StoresToCheck({GetChromeExtensionMalwareId()}), extension_ids);
+      StoresToCheck({GetChromeExtMalwareId()}), extension_ids);
 
   return HandleCheck(std::move(check));
 }
@@ -243,25 +251,43 @@ bool V4LocalDatabaseManager::CheckResourceUrl(const GURL& url, Client* client) {
 
 bool V4LocalDatabaseManager::MatchCsdWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    // To make sure we are conservative we return true.
+    return true;
+  }
+
   return HandleUrlSynchronously(url, StoresToCheck({GetUrlCsdWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistString(
     const std::string& str) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    // To make sure we are conservative we return true.
+    return true;
+  }
+
   return HandleHashSynchronously(
       str, StoresToCheck({GetCertCsdDownloadWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchDownloadWhitelistUrl(const GURL& url) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    // To make sure we are conservative we return true.
+    return true;
+  }
+
   return HandleUrlSynchronously(
       url, StoresToCheck({GetUrlCsdDownloadWhitelistId()}));
 }
 
 bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  if (!enabled_) {
+  if (!enabled_ || !v4_database_) {
     return false;
   }
 
@@ -278,6 +304,12 @@ bool V4LocalDatabaseManager::MatchMalwareIP(const std::string& ip_address) {
 bool V4LocalDatabaseManager::MatchModuleWhitelistString(
     const std::string& str) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
+
+  if (!enabled_ || !v4_database_) {
+    // To make sure we are conservative we return true.
+    return true;
+  }
+
   return HandleHashSynchronously(
       str, StoresToCheck({GetChromeFilenameClientIncidentId()}));
 }
@@ -498,10 +530,6 @@ bool V4LocalDatabaseManager::HandleHashSynchronously(
     const StoresToCheck& stores_to_check) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
 
-  if (!enabled_ || !v4_database_) {
-    return false;
-  }
-
   std::set<FullHash> hashes{hash};
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check, hashes);
@@ -514,10 +542,6 @@ bool V4LocalDatabaseManager::HandleUrlSynchronously(
     const GURL& url,
     const StoresToCheck& stores_to_check) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-
-  if (!enabled_ || !v4_database_) {
-    return false;
-  }
 
   std::unique_ptr<PendingCheck> check = base::MakeUnique<PendingCheck>(
       nullptr, ClientCallbackType::CHECK_OTHER, stores_to_check,

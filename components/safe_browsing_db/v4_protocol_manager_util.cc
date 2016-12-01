@@ -91,7 +91,7 @@ const ListIdentifier GetCertCsdDownloadWhitelistId() {
   return ListIdentifier(GetCurrentPlatformType(), CERT, CSD_DOWNLOAD_WHITELIST);
 }
 
-const ListIdentifier GetChromeExtensionMalwareId() {
+const ListIdentifier GetChromeExtMalwareId() {
   return ListIdentifier(CHROME_PLATFORM, CHROME_EXTENSION, MALWARE_THREAT);
 }
 
