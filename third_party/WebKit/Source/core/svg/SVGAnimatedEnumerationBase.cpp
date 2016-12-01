@@ -52,13 +52,7 @@ void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value,
     return;
   }
 
-  baseValue()->setValue(value);
-
-  m_baseValueUpdated = true;
-
-  ASSERT(this->attributeName() != QualifiedName::null());
-  contextElement()->invalidateSVGAttributes();
-  contextElement()->svgAttributeBaseValChanged(this->attributeName());
+  SVGAnimatedProperty<SVGEnumerationBase>::setBaseVal(value, exceptionState);
 }
 
 }  // namespace blink
