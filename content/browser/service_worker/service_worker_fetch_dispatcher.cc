@@ -81,8 +81,10 @@ class DelegatingURLLoaderClient final : public mojom::URLLoaderClient {
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override {
     client_->OnDataDownloaded(data_length, encoded_length);
   }
-  void OnReceiveResponse(const ResourceResponseHead& head) override {
-    client_->OnReceiveResponse(head);
+  void OnReceiveResponse(
+      const ResourceResponseHead& head,
+      mojom::DownloadedTempFilePtr downloaded_file) override {
+    client_->OnReceiveResponse(head, std::move(downloaded_file));
   }
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& head) override {

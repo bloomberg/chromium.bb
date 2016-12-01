@@ -11,6 +11,7 @@ specific_include_rules = {
   "async_resource_handler\.(cc|h)": [
     "-content",
     "+content/browser/loader/async_resource_handler.h",
+    "+content/browser/loader/downloaded_temp_file_impl.h",
     "+content/browser/loader/netlog_observer.h",
     "+content/browser/loader/resource_buffer.h",
     "+content/browser/loader/resource_dispatcher_host_impl.h",
@@ -62,6 +63,13 @@ specific_include_rules = {
     "+content/common/resource_messages.h",
     "+content/common/resource_request.h",
   ],
+  "downloaded_temp_file_impl\.(cc|h)": [
+    "-content",
+    "+content/browser/loader/downloaded_temp_file_impl.h",
+    "+content/browser/loader/resource_dispatcher_host_impl.h",
+    "+content/common/content_export.h",
+    "+content/common/url_loader_factory.mojom.h"
+  ],
   "resource_buffer.*\.(cc|h)": [
     "-content",
     "+content/browser/loader/resource_buffer.h",
@@ -79,6 +87,7 @@ specific_include_rules = {
   "mojo_async_resource_handler\.(cc|h)": [
     "-content",
     "+content/browser/loader/async_resource_handler.h",
+    "+content/browser/loader/downloaded_temp_file_impl.h",
     "+content/browser/loader/mojo_async_resource_handler.h",
     "+content/browser/loader/test_url_loader_client.h",
     "+content/browser/loader/netlog_observer.h",

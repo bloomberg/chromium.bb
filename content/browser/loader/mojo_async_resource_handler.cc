@@ -12,6 +12,7 @@
 #include "base/macros.h"
 #include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
+#include "content/browser/loader/downloaded_temp_file_impl.h"
 #include "content/browser/loader/netlog_observer.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
 #include "content/browser/loader/resource_request_info_impl.h"
@@ -167,7 +168,17 @@ bool MojoAsyncResourceHandler::OnResponseStarted(ResourceResponse* response,
   response->head.request_start = request()->creation_time();
   response->head.response_start = base::TimeTicks::Now();
   sent_received_response_message_ = true;
-  url_loader_client_->OnReceiveResponse(response->head);
+
+  mojom::DownloadedTempFilePtr downloaded_file_ptr;
+  if (!response->head.download_file_path.empty()) {
+    downloaded_file_ptr = DownloadedTempFileImpl::Create(info->GetChildID(),
+                                                         info->GetRequestID());
+    rdh_->RegisterDownloadedTempFile(info->GetChildID(), info->GetRequestID(),
+                                     response->head.download_file_path);
+  }
+
+  url_loader_client_->OnReceiveResponse(response->head,
+                                        std::move(downloaded_file_ptr));
   return true;
 }
 

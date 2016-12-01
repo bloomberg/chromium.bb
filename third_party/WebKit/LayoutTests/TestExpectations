@@ -1563,20 +1563,11 @@ crbug.com/602693 imported/wpt/service-workers/service-worker/referer.https.html 
 
 # mojo-loading: This is an experimental feature. failing virtual tests are
 # listed below.
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/blob-response-type-warm-cache.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/cross-origin-preflight-get-response-type-blob.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/response-document.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/response-text.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onload-event.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-load.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onprogress-event.html [ Failure ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-progress-events.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/shared-worker-response-type-blob-sync.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/shared-worker-response-type-blob.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/upload-onprogress-event.html [ Failure ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob-sync.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/workers/xmlhttprequest-response-type-blob.html [ Failure Timeout ]
-crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/xmlhttprequest-response-type-blob.html [ Failure Timeout ]
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onloadend-event-after-abort.html [ Timeout ]
 
 # TODO(yhirano): There is an entry for the base test, but this test is flakier

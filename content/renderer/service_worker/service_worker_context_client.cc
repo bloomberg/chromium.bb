@@ -247,8 +247,11 @@ class ServiceWorkerContextClient::NavigationPreloadRequest final
                 "respondWith or waitUntil.")));
   }
 
-  void OnReceiveResponse(const ResourceResponseHead& response_head) override {
+  void OnReceiveResponse(
+      const ResourceResponseHead& response_head,
+      mojom::DownloadedTempFilePtr downloaded_file) override {
     DCHECK(!response_);
+    DCHECK(!downloaded_file);
     response_ = base::MakeUnique<blink::WebServiceWorkerResponse>();
     response_->setURL(url_);
     DCHECK(response_head.headers);

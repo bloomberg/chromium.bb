@@ -24,9 +24,18 @@ interface URLLoader {
   FollowRedirect();
 };
 
+// Opaque handle passed from the browser process to a child process to manage
+// the lifetime of temporary files used for download_to_file resource loading.
+// When the message pipe for this interface is closed, the browser process will
+// clean up the corresponding temporary file.
+interface DownloadedTempFile {
+};
+
+
 interface URLLoaderClient {
-  // Called when the response head is received.
-  OnReceiveResponse(URLResponseHead head);
+  // Called when the response head is received. |downloaded_file| is non-null in
+  // the 'download_to_file' case.
+  OnReceiveResponse(URLResponseHead head, DownloadedTempFile? downloaded_file);
 
   // Called when the request has been redirected. The receiver is expected to
   // call FollowRedirect or cancel the request.

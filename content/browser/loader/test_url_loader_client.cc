@@ -14,7 +14,8 @@ TestURLLoaderClient::TestURLLoaderClient() : binding_(this) {}
 TestURLLoaderClient::~TestURLLoaderClient() {}
 
 void TestURLLoaderClient::OnReceiveResponse(
-    const ResourceResponseHead& response_head) {
+    const ResourceResponseHead& response_head,
+    mojom::DownloadedTempFilePtr downloaded_file) {
   has_received_response_ = true;
   response_head_ = response_head;
   if (quit_closure_for_on_receive_response_)

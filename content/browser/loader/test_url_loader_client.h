@@ -28,7 +28,8 @@ class TestURLLoaderClient final : public mojom::URLLoaderClient {
   TestURLLoaderClient();
   ~TestURLLoaderClient() override;
 
-  void OnReceiveResponse(const ResourceResponseHead& response_head) override;
+  void OnReceiveResponse(const ResourceResponseHead& response_head,
+                         mojom::DownloadedTempFilePtr downloaded_file) override;
   void OnReceiveRedirect(const net::RedirectInfo& redirect_info,
                          const ResourceResponseHead& response_head) override;
   void OnDataDownloaded(int64_t data_length, int64_t encoded_length) override;

@@ -28,6 +28,7 @@
 #include "content/browser/download/download_resource_handler.h"
 #include "content/browser/frame_host/navigation_request_info.h"
 #include "content/browser/loader/detachable_resource_handler.h"
+#include "content/browser/loader/downloaded_temp_file_impl.h"
 #include "content/browser/loader/navigation_resource_throttle.h"
 #include "content/browser/loader/navigation_url_loader.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
@@ -3366,6 +3367,7 @@ TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
   // Create a temporary file.
   base::FilePath file_path;
   ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+  EXPECT_TRUE(base::PathExists(file_path));
   scoped_refptr<ShareableFileReference> deletable_file =
       ShareableFileReference::GetOrCreate(
           file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
@@ -3394,7 +3396,57 @@ TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFile) {
   // Release extra references and wait for the file to be deleted. (This relies
   // on the delete happening on the FILE thread which is mapped to main thread
   // in this test.)
-  deletable_file = NULL;
+  deletable_file = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  // The file is no longer readable to the child and has been deleted.
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+  EXPECT_FALSE(base::PathExists(file_path));
+}
+
+// Tests the dispatcher host's temporary file management in the mojo-enabled
+// loading.
+TEST_P(ResourceDispatcherHostTest, RegisterDownloadedTempFileWithMojo) {
+  const int kRequestID = 1;
+
+  // Create a temporary file.
+  base::FilePath file_path;
+  ASSERT_TRUE(base::CreateTemporaryFile(&file_path));
+  EXPECT_TRUE(base::PathExists(file_path));
+  scoped_refptr<ShareableFileReference> deletable_file =
+      ShareableFileReference::GetOrCreate(
+          file_path, ShareableFileReference::DELETE_ON_FINAL_RELEASE,
+          BrowserThread::GetTaskRunnerForThread(BrowserThread::FILE).get());
+
+  // Not readable.
+  EXPECT_FALSE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // Register it for a resource request.
+  auto downloaded_file =
+      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
+  mojom::DownloadedTempFilePtr downloaded_file_ptr =
+      DownloadedTempFileImpl::Create(filter_->child_id(), kRequestID);
+  host_.RegisterDownloadedTempFile(filter_->child_id(), kRequestID, file_path);
+
+  // Should be readable now.
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // The child releases from the request.
+  downloaded_file_ptr = nullptr;
+  base::RunLoop().RunUntilIdle();
+
+  // Still readable because there is another reference to the file. (The child
+  // may take additional blob references.)
+  EXPECT_TRUE(ChildProcessSecurityPolicyImpl::GetInstance()->CanReadFile(
+      filter_->child_id(), file_path));
+
+  // Release extra references and wait for the file to be deleted. (This relies
+  // on the delete happening on the FILE thread which is mapped to main thread
+  // in this test.)
+  deletable_file = nullptr;
   base::RunLoop().RunUntilIdle();
 
   // The file is no longer readable to the child and has been deleted.

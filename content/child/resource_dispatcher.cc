@@ -90,10 +90,13 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
       body_consumer_->Cancel();
   }
 
-  void OnReceiveResponse(const ResourceResponseHead& response_head) override {
+  void OnReceiveResponse(
+      const ResourceResponseHead& response_head,
+      mojom::DownloadedTempFilePtr downloaded_file) override {
     has_received_response_ = true;
     if (body_consumer_)
       body_consumer_->Start(task_runner_.get());
+    downloaded_file_ = std::move(downloaded_file);
     resource_dispatcher_->OnMessageReceived(
         ResourceMsg_ReceivedResponse(request_id_, response_head));
   }
@@ -137,6 +140,7 @@ class URLLoaderClientImpl final : public mojom::URLLoaderClient {
  private:
   mojo::AssociatedBinding<mojom::URLLoaderClient> binding_;
   scoped_refptr<URLResponseBodyConsumer> body_consumer_;
+  mojom::DownloadedTempFilePtr downloaded_file_;
   const int request_id_;
   bool has_received_response_ = false;
   ResourceDispatcher* const resource_dispatcher_;

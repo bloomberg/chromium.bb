@@ -752,6 +752,8 @@ source_set("browser") {
     "loader/async_revalidation_manager.h",
     "loader/detachable_resource_handler.cc",
     "loader/detachable_resource_handler.h",
+    "loader/downloaded_temp_file_impl.cc",
+    "loader/downloaded_temp_file_impl.h",
     "loader/global_routing_id.h",
     "loader/intercepting_resource_handler.cc",
     "loader/intercepting_resource_handler.h",
