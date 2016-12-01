@@ -1040,9 +1040,6 @@ void ClientSocketPoolBaseHelper::HandOutSocket(
 
     UMA_HISTOGRAM_COUNTS_1000("Net.Socket.IdleSocketReuseTime",
                               idle_time.InSeconds());
-    UMA_HISTOGRAM_TIMES(
-        "Net.Socket.IdleSocketTimeSaving",
-        connect_timing.connect_end - connect_timing.connect_start);
   }
 
   if (reuse_type != ClientSocketHandle::UNUSED) {
