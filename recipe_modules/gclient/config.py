@@ -403,6 +403,12 @@ def chromium_webrtc_tot(c):
   c.revisions['src'] = 'HEAD'
   c.revisions['src/third_party/webrtc'] = 'HEAD'
 
+  # Have the WebRTC revision appear in the web UI instead of Chromium's.
+  # This is also important for set_component_rev to work, since got_revision
+  # will become a WebRTC revision instead of Chromium.
+  c.got_revision_mapping['src'] = 'got_cr_revision'
+  c.got_revision_mapping['src/third_party/webrtc'] = 'got_revision'
+
   # Needed to get the testers to properly sync the right revision.
   c.parent_got_revision_mapping['parent_got_revision'] = 'got_revision'
   c.parent_got_revision_mapping['parent_got_webrtc_revision'] = (
