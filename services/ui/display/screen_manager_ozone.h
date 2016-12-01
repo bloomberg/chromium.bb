@@ -51,7 +51,12 @@ class ScreenManagerOzone
   void ToggleDisplayResolution() override;
 
   // mojom::DisplayController:
+  void IncreaseInternalDisplayZoom() override;
+  void DecreaseInternalDisplayZoom() override;
+  void ResetInternalDisplayZoom() override;
+  void RotateCurrentDisplayCW() override;
   void SwapPrimaryDisplay() override;
+  void ToggleMirrorMode() override;
   void SetDisplayWorkArea(int64_t display_id,
                           const gfx::Size& size,
                           const gfx::Insets& insets) override;

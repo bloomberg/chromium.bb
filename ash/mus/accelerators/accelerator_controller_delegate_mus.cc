@@ -11,6 +11,7 @@
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/display/display_controller.mojom.h"
 #include "services/ui/public/interfaces/display/test_display_controller.mojom.h"
+#include "ui/display/screen.h"
 
 namespace ash {
 namespace mus {
@@ -28,12 +29,18 @@ AcceleratorControllerDelegateMus::AcceleratorControllerDelegateMus(
 AcceleratorControllerDelegateMus::~AcceleratorControllerDelegateMus() {}
 
 bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
-  // This is the list of actions that are not ported from aura. The actions are
-  // replicated here to make sure we don't forget any. This list should
-  // eventually be empty. If there are any actions that don't make sense for
-  // mus, then they should be removed from AcceleratorAction.
+  // Accelerators that return true need to work differently in mash. These
+  // should have implementations in CanPerformAction() and PerformAction().
+  // Accelerators that return false have not been ported to work with mash yet.
+  // If the behavior between cash and mash can be unified then the accelerator
+  // should be moved to accelerator_controller.cc/h. See
   // http://crbug.com/612331.
   switch (action) {
+    case SCALE_UI_DOWN:
+    case SCALE_UI_RESET:
+    case SCALE_UI_UP:
+    case ROTATE_SCREEN:
+      return true;
     case DEBUG_TOGGLE_DEVICE_SCALE_FACTOR:
     case DEV_TOGGLE_ROOT_WINDOW_FULL_SCREEN:
     case DEBUG_TOGGLE_SHOW_DEBUG_BORDERS:
@@ -41,11 +48,7 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case DEBUG_TOGGLE_SHOW_PAINT_RECTS:
     case MAGNIFY_SCREEN_ZOOM_IN:
     case MAGNIFY_SCREEN_ZOOM_OUT:
-    case ROTATE_SCREEN:
     case ROTATE_WINDOW:
-    case SCALE_UI_DOWN:
-    case SCALE_UI_RESET:
-    case SCALE_UI_UP:
     case SHOW_SYSTEM_TRAY_BUBBLE:
     case TAKE_PARTIAL_SCREENSHOT:
     case TAKE_SCREENSHOT:
@@ -58,13 +61,13 @@ bool AcceleratorControllerDelegateMus::HandlesAction(AcceleratorAction action) {
     case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
     case SWAP_PRIMARY_DISPLAY:
+    case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
     case LOCK_PRESSED:
     case LOCK_RELEASED:
     case POWER_PRESSED:
     case POWER_RELEASED:
-    case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_CLEAR:
     case TOUCH_HUD_MODE_CHANGE:
       NOTIMPLEMENTED();
@@ -81,25 +84,49 @@ bool AcceleratorControllerDelegateMus::CanPerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator,
     const ui::Accelerator& previous_accelerator) {
-#if defined(OS_CHROMEOS)
   switch (action) {
+    case ROTATE_SCREEN:
+    case SCALE_UI_DOWN:
+    case SCALE_UI_RESET:
+    case SCALE_UI_UP:
+      return true;
+#if defined(OS_CHROMEOS)
     case DEV_ADD_REMOVE_DISPLAY:
     case DEV_TOGGLE_UNIFIED_DESKTOP:
+      return true;
     case SWAP_PRIMARY_DISPLAY:
+      return display::Screen::GetScreen()->GetNumDisplays() > 1;
+    case TOGGLE_MIRROR_MODE:
     case TOUCH_HUD_PROJECTION_TOGGLE:
       return true;
+#endif
     default:
       break;
   }
-#endif
   return false;
 }
 
 void AcceleratorControllerDelegateMus::PerformAction(
     AcceleratorAction action,
     const ui::Accelerator& accelerator) {
-#if defined(OS_CHROMEOS)
   switch (action) {
+    case ROTATE_SCREEN: {
+      window_manager_->GetDisplayController()->RotateCurrentDisplayCW();
+      break;
+    }
+    case SCALE_UI_DOWN: {
+      window_manager_->GetDisplayController()->DecreaseInternalDisplayZoom();
+      break;
+    }
+    case SCALE_UI_RESET: {
+      window_manager_->GetDisplayController()->ResetInternalDisplayZoom();
+      break;
+    }
+    case SCALE_UI_UP: {
+      window_manager_->GetDisplayController()->IncreaseInternalDisplayZoom();
+      break;
+    }
+#if defined(OS_CHROMEOS)
     case DEV_ADD_REMOVE_DISPLAY: {
       display::mojom::TestDisplayControllerPtr test_display_controller;
       window_manager_->connector()->ConnectToInterface(
@@ -120,6 +147,10 @@ void AcceleratorControllerDelegateMus::PerformAction(
       window_manager_->GetDisplayController()->SwapPrimaryDisplay();
       break;
     }
+    case TOGGLE_MIRROR_MODE: {
+      window_manager_->GetDisplayController()->ToggleMirrorMode();
+      break;
+    }
     case TOUCH_HUD_PROJECTION_TOGGLE: {
       mash::mojom::LaunchablePtr launchable;
       window_manager_->connector()->ConnectToInterface("touch_hud",
@@ -128,12 +159,10 @@ void AcceleratorControllerDelegateMus::PerformAction(
                          mash::mojom::LaunchMode::DEFAULT);
       break;
     }
+#endif
     default:
       NOTREACHED();
   }
-#else
-  NOTREACHED();
-#endif
 }
 
 void AcceleratorControllerDelegateMus::ShowDeprecatedAcceleratorNotification(

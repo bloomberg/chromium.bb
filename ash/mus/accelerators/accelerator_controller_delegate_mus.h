@@ -13,6 +13,7 @@ namespace mus {
 
 class WindowManager;
 
+// Controls accelerators that are specific to mash.
 class AcceleratorControllerDelegateMus : public AcceleratorControllerDelegate {
  public:
   explicit AcceleratorControllerDelegateMus(WindowManager* window_manager);

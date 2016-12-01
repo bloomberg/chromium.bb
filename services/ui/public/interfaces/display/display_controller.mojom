@@ -10,8 +10,28 @@ import "ui/gfx/geometry/mojo/geometry.mojom";
 // state.
 interface DisplayController {
 
+  // =========================== Keyboard Shortcuts ===========================
+
+  // Increase zoom on internal display.
+  IncreaseInternalDisplayZoom();
+
+  // Decrease zoom on internal display.
+  DecreaseInternalDisplayZoom();
+
+  // Reset zoom on internal display to default level.
+  ResetInternalDisplayZoom();
+
+  // Rotate the current display by 90° CW. The current display is the display
+  // closest to the mouse cursor.
+  RotateCurrentDisplayCW();
+
   // Swap the primary display and the next display.
   SwapPrimaryDisplay();
+
+  // Toggles between mirroring and extended mode.
+  ToggleMirrorMode();
+
+  // ========================= Configuration Changes ==========================
 
   // Sets the display work area with the provided insets. The display size is
   // included to ensure that the insets are for the current display size.

@@ -147,6 +147,22 @@ void ScreenManagerOzone::ToggleDisplayResolution() {
   display_configurator_.OnConfigurationChanged();
 }
 
+void ScreenManagerOzone::IncreaseInternalDisplayZoom() {
+  NOTIMPLEMENTED();
+}
+
+void ScreenManagerOzone::DecreaseInternalDisplayZoom() {
+  NOTIMPLEMENTED();
+}
+
+void ScreenManagerOzone::ResetInternalDisplayZoom() {
+  NOTIMPLEMENTED();
+}
+
+void ScreenManagerOzone::RotateCurrentDisplayCW() {
+  NOTIMPLEMENTED();
+}
+
 void ScreenManagerOzone::SwapPrimaryDisplay() {
   const size_t num_displays = cached_displays_.size();
   if (num_displays <= 1)
@@ -169,6 +185,10 @@ void ScreenManagerOzone::SwapPrimaryDisplay() {
   }
 
   delegate_->OnPrimaryDisplayChanged(primary_display_id_);
+}
+
+void ScreenManagerOzone::ToggleMirrorMode() {
+  NOTIMPLEMENTED();
 }
 
 void ScreenManagerOzone::SetDisplayWorkArea(int64_t display_id,
