@@ -95,6 +95,7 @@ static_library("utility") {
     ]
     deps += [
       "//chrome/common:mojo_bindings",
+      "//chrome/common/importer:interfaces",
       "//net:net_utility_services",
     ]
   }

@@ -2887,6 +2887,7 @@ split_static_library("browser") {
       "//apps",
       "//chrome/browser/policy:path_parser",
       "//chrome/browser/profile_resetter:profile_reset_report_proto",
+      "//chrome/common/importer:interfaces",
       "//components/feedback",
       "//components/web_modal",
       "//device/battery",

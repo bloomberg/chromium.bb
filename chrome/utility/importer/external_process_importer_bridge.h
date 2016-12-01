@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/common/importer/importer_bridge.h"
+#include "chrome/common/importer/profile_import.mojom.h"
 #include "components/favicon_base/favicon_usage_data.h"
 
 class GURL;
@@ -20,7 +21,6 @@ struct ImportedBookmarkEntry;
 
 namespace base {
 class DictionaryValue;
-class TaskRunner;
 }
 
 namespace importer {
@@ -31,10 +31,9 @@ struct ImporterURLRow;
 struct SearchEngineInfo;
 }
 
-namespace IPC {
-class Message;
-class Sender;
-}
+// TODO(tibell): Now that profile import is a Mojo service perhaps ImportBridge,
+// ProfileWriter or something in between should be the actual Mojo interface,
+// instead of having the current split.
 
 // When the importer is run in an external process, the bridge is effectively
 // split in half by the IPC infrastructure.  The external bridge receives data
@@ -43,10 +42,11 @@ class Sender;
 // profile.
 class ExternalProcessImporterBridge : public ImporterBridge {
  public:
+  // |observer| must outlive this object.
   ExternalProcessImporterBridge(
       const base::DictionaryValue& localized_strings,
-      IPC::Sender* sender,
-      base::TaskRunner* task_runner);
+      scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr>
+          observer);
 
   // Begin ImporterBridge implementation:
   void AddBookmarks(const std::vector<ImportedBookmarkEntry>& bookmarks,
@@ -87,15 +87,11 @@ class ExternalProcessImporterBridge : public ImporterBridge {
  private:
   ~ExternalProcessImporterBridge() override;
 
-  void Send(IPC::Message* message);
-  void SendInternal(IPC::Message* message);
-
   // Holds strings needed by the external importer because the resource
   // bundle isn't available to the external process.
   std::unique_ptr<base::DictionaryValue> localized_strings_;
 
-  IPC::Sender* sender_;
-  scoped_refptr<base::TaskRunner> task_runner_;
+  scoped_refptr<chrome::mojom::ThreadSafeProfileImportObserverPtr> observer_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalProcessImporterBridge);
 };

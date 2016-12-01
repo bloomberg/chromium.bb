@@ -59,14 +59,15 @@ struct SearchEngineInfo {
   base::string16 display_name;
 };
 
-#if defined(OS_WIN)
 // Contains the information read from the IE7/IE8 Storage2 key in the registry.
 struct ImporterIE7PasswordInfo {
   ImporterIE7PasswordInfo();
+  ImporterIE7PasswordInfo(const ImporterIE7PasswordInfo& other);
   ~ImporterIE7PasswordInfo();
+  ImporterIE7PasswordInfo& operator=(const ImporterIE7PasswordInfo& other);
 
   // Hash of the url.
-  std::wstring url_hash;
+  base::string16 url_hash;
 
   // Encrypted data containing the username, password and some more
   // undocumented fields.
@@ -75,7 +76,6 @@ struct ImporterIE7PasswordInfo {
   // When the login was imported.
   base::Time date_created;
 };
-#endif
 
 // Mapped to history::VisitSource after import in the browser.
 enum VisitSource {

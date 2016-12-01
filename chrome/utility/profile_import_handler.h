@@ -11,7 +11,9 @@
 
 #include "base/compiler_specific.h"
 #include "base/memory/ref_counted.h"
+#include "chrome/common/importer/profile_import.mojom.h"
 #include "chrome/utility/utility_message_handler.h"
+#include "mojo/public/cpp/bindings/interface_request.h"
 
 class ExternalProcessImporterBridge;
 class Importer;
@@ -26,20 +28,22 @@ struct SourceProfile;
 }
 
 // Dispatches IPCs for out of process profile import.
-class ProfileImportHandler : public UtilityMessageHandler {
+class ProfileImportHandler : public chrome::mojom::ProfileImport {
  public:
   ProfileImportHandler();
   ~ProfileImportHandler() override;
 
-  // IPC::Listener:
-  bool OnMessageReceived(const IPC::Message& message) override;
+  static void Create(
+      mojo::InterfaceRequest<chrome::mojom::ProfileImport> request);
 
  private:
-  void OnImportStart(const importer::SourceProfile& source_profile,
-                     uint16_t items,
-                     const base::DictionaryValue& localized_strings);
-  void OnImportCancel();
-  void OnImportItemFinished(uint16_t item);
+  // chrome::mojom::ProfileImport:
+  void StartImport(const importer::SourceProfile& source_profile,
+                   uint16_t items,
+                   const base::DictionaryValue& localized_strings,
+                   chrome::mojom::ProfileImportObserverPtr observer) override;
+  void CancelImport() override;
+  void ReportImportItemFinished(importer::ImportItem item) override;
 
   // The following are used with out of process profile import:
   void ImporterCleanup();
@@ -57,6 +61,8 @@ class ProfileImportHandler : public UtilityMessageHandler {
 
   // Importer of the appropriate type (Firefox, Safari, IE, etc.)
   scoped_refptr<Importer> importer_;
+
+  DISALLOW_COPY_AND_ASSIGN(ProfileImportHandler);
 };
 
 #endif  // CHROME_UTILITY_PROFILE_IMPORT_HANDLER_H_

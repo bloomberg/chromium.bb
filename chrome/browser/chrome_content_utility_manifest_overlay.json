@@ -4,6 +4,7 @@
     "service_manager:connector": {
       "provides": {
         "browser": [
+          "chrome::mojom::ProfileImport",
           "chrome::mojom::ResourceUsageReporter",
           "chrome::mojom::ShellHandler",
           "net::interfaces::ProxyResolverFactory",

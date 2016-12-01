@@ -13,10 +13,6 @@
 #include "build/build_config.h"
 #include "printing/features/features.h"
 
-#if !defined(OS_ANDROID)
-#include "chrome/common/importer/profile_import_process_messages.h"
-#endif
-
 #include "chrome/common/common_message_generator.h"
 
 #if BUILDFLAG(ENABLE_PRINTING)

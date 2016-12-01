@@ -35,6 +35,10 @@ IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImporterType,
                               importer::TYPE_BOOKMARKS_FILE)
 #endif
 
+IPC_ENUM_TRAITS_MIN_MAX_VALUE(importer::ImportItem,
+                              importer::NONE,
+                              importer::ALL)
+
 IPC_STRUCT_TRAITS_BEGIN(importer::SourceProfile)
   IPC_STRUCT_TRAITS_MEMBER(importer_name)
   IPC_STRUCT_TRAITS_MEMBER(importer_type)
@@ -82,12 +86,10 @@ IPC_STRUCT_TRAITS_BEGIN(ImporterAutofillFormDataEntry)
   IPC_STRUCT_TRAITS_MEMBER(last_used)
 IPC_STRUCT_TRAITS_END()
 
-#if defined(OS_WIN)
 IPC_STRUCT_TRAITS_BEGIN(importer::ImporterIE7PasswordInfo)
   IPC_STRUCT_TRAITS_MEMBER(url_hash)
   IPC_STRUCT_TRAITS_MEMBER(encrypted_data)
   IPC_STRUCT_TRAITS_MEMBER(date_created)
 IPC_STRUCT_TRAITS_END()
-#endif
 
 #endif  // CHROME_COMMON_IMPORTER_PROFILE_IMPORT_PROCESS_PARAM_TRAITS_MACROS_H_

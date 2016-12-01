@@ -6,7 +6,6 @@
 
 #include <stddef.h>
 
-#include "base/bind.h"
 #include "base/files/file_util.h"
 #include "base/macros.h"
 #include "base/memory/ptr_util.h"
@@ -23,7 +22,6 @@
 #include "components/search_engines/template_url.h"
 #include "components/search_engines/template_url_parser.h"
 #include "components/search_engines/template_url_prepopulate_data.h"
-#include "content/public/browser/browser_thread.h"
 #include "ui/base/l10n/l10n_util.h"
 
 #if defined(OS_WIN)
@@ -68,8 +66,6 @@ history::VisitSource ConvertImporterVisitSourceToHistoryVisitSource(
 }
 
 }  // namespace
-
-using content::BrowserThread;
 
 namespace {
 
@@ -170,16 +166,11 @@ InProcessImporterBridge::InProcessImporterBridge(
 void InProcessImporterBridge::AddBookmarks(
     const std::vector<ImportedBookmarkEntry>& bookmarks,
     const base::string16& first_folder_name) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddBookmarks, writer_, bookmarks,
-                 first_folder_name));
+  writer_->AddBookmarks(bookmarks, first_folder_name);
 }
 
 void InProcessImporterBridge::AddHomePage(const GURL& home_page) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddHomepage, writer_, home_page));
+  writer_->AddHomepage(home_page);
 }
 
 #if defined(OS_WIN)
@@ -190,18 +181,13 @@ void InProcessImporterBridge::AddIE7PasswordInfo(
   ie7_password_info.encrypted_data = password_info.encrypted_data;
   ie7_password_info.date_created = password_info.date_created;
 
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddIE7PasswordInfo, writer_,
-                 ie7_password_info));
+  writer_->AddIE7PasswordInfo(ie7_password_info);
 }
 #endif  // OS_WIN
 
 void InProcessImporterBridge::SetFavicons(
     const favicon_base::FaviconUsageDataList& favicons) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddFavicons, writer_, favicons));
+  writer_->AddFavicons(favicons);
 }
 
 void InProcessImporterBridge::SetHistoryItems(
@@ -211,12 +197,7 @@ void InProcessImporterBridge::SetHistoryItems(
       ConvertImporterURLRowsToHistoryURLRows(rows);
   history::VisitSource converted_visit_source =
       ConvertImporterVisitSourceToHistoryVisitSource(visit_source);
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&ProfileWriter::AddHistoryPage,
-                                     writer_,
-                                     converted_rows,
-                                     converted_visit_source));
+  writer_->AddHistoryPage(converted_rows, converted_visit_source);
 }
 
 void InProcessImporterBridge::SetKeywords(
@@ -229,9 +210,7 @@ void InProcessImporterBridge::SetKeywords(
     if (owned_template_url)
       owned_template_urls.push_back(std::move(owned_template_url));
   }
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddKeywords, writer_,
-                 base::Passed(&owned_template_urls), unique_on_host_and_path));
+  writer_->AddKeywords(std::move(owned_template_urls), unique_on_host_and_path);
 }
 
 void InProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
@@ -239,16 +218,12 @@ void InProcessImporterBridge::SetFirefoxSearchEnginesXMLData(
   TemplateURLService::OwnedTemplateURLVector search_engines;
   ParseSearchEnginesFromFirefoxXMLData(search_engine_data, &search_engines);
 
-  BrowserThread::PostTask(BrowserThread::UI, FROM_HERE,
-                          base::Bind(&ProfileWriter::AddKeywords, writer_,
-                                     base::Passed(&search_engines), true));
+  writer_->AddKeywords(std::move(search_engines), true);
 }
 
 void InProcessImporterBridge::SetPasswordForm(
     const autofill::PasswordForm& form) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ProfileWriter::AddPasswordForm, writer_, form));
+  writer_->AddPasswordForm(form);
 }
 
 void InProcessImporterBridge::SetAutofillFormData(
@@ -261,37 +236,23 @@ void InProcessImporterBridge::SetAutofillFormData(
         entries[i].last_used));
   }
 
-  BrowserThread::PostTask(BrowserThread::UI,
-                          FROM_HERE,
-                          base::Bind(&ProfileWriter::AddAutofillFormDataEntries,
-                                     writer_,
-                                     autofill_entries));
+  writer_->AddAutofillFormDataEntries(autofill_entries);
 }
 
 void InProcessImporterBridge::NotifyStarted() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalProcessImporterHost::NotifyImportStarted, host_));
+  host_->NotifyImportStarted();
 }
 
 void InProcessImporterBridge::NotifyItemStarted(importer::ImportItem item) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalProcessImporterHost::NotifyImportItemStarted,
-                 host_, item));
+  host_->NotifyImportItemStarted(item);
 }
 
 void InProcessImporterBridge::NotifyItemEnded(importer::ImportItem item) {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalProcessImporterHost::NotifyImportItemEnded,
-                 host_, item));
+  host_->NotifyImportItemEnded(item);
 }
 
 void InProcessImporterBridge::NotifyEnded() {
-  BrowserThread::PostTask(
-      BrowserThread::UI, FROM_HERE,
-      base::Bind(&ExternalProcessImporterHost::NotifyImportEnded, host_));
+  host_->NotifyImportEnded();
 }
 
 base::string16 InProcessImporterBridge::GetLocalizedString(int message_id) {

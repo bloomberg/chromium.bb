@@ -113,10 +113,6 @@ std::unique_ptr<service_manager::Service> CreateImageDecoderService() {
 
 ChromeContentUtilityClient::ChromeContentUtilityClient()
     : filter_messages_(false) {
-#if !defined(OS_ANDROID)
-  handlers_.push_back(new ProfileImportHandler());
-#endif
-
 #if BUILDFLAG(ENABLE_EXTENSIONS)
   handlers_.push_back(new extensions::ExtensionsHandler(this));
   handlers_.push_back(new image_writer::ImageWriterHandler());
@@ -208,6 +204,7 @@ void ChromeContentUtilityClient::ExposeInterfacesToBrowser(
   registry->AddInterface<net::interfaces::ProxyResolverFactory>(
       base::Bind(CreateProxyResolverFactory));
   registry->AddInterface(base::Bind(CreateResourceUsageReporter));
+  registry->AddInterface(base::Bind(ProfileImportHandler::Create));
 #endif
   registry->AddInterface(
       base::Bind(&safe_json::SafeJsonParserMojoImpl::Create));
