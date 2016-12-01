@@ -84,7 +84,7 @@ void HTMLParserThread::postTask(std::unique_ptr<CrossThreadClosure> closure) {
   ASSERT(isMainThread());
   if (!m_thread) {
     m_thread = WebThreadSupportingGC::create("HTMLParserThread",
-                                             BlinkGC::MainThreadHeapMode);
+                                             BlinkGC::PerThreadHeapMode);
     postTask(crossThreadBind(&HTMLParserThread::setupHTMLParserThread,
                              crossThreadUnretained(this)));
   }
