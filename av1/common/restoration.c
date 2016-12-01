@@ -658,7 +658,7 @@ static void loop_sgrproj_filter_tile(uint8_t *data, int tile_idx, int width,
                                rst->rsi->sgrproj_info[tile_idx].xqd, tmpbuf);
   for (i = 0; i < (v_end - v_start); ++i) {
     for (j = 0; j < (h_end - h_start); ++j) {
-      data_p[i * stride + j] = clip_pixel(dat[i * (h_end - h_start) + j]);
+      data_p[i * stride + j] = clip_pixel((int)dat[i * (h_end - h_start) + j]);
     }
   }
 }
@@ -850,7 +850,17 @@ static void loop_wiener_filter_highbd(uint8_t *data8, int width, int height,
                                       int bit_depth) {
   uint16_t *data = CONVERT_TO_SHORTPTR(data8);
   uint16_t *tmpdata = CONVERT_TO_SHORTPTR(tmpdata8);
-  int tile_idx;
+  int tile_idx, i;
+  uint16_t *data_p, *tmpdata_p;
+
+  // Initialize tmp buffer
+  data_p = data;
+  tmpdata_p = tmpdata;
+  for (i = 0; i < height; ++i) {
+    memcpy(tmpdata_p, data_p, sizeof(*data_p) * width);
+    data_p += stride;
+    tmpdata_p += tmpstride;
+  }
   for (tile_idx = 0; tile_idx < rst->ntiles; ++tile_idx) {
     loop_wiener_filter_tile_highbd(data, tile_idx, width, height, stride, rst,
                                    tmpdata, tmpstride, bit_depth);
@@ -885,7 +895,7 @@ static void loop_sgrproj_filter_tile_highbd(uint16_t *data, int tile_idx,
   for (i = 0; i < (v_end - v_start); ++i) {
     for (j = 0; j < (h_end - h_start); ++j) {
       data_p[i * stride + j] =
-          clip_pixel_highbd(dat[i * (h_end - h_start) + j], bit_depth);
+          clip_pixel_highbd((int)dat[i * (h_end - h_start) + j], bit_depth);
     }
   }
 }
