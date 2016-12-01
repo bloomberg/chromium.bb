@@ -309,6 +309,10 @@ v8::Local<v8::Value> ModuleSystem::CallModuleMethod(
 
   v8::Local<v8::Function> function =
       GetModuleFunction(module_name, method_name);
+  if (function.IsEmpty()) {
+    NOTREACHED() << "GetModuleFunction() returns empty function handle";
+    return handle_scope.Escape(v8::Undefined(GetIsolate()));
+  }
 
   v8::Local<v8::Value> result;
   {
@@ -350,6 +354,10 @@ void ModuleSystem::CallModuleMethodSafe(const std::string& module_name,
 
   v8::Local<v8::Function> function =
       GetModuleFunction(module_name, method_name);
+  if (function.IsEmpty()) {
+    NOTREACHED() << "GetModuleFunction() returns empty function handle";
+    return;
+  }
 
   {
     v8::TryCatch try_catch(GetIsolate());
