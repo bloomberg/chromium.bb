@@ -560,12 +560,6 @@ config("compiler_cpu_abi") {
         ldflags += [ "--target=aarch64-linux-gnu" ]
       }
     } else if (current_cpu == "mipsel" && !is_nacl) {
-      if (is_clang) {
-        # Temporarily needed due to unsupported MIPS macro instructions
-        # in inline asm code in third_party projects (libwebp and webrtc).
-        # TODO(lmilko) Enable integrated-as.
-        cflags += [ "-fno-integrated-as" ]
-      }
       if (mips_arch_variant == "r6") {
         if (is_clang) {
           cflags += [
