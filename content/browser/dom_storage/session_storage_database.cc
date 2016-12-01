@@ -33,7 +33,12 @@ const char session_storage_uma_name[] = "SessionStorageDatabase.Open";
 enum SessionStorageUMA {
   SESSION_STORAGE_UMA_SUCCESS,
   SESSION_STORAGE_UMA_RECREATED,
-  SESSION_STORAGE_UMA_FAIL,
+  SESSION_STORAGE_UMA_RECREATE_FAIL,  // Deprecated in M56 (issue 183679)
+  SESSION_STORAGE_UMA_RECREATE_NOT_FOUND,
+  SESSION_STORAGE_UMA_RECREATE_NOT_SUPPORTED,
+  SESSION_STORAGE_UMA_RECREATE_CORRUPTION,
+  SESSION_STORAGE_UMA_RECREATE_INVALID_ARGUMENT,
+  SESSION_STORAGE_UMA_RECREATE_IO_ERROR,
   SESSION_STORAGE_UMA_MAX
 };
 
@@ -391,9 +396,30 @@ bool SessionStorageDatabase::LazyOpen(bool create_if_needed) {
     if (!s.ok()) {
       LOG(WARNING) << "Failed to open leveldb in " << file_path_.value()
                    << ", error: " << s.ToString();
-      UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
-                                SESSION_STORAGE_UMA_FAIL,
-                                SESSION_STORAGE_UMA_MAX);
+      if (s.IsNotFound()) {
+        UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
+                                  SESSION_STORAGE_UMA_RECREATE_NOT_FOUND,
+                                  SESSION_STORAGE_UMA_MAX);
+      } else if (s.IsNotSupportedError()) {
+        UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
+                                  SESSION_STORAGE_UMA_RECREATE_NOT_SUPPORTED,
+                                  SESSION_STORAGE_UMA_MAX);
+      } else if (s.IsCorruption()) {
+        UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
+                                  SESSION_STORAGE_UMA_RECREATE_CORRUPTION,
+                                  SESSION_STORAGE_UMA_MAX);
+      } else if (s.IsInvalidArgument()) {
+        UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
+                                  SESSION_STORAGE_UMA_RECREATE_INVALID_ARGUMENT,
+                                  SESSION_STORAGE_UMA_MAX);
+      } else if (s.IsIOError()) {
+        UMA_HISTOGRAM_ENUMERATION(session_storage_uma_name,
+                                  SESSION_STORAGE_UMA_RECREATE_IO_ERROR,
+                                  SESSION_STORAGE_UMA_MAX);
+      } else {
+        NOTREACHED();
+      }
+
       DCHECK(db == NULL);
       db_error_ = true;
       return false;
