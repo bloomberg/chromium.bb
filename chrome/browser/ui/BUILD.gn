@@ -2228,6 +2228,8 @@ split_static_library("ui") {
         "android/tab_model/tab_model_jni_bridge.h",
         "android/tab_model/tab_model_list.cc",
         "android/tab_model/tab_model_list.h",
+        "android/tab_model/tab_model_selector_base.cc",
+        "android/tab_model/tab_model_selector_base.h",
         "android/toolbar/toolbar_model_android.cc",
         "android/toolbar/toolbar_model_android.h",
         "android/usb_chooser_dialog_android.cc",

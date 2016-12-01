@@ -20,9 +20,11 @@ PermissionPromptAndroid::PermissionPromptAndroid(
 }
 
 PermissionPromptAndroid::~PermissionPromptAndroid() {
-  GroupedPermissionInfoBarDelegate* infobar_delegate =
-      static_cast<GroupedPermissionInfoBarDelegate*>(infobar_->delegate());
-  infobar_delegate->PermissionPromptDestroyed();
+  if (infobar_) {
+    GroupedPermissionInfoBarDelegate* infobar_delegate =
+        static_cast<GroupedPermissionInfoBarDelegate*>(infobar_->delegate());
+    infobar_delegate->PermissionPromptDestroyed();
+  }
 }
 
 void PermissionPromptAndroid::SetDelegate(Delegate* delegate) {

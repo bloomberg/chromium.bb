@@ -158,6 +158,7 @@
 #include "chrome/browser/ui/android/ssl_client_certificate_request.h"
 #include "chrome/browser/ui/android/tab_model/single_tab_model.h"
 #include "chrome/browser/ui/android/tab_model/tab_model_jni_bridge.h"
+#include "chrome/browser/ui/android/tab_model/tab_model_selector_base.h"
 #include "chrome/browser/ui/android/toolbar/toolbar_model_android.h"
 #include "chrome/browser/ui/android/usb_chooser_dialog_android.h"
 #include "components/dom_distiller/content/browser/android/content_jni_registrar.h"
@@ -387,6 +388,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"TabContentManager", RegisterTabContentManager},
     {"TabListSceneLayer", RegisterTabListSceneLayer},
     {"TabModelJniBridge", TabModelJniBridge::Register},
+    {"TabModelSelectorBase", RegisterTabModelSelectorBase},
     {"TabState", RegisterTabState},
     {"TabStripSceneLayer", RegisterTabStripSceneLayer},
     {"TabWebContentsDelegateAndroid", RegisterTabWebContentsDelegateAndroid},
@@ -408,8 +410,7 @@ static base::android::RegistrationMethod kChromeRegisteredMethods[] = {
     {"DisplaySynchronizer",
      DisplaySynchronizer::RegisterDisplaySynchronizerNatives},
     {"GvrApi", GvrApi::RegisterGvrApiNatives},
-    {"NativeCallbacks",
-     NativeCallbacks::RegisterNativeCallbacksNatives},
+    {"NativeCallbacks", NativeCallbacks::RegisterNativeCallbacksNatives},
 #endif
     {"WarmupManager", RegisterWarmupManager},
     {"WebApkInstaller", WebApkInstaller::Register},

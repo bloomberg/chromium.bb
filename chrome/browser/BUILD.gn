@@ -4013,6 +4013,7 @@ if (android_java_ui) {
       "../android/java/src/org/chromium/chrome/browser/tab/TabWebContentsDelegateAndroid.java",
       "../android/java/src/org/chromium/chrome/browser/tabmodel/SingleTabModel.java",
       "../android/java/src/org/chromium/chrome/browser/tabmodel/TabModelJniBridge.java",
+      "../android/java/src/org/chromium/chrome/browser/tabmodel/TabModelSelectorBase.java",
       "../android/java/src/org/chromium/chrome/browser/toolbar/ToolbarModel.java",
       "../android/java/src/org/chromium/chrome/browser/util/AccessibilityUtil.java",
       "../android/java/src/org/chromium/chrome/browser/util/FeatureUtilities.java",
