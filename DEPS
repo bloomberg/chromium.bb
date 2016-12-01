@@ -257,7 +257,7 @@ deps = {
     Var('chromium_git') + '/chromium/deps/mesa.git' + '@' + 'ef811c6bd4de74e13e7035ca882cc77f85793fef',
 
   'src/third_party/ced/src':
-    Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + '9012c0ab648025dd0f8df14294bf5d6d73793ac9',
+    Var('chromium_git') + '/external/github.com/google/compact_enc_det.git' + '@' + 'e57cdc44bd541d10669312a6fdc59fc4bf52d2b9',
 
   'src/third_party/swiftshader':
     Var('swiftshader_git') + '/SwiftShader.git' + '@' +  Var('swiftshader_revision'),
