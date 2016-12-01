@@ -21,7 +21,7 @@ import org.chromium.base.metrics.RecordUserAction;
  *  The memory and reference ownership of this class is unusual - see the .cc file and ContentView
  *  for more details.
  *
- *  TODO(mkosiba): Rid this guy of default implementations. This class is used by both WebView and
+ *  TODO(mkosiba): Rid this class of default implementations. This class is used by both WebView and
  *  the browser and we don't want a the browser-specific default implementation to accidentally leak
  *  over to WebView.
  */
