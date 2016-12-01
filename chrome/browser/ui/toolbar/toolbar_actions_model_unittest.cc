@@ -1456,6 +1456,50 @@ TEST_F(ToolbarActionsModelUnitTest, AddAndRemoveComponentActionWithOVerflow) {
   EXPECT_EQ(browser_action_c()->id(), GetActionIdAtIndex(2u));
 }
 
+TEST_F(ToolbarActionsModelUnitTest, AddComponentActionInIncognito) {
+  Init();
+  // Add three extension actions: A, B, C.
+  ASSERT_TRUE(AddBrowserActionExtensions());
+  EXPECT_EQ(3u, num_toolbar_items());
+
+  // Enable extension C in incognito.
+  extensions::ExtensionPrefs* extension_prefs =
+      extensions::ExtensionPrefs::Get(profile());
+  extension_prefs->SetIsIncognitoEnabled(browser_action_c()->id(), true);
+  extensions::util::SetIsIncognitoEnabled(browser_action_c()->id(), profile(),
+                                          true);
+
+  // Get an incognito toolbar.
+  ToolbarActionsModel* incognito_model =
+      extensions::extension_action_test_util::CreateToolbarModelForProfile(
+          profile()->GetOffTheRecordProfile());
+
+  // The incognito toolbar should only have extension C.
+  EXPECT_EQ(1u, incognito_model->toolbar_items().size());
+
+  // Add a component action to the incognito toolbar. It shouldn't appear on the
+  // non-incognito toolbar.
+  incognito_model->AddComponentAction(component_action_id());
+  EXPECT_EQ(2u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(2u, incognito_model->visible_icon_count());
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(1u, incognito_model));
+  EXPECT_EQ(3u, num_toolbar_items());
+  incognito_model->RemoveComponentAction(component_action_id());
+
+  // Set visible count to 2 so that C is overflowed on the non-incognito
+  // toolbar. Its state is A, B, [C]. C stays visible on the incognito toolbar.
+  toolbar_model()->SetVisibleIconCount(2);
+  EXPECT_EQ(1u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(1u, incognito_model->visible_icon_count());
+
+  // Add a component action to the incognito toolbar. It shouldn't appear in the
+  // overflow menu.
+  incognito_model->AddComponentAction(component_action_id());
+  EXPECT_EQ(2u, incognito_model->toolbar_items().size());
+  EXPECT_EQ(2u, incognito_model->visible_icon_count());
+  EXPECT_EQ(component_action_id(), GetActionIdAtIndex(1u, incognito_model));
+}
+
 TEST_F(ToolbarActionsModelUnitTest,
        TestUninstallVisibleExtensionDoesntBringOutOther) {
   Init();

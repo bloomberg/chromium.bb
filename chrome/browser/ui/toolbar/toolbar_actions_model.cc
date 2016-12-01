@@ -388,7 +388,8 @@ void ToolbarActionsModel::AddItem(const ToolbarItem& item) {
       // nondeterministic, we can't just assume the main bar will have the
       // extension and look it up.
       size_t main_index = main_model->FindNewPositionFromLastKnownGood(item);
-      bool visible = main_index < main_model->visible_icon_count();
+      bool visible =
+          is_new_extension || main_index < main_model->visible_icon_count();
       // We may need to adjust the visible count if the incognito bar isn't
       // showing all icons and this one is visible, or if it is showing all
       // icons and this is hidden.
