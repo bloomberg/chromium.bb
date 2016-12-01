@@ -535,7 +535,10 @@ crbug.com/498539 virtual/threaded/inspector/tracing/timeline-misc/timeline-bound
 crbug.com/498539 [ Mac ] inspector/sources/debugger/live-edit-no-reveal.html [ Crash Pass Timeout ]
 crbug.com/498539 [ Win7 ] inspector/sources/debugger-pause/debugger-eval-on-call-frame-inside-iframe.html [ Failure Pass ]
 crbug.com/498539 [ Mac10.9 ] inspector/console/console-uncaught-exception.html [ Failure Pass ]
-crbug.com/498539 crbug.com/405845 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass NeedsManualRebaseline ]
+
+# TODO(luoe): The old expectation before NeedsManualRebaseline was the following
+# crbug.com/498539 [ Win7 ] inspector/console/console-dir-es6.html [ Failure Pass ]
+crbug.com/405845 inspector/console/console-dir-es6.html [ NeedsManualRebaseline ]
 crbug.com/498539 [ Win7 ] inspector/elements/styles-4/styles-update-from-js.html [ Crash Pass ]
 
 crbug.com/596968 [ Win ] inspector-protocol/input/eventTimestamp.html [ Failure Pass ]
