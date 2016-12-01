@@ -5,15 +5,17 @@ However, do the following instead to install the build dependencies:
 
 ## Install the build dependencies:
 
-Use zypper command to install dependencies:
+Use `zypper` command to install dependencies:
 
 (openSUSE 11.1 and higher)
 
-    sudo zypper in subversion pkg-config python perl \
-         bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
-         wdiff lighttpd gcc gcc-c++ gconf2-devel mozilla-nspr \
-         mozilla-nspr-devel php5-fastcgi alsa-devel libexpat-devel \
-         libjpeg-devel libbz2-devel
+```shell
+sudo zypper in subversion pkg-config python perl \
+     bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
+     wdiff lighttpd gcc gcc-c++ gconf2-devel mozilla-nspr \
+     mozilla-nspr-devel php5-fastcgi alsa-devel libexpat-devel \
+     libjpeg-devel libbz2-devel
+```
 
 For 11.0, use `libnspr4-0d` and `libnspr4-dev` instead of `mozilla-nspr` and
 `mozilla-nspr-devel`, and use `php5-cgi` instead of `php5-fastcgi`. And need
@@ -21,20 +23,26 @@ For 11.0, use `libnspr4-0d` and `libnspr4-dev` instead of `mozilla-nspr` and
 
 (openSUSE 11.0)
 
-    sudo zypper in subversion pkg-config python perl \
-         bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
-         libnspr4-0d libnspr4-dev wdiff lighttpd gcc gcc-c++ libexpat-devel \
-         php5-cgi gconf2-devel alsa-devel gtk2-devel jpeg-devel
+```shell
+sudo zypper in subversion pkg-config python perl \
+     bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
+     libnspr4-0d libnspr4-dev wdiff lighttpd gcc gcc-c++ libexpat-devel \
+     php5-cgi gconf2-devel alsa-devel gtk2-devel jpeg-devel
+```
 
-The Ubuntu package sun-java6-fonts contains a subset of Java of the fonts used.
+The Ubuntu package `sun-java6-fonts` contains a subset of Java of the fonts used.
 Since this package requires Java as a prerequisite anyway, we can do the same
-thing by just installing the equivalent OpenSUSE Sun Java package:
+thing by just installing the equivalent openSUSE Sun Java package:
 
-    sudo zypper in java-1_6_0-sun
+```shell
+sudo zypper in java-1_6_0-sun
+```
 
-Webkit is currently hard-linked to the Microsoft fonts. To install these using zypper
+WebKit is currently hard-linked to the Microsoft fonts. To install these using `zypper`
 
-    sudo zypper in fetchmsttfonts pullin-msttf-fonts
+```shell
+sudo zypper in fetchmsttfonts pullin-msttf-fonts
+```
 
 To make the fonts installed above work, as the paths are hardcoded for Ubuntu,
 create symlinks to the appropriate locations:

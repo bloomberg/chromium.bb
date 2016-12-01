@@ -88,47 +88,57 @@ using gn - see [crbug.com/611087](https://crbug.com/611087).
 
 ## Get the code
 
-Create a chromium directory for the checkout and change to it (you can call
+Create a `chromium` directory for the checkout and change to it (you can call
 this whatever you like and put it wherever you like, as
 long as the full path has no spaces):
-    
-    $ mkdir chromium
-    $ cd chromium
 
-Run the `fetch` tool from depot_tools to check out the code and its
+```shell
+$ mkdir chromium && cd chromium
+```
+
+Run the `fetch` tool from `depot_tools` to check out the code and its
 dependencies.
 
-    $ fetch chromium
+```shell
+$ fetch ios
+```
 
 If you don't want the full repo history, you can save a lot of time by
-adding the `--no-history` flag to fetch. Expect the command to take
-30 minutes on even a fast connection, and many hours on slower ones.
+adding the `--no-history` flag to `fetch`.
 
-When fetch completes, it will have created a directory called `src`.
-The remaining instructions assume you are now in that directory:
+Expect the command to take 30 minutes on even a fast connection, and many
+hours on slower ones.
 
-    $ cd src
+When `fetch` completes, it will have created a hidden `.gclient` file and a
+directory called `src` in the working directory. The remaining instructions
+assume you have switched to the `src` directory:
 
-### (optional) Install API keys
+```shell
+$ cd src
+```
 
-You can also [instaldl API keys](https://www.chromium.org/developers/how-tos/api-keys)
-if you want to talk to some of the Google services, but this is not necessary
-for most development and testing purposes.
+*Optional*: You can also [install API
+keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
+build to talk to some Google services, but this is not necessary for most
+development and testing purposes.
 
-## Seting up the Build
+## Building
 
-Chromium uses [Ninja](https://ninja-build.org) as its main build tool, and
-a tool called [GN](../tools/gn/docs/quick_start.md) to generate
-the .ninja files to do the build. To create a build directory:
+Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
+with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`
+files. You can create any number of *build directories* with different
+configurations. To create a build directory:
 
-    $ gn gen out/Default
+```shell
+$ gn gen out/Default
+```
 
-* You only have to do run this command once, it will self-update the build
-  files as needed after that.
-* You can replace `out/Default` with another directory name, but we recommend
-  it should still be a subdirectory of `out`.
-* To specify build parameters for GN builds, including release settings,
-  see [GN build configuration](https://www.chromium.org/developers/gn-build-configuration). 
+* You only have to run this once for each new build directory, Ninja will
+  update the build files as needed.
+* You can replace `Default` with another name, but
+  it should be a subdirectory of `out`.
+* For other build arguments, including release settings, see [GN build
+  configuration](https://www.chromium.org/developers/gn-build-configuration).
   The default will be a debug component build matching the current host
   operating system and CPU.
 * For more info on GN, run `gn help` on the command line or read the

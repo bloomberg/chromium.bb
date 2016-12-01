@@ -14,137 +14,163 @@ Google employee? See [go/building-chrome](https://goto.google.com/building-chrom
 * You must have Git and Python installed already.
 
 Most development is done on Ubuntu. Other distros may or may not work;
-see the [linux instructions](linux_build_instructions.md) for some suggestions.
+see the [Linux instructions](linux_build_instructions.md) for some suggestions.
 
 Building the Android client on Windows or Mac is not supported and doesn't work.
 
 ## Install `depot_tools`
 
-Clone the depot_tools repository:
+Clone the `depot_tools` repository:
 
-    $ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+```shell
+$ git clone https://chromium.googlesource.com/chromium/tools/depot_tools.git
+```
 
-Add depot_tools to the end of your PATH (you will probably want to put this
-in your ~/.bashrc or ~/.zshrc). Assuming you cloned depot_tools
-to /path/to/depot_tools:
+Add `depot_tools` to the end of your PATH (you will probably want to put this
+in your `~/.bashrc` or `~/.zshrc`). Assuming you cloned `depot_tools`
+to `/path/to/depot_tools`:
 
-    $ export PATH=$PATH:/path/to/depot_tools
+```shell
+$ export PATH="$PATH:/path/to/depot_tools"
+```
 
 ## Get the code
 
-Create a chromium directory for the checkout and change to it (you can call
+Create a `chromium` directory for the checkout and change to it (you can call
 this whatever you like and put it wherever you like, as
 long as the full path has no spaces):
 
-    $ mkdir ~/chromium && cd ~/chromium
-    $ fetch --nohooks android
+```shell
+$ mkdir ~/chromium && cd ~/chromium
+$ fetch --nohooks android
+```
 
 If you don't want the full repo history, you can save a lot of time by
-adding the `--no-history` flag to fetch.
+adding the `--no-history` flag to `fetch`.
 
 Expect the command to take 30 minutes on even a fast connection, and many
 hours on slower ones.
 
 If you've already installed the build dependencies on the machine (from another
-checkout, for example), you can omit the `--nohooks` flag and fetch
+checkout, for example), you can omit the `--nohooks` flag and `fetch`
 will automatically execute `gclient runhooks` at the end.
 
-When fetch completes, it will have created a directory called `src`.
-The remaining instructions assume you are now in that directory:
+When `fetch` completes, it will have created a hidden `.gclient` file and a
+directory called `src` in the working directory. The remaining instructions
+assume you have switched to the `src` directory:
 
-    $ cd src
+```shell
+$ cd src
+```
 
 ### Converting an existing Linux checkout
 
 If you have an existing Linux checkout, you can add Android support by
-appending `target_os = ['android']` to your .gclient file (in the
-directory above src):
+appending `target_os = ['android']` to your `.gclient` file (in the
+directory above `src`):
 
-    $ echo "target_os = [ 'android' ]" >> ../.gclient
+```shell
+$ echo "target_os = [ 'android' ]" >> ../.gclient
+```
 
-Then run gclient sync to pull the new Android dependencies:
+Then run `gclient sync` to pull the new Android dependencies:
 
-    gclient sync
+```shell
+$ gclient sync
+```
 
-(This is actually the difference between `fetch android` and `fetch chromium`).
+(This is the only difference between `fetch android` and `fetch chromium`.)
 
 ### Install additional build dependencies
 
 Once you have checked out the code, run
 
-    build/install-build-deps-android.sh
+```shell
+$ build/install-build-deps-android.sh
+```
 
-to get all of the dependencies you need to build on Linux *plus* all of the
+to get all of the dependencies you need to build on Linux, *plus* all of the
 Android-specific dependencies (you need some of the regular Linux dependencies
-because an Android build builds a bunch of the Linux tools and utilities).
+because an Android build includes a bunch of the Linux tools and utilities).
 
 ### Run the hooks
 
 Once you've run `install-build-deps` at least once, you can now run the
-chromium-specific hooks, which will download additional binaries and other
+Chromium-specific hooks, which will download additional binaries and other
 things you might need:
 
-    $ gclient runhooks
+```shell
+$ gclient runhooks
+```
 
-*Optional*: You can also [install API keys](https://www.chromium.org/developers/how-tos/api-keys)
-if you want to talk to some of the Google services, but this is not necessary
-for most development and testing purposes.
+*Optional*: You can also [install API
+keys](https://www.chromium.org/developers/how-tos/api-keys) if you want your
+build to talk to some Google services, but this is not necessary for most
+development and testing purposes.
 
 ### Configure the JDK
 
 Make also sure that OpenJDK 1.7 is selected as default:
 
-`sudo update-alternatives --config javac`
-`sudo update-alternatives --config java`
-`sudo update-alternatives --config javaws`
-`sudo update-alternatives --config javap`
-`sudo update-alternatives --config jar`
-`sudo update-alternatives --config jarsigner`
+```shell
+$ sudo update-alternatives --config javac
+$ sudo update-alternatives --config java
+$ sudo update-alternatives --config javaws
+$ sudo update-alternatives --config javap
+$ sudo update-alternatives --config jar
+$ sudo update-alternatives --config jarsigner
+```
 
 ## Setting up the Build
 
-Chromium uses [Ninja](https://ninja-build.org) as its main build tool, and
-a tool called [GN](../tools/gn/docs/quick_start.md) to generate
-the .ninja files to do the build. To create a build directory configured
-to build Android, run:
+Chromium uses [Ninja](https://ninja-build.org) as its main build tool along
+with a tool called [GN](../tools/gn/docs/quick_start.md) to generate `.ninja`
+files. You can create any number of *build directories* with different
+configurations. To create a build directory which builds Chrome for Android,
+run:
 
-    $ gn gen '--args="target_os="android"' out/Default
+```shell
+$ gn gen '--args="target_os="android"' out/Default
+```
 
-* You only have to do run this command once, it will self-update the build
-  files as needed after that.
-* You can replace `out/Default` with another directory name, but we recommend
-  it should still be a subdirectory of `out`.
-* To specify build parameters for GN builds, including release settings,
-  see [GN build configuration](https://www.chromium.org/developers/gn-build-configuration). 
+* You only have to run this once for each new build directory, Ninja will
+  update the build files as needed.
+* You can replace `Default` with another name, but
+  it should be a subdirectory of `out`.
+* For other build arguments, including release settings, see [GN build
+  configuration](https://www.chromium.org/developers/gn-build-configuration).
   The default will be a debug component build matching the current host
   operating system and CPU.
 * For more info on GN, run `gn help` on the command line or read the
   [quick start guide](../tools/gn/docs/quick_start.md).
 
-Also be aware that some scripts (e.g. tombstones.py, adb_gdb.py)
+Also be aware that some scripts (e.g. `tombstones.py`, `adb_gdb.py`)
 require you to set `CHROMIUM_OUTPUT_DIR=out/Default`.
 
 ## Build Chromium
 
 Build Chromium with Ninja using the command:
 
-    $ ninja -C out/Default chrome_public_apk
+```shell
+$ ninja -C out/Default chrome_public_apk
+```
 
-You can get a list of all of the other build targets from GN by running
-`gn ls out/Default` from the command line. To compile one, pass to Ninja
-the GN label with no preceding "//" (so for `//chrome/test:unit_tests`
-use ninja -C out/Default chrome/test:unit_tests`).
+You can get a list of all of the other build targets from GN by running `gn ls
+out/Default` from the command line. To compile one, pass the GN label to Ninja
+with no preceding "//" (so, for `//chrome/test:unit_tests` use `ninja -C
+out/Default chrome/test:unit_tests`).
+
 ## Installing and Running Chromium on a device
 
-If the `adb_install_apk.py` script below fails, make sure aapt is in
-your PATH. If not, add aapt's path to your PATH environment variable (it
-should be
+If the `adb_install_apk.py` script below fails, make sure `aapt` is in your
+PATH. If not, add `aapt`'s parent directory to your `PATH` environment variable
+(it should be
 `/path/to/src/third_party/android_tools/sdk/build-tools/{latest_version}/`).
 
 Prepare the environment:
 
 ```shell
-. build/android/envsetup.sh
+$ . build/android/envsetup.sh
 ```
 
 ### Plug in your Android device
