@@ -548,10 +548,8 @@
         <include name="IDR_SOUND_PASSTHROUGH_WAV" file="resources\chromeos\sounds\earcons\passthrough.wav" type="BINDATA" />
         <include name="IDR_SOUND_EXIT_SCREEN_WAV" file="resources\chromeos\sounds\earcons\exit_screen.wav" type="BINDATA" />
         <include name="IDR_SOUND_ENTER_SCREEN_WAV" file="resources\chromeos\sounds\earcons\enter_screen.wav" type="BINDATA" />
-        <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_HIGH_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_high.wav" type="BINDATA" />
-        <include name="IDR_SOUND_SPOKEN_FEEDBACK_TOGGLE_COUNTDOWN_LOW_WAV" file="resources\chromeos\sounds\spoken_feedback_toggle_countdown_low.wav" type="BINDATA" />
       </if>
-     <if expr="chromeos">
+      <if expr="chromeos">
         <include name="IDR_ABOUT_POWER_HTML" file="resources\chromeos\power.html" type="BINDATA" />
         <include name="IDR_ABOUT_POWER_JS" file="resources\chromeos\power.js" type="BINDATA" />
         <include name="IDR_ABOUT_POWER_CSS" file="resources\chromeos\power.css" type="BINDATA" />

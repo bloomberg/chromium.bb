@@ -121,9 +121,6 @@ class ASH_EXPORT AccessibilityDelegate {
   // Gets the last accessibility alert that was triggered.
   virtual AccessibilityAlert GetLastAccessibilityAlert() = 0;
 
-  // Play tick sound indicating spoken feedback will be toggled after countdown.
-  virtual void PlaySpokenFeedbackToggleCountdown(int tick_count) = 0;
-
   // Plays an earcon. Earcons are brief and distinctive sounds that indicate
   // when their mapped event has occurred. The sound key enums can be found in
   // chromeos/audio/chromeos_sounds.h.

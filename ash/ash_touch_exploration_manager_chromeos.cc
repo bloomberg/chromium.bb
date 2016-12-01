@@ -102,17 +102,6 @@ void AshTouchExplorationManager::OnDisplayMetricsChanged(
     UpdateTouchExplorationState();
 }
 
-void AshTouchExplorationManager::PlaySpokenFeedbackToggleCountdown(
-    int tick_count) {
-  WmShell::Get()->accessibility_delegate()->PlaySpokenFeedbackToggleCountdown(
-      tick_count);
-}
-
-void AshTouchExplorationManager::ToggleSpokenFeedback() {
-  WmShell::Get()->accessibility_delegate()->ToggleSpokenFeedback(
-      ash::A11Y_NOTIFICATION_SHOW);
-}
-
 void AshTouchExplorationManager::OnWindowActivated(
     aura::client::ActivationChangeObserver::ActivationReason reason,
     aura::Window* gained_active,
@@ -140,18 +129,11 @@ void AshTouchExplorationManager::UpdateTouchExplorationState() {
   const bool spoken_feedback_enabled =
       WmShell::Get()->accessibility_delegate()->IsSpokenFeedbackEnabled();
 
-  if (!touch_accessibility_enabler_) {
-    // Always enable gesture to toggle spoken feedback.
-    touch_accessibility_enabler_.reset(new ui::TouchAccessibilityEnabler(
-        root_window_controller_->GetRootWindow(), this));
-  }
-
   if (spoken_feedback_enabled) {
     if (!touch_exploration_controller_.get()) {
       touch_exploration_controller_ =
           base::MakeUnique<ui::TouchExplorationController>(
-              root_window_controller_->GetRootWindow(), this,
-              touch_accessibility_enabler_.get());
+              root_window_controller_->GetRootWindow(), this);
     }
     if (pass_through_surface) {
       const gfx::Rect& work_area =

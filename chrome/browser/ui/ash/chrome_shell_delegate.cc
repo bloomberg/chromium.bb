@@ -318,11 +318,6 @@ class AccessibilityDelegateImpl : public ash::AccessibilityDelegate {
     return ash::A11Y_ALERT_NONE;
   }
 
-  void PlaySpokenFeedbackToggleCountdown(int tick_count) override {
-    DCHECK(AccessibilityManager::Get());
-    AccessibilityManager::Get()->PlaySpokenFeedbackToggleCountdown(tick_count);
-  }
-
   void PlayEarcon(int sound_key) override {
     DCHECK(AccessibilityManager::Get());
     AccessibilityManager::Get()->PlayEarcon(

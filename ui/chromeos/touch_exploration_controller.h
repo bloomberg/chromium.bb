@@ -25,7 +25,6 @@ namespace ui {
 class Event;
 class GestureEvent;
 class GestureProviderAura;
-class TouchAccessibilityEnabler;
 class TouchEvent;
 
 // A delegate to handle commands in response to detected accessibility gesture
@@ -181,8 +180,7 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
  public:
   explicit TouchExplorationController(
       aura::Window* root_window,
-      ui::TouchExplorationControllerDelegate* delegate,
-      TouchAccessibilityEnabler* touch_accessibility_enabler);
+      ui::TouchExplorationControllerDelegate* delegate);
   ~TouchExplorationController() override;
 
   // Make synthesized touch events are anchored at this point. This is
@@ -507,12 +505,6 @@ class UI_CHROMEOS_EXPORT TouchExplorationController
 
   // LocatedEvents within this area should be left alone.
   gfx::Rect exclude_bounds_;
-
-  // Code that detects a touch-screen gesture to enable or disable
-  // accessibility. That handler is always running, whereas this is not,
-  // but events need to be sent to TouchAccessibilityEnabler before being
-  // rewritten when TouchExplorationController is running.
-  TouchAccessibilityEnabler* touch_accessibility_enabler_;
 
   DISALLOW_COPY_AND_ASSIGN(TouchExplorationController);
 };

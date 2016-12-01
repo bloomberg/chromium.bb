@@ -23,8 +23,6 @@ component("chromeos") {
     "ime/input_method_menu_manager.h",
     "ime/mode_indicator_view.cc",
     "ime/mode_indicator_view.h",
-    "touch_accessibility_enabler.cc",
-    "touch_accessibility_enabler.h",
     "touch_exploration_controller.cc",
     "touch_exploration_controller.h",
     "user_activity_power_manager_notifier.cc",
@@ -63,7 +61,6 @@ test("ui_chromeos_unittests") {
     "ime/input_method_menu_item_unittest.cc",
     "ime/input_method_menu_manager_unittest.cc",
     "run_all_unittests.cc",
-    "touch_accessibility_enabler_unittest.cc",
     "touch_exploration_controller_unittest.cc",
   ]
   deps = [

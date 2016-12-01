@@ -52,7 +52,6 @@ class ASH_EXPORT DefaultAccessibilityDelegate : public AccessibilityDelegate {
   double GetSavedScreenMagnifierScale() override;
   void TriggerAccessibilityAlert(AccessibilityAlert alert) override;
   AccessibilityAlert GetLastAccessibilityAlert() override;
-  void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
   void PlayEarcon(int sound_key) override;
   base::TimeDelta PlayShutdownSound() const override;
   void HandleAccessibilityGesture(ui::AXGesture gesture) override;

@@ -10,7 +10,6 @@
 #include "ash/ash_export.h"
 #include "ash/common/system/accessibility_observer.h"
 #include "base/macros.h"
-#include "ui/chromeos/touch_accessibility_enabler.h"
 #include "ui/chromeos/touch_exploration_controller.h"
 #include "ui/display/display_observer.h"
 #include "ui/wm/public/activation_change_observer.h"
@@ -29,7 +28,6 @@ class RootWindowController;
 class ASH_EXPORT AshTouchExplorationManager
     : public AccessibilityObserver,
       public ui::TouchExplorationControllerDelegate,
-      public ui::TouchAccessibilityEnablerDelegate,
       public display::DisplayObserver,
       public aura::client::ActivationChangeObserver {
  public:
@@ -54,10 +52,6 @@ class ASH_EXPORT AshTouchExplorationManager
   void OnDisplayMetricsChanged(const display::Display& display,
                                uint32_t changed_metrics) override;
 
-  // TouchAccessibilityEnablerDelegate overrides:
-  void PlaySpokenFeedbackToggleCountdown(int tick_count) override;
-  void ToggleSpokenFeedback() override;
-
   // aura::client::ActivationChangeObserver overrides:
   void OnWindowActivated(
       aura::client::ActivationChangeObserver::ActivationReason reason,
@@ -73,7 +67,6 @@ class ASH_EXPORT AshTouchExplorationManager
   bool VolumeAdjustSoundEnabled();
 
   std::unique_ptr<ui::TouchExplorationController> touch_exploration_controller_;
-  std::unique_ptr<ui::TouchAccessibilityEnabler> touch_accessibility_enabler_;
   RootWindowController* root_window_controller_;
   chromeos::CrasAudioHandler* audio_handler_;
 

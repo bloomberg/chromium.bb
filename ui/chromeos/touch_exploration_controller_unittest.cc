@@ -298,8 +298,7 @@ class TouchExplorationTest : public aura::test::AuraTestBase {
     } else if (on && !touch_exploration_controller_.get()) {
       touch_exploration_controller_.reset(
           new ui::TouchExplorationControllerTestApi(
-              new TouchExplorationController(root_window(), &delegate_,
-                                             nullptr)));
+              new TouchExplorationController(root_window(), &delegate_)));
       cursor_client()->ShowCursor();
       cursor_client()->DisableMouseEvents();
     }

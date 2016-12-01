@@ -13,7 +13,6 @@
 #include "ui/aura/window.h"
 #include "ui/aura/window_event_dispatcher.h"
 #include "ui/aura/window_tree_host.h"
-#include "ui/chromeos/touch_accessibility_enabler.h"
 #include "ui/events/event.h"
 #include "ui/events/event_processor.h"
 #include "ui/events/event_utils.h"
@@ -41,16 +40,14 @@ void SetTouchAccessibilityFlag(ui::Event* event) {
 
 TouchExplorationController::TouchExplorationController(
     aura::Window* root_window,
-    TouchExplorationControllerDelegate* delegate,
-    TouchAccessibilityEnabler* touch_accessibility_enabler)
+    TouchExplorationControllerDelegate* delegate)
     : root_window_(root_window),
       delegate_(delegate),
       state_(NO_FINGERS_DOWN),
       anchor_point_state_(ANCHOR_POINT_NONE),
       gesture_provider_(new GestureProviderAura(this, this)),
       prev_state_(NO_FINGERS_DOWN),
-      VLOG_on_(true),
-      touch_accessibility_enabler_(touch_accessibility_enabler) {
+      VLOG_on_(true) {
   DCHECK(root_window);
   root_window->GetHost()->GetEventSource()->AddEventRewriter(this);
 }
@@ -86,10 +83,6 @@ ui::EventRewriteStatus TouchExplorationController::RewriteEvent(
     return ui::EVENT_REWRITE_CONTINUE;
   }
   const ui::TouchEvent& touch_event = static_cast<const ui::TouchEvent&>(event);
-
-  // Let TouchAccessibilityEnabler process the unrewritten event.
-  if (touch_accessibility_enabler_)
-    touch_accessibility_enabler_->HandleTouchEvent(touch_event);
 
   if (!exclude_bounds_.IsEmpty()) {
     gfx::Point location = touch_event.location();
