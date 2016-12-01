@@ -4,6 +4,7 @@
 
 import("//build/config/features.gni")
 import("//build/config/ui.gni")
+import("//build/config/sanitizers/sanitizers.gni")
 import("//printing/features/features.gni")
 import("//testing/test.gni")
 import("//third_party/skia/gn/shared_sources.gni")
@@ -564,7 +565,14 @@ if (!skia_build_no_opts) {
       ]
     }
     source_set("skia_opts_hsw") {
-      sources = skia_opts.hsw_sources
+      # SyzyAsan doesn't support the AVX2 and F16C instructions.
+      if (!is_syzyasan) {
+        sources = skia_opts.hsw_sources
+      } else {
+        sources = [
+          "ext/SkOpts_hsw_stub.cc",
+        ]
+      }
       if (!is_win) {
         cflags = [
           "-mavx2",
@@ -574,7 +582,7 @@ if (!skia_build_no_opts) {
           "-mfma",
         ]
       }
-      if (is_win) {
+      if (is_win && !is_syzyasan) {
         cflags = [ "/arch:AVX2" ]
       }
       visibility = [ ":skia_opts" ]
