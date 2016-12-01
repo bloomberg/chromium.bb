@@ -35,7 +35,9 @@
 #include "core/CoreExport.h"
 #include "core/dom/DOMHighResTimeStamp.h"
 #include "core/events/EventTarget.h"
+#include "core/loader/FrameLoaderTypes.h"
 #include "core/timing/PerformanceEntry.h"
+#include "core/timing/PerformanceNavigationTiming.h"
 #include "platform/Timer.h"
 #include "platform/heap/Handle.h"
 #include "wtf/Forward.h"
@@ -57,6 +59,8 @@ using PerformanceEntryVector = HeapVector<Member<PerformanceEntry>>;
 using PerformanceObservers = HeapListHashSet<Member<PerformanceObserver>>;
 
 class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
+  friend class PerformanceBaseTest;
+
  public:
   ~PerformanceBase() override;
 
@@ -123,6 +127,11 @@ class CORE_EXPORT PerformanceBase : public EventTargetWithInlineData {
   void resumeSuspendedObservers();
 
   DECLARE_VIRTUAL_TRACE();
+
+ private:
+  static PerformanceNavigationTiming::NavigationType getNavigationType(
+      NavigationType,
+      const Document*);
 
  protected:
   explicit PerformanceBase(double timeOrigin);

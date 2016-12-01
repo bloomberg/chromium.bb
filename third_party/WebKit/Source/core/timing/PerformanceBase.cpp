@@ -39,7 +39,6 @@
 #include "core/loader/DocumentLoadTiming.h"
 #include "core/loader/DocumentLoader.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
-#include "core/timing/PerformanceNavigationTiming.h"
 #include "core/timing/PerformanceObserver.h"
 #include "core/timing/PerformanceResourceTiming.h"
 #include "core/timing/PerformanceUserTiming.h"
@@ -67,6 +66,28 @@ PerformanceBase::PerformanceBase(double timeOrigin)
           &PerformanceBase::deliverObservationsTimerFired) {}
 
 PerformanceBase::~PerformanceBase() {}
+
+PerformanceNavigationTiming::NavigationType PerformanceBase::getNavigationType(
+    NavigationType type,
+    const Document* document) {
+  if (document &&
+      document->pageVisibilityState() == PageVisibilityStatePrerender) {
+    return PerformanceNavigationTiming::NavigationType::Prerender;
+  }
+  switch (type) {
+    case NavigationTypeReload:
+      return PerformanceNavigationTiming::NavigationType::Reload;
+    case NavigationTypeBackForward:
+      return PerformanceNavigationTiming::NavigationType::BackForward;
+    case NavigationTypeLinkClicked:
+    case NavigationTypeFormSubmitted:
+    case NavigationTypeFormResubmitted:
+    case NavigationTypeOther:
+      return PerformanceNavigationTiming::NavigationType::Navigate;
+  }
+  NOTREACHED();
+  return PerformanceNavigationTiming::NavigationType::Navigate;
+}
 
 const AtomicString& PerformanceBase::interfaceName() const {
   return EventTargetNames::Performance;
@@ -336,6 +357,8 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
   unsigned long long encodedBodyLength = finalResponse.encodedBodyLength();
   unsigned long long decodedBodyLength = finalResponse.decodedBodyLength();
   bool didReuseConnection = finalResponse.connectionReused();
+  PerformanceNavigationTiming::NavigationType type =
+      getNavigationType(documentLoader->getNavigationType(), frame->document());
 
   m_navigationTiming = new PerformanceNavigationTiming(
       timeOrigin(), documentLoadTiming.unloadEventStart(),
@@ -344,10 +367,9 @@ void PerformanceBase::addNavigationTiming(LocalFrame* frame) {
       documentTiming ? documentTiming->domInteractive() : 0,
       documentTiming ? documentTiming->domContentLoadedEventStart() : 0,
       documentTiming ? documentTiming->domContentLoadedEventEnd() : 0,
-      documentTiming ? documentTiming->domComplete() : 0,
-      documentLoader->getNavigationType(), documentLoadTiming.redirectStart(),
-      documentLoadTiming.redirectEnd(), documentLoadTiming.fetchStart(),
-      documentLoadTiming.responseEnd(),
+      documentTiming ? documentTiming->domComplete() : 0, type,
+      documentLoadTiming.redirectStart(), documentLoadTiming.redirectEnd(),
+      documentLoadTiming.fetchStart(), documentLoadTiming.responseEnd(),
       documentLoadTiming.hasCrossOriginRedirect(),
       documentLoadTiming.hasSameOriginAsPreviousDocument(), resourceLoadTiming,
       lastRedirectEndTime, finishTime, transferSize, encodedBodyLength,

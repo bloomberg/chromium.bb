@@ -6,7 +6,6 @@
 #define PerformanceNavigationTiming_h
 
 #include "core/CoreExport.h"
-#include "core/loader/FrameLoaderTypes.h"
 #include "core/timing/PerformanceResourceTiming.h"
 
 namespace blink {
@@ -16,6 +15,8 @@ class CORE_EXPORT PerformanceNavigationTiming final
   DEFINE_WRAPPERTYPEINFO();
 
  public:
+  enum class NavigationType { Navigate, Reload, BackForward, Prerender };
+
   PerformanceNavigationTiming(double timeOrigin,
                               double unloadEventStart,
                               double unloadEventEnd,

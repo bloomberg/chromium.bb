@@ -49,6 +49,7 @@ class ResourceLoadTiming;
 class ScriptState;
 class ScriptValue;
 
+// Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 class CORE_EXPORT PerformanceTiming final
     : public GarbageCollected<PerformanceTiming>,
       public ScriptWrappable,

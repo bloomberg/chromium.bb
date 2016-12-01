@@ -42,6 +42,7 @@ class LocalFrame;
 class ScriptState;
 class ScriptValue;
 
+// Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 class CORE_EXPORT PerformanceNavigation final
     : public GarbageCollected<PerformanceNavigation>,
       public ScriptWrappable,

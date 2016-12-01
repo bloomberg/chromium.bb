@@ -6,6 +6,7 @@
 
 #include "bindings/core/v8/PerformanceObserverCallback.h"
 #include "bindings/core/v8/V8BindingForTesting.h"
+#include "core/testing/DummyPageHolder.h"
 #include "core/timing/PerformanceBase.h"
 #include "core/timing/PerformanceLongTaskTiming.h"
 #include "core/timing/PerformanceObserver.h"
@@ -42,12 +43,23 @@ class PerformanceBaseTest : public ::testing::Test {
     m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
   }
 
+  void SetUp() override {
+    m_pageHolder = DummyPageHolder::create(IntSize(800, 600));
+  }
+
   int numPerformanceEntriesInObserver() {
     return m_observer->m_performanceEntries.size();
   }
 
+  PerformanceNavigationTiming::NavigationType getNavigationType(
+      NavigationType type,
+      Document* document) {
+    return PerformanceBase::getNavigationType(type, document);
+  }
+
   Persistent<TestPerformanceBase> m_base;
   Persistent<PerformanceObserver> m_observer;
+  std::unique_ptr<DummyPageHolder> m_pageHolder;
   Persistent<PerformanceObserverCallback> m_cb;
 };
 
@@ -110,5 +122,25 @@ TEST_F(PerformanceBaseTest, AddLongTaskTiming) {
   m_base->addLongTaskTiming(1234, 5678, "same-origin", "www.foo.com/bar", "",
                             "");
   EXPECT_EQ(1, numPerformanceEntriesInObserver());  // added an entry
+}
+
+TEST_F(PerformanceBaseTest, GetNavigationType) {
+  m_pageHolder->page().setVisibilityState(PageVisibilityStatePrerender, false);
+  PerformanceNavigationTiming::NavigationType returnedType =
+      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
+  EXPECT_EQ(returnedType,
+            PerformanceNavigationTiming::NavigationType::Prerender);
+
+  m_pageHolder->page().setVisibilityState(PageVisibilityStateHidden, false);
+  returnedType =
+      getNavigationType(NavigationTypeBackForward, &m_pageHolder->document());
+  EXPECT_EQ(returnedType,
+            PerformanceNavigationTiming::NavigationType::BackForward);
+
+  m_pageHolder->page().setVisibilityState(PageVisibilityStateVisible, false);
+  returnedType = getNavigationType(NavigationTypeFormResubmitted,
+                                   &m_pageHolder->document());
+  EXPECT_EQ(returnedType,
+            PerformanceNavigationTiming::NavigationType::Navigate);
 }
 }  // namespace blink

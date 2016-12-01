@@ -45,6 +45,7 @@
 #include "platform/network/ResourceLoadTiming.h"
 #include "platform/network/ResourceResponse.h"
 
+// Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {
 
 static unsigned long long toIntegerMilliseconds(double seconds) {

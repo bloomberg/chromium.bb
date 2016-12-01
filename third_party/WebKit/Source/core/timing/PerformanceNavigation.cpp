@@ -36,6 +36,7 @@
 #include "core/loader/DocumentLoader.h"
 #include "core/loader/FrameLoaderTypes.h"
 
+// Legacy support for NT1(https://www.w3.org/TR/navigation-timing/).
 namespace blink {
 
 PerformanceNavigation::PerformanceNavigation(LocalFrame* frame)

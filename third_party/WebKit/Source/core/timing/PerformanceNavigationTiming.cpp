@@ -121,16 +121,18 @@ double PerformanceNavigationTiming::loadEventEnd() const {
 }
 
 AtomicString PerformanceNavigationTiming::type() const {
-  // TODO(sunjian) Right now NavigationType doesn't seem to have a Prerender
-  // type yet, need to look into this crbug/663217
   switch (m_type) {
-    case NavigationTypeReload:
+    case NavigationType::Reload:
       return "reload";
-    case NavigationTypeBackForward:
+    case NavigationType::BackForward:
       return "back_forward";
-    default:
+    case NavigationType::Prerender:
+      return "prerender";
+    case NavigationType::Navigate:
       return "navigate";
   }
+  NOTREACHED();
+  return "navigate";
 }
 
 unsigned short PerformanceNavigationTiming::redirectCount() const {
