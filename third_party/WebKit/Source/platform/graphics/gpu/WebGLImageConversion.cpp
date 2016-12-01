@@ -2660,7 +2660,11 @@ GLenum WebGLImageConversion::computeImageSizeInBytes(
   }
 
   unsigned padding = 0;
-  unsigned residual = (checkedValue % params.alignment).ValueOrDie();
+  CheckedNumeric<uint32_t> checkedResidual = checkedValue % params.alignment;
+  if (!checkedResidual.IsValid()) {
+    return GL_INVALID_VALUE;
+  }
+  unsigned residual = checkedResidual.ValueOrDie();
   if (residual) {
     padding = params.alignment - residual;
     checkedValue += padding;

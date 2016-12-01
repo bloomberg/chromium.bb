@@ -4101,9 +4101,14 @@ void WebGLRenderingContextBase::readPixelsHelper(GLint x,
     synthesizeGLError(GL_INVALID_FRAMEBUFFER_OPERATION, "readPixels", reason);
     return;
   }
-  if (!validateReadPixelsFuncParameters(
-          width, height, format, type, pixels,
-          (pixels->byteLength() - offsetInBytes).ValueOrDie())) {
+  CheckedNumeric<GLuint> bufferSize = pixels->byteLength() - offsetInBytes;
+  if (!bufferSize.IsValid()) {
+    synthesizeGLError(GL_INVALID_VALUE, "readPixels",
+                      "destination offset out of range");
+    return;
+  }
+  if (!validateReadPixelsFuncParameters(width, height, format, type, pixels,
+                                        bufferSize.ValueOrDie())) {
     return;
   }
   clearIfComposited();
