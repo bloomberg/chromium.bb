@@ -64,19 +64,6 @@ class ReadingListModelObserver {
   // are applied and then this method is called.
   virtual void ReadingListDidApplyChanges(ReadingListModel* model) {}
 
-  // TODO(crbug.com/664924): Remove temporary methods
-  virtual void ReadingListWillRemoveUnreadEntry(const ReadingListModel* model,
-                                                size_t index) {}
-
-  virtual void ReadingListWillRemoveReadEntry(const ReadingListModel* model,
-                                              size_t index) {}
-
-  virtual void ReadingListWillAddUnreadEntry(const ReadingListModel* model,
-                                             const ReadingListEntry& entry) {}
-
-  virtual void ReadingListWillAddReadEntry(const ReadingListModel* model,
-                                           const ReadingListEntry& entry) {}
-
  protected:
   ReadingListModelObserver() {}
   virtual ~ReadingListModelObserver() {}

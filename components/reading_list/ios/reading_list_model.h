@@ -116,17 +116,6 @@ class ReadingListModel : public base::NonThreadSafe {
     DISALLOW_COPY_AND_ASSIGN(ScopedReadingListBatchUpdate);
   };
 
-  // TODO(crbug.com/664924): Remove temporary methods for transition.
-
-  // Allows iterating through read entries in the model. Must be called on a
-  // singlerunloop to ensure no entry is returned twice and all entries are
-  // returned
-  virtual const ReadingListEntry& GetReadEntryAtIndex(size_t index) const = 0;
-  virtual const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const = 0;
-  virtual void MarkReadByURL(const GURL& url) = 0;
-  virtual void MarkUnreadByURL(const GURL& url) = 0;
-  virtual size_t read_size() const = 0;
-
  protected:
   ReadingListModel();
   virtual ~ReadingListModel();

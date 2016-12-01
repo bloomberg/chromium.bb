@@ -13,13 +13,6 @@
 #include "components/reading_list/ios/reading_list_pref_names.h"
 #include "url/gurl.h"
 
-ReadingListModelImpl::Cache::Cache()
-    : read_entries(std::vector<GURL>()),
-      unread_entries(std::vector<GURL>()),
-      dirty(false) {}
-
-ReadingListModelImpl::Cache::~Cache() {}
-
 ReadingListModelImpl::ReadingListModelImpl()
     : ReadingListModelImpl(nullptr, nullptr) {}
 
@@ -28,7 +21,6 @@ ReadingListModelImpl::ReadingListModelImpl(
     PrefService* pref_service)
     : unread_entry_count_(0),
       read_entry_count_(0),
-      cache_(base::MakeUnique<struct Cache>()),
       pref_service_(pref_service),
       has_unseen_(false),
       loaded_(false),
@@ -40,7 +32,6 @@ ReadingListModelImpl::ReadingListModelImpl(
   } else {
     loaded_ = true;
     entries_ = base::MakeUnique<ReadingListEntries>();
-    cache_->dirty = true;
   }
   has_unseen_ = GetPersistentHasUnseen();
 }
@@ -51,7 +42,6 @@ void ReadingListModelImpl::StoreLoaded(
     std::unique_ptr<ReadingListEntries> entries) {
   DCHECK(CalledOnValidThread());
   entries_ = std::move(entries);
-  cache_->dirty = true;
   for (auto& iterator : *entries_) {
     if (iterator.second.IsRead()) {
       read_entry_count_++;
@@ -93,14 +83,6 @@ size_t ReadingListModelImpl::unread_size() const {
   return unread_entry_count_;
 }
 
-size_t ReadingListModelImpl::read_size() const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(read_entry_count_ + unread_entry_count_ == entries_->size());
-  if (!loaded())
-    return 0;
-  return read_entry_count_;
-}
-
 bool ReadingListModelImpl::HasUnseenEntries() const {
   DCHECK(CalledOnValidThread());
   if (!loaded())
@@ -131,58 +113,6 @@ const ReadingListEntry* ReadingListModelImpl::GetEntryByURL(
   return GetMutableEntryFromURL(gurl);
 }
 
-const ReadingListEntry& ReadingListModelImpl::GetReadEntryAtIndex(
-    size_t index) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(loaded());
-  DCHECK(index < read_entry_count_);
-  if (cache_->dirty) {
-    RebuildIndex();
-  }
-  return *GetEntryByURL(cache_->read_entries[index]);
-}
-
-const ReadingListEntry& ReadingListModelImpl::GetUnreadEntryAtIndex(
-    size_t index) const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(loaded());
-  DCHECK(index < unread_entry_count_);
-  if (cache_->dirty) {
-    RebuildIndex();
-  }
-  return *GetEntryByURL(cache_->unread_entries[index]);
-}
-
-void ReadingListModelImpl::RebuildIndex() const {
-  DCHECK(CalledOnValidThread());
-  DCHECK(loaded());
-  if (!cache_->dirty) {
-    return;
-  }
-  cache_->dirty = false;
-  cache_->read_entries.clear();
-  cache_->unread_entries.clear();
-  for (auto& iterator : *entries_) {
-    if (iterator.second.IsRead()) {
-      cache_->read_entries.push_back(iterator.first);
-    } else {
-      cache_->unread_entries.push_back(iterator.first);
-    }
-  }
-  DCHECK(read_entry_count_ == cache_->read_entries.size());
-  DCHECK(unread_entry_count_ == cache_->unread_entries.size());
-  std::sort(cache_->read_entries.begin(), cache_->read_entries.end(),
-            [this](const GURL& left_url, const GURL& right_url) {
-              return this->entries_->at(left_url).UpdateTime() >
-                     this->entries_->at(right_url).UpdateTime();
-            });
-  std::sort(cache_->unread_entries.begin(), cache_->unread_entries.end(),
-            [this](const GURL& left_url, const GURL& right_url) {
-              return this->entries_->at(left_url).UpdateTime() >
-                     this->entries_->at(right_url).UpdateTime();
-            });
-}
-
 ReadingListEntry* ReadingListModelImpl::GetMutableEntryFromURL(
     const GURL& url) const {
   DCHECK(CalledOnValidThread());
@@ -210,7 +140,6 @@ void ReadingListModelImpl::SyncAddEntry(
   }
   GURL url = entry->URL();
   entries_->insert(std::make_pair(url, std::move(*entry)));
-  cache_->dirty = true;
   for (auto& observer : observers_) {
     observer.ReadingListDidAddEntry(this, url);
     observer.ReadingListDidApplyChanges(this);
@@ -239,7 +168,6 @@ ReadingListEntry* ReadingListModelImpl::SyncMergeEntry(
   entry->MergeLocalStateFrom(*existing_entry);
 
   entries_->find(url)->second = std::move(*entry);
-  cache_->dirty = true;
 
   existing_entry = GetMutableEntryFromURL(url);
   if (existing_entry->IsRead()) {
@@ -280,7 +208,6 @@ void ReadingListModelImpl::RemoveEntryByURLImpl(const GURL& url,
     unread_entry_count_--;
   }
   entries_->erase(url);
-  cache_->dirty = true;
   for (auto& observer : observers_)
     observer.ReadingListDidApplyChanges(this);
 }
@@ -305,7 +232,6 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   if (storage_layer_) {
     storage_layer_->SaveEntry(*GetEntryByURL(url));
   }
-  cache_->dirty = true;
 
   for (auto& observer : observers_) {
     observer.ReadingListDidAddEntry(this, url);
@@ -313,14 +239,6 @@ const ReadingListEntry& ReadingListModelImpl::AddEntry(
   }
 
   return entries_->at(url);
-}
-
-void ReadingListModelImpl::MarkReadByURL(const GURL& url) {
-  return SetReadStatus(url, true);
-}
-
-void ReadingListModelImpl::MarkUnreadByURL(const GURL& url) {
-  return SetReadStatus(url, false);
 }
 
 void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
@@ -346,7 +264,6 @@ void ReadingListModelImpl::SetReadStatus(const GURL& url, bool read) {
   }
   entry.SetRead(read);
   entry.MarkEntryUpdated();
-  cache_->dirty = true;
   if (storage_layer_) {
     storage_layer_->SaveEntry(entry);
   }

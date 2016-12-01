@@ -46,7 +46,6 @@ class ReadingListModelImpl : public ReadingListModel,
 
   size_t size() const override;
   size_t unread_size() const override;
-  size_t read_size() const override;
 
   bool HasUnseenEntries() const override;
   void ResetUnseenEntries() override;
@@ -54,10 +53,6 @@ class ReadingListModelImpl : public ReadingListModel,
   const std::vector<GURL> Keys() const override;
 
   const ReadingListEntry* GetEntryByURL(const GURL& gurl) const override;
-  const ReadingListEntry& GetUnreadEntryAtIndex(size_t index) const override;
-  const ReadingListEntry& GetReadEntryAtIndex(size_t index) const override;
-  void MarkReadByURL(const GURL& url) override;
-  void MarkUnreadByURL(const GURL& url) override;
 
   void RemoveEntryByURL(const GURL& url) override;
 
@@ -120,17 +115,6 @@ class ReadingListModelImpl : public ReadingListModel,
   std::unique_ptr<ReadingListEntries> entries_;
   size_t unread_entry_count_;
   size_t read_entry_count_;
-
-  // TODO(crbug.com/664924): Remove temporary cache and move it to
-  // ReadingListViewController.
-  struct Cache {
-    Cache();
-    ~Cache();
-    std::vector<GURL> read_entries;
-    std::vector<GURL> unread_entries;
-    bool dirty;
-  };
-  std::unique_ptr<struct Cache> cache_;
 
   std::unique_ptr<ReadingListModelStorage> storage_layer_;
   PrefService* pref_service_;

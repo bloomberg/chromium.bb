@@ -558,38 +558,38 @@ TEST_F(ReadingListModelTest, UpdateDistilledPath) {
 TEST_F(ReadingListModelTest, UpdateReadEntryTitle) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample");
-  model_->MarkReadByURL(gurl);
-  const ReadingListEntry& entry = model_->GetReadEntryAtIndex(0);
+  model_->SetReadStatus(gurl, true);
+  const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
 
   model_->SetEntryTitle(gurl, "ping");
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
-  EXPECT_EQ("ping", entry.Title());
+  EXPECT_EQ("ping", entry->Title());
 }
 
 TEST_F(ReadingListModelTest, UpdateReadEntryState) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample");
-  model_->MarkReadByURL(gurl);
-  const ReadingListEntry& entry = model_->GetReadEntryAtIndex(0);
+  model_->SetReadStatus(gurl, true);
+  const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
 
   model_->SetEntryDistilledState(gurl, ReadingListEntry::PROCESSING);
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
-  EXPECT_EQ(ReadingListEntry::PROCESSING, entry.DistilledState());
+  EXPECT_EQ(ReadingListEntry::PROCESSING, entry->DistilledState());
 }
 
 TEST_F(ReadingListModelTest, UpdateReadDistilledPath) {
   const GURL gurl("http://example.com");
   model_->AddEntry(gurl, "sample");
-  model_->MarkReadByURL(gurl);
-  const ReadingListEntry& entry = model_->GetReadEntryAtIndex(0);
+  model_->SetReadStatus(gurl, true);
+  const ReadingListEntry* entry = model_->GetEntryByURL(gurl);
   ClearCounts();
 
   model_->SetEntryDistilledPath(gurl, base::FilePath("distilled/page.html"));
   AssertObserverCount(0, 0, 0, 0, 0, 0, 0, 1, 1);
-  EXPECT_EQ(ReadingListEntry::PROCESSED, entry.DistilledState());
-  EXPECT_EQ(base::FilePath("distilled/page.html"), entry.DistilledPath());
+  EXPECT_EQ(ReadingListEntry::PROCESSED, entry->DistilledState());
+  EXPECT_EQ(base::FilePath("distilled/page.html"), entry->DistilledPath());
 }
 
 // Tests that ReadingListModel calls CallbackModelBeingDeleted when destroyed.
