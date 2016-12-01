@@ -226,4 +226,30 @@ bool NGMarginStrut::operator==(const NGMarginStrut& other) const {
                   negative_margin_block_start, negative_margin_block_end);
 }
 
+NGExclusions::NGExclusions()
+    : last_left_float(nullptr), last_right_float(nullptr) {}
+
+NGExclusions::NGExclusions(const NGExclusions& other) {
+  for (const auto& exclusion : other.storage)
+    Add(*exclusion);
+}
+
+void NGExclusions::Add(const NGExclusion& exclusion) {
+  storage.append(makeUnique<NGExclusion>(exclusion));
+  if (exclusion.type == NGExclusion::kFloatLeft) {
+    last_left_float = storage.rbegin()->get();
+  } else if (exclusion.type == NGExclusion::kFloatRight) {
+    last_right_float = storage.rbegin()->get();
+  }
+}
+
+inline NGExclusions& NGExclusions::operator=(const NGExclusions& other) {
+  storage.clear();
+  last_left_float = nullptr;
+  last_right_float = nullptr;
+  for (const auto& exclusion : other.storage)
+    Add(*exclusion);
+  return *this;
+}
+
 }  // namespace blink

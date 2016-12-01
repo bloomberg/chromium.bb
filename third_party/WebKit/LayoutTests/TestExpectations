@@ -212,11 +212,14 @@ crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-coll
 crbug.com/635619 virtual/layout_ng/fast/block/margin-collapse/webkit-margin-collapse-siblings.html [ Skip ]
 
 #### fast/block/float
-#### Passed: 48
-#### Skipped: 149
+#### Passed: 45
+#### Skipped: 152
 crbug.com/635619 virtual/layout_ng/fast/block/float/001.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/002.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/003.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/004.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/005.html [ Skip ]
+crbug.com/635619 virtual/layout_ng/fast/block/float/006.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/007.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/008.html [ Skip ]
 crbug.com/635619 virtual/layout_ng/fast/block/float/009.html [ Skip ]

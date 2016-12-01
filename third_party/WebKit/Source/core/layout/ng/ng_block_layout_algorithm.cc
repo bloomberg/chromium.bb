@@ -29,8 +29,8 @@ namespace {
 void AdjustToClearance(const NGConstraintSpace& space,
                        const ComputedStyle& style,
                        LayoutUnit* content_size) {
-  const NGExclusion* right_exclusion = space.LastRightFloatExclusion();
-  const NGExclusion* left_exclusion = space.LastLeftFloatExclusion();
+  const NGExclusion* right_exclusion = space.Exclusions()->last_right_float;
+  const NGExclusion* left_exclusion = space.Exclusions()->last_left_float;
 
   // Calculates Left/Right block end offset from left/right float exclusions or
   // use the default content offset position.
@@ -218,8 +218,7 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
       if (adjusted_block_size != NGSizeIndefinite)
         adjusted_block_size -= border_and_padding_.BlockSum();
 
-      space_builder_ =
-          new NGConstraintSpaceBuilder(constraint_space_->WritingMode());
+      space_builder_ = new NGConstraintSpaceBuilder(constraint_space_);
       if (Style().specifiesColumns()) {
         space_builder_->SetFragmentationType(kFragmentColumn);
         adjusted_inline_size =
@@ -429,19 +428,11 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
   space_builder_->SetIsNewFormattingContext(
       IsNewFormattingContextForInFlowBlockLevelChild(ConstraintSpace(),
                                                      CurrentChildStyle()));
-  NGConstraintSpace* child_space = new NGConstraintSpace(
-      constraint_space_->WritingMode(), constraint_space_->Direction(),
-      space_builder_->ToConstraintSpace());
+  NGConstraintSpace* child_space = space_builder_->ToConstraintSpace();
 
   // TODO(layout-ng): Set offset through the space builder.
   child_space->SetOffset(
       NGLogicalOffset(border_and_padding_.inline_start, content_size_));
-
-  // TODO(layout-ng): avoid copying here. A child and parent constraint spaces
-  // should share the same backing space.
-  for (const auto& exclusion : constraint_space_->Exclusions()) {
-    child_space->AddExclusion(*exclusion.get());
-  }
   return child_space;
 }
 

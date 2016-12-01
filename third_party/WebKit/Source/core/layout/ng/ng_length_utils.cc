@@ -176,27 +176,26 @@ LayoutUnit ResolveBlockLength(const NGConstraintSpace& constraint_space,
 }
 
 LayoutUnit ComputeInlineSizeForFragment(
-    const NGConstraintSpace& constraint_space,
+    const NGConstraintSpace& space,
     const ComputedStyle& style,
     const WTF::Optional<MinAndMaxContentSizes>& min_and_max) {
-  if (constraint_space.FixedInlineSize())
-    return constraint_space.AvailableSize().inline_size;
+  if (space.IsFixedSizeInline())
+    return space.AvailableSize().inline_size;
 
-  LayoutUnit extent = ResolveInlineLength(constraint_space, style, min_and_max,
-                                          style.logicalWidth(),
-                                          LengthResolveType::kContentSize);
+  LayoutUnit extent =
+      ResolveInlineLength(space, style, min_and_max, style.logicalWidth(),
+                          LengthResolveType::kContentSize);
 
   Length max_length = style.logicalMaxWidth();
   if (!max_length.isMaxSizeNone()) {
-    LayoutUnit max =
-        ResolveInlineLength(constraint_space, style, min_and_max, max_length,
-                            LengthResolveType::kMaxSize);
+    LayoutUnit max = ResolveInlineLength(space, style, min_and_max, max_length,
+                                         LengthResolveType::kMaxSize);
     extent = std::min(extent, max);
   }
 
   LayoutUnit min =
-      ResolveInlineLength(constraint_space, style, min_and_max,
-                          style.logicalMinWidth(), LengthResolveType::kMinSize);
+      ResolveInlineLength(space, style, min_and_max, style.logicalMinWidth(),
+                          LengthResolveType::kMinSize);
   extent = std::max(extent, min);
   return extent;
 }
@@ -205,7 +204,7 @@ LayoutUnit ComputeBlockSizeForFragment(
     const NGConstraintSpace& constraint_space,
     const ComputedStyle& style,
     LayoutUnit content_size) {
-  if (constraint_space.FixedBlockSize())
+  if (constraint_space.IsFixedSizeBlock())
     return constraint_space.AvailableSize().block_size;
 
   LayoutUnit extent =

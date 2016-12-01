@@ -28,17 +28,14 @@ class NGLengthUtilsTest : public ::testing::Test {
                                                      int block_size,
                                                      bool fixed_inline = false,
                                                      bool fixed_block = false) {
-    NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
-    builder
+    return NGConstraintSpaceBuilder(kHorizontalTopBottom)
         .SetAvailableSize(
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetPercentageResolutionSize(
             NGLogicalSize(LayoutUnit(inline_size), LayoutUnit(block_size)))
         .SetIsFixedSizeInline(fixed_inline)
-        .SetIsFixedSizeBlock(fixed_block);
-
-    return new NGConstraintSpace(kHorizontalTopBottom, LTR,
-                                 builder.ToConstraintSpace());
+        .SetIsFixedSizeBlock(fixed_block)
+        .ToConstraintSpace();
   }
 
   LayoutUnit ResolveInlineLength(

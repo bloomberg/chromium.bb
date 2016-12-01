@@ -4,7 +4,6 @@
 
 #include "core/layout/ng/ng_layout_opportunity_iterator.h"
 
-#include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_units.h"
 #include "wtf/NonCopyingSort.h"
 
@@ -255,8 +254,8 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
   RunPreconditionChecks(*space, opt_origin_point, opt_leader_point);
 
   // TODO(chrome-layout-team): Combine exclusions that shadow each other.
-  auto& exclusions = constraint_space_->PhysicalSpace()->Exclusions();
-  DCHECK(std::is_sorted(exclusions.begin(), exclusions.end(),
+  auto& exclusions = constraint_space_->Exclusions();
+  DCHECK(std::is_sorted(exclusions->storage.begin(), exclusions->storage.end(),
                         &CompareNGExclusionsByTopAsc))
       << "Exclusions are expected to be sorted by TOP";
 
@@ -273,7 +272,7 @@ NGLayoutOpportunityIterator::NGLayoutOpportunityIterator(
                     opportunities_);
   }
 
-  for (const auto& exclusion : exclusions) {
+  for (const auto& exclusion : exclusions->storage) {
     InsertExclusion(MutableOpportunityTreeRoot(), exclusion.get(),
                     opportunities_);
   }

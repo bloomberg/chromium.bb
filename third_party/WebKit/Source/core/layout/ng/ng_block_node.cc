@@ -100,9 +100,11 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
     // TODO(layoutng): Use builder.ToConstraintSpace.ToLogicalConstraintSpace
     // once
     // that's available.
-    NGConstraintSpace* constraint_space = new NGConstraintSpace(
-        FromPlatformWritingMode(Style()->getWritingMode()),
-        Style()->direction(), builder.ToConstraintSpace());
+    NGConstraintSpace* constraint_space =
+        NGConstraintSpaceBuilder(
+            FromPlatformWritingMode(Style()->getWritingMode()))
+            .SetTextDirection(Style()->direction())
+            .ToConstraintSpace();
 
     minmax_algorithm_ = new NGBlockLayoutAlgorithm(
         Style(), toNGBlockNode(FirstChild()), constraint_space);
@@ -130,14 +132,13 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
   sizes->min_content = fragment->InlineOverflow();
 
   // Now, redo with infinite space for max_content
-  NGConstraintSpaceBuilder builder(
-      FromPlatformWritingMode(Style()->getWritingMode()));
-  builder.SetAvailableSize(NGLogicalSize(LayoutUnit::max(), LayoutUnit()));
-  builder.SetPercentageResolutionSize(
-      NGLogicalSize(LayoutUnit(), LayoutUnit()));
   NGConstraintSpace* constraint_space =
-      new NGConstraintSpace(FromPlatformWritingMode(Style()->getWritingMode()),
-                            Style()->direction(), builder.ToConstraintSpace());
+      NGConstraintSpaceBuilder(
+          FromPlatformWritingMode(Style()->getWritingMode()))
+          .SetTextDirection(Style()->direction())
+          .SetAvailableSize({LayoutUnit::max(), LayoutUnit()})
+          .SetPercentageResolutionSize({LayoutUnit(), LayoutUnit()})
+          .ToConstraintSpace();
 
   minmax_algorithm_ = new NGBlockLayoutAlgorithm(
       Style(), toNGBlockNode(FirstChild()), constraint_space);

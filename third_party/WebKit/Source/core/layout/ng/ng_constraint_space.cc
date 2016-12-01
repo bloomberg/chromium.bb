@@ -13,12 +13,31 @@
 
 namespace blink {
 
-NGConstraintSpace::NGConstraintSpace(NGWritingMode writing_mode,
-                                     TextDirection direction,
-                                     NGPhysicalConstraintSpace* physical_space)
-    : physical_space_(physical_space),
+NGConstraintSpace::NGConstraintSpace(
+    NGWritingMode writing_mode,
+    TextDirection direction,
+    NGLogicalSize available_size,
+    NGLogicalSize percentage_resolution_size,
+    bool is_fixed_size_inline,
+    bool is_fixed_size_block,
+    bool is_inline_direction_triggers_scrollbar,
+    bool is_block_direction_triggers_scrollbar,
+    NGFragmentationType block_direction_fragmentation_type,
+    bool is_new_fc,
+    const std::shared_ptr<NGExclusions>& exclusions_)
+    : available_size_(available_size),
+      percentage_resolution_size_(percentage_resolution_size),
+      is_fixed_size_inline_(is_fixed_size_inline),
+      is_fixed_size_block_(is_fixed_size_block),
+      is_inline_direction_triggers_scrollbar_(
+          is_inline_direction_triggers_scrollbar),
+      is_block_direction_triggers_scrollbar_(
+          is_block_direction_triggers_scrollbar),
+      block_direction_fragmentation_type_(block_direction_fragmentation_type),
+      is_new_fc_(is_new_fc),
       writing_mode_(writing_mode),
-      direction_(direction) {}
+      direction_(direction),
+      exclusions_(exclusions_) {}
 
 NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
     const LayoutBox& box) {
@@ -50,85 +69,28 @@ NGConstraintSpace* NGConstraintSpace::CreateFromLayoutObject(
   bool is_new_fc =
       box.isLayoutBlock() && toLayoutBlock(box).createsNewFormattingContext();
 
-  NGConstraintSpaceBuilder builder(
-      FromPlatformWritingMode(box.styleRef().getWritingMode()));
-  builder
-      .SetAvailableSize(
-          NGLogicalSize(available_logical_width, available_logical_height))
-      .SetPercentageResolutionSize(
-          NGLogicalSize(available_logical_width, available_logical_height))
+  NGLogicalSize size = {available_logical_width, available_logical_height};
+  auto writing_mode = FromPlatformWritingMode(box.styleRef().getWritingMode());
+  return NGConstraintSpaceBuilder(writing_mode)
+      .SetAvailableSize(size)
+      .SetPercentageResolutionSize(size)
       .SetIsInlineDirectionTriggersScrollbar(
           box.styleRef().overflowInlineDirection() == OverflowAuto)
       .SetIsBlockDirectionTriggersScrollbar(
           box.styleRef().overflowBlockDirection() == OverflowAuto)
       .SetIsFixedSizeInline(fixed_inline)
       .SetIsFixedSizeBlock(fixed_block)
-      .SetIsNewFormattingContext(is_new_fc);
-
-  return new NGConstraintSpace(
-      FromPlatformWritingMode(box.styleRef().getWritingMode()),
-      box.styleRef().direction(), builder.ToConstraintSpace());
+      .SetIsNewFormattingContext(is_new_fc)
+      .SetTextDirection(box.styleRef().direction())
+      .ToConstraintSpace();
 }
 
-void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) const {
-  WRITING_MODE_IGNORED(
-      "Exclusions are stored directly in physical constraint space.");
-  MutablePhysicalSpace()->AddExclusion(exclusion);
-}
-
-const NGExclusion* NGConstraintSpace::LastLeftFloatExclusion() const {
-  WRITING_MODE_IGNORED(
-      "Exclusions are stored directly in physical constraint space.");
-  return PhysicalSpace()->LastLeftFloatExclusion();
-}
-
-const NGExclusion* NGConstraintSpace::LastRightFloatExclusion() const {
-  WRITING_MODE_IGNORED(
-      "Exclusions are stored directly in physical constraint space.");
-  return PhysicalSpace()->LastRightFloatExclusion();
-}
-
-NGLogicalSize NGConstraintSpace::PercentageResolutionSize() const {
-  return physical_space_->percentage_resolution_size_.ConvertToLogical(
-      static_cast<NGWritingMode>(writing_mode_));
-}
-
-NGLogicalSize NGConstraintSpace::AvailableSize() const {
-  return physical_space_->available_size_.ConvertToLogical(
-      static_cast<NGWritingMode>(writing_mode_));
-}
-
-bool NGConstraintSpace::IsNewFormattingContext() const {
-  return physical_space_->is_new_fc_;
-}
-
-bool NGConstraintSpace::InlineTriggersScrollbar() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_space_->width_direction_triggers_scrollbar_
-             : physical_space_->height_direction_triggers_scrollbar_;
-}
-
-bool NGConstraintSpace::BlockTriggersScrollbar() const {
-  return writing_mode_ == kHorizontalTopBottom
-             ? physical_space_->height_direction_triggers_scrollbar_
-             : physical_space_->width_direction_triggers_scrollbar_;
-}
-
-bool NGConstraintSpace::FixedInlineSize() const {
-  return writing_mode_ == kHorizontalTopBottom ? physical_space_->fixed_width_
-                                               : physical_space_->fixed_height_;
-}
-
-bool NGConstraintSpace::FixedBlockSize() const {
-  return writing_mode_ == kHorizontalTopBottom ? physical_space_->fixed_height_
-                                               : physical_space_->fixed_width_;
+void NGConstraintSpace::AddExclusion(const NGExclusion& exclusion) {
+  exclusions_->Add(exclusion);
 }
 
 NGFragmentationType NGConstraintSpace::BlockFragmentationType() const {
-  return static_cast<NGFragmentationType>(
-      writing_mode_ == kHorizontalTopBottom
-          ? physical_space_->height_direction_fragmentation_type_
-          : physical_space_->width_direction_fragmentation_type_);
+  return static_cast<NGFragmentationType>(block_direction_fragmentation_type_);
 }
 
 void NGConstraintSpace::Subtract(const NGFragment*) {
@@ -144,8 +106,10 @@ NGLayoutOpportunityIterator* NGConstraintSpace::LayoutOpportunities(
 
 NGConstraintSpace* NGConstraintSpace::ChildSpace(
     const ComputedStyle* style) const {
-  return new NGConstraintSpace(FromPlatformWritingMode(style->getWritingMode()),
-                               style->direction(), MutablePhysicalSpace());
+  return NGConstraintSpaceBuilder(this)
+      .SetWritingMode(FromPlatformWritingMode(style->getWritingMode()))
+      .SetTextDirection(style->direction())
+      .ToConstraintSpace();
 }
 
 String NGConstraintSpace::ToString() const {

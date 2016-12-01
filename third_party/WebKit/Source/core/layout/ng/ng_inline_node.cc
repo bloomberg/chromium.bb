@@ -209,9 +209,10 @@ bool NGInlineNode::Layout(const NGConstraintSpace* constraint_space,
 
   // NOTE: We don't need to change the coordinate system here as we are an
   // inline.
-  NGConstraintSpace* child_constraint_space = new NGConstraintSpace(
-      constraint_space->WritingMode(), constraint_space->Direction(),
-      constraint_space->MutablePhysicalSpace());
+  NGConstraintSpace* child_constraint_space =
+      NGConstraintSpaceBuilder(constraint_space->WritingMode())
+          .SetTextDirection(constraint_space->Direction())
+          .ToConstraintSpace();
 
   if (!layout_algorithm_)
     // TODO(layout-dev): If an atomic inline run the appropriate algorithm.

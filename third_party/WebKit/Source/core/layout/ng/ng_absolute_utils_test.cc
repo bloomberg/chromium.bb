@@ -26,18 +26,19 @@ class NGAbsoluteUtilsTest : public ::testing::Test {
     style_->setBoxSizing(EBoxSizing::BoxSizingBorderBox);
     container_size_ = NGLogicalSize(LayoutUnit(200), LayoutUnit(300));
     NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
-    ltr_space_ = new NGConstraintSpace(
-        kHorizontalTopBottom, LTR,
-        builder.SetAvailableSize(container_size_).ToConstraintSpace());
-    rtl_space_ = new NGConstraintSpace(
-        kHorizontalTopBottom, RTL,
-        builder.SetAvailableSize(container_size_).ToConstraintSpace());
-    vertical_lr_space_ = new NGConstraintSpace(
-        kVerticalLeftRight, LTR,
-        builder.SetAvailableSize(container_size_).ToConstraintSpace());
-    vertical_rl_space_ = new NGConstraintSpace(
-        kVerticalLeftRight, LTR,
-        builder.SetAvailableSize(container_size_).ToConstraintSpace());
+    builder.SetAvailableSize(container_size_);
+    ltr_space_ = builder.SetWritingMode(kHorizontalTopBottom)
+                     .SetTextDirection(LTR)
+                     .ToConstraintSpace();
+    rtl_space_ = builder.SetWritingMode(kHorizontalTopBottom)
+                     .SetTextDirection(RTL)
+                     .ToConstraintSpace();
+    vertical_lr_space_ = builder.SetWritingMode(kVerticalLeftRight)
+                             .SetTextDirection(LTR)
+                             .ToConstraintSpace();
+    vertical_rl_space_ = builder.SetWritingMode(kVerticalLeftRight)
+                             .SetTextDirection(LTR)
+                             .ToConstraintSpace();
   }
 
   void SetHorizontalStyle(LayoutUnit left,

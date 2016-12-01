@@ -20,11 +20,11 @@ namespace {
 NGConstraintSpace* ConstructConstraintSpace(NGWritingMode writing_mode,
                                             TextDirection direction,
                                             NGLogicalSize size) {
-  NGConstraintSpaceBuilder builder(writing_mode);
-  builder.SetAvailableSize(size).SetPercentageResolutionSize(size);
-
-  return new NGConstraintSpace(writing_mode, direction,
-                               builder.ToConstraintSpace());
+  return NGConstraintSpaceBuilder(writing_mode)
+      .SetAvailableSize(size)
+      .SetPercentageResolutionSize(size)
+      .SetTextDirection(direction)
+      .ToConstraintSpace();
 }
 
 class NGBlockLayoutAlgorithmTest : public ::testing::Test {
@@ -167,14 +167,14 @@ TEST_F(NGBlockLayoutAlgorithmTest, CollapsingMarginsCase1) {
 
   div1->SetFirstChild(div2);
 
-  NGLogicalSize size(LayoutUnit(100), NGSizeIndefinite);
-  NGConstraintSpaceBuilder builder(kHorizontalTopBottom);
-  builder.SetAvailableSize(size)
-      .SetPercentageResolutionSize(size)
-      .SetIsNewFormattingContext(true);
-  auto* space = new NGConstraintSpace(kHorizontalTopBottom, LTR,
-                                      builder.ToConstraintSpace());
-
+  auto* space =
+      NGConstraintSpaceBuilder(kHorizontalTopBottom)
+          .SetAvailableSize(NGLogicalSize(LayoutUnit(100), NGSizeIndefinite))
+          .SetPercentageResolutionSize(
+              NGLogicalSize(LayoutUnit(100), NGSizeIndefinite))
+          .SetTextDirection(LTR)
+          .SetIsNewFormattingContext(true)
+          .ToConstraintSpace();
   NGPhysicalFragment* frag = RunBlockLayoutAlgorithm(space, div1);
 
   EXPECT_TRUE(frag->MarginStrut().IsEmpty());

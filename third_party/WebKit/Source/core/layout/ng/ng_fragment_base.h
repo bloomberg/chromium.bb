@@ -6,7 +6,6 @@
 #define NGFragmentBase_h
 
 #include "core/CoreExport.h"
-#include "core/layout/ng/ng_physical_constraint_space.h"
 #include "core/layout/ng/ng_physical_fragment_base.h"
 #include "core/layout/ng/ng_writing_mode.h"
 #include "core/layout/ng/ng_units.h"
