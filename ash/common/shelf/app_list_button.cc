@@ -34,6 +34,7 @@ AppListButton::AppListButton(InkDropButtonListener* listener,
                              ShelfView* shelf_view,
                              WmShelf* wm_shelf)
     : views::ImageButton(nullptr),
+      is_showing_app_list_(false),
       draw_background_as_active_(false),
       background_alpha_(0),
       listener_(listener),
@@ -62,6 +63,8 @@ void AppListButton::OnAppListShown() {
     AnimateInkDrop(views::InkDropState::ACTIVATED, nullptr);
   else
     SchedulePaint();
+  is_showing_app_list_ = true;
+  wm_shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::OnAppListDismissed() {
@@ -69,6 +72,8 @@ void AppListButton::OnAppListDismissed() {
     AnimateInkDrop(views::InkDropState::DEACTIVATED, nullptr);
   else
     SchedulePaint();
+  is_showing_app_list_ = false;
+  wm_shelf_->UpdateAutoHideState();
 }
 
 void AppListButton::SetBackgroundAlpha(int alpha) {

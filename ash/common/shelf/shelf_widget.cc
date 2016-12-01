@@ -7,6 +7,7 @@
 #include "ash/common/focus_cycler.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shelf/app_list_button.h"
 #include "ash/common/shelf/shelf_background_animator_observer.h"
 #include "ash/common/shelf/shelf_constants.h"
 #include "ash/common/shelf/shelf_delegate.h"
@@ -433,6 +434,10 @@ void ShelfWidget::SetShelfVisibility(bool visible) {
     shelf_view_->SetVisible(visible);
 }
 
+bool ShelfWidget::IsShowingAppList() const {
+  return GetAppListButton() && GetAppListButton()->is_showing_app_list();
+}
+
 bool ShelfWidget::IsShowingContextMenu() const {
   return shelf_view_ && shelf_view_->IsShowingMenu();
 }
@@ -496,7 +501,7 @@ gfx::Rect ShelfWidget::GetScreenBoundsOfItemIconForWindow(WmWindow* window) {
 }
 
 AppListButton* ShelfWidget::GetAppListButton() const {
-  return shelf_view_->GetAppListButton();
+  return shelf_view_ ? shelf_view_->GetAppListButton() : nullptr;
 }
 
 app_list::ApplicationDragAndDropHost*

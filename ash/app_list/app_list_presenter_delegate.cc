@@ -164,13 +164,9 @@ void AppListPresenterDelegate::OnDismissed() {
 
   is_visible_ = false;
 
-  // App list needs to know the new shelf layout in order to calculate its
-  // UI layout when AppListView visibility changes.
+  // Update applist button status when app list visibility is changed.
   WmShelf* shelf = WmShelf::ForWindow(
       WmLookup::Get()->GetWindowForWidget(view_->GetWidget()));
-  shelf->UpdateAutoHideState();
-
-  // Update applist button status when app list visibility is changed.
   shelf->shelf_widget()->GetAppListButton()->OnAppListDismissed();
 }
 

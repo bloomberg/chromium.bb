@@ -71,6 +71,13 @@ ui::Layer* GetLayer(views::Widget* widget) {
   return widget->GetNativeView()->layer();
 }
 
+// Returns true if the window is in the app list window container.
+bool IsAppListWindow(WmWindow* window) {
+  return window->GetParent() &&
+         window->GetParent()->GetShellWindowId() ==
+             kShellWindowId_AppListContainer;
+}
+
 }  // namespace
 
 // ShelfLayoutManager::UpdateShelfObserver -------------------------------------
@@ -830,18 +837,8 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
   if (visibility_state != SHELF_AUTO_HIDE || !wm_shelf_->IsShelfInitialized())
     return SHELF_AUTO_HIDE_HIDDEN;
 
-  const int64_t shelf_display_id = WmLookup::Get()
-                                       ->GetWindowForWidget(shelf_widget_)
-                                       ->GetDisplayNearestWindow()
-                                       .id();
-
-  // Unhide the shelf only on the active screen when the AppList is shown
-  // (crbug.com/312445).
-  if (WmShell::Get()->GetAppListTargetVisibility()) {
-    WmWindow* window = WmShell::Get()->GetActiveWindow();
-    if (window && window->GetDisplayNearestWindow().id() == shelf_display_id)
-      return SHELF_AUTO_HIDE_SHOWN;
-  }
+  if (shelf_widget_->IsShowingAppList())
+    return SHELF_AUTO_HIDE_SHOWN;
 
   if (shelf_widget_->status_area_widget() &&
       shelf_widget_->status_area_widget()->ShouldShowShelf())
@@ -858,13 +855,17 @@ ShelfAutoHideState ShelfLayoutManager::CalculateAutoHideState(
        shelf_widget_->status_area_widget()->IsActive()))
     return SHELF_AUTO_HIDE_SHOWN;
 
+  const int64_t shelf_display_id = WmLookup::Get()
+                                       ->GetWindowForWidget(shelf_widget_)
+                                       ->GetDisplayNearestWindow()
+                                       .id();
   const std::vector<WmWindow*> windows =
       WmShell::Get()->mru_window_tracker()->BuildWindowListIgnoreModal();
-
   // Process the window list and check if there are any visible windows.
+  // Ignore app list windows that may be animating to hide after dismissal.
   bool visible_window = false;
   for (size_t i = 0; i < windows.size(); ++i) {
-    if (windows[i] && windows[i]->IsVisible() &&
+    if (windows[i] && windows[i]->IsVisible() && !IsAppListWindow(windows[i]) &&
         !windows[i]->GetWindowState()->IsMinimized() &&
         windows[i]->GetDisplayNearestWindow().id() == shelf_display_id) {
       visible_window = true;
