@@ -98,6 +98,11 @@ static const uint64_t above_64x64_txform_mask[TX_SIZES] = {
 //  00000000
 //  00000000
 static const uint64_t left_prediction_mask[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0000000000000001ULL,  // BLOCK_2X2,
+  0x0000000000000001ULL,  // BLOCK_2X4,
+  0x0000000000000001ULL,  // BLOCK_4X2,
+#endif
   0x0000000000000001ULL,  // BLOCK_4X4,
   0x0000000000000001ULL,  // BLOCK_4X8,
   0x0000000000000001ULL,  // BLOCK_8X4,
@@ -115,6 +120,11 @@ static const uint64_t left_prediction_mask[BLOCK_SIZES] = {
 
 // 64 bit mask to shift and set for each prediction size.
 static const uint64_t above_prediction_mask[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0000000000000001ULL,  // BLOCK_2X2
+  0x0000000000000001ULL,  // BLOCK_2X4
+  0x0000000000000001ULL,  // BLOCK_4X2
+#endif
   0x0000000000000001ULL,  // BLOCK_4X4
   0x0000000000000001ULL,  // BLOCK_4X8
   0x0000000000000001ULL,  // BLOCK_8X4
@@ -133,6 +143,11 @@ static const uint64_t above_prediction_mask[BLOCK_SIZES] = {
 // each 8x8 block that would be in the left most block of the given block
 // size in the 64x64 block.
 static const uint64_t size_mask[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0000000000000001ULL,  // BLOCK_2X2
+  0x0000000000000001ULL,  // BLOCK_2X4
+  0x0000000000000001ULL,  // BLOCK_4X2
+#endif
   0x0000000000000001ULL,  // BLOCK_4X4
   0x0000000000000001ULL,  // BLOCK_4X8
   0x0000000000000001ULL,  // BLOCK_8X4
@@ -181,6 +196,11 @@ static const uint16_t above_64x64_txform_mask_uv[TX_SIZES] = {
 
 // 16 bit left mask to shift and set for each uv prediction size.
 static const uint16_t left_prediction_mask_uv[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0001,  // BLOCK_2X2,
+  0x0001,  // BLOCK_2X4,
+  0x0001,  // BLOCK_4X2,
+#endif
   0x0001,  // BLOCK_4X4,
   0x0001,  // BLOCK_4X8,
   0x0001,  // BLOCK_8X4,
@@ -197,6 +217,11 @@ static const uint16_t left_prediction_mask_uv[BLOCK_SIZES] = {
 };
 // 16 bit above mask to shift and set for uv each prediction size.
 static const uint16_t above_prediction_mask_uv[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0001,  // BLOCK_2X2
+  0x0001,  // BLOCK_2X4
+  0x0001,  // BLOCK_4X2
+#endif
   0x0001,  // BLOCK_4X4
   0x0001,  // BLOCK_4X8
   0x0001,  // BLOCK_8X4
@@ -214,6 +239,11 @@ static const uint16_t above_prediction_mask_uv[BLOCK_SIZES] = {
 
 // 64 bit mask to shift and set for each uv prediction size
 static const uint16_t size_mask_uv[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  0x0001,  // BLOCK_2X2
+  0x0001,  // BLOCK_2X4
+  0x0001,  // BLOCK_4X2
+#endif
   0x0001,  // BLOCK_4X4
   0x0001,  // BLOCK_4X8
   0x0001,  // BLOCK_8X4

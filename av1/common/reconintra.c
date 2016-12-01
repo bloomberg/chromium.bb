@@ -123,6 +123,10 @@ static const uint8_t orders_8x8[256] = {
 
 /* clang-format off */
 static const uint8_t *const orders[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  // 2X2,         2X4,            4X2
+  orders_8x8,     orders_8x8,     orders_8x8,
+#endif
   //                              4X4
                                   orders_8x8,
   // 4X8,         8X4,            8X8
@@ -140,6 +144,10 @@ static const uint8_t *const orders[BLOCK_SIZES] = {
 #else
 /* clang-format off */
 static const uint8_t *const orders[BLOCK_SIZES] = {
+#if CONFIG_CB4X4
+  // 2X2,         2X4,            4X2
+  orders_16x16,   orders_16x16,   orders_16x16,
+#endif
   //                              4X4
                                   orders_16x16,
   // 4X8,         8X4,            8X8
