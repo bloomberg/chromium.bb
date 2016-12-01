@@ -344,7 +344,8 @@ PlatformSensorReaderWin::PlatformSensorReaderWin(
       sensor_active_(false),
       client_(nullptr),
       sensor_(sensor),
-      event_listener_(new EventListener(this)) {
+      event_listener_(new EventListener(this)),
+      weak_factory_(this) {
   DCHECK(init_params_);
   DCHECK(!init_params_->reader_func.is_null());
   DCHECK(sensor_);
@@ -375,22 +376,22 @@ bool PlatformSensorReaderWin::StartSensor(
   if (!SetReportingInterval(configuration))
     return false;
 
-  // Set event listener.
   if (!sensor_active_) {
-    base::win::ScopedComPtr<ISensorEvents> sensor_events;
-    HRESULT hr = event_listener_->QueryInterface(__uuidof(ISensorEvents),
-                                                 sensor_events.ReceiveVoid());
-
-    if (FAILED(hr) || !sensor_events)
-      return false;
-
-    if (FAILED(sensor_->SetEventSink(sensor_events.get())))
-      return false;
-
+    task_runner_->PostTask(
+        FROM_HERE, base::Bind(&PlatformSensorReaderWin::ListenSensorEvent,
+                              weak_factory_.GetWeakPtr()));
     sensor_active_ = true;
   }
 
   return true;
+}
+
+void PlatformSensorReaderWin::ListenSensorEvent() {
+  // Set event listener.
+  if (FAILED(sensor_->SetEventSink(event_listener_.get()))) {
+    SensorError();
+    StopSensor();
+  }
 }
 
 bool PlatformSensorReaderWin::SetReportingInterval(

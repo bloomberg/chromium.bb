@@ -54,6 +54,7 @@ class PlatformSensorReaderWin {
       base::win::ScopedComPtr<ISensorManager> sensor_manager);
 
   bool SetReportingInterval(const PlatformSensorConfiguration& configuration);
+  void ListenSensorEvent();
   HRESULT SensorReadingChanged(ISensorDataReport& report,
                                SensorReading& reading) const;
   void SensorError();
@@ -71,6 +72,7 @@ class PlatformSensorReaderWin {
   Client* client_;
   base::win::ScopedComPtr<ISensor> sensor_;
   scoped_refptr<EventListener> event_listener_;
+  base::WeakPtrFactory<PlatformSensorReaderWin> weak_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(PlatformSensorReaderWin);
 };

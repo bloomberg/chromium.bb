@@ -224,6 +224,20 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     return sensor;
   }
 
+  // Listening the sensor is asynchronous, therefore inner loop is used to wait
+  // for SetEventSink to be called.
+  bool StartListening(scoped_refptr<PlatformSensor> sensor,
+                      PlatformSensor::Client* client,
+                      const PlatformSensorConfiguration& config) {
+    run_loop_ = base::MakeUnique<base::RunLoop>();
+    bool ret = sensor->StartListening(client, config);
+    run_loop_->Run();
+    run_loop_ = nullptr;
+    return ret;
+  }
+
+  void QuitInnerLoop() { run_loop_->Quit(); }
+
   // Sets sensor with REFSENSOR_TYPE_ID |sensor| to be supported by mocked
   // ISensorMager and it will be present in ISensorCollection.
   void SetSupportedSensor(REFSENSOR_TYPE_ID sensor) {
@@ -261,6 +275,12 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
         .WillByDefault(Invoke([this](ISensorEvents* events) {
           events->AddRef();
           sensor_events_.Attach(events);
+          if (this->run_loop_) {
+            message_loop_.task_runner()->PostTask(
+                FROM_HERE,
+                base::Bind(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
+                           base::Unretained(this)));
+          }
           return S_OK;
         }));
 
@@ -269,6 +289,12 @@ class PlatformSensorAndProviderTestWin : public ::testing::Test {
     ON_CALL(*sensor_, SetEventSink(IsNull()))
         .WillByDefault(Invoke([this](ISensorEvents* events) {
           sensor_events_.Release();
+          if (this->run_loop_) {
+            message_loop_.task_runner()->PostTask(
+                FROM_HERE,
+                base::Bind(&PlatformSensorAndProviderTestWin::QuitInnerLoop,
+                           base::Unretained(this)));
+          }
           return S_OK;
         }));
   }
@@ -433,7 +459,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
   EXPECT_CALL(*sensor_, SetEventSink(NotNull())).Times(1);
   EXPECT_CALL(*sensor_, SetEventSink(IsNull())).Times(1);
   EXPECT_CALL(*sensor_, SetProperties(NotNull(), _))
-      .WillOnce(Invoke(
+      .WillRepeatedly(Invoke(
           [](IPortableDeviceValues* props, IPortableDeviceValues** result) {
             ULONG value = 0;
             HRESULT hr = props->GetUnsignedIntegerValue(
@@ -449,7 +475,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStarted) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
 
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
   GenerateDataUpdatedEvent({{SENSOR_DATA_TYPE_LIGHT_LEVEL_LUX, 3.14}});
@@ -465,7 +491,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorRemoved) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorError()).Times(1);
 
   GenerateLeaveEvent();
@@ -480,7 +506,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStateChangedToError) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorError()).Times(1);
 
   GenerateStateChangeEvent(SENSOR_STATE_ERROR);
@@ -495,7 +521,7 @@ TEST_F(PlatformSensorAndProviderTestWin, SensorStateChangedToReady) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorError()).Times(0);
 
   GenerateStateChangeEvent(SENSOR_STATE_READY);
@@ -534,7 +560,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckAccelerometerReadingConversion) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
 
   double x_accel = 0.25;
@@ -567,7 +593,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckGyroscopeReadingConversion) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
 
   double x_ang_accel = 0.0;
@@ -608,7 +634,7 @@ TEST_F(PlatformSensorAndProviderTestWin, CheckMagnetometerReadingConversion) {
 
   auto client = base::MakeUnique<NiceMock<MockPlatformSensorClient>>(sensor);
   PlatformSensorConfiguration configuration(10);
-  EXPECT_TRUE(sensor->StartListening(client.get(), configuration));
+  EXPECT_TRUE(StartListening(sensor, client.get(), configuration));
   EXPECT_CALL(*client, OnSensorReadingChanged()).Times(1);
 
   double x_magn_field = 112.0;
