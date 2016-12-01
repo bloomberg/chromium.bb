@@ -14,29 +14,10 @@
 #include "platform/network/ResourceRequest.h"
 #include "platform/weborigin/KURL.h"
 #include "public/platform/WebURLRequest.h"
-#include "public/platform/modules/notifications/WebNotificationConstants.h"
-#include "skia/ext/image_operations.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/Threading.h"
 #include <memory>
-
-#define NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, type_name, value, max) \
-  case NotificationImageLoader::Type::type_name: {                            \
-    DEFINE_THREAD_SAFE_STATIC_LOCAL(                                          \
-        CustomCountHistogram, metric##type_name##Histogram,                   \
-        new CustomCountHistogram("Notifications." #metric "." #type_name,     \
-                                 1 /* min */, max, 50 /* buckets */));        \
-    metric##type_name##Histogram.count(value);                                \
-    break;                                                                    \
-  }
-
-#define NOTIFICATION_HISTOGRAM_COUNTS(metric, type, value, max)            \
-  switch (type) {                                                          \
-    NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, Image, value, max)      \
-    NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, Icon, value, max)       \
-    NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, Badge, value, max)      \
-    NOTIFICATION_PER_TYPE_HISTOGRAM_COUNTS(metric, ActionIcon, value, max) \
-  }
 
 namespace {
 
@@ -47,52 +28,10 @@ const unsigned long kImageFetchTimeoutInMs = 90000;
 
 namespace blink {
 
-NotificationImageLoader::NotificationImageLoader(Type type)
-    : m_type(type), m_stopped(false), m_startTime(0.0) {}
+NotificationImageLoader::NotificationImageLoader()
+    : m_stopped(false), m_startTime(0.0) {}
 
 NotificationImageLoader::~NotificationImageLoader() {}
-
-// static
-SkBitmap NotificationImageLoader::scaleDownIfNeeded(const SkBitmap& image,
-                                                    Type type) {
-  int maxWidthPx = 0, maxHeightPx = 0;
-  switch (type) {
-    case Type::Image:
-      maxWidthPx = kWebNotificationMaxImageWidthPx;
-      maxHeightPx = kWebNotificationMaxImageHeightPx;
-      break;
-    case Type::Icon:
-      maxWidthPx = kWebNotificationMaxIconSizePx;
-      maxHeightPx = kWebNotificationMaxIconSizePx;
-      break;
-    case Type::Badge:
-      maxWidthPx = kWebNotificationMaxBadgeSizePx;
-      maxHeightPx = kWebNotificationMaxBadgeSizePx;
-      break;
-    case Type::ActionIcon:
-      maxWidthPx = kWebNotificationMaxActionIconSizePx;
-      maxHeightPx = kWebNotificationMaxActionIconSizePx;
-      break;
-  }
-  DCHECK_GT(maxWidthPx, 0);
-  DCHECK_GT(maxHeightPx, 0);
-  // TODO(peter): Explore doing the scaling on a background thread.
-  if (image.width() > maxWidthPx || image.height() > maxHeightPx) {
-    double scale = std::min(static_cast<double>(maxWidthPx) / image.width(),
-                            static_cast<double>(maxHeightPx) / image.height());
-    double startTime = monotonicallyIncreasingTimeMS();
-    // TODO(peter): Try using RESIZE_BETTER for large images.
-    SkBitmap scaledImage =
-        skia::ImageOperations::Resize(image, skia::ImageOperations::RESIZE_BEST,
-                                      std::lround(scale * image.width()),
-                                      std::lround(scale * image.height()));
-    NOTIFICATION_HISTOGRAM_COUNTS(LoadScaleDownTime, type,
-                                  monotonicallyIncreasingTimeMS() - startTime,
-                                  1000 * 10 /* 10 seconds max */);
-    return scaledImage;
-  }
-  return image;
-}
 
 void NotificationImageLoader::start(
     ExecutionContext* executionContext,
@@ -150,13 +89,19 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
   if (m_stopped)
     return;
 
-  NOTIFICATION_HISTOGRAM_COUNTS(LoadFinishTime, m_type,
-                                monotonicallyIncreasingTimeMS() - m_startTime,
-                                1000 * 60 * 60 /* 1 hour max */);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, finishedTimeHistogram,
+      new CustomCountHistogram("Notifications.Icon.LoadFinishTime", 1,
+                               1000 * 60 * 60 /* 1 hour max */,
+                               50 /* buckets */));
+  finishedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
 
   if (m_data) {
-    NOTIFICATION_HISTOGRAM_COUNTS(LoadFileSize, m_type, m_data->size(),
-                                  10000000 /* ~10mb max */);
+    DEFINE_THREAD_SAFE_STATIC_LOCAL(
+        CustomCountHistogram, fileSizeHistogram,
+        new CustomCountHistogram("Notifications.Icon.FileSize", 1,
+                                 10000000 /* ~10mb max */, 50 /* buckets */));
+    fileSizeHistogram.count(m_data->size());
 
     std::unique_ptr<ImageDecoder> decoder = ImageDecoder::create(
         m_data, true /* dataComplete */, ImageDecoder::AlphaPremultiplied,
@@ -175,9 +120,12 @@ void NotificationImageLoader::didFinishLoading(unsigned long resourceIdentifier,
 }
 
 void NotificationImageLoader::didFail(const ResourceError& error) {
-  NOTIFICATION_HISTOGRAM_COUNTS(LoadFailTime, m_type,
-                                monotonicallyIncreasingTimeMS() - m_startTime,
-                                1000 * 60 * 60 /* 1 hour max */);
+  DEFINE_THREAD_SAFE_STATIC_LOCAL(
+      CustomCountHistogram, failedTimeHistogram,
+      new CustomCountHistogram("Notifications.Icon.LoadFailTime", 1,
+                               1000 * 60 * 60 /* 1 hour max */,
+                               50 /* buckets */));
+  failedTimeHistogram.count(monotonicallyIncreasingTimeMS() - m_startTime);
 
   runCallbackWithEmptyBitmap();
 }

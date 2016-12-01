@@ -7,7 +7,6 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/fetch/MemoryCache.h"
 #include "core/testing/DummyPageHolder.h"
-#include "platform/testing/HistogramTester.h"
 #include "platform/testing/TestingPlatformSupport.h"
 #include "platform/testing/URLTestHelpers.h"
 #include "public/platform/Platform.h"
@@ -36,9 +35,7 @@ class NotificationImageLoaderTest : public ::testing::Test {
  public:
   NotificationImageLoaderTest()
       : m_page(DummyPageHolder::create()),
-        // Use an arbitrary type, since it only affects which UMA bucket we use.
-        m_loader(
-            new NotificationImageLoader(NotificationImageLoader::Type::Icon)) {}
+        m_loader(new NotificationImageLoader()) {}
 
   ~NotificationImageLoaderTest() override {
     m_loader->stop();
@@ -73,9 +70,6 @@ class NotificationImageLoaderTest : public ::testing::Test {
   ExecutionContext* context() const { return &m_page->document(); }
   LoadState loaded() const { return m_loaded; }
 
- protected:
-  HistogramTester m_histogramTester;
-
  private:
   std::unique_ptr<DummyPageHolder> m_page;
   Persistent<NotificationImageLoader> m_loader;
@@ -85,18 +79,8 @@ class NotificationImageLoaderTest : public ::testing::Test {
 TEST_F(NotificationImageLoaderTest, SuccessTest) {
   KURL url = registerMockedURL(kIcon500x500);
   loadImage(url);
-  m_histogramTester.expectTotalCount("Notifications.LoadFinishTime.Icon", 0);
-  m_histogramTester.expectTotalCount("Notifications.LoadFileSize.Icon", 0);
-  m_histogramTester.expectTotalCount("Notifications.LoadFailTime.Icon", 0);
   Platform::current()->getURLLoaderMockFactory()->serveAsynchronousRequests();
   EXPECT_EQ(LoadState::kLoadSuccessful, loaded());
-  m_histogramTester.expectUniqueSample("Notifications.LoadFileSize.Icon", 7439,
-                                       1);
-  m_histogramTester.expectTotalCount("Notifications.LoadFailTime.Icon", 0);
-  // Should log a non-zero finish time.
-  m_histogramTester.expectTotalCount("Notifications.LoadFinishTime.Icon", 1);
-  m_histogramTester.expectBucketCount("Notifications.LoadFinishTime.Icon", 0,
-                                      0);
 }
 
 TEST_F(NotificationImageLoaderTest, TimeoutTest) {
@@ -110,20 +94,12 @@ TEST_F(NotificationImageLoaderTest, TimeoutTest) {
   // result in a timeout.
   testingPlatform.runForPeriodSeconds(kImageFetchTimeoutInMs / 1000 - 1);
   EXPECT_EQ(LoadState::kNotLoaded, loaded());
-  m_histogramTester.expectTotalCount("Notifications.LoadFinishTime.Icon", 0);
-  m_histogramTester.expectTotalCount("Notifications.LoadFileSize.Icon", 0);
-  m_histogramTester.expectTotalCount("Notifications.LoadFailTime.Icon", 0);
 
   // Now advance time until a timeout should be expected.
   testingPlatform.runForPeriodSeconds(2);
 
   // If the loader times out, it calls the callback and returns an empty bitmap.
   EXPECT_EQ(LoadState::kLoadFailed, loaded());
-  m_histogramTester.expectTotalCount("Notifications.LoadFinishTime.Icon", 0);
-  m_histogramTester.expectTotalCount("Notifications.LoadFileSize.Icon", 0);
-  // Should log a non-zero failure time.
-  m_histogramTester.expectTotalCount("Notifications.LoadFailTime.Icon", 1);
-  m_histogramTester.expectBucketCount("Notifications.LoadFailTime.Icon", 0, 0);
 }
 
 }  // namspace

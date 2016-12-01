@@ -10,10 +10,11 @@
 #include "modules/ModulesExport.h"
 #include "platform/SharedBuffer.h"
 #include "platform/heap/Handle.h"
-#include "third_party/skia/include/core/SkBitmap.h"
 #include "wtf/Functional.h"
 #include "wtf/RefPtr.h"
 #include <memory>
+
+class SkBitmap;
 
 namespace blink {
 
@@ -27,19 +28,12 @@ class MODULES_EXPORT NotificationImageLoader final
     : public GarbageCollectedFinalized<NotificationImageLoader>,
       public ThreadableLoaderClient {
  public:
-  // Type names are used in UMAs, so do not rename.
-  enum class Type { Image, Icon, Badge, ActionIcon };
-
   // The bitmap may be empty if the request failed or the image data could not
   // be decoded.
   using ImageCallback = Function<void(const SkBitmap&)>;
 
-  explicit NotificationImageLoader(Type);
+  NotificationImageLoader();
   ~NotificationImageLoader() override;
-
-  // Scales down |image| according to its type and returns result. If it is
-  // already small enough, |image| is returned unchanged.
-  static SkBitmap scaleDownIfNeeded(const SkBitmap& image, Type);
 
   // Asynchronously downloads an image from the given url, decodes the loaded
   // data, and passes the bitmap to the callback. Times out if the load takes
@@ -62,7 +56,6 @@ class MODULES_EXPORT NotificationImageLoader final
  private:
   void runCallbackWithEmptyBitmap();
 
-  Type m_type;
   bool m_stopped;
   double m_startTime;
   RefPtr<SharedBuffer> m_data;

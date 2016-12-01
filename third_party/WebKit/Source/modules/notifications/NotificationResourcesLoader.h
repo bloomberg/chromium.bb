@@ -56,7 +56,6 @@ class MODULES_EXPORT NotificationResourcesLoader final
 
  private:
   void loadImage(ExecutionContext*,
-                 NotificationImageLoader::Type,
                  const KURL&,
                  std::unique_ptr<NotificationImageLoader::ImageCallback>);
   void didLoadImage(const SkBitmap& image);
