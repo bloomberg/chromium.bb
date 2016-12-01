@@ -11,6 +11,7 @@ import android.view.inputmethod.EditorInfo;
 
 import org.chromium.base.Log;
 import org.chromium.base.VisibleForTesting;
+import org.chromium.base.annotations.SuppressFBWarnings;
 
 /**
  * A factory class for {@link ThreadedInputConnection}. The class also includes triggering
@@ -29,6 +30,10 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     // propagated to the view via ViewRootImpl's message queue. Therefore, it may take another
     // UI message loop until View#hasWindowFocus() is aligned with what IMMS sees.
     private static final int CHECK_REGISTER_RETRY = 1;
+
+    // Reused for multiple WebView instances. TODO(changwan): check if we need to quit the loop
+    // for the last webview instance.
+    private static HandlerThread sHandlerThread;
 
     private final Handler mHandler;
     private final InputMethodManagerWrapper mInputMethodManagerWrapper;
@@ -61,11 +66,14 @@ public class ThreadedInputConnectionFactory implements ChromiumBaseInputConnecti
     }
 
     @VisibleForTesting
+    @SuppressFBWarnings("LI_LAZY_INIT_UPDATE_STATIC")
     protected Handler createHandler() {
-        HandlerThread thread =
-                new HandlerThread("InputConnectionHandlerThread", HandlerThread.NORM_PRIORITY);
-        thread.start();
-        return new Handler(thread.getLooper());
+        if (sHandlerThread == null) {
+            sHandlerThread =
+                    new HandlerThread("InputConnectionHandlerThread", HandlerThread.NORM_PRIORITY);
+            sHandlerThread.start();
+        }
+        return new Handler(sHandlerThread.getLooper());
     }
 
     @VisibleForTesting
