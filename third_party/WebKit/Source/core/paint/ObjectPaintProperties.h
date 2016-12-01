@@ -124,9 +124,23 @@ class CORE_EXPORT ObjectPaintProperties {
   const PropertyTreeStateWithOffset* localBorderBoxProperties() const {
     return m_localBorderBoxProperties.get();
   }
-  void setLocalBorderBoxProperties(
-      std::unique_ptr<PropertyTreeStateWithOffset> properties) {
-    m_localBorderBoxProperties = std::move(properties);
+  void updateLocalBorderBoxProperties(
+      LayoutPoint& paintOffset,
+      const TransformPaintPropertyNode* transform,
+      const ClipPaintPropertyNode* clip,
+      const EffectPaintPropertyNode* effect,
+      const ScrollPaintPropertyNode* scroll) {
+    if (m_localBorderBoxProperties) {
+      m_localBorderBoxProperties->paintOffset = paintOffset;
+      m_localBorderBoxProperties->propertyTreeState.setTransform(transform);
+      m_localBorderBoxProperties->propertyTreeState.setClip(clip);
+      m_localBorderBoxProperties->propertyTreeState.setEffect(effect);
+      m_localBorderBoxProperties->propertyTreeState.setScroll(scroll);
+    } else {
+      m_localBorderBoxProperties =
+          wrapUnique(new ObjectPaintProperties::PropertyTreeStateWithOffset(
+              paintOffset, PropertyTreeState(transform, clip, effect, scroll)));
+    }
   }
 
   // This is the complete set of property nodes and paint offset that can be

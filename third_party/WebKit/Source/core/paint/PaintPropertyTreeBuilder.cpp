@@ -466,16 +466,10 @@ void PaintPropertyTreeBuilder::updateLocalBorderBoxContext(
     if (auto* properties = object.getMutableForPainting().paintProperties())
       properties->clearLocalBorderBoxProperties();
   } else {
-    std::unique_ptr<ObjectPaintProperties::PropertyTreeStateWithOffset>
-        borderBoxContext =
-            wrapUnique(new ObjectPaintProperties::PropertyTreeStateWithOffset(
-                context.current.paintOffset,
-                PropertyTreeState(context.current.transform,
-                                  context.current.clip, context.currentEffect,
-                                  context.current.scroll)));
-    object.getMutableForPainting()
-        .ensurePaintProperties()
-        .setLocalBorderBoxProperties(std::move(borderBoxContext));
+    auto& properties = object.getMutableForPainting().ensurePaintProperties();
+    properties.updateLocalBorderBoxProperties(
+        context.current.paintOffset, context.current.transform,
+        context.current.clip, context.currentEffect, context.current.scroll);
   }
 }
 
