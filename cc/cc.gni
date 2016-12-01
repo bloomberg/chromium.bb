@@ -2,8 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+import("//testing/test.gni")
+
 cc_remove_configs = []
-cc_add_configs = []
+cc_add_configs = [ "//build/config:precompiled_headers" ]
 
 if (!is_debug && (is_win || is_android)) {
   cc_remove_configs += [ "//build/config/compiler:default_optimization" ]
@@ -23,6 +25,28 @@ template("cc_source_set") {
 
 template("cc_component") {
   component(target_name) {
+    forward_variables_from(invoker, "*", [ "configs" ])
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+    configs -= cc_remove_configs
+    configs += cc_add_configs
+  }
+}
+
+template("cc_static_library") {
+  static_library(target_name) {
+    forward_variables_from(invoker, "*", [ "configs" ])
+    if (defined(invoker.configs)) {
+      configs += invoker.configs
+    }
+    configs -= cc_remove_configs
+    configs += cc_add_configs
+  }
+}
+
+template("cc_test") {
+  test(target_name) {
     forward_variables_from(invoker, "*", [ "configs" ])
     if (defined(invoker.configs)) {
       configs += invoker.configs

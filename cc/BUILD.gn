@@ -4,7 +4,6 @@
 
 import("//build/config/ui.gni")
 import("//cc/cc.gni")
-import("//testing/test.gni")
 
 cc_component("cc") {
   sources = [
@@ -540,8 +539,6 @@ cc_component("cc") {
     ]
   }
 
-  configs = [ "//build/config:precompiled_headers" ]
-
   public_deps = [
     "//cc/base",
     "//skia",
@@ -576,7 +573,7 @@ cc_component("cc") {
   }
 }
 
-static_library("test_support") {
+cc_static_library("test_support") {
   testonly = true
   sources = [
     "test/animation_test_common.cc",
@@ -747,8 +744,6 @@ static_library("test_support") {
     "test/test_web_graphics_context_3d.h",
   ]
 
-  configs += [ "//build/config:precompiled_headers" ]
-
   public_deps = [
     ":cc",
     "//cc/animation",
@@ -783,7 +778,7 @@ static_library("test_support") {
   }
 }
 
-test("cc_unittests") {
+cc_test("cc_unittests") {
   sources = [
     "base/contiguous_container_unittest.cc",
     "base/delayed_unique_notifier_unittest.cc",
@@ -953,7 +948,6 @@ test("cc_unittests") {
     "test/run_all_unittests.cc",
   ]
 
-  configs += [ "//build/config:precompiled_headers" ]
   if (!is_android) {
     data = [
       "test/data/",
@@ -991,7 +985,7 @@ test("cc_unittests") {
   ]
 }
 
-test("cc_perftests") {
+cc_test("cc_perftests") {
   sources = [
     "animation/animation_host_perftest.cc",
     "ipc/cc_serialization_perftest.cc",

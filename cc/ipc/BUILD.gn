@@ -3,9 +3,10 @@
 # found in the LICENSE file.
 
 import("//build/config/ui.gni")
+import("//cc/cc.gni")
 import("//mojo/public/tools/bindings/mojom.gni")
 
-component("ipc") {
+cc_component("ipc") {
   output_name = "cc_ipc"
 
   defines = [ "CC_IPC_IMPLEMENTATION" ]
@@ -91,7 +92,7 @@ mojom("test_interfaces") {
   ]
 }
 
-source_set("struct_traits") {
+cc_source_set("struct_traits") {
   sources = [
     "begin_frame_args_struct_traits.h",
     "compositor_frame_metadata_struct_traits.cc",
