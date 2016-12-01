@@ -335,8 +335,8 @@ void WizardController::Init(const std::string& first_screen_name) {
   // or when resuming an OOBE that had it disabled or unset. We use an if/else
   // here to try and not set state when it is the default value so it can
   // change and affect the OOBE again.
-  if (!base::CommandLine::ForCurrentProcess()->HasSwitch(
-          chromeos::switches::kEnableMdOobe))
+  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
+          chromeos::switches::kDisableMdOobe))
     SetShowMdOobe(false);
   else if ((screen_pref.empty() ||
             GetLocalState()->HasPrefPath(prefs::kOobeMdMode)) ||

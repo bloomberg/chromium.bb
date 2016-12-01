@@ -241,8 +241,8 @@ const char kEnableFirstRunUITransitions[] = "enable-first-run-ui-transitions";
 // rather than the kiosk app mode.
 const char kEnableKioskMode[] = "enable-kiosk-mode";
 
-// Enables material design OOBE UI.
-const char kEnableMdOobe[] = "enable-md-oobe";
+// Disables material design OOBE UI.
+const char kDisableMdOobe[] = "disable-md-oobe";
 
 // Enables notifications about captive portals in session.
 const char kEnableNetworkPortalNotification[] =
