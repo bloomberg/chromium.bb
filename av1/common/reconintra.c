@@ -346,9 +346,16 @@ static void av1_init_intra_predictors_internal(void) {
   p[TX_32X32] = aom_##type##_predictor_32x32
 #endif  // CONFIG_TX64X64
 
+#if CONFIG_CB4X4
+#define INIT_ALL_SIZES(p, type)           \
+  p[TX_2X2] = aom_##type##_predictor_2x2; \
+  p[TX_4X4] = aom_##type##_predictor_4x4; \
+  INIT_NO_4X4(p, type)
+#else
 #define INIT_ALL_SIZES(p, type)           \
   p[TX_4X4] = aom_##type##_predictor_4x4; \
   INIT_NO_4X4(p, type)
+#endif
 
   INIT_ALL_SIZES(pred[V_PRED], v);
   INIT_ALL_SIZES(pred[H_PRED], h);
