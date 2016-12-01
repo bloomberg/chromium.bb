@@ -78,36 +78,26 @@ AVDACodecAllocator* AVDACodecAllocator::Instance() {
   return g_avda_codec_allocator.Pointer();
 }
 
-// Make sure the construction threads are started for |client|.
 bool AVDACodecAllocator::StartThread(AVDACodecAllocatorClient* client) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Cancel any pending StopThreadTask()s because we need the threads now.
   weak_this_factory_.InvalidateWeakPtrs();
 
-  // Try to start all threads if they haven't been started.  Remember that
-  // threads fail to start fairly often.
-  for (size_t i = 0; i < threads_.size(); i++) {
-    if (threads_[i]->thread.IsRunning())
+  // Try to start the threads if they haven't been started.
+  for (auto* thread : threads_) {
+    if (thread->thread.IsRunning())
       continue;
 
-    if (!threads_[i]->thread.Start())
-      continue;
+    if (!thread->thread.Start())
+      return false;
 
     // Register the hang detector to observe the thread's MessageLoop.
-    threads_[i]->thread.task_runner()->PostTask(
-        FROM_HERE,
-        base::Bind(&base::MessageLoop::AddTaskObserver,
-                   base::Unretained(threads_[i]->thread.message_loop()),
-                   &threads_[i]->hang_detector));
+    thread->thread.task_runner()->PostTask(
+        FROM_HERE, base::Bind(&base::MessageLoop::AddTaskObserver,
+                              base::Unretained(thread->thread.message_loop()),
+                              &thread->hang_detector));
   }
-
-  // Make sure that the construction thread started, else refuse to run.
-  // If other threads fail to start, then we'll post to the GPU main thread for
-  // those cases.  SW allocation failures are much less rare, so this usually
-  // just costs us the latency of doing the codec allocation on the main thread.
-  if (!threads_[TaskType::AUTO_CODEC]->thread.IsRunning())
-    return false;
 
   clients_.insert(client);
   return true;
@@ -124,42 +114,29 @@ void AVDACodecAllocator::StopThread(AVDACodecAllocatorClient* client) {
     return;
   }
 
-  // Post a task to stop the thread through the thread's task runner and back
-  // to this thread. This ensures that all pending tasks are run first. If the
-  // thread is hung we don't post a task to avoid leaking an unbounded number
-  // of tasks on its queue. If the thread is not hung, but appears to be, it
-  // will stay alive until next time an AVDA tries to stop it. We're
-  // guaranteed to not run StopThreadTask() when the thread is hung because if
-  // an AVDA queues tasks after DoNothing(), the StopThreadTask() reply will
-  // be canceled by invalidating its weak pointer.
+  // Post a task to stop each thread through its task runner and back to this
+  // thread. This ensures that all pending tasks are run first. If a new AVDA
+  // calls StartThread() before StopThreadTask() runs, it's canceled by
+  // invalidating its weak pointer. As a result we're guaranteed to only call
+  // Thread::Stop() while there are no tasks on its queue. We don't try to stop
+  // hung threads. But if it recovers it will be stopped the next time a client
+  // calls this.
   for (size_t i = 0; i < threads_.size(); i++) {
     if (threads_[i]->thread.IsRunning() &&
         !threads_[i]->hang_detector.IsThreadLikelyHung()) {
       threads_[i]->thread.task_runner()->PostTaskAndReply(
           FROM_HERE, base::Bind(&base::DoNothing),
-          base::Bind(
-              &AVDACodecAllocator::StopThreadTask,
-              weak_this_factory_.GetWeakPtr(), i,
-              (i == TaskType::AUTO_CODEC ? stop_event_for_testing_ : nullptr)));
+          base::Bind(&AVDACodecAllocator::StopThreadTask,
+                     weak_this_factory_.GetWeakPtr(), i));
     }
   }
 }
 
-// Return the task runner for tasks of type |type|.  If that thread failed
-// to start, then fall back to the GPU main thread.
+// Return the task runner for tasks of type |type|.
 scoped_refptr<base::SingleThreadTaskRunner> AVDACodecAllocator::TaskRunnerFor(
     TaskType task_type) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  base::Thread& thread = threads_[task_type]->thread;
-
-  // Fail over to the main thread if this thread failed to start.  Note that
-  // if the AUTO_CODEC thread fails to start, then AVDA init will fail.
-  // We won't fall back autodetection to the main thread, even without a
-  // special case here.
-  if (!thread.IsRunning())
-    return base::ThreadTaskRunnerHandle::Get();
-
-  return thread.task_runner();
+  return threads_[task_type]->thread.task_runner();
 }
 
 bool AVDACodecAllocator::AllocateSurface(AVDACodecAllocatorClient* client,
@@ -270,8 +247,7 @@ std::unique_ptr<VideoCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
   // |needs_protected_surface_| implies encrypted stream.
   DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
 
-  const bool require_software_codec =
-      codec_config->task_type_ == TaskType::SW_CODEC;
+  const bool require_software_codec = codec_config->task_type_ == SW_CODEC;
 
   std::unique_ptr<VideoCodecBridge> codec(VideoCodecBridge::CreateDecoder(
       codec_config->codec_, codec_config->needs_protected_surface_,
@@ -314,8 +290,6 @@ void AVDACodecAllocator::ReleaseMediaCodec(
   base::WaitableEvent* released =
       &pending_codec_releases_.find(surface_id)->second;
 
-  // TODO(watk): Even if this is the current thread, things will work, but we
-  // should refactor this to not tolerate threads failing to start.
   TaskRunnerFor(task_type)->PostTaskAndReply(
       FROM_HERE, base::Bind(&DeleteMediaCodecAndSignal,
                             base::Passed(std::move(media_codec)), released),
@@ -351,15 +325,14 @@ bool AVDACodecAllocator::IsAnyRegisteredAVDA() {
   return !clients_.empty();
 }
 
-TaskType AVDACodecAllocator::TaskTypeForAllocation() {
-  if (!IsThreadLikelyHung(TaskType::AUTO_CODEC))
-    return TaskType::AUTO_CODEC;
+base::Optional<TaskType> AVDACodecAllocator::TaskTypeForAllocation() {
+  if (!IsThreadLikelyHung(AUTO_CODEC))
+    return AUTO_CODEC;
 
-  if (!IsThreadLikelyHung(TaskType::SW_CODEC))
-    return TaskType::SW_CODEC;
+  if (!IsThreadLikelyHung(SW_CODEC))
+    return SW_CODEC;
 
-  // If nothing is working, then we can't allocate anyway.
-  return TaskType::FAILED_CODEC;
+  return base::nullopt;
 }
 
 base::Thread& AVDACodecAllocator::GetThreadForTesting(TaskType task_type) {
@@ -372,28 +345,27 @@ AVDACodecAllocator::AVDACodecAllocator(base::TickClock* tick_clock,
   // We leak the clock we create, but that's okay because we're a singleton.
   auto clock = tick_clock ? tick_clock : new base::DefaultTickClock();
 
-  // Create threads with names / indices that match up with TaskType.
-  DCHECK_EQ(threads_.size(), TaskType::AUTO_CODEC);
+  // Create threads with names and indices that match up with TaskType.
   threads_.push_back(new ThreadAndHangDetector("AVDAAutoThread", clock));
-  DCHECK_EQ(threads_.size(), TaskType::SW_CODEC);
   threads_.push_back(new ThreadAndHangDetector("AVDASWThread", clock));
+  static_assert(AUTO_CODEC == 0 && SW_CODEC == 1,
+                "TaskType values are not ordered correctly.");
 }
 
 AVDACodecAllocator::~AVDACodecAllocator() {
   // Only tests should reach here.  Shut down threads so that we guarantee that
   // nothing will use the threads.
-  for (size_t i = 0; i < threads_.size(); i++) {
-    if (!threads_[i]->thread.IsRunning())
-      continue;
-    threads_[i]->thread.Stop();
-  }
+  for (auto* thread : threads_)
+    thread->thread.Stop();
 }
 
-void AVDACodecAllocator::StopThreadTask(size_t index,
-                                        base::WaitableEvent* event) {
+void AVDACodecAllocator::StopThreadTask(size_t index) {
   threads_[index]->thread.Stop();
-  if (event)
-    event->Signal();
+  // Signal the stop event after both threads are stopped.
+  if (stop_event_for_testing_ && !threads_[AUTO_CODEC]->thread.IsRunning() &&
+      !threads_[SW_CODEC]->thread.IsRunning()) {
+    stop_event_for_testing_->Signal();
+  }
 }
 
 }  // namespace media

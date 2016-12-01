@@ -136,7 +136,7 @@ class AVDACodecAllocatorTest : public testing::Test {
             allocator_, task_type));
   }
 
-  TaskType TaskTypeForAllocation() {
+  base::Optional<TaskType> TaskTypeForAllocation() {
     return PostAndWait(FROM_HERE,
                        base::Bind(&AVDACodecAllocator::TaskTypeForAllocation,
                                   base::Unretained(allocator_)));
@@ -185,26 +185,26 @@ class AVDACodecAllocatorTest : public testing::Test {
 };
 
 TEST_F(AVDACodecAllocatorTest, ThreadsStartWhenClientsStart) {
-  ASSERT_FALSE(IsThreadRunning(TaskType::AUTO_CODEC));
-  ASSERT_FALSE(IsThreadRunning(TaskType::SW_CODEC));
-  ASSERT_TRUE(StartThread(avda1_));
-  // Assert that the AUTO_CODEC thread is started. The other might not be.
-  ASSERT_TRUE(IsThreadRunning(TaskType::AUTO_CODEC));
+  ASSERT_FALSE(IsThreadRunning(AUTO_CODEC));
+  ASSERT_FALSE(IsThreadRunning(SW_CODEC));
+  StartThread(avda1_);
+  ASSERT_TRUE(IsThreadRunning(AUTO_CODEC));
+  ASSERT_TRUE(IsThreadRunning(SW_CODEC));
 }
 
 TEST_F(AVDACodecAllocatorTest, ThreadsStopAfterAllClientsStop) {
   StartThread(avda1_);
   StartThread(avda2_);
   StopThread(avda1_);
-  ASSERT_TRUE(IsThreadRunning(TaskType::AUTO_CODEC));
+  ASSERT_TRUE(IsThreadRunning(AUTO_CODEC));
   StopThread(avda2_);
-  ASSERT_FALSE(IsThreadRunning(TaskType::AUTO_CODEC));
-  // Note the SW_CODEC thread might still be running.
+  ASSERT_FALSE(IsThreadRunning(AUTO_CODEC));
+  ASSERT_FALSE(IsThreadRunning(SW_CODEC));
 }
 
 TEST_F(AVDACodecAllocatorTest, TestHangThread) {
   StartThread(avda1_);
-  ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(AUTO_CODEC, TaskTypeForAllocation().value());
 
   // Hang the AUTO_CODEC thread.
   base::WaitableEvent about_to_wait_event(
@@ -213,7 +213,7 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
   base::WaitableEvent wait_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  TaskRunnerFor(TaskType::AUTO_CODEC)
+  TaskRunnerFor(AUTO_CODEC)
       ->PostTask(FROM_HERE, base::Bind(&WaitUntilRestarted,
                                        &about_to_wait_event, &wait_event));
   // Wait until the task starts, so that |allocator_| starts the hang timer.
@@ -221,24 +221,21 @@ TEST_F(AVDACodecAllocatorTest, TestHangThread) {
 
   // Verify that we've failed over after a long time has passed.
   tick_clock_.Advance(base::TimeDelta::FromSeconds(1));
-  // Note that this should return the SW codec task type even if that thread
-  // failed to start.  TaskRunnerFor() will return the current thread in that
-  // case too.
-  ASSERT_EQ(TaskType::SW_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(SW_CODEC, TaskTypeForAllocation().value());
 
   // Un-hang the thread and wait for it to let another task run.  This will
   // notify |allocator_| that the thread is no longer hung.
   base::WaitableEvent done_waiting_event(
       base::WaitableEvent::ResetPolicy::MANUAL,
       base::WaitableEvent::InitialState::NOT_SIGNALED);
-  TaskRunnerFor(TaskType::AUTO_CODEC)
+  TaskRunnerFor(AUTO_CODEC)
       ->PostTask(FROM_HERE,
                  base::Bind(&SignalImmediately, &done_waiting_event));
   wait_event.Signal();
   done_waiting_event.Wait();
 
   // Verify that we've un-failed over.
-  ASSERT_EQ(TaskType::AUTO_CODEC, TaskTypeForAllocation());
+  ASSERT_EQ(AUTO_CODEC, TaskTypeForAllocation().value());
 }
 
 TEST_F(AVDACodecAllocatorTest, AllocatingASurfaceTextureAlwaysSucceeds) {

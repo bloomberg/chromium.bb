@@ -884,9 +884,9 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
     picture_buffer_manager_.CodecChanged(nullptr);
   }
 
-  codec_config_->task_type_ =
+  base::Optional<TaskType> task_type =
       AVDACodecAllocator::Instance()->TaskTypeForAllocation();
-  if (codec_config_->task_type_ == TaskType::FAILED_CODEC) {
+  if (!task_type) {
     // If there is no free thread, then just fail.
     OnCodecConfigured(nullptr);
     return;
@@ -894,12 +894,13 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
   // If autodetection is disallowed, fall back to Chrome's software decoders
   // instead of using the software decoders provided by MediaCodec.
-  if (codec_config_->task_type_ == TaskType::SW_CODEC &&
+  if (task_type == TaskType::SW_CODEC &&
       IsMediaCodecSoftwareDecodingForbidden()) {
     OnCodecConfigured(nullptr);
     return;
   }
 
+  codec_config_->task_type_ = task_type.value();
   AVDACodecAllocator::Instance()->CreateMediaCodecAsync(
       weak_this_factory_.GetWeakPtr(), codec_config_);
 }
@@ -910,13 +911,15 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
   DCHECK_NE(state_, WAITING_FOR_CODEC);
   state_ = WAITING_FOR_CODEC;
 
-  codec_config_->task_type_ =
+  base::Optional<TaskType> task_type =
       AVDACodecAllocator::Instance()->TaskTypeForAllocation();
-  if (codec_config_->task_type_ == TaskType::FAILED_CODEC) {
+  if (!task_type) {
+    // If there is no free thread, then just fail.
     OnCodecConfigured(nullptr);
     return false;
   }
 
+  codec_config_->task_type_ = task_type.value();
   std::unique_ptr<VideoCodecBridge> media_codec =
       AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
   OnCodecConfigured(std::move(media_codec));

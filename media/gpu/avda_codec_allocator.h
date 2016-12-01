@@ -13,6 +13,7 @@
 #include "base/bind.h"
 #include "base/lazy_instance.h"
 #include "base/logging.h"
+#include "base/optional.h"
 #include "base/synchronization/waitable_event.h"
 #include "base/sys_info.h"
 #include "base/threading/thread.h"
@@ -32,17 +33,12 @@ namespace media {
 
 // For TaskRunnerFor. These are used as vector indices, so please update
 // AVDACodecAllocator's constructor if you add / change them.
-// TODO(watk): Hide this from AVDA now that we manage codec creation.
 enum TaskType {
   // Task for an autodetected MediaCodec instance.
   AUTO_CODEC = 0,
 
   // Task for a software-codec-required MediaCodec.
   SW_CODEC = 1,
-
-  // Special value to indicate "none".  This is not used as an array index. It
-  // must, however, be positive to keep the enum unsigned.
-  FAILED_CODEC = 99,
 };
 
 // Configuration info for MediaCodec.
@@ -121,14 +117,11 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // browser UI thread.
   void OnSurfaceDestroyed(int surface_id);
 
-  // Make sure the construction thread is started for |client|.
+  // Make sure the construction threads are started for |client|. Returns true
+  // on success.
   bool StartThread(AVDACodecAllocatorClient* client);
 
   void StopThread(AVDACodecAllocatorClient* client);
-
-  // Return the task runner for tasks of type |type|.  If that thread failed
-  // to start, then fall back to the GPU main thread.
-  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
 
   // Returns true if the caller now owns the surface, or false if someone else
   // owns the surface. |client| will be notified when the surface is available
@@ -166,9 +159,9 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
   // Return true if and only if there is any AVDA registered.
   bool IsAnyRegisteredAVDA();
 
-  // Return the task type to use for a new codec allocation, or FAILED_CODEC if
-  // there is no thread that can support it.
-  TaskType TaskTypeForAllocation();
+  // Return the task type to use for a new codec allocation, or nullopt if
+  // both threads are hung.
+  base::Optional<TaskType> TaskTypeForAllocation();
 
   // Return a reference to the thread for unit tests.
   base::Thread& GetThreadForTesting(TaskType task_type);
@@ -213,10 +206,14 @@ class MEDIA_GPU_EXPORT AVDACodecAllocator {
                      base::WaitableEvent* stop_event = nullptr);
   ~AVDACodecAllocator();
 
+  // Return the task runner for tasks of type |type|.
+  scoped_refptr<base::SingleThreadTaskRunner> TaskRunnerFor(TaskType task_type);
+
   void OnMediaCodecAndSurfaceReleased(int surface_id);
 
-  // Stop the thread indicated by |index|, then signal |event| if provided.
-  void StopThreadTask(size_t index, base::WaitableEvent* event = nullptr);
+  // Stop the thread indicated by |index|. This signals stop_event_for_testing_
+  // after both threads are stopped.
+  void StopThreadTask(size_t index);
 
   // All registered AVDAs.
   std::set<AVDACodecAllocatorClient*> clients_;
