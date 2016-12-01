@@ -36,11 +36,6 @@ class AffineTransform;
 
 class SVGFitToViewBox : public GarbageCollectedMixin {
  public:
-  enum PropertyMapPolicy {
-    PropertyMapPolicyAdd,
-    PropertyMapPolicySkip,
-  };
-
   static AffineTransform viewBoxToViewTransform(const FloatRect& viewBoxRect,
                                                 SVGPreserveAspectRatio*,
                                                 float viewWidth,
@@ -62,11 +57,7 @@ class SVGFitToViewBox : public GarbageCollectedMixin {
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  explicit SVGFitToViewBox(SVGElement*,
-                           PropertyMapPolicy = PropertyMapPolicyAdd);
-  void updateViewBox(const FloatRect&);
-  void clearViewBox() { m_viewBox = nullptr; }
-  void clearPreserveAspectRatio() { m_preserveAspectRatio = nullptr; }
+  explicit SVGFitToViewBox(SVGElement*);
 
  private:
   Member<SVGAnimatedRect> m_viewBox;

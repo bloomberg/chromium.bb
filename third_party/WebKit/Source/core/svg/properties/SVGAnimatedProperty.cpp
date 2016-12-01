@@ -41,7 +41,6 @@ SVGAnimatedPropertyBase::SVGAnimatedPropertyBase(
     CSSPropertyID cssPropertyId)
     : m_type(type),
       m_cssPropertyId(cssPropertyId),
-      m_isReadOnly(false),
       m_contextElement(contextElement),
       m_attributeName(attributeName) {
   DCHECK(m_contextElement);

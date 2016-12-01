@@ -52,12 +52,7 @@ class SVGPropertyTearOffBase
   }
 
   bool isAnimVal() const { return m_propertyIsAnimVal == PropertyIsAnimVal; }
-
-  bool isReadOnlyProperty() const { return m_isReadOnlyProperty; }
-
-  void setIsReadOnlyProperty() { m_isReadOnlyProperty = true; }
-
-  bool isImmutable() const { return isReadOnlyProperty() || isAnimVal(); }
+  bool isImmutable() const { return isAnimVal(); }
 
   virtual void commitChange();
 
@@ -87,7 +82,6 @@ class SVGPropertyTearOffBase
       const QualifiedName& attributeName = QualifiedName::null())
       : m_contextElement(contextElement),
         m_propertyIsAnimVal(propertyIsAnimVal),
-        m_isReadOnlyProperty(false),
         m_attributeName(attributeName) {}
 
  private:
@@ -97,7 +91,6 @@ class SVGPropertyTearOffBase
   UntracedMember<SVGElement> m_contextElement;
 
   PropertyIsAnimValType m_propertyIsAnimVal;
-  bool m_isReadOnlyProperty;
   QualifiedName m_attributeName;
 };
 

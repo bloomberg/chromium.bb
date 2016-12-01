@@ -31,8 +31,6 @@ G*     * Redistributions in binary form must reproduce the above
 #ifndef SVGAnimatedProperty_h
 #define SVGAnimatedProperty_h
 
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/dom/ExceptionCode.h"
 #include "core/svg/SVGParsingError.h"
 #include "core/svg/properties/SVGPropertyInfo.h"
 #include "core/svg/properties/SVGPropertyTearOff.h"
@@ -41,6 +39,7 @@ G*     * Redistributions in binary form must reproduce the above
 
 namespace blink {
 
+class ExceptionState;
 class SVGElement;
 
 class SVGAnimatedPropertyBase
@@ -78,10 +77,6 @@ class SVGAnimatedPropertyBase
     return cssPropertyId() != CSSPropertyInvalid;
   }
 
-  bool isReadOnly() const { return m_isReadOnly; }
-
-  void setReadOnly() { m_isReadOnly = true; }
-
   bool isSpecified() const;
 
   DEFINE_INLINE_VIRTUAL_TRACE() {}
@@ -101,7 +96,6 @@ class SVGAnimatedPropertyBase
 
   const unsigned m_type : 5;
   const unsigned m_cssPropertyId : kCssPropertyBits;
-  unsigned m_isReadOnly : 1;
 
   // This raw pointer is safe since the SVG element is guaranteed to be kept
   // alive by a V8 wrapper.
@@ -197,13 +191,7 @@ class SVGAnimatedProperty : public SVGAnimatedPropertyCommon<Property> {
   // implementation.  Use currentValue() from C++ code.
   PrimitiveType baseVal() { return this->baseValue()->value(); }
 
-  void setBaseVal(PrimitiveType value, ExceptionState& exceptionState) {
-    if (this->isReadOnly()) {
-      exceptionState.throwDOMException(NoModificationAllowedError,
-                                       "The attribute is read-only.");
-      return;
-    }
-
+  void setBaseVal(PrimitiveType value, ExceptionState&) {
     this->baseValue()->setValue(value);
     m_baseValueUpdated = true;
 
@@ -274,20 +262,17 @@ class SVGAnimatedProperty<Property, TearOffType, void>
       m_baseValTearOff =
           TearOffType::create(this->baseValue(), this->contextElement(),
                               PropertyIsNotAnimVal, this->attributeName());
-      if (this->isReadOnly())
-        m_baseValTearOff->setIsReadOnlyProperty();
     }
-
-    return m_baseValTearOff.get();
+    return m_baseValTearOff;
   }
 
   TearOffType* animVal() {
-    if (!m_animValTearOff)
+    if (!m_animValTearOff) {
       m_animValTearOff =
           TearOffType::create(this->currentValue(), this->contextElement(),
                               PropertyIsAnimVal, this->attributeName());
-
-    return m_animValTearOff.get();
+    }
+    return m_animValTearOff;
   }
 
   DEFINE_INLINE_VIRTUAL_TRACE() {

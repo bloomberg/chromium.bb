@@ -101,10 +101,10 @@ DEFINE_NODE_FACTORY(SVGSVGElement)
 
 SVGSVGElement::~SVGSVGElement() {}
 
-SVGViewSpec* SVGSVGElement::currentView() {
+SVGViewSpec& SVGSVGElement::ensureViewSpec() {
   if (!m_viewSpec)
-    m_viewSpec = SVGViewSpec::create(this);
-  return m_viewSpec;
+    m_viewSpec = SVGViewSpec::create();
+  return *m_viewSpec;
 }
 
 float SVGSVGElement::currentScale() const {
@@ -157,11 +157,10 @@ void SVGSVGElement::updateUserTransform() {
 }
 
 bool SVGSVGElement::zoomAndPanEnabled() const {
-  const SVGZoomAndPan* currentViewSpec = this;
+  SVGZoomAndPanType zoomAndPan = this->zoomAndPan();
   if (m_useCurrentView)
-    currentViewSpec = m_viewSpec;
-  DCHECK(currentViewSpec);
-  return currentViewSpec->zoomAndPan() == SVGZoomAndPanMagnify;
+    zoomAndPan = m_viewSpec->zoomAndPan();
+  return zoomAndPan == SVGZoomAndPanMagnify;
 }
 
 void SVGSVGElement::parseAttribute(const QualifiedName& name,
@@ -600,7 +599,7 @@ bool SVGSVGElement::shouldSynthesizeViewBox() const {
 FloatRect SVGSVGElement::currentViewBoxRect() const {
   if (m_useCurrentView) {
     DCHECK(m_viewSpec);
-    return m_viewSpec->viewBox()->currentValue()->value();
+    return m_viewSpec->viewBox()->value();
   }
 
   FloatRect useViewBox = viewBox()->currentValue()->value();
@@ -625,7 +624,7 @@ FloatRect SVGSVGElement::currentViewBoxRect() const {
 SVGPreserveAspectRatio* SVGSVGElement::currentPreserveAspectRatio() const {
   if (m_useCurrentView) {
     DCHECK(m_viewSpec);
-    return m_viewSpec->preserveAspectRatio()->currentValue();
+    return m_viewSpec->preserveAspectRatio();
   }
   if (!viewBox()->currentValue()->isValid() && shouldSynthesizeViewBox()) {
     // If no viewBox is specified and we're embedded through SVGImage, then
@@ -714,17 +713,16 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier,
   m_useCurrentView = false;
 
   if (fragmentIdentifier.startsWith("svgView(")) {
-    SVGViewSpec* view =
-        currentView();  // Ensure the SVGViewSpec has been created.
+    // Ensure the SVGViewSpec has been created.
+    SVGViewSpec& view = ensureViewSpec();
+    view.inheritViewAttributesFromElement(this);
 
-    view->inheritViewAttributesFromElement(this);
-
-    if (view->parseViewSpec(fragmentIdentifier)) {
+    if (view.parseViewSpec(fragmentIdentifier)) {
       UseCounter::count(document(), UseCounter::SVGSVGElementFragmentSVGView);
       m_useCurrentView = true;
       needsViewUpdate = true;
     } else {
-      view->reset();
+      view.reset();
     }
   } else if (isSVGViewElement(anchorNode)) {
     // Spec: If the SVG fragment identifier addresses a 'view' element
@@ -763,12 +761,12 @@ void SVGSVGElement::setupInitialView(const String& fragmentIdentifier,
 }
 
 void SVGSVGElement::inheritViewAttributes(SVGViewElement* viewElement) {
-  SVGViewSpec* view = currentView();
+  SVGViewSpec& view = ensureViewSpec();
   m_useCurrentView = true;
   UseCounter::count(document(),
                     UseCounter::SVGSVGElementFragmentSVGViewElement);
-  view->inheritViewAttributesFromElement(this);
-  view->inheritViewAttributesFromElement(viewElement);
+  view.inheritViewAttributesFromElement(this);
+  view.inheritViewAttributesFromElement(viewElement);
   DCHECK(!m_useCurrentView || m_viewSpec);
 }
 

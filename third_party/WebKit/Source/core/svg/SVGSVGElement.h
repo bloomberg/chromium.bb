@@ -50,10 +50,6 @@ class SVGSVGElement final : public SVGGraphicsElement,
  public:
   DECLARE_NODE_FACTORY(SVGSVGElement);
 
-  // 'SVGSVGElement' functions
-  bool useCurrentView() const { return m_useCurrentView; }
-  SVGViewSpec* currentView();
-
   float intrinsicWidth() const;
   float intrinsicHeight() const;
   FloatSize currentViewportSize() const;
@@ -118,6 +114,8 @@ class SVGSVGElement final : public SVGGraphicsElement,
  private:
   explicit SVGSVGElement(Document&);
   ~SVGSVGElement() override;
+
+  SVGViewSpec& ensureViewSpec();
 
   void parseAttribute(const QualifiedName&,
                       const AtomicString&,

@@ -38,12 +38,6 @@ SVGAnimatedEnumerationBase::~SVGAnimatedEnumerationBase() {}
 
 void SVGAnimatedEnumerationBase::setBaseVal(unsigned short value,
                                             ExceptionState& exceptionState) {
-  if (this->isReadOnly()) {
-    exceptionState.throwDOMException(NoModificationAllowedError,
-                                     "The attribute is read-only.");
-    return;
-  }
-
   if (!value) {
     exceptionState.throwTypeError(
         "The enumeration value provided is 0, which is not settable.");

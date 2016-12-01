@@ -19,45 +19,27 @@
 
 #include "core/svg/SVGViewSpec.h"
 
-#include "bindings/core/v8/ExceptionMessages.h"
-#include "bindings/core/v8/ExceptionState.h"
-#include "core/SVGNames.h"
-#include "core/dom/ExceptionCode.h"
-#include "core/svg/SVGAnimatedTransformList.h"
 #include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGPreserveAspectRatio.h"
+#include "core/svg/SVGRect.h"
+#include "core/svg/SVGTransformList.h"
 #include "wtf/text/ParsingUtilities.h"
 
 namespace blink {
 
-SVGViewSpec::SVGViewSpec(SVGSVGElement* contextElement)
-    // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to
-    // an element.  We make tear-offs' contextElement the target element of
-    // SVGViewSpec.  This contextElement will be only used for keeping this
-    // alive from the tearoff.  SVGSVGElement holds a strong-ref to this
-    // SVGViewSpec, so this is kept alive as:
-    // AnimatedProperty tearoff -(contextElement)-> SVGSVGElement -(RefPtr)->
-    //    SVGViewSpec.
-    : SVGFitToViewBox(contextElement, PropertyMapPolicySkip),
-      m_contextElement(contextElement),
-      m_transform(SVGAnimatedTransformList::create(contextElement,
-                                                   SVGNames::transformAttr)) {
-  ASSERT(m_contextElement);
-
-  viewBox()->setReadOnly();
-  preserveAspectRatio()->setReadOnly();
-  m_transform->setReadOnly();
-  // Note: addToPropertyMap is not needed, as SVGViewSpec do not correspond to
-  // an element.
-}
+SVGViewSpec::SVGViewSpec()
+    : m_viewBox(SVGRect::createInvalid()),
+      m_preserveAspectRatio(SVGPreserveAspectRatio::create()),
+      m_transform(SVGTransformList::create()) {}
 
 DEFINE_TRACE(SVGViewSpec) {
-  visitor->trace(m_contextElement);
+  visitor->trace(m_viewBox);
+  visitor->trace(m_preserveAspectRatio);
   visitor->trace(m_transform);
-  SVGFitToViewBox::trace(visitor);
 }
 
 bool SVGViewSpec::parseViewSpec(const String& spec) {
-  if (spec.isEmpty() || !m_contextElement)
+  if (spec.isEmpty())
     return false;
   if (spec.is8Bit()) {
     const LChar* ptr = spec.characters8();
@@ -69,16 +51,20 @@ bool SVGViewSpec::parseViewSpec(const String& spec) {
   return parseViewSpecInternal(ptr, end);
 }
 
+void SVGViewSpec::setViewBox(const FloatRect& rect) {
+  viewBox()->setValue(rect);
+}
+
+void SVGViewSpec::setPreserveAspectRatio(const SVGPreserveAspectRatio& other) {
+  preserveAspectRatio()->setAlign(other.align());
+  preserveAspectRatio()->setMeetOrSlice(other.meetOrSlice());
+}
+
 void SVGViewSpec::reset() {
   resetZoomAndPan();
-  m_transform->baseValue()->clear();
-  updateViewBox(FloatRect());
-  ASSERT(preserveAspectRatio());
-  preserveAspectRatio()->baseValue()->setAlign(
-      SVGPreserveAspectRatio::kSvgPreserveaspectratioXmidymid);
-  preserveAspectRatio()->baseValue()->setMeetOrSlice(
-      SVGPreserveAspectRatio::kSvgMeetorsliceMeet);
-  m_viewTargetString = emptyString();
+  m_transform->clear();
+  setViewBox(FloatRect());
+  preserveAspectRatio()->setDefault();
 }
 
 namespace {
@@ -148,15 +134,12 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr,
               parseNumber(ptr, end, width) &&
               parseNumber(ptr, end, height, DisallowWhitespace)))
           return false;
-        updateViewBox(FloatRect(x, y, width, height));
+        setViewBox(FloatRect(x, y, width, height));
         break;
       }
       case ViewTarget: {
-        const CharType* viewTargetStart = ptr;
+        // Ignore arguments.
         skipUntil<CharType>(ptr, end, ')');
-        if (ptr == viewTargetStart)
-          return false;
-        m_viewTargetString = String(viewTargetStart, ptr - viewTargetStart);
         break;
       }
       case ZoomAndPan:
@@ -164,11 +147,11 @@ bool SVGViewSpec::parseViewSpecInternal(const CharType* ptr,
           return false;
         break;
       case PreserveAspectRatio:
-        if (!preserveAspectRatio()->baseValue()->parse(ptr, end, false))
+        if (!preserveAspectRatio()->parse(ptr, end, false))
           return false;
         break;
       case Transform:
-        m_transform->baseValue()->parse(ptr, end);
+        m_transform->parse(ptr, end);
         break;
       default:
         NOTREACHED();

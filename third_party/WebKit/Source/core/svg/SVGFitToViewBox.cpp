@@ -21,13 +21,10 @@
 
 #include "core/svg/SVGFitToViewBox.h"
 
-#include "core/dom/Attribute.h"
-#include "core/svg/SVGDocumentExtensions.h"
 #include "core/svg/SVGElement.h"
-#include "core/svg/SVGParserUtilities.h"
+#include "core/svg/SVGParsingError.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/transforms/AffineTransform.h"
-#include "wtf/text/StringImpl.h"
 
 namespace blink {
 
@@ -56,17 +53,14 @@ SVGParsingError SVGAnimatedViewBoxRect::setBaseValueAsString(
   return parseStatus;
 }
 
-SVGFitToViewBox::SVGFitToViewBox(SVGElement* element,
-                                 PropertyMapPolicy propertyMapPolicy)
+SVGFitToViewBox::SVGFitToViewBox(SVGElement* element)
     : m_viewBox(SVGAnimatedViewBoxRect::create(element)),
       m_preserveAspectRatio(SVGAnimatedPreserveAspectRatio::create(
           element,
           SVGNames::preserveAspectRatioAttr)) {
-  ASSERT(element);
-  if (propertyMapPolicy == PropertyMapPolicyAdd) {
-    element->addToPropertyMap(m_viewBox);
-    element->addToPropertyMap(m_preserveAspectRatio);
-  }
+  DCHECK(element);
+  element->addToPropertyMap(m_viewBox);
+  element->addToPropertyMap(m_preserveAspectRatio);
 }
 
 DEFINE_TRACE(SVGFitToViewBox) {
@@ -91,11 +85,6 @@ AffineTransform SVGFitToViewBox::viewBoxToViewTransform(
 bool SVGFitToViewBox::isKnownAttribute(const QualifiedName& attrName) {
   return attrName == SVGNames::viewBoxAttr ||
          attrName == SVGNames::preserveAspectRatioAttr;
-}
-
-void SVGFitToViewBox::updateViewBox(const FloatRect& rect) {
-  ASSERT(m_viewBox);
-  m_viewBox->baseValue()->setValue(rect);
 }
 
 }  // namespace blink

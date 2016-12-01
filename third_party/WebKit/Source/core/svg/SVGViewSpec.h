@@ -20,60 +20,56 @@
 #ifndef SVGViewSpec_h
 #define SVGViewSpec_h
 
-#include "core/svg/SVGFitToViewBox.h"
-#include "core/svg/SVGSVGElement.h"
 #include "core/svg/SVGZoomAndPan.h"
 #include "platform/heap/Handle.h"
 
 namespace blink {
 
-class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
-                          public SVGZoomAndPan,
-                          public SVGFitToViewBox {
-  USING_GARBAGE_COLLECTED_MIXIN(SVGViewSpec);
+class FloatRect;
+class SVGPreserveAspectRatio;
+class SVGRect;
+class SVGTransformList;
 
+class SVGViewSpec final : public GarbageCollectedFinalized<SVGViewSpec>,
+                          public SVGZoomAndPan {
  public:
-  static SVGViewSpec* create(SVGSVGElement* contextElement) {
-    return new SVGViewSpec(contextElement);
-  }
+  static SVGViewSpec* create() { return new SVGViewSpec(); }
 
   bool parseViewSpec(const String&);
   void reset();
   template <typename T>
   void inheritViewAttributesFromElement(T*);
 
-  SVGTransformList* transform() {
-    return m_transform ? m_transform->baseValue() : 0;
+  SVGRect* viewBox() { return m_viewBox; }
+  SVGPreserveAspectRatio* preserveAspectRatio() {
+    return m_preserveAspectRatio;
   }
+  SVGTransformList* transform() { return m_transform; }
 
   DECLARE_VIRTUAL_TRACE();
 
-  SVGSVGElement* contextElement() { return m_contextElement.get(); }
-
  private:
-  explicit SVGViewSpec(SVGSVGElement*);
+  SVGViewSpec();
 
   template <typename CharType>
   bool parseViewSpecInternal(const CharType* ptr, const CharType* end);
 
-  Member<SVGSVGElement> m_contextElement;
-  Member<SVGAnimatedTransformList> m_transform;
-  String m_viewTargetString;
+  void setViewBox(const FloatRect&);
+  void setPreserveAspectRatio(const SVGPreserveAspectRatio&);
+
+  Member<SVGRect> m_viewBox;
+  Member<SVGPreserveAspectRatio> m_preserveAspectRatio;
+  Member<SVGTransformList> m_transform;
 };
 
 template <typename T>
 void SVGViewSpec::inheritViewAttributesFromElement(T* inheritFromElement) {
   if (!inheritFromElement->hasEmptyViewBox())
-    viewBox()->baseValue()->setValue(
-        inheritFromElement->viewBox()->currentValue()->value());
+    setViewBox(inheritFromElement->viewBox()->currentValue()->value());
 
   if (inheritFromElement->preserveAspectRatio()->isSpecified()) {
-    preserveAspectRatio()->baseValue()->setAlign(
-        inheritFromElement->preserveAspectRatio()->currentValue()->align());
-    preserveAspectRatio()->baseValue()->setMeetOrSlice(
-        inheritFromElement->preserveAspectRatio()
-            ->currentValue()
-            ->meetOrSlice());
+    setPreserveAspectRatio(
+        *inheritFromElement->preserveAspectRatio()->currentValue());
   }
 
   if (inheritFromElement->hasAttribute(SVGNames::zoomAndPanAttr))

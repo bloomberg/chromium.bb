@@ -103,10 +103,11 @@ class SVGPreserveAspectRatio final
     return AnimatedPreserveAspectRatio;
   }
 
+  void setDefault();
+
  private:
   SVGPreserveAspectRatio();
 
-  void setDefault();
   template <typename CharType>
   SVGParsingError parseInternal(const CharType*& ptr,
                                 const CharType* end,
