@@ -224,6 +224,7 @@ class BASE_EXPORT FieldTrial : public RefCounted<FieldTrial> {
   FRIEND_TEST_ALL_PREFIXES(FieldTrialTest, DoesNotSurpassTotalProbability);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
                            DoNotAddSimulatedFieldTrialsToAllocator);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, ClearParamsFromSharedMemory);
 
   friend class base::FieldTrialList;
 
@@ -555,12 +556,24 @@ class BASE_EXPORT FieldTrialList {
   // Return the number of active field trials.
   static size_t GetFieldTrialCount();
 
+  // Gets the parameters for |field_trial| from shared memory and stores them in
+  // |params|. This is only exposed for use by FieldTrialParamAssociator and
+  // shouldn't be used by anything else.
+  static bool GetParamsFromSharedMemory(
+      FieldTrial* field_trial,
+      std::map<std::string, std::string>* params);
+
+  // Clears all the params in the allocator.
+  static void ClearParamsFromSharedMemoryForTesting();
+
  private:
   // Allow tests to access our innards for testing purposes.
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, InstantiateAllocator);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, AddTrialsToAllocator);
   FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest,
                            DoNotAddSimulatedFieldTrialsToAllocator);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, AssociateFieldTrialParams);
+  FRIEND_TEST_ALL_PREFIXES(FieldTrialListTest, ClearParamsFromSharedMemory);
 
 #if defined(OS_WIN)
   // Takes in |handle_switch| from the command line which represents the shared
@@ -625,8 +638,8 @@ class BASE_EXPORT FieldTrialList {
   // FieldTrialList is created after that.
   static bool used_without_global_;
 
-  // Lock for access to registered_.
-  base::Lock lock_;
+  // Lock for access to registered_ and field_trial_allocator_.
+  Lock lock_;
   RegistrationMap registered_;
 
   std::map<std::string, std::string> seen_states_;

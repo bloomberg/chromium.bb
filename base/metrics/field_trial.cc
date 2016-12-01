@@ -12,6 +12,7 @@
 #include "base/command_line.h"
 #include "base/feature_list.h"
 #include "base/logging.h"
+#include "base/metrics/field_trial_param_associator.h"
 #include "base/pickle.h"
 #include "base/process/memory.h"
 #include "base/rand_util.h"
@@ -80,24 +81,87 @@ struct FieldTrialEntry {
   // Size of the pickled structure, NOT the total size of this entry.
   uint32_t size;
 
+  // Returns an iterator over the data containing names and params.
+  PickleIterator GetPickleIterator() const {
+    char* src = reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this)) +
+                sizeof(FieldTrialEntry);
+
+    Pickle pickle(src, size);
+    return PickleIterator(pickle);
+  }
+
+  // Takes the iterator and writes out the first two items into |trial_name| and
+  // |group_name|.
+  bool ReadStringPair(PickleIterator* iter,
+                      StringPiece* trial_name,
+                      StringPiece* group_name) const {
+    if (!iter->ReadStringPiece(trial_name))
+      return false;
+    if (!iter->ReadStringPiece(group_name))
+      return false;
+    return true;
+  }
+
   // Calling this is only valid when the entry is initialized. That is, it
   // resides in shared memory and has a pickle containing the trial name and
   // group name following it.
   bool GetTrialAndGroupName(StringPiece* trial_name,
                             StringPiece* group_name) const {
-    char* src = reinterpret_cast<char*>(const_cast<FieldTrialEntry*>(this)) +
-                sizeof(FieldTrialEntry);
+    PickleIterator iter = GetPickleIterator();
+    return ReadStringPair(&iter, trial_name, group_name);
+  }
 
-    Pickle pickle(src, size);
-    PickleIterator pickle_iter(pickle);
+  // Calling this is only valid when the entry is initialized as well. Reads the
+  // parameters following the trial and group name and stores them as key-value
+  // mappings in |params|.
+  bool GetParams(std::map<std::string, std::string>* params) const {
+    PickleIterator iter = GetPickleIterator();
+    StringPiece tmp;
+    if (!ReadStringPair(&iter, &tmp, &tmp))
+      return false;
 
-    if (!pickle_iter.ReadStringPiece(trial_name))
-      return false;
-    if (!pickle_iter.ReadStringPiece(group_name))
-      return false;
-    return true;
+    while (true) {
+      StringPiece key;
+      StringPiece value;
+      if (!ReadStringPair(&iter, &key, &value))
+        return key.empty();  // Non-empty is bad: got one of a pair.
+      (*params)[key.as_string()] = value.as_string();
+    }
   }
 };
+
+// Writes out string1 and then string2 to pickle.
+bool WriteStringPair(Pickle* pickle,
+                     const StringPiece& string1,
+                     const StringPiece& string2) {
+  if (!pickle->WriteString(string1))
+    return false;
+  if (!pickle->WriteString(string2))
+    return false;
+  return true;
+}
+
+// Writes out the field trial's contents (via trial_state) to the pickle. The
+// format of the pickle looks like:
+// TrialName, GroupName, ParamKey1, ParamValue1, ParamKey2, ParamValue2, ...
+// If there are no parameters, then it just ends at GroupName.
+bool PickleFieldTrial(const FieldTrial::State& trial_state, Pickle* pickle) {
+  if (!WriteStringPair(pickle, trial_state.trial_name, trial_state.group_name))
+    return false;
+
+  // Get field trial params.
+  std::map<std::string, std::string> params;
+  FieldTrialParamAssociator::GetInstance()->GetFieldTrialParamsWithoutFallback(
+      trial_state.trial_name.as_string(), trial_state.group_name.as_string(),
+      &params);
+
+  // Write params to pickle.
+  for (const auto& param : params) {
+    if (!WriteStringPair(pickle, param.first, param.second))
+      return false;
+  }
+  return true;
+}
 
 // Created a time value based on |year|, |month| and |day_of_month| parameters.
 Time CreateTimeFromParams(int year, int month, int day_of_month) {
@@ -917,6 +981,106 @@ size_t FieldTrialList::GetFieldTrialCount() {
   return global_->registered_.size();
 }
 
+// static
+bool FieldTrialList::GetParamsFromSharedMemory(
+    FieldTrial* field_trial,
+    std::map<std::string, std::string>* params) {
+  DCHECK(global_);
+  // If the field trial allocator is not set up yet, then there are several
+  // cases:
+  //   - We are in the browser process and the allocator has not been set up
+  //   yet. If we got here, then we couldn't find the params in
+  //   FieldTrialParamAssociator, so it's definitely not here. Return false.
+  //   - Using shared memory for field trials is not enabled. If we got here,
+  //   then there's nothing in shared memory. Return false.
+  //   - We are in the child process and the allocator has not been set up yet.
+  //   If this is the case, then you are calling this too early. The field trial
+  //   allocator should get set up very early in the lifecycle. Try to see if
+  //   you can call it after it's been set up.
+  AutoLock auto_lock(global_->lock_);
+  if (!global_->field_trial_allocator_)
+    return false;
+
+  // If ref_ isn't set, then the field trial data can't be in shared memory.
+  if (!field_trial->ref_)
+    return false;
+
+  const FieldTrialEntry* entry =
+      global_->field_trial_allocator_->GetAsObject<const FieldTrialEntry>(
+          field_trial->ref_, kFieldTrialType);
+
+  size_t allocated_size =
+      global_->field_trial_allocator_->GetAllocSize(field_trial->ref_);
+  size_t actual_size = sizeof(FieldTrialEntry) + entry->size;
+  if (allocated_size < actual_size)
+    return false;
+
+  return entry->GetParams(params);
+}
+
+// static
+void FieldTrialList::ClearParamsFromSharedMemoryForTesting() {
+  if (!global_)
+    return;
+
+  AutoLock auto_lock(global_->lock_);
+  if (!global_->field_trial_allocator_)
+    return;
+
+  // To clear the params, we iterate through every item in the allocator, copy
+  // just the trial and group name into a newly-allocated segment and then clear
+  // the existing item.
+  FieldTrialAllocator* allocator = global_->field_trial_allocator_.get();
+  FieldTrialAllocator::Iterator mem_iter(allocator);
+
+  // List of refs to eventually be made iterable. We can't make it in the loop,
+  // since it would go on forever.
+  std::vector<FieldTrial::FieldTrialRef> new_refs;
+
+  FieldTrial::FieldTrialRef prev_ref;
+  while ((prev_ref = mem_iter.GetNextOfType(kFieldTrialType)) !=
+         FieldTrialAllocator::kReferenceNull) {
+    // Get the existing field trial entry in shared memory.
+    const FieldTrialEntry* prev_entry =
+        allocator->GetAsObject<const FieldTrialEntry>(prev_ref,
+                                                      kFieldTrialType);
+    StringPiece trial_name;
+    StringPiece group_name;
+    if (!prev_entry->GetTrialAndGroupName(&trial_name, &group_name))
+      continue;
+
+    // Write a new entry, minus the params.
+    Pickle pickle;
+    pickle.WriteString(trial_name);
+    pickle.WriteString(group_name);
+    size_t total_size = sizeof(FieldTrialEntry) + pickle.size();
+    FieldTrial::FieldTrialRef new_ref =
+        allocator->Allocate(total_size, kFieldTrialType);
+    FieldTrialEntry* new_entry =
+        allocator->GetAsObject<FieldTrialEntry>(new_ref, kFieldTrialType);
+    new_entry->activated = prev_entry->activated;
+    new_entry->size = pickle.size();
+
+    // TODO(lawrencewu): Modify base::Pickle to be able to write over a section
+    // in memory, so we can avoid this memcpy.
+    char* dst = reinterpret_cast<char*>(new_entry) + sizeof(FieldTrialEntry);
+    memcpy(dst, pickle.data(), pickle.size());
+
+    // Update the ref on the field trial and add it to the list to be made
+    // iterable.
+    FieldTrial* trial = global_->PreLockedFind(trial_name.as_string());
+    trial->ref_ = new_ref;
+    new_refs.push_back(new_ref);
+
+    // Mark the existing entry as unused.
+    allocator->ChangeType(prev_ref, 0, kFieldTrialType);
+  }
+
+  for (const auto& ref : new_refs) {
+    allocator->MakeIterable(ref);
+  }
+}
+
 #if defined(OS_WIN)
 // static
 bool FieldTrialList::CreateTrialsFromHandleSwitch(
@@ -1039,14 +1203,18 @@ void FieldTrialList::AddToAllocatorWhileLocked(FieldTrial* field_trial) {
     return;
 
   Pickle pickle;
-  pickle.WriteString(trial_state.trial_name);
-  pickle.WriteString(trial_state.group_name);
+  if (!PickleFieldTrial(trial_state, &pickle)) {
+    NOTREACHED();
+    return;
+  }
 
   size_t total_size = sizeof(FieldTrialEntry) + pickle.size();
   FieldTrial::FieldTrialRef ref =
       allocator->Allocate(total_size, kFieldTrialType);
-  if (ref == FieldTrialAllocator::kReferenceNull)
+  if (ref == FieldTrialAllocator::kReferenceNull) {
+    NOTREACHED();
     return;
+  }
 
   FieldTrialEntry* entry =
       allocator->GetAsObject<FieldTrialEntry>(ref, kFieldTrialType);
