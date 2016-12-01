@@ -13,7 +13,7 @@ diff --git a/components-chromium/paper-icon-button/paper-icon-button-light.html 
 index 2eaa665..7416f94 100644
 --- a/components-chromium/paper-icon-button/paper-icon-button-light.html
 +++ b/components-chromium/paper-icon-button/paper-icon-button-light.html
-@@ -45,9 +45,10 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
+@@ +45,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
        paper-ripple {
          opacity: 0.6;
          color: currentColor;
@@ -21,6 +21,4 @@ index 2eaa665..7416f94 100644
        }
      </style>
      <content></content>
-   </template>
-   </dom-module>
 

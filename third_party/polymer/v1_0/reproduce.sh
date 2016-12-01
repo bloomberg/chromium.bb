@@ -112,4 +112,4 @@ python ../../../chrome/browser/resources/vulcanize.py
 popd > /dev/null
 
 echo 'Searching for unused elements...'
-"$(dirname "$0")"/find_unused_elements.py
+python "$(dirname "$0")"/find_unused_elements.py
