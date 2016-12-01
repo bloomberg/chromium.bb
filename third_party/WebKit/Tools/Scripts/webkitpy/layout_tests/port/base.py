@@ -785,6 +785,8 @@ class Port(object):
             else:
                 path_in_wpt = filename
             return self._manifest_items_for_path(path_in_wpt) is not None
+        if 'inspector-unit' in dirname:
+            return filesystem.splitext(filename)[1] == '.js'
         return Port._has_supported_extension(
             filesystem, filename) and not Port.is_reference_html_file(filesystem, dirname, filename)
 
@@ -1092,9 +1094,6 @@ class Port(object):
 
     def inspector_build_directory(self):
         return self._build_path('resources', 'inspector')
-
-    def inspector_debug_directory(self):
-        return self.path_from_webkit_base('Source', 'devtools', 'front_end')
 
     def apache_config_directory(self):
         return self.path_from_webkit_base('Tools', 'Scripts', 'apache_config')

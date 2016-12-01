@@ -22,6 +22,8 @@ class LayoutTestDevToolsFrontend : public ShellDevToolsFrontend {
 
   static GURL GetDevToolsPathAsURL(const std::string& frontend_url);
 
+  static GURL MapJSTestURL(const GURL& test_url);
+
   void ReuseFrontend(const std::string& settings,
                      const std::string frontend_url);
   void EvaluateInFrontend(int call_id, const std::string& expression);

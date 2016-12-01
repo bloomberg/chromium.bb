@@ -73,6 +73,17 @@ GURL LayoutTestDevToolsFrontend::GetDevToolsPathAsURL(
   return GURL(url_string);
 }
 
+// static.
+GURL LayoutTestDevToolsFrontend::MapJSTestURL(const GURL& test_url) {
+  std::string url_string = GetDevToolsPathAsURL(std::string()).spec();
+  std::string inspector_file_name = "inspector.html";
+  size_t start_position = url_string.find(inspector_file_name);
+  url_string.replace(start_position, inspector_file_name.length(),
+                     "unit_test_runner.html");
+  url_string += "&test=" + test_url.spec();
+  return GURL(url_string);
+}
+
 void LayoutTestDevToolsFrontend::ReuseFrontend(const std::string& settings,
                                                const std::string frontend_url) {
   DisconnectFromTarget();

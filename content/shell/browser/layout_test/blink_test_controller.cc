@@ -268,7 +268,10 @@ bool BlinkTestController::PrepareForLayoutTest(
   current_working_directory_ = current_working_directory;
   enable_pixel_dumping_ = enable_pixel_dumping;
   expected_pixel_hash_ = expected_pixel_hash;
-  test_url_ = test_url;
+  if (test_url.spec().find("/inspector-unit/") == std::string::npos)
+    test_url_ = test_url;
+  else
+    test_url_ = LayoutTestDevToolsFrontend::MapJSTestURL(test_url);
   did_send_initial_test_configuration_ = false;
   printer_->reset();
   frame_to_layout_dump_map_.clear();
@@ -279,10 +282,10 @@ bool BlinkTestController::PrepareForLayoutTest(
   ShellBrowserContext* browser_context =
       ShellContentBrowserClient::Get()->browser_context();
   is_compositing_test_ =
-      test_url.spec().find("compositing/") != std::string::npos;
+      test_url_.spec().find("compositing/") != std::string::npos;
   initial_size_ = Shell::GetShellDefaultSize();
   // The W3C SVG layout tests use a different size than the other layout tests.
-  if (test_url.spec().find("W3C-SVG-1.1") != std::string::npos)
+  if (test_url_.spec().find("W3C-SVG-1.1") != std::string::npos)
     initial_size_ = gfx::Size(kTestSVGWindowWidthDip, kTestSVGWindowHeightDip);
   if (!main_window_) {
     main_window_ = content::Shell::CreateNewWindow(
@@ -294,7 +297,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     current_pid_ = base::kNullProcessId;
     default_prefs_ =
       main_window_->web_contents()->GetRenderViewHost()->GetWebkitPreferences();
-    main_window_->LoadURL(test_url);
+    main_window_->LoadURL(test_url_);
   } else {
 #if defined(OS_MACOSX)
     // Shell::SizeTo is not implemented on all platforms.
@@ -320,7 +323,7 @@ bool BlinkTestController::PrepareForLayoutTest(
     render_view_host->UpdateWebkitPreferences(default_prefs_);
     HandleNewRenderFrameHost(render_view_host->GetMainFrame());
 
-    NavigationController::LoadURLParams params(test_url);
+    NavigationController::LoadURLParams params(test_url_);
     params.transition_type = ui::PageTransitionFromInt(
         ui::PAGE_TRANSITION_TYPED | ui::PAGE_TRANSITION_FROM_ADDRESS_BAR);
     params.should_clear_history_list = true;

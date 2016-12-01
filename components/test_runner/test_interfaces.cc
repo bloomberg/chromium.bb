@@ -96,7 +96,8 @@ void TestInterfaces::ConfigureForTestWithURL(const blink::WebURL& test_url,
   if (spec.find("/inspector/") != std::string::npos ||
       spec.find("/inspector-enabled/") != std::string::npos)
     test_runner_->ClearDevToolsLocalStorage();
-  if (spec.find("/inspector/") != std::string::npos) {
+  if (spec.find("/inspector/") != std::string::npos &&
+      spec.find("unit_test_runner.html") == std::string::npos) {
     // Subfolder name determines default panel to open.
     std::string test_path = spec.substr(spec.find("/inspector/") + 11);
     base::DictionaryValue settings;

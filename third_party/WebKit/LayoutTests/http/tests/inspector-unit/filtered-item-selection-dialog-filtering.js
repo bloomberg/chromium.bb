@@ -1,12 +1,7 @@
-<html>
-<head>
-<base href="/inspector-debug/"></base>
-<script src="/inspector-debug/Runtime.js"></script>
-<script src="/inspector-unit/inspector-unit-test.js"></script>
-<script>
-UnitTest.addDependency("ui_lazy");
-function test()
-{
+TestRunner.loadLazyModules(["ui_lazy"]).then(test);
+function test() {
+    TestRunner.addResult("Check to see that FilteredItemSelectionDialog uses proper regex to filter results.");
+
     var overridenInput = [];
     var overrideShowMatchingItems = true;
     var history = [];
@@ -22,7 +17,7 @@ function test()
         itemCount() { return overridenInput.length; }
         selectItem(itemIndex, promptValue)
         {
-            UnitTest.addResult("Selected item index: " + itemIndex);
+            TestRunner.addResult("Selected item index: " + itemIndex);
         }
         shouldShowMatchingItems () { return overrideShowMatchingItems; }
     };
@@ -34,34 +29,34 @@ function test()
         overridenInput = input;
         overrideShowMatchingItems = !hideMatchingItems;
 
-        UnitTest.addResult("Input:" + JSON.stringify(input));
+        TestRunner.addResult("Input:" + JSON.stringify(input));
 
         var filteredSelectionDialog = new UI.FilteredListWidget(delegate);
         filteredSelectionDialog.showAsDialog();
-        var promise = UnitTest.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
+        var promise = TestRunner.addSniffer(filteredSelectionDialog, "_itemsFilteredForTest").then(accept);
         filteredSelectionDialog.setQuery(query);
         filteredSelectionDialog._updateAfterItemsLoaded();
         return promise;
 
         function dump()
         {
-            UnitTest.addResult("Query:" + JSON.stringify(filteredSelectionDialog._value()));
+            TestRunner.addResult("Query:" + JSON.stringify(filteredSelectionDialog._value()));
             var items = filteredSelectionDialog._filteredItems;
             var output = [];
             for (var i = 0; i < items.length; ++i)
                 output.push(delegate.itemKeyAt(items[i]));
-            UnitTest.addResult("Output:" + JSON.stringify(output));
+            TestRunner.addResult("Output:" + JSON.stringify(output));
         }
 
         function accept()
         {
             dump();
-            filteredSelectionDialog._onEnter(UnitTest.createKeyEvent("Enter"));
-            UnitTest.addResult("History:" + JSON.stringify(history));
+            filteredSelectionDialog._onEnter(TestRunner.createKeyEvent("Enter"));
+            TestRunner.addResult("History:" + JSON.stringify(history));
         }
     }
 
-    UnitTest.runTests([
+    TestRunner.runTests([
         function emptyQueryMatchesEverything()
         {
             return checkQuery("", ["a", "bc"]);
@@ -98,12 +93,3 @@ function test()
         }
     ]);
 }
-
-</script>
-</head>
-
-<body>
-<p>Check to see that FilteredItemSelectionDialog uses proper regex to filter results.</p>
-</body>
-</html>
-
