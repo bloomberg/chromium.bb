@@ -5,9 +5,7 @@
 #include "ash/wm/toplevel_window_event_handler.h"
 
 #include "ash/aura/wm_window_aura.h"
-#include "ash/common/wm/window_state.h"
 #include "ash/shell.h"
-#include "ash/wm/window_state_aura.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "ui/aura/client/cursor_client.h"
@@ -89,18 +87,10 @@ aura::client::WindowMoveResult ToplevelWindowEventHandler::RunMoveLoop(
   base::MessageLoop* loop = base::MessageLoop::current();
   base::MessageLoop::ScopedNestableTaskAllower allow_nested(loop);
 
-  // Disable window position auto management while dragging and restore it
-  // aftrewards.
-  wm::WindowState* window_state = wm::GetWindowState(source);
-  const bool window_position_managed = window_state->window_position_managed();
-  window_state->set_window_position_managed(false);
-
   run_loop.Run();
 
   if (!weak_ptr)
     return aura::client::MOVE_CANCELED;
-
-  window_state->set_window_position_managed(window_position_managed);
 
   in_move_loop_ = false;
   return result == wm::WmToplevelWindowEventHandler::DragResult::SUCCESS

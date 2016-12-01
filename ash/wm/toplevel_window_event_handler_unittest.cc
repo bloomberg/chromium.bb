@@ -113,67 +113,6 @@ TEST_F(ToplevelWindowEventHandlerTest, Caption) {
 
 namespace {
 
-void ContinueAndCompleteDrag(ui::test::EventGenerator* generator,
-                             wm::WindowState* window_state,
-                             aura::Window* window) {
-  ASSERT_TRUE(window->HasCapture());
-  ASSERT_FALSE(window_state->window_position_managed());
-  generator->DragMouseBy(100, 100);
-  generator->ReleaseLeftButton();
-}
-
-}  // namespace
-
-// Tests dragging restores expected window position auto manage property
-// correctly.
-TEST_F(ToplevelWindowEventHandlerTest, WindowPositionAutoManagement) {
-  std::unique_ptr<aura::Window> w1(CreateWindow(HTNOWHERE));
-  const gfx::Size size = w1->bounds().size();
-  wm::WindowState* window_state = ash::wm::GetWindowState(w1.get());
-  ui::test::EventGenerator generator(Shell::GetPrimaryRootWindow(), w1.get());
-
-  // Explicitly enable window position auto management, and expect it to be
-  // restored after drag completes.
-  window_state->set_window_position_managed(true);
-  generator.PressLeftButton();
-  aura::client::WindowMoveClient* move_client =
-      aura::client::GetWindowMoveClient(w1->GetRootWindow());
-  // generator.PressLeftButton();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
-                 base::Unretained(window_state), base::Unretained(w1.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
-            move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
-  // Window position auto manage property should be restored to true.
-  EXPECT_TRUE(window_state->window_position_managed());
-  // Position should have been offset by 100,100.
-  EXPECT_EQ("100,100", w1->bounds().origin().ToString());
-  // Size should remain the same.
-  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
-
-  // Explicitly disable window position auto management, and expect it to be
-  // restored after drag completes.
-  window_state->set_window_position_managed(false);
-  generator.PressLeftButton();
-  base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE,
-      base::Bind(&ContinueAndCompleteDrag, base::Unretained(&generator),
-                 base::Unretained(window_state), base::Unretained(w1.get())));
-  EXPECT_EQ(aura::client::MOVE_SUCCESSFUL,
-            move_client->RunMoveLoop(w1.get(), gfx::Vector2d(100, 100),
-                                     aura::client::WINDOW_MOVE_SOURCE_MOUSE));
-  // Window position auto manage property should be restored to true.
-  EXPECT_FALSE(window_state->window_position_managed());
-  // Position should have been offset by 100,100.
-  EXPECT_EQ("200,200", w1->bounds().origin().ToString());
-  // Size should remain the same.
-  EXPECT_EQ(size.ToString(), w1->bounds().size().ToString());
-}
-
-namespace {
-
 class CancelDragObserver : public aura::WindowObserver {
  public:
   CancelDragObserver() {}
