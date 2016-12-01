@@ -2313,9 +2313,7 @@ bool LayoutBox::mapToVisualRectInAncestorSpace(
     // for painted elements within the transform since we don't know the desired
     // subpixel accumulation at this point, and the transform may include a
     // scale.
-    FloatRect floatRect =
-        rect.isEmpty() ? FloatRect(rect) : FloatRect(enclosingIntRect(rect));
-    rect = LayoutRect(layer()->transform()->mapRect(floatRect));
+    rect = LayoutRect(layer()->transform()->mapRect(enclosingIntRect(rect)));
   }
   LayoutPoint topLeft = rect.location();
   if (container->isBox()) {
