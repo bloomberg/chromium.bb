@@ -572,13 +572,11 @@ void FeatureInfo::InitializeFeatures() {
     validators_.index_type.AddValue(GL_UNSIGNED_INT);
   }
 
-  bool has_srgb_framebuffer_support = false;
   if (gl_version_info_->IsAtLeastGL(3, 2) ||
       (gl_version_info_->IsAtLeastGL(2, 0) &&
        (extensions.Contains("GL_EXT_framebuffer_sRGB") ||
         extensions.Contains("GL_ARB_framebuffer_sRGB")))) {
     feature_flags_.desktop_srgb_support = true;
-    has_srgb_framebuffer_support = true;
   }
   // With EXT_sRGB, unsized SRGB_EXT and SRGB_ALPHA_EXT are accepted by the
   // <format> and <internalformat> parameter of TexImage2D. GLES3 adds support
@@ -601,22 +599,6 @@ void FeatureInfo::InitializeFeatures() {
         GL_FRAMEBUFFER_ATTACHMENT_COLOR_ENCODING_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_EXT);
     validators_.texture_unsized_internal_format.AddValue(GL_SRGB_ALPHA_EXT);
-    has_srgb_framebuffer_support = true;
-  }
-  if (gl_version_info_->is_es3)
-    has_srgb_framebuffer_support = true;
-
-  if (has_srgb_framebuffer_support && !IsWebGLContext()) {
-    // GL_FRAMEBUFFER_SRGB_EXT is exposed by the GLES extension
-    // GL_EXT_sRGB_write_control (which is not part of the core, even in GLES3),
-    // and the desktop extension GL_ARB_framebuffer_sRGB (part of the core in
-    // 3.0).
-    if (feature_flags_.desktop_srgb_support ||
-        extensions.Contains("GL_EXT_sRGB_write_control")) {
-      feature_flags_.ext_srgb_write_control = true;
-      AddExtensionString("GL_EXT_sRGB_write_control");
-      validators_.capability.AddValue(GL_FRAMEBUFFER_SRGB_EXT);
-    }
   }
 
   // On desktop, GL_EXT_texture_sRGB is required regardless of GL version,

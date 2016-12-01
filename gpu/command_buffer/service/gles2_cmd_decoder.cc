@@ -707,7 +707,6 @@ class GLES2DecoderImpl : public GLES2Decoder, public ErrorStateClient {
   // Workarounds
   void OnFboChanged() const;
   void OnUseFramebuffer() const;
-  void UpdateFramebufferSRGB(Framebuffer* framebuffer);
 
   error::ContextLostReason GetContextLostReasonFromResetStatus(
       GLenum reset_status) const;
@@ -3459,7 +3458,6 @@ bool GLES2DecoderImpl::Initialize(
   DoBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
   DoBindFramebuffer(GL_FRAMEBUFFER, 0);
   DoBindRenderbuffer(GL_RENDERBUFFER, 0);
-  UpdateFramebufferSRGB(nullptr);
 
   bool call_gl_clear = !surfaceless_ && !offscreen;
 #if defined(OS_ANDROID)
@@ -4297,37 +4295,21 @@ bool GLES2DecoderImpl::CheckBoundDrawFramebufferValid(const char* func_name) {
   Framebuffer* framebuffer = GetFramebufferInfoForTarget(target);
   bool valid = CheckFramebufferValid(
       framebuffer, target, GL_INVALID_FRAMEBUFFER_OPERATION, func_name);
-  if (!valid)
-    return false;
-
-  if (!features().chromium_framebuffer_multisample)
+  if (valid && !features().chromium_framebuffer_multisample)
     OnUseFramebuffer();
-
-  UpdateFramebufferSRGB(framebuffer);
-  return true;
-}
-
-void GLES2DecoderImpl::UpdateFramebufferSRGB(Framebuffer* framebuffer) {
-  // Manually set the value of FRAMEBUFFER_SRGB based on the state that was set
-  // by the client.
-  bool needs_enable_disable_framebuffer_srgb = false;
-  bool enable_framebuffer_srgb = true;
-  if (feature_info_->feature_flags().ext_srgb_write_control) {
-    needs_enable_disable_framebuffer_srgb = true;
-    enable_framebuffer_srgb &= state_.GetEnabled(GL_FRAMEBUFFER_SRGB);
-  }
-  // On desktop, enable FRAMEBUFFER_SRGB only if the framebuffer contains sRGB
-  // attachments. In theory, we can just leave FRAMEBUFFER_SRGB enabled,
-  // however,
-  // many drivers behave incorrectly when no attachments are sRGB. When at
-  // least one attachment is sRGB, then they behave correctly.
-  if (feature_info_->feature_flags().desktop_srgb_support) {
-    needs_enable_disable_framebuffer_srgb = true;
-    // Assume that the default fbo does not have an sRGB image.
-    enable_framebuffer_srgb &= framebuffer && framebuffer->HasSRGBAttachments();
-  }
-  if (needs_enable_disable_framebuffer_srgb)
+  if (valid && feature_info_->feature_flags().desktop_srgb_support) {
+    // If framebuffer contains sRGB images, then enable FRAMEBUFFER_SRGB.
+    // Otherwise, disable FRAMEBUFFER_SRGB. Assume default fbo does not have
+    // sRGB image.
+    // In theory, we can just leave FRAMEBUFFER_SRGB on. However, many drivers
+    // behave incorrectly when all images are linear encoding, they still apply
+    // the sRGB conversion, but when at least one image is sRGB, then they
+    // behave correctly.
+    bool enable_framebuffer_srgb =
+        framebuffer && framebuffer->HasSRGBAttachments();
     state_.EnableDisableFramebufferSRGB(enable_framebuffer_srgb);
+  }
+  return valid;
 }
 
 bool GLES2DecoderImpl::CheckBoundReadFramebufferValid(
@@ -7442,11 +7424,6 @@ void GLES2DecoderImpl::DoDisable(GLenum cap) {
       // DrawElements* for old desktop GL.
       return;
     }
-    if (cap == GL_FRAMEBUFFER_SRGB) {
-      // Enable and Disable GL_FRAMEBUFFER_SRGB is done manually in
-      // CheckBoundDrawFramebufferValid.
-      return;
-    }
     glDisable(cap);
   }
 }
@@ -7457,11 +7434,6 @@ void GLES2DecoderImpl::DoEnable(GLenum cap) {
         feature_info_->feature_flags().emulate_primitive_restart_fixed_index) {
       // Enable and Disable PRIMITIVE_RESTART only before and after
       // DrawElements* for old desktop GL.
-      return;
-    }
-    if (cap == GL_FRAMEBUFFER_SRGB) {
-      // Enable and Disable GL_FRAMEBUFFER_SRGB is done manually in
-      // CheckBoundDrawFramebufferValid.
       return;
     }
     glEnable(cap);

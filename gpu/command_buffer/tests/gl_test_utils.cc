@@ -71,13 +71,9 @@ GLuint LoadFragmentShader(unsigned target, const gfx::Size& size) {
 }
 
 bool GLTestHelper::HasExtension(const char* extension) {
-  // Pad with an extra space to ensure that |extension| is not a substring of
-  // another extension.
-  std::string extensions =
-      std::string(reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS))) +
-      " ";
-  std::string extension_padded = std::string(extension) + " ";
-  return extensions.find(extension_padded) != std::string::npos;
+  std::string extensions(
+      reinterpret_cast<const char*>(glGetString(GL_EXTENSIONS)));
+  return extensions.find(extension) != std::string::npos;
 }
 
 bool GLTestHelper::CheckGLError(const char* msg, int line) {

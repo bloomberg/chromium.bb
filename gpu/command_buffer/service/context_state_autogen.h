@@ -22,8 +22,6 @@ struct EnableFlags {
   bool cached_depth_test;
   bool dither;
   bool cached_dither;
-  bool framebuffer_srgb_ext;
-  bool cached_framebuffer_srgb_ext;
   bool polygon_offset_fill;
   bool cached_polygon_offset_fill;
   bool sample_alpha_to_coverage;
@@ -144,12 +142,6 @@ inline void SetDeviceCapabilityState(GLenum cap, bool enable) {
       if (enable_flags.cached_dither == enable && !ignore_cached_state)
         return;
       enable_flags.cached_dither = enable;
-      break;
-    case GL_FRAMEBUFFER_SRGB_EXT:
-      if (enable_flags.cached_framebuffer_srgb_ext == enable &&
-          !ignore_cached_state)
-        return;
-      enable_flags.cached_framebuffer_srgb_ext = enable;
       break;
     case GL_POLYGON_OFFSET_FILL:
       if (enable_flags.cached_polygon_offset_fill == enable &&

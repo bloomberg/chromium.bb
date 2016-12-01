@@ -5140,14 +5140,6 @@ bool GLES2DecoderImpl::SetCapabilityState(GLenum cap, bool enabled) {
         return true;
       }
       return false;
-    case GL_FRAMEBUFFER_SRGB_EXT:
-      state_.enable_flags.framebuffer_srgb_ext = enabled;
-      if (state_.enable_flags.cached_framebuffer_srgb_ext != enabled ||
-          state_.ignore_cached_state) {
-        state_.enable_flags.cached_framebuffer_srgb_ext = enabled;
-        return true;
-      }
-      return false;
     case GL_POLYGON_OFFSET_FILL:
       state_.enable_flags.polygon_offset_fill = enabled;
       if (state_.enable_flags.cached_polygon_offset_fill != enabled ||

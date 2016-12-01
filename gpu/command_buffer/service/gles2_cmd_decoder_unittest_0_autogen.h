@@ -17,9 +17,6 @@ void GLES2DecoderTestBase::SetupInitCapabilitiesExpectations(bool es3_capable) {
   ExpectEnableDisable(GL_CULL_FACE, false);
   ExpectEnableDisable(GL_DEPTH_TEST, false);
   ExpectEnableDisable(GL_DITHER, true);
-  if (group_->feature_info()->feature_flags().ext_srgb_write_control) {
-    ExpectEnableDisable(GL_FRAMEBUFFER_SRGB_EXT, true);
-  }
   ExpectEnableDisable(GL_POLYGON_OFFSET_FILL, false);
   ExpectEnableDisable(GL_SAMPLE_ALPHA_TO_COVERAGE, false);
   ExpectEnableDisable(GL_SAMPLE_COVERAGE, false);
