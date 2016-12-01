@@ -2947,6 +2947,30 @@ static int drmParsePciBusInfo(int maj, int min, drmPciBusInfoPtr info)
     info->func = func;
 
     return 0;
+#elif defined(__OpenBSD__)
+    struct drm_pciinfo pinfo;
+    int fd, type;
+
+    type = drmGetMinorType(min);
+    if (type == -1)
+        return -ENODEV;
+
+    fd = drmOpenMinor(min, 0, type);
+    if (fd < 0)
+        return -errno;
+
+    if (drmIoctl(fd, DRM_IOCTL_GET_PCIINFO, &pinfo)) {
+        close(fd);
+        return -errno;
+    }
+    close(fd);
+
+    info->domain = pinfo.domain;
+    info->bus = pinfo.bus;
+    info->dev = pinfo.dev;
+    info->func = pinfo.func;
+
+    return 0;
 #else
 #warning "Missing implementation of drmParsePciBusInfo"
     return -EINVAL;
