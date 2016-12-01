@@ -35,178 +35,94 @@ namespace blink {
 
 namespace {
 
-void checkIsBeforeThreadCreated() {
+class URLSchemesRegistry final {
+ public:
+  URLSchemesRegistry()
+      : localSchemes({"file"}),
+        secureSchemes({"https", "about", "data", "wss"}),
+        schemesWithUniqueOrigins({"about", "javascript", "data"}),
+        emptyDocumentSchemes({"about"}),
+        CORSEnabledSchemes({"http", "https", "data"}),
+        // For ServiceWorker schemes: HTTP is required because http://localhost
+        // is considered secure. Additional checks are performed to ensure that
+        // other http pages are filtered out.
+        serviceWorkerSchemes({"http", "https"}),
+        fetchAPISchemes({"http", "https"}),
+        allowedInReferrerSchemes({"http", "https"}) {}
+  ~URLSchemesRegistry() = default;
+
+  URLSchemesSet localSchemes;
+  URLSchemesSet displayIsolatedURLSchemes;
+  URLSchemesSet secureSchemes;
+  URLSchemesSet schemesWithUniqueOrigins;
+  URLSchemesSet emptyDocumentSchemes;
+  URLSchemesSet schemesForbiddenFromDomainRelaxation;
+  URLSchemesSet notAllowingJavascriptURLsSchemes;
+  URLSchemesSet CORSEnabledSchemes;
+  URLSchemesSet serviceWorkerSchemes;
+  URLSchemesSet fetchAPISchemes;
+  URLSchemesSet firstPartyWhenTopLevelSchemes;
+  URLSchemesMap<SchemeRegistry::PolicyAreas>
+      contentSecurityPolicyBypassingSchemes;
+  URLSchemesSet secureContextBypassingSchemes;
+  URLSchemesSet allowedInReferrerSchemes;
+
+ private:
+  friend const URLSchemesRegistry& getURLSchemesRegistry();
+  friend URLSchemesRegistry& getMutableURLSchemesRegistry();
+
+  static URLSchemesRegistry& getInstance() {
+    DEFINE_STATIC_LOCAL(URLSchemesRegistry, schemes, ());
+    return schemes;
+  }
+};
+
+const URLSchemesRegistry& getURLSchemesRegistry() {
+  return URLSchemesRegistry::getInstance();
+}
+
+URLSchemesRegistry& getMutableURLSchemesRegistry() {
 #if DCHECK_IS_ON()
   DCHECK(WTF::isBeforeThreadCreated());
 #endif
+  return URLSchemesRegistry::getInstance();
 }
 
 }  // namespace
 
-static URLSchemesSet& localURLSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, localSchemes, ());
-
-  if (localSchemes.isEmpty())
-    localSchemes.add("file");
-
-  return localSchemes;
-}
-
-static URLSchemesSet& displayIsolatedURLSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, displayIsolatedSchemes, ());
-  return displayIsolatedSchemes;
-}
-
-static URLSchemesSet& secureSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, secureSchemes,
-                      ({
-                          "https", "about", "data", "wss",
-                      }));
-  return secureSchemes;
-}
-
-static URLSchemesSet& schemesWithUniqueOrigins() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, schemesWithUniqueOrigins,
-                      ({
-                          "about", "javascript", "data",
-                      }));
-  return schemesWithUniqueOrigins;
-}
-
-static URLSchemesSet& emptyDocumentSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, emptyDocumentSchemes, ({
-                                                               "about",
-                                                           }));
-  return emptyDocumentSchemes;
-}
-
-static HashSet<String>& schemesForbiddenFromDomainRelaxation() {
-  DEFINE_STATIC_LOCAL(HashSet<String>, schemes, ());
-  return schemes;
-}
-
-static URLSchemesSet& notAllowingJavascriptURLsSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, notAllowingJavascriptURLsSchemes, ());
-  return notAllowingJavascriptURLsSchemes;
+// Must be called before we create other threads to avoid racy static local
+// initialization.
+void SchemeRegistry::initialize() {
+  getURLSchemesRegistry();
 }
 
 void SchemeRegistry::registerURLSchemeAsLocal(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  localURLSchemes().add(scheme);
-}
-
-const URLSchemesSet& SchemeRegistry::localSchemes() {
-  return localURLSchemes();
-}
-
-static URLSchemesSet& CORSEnabledSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, CORSEnabledSchemes, ());
-
-  if (CORSEnabledSchemes.isEmpty()) {
-    CORSEnabledSchemes.add("http");
-    CORSEnabledSchemes.add("https");
-    CORSEnabledSchemes.add("data");
-  }
-
-  return CORSEnabledSchemes;
-}
-
-static URLSchemesSet& serviceWorkerSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, serviceWorkerSchemes, ());
-
-  if (serviceWorkerSchemes.isEmpty()) {
-    // HTTP is required because http://localhost is considered secure.
-    // Additional checks are performed to ensure that other http pages
-    // are filtered out.
-    serviceWorkerSchemes.add("http");
-    serviceWorkerSchemes.add("https");
-  }
-
-  return serviceWorkerSchemes;
-}
-
-static URLSchemesSet& fetchAPISchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, fetchAPISchemes, ());
-
-  if (fetchAPISchemes.isEmpty()) {
-    fetchAPISchemes.add("http");
-    fetchAPISchemes.add("https");
-  }
-
-  return fetchAPISchemes;
-}
-
-static URLSchemesSet& firstPartyWhenTopLevelSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, firstPartyWhenTopLevelSchemes, ());
-  return firstPartyWhenTopLevelSchemes;
-}
-
-static URLSchemesMap<SchemeRegistry::PolicyAreas>&
-ContentSecurityPolicyBypassingSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesMap<SchemeRegistry::PolicyAreas>, schemes, ());
-  return schemes;
-}
-
-static URLSchemesSet& secureContextBypassingSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, secureContextBypassingSchemes, ());
-  return secureContextBypassingSchemes;
-}
-
-static URLSchemesSet& allowedInReferrerSchemes() {
-  DEFINE_STATIC_LOCAL(URLSchemesSet, allowedInReferrerSchemes, ());
-
-  if (allowedInReferrerSchemes.isEmpty()) {
-    allowedInReferrerSchemes.add("http");
-    allowedInReferrerSchemes.add("https");
-  }
-
-  return allowedInReferrerSchemes;
-}
-
-// All new maps should be added here. Must be called before we create other
-// threads to avoid racy static local initialization.
-void SchemeRegistry::initialize() {
-  localURLSchemes();
-  displayIsolatedURLSchemes();
-  secureSchemes();
-  schemesWithUniqueOrigins();
-  emptyDocumentSchemes();
-  schemesForbiddenFromDomainRelaxation();
-  notAllowingJavascriptURLsSchemes();
-  CORSEnabledSchemes();
-  serviceWorkerSchemes();
-  fetchAPISchemes();
-  firstPartyWhenTopLevelSchemes();
-  ContentSecurityPolicyBypassingSchemes();
-  secureContextBypassingSchemes();
-  allowedInReferrerSchemes();
+  getMutableURLSchemesRegistry().localSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsLocal(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return localURLSchemes().contains(scheme);
+  return getURLSchemesRegistry().localSchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsNoAccess(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  schemesWithUniqueOrigins().add(scheme);
+  getMutableURLSchemesRegistry().schemesWithUniqueOrigins.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNoAccess(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return schemesWithUniqueOrigins().contains(scheme);
+  return getURLSchemesRegistry().schemesWithUniqueOrigins.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsDisplayIsolated(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  displayIsolatedURLSchemes().add(scheme);
+  getMutableURLSchemesRegistry().displayIsolatedURLSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
@@ -214,7 +130,7 @@ bool SchemeRegistry::shouldTreatURLSchemeAsDisplayIsolated(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return displayIsolatedURLSchemes().contains(scheme);
+  return getURLSchemesRegistry().displayIsolatedURLSchemes.contains(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
@@ -224,43 +140,43 @@ bool SchemeRegistry::shouldTreatURLSchemeAsRestrictingMixedContent(
 }
 
 void SchemeRegistry::registerURLSchemeAsSecure(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  secureSchemes().add(scheme);
+  getMutableURLSchemesRegistry().secureSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSecure(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return secureSchemes().contains(scheme);
+  return getURLSchemesRegistry().secureSchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsEmptyDocument(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  emptyDocumentSchemes().add(scheme);
+  getMutableURLSchemesRegistry().emptyDocumentSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldLoadURLSchemeAsEmptyDocument(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return emptyDocumentSchemes().contains(scheme);
+  return getURLSchemesRegistry().emptyDocumentSchemes.contains(scheme);
 }
 
 void SchemeRegistry::setDomainRelaxationForbiddenForURLScheme(
     bool forbidden,
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return;
 
-  if (forbidden)
-    schemesForbiddenFromDomainRelaxation().add(scheme);
-  else
-    schemesForbiddenFromDomainRelaxation().remove(scheme);
+  if (forbidden) {
+    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.add(
+        scheme);
+  } else {
+    getMutableURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.remove(
+        scheme);
+  }
 }
 
 bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(
@@ -268,7 +184,8 @@ bool SchemeRegistry::isDomainRelaxationForbiddenForURLScheme(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return schemesForbiddenFromDomainRelaxation().contains(scheme);
+  return getURLSchemesRegistry().schemesForbiddenFromDomainRelaxation.contains(
+      scheme);
 }
 
 bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme) {
@@ -278,9 +195,8 @@ bool SchemeRegistry::canDisplayOnlyIfCanRequest(const String& scheme) {
 
 void SchemeRegistry::registerURLSchemeAsNotAllowingJavascriptURLs(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  notAllowingJavascriptURLsSchemes().add(scheme);
+  getMutableURLSchemesRegistry().notAllowingJavascriptURLsSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
@@ -288,26 +204,26 @@ bool SchemeRegistry::shouldTreatURLSchemeAsNotAllowingJavascriptURLs(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return notAllowingJavascriptURLsSchemes().contains(scheme);
+  return getURLSchemesRegistry().notAllowingJavascriptURLsSchemes.contains(
+      scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsCORSEnabled(const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  CORSEnabledSchemes().add(scheme);
+  getMutableURLSchemesRegistry().CORSEnabledSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsCORSEnabled(const String& scheme) {
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return CORSEnabledSchemes().contains(scheme);
+  return getURLSchemesRegistry().CORSEnabledSchemes.contains(scheme);
 }
 
 String SchemeRegistry::listOfCORSEnabledURLSchemes() {
   StringBuilder builder;
   bool addSeparator = false;
-  for (const auto& scheme : CORSEnabledSchemes()) {
+  for (const auto& scheme : getURLSchemesRegistry().CORSEnabledSchemes) {
     if (addSeparator)
       builder.append(", ");
     else
@@ -324,9 +240,8 @@ bool SchemeRegistry::shouldTreatURLSchemeAsLegacy(const String& scheme) {
 
 void SchemeRegistry::registerURLSchemeAsAllowingServiceWorkers(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  serviceWorkerSchemes().add(scheme);
+  getMutableURLSchemesRegistry().serviceWorkerSchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
@@ -334,14 +249,13 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowingServiceWorkers(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return serviceWorkerSchemes().contains(scheme);
+  return getURLSchemesRegistry().serviceWorkerSchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsSupportingFetchAPI(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  fetchAPISchemes().add(scheme);
+  getMutableURLSchemesRegistry().fetchAPISchemes.add(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
@@ -349,21 +263,19 @@ bool SchemeRegistry::shouldTreatURLSchemeAsSupportingFetchAPI(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return fetchAPISchemes().contains(scheme);
+  return getURLSchemesRegistry().fetchAPISchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  firstPartyWhenTopLevelSchemes().add(scheme);
+  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.add(scheme);
 }
 
 void SchemeRegistry::removeURLSchemeAsFirstPartyWhenTopLevel(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  firstPartyWhenTopLevelSchemes().remove(scheme);
+  getMutableURLSchemesRegistry().firstPartyWhenTopLevelSchemes.remove(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
@@ -371,19 +283,17 @@ bool SchemeRegistry::shouldTreatURLSchemeAsFirstPartyWhenTopLevel(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return firstPartyWhenTopLevelSchemes().contains(scheme);
+  return getURLSchemesRegistry().firstPartyWhenTopLevelSchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsAllowedForReferrer(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  allowedInReferrerSchemes().add(scheme);
+  getMutableURLSchemesRegistry().allowedInReferrerSchemes.add(scheme);
 }
 
 void SchemeRegistry::removeURLSchemeAsAllowedForReferrer(const String& scheme) {
-  checkIsBeforeThreadCreated();
-  allowedInReferrerSchemes().remove(scheme);
+  getMutableURLSchemesRegistry().allowedInReferrerSchemes.remove(scheme);
 }
 
 bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(
@@ -391,22 +301,22 @@ bool SchemeRegistry::shouldTreatURLSchemeAsAllowedForReferrer(
   DCHECK_EQ(scheme, scheme.lower());
   if (scheme.isEmpty())
     return false;
-  return allowedInReferrerSchemes().contains(scheme);
+  return getURLSchemesRegistry().allowedInReferrerSchemes.contains(scheme);
 }
 
 void SchemeRegistry::registerURLSchemeAsBypassingContentSecurityPolicy(
     const String& scheme,
     PolicyAreas policyAreas) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  ContentSecurityPolicyBypassingSchemes().add(scheme, policyAreas);
+  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.add(
+      scheme, policyAreas);
 }
 
 void SchemeRegistry::removeURLSchemeRegisteredAsBypassingContentSecurityPolicy(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  ContentSecurityPolicyBypassingSchemes().remove(scheme);
+  getMutableURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.remove(
+      scheme);
 }
 
 bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
@@ -418,22 +328,23 @@ bool SchemeRegistry::schemeShouldBypassContentSecurityPolicy(
 
   // get() returns 0 (PolicyAreaNone) if there is no entry in the map.
   // Thus by default, schemes do not bypass CSP.
-  return (ContentSecurityPolicyBypassingSchemes().get(scheme) & policyAreas) ==
-         policyAreas;
+  return (getURLSchemesRegistry().contentSecurityPolicyBypassingSchemes.get(
+              scheme) &
+          policyAreas) == policyAreas;
 }
 
 void SchemeRegistry::registerURLSchemeBypassingSecureContextCheck(
     const String& scheme) {
-  checkIsBeforeThreadCreated();
   DCHECK_EQ(scheme, scheme.lower());
-  secureContextBypassingSchemes().add(scheme.lower());
+  getMutableURLSchemesRegistry().secureContextBypassingSchemes.add(scheme);
 }
 
 bool SchemeRegistry::schemeShouldBypassSecureContextCheck(
     const String& scheme) {
   if (scheme.isEmpty())
     return false;
-  return secureContextBypassingSchemes().contains(scheme.lower());
+  DCHECK_EQ(scheme, scheme.lower());
+  return getURLSchemesRegistry().secureContextBypassingSchemes.contains(scheme);
 }
 
 }  // namespace blink

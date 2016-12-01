@@ -56,19 +56,16 @@ TEST_F(SchemeRegistryTest, BypassSecureContextCheck) {
   const char* scheme1 = "http";
   const char* scheme2 = "https";
   const char* scheme3 = "random-scheme";
-  const char* scheme4 = "RANDOM-SCHEME";
 
   EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme1));
   EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme2));
   EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme3));
-  EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme4));
 
   SchemeRegistry::registerURLSchemeBypassingSecureContextCheck("random-scheme");
 
   EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme1));
   EXPECT_FALSE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme2));
   EXPECT_TRUE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme3));
-  EXPECT_TRUE(SchemeRegistry::schemeShouldBypassSecureContextCheck(scheme4));
 }
 
 }  // namespace
