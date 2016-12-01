@@ -66,7 +66,7 @@ class CONTENT_EXPORT WebContentsViewAura
 
   void SizeChangedCommon(const gfx::Size& size);
 
-  void EndDrag(blink::WebDragOperationsMask ops);
+  void EndDrag(RenderWidgetHost* source_rwh, blink::WebDragOperationsMask ops);
 
   void InstallOverscrollControllerDelegate(RenderWidgetHostViewAura* view);
 
@@ -202,10 +202,6 @@ class CONTENT_EXPORT WebContentsViewAura
   // sending the drag exited message after leaving the current
   // view. |current_rvh_for_drag_| should not be dereferenced.
   void* current_rvh_for_drag_;
-
-  // We keep track of the RenderWidgetHost from which the current drag started,
-  // in order to properly route the drag end message to it.
-  base::WeakPtr<RenderWidgetHostImpl> drag_start_rwh_;
 
   // The overscroll gesture currently in progress.
   OverscrollMode current_overscroll_gesture_;

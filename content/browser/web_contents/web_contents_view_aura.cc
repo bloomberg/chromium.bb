@@ -550,7 +550,8 @@ void WebContentsViewAura::SizeChangedCommon(const gfx::Size& size) {
     rwhv->SetSize(size);
 }
 
-void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
+void WebContentsViewAura::EndDrag(RenderWidgetHost* source_rwh,
+                                  blink::WebDragOperationsMask ops) {
   if (!web_contents_)
     return;
 
@@ -566,7 +567,9 @@ void WebContentsViewAura::EndDrag(blink::WebDragOperationsMask ops) {
   // the coordinates local to |drag_start_rwh_|? See crbug.com/647249.
   web_contents_->DragSourceEndedAt(client_loc.x(), client_loc.y(),
                                    screen_loc.x(), screen_loc.y(), ops,
-                                   drag_start_rwh_.get());
+                                   source_rwh);
+
+  web_contents_->SystemDragEnded(source_rwh);
 }
 
 void WebContentsViewAura::InstallOverscrollControllerDelegate(
@@ -896,7 +899,13 @@ void WebContentsViewAura::StartDragging(
     return;
   }
 
-  drag_start_rwh_ = source_rwh->GetWeakPtr();
+  // Grab a weak pointer to the RenderWidgetHost, since it can be destroyed
+  // during the drag and drop nested message loop in StartDragAndDrop.
+  // For example, the RenderWidgetHost can be deleted if a cross-process
+  // transfer happens while dragging, since the RenderWidgetHost is deleted in
+  // that case.
+  base::WeakPtr<RenderWidgetHostImpl> source_rwh_weak_ptr =
+      source_rwh->GetWeakPtr();
 
   ui::TouchSelectionController* selection_controller = GetSelectionController();
   if (selection_controller)
@@ -940,8 +949,7 @@ void WebContentsViewAura::StartDragging(
     return;
   }
 
-  EndDrag(ConvertToWeb(result_op));
-  web_contents_->SystemDragEnded(source_rwh);
+  EndDrag(source_rwh_weak_ptr.get(), ConvertToWeb(result_op));
 }
 
 void WebContentsViewAura::UpdateDragCursor(blink::WebDragOperation operation) {
