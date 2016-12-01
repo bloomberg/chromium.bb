@@ -97,7 +97,7 @@ class ServiceUtilityProcessHost::PdfToEmfState {
              const printing::PdfRenderSettings& conversion_settings) {
     if (!temp_dir_.CreateUniqueTempDir())
       return false;
-    return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Start(
+    return host_->Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
         IPC::TakePlatformFileForTransit(std::move(pdf_file)),
         conversion_settings, false /* print_text_with_gdi */));
   }

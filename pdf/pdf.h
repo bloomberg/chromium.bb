@@ -36,7 +36,9 @@ void PPP_ShutdownModule();
 const void* PPP_GetInterface(const char* interface_name);
 
 #if defined(OS_WIN)
-// |pdf_handle| is the handle to the PDF document.
+// |pdf_buffer| is the buffer that contains the entire PDF document to be
+//     rendered.
+// |buffer_size| is the size of |pdf_buffer| in bytes.
 // |page_number| is the 0-based index of the page to be rendered.
 // |dc| is the device context to render into.
 // |dpi| and |dpi_y| is the resolution. If the value is -1, the dpi from the DC
@@ -61,7 +63,8 @@ const void* PPP_GetInterface(const char* interface_name);
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
 // Returns false if the document or the page number are not valid.
-bool RenderPDFPageToDC(void* pdf_handle,
+bool RenderPDFPageToDC(const void* pdf_buffer,
+                       int buffer_size,
                        int page_number,
                        HDC dc,
                        int dpi,
@@ -81,35 +84,32 @@ void SetPDFEnsureTypefaceCharactersAccessible(
 void SetPDFUseGDIPrinting(bool enable);
 #endif  // defined(OS_WIN)
 
-// All the out parameters are optional and can be NULL.
+// |page_count| and |max_page_width| are optional and can be NULL.
 // Returns false if the document is not valid.
-// Returns true on success. In which case, if |pdf_handle| is not NULL, then
-// the handle is guaranteed to be valid and not NULL. The caller takes
-// ownership of |pdf_handle| and must call ReleasePDFHandle() on it when done.
 bool GetPDFDocInfo(const void* pdf_buffer,
                    int buffer_size,
                    int* page_count,
-                   double* max_page_width,
-                   void** pdf_handle);
-
-// Releases the handle received from GetPDFDocInfo().
-// |pdf_handle| can be NULL.
-void ReleasePDFHandle(void* pdf_handle);
+                   double* max_page_width);
 
 // Gets the dimensions of a specific page in a document.
-// |pdf_handle| is the handle to the PDF document.
+// |pdf_buffer| is the buffer that contains the entire PDF document to be
+//     rendered.
+// |pdf_buffer_size| is the size of |pdf_buffer| in bytes.
 // |page_number| is the page number that the function will get the dimensions
 //     of.
 // |width| is the output for the width of the page in points.
 // |height| is the output for the height of the page in points.
 // Returns false if the document or the page number are not valid.
-bool GetPDFPageSizeByIndex(void* pdf_handle,
+bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                           int pdf_buffer_size,
                            int page_number,
                            double* width,
                            double* height);
 
 // Renders PDF page into 4-byte per pixel BGRA color bitmap.
-// |pdf_handle| is the handle to the PDF document.
+// |pdf_buffer| is the buffer that contains the entire PDF document to be
+//     rendered.
+// |pdf_buffer_size| is the size of |pdf_buffer| in bytes.
 // |page_number| is the 0-based index of the page to be rendered.
 // |bitmap_buffer| is the output buffer for bitmap.
 // |bitmap_width| is the width of the output bitmap.
@@ -118,7 +118,8 @@ bool GetPDFPageSizeByIndex(void* pdf_handle,
 // |autorotate| specifies whether the final image should be rotated to match
 //     the output bound.
 // Returns false if the document or the page number are not valid.
-bool RenderPDFPageToBitmap(void* pdf_handle,
+bool RenderPDFPageToBitmap(const void* pdf_buffer,
+                           int pdf_buffer_size,
                            int page_number,
                            void* bitmap_buffer,
                            int bitmap_width,

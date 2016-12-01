@@ -64,8 +64,8 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
   bool handled = true;
   IPC_BEGIN_MESSAGE_MAP(PrintingHandler, message)
 #if defined(OS_WIN)
-    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Start,
-                        OnRenderPDFPagesToMetafileStart)
+    IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
+                        OnRenderPDFPagesToMetafile)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_GetPage,
                         OnRenderPDFPagesToMetafileGetPage)
     IPC_MESSAGE_HANDLER(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop,
@@ -85,7 +85,7 @@ bool PrintingHandler::OnMessageReceived(const IPC::Message& message) {
 }
 
 #if defined(OS_WIN)
-void PrintingHandler::OnRenderPDFPagesToMetafileStart(
+void PrintingHandler::OnRenderPDFPagesToMetafile(
     IPC::PlatformFileForTransit pdf_transit,
     const PdfRenderSettings& settings,
     bool print_text_with_gdi) {
@@ -109,8 +109,6 @@ void PrintingHandler::OnRenderPDFPagesToMetafileGetPage(
 }
 
 void PrintingHandler::OnRenderPDFPagesToMetafileStop() {
-  chrome_pdf::ReleasePDFHandle(pdf_handle_);
-  pdf_handle_ = nullptr;
   ReleaseProcessIfNeeded();
 }
 
@@ -136,8 +134,6 @@ void PrintingHandler::OnRenderPDFPagesToPWGRaster(
 
 #if defined(OS_WIN)
 int PrintingHandler::LoadPDF(base::File pdf_file) {
-  DCHECK(!pdf_handle_);
-
   int64_t length64 = pdf_file.GetLength();
   if (length64 <= 0 || length64 > std::numeric_limits<int>::max())
     return 0;
@@ -149,7 +145,7 @@ int PrintingHandler::LoadPDF(base::File pdf_file) {
 
   int total_page_count = 0;
   if (!chrome_pdf::GetPDFDocInfo(&pdf_data_.front(), pdf_data_.size(),
-                                 &total_page_count, nullptr, &pdf_handle_)) {
+                                 &total_page_count, nullptr)) {
     return 0;
   }
   return total_page_count;
@@ -177,7 +173,7 @@ bool PrintingHandler::RenderPdfPageToMetafile(int page_number,
   // to StartPage.
   metafile.StartPage(gfx::Size(), gfx::Rect(), 1);
   if (!chrome_pdf::RenderPDFPageToDC(
-          pdf_handle_, page_number, metafile.context(),
+          &pdf_data_.front(), pdf_data_.size(), page_number, metafile.context(),
           pdf_rendering_settings_.dpi, pdf_rendering_settings_.area.x(),
           pdf_rendering_settings_.area.y(),
           pdf_rendering_settings_.area.width(),
@@ -208,9 +204,8 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     return false;
 
   int total_page_count = 0;
-  void* pdf_handle = nullptr;
   if (!chrome_pdf::GetPDFDocInfo(data.data(), data_size, &total_page_count,
-                                 nullptr, &pdf_handle)) {
+                                 nullptr)) {
     return false;
   }
 
@@ -219,14 +214,11 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
   encoder.EncodeDocumentHeader(&pwg_header);
   int bytes_written = bitmap_file.WriteAtCurrentPos(pwg_header.data(),
                                                     pwg_header.size());
-  if (bytes_written != static_cast<int>(pwg_header.size())) {
-    chrome_pdf::ReleasePDFHandle(pdf_handle);
+  if (bytes_written != static_cast<int>(pwg_header.size()))
     return false;
-  }
 
   cloud_print::BitmapImage image(settings.area.size(),
                                  cloud_print::BitmapImage::BGRA);
-  bool ret = true;
   for (int i = 0; i < total_page_count; ++i) {
     int page_number = i;
 
@@ -235,8 +227,9 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     }
 
     if (!chrome_pdf::RenderPDFPageToBitmap(
-            pdf_handle, page_number, image.pixel_data(), image.size().width(),
-            image.size().height(), settings.dpi, settings.autorotate)) {
+            data.data(), data_size, page_number, image.pixel_data(),
+            image.size().width(), image.size().height(), settings.dpi,
+            settings.autorotate)) {
       return false;
     }
 
@@ -268,19 +261,14 @@ bool PrintingHandler::RenderPDFPagesToPWGRaster(
     }
 
     std::string pwg_page;
-    if (!encoder.EncodePage(image, header_info, &pwg_page)) {
-      ret = false;
-      break;
-    }
+    if (!encoder.EncodePage(image, header_info, &pwg_page))
+      return false;
     bytes_written = bitmap_file.WriteAtCurrentPos(pwg_page.data(),
                                                   pwg_page.size());
-    if (bytes_written != static_cast<int>(pwg_page.size())) {
-      ret = false;
-      break;
-    }
+    if (bytes_written != static_cast<int>(pwg_page.size()))
+      return false;
   }
-  chrome_pdf::ReleasePDFHandle(pdf_handle);
-  return ret;
+  return true;
 }
 
 void PrintingHandler::OnGetPrinterCapsAndDefaults(

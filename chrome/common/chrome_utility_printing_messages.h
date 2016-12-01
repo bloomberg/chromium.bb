@@ -99,7 +99,7 @@ IPC_MESSAGE_CONTROL1(ChromeUtilityMsg_GetPrinterSemanticCapsAndDefaults,
 // Tell the utility process to start rendering the given PDF into a metafile.
 // Utility process would be alive until
 // ChromeUtilityMsg_RenderPDFPagesToMetafiles_Stop message.
-IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_RenderPDFPagesToMetafiles_Start,
+IPC_MESSAGE_CONTROL3(ChromeUtilityMsg_RenderPDFPagesToMetafiles,
                      IPC::PlatformFileForTransit /* input_file */,
                      printing::PdfRenderSettings /* settings */,
                      bool /* print_text_with_gdi */)

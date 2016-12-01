@@ -771,7 +771,8 @@ class PDFiumEngineExports : public PDFEngineExports {
 
 // PDFEngineExports:
 #if defined(OS_WIN)
-  bool RenderPDFPageToDC(void* pdf_handle,
+  bool RenderPDFPageToDC(const void* pdf_buffer,
+                         int buffer_size,
                          int page_number,
                          const RenderingSettings& settings,
                          HDC dc) override;
@@ -780,17 +781,17 @@ class PDFiumEngineExports : public PDFEngineExports {
 
   void SetPDFUseGDIPrinting(bool enable) override;
 #endif  // defined(OS_WIN)
-  bool RenderPDFPageToBitmap(void* pdf_handle,
+  bool RenderPDFPageToBitmap(const void* pdf_buffer,
+                             int pdf_buffer_size,
                              int page_number,
                              const RenderingSettings& settings,
                              void* bitmap_buffer) override;
   bool GetPDFDocInfo(const void* pdf_buffer,
                      int buffer_size,
                      int* page_count,
-                     double* max_page_width,
-                     void** pdf_handle) override;
-  void ReleasePDFHandle(void* pdf_handle) override;
-  bool GetPDFPageSizeByIndex(void* pdf_handle,
+                     double* max_page_width) override;
+  bool GetPDFPageSizeByIndex(const void* pdf_buffer,
+                             int pdf_buffer_size,
                              int page_number,
                              double* width,
                              double* height) override;

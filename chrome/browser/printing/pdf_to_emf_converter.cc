@@ -340,7 +340,7 @@ void PdfToEmfUtilityProcessHostClient::OnTempPdfReady(bool print_text_with_gdi,
   if (!utility_process_host_ || !pdf)
     return OnFailed();
   // Should reply with OnPageCount().
-  Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles_Start(
+  Send(new ChromeUtilityMsg_RenderPDFPagesToMetafiles(
       IPC::GetPlatformFileForTransit(pdf->GetPlatformFile(), false), settings_,
       print_text_with_gdi));
 }
