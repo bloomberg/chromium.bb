@@ -2033,7 +2033,6 @@ interface HTMLMediaElement : HTMLElement
     getter currentTime
     getter defaultMuted
     getter defaultPlaybackRate
-    getter disableRemotePlayback
     getter duration
     getter ended
     getter error
@@ -2068,7 +2067,6 @@ interface HTMLMediaElement : HTMLElement
     setter currentTime
     setter defaultMuted
     setter defaultPlaybackRate
-    setter disableRemotePlayback
     setter loop
     setter muted
     setter onencrypted

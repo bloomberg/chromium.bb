@@ -87,6 +87,7 @@ CONTENT_EXPORT extern const char kDisablePresentationAPI[];
 CONTENT_EXPORT extern const char kDisableRGBA4444Textures[];
 CONTENT_EXPORT extern const char kDisableReadingFromCanvas[];
 extern const char kDisableRemoteFonts[];
+CONTENT_EXPORT extern const char kDisableRemotePlaybackAPI[];
 extern const char kDisableRendererAccessibility[];
 CONTENT_EXPORT extern const char kDisableRendererBackgrounding[];
 CONTENT_EXPORT extern const char kDisableResizeLock[];

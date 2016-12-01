@@ -108,6 +108,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableReloadwithoutSubResourceCacheRevalidation(
       bool);
   BLINK_EXPORT static void enableRenderingPipelineThrottling(bool);
+  BLINK_EXPORT static void enableRemotePlaybackAPI(bool);
   BLINK_EXPORT static void enableRootLayerScrolling(bool);
   BLINK_EXPORT static void enableScriptedSpeech(bool);
   BLINK_EXPORT static void enableScrollAnchoring(bool);

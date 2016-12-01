@@ -202,6 +202,9 @@ void SetRuntimeFeaturesDefaultsAndUpdateFromArgs(
   if (command_line.HasSwitch(switches::kDisablePresentationAPI))
     WebRuntimeFeatures::enablePresentationAPI(false);
 
+  if (command_line.HasSwitch(switches::kDisableRemotePlaybackAPI))
+    WebRuntimeFeatures::enableRemotePlaybackAPI(false);
+
   const std::string webfonts_intervention_v2_group_name =
       base::FieldTrialList::FindFullName("WebFontsInterventionV2");
   const std::string webfonts_intervention_v2_about_flag =

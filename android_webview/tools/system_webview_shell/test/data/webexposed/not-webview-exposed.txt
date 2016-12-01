@@ -30,17 +30,23 @@ interface PresentationConnectionAvailableEvent : Event
 interface PresentationConnectionCloseEvent : Event
 interface PresentationRequest : EventTarget
 
+# remoteplayback api not supported in webview crbug.com/521319
+interface RemotePlayback : EventTarget
+
 # crbug.com/589500
 interface HTMLMediaElement : HTMLElement
     getter sinkId
     method setSinkId
+    setter disableRemotePlayback       # crbug.com/521319
+    getter disableRemotePlayback       # crbug.com/521319
+    getter remote                      # crbug.com/521319
 
 interface Navigator
     getter permissions                 # crbug.com/490120
     method registerProtocolHandler     # crbug.com/589502
     getter presentation                # crbug.com/521319
     method unregisterProtocolHandler   # crbug.com/589502
-    
+
 # notifications not yet supported in webview, crbug.com/551446
 interface ServiceWorkerRegistration : EventTarget
     getter pushManager

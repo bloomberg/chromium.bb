@@ -358,4 +358,8 @@ void WebRuntimeFeatures::enableBackgroundVideoTrackOptimization(bool enable) {
   RuntimeEnabledFeatures::setBackgroundVideoTrackOptimizationEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableRemotePlaybackAPI(bool enable) {
+  RuntimeEnabledFeatures::setRemotePlaybackEnabled(enable);
+}
+
 }  // namespace blink

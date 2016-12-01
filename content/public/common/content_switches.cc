@@ -261,6 +261,9 @@ const char kDisableReadingFromCanvas[]      = "disable-reading-from-canvas";
 // option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 
+// Disables the RemotePlayback API.
+const char kDisableRemotePlaybackAPI[]      = "disable-remote-playback-api";
+
 // Turns off the accessibility in the renderer.
 const char kDisableRendererAccessibility[]  = "disable-renderer-accessibility";
 

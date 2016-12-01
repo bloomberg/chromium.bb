@@ -108,6 +108,10 @@ bool AwMainDelegate::BasicStartupComplete(int* exit_code) {
   // https://crbug.com/521319
   cl->AppendSwitch(switches::kDisablePresentationAPI);
 
+  // WebView doesn't support Remote Playback API for the same reason as the
+  // Presentation API, see https://crbug.com/521319.
+  cl->AppendSwitch(switches::kDisableRemotePlaybackAPI);
+
 #if defined(V8_USE_EXTERNAL_STARTUP_DATA)
   if (cl->GetSwitchValueASCII(switches::kProcessType).empty()) {
     // Browser process (no type specified).
