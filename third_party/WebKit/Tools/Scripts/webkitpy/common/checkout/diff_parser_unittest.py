@@ -81,7 +81,7 @@ class DiffParserTest(unittest.TestCase):
 
     def test_diff_converter(self):
         comment_lines = [
-            "Hey guys,\n",
+            "Hey people,\n",
             "\n",
             "See my awesome patch below!\n",
             "\n",
