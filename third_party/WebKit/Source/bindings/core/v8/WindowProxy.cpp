@@ -33,7 +33,6 @@
 #include "bindings/core/v8/ConditionalFeatures.h"
 #include "bindings/core/v8/DOMWrapperWorld.h"
 #include "bindings/core/v8/ScriptController.h"
-#include "bindings/core/v8/ToV8.h"
 #include "bindings/core/v8/V8Binding.h"
 #include "bindings/core/v8/V8DOMActivityLogger.h"
 #include "bindings/core/v8/V8Document.h"
@@ -73,6 +72,11 @@
 #include <v8.h>
 
 namespace blink {
+
+static void checkDocumentWrapper(v8::Local<v8::Object> wrapper,
+                                 Document* document) {
+  ASSERT(V8Document::toImpl(wrapper) == document);
+}
 
 WindowProxy* WindowProxy::create(v8::Isolate* isolate,
                                  Frame* frame,
@@ -420,24 +424,33 @@ bool WindowProxy::setupWindowPrototypeChain() {
   return true;
 }
 
-void WindowProxy::updateDocumentProperty() {
-  DCHECK(m_world->isMainWorld());
+void WindowProxy::updateDocumentWrapper(v8::Local<v8::Object> wrapper) {
+  ASSERT(m_world->isMainWorld());
+  m_document.set(m_isolate, wrapper);
+}
 
-  if (m_frame->isRemoteFrame())
+void WindowProxy::updateDocumentProperty() {
+  if (!m_world->isMainWorld())
     return;
+
+  if (m_frame->isRemoteFrame()) {
+    return;
+  }
 
   ScriptState::Scope scope(m_scriptState.get());
   v8::Local<v8::Context> context = m_scriptState->context();
   LocalFrame* frame = toLocalFrame(m_frame);
-  // In the main world, the window.document attribute must be set right after
-  // the initialization of the Window or right after the installation of a new
-  // document, thus this must be the first time of the wrapper instantiation of
-  // the document.
-  CHECK(!frame->document()->containsWrapper());
   v8::Local<v8::Value> documentWrapper =
-      toV8(frame->document(), context->Global(), m_isolate);
-  DCHECK(documentWrapper->IsObject());
-  m_document.set(m_isolate, documentWrapper.As<v8::Object>());
+      toV8(frame->document(), context->Global(), context->GetIsolate());
+  if (documentWrapper.IsEmpty())
+    return;
+  ASSERT(documentWrapper == m_document.newLocal(m_isolate) ||
+         m_document.isEmpty());
+  if (m_document.isEmpty())
+    updateDocumentWrapper(v8::Local<v8::Object>::Cast(documentWrapper));
+  checkDocumentWrapper(m_document.newLocal(m_isolate), frame->document());
+
+  ASSERT(documentWrapper->IsObject());
 
   // Update cached accessor.
   CHECK(V8PrivateProperty::getWindowDocumentCachedAccessor(m_isolate).set(
@@ -505,7 +518,7 @@ void WindowProxy::setSecurityToken(SecurityOrigin* origin) {
 }
 
 void WindowProxy::updateDocument() {
-  DCHECK(m_world->isMainWorld());
+  ASSERT(m_world->isMainWorld());
   if (!isGlobalInitialized())
     return;
   if (!isContextInitialized())
@@ -562,31 +575,24 @@ static void getter(v8::Local<v8::Name> property,
     v8SetReturnValue(info, value);
 }
 
-void WindowProxy::checkDocumentWrapper(v8::Local<v8::Object> wrapper,
-                                       Document* document) const {
-  DCHECK(!wrapper.IsEmpty());
-  DCHECK_EQ(V8Document::toImpl(wrapper), document);
-  DCHECK(wrapper ==
-         toV8(document, m_globalProxy.newLocal(m_isolate), m_isolate));
-}
-
 void WindowProxy::namedItemAdded(HTMLDocument* document,
                                  const AtomicString& name) {
-  DCHECK(m_world->isMainWorld());
+  ASSERT(m_world->isMainWorld());
 
   if (!isContextInitialized() || !m_scriptState->contextIsValid())
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Object> documentWrapper = m_document.newLocal(m_isolate);
-  checkDocumentWrapper(documentWrapper, document);
-  documentWrapper->SetAccessor(m_isolate->GetCurrentContext(),
-                               v8String(m_isolate, name), getter);
+  ASSERT(!m_document.isEmpty());
+  v8::Local<v8::Context> context = m_scriptState->context();
+  v8::Local<v8::Object> documentHandle = m_document.newLocal(m_isolate);
+  checkDocumentWrapper(documentHandle, document);
+  documentHandle->SetAccessor(context, v8String(m_isolate, name), getter);
 }
 
 void WindowProxy::namedItemRemoved(HTMLDocument* document,
                                    const AtomicString& name) {
-  DCHECK(m_world->isMainWorld());
+  ASSERT(m_world->isMainWorld());
 
   if (!isContextInitialized())
     return;
@@ -595,10 +601,11 @@ void WindowProxy::namedItemRemoved(HTMLDocument* document,
     return;
 
   ScriptState::Scope scope(m_scriptState.get());
-  v8::Local<v8::Object> documentWrapper = m_document.newLocal(m_isolate);
-  checkDocumentWrapper(documentWrapper, document);
-  documentWrapper->Delete(m_isolate->GetCurrentContext(),
-                          v8String(m_isolate, name));
+  ASSERT(!m_document.isEmpty());
+  v8::Local<v8::Object> documentHandle = m_document.newLocal(m_isolate);
+  checkDocumentWrapper(documentHandle, document);
+  documentHandle->Delete(m_isolate->GetCurrentContext(),
+                         v8String(m_isolate, name));
 }
 
 void WindowProxy::updateSecurityOrigin(SecurityOrigin* origin) {

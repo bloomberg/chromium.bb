@@ -44,7 +44,6 @@
 
 namespace blink {
 
-class Document;
 class Frame;
 class HTMLDocument;
 class SecurityOrigin;
@@ -116,8 +115,6 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   // Associates the window wrapper and its prototype chain with the native
   // DOMWindow object.  Also does some more Window-specific initialization.
   bool setupWindowPrototypeChain();
-
-  void checkDocumentWrapper(v8::Local<v8::Object> wrapper, Document*) const;
 
   Member<Frame> m_frame;
   v8::Isolate* m_isolate;

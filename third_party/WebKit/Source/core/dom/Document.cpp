@@ -6345,6 +6345,38 @@ void Document::platformColorsChanged() {
   styleEngine().platformColorsChanged();
 }
 
+v8::Local<v8::Object> Document::wrap(v8::Isolate* isolate,
+                                     v8::Local<v8::Object> creationContext) {
+  DCHECK(!DOMDataStore::containsWrapper(this, isolate));
+
+  const WrapperTypeInfo* wrapperType = wrapperTypeInfo();
+
+  if (frame() && frame()->script().initializeMainWorld()) {
+    // initializeMainWorld may have created a wrapper for the object, retry from
+    // the start.
+    v8::Local<v8::Object> wrapper = DOMDataStore::getWrapper(this, isolate);
+    if (!wrapper.IsEmpty())
+      return wrapper;
+  }
+
+  v8::Local<v8::Object> wrapper =
+      V8DOMWrapper::createWrapper(isolate, creationContext, wrapperType);
+  DCHECK(!wrapper.IsEmpty());
+  return associateWithWrapper(isolate, wrapperType, wrapper);
+}
+
+v8::Local<v8::Object> Document::associateWithWrapper(
+    v8::Isolate* isolate,
+    const WrapperTypeInfo* wrapperType,
+    v8::Local<v8::Object> wrapper) {
+  wrapper = V8DOMWrapper::associateObjectWithWrapper(isolate, this, wrapperType,
+                                                     wrapper);
+  DOMWrapperWorld& world = DOMWrapperWorld::current(isolate);
+  if (world.isMainWorld() && frame())
+    frame()->script().windowProxy(world)->updateDocumentWrapper(wrapper);
+  return wrapper;
+}
+
 bool Document::isSecureContext(
     String& errorMessage,
     const SecureContextCheck privilegeContextCheck) const {
