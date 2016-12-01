@@ -5765,18 +5765,6 @@ void Document::tasksWereResumed() {
     DOMWindowPerformance::performance(*m_domWindow)->resumeSuspendedObservers();
 }
 
-// FIXME: suspendScheduledTasks(), resumeScheduledTasks(), tasksNeedSuspension()
-// should be moved to LocalDOMWindow once it inherits ExecutionContext
-void Document::suspendScheduledTasks() {
-  ExecutionContext::suspendScheduledTasks();
-  m_taskRunner->suspend();
-}
-
-void Document::resumeScheduledTasks() {
-  ExecutionContext::resumeScheduledTasks();
-  m_taskRunner->resume();
-}
-
 bool Document::tasksNeedSuspension() {
   Page* page = this->page();
   return page && page->suspended();

@@ -37,6 +37,7 @@ WebFrameSchedulerImpl::WebFrameSchedulerImpl(
       blame_context_(blame_context),
       frame_visible_(true),
       page_visible_(true),
+      frame_suspended_(false),
       cross_origin_(false) {}
 
 WebFrameSchedulerImpl::~WebFrameSchedulerImpl() {
@@ -107,6 +108,9 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::loadingTaskRunner() {
     loading_task_queue_ = renderer_scheduler_->NewLoadingTaskRunner(
         TaskQueue::QueueType::FRAME_LOADING);
     loading_task_queue_->SetBlameContext(blame_context_);
+    loading_queue_enabled_voter_ =
+        loading_task_queue_->CreateQueueEnabledVoter();
+    loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
     loading_web_task_runner_.reset(new WebTaskRunnerImpl(loading_task_queue_));
   }
   return loading_web_task_runner_.get();
@@ -118,6 +122,8 @@ blink::WebTaskRunner* WebFrameSchedulerImpl::timerTaskRunner() {
     timer_task_queue_ = renderer_scheduler_->NewTimerTaskRunner(
         TaskQueue::QueueType::FRAME_TIMER);
     timer_task_queue_->SetBlameContext(blame_context_);
+    timer_queue_enabled_voter_ = timer_task_queue_->CreateQueueEnabledVoter();
+    timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended_);
 
     TaskQueueThrottler::TimeBudgetPool* time_budget_pool =
         parent_web_view_scheduler_->BackgroundTimeBudgetPool();
@@ -200,6 +206,18 @@ void WebFrameSchedulerImpl::setPageVisible(bool page_visible) {
   bool was_throttled = ShouldThrottleTimers();
   page_visible_ = page_visible;
   UpdateTimerThrottling(was_throttled);
+}
+
+void WebFrameSchedulerImpl::setSuspended(bool frame_suspended) {
+  DCHECK(parent_web_view_scheduler_);
+  if (frame_suspended_ == frame_suspended)
+    return;
+
+  frame_suspended_ = frame_suspended;
+  if (loading_queue_enabled_voter_)
+    loading_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
+  if (timer_queue_enabled_voter_)
+    timer_queue_enabled_voter_->SetQueueEnabled(!frame_suspended);
 }
 
 bool WebFrameSchedulerImpl::ShouldThrottleTimers() const {

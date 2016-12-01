@@ -125,8 +125,8 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   void stopActiveDOMObjects();
   void notifyContextDestroyed() override;
 
-  virtual void suspendScheduledTasks();
-  virtual void resumeScheduledTasks();
+  void suspendScheduledTasks();
+  void resumeScheduledTasks();
   virtual bool tasksNeedSuspension() { return false; }
   virtual void tasksWereSuspended() {}
   virtual void tasksWereResumed() {}

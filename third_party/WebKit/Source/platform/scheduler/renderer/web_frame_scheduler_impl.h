@@ -40,6 +40,7 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   // WebFrameScheduler implementation:
   void setFrameVisible(bool frame_visible) override;
   void setPageVisible(bool page_visible) override;
+  void setSuspended(bool frame_suspended) override;
   void setCrossOrigin(bool cross_origin) override;
   WebTaskRunner* loadingTaskRunner() override;
   WebTaskRunner* timerTaskRunner() override;
@@ -63,6 +64,8 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   scoped_refptr<TaskQueue> loading_task_queue_;
   scoped_refptr<TaskQueue> timer_task_queue_;
   scoped_refptr<TaskQueue> unthrottled_task_queue_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> loading_queue_enabled_voter_;
+  std::unique_ptr<TaskQueue::QueueEnabledVoter> timer_queue_enabled_voter_;
   std::unique_ptr<WebTaskRunnerImpl> loading_web_task_runner_;
   std::unique_ptr<WebTaskRunnerImpl> timer_web_task_runner_;
   std::unique_ptr<WebTaskRunnerImpl> unthrottled_web_task_runner_;
@@ -71,6 +74,7 @@ class BLINK_PLATFORM_EXPORT WebFrameSchedulerImpl : public WebFrameScheduler {
   base::trace_event::BlameContext* blame_context_;   // NOT OWNED
   bool frame_visible_;
   bool page_visible_;
+  bool frame_suspended_;
   bool cross_origin_;
 
   DISALLOW_COPY_AND_ASSIGN(WebFrameSchedulerImpl);

@@ -1001,8 +1001,6 @@ class CORE_EXPORT Document : public ContainerNode,
 
   void tasksWereSuspended() final;
   void tasksWereResumed() final;
-  void suspendScheduledTasks() final;
-  void resumeScheduledTasks() final;
   bool tasksNeedSuspension() final;
 
   void finishedParsing();

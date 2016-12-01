@@ -74,6 +74,11 @@ class RepeatingTask : public blink::WebTaskRunner::Task {
   blink::WebTaskRunner* web_task_runner_;  // NOT OWNED
   int* run_count_;                         // NOT OWNED
 };
+
+void IncrementCounter(int* counter) {
+  ++*counter;
+}
+
 }  // namespace
 
 TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_PageInForeground) {
@@ -174,6 +179,28 @@ TEST_F(WebFrameSchedulerImplTest, RepeatingTimer_FrameHidden_CrossOrigin_Throttl
 
   mock_task_runner_->RunForPeriod(base::TimeDelta::FromSeconds(1));
   EXPECT_EQ(1000, run_count);
+}
+
+TEST_F(WebFrameSchedulerImplTest, SuspendAndResume) {
+  int counter = 0;
+  web_frame_scheduler_->loadingTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
+  web_frame_scheduler_->timerTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
+  web_frame_scheduler_->unthrottledTaskRunner()->postTask(
+      BLINK_FROM_HERE, WTF::bind(&IncrementCounter, WTF::unretained(&counter)));
+
+  web_frame_scheduler_->setSuspended(true);
+
+  EXPECT_EQ(0, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(1, counter);
+
+  web_frame_scheduler_->setSuspended(false);
+
+  EXPECT_EQ(1, counter);
+  mock_task_runner_->RunUntilIdle();
+  EXPECT_EQ(3, counter);
 }
 
 }  // namespace scheduler

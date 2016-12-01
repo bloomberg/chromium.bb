@@ -28,12 +28,11 @@
 #define MainThreadTaskRunner_h
 
 #include "core/CoreExport.h"
-#include "platform/Timer.h"
 #include "platform/heap/Handle.h"
+#include "public/platform/WebTraceLocation.h"
 #include "wtf/Allocator.h"
 #include "wtf/Noncopyable.h"
 #include "wtf/PtrUtil.h"
-#include "wtf/Vector.h"
 #include "wtf/WeakPtr.h"
 #include "wtf/text/WTFString.h"
 #include <memory>
@@ -65,13 +64,8 @@ class CORE_EXPORT MainThreadTaskRunner final {
                bool isInspectorTask,
                bool instrumenting);
 
-  void suspend();
-  void resume();
-
  private:
   explicit MainThreadTaskRunner(ExecutionContext*);
-
-  void pendingTasksTimerFired(TimerBase*);
 
   void postTaskInternal(const WebTraceLocation&,
                         std::unique_ptr<ExecutionContextTask>,
@@ -81,11 +75,6 @@ class CORE_EXPORT MainThreadTaskRunner final {
   // Untraced back reference to the owner Document;
   // this object has identical lifetime to it.
   UntracedMember<ExecutionContext> m_context;
-  Timer<MainThreadTaskRunner> m_pendingTasksTimer;
-  Vector<std::pair<std::unique_ptr<ExecutionContextTask>,
-                   bool /* instrumenting */>>
-      m_pendingTasks;
-  bool m_suspended;
   WeakPtrFactory<MainThreadTaskRunner> m_weakFactory;
   WeakPtr<MainThreadTaskRunner> m_weakPtr;
 };

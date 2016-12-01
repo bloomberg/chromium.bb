@@ -37,8 +37,6 @@ namespace blink {
 
 MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
     : m_context(context),
-      m_pendingTasksTimer(this, &MainThreadTaskRunner::pendingTasksTimerFired),
-      m_suspended(false),
       m_weakFactory(this),
       // Bind a WeakPtr now to avoid data races creating a WeakPtr inside
       // postTask.
@@ -81,46 +79,9 @@ void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task,
   if (ThreadHeap::willObjectBeLazilySwept(m_context.get()))
     return;
 
-  if (!isInspectorTask &&
-      (m_context->tasksNeedSuspension() || !m_pendingTasks.isEmpty())) {
-    m_pendingTasks.append(make_pair(std::move(task), instrumenting));
-    return;
-  }
-
   InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(),
                                                 !isInspectorTask);
   task->performTask(m_context);
-}
-
-void MainThreadTaskRunner::suspend() {
-  DCHECK(!m_suspended);
-  m_pendingTasksTimer.stop();
-  m_suspended = true;
-}
-
-void MainThreadTaskRunner::resume() {
-  DCHECK(m_suspended);
-  if (!m_pendingTasks.isEmpty())
-    m_pendingTasksTimer.startOneShot(0, BLINK_FROM_HERE);
-
-  m_suspended = false;
-}
-
-void MainThreadTaskRunner::pendingTasksTimerFired(TimerBase*) {
-  // If the owner m_context is about to be swept then it
-  // is no longer safe to access.
-  if (ThreadHeap::willObjectBeLazilySwept(m_context.get()))
-    return;
-
-  while (!m_pendingTasks.isEmpty()) {
-    std::unique_ptr<ExecutionContextTask> task =
-        std::move(m_pendingTasks[0].first);
-    const bool instrumenting = m_pendingTasks[0].second;
-    m_pendingTasks.remove(0);
-    InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(),
-                                                  instrumenting);
-    task->performTask(m_context);
-  }
 }
 
 }  // namespace blink

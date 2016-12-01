@@ -56,6 +56,7 @@
 #include "platform/graphics/GraphicsLayer.h"
 #include "platform/plugins/PluginData.h"
 #include "public/platform/Platform.h"
+#include "public/platform/WebFrameScheduler.h"
 
 namespace blink {
 
@@ -253,15 +254,18 @@ void Page::setValidationMessageClient(ValidationMessageClient* client) {
   m_validationMessageClient = client;
 }
 
-void Page::setSuspended(bool suspend) {
-  if (suspend == m_suspended)
+void Page::setSuspended(bool suspended) {
+  if (suspended == m_suspended)
     return;
 
-  m_suspended = suspend;
+  m_suspended = suspended;
   for (Frame* frame = mainFrame(); frame;
        frame = frame->tree().traverseNext()) {
-    if (frame->isLocalFrame())
-      toLocalFrame(frame)->loader().setDefersLoading(suspend);
+    if (!frame->isLocalFrame())
+      continue;
+    LocalFrame* localFrame = toLocalFrame(frame);
+    localFrame->loader().setDefersLoading(suspended);
+    localFrame->frameScheduler()->setSuspended(suspended);
   }
 }
 
