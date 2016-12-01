@@ -807,13 +807,15 @@ abstract class PaymentRequestTestBase extends ChromeActivityTestCaseBase<ChromeT
         }
 
         @Override
-        public String getInstrumentMethodName() {
-            return mMethodName;
+        public Set<String> getInstrumentMethodNames() {
+            Set<String> result = new HashSet<>();
+            result.add(mMethodName);
+            return result;
         }
 
         @Override
-        public void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
-                List<PaymentItem> cart, PaymentMethodData details,
+        public void invokePaymentApp(String merchantName, String origin, PaymentItem total,
+                List<PaymentItem> cart, Map<String, PaymentMethodData> methodData,
                 InstrumentDetailsCallback detailsCallback) {
             detailsCallback.onInstrumentDetailsReady(
                     mMethodName, "{\"transaction\": 1337}");

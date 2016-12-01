@@ -56,6 +56,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
@@ -916,7 +917,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     }
 
     @Override
-    public void loadingInstrumentDetails() {
+    public void onInstrumentDetailsLoadingWithoutUI() {
         if (mClient == null || mUI == null || mPaymentResponseHelper == null) return;
 
         mUI.showProcessingMessage();
@@ -935,8 +936,19 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         mPaymentResponseHelper = new PaymentResponseHelper(
                 selectedShippingAddress, selectedShippingOption, selectedContact, this);
 
-        instrument.getInstrumentDetails(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
-                mMethodData.get(instrument.getInstrumentMethodName()), this);
+        // Create a map that is the subset of mMethodData that contains the
+        // payment methods supported by the selected payment instrument. If this
+        // intersection contains more than one payment method, the payment app is
+        // at liberty to choose (or have the user choose) one of the methods.
+        Map<String, PaymentMethodData> methodData = new HashMap<>();
+        for (String instrumentMethodName : instrument.getInstrumentMethodNames()) {
+            if (mMethodData.containsKey(instrumentMethodName)) {
+                methodData.put(instrumentMethodName, mMethodData.get(instrumentMethodName));
+            }
+        }
+
+        instrument.invokePaymentApp(mMerchantName, mOrigin, mRawTotal, mRawLineItems,
+                Collections.unmodifiableMap(methodData), this);
         recordSuccessFunnelHistograms("PayClicked");
         return !(instrument instanceof AutofillPaymentInstrument);
     }
@@ -1067,7 +1079,9 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
-                if (mMethodData.containsKey(instrument.getInstrumentMethodName())) {
+                Set<String> instrumentMethodNames = instrument.getInstrumentMethodNames();
+                instrumentMethodNames.retainAll(mMethodData.keySet());
+                if (!instrumentMethodNames.isEmpty()) {
                     addPendingInstrument(instrument);
                 } else {
                     instrument.dismissInstrument();

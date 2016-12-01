@@ -22,7 +22,10 @@ import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.io.IOException;
 import java.io.StringWriter;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -64,13 +67,16 @@ public class AutofillPaymentInstrument extends PaymentInstrument
     }
 
     @Override
-    public String getInstrumentMethodName() {
-        return mCard.getBasicCardPaymentType();
+    public Set<String> getInstrumentMethodNames() {
+        Set<String> result = new HashSet<>();
+        result.add(mCard.getBasicCardPaymentType());
+        return result;
     }
 
     @Override
-    public void getInstrumentDetails(String unusedMerchantName, String unusedOrigin,
-            PaymentItem unusedTotal, List<PaymentItem> unusedCart, PaymentMethodData unusedDetails,
+    public void invokePaymentApp(String unusedMerchantName, String unusedOrigin,
+            PaymentItem unusedTotal, List<PaymentItem> unusedCart,
+            Map<String, PaymentMethodData> unusedMethodData,
             InstrumentDetailsCallback callback) {
         // The billing address should never be null for a credit card at this point.
         assert mBillingAddress != null;
@@ -101,7 +107,7 @@ public class AutofillPaymentInstrument extends PaymentInstrument
         mIsWaitingForFullCardDetails = false;
 
         // Show the loading UI while the address gets normalized.
-        mCallback.loadingInstrumentDetails();
+        mCallback.onInstrumentDetailsLoadingWithoutUI();
 
         // Wait for the billing address normalization before sending the instrument details.
         if (mIsWaitingForBillingNormalization) {

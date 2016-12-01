@@ -11,6 +11,8 @@ import org.chromium.payments.mojom.PaymentItem;
 import org.chromium.payments.mojom.PaymentMethodData;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * The base class for a single payment instrument, e.g., a credit card.
@@ -21,10 +23,11 @@ public abstract class PaymentInstrument extends PaymentOption {
      */
     public interface InstrumentDetailsCallback {
         /**
-         * Called by the credit card payment instrument when CVC has been unmasked, but billing
-         * address has not been normalized yet.
+         * Called by the payment instrument to let Chrome know that the payment app's UI is
+         * now hidden, but the payment instrument has not been returned yet. This is a good
+         * time to show a "loading" progress indicator UI.
          */
-        void loadingInstrumentDetails();
+        void onInstrumentDetailsLoadingWithoutUI();
 
         /**
          * Called after retrieving instrument details.
@@ -45,26 +48,31 @@ public abstract class PaymentInstrument extends PaymentOption {
     }
 
     /**
-     * Returns a method name for this instrument, e.g., "visa" or "mastercard" in basic card
-     * payments: https://w3c.github.io/webpayments-methods-card/#method-id
+     * Returns a set of payment method names for this instrument, e.g., "visa" or
+     * "mastercard" in basic card payments:
+     * https://w3c.github.io/webpayments-methods-card/#method-id
      *
      * @return The method names for this instrument.
      */
-    public abstract String getInstrumentMethodName();
+    public abstract Set<String> getInstrumentMethodNames();
 
     /**
-     * Asynchronously retrieves the instrument details and invokes the callback with the result.
+     * Invoke the payment app to retrieve the instrument details.
+     *
+     * The callback will be invoked with the resulting payment details or error.
      *
      * @param merchantName The name of the merchant.
      * @param origin       The origin of this merchant.
      * @param total        The total amount.
      * @param items        The shopping cart items.
-     * @param details      The payment-method specific data, e.g., whether the app should be invoked
-     *                     in test or production key, a merchant identifier, or a public key.
+     * @param methodData   The payment-method specific data for all applicable payment methods,
+     *                     e.g., whether the app should be invoked in test or production, a
+     *                     merchant identifier, or a public key.
      * @param callback     The object that will receive the instrument details.
      */
-    public abstract void getInstrumentDetails(String merchantName, String origin, PaymentItem total,
-            List<PaymentItem> cart, PaymentMethodData details, InstrumentDetailsCallback callback);
+    public abstract void invokePaymentApp(String merchantName, String origin, PaymentItem total,
+            List<PaymentItem> cart, Map<String, PaymentMethodData> methodData,
+            InstrumentDetailsCallback callback);
 
     /**
      * Cleans up any resources held by the payment instrument. For example, closes server
