@@ -17,11 +17,12 @@ namespace content {
 class BrowserContext;
 }
 
+namespace extensions {
+
 // Test helper class for observing extension-related events.
-// TODO(devlin): This should be in the extensions namespace.
 class ChromeExtensionTestNotificationObserver
     : public ExtensionTestNotificationObserver,
-      public extensions::ExtensionActionAPI::Observer {
+      public ExtensionActionAPI::Observer {
  public:
   explicit ChromeExtensionTestNotificationObserver(Browser* browser);
   explicit ChromeExtensionTestNotificationObserver(
@@ -46,12 +47,14 @@ class ChromeExtensionTestNotificationObserver
  private:
   content::BrowserContext* GetBrowserContext();
 
-  // extensions::ExtensionActionAPI::Observer:
+  // ExtensionActionAPI::Observer:
   void OnPageActionsUpdated(content::WebContents* contents) override;
 
   Browser* browser_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeExtensionTestNotificationObserver);
 };
+
+}  // namespace extensions
 
 #endif  // CHROME_BROWSER_EXTENSIONS_CHROME_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_

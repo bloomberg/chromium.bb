@@ -129,7 +129,7 @@ void DriveFirstRunTest::InstallApp() {
       extensions::CrxInstaller::CreateSilent(extension_service);
 
   installer->InstallCrx(test_data_dir_.AppendASCII(kTestAppCrxName));
-  ChromeExtensionTestNotificationObserver observer(browser());
+  extensions::ChromeExtensionTestNotificationObserver observer(browser());
   observer.WaitForExtensionLoad();
 
   ASSERT_TRUE(extension_service->GetExtensionById(kTestAppId, false));

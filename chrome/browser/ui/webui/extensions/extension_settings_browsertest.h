@@ -60,7 +60,8 @@ class ExtensionSettingsUIBrowserTest : public WebUIBrowserTest {
       const base::FilePath& path);
   const extensions::Extension* InstallExtension(const base::FilePath& path);
 
-  std::unique_ptr<ChromeExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<extensions::ChromeExtensionTestNotificationObserver>
+      observer_;
 
   // The default profile to be used.
   Profile* profile_;

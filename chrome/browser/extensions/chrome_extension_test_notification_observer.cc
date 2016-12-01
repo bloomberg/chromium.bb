@@ -15,7 +15,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 
-using extensions::Extension;
+namespace extensions {
 
 namespace {
 
@@ -26,14 +26,13 @@ using ConditionCallback = base::Callback<bool(void)>;
 bool HasPageActionVisibilityReachedTarget(
     Browser* browser,
     size_t target_visible_page_action_count) {
-  return extensions::extension_action_test_util::GetVisiblePageActionCount(
+  return extension_action_test_util::GetVisiblePageActionCount(
              browser->tab_strip_model()->GetActiveWebContents()) ==
          target_visible_page_action_count;
 }
 
-bool HaveAllExtensionRenderFrameHostsFinishedLoading(
-    extensions::ProcessManager* manager) {
-  extensions::ProcessManager::FrameSet all_views = manager->GetAllFrames();
+bool HaveAllExtensionRenderFrameHostsFinishedLoading(ProcessManager* manager) {
+  ProcessManager::FrameSet all_views = manager->GetAllFrames();
   for (content::RenderFrameHost* host : manager->GetAllFrames()) {
     if (content::WebContents::FromRenderFrameHost(host)->IsLoading())
       return false;
@@ -72,18 +71,16 @@ ChromeExtensionTestNotificationObserver::GetBrowserContext() {
 bool ChromeExtensionTestNotificationObserver::
     WaitForPageActionVisibilityChangeTo(int count) {
   DCHECK(browser_);
-  ScopedObserver<extensions::ExtensionActionAPI,
-                 extensions::ExtensionActionAPI::Observer>
-      observer(this);
-  observer.Add(extensions::ExtensionActionAPI::Get(GetBrowserContext()));
+  ScopedObserver<ExtensionActionAPI, ExtensionActionAPI::Observer> observer(
+      this);
+  observer.Add(ExtensionActionAPI::Get(GetBrowserContext()));
   WaitForCondition(
       base::Bind(&HasPageActionVisibilityReachedTarget, browser_, count), NULL);
   return true;
 }
 
 bool ChromeExtensionTestNotificationObserver::WaitForExtensionViewsToLoad() {
-  extensions::ProcessManager* manager =
-      extensions::ProcessManager::Get(GetBrowserContext());
+  ProcessManager* manager = ProcessManager::Get(GetBrowserContext());
   NotificationSet notification_set;
   notification_set.Add(content::NOTIFICATION_WEB_CONTENTS_DESTROYED);
   notification_set.Add(content::NOTIFICATION_LOAD_STOP);
@@ -98,9 +95,9 @@ bool ChromeExtensionTestNotificationObserver::WaitForExtensionIdle(
     const std::string& extension_id) {
   NotificationSet notification_set;
   notification_set.Add(content::NOTIFICATION_RENDERER_PROCESS_TERMINATED);
-  WaitForCondition(base::Bind(&extensions::util::IsExtensionIdle, extension_id,
-                              GetBrowserContext()),
-                   &notification_set);
+  WaitForCondition(
+      base::Bind(&util::IsExtensionIdle, extension_id, GetBrowserContext()),
+      &notification_set);
   return true;
 }
 
@@ -111,8 +108,7 @@ bool ChromeExtensionTestNotificationObserver::WaitForExtensionNotIdle(
   WaitForCondition(base::Bind(
                        [](const std::string& extension_id,
                           content::BrowserContext* context) -> bool {
-                         return !extensions::util::IsExtensionIdle(extension_id,
-                                                                   context);
+                         return !util::IsExtensionIdle(extension_id, context);
                        },
                        extension_id, GetBrowserContext()),
                    &notification_set);
@@ -128,3 +124,5 @@ void ChromeExtensionTestNotificationObserver::OnPageActionsUpdated(
     content::WebContents* web_contents) {
   MaybeQuit();
 }
+
+}  // namespace extensions

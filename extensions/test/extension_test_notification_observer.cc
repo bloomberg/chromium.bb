@@ -15,7 +15,7 @@
 #include "extensions/browser/process_manager.h"
 #include "extensions/common/extension.h"
 
-using extensions::Extension;
+namespace extensions {
 
 namespace {
 
@@ -25,9 +25,8 @@ using ConditionCallback = base::Callback<bool(void)>;
 
 const Extension* GetNonTerminatedExtensions(const std::string& id,
                                             content::BrowserContext* context) {
-  return extensions::ExtensionRegistry::Get(context)->GetExtensionById(
-      id, extensions::ExtensionRegistry::EVERYTHING &
-              ~extensions::ExtensionRegistry::TERMINATED);
+  return ExtensionRegistry::Get(context)->GetExtensionById(
+      id, ExtensionRegistry::EVERYTHING & ~ExtensionRegistry::TERMINATED);
 }
 
 }  // namespace
@@ -50,7 +49,7 @@ void ExtensionTestNotificationObserver::NotificationSet::Add(int type) {
 }
 
 void ExtensionTestNotificationObserver::NotificationSet::
-    AddExtensionFrameUnregistration(extensions::ProcessManager* manager) {
+    AddExtensionFrameUnregistration(ProcessManager* manager) {
   process_manager_observer_.Add(manager);
 }
 
@@ -95,19 +94,19 @@ void ExtensionTestNotificationObserver::WaitForNotification(
 bool ExtensionTestNotificationObserver::WaitForExtensionInstallError() {
   int before = extension_installs_observed_;
   content::WindowedNotificationObserver(
-      extensions::NOTIFICATION_EXTENSION_INSTALL_ERROR,
+      NOTIFICATION_EXTENSION_INSTALL_ERROR,
       content::NotificationService::AllSources())
       .Wait();
   return extension_installs_observed_ == before;
 }
 
 void ExtensionTestNotificationObserver::WaitForExtensionLoad() {
-  WaitForNotification(extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
+  WaitForNotification(NOTIFICATION_EXTENSION_LOADED_DEPRECATED);
 }
 
 bool ExtensionTestNotificationObserver::WaitForExtensionLoadError() {
   int before = extension_load_errors_observed_;
-  WaitForNotification(extensions::NOTIFICATION_EXTENSION_LOAD_ERROR);
+  WaitForNotification(NOTIFICATION_EXTENSION_LOAD_ERROR);
   return extension_load_errors_observed_ != before;
 }
 
@@ -119,7 +118,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionCrash(
   }
 
   content::WindowedNotificationObserver(
-      extensions::NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
+      NOTIFICATION_EXTENSION_PROCESS_TERMINATED,
       content::NotificationService::AllSources())
       .Wait();
   return (GetNonTerminatedExtensions(extension_id, context_) == NULL);
@@ -127,7 +126,7 @@ bool ExtensionTestNotificationObserver::WaitForExtensionCrash(
 
 bool ExtensionTestNotificationObserver::WaitForCrxInstallerDone() {
   int before = crx_installers_done_observed_;
-  WaitForNotification(extensions::NOTIFICATION_CRX_INSTALLER_DONE);
+  WaitForNotification(NOTIFICATION_CRX_INSTALLER_DONE);
   return crx_installers_done_observed_ == before + 1;
 }
 
@@ -151,13 +150,13 @@ void ExtensionTestNotificationObserver::Observe(
     const content::NotificationSource& source,
     const content::NotificationDetails& details) {
   switch (type) {
-    case extensions::NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
+    case NOTIFICATION_EXTENSION_LOADED_DEPRECATED:
       last_loaded_extension_id_ =
           content::Details<const Extension>(details).ptr()->id();
       VLOG(1) << "Got EXTENSION_LOADED notification.";
       break;
 
-    case extensions::NOTIFICATION_CRX_INSTALLER_DONE:
+    case NOTIFICATION_CRX_INSTALLER_DONE:
       VLOG(1) << "Got CRX_INSTALLER_DONE notification.";
       {
         const Extension* extension =
@@ -170,7 +169,7 @@ void ExtensionTestNotificationObserver::Observe(
       ++crx_installers_done_observed_;
       break;
 
-    case extensions::NOTIFICATION_EXTENSION_LOAD_ERROR:
+    case NOTIFICATION_EXTENSION_LOAD_ERROR:
       VLOG(1) << "Got EXTENSION_LOAD_ERROR notification.";
       ++extension_load_errors_observed_;
       break;
@@ -207,3 +206,5 @@ void ExtensionTestNotificationObserver::MaybeQuit() {
   if (condition_.Run())
     quit_closure_.Run();
 }
+
+}  // namespace extensions

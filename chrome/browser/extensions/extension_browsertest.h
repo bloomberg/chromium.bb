@@ -325,7 +325,8 @@ class ExtensionBrowserTest : virtual public InProcessBrowserTest {
   // test_data/extensions.
   base::FilePath test_data_dir_;
 
-  std::unique_ptr<ChromeExtensionTestNotificationObserver> observer_;
+  std::unique_ptr<extensions::ChromeExtensionTestNotificationObserver>
+      observer_;
 
  private:
   // Temporary directory for testing.

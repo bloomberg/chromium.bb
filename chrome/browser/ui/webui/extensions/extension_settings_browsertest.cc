@@ -58,7 +58,8 @@ Profile* ExtensionSettingsUIBrowserTest::GetProfile() {
 
 void ExtensionSettingsUIBrowserTest::SetUpOnMainThread() {
   WebUIBrowserTest::SetUpOnMainThread();
-  observer_.reset(new ChromeExtensionTestNotificationObserver(browser()));
+  observer_.reset(
+      new extensions::ChromeExtensionTestNotificationObserver(browser()));
 }
 
 void ExtensionSettingsUIBrowserTest::InstallGoodExtension() {

@@ -211,7 +211,7 @@ class SigninExtensionsDeviceCloudPolicyBrowserTest
         extensions::ExtensionSystem::Get(signin_profile)->extension_service();
     scoped_refptr<extensions::UnpackedInstaller> installer(
         extensions::UnpackedInstaller::Create(service));
-    ExtensionTestNotificationObserver observer(signin_profile);
+    extensions::ExtensionTestNotificationObserver observer(signin_profile);
     installer->Load(GetTestExtensionSourcePath());
     observer.WaitForExtensionLoad();
     return GetTestExtension();

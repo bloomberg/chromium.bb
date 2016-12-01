@@ -766,7 +766,8 @@ IN_PROC_BROWSER_TEST_F(MergeSessionTest, XHRThrottle) {
 
   // Reset ExtensionBrowserTest::observer_ to the right browser object.
   Browser* browser = FindOrCreateVisibleBrowser(profile());
-  observer_.reset(new ChromeExtensionTestNotificationObserver(browser));
+  observer_.reset(
+      new extensions::ChromeExtensionTestNotificationObserver(browser));
 
   // Run background page tests. The tests will just wait for XHR request
   // to complete.

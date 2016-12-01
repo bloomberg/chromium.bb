@@ -24,7 +24,6 @@ class WindowedNotificationObserver;
 
 namespace extensions {
 class ProcessManager;
-}
 
 // Test helper class for observing extension-related events.
 class ExtensionTestNotificationObserver : public content::NotificationObserver {
@@ -138,5 +137,7 @@ class ExtensionTestNotificationObserver : public content::NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionTestNotificationObserver);
 };
+
+}  // namespace extensions
 
 #endif  // EXTENSIONS_TEST_EXTENSION_TEST_NOTIFICATION_OBSERVER_H_
