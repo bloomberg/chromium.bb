@@ -290,9 +290,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemCreated(item8);
             }
         });
-        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
 
-        // This first check is a Criteria because initialization of the Adapter is asynchronous.
+        // The criteria is needed because an AsyncTask is fired to update the space display, which
+        // can result in either 1 or 2 updates.
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {
@@ -367,9 +368,10 @@ public class DownloadActivityTest extends BaseActivityInstrumentationTestCase<Do
                 mAdapter.onDownloadItemCreated(item8);
             }
         });
-        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount, 2);
 
-        // This first check is a Criteria because initialization of the Adapter is asynchronous.
+        // The criteria is needed because an AsyncTask is fired to update the space display, which
+        // can result in either 1 or 2 updates.
+        mAdapterObserver.onSpaceDisplayUpdatedCallback.waitForCallback(callCount);
         CriteriaHelper.pollUiThread(new Criteria() {
             @Override
             public boolean isSatisfied() {

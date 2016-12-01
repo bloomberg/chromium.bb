@@ -22,6 +22,7 @@ import org.chromium.chrome.R;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.RejectedExecutionException;
 
 /** A View that manages the display of space used by the downloads. */
 public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
@@ -108,6 +109,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
     private TextView mSpaceUsedByOtherAppsTextView;
     private TextView mSpaceFreeTextView;
     private ProgressBar mSpaceBar;
+    private long mFreeBytes;
 
     SpaceDisplay(final ViewGroup parent, DownloadHistoryAdapter historyAdapter) {
         mHistoryAdapter = historyAdapter;
@@ -131,13 +133,22 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
         }
 
         // Determine how much space is free now, then update the display.
-        mFreeBytesTask = new StorageSizeTask(false) {
-            @Override
-            protected void onPostExecute(Long bytes) {
-                update();
+        if (mFreeBytesTask == null) {
+            mFreeBytesTask = new StorageSizeTask(false) {
+                @Override
+                protected void onPostExecute(Long bytes) {
+                    mFreeBytes = bytes.longValue();
+                    mFreeBytesTask = null;
+                    update();
+                }
+            };
+
+            try {
+                mFreeBytesTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+            } catch (RejectedExecutionException e) {
+                mFreeBytesTask = null;
             }
-        };
-        mFreeBytesTask.executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR);
+        }
     }
 
     @VisibleForTesting
@@ -147,17 +158,15 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
 
     private void update() {
         long fileSystemBytes = 0;
-        long freeBytes = 0;
 
         try {
             fileSystemBytes = mFileSystemBytesTask.get();
-            freeBytes = mFreeBytesTask.get();
         } catch (ExecutionException | InterruptedException e) {
             // Can't do anything here.
         }
 
         // Indicate how much space has been used by everything on the device via the progress bar.
-        long bytesUsedTotal = Math.max(0, fileSystemBytes - freeBytes);
+        long bytesUsedTotal = Math.max(0, fileSystemBytes - mFreeBytes);
         long bytesUsedByDownloads = Math.max(0, mHistoryAdapter.getTotalDownloadSize());
         long bytesUsedByOtherApps = Math.max(0, bytesUsedTotal - bytesUsedByDownloads);
 
@@ -166,7 +175,7 @@ public class SpaceDisplay extends RecyclerView.AdapterDataObserver {
                 getStringForBytes(USED_STRINGS, bytesUsedByDownloads));
         mSpaceUsedByOtherAppsTextView.setText(
                 getStringForBytes(OTHER_STRINGS, bytesUsedByOtherApps));
-        mSpaceFreeTextView.setText(getStringForBytes(FREE_STRINGS, freeBytes));
+        mSpaceFreeTextView.setText(getStringForBytes(FREE_STRINGS, mFreeBytes));
 
         // Set a minimum size for the download size so that it shows up in the progress bar.
         long onePercentOfSystem = fileSystemBytes == 0 ? 0 : fileSystemBytes / 100;
