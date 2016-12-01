@@ -488,11 +488,14 @@ void LockStateController::PreLockAnimationFinished(bool request_lock) {
       base::TimeDelta::FromMilliseconds(kLockFailTimeoutMs);
 #if defined(OS_CHROMEOS)
   // Increase lock timeout for slower hardware, see http://crbug.com/350628
-  const std::string board = base::SysInfo::GetLsbReleaseBoard();
-  if (board == "x86-mario" ||
+  // The devices with boards "x86-mario", "daisy", "x86-alex" and "x86-zgb" have
+  // slower hardware. For "x86-alex" and "x86-zgb" there are some modifications
+  // like "x86-alex-he". Also there's "daisy", "daisy_spring" and "daisy_skate",
+  // but they are all different devices and only "daisy" has slower hardware.
+  const std::string board = base::SysInfo::GetStrippedReleaseBoard();
+  if (board == "x86-mario" || board == "daisy" ||
       base::StartsWith(board, "x86-alex", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(board, "x86-zgb", base::CompareCase::SENSITIVE) ||
-      base::StartsWith(board, "daisy", base::CompareCase::SENSITIVE)) {
+      base::StartsWith(board, "x86-zgb", base::CompareCase::SENSITIVE)) {
     timeout *= 2;
   }
 #endif
