@@ -96,7 +96,6 @@ static std::string GetStringTextureSizedColorRenderableInternalFormat(
     uint32_t value);
 static std::string GetStringTextureSizedTextureFilterableInternalFormat(
     uint32_t value);
-static std::string GetStringTextureSrgbDecodeExt(uint32_t value);
 static std::string GetStringTextureStencilRenderableInternalFormat(
     uint32_t value);
 static std::string GetStringTextureSwizzle(uint32_t value);

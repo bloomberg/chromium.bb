@@ -4828,15 +4828,6 @@ std::string GLES2Util::GetStringTextureSizedTextureFilterableInternalFormat(
                                            arraysize(string_table), value);
 }
 
-std::string GLES2Util::GetStringTextureSrgbDecodeExt(uint32_t value) {
-  static const EnumToString string_table[] = {
-      {GL_DECODE_EXT, "GL_DECODE_EXT"},
-      {GL_SKIP_DECODE_EXT, "GL_SKIP_DECODE_EXT"},
-  };
-  return GLES2Util::GetQualifiedEnumString(string_table,
-                                           arraysize(string_table), value);
-}
-
 std::string GLES2Util::GetStringTextureStencilRenderableInternalFormat(
     uint32_t value) {
   static const EnumToString string_table[] = {

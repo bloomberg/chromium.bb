@@ -1353,11 +1353,6 @@ GLenum Texture::SetParameteri(
       }
       swizzle_a_ = param;
       break;
-    case GL_TEXTURE_SRGB_DECODE_EXT:
-      if (!feature_info->validators()->texture_srgb_decode_ext.IsValid(param)) {
-        return GL_INVALID_ENUM;
-      }
-      break;
     case GL_TEXTURE_IMMUTABLE_FORMAT:
     case GL_TEXTURE_IMMUTABLE_LEVELS:
       return GL_INVALID_ENUM;
