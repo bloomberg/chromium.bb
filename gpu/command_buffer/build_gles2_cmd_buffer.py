@@ -1539,6 +1539,14 @@ _NAMED_TYPE_INFO = {
       'GL_COMPARE_REF_TO_TEXTURE',
     ],
   },
+  'TextureSrgbDecodeExt': {
+    'type': 'GLenum',
+    'is_complete': True,
+    'valid': [
+      'GL_DECODE_EXT',
+      'GL_SKIP_DECODE_EXT',
+    ],
+  },
   'TextureSwizzle': {
     'type': 'GLenum',
     'is_complete': True,

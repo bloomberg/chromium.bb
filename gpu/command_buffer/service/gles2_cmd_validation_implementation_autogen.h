@@ -1216,6 +1216,16 @@ static const GLenum
         GL_RGB_YCBCR_420V_CHROMIUM,
 };
 
+bool Validators::TextureSrgbDecodeExtValidator::IsValid(
+    const GLenum value) const {
+  switch (value) {
+    case GL_DECODE_EXT:
+    case GL_SKIP_DECODE_EXT:
+      return true;
+  }
+  return false;
+};
+
 static const GLenum
     valid_texture_stencil_renderable_internal_format_table_es3[] = {
         GL_STENCIL_INDEX8, GL_DEPTH24_STENCIL8, GL_DEPTH32F_STENCIL8,
