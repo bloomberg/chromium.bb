@@ -59,17 +59,18 @@ class CONTENT_EXPORT ServiceWorkerContextCore
     : NON_EXPORTED_BASE(public ServiceWorkerVersion::Listener) {
  public:
   using BoolCallback = base::Callback<void(bool)>;
-  typedef base::Callback<void(ServiceWorkerStatusCode status)> StatusCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const std::string& status_message,
-                              int64_t registration_id)> RegistrationCallback;
-  typedef base::Callback<void(ServiceWorkerStatusCode status,
-                              const std::string& status_message,
-                              int64_t registration_id)> UpdateCallback;
-  typedef base::Callback<
-      void(ServiceWorkerStatusCode status)> UnregistrationCallback;
-  typedef IDMap<ServiceWorkerProviderHost, IDMapOwnPointer> ProviderMap;
-  typedef IDMap<ProviderMap, IDMapOwnPointer> ProcessToProviderMap;
+  using StatusCallback = base::Callback<void(ServiceWorkerStatusCode status)>;
+  using RegistrationCallback =
+      base::Callback<void(ServiceWorkerStatusCode status,
+                          const std::string& status_message,
+                          int64_t registration_id)>;
+  using UpdateCallback = base::Callback<void(ServiceWorkerStatusCode status,
+                                             const std::string& status_message,
+                                             int64_t registration_id)>;
+  using UnregistrationCallback =
+      base::Callback<void(ServiceWorkerStatusCode status)>;
+  using ProviderMap = IDMap<std::unique_ptr<ServiceWorkerProviderHost>>;
+  using ProcessToProviderMap = IDMap<std::unique_ptr<ProviderMap>>;
 
   using ProviderByClientUUIDMap =
       std::map<std::string, ServiceWorkerProviderHost*>;

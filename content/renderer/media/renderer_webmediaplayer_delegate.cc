@@ -115,7 +115,7 @@ bool RendererWebMediaPlayerDelegate::IsPlayingBackgroundVideo() {
 }
 
 void RendererWebMediaPlayerDelegate::WasHidden() {
-  for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnHidden();
 
   RecordAction(base::UserMetricsAction("Media.Hidden"));
@@ -123,7 +123,7 @@ void RendererWebMediaPlayerDelegate::WasHidden() {
 
 void RendererWebMediaPlayerDelegate::WasShown() {
   SetIsPlayingBackgroundVideo(false);
-  for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnShown();
 
   RecordAction(base::UserMetricsAction("Media.Shown"));
@@ -177,7 +177,7 @@ void RendererWebMediaPlayerDelegate::OnMediaDelegatePlay(int delegate_id) {
 }
 
 void RendererWebMediaPlayerDelegate::OnMediaDelegateSuspendAllMediaPlayers() {
-  for (IDMap<Observer>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
+  for (IDMap<Observer*>::iterator it(&id_map_); !it.IsAtEnd(); it.Advance())
     it.GetCurrentValue()->OnSuspendRequested(true);
 }
 

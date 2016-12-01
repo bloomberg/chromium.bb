@@ -156,9 +156,9 @@ class MockRenderProcessHost : public RenderProcessHost {
   BrowserContext* browser_context_;
   base::ObserverList<RenderProcessHostObserver> observers_;
 
-  IDMap<RenderWidgetHost> render_widget_hosts_;
+  IDMap<RenderWidgetHost*> render_widget_hosts_;
   int prev_routing_id_;
-  IDMap<IPC::Listener> listeners_;
+  IDMap<IPC::Listener*> listeners_;
   bool fast_shutdown_started_;
   bool deletion_callback_called_;
   bool is_for_guests_only_;

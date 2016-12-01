@@ -136,7 +136,7 @@ class NetworkingPrivateServiceClient
 
     ServiceCallbacksID id;
   };
-  typedef IDMap<ServiceCallbacks, IDMapOwnPointer> ServiceCallbacksMap;
+  using ServiceCallbacksMap = IDMap<std::unique_ptr<ServiceCallbacks>>;
 
   ~NetworkingPrivateServiceClient() override;
 

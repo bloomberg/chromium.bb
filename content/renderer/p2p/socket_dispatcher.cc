@@ -27,7 +27,7 @@ P2PSocketDispatcher::P2PSocketDispatcher(
 
 P2PSocketDispatcher::~P2PSocketDispatcher() {
   network_list_observers_->AssertEmpty();
-  for (IDMap<P2PSocketClientImpl>::iterator i(&clients_); !i.IsAtEnd();
+  for (IDMap<P2PSocketClientImpl*>::iterator i(&clients_); !i.IsAtEnd();
        i.Advance()) {
     i.GetCurrentValue()->Detach();
   }

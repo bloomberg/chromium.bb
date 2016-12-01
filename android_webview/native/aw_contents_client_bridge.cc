@@ -73,7 +73,7 @@ AwContentsClientBridge::~AwContentsClientBridge() {
     Java_AwContentsClientBridge_setNativeContentsClientBridge(env, obj, 0);
   }
 
-  for (IDMap<content::ClientCertificateDelegate>::iterator iter(
+  for (IDMap<content::ClientCertificateDelegate*>::iterator iter(
            &pending_client_cert_request_delegates_);
        !iter.IsAtEnd(); iter.Advance()) {
     delete iter.GetCurrentValue();

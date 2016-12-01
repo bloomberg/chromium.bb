@@ -68,7 +68,7 @@ class CONTENT_EXPORT ScreenOrientationDispatcher :
   // pointer in the sense that it will destroy it when Remove() will be called.
   // Furthermore, we only expect to have one callback at a time in this map,
   // which is what IDMap was designed for.
-  typedef IDMap<blink::WebLockOrientationCallback, IDMapOwnPointer> CallbackMap;
+  using CallbackMap = IDMap<std::unique_ptr<blink::WebLockOrientationCallback>>;
   CallbackMap pending_callbacks_;
 
   ScreenOrientationAssociatedPtr screen_orientation_;

@@ -73,7 +73,7 @@ class PushMessagingDispatcher : public RenderFrameObserver,
   void OnSubscribeFromDocumentError(int32_t request_id,
                                     PushRegistrationStatus status);
 
-  IDMap<blink::WebPushSubscriptionCallbacks, IDMapOwnPointer>
+  IDMap<std::unique_ptr<blink::WebPushSubscriptionCallbacks>>
       subscription_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(PushMessagingDispatcher);

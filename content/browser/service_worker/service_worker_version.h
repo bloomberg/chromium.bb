@@ -745,7 +745,7 @@ class CONTENT_EXPORT ServiceWorkerVersion
 
   // Holds in-flight requests, including requests due to outstanding push,
   // fetch, sync, etc. events.
-  IDMap<PendingRequest, IDMapOwnPointer> pending_requests_;
+  IDMap<std::unique_ptr<PendingRequest>> pending_requests_;
 
   // Container for pending external requests for this service worker.
   // (key, value): (request uuid, request id).

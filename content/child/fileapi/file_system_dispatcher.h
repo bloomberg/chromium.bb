@@ -147,7 +147,7 @@ class FileSystemDispatcher : public IPC::Listener {
   void OnDidFail(int request_id, base::File::Error error_code);
   void OnDidWrite(int request_id, int64_t bytes, bool complete);
 
-  IDMap<CallbackDispatcher, IDMapOwnPointer> dispatchers_;
+  IDMap<std::unique_ptr<CallbackDispatcher>> dispatchers_;
 
   DISALLOW_COPY_AND_ASSIGN(FileSystemDispatcher);
 };

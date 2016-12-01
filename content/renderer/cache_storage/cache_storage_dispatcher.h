@@ -166,26 +166,25 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
  private:
   class WebCache;
 
-  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks,
-                IDMapOwnPointer> CallbacksMap;
-  typedef IDMap<
-      blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks,
-      IDMapOwnPointer> WithCacheCallbacksMap;
-  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks,
-                IDMapOwnPointer> KeysCallbacksMap;
-  typedef IDMap<blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks,
-                IDMapOwnPointer> StorageMatchCallbacksMap;
+  using CallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCacheStorage::CacheStorageCallbacks>>;
+  using WithCacheCallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCacheStorage::CacheStorageWithCacheCallbacks>>;
+  using KeysCallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCacheStorage::CacheStorageKeysCallbacks>>;
+  using StorageMatchCallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCacheStorage::CacheStorageMatchCallbacks>>;
 
-  typedef base::hash_map<int32_t, base::TimeTicks> TimeMap;
+  using TimeMap = base::hash_map<int32_t, base::TimeTicks>;
 
-  typedef IDMap<blink::WebServiceWorkerCache::CacheMatchCallbacks,
-                IDMapOwnPointer> MatchCallbacksMap;
-  typedef IDMap<blink::WebServiceWorkerCache::CacheWithResponsesCallbacks,
-                IDMapOwnPointer> WithResponsesCallbacksMap;
-  typedef IDMap<blink::WebServiceWorkerCache::CacheWithRequestsCallbacks,
-                IDMapOwnPointer> WithRequestsCallbacksMap;
+  using MatchCallbacksMap =
+      IDMap<std::unique_ptr<blink::WebServiceWorkerCache::CacheMatchCallbacks>>;
+  using WithResponsesCallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCache::CacheWithResponsesCallbacks>>;
+  using WithRequestsCallbacksMap = IDMap<std::unique_ptr<
+      blink::WebServiceWorkerCache::CacheWithRequestsCallbacks>>;
   using BatchCallbacksMap =
-      IDMap<blink::WebServiceWorkerCache::CacheBatchCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebServiceWorkerCache::CacheBatchCallbacks>>;
 
   static int32_t CurrentWorkerId() { return WorkerThread::GetCurrentId(); }
 
@@ -211,7 +210,7 @@ class CacheStorageDispatcher : public WorkerThread::Observer {
   TimeMap match_times_;
 
   // The individual caches created under this CacheStorage object.
-  IDMap<WebCache, IDMapExternalPointer> web_caches_;
+  IDMap<WebCache*> web_caches_;
 
   // These ID maps are held in the CacheStorage object rather than the Cache
   // object to ensure that the IDs are unique.

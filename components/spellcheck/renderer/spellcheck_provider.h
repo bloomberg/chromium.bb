@@ -35,7 +35,7 @@ class SpellCheckProvider
       public content::RenderViewObserverTracker<SpellCheckProvider>,
       public blink::WebSpellCheckClient {
  public:
-  typedef IDMap<blink::WebTextCheckingCompletion> WebTextCheckCompletions;
+  using WebTextCheckCompletions = IDMap<blink::WebTextCheckingCompletion*>;
 
   SpellCheckProvider(content::RenderView* render_view,
                      SpellCheck* spellcheck);

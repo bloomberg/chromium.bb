@@ -382,7 +382,7 @@ class JobScheduler
   std::unique_ptr<JobQueue> queue_[NUM_QUEUES];
 
   // The list of queued job info indexed by job IDs.
-  typedef IDMap<JobEntry, IDMapOwnPointer> JobIDMap;
+  using JobIDMap = IDMap<std::unique_ptr<JobEntry>>;
   JobIDMap job_map_;
 
   // The list of observers for the scheduler.

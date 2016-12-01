@@ -34,7 +34,7 @@ const char* const kEventNames[] = {
   "UpdateReady", "Cached", "Obsolete"
 };
 
-typedef IDMap<WebApplicationCacheHostImpl> HostsMap;
+using HostsMap = IDMap<WebApplicationCacheHostImpl*>;
 
 HostsMap* all_hosts() {
   static HostsMap* map = new HostsMap;

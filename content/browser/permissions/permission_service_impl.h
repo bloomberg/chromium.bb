@@ -55,7 +55,7 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
     RequestPermissionsCallback callback;
     int request_count;
   };
-  using RequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
+  using RequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
 
   struct PendingSubscription {
     PendingSubscription(PermissionType permission,
@@ -69,7 +69,7 @@ class PermissionServiceImpl : public blink::mojom::PermissionService {
     url::Origin origin;
     PermissionStatusCallback callback;
   };
-  using SubscriptionsMap = IDMap<PendingSubscription, IDMapOwnPointer>;
+  using SubscriptionsMap = IDMap<std::unique_ptr<PendingSubscription>>;
 
   // blink::mojom::PermissionService.
   void HasPermission(blink::mojom::PermissionDescriptorPtr permission,

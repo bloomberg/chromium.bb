@@ -146,8 +146,8 @@ FileSystemDispatcher::FileSystemDispatcher() {
 
 FileSystemDispatcher::~FileSystemDispatcher() {
   // Make sure we fire all the remaining callbacks.
-  for (IDMap<CallbackDispatcher, IDMapOwnPointer>::iterator
-           iter(&dispatchers_); !iter.IsAtEnd(); iter.Advance()) {
+  for (IDMap<std::unique_ptr<CallbackDispatcher>>::iterator iter(&dispatchers_);
+       !iter.IsAtEnd(); iter.Advance()) {
     int request_id = iter.GetCurrentKey();
     CallbackDispatcher* dispatcher = iter.GetCurrentValue();
     DCHECK(dispatcher);

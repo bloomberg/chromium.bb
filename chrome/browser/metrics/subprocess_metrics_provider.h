@@ -98,7 +98,7 @@ class SubprocessMetricsProvider : public metrics::MetricsProvider,
 
   // All of the shared-persistent-allocators for known sub-processes.
   using AllocatorByIdMap =
-      IDMap<base::PersistentHistogramAllocator, IDMapOwnPointer, int>;
+      IDMap<std::unique_ptr<base::PersistentHistogramAllocator>, int>;
   AllocatorByIdMap allocators_by_id_;
 
   // Track all observed render processes to un-observe them on exit.

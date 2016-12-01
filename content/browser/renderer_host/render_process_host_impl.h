@@ -432,7 +432,7 @@ class CONTENT_EXPORT RenderProcessHostImpl
 
   // The registered IPC listener objects. When this list is empty, we should
   // delete ourselves.
-  IDMap<IPC::Listener> listeners_;
+  IDMap<IPC::Listener*> listeners_;
 
   mojo::AssociatedBinding<mojom::RouteProvider> route_provider_binding_;
   mojo::AssociatedBindingSet<mojom::AssociatedInterfaceProvider>

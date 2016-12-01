@@ -64,7 +64,7 @@ class IPC_EXPORT MessageRouter : public Listener, public Sender {
 
  private:
   // A list of all listeners with assigned routing IDs.
-  IDMap<Listener> routes_;
+  IDMap<Listener*> routes_;
 
   DISALLOW_COPY_AND_ASSIGN(MessageRouter);
 };

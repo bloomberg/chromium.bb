@@ -67,12 +67,12 @@ class ServiceProcessControl : public IPC::Sender,
     SERVICE_EVENT_MAX,
   };
 
-  typedef IDMap<ServiceProcessControl>::iterator iterator;
-  typedef std::queue<IPC::Message> MessageQueue;
-  typedef base::Callback<void(const cloud_print::CloudPrintProxyInfo&)>
-      CloudPrintProxyInfoCallback;
-  typedef base::Callback<void(const std::vector<std::string>&)>
-      PrintersCallback;
+  using iterator = IDMap<ServiceProcessControl*>::iterator;
+  using MessageQueue = std::queue<IPC::Message>;
+  using CloudPrintProxyInfoCallback =
+      base::Callback<void(const cloud_print::CloudPrintProxyInfo&)>;
+  using PrintersCallback =
+      base::Callback<void(const std::vector<std::string>&)>;
 
   // Returns the singleton instance of this class.
   static ServiceProcessControl* GetInstance();

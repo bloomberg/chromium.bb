@@ -158,7 +158,7 @@ class CONTENT_EXPORT PresentationDispatcher
   };
 
   using AvailabilityCallbacksMap =
-      IDMap<blink::WebPresentationAvailabilityCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebPresentationAvailabilityCallbacks>>;
   using AvailabilityObserversSet =
       std::set<blink::WebPresentationAvailabilityObserver*>;
 

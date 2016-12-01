@@ -82,11 +82,11 @@ class NotificationManager : public blink::WebNotificationManager,
   scoped_refptr<NotificationDispatcher> notification_dispatcher_;
 
   // Tracks pending requests for getting a list of notifications.
-  IDMap<blink::WebNotificationGetCallbacks, IDMapOwnPointer>
+  IDMap<std::unique_ptr<blink::WebNotificationGetCallbacks>>
       pending_get_notification_requests_;
 
   // Tracks pending requests for displaying persistent notifications.
-  IDMap<blink::WebNotificationShowCallbacks, IDMapOwnPointer>
+  IDMap<std::unique_ptr<blink::WebNotificationShowCallbacks>>
       pending_show_notification_requests_;
 
   // Structure holding the information for active non-persistent notifications.

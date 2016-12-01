@@ -860,7 +860,7 @@ ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
     : worker_(worker), service_name_(service_name) {}
 
 ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
-  IDMap<PendingRequest, IDMapOwnPointer>::iterator iter(
+  IDMap<std::unique_ptr<PendingRequest>>::iterator iter(
       &worker_->pending_requests_);
   while (!iter.IsAtEnd()) {
     PendingRequest* request = iter.GetCurrentValue();
@@ -1827,7 +1827,7 @@ void ServiceWorkerVersion::OnStoppedInternal(EmbeddedWorkerStatus old_status) {
   // Let all message callbacks fail (this will also fire and clear all
   // callbacks for events).
   // TODO(kinuko): Consider if we want to add queue+resend mechanism here.
-  IDMap<PendingRequest, IDMapOwnPointer>::iterator iter(&pending_requests_);
+  IDMap<std::unique_ptr<PendingRequest>>::iterator iter(&pending_requests_);
   while (!iter.IsAtEnd()) {
     TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
                            iter.GetCurrentValue(), "Error", "Worker Stopped");

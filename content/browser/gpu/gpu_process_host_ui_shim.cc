@@ -40,7 +40,7 @@ namespace {
 #undef DestroyAll
 #endif
 
-base::LazyInstance<IDMap<GpuProcessHostUIShim> > g_hosts_by_id =
+base::LazyInstance<IDMap<GpuProcessHostUIShim*>> g_hosts_by_id =
     LAZY_INSTANCE_INITIALIZER;
 
 void SendOnIOThreadTask(int host_id, IPC::Message* msg) {
@@ -102,7 +102,7 @@ void GpuProcessHostUIShim::Destroy(int host_id, const std::string& message) {
 void GpuProcessHostUIShim::DestroyAll() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   while (!g_hosts_by_id.Pointer()->IsEmpty()) {
-    IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());
+    IDMap<GpuProcessHostUIShim*>::iterator it(g_hosts_by_id.Pointer());
     delete it.GetCurrentValue();
   }
 }
@@ -118,7 +118,7 @@ GpuProcessHostUIShim* GpuProcessHostUIShim::GetOneInstance() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   if (g_hosts_by_id.Pointer()->IsEmpty())
     return NULL;
-  IDMap<GpuProcessHostUIShim>::iterator it(g_hosts_by_id.Pointer());
+  IDMap<GpuProcessHostUIShim*>::iterator it(g_hosts_by_id.Pointer());
   return it.GetCurrentValue();
 }
 

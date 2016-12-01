@@ -77,7 +77,7 @@ class EmbeddedWorkerDispatcher : public IPC::Listener {
   void UnregisterWorker(int embedded_worker_id);
   void RecordStopWorkerTimer(int embedded_worker_id);
 
-  IDMap<WorkerWrapper, IDMapOwnPointer> workers_;
+  IDMap<std::unique_ptr<WorkerWrapper>> workers_;
   std::map<int /* embedded_worker_id */, base::TimeTicks> stop_worker_times_;
   base::WeakPtrFactory<EmbeddedWorkerDispatcher> weak_factory_;
 

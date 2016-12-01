@@ -54,7 +54,7 @@ class CONTENT_EXPORT RenderProcessHost : public IPC::Sender,
                                          public IPC::Listener,
                                          public base::SupportsUserData {
  public:
-  typedef IDMap<RenderProcessHost>::iterator iterator;
+  using iterator = IDMap<RenderProcessHost*>::iterator;
 
   // Details for RENDERER_PROCESS_CLOSED notifications.
   struct RendererClosedDetails {

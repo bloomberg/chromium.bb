@@ -43,7 +43,7 @@ class HeadlessWindowManager {
  private:
   base::FilePath location_;
 
-  IDMap<HeadlessWindow> windows_;
+  IDMap<HeadlessWindow*> windows_;
   base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(HeadlessWindowManager);

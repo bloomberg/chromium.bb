@@ -48,7 +48,7 @@ class ServiceTabLauncher {
   ServiceTabLauncher();
   ~ServiceTabLauncher();
 
-  IDMap<TabLaunchedCallback, IDMapOwnPointer> tab_launched_callbacks_;
+  IDMap<std::unique_ptr<TabLaunchedCallback>> tab_launched_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(ServiceTabLauncher);
 };

@@ -68,7 +68,7 @@ class CastIPCDispatcher : public IPC::MessageFilter {
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_message_loop_|.
-  IDMap<CastTransportIPC> id_map_;
+  IDMap<CastTransportIPC*> id_map_;
   DISALLOW_COPY_AND_ASSIGN(CastIPCDispatcher);
 };
 

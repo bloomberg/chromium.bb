@@ -52,7 +52,7 @@ class QuotaDispatcherHost : public BrowserMessageFilter {
   storage::QuotaManager* quota_manager_;
   scoped_refptr<QuotaPermissionContext> permission_context_;
 
-  IDMap<RequestDispatcher, IDMapOwnPointer> outstanding_requests_;
+  IDMap<std::unique_ptr<RequestDispatcher>> outstanding_requests_;
 
   base::WeakPtrFactory<QuotaDispatcherHost> weak_factory_;
 

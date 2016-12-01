@@ -175,32 +175,32 @@ class CONTENT_EXPORT ServiceWorkerDispatcher : public WorkerThread::Observer {
   }
 
  private:
-  typedef IDMap<WebServiceWorkerRegistrationCallbacks,
-      IDMapOwnPointer> RegistrationCallbackMap;
-  typedef IDMap<WebServiceWorkerUpdateCallbacks, IDMapOwnPointer>
-      UpdateCallbackMap;
-  typedef IDMap<WebServiceWorkerUnregistrationCallbacks,
-      IDMapOwnPointer> UnregistrationCallbackMap;
-  typedef IDMap<WebServiceWorkerGetRegistrationCallbacks,
-      IDMapOwnPointer> GetRegistrationCallbackMap;
-  typedef IDMap<WebServiceWorkerGetRegistrationsCallbacks,
-      IDMapOwnPointer> GetRegistrationsCallbackMap;
-  typedef IDMap<WebServiceWorkerGetRegistrationForReadyCallbacks,
-      IDMapOwnPointer> GetRegistrationForReadyCallbackMap;
+  using RegistrationCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerRegistrationCallbacks>>;
+  using UpdateCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerUpdateCallbacks>>;
+  using UnregistrationCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerUnregistrationCallbacks>>;
+  using GetRegistrationCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerGetRegistrationCallbacks>>;
+  using GetRegistrationsCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerGetRegistrationsCallbacks>>;
+  using GetRegistrationForReadyCallbackMap =
+      IDMap<std::unique_ptr<WebServiceWorkerGetRegistrationForReadyCallbacks>>;
   using EnableNavigationPreloadCallbackMap =
-      IDMap<WebEnableNavigationPreloadCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<WebEnableNavigationPreloadCallbacks>>;
   using GetNavigationPreloadStateCallbackMap =
-      IDMap<WebGetNavigationPreloadStateCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<WebGetNavigationPreloadStateCallbacks>>;
   using SetNavigationPreloadHeaderCallbackMap =
-      IDMap<WebSetNavigationPreloadHeaderCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<WebSetNavigationPreloadHeaderCallbacks>>;
 
-  typedef std::map<int, blink::WebServiceWorkerProviderClient*>
-      ProviderClientMap;
-  typedef std::map<int, ServiceWorkerProviderContext*> ProviderContextMap;
-  typedef std::map<int, ServiceWorkerProviderContext*> WorkerToProviderMap;
-  typedef std::map<int, WebServiceWorkerImpl*> WorkerObjectMap;
-  typedef std::map<int, WebServiceWorkerRegistrationImpl*>
-      RegistrationObjectMap;
+  using ProviderClientMap =
+      std::map<int, blink::WebServiceWorkerProviderClient*>;
+  using ProviderContextMap = std::map<int, ServiceWorkerProviderContext*>;
+  using WorkerToProviderMap = std::map<int, ServiceWorkerProviderContext*>;
+  using WorkerObjectMap = std::map<int, WebServiceWorkerImpl*>;
+  using RegistrationObjectMap =
+      std::map<int, WebServiceWorkerRegistrationImpl*>;
 
   friend class ServiceWorkerDispatcherTest;
   friend class WebServiceWorkerImpl;

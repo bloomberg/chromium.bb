@@ -84,7 +84,7 @@ class LayoutTestPermissionManager : public PermissionManager {
   };
 
   struct Subscription;
-  using SubscriptionsMap = IDMap<Subscription, IDMapOwnPointer>;
+  using SubscriptionsMap = IDMap<std::unique_ptr<Subscription>>;
   using PermissionsMap = base::hash_map<PermissionDescription,
                                         blink::mojom::PermissionStatus,
                                         PermissionDescription::Hash>;

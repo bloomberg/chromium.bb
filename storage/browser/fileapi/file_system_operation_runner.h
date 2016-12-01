@@ -307,8 +307,8 @@ class STORAGE_EXPORT FileSystemOperationRunner
   // Not owned; file_system_context owns this.
   FileSystemContext* file_system_context_;
 
-  // IDMap<FileSystemOperation, IDMapOwnPointer> operations_;
-  IDMap<FileSystemOperation, IDMapOwnPointer> operations_;
+  // IDMap<std::unique_ptr<FileSystemOperation>> operations_;
+  IDMap<std::unique_ptr<FileSystemOperation>> operations_;
 
   // We keep track of the file to be modified by each operation so that
   // we can notify observers when we're done.

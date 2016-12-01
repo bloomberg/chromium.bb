@@ -84,7 +84,7 @@ class CONTENT_EXPORT AudioInputMessageFilter : public IPC::MessageFilter {
                             media::AudioInputIPCDelegateState state);
 
   // A map of stream ids to delegates.
-  IDMap<media::AudioInputIPCDelegate> delegates_;
+  IDMap<media::AudioInputIPCDelegate*> delegates_;
 
   // IPC sender for Send(), must only be accesed on |io_task_runner_|.
   IPC::Sender* sender_;

@@ -92,7 +92,7 @@ class CONTENT_EXPORT AudioMessageFilter : public IPC::MessageFilter {
 
   // A map of stream ids to delegates; must only be accessed on
   // |io_task_runner_|.
-  IDMap<media::AudioOutputIPCDelegate> delegates_;
+  IDMap<media::AudioOutputIPCDelegate*> delegates_;
 
   // Task runner on which IPC calls are executed.
   const scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;

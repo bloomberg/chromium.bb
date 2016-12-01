@@ -84,7 +84,7 @@ class QuotaDispatcher : public WorkerThread::Observer {
                             int64_t granted_quota);
   void DidFail(int request_id, storage::QuotaStatusCode error);
 
-  IDMap<Callback, IDMapOwnPointer> pending_quota_callbacks_;
+  IDMap<std::unique_ptr<Callback>> pending_quota_callbacks_;
 
   scoped_refptr<ThreadSafeSender> thread_safe_sender_;
   scoped_refptr<QuotaMessageFilter> quota_message_filter_;

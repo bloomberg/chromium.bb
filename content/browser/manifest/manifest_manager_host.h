@@ -39,7 +39,7 @@ class ManifestManagerHost : public WebContentsObserver {
   void RenderFrameDeleted(RenderFrameHost*) override;
 
  private:
-  using GetCallbackMap = IDMap<GetManifestCallback, IDMapOwnPointer>;
+  using GetCallbackMap = IDMap<std::unique_ptr<GetManifestCallback>>;
 
   void OnRequestManifestResponse(
       RenderFrameHost*, int request_id, const GURL&, const Manifest&);

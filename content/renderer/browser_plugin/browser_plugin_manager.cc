@@ -49,7 +49,7 @@ int BrowserPluginManager::GetNextInstanceID() {
 }
 
 void BrowserPluginManager::UpdateFocusState() {
-  IDMap<BrowserPlugin>::iterator iter(&instances_);
+  IDMap<BrowserPlugin*>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
     iter.GetCurrentValue()->UpdateGuestFocusState(blink::WebFocusTypeNone);
     iter.Advance();
@@ -76,7 +76,7 @@ BrowserPlugin* BrowserPluginManager::CreateBrowserPlugin(
 
 void BrowserPluginManager::DidCommitCompositorFrame(
     int render_frame_routing_id) {
-  IDMap<BrowserPlugin>::iterator iter(&instances_);
+  IDMap<BrowserPlugin*>::iterator iter(&instances_);
   while (!iter.IsAtEnd()) {
     if (iter.GetCurrentValue()->render_frame_routing_id() ==
         render_frame_routing_id) {

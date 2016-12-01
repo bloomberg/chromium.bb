@@ -55,8 +55,8 @@ class CookiesTreeModelUtil {
                                              const base::string16& title);
 
  private:
-  typedef IDMap<const CookieTreeNode> CookiesTreeNodeIdMap;
-  typedef std::map<const CookieTreeNode*, int32_t> CookieTreeNodeMap;
+  using CookiesTreeNodeIdMap = IDMap<const CookieTreeNode*>;
+  using CookieTreeNodeMap = std::map<const CookieTreeNode*, int32_t>;
 
   // Populate given |dict| with cookie tree node properties. |id_map| maps
   // a CookieTreeNode to an ID and creates a new ID if |node| is not in the

@@ -112,9 +112,9 @@ class CONTENT_EXPORT P2PSocketDispatcher : public IPC::MessageFilter,
   P2PSocketClientImpl* GetClient(int socket_id);
 
   scoped_refptr<base::SingleThreadTaskRunner> ipc_task_runner_;
-  IDMap<P2PSocketClientImpl> clients_;
+  IDMap<P2PSocketClientImpl*> clients_;
 
-  IDMap<P2PAsyncAddressResolver> host_address_requests_;
+  IDMap<P2PAsyncAddressResolver*> host_address_requests_;
 
   bool network_notifications_started_;
   scoped_refptr<base::ObserverListThreadSafe<NetworkListObserver>>

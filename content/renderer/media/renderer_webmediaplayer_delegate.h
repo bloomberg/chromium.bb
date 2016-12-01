@@ -91,7 +91,7 @@ class CONTENT_EXPORT RendererWebMediaPlayerDelegate
   void SetIsPlayingBackgroundVideo(bool is_playing);
 
   bool has_played_media_ = false;
-  IDMap<Observer> id_map_;
+  IDMap<Observer*> id_map_;
 
   // Tracks which delegates have entered an idle state. After some period of
   // inactivity these players will be suspended to release unused resources.

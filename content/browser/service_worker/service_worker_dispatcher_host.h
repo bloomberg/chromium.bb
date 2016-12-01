@@ -275,10 +275,10 @@ class CONTENT_EXPORT ServiceWorkerDispatcherHost
   ResourceContext* resource_context_;
   scoped_refptr<ServiceWorkerContextWrapper> context_wrapper_;
 
-  IDMap<ServiceWorkerHandle, IDMapOwnPointer> handles_;
+  IDMap<std::unique_ptr<ServiceWorkerHandle>> handles_;
 
   using RegistrationHandleMap =
-      IDMap<ServiceWorkerRegistrationHandle, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<ServiceWorkerRegistrationHandle>>;
   RegistrationHandleMap registration_handles_;
 
   bool channel_ready_;  // True after BrowserMessageFilter::sender_ != NULL.

@@ -171,18 +171,17 @@ ToWebServiceWorkerClientInfo(const ServiceWorkerClientInfo& client_info) {
 // worker thread.
 struct ServiceWorkerContextClient::WorkerContextData {
   using ClientsCallbacksMap =
-      IDMap<blink::WebServiceWorkerClientsCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebServiceWorkerClientsCallbacks>>;
   using ClaimClientsCallbacksMap =
-      IDMap<blink::WebServiceWorkerClientsClaimCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebServiceWorkerClientsClaimCallbacks>>;
   using ClientCallbacksMap =
-      IDMap<blink::WebServiceWorkerClientCallbacks, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebServiceWorkerClientCallbacks>>;
   using SkipWaitingCallbacksMap =
-      IDMap<blink::WebServiceWorkerSkipWaitingCallbacks, IDMapOwnPointer>;
-  using SyncEventCallbacksMap = IDMap<const SyncCallback, IDMapOwnPointer>;
-  using FetchEventCallbacksMap = IDMap<const FetchCallback, IDMapOwnPointer>;
-  using NavigationPreloadRequestsMap =
-      IDMap<ServiceWorkerContextClient::NavigationPreloadRequest,
-            IDMapOwnPointer>;
+      IDMap<std::unique_ptr<blink::WebServiceWorkerSkipWaitingCallbacks>>;
+  using SyncEventCallbacksMap = IDMap<std::unique_ptr<const SyncCallback>>;
+  using FetchEventCallbacksMap = IDMap<std::unique_ptr<const FetchCallback>>;
+  using NavigationPreloadRequestsMap = IDMap<
+      std::unique_ptr<ServiceWorkerContextClient::NavigationPreloadRequest>>;
 
   explicit WorkerContextData(ServiceWorkerContextClient* owner)
       : event_dispatcher_binding(owner),

@@ -95,12 +95,12 @@ class AwContentsClientBridge : public AwContentsClientBridgeBase {
 
   typedef const base::Callback<void(content::CertificateRequestResultType)>
       CertErrorCallback;
-  IDMap<CertErrorCallback, IDMapOwnPointer> pending_cert_error_callbacks_;
-  IDMap<content::JavaScriptDialogManager::DialogClosedCallback, IDMapOwnPointer>
+  IDMap<std::unique_ptr<CertErrorCallback>> pending_cert_error_callbacks_;
+  IDMap<std::unique_ptr<content::JavaScriptDialogManager::DialogClosedCallback>>
       pending_js_dialog_callbacks_;
   // |pending_client_cert_request_delegates_| owns its pointers, but IDMap
   // doesn't provide Release, so ownership is managed manually.
-  IDMap<content::ClientCertificateDelegate>
+  IDMap<content::ClientCertificateDelegate*>
       pending_client_cert_request_delegates_;
 };
 

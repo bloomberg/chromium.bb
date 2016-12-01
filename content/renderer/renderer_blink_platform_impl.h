@@ -290,7 +290,7 @@ class CONTENT_EXPORT RendererBlinkPlatformImpl : public BlinkPlatformImpl {
 
   std::unique_ptr<blink::WebScrollbarBehavior> web_scrollbar_behavior_;
 
-  IDMap<PlatformEventObserverBase, IDMapOwnPointer> platform_event_observers_;
+  IDMap<std::unique_ptr<PlatformEventObserverBase>> platform_event_observers_;
 
   blink::scheduler::RendererScheduler* renderer_scheduler_;  // NOT OWNED
   TopLevelBlameContext top_level_blame_context_;

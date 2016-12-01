@@ -116,7 +116,7 @@ class CoreTabHelper : public content::WebContentsObserver,
   // (full-page plugins for now only) permissions.
   int content_restrictions_;
 
-  IDMap<ContextNodeThumbnailCallback, IDMapOwnPointer> thumbnail_callbacks_;
+  IDMap<std::unique_ptr<ContextNodeThumbnailCallback>> thumbnail_callbacks_;
 
   DISALLOW_COPY_AND_ASSIGN(CoreTabHelper);
 };

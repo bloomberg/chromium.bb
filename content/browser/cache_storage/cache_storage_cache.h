@@ -185,7 +185,7 @@ class CONTENT_EXPORT CacheStorageCache {
   using Entries = std::vector<disk_cache::Entry*>;
   using ScopedBackendPtr = std::unique_ptr<disk_cache::Backend>;
   using BlobToDiskCacheIDMap =
-      IDMap<CacheStorageBlobToDiskCache, IDMapOwnPointer>;
+      IDMap<std::unique_ptr<CacheStorageBlobToDiskCache>>;
   using OpenAllEntriesCallback =
       base::Callback<void(std::unique_ptr<OpenAllEntriesContext>,
                           CacheStorageError)>;

@@ -63,7 +63,7 @@ class AwPermissionManager : public content::PermissionManager {
 
  private:
   class PendingRequest;
-  using PendingRequestsMap = IDMap<PendingRequest, IDMapOwnPointer>;
+  using PendingRequestsMap = IDMap<std::unique_ptr<PendingRequest>>;
 
   virtual int GetRenderProcessID(content::RenderFrameHost* render_frame_host);
   virtual int GetRenderFrameID(content::RenderFrameHost* render_frame_host);

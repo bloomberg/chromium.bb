@@ -17,18 +17,6 @@
 #include "base/macros.h"
 #include "base/sequence_checker.h"
 
-// Ownership semantics:
-// - OwnPointer means we store a unique_ptr that owns the object (so the
-//   object is deleted in Remove() and during destruction).
-// - ExternalPointer means we store a raw pointer and don't own the object
-
-// TODO (http://crbug.com/647091): eliminate this enum, replace OwnPointer
-// mode in callsites with IDMap<unique_ptr<T>>
-enum IDMapOwnershipSemantics {
-  IDMapExternalPointer,
-  IDMapOwnPointer
-};
-
 // This object maintains a list of IDs that can be quickly converted to
 // pointers to objects. It is implemented as a hash table, optimized for
 // relatively small data sets (in the common case, there will be exactly one
@@ -37,19 +25,16 @@ enum IDMapOwnershipSemantics {
 // Items can be inserted into the container with arbitrary ID, but the caller
 // must ensure they are unique. Inserting IDs and relying on automatically
 // generated ones is not allowed because they can collide.
-//
-// This class does not have a virtual destructor, do not inherit from it when
-// ownership semantics are set to own because pointers will leak.
-template <typename T,
-          IDMapOwnershipSemantics OS = IDMapExternalPointer,
-          typename K = int32_t>
-class IDMap {
+
+// The map's value type (the V param) can be any dereferenceable type, such as a
+// raw pointer or smart pointer
+template <typename V, typename K = int32_t>
+class IDMap final {
  public:
   using KeyType = K;
 
  private:
-  using V = typename std::
-      conditional<OS == IDMapExternalPointer, T*, std::unique_ptr<T>>::type;
+  using T = typename std::remove_reference<decltype(*V())>::type;
   using HashTable = base::hash_map<KeyType, V>;
 
  public:
@@ -149,9 +134,7 @@ class IDMap {
   template<class ReturnType>
   class Iterator {
    public:
-    Iterator(IDMap<T, OS, K>* map)
-        : map_(map),
-          iter_(map_->data_.begin()) {
+    Iterator(IDMap<V, K>* map) : map_(map), iter_(map_->data_.begin()) {
       Init();
     }
 
@@ -215,7 +198,7 @@ class IDMap {
       }
     }
 
-    IDMap<T, OS, K>* map_;
+    IDMap<V, K>* map_;
     typename HashTable::const_iterator iter_;
   };
 

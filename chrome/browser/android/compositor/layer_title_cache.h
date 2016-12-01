@@ -73,7 +73,7 @@ class LayerTitleCache {
  private:
   virtual ~LayerTitleCache();
 
-  IDMap<DecorationTitle, IDMapOwnPointer> layer_cache_;
+  IDMap<std::unique_ptr<DecorationTitle>> layer_cache_;
 
   JavaObjectWeakGlobalRef weak_java_title_cache_;
   int fade_width_;

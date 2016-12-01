@@ -34,8 +34,8 @@ class GinJavaBridgeDispatcher
   // when it is no more referenced from JS. As GinJavaBridgeObject reports
   // deletion of self to GinJavaBridgeDispatcher, we would not have stale
   // pointers here.
-  typedef IDMap<GinJavaBridgeObject, IDMapExternalPointer> ObjectMap;
-  typedef ObjectMap::KeyType ObjectID;
+  using ObjectMap = IDMap<GinJavaBridgeObject*>;
+  using ObjectID = ObjectMap::KeyType;
 
   explicit GinJavaBridgeDispatcher(RenderFrame* render_frame);
   ~GinJavaBridgeDispatcher() override;

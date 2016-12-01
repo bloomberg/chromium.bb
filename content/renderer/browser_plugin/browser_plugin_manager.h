@@ -61,7 +61,7 @@ class CONTENT_EXPORT BrowserPluginManager : public RenderThreadObserver {
 
  private:
   // This map is keyed by guest instance IDs.
-  IDMap<BrowserPlugin> instances_;
+  IDMap<BrowserPlugin*> instances_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserPluginManager);
 };

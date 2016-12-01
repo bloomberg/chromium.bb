@@ -160,14 +160,13 @@ class MediaRouterAndroid : public MediaRouterBase {
     std::vector<MediaRouteResponseCallback> callbacks;
   };
 
-  using MediaRouteRequests =
-      IDMap<MediaRouteRequest, IDMapOwnPointer>;
+  using MediaRouteRequests = IDMap<std::unique_ptr<MediaRouteRequest>>;
   MediaRouteRequests route_requests_;
 
   using MediaRoutes = std::vector<MediaRoute>;
   MediaRoutes active_routes_;
 
-  using SendMessageCallbacks = IDMap<SendRouteMessageCallback, IDMapOwnPointer>;
+  using SendMessageCallbacks = IDMap<std::unique_ptr<SendRouteMessageCallback>>;
   SendMessageCallbacks message_callbacks_;
 
   using MessageObservers = base::ScopedPtrHashMap<
