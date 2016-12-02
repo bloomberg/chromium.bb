@@ -730,4 +730,93 @@ TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
   }
 }
 
+TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
+  struct TestCase {
+    bool isScriptSrc;
+    String sourcesA;
+    std::vector<String> sourcesB;
+    bool expected;
+  } cases[] = {
+      // A or policiesB contain `unsafe-eval`.
+      {false,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic' "
+       "'unsafe-eval'",
+       {"http://example1.com/foo/bar.html 'unsafe-eval'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-eval'",
+       {"http://example1.com/foo/ 'unsafe-inline'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-eval'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'unsafe-eval'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-eval'",
+       {"http://example1.com/foo/ 'unsafe-eval'",
+        "http://example1.com/foo/bar 'self' unsafe-eval'",
+        "http://non-example.com/foo/ 'unsafe-eval' 'self'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self'",
+       {"http://example1.com/foo/ 'unsafe-eval'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"http://example1.com/foo/ 'unsafe-eval'",
+        "http://example1.com/foo/bar 'self' 'unsafe-eval'",
+        "http://non-example.com/foo/ 'unsafe-eval' 'self'"},
+       false},
+      // A or policiesB contain `unsafe-hashed-attributes`.
+      {false,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'unsafe-eval' "
+       "'strict-dynamic' "
+       "'unsafe-hashed-attributes'",
+       {"http://example1.com/foo/bar.html 'unsafe-hashed-attributes'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes'",
+       {"http://example1.com/foo/ 'unsafe-inline'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-hashed-attributes'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'unsafe-hashed-attributes'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-eval' "
+       "'unsafe-hashed-attributes'",
+       {"http://example1.com/foo/ 'unsafe-eval' 'unsafe-hashed-attributes'",
+        "http://example1.com/foo/bar 'self' 'unsafe-hashed-attributes'",
+        "http://non-example.com/foo/ 'unsafe-hashed-attributes' 'self'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self'",
+       {"http://example1.com/foo/ 'unsafe-hashed-attributes'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"http://example1.com/foo/ 'unsafe-hashed-attributes'",
+        "http://example1.com/foo/bar 'self' 'unsafe-hashed-attributes'",
+        "https://example1.com/foo/bar 'unsafe-hashed-attributes' 'self'"},
+       false},
+  };
+
+  ContentSecurityPolicy* cspB =
+      SetUpWithOrigin("https://another.test/image.png");
+
+  for (const auto& test : cases) {
+    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
+                          test.sourcesA, csp.get());
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member = new SourceListDirective(
+          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(A.subsumes(vectorB), test.expected);
+  }
+}
+
 }  // namespace blink

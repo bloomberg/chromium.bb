@@ -607,12 +607,17 @@ bool SourceListDirective::subsumes(
     normalizedB.append(other[0]->m_policy->getSelfSource());
 
   bool allowInlineOther = other[0]->m_allowInline;
+  bool allowEvalOther = other[0]->m_allowEval;
   bool allowDynamicOther = other[0]->m_allowDynamic;
+  bool allowHashedAttributesOther = other[0]->m_allowHashedAttributes;
   bool isHashOrNoncePresentOther = other[0]->isHashOrNoncePresent();
 
   for (size_t i = 1; i < other.size(); i++) {
     allowInlineOther = allowInlineOther && other[i]->m_allowInline;
+    allowEvalOther = allowEvalOther && other[i]->m_allowEval;
     allowDynamicOther = allowDynamicOther && other[i]->m_allowDynamic;
+    allowHashedAttributesOther =
+        allowHashedAttributesOther && other[i]->m_allowHashedAttributes;
     isHashOrNoncePresentOther =
         isHashOrNoncePresentOther && other[i]->isHashOrNoncePresent();
     normalizedB = other[i]->getIntersectCSPSources(normalizedB);
@@ -620,12 +625,19 @@ bool SourceListDirective::subsumes(
 
   const ContentSecurityPolicy::DirectiveType type =
       ContentSecurityPolicy::getDirectiveType(m_directiveName);
-  bool allowAllInlineOther =
-      allowInlineOther && !isHashOrNoncePresentOther &&
-      (type != ContentSecurityPolicy::DirectiveType::ScriptSrc ||
-       !allowDynamicOther);
-  if (!allowAllInline() && allowAllInlineOther)
-    return false;
+  if (type == ContentSecurityPolicy::DirectiveType::ScriptSrc ||
+      type == ContentSecurityPolicy::DirectiveType::StyleSrc) {
+    if (!m_allowEval && allowEvalOther)
+      return false;
+    if (!m_allowHashedAttributes && allowHashedAttributesOther)
+      return false;
+    bool allowAllInlineOther =
+        allowInlineOther && !isHashOrNoncePresentOther &&
+        (type != ContentSecurityPolicy::DirectiveType::ScriptSrc ||
+         !allowDynamicOther);
+    if (!allowAllInline() && allowAllInlineOther)
+      return false;
+  }
 
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
