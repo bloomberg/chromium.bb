@@ -108,7 +108,8 @@ const char kChromeUIJavaCrashURL[] = "chrome://java-crash/";
 const char kChromeUINativeScheme[] = "chrome-native";
 const char kChromeUINativeNewTabURL[] = "chrome-native://newtab/";
 const char kChromeUINativeBookmarksURL[] = "chrome-native://bookmarks/";
-const char kChromeUINativePhysicalWebURL[] = "chrome-native://physical-web/";
+const char kChromeUINativePhysicalWebDiagnosticsURL[] =
+    "chrome-native://physical-web-diagnostics/";
 const char kChromeUINativeRecentTabsURL[] = "chrome-native://recent-tabs/";
 #endif
 
@@ -281,7 +282,7 @@ const char kChromeUISandboxHost[] = "sandbox";
 #if defined(OS_ANDROID)
 const char kChromeUIContextualSearchPromoHost[] = "contextual-search-promo";
 const char kChromeUIOfflineInternalsHost[] = "offline-internals";
-const char kChromeUIPhysicalWebHost[] = "physical-web";
+const char kChromeUIPhysicalWebDiagnosticsHost[] = "physical-web-diagnostics";
 const char kChromeUIPopularSitesInternalsHost[] = "popular-sites-internals";
 const char kChromeUISnippetsInternalsHost[] = "snippets-internals";
 #endif

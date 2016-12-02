@@ -98,7 +98,7 @@ extern const char kChromeUIJavaCrashURL[];
 extern const char kChromeUINativeScheme[];
 extern const char kChromeUINativeNewTabURL[];
 extern const char kChromeUINativeBookmarksURL[];
-extern const char kChromeUINativePhysicalWebURL[];
+extern const char kChromeUINativePhysicalWebDiagnosticsURL[];
 extern const char kChromeUINativeRecentTabsURL[];
 #endif
 
@@ -261,7 +261,7 @@ extern const char kChromeUISandboxHost[];
 #if defined(OS_ANDROID)
 extern const char kChromeUIContextualSearchPromoHost[];
 extern const char kChromeUIOfflineInternalsURL[];
-extern const char kChromeUIPhysicalWebHost[];
+extern const char kChromeUIPhysicalWebDiagnosticsHost[];
 extern const char kChromeUIPopularSitesInternalsHost[];
 extern const char kChromeUISnippetsInternalsHost[];
 #endif

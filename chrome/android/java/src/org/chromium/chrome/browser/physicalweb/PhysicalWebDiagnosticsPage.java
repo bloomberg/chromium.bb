@@ -80,7 +80,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
 
     @Override
     public String getHost() {
-        return UrlConstants.PHYSICAL_WEB_HOST;
+        return UrlConstants.PHYSICAL_WEB_DIAGNOSTICS_HOST;
     }
 
     @Override

@@ -83,7 +83,7 @@ public class NativePageFactory {
             return NativePageType.DOWNLOADS;
         } else if (UrlConstants.RECENT_TABS_HOST.equals(host) && !isIncognito) {
             return NativePageType.RECENT_TABS;
-        } else if (UrlConstants.PHYSICAL_WEB_HOST.equals(host)) {
+        } else if (UrlConstants.PHYSICAL_WEB_DIAGNOSTICS_HOST.equals(host)) {
             if (ChromeFeatureList.isEnabled("PhysicalWeb")) {
                 return NativePageType.PHYSICAL_WEB;
             } else {
