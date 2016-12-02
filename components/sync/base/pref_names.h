@@ -79,6 +79,9 @@ extern const char kSyncLastRunVersion[];
 extern const char kSyncPassphraseEncryptionTransitionInProgress[];
 extern const char kSyncNigoriStateForPassphraseTransition[];
 
+extern const char kEnableLocalSyncBackend[];
+extern const char kLocalSyncBackendDir[];
+
 }  // namespace prefs
 
 }  // namespace syncer

@@ -507,16 +507,11 @@ void ProfileSyncService::InitializeBackend(bool delete_stale_data) {
     ClearStaleErrors();
 
   bool enable_local_sync_backend = false;
-  base::FilePath local_sync_backend_folder;
+  base::FilePath local_sync_backend_folder =
+      sync_prefs_.GetLocalSyncBackendDir();
 #if defined(OS_WIN)
-  enable_local_sync_backend = base::CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableLocalSyncBackend);
-  if (base::CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kLocalSyncBackendDir)) {
-    local_sync_backend_folder =
-        base::CommandLine::ForCurrentProcess()->GetSwitchValuePath(
-            switches::kLocalSyncBackendDir);
-  } else {
+  enable_local_sync_backend = sync_prefs_.IsLocalSyncEnabled();
+  if (local_sync_backend_folder.empty()) {
     // TODO(pastarmovj): Add DIR_ROAMING_USER_DATA to PathService to simplify
     // this code and move the logic in its right place. See crbug/657810.
     CHECK(

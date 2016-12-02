@@ -86,6 +86,8 @@ void SyncPrefs::RegisterProfilePrefs(
       prefs::kSyncPassphraseEncryptionTransitionInProgress, false);
   registry->RegisterStringPref(prefs::kSyncNigoriStateForPassphraseTransition,
                                std::string());
+  registry->RegisterBooleanPref(prefs::kEnableLocalSyncBackend, false);
+  registry->RegisterFilePathPref(prefs::kLocalSyncBackendDir, base::FilePath());
 }
 
 void SyncPrefs::AddSyncPrefObserver(SyncPrefObserver* sync_pref_observer) {
@@ -544,6 +546,14 @@ void SyncPrefs::GetNigoriSpecificsForPassphraseTransition(
   if (base::Base64Decode(encoded, &decoded)) {
     nigori_specifics->ParseFromString(decoded);
   }
+}
+
+bool SyncPrefs::IsLocalSyncEnabled() const {
+  return pref_service_->GetBoolean(prefs::kEnableLocalSyncBackend);
+}
+
+base::FilePath SyncPrefs::GetLocalSyncBackendDir() const {
+  return pref_service_->GetFilePath(prefs::kLocalSyncBackendDir);
 }
 
 }  // namespace syncer

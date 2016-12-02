@@ -180,6 +180,10 @@ class SyncPrefs : NON_EXPORTED_BASE(public base::NonThreadSafe),
   void GetNigoriSpecificsForPassphraseTransition(
       sync_pb::NigoriSpecifics* nigori_specifics) const;
 
+  // Gets the local sync backend enabled state and its database location.
+  bool IsLocalSyncEnabled() const;
+  base::FilePath GetLocalSyncBackendDir() const;
+
  private:
   void RegisterPrefGroups();
 
