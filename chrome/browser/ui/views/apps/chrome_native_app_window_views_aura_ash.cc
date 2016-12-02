@@ -142,12 +142,8 @@ void ChromeNativeAppWindowViewsAuraAsh::InitializeWindow(
     property_util::SetIntProperty(window, ash::kShelfItemTypeKey,
                                   ash::TYPE_APP_PANEL);
   } else {
-    ash::AppType app_type = ash::AppType::CHROME_APP;
-    Profile* profile =
-        Profile::FromBrowserContext(app_window->browser_context());
-    if (profile && chromeos::IsNoteTakingAppWindow(app_window, profile))
-      app_type = ash::AppType::DEFAULT_NOTE_TAKING_APP;
-    window->SetProperty(aura::client::kAppType, static_cast<int>(app_type));
+    window->SetProperty(aura::client::kAppType,
+                        static_cast<int>(ash::AppType::CHROME_APP));
   }
 }
 

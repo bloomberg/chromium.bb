@@ -15,7 +15,6 @@
 #include "base/strings/string_split.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/chromeos_switches.h"
-#include "extensions/browser/app_window/app_window.h"
 #include "extensions/browser/extension_registry.h"
 #include "extensions/common/api/app_runtime.h"
 #include "extensions/common/extension.h"
@@ -85,13 +84,6 @@ void LaunchNoteTakingAppForNewNote(Profile* profile,
   auto action_data = base::MakeUnique<app_runtime::ActionData>();
   action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
   apps::LaunchPlatformAppWithAction(profile, app, std::move(action_data), path);
-}
-
-bool IsNoteTakingAppWindow(extensions::AppWindow* app_window,
-                           Profile* profile) {
-  DCHECK(app_window && profile);
-  const extensions::Extension* app = GetApp(profile);
-  return app && (app->id() == app_window->extension_id());
 }
 
 }  // namespace chromeos

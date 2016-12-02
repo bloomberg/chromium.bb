@@ -181,11 +181,6 @@ TEST_F(PointerMetricsRecorderTest, DownEventPerDestination) {
   pointer_metrics_recorder_->OnPointerEventObserved(pointer_event, gfx::Point(),
                                                     target.get());
   histogram_tester_->ExpectBucketCount(kDestinationHistogramName, 3, 1);
-
-  window->SetAppType(static_cast<int>(AppType::DEFAULT_NOTE_TAKING_APP));
-  pointer_metrics_recorder_->OnPointerEventObserved(pointer_event, gfx::Point(),
-                                                    target.get());
-  histogram_tester_->ExpectBucketCount(kDestinationHistogramName, 4, 1);
 }
 
 }  // namespace ash
