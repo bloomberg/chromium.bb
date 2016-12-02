@@ -35,13 +35,6 @@ source_set("ipc_client_sources") {
       "gpu_process_hosted_ca_layer_tree_params.h",
     ]
   }
-  if (is_android) {
-    sources += [
-      "android/in_process_surface_texture_manager.cc",
-      "android/in_process_surface_texture_manager.h",
-    ]
-    libs = [ "android" ]
-  }
   if (use_ozone) {
     sources += [
       "gpu_memory_buffer_impl_ozone_native_pixmap.cc",

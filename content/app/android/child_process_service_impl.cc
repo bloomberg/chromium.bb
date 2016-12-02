@@ -11,6 +11,7 @@
 #include "base/android/library_loader/library_loader_hooks.h"
 #include "base/android/memory_pressure_listener_android.h"
 #include "base/android/unguessable_token_android.h"
+#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/posix/global_descriptors.h"
@@ -18,7 +19,6 @@
 #include "content/child/child_thread_impl.h"
 #include "content/public/common/content_descriptors.h"
 #include "gpu/ipc/common/android/scoped_surface_request_conduit.h"
-#include "gpu/ipc/common/android/surface_texture_manager.h"
 #include "gpu/ipc/common/android/surface_texture_peer.h"
 #include "gpu/ipc/common/gpu_surface_lookup.h"
 #include "ipc/ipc_descriptors.h"
@@ -36,59 +36,17 @@ namespace {
 
 // TODO(sievers): Use two different implementations of this depending on if
 // we're in a renderer or gpu process.
-class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
-                                  public gpu::SurfaceTexturePeer,
-                                  public gpu::ScopedSurfaceRequestConduit,
-                                  public gpu::GpuSurfaceLookup {
+class ChildProcessSurfaceManager : public gpu::SurfaceTexturePeer,
+                                   public gpu::ScopedSurfaceRequestConduit,
+                                   public gpu::GpuSurfaceLookup {
  public:
+  ChildProcessSurfaceManager() {}
+  ~ChildProcessSurfaceManager() override {}
+
   // |service impl| is the instance of
   // org.chromium.content.app.ChildProcessServiceImpl.
-  explicit SurfaceTextureManagerImpl(
-      const base::android::JavaRef<jobject>& service_impl)
-      : service_impl_(service_impl) {
-    SurfaceTexturePeer::InitInstance(this);
-    gpu::GpuSurfaceLookup::InitInstance(this);
-    gpu::ScopedSurfaceRequestConduit::SetInstance(this);
-  }
-  ~SurfaceTextureManagerImpl() override {
-    SurfaceTexturePeer::InitInstance(NULL);
-    gpu::GpuSurfaceLookup::InitInstance(NULL);
-    gpu::ScopedSurfaceRequestConduit::SetInstance(nullptr);
-  }
-
-  // Overridden from SurfaceTextureManager:
-  void RegisterSurfaceTexture(int surface_texture_id,
-                              int client_id,
-                              gl::SurfaceTexture* surface_texture) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ChildProcessServiceImpl_createSurfaceTextureSurface(
-        env, service_impl_, surface_texture_id, client_id,
-        surface_texture->j_surface_texture());
-  }
-  void UnregisterSurfaceTexture(int surface_texture_id,
-                                int client_id) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    Java_ChildProcessServiceImpl_destroySurfaceTextureSurface(
-        env, service_impl_, surface_texture_id, client_id);
-  }
-  gfx::AcceleratedWidget AcquireNativeWidgetForSurfaceTexture(
-      int surface_texture_id) override {
-    JNIEnv* env = base::android::AttachCurrentThread();
-    gl::ScopedJavaSurface surface(
-        Java_ChildProcessServiceImpl_getSurfaceTextureSurface(
-            env, service_impl_, surface_texture_id));
-
-    if (surface.j_surface().is_null())
-      return NULL;
-
-    // Note: This ensures that any local references used by
-    // ANativeWindow_fromSurface are released immediately. This is needed as a
-    // workaround for https://code.google.com/p/android/issues/detail?id=68174
-    base::android::ScopedJavaLocalFrame scoped_local_reference_frame(env);
-    ANativeWindow* native_window =
-        ANativeWindow_fromSurface(env, surface.j_surface().obj());
-
-    return native_window;
+  void SetServiceImpl(const base::android::JavaRef<jobject>& service_impl) {
+    service_impl_.Reset(service_impl);
   }
 
   // Overridden from SurfaceTexturePeer:
@@ -145,11 +103,15 @@ class SurfaceTextureManagerImpl : public gpu::SurfaceTextureManager,
   }
 
  private:
+  friend struct base::DefaultLazyInstanceTraits<ChildProcessSurfaceManager>;
   // The instance of org.chromium.content.app.ChildProcessServiceImpl.
   base::android::ScopedJavaGlobalRef<jobject> service_impl_;
 
-  DISALLOW_COPY_AND_ASSIGN(SurfaceTextureManagerImpl);
+  DISALLOW_COPY_AND_ASSIGN(ChildProcessSurfaceManager);
 };
+
+static base::LazyInstance<ChildProcessSurfaceManager>::Leaky
+    g_child_process_surface_manager = LAZY_INSTANCE_INITIALIZER;
 
 // Chrome actually uses the renderer code path for all of its child
 // processes such as renderers, plugins, etc.
@@ -159,8 +121,15 @@ void InternalInitChildProcessImpl(JNIEnv* env,
                                   jlong cpu_features) {
   // Set the CPU properties.
   android_setCpu(cpu_count, cpu_features);
-  gpu::SurfaceTextureManager::SetInstance(
-      new SurfaceTextureManagerImpl(service_impl));
+
+  g_child_process_surface_manager.Get().SetServiceImpl(service_impl);
+
+  gpu::SurfaceTexturePeer::InitInstance(
+      g_child_process_surface_manager.Pointer());
+  gpu::GpuSurfaceLookup::InitInstance(
+      g_child_process_surface_manager.Pointer());
+  gpu::ScopedSurfaceRequestConduit::SetInstance(
+      g_child_process_surface_manager.Pointer());
 
   base::android::MemoryPressureListenerAndroid::RegisterSystemCallback(env);
 }

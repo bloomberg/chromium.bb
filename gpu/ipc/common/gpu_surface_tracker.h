@@ -26,7 +26,7 @@ namespace gpu {
 // GpuMemoryBufferManager::CreateGpuMemoryBuffer.
 // On Android, the handle is used in the GPU process to get a reference to the
 // ANativeWindow, using GpuSurfaceLookup (implemented by
-// SurfaceTextureManagerImpl).
+// ChildProcessSurfaceManager).
 // On Mac, the handle just passes through the GPU process, and is sent back via
 // GpuCommandBufferMsg_SwapBuffersCompleted to reference the surface.
 // This class is thread safe.

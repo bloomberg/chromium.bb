@@ -17,11 +17,4 @@ interface IChildProcessCallback {
       in UnguessableToken requestToken, in Surface surface);
 
   SurfaceWrapper getViewSurface(int surfaceId);
-
-  void registerSurfaceTextureSurface(
-      int surfaceTextureId, int clientId, in Surface surface);
-
-  void unregisterSurfaceTextureSurface(int surfaceTextureId, int clientId);
-
-  SurfaceWrapper getSurfaceTextureSurface(int surfaceTextureId);
 }

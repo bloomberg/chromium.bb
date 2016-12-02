@@ -40,16 +40,6 @@ bool IsChildProcessOomProtected(base::ProcessHandle handle);
 
 void SetChildProcessInForeground(base::ProcessHandle handle,
                                  bool in_foreground);
-
-void CreateSurfaceTextureSurface(int surface_texture_id,
-                                 int client_id,
-                                 gl::SurfaceTexture* surface_texture);
-
-void DestroySurfaceTextureSurface(int surface_texture_id, int client_id);
-
-gl::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
-                                               int client_id);
-
 bool RegisterChildProcessLauncher(JNIEnv* env);
 
 }  // namespace content

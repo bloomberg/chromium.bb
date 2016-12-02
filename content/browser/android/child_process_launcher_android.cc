@@ -215,32 +215,6 @@ void CompleteScopedSurfaceRequest(JNIEnv* env,
       requestToken, gl::ScopedJavaSurface(jsurface));
 }
 
-void CreateSurfaceTextureSurface(int surface_texture_id,
-                                 int client_id,
-                                 gl::SurfaceTexture* surface_texture) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  Java_ChildProcessLauncher_createSurfaceTextureSurface(
-      env, surface_texture_id, client_id, surface_texture->j_surface_texture());
-}
-
-void DestroySurfaceTextureSurface(int surface_texture_id, int client_id) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  Java_ChildProcessLauncher_destroySurfaceTextureSurface(
-      env, surface_texture_id, client_id);
-}
-
-gl::ScopedJavaSurface GetSurfaceTextureSurface(int surface_texture_id,
-                                               int client_id) {
-  JNIEnv* env = AttachCurrentThread();
-  DCHECK(env);
-  return gl::ScopedJavaSurface::AcquireExternalSurface(
-      Java_ChildProcessLauncher_getSurfaceTextureSurface(
-          env, surface_texture_id, client_id)
-          .obj());
-}
-
 jboolean IsSingleProcess(JNIEnv* env, const JavaParamRef<jclass>& clazz) {
   return base::CommandLine::ForCurrentProcess()->HasSwitch(
       switches::kSingleProcess);

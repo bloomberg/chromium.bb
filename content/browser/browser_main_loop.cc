@@ -113,14 +113,12 @@
 #include "base/android/jni_android.h"
 #include "components/tracing/common/graphics_memory_dump_provider_android.h"
 #include "content/browser/android/browser_startup_controller.h"
-#include "content/browser/android/browser_surface_texture_manager.h"
 #include "content/browser/android/scoped_surface_request_manager.h"
 #include "content/browser/android/tracing_controller_android.h"
 #include "content/browser/media/android/browser_media_player_manager.h"
 #include "content/browser/renderer_host/context_provider_factory_impl_android.h"
 #include "content/browser/screen_orientation/screen_orientation_delegate_android.h"
 #include "content/public/browser/screen_orientation_provider.h"
-#include "gpu/ipc/client/android/in_process_surface_texture_manager.h"
 #include "media/base/android/media_client_android.h"
 #include "ui/android/screen_android.h"
 #include "ui/display/screen.h"
@@ -675,15 +673,11 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
 
 #if defined(OS_ANDROID)
   {
-    TRACE_EVENT0("startup", "BrowserMainLoop::Subsystem:SurfaceTextureManager");
+    TRACE_EVENT0("startup",
+                 "BrowserMainLoop::Subsystem:BrowserMediaPlayerManager");
     if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
-      gpu::SurfaceTextureManager::SetInstance(
-          gpu::InProcessSurfaceTextureManager::GetInstance());
       gpu::ScopedSurfaceRequestConduit::SetInstance(
           ScopedSurfaceRequestManager::GetInstance());
-    } else {
-      gpu::SurfaceTextureManager::SetInstance(
-          BrowserSurfaceTextureManager::GetInstance());
     }
     BrowserMediaPlayerManager::InitSurfaceTexturePeer();
   }
