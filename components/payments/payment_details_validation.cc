@@ -108,19 +108,15 @@ bool validatePaymentDetailsModifiers(
     return false;
   }
 
-  std::set<mojo::String> uniqueMethods;
   for (const auto& modifier : modifiers) {
-    if (modifier->supported_methods.empty()) {
-      *error_message = "Must specify at least one payment method identifier";
+    if (!modifier->method_data) {
+      *error_message = "Method data required";
       return false;
     }
 
-    for (const auto& method : modifier->supported_methods) {
-      if (uniqueMethods.find(method) != uniqueMethods.end()) {
-        *error_message = "Duplicate payment method identifiers are not allowed";
-        return false;
-      }
-      uniqueMethods.insert(method);
+    if (modifier->method_data->supported_methods.empty()) {
+      *error_message = "Must specify at least one payment method identifier";
+      return false;
     }
 
     if (modifier->total) {

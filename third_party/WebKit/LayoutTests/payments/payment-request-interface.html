@@ -368,51 +368,51 @@ for (var i in detailNames) {
     generate_tests(assert_throws, [
         // Invalid currency code formats.
         ['Undefined currency code should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': undefined}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'currency': undefined}), {requestShipping: true})
         }],
 
         // Invalid amount formats.
         ['Invalid amount "-" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-'}), {requestShipping: true})
         }],
         ['Invalid amount "notdigits" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': 'notdigits'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': 'notdigits'}), {requestShipping: true})
         }],
         ['Invalid amount "ALSONOTDIGITS" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': 'ALSONOTDIGITS'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': 'ALSONOTDIGITS'}), {requestShipping: true})
         }],
         ['Invalid amount "10." should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '10.'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '10.'}), {requestShipping: true})
         }],
         ['Invalid amount ".99" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '.99'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '.99'}), {requestShipping: true})
         }],
         ['Invalid amount "-10." should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-10.'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-10.'}), {requestShipping: true})
         }],
         ['Invalid amount "-.99" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-.99'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '-.99'}), {requestShipping: true})
         }],
         ['Invalid amount "10-" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '10-'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '10-'}), {requestShipping: true})
         }],
         ['Invalid amount "1-0" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1-0'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1-0'}), {requestShipping: true})
         }],
         ['Invalid amount "1.0.0" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1.0.0'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1.0.0'}), {requestShipping: true})
         }],
         ['Invalid amount "1/3" should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1/3'}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': '1/3'}), {requestShipping: true})
         }],
         ['Empty amount should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': ''}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': ''}), {requestShipping: true})
         }],
         ['Null amount should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': null}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': null}), {requestShipping: true})
         }],
         ['Undefined amount should throw', null, function() {
-            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': undefined}))
+            new PaymentRequest([{'supportedMethods': ['foo']}], buildDetails(detailNames[i], {'value': undefined}), {requestShipping: true})
         }],
     ]);
 }

@@ -10,6 +10,7 @@
 #include "core/dom/Document.h"
 #include "core/dom/ExceptionCode.h"
 #include "modules/payments/PaymentDetails.h"
+#include "modules/payments/PaymentOptions.h"
 #include "modules/payments/PaymentTestHelper.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include <ostream>  // NOLINT
@@ -129,9 +130,11 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
   V8TestingScope scope;
   scope.document().setSecurityOrigin(
       SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
-  PaymentRequest::create(scope.getScriptState(),
-                         buildPaymentMethodDataForTest(),
-                         GetParam().buildDetails(), scope.getExceptionState());
+  PaymentOptions options;
+  options.setRequestShipping(true);
+  PaymentRequest::create(
+      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      GetParam().buildDetails(), options, scope.getExceptionState());
 
   EXPECT_EQ(GetParam().expectException(),
             scope.getExceptionState().hadException());
