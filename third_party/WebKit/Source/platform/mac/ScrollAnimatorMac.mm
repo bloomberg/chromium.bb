@@ -871,25 +871,6 @@ void ScrollAnimatorMac::contentAreaDidHide() const {
   [m_scrollbarPainterController.get() windowOrderedOut];
 }
 
-void ScrollAnimatorMac::didBeginScrollGesture() const {
-  if (!getScrollableArea()->scrollbarsCanBeActive())
-    return;
-  [m_scrollbarPainterController.get() beginScrollGesture];
-}
-
-void ScrollAnimatorMac::didEndScrollGesture() const {
-  if (!getScrollableArea()->scrollbarsCanBeActive())
-    return;
-  [m_scrollbarPainterController.get() endScrollGesture];
-}
-
-void ScrollAnimatorMac::mayBeginScrollGesture() const {
-  if (!getScrollableArea()->scrollbarsCanBeActive())
-    return;
-  [m_scrollbarPainterController.get() beginScrollGesture];
-  [m_scrollbarPainterController.get() contentAreaScrolled];
-}
-
 void ScrollAnimatorMac::finishCurrentScrollAnimations() {
   [m_scrollbarPainterController.get() hideOverlayScrollers];
 }
@@ -970,21 +951,6 @@ bool ScrollAnimatorMac::setScrollbarsVisibleForTesting(bool show) {
 void ScrollAnimatorMac::cancelAnimation() {
   [m_scrollAnimationHelper.get() _stopRun];
   m_haveScrolledSincePageLoad = false;
-}
-
-void ScrollAnimatorMac::handleWheelEventPhase(PlatformWheelEventPhase phase) {
-  // This may not have been set to true yet if the wheel event was handled by
-  // the ScrollingTree,
-  // So set it to true here.
-  m_haveScrolledSincePageLoad = true;
-
-  if (phase == PlatformWheelEventPhaseBegan)
-    didBeginScrollGesture();
-  else if (phase == PlatformWheelEventPhaseEnded ||
-           phase == PlatformWheelEventPhaseCancelled)
-    didEndScrollGesture();
-  else if (phase == PlatformWheelEventPhaseMayBegin)
-    mayBeginScrollGesture();
 }
 
 void ScrollAnimatorMac::updateScrollerStyle() {

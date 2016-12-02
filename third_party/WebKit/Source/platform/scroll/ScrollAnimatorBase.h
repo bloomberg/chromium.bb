@@ -63,10 +63,6 @@ class PLATFORM_EXPORT ScrollAnimatorBase
 
   virtual void scrollToOffsetWithoutAnimation(const ScrollOffset&);
 
-#if OS(MACOSX)
-  virtual void handleWheelEventPhase(PlatformWheelEventPhase) {}
-#endif
-
   void setCurrentOffset(const ScrollOffset&);
   ScrollOffset currentOffset() const;
   virtual ScrollOffset desiredTargetOffset() const { return currentOffset(); }

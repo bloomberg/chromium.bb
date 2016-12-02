@@ -92,8 +92,6 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
                           const ScrollOffset& delta) override;
   void scrollToOffsetWithoutAnimation(const ScrollOffset&) override;
 
-  void handleWheelEventPhase(PlatformWheelEventPhase) override;
-
   void cancelAnimation() override;
 
   void contentAreaWillPaint() const override;
@@ -105,9 +103,6 @@ class PLATFORM_EXPORT ScrollAnimatorMac : public ScrollAnimatorBase {
   void contentsResized() const override;
   void contentAreaDidShow() const override;
   void contentAreaDidHide() const override;
-  void didBeginScrollGesture() const;
-  void didEndScrollGesture() const;
-  void mayBeginScrollGesture() const;
 
   void finishCurrentScrollAnimations() override;
 

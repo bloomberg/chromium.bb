@@ -1101,22 +1101,6 @@ void ScrollingCoordinator::frameViewRootLayerDidChange(FrameView* frameView) {
   notifyGeometryChanged();
 }
 
-#if OS(MACOSX)
-void ScrollingCoordinator::handleWheelEventPhase(
-    PlatformWheelEventPhase phase) {
-  DCHECK(isMainThread());
-
-  if (!m_page)
-    return;
-
-  FrameView* frameView = m_page->deprecatedLocalMainFrame()->view();
-  if (!frameView)
-    return;
-
-  frameView->scrollAnimator().handleWheelEventPhase(phase);
-}
-#endif
-
 bool ScrollingCoordinator::hasVisibleSlowRepaintViewportConstrainedObjects(
     FrameView* frameView) const {
   const FrameView::ViewportConstrainedObjectSet* viewportConstrainedObjects =
