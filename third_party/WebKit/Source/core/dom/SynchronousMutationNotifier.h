@@ -23,6 +23,7 @@ class CORE_EXPORT SynchronousMutationNotifier
  public:
   // TODO(yosin): We will have |notifyXXX()| functions defined in
   // |SynchronousMutationObserver|.
+  void notifyChangeChildren(const ContainerNode&);
   void notifyMergeTextNodes(Text&, unsigned);
   void notifySplitTextNode(const Text&);
   void notifyUpdateCharacterData(CharacterData*,

@@ -785,6 +785,7 @@ void ContainerNode::detachLayoutTree(const AttachContext& context) {
 
 void ContainerNode::childrenChanged(const ChildrenChange& change) {
   document().incDOMTreeVersion();
+  document().notifyChangeChildren(*this);
   invalidateNodeListCachesInAncestors();
   if (change.isChildInsertion() && !childNeedsStyleRecalc()) {
     setChildNeedsStyleRecalc();

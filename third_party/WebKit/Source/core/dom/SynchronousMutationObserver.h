@@ -39,6 +39,9 @@ class CORE_EXPORT SynchronousMutationObserver
   //  - didInsertText(Node*, unsigned offset, unsigned length);
   //  - didRemoveText(Node*, unsigned offset, unsigned length);
 
+  // Called after child nodes changed.
+  virtual void didChangeChildren(const ContainerNode&);
+
   // TODO(yosin): We should use |const Text& oldNode|.
   // Called after characters in |oldNode| is appended at |offset| in
   // |oldNdoe->previousSibling()|.

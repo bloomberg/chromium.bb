@@ -114,6 +114,10 @@ class TestSynchronousMutationObserver
     return m_contextDestroyedCalledCounter;
   }
 
+  const HeapVector<Member<const ContainerNode>>& childrenChangedNodes() const {
+    return m_childrenChangedNodes;
+  }
+
   const HeapVector<Member<MergeTextNodesRecord>>& mergeTextNodesRecords()
       const {
     return m_mergeTextNodesRecords;
@@ -141,6 +145,7 @@ class TestSynchronousMutationObserver
  private:
   // Implement |SynchronousMutationObserver| member functions.
   void contextDestroyed() final;
+  void didChangeChildren(const ContainerNode&) final;
   void didMergeTextNodes(Text&, unsigned) final;
   void didSplitTextNode(const Text&) final;
   void didUpdateCharacterData(CharacterData*,
@@ -151,6 +156,7 @@ class TestSynchronousMutationObserver
   void nodeWillBeRemoved(Node&) final;
 
   int m_contextDestroyedCalledCounter = 0;
+  HeapVector<Member<const ContainerNode>> m_childrenChangedNodes;
   HeapVector<Member<MergeTextNodesRecord>> m_mergeTextNodesRecords;
   HeapVector<Member<ContainerNode>> m_removedChildrenNodes;
   HeapVector<Member<Node>> m_removedNodes;
@@ -167,6 +173,11 @@ TestSynchronousMutationObserver::TestSynchronousMutationObserver(
 
 void TestSynchronousMutationObserver::contextDestroyed() {
   ++m_contextDestroyedCalledCounter;
+}
+
+void TestSynchronousMutationObserver::didChangeChildren(
+    const ContainerNode& container) {
+  m_childrenChangedNodes.append(&container);
 }
 
 void TestSynchronousMutationObserver::didMergeTextNodes(Text& node,
@@ -197,6 +208,7 @@ void TestSynchronousMutationObserver::nodeWillBeRemoved(Node& node) {
 }
 
 DEFINE_TRACE(TestSynchronousMutationObserver) {
+  visitor->trace(m_childrenChangedNodes);
   visitor->trace(m_mergeTextNodesRecords);
   visitor->trace(m_removedChildrenNodes);
   visitor->trace(m_removedNodes);
@@ -469,6 +481,21 @@ TEST_F(DocumentTest, SynchronousMutationNotifier) {
   EXPECT_EQ(observer.countContextDestroyedCalled(), 1);
 }
 
+TEST_F(DocumentTest, SynchronousMutationNotifieAppendChild) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+  document().body()->appendChild(document().createTextNode("a123456789"));
+  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
+  EXPECT_EQ(document().body(), observer.childrenChangedNodes()[0]);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifieInsertBefore) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+  document().documentElement()->insertBefore(
+      document().createTextNode("a123456789"), document().body());
+  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
+  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
+}
+
 TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
   auto& observer = *new TestSynchronousMutationObserver(document());
 
@@ -484,6 +511,26 @@ TEST_F(DocumentTest, SynchronousMutationNotifierMergeTextNodes) {
   ASSERT_EQ(observer.mergeTextNodesRecords().size(), 1u);
   EXPECT_EQ(observer.mergeTextNodesRecords()[0]->m_node, mergeSampleB);
   EXPECT_EQ(observer.mergeTextNodesRecords()[0]->m_offset, 10u);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifieRemoveChild) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+  document().documentElement()->removeChild(document().body());
+  ASSERT_EQ(1u, observer.childrenChangedNodes().size());
+  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
+}
+
+TEST_F(DocumentTest, SynchronousMutationNotifieReplaceChild) {
+  auto& observer = *new TestSynchronousMutationObserver(document());
+  Element* const replacedNode = document().body();
+  document().documentElement()->replaceChild(document().createElement("div"),
+                                             document().body());
+  ASSERT_EQ(2u, observer.childrenChangedNodes().size());
+  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[0]);
+  EXPECT_EQ(document().documentElement(), observer.childrenChangedNodes()[1]);
+
+  ASSERT_EQ(1u, observer.removedNodes().size());
+  EXPECT_EQ(replacedNode, observer.removedNodes()[0]);
 }
 
 TEST_F(DocumentTest, SynchronousMutationNotifierSplitTextNode) {

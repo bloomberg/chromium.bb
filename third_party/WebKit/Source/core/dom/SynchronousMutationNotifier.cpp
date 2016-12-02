@@ -11,6 +11,12 @@ namespace blink {
 
 SynchronousMutationNotifier::SynchronousMutationNotifier() = default;
 
+void SynchronousMutationNotifier::notifyChangeChildren(
+    const ContainerNode& container) {
+  for (SynchronousMutationObserver* observer : m_observers)
+    observer->didChangeChildren(container);
+}
+
 void SynchronousMutationNotifier::notifyMergeTextNodes(Text& node,
                                                        unsigned offset) {
   for (SynchronousMutationObserver* observer : m_observers)
