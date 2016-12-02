@@ -17,5 +17,6 @@ component("client") {
   deps = [
     "//base",
     "//components/discardable_memory/common",
+    "//components/discardable_memory/public/interfaces",
   ]
 }

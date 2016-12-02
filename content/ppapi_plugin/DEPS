@@ -6,4 +6,5 @@ include_rules = [
   "+gin/v8_initializer.h",
   "+ppapi/c",
   "+ppapi/proxy",
+  "+services/service_manager/public/cpp",
 ]

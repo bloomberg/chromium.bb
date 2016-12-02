@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/memory/ref_counted.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "content/common/content_export.h"
 
 namespace content {
@@ -18,12 +18,13 @@ namespace content {
 // ChnanelMojo, an IPC channel name to open.
 class CONTENT_EXPORT InProcessChildThreadParams {
  public:
-  InProcessChildThreadParams(scoped_refptr<base::SequencedTaskRunner> io_runner,
-                             const std::string& service_request_token);
+  InProcessChildThreadParams(
+      scoped_refptr<base::SingleThreadTaskRunner> io_runner,
+      const std::string& service_request_token);
   InProcessChildThreadParams(const InProcessChildThreadParams& other);
   ~InProcessChildThreadParams();
 
-  scoped_refptr<base::SequencedTaskRunner> io_runner() const {
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner() const {
     return io_runner_;
   }
   const std::string& service_request_token() const {
@@ -31,7 +32,7 @@ class CONTENT_EXPORT InProcessChildThreadParams {
   }
 
  private:
-  scoped_refptr<base::SequencedTaskRunner> io_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> io_runner_;
   std::string service_request_token_;
 };
 

@@ -15,7 +15,7 @@
 #include "base/memory/shared_memory.h"
 #include "base/memory/weak_ptr.h"
 #include "base/power_monitor/power_monitor.h"
-#include "base/sequenced_task_runner.h"
+#include "base/single_thread_task_runner.h"
 #include "base/tracked_objects.h"
 #include "build/build_config.h"
 #include "content/common/associated_interfaces.mojom.h"
@@ -47,10 +47,6 @@ namespace edk {
 class ScopedIPCSupport;
 }  // namespace edk
 }  // namespace mojo
-
-namespace discardable_memory {
-class ClientDiscardableSharedMemoryManager;
-}  // namespace discardable_memory
 
 namespace content {
 class ChildHistogramMessageFilter;
@@ -87,7 +83,6 @@ class CONTENT_EXPORT ChildThreadImpl
   // should be joined in Shutdown().
   ~ChildThreadImpl() override;
   virtual void Shutdown();
-  void ShutdownDiscardableSharedMemoryManager();
 
   // IPC::Sender implementation:
   bool Send(IPC::Message* msg) override;
@@ -137,11 +132,6 @@ class CONTENT_EXPORT ChildThreadImpl
 
   ChildSharedBitmapManager* shared_bitmap_manager() const {
     return shared_bitmap_manager_.get();
-  }
-
-  discardable_memory::ClientDiscardableSharedMemoryManager*
-  discardable_shared_memory_manager() const {
-    return discardable_shared_memory_manager_.get();
   }
 
   ResourceDispatcher* resource_dispatcher() const {
@@ -225,7 +215,7 @@ class CONTENT_EXPORT ChildThreadImpl
   void OnChannelError() override;
 
   bool IsInBrowserProcess() const;
-  scoped_refptr<base::SequencedTaskRunner> GetIOTaskRunner();
+  scoped_refptr<base::SingleThreadTaskRunner> GetIOTaskRunner();
 
  private:
   class ChildThreadMessageRouter : public IPC::MessageRouter {
@@ -240,8 +230,6 @@ class CONTENT_EXPORT ChildThreadImpl
    private:
     IPC::Sender* const sender_;
   };
-
-  class ClientDiscardableSharedMemoryManagerDelegate;
 
   void Init(const Options& options);
 
@@ -330,15 +318,9 @@ class CONTENT_EXPORT ChildThreadImpl
 
   std::unique_ptr<ChildSharedBitmapManager> shared_bitmap_manager_;
 
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
-
-  std::unique_ptr<ClientDiscardableSharedMemoryManagerDelegate>
-      client_discardable_shared_memory_manager_delegate_;
-
   std::unique_ptr<base::PowerMonitor> power_monitor_;
 
-  scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner_;
+  scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner_;
 
   std::unique_ptr<base::WeakPtrFactory<ChildThreadImpl>>
       channel_connected_factory_;
@@ -356,7 +338,7 @@ struct ChildThreadImpl::Options {
 
   bool auto_start_service_manager_connection;
   bool connect_to_browser;
-  scoped_refptr<base::SequencedTaskRunner> browser_process_io_runner;
+  scoped_refptr<base::SingleThreadTaskRunner> browser_process_io_runner;
   std::vector<IPC::MessageFilter*> startup_filters;
   std::string in_process_service_request_token;
 

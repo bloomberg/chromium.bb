@@ -29,6 +29,8 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
+#include "mojo/public/cpp/bindings/strong_binding.h"
+#include "mojo/public/cpp/system/platform_handle.h"
 
 #if defined(OS_LINUX)
 #include "base/files/file_path.h"
@@ -56,6 +58,48 @@ uint64_t ClientProcessUniqueIdToTracingProcessId(int client_id) {
              reinterpret_cast<const char*>(&client_id), sizeof(client_id))) +
          1;
 }
+
+// mojom::DiscardableSharedMemoryManager implementation. It contains the
+// |client_id_| which is not visible to client. We associate allocations with a
+// given mojo instance, so if the instance is closed, we can release the
+// allocations associated with that instance.
+class MojoDiscardableSharedMemoryManagerImpl
+    : public mojom::DiscardableSharedMemoryManager {
+ public:
+  MojoDiscardableSharedMemoryManagerImpl(
+      int32_t client_id,
+      ::discardable_memory::DiscardableSharedMemoryManager* manager)
+      : client_id_(client_id), manager_(manager) {}
+
+  ~MojoDiscardableSharedMemoryManagerImpl() override {
+    // Remove this client from the |manager_|, so all allocated discardable
+    // memory belong to this client will be released.
+    manager_->ClientRemoved(client_id_);
+  }
+
+  // mojom::DiscardableSharedMemoryManager overrides:
+  void AllocateLockedDiscardableSharedMemory(
+      uint32_t size,
+      int32_t id,
+      const AllocateLockedDiscardableSharedMemoryCallback& callback) override {
+    base::SharedMemoryHandle handle;
+    manager_->AllocateLockedDiscardableSharedMemoryForClient(client_id_, size,
+                                                             id, &handle);
+    mojo::ScopedSharedBufferHandle memory =
+        mojo::WrapSharedMemoryHandle(handle, size, false /* read_only */);
+    return callback.Run(std::move(memory));
+  }
+
+  void DeletedDiscardableSharedMemory(int32_t id) override {
+    manager_->ClientDeletedDiscardableSharedMemory(id, client_id_);
+  }
+
+ private:
+  const int32_t client_id_;
+  ::discardable_memory::DiscardableSharedMemoryManager* const manager_;
+
+  DISALLOW_COPY_AND_ASSIGN(MojoDiscardableSharedMemoryManagerImpl);
+};
 
 class DiscardableMemoryImpl : public base::DiscardableMemory {
  public:
@@ -180,7 +224,8 @@ DiscardableSharedMemoryManager::MemorySegment::MemorySegment(
 DiscardableSharedMemoryManager::MemorySegment::~MemorySegment() {}
 
 DiscardableSharedMemoryManager::DiscardableSharedMemoryManager()
-    : default_memory_limit_(GetDefaultMemoryLimit()),
+    : next_client_id_(1),
+      default_memory_limit_(GetDefaultMemoryLimit()),
       memory_limit_(default_memory_limit_),
       bytes_allocated_(0),
       memory_pressure_listener_(new base::MemoryPressureListener(
@@ -205,23 +250,38 @@ DiscardableSharedMemoryManager::~DiscardableSharedMemoryManager() {
       this);
 }
 
-DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::current() {
+// static
+DiscardableSharedMemoryManager*
+DiscardableSharedMemoryManager::CreateInstance() {
+  DCHECK(g_discardable_shared_memory_manager == nullptr);
   return g_discardable_shared_memory_manager.Pointer();
+}
+
+// static
+DiscardableSharedMemoryManager* DiscardableSharedMemoryManager::GetInstance() {
+  DCHECK(!(g_discardable_shared_memory_manager == nullptr));
+  return g_discardable_shared_memory_manager.Pointer();
+}
+
+void DiscardableSharedMemoryManager::Bind(
+    mojom::DiscardableSharedMemoryManagerRequest request) {
+  mojo::MakeStrongBinding(
+      base::MakeUnique<MojoDiscardableSharedMemoryManagerImpl>(
+          next_client_id_++, this),
+      std::move(request));
 }
 
 std::unique_ptr<base::DiscardableMemory>
 DiscardableSharedMemoryManager::AllocateLockedDiscardableMemory(size_t size) {
   DCHECK_NE(size, 0u);
 
-  DiscardableSharedMemoryId new_id =
-      g_next_discardable_shared_memory_id.GetNext();
-  base::ProcessHandle current_process_handle = base::GetCurrentProcessHandle();
+  int32_t new_id = g_next_discardable_shared_memory_id.GetNext();
 
   // Note: Use DiscardableSharedMemoryHeap for in-process allocation
   // of discardable memory if the cost of each allocation is too high.
   base::SharedMemoryHandle handle;
-  AllocateLockedDiscardableSharedMemory(
-      current_process_handle, kInvalidUniqueClientID, size, new_id, &handle);
+  AllocateLockedDiscardableSharedMemory(kInvalidUniqueClientID, size, new_id,
+                                        &handle);
   std::unique_ptr<base::DiscardableSharedMemory> memory(
       new base::DiscardableSharedMemory(handle));
   if (!memory->Map(size))
@@ -308,17 +368,16 @@ bool DiscardableSharedMemoryManager::OnMemoryDump(
 
 void DiscardableSharedMemoryManager::
     AllocateLockedDiscardableSharedMemoryForClient(
-        base::ProcessHandle process_handle,
         int client_id,
         size_t size,
-        DiscardableSharedMemoryId id,
+        int32_t id,
         base::SharedMemoryHandle* shared_memory_handle) {
-  AllocateLockedDiscardableSharedMemory(process_handle, client_id, size, id,
+  AllocateLockedDiscardableSharedMemory(client_id, size, id,
                                         shared_memory_handle);
 }
 
 void DiscardableSharedMemoryManager::ClientDeletedDiscardableSharedMemory(
-    DiscardableSharedMemoryId id,
+    int32_t id,
     int client_id) {
   DeletedDiscardableSharedMemory(id, client_id);
 }
@@ -380,10 +439,9 @@ void DiscardableSharedMemoryManager::OnMemoryStateChange(
 }
 
 void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
-    base::ProcessHandle process_handle,
     int client_id,
     size_t size,
-    DiscardableSharedMemoryId id,
+    int32_t id,
     base::SharedMemoryHandle* shared_memory_handle) {
   base::AutoLock lock(lock_);
 
@@ -416,15 +474,6 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
     return;
   }
 
-  if (!memory->ShareToProcess(process_handle, shared_memory_handle)) {
-    LOG(ERROR) << "Cannot share discardable memory segment";
-    *shared_memory_handle = base::SharedMemory::NULLHandle();
-    return;
-  }
-
-  // Close file descriptor to avoid running out.
-  memory->Close();
-
   base::CheckedNumeric<size_t> checked_bytes_allocated = bytes_allocated_;
   checked_bytes_allocated += memory->mapped_size();
   if (!checked_bytes_allocated.IsValid()) {
@@ -434,6 +483,10 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 
   bytes_allocated_ = checked_bytes_allocated.ValueOrDie();
   BytesAllocatedChanged(bytes_allocated_);
+
+  *shared_memory_handle = base::SharedMemory::DuplicateHandle(memory->handle());
+  // Close file descriptor to avoid running out.
+  memory->Close();
 
   scoped_refptr<MemorySegment> segment(new MemorySegment(std::move(memory)));
   client_segments[id] = segment.get();
@@ -445,7 +498,7 @@ void DiscardableSharedMemoryManager::AllocateLockedDiscardableSharedMemory(
 }
 
 void DiscardableSharedMemoryManager::DeletedDiscardableSharedMemory(
-    DiscardableSharedMemoryId id,
+    int32_t id,
     int client_id) {
   base::AutoLock lock(lock_);
 
