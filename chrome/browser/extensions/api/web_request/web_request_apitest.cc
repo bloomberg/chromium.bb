@@ -232,8 +232,10 @@ IN_PROC_BROWSER_TEST_F(ExtensionWebRequestApiTest,
 }
 
 // This test times out regularly on win_rel trybots. See http://crbug.com/122178
-// Also on Linux/ChromiumOS debug builds. https://crbug.com/670415
-#if defined(OS_WIN) || !defined(NDEBUG)
+// Also on Linux/ChromiumOS debug, ASAN and MSAN builds.
+// https://crbug.com/670415
+#if defined(OS_WIN) || !defined(NDEBUG) || defined(ADDRESS_SANITIZER) || \
+    defined(MEMORY_SANITIZER)
 #define MAYBE_WebRequestBlocking DISABLED_WebRequestBlocking
 #else
 #define MAYBE_WebRequestBlocking WebRequestBlocking
