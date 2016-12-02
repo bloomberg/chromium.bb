@@ -211,7 +211,7 @@ ScrollTopLeftInterop status=experimental
 Sensor status=experimental
 ServiceWorkerNavigationPreload
 SetRootScroller status=experimental
-ShadowPiercingDescendantCombinator status=test
+ShadowPiercingDescendantCombinator status=experimental
 ShapeDetection status=experimental
 SharedArrayBuffer
 SharedWorker status=stable
