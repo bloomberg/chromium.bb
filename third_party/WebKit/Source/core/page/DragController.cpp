@@ -69,6 +69,7 @@
 #include "core/page/DragSession.h"
 #include "core/page/DragState.h"
 #include "core/page/Page.h"
+#include "core/svg/graphics/SVGImageForContainer.h"
 #include "platform/DragImage.h"
 #include "platform/SharedBuffer.h"
 #include "platform/geometry/IntRect.h"
@@ -981,6 +982,16 @@ static std::unique_ptr<DragImage> dragImageForImage(
     IntPoint& dragLocation) {
   std::unique_ptr<DragImage> dragImage;
   IntPoint origin;
+
+  // Substitute an appropriately-sized SVGImageForContainer, to ensure dragged
+  // SVG images scale seamlessly.
+  RefPtr<SVGImageForContainer> svgImage;
+  if (image->isSVGImage()) {
+    KURL url = element->document().completeURL(element->imageSourceURL());
+    svgImage = SVGImageForContainer::create(toSVGImage(image),
+                                            imageElementSizeInPixels, 1, url);
+    image = svgImage.get();
+  }
 
   InterpolationQuality interpolationQuality =
       element->ensureComputedStyle()->imageRendering() ==
