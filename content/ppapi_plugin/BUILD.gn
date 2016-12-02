@@ -23,6 +23,7 @@ source_set("ppapi_plugin_sources") {
     "//content",  # For the component build.
     "//content/app:*",
     "//gin",
+    "//services/service_manager/public/cpp",
   ]
 
   sources = [

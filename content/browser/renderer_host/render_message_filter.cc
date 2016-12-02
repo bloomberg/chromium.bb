@@ -161,8 +161,6 @@ RenderMessageFilter::~RenderMessageFilter() {
       BrowserGpuMemoryBufferManager::current();
   if (gpu_memory_buffer_manager)
     gpu_memory_buffer_manager->ProcessRemoved(render_process_id_);
-  discardable_memory::DiscardableSharedMemoryManager::current()->ClientRemoved(
-      render_process_id_);
 }
 
 bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -200,11 +198,7 @@ bool RenderMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnAllocatedSharedBitmap)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedSharedBitmap,
                         OnDeletedSharedBitmap)
-    IPC_MESSAGE_HANDLER_DELAY_REPLY(
-        ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory,
-        OnAllocateLockedDiscardableSharedMemory)
-    IPC_MESSAGE_HANDLER(ChildProcessHostMsg_DeletedDiscardableSharedMemory,
-                        OnDeletedDiscardableSharedMemory)
+
 #if defined(OS_LINUX)
     IPC_MESSAGE_HANDLER(ChildProcessHostMsg_SetThreadPriority,
                         OnSetThreadPriority)
@@ -367,45 +361,6 @@ void RenderMessageFilter::OnAllocatedSharedBitmap(
 
 void RenderMessageFilter::OnDeletedSharedBitmap(const cc::SharedBitmapId& id) {
   bitmap_manager_client_.ChildDeletedSharedBitmap(id);
-}
-
-void RenderMessageFilter::AllocateLockedDiscardableSharedMemoryOnFileThread(
-    uint32_t size,
-    discardable_memory::DiscardableSharedMemoryId id,
-    IPC::Message* reply_msg) {
-  base::SharedMemoryHandle handle;
-  discardable_memory::DiscardableSharedMemoryManager::current()
-      ->AllocateLockedDiscardableSharedMemoryForClient(
-          PeerHandle(), render_process_id_, size, id, &handle);
-  ChildProcessHostMsg_SyncAllocateLockedDiscardableSharedMemory::
-      WriteReplyParams(reply_msg, handle);
-  Send(reply_msg);
-}
-
-void RenderMessageFilter::OnAllocateLockedDiscardableSharedMemory(
-    uint32_t size,
-    discardable_memory::DiscardableSharedMemoryId id,
-    IPC::Message* reply_msg) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-      base::Bind(&RenderMessageFilter::
-                     AllocateLockedDiscardableSharedMemoryOnFileThread,
-                 this, size, id, reply_msg));
-}
-
-void RenderMessageFilter::DeletedDiscardableSharedMemoryOnFileThread(
-    discardable_memory::DiscardableSharedMemoryId id) {
-  discardable_memory::DiscardableSharedMemoryManager::current()
-      ->ClientDeletedDiscardableSharedMemory(id, render_process_id_);
-}
-
-void RenderMessageFilter::OnDeletedDiscardableSharedMemory(
-    discardable_memory::DiscardableSharedMemoryId id) {
-  BrowserThread::PostTask(
-      BrowserThread::FILE_USER_BLOCKING, FROM_HERE,
-      base::Bind(
-          &RenderMessageFilter::DeletedDiscardableSharedMemoryOnFileThread,
-          this, id));
 }
 
 #if defined(OS_LINUX)

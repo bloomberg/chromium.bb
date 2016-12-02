@@ -881,11 +881,18 @@ void RenderThreadImpl::Init(
 
   categorized_worker_pool_->Start(num_raster_threads);
 
+  discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
+  ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
+      mojo::GetProxy(&manager_ptr));
+  discardable_shared_memory_manager_ = base::MakeUnique<
+      discardable_memory::ClientDiscardableSharedMemoryManager>(
+      std::move(manager_ptr), GetIOTaskRunner());
+
   // TODO(boliu): In single process, browser main loop should set up the
   // discardable memory manager, and should skip this if kSingleProcess.
   // See crbug.com/503724.
   base::DiscardableMemoryAllocator::SetInstance(
-      ChildThreadImpl::discardable_shared_memory_manager());
+      discardable_shared_memory_manager_.get());
 
   GetContentClient()->renderer()->ExposeInterfacesToBrowser(
       GetInterfaceRegistry());
@@ -1040,7 +1047,7 @@ void RenderThreadImpl::Shutdown() {
   // Delay shutting down DiscardableSharedMemoryManager until blink::shutdown
   // is complete, because blink::shutdown destructs Blink Resources and they
   // may try to unlock their underlying discardable memory.
-  ChildThreadImpl::ShutdownDiscardableSharedMemoryManager();
+  discardable_shared_memory_manager_.reset();
 
   // The message loop must be cleared after shutting down
   // the DiscardableSharedMemoryManager, which needs to send messages
@@ -1867,8 +1874,7 @@ void RenderThreadImpl::RecordPurgeAndSuspendMetrics() const {
                           malloc_usage / 1024 / 1024);
 
   discardable_memory::ClientDiscardableSharedMemoryManager::Statistics
-      discardable_stats =
-          ChildThreadImpl::discardable_shared_memory_manager()->GetStatistics();
+      discardable_stats = discardable_shared_memory_manager_->GetStatistics();
   size_t discardable_usage =
       discardable_stats.total_size - discardable_stats.freelist_size;
   UMA_HISTOGRAM_MEMORY_KB("PurgeAndSuspend.Memory.DiscardableKB",
@@ -2443,7 +2449,7 @@ void RenderThreadImpl::OnRendererVisible() {
 
 void RenderThreadImpl::ReleaseFreeMemory() {
   base::allocator::ReleaseFreeMemory();
-  discardable_shared_memory_manager()->ReleaseFreeMemory();
+  discardable_shared_memory_manager_->ReleaseFreeMemory();
 
   if (blink_platform_impl_)
     blink::decommitFreeableMemory();

@@ -47,6 +47,7 @@
 #include "build/build_config.h"
 #include "cc/base/switches.h"
 #include "cc/output/buffer_to_texture_target_map.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "components/tracing/common/tracing_switches.h"
 #include "content/browser/appcache/appcache_dispatcher_host.h"
 #include "content/browser/appcache/chrome_appcache_service.h"
@@ -1293,6 +1294,11 @@ void RenderProcessHostImpl::RegisterMojoInterfaces() {
   AddUIThreadInterface(
       registry.get(), base::Bind(&WebSocketManager::CreateWebSocket, GetID(),
                                  MSG_ROUTING_NONE));
+
+  registry->AddInterface(base::Bind(
+      &discardable_memory::DiscardableSharedMemoryManager::Bind,
+      base::Unretained(
+          discardable_memory::DiscardableSharedMemoryManager::GetInstance())));
 
   GetContentClient()->browser()->ExposeInterfacesToRenderer(registry.get(),
                                                             this);

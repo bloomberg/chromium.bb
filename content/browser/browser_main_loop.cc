@@ -632,11 +632,14 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
     screen_orientation_delegate_.reset(new ScreenOrientationDelegateWin());
 #endif
 
+  auto* discardable_shared_memory_manager =
+      discardable_memory::DiscardableSharedMemoryManager::CreateInstance();
+
   // TODO(boliu): kSingleProcess check is a temporary workaround for
   // in-process Android WebView. crbug.com/503724 tracks proper fix.
   if (!parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
     base::DiscardableMemoryAllocator::SetInstance(
-        discardable_memory::DiscardableSharedMemoryManager::current());
+        discardable_shared_memory_manager);
   }
 
   if (parts_)

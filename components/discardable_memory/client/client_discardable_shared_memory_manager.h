@@ -7,6 +7,7 @@
 
 #include <stddef.h>
 
+#include "base/callback_helpers.h"
 #include "base/macros.h"
 #include "base/memory/discardable_memory_allocator.h"
 #include "base/memory/ref_counted.h"
@@ -15,7 +16,11 @@
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
 #include "components/discardable_memory/common/discardable_shared_memory_heap.h"
-#include "components/discardable_memory/common/discardable_shared_memory_id.h"
+#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+
+namespace base {
+class SingleThreadTaskRunner;
+}
 
 namespace discardable_memory {
 
@@ -25,20 +30,9 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
     : public base::DiscardableMemoryAllocator,
       public base::trace_event::MemoryDumpProvider {
  public:
-  class Delegate {
-   public:
-    virtual void AllocateLockedDiscardableSharedMemory(
-        size_t size,
-        DiscardableSharedMemoryId id,
-        base::SharedMemoryHandle* handle) = 0;
-    virtual void DeletedDiscardableSharedMemory(
-        DiscardableSharedMemoryId id) = 0;
-
-   protected:
-    virtual ~Delegate() {}
-  };
-
-  explicit ClientDiscardableSharedMemoryManager(Delegate* delegate);
+  ClientDiscardableSharedMemoryManager(
+      mojom::DiscardableSharedMemoryManagerPtr manager,
+      scoped_refptr<base::SingleThreadTaskRunner> io_task_runner);
   ~ClientDiscardableSharedMemoryManager() override;
 
   // Overridden from base::DiscardableMemoryAllocator:
@@ -70,14 +64,27 @@ class DISCARDABLE_MEMORY_EXPORT ClientDiscardableSharedMemoryManager
 
  private:
   std::unique_ptr<base::DiscardableSharedMemory>
-  AllocateLockedDiscardableSharedMemory(size_t size,
-                                        DiscardableSharedMemoryId id);
+  AllocateLockedDiscardableSharedMemory(size_t size, int32_t id);
+  void AllocateOnIO(size_t size,
+                    int32_t id,
+                    std::unique_ptr<base::DiscardableSharedMemory>* memory,
+                    base::ScopedClosureRunner closure_runner);
+  void AllocateCompletedOnIO(
+      std::unique_ptr<base::DiscardableSharedMemory>* memory,
+      base::ScopedClosureRunner closure_runner,
+      mojo::ScopedSharedBufferHandle mojo_handle);
+
+  void DeletedDiscardableSharedMemory(int32_t id);
   void MemoryUsageChanged(size_t new_bytes_allocated,
                           size_t new_bytes_free) const;
 
+  scoped_refptr<base::SingleThreadTaskRunner> io_task_runner_;
+  // TODO(penghuang): Switch to ThreadSafeInterfacePtr when it starts supporting
+  // sync method call.
+  std::unique_ptr<mojom::DiscardableSharedMemoryManagerPtr> manager_mojo_;
+
   mutable base::Lock lock_;
-  DiscardableSharedMemoryHeap heap_;
-  Delegate* const delegate_;
+  std::unique_ptr<DiscardableSharedMemoryHeap> heap_;
 
   DISALLOW_COPY_AND_ASSIGN(ClientDiscardableSharedMemoryManager);
 };

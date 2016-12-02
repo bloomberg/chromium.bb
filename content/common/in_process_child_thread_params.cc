@@ -7,9 +7,10 @@
 namespace content {
 
 InProcessChildThreadParams::InProcessChildThreadParams(
-    scoped_refptr<base::SequencedTaskRunner> io_runner,
+    scoped_refptr<base::SingleThreadTaskRunner> io_runner,
     const std::string& service_request_token)
-    : io_runner_(io_runner), service_request_token_(service_request_token) {}
+    : io_runner_(std::move(io_runner)),
+      service_request_token_(service_request_token) {}
 
 InProcessChildThreadParams::InProcessChildThreadParams(
     const InProcessChildThreadParams& other) = default;

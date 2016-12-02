@@ -13,7 +13,6 @@ component("common") {
     "discardable_memory_export.h",
     "discardable_shared_memory_heap.cc",
     "discardable_shared_memory_heap.h",
-    "discardable_shared_memory_id.h",
   ]
 
   deps = [

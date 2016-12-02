@@ -32,6 +32,7 @@ specific_include_rules = {
     "+content/shell",
   ],
   "render_thread_impl_browsertest\.cc": [
+    "+components/discardable_memory/service",
     "+content/app/mojo/mojo_init.h",
   ],
 }
