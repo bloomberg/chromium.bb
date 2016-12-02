@@ -29,9 +29,6 @@ class ImageDecoderService : public service_manager::Service {
   bool OnStop() override;
 
  private:
-  void MaybeRequestQuitDelayed();
-  void MaybeRequestQuit();
-
   std::unique_ptr<service_manager::ServiceContextRefFactory> ref_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ImageDecoderService);
