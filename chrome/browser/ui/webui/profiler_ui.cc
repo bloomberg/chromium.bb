@@ -14,6 +14,7 @@
 // #define USE_SOURCE_FILES_DIRECTLY
 
 #include "base/bind.h"
+#include "base/debug/debugging_flags.h"
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/tracked_objects.h"
@@ -105,6 +106,9 @@ content::WebUIDataSource* CreateProfilerHTMLSource() {
   source->AddResourcePath("profiler.js", IDR_PROFILER_JS);
   source->SetDefaultResource(IDR_PROFILER_HTML);
   source->DisableI18nAndUseGzipForAllPaths();
+  source->AddBoolean("enableMemoryTaskProfiler",
+                     BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER));
+
   return source;
 }
 

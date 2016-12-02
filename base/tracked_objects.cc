@@ -13,6 +13,8 @@
 #include "base/compiler_specific.h"
 #include "base/debug/leak_annotations.h"
 #include "base/logging.h"
+#include "base/numerics/safe_conversions.h"
+#include "base/numerics/safe_math.h"
 #include "base/process/process_handle.h"
 #include "base/strings/stringprintf.h"
 #include "base/third_party/valgrind/memcheck.h"
@@ -86,10 +88,15 @@ DeathData::DeathData()
       queue_duration_sum_(0),
       run_duration_max_(0),
       queue_duration_max_(0),
+      alloc_ops_(0),
+      free_ops_(0),
+      allocated_bytes_(0),
+      freed_bytes_(0),
+      alloc_overhead_bytes_(0),
+      max_allocated_bytes_(0),
       run_duration_sample_(0),
       queue_duration_sample_(0),
-      last_phase_snapshot_(nullptr) {
-}
+      last_phase_snapshot_(nullptr) {}
 
 DeathData::DeathData(const DeathData& other)
     : count_(other.count_),
@@ -98,6 +105,12 @@ DeathData::DeathData(const DeathData& other)
       queue_duration_sum_(other.queue_duration_sum_),
       run_duration_max_(other.run_duration_max_),
       queue_duration_max_(other.queue_duration_max_),
+      alloc_ops_(other.alloc_ops_),
+      free_ops_(other.free_ops_),
+      allocated_bytes_(other.allocated_bytes_),
+      freed_bytes_(other.freed_bytes_),
+      alloc_overhead_bytes_(other.alloc_overhead_bytes_),
+      max_allocated_bytes_(other.max_allocated_bytes_),
       run_duration_sample_(other.run_duration_sample_),
       queue_duration_sample_(other.queue_duration_sample_),
       last_phase_snapshot_(nullptr) {
@@ -125,9 +138,9 @@ DeathData::~DeathData() {
 #define CONDITIONAL_ASSIGN(assign_it, target, source) \
   ((target) ^= ((target) ^ (source)) & -static_cast<int32_t>(assign_it))
 
-void DeathData::RecordDeath(const int32_t queue_duration,
-                            const int32_t run_duration,
-                            const uint32_t random_number) {
+void DeathData::RecordDurations(const int32_t queue_duration,
+                                const int32_t run_duration,
+                                const uint32_t random_number) {
   // We'll just clamp at INT_MAX, but we should note this in the UI as such.
   if (count_ < INT_MAX)
     base::subtle::NoBarrier_Store(&count_, count_ + 1);
@@ -164,12 +177,28 @@ void DeathData::RecordDeath(const int32_t queue_duration,
   }
 }
 
+void DeathData::RecordAllocations(const uint32_t alloc_ops,
+                                  const uint32_t free_ops,
+                                  const uint32_t allocated_bytes,
+                                  const uint32_t freed_bytes,
+                                  const uint32_t alloc_overhead_bytes,
+                                  const uint32_t max_allocated_bytes) {
+  // Use saturating arithmetic.
+  SaturatingMemberAdd(alloc_ops, &alloc_ops_);
+  SaturatingMemberAdd(free_ops, &free_ops_);
+  SaturatingMemberAdd(allocated_bytes, &allocated_bytes_);
+  SaturatingMemberAdd(freed_bytes, &freed_bytes_);
+  SaturatingMemberAdd(alloc_overhead_bytes, &alloc_overhead_bytes_);
+
+  int32_t max = base::saturated_cast<int32_t>(max_allocated_bytes);
+  if (max > max_allocated_bytes_)
+    base::subtle::NoBarrier_Store(&max_allocated_bytes_, max);
+}
+
 void DeathData::OnProfilingPhaseCompleted(int profiling_phase) {
   // Snapshotting and storing current state.
-  last_phase_snapshot_ = new DeathDataPhaseSnapshot(
-      profiling_phase, count(), run_duration_sum(), run_duration_max(),
-      run_duration_sample(), queue_duration_sum(), queue_duration_max(),
-      queue_duration_sample(), last_phase_snapshot_);
+  last_phase_snapshot_ =
+      new DeathDataPhaseSnapshot(profiling_phase, *this, last_phase_snapshot_);
 
   // Not touching fields for which a delta can be computed by comparing with a
   // snapshot from the previous phase. Resetting other fields.  Sample values
@@ -201,6 +230,17 @@ void DeathData::OnProfilingPhaseCompleted(int profiling_phase) {
   base::subtle::NoBarrier_Store(&queue_duration_max_, 0);
 }
 
+void DeathData::SaturatingMemberAdd(const uint32_t addend,
+                                    base::subtle::Atomic32* sum) {
+  // Bail quick if no work or already saturated.
+  if (addend == 0U || *sum == INT_MAX)
+    return;
+
+  base::CheckedNumeric<int32_t> new_sum = *sum;
+  new_sum += addend;
+  base::subtle::NoBarrier_Store(sum, new_sum.ValueOrDefault(INT_MAX));
+}
+
 //------------------------------------------------------------------------------
 DeathDataSnapshot::DeathDataSnapshot()
     : count(-1),
@@ -209,8 +249,13 @@ DeathDataSnapshot::DeathDataSnapshot()
       run_duration_sample(-1),
       queue_duration_sum(-1),
       queue_duration_max(-1),
-      queue_duration_sample(-1) {
-}
+      queue_duration_sample(-1),
+      alloc_ops(-1),
+      free_ops(-1),
+      allocated_bytes(-1),
+      freed_bytes(-1),
+      alloc_overhead_bytes(-1),
+      max_allocated_bytes(-1) {}
 
 DeathDataSnapshot::DeathDataSnapshot(int count,
                                      int32_t run_duration_sum,
@@ -218,25 +263,58 @@ DeathDataSnapshot::DeathDataSnapshot(int count,
                                      int32_t run_duration_sample,
                                      int32_t queue_duration_sum,
                                      int32_t queue_duration_max,
-                                     int32_t queue_duration_sample)
+                                     int32_t queue_duration_sample,
+                                     int32_t alloc_ops,
+                                     int32_t free_ops,
+                                     int32_t allocated_bytes,
+                                     int32_t freed_bytes,
+                                     int32_t alloc_overhead_bytes,
+                                     int32_t max_allocated_bytes)
     : count(count),
       run_duration_sum(run_duration_sum),
       run_duration_max(run_duration_max),
       run_duration_sample(run_duration_sample),
       queue_duration_sum(queue_duration_sum),
       queue_duration_max(queue_duration_max),
-      queue_duration_sample(queue_duration_sample) {}
+      queue_duration_sample(queue_duration_sample),
+      alloc_ops(alloc_ops),
+      free_ops(free_ops),
+      allocated_bytes(allocated_bytes),
+      freed_bytes(freed_bytes),
+      alloc_overhead_bytes(alloc_overhead_bytes),
+      max_allocated_bytes(max_allocated_bytes) {}
+
+DeathDataSnapshot::DeathDataSnapshot(const DeathData& death_data)
+    : count(death_data.count()),
+      run_duration_sum(death_data.run_duration_sum()),
+      run_duration_max(death_data.run_duration_max()),
+      run_duration_sample(death_data.run_duration_sample()),
+      queue_duration_sum(death_data.queue_duration_sum()),
+      queue_duration_max(death_data.queue_duration_max()),
+      queue_duration_sample(death_data.queue_duration_sample()),
+      alloc_ops(death_data.alloc_ops()),
+      free_ops(death_data.free_ops()),
+      allocated_bytes(death_data.allocated_bytes()),
+      freed_bytes(death_data.freed_bytes()),
+      alloc_overhead_bytes(death_data.alloc_overhead_bytes()),
+      max_allocated_bytes(death_data.max_allocated_bytes()) {}
+
+DeathDataSnapshot::DeathDataSnapshot(const DeathDataSnapshot& death_data) =
+    default;
 
 DeathDataSnapshot::~DeathDataSnapshot() {
 }
 
 DeathDataSnapshot DeathDataSnapshot::Delta(
     const DeathDataSnapshot& older) const {
-  return DeathDataSnapshot(count - older.count,
-                           run_duration_sum - older.run_duration_sum,
-                           run_duration_max, run_duration_sample,
-                           queue_duration_sum - older.queue_duration_sum,
-                           queue_duration_max, queue_duration_sample);
+  return DeathDataSnapshot(
+      count - older.count, run_duration_sum - older.run_duration_sum,
+      run_duration_max, run_duration_sample,
+      queue_duration_sum - older.queue_duration_sum, queue_duration_max,
+      queue_duration_sample, alloc_ops - older.alloc_ops,
+      free_ops - older.free_ops, allocated_bytes - older.allocated_bytes,
+      freed_bytes - older.freed_bytes,
+      alloc_overhead_bytes - older.alloc_overhead_bytes, max_allocated_bytes);
 }
 
 //------------------------------------------------------------------------------
@@ -455,7 +533,8 @@ void ThreadData::Snapshot(int current_profiling_phase,
     if (birth_count.second > 0) {
       current_phase_tasks->push_back(
           TaskSnapshot(BirthOnThreadSnapshot(*birth_count.first),
-                       DeathDataSnapshot(birth_count.second, 0, 0, 0, 0, 0, 0),
+                       DeathDataSnapshot(birth_count.second, 0, 0, 0, 0, 0, 0,
+                                         0, 0, 0, 0, 0, 0),
                        "Still_Alive"));
     }
   }
@@ -514,7 +593,21 @@ void ThreadData::TallyADeath(const Births& births,
     base::AutoLock lock(map_lock_);  // Lock as the map may get relocated now.
     death_data = &death_map_[&births];
   }  // Release lock ASAP.
-  death_data->RecordDeath(queue_duration, run_duration, random_number_);
+  death_data->RecordDurations(queue_duration, run_duration, random_number_);
+
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  if (stopwatch.heap_tracking_enabled()) {
+    base::debug::ThreadHeapUsage heap_usage = stopwatch.heap_usage().usage();
+    // Saturate the 64 bit counts on conversion to 32 bit storage.
+    death_data->RecordAllocations(
+        base::saturated_cast<int32_t>(heap_usage.alloc_ops),
+        base::saturated_cast<int32_t>(heap_usage.free_ops),
+        base::saturated_cast<int32_t>(heap_usage.alloc_bytes),
+        base::saturated_cast<int32_t>(heap_usage.free_bytes),
+        base::saturated_cast<int32_t>(heap_usage.alloc_overhead_bytes),
+        base::saturated_cast<int32_t>(heap_usage.max_allocated_bytes));
+  }
+#endif
 }
 
 // static
@@ -653,13 +746,7 @@ void ThreadData::SnapshotMaps(int profiling_phase,
   for (const auto& death : death_map_) {
     deaths->push_back(std::make_pair(
         death.first,
-        DeathDataPhaseSnapshot(profiling_phase, death.second.count(),
-                               death.second.run_duration_sum(),
-                               death.second.run_duration_max(),
-                               death.second.run_duration_sample(),
-                               death.second.queue_duration_sum(),
-                               death.second.queue_duration_max(),
-                               death.second.queue_duration_sample(),
+        DeathDataPhaseSnapshot(profiling_phase, death.second,
                                death.second.last_phase_snapshot())));
   }
 }
@@ -705,6 +792,14 @@ void ThreadData::EnsureTlsInitialization() {
   // we get the lock earlier in this method.
   base::subtle::Release_Store(&status_, kInitialStartupState);
   DCHECK(base::subtle::NoBarrier_Load(&status_) != UNINITIALIZED);
+
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  // Make sure heap tracking is enabled ASAP if the default state is active.
+  if (kInitialStartupState == PROFILING_ACTIVE &&
+      !base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled()) {
+    base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
+  }
+#endif  // BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
 }
 
 // static
@@ -714,8 +809,14 @@ void ThreadData::InitializeAndSetTrackingStatus(Status status) {
 
   EnsureTlsInitialization();  // No-op if already initialized.
 
-  if (status > DEACTIVATED)
+  if (status > DEACTIVATED) {
     status = PROFILING_ACTIVE;
+
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+    if (!base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled())
+      base::debug::ThreadHeapUsageTracker::EnableHeapTracking();
+#endif  // BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  }
   base::subtle::Release_Store(&status_, status);
 }
 
@@ -823,6 +924,10 @@ TaskStopwatch::TaskStopwatch()
   state_ = CREATED;
   child_ = NULL;
 #endif
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  heap_tracking_enabled_ =
+      base::debug::ThreadHeapUsageTracker::IsHeapTrackingEnabled();
+#endif
 }
 
 TaskStopwatch::~TaskStopwatch() {
@@ -839,6 +944,10 @@ void TaskStopwatch::Start() {
 #endif
 
   start_time_ = ThreadData::Now();
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  if (heap_tracking_enabled_)
+    heap_usage_.Start();
+#endif
 
   current_thread_data_ = ThreadData::Get();
   if (!current_thread_data_)
@@ -861,6 +970,10 @@ void TaskStopwatch::Stop() {
   DCHECK(state_ == RUNNING);
   state_ = STOPPED;
   DCHECK(child_ == NULL);
+#endif
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  if (heap_tracking_enabled_)
+    heap_usage_.Stop(true);
 #endif
 
   if (!start_time_.is_null() && !end_time.is_null()) {
@@ -913,23 +1026,9 @@ ThreadData* TaskStopwatch::GetThreadData() const {
 
 DeathDataPhaseSnapshot::DeathDataPhaseSnapshot(
     int profiling_phase,
-    int count,
-    int32_t run_duration_sum,
-    int32_t run_duration_max,
-    int32_t run_duration_sample,
-    int32_t queue_duration_sum,
-    int32_t queue_duration_max,
-    int32_t queue_duration_sample,
+    const DeathData& death,
     const DeathDataPhaseSnapshot* prev)
-    : profiling_phase(profiling_phase),
-      death_data(count,
-                 run_duration_sum,
-                 run_duration_max,
-                 run_duration_sample,
-                 queue_duration_sum,
-                 queue_duration_max,
-                 queue_duration_sample),
-      prev(prev) {}
+    : profiling_phase(profiling_phase), death_data(death), prev(prev) {}
 
 //------------------------------------------------------------------------------
 // TaskSnapshot

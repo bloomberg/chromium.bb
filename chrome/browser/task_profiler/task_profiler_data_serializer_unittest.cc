@@ -73,6 +73,12 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data_phase.tasks.back().death_data.queue_duration_max = 53;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 13;
     process_data_phase.tasks.back().death_data.queue_duration_sum = 79;
+    process_data_phase.tasks.back().death_data.alloc_ops = 127;
+    process_data_phase.tasks.back().death_data.free_ops = 120;
+    process_data_phase.tasks.back().death_data.allocated_bytes = 2013;
+    process_data_phase.tasks.back().death_data.freed_bytes = 1092;
+    process_data_phase.tasks.back().death_data.alloc_overhead_bytes = 201;
+    process_data_phase.tasks.back().death_data.max_allocated_bytes = 1500;
     process_data_phase.tasks.back().death_thread_name =
         "WorkerPool/-1340960768";
 
@@ -86,6 +92,12 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
     process_data_phase.tasks.back().death_data.queue_duration_max = 2053;
     process_data_phase.tasks.back().death_data.queue_duration_sample = 2013;
     process_data_phase.tasks.back().death_data.queue_duration_sum = 2079;
+    process_data_phase.tasks.back().death_data.alloc_ops = 1207;
+    process_data_phase.tasks.back().death_data.free_ops = 1200;
+    process_data_phase.tasks.back().death_data.allocated_bytes = 20013;
+    process_data_phase.tasks.back().death_data.freed_bytes = 10092;
+    process_data_phase.tasks.back().death_data.alloc_overhead_bytes = 2001;
+    process_data_phase.tasks.back().death_data.max_allocated_bytes = 15000;
     process_data_phase.tasks.back().death_thread_name = "PAC thread #3";
 
     ExpectSerialization(process_data_phase, 239,
@@ -99,7 +111,13 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
                         "},"
                         "\"birth_thread\":\"CrBrowserMain\","
                         "\"death_data\":{"
+                        "\"alloc_ops\":127,"
+                        "\"alloc_overhead_bytes\":201,"
+                        "\"allocated_bytes\":2013,"
                         "\"count\":37,"
+                        "\"free_ops\":120,"
+                        "\"freed_bytes\":1092,"
+                        "\"max_allocated_bytes\":1500,"
                         "\"queue_ms\":79,"
                         "\"queue_ms_max\":53,"
                         "\"queue_ms_sample\":13,"
@@ -116,7 +134,13 @@ TEST(TaskProfilerDataSerializerTest, SerializeProcessDataToJson) {
                         "},"
                         "\"birth_thread\":\"Chrome_IOThread\","
                         "\"death_data\":{"
+                        "\"alloc_ops\":1207,"
+                        "\"alloc_overhead_bytes\":2001,"
+                        "\"allocated_bytes\":20013,"
                         "\"count\":41,"
+                        "\"free_ops\":1200,"
+                        "\"freed_bytes\":10092,"
+                        "\"max_allocated_bytes\":15000,"
                         "\"queue_ms\":2079,"
                         "\"queue_ms_max\":2053,"
                         "\"queue_ms_sample\":2013,"

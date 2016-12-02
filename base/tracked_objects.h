@@ -14,9 +14,12 @@
 #include <utility>
 #include <vector>
 
+#include "base/allocator/features.h"
 #include "base/atomicops.h"
 #include "base/base_export.h"
 #include "base/containers/hash_tables.h"
+#include "base/debug/debugging_flags.h"
+#include "base/debug/thread_heap_usage_tracker.h"
 #include "base/gtest_prod_util.h"
 #include "base/lazy_instance.h"
 #include "base/location.h"
@@ -248,6 +251,8 @@ class BASE_EXPORT Births: public BirthOnThread {
   DISALLOW_COPY_AND_ASSIGN(Births);
 };
 
+class DeathData;
+
 //------------------------------------------------------------------------------
 // A "snapshotted" representation of the DeathData class.
 
@@ -265,7 +270,15 @@ struct BASE_EXPORT DeathDataSnapshot {
                     int32_t run_duration_sample,
                     int32_t queue_duration_sum,
                     int32_t queue_duration_max,
-                    int32_t queue_duration_sample);
+                    int32_t queue_duration_sample,
+                    int32_t alloc_ops,
+                    int32_t free_ops,
+                    int32_t allocated_bytes,
+                    int32_t freed_bytes,
+                    int32_t alloc_overhead_bytes,
+                    int32_t max_allocated_bytes);
+  DeathDataSnapshot(const DeathData& death_data);
+  DeathDataSnapshot(const DeathDataSnapshot& other);
   ~DeathDataSnapshot();
 
   // Calculates and returns the delta between this snapshot and an earlier
@@ -279,6 +292,13 @@ struct BASE_EXPORT DeathDataSnapshot {
   int32_t queue_duration_sum;
   int32_t queue_duration_max;
   int32_t queue_duration_sample;
+
+  int32_t alloc_ops;
+  int32_t free_ops;
+  int32_t allocated_bytes;
+  int32_t freed_bytes;
+  int32_t alloc_overhead_bytes;
+  int32_t max_allocated_bytes;
 };
 
 //------------------------------------------------------------------------------
@@ -287,13 +307,7 @@ struct BASE_EXPORT DeathDataSnapshot {
 
 struct DeathDataPhaseSnapshot {
   DeathDataPhaseSnapshot(int profiling_phase,
-                         int count,
-                         int32_t run_duration_sum,
-                         int32_t run_duration_max,
-                         int32_t run_duration_sample,
-                         int32_t queue_duration_sum,
-                         int32_t queue_duration_max,
-                         int32_t queue_duration_sample,
+                         const DeathData& death_data,
                          const DeathDataPhaseSnapshot* prev);
 
   // Profiling phase at which completion this snapshot was taken.
@@ -326,9 +340,26 @@ class BASE_EXPORT DeathData {
 
   // Update stats for a task destruction (death) that had a Run() time of
   // |duration|, and has had a queueing delay of |queue_duration|.
-  void RecordDeath(const int32_t queue_duration,
-                   const int32_t run_duration,
-                   const uint32_t random_number);
+  void RecordDurations(const int32_t queue_duration,
+                       const int32_t run_duration,
+                       const uint32_t random_number);
+
+  // Update stats for a task destruction that performed |alloc_ops|
+  // allocations, |free_ops| frees, allocated |allocated_bytes| bytes, freed
+  // |freed_bytes|, where an estimated |alloc_overhead_bytes| went to heap
+  // overhead, and where at most |max_allocated_bytes| were outstanding at any
+  // one time.
+  // Note that |alloc_overhead_bytes|/|alloc_ops| yields the average estimated
+  // heap overhead of allocations in the task, and |allocated_bytes|/|alloc_ops|
+  // yields the average size of allocation.
+  // Note also that |allocated_bytes|-|freed_bytes| yields the net heap memory
+  // usage of the task, which can be negative.
+  void RecordAllocations(const uint32_t alloc_ops,
+                         const uint32_t free_ops,
+                         const uint32_t allocated_bytes,
+                         const uint32_t freed_bytes,
+                         const uint32_t alloc_overhead_bytes,
+                         const uint32_t max_allocated_bytes);
 
   // Metrics and past snapshots accessors, used only for serialization and in
   // tests.
@@ -351,6 +382,22 @@ class BASE_EXPORT DeathData {
   int32_t queue_duration_sample() const {
     return base::subtle::NoBarrier_Load(&queue_duration_sample_);
   }
+  int32_t alloc_ops() const {
+    return base::subtle::NoBarrier_Load(&alloc_ops_);
+  }
+  int32_t free_ops() const { return base::subtle::NoBarrier_Load(&free_ops_); }
+  int32_t allocated_bytes() const {
+    return base::subtle::NoBarrier_Load(&allocated_bytes_);
+  }
+  int32_t freed_bytes() const {
+    return base::subtle::NoBarrier_Load(&freed_bytes_);
+  }
+  int32_t alloc_overhead_bytes() const {
+    return base::subtle::NoBarrier_Load(&alloc_overhead_bytes_);
+  }
+  int32_t max_allocated_bytes() const {
+    return base::subtle::NoBarrier_Load(&max_allocated_bytes_);
+  }
   const DeathDataPhaseSnapshot* last_phase_snapshot() const {
     return last_phase_snapshot_;
   }
@@ -361,6 +408,12 @@ class BASE_EXPORT DeathData {
   void OnProfilingPhaseCompleted(int profiling_phase);
 
  private:
+  // A saturating addition operation for member variables. This elides the
+  // use of atomic-primitive reads for members that are only written on the
+  // owning thread.
+  static void SaturatingMemberAdd(const uint32_t addend,
+                                  base::subtle::Atomic32* sum);
+
   // Members are ordered from most regularly read and updated, to least
   // frequently used.  This might help a bit with cache lines.
   // Number of runs seen (divisor for calculating averages).
@@ -383,6 +436,24 @@ class BASE_EXPORT DeathData {
   // snapshot thread.
   base::subtle::Atomic32 run_duration_max_;
   base::subtle::Atomic32 queue_duration_max_;
+
+  // The cumulative number of allocation and free operations.
+  base::subtle::Atomic32 alloc_ops_;
+  base::subtle::Atomic32 free_ops_;
+
+  // The number of bytes allocated by the task.
+  base::subtle::Atomic32 allocated_bytes_;
+
+  // The number of bytes freed by the task.
+  base::subtle::Atomic32 freed_bytes_;
+
+  // The cumulative number of overhead bytes. Where available this yields an
+  // estimate of the heap overhead for allocations.
+  base::subtle::Atomic32 alloc_overhead_bytes_;
+
+  // The high-watermark for the number of outstanding heap allocated bytes.
+  base::subtle::Atomic32 max_allocated_bytes_;
+
   // Samples, used by crowd sourcing gatherers.  These are almost never read,
   // and rarely updated.  They can be modified only on the death thread.
   base::subtle::Atomic32 run_duration_sample_;
@@ -755,12 +826,24 @@ class BASE_EXPORT TaskStopwatch {
   // this thread during that period.
   int32_t RunDurationMs() const;
 
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  const base::debug::ThreadHeapUsageTracker& heap_usage() const {
+    return heap_usage_;
+  }
+  bool heap_tracking_enabled() const { return heap_tracking_enabled_; }
+#endif
+
   // Returns tracking info for the current thread.
   ThreadData* GetThreadData() const;
 
  private:
   // Time when the stopwatch was started.
   TrackedTime start_time_;
+
+#if BUILDFLAG(ENABLE_MEMORY_TASK_PROFILER)
+  base::debug::ThreadHeapUsageTracker heap_usage_;
+  bool heap_tracking_enabled_;
+#endif
 
   // Wallclock duration of the task.
   int32_t wallclock_duration_ms_;

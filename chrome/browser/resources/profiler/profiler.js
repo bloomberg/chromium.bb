@@ -127,6 +127,17 @@ var MainView = (function() {
   var KEY_QUEUE_TIME = END_KEY++;
   var KEY_AVG_QUEUE_TIME = END_KEY++;
   var KEY_MAX_QUEUE_TIME = END_KEY++;
+  if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
+    var KEY_MEMORY_AVG_ALLOC_OPS = END_KEY++;
+    var KEY_MEMORY_AVG_FREE_OPS = END_KEY++;
+    var KEY_MEMORY_AVG_NET_BYTES = END_KEY++;
+    var KEY_MEMORY_MAX_ALLOCATED_BYTES = END_KEY++;
+    var KEY_MEMORY_ALLOC_OPS = END_KEY++;
+    var KEY_MEMORY_FREE_OPS = END_KEY++;
+    var KEY_MEMORY_ALLOCATED_BYTES = END_KEY++;
+    var KEY_MEMORY_FREED_BYTES = END_KEY++;
+    var KEY_MEMORY_ALLOC_OVERHEAD_BYTES = END_KEY++;
+  }
   var KEY_BIRTH_THREAD = END_KEY++;
   var KEY_DEATH_THREAD = END_KEY++;
   var KEY_PROCESS_TYPE = END_KEY++;
@@ -236,6 +247,47 @@ var MainView = (function() {
         return {
           create: function(key) {
             return new Aggregator(numeratorKey, divisorKey);
+          },
+        };
+      }
+    };
+  })();
+
+  /**
+   * This aggregator computes an average by summing the difference of two
+   * numeric fields, summing a count, and then dividing the totals.
+   */
+  var AvgDiffAggregator = (function() {
+    function Aggregator(numeratorPosKey, numeratorNegKey, divisorKey) {
+      this.numeratorPosKey_ = numeratorPosKey;
+      this.numeratorNegKey_ = numeratorNegKey;
+      this.divisorKey_ = divisorKey;
+
+      this.numeratorSum_ = 0;
+      this.divisorSum_ = 0;
+    }
+
+    Aggregator.prototype = {
+      consume: function(e) {
+        this.numeratorSum_ +=
+            e[this.numeratorPosKey_] - e[this.numeratorNegKey_];
+        this.divisorSum_ += e[this.divisorKey_];
+      },
+
+      getValue: function() {
+        return this.numeratorSum_ / this.divisorSum_;
+      },
+
+      getValueAsText: function() {
+        return formatNumberAsText(this.getValue());
+      },
+    };
+
+    return {
+      create: function(numeratorPosKey, numeratorNegKey, divisorKey) {
+        return {
+          create: function(key) {
+            return new Aggregator(numeratorPosKey, numeratorNegKey, divisorKey);
           },
         };
       }
@@ -418,6 +470,93 @@ var MainView = (function() {
     diff: diffFuncForCount,
   };
 
+  if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
+    KEY_PROPERTIES[KEY_MEMORY_AVG_ALLOC_OPS] = {
+      name: 'Avg Allocations',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      aggregator: AvgAggregator.create(KEY_MEMORY_ALLOC_OPS, KEY_COUNT),
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_AVG_FREE_OPS] = {
+      name: 'Avg Frees',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      aggregator: AvgAggregator.create(KEY_MEMORY_FREE_OPS, KEY_COUNT),
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_AVG_NET_BYTES] = {
+      name: 'Avg Net Bytes',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      aggregator: AvgDiffAggregator.create(KEY_MEMORY_ALLOCATED_BYTES,
+                                           KEY_MEMORY_FREED_BYTES, KEY_COUNT),
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_ALLOC_OPS] = {
+      name: 'Allocation count',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.alloc_ops',
+      aggregator: SumAggregator,
+      diff: diffFuncForCount,
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_FREE_OPS] = {
+      name: 'Free Count',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.free_ops',
+      aggregator: SumAggregator,
+      diff: diffFuncForCount,
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_ALLOCATED_BYTES] = {
+      name: 'Allocated bytes',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.allocated_bytes',
+      aggregator: SumAggregator,
+      diff: diffFuncForCount,
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_FREED_BYTES] = {
+      name: 'Freed bytes',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.freed_bytes',
+      aggregator: SumAggregator,
+      diff: diffFuncForCount,
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_ALLOC_OVERHEAD_BYTES] = {
+      name: 'Overhead bytes',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.alloc_overhead_bytes',
+      aggregator: SumAggregator,
+      diff: diffFuncForCount,
+    };
+
+    KEY_PROPERTIES[KEY_MEMORY_MAX_ALLOCATED_BYTES] = {
+      name: 'Max allocated (outstanding) bytes',
+      cellAlignment: 'right',
+      sortDescending: true,
+      textPrinter: formatNumberAsText,
+      inputJsonKey: 'death_data.max_allocated_bytes',
+      aggregator: MaxAggregator,
+      diff: diffFuncForMax,
+    };
+  }
+
   KEY_PROPERTIES[KEY_AVG_RUN_TIME] = {
     name: 'Avg run time',
     cellAlignment: 'right',
@@ -481,6 +620,16 @@ var MainView = (function() {
     KEY_LINE_NUMBER,
     KEY_QUEUE_TIME,
   ];
+
+  if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
+    INITIALLY_HIDDEN_KEYS = INITIALLY_HIDDEN_KEYS.concat([
+      KEY_MEMORY_ALLOC_OPS,
+      KEY_MEMORY_FREE_OPS,
+      KEY_MEMORY_ALLOCATED_BYTES,
+      KEY_MEMORY_FREED_BYTES,
+      KEY_MEMORY_ALLOC_OVERHEAD_BYTES,
+    ]);
+  }
 
   /**
    * The ordered list of grouping choices to expose in the "Group by"
@@ -825,6 +974,14 @@ var MainView = (function() {
   function computeDataRowAverages(e) {
     e[KEY_AVG_QUEUE_TIME] = e[KEY_QUEUE_TIME] / e[KEY_COUNT];
     e[KEY_AVG_RUN_TIME] = e[KEY_RUN_TIME] / e[KEY_COUNT];
+
+    if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
+      e[KEY_MEMORY_AVG_ALLOC_OPS] = e[KEY_MEMORY_ALLOC_OPS] / e[KEY_COUNT];
+      e[KEY_MEMORY_AVG_FREE_OPS] = e[KEY_MEMORY_FREE_OPS] / e[KEY_COUNT];
+      e[KEY_MEMORY_AVG_NET_BYTES] =
+          (e[KEY_MEMORY_ALLOCATED_BYTES] - e[KEY_MEMORY_FREED_BYTES]) /
+              e[KEY_COUNT];
+    }
   }
 
   /**
@@ -968,6 +1125,12 @@ var MainView = (function() {
     // diffing/aggregating these, but rather will derive them again from the
     // final row.
     var COMPUTED_AGGREGATE_KEYS = [KEY_AVG_QUEUE_TIME, KEY_AVG_RUN_TIME];
+    if (loadTimeData.getBoolean('enableMemoryTaskProfiler')) {
+       COMPUTED_AGGREGATE_KEYS = COMPUTED_AGGREGATE_KEYS.concat([
+          KEY_MEMORY_AVG_ALLOC_OPS,
+          KEY_MEMORY_AVG_FREE_OPS,
+          KEY_MEMORY_AVG_NET_BYTES]);
+    }
 
     // These are the keys which determine row equality. Since we are not doing
     // any merging yet at this point, it is simply the list of all identity
@@ -1916,7 +2079,7 @@ var MainView = (function() {
       for (var i = 0; i < this.snapshots_.length; ++i) {
         var checkbox = this.getSnapshotCheckbox_(i);
         checkbox.parentNode.parentNode.className =
-            checkbox.checked ? 'selected_snapshot' : '';
+            checkbox.checked ? 'selected-snapshot' : '';
       }
     },
 

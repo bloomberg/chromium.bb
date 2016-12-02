@@ -64,6 +64,14 @@ void DeathDataSnapshotToValue(const DeathDataSnapshot& death_data,
   dictionary->SetInteger("queue_ms", death_data.queue_duration_sum);
   dictionary->SetInteger("queue_ms_max", death_data.queue_duration_max);
   dictionary->SetInteger("queue_ms_sample", death_data.queue_duration_sample);
+
+  dictionary->SetInteger("alloc_ops", death_data.alloc_ops);
+  dictionary->SetInteger("free_ops", death_data.free_ops);
+  dictionary->SetInteger("allocated_bytes", death_data.allocated_bytes);
+  dictionary->SetInteger("freed_bytes", death_data.freed_bytes);
+  dictionary->SetInteger("alloc_overhead_bytes",
+                         death_data.alloc_overhead_bytes);
+  dictionary->SetInteger("max_allocated_bytes", death_data.max_allocated_bytes);
 }
 
 // Re-serializes the |snapshot| into |dictionary|.

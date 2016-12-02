@@ -36,6 +36,11 @@ declare_args() {
   # See //base/build_time.cc and //build/write_build_date_header.py for more
   # details and the expected format.
   override_build_date = "N/A"
+
+  # Turn on memory profiling in the task profiler when the heap shim is
+  # available, except for official builds for now.
+  enable_memory_task_profiler =
+      use_experimental_allocator_shim && !is_official_build
 }
 
 if (is_android) {
@@ -1513,7 +1518,10 @@ component("base") {
 buildflag_header("debugging_flags") {
   header = "debugging_flags.h"
   header_dir = "base/debug"
-  flags = [ "ENABLE_PROFILING=$enable_profiling" ]
+  flags = [
+    "ENABLE_PROFILING=$enable_profiling",
+    "ENABLE_MEMORY_TASK_PROFILER=$enable_memory_task_profiler",
+  ]
 }
 
 # This is the subset of files from base that should not be used with a dynamic

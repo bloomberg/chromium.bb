@@ -3,8 +3,10 @@
 <head>
 <meta charset="utf-8">
 <link rel="stylesheet" href="chrome://resources/css/text_defaults.css">
-<script src="profiler.js"></script>
+<script src="chrome://resources/js/load_time_data.js"></script>
 <script src="chrome://resources/js/util.js"></script>
+<script src="chrome://profiler/strings.js"></script>
+<script src="chrome://profiler/profiler.js"></script>
 
 <style>
 
@@ -17,15 +19,15 @@ body {
  * has a blue heading. When you hover over rows, they turn yellow.
  */
 table.results-table {
-  border-collapse:collapse;
+  border-collapse: collapse;
 }
 
 table.results-table,
 .results-table th,
 .results-table td {
   border: 1px solid #777;
-  padding-right: 4px;
   padding-left: 4px;
+  padding-right: 4px;
 }
 
 .results-table th {
@@ -33,7 +35,7 @@ table.results-table,
 }
 
 .results-table tbody tr:hover {
-  background-color:#ffb;
+  background-color: rgb(255, 255, 187);
 }
 
 /*
@@ -48,7 +50,7 @@ table.results-table,
  * This is row which displays aggregate totals for each column.
  */
 .results-table .aggregator-row {
-  background: #FFCC99;
+  background: rgb(255, 204, 153);
 }
 
 /*
@@ -66,8 +68,8 @@ table.results-table,
  * class. Used to add a bit of spacing between groups.
  */
 .group-container {
-  margin-top: 2ex;
   margin-bottom: 2ex;
+  margin-top: 2ex;
 }
 
 /*
@@ -85,16 +87,16 @@ table.results-table,
   text-decoration: underline;
 }
 
-.selected_snapshot {
-  font-weight: bold;
+.selected-snapshot {
   color: purple;
+  font-weight: bold;
 }
 
 #snapshot-selection-summary {
-  margin-top: 1ex;
-  font-weight: bold;
-  font-style: italic;
   color: green;
+  font-style: italic;
+  font-weight: bold;
+  margin-top: 1ex;
 }
 
 .errormsg {
@@ -113,8 +115,8 @@ table.results-table,
   <table width=100%>
     <tr>
       <td>
-        <b>Group by: </b> <span id=group-by-container></span> 
-        <b>Sort by: </b> <span id=sort-by-container></span> 
+        <b>Group by: </b> <span id=group-by-container></span>
+        <b>Sort by: </b> <span id=sort-by-container></span>
       </td>
       <td align=right>
         <span id=snapshots-link class=pseudo-link>[snapshots]</span>
