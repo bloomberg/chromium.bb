@@ -9,8 +9,9 @@
 
 namespace vr_shell {
 
-UiInterface::UiInterface(Mode initial_mode) {
+UiInterface::UiInterface(Mode initial_mode, bool fullscreen) {
   SetMode(initial_mode);
+  SetFullscreen(fullscreen);
 }
 
 UiInterface::~UiInterface() {}
@@ -25,15 +26,15 @@ void UiInterface::SetMenuMode(bool enabled) {
   FlushModeState();
 }
 
-void UiInterface::SetCinemaMode(bool enabled) {
-  cinema_mode_ = enabled;
+void UiInterface::SetFullscreen(bool enabled) {
+  fullscreen_ = enabled;
   FlushModeState();
 }
 
 void UiInterface::FlushModeState() {
   updates_.SetInteger("mode", static_cast<int>(mode_));
   updates_.SetBoolean("menuMode", menu_mode_);
-  updates_.SetBoolean("cinemaMode", cinema_mode_);
+  updates_.SetBoolean("fullscreen", fullscreen_);
   FlushUpdates();
 }
 

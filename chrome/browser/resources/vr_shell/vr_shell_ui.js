@@ -25,7 +25,7 @@ var vrShellUi = (function() {
       /** @const */ this.SCREEN_HEIGHT = 1.6;
       /** @const */ this.SCREEN_RATIO = 16 / 9;
       /** @const */ this.BROWSING_SCREEN_DISTANCE = 2.0;
-      /** @const */ this.CINEMA_SCREEN_DISTANCE = 3.0;
+      /** @const */ this.FULLSCREEN_DISTANCE = 3.0;
 
       let element = new api.UiElement(0, 0, 0, 0);
       element.setIsContentQuad();
@@ -42,10 +42,10 @@ var vrShellUi = (function() {
       scene.updateElement(this.elementId, update);
     }
 
-    setCinemaMode(enabled) {
+    setFullscreen(enabled) {
       let anim = new api.Animation(this.elementId, ANIM_DURATION);
       if (enabled) {
-        anim.setTranslation(0, 0, -this.CINEMA_SCREEN_DISTANCE);
+        anim.setTranslation(0, 0, -this.FULLSCREEN_DISTANCE);
       } else {
         anim.setTranslation(0, 0, -this.BROWSING_SCREEN_DISTANCE);
       }
@@ -125,16 +125,7 @@ var vrShellUi = (function() {
       this.buttons = [];
       let descriptors = [
           ['#back', function() {
-            // If we are in cinema mode, revert to standard mode on back press.
-            if (sceneManager.cinemaMode) {
-              // TODO(crbug/644511): Send a message back to native to handle
-              // switching back to standard mode and out of full screen instead
-              // of only changing the mode here.
-              sceneManager.setMode(sceneManager.mode, sceneManager.menuMode,
-                false /* Cinema Mode */);
-            } else {
-              api.doAction(api.Action.HISTORY_BACK);
-            }
+            api.doAction(api.Action.HISTORY_BACK);
           }],
           ['#reload', function() {
             api.doAction(api.Action.RELOAD);
@@ -393,7 +384,7 @@ var vrShellUi = (function() {
     constructor() {
       this.mode = api.Mode.UNKNOWN;
       this.menuMode = false;
-      this.cinemaMode = false;
+      this.fullscreen = false;
 
       this.contentQuad = new ContentQuad();
       let contentId = this.contentQuad.getElementId();
@@ -403,15 +394,15 @@ var vrShellUi = (function() {
       this.omnibox = new Omnibox(contentId);
     }
 
-    setMode(mode, menuMode, cinemaMode) {
+    setMode(mode, menuMode, fullscreen) {
       this.mode = mode;
       this.menuMode = menuMode;
-      this.cinemaMode = cinemaMode;
+      this.fullscreen = fullscreen;
 
       this.contentQuad.setEnabled(mode == api.Mode.STANDARD && !menuMode);
-      this.contentQuad.setCinemaMode(cinemaMode);
+      this.contentQuad.setFullscreen(fullscreen);
       // TODO(crbug/643815): Set aspect ratio on content quad when available.
-      // TODO(amp): Don't show controls in CINEMA mode once MENU mode lands.
+      // TODO(amp): Don't show controls in fullscreen once MENU mode lands.
       this.controls.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.omnibox.setEnabled(mode == api.Mode.STANDARD && !menuMode);
       this.secureOriginWarnings.setEnabled(mode == api.Mode.WEB_VR);
@@ -439,7 +430,7 @@ var vrShellUi = (function() {
 
   function command(dict) {
     if ('mode' in dict) {
-      sceneManager.setMode(dict['mode'], dict['menuMode'], dict['cinemaMode']);
+      sceneManager.setMode(dict['mode'], dict['menuMode'], dict['fullscreen']);
     }
     if ('secureOrigin' in dict) {
       sceneManager.setSecureOrigin(dict['secureOrigin']);

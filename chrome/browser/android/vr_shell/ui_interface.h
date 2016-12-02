@@ -26,15 +26,15 @@ class UiInterface {
     WEB_VR
   };
 
-  explicit UiInterface(Mode initial_mode);
+  explicit UiInterface(Mode initial_mode, bool fullscreen);
   virtual ~UiInterface();
 
   void SetMode(Mode mode);
   Mode GetMode() { return mode_; }
   void SetMenuMode(bool enabled);
   bool GetMenuMode() { return menu_mode_; }
-  void SetCinemaMode(bool enabled);
-  bool GetCinemaMode() { return cinema_mode_; }
+  void SetFullscreen(bool enabled);
+  bool GetFullscreen() { return fullscreen_; }
 
   void SetSecureOrigin(bool secure);
   void SetLoading(bool loading);
@@ -50,7 +50,7 @@ class UiInterface {
 
   Mode mode_;
   bool menu_mode_ = false;
-  bool cinema_mode_ = false;
+  bool fullscreen_ = false;
   UiCommandHandler* handler_;
   bool loaded_ = false;
   base::DictionaryValue updates_;

@@ -45,8 +45,7 @@ void VrWebContentsObserver::DidFinishNavigation(
 
 void VrWebContentsObserver::DidToggleFullscreenModeForTab(
     bool entered_fullscreen, bool will_cause_resize) {
-  // TODO(amp): Use will_cause_resize to signal ui of pending size changes.
-  ui_interface_->SetCinemaMode(entered_fullscreen);
+  ui_interface_->SetFullscreen(entered_fullscreen);
 }
 
 }  // namespace vr_shell

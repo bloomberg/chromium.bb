@@ -170,7 +170,8 @@ VrShell::VrShell(JNIEnv* env,
   if (for_web_vr)
     metrics_helper_->SetWebVREnabled(true);
   html_interface_.reset(new UiInterface(
-      for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD));
+      for_web_vr ? UiInterface::Mode::WEB_VR : UiInterface::Mode::STANDARD,
+      main_contents_->IsFullscreen()));
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
   vr_web_contents_observer_.reset(
@@ -1043,8 +1044,11 @@ void VrShell::DoUiAction(const UiAction action) {
   content::NavigationController& controller = main_contents_->GetController();
   switch (action) {
     case HISTORY_BACK:
-      if (controller.CanGoBack())
+      if (main_contents_->IsFullscreen()) {
+        main_contents_->ExitFullscreen(true /* will_cause_resize */);
+      } else if (controller.CanGoBack()) {
         controller.GoBack();
+      }
       break;
     case HISTORY_FORWARD:
       if (controller.CanGoForward())
@@ -1056,7 +1060,8 @@ void VrShell::DoUiAction(const UiAction action) {
 #if defined(ENABLE_VR_SHELL_UI_DEV)
     case RELOAD_UI:
       ui_contents_->GetController().Reload(false);
-      html_interface_.reset(new UiInterface(UiInterface::Mode::STANDARD));
+      html_interface_.reset(new UiInterface(UiInterface::Mode::STANDARD,
+                                            main_contents_->IsFullscreen()));
       vr_web_contents_observer_->SetUiInterface(html_interface_.get());
       break;
 #endif
