@@ -6,7 +6,7 @@ Running: addFileSystem
 Running: addNetworkFooJS
 
 Running: setBreakpointInNetworkUISourceCode
-    http://127.0.0.1:8000/inspector/persistence/resources/foo.js:0
+    http://127.0.0.1:8000/inspector/persistence/resources/foo.js:2
 
 Running: reloadPageAndDumpBreakpoints
 Page reloaded.

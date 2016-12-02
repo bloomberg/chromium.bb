@@ -452,9 +452,18 @@ InspectorTest.toggleBreakpoint = function(sourceFrame, lineNumber, disableOnly)
         sourceFrame._toggleBreakpoint(lineNumber, disableOnly);
 };
 
-InspectorTest.waitBreakpointSidebarPane = function()
+InspectorTest.waitBreakpointSidebarPane = function(waitUntilResolved)
 {
-    return new Promise(resolve => InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "_didUpdateForTest", resolve));
+    return new Promise(resolve => InspectorTest.addSniffer(Sources.JavaScriptBreakpointsSidebarPane.prototype, "_didUpdateForTest", resolve)).then(checkIfReady);
+    function checkIfReady()
+    {
+        if (!waitUntilResolved)
+            return;
+        for (var breakpoint of Bindings.breakpointManager._allBreakpoints()) {
+            if (breakpoint._fakePrimaryLocation && breakpoint.enabled())
+                return InspectorTest.waitBreakpointSidebarPane();
+        }
+    }
 }
 
 InspectorTest.breakpointsSidebarPaneContent = function()

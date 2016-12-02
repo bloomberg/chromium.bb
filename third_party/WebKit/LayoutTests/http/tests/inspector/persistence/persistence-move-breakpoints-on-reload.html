@@ -39,7 +39,7 @@ function test()
             function onSourceFrame(sourceFrame)
             {
                 InspectorTest.setBreakpoint(sourceFrame, 0, '', true);
-                InspectorTest.waitBreakpointSidebarPane().then(dumpBreakpointSidebarPane).then(next);
+                InspectorTest.waitBreakpointSidebarPane(true).then(dumpBreakpointSidebarPane).then(next);
             }
         },
 

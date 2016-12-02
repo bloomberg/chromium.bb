@@ -21,7 +21,6 @@ function test()
             .then(() => InspectorTest.dumpJavaScriptSourceFrameBreakpoints(sourceFrame));
     }
 
-    Runtime.experiments.enableForTest("inlineBreakpoints");
     Bindings.breakpointManager._storage._breakpoints = {};
     InspectorTest.runDebuggerTestSuite([
         function testAddRemoveBreakpoint(next)

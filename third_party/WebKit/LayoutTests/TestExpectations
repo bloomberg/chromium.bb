@@ -1338,7 +1338,7 @@ crbug.com/399951 virtual/mojo-loading/http/tests/mime/javascript-mimetype-usecou
 crbug.com/579493 http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 crbug.com/579493 virtual/mojo-loading/http/tests/security/xss-DENIED-xsl-document-securityOrigin.xml [ Timeout ]
 
-crbug.com/572723 [ Linux Mac10.9 ] inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
+crbug.com/572723 inspector/sources/debugger/debugger-disable-enable.html [ Pass Failure Timeout ]
 crbug.com/572723 inspector/sources/debugger/debugger-uncaught-promise-on-pause.html [ Timeout Pass ]
 
 crbug.com/155836 fast/text/emphasis-ellipsis-complextext.html [ Failure Pass ]
