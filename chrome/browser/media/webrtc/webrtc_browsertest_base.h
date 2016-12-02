@@ -6,8 +6,11 @@
 #define CHROME_BROWSER_MEDIA_WEBRTC_WEBRTC_BROWSERTEST_BASE_H_
 
 #include <string>
+#include <vector>
 
 #include "base/macros.h"
+#include "base/memory/ref_counted.h"
+#include "chrome/browser/media/webrtc/test_stats_dictionary.h"
 #include "chrome/test/base/in_process_browser_test.h"
 
 namespace infobars {
@@ -165,6 +168,8 @@ class WebRtcTestBase : public InProcessBrowserTest {
 
   void VerifyStatsGeneratedCallback(content::WebContents* tab) const;
   std::vector<std::string> VerifyStatsGeneratedPromise(
+      content::WebContents* tab) const;
+  scoped_refptr<content::TestStatsReportDictionary> GetStatsReportDictionary(
       content::WebContents* tab) const;
   std::vector<std::string> GetWhitelistedStatsTypes(
       content::WebContents* tab) const;

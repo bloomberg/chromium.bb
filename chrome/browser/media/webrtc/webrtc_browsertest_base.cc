@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_util.h"
 #include "base/strings/stringprintf.h"
+#include "base/values.h"
 #include "build/build_config.h"
 #include "chrome/browser/media/webrtc/webrtc_browsertest_common.h"
 #include "chrome/browser/permissions/permission_request_manager.h"
@@ -492,6 +493,21 @@ std::vector<std::string> WebRtcTestBase::VerifyStatsGeneratedPromise(
   std::string result = ExecuteJavascript("verifyStatsGeneratedPromise()", tab);
   EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
   return JsonArrayToVectorOfStrings(result.substr(3));
+}
+
+scoped_refptr<content::TestStatsReportDictionary>
+WebRtcTestBase::GetStatsReportDictionary(content::WebContents* tab) const {
+  std::string result = ExecuteJavascript("getStatsReportDictionary()", tab);
+  EXPECT_TRUE(base::StartsWith(result, "ok-", base::CompareCase::SENSITIVE));
+  std::unique_ptr<base::Value> parsed_json = base::JSONReader::Read(
+      result.substr(3));
+  base::DictionaryValue* dictionary;
+  CHECK(parsed_json);
+  CHECK(parsed_json->GetAsDictionary(&dictionary));
+  ignore_result(parsed_json.release());
+  return scoped_refptr<content::TestStatsReportDictionary>(
+      new content::TestStatsReportDictionary(
+          std::unique_ptr<base::DictionaryValue>(dictionary)));
 }
 
 std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(

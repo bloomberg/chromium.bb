@@ -261,6 +261,29 @@ function verifyStatsGeneratedPromise() {
 }
 
 /**
+ * Gets the result of the promise-based |RTCPeerConnection.getStats| as a
+ * dictionary of RTCStats-dictionaries.
+ *
+ * Returns "ok-" followed by a JSON-stringified dictionary of dictionaries to
+ * the test.
+ */
+function getStatsReportDictionary() {
+  peerConnection_().getStats()
+    .then(function(report) {
+      if (report == null || report.size == 0)
+        throw new failTest('report is null or empty.');
+      let reportDictionary = {};
+      for (let stats of report.values()) {
+        reportDictionary[stats.id] = stats;
+      }
+      returnToTest('ok-' + JSON.stringify(reportDictionary));
+    },
+    function(e) {
+      throw failTest('Promise was rejected: ' + e);
+    });
+}
+
+/**
  * Returns a complete list of whitelisted "RTCStats.type" values as a
  * JSON-stringified array of strings to the test.
  */
