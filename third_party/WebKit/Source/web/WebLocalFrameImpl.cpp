@@ -853,8 +853,7 @@ void WebLocalFrameImpl::reloadWithOverrideURL(const WebURL& overrideUrl,
   // TODO(clamy): Remove this function once RenderFrame calls load for all
   // requests.
   DCHECK(frame());
-  DCHECK(loadType == WebFrameLoadType::Reload ||
-         loadType == WebFrameLoadType::ReloadBypassingCache);
+  DCHECK(isReloadLoadType(static_cast<FrameLoadType>(loadType)));
   WebURLRequest request = requestForReload(loadType, overrideUrl);
   if (request.isNull())
     return;
