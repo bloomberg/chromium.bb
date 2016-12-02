@@ -332,16 +332,8 @@ void AnalysisCanvas::onDrawVertices(SkCanvas::VertexMode,
   ++draw_op_count_;
 }
 
-// Needed for now, since SkCanvas requires a bitmap, even if it is not backed
-// by any pixels
-static SkBitmap MakeEmptyBitmap(int width, int height) {
-  SkBitmap bitmap;
-  bitmap.setInfo(SkImageInfo::MakeUnknown(width, height));
-  return bitmap;
-}
-
 AnalysisCanvas::AnalysisCanvas(int width, int height)
-    : INHERITED(MakeEmptyBitmap(width, height)),
+    : INHERITED(width, height),
       saved_stack_size_(0),
       force_not_solid_stack_level_(kNoLayer),
       force_not_transparent_stack_level_(kNoLayer),
@@ -351,8 +343,7 @@ AnalysisCanvas::AnalysisCanvas(int width, int height)
       color_(SK_ColorTRANSPARENT),
       is_transparent_(true),
       draw_op_count_(0),
-      rejected_op_count_(0) {
-}
+      rejected_op_count_(0) {}
 
 AnalysisCanvas::~AnalysisCanvas() {}
 
