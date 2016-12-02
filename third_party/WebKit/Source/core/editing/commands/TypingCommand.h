@@ -45,7 +45,8 @@ class CORE_EXPORT TypingCommand final : public CompositeEditCommand {
   enum TextCompositionType {
     TextCompositionNone,
     TextCompositionUpdate,
-    TextCompositionConfirm
+    TextCompositionConfirm,
+    TextCompositionCancel
   };
 
   enum Option {

@@ -84,9 +84,11 @@ void insertTextDuringCompositionWithEvents(
   DCHECK(compositionType ==
              TypingCommand::TextCompositionType::TextCompositionUpdate ||
          compositionType ==
-             TypingCommand::TextCompositionType::TextCompositionConfirm)
+             TypingCommand::TextCompositionType::TextCompositionConfirm ||
+         compositionType ==
+             TypingCommand::TextCompositionType::TextCompositionCancel)
       << "compositionType should be TextCompositionUpdate or "
-         "TextCompositionConfirm, but got "
+         "TextCompositionConfirm  or TextCompositionCancel, but got "
       << static_cast<int>(compositionType);
   if (!frame.document())
     return;
@@ -126,6 +128,7 @@ void insertTextDuringCompositionWithEvents(
                                 compositionType);
       break;
     case TypingCommand::TextCompositionType::TextCompositionConfirm:
+    case TypingCommand::TextCompositionType::TextCompositionCancel:
       // TODO(chongz): Use TypingCommand::insertText after TextEvent was
       // removed. (Removed from spec since 2012)
       // See TextEvent.idl.
@@ -379,7 +382,7 @@ void InputMethodController::cancelComposition() {
   dispatchCompositionUpdateEvent(frame(), emptyString());
   insertTextDuringCompositionWithEvents(
       frame(), emptyString(), 0,
-      TypingCommand::TextCompositionType::TextCompositionConfirm);
+      TypingCommand::TextCompositionType::TextCompositionCancel);
   // Event handler might destroy document.
   if (!isAvailable())
     return;
