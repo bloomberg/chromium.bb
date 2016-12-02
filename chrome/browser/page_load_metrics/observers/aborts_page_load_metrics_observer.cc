@@ -11,60 +11,63 @@ using page_load_metrics::UserAbortType;
 namespace internal {
 
 const char kHistogramAbortClientRedirectBeforeCommit[] =
-    "PageLoad.AbortTiming.ClientRedirect.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.ClientRedirect.BeforeCommit";
 const char kHistogramAbortForwardBackBeforeCommit[] =
-    "PageLoad.AbortTiming.ForwardBackNavigation.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.ForwardBackNavigation.BeforeCommit";
 const char kHistogramAbortReloadBeforeCommit[] =
-    "PageLoad.AbortTiming.Reload.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit";
 const char kHistogramAbortNewNavigationBeforeCommit[] =
-    "PageLoad.AbortTiming.NewNavigation.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit";
 const char kHistogramAbortStopBeforeCommit[] =
-    "PageLoad.AbortTiming.Stop.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.Stop.BeforeCommit";
 const char kHistogramAbortCloseBeforeCommit[] =
-    "PageLoad.AbortTiming.Close.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.Close.BeforeCommit";
 const char kHistogramAbortBackgroundBeforeCommit[] =
-    "PageLoad.AbortTiming.Background.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.Background.BeforeCommit";
 const char kHistogramAbortOtherBeforeCommit[] =
-    "PageLoad.AbortTiming.Other.BeforeCommit";
+    "PageLoad.Experimental.AbortTiming.Other.BeforeCommit";
 
 const char kHistogramAbortClientRedirectBeforePaint[] =
-    "PageLoad.AbortTiming.ClientRedirect.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.ClientRedirect.AfterCommit.BeforePaint";
 const char kHistogramAbortForwardBackBeforePaint[] =
-    "PageLoad.AbortTiming.ForwardBackNavigation.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.ForwardBackNavigation.AfterCommit."
+    "BeforePaint";
 const char kHistogramAbortReloadBeforePaint[] =
-    "PageLoad.AbortTiming.Reload.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.Reload.AfterCommit.BeforePaint";
 const char kHistogramAbortNewNavigationBeforePaint[] =
-    "PageLoad.AbortTiming.NewNavigation.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.NewNavigation.AfterCommit.BeforePaint";
 const char kHistogramAbortStopBeforePaint[] =
-    "PageLoad.AbortTiming.Stop.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.Stop.AfterCommit.BeforePaint";
 const char kHistogramAbortCloseBeforePaint[] =
-    "PageLoad.AbortTiming.Close.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.Close.AfterCommit.BeforePaint";
 const char kHistogramAbortBackgroundBeforePaint[] =
-    "PageLoad.AbortTiming.Background.AfterCommit.BeforePaint";
+    "PageLoad.Experimental.AbortTiming.Background.AfterCommit.BeforePaint";
 
 const char kHistogramAbortClientRedirectDuringParse[] =
-    "PageLoad.AbortTiming.ClientRedirect.DuringParse";
+    "PageLoad.Experimental.AbortTiming.ClientRedirect.DuringParse";
 const char kHistogramAbortForwardBackDuringParse[] =
-    "PageLoad.AbortTiming.ForwardBackNavigation.DuringParse";
+    "PageLoad.Experimental.AbortTiming.ForwardBackNavigation.DuringParse";
 const char kHistogramAbortReloadDuringParse[] =
-    "PageLoad.AbortTiming.Reload.DuringParse";
+    "PageLoad.Experimental.AbortTiming.Reload.DuringParse";
 const char kHistogramAbortNewNavigationDuringParse[] =
-    "PageLoad.AbortTiming.NewNavigation.DuringParse";
+    "PageLoad.Experimental.AbortTiming.NewNavigation.DuringParse";
 const char kHistogramAbortStopDuringParse[] =
-    "PageLoad.AbortTiming.Stop.DuringParse";
+    "PageLoad.Experimental.AbortTiming.Stop.DuringParse";
 const char kHistogramAbortCloseDuringParse[] =
-    "PageLoad.AbortTiming.Close.DuringParse";
+    "PageLoad.Experimental.AbortTiming.Close.DuringParse";
 const char kHistogramAbortBackgroundDuringParse[] =
-    "PageLoad.AbortTiming.Background.DuringParse";
+    "PageLoad.Experimental.AbortTiming.Background.DuringParse";
 
 // These metrics should be temporary until we have landed on a one-size-fits-all
 // abort metric.
 const char kHistogramAbortNewNavigationUserInitiated[] =
-    "PageLoad.AbortTiming.NewNavigation.BeforeCommit.UserInitiated";
+    "PageLoad.Experimental.AbortTiming.NewNavigation.BeforeCommit."
+    "UserInitiated";
 const char kHistogramAbortForwardBackUserInitiated[] =
-    "PageLoad.AbortTiming.ForwardBackNavigation.BeforeCommit.UserInitiated";
+    "PageLoad.Experimental.AbortTiming.ForwardBackNavigation.BeforeCommit."
+    "UserInitiated";
 const char kHistogramAbortReloadUserInitiated[] =
-    "PageLoad.AbortTiming.Reload.BeforeCommit.UserInitiated";
+    "PageLoad.Experimental.AbortTiming.Reload.BeforeCommit.UserInitiated";
 
 }  // namespace internal
 

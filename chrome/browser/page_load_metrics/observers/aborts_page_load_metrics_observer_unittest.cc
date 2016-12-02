@@ -22,7 +22,8 @@ class AbortsPageLoadMetricsObserverTest
 
   int CountTotalAbortMetricsRecorded() {
     base::HistogramTester::CountsMap counts_map =
-        histogram_tester().GetTotalCountsForPrefix("PageLoad.AbortTiming.");
+        histogram_tester().GetTotalCountsForPrefix(
+            "PageLoad.Experimental.AbortTiming.");
     int count = 0;
     for (const auto& entry : counts_map)
       count += entry.second;
