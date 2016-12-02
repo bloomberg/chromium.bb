@@ -232,7 +232,7 @@ class WebURLRequest {
   BLINK_PLATFORM_EXPORT FrameType getFrameType() const;
   BLINK_PLATFORM_EXPORT void setFrameType(FrameType);
 
-  BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
+  BLINK_PLATFORM_EXPORT WebReferrerPolicy getReferrerPolicy() const;
 
   // Adds an HTTP origin header if it is empty and the HTTP method of the
   // request requires it.

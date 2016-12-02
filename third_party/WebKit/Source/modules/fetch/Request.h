@@ -59,7 +59,7 @@ class MODULES_EXPORT Request final : public Body {
   Headers* getHeaders() const { return m_headers; }
   String context() const;
   String referrer() const;
-  String referrerPolicy() const;
+  String getReferrerPolicy() const;
   String mode() const;
   String credentials() const;
   String redirect() const;

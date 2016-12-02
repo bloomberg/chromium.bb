@@ -97,7 +97,7 @@ class CORE_EXPORT WorkerScriptLoader final
     return m_contentSecurityPolicy.release();
   }
 
-  String referrerPolicy() { return m_referrerPolicy; }
+  String getReferrerPolicy() { return m_referrerPolicy; }
 
   WebAddressSpace responseAddressSpace() const {
     return m_responseAddressSpace;

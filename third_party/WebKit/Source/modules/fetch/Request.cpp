@@ -588,7 +588,7 @@ String Request::referrer() const {
   return m_request->referrerString();
 }
 
-String Request::referrerPolicy() const {
+String Request::getReferrerPolicy() const {
   switch (m_request->getReferrerPolicy()) {
     case ReferrerPolicyAlways:
       return "unsafe-url";

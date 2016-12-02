@@ -214,7 +214,7 @@ bool WebDocument::processingBeforeUnloadDoNotUse() const {
   return constUnwrap<Document>()->processingBeforeUnload();
 }
 
-WebReferrerPolicy WebDocument::referrerPolicy() const {
+WebReferrerPolicy WebDocument::getReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(
       constUnwrap<Document>()->getReferrerPolicy());
 }

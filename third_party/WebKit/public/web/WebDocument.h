@@ -112,7 +112,7 @@ class WebDocument : public WebNode {
   BLINK_EXPORT WebURL completeURL(const WebString&) const;
   BLINK_EXPORT WebElement getElementById(const WebString&) const;
   BLINK_EXPORT WebElement focusedElement() const;
-  BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
+  BLINK_EXPORT WebReferrerPolicy getReferrerPolicy() const;
   BLINK_EXPORT WebString outgoingReferrer();
 
   // Accessibility support. These methods should only be called on the

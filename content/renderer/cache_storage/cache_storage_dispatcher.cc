@@ -50,7 +50,7 @@ ServiceWorkerFetchRequest FetchRequestFromWebRequest(
 
   return ServiceWorkerFetchRequest(
       web_request.url(), web_request.method().ascii(), headers,
-      Referrer(web_request.referrerUrl(), web_request.referrerPolicy()),
+      Referrer(web_request.referrerUrl(), web_request.getReferrerPolicy()),
       web_request.isReload());
 }
 

@@ -158,7 +158,7 @@ void PrerenderDispatcher::add(const WebPrerender& prerender) {
       content::Referrer::SanitizeForRequest(
           GURL(prerender.url()),
           content::Referrer(blink::WebStringToGURL(prerender.referrer()),
-                            prerender.referrerPolicy())),
+                            prerender.getReferrerPolicy())),
       extra_data.size(), extra_data.render_view_route_id()));
 }
 

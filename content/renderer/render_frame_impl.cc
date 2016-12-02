@@ -620,7 +620,7 @@ CommonNavigationParams MakeCommonNavigationParams(
   Referrer referrer(
       GURL(info.urlRequest.httpHeaderField(
           WebString::fromUTF8("Referer")).latin1()),
-      info.urlRequest.referrerPolicy());
+      info.urlRequest.getReferrerPolicy());
 
   // Set the ui timestamp for this navigation. Currently the timestamp here is
   // only non empty when the navigation was triggered by an Android intent, or
@@ -4820,7 +4820,7 @@ void RenderFrameImpl::SendDidCommitProvisionalLoad(
   // set the referrer appropriately.
   if (ds->isClientRedirect()) {
     params.referrer =
-        Referrer(params.redirects[0], ds->request().referrerPolicy());
+        Referrer(params.redirects[0], ds->request().getReferrerPolicy());
   } else {
     params.referrer =
         RenderViewImpl::GetReferrerFromRequest(frame, ds->request());
@@ -5346,8 +5346,8 @@ void RenderFrameImpl::OnGetSavableResourceLinks() {
     return;
   }
 
-  Referrer referrer =
-      Referrer(frame_->document().url(), frame_->document().referrerPolicy());
+  Referrer referrer = Referrer(
+      frame_->document().url(), frame_->document().getReferrerPolicy());
 
   Send(new FrameHostMsg_SavableResourceLinksResponse(
       routing_id_, resources_list, referrer, subframes));

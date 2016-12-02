@@ -297,7 +297,7 @@ Referrer RenderViewImpl::GetReferrerFromRequest(
   return Referrer(
       blink::WebStringToGURL(request.httpHeaderField(
           WebString::fromUTF8("Referer"))),
-      request.referrerPolicy());
+      request.getReferrerPolicy());
 }
 
 // static

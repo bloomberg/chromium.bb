@@ -40,7 +40,7 @@ FetchRequestData* FetchRequestData::create(
   request->setContext(webRequest.requestContext());
   request->setReferrer(
       Referrer(webRequest.referrerUrl().string(),
-               static_cast<ReferrerPolicy>(webRequest.referrerPolicy())));
+               static_cast<ReferrerPolicy>(webRequest.getReferrerPolicy())));
   request->setMode(webRequest.mode());
   request->setCredentials(webRequest.credentialsMode());
   request->setRedirect(webRequest.redirectMode());

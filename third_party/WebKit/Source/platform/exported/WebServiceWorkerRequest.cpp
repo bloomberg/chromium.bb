@@ -119,7 +119,7 @@ WebURL WebServiceWorkerRequest::referrerUrl() const {
   return KURL(ParsedURLString, m_private->m_referrer.referrer);
 }
 
-WebReferrerPolicy WebServiceWorkerRequest::referrerPolicy() const {
+WebReferrerPolicy WebServiceWorkerRequest::getReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(m_private->m_referrer.referrerPolicy);
 }
 

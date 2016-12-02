@@ -40,7 +40,7 @@ enum ReferrerPolicy {
     readonly attribute USVString url;
     [ImplementedAs=getHeaders] readonly attribute Headers headers;
     readonly attribute DOMString referrer;
-    readonly attribute ReferrerPolicy referrerPolicy;
+    [ImplementedAs=getReferrerPolicy] readonly attribute ReferrerPolicy referrerPolicy;
     readonly attribute RequestMode mode;
     readonly attribute RequestCredentials credentials;
     readonly attribute RequestRedirect redirect;

@@ -563,7 +563,7 @@ void WebURLLoaderImpl::Context::Start(const WebURLRequest& request,
           : base::Optional<url::Origin>(request.requestorOrigin());
   resource_request->referrer = referrer_url;
 
-  resource_request->referrer_policy = request.referrerPolicy();
+  resource_request->referrer_policy = request.getReferrerPolicy();
 
   resource_request->headers = GetWebURLRequestHeaders(request);
   resource_request->load_flags = GetLoadFlagsForWebURLRequest(request);

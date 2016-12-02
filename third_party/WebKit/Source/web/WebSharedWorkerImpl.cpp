@@ -383,7 +383,7 @@ void WebSharedWorkerImpl::onScriptLoaderFinished() {
           nullptr, startMode,
           contentSecurityPolicy ? contentSecurityPolicy->headers().get()
                                 : nullptr,
-          m_mainScriptLoader->referrerPolicy(), starterOrigin, workerClients,
+          m_mainScriptLoader->getReferrerPolicy(), starterOrigin, workerClients,
           m_mainScriptLoader->responseAddressSpace(),
           m_mainScriptLoader->originTrialTokens(), std::move(workerSettings));
 

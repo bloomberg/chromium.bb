@@ -68,7 +68,7 @@ WebString WebHistoryItem::referrer() const {
   return m_private->referrer().referrer;
 }
 
-WebReferrerPolicy WebHistoryItem::referrerPolicy() const {
+WebReferrerPolicy WebHistoryItem::getReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(m_private->referrer().referrerPolicy);
 }
 

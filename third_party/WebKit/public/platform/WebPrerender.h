@@ -76,7 +76,7 @@ class WebPrerender {
   BLINK_PLATFORM_EXPORT WebURL url() const;
   BLINK_PLATFORM_EXPORT WebString referrer() const;
   BLINK_PLATFORM_EXPORT unsigned relTypes() const;
-  BLINK_PLATFORM_EXPORT WebReferrerPolicy referrerPolicy() const;
+  BLINK_PLATFORM_EXPORT WebReferrerPolicy getReferrerPolicy() const;
 
   BLINK_PLATFORM_EXPORT void setExtraData(ExtraData*);
   BLINK_PLATFORM_EXPORT const ExtraData* getExtraData() const;

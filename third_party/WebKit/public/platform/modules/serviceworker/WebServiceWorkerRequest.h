@@ -60,7 +60,7 @@ class BLINK_PLATFORM_EXPORT WebServiceWorkerRequest {
 
   void setReferrer(const WebString&, WebReferrerPolicy);
   WebURL referrerUrl() const;
-  WebReferrerPolicy referrerPolicy() const;
+  WebReferrerPolicy getReferrerPolicy() const;
 
   void setMode(WebURLRequest::FetchRequestMode);
   WebURLRequest::FetchRequestMode mode() const;

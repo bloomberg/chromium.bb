@@ -41,7 +41,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
                                 ExplodedFrameState* state) {
   state->url_string = item.urlString();
   state->referrer = item.referrer();
-  state->referrer_policy = item.referrerPolicy();
+  state->referrer_policy = item.getReferrerPolicy();
   state->target = item.target();
   if (!item.stateObject().isNull())
     state->state_object = item.stateObject().toString();

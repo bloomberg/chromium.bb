@@ -434,8 +434,10 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
   // ServiceWorkerGlobalScope.
   document->initContentSecurityPolicy(
       m_mainScriptLoader->releaseContentSecurityPolicy());
-  if (!m_mainScriptLoader->referrerPolicy().isNull())
-    document->parseAndSetReferrerPolicy(m_mainScriptLoader->referrerPolicy());
+  if (!m_mainScriptLoader->getReferrerPolicy().isNull()) {
+    document->parseAndSetReferrerPolicy(
+        m_mainScriptLoader->getReferrerPolicy());
+  }
 
   KURL scriptURL = m_mainScriptLoader->url();
   WorkerThreadStartMode startMode =
@@ -448,7 +450,7 @@ void WebEmbeddedWorkerImpl::startWorkerThread() {
           scriptURL, m_workerStartData.userAgent, m_mainScriptLoader->script(),
           m_mainScriptLoader->releaseCachedMetadata(), startMode,
           document->contentSecurityPolicy()->headers().get(),
-          m_mainScriptLoader->referrerPolicy(), starterOrigin, workerClients,
+          m_mainScriptLoader->getReferrerPolicy(), starterOrigin, workerClients,
           m_mainScriptLoader->responseAddressSpace(),
           m_mainScriptLoader->originTrialTokens(), std::move(workerSettings),
           static_cast<V8CacheOptions>(m_workerStartData.v8CacheOptions));

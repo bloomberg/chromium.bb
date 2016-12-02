@@ -239,7 +239,7 @@ WebURLRequest::FrameType WebURLRequest::getFrameType() const {
   return m_resourceRequest->frameType();
 }
 
-WebReferrerPolicy WebURLRequest::referrerPolicy() const {
+WebReferrerPolicy WebURLRequest::getReferrerPolicy() const {
   return static_cast<WebReferrerPolicy>(m_resourceRequest->getReferrerPolicy());
 }
 

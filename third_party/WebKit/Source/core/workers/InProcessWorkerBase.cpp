@@ -98,7 +98,7 @@ void InProcessWorkerBase::onFinished() {
         m_scriptLoader->url(), getExecutionContext()->userAgent(),
         m_scriptLoader->script(),
         m_scriptLoader->releaseContentSecurityPolicy(),
-        m_scriptLoader->referrerPolicy());
+        m_scriptLoader->getReferrerPolicy());
     InspectorInstrumentation::scriptImported(getExecutionContext(),
                                              m_scriptLoader->identifier(),
                                              m_scriptLoader->script());

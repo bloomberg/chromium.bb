@@ -261,7 +261,7 @@ void ChromeClientImpl::startDragging(LocalFrame* frame,
                                      const WebImage& dragImage,
                                      const WebPoint& dragImageOffset) {
   WebLocalFrameImpl* webFrame = WebLocalFrameImpl::fromFrame(frame);
-  WebReferrerPolicy policy = webFrame->document().referrerPolicy();
+  WebReferrerPolicy policy = webFrame->document().getReferrerPolicy();
   webFrame->localRoot()->frameWidget()->startDragging(
       policy, dragData, mask, dragImage, dragImageOffset);
 }

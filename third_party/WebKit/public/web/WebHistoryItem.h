@@ -78,7 +78,7 @@ class WebHistoryItem {
   BLINK_EXPORT void setURLString(const WebString&);
 
   BLINK_EXPORT WebString referrer() const;
-  BLINK_EXPORT WebReferrerPolicy referrerPolicy() const;
+  BLINK_EXPORT WebReferrerPolicy getReferrerPolicy() const;
   BLINK_EXPORT void setReferrer(const WebString&, WebReferrerPolicy);
 
   BLINK_EXPORT WebString target() const;
