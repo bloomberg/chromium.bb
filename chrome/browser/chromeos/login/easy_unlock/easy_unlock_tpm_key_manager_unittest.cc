@@ -9,6 +9,7 @@
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/test/scoped_task_scheduler.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager.h"
 #include "chrome/browser/chromeos/login/easy_unlock/easy_unlock_tpm_key_manager_factory.h"
 #include "chrome/browser/chromeos/login/users/fake_chrome_user_manager.h"
@@ -336,6 +337,7 @@ class EasyUnlockTpmKeyManagerTest : public testing::Test {
   const AccountId test_account_id_ = AccountId::FromUserEmail(kTestUserId);
 
  private:
+  base::test::ScopedTaskScheduler scoped_task_scheduler_;
   content::TestBrowserThreadBundle thread_bundle_;
 
   // The NSS system slot used by EasyUnlockTPMKeyManagers in tests.
