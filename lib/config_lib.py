@@ -112,6 +112,11 @@ def UseBuildbucketScheduler(config):
   """Returns True if this build uses Buildbucket to schedule slaves."""
   return config.name == constants.CQ_MASTER
 
+def ScheduledByBuildbucket(config):
+  """Returns True if this build is scheduled by Buildbucket."""
+  return (config.build_type == constants.PALADIN_TYPE and
+          config.name != constants.CQ_MASTER)
+
 def OverrideConfigForTrybot(build_config, options):
   """Apply trybot-specific configuration settings.
 

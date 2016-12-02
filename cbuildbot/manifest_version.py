@@ -1270,11 +1270,17 @@ class BuildSpecsManager(object):
     self._UploadStatus(self.current_version, status, message=message,
                        dashboard_url=dashboard_url)
 
-  def SetInFlight(self, version, dashboard_url=None):
-    """Marks the buildspec as inflight in Google Storage."""
+  def SetInFlight(self, version, dashboard_url=None, fail_if_exists=True):
+    """Marks the buildspec as inflight in Google Storage.
+
+    Args:
+      version: Version number to use. Must be a string.
+      dashboard_url: Optional url linking to builder dashboard for this build.
+      fail_if_exists: If set, fail if the status already exists.
+    """
     try:
       self._UploadStatus(version, constants.BUILDER_STATUS_INFLIGHT,
-                         fail_if_exists=True,
+                         fail_if_exists=fail_if_exists,
                          dashboard_url=dashboard_url)
     except gs.GSContextPreconditionFailed:
       raise GenerateBuildSpecException('Builder already inflight')

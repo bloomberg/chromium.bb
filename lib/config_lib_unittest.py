@@ -11,6 +11,7 @@ import cPickle
 import mock
 
 from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_test_lib
 
 # pylint: disable=protected-access
@@ -867,3 +868,27 @@ class GetConfigTests(cros_test_lib.TestCase):
     # But also that it's cached going forward.
     self.assertIsInstance(config_c, config_lib.SiteConfig)
     self.assertIs(config_c, config_d)
+
+class ConfigLibHelperTests(cros_test_lib.TestCase):
+  """Tests related to helper methods in config_lib."""
+
+  def testScheduledByBuildbucket(self):
+    """Test ScheduledByBuildbucket."""
+    cq_master_config = config_lib.BuildConfig(
+        name=constants.CQ_MASTER,
+        build_type=constants.PALADIN_TYPE)
+    self.assertFalse(config_lib.ScheduledByBuildbucket(
+        cq_master_config))
+
+    cq_slave_config = config_lib.BuildConfig(
+        name='slave-paladin',
+        build_type=constants.PALADIN_TYPE)
+    self.assertTrue(config_lib.ScheduledByBuildbucket(
+        cq_slave_config))
+
+    pfq_master_config = config_lib.BuildConfig(
+        name=constants.PFQ_MASTER,
+        build_type=constants.PFQ_TYPE)
+
+    self.assertFalse(config_lib.ScheduledByBuildbucket(
+        pfq_master_config))
