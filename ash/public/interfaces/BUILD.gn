@@ -12,6 +12,7 @@ mojom("interfaces") {
     "shelf.mojom",
     "shutdown.mojom",
     "system_tray.mojom",
+    "touch_view.mojom",
     "volume.mojom",
     "vpn_list.mojom",
     "wallpaper.mojom",

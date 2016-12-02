@@ -11,6 +11,7 @@
 #include "ash/common/system/locale/locale_notification_controller.h"
 #include "ash/common/system/tray/system_tray_controller.h"
 #include "ash/common/wallpaper/wallpaper_controller.h"
+#include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "base/bind.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
@@ -42,6 +43,10 @@ void BindSystemTrayRequestOnMainThread(mojom::SystemTrayRequest request) {
   WmShell::Get()->system_tray_controller()->BindRequest(std::move(request));
 }
 
+void BindTouchViewRequestOnMainThread(mojom::TouchViewManagerRequest request) {
+  WmShell::Get()->maximize_mode_controller()->BindRequest(std::move(request));
+}
+
 #if defined(OS_CHROMEOS)
 void BindVpnListRequestOnMainThread(mojom::VpnListRequest request) {
   WmShell::Get()->vpn_list()->BindRequest(std::move(request));
@@ -68,6 +73,8 @@ void RegisterInterfaces(
   registry->AddInterface(base::Bind(&BindShutdownControllerRequestOnMainThread),
                          main_thread_task_runner);
   registry->AddInterface(base::Bind(&BindSystemTrayRequestOnMainThread),
+                         main_thread_task_runner);
+  registry->AddInterface(base::Bind(&BindTouchViewRequestOnMainThread),
                          main_thread_task_runner);
 #if defined(OS_CHROMEOS)
   registry->AddInterface(base::Bind(&BindVpnListRequestOnMainThread),

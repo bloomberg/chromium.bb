@@ -163,10 +163,19 @@ void MaximizeModeController::EnableMaximizeModeWindowManager(
     // to MaximizeModeController::Observer
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_ENABLED);
     shell->OnMaximizeModeStarted();
+
+    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
+      observer->OnTouchViewToggled(true);
+    });
+
   } else {
     maximize_mode_window_manager_.reset();
     shell->RecordUserMetricsAction(UMA_MAXIMIZE_MODE_DISABLED);
     shell->OnMaximizeModeEnded();
+
+    observers_.ForAllPtrs([](mojom::TouchViewObserver* observer) {
+      observer->OnTouchViewToggled(false);
+    });
   }
 }
 
@@ -177,6 +186,11 @@ bool MaximizeModeController::IsMaximizeModeWindowManagerEnabled() const {
 void MaximizeModeController::AddWindow(WmWindow* window) {
   if (IsMaximizeModeWindowManagerEnabled())
     maximize_mode_window_manager_->AddWindow(window);
+}
+
+void MaximizeModeController::BindRequest(
+    mojom::TouchViewManagerRequest request) {
+  bindings_.AddBinding(this, std::move(request));
 }
 
 #if defined(OS_CHROMEOS)
@@ -389,6 +403,11 @@ MaximizeModeController::CurrentTouchViewIntervalType() {
   if (IsMaximizeModeWindowManagerEnabled())
     return TOUCH_VIEW_INTERVAL_ACTIVE;
   return TOUCH_VIEW_INTERVAL_INACTIVE;
+}
+
+void MaximizeModeController::AddObserver(mojom::TouchViewObserverPtr observer) {
+  observer->OnTouchViewToggled(IsMaximizeModeWindowManagerEnabled());
+  observers_.AddPtr(std::move(observer));
 }
 
 void MaximizeModeController::OnAppTerminating() {

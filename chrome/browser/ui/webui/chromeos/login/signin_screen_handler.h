@@ -10,6 +10,7 @@
 #include <set>
 #include <string>
 
+#include "ash/public/interfaces/touch_view.mojom.h"
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/containers/hash_tables.h"
@@ -23,7 +24,6 @@
 #include "chrome/browser/ui/webui/chromeos/login/base_screen_handler.h"
 #include "chrome/browser/ui/webui/chromeos/login/network_state_informer.h"
 #include "chrome/browser/ui/webui/chromeos/login/oobe_ui.h"
-#include "chrome/browser/ui/webui/chromeos/touch_view_controller_delegate.h"
 #include "chromeos/dbus/power_manager_client.h"
 #include "chromeos/network/portal_detector/network_portal_detector.h"
 #include "components/proximity_auth/screenlock_bridge.h"
@@ -31,6 +31,7 @@
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
 #include "content/public/browser/web_ui.h"
+#include "mojo/public/cpp/bindings/binding.h"
 #include "net/base/net_errors.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_manager.h"
@@ -217,7 +218,7 @@ class SigninScreenHandler
       public NetworkStateInformer::NetworkStateInformerObserver,
       public PowerManagerClient::Observer,
       public input_method::ImeKeyboard::Observer,
-      public TouchViewControllerDelegate::Observer,
+      public ash::mojom::TouchViewObserver,
       public OobeUI::Observer {
  public:
   SigninScreenHandler(
@@ -327,9 +328,8 @@ class SigninScreenHandler
   // PowerManagerClient::Observer implementation:
   void SuspendDone(const base::TimeDelta& sleep_duration) override;
 
-  // TouchViewControllerDelegate::Observer implementation:
-  void OnMaximizeModeStarted() override;
-  void OnMaximizeModeEnded() override;
+  // ash::mojom::TouchView:
+  void OnTouchViewToggled(bool enabled) override;
 
   void UpdateAddButtonStatus();
 
@@ -492,8 +492,9 @@ class SigninScreenHandler
   // TODO(antrim@): remove this dependency.
   GaiaScreenHandler* gaia_screen_handler_ = nullptr;
 
-  // Maximized mode controller delegate.
-  std::unique_ptr<TouchViewControllerDelegate> max_mode_delegate_;
+  mojo::Binding<ash::mojom::TouchViewObserver> touch_view_binding_;
+  ash::mojom::TouchViewManagerPtr touch_view_manager_ptr_;
+  bool touch_view_enabled_ = false;
 
   // Input Method Engine state used at signin screen.
   scoped_refptr<input_method::InputMethodManager::State> ime_state_;

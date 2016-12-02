@@ -322,8 +322,6 @@ split_static_library("ui") {
     "webui/chromeos/slow_trace_ui.h",
     "webui/chromeos/slow_ui.cc",
     "webui/chromeos/slow_ui.h",
-    "webui/chromeos/touch_view_controller_delegate.cc",
-    "webui/chromeos/touch_view_controller_delegate.h",
     "webui/chromeos/ui_account_tweaks.cc",
     "webui/chromeos/ui_account_tweaks.h",
     "webui/components_ui.cc",

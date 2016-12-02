@@ -93,7 +93,10 @@
 #include "components/version_info/version_info.h"
 #include "content/public/browser/render_frame_host.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/common/service_manager_connection.h"
+#include "content/public/common/service_names.mojom.h"
 #include "google_apis/gaia/gaia_auth_util.h"
+#include "services/service_manager/public/cpp/connector.h"
 #include "third_party/cros_system_api/dbus/service_constants.h"
 #include "ui/base/ime/chromeos/ime_keyboard.h"
 #include "ui/base/ime/chromeos/input_method_descriptor.h"
@@ -266,6 +269,7 @@ SigninScreenHandler::SigninScreenHandler(
                              ->CapsLockIsEnabled()),
       proxy_auth_dialog_reload_times_(kMaxGaiaReloadForProxyAuthDialog),
       gaia_screen_handler_(gaia_screen_handler),
+      touch_view_binding_(this),
       histogram_helper_(new ErrorScreensHistogramHelper("Signin")),
       weak_factory_(this) {
   DCHECK(network_state_informer_.get());
@@ -292,12 +296,17 @@ SigninScreenHandler::SigninScreenHandler(
   if (keyboard)
     keyboard->AddObserver(this);
 
+  service_manager::Connector* connector =
+      content::ServiceManagerConnection::GetForProcess()->GetConnector();
   if (!chrome::IsRunningInMash()) {
-    max_mode_delegate_.reset(new TouchViewControllerDelegate());
-    max_mode_delegate_->AddObserver(this);
+    connector->ConnectToInterface(content::mojom::kBrowserServiceName,
+                                  &touch_view_manager_ptr_);
   } else {
-    NOTIMPLEMENTED();
+    connector->ConnectToInterface("ash", &touch_view_manager_ptr_);
   }
+
+  touch_view_manager_ptr_->AddObserver(
+      touch_view_binding_.CreateInterfacePtrAndBind());
 }
 
 SigninScreenHandler::~SigninScreenHandler() {
@@ -314,10 +323,6 @@ SigninScreenHandler::~SigninScreenHandler() {
   if (delegate_)
     delegate_->SetWebUIHandler(nullptr);
   network_state_informer_->RemoveObserver(this);
-  if (max_mode_delegate_) {
-    max_mode_delegate_->RemoveObserver(this);
-    max_mode_delegate_.reset(nullptr);
-  }
   proximity_auth::ScreenlockBridge::Get()->SetLockHandler(nullptr);
   proximity_auth::ScreenlockBridge::Get()->SetFocusedUser(EmptyAccountId());
 }
@@ -1067,12 +1072,9 @@ void SigninScreenHandler::SuspendDone(const base::TimeDelta& sleep_duration) {
   }
 }
 
-void SigninScreenHandler::OnMaximizeModeStarted() {
-  CallJS("login.AccountPickerScreen.setTouchViewState", true);
-}
-
-void SigninScreenHandler::OnMaximizeModeEnded() {
-  CallJS("login.AccountPickerScreen.setTouchViewState", false);
+void SigninScreenHandler::OnTouchViewToggled(bool enabled) {
+  touch_view_enabled_ = enabled;
+  CallJS("login.AccountPickerScreen.setTouchViewState", enabled);
 }
 
 bool SigninScreenHandler::ShouldLoadGaia() const {
@@ -1429,10 +1431,7 @@ void SigninScreenHandler::HandleLaunchArcKioskApp(
 }
 
 void SigninScreenHandler::HandleGetTouchViewState() {
-  if (max_mode_delegate_) {
-    CallJS("login.AccountPickerScreen.setTouchViewState",
-           max_mode_delegate_->IsMaximizeModeEnabled());
-  }
+  CallJS("login.AccountPickerScreen.setTouchViewState", touch_view_enabled_);
 }
 
 void SigninScreenHandler::HandleLogRemoveUserWarningShown() {
