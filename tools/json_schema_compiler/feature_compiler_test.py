@@ -328,5 +328,20 @@ class FeatureCompilerTest(unittest.TestCase):
     self._hasError(feature, 'A feature alias property should reference a ' +
                             'feature whose source property references it back.')
 
+  def testComplexParentWithoutDefaultParent(self):
+    c = feature_compiler.FeatureCompiler(
+        None, None, 'APIFeature', None, None, None)
+    c._CompileFeature('bookmarks',
+        [{
+          'contexts': ['blessed_extension'],
+        }, {
+          'channel': 'stable',
+          'contexts': ['webui'],
+        }])
+
+    with self.assertRaisesRegexp(AssertionError,
+                                 'No default parent found for bookmarks'):
+      c._CompileFeature('bookmarks.export', { "whitelist": ["asdf"] })
+
 if __name__ == '__main__':
   unittest.main()
