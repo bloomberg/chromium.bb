@@ -66,6 +66,9 @@ public class StubbedProvider implements BackendProvider {
         }
 
         @Override
+        public void broadcastDownloadAction(DownloadItem downloadItem, String action) {}
+
+        @Override
         public void checkForExternallyRemovedDownloads(boolean isOffTheRecord) {
             checkExternalCallback.notifyCalled();
         }

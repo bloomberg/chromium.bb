@@ -1553,6 +1553,17 @@ public class DownloadManagerService extends BroadcastReceiver implements
     }
 
     /**
+     * Fires an Intent that alerts the DownloadNotificationService that an action must be taken
+     * for a particular item.
+     */
+    @Override
+    public void broadcastDownloadAction(DownloadItem downloadItem, String action) {
+        Intent intent = DownloadNotificationService.buildActionIntent(mContext, action,
+                downloadItem.getId(), downloadItem.getDownloadInfo().getFileName(), false);
+        mContext.sendBroadcast(intent);
+    }
+
+    /**
      * Checks if the files associated with any downloads have been removed by an external action.
      * @param isOffTheRecord Whether or not to check downloads for the off the record profile.
      */

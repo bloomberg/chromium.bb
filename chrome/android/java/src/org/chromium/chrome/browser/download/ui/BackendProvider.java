@@ -7,6 +7,7 @@ package org.chromium.chrome.browser.download.ui;
 import android.content.ComponentName;
 import android.support.annotation.Nullable;
 
+import org.chromium.chrome.browser.download.DownloadItem;
 import org.chromium.chrome.browser.download.DownloadManagerService;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBridge;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
@@ -29,6 +30,9 @@ public interface BackendProvider {
 
         /** See {@link DownloadManagerService#getAllDownloads}. */
         void getAllDownloads(boolean isOffTheRecord);
+
+        /** See {@link DownloadManagerService#broadcastDownloadAction}. */
+        void broadcastDownloadAction(DownloadItem downloadItem, String action);
 
         /** See {@link DownloadManagerService#checkForExternallyRemovedDownloads}. */
         void checkForExternallyRemovedDownloads(boolean isOffTheRecord);

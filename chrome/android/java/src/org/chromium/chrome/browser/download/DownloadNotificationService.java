@@ -55,17 +55,19 @@ public class DownloadNotificationService extends Service {
     static final String EXTRA_DOWNLOAD_FILE_PATH = "DownloadFilePath";
     static final String EXTRA_NOTIFICATION_DISMISSED = "NotificationDismissed";
     static final String EXTRA_IS_SUPPORTED_MIME_TYPE = "IsSupportedMimeType";
-    static final String ACTION_DOWNLOAD_CANCEL =
+
+    public static final String ACTION_DOWNLOAD_CANCEL =
             "org.chromium.chrome.browser.download.DOWNLOAD_CANCEL";
-    static final String ACTION_DOWNLOAD_PAUSE =
+    public static final String ACTION_DOWNLOAD_PAUSE =
             "org.chromium.chrome.browser.download.DOWNLOAD_PAUSE";
-    static final String ACTION_DOWNLOAD_RESUME =
+    public static final String ACTION_DOWNLOAD_RESUME =
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME";
-    public static final String ACTION_DOWNLOAD_RESUME_ALL =
+    static final String ACTION_DOWNLOAD_RESUME_ALL =
             "org.chromium.chrome.browser.download.DOWNLOAD_RESUME_ALL";
     public static final String ACTION_DOWNLOAD_OPEN =
             "org.chromium.chrome.browser.download.DOWNLOAD_OPEN";
-    static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
+
+    public static final int INVALID_DOWNLOAD_PERCENTAGE = -1;
     @VisibleForTesting
     static final String PENDING_DOWNLOAD_NOTIFICATIONS = "PendingDownloadNotifications";
     static final String NOTIFICATION_NAMESPACE = "DownloadNotificationService";
@@ -295,12 +297,12 @@ public class DownloadNotificationService extends Service {
                 isOffTheRecord, canDownloadWhileMetered, downloadGuid, fileName, itemType, true));
         if (startTime > 0) builder.setWhen(startTime);
         Intent cancelIntent = buildActionIntent(
-                ACTION_DOWNLOAD_CANCEL, downloadGuid, fileName, isOfflinePage);
+                mContext, ACTION_DOWNLOAD_CANCEL, downloadGuid, fileName, isOfflinePage);
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, notificationId));
         Intent pauseIntent = buildActionIntent(
-                ACTION_DOWNLOAD_PAUSE, downloadGuid, fileName, isOfflinePage);
+                mContext, ACTION_DOWNLOAD_PAUSE, downloadGuid, fileName, isOfflinePage);
         builder.addAction(R.drawable.ic_media_control_pause,
                 mContext.getResources().getString(R.string.download_notification_pause_button),
                 buildPendingIntent(pauseIntent, notificationId));
@@ -312,12 +314,12 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Cancel a download notification.
-     * @notificationId Notification ID of the download
+     * @param notificationId Notification ID of the download
      * @param downloadGuid GUID of the download.
      */
     @VisibleForTesting
-    void cancelNotification(int notificaitonId, String downloadGuid) {
-        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificaitonId);
+    void cancelNotification(int notificationId, String downloadGuid) {
+        mNotificationManager.cancel(NOTIFICATION_NAMESPACE, notificationId);
         removeSharedPreferenceEntry(downloadGuid);
         mDownloadsInProgress.remove(downloadGuid);
     }
@@ -359,16 +361,16 @@ public class DownloadNotificationService extends Service {
                 R.string.download_notification_paused);
         NotificationCompat.Builder builder = buildNotification(
                 android.R.drawable.ic_media_pause, entry.fileName, contentText);
-        Intent cancelIntent = buildActionIntent(
-                ACTION_DOWNLOAD_CANCEL, entry.downloadGuid, entry.fileName, entry.isOfflinePage());
+        Intent cancelIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_CANCEL,
+                entry.downloadGuid, entry.fileName, entry.isOfflinePage());
         Intent dismissIntent = new Intent(cancelIntent);
         dismissIntent.putExtra(EXTRA_NOTIFICATION_DISMISSED, true);
         builder.setDeleteIntent(buildPendingIntent(dismissIntent, entry.notificationId));
         builder.addAction(R.drawable.btn_close_white,
                 mContext.getResources().getString(R.string.download_notification_cancel_button),
                 buildPendingIntent(cancelIntent, entry.notificationId));
-        Intent resumeIntent = buildActionIntent(
-                ACTION_DOWNLOAD_RESUME, entry.downloadGuid, entry.fileName, entry.isOfflinePage());
+        Intent resumeIntent = buildActionIntent(mContext, ACTION_DOWNLOAD_RESUME,
+                entry.downloadGuid, entry.fileName, entry.isOfflinePage());
         builder.addAction(R.drawable.ic_get_app_white_24dp,
                 mContext.getResources().getString(R.string.download_notification_resume_button),
                 buildPendingIntent(resumeIntent, entry.notificationId));
@@ -402,7 +404,8 @@ public class DownloadNotificationService extends Service {
                 mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent;
         if (isOfflinePage) {
-            intent = buildActionIntent(ACTION_DOWNLOAD_OPEN, downloadGuid, fileName, isOfflinePage);
+            intent = buildActionIntent(
+                    mContext, ACTION_DOWNLOAD_OPEN, downloadGuid, fileName, isOfflinePage);
         } else {
             intent = new Intent(DownloadManager.ACTION_NOTIFICATION_CLICKED);
             long[] idArray = {systemDownloadId};
@@ -483,15 +486,16 @@ public class DownloadNotificationService extends Service {
 
     /**
      * Helper method to build an download action Intent from the provided information.
+     * @param context {@link Context} to pull resources from.
      * @param action Download action to perform.
      * @param downloadGuid GUID of the download.
      * @param fileName Name of the download file.
      * @param isOfflinePage Whether the intent is for offline page download.
      */
-    private Intent buildActionIntent(
-            String action, String downloadGuid, String fileName, boolean isOfflinePage) {
+    static Intent buildActionIntent(Context context, String action, String downloadGuid,
+            String fileName, boolean isOfflinePage) {
         ComponentName component = new ComponentName(
-                mContext.getPackageName(), DownloadBroadcastReceiver.class.getName());
+                context.getPackageName(), DownloadBroadcastReceiver.class.getName());
         Intent intent = new Intent(action);
         intent.setComponent(component);
         intent.putExtra(EXTRA_DOWNLOAD_GUID, downloadGuid);
@@ -543,7 +547,7 @@ public class DownloadNotificationService extends Service {
     }
 
     /**
-     * Retrives DownloadSharedPreferenceEntry from a download action intent.
+     * Retrieves DownloadSharedPreferenceEntry from a download action intent.
      * @param intent Intent that contains the download action.
      */
     private DownloadSharedPreferenceEntry getDownloadEntryFromIntent(Intent intent) {
@@ -695,7 +699,7 @@ public class DownloadNotificationService extends Service {
     /**
      * Adds a DownloadSharedPreferenceEntry to SharedPrefs. If an entry with the GUID already exists
      * in SharedPrefs, update it if it has changed.
-     * @param DownloadSharedPreferenceEntry A DownloadSharedPreferenceEntry to be added.
+     * @param pendingEntry A DownloadSharedPreferenceEntry to be added.
      */
     private void addOrReplaceSharedPreferenceEntry(DownloadSharedPreferenceEntry pendingEntry) {
         Iterator<DownloadSharedPreferenceEntry> iterator =

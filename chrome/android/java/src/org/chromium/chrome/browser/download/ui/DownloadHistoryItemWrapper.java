@@ -13,6 +13,7 @@ import org.chromium.base.metrics.RecordHistogram;
 import org.chromium.chrome.R;
 import org.chromium.chrome.browser.download.DownloadInfo;
 import org.chromium.chrome.browser.download.DownloadItem;
+import org.chromium.chrome.browser.download.DownloadNotificationService;
 import org.chromium.chrome.browser.download.DownloadUtils;
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter.TimedItem;
@@ -97,7 +98,10 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     public abstract String getMimeType();
 
     /** @return How much of the download has completed, or -1 if there is no progress. */
-    public abstract int getDownloadProgress();
+    abstract int getDownloadProgress();
+
+    /** @return ID of the String indicating the status of the download. */
+    abstract int getStatusString();
 
     /** @return Whether the file for this item has been removed through an external action. */
     abstract boolean hasBeenExternallyRemoved();
@@ -105,12 +109,28 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return Whether this download is associated with the off the record profile. */
     abstract boolean isOffTheRecord();
 
+    /** @return Whether the item has been completely downloaded. */
+    abstract boolean isComplete();
+
+    /** @return Whether the download can be resumed. */
+    abstract boolean isResumable();
+
     /** Called when the user wants to open the file. */
     abstract void open();
 
+    /** Called when the user tries to cancel downloading the file. */
+    abstract void cancel();
+
+    /** Called when the user tries to pause downloading the file. */
+    abstract void pause();
+
+    /** Called when the user tries to resume downloading the file. */
+    abstract void resume();
+
     /**
-     * Called when the user wants to remove the download from the backend. May also delete the file
-     * associated with the download item.
+     * Called when the user wants to remove the download from the backend.
+     * May also delete the file associated with the download item.
+     *
      * @return Whether the file associated with the download item was deleted.
      */
     abstract boolean remove();
@@ -201,6 +221,23 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public int getStatusString() {
+            int state = mItem.getDownloadInfo().state();
+            if (mItem.getDownloadInfo().isPaused()) {
+                // TODO(dfalcantara): Account for paused downloads after restarting Chrome.
+                return R.string.download_notification_paused;
+            } else if (state == DownloadState.INTERRUPTED) {
+                return R.string.download_notification_pending;
+            } else if (state == DownloadState.COMPLETE) {
+                return R.string.download_notification_completed;
+            } else if (state == DownloadState.IN_PROGRESS) {
+                return R.string.download_started;
+            } else {
+                return 0;
+            }
+        }
+
+        @Override
         public void open() {
             Context context = ContextUtils.getApplicationContext();
 
@@ -218,6 +255,24 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public void cancel() {
+            mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_CANCEL);
+        }
+
+        @Override
+        public void pause() {
+            mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_PAUSE);
+        }
+
+        @Override
+        public void resume() {
+            mBackendProvider.getDownloadDelegate().broadcastDownloadAction(
+                    mItem, DownloadNotificationService.ACTION_DOWNLOAD_RESUME);
+        }
+
+        @Override
         public boolean remove() {
             // Tell the DownloadManager to remove the file from history.
             mBackendProvider.getDownloadDelegate().removeDownload(getId(), isOffTheRecord());
@@ -232,6 +287,16 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         boolean isOffTheRecord() {
             return mItem.getDownloadInfo().isOffTheRecord();
+        }
+
+        @Override
+        public boolean isComplete() {
+            return mItem.getDownloadInfo().state() == DownloadState.COMPLETE;
+        }
+
+        @Override
+        public boolean isResumable() {
+            return mItem.getDownloadInfo().isResumable();
         }
 
         @Override
@@ -347,9 +412,29 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public int getStatusString() {
+            return R.string.download_notification_completed;
+        }
+
+        @Override
         public void open() {
             mBackendProvider.getOfflinePageBridge().openItem(getId(), mComponentName);
             recordOpenSuccess();
+        }
+
+        @Override
+        public void cancel() {
+            assert false;
+        }
+
+        @Override
+        public void pause() {
+            assert false;
+        }
+
+        @Override
+        public void resume() {
+            assert false;
         }
 
         @Override
@@ -366,6 +451,16 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
 
         @Override
         boolean isOffTheRecord() {
+            return false;
+        }
+
+        @Override
+        public boolean isComplete() {
+            return true;
+        }
+
+        @Override
+        public boolean isResumable() {
             return false;
         }
     }
