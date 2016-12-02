@@ -1572,19 +1572,13 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
     for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
       const struct macroblockd_plane *const pd = &xd->plane[plane];
       const TX_SIZE tx_size = plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
-      const int num_4x4_w = pd->n4_w;
-      const int num_4x4_h = pd->n4_h;
       const int stepr = tx_size_high_unit[tx_size];
       const int stepc = tx_size_wide_unit[tx_size];
+      const BLOCK_SIZE plane_bsize =
+          get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
       int row, col;
-      const int max_blocks_wide =
-          num_4x4_w + (xd->mb_to_right_edge >= 0
-                           ? 0
-                           : xd->mb_to_right_edge >> (5 + pd->subsampling_x));
-      const int max_blocks_high =
-          num_4x4_h + (xd->mb_to_bottom_edge >= 0
-                           ? 0
-                           : xd->mb_to_bottom_edge >> (5 + pd->subsampling_y));
+      const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+      const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
 
       for (row = 0; row < max_blocks_high; row += stepr)
         for (col = 0; col < max_blocks_wide; col += stepc)
@@ -1635,21 +1629,18 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
 
       for (plane = 0; plane < MAX_MB_PLANE; ++plane) {
         const struct macroblockd_plane *const pd = &xd->plane[plane];
-        int block_width = pd->width;
-        int block_height = pd->height;
+        const BLOCK_SIZE plane_bsize =
+            get_plane_block_size(AOMMAX(BLOCK_8X8, bsize), pd);
+        const int max_blocks_wide = max_block_wide(xd, plane_bsize, plane);
+        const int max_blocks_high = max_block_high(xd, plane_bsize, plane);
         int row, col;
 #if CONFIG_VAR_TX
-        // TODO(jingning): This can be simplified for decoder performance.
-        const BLOCK_SIZE plane_bsize =
-            get_plane_block_size(AOMMAX(bsize, BLOCK_8X8), pd);
         const TX_SIZE max_tx_size = max_txsize_rect_lookup[plane_bsize];
         const int bh_var_tx = tx_size_high_unit[max_tx_size];
         const int bw_var_tx = tx_size_wide_unit[max_tx_size];
 
-        block_width >>= tx_size_wide_log2[0];
-        block_height >>= tx_size_wide_log2[0];
-        for (row = 0; row < block_height; row += bh_var_tx)
-          for (col = 0; col < block_width; col += bw_var_tx)
+        for (row = 0; row < max_blocks_high; row += bh_var_tx)
+          for (col = 0; col < max_blocks_wide; col += bw_var_tx)
             decode_reconstruct_tx(cm, xd, r, mbmi, plane, plane_bsize, row, col,
                                   max_tx_size, &eobtotal);
 #else
@@ -1657,16 +1648,6 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
             plane ? get_uv_tx_size(mbmi, pd) : mbmi->tx_size;
         const int stepr = tx_size_high_unit[tx_size];
         const int stepc = tx_size_wide_unit[tx_size];
-        int max_blocks_wide =
-            block_width +
-            (xd->mb_to_right_edge >= 0 ? 0 : xd->mb_to_right_edge >>
-                                                 (3 + pd->subsampling_x));
-        int max_blocks_high =
-            block_height +
-            (xd->mb_to_bottom_edge >= 0 ? 0 : xd->mb_to_bottom_edge >>
-                                                  (3 + pd->subsampling_y));
-        max_blocks_wide >>= tx_size_wide_log2[0];
-        max_blocks_high >>= tx_size_wide_log2[0];
         for (row = 0; row < max_blocks_high; row += stepr)
           for (col = 0; col < max_blocks_wide; col += stepc)
             eobtotal += reconstruct_inter_block(cm, xd, r, mbmi->segment_id,

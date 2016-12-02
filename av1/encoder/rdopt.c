@@ -4527,8 +4527,12 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
   struct macroblock_plane *const p = &x->plane[0];
   MODE_INFO *const mi = xd->mi[0];
   const BLOCK_SIZE plane_bsize = get_plane_block_size(mi->mbmi.sb_type, pd);
+  const int txb_width = max_block_wide(xd, plane_bsize, 0);
+  const int txb_height = max_block_high(xd, plane_bsize, 0);
+#if !CONFIG_PVQ
   const int width = block_size_wide[plane_bsize];
   const int height = block_size_high[plane_bsize];
+#endif
   int idx, idy;
   const uint8_t *const src =
       &p->src.buf[av1_raster_block_offset(BLOCK_8X8, i, p->src.stride)];
@@ -4579,8 +4583,8 @@ static int64_t encode_inter_mb_segment(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // !CONFIG_PVQ
 
   k = i;
-  for (idy = 0; idy < height / 4; idy += num_4x4_h) {
-    for (idx = 0; idx < width / 4; idx += num_4x4_w) {
+  for (idy = 0; idy < txb_height; idy += num_4x4_h) {
+    for (idx = 0; idx < txb_width; idx += num_4x4_w) {
       int64_t dist, ssz, rd, rd1, rd2;
       int block;
 #if !CONFIG_PVQ
