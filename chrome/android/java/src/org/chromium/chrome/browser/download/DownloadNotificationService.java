@@ -268,8 +268,10 @@ public class DownloadNotificationService extends Service {
         if (mStopPostingProgressNotifications) return;
         String contentText = mContext.getResources().getString(isDownloadPending
                 ? R.string.download_notification_pending : R.string.download_started);
+        int resId = isDownloadPending ? android.R.drawable.stat_sys_download_done
+                : android.R.drawable.stat_sys_download;
         NotificationCompat.Builder builder = buildNotification(
-                android.R.drawable.stat_sys_download, fileName, contentText);
+                resId, fileName, contentText);
         boolean indeterminate = (percentage == INVALID_DOWNLOAD_PERCENTAGE) || isDownloadPending;
         builder.setOngoing(true);
         // Avoid moving animations while download is not downloading.
