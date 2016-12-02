@@ -356,10 +356,14 @@ void ServiceWorkerGlobalScopeProxy::reportConsoleMessage(
 void ServiceWorkerGlobalScopeProxy::postMessageToPageInspector(
     const String& message) {
   DCHECK(m_embeddedWorker);
-  document().postInspectorTask(
-      BLINK_FROM_HERE,
-      createCrossThreadTask(&WebEmbeddedWorkerImpl::postMessageToPageInspector,
-                            crossThreadUnretained(m_embeddedWorker), message));
+  // The TaskType of Inspector tasks need to be Unthrottled because they need to
+  // run even on a suspended page.
+  getParentFrameTaskRunners()
+      ->get(TaskType::Unthrottled)
+      ->postTask(
+          BLINK_FROM_HERE,
+          crossThreadBind(&WebEmbeddedWorkerImpl::postMessageToPageInspector,
+                          crossThreadUnretained(m_embeddedWorker), message));
 }
 
 ParentFrameTaskRunners*

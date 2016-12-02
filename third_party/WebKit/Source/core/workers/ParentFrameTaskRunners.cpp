@@ -20,7 +20,7 @@ ParentFrameTaskRunners::ParentFrameTaskRunners(LocalFrame* frame)
   // For now we only support very limited task types.
   for (auto type :
        {TaskType::Internal, TaskType::Networking, TaskType::PostedMessage,
-        TaskType::CanvasBlobSerialization}) {
+        TaskType::CanvasBlobSerialization, TaskType::Unthrottled}) {
     m_taskRunners.add(type, TaskRunnerHelper::get(type, frame));
   }
 }

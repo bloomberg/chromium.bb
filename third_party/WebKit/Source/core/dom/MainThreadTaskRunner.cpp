@@ -44,17 +44,6 @@ MainThreadTaskRunner::MainThreadTaskRunner(ExecutionContext* context)
 
 MainThreadTaskRunner::~MainThreadTaskRunner() {}
 
-void MainThreadTaskRunner::postTaskInternal(
-    const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task,
-    bool isInspectorTask,
-    bool instrumenting) {
-  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
-      location,
-      crossThreadBind(&MainThreadTaskRunner::perform, m_weakPtr,
-                      passed(std::move(task)), isInspectorTask, instrumenting));
-}
-
 void MainThreadTaskRunner::postTask(const WebTraceLocation& location,
                                     std::unique_ptr<ExecutionContextTask> task,
                                     const String& taskNameForInstrumentation) {
@@ -62,17 +51,12 @@ void MainThreadTaskRunner::postTask(const WebTraceLocation& location,
     InspectorInstrumentation::asyncTaskScheduled(
         m_context, taskNameForInstrumentation, task.get());
   const bool instrumenting = !taskNameForInstrumentation.isEmpty();
-  postTaskInternal(location, std::move(task), false, instrumenting);
-}
-
-void MainThreadTaskRunner::postInspectorTask(
-    const WebTraceLocation& location,
-    std::unique_ptr<ExecutionContextTask> task) {
-  postTaskInternal(location, std::move(task), true, false);
+  Platform::current()->mainThread()->getWebTaskRunner()->postTask(
+      location, crossThreadBind(&MainThreadTaskRunner::perform, m_weakPtr,
+                                passed(std::move(task)), instrumenting));
 }
 
 void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task,
-                                   bool isInspectorTask,
                                    bool instrumenting) {
   // If the owner m_context is about to be swept then it
   // is no longer safe to access.
@@ -80,7 +64,7 @@ void MainThreadTaskRunner::perform(std::unique_ptr<ExecutionContextTask> task,
     return;
 
   InspectorInstrumentation::AsyncTask asyncTask(m_context, task.get(),
-                                                !isInspectorTask);
+                                                instrumenting);
   task->performTask(m_context);
 }
 

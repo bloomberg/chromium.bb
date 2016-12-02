@@ -140,16 +140,15 @@ void InProcessWorkerObjectProxy::reportConsoleMessage(
 
 void InProcessWorkerObjectProxy::postMessageToPageInspector(
     const String& message) {
-  ExecutionContext* context = getExecutionContext();
-  if (context->isDocument()) {
-    // TODO(hiroshige): consider using getParentFrameTaskRunners() here
-    // too.
-    toDocument(context)->postInspectorTask(
-        BLINK_FROM_HERE,
-        createCrossThreadTask(
-            &InProcessWorkerMessagingProxy::postMessageToPageInspector,
-            m_messagingProxyWeakPtr, message));
-  }
+  DCHECK(getExecutionContext()->isDocument());
+  // The TaskType of Inspector tasks need to be Unthrottled because they need to
+  // run even on a suspended page.
+  getParentFrameTaskRunners()
+      ->get(TaskType::Unthrottled)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(
+                     &InProcessWorkerMessagingProxy::postMessageToPageInspector,
+                     m_messagingProxyWeakPtr, message));
 }
 
 ParentFrameTaskRunners*

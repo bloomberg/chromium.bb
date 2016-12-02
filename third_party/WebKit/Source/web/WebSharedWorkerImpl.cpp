@@ -238,11 +238,15 @@ void WebSharedWorkerImpl::reportConsoleMessage(MessageSource,
 }
 
 void WebSharedWorkerImpl::postMessageToPageInspector(const String& message) {
-  m_mainFrame->frame()->document()->postInspectorTask(
-      BLINK_FROM_HERE,
-      createCrossThreadTask(
-          &WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread,
-          crossThreadUnretained(this), message));
+  // The TaskType of Inspector tasks need to be Unthrottled because they need to
+  // run even on a suspended page.
+  getParentFrameTaskRunners()
+      ->get(TaskType::Unthrottled)
+      ->postTask(
+          BLINK_FROM_HERE,
+          crossThreadBind(
+              &WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread,
+              crossThreadUnretained(this), message));
 }
 
 void WebSharedWorkerImpl::postMessageToPageInspectorOnMainThread(

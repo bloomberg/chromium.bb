@@ -10,6 +10,7 @@
 #include "core/dom/ExecutionContext.h"
 #include "core/dom/ExecutionContextTask.h"
 #include "core/inspector/ConsoleMessage.h"
+#include "core/workers/ParentFrameTaskRunners.h"
 #include "core/workers/ThreadedWorkletMessagingProxy.h"
 #include "wtf/Functional.h"
 #include "wtf/PtrUtil.h"
@@ -44,14 +45,14 @@ void ThreadedWorkletObjectProxy::reportConsoleMessage(
 void ThreadedWorkletObjectProxy::postMessageToPageInspector(
     const String& message) {
   DCHECK(getExecutionContext()->isDocument());
-  // TODO(nhiroki): Replace this with getParentFrameTaskRunners().
-  // (https://crbug.com/667310)
-  toDocument(getExecutionContext())
-      ->postInspectorTask(
-          BLINK_FROM_HERE,
-          createCrossThreadTask(
-              &ThreadedWorkletMessagingProxy::postMessageToPageInspector,
-              m_messagingProxyWeakPtr, message));
+  // The TaskType of Inspector tasks need to be Unthrottled because they need to
+  // run even on a suspended page.
+  getParentFrameTaskRunners()
+      ->get(TaskType::Unthrottled)
+      ->postTask(BLINK_FROM_HERE,
+                 crossThreadBind(
+                     &ThreadedWorkletMessagingProxy::postMessageToPageInspector,
+                     m_messagingProxyWeakPtr, message));
 }
 
 ParentFrameTaskRunners*

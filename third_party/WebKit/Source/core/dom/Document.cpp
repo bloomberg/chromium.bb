@@ -5738,11 +5738,6 @@ void Document::postTask(const WebTraceLocation& location,
   m_taskRunner->postTask(location, std::move(task), taskNameForInstrumentation);
 }
 
-void Document::postInspectorTask(const WebTraceLocation& location,
-                                 std::unique_ptr<ExecutionContextTask> task) {
-  m_taskRunner->postInspectorTask(location, std::move(task));
-}
-
 void Document::tasksWereSuspended() {
   scriptRunner()->suspend();
 

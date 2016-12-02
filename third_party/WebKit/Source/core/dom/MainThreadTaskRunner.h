@@ -58,19 +58,11 @@ class CORE_EXPORT MainThreadTaskRunner final {
                 std::unique_ptr<ExecutionContextTask>,
                 const String& taskNameForInstrumentation = emptyString());
 
-  void postInspectorTask(const WebTraceLocation&,
-                         std::unique_ptr<ExecutionContextTask>);
   void perform(std::unique_ptr<ExecutionContextTask>,
-               bool isInspectorTask,
                bool instrumenting);
 
  private:
   explicit MainThreadTaskRunner(ExecutionContext*);
-
-  void postTaskInternal(const WebTraceLocation&,
-                        std::unique_ptr<ExecutionContextTask>,
-                        bool isInspectorTask,
-                        bool instrumenting);
 
   // Untraced back reference to the owner Document;
   // this object has identical lifetime to it.
