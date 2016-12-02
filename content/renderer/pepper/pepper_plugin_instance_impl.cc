@@ -850,7 +850,7 @@ bool PepperPluginInstanceImpl::Initialize(
   full_frame_ = full_frame;
 
   UpdateTouchEventRequest();
-  container_->setWantsWheelEvents(IsAcceptingWheelEvents());
+  UpdateWheelEventRequest();
 
   SetGPUHistogram(ppapi::Preferences(PpapiPreferencesBuilder::Build(
                       render_frame_->render_view()->webkit_preferences())),
@@ -1043,7 +1043,7 @@ void PepperPluginInstanceImpl::RequestInputEventsHelper(
   if (event_classes & PP_INPUTEVENT_CLASS_TOUCH)
     UpdateTouchEventRequest();
   if (event_classes & PP_INPUTEVENT_CLASS_WHEEL)
-    container_->setWantsWheelEvents(IsAcceptingWheelEvents());
+    UpdateWheelEventRequest();
 }
 
 bool PepperPluginInstanceImpl::HandleCompositionStart(
@@ -1292,6 +1292,11 @@ void PepperPluginInstanceImpl::ViewChanged(
 
   view_data_.scroll_offset = PP_MakePoint(scroll_offset.width(),
                                           scroll_offset.height());
+
+  // The view size may have changed and we might need to update
+  // our registration of event listeners.
+  UpdateTouchEventRequest();
+  UpdateWheelEventRequest();
 
   if (desired_fullscreen_state_ || view_data_.is_fullscreen) {
     bool is_fullscreen_element = container_->isFullscreenElement();
@@ -1636,6 +1641,12 @@ void PepperPluginInstanceImpl::SendFocusChangeNotification() {
 }
 
 void PepperPluginInstanceImpl::UpdateTouchEventRequest() {
+  // If the view has 0 area don't request touch events.
+  if (view_data_.rect.size.width == 0 || view_data_.rect.size.height == 0) {
+    container_->requestTouchEventType(
+        blink::WebPluginContainer::TouchEventRequestTypeNone);
+    return;
+  }
   bool raw_touch = (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH) ||
                    (input_event_mask_ & PP_INPUTEVENT_CLASS_TOUCH);
   container_->requestTouchEventType(
@@ -1644,9 +1655,17 @@ void PepperPluginInstanceImpl::UpdateTouchEventRequest() {
           : blink::WebPluginContainer::TouchEventRequestTypeSynthesizedMouse);
 }
 
-bool PepperPluginInstanceImpl::IsAcceptingWheelEvents() const {
-  return (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL) ||
-         (input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL);
+void PepperPluginInstanceImpl::UpdateWheelEventRequest() {
+  // If the view has 0 area don't request wheel events.
+  if (view_data_.rect.size.width == 0 || view_data_.rect.size.height == 0) {
+    container_->setWantsWheelEvents(false);
+    return;
+  }
+
+  bool hasWheelMask =
+      (filtered_input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL) ||
+      (input_event_mask_ & PP_INPUTEVENT_CLASS_WHEEL);
+  container_->setWantsWheelEvents(hasWheelMask);
 }
 
 void PepperPluginInstanceImpl::ScheduleAsyncDidChangeView() {

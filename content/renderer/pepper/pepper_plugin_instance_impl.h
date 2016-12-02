@@ -633,9 +633,7 @@ class CONTENT_EXPORT PepperPluginInstanceImpl
   void SendFocusChangeNotification();
 
   void UpdateTouchEventRequest();
-
-  // Returns true if the plugin has registered to accept wheel events.
-  bool IsAcceptingWheelEvents() const;
+  void UpdateWheelEventRequest();
 
   void ScheduleAsyncDidChangeView();
   void SendAsyncDidChangeView();
