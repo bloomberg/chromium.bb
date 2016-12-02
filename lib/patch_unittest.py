@@ -30,6 +30,11 @@ site_config = config_lib.GetConfig()
 
 _GetNumber = iter(itertools.count()).next
 
+# Change-ID of a known open change in public gerrit.
+GERRIT_OPEN_CHANGEID = '8366'
+GERRIT_MERGED_CHANGEID = '3'
+GERRIT_ABANDONED_CHANGEID = '2'
+
 FAKE_PATCH_JSON = {
     'project': 'tacos/chromite',
     'branch': 'master',
@@ -52,10 +57,140 @@ FAKE_PATCH_JSON = {
     'status': 'NEW',
 }
 
-# Change-ID of a known open change in public gerrit.
-GERRIT_OPEN_CHANGEID = '8366'
-GERRIT_MERGED_CHANGEID = '3'
-GERRIT_ABANDONED_CHANGEID = '2'
+# List of labels as seen in the top level desc by normal CrOS devs.
+FAKE_LABELS_JSON = {
+    'Code-Review': {
+        'default_value': 0,
+        'values': {
+            ' 0': 'No score',
+            '+1': 'Looks good to me, but someone else must approve',
+            '+2': 'Looks good to me, approved',
+            '-1': 'I would prefer that you did not submit this',
+            '-2': 'Do not submit',
+        },
+    },
+    'Commit-Queue': {
+        'default_value': 0,
+        'optional': True,
+        'values': {
+            ' 0': 'Not Ready',
+            '+1': 'Ready',
+            '+2': 'Sheriff only: Ready, allow in throttled tree',
+            '+3': 'Ignore this label',
+        },
+    },
+    'Trybot-Ready': {
+        'default_value': 0,
+        'optional': True,
+        'values': {
+            ' 0': 'Not Ready',
+            '+1': 'Ready',
+        },
+    },
+    'Verified': {
+        'default_value': 0,
+        'values': {
+            ' 0': 'No score',
+            '+1': 'Verified',
+            '-1': 'Fails',
+        },
+    },
+}
+
+# List of label values as seen in the permitted_labels field.
+# Note: The space before the 0 is intentional -- it's what gerrit returns.
+FAKE_PERMITTED_LABELS_JSON = {
+    'Code-Review': ['-2', '-1', ' 0', '+1', '+2'],
+    'Commit-Queue': [' 0', '+1', '+2'],
+    'Trybot-Ready': [' 0', '+1'],
+    'Verified': ['-1', ' 0', '+1'],
+}
+
+# An account structure as seen in owners or reviewers lists.
+FAKE_GERRIT_ACCT_JSON = {
+    '_account_id': 991919291,
+    'avatars': [
+        {'height': 26, 'url': 'https://example.com/26/photo.jpg'},
+        {'height': 32, 'url': 'https://example.com/32/photo.jpg'},
+        {'height': 100, 'url': 'https://example.com/100/photo.jpg'},
+    ],
+    'email': 'happy-funky-duck@chromium.org',
+    'name': 'Duckworth Duck',
+}
+
+# A valid change json result as returned by gerrit.
+FAKE_CHANGE_JSON = {
+    '_number': 8366,
+    'branch': 'master',
+    'change_id': 'I3a753d6bacfbe76e5675a6f2f7941fe520c095e5',
+    'created': '2016-09-14 23:02:46.000000000',
+    'current_revision': 'be54f9935bedb157b078eefa26fc1885b8264da6',
+    'deletions': 1,
+    'hashtags': [],
+    'id': 'example%2Frepo~master~I3a753d6bacfbe76e5675a6f2f7941fe520c095e5',
+    'insertions': 0,
+    'labels': FAKE_LABELS_JSON,
+    'mergeable': True,
+    'owner': FAKE_GERRIT_ACCT_JSON,
+    'permitted_labels': FAKE_PERMITTED_LABELS_JSON,
+    'project': 'example/repo',
+    'removable_reviewers': [],
+    'reviewers': {},
+    'revisions': {
+        'be54f9935bedb157b078eefa26fc1885b8264da6': {
+            '_number': 1,
+            'commit': {
+                'author': {
+                    'date': '2016-09-14 22:54:07.000000000',
+                    'email': 'vapier@chromium.org',
+                    'name': 'Mike Frysinger',
+                    'tz': -240,
+                },
+                'committer': {
+                    'date': '2016-09-14 23:02:03.000000000',
+                    'email': 'vapier@chromium.org',
+                    'name': 'Mike Frysinger',
+                    'tz': -240,
+                },
+                'message': ('my super great message\n\nChange-Id: '
+                            'I3a753d6bacfbe76e5675a6f2f7941fe520c095e5\n'),
+                'parents': [
+                    {
+                        'commit': '3d54362a9b010330bae2dde973fc5c3efc4e5f44',
+                        'subject': 'some parent commit',
+                    },
+                ],
+                'subject': 'my super great message',
+            },
+            'created': '2016-09-14 23:02:46.000000000',
+            'fetch': {
+                'http': {
+                    'ref': 'refs/changes/15/8366/1',
+                    'url': 'https://chromium.googlesource.com/example/repo',
+                },
+                'repo': {
+                    'ref': 'refs/changes/15/8366/1',
+                    'url': 'example/repo',
+                },
+                'rpc': {
+                    'ref': 'refs/changes/15/8366/1',
+                    'url': 'rpc://chromium/example/repo',
+                },
+                'sso': {
+                    'ref': 'refs/changes/15/8366/1',
+                    'url': 'sso://chromium/example/repo',
+                },
+            },
+            'kind': 'REWORK',
+            'ref': 'refs/changes/15/8366/1',
+            'uploader': FAKE_GERRIT_ACCT_JSON,
+        },
+    },
+    'status': 'NEW',
+    'subject': 'my super great message',
+    'submit_type': 'CHERRY_PICK',
+    'updated': '2016-09-14 23:02:46.000000000',
+}
 
 
 class GitRepoPatchTestCase(cros_test_lib.TempDirTestCase):
@@ -909,6 +1044,49 @@ class TestGerritPatch(TestGitRepoPatch):
           if set(footers) - set(patch._GetFooters(msg)):
             self.assertNotEqual(msg, patch._AddFooters(msg))
 
+  def testConvertQueryResults(self):
+    """Verify basic ConvertQueryResults behavior."""
+    self.maxDiff = None
+    j = FAKE_CHANGE_JSON
+    exp = {
+        'project': j['project'],
+        'url': 'https://host/#/c/8366/',
+        'status': j['status'],
+        'branch': j['branch'],
+        'owner': {
+            'username': 'Duckworth Duck',
+            'name': 'Duckworth Duck',
+            'email': 'happy-funky-duck@chromium.org',
+        },
+        'createdOn': 1473894166,
+        'commitMessage': ('my super great message\n\nChange-Id: '
+                          'I3a753d6bacfbe76e5675a6f2f7941fe520c095e5\n'),
+        'currentPatchSet': {
+            'approvals': [],
+            'date': 1473894123,
+            'draft': False,
+            'number': '1',
+            'ref': 'refs/changes/15/8366/1',
+            'revision': j['current_revision'],
+        },
+        'dependsOn': [{'revision': '3d54362a9b010330bae2dde973fc5c3efc4e5f44'}],
+        'subject': j['subject'],
+        'id': j['change_id'],
+        'lastUpdated': 1473894166,
+        'number': str(j['_number']),
+    }
+    ret = cros_patch.GerritPatch.ConvertQueryResults(j, 'host')
+    self.assertEqual(ret, exp)
+
+  def testConvertQueryResultsProtoNoHttp(self):
+    """Verify ConvertQueryResults handling of non-http protos."""
+    j = copy.deepcopy(FAKE_CHANGE_JSON)
+    fetch = j['revisions'][j['current_revision']]['fetch']
+    fetch.pop('http', None)
+    fetch.pop('https', None)
+    # Mostly just verifying it still parses.
+    ret = cros_patch.GerritPatch.ConvertQueryResults(j, 'host')
+    self.assertNotEqual(ret, None)
 
 
 class PrepareRemotePatchesTest(cros_test_lib.TestCase):

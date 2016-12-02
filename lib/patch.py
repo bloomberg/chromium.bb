@@ -1712,9 +1712,15 @@ class GerritPatch(GerritFetchOnlyPatch):
             })
 
         date = current_revision_info['commit']['committer']['date']
+        for proto in ('http', 'https', 'repo', 'sso'):
+          if proto in current_revision_info['fetch']:
+            ref = current_revision_info['fetch'][proto]['ref']
+            break
+        else:
+          raise ValueError('Missing ref info')
         patch_dict['currentPatchSet'] = {
             'approvals': approvals,
-            'ref': current_revision_info['fetch']['http']['ref'],
+            'ref': ref,
             'revision': current_revision,
             'number': str(current_revision_info['_number']),
             'date': _convert_tm(date),
