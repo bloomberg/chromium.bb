@@ -74,7 +74,8 @@ class CORE_EXPORT WorkletGlobalScope
     NOTREACHED();
     return nullptr;
   }  // WorkletGlobalScopes don't have timers.
-  void postTask(const WebTraceLocation&,
+  void postTask(TaskType,
+                const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
                 const String&) override {
     // TODO(ikilpatrick): implement.

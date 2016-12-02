@@ -35,11 +35,11 @@ WebTaskRunner* TaskRunnerHelper::get(TaskType type, LocalFrame* frame) {
       return frame ? frame->frameScheduler()->loadingTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
     case TaskType::Unthrottled:
+    case TaskType::Unspecified:
       return frame ? frame->frameScheduler()->unthrottledTaskRunner()
                    : Platform::current()->currentThread()->getWebTaskRunner();
-    default:
-      NOTREACHED();
   }
+  NOTREACHED();
   return nullptr;
 }
 

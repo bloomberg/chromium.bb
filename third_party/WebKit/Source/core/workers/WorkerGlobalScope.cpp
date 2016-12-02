@@ -272,7 +272,8 @@ void WorkerGlobalScope::disableEval(const String& errorMessage) {
   m_scriptController->disableEval(errorMessage);
 }
 
-void WorkerGlobalScope::postTask(const WebTraceLocation& location,
+void WorkerGlobalScope::postTask(TaskType,
+                                 const WebTraceLocation& location,
                                  std::unique_ptr<ExecutionContextTask> task,
                                  const String& taskNameForInstrumentation) {
   thread()->postTask(location, std::move(task),

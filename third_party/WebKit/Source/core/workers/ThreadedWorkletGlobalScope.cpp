@@ -41,6 +41,7 @@ bool ThreadedWorkletGlobalScope::isContextThread() const {
 }
 
 void ThreadedWorkletGlobalScope::postTask(
+    TaskType,
     const WebTraceLocation& location,
     std::unique_ptr<ExecutionContextTask> task,
     const String& taskNameForInstrumentation) {

@@ -29,6 +29,7 @@
 
 #include "bindings/core/v8/SourceLocation.h"
 #include "core/dom/ExecutionContextTask.h"
+#include "core/dom/TaskRunnerHelper.h"
 #include "core/events/ErrorEvent.h"
 #include "core/events/EventTarget.h"
 #include "core/fetch/MemoryCache.h"
@@ -162,6 +163,13 @@ const KURL& ExecutionContext::url() const {
 
 KURL ExecutionContext::completeURL(const String& url) const {
   return virtualCompleteURL(url);
+}
+
+void ExecutionContext::postTask(const WebTraceLocation& location,
+                                std::unique_ptr<ExecutionContextTask> task,
+                                const String& taskNameForInstrumentation) {
+  postTask(TaskType::Unspecified, location, std::move(task),
+           taskNameForInstrumentation);
 }
 
 void ExecutionContext::allowWindowInteraction() {

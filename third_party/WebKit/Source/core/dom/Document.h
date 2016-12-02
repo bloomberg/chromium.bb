@@ -990,9 +990,9 @@ class CORE_EXPORT Document : public ContainerNode,
   bool isDNSPrefetchEnabled() const { return m_isDNSPrefetchEnabled; }
   void parseDNSPrefetchControlHeader(const String&);
 
-  // FIXME(crbug.com/305497): This should be removed once LocalDOMWindow is an
-  // ExecutionContext.
-  void postTask(const WebTraceLocation&,
+  using ExecutionContext::postTask;
+  void postTask(TaskType,
+                const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
                 const String& taskNameForInstrumentation = emptyString())
       override;  // Executes the task on context's thread asynchronously.

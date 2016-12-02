@@ -20,7 +20,8 @@ class CORE_EXPORT ThreadedWorkletGlobalScope : public WorkletGlobalScope {
   // ExecutionContext
   bool isThreadedWorkletGlobalScope() const final { return true; }
   bool isContextThread() const final;
-  void postTask(const WebTraceLocation&,
+  void postTask(TaskType,
+                const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
                 const String& taskNameForInstrumentation) final;
   void addConsoleMessage(ConsoleMessage*) final;

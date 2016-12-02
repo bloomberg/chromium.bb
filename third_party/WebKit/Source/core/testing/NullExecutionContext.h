@@ -29,6 +29,7 @@ class NullExecutionContext final
   String userAgent() const override { return String(); }
 
   void postTask(
+      TaskType,
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
       const String& taskNameForInstrumentation = emptyString()) override;

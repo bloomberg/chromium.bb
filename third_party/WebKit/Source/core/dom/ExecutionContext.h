@@ -53,6 +53,7 @@ class ExecutionContextTask;
 class LocalDOMWindow;
 class PublicURLManager;
 class SecurityOrigin;
+enum class TaskType : unsigned;
 
 class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
                                      public Supplementable<ExecutionContext> {
@@ -94,9 +95,13 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
   virtual String userAgent() const = 0;
   // Executes the task on context's thread asynchronously.
   virtual void postTask(
+      TaskType,
       const WebTraceLocation&,
       std::unique_ptr<ExecutionContextTask>,
       const String& taskNameForInstrumentation = emptyString()) = 0;
+  void postTask(const WebTraceLocation&,
+                std::unique_ptr<ExecutionContextTask>,
+                const String& taskNameForInstrumentation = emptyString());
 
   // Gets the DOMTimerCoordinator which maintains the "active timer
   // list" of tasks created by setTimeout and setInterval. The

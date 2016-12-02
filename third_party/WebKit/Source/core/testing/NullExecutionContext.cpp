@@ -28,7 +28,8 @@ NullExecutionContext::NullExecutionContext()
       m_isSecureContext(true),
       m_queue(new NullEventQueue()) {}
 
-void NullExecutionContext::postTask(const WebTraceLocation&,
+void NullExecutionContext::postTask(TaskType,
+                                    const WebTraceLocation&,
                                     std::unique_ptr<ExecutionContextTask>,
                                     const String&) {}
 

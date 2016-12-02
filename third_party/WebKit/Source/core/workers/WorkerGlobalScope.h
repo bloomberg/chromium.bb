@@ -126,7 +126,8 @@ class CORE_EXPORT WorkerGlobalScope : public EventTargetWithInlineData,
   bool isContextThread() const final;
   void disableEval(const String& errorMessage) final;
   String userAgent() const final { return m_userAgent; }
-  void postTask(const WebTraceLocation&,
+  void postTask(TaskType,
+                const WebTraceLocation&,
                 std::unique_ptr<ExecutionContextTask>,
                 const String& taskNameForInstrumentation) final;
   DOMTimerCoordinator* timers() final { return &m_timers; }

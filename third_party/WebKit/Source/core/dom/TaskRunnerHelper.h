@@ -42,6 +42,10 @@ enum class TaskType : unsigned {
   // Tasks that must not be throttled should be posted here, but the usage
   // should be very limited.
   Unthrottled,
+
+  // Tasks that any other TaskType is not assigned to. This should be
+  // transitional and should be removed.
+  Unspecified,
 };
 
 // HashTraits for TaskType.
