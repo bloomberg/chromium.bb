@@ -98,15 +98,13 @@ struct CheckedAddOp<
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
-  using result_type =
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
     return !__builtin_add_overflow(x, y, result);
 #else
-    using Promotion =
-        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    using Promotion = typename BigEnoughPromotion<T, U>::type;
     Promotion presult;
     // Fail if either operand is out of range for the promoted type.
     // TODO(jschuh): This could be made to work for a broader range of values.
@@ -152,15 +150,13 @@ struct CheckedSubOp<
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
-  using result_type =
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
     return !__builtin_sub_overflow(x, y, result);
 #else
-    using Promotion =
-        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    using Promotion = typename BigEnoughPromotion<T, U>::type;
     Promotion presult;
     // Fail if either operand is out of range for the promoted type.
     // TODO(jschuh): This could be made to work for a broader range of values.
@@ -243,8 +239,7 @@ struct CheckedMulOp<
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
-  using result_type =
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
 #if USE_OVERFLOW_BUILTINS
@@ -262,8 +257,7 @@ struct CheckedMulOp<
     if (kUseMaxInt)
       return !__builtin_mul_overflow(x, y, result);
 #endif
-    using Promotion =
-        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    using Promotion = typename BigEnoughPromotion<T, U>::type;
     Promotion presult;
     // Fail if either operand is out of range for the promoted type.
     // TODO(jschuh): This could be made to work for a broader range of values.
@@ -306,12 +300,10 @@ struct CheckedDivOp<
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
-  using result_type =
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
-    using Promotion =
-        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    using Promotion = typename BigEnoughPromotion<T, U>::type;
     Promotion presult;
     // Fail if either operand is out of range for the promoted type.
     // TODO(jschuh): This could be made to work for a broader range of values.
@@ -357,12 +349,10 @@ struct CheckedModOp<
     U,
     typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<U>::is_integer>::type> {
-  using result_type =
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;
+  using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
-    using Promotion =
-        typename ArithmeticPromotion<BIG_ENOUGH_PROMOTION, T, U>::type;
+    using Promotion = typename BigEnoughPromotion<T, U>::type;
     Promotion presult;
     bool is_valid = CheckedModImpl(static_cast<Promotion>(x),
                                    static_cast<Promotion>(y), &presult);
@@ -437,7 +427,7 @@ struct CheckedAndOp<T,
                     typename std::enable_if<std::is_integral<T>::value &&
                                             std::is_integral<U>::value>::type> {
   using result_type = typename UnsignedIntegerForSize<
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type>::type;
+      typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) & static_cast<result_type>(y);
@@ -456,7 +446,7 @@ struct CheckedOrOp<T,
                    typename std::enable_if<std::is_integral<T>::value &&
                                            std::is_integral<U>::value>::type> {
   using result_type = typename UnsignedIntegerForSize<
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type>::type;
+      typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) | static_cast<result_type>(y);
@@ -475,7 +465,7 @@ struct CheckedXorOp<T,
                     typename std::enable_if<std::is_integral<T>::value &&
                                             std::is_integral<U>::value>::type> {
   using result_type = typename UnsignedIntegerForSize<
-      typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type>::type;
+      typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
     result_type tmp = static_cast<result_type>(x) ^ static_cast<result_type>(y);
@@ -563,22 +553,20 @@ SafeUnsignedAbs(T value) {
 
 // This is just boilerplate that wraps the standard floating point arithmetic.
 // A macro isn't the nicest solution, but it beats rewriting these repeatedly.
-#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                 \
-  template <typename T, typename U>                                         \
-  struct Checked##NAME##Op<                                                 \
-      T, U,                                                                 \
-      typename std::enable_if<std::numeric_limits<T>::is_iec559 ||          \
-                              std::numeric_limits<U>::is_iec559>::type> {   \
-    using result_type =                                                     \
-        typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type;   \
-    template <typename V>                                                   \
-    static bool Do(T x, U y, V* result) {                                   \
-      using Promotion =                                                     \
-          typename ArithmeticPromotion<MAX_EXPONENT_PROMOTION, T, U>::type; \
-      Promotion presult = x OP y;                                           \
-      *result = static_cast<V>(presult);                                    \
-      return IsValueInRangeForNumericType<V>(presult);                      \
-    }                                                                       \
+#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                               \
+  template <typename T, typename U>                                       \
+  struct Checked##NAME##Op<                                               \
+      T, U,                                                               \
+      typename std::enable_if<std::numeric_limits<T>::is_iec559 ||        \
+                              std::numeric_limits<U>::is_iec559>::type> { \
+    using result_type = typename MaxExponentPromotion<T, U>::type;        \
+    template <typename V>                                                 \
+    static bool Do(T x, U y, V* result) {                                 \
+      using Promotion = typename MaxExponentPromotion<T, U>::type;        \
+      Promotion presult = x OP y;                                         \
+      *result = static_cast<V>(presult);                                  \
+      return IsValueInRangeForNumericType<V>(presult);                    \
+    }                                                                     \
   };
 
 BASE_FLOAT_ARITHMETIC_OPS(Add, +)

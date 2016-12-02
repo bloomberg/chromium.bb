@@ -19,9 +19,10 @@ namespace internal {
 // boundary conditions such as overflow, underflow, and invalid conversions.
 // The CheckedNumeric type implicitly converts from floating point and integer
 // data types, and contains overloads for basic arithmetic operations (i.e.: +,
-// -, *, / for all types and %, <<, >>, &, |, ^ for integers; additionally the
-// result of all bitwise logical operations is always promoted to an unsigned
-// CheckedNumeric type matching the width of the larger operand).
+// -, *, / for all types and %, <<, >>, &, |, ^ for integers). Type promotions
+// are a slightly modified version of the standard C arithmetic rules with the
+// two differences being that there is no default promotion to int and bitwise
+// logical operations always return an unsigned of the wider type.
 //
 // You may also use one of the variadic convenience functions, which accept
 // standard arithmetic or CheckedNumeric types, perform arithmetic operations,
@@ -255,7 +256,7 @@ class CheckedNumeric {
   template <template <typename, typename, typename> class M,
             typename L,
             typename R>
-  static CheckedNumeric MathOp(const L& lhs, const R& rhs) {
+  static CheckedNumeric MathOp(const L lhs, const R rhs) {
     using Math = typename MathWrapper<M, L, R>::math;
     T result = 0;
     bool is_valid =
@@ -266,7 +267,7 @@ class CheckedNumeric {
 
   // Assignment arithmetic operations.
   template <template <typename, typename, typename> class M, typename R>
-  CheckedNumeric& MathOp(const R& rhs) {
+  CheckedNumeric& MathOp(const R rhs) {
     using Math = typename MathWrapper<M, T, R>::math;
     T result = 0;  // Using T as the destination saves a range check.
     bool is_valid = state_.is_valid() && Wrapper<R>::is_valid(rhs) &&
@@ -292,10 +293,10 @@ class CheckedNumeric {
 
   template <typename Src>
   struct Wrapper<CheckedNumeric<Src>> {
-    static constexpr bool is_valid(const CheckedNumeric<Src>& v) {
+    static constexpr bool is_valid(const CheckedNumeric<Src> v) {
       return v.IsValid();
     }
-    static constexpr Src value(const CheckedNumeric<Src>& v) {
+    static constexpr Src value(const CheckedNumeric<Src> v) {
       return v.state_.value();
     }
   };

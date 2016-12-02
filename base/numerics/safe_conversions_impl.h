@@ -331,10 +331,8 @@ struct PositionOfSignBit {
 };
 
 enum ArithmeticPromotionCategory {
-  LEFT_PROMOTION,          // Use the type of the left-hand argument.
-  RIGHT_PROMOTION,         // Use the type of the right-hand argument.
-  MAX_EXPONENT_PROMOTION,  // Use the type supporting the largest exponent.
-  BIG_ENOUGH_PROMOTION     // Attempt to find a big enough type.
+  LEFT_PROMOTION,  // Use the type of the left-hand argument.
+  RIGHT_PROMOTION  // Use the type of the right-hand argument.
 };
 
 template <ArithmeticPromotionCategory Promotion,
@@ -397,22 +395,6 @@ template <typename Lhs, typename Rhs>
 struct BigEnoughPromotion<Lhs, Rhs, true, false> {
   using type = typename MaxExponentPromotion<Lhs, Rhs>::type;
   static const bool is_contained = false;
-};
-
-// These are the supported promotion types.
-
-// Use the type supporting the largest exponent.
-template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<MAX_EXPONENT_PROMOTION, Lhs, Rhs> {
-  using type = typename MaxExponentPromotion<Lhs, Rhs>::type;
-  static const bool is_contained = true;
-};
-
-// Attempt to find a big enough type.
-template <typename Lhs, typename Rhs>
-struct ArithmeticPromotion<BIG_ENOUGH_PROMOTION, Lhs, Rhs> {
-  using type = typename BigEnoughPromotion<Lhs, Rhs>::type;
-  static const bool is_contained = BigEnoughPromotion<Lhs, Rhs>::is_contained;
 };
 
 // We can statically check if operations on the provided types can wrap, so we
@@ -628,7 +610,7 @@ template <template <typename, typename> class C, typename L, typename R>
 constexpr bool SafeCompare(const L lhs, const R rhs) {
   static_assert(std::is_arithmetic<L>::value && std::is_arithmetic<R>::value,
                 "Types must be numeric.");
-  using Promotion = ArithmeticPromotion<BIG_ENOUGH_PROMOTION, L, R>;
+  using Promotion = BigEnoughPromotion<L, R>;
   using BigType = typename Promotion::type;
   return Promotion::is_contained
              // Force to a larger type for speed if both are contained.
