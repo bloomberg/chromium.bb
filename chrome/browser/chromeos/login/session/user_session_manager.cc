@@ -21,9 +21,8 @@
 #include "base/single_thread_task_runner.h"
 #include "base/strings/string16.h"
 #include "base/sys_info.h"
-#include "base/task_runner_util.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "chrome/browser/about_flags.h"
 #include "chrome/browser/app_mode/app_mode_utils.h"
 #include "chrome/browser/browser_process.h"
@@ -563,9 +562,12 @@ void UserSessionManager::InitRlz(Profile* profile) {
         base::Bind(&UserSessionManager::InitRlz, AsWeakPtr(), profile));
     return;
   }
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false).get(),
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithFileIO(),
       base::Bind(&base::PathExists, GetRlzDisabledFlagPath()),
       base::Bind(&UserSessionManager::InitRlzImpl, AsWeakPtr(), profile));
 #endif
