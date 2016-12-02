@@ -511,9 +511,6 @@ class CORE_EXPORT LayoutBlock : public LayoutBox {
     return pageLogicalHeightForOffset(LayoutUnit());
   }
 
-  // Returns the logical offset at the top of the next page, for a given offset.
-  LayoutUnit nextPageLogicalTop(LayoutUnit logicalOffset) const;
-
   // Paginated content inside this block was laid out.
   // |logicalBottomOffsetAfterPagination| is the logical bottom offset of the
   // child content after applying any forced or unforced breaks as needed.

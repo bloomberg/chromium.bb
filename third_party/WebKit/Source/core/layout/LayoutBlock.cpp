@@ -1887,15 +1887,6 @@ LayoutBox* LayoutBlock::createAnonymousBoxWithSameTypeAs(
   return createAnonymousWithParentAndDisplay(parent, style()->display());
 }
 
-LayoutUnit LayoutBlock::nextPageLogicalTop(LayoutUnit logicalOffset) const {
-  LayoutUnit pageLogicalHeight = pageLogicalHeightForOffset(logicalOffset);
-  if (!pageLogicalHeight)
-    return logicalOffset;
-
-  return logicalOffset + pageRemainingLogicalHeightForOffset(
-                             logicalOffset, AssociateWithLatterPage);
-}
-
 void LayoutBlock::paginatedContentWasLaidOut(
     LayoutUnit logicalBottomOffsetAfterPagination) {
   if (LayoutFlowThread* flowThread = flowThreadContainingBlock())

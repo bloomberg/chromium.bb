@@ -815,7 +815,7 @@ void LayoutBlockFlow::layoutBlockChild(LayoutBox& child,
   // Now determine the correct ypos based off examination of collapsing margin
   // values.
   LayoutUnit logicalTopBeforeClear =
-      collapseMargins(child, marginInfo, childIsSelfCollapsing,
+      collapseMargins(child, layoutInfo, childIsSelfCollapsing,
                       childDiscardMarginBefore, childDiscardMarginAfter);
 
   // Now check for clear.
@@ -1599,11 +1599,38 @@ LayoutBlockFlow::MarginValues LayoutBlockFlow::marginValuesForChild(
                                        childAfterPositive, childAfterNegative);
 }
 
+LayoutUnit LayoutBlockFlow::adjustedMarginBeforeForPagination(
+    const LayoutBox& child,
+    LayoutUnit logicalTopMarginEdge,
+    LayoutUnit logicalTopBorderEdge,
+    const BlockChildrenLayoutInfo& layoutInfo) const {
+  LayoutUnit effectiveMargin = logicalTopBorderEdge - logicalTopMarginEdge;
+  DCHECK(isPageLogicalHeightKnown());
+  if (effectiveMargin <= LayoutUnit())
+    return effectiveMargin;
+  // If margins would pull us past the top of the next fragmentainer, then we
+  // need to pull back and let the margins collapse into the fragmentainer
+  // boundary. If we're at a fragmentainer boundary, and there's no forced break
+  // involved, collapse the margin with the boundary we're at. Otherwise,
+  // preserve the margin at the top of the fragmentainer, but collapse it with
+  // the next fragmentainer boundary, since no margin should ever live in more
+  // than one fragmentainer.
+  PageBoundaryRule rule = AssociateWithLatterPage;
+  if (!child.needsForcedBreakBefore(layoutInfo.previousBreakAfterValue()) &&
+      offsetFromLogicalTopOfFirstPage() + logicalTopMarginEdge > LayoutUnit())
+    rule = AssociateWithFormerPage;
+  LayoutUnit remainingSpace =
+      pageRemainingLogicalHeightForOffset(logicalTopMarginEdge, rule);
+  return std::min(effectiveMargin, remainingSpace);
+}
+
 LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
-                                            MarginInfo& marginInfo,
+                                            BlockChildrenLayoutInfo& layoutInfo,
                                             bool childIsSelfCollapsing,
                                             bool childDiscardMarginBefore,
                                             bool childDiscardMarginAfter) {
+  MarginInfo& marginInfo = layoutInfo.marginInfo();
+
   // The child discards the before margin when the the after margin has discard
   // in the case of a self collapsing block.
   childDiscardMarginBefore = childDiscardMarginBefore ||
@@ -1765,14 +1792,11 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
       marginInfo.setHasMarginAfterQuirk(hasMarginAfterQuirk(&child));
   }
 
-  // If margins would pull us past the top of the next page, then we need to
-  // pull back and pretend like the margins collapsed into the page edge.
-  LayoutState* layoutState = view()->layoutState();
-  if (layoutState->isPaginated() && isPageLogicalHeightKnown() &&
-      logicalTop > beforeCollapseLogicalTop) {
+  if (view()->layoutState()->isPaginated() && isPageLogicalHeightKnown()) {
     LayoutUnit oldLogicalTop = logicalTop;
-    logicalTop =
-        std::min(logicalTop, nextPageLogicalTop(beforeCollapseLogicalTop));
+    LayoutUnit margin = adjustedMarginBeforeForPagination(
+        child, beforeCollapseLogicalTop, logicalTop, layoutInfo);
+    logicalTop = beforeCollapseLogicalTop + margin;
     setLogicalHeight(logicalHeight() + (logicalTop - oldLogicalTop));
   }
 
@@ -2063,13 +2087,12 @@ LayoutUnit LayoutBlockFlow::estimateLogicalTopPosition(
           std::max(marginInfo.negativeMargin(), negativeMarginBefore);
   }
 
-  // Adjust logicalTopEstimate down to the next page if the margins are so large
-  // that we don't fit on the current page.
   LayoutState* layoutState = view()->layoutState();
-  if (layoutState->isPaginated() && isPageLogicalHeightKnown() &&
-      logicalTopEstimate > logicalHeight())
-    logicalTopEstimate =
-        std::min(logicalTopEstimate, nextPageLogicalTop(logicalHeight()));
+  if (layoutState->isPaginated() && isPageLogicalHeightKnown()) {
+    LayoutUnit margin = adjustedMarginBeforeForPagination(
+        child, logicalHeight(), logicalTopEstimate, layoutInfo);
+    logicalTopEstimate = logicalHeight() + margin;
+  }
 
   logicalTopEstimate += getClearDelta(&child, logicalTopEstimate);
 

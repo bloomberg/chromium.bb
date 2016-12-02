@@ -778,8 +778,14 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
     return maxPositiveMarginAfter() - maxNegativeMarginAfter();
   }
 
+  LayoutUnit adjustedMarginBeforeForPagination(
+      const LayoutBox&,
+      LayoutUnit logicalTopMarginEdge,
+      LayoutUnit logicalTopBorderEdge,
+      const BlockChildrenLayoutInfo&) const;
+
   LayoutUnit collapseMargins(LayoutBox& child,
-                             MarginInfo&,
+                             BlockChildrenLayoutInfo&,
                              bool childIsSelfCollapsing,
                              bool childDiscardMarginBefore,
                              bool childDiscardMarginAfter);
