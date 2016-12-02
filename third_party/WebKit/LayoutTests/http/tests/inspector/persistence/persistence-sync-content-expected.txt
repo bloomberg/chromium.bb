@@ -10,11 +10,19 @@ Binding created: {
     exactMatch: false
 }
 
-Running: changeFileSystem
+Running: addFileSystemRevision
 network code: 'window.foo3 = 3;'
 fileSystem code: 'window.foo3 = 3;'
 
-Running: changeNetworkUISourceCode
+Running: addFileSystemWorkingCopy
+network code: 'window.foo4 = 4;'
+fileSystem code: 'window.foo4 = 4;'
+
+Running: setNetworkRevision
 network code: 'window.foo2 = 2;'
 fileSystem code: 'window.foo2 = 2;'
+
+Running: setNetworkWorkingCopy
+network code: 'window.foo5 = 5;'
+fileSystem code: 'window.foo5 = 5;'
 

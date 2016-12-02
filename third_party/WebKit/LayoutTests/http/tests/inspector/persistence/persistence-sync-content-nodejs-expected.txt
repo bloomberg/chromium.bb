@@ -18,7 +18,7 @@ Binding created: {
     exactMatch: false
 }
 
-Running: Edit network uiSourceCode
+Running: addNetworkUISourceCodeRevision
 Network:
     (function (exports, require, module, __filename, __dirname) { 
     
@@ -35,7 +35,26 @@ FileSystem:
     //TODO
 
 
-Running: Edit fileSystem uiSourceCode
+Running: setNetworkUISourceCodeWorkingCopy
+Network:
+    (function (exports, require, module, __filename, __dirname) { 
+    
+    var express = require("express");
+    network();
+    workingCopy1();
+    //TODO
+    });
+
+FileSystem:
+    #!/usr/bin/env node
+    
+    var express = require("express");
+    network();
+    workingCopy1();
+    //TODO
+
+
+Running: changeFileSystemFile
 Network:
     (function (exports, require, module, __filename, __dirname) { 
     
@@ -49,6 +68,25 @@ FileSystem:
     
     var express = require("express");
     filesystem();
+    //TODO
+
+
+Running: setFileSystemUISourceCodeWorkingCopy
+Network:
+    (function (exports, require, module, __filename, __dirname) { 
+    
+    var express = require("express");
+    filesystem();
+    workingCopy2();
+    //TODO
+    });
+
+FileSystem:
+    #!/usr/bin/env node
+    
+    var express = require("express");
+    filesystem();
+    workingCopy2();
     //TODO
 
 

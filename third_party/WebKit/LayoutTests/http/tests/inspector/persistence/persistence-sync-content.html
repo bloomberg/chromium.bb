@@ -34,32 +34,36 @@ function test()
             }
         },
 
-        function changeFileSystem(next)
+        function addFileSystemRevision(next)
         {
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));
             fsEntry.setContent("window.foo3 = 3;");
-
-            function onSynced()
-            {
-                InspectorTest.addResult(`network code: '${networkCode.workingCopy()}'`);
-                InspectorTest.addResult(`fileSystem code: '${fileSystemCode.workingCopy()}'`);
-                next();
-            }
         },
 
-        function changeNetworkUISourceCode(next)
+        function addFileSystemWorkingCopy(next)
         {
-            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-            networkCode.addRevision("window.foo2 = 2;");
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));
+            fileSystemCode.setWorkingCopy("window.foo4 = 4;");
+        },
 
-            function onSynced()
-            {
-                InspectorTest.addResult(`network code: '${networkCode.workingCopy()}'`);
-                InspectorTest.addResult(`fileSystem code: '${fileSystemCode.workingCopy()}'`);
-                next();
-            }
-        }
+        function setNetworkRevision(next)
+        {
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));
+            networkCode.addRevision("window.foo2 = 2;");
+        },
+
+        function setNetworkWorkingCopy(next)
+        {
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", dumpWorkingCopiesAndNext.bind(null, next));
+            networkCode.setWorkingCopy("window.foo5 = 5;");
+        },
     ]);
+
+    function dumpWorkingCopiesAndNext(next) {
+        InspectorTest.addResult(`network code: '${networkCode.workingCopy()}'`);
+        InspectorTest.addResult(`fileSystem code: '${fileSystemCode.workingCopy()}'`);
+        next();
+    }
 };
 </script>
 </head>

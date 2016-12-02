@@ -39,43 +39,71 @@ function test()
     fs.addFileMapping("http://127.0.0.1:8000", "/");
     fs.reportCreated(function() { });
 
+    var binding;
     InspectorTest.waitForBinding("nodejs.js").then(onBindingCreated);
 
-    function onBindingCreated(binding)
+    function onBindingCreated(theBinding)
     {
+        binding = theBinding;
         InspectorTest.addResult("Binding created: " + binding);
-        editNetworkUISourceCode(binding);
+        InspectorTest.runTestSuite(testSuite);
     }
 
-    function editNetworkUISourceCode(binding)
-    {
-        InspectorTest.addResult("\nRunning: Edit network uiSourceCode");
-        nodeContent = nodeContent.replace("//TODO", "network();\n//TODO");
-        InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-        binding.network.addRevision(nodeContent);
-
-        function onSynced()
+    var testSuite = [
+        function addNetworkUISourceCodeRevision(next)
         {
-            dumpBindingContent(binding);
-            changeFileSystem(binding);
-        }
-    }
+            nodeContent = nodeContent.replace("//TODO", "network();\n//TODO");
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            binding.network.addRevision(nodeContent);
 
-    function changeFileSystem(binding)
-    {
-        InspectorTest.addResult("\nRunning: Edit fileSystem uiSourceCode");
-        fsContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
-        InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
-        fsEntry.setContent(fsContent);
+            function onSynced()
+            {
+                dumpBindingContent();
+                next();
+            }
+        },
 
-        function onSynced()
+        function setNetworkUISourceCodeWorkingCopy(next)
         {
-            dumpBindingContent(binding);
-            InspectorTest.completeTest();
-        }
-    }
+            nodeContent = nodeContent.replace("//TODO", "workingCopy1();\n//TODO");
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            binding.network.setWorkingCopy(nodeContent);
 
-    function dumpBindingContent(binding)
+            function onSynced()
+            {
+                dumpBindingContent();
+                next();
+            }
+        },
+
+        function changeFileSystemFile(next)
+        {
+            fsContent = fsContent.replace("//TODO", "filesystem();\n//TODO");
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            fsEntry.setContent(fsContent);
+
+            function onSynced()
+            {
+                dumpBindingContent();
+                next();
+            }
+        },
+
+        function setFileSystemUISourceCodeWorkingCopy(next)
+        {
+            nodeContent = fsContent.replace("//TODO", "workingCopy2();\n//TODO");
+            InspectorTest.addSniffer(Persistence.Persistence.prototype, "_contentSyncedForTest", onSynced);
+            binding.fileSystem.setWorkingCopy(nodeContent);
+
+            function onSynced()
+            {
+                dumpBindingContent();
+                next();
+            }
+        },
+    ];
+
+    function dumpBindingContent()
     {
         InspectorTest.addResult("Network:");
         InspectorTest.addResult(indent(binding.network.workingCopy()));
