@@ -11,6 +11,7 @@
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
 #include "base/test/histogram_tester.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/service_worker/embedded_worker_registry.h"
 #include "content/browser/service_worker/embedded_worker_status.h"
@@ -279,6 +280,12 @@ class ServiceWorkerVersionTest : public testing::Test {
                                         base::Time::Now()));
     base::RunLoop().RunUntilIdle();
     EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, status);
+  }
+
+  base::SimpleTestTickClock* SetTickClockForTesting() {
+    base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
+    version_->SetTickClockForTesting(base::WrapUnique(tick_clock));
+    return tick_clock;
   }
 
   TestBrowserThreadBundle thread_bundle_;
@@ -859,7 +866,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestTimeout) {
                                        base::Time::Now()));
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeout) {
+TEST_P(ServiceWorkerVersionTestP, RequestNowTimeout) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -886,7 +893,7 @@ TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeout) {
   EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
 }
 
-TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeoutKill) {
+TEST_P(ServiceWorkerVersionTestP, RequestNowTimeoutKill) {
   ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_NETWORK;  // dummy value
   version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
 
@@ -908,6 +915,68 @@ TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeoutKill) {
 
   EXPECT_FALSE(version_->FinishRequest(request_id, true /* was_handled */,
                                        base::Time::Now()));
+
+  // KILL_ON_TIMEOUT timeouts should stop the service worker.
+  EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());
+}
+
+TEST_P(ServiceWorkerVersionTestP, RequestCustomizedTimeout) {
+  ServiceWorkerStatusCode first_status =
+      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+  ServiceWorkerStatusCode second_status =
+      SERVICE_WORKER_ERROR_MAX_VALUE;  // dummy value
+  version_->SetStatus(ServiceWorkerVersion::ACTIVATED);
+
+  version_->StartWorker(ServiceWorkerMetrics::EventType::SYNC,
+                        base::Bind(&ServiceWorkerUtils::NoOpStatusCallback));
+  base::RunLoop().RunUntilIdle();
+
+  base::SimpleTestTickClock* tick_clock = SetTickClockForTesting();
+
+  // Create two requests. One which times out in 10 seconds, one in 20 seconds.
+  int timeout_seconds = 10;
+  int first_request_id = version_->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&first_status),
+      base::TimeDelta::FromSeconds(2 * timeout_seconds),
+      ServiceWorkerVersion::KILL_ON_TIMEOUT);
+
+  int second_request_id = version_->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::SYNC,
+      CreateReceiverOnCurrentThread(&second_status),
+      base::TimeDelta::FromSeconds(timeout_seconds),
+      ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+
+  // The status should not have changed since neither task has timed out yet.
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(version_->timeout_timer_.IsRunning());
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, first_status);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, second_status);
+
+  // Now advance time until the second task timeout should expire.
+  tick_clock->Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_MAX_VALUE, first_status);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, second_status);
+
+  // CONTINUE_ON_TIMEOUT timeouts don't stop the service worker.
+  EXPECT_EQ(EmbeddedWorkerStatus::RUNNING, version_->running_status());
+
+  // Now advance time until both tasks should be expired.
+  tick_clock->Advance(base::TimeDelta::FromSeconds(timeout_seconds + 1));
+  version_->timeout_timer_.user_task().Run();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, first_status);
+  EXPECT_EQ(SERVICE_WORKER_ERROR_TIMEOUT, second_status);
+
+  EXPECT_FALSE(version_->FinishRequest(first_request_id, true /* was_handled */,
+                                       base::Time::Now()));
+
+  EXPECT_FALSE(version_->FinishRequest(
+      second_request_id, true /* was_handled */, base::Time::Now()));
 
   // KILL_ON_TIMEOUT timeouts should stop the service worker.
   EXPECT_EQ(EmbeddedWorkerStatus::STOPPED, version_->running_status());

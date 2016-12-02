@@ -26,6 +26,7 @@
 #include "base/observer_list.h"
 #include "base/optional.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/tick_clock.h"
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "content/browser/service_worker/embedded_worker_instance.h"
@@ -397,6 +398,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // Simulate ping timeout. Should be used for tests-only.
   void SimulatePingTimeoutForTesting();
 
+  // Used to allow tests to change time for testing.
+  void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
+
   // Returns true if the service worker has work to do: it has pending
   // requests, in-progress streaming URLRequestJobs, or pending start callbacks.
   bool HasWork() const;
@@ -439,9 +443,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerStallInStoppingTest, DetachThenRestart);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
                            RegisterForeignFetchScopes);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestNowTimeout);
+  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestNowTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, RequestCustomizedTimeout);
-  FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP,
-                           RequestCustomizedTimeoutKill);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerVersionTestP, MixedRequestTimeouts);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, EarlyResponse);
   FRIEND_TEST_ALL_PREFIXES(ServiceWorkerURLRequestJobTest, CancelRequest);
@@ -583,6 +587,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
   static const int kStopWorkerTimeoutSeconds;
 
   ~ServiceWorkerVersion() override;
+
+  // The following methods all rely on the internal |tick_clock_| for the
+  // current time.
+  void RestartTick(base::TimeTicks* time) const;
+  bool RequestExpired(const base::TimeTicks& expiration) const;
+  base::TimeDelta GetTickDuration(const base::TimeTicks& time) const;
 
   // EmbeddedWorkerInstance::Listener overrides:
   void OnThreadStarted() override;
@@ -800,6 +810,9 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // If not OK, the reason that StartWorker failed. Used for
   // running |start_callbacks_|.
   ServiceWorkerStatusCode start_worker_status_ = SERVICE_WORKER_OK;
+
+  // The clock used to vend tick time.
+  std::unique_ptr<base::TickClock> tick_clock_;
 
   std::unique_ptr<PingController> ping_controller_;
   std::unique_ptr<Metrics> metrics_;

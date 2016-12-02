@@ -21,6 +21,7 @@
 #include "base/strings/string16.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "base/time/default_tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/bad_message.h"
 #include "content/browser/child_process_security_policy_impl.h"
@@ -131,22 +132,6 @@ void ClearTick(base::TimeTicks* time) {
   *time = base::TimeTicks();
 }
 
-void RestartTick(base::TimeTicks* time) {
-  *time = base::TimeTicks().Now();
-}
-
-bool RequestExpired(const base::TimeTicks& expiration) {
-  if (expiration.is_null())
-    return false;
-  return base::TimeTicks().Now() >= expiration;
-}
-
-base::TimeDelta GetTickDuration(const base::TimeTicks& time) {
-  if (time.is_null())
-    return base::TimeDelta();
-  return base::TimeTicks().Now() - time;
-}
-
 bool IsInstalled(ServiceWorkerVersion::Status status) {
   switch (status) {
     case ServiceWorkerVersion::NEW:
@@ -201,6 +186,24 @@ const int ServiceWorkerVersion::kStartInstalledWorkerTimeoutSeconds = 60;
 const int ServiceWorkerVersion::kStartNewWorkerTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kRequestTimeoutMinutes = 5;
 const int ServiceWorkerVersion::kStopWorkerTimeoutSeconds = 5;
+
+void ServiceWorkerVersion::RestartTick(base::TimeTicks* time) const {
+  *time = tick_clock_->NowTicks();
+}
+
+bool ServiceWorkerVersion::RequestExpired(
+    const base::TimeTicks& expiration) const {
+  if (expiration.is_null())
+    return false;
+  return tick_clock_->NowTicks() >= expiration;
+}
+
+base::TimeDelta ServiceWorkerVersion::GetTickDuration(
+    const base::TimeTicks& time) const {
+  if (time.is_null())
+    return base::TimeDelta();
+  return tick_clock_->NowTicks() - time;
+}
 
 class ServiceWorkerVersion::Metrics {
  public:
@@ -264,7 +267,7 @@ class ServiceWorkerVersion::PingController {
   // - OnPingTimeout() if the worker hasn't reponded within a certain period.
   // - PingWorker() if we're running ping timer and can send next ping.
   void CheckPingStatus() {
-    if (GetTickDuration(ping_time_) >
+    if (version_->GetTickDuration(ping_time_) >
         base::TimeDelta::FromSeconds(kPingTimeoutSeconds)) {
       ping_state_ = PING_TIMED_OUT;
       version_->OnPingTimeout();
@@ -281,7 +284,7 @@ class ServiceWorkerVersion::PingController {
       version_->OnPingTimeout();
       return;
     }
-    RestartTick(&ping_time_);
+    version_->RestartTick(&ping_time_);
   }
 
   void SimulateTimeoutForTesting() {
@@ -311,6 +314,7 @@ ServiceWorkerVersion::ServiceWorkerVersion(
       site_for_uma_(ServiceWorkerMetrics::SiteFromURL(scope_)),
       context_(context),
       script_cache_map_(this, context),
+      tick_clock_(base::WrapUnique(new base::DefaultTickClock)),
       ping_controller_(new PingController(this)),
       should_exclude_from_uma_(
           ServiceWorkerMetrics::ShouldExcludeSiteFromHistogram(site_for_uma_)),
@@ -560,12 +564,12 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
       << " can only be dispatched to an active worker: " << status();
 
   int request_id = pending_requests_.Add(base::MakeUnique<PendingRequest>(
-      error_callback, base::Time::Now(), base::TimeTicks::Now(), event_type));
+      error_callback, base::Time::Now(), tick_clock_->NowTicks(), event_type));
   TRACE_EVENT_ASYNC_BEGIN2("ServiceWorker", "ServiceWorkerVersion::Request",
                            pending_requests_.Lookup(request_id), "Request id",
                            request_id, "Event type",
                            ServiceWorkerMetrics::EventTypeToString(event_type));
-  base::TimeTicks expiration_time = base::TimeTicks::Now() + timeout;
+  base::TimeTicks expiration_time = tick_clock_->NowTicks() + timeout;
   timeout_queue_.push(
       RequestInfo(request_id, event_type, expiration_time, timeout_behavior));
   return request_id;
@@ -598,7 +602,7 @@ bool ServiceWorkerVersion::FinishRequest(int request_id,
   // TODO(kinuko): Record other event statuses too.
   metrics_->RecordEventHandledStatus(request->event_type, was_handled);
   ServiceWorkerMetrics::RecordEventDuration(
-      request->event_type, base::TimeTicks::Now() - request->start_time_ticks,
+      request->event_type, tick_clock_->NowTicks() - request->start_time_ticks,
       was_handled);
   ServiceWorkerMetrics::RecordEventDispatchingDelay(
       request->event_type, dispatch_event_time - request->start_time,
@@ -792,7 +796,7 @@ void ServiceWorkerVersion::SetDevToolsAttached(bool attached) {
 
   // Reactivate request timeouts, setting them all to the same expiration time.
   SetAllRequestExpirations(
-      base::TimeTicks::Now() +
+      tick_clock_->NowTicks() +
       base::TimeDelta::FromMinutes(kRequestTimeoutMinutes));
 }
 
@@ -817,6 +821,11 @@ void ServiceWorkerVersion::SetMainScriptHttpResponseInfo(
 
 void ServiceWorkerVersion::SimulatePingTimeoutForTesting() {
   ping_controller_->SimulateTimeoutForTesting();
+}
+
+void ServiceWorkerVersion::SetTickClockForTesting(
+    std::unique_ptr<base::TickClock> tick_clock) {
+  tick_clock_ = std::move(tick_clock);
 }
 
 const net::HttpResponseInfo*
@@ -1149,7 +1158,7 @@ void ServiceWorkerVersion::OnOpenWindowFinished(
 
 void ServiceWorkerVersion::OnSetCachedMetadata(const GURL& url,
                                                const std::vector<char>& data) {
-  int64_t callback_id = base::TimeTicks::Now().ToInternalValue();
+  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::OnSetCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1168,7 +1177,7 @@ void ServiceWorkerVersion::OnSetCachedMetadataFinished(int64_t callback_id,
 }
 
 void ServiceWorkerVersion::OnClearCachedMetadata(const GURL& url) {
-  int64_t callback_id = base::TimeTicks::Now().ToInternalValue();
+  int64_t callback_id = tick_clock_->NowTicks().ToInternalValue();
   TRACE_EVENT_ASYNC_BEGIN1("ServiceWorker",
                            "ServiceWorkerVersion::OnClearCachedMetadata",
                            callback_id, "URL", url.spec());
@@ -1857,7 +1866,7 @@ void ServiceWorkerVersion::OnBeginEvent() {
       idle_time_.is_null()) {
     return;
   }
-  ServiceWorkerMetrics::RecordTimeBetweenEvents(base::TimeTicks::Now() -
+  ServiceWorkerMetrics::RecordTimeBetweenEvents(tick_clock_->NowTicks() -
                                                 idle_time_);
 }
 
