@@ -203,6 +203,13 @@ class RequestCoordinatorTest
     }
   }
 
+  void CallConnectionTypeObserver() {
+    if (coordinator()->connection_notifier_) {
+      coordinator()->connection_notifier_->OnConnectionTypeChanged(
+          GetConnectionType());
+    }
+  }
+
   void SetIsLowEndDeviceForTest(bool is_low_end_device) {
     coordinator()->is_low_end_device_ = is_low_end_device;
   }
@@ -568,6 +575,35 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceeded) {
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::SUCCESS,
             observer().last_status());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDoneRequestSucceededButLostNetwork) {
+  // Add a request to the queue and set offliner done callback for it.
+  offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
+                                         base::Time::Now(), kUserRequested);
+  SetupForOfflinerDoneCallbackTest(&request);
+  EnableOfflinerCallback(false);
+
+  // Add a 2nd request to the queue.
+  AddRequest2();
+
+  // Disconnect network.
+  SetNetworkConnected(false);
+
+  // Call the OfflinerDoneCallback to simulate the page being completed, wait
+  // for callbacks.
+  SendOfflinerDoneCallback(request, Offliner::RequestStatus::SAVED);
+  PumpLoop();
+  EXPECT_TRUE(immediate_schedule_callback_called());
+
+  // Verify not busy with 2nd request (since no connection).
+  EXPECT_FALSE(is_busy());
+
+  // Now connect network and verify processing starts.
+  SetNetworkConnected(true);
+  CallConnectionTypeObserver();
+  PumpLoop();
+  EXPECT_TRUE(is_busy());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
@@ -1243,13 +1279,23 @@ TEST_F(RequestCoordinatorTest,
 }
 
 TEST_F(RequestCoordinatorTest, SavePageDoesntStartProcessingWhenDisconnected) {
+  // If low end device, pretend it is not so that immediate start allowed.
+  SetIsLowEndDeviceForTest(false);
+
   SetNetworkConnected(false);
+  EnableOfflinerCallback(false);
   EXPECT_NE(
       coordinator()->SavePageLater(
           kUrl1, kClientId1, kUserRequested,
           RequestCoordinator::RequestAvailability::ENABLED_FOR_OFFLINER), 0);
   PumpLoop();
   EXPECT_FALSE(is_busy());
+
+  // Now connect network and verify processing starts.
+  SetNetworkConnected(true);
+  CallConnectionTypeObserver();
+  PumpLoop();
+  EXPECT_TRUE(is_busy());
 }
 
 TEST_F(RequestCoordinatorTest,

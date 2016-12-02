@@ -559,8 +559,14 @@ RequestCoordinator::TryImmediateStart() {
   }
 
   if (GetConnectionType() ==
-             net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE)
+      net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE) {
+    RequestConnectedEventForStarting();
     return OfflinerImmediateStartStatus::NO_CONNECTION;
+  } else {
+    // Clear any pending connected event request since we have connection
+    // and will start processing.
+    ClearConnectedEventRequest();
+  }
 
   // Start processing with manufactured conservative battery conditions
   // (i.e., assume no battery).
@@ -572,6 +578,21 @@ RequestCoordinator::TryImmediateStart() {
     return OfflinerImmediateStartStatus::STARTED;
   else
     return OfflinerImmediateStartStatus::NOT_ACCEPTED;
+}
+
+void RequestCoordinator::RequestConnectedEventForStarting() {
+  connection_notifier_.reset(new ConnectionNotifier(
+      base::Bind(&RequestCoordinator::HandleConnectedEventForStarting,
+                 weak_ptr_factory_.GetWeakPtr())));
+}
+
+void RequestCoordinator::ClearConnectedEventRequest() {
+  connection_notifier_.reset(nullptr);
+}
+
+void RequestCoordinator::HandleConnectedEventForStarting() {
+  ClearConnectedEventRequest();
+  StartImmediatelyIfConnected();
 }
 
 void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
@@ -603,6 +624,11 @@ void RequestCoordinator::TryNextRequest(bool is_start_of_processing) {
           net::NetworkChangeNotifier::ConnectionType::CONNECTION_NONE ||
       (base::Time::Now() - operation_start_time_) > processing_time_budget) {
     is_starting_ = false;
+
+    // If we were doing immediate processing, try to start it again
+    // when we get connected.
+    if (processing_state_ == ProcessingWindowState::IMMEDIATE_WINDOW)
+      RequestConnectedEventForStarting();
 
     // Let the scheduler know we are done processing.
     // TODO: Make sure the scheduler callback is valid before running it.

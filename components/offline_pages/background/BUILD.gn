@@ -12,6 +12,8 @@ static_library("background_offliner") {
     "add_request_task.h",
     "change_requests_state_task.cc",
     "change_requests_state_task.h",
+    "connection_notifier.cc",
+    "connection_notifier.h",
     "device_conditions.h",
     "get_requests_task.cc",
     "get_requests_task.h",

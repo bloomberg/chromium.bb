@@ -18,6 +18,7 @@
 #include "base/time/time.h"
 #include "base/timer/timer.h"
 #include "components/keyed_service/core/keyed_service.h"
+#include "components/offline_pages/background/connection_notifier.h"
 #include "components/offline_pages/background/device_conditions.h"
 #include "components/offline_pages/background/offliner.h"
 #include "components/offline_pages/background/request_coordinator_event_logger.h"
@@ -255,6 +256,15 @@ class RequestCoordinator : public KeyedService,
 
   OfflinerImmediateStartStatus TryImmediateStart();
 
+  // Requests a callback upon the next network connection to start processing.
+  void RequestConnectedEventForStarting();
+
+  // Clears the request for connected event if it was set.
+  void ClearConnectedEventRequest();
+
+  // Handles receiving a connection event. Will start immediate processing.
+  void HandleConnectedEventForStarting();
+
   // Check the request queue, and schedule a task corresponding
   // to the least restrictive type of request in the queue.
   void ScheduleAsNeeded();
@@ -404,6 +414,8 @@ class RequestCoordinator : public KeyedService,
   base::OneShotTimer watchdog_timer_;
   // Callback invoked when an immediate request is done (default empty).
   base::Callback<void(bool)> immediate_schedule_callback_;
+  // Used for potential immediate processing when we get network connection.
+  std::unique_ptr<ConnectionNotifier> connection_notifier_;
   // Allows us to pass a weak pointer to callbacks.
   base::WeakPtrFactory<RequestCoordinator> weak_ptr_factory_;
 
