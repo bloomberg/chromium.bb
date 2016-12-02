@@ -53,6 +53,7 @@ const base::Feature* kFeaturesExposedToJava[] = {
     &kSpecialLocaleWrapper,
     &kTabReparenting,
     &kWebApks,
+    &kWebPaymentsModifiers,
     &ntp_snippets::kContentSuggestionsFeature,
     &ntp_snippets::kIncreasedVisibility,
     &ntp_snippets::kForeignSessionsSuggestionsFeature,
@@ -92,11 +93,11 @@ const base::Feature kImportantSitesInCBD{"ImportantSitesInCBD",
 const base::Feature kNoCreditCardAbort{"NoCreditCardAbort",
                                        base::FEATURE_DISABLED_BY_DEFAULT};
 
-const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
-                                            base::FEATURE_ENABLED_BY_DEFAULT};
-
 const base::Feature kNTPFakeOmniboxTextFeature{
     "NTPFakeOmniboxText", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kNTPOfflinePagesFeature{"NTPOfflinePages",
+                                            base::FEATURE_ENABLED_BY_DEFAULT};
 
 const base::Feature kPhysicalWebFeature{"PhysicalWeb",
                                         base::FEATURE_ENABLED_BY_DEFAULT};
@@ -119,6 +120,9 @@ const base::Feature kUserMediaScreenCapturing{
 // Makes "Add to Home screen" in the app menu generate an APK for the shortcut
 // URL which opens Chrome in fullscreen.
 const base::Feature kWebApks{"WebApks", base::FEATURE_DISABLED_BY_DEFAULT};
+
+const base::Feature kWebPaymentsModifiers{"WebPaymentsModifiers",
+                                          base::FEATURE_DISABLED_BY_DEFAULT};
 
 static jboolean IsEnabled(JNIEnv* env,
                           const JavaParamRef<jclass>& clazz,

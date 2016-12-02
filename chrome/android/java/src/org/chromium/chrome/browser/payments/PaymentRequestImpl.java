@@ -220,6 +220,12 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private List<PaymentItem> mRawLineItems;
 
     /**
+     * A mapping from method names to modified totals. Used to display modified totals for each
+     * payment instrument.
+     */
+    private Map<String, PaymentItem> mModifiedTotals;
+
+    /**
      * The UI model of the shopping cart, including the total. Each item includes a label and a
      * price string. This data is passed to the UI.
      */
@@ -245,6 +251,7 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
     private ContactEditor mContactEditor;
     private boolean mHasRecordedAbortReason;
     private boolean mQueriedCanMakeActivePayment;
+    private CurrencyStringFormatter mFormatter;
 
     /** True if any of the requested payment methods are supported. */
     private boolean mArePaymentMethodsSupported;
@@ -597,23 +604,58 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         }
 
         String totalCurrency = details.total.amount.currency;
-        CurrencyStringFormatter formatter =
-                new CurrencyStringFormatter(totalCurrency, Locale.getDefault());
+        if (mFormatter == null) {
+            mFormatter = new CurrencyStringFormatter(totalCurrency, Locale.getDefault());
+        }
 
         // Total is never pending.
         LineItem uiTotal = new LineItem(
-                details.total.label, formatter.getFormattedCurrencyCode(),
-                formatter.format(details.total.amount.value), /* isPending */ false);
+                details.total.label, mFormatter.getFormattedCurrencyCode(),
+                mFormatter.format(details.total.amount.value), /* isPending */ false);
 
-        List<LineItem> uiLineItems = getLineItems(details.displayItems, totalCurrency, formatter);
+        List<LineItem> uiLineItems = getLineItems(details.displayItems, totalCurrency, mFormatter);
 
         mUiShoppingCart = new ShoppingCart(uiTotal, uiLineItems);
         mRawTotal = details.total;
         mRawLineItems = Collections.unmodifiableList(Arrays.asList(details.displayItems));
 
-        mUiShippingOptions = getShippingOptions(details.shippingOptions, totalCurrency, formatter);
+        mUiShippingOptions = getShippingOptions(details.shippingOptions, totalCurrency, mFormatter);
+
+        for (int i = 0; i < details.modifiers.length; i++) {
+            PaymentItem total = details.modifiers[i].total;
+            String[] methods = details.modifiers[i].methodData.supportedMethods;
+            if (total != null) {
+                for (int j = 0; j < methods.length; j++) {
+                    if (mModifiedTotals == null) mModifiedTotals = new ArrayMap<>();
+                    mModifiedTotals.put(methods[j], total);
+                }
+            }
+        }
+
+        updateInstrumentModifiedTotals();
 
         return true;
+    }
+
+    /** Updates the modified totals for payment instruments. */
+    private void updateInstrumentModifiedTotals() {
+        if (!ChromeFeatureList.isEnabled(ChromeFeatureList.WEB_PAYMENTS_MODIFIERS)) return;
+        if (mModifiedTotals == null) return;
+        if (mPaymentMethodsSection == null) return;
+
+        for (int i = 0; i < mPaymentMethodsSection.getSize(); i++) {
+            PaymentOption option = mPaymentMethodsSection.getItem(i);
+            assert option instanceof PaymentInstrument;
+            PaymentInstrument instrument = (PaymentInstrument) option;
+            Set<String> methodNames = instrument.getInstrumentMethodNames();
+            methodNames.retainAll(mModifiedTotals.keySet());
+            PaymentItem modifiedTotal = methodNames.isEmpty()
+                    ? null
+                    : mModifiedTotals.get(methodNames.iterator().next());
+            instrument.setModifiedTotal(modifiedTotal == null
+                    ? null
+                    : mFormatter.format(modifiedTotal.amount.value));
+        }
     }
 
     /**
@@ -1140,6 +1182,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
                 selection, mPendingInstruments);
 
         mPendingInstruments.clear();
+
+        updateInstrumentModifiedTotals();
 
         // UI has requested the full list of payment instruments. Provide it now.
         if (mPaymentInformationCallback != null) providePaymentInformation();

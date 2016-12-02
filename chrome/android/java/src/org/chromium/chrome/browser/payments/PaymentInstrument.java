@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 /**
  * The base class for a single payment instrument, e.g., a credit card.
  */
@@ -45,6 +47,15 @@ public abstract class PaymentInstrument extends PaymentOption {
 
     protected PaymentInstrument(String id, String label, String sublabel, Drawable icon) {
         super(id, label, sublabel, icon);
+    }
+
+    /**
+     * Sets the modified total for this payment instrument.
+     *
+     * @param modifiedTotal The new modified total to use.
+     */
+    public void setModifiedTotal(@Nullable String modifiedTotal) {
+        updateTertiarylabel(modifiedTotal);
     }
 
     /**

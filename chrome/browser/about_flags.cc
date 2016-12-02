@@ -2091,6 +2091,10 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_OFFLINE_PAGES_SVELTE_CONCURRENT_LOADING_DESCRIPTION, kOsAndroid,
      FEATURE_VALUE_TYPE(
          offline_pages::kOfflinePagesSvelteConcurrentLoadingFeature)},
+    {"web-payments-modifiers",
+     IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_NAME,
+     IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(chrome::android::kWebPaymentsModifiers)},
 #endif
     {"cross-process-guests", IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_NAME,
      IDS_FLAGS_CROSS_PROCESS_GUEST_VIEW_ISOLATION_DESCRIPTION, kOsDesktop,

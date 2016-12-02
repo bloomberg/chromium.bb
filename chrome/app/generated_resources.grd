@@ -15014,6 +15014,12 @@ Please check your email at <ph name="ACCOUNT_EMAIL">$2<ex>jane.doe@gmail.com</ex
       <message name="IDS_FLAGS_USE_ANDROID_MIDI_API_DESCRIPTION" desc="Description for the flag to use android midi api.">
         Use Android Midi API for WebMIDI (effective only with Android M+ devices).
       </message>
+      <message name="IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_NAME" desc="Name for the flag to enable web payments modifiers." translateable="false">
+        Enable web payment modifiers
+      </message>
+      <message name="IDS_FLAGS_WEB_PAYMENTS_MODIFIERS_DESCRIPTION" desc="Description for the flag to use android midi api." translateable="false">
+        If the website provides modifiers in the payment request, show the custom total for each payment instrument, update the shopping cart when instruments are switched, and send modified payment method specific data to the payment app.
+      </message>
    </if>
 
     <if expr="is_win">

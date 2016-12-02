@@ -11,4 +11,4 @@ per-file shortcut_*=dominickn@chromium.org
 
 # This is For simple changes of adding/removing features.  For more structural
 # changes, use the normal OWNERS rules.
-per-file chrome_feature_list.cc=*
+per-file chrome_feature_list.*=*

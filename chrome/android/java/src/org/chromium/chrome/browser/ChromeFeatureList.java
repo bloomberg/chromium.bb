@@ -69,6 +69,7 @@ public abstract class ChromeFeatureList {
     public static final String TAB_REPARENTING = "TabReparenting";
     public static final String VR_SHELL = "VrShell";
     public static final String WEB_PAYMENTS = "WebPayments";
+    public static final String WEB_PAYMENTS_MODIFIERS = "WebPaymentsModifiers";
     public static final String WEBAPKS = "WebApks";
 
     private static native boolean nativeIsEnabled(String featureName);
