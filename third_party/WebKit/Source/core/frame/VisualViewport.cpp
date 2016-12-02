@@ -157,7 +157,7 @@ FloatSize VisualViewport::visibleSize() const {
 }
 
 FloatRect VisualViewport::visibleRect() const {
-  return FloatRect(FloatPoint(scrollOffset()), visibleSize());
+  return FloatRect(FloatPoint(getScrollOffset()), visibleSize());
 }
 
 FloatRect VisualViewport::visibleRectInDocument() const {
@@ -165,7 +165,7 @@ FloatRect VisualViewport::visibleRectInDocument() const {
     return FloatRect();
 
   FloatPoint viewLocation =
-      FloatPoint(mainFrame()->view()->getScrollableArea()->scrollOffset());
+      FloatPoint(mainFrame()->view()->getScrollableArea()->getScrollOffset());
   return FloatRect(viewLocation, visibleSize());
 }
 
@@ -173,7 +173,7 @@ FloatPoint VisualViewport::viewportCSSPixelsToRootFrame(
     const FloatPoint& point) const {
   // Note, this is in CSS Pixels so we don't apply scale.
   FloatPoint pointInRootFrame = point;
-  pointInRootFrame.move(scrollOffset());
+  pointInRootFrame.move(getScrollOffset());
   return pointInRootFrame;
 }
 
@@ -312,7 +312,7 @@ bool VisualViewport::magnifyScaleAroundAnchor(float magnifyDelta,
   FloatSize anchorDeltaUnusedByScroll = anchorDelta;
 
   // Manually bubble any remaining anchor delta up to the visual viewport.
-  FloatPoint newLocation(FloatPoint(scrollOffset()) +
+  FloatPoint newLocation(FloatPoint(getScrollOffset()) +
                          anchorDeltaUnusedByScroll);
   setScaleAndLocation(newPageScale, newLocation);
   return true;
@@ -676,7 +676,7 @@ FloatRect VisualViewport::viewportToRootFrame(
     const FloatRect& rectInViewport) const {
   FloatRect rectInRootFrame = rectInViewport;
   rectInRootFrame.scale(1 / scale());
-  rectInRootFrame.move(scrollOffset());
+  rectInRootFrame.move(getScrollOffset());
   return rectInRootFrame;
 }
 
@@ -689,7 +689,7 @@ IntRect VisualViewport::viewportToRootFrame(
 FloatRect VisualViewport::rootFrameToViewport(
     const FloatRect& rectInRootFrame) const {
   FloatRect rectInViewport = rectInRootFrame;
-  rectInViewport.move(-scrollOffset());
+  rectInViewport.move(-getScrollOffset());
   rectInViewport.scale(scale());
   return rectInViewport;
 }
@@ -704,14 +704,14 @@ FloatPoint VisualViewport::viewportToRootFrame(
     const FloatPoint& pointInViewport) const {
   FloatPoint pointInRootFrame = pointInViewport;
   pointInRootFrame.scale(1 / scale(), 1 / scale());
-  pointInRootFrame.move(scrollOffset());
+  pointInRootFrame.move(getScrollOffset());
   return pointInRootFrame;
 }
 
 FloatPoint VisualViewport::rootFrameToViewport(
     const FloatPoint& pointInRootFrame) const {
   FloatPoint pointInViewport = pointInRootFrame;
-  pointInViewport.move(-scrollOffset());
+  pointInViewport.move(-getScrollOffset());
   pointInViewport.scale(scale(), scale());
   return pointInViewport;
 }

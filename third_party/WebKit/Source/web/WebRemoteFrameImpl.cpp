@@ -102,7 +102,7 @@ void WebRemoteFrameImpl::setCanHaveScrollbars(bool) {
   NOTREACHED();
 }
 
-WebSize WebRemoteFrameImpl::scrollOffset() const {
+WebSize WebRemoteFrameImpl::getScrollOffset() const {
   NOTREACHED();
   return WebSize();
 }

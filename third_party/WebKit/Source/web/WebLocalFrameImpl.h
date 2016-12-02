@@ -91,7 +91,7 @@ class WEB_EXPORT WebLocalFrameImpl final
   void setContentSettingsClient(WebContentSettingsClient*) override;
   void setSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) override;
-  WebSize scrollOffset() const override;
+  WebSize getScrollOffset() const override;
   void setScrollOffset(const WebSize&) override;
   WebSize contentsSize() const override;
   bool hasVisibleContent() const override;

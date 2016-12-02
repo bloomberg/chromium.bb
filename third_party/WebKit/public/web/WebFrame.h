@@ -174,7 +174,7 @@ class WebFrame {
   virtual void setCanHaveScrollbars(bool) = 0;
 
   // The scroll offset from the top-left corner of the frame in pixels.
-  virtual WebSize scrollOffset() const = 0;
+  virtual WebSize getScrollOffset() const = 0;
   virtual void setScrollOffset(const WebSize&) = 0;
 
   // The size of the contents area.

@@ -272,7 +272,7 @@ class CORE_EXPORT PaintLayerScrollableArea final
       const IntPoint&) const override;
   int scrollSize(ScrollbarOrientation) const override;
   IntSize scrollOffsetInt() const override;
-  ScrollOffset scrollOffset() const override;
+  ScrollOffset getScrollOffset() const override;
   IntSize minimumScrollOffsetInt() const override;
   IntSize maximumScrollOffsetInt() const override;
   IntRect visibleContentRect(

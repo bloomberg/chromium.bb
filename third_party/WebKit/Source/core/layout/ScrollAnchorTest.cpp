@@ -950,11 +950,11 @@ TEST_P(ScrollAnchorTest, NonDefaultRootScroller) {
   setHeight(document().getElementById("firstChild"), 1000);
 
   // Scroll anchoring should be applied to #rootScroller.
-  EXPECT_EQ(1000, scroller->scrollOffset().height());
+  EXPECT_EQ(1000, scroller->getScrollOffset().height());
   EXPECT_EQ(document().getElementById("target")->layoutObject(),
             scrollAnchor(scroller).anchorObject());
   // Scroll anchoring should not apply within main frame.
-  EXPECT_EQ(0, layoutViewport()->scrollOffset().height());
+  EXPECT_EQ(0, layoutViewport()->getScrollOffset().height());
   EXPECT_EQ(nullptr, scrollAnchor(layoutViewport()).anchorObject());
 }
 
@@ -991,7 +991,7 @@ class ScrollAnchorCornerTest : public ScrollAnchorTest {
     ScrollOffset endPos = startOffset;
     endPos += expectedAdjustment;
 
-    EXPECT_EQ(endPos, viewport->scrollOffset());
+    EXPECT_EQ(endPos, viewport->getScrollOffset());
     EXPECT_EQ(document().getElementById("a")->layoutObject(),
               scrollAnchor(viewport).anchorObject());
     EXPECT_EQ(corner, scrollAnchor(viewport).corner());
@@ -1088,7 +1088,7 @@ TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
 
   a->setAttribute(HTMLNames::styleAttr, "height: 150px");
   update();
-  EXPECT_EQ(ScrollOffset(150, 0), viewport->scrollOffset());
+  EXPECT_EQ(ScrollOffset(150, 0), viewport->getScrollOffset());
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 
   scrollLayoutViewport(ScrollOffset(0, 50));
@@ -1096,7 +1096,7 @@ TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
   a->setAttribute(HTMLNames::styleAttr, "height: 200px");
   b->setAttribute(HTMLNames::styleAttr, "width: 150px");
   update();
-  EXPECT_EQ(ScrollOffset(150, 100), viewport->scrollOffset());
+  EXPECT_EQ(ScrollOffset(150, 100), viewport->getScrollOffset());
   EXPECT_EQ(c->layoutObject(), scrollAnchor(viewport).anchorObject());
 
   a->setAttribute(HTMLNames::styleAttr, "height: 100px");
@@ -1109,7 +1109,7 @@ TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
 
   a->setAttribute(HTMLNames::styleAttr, "width: 150px");
   update();
-  EXPECT_EQ(ScrollOffset(0, 150), viewport->scrollOffset());
+  EXPECT_EQ(ScrollOffset(0, 150), viewport->getScrollOffset());
   EXPECT_EQ(nullptr, scrollAnchor(viewport).anchorObject());
 
   scrollLayoutViewport(ScrollOffset(-50, 0));
@@ -1117,7 +1117,7 @@ TEST_P(ScrollAnchorTest, IgnoreNonBlockLayoutAxis) {
   a->setAttribute(HTMLNames::styleAttr, "width: 200px");
   b->setAttribute(HTMLNames::styleAttr, "height: 150px");
   update();
-  EXPECT_EQ(ScrollOffset(-100, 150), viewport->scrollOffset());
+  EXPECT_EQ(ScrollOffset(-100, 150), viewport->getScrollOffset());
   EXPECT_EQ(c->layoutObject(), scrollAnchor(viewport).anchorObject());
 }
 }

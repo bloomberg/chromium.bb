@@ -606,7 +606,7 @@ static void write(TextStream& ts,
       scrollableArea = layer.getScrollableArea();
 
     ScrollOffset adjustedScrollOffset =
-        scrollableArea->scrollOffset() +
+        scrollableArea->getScrollOffset() +
         toFloatSize(scrollableArea->scrollOrigin());
     if (adjustedScrollOffset.width())
       ts << " scrollX " << adjustedScrollOffset.width();

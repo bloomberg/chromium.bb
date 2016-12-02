@@ -80,7 +80,7 @@ static void applyClipRects(const ClipRectsContext& context,
   LayoutView* view = layoutObject.view();
   DCHECK(view);
   if (clipRects.fixed() && context.rootLayer->layoutObject() == view)
-    offset -= LayoutSize(view->frameView()->scrollOffset());
+    offset -= LayoutSize(view->frameView()->getScrollOffset());
   if (layoutObject.hasOverflowClip() ||
       (layoutObject.isSVGRoot() &&
        toLayoutSVGRoot(&layoutObject)->shouldApplyViewportClip()) ||
@@ -513,7 +513,7 @@ ClipRect PaintLayerClipper::backgroundClipRect(
   if (parentClipRects->fixed() &&
       context.rootLayer->layoutObject() == layoutView &&
       result != LayoutRect(LayoutRect::infiniteIntRect()))
-    result.move(LayoutSize(layoutView->frameView()->scrollOffset()));
+    result.move(LayoutSize(layoutView->frameView()->getScrollOffset()));
 
   return result;
 }

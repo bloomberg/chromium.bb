@@ -214,10 +214,10 @@ class PLATFORM_EXPORT ScrollableArea : public GarbageCollectedMixin {
   // For a more detailed explanation of scrollPosition, scrollOffset, and
   // scrollOrigin, see core/layout/README.md.
   FloatPoint scrollPosition() const {
-    return FloatPoint(scrollOrigin()) + scrollOffset();
+    return FloatPoint(scrollOrigin()) + getScrollOffset();
   }
   virtual IntSize scrollOffsetInt() const = 0;
-  virtual ScrollOffset scrollOffset() const {
+  virtual ScrollOffset getScrollOffset() const {
     return ScrollOffset(scrollOffsetInt());
   }
   virtual IntSize minimumScrollOffsetInt() const = 0;

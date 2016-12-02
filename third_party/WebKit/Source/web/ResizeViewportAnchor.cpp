@@ -19,10 +19,10 @@ void ResizeViewportAnchor::resizeFrameView(IntSize size) {
   DCHECK(frameView);
 
   ScrollableArea* rootViewport = frameView->getScrollableArea();
-  ScrollOffset offset = rootViewport->scrollOffset();
+  ScrollOffset offset = rootViewport->getScrollOffset();
 
   frameView->resize(size);
-  m_drift += rootViewport->scrollOffset() - offset;
+  m_drift += rootViewport->getScrollOffset() - offset;
 }
 
 void ResizeViewportAnchor::endScope() {
@@ -34,7 +34,7 @@ void ResizeViewportAnchor::endScope() {
     return;
 
   ScrollOffset visualViewportInDocument =
-      frameView->getScrollableArea()->scrollOffset() - m_drift;
+      frameView->getScrollableArea()->getScrollOffset() - m_drift;
 
   // TODO(bokan): Don't use RootFrameViewport::setScrollPosition since it
   // assumes we can just set a sub-pixel precision offset on the FrameView.

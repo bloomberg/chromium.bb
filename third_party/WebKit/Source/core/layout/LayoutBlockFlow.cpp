@@ -3961,7 +3961,7 @@ bool LayoutBlockFlow::hitTestFloats(HitTestResult& result,
 
   LayoutPoint adjustedLocation = accumulatedOffset;
   if (isLayoutView()) {
-    ScrollOffset offset = toLayoutView(this)->frameView()->scrollOffset();
+    ScrollOffset offset = toLayoutView(this)->frameView()->getScrollOffset();
     adjustedLocation.move(LayoutSize(offset));
   }
 

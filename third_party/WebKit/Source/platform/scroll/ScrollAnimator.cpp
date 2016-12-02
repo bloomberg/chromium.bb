@@ -190,8 +190,8 @@ bool ScrollAnimator::willAnimateToOffset(const ScrollOffset& targetOffset) {
 void ScrollAnimator::adjustAnimationAndSetScrollOffset(
     const ScrollOffset& offset,
     ScrollType scrollType) {
-  IntSize adjustment =
-      roundedIntSize(offset) - roundedIntSize(m_scrollableArea->scrollOffset());
+  IntSize adjustment = roundedIntSize(offset) -
+                       roundedIntSize(m_scrollableArea->getScrollOffset());
   scrollOffsetChanged(offset, scrollType);
 
   if (m_runState == RunState::Idle) {

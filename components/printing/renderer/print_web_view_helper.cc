@@ -760,7 +760,7 @@ void PrepareFrameAndViewForPrint::ResizeForPrinting() {
   blink::WebView* web_view = frame_.view();
   if (blink::WebFrame* web_frame = web_view->mainFrame()) {
     if (web_frame->isWebLocalFrame())
-      prev_scroll_offset_ = web_frame->scrollOffset();
+      prev_scroll_offset_ = web_frame->getScrollOffset();
   }
   prev_view_size_ = web_view->size();
 

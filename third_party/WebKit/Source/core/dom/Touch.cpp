@@ -38,7 +38,7 @@ static FloatPoint contentsOffset(LocalFrame* frame) {
   if (!frameView)
     return FloatPoint();
   float scale = 1.0f / frame->pageZoomFactor();
-  return FloatPoint(frameView->scrollOffset()).scaledBy(scale);
+  return FloatPoint(frameView->getScrollOffset()).scaledBy(scale);
 }
 
 Touch::Touch(LocalFrame* frame,

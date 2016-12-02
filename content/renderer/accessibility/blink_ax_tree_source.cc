@@ -724,7 +724,7 @@ void BlinkAXTreeSource::SerializeNode(blink::WebAXObject src,
     AddIntListAttributeFromWebObjects(ui::AX_ATTR_FLOWTO_IDS, flowTo, dst);
 
   if (src.isScrollableContainer()) {
-    const gfx::Point& scrollOffset = src.scrollOffset();
+    const gfx::Point& scrollOffset = src.getScrollOffset();
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_X, scrollOffset.x());
     dst->AddIntAttribute(ui::AX_ATTR_SCROLL_Y, scrollOffset.y());
 

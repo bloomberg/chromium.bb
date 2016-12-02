@@ -43,7 +43,7 @@ bool ViewportScrollCallback::shouldScrollBrowserControls(
     return false;
 
   ScrollOffset maxScroll = m_rootFrameViewport->maximumScrollOffset();
-  ScrollOffset scrollOffset = m_rootFrameViewport->scrollOffset();
+  ScrollOffset scrollOffset = m_rootFrameViewport->getScrollOffset();
 
   // Always give the delta to the browser controls if the scroll is in
   // the direction to show the browser controls. If it's in the

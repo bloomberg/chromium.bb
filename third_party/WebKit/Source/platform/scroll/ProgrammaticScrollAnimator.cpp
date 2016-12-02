@@ -134,7 +134,7 @@ void ProgrammaticScrollAnimator::updateCompositorAnimations() {
     if (!sentToCompositor) {
       m_runState = RunState::RunningOnMainThread;
       m_animationCurve->setInitialValue(
-          compositorOffsetFromBlinkOffset(m_scrollableArea->scrollOffset()));
+          compositorOffsetFromBlinkOffset(m_scrollableArea->getScrollOffset()));
       if (!m_scrollableArea->scheduleAnimation()) {
         notifyOffsetChanged(m_targetOffset);
         resetAnimationState();
@@ -155,7 +155,7 @@ void ProgrammaticScrollAnimator::layerForCompositedScrollingDidChange(
     m_compositorAnimationId = 0;
     m_compositorAnimationGroupId = 0;
     m_animationCurve->setInitialValue(
-        compositorOffsetFromBlinkOffset(m_scrollableArea->scrollOffset()));
+        compositorOffsetFromBlinkOffset(m_scrollableArea->getScrollOffset()));
     m_scrollableArea->registerForAnimation();
     if (!m_scrollableArea->scheduleAnimation()) {
       resetAnimationState();

@@ -87,7 +87,7 @@ class WebHistoryItem {
   BLINK_EXPORT WebFloatPoint visualViewportScrollOffset() const;
   BLINK_EXPORT void setVisualViewportScrollOffset(const WebFloatPoint&);
 
-  BLINK_EXPORT WebPoint scrollOffset() const;
+  BLINK_EXPORT WebPoint getScrollOffset() const;
   BLINK_EXPORT void setScrollOffset(const WebPoint&);
 
   BLINK_EXPORT float pageScaleFactor() const;

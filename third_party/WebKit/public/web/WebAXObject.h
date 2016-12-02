@@ -311,7 +311,7 @@ class WebAXObject {
 
   // Scrollable containers.
   BLINK_EXPORT bool isScrollableContainer() const;
-  BLINK_EXPORT WebPoint scrollOffset() const;
+  BLINK_EXPORT WebPoint getScrollOffset() const;
   BLINK_EXPORT WebPoint minimumScrollOffset() const;
   BLINK_EXPORT WebPoint maximumScrollOffset() const;
   BLINK_EXPORT void setScrollOffset(const WebPoint&) const;

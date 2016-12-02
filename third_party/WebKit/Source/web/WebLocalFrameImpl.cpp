@@ -583,7 +583,7 @@ bool WebLocalFrameImpl::isFocused() const {
                      viewImpl()->page()->focusController().focusedFrame());
 }
 
-WebSize WebLocalFrameImpl::scrollOffset() const {
+WebSize WebLocalFrameImpl::getScrollOffset() const {
   if (ScrollableArea* scrollableArea = layoutViewportScrollableArea())
     return scrollableArea->scrollOffsetInt();
   return WebSize();

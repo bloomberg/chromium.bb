@@ -219,7 +219,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -100));
     EXPECT_FLOAT_EQ(100, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, mainFrameView()->scrollOffset().height());
+    EXPECT_FLOAT_EQ(0, mainFrameView()->getScrollOffset().height());
   }
 
   {
@@ -230,7 +230,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -550));
     EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, mainFrameView()->scrollOffset().height());
+    EXPECT_FLOAT_EQ(0, mainFrameView()->getScrollOffset().height());
     Mock::VerifyAndClearExpectations(&client);
   }
 
@@ -241,7 +241,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -20));
     EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, mainFrameView()->scrollOffset().height());
+    EXPECT_FLOAT_EQ(0, mainFrameView()->getScrollOffset().height());
     Mock::VerifyAndClearExpectations(&client);
   }
 
@@ -259,7 +259,7 @@ TEST_F(RootScrollerTest, TestSetRootScroller) {
     webViewImpl()->handleInputEvent(
         generateTouchGestureEvent(WebInputEvent::GestureScrollUpdate, 0, -30));
     EXPECT_FLOAT_EQ(maximumScroll, container->scrollTop());
-    EXPECT_FLOAT_EQ(0, mainFrameView()->scrollOffset().height());
+    EXPECT_FLOAT_EQ(0, mainFrameView()->getScrollOffset().height());
     Mock::VerifyAndClearExpectations(&client);
 
     webViewImpl()->handleInputEvent(
@@ -1150,12 +1150,12 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
 
     // The visual viewport should be 1.5 screens scrolled so that the target
     // occupies the bottom quadrant of the layout viewport.
-    ASSERT_EQ((250 * 3) / 2, containerScroller->scrollOffset().width());
-    ASSERT_EQ((1000 * 3) / 2, containerScroller->scrollOffset().height());
+    ASSERT_EQ((250 * 3) / 2, containerScroller->getScrollOffset().width());
+    ASSERT_EQ((1000 * 3) / 2, containerScroller->getScrollOffset().height());
 
     // The visual viewport should have scrolled the last half layout viewport.
-    ASSERT_EQ((250) / 2, visualViewport().scrollOffset().width());
-    ASSERT_EQ((1000) / 2, visualViewport().scrollOffset().height());
+    ASSERT_EQ((250) / 2, visualViewport().getScrollOffset().width());
+    ASSERT_EQ((1000) / 2, visualViewport().getScrollOffset().height());
   }
 
   // Now do a rotation resize.
@@ -1164,8 +1164,8 @@ TEST_F(RootScrollerTest, RotationAnchoring) {
 
   // The visual viewport should remain fully filled by the target.
   ClientRect* rect = target->getBoundingClientRect();
-  EXPECT_EQ(rect->left(), visualViewport().scrollOffset().width());
-  EXPECT_EQ(rect->top(), visualViewport().scrollOffset().height());
+  EXPECT_EQ(rect->left(), visualViewport().getScrollOffset().width());
+  EXPECT_EQ(rect->top(), visualViewport().getScrollOffset().height());
 }
 
 // Tests that we don't crash if the default documentElement isn't a valid root

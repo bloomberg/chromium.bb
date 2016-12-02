@@ -52,7 +52,7 @@ LayoutRect RootFrameViewport::rootContentsToLayoutViewportContents(
   // by adding the scroll position.
   // TODO(bokan): This will have to be revisited if we ever remove the
   // restriction that a root scroller must be exactly screen filling.
-  ret.move(LayoutSize(layoutViewport().scrollOffset()));
+  ret.move(LayoutSize(layoutViewport().getScrollOffset()));
 
   return ret;
 }
@@ -60,17 +60,17 @@ LayoutRect RootFrameViewport::rootContentsToLayoutViewportContents(
 void RootFrameViewport::restoreToAnchor(const ScrollOffset& targetOffset) {
   // Clamp the scroll offset of each viewport now so that we force any invalid
   // offsets to become valid so we can compute the correct deltas.
-  visualViewport().setScrollOffset(visualViewport().scrollOffset(),
+  visualViewport().setScrollOffset(visualViewport().getScrollOffset(),
                                    ProgrammaticScroll);
-  layoutViewport().setScrollOffset(layoutViewport().scrollOffset(),
-                                   ProgrammaticScroll);
-
-  ScrollOffset delta = targetOffset - scrollOffset();
-
-  visualViewport().setScrollOffset(visualViewport().scrollOffset() + delta,
+  layoutViewport().setScrollOffset(layoutViewport().getScrollOffset(),
                                    ProgrammaticScroll);
 
-  delta = targetOffset - scrollOffset();
+  ScrollOffset delta = targetOffset - getScrollOffset();
+
+  visualViewport().setScrollOffset(visualViewport().getScrollOffset() + delta,
+                                   ProgrammaticScroll);
+
+  delta = targetOffset - getScrollOffset();
 
   // Since the main thread FrameView has integer scroll offsets, scroll it to
   // the next pixel and then we'll scroll the visual viewport again to
@@ -85,8 +85,8 @@ void RootFrameViewport::restoreToAnchor(const ScrollOffset& targetOffset) {
       ScrollOffset(layoutViewport().scrollOffsetInt() + layoutDelta),
       ProgrammaticScroll);
 
-  delta = targetOffset - scrollOffset();
-  visualViewport().setScrollOffset(visualViewport().scrollOffset() + delta,
+  delta = targetOffset - getScrollOffset();
+  visualViewport().setScrollOffset(visualViewport().getScrollOffset() + delta,
                                    ProgrammaticScroll);
 }
 
@@ -283,11 +283,12 @@ void RootFrameViewport::distributeScrollBetweenViewports(
 }
 
 IntSize RootFrameViewport::scrollOffsetInt() const {
-  return flooredIntSize(scrollOffset());
+  return flooredIntSize(getScrollOffset());
 }
 
-ScrollOffset RootFrameViewport::scrollOffset() const {
-  return layoutViewport().scrollOffset() + visualViewport().scrollOffset();
+ScrollOffset RootFrameViewport::getScrollOffset() const {
+  return layoutViewport().getScrollOffset() +
+         visualViewport().getScrollOffset();
 }
 
 IntSize RootFrameViewport::minimumScrollOffsetInt() const {

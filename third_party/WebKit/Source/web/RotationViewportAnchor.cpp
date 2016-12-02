@@ -130,7 +130,7 @@ void RotationViewportAnchor::setAnchor() {
 
   // Normalize by the size of the outer rect
   DCHECK(!outerViewRect.isEmpty());
-  m_normalizedVisualViewportOffset = m_visualViewport->scrollOffset();
+  m_normalizedVisualViewportOffset = m_visualViewport->getScrollOffset();
   m_normalizedVisualViewportOffset.scale(1.0 / outerViewRect.width(),
                                          1.0 / outerViewRect.height());
 

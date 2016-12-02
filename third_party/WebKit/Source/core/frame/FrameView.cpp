@@ -568,7 +568,7 @@ FloatQuad FrameView::localToVisibleContentQuad(
     return quad;
   DCHECK(localObject);
   FloatQuad result = localObject->localToAncestorQuad(quad, box, flags);
-  result.move(-scrollOffset());
+  result.move(-getScrollOffset());
   return result;
 }
 
@@ -3281,7 +3281,7 @@ IntRect FrameView::convertFromLayoutItem(
   LayoutRect rect = enclosingLayoutRect(
       layoutItem.localToAbsoluteQuad(FloatRect(layoutObjectRect))
           .boundingBox());
-  rect.move(LayoutSize(-scrollOffset()));
+  rect.move(LayoutSize(-getScrollOffset()));
   return pixelSnappedIntRect(rect);
 }
 
@@ -4023,8 +4023,8 @@ void FrameView::updateScrollbars() {
 }
 
 void FrameView::adjustScrollOffsetFromUpdateScrollbars() {
-  ScrollOffset clamped = clampScrollOffset(scrollOffset());
-  if (clamped != scrollOffset() || scrollOriginChanged()) {
+  ScrollOffset clamped = clampScrollOffset(getScrollOffset());
+  if (clamped != getScrollOffset() || scrollOriginChanged()) {
     ScrollableArea::setScrollOffset(clamped, ClampingScroll);
     resetScrollOriginChanged();
   }
@@ -4064,7 +4064,7 @@ IntRect FrameView::contentsToFrame(const IntRect& rectInContentSpace) const {
 }
 
 FloatPoint FrameView::frameToContents(const FloatPoint& pointInFrame) const {
-  return pointInFrame + scrollOffset();
+  return pointInFrame + getScrollOffset();
 }
 
 IntPoint FrameView::frameToContents(const IntPoint& pointInFrame) const {

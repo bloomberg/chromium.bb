@@ -176,7 +176,7 @@ class CORE_EXPORT VisualViewport final
   bool isScrollCornerVisible() const override { return false; }
   IntRect scrollCornerRect() const override { return IntRect(); }
   IntSize scrollOffsetInt() const override { return flooredIntSize(m_offset); }
-  ScrollOffset scrollOffset() const override { return m_offset; }
+  ScrollOffset getScrollOffset() const override { return m_offset; }
   IntSize minimumScrollOffsetInt() const override;
   IntSize maximumScrollOffsetInt() const override;
   ScrollOffset maximumScrollOffset() const override;

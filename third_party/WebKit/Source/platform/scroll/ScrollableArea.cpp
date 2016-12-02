@@ -167,7 +167,7 @@ void ScrollableArea::setScrollOffset(const ScrollOffset& offset,
                                      ScrollType scrollType,
                                      ScrollBehavior behavior) {
   ScrollOffset clampedOffset = clampScrollOffset(offset);
-  if (clampedOffset == scrollOffset())
+  if (clampedOffset == getScrollOffset())
     return;
 
   if (behavior == ScrollBehaviorAuto)
@@ -196,7 +196,7 @@ void ScrollableArea::setScrollOffset(const ScrollOffset& offset,
 void ScrollableArea::scrollBy(const ScrollOffset& delta,
                               ScrollType type,
                               ScrollBehavior behavior) {
-  setScrollOffset(scrollOffset() + delta, type, behavior);
+  setScrollOffset(getScrollOffset() + delta, type, behavior);
 }
 
 void ScrollableArea::setScrollOffsetSingleAxis(ScrollbarOrientation orientation,
@@ -260,7 +260,7 @@ void ScrollableArea::scrollOffsetChanged(const ScrollOffset& offset,
                                          ScrollType scrollType) {
   TRACE_EVENT0("blink", "ScrollableArea::scrollOffsetChanged");
 
-  ScrollOffset oldOffset = scrollOffset();
+  ScrollOffset oldOffset = getScrollOffset();
   ScrollOffset truncatedOffset = shouldUseIntegerScrollOffset()
                                      ? ScrollOffset(flooredIntSize(offset))
                                      : offset;
@@ -277,8 +277,8 @@ void ScrollableArea::scrollOffsetChanged(const ScrollOffset& offset,
   if (Scrollbar* verticalScrollbar = this->verticalScrollbar())
     verticalScrollbar->offsetDidChange();
 
-  if (scrollOffset() != oldOffset)
-    scrollAnimator().notifyContentAreaScrolled(scrollOffset() - oldOffset);
+  if (getScrollOffset() != oldOffset)
+    scrollAnimator().notifyContentAreaScrolled(getScrollOffset() - oldOffset);
 
   scrollAnimator().setCurrentOffset(offset);
 }
@@ -588,7 +588,7 @@ IntRect ScrollableArea::visibleContentRect(
       scrollbarInclusion == IncludeScrollbars ? horizontalScrollbarHeight() : 0;
 
   return enclosingIntRect(
-      IntRect(scrollOffset().width(), scrollOffset().height(),
+      IntRect(getScrollOffset().width(), getScrollOffset().height(),
               std::max(0, visibleWidth() + scrollbarWidth),
               std::max(0, visibleHeight() + scrollbarHeight)));
 }
@@ -646,7 +646,7 @@ FloatQuad ScrollableArea::localToVisibleContentQuad(const FloatQuad& quad,
                                                     const LayoutObject*,
                                                     unsigned) const {
   FloatQuad result(quad);
-  result.move(-scrollOffset());
+  result.move(-getScrollOffset());
   return result;
 }
 

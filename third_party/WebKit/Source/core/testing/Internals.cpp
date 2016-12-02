@@ -2982,14 +2982,14 @@ float Internals::visualViewportScrollX() {
   if (!frame())
     return 0;
 
-  return frame()->view()->getScrollableArea()->scrollOffset().width();
+  return frame()->view()->getScrollableArea()->getScrollOffset().width();
 }
 
 float Internals::visualViewportScrollY() {
   if (!frame())
     return 0;
 
-  return frame()->view()->getScrollableArea()->scrollOffset().height();
+  return frame()->view()->getScrollableArea()->getScrollOffset().height();
 }
 
 ValueIterable<int>::IterationSource* Internals::startIteration(

@@ -42,7 +42,7 @@ class WEB_EXPORT WebRemoteFrameImpl final
   void setSharedWorkerRepositoryClient(
       WebSharedWorkerRepositoryClient*) override;
   void setCanHaveScrollbars(bool) override;
-  WebSize scrollOffset() const override;
+  WebSize getScrollOffset() const override;
   void setScrollOffset(const WebSize&) override;
   WebSize contentsSize() const override;
   bool hasVisibleContent() const override;

@@ -973,9 +973,9 @@ void Element::scrollFrameBy(const ScrollToOptions& scrollToOptions) {
     return;
 
   float newScaledLeft =
-      left * frame->pageZoomFactor() + viewport->scrollOffset().width();
+      left * frame->pageZoomFactor() + viewport->getScrollOffset().width();
   float newScaledTop =
-      top * frame->pageZoomFactor() + viewport->scrollOffset().height();
+      top * frame->pageZoomFactor() + viewport->getScrollOffset().height();
   viewport->setScrollOffset(ScrollOffset(newScaledLeft, newScaledTop),
                             ProgrammaticScroll, scrollBehavior);
 }
@@ -992,8 +992,8 @@ void Element::scrollFrameTo(const ScrollToOptions& scrollToOptions) {
   if (!viewport)
     return;
 
-  float scaledLeft = viewport->scrollOffset().width();
-  float scaledTop = viewport->scrollOffset().height();
+  float scaledLeft = viewport->getScrollOffset().width();
+  float scaledTop = viewport->getScrollOffset().height();
   if (scrollToOptions.hasLeft())
     scaledLeft =
         ScrollableArea::normalizeNonFiniteScroll(scrollToOptions.left()) *

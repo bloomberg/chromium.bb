@@ -272,7 +272,7 @@ void FrameLoader::saveScrollState() {
 
   if (ScrollableArea* layoutScrollableArea =
           m_frame->view()->layoutViewportScrollableArea())
-    m_currentItem->setScrollOffset(layoutScrollableArea->scrollOffset());
+    m_currentItem->setScrollOffset(layoutScrollableArea->getScrollOffset());
   m_currentItem->setVisualViewportScrollOffset(toScrollOffset(
       m_frame->host()->visualViewport().visibleRect().location()));
 
@@ -415,7 +415,7 @@ void FrameLoader::setHistoryItemStateForCommit(
        !equalIgnoringFragmentIdentifier(oldItem->url(), m_currentItem->url())))
     return;
   m_currentItem->setDocumentSequenceNumber(oldItem->documentSequenceNumber());
-  m_currentItem->setScrollOffset(oldItem->scrollOffset());
+  m_currentItem->setScrollOffset(oldItem->getScrollOffset());
   m_currentItem->setVisualViewportScrollOffset(
       oldItem->visualViewportScrollOffset());
   m_currentItem->setPageScaleFactor(oldItem->pageScaleFactor());
@@ -1386,7 +1386,7 @@ void FrameLoader::restoreScrollPositionAndViewState() {
   //    previous height
   bool canRestoreWithoutClamping =
       view->layoutViewportScrollableArea()->clampScrollOffset(
-          m_currentItem->scrollOffset()) == m_currentItem->scrollOffset();
+          m_currentItem->getScrollOffset()) == m_currentItem->getScrollOffset();
   bool canRestoreWithoutAnnoyingUser =
       !documentLoader()->initialScrollState().wasScrolledByUser &&
       (canRestoreWithoutClamping || !m_frame->isLoading() ||
@@ -1396,7 +1396,7 @@ void FrameLoader::restoreScrollPositionAndViewState() {
 
   if (shouldRestoreScroll) {
     view->layoutViewportScrollableArea()->setScrollOffset(
-        m_currentItem->scrollOffset(), ProgrammaticScroll);
+        m_currentItem->getScrollOffset(), ProgrammaticScroll);
   }
 
   // For main frame restore scale and visual viewport position
@@ -1410,8 +1410,8 @@ void FrameLoader::restoreScrollPositionAndViewState() {
     if (visualViewportOffset.width() == -1 &&
         visualViewportOffset.height() == -1) {
       visualViewportOffset =
-          m_currentItem->scrollOffset() -
-          view->layoutViewportScrollableArea()->scrollOffset();
+          m_currentItem->getScrollOffset() -
+          view->layoutViewportScrollableArea()->getScrollOffset();
     }
 
     VisualViewport& visualViewport = m_frame->host()->visualViewport();

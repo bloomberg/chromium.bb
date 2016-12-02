@@ -1209,7 +1209,7 @@ bool AXObject::isScrollableContainer() const {
   return !!getScrollableAreaIfScrollable();
 }
 
-IntPoint AXObject::scrollOffset() const {
+IntPoint AXObject::getScrollOffset() const {
   ScrollableArea* area = getScrollableAreaIfScrollable();
   if (!area)
     return IntPoint();
@@ -1303,7 +1303,7 @@ void AXObject::getRelativeBounds(AXObject** outContainer,
   // bounds to be relative to the *unscrolled* position of the container object.
   ScrollableArea* scrollableArea = container->getScrollableAreaIfScrollable();
   if (scrollableArea && !container->isWebArea()) {
-    ScrollOffset scrollOffset = scrollableArea->scrollOffset();
+    ScrollOffset scrollOffset = scrollableArea->getScrollOffset();
     outBoundsInContainer.move(scrollOffset);
   }
 
@@ -1328,9 +1328,10 @@ LayoutRect AXObject::getBoundsInFrameCoordinates() const {
   FloatRect computedBounds(0, 0, bounds.width(), bounds.height());
   while (container && container != this) {
     computedBounds.move(bounds.x(), bounds.y());
-    if (!container->isWebArea())
-      computedBounds.move(-container->scrollOffset().x(),
-                          -container->scrollOffset().y());
+    if (!container->isWebArea()) {
+      computedBounds.move(-container->getScrollOffset().x(),
+                          -container->getScrollOffset().y());
+    }
     if (!transform.isIdentity()) {
       TransformationMatrix transformationMatrix(transform);
       transformationMatrix.mapRect(computedBounds);

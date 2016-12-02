@@ -980,7 +980,7 @@ double LocalDOMWindow::scrollX() const {
   document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   double viewportX =
-      view->layoutViewportScrollableArea()->scrollOffset().width();
+      view->layoutViewportScrollableArea()->getScrollOffset().width();
   return adjustScrollForAbsoluteZoom(viewportX, frame()->pageZoomFactor());
 }
 
@@ -998,7 +998,7 @@ double LocalDOMWindow::scrollY() const {
   document()->updateStyleAndLayoutIgnorePendingStylesheets();
 
   double viewportY =
-      view->layoutViewportScrollableArea()->scrollOffset().height();
+      view->layoutViewportScrollableArea()->getScrollOffset().height();
   return adjustScrollForAbsoluteZoom(viewportY, frame()->pageZoomFactor());
 }
 
@@ -1124,7 +1124,7 @@ void LocalDOMWindow::scrollBy(double x,
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 
-  ScrollOffset currentOffset = viewport->scrollOffset();
+  ScrollOffset currentOffset = viewport->getScrollOffset();
   ScrollOffset scaledDelta(x * frame()->pageZoomFactor(),
                            y * frame()->pageZoomFactor());
 
@@ -1200,7 +1200,7 @@ void LocalDOMWindow::scrollTo(const ScrollToOptions& scrollToOptions) const {
                                  ? view->layoutViewportScrollableArea()
                                  : view->getScrollableArea();
 
-  ScrollOffset currentOffset = viewport->scrollOffset();
+  ScrollOffset currentOffset = viewport->getScrollOffset();
   scaledX = currentOffset.width();
   scaledY = currentOffset.height();
 

@@ -849,7 +849,7 @@ WebInputEventResult WebViewImpl::handleGestureEvent(
         // TODO(bokan): We shouldn't pass details of the VisualViewport offset
         // to render_view_impl.  crbug.com/459591
         WebSize visualViewportOffset =
-            flooredIntSize(visualViewport.scrollOffset());
+            flooredIntSize(visualViewport.getScrollOffset());
 
         if (m_webSettings->multiTargetTapNotificationEnabled()) {
           Vector<IntRect> goodTargets;
@@ -1274,7 +1274,7 @@ WebRect WebViewImpl::widenRectWithinPageBounds(const WebRect& source,
     maxSize = mainFrame()->contentsSize();
   IntSize scrollOffset;
   if (mainFrame())
-    scrollOffset = mainFrame()->scrollOffset();
+    scrollOffset = mainFrame()->getScrollOffset();
   int leftMargin = targetMargin;
   int rightMargin = targetMargin;
 
@@ -3298,7 +3298,7 @@ void WebViewImpl::resetScrollAndScaleState() {
   if (FrameView* frameView = toLocalFrame(page()->mainFrame())->view()) {
     ScrollableArea* scrollableArea = frameView->layoutViewportScrollableArea();
 
-    if (!scrollableArea->scrollOffset().isZero())
+    if (!scrollableArea->getScrollOffset().isZero())
       scrollableArea->setScrollOffset(ScrollOffset(), ProgrammaticScroll);
   }
 

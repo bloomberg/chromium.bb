@@ -333,7 +333,7 @@ void LayoutView::mapLocalToAncestor(const LayoutBoxModelObject* ancestor,
     LayoutPartItem parentDocLayoutItem = frame()->ownerLayoutItem();
     if (!parentDocLayoutItem.isNull()) {
       if (!(mode & InputIsInFrameCoordinates)) {
-        transformState.move(LayoutSize(-frame()->view()->scrollOffset()));
+        transformState.move(LayoutSize(-frame()->view()->getScrollOffset()));
       } else {
         // The flag applies to immediate LayoutView only.
         mode &= ~InputIsInFrameCoordinates;
@@ -355,7 +355,7 @@ const LayoutObject* LayoutView::pushMappingToContainer(
   if (geometryMap.getMapCoordinatesFlags() & TraverseDocumentBoundaries) {
     if (LayoutPart* parentDocLayoutObject = toLayoutPart(
             LayoutAPIShim::layoutObjectFrom(frame()->ownerLayoutItem()))) {
-      offset = -LayoutSize(m_frameView->scrollOffset());
+      offset = -LayoutSize(m_frameView->getScrollOffset());
       offset += parentDocLayoutObject->contentBoxOffset();
       container = parentDocLayoutObject;
     }
@@ -389,7 +389,7 @@ void LayoutView::mapAncestorToLocal(const LayoutBoxModelObject* ancestor,
                                                 mode & ~IsFixed);
 
       transformState.move(parentDocLayoutObject->contentBoxOffset());
-      transformState.move(LayoutSize(-frame()->view()->scrollOffset()));
+      transformState.move(LayoutSize(-frame()->view()->getScrollOffset()));
     }
   } else {
     DCHECK(this == ancestor || !ancestor);
@@ -503,7 +503,7 @@ bool LayoutView::mapToVisualRectInAncestorSpace(
 LayoutSize LayoutView::offsetForFixedPosition(bool includePendingScroll) const {
   FloatSize adjustment;
   if (m_frameView) {
-    adjustment += m_frameView->scrollOffset();
+    adjustment += m_frameView->getScrollOffset();
 
     // FIXME: Paint invalidation should happen after scroll updates, so there
     // should be no pending scroll delta.

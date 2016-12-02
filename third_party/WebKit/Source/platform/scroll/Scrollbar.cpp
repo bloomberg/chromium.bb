@@ -592,11 +592,11 @@ float Scrollbar::scrollableAreaCurrentPos() const {
     return 0;
 
   if (m_orientation == HorizontalScrollbar) {
-    return m_scrollableArea->scrollOffset().width() -
+    return m_scrollableArea->getScrollOffset().width() -
            m_scrollableArea->minimumScrollOffset().width();
   }
 
-  return m_scrollableArea->scrollOffset().height() -
+  return m_scrollableArea->getScrollOffset().height() -
          m_scrollableArea->minimumScrollOffset().height();
 }
 

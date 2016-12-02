@@ -1861,8 +1861,8 @@ WebInputEventResult EventHandler::sendContextMenuEventForKey(
     locationInRootFrame = IntPoint(
         rightAligned
             ? visualViewport.visibleRect().maxX() - kContextMenuMargin
-            : visualViewport.scrollOffset().width() + kContextMenuMargin,
-        visualViewport.scrollOffset().height() + kContextMenuMargin);
+            : visualViewport.getScrollOffset().width() + kContextMenuMargin,
+        visualViewport.getScrollOffset().height() + kContextMenuMargin);
   }
 
   m_frame->view()->setCursor(pointerCursor());

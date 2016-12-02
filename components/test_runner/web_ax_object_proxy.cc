@@ -332,7 +332,7 @@ blink::WebFloatRect BoundsForObject(const blink::WebAXObject& object) {
   while (!container.isDetached()) {
     computedBounds.Offset(bounds.x, bounds.y);
     computedBounds.Offset(
-        -container.scrollOffset().x, -container.scrollOffset().y);
+        -container.getScrollOffset().x, -container.getScrollOffset().y);
     if (!matrix.isIdentity()) {
       gfx::Transform transform(matrix);
       transform.TransformRect(&computedBounds);
@@ -1396,12 +1396,12 @@ void WebAXObjectProxy::ScrollToGlobalPoint(int x, int y) {
 
 int WebAXObjectProxy::ScrollX() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.scrollOffset().x;
+  return accessibility_object_.getScrollOffset().x;
 }
 
 int WebAXObjectProxy::ScrollY() {
   accessibility_object_.updateLayoutAndCheckValidity();
-  return accessibility_object_.scrollOffset().y;
+  return accessibility_object_.getScrollOffset().y;
 }
 
 float WebAXObjectProxy::BoundsX() {

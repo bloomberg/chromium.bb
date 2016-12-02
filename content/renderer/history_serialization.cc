@@ -47,7 +47,7 @@ void GenerateFrameStateFromItem(const WebHistoryItem& item,
     state->state_object = item.stateObject().toString();
   state->scroll_restoration_type = item.scrollRestorationType();
   state->visual_viewport_scroll_offset = item.visualViewportScrollOffset();
-  state->scroll_offset = item.scrollOffset();
+  state->scroll_offset = item.getScrollOffset();
   state->item_sequence_number = item.itemSequenceNumber();
   state->document_sequence_number =
       item.documentSequenceNumber();

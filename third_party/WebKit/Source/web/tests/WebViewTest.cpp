@@ -1275,8 +1275,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
       m_webViewHelper.initializeAndLoad(m_baseURL + "form_with_input.html");
   webView->resize(WebSize(800, 600));
   webView->setInitialFocus(false);
-  EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webView->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webView->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webView->mainFrame()->getScrollOffset().height);
 
   // Set up a composition from existing text that needs to be committed.
   Vector<CompositionUnderline> emptyUnderlines;
@@ -1288,8 +1288,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   Element* element = static_cast<Element*>(
       webView->mainFrame()->document().getElementById("btn"));
   element->scrollIntoView();
-  float offsetHeight = webView->mainFrame()->scrollOffset().height;
-  EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
+  float offsetHeight = webView->mainFrame()->getScrollOffset().height;
+  EXPECT_EQ(0, webView->mainFrame()->getScrollOffset().width);
   EXPECT_LT(0, offsetHeight);
 
   WebTextInputInfo info = webView->textInputInfo();
@@ -1299,8 +1299,8 @@ TEST_P(WebViewTest, FinishCompositionDoesNotRevealSelection) {
   frame->frameWidget()
       ->getActiveWebInputMethodController()
       ->finishComposingText(WebInputMethodController::DoNotKeepSelection);
-  EXPECT_EQ(0, webView->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(offsetHeight, webView->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webView->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(offsetHeight, webView->mainFrame()->getScrollOffset().height);
 }
 
 TEST_P(WebViewTest, InsertNewLinePlacementAfterFinishComposingText) {
@@ -1616,30 +1616,33 @@ TEST_P(WebViewTest, HistoryResetScrollAndScaleState) {
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
   webViewImpl->updateAllLifecyclePhases();
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
 
   // Make the page scale and scroll with the given paremeters.
   webViewImpl->setPageScaleFactor(2.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(94, 111));
   EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-  EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(94, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(111, webViewImpl->mainFrame()->getScrollOffset().height);
   LocalFrame* mainFrameLocal = toLocalFrame(webViewImpl->page()->mainFrame());
   mainFrameLocal->loader().saveScrollState();
   EXPECT_EQ(2.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
-  EXPECT_EQ(94, mainFrameLocal->loader().currentItem()->scrollOffset().width());
+  EXPECT_EQ(94,
+            mainFrameLocal->loader().currentItem()->getScrollOffset().width());
   EXPECT_EQ(111,
-            mainFrameLocal->loader().currentItem()->scrollOffset().height());
+            mainFrameLocal->loader().currentItem()->getScrollOffset().height());
 
   // Confirm that resetting the page state resets the saved scroll position.
   webViewImpl->resetScrollAndScaleState();
   EXPECT_EQ(1.0f, webViewImpl->pageScaleFactor());
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(1.0f, mainFrameLocal->loader().currentItem()->pageScaleFactor());
-  EXPECT_EQ(0, mainFrameLocal->loader().currentItem()->scrollOffset().width());
-  EXPECT_EQ(0, mainFrameLocal->loader().currentItem()->scrollOffset().height());
+  EXPECT_EQ(0,
+            mainFrameLocal->loader().currentItem()->getScrollOffset().width());
+  EXPECT_EQ(0,
+            mainFrameLocal->loader().currentItem()->getScrollOffset().height());
 }
 
 TEST_P(WebViewTest, BackForwardRestoreScroll) {
@@ -1697,8 +1700,8 @@ TEST_P(WebViewTest, BackForwardRestoreScroll) {
           nullptr, FrameLoader::resourceRequestFromHistoryItem(
                        item3.get(), WebCachePolicy::UseProtocolCachePolicy)),
       FrameLoadTypeBackForward, item3.get(), HistorySameDocumentLoad);
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_GT(webViewImpl->mainFrame()->scrollOffset().height, 2000);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_GT(webViewImpl->mainFrame()->getScrollOffset().height, 2000);
 }
 
 // Tests that we restore scroll and scale *after* the fullscreen styles are
@@ -1714,7 +1717,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
 
   // Scroll the page down.
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+  ASSERT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
 
   // Enter fullscreen.
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
@@ -1725,7 +1728,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  ASSERT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
   ASSERT_EQ(0, webViewImpl->mainFrameImpl()
                    ->frameView()
                    ->maximumScrollOffset()
@@ -1739,7 +1742,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleFullscreenStyles) {
   EXPECT_TRUE(webViewImpl->mainFrameImpl()->frameView()->needsLayout());
   webViewImpl->updateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
 }
 
 // Tests that exiting and immediately reentering fullscreen doesn't cause the
@@ -1755,7 +1758,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
 
   // Scroll the page down.
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 2000));
-  ASSERT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+  ASSERT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
 
   // Enter fullscreen.
   Document* document = webViewImpl->mainFrameImpl()->frame()->document();
@@ -1766,7 +1769,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  ASSERT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
   ASSERT_EQ(0, webViewImpl->mainFrameImpl()
                    ->frameView()
                    ->maximumScrollOffset()
@@ -1781,7 +1784,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   webViewImpl->updateAllLifecyclePhases();
 
   // Sanity-check. There should be no scrolling possible.
-  ASSERT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  ASSERT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
   ASSERT_EQ(0, webViewImpl->mainFrameImpl()
                    ->frameView()
                    ->maximumScrollOffset()
@@ -1791,7 +1794,7 @@ TEST_P(WebViewTest, FullscreenResetScrollAndScaleExitAndReenter) {
   webViewImpl->didExitFullscreen();
   webViewImpl->updateAllLifecyclePhases();
 
-  EXPECT_EQ(2000, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(2000, webViewImpl->mainFrame()->getScrollOffset().height);
 }
 
 TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
@@ -1802,16 +1805,16 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
       m_webViewHelper.initializeAndLoad(m_baseURL + "200-by-300.html");
   webViewImpl->resize(WebSize(100, 150));
   webViewImpl->updateAllLifecyclePhases();
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webViewImpl->mainFrame()->getScrollOffset().height);
 
   // Make the page scale and scroll with the given paremeters.
   webViewImpl->setPageScaleFactor(2.0f);
   webViewImpl->mainFrame()->setScrollOffset(WebSize(94, 111));
   webViewImpl->setVisualViewportOffset(WebFloatPoint(12, 20));
   EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-  EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(94, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(111, webViewImpl->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
   EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 
@@ -1834,8 +1837,8 @@ TEST_P(WebViewTest, EnterFullscreenResetScrollAndScaleState) {
   webViewImpl->updateAllLifecyclePhases();
 
   EXPECT_EQ(2.0f, webViewImpl->pageScaleFactor());
-  EXPECT_EQ(94, webViewImpl->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(111, webViewImpl->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(94, webViewImpl->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(111, webViewImpl->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(12, webViewImpl->visualViewportOffset().x);
   EXPECT_EQ(20, webViewImpl->visualViewportOffset().y);
 }

@@ -139,7 +139,7 @@ void PaintPropertyTreeBuilder::updateProperties(
         updateContentClip(frameView, context.current.clip,
                           frameView.preTranslation(), contentClip);
 
-    ScrollOffset scrollOffset = frameView.scrollOffset();
+    ScrollOffset scrollOffset = frameView.getScrollOffset();
     if (frameView.isScrollable() || !scrollOffset.isZero()) {
       TransformationMatrix frameScroll;
       frameScroll.translate(-scrollOffset.width(), -scrollOffset.height());

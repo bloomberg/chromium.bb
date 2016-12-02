@@ -2946,7 +2946,7 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
       EXPECT_NEAR(expectedPageScaleFactor,
                   webViewHelper.webView()->pageScaleFactor(), 0.05f);
       EXPECT_EQ(WebSize(),
-                webViewHelper.webView()->mainFrame()->scrollOffset());
+                webViewHelper.webView()->mainFrame()->getScrollOffset());
     }
 
     // Resizing just the height should not affect pageScaleFactor or
@@ -2957,19 +2957,19 @@ class WebFrameResizeTest : public ParameterizedWebFrameTest {
       webViewHelper.webView()->mainFrame()->setScrollOffset(scrollOffset);
       webViewHelper.webView()->updateAllLifecyclePhases();
       const WebSize expectedScrollOffset =
-          webViewHelper.webView()->mainFrame()->scrollOffset();
+          webViewHelper.webView()->mainFrame()->getScrollOffset();
       webViewHelper.resize(
           WebSize(viewportSize.width, viewportSize.height * 0.8f));
       EXPECT_EQ(initialPageScaleFactor,
                 webViewHelper.webView()->pageScaleFactor());
       EXPECT_EQ(expectedScrollOffset,
-                webViewHelper.webView()->mainFrame()->scrollOffset());
+                webViewHelper.webView()->mainFrame()->getScrollOffset());
       webViewHelper.resize(
           WebSize(viewportSize.width, viewportSize.height * 0.8f));
       EXPECT_EQ(initialPageScaleFactor,
                 webViewHelper.webView()->pageScaleFactor());
       EXPECT_EQ(expectedScrollOffset,
-                webViewHelper.webView()->mainFrame()->scrollOffset());
+                webViewHelper.webView()->mainFrame()->getScrollOffset());
     }
   }
 };
@@ -3142,7 +3142,7 @@ void simulatePageScale(WebViewImpl* webViewImpl, float& scale) {
   ScrollOffset scrollDelta =
       toScrollOffset(
           webViewImpl->fakePageScaleAnimationTargetPositionForTesting()) -
-      webViewImpl->mainFrameImpl()->frameView()->scrollOffset();
+      webViewImpl->mainFrameImpl()->frameView()->getScrollOffset();
   float scaleDelta = webViewImpl->fakePageScaleAnimationPageScaleForTesting() /
                      webViewImpl->pageScaleFactor();
   webViewImpl->applyViewportDeltas(WebFloatSize(), FloatSize(scrollDelta),
@@ -4123,7 +4123,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       WebSize(pageWidth / 4, pageHeight / 4));
   webViewHelper.webView()->setPageScaleFactor(pageScaleFactor);
 
-  WebSize previousOffset = webViewHelper.webView()->mainFrame()->scrollOffset();
+  WebSize previousOffset =
+      webViewHelper.webView()->mainFrame()->getScrollOffset();
   float previousScale = webViewHelper.webView()->pageScaleFactor();
 
   // Reload the page and end up at the same url. State should be propagated.
@@ -4132,9 +4133,9 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
   EXPECT_EQ(previousOffset.width,
-            webViewHelper.webView()->mainFrame()->scrollOffset().width);
+            webViewHelper.webView()->mainFrame()->getScrollOffset().width);
   EXPECT_EQ(previousOffset.height,
-            webViewHelper.webView()->mainFrame()->scrollOffset().height);
+            webViewHelper.webView()->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(previousScale, webViewHelper.webView()->pageScaleFactor());
 
   // Reload the page using the cache. State should not be propagated.
@@ -4142,8 +4143,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       toKURL(m_baseURL + secondURL), WebFrameLoadType::Reload);
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
-  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 
   // Reload the page while ignoring the cache. State should not be propagated.
@@ -4151,8 +4152,8 @@ TEST_F(WebFrameTest, ReloadWithOverrideURLPreservesState) {
       toKURL(m_baseURL + thirdURL), WebFrameLoadType::ReloadBypassingCache);
   FrameTestHelpers::pumpPendingRequestsForFrameToLoad(
       webViewHelper.webView()->mainFrame());
-  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->scrollOffset().width);
-  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->scrollOffset().height);
+  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().width);
+  EXPECT_EQ(0, webViewHelper.webView()->mainFrame()->getScrollOffset().height);
   EXPECT_EQ(1.0f, webViewHelper.webView()->pageScaleFactor());
 }
 
@@ -5963,14 +5964,14 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Scroll main frame to the bottom of the document
   webViewImpl->mainFrame()->setScrollOffset(WebSize(0, 400));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 400), frame->view()->scrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 400), frame->view()->getScrollOffset());
 
   webViewImpl->setPageScaleFactor(2.0);
 
   // Scroll visual viewport to the top of the main frame.
   VisualViewport& visualViewport = frame->page()->frameHost().visualViewport();
   visualViewport.setLocation(FloatPoint(0, 0));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 0), visualViewport.scrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 0), visualViewport.getScrollOffset());
 
   // Tap at the top: there is nothing there.
   client.resetTriggered();
@@ -5979,7 +5980,7 @@ TEST_F(WebFrameTest, DisambiguationPopupVisualViewport) {
 
   // Scroll visual viewport to the bottom of the main frame.
   visualViewport.setLocation(FloatPoint(0, 200));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 200), visualViewport.scrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 200), visualViewport.getScrollOffset());
 
   // Now the tap with the same coordinates should hit two elements.
   client.resetTriggered();
@@ -7512,7 +7513,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   webView->updateAllLifecyclePhases();
 
   webView->mainFrame()->setScrollOffset(WebSize(0, 2000));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1900), frameView->scrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 1900), frameView->getScrollOffset());
 
   // Simulate the browser controls showing by 20px, thus shrinking the viewport
   // and allowing it to scroll an additional 20px.
@@ -7524,7 +7525,7 @@ TEST_F(WebFrameTest, FrameViewScrollAccountsForBrowserControls) {
   webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),
                                1.0f, 20.0f / browserControlsHeight);
   webView->mainFrame()->setScrollOffset(WebSize(0, 2000));
-  EXPECT_SIZE_EQ(ScrollOffset(0, 1940), frameView->scrollOffset());
+  EXPECT_SIZE_EQ(ScrollOffset(0, 1940), frameView->getScrollOffset());
 
   // Hide until there's 10px showing.
   webView->applyViewportDeltas(WebFloatSize(), WebFloatSize(), WebFloatSize(),

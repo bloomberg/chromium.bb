@@ -3014,7 +3014,7 @@ void CompositedLayerMapping::adjustForCompositedScrolling(
         // the offset from the top/left of the overflow rect.
         // offsetFromLayoutObject adds the origin offset from top/left to the
         // beginning of flow.
-        ScrollOffset scrollOffset = scrollableArea->scrollOffset();
+        ScrollOffset scrollOffset = scrollableArea->getScrollOffset();
         offset.expand(-scrollOffset.width(), -scrollOffset.height());
       }
     }

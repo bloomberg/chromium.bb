@@ -94,10 +94,10 @@ class MockScrollableArea : public GarbageCollectedFinalized<MockScrollableArea>,
     animator = scrollAnimator;
   }
 
-  ScrollOffset scrollOffset() const override {
+  ScrollOffset getScrollOffset() const override {
     if (animator)
       return animator->currentOffset();
-    return ScrollableArea::scrollOffset();
+    return ScrollableArea::getScrollOffset();
   }
 
   void setScrollOffset(const ScrollOffset& offset,

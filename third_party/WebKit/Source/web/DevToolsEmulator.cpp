@@ -409,7 +409,7 @@ void DevToolsEmulator::applyViewportOverride(TransformationMatrix* transform) {
   transform->scale(m_viewportOverride->scale);
 
   // Translate while taking into account current scroll offset.
-  WebSize scrollOffset = m_webViewImpl->mainFrame()->scrollOffset();
+  WebSize scrollOffset = m_webViewImpl->mainFrame()->getScrollOffset();
   WebFloatPoint visualOffset = m_webViewImpl->visualViewportOffset();
   float scrollX = scrollOffset.width + visualOffset.x;
   float scrollY = scrollOffset.height + visualOffset.y;
@@ -501,7 +501,7 @@ bool DevToolsEmulator::handleInputEvent(const WebInputEvent& inputEvent) {
     float pageScaleFactor = page->pageScaleFactor();
     if (gestureEvent.type() == PlatformEvent::GesturePinchBegin) {
       m_lastPinchAnchorCss = wrapUnique(new IntPoint(roundedIntPoint(
-          gestureEvent.position() + frameView->scrollOffset())));
+          gestureEvent.position() + frameView->getScrollOffset())));
       m_lastPinchAnchorDip = wrapUnique(new IntPoint(gestureEvent.position()));
       m_lastPinchAnchorDip->scale(pageScaleFactor, pageScaleFactor);
     }

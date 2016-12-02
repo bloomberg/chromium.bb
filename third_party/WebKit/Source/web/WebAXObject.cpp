@@ -1401,11 +1401,11 @@ bool WebAXObject::isScrollableContainer() const {
   return m_private->isScrollableContainer();
 }
 
-WebPoint WebAXObject::scrollOffset() const {
+WebPoint WebAXObject::getScrollOffset() const {
   if (isDetached())
     return WebPoint();
 
-  return m_private->scrollOffset();
+  return m_private->getScrollOffset();
 }
 
 WebPoint WebAXObject::minimumScrollOffset() const {

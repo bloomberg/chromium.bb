@@ -96,8 +96,8 @@ void WebHistoryItem::setVisualViewportScrollOffset(
   m_private->setVisualViewportScrollOffset(toScrollOffset(scrollOffset));
 }
 
-WebPoint WebHistoryItem::scrollOffset() const {
-  ScrollOffset offset = m_private->scrollOffset();
+WebPoint WebHistoryItem::getScrollOffset() const {
+  ScrollOffset offset = m_private->getScrollOffset();
   return WebPoint(offset.width(), offset.height());
 }
 

@@ -271,10 +271,10 @@ void LayoutBox::styleDidChange(StyleDifference diff,
       oldStyle->effectiveZoom() != newStyle.effectiveZoom()) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
     ASSERT(scrollableArea);
-    // We use scrollOffset() rather than scrollPosition(), because scrollOffset
-    // is the distance from the beginning of flow for the box, which is the
-    // dimension we want to preserve.
-    ScrollOffset oldOffset = scrollableArea->scrollOffset();
+    // We use getScrollOffset() rather than scrollPosition(), because scroll
+    // offset is the distance from the beginning of flow for the box, which is
+    // the dimension we want to preserve.
+    ScrollOffset oldOffset = scrollableArea->getScrollOffset();
     if (oldOffset.width() || oldOffset.height()) {
       ScrollOffset newOffset = oldOffset.scaledBy(newStyle.effectiveZoom() /
                                                   oldStyle->effectiveZoom());
@@ -1055,13 +1055,13 @@ void LayoutBox::scrollByRecursively(const ScrollOffset& delta) {
     PaintLayerScrollableArea* scrollableArea = this->getScrollableArea();
     ASSERT(scrollableArea);
 
-    ScrollOffset newScrollOffset = scrollableArea->scrollOffset() + delta;
+    ScrollOffset newScrollOffset = scrollableArea->getScrollOffset() + delta;
     scrollableArea->setScrollOffset(newScrollOffset, ProgrammaticScroll);
 
     // If this layer can't do the scroll we ask the next layer up that can
     // scroll to try.
     ScrollOffset remainingScrollOffset =
-        newScrollOffset - scrollableArea->scrollOffset();
+        newScrollOffset - scrollableArea->getScrollOffset();
     if (!remainingScrollOffset.isZero() && parent()) {
       if (LayoutBox* scrollableBox = enclosingScrollableBox())
         scrollableBox->scrollByRecursively(remainingScrollOffset);

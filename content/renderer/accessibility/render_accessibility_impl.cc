@@ -187,7 +187,7 @@ void RenderAccessibilityImpl::HandleAXEvent(
     return;
 
   if (document.frame()) {
-    gfx::Size scroll_offset = document.frame()->scrollOffset();
+    gfx::Size scroll_offset = document.frame()->getScrollOffset();
     if (scroll_offset != last_scroll_offset_) {
       // Make sure the browser is always aware of the scroll position of
       // the root document element by posting a generic notification that

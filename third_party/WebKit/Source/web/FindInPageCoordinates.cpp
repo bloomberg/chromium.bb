@@ -97,7 +97,8 @@ static FloatRect toNormalizedRect(const FloatRect& absoluteRect,
   // scrolled, like an absolute position.
   if (layoutObject->style()->position() == FixedPosition &&
       container->isLayoutView()) {
-    normalizedRect.move(-toLayoutView(container)->frameView()->scrollOffset());
+    normalizedRect.move(
+        -toLayoutView(container)->frameView()->getScrollOffset());
   }
 
   normalizedRect.scale(1 / containerRect.width(), 1 / containerRect.height());

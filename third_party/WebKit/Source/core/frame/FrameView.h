@@ -535,14 +535,14 @@ class CORE_EXPORT FrameView final
 
   // Functions for querying the current scrolled offset (both as a point, a
   // size, or as individual X and Y values).  Be careful in using the Float
-  // version scrollOffset() and scrollOffset(). They are meant to be used to
-  // communicate the fractional scroll offset with chromium compositor which can
-  // do sub-pixel positioning.  Do not call these if the scroll offset is used
-  // in Blink for positioning. Use the Int version instead.
+  // version getScrollOffset() and getScrollOffset(). They are meant to be used
+  // to communicate the fractional scroll offset with chromium compositor which
+  // can do sub-pixel positioning.  Do not call these if the scroll offset is
+  // used in Blink for positioning. Use the Int version instead.
   IntSize scrollOffsetInt() const override {
     return toIntSize(visibleContentRect().location());
   }
-  ScrollOffset scrollOffset() const override { return m_scrollOffset; }
+  ScrollOffset getScrollOffset() const override { return m_scrollOffset; }
   ScrollOffset pendingScrollDelta() const { return m_pendingScrollDelta; }
   IntSize minimumScrollOffsetInt()
       const override;  // The minimum offset we can be scrolled to.

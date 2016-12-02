@@ -861,7 +861,7 @@ Response InspectorPageAgent::getLayoutMetrics(
                            .build();
 
   FrameView* frameView = mainFrame->view();
-  ScrollOffset pageOffset = frameView->getScrollableArea()->scrollOffset();
+  ScrollOffset pageOffset = frameView->getScrollableArea()->getScrollOffset();
   float pageZoom = mainFrame->pageZoomFactor();
   FloatRect visibleRect = visualViewport.visibleRect();
   float scale = visualViewport.scale();

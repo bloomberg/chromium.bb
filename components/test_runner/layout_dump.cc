@@ -38,7 +38,7 @@ std::string DumpFrameHeaderIfNeeded(WebFrame* frame) {
 
 std::string DumpFrameScrollPosition(WebFrame* frame) {
   std::string result;
-  WebSize offset = frame->scrollOffset();
+  WebSize offset = frame->getScrollOffset();
   if (offset.width > 0 || offset.height > 0) {
     if (frame->parent()) {
       result =

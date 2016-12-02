@@ -938,7 +938,7 @@ class MODULES_EXPORT AXObject : public GarbageCollectedFinalized<AXObject> {
 
   // Scrollable containers.
   bool isScrollableContainer() const;
-  IntPoint scrollOffset() const;
+  IntPoint getScrollOffset() const;
   IntPoint minimumScrollOffset() const;
   IntPoint maximumScrollOffset() const;
   void setScrollOffset(const IntPoint&) const;

@@ -93,7 +93,7 @@ void HistoryItem::setVisualViewportScrollOffset(const ScrollOffset& offset) {
   m_visualViewportScrollOffset = offset;
 }
 
-const ScrollOffset& HistoryItem::scrollOffset() const {
+const ScrollOffset& HistoryItem::getScrollOffset() const {
   return m_scrollOffset;
 }
 

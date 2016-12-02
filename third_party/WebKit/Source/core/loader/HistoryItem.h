@@ -62,7 +62,7 @@ class CORE_EXPORT HistoryItem final
 
   const ScrollOffset& visualViewportScrollOffset() const;
   void setVisualViewportScrollOffset(const ScrollOffset&);
-  const ScrollOffset& scrollOffset() const;
+  const ScrollOffset& getScrollOffset() const;
   void setScrollOffset(const ScrollOffset&);
 
   float pageScaleFactor() const;

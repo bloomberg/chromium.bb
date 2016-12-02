@@ -111,7 +111,7 @@ void updateTouchPointerEventInit(const PlatformTouchPoint& touchPoint,
     FloatPoint pagePoint =
         targetFrame->view()->rootFrameToContents(touchPoint.pos());
     float scaleFactor = 1.0f / targetFrame->pageZoomFactor();
-    FloatPoint scrollPosition(targetFrame->view()->scrollOffset());
+    FloatPoint scrollPosition(targetFrame->view()->getScrollOffset());
     FloatPoint clientPoint = pagePoint.scaledBy(scaleFactor);
     clientPoint.moveBy(scrollPosition.scaledBy(-scaleFactor));
 

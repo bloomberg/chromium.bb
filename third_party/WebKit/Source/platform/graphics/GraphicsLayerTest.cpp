@@ -186,7 +186,7 @@ class FakeScrollableArea : public GarbageCollectedFinalized<FakeScrollableArea>,
   void updateScrollOffset(const ScrollOffset& offset, ScrollType) override {
     m_scrollOffset = offset;
   }
-  ScrollOffset scrollOffset() const override { return m_scrollOffset; }
+  ScrollOffset getScrollOffset() const override { return m_scrollOffset; }
   IntSize scrollOffsetInt() const override {
     return flooredIntSize(m_scrollOffset);
   }
@@ -205,8 +205,8 @@ TEST_F(GraphicsLayerTest, applyScrollToScrollableArea) {
   m_platformLayer->setScrollPositionDouble(scrollPosition);
   m_graphicsLayer->didScroll();
 
-  EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea->scrollOffset().width());
-  EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea->scrollOffset().height());
+  EXPECT_FLOAT_EQ(scrollPosition.x, scrollableArea->getScrollOffset().width());
+  EXPECT_FLOAT_EQ(scrollPosition.y, scrollableArea->getScrollOffset().height());
 }
 
 }  // namespace blink

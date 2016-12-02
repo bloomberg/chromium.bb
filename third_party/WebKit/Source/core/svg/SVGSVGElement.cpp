@@ -500,7 +500,7 @@ AffineTransform SVGSVGElement::localCoordinateSpaceTransform(
 
       // Respect scroll offset.
       if (FrameView* view = document().view()) {
-        LayoutSize scrollOffset(view->scrollOffset());
+        LayoutSize scrollOffset(view->getScrollOffset());
         scrollOffset.scale(zoomFactor);
         transform.translate(-scrollOffset.width(), -scrollOffset.height());
       }

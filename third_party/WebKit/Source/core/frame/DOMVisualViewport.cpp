@@ -87,7 +87,7 @@ float DOMVisualViewport::pageX() {
     return 0;
 
   frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-  float viewportX = view->getScrollableArea()->scrollOffset().width();
+  float viewportX = view->getScrollableArea()->getScrollOffset().width();
   return adjustScrollForAbsoluteZoom(viewportX, frame->pageZoomFactor());
 }
 
@@ -101,7 +101,7 @@ float DOMVisualViewport::pageY() {
     return 0;
 
   frame->document()->updateStyleAndLayoutIgnorePendingStylesheets();
-  float viewportY = view->getScrollableArea()->scrollOffset().height();
+  float viewportY = view->getScrollableArea()->getScrollOffset().height();
   return adjustScrollForAbsoluteZoom(viewportY, frame->pageZoomFactor());
 }
 

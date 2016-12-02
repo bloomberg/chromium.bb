@@ -137,7 +137,7 @@ void FullscreenController::enterFullscreenForElement(Element* element) {
     m_exitFullscreenPageScaleFactor = m_webViewImpl->pageScaleFactor();
     m_exitFullscreenScrollOffset =
         m_webViewImpl->mainFrame()->isWebLocalFrame()
-            ? m_webViewImpl->mainFrame()->scrollOffset()
+            ? m_webViewImpl->mainFrame()->getScrollOffset()
             : WebSize();
     m_exitFullscreenVisualViewportOffset =
         m_webViewImpl->visualViewportOffset();

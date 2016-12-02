@@ -367,11 +367,11 @@ int PaintLayerScrollableArea::scrollSize(
 
 void PaintLayerScrollableArea::updateScrollOffset(const ScrollOffset& newOffset,
                                                   ScrollType scrollType) {
-  if (scrollOffset() == newOffset)
+  if (getScrollOffset() == newOffset)
     return;
 
   showOverlayScrollbars();
-  ScrollOffset scrollDelta = scrollOffset() - newOffset;
+  ScrollOffset scrollDelta = getScrollOffset() - newOffset;
   m_scrollOffset = newOffset;
 
   LocalFrame* frame = box().frame();
@@ -470,7 +470,7 @@ IntSize PaintLayerScrollableArea::scrollOffsetInt() const {
   return flooredIntSize(m_scrollOffset);
 }
 
-ScrollOffset PaintLayerScrollableArea::scrollOffset() const {
+ScrollOffset PaintLayerScrollableArea::getScrollOffset() const {
   return m_scrollOffset;
 }
 
@@ -807,9 +807,9 @@ void PaintLayerScrollableArea::clampScrollOffsetAfterOverflowChange() {
   }
 
   if (scrollOriginChanged())
-    setScrollOffsetUnconditionally(clampScrollOffset(scrollOffset()));
+    setScrollOffsetUnconditionally(clampScrollOffset(getScrollOffset()));
   else
-    ScrollableArea::setScrollOffset(scrollOffset(), ClampingScroll);
+    ScrollableArea::setScrollOffset(getScrollOffset(), ClampingScroll);
 
   setNeedsScrollOffsetClamp(false);
   resetScrollOriginChanged();
@@ -1625,7 +1625,7 @@ LayoutRect PaintLayerScrollableArea::scrollIntoView(
   LayoutRect r = ScrollAlignment::getRectToExpose(layerBounds, localExposeRect,
                                                   alignX, alignY);
 
-  ScrollOffset oldScrollOffset = scrollOffset();
+  ScrollOffset oldScrollOffset = getScrollOffset();
   ScrollOffset newScrollOffset(clampScrollOffset(roundedIntSize(
       toScrollOffset(FloatPoint(r.location()) + oldScrollOffset))));
 
@@ -1639,7 +1639,7 @@ LayoutRect PaintLayerScrollableArea::scrollIntoView(
   }
 
   setScrollOffset(newScrollOffset, scrollType, ScrollBehaviorInstant);
-  ScrollOffset scrollOffsetDifference = scrollOffset() - oldScrollOffset;
+  ScrollOffset scrollOffsetDifference = getScrollOffset() - oldScrollOffset;
   localExposeRect.move(-LayoutSize(scrollOffsetDifference));
   return LayoutRect(
       box()
