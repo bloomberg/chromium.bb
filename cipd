@@ -1,0 +1,73 @@
+#!/bin/bash -e
+
+# Copyright (c) 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+MYPATH=$(dirname "${BASH_SOURCE[0]}")
+
+: ${CIPD_CLIENT_VER:=`cat $MYPATH/cipd_client_version`}
+: ${CIPD_CLIENT_SRV:='https://chrome-infra-packages.appspot.com'}
+
+UNAME=`uname -s | tr '[:upper:]' '[:lower:]'`
+case $UNAME in
+  linux)
+    PLAT=linux
+    ;;
+  cygwin*|msys*|mingw*)
+    PLAT=windows
+    ;;
+  darwin)
+    PLAT=mac
+    ;;
+  *)
+    echo "UNKNOWN OS: $UNAME"
+    exit 1
+esac
+
+UNAME=`uname -m | tr '[:upper:]' '[:lower:]'`
+case $UNAME in
+  x86_64|amd64)
+    ARCH=amd64
+    ;;
+  arm*)
+    ARCH=$UNAME
+    ;;
+  *86)
+    ARCH=386
+    ;;
+  *)
+    echo "UNKNOWN Machine architecture: $UNAME"
+    exit 1
+esac
+
+URL="$CIPD_CLIENT_SRV/client?platform=${PLAT}-${ARCH}&version=$CIPD_CLIENT_VER"
+CLIENT="$MYPATH/.cipd_client"
+
+USER_AGENT="depot_tools/$(git -C $MYPATH rev-parse HEAD 2>/dev/null || echo "???")"
+
+if [ ! -e "$CLIENT" ]; then
+  echo "Bootstrapping cipd client for ${PLAT}-${ARCH}..."
+  echo "From $URL"
+  if hash curl 2> /dev/null ; then
+    curl "$URL" -A "$USER_AGENT"  -L -o "$CLIENT"
+    chmod +x "$CLIENT"
+  else
+    echo Your platform is missing the \`curl\` command. Please use your package
+    echo manager to install it before continuing.
+    echo
+    echo Alternately, manually download:
+    echo   "$URL"
+    echo To $CLIENT, and then re-run this command.
+    exit 1
+  fi
+fi
+
+export CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT
+if ! "$CLIENT" selfupdate -version "$CIPD_CLIENT_VER" ; then
+  echo -n "[31;1mselfupdate failed:[0;1m " 1>&2
+  echo "run \`CIPD_HTTP_USER_AGENT_PREFIX=$USER_AGENT/manual $CLIENT selfupdate -version '$CIPD_CLIENT_VER'\` to diagnose" 1>&2
+  echo "[0m" 1>&2
+fi
+
+exec "$CLIENT" "${@}"

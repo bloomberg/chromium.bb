@@ -1,6 +1,10 @@
 # Ignore any python bytecode.
 *.pyc
 
+# ignore cipd client files
+/.cipd_client*
+/.versions
+
 # Ignore the batch files produced by the Windows bootstrapping.
 /git-bash
 /git.bat
