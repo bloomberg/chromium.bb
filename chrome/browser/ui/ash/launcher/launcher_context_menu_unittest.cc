@@ -14,6 +14,7 @@
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_test.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/arc_launcher_context_menu.h"
 #include "chrome/browser/ui/ash/launcher/browser_shortcut_launcher_item_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
@@ -229,6 +230,29 @@ TEST_F(LauncherContextMenuTest, ArcLauncherContextMenuItemCheck) {
   arc_test().app_instance()->SendTaskCreated(2, arc_test().fake_apps()[1],
                                              std::string());
   item.id = controller()->GetShelfIDForAppID(app_id2);
+  ASSERT_TRUE(item.id);
+  menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
+
+  EXPECT_FALSE(
+      IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_OPEN_NEW));
+  EXPECT_FALSE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_PIN));
+  EXPECT_TRUE(IsItemPresentInMenu(menu.get(), LauncherContextMenu::MENU_CLOSE));
+  EXPECT_TRUE(menu->IsCommandIdEnabled(LauncherContextMenu::MENU_CLOSE));
+
+  // Shelf group context menu.
+  std::vector<arc::mojom::ShortcutInfo> shortcuts = arc_test().fake_shortcuts();
+  shortcuts[0].intent_uri +=
+      ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
+  arc_test().app_instance()->SendInstallShortcuts(shortcuts);
+  const std::string app_id3 =
+      arc::ArcAppShelfId("arc_test_shelf_group",
+                         ArcAppTest::GetAppId(arc_test().fake_apps()[2]))
+          .ToString();
+  std::string window_app_id3("org.chromium.arc.3");
+  CreateArcWindow(window_app_id3);
+  arc_test().app_instance()->SendTaskCreated(3, arc_test().fake_apps()[2],
+                                             shortcuts[0].intent_uri);
+  item.id = controller()->GetShelfIDForAppID(app_id3);
   ASSERT_TRUE(item.id);
   menu.reset(new ArcLauncherContextMenu(controller(), &item, wm_shelf));
 

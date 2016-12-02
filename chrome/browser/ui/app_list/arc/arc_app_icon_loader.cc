@@ -6,6 +6,7 @@
 
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "ui/app_list/app_list_constants.h"
 
 ArcAppIconLoader::ArcAppIconLoader(Profile* profile,
@@ -24,7 +25,7 @@ ArcAppIconLoader::~ArcAppIconLoader() {
 bool ArcAppIconLoader::CanLoadImageForApp(const std::string& app_id) {
   if (icon_map_.find(app_id) != icon_map_.end())
     return true;
-  return arc_prefs_->IsRegistered(app_id);
+  return arc::IsArcItem(profile(), app_id);
 }
 
 void ArcAppIconLoader::FetchImage(const std::string& app_id) {

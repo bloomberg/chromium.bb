@@ -30,6 +30,10 @@ void ArcAppWindowLauncherItemController::RemoveTaskId(int task_id) {
   task_ids_.erase(task_id);
 }
 
+bool ArcAppWindowLauncherItemController::HasAnyTasks() const {
+  return !task_ids_.empty();
+}
+
 ash::ShelfItemDelegate::PerformedAction
 ArcAppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (window_count()) {

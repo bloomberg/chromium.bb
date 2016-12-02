@@ -34,6 +34,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_default_app_list.h"
 #include "chrome/browser/ui/app_list/arc/arc_package_syncable_service_factory.h"
 #include "chrome/browser/ui/app_list/test/test_app_list_controller_delegate.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/test/base/testing_profile.h"
 #include "components/arc/test/fake_app_instance.h"
 #include "components/arc/test/fake_arc_bridge_service.h"
@@ -1007,6 +1008,63 @@ TEST_F(ArcPlayStoreAppTest, PlayStore) {
 
   arc::LaunchApp(profile(), arc::kPlayStoreAppId, ui::EF_NONE);
   EXPECT_TRUE(arc_test()->arc_session_manager()->IsArcEnabled());
+}
+
+// Test that icon is correctly extracted for shelf group.
+TEST_F(ArcAppModelBuilderTest, IconLoaderForShelfGroup) {
+  const arc::mojom::AppInfo& app = fake_apps()[0];
+  const std::string app_id = ArcAppTest::GetAppId(app);
+
+  ArcAppListPrefs* prefs = ArcAppListPrefs::Get(profile_.get());
+  ASSERT_NE(nullptr, prefs);
+
+  app_instance()->RefreshAppList();
+  app_instance()->SendRefreshAppList(std::vector<arc::mojom::AppInfo>(
+      fake_apps().begin(), fake_apps().begin() + 1));
+
+  std::vector<arc::mojom::ShortcutInfo> shortcuts =
+      arc_test()->fake_shortcuts();
+  shortcuts[0].intent_uri +=
+      ";S.org.chromium.arc.shelf_group_id=arc_test_shelf_group;end";
+  app_instance()->SendInstallShortcuts(shortcuts);
+  const std::string shortcut_id = ArcAppTest::GetAppId(shortcuts[0]);
+
+  const std::string id_shortcut_exist =
+      arc::ArcAppShelfId("arc_test_shelf_group", app_id).ToString();
+  const std::string id_shortcut_absent =
+      arc::ArcAppShelfId("arc_test_shelf_group_absent", app_id).ToString();
+
+  FakeAppIconLoaderDelegate delegate;
+  ArcAppIconLoader icon_loader(profile(),
+                               app_list::kListIconSize,
+                               &delegate);
+  EXPECT_EQ(0UL, delegate.update_image_cnt());
+
+  // Shortcut exists, icon is requested from shortcut.
+  icon_loader.FetchImage(id_shortcut_exist);
+  EXPECT_EQ(1UL, delegate.update_image_cnt());
+  EXPECT_EQ(id_shortcut_exist, delegate.app_id());
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+  const size_t shortcut_request_cnt =
+      app_instance()->shortcut_icon_requests().size();
+  EXPECT_NE(0U, shortcut_request_cnt);
+  EXPECT_TRUE(app_instance()->icon_requests().empty());
+  for (const auto& request : app_instance()->shortcut_icon_requests()) {
+    EXPECT_EQ(shortcuts[0].icon_resource_id, request->icon_resource_id());
+  }
+
+  // Fallback when shortcut is not found for shelf group id, use app id instead.
+  icon_loader.FetchImage(id_shortcut_absent);
+  EXPECT_EQ(2UL, delegate.update_image_cnt());
+  content::BrowserThread::GetBlockingPool()->FlushForTesting();
+  base::RunLoop().RunUntilIdle();
+  EXPECT_FALSE(app_instance()->icon_requests().empty());
+  EXPECT_EQ(shortcut_request_cnt,
+      app_instance()->shortcut_icon_requests().size());
+  for (const auto& request : app_instance()->icon_requests()) {
+    EXPECT_TRUE(request->IsForApp(app));
+  }
 }
 
 // TODO(crbug.com/628425) -- reenable once this test is less flaky.

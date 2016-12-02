@@ -30,6 +30,7 @@ class ArcAppWindowLauncherItemController
 
   void AddTaskId(int task_id);
   void RemoveTaskId(int task_id);
+  bool HasAnyTasks() const;
 
  private:
   std::unordered_set<int> task_ids_;

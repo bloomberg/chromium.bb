@@ -147,14 +147,14 @@ void ArcAppTest::CreateFakeAppsAndPackages() {
   fake_packages_.push_back(package3);
 
   for (int i = 0; i < 3; ++i) {
-    arc::mojom::ShortcutInfo shortcutInfo;
-    shortcutInfo.name = base::StringPrintf("Fake Shortcut %d", i);
-    shortcutInfo.package_name = base::StringPrintf("fake.shortcut.%d", i);
-    shortcutInfo.intent_uri =
-        base::StringPrintf("fake.shortcut.%d.intent_uri", i);
-    shortcutInfo.icon_resource_id =
+    arc::mojom::ShortcutInfo shortcut_info;
+    shortcut_info.name = base::StringPrintf("Fake Shortcut %d", i);
+    shortcut_info.package_name = base::StringPrintf("fake.shortcut.%d", i);
+    shortcut_info.intent_uri =
+        base::StringPrintf("#Intent;fake.shortcut.%d.intent_uri", i);
+    shortcut_info.icon_resource_id =
         base::StringPrintf("fake.shortcut.%d.icon_resource_id", i);
-    fake_shortcuts_.push_back(shortcutInfo);
+    fake_shortcuts_.push_back(shortcut_info);
   }
 }
 

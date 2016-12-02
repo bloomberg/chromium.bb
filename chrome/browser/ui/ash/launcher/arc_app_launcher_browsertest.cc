@@ -7,6 +7,7 @@
 #include "ash/wm/window_util.h"
 #include "base/macros.h"
 #include "base/run_loop.h"
+#include "base/strings/stringprintf.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/ui/app_list/app_list_service.h"
 #include "chrome/browser/ui/app_list/app_list_syncable_service.h"
@@ -14,6 +15,7 @@
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
 #include "chrome/browser/ui/ash/launcher/arc_app_deferred_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_window_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller.h"
 #include "chrome/browser/ui/ash/launcher/launcher_item_controller.h"
 #include "chromeos/chromeos_switches.h"
@@ -39,15 +41,28 @@ struct TypeConverter<arc::mojom::ArcPackageInfoPtr,
   }
 };
 
+template <>
+struct TypeConverter<arc::mojom::ShortcutInfoPtr, arc::mojom::ShortcutInfo> {
+  static arc::mojom::ShortcutInfoPtr Convert(
+      const arc::mojom::ShortcutInfo& shortcut_info) {
+    return shortcut_info.Clone();
+  }
+};
+
 }  // namespace mojo
 
 namespace {
 
-const char kTestAppName[] = "Test Arc App";
-const char kTestAppName2[] = "Test Arc App 2";
-const char kTestAppPackage[] = "test.arc.app.package";
-const char kTestAppActivity[] = "test.arc.app.package.activity";
-const char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
+constexpr char kTestAppName[] = "Test Arc App";
+constexpr char kTestAppName2[] = "Test Arc App 2";
+constexpr char kTestShortcutName[] = "Test Shortcut";
+constexpr char kTestShortcutName2[] = "Test Shortcut 2";
+constexpr char kTestAppPackage[] = "test.arc.app.package";
+constexpr char kTestAppActivity[] = "test.arc.app.package.activity";
+constexpr char kTestAppActivity2[] = "test.arc.gitapp.package.activity2";
+constexpr char kTestShelfGroup[] = "shelf_group";
+constexpr char kTestShelfGroup2[] = "shelf_group_2";
+constexpr char kTestShelfGroup3[] = "shelf_group_3";
 constexpr int kAppAnimatedThresholdMs = 100;
 
 std::string GetTestApp1Id() {
@@ -122,6 +137,11 @@ TestParameter build_test_parameter[] = {
     TestParameter(TEST_ACTION_START, true),
 };
 
+std::string CreateIntentUriWithShelfGroup(const std::string& shelf_group_id) {
+  return base::StringPrintf("#Intent;S.org.chromium.arc.shelf_group_id=%s;end",
+                            shelf_group_id.c_str());
+}
+
 }  // namespace
 
 class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
@@ -160,6 +180,27 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     }
   }
 
+  std::string InstallShortcut(const std::string& name,
+                              const std::string& shelf_group) {
+    arc::mojom::ShortcutInfo shortcut;
+    shortcut.name = name;
+    shortcut.package_name = kTestAppPackage;
+    shortcut.intent_uri = CreateIntentUriWithShelfGroup(shelf_group);
+    const std::string shortcut_id =
+        ArcAppListPrefs::GetAppId(shortcut.package_name, shortcut.intent_uri);
+    app_host()->OnInstallShortcut(arc::mojom::ShortcutInfo::From(shortcut));
+    base::RunLoop().RunUntilIdle();
+
+    std::unique_ptr<ArcAppListPrefs::AppInfo> shortcut_info =
+        app_prefs()->GetApp(shortcut_id);
+
+    CHECK(shortcut_info);
+    EXPECT_TRUE(shortcut_info->shortcut);
+    EXPECT_EQ(kTestAppPackage, shortcut_info->package_name);
+    EXPECT_EQ(shortcut.intent_uri, shortcut_info->intent_uri);
+    return shortcut_id;
+  }
+
   void SendPackageAdded(bool package_synced) {
     arc::mojom::ArcPackageInfo package_info;
     package_info.package_name = kTestAppPackage;
@@ -189,6 +230,18 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
   void StopInstance() {
     arc_session_manager()->Shutdown();
     app_instance_observer()->OnInstanceClosed();
+  }
+
+  LauncherItemController* GetAppItemController(const std::string& id) {
+    const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(id);
+    if (!shelf_id)
+      return nullptr;
+    LauncherItemController* controller =
+        chrome_controller()->GetLauncherItemController(shelf_id);
+    if (!controller)
+      return nullptr;
+    DCHECK_EQ(LauncherItemController::TYPE_APP, controller->type());
+    return controller;
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }
@@ -285,9 +338,7 @@ IN_PROC_BROWSER_TEST_P(ArcAppDeferredLauncherBrowserTest, StartAppDeferred) {
     case TEST_ACTION_CLOSE:
       // Close item during animation.
       {
-        LauncherItemController* controller =
-            chrome_controller()->GetLauncherItemController(
-                shelf_delegate()->GetShelfIDForAppID(app_id));
+        LauncherItemController* controller = GetAppItemController(app_id);
         ASSERT_TRUE(controller);
         controller->Close();
         EXPECT_TRUE(chrome_controller()
@@ -385,4 +436,75 @@ IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, IsAppOpen) {
   app_host()->OnTaskCreated(0, info->package_name, info->activity, info->name,
                             info->intent_uri);
   EXPECT_TRUE(delegate->IsAppOpen(app_id));
+}
+
+// Test Shelf Groups
+IN_PROC_BROWSER_TEST_F(ArcAppLauncherBrowserTest, ShelfGroup) {
+  StartInstance();
+  InstallTestApps(false);
+  SendPackageAdded(true);
+  const std::string shorcut_id1 =
+      InstallShortcut(kTestShortcutName, kTestShelfGroup);
+  const std::string shorcut_id2 =
+      InstallShortcut(kTestShortcutName2, kTestShelfGroup2);
+
+  const std::string app_id = GetTestApp1Id();
+  std::unique_ptr<ArcAppListPrefs::AppInfo> info = app_prefs()->GetApp(app_id);
+  ASSERT_TRUE(info);
+
+  const std::string shelf_id1 =
+      arc::ArcAppShelfId(kTestShelfGroup, app_id).ToString();
+  const std::string shelf_id2 =
+      arc::ArcAppShelfId(kTestShelfGroup2, app_id).ToString();
+  const std::string shelf_id3 =
+      arc::ArcAppShelfId(kTestShelfGroup3, app_id).ToString();
+
+  // 1 task for group 1
+  app_host()->OnTaskCreated(1, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroup(kTestShelfGroup));
+
+  LauncherItemController* controller1 = GetAppItemController(shelf_id1);
+  ASSERT_TRUE(controller1);
+
+  // 2 tasks for group 2
+  app_host()->OnTaskCreated(2, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroup(kTestShelfGroup2));
+
+  LauncherItemController* controller2 = GetAppItemController(shelf_id2);
+  ASSERT_TRUE(controller2);
+  ASSERT_NE(controller1, controller2);
+
+  app_host()->OnTaskCreated(3, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroup(kTestShelfGroup2));
+
+  ASSERT_EQ(controller2, GetAppItemController(shelf_id2));
+
+  // 2 tasks for group 3 which does not have shortcut.
+  app_host()->OnTaskCreated(4, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroup(kTestShelfGroup3));
+
+  LauncherItemController* controller3 = GetAppItemController(shelf_id3);
+  ASSERT_TRUE(controller3);
+  ASSERT_NE(controller1, controller3);
+  ASSERT_NE(controller2, controller3);
+
+  app_host()->OnTaskCreated(5, info->package_name, info->activity, info->name,
+                            CreateIntentUriWithShelfGroup(kTestShelfGroup3));
+
+  ASSERT_EQ(controller3, GetAppItemController(shelf_id3));
+
+  // Destroy task #0, this kills shelf group 1
+  app_host()->OnTaskDestroyed(1);
+  EXPECT_FALSE(GetAppItemController(shelf_id1));
+
+  // Destroy task #1, shelf group 2 is still alive
+  app_host()->OnTaskDestroyed(2);
+  EXPECT_EQ(controller2, GetAppItemController(shelf_id2));
+  // Destroy task #2, this kills shelf group 2
+  app_host()->OnTaskDestroyed(3);
+  EXPECT_FALSE(GetAppItemController(shelf_id2));
+
+  // Disable Arc, this removes app and as result kills shelf group 3.
+  arc::ArcSessionManager::Get()->DisableArc();
+  EXPECT_FALSE(GetAppItemController(shelf_id3));
 }

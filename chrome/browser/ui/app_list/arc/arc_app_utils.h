@@ -78,13 +78,16 @@ void UninstallArcApp(const std::string& app_id, Profile* profile);
 // Removes cached app shortcut icon in ARC.
 void RemoveCachedIcon(const std::string& icon_resource_id);
 
-// Show package info for ARC package.
+// Shows package info for ARC package.
 // Deprecated. Use ShowPackageInfoOnPage.
 bool ShowPackageInfo(const std::string& package_name);
 
-// Show package info for ARC package at the specified page.
+// Shows package info for ARC package at the specified page.
 bool ShowPackageInfoOnPage(const std::string& package_name,
                            mojom::ShowPackageInfoPage page);
+
+// Returns true if |id| represents either ARC app or ARC shelf group.
+bool IsArcItem(content::BrowserContext* context, const std::string& id);
 
 }  // namespace arc
 

@@ -7,6 +7,8 @@
 #include "ash/common/shelf/shelf_item_types.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
+#include "chrome/browser/ui/app_list/arc/arc_app_utils.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "chrome/browser/ui/ash/launcher/chrome_launcher_controller_impl.h"
 #include "chrome/grit/generated_resources.h"
 
@@ -25,10 +27,11 @@ void ArcLauncherContextMenu::Init() {
       ArcAppListPrefs::Get(controller()->profile());
   DCHECK(arc_list_prefs);
 
-  const std::string app_id = controller()->GetAppIDForShelfID(item().id);
+  const arc::ArcAppShelfId& app_id = arc::ArcAppShelfId::FromString(
+      controller()->GetAppIDForShelfID(item().id));
   std::unique_ptr<ArcAppListPrefs::AppInfo> app_info =
-      arc_list_prefs->GetApp(app_id);
-  if (!app_info) {
+      arc_list_prefs->GetApp(app_id.app_id());
+  if (!app_info && !app_id.has_shelf_group_id()) {
     NOTREACHED();
     return;
   }
@@ -40,7 +43,7 @@ void ArcLauncherContextMenu::Init() {
     AddSeparator(ui::NORMAL_SEPARATOR);
   }
 
-  if (app_info->launchable)
+  if (!app_id.has_shelf_group_id() && app_info->launchable)
     AddPinMenu();
 
   if (app_is_open)

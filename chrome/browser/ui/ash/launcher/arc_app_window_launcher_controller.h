@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "chrome/browser/ui/app_list/arc/arc_app_list_prefs.h"
 #include "chrome/browser/ui/ash/launcher/app_window_launcher_controller.h"
+#include "chrome/browser/ui/ash/launcher/arc_app_shelf_id.h"
 #include "mojo/public/cpp/bindings/binding.h"
 #include "ui/aura/env_observer.h"
 #include "ui/aura/window_observer.h"
@@ -88,14 +89,17 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   class AppWindowInfo;
 
   using TaskIdToAppWindowInfo = std::map<int, std::unique_ptr<AppWindowInfo>>;
-  using ShelfAppIdToAppControllerMap =
-      std::map<std::string, ArcAppWindowLauncherItemController*>;
+
+  // Maps shelf group id to controller. Shelf group id is optional parameter for
+  // the Android task. If it is not set, app id is used instead.
+  using ShelfGroupToAppControllerMap =
+      std::map<arc::ArcAppShelfId, ArcAppWindowLauncherItemController*>;
 
   void StartObserving(Profile* profile);
   void StopObserving(Profile* profile);
 
   void RegisterApp(AppWindowInfo* app_window_info);
-  void UnregisterApp(AppWindowInfo* app_window_info, bool close_controller);
+  void UnregisterApp(AppWindowInfo* app_window_info);
 
   AppWindowInfo* GetAppWindowInfoForTask(int task_id);
   AppWindow* GetAppWindowForTask(int task_id);
@@ -103,10 +107,12 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   void AttachControllerToWindowIfNeeded(aura::Window* window);
   void AttachControllerToWindowsIfNeeded();
   ArcAppWindowLauncherItemController* AttachControllerToTask(
-      const std::string& shelf_app_id,
-      int taskId);
+      int taskId,
+      const AppWindowInfo& app_window_info);
 
   void SetOrientationLockForAppWindow(AppWindow* app_window);
+
+  std::vector<int> GetTaskIdsForApp(const std::string& arc_app_id) const;
 
   // AppWindowLauncherController:
   AppWindowLauncherItemController* ControllerForWindow(
@@ -116,7 +122,7 @@ class ArcAppWindowLauncherController : public AppWindowLauncherController,
   ash::ShelfDelegate* shelf_delegate_;
   int active_task_id_ = -1;
   TaskIdToAppWindowInfo task_id_to_app_window_info_;
-  ShelfAppIdToAppControllerMap app_controller_map_;
+  ShelfGroupToAppControllerMap app_shelf_group_to_controller_map_;
   std::vector<aura::Window*> observed_windows_;
   Profile* observed_profile_ = nullptr;
   bool observing_shell_ = false;
