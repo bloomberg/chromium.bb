@@ -126,6 +126,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   String m_displayName;
   bool m_isConnected;
   bool m_isPresenting;
+  bool m_isValidDeviceForPresenting;
   bool m_canUpdateFramePose;
   Member<VRDisplayCapabilities> m_capabilities;
   Member<VRStageParameters> m_stageParameters;

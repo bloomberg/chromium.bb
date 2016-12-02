@@ -574,6 +574,10 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
   if (html_interface_->GetMode() == UiInterface::Mode::WEB_VR) {
     // If needed, resize the primary buffer for use with WebVR.
     if (render_size_primary_ != render_size_primary_webvr_) {
+      if (!render_size_primary_webvr_.width) {
+        VLOG(2) << "WebVR rendering size not known yet, dropping frame";
+        return;
+      }
       render_size_primary_ = render_size_primary_webvr_;
       swap_chain_->ResizeBuffer(kFramePrimaryBuffer, render_size_primary_);
     }

@@ -175,7 +175,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   gvr::Sizei render_size_headlocked_;
 
   // Intended size for the primary render buffer by UI mode.
-  gvr::Sizei render_size_primary_webvr_ = device::kFallbackRenderTargetSize;
+  // For WebVR, a size of 0x0 is used to indicate "not yet ready"
+  // to suppress rendering while still initializing.
+  gvr::Sizei render_size_primary_webvr_ = device::kInvalidRenderTargetSize;
   gvr::Sizei render_size_primary_vrshell_;
 
   std::queue<base::Callback<void()>> task_queue_;

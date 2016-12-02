@@ -55,11 +55,10 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
   left_eye->offset.resize(3);
   right_eye->offset.resize(3);
 
-  // TODO(bajones): GVR has a bug that causes it to return bad render target
-  // sizes when the phone is in portait mode. Send arbitrary,
-  // not-horrifically-wrong values instead.
-  //  gvr::Sizei render_target_size = gvr_api->GetRecommendedRenderTargetSize();
-  gvr::Sizei render_target_size = kFallbackRenderTargetSize;
+  // Set the render target size to "invalid" to indicate that
+  // we can't render into it yet. Other code uses this to check
+  // for valid state.
+  gvr::Sizei render_target_size = kInvalidRenderTargetSize;
   left_eye->renderWidth = render_target_size.width / 2;
   left_eye->renderHeight = render_target_size.height;
 
@@ -90,8 +89,10 @@ mojom::VRDisplayInfoPtr GvrDevice::GetVRDevice() {
     right_eye->offset[1] = 0.0;
     right_eye->offset[2] = 0.03;
 
-    delegate_->SetWebVRRenderSurfaceSize(2 * left_eye->renderWidth,
-                                         left_eye->renderHeight);
+    // Tell the delegate not to draw yet, to avoid a race condition
+    // (and visible wobble) on entering VR.
+    delegate_->SetWebVRRenderSurfaceSize(kInvalidRenderTargetSize.width,
+                                         kInvalidRenderTargetSize.height);
 
     return device;
   }

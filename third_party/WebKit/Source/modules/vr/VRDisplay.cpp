@@ -75,6 +75,7 @@ VRDisplay::VRDisplay(NavigatorVR* navigatorVR,
     : m_navigatorVR(navigatorVR),
       m_isConnected(false),
       m_isPresenting(false),
+      m_isValidDeviceForPresenting(true),
       m_canUpdateFramePose(true),
       m_capabilities(new VRDisplayCapabilities()),
       m_eyeParametersLeft(new VREyeParameters()),
@@ -108,6 +109,13 @@ void VRDisplay::update(const device::mojom::blink::VRDisplayInfoPtr& display) {
   m_capabilities->setCanPresent(display->capabilities->canPresent);
   m_capabilities->setMaxLayers(display->capabilities->canPresent ? 1 : 0);
 
+  // Ignore non presenting delegate
+  bool isValid = display->leftEye->renderWidth > 0;
+  bool needOnPresentChange = false;
+  if (m_isPresenting && isValid && !m_isValidDeviceForPresenting) {
+    needOnPresentChange = true;
+  }
+  m_isValidDeviceForPresenting = isValid;
   m_eyeParametersLeft->update(display->leftEye);
   m_eyeParametersRight->update(display->rightEye);
 
@@ -117,6 +125,10 @@ void VRDisplay::update(const device::mojom::blink::VRDisplayInfoPtr& display) {
     m_stageParameters->update(display->stageParameters);
   } else {
     m_stageParameters = nullptr;
+  }
+
+  if (needOnPresentChange) {
+    OnPresentChange();
   }
 }
 
@@ -497,10 +509,10 @@ void VRDisplay::forceExitPresent() {
     } else {
       // Can't get into this presentation mode, so nothing to do here.
     }
+    m_isPresenting = false;
     OnPresentChange();
   }
 
-  m_isPresenting = false;
   m_renderingContext = nullptr;
   m_contextGL = nullptr;
 }
@@ -620,6 +632,10 @@ Document* VRDisplay::document() {
 }
 
 void VRDisplay::OnPresentChange() {
+  if (m_isPresenting && !m_isValidDeviceForPresenting) {
+    VLOG(1) << __FUNCTION__ << ": device not valid, not sending event";
+    return;
+  }
   m_navigatorVR->enqueueVREvent(VRDisplayEvent::create(
       EventTypeNames::vrdisplaypresentchange, true, false, this, ""));
 }

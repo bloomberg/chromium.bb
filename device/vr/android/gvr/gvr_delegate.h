@@ -16,7 +16,7 @@ class GvrApi;
 
 namespace device {
 
-constexpr gvr::Sizei kFallbackRenderTargetSize = {2048, 1024};
+constexpr gvr::Sizei kInvalidRenderTargetSize = {0, 0};
 
 class DEVICE_VR_EXPORT GvrDelegate {
  public:
