@@ -188,6 +188,10 @@ std::unique_ptr<FakeDisplaySnapshot> Builder::Build() {
     return nullptr;
   }
 
+  // Add a name if none is provided.
+  if (name_.empty())
+    name_ = base::StringPrintf("Fake Display %" PRId64, id_);
+
   // If there is no native mode set, use the first display mode.
   if (!native_mode_)
     native_mode_ = modes_.back().get();
@@ -361,7 +365,6 @@ std::unique_ptr<ui::DisplaySnapshot> FakeDisplaySnapshot::CreateFromSpec(
 
   FakeDisplaySnapshot::Builder builder;
   builder.SetId(id).SetNativeMode(std::move(native_mode));
-  builder.SetName(base::StringPrintf("Fake Display %" PRId64, id));
 
   if (!HandleModes(&builder, resolutions) || !HandleDPI(&builder, dpi) ||
       !HandleOptions(&builder, options))

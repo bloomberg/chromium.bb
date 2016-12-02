@@ -6,6 +6,7 @@
 #define UI_DISPLAY_FAKE_DISPLAY_DELEGATE_H_
 
 #include <memory>
+#include <queue>
 #include <string>
 #include <vector>
 
@@ -130,9 +131,9 @@ class DISPLAY_EXPORT FakeDisplayDelegate : public ui::NativeDisplayDelegate,
   base::ObserverList<ui::NativeDisplayObserver> observers_;
   std::vector<std::unique_ptr<ui::DisplaySnapshot>> displays_;
 
-  // Add delay before finished Configure().
+  // Add delay before finishing Configure() and running callback.
   base::OneShotTimer configure_timer_;
-  base::Closure configure_callback_;
+  std::queue<base::Closure> configure_callbacks_;
 
   // If Initialize() has been called.
   bool initialized_ = false;

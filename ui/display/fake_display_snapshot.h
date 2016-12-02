@@ -84,7 +84,7 @@ class DISPLAY_EXPORT FakeDisplaySnapshot : public ui::DisplaySnapshot {
     bool is_aspect_preserving_scaling_ = false;
     bool has_overscan_ = false;
     bool has_color_correction_matrix_ = false;
-    std::string name_ = "Fake Display";
+    std::string name_;
     int64_t product_id_ = DisplaySnapshot::kInvalidProductID;
     DisplayModeList modes_;
     const ui::DisplayMode* current_mode_ = nullptr;

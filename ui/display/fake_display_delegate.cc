@@ -4,8 +4,6 @@
 
 #include "ui/display/fake_display_delegate.h"
 
-#include <inttypes.h>
-
 #include <string>
 #include <utility>
 
@@ -54,7 +52,6 @@ int64_t FakeDisplayDelegate::AddDisplay(const gfx::Size& display_size) {
 
   FakeDisplaySnapshot::Builder builder;
   builder.SetId(id).SetNativeMode(display_size);
-  builder.SetName(base::StringPrintf("Fake Display %" PRId64, id));
 
   return AddDisplay(builder.Build()) ? id : kInvalidDisplayId;
 }
@@ -161,10 +158,16 @@ void FakeDisplayDelegate::Configure(const ui::DisplaySnapshot& output,
     }
   }
 
-  configure_callback_ = base::Bind(callback, configure_success);
-  configure_timer_.Start(
-      FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
-      this, &FakeDisplayDelegate::ConfigureDone);
+  configure_callbacks_.push(base::Bind(callback, configure_success));
+
+  // Start the timer if it's not already running. If there are multiple queued
+  // configuration requests then ConfigureDone() will handle starting the
+  // next request.
+  if (!configure_timer_.IsRunning()) {
+    configure_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
+        this, &FakeDisplayDelegate::ConfigureDone);
+  }
 }
 
 void FakeDisplayDelegate::CreateFrameBuffer(const gfx::Size& size) {}
@@ -247,9 +250,16 @@ void FakeDisplayDelegate::OnConfigurationChanged() {
 }
 
 void FakeDisplayDelegate::ConfigureDone() {
-  DCHECK(!configure_callback_.is_null());
-  configure_callback_.Run();
-  configure_callback_.Reset();
+  DCHECK(!configure_callbacks_.empty());
+  configure_callbacks_.front().Run();
+  configure_callbacks_.pop();
+
+  // If there are more configuration requests waiting then restart the timer.
+  if (!configure_callbacks_.empty()) {
+    configure_timer_.Start(
+        FROM_HERE, base::TimeDelta::FromMilliseconds(kConfigureDisplayDelayMs),
+        this, &FakeDisplayDelegate::ConfigureDone);
+  }
 }
 
 }  // namespace display
