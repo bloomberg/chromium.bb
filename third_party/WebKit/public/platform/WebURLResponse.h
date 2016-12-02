@@ -98,7 +98,7 @@ class WebURLResponse {
                        const WebString& issuer,
                        double validFrom,
                        double validTo,
-                       WebVector<WebString>& certificate,
+                       const WebVector<WebString>& certificate,
                        const SignedCertificateTimestampList& sctList)
         : protocol(protocol),
           keyExchange(keyExchange),
