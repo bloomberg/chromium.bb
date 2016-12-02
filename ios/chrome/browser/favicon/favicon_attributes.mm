@@ -5,11 +5,12 @@
 #import "ios/chrome/browser/favicon/favicon_attributes.h"
 
 #include "base/logging.h"
-#include "base/mac/objc_property_releaser.h"
 
-@implementation FaviconAttributes {
-  base::mac::ObjCPropertyReleaser _propertyReleaser_FaviconAttributes;
-}
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
+@implementation FaviconAttributes
 @synthesize faviconImage = _faviconImage;
 @synthesize monogramString = _monogramString;
 @synthesize textColor = _textColor;
@@ -22,11 +23,10 @@
   DCHECK(image || (monogram && textColor && backgroundColor));
   self = [super init];
   if (self) {
-    _propertyReleaser_FaviconAttributes.Init(self, [FaviconAttributes class]);
-    _faviconImage = [image retain];
+    _faviconImage = image;
     _monogramString = [monogram copy];
-    _textColor = [textColor retain];
-    _backgroundColor = [backgroundColor retain];
+    _textColor = textColor;
+    _backgroundColor = backgroundColor;
   }
 
   return self;
@@ -49,15 +49,15 @@
 }
 
 + (instancetype)attributesWithImage:(UIImage*)image {
-  return [[[self alloc] initWithImage:image] autorelease];
+  return [[self alloc] initWithImage:image];
 }
 
 + (instancetype)attributesWithMonogram:(NSString*)monogram
                              textColor:(UIColor*)textColor
                        backgroundColor:(UIColor*)backgroundColor {
-  return [[[self alloc] initWithMonogram:monogram
-                               textColor:textColor
-                         backgroundColor:backgroundColor] autorelease];
+  return [[self alloc] initWithMonogram:monogram
+                              textColor:textColor
+                        backgroundColor:backgroundColor];
 }
 
 @end

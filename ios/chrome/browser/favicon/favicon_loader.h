@@ -8,7 +8,6 @@
 #include <memory>
 #include <vector>
 
-#import "base/mac/scoped_nsobject.h"
 #include "base/macros.h"
 #include "base/task/cancelable_task_tracker.h"
 #include "base/threading/thread_checker.h"
@@ -69,7 +68,7 @@ class FaviconLoader : public KeyedService {
   // Holds cached favicons. This dictionary is populated as favicons are
   // retrieved from the FaviconService. This will be emptied during low-memory
   // conditions. Keyed by NSString of URL spec.
-  base::scoped_nsobject<NSMutableDictionary> favicon_cache_;
+  NSMutableDictionary* favicon_cache_;
 
   DISALLOW_COPY_AND_ASSIGN(FaviconLoader);
 };

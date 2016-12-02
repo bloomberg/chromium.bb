@@ -16,6 +16,10 @@
 #include "skia/ext/skia_utils_ios.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 @interface FaviconAttributesProvider () {
   // Used to cancel tasks for the LargeIconService.
   base::CancelableTaskTracker _faviconTaskTracker;
@@ -76,7 +80,7 @@
   CGFloat faviconSize = [UIScreen mainScreen].scale * self.faviconSize;
   CGFloat minFaviconSize = [UIScreen mainScreen].scale * self.minSize;
   self.largeIconService->GetLargeIconOrFallbackStyle(
-      URL, minFaviconSize, faviconSize, base::BindBlock(faviconBlock),
+      URL, minFaviconSize, faviconSize, base::BindBlockArc(faviconBlock),
       &_faviconTaskTracker);
 }
 @end
