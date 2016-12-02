@@ -37,22 +37,6 @@ void CommitUnused(base::WeakPtr<IndexedDBTransaction> transaction) {
   DCHECK(status.ok());
 }
 
-// The database will be closed during this call.
-void ReportError(leveldb::Status status,
-                 const scoped_refptr<IndexedDBDatabase> database,
-                 IndexedDBFactory* factory) {
-  DCHECK(!status.ok());
-  if (status.IsCorruption()) {
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 base::ASCIIToUTF16(status.ToString()));
-    factory->HandleBackingStoreCorruption(database->origin(), error);
-  } else {
-    factory->HandleBackingStoreFailure(database->origin());
-  }
-}
-
-
-
 }  // namespace
 
 IndexedDBTransaction::TaskQueue::TaskQueue() {}
@@ -285,7 +269,7 @@ leveldb::Status IndexedDBTransaction::BlobWriteComplete(
       s = CommitPhaseTwo();
       if (!s.ok() &&
           result == IndexedDBBackingStore::BlobWriteResult::SUCCESS_ASYNC)
-        ReportError(s, database, database->factory());
+        database->ReportError(s);
       break;
     }
   }
@@ -439,7 +423,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     }
     if (!result.ok()) {
       processing_event_queue_ = false;
-      ReportError(result, database_, database_->factory());
+      database_->ReportError(result);
       return;
     }
 
@@ -455,7 +439,7 @@ void IndexedDBTransaction::ProcessTaskQueue() {
     // This can delete |this|.
     leveldb::Status result = Commit();
     if (!result.ok())
-      ReportError(result, database_, database_->factory());
+      database_->ReportError(result);
     return;
   }
 

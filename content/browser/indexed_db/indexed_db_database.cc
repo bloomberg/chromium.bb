@@ -70,19 +70,6 @@ HistogramIDBKeyPathType HistogramKeyPathType(const IndexedDBKeyPath& key_path) {
   return KEY_PATH_TYPE_NONE;
 }
 
-// The database will be closed (IndexedDBFactory::ForceClose) during this call.
-// This should NOT be used in an method scheduled as a transaction operation.
-void ReportError(leveldb::Status status,
-                 const url::Origin& origin,
-                 IndexedDBFactory* factory,
-                 const IndexedDBDatabaseError& error) {
-  DCHECK(!status.ok());
-  if (status.IsCorruption())
-    factory->HandleBackingStoreCorruption(origin, error);
-  else
-    factory->HandleBackingStoreFailure(origin);
-}
-
 }  // namespace
 
 // This represents what script calls an 'IDBOpenDBRequest' - either a database
@@ -585,11 +572,7 @@ void IndexedDBDatabase::CreateObjectStore(IndexedDBTransaction* transaction,
                                         object_store_metadata.key_path,
                                         object_store_metadata.auto_increment);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(
-        blink::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error creating object store '") +
-            object_store_metadata.name + ASCIIToUTF16("'."));
-    ReportError(s, origin(), factory_.get(), error);
+    ReportErrorWithDetails(s, "Internal error creating object store.");
     return;
   }
 
@@ -638,12 +621,7 @@ void IndexedDBDatabase::RenameObjectStore(IndexedDBTransaction* transaction,
                                         transaction->database()->id(),
                                         object_store_metadata.id, new_name);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(
-        blink::WebIDBDatabaseExceptionUnknownError,
-        ASCIIToUTF16("Internal error renaming object store '") +
-            object_store_metadata.name + ASCIIToUTF16("' to '") + new_name +
-            ASCIIToUTF16("'."));
-    ReportError(s, origin(), factory_.get(), error);
+    ReportErrorWithDetails(s, "Internal error renaming object store.");
     return;
   }
 
@@ -785,13 +763,7 @@ void IndexedDBDatabase::RenameIndex(IndexedDBTransaction* transaction,
                                   index_id,
                                   new_name);
   if (!s.ok()) {
-    base::string16 error_string =
-        ASCIIToUTF16("Internal error renaming index '") +
-        index_metadata.name + ASCIIToUTF16("' to '") + new_name +
-        ASCIIToUTF16("'.");
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 error_string);
-    ReportError(s, origin(), factory_.get(), error);
+    ReportErrorWithDetails(s, "Internal error renaming index.");
     return;
   }
 
@@ -820,11 +792,8 @@ void IndexedDBDatabase::Commit(IndexedDBTransaction* transaction) {
   if (transaction) {
     scoped_refptr<IndexedDBFactory> factory = factory_;
     leveldb::Status result = transaction->Commit();
-    if (!result.ok()) {
-      IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                   base::ASCIIToUTF16(result.ToString()));
-      ReportError(result, origin(), factory_.get(), error);
-    }
+    if (!result.ok())
+      ReportError(result);
   }
 }
 
@@ -1397,9 +1366,7 @@ void IndexedDBDatabase::SetIndexKeys(
       &record_identifier,
       &found);
   if (!s.ok()) {
-    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
-                                 "Internal error setting index keys.");
-    ReportError(s, origin(), factory_.get(), error);
+    ReportErrorWithDetails(s, "Internal error setting index keys.");
     return;
   }
   if (!found) {
@@ -1926,6 +1893,29 @@ void IndexedDBDatabase::RenameObjectStoreAbortOperation(
 void IndexedDBDatabase::VersionChangeAbortOperation(int64_t previous_version) {
   IDB_TRACE("IndexedDBDatabase::VersionChangeAbortOperation");
   metadata_.version = previous_version;
+}
+
+void IndexedDBDatabase::ReportError(leveldb::Status status) {
+  DCHECK(!status.ok());
+  if (status.IsCorruption()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 base::ASCIIToUTF16(status.ToString()));
+    factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
+  } else {
+    factory_->HandleBackingStoreFailure(backing_store_->origin());
+  }
+}
+
+void IndexedDBDatabase::ReportErrorWithDetails(leveldb::Status status,
+                                               const char* message) {
+  DCHECK(!status.ok());
+  if (status.IsCorruption()) {
+    IndexedDBDatabaseError error(blink::WebIDBDatabaseExceptionUnknownError,
+                                 message);
+    factory_->HandleBackingStoreCorruption(backing_store_->origin(), error);
+  } else {
+    factory_->HandleBackingStoreFailure(backing_store_->origin());
+  }
 }
 
 }  // namespace content

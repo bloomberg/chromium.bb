@@ -263,6 +263,14 @@ class CONTENT_EXPORT IndexedDBDatabase
                                  scoped_refptr<IndexedDBCallbacks> callbacks,
                                  IndexedDBTransaction* transaction);
 
+  // Called when a backing store operation has failed. The database will be
+  // closed (IndexedDBFactory::ForceClose) during this call. This should NOT
+  // be used in an method scheduled as a transaction operation.
+  void ReportError(leveldb::Status status);
+  void ReportErrorWithDetails(leveldb::Status status, const char* message);
+
+  IndexedDBFactory* factory() const { return factory_.get(); }
+
  protected:
   friend class IndexedDBTransaction;
 
@@ -274,8 +282,6 @@ class CONTENT_EXPORT IndexedDBDatabase
 
   // May be overridden in tests.
   virtual size_t GetMaxMessageSizeInBytes() const;
-
-  IndexedDBFactory* factory() const { return factory_.get(); }
 
  private:
   friend class base::RefCounted<IndexedDBDatabase>;
