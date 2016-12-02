@@ -93,7 +93,8 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
 
   base::TimeDelta time_delta;
   item->TimeRemaining(&time_delta);
-
+  std::string original_url = item->GetOriginalUrl().SchemeIs(url::kDataScheme)
+      ? std::string() : item->GetOriginalUrl().spec();
   return Java_DownloadInfo_createDownloadInfo(
       env,
       ConvertUTF8ToJavaString(env, item->GetGuid()),
@@ -109,7 +110,7 @@ ScopedJavaLocalRef<jobject> DownloadManagerService::CreateJavaDownloadInfo(
       item->IsPaused(),
       has_user_gesture,
       item->CanResume(),
-      ConvertUTF8ToJavaString(env, item->GetOriginalUrl().spec()),
+      ConvertUTF8ToJavaString(env, original_url),
       ConvertUTF8ToJavaString(env, item->GetReferrerUrl().spec()),
       time_delta.InMilliseconds());
 }

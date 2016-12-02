@@ -12,6 +12,7 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
 import android.support.v4.app.NotificationManagerCompat;
+import android.text.TextUtils;
 
 import org.chromium.base.ContextUtils;
 import org.chromium.base.Log;
@@ -94,8 +95,9 @@ public class DownloadManagerDelegate {
                 Class[] args = {String.class, String.class, boolean.class, String.class,
                         String.class, long.class, boolean.class, Uri.class, Uri.class};
                 Method method = c.getMethod("addCompletedDownload", args);
-                Uri originalUri = Uri.parse(originalUrl);
-                Uri refererUri = referer == null ? Uri.EMPTY : Uri.parse(referer);
+                // OriginalUri has to be null or non-empty.
+                Uri originalUri = TextUtils.isEmpty(originalUrl) ? null : Uri.parse(originalUrl);
+                Uri refererUri = TextUtils.isEmpty(referer) ? null : Uri.parse(referer);
                 downloadId = (Long) method.invoke(manager, fileName, description, true, mimeType,
                         path, length, useSystemNotification, originalUri, refererUri);
             } catch (SecurityException e) {
