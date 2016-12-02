@@ -15,9 +15,11 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "media/base/media_export.h"
+#include "media/base/ranges.h"
 #include "media/base/video_decoder_config.h"
 #include "media/formats/mp2t/es_adapter_video.h"
 #include "media/formats/mp2t/es_parser.h"
+#include "media/media_features.h"
 
 namespace media {
 class EncryptionScheme;
@@ -43,6 +45,12 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
 
   EsParserH264(const NewVideoConfigCB& new_video_config_cb,
                const EmitBufferCB& emit_buffer_cb);
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+               const EmitBufferCB& emit_buffer_cb,
+               bool use_hls_sample_aes,
+               const GetDecryptConfigCB& get_decrypt_config_cb);
+#endif
   ~EsParserH264() override;
 
   // EsParser implementation.
@@ -80,6 +88,13 @@ class MEDIA_EXPORT EsParserH264 : public EsParser {
   std::unique_ptr<H264Parser> h264_parser_;
   int64_t current_access_unit_pos_;
   int64_t next_access_unit_pos_;
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  bool use_hls_sample_aes_;
+  // Callback to obtain the current decrypt_config.
+  // Only called if use_hls_sample_aes_ is true.
+  GetDecryptConfigCB get_decrypt_config_cb_;
+  Ranges<int> protected_blocks_;
+#endif
 
   // Last video decoder config.
   VideoDecoderConfig last_video_decoder_config_;

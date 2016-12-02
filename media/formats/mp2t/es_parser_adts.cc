@@ -28,6 +28,11 @@ static int ExtractAdtsFrameSize(const uint8_t* adts_header) {
           ((static_cast<int>(adts_header[3]) & 0x3) << 11));
 }
 
+static int AdtsHeaderSize(const uint8_t* adts_header) {
+  // protection absent bit: set to 1 if there is no CRC and 0 if there is CRC
+  return (adts_header[1] & 0x1) ? kADTSHeaderSizeNoCrc : kADTSHeaderSizeWithCrc;
+}
+
 // Return true if buf corresponds to an ADTS syncword.
 // |buf| size must be at least 2.
 static bool isAdtsSyncWord(const uint8_t* buf) {
@@ -44,6 +49,7 @@ struct EsParserAdts::AdtsFrame {
 
   // Frame size;
   int size;
+  int header_size;
 
   // Frame offset in the ES queue.
   int64_t queue_offset;
@@ -68,6 +74,7 @@ bool EsParserAdts::LookForAdtsFrame(AdtsFrame* adts_frame) {
       // Too short to be an ADTS frame.
       continue;
     }
+    int header_size = AdtsHeaderSize(cur_buf);
 
     int remaining_size = es_size - offset;
     if (remaining_size < frame_size) {
@@ -87,6 +94,7 @@ bool EsParserAdts::LookForAdtsFrame(AdtsFrame* adts_frame) {
     es_queue_->Peek(&adts_frame->data, &es_size);
     adts_frame->queue_offset = es_queue_->head();
     adts_frame->size = frame_size;
+    adts_frame->header_size = header_size;
     DVLOG(LOG_LEVEL_ES)
         << "ADTS syncword @ pos=" << adts_frame->queue_offset
         << " frame_size=" << adts_frame->size;
@@ -105,17 +113,62 @@ void EsParserAdts::SkipAdtsFrame(const AdtsFrame& adts_frame) {
   es_queue_->Pop(adts_frame.size);
 }
 
-EsParserAdts::EsParserAdts(
-    const NewAudioConfigCB& new_audio_config_cb,
-    const EmitBufferCB& emit_buffer_cb,
-    bool sbr_in_mimetype)
-  : new_audio_config_cb_(new_audio_config_cb),
-    emit_buffer_cb_(emit_buffer_cb),
-    sbr_in_mimetype_(sbr_in_mimetype) {
+EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
+                           const EmitBufferCB& emit_buffer_cb,
+                           bool sbr_in_mimetype)
+    : new_audio_config_cb_(new_audio_config_cb),
+      emit_buffer_cb_(emit_buffer_cb),
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+      get_decrypt_config_cb_(),
+      use_hls_sample_aes_(false),
+#endif
+      sbr_in_mimetype_(sbr_in_mimetype) {
 }
+
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+EsParserAdts::EsParserAdts(const NewAudioConfigCB& new_audio_config_cb,
+                           const EmitBufferCB& emit_buffer_cb,
+                           const GetDecryptConfigCB& get_decrypt_config_cb,
+                           bool use_hls_sample_aes,
+                           bool sbr_in_mimetype)
+    : new_audio_config_cb_(new_audio_config_cb),
+      emit_buffer_cb_(emit_buffer_cb),
+      get_decrypt_config_cb_(get_decrypt_config_cb),
+      use_hls_sample_aes_(use_hls_sample_aes),
+      sbr_in_mimetype_(sbr_in_mimetype) {
+  DCHECK_EQ(!get_decrypt_config_cb_.is_null(), use_hls_sample_aes_);
+}
+#endif
 
 EsParserAdts::~EsParserAdts() {
 }
+
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+void EsParserAdts::CalculateSubsamplesForAdtsFrame(
+    const AdtsFrame& adts_frame,
+    std::vector<SubsampleEntry>* subsamples) {
+  DCHECK(subsamples);
+  subsamples->clear();
+  int data_size = adts_frame.size - adts_frame.header_size;
+  int residue = data_size % 16;
+  int clear_bytes = adts_frame.header_size;
+  int encrypted_bytes = 0;
+  if (data_size <= 16) {
+    clear_bytes += data_size;
+    residue = 0;
+  } else {
+    clear_bytes += 16;
+    encrypted_bytes = adts_frame.size - clear_bytes - residue;
+  }
+  SubsampleEntry subsample(clear_bytes, encrypted_bytes);
+  subsamples->push_back(subsample);
+  if (residue) {
+    subsample.clear_bytes = residue;
+    subsample.cypher_bytes = 0;
+    subsamples->push_back(subsample);
+  }
+}
+#endif
 
 bool EsParserAdts::ParseFromEsQueue() {
   // Look for every ADTS frame in the ES buffer.
@@ -154,6 +207,18 @@ bool EsParserAdts::ParseFromEsQueue() {
     stream_parser_buffer->SetDecodeTimestamp(
         DecodeTimestamp::FromPresentationTime(current_pts));
     stream_parser_buffer->set_duration(frame_duration);
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+    if (use_hls_sample_aes_) {
+      const DecryptConfig* base_decrypt_config = get_decrypt_config_cb_.Run();
+      RCHECK(base_decrypt_config);
+      std::vector<SubsampleEntry> subsamples;
+      CalculateSubsamplesForAdtsFrame(adts_frame, &subsamples);
+      std::unique_ptr<DecryptConfig> decrypt_config(
+          new DecryptConfig(base_decrypt_config->key_id(),
+                            base_decrypt_config->iv(), subsamples));
+      stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
+    }
+#endif
     emit_buffer_cb_.Run(stream_parser_buffer);
 
     // Update the PTS of the next frame.
@@ -191,10 +256,16 @@ bool EsParserAdts::UpdateAudioConfiguration(const uint8_t* adts_header,
   const int extended_samples_per_second =
       sbr_in_mimetype_ ? std::min(2 * orig_sample_rate, 48000)
                        : orig_sample_rate;
-
+  EncryptionScheme scheme = Unencrypted();
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  if (use_hls_sample_aes_) {
+    scheme = EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
+                              EncryptionScheme::Pattern());
+  }
+#endif
   AudioDecoderConfig audio_decoder_config(
       kCodecAAC, kSampleFormatS16, channel_layout, extended_samples_per_second,
-      extra_data, Unencrypted());
+      extra_data, scheme);
 
   if (!audio_decoder_config.Matches(last_audio_decoder_config_)) {
     DVLOG(1) << "Sampling frequency: "

@@ -14,6 +14,8 @@ namespace media {
 
 enum {
   kADTSHeaderMinSize = 7,
+  kADTSHeaderSizeNoCrc = 7,
+  kADTSHeaderSizeWithCrc = 9,
   kSamplesPerAACFrame = 1024,
 };
 

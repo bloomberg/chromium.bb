@@ -17,6 +17,20 @@ BitReader::BitReader(const uint8_t* data, int size)
 
 BitReader::~BitReader() {}
 
+bool BitReader::ReadString(int num_bits, std::string* str) {
+  DCHECK_EQ(num_bits % 8, 0);
+  DCHECK_GT(num_bits, 0);
+  DCHECK(str);
+  int num_bytes = num_bits / 8;
+  str->resize(num_bytes);
+  char* ptr = &str->front();
+  while (num_bytes--) {
+    if (!ReadBits(8, ptr++))
+      return false;
+  }
+  return true;
+}
+
 int BitReader::GetBytes(int max_nbytes, const uint8_t** out) {
   DCHECK_GE(max_nbytes, 0);
   DCHECK(out);

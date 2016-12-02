@@ -21,6 +21,7 @@ buildflag_header("media_features") {
     "ENABLE_AC3_EAC3_AUDIO_DEMUXING=$enable_ac3_eac3_audio_demuxing",
     "ENABLE_CBCS_ENCRYPTION_SCHEME=$enable_cbcs_encryption_scheme",
     "ENABLE_HEVC_DEMUXING=$enable_hevc_demuxing",
+    "ENABLE_HLS_SAMPLE_AES=$enable_hls_sample_aes",
     "ENABLE_MSE_MPEG2TS_STREAM_PARSER=$enable_mse_mpeg2ts_stream_parser",
     "ENABLE_MEDIA_REMOTING=$enable_media_remoting",
     "ENABLE_WEBRTC=$enable_webrtc",
@@ -434,6 +435,8 @@ component("media") {
     ]
     if (enable_mse_mpeg2ts_stream_parser) {
       sources += [
+        "formats/mp2t/descriptors.cc",
+        "formats/mp2t/descriptors.h",
         "formats/mp2t/es_adapter_video.cc",
         "formats/mp2t/es_adapter_video.h",
         "formats/mp2t/es_parser.cc",
@@ -461,6 +464,16 @@ component("media") {
         "formats/mp2t/ts_section_psi.cc",
         "formats/mp2t/ts_section_psi.h",
       ]
+      if (enable_hls_sample_aes) {
+        sources += [
+          "formats/mp2t/ts_section_cat.cc",
+          "formats/mp2t/ts_section_cat.h",
+          "formats/mp2t/ts_section_cets_ecm.cc",
+          "formats/mp2t/ts_section_cets_ecm.h",
+          "formats/mp2t/ts_section_cets_pssh.cc",
+          "formats/mp2t/ts_section_cets_pssh.h",
+        ]
+      }
     }
   }
 
@@ -600,6 +613,7 @@ source_set("unit_tests") {
     ":media",
     ":test_support",
     "//base/test:test_support",
+    "//crypto",
     "//gpu:test_support",
     "//gpu/command_buffer/common",
     "//media/audio:test_support",
@@ -692,6 +706,9 @@ source_set("unit_tests") {
     }
     if (enable_hevc_demuxing) {
       sources += [ "filters/h265_parser_unittest.cc" ]
+    }
+    if (enable_hls_sample_aes) {
+      deps += [ "//third_party/boringssl" ]
     }
   }
 

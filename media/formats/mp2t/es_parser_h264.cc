@@ -9,6 +9,7 @@
 #include "base/logging.h"
 #include "base/numerics/safe_conversions.h"
 #include "base/optional.h"
+#include "media/base/decrypt_config.h"
 #include "media/base/encryption_scheme.h"
 #include "media/base/media_util.h"
 #include "media/base/stream_parser_buffer.h"
@@ -23,18 +24,187 @@
 namespace media {
 namespace mp2t {
 
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+namespace {
+
+const int kSampleAESMaxUnprotectedNALULength = 48;
+const int kSampleAESClearLeaderSize = 32;
+const int kSampleAESEncryptBlocks = 1;
+const int kSampleAESSkipBlocks = 9;
+const int kSampleAESPatternUnit =
+    (kSampleAESEncryptBlocks + kSampleAESSkipBlocks) * 16;
+
+// Attempts to find the first or only EP3B (emulation prevention 3 byte) in
+// the part of the |buffer| between |start_pos| and |end_pos|. Returns the
+// position of the EP3B, or 0 if there are none.
+// Note: the EP3B always follows two zero bytes, so the value 0 can never be a
+// valid position.
+int FindEP3B(const uint8_t* buffer, int start_pos, int end_pos) {
+  const uint8_t* data = buffer + start_pos;
+  int data_size = end_pos - start_pos;
+  DCHECK_GE(data_size, 0);
+  int bytes_left = data_size;
+
+  while (bytes_left >= 4) {
+    if (data[0] == 0x00 && data[1] == 0x00 && data[2] == 0x03 &&
+        data[3] <= 0x03) {
+      return (data - buffer) + 2;
+    }
+    ++data;
+    --bytes_left;
+  }
+  return 0;
+}
+
+// Remove the byte at |pos| in the |buffer| and close up the gap, moving all the
+// bytes from [pos + 1, end_pos) to [pos, end_pos - 1).
+void RemoveByte(uint8_t* buffer, int pos, int end_pos) {
+  memmove(&buffer[pos], &buffer[pos + 1], end_pos - pos - 1);
+}
+
+// Given an Access Unit pointed to by |au| of size |au_size|, removes emulation
+// prevention 3 bytes (EP3B) from within the |protected_blocks|. Also computes
+// the |subsamples| vector describing the resulting AU.
+// Returns the allocated buffer holding the adjusted copy, or NULL if no size
+// adjustment was necessary.
+std::unique_ptr<uint8_t[]> AdjustAUForSampleAES(
+    const uint8_t* au,
+    int* au_size,
+    const Ranges<int>& protected_blocks,
+    std::vector<SubsampleEntry>* subsamples) {
+  DCHECK(subsamples);
+  DCHECK(au_size);
+  std::unique_ptr<uint8_t[]> result;
+  int& au_end_pos = *au_size;
+
+  // 1. Considering each protected block in turn, find any emulation prevention
+  // 3 bytes (EP3B) within it, keeping track of their positions. While doing so,
+  // produce a revised Ranges<int> reflecting the new protected block positions
+  // that will apply after we have removed the EP3Bs.
+  Ranges<int> adjusted_protected_blocks;
+  std::vector<int> epbs;
+  int adjustment = 0;
+  for (size_t i = 0; i < protected_blocks.size(); i++) {
+    int start_pos = protected_blocks.start(i);
+    int end_pos = protected_blocks.end(i);
+    int search_pos = start_pos;
+    int epb_pos;
+    int block_adjustment = 0;
+    while ((epb_pos = FindEP3B(au, search_pos, end_pos))) {
+      epbs.push_back(epb_pos);
+      block_adjustment++;
+      search_pos = epb_pos + 2;
+    }
+    // adjust the start_pos and end_pos to accommodate the EPBs that will be
+    // removed.
+    start_pos -= adjustment;
+    adjustment += block_adjustment;
+    end_pos -= adjustment;
+    if (end_pos - start_pos > kSampleAESMaxUnprotectedNALULength)
+      adjusted_protected_blocks.Add(start_pos, end_pos);
+    else
+      VLOG(1) << "Ignoring short protected block of length: "
+              << (end_pos - start_pos);
+  }
+
+  // 2. If we actually found any EP3Bs, make a copy of the AU and then remove
+  // the EP3Bs in the copy (we can't modify the original).
+  if (adjustment) {
+    result.reset(new uint8_t[au_end_pos]);
+    uint8_t* temp = result.get();
+    memcpy(temp, au, au_end_pos);
+    for (auto epb_pos = epbs.rbegin(); epb_pos != epbs.rend(); ++epb_pos) {
+      RemoveByte(temp, *epb_pos, au_end_pos);
+      au_end_pos--;
+    }
+    au = temp;
+    VLOG(2) << "Copied AU and removed emulation prevention bytes: "
+            << adjustment;
+  }
+
+  // We now have either the original AU, or a copy with the EP3Bs removed.
+  // We also have an updated Ranges<int> indicating the protected blocks.
+  // Also au_end_pos has been adjusted to indicate the new au_size.
+
+  // 3. Use a new Ranges<int> to collect all the clear ranges. They will
+  // automatically be coalesced to minimize the number of (disjoint) ranges.
+  Ranges<int> clear_ranges;
+  int previous_pos = 0;
+  for (size_t i = 0; i < adjusted_protected_blocks.size(); i++) {
+    int start_pos = adjusted_protected_blocks.start(i);
+    int end_pos = adjusted_protected_blocks.end(i);
+    // Add the clear range prior to this protected block.
+    clear_ranges.Add(previous_pos, start_pos);
+    int block_size = end_pos - start_pos;
+    DCHECK_GT(block_size, kSampleAESMaxUnprotectedNALULength);
+    // Add the clear leader.
+    clear_ranges.Add(start_pos, start_pos + kSampleAESClearLeaderSize);
+    block_size -= kSampleAESClearLeaderSize;
+    // The bytes beyond an integral multiple of AES blocks (16 bytes) are to be
+    // left clear. Also, if the last 16 bytes would be the only block in a
+    // pattern unit (160 bytes), they are also left clear.
+    int residual_bytes = block_size % kSampleAESPatternUnit;
+    if (residual_bytes > 16)
+      residual_bytes = residual_bytes % 16;
+    clear_ranges.Add(end_pos - residual_bytes, end_pos);
+    previous_pos = end_pos;
+  }
+  // Add the trailing bytes, if any, beyond the last protected block.
+  clear_ranges.Add(previous_pos, au_end_pos);
+
+  // 4. Convert the disjoint set of clear ranges into subsample entries. Each
+  // subsample entry is a count of clear bytes followed by a count of protected
+  // bytes.
+  subsamples->clear();
+  for (size_t i = 0; i < clear_ranges.size(); i++) {
+    int start_pos = clear_ranges.start(i);
+    int end_pos = clear_ranges.end(i);
+    int clear_size = end_pos - start_pos;
+    int encrypt_end_pos = au_end_pos;
+
+    if (i + 1 < clear_ranges.size())
+      encrypt_end_pos = clear_ranges.start(i + 1);
+    SubsampleEntry subsample(clear_size, encrypt_end_pos - end_pos);
+    subsamples->push_back(subsample);
+  }
+  return result;
+}
+
+}  // namespace
+#endif  // BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+
 // An AUD NALU is at least 4 bytes:
 // 3 bytes for the start code + 1 byte for the NALU type.
 const int kMinAUDSize = 4;
 
-EsParserH264::EsParserH264(
-    const NewVideoConfigCB& new_video_config_cb,
-    const EmitBufferCB& emit_buffer_cb)
+EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+                           const EmitBufferCB& emit_buffer_cb)
     : es_adapter_(new_video_config_cb, emit_buffer_cb),
       h264_parser_(new H264Parser()),
       current_access_unit_pos_(0),
-      next_access_unit_pos_(0) {
+      next_access_unit_pos_(0)
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+      ,
+      use_hls_sample_aes_(false),
+      get_decrypt_config_cb_()
+#endif
+{
 }
+
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+EsParserH264::EsParserH264(const NewVideoConfigCB& new_video_config_cb,
+                           const EmitBufferCB& emit_buffer_cb,
+                           bool use_hls_sample_aes,
+                           const GetDecryptConfigCB& get_decrypt_config_cb)
+    : es_adapter_(new_video_config_cb, emit_buffer_cb),
+      h264_parser_(new H264Parser()),
+      current_access_unit_pos_(0),
+      next_access_unit_pos_(0),
+      use_hls_sample_aes_(use_hls_sample_aes),
+      get_decrypt_config_cb_(get_decrypt_config_cb) {
+  DCHECK_EQ(!get_decrypt_config_cb_.is_null(), use_hls_sample_aes_);
+}
+#endif
 
 EsParserH264::~EsParserH264() {
 }
@@ -183,6 +353,15 @@ bool EsParserH264::ParseFromEsQueue() {
         } else {
           pps_id_for_access_unit = shdr.pic_parameter_set_id;
         }
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+        // With HLS SampleAES, protected blocks in H.264 consist of IDR and non-
+        // IDR slices that are more than 48 bytes in length.
+        if (use_hls_sample_aes_ &&
+            nalu.size > kSampleAESMaxUnprotectedNALULength) {
+          int64_t nal_begin = nalu.data - es;
+          protected_blocks_.Add(nal_begin, nal_begin + nalu.size);
+        }
+#endif
         break;
       }
       default: {
@@ -235,7 +414,17 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
     const H264SPS* sps = h264_parser_->GetSPS(pps->seq_parameter_set_id);
     if (!sps)
       return false;
-    RCHECK(UpdateVideoDecoderConfig(sps, Unencrypted()));
+    EncryptionScheme scheme = Unencrypted();
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+    if (use_hls_sample_aes_) {
+      // Note that for SampleAES the (encrypt,skip) pattern is constant.
+      scheme =
+          EncryptionScheme(EncryptionScheme::CIPHER_MODE_AES_CBC,
+                           EncryptionScheme::Pattern(kSampleAESEncryptBlocks,
+                                                     kSampleAESSkipBlocks));
+    }
+#endif
+    RCHECK(UpdateVideoDecoderConfig(sps, scheme));
   }
 
   // Emit a frame.
@@ -246,6 +435,18 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
   es_queue_->PeekAt(current_access_unit_pos_, &es, &es_size);
   CHECK_GE(es_size, access_unit_size);
 
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  std::unique_ptr<uint8_t[]> adjusted_au;
+  std::vector<SubsampleEntry> subsamples;
+  if (use_hls_sample_aes_) {
+    adjusted_au = AdjustAUForSampleAES(es, &access_unit_size, protected_blocks_,
+                                       &subsamples);
+    protected_blocks_.clear();
+    if (adjusted_au)
+      es = adjusted_au.get();
+  }
+#endif
+
   // TODO(wolenetz/acolwell): Validate and use a common cross-parser TrackId
   // type and allow multiple video tracks. See https://crbug.com/341581.
   scoped_refptr<StreamParserBuffer> stream_parser_buffer =
@@ -253,6 +454,16 @@ bool EsParserH264::EmitFrame(int64_t access_unit_pos,
                                    DemuxerStream::VIDEO, kMp2tVideoTrackId);
   stream_parser_buffer->SetDecodeTimestamp(current_timing_desc.dts);
   stream_parser_buffer->set_timestamp(current_timing_desc.pts);
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+  if (use_hls_sample_aes_) {
+    DCHECK(!get_decrypt_config_cb_.is_null());
+    const DecryptConfig* base_decrypt_config = get_decrypt_config_cb_.Run();
+    RCHECK(base_decrypt_config);
+    std::unique_ptr<DecryptConfig> decrypt_config(new DecryptConfig(
+        base_decrypt_config->key_id(), base_decrypt_config->iv(), subsamples));
+    stream_parser_buffer->set_decrypt_config(std::move(decrypt_config));
+  }
+#endif
   return es_adapter_.OnNewBuffer(stream_parser_buffer);
 }
 

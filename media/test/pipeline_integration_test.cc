@@ -113,14 +113,6 @@ const char kMP3[] = "audio/mpeg";
 const char kMP2AudioSBR[] = "video/mp2t; codecs=\"avc1.4D4041,mp4a.40.5\"";
 #endif  // defined(USE_PROPRIETARY_CODECS)
 
-// Key used to encrypt test files.
-const uint8_t kSecretKey[] = {0xeb, 0xdd, 0x62, 0xf1, 0x68, 0x14, 0xd2, 0x7b,
-                              0x68, 0xef, 0x12, 0x2a, 0xfc, 0xe4, 0xae, 0x3c};
-
-// The key ID for all encrypted files.
-const uint8_t kKeyId[] = {0x30, 0x31, 0x32, 0x33, 0x34, 0x35, 0x36, 0x37,
-                          0x38, 0x39, 0x30, 0x31, 0x32, 0x33, 0x34, 0x35};
-
 const size_t kAppendWholeFile = std::numeric_limits<size_t>::max();
 
 // Constants for the Media Source config change tests.
@@ -265,7 +257,7 @@ class FakeEncryptedMedia {
 
 enum PromiseResult { RESOLVED, REJECTED };
 
-// Provides |kSecretKey| in response to the encrypted event.
+// Provides the test key in response to the encrypted event.
 class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
  public:
   KeyProvidingApp() {}
@@ -368,11 +360,8 @@ class KeyProvidingApp : public FakeEncryptedMedia::AppBase {
 
   virtual bool LookupKey(const std::vector<uint8_t>& key_id,
                          std::vector<uint8_t>* key) {
-    // As there is no key rotation, the key ID provided should be |kKeyId|
-    // which uses |kSecretKey| as the key.
-    EXPECT_EQ(std::vector<uint8_t>(kKeyId, kKeyId + arraysize(kKeyId)), key_id);
-    key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
-    return true;
+    // No key rotation.
+    return LookupTestKeyVector(key_id, false, key);
   }
 
   std::string current_session_id_;
@@ -404,22 +393,8 @@ class RotatingKeyProvidingApp : public KeyProvidingApp {
 
   bool LookupKey(const std::vector<uint8_t>& key_id,
                  std::vector<uint8_t>* key) override {
-    // The Key and KeyId for this testing key provider are created by left
-    // rotating |kSecretKey| and |kKeyId|. Note that this implementation is
-    // only intended for testing purpose. The actual key rotation algorithm
-    // can be much more complicated.
-    // Find out the rotating position from |starting_key_id| and apply on |key|.
-    std::vector<uint8_t> starting_key_id(kKeyId, kKeyId + arraysize(kKeyId));
-    for (size_t pos = 0; pos < starting_key_id.size(); ++pos) {
-      std::rotate(starting_key_id.begin(), starting_key_id.begin() + pos,
-                  starting_key_id.end());
-      if (key_id == starting_key_id) {
-        key->assign(kSecretKey, kSecretKey + arraysize(kSecretKey));
-        std::rotate(key->begin(), key->begin() + pos, key->end());
-        return true;
-      }
-    }
-    return false;
+    // With key rotation.
+    return LookupTestKeyVector(key_id, true, key);
   }
 
   uint32_t num_distinct_need_key_calls_;

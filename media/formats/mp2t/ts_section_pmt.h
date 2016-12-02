@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/macros.h"
+#include "media/formats/mp2t/descriptors.h"
 #include "media/formats/mp2t/ts_section_psi.h"
 
 namespace media {
@@ -15,11 +16,10 @@ namespace mp2t {
 
 class TsSectionPmt : public TsSectionPsi {
  public:
-  // RegisterPesCb::Run(int pes_pid, int stream_type);
-  // Stream type is defined in
-  // "Table 2-34 – Stream type assignments" in H.222
+  // |stream_type| is defined in "Table 2-34 – Stream type assignments" in H.222
   // TODO(damienv): add the program number.
-  typedef base::Callback<void(int, int)> RegisterPesCb;
+  using RegisterPesCb = base::Callback<
+      void(int pes_pid, int stream_type, const Descriptors& descriptors)>;
 
   explicit TsSectionPmt(const RegisterPesCb& register_pes_cb);
   ~TsSectionPmt() override;

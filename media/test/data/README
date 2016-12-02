@@ -90,6 +90,12 @@ bear-640x360-v_frag-cenc-key_rotation.mp4 - A fragmented MP4 version of the vide
 bear-a_enc-a.webm - bear-320x240-audio-only.webm encrypted using key ID [1] and key [2].
 frame_size_change-av_enc-v.webm - third_party/WebKit/LayoutTests/media/resources/frame_size_change.webm encrypted using key ID [1] and key [2].
 
+bear-1280x720-hls.ts: produced using Apple's mediafilesegmenter tool with bear-1280x720.ts as input, with no encryption.
+  mediafilesegmenter -t 10 -start-segments-with-iframe -f 'output_clear/' bear-1280x720.ts
+
+bear-1280x720-hls-sample-aes.ts: produced using Apple's mediafilesegmenter tool also with bear-1280x720.ts as input, but with SAMPLE_AES encryption.
+  (Additional TS packets were constructed manually and prepended to convey the encryption metadata, notably key id and IV).
+  mediafilesegmenter -S -P -k 'key_iv.bin' -t 10 -start-segments-with-iframe -f 'output/' bear-1280x720.ts
 
 [1] 30313233343536373839303132333435
 [2] ebdd62f16814d27b68ef122afce4ae3c

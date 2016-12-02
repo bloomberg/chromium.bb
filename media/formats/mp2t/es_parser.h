@@ -20,6 +20,7 @@
 
 namespace media {
 
+class DecryptConfig;
 class OffsetByteQueue;
 class StreamParserBuffer;
 
@@ -27,7 +28,8 @@ namespace mp2t {
 
 class MEDIA_EXPORT EsParser {
  public:
-  typedef base::Callback<void(scoped_refptr<StreamParserBuffer>)> EmitBufferCB;
+  using EmitBufferCB = base::Callback<void(scoped_refptr<StreamParserBuffer>)>;
+  using GetDecryptConfigCB = base::Callback<const DecryptConfig*()>;
 
   EsParser();
   virtual ~EsParser();

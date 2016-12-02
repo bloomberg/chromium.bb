@@ -35,6 +35,18 @@ std::string GetURLQueryString(const base::StringPairs& query_params);
 //  |buffer| - The contents of the file.
 scoped_refptr<DecoderBuffer> ReadTestDataFile(const std::string& name);
 
+// If the provided |key_id| is that of a test key, returns true and fills the
+// |key|, otherwise returns false. If |allowRotation| is true, then other valid
+// values are obtained by rotating the original key_id and key. Two overloads
+// are provided, one using vectors and one using strings.
+bool LookupTestKeyVector(const std::vector<uint8_t>& key_id,
+                         bool allowRotation,
+                         std::vector<uint8_t>* key);
+
+bool LookupTestKeyString(const std::string& key_id,
+                         bool allowRotation,
+                         std::string* key);
+
 }  // namespace media
 
 #endif  // MEDIA_BASE_TEST_DATA_UTIL_H_

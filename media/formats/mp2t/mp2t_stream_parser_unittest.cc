@@ -15,6 +15,7 @@
 #include "base/bind_helpers.h"
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
+#include "base/strings/string_number_conversions.h"
 #include "base/time/time.h"
 #include "media/base/audio_decoder_config.h"
 #include "media/base/decoder_buffer.h"
@@ -25,7 +26,14 @@
 #include "media/base/test_data_util.h"
 #include "media/base/text_track_config.h"
 #include "media/base/video_decoder_config.h"
+#include "media/media_features.h"
 #include "testing/gtest/include/gtest/gtest.h"
+
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+#include <openssl/aes.h>
+#include <openssl/evp.h>
+#include "crypto/openssl_util.h"
+#endif
 
 namespace media {
 namespace mp2t {
@@ -51,6 +59,97 @@ bool IsAlmostEqual(DecodeTimestamp t0, DecodeTimestamp t1) {
   return (diff >= -kMaxDeviation && diff <= kMaxDeviation);
 }
 
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+class ScopedCipherCTX {
+ public:
+  explicit ScopedCipherCTX() { EVP_CIPHER_CTX_init(&ctx_); }
+  ~ScopedCipherCTX() {
+    EVP_CIPHER_CTX_cleanup(&ctx_);
+    crypto::ClearOpenSSLERRStack(FROM_HERE);
+  }
+  EVP_CIPHER_CTX* get() { return &ctx_; }
+
+ private:
+  EVP_CIPHER_CTX ctx_;
+};
+
+std::string DecryptSampleAES(const std::string& key,
+                             const std::string& iv,
+                             const uint8_t* input,
+                             int input_size,
+                             bool has_pattern) {
+  DCHECK(input);
+  EXPECT_EQ(input_size % 16, 0);
+  crypto::EnsureOpenSSLInit();
+  std::string result;
+  const EVP_CIPHER* cipher = EVP_aes_128_cbc();
+  ScopedCipherCTX ctx;
+  EXPECT_EQ(EVP_CipherInit_ex(ctx.get(), cipher, NULL,
+                              reinterpret_cast<const uint8_t*>(key.data()),
+                              reinterpret_cast<const uint8_t*>(iv.data()), 0),
+            1);
+  EVP_CIPHER_CTX_set_padding(ctx.get(), 0);
+  const size_t output_size = input_size;
+  std::unique_ptr<char[]> output(new char[output_size]);
+  uint8_t* in_ptr = const_cast<uint8_t*>(input);
+  uint8_t* out_ptr = reinterpret_cast<uint8_t*>(output.get());
+  size_t bytes_remaining = output_size;
+
+  while (bytes_remaining) {
+    int unused;
+    size_t amount_to_decrypt = has_pattern ? 16UL : bytes_remaining;
+    EXPECT_EQ(EVP_CipherUpdate(ctx.get(), out_ptr, &unused, in_ptr,
+                               amount_to_decrypt),
+              1);
+    bytes_remaining -= amount_to_decrypt;
+    if (bytes_remaining) {
+      out_ptr += amount_to_decrypt;
+      in_ptr += amount_to_decrypt;
+      size_t amount_to_skip = 144UL;
+      if (amount_to_skip > bytes_remaining)
+        amount_to_skip = bytes_remaining;
+      memcpy(out_ptr, in_ptr, amount_to_skip);
+      out_ptr += amount_to_skip;
+      in_ptr += amount_to_skip;
+      bytes_remaining -= amount_to_skip;
+    }
+  }
+
+  result.assign(output.get(), output_size);
+  return result;
+}
+
+// We only support AES-CBC at this time.
+// For the purpose of these tests, the key id is also used as the actual key.
+std::string DecryptBuffer(const StreamParserBuffer& buffer,
+                          const EncryptionScheme& scheme) {
+  EXPECT_TRUE(scheme.is_encrypted());
+  EXPECT_TRUE(scheme.mode() == EncryptionScheme::CIPHER_MODE_AES_CBC);
+  bool has_pattern = scheme.pattern().IsInEffect();
+  EXPECT_TRUE(!has_pattern ||
+              scheme.pattern().Matches(EncryptionScheme::Pattern(1, 9)));
+
+  std::string key;
+  EXPECT_TRUE(
+      LookupTestKeyString(buffer.decrypt_config()->key_id(), false, &key));
+  std::string iv = buffer.decrypt_config()->iv();
+  EXPECT_EQ(key.size(), 16UL);
+  EXPECT_EQ(iv.size(), 16UL);
+  std::string result;
+  uint8_t* in_ptr = const_cast<uint8_t*>(buffer.data());
+  const DecryptConfig* decrypt_config = buffer.decrypt_config();
+  for (const auto& subsample : decrypt_config->subsamples()) {
+    std::string clear(reinterpret_cast<char*>(in_ptr), subsample.clear_bytes);
+    result += clear;
+    in_ptr += subsample.clear_bytes;
+    result +=
+        DecryptSampleAES(key, iv, in_ptr, subsample.cypher_bytes, has_pattern);
+    in_ptr += subsample.cypher_bytes;
+  }
+  return result;
+}
+#endif
+
 }  // namespace
 
 class Mp2tStreamParserTest : public testing::Test {
@@ -66,7 +165,10 @@ class Mp2tStreamParserTest : public testing::Test {
         video_min_dts_(kNoDecodeTimestamp()),
         video_max_dts_(kNoDecodeTimestamp()),
         audio_track_id_(0),
-        video_track_id_(0) {
+        video_track_id_(0),
+        current_audio_config_(),
+        current_video_config_(),
+        capture_buffers(false) {
     bool has_sbr = false;
     parser_.reset(new Mp2tStreamParser(has_sbr));
   }
@@ -84,6 +186,12 @@ class Mp2tStreamParserTest : public testing::Test {
   DecodeTimestamp video_max_dts_;
   StreamParser::TrackId audio_track_id_;
   StreamParser::TrackId video_track_id_;
+
+  AudioDecoderConfig current_audio_config_;
+  VideoDecoderConfig current_video_config_;
+  std::vector<scoped_refptr<StreamParserBuffer>> audio_buffer_capture_;
+  std::vector<scoped_refptr<StreamParserBuffer>> video_buffer_capture_;
+  bool capture_buffers;
 
   void ResetStats() {
     segment_count_ = 0;
@@ -131,10 +239,12 @@ class Mp2tStreamParserTest : public testing::Test {
         audio_track_id_ = track_id;
         found_audio_track = true;
         EXPECT_TRUE(tracks->getAudioConfig(track_id).IsValidConfig());
+        current_audio_config_ = tracks->getAudioConfig(track_id);
       } else if (track->type() == MediaTrack::Video) {
         video_track_id_ = track_id;
         found_video_track = true;
         EXPECT_TRUE(tracks->getVideoConfig(track_id).IsValidConfig());
+        current_video_config_ = tracks->getVideoConfig(track_id);
       } else {
         // Unexpected track type.
         LOG(ERROR) << "Unexpected track type " << track->type();
@@ -145,6 +255,18 @@ class Mp2tStreamParserTest : public testing::Test {
     EXPECT_EQ(has_video_, found_video_track);
     config_count_++;
     return true;
+  }
+
+  void CaptureVideoBuffers(const StreamParser::BufferQueue& video_buffers) {
+    for (const auto& buffer : video_buffers) {
+      video_buffer_capture_.push_back(buffer);
+    }
+  }
+
+  void CaptureAudioBuffers(const StreamParser::BufferQueue& audio_buffers) {
+    for (const auto& buffer : audio_buffers) {
+      audio_buffer_capture_.push_back(buffer);
+    }
   }
 
   bool OnNewBuffers(const StreamParser::BufferQueueMap& buffer_queue_map) {
@@ -172,6 +294,11 @@ class Mp2tStreamParserTest : public testing::Test {
     const StreamParser::BufferQueue& video_buffers =
         (itr_video == buffer_queue_map.end()) ? empty_buffers
                                               : itr_video->second;
+
+    if (capture_buffers) {
+      CaptureVideoBuffers(video_buffers);
+      CaptureAudioBuffers(audio_buffers);
+    }
 
     // Verify monotonicity.
     if (!IsMonotonic(video_buffers))
@@ -205,8 +332,10 @@ class Mp2tStreamParserTest : public testing::Test {
 
   void OnKeyNeeded(EmeInitDataType type,
                    const std::vector<uint8_t>& init_data) {
+#if !BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
     LOG(ERROR) << "OnKeyNeeded not expected in the Mpeg2 TS parser";
     EXPECT_TRUE(false);
+#endif
   }
 
   void OnNewSegment() {
@@ -323,6 +452,58 @@ TEST_F(Mp2tStreamParserTest, AudioInPrivateStream1) {
   EXPECT_EQ(config_count_, 1);
   EXPECT_EQ(segment_count_, 1);
 }
+
+#if BUILDFLAG(ENABLE_HLS_SAMPLE_AES)
+TEST_F(Mp2tStreamParserTest, HLSSampleAES) {
+  std::vector<std::string> decrypted_video_buffers;
+  std::vector<std::string> decrypted_audio_buffers;
+  InitializeParser();
+  capture_buffers = true;
+  ParseMpeg2TsFile("bear-1280x720-hls-sample-aes.ts", 2048);
+  parser_->Flush();
+  EncryptionScheme video_encryption_scheme =
+      current_video_config_.encryption_scheme();
+  EXPECT_TRUE(video_encryption_scheme.is_encrypted());
+  for (const auto& buffer : video_buffer_capture_) {
+    std::string decrypted_video_buffer =
+        DecryptBuffer(*buffer.get(), video_encryption_scheme);
+    decrypted_video_buffers.push_back(decrypted_video_buffer);
+  }
+  EncryptionScheme audio_encryption_scheme =
+      current_audio_config_.encryption_scheme();
+  EXPECT_TRUE(audio_encryption_scheme.is_encrypted());
+  for (const auto& buffer : audio_buffer_capture_) {
+    std::string decrypted_audio_buffer =
+        DecryptBuffer(*buffer.get(), audio_encryption_scheme);
+    decrypted_audio_buffers.push_back(decrypted_audio_buffer);
+  }
+
+  parser_.reset(new Mp2tStreamParser(false));
+  ResetStats();
+  InitializeParser();
+  video_buffer_capture_.clear();
+  audio_buffer_capture_.clear();
+  ParseMpeg2TsFile("bear-1280x720-hls.ts", 2048);
+  parser_->Flush();
+  video_encryption_scheme = current_video_config_.encryption_scheme();
+  EXPECT_FALSE(video_encryption_scheme.is_encrypted());
+  // Skip the last buffer, which may be truncated.
+  for (size_t i = 0; i + 1 < video_buffer_capture_.size(); i++) {
+    const auto& buffer = video_buffer_capture_[i];
+    std::string unencrypted_video_buffer(
+        reinterpret_cast<const char*>(buffer->data()), buffer->data_size());
+    EXPECT_EQ(decrypted_video_buffers[i], unencrypted_video_buffer);
+  }
+  audio_encryption_scheme = current_audio_config_.encryption_scheme();
+  EXPECT_FALSE(audio_encryption_scheme.is_encrypted());
+  for (size_t i = 0; i + 1 < audio_buffer_capture_.size(); i++) {
+    const auto& buffer = audio_buffer_capture_[i];
+    std::string unencrypted_audio_buffer(
+        reinterpret_cast<const char*>(buffer->data()), buffer->data_size());
+    EXPECT_EQ(decrypted_audio_buffers[i], unencrypted_audio_buffer);
+  }
+}
+#endif
 
 }  // namespace mp2t
 }  // namespace media

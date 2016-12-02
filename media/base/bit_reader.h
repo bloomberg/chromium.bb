@@ -6,6 +6,7 @@
 #define MEDIA_BASE_BIT_READER_H_
 
 #include <stdint.h>
+#include <string>
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
@@ -29,6 +30,11 @@ class MEDIA_EXPORT BitReader
   bool ReadFlag(bool* flag) {
     return bit_reader_core_.ReadFlag(flag);
   }
+
+  // Read |num_bits| of binary data into |str|. |num_bits| must be a positive
+  // multiple of 8. This is not efficient for extracting large strings.
+  // If false is returned, |str| may not be valid.
+  bool ReadString(int num_bits, std::string* str);
 
   bool SkipBits(int num_bits) {
     return bit_reader_core_.SkipBits(num_bits);
