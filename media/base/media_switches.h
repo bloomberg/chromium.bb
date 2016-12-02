@@ -79,6 +79,7 @@ namespace media {
 // alongside the definition of their values in the .cc file.
 
 #if defined(OS_WIN)
+MEDIA_EXPORT extern const base::Feature kD3D11VideoDecoding;
 MEDIA_EXPORT extern const base::Feature kMediaFoundationH264Encoding;
 #endif  // defined(OS_WIN)
 

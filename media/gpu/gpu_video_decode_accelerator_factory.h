@@ -86,6 +86,9 @@ class MEDIA_GPU_EXPORT GpuVideoDecodeAcceleratorFactory {
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);
 
 #if defined(OS_WIN)
+  std::unique_ptr<VideoDecodeAccelerator> CreateD3D11VDA(
+      const gpu::GpuDriverBugWorkarounds& workarounds,
+      const gpu::GpuPreferences& gpu_preferences) const;
   std::unique_ptr<VideoDecodeAccelerator> CreateDXVAVDA(
       const gpu::GpuDriverBugWorkarounds& workarounds,
       const gpu::GpuPreferences& gpu_preferences) const;

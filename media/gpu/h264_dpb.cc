@@ -62,7 +62,7 @@ void H264DPB::Clear() {
 }
 
 void H264DPB::set_max_num_pics(size_t max_num_pics) {
-  DCHECK_LE(max_num_pics, kDPBMaxSize);
+  DCHECK_LE(max_num_pics, static_cast<size_t>(kDPBMaxSize));
   max_num_pics_ = max_num_pics;
   if (pics_.size() > max_num_pics_)
     pics_.resize(max_num_pics_);

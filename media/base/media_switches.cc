@@ -131,6 +131,11 @@ const char kMSEVideoBufferSizeLimit[] = "mse-video-buffer-size-limit";
 namespace media {
 
 #if defined(OS_WIN)
+// Enables video decode acceleration using the D3D11 video decoder api.
+// This is completely insecure - DO NOT USE except for testing.
+const base::Feature kD3D11VideoDecoding{"D3D11VideoDecoding",
+                                        base::FEATURE_DISABLED_BY_DEFAULT};
+
 // Enables H264 HW encode acceleration using Media Foundation for Windows.
 const base::Feature kMediaFoundationH264Encoding{
     "MediaFoundationH264Encoding", base::FEATURE_DISABLED_BY_DEFAULT};

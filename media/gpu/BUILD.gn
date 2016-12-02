@@ -198,13 +198,17 @@ component("gpu") {
     }
   }
 
-  if (is_chromeos) {
+  if (is_chromeos || is_win) {
     sources += [
       "accelerated_video_decoder.h",
       "h264_decoder.cc",
       "h264_decoder.h",
       "h264_dpb.cc",
       "h264_dpb.h",
+    ]
+  }
+  if (is_chromeos) {
+    sources += [
       "vp8_decoder.cc",
       "vp8_decoder.h",
       "vp8_picture.cc",
@@ -292,6 +296,10 @@ component("gpu") {
 
   if (is_win) {
     sources += [
+      "d3d11_h264_accelerator.cc",
+      "d3d11_h264_accelerator.h",
+      "d3d11_video_decode_accelerator_win.cc",
+      "d3d11_video_decode_accelerator_win.h",
       "dxva_picture_buffer_win.cc",
       "dxva_picture_buffer_win.h",
       "dxva_video_decode_accelerator_win.cc",
