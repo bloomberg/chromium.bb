@@ -8,17 +8,27 @@
 #if DCHECK_IS_ON()
 namespace blink {
 
-#define DCHECK_PTR_VAL_EQ(ptrA, ptrB) \
-  DCHECK((!!ptrA == !!ptrB) && ((!ptrA && !ptrB) || (*ptrA == *ptrB)));
-
 // This file contains two scope classes for catching cases where paint
 // properties need an update but where not marked as such. If paint properties
 // will change, the object must be marked as needing a paint property update
-// using {FrameView, LayoutObject}::setNeedsPaintPropertyUpdate().
+// using {FrameView, LayoutObject}::setNeedsPaintPropertyUpdate() or by forcing
+// a subtree update (see: PaintPropertyTreeBuilderContext::forceSubtreeupdate).
 //
 // Both scope classes work by recording the paint property state of an object
 // before rebuilding properties, forcing the properties to get updated, then
 // checking that the updated properties match the original properties.
+
+#define DCHECK_FRAMEVIEW_PROPERTY_EQ(original, updated)                      \
+  do {                                                                       \
+    DCHECK(!!original == !!updated) << "Property was created or deleted "    \
+                                       "without the FrameView needing a "    \
+                                       "paint property update.";             \
+    if (!!original && !!updated) {                                           \
+      DCHECK(*original == *updated) << "Property was updated without the "   \
+                                       "FrameView needing a paint property " \
+                                       "update.";                            \
+    }                                                                        \
+  } while (0);
 
 class FindFrameViewPropertiesNeedingUpdateScope {
  public:
@@ -36,13 +46,13 @@ class FindFrameViewPropertiesNeedingUpdateScope {
     m_frameView->setOnlyThisNeedsPaintPropertyUpdateForTesting();
 
     if (auto* preTranslation = m_frameView->preTranslation())
-      m_preTranslation = preTranslation->clone();
+      m_originalPreTranslation = preTranslation->clone();
     if (auto* contentClip = m_frameView->contentClip())
-      m_contentClip = contentClip->clone();
+      m_originalContentClip = contentClip->clone();
     if (auto* scrollTranslation = m_frameView->scrollTranslation())
-      m_scrollTranslation = scrollTranslation->clone();
+      m_originalScrollTranslation = scrollTranslation->clone();
     if (auto* scroll = m_frameView->scroll())
-      m_scroll = scroll->clone();
+      m_originalScroll = scroll->clone();
   }
 
   ~FindFrameViewPropertiesNeedingUpdateScope() {
@@ -50,12 +60,19 @@ class FindFrameViewPropertiesNeedingUpdateScope {
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
-    // If paint properties are not marked as needing an update but still change,
-    // we are missing a call to FrameView::setNeedsPaintPropertyUpdate().
-    DCHECK_PTR_VAL_EQ(m_preTranslation, m_frameView->preTranslation());
-    DCHECK_PTR_VAL_EQ(m_contentClip, m_frameView->contentClip());
-    DCHECK_PTR_VAL_EQ(m_scrollTranslation, m_frameView->scrollTranslation());
-    DCHECK_PTR_VAL_EQ(m_scroll, m_frameView->scroll());
+    // If these checks fail, the paint properties should not have changed but
+    // did. This is due to missing one of these paint property invalidations:
+    // 1) The FrameView should have been marked as needing an update with
+    //    FrameView::setNeedsPaintPropertyUpdate().
+    // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
+    //    PaintPropertyTreeBuilderContext::forceSubtreeupdate).
+    DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalPreTranslation,
+                                 m_frameView->preTranslation());
+    DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalContentClip,
+                                 m_frameView->contentClip());
+    DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalScrollTranslation,
+                                 m_frameView->scrollTranslation());
+    DCHECK_FRAMEVIEW_PROPERTY_EQ(m_originalScroll, m_frameView->scroll());
 
     // Restore original clean bit.
     m_frameView->clearNeedsPaintPropertyUpdate();
@@ -65,11 +82,25 @@ class FindFrameViewPropertiesNeedingUpdateScope {
   Persistent<FrameView> m_frameView;
   bool m_neededPaintPropertyUpdate;
   bool m_neededForcedSubtreeUpdate;
-  RefPtr<TransformPaintPropertyNode> m_preTranslation;
-  RefPtr<ClipPaintPropertyNode> m_contentClip;
-  RefPtr<TransformPaintPropertyNode> m_scrollTranslation;
-  RefPtr<ScrollPaintPropertyNode> m_scroll;
+  RefPtr<TransformPaintPropertyNode> m_originalPreTranslation;
+  RefPtr<ClipPaintPropertyNode> m_originalContentClip;
+  RefPtr<TransformPaintPropertyNode> m_originalScrollTranslation;
+  RefPtr<ScrollPaintPropertyNode> m_originalScroll;
 };
+
+#define DCHECK_OBJECT_PROPERTY_EQ(object, original, updated)                 \
+  do {                                                                       \
+    DCHECK(!!original == !!updated) << "Property was created or deleted "    \
+                                       "without the layout object ("         \
+                                    << object.debugName()                    \
+                                    << ") needing a paint property update."; \
+    if (!!original && !!updated) {                                           \
+      DCHECK(*original == *updated) << "Property was updated without the "   \
+                                       "layout object ("                     \
+                                    << object.debugName()                    \
+                                    << ") needing a paint property update."; \
+    }                                                                        \
+  } while (0);
 
 class FindObjectPropertiesNeedingUpdateScope {
  public:
@@ -88,7 +119,7 @@ class FindObjectPropertiesNeedingUpdateScope {
         .setOnlyThisNeedsPaintPropertyUpdateForTesting();
 
     if (const auto* properties = m_object.paintProperties())
-      m_properties = properties->clone();
+      m_originalProperties = properties->clone();
   }
 
   ~FindObjectPropertiesNeedingUpdateScope() {
@@ -96,48 +127,70 @@ class FindObjectPropertiesNeedingUpdateScope {
     if (m_neededPaintPropertyUpdate || m_neededForcedSubtreeUpdate)
       return;
 
-    // If paint properties are not marked as needing an update but still change,
-    // we are missing a call to LayoutObject::setNeedsPaintPropertyUpdate().
+    // If these checks fail, the paint properties should not have changed but
+    // did. This is due to missing one of these paint property invalidations:
+    // 1) The LayoutObject should have been marked as needing an update with
+    //    LayoutObject::setNeedsPaintPropertyUpdate().
+    // 2) The PrePaintTreeWalk should have had a forced subtree update (see:
+    //    PaintPropertyTreeBuilderContext::forceSubtreeupdate).
     const auto* objectProperties = m_object.paintProperties();
-    if (m_properties && objectProperties) {
-      DCHECK_PTR_VAL_EQ(m_properties->paintOffsetTranslation(),
-                        objectProperties->paintOffsetTranslation());
-      DCHECK_PTR_VAL_EQ(m_properties->transform(),
-                        objectProperties->transform());
-      DCHECK_PTR_VAL_EQ(m_properties->effect(), objectProperties->effect());
-      DCHECK_PTR_VAL_EQ(m_properties->cssClip(), objectProperties->cssClip());
-      DCHECK_PTR_VAL_EQ(m_properties->cssClipFixedPosition(),
-                        objectProperties->cssClipFixedPosition());
-      DCHECK_PTR_VAL_EQ(m_properties->innerBorderRadiusClip(),
-                        objectProperties->innerBorderRadiusClip());
-      DCHECK_PTR_VAL_EQ(m_properties->overflowClip(),
-                        objectProperties->overflowClip());
-      DCHECK_PTR_VAL_EQ(m_properties->perspective(),
-                        objectProperties->perspective());
-      DCHECK_PTR_VAL_EQ(m_properties->svgLocalToBorderBoxTransform(),
-                        objectProperties->svgLocalToBorderBoxTransform());
-      DCHECK_PTR_VAL_EQ(m_properties->scrollTranslation(),
-                        objectProperties->scrollTranslation());
-      DCHECK_PTR_VAL_EQ(m_properties->scrollbarPaintOffset(),
-                        objectProperties->scrollbarPaintOffset());
-      const auto* borderBox = m_properties->localBorderBoxProperties();
+    if (m_originalProperties && objectProperties) {
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->paintOffsetTranslation(),
+                                objectProperties->paintOffsetTranslation());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->transform(),
+                                objectProperties->transform());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->effect(),
+                                objectProperties->effect());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->cssClip(),
+                                objectProperties->cssClip());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->cssClipFixedPosition(),
+                                objectProperties->cssClipFixedPosition());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->innerBorderRadiusClip(),
+                                objectProperties->innerBorderRadiusClip());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->overflowClip(),
+                                objectProperties->overflowClip());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object, m_originalProperties->perspective(),
+                                objectProperties->perspective());
+      DCHECK_OBJECT_PROPERTY_EQ(
+          m_object, m_originalProperties->svgLocalToBorderBoxTransform(),
+          objectProperties->svgLocalToBorderBoxTransform());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->scrollTranslation(),
+                                objectProperties->scrollTranslation());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->scrollTranslation(),
+                                objectProperties->scrollTranslation());
+      DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                m_originalProperties->scrollbarPaintOffset(),
+                                objectProperties->scrollbarPaintOffset());
+      const auto* originalBorderBox =
+          m_originalProperties->localBorderBoxProperties();
       const auto* objectBorderBox =
           objectProperties->localBorderBoxProperties();
-      if (borderBox && objectBorderBox) {
-        DCHECK(borderBox->paintOffset == objectBorderBox->paintOffset);
-        DCHECK_EQ(borderBox->propertyTreeState.transform(),
-                  objectBorderBox->propertyTreeState.transform());
-        DCHECK_EQ(borderBox->propertyTreeState.clip(),
-                  objectBorderBox->propertyTreeState.clip());
-        DCHECK_EQ(borderBox->propertyTreeState.effect(),
-                  objectBorderBox->propertyTreeState.effect());
-        DCHECK_EQ(borderBox->propertyTreeState.scroll(),
-                  objectBorderBox->propertyTreeState.scroll());
+      if (originalBorderBox && objectBorderBox) {
+        DCHECK(originalBorderBox->paintOffset == objectBorderBox->paintOffset)
+            << "Border box paint offset was updated without the layout object ("
+            << m_object.debugName() << ") needing a paint property update.";
+        DCHECK_OBJECT_PROPERTY_EQ(
+            m_object, originalBorderBox->propertyTreeState.transform(),
+            objectBorderBox->propertyTreeState.transform());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                  originalBorderBox->propertyTreeState.clip(),
+                                  objectBorderBox->propertyTreeState.clip());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                  originalBorderBox->propertyTreeState.effect(),
+                                  objectBorderBox->propertyTreeState.effect());
+        DCHECK_OBJECT_PROPERTY_EQ(m_object,
+                                  originalBorderBox->propertyTreeState.scroll(),
+                                  objectBorderBox->propertyTreeState.scroll());
       } else {
-        DCHECK_EQ(!!borderBox, !!objectBorderBox);
+        DCHECK_EQ(!!originalBorderBox, !!objectBorderBox);
       }
     } else {
-      DCHECK_EQ(!!m_properties, !!objectProperties);
+      DCHECK_EQ(!!m_originalProperties, !!objectProperties);
     }
     // Restore original clean bit.
     const_cast<LayoutObject&>(m_object).clearNeedsPaintPropertyUpdate();
@@ -147,7 +200,7 @@ class FindObjectPropertiesNeedingUpdateScope {
   const LayoutObject& m_object;
   bool m_neededPaintPropertyUpdate;
   bool m_neededForcedSubtreeUpdate;
-  std::unique_ptr<const ObjectPaintProperties> m_properties;
+  std::unique_ptr<const ObjectPaintProperties> m_originalProperties;
 };
 
 }  // namespace blink
