@@ -27,7 +27,6 @@
 #include "bindings/core/v8/RadioNodeListOrElement.h"
 #include "core/HTMLNames.h"
 #include "core/frame/UseCounter.h"
-#include "core/html/HTMLFieldSetElement.h"
 #include "core/html/HTMLFormElement.h"
 #include "core/html/HTMLImageElement.h"
 #include "wtf/HashSet.h"
@@ -43,7 +42,7 @@ HTMLFormControlsCollection::HTMLFormControlsCollection(ContainerNode& ownerNode)
     : HTMLCollection(ownerNode, FormControls, OverridesItemAfter),
       m_cachedElement(nullptr),
       m_cachedElementOffsetInArray(0) {
-  DCHECK(isHTMLFormElement(ownerNode) || isHTMLFieldSetElement(ownerNode));
+  DCHECK(isHTMLFormElement(ownerNode));
 }
 
 HTMLFormControlsCollection* HTMLFormControlsCollection::create(
@@ -57,10 +56,7 @@ HTMLFormControlsCollection::~HTMLFormControlsCollection() {}
 
 const FormAssociatedElement::List&
 HTMLFormControlsCollection::formControlElements() const {
-  DCHECK(isHTMLFormElement(ownerNode()) || isHTMLFieldSetElement(ownerNode()));
-  if (isHTMLFormElement(ownerNode()))
-    return toHTMLFormElement(ownerNode()).associatedElements();
-  return toHTMLFieldSetElement(ownerNode()).associatedElements();
+  return toHTMLFormElement(ownerNode()).associatedElements();
 }
 
 const HeapVector<Member<HTMLImageElement>>&
@@ -162,23 +158,20 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
     }
   }
 
-  if (isHTMLFormElement(ownerNode())) {
-    // HTMLFormControlsCollection doesn't support named getter for IMG
-    // elements. However we still need to handle IMG elements here because
-    // HTMLFormElement named getter relies on this.
-    const HeapVector<Member<HTMLImageElement>>& imageElementsArray =
-        formImageElements();
-    for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
-      HTMLImageElement* element = imageElementsArray[i];
-      const AtomicString& idAttrVal = element->getIdAttribute();
-      const AtomicString& nameAttrVal = element->getNameAttribute();
-      if (!idAttrVal.isEmpty() &&
-          !foundInputElements.contains(idAttrVal.impl()))
-        cache->addElementWithId(idAttrVal, element);
-      if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal &&
-          !foundInputElements.contains(nameAttrVal.impl()))
-        cache->addElementWithName(nameAttrVal, element);
-    }
+  // HTMLFormControlsCollection doesn't support named getter for IMG
+  // elements. However we still need to handle IMG elements here because
+  // HTMLFormElement named getter relies on this.
+  const HeapVector<Member<HTMLImageElement>>& imageElementsArray =
+      formImageElements();
+  for (unsigned i = 0; i < imageElementsArray.size(); ++i) {
+    HTMLImageElement* element = imageElementsArray[i];
+    const AtomicString& idAttrVal = element->getIdAttribute();
+    const AtomicString& nameAttrVal = element->getNameAttribute();
+    if (!idAttrVal.isEmpty() && !foundInputElements.contains(idAttrVal.impl()))
+      cache->addElementWithId(idAttrVal, element);
+    if (!nameAttrVal.isEmpty() && idAttrVal != nameAttrVal &&
+        !foundInputElements.contains(nameAttrVal.impl()))
+      cache->addElementWithName(nameAttrVal, element);
   }
 
   // Set the named item cache last as traversing the tree may cause cache
@@ -204,10 +197,6 @@ void HTMLFormControlsCollection::namedGetter(
   // This path never returns a RadioNodeList for <img> because
   // onlyMatchingImgElements flag is false by default.
   returnValue.setRadioNodeList(ownerNode().radioNodeList(name));
-  if (isHTMLFieldSetElement(ownerNode()))
-    UseCounter::count(
-        document(),
-        UseCounter::FormControlsCollectionReturnsRadioNodeListForFieldSet);
 }
 
 void HTMLFormControlsCollection::supportedPropertyNames(Vector<String>& names) {

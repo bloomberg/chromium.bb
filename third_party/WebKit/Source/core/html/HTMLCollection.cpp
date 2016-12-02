@@ -30,6 +30,7 @@
 #include "core/html/DocumentNameCollection.h"
 #include "core/html/HTMLDataListOptionsCollection.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/HTMLFormControlElement.h"
 #include "core/html/HTMLObjectElement.h"
 #include "core/html/HTMLOptionElement.h"
 #include "core/html/HTMLOptionsCollection.h"
@@ -78,7 +79,8 @@ static bool shouldTypeOnlyIncludeDirectChildren(CollectionType type) {
   return false;
 }
 
-static NodeListRootType rootTypeFromCollectionType(CollectionType type) {
+static NodeListRootType rootTypeFromCollectionType(const ContainerNode& owner,
+                                                   CollectionType type) {
   switch (type) {
     case DocImages:
     case DocApplets:
@@ -90,7 +92,6 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type) {
     case DocAll:
     case WindowNamedItems:
     case DocumentNamedItems:
-    case FormControls:
       return NodeListRootType::TreeScope;
     case ClassCollectionType:
     case TagCollectionType:
@@ -105,6 +106,11 @@ static NodeListRootType rootTypeFromCollectionType(CollectionType type) {
     case DataListOptions:
     case MapAreas:
       return NodeListRootType::Node;
+    case FormControls:
+      if (isHTMLFieldSetElement(owner))
+        return NodeListRootType::Node;
+      DCHECK(isHTMLFormElement(owner));
+      return NodeListRootType::TreeScope;
     case NameNodeListType:
     case RadioNodeListType:
     case RadioImgNodeListType:
@@ -164,7 +170,7 @@ HTMLCollection::HTMLCollection(ContainerNode& ownerNode,
                                CollectionType type,
                                ItemAfterOverrideType itemAfterOverrideType)
     : LiveNodeListBase(ownerNode,
-                       rootTypeFromCollectionType(type),
+                       rootTypeFromCollectionType(ownerNode, type),
                        invalidationTypeExcludingIdAndNameAttributes(type),
                        type),
       m_overridesItemAfter(itemAfterOverrideType == OverridesItemAfter),
@@ -233,12 +239,14 @@ static inline bool isMatchingHTMLElement(const HTMLCollection& htmlCollection,
              element.fastHasAttribute(hrefAttr);
     case DocAnchors:
       return element.hasTagName(aTag) && element.fastHasAttribute(nameAttr);
+    case FormControls:
+      DCHECK(isHTMLFieldSetElement(htmlCollection.ownerNode()));
+      return isHTMLObjectElement(element) || isHTMLFormControlElement(element);
     case ClassCollectionType:
     case TagCollectionType:
     case HTMLTagCollectionType:
     case DocAll:
     case NodeChildren:
-    case FormControls:
     case TableRows:
     case WindowNamedItems:
     case NameNodeListType:

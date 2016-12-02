@@ -41,76 +41,15 @@
 </div>
 <div id="console"></div>
 <script>
-description("This test is for RadioNodeList specified at http://www.whatwg.org/specs/web-apps/current-work/multipage/common-dom-interfaces.html#radionodelist ");
+description("This test ensures fieldset.elements does NOT contain RadioNodeList.");
 debug("");
 var owner = document.getElementById('fs');
 
-shouldBe('owner.elements.length', '23');
+shouldBe('owner.elements.length', '24');
 
 var elementsList = owner.elements;
-var radioNodeList = elementsList.namedItem("inputcommon");
-shouldBe('radioNodeList.length', '4');
-
-shouldBe('radioNodeList[0].value', "'searching'");
-shouldBe('radioNodeList[1].value', "'123'");
-shouldBe('radioNodeList[2].value', "'inputRadioValue'");
-shouldBe('radioNodeList[3].value', "'buttonValue'");
-
-debug("");
-debug("Changing the input value to check RadioNodeList is live view of FormCollection");
-document.getElementById("numberId").value = 456;
-shouldBe('radioNodeList[1].value', "'456'");
-
-debug("");
-debug("Checking value IDL attribute on the RadioNodeList");
-shouldBe('radioNodeList.value', '""');
-shouldBe('radioNodeList.value = "inputRadioValue"; radioNodeList[2].checked', 'true');
-shouldBe('Object.prototype.toString.call(radioNodeList[2])', "'[object HTMLInputElement]'");
-shouldBe('radioNodeList[2].type', "'radio'");
-
-radioNodeList[2].checked = false;
-shouldBe('radioNodeList.value', '""');
-shouldBe('radioNodeList[2].checked = true; radioNodeList.value', "'inputRadioValue'");
-
-var newElement = document.createElement("input");
-newElement.setAttribute("type", "text");
-newElement.setAttribute("value", "new element");
-newElement.setAttribute("id", "inputcommon");
-
-debug("");
-debug("Check RadioNodeList is updated after adding a new element");
-shouldBe('owner.appendChild(newElement); radioNodeList.length', '5');
-shouldBe('owner.elements.length', '24');
-shouldBe('radioNodeList[4].value', "'new element'");
-
-debug("");
-debug("Check RadioNodeList is updated after remove an element");
-shouldBe('owner.removeChild(newElement); radioNodeList.length', '4');
-shouldBe('radioNodeList[3].value', "'buttonValue'");
-
-debug("");
-debug("Check RadioNodeList is updated after change in id, type and checked state of an element");
-shouldBe('radioNodeList.length', '4');
-debug("After changing the id");
-radioNodeList[3].id = "changedName";
-shouldBe('radioNodeList.length', '3');
-
-shouldBe('elementsList[13].checked = false; radioNodeList.value', '""');
-shouldBe('elementsList[13].checked = true; radioNodeList.value', "'inputRadioValue'");
-shouldBe('elementsList[13].type = "date"; radioNodeList.value', "''");
-
-debug("");
-debug("Check second RadioNodeList is also created properly");
-var radioNodeList2 = elementsList.namedItem("commoninput");
-shouldBe('radioNodeList2.length', '3');
-
-shouldBe('radioNodeList2[0].type', "'text'");
-shouldBe('radioNodeList2[1].type', "'email'");
-shouldBe('radioNodeList2[2].type', "'reset'");
-radioNodeList2[2].id = "idChanged";
-debug("After changing the id");
-shouldBe('radioNodeList2.length', '2');
-debug("");
+var notRadioNodeList = elementsList.namedItem("inputcommon");
+shouldBeFalse('notRadioNodeList instanceof RadioNodeList');
 
 var container = document.getElementById("divId");
 container.parentNode.removeChild(container);

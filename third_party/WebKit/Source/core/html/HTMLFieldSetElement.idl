@@ -26,7 +26,7 @@ interface HTMLFieldSetElement : HTMLElement {
 
     readonly attribute DOMString type;
 
-    [Measure] readonly attribute HTMLFormControlsCollection elements;
+    [Measure] readonly attribute HTMLCollection elements;
 
     readonly attribute boolean willValidate;
     [SameObject] readonly attribute ValidityState validity;

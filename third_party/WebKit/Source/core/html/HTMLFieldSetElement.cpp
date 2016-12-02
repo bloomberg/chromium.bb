@@ -111,8 +111,8 @@ HTMLLegendElement* HTMLFieldSetElement::legend() const {
   return Traversal<HTMLLegendElement>::firstChild(*this);
 }
 
-HTMLFormControlsCollection* HTMLFieldSetElement::elements() {
-  return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
+HTMLCollection* HTMLFieldSetElement::elements() {
+  return ensureCachedCollection<HTMLCollection>(FormControls);
 }
 
 void HTMLFieldSetElement::refreshElementsIfNeeded() const {

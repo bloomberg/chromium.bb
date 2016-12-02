@@ -29,7 +29,7 @@
 
 namespace blink {
 
-class HTMLFormControlsCollection;
+class HTMLCollection;
 
 class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   DEFINE_WRAPPERTYPEINFO();
@@ -38,10 +38,7 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
   static HTMLFieldSetElement* create(Document&, HTMLFormElement*);
   DECLARE_VIRTUAL_TRACE();
   HTMLLegendElement* legend() const;
-
-  HTMLFormControlsCollection* elements();
-
-  const FormAssociatedElement::List& associatedElements() const;
+  HTMLCollection* elements();
 
  protected:
   void disabledAttributeChanged() override;
@@ -64,7 +61,9 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
 
   static void invalidateDisabledStateUnder(Element&);
   void refreshElementsIfNeeded() const;
+  const FormAssociatedElement::List& associatedElements() const;
 
+  // TODO(tkent): Remove m_associcatedElements.
   mutable FormAssociatedElement::List m_associatedElements;
   // When dom tree is modified, we have to refresh the m_associatedElements
   // array.
