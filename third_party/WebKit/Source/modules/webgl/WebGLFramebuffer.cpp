@@ -43,7 +43,6 @@ class WebGLRenderbufferAttachment final
 
  private:
   explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
-  WebGLRenderbufferAttachment() {}
 
   WebGLSharedObject* object() const override;
   bool isSharedObject(WebGLSharedObject*) const override;
@@ -117,7 +116,6 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                          GLenum target,
                          GLint level,
                          GLint layer);
-  WebGLTextureAttachment() {}
 
   WebGLSharedObject* object() const override;
   bool isSharedObject(WebGLSharedObject*) const override;
@@ -197,8 +195,6 @@ void WebGLTextureAttachment::unattach(gpu::gles2::GLES2Interface* gl,
 
 WebGLFramebuffer::WebGLAttachment::WebGLAttachment() {}
 
-WebGLFramebuffer::WebGLAttachment::~WebGLAttachment() {}
-
 WebGLFramebuffer* WebGLFramebuffer::create(WebGLRenderingContextBase* ctx) {
   return new WebGLFramebuffer(ctx);
 }
@@ -206,7 +202,6 @@ WebGLFramebuffer* WebGLFramebuffer::create(WebGLRenderingContextBase* ctx) {
 WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx),
       m_object(0),
-      m_destructionInProgress(false),
       m_hasEverBeenBound(false),
       m_webGL1DepthStencilConsistent(true),
       m_readBuffer(GL_COLOR_ATTACHMENT0) {
@@ -214,13 +209,7 @@ WebGLFramebuffer::WebGLFramebuffer(WebGLRenderingContextBase* ctx)
 }
 
 WebGLFramebuffer::~WebGLFramebuffer() {
-  // Attachments in |m_attachments| will be deleted from other
-  // places, and we must not touch that map in deleteObjectImpl once
-  // the destructor has been entered.
-  m_destructionInProgress = true;
-
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
+  runDestructor();
 }
 
 void WebGLFramebuffer::setAttachmentForBoundFramebuffer(GLenum target,
@@ -383,7 +372,7 @@ void WebGLFramebuffer::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {
   // entered, as they may have been finalized already during the
   // same GC sweep. These attachments' OpenGL objects will be fully
   // destroyed once their JavaScript wrappers are collected.
-  if (!m_destructionInProgress) {
+  if (!destructionInProgress()) {
     for (const auto& attachment : m_attachments)
       attachment.value->onDetached(gl);
   }

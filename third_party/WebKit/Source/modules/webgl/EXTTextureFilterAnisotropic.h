@@ -38,7 +38,6 @@ class EXTTextureFilterAnisotropic final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~EXTTextureFilterAnisotropic() override;
   WebGLExtensionName name() const override;
 
  private:

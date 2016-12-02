@@ -37,8 +37,6 @@ WebGLCompressedTextureATC::WebGLCompressedTextureATC(
       GC3D_COMPRESSED_ATC_RGBA_INTERPOLATED_ALPHA_AMD);
 }
 
-WebGLCompressedTextureATC::~WebGLCompressedTextureATC() {}
-
 WebGLExtensionName WebGLCompressedTextureATC::name() const {
   return WebGLCompressedTextureATCName;
 }

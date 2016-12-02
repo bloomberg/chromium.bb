@@ -14,16 +14,15 @@ WebGLTransformFeedback* WebGLTransformFeedback::create(
   return new WebGLTransformFeedback(ctx);
 }
 
-WebGLTransformFeedback::~WebGLTransformFeedback() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
-}
-
 WebGLTransformFeedback::WebGLTransformFeedback(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx), m_target(0), m_program(nullptr) {
   GLuint tf;
   ctx->contextGL()->GenTransformFeedbacks(1, &tf);
   setObject(tf);
+}
+
+WebGLTransformFeedback::~WebGLTransformFeedback() {
+  runDestructor();
 }
 
 void WebGLTransformFeedback::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

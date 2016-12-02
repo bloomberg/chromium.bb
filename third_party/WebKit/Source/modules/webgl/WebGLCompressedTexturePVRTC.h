@@ -38,7 +38,6 @@ class WebGLCompressedTexturePVRTC final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLCompressedTexturePVRTC() override;
   WebGLExtensionName name() const override;
 
  private:

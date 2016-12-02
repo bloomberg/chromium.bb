@@ -135,8 +135,6 @@ WebGL2RenderingContext::WebGL2RenderingContext(
                                  std::move(contextProvider),
                                  requestedAttributes) {}
 
-WebGL2RenderingContext::~WebGL2RenderingContext() {}
-
 void WebGL2RenderingContext::setCanvasGetContextResult(
     RenderingContext& result) {
   result.setWebGL2RenderingContext(this);

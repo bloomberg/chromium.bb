@@ -16,7 +16,6 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(
       m_object(0),
       m_type(type),
       m_hasEverBeenBound(false),
-      m_destructionInProgress(false),
       m_boundElementArrayBuffer(this, nullptr),
       m_isAllEnabledAttribBufferBound(true) {
   m_arrayBufferList.resize(ctx->maxVertexAttribs());
@@ -35,13 +34,7 @@ WebGLVertexArrayObjectBase::WebGLVertexArrayObjectBase(
 }
 
 WebGLVertexArrayObjectBase::~WebGLVertexArrayObjectBase() {
-  m_destructionInProgress = true;
-
-  // Delete the platform framebuffer resource, in case
-  // where this vertex array object isn't detached when it and
-  // the WebGLRenderingContextBase object it is registered with
-  // are both finalized.
-  detachAndDeleteObject();
+  runDestructor();
 }
 
 void WebGLVertexArrayObjectBase::dispatchDetached(
@@ -70,7 +63,7 @@ void WebGLVertexArrayObjectBase::deleteObjectImpl(
   // since they could have been already finalized.
   // The finalizers of these objects will handle their detachment
   // by themselves.
-  if (!m_destructionInProgress)
+  if (!destructionInProgress())
     dispatchDetached(gl);
 }
 

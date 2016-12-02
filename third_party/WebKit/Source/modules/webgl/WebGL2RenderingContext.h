@@ -42,8 +42,6 @@ class WebGL2RenderingContext : public WebGL2RenderingContextBase {
     void onError(HTMLCanvasElement*, const String& error) override;
   };
 
-  ~WebGL2RenderingContext() override;
-
   CanvasRenderingContext::ContextType getContextType() const override {
     return CanvasRenderingContext::ContextWebgl2;
   }

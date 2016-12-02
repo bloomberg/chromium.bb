@@ -32,8 +32,6 @@ namespace blink {
 WebGLLoseContext::WebGLLoseContext(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {}
 
-WebGLLoseContext::~WebGLLoseContext() {}
-
 void WebGLLoseContext::lose(bool force) {
   if (force)
     WebGLExtension::lose(true);

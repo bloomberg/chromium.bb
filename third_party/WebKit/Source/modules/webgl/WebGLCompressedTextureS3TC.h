@@ -38,7 +38,6 @@ class WebGLCompressedTextureS3TC final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLCompressedTextureS3TC() override;
   WebGLExtensionName name() const override;
 
  private:

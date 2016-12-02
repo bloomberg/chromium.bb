@@ -14,8 +14,6 @@ WebGLCompressedTextureETC1::WebGLCompressedTextureETC1(
   context->addCompressedTextureFormat(GL_ETC1_RGB8_OES);
 }
 
-WebGLCompressedTextureETC1::~WebGLCompressedTextureETC1() {}
-
 WebGLExtensionName WebGLCompressedTextureETC1::name() const {
   return WebGLCompressedTextureETC1Name;
 }

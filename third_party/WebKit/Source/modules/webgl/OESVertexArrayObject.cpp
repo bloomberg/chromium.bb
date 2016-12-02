@@ -38,8 +38,6 @@ OESVertexArrayObject::OESVertexArrayObject(WebGLRenderingContextBase* context)
       "GL_OES_vertex_array_object");
 }
 
-OESVertexArrayObject::~OESVertexArrayObject() {}
-
 WebGLExtensionName OESVertexArrayObject::name() const {
   return OESVertexArrayObjectName;
 }
@@ -54,10 +52,8 @@ WebGLVertexArrayObjectOES* OESVertexArrayObject::createVertexArrayOES() {
   if (scoped.isLost())
     return nullptr;
 
-  WebGLVertexArrayObjectOES* o = WebGLVertexArrayObjectOES::create(
+  return WebGLVertexArrayObjectOES::create(
       scoped.context(), WebGLVertexArrayObjectOES::VaoTypeUser);
-  scoped.context()->addContextObject(o);
-  return o;
 }
 
 void OESVertexArrayObject::deleteVertexArrayOES(

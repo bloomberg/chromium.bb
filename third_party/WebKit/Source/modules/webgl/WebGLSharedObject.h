@@ -26,6 +26,7 @@
 #ifndef WebGLSharedObject_h
 #define WebGLSharedObject_h
 
+#include "bindings/core/v8/TraceWrapperMember.h"
 #include "modules/webgl/WebGLObject.h"
 
 namespace blink {
@@ -33,12 +34,10 @@ namespace blink {
 class WebGLContextGroup;
 class WebGLRenderingContextBase;
 
-// WebGLSharedObject the base class for objects that can be shared by multiple
-// WebGLRenderingContexts.
+// WebGLSharedObject is the base class for objects that can be shared by
+// multiple WebGLRenderingContexts.
 class WebGLSharedObject : public WebGLObject {
  public:
-  ~WebGLSharedObject() override;
-
   WebGLContextGroup* contextGroup() const { return m_contextGroup; }
 
   virtual bool isBuffer() const { return false; }
@@ -52,21 +51,23 @@ class WebGLSharedObject : public WebGLObject {
   virtual bool isTransformFeedback() const { return false; }
 
   bool validate(const WebGLContextGroup* contextGroup,
-                const WebGLRenderingContextBase*) const final {
-    return contextGroup == m_contextGroup;
-  }
+                const WebGLRenderingContextBase*) const final;
 
-  void detachContextGroup();
+  DECLARE_VIRTUAL_TRACE();
+
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   explicit WebGLSharedObject(WebGLRenderingContextBase*);
 
   bool hasGroupOrContext() const final { return m_contextGroup; }
 
+  uint32_t currentNumberOfContextLosses() const final;
+
   gpu::gles2::GLES2Interface* getAGLInterface() const final;
 
  private:
-  WebGLContextGroup* m_contextGroup;
+  TraceWrapperMember<WebGLContextGroup> m_contextGroup;
 };
 
 }  // namespace blink

@@ -34,8 +34,6 @@ OESStandardDerivatives::OESStandardDerivatives(
       "GL_OES_standard_derivatives");
 }
 
-OESStandardDerivatives::~OESStandardDerivatives() {}
-
 WebGLExtensionName OESStandardDerivatives::name() const {
   return OESStandardDerivativesName;
 }

@@ -34,8 +34,6 @@ OESTextureHalfFloatLinear::OESTextureHalfFloatLinear(
       "GL_OES_texture_half_float_linear");
 }
 
-OESTextureHalfFloatLinear::~OESTextureHalfFloatLinear() {}
-
 WebGLExtensionName OESTextureHalfFloatLinear::name() const {
   return OESTextureHalfFloatLinearName;
 }

@@ -33,8 +33,6 @@ OESTextureFloatLinear::OESTextureFloatLinear(WebGLRenderingContextBase* context)
       "GL_OES_texture_float_linear");
 }
 
-OESTextureFloatLinear::~OESTextureFloatLinear() {}
-
 WebGLExtensionName OESTextureFloatLinear::name() const {
   return OESTextureFloatLinearName;
 }

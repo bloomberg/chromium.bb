@@ -40,7 +40,6 @@ class WebGLLoseContext final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLLoseContext() override;
   WebGLExtensionName name() const override;
   void lose(bool) override;
 

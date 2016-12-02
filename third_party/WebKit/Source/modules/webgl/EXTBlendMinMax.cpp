@@ -11,8 +11,6 @@ EXTBlendMinMax::EXTBlendMinMax(WebGLRenderingContextBase* context)
   context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_blend_minmax");
 }
 
-EXTBlendMinMax::~EXTBlendMinMax() {}
-
 WebGLExtensionName EXTBlendMinMax::name() const {
   return EXTBlendMinMaxName;
 }

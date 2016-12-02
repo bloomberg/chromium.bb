@@ -34,8 +34,6 @@ EXTTextureFilterAnisotropic::EXTTextureFilterAnisotropic(
       "GL_EXT_texture_filter_anisotropic");
 }
 
-EXTTextureFilterAnisotropic::~EXTTextureFilterAnisotropic() {}
-
 WebGLExtensionName EXTTextureFilterAnisotropic::name() const {
   return EXTTextureFilterAnisotropicName;
 }

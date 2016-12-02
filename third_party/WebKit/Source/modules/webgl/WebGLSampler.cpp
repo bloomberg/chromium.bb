@@ -13,16 +13,15 @@ WebGLSampler* WebGLSampler::create(WebGL2RenderingContextBase* ctx) {
   return new WebGLSampler(ctx);
 }
 
-WebGLSampler::~WebGLSampler() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
-}
-
 WebGLSampler::WebGLSampler(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx) {
   GLuint sampler;
   ctx->contextGL()->GenSamplers(1, &sampler);
   setObject(sampler);
+}
+
+WebGLSampler::~WebGLSampler() {
+  runDestructor();
 }
 
 void WebGLSampler::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

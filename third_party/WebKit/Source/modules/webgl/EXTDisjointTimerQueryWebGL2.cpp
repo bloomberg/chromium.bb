@@ -10,8 +10,6 @@
 
 namespace blink {
 
-EXTDisjointTimerQueryWebGL2::~EXTDisjointTimerQueryWebGL2() {}
-
 WebGLExtensionName EXTDisjointTimerQueryWebGL2::name() const {
   return EXTDisjointTimerQueryWebGL2Name;
 }

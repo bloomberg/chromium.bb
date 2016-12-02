@@ -14,8 +14,6 @@ class WebGLRenderingContextBase;
 
 class WebGLSharedPlatform3DObject : public WebGLSharedObject {
  public:
-  ~WebGLSharedPlatform3DObject() override;
-
   GLuint object() const { return m_object; }
   void setObject(GLuint);
 

@@ -44,8 +44,6 @@ WebGLCompressedTextureASTC::WebGLCompressedTextureASTC(
   }
 }
 
-WebGLCompressedTextureASTC::~WebGLCompressedTextureASTC() {}
-
 WebGLExtensionName WebGLCompressedTextureASTC::name() const {
   return WebGLCompressedTextureASTCName;
 }

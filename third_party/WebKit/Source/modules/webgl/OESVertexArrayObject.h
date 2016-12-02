@@ -41,7 +41,6 @@ class OESVertexArrayObject final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~OESVertexArrayObject() override;
   WebGLExtensionName name() const override;
 
   WebGLVertexArrayObjectOES* createVertexArrayOES();

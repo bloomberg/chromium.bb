@@ -15,11 +15,6 @@ WebGLQuery* WebGLQuery::create(WebGL2RenderingContextBase* ctx) {
   return new WebGLQuery(ctx);
 }
 
-WebGLQuery::~WebGLQuery() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
-}
-
 WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       m_target(0),
@@ -32,6 +27,10 @@ WebGLQuery::WebGLQuery(WebGL2RenderingContextBase* ctx)
   GLuint query;
   ctx->contextGL()->GenQueriesEXT(1, &query);
   setObject(query);
+}
+
+WebGLQuery::~WebGLQuery() {
+  runDestructor();
 }
 
 void WebGLQuery::setTarget(GLenum target) {

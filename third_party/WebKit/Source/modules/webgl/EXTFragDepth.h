@@ -38,7 +38,6 @@ class EXTFragDepth final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~EXTFragDepth() override;
   WebGLExtensionName name() const override;
 
  private:

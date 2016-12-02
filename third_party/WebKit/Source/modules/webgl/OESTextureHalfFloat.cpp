@@ -33,8 +33,6 @@ OESTextureHalfFloat::OESTextureHalfFloat(WebGLRenderingContextBase* context)
       "GL_OES_texture_half_float");
 }
 
-OESTextureHalfFloat::~OESTextureHalfFloat() {}
-
 WebGLExtensionName OESTextureHalfFloat::name() const {
   return OESTextureHalfFloatName;
 }

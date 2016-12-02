@@ -23,7 +23,6 @@ class WebGLCompressedTextureASTC final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLCompressedTextureASTC() override;
   WebGLExtensionName name() const override;
   static const BlockSizeCompressASTC kBlockSizeCompressASTC[];
 

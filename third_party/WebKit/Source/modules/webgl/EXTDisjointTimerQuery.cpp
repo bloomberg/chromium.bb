@@ -11,16 +11,13 @@
 
 namespace blink {
 
-EXTDisjointTimerQuery::~EXTDisjointTimerQuery() {}
-
 WebGLExtensionName EXTDisjointTimerQuery::name() const {
   return EXTDisjointTimerQueryName;
 }
 
 EXTDisjointTimerQuery* EXTDisjointTimerQuery::create(
     WebGLRenderingContextBase* context) {
-  EXTDisjointTimerQuery* o = new EXTDisjointTimerQuery(context);
-  return o;
+  return new EXTDisjointTimerQuery(context);
 }
 
 bool EXTDisjointTimerQuery::supported(WebGLRenderingContextBase* context) {
@@ -37,9 +34,7 @@ WebGLTimerQueryEXT* EXTDisjointTimerQuery::createQueryEXT() {
   if (scoped.isLost())
     return nullptr;
 
-  WebGLTimerQueryEXT* o = WebGLTimerQueryEXT::create(scoped.context());
-  scoped.context()->addContextObject(o);
-  return o;
+  return WebGLTimerQueryEXT::create(scoped.context());
 }
 
 void EXTDisjointTimerQuery::deleteQueryEXT(WebGLTimerQueryEXT* query) {

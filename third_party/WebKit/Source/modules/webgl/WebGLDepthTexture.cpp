@@ -33,8 +33,6 @@ WebGLDepthTexture::WebGLDepthTexture(WebGLRenderingContextBase* context)
       "GL_CHROMIUM_depth_texture");
 }
 
-WebGLDepthTexture::~WebGLDepthTexture() {}
-
 WebGLExtensionName WebGLDepthTexture::name() const {
   return WebGLDepthTextureName;
 }

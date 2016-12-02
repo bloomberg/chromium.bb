@@ -36,16 +36,10 @@ class WebGLRenderingContextBase;
 // WebGLRenderingContextBase.
 class WebGLContextObject : public WebGLObject {
  public:
-  ~WebGLContextObject() override;
-
   WebGLRenderingContextBase* context() const { return m_context; }
 
   bool validate(const WebGLContextGroup*,
-                const WebGLRenderingContextBase* context) const final {
-    return context == m_context;
-  }
-
-  void detachContext();
+                const WebGLRenderingContextBase*) const final;
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -53,6 +47,8 @@ class WebGLContextObject : public WebGLObject {
   explicit WebGLContextObject(WebGLRenderingContextBase*);
 
   bool hasGroupOrContext() const final { return m_context; }
+
+  uint32_t currentNumberOfContextLosses() const final;
 
   gpu::gles2::GLES2Interface* getAGLInterface() const final;
 

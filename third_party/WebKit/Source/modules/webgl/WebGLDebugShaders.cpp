@@ -35,8 +35,6 @@ namespace blink {
 WebGLDebugShaders::WebGLDebugShaders(WebGLRenderingContextBase* context)
     : WebGLExtension(context) {}
 
-WebGLDebugShaders::~WebGLDebugShaders() {}
-
 WebGLExtensionName WebGLDebugShaders::name() const {
   return WebGLDebugShadersName;
 }

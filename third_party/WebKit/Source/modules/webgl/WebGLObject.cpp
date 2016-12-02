@@ -29,12 +29,16 @@
 
 namespace blink {
 
-WebGLObject::WebGLObject(WebGLRenderingContextBase*)
-    : m_attachmentCount(0), m_deleted(false) {}
+WebGLObject::WebGLObject(WebGLRenderingContextBase* context)
+    : m_cachedNumberOfContextLosses(context->numberOfContextLosses()),
+      m_attachmentCount(0),
+      m_deleted(false),
+      m_destructionInProgress(false) {}
 
-WebGLObject::~WebGLObject() {
-  // Verify that platform objects have been explicitly deleted.
-  ASSERT(m_deleted);
+WebGLObject::~WebGLObject() {}
+
+uint32_t WebGLObject::cachedNumberOfContextLosses() const {
+  return m_cachedNumberOfContextLosses;
 }
 
 void WebGLObject::deleteObject(gpu::gles2::GLES2Interface* gl) {
@@ -44,6 +48,11 @@ void WebGLObject::deleteObject(gpu::gles2::GLES2Interface* gl) {
 
   if (!hasGroupOrContext())
     return;
+
+  if (currentNumberOfContextLosses() != m_cachedNumberOfContextLosses) {
+    // This object has been invalidated.
+    return;
+  }
 
   if (!m_attachmentCount) {
     if (!gl)
@@ -63,11 +72,21 @@ void WebGLObject::detach() {
 void WebGLObject::detachAndDeleteObject() {
   // To ensure that all platform objects are deleted after being detached,
   // this method does them together.
-  //
-  // The individual WebGL destructors need to call detachAndDeleteObject()
-  // rather than do it based on Oilpan GC.
   detach();
   deleteObject(nullptr);
+}
+
+void WebGLObject::runDestructor() {
+  DCHECK(!m_destructionInProgress);
+  // This boilerplate destructor is sufficient for all subclasses, as long
+  // as they implement deleteObjectImpl properly, and don't try to touch
+  // other objects on the Oilpan heap if the destructor's been entered.
+  m_destructionInProgress = true;
+  detachAndDeleteObject();
+}
+
+bool WebGLObject::destructionInProgress() const {
+  return m_destructionInProgress;
 }
 
 void WebGLObject::onDetached(gpu::gles2::GLES2Interface* gl) {
@@ -76,5 +95,7 @@ void WebGLObject::onDetached(gpu::gles2::GLES2Interface* gl) {
   if (m_deleted)
     deleteObject(gl);
 }
+
+DEFINE_TRACE_WRAPPERS(WebGLObject) {}
 
 }  // namespace blink

@@ -28,8 +28,6 @@ class WebGLVertexArrayObject;
 
 class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
  public:
-  ~WebGL2RenderingContextBase() override;
-
   void destroyContext() override;
 
   /* Buffer objects */
@@ -744,7 +742,6 @@ class WebGL2RenderingContextBase : public WebGLRenderingContextBase {
                   DOMArrayBufferView* pixels) override;
   void restoreCurrentFramebuffer() override;
 
-  EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
 

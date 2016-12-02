@@ -272,21 +272,6 @@ WebGL2RenderingContextBase::WebGL2RenderingContextBase(
           WTF_ARRAY_LENGTH(kSupportedInternalFormatsStorage));
 }
 
-WebGL2RenderingContextBase::~WebGL2RenderingContextBase() {
-  m_readFramebufferBinding = nullptr;
-
-  m_boundCopyReadBuffer = nullptr;
-  m_boundCopyWriteBuffer = nullptr;
-  m_boundPixelPackBuffer = nullptr;
-  m_boundPixelUnpackBuffer = nullptr;
-  m_boundTransformFeedbackBuffer = nullptr;
-  m_boundUniformBuffer = nullptr;
-
-  m_currentBooleanOcclusionQuery = nullptr;
-  m_currentTransformFeedbackPrimitivesWrittenQuery = nullptr;
-  m_currentElapsedQuery = nullptr;
-}
-
 void WebGL2RenderingContextBase::destroyContext() {
   for (auto& callback : m_getBufferSubDataAsyncCallbacks) {
     callback->destroy();
@@ -2792,9 +2777,7 @@ void WebGL2RenderingContextBase::clearBufferfi(GLenum buffer,
 WebGLQuery* WebGL2RenderingContextBase::createQuery() {
   if (isContextLost())
     return nullptr;
-  WebGLQuery* o = WebGLQuery::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLQuery::create(this);
 }
 
 void WebGL2RenderingContextBase::deleteQuery(WebGLQuery* query) {
@@ -3032,9 +3015,7 @@ ScriptValue WebGL2RenderingContextBase::getQueryParameter(
 WebGLSampler* WebGL2RenderingContextBase::createSampler() {
   if (isContextLost())
     return nullptr;
-  WebGLSampler* o = WebGLSampler::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLSampler::create(this);
 }
 
 void WebGL2RenderingContextBase::deleteSampler(WebGLSampler* sampler) {
@@ -3226,9 +3207,7 @@ WebGLSync* WebGL2RenderingContextBase::fenceSync(GLenum condition,
   if (isContextLost())
     return nullptr;
 
-  WebGLSync* o = WebGLFenceSync::create(this, condition, flags);
-  addSharedObject(o);
-  return o;
+  return WebGLFenceSync::create(this, condition, flags);
 }
 
 GLboolean WebGL2RenderingContextBase::isSync(WebGLSync* sync) {
@@ -3303,9 +3282,7 @@ ScriptValue WebGL2RenderingContextBase::getSyncParameter(
 WebGLTransformFeedback* WebGL2RenderingContextBase::createTransformFeedback() {
   if (isContextLost())
     return nullptr;
-  WebGLTransformFeedback* o = WebGLTransformFeedback::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLTransformFeedback::create(this);
 }
 
 void WebGL2RenderingContextBase::deleteTransformFeedback(
@@ -3813,10 +3790,8 @@ WebGLVertexArrayObject* WebGL2RenderingContextBase::createVertexArray() {
   if (isContextLost())
     return nullptr;
 
-  WebGLVertexArrayObject* o = WebGLVertexArrayObject::create(
+  return WebGLVertexArrayObject::create(
       this, WebGLVertexArrayObjectBase::VaoTypeUser);
-  addContextObject(o);
-  return o;
 }
 
 void WebGL2RenderingContextBase::deleteVertexArray(

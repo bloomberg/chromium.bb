@@ -42,8 +42,7 @@ WebGLTexture::WebGLTexture(WebGLRenderingContextBase* ctx)
 }
 
 WebGLTexture::~WebGLTexture() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
+  runDestructor();
 }
 
 void WebGLTexture::setTarget(GLenum target) {

@@ -69,8 +69,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
     void onError(HTMLCanvasElement*, const String& error) override;
   };
 
-  ~WebGLRenderingContext() override;
-
   CanvasRenderingContext::ContextType getContextType() const override {
     return CanvasRenderingContext::ContextWebgl;
   }
@@ -80,7 +78,6 @@ class WebGLRenderingContext final : public WebGLRenderingContextBase {
   void setCanvasGetContextResult(RenderingContext&) final;
   void setOffscreenCanvasGetContextResult(OffscreenRenderingContext&) final;
 
-  EAGERLY_FINALIZE();
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();

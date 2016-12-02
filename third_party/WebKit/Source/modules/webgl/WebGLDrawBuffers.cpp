@@ -35,8 +35,6 @@ WebGLDrawBuffers::WebGLDrawBuffers(WebGLRenderingContextBase* context)
   context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_draw_buffers");
 }
 
-WebGLDrawBuffers::~WebGLDrawBuffers() {}
-
 WebGLExtensionName WebGLDrawBuffers::name() const {
   return WebGLDrawBuffersName;
 }

@@ -42,8 +42,7 @@ WebGLBuffer::WebGLBuffer(WebGLRenderingContextBase* ctx)
 }
 
 WebGLBuffer::~WebGLBuffer() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
+  runDestructor();
 }
 
 void WebGLBuffer::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

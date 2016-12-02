@@ -60,6 +60,12 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   WTF_MAKE_NONCOPYABLE(WebGLObject);
 
  public:
+  // We can't call virtual functions like deleteObjectImpl in this class's
+  // destructor; doing so results in a pure virtual function call. Further,
+  // making this destructor non-virtual is complicated with respect to
+  // Oilpan tracing. Therefore this destructor is declared virtual, but is
+  // empty, and the code that would have gone into its body is called by
+  // subclasses via runDestructor().
   virtual ~WebGLObject();
 
   // deleteObject may not always delete the OpenGL resource.  For programs and
@@ -80,7 +86,16 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
                         const WebGLRenderingContextBase*) const = 0;
   virtual bool hasObject() const = 0;
 
+  // WebGLObjects are eagerly finalized, and the WebGLRenderingContextBase
+  // is specifically not. This is done in order to allow WebGLObjects to
+  // refer back to their owning context in their destructor to delete their
+  // resources if they are GC'd before the context is.
+  EAGERLY_FINALIZE();
+  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
+
   DEFINE_INLINE_VIRTUAL_TRACE() {}
+
+  DECLARE_VIRTUAL_TRACE_WRAPPERS();
 
  protected:
   // To allow WebGL[2]RenderingContextBase to call visitChildDOMWrappers.
@@ -95,6 +110,13 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
 
   virtual bool hasGroupOrContext() const = 0;
 
+  // Return the current number of context losses associated with this
+  // object's context group (if it's a shared object), or its
+  // context's context group (if it's a per-context object).
+  virtual uint32_t currentNumberOfContextLosses() const = 0;
+
+  uint32_t cachedNumberOfContextLosses() const;
+
   void detach();
   void detachAndDeleteObject();
 
@@ -103,9 +125,30 @@ class WebGLObject : public GarbageCollectedFinalized<WebGLObject>,
   virtual void visitChildDOMWrappers(v8::Isolate*,
                                      const v8::Persistent<v8::Object>&) {}
 
+  // Used by leaf subclasses to run the destruction sequence -- what would
+  // be in the destructor of the base class, if it could be. Must be called
+  // no more than once.
+  void runDestructor();
+
+  // Indicates to subclasses that the destructor is being run.
+  bool destructionInProgress() const;
+
  private:
+  // This was the number of context losses of the object's associated
+  // WebGLContextGroup at the time this object was created. Contexts
+  // no longer refer to all the objects that they ever created, so
+  // it's necessary to check this count when validating each object.
+  uint32_t m_cachedNumberOfContextLosses;
+
   unsigned m_attachmentCount;
+
+  // Indicates whether the WebGL context's deletion function for this
+  // object (deleteBuffer, deleteTexture, etc.) has been called.
   bool m_deleted;
+
+  // Indicates whether the destructor has been entered and we therefore
+  // need to be careful in subclasses to not touch other on-heap objects.
+  bool m_destructionInProgress;
 };
 
 }  // namespace blink

@@ -45,10 +45,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class WebGLAttachment : public GarbageCollectedFinalized<WebGLAttachment> {
+  class WebGLAttachment : public GarbageCollected<WebGLAttachment> {
    public:
-    virtual ~WebGLAttachment();
-
     virtual WebGLSharedObject* object() const = 0;
     virtual bool isSharedObject(WebGLSharedObject*) const = 0;
     virtual bool valid() const = 0;
@@ -149,7 +147,6 @@ class WebGLFramebuffer final : public WebGLContextObject {
       AttachmentMap;
 
   AttachmentMap m_attachments;
-  bool m_destructionInProgress;
 
   bool m_hasEverBeenBound;
   bool m_webGL1DepthStencilConsistent;

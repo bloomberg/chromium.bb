@@ -12,8 +12,6 @@ EXTColorBufferFloat::EXTColorBufferFloat(WebGLRenderingContextBase* context)
       "GL_EXT_color_buffer_float");
 }
 
-EXTColorBufferFloat::~EXTColorBufferFloat() {}
-
 WebGLExtensionName EXTColorBufferFloat::name() const {
   return EXTColorBufferFloatName;
 }

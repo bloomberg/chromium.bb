@@ -19,8 +19,6 @@ WebGLCompressedTextureS3TCsRGB::WebGLCompressedTextureS3TCsRGB(
   context->addCompressedTextureFormat(GL_COMPRESSED_SRGB_ALPHA_S3TC_DXT5_NV);
 }
 
-WebGLCompressedTextureS3TCsRGB::~WebGLCompressedTextureS3TCsRGB() {}
-
 WebGLExtensionName WebGLCompressedTextureS3TCsRGB::name() const {
   return WebGLCompressedTextureS3TCsRGBName;
 }

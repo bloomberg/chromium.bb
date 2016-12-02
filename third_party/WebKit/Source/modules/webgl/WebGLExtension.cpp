@@ -36,8 +36,6 @@ WebGLExtensionScopedContext::~WebGLExtensionScopedContext() {}
 WebGLExtension::WebGLExtension(WebGLRenderingContextBase* context)
     : m_context(context) {}
 
-WebGLExtension::~WebGLExtension() {}
-
 DEFINE_TRACE(WebGLExtension) {
   visitor->trace(m_context);
 }

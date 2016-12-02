@@ -12,8 +12,6 @@ EXTsRGB::EXTsRGB(WebGLRenderingContextBase* context) : WebGLExtension(context) {
   context->extensionsUtil()->ensureExtensionEnabled("GL_EXT_sRGB");
 }
 
-EXTsRGB::~EXTsRGB() {}
-
 WebGLExtensionName EXTsRGB::name() const {
   return EXTsRGBName;
 }

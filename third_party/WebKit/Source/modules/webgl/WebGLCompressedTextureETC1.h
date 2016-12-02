@@ -17,7 +17,6 @@ class WebGLCompressedTextureETC1 final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLCompressedTextureETC1() override;
   WebGLExtensionName name() const override;
 
  private:

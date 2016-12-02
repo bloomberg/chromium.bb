@@ -40,8 +40,6 @@ ANGLEInstancedArrays::ANGLEInstancedArrays(WebGLRenderingContextBase* context)
       "GL_ANGLE_instanced_arrays");
 }
 
-ANGLEInstancedArrays::~ANGLEInstancedArrays() {}
-
 WebGLExtensionName ANGLEInstancedArrays::name() const {
   return ANGLEInstancedArraysName;
 }

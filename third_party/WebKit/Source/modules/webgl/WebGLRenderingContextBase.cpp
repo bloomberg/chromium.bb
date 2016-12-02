@@ -241,7 +241,7 @@ void WebGLRenderingContextBase::removeFromEvictedList(
   forciblyEvictedContexts().remove(context);
 }
 
-void WebGLRenderingContextBase::willDestroyContext(
+void WebGLRenderingContextBase::restoreEvictedContext(
     WebGLRenderingContextBase* context) {
   // These two sets keep weak references to their contexts;
   // verify that the GC already removed the |context| entries.
@@ -1002,6 +1002,7 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
     : CanvasRenderingContext(passedCanvas,
                              passedOffscreenCanvas,
                              requestedAttributes),
+      m_contextGroup(this, new WebGLContextGroup()),
       m_isHidden(false),
       m_contextLostMode(NotLostContext),
       m_autoRecoveryMethod(Manual),
@@ -1029,7 +1030,6 @@ WebGLRenderingContextBase::WebGLRenderingContextBase(
       m_version(version) {
   ASSERT(contextProvider);
 
-  m_contextGroup = WebGLContextGroup::create();
   m_contextGroup->addContext(this);
 
   m_maxViewportDims[0] = m_maxViewportDims[1] = 0;
@@ -1177,7 +1177,6 @@ void WebGLRenderingContextBase::initializeNewContext() {
 
   m_defaultVertexArrayObject = WebGLVertexArrayObject::create(
       this, WebGLVertexArrayObjectBase::VaoTypeDefault);
-  addContextObject(m_defaultVertexArrayObject.get());
 
   m_boundVertexArrayObject = m_defaultVertexArrayObject;
 
@@ -1276,42 +1275,22 @@ unsigned WebGLRenderingContextBase::getWebGLVersion(
 }
 
 WebGLRenderingContextBase::~WebGLRenderingContextBase() {
-  // Remove all references to WebGLObjects so if they are the last reference
-  // they will be freed before the last context is removed from the context
-  // group.
-  m_boundArrayBuffer = nullptr;
-  m_defaultVertexArrayObject = nullptr;
-  m_boundVertexArrayObject = nullptr;
-  m_currentProgram = nullptr;
-  m_framebufferBinding = nullptr;
-  m_renderbufferBinding = nullptr;
-
-  // WebGLTexture shared objects will be detached and deleted
-  // m_contextGroup->removeContext(this), which will bring about deleteTexture()
-  // calls.  We null these out to avoid accessing those members in
-  // deleteTexture().
-  for (size_t i = 0; i < m_textureUnits.size(); ++i) {
-    m_textureUnits[i].m_texture2DBinding = nullptr;
-    m_textureUnits[i].m_textureCubeMapBinding = nullptr;
-    m_textureUnits[i].m_texture3DBinding = nullptr;
-    m_textureUnits[i].m_texture2DArrayBinding = nullptr;
-  }
-
-  detachAndRemoveAllObjects();
-
-  // Release all extensions now.
-  for (ExtensionTracker* tracker : m_extensions) {
-    tracker->loseExtension(true);
-  }
-  m_extensions.clear();
-
-  // Context must be removed from the group prior to the destruction of the
-  // GL context, otherwise shared objects may not be properly deleted.
-  m_contextGroup->removeContext(this);
-
+  // Now that the context and context group no longer hold on to the
+  // objects they create, and now that the objects are eagerly finalized
+  // rather than the context, there is very little useful work that this
+  // destructor can do, since it's not allowed to touch other on-heap
+  // objects. All it can do is destroy its underlying context, which, if
+  // there are no other contexts in the same share group, will cause all of
+  // the underlying graphics resources to be deleted. (Currently, it's
+  // always the case that there are no other contexts in the same share
+  // group -- resource sharing between WebGL contexts is not yet
+  // implemented, and due to its complex semantics, it's doubtful that it
+  // ever will be.)
   destroyContext();
 
-  willDestroyContext(this);
+  // Now that this context is destroyed, see if there's a
+  // previously-evicted one that should be restored.
+  restoreEvictedContext(this);
 }
 
 void WebGLRenderingContextBase::destroyContext() {
@@ -2160,41 +2139,31 @@ void WebGLRenderingContextBase::copyTexSubImage2D(GLenum target,
 WebGLBuffer* WebGLRenderingContextBase::createBuffer() {
   if (isContextLost())
     return nullptr;
-  WebGLBuffer* o = WebGLBuffer::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLBuffer::create(this);
 }
 
 WebGLFramebuffer* WebGLRenderingContextBase::createFramebuffer() {
   if (isContextLost())
     return nullptr;
-  WebGLFramebuffer* o = WebGLFramebuffer::create(this);
-  addContextObject(o);
-  return o;
+  return WebGLFramebuffer::create(this);
 }
 
 WebGLTexture* WebGLRenderingContextBase::createTexture() {
   if (isContextLost())
     return nullptr;
-  WebGLTexture* o = WebGLTexture::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLTexture::create(this);
 }
 
 WebGLProgram* WebGLRenderingContextBase::createProgram() {
   if (isContextLost())
     return nullptr;
-  WebGLProgram* o = WebGLProgram::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLProgram::create(this);
 }
 
 WebGLRenderbuffer* WebGLRenderingContextBase::createRenderbuffer() {
   if (isContextLost())
     return nullptr;
-  WebGLRenderbuffer* o = WebGLRenderbuffer::create(this);
-  addSharedObject(o);
-  return o;
+  return WebGLRenderbuffer::create(this);
 }
 
 void WebGLRenderingContextBase::setBoundVertexArrayObject(
@@ -2213,9 +2182,7 @@ WebGLShader* WebGLRenderingContextBase::createShader(GLenum type) {
     return nullptr;
   }
 
-  WebGLShader* o = WebGLShader::create(this, type);
-  addSharedObject(o);
-  return o;
+  return WebGLShader::create(this, type);
 }
 
 void WebGLRenderingContextBase::cullFace(GLenum mode) {
@@ -6124,8 +6091,6 @@ void WebGLRenderingContextBase::loseContextImpl(
   ASSERT(m_contextLostMode != NotLostContext);
   m_autoRecoveryMethod = autoRecoveryMethod;
 
-  detachAndRemoveAllObjects();
-
   // Lose all the extensions.
   for (size_t i = 0; i < m_extensions.size(); ++i) {
     ExtensionTracker* tracker = m_extensions[i];
@@ -6175,6 +6140,10 @@ void WebGLRenderingContextBase::forceRestoreContext() {
     m_restoreTimer.startOneShot(0, BLINK_FROM_HERE);
 }
 
+uint32_t WebGLRenderingContextBase::numberOfContextLosses() const {
+  return m_contextGroup->numberOfContextLosses();
+}
+
 WebLayer* WebGLRenderingContextBase::platformLayer() const {
   return isContextLost() ? 0 : drawingBuffer()->platformLayer();
 }
@@ -6196,20 +6165,6 @@ Extensions3DUtil* WebGLRenderingContextBase::extensionsUtil() {
            gl->GetGraphicsResetStatusKHR() != GL_NO_ERROR);
   }
   return m_extensionsUtil.get();
-}
-
-void WebGLRenderingContextBase::removeSharedObject(WebGLSharedObject* object) {
-  m_contextGroup->removeObject(object);
-}
-
-void WebGLRenderingContextBase::addSharedObject(WebGLSharedObject* object) {
-  ASSERT(!isContextLost());
-  m_contextGroup->addObject(object);
-}
-
-void WebGLRenderingContextBase::removeContextObject(
-    WebGLContextObject* object) {
-  m_contextObjects.remove(object);
 }
 
 void WebGLRenderingContextBase::visitChildDOMWrappers(
@@ -6256,20 +6211,6 @@ void WebGLRenderingContextBase::visitChildDOMWrappers(
     WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();
     DOMWrapperWorld::setWrapperReferencesInAllWorlds(wrapper, extension,
                                                      isolate);
-  }
-}
-
-void WebGLRenderingContextBase::addContextObject(WebGLContextObject* object) {
-  ASSERT(!isContextLost());
-  m_contextObjects.add(object);
-}
-
-void WebGLRenderingContextBase::detachAndRemoveAllObjects() {
-  while (m_contextObjects.size() > 0) {
-    // Following detachContext() will remove the iterated object from
-    // |m_contextObjects|, and thus we need to look up begin() every time.
-    auto it = m_contextObjects.begin();
-    (*it)->detachContext();
   }
 }
 
@@ -7692,7 +7633,7 @@ DEFINE_TRACE(WebGLRenderingContextBase::TextureUnitState) {
 }
 
 DEFINE_TRACE(WebGLRenderingContextBase) {
-  visitor->trace(m_contextObjects);
+  visitor->trace(m_contextGroup);
   visitor->trace(m_boundArrayBuffer);
   visitor->trace(m_defaultVertexArrayObject);
   visitor->trace(m_boundVertexArrayObject);

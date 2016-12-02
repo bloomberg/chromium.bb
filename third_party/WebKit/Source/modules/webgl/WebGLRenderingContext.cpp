@@ -151,8 +151,6 @@ WebGLRenderingContext::WebGLRenderingContext(
                                 requestedAttributes,
                                 1) {}
 
-WebGLRenderingContext::~WebGLRenderingContext() {}
-
 void WebGLRenderingContext::setCanvasGetContextResult(
     RenderingContext& result) {
   result.setWebGLRenderingContext(this);

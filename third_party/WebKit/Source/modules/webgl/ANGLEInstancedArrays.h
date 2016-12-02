@@ -44,7 +44,6 @@ class ANGLEInstancedArrays final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~ANGLEInstancedArrays() override;
   WebGLExtensionName name() const override;
 
   void drawArraysInstancedANGLE(GLenum mode,

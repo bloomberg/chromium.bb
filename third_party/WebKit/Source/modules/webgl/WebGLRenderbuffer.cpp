@@ -34,11 +34,6 @@ WebGLRenderbuffer* WebGLRenderbuffer::create(WebGLRenderingContextBase* ctx) {
   return new WebGLRenderbuffer(ctx);
 }
 
-WebGLRenderbuffer::~WebGLRenderbuffer() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
-}
-
 WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
     : WebGLSharedPlatform3DObject(ctx),
       m_internalFormat(GL_RGBA4),
@@ -48,6 +43,10 @@ WebGLRenderbuffer::WebGLRenderbuffer(WebGLRenderingContextBase* ctx)
   GLuint rbo;
   ctx->contextGL()->GenRenderbuffers(1, &rbo);
   setObject(rbo);
+}
+
+WebGLRenderbuffer::~WebGLRenderbuffer() {
+  runDestructor();
 }
 
 void WebGLRenderbuffer::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

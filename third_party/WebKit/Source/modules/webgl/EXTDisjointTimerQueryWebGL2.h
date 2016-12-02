@@ -23,7 +23,6 @@ class EXTDisjointTimerQueryWebGL2 final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~EXTDisjointTimerQueryWebGL2() override;
   WebGLExtensionName name() const override;
 
   void queryCounterEXT(WebGLQuery*, GLenum);

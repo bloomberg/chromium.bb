@@ -38,8 +38,6 @@ WebGLCompressedTexturePVRTC::WebGLCompressedTexturePVRTC(
   context->addCompressedTextureFormat(GL_COMPRESSED_RGBA_PVRTC_2BPPV1_IMG);
 }
 
-WebGLCompressedTexturePVRTC::~WebGLCompressedTexturePVRTC() {}
-
 WebGLExtensionName WebGLCompressedTexturePVRTC::name() const {
   return WebGLCompressedTexturePVRTCName;
 }

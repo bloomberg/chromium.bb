@@ -33,8 +33,6 @@ OESElementIndexUint::OESElementIndexUint(WebGLRenderingContextBase* context)
       "GL_OES_element_index_uint");
 }
 
-OESElementIndexUint::~OESElementIndexUint() {}
-
 WebGLExtensionName OESElementIndexUint::name() const {
   return OESElementIndexUintName;
 }

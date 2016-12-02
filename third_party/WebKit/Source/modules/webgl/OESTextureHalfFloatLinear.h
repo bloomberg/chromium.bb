@@ -38,7 +38,6 @@ class OESTextureHalfFloatLinear final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~OESTextureHalfFloatLinear() override;
   WebGLExtensionName name() const override;
 
  private:

@@ -49,12 +49,11 @@ class WebGLExtensionScopedContext final {
   Member<WebGLRenderingContextBase> m_context;
 };
 
-class WebGLExtension : public GarbageCollectedFinalized<WebGLExtension>,
+class WebGLExtension : public GarbageCollected<WebGLExtension>,
                        public ScriptWrappable {
   WTF_MAKE_NONCOPYABLE(WebGLExtension);
 
  public:
-  virtual ~WebGLExtension();
   virtual WebGLExtensionName name() const = 0;
 
   // Lose this extension. Passing true = force loss. Some extensions

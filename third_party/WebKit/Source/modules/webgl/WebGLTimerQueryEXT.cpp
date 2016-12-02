@@ -15,11 +15,6 @@ WebGLTimerQueryEXT* WebGLTimerQueryEXT::create(WebGLRenderingContextBase* ctx) {
   return new WebGLTimerQueryEXT(ctx);
 }
 
-WebGLTimerQueryEXT::~WebGLTimerQueryEXT() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
-}
-
 WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
     : WebGLContextObject(ctx),
       m_target(0),
@@ -31,6 +26,10 @@ WebGLTimerQueryEXT::WebGLTimerQueryEXT(WebGLRenderingContextBase* ctx)
                                          &ctx->canvas()->document())
                        ->clone()) {
   context()->contextGL()->GenQueriesEXT(1, &m_queryId);
+}
+
+WebGLTimerQueryEXT::~WebGLTimerQueryEXT() {
+  runDestructor();
 }
 
 void WebGLTimerQueryEXT::resetCachedResult() {

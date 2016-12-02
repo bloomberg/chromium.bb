@@ -101,7 +101,6 @@ class WebGLProgram;
 class WebGLRenderbuffer;
 class WebGLShader;
 class WebGLShaderPrecisionFormat;
-class WebGLSharedObject;
 class WebGLUniformLocation;
 class WebGLVertexArrayObjectBase;
 
@@ -531,6 +530,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void forceLostContext(LostContextMode, AutoRecoveryMethod);
   void forceRestoreContext();
   void loseContextImpl(LostContextMode, AutoRecoveryMethod);
+  uint32_t numberOfContextLosses() const;
 
   // Utilities to restore GL state to match the rendering context's
   // saved state. Use these after contextGL()-based state changes that
@@ -554,16 +554,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void markLayerComposited() override;
   ImageData* paintRenderingResultsToImageData(SourceDrawingBuffer) override;
 
-  void removeSharedObject(WebGLSharedObject*);
-  void removeContextObject(WebGLContextObject*);
-
   unsigned maxVertexAttribs() const { return m_maxVertexAttribs; }
 
-  // Eagerly finalize WebGLRenderingContextBase in order for it
-  // to (first) be able to detach its WebGLContextObjects, before
-  // they're later swept and finalized.
-  EAGERLY_FINALIZE();
-  DECLARE_EAGER_FINALIZATION_OPERATOR_NEW();
   DECLARE_VIRTUAL_TRACE();
 
   DECLARE_VIRTUAL_TRACE_WRAPPERS();
@@ -649,10 +641,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   void DrawingBufferClientRestoreFramebufferBinding() override;
   void DrawingBufferClientRestorePixelUnpackBufferBinding() override;
 
-  void addSharedObject(WebGLSharedObject*);
-  void addContextObject(WebGLContextObject*);
-  void detachAndRemoveAllObjects();
-
   virtual void destroyContext();
   void markContextChanged(ContentChangeType);
 
@@ -696,7 +684,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   RefPtr<DrawingBuffer> m_drawingBuffer;
   DrawingBuffer* drawingBuffer() const;
 
-  RefPtr<WebGLContextGroup> m_contextGroup;
+  TraceWrapperMember<WebGLContextGroup> m_contextGroup;
 
   bool m_isHidden;
   LostContextMode m_contextLostMode;
@@ -711,7 +699,6 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   Timer<WebGLRenderingContextBase> m_restoreTimer;
 
   bool m_markedCanvasDirty;
-  HeapHashSet<WeakMember<WebGLContextObject>> m_contextObjects;
 
   // List of bound VBO's. Used to maintain info about sizes for ARRAY_BUFFER and
   // stored values for ELEMENT_ARRAY_BUFFER
@@ -1527,7 +1514,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   static void deactivateContext(WebGLRenderingContextBase*);
   static void addToEvictedList(WebGLRenderingContextBase*);
   static void removeFromEvictedList(WebGLRenderingContextBase*);
-  static void willDestroyContext(WebGLRenderingContextBase*);
+  static void restoreEvictedContext(WebGLRenderingContextBase*);
   static void forciblyLoseOldestContext(const String& reason);
   // Return the least recently used context's position in the active context
   // vector.  If the vector is empty, return the maximum allowed active context

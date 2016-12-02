@@ -12,8 +12,6 @@ EXTShaderTextureLOD::EXTShaderTextureLOD(WebGLRenderingContextBase* context)
       "GL_EXT_shader_texture_lod");
 }
 
-EXTShaderTextureLOD::~EXTShaderTextureLOD() {}
-
 WebGLExtensionName EXTShaderTextureLOD::name() const {
   return EXTShaderTextureLODName;
 }

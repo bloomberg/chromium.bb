@@ -40,8 +40,7 @@ WebGLShader::WebGLShader(WebGLRenderingContextBase* ctx, GLenum type)
 }
 
 WebGLShader::~WebGLShader() {
-  // See the comment in WebGLObject::detachAndDeleteObject().
-  detachAndDeleteObject();
+  runDestructor();
 }
 
 void WebGLShader::deleteObjectImpl(gpu::gles2::GLES2Interface* gl) {

@@ -43,7 +43,6 @@ class WebGLDebugRendererInfo final : public WebGLExtension {
   static bool supported(WebGLRenderingContextBase*);
   static const char* extensionName();
 
-  ~WebGLDebugRendererInfo() override;
   WebGLExtensionName name() const override;
 
  private:
