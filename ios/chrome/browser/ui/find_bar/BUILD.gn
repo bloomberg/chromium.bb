@@ -1,0 +1,58 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/find_bg@2x~ipad.png",
+    "resources/find_bg~ipad.png",
+    "resources/find_close.png",
+    "resources/find_close@2x.png",
+    "resources/find_close@3x.png",
+    "resources/find_close_incognito.png",
+    "resources/find_close_incognito@2x.png",
+    "resources/find_close_incognito@3x.png",
+    "resources/find_close_pressed.png",
+    "resources/find_close_pressed@2x.png",
+    "resources/find_close_pressed@3x.png",
+    "resources/find_next.png",
+    "resources/find_next@2x.png",
+    "resources/find_next@3x.png",
+    "resources/find_next_disabled.png",
+    "resources/find_next_disabled@2x.png",
+    "resources/find_next_disabled@3x.png",
+    "resources/find_next_disabled_incognito.png",
+    "resources/find_next_disabled_incognito@2x.png",
+    "resources/find_next_disabled_incognito@3x.png",
+    "resources/find_next_incognito.png",
+    "resources/find_next_incognito@2x.png",
+    "resources/find_next_incognito@3x.png",
+    "resources/find_next_pressed.png",
+    "resources/find_next_pressed@2x.png",
+    "resources/find_next_pressed@3x.png",
+    "resources/find_next_pressed_incognito.png",
+    "resources/find_next_pressed_incognito@2x.png",
+    "resources/find_next_pressed_incognito@3x.png",
+    "resources/find_prev.png",
+    "resources/find_prev@2x.png",
+    "resources/find_prev@3x.png",
+    "resources/find_prev_disabled.png",
+    "resources/find_prev_disabled@2x.png",
+    "resources/find_prev_disabled@3x.png",
+    "resources/find_prev_disabled_incognito.png",
+    "resources/find_prev_disabled_incognito@2x.png",
+    "resources/find_prev_disabled_incognito@3x.png",
+    "resources/find_prev_incognito.png",
+    "resources/find_prev_incognito@2x.png",
+    "resources/find_prev_incognito@3x.png",
+    "resources/find_prev_pressed.png",
+    "resources/find_prev_pressed@2x.png",
+    "resources/find_prev_pressed@3x.png",
+    "resources/find_prev_pressed_incognito.png",
+    "resources/find_prev_pressed_incognito@2x.png",
+    "resources/find_prev_pressed_incognito@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
