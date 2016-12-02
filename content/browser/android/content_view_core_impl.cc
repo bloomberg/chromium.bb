@@ -77,6 +77,7 @@ using base::android::JavaRef;
 using base::android::ScopedJavaLocalRef;
 using blink::WebGestureEvent;
 using blink::WebInputEvent;
+using ui::MotionEventAndroid;
 
 namespace content {
 
@@ -158,6 +159,17 @@ int ToGestureEventType(WebInputEvent::Type type) {
       NOTREACHED() << "Invalid source gesture type: "
                    << WebInputEvent::GetName(type);
       return -1;
+  }
+}
+
+void RecordToolTypeForActionDown(MotionEventAndroid& event) {
+  MotionEventAndroid::Action action = event.GetAction();
+  if (action == MotionEventAndroid::ACTION_DOWN ||
+      action == MotionEventAndroid::ACTION_POINTER_DOWN ||
+      action == MotionEventAndroid::ACTION_BUTTON_PRESS) {
+    UMA_HISTOGRAM_ENUMERATION("Event.AndroidActionDown.ToolType",
+                              event.GetToolType(0),
+                              MotionEventAndroid::TOOL_TYPE_LAST + 1);
   }
 }
 
@@ -916,7 +928,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
   if (!rwhv)
     return false;
 
-  ui::MotionEventAndroid::Pointer pointer0(pointer_id_0,
+  MotionEventAndroid::Pointer pointer0(pointer_id_0,
                                        pos_x_0,
                                        pos_y_0,
                                        touch_major_0,
@@ -924,7 +936,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                                        orientation_0,
                                        tilt_0,
                                        android_tool_type_0);
-  ui::MotionEventAndroid::Pointer pointer1(pointer_id_1,
+  MotionEventAndroid::Pointer pointer1(pointer_id_1,
                                        pos_x_1,
                                        pos_y_1,
                                        touch_major_1,
@@ -932,7 +944,7 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                                        orientation_1,
                                        tilt_1,
                                        android_tool_type_1);
-  ui::MotionEventAndroid event(1.f / dpi_scale(),
+  MotionEventAndroid event(1.f / dpi_scale(),
                            env,
                            motion_event,
                            time_ms,
@@ -946,6 +958,8 @@ jboolean ContentViewCoreImpl::OnTouchEvent(
                            raw_pos_y - pos_y_0,
                            &pointer0,
                            &pointer1);
+
+  RecordToolTypeForActionDown(event);
 
   return is_touch_handle_event ? rwhv->OnTouchHandleEvent(event)
                                : rwhv->OnTouchEvent(event);
@@ -974,11 +988,11 @@ jboolean ContentViewCoreImpl::SendMouseEvent(
   // Construct a motion_event object minimally, only to convert the raw
   // parameters to ui::MotionEvent values. Since we used only the cached values
   // at index=0, it is okay to even pass a null event to the constructor.
-  ui::MotionEventAndroid::Pointer pointer0(
+  MotionEventAndroid::Pointer pointer0(
       pointer_id, x, y, 0.0f /* touch_major */, 0.0f /* touch_minor */,
       orientation, tilt, android_tool_type);
 
-  ui::MotionEventAndroid motion_event(1.f / dpi_scale(),
+  MotionEventAndroid motion_event(1.f / dpi_scale(),
       env,
       nullptr /* event */,
       time_ms,
@@ -992,6 +1006,8 @@ jboolean ContentViewCoreImpl::SendMouseEvent(
       0 /* raw_offset_y_pixels */,
       &pointer0,
       nullptr);
+
+  RecordToolTypeForActionDown(motion_event);
 
   // Note: This relies on identical button enum values in MotionEvent and
   // MotionEventAndroid.

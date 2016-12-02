@@ -31,7 +31,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
     ACTION_HOVER_EXIT,
     ACTION_HOVER_MOVE,
     ACTION_BUTTON_PRESS,
-    ACTION_BUTTON_RELEASE
+    ACTION_BUTTON_RELEASE,
+    ACTION_LAST = ACTION_BUTTON_RELEASE
   };
 
   enum ToolType {
@@ -39,7 +40,8 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
     TOOL_TYPE_FINGER,
     TOOL_TYPE_STYLUS,
     TOOL_TYPE_MOUSE,
-    TOOL_TYPE_ERASER
+    TOOL_TYPE_ERASER,
+    TOOL_TYPE_LAST = TOOL_TYPE_ERASER
   };
 
   enum ButtonType {
@@ -49,7 +51,7 @@ class GESTURE_DETECTION_EXPORT MotionEvent {
     BUTTON_BACK = 1 << 3,
     BUTTON_FORWARD = 1 << 4,
     BUTTON_STYLUS_PRIMARY = 1 << 5,
-    BUTTON_STYLUS_SECONDARY = 1 << 6,
+    BUTTON_STYLUS_SECONDARY = 1 << 6
   };
 
   // The implementer promises that |GetPointerId()| will never exceed
