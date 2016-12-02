@@ -1,0 +1,28 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("assets") {
+  sources = [
+    "resources/download_manager_assets.xcassets/Contents.json",
+    "resources/download_manager_assets.xcassets/error_icon.imageset/Contents.json",
+    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon.png",
+    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon@2x.png",
+    "resources/download_manager_assets.xcassets/error_icon.imageset/error_icon@3x.png",
+    "resources/download_manager_assets.xcassets/file_icon_body.imageset/Contents.json",
+    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body.png",
+    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body@2x.png",
+    "resources/download_manager_assets.xcassets/file_icon_body.imageset/file_icon_body@3x.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/Contents.json",
+    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold@2x.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold.imageset/file_icon_fold@3x.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/Contents.json",
+    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete@2x.png",
+    "resources/download_manager_assets.xcassets/file_icon_fold_complete.imageset/file_icon_fold_complete@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
