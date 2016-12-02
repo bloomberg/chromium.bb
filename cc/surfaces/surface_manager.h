@@ -33,7 +33,12 @@ class SurfaceFactoryClient;
 class CC_SURFACES_EXPORT SurfaceManager
     : public NON_EXPORTED_BASE(SurfaceReferenceManager) {
  public:
-  SurfaceManager();
+  enum class LifetimeType {
+    REFERENCES,
+    SEQUENCES,
+  };
+
+  explicit SurfaceManager(LifetimeType lifetime_type = LifetimeType::SEQUENCES);
   ~SurfaceManager() override;
 
   void RegisterSurface(Surface* surface);
@@ -122,12 +127,18 @@ class CC_SURFACES_EXPORT SurfaceManager
   bool ChildContains(const FrameSinkId& child_frame_sink_id,
                      const FrameSinkId& search_frame_sink_id) const;
 
+  // Garbage collects all destroyed surfaces not reachable from the root. Used
+  // when |use_references_| is true.
+  void GarbageCollectSurfacesFromRoot();
   void GarbageCollectSurfaces();
 
   // Removes reference from a parent surface to a child surface. Used to remove
   // references without triggered GC.
   void RemoveSurfaceReferenceImpl(const SurfaceId& parent_id,
                                   const SurfaceId& child_id);
+
+  // Use reference or sequence based lifetime management.
+  LifetimeType lifetime_type_;
 
   using SurfaceMap = std::unordered_map<SurfaceId, Surface*, SurfaceIdHash>;
   SurfaceMap surface_map_;
@@ -183,7 +194,7 @@ class CC_SURFACES_EXPORT SurfaceManager
 
   // Root SurfaceId that references display root surfaces. There is no Surface
   // with this id, it's for bookkeeping purposes only.
-  const SurfaceId kRootSurfaceId;
+  const SurfaceId root_surface_id_;
 
   DISALLOW_COPY_AND_ASSIGN(SurfaceManager);
 };

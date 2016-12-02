@@ -7,6 +7,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+#include <queue>
 #include <utility>
 
 #include "base/logging.h"
@@ -27,9 +28,10 @@ SurfaceManager::FrameSinkSourceMapping::~FrameSinkSourceMapping() {
                      << ", children: " << children.size();
 }
 
-SurfaceManager::SurfaceManager()
-    : kRootSurfaceId(FrameSinkId(0u, 0u),
-                     LocalFrameId(0u, base::UnguessableToken::Create())) {
+SurfaceManager::SurfaceManager(LifetimeType lifetime_type)
+    : lifetime_type_(lifetime_type),
+      root_surface_id_(FrameSinkId(0u, 0u),
+                       LocalFrameId(1u, base::UnguessableToken::Create())) {
   thread_checker_.DetachFromThread();
 }
 
@@ -74,6 +76,7 @@ void SurfaceManager::Destroy(std::unique_ptr<Surface> surface) {
 void SurfaceManager::DidSatisfySequences(const FrameSinkId& frame_sink_id,
                                          std::vector<uint32_t>* sequence) {
   DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK_EQ(lifetime_type_, LifetimeType::SEQUENCES);
   for (uint32_t value : *sequence)
     satisfied_sequences_.insert(SurfaceSequence(frame_sink_id, value));
   sequence->clear();
@@ -91,7 +94,7 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
 }
 
 const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
-  return kRootSurfaceId;
+  return root_surface_id_;
 }
 
 void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
@@ -104,7 +107,7 @@ void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
     LOG(ERROR) << "Cannot add self reference for " << parent_id.ToString();
     return;
   }
-  if (parent_id != kRootSurfaceId && surface_map_.count(parent_id) == 0) {
+  if (parent_id != root_surface_id_ && surface_map_.count(parent_id) == 0) {
     LOG(ERROR) << "No surface in map for " << parent_id.ToString();
     return;
   }
@@ -150,7 +153,55 @@ size_t SurfaceManager::GetReferencedSurfaceCount(
   return iter->second.size();
 }
 
+void SurfaceManager::GarbageCollectSurfacesFromRoot() {
+  DCHECK_EQ(lifetime_type_, LifetimeType::REFERENCES);
+
+  if (surfaces_to_destroy_.empty())
+    return;
+
+  std::unordered_set<SurfaceId, SurfaceIdHash> reachable_surfaces;
+
+  // Walk down from the root and mark each SurfaceId we encounter as reachable.
+  std::queue<SurfaceId> surface_queue;
+  surface_queue.push(root_surface_id_);
+  while (!surface_queue.empty()) {
+    const SurfaceId& surface_id = surface_queue.front();
+    auto iter = parent_to_child_refs_.find(surface_id);
+    if (iter != parent_to_child_refs_.end()) {
+      for (const SurfaceId& child_id : iter->second) {
+        // Check for cycles when inserting into |reachable_surfaces|.
+        if (reachable_surfaces.insert(child_id).second)
+          surface_queue.push(child_id);
+      }
+    }
+    surface_queue.pop();
+  }
+
+  std::vector<std::unique_ptr<Surface>> surfaces_to_delete;
+
+  // Delete all destroyed and unreachable surfaces.
+  for (auto iter = surfaces_to_destroy_.begin();
+       iter != surfaces_to_destroy_.end();) {
+    SurfaceId surface_id = (*iter)->surface_id();
+    if (reachable_surfaces.count(surface_id) == 0) {
+      DeregisterSurface(surface_id);
+      surfaces_to_delete.push_back(std::move(*iter));
+      iter = surfaces_to_destroy_.erase(iter);
+    } else {
+      ++iter;
+    }
+  }
+
+  // ~Surface() draw callback could modify |surfaces_to_destroy_|.
+  surfaces_to_delete.clear();
+}
+
 void SurfaceManager::GarbageCollectSurfaces() {
+  if (lifetime_type_ == LifetimeType::REFERENCES) {
+    GarbageCollectSurfacesFromRoot();
+    return;
+  }
+
   // Simple mark and sweep GC.
   // TODO(jbauman): Reduce the amount of work when nothing needs to be
   // destroyed.

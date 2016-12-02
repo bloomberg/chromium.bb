@@ -21,7 +21,8 @@ DisplayCompositor::DisplayCompositor(
     gpu::ImageFactory* image_factory,
     cc::mojom::DisplayCompositorRequest request,
     cc::mojom::DisplayCompositorClientPtr client)
-    : gpu_service_(std::move(gpu_service)),
+    : manager_(cc::SurfaceManager::LifetimeType::REFERENCES),
+      gpu_service_(std::move(gpu_service)),
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
       client_(std::move(client)),
