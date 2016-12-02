@@ -29,7 +29,7 @@
 #include "core/CoreExport.h"
 #include "core/fetch/IntegrityMetadata.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/TextResource.h"
+#include "core/loader/resource/TextResource.h"
 
 namespace blink {
 

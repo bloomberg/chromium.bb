@@ -32,7 +32,7 @@
 #define StyleSheetResource_h
 
 #include "core/CoreExport.h"
-#include "core/fetch/TextResource.h"
+#include "core/loader/resource/TextResource.h"
 
 namespace blink {
 

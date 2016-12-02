@@ -25,8 +25,8 @@
 
 #include "core/fetch/Resource.h"
 #include "core/fetch/ResourceClient.h"
-#include "core/fetch/TextResource.h"
 #include "core/html/parser/TextResourceDecoder.h"
+#include "core/loader/resource/TextResource.h"
 #include "platform/heap/Handle.h"
 #include <memory>
 
