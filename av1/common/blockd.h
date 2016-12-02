@@ -38,6 +38,11 @@ extern "C" {
 
 #define MAX_MB_PLANE 3
 
+#if CONFIG_EXT_INTER
+// Should we try rectangular interintra predictions?
+#define USE_RECT_INTERINTRA 1
+#endif
+
 typedef enum {
   KEY_FRAME = 0,
   INTER_FRAME = 1,
@@ -84,6 +89,11 @@ typedef struct PVQ_QUEUE {
   int last_pos;   // last written position of PVQ_INFO in a tile
 } PVQ_QUEUE;
 #endif
+
+typedef struct {
+  uint8_t *plane[MAX_MB_PLANE];
+  int stride[MAX_MB_PLANE];
+} BUFFER_SET;
 
 #if CONFIG_EXT_INTER
 static INLINE int is_inter_singleref_mode(PREDICTION_MODE mode) {
@@ -884,6 +894,9 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
 
 #if CONFIG_EXT_INTER
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
+#if !USE_RECT_INTERINTRA
+  if (block_size_wide[bsize] != block_size_high[bsize]) return 0;
+#endif
   // TODO(debargha): Should this be bsize < BLOCK_LARGEST?
   return (bsize >= BLOCK_8X8) && (bsize < BLOCK_64X64);
 }

@@ -1502,7 +1502,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     } else {
       // Prediction
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col,
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
                                     AOMMAX(bsize, BLOCK_8X8));
 
       // Reconstruction
@@ -1601,7 +1601,7 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
       }
     } else {
 #endif  // CONFIG_WARPED_MOTION
-      av1_build_inter_predictors_sb(xd, mi_row, mi_col,
+      av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL,
                                     AOMMAX(bsize, BLOCK_8X8));
 #if CONFIG_WARPED_MOTION
     }

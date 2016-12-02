@@ -919,7 +919,7 @@ static void choose_partitioning(AV1_COMP *const cpi, ThreadData *const td,
       x->pred_mv[LAST_FRAME] = mbmi->mv[0].as_mv;
     }
 
-    av1_build_inter_predictors_sb(xd, mi_row, mi_col, cm->sb_size);
+    av1_build_inter_predictors_sb(xd, mi_row, mi_col, NULL, cm->sb_size);
 
     ref = xd->plane[0].dst.buf;
     ref_stride = xd->plane[0].dst.stride;
@@ -5550,10 +5550,10 @@ static void encode_superblock(const AV1_COMP *const cpi, ThreadData *td,
     } else {
 #endif  // CONFIG_WARPED_MOTION
       if (!(cpi->sf.reuse_inter_pred_sby && ctx->pred_pixel_ready) || seg_skip)
-        av1_build_inter_predictors_sby(xd, mi_row, mi_col,
+        av1_build_inter_predictors_sby(xd, mi_row, mi_col, NULL,
                                        AOMMAX(bsize, BLOCK_8X8));
 
-      av1_build_inter_predictors_sbuv(xd, mi_row, mi_col,
+      av1_build_inter_predictors_sbuv(xd, mi_row, mi_col, NULL,
                                       AOMMAX(bsize, BLOCK_8X8));
 #if CONFIG_WARPED_MOTION
     }
