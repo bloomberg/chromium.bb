@@ -5276,10 +5276,10 @@ const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES] = {
 #if CONFIG_CB4X4
   {
       // TX_2X2
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
-      { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
+      { default_scan_2x2, av1_default_iscan_2x2, default_scan_2x2_neighbors },
 #if CONFIG_EXT_TX
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
       { default_scan_4x4, av1_default_iscan_4x4, default_scan_4x4_neighbors },
