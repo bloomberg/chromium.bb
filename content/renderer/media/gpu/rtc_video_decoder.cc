@@ -210,10 +210,10 @@ int32_t RTCVideoDecoder::Decode(
 #endif
 
   bool need_to_reset_for_midstream_resize = false;
-  if (inputImage._frameType == webrtc::kVideoFrameKey) {
-    const gfx::Size new_frame_size(inputImage._encodedWidth,
-                                   inputImage._encodedHeight);
-    DVLOG(2) << "Got key frame. size=" << new_frame_size.ToString();
+  const gfx::Size new_frame_size(inputImage._encodedWidth,
+                                 inputImage._encodedHeight);
+  if (!new_frame_size.IsEmpty() && new_frame_size != frame_size_) {
+    DVLOG(2) << "Got new size=" << new_frame_size.ToString();
 
     if (new_frame_size.width() > max_resolution_.width() ||
         new_frame_size.width() < min_resolution_.width() ||
@@ -237,7 +237,7 @@ int32_t RTCVideoDecoder::Decode(
     // If we're are in an error condition, increase the counter.
     vda_error_counter_ += vda_error_counter_ ? 1 : 0;
 
-    DVLOG(1) << "The first frame should be a key frame. Drop this.";
+    DVLOG(1) << "The first frame should have resolution. Drop this.";
     return WEBRTC_VIDEO_CODEC_ERROR;
   }
 

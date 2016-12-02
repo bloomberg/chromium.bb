@@ -291,8 +291,8 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
 
   webrtc::EncodedImage input_image;
   input_image._completeFrame = true;
-  input_image._encodedWidth = kMinResolutionWidth;
-  input_image._encodedHeight = kMaxResolutionHeight;
+  input_image._encodedWidth = 0;
+  input_image._encodedHeight = 0;
   input_image._frameType = webrtc::kVideoFrameDelta;
   input_image._length = kMinResolutionWidth * kMaxResolutionHeight;
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
@@ -310,8 +310,8 @@ TEST_P(RTCVideoDecoderTest, GetVDAErrorCounterForTesting) {
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
   EXPECT_EQ(1, rtc_decoder_->GetVDAErrorCounterForTesting());
 
-  // Decoder expects a keyframe after reset, so drops any other frames. However,
-  // we should still increment the error counter.
+  // Decoder expects a frame with size after reset, so drops any other frames.
+  // However, we should still increment the error counter.
   EXPECT_EQ(WEBRTC_VIDEO_CODEC_ERROR,
             rtc_decoder_->Decode(input_image, false, nullptr, nullptr, 0));
   EXPECT_EQ(2, rtc_decoder_->GetVDAErrorCounterForTesting());
