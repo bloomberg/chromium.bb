@@ -309,3 +309,24 @@ async_test((test) => {
   n.c1.remove();
 }, "slotchange event: Fallback slot's parant slot is assinged to another slot.");
 </script>
+
+<div id="test8">
+  <div id="host1">
+    <template id="shadowroot" data-mode="open">
+      <slot id="s1"></slot>
+    </template>
+  </div>
+</div>
+
+<script>
+async_test((test) => {
+  const n = createTestTree(window.test8);
+  removeWhiteSpaceOnlyTextNodes(n.test8);
+  n.host1.innerHTML = 'hello';
+
+  window.setTimeout(() => {
+    doneIfSlotChange([n.s1], test);
+    n.host1.innerHTML = 'world';
+  }, 0);
+}, 'slotchange event: Replacing a text node with innerHTML.');
+</script>

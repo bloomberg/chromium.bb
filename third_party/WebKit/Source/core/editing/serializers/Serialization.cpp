@@ -713,13 +713,6 @@ void replaceChildrenWithFragment(ContainerNode* container,
     return;
   }
 
-  // FIXME: This is wrong if containerNode->firstChild() has more than one ref!
-  if (containerNode->hasOneTextChild() && fragment->hasOneTextChild()) {
-    toText(containerNode->firstChild())
-        ->setData(toText(fragment->firstChild())->data());
-    return;
-  }
-
   // FIXME: No need to replace the child it is a text node and its contents are
   // already == text.
   if (containerNode->hasOneChild()) {
