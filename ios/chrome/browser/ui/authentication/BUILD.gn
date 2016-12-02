@@ -1,0 +1,14 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/signin_confirmation_more.png",
+    "resources/signin_confirmation_more@2x.png",
+    "resources/signin_confirmation_more@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
