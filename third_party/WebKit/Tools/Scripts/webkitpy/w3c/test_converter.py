@@ -53,16 +53,17 @@ def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
         return None
 
     contents = host.filesystem.read_binary_file(filename)
+    try:
+        contents = contents.decode('utf-8')
+    except UnicodeDecodeError:
+        contents = contents.decode('utf-16')
+
     converter = _W3CTestConverter(new_path, filename, reference_support_info, host)
     if filename.endswith('.css'):
-        return converter.add_webkit_prefix_to_unprefixed_properties(contents.decode('utf-8'))
-    else:
-        try:
-            converter.feed(contents.decode('utf-8'))
-        except UnicodeDecodeError:
-            converter.feed(contents.decode('utf-16'))
-        converter.close()
-        return converter.output()
+        return converter.add_webkit_prefix_to_unprefixed_properties(contents)
+    converter.feed(contents)
+    converter.close()
+    return converter.output()
 
 
 class _W3CTestConverter(HTMLParser):
@@ -130,10 +131,15 @@ class _W3CTestConverter(HTMLParser):
         converted_properties = set()
         text_chunks = []
         cur_pos = 0
-        for m in self.prop_re.finditer(text):
-            text_chunks.extend([text[cur_pos:m.start()], m.group(1), '-webkit-', m.group(2), m.group(3)])
-            converted_properties.add(m.group(2))
-            cur_pos = m.end()
+        for match in self.prop_re.finditer(text):
+            text_chunks.extend([
+                text[cur_pos:match.start()],
+                match.group(1), '-webkit-',
+                match.group(2),
+                match.group(3)
+            ])
+            converted_properties.add(match.group(2))
+            cur_pos = match.end()
         text_chunks.append(text[cur_pos:])
 
         for prop in converted_properties:
