@@ -25,6 +25,7 @@ namespace {
 const char* const kDefaultDeviceId =
     media::AudioDeviceDescription::kDefaultDeviceId;
 const char kAnotherDeviceId[] = "another-device-id";
+const char kUnhealthyDeviceId[] = "i-am-sick";
 const int kRenderFrameId = 124;
 const int kDeleteTimeoutMs = 500;
 }  // namespace
@@ -72,8 +73,10 @@ class AudioRendererSinkCacheTest : public testing::Test {
       int session_id,
       const std::string& device_id,
       const url::Origin& security_origin) {
-    return new media::MockAudioRendererSink(device_id,
-                                            media::OUTPUT_DEVICE_STATUS_OK);
+    return new media::MockAudioRendererSink(
+        device_id, (device_id == kUnhealthyDeviceId)
+                       ? media::OUTPUT_DEVICE_STATUS_ERROR_INTERNAL
+                       : media::OUTPUT_DEVICE_STATUS_OK);
   }
 
   void ExpectToStop(media::AudioRendererSink* sink) {
@@ -248,6 +251,18 @@ TEST_F(AudioRendererSinkCacheTest, NoGarbageCollectionForUsedSink) {
 
   // The sink is still in place.
   EXPECT_EQ(1, sink_count());
+}
+
+// Verify that the sink created with GetSinkInfo() is not cached if it is
+// unhealthy.
+TEST_F(AudioRendererSinkCacheTest, UnhealthySinkIsNotCached) {
+  EXPECT_EQ(0, sink_count());
+  media::OutputDeviceInfo device_info =
+      cache_->GetSinkInfo(kRenderFrameId, 0, kUnhealthyDeviceId, url::Origin());
+  EXPECT_EQ(0, sink_count());
+  scoped_refptr<media::AudioRendererSink> sink =
+      cache_->GetSink(kRenderFrameId, kUnhealthyDeviceId, url::Origin()).get();
+  EXPECT_EQ(0, sink_count());
 }
 
 // Verify that cache works fine if a sink scheduled for delettion is aquired and

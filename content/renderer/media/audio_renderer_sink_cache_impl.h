@@ -70,6 +70,11 @@ class CONTENT_EXPORT AudioRendererSinkCacheImpl
       const url::Origin& security_origin,
       bool unused_only);
 
+  void CacheUnusedSinkIfHealthy(int source_render_frame_id,
+                                const std::string& device_id,
+                                const url::Origin& security_origin,
+                                scoped_refptr<media::AudioRendererSink> sink);
+
   // To avoid publishing CacheEntry structure in the header.
   int GetCacheSizeForTesting();
 
