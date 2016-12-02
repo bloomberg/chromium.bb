@@ -47,6 +47,9 @@ class CastContentRendererClient : public content::ContentRendererClient {
  protected:
   CastContentRendererClient();
 
+  virtual void RunWhenInForeground(content::RenderFrame* render_frame,
+                                   const base::Closure& closure);
+
  private:
   std::unique_ptr<network_hints::PrescientNetworkingDispatcher>
       prescient_networking_dispatcher_;

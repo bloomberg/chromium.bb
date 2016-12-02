@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chromecast/renderer/cast_media_load_deferrer.h"
+#include "chromecast/renderer/cast_render_frame_action_deferrer.h"
 
 #include "base/callback_helpers.h"
 #include "base/logging.h"
 
 namespace chromecast {
 
-CastMediaLoadDeferrer::CastMediaLoadDeferrer(
+CastRenderFrameActionDeferrer::CastRenderFrameActionDeferrer(
     content::RenderFrame* render_frame,
     const base::Closure& continue_loading_cb)
     : content::RenderFrameObserver(render_frame),
@@ -17,14 +17,14 @@ CastMediaLoadDeferrer::CastMediaLoadDeferrer(
   DCHECK(!continue_loading_cb_.is_null());
 }
 
-CastMediaLoadDeferrer::~CastMediaLoadDeferrer() {}
+CastRenderFrameActionDeferrer::~CastRenderFrameActionDeferrer() {}
 
-void CastMediaLoadDeferrer::WasShown() {
+void CastRenderFrameActionDeferrer::WasShown() {
   continue_loading_cb_.Run();
   delete this;
 }
 
-void CastMediaLoadDeferrer::OnDestruct() {
+void CastRenderFrameActionDeferrer::OnDestruct() {
   delete this;
 }
 

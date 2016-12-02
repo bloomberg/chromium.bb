@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROMECAST_RENDERER_CAST_MEDIA_LOAD_DEFERRER_H_
-#define CHROMECAST_RENDERER_CAST_MEDIA_LOAD_DEFERRER_H_
+#ifndef CHROMECAST_RENDERER_CAST_RENDER_FRAME_ACTION_DEFERRER_H_
+#define CHROMECAST_RENDERER_CAST_RENDER_FRAME_ACTION_DEFERRER_H_
 
 #include "base/callback.h"
 #include "base/macros.h"
@@ -13,13 +13,13 @@ namespace chromecast {
 
 // Defers media player loading in background web apps until brought into
 // foreground.
-class CastMediaLoadDeferrer : public content::RenderFrameObserver {
+class CastRenderFrameActionDeferrer : content::RenderFrameObserver {
  public:
   // Will run |closure| to continue loading the media resource once the page is
   // swapped in.
-  CastMediaLoadDeferrer(content::RenderFrame* render_frame,
-                        const base::Closure& continue_loading_cb);
-  ~CastMediaLoadDeferrer() override;
+  CastRenderFrameActionDeferrer(content::RenderFrame* render_frame,
+                                const base::Closure& continue_loading_cb);
+  ~CastRenderFrameActionDeferrer() override;
 
  private:
   // content::RenderFrameObserver implementation:
@@ -28,9 +28,9 @@ class CastMediaLoadDeferrer : public content::RenderFrameObserver {
 
   base::Closure continue_loading_cb_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastMediaLoadDeferrer);
+  DISALLOW_COPY_AND_ASSIGN(CastRenderFrameActionDeferrer);
 };
 
 }  // namespace chromecast
 
-#endif  // CHROMECAST_RENDERER_CAST_MEDIA_LOAD_DEFERRER_H_
+#endif  // CHROMECAST_RENDERER_CAST_RENDER_FRAME_ACTION_DEFERRER_H_

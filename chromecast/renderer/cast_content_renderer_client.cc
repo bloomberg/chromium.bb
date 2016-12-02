@@ -16,7 +16,7 @@
 #include "chromecast/common/media/cast_media_client.h"
 #include "chromecast/crash/cast_crash_keys.h"
 #include "chromecast/renderer/cast_gin_runner.h"
-#include "chromecast/renderer/cast_media_load_deferrer.h"
+#include "chromecast/renderer/cast_render_frame_action_deferrer.h"
 #include "chromecast/renderer/key_systems_cast.h"
 #include "chromecast/renderer/media/media_caps_observer_impl.h"
 #include "components/network_hints/renderer/prescient_networking_dispatcher.h"
@@ -131,13 +131,24 @@ void CastContentRendererClient::DeferMediaLoad(
     content::RenderFrame* render_frame,
     bool render_frame_has_played_media_before,
     const base::Closure& closure) {
-  if (!render_frame->IsHidden() || allow_hidden_media_playback_) {
+  if (allow_hidden_media_playback_) {
+    closure.Run();
+    return;
+  }
+
+  RunWhenInForeground(render_frame, closure);
+}
+
+void CastContentRendererClient::RunWhenInForeground(
+    content::RenderFrame* render_frame,
+    const base::Closure& closure) {
+  if (!render_frame->IsHidden()) {
     closure.Run();
     return;
   }
 
   // Lifetime is tied to |render_frame| via content::RenderFrameObserver.
-  new CastMediaLoadDeferrer(render_frame, closure);
+  new CastRenderFrameActionDeferrer(render_frame, closure);
 }
 
 void CastContentRendererClient::RunScriptsAtDocumentStart(

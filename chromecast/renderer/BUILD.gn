@@ -10,8 +10,8 @@ source_set("renderer") {
     "cast_content_renderer_client.h",
     "cast_gin_runner.cc",
     "cast_gin_runner.h",
-    "cast_media_load_deferrer.cc",
-    "cast_media_load_deferrer.h",
+    "cast_render_frame_action_deferrer.cc",
+    "cast_render_frame_action_deferrer.h",
     "key_systems_cast.cc",
     "key_systems_cast.h",
   ]
