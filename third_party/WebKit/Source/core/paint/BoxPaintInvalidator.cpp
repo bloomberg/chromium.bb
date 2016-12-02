@@ -162,6 +162,10 @@ PaintInvalidationReason BoxPaintInvalidator::computePaintInvalidationReason() {
   if (m_box.isFrameSet())
     return PaintInvalidationBorderBoxChange;
 
+  // Needs to repaint column rules.
+  if (m_box.isLayoutMultiColumnSet())
+    return PaintInvalidationBorderBoxChange;
+
   return PaintInvalidationIncremental;
 }
 

@@ -1,0 +1,24 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutMultiColumnSet (anonymous)",
+          "rect": [8, 8, 600, 200],
+          "reason": "border box change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutMultiColumnSet (anonymous)",
+      "reason": "border box change"
+    }
+  ]
+}
+
