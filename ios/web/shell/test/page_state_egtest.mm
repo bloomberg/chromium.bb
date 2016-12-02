@@ -7,6 +7,8 @@
 #import <Foundation/Foundation.h>
 #import <XCTest/XCTest.h>
 
+#include "base/ios/ios_util.h"
+#import "ios/testing/earl_grey/disabled_test_macros.h"
 #import "ios/web/public/test/http_server.h"
 #include "ios/web/public/test/http_server_util.h"
 #import "ios/web/shell/test/earl_grey/shell_base_test_case.h"
@@ -58,6 +60,10 @@ using web::test::HttpServer;
 // Tests that page scroll position of a page is restored upon returning to the
 // page via the back/forward buttons.
 - (void)testScrollPositionRestoring {
+  // TODO(crbug.com/670700): Re-enable this test.
+  if (!base::ios::IsRunningOnIOS10OrLater()) {
+    EARL_GREY_TEST_DISABLED(@"Test disabled on pre-iOS 10");
+  }
   web::test::SetUpFileBasedHttpServer();
 
   // Load first URL which is a long page.
