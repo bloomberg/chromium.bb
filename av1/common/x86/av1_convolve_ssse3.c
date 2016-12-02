@@ -942,8 +942,8 @@ static void init_simd_horiz_filter(const int16_t *filter_ptr, int taps,
     for (i = 0; i < offset + 2; ++i) simd_horiz_filter[shift - 1][1][i] = 0;
 
     for (i = 0; i < taps; ++i) {
-      simd_horiz_filter[shift - 1][0][i + offset] = filter_row[i];
-      simd_horiz_filter[shift - 1][1][i + offset + 2] = filter_row[i];
+      simd_horiz_filter[shift - 1][0][i + offset] = (int8_t)filter_row[i];
+      simd_horiz_filter[shift - 1][1][i + offset + 2] = (int8_t)filter_row[i];
     }
 
     for (i = offset + taps; i < 16; ++i) simd_horiz_filter[shift - 1][0][i] = 0;
@@ -966,7 +966,7 @@ static void init_simd_vert_filter(const int16_t *filter_ptr, int taps,
       for (j = 0; j < 16; ++j) {
         int c = i * 2 + (j % 2) - offset;
         if (c >= 0 && c < taps)
-          simd_vert_filter[shift - 1][i][j] = filter_row[c];
+          simd_vert_filter[shift - 1][i][j] = (int8_t)filter_row[c];
         else
           simd_vert_filter[shift - 1][i][j] = 0;
       }
