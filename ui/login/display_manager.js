@@ -266,7 +266,7 @@ cr.define('cr.ui.login', function() {
 
     set pinHidden(hidden) {
       this.virtualKeyboardShown = hidden;
-      $('pod-row').setPinHidden(hidden);
+      $('pod-row').setFocusedPodPinVisibility(!hidden);
     },
 
     /**

@@ -29,7 +29,7 @@ function showPinKeyboardAsync() {
   // Called after polymer has been loaded. Fades the pin element in.
   var onPinLoaded = function(pinKeyboard) {
     var podRow = $('pod-row');
-    podRow.togglePinTransitions(true);
+    podRow.toggleTransitions(true);
     podRow.setFocusedPodPinVisibility(true);
   };
 

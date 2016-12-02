@@ -2729,10 +2729,10 @@ cr.define('login', function() {
     },
 
     /**
-     * Enables or disables transitions on the user pod.
+     * Enables or disables transitions on every pod instance.
      * @param {boolean} enable
      */
-    togglePinTransitions: function(enable) {
+    toggleTransitions: function(enable) {
       for (var i = 0; i < this.pods.length; ++i)
         this.pods[i].toggleTransitions(enable);
     },
@@ -2770,15 +2770,6 @@ cr.define('login', function() {
             0, 0, 0, 0, 0, ctrlKey, false, false, false, 0, null);
         app.dispatchEvent(activationEvent);
       }
-    },
-
-    /**
-     * Function that hides the pin keyboard. Meant to be called when the virtual
-     * keyboard is enabled and being toggled.
-     * @param {boolean} hidden
-     */
-    setPinHidden: function(hidden) {
-      this.setFocusedPodPinVisibility(!hidden);
     },
 
     /**
