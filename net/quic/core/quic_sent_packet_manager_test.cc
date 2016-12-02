@@ -14,7 +14,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::vector;
 using testing::AnyNumber;
 using testing::ElementsAre;
 using testing::IsEmpty;

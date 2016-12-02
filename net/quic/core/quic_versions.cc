@@ -12,9 +12,6 @@
 #include "net/quic/core/quic_types.h"
 
 using base::StringPiece;
-using std::map;
-using std::numeric_limits;
-using std::ostream;
 using std::string;
 
 namespace net {

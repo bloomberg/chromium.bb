@@ -4,13 +4,12 @@
 
 #include "net/quic/core/frames/quic_path_close_frame.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicPathCloseFrame::QuicPathCloseFrame(QuicPathId path_id) : path_id(path_id) {}
 
-ostream& operator<<(ostream& os, const QuicPathCloseFrame& path_close_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicPathCloseFrame& path_close_frame) {
   os << "{ path_id: " << static_cast<int>(path_close_frame.path_id) << " }\n";
   return os;
 }

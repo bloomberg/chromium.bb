@@ -58,7 +58,6 @@
 #include "url/gurl.h"
 #include "url/url_constants.h"
 
-using std::min;
 using NetworkHandle = net::NetworkChangeNotifier::NetworkHandle;
 
 namespace net {

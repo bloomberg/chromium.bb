@@ -4,8 +4,6 @@
 
 #include "net/quic/core/frames/quic_rst_stream_frame.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicRstStreamFrame::QuicRstStreamFrame()
@@ -18,7 +16,8 @@ QuicRstStreamFrame::QuicRstStreamFrame(QuicStreamId stream_id,
       error_code(error_code),
       byte_offset(bytes_written) {}
 
-ostream& operator<<(ostream& os, const QuicRstStreamFrame& rst_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicRstStreamFrame& rst_frame) {
   os << "{ stream_id: " << rst_frame.stream_id
      << ", error_code: " << rst_frame.error_code << " }\n";
   return os;

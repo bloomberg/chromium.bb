@@ -24,12 +24,7 @@
 #include "net/test/gtest_util.h"
 
 using base::StringPiece;
-using std::make_pair;
-using std::map;
-using std::numeric_limits;
-using std::pair;
 using std::string;
-using std::vector;
 using testing::Return;
 using testing::Truly;
 using testing::_;

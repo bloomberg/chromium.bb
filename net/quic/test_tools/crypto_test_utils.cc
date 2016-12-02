@@ -36,7 +36,6 @@
 #include "third_party/boringssl/src/include/openssl/sha.h"
 
 using base::StringPiece;
-using std::make_pair;
 using std::string;
 
 namespace net {

@@ -12,7 +12,6 @@
 #include "net/quic/core/quic_flags.h"
 
 using base::StringPrintf;
-using std::min;
 using std::string;
 
 namespace net {
@@ -209,7 +208,8 @@ QuicErrorCode QuicStreamSequencerBuffer::OnStreamData(
       blocks_[write_block_num] = new BufferBlock();
     }
 
-    const size_t bytes_to_copy = min<size_t>(bytes_avail, source_remaining);
+    const size_t bytes_to_copy =
+        std::min<size_t>(bytes_avail, source_remaining);
     char* dest = blocks_[write_block_num]->buffer + write_block_offset;
     DVLOG(1) << "Write at offset: " << offset << " length: " << bytes_to_copy;
 
@@ -290,10 +290,10 @@ QuicErrorCode QuicStreamSequencerBuffer::Readv(const iovec* dest_iov,
       size_t block_idx = NextBlockToRead();
       size_t start_offset_in_block = ReadOffset();
       size_t block_capacity = GetBlockCapacity(block_idx);
-      size_t bytes_available_in_block =
-          min<size_t>(ReadableBytes(), block_capacity - start_offset_in_block);
+      size_t bytes_available_in_block = std::min<size_t>(
+          ReadableBytes(), block_capacity - start_offset_in_block);
       size_t bytes_to_copy =
-          min<size_t>(bytes_available_in_block, dest_remaining);
+          std::min<size_t>(bytes_available_in_block, dest_remaining);
       DCHECK_GT(bytes_to_copy, 0UL);
       if (blocks_[block_idx] == nullptr || dest == nullptr) {
         *error_details = StringPrintf(
@@ -408,7 +408,7 @@ bool QuicStreamSequencerBuffer::GetReadableRegion(iovec* iov,
 
   size_t start_block_idx = NextBlockToRead();
   iov->iov_base = blocks_[start_block_idx]->buffer + ReadOffset();
-  size_t readable_bytes_in_block = min<size_t>(
+  size_t readable_bytes_in_block = std::min<size_t>(
       GetBlockCapacity(start_block_idx) - ReadOffset(), ReadableBytes());
   size_t region_len = 0;
   auto iter = frame_arrival_time_map_.begin();
@@ -447,9 +447,9 @@ bool QuicStreamSequencerBuffer::MarkConsumed(size_t bytes_used) {
   while (bytes_to_consume > 0) {
     size_t block_idx = NextBlockToRead();
     size_t offset_in_block = ReadOffset();
-    size_t bytes_available = min<size_t>(
+    size_t bytes_available = std::min<size_t>(
         ReadableBytes(), GetBlockCapacity(block_idx) - offset_in_block);
-    size_t bytes_read = min<size_t>(bytes_to_consume, bytes_available);
+    size_t bytes_read = std::min<size_t>(bytes_to_consume, bytes_available);
     total_bytes_read_ += bytes_read;
     num_bytes_buffered_ -= bytes_read;
     bytes_to_consume -= bytes_read;

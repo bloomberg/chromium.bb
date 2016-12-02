@@ -16,7 +16,6 @@
 #include "net/quic/test_tools/quic_crypto_server_config_peer.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::ostream;
 using std::string;
 
 namespace net {

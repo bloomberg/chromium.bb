@@ -13,8 +13,6 @@
 #include "net/quic/core/quic_packets.h"
 #include "net/quic/core/quic_time.h"
 
-using std::max;
-using std::min;
 
 namespace net {
 
@@ -118,8 +116,8 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
   // Cubic is "independent" of RTT, the update is limited by the time elapsed.
   if (last_congestion_window_ == current_congestion_window &&
       (current_time - last_update_time_ <= MaxCubicTimeInterval())) {
-    return max(last_target_congestion_window_,
-               estimated_tcp_congestion_window_);
+    return std::max(last_target_congestion_window_,
+                    estimated_tcp_congestion_window_);
   }
   last_congestion_window_ = current_congestion_window;
   last_update_time_ = current_time;
@@ -172,8 +170,8 @@ QuicPacketCount Cubic::CongestionWindowAfterAck(
   // Limit the CWND increase to half the acked packets rounded up to the
   // nearest packet.
   target_congestion_window =
-      min(target_congestion_window,
-          current_congestion_window + (epoch_packets_count_ + 1) / 2);
+      std::min(target_congestion_window,
+               current_congestion_window + (epoch_packets_count_ + 1) / 2);
 
   DCHECK_LT(0u, estimated_tcp_congestion_window_);
   // With dynamic beta/alpha based on number of active streams, it is possible

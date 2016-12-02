@@ -4,16 +4,14 @@
 
 #include "net/quic/core/frames/quic_window_update_frame.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicWindowUpdateFrame::QuicWindowUpdateFrame(QuicStreamId stream_id,
                                              QuicStreamOffset byte_offset)
     : stream_id(stream_id), byte_offset(byte_offset) {}
 
-ostream& operator<<(ostream& os,
-                    const QuicWindowUpdateFrame& window_update_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicWindowUpdateFrame& window_update_frame) {
   os << "{ stream_id: " << window_update_frame.stream_id
      << ", byte_offset: " << window_update_frame.byte_offset << " }\n";
   return os;

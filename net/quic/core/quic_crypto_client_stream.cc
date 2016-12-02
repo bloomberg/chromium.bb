@@ -19,7 +19,6 @@
 #include "net/quic/core/quic_utils.h"
 
 using std::string;
-using std::vector;
 
 namespace net {
 

@@ -18,9 +18,6 @@
 #include "net/quic/core/quic_connection_stats.h"
 #include "net/quic/core/quic_flags.h"
 
-using std::max;
-using std::min;
-using std::pair;
 
 namespace net {
 
@@ -101,15 +98,15 @@ void QuicSentPacketManager::SetFromConfig(const QuicConfig& config) {
   if (config.HasReceivedInitialRoundTripTimeUs() &&
       config.ReceivedInitialRoundTripTimeUs() > 0) {
     rtt_stats_.set_initial_rtt_us(
-        max(kMinInitialRoundTripTimeUs,
-            min(kMaxInitialRoundTripTimeUs,
-                config.ReceivedInitialRoundTripTimeUs())));
+        std::max(kMinInitialRoundTripTimeUs,
+                 std::min(kMaxInitialRoundTripTimeUs,
+                          config.ReceivedInitialRoundTripTimeUs())));
   } else if (config.HasInitialRoundTripTimeUsToSend() &&
              config.GetInitialRoundTripTimeUsToSend() > 0) {
     rtt_stats_.set_initial_rtt_us(
-        max(kMinInitialRoundTripTimeUs,
-            min(kMaxInitialRoundTripTimeUs,
-                config.GetInitialRoundTripTimeUsToSend())));
+        std::max(kMinInitialRoundTripTimeUs,
+                 std::min(kMaxInitialRoundTripTimeUs,
+                          config.GetInitialRoundTripTimeUsToSend())));
   }
   // Configure congestion control.
   const bool enable_client_connection_options =
@@ -218,8 +215,8 @@ void QuicSentPacketManager::ResumeConnectionState(
     uint32_t initial_rtt_us =
         kNumMicrosPerMilli * cached_network_params.min_rtt_ms();
     rtt_stats_.set_initial_rtt_us(
-        max(kMinInitialRoundTripTimeUs,
-            min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
+        std::max(kMinInitialRoundTripTimeUs,
+                 std::min(kMaxInitialRoundTripTimeUs, initial_rtt_us)));
   }
   send_algorithm_->ResumeConnectionState(cached_network_params,
                                          max_bandwidth_resumption);
@@ -229,7 +226,7 @@ void QuicSentPacketManager::SetNumOpenStreams(size_t num_streams) {
   if (n_connection_simulation_) {
     // Ensure the number of connections is between 1 and 5.
     send_algorithm_->SetNumEmulatedConnections(
-        min<size_t>(5, max<size_t>(1, num_streams)));
+        std::min<size_t>(5, std::max<size_t>(1, num_streams)));
   }
 }
 
@@ -879,11 +876,11 @@ const QuicTime::Delta QuicSentPacketManager::GetCryptoRetransmissionDelay()
     srtt = QuicTime::Delta::FromMicroseconds(rtt_stats_.initial_rtt_us());
   }
   if (conservative_handshake_retransmits_) {
-    delay_ms = max(kConservativeMinHandshakeTimeoutMs,
-                   static_cast<int64_t>(2 * srtt.ToMilliseconds()));
+    delay_ms = std::max(kConservativeMinHandshakeTimeoutMs,
+                        static_cast<int64_t>(2 * srtt.ToMilliseconds()));
   } else {
-    delay_ms = max(kMinHandshakeTimeoutMs,
-                   static_cast<int64_t>(1.5 * srtt.ToMilliseconds()));
+    delay_ms = std::max(kMinHandshakeTimeoutMs,
+                        static_cast<int64_t>(1.5 * srtt.ToMilliseconds()));
   }
   return QuicTime::Delta::FromMilliseconds(
       delay_ms << consecutive_crypto_retransmission_count_);
@@ -896,16 +893,16 @@ const QuicTime::Delta QuicSentPacketManager::GetTailLossProbeDelay() const {
   }
   if (enable_half_rtt_tail_loss_probe_ && consecutive_tlp_count_ == 0u) {
     return QuicTime::Delta::FromMilliseconds(
-        max(kMinTailLossProbeTimeoutMs,
-            static_cast<int64_t>(0.5 * srtt.ToMilliseconds())));
+        std::max(kMinTailLossProbeTimeoutMs,
+                 static_cast<int64_t>(0.5 * srtt.ToMilliseconds())));
   }
   if (!unacked_packets_.HasMultipleInFlightPackets()) {
     return std::max(2 * srtt, 1.5 * srtt + QuicTime::Delta::FromMilliseconds(
                                                kMinRetransmissionTimeMs / 2));
   }
   return QuicTime::Delta::FromMilliseconds(
-      max(kMinTailLossProbeTimeoutMs,
-          static_cast<int64_t>(2 * srtt.ToMilliseconds())));
+      std::max(kMinTailLossProbeTimeoutMs,
+               static_cast<int64_t>(2 * srtt.ToMilliseconds())));
 }
 
 const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
@@ -926,7 +923,7 @@ const QuicTime::Delta QuicSentPacketManager::GetRetransmissionDelay() const {
   // Calculate exponential back off.
   retransmission_delay =
       retransmission_delay *
-      (1 << min<size_t>(consecutive_rto_count_, kMaxRetransmissions));
+      (1 << std::min<size_t>(consecutive_rto_count_, kMaxRetransmissions));
 
   if (retransmission_delay.ToMilliseconds() > kMaxRetransmissionTimeMs) {
     return QuicTime::Delta::FromMilliseconds(kMaxRetransmissionTimeMs);

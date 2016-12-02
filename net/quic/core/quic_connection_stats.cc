@@ -4,8 +4,6 @@
 
 #include "net/quic/core/quic_connection_stats.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicConnectionStats::QuicConnectionStats()
@@ -48,7 +46,7 @@ QuicConnectionStats::QuicConnectionStats(const QuicConnectionStats& other) =
 
 QuicConnectionStats::~QuicConnectionStats() {}
 
-ostream& operator<<(ostream& os, const QuicConnectionStats& s) {
+std::ostream& operator<<(std::ostream& os, const QuicConnectionStats& s) {
   os << "{ bytes_sent: " << s.bytes_sent;
   os << " packets_sent: " << s.packets_sent;
   os << " stream_bytes_sent: " << s.stream_bytes_sent;

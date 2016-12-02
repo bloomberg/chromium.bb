@@ -23,7 +23,6 @@
 #include "net/tools/quic/stateless_rejector.h"
 
 using base::StringPiece;
-using std::list;
 using std::string;
 
 namespace net {

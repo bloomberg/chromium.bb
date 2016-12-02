@@ -4,12 +4,12 @@
 
 #include "net/quic/core/frames/quic_padding_frame.h"
 
-using std::ostream;
 using std::string;
 
 namespace net {
 
-ostream& operator<<(ostream& os, const QuicPaddingFrame& padding_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicPaddingFrame& padding_frame) {
   os << "{ num_padding_bytes: " << padding_frame.num_padding_bytes << " }\n";
   return os;
 }

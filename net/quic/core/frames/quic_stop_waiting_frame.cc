@@ -6,8 +6,6 @@
 
 #include "net/quic/core/quic_constants.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicStopWaitingFrame::QuicStopWaitingFrame()
@@ -15,7 +13,8 @@ QuicStopWaitingFrame::QuicStopWaitingFrame()
 
 QuicStopWaitingFrame::~QuicStopWaitingFrame() {}
 
-ostream& operator<<(ostream& os, const QuicStopWaitingFrame& sent_info) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicStopWaitingFrame& sent_info) {
   os << "{ least_unacked: " << sent_info.least_unacked << " }\n";
   return os;
 }

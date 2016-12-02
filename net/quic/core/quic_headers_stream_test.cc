@@ -4,6 +4,7 @@
 
 #include "net/quic/core/quic_headers_stream.h"
 
+#include <ostream>
 #include <string>
 #include <tuple>
 #include <utility>
@@ -25,9 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::ostream;
 using std::string;
-using std::vector;
 using testing::ElementsAre;
 using testing::_;
 using testing::AtLeast;
@@ -143,7 +142,7 @@ enum Http2DecoderChoice {
   HTTP2_DECODER_NESTED_SPDY,
   HTTP2_DECODER_NEW
 };
-ostream& operator<<(ostream& os, Http2DecoderChoice v) {
+std::ostream& operator<<(std::ostream& os, Http2DecoderChoice v) {
   switch (v) {
     case HTTP2_DECODER_SPDY:
       return os << "SPDY";
@@ -156,7 +155,7 @@ ostream& operator<<(ostream& os, Http2DecoderChoice v) {
 }
 
 enum HpackDecoderChoice { HPACK_DECODER_SPDY, HPACK_DECODER_NEW };
-ostream& operator<<(ostream& os, HpackDecoderChoice v) {
+std::ostream& operator<<(std::ostream& os, HpackDecoderChoice v) {
   switch (v) {
     case HPACK_DECODER_SPDY:
       return os << "SPDY";

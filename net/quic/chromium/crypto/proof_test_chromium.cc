@@ -19,7 +19,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using std::string;
-using std::vector;
 
 namespace net {
 namespace test {
@@ -58,7 +57,7 @@ void RunVerification(ProofVerifier* verifier,
                      const string& server_config,
                      QuicVersion quic_version,
                      StringPiece chlo_hash,
-                     const vector<string>& certs,
+                     const std::vector<string>& certs,
                      const string& proof,
                      bool expected_ok) {
   std::unique_ptr<ProofVerifyDetails> details;
@@ -168,7 +167,7 @@ TEST_P(ProofTest, DISABLED_Verify) {
   RunVerification(verifier.get(), hostname, port, server_config, quic_version,
                   first_chlo_hash, chain->certs, corrupt_signature, false);
 
-  vector<string> wrong_certs;
+  std::vector<string> wrong_certs;
   for (size_t i = 1; i < chain->certs.size(); i++) {
     wrong_certs.push_back(chain->certs[i]);
   }

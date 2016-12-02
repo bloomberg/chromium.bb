@@ -6,6 +6,7 @@
 
 #include <errno.h>
 #include <memory>
+#include <ostream>
 
 #include "net/quic/core/crypto/crypto_protocol.h"
 #include "net/quic/core/crypto/null_encrypter.h"

@@ -6,6 +6,7 @@
 
 #include <cstdint>
 #include <memory>
+#include <ostream>
 #include <string>
 
 #include "base/macros.h"
@@ -25,7 +26,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::StringPiece;
-using std::ostream;
 using std::string;
 using testing::DoAll;
 using testing::InSequence;
@@ -47,7 +47,7 @@ struct TestParams {
         connection_id_length(length),
         version_serialization(version_serialization) {}
 
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "{ client_version: " << QuicVersionToString(p.version)
        << " connection id length: " << p.connection_id_length
        << " include version: " << p.version_serialization << " }";

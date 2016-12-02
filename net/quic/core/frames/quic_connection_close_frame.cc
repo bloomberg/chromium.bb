@@ -4,15 +4,14 @@
 
 #include "net/quic/core/frames/quic_connection_close_frame.h"
 
-using std::ostream;
-
 namespace net {
 
 QuicConnectionCloseFrame::QuicConnectionCloseFrame()
     : error_code(QUIC_NO_ERROR) {}
 
-ostream& operator<<(std::ostream& os,
-                    const QuicConnectionCloseFrame& connection_close_frame) {
+std::ostream& operator<<(
+    std::ostream& os,
+    const QuicConnectionCloseFrame& connection_close_frame) {
   os << "{ error_code: " << connection_close_frame.error_code
      << ", error_details: '" << connection_close_frame.error_details << "' }\n";
   return os;

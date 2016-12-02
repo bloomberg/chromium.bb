@@ -12,7 +12,6 @@
 #include "third_party/boringssl/src/include/openssl/rsa.h"
 
 using std::string;
-using std::vector;
 
 namespace net {
 
@@ -40,7 +39,7 @@ bool ProofSourceChromium::Initialize(const base::FilePath& cert_path,
     return false;
   }
 
-  vector<string> certs;
+  std::vector<string> certs;
   for (const scoped_refptr<X509Certificate>& cert : certs_in_file) {
     std::string der_encoded_cert;
     if (!X509Certificate::GetDEREncoded(cert->os_cert_handle(),

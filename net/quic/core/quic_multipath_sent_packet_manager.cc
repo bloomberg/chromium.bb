@@ -10,7 +10,6 @@
 #include "net/quic/core/quic_bug_tracker.h"
 
 using std::string;
-using std::max;
 
 namespace net {
 
@@ -287,9 +286,9 @@ QuicPacketCount QuicMultipathSentPacketManager::EstimateMaxPacketsInFlight(
   for (PathSentPacketManagerInfo path_manager_info : path_managers_info_) {
     if (path_manager_info.manager != nullptr) {
       max_packets_in_flight =
-          max(max_packets_in_flight,
-              path_manager_info.manager->EstimateMaxPacketsInFlight(
-                  max_packet_length));
+          std::max(max_packets_in_flight,
+                   path_manager_info.manager->EstimateMaxPacketsInFlight(
+                       max_packet_length));
     }
   }
   DCHECK_LT(0u, max_packets_in_flight);

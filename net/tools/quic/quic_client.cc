@@ -36,7 +36,6 @@
 using base::StringPiece;
 using base::StringToInt;
 using std::string;
-using std::vector;
 
 namespace net {
 

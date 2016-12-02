@@ -15,8 +15,6 @@
 
 using base::IntToString;
 using base::StringPiece;
-using std::make_pair;
-using std::max;
 using std::string;
 using net::SpdyPriority;
 
@@ -449,16 +447,16 @@ void QuicSession::OnConfigNegotiated() {
     // Use a minimum number of additional streams, or a percentage increase,
     // whichever is larger.
     uint32_t max_incoming_streams =
-        max(max_streams + kMaxStreamsMinimumIncrement,
-            static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
+        std::max(max_streams + kMaxStreamsMinimumIncrement,
+                 static_cast<uint32_t>(max_streams * kMaxStreamsMultiplier));
     set_max_open_incoming_streams(max_incoming_streams);
   } else {
     uint32_t max_incoming_streams_to_send =
         config_.GetMaxIncomingDynamicStreamsToSend();
     uint32_t max_incoming_streams =
-        max(max_incoming_streams_to_send + kMaxStreamsMinimumIncrement,
-            static_cast<uint32_t>(max_incoming_streams_to_send *
-                                  kMaxStreamsMultiplier));
+        std::max(max_incoming_streams_to_send + kMaxStreamsMinimumIncrement,
+                 static_cast<uint32_t>(max_incoming_streams_to_send *
+                                       kMaxStreamsMultiplier));
     set_max_open_incoming_streams(max_incoming_streams);
   }
 

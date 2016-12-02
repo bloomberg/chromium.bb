@@ -60,7 +60,6 @@ using net::test::IsError;
 using net::test::IsOk;
 
 using std::string;
-using std::vector;
 
 namespace net {
 
@@ -115,8 +114,8 @@ struct TestParams {
   bool enable_connection_racing;
 };
 
-vector<TestParams> GetTestParams() {
-  vector<TestParams> params;
+std::vector<TestParams> GetTestParams() {
+  std::vector<TestParams> params;
   QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(TestParams{version, false});
@@ -154,8 +153,8 @@ struct PoolingTestParams {
   DestinationType destination_type;
 };
 
-vector<PoolingTestParams> GetPoolingTestParams() {
-  vector<PoolingTestParams> params;
+std::vector<PoolingTestParams> GetPoolingTestParams() {
+  std::vector<PoolingTestParams> params;
   QuicVersionVector all_supported_versions = AllSupportedVersions();
   for (const QuicVersion version : all_supported_versions) {
     params.push_back(PoolingTestParams{version, false, SAME_AS_FIRST});
@@ -581,7 +580,7 @@ class QuicStreamFactoryTestBase {
     string chlo_hash("test_chlo_hash");
     string signature("test_signature");
     string test_cert("test_cert");
-    vector<string> certs;
+    std::vector<string> certs;
     certs.push_back(test_cert);
     state->server_config = server_config;
     state->source_address_token = source_address_token;
@@ -621,7 +620,7 @@ class QuicStreamFactoryTestBase {
     string chlo_hash2("test_chlo_hash2");
     string signature2("test_signature2");
     string test_cert2("test_cert2");
-    vector<string> certs2;
+    std::vector<string> certs2;
     certs2.push_back(test_cert2);
     state2->server_config = server_config2;
     state2->source_address_token = source_address_token2;
@@ -1402,7 +1401,7 @@ TEST_P(QuicStreamFactoryTest, MaxOpenStream) {
   socket_data.AddSocketDataToFactory(&socket_factory_);
 
   HttpRequestInfo request_info;
-  vector<std::unique_ptr<QuicHttpStream>> streams;
+  std::vector<std::unique_ptr<QuicHttpStream>> streams;
   // The MockCryptoClientStream sets max_open_streams to be
   // kDefaultMaxStreamsPerConnection / 2.
   for (size_t i = 0; i < kDefaultMaxStreamsPerConnection / 2; i++) {
@@ -4005,7 +4004,7 @@ TEST_P(QuicStreamFactoryTest, OnCertDBChanged) {
 TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
   Initialize();
 
-  vector<string> cannoncial_suffixes;
+  std::vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));
   cannoncial_suffixes.push_back(string(".googlevideo.com"));
 
@@ -4040,7 +4039,7 @@ TEST_P(QuicStreamFactoryTest, SharedCryptoConfig) {
 
 TEST_P(QuicStreamFactoryTest, CryptoConfigWhenProofIsInvalid) {
   Initialize();
-  vector<string> cannoncial_suffixes;
+  std::vector<string> cannoncial_suffixes;
   cannoncial_suffixes.push_back(string(".c.youtube.com"));
   cannoncial_suffixes.push_back(string(".googlevideo.com"));
 
@@ -4940,7 +4939,8 @@ class QuicStreamFactoryWithDestinationTest
   HostPortPair origin1_;
   HostPortPair origin2_;
   MockRead hanging_read_;
-  vector<std::unique_ptr<SequencedSocketData>> sequenced_socket_data_vector_;
+  std::vector<std::unique_ptr<SequencedSocketData>>
+      sequenced_socket_data_vector_;
 };
 
 INSTANTIATE_TEST_CASE_P(Version,
@@ -5196,7 +5196,7 @@ TEST_P(QuicStreamFactoryTest, ClearCachedStatesInCryptoConfig) {
              QuicCryptoClientConfig* crypto_config)
         : server_id(host, port, privacy_mode),
           state(crypto_config->LookupOrCreate(server_id)) {
-      vector<string> certs(1);
+      std::vector<string> certs(1);
       certs[0] = "cert";
       state->SetProof(certs, "cert_sct", "chlo_hash", "signature");
       state->set_source_address_token("TOKEN");

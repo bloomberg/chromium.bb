@@ -26,8 +26,6 @@
 
 using base::ContainsKey;
 using base::StringPiece;
-using std::max;
-using std::min;
 using std::string;
 #define PREDICT_FALSE(x) (x)
 
@@ -778,7 +776,8 @@ void QuicFramer::SetLastPacketNumber(const QuicPacketHeader& header) {
     last_path_id_ = header.path_id;
   }
   last_packet_number_ = header.packet_number;
-  largest_packet_number_ = max(header.packet_number, largest_packet_number_);
+  largest_packet_number_ =
+      std::max(header.packet_number, largest_packet_number_);
 }
 
 void QuicFramer::OnPathClosed(QuicPathId path_id) {
@@ -952,7 +951,7 @@ QuicFramer::AckFrameInfo QuicFramer::GetAckFrameInfo(
         (total_gap + std::numeric_limits<uint8_t>::max() - 1) /
         std::numeric_limits<uint8_t>::max();
     new_ack_info.max_block_length =
-        max(new_ack_info.max_block_length, interval.Length());
+        std::max(new_ack_info.max_block_length, interval.Length());
   }
   return new_ack_info;
 }
@@ -1715,7 +1714,7 @@ size_t QuicFramer::GetAckFrameSize(
   ack_size += ack_block_length;
   if (ack_info.num_ack_blocks != 0) {
     ack_size += kNumberOfAckBlocksSize;
-    ack_size += min(ack_info.num_ack_blocks, kMaxAckBlocks) *
+    ack_size += std::min(ack_info.num_ack_blocks, kMaxAckBlocks) *
                 (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
   }
 
@@ -1938,7 +1937,8 @@ bool QuicFramer::AppendAckFrameAndTypeByte(const QuicAckFrame& frame,
                               (ack_block_length + PACKET_1BYTE_PACKET_NUMBER);
 
   // Number of ack blocks.
-  size_t num_ack_blocks = min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
+  size_t num_ack_blocks =
+      std::min(new_ack_info.num_ack_blocks, max_num_ack_blocks);
   if (num_ack_blocks > std::numeric_limits<uint8_t>::max()) {
     num_ack_blocks = std::numeric_limits<uint8_t>::max();
   }

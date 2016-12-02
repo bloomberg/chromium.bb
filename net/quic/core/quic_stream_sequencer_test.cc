@@ -25,7 +25,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::min;
 using std::string;
 using testing::_;
 using testing::AnyNumber;
@@ -394,7 +393,7 @@ class QuicSequencerRandomTest : public QuicStreamSequencerTest {
     int payload_size = arraysize(kPayload) - 1;
     int remaining_payload = payload_size;
     while (remaining_payload != 0) {
-      int size = min(OneToN(6), remaining_payload);
+      int size = std::min(OneToN(6), remaining_payload);
       int index = payload_size - remaining_payload;
       list_.push_back(std::make_pair(index, string(kPayload + index, size)));
       remaining_payload -= size;
@@ -472,7 +471,8 @@ TEST_F(QuicSequencerRandomTest, RandomFramesNoDroppingBackup) {
       }
       int total_bytes_to_peek = arraysize(buffer);
       for (int i = 0; i < iovs_peeked; ++i) {
-        int bytes_to_peek = min<int>(peek_iov[i].iov_len, total_bytes_to_peek);
+        int bytes_to_peek =
+            std::min<int>(peek_iov[i].iov_len, total_bytes_to_peek);
         peeked_.append(static_cast<char*>(peek_iov[i].iov_base), bytes_to_peek);
         total_bytes_to_peek -= bytes_to_peek;
         if (total_bytes_to_peek == 0) {

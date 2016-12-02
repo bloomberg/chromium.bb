@@ -44,7 +44,6 @@ using net::test::ConstructEncryptedPacket;
 using net::test::CryptoTestUtils;
 using net::test::MockQuicConnection;
 using net::test::MockQuicConnectionHelper;
-using std::ostream;
 using std::string;
 using testing::CreateFunctor;
 using testing::DoAll;
@@ -1097,8 +1096,8 @@ struct BufferedPacketStoreTestParams {
       : enable_stateless_rejects_via_flag(enable_stateless_rejects_via_flag),
         support_cheap_stateless_reject(support_cheap_stateless_reject) {}
 
-  friend ostream& operator<<(ostream& os,
-                             const BufferedPacketStoreTestParams& p) {
+  friend std::ostream& operator<<(std::ostream& os,
+                                  const BufferedPacketStoreTestParams& p) {
     os << "{  enable_stateless_rejects_via_flag: "
        << p.enable_stateless_rejects_via_flag << std::endl;
     os << "  support_cheap_stateless_reject: "

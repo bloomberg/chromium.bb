@@ -13,7 +13,6 @@
 #include "net/quic/core/quic_socket_address_coder.h"
 #include "net/quic/core/quic_utils.h"
 
-using std::min;
 using std::string;
 
 namespace net {
@@ -109,7 +108,7 @@ QuicErrorCode QuicNegotiableUint32::ProcessPeerHello(
   }
 
   set_negotiated(true);
-  negotiated_value_ = min(value, max_value_);
+  negotiated_value_ = std::min(value, max_value_);
   return QUIC_NO_ERROR;
 }
 

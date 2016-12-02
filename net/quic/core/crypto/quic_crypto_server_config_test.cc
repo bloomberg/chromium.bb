@@ -26,10 +26,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::map;
-using std::pair;
 using std::string;
-using std::vector;
 
 namespace net {
 namespace test {

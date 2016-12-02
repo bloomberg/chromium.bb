@@ -12,8 +12,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_packets.h"
 
-using std::max;
-using std::min;
 
 namespace net {
 
@@ -121,8 +119,8 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
   // Cubic is "independent" of RTT, the update is limited by the time elapsed.
   if (last_congestion_window_ == current_congestion_window &&
       (current_time - last_update_time_ <= MaxCubicTimeInterval())) {
-    return max(last_target_congestion_window_,
-               estimated_tcp_congestion_window_);
+    return std::max(last_target_congestion_window_,
+                    estimated_tcp_congestion_window_);
   }
   last_congestion_window_ = current_congestion_window;
   last_update_time_ = current_time;
@@ -173,8 +171,8 @@ QuicByteCount CubicBytes::CongestionWindowAfterAck(
           : origin_point_congestion_window_ - delta_congestion_window;
   // Limit the CWND increase to half the acked bytes.
   target_congestion_window =
-      min(target_congestion_window,
-          current_congestion_window + acked_bytes_count_ / 2);
+      std::min(target_congestion_window,
+               current_congestion_window + acked_bytes_count_ / 2);
 
   DCHECK_LT(0u, estimated_tcp_congestion_window_);
   // Increase the window by approximately Alpha * 1 MSS of bytes every

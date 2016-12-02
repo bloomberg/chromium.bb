@@ -24,7 +24,6 @@
 using base::IntToString;
 using base::StringPiece;
 using base::StringPrintf;
-using std::min;
 using std::string;
 
 namespace net {

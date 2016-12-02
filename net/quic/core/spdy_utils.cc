@@ -21,7 +21,6 @@
 using base::StringPiece;
 using base::ContainsKey;
 using std::string;
-using std::vector;
 
 namespace net {
 

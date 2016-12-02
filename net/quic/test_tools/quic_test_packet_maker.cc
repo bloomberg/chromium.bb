@@ -13,7 +13,6 @@
 #include "net/quic/core/quic_utils.h"
 #include "net/quic/test_tools/quic_test_utils.h"
 
-using std::make_pair;
 
 namespace net {
 namespace test {
@@ -96,7 +95,7 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndRstPacket(
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = ack_least_unacked; i <= largest_received; ++i) {
-    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
   }
   if (largest_received > 0) {
     ack.packets.Add(1, largest_received + 1);
@@ -145,7 +144,7 @@ QuicTestPacketMaker::MakeAckAndConnectionClosePacket(
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = ack_delay_time;
   for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
-    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
   }
   if (largest_received > 0) {
     ack.packets.Add(1, largest_received + 1);
@@ -240,7 +239,7 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckPacket(
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = ack_least_unacked; i <= largest_received; ++i) {
-    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
   }
   if (largest_received > 0) {
     ack.packets.Add(1, largest_received + 1);
@@ -322,7 +321,7 @@ std::unique_ptr<QuicReceivedPacket> QuicTestPacketMaker::MakeAckAndDataPacket(
   QuicAckFrame ack(MakeAckFrame(largest_received));
   ack.ack_delay_time = QuicTime::Delta::Zero();
   for (QuicPacketNumber i = least_unacked; i <= largest_received; ++i) {
-    ack.received_packet_times.push_back(make_pair(i, clock_->Now()));
+    ack.received_packet_times.push_back(std::make_pair(i, clock_->Now()));
   }
   if (largest_received > 0) {
     ack.packets.Add(1, largest_received + 1);

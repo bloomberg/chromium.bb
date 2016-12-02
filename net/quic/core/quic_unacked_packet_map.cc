@@ -12,7 +12,6 @@
 #include "net/quic/core/quic_flags.h"
 #include "net/quic/core/quic_utils.h"
 
-using std::max;
 
 namespace net {
 

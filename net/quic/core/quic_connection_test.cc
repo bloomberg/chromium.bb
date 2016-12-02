@@ -38,10 +38,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::map;
-using std::ostream;
 using std::string;
-using std::vector;
 using testing::AnyNumber;
 using testing::AtLeast;
 using testing::DoAll;
@@ -650,7 +647,7 @@ struct TestParams {
   TestParams(QuicVersion version, AckResponse ack_response)
       : version(version), ack_response(ack_response) {}
 
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "{ client_version: " << QuicVersionToString(p.version)
        << " ack_response: "
        << (p.ack_response == AckResponse::kDefer ? "defer" : "immediate")

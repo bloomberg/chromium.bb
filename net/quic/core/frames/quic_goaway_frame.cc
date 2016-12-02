@@ -4,7 +4,6 @@
 
 #include "net/quic/core/frames/quic_goaway_frame.h"
 
-using std::ostream;
 using std::string;
 
 namespace net {
@@ -19,7 +18,8 @@ QuicGoAwayFrame::QuicGoAwayFrame(QuicErrorCode error_code,
       last_good_stream_id(last_good_stream_id),
       reason_phrase(reason) {}
 
-ostream& operator<<(ostream& os, const QuicGoAwayFrame& goaway_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicGoAwayFrame& goaway_frame) {
   os << "{ error_code: " << goaway_frame.error_code
      << ", last_good_stream_id: " << goaway_frame.last_good_stream_id
      << ", reason_phrase: '" << goaway_frame.reason_phrase << "' }\n";

@@ -5,7 +5,6 @@
 #include "net/quic/core/frames/quic_frame.h"
 
 using base::StringPiece;
-using std::ostream;
 using std::string;
 
 namespace net {
@@ -101,7 +100,7 @@ void RemoveFramesForStream(QuicFrames* frames, QuicStreamId stream_id) {
   }
 }
 
-ostream& operator<<(ostream& os, const QuicFrame& frame) {
+std::ostream& operator<<(std::ostream& os, const QuicFrame& frame) {
   switch (frame.type) {
     case PADDING_FRAME: {
       os << "type { PADDING_FRAME } " << frame.padding_frame;

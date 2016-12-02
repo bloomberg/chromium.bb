@@ -40,14 +40,7 @@
 
 using base::StringPiece;
 using base::StringPrintf;
-using std::list;
-using std::make_pair;
-using std::max;
-using std::min;
-using std::numeric_limits;
-using std::set;
 using std::string;
-using std::vector;
 
 namespace net {
 
@@ -2090,7 +2083,7 @@ void QuicConnection::SetNetworkTimeouts(QuicTime::Delta handshake_timeout,
 void QuicConnection::CheckForTimeout() {
   QuicTime now = clock_->ApproximateNow();
   QuicTime time_of_last_packet =
-      max(time_of_last_received_packet_, last_send_for_timeout_);
+      std::max(time_of_last_received_packet_, last_send_for_timeout_);
 
   // |delta| can be < 0 as |now| is approximate time but |time_of_last_packet|
   // is accurate time. However, this should not change the behavior of
@@ -2129,14 +2122,14 @@ void QuicConnection::CheckForTimeout() {
 
 void QuicConnection::SetTimeoutAlarm() {
   QuicTime time_of_last_packet =
-      max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
+      std::max(time_of_last_received_packet_, time_of_last_sent_new_packet_);
   time_of_last_packet =
-      max(time_of_last_received_packet_, last_send_for_timeout_);
+      std::max(time_of_last_received_packet_, last_send_for_timeout_);
 
   QuicTime deadline = time_of_last_packet + idle_network_timeout_;
   if (!handshake_timeout_.IsInfinite()) {
-    deadline =
-        min(deadline, stats_.connection_creation_time + handshake_timeout_);
+    deadline = std::min(deadline,
+                        stats_.connection_creation_time + handshake_timeout_);
   }
 
   timeout_alarm_->Update(deadline, QuicTime::Delta::Zero());
@@ -2461,7 +2454,7 @@ bool QuicConnection::MaybeConsiderAsMemoryCorruption(
 // of (likely, tail) latency, then consider such a mechanism.
 const QuicTime::Delta QuicConnection::DelayedAckTime() {
   return QuicTime::Delta::FromMilliseconds(
-      min(kMaxDelayedAckTimeMs, kMinRetransmissionTimeMs / 2));
+      std::min(kMaxDelayedAckTimeMs, kMinRetransmissionTimeMs / 2));
 }
 
 void QuicConnection::CheckIfApplicationLimited() {

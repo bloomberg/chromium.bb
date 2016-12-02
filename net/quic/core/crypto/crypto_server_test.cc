@@ -30,8 +30,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::StringPiece;
-using std::endl;
-using std::ostream;
 using std::string;
 
 namespace net {
@@ -63,7 +61,7 @@ struct TestParams {
         use_stateless_rejects(use_stateless_rejects),
         supported_versions(std::move(supported_versions)) {}
 
-  friend ostream& operator<<(ostream& os, const TestParams& p) {
+  friend std::ostream& operator<<(std::ostream& os, const TestParams& p) {
     os << "  enable_stateless_rejects: " << p.enable_stateless_rejects
        << std::endl;
     os << "  use_stateless_rejects: " << p.use_stateless_rejects << std::endl;

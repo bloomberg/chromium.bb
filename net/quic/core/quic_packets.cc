@@ -11,9 +11,6 @@
 #include "net/quic/core/quic_versions.h"
 
 using base::StringPiece;
-using std::map;
-using std::numeric_limits;
-using std::ostream;
 using std::string;
 
 namespace net {
@@ -85,7 +82,7 @@ QuicPublicResetPacket::QuicPublicResetPacket(
     const QuicPacketPublicHeader& header)
     : public_header(header), nonce_proof(0), rejected_packet_number(0) {}
 
-ostream& operator<<(ostream& os, const QuicPacketHeader& header) {
+std::ostream& operator<<(std::ostream& os, const QuicPacketHeader& header) {
   os << "{ connection_id: " << header.public_header.connection_id
      << ", connection_id_length: " << header.public_header.connection_id_length
      << ", packet_number_length: " << header.public_header.packet_number_length
@@ -151,7 +148,7 @@ std::unique_ptr<QuicEncryptedPacket> QuicEncryptedPacket::Clone() const {
   return base::MakeUnique<QuicEncryptedPacket>(buffer, this->length(), true);
 }
 
-ostream& operator<<(ostream& os, const QuicEncryptedPacket& s) {
+std::ostream& operator<<(std::ostream& os, const QuicEncryptedPacket& s) {
   os << s.length() << "-byte data";
   return os;
 }
@@ -188,7 +185,7 @@ std::unique_ptr<QuicReceivedPacket> QuicReceivedPacket::Clone() const {
       buffer, this->length(), receipt_time(), true, ttl(), ttl() >= 0);
 }
 
-ostream& operator<<(ostream& os, const QuicReceivedPacket& s) {
+std::ostream& operator<<(std::ostream& os, const QuicReceivedPacket& s) {
   os << s.length() << "-byte data";
   return os;
 }

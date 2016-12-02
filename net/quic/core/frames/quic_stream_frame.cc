@@ -7,7 +7,6 @@
 #include "base/logging.h"
 
 using base::StringPiece;
-using std::ostream;
 
 namespace net {
 
@@ -72,7 +71,8 @@ QuicStreamFrame::QuicStreamFrame(QuicStreamId stream_id,
 
 QuicStreamFrame::~QuicStreamFrame() {}
 
-ostream& operator<<(ostream& os, const QuicStreamFrame& stream_frame) {
+std::ostream& operator<<(std::ostream& os,
+                         const QuicStreamFrame& stream_frame) {
   os << "{ stream_id: " << stream_frame.stream_id
      << ", fin: " << stream_frame.fin << ", offset: " << stream_frame.offset
      << ", length: " << stream_frame.data_length << " }\n";

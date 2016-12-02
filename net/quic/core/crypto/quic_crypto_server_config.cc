@@ -41,10 +41,7 @@
 
 using base::StringPiece;
 using crypto::SecureHash;
-using std::map;
-using std::sort;
 using std::string;
-using std::vector;
 
 namespace net {
 
@@ -407,11 +404,11 @@ bool QuicCryptoServerConfig::SetConfigs(
 }
 
 void QuicCryptoServerConfig::SetSourceAddressTokenKeys(
-    const vector<string>& keys) {
+    const std::vector<string>& keys) {
   source_address_token_boxer_.SetKeys(keys);
 }
 
-void QuicCryptoServerConfig::GetConfigIds(vector<string>* scids) const {
+void QuicCryptoServerConfig::GetConfigIds(std::vector<string>* scids) const {
   base::AutoLock locked(configs_lock_);
   for (ConfigMap::const_iterator it = configs_.begin(); it != configs_.end();
        ++it) {

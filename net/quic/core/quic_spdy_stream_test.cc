@@ -21,7 +21,6 @@
 #include "testing/gmock/include/gmock/gmock.h"
 
 using base::StringPiece;
-using std::min;
 using std::string;
 using testing::AnyNumber;
 using testing::Invoke;
@@ -255,7 +254,7 @@ TEST_P(QuicSpdyStreamTest, ProcessHeadersAndBodyFragments) {
     for (size_t offset = 0; offset < body.size(); offset += fragment_size) {
       size_t remaining_data = body.size() - offset;
       StringPiece fragment(body.data() + offset,
-                           min(fragment_size, remaining_data));
+                           std::min(fragment_size, remaining_data));
       QuicStreamFrame frame(kClientDataStreamId1, false, offset,
                             StringPiece(fragment));
       stream_->OnStreamFrame(frame);

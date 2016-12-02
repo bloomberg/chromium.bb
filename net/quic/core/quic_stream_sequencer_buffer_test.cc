@@ -20,7 +20,6 @@
 #include "testing/gmock_mutant.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-using std::min;
 using std::string;
 
 namespace net {
@@ -832,8 +831,8 @@ class QuicStreamSequencerBufferRandomIOTest
     size_t start_chopping_offset = 0;
     size_t iterations = 0;
     while (start_chopping_offset < bytes_to_buffer_) {
-      size_t max_chunk = min<size_t>(max_chunk_size_bytes_,
-                                     bytes_to_buffer_ - start_chopping_offset);
+      size_t max_chunk = std::min<size_t>(
+          max_chunk_size_bytes_, bytes_to_buffer_ - start_chopping_offset);
       size_t chunk_size = rng_.RandUint64() % max_chunk + 1;
       chopped_stream[iterations] =
           OffsetSizePair(start_chopping_offset, chunk_size);
@@ -993,7 +992,7 @@ TEST_F(QuicStreamSequencerBufferRandomIOTest, RandomWriteAndConsumeInPlace) {
         size_t bytes_to_process = rng_.RandUint64() % (avail_bytes + 1);
         size_t bytes_processed = 0;
         for (size_t i = 0; i < actually_num_read; ++i) {
-          size_t bytes_in_block = min<size_t>(
+          size_t bytes_in_block = std::min<size_t>(
               bytes_to_process - bytes_processed, dest_iov[i].iov_len);
           if (bytes_in_block == 0) {
             break;

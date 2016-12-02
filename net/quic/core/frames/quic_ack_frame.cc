@@ -6,8 +6,6 @@
 
 #include "net/quic/core/quic_constants.h"
 
-using std::ostream;
-
 namespace net {
 
 bool IsAwaitingPacket(const QuicAckFrame& ack_frame,
@@ -26,7 +24,7 @@ QuicAckFrame::QuicAckFrame(const QuicAckFrame& other) = default;
 
 QuicAckFrame::~QuicAckFrame() {}
 
-ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
+std::ostream& operator<<(std::ostream& os, const QuicAckFrame& ack_frame) {
   os << "{ largest_observed: " << ack_frame.largest_observed
      << ", ack_delay_time: " << ack_frame.ack_delay_time.ToMicroseconds()
      << ", packets: [ " << ack_frame.packets << " ]"
@@ -150,7 +148,7 @@ PacketNumberQueue::const_reverse_iterator PacketNumberQueue::rend() const {
   return packet_number_intervals_.rend();
 }
 
-ostream& operator<<(ostream& os, const PacketNumberQueue& q) {
+std::ostream& operator<<(std::ostream& os, const PacketNumberQueue& q) {
   for (const Interval<QuicPacketNumber>& interval : q) {
     for (QuicPacketNumber packet_number = interval.min();
          packet_number < interval.max(); ++packet_number) {
