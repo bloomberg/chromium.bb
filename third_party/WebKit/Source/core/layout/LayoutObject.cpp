@@ -103,7 +103,7 @@ const LayoutUnit& caretWidth() {
   return gCaretWidth;
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 
 LayoutObject::SetLayoutNeededForbiddenScope::SetLayoutNeededForbiddenScope(
     LayoutObject& layoutObject)
@@ -121,7 +121,7 @@ struct SameSizeAsLayoutObject : DisplayItemClient {
   virtual ~SameSizeAsLayoutObject() {}  // Allocate vtable pointer.
   void* pointers[5];
   Member<void*> members[1];
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   unsigned m_debugBitfields : 2;
 #endif
   unsigned m_bitfields;
@@ -225,7 +225,7 @@ LayoutObject::LayoutObject(Node* node)
       m_parent(nullptr),
       m_previous(nullptr),
       m_next(nullptr),
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
       m_hasAXObject(false),
       m_setNeedsLayoutForbidden(false),
 #endif
@@ -797,7 +797,7 @@ void LayoutObject::markContainerChainForLayout(bool scheduleRelayout,
     last->scheduleRelayout();
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 void LayoutObject::checkBlockPositionedObjectsNeedLayout() {
   ASSERT(!needsLayout());
 
@@ -3402,8 +3402,10 @@ void LayoutObject::setMayNeedPaintInvalidationAnimatedBackgroundImage() {
 void LayoutObject::clearPaintInvalidationFlags() {
   // paintInvalidationStateIsDirty should be kept in sync with the
   // booleans that are cleared below.
-  ASSERT(!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() ||
+#if DCHECK_IS_ON()
+  DCHECK(!shouldCheckForPaintInvalidationRegardlessOfPaintInvalidationState() ||
          paintInvalidationStateIsDirty());
+#endif
   clearShouldDoFullPaintInvalidation();
   m_bitfields.setChildShouldCheckForPaintInvalidation(false);
   m_bitfields.setMayNeedPaintInvalidation(false);

@@ -378,7 +378,9 @@ void LocalDOMWindow::enqueueDocumentEvent(Event* event) {
 }
 
 void LocalDOMWindow::dispatchWindowLoadEvent() {
-  ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
   // Delay 'load' event if we are in EventQueueScope.  This is a short-term
   // workaround to avoid Editing code crashes.  We should always dispatch
   // 'load' event asynchronously.  crbug.com/569511.
@@ -1428,7 +1430,9 @@ void LocalDOMWindow::dispatchLoadEvent() {
 
 DispatchEventResult LocalDOMWindow::dispatchEvent(Event* event,
                                                   EventTarget* target) {
-  ASSERT(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#if DCHECK_IS_ON()
+  DCHECK(!EventDispatchForbiddenScope::isEventDispatchForbidden());
+#endif
 
   event->setTrusted(true);
   event->setTarget(target ? target : this);

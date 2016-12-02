@@ -292,7 +292,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
     return locateFlowThreadContainingBlock();
   }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void setHasAXObject(bool flag) { m_hasAXObject = flag; }
   bool hasAXObject() const { return m_hasAXObject; }
 
@@ -419,7 +419,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
 
   //////////////////////////////////////////
  private:
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isSetNeedsLayoutForbidden() const { return m_setNeedsLayoutForbidden; }
   void setNeedsLayoutIsForbidden(bool flag) {
     m_setNeedsLayoutForbidden = flag;
@@ -2050,7 +2050,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   void removeShapeImageClient(ShapeValue*);
   void removeCursorImageClient(const CursorList*);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   void checkBlockPositionedObjectsNeedLayout();
 #endif
 
@@ -2077,7 +2077,7 @@ class CORE_EXPORT LayoutObject : public ImageResourceObserver,
   LayoutObject* m_previous;
   LayoutObject* m_next;
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   unsigned m_hasAXObject : 1;
   unsigned m_setNeedsLayoutForbidden : 1;
 #endif
@@ -2537,7 +2537,7 @@ inline void LayoutObject::clearNeedsLayout() {
   setNeedsPositionedMovementLayout(false);
   setAncestorLineBoxDirty(false);
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   checkBlockPositionedObjectsNeedLayout();
 #endif
 

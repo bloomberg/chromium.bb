@@ -143,7 +143,7 @@ void SVGScriptElement::dispatchLoadEvent() {
   dispatchEvent(Event::create(EventTypeNames::load));
 }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
 bool SVGScriptElement::isAnimatableAttribute(const QualifiedName& name) const {
   if (name == SVGNames::typeAttr)
     return false;

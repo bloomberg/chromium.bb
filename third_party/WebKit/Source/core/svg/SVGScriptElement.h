@@ -42,7 +42,7 @@ class SVGScriptElement final : public SVGElement,
 
   ScriptLoader* loader() const { return m_loader.get(); }
 
-#if ENABLE(ASSERT)
+#if DCHECK_IS_ON()
   bool isAnimatableAttribute(const QualifiedName&) const override;
 #endif
 
