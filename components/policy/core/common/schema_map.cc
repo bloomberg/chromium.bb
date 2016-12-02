@@ -70,10 +70,10 @@ void SchemaMap::FilterBundle(PolicyBundle* bundle) const {
                                   SCHEMA_STRICT,
                                   &error_path,
                                   &error)) {
-        LOG(ERROR) << "Dropping policy " << policy_name << " for "
-                   << it->first.component_id
-                   << " because it's not valid: " << error
-                   << " at " << error_path;
+        LOG(ERROR) << "Dropping policy " << policy_name << " of component "
+                   << it->first.component_id << " due to error at "
+                   << (error_path.empty() ? "root" : error_path) << ": "
+                   << error;
         map->Erase(policy_name);
       }
     }
