@@ -272,8 +272,17 @@ void DOMSelection::setBaseAndExtent(Node* baseNode,
     return;
   }
 
-  if (!baseNode || !extentNode)
+  // TODO(editing-dev): Behavior on where base or extent is null is still
+  // under discussion: https://github.com/w3c/selection-api/issues/72
+  if (!baseNode) {
     UseCounter::count(frame(), UseCounter::SelectionSetBaseAndExtentNull);
+    frame()->selection().clear();
+    return;
+  }
+  if (!extentNode) {
+    UseCounter::count(frame(), UseCounter::SelectionSetBaseAndExtentNull);
+    extentOffset = 0;
+  }
 
   if (!isValidForPosition(baseNode) || !isValidForPosition(extentNode))
     return;
