@@ -14,6 +14,7 @@
 
 namespace blink {
 
+class ExecutionContext;
 class PaymentAppManifest;
 class ScriptPromiseResolver;
 class ScriptState;
@@ -28,7 +29,8 @@ class MODULES_EXPORT PaymentAppManager final
   WTF_MAKE_NONCOPYABLE(PaymentAppManager);
 
  public:
-  static PaymentAppManager* create(ScriptState*, ServiceWorkerRegistration*);
+  static PaymentAppManager* create(ExecutionContext*,
+                                   ServiceWorkerRegistration*);
 
   void contextDestroyed() override;
 
@@ -38,7 +40,7 @@ class MODULES_EXPORT PaymentAppManager final
   DECLARE_TRACE();
 
  private:
-  PaymentAppManager(ScriptState*, ServiceWorkerRegistration*);
+  PaymentAppManager(ExecutionContext*, ServiceWorkerRegistration*);
 
   void onSetManifest(ScriptPromiseResolver*,
                      payments::mojom::blink::PaymentAppManifestError);

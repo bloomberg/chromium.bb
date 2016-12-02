@@ -45,11 +45,11 @@ class MODULES_EXPORT PaymentRequest final
   WTF_MAKE_NONCOPYABLE(PaymentRequest);
 
  public:
-  static PaymentRequest* create(ScriptState*,
+  static PaymentRequest* create(Document&,
                                 const HeapVector<PaymentMethodData>&,
                                 const PaymentDetails&,
                                 ExceptionState&);
-  static PaymentRequest* create(ScriptState*,
+  static PaymentRequest* create(Document&,
                                 const HeapVector<PaymentMethodData>&,
                                 const PaymentDetails&,
                                 const PaymentOptions&,
@@ -88,7 +88,7 @@ class MODULES_EXPORT PaymentRequest final
   void onCompleteTimeoutForTesting();
 
  private:
-  PaymentRequest(ScriptState*,
+  PaymentRequest(Document&,
                  const HeapVector<PaymentMethodData>&,
                  const PaymentDetails&,
                  const PaymentOptions&,

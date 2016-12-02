@@ -17,7 +17,7 @@ TEST(CompleteTest, CannotCallCompleteTwice) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
@@ -34,7 +34,7 @@ TEST(CompleteTest, RejectCompletePromiseOnError) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
@@ -59,7 +59,7 @@ TEST(CompleteTest, RejectCompletePromiseAfterError) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
@@ -77,7 +77,7 @@ TEST(CompleteTest, ResolvePromiseOnComplete) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState());
@@ -96,7 +96,7 @@ TEST(CompleteTest, RejectCompletePromiseOnUpdateDetailsFailure) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState())
@@ -119,7 +119,7 @@ TEST(CompleteTest, RejectCompletePromiseAfterTimeout) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   request->show(scope.getScriptState())

@@ -132,9 +132,9 @@ TEST_P(PaymentRequestDetailsTest, ValidatesDetails) {
       SecurityOrigin::create(KURL(KURL(), "https://www.example.com/")));
   PaymentOptions options;
   options.setRequestShipping(true);
-  PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
-      GetParam().buildDetails(), options, scope.getExceptionState());
+  PaymentRequest::create(scope.document(), buildPaymentMethodDataForTest(),
+                         GetParam().buildDetails(), options,
+                         scope.getExceptionState());
 
   EXPECT_EQ(GetParam().expectException(),
             scope.getExceptionState().hadException());

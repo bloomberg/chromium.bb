@@ -84,9 +84,9 @@ struct TypeConverter<blink::PaymentAppOption, PaymentAppOptionPtr> {
 namespace blink {
 
 PaymentAppManager* PaymentAppManager::create(
-    ScriptState* scriptState,
+    ExecutionContext* executionContext,
     ServiceWorkerRegistration* registration) {
-  return new PaymentAppManager(scriptState, registration);
+  return new PaymentAppManager(executionContext, registration);
 }
 
 void PaymentAppManager::contextDestroyed() {
@@ -138,10 +138,9 @@ DEFINE_TRACE(PaymentAppManager) {
   ContextLifecycleObserver::trace(visitor);
 }
 
-PaymentAppManager::PaymentAppManager(ScriptState* scriptState,
+PaymentAppManager::PaymentAppManager(ExecutionContext* executionContext,
                                      ServiceWorkerRegistration* registration)
-    : ContextLifecycleObserver(scriptState->getExecutionContext()),
-      m_registration(registration) {
+    : ContextLifecycleObserver(executionContext), m_registration(registration) {
   DCHECK(registration);
   Platform::current()->interfaceProvider()->getInterface(
       mojo::GetProxy(&m_manager));

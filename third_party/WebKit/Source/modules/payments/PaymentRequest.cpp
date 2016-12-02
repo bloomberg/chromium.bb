@@ -496,21 +496,21 @@ bool allowedToUsePaymentRequest(const Frame* frame) {
 }  // namespace
 
 PaymentRequest* PaymentRequest::create(
-    ScriptState* scriptState,
+    Document& document,
     const HeapVector<PaymentMethodData>& methodData,
     const PaymentDetails& details,
     ExceptionState& exceptionState) {
-  return new PaymentRequest(scriptState, methodData, details, PaymentOptions(),
+  return new PaymentRequest(document, methodData, details, PaymentOptions(),
                             exceptionState);
 }
 
 PaymentRequest* PaymentRequest::create(
-    ScriptState* scriptState,
+    Document& document,
     const HeapVector<PaymentMethodData>& methodData,
     const PaymentDetails& details,
     const PaymentOptions& options,
     ExceptionState& exceptionState) {
-  return new PaymentRequest(scriptState, methodData, details, options,
+  return new PaymentRequest(document, methodData, details, options,
                             exceptionState);
 }
 
@@ -663,12 +663,12 @@ void PaymentRequest::onCompleteTimeoutForTesting() {
   onCompleteTimeout(0);
 }
 
-PaymentRequest::PaymentRequest(ScriptState* scriptState,
+PaymentRequest::PaymentRequest(Document& document,
                                const HeapVector<PaymentMethodData>& methodData,
                                const PaymentDetails& details,
                                const PaymentOptions& options,
                                ExceptionState& exceptionState)
-    : ContextLifecycleObserver(scriptState->getExecutionContext()),
+    : ContextLifecycleObserver(&document),
       ActiveScriptWrappable(this),
       m_options(options),
       m_clientBinding(this),
@@ -679,12 +679,12 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
   if (exceptionState.hadException())
     return;
 
-  if (!scriptState->getExecutionContext()->isSecureContext()) {
+  if (!document.isSecureContext()) {
     exceptionState.throwSecurityError("Must be in a secure context");
     return;
   }
 
-  if (!allowedToUsePaymentRequest(scriptState->domWindow()->frame())) {
+  if (!allowedToUsePaymentRequest(document.frame())) {
     exceptionState.throwSecurityError(
         RuntimeEnabledFeatures::paymentRequestIFrameEnabled()
             ? "Must be in a top-level browsing context or an iframe needs to "
@@ -709,7 +709,7 @@ PaymentRequest::PaymentRequest(ScriptState* scriptState,
   if (m_options.requestShipping())
     m_shippingType = getValidShippingType(m_options.shippingType());
 
-  scriptState->domWindow()->frame()->interfaceProvider()->getInterface(
+  document.frame()->interfaceProvider()->getInterface(
       mojo::GetProxy(&m_paymentProvider));
   m_paymentProvider.set_connection_error_handler(convertToBaseCallback(
       WTF::bind(&PaymentRequest::OnError, wrapWeakPersistent(this),

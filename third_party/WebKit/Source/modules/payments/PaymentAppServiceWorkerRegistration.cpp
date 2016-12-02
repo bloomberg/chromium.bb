@@ -5,6 +5,7 @@
 #include "modules/payments/PaymentAppServiceWorkerRegistration.h"
 
 #include "bindings/core/v8/ScriptState.h"
+#include "core/dom/Document.h"
 #include "modules/payments/PaymentAppManager.h"
 #include "modules/serviceworkers/ServiceWorkerRegistration.h"
 
@@ -39,8 +40,8 @@ PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
 PaymentAppManager* PaymentAppServiceWorkerRegistration::paymentAppManager(
     ScriptState* scriptState) {
   if (!m_paymentAppManager) {
-    m_paymentAppManager =
-        PaymentAppManager::create(scriptState, m_registration);
+    m_paymentAppManager = PaymentAppManager::create(
+        scriptState->getExecutionContext(), m_registration);
   }
   return m_paymentAppManager.get();
 }

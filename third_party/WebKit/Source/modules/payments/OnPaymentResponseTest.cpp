@@ -25,7 +25,7 @@ TEST(OnPaymentResponseTest, RejectMissingShippingOption) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -51,7 +51,7 @@ TEST(OnPaymentResponseTest, RejectMissingAddress) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -74,7 +74,7 @@ TEST(OnPaymentResponseTest, RejectMissingName) {
   PaymentOptions options;
   options.setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -96,7 +96,7 @@ TEST(OnPaymentResponseTest, RejectMissingEmail) {
   PaymentOptions options;
   options.setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -118,7 +118,7 @@ TEST(OnPaymentResponseTest, RejectMissingPhone) {
   PaymentOptions options;
   options.setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -140,7 +140,7 @@ TEST(OnPaymentResponseTest, RejectEmptyShippingOption) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -167,7 +167,7 @@ TEST(OnPaymentResponseTest, RejectEmptyAddress) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -191,7 +191,7 @@ TEST(OnPaymentResponseTest, RejectEmptyName) {
   PaymentOptions options;
   options.setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -214,7 +214,7 @@ TEST(OnPaymentResponseTest, RejectEmptyEmail) {
   PaymentOptions options;
   options.setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -237,7 +237,7 @@ TEST(OnPaymentResponseTest, RejectEmptyPhone) {
   PaymentOptions options;
   options.setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -260,7 +260,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedAddress) {
   PaymentOptions options;
   options.setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -286,7 +286,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedShippingOption) {
   PaymentOptions options;
   options.setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -309,7 +309,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedName) {
   PaymentOptions options;
   options.setRequestPayerName(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -332,7 +332,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedEmail) {
   PaymentOptions options;
   options.setRequestPayerEmail(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -355,7 +355,7 @@ TEST(OnPaymentResponseTest, RejectNotRequestedPhone) {
   PaymentOptions options;
   options.setRequestPayerPhone(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -378,7 +378,7 @@ TEST(OnPaymentResponseTest, RejectInvalidAddress) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -427,7 +427,7 @@ TEST(OnPaymentResponseTest, CanRequestShippingInformation) {
   PaymentOptions options;
   options.setRequestShipping(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -462,7 +462,7 @@ TEST(OnPaymentResponseTest, CanRequestName) {
   PaymentOptions options;
   options.setRequestPayerName(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -491,7 +491,7 @@ TEST(OnPaymentResponseTest, CanRequestEmail) {
   PaymentOptions options;
   options.setRequestPayerEmail(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -520,7 +520,7 @@ TEST(OnPaymentResponseTest, CanRequestPhone) {
   PaymentOptions options;
   options.setRequestPayerPhone(true);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -550,7 +550,7 @@ TEST(OnPaymentResponseTest, ShippingInformationNotRequired) {
   PaymentOptions options;
   options.setRequestShipping(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   ASSERT_FALSE(scope.getExceptionState().hadException());
   ScriptValue outValue;
@@ -577,7 +577,7 @@ TEST(OnPaymentResponseTest, PhoneNotRequred) {
   PaymentOptions options;
   options.setRequestPayerPhone(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -606,7 +606,7 @@ TEST(OnPaymentResponseTest, NameNotRequired) {
   PaymentOptions options;
   options.setRequestPayerName(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =
@@ -635,7 +635,7 @@ TEST(OnPaymentResponseTest, EmailNotRequired) {
   PaymentOptions options;
   options.setRequestPayerEmail(false);
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), options, scope.getExceptionState());
   EXPECT_FALSE(scope.getExceptionState().hadException());
   payments::mojom::blink::PaymentResponsePtr response =

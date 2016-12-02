@@ -126,7 +126,7 @@ TEST(PaymentRequestUpdateEventTest, OnUpdatePaymentDetailsTimeout) {
   PaymentRequestMockFunctionScope funcs(scope.getScriptState());
   makePaymentRequestOriginSecure(scope.document());
   PaymentRequest* request = PaymentRequest::create(
-      scope.getScriptState(), buildPaymentMethodDataForTest(),
+      scope.document(), buildPaymentMethodDataForTest(),
       buildPaymentDetailsForTest(), scope.getExceptionState());
   PaymentRequestUpdateEvent* event =
       PaymentRequestUpdateEvent::create(EventTypeNames::shippingaddresschange);
