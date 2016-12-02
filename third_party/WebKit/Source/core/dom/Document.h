@@ -1229,7 +1229,6 @@ class CORE_EXPORT Document : public ContainerNode,
   void notifyResizeForViewportUnits();
 
   void updateActiveStyle();
-  void updateStyleInvalidationIfNeeded();
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -1363,6 +1362,7 @@ class CORE_EXPORT Document : public ContainerNode,
   void updateUseShadowTreesIfNeeded();
   void evaluateMediaQueryListIfNeeded();
 
+  void updateStyleInvalidationIfNeeded();
   void updateStyle();
   void notifyLayoutTreeOfSubtreeChanges();
 
