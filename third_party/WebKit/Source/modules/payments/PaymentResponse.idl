@@ -7,7 +7,7 @@
 enum PaymentComplete {
     "success",
     "fail",
-    ""
+    "unknown"
 };
 
 // https://w3c.github.io/browser-payment-api/#paymentresponse-interface
@@ -25,5 +25,5 @@ enum PaymentComplete {
     readonly attribute PaymentAddress? shippingAddress;
     readonly attribute DOMString? shippingOption;
 
-    [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "");
+    [CallWith=ScriptState] Promise<void> complete(optional PaymentComplete paymentResult = "unknown");
 };
