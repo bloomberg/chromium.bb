@@ -236,7 +236,8 @@ TimerThrottlingForHiddenFrames status=stable
 // Many websites disable mouse support when touch APIs are available.  We'd
 // like to enable this always but can't until more websites fix this bug.
 // Chromium sets this conditionally (eg. based on the presence of a
-// touchscreen) in ApplyWebPreferences.
+// touchscreen) in ApplyWebPreferences. "Touch events" themselves are always
+// enabled since they're a feature always supported by Chrome.
 TouchEventAPI status=stable
 TraceWrappables
 TrueColorRendering status=experimental, settable_from_internals=True

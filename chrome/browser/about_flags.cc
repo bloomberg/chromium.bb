@@ -135,11 +135,13 @@ const unsigned kOsAll = kOsMac | kOsWin | kOsLinux | kOsCrOS | kOsAndroid;
 const unsigned kOsDesktop = kOsMac | kOsWin | kOsLinux | kOsCrOS;
 
 const FeatureEntry::Choice kTouchEventsChoices[] = {
-    { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED, "", "" },
-    { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED, switches::kTouchEvents,
-        switches::kTouchEventsDisabled },
-    { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, switches::kTouchEvents,
-        switches::kTouchEventsAuto }
+  { IDS_GENERIC_EXPERIMENT_CHOICE_AUTOMATIC, "", "" },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_ENABLED,
+    switches::kTouchEvents,
+    switches::kTouchEventsEnabled },
+  { IDS_GENERIC_EXPERIMENT_CHOICE_DISABLED,
+    switches::kTouchEvents,
+    switches::kTouchEventsDisabled }
 };
 
 #if defined(USE_AURA)

@@ -442,12 +442,17 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
   prefs.use_solid_color_scrollbars = true;
 #endif
 
-  prefs.touch_event_api_enabled =
-      !command_line.HasSwitch(switches::kTouchEvents) ||
-      command_line.GetSwitchValueASCII(switches::kTouchEvents) !=
-          switches::kTouchEventsDisabled;
   prefs.device_supports_touch = ui::GetTouchScreensAvailability() ==
                                 ui::TouchScreensAvailability::ENABLED;
+  const std::string touch_enabled_switch =
+      command_line.HasSwitch(switches::kTouchEvents)
+          ? command_line.GetSwitchValueASCII(switches::kTouchEvents)
+          : switches::kTouchEventsAuto;
+  prefs.touch_event_api_enabled =
+      (touch_enabled_switch == switches::kTouchEventsAuto)
+          ? prefs.device_supports_touch
+          : (touch_enabled_switch.empty() ||
+             touch_enabled_switch == switches::kTouchEventsEnabled);
   std::tie(prefs.available_pointer_types, prefs.available_hover_types) =
       ui::GetAvailablePointerAndHoverTypes();
   prefs.primary_pointer_type =

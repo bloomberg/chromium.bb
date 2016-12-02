@@ -18,7 +18,6 @@
 #include "core/page/Page.h"
 #include "platform/Histogram.h"
 #include "platform/PlatformTouchEvent.h"
-#include "platform/RuntimeEnabledFeatures.h"
 #include "wtf/CurrentTime.h"
 #include "wtf/PtrUtil.h"
 #include <memory>
@@ -490,8 +489,6 @@ class CurrentEventHolder {
 WebInputEventResult TouchEventManager::handleTouchEvent(
     const PlatformTouchEvent& event,
     HeapVector<TouchInfo>& touchInfos) {
-  if (!RuntimeEnabledFeatures::touchEventAPIEnabled())
-    return WebInputEventResult::HandledSuppressed;
 
   // Track the current event for the scope of this function.
   CurrentEventHolder holder(m_currentEvent, event.type());
