@@ -40,7 +40,8 @@ class PerformanceBaseTest : public ::testing::Test {
         v8::Function::New(scriptState->context(), nullptr).ToLocalChecked();
     m_base = new TestPerformanceBase();
     m_cb = PerformanceObserverCallback::create(scriptState, callback);
-    m_observer = PerformanceObserver::create(scriptState, m_base, m_cb);
+    m_observer = PerformanceObserver::create(scriptState->getExecutionContext(),
+                                             m_base, m_cb);
   }
 
   void SetUp() override {

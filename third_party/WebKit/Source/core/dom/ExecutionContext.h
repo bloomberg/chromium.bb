@@ -132,6 +132,10 @@ class CORE_EXPORT ExecutionContext : public ContextLifecycleNotifier,
 
   void suspendScheduledTasks();
   void resumeScheduledTasks();
+
+  // TODO(haraken): Remove these methods by making the customers inherit from
+  // ActiveDOMObject. ActiveDOMObject is a standard way to observe context
+  // suspension/resumption.
   virtual bool tasksNeedSuspension() { return false; }
   virtual void tasksWereSuspended() {}
   virtual void tasksWereResumed() {}

@@ -17,17 +17,17 @@
 namespace blink {
 
 PerformanceObserver* PerformanceObserver::create(
-    ScriptState* scriptState,
+    ExecutionContext* executionContext,
     PerformanceBase* performance,
     PerformanceObserverCallback* callback) {
   ASSERT(isMainThread());
-  return new PerformanceObserver(scriptState, performance, callback);
+  return new PerformanceObserver(executionContext, performance, callback);
 }
 
-PerformanceObserver::PerformanceObserver(ScriptState* scriptState,
+PerformanceObserver::PerformanceObserver(ExecutionContext* executionContext,
                                          PerformanceBase* performance,
                                          PerformanceObserverCallback* callback)
-    : m_scriptState(scriptState),
+    : m_executionContext(executionContext),
       m_callback(this, callback),
       m_performance(performance),
       m_filterOptions(PerformanceEntry::Invalid),
@@ -77,8 +77,7 @@ void PerformanceObserver::enqueuePerformanceEntry(PerformanceEntry& entry) {
 }
 
 bool PerformanceObserver::shouldBeSuspended() const {
-  return m_scriptState->getExecutionContext() &&
-         m_scriptState->getExecutionContext()->activeDOMObjectsAreSuspended();
+  return m_executionContext->activeDOMObjectsAreSuspended();
 }
 
 void PerformanceObserver::deliver() {
@@ -95,6 +94,7 @@ void PerformanceObserver::deliver() {
 }
 
 DEFINE_TRACE(PerformanceObserver) {
+  visitor->trace(m_executionContext);
   visitor->trace(m_callback);
   visitor->trace(m_performance);
   visitor->trace(m_performanceEntries);
