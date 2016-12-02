@@ -17,6 +17,7 @@
 #include "chrome/browser/plugins/plugin_metadata.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
 #include "components/content_settings/core/common/content_settings.h"
+#include "components/keyed_service/core/keyed_service_shutdown_notifier.h"
 #include "components/prefs/pref_member.h"
 #include "content/public/browser/browser_message_filter.h"
 #include "extensions/features/features.h"
@@ -81,6 +82,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
                           const base::FilePath& path) const;
     bool IsPluginEnabled(const content::WebPluginInfo& plugin) const;
 
+    void ShutdownOnUIThread();
    private:
     int render_process_id_;
     content::ResourceContext* resource_context_;
@@ -105,6 +107,7 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
       content::BrowserThread::UI>;
   friend class base::DeleteHelper<PluginInfoMessageFilter>;
 
+  void ShutdownOnUIThread();
   ~PluginInfoMessageFilter() override;
 
   void OnGetPluginInfo(int render_frame_id,
@@ -148,6 +151,8 @@ class PluginInfoMessageFilter : public content::BrowserMessageFilter {
 #endif
 
   Context context_;
+  std::unique_ptr<KeyedServiceShutdownNotifier::Subscription>
+      shutdown_notifier_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;
   base::WeakPtrFactory<PluginInfoMessageFilter> weak_ptr_factory_;

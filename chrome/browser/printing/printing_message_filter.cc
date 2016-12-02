@@ -9,12 +9,14 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/memory/singleton.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/common/pref_names.h"
+#include "components/keyed_service/content/browser_context_keyed_service_shutdown_notifier_factory.h"
 #include "components/printing/browser/print_manager_utils.h"
 #include "components/printing/common/print_messages.h"
 #include "content/public/browser/browser_thread.h"
@@ -38,6 +40,25 @@ using content::BrowserThread;
 namespace printing {
 
 namespace {
+
+class ShutdownNotifierFactory
+    : public BrowserContextKeyedServiceShutdownNotifierFactory {
+ public:
+  static ShutdownNotifierFactory* GetInstance() {
+    return base::Singleton<ShutdownNotifierFactory>::get();
+  }
+
+ private:
+  friend struct base::DefaultSingletonTraits<ShutdownNotifierFactory>;
+
+  ShutdownNotifierFactory()
+      : BrowserContextKeyedServiceShutdownNotifierFactory(
+          "PrintingMessageFilter") {}
+
+  ~ShutdownNotifierFactory() override {}
+
+  DISALLOW_COPY_AND_ASSIGN(ShutdownNotifierFactory);
+};
 
 #if defined(OS_ANDROID)
 content::WebContents* GetWebContentsForRenderFrame(int render_process_id,
@@ -63,16 +84,26 @@ PrintViewManagerBasic* GetPrintManager(int render_process_id,
 PrintingMessageFilter::PrintingMessageFilter(int render_process_id,
                                              Profile* profile)
     : BrowserMessageFilter(PrintMsgStart),
-      is_printing_enabled_(new BooleanPrefMember),
       render_process_id_(render_process_id),
       queue_(g_browser_process->print_job_manager()->queue()) {
   DCHECK(queue_.get());
-  is_printing_enabled_->Init(prefs::kPrintingEnabled, profile->GetPrefs());
-  is_printing_enabled_->MoveToThread(
+  printing_shutdown_notifier_ =
+      ShutdownNotifierFactory::GetInstance()->Get(profile)->Subscribe(
+          base::Bind(&PrintingMessageFilter::ShutdownOnUIThread,
+                     base::Unretained(this)));
+  is_printing_enabled_.Init(prefs::kPrintingEnabled, profile->GetPrefs());
+  is_printing_enabled_.MoveToThread(
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
 }
 
 PrintingMessageFilter::~PrintingMessageFilter() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+}
+
+void PrintingMessageFilter::ShutdownOnUIThread() {
+  DCHECK_CURRENTLY_ON(BrowserThread::UI);
+  is_printing_enabled_.Destroy();
+  printing_shutdown_notifier_.reset();
 }
 
 void PrintingMessageFilter::OverrideThreadForMessage(
@@ -83,6 +114,10 @@ void PrintingMessageFilter::OverrideThreadForMessage(
     *thread = BrowserThread::UI;
   }
 #endif
+}
+
+void PrintingMessageFilter::OnDestruct() const {
+  BrowserThread::DeleteOnUIThread::Destruct(this);
 }
 
 bool PrintingMessageFilter::OnMessageReceived(const IPC::Message& message) {
@@ -137,7 +172,7 @@ void PrintingMessageFilter::OnTempFileForPrintingWritten(int render_frame_id,
 void PrintingMessageFilter::OnGetDefaultPrintSettings(IPC::Message* reply_msg) {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   scoped_refptr<PrinterQuery> printer_query;
-  if (!is_printing_enabled_->GetValue()) {
+  if (!is_printing_enabled_.GetValue()) {
     // Reply with NULL query.
     OnGetDefaultPrintSettingsReply(printer_query, reply_msg);
     return;
@@ -250,7 +285,7 @@ void PrintingMessageFilter::OnUpdatePrintSettings(
   std::unique_ptr<base::DictionaryValue> new_settings(job_settings.DeepCopy());
 
   scoped_refptr<PrinterQuery> printer_query;
-  if (!is_printing_enabled_->GetValue()) {
+  if (!is_printing_enabled_.GetValue()) {
     // Reply with NULL query.
     OnUpdatePrintSettingsReply(printer_query, reply_msg);
     return;
