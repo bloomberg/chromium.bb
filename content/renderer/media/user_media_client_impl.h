@@ -242,6 +242,20 @@ class CONTENT_EXPORT UserMediaClientImpl
 
   const ::mojom::MediaDevicesDispatcherHostPtr& GetMediaDevicesDispatcher();
 
+  void SelectUserMediaDevice(
+      int request_id,
+      const blink::WebUserMediaRequest& user_media_request,
+      std::unique_ptr<StreamControls> controls,
+      bool enable_automatic_output_device_selection,
+      const url::Origin& security_origin,
+      const EnumerationResult& device_enumeration);
+  void FinalizeRequestUserMedia(
+      int request_id,
+      const blink::WebUserMediaRequest& user_media_request,
+      std::unique_ptr<StreamControls> controls,
+      bool enable_automatic_output_device_selection,
+      const url::Origin& security_origin);
+
   // Callback invoked by MediaDevicesEventDispatcher when a device-change
   // notification arrives.
   void DevicesChanged(MediaDeviceType device_type,

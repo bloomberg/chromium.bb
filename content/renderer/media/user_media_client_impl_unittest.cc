@@ -110,6 +110,7 @@ class UserMediaClientImplUnderTest : public UserMediaClientImpl {
   void RequestUserMedia(const blink::WebUserMediaRequest& user_media_request) {
     state_ = REQUEST_NOT_COMPLETE;
     requestUserMedia(user_media_request);
+    base::RunLoop().RunUntilIdle();
   }
 
   void RequestUserMedia() {

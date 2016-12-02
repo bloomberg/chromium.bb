@@ -594,9 +594,9 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithoutWaiting) {
   run_loop2.Run();
 }
 
-// Test that we can generate streams where a mandatory sourceId is specified in
+// Test that we can generate streams where a sourceId is specified in
 // the request.
-TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
+TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithSourceId) {
   ASSERT_GE(physical_audio_devices_.size(), 1u);
   ASSERT_GE(physical_video_devices_.size(), 1u);
 
@@ -609,7 +609,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
         audio_it->unique_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
-    controls.audio.device_ids.push_back(source_id);
+    controls.audio.device_id = source_id;
 
     SetupFakeUI(true);
     GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
@@ -624,7 +624,7 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
         video_it->device_id);
     ASSERT_FALSE(source_id.empty());
     StreamControls controls(true, true);
-    controls.video.device_ids.push_back(source_id);
+    controls.video.device_id = source_id;
 
     SetupFakeUI(true);
     GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
@@ -632,84 +632,22 @@ TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithMandatorySourceId) {
   }
 }
 
-// Test that we can generate streams where a optional sourceId is specified in
-// the request.
-TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithOptionalSourceId) {
-  ASSERT_GE(physical_audio_devices_.size(), 1u);
-  ASSERT_GE(physical_video_devices_.size(), 1u);
-
-  media::AudioDeviceNames::const_iterator audio_it =
-      physical_audio_devices_.begin();
-  for (; audio_it != physical_audio_devices_.end(); ++audio_it) {
-    std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(),
-        origin_,
-        audio_it->unique_id);
-    ASSERT_FALSE(source_id.empty());
-    StreamControls controls(true, true);
-    controls.audio.device_ids.push_back(source_id);
-
-    SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
-    EXPECT_EQ(host_->audio_devices_[0].device.id, source_id);
-  }
-
-  media::VideoCaptureDeviceDescriptors::const_iterator video_it =
-      physical_video_devices_.begin();
-  for (; video_it != physical_video_devices_.end(); ++video_it) {
-    std::string source_id = content::GetHMACForMediaDeviceID(
-        browser_context_.GetResourceContext()->GetMediaDeviceIDSalt(), origin_,
-        video_it->device_id);
-    ASSERT_FALSE(source_id.empty());
-    StreamControls controls(true, true);
-    controls.video.device_ids.push_back(source_id);
-
-    SetupFakeUI(true);
-    GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
-    EXPECT_EQ(host_->video_devices_[0].device.id, source_id);
-  }
-}
-
-// Test that generating a stream with an invalid mandatory video source id fail.
-TEST_F(MediaStreamDispatcherHostTest,
-       GenerateStreamsWithInvalidMandatoryVideoSourceId) {
+// Test that generating a stream with an invalid video source id fail.
+TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidVideoSourceId) {
   StreamControls controls(true, true);
-  controls.video.device_ids.push_back("invalid source id");
+  controls.video.device_id = "invalid source id";
 
   GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
                                   MEDIA_DEVICE_NO_HARDWARE);
 }
 
-// Test that generating a stream with an invalid mandatory audio source id fail.
-TEST_F(MediaStreamDispatcherHostTest,
-       GenerateStreamsWithInvalidMandatoryAudioSourceId) {
+// Test that generating a stream with an invalid audio source id fail.
+TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsWithInvalidAudioSourceId) {
   StreamControls controls(true, true);
-  controls.audio.device_ids.push_back("invalid source id");
+  controls.audio.device_id = "invalid source id";
 
   GenerateStreamAndWaitForFailure(kRenderId, kPageRequestId, controls,
                                   MEDIA_DEVICE_NO_HARDWARE);
-}
-
-// Test that generating a stream with an invalid optional video source id
-// succeed.
-TEST_F(MediaStreamDispatcherHostTest,
-       GenerateStreamsWithInvalidOptionalVideoSourceId) {
-  StreamControls controls(true, true);
-  controls.video.alternate_device_ids.push_back("invalid source id");
-
-  SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
-}
-
-// Test that generating a stream with an invalid optional audio source id
-// succeed.
-TEST_F(MediaStreamDispatcherHostTest,
-       GenerateStreamsWithInvalidOptionalAudioSourceId) {
-  StreamControls controls(true, true);
-  controls.video.alternate_device_ids.push_back("invalid source id");
-
-  SetupFakeUI(true);
-  GenerateStreamAndWaitForResult(kRenderId, kPageRequestId, controls);
 }
 
 TEST_F(MediaStreamDispatcherHostTest, GenerateStreamsNoAvailableVideoDevice) {

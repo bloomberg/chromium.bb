@@ -704,10 +704,10 @@ void MediaStreamManager::OpenDevice(MediaStreamRequester* requester,
   StreamControls controls;
   if (IsAudioInputMediaType(type)) {
     controls.audio.requested = true;
-    controls.audio.device_ids.push_back(device_id);
+    controls.audio.device_id = device_id;
   } else if (IsVideoMediaType(type)) {
     controls.video.requested = true;
-    controls.video.device_ids.push_back(device_id);
+    controls.video.device_id = device_id;
   } else {
     NOTREACHED();
   }
@@ -793,29 +793,15 @@ bool MediaStreamManager::PickDeviceId(const std::string& salt,
                                       const TrackControls& controls,
                                       const MediaDeviceInfoArray& devices,
                                       std::string* device_id) const {
-  if (!controls.device_ids.empty()) {
-    if (controls.device_ids.size() > 1) {
-      LOG(ERROR) << "Only one required device ID is supported";
-      return false;
-    }
-    const std::string& candidate_id = controls.device_ids[0];
-    if (!GetDeviceIDFromHMAC(salt, security_origin, candidate_id, devices,
-                             device_id)) {
-      LOG(WARNING) << "Invalid mandatory capture ID = " << candidate_id;
-      return false;
-    }
+  if (controls.device_id.empty())
     return true;
+
+  if (!GetDeviceIDFromHMAC(salt, security_origin, controls.device_id, devices,
+                           device_id)) {
+    LOG(WARNING) << "Invalid device ID = " << controls.device_id;
+    return false;
   }
-  // We don't have a required ID. Look at the alternates.
-  for (const std::string& candidate_id : controls.alternate_device_ids) {
-    if (GetDeviceIDFromHMAC(salt, security_origin, candidate_id, devices,
-                            device_id)) {
-      return true;
-    } else {
-      LOG(WARNING) << "Invalid optional capture ID = " << candidate_id;
-    }
-  }
-  return true;  // If we get here, device_id is empty.
+  return true;
 }
 
 bool MediaStreamManager::GetRequestedDeviceCaptureId(
@@ -1062,10 +1048,10 @@ bool MediaStreamManager::SetupTabCaptureRequest(DeviceRequest* request) {
          request->video_type() == MEDIA_TAB_VIDEO_CAPTURE);
 
   std::string capture_device_id;
-  if (!request->controls.audio.device_ids.empty()) {
-    capture_device_id = request->controls.audio.device_ids[0];
-  } else if (!request->controls.video.device_ids.empty()) {
-    capture_device_id = request->controls.video.device_ids[0];
+  if (!request->controls.audio.device_id.empty()) {
+    capture_device_id = request->controls.audio.device_id;
+  } else if (!request->controls.video.device_id.empty()) {
+    capture_device_id = request->controls.video.device_id;
   } else {
     return false;
   }
@@ -1117,8 +1103,8 @@ bool MediaStreamManager::SetupScreenCaptureRequest(DeviceRequest* request) {
         request->controls.video.stream_source;
 
     if (video_stream_source == kMediaStreamSourceDesktop &&
-        !request->controls.video.device_ids.empty()) {
-      video_device_id = request->controls.video.device_ids[0];
+        !request->controls.video.device_id.empty()) {
+      video_device_id = request->controls.video.device_id;
     }
   }
 

@@ -29,8 +29,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(content::MediaStreamRequestResult,
 IPC_STRUCT_TRAITS_BEGIN(content::TrackControls)
   IPC_STRUCT_TRAITS_MEMBER(requested)
   IPC_STRUCT_TRAITS_MEMBER(stream_source)
-  IPC_STRUCT_TRAITS_MEMBER(device_ids)
-  IPC_STRUCT_TRAITS_MEMBER(alternate_device_ids)
+  IPC_STRUCT_TRAITS_MEMBER(device_id)
 IPC_STRUCT_TRAITS_END()
 
 IPC_STRUCT_TRAITS_BEGIN(content::StreamControls)
