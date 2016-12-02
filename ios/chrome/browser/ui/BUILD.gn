@@ -82,3 +82,33 @@ bundle_data_xib("native_content_controller_test_xib") {
   testonly = true
   source = "native_content_controller_test.xib"
 }
+
+bundle_data("resources") {
+  sources = [
+    "resources/custom_row_voice.png",
+    "resources/custom_row_voice@2x.png",
+    "resources/custom_row_voice@2x~ipad.png",
+    "resources/custom_row_voice@3x.png",
+    "resources/custom_row_voice_pressed.png",
+    "resources/custom_row_voice_pressed@2x.png",
+    "resources/custom_row_voice_pressed@2x~ipad.png",
+    "resources/custom_row_voice_pressed@3x.png",
+    "resources/custom_row_voice_pressed~ipad.png",
+    "resources/custom_row_voice~ipad.png",
+    "resources/default_favicon.png",
+    "resources/default_favicon@2x.png",
+    "resources/default_favicon@3x.png",
+    "resources/default_favicon_incognito.png",
+    "resources/default_favicon_incognito@2x.png",
+    "resources/default_favicon_incognito@3x.png",
+    "resources/keyboard_bg_portrait_tablet.png",
+    "resources/keyboard_button.png",
+    "resources/keyboard_button@2x.png",
+    "resources/keyboard_button@2x~ipad.png",
+    "resources/keyboard_button@3x.png",
+    "resources/keyboard_button~ipad.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
