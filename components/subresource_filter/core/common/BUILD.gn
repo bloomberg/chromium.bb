@@ -23,6 +23,7 @@ static_library("common") {
     "memory_mapped_ruleset.cc",
     "memory_mapped_ruleset.h",
     "ngram_extractor.h",
+    "scoped_timers.h",
     "string_splitter.h",
     "uint64_hasher.h",
     "unindexed_ruleset.cc",
@@ -69,6 +70,7 @@ source_set("unit_tests") {
     "indexed_ruleset_unittest.cc",
     "knuth_morris_pratt_unittest.cc",
     "ngram_extractor_unittest.cc",
+    "scoped_timers_unittest.cc",
     "string_splitter_unittest.cc",
     "unindexed_ruleset_unittest.cc",
     "url_pattern_matching_unittest.cc",
@@ -76,6 +78,7 @@ source_set("unit_tests") {
   deps = [
     ":common",
     "//base",
+    "//base/test:test_support",
     "//testing/gtest",
     "//third_party/protobuf:protobuf_lite",
     "//url",

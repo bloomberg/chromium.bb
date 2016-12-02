@@ -11,6 +11,7 @@
 #include "base/macros.h"
 #include "base/strings/string_piece.h"
 #include "base/test/histogram_tester.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/test_ruleset_creator.h"
@@ -83,6 +84,10 @@ constexpr const char kSubresourcesMatchedRules[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.MatchedRules";
 constexpr const char kSubresourcesDisallowed[] =
     "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed";
+constexpr const char kEvaluationTotalWallDuration[] =
+    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalWallDuration";
+constexpr const char kEvaluationTotalCPUDuration[] =
+    "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration";
 
 }  // namespace
 
@@ -321,6 +326,9 @@ TEST_F(SubresourceFilterAgentTest, Disabled_HistogramSamples) {
   histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
   histogram_tester.ExpectTotalCount(kSubresourcesMatchedRules, 0);
   histogram_tester.ExpectTotalCount(kSubresourcesDisallowed, 0);
+
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
 }
 
 TEST_F(SubresourceFilterAgentTest,
@@ -338,6 +346,9 @@ TEST_F(SubresourceFilterAgentTest,
   histogram_tester.ExpectTotalCount(kSubresourcesEvaluated, 0);
   histogram_tester.ExpectTotalCount(kSubresourcesMatchedRules, 0);
   histogram_tester.ExpectTotalCount(kSubresourcesDisallowed, 0);
+
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 0);
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, 0);
 }
 
 TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
@@ -376,6 +387,11 @@ TEST_F(SubresourceFilterAgentTest, Enabled_HistogramSamples) {
               ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
   EXPECT_THAT(histogram_tester.GetAllSamples(kSubresourcesDisallowed),
               ::testing::ElementsAre(base::Bucket(1, 1), base::Bucket(2, 1)));
+
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 2);
+  const base::HistogramBase::Count total_count =
+      base::ThreadTicks::IsSupported() ? 2 : 0;
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, total_count);
 }
 
 TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
@@ -403,6 +419,11 @@ TEST_F(SubresourceFilterAgentTest, DryRun_HistogramSamples) {
   histogram_tester.ExpectUniqueSample(kSubresourcesEvaluated, 3, 1);
   histogram_tester.ExpectUniqueSample(kSubresourcesMatchedRules, 2, 1);
   histogram_tester.ExpectUniqueSample(kSubresourcesDisallowed, 0, 1);
+
+  histogram_tester.ExpectTotalCount(kEvaluationTotalWallDuration, 1);
+  const base::HistogramBase::Count total_count =
+      base::ThreadTicks::IsSupported() ? 1 : 0;
+  histogram_tester.ExpectTotalCount(kEvaluationTotalCPUDuration, total_count);
 }
 
 }  // namespace subresource_filter

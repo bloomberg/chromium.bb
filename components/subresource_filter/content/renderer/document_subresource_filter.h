@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
 #include "base/memory/weak_ptr.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/core/common/activation_state.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "third_party/WebKit/public/platform/WebDocumentSubresourceFilter.h"
@@ -29,7 +30,6 @@ class DocumentSubresourceFilter
     : public blink::WebDocumentSubresourceFilter,
       public base::SupportsWeakPtr<DocumentSubresourceFilter> {
  public:
-  // TODO(pkalinnikov): Add total evaluation time metrics.
   struct Statistics {
     // The number of subresource loads that went through the allowLoad method.
     size_t num_loads_total = 0;
@@ -40,6 +40,10 @@ class DocumentSubresourceFilter
     size_t num_loads_evaluated = 0;
     size_t num_loads_matching_rules = 0;
     size_t num_loads_disallowed = 0;
+
+    // Total time spent in allowLoad() calls while evaluating subresource loads.
+    base::TimeDelta evaluation_total_wall_duration;
+    base::TimeDelta evaluation_total_cpu_duration;
   };
 
   // Constructs a new filter that will:

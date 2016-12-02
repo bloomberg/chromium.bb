@@ -7,10 +7,12 @@
 #include "base/logging.h"
 #include "base/memory/ref_counted.h"
 #include "base/metrics/histogram_macros.h"
+#include "base/time/time.h"
 #include "components/subresource_filter/content/common/subresource_filter_messages.h"
 #include "components/subresource_filter/content/renderer/document_subresource_filter.h"
 #include "components/subresource_filter/content/renderer/ruleset_dealer.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "content/public/common/browser_side_navigation_policy.h"
 #include "content/public/renderer/render_frame.h"
 #include "ipc/ipc_message.h"
@@ -93,6 +95,22 @@ void SubresourceFilterAgent::RecordHistogramsOnLoadFinished() {
   UMA_HISTOGRAM_COUNTS_1000(
       "SubresourceFilter.DocumentLoad.NumSubresourceLoads.Disallowed",
       statistics.num_loads_disallowed);
+
+  UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+      "SubresourceFilter.DocumentLoad.SubresourceEvaluation."
+      "TotalWallDuration",
+      statistics.evaluation_total_wall_duration,
+      base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+      50);
+
+  // If ThreadTicks is not supported, then no measurements have been collected.
+  if (base::ThreadTicks::IsSupported()) {
+    UMA_HISTOGRAM_CUSTOM_MICRO_TIMES(
+        "SubresourceFilter.DocumentLoad.SubresourceEvaluation.TotalCPUDuration",
+        statistics.evaluation_total_cpu_duration,
+        base::TimeDelta::FromMicroseconds(1), base::TimeDelta::FromSeconds(10),
+        50);
+  }
 }
 
 void SubresourceFilterAgent::OnDestruct() {

@@ -12,6 +12,7 @@
 #include "base/trace_event/trace_event.h"
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
+#include "components/subresource_filter/core/common/scoped_timers.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace subresource_filter {
@@ -87,6 +88,11 @@ DocumentSubresourceFilter::DocumentSubresourceFilter(
                                    ? std::string()
                                    : ancestor_document_urls[0].spec());
 
+  SCOPED_UMA_HISTOGRAM_MICRO_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.WallDuration");
+  SCOPED_UMA_HISTOGRAM_MICRO_THREAD_TIMER(
+      "SubresourceFilter.DocumentLoad.Activation.CPUDuration");
+
   DCHECK_NE(activation_state_, ActivationState::DISABLED);
   DCHECK(ruleset);
 
@@ -123,6 +129,19 @@ bool DocumentSubresourceFilter::allowLoad(
     blink::WebURLRequest::RequestContext request_context) {
   TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
                resourceUrl.string().utf8());
+
+  auto wall_duration_exporter = [this](base::TimeDelta delta) {
+    statistics_.evaluation_total_wall_duration += delta;
+    UMA_HISTOGRAM_MICRO_TIMES(
+        "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
+  };
+  auto cpu_duration_exporter = [this](base::TimeDelta delta) {
+    statistics_.evaluation_total_cpu_duration += delta;
+    UMA_HISTOGRAM_MICRO_TIMES(
+        "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);
+  };
+  SCOPED_TIMER(wall_duration_exporter);
+  SCOPED_THREAD_TIMER(cpu_duration_exporter);
 
   ++statistics_.num_loads_total;
 
