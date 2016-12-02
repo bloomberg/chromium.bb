@@ -110,7 +110,7 @@ void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
 }
 
 void FontResource::startLoadLimitTimers() {
-  CHECK(isLoading());
+  DCHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, LoadNotStarted);
   m_loadLimitState = UnderLimit;
   m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec,
@@ -144,7 +144,6 @@ FontPlatformData FontResource::platformDataFromCustomData(
 }
 
 void FontResource::fontLoadShortLimitCallback(TimerBase*) {
-  CHECK(isLoading());
   if (!isLoading())
     return;
   DCHECK_EQ(m_loadLimitState, UnderLimit);
@@ -155,7 +154,6 @@ void FontResource::fontLoadShortLimitCallback(TimerBase*) {
 }
 
 void FontResource::fontLoadLongLimitCallback(TimerBase*) {
-  CHECK(isLoading());
   if (!isLoading())
     return;
   DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
