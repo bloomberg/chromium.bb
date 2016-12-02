@@ -848,11 +848,6 @@ void PaintLayerCompositor::updatePotentialCompositingReasonsFromStyle(
           layer->layoutObject()));
 }
 
-void PaintLayerCompositor::updateDirectCompositingReasons(PaintLayer* layer) {
-  layer->setCompositingReasons(m_compositingReasonFinder.directReasons(layer),
-                               CompositingReasonComboAllDirectReasons);
-}
-
 bool PaintLayerCompositor::canBeComposited(const PaintLayer* layer) const {
   FrameView* frameView = layer->layoutObject()->frameView();
   // Elements within an invisible frame must not be composited because they are

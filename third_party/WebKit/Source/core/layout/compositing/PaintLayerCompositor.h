@@ -191,8 +191,6 @@ class CORE_EXPORT PaintLayerCompositor final : public GraphicsLayerClient {
       PaintLayer*,
       CompositingStateTransitionType compositedLayerUpdate);
 
-  void updateDirectCompositingReasons(PaintLayer*);
-
   bool inOverlayFullscreenVideo() const { return m_inOverlayFullscreenVideo; }
 
  private:
