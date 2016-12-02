@@ -151,7 +151,6 @@ static int ransac(double *matched_points, int npoints, int *number_of_inliers,
 
   *number_of_inliers = 0;
   if (npoints < minpts * MINPTS_MULTIPLIER || npoints == 0) {
-    printf("Cannot find motion with %d matches\n", npoints);
     return 1;
   }
 

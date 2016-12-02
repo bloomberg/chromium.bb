@@ -4333,29 +4333,22 @@ static int get_interinter_compound_type_bits(BLOCK_SIZE bsize,
 #endif  // CONFIG_EXT_INTER
 
 #if CONFIG_GLOBAL_MOTION
-#define GLOBAL_MOTION_COST_AMORTIZATION_BLKS 8
-
-#if GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
-static int get_gmbitcost(const AV1_COMP *const cpi,
-                         const WarpedMotionParams *gm) {
+static int GLOBAL_MOTION_RATE(const AV1_COMP *const cpi, int ref) {
+  static const int gm_amortization_blks[TRANS_TYPES] = { 4, 6, 8, 10, 12 };
   static const int gm_params_cost[TRANS_TYPES] = {
     GM_IDENTITY_BITS, GM_TRANSLATION_BITS, GM_ROTZOOM_BITS,
     GM_AFFINE_BITS,   GM_HOMOGRAPHY_BITS,
   };
-  const int cost = (gm_params_cost[gm->wmtype] << AV1_PROB_COST_SHIFT) +
-                   cpi->gmtype_cost[gm->wmtype];
+  const WarpedMotionParams *gm = &cpi->common.global_motion[(ref)];
   assert(gm->wmtype < GLOBAL_TRANS_TYPES);
-  return cost;
+  if (cpi->global_motion_used[ref] >= gm_amortization_blks[gm->wmtype]) {
+    return 0;
+  } else {
+    const int cost = (gm_params_cost[gm->wmtype] << AV1_PROB_COST_SHIFT) +
+                     cpi->gmtype_cost[gm->wmtype];
+    return cost / gm_amortization_blks[gm->wmtype];
+  }
 }
-
-#define GLOBAL_MOTION_RATE(ref)                                         \
-  (cpi->global_motion_used[ref] >= GLOBAL_MOTION_COST_AMORTIZATION_BLKS \
-       ? 0                                                              \
-       : get_gmbitcost(cpi, &cm->global_motion[(ref)]) /                \
-             GLOBAL_MOTION_COST_AMORTIZATION_BLKS)
-#else
-#define GLOBAL_MOTION_RATE(ref) 0
-#endif  // GLOBAL_MOTION_COST_AMORTIZATION_BLKS > 0
 #endif  // CONFIG_GLOBAL_MOTION
 
 static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
@@ -4369,9 +4362,6 @@ static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
 #endif  // CONFIG_EXT_INTER
                                 int_mv *best_ref_mv[2], const int *mvjcost,
                                 int *mvcost[2]) {
-#if CONFIG_GLOBAL_MOTION
-  const AV1_COMMON *cm = &cpi->common;
-#endif  // CONFIG_GLOBAL_MOTION
   MODE_INFO *const mic = xd->mi[0];
   const MB_MODE_INFO *const mbmi = &mic->mbmi;
   const MB_MODE_INFO_EXT *const mbmi_ext = x->mbmi_ext;
@@ -4427,13 +4417,13 @@ static int set_and_cost_bmi_mvs(const AV1_COMP *const cpi, MACROBLOCK *x,
           gm_get_motion_vector(&cpi->common.global_motion[mbmi->ref_frame[0]],
                                cpi->common.allow_high_precision_mv)
               .as_int;
-      thismvcost += GLOBAL_MOTION_RATE(mbmi->ref_frame[0]);
+      thismvcost += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[0]);
       if (is_compound) {
         this_mv[1].as_int =
             gm_get_motion_vector(&cpi->common.global_motion[mbmi->ref_frame[1]],
                                  cpi->common.allow_high_precision_mv)
                 .as_int;
-        thismvcost += GLOBAL_MOTION_RATE(mbmi->ref_frame[1]);
+        thismvcost += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[1]);
       }
 #else   // CONFIG_GLOBAL_MOTION
       this_mv[0].as_int = 0;
@@ -8059,9 +8049,9 @@ static int64_t handle_inter_mode(
 #endif  // CONFIG_MOTION_VAR || CONFIG_WARPED_MOTION
 #if CONFIG_GLOBAL_MOTION
     if (this_mode == ZEROMV) {
-      rd_stats->rate += GLOBAL_MOTION_RATE(mbmi->ref_frame[0]);
+      rd_stats->rate += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[0]);
       if (is_comp_pred)
-        rd_stats->rate += GLOBAL_MOTION_RATE(mbmi->ref_frame[1]);
+        rd_stats->rate += GLOBAL_MOTION_RATE(cpi, mbmi->ref_frame[1]);
     }
 #endif  // CONFIG_GLOBAL_MOTION
 

@@ -55,14 +55,14 @@ typedef struct mv32 {
 typedef enum {
   IDENTITY = 0,     // identity transformation, 0-parameter
   TRANSLATION = 1,  // translational motion 2-parameter
-  ROTZOOM = 2,      // simplified affine with rotation and zoom only, 4-parameter
+  ROTZOOM = 2,      // simplified affine with rotation + zoom only, 4-parameter
   AFFINE = 3,       // affine, 6-parameter
   HOMOGRAPHY = 4,   // homography, 8-parameter
   TRANS_TYPES = 5,
 } TransformationType;
 /* clang-format on */
 
-// Number of types used for global motion (must be <= TRANS_TYPES)
+// Number of types used for global motion (must be >= 3 and <= TRANS_TYPES)
 #define GLOBAL_TRANS_TYPES 3
 
 // number of parameters used by each transformation in TransformationTypes
