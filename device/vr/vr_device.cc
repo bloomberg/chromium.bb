@@ -31,9 +31,9 @@ void VRDevice::AddService(VRServiceImpl* service) {
 }
 
 void VRDevice::RemoveService(VRServiceImpl* service) {
+  displays_.erase(service);
   if (IsPresentingService(service))
     ExitPresent();
-  displays_.erase(service);
 }
 
 bool VRDevice::IsAccessAllowed(VRServiceImpl* service) {
