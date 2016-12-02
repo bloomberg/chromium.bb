@@ -1815,8 +1815,8 @@ int
 weston_input_init(struct weston_compositor *compositor);
 
 int
-backend_init(struct weston_compositor *c,
-	     struct weston_backend_config *config_base);
+weston_backend_init(struct weston_compositor *c,
+		    struct weston_backend_config *config_base);
 int
 module_init(struct weston_compositor *compositor,
 	    int *argc, char *argv[]);

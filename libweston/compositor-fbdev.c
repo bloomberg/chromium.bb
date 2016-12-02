@@ -782,8 +782,8 @@ config_init_to_defaults(struct weston_fbdev_backend_config *config)
 }
 
 WL_EXPORT int
-backend_init(struct weston_compositor *compositor,
-	     struct weston_backend_config *config_base)
+weston_backend_init(struct weston_compositor *compositor,
+		    struct weston_backend_config *config_base)
 {
 	struct fbdev_backend *b;
 	struct weston_fbdev_backend_config config = {{ 0, }};

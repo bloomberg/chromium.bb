@@ -1756,8 +1756,8 @@ config_init_to_defaults(struct weston_x11_backend_config *config)
 }
 
 WL_EXPORT int
-backend_init(struct weston_compositor *compositor,
-	     struct weston_backend_config *config_base)
+weston_backend_init(struct weston_compositor *compositor,
+		    struct weston_backend_config *config_base)
 {
 	struct x11_backend *b;
 	struct weston_x11_backend_config config = {{ 0, }};
