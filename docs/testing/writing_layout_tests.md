@@ -31,8 +31,10 @@ Layout tests should be used to accomplish one of the following goals:
 If you know that Blink layout tests are upstreamed to other projects, such as
 [test262](https://github.com/tc39/test262), please update this document. Most
 importantly, our guidelines should to make it easy for our tests to be
-upstreamed. The `blink-dev` mailing list will be happy to help you harmonize our
-current guidelines with communal test repositories.
+upstreamed. The
+[blink-dev mailing list](https://groups.google.com/a/chromium.org/forum/#!forum/blink-dev)
+will be happy to help you harmonize our current guidelines with communal test
+repositories.
 ***
 
 ### Test Types
@@ -73,151 +75,238 @@ The principles below are adapted from
 and
 [WebKit's Wiki page on Writing good test cases](https://trac.webkit.org/wiki/Writing%20Layout%20Tests%20for%20DumpRenderTree).
 
-* Tests should be **concise**, without compromising on the principles below.
-  Every element and piece of code on the page should be necessary and relevant
-  to what is being tested. For example, don't build a fully functional signup
-  form if you only need a text field or a button.
-      * Content needed to satisfy the principles below is considered necessary.
-        For example, it is acceptable and desirable to add elements that make
-        the test self-describing (see below), and to add code that makes the
-        test more reliable (see below).
-      * Content that makes test failures easier to debug is considered necessary
-        (to maintaining a good development speed), and is both acceptable and
-        desirable.
-      * Conciseness is particularly important for reference tests and pixel
-        tests, as the test pages are rendered in an 800x600px viewport. Having
-        content outside the viewport is undesirable because the outside content
-        does not get compared, and because the resulting scrollbars are
-        platform-specific UI widgets, making the test results less reliable.
-
-* Tests should be as **fast** as possible, without compromising on the
-  principles below. Blink has several thousand layout tests that are run in
-  parallel, and avoiding unnecessary delays is crucial to keeping our Commit
-  Queue in good shape.
-    * Avoid [window.setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout),
-      as it wastes time on the testing infrastructure. Instead, use specific
-      event handlers, such as
-      [window.onload](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onload),
-      to decide when to advance to the next step in a test.
-
-* Tests should be **reliable** and yield consistent results for a given
-  implementation. Flaky tests slow down your fellow developers' debugging
-  efforts and the Commit Queue.
-    * `window.setTimeout` is again a primary offender here. Asides from wasting
-      time on a fast system, tests that rely on fixed timeouts can fail when run
-      on systems that are slower than expected.
-    * Follow the guidelines in this
-      [PSA on writing reliable layout tests](https://docs.google.com/document/d/1Yl4SnTLBWmY1O99_BTtQvuoffP8YM9HZx2YPkEsaduQ/edit).
-
-* Tests should be **self-describing**, so that a project member can recognize
-  whether a test passes or fails without having to read the specification of the
-  feature being tested. `testharness.js` makes a test self-describing when used
-  correctly, but tests that degrade to manual tests
-  [must be carefully designed](http://testthewebforward.org/docs/test-style-guidelines.html)
-  to be self-describing.
-
-* Tests should require a **minimal** amount of cognitive effort to read and
-  maintain.
-    * Avoid depending on edge case behavior of features that aren't explicitly
-      covered by the test. For example, except where testing parsing, tests
-      should contain valid markup (no parsing errors).
-    * Tests should provide as much relevant information as possible when
-      failing. `testharness.js` tests should prefer
-      [rich assert_ functions](https://github.com/w3c/testharness.js/blob/master/docs/api.md#list-of-assertions)
-      to combining `assert_true()` with a boolean operator. Using appropriate
-      `assert_` functions results in better diagnostic output when the assertion
-      fails.
-    * Prefer JavaScript's
-      [===](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Comparison_Operators#Identity_strict_equality_())
-      operator to
-      [==](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Comparison_Operators#Equality_())
-      so that readers don't have to reason about
-      [type conversion](http://www.ecma-international.org/ecma-262/6.0/#sec-abstract-equality-comparison).
-
-* Tests should be as **cross-platform** as reasonably possible. Avoid
-  assumptions about device type, screen resolution, etc. Unavoidable assumptions
-  should be documented.
-    * When possible, tests should only use Web platform features, as specified
-      in the relevant standards. When the Web platform's APIs are insufficient,
-      tests should prefer to use WPT extended testing APIs, such as
-      `wpt_automation`.
-    * Test pages should use the HTML5 doctype (`<!doctype html>`) unless they
-      specifically cover
-      [quirks mode](https://developer.mozilla.org/docs/Quirks_Mode_and_Standards_Mode)
-      behavior.
-    * Tests should be written under the assumption that they will be upstreamed
-      to the WPT project. For example, tests should follow the
-      [WPT guidelines](http://testthewebforward.org/docs/writing-tests.html).
-    * Tests that use Blink-specific testing APIs should feature-test for the
-      presence of the testing APIs and degrade to
-      [manual tests](http://testthewebforward.org/docs/manual-test.html) when
-      the testing APIs are not present. _This is not currently enforced in code
-      review. However, please keep in mind that a manual test can be debugged in
-      the browser, whereas a test that does not degrade gracefully can only be
-      debugged in the test runner._
-
-* Tests must be **self-contained** and not depend on external network resources.
-  Unless used by multiple test files, CSS and JavaScript should be inlined using
-  `<style>` and `<script>` tags. Content shared by multiple tests should be
-  placed in a `resources/` directory near the tests that share it. See below for
-  using multiple origins in a test.
-
-* Test **file names** should describe what is being tested. File names should
-  use `snake-case`, but preserve the case of any embedded API names. For
-  example, prefer `document-createElement.html` to
-  `document-create-element.html`.
-
-* Tests should prefer **modern features** in JavaScript and in the Web Platform.
-    * Tests should use
-      [strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)
-      for all JavaScript, except when specifically testing sloppy mode behavior.
-      Strict mode flags deprecated features and helps catch some errors, such as
-      forgetting to declare variables.
-    * JavaScript code should prefer
-      [const](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/const)
-      and
-      [let](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/let)
-      over `var`,
-      [classes](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Classes)
-      over other OOP constructs, and
-      [Promises](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)
-      over other mechanisms for structuring asynchronous code.
-    * The desire to use modern features must be balanced with the desire for
-      cross-platform tests. Avoid using features that haven't been shipped by
-      other developed major rendering engines (WebKit, Gecko, Edge). When
-      unsure, check [caniuse.com](http://caniuse.com/).
-
-* Tests should use the UTF-8 **character encoding**, which should be declared by
-  `<meta charset=utf-8>`. This does not apply when specifically testing
-  encodings.
-      * At this time, code reviewers may choose to accept layout tests that do
-        not have a `<meta charset>`, as long as the file content is pure ASCII.
-        If going that route, please keep in mind that Firefox currently issues a
-        dev tools warning for pages without a declared charset.
-
-* Tests should aim to have a **coding style** that is consistent with
-  [Google's JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html),
-  and
-  [Google's HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.xml),
-  with the following exceptions.
-    * Rules related to Google Closure and JSDoc do not apply.
-    * Modern Web Platform and JavaScript features should be preferred to legacy
-      constructs that target old browsers. For example, prefer `const` and `let`
-      to `var`, and prefer `class` over other OOP constructs. This should be
-      balanced with the desire to have cross-platform tests.
-    * Concerns regarding buggy behavior in legacy browsers do not apply. For
-      example, the garbage collection cycle note in the _Closures_ section does
-      not apply.
-    * Per the JavaScript guide, new tests should also follow any per-project
-      style guide, such as the
-      [ServiceWorker Tests Style guide](http://www.chromium.org/blink/serviceworker/testing).
-
 *** note
 This document intentionally uses _should_ a lot more than _must_, as defined in
 [RFC 2119](https://www.ietf.org/rfc/rfc2119.txt). Writing layout tests is a
 careful act of balancing many concerns, and this humble document cannot possibly
 capture the context that rests in the head of an experienced Blink engineer.
 ***
+
+### Concise
+
+Tests should be **concise**, without compromising on the principles below. Every
+element and piece of code on the page should be necessary and relevant to what
+is being tested. For example, don't build a fully functional signup form if you
+only need a text field or a button.
+
+Content needed to satisfy the principles below is considered necessary. For
+example, it is acceptable and desirable to add elements that make the test
+self-describing (see below), and to add code that makes the test more reliable
+(see below).
+
+Content that makes test failures easier to debug is considered necessary (to
+maintaining a good development speed), and is both acceptable and desirable.
+
+*** promo
+Conciseness is particularly important for reference tests and pixel tests, as
+the test pages are rendered in an 800x600px viewport. Having content outside the
+viewport is undesirable because the outside content does not get compared, and
+because the resulting scrollbars are platform-specific UI widgets, making the
+test results less reliable.
+***
+
+### Fast
+
+Tests should be as **fast** as possible, without compromising on the principles
+below. Blink has several thousand layout tests that are run in parallel, and
+avoiding unnecessary delays is crucial to keeping our Commit Queue in good
+shape.
+
+Avoid
+[window.setTimeout](https://developer.mozilla.org/en-US/docs/Web/API/WindowTimers/setTimeout),
+as it wastes time on the testing infrastructure. Instead, use specific event
+handlers, such as
+[window.onload](https://developer.mozilla.org/en-US/docs/Web/API/GlobalEventHandlers/onload),
+to decide when to advance to the next step in a test.
+
+### Reliable
+
+Tests should be **reliable** and yield consistent results for a given
+implementation. Flaky tests slow down your fellow developers' debugging efforts
+and the Commit Queue.
+
+`window.setTimeout` is again a primary offender here. Asides from wasting time
+on a fast system, tests that rely on fixed timeouts can fail when on systems
+that are slower than expected.
+
+Follow the guidelines in this
+[PSA on writing reliable layout tests](https://docs.google.com/document/d/1Yl4SnTLBWmY1O99_BTtQvuoffP8YM9HZx2YPkEsaduQ/edit).
+
+### Self-Describing
+
+Tests should be **self-describing**, so that a project member can recognize
+whether a test passes or fails without having to read the specification of the
+feature being tested. `testharness.js` makes a test self-describing when used
+correctly, but tests that degrade to manual tests
+[must be carefully designed](http://testthewebforward.org/docs/test-style-guidelines.html)
+to be self-describing.
+
+### Minimal
+
+Tests should require a **minimal** amount of cognitive effort to read and
+maintain.
+
+Avoid depending on edge case behavior of features that aren't explicitly covered
+by the test. For example, except where testing parsing, tests should contain
+valid markup (no parsing errors).
+
+Tests should provide as much relevant information as possible when failing.
+`testharness.js` tests should prefer
+[rich assert_ functions](https://github.com/w3c/testharness.js/blob/master/docs/api.md#list-of-assertions)
+to combining `assert_true()` with a boolean operator. Using appropriate
+`assert_` functions results in better diagnostic output when the assertion
+fails.
+
+&#x1F6A7; Prefer JavaScript's
+[===](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Comparison_Operators#Identity_strict_equality_())
+operator to
+[==](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Operators/Comparison_Operators#Equality_())
+so that readers don't have to reason about
+[type conversion](http://www.ecma-international.org/ecma-262/6.0/#sec-abstract-equality-comparison).
+
+*** promo
+The === vs == recommendation is still being discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+However, please keep in mind that a fellow developer who has to debug a failing
+test may have to consider the
+[special cases for ==](http://dorey.github.io/JavaScript-Equality-Table/) when
+the types of the two values being compared aren't immediately obvious.
+***
+
+### Cross-Platform
+
+Tests should be as **cross-platform** as reasonably possible. Avoid assumptions
+about device type, screen resolution, etc. Unavoidable assumptions should be
+documented.
+
+When possible, tests should only use Web platform features, as specified
+in the relevant standards. When the Web platform's APIs are insufficient,
+tests should prefer to use WPT extended testing APIs, such as
+`wpt_automation`, over Blink-specific testing APIs.
+
+&#x1F6A7; Tests that use testing APIs should feature-test for the presence of
+those APIs, and gracefully degrade to manual tests (see below) when the testing
+APIs are not available.
+
+Test pages should use the HTML5 doctype (`<!doctype html>`) unless they
+specifically cover
+[quirks mode](https://developer.mozilla.org/docs/Quirks_Mode_and_Standards_Mode)
+behavior.
+
+Tests should be written under the assumption that they will be upstreamed
+to the WPT project. For example, tests should follow the
+[WPT guidelines](http://testthewebforward.org/docs/writing-tests.html).
+
+Tests should avoid using features that haven't been shipped by the
+actively-developed major rendering engines (Blink, WebKit, Gecko, Edge). When
+unsure, check [caniuse.com](http://caniuse.com/). By necessity, this
+recommendation does not apply to the feature targeted by the test.
+
+*** note
+It may be tempting have a test for a bleeding-edge feature X depend on feature
+Y, which has only shipped in beta / development versions of various browsers.
+The reasoning would be that all browsers that implement X will have implemented
+Y. Please keep in mind that Chrome has un-shipped features that made it to the
+Beta channel in the past.
+***
+
+Tests that use Blink-specific testing APIs should feature-test for the
+presence of the testing APIs and degrade to
+[manual tests](http://testthewebforward.org/docs/manual-test.html) when
+the testing APIs are not present.
+
+*** promo
+The recommendation to degrade to manual tests is still being discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+However, please keep in mind that a manual test can be debugged in the browser,
+whereas a test that does not degrade gracefully can only be debugged in the test
+runner. Fellow project members and future you will thank you for having your
+test work as a manual test.
+***
+
+### Self-Contained
+
+Tests must be **self-contained** and not depend on external network resources.
+
+Unless used by multiple test files, CSS and JavaScript should be inlined using
+`<style>` and `<script>` tags. Content shared by multiple tests should be
+placed in a `resources/` directory near the tests that share it. See below for
+using multiple origins in a test.
+
+### File Names
+
+Test **file names** should describe what is being tested.
+
+File names should use `snake-case`, but preserve the case of any embedded API
+names. For example, prefer `document-createElement.html` to
+`document-create-element.html`.
+
+### Modern Features
+
+Tests should prefer **modern features** in JavaScript and in the Web Platform,
+provided that they meet the recommendations above for cross-platform tests.
+
+Tests should use
+[strict mode](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Strict_mode)
+for all JavaScript, except when specifically testing sloppy mode behavior.
+Strict mode flags deprecated features and helps catch some errors, such as
+forgetting to declare variables.
+
+&#x1F6A7; JavaScript code should prefer
+[const](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/const)
+and
+[let](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Statements/let)
+over `var`,
+[classes](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Classes)
+over other OOP constructs, and
+[Promises](https://developer.mozilla.org/docs/Web/JavaScript/Reference/Global_Objects/Promise)
+over other mechanisms for structuring asynchronous code.
+
+*** promo
+The recommendation to prefer `const` and `let` over `var` is currently being
+discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+***
+
+### Character Encoding
+
+Tests should use the UTF-8 **character encoding**, which should be declared by
+`<meta charset=utf-8>`. This does not apply when specifically testing encodings.
+
+The `<meta>` tag must be the first child of the document's `<head>` element. In
+documents that do not have an explicit `<head>`, the `<meta>` tag must follow
+the doctype.
+
+When HTML pages do not explicitly declare a character encoding, browsers
+determine the encoding using an
+[encoding sniffing algorithm](https://html.spec.whatwg.org/multipage/syntax.html#determining-the-character-encoding)
+that will surprise most modern Web developers. Highlights include a default
+encoding that depends on the user's locale, and non-standardized
+browser-specific heuristics.
+
+*** promo
+The WPT guidelines state that test files that only contain ASCII characters may
+omit the `<meta>` tag. This exception is currently discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+If taking that route, please keep in mind that Firefox currently issues a
+[development tools](https://developer.mozilla.org/en-US/docs/Tools) warning for
+pages without a declared encoding.
+***
+
+### Coding Style
+
+Tests should aim to have a **coding style** that is consistent with
+[Google's JavaScript Style Guide](https://google.github.io/styleguide/jsguide.html),
+and
+[Google's HTML/CSS Style Guide](https://google.github.io/styleguide/htmlcssguide.xml),
+with the following exceptions.
+
+* Rules related to Google Closure and JSDoc do not apply.
+* Modern Web Platform and JavaScript features should be preferred to legacy
+  constructs that target old browsers.
+* Per the JavaScript guide, new tests should also follow any per-project
+  style guide, such as the
+  [ServiceWorker Tests Style guide](http://www.chromium.org/blink/serviceworker/testing).
 
 ## JavaScript Tests
 
@@ -397,21 +486,22 @@ drag-and-drop.
 Here is a UML diagram of how the `testRunner` bindings fit into Chromium.
 
 [![UML of testRunner bindings configuring platform implementation](https://docs.google.com/drawings/u/1/d/1KNRNjlxK0Q3Tp8rKxuuM5mpWf4OJQZmvm9_kpwu_Wwg/export/svg?id=1KNRNjlxK0Q3Tp8rKxuuM5mpWf4OJQZmvm9_kpwu_Wwg&pageid=p)](https://docs.google.com/drawings/d/1KNRNjlxK0Q3Tp8rKxuuM5mpWf4OJQZmvm9_kpwu_Wwg/edit)
+
 ### Manual Tests
 
-Whenever possible, tests that rely on (WPT's or Blink's) testing APIs should
-also be usable as
+&#x1F6A7; Whenever possible, tests that rely on (WPT's or Blink's) testing APIs
+should also be usable as
 [manual tests](http://testthewebforward.org/docs/manual-test.html). This makes
 it easy to debug the test, and to check whether our behavior matches other
 browsers.
 
-*** note
-The recommendation to have tests that depend on Blink-only testing APIs
-gracefully degrade to manual tests is not currently enforced in code review.
-When considering skipping this recommendation, please keep in mind that a manual
-test can be debugged in the browser, whereas a test that does not degrade
-gracefully can only be debugged in the test runner. Fellow project members and
-future you will thank you for having your test work as a manual test.
+*** promo
+The recommendation to degrade to manual tests is still being discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+However, please keep in mind that a manual test can be debugged in the browser,
+whereas a test that does not degrade gracefully can only be debugged in the test
+runner. Fellow project members and future you will thank you for having your
+test work as a manual test.
 ***
 
 Manual tests should minimize the chance of user error. This implies keeping the
@@ -583,9 +673,9 @@ New reference tests should follow the
 [WPT reftests guidelines](http://testthewebforward.org/docs/reftests.html). The
 most important points are summarized below.
 
-* The test page declares the reference page using a `<link rel="match">` or
-  `<link rel="mismatch">`, depending on whether the test passes when the test
-  image matches or does not match the reference image.
+* &#x1F6A7; The test page declares the reference page using a
+  `<link rel="match">` or `<link rel="mismatch">`, depending on whether the test
+  passes when the test image matches or does not match the reference image.
 * The reference page must not use the feature being tested. Otherwise, the test
   is meaningless.
 * The reference page should be as simple as possible, and should not depend on
@@ -594,7 +684,7 @@ most important points are summarized below.
 * Reference tests should be self-describing.
 * Reference tests do _not_ include `testharness.js`.
 
-Our testing infrastructure was designed for the
+&#x1F6A7; Our testing infrastructure was designed for the
 [WebKit reftests](https://trac.webkit.org/wiki/Writing%20Reftests) that Blink
 has inherited. The consequences are summarized below.
 
@@ -636,6 +726,12 @@ The reference page, which must be named `ol-reversed-expected.html`, is below.
 </ol>
 ```
 
+*** promo
+The method for pointing out a test's reference page is still in flux, and is
+being discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
+***
+
 ## Pixel Tests
 
 `testRunner` APIs such as `window.testRunner.dumpAsTextWithPixelResults()` and
@@ -657,16 +753,22 @@ contain useful guidance. The most relevant pieces of advice are below.
   description of the desired (passing) outcome.
 * Only use the red color or the word `FAIL` to highlight errors. This does not
   apply when testing the color red.
-* Use the [Ahem font](https://www.w3.org/Style/CSS/Test/Fonts/Ahem/README) to
-  reduce the variance introduced by the platform's text rendering system. This
-  does not apply when testing text, text flow, font selection, font fallback,
-  font features, or other typographic information.
+* &#x1F6A7; Use the
+  [Ahem font](https://www.w3.org/Style/CSS/Test/Fonts/Ahem/README) to reduce the
+  variance introduced by the platform's text rendering system. This does not
+  apply when testing text, text flow, font selection, font fallback, font
+  features, or other typographic information.
 
 *** promo
 When using `window.testRunner.dumpAsTextWithPixelResults()`, the image result
 will always be 800x600px, because test pages are rendered in an 800x600px
 viewport. Pixel tests that do not specifically cover scrolling should fit in an
 800x600px viewport without creating scrollbars.
+***
+
+*** promo
+The recommendation of using Ahem in pixel tests is being discussed on
+[blink-dev](https://groups.google.com/a/chromium.org/d/topic/blink-dev/XsR6PKRrS1E/discussion).
 ***
 
 The following snippet includes the Ahem font in a layout test.
