@@ -496,14 +496,20 @@ def generate_telemetry_tests(
     # For each set of dimensions it is only triggered on one of the devices
     swarming_dimensions = []
     for dimension in tester_config['swarming_dimensions']:
-      sharding_map = benchmark_sharding_map.get(str(num_shards), None)
-      if not sharding_map and not use_whitelist:
-        raise Exception('Invalid number of shards, generate new sharding map')
       device_affinity = None
-      if use_whitelist:
-        device_affinity = current_shard
+      if benchmark_sharding_map:
+        sharding_map = benchmark_sharding_map.get(str(num_shards), None)
+        if not sharding_map and not use_whitelist:
+          raise Exception('Invalid number of shards, generate new sharding map')
+        if use_whitelist:
+          device_affinity = current_shard
+        else:
+          device_affinity = sharding_map.get(benchmark.Name(), None)
       else:
-        device_affinity = sharding_map.get(benchmark.Name(), None)
+        # No sharding map was provided, default to legacy device
+        # affinity algorithm
+        device_affinity = bot_utils.GetDeviceAffinity(
+          num_shards, benchmark.Name())
       if device_affinity is None:
         raise Exception('Device affinity for benchmark %s not found'
           % benchmark.Name())
@@ -545,6 +551,14 @@ BENCHMARK_NAME_BLACKLIST = [
     'skpicture_printer_ct',
 ]
 
+# Certain swarming bots are not sharding correctly with the new device affinity
+# algorithm.  Reverting to legacy algorithm to try and get them to complete.
+# See crbug.com/670284
+LEGACY_DEVICE_AFFIINITY_ALGORITHM = [
+  'Win Zenbook Perf',
+  'Win 10 High-DPI Perf',
+  'Mac HDD Perf',
+]
 
 def current_benchmarks(use_whitelist):
   benchmarks_dir = os.path.join(os.getcwd(), 'benchmarks')
@@ -640,8 +654,11 @@ def generate_all_tests(waterfall):
       if len(config['swarming_dimensions']) > 1:
         raise Exception('Invalid assumption on number of swarming dimensions')
       # Generate benchmarks
+      sharding_map = benchmark_sharding_map
+      if name in LEGACY_DEVICE_AFFIINITY_ALGORITHM:
+        sharding_map = None
       isolated_scripts = generate_telemetry_tests(
-          config, benchmark_list, benchmark_sharding_map, use_whitelist)
+          config, benchmark_list, sharding_map, use_whitelist)
       # Generate swarmed non-telemetry tests if present
       if config['swarming_dimensions'][0].get('perf_tests', False):
         isolated_scripts += generate_cplusplus_isolate_script_test(
