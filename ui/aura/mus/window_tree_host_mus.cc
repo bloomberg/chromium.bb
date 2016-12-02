@@ -84,12 +84,16 @@ WindowTreeHostMus::WindowTreeHostMus(
   compositor()->SetVisible(false);
 }
 
+// Pass |properties| to CreateWindowPortForTopLevel() so that |properties|
+// are passed to the server *and* pass |properties| to the WindowTreeHostMus
+// constructor (above) which applies the properties to the Window. Some of the
+// properties may be server specific and not applied to the Window.
 WindowTreeHostMus::WindowTreeHostMus(
     WindowTreeClient* window_tree_client,
     const std::map<std::string, std::vector<uint8_t>>* properties)
     : WindowTreeHostMus(
           static_cast<WindowTreeHostMusDelegate*>(window_tree_client)
-              ->CreateWindowPortForTopLevel(),
+              ->CreateWindowPortForTopLevel(properties),
           window_tree_client,
           display::Screen::GetScreen()->GetPrimaryDisplay().id(),
           properties) {}

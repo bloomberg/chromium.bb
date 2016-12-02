@@ -535,7 +535,7 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
   window->set_server_id(MakeTransportId(client_id_, next_window_id_++));
   RegisterWindowMus(window);
 
-  const bool create_top_level = !window_manager_delegate_ && IsRoot(window);
+  DCHECK(window_manager_delegate_ || !IsRoot(window));
 
   std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
   std::set<const void*> property_keys =
@@ -555,17 +555,10 @@ void WindowTreeClient::OnWindowMusCreated(WindowMus* window) {
     }
   }
 
-  const uint32_t change_id =
-      ScheduleInFlightChange(base::MakeUnique<CrashInFlightChange>(
-          window, create_top_level ? ChangeType::NEW_TOP_LEVEL_WINDOW
-                                   : ChangeType::NEW_WINDOW));
-  if (create_top_level) {
-    tree_->NewTopLevelWindow(change_id, window->server_id(),
-                             transport_properties);
-  } else {
-    tree_->NewWindow(change_id, window->server_id(),
-                     std::move(transport_properties));
-  }
+  const uint32_t change_id = ScheduleInFlightChange(
+      base::MakeUnique<CrashInFlightChange>(window, ChangeType::NEW_WINDOW));
+  tree_->NewWindow(change_id, window->server_id(),
+                   std::move(transport_properties));
 }
 
 void WindowTreeClient::OnWindowMusDestroyed(WindowMus* window, Origin origin) {
@@ -1533,10 +1526,26 @@ void WindowTreeClient::OnWindowTreeHostHitTestMaskWillChange(
                         out_rect);
 }
 
-std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel() {
+std::unique_ptr<WindowPortMus> WindowTreeClient::CreateWindowPortForTopLevel(
+    const std::map<std::string, std::vector<uint8_t>>* properties) {
   std::unique_ptr<WindowPortMus> window_port =
       base::MakeUnique<WindowPortMus>(this, WindowMusType::TOP_LEVEL);
   roots_.insert(window_port.get());
+
+  window_port->set_server_id(MakeTransportId(client_id_, next_window_id_++));
+  RegisterWindowMus(window_port.get());
+
+  std::unordered_map<std::string, std::vector<uint8_t>> transport_properties;
+  if (properties) {
+    for (const auto& property_pair : *properties)
+      transport_properties[property_pair.first] = property_pair.second;
+  }
+
+  const uint32_t change_id =
+      ScheduleInFlightChange(base::MakeUnique<CrashInFlightChange>(
+          window_port.get(), ChangeType::NEW_TOP_LEVEL_WINDOW));
+  tree_->NewTopLevelWindow(change_id, window_port->server_id(),
+                           transport_properties);
   return window_port;
 }
 

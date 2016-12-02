@@ -422,7 +422,8 @@ class AURA_EXPORT WindowTreeClient
   void OnWindowTreeHostHitTestMaskWillChange(
       WindowTreeHostMus* window_tree_host,
       const base::Optional<gfx::Rect>& mask_rect) override;
-  std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() override;
+  std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
+      const std::map<std::string, std::vector<uint8_t>>* properties) override;
   void OnWindowTreeHostCreated(WindowTreeHostMus* window_tree_host) override;
 
   // Override from client::TransientWindowClientObserver:

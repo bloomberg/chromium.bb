@@ -5,6 +5,12 @@
 #ifndef UI_AURA_MUS_WINDOW_TREE_HOST_MUS_DELEGATE_H_
 #define UI_AURA_MUS_WINDOW_TREE_HOST_MUS_DELEGATE_H_
 
+#include <stdint.h>
+
+#include <map>
+#include <string>
+#include <vector>
+
 #include "ui/aura/aura_export.h"
 
 namespace gfx {
@@ -37,7 +43,9 @@ class AURA_EXPORT WindowTreeHostMusDelegate {
       const base::Optional<gfx::Rect>& mask_rect) = 0;
 
   // Called when a WindowTreeHostMus is created without a WindowPort.
-  virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel() = 0;
+  // TODO: this should take an unordered_map, see http://crbug.com/670515.
+  virtual std::unique_ptr<WindowPortMus> CreateWindowPortForTopLevel(
+      const std::map<std::string, std::vector<uint8_t>>* properties) = 0;
 
   // Called from WindowTreeHostMus's constructor once the Window has been
   // created.

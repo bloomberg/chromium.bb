@@ -1052,6 +1052,11 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
   std::map<std::string, std::vector<uint8_t>> properties;
   properties[kTestPropertyServerKey1] =
       ConvertToPropertyTransportValue(property_value);
+  const char kUnknownPropertyKey[] = "unknown-property";
+  using UnknownPropertyType = int32_t;
+  const UnknownPropertyType kUnknownPropertyValue = 101;
+  properties[kUnknownPropertyKey] =
+      mojo::ConvertTo<std::vector<uint8_t>>(kUnknownPropertyValue);
   std::unique_ptr<WindowTreeHostMus> window_tree_host =
       base::MakeUnique<WindowTreeHostMus>(window_tree_client_impl(),
                                           &properties);
@@ -1064,7 +1069,7 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
   ASSERT_TRUE(window_tree()->GetAndRemoveFirstChangeOfType(
       WindowTreeChangeType::NEW_TOP_LEVEL, &change_id));
 
-  // Verify the property was sent to the server.
+  // Verify the properties were sent to the server.
   base::Optional<std::unordered_map<std::string, std::vector<uint8_t>>>
       transport_properties = window_tree()->GetLastNewWindowProperties();
   ASSERT_TRUE(transport_properties.has_value());
@@ -1075,6 +1080,12 @@ TEST_F(WindowTreeClientClientTest, NewTopLevelWindowGetsProperties) {
   ASSERT_EQ(8u, properties2[kTestPropertyServerKey1].size());
   EXPECT_EQ(static_cast<int64_t>(property_value),
             mojo::ConvertTo<int64_t>(properties2[kTestPropertyServerKey1]));
+
+  ASSERT_EQ(1u, properties2.count(kUnknownPropertyKey));
+  ASSERT_EQ(sizeof(UnknownPropertyType),
+            properties2[kUnknownPropertyKey].size());
+  EXPECT_EQ(kUnknownPropertyValue, mojo::ConvertTo<UnknownPropertyType>(
+                                       properties2[kUnknownPropertyKey]));
 }
 
 // Tests both SetCapture and ReleaseCapture, to ensure that Window is properly
