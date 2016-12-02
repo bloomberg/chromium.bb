@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "cc/tiles/image_controller.h"
 #include "cc/tiles/image_decode_cache.h"
-#include "cc/tiles/image_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace cc {
@@ -37,20 +37,20 @@ class TestableCache : public ImageDecodeCache {
   int number_of_refs_ = 0;
 };
 
-TEST(ImageManagerTest, NullCacheUnrefsImages) {
+TEST(ImageControllerTest, NullCacheUnrefsImages) {
   TestableCache cache;
-  ImageManager manager;
-  manager.SetImageDecodeCache(&cache);
+  ImageController controller;
+  controller.SetImageDecodeCache(&cache);
 
   std::vector<DrawImage> images(10);
   ImageDecodeCache::TracingInfo tracing_info;
 
   ASSERT_EQ(10u, images.size());
-  auto tasks = manager.SetPredecodeImages(std::move(images), tracing_info);
+  auto tasks = controller.SetPredecodeImages(std::move(images), tracing_info);
   EXPECT_EQ(0u, tasks.size());
   EXPECT_EQ(10, cache.number_of_refs());
 
-  manager.SetImageDecodeCache(nullptr);
+  controller.SetImageDecodeCache(nullptr);
   EXPECT_EQ(0, cache.number_of_refs());
 }
 

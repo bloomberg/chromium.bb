@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "cc/tiles/image_manager.h"
+#include "cc/tiles/image_controller.h"
 
 namespace cc {
 
-ImageManager::ImageManager() = default;
-ImageManager::~ImageManager() = default;
+ImageController::ImageController() = default;
+ImageController::~ImageController() = default;
 
-void ImageManager::SetImageDecodeCache(ImageDecodeCache* cache) {
+void ImageController::SetImageDecodeCache(ImageDecodeCache* cache) {
   // We can only switch from null to non-null and back.
   // CHECK to debug crbug.com/650234.
   CHECK(cache || cache_);
@@ -24,7 +24,7 @@ void ImageManager::SetImageDecodeCache(ImageDecodeCache* cache) {
   ++num_times_cache_was_set_;
 }
 
-void ImageManager::GetTasksForImagesAndRef(
+void ImageController::GetTasksForImagesAndRef(
     std::vector<DrawImage>* images,
     std::vector<scoped_refptr<TileTask>>* tasks,
     const ImageDecodeCache::TracingInfo& tracing_info) {
@@ -43,19 +43,19 @@ void ImageManager::GetTasksForImagesAndRef(
   }
 }
 
-void ImageManager::UnrefImages(const std::vector<DrawImage>& images) {
+void ImageController::UnrefImages(const std::vector<DrawImage>& images) {
   // Debugging information for crbug.com/650234.
   CHECK(cache_) << num_times_cache_was_set_;
   for (auto image : images)
     cache_->UnrefImage(image);
 }
 
-void ImageManager::ReduceMemoryUsage() {
+void ImageController::ReduceMemoryUsage() {
   DCHECK(cache_);
   cache_->ReduceCacheUsage();
 }
 
-std::vector<scoped_refptr<TileTask>> ImageManager::SetPredecodeImages(
+std::vector<scoped_refptr<TileTask>> ImageController::SetPredecodeImages(
     std::vector<DrawImage> images,
     const ImageDecodeCache::TracingInfo& tracing_info) {
   std::vector<scoped_refptr<TileTask>> new_tasks;

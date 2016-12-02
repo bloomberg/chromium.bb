@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CC_TILES_IMAGE_MANAGER_H_
-#define CC_TILES_IMAGE_MANAGER_H_
+#ifndef CC_TILES_IMAGE_CONTROLLER_H_
+#define CC_TILES_IMAGE_CONTROLLER_H_
 
 #include <vector>
 
@@ -16,12 +16,12 @@
 
 namespace cc {
 
-class CC_EXPORT ImageManager {
+class CC_EXPORT ImageController {
  public:
-  ImageManager();
-  ~ImageManager();
+  ImageController();
+  ~ImageController();
 
-  void SetImageDecodeCache(ImageDecodeCache* controller);
+  void SetImageDecodeCache(ImageDecodeCache* cache);
   void GetTasksForImagesAndRef(
       std::vector<DrawImage>* images,
       std::vector<scoped_refptr<TileTask>>* tasks,
@@ -39,9 +39,9 @@ class CC_EXPORT ImageManager {
   // Debugging information for crbug.com/650234.
   size_t num_times_cache_was_set_ = 0;
 
-  DISALLOW_COPY_AND_ASSIGN(ImageManager);
+  DISALLOW_COPY_AND_ASSIGN(ImageController);
 };
 
 }  // namespace cc
 
-#endif  // CC_TILES_IMAGE_MANAGER_H_
+#endif  // CC_TILES_IMAGE_CONTROLLER_H_

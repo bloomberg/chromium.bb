@@ -22,7 +22,7 @@
 #include "cc/resources/memory_history.h"
 #include "cc/resources/resource_pool.h"
 #include "cc/tiles/eviction_tile_priority_queue.h"
-#include "cc/tiles/image_manager.h"
+#include "cc/tiles/image_controller.h"
 #include "cc/tiles/raster_tile_priority_queue.h"
 #include "cc/tiles/tile.h"
 #include "cc/tiles/tile_draw_info.h"
@@ -321,7 +321,7 @@ class CC_EXPORT TileManager {
   bool did_check_for_completed_tasks_since_last_schedule_tasks_;
   bool did_oom_on_last_assign_;
 
-  ImageManager image_manager_;
+  ImageController image_controller_;
 
   RasterTaskCompletionStats flush_stats_;
 
