@@ -13,6 +13,7 @@
 #include "device/vr/android/gvr/gvr_delegate.h"
 #include "device/vr/android/gvr/gvr_device.h"
 #include "device/vr/android/gvr/gvr_gamepad_data_fetcher.h"
+#include "device/vr/vr_device.h"
 #include "device/vr/vr_device_manager.h"
 #include "device/vr/vr_service.mojom.h"
 #include "third_party/gvr-android-sdk/src/ndk/include/vr/gvr/capi/include/gvr.h"

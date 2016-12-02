@@ -281,6 +281,11 @@ public class VrShellDelegate {
         return true;
     }
 
+    @CalledByNative
+    private void forceExitVr() {
+        shutdownVR(true, true);
+    }
+
     /**
      * Resumes VR Shell.
      */

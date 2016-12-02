@@ -5,6 +5,7 @@
 #ifndef DEVICE_VR_VR_DEVICE_H
 #define DEVICE_VR_VR_DEVICE_H
 
+#include "base/callback.h"
 #include "base/macros.h"
 #include "device/vr/vr_export.h"
 #include "device/vr/vr_service.mojom.h"

@@ -29,6 +29,8 @@ class VrShellDelegate : public device::GvrDelegateProvider {
   void SetPresentResult(JNIEnv* env, jobject obj, jboolean result);
   void DisplayActivate(JNIEnv* env, jobject obj);
 
+  void ForceExitVr();
+
   // device::GvrDelegateProvider implementation
   void SetDeviceProvider(
       base::WeakPtr<device::GvrDeviceProvider> device_provider) override;

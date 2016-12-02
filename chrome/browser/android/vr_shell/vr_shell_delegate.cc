@@ -104,6 +104,11 @@ void VrShellDelegate::ExitWebVRPresent() {
   Java_VrShellDelegate_exitWebVR(env, j_vr_shell_delegate_.obj());
 }
 
+void VrShellDelegate::ForceExitVr() {
+  JNIEnv* env = AttachCurrentThread();
+  Java_VrShellDelegate_forceExitVr(env, j_vr_shell_delegate_.obj());
+}
+
 base::WeakPtr<device::GvrDelegate> VrShellDelegate::GetNonPresentingDelegate() {
   if (!non_presenting_delegate_) {
     JNIEnv* env = AttachCurrentThread();

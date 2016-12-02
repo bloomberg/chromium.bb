@@ -34,6 +34,8 @@
 
 using base::android::JavaParamRef;
 
+namespace vr_shell {
+
 namespace {
 // Constant taken from treasure_hunt demo.
 static constexpr long kPredictionTimeWithoutVsyncNanos = 50000000;
@@ -128,26 +130,24 @@ gvr::Quatf GetRotationFromZAxis(gvr::Vec3f vec) {
   return quat;
 }
 
-blink::WebMouseEvent MakeMouseEvent(WebInputEvent::Type type,
-                                    double timestamp,
-                                    float x,
-                                    float y) {
-  blink::WebMouseEvent mouse_event;
-  mouse_event.type = type;
-  mouse_event.pointerType = blink::WebPointerProperties::PointerType::Mouse;
-  mouse_event.x = x;
-  mouse_event.y = y;
-  mouse_event.windowX = x;
-  mouse_event.windowY = y;
-  mouse_event.timeStampSeconds = timestamp;
-  mouse_event.clickCount = 1;
-  mouse_event.modifiers = 0;
+std::unique_ptr<blink::WebMouseEvent> MakeMouseEvent(WebInputEvent::Type type,
+                                                     double timestamp,
+                                                     float x,
+                                                     float y) {
+  std::unique_ptr<blink::WebMouseEvent> mouse_event(new blink::WebMouseEvent);
+  mouse_event->type = type;
+  mouse_event->pointerType = blink::WebPointerProperties::PointerType::Mouse;
+  mouse_event->x = x;
+  mouse_event->y = y;
+  mouse_event->windowX = x;
+  mouse_event->windowY = y;
+  mouse_event->timeStampSeconds = timestamp;
+  mouse_event->clickCount = 1;
+  mouse_event->modifiers = 0;
 
   return mouse_event;
 }
 }  // namespace
-
-namespace vr_shell {
 
 VrShell::VrShell(JNIEnv* env,
                  jobject obj,
@@ -174,8 +174,8 @@ VrShell::VrShell(JNIEnv* env,
       main_contents_->IsFullscreen()));
   content_compositor_.reset(new VrCompositor(content_window, false));
   ui_compositor_.reset(new VrCompositor(ui_window, true));
-  vr_web_contents_observer_.reset(
-      new VrWebContentsObserver(main_contents, html_interface_.get()));
+  vr_web_contents_observer_.reset(new VrWebContentsObserver(
+      main_contents, html_interface_.get(), this));
 
   LoadUIContent();
 
@@ -183,6 +183,11 @@ VrShell::VrShell(JNIEnv* env,
   SetIdentityM(identity);
   webvr_head_pose_.resize(kPoseRingBufferSize, identity);
   webvr_head_pose_valid_.resize(kPoseRingBufferSize, false);
+
+  content_input_manager_.reset(new VrInputManager(main_contents_));
+  ui_input_manager_.reset(new VrInputManager(ui_contents_));
+  weak_content_input_manager_ = content_input_manager_->GetWeakPtr();
+  weak_ui_input_manager_ = ui_input_manager_->GetWeakPtr();
 }
 
 void VrShell::UpdateCompositorLayers(JNIEnv* env,
@@ -248,8 +253,7 @@ void VrShell::GvrInit(JNIEnv* env,
   // ContentSurfaceChanged.
   controller_.reset(
       new VrController(reinterpret_cast<gvr_context*>(native_gvr_api)));
-  content_input_manager_ = new VrInputManager(main_contents_);
-  ui_input_manager_ = new VrInputManager(ui_contents_);
+
 
   ViewerType viewerType;
   switch (gvr_api_->GetViewerType()) {
@@ -395,7 +399,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
       gesture->type = WebInputEvent::GestureTapDown;
       gesture->data.tapDown.width = 0;
       gesture->data.tapDown.height = 0;
-      content_input_manager_->ProcessUpdatedGesture(*gesture.get());
+      SendGesture(CONTENT, std::move(gesture));
     }
 
     return;
@@ -455,7 +459,7 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
   int pixel_x = 0;
   int pixel_y = 0;
   target_element_ = nullptr;
-  VrInputManager* input_target = nullptr;
+  InputTarget input_target = NONE;
 
   for (const auto& plane : scene_->GetUiElements()) {
     if (!plane->visible || !plane->hit_testable) {
@@ -487,14 +491,13 @@ void VrShell::UpdateController(const gvr::Vec3f& forward_vector) {
 
       target_point_ = plane_intersection_point;
       target_element_ = plane.get();
-      input_target = plane->content_quad ? content_input_manager_.get()
-                                         : ui_input_manager_.get();
+      input_target = plane->content_quad ? CONTENT : UI;
     }
   }
   SendEventsToTarget(input_target, pixel_x, pixel_y);
 }
 
-void VrShell::SendEventsToTarget(VrInputManager* input_target,
+void VrShell::SendEventsToTarget(InputTarget input_target,
                                  int pixel_x,
                                  int pixel_y) {
   std::vector<std::unique_ptr<WebGestureEvent>> gesture_list =
@@ -506,54 +509,65 @@ void VrShell::SendEventsToTarget(VrInputManager* input_target,
       gesture->type == WebInputEvent::GestureScrollUpdate ||
       gesture->type == WebInputEvent::GestureScrollEnd ||
       gesture->type == WebInputEvent::GestureFlingCancel) {
-    content_input_manager_->ProcessUpdatedGesture(*gesture.get());
+    SendGesture(CONTENT, base::WrapUnique(new WebGestureEvent(*gesture)));
   }
 
   if (gesture->type == WebInputEvent::GestureScrollEnd) {
     CHECK(gesture_list.size() == 2);
-    std::unique_ptr<WebGestureEvent> followup_gesture =
-        std::move(gesture_list.back());
-    if (followup_gesture->type == WebInputEvent::GestureTapDown) {
-      followup_gesture->data.tapDown.width = pixel_x;
-      followup_gesture->data.tapDown.height = pixel_y;
-      if (input_target != nullptr)
-        input_target->ProcessUpdatedGesture(*followup_gesture.get());
-    } else if (followup_gesture->type == WebInputEvent::GestureFlingStart) {
-      content_input_manager_->ProcessUpdatedGesture(*followup_gesture.get());
+    if (gesture_list.back()->type == WebInputEvent::GestureTapDown) {
+      gesture_list.back()->data.tapDown.width = pixel_x;
+      gesture_list.back()->data.tapDown.height = pixel_y;
+      if (input_target != NONE)
+        SendGesture(input_target, std::move(gesture_list.back()));
+    } else if (gesture_list.back()->type == WebInputEvent::GestureFlingStart) {
+      SendGesture(CONTENT, std::move(gesture_list.back()));
+    } else {
+      NOTREACHED();
     }
   }
 
   WebInputEvent::Type original_type = gesture->type;
 
   bool new_target = input_target != current_input_target_;
-  if (new_target && current_input_target_ != nullptr) {
+  if (new_target && current_input_target_ != NONE) {
     // Send a move event indicating that the pointer moved off of an element.
-    blink::WebMouseEvent mouse_event = MakeMouseEvent(
-        WebInputEvent::MouseLeave, gesture->timeStampSeconds, 0, 0);
-    current_input_target_->ProcessUpdatedGesture(mouse_event);
+    SendGesture(current_input_target_, MakeMouseEvent(
+        WebInputEvent::MouseLeave, gesture->timeStampSeconds, 0, 0));
   }
   current_input_target_ = input_target;
-  if (current_input_target_ == nullptr) {
+  if (current_input_target_ == NONE) {
     return;
   }
   WebInputEvent::Type type =
       new_target ? WebInputEvent::MouseEnter : WebInputEvent::MouseMove;
-  blink::WebMouseEvent mouse_event =
-      MakeMouseEvent(type, gesture->timeStampSeconds, pixel_x, pixel_y);
-  current_input_target_->ProcessUpdatedGesture(mouse_event);
+  SendGesture(current_input_target_, MakeMouseEvent(
+      type, gesture->timeStampSeconds, pixel_x, pixel_y));
 
   if (original_type == WebInputEvent::GestureTapDown || touch_pending_) {
+    std::unique_ptr<WebGestureEvent> event(new WebGestureEvent(*gesture));
     if (touch_pending_) {
       touch_pending_ = false;
-      gesture->sourceDevice = blink::WebGestureDeviceTouchpad;
-      gesture->timeStampSeconds =
+      event->sourceDevice = blink::WebGestureDeviceTouchpad;
+      event->timeStampSeconds =
           (base::TimeTicks::Now() - base::TimeTicks()).InSecondsF();
     }
-    gesture->type = WebInputEvent::GestureTapDown;
-    gesture->data.tapDown.width = pixel_x;
-    gesture->data.tapDown.height = pixel_y;
-    current_input_target_->ProcessUpdatedGesture(*gesture.get());
+    event->type = WebInputEvent::GestureTapDown;
+    event->data.tapDown.width = pixel_x;
+    event->data.tapDown.height = pixel_y;
+    SendGesture(current_input_target_, std::move(event));
   }
+}
+
+void VrShell::SendGesture(InputTarget input_target,
+                          std::unique_ptr<blink::WebInputEvent> event) {
+  DCHECK(input_target != NONE);
+  const base::WeakPtr<VrInputManager>& weak_ptr =
+      input_target == CONTENT ? weak_content_input_manager_
+                              : weak_ui_input_manager_;
+  main_thread_task_runner_->PostTask(
+      FROM_HERE,
+      base::Bind(&VrInputManager::ProcessUpdatedGesture, weak_ptr,
+                 base::Passed(std::move(event))));
 }
 
 void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
@@ -1084,6 +1098,20 @@ void VrShell::MainFrameWasResized(bool width_changed) {
   // TODO(mthiesse): Synchronize with GL thread.
   ui_tex_css_width_ = display.size().width();
   ui_tex_css_height_ = display.size().height();
+}
+
+void VrShell::WebContentsDestroyed() {
+  ui_input_manager_.reset();
+  ui_contents_ = nullptr;
+  // TODO(mthiesse): Handle web contents being destroyed.
+  delegate_->ForceExitVr();
+}
+
+void VrShell::ContentWebContentsDestroyed() {
+  content_input_manager_.reset();
+  main_contents_ = nullptr;
+  // TODO(mthiesse): Handle web contents being destroyed.
+  delegate_->ForceExitVr();
 }
 
 void VrShell::SetContentCssSize(float width, float height, float dpr) {

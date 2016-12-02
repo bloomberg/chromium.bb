@@ -5,14 +5,17 @@
 #include "chrome/browser/android/vr_shell/vr_web_contents_observer.h"
 
 #include "chrome/browser/android/vr_shell/ui_interface.h"
+#include "chrome/browser/android/vr_shell/vr_shell.h"
 #include "content/public/browser/navigation_handle.h"
 
 namespace vr_shell {
 
 VrWebContentsObserver::VrWebContentsObserver(content::WebContents* web_contents,
-                                             UiInterface* ui_interface)
+                                             UiInterface* ui_interface,
+                                             VrShell* vr_shell)
     : WebContentsObserver(web_contents),
-      ui_interface_(ui_interface) {}
+      ui_interface_(ui_interface),
+      vr_shell_(vr_shell) {}
 
 VrWebContentsObserver::~VrWebContentsObserver() {}
 
@@ -46,6 +49,10 @@ void VrWebContentsObserver::DidFinishNavigation(
 void VrWebContentsObserver::DidToggleFullscreenModeForTab(
     bool entered_fullscreen, bool will_cause_resize) {
   ui_interface_->SetFullscreen(entered_fullscreen);
+}
+
+void VrWebContentsObserver::WebContentsDestroyed() {
+  vr_shell_->ContentWebContentsDestroyed();
 }
 
 }  // namespace vr_shell

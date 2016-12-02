@@ -8,8 +8,10 @@
 #include <jni.h>
 
 #include <memory>
+#include <queue>
 
 #include "base/android/jni_weak_ref.h"
+#include "base/callback.h"
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
 #include "base/single_thread_task_runner.h"
@@ -53,6 +55,12 @@ enum UiAction {
   RELOAD_UI
 };
 
+enum InputTarget {
+  NONE = 0,
+  CONTENT,
+  UI
+};
+
 class VrMetricsHelper;
 
 class VrShell : public device::GvrDelegate, content::WebContentsObserver {
@@ -85,6 +93,8 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void SetWebVrMode(JNIEnv* env,
                     const base::android::JavaParamRef<jobject>& obj,
                     bool enabled);
+
+  void ContentWebContentsDestroyed();
 
   // html/js UI hooks.
   static base::WeakPtr<VrShell> GetWeakPtr(
@@ -143,9 +153,10 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const gvr::Vec3f& forward_vector);
-  void SendEventsToTarget(VrInputManager* input_target,
-                          int pixel_x,
-                          int pixel_y);
+  void SendEventsToTarget(InputTarget input_target, int pixel_x, int pixel_y);
+  // This function should only be called from the GL thread.
+  void SendGesture(InputTarget input_target,
+                   std::unique_ptr<blink::WebInputEvent> event);
 
   void HandleQueuedTasks();
 
@@ -153,6 +164,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   void RenderViewHostChanged(content::RenderViewHost* old_host,
                              content::RenderViewHost* new_host) override;
   void MainFrameWasResized(bool width_changed) override;
+  void WebContentsDestroyed() override;
 
   // samplerExternalOES texture data for UI content image.
   jint ui_texture_id_ = 0;
@@ -200,7 +212,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
 
   gvr::Vec3f target_point_;
   const ContentRectangle* target_element_ = nullptr;
-  VrInputManager* current_input_target_ = nullptr;
+  InputTarget current_input_target_ = NONE;
   int ui_tex_css_width_ = 0;
   int ui_tex_css_height_ = 0;
   int content_tex_css_width_ = 0;
@@ -216,8 +228,10 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   jint webvr_texture_id_ = 0;
 
   std::unique_ptr<VrController> controller_;
-  scoped_refptr<VrInputManager> content_input_manager_;
-  scoped_refptr<VrInputManager> ui_input_manager_;
+  std::unique_ptr<VrInputManager> content_input_manager_;
+  base::WeakPtr<VrInputManager> weak_content_input_manager_;
+  std::unique_ptr<VrInputManager> ui_input_manager_;
+  base::WeakPtr<VrInputManager> weak_ui_input_manager_;
   scoped_refptr<VrMetricsHelper> metrics_helper_;
 
   scoped_refptr<base::SingleThreadTaskRunner> main_thread_task_runner_;

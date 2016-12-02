@@ -5,7 +5,8 @@
 #ifndef CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 #define CHROME_BROWSER_ANDROID_VR_SHELL_VR_INPUT_MANAGER_H_
 
-#include "base/memory/ref_counted.h"
+#include "base/macros.h"
+#include "base/memory/weak_ptr.h"
 #include "third_party/WebKit/public/platform/WebGestureEvent.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 
@@ -15,29 +16,23 @@ class WebContents;
 
 namespace vr_shell {
 
-class VrInputManager : public base::RefCountedThreadSafe<VrInputManager> {
+// Note: This class is not thread safe and must only be used from main thread.
+class VrInputManager {
  public:
   explicit VrInputManager(content::WebContents* web_contents);
+  ~VrInputManager();
 
-  void ProcessUpdatedGesture(const blink::WebInputEvent& event);
-
- protected:
-  friend class base::RefCountedThreadSafe<VrInputManager>;
-  virtual ~VrInputManager();
+  base::WeakPtr<VrInputManager> GetWeakPtr();
+  void ProcessUpdatedGesture(std::unique_ptr<blink::WebInputEvent> event);
 
  private:
-  void SendMouseEvent(const blink::WebMouseEvent& mouse_event);
   void SendGesture(const blink::WebGestureEvent& gesture);
   void ForwardGestureEvent(const blink::WebGestureEvent& gesture);
   void ForwardMouseEvent(const blink::WebMouseEvent& mouse_event);
-  blink::WebGestureEvent MakeGestureEvent(blink::WebInputEvent::Type type,
-                                          int64_t time_ms,
-                                          float x,
-                                          float y) const;
 
-  // Device scale factor.
-  float dpi_scale_;
   content::WebContents* web_contents_;
+
+  base::WeakPtrFactory<VrInputManager> weak_ptr_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(VrInputManager);
 };
