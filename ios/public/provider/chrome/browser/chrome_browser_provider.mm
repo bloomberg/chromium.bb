@@ -146,6 +146,10 @@ UserFeedbackProvider* ChromeBrowserProvider::GetUserFeedbackProvider() const {
   return nullptr;
 }
 
+SpotlightProvider* ChromeBrowserProvider::GetSpotlightProvider() const {
+  return nullptr;
+}
+
 BrandedImageProvider* ChromeBrowserProvider::GetBrandedImageProvider() const {
   return nullptr;
 }

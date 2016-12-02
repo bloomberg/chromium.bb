@@ -25,6 +25,7 @@ class InfoBarViewDelegate;
 class OmahaServiceProvider;
 class PrefRegistrySimple;
 class PrefService;
+class SpotlightProvider;
 class UserFeedbackProvider;
 class VoiceSearchProvider;
 
@@ -192,6 +193,9 @@ class ChromeBrowserProvider {
   // Logs if any modals created by this provider are still presented. It does
   // not dismiss them.
   virtual void LogIfModalViewsArePresented() const;
+
+  // Returns an instance of the spotlight provider.
+  virtual SpotlightProvider* GetSpotlightProvider() const;
 };
 
 }  // namespace ios

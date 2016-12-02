@@ -7,6 +7,7 @@
 #include "base/memory/ptr_util.h"
 #import "ios/chrome/browser/providers/chromium_logo_controller.h"
 #import "ios/chrome/browser/providers/chromium_voice_search_provider.h"
+#import "ios/chrome/browser/providers/chromium_spotlight_provider.h"
 #import "ios/chrome/browser/providers/images/chromium_branded_image_provider.h"
 #include "ios/chrome/browser/providers/signin/chromium_signin_resources_provider.h"
 #include "ios/chrome/browser/providers/ui/chromium_styled_text_field.h"
@@ -26,7 +27,8 @@ ChromiumBrowserProvider::ChromiumBrowserProvider()
       signin_resources_provider_(
           base::MakeUnique<ChromiumSigninResourcesProvider>()),
       user_feedback_provider_(base::MakeUnique<UserFeedbackProvider>()),
-      voice_search_provider_(base::MakeUnique<ChromiumVoiceSearchProvider>()) {}
+      voice_search_provider_(base::MakeUnique<ChromiumVoiceSearchProvider>()),
+      spotlight_provider_(base::MakeUnique<ChromiumSpotlightProvider>()) {}
 
 ChromiumBrowserProvider::~ChromiumBrowserProvider() {}
 
@@ -83,4 +85,8 @@ AppDistributionProvider* ChromiumBrowserProvider::GetAppDistributionProvider()
 
 BrandedImageProvider* ChromiumBrowserProvider::GetBrandedImageProvider() const {
   return branded_image_provider_.get();
+}
+
+SpotlightProvider* ChromiumBrowserProvider::GetSpotlightProvider() const {
+  return spotlight_provider_.get();
 }

@@ -16,6 +16,7 @@
 #include "ios/public/provider/chrome/browser/sessions/test_synced_window_delegates_getter.h"
 #include "ios/public/provider/chrome/browser/signin/fake_chrome_identity_service.h"
 #include "ios/public/provider/chrome/browser/signin/test_signin_resources_provider.h"
+#import "ios/public/provider/chrome/browser/spotlight/test_spotlight_provider.h"
 #import "ios/public/provider/chrome/browser/ui/test_infobar_view.h"
 #import "ios/public/provider/chrome/browser/ui/test_styled_text_field.h"
 #import "ios/public/provider/chrome/browser/user_feedback/test_user_feedback_provider.h"
@@ -34,7 +35,8 @@ TestChromeBrowserProvider::TestChromeBrowserProvider()
       signin_resources_provider_(
           base::MakeUnique<TestSigninResourcesProvider>()),
       voice_search_provider_(base::MakeUnique<TestVoiceSearchProvider>()),
-      user_feedback_provider_(base::MakeUnique<TestUserFeedbackProvider>()) {}
+      user_feedback_provider_(base::MakeUnique<TestUserFeedbackProvider>()),
+      spotlight_provider_(base::MakeUnique<TestSpotlightProvider>()) {}
 
 TestChromeBrowserProvider::~TestChromeBrowserProvider() {}
 
@@ -94,6 +96,10 @@ OmahaServiceProvider* TestChromeBrowserProvider::GetOmahaServiceProvider()
 UserFeedbackProvider* TestChromeBrowserProvider::GetUserFeedbackProvider()
     const {
   return user_feedback_provider_.get();
+}
+
+SpotlightProvider* TestChromeBrowserProvider::GetSpotlightProvider() const {
+  return spotlight_provider_.get();
 }
 
 std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>

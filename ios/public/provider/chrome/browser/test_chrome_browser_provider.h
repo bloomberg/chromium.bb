@@ -36,6 +36,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   AppDistributionProvider* GetAppDistributionProvider() const override;
   OmahaServiceProvider* GetOmahaServiceProvider() const override;
   UserFeedbackProvider* GetUserFeedbackProvider() const override;
+  SpotlightProvider* GetSpotlightProvider() const override;
   std::unique_ptr<sync_sessions::SyncedWindowDelegatesGetter>
   CreateSyncedWindowDelegatesGetter(
       ios::ChromeBrowserState* browser_state) override;
@@ -51,6 +52,7 @@ class TestChromeBrowserProvider : public ChromeBrowserProvider {
   std::unique_ptr<SigninResourcesProvider> signin_resources_provider_;
   std::unique_ptr<VoiceSearchProvider> voice_search_provider_;
   std::unique_ptr<UserFeedbackProvider> user_feedback_provider_;
+  std::unique_ptr<SpotlightProvider> spotlight_provider_;
 
   DISALLOW_COPY_AND_ASSIGN(TestChromeBrowserProvider);
 };
