@@ -293,12 +293,13 @@ class ClientManager {
     }
 
     /**
-     * Sets whether navigation info should be recorded and shared for the session.
+     * Sets whether navigation info should be recorded and shared for the current navigation in this
+     * session.
      */
     public synchronized void setSendNavigationInfoForSession(
-            CustomTabsSessionToken session, boolean save) {
+            CustomTabsSessionToken session, boolean send) {
         SessionParams params = mSessionParams.get(session);
-        if (params != null) params.mShouldSendNavigationInfo = save;
+        if (params != null) params.mShouldSendNavigationInfo = send;
     }
 
     /**

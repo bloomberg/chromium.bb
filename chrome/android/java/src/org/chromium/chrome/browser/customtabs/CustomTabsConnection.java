@@ -662,6 +662,13 @@ public class CustomTabsConnection {
     }
 
     /**
+     * See {@link ClientManager#setSendNavigationInfoForSession(CustomTabsSessionToken, boolean)}.
+     */
+    void setSendNavigationInfoForSession(CustomTabsSessionToken session, boolean send) {
+        mClientManager.setSendNavigationInfoForSession(session, send);
+    }
+
+    /**
      * Extracts the creator package name from the intent.
      * @param intent The intent to get the package name from.
      * @return the package name which can be null.

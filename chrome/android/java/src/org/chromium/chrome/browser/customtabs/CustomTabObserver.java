@@ -95,6 +95,7 @@ class CustomTabObserver extends EmptyTabObserver {
             mPageLoadStartedTimestamp = SystemClock.elapsedRealtime();
         }
         if (mCustomTabsConnection != null) {
+            mCustomTabsConnection.setSendNavigationInfoForSession(mSession, false);
             mCustomTabsConnection.notifyNavigationEvent(
                     mSession, CustomTabsCallback.NAVIGATION_STARTED);
             mScreenshotTakenForCurrentNavigation = false;
