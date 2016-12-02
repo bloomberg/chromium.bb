@@ -157,13 +157,6 @@ class TestingPeopleHandler : public PeopleHandler {
       : PeopleHandler(profile) {
     set_web_ui(web_ui);
   }
-  ~TestingPeopleHandler() override {
-    // TODO(tommycli): PeopleHandler needs this call to destruct properly in the
-    // unit testing context. See the destructor to PeopleHandler. This is hacky.
-    set_web_ui(nullptr);
-  }
-
-  void FocusUI() override {}
 
   using PeopleHandler::is_configuring_sync;
 
