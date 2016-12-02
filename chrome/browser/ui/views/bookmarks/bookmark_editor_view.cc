@@ -15,6 +15,8 @@
 #include "chrome/browser/ui/bookmarks/bookmark_utils.h"
 #include "chrome/browser/ui/bookmarks/bookmark_utils_desktop.h"
 #include "chrome/browser/ui/browser_dialogs.h"
+#include "chrome/browser/ui/views/harmony/layout_delegate.h"
+#include "chrome/browser/ui/views/layout_utils.h"
 #include "chrome/grit/generated_resources.h"
 #include "chrome/grit/locale_settings.h"
 #include "components/bookmarks/browser/bookmark_model.h"
@@ -36,7 +38,6 @@
 #include "ui/views/controls/tree/tree_view.h"
 #include "ui/views/focus/focus_manager.h"
 #include "ui/views/layout/grid_layout.h"
-#include "ui/views/layout/layout_constants.h"
 #include "ui/views/widget/widget.h"
 #include "ui/views/window/dialog_client_view.h"
 #include "url/gurl.h"
@@ -340,17 +341,19 @@ void BookmarkEditorView::Init() {
     new_folder_button_->SetEnabled(false);
   }
 
-  GridLayout* layout = GridLayout::CreatePanel(this);
-  SetLayoutManager(layout);
+  GridLayout* layout = layout_utils::CreatePanelLayout(this);
+  LayoutDelegate* delegate = LayoutDelegate::Get();
 
   const int labels_column_set_id = 0;
   const int single_column_view_set_id = 1;
   const int buttons_column_set_id = 2;
 
   views::ColumnSet* column_set = layout->AddColumnSet(labels_column_set_id);
-  column_set->AddColumn(views::kControlLabelGridAlignment, GridLayout::CENTER,
-                        0, GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(delegate->GetControlLabelGridAlignment(),
+                        GridLayout::CENTER, 0, GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
@@ -361,10 +364,14 @@ void BookmarkEditorView::Init() {
   column_set = layout->AddColumnSet(buttons_column_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(1, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      1, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
-  column_set->AddPaddingColumn(0, views::kRelatedControlHorizontalSpacing);
+  column_set->AddPaddingColumn(
+      0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                         RELATED_CONTROL_HORIZONTAL_SPACING));
   column_set->AddColumn(GridLayout::FILL, GridLayout::LEADING, 0,
                         GridLayout::USE_PREF, 0, 0);
   column_set->LinkColumnSizes(0, 2, 4, -1);
@@ -383,7 +390,9 @@ void BookmarkEditorView::Init() {
     url_tf_->SetAccessibleName(
         l10n_util::GetStringUTF16(IDS_BOOKMARK_AX_EDITOR_URL_LABEL));
 
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
 
     layout->StartRow(0, labels_column_set_id);
     layout->AddView(url_label_);
@@ -391,12 +400,18 @@ void BookmarkEditorView::Init() {
   }
 
   if (show_tree_) {
-    layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
     layout->StartRow(1, single_column_view_set_id);
     layout->AddView(tree_view_->CreateParentIfNecessary());
   }
 
-  layout->AddPaddingRow(0, views::kRelatedControlVerticalSpacing);
+  if (delegate->UseExtraDialogPadding()) {
+    layout->AddPaddingRow(
+        0, delegate->GetLayoutDistance(LayoutDelegate::LayoutDistanceType::
+                                           RELATED_CONTROL_VERTICAL_SPACING));
+  }
 
   if (!show_tree_ || bb_model_->loaded())
     Reset();
