@@ -124,17 +124,15 @@ std::vector<base::SchedulerWorkerPoolParams>
 VariationsParamsToBrowserSchedulerWorkerPoolParams(
     const std::map<std::string, std::string>& variation_params) {
   using ThreadPriority = base::ThreadPriority;
-  using IORestriction = base::SchedulerWorkerPoolParams::IORestriction;
   struct SchedulerWorkerPoolPredefinedParams {
     const char* name;
     ThreadPriority priority_hint;
-    IORestriction io_restriction;
   };
   static const SchedulerWorkerPoolPredefinedParams kAllPredefinedParams[] = {
-    {"Background", ThreadPriority::BACKGROUND, IORestriction::DISALLOWED},
-    {"BackgroundFileIO", ThreadPriority::BACKGROUND, IORestriction::ALLOWED},
-    {"Foreground", ThreadPriority::NORMAL, IORestriction::DISALLOWED},
-    {"ForegroundFileIO", ThreadPriority::NORMAL, IORestriction::ALLOWED},
+      {"Background", ThreadPriority::BACKGROUND},
+      {"BackgroundFileIO", ThreadPriority::BACKGROUND},
+      {"Foreground", ThreadPriority::NORMAL},
+      {"ForegroundFileIO", ThreadPriority::NORMAL},
   };
   static_assert(arraysize(kAllPredefinedParams) == WORKER_POOL_COUNT,
                 "Mismatched Worker Pool Types and Predefined Parameters");
@@ -159,7 +157,6 @@ VariationsParamsToBrowserSchedulerWorkerPoolParams(
 
     params_vector.emplace_back(predefined_params.name,
                                predefined_params.priority_hint,
-                               predefined_params.io_restriction,
                                variation_values.standby_thread_policy,
                                variation_values.threads,
                                variation_values.detach_period);
