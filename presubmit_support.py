@@ -253,7 +253,7 @@ class GerritAccessor(object):
   def GetChangeReviewers(self, issue, approving_only=True):
     cr = self.GetChangeInfo(issue)['labels']['Code-Review']
     max_value = max(int(k) for k in cr['values'].keys())
-    return [r['email'] for r in cr['all']
+    return [r.get('email') for r in cr.get('all', [])
             if not approving_only or r.get('value', 0) == max_value]
 
 
