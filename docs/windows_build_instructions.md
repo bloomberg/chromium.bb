@@ -3,8 +3,6 @@
 There are instructions for other platforms linked from the 
 [get the code](get_the_code.md) page.
 
-**See also [the old version of this page](old_linux_build_instructions.md).**
-
 ## Instructions for Google Employees
 
 Are you a Google employee? See
