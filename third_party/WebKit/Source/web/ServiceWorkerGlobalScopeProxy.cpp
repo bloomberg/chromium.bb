@@ -199,8 +199,9 @@ void ServiceWorkerGlobalScopeProxy::onNavigationPreloadResponse(
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
   DCHECK(fetchEvent);
-  fetchEvent->onNavigationPreloadResponse(std::move(response),
-                                          std::move(dataConsumeHandle));
+  fetchEvent->onNavigationPreloadResponse(
+      workerGlobalScope()->scriptController()->getScriptState(),
+      std::move(response), std::move(dataConsumeHandle));
 }
 
 void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
@@ -208,7 +209,9 @@ void ServiceWorkerGlobalScopeProxy::onNavigationPreloadError(
     std::unique_ptr<WebServiceWorkerError> error) {
   FetchEvent* fetchEvent = m_pendingPreloadFetchEvents.take(fetchEventID);
   DCHECK(fetchEvent);
-  fetchEvent->onNavigationPreloadError(std::move(error));
+  fetchEvent->onNavigationPreloadError(
+      workerGlobalScope()->scriptController()->getScriptState(),
+      std::move(error));
 }
 
 void ServiceWorkerGlobalScopeProxy::dispatchForeignFetchEvent(

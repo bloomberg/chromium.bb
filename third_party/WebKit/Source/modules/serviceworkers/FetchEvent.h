@@ -54,9 +54,11 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
   void respondWith(ScriptState*, ScriptPromise, ExceptionState&);
   ScriptPromise preloadResponse(ScriptState*);
 
-  void onNavigationPreloadResponse(std::unique_ptr<WebServiceWorkerResponse>,
+  void onNavigationPreloadResponse(ScriptState*,
+                                   std::unique_ptr<WebServiceWorkerResponse>,
                                    std::unique_ptr<WebDataConsumerHandle>);
-  void onNavigationPreloadError(std::unique_ptr<WebServiceWorkerError>);
+  void onNavigationPreloadError(ScriptState*,
+                                std::unique_ptr<WebServiceWorkerError>);
 
   const AtomicString& interfaceName() const override;
 
@@ -71,7 +73,6 @@ class MODULES_EXPORT FetchEvent final : public ExtendableEvent {
              bool navigationPreloadSent);
 
  private:
-  RefPtr<ScriptState> m_scriptState;
   Member<RespondWithObserver> m_observer;
   Member<Request> m_request;
   Member<PreloadResponseProperty> m_preloadResponseProperty;

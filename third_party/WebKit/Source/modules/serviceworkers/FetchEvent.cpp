@@ -71,7 +71,6 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
                        WaitUntilObserver* waitUntilObserver,
                        bool navigationPreloadSent)
     : ExtendableEvent(type, initializer, waitUntilObserver),
-      m_scriptState(scriptState),
       m_observer(respondWithObserver),
       m_preloadResponseProperty(new PreloadResponseProperty(
           scriptState->getExecutionContext(),
@@ -110,17 +109,17 @@ FetchEvent::FetchEvent(ScriptState* scriptState,
 }
 
 void FetchEvent::onNavigationPreloadResponse(
+    ScriptState* scriptState,
     std::unique_ptr<WebServiceWorkerResponse> response,
     std::unique_ptr<WebDataConsumerHandle> dataConsumeHandle) {
-  if (!m_scriptState->contextIsValid())
+  if (!scriptState->contextIsValid())
     return;
   DCHECK(m_preloadResponseProperty);
-  ScriptState::Scope scope(m_scriptState.get());
-  FetchResponseData* responseData =
-      FetchResponseData::createWithBuffer(new BodyStreamBuffer(
-          m_scriptState.get(), new BytesConsumerForDataConsumerHandle(
-                                   m_scriptState->getExecutionContext(),
-                                   std::move(dataConsumeHandle))));
+  ScriptState::Scope scope(scriptState);
+  FetchResponseData* responseData = FetchResponseData::createWithBuffer(
+      new BodyStreamBuffer(scriptState, new BytesConsumerForDataConsumerHandle(
+                                            scriptState->getExecutionContext(),
+                                            std::move(dataConsumeHandle))));
   responseData->setURL(response->url());
   responseData->setStatus(response->status());
   responseData->setStatusMessage(response->statusText());
@@ -130,12 +129,13 @@ void FetchEvent::onNavigationPreloadResponse(
   FetchResponseData* taintedResponse =
       responseData->createBasicFilteredResponse();
   m_preloadResponseProperty->resolve(
-      Response::create(m_scriptState->getExecutionContext(), taintedResponse));
+      Response::create(scriptState->getExecutionContext(), taintedResponse));
 }
 
 void FetchEvent::onNavigationPreloadError(
+    ScriptState* scriptState,
     std::unique_ptr<WebServiceWorkerError> error) {
-  if (!m_scriptState->contextIsValid())
+  if (!scriptState->contextIsValid())
     return;
   DCHECK(m_preloadResponseProperty);
   m_preloadResponseProperty->reject(
