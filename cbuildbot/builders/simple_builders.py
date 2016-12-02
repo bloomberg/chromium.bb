@@ -157,17 +157,18 @@ class SimpleBuilder(generic_builders.Builder):
                      update_metadata=True, builder_run=builder_run,
                      afdo_use=config.afdo_use)
 
+    changes = self._GetChangesUnderTest()
+    if changes:
+      self._RunStage(report_stages.DetectIrrelevantChangesStage, board,
+                     changes, builder_run=builder_run)
+
     # While this stage list is run in parallel, the order here dictates the
     # order that things will be shown in the log.  So group things together
     # that make sense when read in order.  Also keep in mind that, since we
     # gather output manually, early slow stages will prevent any output from
     # later stages showing up until it finishes.
     changes = self._GetChangesUnderTest()
-    stage_list = []
-    if changes:
-      stage_list += [[report_stages.DetectIrrelevantChangesStage, board,
-                      changes]]
-    stage_list += [[test_stages.UnitTestStage, board]]
+    stage_list = [[test_stages.UnitTestStage, board]]
 
     # Skip most steps if we're a compilecheck builder.
     if builder_run.config.compilecheck or builder_run.options.compilecheck:
