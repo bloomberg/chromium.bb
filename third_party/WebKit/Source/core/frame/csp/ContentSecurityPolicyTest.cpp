@@ -958,4 +958,35 @@ TEST_F(ContentSecurityPolicyTest, DirectiveType) {
   }
 }
 
+TEST_F(ContentSecurityPolicyTest, Subsumes) {
+  ContentSecurityPolicy* other = ContentSecurityPolicy::create();
+  EXPECT_TRUE(csp->subsumes(*other));
+  EXPECT_TRUE(other->subsumes(*csp));
+
+  csp->didReceiveHeader("default-src http://example.com;",
+                        ContentSecurityPolicyHeaderTypeEnforce,
+                        ContentSecurityPolicyHeaderSourceHTTP);
+  // If this CSP is not empty, the other must not be empty either.
+  EXPECT_FALSE(csp->subsumes(*other));
+  EXPECT_TRUE(other->subsumes(*csp));
+
+  // Report-only policies do not impact subsumption.
+  other->didReceiveHeader("default-src http://example.com;",
+                          ContentSecurityPolicyHeaderTypeReport,
+                          ContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_FALSE(csp->subsumes(*other));
+
+  // CSPDirectiveLists have to subsume.
+  other->didReceiveHeader("default-src http://example.com https://another.com;",
+                          ContentSecurityPolicyHeaderTypeEnforce,
+                          ContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_FALSE(csp->subsumes(*other));
+
+  // `other` is stricter than `this`.
+  other->didReceiveHeader("default-src https://example.com;",
+                          ContentSecurityPolicyHeaderTypeEnforce,
+                          ContentSecurityPolicyHeaderSourceHTTP);
+  EXPECT_TRUE(csp->subsumes(*other));
+}
+
 }  // namespace blink

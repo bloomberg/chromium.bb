@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/security/contentSecurityPolicy/resources/child-csp-test.js"></script>
+</head>
+<body>
+    <script>
+      //
+      // Protocols
+      //
+      async_test(t => {
+          required_csp = "img-src http://c.com:* https://b.com";
+          returned_csp = "img-src http://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "0");
+        }, "https is more restrictive than http.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com";
+          returned_csp = "img-src https://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "1");
+        }, "The reverse allows iframe be to be loaded.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* https://b.com";
+          returned_csp = "img-src https://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "2");
+        }, "Matching https protocols.");
+
+      //
+      // Paths
+      //
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com/example.com";
+          returned_csp = "img-src http://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "3");
+        }, "Returned CSP has a specific path.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com";
+          returned_csp = "img-src http://b.com/example.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "4");
+        }, "Returned CSP is more specific.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com/example.com";
+          returned_csp = "img-src http://b.com/example.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "5");
+        }, "Matching paths.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* https://b.com/example.com";
+          returned_csp = "img-src http://b.com/example.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "6");
+        }, "Matching paths but not protocols.");
+
+      async_test(t => {
+          required_csp = "img-src http://b.com/page1.com http://b.com/page2.com http://b.com/page3.com";
+          returned_csp = "img-src http://b.com/";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "7");
+        }, "Returned CSP is less restrictive in paths.");
+
+      async_test(t => {
+          required_csp = "img-src http://b.com/page1.com http://b.com/page2.com http://b.com/page3.com";
+          returned_csp = "img-src http://b.com/page2.com http://b.com/page3.com http://b.com/page1.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "8");
+        }, "All specific paths match except the order.");
+
+      async_test(t => {
+          required_csp = "img-src http://b.com/page1.com http://b.com/page2.com http://b.com/page3.com";
+          returned_csp = "img-src http://b.com/page2.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "9");
+        }, "Returned CSP allows only one path.");
+
+      //
+      // Mixed
+      //
+      async_test(t => {
+          required_csp = "img-src https://b.com/page1.com http://b.com/page2.com http://b.com/page3.com";
+          returned_csp = "img-src https://b.com/page2.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "10");
+        }, "Returned CSP allows only one path with stricter protocol.");
+
+      async_test(t => {
+          required_csp = "img-src http://b.com/page1.com https://b.com/page2.com http://b.com/page3.com";
+          returned_csp = "img-src http://b.com/page2.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "11");
+        }, "Returned CSP allows only one path with less stricter protocol.");
+
+      async_test(t => {
+          required_csp = "img-src https://*";
+          returned_csp = "img-src https://b.com/page2.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "12");
+        }, "Specified protocol should match any domain with that protocol.");
+
+      async_test(t => {
+          required_csp = "img-src https://*";
+          returned_csp = "img-src https://*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "13");
+        }, "Equal policies with protocols and host wildcards.");
+
+      async_test(t => {
+          required_csp = "img-src https://b.com";
+          returned_csp = "img-src https://*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "14");
+        }, "Returned CSP allows any https resources.");
+    </script>
+</body>
+</html>

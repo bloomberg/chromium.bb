@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/security/contentSecurityPolicy/resources/child-csp-test.js"></script>
+</head>
+<body>
+    <script>
+      // Note that the origin for embedder is "http://127.0.0.1:8000".
+      // The origin for the embedee is "http://localhost:8000".
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "0");
+        }, "'self' is `localhost` in this case so iframe should be blocked.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:8000 http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "2");
+        }, "'self' is `127.0.0.1` in this case so iframe should be blocked.");
+
+      async_test(t => {
+          required_csp = "img-src 'self' http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "4");
+        }, "Exact match of returned csp to required csp should load iframe.");
+
+      async_test(t => {
+          required_csp = "img-src 'self' http://b.com:*";
+          returned_csp = "img-src http://127.0.0.1:8000 http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "4");
+        }, "'self' refers to `http://localhost:8000`.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:499  http://localhost:8000 http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "5");
+        }, "Multiple sources with locahost should still allow iframe to load since it is more restrictive.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "6");
+        }, "Iframe's returned csp is less restrictive.");
+
+      async_test(t => {
+          required_csp = "img-src http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "7");
+        }, "Iframe's returned csp is again less restrictive.");
+
+      async_test(t => {
+          required_csp = "img-src https://localhost.com:* http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "8");
+        }, "Protocol of 'self' matches https:// of the required csp");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost.com:443 http://b.com:*";
+          returned_csp = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "9");
+        }, "Ports of 'self' have to match.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:8000 http://b.com:*";
+          returned_csp1 = "img-src http://localhost:8000 http://b.com:8000";
+          returned_csp2 = "img-src 'self' http://b.com:*";
+          url = generateUrlWithCSPMultiple(CROSS_ORIGIN, returned_csp, returned_csp2, null);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "10");
+        }, "'self' can be matched to the actual origin.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:8000 http://b.com:*";
+          returned_csp1 = "img-src https://b.com:8000 'self'";
+          returned_csp2 = "img-src http://localhost:8000 https://b.com:*";
+          url = generateUrlWithCSPMultiple(CROSS_ORIGIN, returned_csp, returned_csp2, null);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "11");
+        }, "'self' can be matched to the actual origin despite order.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:8000 http://b.com:*";
+          returned_csp1 = "img-src https://b.com:8000 'self'";
+          returned_csp2 = "img-src http://localhost:4343 https://b.com:*";
+          url = generateUrlWithCSPMultiple(CROSS_ORIGIN, returned_csp, returned_csp2, null);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "12");
+        }, "'self' can be matched to the actual origin with the port.");
+
+      async_test(t => {
+          required_csp = "img-src http://localhost:8000 http://b.com:*";
+          returned_csp = "img-src http://localhost:8000 'self' http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "13");
+        }, "Repetitions of sources should not influence subsumption .");
+    </script>
+</body>
+</html>

@@ -469,16 +469,23 @@ void DocumentLoader::responseReceived(
           frameLoader()->requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
           ContentSecurityPolicyHeaderSourceHTTP);
     } else {
-      String message = "Refused to display '" + response.url().elidedString() +
-                       "' because it has not opted-into the following policy "
-                       "required by its embedder: '" +
-                       frameLoader()->requiredCSP() + "'.";
-      ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
-          SecurityMessageSource, ErrorMessageLevel, message, response.url(),
-          mainResourceIdentifier());
-      frame()->document()->addConsoleMessage(consoleMessage);
-      cancelLoadAfterXFrameOptionsOrCSPDenied(response);
-      return;
+      ContentSecurityPolicy* embeddingCSP = ContentSecurityPolicy::create();
+      embeddingCSP->addPolicyFromHeaderValue(
+          frameLoader()->requiredCSP(), ContentSecurityPolicyHeaderTypeEnforce,
+          ContentSecurityPolicyHeaderSourceHTTP);
+      if (!embeddingCSP->subsumes(*m_contentSecurityPolicy)) {
+        String message = "Refused to display '" +
+                         response.url().elidedString() +
+                         "' because it has not opted-into the following policy "
+                         "required by its embedder: '" +
+                         frameLoader()->requiredCSP() + "'.";
+        ConsoleMessage* consoleMessage = ConsoleMessage::createForRequest(
+            SecurityMessageSource, ErrorMessageLevel, message, response.url(),
+            mainResourceIdentifier());
+        frame()->document()->addConsoleMessage(consoleMessage);
+        cancelLoadAfterXFrameOptionsOrCSPDenied(response);
+        return;
+      }
     }
   }
 

@@ -1595,4 +1595,20 @@ ContentSecurityPolicy::DirectiveType ContentSecurityPolicy::getDirectiveType(
   return DirectiveType::Undefined;
 }
 
+bool ContentSecurityPolicy::subsumes(const ContentSecurityPolicy& other) {
+  if (!m_policies.size() || !other.m_policies.size())
+    return !m_policies.size();
+  // Embedding-CSP must specify only one policy.
+  if (m_policies.size() != 1)
+    return false;
+
+  CSPDirectiveListVector otherVector;
+  for (const auto& policy : other.m_policies) {
+    if (!policy->isReportOnly())
+      otherVector.append(policy);
+  }
+
+  return m_policies[0]->subsumes(otherVector);
+}
+
 }  // namespace blink

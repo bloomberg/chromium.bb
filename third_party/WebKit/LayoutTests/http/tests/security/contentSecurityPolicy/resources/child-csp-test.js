@@ -1,5 +1,8 @@
-var CROSS_ORIGIN_URL = "http://localhost:8000/security/contentSecurityPolicy/resources/respond-with-allow-csp-from-header.php";
-var SAME_ORIGIN_URL = "http://127.0.0.1:8000/security/contentSecurityPolicy/resources/respond-with-allow-csp-from-header.php";
+var CROSS_ORIGIN_URL_ACF_HEADERS = "http://localhost:8000/security/contentSecurityPolicy/resources/respond-with-allow-csp-from-header.php";
+var SAME_ORIGIN_URL_ACF_HEADERS  = "http://127.0.0.1:8000/security/contentSecurityPolicy/resources/respond-with-allow-csp-from-header.php";
+
+var CROSS_ORIGIN_URL_CSP_HEADERS = "http://localhost:8000/security/contentSecurityPolicy/resources/respond-with-multiple-csp-headers.php";
+var SAME_ORIGIN_URL_CSP_HEADERS  = "http://127.0.0.1:8000/security/contentSecurityPolicy/resources/respond-with-multiple-csp-headers.php";
 
 var EXPECT_BLOCK = true;
 var EXPECT_LOAD = false;
@@ -44,7 +47,18 @@ function injectIframeWithCSP(url, shouldBlock, csp, t, urlId) {
     }
     document.body.appendChild(i);
 }
+
 function generateUrlWithAllowCSPFrom(useCrossOrigin, allowCspFrom) {
-    var url = useCrossOrigin ? CROSS_ORIGIN_URL : SAME_ORIGIN_URL;
+    var url = useCrossOrigin ? CROSS_ORIGIN_URL_ACF_HEADERS : SAME_ORIGIN_URL_ACF_HEADERS;
     return url + "?allow_csp_from=" + allowCspFrom;
+}
+
+function generateUrlWithCSP(useCrossOrigin, csp) {
+    var url = useCrossOrigin ? CROSS_ORIGIN_URL_CSP_HEADERS : SAME_ORIGIN_URL_CSP_HEADERS;
+    return url + "?csp=" + csp;
+}
+
+function generateUrlWithCSPMultiple(useCrossOrigin, csp, csp2, cspReportOnly) {
+    var url = useCrossOrigin ? CROSS_ORIGIN_URL_CSP_HEADERS : SAME_ORIGIN_URL_CSP_HEADERS;
+    return url + "?csp=" + csp + "?csp2=" + csp2 + "?csp_report_only=" + cspReportOnly;
 }

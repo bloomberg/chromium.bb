@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="/resources/testharness.js"></script>
+    <script src="/resources/testharnessreport.js"></script>
+    <script src="/security/contentSecurityPolicy/resources/child-csp-test.js"></script>
+</head>
+<body>
+    <script>
+      //
+      // Total of one wildcard.
+      //
+      async_test(t => {
+          required_csp = "frame-src http://c.com:* http://b.com:80";
+          returned_csp = "frame-src http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "0");
+        }, "Wildcard in port in returned_csp vs no wildcard in port in required_csp should be 'Blocked'.");
+
+      async_test(t => {
+          required_csp = "frame-src http://c.com:* http://b.com:*";
+          returned_csp = "frame-src http://b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "1");
+        }, "Wildcard in port in returned_csp vs a wildcard in port in required_csp should be 'Allowed'.");
+
+      async_test(t => {
+          required_csp = "frame-src http://c.com:* http://b.com:80";
+          returned_csp = "frame-src http://*.b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "2");
+        }, "Wildcard in host in returned_csp vs no wildcard in host in required_csp should be 'Blocked'.");
+
+      async_test(t => {
+          required_csp = "frame-src http://c.com:* http://*.b.com:80";
+          returned_csp = "frame-src http://b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "3");
+        }, "Wildcard in host in returned_csp vs a wildcard in port in required_csp should be 'Allowed'.");
+
+      //
+      // Total of two wildcards.
+      //
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com:80";
+          returned_csp = "img-src http://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "4");
+        }, "Wildcards in returned_csp are less restrictive.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:*";
+          returned_csp = "img-src http://b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "5");
+        }, "Returned csp with no wildcards should be 'Allowed'.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:80";
+          returned_csp = "img-src http://*.b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "6");
+        }, "'Allowed' if exact match of wildcards in hosts.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com:*";
+          returned_csp = "img-src http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "7");
+        }, "'Allowed' if exact match of wildcards in ports.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://d.com:*";
+          returned_csp = "img-src http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "8");
+        }, "'Blocked' if exact match of wildcards in ports but not matching hosts.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com:*";
+          returned_csp = "img-src http://*.b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "9");
+        }, "Cross wildcards so the iframe should be 'Blocked'.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:80";
+          returned_csp = "img-src http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "10");
+        }, "Cross wildcards again so the iframe should be 'Blocked'.");
+
+      //
+      // Total of three wildcards.
+      // 
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:*";
+          returned_csp = "img-src http://b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "11");
+        }, "Two out of three wildcards in required_csp should correspond to iframe being 'Allowed'.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:*";
+          returned_csp = "img-src http://*.b.com:80";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "12");
+        }, "Two out of three wildcards in required_csp again should correspond to iframe being 'Allowed'.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:80";
+          returned_csp = "img-src http://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "13");
+        }, "Two out of three wildcards in returned_csp should correspond to iframe being 'Blocked'.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com:*";
+          returned_csp = "img-src http://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "14");
+        }, "Two out of three wildcards in returned_csp again should correspond to iframe being 'Blocked'.");
+
+      //
+      // Total of four wildcards.
+      // 
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:*";
+          returned_csp = "img-src http://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "15");
+        }, "Origins with wildcards in hosts and ports should be matched.");
+      
+      async_test(t => {
+          required_csp = "img-src http://c.com:* https://*.b.com:*";
+          returned_csp = "img-src http://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "16");
+        }, "Origins with wildcards in hosts and ports should be matched but also protocols.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.d.com:*";
+          returned_csp = "img-src https://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_BLOCK, required_csp, t, "17");
+        }, "Not matching four wildcards.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://*.b.com:*";
+          returned_csp = "img-src https://*.b.com:*";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "18");
+        }, "Four wildcards and https in returned_csp should be 'Allowed'.");
+
+      //
+      // Total of zero wildcards.
+      //
+      async_test(t => {
+          required_csp = "img-src http://c.com:* http://b.com";
+          returned_csp = "img-src http://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "19");
+        }, "Exact match.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com:* https://b.com";
+          returned_csp = "img-src https://b.com";
+          url = generateUrlWithCSP(CROSS_ORIGIN, returned_csp);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "20");
+        }, "Exact match in https.");
+
+      async_test(t => {
+          required_csp = "img-src http://c.com; frame-src http://b.com";
+          returned_csp1 = "img-src http://c.com; frame-src http://b.com:*";
+          returned_csp2 = "frame-src http://b.com; img-src http://c.com:*";
+          url = generateUrlWithCSPMultiple(CROSS_ORIGIN, returned_csp1, returned_csp2);
+          injectIframeWithCSP(url, EXPECT_LOAD, required_csp, t, "21");
+        }, "Exact match in https.");
+    </script>
+</body>
+</html>

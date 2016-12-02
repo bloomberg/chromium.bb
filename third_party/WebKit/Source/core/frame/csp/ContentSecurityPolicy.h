@@ -356,6 +356,12 @@ class CORE_EXPORT ContentSecurityPolicy
   static const char* getDirectiveName(const DirectiveType&);
   static DirectiveType getDirectiveType(const String& name);
 
+  // This method checks if if this policy subsumes a given policy.
+  // Note the correct result is guaranteed if this policy contains only one
+  // CSPDirectiveList. More information here:
+  // https://w3c.github.io/webappsec-csp/embedded/#subsume-policy
+  bool subsumes(const ContentSecurityPolicy&);
+
   Document* document() const;
 
  private:
