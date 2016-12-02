@@ -1429,7 +1429,7 @@ bool Element::shouldInvalidateDistributionWhenAttributeChanged(
   return featureSet.hasSelectorForAttribute(name.localName());
 }
 
-// Returns true is the given attribute is an event handler.
+// Returns true if the given attribute is an event handler.
 // We consider an event handler any attribute that begins with "on".
 // It is a simple solution that has the advantage of not requiring any
 // code or configuration change if a new event handler is defined.
@@ -1448,14 +1448,18 @@ bool Element::isJavaScriptURLAttribute(const Attribute& attribute) const {
   return isURLAttribute(attribute) && attributeValueIsJavaScriptURL(attribute);
 }
 
+bool Element::isScriptingAttribute(const Attribute& attribute) const {
+  return isEventHandlerAttribute(attribute) ||
+         isJavaScriptURLAttribute(attribute) ||
+         isHTMLContentAttribute(attribute) ||
+         isSVGAnimationAttributeSettingJavaScriptURL(attribute);
+}
+
 void Element::stripScriptingAttributes(
     Vector<Attribute>& attributeVector) const {
   size_t destination = 0;
   for (size_t source = 0; source < attributeVector.size(); ++source) {
-    if (isEventHandlerAttribute(attributeVector[source]) ||
-        isJavaScriptURLAttribute(attributeVector[source]) ||
-        isHTMLContentAttribute(attributeVector[source]) ||
-        isSVGAnimationAttributeSettingJavaScriptURL(attributeVector[source]))
+    if (isScriptingAttribute(attributeVector[source]))
       continue;
 
     if (source != destination)

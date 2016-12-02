@@ -63,7 +63,7 @@ class MarkupAccumulator {
                                       Namespaces*);
 
   virtual void appendText(StringBuilder&, Text&);
-  virtual bool shouldIgnoreAttribute(const Attribute&);
+  virtual bool shouldIgnoreAttribute(const Element&, const Attribute&);
   virtual void appendElement(StringBuilder&, Element&, Namespaces*);
   void appendOpenTag(StringBuilder&, const Element&, Namespaces*);
   void appendCloseTag(StringBuilder&, const Element&);

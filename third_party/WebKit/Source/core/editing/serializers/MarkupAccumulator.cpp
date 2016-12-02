@@ -111,7 +111,8 @@ void MarkupAccumulator::appendText(StringBuilder& result, Text& text) {
   m_formatter.appendText(result, text);
 }
 
-bool MarkupAccumulator::shouldIgnoreAttribute(const Attribute& attribute) {
+bool MarkupAccumulator::shouldIgnoreAttribute(const Element& element,
+                                              const Attribute& attribute) {
   return false;
 }
 
@@ -122,7 +123,7 @@ void MarkupAccumulator::appendElement(StringBuilder& result,
 
   AttributeCollection attributes = element.attributes();
   for (const auto& attribute : attributes) {
-    if (!shouldIgnoreAttribute(attribute))
+    if (!shouldIgnoreAttribute(element, attribute))
       appendAttribute(result, element, attribute, namespaces);
   }
 

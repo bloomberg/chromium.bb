@@ -99,7 +99,7 @@ class SerializerMarkupAccumulator : public MarkupAccumulator {
 
  protected:
   void appendText(StringBuilder& out, Text&) override;
-  bool shouldIgnoreAttribute(const Attribute&) override;
+  bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
   void appendElement(StringBuilder& out, Element&, Namespaces*) override;
   void appendAttribute(StringBuilder& out,
                        const Element&,
@@ -147,8 +147,9 @@ void SerializerMarkupAccumulator::appendText(StringBuilder& result,
 }
 
 bool SerializerMarkupAccumulator::shouldIgnoreAttribute(
+    const Element& element,
     const Attribute& attribute) {
-  return m_delegate.shouldIgnoreAttribute(attribute);
+  return m_delegate.shouldIgnoreAttribute(element, attribute);
 }
 
 void SerializerMarkupAccumulator::appendElement(StringBuilder& result,

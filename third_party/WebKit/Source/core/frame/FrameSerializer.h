@@ -66,7 +66,9 @@ class CORE_EXPORT FrameSerializer final {
   class Delegate {
    public:
     // Controls whether HTML serialization should skip the given attribute.
-    virtual bool shouldIgnoreAttribute(const Attribute&) { return false; }
+    virtual bool shouldIgnoreAttribute(const Element&, const Attribute&) {
+      return false;
+    }
 
     // Method allowing the Delegate control which URLs are written into the
     // generated html document.

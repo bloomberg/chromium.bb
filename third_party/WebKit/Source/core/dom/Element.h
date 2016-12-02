@@ -474,6 +474,7 @@ class CORE_EXPORT Element : public ContainerNode {
       const Attribute&) const {
     return false;
   }
+  bool isScriptingAttribute(const Attribute&) const;
 
   virtual bool isLiveLink() const { return false; }
   KURL hrefURL() const;

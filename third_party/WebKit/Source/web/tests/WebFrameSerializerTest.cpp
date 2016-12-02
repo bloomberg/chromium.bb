@@ -61,6 +61,20 @@ class SimpleWebFrameSerializerClient final : public WebFrameSerializerClient {
   StringBuilder m_builder;
 };
 
+class SimpleMHTMLPartsGenerationDelegate
+    : public WebFrameSerializer::MHTMLPartsGenerationDelegate {
+ private:
+  bool shouldSkipResource(const WebURL&) final { return false; }
+
+  WebString getContentID(WebFrame*) final { return WebString("<cid>"); }
+
+  WebFrameSerializerCacheControlPolicy cacheControlPolicy() final {
+    return WebFrameSerializerCacheControlPolicy::None;
+  }
+
+  bool useBinaryEncoding() final { return false; }
+};
+
 }  // namespace
 
 class WebFrameSerializerTest : public testing::Test {
@@ -162,6 +176,48 @@ TEST_F(WebFrameSerializerTest, FromUrlWithMinusMinus) {
       serializeFile("http://www.test.com?--x--", "text_only_page.html");
   EXPECT_EQ("<!-- saved from url=(0030)http://www.test.com/?-%2Dx-%2D -->",
             actualHTML.substring(1, 60));
+}
+
+class WebFrameSerializerSanitizationTest : public WebFrameSerializerTest {
+ protected:
+  WebFrameSerializerSanitizationTest() {}
+
+  ~WebFrameSerializerSanitizationTest() override {}
+
+  String generateMHTMLParts(const String& url, const String& fileName) {
+    KURL parsedURL(ParsedURLString, url);
+    URLTestHelpers::registerMockedURLLoad(parsedURL, fileName,
+                                          "frameserialization/", "text/html");
+    FrameTestHelpers::loadFrame(mainFrameImpl(), url.utf8().data());
+    WebThreadSafeData result = WebFrameSerializer::generateMHTMLParts(
+        WebString("boundary"), mainFrameImpl(), &m_mhtmlDelegate);
+    return String(result.data(), result.size());
+  }
+
+ private:
+  SimpleMHTMLPartsGenerationDelegate m_mhtmlDelegate;
+};
+
+TEST_F(WebFrameSerializerSanitizationTest, RemoveInlineScriptInAttributes) {
+  String mhtml =
+      generateMHTMLParts("http://www.test.com", "script_in_attributes.html");
+
+  // These scripting attributes should be removed.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("onload="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("ONLOAD="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("onclick="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("href="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("from="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("to="));
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("javascript:"));
+
+  // These non-scripting attributes should remain intact.
+  EXPECT_NE(WTF::kNotFound, mhtml.find("class="));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("id="));
+
+  // srcdoc attribute of frame element should be replaced with src attribute.
+  EXPECT_EQ(WTF::kNotFound, mhtml.find("srcdoc="));
+  EXPECT_NE(WTF::kNotFound, mhtml.find("src="));
 }
 
 }  // namespace blink

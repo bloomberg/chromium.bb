@@ -81,7 +81,7 @@ class MHTMLFrameSerializerDelegate final : public FrameSerializer::Delegate {
  public:
   explicit MHTMLFrameSerializerDelegate(
       WebFrameSerializer::MHTMLPartsGenerationDelegate&);
-  bool shouldIgnoreAttribute(const Attribute&) override;
+  bool shouldIgnoreAttribute(const Element&, const Attribute&) override;
   bool rewriteLink(const Element&, String& rewrittenLink) override;
   bool shouldSkipResourceWithURL(const KURL&) override;
   bool shouldSkipResource(const Resource&) override;
@@ -95,12 +95,27 @@ MHTMLFrameSerializerDelegate::MHTMLFrameSerializerDelegate(
     : m_webDelegate(webDelegate) {}
 
 bool MHTMLFrameSerializerDelegate::shouldIgnoreAttribute(
+    const Element& element,
     const Attribute& attribute) {
   // TODO(fgorski): Presence of srcset attribute causes MHTML to not display
   // images, as only the value of src is pulled into the archive. Discarding
   // srcset prevents the problem. Long term we should make sure to MHTML plays
   // nicely with srcset.
-  return attribute.localName() == HTMLNames::srcsetAttr;
+  if (attribute.localName() == HTMLNames::srcsetAttr)
+    return true;
+
+  // If srcdoc attribute for frame elements will be rewritten as src attribute
+  // containing link instead of html contents, don't ignore the attribute.
+  // Bail out now to avoid the check in Element::isScriptingAttribute.
+  bool isSrcDocAttribute = isHTMLFrameElementBase(element) &&
+                           attribute.name() == HTMLNames::srcdocAttr;
+  String newLinkForTheElement;
+  if (isSrcDocAttribute && rewriteLink(element, newLinkForTheElement))
+    return false;
+
+  // Do not include attributes that contain javascript. This is because the
+  // script will not be executed when a MHTML page is being loaded.
+  return element.isScriptingAttribute(attribute);
 }
 
 bool MHTMLFrameSerializerDelegate::rewriteLink(const Element& element,
