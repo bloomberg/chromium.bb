@@ -19,7 +19,6 @@ PASS SVGFilterPrimitiveStandardAttributes mixin interface must not be exposed
 PASS SVGFitToViewBox mixin interface must not be exposed 
 PASS SVGTests mixin interface must not be exposed 
 PASS SVGURIReference mixin interface must not be exposed 
-FAIL SVGUnitTypes mixin interface must not be exposed assert_false: expected false got true
 PASS SVGZoomAndPan mixin interface must not be exposed 
 PASS SVGElement.prototype.getPresentationAttribute must be removed 
 PASS SVGElement.prototype.xmlbase must be removed 
@@ -35,5 +34,10 @@ PASS SVGViewElement.prototype.viewTarget must be removed
 PASS SVGPathElement.prototype.getPointAtLength must be moved to SVGGeometryElement.prototype 
 PASS SVGPathElement.prototype.getTotalLength must be moved to SVGGeometryElement.prototype 
 PASS SVGPathElement.prototype.pathLength must be moved to SVGGeometryElement.prototype 
+PASS SVGClipPathElement must not implement SVGUnitTypes 
+PASS SVGFilterElement must not implement SVGUnitTypes 
+PASS SVGGradientElement must not implement SVGUnitTypes 
+PASS SVGMaskElement must not implement SVGUnitTypes 
+PASS SVGPatternElement must not implement SVGUnitTypes 
 Harness: the test ran to completion.
 

@@ -1838,7 +1838,7 @@ Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-matc
 Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-put.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-storage-keys.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-storage-match.https.html [ Failure ]
-Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/credentials.html [ Failure ]
+Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/credentials.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/window/cache-add.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/worker/cache-add.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/worker/cache-match.https.html [ Failure ]

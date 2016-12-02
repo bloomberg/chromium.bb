@@ -1,0 +1,6 @@
+CONSOLE ERROR: line 1: Uncaught ReferenceError: undefined_variable is not defined
+This is a testharness.js-based test.
+FAIL window.onerror - runtime error in <script src=...> with hash assert_equals: second arg expected "file:///.../html/webappapis/scripting/processing-model-2/support/undefined-variable.js#" but got "file:///.../html/webappapis/scripting/processing-model-2/support/undefined-variable.js"
+PASS window.onerror - runtime error in <script src=...> with hash (column) 
+Harness: the test ran to completion.
+

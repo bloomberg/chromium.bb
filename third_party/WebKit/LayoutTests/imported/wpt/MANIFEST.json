@@ -11,42 +11,6 @@
     "deleted_reftests": {},
     "items": {
       "manual": {
-        "annotation-vocab/01-validJSON-LD-manual.html": [
-          {
-            "path": "annotation-vocab/01-validJSON-LD-manual.html",
-            "url": "/annotation-vocab/01-validJSON-LD-manual.html"
-          }
-        ],
-        "annotation-vocab/02-context-to-triples-manual.html": [
-          {
-            "path": "annotation-vocab/02-context-to-triples-manual.html",
-            "url": "/annotation-vocab/02-context-to-triples-manual.html"
-          }
-        ],
-        "annotation-vocab/03-graphs-are-isomorphic-manual.html": [
-          {
-            "path": "annotation-vocab/03-graphs-are-isomorphic-manual.html",
-            "url": "/annotation-vocab/03-graphs-are-isomorphic-manual.html"
-          }
-        ],
-        "annotation-vocab/04-graphs-convert-lossless-manual.html": [
-          {
-            "path": "annotation-vocab/04-graphs-convert-lossless-manual.html",
-            "url": "/annotation-vocab/04-graphs-convert-lossless-manual.html"
-          }
-        ],
-        "annotation-vocab/05-ontology-parsed-as-valid-manual.html": [
-          {
-            "path": "annotation-vocab/05-ontology-parsed-as-valid-manual.html",
-            "url": "/annotation-vocab/05-ontology-parsed-as-valid-manual.html"
-          }
-        ],
-        "annotation-vocab/06-ontology-internally-consistent-manual.html": [
-          {
-            "path": "annotation-vocab/06-ontology-internally-consistent-manual.html",
-            "url": "/annotation-vocab/06-ontology-internally-consistent-manual.html"
-          }
-        ],
         "fullscreen/api/document-exit-fullscreen-manual.html": [
           {
             "path": "fullscreen/api/document-exit-fullscreen-manual.html",
@@ -8904,6 +8868,13 @@
             "url": "/html/browsers/offline/manifest_url_check.html"
           }
         ],
+        "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html": [
+          {
+            "path": "html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html",
+            "timeout": "long",
+            "url": "/html/browsers/origin/cross-origin-objects/cross-origin-objects-exceptions.html"
+          }
+        ],
         "html/browsers/origin/cross-origin-objects/cross-origin-objects.html": [
           {
             "path": "html/browsers/origin/cross-origin-objects/cross-origin-objects.html",
@@ -13724,6 +13695,12 @@
             "url": "/html/webappapis/scripting/events/event-handler-javascript.html"
           }
         ],
+        "html/webappapis/scripting/events/event-handler-onauxclick.html": [
+          {
+            "path": "html/webappapis/scripting/events/event-handler-onauxclick.html",
+            "url": "/html/webappapis/scripting/events/event-handler-onauxclick.html"
+          }
+        ],
         "html/webappapis/scripting/events/event-handler-onresize.html": [
           {
             "path": "html/webappapis/scripting/events/event-handler-onresize.html",
@@ -13850,6 +13827,12 @@
             "url": "/html/webappapis/scripting/processing-model-2/compile-error-in-setTimeout.html"
           }
         ],
+        "html/webappapis/scripting/processing-model-2/compile-error-same-origin-with-hash.html": [
+          {
+            "path": "html/webappapis/scripting/processing-model-2/compile-error-same-origin-with-hash.html",
+            "url": "/html/webappapis/scripting/processing-model-2/compile-error-same-origin-with-hash.html"
+          }
+        ],
         "html/webappapis/scripting/processing-model-2/compile-error-same-origin.html": [
           {
             "path": "html/webappapis/scripting/processing-model-2/compile-error-same-origin.html",
@@ -13914,6 +13897,12 @@
           {
             "path": "html/webappapis/scripting/processing-model-2/runtime-error-in-window-onerror.html",
             "url": "/html/webappapis/scripting/processing-model-2/runtime-error-in-window-onerror.html"
+          }
+        ],
+        "html/webappapis/scripting/processing-model-2/runtime-error-same-origin-with-hash.html": [
+          {
+            "path": "html/webappapis/scripting/processing-model-2/runtime-error-same-origin-with-hash.html",
+            "url": "/html/webappapis/scripting/processing-model-2/runtime-error-same-origin-with-hash.html"
           }
         ],
         "html/webappapis/scripting/processing-model-2/runtime-error-same-origin.html": [
@@ -14234,6 +14223,1890 @@
             "url": "/mediacapture-streams/MediaStreamTrackEvent-constructor.https.html"
           }
         ],
+        "offscreen-canvas/compositing/2d.composite.canvas.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.destination-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.destination-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.destination-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.lighter.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.lighter.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.lighter.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.lighter.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.lighter.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.lighter.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.source-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.source-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.source-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.xor.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.xor.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.xor.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.canvas.xor.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.canvas.xor.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.canvas.xor.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.destination-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.destination-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.destination-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.lighter.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.lighter.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.lighter.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.lighter.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.lighter.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.lighter.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.source-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.source-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.source-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.xor.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.xor.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.xor.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.clip.xor.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.clip.xor.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.clip.xor.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvas.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvascopy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.canvaspattern.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.default.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.default.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.default.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.default.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.default.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.default.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.fill.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.fill.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.fill.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.fill.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.fill.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.fill.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.image.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.image.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.image.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.image.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.image.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.image.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.imagepattern.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.invalid.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.range.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.range.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.range.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.globalAlpha.range.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.globalAlpha.range.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.globalAlpha.range.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.destination-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.destination-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.destination-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.lighter.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.lighter.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.lighter.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.lighter.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.lighter.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.lighter.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.source-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.source-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.source-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.xor.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.xor.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.xor.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.image.xor.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.image.xor.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.image.xor.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.casesensitive.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.casesensitive.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.casesensitive.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.casesensitive.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.casesensitive.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.casesensitive.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.clear.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.clear.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.clear.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.clear.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.clear.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.clear.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.darker.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.darker.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.darker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.darker.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.darker.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.darker.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.default.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.default.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.default.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.default.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.default.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.default.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.get.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.get.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.get.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.get.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.get.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.get.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.highlight.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.highlight.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.highlight.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.highlight.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.highlight.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.highlight.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.nullsuffix.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.nullsuffix.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.nullsuffix.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.nullsuffix.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.nullsuffix.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.nullsuffix.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.unrecognised.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.unrecognised.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.unrecognised.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.operation.unrecognised.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.operation.unrecognised.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.operation.unrecognised.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.destination-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.destination-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.destination-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.lighter.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.lighter.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.lighter.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.lighter.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.lighter.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.lighter.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.source-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.source-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.source-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.xor.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.xor.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.xor.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.solid.xor.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.solid.xor.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.solid.xor.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.destination-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.destination-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.destination-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.lighter.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.lighter.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.lighter.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.lighter.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.lighter.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.lighter.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-over.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-over.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-over.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.source-over.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.source-over.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.source-over.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.xor.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.xor.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.xor.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.transparent.xor.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.transparent.xor.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.transparent.xor.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.fill.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.image.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.nocontext.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.copy.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-atop.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.destination-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-in.worker.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.html": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.html",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.html"
+          }
+        ],
+        "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.worker.js": [
+          {
+            "path": "offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.worker.js",
+            "url": "/offscreen-canvas/compositing/2d.composite.uncovered.pattern.source-out.worker.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.coordinatespace.html": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.coordinatespace.html",
+            "url": "/offscreen-canvas/conformance-requirements/2d.coordinatespace.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.coordinatespace.worker.js": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.coordinatespace.worker.js",
+            "url": "/offscreen-canvas/conformance-requirements/2d.coordinatespace.worker.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.missingargs.html": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.missingargs.html",
+            "url": "/offscreen-canvas/conformance-requirements/2d.missingargs.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.missingargs.worker.js": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.missingargs.worker.js",
+            "url": "/offscreen-canvas/conformance-requirements/2d.missingargs.worker.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.voidreturn.html": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.voidreturn.html",
+            "url": "/offscreen-canvas/conformance-requirements/2d.voidreturn.html"
+          }
+        ],
+        "offscreen-canvas/conformance-requirements/2d.voidreturn.worker.js": [
+          {
+            "path": "offscreen-canvas/conformance-requirements/2d.voidreturn.worker.js",
+            "url": "/offscreen-canvas/conformance-requirements/2d.voidreturn.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.3arg.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.5arg.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.basic.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destpos.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.destsize.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcepos.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.9arg.sourcesize.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.alpha.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.animated.poster.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.broken.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.canvas.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.clip.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.composite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.floatsource.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedest.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativedir.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.negativesource.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nonfinite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.nowrap.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.null.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.path.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.1.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.self.2.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.svg.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.transform.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.wrongtype.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerocanvas.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.html": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.html",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.image.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.js",
+            "url": "/offscreen-canvas/drawing-images-to-the-canvas/2d.drawImage.zerosource.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.basic.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.clip.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalalpha.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.globalcomposite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.negative.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.nonfinite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.path.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.shadow.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.transform.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.clearRect.zero.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.basic.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.clip.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.negative.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.nonfinite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.path.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.shadow.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.transform.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.fillRect.zero.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.basic.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.clip.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalalpha.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.globalcomposite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.negative.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.nonfinite.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.path.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.shadow.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.transform.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.1.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.2.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.3.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.4.worker.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.html": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.html",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.html"
+          }
+        ],
+        "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.worker.js": [
+          {
+            "path": "offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.worker.js",
+            "url": "/offscreen-canvas/drawing-rectangles-to-the-canvas/2d.strokeRect.zero.5.worker.html"
+          }
+        ],
         "pointerevents/pointerevent_constructor.html": [
           {
             "path": "pointerevents/pointerevent_constructor.html",
@@ -14364,10 +16237,10 @@
             "url": "/service-workers/cache-storage/serviceworker/cache-storage.https.html"
           }
         ],
-        "service-workers/cache-storage/serviceworker/credentials.html": [
+        "service-workers/cache-storage/serviceworker/credentials.https.html": [
           {
-            "path": "service-workers/cache-storage/serviceworker/credentials.html",
-            "url": "/service-workers/cache-storage/serviceworker/credentials.html"
+            "path": "service-workers/cache-storage/serviceworker/credentials.https.html",
+            "url": "/service-workers/cache-storage/serviceworker/credentials.https.html"
           }
         ],
         "service-workers/cache-storage/window/cache-add.https.html": [
@@ -16132,6 +18005,18 @@
           {
             "path": "web-animations/timing-model/animations/updating-the-finished-state.html",
             "url": "/web-animations/timing-model/animations/updating-the-finished-state.html"
+          }
+        ],
+        "webrtc/RTCDataChannelEvent-constructor.html": [
+          {
+            "path": "webrtc/RTCDataChannelEvent-constructor.html",
+            "url": "/webrtc/RTCDataChannelEvent-constructor.html"
+          }
+        ],
+        "webrtc/RTCPeerConnectionIceEvent-constructor.html": [
+          {
+            "path": "webrtc/RTCPeerConnectionIceEvent-constructor.html",
+            "url": "/webrtc/RTCPeerConnectionIceEvent-constructor.html"
           }
         ],
         "webrtc/datachannel-emptystring.html": [
