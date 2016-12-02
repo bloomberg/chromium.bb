@@ -1114,6 +1114,13 @@ void VrShell::ContentWebContentsDestroyed() {
   delegate_->ForceExitVr();
 }
 
+void VrShell::ContentWasHidden() {
+  // Ensure we don't continue sending input to it.
+  content_input_manager_.reset();
+  // TODO(mthiesse): Handle web contents being hidden.
+  delegate_->ForceExitVr();
+}
+
 void VrShell::SetContentCssSize(float width, float height, float dpr) {
   JNIEnv* env = base::android::AttachCurrentThread();
   Java_VrShellImpl_setContentCssSize(env, j_vr_shell_.obj(), width, height,

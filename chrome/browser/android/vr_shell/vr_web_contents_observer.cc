@@ -55,4 +55,8 @@ void VrWebContentsObserver::WebContentsDestroyed() {
   vr_shell_->ContentWebContentsDestroyed();
 }
 
+void VrWebContentsObserver::WasHidden() {
+  vr_shell_->ContentWasHidden();
+}
+
 }  // namespace vr_shell

@@ -95,6 +95,9 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                     bool enabled);
 
   void ContentWebContentsDestroyed();
+  // Called when our WebContents have been hidden. Usually a sign that something
+  // like another tab placed in front of it.
+  void ContentWasHidden();
 
   // html/js UI hooks.
   static base::WeakPtr<VrShell> GetWeakPtr(

@@ -40,6 +40,7 @@ class CONTENT_EXPORT VrWebContentsObserver
   void DidToggleFullscreenModeForTab(
       bool entered_fullscreen, bool will_cause_resize) override;
   void WebContentsDestroyed() override;
+  void WasHidden() override;
 
   // This class does not own the UI interface.
   UiInterface* ui_interface_;
