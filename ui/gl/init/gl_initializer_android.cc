@@ -96,10 +96,10 @@ void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsOSMESA();
 }
 
-void ClearGLBindingsPlatform() {
-  ClearGLBindingsEGL();
-  ClearGLBindingsGL();
-  ClearGLBindingsOSMESA();
+void ShutdownGLPlatform() {
+  ClearBindingsEGL();
+  ClearBindingsGL();
+  ClearBindingsOSMESA();
 }
 
 }  // namespace init

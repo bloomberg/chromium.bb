@@ -319,16 +319,16 @@ void InitializeDebugGLBindings() {
   InitializeDebugGLBindingsWGL();
 }
 
-void ClearGLBindingsPlatform() {
+void ShutdownGLPlatform() {
   // TODO(jmadill): Apply to all platforms eventually
   if (g_angle_platform_shutdown) {
     g_angle_platform_shutdown();
   }
 
-  ClearGLBindingsEGL();
-  ClearGLBindingsGL();
-  ClearGLBindingsOSMESA();
-  ClearGLBindingsWGL();
+  ClearBindingsEGL();
+  ClearBindingsGL();
+  ClearBindingsOSMESA();
+  ClearBindingsWGL();
 }
 
 }  // namespace init

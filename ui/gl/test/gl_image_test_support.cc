@@ -33,7 +33,7 @@ void GLImageTestSupport::InitializeGL() {
 
 // static
 void GLImageTestSupport::CleanupGL() {
-  init::ClearGLBindings();
+  init::ShutdownGL();
 }
 
 // static

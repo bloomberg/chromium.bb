@@ -39,7 +39,7 @@ class GPUTimingTest : public testing::Test {
     surface_ = nullptr;
     if (setup_) {
       MockGLInterface::SetGLInterface(NULL);
-      init::ClearGLBindings();
+      init::ShutdownGL();
     }
     setup_ = false;
     cpu_time_bounded_ = false;

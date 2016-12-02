@@ -27,7 +27,7 @@ void InitializeDebugGLBindingsGLX() {
   g_driver_glx.InitializeDebugBindings();
 }
 
-void ClearGLBindingsGLX() {
+void ClearBindingsGLX() {
   if (g_real_glx) {
     delete g_real_glx;
     g_real_glx = NULL;

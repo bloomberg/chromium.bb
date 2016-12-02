@@ -23,7 +23,7 @@ bool InitializeStaticGLBindings(GLImplementation implementation);
 void InitializeDebugGLBindings();
 
 // Clears GL bindings for all implementations supported by platform.
-void ClearGLBindingsPlatform();
+void ShutdownGLPlatform();
 
 }  // namespace init
 }  // namespace gl

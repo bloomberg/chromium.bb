@@ -19,7 +19,7 @@ class GLOzoneGLX : public GLOzone {
   bool InitializeGLOneOffPlatform() override;
   bool InitializeStaticGLBindings(gl::GLImplementation implementation) override;
   void InitializeDebugGLBindings() override;
-  void ClearGLBindings() override;
+  void ShutdownGL() override;
   bool GetGLWindowSystemBindingInfo(
       gl::GLWindowSystemBindingInfo* info) override;
   scoped_refptr<gl::GLContext> CreateGLContext(

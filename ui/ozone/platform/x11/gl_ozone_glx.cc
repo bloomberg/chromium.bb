@@ -72,9 +72,9 @@ void GLOzoneGLX::InitializeDebugGLBindings() {
   gl::InitializeDebugGLBindingsGLX();
 }
 
-void GLOzoneGLX::ClearGLBindings() {
-  gl::ClearGLBindingsGL();
-  gl::ClearGLBindingsGLX();
+void GLOzoneGLX::ShutdownGL() {
+  gl::ClearBindingsGL();
+  gl::ClearBindingsGLX();
 }
 
 bool GLOzoneGLX::GetGLWindowSystemBindingInfo(

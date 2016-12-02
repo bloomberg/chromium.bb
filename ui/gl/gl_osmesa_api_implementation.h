@@ -13,7 +13,7 @@ namespace gl {
 
 GL_EXPORT void InitializeStaticGLBindingsOSMESA();
 GL_EXPORT void InitializeDebugGLBindingsOSMESA();
-GL_EXPORT void ClearGLBindingsOSMESA();
+GL_EXPORT void ClearBindingsOSMESA();
 
 class GL_EXPORT OSMESAApiBase : public OSMESAApi {
  public:

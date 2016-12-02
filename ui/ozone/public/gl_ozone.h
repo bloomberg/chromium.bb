@@ -40,7 +40,7 @@ class OZONE_BASE_EXPORT GLOzone {
   virtual void InitializeDebugGLBindings() = 0;
 
   // Clears static GL bindings.
-  virtual void ClearGLBindings() = 0;
+  virtual void ShutdownGL() = 0;
 
   // Returns information about the GL window system binding implementation (eg.
   // EGL, GLX, WGL). Returns true if the information was retrieved successfully.

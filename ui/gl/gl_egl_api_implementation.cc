@@ -45,7 +45,7 @@ void InitializeDebugGLBindingsEGL() {
   g_driver_egl.InitializeDebugBindings();
 }
 
-void ClearGLBindingsEGL() {
+void ClearBindingsEGL() {
   if (g_real_egl) {
     delete g_real_egl;
     g_real_egl = NULL;

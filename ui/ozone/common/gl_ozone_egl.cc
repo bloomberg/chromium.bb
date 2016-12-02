@@ -40,10 +40,10 @@ void GLOzoneEGL::InitializeDebugGLBindings() {
   gl::InitializeDebugGLBindingsEGL();
 }
 
-void GLOzoneEGL::ClearGLBindings() {
+void GLOzoneEGL::ShutdownGL() {
   gl::GLSurfaceEGL::ResetForTesting();
-  gl::ClearGLBindingsGL();
-  gl::ClearGLBindingsEGL();
+  gl::ClearBindingsGL();
+  gl::ClearBindingsEGL();
 }
 
 bool GLOzoneEGL::GetGLWindowSystemBindingInfo(

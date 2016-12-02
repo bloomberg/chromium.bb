@@ -35,7 +35,7 @@ class GpuChannelTest : public GpuChannelTestCommon {
   void TearDown() override {
     GpuChannelTestCommon::TearDown();
 
-    gl::init::ClearGLBindings();
+    gl::init::ShutdownGL();
   }
 
   GpuChannel* CreateChannel(int32_t client_id,

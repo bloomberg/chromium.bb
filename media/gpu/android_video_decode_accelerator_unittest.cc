@@ -66,7 +66,7 @@ class AndroidVideoDecodeAcceleratorTest : public testing::Test {
     JNIEnv* env = base::android::AttachCurrentThread();
     RegisterJni(env);
 
-    gl::init::ClearGLBindings();
+    gl::init::ShutdownGL();
     ASSERT_TRUE(gl::init::InitializeGLOneOff());
     surface_ = gl::init::CreateOffscreenGLSurface(gfx::Size(1024, 1024));
     context_ = gl::init::CreateGLContext(nullptr, surface_.get(),

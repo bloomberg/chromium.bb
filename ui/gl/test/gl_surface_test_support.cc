@@ -76,7 +76,7 @@ void GLSurfaceTestSupport::InitializeOneOffImplementation(
 
   // This method may be called multiple times in the same process to set up
   // bindings in different ways.
-  init::ClearGLBindings();
+  init::ShutdownGL();
 
   bool gpu_service_logging = false;
   bool disable_gl_drawing = false;

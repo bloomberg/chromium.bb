@@ -216,7 +216,7 @@ VrShell::~VrShell() {
     delegate_->GetDeviceProvider()->OnGvrDelegateRemoved();
   }
   g_instance = nullptr;
-  gl::init::ClearGLBindings();
+  gl::init::ShutdownGL();
 }
 
 void VrShell::SetDelegate(JNIEnv* env,

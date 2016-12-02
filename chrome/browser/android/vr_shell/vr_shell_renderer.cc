@@ -310,7 +310,7 @@ void WebVrRenderer::Draw(int texture_handle) {
 }
 
 // Note that we don't explicitly delete gl objects here, they're deleted
-// automatically when we call ClearGLBindings, and deleting them here leads to
+// automatically when we call ShutdownGL, and deleting them here leads to
 // segfaults.
 WebVrRenderer::~WebVrRenderer() = default;
 

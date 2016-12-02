@@ -449,7 +449,7 @@ bool SetNullDrawGLBindingsEnabledGL(bool enabled) {
   return g_driver_gl.SetNullDrawBindingsEnabled(enabled);
 }
 
-void ClearGLBindingsGL() {
+void ClearBindingsGL() {
   if (g_real_gl) {
     delete g_real_gl;
     g_real_gl = NULL;

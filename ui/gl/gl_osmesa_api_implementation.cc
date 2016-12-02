@@ -22,7 +22,7 @@ void InitializeDebugGLBindingsOSMESA() {
   g_driver_osmesa.InitializeDebugBindings();
 }
 
-void ClearGLBindingsOSMESA() {
+void ClearBindingsOSMESA() {
   if (g_real_osmesa) {
     delete g_real_osmesa;
     g_real_osmesa = NULL;

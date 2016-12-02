@@ -567,7 +567,7 @@ void GLES2DecoderTestBase::ResetDecoder() {
   engine_.reset();
   ::gl::MockGLInterface::SetGLInterface(NULL);
   gl_.reset();
-  gl::init::ClearGLBindings();
+  gl::init::ShutdownGL();
 }
 
 void GLES2DecoderTestBase::TearDown() {

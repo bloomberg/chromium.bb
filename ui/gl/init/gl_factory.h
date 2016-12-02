@@ -38,7 +38,7 @@ GL_INIT_EXPORT bool InitializeGLOneOffImplementation(GLImplementation impl,
                                                      bool disable_gl_drawing);
 
 // Clears GL bindings and resets GL implementation.
-GL_INIT_EXPORT void ClearGLBindings();
+GL_INIT_EXPORT void ShutdownGL();
 
 // Return information about the GL window system binding implementation (e.g.,
 // EGL, GLX, WGL). Returns true if the information was retrieved successfully.

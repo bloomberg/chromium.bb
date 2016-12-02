@@ -27,7 +27,7 @@ void InitializeDebugGLBindingsWGL() {
   g_driver_wgl.InitializeDebugBindings();
 }
 
-void ClearGLBindingsWGL() {
+void ClearBindingsWGL() {
   if (g_real_wgl) {
     delete g_real_wgl;
     g_real_wgl = NULL;

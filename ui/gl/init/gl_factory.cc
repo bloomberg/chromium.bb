@@ -64,12 +64,12 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   bool initialized =
       InitializeStaticGLBindings(impl) && InitializeGLOneOffPlatform();
   if (!initialized && fallback_to_osmesa) {
-    ClearGLBindings();
+    ShutdownGL();
     initialized = InitializeStaticGLBindings(kGLImplementationOSMesaGL) &&
                   InitializeGLOneOffPlatform();
   }
   if (!initialized)
-    ClearGLBindings();
+    ShutdownGL();
 
   if (initialized) {
     DVLOG(1) << "Using " << GetGLImplementationName(GetGLImplementation())
@@ -82,8 +82,8 @@ bool InitializeGLOneOffImplementation(GLImplementation impl,
   return initialized;
 }
 
-void ClearGLBindings() {
-  ClearGLBindingsPlatform();
+void ShutdownGL() {
+  ShutdownGLPlatform();
 
   SetGLImplementation(kGLImplementationNone);
   UnloadGLNativeLibraries();
