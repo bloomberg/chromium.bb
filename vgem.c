@@ -18,7 +18,7 @@ static struct supported_combination combos[2] = {
 static int vgem_init(struct driver *drv)
 {
 	drv_insert_combinations(drv, combos, ARRAY_SIZE(combos));
-	return drv_add_kms_flags(drv);
+	return 0;
 }
 
 static uint32_t vgem_resolve_format(uint32_t format)
