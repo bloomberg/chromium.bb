@@ -48,7 +48,8 @@ class TestChromotingClient : public ClientUserInterface,
   ~TestChromotingClient() override;
 
   // Starts a Chromoting connection using the specified connection setup info.
-  void StartConnection(const ConnectionSetupInfo& connection_setup_info);
+  void StartConnection(bool use_test_api_values,
+                       const ConnectionSetupInfo& connection_setup_info);
 
   // Ends the current remote connection and updates the connection state.
   void EndConnection();

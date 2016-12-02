@@ -206,6 +206,9 @@ void HostListFetcherTest::SetUp() {
   SetFakeResponse(GURL(kHostListProdRequestUrl),
                   kHostListEmptyResponse, net::HTTP_NOT_FOUND,
                   net::URLRequestStatus::FAILED);
+
+  SetFakeResponse(GURL(kHostListTestRequestUrl), kHostListEmptyResponse,
+                  net::HTTP_NOT_FOUND, net::URLRequestStatus::FAILED);
 }
 
 void HostListFetcherTest::SetFakeResponse(
@@ -228,7 +231,45 @@ TEST_F(HostListFetcherTest, RetrieveHostListFromProd) {
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
+
+  run_loop.Run();
+
+  EXPECT_EQ(hostlist.size(), kExpectedHostListSize);
+
+  HostInfo online_host_info = hostlist.at(0);
+  EXPECT_EQ(online_host_info.token_url_patterns.size(), kExpectedPatternsSize);
+  EXPECT_FALSE(online_host_info.host_id.empty());
+  EXPECT_FALSE(online_host_info.host_jid.empty());
+  EXPECT_FALSE(online_host_info.host_name.empty());
+  EXPECT_EQ(online_host_info.status, HostStatus::kHostStatusOnline);
+  EXPECT_TRUE(online_host_info.offline_reason.empty());
+  EXPECT_FALSE(online_host_info.public_key.empty());
+
+  HostInfo offline_host_info = hostlist.at(1);
+  EXPECT_TRUE(offline_host_info.token_url_patterns.empty());
+  EXPECT_FALSE(offline_host_info.host_id.empty());
+  EXPECT_FALSE(offline_host_info.host_jid.empty());
+  EXPECT_FALSE(offline_host_info.host_name.empty());
+  EXPECT_EQ(offline_host_info.status, HostStatus::kHostStatusOffline);
+  EXPECT_FALSE(offline_host_info.offline_reason.empty());
+  EXPECT_FALSE(offline_host_info.public_key.empty());
+}
+
+TEST_F(HostListFetcherTest, RetrieveHostListFromTest) {
+  SetFakeResponse(GURL(kHostListTestRequestUrl), kHostListReadyResponse,
+                  net::HTTP_OK, net::URLRequestStatus::SUCCESS);
+
+  std::vector<HostInfo> hostlist;
+
+  base::RunLoop run_loop;
+  HostListFetcher::HostlistCallback host_list_callback =
+      base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
+
+  HostListFetcher host_list_fetcher;
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListTestRequestUrl,
+                                     host_list_callback);
 
   run_loop.Run();
 
@@ -265,7 +306,8 @@ TEST_F(HostListFetcherTest, RetrieveHostListWithEmptyPatterns) {
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
 
   run_loop.Run();
 
@@ -295,7 +337,8 @@ TEST_F(HostListFetcherTest,
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
   run_loop.Run();
 
   EXPECT_EQ(hostlist.size(), kExpectedHostListSize);
@@ -329,7 +372,8 @@ TEST_F(HostListFetcherTest, RetrieveHostListNetworkError) {
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
   run_loop.Run();
 
   // If there was a network error retrieving the host list, then the host list
@@ -350,7 +394,8 @@ TEST_F(HostListFetcherTest, RetrieveHostListEmptyItemsResponse) {
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
   run_loop.Run();
 
   // If we received an empty items response, then host list should be empty.
@@ -370,7 +415,8 @@ TEST_F(HostListFetcherTest, RetrieveHostListEmptyResponse) {
       base::Bind(&OnHostlistRetrieved, run_loop.QuitClosure(), &hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, host_list_callback);
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
+                                     host_list_callback);
   run_loop.Run();
 
   // If we received an empty response, then host list should be empty.
@@ -392,7 +438,7 @@ TEST_F(HostListFetcherTest, MultipleRetrieveHostListRequests) {
                  &ready_hostlist);
 
   HostListFetcher host_list_fetcher;
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue,
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
                                      ready_host_list_callback);
 
   ready_run_loop.Run();
@@ -432,7 +478,7 @@ TEST_F(HostListFetcherTest, MultipleRetrieveHostListRequests) {
                  &empty_items_hostlist);
 
   // Re-use the same host_list_fetcher.
-  host_list_fetcher.RetrieveHostlist(kAccessTokenValue,
+  host_list_fetcher.RetrieveHostlist(kAccessTokenValue, kHostListProdRequestUrl,
                                      empty_host_list_callback);
 
   empty_items_run_loop.Run();

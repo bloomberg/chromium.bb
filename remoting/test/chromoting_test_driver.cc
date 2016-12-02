@@ -4,6 +4,7 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
+#include "base/feature_list.h"
 #include "base/files/file_path.h"
 #include "base/logging.h"
 #include "base/message_loop/message_loop.h"
@@ -25,6 +26,7 @@ const char kLoggingLevelSwitchName[] = "verbosity";
 const char kPinSwitchName[] = "pin";
 const char kRefreshTokenPathSwitchName[] = "refresh-token-path";
 const char kSingleProcessTestsSwitchName[] = "single-process-tests";
+const char kTestEnvironmentSwitchName[] = "use-test-env";
 const char kUserNameSwitchName[] = "username";
 }
 
@@ -74,6 +76,10 @@ void PrintUsage() {
          switches::kRefreshTokenPathSwitchName);
   printf("  %s: Specifies the optional logging level of the tool (0-3)."
          " [default: off]\n", switches::kLoggingLevelSwitchName);
+  printf(
+      "  %s: Specifies that the test environment APIs should be used."
+      " [default: false]\n",
+      switches::kTestEnvironmentSwitchName);
 }
 
 void PrintAuthCodeInfo() {
@@ -138,6 +144,7 @@ void PrintJsonFileInfo() {
 int main(int argc, char* argv[]) {
   base::TestSuite test_suite(argc, argv);
   base::MessageLoopForIO message_loop;
+  base::FeatureList::InitializeInstance(std::string(), std::string());
 
   if (!base::CommandLine::InitializedForCurrentProcess()) {
     if (!base::CommandLine::Init(argc, argv)) {
@@ -220,6 +227,9 @@ int main(int argc, char* argv[]) {
   VLOG(1) << "host_jid: '" << options.host_jid << "'";
 
   options.pin = command_line->GetSwitchValueASCII(switches::kPinSwitchName);
+
+  options.use_test_environment =
+      command_line->HasSwitch(switches::kTestEnvironmentSwitchName);
 
   // Create and register our global test data object. It will handle
   // retrieving an access token or host list for the user. The GTest framework

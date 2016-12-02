@@ -20,6 +20,7 @@ class FakeHostListFetcher : public HostListFetcher {
 
   // HostListFetcher interface.
   void RetrieveHostlist(const std::string& access_token,
+                        const std::string& target_url,
                         const HostlistCallback& callback) override;
 
   void set_retrieved_host_list(const std::vector<HostInfo>& host_list) {

@@ -14,6 +14,7 @@ FakeHostListFetcher::~FakeHostListFetcher() {
 }
 
 void FakeHostListFetcher::RetrieveHostlist(const std::string& access_token,
+                                           const std::string& target_url,
                                            const HostlistCallback& callback) {
   callback.Run(host_list_);
 }

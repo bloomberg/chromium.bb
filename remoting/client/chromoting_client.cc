@@ -65,10 +65,9 @@ void ChromotingClient::Start(
   host_jid_ = NormalizeJid(host_jid);
   local_capabilities_ = capabilities;
 
-  if (!protocol_config_)
+  if (!protocol_config_) {
     protocol_config_ = protocol::CandidateSessionConfig::CreateDefault();
-  if (!audio_consumer_)
-    protocol_config_->DisableAudioChannel();
+  }
 
   if (!connection_) {
     if (protocol_config_->webrtc_supported()) {
@@ -87,7 +86,11 @@ void ChromotingClient::Start(
   connection_->set_clipboard_stub(this);
   connection_->set_video_renderer(video_renderer_);
 
-  connection_->InitializeAudio(audio_decode_task_runner_, audio_consumer_);
+  if (audio_consumer_) {
+    connection_->InitializeAudio(audio_decode_task_runner_, audio_consumer_);
+  } else {
+    protocol_config_->DisableAudioChannel();
+  }
 
   session_manager_.reset(new protocol::JingleSessionManager(signal_strategy));
   session_manager_->set_protocol_config(std::move(protocol_config_));

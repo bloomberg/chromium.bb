@@ -109,7 +109,7 @@ void TestChromotingClientTest::ConnectionReady(bool ready) {
 }
 
 TEST_F(TestChromotingClientTest, StartConnectionAndDisconnect) {
-  test_chromoting_client_->StartConnection(connection_setup_info_);
+  test_chromoting_client_->StartConnection(false, connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
@@ -142,7 +142,7 @@ TEST_F(TestChromotingClientTest, StartConnectionAndDisconnect) {
 
 TEST_F(TestChromotingClientTest,
        StartConnectionThenFailWithAuthenticationError) {
-  test_chromoting_client_->StartConnection(connection_setup_info_);
+  test_chromoting_client_->StartConnection(false, connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);
@@ -162,7 +162,7 @@ TEST_F(TestChromotingClientTest,
 }
 
 TEST_F(TestChromotingClientTest, StartConnectionThenFailWithUnknownError) {
-  test_chromoting_client_->StartConnection(connection_setup_info_);
+  test_chromoting_client_->StartConnection(false, connection_setup_info_);
   EXPECT_EQ(protocol::ConnectionToHost::State::CONNECTING, connection_state_);
   EXPECT_EQ(protocol::OK, error_code_);
   EXPECT_FALSE(is_connected_to_host_);

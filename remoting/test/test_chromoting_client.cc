@@ -35,7 +35,8 @@ namespace test {
 
 namespace {
 const char kXmppHostName[] = "talk.google.com";
-const int kXmppPortNumber = 5222;
+const int kProdXmppPortNumber = 5222;
+const int kTestXmppPortNumber = 19316;
 
 // Used as the TokenFetcherCallback for App Remoting sessions.
 void FetchThirdPartyToken(
@@ -76,6 +77,7 @@ TestChromotingClient::~TestChromotingClient() {
 }
 
 void TestChromotingClient::StartConnection(
+    bool use_test_api_values,
     const ConnectionSetupInfo& connection_setup_info) {
   // Required to establish a connection to the host.
   jingle_glue::JingleThreadWrapper::EnsureForCurrentMessageLoop();
@@ -105,8 +107,9 @@ void TestChromotingClient::StartConnection(
   if (!signal_strategy_) {
     XmppSignalStrategy::XmppServerConfig xmpp_server_config;
     xmpp_server_config.host = kXmppHostName;
-    xmpp_server_config.port = kXmppPortNumber;
-    xmpp_server_config.use_tls = true;
+    xmpp_server_config.port =
+        use_test_api_values ? kTestXmppPortNumber : kProdXmppPortNumber;
+    xmpp_server_config.use_tls = !use_test_api_values;
     xmpp_server_config.username = connection_setup_info.user_name;
     xmpp_server_config.auth_token = connection_setup_info.access_token;
 

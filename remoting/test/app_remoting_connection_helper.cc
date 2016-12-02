@@ -75,9 +75,11 @@ bool AppRemotingConnectionHelper::StartConnection() {
   timer_->Start(FROM_HERE, base::TimeDelta::FromSeconds(30),
                 run_loop_->QuitClosure());
 
-  client_->StartConnection(remote_host_info.GenerateConnectionSetupInfo(
-      AppRemotingSharedData->access_token(),
-      AppRemotingSharedData->user_name()));
+  client_->StartConnection(
+      /*use_test_api_settings=*/false,
+      remote_host_info.GenerateConnectionSetupInfo(
+          AppRemotingSharedData->access_token(),
+          AppRemotingSharedData->user_name()));
 
   run_loop_->Run();
   timer_->Stop();

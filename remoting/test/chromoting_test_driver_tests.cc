@@ -7,7 +7,7 @@
 
 namespace {
 const base::TimeDelta kPinBasedMaxConnectionTimeInSeconds =
-    base::TimeDelta::FromSeconds(5);
+    base::TimeDelta::FromSeconds(10);
 }
 
 namespace remoting {

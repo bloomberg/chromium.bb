@@ -34,9 +34,7 @@ ChromotingTestDriverEnvironment::ChromotingTestDriverEnvironment(
       user_name_(options.user_name),
       pin_(options.pin),
       refresh_token_file_path_(options.refresh_token_file_path),
-      test_access_token_fetcher_(nullptr),
-      test_refresh_token_store_(nullptr),
-      test_host_list_fetcher_(nullptr) {
+      use_test_environment_(options.use_test_environment) {
   DCHECK(!user_name_.empty());
   DCHECK(!host_name_.empty());
 }
@@ -294,7 +292,10 @@ bool ChromotingTestDriverEnvironment::RetrieveHostList() {
       base::Bind(&ChromotingTestDriverEnvironment::OnHostListRetrieved,
                  base::Unretained(this), run_loop.QuitClosure());
 
-  host_list_fetcher->RetrieveHostlist(access_token_, host_list_callback);
+  host_list_fetcher->RetrieveHostlist(
+      access_token_,
+      use_test_environment_ ? kHostListTestRequestUrl : kHostListProdRequestUrl,
+      host_list_callback);
 
   run_loop.Run();
 

@@ -26,6 +26,8 @@ namespace test {
 // unittests for this class to set fake response data for these URLs.
 const char kHostListProdRequestUrl[] = "https://www.googleapis.com/"
     "chromoting/v1/@me/hosts";
+const char kHostListTestRequestUrl[] =
+    "https://www-googleapis-test.sandbox.google.com/chromoting/v1/@me/hosts";
 
 // Requests a host list from the directory service for an access token.
 // Destroying the RemoteHostInfoFetcher while a request is outstanding
@@ -45,6 +47,7 @@ class HostListFetcher : public net::URLFetcherDelegate {
   // Makes a service call to retrieve a hostlist. The
   // callback will be called once the HTTP request has completed.
   virtual void RetrieveHostlist(const std::string& access_token,
+                                const std::string& target_url,
                                 const HostlistCallback& callback);
 
  private:

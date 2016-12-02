@@ -40,6 +40,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
     std::string host_jid;
     std::string pin;
     base::FilePath refresh_token_file_path;
+    bool use_test_environment;
   };
 
   explicit ChromotingTestDriverEnvironment(const EnvironmentOptions& options);
@@ -72,6 +73,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   const std::string& host_name() const { return host_name_; }
   const std::string& pin() const { return pin_; }
   const std::string& user_name() const { return user_name_; }
+  bool use_test_environment() const { return use_test_environment_; }
   const std::vector<HostInfo>& host_list() const { return host_list_; }
   const HostInfo& host_info() const { return host_info_; }
 
@@ -125,6 +127,9 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   // Path to a JSON file containing refresh tokens.
   base::FilePath refresh_token_file_path_;
 
+  // Indicates whether the test environment APIs should be used.
+  const bool use_test_environment_;
+
   // List of remote hosts for the specified user/test-account.
   std::vector<HostInfo> host_list_;
 
@@ -132,13 +137,13 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
   HostInfo host_info_;
 
   // Access token fetcher used by TestDriverEnvironment tests.
-  remoting::test::AccessTokenFetcher* test_access_token_fetcher_;
+  remoting::test::AccessTokenFetcher* test_access_token_fetcher_ = nullptr;
 
   // RefreshTokenStore used by TestDriverEnvironment tests.
-  remoting::test::RefreshTokenStore* test_refresh_token_store_;
+  remoting::test::RefreshTokenStore* test_refresh_token_store_ = nullptr;
 
   // HostListFetcher used by TestDriverEnvironment tests.
-  remoting::test::HostListFetcher* test_host_list_fetcher_;
+  remoting::test::HostListFetcher* test_host_list_fetcher_ = nullptr;
 
   // Used for running network request tasks.
   std::unique_ptr<base::MessageLoopForIO> message_loop_;
