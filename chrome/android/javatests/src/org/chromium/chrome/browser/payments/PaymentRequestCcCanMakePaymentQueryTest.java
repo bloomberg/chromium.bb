@@ -17,20 +17,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for checking whether user can make active payment via a credit card.
+ * A payment integration test for checking whether user can make a payment via a credit card.
  * This user has a complete credit card on file.
  */
-@CommandLineFlags.Add("enable-blink-features=CanMakeActivePayment")
-public class PaymentRequestCcActivePaymentQueryTest extends PaymentRequestTestBase {
-    public PaymentRequestCcActivePaymentQueryTest() {
-        super("payment_request_active_payment_query_cc_test.html");
+@CommandLineFlags.Add("enable-blink-features=CanMakePayment")
+public class PaymentRequestCcCanMakePaymentQueryTest extends PaymentRequestTestBase {
+    public PaymentRequestCcCanMakePaymentQueryTest() {
+        super("payment_request_can_make_payment_query_cc_test.html");
     }
 
     @Override
     public void onMainActivityStarted() throws InterruptedException, ExecutionException,
             TimeoutException {
         // The user has a complete credit card on file. This is sufficient for
-        // canMakeActivePayment() to return true.
+        // canMakePayment() to return true.
         AutofillTestHelper helper = new AutofillTestHelper();
         String billingAddressId = helper.setProfile(new AutofillProfile("", "https://example.com",
                 true, "Jon Doe", "Google", "340 Main St", "CA", "Los Angeles", "", "90291", "",
@@ -42,24 +42,24 @@ public class PaymentRequestCcActivePaymentQueryTest extends PaymentRequestTestBa
 
     @MediumTest
     @Feature({"Payments"})
-    public void testCanMakeActivePayment() throws InterruptedException, ExecutionException,
+    public void testCanMakePayment() throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 
         // Repeating a query does not count against the quota.
-        clickNodeAndWait("buy", mActivePaymentQueryResponded);
+        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 
-        clickNodeAndWait("buy", mActivePaymentQueryResponded);
+        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
 
         // Different queries are throttled for a period of time.
-        clickNodeAndWait("other-buy", mActivePaymentQueryResponded);
+        clickNodeAndWait("other-buy", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"Query quota exceeded"});
 
         // Repeating the same query again does not count against the quota.
-        clickNodeAndWait("buy", mActivePaymentQueryResponded);
+        clickNodeAndWait("buy", mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
     }
 }

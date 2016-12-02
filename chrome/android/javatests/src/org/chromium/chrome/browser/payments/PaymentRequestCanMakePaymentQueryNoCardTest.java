@@ -16,20 +16,20 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 
 /**
- * A payment integration test for checking whether user can make active payment via either payment
+ * A payment integration test for checking whether user can make a payment via either payment
  * app or a credit card. This user does not have a complete credit card on file.
  */
-@CommandLineFlags.Add("enable-blink-features=CanMakeActivePayment")
-public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTestBase {
-    public PaymentRequestActivePaymentQueryNoCardTest() {
-        super("payment_request_active_payment_query_test.html");
+@CommandLineFlags.Add("enable-blink-features=CanMakePayment")
+public class PaymentRequestCanMakePaymentQueryNoCardTest extends PaymentRequestTestBase {
+    public PaymentRequestCanMakePaymentQueryNoCardTest() {
+        super("payment_request_can_make_payment_query_test.html");
     }
 
     @Override
     public void onMainActivityStarted() throws InterruptedException, ExecutionException,
             TimeoutException {
         // The user has an incomplete credit card on file. This is not sufficient for
-        // canMakeActivePayment() to return true.
+        // canMakePayment() to return true.
         new AutofillTestHelper().setCreditCard(new CreditCard("", "https://example.com", true, true,
                 "Jon Doe", "4111111111111111", "1111", "12", "2050", "visa", R.drawable.pr_visa,
                 "" /* billingAddressId */, "" /* serverId */));
@@ -39,7 +39,7 @@ public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTe
     @Feature({"Payments"})
     public void testNoBobPayInstalled() throws InterruptedException, ExecutionException,
             TimeoutException {
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -48,7 +48,7 @@ public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTe
     public void testNoInstrumentsInFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -57,7 +57,7 @@ public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTe
     public void testNoInstrumentsInSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(NO_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"false"});
     }
 
@@ -66,7 +66,7 @@ public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTe
     public void testPayViaFastBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, IMMEDIATE_RESPONSE);
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
     }
 
@@ -75,7 +75,7 @@ public class PaymentRequestActivePaymentQueryNoCardTest extends PaymentRequestTe
     public void testPayViaSlowBobPay() throws InterruptedException, ExecutionException,
             TimeoutException {
         installPaymentApp(HAVE_INSTRUMENTS, DELAYED_RESPONSE);
-        openPageAndClickBuyAndWait(mActivePaymentQueryResponded);
+        openPageAndClickBuyAndWait(mCanMakePaymentQueryResponded);
         expectResultContains(new String[]{"true"});
     }
 }

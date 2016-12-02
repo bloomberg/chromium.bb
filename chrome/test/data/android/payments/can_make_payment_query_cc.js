@@ -15,7 +15,7 @@ function buy() {  // eslint-disable-line no-unused-vars
     var request = new PaymentRequest(
         [{supportedMethods: ['visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.canMakeActivePayment()
+    request.canMakePayment()
         .then(function(result) {
           print(result);
         })
@@ -35,7 +35,7 @@ function other_buy() {  // eslint-disable-line no-unused-vars
     var request = new PaymentRequest(
         [{supportedMethods: ['mastercard']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.canMakeActivePayment()
+    request.canMakePayment()
         .then(function(result) {
           print(result);
         })

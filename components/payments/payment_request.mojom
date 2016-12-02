@@ -77,9 +77,9 @@ enum PaymentErrorReason {
   NOT_SUPPORTED
 };
 
-enum ActivePaymentQueryResult {
-  CAN_MAKE_ACTIVE_PAYMENT,
-  CANNOT_MAKE_ACTIVE_PAYMENT,
+enum CanMakePaymentQueryResult {
+  CAN_MAKE_PAYMENT,
+  CANNOT_MAKE_PAYMENT,
   QUERY_QUOTA_EXCEEDED
 };
 
@@ -90,7 +90,7 @@ interface PaymentRequestClient {
   OnError(PaymentErrorReason error);
   OnComplete();
   OnAbort(bool aborted_successfully);
-  OnCanMakeActivePayment(ActivePaymentQueryResult result);
+  OnCanMakePayment(CanMakePaymentQueryResult result);
 };
 
 struct PaymentItem {
@@ -196,5 +196,5 @@ interface PaymentRequest {
   UpdateWith(PaymentDetails details);
   Abort();
   Complete(PaymentComplete result);
-  CanMakeActivePayment();
+  CanMakePayment();
 };

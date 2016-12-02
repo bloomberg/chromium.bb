@@ -38,7 +38,7 @@
 #include <stddef.h>
 #include <utility>
 
-using payments::mojom::blink::ActivePaymentQueryResult;
+using payments::mojom::blink::CanMakePaymentQueryResult;
 using payments::mojom::blink::PaymentAddressPtr;
 using payments::mojom::blink::PaymentCurrencyAmount;
 using payments::mojom::blink::PaymentCurrencyAmountPtr;
@@ -552,18 +552,18 @@ ScriptPromise PaymentRequest::abort(ScriptState* scriptState) {
   return m_abortResolver->promise();
 }
 
-ScriptPromise PaymentRequest::canMakeActivePayment(ScriptState* scriptState) {
-  if (!m_paymentProvider.is_bound() || m_canMakeActivePaymentResolver ||
+ScriptPromise PaymentRequest::canMakePayment(ScriptState* scriptState) {
+  if (!m_paymentProvider.is_bound() || m_canMakePaymentResolver ||
       !scriptState->contextIsValid()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(InvalidStateError,
                                           "Cannot query payment request"));
   }
 
-  m_paymentProvider->CanMakeActivePayment();
+  m_paymentProvider->CanMakePayment();
 
-  m_canMakeActivePaymentResolver = ScriptPromiseResolver::create(scriptState);
-  return m_canMakeActivePaymentResolver->promise();
+  m_canMakePaymentResolver = ScriptPromiseResolver::create(scriptState);
+  return m_canMakePaymentResolver->promise();
 }
 
 bool PaymentRequest::hasPendingActivity() const {
@@ -653,7 +653,7 @@ DEFINE_TRACE(PaymentRequest) {
   visitor->trace(m_showResolver);
   visitor->trace(m_completeResolver);
   visitor->trace(m_abortResolver);
-  visitor->trace(m_canMakeActivePaymentResolver);
+  visitor->trace(m_canMakePaymentResolver);
   EventTargetWithInlineData::trace(visitor);
   ContextLifecycleObserver::trace(visitor);
 }
@@ -847,8 +847,8 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
     if (m_abortResolver)
       m_abortResolver->reject(DOMException::create(ec, message));
 
-    if (m_canMakeActivePaymentResolver)
-      m_canMakeActivePaymentResolver->reject(DOMException::create(ec, message));
+    if (m_canMakePaymentResolver)
+      m_canMakePaymentResolver->reject(DOMException::create(ec, message));
   } else {
     if (m_completeResolver)
       m_completeResolver->reject(message);
@@ -859,8 +859,8 @@ void PaymentRequest::OnError(PaymentErrorReason error) {
     if (m_abortResolver)
       m_abortResolver->reject(message);
 
-    if (m_canMakeActivePaymentResolver)
-      m_canMakeActivePaymentResolver->reject(message);
+    if (m_canMakePaymentResolver)
+      m_canMakePaymentResolver->reject(message);
   }
 
   clearResolversAndCloseMojoConnection();
@@ -887,23 +887,23 @@ void PaymentRequest::OnAbort(bool abortedSuccessfully) {
   clearResolversAndCloseMojoConnection();
 }
 
-void PaymentRequest::OnCanMakeActivePayment(ActivePaymentQueryResult result) {
-  DCHECK(m_canMakeActivePaymentResolver);
+void PaymentRequest::OnCanMakePayment(CanMakePaymentQueryResult result) {
+  DCHECK(m_canMakePaymentResolver);
 
   switch (result) {
-    case ActivePaymentQueryResult::CAN_MAKE_ACTIVE_PAYMENT:
-      m_canMakeActivePaymentResolver->resolve(true);
+    case CanMakePaymentQueryResult::CAN_MAKE_PAYMENT:
+      m_canMakePaymentResolver->resolve(true);
       break;
-    case ActivePaymentQueryResult::CANNOT_MAKE_ACTIVE_PAYMENT:
-      m_canMakeActivePaymentResolver->resolve(false);
+    case CanMakePaymentQueryResult::CANNOT_MAKE_PAYMENT:
+      m_canMakePaymentResolver->resolve(false);
       break;
-    case ActivePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
-      m_canMakeActivePaymentResolver->reject(
+    case CanMakePaymentQueryResult::QUERY_QUOTA_EXCEEDED:
+      m_canMakePaymentResolver->reject(
           DOMException::create(QuotaExceededError, "Query quota exceeded"));
       break;
   }
 
-  m_canMakeActivePaymentResolver.clear();
+  m_canMakePaymentResolver.clear();
 }
 
 void PaymentRequest::onCompleteTimeout(TimerBase*) {
@@ -916,7 +916,7 @@ void PaymentRequest::clearResolversAndCloseMojoConnection() {
   m_completeResolver.clear();
   m_showResolver.clear();
   m_abortResolver.clear();
-  m_canMakeActivePaymentResolver.clear();
+  m_canMakePaymentResolver.clear();
   if (m_clientBinding.is_bound())
     m_clientBinding.Close();
   m_paymentProvider.reset();

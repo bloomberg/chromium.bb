@@ -10,7 +10,7 @@ import org.chromium.chrome.browser.ChromeFeatureList;
 import org.chromium.content.browser.ContentViewCore;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.mojo.system.MojoException;
-import org.chromium.payments.mojom.ActivePaymentQueryResult;
+import org.chromium.payments.mojom.CanMakePaymentQueryResult;
 import org.chromium.payments.mojom.PaymentDetails;
 import org.chromium.payments.mojom.PaymentErrorReason;
 import org.chromium.payments.mojom.PaymentMethodData;
@@ -57,9 +57,9 @@ public class PaymentRequestFactory implements InterfaceFactory<PaymentRequest> {
         public void complete(int result) {}
 
         @Override
-        public void canMakeActivePayment() {
+        public void canMakePayment() {
             if (mClient != null) {
-                mClient.onCanMakeActivePayment(ActivePaymentQueryResult.CANNOT_MAKE_ACTIVE_PAYMENT);
+                mClient.onCanMakePayment(CanMakePaymentQueryResult.CANNOT_MAKE_PAYMENT);
             }
         }
 

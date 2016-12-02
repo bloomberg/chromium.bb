@@ -15,7 +15,7 @@ function buy() {  // eslint-disable-line no-unused-vars
     var request = new PaymentRequest(
         [{supportedMethods: ['https://bobpay.com', 'visa']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}});
-    request.canMakeActivePayment()
+    request.canMakePayment()
         .then(function(result) {
           print(result);
         })

@@ -32,7 +32,7 @@ class PaymentRequestImpl : payments::mojom::PaymentRequest,
   void UpdateWith(payments::mojom::PaymentDetailsPtr details) override {}
   void Abort() override {}
   void Complete(payments::mojom::PaymentComplete result) override {}
-  void CanMakeActivePayment() override {}
+  void CanMakePayment() override {}
 
   void OnError();
 

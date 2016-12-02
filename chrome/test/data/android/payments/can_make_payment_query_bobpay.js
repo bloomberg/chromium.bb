@@ -43,7 +43,7 @@ function buy() {  // eslint-disable-line no-unused-vars
     new PaymentRequest(
         [{supportedMethods: ['https://bobpay.com']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakeActivePayment()
+        .canMakePayment()
         .then(function(result) { printFirst(result); })
         .catch(function(error) { printFirst(error); });
   } catch (error) {
@@ -54,7 +54,7 @@ function buy() {  // eslint-disable-line no-unused-vars
     new PaymentRequest(
         [{supportedMethods: ['https://bobpay.com']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakeActivePayment()
+        .canMakePayment()
         .then(function(result) { printSecond(result); })
         .catch(function(error) { printSecond(error); });
   } catch (error) {
@@ -73,7 +73,7 @@ function otherBuy() {  // eslint-disable-line no-unused-vars
     new PaymentRequest(
         [{supportedMethods: ['https://bobpay.com']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakeActivePayment()
+        .canMakePayment()
         .then(function(result) { printFirst(result); })
         .catch(function(error) { printFirst(error); });
   } catch (error) {
@@ -84,7 +84,7 @@ function otherBuy() {  // eslint-disable-line no-unused-vars
     new PaymentRequest(
         [{supportedMethods: ['https://alicepay.com']}],
         {total: {label: 'Total', amount: {currency: 'USD', value: '5.00'}}})
-        .canMakeActivePayment()
+        .canMakePayment()
         .then(function(result) { printSecond(result); })
         .catch(function(error) { printSecond(error); });
   } catch (error) {
