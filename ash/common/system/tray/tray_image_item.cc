@@ -39,9 +39,7 @@ const gfx::VectorIcon& ResourceIdToVectorIcon(int resource_id) {
     case IDR_AURA_UBER_TRAY_CAPS_LOCK:
       return kSystemTrayCapsLockIcon;
     case IDR_AURA_UBER_TRAY_TRACING:
-      // TODO(tdanderson): Update the icon used for tracing or remove it from
-      // the system tray. See crbug.com/625691.
-      return kSystemMenuTimerIcon;
+      return kSystemTrayTracingIcon;
 #endif
     default:
       NOTREACHED();

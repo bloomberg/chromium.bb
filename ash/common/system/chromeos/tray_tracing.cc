@@ -16,12 +16,12 @@
 #include "ash/common/system/tray/tray_popup_utils.h"
 #include "ash/common/system/tray/tri_view.h"
 #include "ash/common/wm_shell.h"
+#include "ash/resources/vector_icons/vector_icons.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/resource/resource_bundle.h"
 #include "ui/gfx/image/image.h"
 #include "ui/gfx/paint_vector_icon.h"
-#include "ui/gfx/vector_icons_public.h"
 #include "ui/views/controls/image_view.h"
 #include "ui/views/controls/label.h"
 #include "ui/views/layout/fill_layout.h"
@@ -64,11 +64,8 @@ class DefaultTracingView : public ActionableView {
     TrayPopupItemStyle style(GetNativeTheme(),
                              TrayPopupItemStyle::FontStyle::DEFAULT_VIEW_LABEL);
     style.SetupLabel(label_);
-
-    // TODO(tdanderson): Update the icon used for tracing or remove it from
-    // the system menu. See crbug.com/625691.
-    image_->SetImage(CreateVectorIcon(gfx::VectorIconId::CODE, kMenuIconSize,
-                                      style.GetIconColor()));
+    image_->SetImage(
+        gfx::CreateVectorIcon(kSystemMenuTracingIcon, style.GetIconColor()));
   }
 
   // ActionableView:
