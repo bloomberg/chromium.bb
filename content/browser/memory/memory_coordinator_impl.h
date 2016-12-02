@@ -50,6 +50,7 @@ class CONTENT_EXPORT MemoryCoordinatorImpl : public MemoryCoordinator,
 
   MemoryMonitor* memory_monitor() { return memory_monitor_.get(); }
 
+  base::MemoryState GetGlobalMemoryState() const override;
   base::MemoryState GetCurrentMemoryState() const override;
   void SetCurrentMemoryStateForTesting(base::MemoryState memory_state) override;
 

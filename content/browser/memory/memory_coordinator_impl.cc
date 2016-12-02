@@ -188,6 +188,10 @@ void MemoryCoordinatorImpl::OnChildAdded(int render_process_id) {
   SetChildMemoryState(render_process_id, ToMojomMemoryState(current_state_));
 }
 
+base::MemoryState MemoryCoordinatorImpl::GetGlobalMemoryState() const {
+  return current_state_;
+}
+
 base::MemoryState MemoryCoordinatorImpl::GetCurrentMemoryState() const {
   // SUSPENDED state may not make sense to the browser process. Use THROTTLED
   // instead when the global state is SUSPENDED.

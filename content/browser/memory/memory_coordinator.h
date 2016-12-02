@@ -59,7 +59,15 @@ class CONTENT_EXPORT MemoryCoordinator {
   // Called when ChildMemoryCoordinator calls AddChild().
   virtual void OnChildAdded(int render_process_id) {}
 
+  // Returns the global memory state.
+  virtual base::MemoryState GetGlobalMemoryState() const;
+
+  // Returns the browser's current memory state. Note that the current state
+  // could be different from the global memory state as the browser won't be
+  // suspended.
   virtual base::MemoryState GetCurrentMemoryState() const;
+
+  // Sets the global memory state for testing.
   virtual void SetCurrentMemoryStateForTesting(base::MemoryState memory_state);
 
  protected:

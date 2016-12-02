@@ -122,7 +122,8 @@ mojom::MemoryState MemoryCoordinator::GetChildMemoryState(
 
 void MemoryCoordinator::RecordMemoryPressure(
     base::MemoryPressureMonitor::MemoryPressureLevel level) {
-  int state = static_cast<int>(GetCurrentMemoryState());
+  DCHECK(GetGlobalMemoryState() != base::MemoryState::UNKNOWN);
+  int state = static_cast<int>(GetGlobalMemoryState());
   switch (level) {
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_MODERATE:
       UMA_HISTOGRAM_ENUMERATION(
@@ -137,6 +138,10 @@ void MemoryCoordinator::RecordMemoryPressure(
     case base::MemoryPressureListener::MEMORY_PRESSURE_LEVEL_NONE:
       NOTREACHED();
   }
+}
+
+base::MemoryState MemoryCoordinator::GetGlobalMemoryState() const {
+  return base::MemoryState::UNKNOWN;
 }
 
 base::MemoryState MemoryCoordinator::GetCurrentMemoryState() const {

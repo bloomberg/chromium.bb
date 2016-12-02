@@ -72,7 +72,7 @@ static void OnTrimMemory(JNIEnv* env,
                          const base::android::JavaParamRef<jclass>& jcaller,
                          jint level) {
   DCHECK(level >= 0 && level <= kTrimMemoryLevelMax);
-  auto state = MemoryCoordinator::GetInstance()->GetCurrentMemoryState();
+  auto state = MemoryCoordinator::GetInstance()->GetGlobalMemoryState();
   switch (state) {
     case base::MemoryState::NORMAL:
       UMA_HISTOGRAM_ENUMERATION("Memory.Coordinator.TrimMemoryLevel.Normal",
