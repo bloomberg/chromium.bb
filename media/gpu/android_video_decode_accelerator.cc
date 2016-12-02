@@ -280,32 +280,31 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   client_ = client;
   config_ = config;
   codec_config_ = new CodecConfig();
-  codec_config_->codec_ = VideoCodecProfileToVideoCodec(config.profile);
-  codec_config_->initial_expected_coded_size_ =
+  codec_config_->codec = VideoCodecProfileToVideoCodec(config.profile);
+  codec_config_->initial_expected_coded_size =
       config.initial_expected_coded_size;
 
-  if (codec_config_->codec_ != kCodecVP8 &&
-      codec_config_->codec_ != kCodecVP9 &&
+  if (codec_config_->codec != kCodecVP8 && codec_config_->codec != kCodecVP9 &&
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-      codec_config_->codec_ != kCodecHEVC &&
+      codec_config_->codec != kCodecHEVC &&
 #endif
-      codec_config_->codec_ != kCodecH264) {
+      codec_config_->codec != kCodecH264) {
     DLOG(ERROR) << "Unsupported profile: " << config.profile;
     return false;
   }
 
-  if (codec_config_->codec_ == kCodecH264) {
-    codec_config_->csd0_ = config.sps;
-    codec_config_->csd1_ = config.pps;
+  if (codec_config_->codec == kCodecH264) {
+    codec_config_->csd0 = config.sps;
+    codec_config_->csd1 = config.pps;
   }
 
   // Only use MediaCodec for VP8/9 if it's likely backed by hardware
   // or if the stream is encrypted.
   if (IsMediaCodecSoftwareDecodingForbidden() &&
-      VideoCodecBridge::IsKnownUnaccelerated(codec_config_->codec_,
+      VideoCodecBridge::IsKnownUnaccelerated(codec_config_->codec,
                                              MEDIA_CODEC_DECODER)) {
     DVLOG(1) << "Initialization failed: "
-             << (codec_config_->codec_ == kCodecVP8 ? "vp8" : "vp9")
+             << (codec_config_->codec == kCodecVP8 ? "vp8" : "vp9")
              << " is not hardware accelerated";
     return false;
   }
@@ -322,7 +321,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
 
   // If we're low on resources, we may decide to defer creation of the surface
   // until the codec is actually used.
-  if (ShouldDeferSurfaceCreation(config_.surface_id, codec_config_->codec_)) {
+  if (ShouldDeferSurfaceCreation(config_.surface_id, codec_config_->codec)) {
     DCHECK(!deferred_initialization_pending_);
     // We should never be here if a SurfaceView is required.
     DCHECK_EQ(config_.surface_id, SurfaceManager::kNoSurfaceID);
@@ -366,9 +365,9 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
     return false;
   }
 
-  codec_config_->surface_ =
+  codec_config_->surface =
       picture_buffer_manager_.Initialize(config_.surface_id);
-  if (codec_config_->surface_.IsEmpty())
+  if (codec_config_->surface.IsEmpty())
     return false;
 
   if (!AVDACodecAllocator::Instance()->StartThread(this))
@@ -880,7 +879,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
 
   if (media_codec_) {
     AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type_, config_.surface_id);
+        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
     picture_buffer_manager_.CodecChanged(nullptr);
   }
 
@@ -900,7 +899,7 @@ void AndroidVideoDecodeAccelerator::ConfigureMediaCodecAsynchronously() {
     return;
   }
 
-  codec_config_->task_type_ = task_type.value();
+  codec_config_->task_type = task_type.value();
   AVDACodecAllocator::Instance()->CreateMediaCodecAsync(
       weak_this_factory_.GetWeakPtr(), codec_config_);
 }
@@ -919,7 +918,7 @@ bool AndroidVideoDecodeAccelerator::ConfigureMediaCodecSynchronously() {
     return false;
   }
 
-  codec_config_->task_type_ = task_type.value();
+  codec_config_->task_type = task_type.value();
   std::unique_ptr<VideoCodecBridge> media_codec =
       AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
   OnCodecConfigured(std::move(media_codec));
@@ -1102,7 +1101,7 @@ void AndroidVideoDecodeAccelerator::Reset() {
 
   // Some VP8 files require complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.reset(). http://crbug.com/598963.
-  if (media_codec_ && codec_config_->codec_ == kCodecVP8 &&
+  if (media_codec_ && codec_config_->codec == kCodecVP8 &&
       !bitstream_buffers_in_decoder_.empty()) {
     // Postpone ResetCodecState() after the drain.
     StartCodecDrain(DRAIN_FOR_RESET);
@@ -1140,7 +1139,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
   // Some VP8 files require a complete MediaCodec drain before we can call
   // MediaCodec.flush() or MediaCodec.release(). http://crbug.com/598963. In
   // that case, postpone ActualDestroy() until after the drain.
-  if (media_codec_ && codec_config_->codec_ == kCodecVP8) {
+  if (media_codec_ && codec_config_->codec == kCodecVP8) {
     // Clear |pending_bitstream_records_|.
     while (!pending_bitstream_records_.empty())
       pending_bitstream_records_.pop();
@@ -1162,7 +1161,7 @@ void AndroidVideoDecodeAccelerator::ActualDestroy() {
   g_avda_manager.Get().StopTimer(this);
   if (media_codec_) {
     AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type_, config_.surface_id);
+        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
   }
 
   // We no longer care about |surface_id|, in case we did before.  It's okay
@@ -1218,7 +1217,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
   state_ = SURFACE_DESTROYED;
   if (media_codec_) {
     AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-        std::move(media_codec_), codec_config_->task_type_, config_.surface_id);
+        std::move(media_codec_), codec_config_->task_type, config_.surface_id);
     picture_buffer_manager_.CodecChanged(nullptr);
   }
 
@@ -1284,8 +1283,8 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
   // is not created yet.
   DCHECK(!media_codec_);
 
-  codec_config_->media_crypto_ = std::move(media_crypto);
-  codec_config_->needs_protected_surface_ = needs_protected_surface;
+  codec_config_->media_crypto = std::move(media_crypto);
+  codec_config_->needs_protected_surface = needs_protected_surface;
 
   // After receiving |media_crypto_| we can configure MediaCodec.
   ConfigureMediaCodecAsynchronously();
@@ -1454,8 +1453,8 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
     const {
   // Prevent MediaCodec from using its internal software decoders when we have
   // more secure and up to date versions in the renderer process.
-  return !config_.is_encrypted && (codec_config_->codec_ == kCodecVP8 ||
-                                   codec_config_->codec_ == kCodecVP9);
+  return !config_.is_encrypted && (codec_config_->codec == kCodecVP8 ||
+                                   codec_config_->codec == kCodecVP9);
 }
 
 bool AndroidVideoDecodeAccelerator::UpdateSurface() {
@@ -1485,16 +1484,15 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
   }
 
   if (success) {
-    codec_config_->surface_ =
-        picture_buffer_manager_.Initialize(new_surface_id);
-    if (codec_config_->surface_.IsEmpty()) {
+    codec_config_->surface = picture_buffer_manager_.Initialize(new_surface_id);
+    if (codec_config_->surface.IsEmpty()) {
       NOTIFY_ERROR(PLATFORM_FAILURE, "Failed to switch surfaces.");
       success = false;
     }
   }
 
   if (success && media_codec_ &&
-      !media_codec_->SetSurface(codec_config_->surface_.j_surface().obj())) {
+      !media_codec_->SetSurface(codec_config_->surface.j_surface().obj())) {
     NOTIFY_ERROR(PLATFORM_FAILURE, "MediaCodec failed to switch surfaces.");
     success = false;
   }
@@ -1506,7 +1504,7 @@ bool AndroidVideoDecodeAccelerator::UpdateSurface() {
     // MediaCodec if we failed to switch the surface.
     if (media_codec_) {
       AVDACodecAllocator::Instance()->ReleaseMediaCodec(
-          std::move(media_codec_), codec_config_->task_type_,
+          std::move(media_codec_), codec_config_->task_type,
           previous_surface_id);
       picture_buffer_manager_.CodecChanged(nullptr);
     }

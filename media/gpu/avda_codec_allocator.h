@@ -48,33 +48,30 @@ class CodecConfig : public base::RefCountedThreadSafe<CodecConfig> {
  public:
   CodecConfig();
 
-  // Codec type. Used when we configure media codec.
-  VideoCodec codec_ = kUnknownVideoCodec;
-
-  // Whether encryption scheme requires to use protected surface.
-  bool needs_protected_surface_ = false;
+  VideoCodec codec = kUnknownVideoCodec;
 
   // The surface that MediaCodec is configured to output to.
-  gl::ScopedJavaSurface surface_;
+  gl::ScopedJavaSurface surface;
+  int surface_id = SurfaceManager::kNoSurfaceID;
 
-  int surface_id_ = SurfaceManager::kNoSurfaceID;
+  // The MediaCrypto that MediaCodec is configured with for an encrypted stream.
+  MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto;
 
-  // The MediaCrypto object is used in the MediaCodec.configure() in case of
-  // an encrypted stream.
-  MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto_;
+  // Whether the encryption scheme requires us to use a protected surface.
+  bool needs_protected_surface = false;
 
-  // Initial coded size.  The actual size might change at any time, so this
+  // The initial coded size. The actual size might change at any time, so this
   // is only a hint.
-  gfx::Size initial_expected_coded_size_;
+  gfx::Size initial_expected_coded_size;
 
-  // The type of allocation to use for this.  We use this to select the right
-  // thread for construction / destruction, and to decide if we should
-  // restrict the codec to be software only.
-  TaskType task_type_;
+  // The type of allocation to use for. We use this to select the right thread
+  // for construction / destruction, and to decide if we should restrict the
+  // codec to be software only.
+  TaskType task_type;
 
   // Codec specific data (SPS and PPS for H264).
-  std::vector<uint8_t> csd0_;
-  std::vector<uint8_t> csd1_;
+  std::vector<uint8_t> csd0;
+  std::vector<uint8_t> csd1;
 
  protected:
   friend class base::RefCountedThreadSafe<CodecConfig>;

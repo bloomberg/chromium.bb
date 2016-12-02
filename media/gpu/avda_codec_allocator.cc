@@ -240,20 +240,18 @@ std::unique_ptr<VideoCodecBridge> AVDACodecAllocator::CreateMediaCodecSync(
     scoped_refptr<CodecConfig> codec_config) {
   TRACE_EVENT0("media", "AVDA::CreateMediaCodecSync");
 
-  jobject media_crypto = codec_config->media_crypto_
-                             ? codec_config->media_crypto_->obj()
-                             : nullptr;
+  jobject media_crypto =
+      codec_config->media_crypto ? codec_config->media_crypto->obj() : nullptr;
 
-  // |needs_protected_surface_| implies encrypted stream.
-  DCHECK(!codec_config->needs_protected_surface_ || media_crypto);
+  // |needs_protected_surface| implies encrypted stream.
+  DCHECK(!codec_config->needs_protected_surface || media_crypto);
 
-  const bool require_software_codec = codec_config->task_type_ == SW_CODEC;
-
+  const bool require_software_codec = codec_config->task_type == SW_CODEC;
   std::unique_ptr<VideoCodecBridge> codec(VideoCodecBridge::CreateDecoder(
-      codec_config->codec_, codec_config->needs_protected_surface_,
-      codec_config->initial_expected_coded_size_,
-      codec_config->surface_.j_surface().obj(), media_crypto,
-      codec_config->csd0_, codec_config->csd1_, true, require_software_codec));
+      codec_config->codec, codec_config->needs_protected_surface,
+      codec_config->initial_expected_coded_size,
+      codec_config->surface.j_surface().obj(), media_crypto, codec_config->csd0,
+      codec_config->csd1, true, require_software_codec));
 
   return codec;
 }
@@ -262,7 +260,7 @@ void AVDACodecAllocator::CreateMediaCodecAsync(
     base::WeakPtr<AVDACodecAllocatorClient> client,
     scoped_refptr<CodecConfig> codec_config) {
   base::PostTaskAndReplyWithResult(
-      TaskRunnerFor(codec_config->task_type_).get(), FROM_HERE,
+      TaskRunnerFor(codec_config->task_type).get(), FROM_HERE,
       base::Bind(&AVDACodecAllocator::CreateMediaCodecSync,
                  base::Unretained(this), codec_config),
       base::Bind(&AVDACodecAllocatorClient::OnCodecConfigured, client));
