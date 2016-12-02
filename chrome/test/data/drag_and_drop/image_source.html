@@ -22,14 +22,11 @@
       ev.dataTransfer.effectAllowed = "copy";
       window.reportDragAndDropEvent(ev);
     }
-
-    function dragend_handler(ev) {
-      window.reportDragAndDropEvent(ev);
-    }
   </script>
 </head>
 <body>
   <img  ondragstart="dragstart_handler(event);"
-        ondragend="dragend_handler(event);"
+        ondragend="window.reportDragAndDropEvent(event);"
+        ondragleave="window.reportDragAndDropEvent(event);"
         src="/image_decoding/droids.jpg">
 </body>

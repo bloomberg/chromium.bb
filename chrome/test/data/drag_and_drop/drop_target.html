@@ -38,7 +38,9 @@
   </script>
 </head>
 <body>
-  <div ondragover="dragover_handler(event);" ondrop="drop_handler(event);">
-    <p>Use this frame as a target of a drag-n-drop</p>
+  <div ondragover="dragover_handler(event);"
+       ondrop="drop_handler(event);"
+       ondragenter="window.reportDragAndDropEvent(event);"
+    ><p>Use this frame as a target of a drag-n-drop</p>
   </div>
 </body>

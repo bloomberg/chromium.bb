@@ -1303,7 +1303,8 @@ void DOMMessageQueue::RenderProcessGone(base::TerminationStatus status) {
     case base::TERMINATION_STATUS_STILL_RUNNING:
       break;
     default:
-      message_loop_runner_->Quit();
+      if (message_loop_runner_.get())
+        message_loop_runner_->Quit();
       break;
   }
 }

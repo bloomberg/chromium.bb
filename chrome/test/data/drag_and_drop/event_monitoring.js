@@ -8,11 +8,12 @@ window.reportDragAndDropEvent = function(ev) {
     try {
       return f();
     } catch(err) {
-      return "exception: " + err.message;
+      return "Got exception: " + err.message;
     }
   }
 
-  console.log("got event: " + ev.type);
+  var msg = "Got a " + ev.type + " event from the " + window.name + " frame.";
+  console.log(msg);
 
   if (window.domAutomationController) {
     window.domAutomationController.setAutomationId(0);
