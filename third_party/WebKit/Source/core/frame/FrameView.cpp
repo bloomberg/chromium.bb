@@ -2852,6 +2852,7 @@ void FrameView::updateLifecyclePhasesInternal(
         DocumentAnimations::updateAnimations(layoutView()->document());
 
         forAllNonThrottledFrameViews([](FrameView& frameView) {
+          frameView.layoutView()->layer()->updateDescendantDependentFlags();
           frameView.layoutView()->commitPendingSelection();
         });
       }

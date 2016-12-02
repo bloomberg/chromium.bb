@@ -1772,10 +1772,17 @@ bool CompositedLayerMapping::updateOverflowControlsLayers(
   }
 
   // If the subtree is invisible, we don't actually need scrollbar layers.
-  bool invisible = m_owningLayer.subtreeIsInvisible();
-  needsHorizontalScrollbarLayer &= !invisible;
-  needsVerticalScrollbarLayer &= !invisible;
-  needsScrollCornerLayer &= !invisible;
+  // Only do this check if at least one of the bits is currently true.
+  // This is important because this method is called during the destructor
+  // of CompositedLayerMapping, which may happen during style recalc,
+  // and therefore visible content status may be invalid.
+  if (needsHorizontalScrollbarLayer || needsVerticalScrollbarLayer ||
+      needsScrollCornerLayer) {
+    bool invisible = m_owningLayer.subtreeIsInvisible();
+    needsHorizontalScrollbarLayer &= !invisible;
+    needsVerticalScrollbarLayer &= !invisible;
+    needsScrollCornerLayer &= !invisible;
+  }
 
   bool horizontalScrollbarLayerChanged = toggleScrollbarLayerIfNeeded(
       m_layerForHorizontalScrollbar, needsHorizontalScrollbarLayer,

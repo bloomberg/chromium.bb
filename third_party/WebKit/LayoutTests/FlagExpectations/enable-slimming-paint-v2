@@ -1849,9 +1849,9 @@ Bug(none) transforms/transforms-with-opacity.html [ Failure ]
 crbug.com/642401 fast/css/all-shorthand-first-letter.html [ Failure ]
 
 crbug.com/644358 compositing/gestures/gesture-tapHighlight-2-iframe-scrolled-outer-late-composite.html [ Crash ]
-crbug.com/644358 compositing/iframes/connect-compositing-iframe-delayed.html [ Crash ]
-crbug.com/644358 compositing/iframes/connect-compositing-iframe.html [ Crash ]
-crbug.com/644358 compositing/iframes/enter-compositing-iframe.html [ Crash ]
+crbug.com/644358 compositing/iframes/connect-compositing-iframe-delayed.html [ Failure ]
+crbug.com/644358 compositing/iframes/connect-compositing-iframe.html [ Failure ]
+crbug.com/644358 compositing/iframes/enter-compositing-iframe.html [ Failure ]
 crbug.com/644358 compositing/squashing/squashed-layer-loses-graphicslayer.html [ Crash ]
 crbug.com/644358 fast/forms/relayout-shifts-inner-editor.html [ Crash ]
 

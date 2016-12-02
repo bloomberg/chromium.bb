@@ -131,9 +131,8 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
     : m_hasSelfPaintingLayerDescendant(false),
       m_hasSelfPaintingLayerDescendantDirty(false),
       m_isRootLayer(layoutObject->isLayoutView()),
-      m_isVisibleContentDirty(true),
       m_hasVisibleContent(false),
-      m_isVisibleDescendantDirty(false),
+      m_needsDescendantDependentFlagsUpdate(true),
       m_hasVisibleDescendant(false),
 #if DCHECK_IS_ON()
       m_needsPositionUpdate(true),
@@ -172,12 +171,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
   updateStackingNode();
 
   m_isSelfPaintingLayer = shouldBeSelfPaintingLayer();
-
-  if (!layoutObject->slowFirstChild() && layoutObject->style()) {
-    m_isVisibleContentDirty = false;
-    m_hasVisibleContent =
-        layoutObject->style()->visibility() == EVisibility::Visible;
-  }
 
   updateScrollableArea();
 }
@@ -310,11 +303,6 @@ void PaintLayer::updateLayerPositionRecursive() {
             m_scrollableArea->existingScrollAnimator())
       scrollAnimator->updateAfterLayout();
   }
-
-  // FIXME: We should be able to remove this call because we don't care about
-  // any descendant-dependent flags, but code somewhere else is reading these
-  // flags and depending on us to update them.
-  updateDescendantDependentFlags();
 
   for (PaintLayer* child = firstChild(); child; child = child->nextSibling())
     child->updateLayerPositionRecursive();
@@ -640,28 +628,18 @@ void PaintLayer::mapRectToPaintInvalidationBacking(
 }
 
 void PaintLayer::dirtyVisibleContentStatus() {
-  m_isVisibleContentDirty = true;
-  if (parent())
-    parent()->dirtyAncestorChainVisibleDescendantStatus();
+  markAncestorChainForDescendantDependentFlagsUpdate();
   // Non-self-painting layers paint into their ancestor layer, and count as part
   // of the "visible contents" of the parent, so we need to dirty it.
   if (!isSelfPaintingLayer())
     parent()->dirtyVisibleContentStatus();
 }
 
-void PaintLayer::potentiallyDirtyVisibleContentStatus(EVisibility visibility) {
-  if (m_isVisibleContentDirty)
-    return;
-  if (hasVisibleContent() == (visibility == EVisibility::Visible))
-    return;
-  dirtyVisibleContentStatus();
-}
-
-void PaintLayer::dirtyAncestorChainVisibleDescendantStatus() {
+void PaintLayer::markAncestorChainForDescendantDependentFlagsUpdate() {
   for (PaintLayer* layer = this; layer; layer = layer->parent()) {
-    if (layer->m_isVisibleDescendantDirty)
+    if (layer->m_needsDescendantDependentFlagsUpdate)
       break;
-    layer->m_isVisibleDescendantDirty = true;
+    layer->m_needsDescendantDependentFlagsUpdate = true;
   }
 }
 
@@ -694,7 +672,7 @@ void PaintLayer::updateScrollingStateAfterCompositingChange() {
 }
 
 void PaintLayer::updateDescendantDependentFlags() {
-  if (m_isVisibleDescendantDirty) {
+  if (m_needsDescendantDependentFlagsUpdate) {
     m_hasVisibleDescendant = false;
 
     for (PaintLayer* child = firstChild(); child;
@@ -705,50 +683,47 @@ void PaintLayer::updateDescendantDependentFlags() {
         m_hasVisibleDescendant = true;
     }
 
-    m_isVisibleDescendantDirty = false;
+    m_needsDescendantDependentFlagsUpdate = false;
   }
 
-  if (m_isVisibleContentDirty) {
-    bool previouslyHasVisibleContent = m_hasVisibleContent;
-    if (layoutObject()->style()->visibility() == EVisibility::Visible) {
-      m_hasVisibleContent = true;
-    } else {
-      // layer may be hidden but still have some visible content, check for this
-      m_hasVisibleContent = false;
-      LayoutObject* r = layoutObject()->slowFirstChild();
-      while (r) {
-        if (r->style()->visibility() == EVisibility::Visible &&
-            (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
-          m_hasVisibleContent = true;
-          break;
-        }
-        LayoutObject* layoutObjectFirstChild = r->slowFirstChild();
-        if (layoutObjectFirstChild &&
-            (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
-          r = layoutObjectFirstChild;
-        } else if (r->nextSibling()) {
+  bool previouslyHasVisibleContent = m_hasVisibleContent;
+  if (layoutObject()->style()->visibility() == EVisibility::Visible) {
+    m_hasVisibleContent = true;
+  } else {
+    // layer may be hidden but still have some visible content, check for this
+    m_hasVisibleContent = false;
+    LayoutObject* r = layoutObject()->slowFirstChild();
+    while (r) {
+      if (r->style()->visibility() == EVisibility::Visible &&
+          (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
+        m_hasVisibleContent = true;
+        break;
+      }
+      LayoutObject* layoutObjectFirstChild = r->slowFirstChild();
+      if (layoutObjectFirstChild &&
+          (!r->hasLayer() || !r->enclosingLayer()->isSelfPaintingLayer())) {
+        r = layoutObjectFirstChild;
+      } else if (r->nextSibling()) {
+        r = r->nextSibling();
+      } else {
+        do {
+          r = r->parent();
+          if (r == layoutObject())
+            r = 0;
+        } while (r && !r->nextSibling());
+        if (r)
           r = r->nextSibling();
-        } else {
-          do {
-            r = r->parent();
-            if (r == layoutObject())
-              r = 0;
-          } while (r && !r->nextSibling());
-          if (r)
-            r = r->nextSibling();
-        }
       }
     }
-    m_isVisibleContentDirty = false;
+  }
 
-    if (hasVisibleContent() != previouslyHasVisibleContent) {
-      setNeedsCompositingInputsUpdate();
-      // We need to tell m_layoutObject to recheck its rect because we
-      // pretend that invisible LayoutObjects have 0x0 rects. Changing
-      // visibility therefore changes our rect and we need to visit
-      // this LayoutObject during the invalidateTreeIfNeeded walk.
-      m_layoutObject->setMayNeedPaintInvalidation();
-    }
+  if (hasVisibleContent() != previouslyHasVisibleContent) {
+    setNeedsCompositingInputsUpdate();
+    // We need to tell m_layoutObject to recheck its rect because we
+    // pretend that invisible LayoutObjects have 0x0 rects. Changing
+    // visibility therefore changes our rect and we need to visit
+    // this LayoutObject during the invalidateTreeIfNeeded walk.
+    m_layoutObject->setMayNeedPaintInvalidation();
   }
 }
 
@@ -1277,12 +1252,10 @@ void PaintLayer::addChild(PaintLayer* child, PaintLayer* beforeChild) {
   if (!child->isSelfPaintingLayer())
     dirtyVisibleContentStatus();
 
-  dirtyAncestorChainVisibleDescendantStatus();
+  markAncestorChainForDescendantDependentFlagsUpdate();
   dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
   child->setNeedsRepaint();
-
-  child->updateDescendantDependentFlags();
 }
 
 PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild) {
@@ -1321,10 +1294,8 @@ PaintLayer* PaintLayer::removeChild(PaintLayer* oldChild) {
 
   dirtyAncestorChainHasSelfPaintingLayerDescendantStatus();
 
-  oldChild->updateDescendantDependentFlags();
-
   if (oldChild->m_hasVisibleContent || oldChild->m_hasVisibleDescendant)
-    dirtyAncestorChainVisibleDescendantStatus();
+    markAncestorChainForDescendantDependentFlagsUpdate();
 
   if (oldChild->enclosingPaginationLayer())
     oldChild->clearPaginationRecursive();
@@ -3005,8 +2976,6 @@ void PaintLayer::styleDidChange(StyleDifference diff,
   // Overlay scrollbars can make this layer self-painting so we need
   // to recompute the bit once scrollbars have been updated.
   updateSelfPaintingLayer();
-
-  updateDescendantDependentFlags();
 
   updateTransform(oldStyle, layoutObject()->styleRef());
   updateFilters(oldStyle, layoutObject()->styleRef());

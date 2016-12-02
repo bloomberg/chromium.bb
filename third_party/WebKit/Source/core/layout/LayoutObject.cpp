@@ -1753,7 +1753,7 @@ void LayoutObject::styleWillChange(StyleDifference diff,
       // We might not have an enclosing layer yet because we might not be in the
       // tree.
       if (PaintLayer* layer = enclosingLayer())
-        layer->potentiallyDirtyVisibleContentStatus(newStyle.visibility());
+        layer->dirtyVisibleContentStatus();
     }
 
     if (isFloating() && (m_style->floating() != newStyle.floating())) {

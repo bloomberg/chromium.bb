@@ -315,22 +315,17 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return !hasVisibleContent() && !hasVisibleDescendant();
   }
 
-  // FIXME: hasVisibleContent() should call updateDescendantDependentFlags() if
-  // m_isVisibleContentDirty.
   bool hasVisibleContent() const {
-    DCHECK(!m_isVisibleContentDirty);
+    DCHECK(!m_needsDescendantDependentFlagsUpdate);
     return m_hasVisibleContent;
   }
 
-  // FIXME: hasVisibleDescendant() should call updateDescendantDependentFlags()
-  // if m_isVisibleDescendantDirty.
   bool hasVisibleDescendant() const {
-    DCHECK(!m_isVisibleDescendantDirty);
+    DCHECK(!m_needsDescendantDependentFlagsUpdate);
     return m_hasVisibleDescendant;
   }
 
   void dirtyVisibleContentStatus();
-  void potentiallyDirtyVisibleContentStatus(EVisibility);
 
   bool hasBoxDecorationsOrBackground() const;
   bool hasVisibleBoxDecorations() const;
@@ -1073,7 +1068,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   bool requiresScrollableArea() const { return layoutBox(); }
   void updateScrollableArea();
 
-  void dirtyAncestorChainVisibleDescendantStatus();
+  void markAncestorChainForDescendantDependentFlagsUpdate();
 
   bool attemptDirectCompositingUpdate(StyleDifference,
                                       const ComputedStyle* oldStyle);
@@ -1133,9 +1128,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 
   const unsigned m_isRootLayer : 1;
 
-  unsigned m_isVisibleContentDirty : 1;
   unsigned m_hasVisibleContent : 1;
-  unsigned m_isVisibleDescendantDirty : 1;
+  unsigned m_needsDescendantDependentFlagsUpdate : 1;
   unsigned m_hasVisibleDescendant : 1;
 
 #if DCHECK_IS_ON()
