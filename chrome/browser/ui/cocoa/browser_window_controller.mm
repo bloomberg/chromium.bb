@@ -1978,7 +1978,10 @@ willAnimateFromState:(BookmarkBar::State)oldState
 }
 
 - (BOOL)hasToolbar {
-  return [self supportsWindowFeature:Browser::FEATURE_TOOLBAR];
+  FullscreenToolbarLayout layout =
+      [[self fullscreenToolbarController] computeLayout];
+  return layout.toolbarStyle != FullscreenToolbarStyle::TOOLBAR_NONE &&
+         [self supportsWindowFeature:Browser::FEATURE_TOOLBAR];
 }
 
 - (BOOL)hasLocationBar {
