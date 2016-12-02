@@ -10,6 +10,8 @@ source_set("reading_list") {
     "reading_list_download_service.h",
     "reading_list_download_service_factory.cc",
     "reading_list_download_service_factory.h",
+    "reading_list_entry_loading_util.h",
+    "reading_list_entry_loading_util.mm",
     "reading_list_model_factory.cc",
     "reading_list_model_factory.h",
     "reading_list_web_state_observer.h",
@@ -41,6 +43,7 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "offline_url_utils_unittest.cc",
+    "reading_list_entry_loading_util_unittest.mm",
     "url_downloader_unittest.mm",
   ]
   deps = [
@@ -50,7 +53,9 @@ source_set("unit_tests") {
     "//components/reading_list/ios",
     "//ios/chrome/browser",
     "//ios/chrome/browser/dom_distiller",
+    "//ios/web",
     "//ios/web:test_support",
+    "//net",
     "//testing/gtest",
     "//url",
   ]

@@ -8,14 +8,40 @@
 #include "base/strings/stringprintf.h"
 #include "components/reading_list/ios/offline_url_utils.h"
 #include "ios/chrome/browser/chrome_url_constants.h"
+#include "net/base/url_util.h"
+
+namespace {
+const char kVirtualURLQueryParam[] = "virtualURL";
+}
 
 namespace reading_list {
 
-GURL DistilledURLForPath(const base::FilePath& distilled_path) {
+GURL DistilledURLForPath(const base::FilePath& distilled_path,
+                         const GURL& virtual_url) {
   if (distilled_path.empty()) {
     return GURL();
   }
-  return GURL(kChromeUIOfflineURL + distilled_path.value());
+  GURL page_url(kChromeUIOfflineURL);
+  GURL::Replacements replacements;
+  replacements.SetPathStr(distilled_path.value());
+  page_url = page_url.ReplaceComponents(replacements);
+  if (virtual_url.is_valid()) {
+    page_url = net::AppendQueryParameter(page_url, kVirtualURLQueryParam,
+                                         virtual_url.spec());
+  }
+  return page_url;
+}
+
+GURL VirtualURLForDistilledURL(const GURL& distilled_url) {
+  std::string virtual_url_string;
+  if (net::GetValueForKeyInQuery(distilled_url, kVirtualURLQueryParam,
+                                 &virtual_url_string)) {
+    GURL virtual_url = GURL(virtual_url_string);
+    if (virtual_url.is_valid()) {
+      return virtual_url;
+    }
+  }
+  return distilled_url;
 }
 
 GURL FileURLForDistilledURL(const GURL& distilled_url,

@@ -13,8 +13,34 @@
 // Checks the distilled URL for the page is chrome://offline/MD5/page.html;
 TEST(OfflineURLUtilsTest, DistilledURLForPathTest) {
   base::FilePath page_path("MD5/page.html");
-  GURL distilled_url = reading_list::DistilledURLForPath(page_path);
+  GURL distilled_url = reading_list::DistilledURLForPath(page_path, GURL());
   EXPECT_EQ("chrome://offline/MD5/page.html", distilled_url.spec());
+}
+
+// Checks the distilled URL for the page with an onlineURL is
+// chrome://offline/MD5/page.html?virtualURL=encorded%20URL;
+TEST(OfflineURLUtilsTest, DistilledURLForPathWithVirtualURLTest) {
+  base::FilePath page_path("MD5/page.html");
+  GURL online_url = GURL("http://foo.bar");
+  GURL distilled_url = reading_list::DistilledURLForPath(page_path, online_url);
+  EXPECT_EQ("chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F",
+            distilled_url.spec());
+}
+
+// Checks the distilled URL for the page is chrome://offline/MD5/page.html;
+TEST(OfflineURLUtilsTest, VirtualURLForDistilledURLTest) {
+  GURL distilled_url("chrome://offline/MD5/page.html");
+  GURL virtual_url = reading_list::VirtualURLForDistilledURL(distilled_url);
+  EXPECT_EQ("chrome://offline/MD5/page.html", virtual_url.spec());
+}
+
+// Checks the distilled URL for the page with an onlineURL is
+// chrome://offline/MD5/page.html?virtualURL=encorded%20URL;
+TEST(OfflineURLUtilsTest, VirtualURLForDistilledURLWithVirtualURLTest) {
+  GURL distilled_url(
+      "chrome://offline/MD5/page.html?virtualURL=http%3A%2F%2Ffoo.bar%2F");
+  GURL virtual_url = reading_list::VirtualURLForDistilledURL(distilled_url);
+  EXPECT_EQ("http://foo.bar/", virtual_url.spec());
 }
 
 // Checks the file path for chrome://offline/MD5/page.html is
