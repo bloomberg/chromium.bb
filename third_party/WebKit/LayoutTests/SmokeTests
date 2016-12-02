@@ -156,8 +156,6 @@ fast/speechsynthesis/speech-synthesis-cancel.html
 fast/sub-pixel/client-and-offset-width.html
 fast/tokenizer/entities-04.html
 fast/tokenizer/external-script-document-open.html
-fast/transforms/container-transform-crash.html
-fast/transforms/topmost-becomes-bottomost-for-scrolling.html
 fast/viewport/viewport-legacy-ordering-7.html
 fast/writing-mode/percentage-padding.html
 fast/xsl/import-non-document-node.xhtml
@@ -198,7 +196,9 @@ tables/hittesting/filltable-levels.html
 tables/hittesting/filltable-rtl.html
 transforms/2d/transform-accuracy.html
 transforms/3d/hit-testing/rotated-hit-test-with-child.html
+transforms/container-transform-crash.html
 transforms/no_transform_hit_testing.html
+transforms/topmost-becomes-bottomost-for-scrolling.html
 transitions/transition-transform-translate-calculated-length-crash.html
 userstyles/mixed-case-stylesheet.html
 userstyles/simple-stylesheet.html
