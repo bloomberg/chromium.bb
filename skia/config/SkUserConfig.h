@@ -224,6 +224,14 @@ SK_API void SkDebugf_FileLine(const char* file, int line, bool fatal,
 #   define SK_SUPPORT_LEGACY_EVAL_CUBIC
 #endif
 
+#ifndef    SK_USE_LEGACY_D50_MATRICES
+#   define SK_USE_LEGACY_D50_MATRICES
+#endif
+
+#ifndef    SK_DISABLE_COLOR_XFORM_PIPELINE
+#   define SK_DISABLE_COLOR_XFORM_PIPELINE
+#endif
+
 #ifndef    SK_SUPPORT_LEGACY_IMAGE_ENCODER_CLASS
 #   define SK_SUPPORT_LEGACY_IMAGE_ENCODER_CLASS
 #endif
