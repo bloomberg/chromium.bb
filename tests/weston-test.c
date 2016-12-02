@@ -585,8 +585,8 @@ idle_launch_client(void *data)
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *ec,
-	    int *argc, char *argv[])
+wet_module_init(struct weston_compositor *ec,
+		int *argc, char *argv[])
 {
 	struct weston_test *test;
 	struct wl_event_loop *loop;

@@ -4874,8 +4874,8 @@ handle_seat_created(struct wl_listener *listener, void *data)
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *ec,
-	    int *argc, char *argv[])
+wet_module_init(struct weston_compositor *ec,
+		int *argc, char *argv[])
 {
 	struct weston_seat *seat;
 	struct desktop_shell *shell;

@@ -761,7 +761,7 @@ weston_create_listening_socket(struct wl_display *display, const char *socket_na
 }
 
 WL_EXPORT void *
-wet_load_module(const char *name, const char *entrypoint)
+wet_load_module_entrypoint(const char *name, const char *entrypoint)
 {
 	const char *builddir = getenv("WESTON_BUILD_DIR");
 	char path[PATH_MAX];
@@ -812,14 +812,28 @@ wet_load_module(const char *name, const char *entrypoint)
 	return init;
 }
 
+
+WL_EXPORT int
+wet_load_module(struct weston_compositor *compositor,
+	        const char *name, int *argc, char *argv[])
+{
+	int (*module_init)(struct weston_compositor *ec,
+			   int *argc, char *argv[]);
+
+	module_init = wet_load_module_entrypoint(name, "wet_module_init");
+	if (!module_init)
+		return -1;
+	if (module_init(compositor, argc, argv) < 0)
+		return -1;
+	return 0;
+}
+
 static int
 load_modules(struct weston_compositor *ec, const char *modules,
 	     int *argc, char *argv[])
 {
 	const char *p, *end;
 	char buffer[256];
-	int (*module_init)(struct weston_compositor *ec,
-			   int *argc, char *argv[]);
 
 	if (modules == NULL)
 		return 0;
@@ -833,16 +847,13 @@ load_modules(struct weston_compositor *ec, const char *modules,
 			if (wet_load_xwayland(ec) < 0)
 				return -1;
 		} else {
-			module_init = wet_load_module(buffer, "module_init");
-			if (!module_init)
-				return -1;
-			if (module_init(ec, argc, argv) < 0)
+			if (wet_load_module(ec, buffer, argc, argv) < 0)
 				return -1;
 		}
+
 		p = end;
 		while (*p == ',')
 			p++;
-
 	}
 
 	return 0;

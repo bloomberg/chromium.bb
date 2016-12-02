@@ -1106,8 +1106,8 @@ share_output_binding(struct weston_keyboard *keyboard, uint32_t time, uint32_t k
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[])
+wet_module_init(struct weston_compositor *compositor,
+		int *argc, char *argv[])
 {
 	struct screen_share *ss;
 	struct weston_config *config = wet_get_config(compositor);

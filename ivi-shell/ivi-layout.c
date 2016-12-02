@@ -2120,7 +2120,9 @@ load_controller_modules(struct weston_compositor *compositor, const char *module
 		end = strchrnul(p, ',');
 		snprintf(buffer, sizeof buffer, "%.*s", (int)(end - p), p);
 
-		controller_module_init = wet_load_module(buffer, "controller_module_init");
+		controller_module_init =
+			wet_load_module_entrypoint(buffer,
+						   "controller_module_init");
 		if (!controller_module_init)
 			return -1;
 

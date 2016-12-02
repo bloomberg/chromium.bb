@@ -89,7 +89,8 @@ runtime_tests(void *data)
 }
 
 WL_EXPORT int
-module_init(struct weston_compositor *compositor, int *argc, char *argv[])
+wet_module_init(struct weston_compositor *compositor,
+		int *argc, char *argv[])
 {
 	struct wl_event_loop *loop;
 

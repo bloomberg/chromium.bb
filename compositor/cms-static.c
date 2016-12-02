@@ -91,8 +91,8 @@ cms_notifier_destroy(struct wl_listener *listener, void *data)
 
 
 WL_EXPORT int
-module_init(struct weston_compositor *ec,
-	    int *argc, char *argv[])
+wet_module_init(struct weston_compositor *ec,
+		int *argc, char *argv[])
 {
 	struct cms_static *cms;
 	struct weston_output *output;
