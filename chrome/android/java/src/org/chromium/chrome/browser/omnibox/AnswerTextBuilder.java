@@ -152,6 +152,7 @@ class AnswerTextBuilder {
      * @param density Screen density which will be used to properly size and layout images and top-
      *                aligned text.
     */
+    @SuppressWarnings("deprecation")  // Update usage of Html.fromHtml when API min is 24
     private static void appendAndStyleText(
             SpannableStringBuilder builder, SuggestionAnswer.TextField textField,
             int maxTextHeightSp, Paint.FontMetrics metrics, float density) {

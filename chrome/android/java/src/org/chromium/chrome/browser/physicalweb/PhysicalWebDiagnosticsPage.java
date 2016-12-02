@@ -47,6 +47,7 @@ public class PhysicalWebDiagnosticsPage extends BasicNativePage {
     }
 
     @Override
+    @SuppressWarnings("deprecation")  // Update usage of Html.fromHtml when API min is 24
     protected void initialize(final Activity activity, Tab tab) {
         Resources resources = activity.getResources();
         mSuccessColor = colorToHexValue(ApiCompatibilityUtils.getColor(resources,

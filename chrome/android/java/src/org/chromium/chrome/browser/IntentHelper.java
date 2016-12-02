@@ -37,6 +37,7 @@ public abstract class IntentHelper {
      * @param chooserTitle The title of the activity chooser.
      * @param fileToAttach The file name of the attachment.
      */
+    @SuppressWarnings("deprecation")  // Update usage of Html.fromHtml when API min is 24
     @CalledByNative
     static void sendEmail(Context context, String email, String subject, String body,
             String chooserTitle, String fileToAttach) {
