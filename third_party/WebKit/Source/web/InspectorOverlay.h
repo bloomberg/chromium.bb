@@ -47,8 +47,6 @@ namespace blink {
 
 class Color;
 class LocalFrame;
-class InspectorCSSAgent;
-class LayoutEditor;
 class Node;
 class Page;
 class PageOverlay;
@@ -72,9 +70,7 @@ class InspectorOverlay final
   ~InspectorOverlay() override;
   DECLARE_TRACE();
 
-  void init(InspectorCSSAgent*,
-            v8_inspector::V8InspectorSession*,
-            InspectorDOMAgent*);
+  void init(v8_inspector::V8InspectorSession*, InspectorDOMAgent*);
 
   void clear();
   void suspend();
@@ -99,12 +95,6 @@ class InspectorOverlay final
   // InspectorOverlayHost::Listener implementation.
   void overlayResumed() override;
   void overlaySteppedOver() override;
-  void overlayStartedPropertyChange(const String&) override;
-  void overlayPropertyChanged(float) override;
-  void overlayEndedPropertyChange() override;
-  void overlayClearSelection(bool) override;
-  void overlayNextSelector() override;
-  void overlayPreviousSelector() override;
 
   // InspectorDOMAgent::Client implementation.
   void hideHighlight() override;
@@ -115,7 +105,6 @@ class InspectorOverlay final
                      const InspectorHighlightConfig&) override;
   void setInspectMode(InspectorDOMAgent::SearchMode,
                       std::unique_ptr<InspectorHighlightConfig>) override;
-  void setInspectedNode(Node*) override;
 
   void highlightNode(Node*,
                      Node* eventTarget,
@@ -147,7 +136,6 @@ class InspectorOverlay final
   bool handleMouseMove(const PlatformMouseEvent&);
   bool shouldSearchForNode();
   void inspect(Node*);
-  void initializeLayoutEditorIfNeeded(Node*);
 
   Member<WebLocalFrameImpl> m_frameImpl;
   String m_pausedInDebuggerMessage;
@@ -169,8 +157,6 @@ class InspectorOverlay final
   bool m_needsUpdate;
   v8_inspector::V8InspectorSession* m_v8Session;
   Member<InspectorDOMAgent> m_domAgent;
-  Member<InspectorCSSAgent> m_cssAgent;
-  Member<LayoutEditor> m_layoutEditor;
   std::unique_ptr<PageOverlay> m_pageOverlay;
   Member<Node> m_hoveredNodeForInspectMode;
   InspectorDOMAgent::SearchMode m_inspectMode;

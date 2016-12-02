@@ -55,7 +55,6 @@
 #include "core/inspector/InspectorTaskRunner.h"
 #include "core/inspector/InspectorTracingAgent.h"
 #include "core/inspector/InspectorWorkerAgent.h"
-#include "core/inspector/LayoutEditor.h"
 #include "core/inspector/MainThreadDebugger.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/page/FocusController.h"
@@ -455,7 +454,7 @@ void WebDevToolsAgentImpl::initializeSession(int sessionId,
   }
 
   if (m_overlay)
-    m_overlay->init(cssAgent, m_session->v8Session(), m_domAgent);
+    m_overlay->init(m_session->v8Session(), m_domAgent);
 
   Platform::current()->currentThread()->addTaskObserver(this);
 }

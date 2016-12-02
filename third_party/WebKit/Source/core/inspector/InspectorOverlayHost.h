@@ -45,24 +45,12 @@ class CORE_EXPORT InspectorOverlayHost final
 
   void resume();
   void stepOver();
-  void startPropertyChange(const String&);
-  void changeProperty(float delta);
-  void endPropertyChange();
-  void clearSelection(bool commitChanges);
-  void nextSelector();
-  void previousSelector();
 
   class Listener : public GarbageCollectedMixin {
    public:
     virtual ~Listener() {}
     virtual void overlayResumed() = 0;
     virtual void overlaySteppedOver() = 0;
-    virtual void overlayStartedPropertyChange(const String&) = 0;
-    virtual void overlayPropertyChanged(float cssDelta) = 0;
-    virtual void overlayEndedPropertyChange() = 0;
-    virtual void overlayClearSelection(bool commitChanges) = 0;
-    virtual void overlayNextSelector() = 0;
-    virtual void overlayPreviousSelector() = 0;
   };
   void setListener(Listener* listener) { m_listener = listener; }
 

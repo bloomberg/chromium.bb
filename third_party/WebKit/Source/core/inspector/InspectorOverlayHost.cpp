@@ -42,36 +42,6 @@ void InspectorOverlayHost::stepOver() {
     m_listener->overlaySteppedOver();
 }
 
-void InspectorOverlayHost::startPropertyChange(const String& anchorName) {
-  if (m_listener)
-    m_listener->overlayStartedPropertyChange(anchorName);
-}
-
-void InspectorOverlayHost::changeProperty(float delta) {
-  if (m_listener)
-    m_listener->overlayPropertyChanged(delta);
-}
-
-void InspectorOverlayHost::endPropertyChange() {
-  if (m_listener)
-    m_listener->overlayEndedPropertyChange();
-}
-
-void InspectorOverlayHost::clearSelection(bool commitChanges) {
-  if (m_listener)
-    m_listener->overlayClearSelection(commitChanges);
-}
-
-void InspectorOverlayHost::nextSelector() {
-  if (m_listener)
-    m_listener->overlayNextSelector();
-}
-
-void InspectorOverlayHost::previousSelector() {
-  if (m_listener)
-    m_listener->overlayPreviousSelector();
-}
-
 DEFINE_TRACE(InspectorOverlayHost) {
   visitor->trace(m_listener);
 }

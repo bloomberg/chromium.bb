@@ -39,9 +39,7 @@
 #include "core/frame/Settings.h"
 #include "core/frame/VisualViewport.h"
 #include "core/input/EventHandler.h"
-#include "core/inspector/InspectorCSSAgent.h"
 #include "core/inspector/InspectorOverlayHost.h"
-#include "core/inspector/LayoutEditor.h"
 #include "core/layout/api/LayoutViewItem.h"
 #include "core/loader/EmptyClients.h"
 #include "core/loader/FrameLoadRequest.h"
@@ -145,8 +143,7 @@ class InspectorOverlay::InspectorOverlayChromeClient final
     toChromeClientImpl(m_client)->setCursorOverridden(false);
     toChromeClientImpl(m_client)->setCursor(cursor,
                                             m_overlay->m_frameImpl->frame());
-    bool overrideCursor = m_overlay->m_layoutEditor;
-    toChromeClientImpl(m_client)->setCursorOverridden(overrideCursor);
+    toChromeClientImpl(m_client)->setCursorOverridden(false);
   }
 
   void setToolTip(LocalFrame& frame,
@@ -198,17 +195,13 @@ DEFINE_TRACE(InspectorOverlay) {
   visitor->trace(m_overlayChromeClient);
   visitor->trace(m_overlayHost);
   visitor->trace(m_domAgent);
-  visitor->trace(m_cssAgent);
-  visitor->trace(m_layoutEditor);
   visitor->trace(m_hoveredNodeForInspectMode);
 }
 
-void InspectorOverlay::init(InspectorCSSAgent* cssAgent,
-                            v8_inspector::V8InspectorSession* v8Session,
+void InspectorOverlay::init(v8_inspector::V8InspectorSession* v8Session,
                             InspectorDOMAgent* domAgent) {
   m_v8Session = v8Session;
   m_domAgent = domAgent;
-  m_cssAgent = cssAgent;
   m_overlayHost->setListener(this);
 }
 
@@ -360,9 +353,6 @@ void InspectorOverlay::highlightNode(
 void InspectorOverlay::setInspectMode(
     InspectorDOMAgent::SearchMode searchMode,
     std::unique_ptr<InspectorHighlightConfig> highlightConfig) {
-  if (m_layoutEditor)
-    overlayClearSelection(true);
-
   m_inspectMode = searchMode;
   scheduleUpdate();
 
@@ -372,18 +362,6 @@ void InspectorOverlay::setInspectMode(
     m_hoveredNodeForInspectMode.clear();
     hideHighlight();
   }
-}
-
-void InspectorOverlay::setInspectedNode(Node* node) {
-  if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor ||
-      (m_layoutEditor && m_layoutEditor->element() == node))
-    return;
-
-  if (m_layoutEditor) {
-    m_layoutEditor->commitChanges();
-    m_layoutEditor.clear();
-  }
-  initializeLayoutEditorIfNeeded(node);
 }
 
 void InspectorOverlay::highlightQuad(
@@ -444,8 +422,6 @@ void InspectorOverlay::rebuildOverlayPage() {
   drawQuadHighlight();
   drawPausedInDebuggerMessage();
   drawViewSize();
-  if (m_layoutEditor && !m_highlightNode)
-    m_layoutEditor->rebuild();
 }
 
 static std::unique_ptr<protocol::DictionaryValue> buildObjectForSize(
@@ -679,9 +655,6 @@ void InspectorOverlay::onTimer(TimerBase*) {
 }
 
 void InspectorOverlay::clearInternal() {
-  if (m_layoutEditor)
-    m_layoutEditor.clear();
-
   if (m_overlayPage) {
     m_overlayPage->willBeDestroyed();
     m_overlayPage.clear();
@@ -698,7 +671,6 @@ void InspectorOverlay::clear() {
   clearInternal();
   m_v8Session = nullptr;
   m_domAgent.clear();
-  m_cssAgent.clear();
   m_overlayHost->setListener(nullptr);
 }
 
@@ -710,53 +682,6 @@ void InspectorOverlay::overlayResumed() {
 void InspectorOverlay::overlaySteppedOver() {
   if (m_v8Session)
     m_v8Session->stepOver();
-}
-
-void InspectorOverlay::overlayStartedPropertyChange(const String& property) {
-  DCHECK(m_layoutEditor);
-  m_layoutEditor->overlayStartedPropertyChange(property);
-}
-
-void InspectorOverlay::overlayPropertyChanged(float value) {
-  DCHECK(m_layoutEditor);
-  m_layoutEditor->overlayPropertyChanged(value);
-}
-
-void InspectorOverlay::overlayEndedPropertyChange() {
-  DCHECK(m_layoutEditor);
-  m_layoutEditor->overlayEndedPropertyChange();
-}
-
-void InspectorOverlay::overlayNextSelector() {
-  DCHECK(m_layoutEditor);
-  m_layoutEditor->nextSelector();
-}
-
-void InspectorOverlay::overlayPreviousSelector() {
-  DCHECK(m_layoutEditor);
-  m_layoutEditor->previousSelector();
-}
-
-void InspectorOverlay::overlayClearSelection(bool commitChanges) {
-  DCHECK(m_layoutEditor);
-  m_hoveredNodeForInspectMode = m_layoutEditor->element();
-
-  if (commitChanges)
-    m_layoutEditor->commitChanges();
-
-  if (m_layoutEditor) {
-    m_layoutEditor->dispose();
-    m_layoutEditor.clear();
-  }
-
-  if (m_inspectModeHighlightConfig)
-    highlightNode(m_hoveredNodeForInspectMode.get(),
-                  *m_inspectModeHighlightConfig, false);
-
-  toChromeClientImpl(m_frameImpl->frame()->host()->chromeClient())
-      .setCursorOverridden(false);
-  toChromeClientImpl(m_frameImpl->frame()->host()->chromeClient())
-      .setCursor(pointerCursor(), overlayMainFrame());
 }
 
 void InspectorOverlay::suspend() {
@@ -857,27 +782,12 @@ bool InspectorOverlay::handleTouchEvent(const PlatformTouchEvent& event) {
 }
 
 bool InspectorOverlay::shouldSearchForNode() {
-  return m_inspectMode != InspectorDOMAgent::NotSearching && !m_layoutEditor;
+  return m_inspectMode != InspectorDOMAgent::NotSearching;
 }
 
 void InspectorOverlay::inspect(Node* node) {
   if (m_domAgent)
     m_domAgent->inspect(node);
-
-  initializeLayoutEditorIfNeeded(node);
-  if (m_layoutEditor)
-    hideHighlight();
-}
-
-void InspectorOverlay::initializeLayoutEditorIfNeeded(Node* node) {
-  if (m_inspectMode != InspectorDOMAgent::ShowLayoutEditor || !node ||
-      !node->isElementNode() || !node->ownerDocument()->isActive() ||
-      !m_cssAgent || !m_domAgent)
-    return;
-  m_layoutEditor = LayoutEditor::create(toElement(node), m_cssAgent, m_domAgent,
-                                        &overlayMainFrame()->script());
-  toChromeClientImpl(m_frameImpl->frame()->host()->chromeClient())
-      .setCursorOverridden(true);
 }
 
 }  // namespace blink

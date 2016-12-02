@@ -216,12 +216,6 @@ class CORE_EXPORT InspectorCSSAgent final
   CSSStyleDeclaration* findEffectiveDeclaration(
       CSSPropertyID,
       const HeapVector<Member<CSSStyleDeclaration>>& styles);
-  Response setLayoutEditorValue(Element*,
-                                CSSStyleDeclaration*,
-                                CSSPropertyID,
-                                const String& value,
-                                bool forceImportant = false);
-  void layoutEditorItemSelected(Element*, CSSStyleDeclaration*);
   Response getLayoutTreeAndStyles(
       std::unique_ptr<protocol::Array<String>> styleWhitelist,
       std::unique_ptr<protocol::Array<protocol::CSS::LayoutTreeNode>>*

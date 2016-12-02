@@ -81,7 +81,6 @@ class CORE_EXPORT InspectorDOMAgent final
     NotSearching,
     SearchingForNormal,
     SearchingForUAShadow,
-    ShowLayoutEditor
   };
 
   class Client {
@@ -95,7 +94,6 @@ class CORE_EXPORT InspectorDOMAgent final
                                const InspectorHighlightConfig&) {}
     virtual void setInspectMode(SearchMode searchMode,
                                 std::unique_ptr<InspectorHighlightConfig>) {}
-    virtual void setInspectedNode(Node*) {}
   };
 
   static Response toResponse(ExceptionState&);

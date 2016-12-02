@@ -2116,11 +2116,32 @@ CSSStyleDeclaration* InspectorCSSAgent::findEffectiveDeclaration(
   return foundStyle ? foundStyle : styles.at(0).get();
 }
 
-Response InspectorCSSAgent::setLayoutEditorValue(Element* element,
-                                                 CSSStyleDeclaration* style,
-                                                 CSSPropertyID propertyId,
-                                                 const String& value,
-                                                 bool forceImportant) {
+Response InspectorCSSAgent::setEffectivePropertyValueForNode(
+    int nodeId,
+    const String& propertyName,
+    const String& value) {
+  Element* element = nullptr;
+  Response response = m_domAgent->assertElement(nodeId, element);
+  if (!response.isSuccess())
+    return response;
+  if (element->getPseudoId())
+    return Response::Error("Elements is pseudo");
+
+  CSSPropertyID property = cssPropertyID(propertyName);
+  if (!property)
+    return Response::Error("Invalid property name");
+
+  Document* ownerDocument = element->ownerDocument();
+  if (!ownerDocument->isActive())
+    return Response::Error("Can't edit a node from a non-active document");
+
+  CSSPropertyID propertyId = cssPropertyID(propertyName);
+  CSSStyleDeclaration* style =
+      findEffectiveDeclaration(propertyId, matchingStyles(element));
+  if (!style)
+    return Response::Error("Can't find a style to edit");
+
+  bool forceImportant = false;
   InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
   RefPtr<CSSRuleSourceData> sourceData;
   // An absence of the parent rule means that given style is an inline style.
@@ -2196,65 +2217,8 @@ Response InspectorCSSAgent::setLayoutEditorValue(Element* element,
     changeRange.start = declaration.range.start;
     changeRange.end = changeRange.start + newPropertyText.length();
   }
-  CSSStyleDeclaration* resultStyle = nullptr;
-  Response response =
-      setStyleText(inspectorStyleSheet, bodyRange, styleText, resultStyle);
-  if (!response.isSuccess())
-    return response;
-  frontend()->layoutEditorChange(
-      inspectorStyleSheet->id(),
-      inspectorStyleSheet->buildSourceRangeObject(changeRange));
-  return Response::OK();
-}
-
-void InspectorCSSAgent::layoutEditorItemSelected(Element* element,
-                                                 CSSStyleDeclaration* style) {
-  InspectorStyleSheetBase* inspectorStyleSheet = nullptr;
-  RefPtr<CSSRuleSourceData> sourceData;
-  if (style->parentRule()) {
-    InspectorStyleSheet* styleSheet = bindStyleSheet(style->parentStyleSheet());
-    inspectorStyleSheet = styleSheet;
-    sourceData = styleSheet->sourceDataForRule(style->parentRule());
-  } else {
-    InspectorStyleSheetForInlineStyle* inlineStyleSheet =
-        asInspectorStyleSheet(element);
-    inspectorStyleSheet = inlineStyleSheet;
-    sourceData = inlineStyleSheet->ruleSourceData();
-  }
-
-  if (sourceData)
-    frontend()->layoutEditorChange(inspectorStyleSheet->id(),
-                                   inspectorStyleSheet->buildSourceRangeObject(
-                                       sourceData->ruleHeaderRange));
-}
-
-Response InspectorCSSAgent::setEffectivePropertyValueForNode(
-    int nodeId,
-    const String& propertyName,
-    const String& value) {
-  // TODO: move testing from CSSAgent to layout editor.
-  Element* element = nullptr;
-  Response response = m_domAgent->assertElement(nodeId, element);
-  if (!response.isSuccess())
-    return response;
-  if (element->getPseudoId())
-    return Response::Error("Elements is pseudo");
-
-  CSSPropertyID property = cssPropertyID(propertyName);
-  if (!property)
-    return Response::Error("Invalid property name");
-
-  Document* ownerDocument = element->ownerDocument();
-  if (!ownerDocument->isActive())
-    return Response::Error("Can't edit a node from a non-active document");
-
-  CSSPropertyID propertyId = cssPropertyID(propertyName);
-  CSSStyleDeclaration* style =
-      findEffectiveDeclaration(propertyId, matchingStyles(element));
-  if (!style)
-    return Response::Error("Can't find a style to edit");
-
-  return setLayoutEditorValue(element, style, propertyId, value);
+  CSSStyleDeclaration* resultStyle;
+  return setStyleText(inspectorStyleSheet, bodyRange, styleText, resultStyle);
 }
 
 Response InspectorCSSAgent::getBackgroundColors(

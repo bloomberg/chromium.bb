@@ -1196,8 +1196,6 @@ Response InspectorDOMAgent::setInspectMode(
     searchMode = SearchingForUAShadow;
   } else if (mode == protocol::DOM::InspectModeEnum::None) {
     searchMode = NotSearching;
-  } else if (mode == protocol::DOM::InspectModeEnum::ShowLayoutEditor) {
-    searchMode = ShowLayoutEditor;
   } else {
     return Response::Error(
         String("Unknown mode \"" + mode + "\" was provided."));
@@ -2208,8 +2206,6 @@ Response InspectorDOMAgent::setInspectedNode(int nodeId) {
   if (!response.isSuccess())
     return response;
   m_v8Session->addInspectedObject(makeUnique<InspectableNode>(node));
-  if (m_client)
-    m_client->setInspectedNode(node);
   return Response::OK();
 }
 
