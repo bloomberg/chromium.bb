@@ -15,6 +15,7 @@
     <color name="dark_action_bar_color">#263238</color>
     <color name="descriptive_text_color">#646464</color>
     <color name="error_text_color">#c53929</color>
+    <color name="google_blue_200">#90caf9</color>
     <color name="google_blue_700">#3367d6</color>
     <color name="google_blue_grey_500">#607D8B</color>
     <color name="google_red_700">#c53929</color>

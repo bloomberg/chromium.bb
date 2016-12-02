@@ -1640,7 +1640,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         Download paused
       </message>
       <message name="IDS_DOWNLOAD_NOTIFICATION_PENDING" desc="Download notification to be displayed when a download has been scheduled but has not started being fetched from the network.">
-        Download pending...
+        Download pending…
       </message>
       <message name="IDS_DOWNLOAD_CANT_OPEN_FILE" desc="Toast that appears when a downloaded file can't be opened.">
         Can't open file
@@ -1790,7 +1790,7 @@ To obtain new licenses, connect to the internet and play your downloaded content
         No downloads here
       </message>
       <message name="IDS_DOWNLOAD_MANAGER_OPEN_WITH" desc="Menu item to open an item with another app.">
-        Open with...
+        Open with…
       </message>
 
       <!-- Document mode messages -->

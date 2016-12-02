@@ -112,6 +112,9 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
     /** @return Whether the item has been completely downloaded. */
     abstract boolean isComplete();
 
+    /** @return Whether the download is currently paused. */
+    abstract boolean isPaused();
+
     /** @return Whether the download can be resumed. */
     abstract boolean isResumable();
 
@@ -295,6 +298,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         }
 
         @Override
+        public boolean isPaused() {
+            return mItem.getDownloadInfo().isPaused();
+        }
+
+        @Override
         public boolean isResumable() {
             return mItem.getDownloadInfo().isResumable();
         }
@@ -308,12 +316,6 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
             }
 
             if (mItem.getDownloadInfo().state() == DownloadState.CANCELLED) {
-                return false;
-            }
-
-            // TODO(dfalcantara): Show in-progress downloads.  Adjust space calculation to account
-            //                    for making in-progress downloads visible.
-            if (mItem.getDownloadInfo().state() != DownloadState.COMPLETE) {
                 return false;
             }
 
@@ -457,6 +459,11 @@ public abstract class DownloadHistoryItemWrapper extends TimedItem {
         @Override
         public boolean isComplete() {
             return true;
+        }
+
+        @Override
+        public boolean isPaused() {
+            return false;
         }
 
         @Override

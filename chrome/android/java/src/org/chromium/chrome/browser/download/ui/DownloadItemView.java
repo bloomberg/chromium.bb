@@ -10,13 +10,19 @@ import android.graphics.Bitmap;
 import android.text.TextUtils;
 import android.text.format.Formatter;
 import android.util.AttributeSet;
+import android.view.View;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 
 import org.chromium.base.ApiCompatibilityUtils;
 import org.chromium.chrome.R;
+import org.chromium.chrome.browser.download.DownloadNotificationService;
+import org.chromium.chrome.browser.widget.TintedImageButton;
 import org.chromium.chrome.browser.widget.TintedImageView;
 import org.chromium.chrome.browser.widget.selection.SelectableItemView;
 import org.chromium.components.url_formatter.UrlFormatter;
+import org.chromium.ui.UiUtils;
 
 /**
  * The view for a downloaded item displayed in the Downloads list.
@@ -27,14 +33,27 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     private final int mIconBackgroundColorSelected;
     private final ColorStateList mWhiteTint;
 
-    private TintedImageView mIconView;
-    private TextView mFilenameView;
-    private TextView mHostnameView;
-    private TextView mFilesizeView;
-
     private DownloadHistoryItemWrapper mItem;
     private int mIconResId;
     private Bitmap mThumbnailBitmap;
+
+    // Controls common to completed and in-progress downloads.
+    private LinearLayout mLayoutContainer;
+    private TintedImageView mIconView;
+
+    // Controls for completed downloads.
+    private View mLayoutCompleted;
+    private TextView mFilenameCompletedView;
+    private TextView mHostnameView;
+    private TextView mFilesizeView;
+
+    // Controls for in-progress downloads.
+    private View mLayoutInProgress;
+    private TextView mFilenameInProgressView;
+    private TextView mDownloadStatusView;
+    private ProgressBar mProgressView;
+    private TintedImageButton mPauseResumeButton;
+    private View mCancelButton;
 
     /**
      * Constructor for inflating from XML.
@@ -53,9 +72,38 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
     protected void onFinishInflate() {
         super.onFinishInflate();
         mIconView = (TintedImageView) findViewById(R.id.icon_view);
-        mFilenameView = (TextView) findViewById(R.id.filename_view);
+        mProgressView = (ProgressBar) findViewById(R.id.download_progress_view);
+
+        mLayoutContainer = (LinearLayout) findViewById(R.id.layout_container);
+        mLayoutCompleted = findViewById(R.id.completed_layout);
+        mLayoutInProgress = findViewById(R.id.progress_layout);
+
+        mFilenameCompletedView = (TextView) findViewById(R.id.filename_completed_view);
         mHostnameView = (TextView) findViewById(R.id.hostname_view);
         mFilesizeView = (TextView) findViewById(R.id.filesize_view);
+
+        mFilenameInProgressView = (TextView) findViewById(R.id.filename_progress_view);
+        mDownloadStatusView = (TextView) findViewById(R.id.status_view);
+
+        mPauseResumeButton = (TintedImageButton) findViewById(R.id.pause_button);
+        mCancelButton = findViewById(R.id.cancel_button);
+
+        mPauseResumeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (mItem.isResumable()) {
+                    mItem.resume();
+                } else if (!mItem.isComplete()) {
+                    mItem.pause();
+                }
+            }
+        });
+        mCancelButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                mItem.cancel();
+            }
+        });
     }
 
     @Override
@@ -86,7 +134,8 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         thumbnailProvider.cancelRetrieval(this);
 
         Context context = mFilesizeView.getContext();
-        mFilenameView.setText(item.getDisplayFileName());
+        mFilenameCompletedView.setText(item.getDisplayFileName());
+        mFilenameInProgressView.setText(item.getDisplayFileName());
         mHostnameView.setText(
                 UrlFormatter.formatUrlForSecurityDisplay(item.getUrl(), false));
         mFilesizeView.setText(
@@ -95,7 +144,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         // Asynchronously grab a thumbnail for the file if it might have one.
         int fileType = item.getFilterType();
         mThumbnailBitmap = null;
-        if (fileType == DownloadFilter.FILTER_IMAGE) {
+        if (fileType == DownloadFilter.FILTER_IMAGE && item.isComplete()) {
             mThumbnailBitmap = thumbnailProvider.getThumbnail(this);
         } else {
             // TODO(dfalcantara): Get thumbnails for audio and video files when possible.
@@ -123,6 +172,27 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
         }
 
         updateIconView();
+
+        if (item.isComplete()) {
+            showLayout(mLayoutCompleted);
+        } else {
+            showLayout(mLayoutInProgress);
+            mDownloadStatusView.setText(item.getStatusString());
+
+            if (item.isResumable() || item.isPaused()) {
+                mPauseResumeButton.setImageResource(R.drawable.ic_media_control_play);
+                mPauseResumeButton.setContentDescription(
+                        getContext().getString(R.string.download_notification_resume_button));
+                mProgressView.setIndeterminate(false);
+            } else {
+                mPauseResumeButton.setImageResource(R.drawable.ic_media_control_pause);
+                mPauseResumeButton.setContentDescription(
+                        getContext().getString(R.string.download_notification_pause_button));
+                mProgressView.setIndeterminate(item.getDownloadProgress()
+                        == DownloadNotificationService.INVALID_DOWNLOAD_PERCENTAGE);
+            }
+            mProgressView.setProgress(item.getDownloadProgress());
+        }
     }
 
     /**
@@ -135,7 +205,7 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
 
     @Override
     public void onClick() {
-        if (mItem != null) mItem.open();
+        if (mItem != null && mItem.isComplete()) mItem.open();
     }
 
     @Override
@@ -157,6 +227,18 @@ public class DownloadItemView extends SelectableItemView<DownloadHistoryItemWrap
             mIconView.setBackgroundColor(mIconBackgroundColor);
             mIconView.setImageResource(mIconResId);
             mIconView.setTint(mWhiteTint);
+        }
+    }
+
+    private void showLayout(View layoutToShow) {
+        if (mLayoutCompleted != layoutToShow) UiUtils.removeViewFromParent(mLayoutCompleted);
+        if (mLayoutInProgress != layoutToShow) UiUtils.removeViewFromParent(mLayoutInProgress);
+
+        if (layoutToShow.getParent() == null) {
+            LinearLayout.LayoutParams params =
+                    new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT);
+            params.weight = 1;
+            mLayoutContainer.addView(layoutToShow, params);
         }
     }
 }

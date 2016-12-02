@@ -88,14 +88,16 @@ public class SelectableListLayout extends RelativeLayout {
      *
      * @param adapter The adapter that provides a binding from an app-specific data set to views
      *                that are displayed within the RecyclerView.
+     * @return The RecyclerView itself.
      */
-    public void initializeRecyclerView(Adapter<RecyclerView.ViewHolder> adapter) {
+    public RecyclerView initializeRecyclerView(Adapter<RecyclerView.ViewHolder> adapter) {
         mAdapter = adapter;
         mAdapter.registerAdapterDataObserver(mAdapterObserver);
 
         mRecyclerView = (RecyclerView) findViewById(R.id.recycler_view);
         mRecyclerView.setAdapter(mAdapter);
         mRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+        return mRecyclerView;
     }
 
     /**

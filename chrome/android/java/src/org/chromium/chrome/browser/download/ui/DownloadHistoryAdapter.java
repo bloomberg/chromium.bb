@@ -23,6 +23,7 @@ import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadBri
 import org.chromium.chrome.browser.offlinepages.downloads.OfflinePageDownloadItem;
 import org.chromium.chrome.browser.widget.DateDividedAdapter;
 import org.chromium.chrome.browser.widget.selection.SelectionDelegate;
+import org.chromium.content_public.browser.DownloadState;
 
 import java.util.List;
 
@@ -32,6 +33,7 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
     /** Alerted about changes to internal state. */
     static interface TestObserver {
         abstract void onDownloadItemCreated(DownloadItem item);
+        abstract void onDownloadItemUpdated(DownloadItem item);
     }
 
     private class BackendItemsImpl extends BackendItems {
@@ -237,11 +239,15 @@ public class DownloadHistoryAdapter extends DateDividedAdapter implements Downlo
         DownloadHistoryItemWrapper existingWrapper = list.get(index);
         boolean isUpdated = existingWrapper.replaceItem(item);
 
-        if (existingWrapper.isVisibleToUser(mFilter)) {
+        if (item.getDownloadInfo().state() == DownloadState.CANCELLED) {
+            // The old one is being removed.
+            filter(mFilter);
+        } else if (existingWrapper.isVisibleToUser(mFilter)) {
             if (existingWrapper.getPosition() == TimedItem.INVALID_POSITION) {
                 filter(mFilter);
             } else if (isUpdated) {
                 notifyItemChanged(existingWrapper.getPosition());
+                for (TestObserver observer : mObservers) observer.onDownloadItemUpdated(item);
             }
         }
     }

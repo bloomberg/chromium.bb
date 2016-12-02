@@ -12,6 +12,7 @@ import android.os.AsyncTask;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v4.widget.DrawerLayout.DrawerListener;
+import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar.OnMenuItemClickListener;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -197,7 +198,11 @@ public class DownloadManagerUi implements OnMenuItemClickListener {
                 R.string.download_manager_ui_empty);
 
         mHistoryAdapter = new DownloadHistoryAdapter(isOffTheRecord, parentComponent);
-        mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+        RecyclerView recyclerView = mSelectableListLayout.initializeRecyclerView(mHistoryAdapter);
+
+        // Prevent every progress update from causing a transition animation.
+        recyclerView.getItemAnimator().setChangeDuration(0);
+
         mHistoryAdapter.initialize(mBackendProvider);
         addObserver(mHistoryAdapter);
 

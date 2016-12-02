@@ -6,67 +6,149 @@
 <!-- Represents a single item in the DownloadHistoryAdapterView. --> 
 <view class="org.chromium.chrome.browser.download.ui.DownloadItemView"
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:chrome="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content" >
 
-    <RelativeLayout
-            android:id="@+id/content"
+    <!-- The end margin is not assigned because the cancel button overlaps it. --> 
+    <LinearLayout
+            android:id="@+id/layout_container"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginStart="16dp"
-            android:layout_marginEnd="16dp"
-            android:paddingTop="16dp"
-            android:paddingBottom="16dp" >
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:gravity="center_vertical"
+            android:orientation="horizontal" >
 
         <org.chromium.chrome.browser.widget.TintedImageView
                 android:id="@+id/icon_view"
                 android:layout_width="@dimen/downloads_item_icon_size"
                 android:layout_height="@dimen/downloads_item_icon_size"
-                android:layout_alignParentStart="true"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentBottom="true"
                 android:layout_marginEnd="16dp"
                 android:contentDescription="@null"
                 android:scaleType="center"
                 android:background="@color/light_active_color" />
 
-        <TextView
-                android:id="@+id/filename_view"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_alignParentTop="true"
-                android:layout_alignParentEnd="true"
-                android:layout_toEndOf="@+id/icon_view"
-                android:singleLine="true"
-                android:textColor="@color/default_text_color"
-                android:textSize="16sp" />
-
-        <TextView
-                android:id="@+id/hostname_view"
+        <!-- Shown for completed downloads. -->
+        <RelativeLayout
+                android:id="@+id/completed_layout"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_toEndOf="@+id/icon_view"
-                android:layout_toStartOf="@+id/filesize_view"
-                android:layout_below="@+id/filename_view"
-                android:layout_marginEnd="16dp"
-                android:layout_marginTop="0dp"
-                android:textAlignment="viewStart"
-                android:textColor="@color/google_grey_600"
-                android:ellipsize="start"
-                android:singleLine="true" />
-
-        <TextView
-                android:id="@+id/filesize_view"
-                android:layout_width="wrap_content"
+                android:layout_weight="1" >
+    
+            <TextView
+                    android:id="@+id/filename_completed_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentStart="true"
+                    android:paddingEnd="16dp"
+                    android:singleLine="true"
+                    android:textColor="@color/default_text_color"
+                    android:textSize="16sp" />
+    
+            <TextView
+                    android:id="@+id/hostname_view"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/filesize_view"
+                    android:layout_below="@+id/filename_completed_view"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="0dp"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/google_grey_600"
+                    android:ellipsize="start"
+                    android:singleLine="true" />
+    
+            <TextView
+                    android:id="@+id/filesize_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:layout_below="@+id/filename_completed_view"
+                    android:layout_marginTop="0dp"
+                    android:paddingEnd="16dp"
+                    android:textAlignment="viewEnd"
+                    android:textColor="@color/google_grey_600"
+                    android:singleLine="true" />
+        </RelativeLayout>
+    
+        <!-- Shown for downloads that haven't been completed. -->
+        <RelativeLayout
+                android:id="@+id/progress_layout"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_alignParentBottom="true"
-                android:layout_alignParentEnd="true"
-                android:layout_below="@+id/filename_view"
-                android:layout_marginTop="0dp"
-                android:textAlignment="viewEnd"
-                android:textColor="@color/google_grey_600"
-                android:singleLine="true" />
-    </RelativeLayout>
+                android:layout_weight="1" >
 
- </view>
+            <TextView
+                    android:id="@+id/filename_progress_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/pause_button"
+                    android:singleLine="true"
+                    android:textColor="@color/default_text_color"
+                    android:textSize="14sp" />
+
+            <ProgressBar
+                    android:id="@+id/download_progress_view"
+                    style="@style/DownloadProgressBar"
+                    android:layout_width="wrap_content"
+                    android:layout_height="2dp"
+                    android:layout_marginTop="5dp"
+                    android:layout_marginBottom="5dp"
+                    android:layout_below="@+id/filename_progress_view"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/pause_button" />
+
+            <TextView
+                    android:id="@+id/status_view"
+                    android:layout_width="wrap_content"
+                    android:layout_height="18dp"
+                    android:layout_marginEnd="16dp"
+                    android:layout_marginTop="0dp"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentStart="true"
+                    android:layout_toStartOf="@+id/pause_button"
+                    android:layout_below="@+id/download_progress_view"
+                    android:textAlignment="viewStart"
+                    android:textColor="@color/google_grey_600"
+                    android:textSize="12sp"
+                    android:ellipsize="start"
+                    android:singleLine="true" />
+
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                    android:id="@+id/pause_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_toStartOf="@+id/cancel_button"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/download_notification_pause_button"
+                    android:src="@drawable/ic_media_control_pause"
+                    chrome:tint="@color/google_grey_600" />
+
+            <org.chromium.chrome.browser.widget.TintedImageButton
+                    android:id="@+id/cancel_button"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
+                    android:layout_alignParentTop="true"
+                    android:layout_alignParentBottom="true"
+                    android:layout_alignParentEnd="true"
+                    android:padding="8dp"
+                    android:background="?attr/selectableItemBackground"
+                    android:contentDescription="@string/download_notification_cancel_button"
+                    android:src="@drawable/btn_close"
+                    chrome:tint="@color/google_grey_600" />
+        </RelativeLayout>
+    </LinearLayout>
+</view>

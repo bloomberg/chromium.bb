@@ -28,8 +28,10 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
             implements DownloadHistoryAdapter.TestObserver {
         public CallbackHelper onChangedCallback = new CallbackHelper();
         public CallbackHelper onDownloadItemCreatedCallback = new CallbackHelper();
+        public CallbackHelper onDownloadItemUpdatedCallback = new CallbackHelper();
 
         public DownloadItem createdItem;
+        public DownloadItem updatedItem;
 
         @Override
         public void onChanged() {
@@ -40,6 +42,12 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         public void onDownloadItemCreated(DownloadItem item) {
             createdItem = item;
             onDownloadItemCreatedCallback.notifyCalled();
+        }
+
+        @Override
+        public void onDownloadItemUpdated(DownloadItem item) {
+            updatedItem = item;
+            onDownloadItemUpdatedCallback.notifyCalled();
         }
     }
 
@@ -183,39 +191,39 @@ public class DownloadHistoryAdapterTest extends NativeLibraryTestBase {
         checkAdapterContents(null, item1, null, item0);
         assertEquals(11, mAdapter.getTotalDownloadSize());
 
-        // Add a third item with the same date as the second item.  Shouldn't be displayed yet
-        // because it's in progress.
+        // Add a third item with the same date as the second item.
         assertEquals(2, mObserver.onDownloadItemCreatedCallback.getCallCount());
         DownloadItem item2 = StubbedProvider.createDownloadItem(
                 2, "19840117 18:00", false, DownloadState.IN_PROGRESS);
         mAdapter.onDownloadItemCreated(item2);
         mObserver.onDownloadItemCreatedCallback.waitForCallback(2);
         assertEquals(mObserver.createdItem, item2);
-        checkAdapterContents(null, item1, null, item0);
+        checkAdapterContents(null, item2, item1, null, item0);
         assertEquals(11, mAdapter.getTotalDownloadSize());
 
         // An item with the same download ID as the second item should just update the old one,
         // but it should now be visible.
-        assertEquals(3, mObserver.onChangedCallback.getCallCount());
+        int callCount = mObserver.onDownloadItemUpdatedCallback.getCallCount();
         DownloadItem item3 = StubbedProvider.createDownloadItem(
                 2, "19840117 18:00", false, DownloadState.COMPLETE);
         mAdapter.onDownloadItemUpdated(item3);
-        mObserver.onChangedCallback.waitForCallback(3);
+        mObserver.onDownloadItemUpdatedCallback.waitForCallback(callCount);
+        assertEquals(mObserver.updatedItem, item3);
         checkAdapterContents(null, item3, item1, null, item0);
         assertEquals(111, mAdapter.getTotalDownloadSize());
 
         // Throw on a new OfflinePageItem.
-        assertEquals(4, mObserver.onChangedCallback.getCallCount());
+        callCount = mObserver.onChangedCallback.getCallCount();
         OfflinePageDownloadItem item4 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         mOfflineDelegate.observer.onItemAdded(item4);
-        mObserver.onChangedCallback.waitForCallback(4);
+        mObserver.onChangedCallback.waitForCallback(callCount);
         checkAdapterContents(null, item4, item3, item1, null, item0);
 
         // Update the existing OfflinePageItem.
-        assertEquals(5, mObserver.onChangedCallback.getCallCount());
+        callCount = mObserver.onChangedCallback.getCallCount();
         OfflinePageDownloadItem item5 = StubbedProvider.createOfflineItem(0, "19840117 19:00");
         mOfflineDelegate.observer.onItemUpdated(item5);
-        mObserver.onChangedCallback.waitForCallback(5);
+        mObserver.onChangedCallback.waitForCallback(callCount);
         checkAdapterContents(null, item5, item3, item1, null, item0);
     }
 
