@@ -34,6 +34,7 @@
 #include <colord.h>
 
 #include "compositor.h"
+#include "weston.h"
 #include "cms-helper.h"
 #include "shared/helpers.h"
 

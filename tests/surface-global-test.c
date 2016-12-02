@@ -29,6 +29,7 @@
 #include <stdint.h>
 
 #include "compositor.h"
+#include "compositor/weston.h"
 
 static void
 surface_to_from_global(void *data)

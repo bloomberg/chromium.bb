@@ -34,6 +34,7 @@
 #include "shared/string-helpers.h"
 #include "shared/zalloc.h"
 #include "compositor.h"
+#include "weston.h"
 
 struct systemd_notifier {
 	int watchdog_time;

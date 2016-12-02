@@ -1818,8 +1818,7 @@ int
 weston_backend_init(struct weston_compositor *c,
 		    struct weston_backend_config *config_base);
 int
-module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[]);
+weston_module_init(struct weston_compositor *compositor);
 
 void
 weston_transformed_coord(int width, int height,

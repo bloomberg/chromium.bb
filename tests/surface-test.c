@@ -29,6 +29,7 @@
 #include <assert.h>
 
 #include "compositor.h"
+#include "compositor/weston.h"
 
 static void
 surface_transform(void *data)

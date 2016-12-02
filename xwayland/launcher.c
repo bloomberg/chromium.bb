@@ -351,8 +351,7 @@ const struct weston_xwayland_api api = {
 extern const struct weston_xwayland_surface_api surface_api;
 
 WL_EXPORT int
-module_init(struct weston_compositor *compositor,
-	    int *argc, char *argv[])
+weston_module_init(struct weston_compositor *compositor)
 
 {
 	struct wl_display *display = compositor->wl_display;

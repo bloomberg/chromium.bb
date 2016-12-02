@@ -34,6 +34,7 @@
 #include <linux/input.h>
 
 #include "compositor.h"
+#include "compositor/weston.h"
 #include "file-util.h"
 
 static char *

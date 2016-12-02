@@ -28,6 +28,7 @@
 #include <assert.h>
 
 #include "compositor.h"
+#include "compositor/weston.h"
 #include "plugin-registry.h"
 
 static void

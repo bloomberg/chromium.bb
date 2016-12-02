@@ -64,6 +64,10 @@ void *
 wet_load_module(const char *name, const char *entrypoint);
 
 int
+module_init(struct weston_compositor *compositor,
+	    int *argc, char *argv[]);
+
+int
 wet_load_xwayland(struct weston_compositor *comp);
 
 struct text_backend;
