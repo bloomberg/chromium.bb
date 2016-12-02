@@ -39,7 +39,7 @@
 #include "core/dom/StyleEngine.h"
 #include "core/frame/FrameView.h"
 #include "core/frame/LocalFrame.h"
-#include "core/style/StyleInheritedData.h"
+#include "core/style/ComputedStyle.h"
 #include "platform/Histogram.h"
 
 namespace blink {

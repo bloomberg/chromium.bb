@@ -55,7 +55,6 @@
 #include "core/frame/HostsUsingFeatures.h"
 #include "core/html/parser/ParserSynchronizationPolicy.h"
 #include "core/page/PageVisibilityState.h"
-#include "core/style/ComputedStyle.h"
 #include "platform/Length.h"
 #include "platform/Timer.h"
 #include "platform/WebTaskRunner.h"
@@ -82,6 +81,7 @@ class CharacterData;
 class ChromeClient;
 class CompositorPendingAnimations;
 class Comment;
+class ComputedStyle;
 class ConsoleMessage;
 class ContextFeatures;
 class V0CustomElementMicrotaskRunQueue;

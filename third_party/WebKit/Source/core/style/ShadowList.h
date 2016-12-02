@@ -31,7 +31,6 @@
 #ifndef ShadowList_h
 #define ShadowList_h
 
-#include "core/style/ComputedStyle.h"
 #include "core/style/ShadowData.h"
 #include "platform/geometry/FloatRectOutsets.h"
 #include "platform/geometry/LayoutRect.h"

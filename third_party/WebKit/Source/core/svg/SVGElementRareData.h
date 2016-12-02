@@ -20,6 +20,7 @@
 #ifndef SVGElementRareData_h
 #define SVGElementRareData_h
 
+#include "core/style/ComputedStyle.h"
 #include "core/svg/SVGElement.h"
 #include "platform/heap/Handle.h"
 #include "platform/transforms/AffineTransform.h"

@@ -26,10 +26,10 @@
 
 #include "core/CoreExport.h"
 #include "core/html/HTMLElement.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 
+class ComputedStyle;
 class HTMLSelectElement;
 class HTMLDivElement;
 
@@ -48,6 +48,7 @@ class CORE_EXPORT HTMLOptGroupElement final : public HTMLElement {
 
  private:
   explicit HTMLOptGroupElement(Document&);
+  ~HTMLOptGroupElement();
 
   bool supportsFocus() const override;
   void parseAttribute(const QualifiedName&,

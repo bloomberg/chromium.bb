@@ -23,8 +23,6 @@
 #define LayoutQuote_h
 
 #include "core/layout/LayoutInline.h"
-#include "core/style/ComputedStyle.h"
-#include "core/style/ComputedStyleConstants.h"
 #include "core/style/QuotesData.h"
 
 namespace blink {

@@ -30,7 +30,6 @@
 #include "core/dom/shadow/InsertionPoint.h"
 #include "core/html/HTMLOptGroupElement.h"
 #include "core/layout/LayoutObject.h"
-#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

@@ -33,6 +33,7 @@
 #include "core/html/HTMLDivElement.h"
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/shadow/ShadowElementNames.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/StdLibExtras.h"
 #include "wtf/text/CharacterNames.h"
 
@@ -44,6 +45,13 @@ inline HTMLOptGroupElement::HTMLOptGroupElement(Document& document)
     : HTMLElement(optgroupTag, document) {
   setHasCustomStyleCallbacks();
 }
+
+// An explicit empty destructor should be in HTMLOptGroupElement.cpp, because
+// if an implicit destructor is used or an empty destructor is defined in
+// HTMLOptGroupElement.h, when including HTMLOptGroupElement.h,
+// msvc tries to expand the destructor and causes
+// a compile error because of lack of ComputedStyle definition.
+HTMLOptGroupElement::~HTMLOptGroupElement() {}
 
 HTMLOptGroupElement* HTMLOptGroupElement::create(Document& document) {
   HTMLOptGroupElement* optGroupElement = new HTMLOptGroupElement(document);

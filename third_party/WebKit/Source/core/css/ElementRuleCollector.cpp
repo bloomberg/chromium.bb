@@ -44,7 +44,7 @@
 #include "core/css/resolver/StyleRuleUsageTracker.h"
 #include "core/dom/StyleEngine.h"
 #include "core/dom/shadow/ShadowRoot.h"
-#include "core/style/StyleInheritedData.h"
+#include "core/style/ComputedStyle.h"
 
 namespace blink {
 

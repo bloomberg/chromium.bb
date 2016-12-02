@@ -31,7 +31,6 @@
 #define ShapeOutsideInfo_h
 
 #include "core/layout/shapes/Shape.h"
-#include "core/style/ComputedStyle.h"
 #include "core/style/ShapeValue.h"
 #include "platform/geometry/FloatRect.h"
 #include "platform/geometry/LayoutSize.h"

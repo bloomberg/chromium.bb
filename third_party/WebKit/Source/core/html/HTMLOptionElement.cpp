@@ -40,6 +40,7 @@
 #include "core/html/HTMLSelectElement.h"
 #include "core/html/parser/HTMLParserIdioms.h"
 #include "core/layout/LayoutTheme.h"
+#include "core/style/ComputedStyle.h"
 #include "wtf/Vector.h"
 #include "wtf/text/StringBuilder.h"
 
