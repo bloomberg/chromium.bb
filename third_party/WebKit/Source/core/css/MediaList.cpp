@@ -65,13 +65,6 @@ MediaQuerySet* MediaQuerySet::create(const String& mediaString) {
   return MediaQueryParser::parseMediaQuerySet(mediaString);
 }
 
-MediaQuerySet* MediaQuerySet::createOffMainThread(const String& mediaString) {
-  if (mediaString.isEmpty())
-    return MediaQuerySet::create();
-
-  return MediaQueryParser::parseMediaQuerySet(mediaString);
-}
-
 bool MediaQuerySet::set(const String& mediaString) {
   MediaQuerySet* result = create(mediaString);
   m_queries.swap(result->m_queries);

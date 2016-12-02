@@ -42,7 +42,6 @@ class CORE_EXPORT MediaQuerySet : public GarbageCollected<MediaQuerySet> {
  public:
   static MediaQuerySet* create() { return new MediaQuerySet(); }
   static MediaQuerySet* create(const String& mediaString);
-  static MediaQuerySet* createOffMainThread(const String& mediaString);
 
   bool set(const String&);
   bool add(const String&);

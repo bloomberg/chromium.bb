@@ -126,8 +126,7 @@ static String initiatorFor(const StringImpl* tagImpl) {
 
 static bool mediaAttributeMatches(const MediaValuesCached& mediaValues,
                                   const String& attributeValue) {
-  MediaQuerySet* mediaQueries =
-      MediaQuerySet::createOffMainThread(attributeValue);
+  MediaQuerySet* mediaQueries = MediaQuerySet::create(attributeValue);
   MediaQueryEvaluator mediaQueryEvaluator(mediaValues);
   return mediaQueryEvaluator.eval(mediaQueries);
 }
