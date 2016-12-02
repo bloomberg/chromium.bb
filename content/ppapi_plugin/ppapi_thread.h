@@ -36,10 +36,6 @@ class CommandLine;
 class FilePath;
 }
 
-namespace discardable_memory {
-class ClientDiscardableSharedMemoryManager;
-}
-
 namespace IPC {
 struct ChannelHandle;
 }
@@ -184,9 +180,6 @@ class PpapiThread : public ChildThreadImpl,
 #endif
 
   variations::ChildProcessFieldTrialSyncer field_trial_syncer_;
-
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(PpapiThread);
 };

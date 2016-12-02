@@ -77,7 +77,8 @@ TEST_F(DiscardableSharedMemoryManagerTest, AllocateForClient) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 0, &shared_handle);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -98,7 +99,8 @@ TEST_F(DiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle1;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 1, &shared_handle1);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 1,
+      &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -107,7 +109,8 @@ TEST_F(DiscardableSharedMemoryManagerTest, Purge) {
 
   base::SharedMemoryHandle shared_handle2;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 2, &shared_handle2);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 2,
+      &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -162,7 +165,8 @@ TEST_F(DiscardableSharedMemoryManagerTest, EnforceMemoryPolicy) {
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 0, &shared_handle);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   TestDiscardableSharedMemory memory(shared_handle);
@@ -200,7 +204,8 @@ TEST_F(DiscardableSharedMemoryManagerTest,
 
   base::SharedMemoryHandle shared_handle1;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 1, &shared_handle1);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 1,
+      &shared_handle1);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle1));
 
   TestDiscardableSharedMemory memory1(shared_handle1);
@@ -209,7 +214,8 @@ TEST_F(DiscardableSharedMemoryManagerTest,
 
   base::SharedMemoryHandle shared_handle2;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 2, &shared_handle2);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 2,
+      &shared_handle2);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle2));
 
   TestDiscardableSharedMemory memory2(shared_handle2);
@@ -263,7 +269,8 @@ TEST_F(DiscardableSharedMemoryManagerScheduleEnforceMemoryPolicyTest,
 
   base::SharedMemoryHandle shared_handle;
   manager_->AllocateLockedDiscardableSharedMemoryForClient(
-      kInvalidUniqueID, kDataSize, 0, &shared_handle);
+      base::GetCurrentProcessHandle(), kInvalidUniqueID, kDataSize, 0,
+      &shared_handle);
   ASSERT_TRUE(base::SharedMemory::IsHandleValid(shared_handle));
 
   // Set the memory limit to a value that will require EnforceMemoryPolicy()

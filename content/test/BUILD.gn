@@ -890,6 +890,7 @@ test("content_browsertests") {
     # These tests depend on single process mode, which is disabled
     # in official builds.
     sources += [
+      "../child/child_thread_impl_browsertest.cc",
       "../renderer/browser_render_view_browsertest.cc",
       "../renderer/dom_serializer_browsertest.cc",
       "../renderer/resource_fetcher_browsertest.cc",

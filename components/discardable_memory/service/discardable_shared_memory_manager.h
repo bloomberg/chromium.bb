@@ -27,7 +27,7 @@
 #include "base/threading/thread_task_runner_handle.h"
 #include "base/trace_event/memory_dump_provider.h"
 #include "components/discardable_memory/common/discardable_memory_export.h"
-#include "components/discardable_memory/public/interfaces/discardable_shared_memory_manager.mojom.h"
+#include "components/discardable_memory/common/discardable_shared_memory_id.h"
 
 namespace discardable_memory {
 
@@ -44,14 +44,8 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   DiscardableSharedMemoryManager();
   ~DiscardableSharedMemoryManager() override;
 
-  // Create a sigleton instance.
-  static DiscardableSharedMemoryManager* CreateInstance();
-
   // Returns a singleton instance.
-  static DiscardableSharedMemoryManager* GetInstance();
-
-  // Bind the manager to a mojo interface request.
-  void Bind(mojom::DiscardableSharedMemoryManagerRequest request);
+  static DiscardableSharedMemoryManager* current();
 
   // Overridden from base::DiscardableMemoryAllocator:
   std::unique_ptr<base::DiscardableMemory> AllocateLockedDiscardableMemory(
@@ -61,17 +55,20 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   bool OnMemoryDump(const base::trace_event::MemoryDumpArgs& args,
                     base::trace_event::ProcessMemoryDump* pmd) override;
 
+  // TODO(penghuang): Get ride of the |process_handle| when we switch to mojo.
   // This allocates a discardable memory segment for |process_handle|.
   // A valid shared memory handle is returned on success.
   void AllocateLockedDiscardableSharedMemoryForClient(
+      base::ProcessHandle process_handle,
       int client_id,
       size_t size,
-      int32_t id,
+      DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
 
   // Call this to notify the manager that client process associated with
   // |client_id| has deleted discardable memory segment with |id|.
-  void ClientDeletedDiscardableSharedMemory(int32_t id, int client_id);
+  void ClientDeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
+                                            int client_id);
 
   // Call this to notify the manager that client associated with |client_id|
   // has been removed. The manager will use this to release memory segments
@@ -114,12 +111,15 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   // base::MemoryCoordinatorClient implementation:
   void OnMemoryStateChange(base::MemoryState state) override;
 
+  // TODO(penghuang): Get ride of the |process_handle| when we switch to mojo.
   void AllocateLockedDiscardableSharedMemory(
+      base::ProcessHandle process_handle,
       int client_id,
       size_t size,
-      int32_t id,
+      DiscardableSharedMemoryId id,
       base::SharedMemoryHandle* shared_memory_handle);
-  void DeletedDiscardableSharedMemory(int32_t id, int client_id);
+  void DeletedDiscardableSharedMemory(DiscardableSharedMemoryId id,
+                                      int client_id);
   void OnMemoryPressure(
       base::MemoryPressureListener::MemoryPressureLevel memory_pressure_level);
   void ReduceMemoryUsageUntilWithinMemoryLimit();
@@ -131,16 +131,15 @@ class DISCARDABLE_MEMORY_EXPORT DiscardableSharedMemoryManager
   virtual base::Time Now() const;
   virtual void ScheduleEnforceMemoryPolicy();
 
-  int32_t next_client_id_;
-
   base::Lock lock_;
-  using MemorySegmentMap =
-      base::hash_map<int32_t, scoped_refptr<MemorySegment>>;
-  using ClientMap = base::hash_map<int, MemorySegmentMap>;
+  typedef base::hash_map<DiscardableSharedMemoryId,
+                         scoped_refptr<MemorySegment>>
+      MemorySegmentMap;
+  typedef base::hash_map<int, MemorySegmentMap> ClientMap;
   ClientMap clients_;
   // Note: The elements in |segments_| are arranged in such a way that they form
   // a heap. The LRU memory segment always first.
-  using MemorySegmentVector = std::vector<scoped_refptr<MemorySegment>>;
+  typedef std::vector<scoped_refptr<MemorySegment>> MemorySegmentVector;
   MemorySegmentVector segments_;
   size_t default_memory_limit_;
   size_t memory_limit_;

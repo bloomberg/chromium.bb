@@ -75,10 +75,6 @@ class CompositorFrameSink;
 class TaskGraphRunner;
 }
 
-namespace discardable_memory {
-class ClientDiscardableSharedMemoryManager;
-}
-
 namespace gpu {
 class GpuChannelHost;
 }
@@ -267,11 +263,6 @@ class CONTENT_EXPORT RenderThreadImpl
   void set_layout_test_dependencies(
       std::unique_ptr<LayoutTestDependencies> deps) {
     layout_test_deps_ = std::move(deps);
-  }
-
-  discardable_memory::ClientDiscardableSharedMemoryManager*
-  GetDiscardableSharedMemoryManagerForTest() {
-    return discardable_shared_memory_manager_.get();
   }
 
   RendererBlinkPlatformImpl* blink_platform_impl() const {
@@ -560,9 +551,6 @@ class CONTENT_EXPORT RenderThreadImpl
       int routing_id);
 
   void OnRendererInterfaceRequest(mojom::RendererAssociatedRequest request);
-
-  std::unique_ptr<discardable_memory::ClientDiscardableSharedMemoryManager>
-      discardable_shared_memory_manager_;
 
   // These objects live solely on the render thread.
   std::unique_ptr<AppCacheDispatcher> appcache_dispatcher_;

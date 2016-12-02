@@ -20,6 +20,7 @@
 #include "base/strings/string16.h"
 #include "build/build_config.h"
 #include "cc/resources/shared_bitmap_manager.h"
+#include "components/discardable_memory/service/discardable_shared_memory_manager.h"
 #include "content/common/cache_storage/cache_storage_types.h"
 #include "content/common/host_shared_bitmap_manager.h"
 #include "content/common/render_message_filter.mojom.h"
@@ -154,6 +155,20 @@ class CONTENT_EXPORT RenderMessageFilter
                                const cc::SharedBitmapId& id);
   void OnDeletedSharedBitmap(const cc::SharedBitmapId& id);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
+
+  // Browser side discardable shared memory allocation.
+  void AllocateLockedDiscardableSharedMemoryOnFileThread(
+      uint32_t size,
+      discardable_memory::DiscardableSharedMemoryId id,
+      IPC::Message* reply_message);
+  void OnAllocateLockedDiscardableSharedMemory(
+      uint32_t size,
+      discardable_memory::DiscardableSharedMemoryId id,
+      IPC::Message* reply_message);
+  void DeletedDiscardableSharedMemoryOnFileThread(
+      discardable_memory::DiscardableSharedMemoryId id);
+  void OnDeletedDiscardableSharedMemory(
+      discardable_memory::DiscardableSharedMemoryId id);
 
 #if defined(OS_LINUX)
   void SetThreadPriorityOnFileThread(base::PlatformThreadId ns_tid,

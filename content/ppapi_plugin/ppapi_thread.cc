@@ -48,7 +48,6 @@
 #include "ppapi/proxy/plugin_message_filter.h"
 #include "ppapi/proxy/ppapi_messages.h"
 #include "ppapi/proxy/resource_reply_thread_registrar.h"
-#include "services/service_manager/public/cpp/interface_provider.h"
 #include "third_party/WebKit/public/web/WebKit.h"
 #include "ui/base/ui_base_switches.h"
 
@@ -132,14 +131,8 @@ PpapiThread::PpapiThread(const base::CommandLine& command_line, bool is_broker)
   // In single process, browser main loop set up the discardable memory
   // allocator.
   if (!command_line.HasSwitch(switches::kSingleProcess)) {
-    discardable_memory::mojom::DiscardableSharedMemoryManagerPtr manager_ptr;
-    ChildThread::Get()->GetRemoteInterfaces()->GetInterface(
-        mojo::GetProxy(&manager_ptr));
-    discardable_shared_memory_manager_ = base::MakeUnique<
-        discardable_memory::ClientDiscardableSharedMemoryManager>(
-        std::move(manager_ptr), GetIOTaskRunner());
     base::DiscardableMemoryAllocator::SetInstance(
-        discardable_shared_memory_manager_.get());
+        ChildThreadImpl::discardable_shared_memory_manager());
   }
   field_trial_syncer_.InitFieldTrialObserving(command_line,
                                               switches::kSingleProcess);
