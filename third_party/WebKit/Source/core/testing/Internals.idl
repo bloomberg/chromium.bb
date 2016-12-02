@@ -26,7 +26,6 @@
 
 [
     DoNotCheckConstants,
-    ConstructorCallWith=ScriptState,
 ] interface Internals {
     DOMString address(Node node);
 
