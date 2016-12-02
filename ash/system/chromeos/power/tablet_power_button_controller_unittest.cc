@@ -61,6 +61,9 @@ class TabletPowerButtonControllerTest : public AshTestBase {
                              ->tablet_power_button_controller_for_test();
     test_api_ = base::MakeUnique<TabletPowerButtonController::TestApi>(
         tablet_controller_);
+    tick_clock_ = new base::SimpleTestTickClock;
+    tablet_controller_->SetTickClockForTesting(
+        std::unique_ptr<base::TickClock>(tick_clock_));
     generator_ = &AshTestBase::GetEventGenerator();
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
     EXPECT_FALSE(GetBacklightsForcedOff());
@@ -115,6 +118,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   LockStateController* lock_state_controller_;      // Not owned.
   TabletPowerButtonController* tablet_controller_;  // Not owned.
   std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
+  base::SimpleTestTickClock* tick_clock_;  // Not owned.
   ui::test::EventGenerator* generator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
@@ -210,13 +214,10 @@ TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenScreenIsIdleOff) {
   EXPECT_FALSE(GetBacklightsForcedOff());
 }
 
-// Tests tapping power button when device is suspended.
-TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenSuspended) {
-  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock;
-  // |tick_clock| owned by |tablet_controller_|.
-  tablet_controller_->SetTickClockForTesting(
-      std::unique_ptr<base::TickClock>(tick_clock));
-
+// Tests tapping power button when device is suspended without backlights forced
+// off.
+TEST_F(TabletPowerButtonControllerTest,
+       TappingPowerButtonWhenSuspendedWithoutBacklightsForcedOff) {
   power_manager_client_->SendSuspendImminent();
   power_manager_client_->SendBrightnessChanged(0, false);
   // There is a power button pressed here, but PowerButtonEvent is sent later.
@@ -225,16 +226,48 @@ TEST_F(TabletPowerButtonControllerTest, TappingPowerButtonWhenSuspended) {
 
   // Send the power button event after a short delay and check that it is
   // ignored.
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(500));
-  power_manager_client_->SendPowerButtonEvent(true, tick_clock->NowTicks());
-  power_manager_client_->SendPowerButtonEvent(false, tick_clock->NowTicks());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
   EXPECT_FALSE(GetBacklightsForcedOff());
 
   // Send the power button event after a longer delay and check that it is not
   // ignored.
-  tick_clock->Advance(base::TimeDelta::FromMilliseconds(1600));
-  power_manager_client_->SendPowerButtonEvent(true, tick_clock->NowTicks());
-  power_manager_client_->SendPowerButtonEvent(false, tick_clock->NowTicks());
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+}
+
+// Tests tapping power button when device is suspended with backlights forced
+// off.
+TEST_F(TabletPowerButtonControllerTest,
+       TappingPowerButtonWhenSuspendedWithBacklightsForcedOff) {
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+  power_manager_client_->SendSuspendImminent();
+  // There is a power button pressed here, but PowerButtonEvent is sent later.
+  // Because of backlights forced off, resuming system will not restore
+  // brightness.
+  power_manager_client_->SendSuspendDone();
+
+  // Send the power button event after a short delay and check that it is
+  // ignored. But if backlights are forced off, stop forcing off.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(GetBacklightsForcedOff());
+
+  // Send the power button event after a longer delay and check that it is not
+  // ignored.
+  tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
+  power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  power_manager_client_->SendBrightnessChanged(0, false);
   EXPECT_TRUE(GetBacklightsForcedOff());
 }
 

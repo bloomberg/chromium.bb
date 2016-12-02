@@ -98,6 +98,10 @@ void TabletPowerButtonController::OnPowerButtonEvent(
   // don't turn the screen off in response to the events.
   if (timestamp - last_resume_time_ <=
       base::TimeDelta::FromMilliseconds(kIgnorePowerButtonAfterResumeMs)) {
+    // If backlights are forced off, stop forcing off because resuming system
+    // doesn't handle this.
+    if (down && backlights_forced_off_)
+      SetBacklightsForcedOff(false);
     return;
   }
 
