@@ -174,14 +174,14 @@ TEST(PageTransitionUtilTest, TestMaskOutPageTransition) {
   ui::PageTransition page_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_CLIENT_REDIRECT);
   EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            MaskOutPageTransitionForTesting(
-                page_transition, ui::PAGE_TRANSITION_CLIENT_REDIRECT));
+            MaskOutPageTransition(page_transition,
+                                  ui::PAGE_TRANSITION_CLIENT_REDIRECT));
 
   page_transition = ui::PageTransitionFromInt(
       ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_SERVER_REDIRECT);
   EXPECT_EQ(ui::PAGE_TRANSITION_LINK,
-            MaskOutPageTransitionForTesting(
-                page_transition, ui::PAGE_TRANSITION_SERVER_REDIRECT));
+            MaskOutPageTransition(page_transition,
+                                  ui::PAGE_TRANSITION_SERVER_REDIRECT));
 }
 
 // Test mixed variants between |allow_form_submit| and |allow_client_redirect|.

@@ -6,15 +6,6 @@
 
 namespace arc {
 
-namespace {
-
-ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
-                                         ui::PageTransition mask) {
-  return ui::PageTransitionFromInt(page_transition & ~mask);
-}
-
-}  // namespace
-
 bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
                             bool allow_form_submit,
                             bool allow_client_redirect) {
@@ -46,10 +37,9 @@ bool ShouldIgnoreNavigation(ui::PageTransition page_transition,
   return false;
 }
 
-ui::PageTransition MaskOutPageTransitionForTesting(
-    ui::PageTransition page_transition,
-    ui::PageTransition mask) {
-  return MaskOutPageTransition(page_transition, mask);
+ui::PageTransition MaskOutPageTransition(ui::PageTransition page_transition,
+                                         ui::PageTransition mask) {
+  return ui::PageTransitionFromInt(page_transition & ~mask);
 }
 
 }  // namespace arc

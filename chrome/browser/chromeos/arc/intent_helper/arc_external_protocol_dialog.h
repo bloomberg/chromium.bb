@@ -45,12 +45,19 @@ bool RunArcExternalProtocolDialog(const GURL& url,
 
 GetActionResult GetActionForTesting(
     const GURL& original_url,
+    bool always_ask_user,
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers,
     size_t selected_app_index,
     std::pair<GURL, std::string>* out_url_and_package);
 
 GURL GetUrlToNavigateOnDeactivateForTesting(
     const std::vector<mojom::IntentHandlerInfoPtr>& handlers);
+
+bool IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+    const GURL& url,
+    ui::PageTransition page_transition,
+    const GURL& last_url,
+    ui::PageTransition last_page_transition);
 
 }  // namespace arc
 

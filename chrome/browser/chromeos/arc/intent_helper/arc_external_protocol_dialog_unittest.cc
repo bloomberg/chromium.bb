@@ -35,7 +35,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithNoApp) {
   std::vector<mojom::IntentHandlerInfoPtr> handlers;
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::SHOW_CHROME_OS_DIALOG,
-            GetActionForTesting(GURL("external-protocol:foo"), handlers,
+            GetActionForTesting(GURL("external-protocol:foo"), false, handlers,
                                 handlers.size(), &url_and_package));
 }
 
@@ -49,7 +49,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneApp) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::ASK_USER,
-            GetActionForTesting(GURL("external-protocol:foo"), handlers,
+            GetActionForTesting(GURL("external-protocol:foo"), false, handlers,
                                 no_selection, &url_and_package));
 }
 
@@ -65,10 +65,16 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOnePreferredApp) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(external_url, handlers, no_selection,
+            GetActionForTesting(external_url, false, handlers, no_selection,
                                 &url_and_package));
   EXPECT_EQ(external_url, url_and_package.first);
   EXPECT_EQ(package_name, url_and_package.second);
+
+  // Test that when |always_ask_user| is true, the preferred app setting is
+  // ignored.
+  EXPECT_EQ(GetActionResult::ASK_USER,
+            GetActionForTesting(external_url, true, handlers, no_selection,
+                                &url_and_package));
 }
 
 // Tests that when one app is passed to GetAction, the user has already selected
@@ -83,7 +89,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneAppSelected) {
   constexpr size_t kSelection = 0;
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(external_url, handlers, kSelection,
+            GetActionForTesting(external_url, false, handlers, kSelection,
                                 &url_and_package));
   EXPECT_EQ(external_url, url_and_package.first);
   EXPECT_EQ(package_name, url_and_package.second);
@@ -103,7 +109,7 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(external_url, handlers, no_selection,
+            GetActionForTesting(external_url, false, handlers, no_selection,
                                 &url_and_package));
   EXPECT_EQ(external_url, url_and_package.first);
   EXPECT_EQ(package_name, url_and_package.second);
@@ -121,9 +127,9 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithGeoUrl) {
 
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
-  EXPECT_EQ(
-      GetActionResult::HANDLE_URL_IN_ARC,
-      GetActionForTesting(geo_url, handlers, no_selection, &url_and_package));
+  EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
+            GetActionForTesting(geo_url, false, handlers, no_selection,
+                                &url_and_package));
   EXPECT_EQ(geo_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
 }
@@ -143,7 +149,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneFallbackUrl) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::OPEN_URL_IN_CHROME,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
@@ -162,7 +168,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOnePreferredFallbackUrl) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::OPEN_URL_IN_CHROME,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
@@ -185,7 +191,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithTwoFallbackUrls) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::ASK_USER,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
 }
 
@@ -206,7 +212,7 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::OPEN_URL_IN_CHROME,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
@@ -229,7 +235,7 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(package_name, url_and_package.second);
@@ -251,8 +257,8 @@ TEST(ArcExternalProtocolDialogTest,
   constexpr size_t kSelection = 1;  // Chrome
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::OPEN_URL_IN_CHROME,
-            GetActionForTesting(intent_url_with_fallback, handlers, kSelection,
-                                &url_and_package));
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
+                                kSelection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
 }
@@ -274,8 +280,8 @@ TEST(ArcExternalProtocolDialogTest,
   constexpr size_t kSelection = 0;  // the other browser
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers, kSelection,
-                                &url_and_package));
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
+                                kSelection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(package_name, url_and_package.second);
 }
@@ -294,7 +300,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithOneMarketFallbackUrl) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::ASK_USER,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
 }
 
@@ -313,10 +319,16 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(play_store_package_name, url_and_package.second);
+
+  // Test that when |always_ask_user| is true, the preferred app setting is
+  // ignored.
+  EXPECT_EQ(GetActionResult::ASK_USER,
+            GetActionForTesting(intent_url_with_fallback, true, handlers,
+                                no_selection, &url_and_package));
 }
 
 // Tests the same but with an app_seleteced_index.
@@ -334,8 +346,8 @@ TEST(ArcExternalProtocolDialogTest,
   constexpr size_t kSelection = 0;
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers, kSelection,
-                                &url_and_package));
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
+                                kSelection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(play_store_package_name, url_and_package.second);
 }
@@ -357,7 +369,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithTwoMarketFallbackUrls) {
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::ASK_USER,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
 }
 
@@ -378,7 +390,7 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t no_selection = handlers.size();
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(play_store_package_name, url_and_package.second);
@@ -401,8 +413,8 @@ TEST(ArcExternalProtocolDialogTest,
   const size_t kSelection = 1;  // Play Store
   std::pair<GURL, std::string> url_and_package;
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers, kSelection,
-                                &url_and_package));
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
+                                kSelection, &url_and_package));
   EXPECT_EQ(fallback_url, url_and_package.first);
   EXPECT_EQ(play_store_package_name, url_and_package.second);
 }
@@ -425,7 +437,7 @@ TEST(ArcExternalProtocolDialogTest, TestGetActionWithGeoUrlAsFallback) {
   // GetAction shouldn't return OPEN_URL_IN_CHROME because Chrome doesn't
   // directly support geo:.
   EXPECT_EQ(GetActionResult::HANDLE_URL_IN_ARC,
-            GetActionForTesting(intent_url_with_fallback, handlers,
+            GetActionForTesting(intent_url_with_fallback, false, handlers,
                                 no_selection, &url_and_package));
   EXPECT_EQ(geo_url, url_and_package.first);
   EXPECT_EQ(kChromePackageName, url_and_package.second);
@@ -504,6 +516,43 @@ TEST(ArcExternalProtocolDialogTest,
 
   EXPECT_EQ(GURL("https://www2/"),
             GetUrlToNavigateOnDeactivateForTesting(handlers));
+}
+
+// Tests that IsSafeToRedirectToArcWithoutUserConfirmation works as expected.
+TEST(ArcExternalProtocolDialogTest,
+     TestIsSafeToRedirectToArcWithoutUserConfirmation) {
+  const GURL url_a_foo("scheme-a://foo");
+  const GURL url_a_bar("scheme-a://bar");
+  const GURL url_b_foo("scheme-b://foo");
+  const ui::PageTransition not_from_api = ui::PAGE_TRANSITION_LINK;
+  const ui::PageTransition from_api = ui::PageTransitionFromInt(
+      ui::PAGE_TRANSITION_LINK | ui::PAGE_TRANSITION_FROM_API);
+
+  // When last_* parameters are empty, the function should return true ("safe").
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, from_api, GURL(), ui::PageTransition()));
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, not_from_api, GURL(), ui::PageTransition()));
+  // When the previous navigation is not from API, it should return true.
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, from_api, url_a_foo, not_from_api));
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, not_from_api, url_a_foo, not_from_api));
+  // When the current navigation is not from API, it should return true.
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, not_from_api, url_a_foo, from_api));
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, not_from_api, url_a_foo, not_from_api));
+  // When the current navigation is for a different app than the previous
+  // navigation's, it should return true.
+  EXPECT_TRUE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, from_api, url_b_foo, from_api));
+  // When the current and previous navigations are for the same app, and both
+  // are from API, it should return false ("possibly unsafe").
+  EXPECT_FALSE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, from_api, url_a_foo, from_api));
+  EXPECT_FALSE(IsSafeToRedirectToArcWithoutUserConfirmationForTesting(
+      url_a_foo, from_api, url_a_bar, from_api));
 }
 
 }  // namespace arc
