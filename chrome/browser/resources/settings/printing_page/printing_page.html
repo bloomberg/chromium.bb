@@ -40,22 +40,25 @@
         </div>
       </neon-animatable>
 <if expr="chromeos">
-      <template is="dom-if" route-path="/cupsPrinters">
-        <settings-subpage
-            associated-control="[[$$('#cupsPrinters')]]"
-            page-title="$i18n{cupsPrintersTitle}"
-            search-label="$i18n{searchLabel}"
-            search-term="{{searchTerm}}">
-          <settings-cups-printers printers="{{cupsPrinters}}"
+      <template is="dom-if" if="[[showCupsPrintingFeatures_]]">
+        <template is="dom-if" route-path="/cupsPrinters">
+          <settings-subpage
+              associated-control="[[$$('#cupsPrinters')]]"
+              page-title="$i18n{cupsPrintersTitle}"
+              search-label="$i18n{searchLabel}"
               search-term="{{searchTerm}}">
-          </settings-cups-printers>
-        </settings-subpage>
-      </template>
-      <template is="dom-if" route-path="/cupsPrinterDetails" restamp no-search>
-        <settings-subpage page-title="$i18n{printerDetailsTitle}">
-          <settings-cups-printer-details-page printer="{{detailPrinter_}}">
-          </settings-cups-printer-details-page>
-        </settings-subpage>
+            <settings-cups-printers printers="{{cupsPrinters}}"
+                search-term="{{searchTerm}}">
+            </settings-cups-printers>
+          </settings-subpage>
+        </template>
+        <template is="dom-if" route-path="/cupsPrinterDetails" restamp
+              no-search>
+          <settings-subpage page-title="$i18n{printerDetailsTitle}">
+            <settings-cups-printer-details-page printer="{{detailPrinter_}}">
+            </settings-cups-printer-details-page>
+          </settings-subpage>
+        </template>
       </template>
 </if>
       <template is="dom-if" route-path="/cloudPrinters">
