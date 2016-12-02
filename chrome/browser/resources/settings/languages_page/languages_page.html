@@ -89,9 +89,11 @@
             <span class="list-item"
                 hidden="[[isHelpTextHidden_(languages.enabled.*)]]">
               <span>$i18n{orderLanguagesInstructions}</span>
+<if expr="chromeos">
               <a href="$i18n{languagesLearnMoreURL}" target="_blank">
                 $i18n{learnMore}
               </a>
+</if>
             </span>
             <template is="dom-repeat" items="[[languages.enabled]]">
               <div class$="list-item [[getLanguageItemClass_(

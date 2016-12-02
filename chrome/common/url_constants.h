@@ -581,6 +581,7 @@ extern const char kSafeSearchSsuiParameter[];
 extern const char kMediaAccessLearnMoreUrl[];
 
 // The URL for the "Learn more" link in the language settings.
+// TODO(michaelpg): Compile on Chrome OS only when Options is removed.
 extern const char kLanguageSettingsLearnMoreUrl[];
 
 #if defined(GOOGLE_CHROME_BUILD) && defined(OS_LINUX) && !defined(OS_CHROMEOS)

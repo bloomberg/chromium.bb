@@ -917,9 +917,13 @@ void AddLanguagesStrings(content::WebUIDataSource* html_source) {
   AddLocalizedStringsBulk(html_source, localized_strings,
                           arraysize(localized_strings));
 
+#if defined(OS_CHROMEOS)
+  // Only the Chrome OS help article explains how language order affects website
+  // language.
   html_source->AddString(
       "languagesLearnMoreURL",
       base::ASCIIToUTF16(chrome::kLanguageSettingsLearnMoreUrl));
+#endif
 }
 
 #if defined(OS_CHROMEOS)
