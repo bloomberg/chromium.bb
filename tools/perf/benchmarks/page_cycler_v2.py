@@ -167,6 +167,7 @@ class PageCyclerV2IntlKoThVi(_PageCyclerV2):
           cache_temperature.PCV1_COLD, cache_temperature.PCV1_WARM])
 
 
+@benchmark.Enabled('android')
 class PageCyclerV2Top10Mobile(_PageCyclerV2):
   """Page load time benchmark for the top 10 mobile web pages.
 
