@@ -334,8 +334,10 @@ void ChromeDataUseAscriber::ReadyToCommitMainFrameNavigation(
       // Add a new recorder to the render frame map to replace the deleted one.
       DataUseRecorderEntry entry = data_use_recorders_.emplace(
           data_use_recorders_.end());
-      render_frame_data_use_map_.insert(std::make_pair(
-          RenderFrameHostID(render_process_id, render_frame_id), entry));
+      std::pair<int, int> frame_key =
+          RenderFrameHostID(render_process_id, render_frame_id);
+      entry->set_main_frame_id(frame_key);
+      render_frame_data_use_map_.insert(std::make_pair(frame_key, entry));
     }
     return;
   }
