@@ -13,7 +13,7 @@ PromiseRejectionEvent::PromiseRejectionEvent(
     const AtomicString& type,
     const PromiseRejectionEventInit& initializer)
     : Event(type, initializer),
-      m_scriptState(state),
+      m_world(state->world()),
       m_promise(this),
       m_reason(this) {
   ThreadState::current()->registerPreFinalizer(this);
@@ -33,28 +33,23 @@ void PromiseRejectionEvent::dispose() {
   // (and touch the ScopedPersistents) after Oilpan starts lazy sweeping.
   m_promise.clear();
   m_reason.clear();
-  m_scriptState.clear();
+  m_world.clear();
 }
 
-ScriptPromise PromiseRejectionEvent::promise(ScriptState* state) const {
+ScriptPromise PromiseRejectionEvent::promise(ScriptState* scriptState) const {
   // Return null when the promise is accessed by a different world than the
   // world that created the promise.
-  if (!m_scriptState || !m_scriptState->contextIsValid() ||
-      m_scriptState->world().worldId() != state->world().worldId())
+  if (!canBeDispatchedInWorld(scriptState->world()))
     return ScriptPromise();
-  return ScriptPromise(m_scriptState.get(),
-                       m_promise.newLocal(m_scriptState->isolate()));
+  return ScriptPromise(scriptState, m_promise.newLocal(scriptState->isolate()));
 }
 
-ScriptValue PromiseRejectionEvent::reason(ScriptState* state) const {
+ScriptValue PromiseRejectionEvent::reason(ScriptState* scriptState) const {
   // Return null when the value is accessed by a different world than the world
   // that created the value.
-  if (m_reason.isEmpty() || !m_scriptState ||
-      !m_scriptState->contextIsValid() ||
-      m_scriptState->world().worldId() != state->world().worldId())
-    return ScriptValue(state, v8::Undefined(state->isolate()));
-  return ScriptValue(m_scriptState.get(),
-                     m_reason.newLocal(m_scriptState->isolate()));
+  if (m_reason.isEmpty() || !canBeDispatchedInWorld(scriptState->world()))
+    return ScriptValue(scriptState, v8::Undefined(scriptState->isolate()));
+  return ScriptValue(scriptState, m_reason.newLocal(scriptState->isolate()));
 }
 
 void PromiseRejectionEvent::setWrapperReference(
@@ -76,8 +71,7 @@ const AtomicString& PromiseRejectionEvent::interfaceName() const {
 
 bool PromiseRejectionEvent::canBeDispatchedInWorld(
     const DOMWrapperWorld& world) const {
-  return m_scriptState && m_scriptState->contextIsValid() &&
-         m_scriptState->world().worldId() == world.worldId();
+  return m_world && m_world->worldId() == world.worldId();
 }
 
 DEFINE_TRACE(PromiseRejectionEvent) {

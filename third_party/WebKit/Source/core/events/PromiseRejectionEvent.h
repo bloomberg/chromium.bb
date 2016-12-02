@@ -50,7 +50,7 @@ class CORE_EXPORT PromiseRejectionEvent final : public Event {
   ~PromiseRejectionEvent() override;
   void dispose();
 
-  RefPtr<ScriptState> m_scriptState;
+  RefPtr<DOMWrapperWorld> m_world;
   TraceWrapperV8Reference<v8::Value> m_promise;
   TraceWrapperV8Reference<v8::Value> m_reason;
 };
