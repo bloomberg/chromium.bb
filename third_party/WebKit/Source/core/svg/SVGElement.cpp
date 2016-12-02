@@ -540,7 +540,7 @@ void SVGElement::updateRelativeLengthsInformation(bool clientHasRelativeLengths,
 
   // Register root SVG elements for top level viewport change notifications.
   if (isSVGSVGElement(*clientElement)) {
-    SVGDocumentExtensions& svgExtensions = accessDocumentSVGExtensions();
+    SVGDocumentExtensions& svgExtensions = document().accessSVGExtensions();
     if (clientElement->hasRelativeLengths())
       svgExtensions.addSVGRootWithRelativeLengthDescendents(
           toSVGSVGElement(clientElement));
@@ -601,12 +601,6 @@ SVGElement* SVGElement::viewportElement() const {
   }
 
   return nullptr;
-}
-
-SVGDocumentExtensions& SVGElement::accessDocumentSVGExtensions() {
-  // This function is provided for use by SVGAnimatedProperty to avoid
-  // global inclusion of core/dom/Document.h in SVG code.
-  return document().accessSVGExtensions();
 }
 
 void SVGElement::mapInstanceToElement(SVGElement* instance) {

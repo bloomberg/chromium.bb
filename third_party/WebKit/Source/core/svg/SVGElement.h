@@ -40,11 +40,9 @@ class SVGAnimatedPropertyBase;
 class SubtreeLayoutScope;
 class SVGAnimatedString;
 class SVGCursorElement;
-class SVGDocumentExtensions;
 class SVGElement;
 class SVGElementProxySet;
 class SVGElementRareData;
-class SVGFitToViewBox;
 class SVGPropertyBase;
 class SVGSVGElement;
 class SVGUseElement;
@@ -106,8 +104,6 @@ class CORE_EXPORT SVGElement : public Element {
 
   SVGSVGElement* ownerSVGElement() const;
   SVGElement* viewportElement() const;
-
-  SVGDocumentExtensions& accessDocumentSVGExtensions();
 
   virtual bool isSVGGeometryElement() const { return false; }
   virtual bool isSVGGraphicsElement() const { return false; }
@@ -254,8 +250,6 @@ class CORE_EXPORT SVGElement : public Element {
     return m_SVGRareData.get();
   }
 
-  // SVGFitToViewBox::parseAttribute uses reportAttributeParsingError.
-  friend class SVGFitToViewBox;
   void reportAttributeParsingError(SVGParsingError,
                                    const QualifiedName&,
                                    const AtomicString&);
