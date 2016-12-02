@@ -581,6 +581,7 @@ class TemplateURL {
 
   base::Time date_created() const { return data_.date_created; }
   base::Time last_modified() const { return data_.last_modified; }
+  base::Time last_visited() const { return data_.last_visited; }
 
   bool created_by_policy() const { return data_.created_by_policy; }
 

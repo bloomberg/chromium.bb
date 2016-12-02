@@ -59,6 +59,7 @@ class KeywordTableTest : public testing::Test {
     keyword.id = 1;
     keyword.date_created = base::Time::UnixEpoch();
     keyword.last_modified = base::Time::UnixEpoch();
+    keyword.last_visited = base::Time::UnixEpoch();
     keyword.created_by_policy = true;
     keyword.usage_count = 32;
     keyword.prepopulate_id = 10;
@@ -132,6 +133,8 @@ TEST_F(KeywordTableTest, Keywords) {
             restored_keyword.date_created.ToTimeT());
   EXPECT_EQ(keyword.last_modified.ToTimeT(),
             restored_keyword.last_modified.ToTimeT());
+  EXPECT_EQ(keyword.last_visited.ToTimeT(),
+            restored_keyword.last_visited.ToTimeT());
   EXPECT_EQ(keyword.created_by_policy, restored_keyword.created_by_policy);
   EXPECT_EQ(keyword.usage_count, restored_keyword.usage_count);
   EXPECT_EQ(keyword.prepopulate_id, restored_keyword.prepopulate_id);

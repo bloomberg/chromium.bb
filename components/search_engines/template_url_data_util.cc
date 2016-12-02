@@ -67,18 +67,22 @@ std::unique_ptr<TemplateURLData> TemplateURLDataFromDictionary(
 
   std::string date_created_str;
   std::string last_modified_str;
+  std::string last_visited_str;
   dict.GetString(DefaultSearchManager::kDateCreated, &date_created_str);
   dict.GetString(DefaultSearchManager::kLastModified, &last_modified_str);
+  dict.GetString(DefaultSearchManager::kLastVisited, &last_visited_str);
 
   int64_t date_created = 0;
-  if (base::StringToInt64(date_created_str, &date_created)) {
+  if (base::StringToInt64(date_created_str, &date_created))
     result->date_created = base::Time::FromInternalValue(date_created);
-  }
 
   int64_t last_modified = 0;
-  if (base::StringToInt64(date_created_str, &last_modified)) {
+  if (base::StringToInt64(date_created_str, &last_modified))
     result->last_modified = base::Time::FromInternalValue(last_modified);
-  }
+
+  int64_t last_visited = 0;
+  if (base::StringToInt64(last_visited_str, &last_visited))
+    result->last_visited = base::Time::FromInternalValue(last_visited);
 
   dict.GetInteger(DefaultSearchManager::kUsageCount, &result->usage_count);
 
@@ -147,6 +151,9 @@ std::unique_ptr<base::DictionaryValue> TemplateURLDataToDictionary(
   url_dict->SetString(
       DefaultSearchManager::kLastModified,
       base::Int64ToString(data.last_modified.ToInternalValue()));
+  url_dict->SetString(
+      DefaultSearchManager::kLastVisited,
+      base::Int64ToString(data.last_visited.ToInternalValue()));
   url_dict->SetInteger(DefaultSearchManager::kUsageCount, data.usage_count);
 
   auto alternate_urls = base::MakeUnique<base::ListValue>();

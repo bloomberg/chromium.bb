@@ -730,6 +730,12 @@ void TemplateURLService::RepairPrepopulatedSearchEngines() {
   }
 }
 
+void TemplateURLService::UpdateTemplateURLVisitTime(TemplateURL* url) {
+  TemplateURLData data(url->data());
+  data.last_visited = clock_->Now();
+  Update(url, TemplateURL(data));
+}
+
 void TemplateURLService::AddObserver(TemplateURLServiceObserver* observer) {
   model_observers_.AddObserver(observer);
 }
@@ -999,8 +1005,7 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         TemplateURLData data(existing_turl->data());
         data.SetKeyword(updated_keyword);
         TemplateURL new_turl(data);
-        if (UpdateNoNotify(existing_turl, new_turl))
-          NotifyObservers();
+        Update(existing_turl, new_turl);
 
         syncer::SyncData sync_data = CreateSyncDataFromTemplateURL(new_turl);
         new_changes.push_back(syncer::SyncChange(FROM_HERE,
@@ -1048,10 +1053,8 @@ syncer::SyncError TemplateURLService::ProcessSyncChanges(
         ResolveSyncKeywordConflict(turl.get(), existing_keyword_turl,
                                    &new_changes);
       }
-      if (UpdateNoNotify(existing_turl, *turl)) {
-        NotifyObservers();
+      if (Update(existing_turl, *turl))
         MaybeUpdateDSEAfterSync(existing_turl);
-      }
     } else {
       // We've unexpectedly received an ACTION_INVALID.
       error = sync_error_factory_->CreateAndUploadError(
@@ -1148,8 +1151,7 @@ syncer::SyncMergeResult TemplateURLService::MergeDataAndStartSyncing(
         // TemplateURLID and the TemplateURL may have to be reparsed. This
         // also makes the local data's last_modified timestamp equal to Sync's,
         // avoiding an Update on the next MergeData call.
-        if (UpdateNoNotify(local_turl, *sync_turl))
-          NotifyObservers();
+        Update(local_turl, *sync_turl);
         merge_result.set_num_items_modified(
             merge_result.num_items_modified() + 1);
       } else if (sync_turl->last_modified() < local_turl->last_modified()) {
@@ -1742,6 +1744,14 @@ bool TemplateURLService::UpdateNoNotify(TemplateURL* existing_turl,
   return true;
 }
 
+bool TemplateURLService::Update(TemplateURL* existing_turl,
+                                        const TemplateURL& new_values) {
+  const bool updated = UpdateNoNotify(existing_turl, new_values);
+  if (updated)
+    NotifyObservers();
+  return updated;
+}
+
 // static
 void TemplateURLService::UpdateTemplateURLIfPrepopulated(
     TemplateURL* template_url,
@@ -1782,6 +1792,7 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
   if (!urls_for_host)
     return;
 
+  TemplateURL* visited_url = nullptr;
   for (TemplateURLSet::const_iterator i = urls_for_host->begin();
        i != urls_for_host->end(); ++i) {
     base::string16 search_terms;
@@ -1798,8 +1809,15 @@ void TemplateURLService::UpdateKeywordSearchTermsForURL(
         client_->SetKeywordSearchTermsForURL(
             details.url, (*i)->id(), search_terms);
       }
+      // Caches the matched TemplateURL so its last_visited could be updated
+      // later after iteration.
+      // Note: UpdateNoNotify() will replace the entry from the container of
+      // this iterator, so update here directly will cause an error about it.
+      visited_url = *i;
     }
   }
+  if (visited_url)
+    UpdateTemplateURLVisitTime(visited_url);
 }
 
 void TemplateURLService::AddTabToSearchVisit(const TemplateURL& t_url) {
@@ -2256,8 +2274,7 @@ void TemplateURLService::ResolveSyncKeywordConflict(
     // Update |applied_sync_turl| in the local model with the new keyword.
     TemplateURLData data(applied_sync_turl->data());
     data.SetKeyword(new_keyword);
-    if (UpdateNoNotify(applied_sync_turl, TemplateURL(data)))
-      NotifyObservers();
+    Update(applied_sync_turl, TemplateURL(data));
   }
   // The losing TemplateURL should have their keyword updated. Send a change to
   // the server to reflect this change.

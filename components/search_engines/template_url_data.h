@@ -110,6 +110,11 @@ struct TemplateURLData {
   // NOTE: Like date_created above, this may be 0.
   base::Time last_modified;
 
+  // Date when this TemplateURL was last visited.
+  //
+  // NOTE: This might be 0 if the TemplateURL has never been visited.
+  base::Time last_visited;
+
   // True if this TemplateURL was automatically created by the administrator via
   // group policy.
   bool created_by_policy;

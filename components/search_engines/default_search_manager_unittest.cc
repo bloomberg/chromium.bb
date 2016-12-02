@@ -29,8 +29,8 @@ namespace {
 const char kDefaultSearchProviderData[] =
     "default_search_provider_data.template_url_data";
 
-// Checks that the two TemplateURLs are similar. Does not check the id, the
-// date_created or the last_modified time.  Neither pointer should be NULL.
+// Checks that the two TemplateURLs are similar. Does not check the id or
+// any time-related fields.  Neither pointer should be null.
 void ExpectSimilar(const TemplateURLData* expected,
                    const TemplateURLData* actual) {
   ASSERT_TRUE(expected != NULL);
@@ -111,6 +111,7 @@ std::unique_ptr<TemplateURLData> GenerateDummyTemplateURLData(
       "UTF-8;UTF-16", ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data->date_created = base::Time();
   data->last_modified = base::Time();
+  data->last_visited = base::Time();
   return data;
 }
 
@@ -151,6 +152,7 @@ TEST_F(DefaultSearchManagerTest, ReadAndWritePref) {
   data.input_encodings = base::SplitString(
       "UTF-8;UTF-16", ";", base::TRIM_WHITESPACE, base::SPLIT_WANT_ALL);
   data.date_created = base::Time();
+  data.last_modified = base::Time();
   data.last_modified = base::Time();
 
   manager.SetUserSelectedDefaultSearchEngine(data);

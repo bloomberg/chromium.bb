@@ -413,6 +413,7 @@ class TemplateURLService : public WebDataServiceConsumer,
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, ChangeGoogleBaseValue);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, MergeDeletesUnusedProviders);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, AddExtensionKeyword);
+  FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceTest, LastVisitedTimeUpdate);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest, UniquifyKeyword);
   FRIEND_TEST_ALL_PREFIXES(TemplateURLServiceSyncTest,
                            IsLocalTemplateURLBetter);
@@ -547,6 +548,10 @@ class TemplateURLService : public WebDataServiceConsumer,
   bool UpdateNoNotify(TemplateURL* existing_turl,
                       const TemplateURL& new_values);
 
+  // Calls UpdateNoNotify() and NotifyObservers() if update succeeds.
+  // Returns the result of UpdateNoNotify().
+  bool Update(TemplateURL* existing_turl, const TemplateURL& new_values);
+
   // If the TemplateURL comes from a prepopulated URL available in the current
   // country, update all its fields save for the keyword, short name and id so
   // that they match the internal prepopulated URL. TemplateURLs not coming from
@@ -563,6 +568,9 @@ class TemplateURLService : public WebDataServiceConsumer,
   // For each TemplateURL whose url matches the visited url
   // SetKeywordSearchTermsForURL is invoked.
   void UpdateKeywordSearchTermsForURL(const URLVisitedDetails& details);
+
+  // Updates the last_visited time of |url| to the current time.
+  void UpdateTemplateURLVisitTime(TemplateURL* url);
 
   // If necessary, generates a visit for the site http:// + t_url.keyword().
   void AddTabToSearchVisit(const TemplateURL& t_url);

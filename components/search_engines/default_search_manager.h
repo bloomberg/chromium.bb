@@ -54,6 +54,7 @@ class DefaultSearchManager {
 
   static const char kDateCreated[];
   static const char kLastModified[];
+  static const char kLastVisited[];
 
   static const char kUsageCount[];
   static const char kAlternateURLs[];

@@ -131,6 +131,7 @@ class KeywordTable : public WebDatabaseTable {
   bool MigrateToVersion53AddNewTabURLColumn();
   bool MigrateToVersion59RemoveExtensionKeywords();
   bool MigrateToVersion68RemoveShowInDefaultListColumn();
+  bool MigrateToVersion69AddLastVisitedColumn();
 
  private:
   friend class KeywordTableTest;

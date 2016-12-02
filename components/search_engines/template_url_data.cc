@@ -16,6 +16,7 @@ TemplateURLData::TemplateURLData()
       id(0),
       date_created(base::Time::Now()),
       last_modified(base::Time::Now()),
+      last_visited(base::Time()),
       created_by_policy(false),
       usage_count(0),
       prepopulate_id(0),

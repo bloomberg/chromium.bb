@@ -130,7 +130,7 @@ class WebDatabaseMigrationTest : public testing::Test {
   DISALLOW_COPY_AND_ASSIGN(WebDatabaseMigrationTest);
 };
 
-const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 68;
+const int WebDatabaseMigrationTest::kCurrentTestedVersionNumber = 69;
 
 void WebDatabaseMigrationTest::LoadDatabase(
     const base::FilePath::StringType& file) {
@@ -164,6 +164,7 @@ TEST_F(WebDatabaseMigrationTest, VersionXxSqlFilesAreGolden) {
     ASSERT_NO_FATAL_FAILURE(LoadDatabase(file_name.value()))
         << "Failed to load " << file_name.MaybeAsASCII();
     DoMigration();
+
     EXPECT_EQ(expected_schema, RemoveQuotes(connection.GetSchema()))
         << "For version " << i;
   }
@@ -1070,7 +1071,7 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion66ToCurrent) {
   }
 }
 
-// Tests delete show_in_default_list column in keywords table.
+// Tests deletion of show_in_default_list column in keywords table.
 TEST_F(WebDatabaseMigrationTest, MigrateVersion67ToCurrent) {
   ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_67.sql")));
 
@@ -1099,5 +1100,37 @@ TEST_F(WebDatabaseMigrationTest, MigrateVersion67ToCurrent) {
 
     EXPECT_FALSE(
         connection.DoesColumnExist("keywords", "show_in_default_list"));
+  }
+}
+
+// Tests addition of last_visited column in keywords table.
+TEST_F(WebDatabaseMigrationTest, MigrateVersion68ToCurrent) {
+  ASSERT_NO_FATAL_FAILURE(LoadDatabase(FILE_PATH_LITERAL("version_68.sql")));
+
+  // Verify pre-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    sql::MetaTable meta_table;
+    ASSERT_TRUE(meta_table.Init(&connection, 68, 68));
+
+    EXPECT_FALSE(connection.DoesColumnExist("keywords", "last_visited"));
+  }
+
+  DoMigration();
+
+  // Verify post-conditions.
+  {
+    sql::Connection connection;
+    ASSERT_TRUE(connection.Open(GetDatabasePath()));
+    ASSERT_TRUE(sql::MetaTable::DoesTableExist(&connection));
+
+    // Check version.
+    EXPECT_EQ(kCurrentTestedVersionNumber, VersionFromConnection(&connection));
+
+    EXPECT_TRUE(
+        connection.DoesColumnExist("keywords", "last_visited"));
   }
 }
