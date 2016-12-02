@@ -636,6 +636,10 @@ void FrameView::setContentsSize(const IntSize& size) {
   updateScrollbars();
   ScrollableArea::contentsResized();
 
+  if (RuntimeEnabledFeatures::slimmingPaintInvalidationEnabled() &&
+      !RuntimeEnabledFeatures::rootLayerScrollingEnabled())
+    setNeedsPaintPropertyUpdate();
+
   Page* page = frame().page();
   if (!page)
     return;
