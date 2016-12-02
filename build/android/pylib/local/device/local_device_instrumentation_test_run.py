@@ -349,7 +349,7 @@ class LocalDeviceInstrumentationTestRun(
                 include_stack_symbols=False,
                 wipe_tombstones=True))
           result.SetTombstones(resolved_tombstones)
-    return results
+    return results, None
 
   #override
   def _ShouldRetry(self, test):
