@@ -113,7 +113,8 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
     STEP_LOCK_DEVICE = 8,         // Writing installation-time attributes.
     STEP_STORE_TOKEN_AND_ID = 9,  // Storing DM token and virtual device ID.
     STEP_STORE_ROBOT_AUTH = 10,   // Encrypting & writing robot refresh token.
-    STEP_STORE_POLICY = 11,       // Storing policy and API refresh token.
+    STEP_STORE_POLICY = 11,       // Storing policy and API refresh token. For
+                                  // AD, includes policy fetch via authpolicyd.
     STEP_FINISHED = 12,           // Enrollment process done, no further action.
   };
 
@@ -153,6 +154,9 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
 
   // Handles completion of the robot token store operation.
   void HandleStoreRobotAuthTokenResult(bool result);
+
+  // Handles result from device policy refresh via authpolicyd.
+  void HandleActiveDirectoryPolicyRefreshed(bool success);
 
   // Drops any ongoing actions.
   void Stop();

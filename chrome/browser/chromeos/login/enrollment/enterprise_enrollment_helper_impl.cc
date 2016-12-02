@@ -421,6 +421,9 @@ void EnterpriseEnrollmentHelperImpl::ReportEnrollmentStatus(
     case policy::EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION:
       UMA(policy::kMetricEnrollmentNoDeviceIdentification);
       break;
+    case policy::EnrollmentStatus::STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED:
+      UMA(policy::kMetricEnrollmentActiveDirectoryPolicyFetchFailed);
+      break;
   }
 }
 

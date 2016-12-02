@@ -43,6 +43,9 @@ class EnrollmentStatus {
     STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED = 15,  // Cannot obtain
                                                         // registration cert.
     STATUS_NO_MACHINE_IDENTIFICATION = 16,  // Machine model or serial missing.
+    STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
+                                                       // Directory policy via
+                                                       // authpolicyd.
   };
 
   // Helpers for constructing errors for relevant cases.

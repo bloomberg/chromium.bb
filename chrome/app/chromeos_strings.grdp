@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- ChromeOS-specific strings (included from generated_resources.grd).
+<!-- Chrome OS-specific strings (included from generated_resources.grd).
      Everything in this file is wrapped in <if expr="chromeos">. -->
 <grit-part>
   <message name="IDS_EMPTY_STRING" desc="Empty string, exist only to make code generic. No translation required.">
@@ -6170,6 +6170,9 @@ All users must sign out to continue.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_MACHINE_IDENTIFICATION" desc="Error message shown on the enrollment screen when the system failed to determine the device model or serial number.">
     Oops!  The system failed to determine device model or serial number.
+  </message>
+  <message name="IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH" desc="Error message shown on the enrollment screen when the system failed to fetch device policy from Active Directory.">
+    Oops!  The system failed to fetch policy from Microsoft® Active Directory®.
   </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_SCREEN_TITLE" desc="The title on the enterprise enrollment dialog.">
     Enterprise enrollment

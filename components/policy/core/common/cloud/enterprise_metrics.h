@@ -226,6 +226,8 @@ enum MetricEnrollment {
   kMetricEnrollmentRegisterCannotSignRequest = 53,
   // Device model or serial number missing from VPD.
   kMetricEnrollmentNoDeviceIdentification = 54,
+  // Active Directory policy fetch failed.
+  kMetricEnrollmentActiveDirectoryPolicyFetchFailed = 55,
 };
 
 // Events related to policy refresh.

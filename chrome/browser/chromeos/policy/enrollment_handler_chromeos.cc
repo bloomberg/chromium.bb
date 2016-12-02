@@ -25,6 +25,8 @@
 #include "chrome/browser/profiles/profile.h"
 #include "chromeos/attestation/attestation_flow.h"
 #include "chromeos/chromeos_switches.h"
+#include "chromeos/dbus/auth_policy_client.h"
+#include "chromeos/dbus/dbus_thread_manager.h"
 #include "google_apis/gaia/gaia_auth_util.h"
 #include "google_apis/gaia/gaia_urls.h"
 #include "net/http/http_status_code.h"
@@ -250,6 +252,7 @@ void EnrollmentHandlerChromeOS::OnStoreError(CloudPolicyStore* store) {
     // enterprise-managed.
     return;
   }
+  LOG(ERROR) << "Error in device policy store.";
   ReportResult(EnrollmentStatus::ForStoreError(store_->status(),
                                                store_->validation_status()));
 }
@@ -488,12 +491,36 @@ void EnrollmentHandlerChromeOS::HandleStoreRobotAuthTokenResult(bool result) {
     return;
   }
 
+  SetStep(STEP_STORE_POLICY);
   if (device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) {
-    ReportResult(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS));
+    CHECK(install_attributes_->IsActiveDirectoryManaged());
+    // Update device settings so that in case of Active Directory unsigned
+    // policy is accepted.
+    chromeos::DeviceSettingsService::Get()->SetDeviceMode(
+        install_attributes_->GetMode());
+    chromeos::DBusThreadManager::Get()
+        ->GetAuthPolicyClient()
+        ->RefreshDevicePolicy(base::Bind(
+            &EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed,
+            weak_ptr_factory_.GetWeakPtr()));
   } else {
-    SetStep(STEP_STORE_POLICY);
     store_->InstallInitialPolicy(*policy_);
   }
+}
+
+void EnrollmentHandlerChromeOS::HandleActiveDirectoryPolicyRefreshed(
+    bool success) {
+  DCHECK_EQ(STEP_STORE_POLICY, enrollment_step_);
+
+  if (!success) {
+    LOG(ERROR) << "Failed to load Active Directory policy.";
+    ReportResult(EnrollmentStatus::ForStatus(
+        EnrollmentStatus::STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED));
+    return;
+  }
+
+  // After that, the enrollment flow continues in one of the OnStore* observers.
+  store_->Load();
 }
 
 void EnrollmentHandlerChromeOS::Stop() {

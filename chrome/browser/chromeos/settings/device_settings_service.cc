@@ -132,6 +132,8 @@ void DeviceSettingsService::Load() {
 void DeviceSettingsService::Store(
     std::unique_ptr<em::PolicyFetchResponse> policy,
     const base::Closure& callback) {
+  // On Active Directory managed devices policy is written only by authpolicyd.
+  CHECK(device_mode_ != policy::DEVICE_MODE_ENTERPRISE_AD);
   Enqueue(linked_ptr<SessionManagerOperation>(new StoreSettingsOperation(
       base::Bind(&DeviceSettingsService::HandleCompletedOperation,
                  weak_factory_.GetWeakPtr(), callback),
@@ -256,9 +258,6 @@ void DeviceSettingsService::HandleCompletedOperation(
     const base::Closure& callback,
     SessionManagerOperation* operation,
     Status status) {
-  // Exactly one must be true: Active Directory management or existence of key.
-  DCHECK((device_mode_ == policy::DEVICE_MODE_ENTERPRISE_AD) !=
-         (operation->public_key() != nullptr));
   DCHECK_EQ(operation, pending_operations_.front().get());
 
   store_status_ = status;

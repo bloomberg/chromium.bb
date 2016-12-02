@@ -382,6 +382,10 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_MACHINE_IDENTIFICATION,
                 false);
       return;
+    case policy::EnrollmentStatus::STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED:
+      ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH,
+                false);
+      return;
   }
   NOTREACHED();
 }
