@@ -47,7 +47,9 @@ class TextInputController {
   void ForceTextInputStateUpdate();
 
   blink::WebView* view();
-  blink::WebInputMethodController* inputMethodController();
+  // Returns the WebInputMethodController corresponding to the focused frame
+  // accepting IME. Could return nullptr if no such frame exists.
+  blink::WebInputMethodController* GetInputMethodController();
 
   WebViewTestProxyBase* web_view_test_proxy_base_;
 

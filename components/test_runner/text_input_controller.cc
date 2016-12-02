@@ -12,6 +12,7 @@
 #include "gin/object_template_builder.h"
 #include "gin/wrappable.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
+#include "third_party/WebKit/public/platform/WebInputEventResult.h"
 #include "third_party/WebKit/public/web/WebCompositionUnderline.h"
 #include "third_party/WebKit/public/web/WebFrameWidget.h"
 #include "third_party/WebKit/public/web/WebInputMethodController.h"
@@ -168,12 +169,16 @@ void TextInputController::Install(blink::WebLocalFrame* frame) {
 }
 
 void TextInputController::InsertText(const std::string& text) {
-  inputMethodController()->commitText(blink::WebString::fromUTF8(text), 0);
+  if (auto* controller = GetInputMethodController()) {
+    controller->commitText(blink::WebString::fromUTF8(text), 0);
+  }
 }
 
 void TextInputController::UnmarkText() {
-  inputMethodController()->finishComposingText(
-      blink::WebInputMethodController::KeepSelection);
+  if (auto* controller = GetInputMethodController()) {
+    controller->finishComposingText(
+        blink::WebInputMethodController::KeepSelection);
+  }
 }
 
 void TextInputController::DoCommand(const std::string& text) {
@@ -212,8 +217,9 @@ void TextInputController::SetMarkedText(const std::string& text,
     underlines.push_back(underline);
   }
 
-  inputMethodController()->setComposition(web_text, underlines, start,
-                                          start + length);
+  if (auto* controller = GetInputMethodController()) {
+    controller->setComposition(web_text, underlines, start, start + length);
+  }
 }
 
 bool TextInputController::HasMarkedText() {
@@ -302,9 +308,11 @@ void TextInputController::SetComposition(const std::string& text) {
   std::vector<blink::WebCompositionUnderline> underlines;
   underlines.push_back(blink::WebCompositionUnderline(
       0, textLength, SK_ColorBLACK, false, SK_ColorTRANSPARENT));
-  inputMethodController()->setComposition(
-      newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
-      textLength, textLength);
+  if (auto* controller = GetInputMethodController()) {
+    controller->setComposition(
+        newText, blink::WebVector<blink::WebCompositionUnderline>(underlines),
+        textLength, textLength);
+  }
 }
 
 void TextInputController::ForceTextInputStateUpdate() {
@@ -316,7 +324,11 @@ blink::WebView* TextInputController::view() {
   return web_view_test_proxy_base_->web_view();
 }
 
-blink::WebInputMethodController* TextInputController::inputMethodController() {
+blink::WebInputMethodController*
+TextInputController::GetInputMethodController() {
+  if (!view()->mainFrame())
+    return nullptr;
+
   blink::WebLocalFrame* mainFrame = view()->mainFrame()->toWebLocalFrame();
   if (!mainFrame) {
     CHECK(false) << "WebView does not have a local main frame and"
