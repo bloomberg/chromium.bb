@@ -550,21 +550,18 @@ For methods all calls are logged, and by default for attributes all access (call
 
 Summary: `[CallWith]` indicates that the bindings code calls the Blink implementation with additional information.
 
-Each value changes the signature of the Blink methods by adding an additional parameter to the head of the parameter list, such as `&state` for `[CallWith=ScriptState]`.
-
-Multiple values can be specified e.g. `[CallWith=ScriptState|ScriptArguments]`. The order of the values in the IDL file doesn't matter: the generated parameter list is always in a fixed order (specifically `&state`, `scriptContext`, `scriptArguments.release()`, if present, corresponding to `ScriptState`, `ScriptExecutionContext`, `ScriptArguments`, respectively).
+Each value changes the signature of the Blink methods by adding an additional parameter to the head of the parameter list, such as `ScriptState*` for `[CallWith=ScriptState]`.
 
 There are also three rarely used values: `CurrentWindow`, `EnteredWindow`, `ThisValue`.
 
 `[SetterCallWith]` applies to attributes, and only affects the signature of the setter; this is only used in Location.idl, with `CurrentWindow&EnteredWindow`.
 
-Syntax:
-`CallWith=ScriptState|ScriptExecutionContext|ScriptArguments|CurrentWindow|EnteredWindow|ThisValue`
-
 #### [CallWith=ScriptState] _(m, a*)_
-`[CallWith=ScriptState]` is used in a number of places for methods.
 
-`[CallWith=ScriptState]` _can_ be used for attributes, but is not used in real IDL files.
+`[CallWith=ScriptState]` is used in a number of places for methods.
+ScriptState holds all information about script execution.
+You can retrieve Frame, ExcecutionContext, v8::Context, v8::Isolate etc
+from ScriptState.
 
 IDL example:
 
@@ -582,7 +579,18 @@ String Example::str(ScriptState* state);
 String Example::func(ScriptState* state, bool a, bool b);
 ```
 
-#### [CallWith=ExecutionContext] _(m,a)_
+Be careful when you use `[CallWith=ScriptState]`.
+You should not store the passed-in ScriptState on a DOM object (using RefPtr<ScriptState>).
+This is because if the stored ScriptState is used by some method called by a different
+world (note that the DOM object is shared among multiple worlds), it leaks the ScriptState
+to the world. ScriptState must be carefully maintained in a way that doesn't leak
+to another world.
+
+#### [CallWith=ExecutionContext] _(m,a)_  _deprecated_
+
+`[CallWith=ExecutionContext]` is a less convenient version of `[CallWith=ScriptState]`
+because you can just retrieve ExecutionContext from ScriptState.
+Use `[CallWith=ScriptState]` instead.
 
 IDL example:
 
@@ -598,24 +606,6 @@ C++ Blink function signatures:
 ```c++
 String Example::str(ExecutionContext* context);
 String Example::func(ExecutionContext* context, bool a, bool b);
-```
-
-You can retrieve the document and frame from a `ExecutionContext*`.
-
-#### [CallWith=ScriptArguments] _(m)_
-
-IDL example:
-
-```webidl
-interface Example {
-    [CallWith=ScriptState] DOMString func(boolean a, boolean b);
-};
-```
-
-C++ Blink function signature:
-
-```c++
-String Example::func(ScriptArguments* arguments, bool a, bool b);
 ```
 
 _(rare CallWith values)_
@@ -655,7 +645,7 @@ If `[Constructor]` is specified on an interface, `[ConstructorCallWith]` can be 
 ```webidl
 [
     Constructor(float x, float y, DOMString str),
-    ConstructorCallWith=Document|ExecutionContext,
+    ConstructorCallWith=ExecutionContext,
 ]
 interface XXX {
     ...
@@ -669,13 +659,18 @@ Then XXX::create(...) can have the following signature
 ***
 
 ```c++
-PassRefPtr<XXX> XXX::create(ScriptExecutionContext* context, ScriptState* state, float x, float y, String str)
+PassRefPtr<XXX> XXX::create(ExecutionContext* context, float x, float y, String str)
 {
     ...;
 }
 ```
 
-You can retrieve document or frame from ScriptExecutionContext.
+Be careful when you use `[ConstructorCallWith=ScriptState]`.
+You should not store the passed-in ScriptState on a DOM object (using RefPtr<ScriptState>).
+This is because if the stored ScriptState is used by some method called by a different
+world (note that the DOM object is shared among multiple worlds), it leaks the ScriptState
+to the world. ScriptState must be carefully maintained in a way that doesn't leak
+to another world.
 
 ### [Custom] _(i, m, s, a, f)_
 
@@ -827,7 +822,7 @@ v8::Handle<v8::Array> V8XXX::namedPropertyEnumerator(const v8::AccessorInfo& inf
 }
 ```
 
-#### [Custom=LegacyCallAsFunction] _(i) _deprecated__
+#### [Custom=LegacyCallAsFunction] _(i) _deprecated_
 
 Summary: `[Custom=LegacyCallAsFunction]` allows you to write custom bindings for call(...) of a given interface.
 
@@ -1384,7 +1379,7 @@ bool Object::isAttributeDirty()
 }
 
 // Called by generated binding code if no value cached or isAttributeDirty() returns true
-ScriptValue Object::attribute(ScriptExecutionContext* context)
+ScriptValue Object::attribute(ExecutionContext* context)
 {
     m_attributeDirty = false;
     return convertDataToScriptValue(m_data);
