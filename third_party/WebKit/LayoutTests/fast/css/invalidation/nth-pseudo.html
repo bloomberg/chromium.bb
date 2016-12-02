@@ -39,7 +39,7 @@
         assert_equals(t1.lastChild.nodeType, Node.TEXT_NODE);
         t1.insertBefore(document.createElement("span"), t1.lastChild);
         assert_equals(internals.updateStyleAndReturnAffectedElementCount(), 1);
-    }, "Appending an element sibling should not affect :nth-child of preceeding siblings.");
+    }, "Appending an element sibling should not affect :nth-child of preceding siblings.");
 
     test(() => {
         t2.offsetTop;
