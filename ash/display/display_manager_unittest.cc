@@ -486,8 +486,9 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   UpdateDisplay("0+0-500x500,0+501-400x400");
   reset();
   ASSERT_EQ(2u, display_manager()->GetNumDisplays());
-  const display::ManagedDisplayInfo& display_info1 = GetDisplayInfoAt(0);
-  const display::ManagedDisplayInfo& display_info2 = GetDisplayInfoAt(1);
+  const display::ManagedDisplayInfo display_info1 = GetDisplayInfoAt(0);
+  const display::ManagedDisplayInfo display_info2 = GetDisplayInfoAt(1);
+
   display_manager()->SetOverscanInsets(display_info2.id(),
                                        gfx::Insets(13, 12, 11, 10));
 
@@ -533,11 +534,13 @@ TEST_P(DisplayManagerTest, OverscanInsetsTest) {
   // Recreate the displays with the same ID.  It should apply the overscan
   // inset.
   UpdateDisplay("0+0-500x500");
+
   std::vector<display::ManagedDisplayInfo> display_info_list;
   display_info_list.push_back(display_info1);
   display_info_list.push_back(display_info2);
+
   display_manager()->OnNativeDisplaysChanged(display_info_list);
-  EXPECT_EQ("1,1 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
+  EXPECT_EQ("0,0 500x500", GetDisplayInfoAt(0).bounds_in_native().ToString());
   updated_display_info2 = GetDisplayInfoAt(1);
   EXPECT_EQ("376x378", updated_display_info2.size_in_pixel().ToString());
   EXPECT_EQ("10,11,12,13",
