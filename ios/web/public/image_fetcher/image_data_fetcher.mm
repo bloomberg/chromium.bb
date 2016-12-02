@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "ios/chrome/browser/net/image_fetcher.h"
+#import "ios/web/public/image_fetcher/image_data_fetcher.h"
 
 #import <Foundation/Foundation.h>
 #include <stddef.h>
@@ -11,8 +11,8 @@
 #include "base/location.h"
 #include "base/mac/scoped_nsobject.h"
 #include "base/task_runner.h"
+#include "base/task_runner_util.h"
 #include "ios/web/public/image_fetcher/webp_decoder.h"
-#include "ios/web/public/web_thread.h"
 #include "net/base/load_flags.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_fetcher.h"
@@ -42,6 +42,7 @@ class WebpDecoderDelegate : public webp_transcode::WebpDecoder::Delegate {
     DCHECK(decoded_image_);
     [decoded_image_ appendData:data];
   }
+
  private:
   ~WebpDecoderDelegate() override {}
   base::scoped_nsobject<NSMutableData> decoded_image_;
@@ -64,14 +65,17 @@ base::scoped_nsobject<NSData> DecodeWebpImage(
 
 }  // namespace
 
-ImageFetcher::ImageFetcher(const scoped_refptr<base::TaskRunner>& task_runner)
+namespace web {
+
+ImageDataFetcher::ImageDataFetcher(
+    const scoped_refptr<base::TaskRunner>& task_runner)
     : request_context_getter_(nullptr),
       task_runner_(task_runner),
       weak_factory_(this) {
   DCHECK(task_runner_.get());
 }
 
-ImageFetcher::~ImageFetcher() {
+ImageDataFetcher::~ImageDataFetcher() {
   // Delete all the entries in the |downloads_in_progress_| map.  This will in
   // turn cancel all of the requests.
   for (const auto& pair : downloads_in_progress_) {
@@ -79,7 +83,7 @@ ImageFetcher::~ImageFetcher() {
   }
 }
 
-void ImageFetcher::StartDownload(
+void ImageDataFetcher::StartDownload(
     const GURL& url,
     ImageFetchedCallback callback,
     const std::string& referrer,
@@ -88,25 +92,25 @@ void ImageFetcher::StartDownload(
   net::URLFetcher* fetcher =
       net::URLFetcher::Create(url, net::URLFetcher::GET, this).release();
   downloads_in_progress_[fetcher] = [callback copy];
-  fetcher->SetLoadFlags(
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SAVE_COOKIES |
-      net::LOAD_DO_NOT_SEND_AUTH_DATA);
+  fetcher->SetLoadFlags(net::LOAD_DO_NOT_SEND_COOKIES |
+                        net::LOAD_DO_NOT_SAVE_COOKIES |
+                        net::LOAD_DO_NOT_SEND_AUTH_DATA);
   fetcher->SetRequestContext(request_context_getter_.get());
   fetcher->SetReferrer(referrer);
   fetcher->SetReferrerPolicy(referrer_policy);
   fetcher->Start();
 }
 
-void ImageFetcher::StartDownload(
-    const GURL& url, ImageFetchedCallback callback) {
-  ImageFetcher::StartDownload(
-      url, callback, std::string(), net::URLRequest::NEVER_CLEAR_REFERRER);
+void ImageDataFetcher::StartDownload(const GURL& url,
+                                     ImageFetchedCallback callback) {
+  ImageDataFetcher::StartDownload(url, callback, std::string(),
+                                  net::URLRequest::NEVER_CLEAR_REFERRER);
 }
 
 // Delegate callback that is called when URLFetcher completes.  If the image
 // was fetched successfully, creates a new NSData and returns it to the
 // callback, otherwise returns nil to the callback.
-void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
+void ImageDataFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   if (downloads_in_progress_.find(fetcher) == downloads_in_progress_.end()) {
     LOG(ERROR) << "Received callback for unknown URLFetcher " << fetcher;
     return;
@@ -127,8 +131,8 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
   // code has no meaning, because there is no actual server (data is encoded
   // directly in the URL). In that case, set the response code to 200 (OK).
   const GURL& original_url = fetcher->GetOriginalURL();
-  const int http_response_code = original_url.SchemeIs("data") ?
-      200 : fetcher->GetResponseCode();
+  const int http_response_code =
+      original_url.SchemeIs("data") ? 200 : fetcher->GetResponseCode();
   if (http_response_code != 200) {
     (callback.get())(original_url, http_response_code, nil);
     return;
@@ -149,21 +153,17 @@ void ImageFetcher::OnURLFetchComplete(const net::URLFetcher* fetcher) {
     std::string mime_type;
     fetcher->GetResponseHeaders()->GetMimeType(&mime_type);
     if (mime_type == kWEBPMimeType) {
-      base::PostTaskAndReplyWithResult(task_runner_.get(),
-                                       FROM_HERE,
-                                       base::Bind(&DecodeWebpImage, data),
-                                       base::Bind(&ImageFetcher::RunCallback,
-                                                  weak_factory_.GetWeakPtr(),
-                                                  callback,
-                                                  original_url,
-                                                  http_response_code));
+      base::PostTaskAndReplyWithResult(
+          task_runner_.get(), FROM_HERE, base::Bind(&DecodeWebpImage, data),
+          base::Bind(&ImageDataFetcher::RunCallback, weak_factory_.GetWeakPtr(),
+                     callback, original_url, http_response_code));
       return;
     }
   }
   (callback.get())(original_url, http_response_code, data);
 }
 
-void ImageFetcher::RunCallback(
+void ImageDataFetcher::RunCallback(
     const base::mac::ScopedBlock<ImageFetchedCallback>& callback,
     const GURL& url,
     int http_response_code,
@@ -171,7 +171,9 @@ void ImageFetcher::RunCallback(
   (callback.get())(url, http_response_code, data);
 }
 
-void ImageFetcher::SetRequestContextGetter(
+void ImageDataFetcher::SetRequestContextGetter(
     const scoped_refptr<net::URLRequestContextGetter>& request_context_getter) {
   request_context_getter_ = request_context_getter;
 }
+
+}  // namespace web

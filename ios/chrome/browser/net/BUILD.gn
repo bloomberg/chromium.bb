@@ -44,9 +44,9 @@ source_set("net") {
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
     "//ios/chrome/browser/browsing_data",
-    "//ios/chrome/browser/webp_transcode",
     "//ios/net",
     "//ios/web",
+    "//ios/web/public/image_fetcher",
     "//net",
     "//net:extras",
     "//url",
@@ -74,7 +74,6 @@ source_set("unit_tests") {
   testonly = true
   sources = [
     "cookie_util_unittest.mm",
-    "image_fetcher_unittest.mm",
     "metrics_network_client_unittest.mm",
     "retryable_url_fetcher_unittest.mm",
   ]

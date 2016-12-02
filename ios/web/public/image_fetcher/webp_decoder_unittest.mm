@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/webp_transcode/webp_decoder.h"
+#include "ios/web/public/image_fetcher/webp_decoder.h"
 
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
@@ -59,8 +59,8 @@ class WebpDecoderTest : public testing::Test {
   NSData* LoadImage(const base::FilePath& filename) {
     base::FilePath path;
     PathService::Get(base::DIR_SOURCE_ROOT, &path);
-    path = path.AppendASCII("ios/chrome/test/data/webp_transcode")
-               .Append(filename);
+    path =
+        path.AppendASCII("ios/web/test/data/webp_transcode").Append(filename);
     return
         [NSData dataWithContentsOfFile:base::SysUTF8ToNSString(path.value())];
   }

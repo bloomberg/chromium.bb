@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ios/chrome/browser/webp_transcode/webp_decoder.h"
+#include "ios/web/public/image_fetcher/webp_decoder.h"
 
 #import <Foundation/Foundation.h>
 #include <stdint.h>
@@ -45,34 +45,34 @@ void WriteTiffHeader(uint8_t* dst,
   const uint8_t num_ifd_entries =
       has_alpha ? kNumIfdEntries : kNumIfdEntries - 1;
   uint8_t tiff_header[kHeaderSize] = {
-    0x49, 0x49, 0x2a, 0x00,   // little endian signature
-    8, 0, 0, 0,               // offset to the unique IFD that follows
-    // IFD (offset = 8). Entries must be written in increasing tag order.
-    num_ifd_entries, 0,       // Number of entries in the IFD (12 bytes each).
-    0x00, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0,    //  10: Width  (TBD)
-    0x01, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0,    //  22: Height (TBD)
-    0x02, 0x01, 3, 0, bytes_per_px, 0, 0, 0,     //  34: BitsPerSample: 8888
-        kExtraDataOffset + 0, 0, 0, 0,
-    0x03, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    //  46: Compression: none
-    0x06, 0x01, 3, 0, 1, 0, 0, 0, 2, 0, 0, 0,    //  58: Photometric: RGB
-    0x11, 0x01, 4, 0, 1, 0, 0, 0,                //  70: Strips offset:
-        kHeaderSize, 0, 0, 0,                    //      data follows header
-    0x12, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    //  82: Orientation: topleft
-    0x15, 0x01, 3, 0, 1, 0, 0, 0,                //  94: SamplesPerPixels
-        bytes_per_px, 0, 0, 0,
-    0x16, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0,    // 106: Rows per strip (TBD)
-    0x17, 0x01, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0,    // 118: StripByteCount (TBD)
-    0x1a, 0x01, 5, 0, 1, 0, 0, 0,                // 130: X-resolution
-        kExtraDataOffset + 8, 0, 0, 0,
-    0x1b, 0x01, 5, 0, 1, 0, 0, 0,                // 142: Y-resolution
-        kExtraDataOffset + 8, 0, 0, 0,
-    0x1c, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    // 154: PlanarConfiguration
-    0x28, 0x01, 3, 0, 1, 0, 0, 0, 2, 0, 0, 0,    // 166: ResolutionUnit (inch)
-    0x52, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,    // 178: ExtraSamples: rgbA
-    0, 0, 0, 0,                                  // 190: IFD terminator
-    // kExtraDataOffset:
-    8, 0, 8, 0, 8, 0, 8, 0,      // BitsPerSample
-    72, 0, 0, 0, 1, 0, 0, 0      // 72 pixels/inch, for X/Y-resolution
+      0x49, 0x49, 0x2a, 0x00,  // little endian signature
+      8, 0, 0, 0,              // offset to the unique IFD that follows
+      // IFD (offset = 8). Entries must be written in increasing tag order.
+      num_ifd_entries, 0,  // Number of entries in the IFD (12 bytes each).
+      0x00, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0,  //  10: Width  (TBD)
+      0x01, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0, 0,  //  22: Height (TBD)
+      0x02, 0x01, 3, 0, bytes_per_px, 0, 0, 0,   //  34: BitsPerSample: 8888
+      kExtraDataOffset + 0, 0, 0, 0, 0x03, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0,
+      0,                                         //  46: Compression: none
+      0x06, 0x01, 3, 0, 1, 0, 0, 0, 2, 0, 0, 0,  //  58: Photometric: RGB
+      0x11, 0x01, 4, 0, 1, 0, 0, 0,              //  70: Strips offset:
+      kHeaderSize, 0, 0, 0,                      //      data follows header
+      0x12, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,  //  82: Orientation: topleft
+      0x15, 0x01, 3, 0, 1, 0, 0, 0,              //  94: SamplesPerPixels
+      bytes_per_px, 0, 0, 0, 0x16, 0x01, 3, 0, 1, 0, 0, 0, 0, 0, 0,
+      0,                                         // 106: Rows per strip (TBD)
+      0x17, 0x01, 4, 0, 1, 0, 0, 0, 0, 0, 0, 0,  // 118: StripByteCount (TBD)
+      0x1a, 0x01, 5, 0, 1, 0, 0, 0,              // 130: X-resolution
+      kExtraDataOffset + 8, 0, 0, 0, 0x1b, 0x01, 5, 0, 1, 0, 0,
+      0,  // 142: Y-resolution
+      kExtraDataOffset + 8, 0, 0, 0, 0x1c, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0,
+      0,                                         // 154: PlanarConfiguration
+      0x28, 0x01, 3, 0, 1, 0, 0, 0, 2, 0, 0, 0,  // 166: ResolutionUnit (inch)
+      0x52, 0x01, 3, 0, 1, 0, 0, 0, 1, 0, 0, 0,  // 178: ExtraSamples: rgbA
+      0, 0, 0, 0,                                // 190: IFD terminator
+      // kExtraDataOffset:
+      8, 0, 8, 0, 8, 0, 8, 0,  // BitsPerSample
+      72, 0, 0, 0, 1, 0, 0, 0  // 72 pixels/inch, for X/Y-resolution
   };
 
   // Fill placeholders in IFD:

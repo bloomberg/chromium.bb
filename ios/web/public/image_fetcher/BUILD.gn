@@ -2,14 +2,17 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-source_set("webp_transcode") {
+source_set("image_fetcher") {
   configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
+    "image_data_fetcher.h",
+    "image_data_fetcher.mm",
     "webp_decoder.h",
     "webp_decoder.mm",
   ]
   deps = [
     "//base",
+    "//net",
     "//third_party/libwebp:libwebp_dec",
   ]
 }
@@ -18,12 +21,15 @@ source_set("unit_tests") {
   configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
+    "image_data_fetcher_unittest.mm",
     "webp_decoder_unittest.mm",
   ]
   deps = [
-    ":webp_transcode",
+    ":image_fetcher",
     ":webp_transcode_unit_tests_bundle_data",
     "//base",
+    "//net",
+    "//net:test_support",
     "//testing/gmock",
     "//testing/gtest",
   ]
@@ -34,12 +40,12 @@ bundle_data("webp_transcode_unit_tests_bundle_data") {
   visibility = [ ":unit_tests" ]
   testonly = true
   sources = [
-    "//ios/chrome/test/data/webp_transcode/test.jpg",
-    "//ios/chrome/test/data/webp_transcode/test.webp",
-    "//ios/chrome/test/data/webp_transcode/test_alpha.png",
-    "//ios/chrome/test/data/webp_transcode/test_alpha.webp",
-    "//ios/chrome/test/data/webp_transcode/test_small.tiff",
-    "//ios/chrome/test/data/webp_transcode/test_small.webp",
+    "//ios/web/test/data/webp_transcode/test.jpg",
+    "//ios/web/test/data/webp_transcode/test.webp",
+    "//ios/web/test/data/webp_transcode/test_alpha.png",
+    "//ios/web/test/data/webp_transcode/test_alpha.webp",
+    "//ios/web/test/data/webp_transcode/test_small.tiff",
+    "//ios/web/test/data/webp_transcode/test_small.webp",
   ]
   outputs = [
     "{{bundle_resources_dir}}/{{source_root_relative_dir}}/" +
