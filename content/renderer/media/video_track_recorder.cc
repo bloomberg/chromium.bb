@@ -793,10 +793,10 @@ void VpxEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
     encoder_.reset();
   }
 
-  const vpx_codec_iface_t* interface =
+  const vpx_codec_iface_t* codec_interface =
       use_vp9_ ? vpx_codec_vp9_cx() : vpx_codec_vp8_cx();
-  vpx_codec_err_t result =
-      vpx_codec_enc_config_default(interface, &codec_config_, 0 /* reserved */);
+  vpx_codec_err_t result = vpx_codec_enc_config_default(
+      codec_interface, &codec_config_, 0 /* reserved */);
   DCHECK_EQ(VPX_CODEC_OK, result);
 
   DCHECK_EQ(320u, codec_config_.g_w);
@@ -854,8 +854,8 @@ void VpxEncoder::ConfigureEncoderOnEncodingTaskRunner(const gfx::Size& size) {
 
   DCHECK(!encoder_);
   encoder_.reset(new vpx_codec_ctx_t);
-  const vpx_codec_err_t ret = vpx_codec_enc_init(encoder_.get(), interface,
-                                                 &codec_config_, 0 /* flags */);
+  const vpx_codec_err_t ret = vpx_codec_enc_init(
+      encoder_.get(), codec_interface, &codec_config_, 0 /* flags */);
   DCHECK_EQ(VPX_CODEC_OK, ret);
 
   if (use_vp9_) {
