@@ -23,7 +23,7 @@
 #include "base/bind_helpers.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/strings/utf_string_conversions.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/time/time.h"
 #include "base/win/windows_version.h"
 #include "chrome/browser/browser_process.h"
@@ -207,16 +207,13 @@ void GetOsPasswordStatus() {
       new OsPasswordStatus(PASSWORD_STATUS_UNKNOWN));
   PasswordCheckPrefs* prefs_weak = prefs.get();
   OsPasswordStatus* status_weak = status.get();
-  bool posted = base::WorkerPool::PostTaskAndReply(
-      FROM_HERE,
+  base::PostTaskWithTraitsAndReply(
+      FROM_HERE, base::TaskTraits()
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithWait(),
       base::Bind(&GetOsPasswordStatusInternal, prefs_weak, status_weak),
       base::Bind(&ReplyOsPasswordStatus, base::Passed(&prefs),
-                 base::Passed(&status)),
-      true);
-  if (!posted) {
-    UMA_HISTOGRAM_ENUMERATION("PasswordManager.OsPasswordStatus",
-                              PASSWORD_STATUS_UNKNOWN, MAX_PASSWORD_STATUS);
-  }
+                 base::Passed(&status)));
 }
 
 }  // namespace
