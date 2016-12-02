@@ -1424,8 +1424,13 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
   }
   // Any non-web URL source is trusted.
   *trustLevel = web::URLVerificationTrustLevel::kAbsolute;
-  if (self.nativeController)
-    return [self.nativeController url];
+  if (self.nativeController) {
+    if ([self.nativeController respondsToSelector:@selector(virtualURL)]) {
+      return [self.nativeController virtualURL];
+    } else {
+      return [self.nativeController url];
+    }
+  }
   return [self currentNavigationURL];
 }
 
@@ -1997,9 +2002,14 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
 
   const GURL targetURL = [self currentNavigationURL];
   const web::Referrer referrer;
+  id<CRWNativeContent> nativeContent =
+      [_nativeProvider controllerForURL:targetURL];
   // Unlike the WebView case, always create a new controller and view.
   // TODO(pinkerton): What to do if this does return nil?
-  [self setNativeController:[_nativeProvider controllerForURL:targetURL]];
+  [self setNativeController:nativeContent];
+  if ([nativeContent respondsToSelector:@selector(virtualURL)]) {
+    [self currentNavItem]->SetVirtualURL([nativeContent virtualURL]);
+  }
   [self registerLoadRequest:targetURL
                    referrer:referrer
                  transition:[self currentTransition]];

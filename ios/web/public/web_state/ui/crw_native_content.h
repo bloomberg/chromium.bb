@@ -85,6 +85,10 @@
 // Called when a snapshot of the content will be taken.
 - (void)willUpdateSnapshot;
 
+// The URL that will be displayed to the user when presenting this native
+// content.
+- (GURL)virtualURL;
+
 @end
 
 // CRWNativeContent delegate protocol.

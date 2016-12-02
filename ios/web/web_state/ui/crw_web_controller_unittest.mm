@@ -19,10 +19,14 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #import "ios/web/navigation/navigation_manager_impl.h"
 #include "ios/web/public/referrer.h"
+#import "ios/web/public/test/test_native_content.h"
+#import "ios/web/public/test/test_native_content_provider.h"
 #import "ios/web/public/test/test_web_client.h"
 #include "ios/web/public/test/test_web_view_content_view.h"
 #import "ios/web/public/web_state/crw_web_controller_observer.h"
 #import "ios/web/public/web_state/ui/crw_content_view.h"
+#import "ios/web/public/web_state/ui/crw_native_content.h"
+#import "ios/web/public/web_state/ui/crw_native_content_provider.h"
 #import "ios/web/public/web_state/ui/crw_web_view_content_view.h"
 #include "ios/web/public/web_state/url_verification_constants.h"
 #import "ios/web/test/web_test_with_web_controller.h"
@@ -227,7 +231,8 @@ typedef BOOL (^openExternalURLBlockType)(const GURL&);
 
 namespace {
 
-NSString* kTestURLString = @"http://www.google.com/";
+const char kTestURLString[] = "http://www.google.com/";
+const char kTestAppSpecificURL[] = "testwebui://test/";
 
 // Returns true if the current device is a large iPhone (6 or 6+).
 bool IsIPhone6Or6Plus() {
@@ -324,7 +329,7 @@ class CRWWebControllerTest : public web::WebTestWithWebController {
     }
 
     [[result stub] backForwardList];
-    [[[result stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
+    [[[result stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
     [[result stub] setNavigationDelegate:OCMOCK_ANY];
     [[result stub] setUIDelegate:OCMOCK_ANY];
     [[result stub] setFrame:ExpectedWebViewFrame()];
@@ -795,7 +800,7 @@ TEST_F(CRWWebControllerJSExecutionTest, WindowIdMissmatch) {
 }
 
 TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
-  [[[mockWebView_ stub] andReturn:[NSURL URLWithString:kTestURLString]] URL];
+  [[[mockWebView_ stub] andReturn:[NSURL URLWithString:@(kTestURLString)]] URL];
   [[[mockWebView_ stub] andReturnBool:NO] hasOnlySecureContent];
 
   // Stub out the injection process.
@@ -803,8 +808,7 @@ TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
                         completionHandler:OCMOCK_ANY];
 
   // Simulate registering load request to avoid failing page load simulation.
-  [web_controller()
-      simulateLoadRequestWithURL:GURL([kTestURLString UTF8String])];
+  [web_controller() simulateLoadRequestWithURL:GURL(kTestURLString)];
   // Simulate a page load to trigger a URL update.
   [static_cast<id<WKNavigationDelegate>>(web_controller()) webView:mockWebView_
                                                didCommitNavigation:nil];
@@ -812,8 +816,77 @@ TEST_F(CRWWebControllerTest, WebUrlWithTrustLevel) {
   web::URLVerificationTrustLevel trust_level = web::kNone;
   GURL gurl = [web_controller() currentURLWithTrustLevel:&trust_level];
 
-  EXPECT_EQ(gurl, GURL(base::SysNSStringToUTF8(kTestURLString)));
+  EXPECT_EQ(gurl, GURL(kTestURLString));
   EXPECT_EQ(web::kAbsolute, trust_level);
+}
+
+// Test fixture for testing CRWWebController presenting native content.
+class CRWWebControllerNativeContentTest : public web::WebTestWithWebController {
+ protected:
+  void SetUp() override {
+    web::WebTestWithWebController::SetUp();
+    mock_native_provider_.reset([[TestNativeContentProvider alloc] init]);
+    [web_controller() setNativeProvider:mock_native_provider_];
+  }
+
+  void Load(const GURL& URL) {
+    NavigationManagerImpl& navigation_manager =
+        [web_controller() webStateImpl]->GetNavigationManagerImpl();
+    navigation_manager.InitializeSession(@"name", nil, NO, 0);
+    [navigation_manager.GetSessionController()
+          addPendingEntry:URL
+                 referrer:web::Referrer()
+               transition:ui::PAGE_TRANSITION_TYPED
+        rendererInitiated:NO];
+    [web_controller() loadCurrentURL];
+  }
+
+  base::scoped_nsobject<TestNativeContentProvider> mock_native_provider_;
+};
+
+// Tests WebState and NavigationManager correctly return native content URL.
+TEST_F(CRWWebControllerNativeContentTest, NativeContentURL) {
+  GURL url_to_load(kTestAppSpecificURL);
+  base::scoped_nsobject<TestNativeContent> content(
+      [[TestNativeContent alloc] initWithURL:url_to_load virtualURL:GURL()]);
+  [mock_native_provider_ setController:content forURL:url_to_load];
+  Load(url_to_load);
+  web::URLVerificationTrustLevel trust_level = web::kNone;
+  GURL gurl = [web_controller() currentURLWithTrustLevel:&trust_level];
+  EXPECT_EQ(gurl, url_to_load);
+  EXPECT_EQ(web::kAbsolute, trust_level);
+  EXPECT_EQ([web_controller() webState]->GetVisibleURL(), url_to_load);
+  NavigationManagerImpl& navigationManager =
+      [web_controller() webStateImpl]->GetNavigationManagerImpl();
+  EXPECT_EQ(navigationManager.GetVisibleItem()->GetURL(), url_to_load);
+  EXPECT_EQ(navigationManager.GetVisibleItem()->GetVirtualURL(), url_to_load);
+  EXPECT_EQ(navigationManager.GetLastCommittedItem()->GetURL(), url_to_load);
+  EXPECT_EQ(navigationManager.GetLastCommittedItem()->GetVirtualURL(),
+            url_to_load);
+}
+
+// Tests WebState and NavigationManager correctly return native content URL and
+// VirtualURL
+TEST_F(CRWWebControllerNativeContentTest, NativeContentVirtualURL) {
+  GURL url_to_load(kTestAppSpecificURL);
+  GURL virtual_url(kTestURLString);
+  base::scoped_nsobject<TestNativeContent> content([[TestNativeContent alloc]
+      initWithURL:virtual_url
+       virtualURL:virtual_url]);
+  [mock_native_provider_ setController:content forURL:url_to_load];
+  Load(url_to_load);
+  web::URLVerificationTrustLevel trust_level = web::kNone;
+  GURL gurl = [web_controller() currentURLWithTrustLevel:&trust_level];
+  EXPECT_EQ(gurl, virtual_url);
+  EXPECT_EQ(web::kAbsolute, trust_level);
+  EXPECT_EQ([web_controller() webState]->GetVisibleURL(), virtual_url);
+  NavigationManagerImpl& navigationManager =
+      [web_controller() webStateImpl]->GetNavigationManagerImpl();
+  EXPECT_EQ(navigationManager.GetVisibleItem()->GetURL(), url_to_load);
+  EXPECT_EQ(navigationManager.GetVisibleItem()->GetVirtualURL(), virtual_url);
+  EXPECT_EQ(navigationManager.GetLastCommittedItem()->GetURL(), url_to_load);
+  EXPECT_EQ(navigationManager.GetLastCommittedItem()->GetVirtualURL(),
+            virtual_url);
 }
 
 // A separate test class, as none of the |CRWUIWebViewWebControllerTest| setup
