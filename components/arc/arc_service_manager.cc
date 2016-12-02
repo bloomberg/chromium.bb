@@ -58,7 +58,10 @@ ArcServiceManager* ArcServiceManager::Get() {
 
 // static
 bool ArcServiceManager::IsInitialized() {
-  return g_arc_service_manager;
+  if (!g_arc_service_manager)
+    return false;
+  DCHECK(g_arc_service_manager->thread_checker_.CalledOnValidThread());
+  return true;
 }
 
 ArcBridgeService* ArcServiceManager::arc_bridge_service() {
@@ -72,19 +75,23 @@ void ArcServiceManager::AddService(std::unique_ptr<ArcService> service) {
 }
 
 void ArcServiceManager::AddObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.AddObserver(observer);
 }
 
 void ArcServiceManager::RemoveObserver(Observer* observer) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   observer_list_.RemoveObserver(observer);
 }
 
 void ArcServiceManager::OnAppsUpdated() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   for (auto& observer : observer_list_)
     observer.OnAppsUpdated();
 }
 
 void ArcServiceManager::Shutdown() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   icon_loader_ = nullptr;
   activity_resolver_ = nullptr;
   services_.clear();
