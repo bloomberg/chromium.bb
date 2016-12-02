@@ -14,6 +14,7 @@
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread.h"
+#include "base/threading/thread_restrictions.h"
 #include "base/trace_event/trace_event.h"
 #include "chrome/browser/chrome_notification_types.h"
 #include "chrome/browser/favicon/favicon_service_factory.h"
@@ -54,6 +55,16 @@ namespace {
 
 // Delay jumplist updates to allow collapsing of redundant update requests.
 const int kDelayForJumplistUpdateInMS = 3500;
+
+// JumpList folder's move operation status.
+enum MoveOperationResult {
+  SUCCESS = 0,
+  MAX_PATH_CHECK_FAILED = 1 << 0,
+  MOVE_FILE_EX_FAILED = 1 << 1,
+  COPY_AND_DELETE_DIR_FAILED = 1 << 2,
+  DELETE_FAILED = 1 << 3,
+  END = 1 << 4
+};
 
 // Append the common switches to each shell link.
 void AppendCommonSwitches(ShellLinkItem* shell_link) {
@@ -212,6 +223,69 @@ bool UpdateJumpList(const wchar_t* app_id,
   return true;
 }
 
+// A wrapper function for recording UMA histogram.
+void RecordFolderMoveResult(int move_operation_status) {
+  UMA_HISTOGRAM_ENUMERATION("WinJumplist.FolderMoveResults",
+                            move_operation_status, MoveOperationResult::END);
+}
+
+// This function is a temporary fork of Move() and MoveUnsafe() in
+// base/files/file_util.h, where UMA functions are added to gather user data.
+// As //base is highly mature, we tend not to add this temporary function
+// in it. This change will be reverted after user data gathered.
+bool MoveDebugWithUMA(const base::FilePath& from_path,
+                      const base::FilePath& to_path,
+                      int folder_delete_fail) {
+  if (from_path.ReferencesParent() || to_path.ReferencesParent())
+    return false;
+
+  base::ThreadRestrictions::AssertIOAllowed();
+
+  // This variable records the status of move operations.
+  int move_operation_status = MoveOperationResult::SUCCESS;
+  if (folder_delete_fail)
+    move_operation_status |= MoveOperationResult::DELETE_FAILED;
+
+  // NOTE: I suspect we could support longer paths, but that would involve
+  // analyzing all our usage of files.
+  if (from_path.value().length() >= MAX_PATH ||
+      to_path.value().length() >= MAX_PATH) {
+    move_operation_status |= MoveOperationResult::MAX_PATH_CHECK_FAILED;
+    RecordFolderMoveResult(move_operation_status);
+    return false;
+  }
+  if (MoveFileEx(from_path.value().c_str(), to_path.value().c_str(),
+                 MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0) {
+    RecordFolderMoveResult(move_operation_status);
+    return true;
+  }
+
+  move_operation_status |= MoveOperationResult::MOVE_FILE_EX_FAILED;
+
+  // Keep the last error value from MoveFileEx around in case the below
+  // fails.
+  bool ret = false;
+  DWORD last_error = ::GetLastError();
+
+  if (base::DirectoryExists(from_path)) {
+    // MoveFileEx fails if moving directory across volumes. We will simulate
+    // the move by using Copy and Delete. Ideally we could check whether
+    // from_path and to_path are indeed in different volumes.
+    ret = base::internal::CopyAndDeleteDirectory(from_path, to_path);
+  }
+
+  if (!ret) {
+    // Leave a clue about what went wrong so that it can be (at least) picked
+    // up by a PLOG entry.
+    ::SetLastError(last_error);
+    move_operation_status |= MoveOperationResult::COPY_AND_DELETE_DIR_FAILED;
+  }
+
+  RecordFolderMoveResult(move_operation_status);
+
+  return ret;
+}
+
 // Updates the jumplist, once all the data has been fetched.
 void RunUpdateOnFileThread(
     IncognitoModePrefs::Availability incognito_availability,
@@ -254,7 +328,7 @@ void RunUpdateOnFileThread(
 
   if (base::PathExists(icon_dir_old) && !base::DeleteFile(icon_dir_old, true))
     folder_operation_status |= FolderOperationResult::DELETE_FAILED;
-  if (!base::Move(icon_dir, icon_dir_old))
+  if (!MoveDebugWithUMA(icon_dir, icon_dir_old, folder_operation_status))
     folder_operation_status |= FolderOperationResult::MOVE_FAILED;
   if (!base::CreateDirectory(icon_dir))
     folder_operation_status |= FolderOperationResult::CREATE_DIR_FAILED;
