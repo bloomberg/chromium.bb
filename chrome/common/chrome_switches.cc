@@ -781,12 +781,6 @@ const char kProxyPacUrl[]                   = "proxy-pac-url";
 // highest priority.
 const char kProxyServer[]                   = "proxy-server";
 
-// Specifies the time for tab purging and suspending. When the indicated time
-// passes after a tab goes backgrounded, the backgrounded tab is purged and
-// suspended to save memory usage. The default value is "0" and purging and
-// suspending never happen.
-const char kPurgeAndSuspendTime[]           = "purge-and-suspend-time";
-
 // Specifies a comma separated list of QUIC connection options to send to
 // the server.
 const char kQuicConnectionOptions[] = "quic-connection-options";

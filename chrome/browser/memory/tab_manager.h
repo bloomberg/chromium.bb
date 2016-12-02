@@ -366,6 +366,9 @@ class TabManager : public TabStripModelObserver {
   // backgrounded.
   base::TimeDelta minimum_protection_time_;
 
+  // A backgrounded renderer will be suspended when this time passes.
+  base::TimeDelta time_to_first_suspension_;
+
 #if defined(OS_CHROMEOS)
   std::unique_ptr<TabManagerDelegate> delegate_;
 #endif
