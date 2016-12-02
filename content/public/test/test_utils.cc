@@ -120,14 +120,23 @@ void RunMessageLoop() {
 void RunThisRunLoop(base::RunLoop* run_loop) {
   base::MessageLoop::ScopedNestableTaskAllower allow(
       base::MessageLoop::current());
+
+  // If we're running inside a browser test, we might need to allow the test
+  // launcher to do extra work before/after running a nested message loop.
+  TestLauncherDelegate* delegate = NULL;
+  delegate = GetCurrentTestLauncherDelegate();
+  if (delegate)
+    delegate->PreRunMessageLoop(run_loop);
   run_loop->Run();
+  if (delegate)
+    delegate->PostRunMessageLoop();
 }
 
 void RunAllPendingInMessageLoop() {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   base::RunLoop run_loop;
   base::ThreadTaskRunnerHandle::Get()->PostTask(
-      FROM_HERE, GetDeferredQuitTaskForRunLoop(&run_loop));
+      FROM_HERE, GetQuitTaskForRunLoop(&run_loop));
   RunThisRunLoop(&run_loop);
 }
 
@@ -166,7 +175,7 @@ void RunAllBlockingPoolTasksUntilIdle() {
   }
 }
 
-base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop) {
+base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop) {
   return base::Bind(&DeferredQuitRunLoop, run_loop->QuitClosure(),
                     kNumQuitDeferrals);
 }
@@ -231,7 +240,7 @@ void MessageLoopRunner::Quit() {
   if (loop_running_) {
     switch (quit_mode_) {
       case QuitMode::DEFERRED:
-        GetDeferredQuitTaskForRunLoop(&run_loop_).Run();
+        GetQuitTaskForRunLoop(&run_loop_).Run();
         break;
       case QuitMode::IMMEDIATE:
         run_loop_.Quit();

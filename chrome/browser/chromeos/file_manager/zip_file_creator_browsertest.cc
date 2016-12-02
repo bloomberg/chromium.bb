@@ -54,10 +54,11 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, FailZipForAbsentFile) {
   std::vector<base::FilePath> paths;
   paths.push_back(base::FilePath(FILE_PATH_LITERAL("not.exist")));
   (new ZipFileCreator(
-       base::Bind(&TestCallback, &success,
-                  content::GetDeferredQuitTaskForRunLoop(&run_loop)),
-       zip_base_dir(), paths, zip_archive_path()))
-      ->Start();
+       base::Bind(
+           &TestCallback, &success, content::GetQuitTaskForRunLoop(&run_loop)),
+       zip_base_dir(),
+       paths,
+       zip_archive_path()))->Start();
 
   content::RunThisRunLoop(&run_loop);
   EXPECT_FALSE(success);
@@ -83,10 +84,11 @@ IN_PROC_BROWSER_TEST_F(ZipFileCreatorTest, SomeFilesZip) {
   paths.push_back(kFile1);
   paths.push_back(kFile2);
   (new ZipFileCreator(
-       base::Bind(&TestCallback, &success,
-                  content::GetDeferredQuitTaskForRunLoop(&run_loop)),
-       zip_base_dir(), paths, zip_archive_path()))
-      ->Start();
+       base::Bind(
+           &TestCallback, &success, content::GetQuitTaskForRunLoop(&run_loop)),
+       zip_base_dir(),
+       paths,
+       zip_archive_path()))->Start();
 
   content::RunThisRunLoop(&run_loop);
   EXPECT_TRUE(success);
