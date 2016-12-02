@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "services/ui/surfaces/direct_output_surface_ozone.h"
+#include "services/ui/surfaces/display_output_surface_ozone.h"
 
 #include <utility>
 
@@ -21,7 +21,7 @@ using display_compositor::BufferQueue;
 
 namespace ui {
 
-DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
+DisplayOutputSurfaceOzone::DisplayOutputSurfaceOzone(
     scoped_refptr<cc::InProcessContextProvider> context_provider,
     gfx::AcceleratedWidget widget,
     cc::SyntheticBeginFrameSource* synthetic_begin_frame_source,
@@ -52,30 +52,30 @@ DirectOutputSurfaceOzone::DirectOutputSurfaceOzone(
   buffer_queue_->Initialize();
 
   context_provider->SetSwapBuffersCompletionCallback(
-      base::Bind(&DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted,
+      base::Bind(&DisplayOutputSurfaceOzone::OnGpuSwapBuffersCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
   context_provider->SetUpdateVSyncParametersCallback(
-      base::Bind(&DirectOutputSurfaceOzone::OnVSyncParametersUpdated,
+      base::Bind(&DisplayOutputSurfaceOzone::OnVSyncParametersUpdated,
                  weak_ptr_factory_.GetWeakPtr()));
 }
 
-DirectOutputSurfaceOzone::~DirectOutputSurfaceOzone() {
+DisplayOutputSurfaceOzone::~DisplayOutputSurfaceOzone() {
   // TODO(rjkroege): Support cleanup.
 }
 
-void DirectOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
+void DisplayOutputSurfaceOzone::BindToClient(cc::OutputSurfaceClient* client) {
   DCHECK(client);
   DCHECK(!client_);
   client_ = client;
 }
 
-void DirectOutputSurfaceOzone::EnsureBackbuffer() {}
+void DisplayOutputSurfaceOzone::EnsureBackbuffer() {}
 
-void DirectOutputSurfaceOzone::DiscardBackbuffer() {
+void DisplayOutputSurfaceOzone::DiscardBackbuffer() {
   context_provider()->ContextGL()->DiscardBackbufferCHROMIUM();
 }
 
-void DirectOutputSurfaceOzone::BindFramebuffer() {
+void DisplayOutputSurfaceOzone::BindFramebuffer() {
   DCHECK(buffer_queue_);
   buffer_queue_->BindFramebuffer();
 }
@@ -86,17 +86,17 @@ void DirectOutputSurfaceOzone::BindFramebuffer() {
 // implies that screen size changes need to be plumbed differently. In
 // particular, we must create the native window in the size that the hardware
 // reports.
-void DirectOutputSurfaceOzone::Reshape(const gfx::Size& size,
-                                       float device_scale_factor,
-                                       const gfx::ColorSpace& color_space,
-                                       bool has_alpha) {
+void DisplayOutputSurfaceOzone::Reshape(const gfx::Size& size,
+                                        float device_scale_factor,
+                                        const gfx::ColorSpace& color_space,
+                                        bool has_alpha) {
   reshape_size_ = size;
   context_provider()->ContextGL()->ResizeCHROMIUM(
       size.width(), size.height(), device_scale_factor, has_alpha);
   buffer_queue_->Reshape(size, device_scale_factor, color_space);
 }
 
-void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
+void DisplayOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   DCHECK(buffer_queue_);
 
   // TODO(rjkroege): What if swap happens again before OnGpuSwapBuffersCompleted
@@ -106,7 +106,7 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
 
   buffer_queue_->SwapBuffers(frame.sub_buffer_rect);
 
-  // Code combining GpuBrowserCompositorOutputSurface + DirectOutputSurface
+  // Code combining GpuBrowserCompositorOutputSurface + DisplayOutputSurface
   if (frame.sub_buffer_rect == gfx::Rect(frame.size)) {
     context_provider_->ContextSupport()->Swap();
   } else {
@@ -115,35 +115,35 @@ void DirectOutputSurfaceOzone::SwapBuffers(cc::OutputSurfaceFrame frame) {
   }
 }
 
-uint32_t DirectOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
+uint32_t DisplayOutputSurfaceOzone::GetFramebufferCopyTextureFormat() {
   return buffer_queue_->internal_format();
 }
 
 cc::OverlayCandidateValidator*
-DirectOutputSurfaceOzone::GetOverlayCandidateValidator() const {
+DisplayOutputSurfaceOzone::GetOverlayCandidateValidator() const {
   return nullptr;
 }
 
-bool DirectOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
+bool DisplayOutputSurfaceOzone::IsDisplayedAsOverlayPlane() const {
   // TODO(rjkroege): implement remaining overlay functionality.
   return true;
 }
 
-unsigned DirectOutputSurfaceOzone::GetOverlayTextureId() const {
+unsigned DisplayOutputSurfaceOzone::GetOverlayTextureId() const {
   return buffer_queue_->current_texture_id();
 }
 
-bool DirectOutputSurfaceOzone::SurfaceIsSuspendForRecycle() const {
+bool DisplayOutputSurfaceOzone::SurfaceIsSuspendForRecycle() const {
   return false;
 }
 
-bool DirectOutputSurfaceOzone::HasExternalStencilTest() const {
+bool DisplayOutputSurfaceOzone::HasExternalStencilTest() const {
   return false;
 }
 
-void DirectOutputSurfaceOzone::ApplyExternalStencil() {}
+void DisplayOutputSurfaceOzone::ApplyExternalStencil() {}
 
-void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
+void DisplayOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
     gfx::SwapResult result,
     const gpu::GpuProcessHostedCALayerTreeParamsMac* params_mac) {
@@ -163,7 +163,7 @@ void DirectOutputSurfaceOzone::OnGpuSwapBuffersCompleted(
     client_->SetNeedsRedrawRect(gfx::Rect(swap_size_));
 }
 
-void DirectOutputSurfaceOzone::OnVSyncParametersUpdated(
+void DisplayOutputSurfaceOzone::OnVSyncParametersUpdated(
     base::TimeTicks timebase,
     base::TimeDelta interval) {
   // TODO(brianderson): We should not be receiving 0 intervals.

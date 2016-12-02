@@ -6,10 +6,10 @@ import("//build/config/ui.gni")
 
 source_set("surfaces") {
   sources = [
-    "direct_output_surface.cc",
-    "direct_output_surface.h",
     "display_compositor.cc",
     "display_compositor.h",
+    "display_output_surface.cc",
+    "display_output_surface.h",
     "gpu_compositor_frame_sink.cc",
     "gpu_compositor_frame_sink.h",
   ]
@@ -38,8 +38,8 @@ source_set("surfaces") {
 
   if (use_ozone) {
     sources += [
-      "direct_output_surface_ozone.cc",
-      "direct_output_surface_ozone.h",
+      "display_output_surface_ozone.cc",
+      "display_output_surface_ozone.h",
     ]
     deps += [ "//gpu/command_buffer/common" ]
   }

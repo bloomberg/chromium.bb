@@ -15,12 +15,12 @@
 #include "cc/quads/surface_draw_quad.h"
 #include "cc/scheduler/begin_frame_source.h"
 #include "cc/surfaces/display_scheduler.h"
-#include "services/ui/surfaces/direct_output_surface.h"
 #include "services/ui/surfaces/display_compositor.h"
+#include "services/ui/surfaces/display_output_surface.h"
 
 #if defined(USE_OZONE)
 #include "gpu/command_buffer/client/gles2_interface.h"
-#include "services/ui/surfaces/direct_output_surface_ozone.h"
+#include "services/ui/surfaces/display_output_surface_ozone.h"
 #endif
 
 namespace ui {
@@ -137,7 +137,7 @@ void GpuCompositorFrameSink::InitDisplay(
   std::unique_ptr<cc::OutputSurface> display_output_surface;
   if (context_provider->ContextCapabilities().surfaceless) {
 #if defined(USE_OZONE)
-    display_output_surface = base::MakeUnique<DirectOutputSurfaceOzone>(
+    display_output_surface = base::MakeUnique<DisplayOutputSurfaceOzone>(
         std::move(context_provider), surface_handle,
         synthetic_begin_frame_source.get(), gpu_memory_buffer_manager,
         GL_TEXTURE_2D, GL_RGB);
@@ -145,7 +145,7 @@ void GpuCompositorFrameSink::InitDisplay(
     NOTREACHED();
 #endif
   } else {
-    display_output_surface = base::MakeUnique<DirectOutputSurface>(
+    display_output_surface = base::MakeUnique<DisplayOutputSurface>(
         std::move(context_provider), synthetic_begin_frame_source.get());
   }
 
