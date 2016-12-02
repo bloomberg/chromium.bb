@@ -829,6 +829,21 @@ wet_load_module(struct weston_compositor *compositor,
 }
 
 static int
+wet_load_shell(struct weston_compositor *compositor,
+	       const char *name, int *argc, char *argv[])
+{
+	int (*shell_init)(struct weston_compositor *ec,
+			  int *argc, char *argv[]);
+
+	shell_init = wet_load_module_entrypoint(name, "wet_shell_init");
+	if (!shell_init)
+		return -1;
+	if (shell_init(compositor, argc, argv) < 0)
+		return -1;
+	return 0;
+}
+
+static int
 load_modules(struct weston_compositor *ec, const char *modules,
 	     int *argc, char *argv[])
 {
@@ -1895,7 +1910,7 @@ int main(int argc, char *argv[])
 		weston_config_section_get_string(section, "shell", &shell,
 						 "desktop-shell.so");
 
-	if (load_modules(ec, shell, &argc, argv) < 0)
+	if (wet_load_shell(ec, shell, &argc, argv) < 0)
 		goto out;
 
 	weston_config_section_get_string(section, "modules", &modules, "");

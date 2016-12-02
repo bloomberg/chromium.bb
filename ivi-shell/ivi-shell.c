@@ -492,8 +492,8 @@ shell_add_bindings(struct weston_compositor *compositor,
  * Initialization of ivi-shell.
  */
 WL_EXPORT int
-wet_module_init(struct weston_compositor *compositor,
-		int *argc, char *argv[])
+wet_shell_init(struct weston_compositor *compositor,
+	       int *argc, char *argv[])
 {
 	struct ivi_shell *shell;
 	struct ivi_shell_setting setting = { };

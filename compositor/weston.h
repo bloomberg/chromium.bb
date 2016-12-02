@@ -64,6 +64,9 @@ void *
 wet_load_module_entrypoint(const char *name, const char *entrypoint);
 
 int
+wet_shell_init(struct weston_compositor *ec,
+	       int *argc, char *argv[]);
+int
 wet_module_init(struct weston_compositor *ec,
 		int *argc, char *argv[]);
 int

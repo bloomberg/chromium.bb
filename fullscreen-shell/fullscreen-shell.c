@@ -897,8 +897,8 @@ bind_fullscreen_shell(struct wl_client *client, void *data, uint32_t version,
 }
 
 WL_EXPORT int
-wet_module_init(struct weston_compositor *compositor,
-		int *argc, char *argv[])
+wet_shell_init(struct weston_compositor *compositor,
+	       int *argc, char *argv[])
 {
 	struct fullscreen_shell *shell;
 	struct weston_seat *seat;
