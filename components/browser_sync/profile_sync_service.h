@@ -588,44 +588,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Triggers sync cycle with request to update specified |types|.
   void RefreshTypesForTest(syncer::ModelTypeSet types);
 
- protected:
-  // Helper to install and configure a data type manager.
-  void ConfigureDataTypeManager();
-
-  // Shuts down the backend sync components.
-  // |reason| dictates if syncing is being disabled or not, and whether
-  // to claim ownership of sync thread from backend.
-  void ShutdownImpl(syncer::ShutdownReason reason);
-
-  // Return SyncCredentials from the OAuth2TokenService.
-  syncer::SyncCredentials GetCredentials();
-
-  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
-
-  // Helper method for managing encryption UI.
-  bool IsEncryptedDatatypeEnabled() const;
-
-  // Helper for OnUnrecoverableError.
-  // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
-  // and in SyncBackendHost::Shutdown.
-  void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
-                                const std::string& message,
-                                bool delete_sync_database);
-
-  // This is a cache of the last authentication response we received from the
-  // sync server. The UI queries this to display appropriate messaging to the
-  // user.
-  GoogleServiceAuthError last_auth_error_;
-
-  // Our asynchronous backend to communicate with sync components living on
-  // other threads.
-  std::unique_ptr<syncer::SyncBackendHost> backend_;
-
-  // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
-  // was required for encryption, decryption with a cached passphrase, or
-  // because a new passphrase is required?
-  syncer::PassphraseRequiredReason passphrase_required_reason_;
-
  private:
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
@@ -662,6 +624,29 @@ class ProfileSyncService : public syncer::SyncService,
 
   friend class TestProfileSyncService;
 
+  // Helper to install and configure a data type manager.
+  void ConfigureDataTypeManager();
+
+  // Shuts down the backend sync components.
+  // |reason| dictates if syncing is being disabled or not, and whether
+  // to claim ownership of sync thread from backend.
+  void ShutdownImpl(syncer::ShutdownReason reason);
+
+  // Return SyncCredentials from the OAuth2TokenService.
+  syncer::SyncCredentials GetCredentials();
+
+  virtual syncer::WeakHandle<syncer::JsEventHandler> GetJsEventHandler();
+
+  // Helper method for managing encryption UI.
+  bool IsEncryptedDatatypeEnabled() const;
+
+  // Helper for OnUnrecoverableError.
+  // TODO(tim): Use an enum for |delete_sync_database| here, in ShutdownImpl,
+  // and in SyncBackendHost::Shutdown.
+  void OnUnrecoverableErrorImpl(const tracked_objects::Location& from_here,
+                                const std::string& message,
+                                bool delete_sync_database);
+
   // Stops the sync engine. Does NOT set IsSyncRequested to false. Use
   // RequestStop for that. |data_fate| controls whether the local sync data is
   // deleted or kept when the engine shuts down.
@@ -674,11 +659,6 @@ class ProfileSyncService : public syncer::SyncService,
   // Called when configuration is complete.
   void StartSyncingWithServer();
 
-  // Called when we've determined that we don't need a passphrase (either
-  // because OnPassphraseAccepted() was called, or because we've gotten a
-  // OnPassphraseRequired() but no data types are enabled).
-  void ResolvePassphraseRequired();
-
   // During initial signin, ProfileSyncService caches the user's signin
   // passphrase so it can be used to encrypt/decrypt data after sync starts up.
   // This routine is invoked once the backend has started up to use the
@@ -689,7 +669,7 @@ class ProfileSyncService : public syncer::SyncService,
   // refresh token. This happens when a new OAuth2 login token is loaded and
   // when sync server returns AUTH_ERROR which indicates it is time to refresh
   // token.
-  virtual void RequestAccessToken();
+  void RequestAccessToken();
 
   // Return true if backend should start from a fresh sync DB.
   bool ShouldDeleteSyncFolder();
@@ -697,9 +677,6 @@ class ProfileSyncService : public syncer::SyncService,
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
   void InitializeBackend(bool delete_sync_data_folder);
-
-  // Initializes the various settings from the command line.
-  void InitSettings();
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -713,7 +690,7 @@ class ProfileSyncService : public syncer::SyncService,
   void ClearUnrecoverableError();
 
   // Starts up the backend sync components.
-  virtual void StartUpSlowBackendComponents();
+  void StartUpSlowBackendComponents();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
@@ -790,6 +767,20 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Called when a SetupInProgressHandle issued by this instance is destroyed.
   virtual void OnSetupInProgressHandleDestroyed();
+
+  // This is a cache of the last authentication response we received from the
+  // sync server. The UI queries this to display appropriate messaging to the
+  // user.
+  GoogleServiceAuthError last_auth_error_;
+
+  // Our asynchronous backend to communicate with sync components living on
+  // other threads.
+  std::unique_ptr<syncer::SyncBackendHost> backend_;
+
+  // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
+  // was required for encryption, decryption with a cached passphrase, or
+  // because a new passphrase is required?
+  syncer::PassphraseRequiredReason passphrase_required_reason_;
 
   // This profile's SyncClient, which abstracts away non-Sync dependencies and
   // the Sync API component factory.
