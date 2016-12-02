@@ -8,6 +8,7 @@
     <dimen name="dropdown_item_height">50dp</dimen>
     <dimen name="dropdown_item_divider_height">1px</dimen>
     <dimen name="dropdown_item_label_font_size">18sp</dimen>
+    <dimen name="dropdown_item_label_margin">10dp</dimen>
 
     <!--
          Fallback values if the corresponding com.android.internal.R dimensions

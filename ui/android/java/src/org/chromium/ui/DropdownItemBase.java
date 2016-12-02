@@ -48,4 +48,14 @@ public class DropdownItemBase implements DropdownItem {
     public int getLabelFontSizeResId() {
         return R.dimen.dropdown_item_label_font_size;
     }
+
+    @Override
+    public boolean isLabelAndSublabelOnSameLine() {
+        return false;
+    }
+
+    @Override
+    public boolean isIconAtStart() {
+        return false;
+    }
 }

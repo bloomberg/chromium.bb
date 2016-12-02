@@ -85,13 +85,32 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
         // If you need to modify this layout, don't forget to test it with TalkBack and make sure
         // it doesn't regress.
         // http://crbug.com/429364
-        View wrapper = layout.findViewById(R.id.dropdown_label_wrapper);
+        LinearLayout wrapper = (LinearLayout) layout.findViewById(R.id.dropdown_label_wrapper);
         if (item.isMultilineLabel()) height = LayoutParams.WRAP_CONTENT;
+        if (item.isLabelAndSublabelOnSameLine()) {
+            wrapper.setOrientation(LinearLayout.HORIZONTAL);
+        } else {
+            wrapper.setOrientation(LinearLayout.VERTICAL);
+        }
+
         wrapper.setLayoutParams(new LinearLayout.LayoutParams(0, height, 1));
 
         TextView labelView = (TextView) layout.findViewById(R.id.dropdown_label);
         labelView.setText(item.getLabel());
         labelView.setSingleLine(!item.isMultilineLabel());
+
+        if (item.isLabelAndSublabelOnSameLine()) {
+            labelView.setLayoutParams(
+                    new LinearLayout.LayoutParams(0, LayoutParams.WRAP_CONTENT, 1));
+        } else {
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(
+                    LayoutParams.WRAP_CONTENT, LayoutParams.WRAP_CONTENT);
+            int labelMargin = mContext.getResources().getDimensionPixelSize(
+                    R.dimen.dropdown_item_label_margin);
+            ApiCompatibilityUtils.setMarginStart(layoutParams, labelMargin);
+            ApiCompatibilityUtils.setMarginEnd(layoutParams, labelMargin);
+            labelView.setLayoutParams(layoutParams);
+        }
 
         labelView.setEnabled(item.isEnabled());
         if (item.isGroupHeader()) {
@@ -114,7 +133,15 @@ public class DropdownAdapter extends ArrayAdapter<DropdownItem> {
             sublabelView.setVisibility(View.VISIBLE);
         }
 
-        ImageView iconView = (ImageView) layout.findViewById(R.id.dropdown_icon);
+        ImageView iconViewStart = (ImageView) layout.findViewById(R.id.start_dropdown_icon);
+        ImageView iconViewEnd = (ImageView) layout.findViewById(R.id.end_dropdown_icon);
+        if (item.isIconAtStart()) {
+            iconViewEnd.setVisibility(View.GONE);
+        } else {
+            iconViewStart.setVisibility(View.GONE);
+        }
+
+        ImageView iconView = item.isIconAtStart() ? iconViewStart : iconViewEnd;
         if (item.getIconId() == DropdownItem.NO_ICON) {
             iconView.setVisibility(View.GONE);
         } else {

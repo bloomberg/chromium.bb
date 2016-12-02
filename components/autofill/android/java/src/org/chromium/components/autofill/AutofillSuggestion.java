@@ -78,6 +78,22 @@ public class AutofillSuggestion extends DropdownItemBase {
         return super.getLabelFontSizeResId();
     }
 
+    @Override
+    public boolean isLabelAndSublabelOnSameLine() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return true;
+        }
+        return super.isLabelAndSublabelOnSameLine();
+    }
+
+    @Override
+    public boolean isIconAtStart() {
+        if (mSuggestionId == ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE) {
+            return true;
+        }
+        return super.isIconAtStart();
+    }
+
     public int getSuggestionId() {
         return mSuggestionId;
     }
