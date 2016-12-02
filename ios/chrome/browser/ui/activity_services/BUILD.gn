@@ -1,0 +1,28 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("assets") {
+  sources = [
+    "resources/activity_services_print.xcassets/Contents.json",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/Contents.json",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@2x.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-60@3x.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76.png",
+    "resources/activity_services_print.xcassets/activity_services_print.imageset/activity_services_print-76@2x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
+
+bundle_data("resources") {
+  sources = [
+    "resources/activity_services_reading_list.png",
+    "resources/activity_services_reading_list@2x.png",
+    "resources/activity_services_reading_list@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
