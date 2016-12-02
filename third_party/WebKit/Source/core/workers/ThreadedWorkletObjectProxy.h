@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class ExecutionContext;
 class ThreadedWorkletMessagingProxy;
 
 // A proxy to talk to the parent worklet object. This object is created on the
@@ -49,8 +48,6 @@ class CORE_EXPORT ThreadedWorkletObjectProxy : public WorkerReportingProxy {
   ThreadedWorkletObjectProxy(const WeakPtr<ThreadedWorkletMessagingProxy>&);
 
  private:
-  ExecutionContext* getExecutionContext() const;
-
   // No guarantees about the lifetimes of tasks posted by this proxy wrt the
   // ThreadedWorkletMessagingProxy so a weak pointer must be used when posting
   // the tasks.
