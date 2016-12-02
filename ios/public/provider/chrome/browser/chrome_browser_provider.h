@@ -18,12 +18,10 @@
 #include "components/favicon_base/favicon_callback.h"
 
 class AppDistributionProvider;
-class AutocompleteProvider;
 class BrandedImageProvider;
 class GURL;
 class InfoBarViewDelegate;
 class OmahaServiceProvider;
-class PrefRegistrySimple;
 class PrefService;
 class SpotlightProvider;
 class UserFeedbackProvider;
@@ -32,10 +30,6 @@ class VoiceSearchProvider;
 namespace autofill {
 class CardUnmaskPromptController;
 class CardUnmaskPromptView;
-}
-
-namespace net {
-class URLRequestContextGetter;
 }
 
 namespace web {

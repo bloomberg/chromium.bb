@@ -11,10 +11,6 @@
 #include "base/memory/ref_counted.h"
 #include "net/cookies/canonical_cookie.h"
 
-namespace base {
-class SequencedTaskRunner;
-}
-
 namespace ios {
 class ChromeBrowserState;
 }

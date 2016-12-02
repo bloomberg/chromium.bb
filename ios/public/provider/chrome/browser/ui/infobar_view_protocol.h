@@ -8,7 +8,6 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <Foundation/Foundation.h>
 
-class InfoBarViewDelegate;
 @class UIImage;
 
 // Interface for setting up the infobar's widgets.

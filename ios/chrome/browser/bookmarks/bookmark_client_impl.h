@@ -14,12 +14,7 @@
 
 class GURL;
 
-namespace base {
-class ListValue;
-}
-
 namespace bookmarks {
-class BookmarkModel;
 class BookmarkNode;
 class BookmarkPermanentNode;
 }

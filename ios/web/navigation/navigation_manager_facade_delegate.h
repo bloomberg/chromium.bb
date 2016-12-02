@@ -13,7 +13,6 @@ class NavigationController;
 
 namespace web {
 
-class NavigationItemImpl;
 class NavigationManagerImpl;
 
 // Interface used by the NavigationManager to drive the NavigationController

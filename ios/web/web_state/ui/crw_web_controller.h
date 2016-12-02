@@ -44,15 +44,8 @@ extern NSString* const kContainerViewID;
 @protocol CRWWebViewProxy;
 class GURL;
 
-namespace base {
-class Value;
-}
-
 namespace web {
-class BrowserState;
-struct Referrer;
 class WebState;
-class WebInterstitialImpl;
 class WebStateImpl;
 }
 

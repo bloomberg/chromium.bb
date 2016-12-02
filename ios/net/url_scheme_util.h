@@ -5,7 +5,6 @@
 #ifndef IOS_NET_URL_SCHEME_UTIL_H_
 #define IOS_NET_URL_SCHEME_UTIL_H_
 
-class GURL;
 @class NSString;
 @class NSURL;
 

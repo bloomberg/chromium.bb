@@ -49,10 +49,6 @@ namespace rappor {
 class RapporService;
 }
 
-namespace safe_browsing {
-class SafeBrowsingService;
-}
-
 namespace variations {
 class VariationsService;
 }

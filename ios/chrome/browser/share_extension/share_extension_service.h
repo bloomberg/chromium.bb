@@ -13,10 +13,6 @@ namespace bookmarks {
 class BookmarkModel;
 }
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 class ReadingListModel;
 
 // AuthenticationService is the Chrome interface to the iOS shared

@@ -21,12 +21,6 @@ class GURL;
 @class CRWSessionEntry;
 @class CRWWebController;
 
-namespace net {
-class HttpResponseHeaders;
-class SSLInfo;
-class X509Certificate;
-}
-
 namespace web {
 class BlockedPopupInfo;
 struct Referrer;

@@ -17,7 +17,6 @@ class URLRequestContextGetter;
 
 namespace web {
 class ActiveStateManager;
-class BrowsingDataPartition;
 class CertificatePolicyCache;
 class URLDataManagerIOS;
 class URLDataManagerIOSBackend;

@@ -8,10 +8,6 @@
 #include "ios/web/public/web_state/credential.h"
 #import "ios/web/public/web_state/js/crw_js_injection_manager.h"
 
-namespace base {
-class DictionaryValue;
-}  // namespace base
-
 // Constants for rejecting requests.
 extern const char kCredentialsPendingRequestErrorType[];
 extern const char kCredentialsPendingRequestErrorMessage[];

@@ -12,7 +12,6 @@
 
 namespace web {
 
-class ShellBrowserContext;
 class ShellURLRequestContextGetter;
 
 // Shell-specific implementation of BrowserState.  Can only be called from the

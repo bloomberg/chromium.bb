@@ -9,7 +9,6 @@
 #include "base/timer/timer.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 
-class BrowserState;
 class ReadingListModel;
 
 // Observes the loading of pages coming from the reading list, determines

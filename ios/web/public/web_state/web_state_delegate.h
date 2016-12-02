@@ -9,15 +9,10 @@
 
 #include "base/callback.h"
 
-namespace net {
-class SSLInfo;
-}
-
 namespace web {
 
 struct ContextMenuParams;
 class JavaScriptDialogPresenter;
-struct SSLStatus;
 class WebState;
 
 // Objects implement this interface to get notified about changes in the

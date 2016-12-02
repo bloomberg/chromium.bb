@@ -15,8 +15,6 @@
 #include "net/url_request/url_request_context_getter.h"
 
 namespace net {
-class HostResolver;
-class MappedHostResolver;
 class NetworkDelegate;
 class NetLog;
 class ProxyConfigService;

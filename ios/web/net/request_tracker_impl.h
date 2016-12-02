@@ -25,10 +25,6 @@
 @class CRWSSLCarrier;
 struct TrackerCounts;
 
-namespace content {
-struct SSLStatus;
-}
-
 namespace net {
 class HttpResponseHeaders;
 class URLRequest;

@@ -42,7 +42,6 @@ enum class ChromeBrowserStateType;
 }
 
 namespace net {
-class CertVerifier;
 class ChannelIDService;
 class CookieStore;
 class HttpServerProperties;
@@ -50,7 +49,6 @@ class HttpTransactionFactory;
 class ProxyConfigService;
 class ProxyService;
 class ReportSender;
-class ServerBoundCertService;
 class SSLConfigService;
 class TransportSecurityPersister;
 class TransportSecurityState;

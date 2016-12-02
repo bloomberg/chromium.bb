@@ -21,11 +21,6 @@
 
 class IOSChromeStabilityMetricsProvider;
 class PrefRegistrySimple;
-class PrefService;
-
-namespace base {
-class FilePath;
-}  // namespace base
 
 namespace metrics {
 class DriveMetricsProvider;

@@ -9,10 +9,6 @@
 
 class GURL;
 
-namespace gfx {
-class Size;
-}
-
 namespace web {
 
 class HtmlWebInterstitialDelegate;

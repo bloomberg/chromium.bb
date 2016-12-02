@@ -7,10 +7,7 @@
 
 #include "base/strings/string16.h"
 
-class GURL;
-
 namespace base {
-class DictionaryValue;
 class ListValue;
 }
 

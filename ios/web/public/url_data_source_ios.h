@@ -11,7 +11,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace base {
-class MessageLoop;
 class RefCountedMemory;
 }
 

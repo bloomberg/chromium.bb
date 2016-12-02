@@ -11,8 +11,6 @@ class NavigationEntry;
 
 namespace web {
 
-class NavigationItemImpl;
-
 // Interface used by NavigationItems to interact with their NavigationEntry
 // facades.  This pushes references to NavigationEntry out of the web-layer.
 // Note that since communication is one-directional, this interface is primarily

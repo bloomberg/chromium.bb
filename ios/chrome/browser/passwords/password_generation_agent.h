@@ -20,7 +20,6 @@
 @class JsSuggestionManager;
 
 namespace autofill {
-struct FormData;
 struct FormFieldData;
 struct PasswordForm;
 }

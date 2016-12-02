@@ -15,7 +15,6 @@ struct DefaultSingletonTraits;
 }  // namespace base
 
 class ReadingListModel;
-class ReadingListStore;
 
 namespace ios {
 class ChromeBrowserState;

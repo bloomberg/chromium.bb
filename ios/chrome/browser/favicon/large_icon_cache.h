@@ -18,10 +18,6 @@ namespace favicon_base {
 struct LargeIconResult;
 }
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 // Provides a cache of most recently used LargeIconResult.
 //
 // Example usage:

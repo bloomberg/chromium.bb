@@ -8,8 +8,6 @@
 #import <Foundation/Foundation.h>
 #include <stdint.h>
 
-class GURL;
-
 // Protocol used to mock the delayed dispatching for the unit tests.
 // Calls |block| after |delayInNSec|.
 @protocol DispatcherProtocol<NSObject>

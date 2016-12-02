@@ -11,8 +11,6 @@
 #include "base/memory/ref_counted.h"
 
 namespace base {
-class CommandLine;
-class FilePath;
 class MessageLoop;
 class PowerMonitor;
 class SystemMonitor;

@@ -29,10 +29,6 @@ class PrefProxyConfigTracker;
 class PrefService;
 class SystemURLRequestContextGetter;
 
-namespace base {
-class CommandLine;
-}  // namespace base
-
 namespace net {
 class CTPolicyEnforcer;
 class CertVerifier;

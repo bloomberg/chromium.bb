@@ -11,15 +11,10 @@
 
 class PrefRegistry;
 class PrefService;
-class PrefStore;
 
 namespace base {
 class FilePath;
 class SequencedTaskRunner;
-}
-
-namespace ios {
-class ChromeBrowserState;
 }
 
 namespace sync_preferences {

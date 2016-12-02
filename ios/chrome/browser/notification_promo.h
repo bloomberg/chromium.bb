@@ -15,7 +15,6 @@ class PrefService;
 
 namespace base {
 class DictionaryValue;
-class ListValue;
 }
 
 namespace user_prefs {

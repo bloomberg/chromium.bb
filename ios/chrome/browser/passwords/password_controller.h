@@ -19,7 +19,6 @@
 
 namespace password_manager {
 class PasswordGenerationManager;
-class PasswordManager;
 class PasswordManagerClient;
 class PasswordManagerDriver;
 }  // namespace password_manager

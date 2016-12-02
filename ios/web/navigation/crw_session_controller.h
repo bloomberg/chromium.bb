@@ -17,7 +17,6 @@
 namespace web {
 class NavigationManagerImpl;
 struct Referrer;
-struct SSLStatus;
 }
 
 // A CRWSessionController is similar to a NavigationController object in desktop

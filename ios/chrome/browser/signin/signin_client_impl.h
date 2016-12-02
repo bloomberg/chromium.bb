@@ -15,10 +15,6 @@
 #include "google_apis/gaia/oauth2_token_service.h"
 #include "net/base/network_change_notifier.h"
 
-namespace content_settings {
-class CookieSettings;
-}
-
 namespace ios {
 class ChromeBrowserState;
 }

@@ -15,10 +15,6 @@ namespace password_manager {
 class PasswordFormManager;
 }
 
-namespace infobars {
-class InfoBarManager;
-}
-
 // Base class for password manager infobar delegates, e.g.
 // IOSChromeSavePasswordInfoBarDelegate and
 // IOSChromeUpdatePasswordInfoBarDelegate. Provides link text and action for

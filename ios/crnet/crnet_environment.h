@@ -20,7 +20,6 @@ class JsonPrefStore;
 
 namespace net {
 class CookieStore;
-class HttpCache;
 class NetworkChangeNotifier;
 class NetLog;
 class ProxyConfigService;

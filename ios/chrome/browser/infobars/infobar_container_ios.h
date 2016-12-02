@@ -13,7 +13,6 @@
 #include "base/macros.h"
 
 @class InfoBarContainerView;
-class InfoBarIOS;
 
 // IOS infobar container specialization, managing infobars visibility so
 // that only the front most one is visible at any time.

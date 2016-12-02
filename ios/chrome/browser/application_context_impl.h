@@ -13,8 +13,6 @@
 #include "base/threading/thread_checker.h"
 #include "ios/chrome/browser/application_context.h"
 
-class PrefRegistrySimple;
-
 namespace base {
 class CommandLine;
 class SequencedTaskRunner;

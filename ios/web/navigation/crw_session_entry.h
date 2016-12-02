@@ -18,7 +18,6 @@
 namespace web {
 class NavigationItem;
 class NavigationItemImpl;
-struct Referrer;
 
 // Keys used to serialize web::PageScrollState properties.
 extern NSString* const kSessionEntryPageScrollStateKey;

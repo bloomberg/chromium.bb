@@ -11,8 +11,6 @@
 #import "base/mac/scoped_nsobject.h"
 #include "testing/gtest_mac.h"
 
-class GURL;
-
 namespace web {
 
 // Base fixture mixin for testing JavaScripts.

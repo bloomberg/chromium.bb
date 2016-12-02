@@ -12,7 +12,6 @@
 namespace base {
 class ListValue;
 }
-class PhysicalWebListener;
 
 @class PhysicalWebScanner;
 

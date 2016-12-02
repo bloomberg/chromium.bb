@@ -17,10 +17,6 @@
 class IOSChromeControllerClient;
 class GURL;
 
-namespace ios {
-class ChromeBrowserState;
-}
-
 namespace security_interstitials {
 class SSLErrorUI;
 }
