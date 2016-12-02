@@ -55,4 +55,8 @@ TimeFunction setTimeFunctionsForTesting(TimeFunction newFunction) {
   return oldFunction;
 }
 
+TimeFunction getTimeFunctionForTesting() {
+  return mockTimeFunctionForTesting;
+}
+
 }  // namespace WTF

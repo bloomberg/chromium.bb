@@ -64,6 +64,9 @@ using TimeFunction = double (*)();
 // means using the default timing function returning the actual time.
 WTF_EXPORT TimeFunction setTimeFunctionsForTesting(TimeFunction);
 
+// Allows wtf/Time.h to use the same mock time function
+WTF_EXPORT TimeFunction getTimeFunctionForTesting();
+
 }  // namespace WTF
 
 using WTF::currentTime;
