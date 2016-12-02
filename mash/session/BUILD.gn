@@ -29,9 +29,12 @@ source_set("lib") {
   ]
 
   data_deps = [
-    "//ash/mus",
     "//mash/quick_launch",
   ]
+
+  if (is_chromeos) {
+    data_deps += [ "//ash/mus" ]
+  }
 }
 
 service("session") {

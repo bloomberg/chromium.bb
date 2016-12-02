@@ -530,12 +530,11 @@ def DoComponentBuildTasks(staging_dir, build_dir, target_arch,
   for component_dll in [dll for dll in build_dlls if \
                         os.path.basename(dll) not in staged_dll_basenames]:
     component_dll_name = os.path.basename(component_dll)
-    # ash*.dll remoting_*.dll's don't belong in the archive (it doesn't depend
+    # These remoting_*.dll's don't belong in the archive (it doesn't depend
     # on them in gyp). Trying to copy them causes a build race when creating the
     # installer archive in component mode. See: crbug.com/180996 and
     # crbug.com/586967
-    if (component_dll_name.startswith('remoting_') or
-        component_dll_name.startswith('ash')):
+    if (component_dll_name.startswith('remoting_')):
       continue
 
     component_dll_filenames.append(component_dll_name)

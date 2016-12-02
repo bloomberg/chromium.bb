@@ -347,11 +347,16 @@ group("both_gn_and_gyp") {
     ]
   }
 
-  if (use_aura) {
+  if (use_ash) {
     deps += [
       "//ash:ash_content_unittests",
       "//ash:ash_shell_with_content",
       "//ash:ash_unittests",
+    ]
+  }
+
+  if (use_aura) {
+    deps += [
       "//ui/app_list:app_list_unittests",
       "//ui/app_list/presenter:app_list_presenter_unittests",
       "//ui/aura:aura_unittests",
@@ -476,6 +481,7 @@ group("both_gn_and_gyp") {
   if (is_chromeos) {
     deps += [
       "//chromeos:chromeos_unittests",
+      "//components/session_manager/core",
       "//ui/arc:ui_arc_unittests",
       "//ui/chromeos:ui_chromeos_unittests",
     ]
@@ -506,10 +512,6 @@ group("both_gn_and_gyp") {
         "//dbus:dbus_test_server",
         "//dbus:dbus_unittests",
       ]
-    }
-
-    if (is_chromeos || use_ash) {
-      deps += [ "//components/session_manager/core" ]
     }
 
     if (is_chrome_branded && is_official_build) {
