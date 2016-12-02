@@ -490,6 +490,7 @@ class ManagedGitWrapperTestCase(BaseGitWrapperTestCase):
     sys.stdout.getvalue()
     sys.stdout.close()
 
+  @unittest.skip('Skipping until crbug.com/670884 is resolved.')
   def testUpdateLocked(self):
     if not self.enabled:
       return
