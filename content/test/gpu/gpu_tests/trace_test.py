@@ -5,7 +5,7 @@ from gpu_tests import gpu_test_base
 from gpu_tests import trace_test_expectations
 import page_sets
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.timeline import model as model_module
 from telemetry.timeline import tracing_config
 
@@ -60,7 +60,7 @@ class TraceValidatorBase(gpu_test_base.ValidatorBase):
           event.category == category_name):
         break
     else:
-      raise page_test.Failure(self._FormatException(category_name))
+      raise legacy_page_test.Failure(self._FormatException(category_name))
 
   def CustomizeBrowserOptions(self, options):
     options.AppendExtraBrowserArgs('--enable-logging')

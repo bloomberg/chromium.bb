@@ -8,7 +8,7 @@ from gpu_tests import gpu_test_base
 from gpu_tests import path_util
 from gpu_tests import screenshot_sync_expectations
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.story import story_set as story_set_module
 from telemetry.util import image_util
 from telemetry.util import rgba_color
@@ -41,7 +41,8 @@ class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not tab.screenshot_supported:
-      raise page_test.Failure('Browser does not support screenshot capture')
+      raise legacy_page_test.Failure(
+          'Browser does not support screenshot capture')
 
     def CheckColorMatchAtLocation(expectedRGB, screenshot, x, y):
       pixel_value = image_util.GetPixelColor(screenshot, x, y)
@@ -50,7 +51,7 @@ class ScreenshotSyncValidator(gpu_test_base.ValidatorBase):
                          'got (%d, %d, %d)') % (
                              x, y, expectedRGB.r, expectedRGB.g, expectedRGB.b,
                              pixel_value.r, pixel_value.g, pixel_value.b)
-        raise page_test.Failure(error_message)
+        raise legacy_page_test.Failure(error_message)
 
     def CheckScreenshot():
       canvasRGB = rgba_color.RgbaColor(random.randint(0, 255),

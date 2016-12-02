@@ -11,7 +11,7 @@ import re
 import tempfile
 
 from py_utils import cloud_storage
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.util import image_util
 from telemetry.util import rgba_color
 
@@ -67,7 +67,7 @@ def _CompareScreenshotSamples(tab, screenshot, expectations, device_pixel_ratio,
       for y in range(y0, y1):
         if (x < 0 or y < 0 or x >= image_util.Width(screenshot) or
             y >= image_util.Height(screenshot)):
-          raise page_test.Failure(
+          raise legacy_page_test.Failure(
               ('Expected pixel location [%d, %d] is out of range on ' +
                '[%d, %d] image') %
               (x, y, image_util.Width(screenshot),
@@ -79,7 +79,7 @@ def _CompareScreenshotSamples(tab, screenshot, expectations, device_pixel_ratio,
             expectation["color"][1],
             expectation["color"][2])
         if not actual_color.IsEqual(expected_color, expectation["tolerance"]):
-          raise page_test.Failure('Expected pixel at ' + str(location) +
+          raise legacy_page_test.Failure('Expected pixel at ' + str(location) +
               ' (actual pixel (' + str(x) + ', ' + str(y) + ')) ' +
               ' to be ' +
               str(expectation["color"]) + " but got [" +
@@ -262,7 +262,7 @@ class ValidatorBase(gpu_test_base.ValidatorBase):
       _CompareScreenshotSamples(tab, screenshot, expectations,
                                 device_pixel_ratio,
                                 self.options.test_machine_name)
-    except page_test.Failure:
+    except legacy_page_test.Failure:
       image_name = self._UrlToImageName(url)
       if self.options.test_machine_name:
         self._UploadErrorImagesToCloudStorage(image_name, screenshot, None)

@@ -3,7 +3,7 @@
 # found in the LICENSE file.
 import sys
 from telemetry.story import story_set as story_set_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 from gpu_tests import gpu_test_base
 
@@ -63,10 +63,12 @@ class IdentifyActiveGpuPageBase(gpu_test_base.PageBase):
         index += 1
 
     if active_gpu != self.active_gpu:
-      raise page_test.Failure('Active GPU field is wrong %s' % active_gpu)
+      raise legacy_page_test.Failure(
+          'Active GPU field is wrong %s' % active_gpu)
 
     if inactive_gpus != self.inactive_gpus:
-      raise page_test.Failure('Inactive GPU field is wrong %s' % inactive_gpus)
+      raise legacy_page_test.Failure(
+          'Inactive GPU field is wrong %s' % inactive_gpus)
 
 
 class DriverBugWorkaroundsTestsPage(gpu_test_base.PageBase):
@@ -105,7 +107,7 @@ class DriverBugWorkaroundsTestsPage(gpu_test_base.PageBase):
     if failure:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('%s %s in Browser process workarounds: %s' \
+      raise legacy_page_test.Failure('%s %s in Browser process workarounds: %s'
         % (workaround_name, error_message, gpu_driver_bug_workarounds))
 
   def Validate(self, tab, results):
@@ -134,11 +136,11 @@ class EqualBugWorkaroundsBasePage(gpu_test_base.PageBase):
   def Validate(self, tab, results):
     has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
     if not tab.EvaluateJavaScript(has_gpu_process_js):
-      raise page_test.Failure('No GPU process detected')
+      raise legacy_page_test.Failure('No GPU process detected')
 
     has_gpu_channel_js = 'chrome.gpuBenchmarking.hasGpuChannel()'
     if not tab.EvaluateJavaScript(has_gpu_channel_js):
-      raise page_test.Failure('No GPU channel detected')
+      raise legacy_page_test.Failure('No GPU channel detected')
 
     browser_list = tab.EvaluateJavaScript('GetDriverBugWorkarounds()')
     gpu_list = tab.EvaluateJavaScript( \
@@ -148,8 +150,9 @@ class EqualBugWorkaroundsBasePage(gpu_test_base.PageBase):
     if len(diff) > 0:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('Browser and GPU process list of driver bug' \
-        'workarounds are not equal: %s != %s, diff: %s' % \
+      raise legacy_page_test.Failure(
+        'Browser and GPU process list of driver bug'
+        'workarounds are not equal: %s != %s, diff: %s' %
         (browser_list, gpu_list, list(diff)))
 
     basic_infos = tab.EvaluateJavaScript('browserBridge.gpuInfo.basic_info')
@@ -198,16 +201,18 @@ class GpuInfoCompletePage(GpuProcessTestsPage):
   def Validate(self, tab, results):
     # Regression test for crbug.com/454906
     if not tab.browser.supports_system_info:
-      raise page_test.Failure('Browser must support system info')
+      raise legacy_page_test.Failure('Browser must support system info')
     system_info = tab.browser.GetSystemInfo()
     if not system_info.gpu:
-      raise page_test.Failure('Target machine must have a GPU')
+      raise legacy_page_test.Failure('Target machine must have a GPU')
     if not system_info.gpu.aux_attributes:
-      raise page_test.Failure('Browser must support GPU aux attributes')
+      raise legacy_page_test.Failure('Browser must support GPU aux attributes')
     if not 'gl_renderer' in system_info.gpu.aux_attributes:
-      raise page_test.Failure('Browser must have gl_renderer in aux attribs')
+      raise legacy_page_test.Failure(
+          'Browser must have gl_renderer in aux attribs')
     if len(system_info.gpu.aux_attributes['gl_renderer']) <= 0:
-      raise page_test.Failure('Must have a non-empty gl_renderer string')
+      raise legacy_page_test.Failure(
+          'Must have a non-empty gl_renderer string')
 
 
 class NoGpuProcessSharedPageState(GpuProcessSharedPageState):
@@ -257,7 +262,7 @@ class NoGpuProcessPage(gpu_test_base.PageBase):
     has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
     has_gpu_process = tab.EvaluateJavaScript(has_gpu_process_js)
     if has_gpu_process:
-      raise page_test.Failure('GPU process detected')
+      raise legacy_page_test.Failure('GPU process detected')
 
 
 class SoftwareGpuProcessSharedPageState(GpuProcessSharedPageState):
@@ -309,7 +314,7 @@ class SkipGpuProcessPage(gpu_test_base.PageBase):
     has_gpu_process_js = 'chrome.gpuBenchmarking.hasGpuProcess()'
     has_gpu_process = tab.EvaluateJavaScript(has_gpu_process_js)
     if has_gpu_process:
-      raise page_test.Failure('GPU process detected')
+      raise legacy_page_test.Failure('GPU process detected')
 
 
 class DriverBugWorkaroundsShared(GpuProcessSharedPageState):
@@ -560,7 +565,7 @@ class ReadbackWebGLGpuProcessPage(gpu_test_base.PageBase):
         else:
           result = result and status == 'unavailable_software'
       if not result:
-        raise page_test.Failure('WebGL readback setup failed: %s' \
+        raise legacy_page_test.Failure('WebGL readback setup failed: %s' \
           % feature_status_list)
 
 
@@ -705,15 +710,17 @@ class OnlyOneWorkaroundPage(EqualBugWorkaroundsBasePage):
     if len(diff) > 0:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('GPU process and expected list of driver bug' \
-        'workarounds are not equal: %s != %s, diff: %s' % \
+      raise legacy_page_test.Failure(
+        'GPU process and expected list of driver bug'
+        'workarounds are not equal: %s != %s, diff: %s' %
         (self.expected_workarounds, gpu_list, list(diff)))
 
     if self.expected_disabled_exts != disabled_gl_extensions:
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('The expected disabled gl extensions are ' \
-        'incorrect: %s != %s:' % \
+      raise legacy_page_test.Failure(
+        'The expected disabled gl extensions are '
+        'incorrect: %s != %s:' %
         (self.expected_disabled_exts, disabled_gl_extensions))
 
 

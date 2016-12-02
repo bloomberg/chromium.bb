@@ -4,10 +4,10 @@
 
 from benchmarks import media_router_dialog_metric
 from benchmarks import media_router_cpu_memory_metric
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 
-class MediaRouterDialogTest(page_test.PageTest):
+class MediaRouterDialogTest(legacy_page_test.LegacyPageTest):
   """Performs a measurement of Media Route dialog latency."""
 
   def __init__(self):
@@ -22,7 +22,7 @@ class MediaRouterDialogTest(page_test.PageTest):
     self._metric.AddResults(tab, results)
 
 
-class MediaRouterCPUMemoryTest(page_test.PageTest):
+class MediaRouterCPUMemoryTest(legacy_page_test.LegacyPageTest):
   """Performs a measurement of Media Route CPU/memory usage."""
 
   def __init__(self):

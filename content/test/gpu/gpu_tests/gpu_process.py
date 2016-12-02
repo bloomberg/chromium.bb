@@ -5,7 +5,7 @@ from gpu_tests import gpu_process_expectations as expectations
 from gpu_tests import gpu_test_base
 import page_sets
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 
 test_harness_script = r"""
   var domAutomationController = {};
@@ -41,7 +41,7 @@ class GpuProcessValidator(gpu_test_base.ValidatorBase):
       has_gpu_channel_js = 'chrome.gpuBenchmarking.hasGpuChannel()'
       has_gpu_channel = tab.EvaluateJavaScript(has_gpu_channel_js)
       if not has_gpu_channel:
-        raise page_test.Failure('No GPU channel detected')
+        raise legacy_page_test.Failure('No GPU channel detected')
 
 class GpuProcess(gpu_test_base.TestBase):
   """Tests that accelerated content triggers the creation of a GPU process"""

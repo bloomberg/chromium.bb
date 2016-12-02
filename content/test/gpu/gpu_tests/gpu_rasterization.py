@@ -6,7 +6,7 @@ from gpu_tests import cloud_storage_test_base
 from gpu_tests import gpu_rasterization_expectations
 import page_sets
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.util import image_util
 
 
@@ -39,17 +39,18 @@ class GpuRasterizationValidator(cloud_storage_test_base.ValidatorBase):
 
   def ValidateAndMeasurePage(self, page, tab, results):
     if not _DidTestSucceed(tab):
-      raise page_test.Failure('Page indicated a failure')
+      raise legacy_page_test.Failure('Page indicated a failure')
 
     if not hasattr(page, 'expectations') or not page.expectations:
-      raise page_test.Failure('Expectations not specified')
+      raise legacy_page_test.Failure('Expectations not specified')
 
     if not tab.screenshot_supported:
-      raise page_test.Failure('Browser does not support screenshot capture')
+      raise legacy_page_test.Failure(
+          'Browser does not support screenshot capture')
 
     screenshot = tab.Screenshot()
     if screenshot is None:
-      raise page_test.Failure('Could not capture screenshot')
+      raise legacy_page_test.Failure('Could not capture screenshot')
 
     device_pixel_ratio = tab.EvaluateJavaScript('window.devicePixelRatio')
     if hasattr(page, 'test_rect'):

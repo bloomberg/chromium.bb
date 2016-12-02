@@ -15,7 +15,7 @@ from gpu_tests import maps_expectations
 from gpu_tests import path_util
 
 from telemetry.core import util
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry import story as story_module
 from telemetry.story import story_set as story_set_module
 
@@ -37,10 +37,11 @@ class MapsValidator(cloud_storage_test_base.ValidatorBase):
     MapsValidator.SpinWaitOnRAF(tab, 3)
 
     if not tab.screenshot_supported:
-      raise page_test.Failure('Browser does not support screenshot capture')
+      raise legacy_page_test.Failure(
+          'Browser does not support screenshot capture')
     screenshot = tab.Screenshot(5)
     if screenshot is None:
-      raise page_test.Failure('Could not capture screenshot')
+      raise legacy_page_test.Failure('Could not capture screenshot')
 
     dpr = tab.EvaluateJavaScript('window.devicePixelRatio')
     print 'Maps\' devicePixelRatio is ' + str(dpr)

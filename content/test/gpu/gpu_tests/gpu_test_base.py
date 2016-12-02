@@ -6,7 +6,7 @@ import logging
 
 from telemetry import benchmark as benchmark_module
 from telemetry.page import page as page_module
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.page import shared_page_state as shared_page_state_module
 from telemetry.testing import fakes
 
@@ -41,7 +41,7 @@ class TestBase(benchmark_module.Benchmark):
 
 # Provides a single subclass of PageTest in case it's useful in the
 # future.
-class ValidatorBase(page_test.PageTest):
+class ValidatorBase(legacy_page_test.LegacyPageTest):
   def __init__(self,
                needs_browser_restart_after_each_page=False,
                clear_cache_before_each_run=False):

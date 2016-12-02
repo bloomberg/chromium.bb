@@ -4,7 +4,7 @@
 from gpu_tests import gpu_test_base
 import gpu_tests.hardware_accelerated_feature_expectations as hw_expectations
 
-from telemetry.page import page_test
+from telemetry.page import legacy_page_test
 from telemetry.story import story_set as story_set_module
 
 test_harness_script = r"""
@@ -30,7 +30,7 @@ class HardwareAcceleratedFeatureValidator(gpu_test_base.ValidatorBase):
     if not tab.EvaluateJavaScript('VerifyHardwareAccelerated("%s")' % feature):
       print 'Test failed. Printing page contents:'
       print tab.EvaluateJavaScript('document.body.innerHTML')
-      raise page_test.Failure('%s not hardware accelerated' % feature)
+      raise legacy_page_test.Failure('%s not hardware accelerated' % feature)
 
 def safe_feature_name(feature):
   return feature.lower().replace(' ', '_')
