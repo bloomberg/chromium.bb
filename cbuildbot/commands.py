@@ -8,7 +8,6 @@ from __future__ import print_function
 
 import base64
 import collections
-import copy
 import datetime
 import fnmatch
 import glob
@@ -321,8 +320,12 @@ def UpdateChroot(buildroot, usepkg, toolchain_boards=None, extra_env=None):
     cmd.extend(['--toolchain_boards', ','.join(toolchain_boards)])
 
   # workaround http://crbug.com/225509
-  extra_env_local = copy.copy(extra_env)
-  extra_env_local['FEATURES'] = 'splitdebug'
+  # Building with FEATURES=separatedebug will create a dedicated tarball with the
+  # debug files, and the debug files won't be in the glibc.tbz2, which is where
+  # the build scripts expect them.
+  extra_env_local = extra_env.copy()
+  extra_env_local.setdefault('FEATURES', '')
+  extra_env_local['FEATURES'] += ' -separatedebug splitdebug'
 
   RunBuildScript(buildroot, cmd, extra_env=extra_env_local, enter_chroot=True)
 
