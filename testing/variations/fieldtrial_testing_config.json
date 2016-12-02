@@ -1183,24 +1183,6 @@
             ]
         }
     ],
-    "NonValidatingReloadOnNormalReload": [
-        {
-            "platforms": [
-                "android",
-                "linux",
-                "mac",
-                "win"
-            ],
-            "experiments": [
-                {
-                    "name": "Enabled",
-                    "enable_features": [
-                        "NonValidatingReloadOnNormalReload"
-                    ]
-                }
-            ]
-        }
-    ],
     "OfferUploadCreditCards": [
         {
             "platforms": [

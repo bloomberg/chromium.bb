@@ -35,7 +35,6 @@ CONTENT_EXPORT extern const base::Feature kGuestViewCrossProcessFrames;
 CONTENT_EXPORT extern const base::Feature kLazyParseCSS;
 CONTENT_EXPORT extern const base::Feature kMediaDocumentDownloadButton;
 CONTENT_EXPORT extern const base::Feature kMemoryCoordinator;
-CONTENT_EXPORT extern const base::Feature kNonValidatingReloadOnNormalReload;
 CONTENT_EXPORT extern const base::Feature kNotificationContentImage;
 CONTENT_EXPORT extern const base::Feature kOptimizeLoadingIPCForSmallResources;
 CONTENT_EXPORT extern const base::Feature kOriginTrials;

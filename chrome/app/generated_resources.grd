@@ -6321,12 +6321,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         This is to be used in conjunction with the trace-upload-url flag.
         WARNING: When enabled, Chrome will record performance data for every navigation and upload it to the URL specified by the trace-upload-url flag. The trace may include personally identifiable information (PII) such as the titles and URLs of websites you visit.
       </message>
-      <message name="IDS_FLAGS_ENABLE_NON_VALIDATING_RELOAD_ON_NORMAL_RELOAD_NAME" desc="Name of the flag to enable non-validating reload">
-        Enable non-validating reload
-      </message>
-      <message name="IDS_FLAGS_ENABLE_NON_VALIDATING_RELOAD_ON_NORMAL_RELOAD_DESCRIPTION" desc="Description of the flag to enable non-validating reload">
-        Forces reload UIs trigger non-validating reload (while it usually means regular, cache-validating reload when the flag is disabled).
-      </message>
       <message name="IDS_FLAGS_TRACE_UPLOAD_URL" desc="Name of the flag to set the trace upload url">
         Trace label for navigation tracing
       </message>

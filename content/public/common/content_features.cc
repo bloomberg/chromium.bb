@@ -111,11 +111,6 @@ const base::Feature kMemoryCoordinator {
   "MemoryCoordinator", base::FEATURE_DISABLED_BY_DEFAULT
 };
 
-// Non-validating reload for desktop.
-// See https://crbug.com/591245
-const base::Feature kNonValidatingReloadOnNormalReload{
-    "NonValidatingReloadOnNormalReload", base::FEATURE_ENABLED_BY_DEFAULT};
-
 // Kill switch for Web Notification content images.
 const base::Feature kNotificationContentImage{"NotificationContentImage",
                                               base::FEATURE_ENABLED_BY_DEFAULT};

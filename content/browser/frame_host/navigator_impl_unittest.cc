@@ -834,15 +834,8 @@ TEST_F(NavigatorTestWithBrowserSideNavigation, Reload) {
   // A NavigationRequest should have been generated.
   NavigationRequest* main_request = node->navigation_request();
   ASSERT_TRUE(main_request != NULL);
-  // TODO(toyoshim): Modify following checks once the feature is enabled.
-  if (base::FeatureList::IsEnabled(
-          features::kNonValidatingReloadOnNormalReload)) {
-    EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE,
-              main_request->common_params().navigation_type);
-  } else {
-    EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD,
-              main_request->common_params().navigation_type);
-  }
+  EXPECT_EQ(FrameMsg_Navigate_Type::RELOAD_MAIN_RESOURCE,
+            main_request->common_params().navigation_type);
   main_test_rfh()->PrepareForCommit();
   EXPECT_FALSE(GetSpeculativeRenderFrameHost(node));
 

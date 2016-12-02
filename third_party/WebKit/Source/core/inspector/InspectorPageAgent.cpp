@@ -447,13 +447,9 @@ Response InspectorPageAgent::reload(
       optionalScriptToEvaluateOnLoad.fromMaybe("");
   m_v8Session->setSkipAllPauses(true);
   m_reloading = true;
-  FrameLoadType reloadType = FrameLoadTypeReload;
-  if (optionalBypassCache.fromMaybe(false))
-    reloadType = FrameLoadTypeReloadBypassingCache;
-  else if (RuntimeEnabledFeatures::
-               reloadwithoutSubResourceCacheRevalidationEnabled())
-    reloadType = FrameLoadTypeReloadMainResource;
-  m_inspectedFrames->root()->reload(reloadType,
+  m_inspectedFrames->root()->reload(optionalBypassCache.fromMaybe(false)
+                                        ? FrameLoadTypeReloadBypassingCache
+                                        : FrameLoadTypeReloadMainResource,
                                     ClientRedirectPolicy::NotClientRedirect);
   return Response::OK();
 }

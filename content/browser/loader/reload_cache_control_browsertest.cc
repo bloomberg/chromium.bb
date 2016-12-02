@@ -6,9 +6,6 @@
 
 #include "base/bind.h"
 #include "base/bind_helpers.h"
-#include "base/files/file_path.h"
-#include "base/test/scoped_feature_list.h"
-#include "content/public/common/content_features.h"
 #include "content/public/test/content_browser_test.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
@@ -39,12 +36,7 @@ struct RequestLog {
 
 class ReloadCacheControlBrowserTest : public ContentBrowserTest {
  protected:
-  ReloadCacheControlBrowserTest() {
-    // TODO(toyoshim): Tests in this file depend on current reload behavior,
-    // and should be modified when we enable the new reload behavior.
-    scoped_feature_list_.InitAndDisableFeature(
-        features::kNonValidatingReloadOnNormalReload);
-  }
+  ReloadCacheControlBrowserTest() {}
   ~ReloadCacheControlBrowserTest() override = default;
 
   void SetUpOnMainThread() override {
@@ -77,27 +69,7 @@ class ReloadCacheControlBrowserTest : public ContentBrowserTest {
     request_log_.push_back(log);
   }
 
-  base::test::ScopedFeatureList scoped_feature_list_;
-
   DISALLOW_COPY_AND_ASSIGN(ReloadCacheControlBrowserTest);
-};
-
-class ReloadCacheControlWithAnExperimentBrowserTest
-    : public ReloadCacheControlBrowserTest {
- protected:
-  ReloadCacheControlWithAnExperimentBrowserTest() {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kNonValidatingReloadOnNormalReload);
-  }
-  ~ReloadCacheControlWithAnExperimentBrowserTest() override = default;
-
-  void SetUpOnMainThread() override {
-    SetUpTestServerOnMainThread();
-  }
-
-  base::test::ScopedFeatureList scoped_feature_list_;
-
-  DISALLOW_COPY_AND_ASSIGN(ReloadCacheControlWithAnExperimentBrowserTest);
 };
 
 IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NormalReload) {
@@ -115,7 +87,7 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, NormalReload) {
   EXPECT_EQ(kReloadTestPath, request_log_[2].relative_url);
   EXPECT_EQ(kMaxAgeCacheControl, request_log_[2].cache_control);
   EXPECT_EQ(kReloadImagePath, request_log_[3].relative_url);
-  EXPECT_EQ(kMaxAgeCacheControl, request_log_[3].cache_control);
+  EXPECT_EQ(kNoCacheControl, request_log_[3].cache_control);
 }
 
 IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, BypassingReload) {
@@ -134,25 +106,6 @@ IN_PROC_BROWSER_TEST_F(ReloadCacheControlBrowserTest, BypassingReload) {
   EXPECT_EQ(kNoCacheCacheControl, request_log_[2].cache_control);
   EXPECT_EQ(kReloadImagePath, request_log_[3].relative_url);
   EXPECT_EQ(kNoCacheCacheControl, request_log_[3].cache_control);
-}
-
-IN_PROC_BROWSER_TEST_F(ReloadCacheControlWithAnExperimentBrowserTest,
-                       ReloadMainResource) {
-  GURL url(embedded_test_server()->GetURL(kReloadTestPath));
-
-  EXPECT_TRUE(NavigateToURL(shell(), url));
-  ReloadBlockUntilNavigationsComplete(shell(), 1);
-
-  ASSERT_EQ(4UL, request_log_.size());
-  EXPECT_EQ(kReloadTestPath, request_log_[0].relative_url);
-  EXPECT_EQ(kNoCacheControl, request_log_[0].cache_control);
-  EXPECT_EQ(kReloadImagePath, request_log_[1].relative_url);
-  EXPECT_EQ(kNoCacheControl, request_log_[1].cache_control);
-
-  EXPECT_EQ(kReloadTestPath, request_log_[2].relative_url);
-  EXPECT_EQ(kMaxAgeCacheControl, request_log_[2].cache_control);
-  EXPECT_EQ(kReloadImagePath, request_log_[3].relative_url);
-  EXPECT_EQ(kNoCacheControl, request_log_[3].cache_control);
 }
 
 // TODO(toyoshim): Add another set of reload tests with DevTools open.
