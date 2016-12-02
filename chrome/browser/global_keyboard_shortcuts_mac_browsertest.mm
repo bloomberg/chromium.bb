@@ -18,6 +18,20 @@ using cocoa_test_event_utils::SynthesizeKeyEvent;
 
 using GlobalKeyboardShortcutsTest = ExtensionBrowserTest;
 
+namespace {
+
+void ActivateAccelerator(NSWindow* window, NSEvent* ns_event) {
+  if ([window performKeyEquivalent:ns_event])
+    return;
+
+  // This is consistent with the way AppKit dispatches events when
+  // -performKeyEquivalent: returns NO. See "The Path of Key Events" in the
+  // Cocoa Event Architecture documentation.
+  [window sendEvent:ns_event];
+}
+
+}  // namespace
+
 // Test that global keyboard shortcuts are handled by the native window.
 IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   NSWindow* ns_window = browser()->window()->GetNativeWindow();
@@ -29,17 +43,19 @@ IN_PROC_BROWSER_TEST_F(GlobalKeyboardShortcutsTest, SwitchTabsMac) {
   EXPECT_TRUE(tab_strip->IsTabSelected(1));
 
   // Ctrl+Tab goes to the next tab, which loops back to the first tab.
-  [ns_window performKeyEquivalent:SynthesizeKeyEvent(
-      ns_window, true, ui::VKEY_TAB, NSControlKeyMask)];
+  ActivateAccelerator(
+      ns_window,
+      SynthesizeKeyEvent(ns_window, true, ui::VKEY_TAB, NSControlKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
 
   // Cmd+2 goes to the second tab.
-  [ns_window performKeyEquivalent:SynthesizeKeyEvent(
-      ns_window, true, ui::VKEY_2, NSCommandKeyMask)];
+  ActivateAccelerator(ns_window, SynthesizeKeyEvent(ns_window, true, ui::VKEY_2,
+                                                    NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(1));
 
   // Cmd+{ goes to the previous tab.
-  [ns_window performKeyEquivalent:SynthesizeKeyEvent(
-      ns_window, true, ui::VKEY_OEM_4, NSShiftKeyMask | NSCommandKeyMask)];
+  ActivateAccelerator(ns_window,
+                      SynthesizeKeyEvent(ns_window, true, ui::VKEY_OEM_4,
+                                         NSShiftKeyMask | NSCommandKeyMask));
   EXPECT_TRUE(tab_strip->IsTabSelected(0));
 }

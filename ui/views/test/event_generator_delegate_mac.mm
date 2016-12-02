@@ -401,6 +401,13 @@ void EventGeneratorDelegateMac::OnKeyEvent(ui::KeyEvent* event) {
       [NSApp sendEvent:ns_event];
       break;
     case Target::WINDOW:
+      // -[NSApp sendEvent:] sends -performKeyEquivalent: if Command or Control
+      // modifiers are pressed. Emulate that behavior.
+      if ([ns_event type] == NSKeyDown &&
+          ([ns_event modifierFlags] & (NSControlKeyMask | NSCommandKeyMask)) &&
+          [window_ performKeyEquivalent:ns_event])
+        break;  // Handled by performKeyEquivalent:.
+
       [window_ sendEvent:ns_event];
       break;
     case Target::WIDGET:
