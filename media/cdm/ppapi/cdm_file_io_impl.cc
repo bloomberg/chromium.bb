@@ -82,7 +82,7 @@ CdmFileIOImpl::~CdmFileIOImpl() {
 // Note: This only stores file name and opens the file system. The real file
 // open is deferred to when Read() or Write() is called.
 void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
-  CDM_DLOG() << __FUNCTION__;
+  CDM_DLOG() << __func__;
   PP_DCHECK(IsMainThread());
 
   if (state_ != STATE_UNOPENED) {
@@ -120,7 +120,7 @@ void CdmFileIOImpl::Open(const char* file_name, uint32_t file_name_size) {
 // Call sequence:
 // Read() -> OpenFileForRead() -> ReadFile() -> Done.
 void CdmFileIOImpl::Read() {
-  CDM_DLOG() << __FUNCTION__;
+  CDM_DLOG() << __func__;
   PP_DCHECK(IsMainThread());
 
   if (state_ == STATE_READING || state_ == STATE_WRITING) {
@@ -149,7 +149,7 @@ void CdmFileIOImpl::Read() {
 // Write() -> OpenTempFileForWrite() -> WriteTempFile() -> RenameTempFile().
 // The file name of the temporary file is /_<requested_file_name>.
 void CdmFileIOImpl::Write(const uint8_t* data, uint32_t data_size) {
-  CDM_DLOG() << __FUNCTION__;
+  CDM_DLOG() << __func__;
   PP_DCHECK(IsMainThread());
 
   if (state_ == STATE_READING || state_ == STATE_WRITING) {
@@ -176,7 +176,7 @@ void CdmFileIOImpl::Write(const uint8_t* data, uint32_t data_size) {
 }
 
 void CdmFileIOImpl::Close() {
-  CDM_DLOG() << __FUNCTION__;
+  CDM_DLOG() << __func__;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ != STATE_CLOSED);
   Reset();
@@ -288,7 +288,7 @@ void CdmFileIOImpl::OpenFileForRead() {
 }
 
 void CdmFileIOImpl::OnFileOpenedForRead(int32_t result) {
-  CDM_DLOG() << __FUNCTION__ << ": " << result;
+  CDM_DLOG() << __func__ << ": " << result;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ == STATE_READING);
 
@@ -328,7 +328,7 @@ void CdmFileIOImpl::ReadFile() {
 }
 
 void CdmFileIOImpl::OnFileRead(int32_t bytes_read) {
-  CDM_DLOG() << __FUNCTION__ << ": " << bytes_read;
+  CDM_DLOG() << __func__ << ": " << bytes_read;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ == STATE_READING);
 
@@ -404,7 +404,7 @@ void CdmFileIOImpl::OpenTempFileForWrite() {
 }
 
 void CdmFileIOImpl::OnTempFileOpenedForWrite(int32_t result) {
-  CDM_DLOG() << __FUNCTION__ << ": " << result;
+  CDM_DLOG() << __func__ << ": " << result;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ == STATE_WRITING);
 
@@ -447,7 +447,7 @@ void CdmFileIOImpl::WriteTempFile() {
 }
 
 void CdmFileIOImpl::OnTempFileWritten(int32_t bytes_written) {
-  CDM_DLOG() << __FUNCTION__ << ": " << bytes_written;
+  CDM_DLOG() << __func__ << ": " << bytes_written;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ == STATE_WRITING);
 
@@ -481,7 +481,7 @@ void CdmFileIOImpl::RenameTempFile() {
 }
 
 void CdmFileIOImpl::OnTempFileRenamed(int32_t result) {
-  CDM_DLOG() << __FUNCTION__ << ": " << result;
+  CDM_DLOG() << __func__ << ": " << result;
   PP_DCHECK(IsMainThread());
   PP_DCHECK(state_ == STATE_WRITING);
 

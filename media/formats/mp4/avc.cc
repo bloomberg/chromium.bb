@@ -65,7 +65,7 @@ bool AVC::ConvertFrameToAnnexB(int length_size,
                                std::vector<uint8_t>* buffer,
                                std::vector<SubsampleEntry>* subsamples) {
   RCHECK(length_size == 1 || length_size == 2 || length_size == 4);
-  DVLOG(5) << __FUNCTION__ << " length_size=" << length_size
+  DVLOG(5) << __func__ << " length_size=" << length_size
            << " buffer->size()=" << buffer->size()
            << " subsamples=" << (subsamples ? subsamples->size() : 0);
 
@@ -184,7 +184,7 @@ bool AVC::IsValidAnnexB(const std::vector<uint8_t>& buffer,
 bool AVC::IsValidAnnexB(const uint8_t* buffer,
                         size_t size,
                         const std::vector<SubsampleEntry>& subsamples) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(buffer);
 
   if (size == 0)

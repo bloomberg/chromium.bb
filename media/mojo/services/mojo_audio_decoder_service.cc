@@ -31,7 +31,7 @@ void MojoAudioDecoderService::Initialize(
     mojom::AudioDecoderConfigPtr config,
     int32_t cdm_id,
     const InitializeCallback& callback) {
-  DVLOG(1) << __FUNCTION__ << " "
+  DVLOG(1) << __func__ << " "
            << config.To<media::AudioDecoderConfig>().AsHumanReadableString();
 
   // Get CdmContext from cdm_id if the stream is encrypted.
@@ -70,7 +70,7 @@ void MojoAudioDecoderService::Initialize(
 
 void MojoAudioDecoderService::SetDataSource(
     mojo::ScopedDataPipeConsumerHandle receive_pipe) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   mojo_decoder_buffer_reader_.reset(
       new MojoDecoderBufferReader(std::move(receive_pipe)));
@@ -78,14 +78,14 @@ void MojoAudioDecoderService::SetDataSource(
 
 void MojoAudioDecoderService::Decode(mojom::DecoderBufferPtr buffer,
                                      const DecodeCallback& callback) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
       std::move(buffer), base::BindOnce(&MojoAudioDecoderService::OnReadDone,
                                         weak_this_, callback));
 }
 
 void MojoAudioDecoderService::Reset(const ResetCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decoder_->Reset(
       base::Bind(&MojoAudioDecoderService::OnResetDone, weak_this_, callback));
 }
@@ -93,7 +93,7 @@ void MojoAudioDecoderService::Reset(const ResetCallback& callback) {
 void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
                                             scoped_refptr<MediaKeys> cdm,
                                             bool success) {
-  DVLOG(1) << __FUNCTION__ << " success:" << success;
+  DVLOG(1) << __func__ << " success:" << success;
 
   if (success) {
     cdm_ = cdm;
@@ -110,7 +110,7 @@ void MojoAudioDecoderService::OnInitialized(const InitializeCallback& callback,
 
 void MojoAudioDecoderService::OnReadDone(const DecodeCallback& callback,
                                          scoped_refptr<DecoderBuffer> buffer) {
-  DVLOG(3) << __FUNCTION__ << " success:" << !!buffer;
+  DVLOG(3) << __func__ << " success:" << !!buffer;
 
   if (!buffer) {
     callback.Run(DecodeStatus::DECODE_ERROR);
@@ -123,18 +123,18 @@ void MojoAudioDecoderService::OnReadDone(const DecodeCallback& callback,
 
 void MojoAudioDecoderService::OnDecodeStatus(const DecodeCallback& callback,
                                              media::DecodeStatus status) {
-  DVLOG(3) << __FUNCTION__ << " status:" << status;
+  DVLOG(3) << __func__ << " status:" << status;
   callback.Run(status);
 }
 
 void MojoAudioDecoderService::OnResetDone(const ResetCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   callback.Run();
 }
 
 void MojoAudioDecoderService::OnAudioBufferReady(
     const scoped_refptr<AudioBuffer>& audio_buffer) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   // TODO(timav): Use DataPipe.
   client_->OnBufferDecoded(mojom::AudioBuffer::From(audio_buffer));

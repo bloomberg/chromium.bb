@@ -29,7 +29,7 @@ void URLProvisionFetcher::Retrieve(
 
   const std::string request_string =
       default_url + "&signedRequest=" + request_data;
-  DVLOG(1) << __FUNCTION__ << ": request:" << request_string;
+  DVLOG(1) << __func__ << ": request:" << request_string;
 
   DCHECK(!request_);
   request_ = URLFetcher::Create(GURL(request_string), URLFetcher::POST, this);
@@ -49,13 +49,13 @@ void URLProvisionFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   DCHECK(source);
 
   int response_code = source->GetResponseCode();
-  DVLOG(1) << __FUNCTION__ << ": response code:" << source->GetResponseCode();
+  DVLOG(1) << __func__ << ": response code:" << source->GetResponseCode();
 
   std::string response;
   bool success = false;
   if (response_code == 200) {
     success = source->GetResponseAsString(&response);
-    DVLOG_IF(1, !success) << __FUNCTION__ << ": GetResponseAsString() failed";
+    DVLOG_IF(1, !success) << __func__ << ": GetResponseAsString() failed";
   } else {
     DVLOG(1) << "CDM provision: server returned error code " << response_code;
   }

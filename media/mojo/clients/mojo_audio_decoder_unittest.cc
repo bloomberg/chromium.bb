@@ -83,19 +83,19 @@ class MojoAudioDecoderTest : public ::testing::Test {
   // running the loop because we cannot run the same loop more than once.
 
   void RunLoop() {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     run_loop_.reset(new base::RunLoop());
     run_loop_->Run();
   }
 
   void RunLoopUntilIdle() {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     run_loop_.reset(new base::RunLoop());
     run_loop_->RunUntilIdle();
   }
 
   void QuitLoop() {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     run_loop_->QuitWhenIdle();
   }
 
@@ -120,7 +120,7 @@ class MojoAudioDecoderTest : public ::testing::Test {
   }
 
   void InitializeAndExpect(bool success) {
-    DVLOG(1) << __FUNCTION__ << ": success=" << success;
+    DVLOG(1) << __func__ << ": success=" << success;
     EXPECT_CALL(*this, OnInitialized(success))
         .WillOnce(InvokeWithoutArgs(this, &MojoAudioDecoderTest::QuitLoop));
 

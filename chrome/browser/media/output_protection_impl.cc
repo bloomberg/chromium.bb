@@ -14,7 +14,7 @@
 void OutputProtectionImpl::Create(
     content::RenderFrameHost* render_frame_host,
     media::mojom::OutputProtectionRequest request) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   DCHECK(render_frame_host);
   mojo::MakeStrongBinding(base::MakeUnique<OutputProtectionImpl>(
@@ -36,7 +36,7 @@ OutputProtectionImpl::~OutputProtectionImpl() {
 }
 
 void OutputProtectionImpl::QueryStatus(const QueryStatusCallback& callback) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GetProxy()->QueryStatus(base::Bind(&OutputProtectionImpl::OnQueryStatusResult,
@@ -46,7 +46,7 @@ void OutputProtectionImpl::QueryStatus(const QueryStatusCallback& callback) {
 void OutputProtectionImpl::EnableProtection(
     uint32_t desired_protection_mask,
     const EnableProtectionCallback& callback) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   GetProxy()->EnableProtection(
@@ -60,8 +60,7 @@ void OutputProtectionImpl::OnQueryStatusResult(
     bool success,
     uint32_t link_mask,
     uint32_t protection_mask) {
-  DVLOG(2) << __FUNCTION__ << ": success=" << success
-           << ", link_mask=" << link_mask
+  DVLOG(2) << __func__ << ": success=" << success << ", link_mask=" << link_mask
            << ", protection_mask=" << protection_mask;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback.Run(success, link_mask, protection_mask);
@@ -70,7 +69,7 @@ void OutputProtectionImpl::OnQueryStatusResult(
 void OutputProtectionImpl::OnEnableProtectionResult(
     const EnableProtectionCallback& callback,
     bool success) {
-  DVLOG(2) << __FUNCTION__ << ": success=" << success;
+  DVLOG(2) << __func__ << ": success=" << success;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
   callback.Run(success);
 }

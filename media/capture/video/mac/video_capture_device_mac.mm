@@ -434,7 +434,7 @@ void VideoCaptureDeviceMac::OnPhotoTaken(const uint8_t* image_data,
 }
 
 void VideoCaptureDeviceMac::OnPhotoError() {
-  DLOG(ERROR) << __FUNCTION__ << " error taking picture";
+  DLOG(ERROR) << __func__ << " error taking picture";
   photo_callback_.reset();
 }
 

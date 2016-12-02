@@ -169,7 +169,7 @@ bool MediaCodecUtil::IsKnownUnaccelerated(const std::string& android_mime_type,
 
   std::string codec_name =
       GetDefaultCodecName(android_mime_type, direction, false);
-  DVLOG(1) << __FUNCTION__ << "Default codec for " << android_mime_type << " : "
+  DVLOG(1) << __func__ << "Default codec for " << android_mime_type << " : "
            << codec_name << ", direction: " << direction;
   if (codec_name.empty())
     return true;

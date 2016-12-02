@@ -86,7 +86,7 @@ void ProtectedMediaIdentifierPermissionContext::DecidePermission(
 ContentSetting ProtectedMediaIdentifierPermissionContext::GetPermissionStatus(
       const GURL& requesting_origin,
       const GURL& embedding_origin) const {
-  DVLOG(1) << __FUNCTION__ << ": (" << requesting_origin.spec() << ", "
+  DVLOG(1) << __func__ << ": (" << requesting_origin.spec() << ", "
            << embedding_origin.spec() << ")";
 
   if (!requesting_origin.is_valid() || !embedding_origin.is_valid() ||

@@ -40,7 +40,7 @@ EsParserH264::~EsParserH264() {
 }
 
 void EsParserH264::Flush() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   if (!FindAUD(&current_access_unit_pos_))
     return;
 
@@ -54,7 +54,7 @@ void EsParserH264::Flush() {
 }
 
 void EsParserH264::ResetInternal() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   h264_parser_.reset(new H264Parser());
   current_access_unit_pos_ = 0;
   next_access_unit_pos_ = 0;

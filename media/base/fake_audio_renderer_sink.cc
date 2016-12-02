@@ -101,8 +101,8 @@ void FakeAudioRendererSink::ChangeState(State new_state) {
     "kStopped"
   };
 
-  DVLOG(1) << __FUNCTION__ << " : "
-           << kStateNames[state_] << " -> " << kStateNames[new_state];
+  DVLOG(1) << __func__ << " : " << kStateNames[state_] << " -> "
+           << kStateNames[new_state];
   state_ = new_state;
 }
 

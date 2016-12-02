@@ -39,14 +39,14 @@ int RpcBroker::GetUniqueHandle() {
 void RpcBroker::RegisterMessageReceiverCallback(
     int handle,
     const ReceiveMessageCallback& callback) {
-  VLOG(2) << __FUNCTION__ << "handle=" << handle;
+  VLOG(2) << __func__ << "handle=" << handle;
   DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(receive_callbacks_.find(handle) == receive_callbacks_.end());
   receive_callbacks_[handle] = callback;
 }
 
 void RpcBroker::UnregisterMessageReceiverCallback(int handle) {
-  VLOG(2) << __FUNCTION__ << " handle=" << handle;
+  VLOG(2) << __func__ << " handle=" << handle;
   DCHECK(thread_checker_.CalledOnValidThread());
   receive_callbacks_.erase(handle);
 }

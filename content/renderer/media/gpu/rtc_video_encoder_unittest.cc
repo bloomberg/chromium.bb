@@ -62,7 +62,7 @@ class RTCVideoEncoderTest
   }
 
   void SetUp() override {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     ASSERT_TRUE(encoder_thread_.Start());
 
     EXPECT_CALL(*mock_gpu_factories_.get(), GetTaskRunner())
@@ -71,7 +71,7 @@ class RTCVideoEncoderTest
   }
 
   void TearDown() override {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     EXPECT_TRUE(encoder_thread_.IsRunning());
     RunUntilIdle();
     rtc_encoder_->Release();
@@ -80,7 +80,7 @@ class RTCVideoEncoderTest
   }
 
   void RunUntilIdle() {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     encoder_thread_.task_runner()->PostTask(
         FROM_HERE, base::Bind(&base::WaitableEvent::Signal,
                               base::Unretained(&idle_waiter_)));
@@ -88,7 +88,7 @@ class RTCVideoEncoderTest
   }
 
   void CreateEncoder(webrtc::VideoCodecType codec_type) {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     rtc_encoder_ = base::MakeUnique<RTCVideoEncoder>(codec_type,
                                                      mock_gpu_factories_.get());
   }
@@ -99,7 +99,7 @@ class RTCVideoEncoderTest
                   media::VideoCodecProfile output_profile,
                   uint32_t initial_bitrate,
                   media::VideoEncodeAccelerator::Client* client) {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     client->RequireBitstreamBuffers(0, input_visible_size,
                                     input_visible_size.GetArea());
     return true;
@@ -125,7 +125,7 @@ class RTCVideoEncoderTest
 
   void VerifyEncodedFrame(const scoped_refptr<media::VideoFrame>& frame,
                           bool force_keyframe) {
-    DVLOG(3) << __FUNCTION__;
+    DVLOG(3) << __func__;
     EXPECT_EQ(kInputFrameWidth, frame->visible_rect().width());
     EXPECT_EQ(kInputFrameHeight, frame->visible_rect().height());
     EXPECT_EQ(kInputFrameFillY,

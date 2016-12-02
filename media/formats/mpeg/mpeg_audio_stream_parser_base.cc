@@ -70,7 +70,7 @@ void MPEGAudioStreamParserBase::Init(
     const NewMediaSegmentCB& new_segment_cb,
     const EndMediaSegmentCB& end_of_segment_cb,
     const scoped_refptr<MediaLog>& media_log) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_EQ(state_, UNINITIALIZED);
   init_cb_ = init_cb;
   config_cb_ = config_cb;
@@ -83,7 +83,7 @@ void MPEGAudioStreamParserBase::Init(
 }
 
 void MPEGAudioStreamParserBase::Flush() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_NE(state_, UNINITIALIZED);
   queue_.Reset();
   if (timestamp_helper_)
@@ -92,7 +92,7 @@ void MPEGAudioStreamParserBase::Flush() {
 }
 
 bool MPEGAudioStreamParserBase::Parse(const uint8_t* buf, int size) {
-  DVLOG(1) << __FUNCTION__ << "(" << size << ")";
+  DVLOG(1) << __func__ << "(" << size << ")";
   DCHECK(buf);
   DCHECK_GT(size, 0);
   DCHECK_NE(state_, UNINITIALIZED);
@@ -165,14 +165,14 @@ bool MPEGAudioStreamParserBase::Parse(const uint8_t* buf, int size) {
 }
 
 void MPEGAudioStreamParserBase::ChangeState(State state) {
-  DVLOG(1) << __FUNCTION__ << "() : " << state_ << " -> " << state;
+  DVLOG(1) << __func__ << "() : " << state_ << " -> " << state;
   state_ = state;
 }
 
 int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
                                           int size,
                                           BufferQueue* buffers) {
-  DVLOG(2) << __FUNCTION__ << "(" << size << ")";
+  DVLOG(2) << __func__ << "(" << size << ")";
 
   int sample_rate;
   ChannelLayout channel_layout;
@@ -251,7 +251,7 @@ int MPEGAudioStreamParserBase::ParseFrame(const uint8_t* data,
 
 int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8_t* data,
                                                   int size) {
-  DVLOG(1) << __FUNCTION__ << "(" << size << ")";
+  DVLOG(1) << __func__ << "(" << size << ")";
 
   if (size < 4)
     return 0;
@@ -274,7 +274,7 @@ int MPEGAudioStreamParserBase::ParseIcecastHeader(const uint8_t* data,
 }
 
 int MPEGAudioStreamParserBase::ParseID3v1(const uint8_t* data, int size) {
-  DVLOG(1) << __FUNCTION__ << "(" << size << ")";
+  DVLOG(1) << __func__ << "(" << size << ")";
 
   if (size < kID3v1Size)
     return 0;
@@ -285,7 +285,7 @@ int MPEGAudioStreamParserBase::ParseID3v1(const uint8_t* data, int size) {
 }
 
 int MPEGAudioStreamParserBase::ParseID3v2(const uint8_t* data, int size) {
-  DVLOG(1) << __FUNCTION__ << "(" << size << ")";
+  DVLOG(1) << __func__ << "(" << size << ")";
 
   if (size < 10)
     return 0;

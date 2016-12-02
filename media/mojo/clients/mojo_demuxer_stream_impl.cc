@@ -30,7 +30,7 @@ MojoDemuxerStreamImpl::~MojoDemuxerStreamImpl() {}
 // ready to receive messages.  Send an initial config and notify it that
 // we are now ready for business.
 void MojoDemuxerStreamImpl::Initialize(const InitializeCallback& callback) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   // Prepare the initial config.
   mojom::AudioDecoderConfigPtr audio_config;
@@ -71,7 +71,7 @@ void MojoDemuxerStreamImpl::OnBufferReady(
   mojom::VideoDecoderConfigPtr video_config;
 
   if (status == Status::kConfigChanged) {
-    DVLOG(2) << __FUNCTION__ << ": ConfigChange!";
+    DVLOG(2) << __func__ << ": ConfigChange!";
     // Send the config change so our client can read it once it parses the
     // Status obtained via Run() below.
     if (stream_->type() == Type::AUDIO) {

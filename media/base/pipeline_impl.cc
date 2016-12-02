@@ -1117,7 +1117,7 @@ base::TimeDelta PipelineImpl::GetMediaTime() const {
     return last_media_time_;
   }
 
-  DVLOG(3) << __FUNCTION__ << ": " << media_time.InMilliseconds() << " ms";
+  DVLOG(3) << __func__ << ": " << media_time.InMilliseconds() << " ms";
   last_media_time_ = media_time;
   return last_media_time_;
 }

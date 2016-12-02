@@ -24,7 +24,7 @@ MediaInterfaceProvider::~MediaInterfaceProvider() {
 
 void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
                                           mojo::ScopedMessagePipeHandle pipe) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (interface_name == media::mojom::ContentDecryptionModule::Name_) {
@@ -48,7 +48,7 @@ void MediaInterfaceProvider::GetInterface(const std::string& interface_name,
 
 media::mojom::InterfaceFactory*
 MediaInterfaceProvider::GetMediaInterfaceFactory() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (!media_interface_factory_) {
@@ -61,7 +61,7 @@ MediaInterfaceProvider::GetMediaInterfaceFactory() {
 }
 
 void MediaInterfaceProvider::OnConnectionError() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   media_interface_factory_.reset();

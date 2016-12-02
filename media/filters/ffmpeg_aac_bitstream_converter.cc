@@ -77,9 +77,8 @@ bool GenerateAdtsHeader(int codec,
       hdr[2] |= (3 << 6);
       break;
     default:
-      DLOG(ERROR) << "[" << __FUNCTION__ << "] "
-                  << "unsupported audio profile:"
-                  << audio_profile;
+      DLOG(ERROR) << "[" << __func__ << "] "
+                  << "unsupported audio profile:" << audio_profile;
       return false;
   }
 
@@ -123,7 +122,7 @@ bool GenerateAdtsHeader(int codec,
       hdr[3] |= (3 << 6);
       break;
     default:
-      DLOG(ERROR) << "[" << __FUNCTION__ << "] "
+      DLOG(ERROR) << "[" << __func__ << "] "
                   << "unsupported number of audio channels:"
                   << channel_configuration;
       return false;

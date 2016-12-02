@@ -392,7 +392,7 @@ void PipelineIntegrationTestBase::OnVideoFramePaint(
   if (!hashing_enabled_ || last_frame_ == frame)
     return;
   last_frame_ = frame;
-  DVLOG(3) << __FUNCTION__ << " pts=" << frame->timestamp().InSecondsF();
+  DVLOG(3) << __func__ << " pts=" << frame->timestamp().InSecondsF();
   VideoFrame::HashFrameForTesting(&md5_context_, frame);
 }
 
@@ -409,7 +409,7 @@ base::TimeDelta PipelineIntegrationTestBase::GetStartTime() {
 }
 
 void PipelineIntegrationTestBase::ResetVideoHash() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   base::MD5Init(&md5_context_);
 }
 

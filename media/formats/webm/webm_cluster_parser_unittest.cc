@@ -186,7 +186,7 @@ bool VerifyBuffers(const StreamParser::BufferQueueMap& buffer_queue_map,
   for (const auto& it : buffer_queue_map)
     buffer_count += it.second.size();
   if (block_count != buffer_count) {
-    DVLOG(1) << __FUNCTION__ << " : block_count (" << block_count
+    DVLOG(1) << __func__ << " : block_count (" << block_count
              << ") mismatches buffer_count (" << buffer_count << ")";
     return false;
   }
@@ -217,7 +217,7 @@ bool VerifyBuffers(const StreamParser::BufferQueueMap& buffer_queue_map,
     }
 
     if (*offset >= buffers->size()) {
-      DVLOG(1) << __FUNCTION__ << " : Too few buffers (" << buffers->size()
+      DVLOG(1) << __func__ << " : Too few buffers (" << buffers->size()
                << ") for track_num (" << block_info[i].track_num
                << "), expected at least " << *offset + 1 << " buffers";
       return false;

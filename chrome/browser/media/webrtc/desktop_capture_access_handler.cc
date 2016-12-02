@@ -156,7 +156,7 @@ std::unique_ptr<content::MediaStreamUI> GetDevicesForDesktopCapture(
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
   std::unique_ptr<content::MediaStreamUI> ui;
 
-  DVLOG(2) << __FUNCTION__ << ": media_id " << media_id.ToString()
+  DVLOG(2) << __func__ << ": media_id " << media_id.ToString()
            << ", capture_audio " << capture_audio << ", disable_local_echo "
            << disable_local_echo << ", display_notification "
            << display_notification << ", application_title "

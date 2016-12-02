@@ -27,11 +27,11 @@ MojoVideoDecoder::MojoVideoDecoder(
       remote_decoder_info_(remote_decoder.PassInterface()),
       client_binding_(this) {
   (void)gpu_factories_;
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 MojoVideoDecoder::~MojoVideoDecoder() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   Stop();
 }
 
@@ -45,7 +45,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!cdm_context);
 
@@ -68,7 +68,7 @@ void MojoVideoDecoder::Initialize(const VideoDecoderConfig& config,
 void MojoVideoDecoder::OnInitializeDone(bool status,
                                         bool needs_bitstream_conversion,
                                         int32_t max_decode_requests) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   initialized_ = status;
   needs_bitstream_conversion_ = needs_bitstream_conversion;
@@ -78,7 +78,7 @@ void MojoVideoDecoder::OnInitializeDone(bool status,
 
 void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
                               const DecodeCB& decode_cb) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -103,13 +103,13 @@ void MojoVideoDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 }
 
 void MojoVideoDecoder::OnVideoFrameDecoded(mojom::VideoFramePtr frame) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   output_cb_.Run(frame.To<scoped_refptr<VideoFrame>>());
 }
 
 void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   auto it = pending_decodes_.find(decode_id);
@@ -124,7 +124,7 @@ void MojoVideoDecoder::OnDecodeDone(uint64_t decode_id, DecodeStatus status) {
 }
 
 void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -138,30 +138,30 @@ void MojoVideoDecoder::Reset(const base::Closure& reset_cb) {
 }
 
 void MojoVideoDecoder::OnResetDone() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   base::ResetAndReturn(&reset_cb_).Run();
 }
 
 bool MojoVideoDecoder::NeedsBitstreamConversion() const {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(initialized_);
   return needs_bitstream_conversion_;
 }
 
 bool MojoVideoDecoder::CanReadWithoutStalling() const {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   return true;
 }
 
 int MojoVideoDecoder::GetMaxDecodeRequests() const {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(initialized_);
   return max_decode_requests_;
 }
 
 void MojoVideoDecoder::BindRemoteDecoder() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
   DCHECK(!remote_decoder_bound_);
 
@@ -185,7 +185,7 @@ void MojoVideoDecoder::BindRemoteDecoder() {
 }
 
 void MojoVideoDecoder::Stop() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   has_connection_error_ = true;

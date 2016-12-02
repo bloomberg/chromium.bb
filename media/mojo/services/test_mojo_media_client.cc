@@ -25,7 +25,7 @@ namespace media {
 TestMojoMediaClient::TestMojoMediaClient() {}
 
 TestMojoMediaClient::~TestMojoMediaClient() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   // AudioManager destructor requires MessageLoop.
   // Destroy it before the message loop goes away.
   audio_manager_.reset();
@@ -69,7 +69,7 @@ std::unique_ptr<RendererFactory> TestMojoMediaClient::CreateRendererFactory(
 
 std::unique_ptr<CdmFactory> TestMojoMediaClient::CreateCdmFactory(
     service_manager::mojom::InterfaceProvider* /* interface_provider */) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   return base::MakeUnique<DefaultCdmFactory>();
 }
 

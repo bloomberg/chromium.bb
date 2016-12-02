@@ -24,7 +24,7 @@ FFmpegH265ToAnnexBBitstreamConverter::FFmpegH265ToAnnexBBitstreamConverter(
 FFmpegH265ToAnnexBBitstreamConverter::~FFmpegH265ToAnnexBBitstreamConverter() {}
 
 bool FFmpegH265ToAnnexBBitstreamConverter::ConvertPacket(AVPacket* packet) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   if (packet == NULL || !packet->data)
     return false;
 

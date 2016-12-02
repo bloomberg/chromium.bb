@@ -341,7 +341,7 @@ void WebMediaPlayerAndroid::requestRemotePlaybackStop() {
 
 void WebMediaPlayerAndroid::seek(double seconds) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
-  DVLOG(1) << __FUNCTION__ << "(" << seconds << ")";
+  DVLOG(1) << __func__ << "(" << seconds << ")";
 
   playback_completed_ = false;
   base::TimeDelta new_seek_time = base::TimeDelta::FromSecondsD(seconds);

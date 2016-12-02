@@ -27,7 +27,7 @@ OutputProtectionProxy::~OutputProtectionProxy() {
 }
 
 void OutputProtectionProxy::QueryStatus(const QueryStatusCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
@@ -42,7 +42,7 @@ void OutputProtectionProxy::QueryStatus(const QueryStatusCallback& callback) {
 void OutputProtectionProxy::EnableProtection(
     uint32_t desired_method_mask,
     const EnableProtectionCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
 #if defined(OS_CHROMEOS)
@@ -58,7 +58,7 @@ void OutputProtectionProxy::ProcessQueryStatusResult(
     bool success,
     uint32_t link_mask,
     uint32_t protection_mask) {
-  DVLOG(1) << __FUNCTION__ << ": " << success << ", " << link_mask;
+  DVLOG(1) << __func__ << ": " << success << ", " << link_mask;
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
 
   content::RenderFrameHost* rfh =

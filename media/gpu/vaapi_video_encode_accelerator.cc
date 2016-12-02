@@ -20,7 +20,7 @@
 #include "media/gpu/shared_memory_region.h"
 #include "third_party/libva/va/va_enc_h264.h"
 
-#define DVLOGF(level) DVLOG(level) << __FUNCTION__ << "(): "
+#define DVLOGF(level) DVLOG(level) << __func__ << "(): "
 
 #define NOTIFY_ERROR(error, msg)                          \
   do {                                                    \

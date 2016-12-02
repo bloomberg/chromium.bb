@@ -32,7 +32,7 @@ MojoVideoDecoderService::~MojoVideoDecoderService() {}
 void MojoVideoDecoderService::Construct(
     mojom::VideoDecoderClientAssociatedPtrInfo client,
     mojo::ScopedDataPipeConsumerHandle decoder_buffer_pipe) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (decoder_)
     return;
@@ -50,7 +50,7 @@ void MojoVideoDecoderService::Construct(
 void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
                                          bool low_delay,
                                          const InitializeCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!decoder_) {
     callback.Run(false, false, 1);
@@ -66,7 +66,7 @@ void MojoVideoDecoderService::Initialize(mojom::VideoDecoderConfigPtr config,
 
 void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
                                      const DecodeCallback& callback) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   if (!decoder_) {
     callback.Run(DecodeStatus::DECODE_ERROR);
@@ -79,7 +79,7 @@ void MojoVideoDecoderService::Decode(mojom::DecoderBufferPtr buffer,
 }
 
 void MojoVideoDecoderService::Reset(const ResetCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!decoder_) {
     callback.Run();
@@ -93,7 +93,7 @@ void MojoVideoDecoderService::Reset(const ResetCallback& callback) {
 void MojoVideoDecoderService::OnDecoderInitialized(
     const InitializeCallback& callback,
     bool success) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(decoder_);
   callback.Run(success, decoder_->NeedsBitstreamConversion(),
                decoder_->GetMaxDecodeRequests());
@@ -116,20 +116,20 @@ void MojoVideoDecoderService::OnDecoderRead(
 
 void MojoVideoDecoderService::OnDecoderDecoded(const DecodeCallback& callback,
                                                DecodeStatus status) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(decoder_);
   DCHECK(decoder_->CanReadWithoutStalling());
   callback.Run(status);
 }
 
 void MojoVideoDecoderService::OnDecoderReset(const ResetCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   callback.Run();
 }
 
 void MojoVideoDecoderService::OnDecoderOutput(
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(client_);
   client_->OnVideoFrameDecoded(mojom::VideoFrame::From(frame));
 }

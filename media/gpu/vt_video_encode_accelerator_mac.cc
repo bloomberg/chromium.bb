@@ -83,7 +83,7 @@ VTVideoEncodeAccelerator::VTVideoEncodeAccelerator()
 }
 
 VTVideoEncodeAccelerator::~VTVideoEncodeAccelerator() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   Destroy();
@@ -93,7 +93,7 @@ VTVideoEncodeAccelerator::~VTVideoEncodeAccelerator() {
 
 VideoEncodeAccelerator::SupportedProfiles
 VTVideoEncodeAccelerator::GetSupportedProfiles() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   SupportedProfiles profiles;
@@ -121,8 +121,7 @@ bool VTVideoEncodeAccelerator::Initialize(VideoPixelFormat format,
                                           VideoCodecProfile output_profile,
                                           uint32_t initial_bitrate,
                                           Client* client) {
-  DVLOG(3) << __FUNCTION__
-           << ": input_format=" << VideoPixelFormatToString(format)
+  DVLOG(3) << __func__ << ": input_format=" << VideoPixelFormatToString(format)
            << ", input_visible_size=" << input_visible_size.ToString()
            << ", output_profile=" << output_profile
            << ", initial_bitrate=" << initial_bitrate;
@@ -166,7 +165,7 @@ bool VTVideoEncodeAccelerator::Initialize(VideoPixelFormat format,
 
 void VTVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
                                       bool force_keyframe) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   encoder_thread_task_runner_->PostTask(
@@ -176,7 +175,7 @@ void VTVideoEncodeAccelerator::Encode(const scoped_refptr<VideoFrame>& frame,
 
 void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
     const BitstreamBuffer& buffer) {
-  DVLOG(3) << __FUNCTION__ << ": buffer size=" << buffer.size();
+  DVLOG(3) << __func__ << ": buffer size=" << buffer.size();
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (buffer.size() < bitstream_buffer_size_) {
@@ -206,7 +205,7 @@ void VTVideoEncodeAccelerator::UseOutputBitstreamBuffer(
 void VTVideoEncodeAccelerator::RequestEncodingParametersChange(
     uint32_t bitrate,
     uint32_t framerate) {
-  DVLOG(3) << __FUNCTION__ << ": bitrate=" << bitrate
+  DVLOG(3) << __func__ << ": bitrate=" << bitrate
            << ": framerate=" << framerate;
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -217,7 +216,7 @@ void VTVideoEncodeAccelerator::RequestEncodingParametersChange(
 }
 
 void VTVideoEncodeAccelerator::Destroy() {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Cancel all callbacks.
@@ -363,7 +362,7 @@ void VTVideoEncodeAccelerator::CompressionCallback(void* encoder_opaque,
                                                    CMSampleBufferRef sbuf) {
   // This function may be called asynchronously, on a different thread from the
   // one that calls VTCompressionSessionEncodeFrame.
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
 
   auto* encoder = reinterpret_cast<VTVideoEncodeAccelerator*>(encoder_opaque);
   DCHECK(encoder);
@@ -412,7 +411,7 @@ void VTVideoEncodeAccelerator::CompressionCallbackTask(
 void VTVideoEncodeAccelerator::ReturnBitstreamBuffer(
     std::unique_ptr<EncodeOutput> encode_output,
     std::unique_ptr<VTVideoEncodeAccelerator::BitstreamBufferRef> buffer_ref) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(encoder_thread_task_runner_->BelongsToCurrentThread());
 
   if (encode_output->info & kVTEncodeInfo_FrameDropped) {

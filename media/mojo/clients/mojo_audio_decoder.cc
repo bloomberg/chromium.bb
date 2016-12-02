@@ -27,11 +27,11 @@ MojoAudioDecoder::MojoAudioDecoder(
       client_binding_(this),
       has_connection_error_(false),
       needs_bitstream_conversion_(false) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 MojoAudioDecoder::~MojoAudioDecoder() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 std::string MojoAudioDecoder::GetDisplayName() const {
@@ -42,7 +42,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                   CdmContext* cdm_context,
                                   const InitCB& init_cb,
                                   const OutputCB& output_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // Bind |remote_decoder_| to the |task_runner_|.
@@ -80,7 +80,7 @@ void MojoAudioDecoder::Initialize(const AudioDecoderConfig& config,
 
 void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& media_buffer,
                               const DecodeCB& decode_cb) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -106,7 +106,7 @@ void MojoAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& media_buffer,
 }
 
 void MojoAudioDecoder::Reset(const base::Closure& closure) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   if (has_connection_error_) {
@@ -127,21 +127,21 @@ void MojoAudioDecoder::Reset(const base::Closure& closure) {
 }
 
 bool MojoAudioDecoder::NeedsBitstreamConversion() const {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   return needs_bitstream_conversion_;
 }
 
 void MojoAudioDecoder::OnBufferDecoded(mojom::AudioBufferPtr buffer) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   output_cb_.Run(buffer.To<scoped_refptr<AudioBuffer>>());
 }
 
 void MojoAudioDecoder::OnConnectionError() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   has_connection_error_ = true;
@@ -159,7 +159,7 @@ void MojoAudioDecoder::OnConnectionError() {
 
 void MojoAudioDecoder::OnInitialized(bool success,
                                      bool needs_bitstream_conversion) {
-  DVLOG(1) << __FUNCTION__ << ": success:" << success;
+  DVLOG(1) << __func__ << ": success:" << success;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   needs_bitstream_conversion_ = needs_bitstream_conversion;
@@ -176,7 +176,7 @@ void MojoAudioDecoder::OnInitialized(bool success,
 }
 
 void MojoAudioDecoder::OnDecodeStatus(DecodeStatus status) {
-  DVLOG(1) << __FUNCTION__ << ": status:" << status;
+  DVLOG(1) << __func__ << ": status:" << status;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   DCHECK(!decode_cb_.is_null());
@@ -184,7 +184,7 @@ void MojoAudioDecoder::OnDecodeStatus(DecodeStatus status) {
 }
 
 void MojoAudioDecoder::OnResetDone() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(task_runner_->BelongsToCurrentThread());
 
   // For pending decodes OnDecodeStatus() should arrive before OnResetDone().

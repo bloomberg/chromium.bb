@@ -313,7 +313,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::Create(
     const SessionClosedCB& session_closed_cb,
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!IsAvailable())
     return nullptr;
@@ -328,7 +328,7 @@ scoped_refptr<MediaDrmBridge> MediaDrmBridge::CreateWithoutSessionSupport(
     const std::string& key_system,
     SecurityLevel security_level,
     const CreateFetcherCB& create_fetcher_cb) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   // Sessions won't be used so decoding capability is not required.
   if (!AreMediaDrmApisAvailable())
@@ -343,7 +343,7 @@ void MediaDrmBridge::SetServerCertificate(
     const std::vector<uint8_t>& certificate,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__ << "(" << certificate.size() << " bytes)";
+  DVLOG(2) << __func__ << "(" << certificate.size() << " bytes)";
 
   DCHECK(!certificate.empty());
 
@@ -365,7 +365,7 @@ void MediaDrmBridge::CreateSessionAndGenerateRequest(
     const std::vector<uint8_t>& init_data,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   if (session_type != media::MediaKeys::TEMPORARY_SESSION) {
     NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
@@ -422,7 +422,7 @@ void MediaDrmBridge::LoadSession(
     const std::string& session_id,
     std::unique_ptr<media::NewSessionCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
   promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
@@ -434,7 +434,7 @@ void MediaDrmBridge::UpdateSession(
     const std::vector<uint8_t>& response,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_response =
@@ -451,7 +451,7 @@ void MediaDrmBridge::CloseSession(
     const std::string& session_id,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   JNIEnv* env = AttachCurrentThread();
   ScopedJavaLocalRef<jbyteArray> j_session_id = base::android::ToJavaByteArray(
@@ -465,7 +465,7 @@ void MediaDrmBridge::RemoveSession(
     const std::string& session_id,
     std::unique_ptr<media::SimpleCdmPromise> promise) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   NOTIMPLEMENTED() << "EME persistent sessions not yet supported on Android.";
   promise->reject(CdmPromise::NOT_SUPPORTED_ERROR, 0,
@@ -473,13 +473,13 @@ void MediaDrmBridge::RemoveSession(
 }
 
 CdmContext* MediaDrmBridge::GetCdmContext() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   return &media_drm_bridge_cdm_context_;
 }
 
 void MediaDrmBridge::DeleteOnCorrectThread() const {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!task_runner_->BelongsToCurrentThread()) {
     // When DeleteSoon returns false, |this| will be leaked, which is okay.
@@ -511,7 +511,7 @@ bool MediaDrmBridge::IsProtectedSurfaceRequired() {
 
 void MediaDrmBridge::ResetDeviceCredentials(
     const ResetCredentialsCB& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   DCHECK(reset_credentials_cb_.is_null());
   reset_credentials_cb_ = callback;
@@ -520,19 +520,19 @@ void MediaDrmBridge::ResetDeviceCredentials(
 }
 
 void MediaDrmBridge::ResolvePromise(uint32_t promise_id) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   cdm_promise_adapter_.ResolvePromise(promise_id);
 }
 
 void MediaDrmBridge::ResolvePromiseWithSession(uint32_t promise_id,
                                                const std::string& session_id) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   cdm_promise_adapter_.ResolvePromise(promise_id, session_id);
 }
 
 void MediaDrmBridge::RejectPromise(uint32_t promise_id,
                                    const std::string& error_message) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   cdm_promise_adapter_.RejectPromise(promise_id, CdmPromise::UNKNOWN_ERROR, 0,
                                      error_message);
 }
@@ -547,7 +547,7 @@ void MediaDrmBridge::SetMediaCryptoReadyCB(
     return;
   }
 
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (media_crypto_ready_cb.is_null()) {
     media_crypto_ready_cb_.Reset();
@@ -574,7 +574,7 @@ void MediaDrmBridge::OnMediaCryptoReady(
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jobject>& j_media_crypto) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   task_runner_->PostTask(
       FROM_HERE,
@@ -588,7 +588,7 @@ void MediaDrmBridge::OnStartProvisioning(
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jstring>& j_default_url,
     const JavaParamRef<jbyteArray>& j_request_data) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   task_runner_->PostTask(FROM_HERE,
                          base::Bind(&MediaDrmBridge::SendProvisioningRequest,
@@ -633,7 +633,7 @@ void MediaDrmBridge::OnSessionMessage(
     const JavaParamRef<jbyteArray>& j_session_id,
     jint j_message_type,
     const JavaParamRef<jbyteArray>& j_message) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   std::vector<uint8_t> message;
   JavaByteArrayToByteVector(env, j_message, &message);
@@ -649,7 +649,7 @@ void MediaDrmBridge::OnSessionClosed(
     JNIEnv* env,
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jbyteArray>& j_session_id) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   std::string session_id = AsString(env, j_session_id);
   task_runner_->PostTask(FROM_HERE, base::Bind(session_closed_cb_, session_id));
 }
@@ -660,7 +660,7 @@ void MediaDrmBridge::OnSessionKeysChange(
     const JavaParamRef<jbyteArray>& j_session_id,
     const JavaParamRef<jobjectArray>& j_keys_info,
     bool has_additional_usable_key) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   CdmKeysInfo cdm_keys_info;
 
@@ -681,7 +681,7 @@ void MediaDrmBridge::OnSessionKeysChange(
     CdmKeyInformation::KeyStatus key_status =
         ConvertKeyStatus(static_cast<KeyStatus>(j_status_code));
 
-    DVLOG(2) << __FUNCTION__ << "Key status change: "
+    DVLOG(2) << __func__ << "Key status change: "
              << base::HexEncode(&key_id[0], key_id.size()) << ", "
              << key_status;
 
@@ -716,7 +716,7 @@ void MediaDrmBridge::OnSessionExpirationUpdate(
     const JavaParamRef<jobject>& j_media_drm,
     const JavaParamRef<jbyteArray>& j_session_id,
     jlong expiry_time_ms) {
-  DVLOG(2) << __FUNCTION__ << ": " << expiry_time_ms << " ms";
+  DVLOG(2) << __func__ << ": " << expiry_time_ms << " ms";
   task_runner_->PostTask(
       FROM_HERE,
       base::Bind(session_expiration_update_cb_, AsString(env, j_session_id),
@@ -727,7 +727,7 @@ void MediaDrmBridge::OnResetDeviceCredentialsCompleted(
     JNIEnv* env,
     const JavaParamRef<jobject>&,
     bool success) {
-  DVLOG(2) << __FUNCTION__ << ": success:" << success;
+  DVLOG(2) << __func__ << ": success:" << success;
   DCHECK(!reset_credentials_cb_.is_null());
   task_runner_->PostTask(
       FROM_HERE,
@@ -754,7 +754,7 @@ MediaDrmBridge::MediaDrmBridge(
       task_runner_(base::ThreadTaskRunnerHandle::Get()),
       media_drm_bridge_cdm_context_(this),
       weak_factory_(this) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   DCHECK(!create_fetcher_cb_.is_null());
 
@@ -775,7 +775,7 @@ MediaDrmBridge::MediaDrmBridge(
 
 MediaDrmBridge::~MediaDrmBridge() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   JNIEnv* env = AttachCurrentThread();
 
@@ -839,7 +839,7 @@ void MediaDrmBridge::NotifyMediaCryptoReady(JavaObjectPtr j_media_crypto) {
 void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
                                              const std::string& request_data) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   DCHECK(!provision_fetcher_) << "At most one provision request at any time.";
   provision_fetcher_ = create_fetcher_cb_.Run();
@@ -853,7 +853,7 @@ void MediaDrmBridge::SendProvisioningRequest(const std::string& default_url,
 void MediaDrmBridge::ProcessProvisionResponse(bool success,
                                               const std::string& response) {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   DCHECK(provision_fetcher_) << "No provision request pending.";
   provision_fetcher_.reset();
@@ -872,7 +872,7 @@ void MediaDrmBridge::ProcessProvisionResponse(bool success,
 
 void MediaDrmBridge::OnHasAdditionalUsableKey() {
   DCHECK(task_runner_->BelongsToCurrentThread());
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   player_tracker_.NotifyNewKey();
 }

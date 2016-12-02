@@ -159,7 +159,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueInputBuffer(
     const uint8_t* data,
     size_t data_size,
     base::TimeDelta presentation_time) {
-  DVLOG(3) << __FUNCTION__ << index << ": " << data_size;
+  DVLOG(3) << __func__ << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -183,7 +183,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     const SubsampleEntry* subsamples,
     int subsamples_size,
     base::TimeDelta presentation_time) {
-  DVLOG(3) << __FUNCTION__ << index << ": " << data_size;
+  DVLOG(3) << __func__ << index << ": " << data_size;
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
     return MEDIA_CODEC_ERROR;
@@ -238,7 +238,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
 }
 
 void SdkMediaCodecBridge::QueueEOS(int input_buffer_index) {
-  DVLOG(3) << __FUNCTION__ << ": " << input_buffer_index;
+  DVLOG(3) << __func__ << ": " << input_buffer_index;
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_queueInputBuffer(
       env, j_media_codec_, input_buffer_index, 0, 0, 0, kBufferFlagEndOfStream);
@@ -253,7 +253,7 @@ MediaCodecStatus SdkMediaCodecBridge::DequeueInputBuffer(
   *index = Java_DequeueInputResult_index(env, result);
   MediaCodecStatus status = static_cast<MediaCodecStatus>(
       Java_DequeueInputResult_status(env, result));
-  DVLOG(3) << __FUNCTION__ << ": status: " << status << ", index: " << *index;
+  DVLOG(3) << __func__ << ": status: " << status << ", index: " << *index;
   return status;
 }
 
@@ -285,14 +285,14 @@ MediaCodecStatus SdkMediaCodecBridge::DequeueOutputBuffer(
     *key_frame = flags & kBufferFlagSyncFrame;
   MediaCodecStatus status = static_cast<MediaCodecStatus>(
       Java_DequeueOutputResult_status(env, result));
-  DVLOG(3) << __FUNCTION__ << ": status: " << status << ", index: " << *index
+  DVLOG(3) << __func__ << ": status: " << status << ", index: " << *index
            << ", offset: " << *offset << ", size: " << *size
            << ", flags: " << flags;
   return status;
 }
 
 void SdkMediaCodecBridge::ReleaseOutputBuffer(int index, bool render) {
-  DVLOG(3) << __FUNCTION__ << ": " << index;
+  DVLOG(3) << __func__ << ": " << index;
   JNIEnv* env = AttachCurrentThread();
   Java_MediaCodecBridge_releaseOutputBuffer(env, j_media_codec_, index, render);
 }
@@ -391,7 +391,7 @@ bool AudioCodecBridge::ConfigureAndStart(const AudioCodec& codec,
                                          int64_t codec_delay_ns,
                                          int64_t seek_preroll_ns,
                                          jobject media_crypto) {
-  DVLOG(2) << __FUNCTION__ << ": "
+  DVLOG(2) << __func__ << ": "
            << " codec:" << GetCodecName(codec)
            << " samples_per_second:" << sample_rate
            << " channel_count:" << channel_count

@@ -117,7 +117,7 @@ class MojoRendererTest : public ::testing::Test {
   }
 
   void InitializeAndExpect(PipelineStatus status) {
-    DVLOG(1) << __FUNCTION__ << ": " << status;
+    DVLOG(1) << __func__ << ": " << status;
     EXPECT_CALL(*this, OnInitialized(status));
     mojo_renderer_->Initialize(
         &demuxer_, &renderer_client_,
@@ -134,7 +134,7 @@ class MojoRendererTest : public ::testing::Test {
   }
 
   void Flush() {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     // Flush callback should always be fired.
     EXPECT_CALL(*this, OnFlushed());
     mojo_renderer_->Flush(
@@ -143,7 +143,7 @@ class MojoRendererTest : public ::testing::Test {
   }
 
   void SetCdmAndExpect(bool success) {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     // Set CDM callback should always be fired.
     EXPECT_CALL(*this, OnCdmAttached(success));
     mojo_renderer_->SetCdm(
@@ -156,7 +156,7 @@ class MojoRendererTest : public ::testing::Test {
   // Note that |mock_renderer_| will also be destroyed, do NOT expect anything
   // on it. Otherwise the test will crash.
   void ConnectionError() {
-    DVLOG(1) << __FUNCTION__;
+    DVLOG(1) << __func__;
     DCHECK(renderer_binding_);
     renderer_binding_->Close();
     base::RunLoop().RunUntilIdle();

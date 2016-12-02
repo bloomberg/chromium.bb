@@ -171,7 +171,7 @@ void VideoCaptureDeviceAndroid::AllocateAndStart(
         capture_format_.frame_rate);
   }
 
-  DVLOG(1) << __FUNCTION__ << " requested ("
+  DVLOG(1) << __func__ << " requested ("
            << capture_format_.frame_size.ToString() << ")@ "
            << capture_format_.frame_rate << "fps";
 

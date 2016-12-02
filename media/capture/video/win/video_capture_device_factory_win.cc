@@ -148,7 +148,7 @@ static std::string GetDeviceModelId(const std::string& device_id) {
 
 static void GetDeviceDescriptorsDirectShow(Descriptors* device_descriptors) {
   DCHECK(device_descriptors);
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   ScopedComPtr<ICreateDevEnum> dev_enum;
   HRESULT hr =

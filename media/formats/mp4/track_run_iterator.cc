@@ -144,13 +144,13 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   uint32_t flags;
   if (i < trun.sample_flags.size()) {
     flags = trun.sample_flags[i];
-    DVLOG(4) << __FUNCTION__ << " trun sample flags "  << HexFlags(flags);
+    DVLOG(4) << __func__ << " trun sample flags " << HexFlags(flags);
   } else if (tfhd.has_default_sample_flags) {
     flags = tfhd.default_sample_flags;
-    DVLOG(4) << __FUNCTION__ << " tfhd sample flags "  << HexFlags(flags);
+    DVLOG(4) << __func__ << " tfhd sample flags " << HexFlags(flags);
   } else {
     flags = trex.default_sample_flags;
-    DVLOG(4) << __FUNCTION__ << " trex sample flags "  << HexFlags(flags);
+    DVLOG(4) << __func__ << " trex sample flags " << HexFlags(flags);
   }
 
   SampleDependsOn sample_depends_on =
@@ -158,7 +158,7 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   if (sample_depends_on == kSampleDependsOnUnknown) {
     sample_depends_on = sdtp_sample_depends_on;
   }
-  DVLOG(4) << __FUNCTION__ << " sample_depends_on "  << sample_depends_on;
+  DVLOG(4) << __func__ << " sample_depends_on " << sample_depends_on;
   if (sample_depends_on == kSampleDependsOnReserved) {
     MEDIA_LOG(ERROR, media_log) << "Reserved value used in sample dependency"
                                    " info.";
@@ -180,10 +180,9 @@ static bool PopulateSampleInfo(const TrackExtends& trex,
   sample_info->is_keyframe = sample_is_sync_sample &&
                              (!sample_depends_on_others || is_audio);
 
-  DVLOG(4) << __FUNCTION__ << " is_kf:" << sample_info->is_keyframe
+  DVLOG(4) << __func__ << " is_kf:" << sample_info->is_keyframe
            << " is_sync:" << sample_is_sync_sample
-           << " deps:" << sample_depends_on_others
-           << " audio:" << is_audio;
+           << " deps:" << sample_depends_on_others << " audio:" << is_audio;
 
   return true;
 }

@@ -78,7 +78,7 @@ class PresentationSessionMessagesObserver : public RouteMessageObserver {
   ~PresentationSessionMessagesObserver() final {}
 
   void OnMessagesReceived(const std::vector<RouteMessage>& messages) final {
-    DVLOG(2) << __FUNCTION__ << ", number of messages : " << messages.size();
+    DVLOG(2) << __func__ << ", number of messages : " << messages.size();
     ScopedVector<content::PresentationSessionMessage> presentation_messages;
     for (const RouteMessage& message : messages) {
       if (message.type == RouteMessage::TEXT && message.text) {

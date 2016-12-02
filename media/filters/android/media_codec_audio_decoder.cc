@@ -27,11 +27,11 @@ MediaCodecAudioDecoder::MediaCodecAudioDecoder(
       media_drm_bridge_cdm_context_(nullptr),
       cdm_registration_id_(0),
       weak_factory_(this) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 MediaCodecAudioDecoder::~MediaCodecAudioDecoder() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   codec_loop_.reset();
 
@@ -56,7 +56,7 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
                                         CdmContext* cdm_context,
                                         const InitCB& init_cb,
                                         const OutputCB& output_cb) {
-  DVLOG(1) << __FUNCTION__ << ": " << config.AsHumanReadableString();
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   DCHECK_EQ(state_, STATE_UNINITIALIZED);
 
   InitCB bound_init_cb = BindToCurrentLoop(init_cb);
@@ -100,21 +100,21 @@ void MediaCodecAudioDecoder::Initialize(const AudioDecoderConfig& config,
 }
 
 bool MediaCodecAudioDecoder::CreateMediaCodecLoop() {
-  DVLOG(1) << __FUNCTION__ << ": config:" << config_.AsHumanReadableString();
+  DVLOG(1) << __func__ << ": config:" << config_.AsHumanReadableString();
 
   codec_loop_.reset();
 
   std::unique_ptr<AudioCodecBridge> audio_codec_bridge(
       AudioCodecBridge::Create(config_.codec()));
   if (!audio_codec_bridge) {
-    DLOG(ERROR) << __FUNCTION__ << " failed: cannot create AudioCodecBridge";
+    DLOG(ERROR) << __func__ << " failed: cannot create AudioCodecBridge";
     return false;
   }
 
   jobject media_crypto_obj = media_crypto_ ? media_crypto_->obj() : nullptr;
 
   if (!audio_codec_bridge->ConfigureAndStart(config_, media_crypto_obj)) {
-    DLOG(ERROR) << __FUNCTION__ << " failed: cannot configure audio codec for "
+    DLOG(ERROR) << __func__ << " failed: cannot configure audio codec for "
                 << config_.AsHumanReadableString();
     return false;
   }
@@ -131,7 +131,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   DecodeCB bound_decode_cb = BindToCurrentLoop(decode_cb);
 
   if (!buffer->end_of_stream() && buffer->timestamp() == kNoTimestamp) {
-    DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
+    DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": no timestamp, skipping this buffer";
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
     return;
@@ -140,7 +140,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
   // Note that we transition to STATE_ERROR if |codec_loop_| does.
   if (state_ == STATE_ERROR) {
     // We get here if an error happens in DequeueOutput() or Reset().
-    DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString()
+    DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString()
              << ": Error state, returning decode error for all buffers";
     ClearInputQueue(DecodeStatus::DECODE_ERROR);
     bound_decode_cb.Run(DecodeStatus::DECODE_ERROR);
@@ -149,7 +149,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 
   DCHECK(codec_loop_);
 
-  DVLOG(2) << __FUNCTION__ << " " << buffer->AsHumanReadableString();
+  DVLOG(2) << __func__ << " " << buffer->AsHumanReadableString();
 
   DCHECK_EQ(state_, STATE_READY) << " unexpected state " << AsString(state_);
 
@@ -163,7 +163,7 @@ void MediaCodecAudioDecoder::Decode(const scoped_refptr<DecoderBuffer>& buffer,
 }
 
 void MediaCodecAudioDecoder::Reset(const base::Closure& closure) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   ClearInputQueue(DecodeStatus::ABORTED);
 
@@ -214,7 +214,7 @@ void MediaCodecAudioDecoder::SetCdm(CdmContext* cdm_context,
 }
 
 void MediaCodecAudioDecoder::OnKeyAdded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   // We don't register |codec_loop_| directly with the DRM bridge, since it's
   // subject to replacement.
@@ -226,7 +226,7 @@ void MediaCodecAudioDecoder::OnMediaCryptoReady(
     const InitCB& init_cb,
     MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
     bool /*needs_protected_surface*/) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   DCHECK(state_ == STATE_WAITING_FOR_MEDIA_CRYPTO);
 
@@ -263,7 +263,7 @@ bool MediaCodecAudioDecoder::IsAnyInputPending() const {
 }
 
 MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   scoped_refptr<DecoderBuffer> decoder_buffer = input_queue_.front().first;
 
@@ -303,7 +303,7 @@ void MediaCodecAudioDecoder::OnInputDataQueued(bool success) {
 }
 
 void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   for (const auto& entry : input_queue_)
     entry.second.Run(decode_status);
@@ -312,7 +312,7 @@ void MediaCodecAudioDecoder::ClearInputQueue(DecodeStatus decode_status) {
 }
 
 void MediaCodecAudioDecoder::SetState(State new_state) {
-  DVLOG(1) << __FUNCTION__ << ": " << AsString(state_) << "->"
+  DVLOG(1) << __func__ << ": " << AsString(state_) << "->"
            << AsString(new_state);
   state_ = new_state;
 }
@@ -325,7 +325,7 @@ void MediaCodecAudioDecoder::OnCodecLoopError() {
 
 void MediaCodecAudioDecoder::OnDecodedEos(
     const MediaCodecLoop::OutputBuffer& out) {
-  DVLOG(2) << __FUNCTION__ << " pts:" << out.pts;
+  DVLOG(2) << __func__ << " pts:" << out.pts;
 
   // If we've transitioned into the error state, then we don't really know what
   // to do.  If we transitioned because of OnCodecError, then all of our
@@ -341,7 +341,7 @@ void MediaCodecAudioDecoder::OnDecodedEos(
 
 bool MediaCodecAudioDecoder::OnDecodedFrame(
     const MediaCodecLoop::OutputBuffer& out) {
-  DVLOG(2) << __FUNCTION__ << " pts:" << out.pts;
+  DVLOG(2) << __func__ << " pts:" << out.pts;
 
   DCHECK_NE(out.size, 0U);
   DCHECK_NE(out.index, MediaCodecLoop::kInvalidBufferIndex);
@@ -392,7 +392,7 @@ bool MediaCodecAudioDecoder::OnDecodedFrame(
 }
 
 bool MediaCodecAudioDecoder::OnOutputFormatChanged() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   MediaCodecBridge* media_codec = codec_loop_->GetCodec();
 
   // Note that if we return false to transition |codec_loop_| to the error
@@ -406,9 +406,8 @@ bool MediaCodecAudioDecoder::OnOutputFormatChanged() {
     return false;
   }
   if (new_sampling_rate != sample_rate_) {
-    DVLOG(1) << __FUNCTION__
-             << ": detected sample rate change: " << sample_rate_ << " -> "
-             << new_sampling_rate;
+    DVLOG(1) << __func__ << ": detected sample rate change: " << sample_rate_
+             << " -> " << new_sampling_rate;
 
     sample_rate_ = new_sampling_rate;
     const base::TimeDelta base_timestamp =
@@ -428,7 +427,7 @@ bool MediaCodecAudioDecoder::OnOutputFormatChanged() {
   }
 
   if (new_channel_count != channel_count_) {
-    DVLOG(1) << __FUNCTION__
+    DVLOG(1) << __func__
              << ": detected channel count change: " << channel_count_ << " -> "
              << new_channel_count;
     channel_count_ = new_channel_count;

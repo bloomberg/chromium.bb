@@ -33,7 +33,7 @@ void MojoCdmFactory::Create(
     const SessionKeysChangeCB& session_keys_change_cb,
     const SessionExpirationUpdateCB& session_expiration_update_cb,
     const CdmCreatedCB& cdm_created_cb) {
-  DVLOG(2) << __FUNCTION__ << ": " << key_system;
+  DVLOG(2) << __func__ << ": " << key_system;
 
   if (!security_origin.is_valid()) {
     base::ThreadTaskRunnerHandle::Get()->PostTask(

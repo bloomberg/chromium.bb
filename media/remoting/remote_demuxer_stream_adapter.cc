@@ -83,7 +83,7 @@ RemoteDemuxerStreamAdapter::~RemoteDemuxerStreamAdapter() {
 base::Optional<uint32_t> RemoteDemuxerStreamAdapter::SignalFlush(
     bool flushing) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  VLOG(2) << __FUNCTION__ << " (" << name_ << "): " << flushing;
+  VLOG(2) << __func__ << " (" << name_ << "): " << flushing;
 
   // Ignores if |pending_flush_| states is same.
   if (pending_flush_ == flushing)
@@ -127,7 +127,7 @@ void RemoteDemuxerStreamAdapter::OnReceivedRpc(
 void RemoteDemuxerStreamAdapter::Initialize(int remote_callback_handle) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   DCHECK(!pending_flush_);
-  VLOG(2) << __FUNCTION__ << " (" << name_ << "):" << type_;
+  VLOG(2) << __func__ << " (" << name_ << "):" << type_;
 
   // Checks if initialization had been called or not.
   if (remote_callback_handle_ != kInvalidHandle) {
@@ -219,7 +219,7 @@ void RemoteDemuxerStreamAdapter::OnNewBuffer(
     int callback_handle,
     ::media::DemuxerStream::Status status,
     const scoped_refptr<::media::DecoderBuffer>& input) {
-  VLOG(3) << __FUNCTION__ << " (" << name_ << ") status:" << status;
+  VLOG(3) << __func__ << " (" << name_ << ") status:" << status;
   DCHECK(media_task_runner_->BelongsToCurrentThread());
   if (pending_flush_) {
     VLOG(2) << "Skip actions since it's in the flushing state";
@@ -324,8 +324,7 @@ void RemoteDemuxerStreamAdapter::TryWriteData(int callback_handle,
 
 void RemoteDemuxerStreamAdapter::SendReadAck(int callback_handle) {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  VLOG(3) << __FUNCTION__ << " name:" << name_
-          << " last frame id:" << last_count_
+  VLOG(3) << __func__ << " name:" << name_ << " last frame id:" << last_count_
           << " remote_read_callback_handle:" << callback_handle
           << " media_status:" << media_status_;
   // Resets the flag that it's not in the ReadUntil process.
@@ -372,7 +371,7 @@ void RemoteDemuxerStreamAdapter::ResetPendingFrame() {
 
 void RemoteDemuxerStreamAdapter::OnFatalError() {
   DCHECK(media_task_runner_->BelongsToCurrentThread());
-  VLOG(2) << __FUNCTION__;
+  VLOG(2) << __func__;
   // Resets mojo data pipe producer handle.
   producer_handle_.reset();
 

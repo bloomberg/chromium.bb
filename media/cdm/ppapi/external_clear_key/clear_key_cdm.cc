@@ -211,7 +211,7 @@ void ConvertCdmKeysInfo(const std::vector<media::CdmKeyInformation*>& keys_info,
 }
 
 void INITIALIZE_CDM_MODULE() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 #if defined(CLEAR_KEY_CDM_USE_FFMPEG_DECODER)
   media::InitializeMediaLibrary();
   av_register_all();
@@ -219,7 +219,7 @@ void INITIALIZE_CDM_MODULE() {
 }
 
 void DeinitializeCdmModule() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 void* CreateCdmInstance(int cdm_interface_version,
@@ -298,7 +298,7 @@ void ClearKeyCdm::CreateSessionAndGenerateRequest(
     cdm::InitDataType init_data_type,
     const uint8_t* init_data,
     uint32_t init_data_size) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   std::unique_ptr<media::NewSessionCdmPromise> promise(
       new media::CdmCallbackPromise<std::string>(
@@ -328,7 +328,7 @@ void ClearKeyCdm::LoadSession(uint32_t promise_id,
                               cdm::SessionType session_type,
                               const char* session_id,
                               uint32_t session_id_length) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK_EQ(session_type, cdm::kPersistentLicense);
 
   if (std::string(kLoadableSessionId) !=
@@ -361,7 +361,7 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
                                 uint32_t session_id_length,
                                 const uint8_t* response,
                                 uint32_t response_size) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   std::string web_session_str(session_id, session_id_length);
 
   // If updating the loadable session, use the actual session id generated.
@@ -387,7 +387,7 @@ void ClearKeyCdm::UpdateSession(uint32_t promise_id,
 void ClearKeyCdm::CloseSession(uint32_t promise_id,
                                const char* session_id,
                                uint32_t session_id_length) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   std::string web_session_str(session_id, session_id_length);
 
   // If closing the loadable session, use the actual session id generated.
@@ -406,7 +406,7 @@ void ClearKeyCdm::CloseSession(uint32_t promise_id,
 void ClearKeyCdm::RemoveSession(uint32_t promise_id,
                                 const char* session_id,
                                 uint32_t session_id_length) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   std::string web_session_str(session_id, session_id_length);
 
   // RemoveSession only allowed for the loadable session.
@@ -699,7 +699,7 @@ cdm::Status ClearKeyCdm::DecryptToMediaDecoderBuffer(
 
 void ClearKeyCdm::OnPlatformChallengeResponse(
     const cdm::PlatformChallengeResponse& response) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!is_running_platform_verification_test_) {
     NOTREACHED() << "OnPlatformChallengeResponse() called unexpectedly.";
@@ -718,7 +718,7 @@ void ClearKeyCdm::OnQueryOutputProtectionStatus(
     cdm::QueryResult result,
     uint32_t link_mask,
     uint32_t output_protection_mask) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!is_running_output_protection_test_) {
     NOTREACHED() << "OnQueryOutputProtectionStatus() called unexpectedly.";
@@ -960,19 +960,19 @@ void ClearKeyCdm::StartFileIOTest() {
 }
 
 void ClearKeyCdm::OnFileIOTestComplete(bool success) {
-  DVLOG(1) << __FUNCTION__ << ": " << success;
+  DVLOG(1) << __func__ << ": " << success;
   OnUnitTestComplete(success);
   file_io_test_runner_.reset();
 }
 
 void ClearKeyCdm::StartOutputProtectionTest() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   is_running_output_protection_test_ = true;
   host_->QueryOutputProtectionStatus();
 }
 
 void ClearKeyCdm::StartPlatformVerificationTest() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   is_running_platform_verification_test_ = true;
 
   std::string service_id = "test_service_id";

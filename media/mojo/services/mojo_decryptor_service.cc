@@ -27,7 +27,7 @@ MojoDecryptorService::MojoDecryptorService(
     mojo::InterfaceRequest<mojom::Decryptor> request,
     const base::Closure& error_handler)
     : binding_(this, std::move(request)), cdm_(cdm), weak_factory_(this) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_ = cdm->GetCdmContext()->GetDecryptor();
   DCHECK(decryptor_);
   weak_this_ = weak_factory_.GetWeakPtr();
@@ -48,21 +48,21 @@ void MojoDecryptorService::Initialize(
 void MojoDecryptorService::Decrypt(StreamType stream_type,
                                    mojom::DecoderBufferPtr encrypted,
                                    const DecryptCallback& callback) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted), base::BindOnce(&MojoDecryptorService::OnReadDone,
                                            weak_this_, stream_type, callback));
 }
 
 void MojoDecryptorService::CancelDecrypt(StreamType stream_type) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_->CancelDecrypt(stream_type);
 }
 
 void MojoDecryptorService::InitializeAudioDecoder(
     mojom::AudioDecoderConfigPtr config,
     const InitializeAudioDecoderCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_->InitializeAudioDecoder(
       config.To<AudioDecoderConfig>(),
       base::Bind(&MojoDecryptorService::OnAudioDecoderInitialized, weak_this_,
@@ -72,7 +72,7 @@ void MojoDecryptorService::InitializeAudioDecoder(
 void MojoDecryptorService::InitializeVideoDecoder(
     mojom::VideoDecoderConfigPtr config,
     const InitializeVideoDecoderCallback& callback) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_->InitializeVideoDecoder(
       config.To<VideoDecoderConfig>(),
       base::Bind(&MojoDecryptorService::OnVideoDecoderInitialized, weak_this_,
@@ -82,7 +82,7 @@ void MojoDecryptorService::InitializeVideoDecoder(
 void MojoDecryptorService::DecryptAndDecodeAudio(
     mojom::DecoderBufferPtr encrypted,
     const DecryptAndDecodeAudioCallback& callback) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted),
       base::BindOnce(&MojoDecryptorService::OnAudioRead, weak_this_, callback));
@@ -91,19 +91,19 @@ void MojoDecryptorService::DecryptAndDecodeAudio(
 void MojoDecryptorService::DecryptAndDecodeVideo(
     mojom::DecoderBufferPtr encrypted,
     const DecryptAndDecodeVideoCallback& callback) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
   mojo_decoder_buffer_reader_->ReadDecoderBuffer(
       std::move(encrypted),
       base::BindOnce(&MojoDecryptorService::OnVideoRead, weak_this_, callback));
 }
 
 void MojoDecryptorService::ResetDecoder(StreamType stream_type) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_->ResetDecoder(stream_type);
 }
 
 void MojoDecryptorService::DeinitializeDecoder(StreamType stream_type) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   decryptor_->DeinitializeDecoder(stream_type);
 }
 
@@ -130,9 +130,8 @@ void MojoDecryptorService::OnDecryptDone(
     const DecryptCallback& callback,
     Status status,
     const scoped_refptr<DecoderBuffer>& buffer) {
-  DVLOG_IF(1, status != Status::kSuccess) << __FUNCTION__ << "(" << status
-                                          << ")";
-  DVLOG_IF(3, status == Status::kSuccess) << __FUNCTION__;
+  DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
+  DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
   if (!buffer) {
     DCHECK_NE(status, Status::kSuccess);
@@ -153,14 +152,14 @@ void MojoDecryptorService::OnDecryptDone(
 void MojoDecryptorService::OnAudioDecoderInitialized(
     const InitializeAudioDecoderCallback& callback,
     bool success) {
-  DVLOG(1) << __FUNCTION__ << "(" << success << ")";
+  DVLOG(1) << __func__ << "(" << success << ")";
   callback.Run(success);
 }
 
 void MojoDecryptorService::OnVideoDecoderInitialized(
     const InitializeVideoDecoderCallback& callback,
     bool success) {
-  DVLOG(1) << __FUNCTION__ << "(" << success << ")";
+  DVLOG(1) << __func__ << "(" << success << ")";
   callback.Run(success);
 }
 
@@ -194,9 +193,8 @@ void MojoDecryptorService::OnAudioDecoded(
     const DecryptAndDecodeAudioCallback& callback,
     Status status,
     const media::Decryptor::AudioFrames& frames) {
-  DVLOG_IF(1, status != Status::kSuccess) << __FUNCTION__ << "(" << status
-                                          << ")";
-  DVLOG_IF(3, status == Status::kSuccess) << __FUNCTION__;
+  DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
+  DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
   std::vector<mojom::AudioBufferPtr> audio_buffers;
   for (const auto& frame : frames)
@@ -209,9 +207,8 @@ void MojoDecryptorService::OnVideoDecoded(
     const DecryptAndDecodeVideoCallback& callback,
     Status status,
     const scoped_refptr<VideoFrame>& frame) {
-  DVLOG_IF(1, status != Status::kSuccess) << __FUNCTION__ << "(" << status
-                                          << ")";
-  DVLOG_IF(3, status == Status::kSuccess) << __FUNCTION__;
+  DVLOG_IF(1, status != Status::kSuccess) << __func__ << "(" << status << ")";
+  DVLOG_IF(3, status == Status::kSuccess) << __func__;
 
   if (!frame) {
     DCHECK_NE(status, Status::kSuccess);

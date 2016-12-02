@@ -46,12 +46,12 @@ InterfaceFactoryImpl::InterfaceFactoryImpl(
       media_log_(media_log),
       connection_ref_(std::move(connection_ref)),
       mojo_media_client_(mojo_media_client) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(mojo_media_client_);
 }
 
 InterfaceFactoryImpl::~InterfaceFactoryImpl() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 // mojom::InterfaceFactory implementation.

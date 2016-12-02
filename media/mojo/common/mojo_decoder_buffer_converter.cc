@@ -54,7 +54,7 @@ bool IsPipeReadWriteError(MojoResult result) {
 std::unique_ptr<MojoDecoderBufferReader> MojoDecoderBufferReader::Create(
     DemuxerStream::Type type,
     mojo::ScopedDataPipeProducerHandle* producer_handle) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   std::unique_ptr<mojo::DataPipe> data_pipe = CreateDataPipe(type);
   *producer_handle = std::move(data_pipe->producer_handle);
   return base::WrapUnique(
@@ -64,32 +64,32 @@ std::unique_ptr<MojoDecoderBufferReader> MojoDecoderBufferReader::Create(
 MojoDecoderBufferReader::MojoDecoderBufferReader(
     mojo::ScopedDataPipeConsumerHandle consumer_handle)
     : consumer_handle_(std::move(consumer_handle)), bytes_read_(0) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   MojoResult result =
       pipe_watcher_.Start(consumer_handle_.get(), MOJO_HANDLE_SIGNAL_READABLE,
                           base::Bind(&MojoDecoderBufferReader::OnPipeReadable,
                                      base::Unretained(this)));
   if (result != MOJO_RESULT_OK) {
-    DVLOG(1) << __FUNCTION__
+    DVLOG(1) << __func__
              << ": Failed to start watching the pipe. result=" << result;
     consumer_handle_.reset();
   }
 }
 
 MojoDecoderBufferReader::~MojoDecoderBufferReader() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 void MojoDecoderBufferReader::ReadDecoderBuffer(
     mojom::DecoderBufferPtr mojo_buffer,
     ReadCB read_cb) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
 
   // DecoderBuffer cannot be read if the pipe is already closed.
   if (!consumer_handle_.is_valid()) {
     DVLOG(1)
-        << __FUNCTION__
+        << __func__
         << ": Failed to read DecoderBuffer becuase the pipe is already closed";
     std::move(read_cb).Run(nullptr);
     return;
@@ -116,12 +116,11 @@ void MojoDecoderBufferReader::ReadDecoderBuffer(
 }
 
 void MojoDecoderBufferReader::OnPipeError(MojoResult result) {
-  DVLOG(1) << __FUNCTION__ << "(" << result << ")";
+  DVLOG(1) << __func__ << "(" << result << ")";
   DCHECK(IsPipeReadWriteError(result));
 
   if (media_buffer_) {
-    DVLOG(1) << __FUNCTION__
-             << ": reading from data pipe failed. result=" << result
+    DVLOG(1) << __func__ << ": reading from data pipe failed. result=" << result
              << ", buffer size=" << media_buffer_->data_size()
              << ", num_bytes(read)=" << bytes_read_;
     DCHECK(read_cb_);
@@ -133,7 +132,7 @@ void MojoDecoderBufferReader::OnPipeError(MojoResult result) {
 }
 
 void MojoDecoderBufferReader::OnPipeReadable(MojoResult result) {
-  DVLOG(4) << __FUNCTION__ << "(" << result << ")";
+  DVLOG(4) << __func__ << "(" << result << ")";
 
   if (result != MOJO_RESULT_OK)
     OnPipeError(result);
@@ -142,7 +141,7 @@ void MojoDecoderBufferReader::OnPipeReadable(MojoResult result) {
 }
 
 void MojoDecoderBufferReader::ReadDecoderBufferData() {
-  DVLOG(4) << __FUNCTION__;
+  DVLOG(4) << __func__;
   DCHECK(media_buffer_);
 
   uint32_t buffer_size =
@@ -175,7 +174,7 @@ void MojoDecoderBufferReader::ReadDecoderBufferData() {
 std::unique_ptr<MojoDecoderBufferWriter> MojoDecoderBufferWriter::Create(
     DemuxerStream::Type type,
     mojo::ScopedDataPipeConsumerHandle* consumer_handle) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   std::unique_ptr<mojo::DataPipe> data_pipe = CreateDataPipe(type);
   *consumer_handle = std::move(data_pipe->consumer_handle);
   return base::WrapUnique(
@@ -185,31 +184,31 @@ std::unique_ptr<MojoDecoderBufferWriter> MojoDecoderBufferWriter::Create(
 MojoDecoderBufferWriter::MojoDecoderBufferWriter(
     mojo::ScopedDataPipeProducerHandle producer_handle)
     : producer_handle_(std::move(producer_handle)), bytes_written_(0) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   MojoResult result =
       pipe_watcher_.Start(producer_handle_.get(), MOJO_HANDLE_SIGNAL_WRITABLE,
                           base::Bind(&MojoDecoderBufferWriter::OnPipeWritable,
                                      base::Unretained(this)));
   if (result != MOJO_RESULT_OK) {
-    DVLOG(1) << __FUNCTION__
+    DVLOG(1) << __func__
              << ": Failed to start watching the pipe. result=" << result;
     producer_handle_.reset();
   }
 }
 
 MojoDecoderBufferWriter::~MojoDecoderBufferWriter() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 }
 
 mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
     const scoped_refptr<DecoderBuffer>& media_buffer) {
-  DVLOG(3) << __FUNCTION__;
+  DVLOG(3) << __func__;
 
   // DecoderBuffer cannot be written if the pipe is already closed.
   if (!producer_handle_.is_valid()) {
     DVLOG(1)
-        << __FUNCTION__
+        << __func__
         << ": Failed to write DecoderBuffer becuase the pipe is already closed";
     return nullptr;
   }
@@ -231,12 +230,11 @@ mojom::DecoderBufferPtr MojoDecoderBufferWriter::WriteDecoderBuffer(
 }
 
 void MojoDecoderBufferWriter::OnPipeError(MojoResult result) {
-  DVLOG(1) << __FUNCTION__ << "(" << result << ")";
+  DVLOG(1) << __func__ << "(" << result << ")";
   DCHECK(IsPipeReadWriteError(result));
 
   if (media_buffer_) {
-    DVLOG(1) << __FUNCTION__
-             << ": writing to data pipe failed. result=" << result
+    DVLOG(1) << __func__ << ": writing to data pipe failed. result=" << result
              << ", buffer size=" << media_buffer_->data_size()
              << ", num_bytes(written)=" << bytes_written_;
     media_buffer_ = nullptr;
@@ -246,7 +244,7 @@ void MojoDecoderBufferWriter::OnPipeError(MojoResult result) {
 }
 
 void MojoDecoderBufferWriter::OnPipeWritable(MojoResult result) {
-  DVLOG(4) << __FUNCTION__ << "(" << result << ")";
+  DVLOG(4) << __func__ << "(" << result << ")";
 
   if (result != MOJO_RESULT_OK)
     OnPipeError(result);
@@ -255,7 +253,7 @@ void MojoDecoderBufferWriter::OnPipeWritable(MojoResult result) {
 }
 
 MojoResult MojoDecoderBufferWriter::WriteDecoderBufferData() {
-  DVLOG(4) << __FUNCTION__;
+  DVLOG(4) << __func__;
   DCHECK(media_buffer_);
 
   uint32_t buffer_size =

@@ -261,7 +261,7 @@ AndroidVideoDecodeAccelerator::~AndroidVideoDecodeAccelerator() {
 
 bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
                                                Client* client) {
-  DVLOG(1) << __FUNCTION__ << ": " << config.AsHumanReadableString();
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   TRACE_EVENT0("media", "AVDA::Initialize");
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -507,7 +507,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
         subsamples, presentation_timestamp);
   }
 
-  DVLOG(2) << __FUNCTION__
+  DVLOG(2) << __func__
            << ": Queue(Secure)InputBuffer: pts:" << presentation_timestamp
            << " status:" << status;
 
@@ -595,7 +595,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
         // Do not post an error if we are draining for reset and destroy.
         // Instead, run the drain completion task.
         if (IsDrainingForResetOrDestroy()) {
-          DVLOG(1) << __FUNCTION__ << ": error while codec draining";
+          DVLOG(1) << __func__ << ": error while codec draining";
           state_ = ERROR;
           OnDrainCompleted();
         } else {
@@ -618,7 +618,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
           return false;
         }
 
-        DVLOG(3) << __FUNCTION__
+        DVLOG(3) << __func__
                  << " OUTPUT_FORMAT_CHANGED, new size: " << size_.ToString();
 
         // Don't request picture buffers if we already have some. This avoids
@@ -645,7 +645,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
 
       case MEDIA_CODEC_OK:
         DCHECK_GE(buf_index, 0);
-        DVLOG(3) << __FUNCTION__ << ": pts:" << presentation_timestamp
+        DVLOG(3) << __func__ << ": pts:" << presentation_timestamp
                  << " buf_index:" << buf_index << " offset:" << offset
                  << " size:" << size << " eos:" << eos;
         break;
@@ -702,7 +702,7 @@ bool AndroidVideoDecodeAccelerator::DequeueOutput() {
     // correction and provides a non-decreasing timestamp sequence, which might
     // result in timestamp duplicates. Discard the frame if we cannot get the
     // corresponding buffer id.
-    DVLOG(3) << __FUNCTION__ << ": Releasing buffer with unexpected PTS: "
+    DVLOG(3) << __func__ << ": Releasing buffer with unexpected PTS: "
              << presentation_timestamp;
     media_codec_->ReleaseOutputBuffer(buf_index, false);
   }
@@ -862,7 +862,7 @@ void AndroidVideoDecodeAccelerator::ReusePictureBuffer(
 }
 
 void AndroidVideoDecodeAccelerator::Flush() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == SURFACE_DESTROYED || defer_surface_creation_)
@@ -959,7 +959,7 @@ void AndroidVideoDecodeAccelerator::OnCodecConfigured(
 }
 
 void AndroidVideoDecodeAccelerator::StartCodecDrain(DrainType drain_type) {
-  DVLOG(2) << __FUNCTION__ << " drain_type:" << drain_type;
+  DVLOG(2) << __func__ << " drain_type:" << drain_type;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // We assume that DRAIN_FOR_FLUSH and DRAIN_FOR_RESET cannot come while
@@ -981,7 +981,7 @@ bool AndroidVideoDecodeAccelerator::IsDrainingForResetOrDestroy() const {
 }
 
 void AndroidVideoDecodeAccelerator::OnDrainCompleted() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we were waiting for an EOS, clear the state and reset the MediaCodec
@@ -1054,21 +1054,20 @@ void AndroidVideoDecodeAccelerator::ResetCodecState() {
   // Flush the codec if possible, or create a new one if not.
   if (!did_codec_error_happen &&
       !MediaCodecUtil::CodecNeedsFlushWorkaround(media_codec_.get())) {
-    DVLOG(3) << __FUNCTION__ << " Flushing MediaCodec.";
+    DVLOG(3) << __func__ << " Flushing MediaCodec.";
     media_codec_->Flush();
     // Since we just flushed all the output buffers, make sure that nothing is
     // using them.
     picture_buffer_manager_.CodecChanged(media_codec_.get());
   } else {
-    DVLOG(3) << __FUNCTION__
-             << " Deleting the MediaCodec and creating a new one.";
+    DVLOG(3) << __func__ << " Deleting the MediaCodec and creating a new one.";
     g_avda_manager.Get().StopTimer(this);
     ConfigureMediaCodecAsynchronously();
   }
 }
 
 void AndroidVideoDecodeAccelerator::Reset() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "AVDA::Reset");
 
@@ -1129,7 +1128,7 @@ void AndroidVideoDecodeAccelerator::SetSurface(int32_t surface_id) {
 }
 
 void AndroidVideoDecodeAccelerator::Destroy() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   picture_buffer_manager_.Destroy(output_picture_buffers_);
@@ -1151,7 +1150,7 @@ void AndroidVideoDecodeAccelerator::Destroy() {
 }
 
 void AndroidVideoDecodeAccelerator::ActualDestroy() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Note that async codec construction might still be in progress.  In that
@@ -1228,7 +1227,7 @@ void AndroidVideoDecodeAccelerator::OnSurfaceDestroyed() {
 }
 
 void AndroidVideoDecodeAccelerator::InitializeCdm() {
-  DVLOG(2) << __FUNCTION__ << ": " << config_.cdm_id;
+  DVLOG(2) << __func__ << ": " << config_.cdm_id;
 
 #if !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   NOTIMPLEMENTED();
@@ -1267,7 +1266,7 @@ void AndroidVideoDecodeAccelerator::InitializeCdm() {
 void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
     MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
     bool needs_protected_surface) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!media_crypto) {
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
@@ -1291,7 +1290,7 @@ void AndroidVideoDecodeAccelerator::OnMediaCryptoReady(
 }
 
 void AndroidVideoDecodeAccelerator::OnKeyAdded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (state_ == WAITING_FOR_KEY)
     state_ = NO_ERROR;

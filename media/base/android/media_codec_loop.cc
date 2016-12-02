@@ -142,7 +142,7 @@ bool MediaCodecLoop::ProcessOneInputBuffer() {
 }
 
 MediaCodecLoop::InputBuffer MediaCodecLoop::DequeueInputBuffer() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
 
   // Do not dequeue a new input buffer if we failed with MEDIA_CODEC_NO_KEY.
   // That status does not return the input buffer back to the pool of
@@ -163,8 +163,7 @@ MediaCodecLoop::InputBuffer MediaCodecLoop::DequeueInputBuffer() {
       break;
 
     case media::MEDIA_CODEC_ERROR:
-      DLOG(ERROR) << __FUNCTION__
-                  << ": MEDIA_CODEC_ERROR from DequeInputBuffer";
+      DLOG(ERROR) << __func__ << ": MEDIA_CODEC_ERROR from DequeInputBuffer";
       SetState(STATE_ERROR);
       break;
 
@@ -217,8 +216,7 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
 
   switch (status) {
     case MEDIA_CODEC_ERROR:
-      DLOG(ERROR) << __FUNCTION__
-                  << ": MEDIA_CODEC_ERROR from QueueInputBuffer";
+      DLOG(ERROR) << __func__ << ": MEDIA_CODEC_ERROR from QueueInputBuffer";
       client_->OnInputDataQueued(false);
       // Transition to the error state after running the completion cb, to keep
       // it in order if the client chooses to flush its queue.
@@ -303,8 +301,7 @@ bool MediaCodecLoop::ProcessOneOutputBuffer() {
       break;
 
     case MEDIA_CODEC_ERROR:
-      DLOG(ERROR) << __FUNCTION__
-                  << ": MEDIA_CODEC_ERROR from DequeueOutputBuffer";
+      DLOG(ERROR) << __func__ << ": MEDIA_CODEC_ERROR from DequeueOutputBuffer";
       SetState(STATE_ERROR);
       break;
 

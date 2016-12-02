@@ -61,7 +61,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
   const JavaRef<jobject>& context = base::android::GetApplicationContext();
   const int num_cameras =
       Java_VideoCaptureFactory_getNumberOfCameras(env, context);
-  DVLOG(1) << __FUNCTION__ << ": num_cameras=" << num_cameras;
+  DVLOG(1) << __func__ << ": num_cameras=" << num_cameras;
   if (num_cameras <= 0)
     return;
 
@@ -84,7 +84,7 @@ void VideoCaptureDeviceFactoryAndroid::GetDeviceDescriptors(
         display_name, device_id,
         static_cast<VideoCaptureApi>(capture_api_type));
 
-    DVLOG(1) << __FUNCTION__ << ": camera "
+    DVLOG(1) << __func__ << ": camera "
              << "device_name=" << display_name << ", unique_id=" << device_id;
   }
 }

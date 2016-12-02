@@ -36,12 +36,12 @@ void RendererSurfaceViewManager::CreateFullscreenSurface(
 }
 
 void RendererSurfaceViewManager::NaturalSizeChanged(const gfx::Size& size) {
-  DVLOG(3) << __FUNCTION__ << ": size: " << size.ToString();
+  DVLOG(3) << __func__ << ": size: " << size.ToString();
   Send(new SurfaceViewManagerHostMsg_NaturalSizeChanged(routing_id(), size));
 }
 
 void RendererSurfaceViewManager::OnFullscreenSurfaceCreated(int surface_id) {
-  DVLOG(3) << __FUNCTION__ << ": surface_id: " << surface_id;
+  DVLOG(3) << __func__ << ": surface_id: " << surface_id;
   if (!pending_surface_created_cb_.is_null()) {
     pending_surface_created_cb_.Run(surface_id);
     pending_surface_created_cb_.Reset();

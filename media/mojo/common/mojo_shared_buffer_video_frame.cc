@@ -24,7 +24,7 @@ MojoSharedBufferVideoFrame::CreateDefaultI420(const gfx::Size& dimensions,
   const gfx::Size coded_size = DetermineAlignedSize(format, dimensions);
   if (!IsValidConfig(format, STORAGE_MOJO_SHARED_BUFFER, coded_size,
                      visible_rect, dimensions)) {
-    LOG(DFATAL) << __FUNCTION__ << " Invalid config. "
+    LOG(DFATAL) << __func__ << " Invalid config. "
                 << ConfigToString(format, STORAGE_MOJO_SHARED_BUFFER,
                                   dimensions, visible_rect, dimensions);
     return nullptr;
@@ -66,7 +66,7 @@ scoped_refptr<MojoSharedBufferVideoFrame> MojoSharedBufferVideoFrame::Create(
     base::TimeDelta timestamp) {
   if (!IsValidConfig(format, STORAGE_MOJO_SHARED_BUFFER, coded_size,
                      visible_rect, natural_size)) {
-    LOG(DFATAL) << __FUNCTION__ << " Invalid config. "
+    LOG(DFATAL) << __func__ << " Invalid config. "
                 << ConfigToString(format, STORAGE_MOJO_SHARED_BUFFER,
                                   coded_size, visible_rect, natural_size);
     return nullptr;

@@ -707,8 +707,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
   switch (actual_format) {
     case FOURCC_AVC1:
     case FOURCC_AVC3: {
-      DVLOG(2) << __FUNCTION__
-               << " reading AVCDecoderConfigurationRecord (avcC)";
+      DVLOG(2) << __func__ << " reading AVCDecoderConfigurationRecord (avcC)";
       std::unique_ptr<AVCDecoderConfigurationRecord> avcConfig(
           new AVCDecoderConfigurationRecord());
       RCHECK(reader->ReadChild(avcConfig.get()));
@@ -722,8 +721,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
 #if BUILDFLAG(ENABLE_HEVC_DEMUXING)
     case FOURCC_HEV1:
     case FOURCC_HVC1: {
-      DVLOG(2) << __FUNCTION__
-               << " parsing HEVCDecoderConfigurationRecord (hvcC)";
+      DVLOG(2) << __func__ << " parsing HEVCDecoderConfigurationRecord (hvcC)";
       std::unique_ptr<HEVCDecoderConfigurationRecord> hevcConfig(
           new HEVCDecoderConfigurationRecord());
       RCHECK(reader->ReadChild(hevcConfig.get()));
@@ -737,8 +735,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
     case FOURCC_VP09:
       if (base::CommandLine::ForCurrentProcess()->HasSwitch(
               switches::kEnableVp9InMp4)) {
-        DVLOG(2) << __FUNCTION__
-                 << " parsing VPCodecConfigurationRecord (vpcC)";
+        DVLOG(2) << __func__ << " parsing VPCodecConfigurationRecord (vpcC)";
         std::unique_ptr<VPCodecConfigurationRecord> vp_config(
             new VPCodecConfigurationRecord());
         RCHECK(reader->ReadChild(vp_config.get()));
@@ -752,7 +749,7 @@ bool VideoSampleEntry::Parse(BoxReader* reader) {
       break;
     default:
       // Unknown/unsupported format
-      MEDIA_LOG(ERROR, reader->media_log()) << __FUNCTION__
+      MEDIA_LOG(ERROR, reader->media_log()) << __func__
                                             << " unsupported video format "
                                             << FourCCToString(actual_format);
       return false;
