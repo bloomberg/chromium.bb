@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://dev.w3.org/csswg/cssom/#the-stylesheetlist-interface
+// https://dev.w3.org/csswg/cssom/#the-stylesheetlist-interface
 
 // TODO(foolip): StyleSheetList should be an [ArrayClass].
 [

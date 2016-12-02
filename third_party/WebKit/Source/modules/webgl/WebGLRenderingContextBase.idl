@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://www.khronos.org/registry/webgl/specs/latest/1.0/#WebGLRenderingContextBase
+// https://www.khronos.org/registry/webgl/specs/latest/1.0/#WebGLRenderingContextBase
 
 typedef unsigned long  GLenum;
 typedef boolean        GLboolean;

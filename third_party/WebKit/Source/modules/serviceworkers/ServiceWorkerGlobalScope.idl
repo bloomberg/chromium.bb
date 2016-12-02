@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#service-worker-global-scope-interface
+// https://w3c.github.io/ServiceWorker/#service-worker-global-scope-interface
 
 [
     Exposed=ServiceWorker,

@@ -42,7 +42,7 @@ interface HTMLLinkElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString target;
 
     // HTMLLinkElement implements LinkStyle
-    // http://dev.w3.org/csswg/cssom/#the-linkstyle-interface
+    // https://dev.w3.org/csswg/cssom/#the-linkstyle-interface
     readonly attribute StyleSheet? sheet;
 
     // HTML Imports
@@ -50,10 +50,10 @@ interface HTMLLinkElement : HTMLElement {
     readonly attribute Document? import;
 
     // Subresource Integrity
-    // http://w3c.github.io/webappsec/specs/subresourceintegrity/#htmllinkelement-1
+    // https://w3c.github.io/webappsec-subresource-integrity/#HTMLLinkElement
     [Reflect] attribute DOMString integrity;
 
     // Service workers
-    // http://mkruisselbrink.github.io/ServiceWorker/spec/service_worker/#link-element-interface-section
+    // https://w3c.github.io/ServiceWorker/#link-element-interface-extensions
     [Reflect, OriginTrialEnabled=LinkServiceWorker] attribute USVString scope;
 };

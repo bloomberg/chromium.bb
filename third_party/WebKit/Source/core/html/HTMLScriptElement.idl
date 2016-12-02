@@ -40,6 +40,6 @@ interface HTMLScriptElement : HTMLElement {
     [CEReactions, Reflect, RuntimeEnabled=ExperimentalContentSecurityPolicyFeatures] attribute DOMString nonce;
 
     // Subresource Integrity
-    // https://w3c.github.io/webappsec/specs/subresourceintegrity/#htmlscriptelement-1
+    // https://w3c.github.io/webappsec-subresource-integrity/#HTMLScriptElement
     [Reflect] attribute DOMString integrity;
 };

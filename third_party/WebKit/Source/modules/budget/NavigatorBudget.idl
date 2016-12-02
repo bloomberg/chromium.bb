@@ -2,8 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://beverloo.github.io/budget-api/#navigator-budget-interface
-// TODO(harkness): Link WICG spec when it exists.
+// https://wicg.github.io/budget-api/#navigator-budget-interface
 
 [
     RuntimeEnabled=Budget

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-animations/#interface-animationevent
+// https://dev.w3.org/csswg/css-animations/#interface-animationevent
 
 [
     Constructor(DOMString type, optional AnimationEventInit eventInitDict),

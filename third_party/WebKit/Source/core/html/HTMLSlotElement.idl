@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://w3c.github.io/webcomponents/spec/shadow/#the-slot-element
+// https://w3c.github.io/webcomponents/spec/shadow/#the-slot-element
 
 interface HTMLSlotElement : HTMLElement {
     [CEReactions, Reflect] attribute DOMString name;

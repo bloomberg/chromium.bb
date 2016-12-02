@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://fetch.spec.whatwg.org/#response-class
+// https://fetch.spec.whatwg.org/#response-class
 
 enum ResponseType { "basic", "cors", "default", "error", "opaque", "opaqueredirect" };
 

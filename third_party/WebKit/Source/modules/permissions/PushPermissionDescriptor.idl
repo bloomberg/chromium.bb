@@ -3,6 +3,6 @@
 // found in the LICENSE file.
 
 dictionary PushPermissionDescriptor : PermissionDescriptor {
-    // See https://w3c.github.io/push-api/.
+    // https://w3c.github.io/push-api/#pushsubscriptionoptions-interface-and-dictionary
     boolean userVisibleOnly = false;
 };

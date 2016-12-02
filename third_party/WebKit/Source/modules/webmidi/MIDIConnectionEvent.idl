@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://webaudio.github.io/web-midi-api/#idl-def-MIDIConnectionEvent
+// https://webaudio.github.io/web-midi-api/#MIDIConnectionEvent
 
 [
     Constructor(DOMString type, optional MIDIConnectionEventInit eventInitDict),

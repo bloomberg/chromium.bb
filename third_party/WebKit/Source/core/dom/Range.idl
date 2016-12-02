@@ -65,7 +65,7 @@
     stringifier;
 
     // CSSOM View Module
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-range-interface
+    // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-range-interface
     // FIXME: getClientRect() and getBoundingClientRect() should
     // return DOMRectList and DOMRect respectively.
     ClientRectList getClientRects();

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/cssom/#the-cssrulelist-interface
+// https://dev.w3.org/csswg/cssom/#the-cssrulelist-interface
 
 // TODO(foolip): CSSRuleList should be an [ArrayClass].
 [

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#context-frame-type-enum
+// https://w3c.github.io/ServiceWorker/#context-frame-type-enum
 enum ContextFrameType {
     "top-level",
     "nested",
@@ -10,7 +10,7 @@ enum ContextFrameType {
     "none"
 };
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#window-client-interface
+// https://w3c.github.io/ServiceWorker/#window-client-interface
 [
     Exposed=ServiceWorker,
     ImplementedAs=ServiceWorkerWindowClient,

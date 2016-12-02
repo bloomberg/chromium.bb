@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
+// https://w3c.github.io/deviceorientation/spec-source-orientation.html#devicemotion
 
 // TODO(foolip): DeviceMotionEvent should have a constructor.
 interface DeviceMotionEvent : Event {

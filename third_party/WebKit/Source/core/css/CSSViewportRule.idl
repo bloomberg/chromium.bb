@@ -27,7 +27,7 @@
  * SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-device-adapt/#css-viewport-rule-interface
+// https://dev.w3.org/csswg/css-device-adapt/#css-viewport-rule-interface
 
 interface CSSViewportRule : CSSRule {
     readonly attribute CSSStyleDeclaration style;

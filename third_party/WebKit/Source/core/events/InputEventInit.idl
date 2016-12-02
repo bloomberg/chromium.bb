@@ -2,8 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://w3c.github.io/editing/input-events.html
+// https://w3c.github.io/uievents/#interface-inputevent
 
+// InputEventInit
+// https://w3c.github.io/input-events/#interface-InputEventInit
 dictionary InputEventInit : UIEventInit {
     DOMString inputType = "";
     DOMString? data;

@@ -43,7 +43,7 @@ interface TestObject {
     // [Foo] attribute DOMString? fooStringOrNullAttribute
     //
     // Type name reference:
-    // http://heycam.github.io/webidl/#dfn-type-name
+    // https://heycam.github.io/webidl/#dfn-type-name
     //
     // TestInterfaceEmpty is used as a stub interface type, for testing behavior
     // that should not depend on particular type (beyond "interface or not").

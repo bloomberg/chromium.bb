@@ -7,7 +7,7 @@ enum VREye {
     "right"
 };
 
-// http://mozvr.github.io/webvr-spec/webvr.html#vrdisplay
+// https://w3c.github.io/webvr/#interface-vrdisplay
 [
     OriginTrialEnabled=WebVR
 ] interface VRDisplay {

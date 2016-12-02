@@ -3,16 +3,16 @@
 // found in the LICENSE file.
 
 // https://dom.spec.whatwg.org/#mixin-documentorshadowroot
-// http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-the-documentorshadowroot-mixin
+// https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-the-documentorshadowroot-mixin
 [
     LegacyTreatAsPartialInterface,
     NoInterfaceObject,
 ] interface DocumentOrShadowRoot {
     // Selection API
-    // http://w3c.github.io/selection-api/#extensions-to-document-interface
+    // https://w3c.github.io/selection-api/#extensions-to-document-interface
     Selection? getSelection();
     // CSSOM View Module
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-document-interface
+    // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-document-interface
     // TODO(foolip): The x and y arguments should be of type double.
     Element? elementFromPoint(long x, long y);
     sequence<Element> elementsFromPoint(long x, long y);

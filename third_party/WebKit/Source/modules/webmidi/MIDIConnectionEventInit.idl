@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://webaudio.github.io/web-midi-api/#idl-def-MIDIConnectionEventInit
+// https://webaudio.github.io/web-midi-api/#MIDIConnectionEventInit
 
 dictionary MIDIConnectionEventInit : EventInit {
     // TODO(foolip): |port| should be required and not nullable.

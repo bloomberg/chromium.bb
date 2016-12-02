@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/index.html#extendablemessage-event-section
+// https://w3c.github.io/ServiceWorker/#extendablemessage-event-section
 
 [
     // TODO(bashi): Stop using CustomConstructor once we solve reference

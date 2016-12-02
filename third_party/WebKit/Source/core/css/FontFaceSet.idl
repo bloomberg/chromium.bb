@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-font-loading/#FontFaceSet-interface
+// https://dev.w3.org/csswg/css-font-loading/#FontFaceSet-interface
 
 enum FontFaceSetLoadStatus { "loading", "loaded" };
 

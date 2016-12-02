@@ -18,7 +18,7 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://dev.w3.org/csswg/cssom/#the-stylesheet-interface
+// https://dev.w3.org/csswg/cssom/#the-stylesheet-interface
 
 [
     SetWrapperReferenceFrom=ownerNode,

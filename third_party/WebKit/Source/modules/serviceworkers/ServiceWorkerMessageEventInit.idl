@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#serviceworkermessage-event-init-dictionary
+// https://w3c.github.io/ServiceWorker/#serviceworkermessage-event-init-dictionary
 
 dictionary ServiceWorkerMessageEventInit : EventInit {
     any data;

@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-animations/#interface-csskeyframesrule
+// https://dev.w3.org/csswg/css-animations/#interface-csskeyframesrule
 
 interface CSSKeyframesRule : CSSRule {
     attribute DOMString name;

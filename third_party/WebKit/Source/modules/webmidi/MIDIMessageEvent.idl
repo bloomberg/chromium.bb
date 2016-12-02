@@ -28,7 +28,8 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://webaudio.github.io/web-midi-api/#idl-def-MIDIMessageEvent
+// https://webaudio.github.io/web-midi-api/#MIDIMessageEvent
+
 [
     Constructor(DOMString type, optional MIDIMessageEventInit eventInitDict)
 ] interface MIDIMessageEvent : Event {

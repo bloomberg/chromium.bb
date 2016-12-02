@@ -24,7 +24,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://w3c.github.io/webcomponents/spec/shadow/#the-content-element
+// https://w3c.github.io/webcomponents/spec/shadow/#the-content-element
 
 interface HTMLContentElement : HTMLElement {
     [Reflect] attribute DOMString select;

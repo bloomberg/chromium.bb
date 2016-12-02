@@ -20,13 +20,13 @@
  * Boston, MA 02110-1301, USA.
  */
 
-// http://www.w3.org/TR/SVG2/types.html#InterfaceSVGElement
+// https://www.w3.org/TR/SVG2/types.html#InterfaceSVGElement
 
 interface SVGElement : Element {
     [MeasureAs=SVGClassName] readonly attribute SVGAnimatedString className;
     [SameObject, PerWorldBindings] readonly attribute DOMStringMap dataset;
     // CSS Object Model (CSSOM)
-    // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
+    // https://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
     [SameObject, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
 
     readonly attribute SVGSVGElement? ownerSVGElement;

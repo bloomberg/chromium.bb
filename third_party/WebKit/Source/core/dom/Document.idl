@@ -27,7 +27,7 @@ enum DocumentReadyState { "loading", "interactive", "complete" };
 // https://w3c.github.io/page-visibility/#visibility-states-and-the-visibilitystate-enum
 enum VisibilityState { "hidden", "visible", "prerender", "unloaded" };
 
-// https://mikewest.github.io/cors-rfc1918/#feature-detect
+// https://wicg.github.io/cors-rfc1918/#feature-detect
 enum AddressSpace { "local", "private", "public" };
 
 typedef (HTMLScriptElement or SVGScriptElement) HTMLOrSVGScriptElement;
@@ -142,7 +142,7 @@ interface Document : Node {
     // FIXME: clear(), captureEvents(), releaseEvents() and all are on HTMLDocument.
 
     // CSS Object Model (CSSOM)
-    // http://dev.w3.org/csswg/cssom/#extensions-to-the-document-interface
+    // https://dev.w3.org/csswg/cssom/#extensions-to-the-document-interface
     attribute DOMString? selectedStylesheetSet;
     readonly attribute DOMString? preferredStylesheetSet;
 
@@ -155,7 +155,7 @@ interface Document : Node {
     [MeasureAs=DocumentExitPointerLock] void exitPointerLock();
 
     // Touch Events
-    // http://rawgit.com/w3c/touch-events/v1-errata/touchevents.html#extensions-to-the-document-interface
+    // https://w3c.github.io/touch-events/#extensions-to-the-document-interface
     // FIXME: The arguments should not be optional.
     [RuntimeEnabled=TouchEventAPI, Measure, LegacyInterfaceTypeChecking, Custom=CallPrologue]
     Touch createTouch([Default=Undefined] optional Window window,
@@ -172,21 +172,21 @@ interface Document : Node {
     [RuntimeEnabled=TouchEventAPI] TouchList createTouchList(Touch... touches);
 
     // Custom Elements
-    // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
+    // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-register
     // FIXME: The registerElement return type should be Function.
     [CallWith=ScriptState, CustomElementCallbacks, RaisesException, MeasureAs=DocumentRegisterElement] CustomElementConstructor registerElement(DOMString type, optional ElementRegistrationOptions options);
-    // http://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
+    // https://w3c.github.io/webcomponents/spec/custom/#extensions-to-document-interface-to-instantiate
     // FIXME: The typeExtension arguments should not be nullable.
     [CustomElementCallbacks, PerWorldBindings, RaisesException] Element createElement(DOMString localName, (DOMString or Dictionary)? options);
     [CustomElementCallbacks, RaisesException] Element createElementNS(DOMString? namespaceURI, DOMString qualifiedName, (DOMString or Dictionary)? options);
 
     // Page Visibility
-    // http://www.w3.org/TR/page-visibility/#sec-document-interface
+    // https://www.w3.org/TR/page-visibility/#sec-document-interface
     readonly attribute boolean hidden;
     readonly attribute VisibilityState visibilityState;
 
     // CORS and RFC1918
-    // https://mikewest.github.io/cors-rfc1918/#feature-detect
+    // https://wicg.github.io/cors-rfc1918/#feature-detect
     [RuntimeEnabled=CorsRFC1918, ImplementedAs=addressSpaceForBindings] readonly attribute AddressSpace addressSpace;
 
     // Non-standard APIs
@@ -194,7 +194,7 @@ interface Document : Node {
 
     // Deprecated prefixed page visibility API.
     // TODO(davidben): This is a property so attaching a deprecation warning results in false positives when outputting
-    // document in the console. It's possible http://crbug.com/43394 will resolve this.
+    // document in the console. It's possible https://crbug.com/43394 will resolve this.
     [MeasureAs=PrefixedPageVisibility, ImplementedAs=visibilityState] readonly attribute DOMString webkitVisibilityState;
     [MeasureAs=PrefixedPageVisibility, ImplementedAs=hidden] readonly attribute boolean webkitHidden;
 

@@ -20,8 +20,8 @@
 
 // The CSSFontFaceRule interface was introduced in DOM Level 2 Style, but has
 // been replaced by an entirely different interface in CSS Fonts:
-// http://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSFontFaceRule
-// http://dev.w3.org/csswg/css-fonts/#om-fontface
+// https://www.w3.org/TR/DOM-Level-2-Style/css.html#CSS-CSSFontFaceRule
+// https://dev.w3.org/csswg/css-fonts/#om-fontface
 //
 // The interface from DOM Level 2 Style is implemented here.
 // TODO(foolip): Implement the interface from CSS Fonts.

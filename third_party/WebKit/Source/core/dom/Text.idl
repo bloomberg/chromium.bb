@@ -27,7 +27,7 @@
     [MeasureAs=TextWholeText] readonly attribute DOMString wholeText;
 
     // Shadow DOM
-    // http://w3c.github.io/webcomponents/spec/shadow/#extensions-to-text-interface
+    // https://w3c.github.io/webcomponents/spec/shadow/#extensions-to-text-interface
     NodeList getDestinationInsertionPoints();
     [ImplementedAs=assignedSlotForBinding] readonly attribute HTMLSlotElement assignedSlot;
 };

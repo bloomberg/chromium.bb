@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-font-loading/#font-face-source
+// https://dev.w3.org/csswg/css-font-loading/#font-face-source
 
 // TODO(foolip): This should be a FontFaceSource interface implemented by
 // Document and WorkerGlobalScope.

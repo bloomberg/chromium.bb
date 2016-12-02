@@ -28,7 +28,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-font-loading/#fontfacesetloadevent
+// https://dev.w3.org/csswg/css-font-loading/#fontfacesetloadevent
 
 // TODO(foolip): This interface should have a constructor and
 // [Exposed=Window,Worker], and thus not [NoInterfaceObject].

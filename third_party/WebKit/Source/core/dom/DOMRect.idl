@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://dev.w3.org/fxtf/geometry/#DOMRect
+// https://dev.w3.org/fxtf/geometry/#DOMRect
 
 [
     Constructor(optional unrestricted double x = 0,

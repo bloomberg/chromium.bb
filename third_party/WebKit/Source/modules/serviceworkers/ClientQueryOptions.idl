@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#client-type-enum
+// https://w3c.github.io/ServiceWorker/#client-type-enum
 enum ClientType {
     "window",
     "worker",
@@ -10,7 +10,7 @@ enum ClientType {
     "all"
 };
 
-// https://slightlyoff.github.io/ServiceWorker/spec/service_worker/#serviceworker-client-query-options-dictionary
+// https://w3c.github.io/ServiceWorker/#serviceworker-client-query-options-dictionary
 dictionary ClientQueryOptions {
     boolean includeUncontrolled = false;
     ClientType type = "window";

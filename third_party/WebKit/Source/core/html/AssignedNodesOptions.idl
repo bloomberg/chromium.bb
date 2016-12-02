@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://w3c.github.io/webcomponents/spec/shadow/#idl-def-AssignedNodesOptions
+// https://w3c.github.io/webcomponents/spec/shadow/#idl-def-AssignedNodesOptions
 
 dictionary AssignedNodesOptions {
     boolean flatten = false;

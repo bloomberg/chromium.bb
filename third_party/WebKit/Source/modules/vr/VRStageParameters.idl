@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://mozvr.github.io/webvr-spec/webvr.html#vrstageparameters
+// https://w3c.github.io/webvr/#interface-vrstageparameters
 [
     OriginTrialEnabled=WebVR
 ] interface VRStageParameters {

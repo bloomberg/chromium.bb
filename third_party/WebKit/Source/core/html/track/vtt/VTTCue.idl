@@ -27,7 +27,7 @@
  * OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/html5/webvtt/#the-vttcue-interface
+// https://w3c.github.io/webvtt/#the-vttcue-interface
 
 enum AutoKeyword { "auto" };
 enum DirectionSetting { "" /* horizontal */, "rl", "lr" };

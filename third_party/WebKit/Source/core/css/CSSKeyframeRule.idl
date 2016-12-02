@@ -26,7 +26,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-animations/#interface-csskeyframerule
+// https://dev.w3.org/csswg/css-animations/#interface-csskeyframerule
 
 interface CSSKeyframeRule : CSSRule {
     [RaisesException=Setter] attribute DOMString keyText;

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// http://w3c.github.io/ambient-light/#idl-def-DeviceLightEvent
+// https://www.w3.org/TR/2015/WD-ambient-light-20150903/#devicelightevent-interface
 
 dictionary DeviceLightEventInit : EventInit {
     unrestricted double value;

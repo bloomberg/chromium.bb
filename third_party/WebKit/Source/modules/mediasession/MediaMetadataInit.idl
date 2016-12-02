@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// https://mediasession.spec.whatwg.org/#the-mediametadata-interface
+// https://wicg.github.io/mediasession/#the-mediametadata-interface
 
 dictionary MediaMetadataInit {
     DOMString title = "";

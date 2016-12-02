@@ -46,7 +46,7 @@ interface HTMLElement : Element {
     [RuntimeEnabled=InputModeAttribute, CEReactions, Reflect] attribute DOMString inputMode;
 
     // CSSOM View Module
-    // http://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
+    // https://dev.w3.org/csswg/cssom-view/#extensions-to-the-htmlelement-interface
     [PerWorldBindings, ImplementedAs=unclosedOffsetParent] readonly attribute Element? offsetParent;
     [ImplementedAs=offsetTopForBinding] readonly attribute long offsetTop;
     [ImplementedAs=offsetLeftForBinding] readonly attribute long offsetLeft;
@@ -54,7 +54,7 @@ interface HTMLElement : Element {
     [ImplementedAs=offsetHeightForBinding] readonly attribute long offsetHeight;
 
     // CSS Object Model (CSSOM)
-    // http://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
+    // https://dev.w3.org/csswg/cssom/#the-elementcssinlinestyle-interface
     [SameObject, PerWorldBindings, PutForwards=cssText] readonly attribute CSSStyleDeclaration style;
     // Typed OM
     // https://drafts.css-houdini.org/css-typed-om/#inline-stylepropertymap-objects

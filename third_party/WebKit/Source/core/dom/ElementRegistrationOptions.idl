@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-// Spec: http://w3c.github.io/webcomponents/spec/custom/#api-element-registration-options
+// Spec: https://w3c.github.io/webcomponents/spec/custom/#api-element-registration-options
 
 dictionary ElementRegistrationOptions {
     object? prototype = null;

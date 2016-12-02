@@ -4,7 +4,7 @@
 
 typedef HTMLCanvasElement VRSource;
 
-// http://mozvr.github.io/webvr-spec/webvr.html#vrlayer
+// https://w3c.github.io/webvr/#interface-vrlayer
 
 dictionary VRLayer {
   // The canvas to be presented to the VRDisplay

@@ -23,7 +23,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/html5/webvtt/#the-vttregion-interface
+// https://w3c.github.io/webvtt/#the-vttregion-interface
 
 [
     Constructor,

@@ -27,7 +27,7 @@
  * THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://w3c.github.io/selection-api/#idl-def-Selection
+// https://w3c.github.io/selection-api/#selection-interface
 
 // TODO(yoichio): All long types should be unsigned long. crbug.com/391673
 [

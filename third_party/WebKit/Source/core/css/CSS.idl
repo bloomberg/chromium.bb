@@ -27,7 +27,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-// http://dev.w3.org/csswg/css-conditional/#the-css-interface
+// https://dev.w3.org/csswg/css-conditional/#the-css-interface
 
 [
     ImplementedAs=DOMWindowCSS,
