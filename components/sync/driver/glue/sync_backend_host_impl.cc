@@ -528,9 +528,6 @@ void SyncBackendHostImpl::FinishConfigureDataTypesOnFrontendLoop(
     const ModelTypeSet succeeded_configuration_types,
     const ModelTypeSet failed_configuration_types,
     const base::Callback<void(ModelTypeSet, ModelTypeSet)>& ready_task) {
-  if (!frontend_)
-    return;
-
   if (invalidator_) {
     CHECK(invalidator_->UpdateRegisteredInvalidationIds(
         this, ModelTypeSetToObjectIdSet(enabled_types)));
@@ -556,9 +553,6 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
 
   model_type_connector_ = std::move(model_type_connector);
 
-  if (!frontend_)
-    return;
-
   initialized_ = true;
 
   if (invalidator_) {
@@ -580,9 +574,6 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
 
 void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  if (!frontend_)
-    return;
-
   frontend_->OnBackendInitialized(WeakHandle<JsBackend>(),
                                   WeakHandle<DataTypeDebugInfoListener>(), "",
                                   false);
@@ -590,8 +581,6 @@ void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
 
 void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(
     const SyncCycleSnapshot& snapshot) {
-  if (!frontend_)
-    return;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   last_snapshot_ = snapshot;
@@ -628,16 +617,12 @@ void SyncBackendHostImpl::PersistEncryptionBootstrapToken(
 
 void SyncBackendHostImpl::HandleActionableErrorEventOnFrontendLoop(
     const SyncProtocolError& sync_error) {
-  if (!frontend_)
-    return;
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_->OnActionableError(sync_error);
 }
 
 void SyncBackendHostImpl::HandleMigrationRequestedOnFrontendLoop(
     ModelTypeSet types) {
-  if (!frontend_)
-    return;
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_->OnMigrationNeededForTypes(types);
 }
@@ -674,9 +659,6 @@ bool SyncBackendHostImpl::CheckPassphraseAgainstCachedPendingKeys(
 void SyncBackendHostImpl::NotifyPassphraseRequired(
     PassphraseRequiredReason reason,
     sync_pb::EncryptedData pending_keys) {
-  if (!frontend_)
-    return;
-
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Update our cache of the cryptographer's pending keys.
@@ -686,11 +668,7 @@ void SyncBackendHostImpl::NotifyPassphraseRequired(
 }
 
 void SyncBackendHostImpl::NotifyPassphraseAccepted() {
-  if (!frontend_)
-    return;
-
   DCHECK(thread_checker_.CalledOnValidThread());
-
   // Clear our cache of the cryptographer's pending keys.
   cached_pending_keys_.clear_blob();
   frontend_->OnPassphraseAccepted();
@@ -699,17 +677,11 @@ void SyncBackendHostImpl::NotifyPassphraseAccepted() {
 void SyncBackendHostImpl::NotifyEncryptedTypesChanged(
     ModelTypeSet encrypted_types,
     bool encrypt_everything) {
-  if (!frontend_)
-    return;
-
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_->OnEncryptedTypesChanged(encrypted_types, encrypt_everything);
 }
 
 void SyncBackendHostImpl::NotifyEncryptionComplete() {
-  if (!frontend_)
-    return;
-
   DCHECK(thread_checker_.CalledOnValidThread());
   frontend_->OnEncryptionComplete();
 }
@@ -731,9 +703,6 @@ void SyncBackendHostImpl::HandleLocalSetPassphraseEncryptionOnFrontendLoop(
 
 void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
     ConnectionStatus status) {
-  if (!frontend_)
-    return;
-
   DCHECK(thread_checker_.CalledOnValidThread());
 
   DVLOG(1) << "Connection status changed: " << ConnectionStatusToString(status);
@@ -742,32 +711,24 @@ void SyncBackendHostImpl::HandleConnectionStatusChangeOnFrontendLoop(
 
 void SyncBackendHostImpl::HandleProtocolEventOnFrontendLoop(
     std::unique_ptr<ProtocolEvent> event) {
-  if (!frontend_)
-    return;
   frontend_->OnProtocolEvent(*event);
 }
 
 void SyncBackendHostImpl::HandleDirectoryCommitCountersUpdatedOnFrontendLoop(
     ModelType type,
     const CommitCounters& counters) {
-  if (!frontend_)
-    return;
   frontend_->OnDirectoryTypeCommitCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::HandleDirectoryUpdateCountersUpdatedOnFrontendLoop(
     ModelType type,
     const UpdateCounters& counters) {
-  if (!frontend_)
-    return;
   frontend_->OnDirectoryTypeUpdateCounterUpdated(type, counters);
 }
 
 void SyncBackendHostImpl::HandleDirectoryStatusCountersUpdatedOnFrontendLoop(
     ModelType type,
     const StatusCounters& counters) {
-  if (!frontend_)
-    return;
   frontend_->OnDatatypeStatusCounterUpdated(type, counters);
 }
 
