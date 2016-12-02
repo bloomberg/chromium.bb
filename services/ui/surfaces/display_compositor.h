@@ -7,6 +7,10 @@
 
 #include <stdint.h>
 
+#include <memory>
+#include <unordered_map>
+#include <vector>
+
 #include "base/macros.h"
 #include "base/threading/thread_checker.h"
 #include "cc/ipc/display_compositor.mojom.h"
@@ -32,6 +36,10 @@ class SurfaceManager;
 }  // namespace cc
 
 namespace ui {
+
+namespace test {
+class DisplayCompositorTest;
+}
 
 class DisplayCompositorClient;
 class GpuCompositorFrameSink;
@@ -79,6 +87,9 @@ class DisplayCompositor : public cc::SurfaceObserver,
       bool destroy_compositor_frame_sink);
 
  private:
+  friend class test::DisplayCompositorTest;
+
+  const cc::SurfaceId& GetRootSurfaceId() const;
 
   // cc::SurfaceObserver implementation.
   void OnSurfaceCreated(const cc::SurfaceId& surface_id,
@@ -99,6 +110,10 @@ class DisplayCompositor : public cc::SurfaceObserver,
   std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
   gpu::ImageFactory* image_factory_;
   cc::mojom::DisplayCompositorClientPtr client_;
+
+  // Will normally point to |manager_| as it provides the interface. For tests
+  // it will be swapped out with a mock implementation.
+  cc::SurfaceReferenceManager* reference_manager_;
 
   // SurfaceIds that have temporary references from top level root so they
   // aren't GC'd before DisplayCompositorClient can add a real reference. This

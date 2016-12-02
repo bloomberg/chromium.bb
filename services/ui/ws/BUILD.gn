@@ -197,6 +197,8 @@ group("tests") {
 
 test("mus_ws_unittests") {
   sources = [
+    # TODO(fsamuel): Move this test with DisplayCompositor. crbug.com/670454
+    "../surfaces/display_compositor_unittest.cc",
     "animation_runner_unittest.cc",
     "cursor_unittest.cc",
     "display_unittest.cc",
@@ -252,6 +254,9 @@ test("mus_ws_unittests") {
     "//ui/gfx/geometry/mojo",
     "//ui/gl",
   ]
+
+  # TODO(fsamuel): Remove this dep. crbug.com/670454
+  deps += [ "//services/ui/surfaces" ]
 
   if (use_x11) {
     deps += [ "//tools/xdisplaycheck" ]

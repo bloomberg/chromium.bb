@@ -13,12 +13,14 @@
 #include <unordered_set>
 #include <vector>
 
+#include "base/compiler_specific.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_id.h"
 #include "cc/surfaces/surface_observer.h"
+#include "cc/surfaces/surface_reference_manager.h"
 #include "cc/surfaces/surface_sequence.h"
 #include "cc/surfaces/surfaces_export.h"
 
@@ -28,10 +30,11 @@ class CompositorFrame;
 class Surface;
 class SurfaceFactoryClient;
 
-class CC_SURFACES_EXPORT SurfaceManager {
+class CC_SURFACES_EXPORT SurfaceManager
+    : public NON_EXPORTED_BASE(SurfaceReferenceManager) {
  public:
   SurfaceManager();
-  ~SurfaceManager();
+  ~SurfaceManager() override;
 
   void RegisterSurface(Surface* surface);
   void DeregisterSurface(const SurfaceId& surface_id);
@@ -65,24 +68,6 @@ class CC_SURFACES_EXPORT SurfaceManager {
   // Invalidate a frame_sink_id that might still have associated sequences,
   // possibly because a renderer process has crashed.
   void InvalidateFrameSinkId(const FrameSinkId& frame_sink_id);
-
-  // Adds a reference from a parent surface to a child surface. Any surface
-  // embedding a child surface should have a reference added so that the child
-  // surface is not garbage collected until after the parent surface.
-  void AddSurfaceReference(const SurfaceId& parent_id,
-                           const SurfaceId& child_id);
-
-  // Removes a reference from a parent surface to a child surface.
-  void RemoveSurfaceReference(const SurfaceId& parent_id,
-                              const SurfaceId& child_id);
-
-  // Returns the number of surfaces that have references to |surface_id|. When
-  // the count is zero nothing is referencing the surface and it may be garbage
-  // collected.
-  size_t GetSurfaceReferenceCount(const SurfaceId& surface_id) const;
-
-  // Returns the number of surfaces that |surface_id| has references to.
-  size_t GetReferencedSurfaceCount(const SurfaceId& surface_id) const;
 
   // SurfaceFactoryClient, hierarchy, and BeginFrameSource can be registered
   // and unregistered in any order with respect to each other.
@@ -118,7 +103,14 @@ class CC_SURFACES_EXPORT SurfaceManager {
   void UnregisterFrameSinkHierarchy(const FrameSinkId& parent_frame_sink_id,
                                     const FrameSinkId& child_frame_sink_id);
 
-  const SurfaceId& GetRootSurfaceId() { return kRootSurfaceId; }
+  // SurfaceReferenceManager:
+  const SurfaceId& GetRootSurfaceId() const override;
+  void AddSurfaceReference(const SurfaceId& parent_id,
+                           const SurfaceId& child_id) override;
+  void RemoveSurfaceReference(const SurfaceId& parent_id,
+                              const SurfaceId& child_id) override;
+  size_t GetSurfaceReferenceCount(const SurfaceId& surface_id) const override;
+  size_t GetReferencedSurfaceCount(const SurfaceId& surface_id) const override;
 
  private:
   void RecursivelyAttachBeginFrameSource(const FrameSinkId& frame_sink_id,

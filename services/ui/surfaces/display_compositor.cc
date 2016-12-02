@@ -4,6 +4,8 @@
 
 #include "services/ui/surfaces/display_compositor.h"
 
+#include <utility>
+
 #include "cc/output/in_process_context_provider.h"
 #include "cc/surfaces/surface.h"
 #include "gpu/command_buffer/client/shared_memory_limits.h"
@@ -23,6 +25,7 @@ DisplayCompositor::DisplayCompositor(
       gpu_memory_buffer_manager_(std::move(gpu_memory_buffer_manager)),
       image_factory_(image_factory),
       client_(std::move(client)),
+      reference_manager_(&manager_),
       binding_(this, std::move(request)) {
   manager_.AddObserver(this);
 }
@@ -53,7 +56,7 @@ void DisplayCompositor::CreateCompositorFrameSink(
 
 void DisplayCompositor::AddRootSurfaceReference(const cc::SurfaceId& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  AddSurfaceReference(manager_.GetRootSurfaceId(), child_id);
+  AddSurfaceReference(GetRootSurfaceId(), child_id);
 }
 
 void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
@@ -64,7 +67,7 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
   // If there are no temporary references for the FrameSinkId then we can just
   // add reference and return.
   if (vector_iter == temp_references_.end()) {
-    manager_.AddSurfaceReference(parent_id, child_id);
+    reference_manager_->AddSurfaceReference(parent_id, child_id);
     return;
   }
 
@@ -76,16 +79,16 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
       std::find(refs.begin(), refs.end(), child_id.local_frame_id());
 
   if (temp_ref_iter == refs.end()) {
-    manager_.AddSurfaceReference(parent_id, child_id);
+    reference_manager_->AddSurfaceReference(parent_id, child_id);
     return;
   }
 
   // All surfaces get a temporary reference to the top level root. If the parent
   // wants to add a reference to the top level root then we do nothing.
   // Otherwise remove the temporary reference and add the reference.
-  if (parent_id != manager_.GetRootSurfaceId()) {
-    manager_.AddSurfaceReference(parent_id, child_id);
-    manager_.RemoveSurfaceReference(manager_.GetRootSurfaceId(), child_id);
+  if (parent_id != GetRootSurfaceId()) {
+    reference_manager_->AddSurfaceReference(parent_id, child_id);
+    reference_manager_->RemoveSurfaceReference(GetRootSurfaceId(), child_id);
   }
 
   // Remove temporary references for surfaces with the same FrameSinkId that
@@ -94,7 +97,7 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
   // parent doesn't need them anymore.
   for (auto iter = refs.begin(); iter != temp_ref_iter; ++iter) {
     cc::SurfaceId id = cc::SurfaceId(child_id.frame_sink_id(), *iter);
-    manager_.RemoveSurfaceReference(manager_.GetRootSurfaceId(), id);
+    reference_manager_->RemoveSurfaceReference(GetRootSurfaceId(), id);
   }
 
   // Remove markers for temporary references up to |child_id|, as the temporary
@@ -110,7 +113,7 @@ void DisplayCompositor::AddSurfaceReference(const cc::SurfaceId& parent_id,
 void DisplayCompositor::RemoveRootSurfaceReference(
     const cc::SurfaceId& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  RemoveSurfaceReference(manager_.GetRootSurfaceId(), child_id);
+  RemoveSurfaceReference(GetRootSurfaceId(), child_id);
 }
 
 void DisplayCompositor::RemoveSurfaceReference(const cc::SurfaceId& parent_id,
@@ -118,7 +121,7 @@ void DisplayCompositor::RemoveSurfaceReference(const cc::SurfaceId& parent_id,
   DCHECK(thread_checker_.CalledOnValidThread());
   // TODO(kylechar): Each remove reference can trigger GC, it would be better if
   // we GC only once if removing multiple references.
-  manager_.RemoveSurfaceReference(parent_id, child_id);
+  reference_manager_->RemoveSurfaceReference(parent_id, child_id);
 }
 
 DisplayCompositor::~DisplayCompositor() {
@@ -127,9 +130,8 @@ DisplayCompositor::~DisplayCompositor() {
   for (auto& map_entry : temp_references_) {
     const cc::FrameSinkId& frame_sink_id = map_entry.first;
     for (auto& local_frame_id : map_entry.second) {
-      manager_.RemoveSurfaceReference(
-          manager_.GetRootSurfaceId(),
-          cc::SurfaceId(frame_sink_id, local_frame_id));
+      reference_manager_->RemoveSurfaceReference(
+          GetRootSurfaceId(), cc::SurfaceId(frame_sink_id, local_frame_id));
     }
   }
   manager_.RemoveObserver(this);
@@ -154,6 +156,10 @@ void DisplayCompositor::OnCompositorFrameSinkPrivateConnectionLost(
     compositor_frame_sinks_.erase(frame_sink_id);
 }
 
+const cc::SurfaceId& DisplayCompositor::GetRootSurfaceId() const {
+  return reference_manager_->GetRootSurfaceId();
+}
+
 void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,
                                          const gfx::Size& frame_size,
                                          float device_scale_factor) {
@@ -164,7 +170,7 @@ void DisplayCompositor::OnSurfaceCreated(const cc::SurfaceId& surface_id,
   // the first will be destroyed and then if there are no references it will be
   // deleted during surface GC. A temporary reference, removed when a real
   // reference is received, is added to prevent this from happening.
-  manager_.AddSurfaceReference(manager_.GetRootSurfaceId(), surface_id);
+  reference_manager_->AddSurfaceReference(GetRootSurfaceId(), surface_id);
   temp_references_[surface_id.frame_sink_id()].push_back(
       surface_id.local_frame_id());
 

@@ -90,6 +90,10 @@ void SurfaceManager::InvalidateFrameSinkId(const FrameSinkId& frame_sink_id) {
   GarbageCollectSurfaces();
 }
 
+const SurfaceId& SurfaceManager::GetRootSurfaceId() const {
+  return kRootSurfaceId;
+}
+
 void SurfaceManager::AddSurfaceReference(const SurfaceId& parent_id,
                                          const SurfaceId& child_id) {
   DCHECK(thread_checker_.CalledOnValidThread());

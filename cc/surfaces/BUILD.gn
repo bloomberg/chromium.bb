@@ -46,6 +46,7 @@ cc_component("surfaces") {
     "surface_id_allocator.h",
     "surface_manager.cc",
     "surface_manager.h",
+    "surface_reference_manager.h",
     "surface_resource_holder.cc",
     "surface_resource_holder.h",
     "surfaces_export.h",
