@@ -45,13 +45,9 @@ def convert_for_webkit(new_path, filename, reference_support_info, host=Host()):
         reference_support_info: Dict of information about a related reference HTML, if any.
 
     Returns:
-        A pair of (list of modified CSS properties, modified text) if the file
-        should be modified; None, if the file is not modified.
+        A pair of (list of modified CSS properties, modified text).
     """
     # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
-    if re.search(r'[/\\]imported[/\\]wpt[/\\]', new_path):
-        return None
-
     contents = host.filesystem.read_binary_file(filename)
     try:
         contents = contents.decode('utf-8')

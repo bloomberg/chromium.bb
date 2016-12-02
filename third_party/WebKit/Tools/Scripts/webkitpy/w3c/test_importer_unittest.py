@@ -164,3 +164,24 @@ class TestImporterTest(unittest.TestCase):
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
         importer.find_importable_tests()
         self.assertEqual(importer.import_list, [])
+
+    def test_should_try_to_convert_positive_cases(self):
+        self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.css', 'LayoutTests/imported/csswg-test/x'))
+        self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.htm', 'LayoutTests/imported/csswg-test/x'))
+        self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.html', 'LayoutTests/imported/csswg-test/x'))
+        self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.xht', 'LayoutTests/imported/csswg-test/x'))
+        self.assertTrue(TestImporter.should_try_to_convert({}, 'foo.xhtml', 'LayoutTests/imported/csswg-test/x'))
+
+    def test_should_not_try_to_convert_js_test(self):
+        self.assertFalse(TestImporter.should_try_to_convert({'is_jstest': True}, 'foo.html', 'LayoutTests/imported/csswg-test/x'))
+
+    def test_should_not_try_to_convert_test_in_wpt(self):
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.html', 'LayoutTests/imported/wpt/foo'))
+
+    def test_should_not_try_to_convert_other_file_types(self):
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.bar', 'LayoutTests/imported/csswg-test/x'))
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.js', 'LayoutTests/imported/csswg-test/x'))
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.md', 'LayoutTests/imported/csswg-test/x'))
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.png', 'LayoutTests/imported/csswg-test/x'))
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.svg', 'LayoutTests/imported/csswg-test/x'))
+        self.assertFalse(TestImporter.should_try_to_convert({}, 'foo.svgz', 'LayoutTests/imported/csswg-test/x'))

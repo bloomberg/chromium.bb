@@ -66,6 +66,7 @@ Rules for importing:
 
 import logging
 import mimetypes
+import re
 import optparse
 import os
 import sys
@@ -404,26 +405,17 @@ class TestImporter(object):
             # there's no harm in copying the identical thing.
             _log.info('  %s', relpath)
 
-        # Only HTML, XML, or CSS should be converted.
-        # FIXME: Eventually, so should JS when support is added for this type of conversion.
-        mimetype = mimetypes.guess_type(source_path)
-        if 'is_jstest' not in file_to_copy and (
-                'html' in str(mimetype[0]) or 'xml' in str(mimetype[0]) or 'css' in str(mimetype[0])):
+        if self.should_try_to_convert(file_to_copy, source_path, dest_dir):
             converted_file = convert_for_webkit(
                 dest_dir, filename=source_path,
                 reference_support_info=reference_support_info,
                 host=self.host)
+            for prefixed_property in converted_file[0]:
+                self._prefixed_properties.setdefault(prefixed_property, 0)
+                self._prefixed_properties[prefixed_property] += 1
 
-            if not converted_file:
-                if not self.import_in_place and not self.options.dry_run:
-                    self.filesystem.copyfile(source_path, dest_path)  # The file was unmodified.
-            else:
-                for prefixed_property in converted_file[0]:
-                    self._prefixed_properties.setdefault(prefixed_property, 0)
-                    self._prefixed_properties[prefixed_property] += 1
-
-                if not self.options.dry_run:
-                    self.filesystem.write_text_file(dest_path, converted_file[1])
+            if not self.options.dry_run:
+                self.filesystem.write_text_file(dest_path, converted_file[1])
         else:
             if not self.import_in_place and not self.options.dry_run:
                 self.filesystem.copyfile(source_path, dest_path)
@@ -431,6 +423,21 @@ class TestImporter(object):
                     self.filesystem.make_executable(dest_path)
 
         return dest_path.replace(self._webkit_root, '')
+
+    @staticmethod
+    def should_try_to_convert(file_to_copy, source_path, dest_dir):
+        """Checks whether we should try to modify the file when importing."""
+        if file_to_copy.get('is_jstest', False):
+            return False
+
+        # Conversion is not necessary for any tests in wpt now; see http://crbug.com/654081.
+        # Note, we want to move away from converting files, see http://crbug.com/663773.
+        if re.search(r'[/\\]imported[/\\]wpt[/\\]', dest_dir):
+            return False
+
+        # Only HTML, XHTML and CSS files should be converted.
+        mimetype, _ = mimetypes.guess_type(source_path)
+        return mimetype in ('text/html', 'application/xhtml+xml', 'text/css')
 
     def path_too_long(self, source_path):
         """Checks whether a source path is too long to import.
