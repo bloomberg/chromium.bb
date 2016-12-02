@@ -26,6 +26,7 @@
 #include "net/quic/core/crypto/crypto_secret_boxer.h"
 #include "net/quic/core/crypto/proof_source.h"
 #include "net/quic/core/crypto/quic_compressed_certs_cache.h"
+#include "net/quic/core/crypto/quic_crypto_proof.h"
 #include "net/quic/core/proto/cached_network_parameters.pb.h"
 #include "net/quic/core/proto/source_address_token.pb.h"
 #include "net/quic/core/quic_time.h"
@@ -788,22 +789,12 @@ struct NET_EXPORT_PRIVATE QuicSignedServerConfig
     : public base::RefCounted<QuicSignedServerConfig> {
   QuicSignedServerConfig();
 
-  // TODO(eranm): Have a QuicCryptoProof field instead of signature, cert_sct.
-  std::string signature;
+  QuicCryptoProof proof;
   scoped_refptr<ProofSource::Chain> chain;
-  std::string cert_sct;
   // The server config that is used for this proof (and the rest of the
   // request).
   scoped_refptr<QuicCryptoServerConfig::Config> config;
   std::string primary_scid;
-  // Indication whether the Expect-CT header should be sent on the session
-  // this proof relates to (for background, see
-  // https://www.ietf.org/id/draft-stark-expect-ct-00.txt).
-  // NOTE: This field is intentionally independent from the |cert_sct| one
-  // and can be true even if |cert_sct| is empty.
-  // The goal of the Expect-CT header is uncover cases where valid SCTs are
-  // expected to be served, but aren't.
-  bool send_expect_ct_header;
 
  private:
   friend class base::RefCounted<QuicSignedServerConfig>;

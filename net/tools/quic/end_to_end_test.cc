@@ -378,6 +378,10 @@ class EndToEndTest : public ::testing::TestWithParam<TestParams> {
     // TODO(nimia): Consider setting the congestion control algorithm for the
     // client as well according to the test parameter.
     copt.push_back(GetParam().congestion_control_tag);
+    if (GetParam().congestion_control_tag == kQBIC &&
+        FLAGS_quic_fix_cubic_convex_mode) {
+      copt.push_back(kCCVX);
+    }
     if (support_server_push_) {
       copt.push_back(kSPSH);
     }

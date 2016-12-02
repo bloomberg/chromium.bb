@@ -124,13 +124,8 @@ TEST_F(QuicClientPromisedInfoTest, PushPromiseCleanupAlarm) {
   ASSERT_NE(promised, nullptr);
 
   // Fire the alarm that will cancel the promised stream.
-  if (FLAGS_quic_send_push_stream_timed_out_error) {
-    EXPECT_CALL(*connection_,
-                SendRstStream(promise_id_, QUIC_PUSH_STREAM_TIMED_OUT, 0));
-  } else {
-    EXPECT_CALL(*connection_,
-                SendRstStream(promise_id_, QUIC_STREAM_CANCELLED, 0));
-  }
+  EXPECT_CALL(*connection_,
+              SendRstStream(promise_id_, QUIC_PUSH_STREAM_TIMED_OUT, 0));
   alarm_factory_.FireAlarm(QuicClientPromisedInfoPeer::GetAlarm(promised));
 
   // Verify that the promise is gone after the alarm fires.

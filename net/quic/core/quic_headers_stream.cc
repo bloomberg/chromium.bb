@@ -400,90 +400,46 @@ QuicConsumedData QuicHeadersStream::WritevStreamData(
   QuicConsumedData result(0, false);
   size_t total_length = iov.total_length;
 
-  if (!FLAGS_quic_bugfix_fhol_writev_fin_only_v2) {
-    // Encapsulate the data into HTTP/2 DATA frames.  The outer loop
-    // handles each element of the source iov, the inner loop handles
-    // the possibility of fragmenting eacho of those into multiple DATA
-    // frames, as the DATA frames have a max size of 16KB.
-    for (int i = 0; i < iov.iov_count; i++) {
-      size_t offset = 0;
-      const struct iovec* src_iov = &iov.iov[i];
-      do {
-        size_t len = std::min(std::min(src_iov->iov_len - offset, max_len),
-                              total_length);
-        char* data = static_cast<char*>(src_iov->iov_base) + offset;
-        SpdyDataIR spdy_data(id, StringPiece(data, len));
-        offset += len;
-        // fin handling, only set it for the final HTTP/2 DATA frame.
-        bool last_iov = i == iov.iov_count - 1;
-        bool last_fragment_within_iov = offset >= src_iov->iov_len;
-        bool frame_fin = (last_iov && last_fragment_within_iov) ? fin : false;
-        spdy_data.set_fin(frame_fin);
-        if (frame_fin) {
-          result.fin_consumed = true;
-        }
-        SpdySerializedFrame frame(spdy_framer_.SerializeFrame(spdy_data));
-        DVLOG(1) << "Encapsulating in DATA frame for stream " << id << " len "
-                 << len << " fin " << spdy_data.fin() << " remaining "
-                 << src_iov->iov_len - offset;
+  if (total_length == 0 && fin) {
+    WriteDataFrame(id, StringPiece(), true, ack_notifier_delegate);
+    result.fin_consumed = true;
+    return result;
+  }
 
-        scoped_refptr<ForceHolAckListener> ack_listener;
-        if (ack_notifier_delegate != nullptr) {
-          ack_listener = new ForceHolAckListener(ack_notifier_delegate,
-                                                 frame.size() - len);
-        }
-
-        WriteOrBufferData(StringPiece(frame.data(), frame.size()), false,
-                          ack_listener.get());
-        result.bytes_consumed += len;
-        total_length -= len;
-        if (total_length <= 0) {
-          return result;
-        }
-      } while (offset < src_iov->iov_len);
-    }
-  } else {
-    if (total_length == 0 && fin) {
-      WriteDataFrame(id, StringPiece(), true, ack_notifier_delegate);
-      result.fin_consumed = true;
-      return result;
-    }
-
-    // Encapsulate the data into HTTP/2 DATA frames.  The outer loop
-    // handles each element of the source iov, the inner loop handles
-    // the possibility of fragmenting each of those into multiple DATA
-    // frames, as the DATA frames have a max size of 16KB.
-    for (int i = 0; i < iov.iov_count; i++) {
-      size_t src_iov_offset = 0;
-      const struct iovec* src_iov = &iov.iov[i];
-      do {
-        if (queued_data_bytes() > 0) {
-          // Limit the amount of buffering to the minimum needed to
-          // preserve framing.
-          return result;
-        }
-        size_t len = std::min(
-            std::min(src_iov->iov_len - src_iov_offset, max_len), total_length);
-        char* data = static_cast<char*>(src_iov->iov_base) + src_iov_offset;
-        src_iov_offset += len;
-        offset += len;
-        // fin handling, only set it for the final HTTP/2 DATA frame.
-        bool last_iov = i == iov.iov_count - 1;
-        bool last_fragment_within_iov = src_iov_offset >= src_iov->iov_len;
-        bool frame_fin = (last_iov && last_fragment_within_iov) ? fin : false;
-        WriteDataFrame(id, StringPiece(data, len), frame_fin,
-                       ack_notifier_delegate);
-        result.bytes_consumed += len;
-        if (frame_fin) {
-          result.fin_consumed = true;
-        }
-        DCHECK_GE(total_length, len);
-        total_length -= len;
-        if (total_length <= 0) {
-          return result;
-        }
-      } while (src_iov_offset < src_iov->iov_len);
-    }
+  // Encapsulate the data into HTTP/2 DATA frames.  The outer loop
+  // handles each element of the source iov, the inner loop handles
+  // the possibility of fragmenting each of those into multiple DATA
+  // frames, as the DATA frames have a max size of 16KB.
+  for (int i = 0; i < iov.iov_count; i++) {
+    size_t src_iov_offset = 0;
+    const struct iovec* src_iov = &iov.iov[i];
+    do {
+      if (queued_data_bytes() > 0) {
+        // Limit the amount of buffering to the minimum needed to
+        // preserve framing.
+        return result;
+      }
+      size_t len = std::min(
+          std::min(src_iov->iov_len - src_iov_offset, max_len), total_length);
+      char* data = static_cast<char*>(src_iov->iov_base) + src_iov_offset;
+      src_iov_offset += len;
+      offset += len;
+      // fin handling, only set it for the final HTTP/2 DATA frame.
+      bool last_iov = i == iov.iov_count - 1;
+      bool last_fragment_within_iov = src_iov_offset >= src_iov->iov_len;
+      bool frame_fin = (last_iov && last_fragment_within_iov) ? fin : false;
+      WriteDataFrame(id, StringPiece(data, len), frame_fin,
+                     ack_notifier_delegate);
+      result.bytes_consumed += len;
+      if (frame_fin) {
+        result.fin_consumed = true;
+      }
+      DCHECK_GE(total_length, len);
+      total_length -= len;
+      if (total_length <= 0) {
+        return result;
+      }
+    } while (src_iov_offset < src_iov->iov_len);
   }
 
   return result;

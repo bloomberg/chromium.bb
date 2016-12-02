@@ -121,7 +121,6 @@ class CryptoServerTest : public ::testing::TestWithParam<TestParams> {
     client_version_string_ =
         QuicTagToString(QuicVersionToQuicTag(client_version_));
 
-    FLAGS_quic_require_handshake_confirmation_pre33 = false;
     FLAGS_enable_quic_stateless_reject_support =
         GetParam().enable_stateless_rejects;
     use_stateless_rejects_ = GetParam().use_stateless_rejects;

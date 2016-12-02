@@ -47,18 +47,6 @@ QuicSpdyStream::~QuicSpdyStream() {
   }
 }
 
-void QuicSpdyStream::CloseWriteSide() {
-  if (!fin_received() && !rst_received() && sequencer()->ignore_read_data() &&
-      !rst_sent()) {
-    DCHECK(fin_sent());
-    // Tell the peer to stop sending further data.
-    DVLOG(1) << ENDPOINT << "Send QUIC_STREAM_NO_ERROR on stream " << id();
-    Reset(QUIC_STREAM_NO_ERROR);
-  }
-
-  QuicStream::CloseWriteSide();
-}
-
 void QuicSpdyStream::StopReading() {
   if (!fin_received() && !rst_received() && write_side_closed() &&
       !rst_sent()) {

@@ -129,7 +129,7 @@ class NET_EXPORT_PRIVATE QuicCryptoServerStream
   // However, it is exposed here because that is the only place where the
   // configuration for the certificate used in the connection is accessible.
   bool ShouldSendExpectCTHeader() const {
-    return signed_config_->send_expect_ct_header;
+    return signed_config_->proof.send_expect_ct_header;
   }
 
  protected:

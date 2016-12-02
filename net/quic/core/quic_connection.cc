@@ -2007,6 +2007,8 @@ void QuicConnection::TearDownLocalConnectionState(
 }
 
 void QuicConnection::CancelAllAlarms() {
+  DVLOG(1) << "Cancelling all QuicConnection alarms.";
+
   ack_alarm_->Cancel();
   ping_alarm_->Cancel();
   resume_writes_alarm_->Cancel();

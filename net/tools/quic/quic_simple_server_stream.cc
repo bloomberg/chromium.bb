@@ -30,7 +30,7 @@ QuicSimpleServerStream::QuicSimpleServerStream(
     QuicStreamId id,
     QuicSpdySession* session,
     QuicHttpResponseCache* response_cache)
-    : QuicSpdyStream(id, session),
+    : QuicSpdyServerStreamBase(id, session),
       content_length_(-1),
       response_cache_(response_cache) {}
 

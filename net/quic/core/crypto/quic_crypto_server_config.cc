@@ -461,8 +461,8 @@ void QuicCryptoServerConfig::ValidateClientHello(
   if (result->error_code == QUIC_NO_ERROR) {
     // QUIC requires a new proof for each CHLO so clear any existing proof.
     signed_config->chain = nullptr;
-    signed_config->signature = "";
-    signed_config->cert_sct = "";
+    signed_config->proof.signature = "";
+    signed_config->proof.leaf_cert_scts = "";
     EvaluateClientHello(server_ip, version, requested_config, primary_config,
                         signed_config, result, std::move(done_cb));
   } else {
@@ -554,9 +554,7 @@ class QuicCryptoServerConfig::ProcessClientHelloCallback
            std::unique_ptr<ProofSource::Details> details) override {
     if (ok) {
       signed_config_->chain = chain;
-      signed_config_->signature = proof.signature;
-      signed_config_->cert_sct = proof.leaf_cert_scts;
-      signed_config_->send_expect_ct_header = proof.send_expect_ct_header;
+      signed_config_->proof = proof;
     }
     config_->ProcessClientHelloAfterGetProof(
         !ok, std::move(details), *validate_chlo_result_, reject_only_,
@@ -702,8 +700,7 @@ void QuicCryptoServerConfig::ProcessClientHello(
       helper.Fail(QUIC_HANDSHAKE_FAILED, "Missing or invalid crypto proof.");
       return;
     }
-    signed_config->signature = proof.signature;
-    signed_config->cert_sct = proof.leaf_cert_scts;
+    signed_config->proof = proof;
   }
 
   helper.DetachCallback();
@@ -1148,9 +1145,7 @@ class QuicCryptoServerConfig::EvaluateClientHelloCallback
            std::unique_ptr<ProofSource::Details> details) override {
     if (ok) {
       signed_config_->chain = chain;
-      signed_config_->signature = proof.signature;
-      signed_config_->cert_sct = proof.leaf_cert_scts;
-      signed_config_->send_expect_ct_header = proof.send_expect_ct_header;
+      signed_config_->proof = proof;
     }
     config_.EvaluateClientHelloAfterGetProof(
         found_error_, server_ip_, version_, requested_config_, primary_config_,
@@ -1278,8 +1273,7 @@ void QuicCryptoServerConfig::EvaluateClientHello(
     if (proof_source_->GetProof(
             server_ip, info->sni.as_string(), serialized_config, version,
             chlo_hash, connection_options, &signed_config->chain, &proof)) {
-      signed_config->signature = proof.signature;
-      signed_config->cert_sct = proof.leaf_cert_scts;
+      signed_config->proof = proof;
     } else {
       get_proof_failed = true;
     }
@@ -1589,22 +1583,23 @@ void QuicCryptoServerConfig::BuildRejection(
                 "overhead calculation may underflow");
   bool should_return_sct =
       params->sct_supported_by_client && enable_serving_sct_;
-  const size_t sct_size = should_return_sct ? signed_config.cert_sct.size() : 0;
+  const string& cert_sct = signed_config.proof.leaf_cert_scts;
+  const size_t sct_size = should_return_sct ? cert_sct.size() : 0;
   const size_t total_size =
-      signed_config.signature.size() + compressed.size() + sct_size;
+      signed_config.proof.signature.size() + compressed.size() + sct_size;
   if (info.valid_source_address_token || total_size < max_unverified_size) {
     out->SetStringPiece(kCertificateTag, compressed);
-    out->SetStringPiece(kPROF, signed_config.signature);
+    out->SetStringPiece(kPROF, signed_config.proof.signature);
     if (should_return_sct) {
-      if (signed_config.cert_sct.empty()) {
+      if (cert_sct.empty()) {
         DLOG(WARNING) << "SCT is expected but it is empty.";
       } else {
-        out->SetStringPiece(kCertificateSCTTag, signed_config.cert_sct);
+        out->SetStringPiece(kCertificateSCTTag, cert_sct);
       }
     }
   } else {
     DLOG(WARNING) << "Sending inchoate REJ for hostname: " << info.sni
-                  << " signature: " << signed_config.signature.size()
+                  << " signature: " << signed_config.proof.signature.size()
                   << " cert: " << compressed.size() << " sct:" << sct_size
                   << " total: " << total_size
                   << " max: " << max_unverified_size;
@@ -2013,8 +2008,7 @@ QuicCryptoServerConfig::Config::Config()
 QuicCryptoServerConfig::Config::~Config() {
 }
 
-QuicSignedServerConfig::QuicSignedServerConfig()
-    : send_expect_ct_header(false) {}
+QuicSignedServerConfig::QuicSignedServerConfig() {}
 QuicSignedServerConfig::~QuicSignedServerConfig() {}
 
 }  // namespace net

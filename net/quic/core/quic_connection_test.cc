@@ -44,7 +44,6 @@ using std::string;
 using std::vector;
 using testing::AnyNumber;
 using testing::AtLeast;
-using testing::Contains;
 using testing::DoAll;
 using testing::InSequence;
 using testing::InvokeWithoutArgs;

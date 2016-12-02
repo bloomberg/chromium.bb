@@ -14,6 +14,7 @@
 #include "net/quic/core/quic_spdy_stream.h"
 #include "net/spdy/spdy_framer.h"
 #include "net/tools/quic/quic_http_response_cache.h"
+#include "net/tools/quic/quic_spdy_server_stream_base.h"
 
 namespace net {
 
@@ -24,7 +25,7 @@ class QuicSimpleServerStreamPeer;
 
 // All this does right now is aggregate data, and on fin, send an HTTP
 // response.
-class QuicSimpleServerStream : public QuicSpdyStream {
+class QuicSimpleServerStream : public QuicSpdyServerStreamBase {
  public:
   QuicSimpleServerStream(QuicStreamId id,
                          QuicSpdySession* session,

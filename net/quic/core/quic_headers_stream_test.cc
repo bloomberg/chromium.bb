@@ -995,7 +995,6 @@ TEST_P(QuicHeadersStreamTest, WritevStreamData) {
 }
 
 TEST_P(QuicHeadersStreamTest, WritevStreamDataFinOnly) {
-  FLAGS_quic_bugfix_fhol_writev_fin_only_v2 = true;
   struct iovec iov;
   string data;
 
@@ -1012,7 +1011,6 @@ TEST_P(QuicHeadersStreamTest, WritevStreamDataFinOnly) {
 }
 
 TEST_P(QuicHeadersStreamTest, WritevStreamDataSendBlocked) {
-  FLAGS_quic_bugfix_fhol_writev_fin_only_v2 = true;
   QuicStreamId id = kClientDataStreamId1;
   QuicStreamOffset offset = 0;
   struct iovec iov;

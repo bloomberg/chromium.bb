@@ -39,6 +39,8 @@ class NET_EXPORT_PRIVATE TcpCubicSenderBytes : public TcpCubicSenderBase {
   ~TcpCubicSenderBytes() override;
 
   // Start implementation of SendAlgorithmInterface.
+  void SetFromConfig(const QuicConfig& config,
+                     Perspective perspective) override;
   void SetNumEmulatedConnections(int num_connections) override;
   void OnConnectionMigration() override;
   QuicByteCount GetCongestionWindow() const override;

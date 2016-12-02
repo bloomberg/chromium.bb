@@ -47,6 +47,16 @@ TcpCubicSenderBytes::TcpCubicSenderBytes(
 
 TcpCubicSenderBytes::~TcpCubicSenderBytes() {}
 
+void TcpCubicSenderBytes::SetFromConfig(const QuicConfig& config,
+                                        Perspective perspective) {
+  TcpCubicSenderBase::SetFromConfig(config, perspective);
+  if (FLAGS_quic_fix_cubic_convex_mode &&
+      config.HasReceivedConnectionOptions() &&
+      ContainsQuicTag(config.ReceivedConnectionOptions(), kCCVX)) {
+    cubic_.SetFixConvexMode(true);
+  }
+}
+
 void TcpCubicSenderBytes::SetCongestionWindowFromBandwidthAndRtt(
     QuicBandwidth bandwidth,
     QuicTime::Delta rtt) {
