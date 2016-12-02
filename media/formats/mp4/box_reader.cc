@@ -90,11 +90,13 @@ bool BufferReader::Read4sInto8s(int64_t* v) {
 }
 
 BoxReader::BoxReader(const uint8_t* buf,
-                     const int size,
+                     const size_t buf_size,
                      const scoped_refptr<MediaLog>& media_log,
                      bool is_EOS)
-    : BufferReader(buf, size),
+    : BufferReader(buf, buf_size),
       media_log_(media_log),
+      box_size_(0),
+      box_size_known_(false),
       type_(FOURCC_NULL),
       version_(0),
       flags_(0),
@@ -114,7 +116,7 @@ BoxReader::~BoxReader() {
 
 // static
 BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
-                                      const int buf_size,
+                                      const size_t buf_size,
                                       const scoped_refptr<MediaLog>& media_log,
                                       bool* err) {
   std::unique_ptr<BoxReader> reader(
@@ -122,23 +124,25 @@ BoxReader* BoxReader::ReadTopLevelBox(const uint8_t* buf,
   if (!reader->ReadHeader(err))
     return NULL;
 
+  // BoxReader::ReadHeader is expected to return false if box_size > buf_size.
+  // This may happen if a partial mp4 box is appended, or if the box header is
+  // corrupt.
+  CHECK(reader->box_size() <= static_cast<uint64_t>(buf_size));
+
   if (!IsValidTopLevelBox(reader->type(), media_log)) {
     *err = true;
     return NULL;
   }
 
-  if (reader->size() <= static_cast<uint64_t>(buf_size))
-    return reader.release();
-
-  return NULL;
+  return reader.release();
 }
 
 // static
 bool BoxReader::StartTopLevelBox(const uint8_t* buf,
-                                 const int buf_size,
+                                 const size_t buf_size,
                                  const scoped_refptr<MediaLog>& media_log,
                                  FourCC* type,
-                                 int* box_size,
+                                 size_t* box_size,
                                  bool* err) {
   BoxReader reader(buf, buf_size, media_log, false);
   if (!reader.ReadHeader(err)) return false;
@@ -147,14 +151,22 @@ bool BoxReader::StartTopLevelBox(const uint8_t* buf,
     return false;
   }
   *type = reader.type();
-  *box_size = reader.size();
+  *box_size = reader.box_size();
   return true;
 }
 
 // static
 BoxReader* BoxReader::ReadConcatentatedBoxes(const uint8_t* buf,
-                                             const int buf_size) {
-  return new BoxReader(buf, buf_size, new MediaLog(), true);
+                                             const size_t buf_size) {
+  BoxReader* reader = new BoxReader(buf, buf_size, new MediaLog(), true);
+
+  // Concatenated boxes are passed in without a wrapping parent box. Set
+  // |box_size_| to the concatenated buffer length to mimic having already
+  // parsed the parent box.
+  reader->box_size_ = buf_size;
+  reader->box_size_known_ = true;
+
+  return reader;
 }
 
 // static
@@ -188,19 +200,22 @@ bool BoxReader::IsValidTopLevelBox(const FourCC& type,
 }
 
 bool BoxReader::ScanChildren() {
+  // Must be able to trust box_size_ below.
+  RCHECK(box_size_known_);
+
   DCHECK(!scanned_);
   scanned_ = true;
 
   bool err = false;
-  while (pos_ < size_) {
-    BoxReader child(&buf_[pos_], size_ - pos_, media_log_, is_EOS_);
+  while (pos_ < box_size_) {
+    BoxReader child(&buf_[pos_], box_size_ - pos_, media_log_, is_EOS_);
     if (!child.ReadHeader(&err)) break;
 
     children_.insert(std::pair<FourCC, BoxReader>(child.type(), child));
-    pos_ += child.size();
+    pos_ += child.box_size();
   }
 
-  return !err && pos_ == size_;
+  return !err && pos_ == box_size_;
 }
 
 bool BoxReader::HasChild(Box* child) {
@@ -235,7 +250,7 @@ bool BoxReader::ReadFullBoxHeader() {
 }
 
 bool BoxReader::ReadHeader(bool* err) {
-  uint64_t size = 0;
+  uint64_t box_size = 0;
   *err = false;
 
   if (!HasBytes(8)) {
@@ -244,45 +259,46 @@ bool BoxReader::ReadHeader(bool* err) {
     *err = is_EOS_;
     return false;
   }
-  CHECK(Read4Into8(&size) && ReadFourCC(&type_));
+  CHECK(Read4Into8(&box_size) && ReadFourCC(&type_));
 
-  if (size == 0) {
+  if (box_size == 0) {
     if (is_EOS_) {
       // All the data bytes are expected to be provided.
-      size = size_;
+      box_size = base::checked_cast<uint64_t>(buf_size_);
     } else {
       MEDIA_LOG(DEBUG, media_log_)
           << "ISO BMFF boxes that run to EOS are not supported";
       *err = true;
       return false;
     }
-  } else if (size == 1) {
+  } else if (box_size == 1) {
     if (!HasBytes(8)) {
       // If EOS is known, then this is an error. If not, it's a soft error.
       *err = is_EOS_;
       return false;
     }
-    CHECK(Read8(&size));
+    CHECK(Read8(&box_size));
   }
 
   // Implementation-specific: support for boxes larger than 2^31 has been
   // removed.
-  if (size < static_cast<uint64_t>(pos_) ||
-      size > static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
+  if (box_size < static_cast<uint64_t>(pos_) ||
+      box_size > static_cast<uint64_t>(std::numeric_limits<int32_t>::max())) {
     *err = true;
     return false;
   }
 
   // Make sure the buffer contains at least the expected number of bytes.
-  // Since the data may be appended in pieces, this can only be checked if EOS.
-  if (is_EOS_ && size > size_) {
-    *err = true;
+  // Since the data may be appended in pieces, this is only an error if EOS.
+  if (box_size > base::checked_cast<size_t>(buf_size_)) {
+    *err = is_EOS_;
     return false;
   }
 
   // Note that the pos_ head has advanced to the byte immediately after the
   // header, which is where we want it.
-  size_ = size;
+  box_size_ = base::checked_cast<size_t>(box_size);
+  box_size_known_ = true;
   return true;
 }
 

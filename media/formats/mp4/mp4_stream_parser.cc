@@ -199,7 +199,7 @@ bool MP4StreamParser::ParseBox(bool* err) {
     *err = !ParseMoof(reader.get());
 
     // Set up first mdat offset for ReadMDATsUntil().
-    mdat_tail_ = queue_.head() + reader->size();
+    mdat_tail_ = queue_.head() + reader->box_size();
 
     // Return early to avoid evicting 'moof' data from queue. Auxiliary info may
     // be located anywhere in the file, including inside the 'moof' itself.
@@ -213,7 +213,7 @@ bool MP4StreamParser::ParseBox(bool* err) {
              << FourCCToString(reader->type());
   }
 
-  queue_.Pop(reader->size());
+  queue_.Pop(reader->box_size());
   return !(*err);
 }
 
@@ -724,7 +724,7 @@ bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64_t max_clear_offset) {
     queue_.PeekAt(mdat_tail_, &buf, &size);
 
     FourCC type;
-    int box_sz;
+    size_t box_sz;
     if (!BoxReader::StartTopLevelBox(buf, size, media_log_, &type, &box_sz,
                                      &err))
       break;
@@ -734,7 +734,8 @@ bool MP4StreamParser::ReadAndDiscardMDATsUntil(int64_t max_clear_offset) {
           << "Unexpected box type while parsing MDATs: "
           << FourCCToString(type);
     }
-    mdat_tail_ += box_sz;
+    // TODO(chcunningham): Fix mdat_tail_ and ByteQueue classes to use size_t.
+    mdat_tail_ += base::checked_cast<int64_t>(box_sz);
   }
   queue_.Trim(std::min(mdat_tail_, upper_bound));
   return !err;

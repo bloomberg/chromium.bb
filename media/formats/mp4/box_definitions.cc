@@ -39,7 +39,7 @@ FourCC FileType::BoxType() const { return FOURCC_FTYP; }
 
 bool FileType::Parse(BoxReader* reader) {
   RCHECK(reader->ReadFourCC(&major_brand) && reader->Read4(&minor_version));
-  size_t num_brands = (reader->size() - reader->pos()) / sizeof(FourCC);
+  size_t num_brands = (reader->box_size() - reader->pos()) / sizeof(FourCC);
   return reader->SkipBytes(sizeof(FourCC) * num_brands);  // compatible_brands
 }
 
@@ -53,7 +53,7 @@ bool ProtectionSystemSpecificHeader::Parse(BoxReader* reader) {
   // Don't bother validating the box's contents.
   // Copy the entire box, including the header, for passing to EME as initData.
   DCHECK(raw_box.empty());
-  raw_box.assign(reader->data(), reader->data() + reader->size());
+  raw_box.assign(reader->buffer(), reader->buffer() + reader->box_size());
   return true;
 }
 
@@ -216,8 +216,8 @@ FourCC SampleEncryption::BoxType() const {
 bool SampleEncryption::Parse(BoxReader* reader) {
   RCHECK(reader->ReadFullBoxHeader());
   use_subsample_encryption = (reader->flags() & kUseSubsampleEncryption) != 0;
-  sample_encryption_data.assign(reader->data() + reader->pos(),
-                                reader->data() + reader->size());
+  sample_encryption_data.assign(reader->buffer() + reader->pos(),
+                                reader->buffer() + reader->box_size());
   return true;
 }
 
@@ -520,7 +520,7 @@ bool HandlerReference::Parse(BoxReader* reader) {
   // zero byte, otherwise we'll string the first byte (containing the length of
   // the Pascal-style string).
   std::vector<uint8_t> name_bytes;
-  RCHECK(reader->ReadVec(&name_bytes, reader->size() - reader->pos()));
+  RCHECK(reader->ReadVec(&name_bytes, reader->box_size() - reader->pos()));
   if (name_bytes.size() == 0) {
     name = "";
   } else if (name_bytes.back() == 0) {
@@ -797,7 +797,7 @@ bool ElementaryStreamDescriptor::Parse(BoxReader* reader) {
   ESDescriptor es_desc;
 
   RCHECK(reader->ReadFullBoxHeader());
-  RCHECK(reader->ReadVec(&data, reader->size() - reader->pos()));
+  RCHECK(reader->ReadVec(&data, reader->box_size() - reader->pos()));
   RCHECK(es_desc.Parse(data));
 
   object_type = es_desc.object_type();
@@ -1328,7 +1328,7 @@ bool IndependentAndDisposableSamples::Parse(BoxReader* reader) {
   RCHECK(reader->version() == 0);
   RCHECK(reader->flags() == 0);
 
-  int sample_count = reader->size() - reader->pos();
+  int sample_count = reader->box_size() - reader->pos();
   sample_depends_on_.resize(sample_count);
   for (int i = 0; i < sample_count; ++i) {
     uint8_t sample_info;
