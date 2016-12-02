@@ -5,6 +5,8 @@
 #include "services/image_decoder/image_decoder_service.h"
 
 #include "base/macros.h"
+#include "base/threading/thread_task_runner_handle.h"
+#include "base/time/time.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/image_decoder/image_decoder_impl.h"
 #include "services/image_decoder/public/interfaces/image_decoder.mojom.h"
@@ -41,8 +43,8 @@ std::unique_ptr<service_manager::Service> ImageDecoderService::Create() {
 
 void ImageDecoderService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
-      base::Bind(&service_manager::ServiceContext::RequestQuit,
-                 base::Unretained(context()))));
+      base::Bind(&ImageDecoderService::MaybeRequestQuitDelayed,
+                 base::Unretained(this))));
 }
 
 bool ImageDecoderService::OnConnect(
@@ -61,6 +63,20 @@ bool ImageDecoderService::OnConnect(
 
 bool ImageDecoderService::OnStop() {
   return true;
+}
+
+void ImageDecoderService::MaybeRequestQuitDelayed() {
+  base::ThreadTaskRunnerHandle::Get()->PostDelayedTask(
+      FROM_HERE,
+      base::Bind(&ImageDecoderService::MaybeRequestQuit,
+                 base::Unretained(this)),
+      base::TimeDelta::FromSeconds(5));
+}
+
+void ImageDecoderService::MaybeRequestQuit() {
+  DCHECK(ref_factory_);
+  if (ref_factory_->HasNoRefs())
+    context()->RequestQuit();
 }
 
 }  // namespace image_decoder
