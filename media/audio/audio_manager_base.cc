@@ -324,6 +324,7 @@ void AudioManagerBase::Shutdown() {
     AudioInputStream* stream = *iter++;
     stream->Close();
   }
+  CHECK(input_streams_.empty());
 #endif  // OS_MACOSX
 }
 
