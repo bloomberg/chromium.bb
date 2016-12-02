@@ -143,7 +143,10 @@ bool ShellMainDelegate::BasicStartupComplete(int* exit_code) {
   EnsureCorrectResolutionSettings();
 #endif  // OS_MACOSX
 
-  InitLogging();
+  // Log to stderr when run with --run-layout-tests
+  // so the layout tests can capture and display any messages.
+  if (!command_line.HasSwitch(switches::kRunLayoutTest))
+    InitLogging();
   if (command_line.HasSwitch(switches::kCheckLayoutTestSysDeps)) {
     // If CheckLayoutSystemDeps succeeds, we don't exit early. Instead we
     // continue and try to load the fonts in BlinkTestPlatformInitialize
