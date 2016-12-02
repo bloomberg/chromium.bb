@@ -50,13 +50,10 @@ gfx::Image GetAppListIcon(extensions::AppWindow* app_window) {
 
 ExtensionAppWindowLauncherItemController::
     ExtensionAppWindowLauncherItemController(
-        Type type,
         const std::string& app_id,
         const std::string& launch_id,
         ChromeLauncherController* controller)
-    : AppWindowLauncherItemController(type, app_id, launch_id, controller) {
-  DCHECK_NE(TYPE_APP_PANEL, type);
-}
+    : AppWindowLauncherItemController(app_id, launch_id, controller) {}
 
 ExtensionAppWindowLauncherItemController::
     ~ExtensionAppWindowLauncherItemController() {}

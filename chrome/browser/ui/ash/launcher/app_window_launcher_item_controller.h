@@ -70,8 +70,7 @@ class AppWindowLauncherItemController : public LauncherItemController,
   const WindowList& windows() const { return windows_; }
 
  protected:
-  AppWindowLauncherItemController(Type type,
-                                  const std::string& app_id,
+  AppWindowLauncherItemController(const std::string& app_id,
                                   const std::string& launch_id,
                                   ChromeLauncherController* controller);
 

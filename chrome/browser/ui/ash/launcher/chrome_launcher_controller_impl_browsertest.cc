@@ -712,7 +712,6 @@ IN_PROC_BROWSER_TEST_F(LauncherPlatformAppBrowserTest,
   LauncherItemController* item1_controller = GetItemController(item1.id);
   EXPECT_EQ(ash::TYPE_APP, item1.type);
   EXPECT_EQ(ash::STATUS_ACTIVE, item1.status);
-  EXPECT_EQ(LauncherItemController::TYPE_APP, item1_controller->type());
   // Since it is already active, clicking it should minimize.
   TestEvent click_event(ui::ET_MOUSE_PRESSED);
   item1_controller->ItemSelected(click_event);

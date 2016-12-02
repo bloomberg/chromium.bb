@@ -38,9 +38,6 @@ enum ShelfItemType {
   // Represents a dialog.
   TYPE_DIALOG,
 
-  // The expanded IME menu in the shelf.
-  TYPE_IME_MENU,
-
   // Default value.
   TYPE_UNDEFINED,
 };

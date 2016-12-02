@@ -69,6 +69,17 @@ ash::ShelfID ChromeLauncherControllerMus::CreateAppLauncherItem(
   return ash::TYPE_UNDEFINED;
 }
 
+const ash::ShelfItem& ChromeLauncherControllerMus::GetItem(
+    ash::ShelfID id) const {
+  NOTIMPLEMENTED();
+  return fake_item_;
+}
+
+void ChromeLauncherControllerMus::SetItemType(ash::ShelfID id,
+                                              ash::ShelfItemType type) {
+  NOTIMPLEMENTED();
+}
+
 void ChromeLauncherControllerMus::SetItemStatus(ash::ShelfID id,
                                                 ash::ShelfItemStatus status) {
   NOTIMPLEMENTED();
@@ -205,7 +216,7 @@ ChromeLauncherControllerMus::GetV1ApplicationsFromAppId(
 }
 
 void ChromeLauncherControllerMus::ActivateShellApp(const std::string& app_id,
-                                                   int index) {
+                                                   int window_index) {
   NOTIMPLEMENTED();
 }
 

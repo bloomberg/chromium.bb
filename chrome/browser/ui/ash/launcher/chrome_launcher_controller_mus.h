@@ -24,6 +24,8 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
   ash::ShelfID CreateAppLauncherItem(LauncherItemController* controller,
                                      const std::string& app_id,
                                      ash::ShelfItemStatus status) override;
+  const ash::ShelfItem& GetItem(ash::ShelfID id) const override;
+  void SetItemType(ash::ShelfID id, ash::ShelfItemType type) override;
   void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) override;
   void SetItemController(ash::ShelfID id,
                          LauncherItemController* controller) override;
@@ -61,7 +63,7 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
                                                 int event_flags) override;
   std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) override;
-  void ActivateShellApp(const std::string& app_id, int index) override;
+  void ActivateShellApp(const std::string& app_id, int window_index) override;
   bool IsWebContentHandledByApplication(content::WebContents* web_contents,
                                         const std::string& app_id) override;
   bool ContentCanBeHandledByGmailApp(
@@ -90,6 +92,9 @@ class ChromeLauncherControllerMus : public ChromeLauncherController {
 
   std::map<std::string, std::unique_ptr<ChromeShelfItemDelegate>>
       app_id_to_item_delegate_;
+
+  // A fake item used for the unimplemented GetItem() override.
+  const ash::ShelfItem fake_item_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeLauncherControllerMus);
 };

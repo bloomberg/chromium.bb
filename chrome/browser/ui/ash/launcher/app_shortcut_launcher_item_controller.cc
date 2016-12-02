@@ -79,7 +79,7 @@ AppShortcutLauncherItemController::AppShortcutLauncherItemController(
     const std::string& app_id,
     const std::string& launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(TYPE_SHORTCUT, app_id, launch_id, controller),
+    : LauncherItemController(app_id, launch_id, controller),
       chrome_launcher_controller_(controller) {
   // To detect V1 applications we use their domain and match them against the
   // used URL. This will also work with applications like Google Drive.

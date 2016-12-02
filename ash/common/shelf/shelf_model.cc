@@ -28,8 +28,6 @@ int ShelfItemTypeToWeight(ShelfItemType type) {
       return 3;
     case TYPE_APP_PANEL:
       return 4;
-    case TYPE_IME_MENU:
-      return 5;
     case TYPE_UNDEFINED:
       NOTREACHED() << "ShelfItemType must be set";
       return -1;

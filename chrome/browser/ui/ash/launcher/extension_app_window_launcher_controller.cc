@@ -165,10 +165,9 @@ void ExtensionAppWindowLauncherController::RegisterApp(AppWindow* app_window) {
     shelf_id = controller->shelf_id();
     controller->AddAppWindow(app_window);
   } else {
-    LauncherItemController::Type type = LauncherItemController::TYPE_APP;
     std::string launch_id = GetLaunchId(app_window);
     ExtensionAppWindowLauncherItemController* controller =
-        new ExtensionAppWindowLauncherItemController(type, app_id, launch_id,
+        new ExtensionAppWindowLauncherItemController(app_id, launch_id,
                                                      owner());
     controller->AddAppWindow(app_window);
     // If there is already a shelf id mapped to this app_shelf_id (e.g. pinned),

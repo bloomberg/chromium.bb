@@ -251,10 +251,7 @@ class TestV2AppLauncherItemController : public LauncherItemController {
  public:
   TestV2AppLauncherItemController(const std::string& app_id,
                                   ChromeLauncherController* controller)
-      : LauncherItemController(LauncherItemController::TYPE_APP,
-                               app_id,
-                               "",
-                               controller) {}
+      : LauncherItemController(app_id, "", controller) {}
 
   ~TestV2AppLauncherItemController() override {}
 
@@ -422,6 +419,7 @@ class ChromeLauncherControllerImplTest : public BrowserWithTestWindowTest {
         launcher_controller_.get());
     launcher_controller_->SetItemController(id, test_controller_);
     DCHECK(launcher_controller_->IsPlatformApp(id));
+    launcher_controller_->SetItemStatus(id, ash::STATUS_RUNNING);
   }
 
   // Sets the stage for a multi user test.
@@ -3525,9 +3523,8 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
                     std::unique_ptr<AppIconLoader>(app_icon_loader2));
 
   AppWindowLauncherItemController* app_controller3 =
-      new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP, app_id3, "id",
-          launcher_controller_.get());
+      new ExtensionAppWindowLauncherItemController(app_id3, "id",
+                                                   launcher_controller_.get());
   const ash::ShelfID shelfId3 = launcher_controller_->CreateAppLauncherItem(
       app_controller3, app_id3, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
@@ -3536,9 +3533,8 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   AppWindowLauncherItemController* app_controller2 =
-      new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP, app_id2, "id",
-          launcher_controller_.get());
+      new ExtensionAppWindowLauncherItemController(app_id2, "id",
+                                                   launcher_controller_.get());
   const ash::ShelfID shelfId2 = launcher_controller_->CreateAppLauncherItem(
       app_controller2, app_id2, ash::STATUS_RUNNING);
   EXPECT_EQ(0, app_icon_loader1->fetch_count());
@@ -3547,9 +3543,8 @@ TEST_F(ChromeLauncherControllerImplTest, MultipleAppIconLoaders) {
   EXPECT_EQ(0, app_icon_loader2->clear_count());
 
   AppWindowLauncherItemController* app_controller1 =
-      new ExtensionAppWindowLauncherItemController(
-          LauncherItemController::TYPE_APP, app_id1, "id",
-          launcher_controller_.get());
+      new ExtensionAppWindowLauncherItemController(app_id1, "id",
+                                                   launcher_controller_.get());
 
   const ash::ShelfID shelfId1 = launcher_controller_->CreateAppLauncherItem(
       app_controller1, app_id1, ash::STATUS_RUNNING);

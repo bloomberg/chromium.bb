@@ -63,8 +63,7 @@ bool IsSettingsBrowser(Browser* browser) {
 BrowserShortcutLauncherItemController::BrowserShortcutLauncherItemController(
     ChromeLauncherController* launcher_controller,
     ash::ShelfModel* shelf_model)
-    : LauncherItemController(TYPE_SHORTCUT,
-                             extension_misc::kChromeAppId,
+    : LauncherItemController(extension_misc::kChromeAppId,
                              "",
                              launcher_controller),
       shelf_model_(shelf_model) {}

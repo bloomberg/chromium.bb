@@ -16,11 +16,10 @@
 #include "ui/wm/core/window_animations.h"
 
 AppWindowLauncherItemController::AppWindowLauncherItemController(
-    Type type,
     const std::string& app_id,
     const std::string& launch_id,
     ChromeLauncherController* controller)
-    : LauncherItemController(type, app_id, launch_id, controller),
+    : LauncherItemController(app_id, launch_id, controller),
       observed_windows_(this) {}
 
 AppWindowLauncherItemController::~AppWindowLauncherItemController() {}
@@ -120,7 +119,6 @@ AppWindowLauncherItemController::ItemSelected(const ui::Event& event) {
   if (windows_.empty())
     return kNoAction;
 
-  DCHECK_EQ(TYPE_APP, type());
   ui::BaseWindow* window_to_show =
       last_active_window_ ? last_active_window_ : windows_.front();
   // If the event was triggered by a keystroke, we try to advance to the next
@@ -139,7 +137,6 @@ base::string16 AppWindowLauncherItemController::GetTitle() {
 }
 
 bool AppWindowLauncherItemController::IsDraggable() {
-  DCHECK_EQ(TYPE_APP, type());
   return true;
 }
 
@@ -149,7 +146,6 @@ bool AppWindowLauncherItemController::CanPin() const {
 }
 
 bool AppWindowLauncherItemController::ShouldShowTooltip() {
-  DCHECK_EQ(TYPE_APP, type());
   return true;
 }
 

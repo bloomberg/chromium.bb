@@ -24,19 +24,11 @@ typedef ScopedVector<ChromeLauncherAppMenuItem> ChromeLauncherAppMenuItems;
 // or more windows associated with a shelf item.
 class LauncherItemController : public ash::ShelfItemDelegate {
  public:
-  enum Type {
-    TYPE_APP,
-    TYPE_APP_PANEL,
-    TYPE_SHORTCUT,
-  };
-
-  LauncherItemController(Type type,
-                         const std::string& app_id,
+  LauncherItemController(const std::string& app_id,
                          const std::string& launch_id,
                          ChromeLauncherController* launcher_controller);
   ~LauncherItemController() override;
 
-  Type type() const { return type_; }
   ash::ShelfID shelf_id() const { return shelf_id_; }
   void set_shelf_id(ash::ShelfID id) { shelf_id_ = id; }
   const std::string& app_id() const { return app_id_; }
@@ -72,12 +64,7 @@ class LauncherItemController : public ash::ShelfItemDelegate {
   // Called to retrieve the list of running applications.
   virtual ChromeLauncherAppMenuItems GetApplicationList(int event_flags) = 0;
 
-  // Helper function to get the ash::ShelfItemType for the item type.
-  ash::ShelfItemType GetShelfItemType() const;
-
  private:
-  const Type type_;
-
   // The application id; empty if there is no app associated with the item.
   const std::string app_id_;
 

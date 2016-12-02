@@ -236,12 +236,7 @@ class ArcAppLauncherBrowserTest : public ExtensionBrowserTest {
     const ash::ShelfID shelf_id = shelf_delegate()->GetShelfIDForAppID(id);
     if (!shelf_id)
       return nullptr;
-    LauncherItemController* controller =
-        chrome_controller()->GetLauncherItemController(shelf_id);
-    if (!controller)
-      return nullptr;
-    DCHECK_EQ(LauncherItemController::TYPE_APP, controller->type());
-    return controller;
+    return chrome_controller()->GetLauncherItemController(shelf_id);
   }
 
   ArcAppListPrefs* app_prefs() { return ArcAppListPrefs::Get(profile()); }

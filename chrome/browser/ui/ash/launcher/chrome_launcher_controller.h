@@ -85,6 +85,12 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
                                              const std::string& app_id,
                                              ash::ShelfItemStatus status) = 0;
 
+  // A helper to get the shelf item with the given id, which must be valid.
+  virtual const ash::ShelfItem& GetItem(ash::ShelfID id) const = 0;
+
+  // Updates the type of an item.
+  virtual void SetItemType(ash::ShelfID id, ash::ShelfItemType type) = 0;
+
   // Updates the running status of an item. It will also update the status of
   // browsers shelf item if needed.
   virtual void SetItemStatus(ash::ShelfID id, ash::ShelfItemStatus status) = 0;
@@ -200,8 +206,9 @@ class ChromeLauncherController : public ash::mojom::ShelfObserver,
   virtual std::vector<content::WebContents*> GetV1ApplicationsFromAppId(
       const std::string& app_id) = 0;
 
-  // Activates a specified shell application.
-  virtual void ActivateShellApp(const std::string& app_id, int index) = 0;
+  // Activates a specified shell application by app id and window index.
+  virtual void ActivateShellApp(const std::string& app_id,
+                                int window_index) = 0;
 
   // Checks if a given |web_contents| is known to be associated with an
   // application of type |app_id|.
