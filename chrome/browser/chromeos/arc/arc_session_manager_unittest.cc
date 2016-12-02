@@ -288,6 +288,8 @@ TEST_F(ArcSessionManagerTest, SignInStatus) {
   arc_session_manager()->OnPrimaryUserProfilePrepared(profile());
   EXPECT_EQ(ArcSessionManager::State::SHOWING_TERMS_OF_SERVICE,
             arc_session_manager()->state());
+  // Emulate to accept the terms of service.
+  prefs->SetBoolean(prefs::kArcTermsAccepted, true);
   arc_session_manager()->StartArc();
   EXPECT_EQ(ArcSessionManager::State::ACTIVE, arc_session_manager()->state());
   EXPECT_TRUE(bridge_service()->ready());

@@ -19,7 +19,7 @@
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "chrome/browser/chromeos/arc/auth/arc_robot_auth.h"
-#include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler.h"
+#include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
@@ -377,11 +377,6 @@ void ArcSessionManager::OnPrimaryUserProfilePrepared(Profile* profile) {
     DCHECK(!support_host_);
     support_host_ = base::MakeUnique<ArcSupportHost>(profile_);
     support_host_->AddObserver(this);
-
-    preference_handler_ = base::MakeUnique<arc::ArcOptInPreferenceHandler>(
-        this, profile_->GetPrefs());
-    // This automatically updates all preferences.
-    preference_handler_->Start();
   }
 
   DCHECK_EQ(State::NOT_INITIALIZED, state_);
@@ -493,49 +488,65 @@ void ArcSessionManager::OnOptInPreferenceChanged() {
   if (support_host_)
     support_host_->SetArcManaged(IsArcManaged());
 
-  // In case UI is disabled we assume that ARC is opted-in. For ARC Kiosk we
-  // skip ToS because it is very likely that near the device there will be
-  // no one who is eligible to accept them. We skip if Android management check
-  // because there are no managed human users for Kiosk exist.
-  if (IsOptInVerificationDisabled() || IsArcKioskMode()) {
-    // Automatically accept terms in kiosk mode. This is not required for
-    // IsOptInVerificationDisabled mode because in last case it may cause
-    // a privacy issue on next run without this flag set.
-    if (IsArcKioskMode())
-      profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
-    StartArc();
-    return;
-  }
+  // For ARC Kiosk we skip ToS because it is very likely that near the device
+  // there will be no one who is eligible to accept them.
+  // TODO(poromov): Move to more Kiosk dedicated set-up phase.
+  if (IsArcKioskMode())
+    profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn)) {
-    if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-      StartArc();
-    } else {
-      // Need pre-fetch auth code and show OptIn UI if needed.
-      StartUI();
-    }
-  } else {
-    // Ready to start Arc, but check Android management in parallel.
+  // If it is marked that sign in has been successfully done, then directly
+  // start ARC.
+  // For testing, and for Kisok mode, we also skip ToS negotiation procedure.
+  // For backward compatibility, this check needs to be prior to the
+  // kArcTermsAccepted check below.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcSignedIn) ||
+      IsOptInVerificationDisabled() || IsArcKioskMode()) {
     StartArc();
+
+    // Skip Android management check for testing.
+    // We also skip if Android management check for Kiosk mode,
+    // because there are no managed human users for Kiosk exist.
+    if (IsOptInVerificationDisabled() || IsArcKioskMode() ||
+        (g_disable_ui_for_testing &&
+         !g_enable_check_android_management_for_testing)) {
+      return;
+    }
+
+    // Check Android management in parallel.
     // Note: Because the callback may be called in synchronous way (i.e. called
     // on the same stack), StartCheck() needs to be called *after* StartArc().
     // Otherwise, DisableArc() which may be called in
     // OnBackgroundAndroidManagementChecked() could be ignored.
-    if (!g_disable_ui_for_testing ||
-        g_enable_check_android_management_for_testing) {
-      android_management_checker_.reset(new ArcAndroidManagementChecker(
-          profile_, context_->token_service(), context_->account_id(),
-          true /* retry_on_error */));
-      android_management_checker_->StartCheck(
-          base::Bind(&ArcSessionManager::OnBackgroundAndroidManagementChecked,
-                     weak_ptr_factory_.GetWeakPtr()));
-    }
+    android_management_checker_ = base::MakeUnique<ArcAndroidManagementChecker>(
+        profile_, context_->token_service(), context_->account_id(),
+        true /* retry_on_error */);
+    android_management_checker_->StartCheck(
+        base::Bind(&ArcSessionManager::OnBackgroundAndroidManagementChecked,
+                   weak_ptr_factory_.GetWeakPtr()));
+    return;
   }
+
+  // If it is marked that the Terms of service is accepted already,
+  // just skip the negotiation with user, and start Android management
+  // check directly.
+  // This happens, e.g., when;
+  // 1) User accepted the Terms of service on OOBE flow.
+  // 2) User accepted the Terms of service on Opt-in flow, but logged out
+  //   before ARC sign in procedure was done. Then, logs in again.
+  if (profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+    support_host_->ShowArcLoading();
+    StartArcAndroidManagementCheck();
+    return;
+  }
+
+  // Need user's explicit Terms Of Service agreement.
+  StartTermsOfServiceNegotiation();
 }
 
 void ArcSessionManager::ShutdownBridge() {
   arc_sign_in_timer_.Stop();
   playstore_launcher_.reset();
+  terms_of_service_negotiator_.reset();
   android_management_checker_.reset();
   arc_bridge_service()->RequestStop();
   if (state_ != State::NOT_INITIALIZED)
@@ -648,8 +659,9 @@ void ArcSessionManager::RecordArcState() {
     UpdateEnabledStateUMA(IsArcEnabled());
 }
 
-void ArcSessionManager::StartUI() {
+void ArcSessionManager::StartTermsOfServiceNegotiation() {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
+  DCHECK(!terms_of_service_negotiator_);
 
   if (!arc_bridge_service()->stopped()) {
     // If the user attempts to re-enable ARC while the bridge is still running
@@ -662,8 +674,32 @@ void ArcSessionManager::StartUI() {
   }
 
   SetState(State::SHOWING_TERMS_OF_SERVICE);
-  if (support_host_)
-    support_host_->ShowTermsOfService();
+  if (support_host_) {
+    terms_of_service_negotiator_ =
+        base::MakeUnique<ArcTermsOfServiceNegotiator>(profile_->GetPrefs(),
+                                                      support_host_.get());
+    terms_of_service_negotiator_->StartNegotiation(
+        base::Bind(&ArcSessionManager::OnTermsOfServiceNegotiated,
+                   weak_ptr_factory_.GetWeakPtr()));
+  }
+}
+
+void ArcSessionManager::OnTermsOfServiceNegotiated(bool accepted) {
+  DCHECK(terms_of_service_negotiator_);
+  terms_of_service_negotiator_.reset();
+
+  if (!accepted) {
+    // To cancel, user needs to close the window. Note that clicking "Cancel"
+    // button effectively just closes the window.
+    CancelAuthCode();
+    return;
+  }
+
+  // Terms were accepted.
+  profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
+
+  support_host_->ShowArcLoading();
+  StartArcAndroidManagementCheck();
 }
 
 void ArcSessionManager::StartArcAndroidManagementCheck() {
@@ -734,6 +770,11 @@ void ArcSessionManager::OnBackgroundAndroidManagementChecked(
 
 void ArcSessionManager::OnWindowClosed() {
   DCHECK(support_host_);
+  if (terms_of_service_negotiator_) {
+    // In this case, ArcTermsOfServiceNegotiator should handle the case.
+    // Do nothing.
+    return;
+  }
   CancelAuthCode();
 }
 
@@ -741,19 +782,8 @@ void ArcSessionManager::OnTermsAgreed(bool is_metrics_enabled,
                                       bool is_backup_and_restore_enabled,
                                       bool is_location_service_enabled) {
   DCHECK(support_host_);
-
-  // Terms were accepted
-  profile_->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
-
-  // Since this is ARC support's UI event callback, preference_handler_
-  // should be always created (see OnPrimaryUserProfilePrepared()).
-  // TODO(hidehiko): Simplify the logic with the code restructuring.
-  DCHECK(preference_handler_);
-  preference_handler_->EnableMetrics(is_metrics_enabled);
-  preference_handler_->EnableBackupRestore(is_backup_and_restore_enabled);
-  preference_handler_->EnableLocationService(is_location_service_enabled);
-  support_host_->ShowArcLoading();
-  StartArcAndroidManagementCheck();
+  DCHECK(terms_of_service_negotiator_);
+  // This should be handled in ArcTermsOfServiceNegotiator. Do nothing here.
 }
 
 void ArcSessionManager::OnRetryClicked() {
@@ -762,9 +792,11 @@ void ArcSessionManager::OnRetryClicked() {
   UpdateOptInActionUMA(OptInActionType::RETRY);
 
   // TODO(hidehiko): Simplify the retry logic.
-  if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
-    // If the user has not yet agreed on Terms of Service, then show it.
-    support_host_->ShowTermsOfService();
+  if (terms_of_service_negotiator_) {
+    // Currently Terms of service is shown. ArcTermsOfServiceNegotiator should
+    // handle this.
+  } else if (!profile_->GetPrefs()->GetBoolean(prefs::kArcTermsAccepted)) {
+    StartTermsOfServiceNegotiation();
   } else if (support_host_->ui_page() == ArcSupportHost::UIPage::ERROR &&
              !arc_bridge_service()->stopped()) {
     // ERROR_WITH_FEEDBACK is set in OnSignInFailed(). In the case, stopping
@@ -789,26 +821,6 @@ void ArcSessionManager::OnRetryClicked() {
 void ArcSessionManager::OnSendFeedbackClicked() {
   DCHECK(support_host_);
   chrome::OpenFeedbackDialog(nullptr);
-}
-
-void ArcSessionManager::OnMetricsModeChanged(bool enabled, bool managed) {
-  if (!support_host_)
-    return;
-  support_host_->SetMetricsPreferenceCheckbox(enabled, managed);
-}
-
-void ArcSessionManager::OnBackupAndRestoreModeChanged(bool enabled,
-                                                      bool managed) {
-  if (!support_host_)
-    return;
-  support_host_->SetBackupAndRestorePreferenceCheckbox(enabled, managed);
-}
-
-void ArcSessionManager::OnLocationServicesModeChanged(bool enabled,
-                                                      bool managed) {
-  if (!support_host_)
-    return;
-  support_host_->SetLocationServicesPreferenceCheckbox(enabled, managed);
 }
 
 std::ostream& operator<<(std::ostream& os,

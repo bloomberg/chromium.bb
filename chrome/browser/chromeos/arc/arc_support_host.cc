@@ -8,6 +8,7 @@
 #include <utility>
 
 #include "ash/common/system/chromeos/devicetype_utils.h"
+#include "base/bind.h"
 #include "base/i18n/timezone.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"
@@ -86,6 +87,18 @@ constexpr char kEventOnRetryClicked[] = "onRetryClicked";
 // "onSendFeedbackClicked" is fired when a user clicks "Send Feedback" button.
 constexpr char kEventOnSendFeedbackClicked[] = "onSendFeedbackClicked";
 
+void RequestOpenApp(Profile* profile) {
+  const extensions::Extension* extension =
+      extensions::ExtensionRegistry::Get(profile)->GetInstalledExtension(
+          ArcSupportHost::kHostAppId);
+  DCHECK(extension);
+  DCHECK(
+      extensions::util::IsAppLaunchable(ArcSupportHost::kHostAppId, profile));
+  OpenApplication(CreateAppLaunchParamsUserContainer(
+      profile, extension, WindowOpenDisposition::NEW_WINDOW,
+      extensions::SOURCE_CHROME_INTERNAL));
+}
+
 std::ostream& operator<<(std::ostream& os, ArcSupportHost::UIPage ui_page) {
   switch (ui_page) {
     case ArcSupportHost::UIPage::NO_PAGE:
@@ -140,7 +153,11 @@ const char ArcSupportHost::kHostAppId[] = "cnbgggchhmkkdmeppjobngjoejnihlei";
 // static
 const char ArcSupportHost::kStorageId[] = "arc_support";
 
-ArcSupportHost::ArcSupportHost(Profile* profile) : profile_(profile) {}
+ArcSupportHost::ArcSupportHost(Profile* profile)
+    : profile_(profile),
+      request_open_app_callback_(base::Bind(&RequestOpenApp)) {
+  DCHECK(profile_);
+}
 
 ArcSupportHost::~ArcSupportHost() {
   if (message_host_)
@@ -317,7 +334,9 @@ void ArcSupportHost::SetMessageHost(arc::ArcSupportMessageHost* message_host) {
     DisconnectMessageHost();
   message_host_ = message_host;
   message_host_->SetObserver(this);
-  display::Screen::GetScreen()->AddObserver(this);
+  display::Screen* screen = display::Screen::GetScreen();
+  if (screen)
+    screen->AddObserver(this);
 
   if (!Initialize()) {
     Close();
@@ -352,7 +371,9 @@ void ArcSupportHost::UnsetMessageHost(
 
 void ArcSupportHost::DisconnectMessageHost() {
   DCHECK(message_host_);
-  display::Screen::GetScreen()->RemoveObserver(this);
+  display::Screen* screen = display::Screen::GetScreen();
+  if (screen)
+    screen->RemoveObserver(this);
   message_host_->SetObserver(nullptr);
   message_host_ = nullptr;
 }
@@ -362,14 +383,15 @@ void ArcSupportHost::RequestAppStart() {
   DCHECK(!app_start_pending_);
 
   app_start_pending_ = true;
-  const extensions::Extension* extension =
-      extensions::ExtensionRegistry::Get(profile_)->GetInstalledExtension(
-          kHostAppId);
-  DCHECK(extension);
-  DCHECK(extensions::util::IsAppLaunchable(kHostAppId, profile_));
-  OpenApplication(CreateAppLaunchParamsUserContainer(
-      profile_, extension, WindowOpenDisposition::NEW_WINDOW,
-      extensions::SOURCE_CHROME_INTERNAL));
+  request_open_app_callback_.Run(profile_);
+}
+
+void ArcSupportHost::SetRequestOpenAppCallbackForTesting(
+    const RequestOpenAppCallback& callback) {
+  DCHECK(!message_host_);
+  DCHECK(!app_start_pending_);
+  DCHECK(!callback.is_null());
+  request_open_app_callback_ = callback;
 }
 
 bool ArcSupportHost::Initialize() {
@@ -463,7 +485,6 @@ bool ArcSupportHost::Initialize() {
 
   const std::string device_id = user_manager::known_user::GetDeviceId(
       multi_user_util::GetAccountIdFromProfile(profile_));
-  DCHECK(!device_id.empty());
   message.SetString(kDeviceId, device_id);
 
   message_host_->SendMessage(message);

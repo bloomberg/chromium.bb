@@ -24,12 +24,13 @@ ArcOptInPreferenceHandler::ArcOptInPreferenceHandler(
 }
 
 void ArcOptInPreferenceHandler::Start() {
-  DCHECK(g_browser_process->local_state());
-  pref_local_change_registrar_.Init(g_browser_process->local_state());
-  pref_local_change_registrar_.Add(
-      metrics::prefs::kMetricsReportingEnabled,
-      base::Bind(&ArcOptInPreferenceHandler::OnMetricsPreferenceChanged,
-                 base::Unretained(this)));
+  if (g_browser_process->local_state()) {
+    pref_local_change_registrar_.Init(g_browser_process->local_state());
+    pref_local_change_registrar_.Add(
+        metrics::prefs::kMetricsReportingEnabled,
+        base::Bind(&ArcOptInPreferenceHandler::OnMetricsPreferenceChanged,
+                   base::Unretained(this)));
+  }
 
   pref_change_registrar_.Init(pref_service_);
   pref_change_registrar_.Add(
@@ -63,9 +64,11 @@ void ArcOptInPreferenceHandler::OnLocationServicePreferenceChanged() {
 }
 
 void ArcOptInPreferenceHandler::SendMetricsMode() {
-  observer_->OnMetricsModeChanged(
-      ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
-      IsMetricsReportingPolicyManaged());
+  if (g_browser_process->local_state()) {
+    observer_->OnMetricsModeChanged(
+        ChromeMetricsServiceAccessor::IsMetricsAndCrashReportingEnabled(),
+        IsMetricsReportingPolicyManaged());
+  }
 }
 
 void ArcOptInPreferenceHandler::SendBackupAndRestoreMode() {
@@ -81,7 +84,8 @@ void ArcOptInPreferenceHandler::SendLocationServicesMode() {
 }
 
 void ArcOptInPreferenceHandler::EnableMetrics(bool is_enabled) {
-  ChangeMetricsReportingState(is_enabled);
+  if (g_browser_process->local_state())
+    ChangeMetricsReportingState(is_enabled);
 }
 
 void ArcOptInPreferenceHandler::EnableBackupRestore(bool is_enabled) {

@@ -153,6 +153,7 @@ class ArcSessionManagerTest : public InProcessBrowserTest {
     token_service_->UpdateCredentials("", kRefreshToken);
 
     profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+    profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted, true);
 
     const AccountId account_id(
         AccountId::FromUserEmailGaiaId(kFakeUserName, "1234567890"));

@@ -14,7 +14,6 @@
 #include "base/observer_list.h"
 #include "base/timer/timer.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/arc/optin/arc_optin_preference_handler_observer.h"
 #include "chrome/browser/chromeos/policy/android_management_client.h"
 #include "components/arc/arc_bridge_service.h"
 #include "components/arc/arc_service.h"
@@ -39,7 +38,7 @@ namespace arc {
 class ArcAndroidManagementChecker;
 class ArcAuthCodeFetcher;
 class ArcAuthContext;
-class ArcOptInPreferenceHandler;
+class ArcTermsOfServiceNegotiator;
 enum class ProvisioningResult : int;
 
 // This class proxies the request from the client to fetch an auth code from
@@ -47,7 +46,6 @@ enum class ProvisioningResult : int;
 class ArcSessionManager : public ArcService,
                           public ArcBridgeService::Observer,
                           public ArcSupportHost::Observer,
-                          public ArcOptInPreferenceHandlerObserver,
                           public sync_preferences::PrefServiceSyncableObserver,
                           public sync_preferences::SyncedPrefObserver {
  public:
@@ -181,11 +179,6 @@ class ArcSessionManager : public ArcService,
   void OnRetryClicked() override;
   void OnSendFeedbackClicked() override;
 
-  // ArcOptInPreferenceHandlerObserver:
-  void OnMetricsModeChanged(bool enabled, bool managed) override;
-  void OnBackupAndRestoreModeChanged(bool enabled, bool managed) override;
-  void OnLocationServicesModeChanged(bool enabled, bool managed) override;
-
   // Stops ARC without changing ArcEnabled preference.
   void StopArc();
 
@@ -209,11 +202,13 @@ class ArcSessionManager : public ArcService,
   void OnProvisioningFinished(ProvisioningResult result);
 
  private:
-  // TODO(hidehiko): move UI methods/fields to ArcSupportHost.
+  // Negotiates the terms of service to user.
+  void StartTermsOfServiceNegotiation();
+  void OnTermsOfServiceNegotiated(bool accepted);
+
   void SetState(State state);
   void ShutdownBridge();
   void OnOptInPreferenceChanged();
-  void StartUI();
   void OnAndroidManagementPassed();
   void OnArcDataRemoved(bool success);
   void OnArcSignInTimeout();
@@ -245,12 +240,9 @@ class ArcSessionManager : public ArcService,
   bool reenable_arc_ = false;
   base::OneShotTimer arc_sign_in_timer_;
 
-  // Temporarily keeps the ArcSupportHost instance.
-  // This should be moved to ArcSessionManager when the refactoring is
-  // done.
   std::unique_ptr<ArcSupportHost> support_host_;
-  // Handles preferences and metrics mode.
-  std::unique_ptr<ArcOptInPreferenceHandler> preference_handler_;
+
+  std::unique_ptr<ArcTermsOfServiceNegotiator> terms_of_service_negotiator_;
 
   std::unique_ptr<ArcAuthContext> context_;
   std::unique_ptr<ArcAndroidManagementChecker> android_management_checker_;

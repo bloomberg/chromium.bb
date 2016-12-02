@@ -3956,6 +3956,8 @@ class ArcPolicyTest : public PolicyTest {
     arc::ArcSessionManager::DisableUIForTesting();
 
     browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcSignedIn, true);
+    browser()->profile()->GetPrefs()->SetBoolean(prefs::kArcTermsAccepted,
+                                                 true);
   }
 
   void TearDownTest() { arc::ArcSessionManager::Get()->Shutdown(); }
