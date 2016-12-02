@@ -21,6 +21,9 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   WTF_MAKE_NONCOPYABLE(PaymentRequestEvent);
 
  public:
+  static PaymentRequestEvent* create(const AtomicString& type,
+                                     const PaymentAppRequestData&,
+                                     WaitUntilObserver*);
   ~PaymentRequestEvent() override;
 
   const AtomicString& interfaceName() const override;
@@ -34,6 +37,7 @@ class MODULES_EXPORT PaymentRequestEvent final : public ExtendableEvent {
   PaymentRequestEvent(const AtomicString& type,
                       const PaymentAppRequestData&,
                       WaitUntilObserver*);
+  PaymentAppRequestData m_data;
 };
 
 }  // namespace blink

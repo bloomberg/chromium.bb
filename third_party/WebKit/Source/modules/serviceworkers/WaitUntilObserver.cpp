@@ -191,6 +191,10 @@ void WaitUntilObserver::decrementPendingActivity() {
     case Sync:
       client->didHandleSyncEvent(m_eventID, result, m_eventDispatchTime);
       break;
+    case PaymentRequest:
+      client->didHandlePaymentRequestEvent(m_eventID, result,
+                                           m_eventDispatchTime);
+      break;
   }
   setContext(nullptr);
 }

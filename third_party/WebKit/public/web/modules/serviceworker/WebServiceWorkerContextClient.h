@@ -190,6 +190,13 @@ class WebServiceWorkerContextClient {
                                   WebServiceWorkerEventResult result,
                                   double eventDispatchTime) {}
 
+  // ServiceWorker specific method. Called after PaymentRequestEvent (dispatched
+  // via WebServiceWorkerContextProxy) is handled by the ServiceWorker's script
+  // context.
+  virtual void didHandlePaymentRequestEvent(int paymentRequestEventID,
+                                            WebServiceWorkerEventResult result,
+                                            double eventDispatchTime) {}
+
   // Ownership of the returned object is transferred to the caller.
   // This is called on the main thread.
   virtual WebServiceWorkerNetworkProvider* createServiceWorkerNetworkProvider(

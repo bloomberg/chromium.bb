@@ -260,6 +260,7 @@ source_set("unit_tests") {
     "payments/CompleteTest.cpp",
     "payments/OnPaymentResponseTest.cpp",
     "payments/PaymentAddressTest.cpp",
+    "payments/PaymentAppRequestDataConversionTest.cpp",
     "payments/PaymentRequestDetailsTest.cpp",
     "payments/PaymentRequestTest.cpp",
     "payments/PaymentRequestUpdateEventTest.cpp",

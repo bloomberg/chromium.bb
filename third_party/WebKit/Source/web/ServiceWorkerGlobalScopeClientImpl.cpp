@@ -148,6 +148,14 @@ void ServiceWorkerGlobalScopeClientImpl::didHandleSyncEvent(
   m_client.didHandleSyncEvent(syncEventID, result, eventDispatchTime);
 }
 
+void ServiceWorkerGlobalScopeClientImpl::didHandlePaymentRequestEvent(
+    int paymentRequestEventID,
+    WebServiceWorkerEventResult result,
+    double eventDispatchTime) {
+  m_client.didHandlePaymentRequestEvent(paymentRequestEventID, result,
+                                        eventDispatchTime);
+}
+
 void ServiceWorkerGlobalScopeClientImpl::postMessageToClient(
     const WebString& clientUUID,
     const WebString& message,

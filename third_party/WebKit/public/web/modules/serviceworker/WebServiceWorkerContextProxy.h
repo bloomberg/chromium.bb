@@ -44,6 +44,7 @@ class WebServiceWorkerRequest;
 class WebServiceWorkerResponse;
 class WebString;
 struct WebNotificationData;
+struct WebPaymentAppRequestData;
 struct WebServiceWorkerClientInfo;
 struct WebServiceWorkerError;
 
@@ -95,6 +96,9 @@ class WebServiceWorkerContextProxy {
   virtual void dispatchSyncEvent(int syncEventID,
                                  const WebString& tag,
                                  LastChanceOption) = 0;
+
+  virtual void dispatchPaymentRequestEvent(int eventID,
+                                           const WebPaymentAppRequestData&) = 0;
 
   virtual void onNavigationPreloadResponse(
       int fetchEventID,

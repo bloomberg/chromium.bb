@@ -46,6 +46,9 @@
 #include "modules/notifications/Notification.h"
 #include "modules/notifications/NotificationEvent.h"
 #include "modules/notifications/NotificationEventInit.h"
+#include "modules/payments/PaymentAppRequestData.h"
+#include "modules/payments/PaymentAppRequestDataConversion.h"
+#include "modules/payments/PaymentRequestEvent.h"
 #include "modules/push_messaging/PushEvent.h"
 #include "modules/push_messaging/PushMessageData.h"
 #include "modules/serviceworkers/ExtendableEvent.h"
@@ -328,6 +331,19 @@ void ServiceWorkerGlobalScopeProxy::dispatchSyncEvent(
       workerGlobalScope(), WaitUntilObserver::Sync, eventID);
   Event* event = SyncEvent::create(EventTypeNames::sync, tag,
                                    lastChance == IsLastChance, observer);
+  workerGlobalScope()->dispatchExtendableEvent(event, observer);
+}
+
+void ServiceWorkerGlobalScopeProxy::dispatchPaymentRequestEvent(
+    int eventID,
+    const WebPaymentAppRequestData& webData) {
+  WaitUntilObserver* observer = WaitUntilObserver::create(
+      workerGlobalScope(), WaitUntilObserver::PaymentRequest, eventID);
+  Event* event = PaymentRequestEvent::create(
+      EventTypeNames::paymentrequest,
+      PaymentAppRequestDataConversion::toPaymentAppRequestData(
+          workerGlobalScope()->scriptController()->getScriptState(), webData),
+      observer);
   workerGlobalScope()->dispatchExtendableEvent(event, observer);
 }
 

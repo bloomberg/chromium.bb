@@ -12,6 +12,8 @@ blink_modules_sources("payments") {
     "PaymentAddress.h",
     "PaymentAppManager.cpp",
     "PaymentAppManager.h",
+    "PaymentAppRequestDataConversion.cpp",
+    "PaymentAppRequestDataConversion.h",
     "PaymentAppServiceWorkerGlobalScope.h",
     "PaymentAppServiceWorkerRegistration.cpp",
     "PaymentAppServiceWorkerRegistration.h",

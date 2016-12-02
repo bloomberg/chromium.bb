@@ -33,6 +33,7 @@ class MODULES_EXPORT WaitUntilObserver final
     Message,
     NotificationClick,
     NotificationClose,
+    PaymentRequest,
     Push,
     Sync
   };

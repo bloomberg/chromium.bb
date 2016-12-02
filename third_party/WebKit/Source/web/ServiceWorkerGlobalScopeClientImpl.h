@@ -90,6 +90,9 @@ class ServiceWorkerGlobalScopeClientImpl final
   void didHandleSyncEvent(int syncEventID,
                           WebServiceWorkerEventResult,
                           double eventDispatchTime) override;
+  void didHandlePaymentRequestEvent(int paymentRequestEventID,
+                                    WebServiceWorkerEventResult,
+                                    double eventDispatchTime) override;
   void postMessageToClient(
       const WebString& clientUUID,
       const WebString& message,

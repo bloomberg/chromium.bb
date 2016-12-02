@@ -8,6 +8,13 @@
 
 namespace blink {
 
+PaymentRequestEvent* PaymentRequestEvent::create(
+    const AtomicString& type,
+    const PaymentAppRequestData& data,
+    WaitUntilObserver* observer) {
+  return new PaymentRequestEvent(type, data, observer);
+}
+
 PaymentRequestEvent::~PaymentRequestEvent() {}
 
 const AtomicString& PaymentRequestEvent::interfaceName() const {
@@ -15,7 +22,7 @@ const AtomicString& PaymentRequestEvent::interfaceName() const {
 }
 
 void PaymentRequestEvent::data(PaymentAppRequestData& data) const {
-  NOTIMPLEMENTED();
+  data = m_data;
 }
 
 void PaymentRequestEvent::respondWith(ScriptPromise) {
@@ -23,12 +30,13 @@ void PaymentRequestEvent::respondWith(ScriptPromise) {
 }
 
 DEFINE_TRACE(PaymentRequestEvent) {
+  visitor->trace(m_data);
   ExtendableEvent::trace(visitor);
 }
 
 PaymentRequestEvent::PaymentRequestEvent(const AtomicString& type,
                                          const PaymentAppRequestData& data,
                                          WaitUntilObserver* observer)
-    : ExtendableEvent(type, ExtendableEventInit(), observer) {}
+    : ExtendableEvent(type, ExtendableEventInit(), observer), m_data(data) {}
 
 }  // namespace blink

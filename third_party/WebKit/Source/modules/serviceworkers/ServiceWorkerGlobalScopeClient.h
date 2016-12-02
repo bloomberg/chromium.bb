@@ -106,6 +106,9 @@ class MODULES_EXPORT ServiceWorkerGlobalScopeClient
   virtual void didHandleSyncEvent(int syncEventID,
                                   WebServiceWorkerEventResult,
                                   double eventDispatchTime) = 0;
+  virtual void didHandlePaymentRequestEvent(int paymentRequestEventID,
+                                            WebServiceWorkerEventResult,
+                                            double eventDispatchTime) = 0;
   virtual void postMessageToClient(
       const WebString& clientUUID,
       const WebString& message,
