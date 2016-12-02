@@ -8024,8 +8024,10 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                          "the width or height of src region overflow");
       return;
     }
-    src_width = std::abs(src_width_temp.ValueOrDefault(0));
-    src_height = std::abs(src_height_temp.ValueOrDefault(0));
+    if (!src_width_temp.Abs().AssignIfValid(&src_width))
+      src_width = 0;
+    if (!src_height_temp.Abs().AssignIfValid(&src_height))
+      src_height = 0;
 
     gfx::Rect src_region(src_x, src_y, src_width, src_height);
     if (!src_bounds.Contains(src_region) &&
@@ -8060,8 +8062,10 @@ void GLES2DecoderImpl::DoBlitFramebufferCHROMIUM(
                            "the width or height of dst region overflow");
         return;
       }
-      dst_width = std::abs(dst_width_temp.ValueOrDefault(0));
-      dst_height = std::abs(dst_height_temp.ValueOrDefault(0));
+      if (!dst_width_temp.Abs().AssignIfValid(&dst_width))
+        dst_width = 0;
+      if (!dst_height_temp.Abs().AssignIfValid(&dst_height))
+        dst_height = 0;
 
       GLfloat dst_mapping_width =
           static_cast<GLfloat>(src_real_width) * dst_width / src_width;

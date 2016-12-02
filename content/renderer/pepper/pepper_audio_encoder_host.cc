@@ -340,11 +340,11 @@ bool PepperAudioEncoderHost::AllocateBuffers(
   DCHECK(RenderThreadImpl::current());
 
   // Audio buffers size computation.
-  base::CheckedNumeric<size_t> audio_buffer_size = samples_per_frame;
+  base::CheckedNumeric<uint32_t> audio_buffer_size = samples_per_frame;
   audio_buffer_size *= parameters.channels;
   audio_buffer_size *= parameters.input_sample_size;
 
-  base::CheckedNumeric<size_t> total_audio_buffer_size = audio_buffer_size;
+  base::CheckedNumeric<uint32_t> total_audio_buffer_size = audio_buffer_size;
   total_audio_buffer_size += sizeof(ppapi::MediaStreamBuffer::Audio);
   base::CheckedNumeric<size_t> total_audio_memory_size =
       total_audio_buffer_size;
@@ -353,7 +353,7 @@ bool PepperAudioEncoderHost::AllocateBuffers(
   // Bitstream buffers size computation (individual bitstream buffers are
   // twice the size of the raw data, to handle the worst case where
   // compression doesn't work).
-  base::CheckedNumeric<size_t> bitstream_buffer_size = audio_buffer_size;
+  base::CheckedNumeric<uint32_t> bitstream_buffer_size = audio_buffer_size;
   bitstream_buffer_size *= 2;
   bitstream_buffer_size += sizeof(ppapi::MediaStreamBuffer::Bitstream);
   base::CheckedNumeric<size_t> total_bitstream_memory_size =
@@ -371,9 +371,10 @@ bool PepperAudioEncoderHost::AllocateBuffers(
     return false;
   std::unique_ptr<ppapi::MediaStreamBufferManager> audio_buffer_manager(
       new ppapi::MediaStreamBufferManager(this));
-  if (!audio_buffer_manager->SetBuffers(kDefaultNumberOfAudioBuffers,
-                                        total_audio_buffer_size.ValueOrDie(),
-                                        std::move(audio_memory), false))
+  if (!audio_buffer_manager->SetBuffers(
+          kDefaultNumberOfAudioBuffers,
+          base::ValueOrDieForType<int32_t>(total_audio_buffer_size),
+          std::move(audio_memory), false))
     return false;
 
   for (int32_t i = 0; i < audio_buffer_manager->number_of_buffers(); ++i) {
@@ -395,9 +396,10 @@ bool PepperAudioEncoderHost::AllocateBuffers(
     return false;
   std::unique_ptr<ppapi::MediaStreamBufferManager> bitstream_buffer_manager(
       new ppapi::MediaStreamBufferManager(this));
-  if (!bitstream_buffer_manager->SetBuffers(kDefaultNumberOfAudioBuffers,
-                                            bitstream_buffer_size.ValueOrDie(),
-                                            std::move(bitstream_memory), true))
+  if (!bitstream_buffer_manager->SetBuffers(
+          kDefaultNumberOfAudioBuffers,
+          base::ValueOrDieForType<int32_t>(bitstream_buffer_size),
+          std::move(bitstream_memory), true))
     return false;
 
   for (int32_t i = 0; i < bitstream_buffer_manager->number_of_buffers(); ++i) {

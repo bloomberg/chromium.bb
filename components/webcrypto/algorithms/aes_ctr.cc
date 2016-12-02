@@ -166,7 +166,7 @@ Status AesCtrEncryptDecrypt(const blink::WebCryptoAlgorithm& algorithm,
     return Status::ErrorUnexpected();
 
   const CryptoData counter_block(params->counter());
-  buffer->resize(output_max_len.ValueOrDie());
+  buffer->resize(base::ValueOrDieForType<size_t>(output_max_len));
 
   // The total number of possible counter values is pow(2, counter_length_bits)
   bssl::UniquePtr<BIGNUM> num_counter_values(BN_new());

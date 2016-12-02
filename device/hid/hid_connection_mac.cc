@@ -136,12 +136,12 @@ void HidConnectionMac::InputReportCallback(void* context,
   scoped_refptr<net::IOBufferWithSize> buffer;
   if (connection->device_info()->has_report_id()) {
     // report_id is already contained in report_bytes
-    buffer = new net::IOBufferWithSize(
-        base::CheckedNumeric<size_t>(report_length).ValueOrDie());
+    buffer =
+        new net::IOBufferWithSize(base::checked_cast<size_t>(report_length));
     memcpy(buffer->data(), report_bytes, report_length);
   } else {
-    buffer = new net::IOBufferWithSize(
-        (base::CheckedNumeric<size_t>(report_length) + 1).ValueOrDie());
+    buffer = new net::IOBufferWithSize(static_cast<size_t>(
+        (base::CheckedNumeric<size_t>(report_length) + 1).ValueOrDie()));
     buffer->data()[0] = 0;
     memcpy(buffer->data() + 1, report_bytes, report_length);
   }

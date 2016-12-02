@@ -270,7 +270,7 @@ static int RoundedDivision(int64_t a, int b) {
   base::CheckedNumeric<uint64_t> result(a);
   result += b / 2;
   result /= b;
-  return base::checked_cast<int>(result.ValueOrDie());
+  return base::ValueOrDieForType<int>(result);
 }
 
 // Common logic for the letterboxing and scale-within/scale-encompassing

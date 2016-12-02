@@ -36,3 +36,5 @@ $ git am --3way --message-id -p4 /tmp/patchdir
 
 Local Modifications:
 - Have crashpad call ASan's crash handler if present
+- Modified util/file/string_file.cc for compat with base/numerics here:
+  https://codereview.chromium.org/2528243002/

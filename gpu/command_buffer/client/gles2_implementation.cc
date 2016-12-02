@@ -6327,7 +6327,7 @@ bool GLES2Implementation::PackStringsToBucket(GLsizei count,
                                               const char* func_name) {
   DCHECK_LE(0, count);
   // Compute the total size.
-  base::CheckedNumeric<size_t> total_size = count;
+  base::CheckedNumeric<uint32_t> total_size = count;
   total_size += 1;
   total_size *= sizeof(GLint);
   if (!total_size.IsValid()) {

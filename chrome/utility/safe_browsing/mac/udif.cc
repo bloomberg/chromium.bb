@@ -681,7 +681,9 @@ off_t UDIFPartitionReadStream::Seek(off_t offset, int whence) {
         new UDIFBlockChunkReadStream(stream_, block_size_, chunk));
   }
   current_chunk_ = chunk_number;
-  if (chunk_stream_->Seek(decompress_read_offset.ValueOrDie(), SEEK_SET) == -1)
+  if (chunk_stream_->Seek(
+          base::ValueOrDieForType<off_t>(decompress_read_offset), SEEK_SET) ==
+      -1)
     return -1;
 
   return offset;
