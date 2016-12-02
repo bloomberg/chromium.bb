@@ -62,7 +62,7 @@ void RunAllBlockingPoolTasksUntilIdle();
 
 // Get task to quit the given RunLoop. It allows a few generations of pending
 // tasks to run as opposed to run_loop->QuitClosure().
-base::Closure GetQuitTaskForRunLoop(base::RunLoop* run_loop);
+base::Closure GetDeferredQuitTaskForRunLoop(base::RunLoop* run_loop);
 
 // Executes the specified JavaScript in the specified frame, and runs a nested
 // MessageLoop. When the result is available, it is returned.
@@ -91,6 +91,12 @@ bool RegisterJniForTesting(JNIEnv* env);
 // has returned is safe and has no effect.
 // Note that by default Quit does not quit immediately. If that is not what you
 // really need, pass QuitMode::IMMEDIATE in the constructor.
+//
+// DEPRECATED. Consider using base::RunLoop, in most cases MessageLoopRunner is
+// not needed.  If you need to defer quitting the loop, use
+// GetDeferredQuitTaskForRunLoop directly.
+// If you found a case where base::RunLoop is inconvenient or can not be used at
+// all, please post details in a comment on https://crbug.com/668707.
 class MessageLoopRunner : public base::RefCounted<MessageLoopRunner> {
  public:
   enum class QuitMode {

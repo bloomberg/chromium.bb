@@ -14,7 +14,6 @@
 namespace base {
 class CommandLine;
 class FilePath;
-class RunLoop;
 }
 
 namespace content {
@@ -47,8 +46,6 @@ class TestLauncherDelegate {
   virtual bool AdjustChildProcessCommandLine(
       base::CommandLine* command_line,
       const base::FilePath& temp_data_dir) = 0;
-  virtual void PreRunMessageLoop(base::RunLoop* run_loop) {}
-  virtual void PostRunMessageLoop() {}
   virtual ContentMainDelegate* CreateContentMainDelegate() = 0;
 
   // Called prior to running each test. The delegate may alter the CommandLine

@@ -30,7 +30,7 @@ bool ResultCatcher::GetNextResult() {
   // empty.
   if (results_.empty()) {
     base::RunLoop run_loop;
-    quit_closure_ = content::GetQuitTaskForRunLoop(&run_loop);
+    quit_closure_ = content::GetDeferredQuitTaskForRunLoop(&run_loop);
     content::RunThisRunLoop(&run_loop);
     quit_closure_ = base::Closure();
   }
