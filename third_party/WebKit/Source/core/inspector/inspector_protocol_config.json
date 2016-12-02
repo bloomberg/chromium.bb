@@ -104,7 +104,17 @@
         "header": "<v8-inspector-protocol.h>",
         "to_imported_string": "toV8InspectorStringView(%s)",
         "from_imported_string": "toCoreString(%s)",
-        "namespace": ["v8_inspector", "protocol"]
+        "namespace": ["v8_inspector", "protocol"],
+        "options": [
+            {
+                "domain": "Runtime",
+                "imported": ["RemoteObject", "StackTrace"]
+            },
+            {
+                "domain": "Debugger",
+                "imported": ["SearchMatch"]
+            }
+        ]
     },
 
     "lib": {
