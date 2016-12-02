@@ -74,6 +74,7 @@ void HTMLViewSourceParser::append(const String& input) {
 }
 
 void HTMLViewSourceParser::finish() {
+  flush();
   if (!m_input.haveSeenEndOfFile())
     m_input.markEndOfFile();
 
