@@ -164,6 +164,12 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
                                            wchar_t delimiter,
                                            bool trim_spaces);
 
+// Tokenizes |command_line| in the same way as CommandLineToArgvW() in
+// shell32.dll, handling quoting, spacing etc. Normally only used from
+// GetSwitchValueFromCommandLine(), but exposed for testing.
+std::vector<std::wstring> TokenizeCommandLineToArray(
+    const std::wstring& command_line);
+
 // We assume that the command line |command_line| contains multiple switches
 // with the format --<switch name>=<switch value>. This function returns the
 // value of the |switch_name| passed in.

@@ -581,46 +581,124 @@ std::vector<std::wstring> TokenizeString16(const std::wstring& str,
   return TokenizeStringT<std::wstring>(str, delimiter, trim_spaces);
 }
 
+std::vector<std::wstring> TokenizeCommandLineToArray(
+    const std::wstring& command_line) {
+  // This is baroquely complex to do properly, see e.g.
+  // https://blogs.msdn.microsoft.com/oldnewthing/20100917-00/?p=12833
+  // http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/
+  // and many others. We cannot use CommandLineToArgvW() in chrome_elf, because
+  // it's in shell32.dll. Previously, __wgetmainargs() in the CRT was available,
+  // and it's still documented for VS 2015 at
+  // https://msdn.microsoft.com/en-us/library/ff770599.aspx but unfortunately,
+  // isn't actually available.
+  //
+  // This parsing matches CommandLineToArgvW()s for arguments, rather than the
+  // CRTs. These are different only in the most obscure of cases and will not
+  // matter in any practical situation. See the windowsinspired.com post above
+  // for details.
+  //
+  // Indicates whether or not space and tab are interpreted as token separators.
+  enum class SpecialChars {
+    // Space or tab, if encountered, delimit tokens.
+    kInterpret,
+
+    // Space or tab, if encountered, are part of the current token.
+    kIgnore,
+  } state;
+
+  static constexpr wchar_t kSpaceTab[] = L" \t";
+
+  std::vector<std::wstring> result;
+  const wchar_t* p = command_line.c_str();
+
+  // The first argument (the program) is delimited by whitespace or quotes based
+  // on its first character.
+  int argv0_length = 0;
+  if (p[0] == L'"')
+    argv0_length = wcschr(++p, L'"') - (command_line.c_str() + 1);
+  else
+    argv0_length = wcscspn(p, kSpaceTab);
+  result.emplace_back(p, argv0_length);
+  if (p[argv0_length] == 0)
+    return result;
+  p += argv0_length + 1;
+
+  std::wstring token;
+  // This loops the entire string, with a subloop for each argument.
+  for (;;) {
+    // Advance past leading whitespace (only space and tab are handled).
+    p += wcsspn(p, kSpaceTab);
+
+    // End of arguments.
+    if (p[0] == 0) {
+      if (!token.empty())
+        result.push_back(token);
+      break;
+    }
+
+    state = SpecialChars::kInterpret;
+
+    // Scan an argument.
+    for (;;) {
+      // Count and advance past collections of backslashes, which have special
+      // meaning when followed by a double quote.
+      int num_backslashes = wcsspn(p, L"\\");
+      p += num_backslashes;
+
+      if (p[0] == L'"') {
+        // Emit a backslash for each pair of backslashes found. A non-paired
+        // "extra" backslash is handled below.
+        token.append(num_backslashes / 2, L'\\');
+
+        if (num_backslashes % 2 == 1) {
+          // An odd number of backslashes followed by a quote is treated as
+          // pairs of protected backslashes, followed by the protected quote.
+          token += L'"';
+        } else if (p[1] == L'"' && state == SpecialChars::kIgnore) {
+          // Special case for consecutive double quotes within a quoted string:
+          // emit one for the pair, and switch back to interpreting special
+          // characters.
+          ++p;
+          token += L'"';
+          state = SpecialChars::kInterpret;
+        } else {
+          state = state == SpecialChars::kInterpret ? SpecialChars::kIgnore
+                                                    : SpecialChars::kInterpret;
+        }
+      } else {
+        // Emit backslashes that do not precede a quote verbatim.
+        token.append(num_backslashes, L'\\');
+        if (p[0] == 0 ||
+            (state == SpecialChars::kInterpret && wcschr(kSpaceTab, p[0]))) {
+          result.push_back(token);
+          token.clear();
+          break;
+        }
+
+        token += *p;
+      }
+
+      ++p;
+    }
+  }
+
+  return result;
+}
+
 std::wstring GetSwitchValueFromCommandLine(const std::wstring& command_line,
                                            const std::wstring& switch_name) {
   assert(!command_line.empty());
   assert(!switch_name.empty());
 
-  std::wstring command_line_copy = command_line;
-  // Remove leading and trailing spaces.
-  TrimT<std::wstring>(&command_line_copy);
-
-  // Find the switch in the command line. If we don't find the switch, return
-  // an empty string.
-  std::wstring switch_token = L"--";
-  switch_token += switch_name;
-  switch_token += L"=";
-  size_t switch_offset = command_line_copy.find(switch_token);
-  if (switch_offset == std::string::npos)
-    return std::wstring();
-
-  // The format is "--<switch name>=blah". Look for a space after the
-  // "--<switch name>=" string. If we don't find a space assume that the switch
-  // value ends at the end of the command line.
-  size_t switch_value_start_offset = switch_offset + switch_token.length();
-  if (std::wstring(kWhiteSpaces16).find(
-          command_line_copy[switch_value_start_offset]) != std::wstring::npos) {
-    switch_value_start_offset = command_line_copy.find_first_not_of(
-        GetWhiteSpacesForType<std::wstring>(), switch_value_start_offset);
-    if (switch_value_start_offset == std::wstring::npos)
-      return std::wstring();
+  std::vector<std::wstring> as_array = TokenizeCommandLineToArray(command_line);
+  std::wstring switch_with_equal = L"--" + switch_name + L"=";
+  for (size_t i = 1; i < as_array.size(); ++i) {
+    const std::wstring& arg = as_array[i];
+    if (arg.compare(0, switch_with_equal.size(), switch_with_equal) == 0)
+      return arg.substr(switch_with_equal.size());
   }
-  size_t switch_value_end_offset =
-      command_line_copy.find_first_of(GetWhiteSpacesForType<std::wstring>(),
-                                      switch_value_start_offset);
-  if (switch_value_end_offset == std::wstring::npos)
-    switch_value_end_offset = command_line_copy.length();
 
-  std::wstring switch_value = command_line_copy.substr(
-      switch_value_start_offset,
-      switch_value_end_offset - (switch_offset + switch_token.length()));
-  TrimT<std::wstring>(&switch_value);
-  return switch_value;
+  return std::wstring();
 }
 
 bool RecursiveDirectoryCreate(const std::wstring& full_path) {

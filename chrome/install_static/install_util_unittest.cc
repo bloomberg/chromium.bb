@@ -90,16 +90,173 @@ TEST(InstallStaticTest, GetSwitchValueFromCommandLineTest) {
   value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=\t\t\t",
                                         L"type");
   EXPECT_TRUE(value.empty());
+}
 
-  // Whitespace after the "=" before the value.
-  value =
-      GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type= bar", L"type");
-  EXPECT_EQ(L"bar", value);
+TEST(InstallStaticTest, SpacesAndQuotesInCommandLineArguments) {
+  std::vector<std::wstring> tokenized;
 
-  // Tabs after the "=" before the value.
-  value = GetSwitchValueFromCommandLine(L"c:\\temp\\bleh.exe --type=\t\t\tbar",
-                                        L"type");
-  EXPECT_EQ(value, L"bar");
+  tokenized = TokenizeCommandLineToArray(L"\"C:\\a\\b.exe\"");
+  ASSERT_EQ(1u, tokenized.size());
+  EXPECT_EQ(L"C:\\a\\b.exe", tokenized[0]);
+
+  tokenized = TokenizeCommandLineToArray(L"x.exe");
+  ASSERT_EQ(1u, tokenized.size());
+  EXPECT_EQ(L"x.exe", tokenized[0]);
+
+  tokenized = TokenizeCommandLineToArray(L"\"c:\\with space\\something.exe\"");
+  ASSERT_EQ(1u, tokenized.size());
+  EXPECT_EQ(L"c:\\with space\\something.exe", tokenized[0]);
+
+  tokenized = TokenizeCommandLineToArray(L"\"C:\\a\\b.exe\" arg");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\a\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"arg", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(L"\"C:\\with space\\b.exe\" \"arg\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"arg", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(L"\"C:\\a\\b.exe\" c:\\tmp\\");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\a\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"c:\\tmp\\", tokenized[1]);
+
+  tokenized =
+      TokenizeCommandLineToArray(L"\"C:\\a\\b.exe\" \"c:\\some file path\\\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\a\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"c:\\some file path\"", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"C:\\with space\\b.exe\" \\\\x\\\\ \\\\y\\\\");
+  ASSERT_EQ(3u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"\\\\x\\\\", tokenized[1]);
+  EXPECT_EQ(L"\\\\y\\\\", tokenized[2]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"C:\\with space\\b.exe\" \"\\\\space quoted\\\\\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"\\\\space quoted\\", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"C:\\with space\\b.exe\" --stuff    -x -Y   \"c:\\some thing\\\"    "
+      L"weewaa    ");
+  ASSERT_EQ(5u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"--stuff", tokenized[1]);
+  EXPECT_EQ(L"-x", tokenized[2]);
+  EXPECT_EQ(L"-Y", tokenized[3]);
+  EXPECT_EQ(L"c:\\some thing\"    weewaa    ", tokenized[4]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"C:\\with space\\b.exe\" --stuff=\"d:\\stuff and things\"");
+  EXPECT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"--stuff=d:\\stuff and things", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"C:\\with space\\b.exe\" \\\\\\\"\"");
+  EXPECT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"C:\\with space\\b.exe", tokenized[0]);
+  EXPECT_EQ(L"\\\"", tokenized[1]);
+}
+
+// Test cases from
+// https://blogs.msdn.microsoft.com/oldnewthing/20100917-00/?p=12833.
+TEST(InstallStaticTest, SpacesAndQuotesOldNewThing) {
+  std::vector<std::wstring> tokenized;
+
+  tokenized = TokenizeCommandLineToArray(L"program.exe \"hello there.txt\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"program.exe", tokenized[0]);
+  EXPECT_EQ(L"hello there.txt", tokenized[1]);
+
+  tokenized =
+      TokenizeCommandLineToArray(L"program.exe \"C:\\Hello there.txt\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"program.exe", tokenized[0]);
+  EXPECT_EQ(L"C:\\Hello there.txt", tokenized[1]);
+
+  tokenized =
+      TokenizeCommandLineToArray(L"program.exe \"hello\\\"there\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"program.exe", tokenized[0]);
+  EXPECT_EQ(L"hello\"there", tokenized[1]);
+
+  tokenized =
+      TokenizeCommandLineToArray(L"program.exe \"hello\\\\\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"program.exe", tokenized[0]);
+  EXPECT_EQ(L"hello\\", tokenized[1]);
+}
+
+// Test cases from
+// http://www.windowsinspired.com/how-a-windows-programs-splits-its-command-line-into-individual-arguments/.
+// These are mostly about the special handling of argv[0], which uses different
+// quoting than the rest of the arguments.
+TEST(InstallStaticTest, SpacesAndQuotesWindowsInspired) {
+  std::vector<std::wstring> tokenized;
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"They said \"you can't do this!\", didn't they?\"");
+  ASSERT_EQ(5u, tokenized.size());
+  EXPECT_EQ(L"They said ", tokenized[0]);
+  EXPECT_EQ(L"you", tokenized[1]);
+  EXPECT_EQ(L"can't", tokenized[2]);
+  EXPECT_EQ(L"do", tokenized[3]);
+  EXPECT_EQ(L"this!, didn't they?", tokenized[4]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"test.exe \"c:\\Path With Spaces\\Ending In Backslash\\\" Arg2 Arg3");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"test.exe", tokenized[0]);
+  EXPECT_EQ(L"c:\\Path With Spaces\\Ending In Backslash\" Arg2 Arg3",
+            tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"FinalProgram.exe \"first second \"\"embedded quote\"\" third\"");
+  ASSERT_EQ(4u, tokenized.size());
+  EXPECT_EQ(L"FinalProgram.exe", tokenized[0]);
+  EXPECT_EQ(L"first second \"embedded", tokenized[1]);
+  EXPECT_EQ(L"quote", tokenized[2]);
+  EXPECT_EQ(L"third", tokenized[3]);
+
+  tokenized = TokenizeCommandLineToArray(
+      L"\"F\"i\"r\"s\"t S\"e\"c\"o\"n\"d\" T\"h\"i\"r\"d\"");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"F", tokenized[0]);
+  EXPECT_EQ(L"irst Second Third", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(L"F\"\"ir\"s\"\"t \\\"Second Third\"");
+  ASSERT_EQ(3u, tokenized.size());
+  EXPECT_EQ(L"F\"\"ir\"s\"\"t", tokenized[0]);
+  EXPECT_EQ(L"\"Second", tokenized[1]);
+  EXPECT_EQ(L"Third", tokenized[2]);
+
+  tokenized = TokenizeCommandLineToArray(L"  Something Else");
+  ASSERT_EQ(3u, tokenized.size());
+  EXPECT_EQ(L"", tokenized[0]);
+  EXPECT_EQ(L"Something", tokenized[1]);
+  EXPECT_EQ(L"Else", tokenized[2]);
+
+  tokenized = TokenizeCommandLineToArray(L" Something Else");
+  ASSERT_EQ(3u, tokenized.size());
+  EXPECT_EQ(L"", tokenized[0]);
+  EXPECT_EQ(L"Something", tokenized[1]);
+  EXPECT_EQ(L"Else", tokenized[2]);
+
+  tokenized = TokenizeCommandLineToArray(L"\"123 456\tabc\\def\"ghi");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"123 456\tabc\\def", tokenized[0]);
+  EXPECT_EQ(L"ghi", tokenized[1]);
+
+  tokenized = TokenizeCommandLineToArray(L"123\"456\"\tabc");
+  ASSERT_EQ(2u, tokenized.size());
+  EXPECT_EQ(L"123\"456\"", tokenized[0]);
+  EXPECT_EQ(L"abc", tokenized[1]);
 }
 
 TEST(InstallStaticTest, BrowserProcessTest) {
