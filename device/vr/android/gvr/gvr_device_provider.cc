@@ -81,6 +81,7 @@ void GvrDeviceProvider::OnGvrDelegateReady(
     const base::WeakPtr<GvrDelegate>& delegate) {
   if (!vr_device_)
     return;
+  VLOG(1) << "Switching to presenting delegate";
   vr_device_->SetDelegate(delegate);
   GamepadDataFetcherManager::GetInstance()->AddFactory(
       new GvrGamepadDataFetcher::Factory(delegate, vr_device_->id()));
@@ -118,6 +119,7 @@ void GvrDeviceProvider::SwitchToNonPresentingDelegate() {
   if (!vr_device_ || !delegate_provider)
     return;
 
+  VLOG(1) << "Switching to non-presenting delegate";
   vr_device_->SetDelegate(delegate_provider->GetNonPresentingDelegate());
 
   // Remove GVR gamepad polling.

@@ -28,9 +28,15 @@
 #include "public/platform/Platform.h"
 #include "wtf/AutoReset.h"
 
+#include <array>
+
 namespace blink {
 
 namespace {
+
+// Magic numbers used to mark valid pose index values encoded in frame
+// data. Must match the magic numbers used in vr_shell.cc.
+static constexpr std::array<uint8_t, 2> kWebVrPosePixelMagicNumbers{{42, 142}};
 
 VREye stringToVREye(const String& whichEye) {
   if (whichEye == "left")
@@ -613,8 +619,11 @@ void VRDisplay::submitFrame() {
   gl->ColorMask(GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
   int idx = m_framePose->poseIndex;
   // Careful with the arithmetic here. Float color 1.f is equivalent to int 255.
-  gl->ClearColor((idx & 255) / 255.0f, ((idx >> 8) & 255) / 255.0f,
-                 ((idx >> 16) & 255) / 255.0f, 1.0f);
+  // Use the low byte of the index as the red component, and store an arbitrary
+  // magic number in green/blue. This number must match the reading code in
+  // vr_shell.cc. Avoid all-black/all-white.
+  gl->ClearColor((idx & 255) / 255.0f, kWebVrPosePixelMagicNumbers[0] / 255.0f,
+                 kWebVrPosePixelMagicNumbers[1] / 255.0f, 1.0f);
   gl->Clear(GL_COLOR_BUFFER_BIT);
 
   // Set the GL state back to what was set by the WebVR application.

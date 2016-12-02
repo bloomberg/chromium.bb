@@ -140,6 +140,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
                     const std::vector<const ContentRectangle*>& elements);
   void DrawCursor(const gvr::Mat4f& render_matrix);
   void DrawWebVr();
+  bool WebVrPoseByteIsValid(int pose_index_byte);
 
   void UpdateController(const gvr::Vec3f& forward_vector);
   void SendEventsToTarget(VrInputManager* input_target,
@@ -211,6 +212,7 @@ class VrShell : public device::GvrDelegate, content::WebContentsObserver {
   // current backlog of poses which is 2-3 frames.
   static constexpr int kPoseRingBufferSize = 8;
   std::vector<gvr::Mat4f> webvr_head_pose_;
+  std::vector<bool> webvr_head_pose_valid_;
   jint webvr_texture_id_ = 0;
 
   std::unique_ptr<VrController> controller_;

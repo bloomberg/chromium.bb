@@ -89,6 +89,10 @@ static constexpr gvr::Rectf kHeadlockedBufferFov = {20.f, 20.f, 20.f, 20.f};
 static constexpr int kViewportListPrimaryOffset = 0;
 static constexpr int kViewportListHeadlockedOffset = 2;
 
+// Magic numbers used to mark valid pose index values encoded in frame
+// data. Must match the magic numbers used in blink's VRDisplay.cpp.
+static constexpr std::array<uint8_t, 2> kWebVrPosePixelMagicNumbers{{42, 142}};
+
 vr_shell::VrShell* g_instance;
 
 static const char kVrShellUIURL[] = "chrome://vr-shell-ui";
@@ -177,6 +181,7 @@ VrShell::VrShell(JNIEnv* env,
   gvr::Mat4f identity;
   SetIdentityM(identity);
   webvr_head_pose_.resize(kPoseRingBufferSize, identity);
+  webvr_head_pose_valid_.resize(kPoseRingBufferSize, false);
 }
 
 void VrShell::UpdateCompositorLayers(JNIEnv* env,
@@ -278,6 +283,10 @@ void VrShell::InitializeGl(JNIEnv* env,
   // surface, but store it separately to avoid future confusion.
   // TODO(klausw,crbug.com/655722): remove this.
   webvr_texture_id_ = content_texture_id_;
+  // Out of paranoia, explicitly reset the "pose valid" flags to false
+  // from the GL thread. The constructor ran in the UI thread.
+  // TODO(klausw,crbug.com/655722): remove this.
+  webvr_head_pose_valid_.assign(kPoseRingBufferSize, false);
 
   gvr_api_->InitializeGl();
   std::vector<gvr::BufferSpec> specs;
@@ -548,20 +557,46 @@ void VrShell::SendEventsToTarget(VrInputManager* input_target,
 
 void VrShell::SetGvrPoseForWebVr(const gvr::Mat4f& pose, uint32_t pose_num) {
   webvr_head_pose_[pose_num % kPoseRingBufferSize] = pose;
+  webvr_head_pose_valid_[pose_num % kPoseRingBufferSize] = true;
 }
 
-uint32_t GetPixelEncodedPoseIndex() {
+int GetPixelEncodedPoseIndexByte() {
   TRACE_EVENT0("gpu", "VrShell::GetPixelEncodedPoseIndex");
   // Read the pose index encoded in a bottom left pixel as color values.
   // See also third_party/WebKit/Source/modules/vr/VRDisplay.cpp which
   // encodes the pose index, and device/vr/android/gvr/gvr_device.cc
-  // which tracks poses.
+  // which tracks poses. Returns the low byte (0..255) if valid, or -1
+  // if not valid due to bad magic number.
   uint8_t pixels[4];
   // Assume we're reading from the framebuffer we just wrote to.
   // That's true currently, we may need to use glReadBuffer(GL_BACK)
   // or equivalent if the rendering setup changes in the future.
   glReadPixels(0, 0, 1, 1, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-  return pixels[0] | (pixels[1] << 8) | (pixels[2] << 16);
+
+  // Check for the magic number written by VRDevice.cpp on submit.
+  // This helps avoid glitches from garbage data in the render
+  // buffer that can appear during initialization or resizing. These
+  // often appear as flashes of all-black or all-white pixels.
+  if (pixels[1] == kWebVrPosePixelMagicNumbers[0] &&
+      pixels[2] == kWebVrPosePixelMagicNumbers[1]) {
+    // Pose is good.
+    return pixels[0];
+  }
+  VLOG(1) << "WebVR: reject decoded pose index " << (int)pixels[0] <<
+      ", bad magic number " << (int)pixels[1] << ", " << (int)pixels[2];
+  return -1;
+}
+
+bool VrShell::WebVrPoseByteIsValid(int pose_index_byte) {
+  if (pose_index_byte < 0) {
+    return false;
+  }
+  if (!webvr_head_pose_valid_[pose_index_byte % kPoseRingBufferSize]) {
+    VLOG(1) << "WebVR: reject decoded pose index " << pose_index_byte <<
+        ", not a valid pose";
+    return false;
+  }
+  return true;
 }
 
 void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
@@ -627,16 +662,24 @@ void VrShell::DrawFrame(JNIEnv* env, const JavaParamRef<jobject>& obj) {
     // pixels is an expensive operation. TODO(klausw,crbug.com/655722): stop
     // doing this once we have working no-compositor rendering for WebVR.
     if (gvr_api_->GetAsyncReprojectionEnabled()) {
-      uint32_t webvr_pose_frame = GetPixelEncodedPoseIndex();
-      // If we don't get a valid frame ID back we shouldn't attempt to reproject
-      // by an invalid matrix, so turn of reprojection instead.
-      if (webvr_pose_frame == 0) {
-        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
-        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
-      } else {
+      int pose_index_byte = GetPixelEncodedPoseIndexByte();
+      if (WebVrPoseByteIsValid(pose_index_byte)) {
+        // We have a valid pose, use it for reprojection.
         webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
         webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_FULL);
-        head_pose = webvr_head_pose_[webvr_pose_frame % kPoseRingBufferSize];
+        head_pose = webvr_head_pose_[pose_index_byte % kPoseRingBufferSize];
+        // We can't mark the used pose as invalid since unfortunately
+        // we have to reuse them. The compositor will re-submit stale
+        // frames on vsync, and we can't tell that this has happened
+        // until we've read the pose index from it, and at that point
+        // it's too late to skip rendering.
+      } else {
+        // If we don't get a valid frame ID back we shouldn't attempt
+        // to reproject by an invalid matrix, so turn off reprojection
+        // instead. Invalid poses can permanently break reprojection
+        // for this GVR instance: http://crbug.com/667327
+        webvr_left_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
+        webvr_right_viewport_->SetReprojection(GVR_REPROJECTION_NONE);
       }
     }
   }
