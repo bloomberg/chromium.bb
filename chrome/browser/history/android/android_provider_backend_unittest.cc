@@ -11,7 +11,9 @@
 #include "base/files/scoped_temp_dir.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/run_loop.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/thread_task_runner_handle.h"
 #include "chrome/browser/bookmarks/bookmark_model_factory.h"
 #include "chrome/browser/history/chrome_history_client.h"
 #include "chrome/browser/profiles/profile_manager.h"
@@ -29,7 +31,7 @@
 #include "components/history/core/browser/keyword_search_term.h"
 #include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -170,10 +172,13 @@ class AndroidProviderBackendTest : public testing::Test {
   AndroidProviderBackendTest()
       : thumbnail_db_(NULL),
         profile_manager_(TestingBrowserProcess::GetGlobal()),
-        bookmark_model_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
-  ~AndroidProviderBackendTest() override {}
+        bookmark_model_(NULL) {}
+
+  ~AndroidProviderBackendTest() override {
+    // Avoid use after frees by running any unhandled tasks before freeing this
+    // fixture's members.
+    base::RunLoop().RunUntilIdle();
+  }
 
  protected:
   void SetUp() override {
@@ -245,6 +250,8 @@ class AndroidProviderBackendTest : public testing::Test {
     return true;
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
   AndroidProviderBackendNotifier notifier_;
   scoped_refptr<HistoryBackend> history_backend_;
   TestHistoryDatabase history_db_;
@@ -256,9 +263,6 @@ class AndroidProviderBackendTest : public testing::Test {
 
   TestingProfileManager profile_manager_;
   BookmarkModel* bookmark_model_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   std::unique_ptr<history::HistoryClient> history_client_;
   std::unique_ptr<history::HistoryBackendClient> history_backend_client_;
 
@@ -303,7 +307,7 @@ TEST_F(AndroidProviderBackendTest, UpdateTables) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
-                                       message_loop_.task_runner());
+                                       base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -439,7 +443,7 @@ TEST_F(AndroidProviderBackendTest, QueryHistoryAndBookmarks) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
-                                       message_loop_.task_runner());
+                                       base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);
@@ -1827,7 +1831,7 @@ TEST_F(AndroidProviderBackendTest, QueryWithoutThumbnailDB) {
   scoped_refptr<HistoryBackend> history_backend;
   history_backend = new HistoryBackend(new AndroidProviderBackendDelegate(),
                                        history_client_->CreateBackendClient(),
-                                       message_loop_.task_runner());
+                                       base::ThreadTaskRunnerHandle::Get());
   history_backend->Init(false,
                         TestHistoryDatabaseParamsForPath(temp_dir_.GetPath()));
   history_backend->AddVisits(url1, visits1, history::SOURCE_SYNCED);

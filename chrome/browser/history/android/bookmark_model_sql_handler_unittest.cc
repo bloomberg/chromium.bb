@@ -18,7 +18,7 @@
 #include "components/history/core/browser/history_database.h"
 #include "components/history/core/test/test_history_database.h"
 #include "content/public/browser/browser_thread.h"
-#include "content/public/test/test_browser_thread.h"
+#include "content/public/test/test_browser_thread_bundle.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -32,9 +32,7 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
  public:
   BookmarkModelSQLHandlerTest()
       : profile_manager_(TestingBrowserProcess::GetGlobal()),
-        bookmark_model_(NULL),
-        ui_thread_(BrowserThread::UI, &message_loop_),
-        file_thread_(BrowserThread::FILE, &message_loop_) {}
+        bookmark_model_(NULL) {}
   ~BookmarkModelSQLHandlerTest() override {}
 
  protected:
@@ -70,11 +68,10 @@ class BookmarkModelSQLHandlerTest : public testing::Test {
     content::RunAllPendingInMessageLoop();
   }
 
+  content::TestBrowserThreadBundle thread_bundle_;
+
   TestingProfileManager profile_manager_;
   BookmarkModel* bookmark_model_;
-  base::MessageLoopForUI message_loop_;
-  content::TestBrowserThread ui_thread_;
-  content::TestBrowserThread file_thread_;
   base::ScopedTempDir temp_dir_;
   TestHistoryDatabase history_db_;
 };
