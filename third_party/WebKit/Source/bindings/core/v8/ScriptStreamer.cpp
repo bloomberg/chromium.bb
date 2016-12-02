@@ -405,7 +405,7 @@ void ScriptStreamer::suppressStreaming() {
 
 void ScriptStreamer::notifyAppendData(ScriptResource* resource) {
   DCHECK(isMainThread());
-  DCHECK_EQ(m_resource, resource);
+  CHECK_EQ(m_resource, resource);
   {
     MutexLocker locker(m_mutex);
     if (m_streamingSuppressed)
@@ -500,7 +500,7 @@ void ScriptStreamer::notifyAppendData(ScriptResource* resource) {
 
 void ScriptStreamer::notifyFinished(Resource* resource) {
   DCHECK(isMainThread());
-  DCHECK_EQ(m_resource, resource);
+  CHECK_EQ(m_resource, resource);
   // A special case: empty and small scripts. We didn't receive enough data to
   // start the streaming before this notification. In that case, there won't
   // be a "parsing complete" notification either, and we should not wait for

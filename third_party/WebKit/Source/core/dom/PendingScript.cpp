@@ -223,6 +223,7 @@ void PendingScript::onMemoryStateChange(MemoryState state) {
   if (!m_streamer)
     return;
   m_streamer->cancel();
+  m_streamer = nullptr;
 }
 
 }  // namespace blink
