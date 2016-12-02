@@ -78,6 +78,15 @@ class GLES3DecoderTest : public GLES2DecoderTest {
   void SetUp() override;
 };
 
+class WebGL2DecoderTest : public GLES2DecoderTest {
+ public:
+  WebGL2DecoderTest() { shader_language_version_ = 300; }
+
+  // Override default setup so ES3 capabilities are enabled by default
+  // and WebGL2 specific rules are enforced.
+  void SetUp() override;
+};
+
 class GLES3DecoderWithShaderTest : public GLES2DecoderWithShaderTest {
  public:
   GLES3DecoderWithShaderTest() { shader_language_version_ = 300; }

@@ -10533,6 +10533,7 @@ void GLES2DecoderImpl::GetTexParameterImpl(
         }
         return;
       }
+      break;
     case GL_TEXTURE_MAX_LEVEL:
       if (workarounds().use_shadowed_tex_level_params) {
         if (fparams) {
@@ -10542,6 +10543,35 @@ void GLES2DecoderImpl::GetTexParameterImpl(
         }
         return;
       }
+      break;
+    case GL_TEXTURE_SWIZZLE_R:
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->swizzle_r());
+      } else {
+        iparams[0] = texture->swizzle_r();
+      }
+      return;
+    case GL_TEXTURE_SWIZZLE_G:
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->swizzle_g());
+      } else {
+        iparams[0] = texture->swizzle_g();
+      }
+      return;
+    case GL_TEXTURE_SWIZZLE_B:
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->swizzle_b());
+      } else {
+        iparams[0] = texture->swizzle_b();
+      }
+      return;
+    case GL_TEXTURE_SWIZZLE_A:
+      if (fparams) {
+        fparams[0] = static_cast<GLfloat>(texture->swizzle_a());
+      } else {
+        iparams[0] = texture->swizzle_a();
+      }
+      return;
     default:
       break;
   }

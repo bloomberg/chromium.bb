@@ -428,6 +428,14 @@ int GLES2Util::GLGetNumValuesReturned(int id) const {
       return 1;
     case GL_TEXTURE_MAX_ANISOTROPY_EXT:
       return 1;
+    case GL_TEXTURE_SWIZZLE_R:
+      return 1;
+    case GL_TEXTURE_SWIZZLE_G:
+      return 1;
+    case GL_TEXTURE_SWIZZLE_B:
+      return 1;
+    case GL_TEXTURE_SWIZZLE_A:
+      return 1;
 
     // -- glGetVertexAttrib
     case GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING:
@@ -1951,4 +1959,3 @@ bool ContextCreationAttribHelper::Parse(const std::vector<int32_t>& attribs) {
 
 }  // namespace gles2
 }  // namespace gpu
-

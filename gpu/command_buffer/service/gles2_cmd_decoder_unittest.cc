@@ -90,6 +90,15 @@ void GLES2DecoderManualInitTest::EnableDisableTest(GLenum cap,
 TEST_P(GLES3DecoderTest, Basic) {
   // Make sure the setup is correct for ES3.
   EXPECT_TRUE(feature_info()->IsWebGL2OrES3Context());
+  EXPECT_FALSE(feature_info()->IsWebGLContext());
+  EXPECT_TRUE(feature_info()->validators()->texture_bind_target.IsValid(
+      GL_TEXTURE_3D));
+}
+
+TEST_P(WebGL2DecoderTest, Basic) {
+  // Make sure the setup is correct for WebGL2.
+  EXPECT_TRUE(feature_info()->IsWebGL2OrES3Context());
+  EXPECT_TRUE(feature_info()->IsWebGLContext());
   EXPECT_TRUE(feature_info()->validators()->texture_bind_target.IsValid(
       GL_TEXTURE_3D));
 }
@@ -1692,6 +1701,14 @@ void GLES3DecoderTest::SetUp() {
   init.gl_version = "OpenGL ES 3.0";
   init.bind_generates_resource = true;
   init.context_type = CONTEXT_TYPE_OPENGLES3;
+  InitDecoder(init);
+}
+
+void WebGL2DecoderTest::SetUp() {
+  InitState init;
+  init.gl_version = "OpenGL ES 3.0";
+  init.bind_generates_resource = true;
+  init.context_type = CONTEXT_TYPE_WEBGL2;
   InitDecoder(init);
 }
 

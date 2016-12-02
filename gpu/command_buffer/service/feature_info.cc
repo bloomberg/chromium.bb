@@ -1491,6 +1491,13 @@ void FeatureInfo::EnableES3Validators() {
     validators_.texture_sized_texture_filterable_internal_format.AddValue(
         GL_BGRA8_EXT);
   }
+
+  if (!IsWebGLContext()) {
+    validators_.texture_parameter.AddValue(GL_TEXTURE_SWIZZLE_R);
+    validators_.texture_parameter.AddValue(GL_TEXTURE_SWIZZLE_G);
+    validators_.texture_parameter.AddValue(GL_TEXTURE_SWIZZLE_B);
+    validators_.texture_parameter.AddValue(GL_TEXTURE_SWIZZLE_A);
+  }
 }
 
 bool FeatureInfo::IsWebGLContext() const {
