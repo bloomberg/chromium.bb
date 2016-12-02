@@ -87,6 +87,14 @@ void ArcIntentHelperBridge::SetWallpaperDeprecated(
   LOG(ERROR) << "IntentHelper.SetWallpaper is deprecated";
 }
 
+void ArcIntentHelperBridge::AddObserver(ArcIntentHelperObserver* observer) {
+  observer_list_.AddObserver(observer);
+}
+
+void ArcIntentHelperBridge::RemoveObserver(ArcIntentHelperObserver* observer) {
+  observer_list_.RemoveObserver(observer);
+}
+
 std::unique_ptr<ash::LinkHandlerModel> ArcIntentHelperBridge::CreateModel(
     const GURL& url) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -165,6 +173,9 @@ void ArcIntentHelperBridge::OnIntentFiltersUpdated(
     std::vector<mojom::IntentFilterPtr> filters) {
   DCHECK(thread_checker_.CalledOnValidThread());
   activity_resolver_->UpdateIntentFilters(std::move(filters));
+
+  for (auto& observer : observer_list_)
+    observer.OnAppsUpdated();
 }
 
 }  // namespace arc

@@ -12,10 +12,12 @@
 #include "ash/link_handler_model_factory.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/intent_helper.mojom.h"
 #include "components/arc/instance_holder.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
 namespace ash {
@@ -51,6 +53,9 @@ class ArcIntentHelperBridge
       const scoped_refptr<ActivityIconLoader>& icon_loader,
       const scoped_refptr<LocalActivityResolver>& activity_resolver);
   ~ArcIntentHelperBridge() override;
+
+  void AddObserver(ArcIntentHelperObserver* observer);
+  void RemoveObserver(ArcIntentHelperObserver* observer);
 
   // InstanceHolder<mojom::IntentHelperInstance>::Observer
   void OnInstanceReady() override;
@@ -96,6 +101,8 @@ class ArcIntentHelperBridge
   scoped_refptr<LocalActivityResolver> activity_resolver_;
 
   base::ThreadChecker thread_checker_;
+
+  base::ObserverList<ArcIntentHelperObserver> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcIntentHelperBridge);
 };

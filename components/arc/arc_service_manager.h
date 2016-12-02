@@ -10,9 +10,11 @@
 
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/observer_list.h"
 #include "base/task_runner.h"
 #include "base/threading/thread_checker.h"
 #include "components/arc/intent_helper/activity_icon_loader.h"
+#include "components/arc/intent_helper/arc_intent_helper_observer.h"
 #include "components/arc/intent_helper/local_activity_resolver.h"
 
 namespace arc {
@@ -22,11 +24,20 @@ class ArcService;
 
 // Manages creation and destruction of services that communicate with the ARC
 // instance via the ArcBridgeService.
-class ArcServiceManager {
+class ArcServiceManager : public arc::ArcIntentHelperObserver {
  public:
+  class Observer {
+   public:
+    // Called when app's intent filter is updated.
+    virtual void OnAppsUpdated() = 0;
+
+   protected:
+    virtual ~Observer() = default;
+  };
+
   explicit ArcServiceManager(
       scoped_refptr<base::TaskRunner> blocking_task_runner);
-  virtual ~ArcServiceManager();
+  ~ArcServiceManager() override;
 
   // |arc_bridge_service| can only be accessed on the thread that this
   // class was created on.
@@ -38,6 +49,15 @@ class ArcServiceManager {
   // Gets the global instance of the ARC Service Manager. This can only be
   // called on the thread that this class was created on.
   static ArcServiceManager* Get();
+
+  // Returns if the ARC Service Manager instance exists.
+  static bool IsInitialized();
+
+  void AddObserver(Observer* observer);
+  void RemoveObserver(Observer* observer);
+
+  // arc::ArcIntentHelperObserver overrides.
+  void OnAppsUpdated() override;
 
   // Called to shut down all ARC services.
   void Shutdown();
@@ -67,6 +87,8 @@ class ArcServiceManager {
   std::vector<std::unique_ptr<ArcService>> services_;
   scoped_refptr<ActivityIconLoader> icon_loader_;
   scoped_refptr<LocalActivityResolver> activity_resolver_;
+
+  base::ObserverList<Observer> observer_list_;
 
   DISALLOW_COPY_AND_ASSIGN(ArcServiceManager);
 };
