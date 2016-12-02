@@ -36,5 +36,9 @@ a {
 }
 
 .bottom-buttons {
-  padding: 0 24px;
+  padding: 0 6px; /* = 8px - 2px back button border */
+}
+
+#eula-accept-button {
+  -webkit-padding-end: 18px;
 }

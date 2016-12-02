@@ -59,8 +59,12 @@
           </paper-checkbox>
         </div>
       </div>
-      <div class="bottom-buttons flex layout horizontal end-justified">
-        <oobe-text-button inverse on-tap="eulaAccepted_"
+      <div class="bottom-buttons flex layout horizontal">
+        <oobe-back-button on-tap="onEulaBackButtonPressed_">
+        </oobe-back-button>
+        <div class="flex">
+        </div>
+        <oobe-text-button id="eula-accept-button" inverse on-tap="eulaAccepted_"
             disabled="[[acceptButtonDisabled]]">
           <div i18n-content="oobeEulaAcceptAndContinueButtonText"
               id="accept-button-text">
