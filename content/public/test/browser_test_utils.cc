@@ -10,6 +10,7 @@
 
 #include "base/auto_reset.h"
 #include "base/bind.h"
+#include "base/bind_helpers.h"
 #include "base/command_line.h"
 #include "base/json/json_reader.h"
 #include "base/macros.h"
@@ -38,6 +39,8 @@
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/web_contents/web_contents_impl.h"
 #include "content/browser/web_contents/web_contents_view.h"
+#include "content/common/fileapi/file_system_messages.h"
+#include "content/common/fileapi/webblob_messages.h"
 #include "content/common/input/synthetic_web_input_event_builders.h"
 #include "content/common/input_messages.h"
 #include "content/common/view_messages.h"
@@ -55,9 +58,11 @@
 #include "content/public/browser/render_view_host.h"
 #include "content/public/browser/storage_partition.h"
 #include "content/public/browser/web_contents.h"
+#include "content/public/test/test_fileapi_operation_waiter.h"
 #include "content/public/test/test_navigation_observer.h"
 #include "content/public/test/test_utils.h"
 #include "content/test/accessibility_browser_test_utils.h"
+#include "ipc/ipc_security_test_util.h"
 #include "net/base/filename_util.h"
 #include "net/cookies/cookie_store.h"
 #include "net/filter/gzip_header.h"
@@ -69,6 +74,7 @@
 #include "net/test/python_utils.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_context_getter.h"
+#include "storage/browser/fileapi/file_system_context.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "ui/base/clipboard/clipboard.h"
 #include "ui/base/clipboard/scoped_clipboard_writer.h"
@@ -1772,6 +1778,68 @@ bool ConsoleObserverDelegate::DidAddMessageToConsole(
     message_loop_runner_->Quit();
   }
   return false;
+}
+
+// static
+void PwnMessageHelper::CreateBlobWithPayload(RenderProcessHost* process,
+                                             std::string uuid,
+                                             std::string content_type,
+                                             std::string content_disposition,
+                                             std::string payload) {
+  std::vector<storage::DataElement> data_elements(1);
+  data_elements[0].SetToBytes(payload.c_str(), payload.size());
+
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      BlobStorageMsg_RegisterBlob(uuid, content_type, content_disposition,
+                                  data_elements));
+}
+
+
+// static
+void PwnMessageHelper::RegisterBlobURL(RenderProcessHost* process,
+                                       GURL url,
+                                       std::string uuid) {
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(), BlobHostMsg_RegisterPublicURL(url, uuid));
+}
+
+// static
+void PwnMessageHelper::FileSystemCreate(RenderProcessHost* process,
+                                        int request_id,
+                                        GURL path,
+                                        bool exclusive,
+                                        bool is_directory,
+                                        bool recursive) {
+  TestFileapiOperationWaiter waiter(
+      process->GetStoragePartition()->GetFileSystemContext());
+
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      FileSystemHostMsg_Create(request_id, path, exclusive, is_directory,
+                               recursive));
+
+  // If this started an async operation, wait for it to complete.
+  if (waiter.did_start_update())
+    waiter.WaitForEndUpdate();
+}
+
+// static
+void PwnMessageHelper::FileSystemWrite(RenderProcessHost* process,
+                                       int request_id,
+                                       GURL file_path,
+                                       std::string blob_uuid,
+                                       int64_t position) {
+  TestFileapiOperationWaiter waiter(
+      process->GetStoragePartition()->GetFileSystemContext());
+
+  IPC::IpcSecurityTestUtil::PwnMessageReceived(
+      process->GetChannel(),
+      FileSystemHostMsg_Write(request_id, file_path, blob_uuid, position));
+
+  // If this started an async operation, wait for it to complete.
+  if (waiter.did_start_update())
+    waiter.WaitForEndUpdate();
 }
 
 }  // namespace content

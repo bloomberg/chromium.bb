@@ -17,7 +17,7 @@
 
 namespace storage {
 
-// Mock file change observer.
+// Mock file change observer for use in unittests.
 class MockFileUpdateObserver : public FileUpdateObserver {
  public:
   MockFileUpdateObserver();

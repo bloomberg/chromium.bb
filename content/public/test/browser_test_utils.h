@@ -26,6 +26,7 @@
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/common/page_type.h"
 #include "ipc/message_filter.h"
+#include "storage/common/fileapi/file_system_types.h"
 #include "third_party/WebKit/public/platform/WebInputEvent.h"
 #include "ui/accessibility/ax_node_data.h"
 #include "ui/accessibility/ax_tree_update.h"
@@ -715,6 +716,43 @@ class ConsoleObserverDelegate : public WebContentsDelegate {
   scoped_refptr<MessageLoopRunner> message_loop_runner_;
 
   DISALLOW_COPY_AND_ASSIGN(ConsoleObserverDelegate);
+};
+
+// Static methods that inject particular IPCs into the message pipe as if they
+// came from |process|. Used to simulate a compromised renderer.
+class PwnMessageHelper {
+ public:
+  // Sends BlobStorageMsg_RegisterBlob
+  static void CreateBlobWithPayload(RenderProcessHost* process,
+                                    std::string uuid,
+                                    std::string content_type,
+                                    std::string content_disposition,
+                                    std::string payload);
+
+  // Sends BlobHostMsg_RegisterPublicURL
+  static void RegisterBlobURL(RenderProcessHost* process,
+                              GURL url,
+                              std::string uuid);
+
+  // Sends FileSystemHostMsg_Create
+  static void FileSystemCreate(RenderProcessHost* process,
+                               int request_id,
+                               GURL path,
+                               bool exclusive,
+                               bool is_directory,
+                               bool recursive);
+
+  // Sends FileSystemHostMsg_Write
+  static void FileSystemWrite(RenderProcessHost* process,
+                              int request_id,
+                              GURL file_path,
+                              std::string blob_uuid,
+                              int64_t position);
+
+ private:
+  PwnMessageHelper();  // Not instantiable.
+
+  DISALLOW_COPY_AND_ASSIGN(PwnMessageHelper);
 };
 
 }  // namespace content
