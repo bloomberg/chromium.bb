@@ -17,13 +17,11 @@ void SetUp() {
   // Get the breakpad pointer from chrome.exe
   gin::Debug::CodeRangeCreatedCallback create_callback =
       reinterpret_cast<gin::Debug::CodeRangeCreatedCallback>(
-          ::GetProcAddress(::GetModuleHandle(
-                               chrome::kBrowserProcessExecutableName),
+          ::GetProcAddress(::GetModuleHandle(chrome::kChromeElfDllName),
                            "RegisterNonABICompliantCodeRange"));
   gin::Debug::CodeRangeDeletedCallback delete_callback =
       reinterpret_cast<gin::Debug::CodeRangeDeletedCallback>(
-          ::GetProcAddress(::GetModuleHandle(
-                               chrome::kBrowserProcessExecutableName),
+          ::GetProcAddress(::GetModuleHandle(chrome::kChromeElfDllName),
                            "UnregisterNonABICompliantCodeRange"));
   // When running e.g. browser_tests.exe, these might be NULL.
   if (create_callback && delete_callback) {
