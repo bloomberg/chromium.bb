@@ -36,7 +36,7 @@ namespace {
 
 // The default WebAPK server URL.
 const char kDefaultServerUrl[] =
-    "https://test-webapk.sandbox.googleapis.com/v1/webApks/?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
+    "https://webapk.googleapis.com/v1/webApks/?alt=proto&key=AIzaSyAoI6v-F31-3t9NunLYEiKcPIqgTJIUZBw";
 
 // The MIME type of the POST data sent to the server.
 const char kProtoMimeType[] = "application/x-protobuf";
