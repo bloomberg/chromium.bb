@@ -15,45 +15,18 @@ import org.chromium.base.annotations.JNINamespace;
 
 /**
  * This class implements a factory of Android Video Capture objects for Chrome.
- * The static createVideoCapture() returns either a "normal" VideoCaptureAndroid
- * or a "special" VideoCaptureTango. Cameras are identified by |id|, where Tango
- * cameras have |id| above the standard ones. Video Capture objects allocated
- * via createVideoCapture() are explicitly owned by the caller.
- * ChromiumCameraInfo is an internal class with some static methods needed from
- * the rest of the class to manipulate the |id|s of normal and special devices.
+ * Cameras are identified by |id|. Video Capture objects allocated via
+ * createVideoCapture() are explicitly owned by the caller. ChromiumCameraInfo
+ * is an internal class with some static methods needed from the rest of the
+ * class to manipulate the |id|s of devices.
  **/
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
 class VideoCaptureFactory {
     // Internal class to encapsulate camera device id manipulations.
     static class ChromiumCameraInfo {
-        // Special devices have more cameras than usual. Those devices are
-        // identified by model & device. Currently only the Tango is supported.
-        // Note that these devices have no Camera.CameraInfo.
-        private static final String[][] SPECIAL_DEVICE_LIST = {
-                {"Peanut", "peanut"},
-        };
         private static int sNumberOfSystemCameras = -1;
         private static final String TAG = "cr.media";
-
-        private static boolean isSpecialDevice() {
-            for (String[] device : SPECIAL_DEVICE_LIST) {
-                if (device[0].contentEquals(android.os.Build.MODEL)
-                        && device[1].contentEquals(android.os.Build.DEVICE)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-
-        private static boolean isSpecialCamera(int id) {
-            return id >= sNumberOfSystemCameras;
-        }
-
-        private static int toSpecialCameraId(int id) {
-            assert isSpecialCamera(id);
-            return id - sNumberOfSystemCameras;
-        }
 
         private static int getNumberOfCameras(Context appContext) {
             if (sNumberOfSystemCameras == -1) {
@@ -75,11 +48,7 @@ class VideoCaptureFactory {
                     if (isLReleaseOrLater()) {
                         sNumberOfSystemCameras = VideoCaptureCamera2.getNumberOfCameras(appContext);
                     } else {
-                        sNumberOfSystemCameras = VideoCaptureAndroid.getNumberOfCameras();
-                        if (isSpecialDevice()) {
-                            Log.d(TAG, "Special device: %s", android.os.Build.MODEL);
-                            sNumberOfSystemCameras += VideoCaptureTango.numberOfCameras();
-                        }
+                        sNumberOfSystemCameras = VideoCaptureCamera.getNumberOfCameras();
                     }
                 }
             }
@@ -103,11 +72,7 @@ class VideoCaptureFactory {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(context, id)) {
             return new VideoCaptureCamera2(context, id, nativeVideoCaptureDeviceAndroid);
         }
-        if (!ChromiumCameraInfo.isSpecialCamera(id)) {
-            return new VideoCaptureAndroid(context, id, nativeVideoCaptureDeviceAndroid);
-        }
-        return new VideoCaptureTango(
-                context, ChromiumCameraInfo.toSpecialCameraId(id), nativeVideoCaptureDeviceAndroid);
+        return new VideoCaptureCamera(context, id, nativeVideoCaptureDeviceAndroid);
     }
 
     @CalledByNative
@@ -119,11 +84,8 @@ class VideoCaptureFactory {
     static int getCaptureApiType(int id, Context appContext) {
         if (isLReleaseOrLater()) {
             return VideoCaptureCamera2.getCaptureApiType(id, appContext);
-        } else if (ChromiumCameraInfo.isSpecialCamera(id)) {
-            return VideoCaptureTango.getCaptureApiType(ChromiumCameraInfo.toSpecialCameraId(id));
-        } else {
-            return VideoCaptureAndroid.getCaptureApiType(id);
         }
+        return VideoCaptureCamera.getCaptureApiType(id);
     }
 
     @CalledByNative
@@ -131,9 +93,7 @@ class VideoCaptureFactory {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getName(id, appContext);
         }
-        return (ChromiumCameraInfo.isSpecialCamera(id))
-                ? VideoCaptureTango.getName(ChromiumCameraInfo.toSpecialCameraId(id))
-                : VideoCaptureAndroid.getName(id);
+        return VideoCaptureCamera.getName(id);
     }
 
     @CalledByNative
@@ -141,10 +101,7 @@ class VideoCaptureFactory {
         if (isLReleaseOrLater() && !VideoCaptureCamera2.isLegacyDevice(appContext, id)) {
             return VideoCaptureCamera2.getDeviceSupportedFormats(appContext, id);
         }
-        return ChromiumCameraInfo.isSpecialCamera(id)
-                ? VideoCaptureTango.getDeviceSupportedFormats(
-                          ChromiumCameraInfo.toSpecialCameraId(id))
-                : VideoCaptureAndroid.getDeviceSupportedFormats(id);
+        return VideoCaptureCamera.getDeviceSupportedFormats(id);
     }
 
     @CalledByNative

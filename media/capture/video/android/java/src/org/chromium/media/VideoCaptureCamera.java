@@ -6,6 +6,7 @@ package org.chromium.media;
 
 import android.annotation.TargetApi;
 import android.content.Context;
+import android.graphics.ImageFormat;
 import android.graphics.Rect;
 import android.graphics.SurfaceTexture;
 import android.opengl.GLES20;
@@ -16,23 +17,27 @@ import org.chromium.base.Log;
 import org.chromium.base.annotations.JNINamespace;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantLock;
 
 /**
  * Video Capture Device extension of VideoCapture to provide common functionality
- * for capture using android.hardware.Camera API (deprecated in API 21). Normal
- * Android and Tango devices are extensions of this class.
+ * for capture using android.hardware.Camera API (deprecated in API 21). For Normal
+ * Android devices, it provides functionality for receiving copies of preview
+ * frames via Java-allocated buffers. It also includes class BuggyDeviceHack to
+ * deal with troublesome devices.
  **/
 @JNINamespace("media")
 @SuppressWarnings("deprecation")
 // TODO: is this class only used on ICS MR1 (or some later version) and above?
 @TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-public abstract class VideoCaptureCamera
+public class VideoCaptureCamera
         extends VideoCapture implements android.hardware.Camera.PreviewCallback {
     private static final String TAG = "VideoCapture";
-    protected static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+    private static final int GL_TEXTURE_EXTERNAL_OES = 0x8D65;
+    private static final int NUM_CAPTURE_BUFFERS = 3;
 
     // Map of the equivalent color temperature in Kelvin for the White Balance setting. The
     // values are a mixture of educated guesses and data from Android's Camera2 API. The
@@ -55,6 +60,27 @@ public abstract class VideoCaptureCamera
         COLOR_TEMPERATURES_MAP.append(7000, android.hardware.Camera.Parameters.WHITE_BALANCE_SHADE);
     };
 
+    // Some devices don't support YV12 format correctly, even with JELLY_BEAN or
+    // newer OS. To work around the issues on those devices, we have to request
+    // NV21. This is supposed to be a temporary hack.
+    private static class BuggyDeviceHack {
+        private static final String[] COLORSPACE_BUGGY_DEVICE_LIST = {
+                "SAMSUNG-SGH-I747", "ODROID-U2",
+                // See https://crbug.com/577435 for more info.
+                "XT1092", "XT1095", "XT1096", "XT1097",
+        };
+
+        static int getImageFormat() {
+            for (String buggyDevice : COLORSPACE_BUGGY_DEVICE_LIST) {
+                if (buggyDevice.contentEquals(android.os.Build.MODEL)) {
+                    return ImageFormat.NV21;
+                }
+            }
+            return ImageFormat.YV12;
+        }
+    }
+
+    private int mExpectedFrameSize;
     private final Object mPhotoTakenCallbackLock = new Object();
 
     // Storage of takePicture() callback Id. There can be one such request in flight at most, and
@@ -64,16 +90,16 @@ public abstract class VideoCaptureCamera
     private int mPhotoHeight = 0;
     private android.hardware.Camera.Area mAreaOfInterest;
 
-    protected android.hardware.Camera mCamera;
+    private android.hardware.Camera mCamera;
     // Lock to mutually exclude execution of OnPreviewFrame() and {start/stop}Capture().
-    protected ReentrantLock mPreviewBufferLock = new ReentrantLock();
+    private ReentrantLock mPreviewBufferLock = new ReentrantLock();
     // True when native code has started capture.
-    protected boolean mIsRunning = false;
+    private boolean mIsRunning = false;
 
-    protected int[] mGlTextures = null;
-    protected SurfaceTexture mSurfaceTexture = null;
+    private int[] mGlTextures = null;
+    private SurfaceTexture mSurfaceTexture = null;
 
-    protected static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
+    private static android.hardware.Camera.CameraInfo getCameraInfo(int id) {
         android.hardware.Camera.CameraInfo cameraInfo = new android.hardware.Camera.CameraInfo();
         try {
             android.hardware.Camera.getCameraInfo(id, cameraInfo);
@@ -84,7 +110,7 @@ public abstract class VideoCaptureCamera
         return cameraInfo;
     }
 
-    protected static android.hardware.Camera.Parameters getCameraParameters(
+    private static android.hardware.Camera.Parameters getCameraParameters(
             android.hardware.Camera camera) {
         android.hardware.Camera.Parameters parameters;
         try {
@@ -140,6 +166,86 @@ public abstract class VideoCaptureCamera
             camera.startPreview();
         }
     };
+
+    static int getNumberOfCameras() {
+        return android.hardware.Camera.getNumberOfCameras();
+    }
+
+    static int getCaptureApiType(int id) {
+        if (VideoCaptureCamera.getCameraInfo(id) == null) {
+            return VideoCaptureApi.UNKNOWN;
+        }
+        return VideoCaptureApi.ANDROID_API1;
+    }
+
+    static String getName(int id) {
+        android.hardware.Camera.CameraInfo cameraInfo = VideoCaptureCamera.getCameraInfo(id);
+        if (cameraInfo == null) return null;
+
+        return "camera " + id + ", facing "
+                + (cameraInfo.facing == android.hardware.Camera.CameraInfo.CAMERA_FACING_FRONT
+                                  ? "front"
+                                  : "back");
+    }
+
+    static VideoCaptureFormat[] getDeviceSupportedFormats(int id) {
+        android.hardware.Camera camera;
+        try {
+            camera = android.hardware.Camera.open(id);
+        } catch (RuntimeException ex) {
+            Log.e(TAG, "Camera.open: ", ex);
+            return null;
+        }
+        android.hardware.Camera.Parameters parameters = getCameraParameters(camera);
+        if (parameters == null) {
+            return null;
+        }
+
+        ArrayList<VideoCaptureFormat> formatList = new ArrayList<VideoCaptureFormat>();
+        // getSupportedPreview{Formats,FpsRange,PreviewSizes}() returns Lists
+        // with at least one element, but when the camera is in bad state, they
+        // can return null pointers; in that case we use a 0 entry, so we can
+        // retrieve as much information as possible.
+        List<Integer> pixelFormats = parameters.getSupportedPreviewFormats();
+        if (pixelFormats == null) {
+            pixelFormats = new ArrayList<Integer>();
+        }
+        if (pixelFormats.size() == 0) {
+            pixelFormats.add(ImageFormat.UNKNOWN);
+        }
+        for (Integer previewFormat : pixelFormats) {
+            int pixelFormat = AndroidImageFormat.UNKNOWN;
+            if (previewFormat == ImageFormat.YV12) {
+                pixelFormat = AndroidImageFormat.YV12;
+            } else if (previewFormat == ImageFormat.NV21) {
+                continue;
+            }
+
+            List<int[]> listFpsRange = parameters.getSupportedPreviewFpsRange();
+            if (listFpsRange == null) {
+                listFpsRange = new ArrayList<int[]>();
+            }
+            if (listFpsRange.size() == 0) {
+                listFpsRange.add(new int[] {0, 0});
+            }
+            for (int[] fpsRange : listFpsRange) {
+                List<android.hardware.Camera.Size> supportedSizes =
+                        parameters.getSupportedPreviewSizes();
+                if (supportedSizes == null) {
+                    supportedSizes = new ArrayList<android.hardware.Camera.Size>();
+                }
+                if (supportedSizes.size() == 0) {
+                    supportedSizes.add(camera.new Size(0, 0));
+                }
+                for (android.hardware.Camera.Size size : supportedSizes) {
+                    formatList.add(new VideoCaptureFormat(
+                            size.width, size.height, (fpsRange[1] + 999) / 1000, pixelFormat));
+                }
+            }
+        }
+        camera.release();
+        return formatList.toArray(new VideoCaptureFormat[formatList.size()]);
+    }
 
     VideoCaptureCamera(Context context, int id, long nativeVideoCaptureDeviceAndroid) {
         super(context, id, nativeVideoCaptureDeviceAndroid);
@@ -241,7 +347,9 @@ public abstract class VideoCaptureCamera
             Log.d(TAG, "Continuous focus mode not supported.");
         }
 
-        setCaptureParameters(matchedWidth, matchedHeight, chosenFrameRate, parameters);
+        // Fill the capture format.
+        mCaptureFormat = new VideoCaptureFormat(
+                matchedWidth, matchedHeight, chosenFrameRate, BuggyDeviceHack.getImageFormat());
         parameters.setPictureSize(matchedWidth, matchedHeight);
         parameters.setPreviewSize(matchedWidth, matchedHeight);
         parameters.setPreviewFpsRange(chosenFpsRange[0], chosenFpsRange[1]);
@@ -281,7 +389,12 @@ public abstract class VideoCaptureCamera
 
         mCamera.setErrorCallback(new CrErrorCallback());
 
-        allocateBuffers();
+        mExpectedFrameSize = mCaptureFormat.mWidth * mCaptureFormat.mHeight
+                * ImageFormat.getBitsPerPixel(mCaptureFormat.mPixelFormat) / 8;
+        for (int i = 0; i < NUM_CAPTURE_BUFFERS; i++) {
+            byte[] buffer = new byte[mExpectedFrameSize];
+            mCamera.addCallbackBuffer(buffer);
+        }
         return true;
     }
 
@@ -665,16 +778,26 @@ public abstract class VideoCaptureCamera
         }
     }
 
-    // Local hook to allow derived classes to configure and plug capture
-    // buffers if needed.
-    abstract void allocateBuffers();
+    private void setPreviewCallback(android.hardware.Camera.PreviewCallback cb) {
+        mCamera.setPreviewCallbackWithBuffer(cb);
+    }
 
-    // Local hook to allow derived classes to fill capture format and modify
-    // camera parameters as they see fit.
-    abstract void setCaptureParameters(int width, int height, int frameRate,
-            android.hardware.Camera.Parameters cameraParameters);
-
-    // Local method to be overriden with the particular setPreviewCallback to be
-    // used in the implementations.
-    abstract void setPreviewCallback(android.hardware.Camera.PreviewCallback cb);
+    @Override
+    public void onPreviewFrame(byte[] data, android.hardware.Camera camera) {
+        mPreviewBufferLock.lock();
+        try {
+            if (!mIsRunning) {
+                return;
+            }
+            if (data.length == mExpectedFrameSize) {
+                nativeOnFrameAvailable(mNativeVideoCaptureDeviceAndroid, data, mExpectedFrameSize,
+                        getCameraRotation());
+            }
+        } finally {
+            mPreviewBufferLock.unlock();
+            if (camera != null) {
+                camera.addCallbackBuffer(data);
+            }
+        }
+    }
 }
