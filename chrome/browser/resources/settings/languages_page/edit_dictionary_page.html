@@ -29,9 +29,6 @@
 
       iron-list .word {
         flex: 1;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
 
       paper-button {
@@ -55,7 +52,7 @@
         <iron-list id="list" items="{{words_}}">
           <template>
             <div class="list-item">
-              <div class="word">[[item]]</div>
+              <div class="word text-elide">[[item]]</div>
               <paper-icon-button icon="cr:clear" on-tap="onRemoveWordTap_">
               </paper-icon-button>
             </div>

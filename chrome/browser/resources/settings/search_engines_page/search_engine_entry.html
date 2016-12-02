@@ -23,9 +23,6 @@
 
       #url-column {
         flex: 4;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        white-space: nowrap;
       }
     </style>
 
@@ -38,7 +35,7 @@
           style="background-image: [[getIconSet_(engine.iconURL)]]"></div>
       <div class="column">[[engine.displayName]]</div>
       <div class="column">[[engine.keyword]]</div>
-      <div id="url-column">[[engine.url]]</div>
+      <div id="url-column" class="text-elide">[[engine.url]]</div>
       <paper-icon-button icon="cr:more-vert" tabindex$="[[tabindex]]"
           on-tap="onDotsTap_">
       </paper-icon-button>
