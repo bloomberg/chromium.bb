@@ -599,15 +599,6 @@ static int reconstruct_inter_block(AV1_COMMON *cm, MACROBLOCKD *const xd,
 }
 #endif  // !CONFIG_VAR_TX || CONFIG_SUPER_TX
 
-static INLINE void dec_reset_skip_context(MACROBLOCKD *xd) {
-  int i;
-  for (i = 0; i < MAX_MB_PLANE; i++) {
-    struct macroblockd_plane *const pd = &xd->plane[i];
-    memset(pd->above_context, 0, sizeof(ENTROPY_CONTEXT) * pd->n4_w);
-    memset(pd->left_context, 0, sizeof(ENTROPY_CONTEXT) * pd->n4_h);
-  }
-}
-
 static MB_MODE_INFO *set_offsets(AV1_COMMON *const cm, MACROBLOCKD *const xd,
                                  BLOCK_SIZE bsize, int mi_row, int mi_col,
                                  int bw, int bh, int x_mis, int y_mis, int bwl,
@@ -1437,9 +1428,8 @@ static void decode_block(AV1Decoder *const pbi, MACROBLOCKD *const xd,
   }
 #endif
 
-  if (mbmi->skip) {
-    dec_reset_skip_context(xd);
-  }
+  if (mbmi->skip) reset_skip_context(xd, AOMMAX(BLOCK_8X8, bsize));
+
 #if CONFIG_COEF_INTERLEAVE
   {
     const struct macroblockd_plane *const pd_y = &xd->plane[0];
