@@ -341,6 +341,7 @@ public class DeferredStartupHandler {
         }
     }
 
+    @SuppressWarnings("deprecation")  // InputMethodSubtype.getLocale() deprecated in API 24
     private void recordKeyboardLocaleUma() {
         InputMethodManager imm =
                 (InputMethodManager) mAppContext.getSystemService(Context.INPUT_METHOD_SERVICE);
