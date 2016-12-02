@@ -135,8 +135,12 @@ found in the LICENSE file.
         // This can only be called in response to a user gesture.
         vrDisplay.requestPresent([{ source: webglCanvas }]).then(function () {
           // Nothing to do because we're handling things in onVRPresentChange.
-        }, function () {
-          VRSamplesUtil.addError("requestPresent failed.", 2000);
+        }, function (err) {
+          var errMsg = "requestPresent failed.";
+          if (err && err.message) {
+            errMsg += "<br/>" + err.message
+          }
+          VRSamplesUtil.addError(errMsg, 2000);
         });
       }
 
@@ -149,8 +153,12 @@ found in the LICENSE file.
 
         vrDisplay.exitPresent().then(function () {
           // Nothing to do because we're handling things in onVRPresentChange.
-        }, function () {
-          VRSamplesUtil.addError("exitPresent failed.", 2000);
+        }, function (err) {
+          var errMsg = "exitPresent failed.";
+          if (err && err.message) {
+            errMsg += "<br/>" + err.message
+          }
+          VRSamplesUtil.addError(errMsg, 2000);
         });
       }
 

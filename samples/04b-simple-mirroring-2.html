@@ -148,8 +148,12 @@ found in the LICENSE file.
 
       function onVRRequestPresent () {
         vrDisplay.requestPresent([{ source: webglCanvas }]).then(function () {
-        }, function () {
-          VRSamplesUtil.addError("requestPresent failed.", 2000);
+        }, function (err) {
+          var errMsg = "requestPresent failed.";
+          if (err && err.message) {
+            errMsg += "<br/>" + err.message
+          }
+          VRSamplesUtil.addError(errMsg, 2000);
         });
       }
 

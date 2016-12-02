@@ -46,8 +46,12 @@ found in the LICENSE file.
         // This can only be called in response to a user gesture.
         vrDisplay.requestPresent([{ source: canvas }]).then(function () {
           presentingCanvas = canvas;
-        }, function () {
-          VRSamplesUtil.addError("requestPresent failed.", 2000);
+        }, function (err) {
+          var errMsg = "requestPresent failed.";
+          if (err && err.message) {
+            errMsg += "<br/>" + err.message
+          }
+          VRSamplesUtil.addError(errMsg, 2000);
         });
       }
 
