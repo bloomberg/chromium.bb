@@ -34,9 +34,13 @@ img {
 #infobar {
   background: rgb(255, 212, 0);
   height: 20px;
+  left: 0;
   line-height: 20px;
+  position: fixed;
+  right: 0;
   text-align: center;
   visibility: hidden;
+  z-index: 1;
 }
 
 #infobar.show {
