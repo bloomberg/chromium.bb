@@ -9,7 +9,7 @@
         {
           "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
           "rect": [0, 0, 185, 30],
-          "reason": "forced by layout"
+          "reason": "full"
         },
         {
           "object": "LayoutBlockFlow DIV id='scroller'",
@@ -19,31 +19,40 @@
         {
           "object": "LayoutText #text",
           "rect": [0, 5, 15, 15],
-          "reason": "full"
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutText #text",
+          "rect": [0, 5, 15, 15],
+          "reason": "layoutObject removal"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
+      "object": "LayoutText #text",
+      "reason": "layoutObject removal"
+    },
+    {
       "object": "VerticalScrollbar",
       "reason": "scroll"
     },
     {
       "object": "LayoutBlockFlow DIV id='dynamic' class='content'",
-      "reason": "forced by layout"
+      "reason": "full"
     },
     {
       "object": "RootInlineBox",
-      "reason": "forced by layout"
+      "reason": "full"
     },
     {
       "object": "LayoutText #text",
-      "reason": "full"
+      "reason": "layoutObject insertion"
     },
     {
       "object": "InlineTextBox 'z'",
-      "reason": "full"
+      "reason": "layoutObject insertion"
     }
   ]
 }
