@@ -58,6 +58,11 @@ class JavaScriptDialogTabHelper
 
   // WebContentsObserver:
   void WasHidden() override;
+  void DidStartNavigation(
+      content::NavigationHandle* navigation_handle) override;
+  void DidStartNavigationToPendingEntry(
+      const GURL& url,
+      content::ReloadType reload_type) override;
 
   // BrowserListObserver:
   void OnBrowserSetLastActive(Browser* browser) override;

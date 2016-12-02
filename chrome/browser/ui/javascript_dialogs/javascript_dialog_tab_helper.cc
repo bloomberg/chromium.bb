@@ -16,6 +16,7 @@
 #include "chrome/browser/ui/tabs/tab_strip_model.h"
 #include "chrome/common/chrome_features.h"
 #include "components/app_modal/javascript_dialog_manager.h"
+#include "content/public/browser/navigation_handle.h"
 #include "content/public/browser/render_frame_host.h"
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(JavaScriptDialogTabHelper);
@@ -66,6 +67,7 @@ enum class JavaScriptDialogTabHelper::DismissalCause {
   TAB_HIDDEN = 4,
   BROWSER_SWITCHED = 5,
   DIALOG_BUTTON_CLICKED = 6,
+  TAB_NAVIGATED = 7,
   MAX,
 };
 
@@ -244,9 +246,10 @@ void JavaScriptDialogTabHelper::CancelDialogs(
     content::WebContents* web_contents,
     bool suppress_callbacks,
     bool reset_state) {
-  if (dialog_)
+  if (dialog_) {
     CloseDialog(suppress_callbacks, false, base::string16(),
                 DismissalCause::CANCEL_DIALOGS_CALLED);
+  }
 
   // Cancel any app-modal dialogs being run by the app-modal dialog system.
   return AppModalDialogManager()->CancelDialogs(
@@ -254,9 +257,33 @@ void JavaScriptDialogTabHelper::CancelDialogs(
 }
 
 void JavaScriptDialogTabHelper::WasHidden() {
-  if (dialog_) {
+  if (dialog_)
     CloseDialog(false, false, base::string16(), DismissalCause::TAB_HIDDEN);
-  }
+}
+
+// This function handles the case where browser-side navigation (PlzNavigate) is
+// enabled. DidStartNavigationToPendingEntry, below, handles the case where
+// PlzNavigate is not enabled. TODO(avi): When the non-PlzNavigate code is
+// removed, remove DidStartNavigationToPendingEntry.
+void JavaScriptDialogTabHelper::DidStartNavigation(
+    content::NavigationHandle* navigation_handle) {
+  // Close the dialog if the user started a new navigation. This allows reloads
+  // and history navigations to proceed.
+  if (dialog_)
+    CloseDialog(false, false, base::string16(), DismissalCause::TAB_NAVIGATED);
+}
+
+// This function handles the case where browser-side navigation (PlzNavigate) is
+// not enabled. DidStartNavigation, above, handles the case where PlzNavigate is
+// enabled. TODO(avi): When the non-PlzNavigate code is removed, remove
+// DidStartNavigationToPendingEntry.
+void JavaScriptDialogTabHelper::DidStartNavigationToPendingEntry(
+    const GURL& url,
+    content::ReloadType reload_type) {
+  // Close the dialog if the user started a new navigation. This allows reloads
+  // and history navigations to proceed.
+  if (dialog_)
+    CloseDialog(false, false, base::string16(), DismissalCause::TAB_NAVIGATED);
 }
 
 void JavaScriptDialogTabHelper::OnBrowserSetLastActive(Browser* browser) {
