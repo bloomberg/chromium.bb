@@ -139,9 +139,6 @@ class CORE_EXPORT DocumentLoader
 
   void startLoadingMainResource();
 
-  void acceptDataFromThreadedReceiver(const char* data,
-                                      int dataLength,
-                                      int encodedDataLength);
   DocumentLoadTiming& timing() { return m_documentLoadTiming; }
   const DocumentLoadTiming& timing() const { return m_documentLoadTiming; }
 

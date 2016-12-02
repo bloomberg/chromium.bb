@@ -137,11 +137,6 @@ class CORE_EXPORT ResourceFetcher
   bool defersLoading() const;
   bool isControlledByServiceWorker() const;
 
-  void acceptDataFromThreadedReceiver(unsigned long identifier,
-                                      const char* data,
-                                      int dataLength,
-                                      int encodedDataLength);
-
   enum ResourceLoadStartType {
     ResourceLoadingFromNetwork,
     ResourceLoadingFromCache

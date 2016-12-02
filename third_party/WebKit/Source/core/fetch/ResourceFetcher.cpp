@@ -1272,14 +1272,6 @@ void ResourceFetcher::didDownloadData(const Resource* resource,
                                     encodedDataLength);
 }
 
-void ResourceFetcher::acceptDataFromThreadedReceiver(unsigned long identifier,
-                                                     const char* data,
-                                                     int dataLength,
-                                                     int encodedDataLength) {
-  context().dispatchDidReceiveData(identifier, data, dataLength,
-                                   encodedDataLength);
-}
-
 void ResourceFetcher::moveResourceLoaderToNonBlocking(ResourceLoader* loader) {
   DCHECK(loader);
   // TODO(yoav): Convert CHECK to DCHECK if no crash reports come in.
