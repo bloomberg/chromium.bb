@@ -161,6 +161,7 @@ class BreakingContext {
                           bool breakAll,
                           int& nextBreakablePositionForBreakAll);
   bool rewindToMidWordBreak(WordMeasurement&, int end, float width);
+  bool canMidWordBreakBefore(LineLayoutText);
   bool rewindToFirstMidWordBreak(LineLayoutText,
                                  const ComputedStyle&,
                                  const Font&,
@@ -760,6 +761,28 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(
   return true;
 }
 
+ALWAYS_INLINE bool BreakingContext::canMidWordBreakBefore(LineLayoutText text) {
+  // No break opportunities at the beginning of a line.
+  if (!m_width.currentWidth())
+    return false;
+  // If this text node is not the first child of an inline, the parent and the
+  // preivous have the same style.
+  if (text.previousSibling())
+    return true;
+  // Element boundaries belong to the parent of the element.
+  // TODO(kojii): Not all cases of element boundaries are supported yet.
+  // crbug.com/282134
+  if (LineLayoutItem element = text.parent()) {
+    if (LineLayoutItem parent = element.parent()) {
+      const ComputedStyle& parentStyle = parent.styleRef();
+      return parentStyle.autoWrap() &&
+             ((parentStyle.breakWords() && !m_width.committedWidth()) ||
+              parentStyle.wordBreak() == BreakAllWordBreak);
+    }
+  }
+  return false;
+}
+
 ALWAYS_INLINE bool BreakingContext::rewindToFirstMidWordBreak(
     LineLayoutText text,
     const ComputedStyle& style,
@@ -767,21 +790,24 @@ ALWAYS_INLINE bool BreakingContext::rewindToFirstMidWordBreak(
     bool breakAll,
     WordMeasurement& wordMeasurement) {
   int start = wordMeasurement.startOffset;
-  int end;
+  int end = canMidWordBreakBefore(text) ? start : start + 1;
   if (breakAll) {
     LazyLineBreakIterator lineBreakIterator(text.text(), style.locale());
-    end = -1;
-    lineBreakIterator.isBreakable(start + 1, end, LineBreakType::BreakAll);
-    if (end < 0)
+    int nextBreakable = -1;
+    lineBreakIterator.isBreakable(end, nextBreakable, LineBreakType::BreakAll);
+    if (nextBreakable < 0)
       return false;
-  } else {
-    end = start + 1;
+    end = nextBreakable;
   }
   if (end >= wordMeasurement.endOffset)
     return false;
 
   float width = textWidth(text, start, end - start, font,
                           m_width.currentWidth(), m_collapseWhiteSpace);
+  // If the first break opportunity doesn't fit, and if there's a break
+  // opportunity in previous runs, break at the opportunity.
+  if (!m_width.fitsOnLine(width) && m_width.committedWidth())
+    return false;
   return rewindToMidWordBreak(wordMeasurement, end, width);
 }
 
@@ -795,23 +821,27 @@ ALWAYS_INLINE bool BreakingContext::rewindToMidWordBreak(
   int len = wordMeasurement.endOffset - start;
   if (!len)
     return false;
-  if (m_width.availableWidth() <= LayoutUnit::epsilon())
+  float xPosToBreak = m_width.availableWidth() - m_width.currentWidth();
+  if (xPosToBreak <= LayoutUnit::epsilon()) {
+    // There were no space left. Skip computing how many characters can fit.
     return rewindToFirstMidWordBreak(text, style, font, breakAll,
                                      wordMeasurement);
+  }
 
   TextRun run = constructTextRun(font, text, start, len, style);
   run.setTabSize(!m_collapseWhiteSpace, style.getTabSize());
   run.setXPos(m_width.currentWidth());
 
   // TODO(kojii): should be replaced with safe-to-break when hb is ready.
-  float x =
-      m_width.availableWidth() + LayoutUnit::epsilon() - m_width.currentWidth();
+  xPosToBreak += LayoutUnit::epsilon();
   if (run.rtl())
-    x = wordMeasurement.width - x;
-  len = font.offsetForPosition(run, x, false);
-  if (!len && !m_width.currentWidth())
+    xPosToBreak = wordMeasurement.width - xPosToBreak;
+  len = font.offsetForPosition(run, xPosToBreak, false);
+  if (!len) {
+    // No characters can fit in the available space.
     return rewindToFirstMidWordBreak(text, style, font, breakAll,
                                      wordMeasurement);
+  }
 
   int end = start + len;
   if (breakAll) {
