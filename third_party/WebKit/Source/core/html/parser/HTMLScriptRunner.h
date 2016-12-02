@@ -64,9 +64,6 @@ class HTMLScriptRunner final
                const TextPosition& scriptStartPosition);
 
   void executeScriptsWaitingForLoad(Resource*);
-  bool hasScriptsWaitingForResources() const {
-    return m_hasScriptsWaitingForResources;
-  }
   void executeScriptsWaitingForResources();
   bool executeScriptsWaitingForParsing();
 
@@ -95,7 +92,7 @@ class HTMLScriptRunner final
 
   void runScript(Element*, const TextPosition& scriptStartPosition);
 
-  bool isPendingScriptReady(const PendingScript*);
+  bool isPendingScriptReady();
 
   void stopWatchingResourceForLoad(Resource*);
 
@@ -107,12 +104,6 @@ class HTMLScriptRunner final
   Member<PendingScript> m_parserBlockingScript;
   // http://www.whatwg.org/specs/web-apps/current-work/#list-of-scripts-that-will-execute-when-the-document-has-finished-parsing
   HeapDeque<Member<PendingScript>> m_scriptsToExecuteAfterParsing;
-
-  // We only want stylesheet loads to trigger script execution if script
-  // execution is currently stopped due to stylesheet loads, otherwise we'd
-  // cause nested script execution when parsing <style> tags since </style>
-  // tags can cause Document to call executeScriptsWaitingForResources.
-  bool m_hasScriptsWaitingForResources;
 };
 
 }  // namespace blink

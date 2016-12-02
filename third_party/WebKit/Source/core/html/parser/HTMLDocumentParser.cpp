@@ -397,6 +397,10 @@ void HTMLDocumentParser::didReceiveEncodingDataFromBackgroundParser(
 void HTMLDocumentParser::validateSpeculations(
     std::unique_ptr<TokenizedChunk> chunk) {
   ASSERT(chunk);
+  // TODO(kouhei): We should simplify codepath here by disallowing
+  // validateSpeculations
+  // while isWaitingForScripts, and m_lastChunkBeforeScript can simply be
+  // pushed to m_speculations.
   if (isWaitingForScripts()) {
     // We're waiting on a network script, just save the chunk, we'll get a
     // second validateSpeculations call after the script completes. This call
@@ -1056,14 +1060,18 @@ void HTMLDocumentParser::resumeParsingAfterScriptExecution() {
   ASSERT(!isWaitingForScripts());
 
   if (m_haveBackgroundParser) {
-    validateSpeculations(std::move(m_lastChunkBeforeScript));
-    ASSERT(!m_lastChunkBeforeScript);
-    pumpPendingSpeculations();
+    if (m_lastChunkBeforeScript) {
+      validateSpeculations(std::move(m_lastChunkBeforeScript));
+      DCHECK(!m_lastChunkBeforeScript);
+      pumpPendingSpeculations();
+    }
     return;
   }
 
   m_insertionPreloadScanner.reset();
-  pumpTokenizerIfPossible();
+  if (m_tokenizer) {
+    pumpTokenizerIfPossible();
+  }
   endIfDelayed();
 }
 
@@ -1092,14 +1100,11 @@ void HTMLDocumentParser::notifyScriptLoaded(Resource* cachedResource) {
 }
 
 void HTMLDocumentParser::executeScriptsWaitingForResources() {
+  DCHECK(document()->isScriptExecutionReady());
+
   // Document only calls this when the Document owns the DocumentParser so this
   // will not be called in the DocumentFragment case.
-  ASSERT(m_scriptRunner);
-  // Ignore calls unless we have a script blocking the parser waiting on a
-  // stylesheet load.  Otherwise we are currently parsing and this is a
-  // re-entrant call from encountering a </ style> tag.
-  if (!m_scriptRunner->hasScriptsWaitingForResources())
-    return;
+  DCHECK(m_scriptRunner);
   m_scriptRunner->executeScriptsWaitingForResources();
   if (!isWaitingForScripts())
     resumeParsingAfterScriptExecution();

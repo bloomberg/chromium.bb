@@ -154,8 +154,7 @@ HTMLScriptRunner::HTMLScriptRunner(HTMLParserReentryPermit* reentryPermit,
     : m_reentryPermit(reentryPermit),
       m_document(document),
       m_host(host),
-      m_parserBlockingScript(PendingScript::create(nullptr, nullptr)),
-      m_hasScriptsWaitingForResources(false) {
+      m_parserBlockingScript(PendingScript::create(nullptr, nullptr)) {
   ASSERT(m_host);
   ThreadState::current()->registerPreFinalizer(this);
 }
@@ -181,18 +180,17 @@ void HTMLScriptRunner::detach() {
   // detached.
 }
 
-bool HTMLScriptRunner::isPendingScriptReady(const PendingScript* script) {
-  m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
-  if (m_hasScriptsWaitingForResources)
+bool HTMLScriptRunner::isPendingScriptReady() {
+  if (!m_document->isScriptExecutionReady())
     return false;
-  return script->isReady();
+  return m_parserBlockingScript->isReady();
 }
 
 void HTMLScriptRunner::executeParsingBlockingScript() {
-  ASSERT(m_document);
-  ASSERT(!isExecutingScript());
-  ASSERT(m_document->isScriptExecutionReady());
-  ASSERT(isPendingScriptReady(m_parserBlockingScript.get()));
+  DCHECK(m_document);
+  DCHECK(!isExecutingScript());
+  DCHECK(m_document->isScriptExecutionReady());
+  DCHECK(isPendingScriptReady());
 
   InsertionPointRecord insertionPointRecord(m_host->inputStream());
   executePendingScriptAndDispatchEvent(m_parserBlockingScript.get(),
@@ -215,10 +213,9 @@ void HTMLScriptRunner::executePendingScriptAndDispatchEvent(
   if (!isExecutingScript()) {
     Microtask::performCheckpoint(V8PerIsolateData::mainThreadIsolate());
     if (pendingScriptType == ScriptStreamer::ParsingBlocking) {
-      m_hasScriptsWaitingForResources = !m_document->isScriptExecutionReady();
       // The parser cannot be unblocked as a microtask requested another
       // resource
-      if (m_hasScriptsWaitingForResources)
+      if (!m_document->isScriptExecutionReady())
         return;
     }
   }
@@ -373,8 +370,7 @@ bool HTMLScriptRunner::hasParserBlockingScript() const {
 }
 
 void HTMLScriptRunner::executeParsingBlockingScripts() {
-  while (hasParserBlockingScript() &&
-         isPendingScriptReady(m_parserBlockingScript.get()))
+  while (hasParserBlockingScript() && isPendingScriptReady())
     executeParsingBlockingScript();
 }
 
@@ -390,9 +386,6 @@ void HTMLScriptRunner::executeScriptsWaitingForLoad(Resource* resource) {
 void HTMLScriptRunner::executeScriptsWaitingForResources() {
   TRACE_EVENT0("blink", "HTMLScriptRunner::executeScriptsWaitingForResources");
   ASSERT(m_document);
-  // Callers should check hasScriptsWaitingForResources() before calling
-  // to prevent parser or script re-entry during </style> parsing.
-  ASSERT(hasScriptsWaitingForResources());
   ASSERT(!isExecutingScript());
   ASSERT(m_document->isScriptExecutionReady());
   executeParsingBlockingScripts();
