@@ -3461,6 +3461,7 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
     case GL_RGBA32I:
       return GL_RGBA_INTEGER;
     case GL_BGRA_EXT:
+    case GL_BGRA8_EXT:
       return GL_BGRA_EXT;
     case GL_DEPTH_COMPONENT16:
     case GL_DEPTH_COMPONENT24:
@@ -3490,8 +3491,6 @@ GLenum TextureManager::ExtractFormatFromStorageFormat(GLenum internalformat) {
       return GL_LUMINANCE;
     case GL_LUMINANCE_ALPHA16F_EXT:
       return GL_LUMINANCE_ALPHA;
-    case GL_BGRA8_EXT:
-      return GL_BGRA_EXT;
     default:
       return GL_NONE;
   }
