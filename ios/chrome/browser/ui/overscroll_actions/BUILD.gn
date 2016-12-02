@@ -1,0 +1,29 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/ptr_close.png",
+    "resources/ptr_close@2x.png",
+    "resources/ptr_close@3x.png",
+    "resources/ptr_close_active.png",
+    "resources/ptr_close_active@2x.png",
+    "resources/ptr_close_active@3x.png",
+    "resources/ptr_new_tab.png",
+    "resources/ptr_new_tab@2x.png",
+    "resources/ptr_new_tab@3x.png",
+    "resources/ptr_new_tab_active.png",
+    "resources/ptr_new_tab_active@2x.png",
+    "resources/ptr_new_tab_active@3x.png",
+    "resources/ptr_reload.png",
+    "resources/ptr_reload@2x.png",
+    "resources/ptr_reload@3x.png",
+    "resources/ptr_reload_active.png",
+    "resources/ptr_reload_active@2x.png",
+    "resources/ptr_reload_active@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}

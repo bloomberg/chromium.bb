@@ -1,0 +1,23 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("assets") {
+  sources = [
+    "resources/QRScanner.xcassets/Contents.json",
+    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/Contents.json",
+    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off.png",
+    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off@2x.png",
+    "resources/QRScanner.xcassets/qr_scanner_torch_off.imageset/torch_off@3x.png",
+    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/Contents.json",
+    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on.png",
+    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@2x.png",
+    "resources/QRScanner.xcassets/qr_scanner_torch_on.imageset/torch_on@3x.png",
+    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/Contents.json",
+    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/quick_action_qr_scanner@2x.png",
+    "resources/QRScanner.xcassets/quick_action_qr_scanner.imageset/quick_action_qr_scanner@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
