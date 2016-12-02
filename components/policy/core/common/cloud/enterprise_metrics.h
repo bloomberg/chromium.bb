@@ -167,8 +167,7 @@ enum MetricEnrollment {
   // The user submitted valid credentials to start the enrollment process
   // for the second (or further) time.
   kMetricEnrollmentRestarted = 25,
-  // Failed to store DM token and device ID.
-  kMetricEnrollmentStoreTokenAndIdFailed = 26,
+  /* kMetricEnrollmentStoreTokenAndIdFailed = 26 REMOVED */
   // Failed to obtain FRE state keys.
   kMetricEnrollmentNoStateKeys = 27,
   // Failed to validate policy.

@@ -27,7 +27,7 @@ FakeDeviceCloudPolicyInitializer::FakeDeviceCloudPolicyInitializer()
           nullptr),  // statistics_provider
       was_start_enrollment_called_(false),
       enrollment_status_(
-          EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)) {}
+          EnrollmentStatus::ForStatus(EnrollmentStatus::SUCCESS)) {}
 
 void FakeDeviceCloudPolicyInitializer::Init() {
 }

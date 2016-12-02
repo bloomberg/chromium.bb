@@ -271,16 +271,16 @@ void EnrollmentScreenHandler::ShowOtherError(
 void EnrollmentScreenHandler::ShowEnrollmentStatus(
     policy::EnrollmentStatus status) {
   switch (status.status()) {
-    case policy::EnrollmentStatus::STATUS_SUCCESS:
+    case policy::EnrollmentStatus::SUCCESS:
       if (config_.is_mode_attestation())
         ShowAttestationBasedEnrollmentSuccessScreen(GetEnterpriseDomain());
       else
         ShowStep(kEnrollmentStepSuccess);
       return;
-    case policy::EnrollmentStatus::STATUS_NO_STATE_KEYS:
+    case policy::EnrollmentStatus::NO_STATE_KEYS:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_STATE_KEYS, false);
       return;
-    case policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED:
+    case policy::EnrollmentStatus::REGISTRATION_FAILED:
       // Some special cases for generating a nicer message that's more helpful.
       switch (status.client_status()) {
         case policy::DM_STATUS_SERVICE_MANAGEMENT_NOT_SUPPORTED:
@@ -303,37 +303,37 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
               true);
       }
       return;
-    case policy::EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED:
+    case policy::EnrollmentStatus::ROBOT_AUTH_FETCH_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_AUTH_FETCH_FAILED, true);
       return;
-    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED:
+    case policy::EnrollmentStatus::ROBOT_REFRESH_FETCH_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_FETCH_FAILED, true);
       return;
-    case policy::EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED:
+    case policy::EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ROBOT_REFRESH_STORE_FAILED, true);
       return;
-    case policy::EnrollmentStatus::STATUS_REGISTRATION_BAD_MODE:
+    case policy::EnrollmentStatus::REGISTRATION_BAD_MODE:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_BAD_MODE, false);
       return;
-    case policy::EnrollmentStatus::STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED:
+    case policy::EnrollmentStatus::REGISTRATION_CERT_FETCH_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_REGISTRATION_CERT_FETCH_FAILED,
                 true);
       return;
-    case policy::EnrollmentStatus::STATUS_POLICY_FETCH_FAILED:
+    case policy::EnrollmentStatus::POLICY_FETCH_FAILED:
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(
               IDS_ENTERPRISE_ENROLLMENT_STATUS_POLICY_FETCH_FAILED,
               policy::FormatDeviceManagementStatus(status.client_status())),
           true);
       return;
-    case policy::EnrollmentStatus::STATUS_VALIDATION_FAILED:
+    case policy::EnrollmentStatus::VALIDATION_FAILED:
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(
               IDS_ENTERPRISE_ENROLLMENT_STATUS_VALIDATION_FAILED,
               policy::FormatValidationStatus(status.validation_status())),
           true);
       return;
-    case policy::EnrollmentStatus::STATUS_LOCK_ERROR:
+    case policy::EnrollmentStatus::LOCK_ERROR:
       switch (status.lock_status()) {
         case InstallAttributes::LOCK_SUCCESS:
         case InstallAttributes::LOCK_NOT_READY:
@@ -361,7 +361,7 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
       }
       NOTREACHED();
       return;
-    case policy::EnrollmentStatus::STATUS_STORE_ERROR:
+    case policy::EnrollmentStatus::STORE_ERROR:
       ShowErrorMessage(
           l10n_util::GetStringFUTF8(
               IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_ERROR,
@@ -369,20 +369,14 @@ void EnrollmentScreenHandler::ShowEnrollmentStatus(
                                         status.validation_status())),
           true);
       return;
-    case policy::EnrollmentStatus::STATUS_STORE_TOKEN_AND_ID_FAILED:
-      // This error should not happen for enterprise enrollment.
-      ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_TOKEN_AND_ID_FAILED,
-                true);
-      NOTREACHED();
-      return;
-    case policy::EnrollmentStatus::STATUS_ATTRIBUTE_UPDATE_FAILED:
+    case policy::EnrollmentStatus::ATTRIBUTE_UPDATE_FAILED:
       ShowErrorForDevice(IDS_ENTERPRISE_ENROLLMENT_ATTRIBUTE_ERROR, false);
       return;
-    case policy::EnrollmentStatus::STATUS_NO_MACHINE_IDENTIFICATION:
+    case policy::EnrollmentStatus::NO_MACHINE_IDENTIFICATION:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_STATUS_NO_MACHINE_IDENTIFICATION,
                 false);
       return;
-    case policy::EnrollmentStatus::STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED:
+    case policy::EnrollmentStatus::ACTIVE_DIRECTORY_POLICY_FETCH_FAILED:
       ShowError(IDS_ENTERPRISE_ENROLLMENT_ERROR_ACTIVE_DIRECTORY_POLICY_FETCH,
                 false);
       return;

@@ -6132,9 +6132,6 @@ All users must sign out to continue.
   <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_ERROR" desc="Error message shown on the enrollment screen when the installation of the policy on the device fails.">
     Failed to install policy settings on the device: <ph name="VALIDATION_ERROR">$1<ex>Policy parsing failed</ex></ph>.
   </message>
-  <message name="IDS_ENTERPRISE_ENROLLMENT_STATUS_STORE_TOKEN_AND_ID_FAILED" desc="Error message shown on the enrollment screen when storing DM token and device ID fails.">
-    Oops!  The system failed to store the device token and ID.
-  </message>
   <message name="IDS_ENTERPRISE_ENROLLMENT_AUTH_FATAL_ERROR" desc="Error message to show when there is an unrecoverable error while authenticating with GAIA.">
     Oops!  Something went wrong when trying to authenticate you.  Please double-check your sign-in credentials and try again.
   </message>

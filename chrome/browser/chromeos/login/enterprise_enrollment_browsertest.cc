@@ -181,7 +181,7 @@ IN_PROC_BROWSER_TEST_F(EnterpriseEnrollmentTest,
   ShowEnrollmentScreen();
 
   enrollment_screen()->OnEnrollmentError(policy::EnrollmentStatus::ForStatus(
-      policy::EnrollmentStatus::STATUS_REGISTRATION_FAILED));
+      policy::EnrollmentStatus::REGISTRATION_FAILED));
   ExecutePendingJavaScript();
 
   // Verify that the error page is displayed.

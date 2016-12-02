@@ -21,31 +21,28 @@ class EnrollmentStatus {
   // Enrollment status codes.  Do not change the numeric ids or the meaning of
   // the existing codes to preserve the interpretability of old logfiles.
   enum Status {
-    STATUS_SUCCESS = 0,                     // Enrollment succeeded.
-    STATUS_NO_STATE_KEYS = 1,               // Server-backed state keys
-                                            // unavailable.
-    STATUS_REGISTRATION_FAILED = 2,         // DM registration failed.
-    STATUS_REGISTRATION_BAD_MODE = 3,       // Bad device mode.
-    STATUS_ROBOT_AUTH_FETCH_FAILED = 4,     // API OAuth2 auth code failure.
-    STATUS_ROBOT_REFRESH_FETCH_FAILED = 5,  // API OAuth2 refresh token failure.
-    STATUS_ROBOT_REFRESH_STORE_FAILED = 6,  // Failed to store API OAuth2 token.
-    STATUS_POLICY_FETCH_FAILED = 7,         // DM policy fetch failed.
-    STATUS_VALIDATION_FAILED = 8,           // Policy validation failed.
-    STATUS_LOCK_ERROR = 9,                  // Cryptohome failed to lock device.
-    /* STATUS_LOCK_TIMEOUT = 10, */         // Unused: Timeout while waiting for
-                                            // the lock.
-    /* STATUS_LOCK_WRONG_USER = 11, */      // Unused: Locked to different
-                                            // domain.
-    STATUS_STORE_ERROR = 12,                // Failed to store the policy.
-    STATUS_STORE_TOKEN_AND_ID_FAILED = 13,  // Failed to store DM token and
-                                            // device ID.
-    STATUS_ATTRIBUTE_UPDATE_FAILED = 14,    // Device attribute update failed.
-    STATUS_REGISTRATION_CERTIFICATE_FETCH_FAILED = 15,  // Cannot obtain
-                                                        // registration cert.
-    STATUS_NO_MACHINE_IDENTIFICATION = 16,  // Machine model or serial missing.
-    STATUS_ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
-                                                       // Directory policy via
-                                                       // authpolicyd.
+    SUCCESS = 0,                     // Enrollment succeeded.
+    NO_STATE_KEYS = 1,               // Server-backed state keys unavailable.
+    REGISTRATION_FAILED = 2,         // DM registration failed.
+    REGISTRATION_BAD_MODE = 3,       // Bad device mode.
+    ROBOT_AUTH_FETCH_FAILED = 4,     // API OAuth2 auth code failure.
+    ROBOT_REFRESH_FETCH_FAILED = 5,  // API OAuth2 refresh token failure.
+    ROBOT_REFRESH_STORE_FAILED = 6,  // Failed to store API OAuth2 token.
+    POLICY_FETCH_FAILED = 7,         // DM policy fetch failed.
+    VALIDATION_FAILED = 8,           // Policy validation failed.
+    LOCK_ERROR = 9,                  // Cryptohome failed to lock device.
+    /* LOCK_TIMEOUT = 10, */         // Unused: Timeout while waiting for the
+                                     // lock.
+    /* LOCK_WRONG_USER = 11, */      // Unused: Locked to different domain.
+    STORE_ERROR = 12,                // Failed to store the policy.
+    /* STORE_TOKEN_AND_ID_FAILED = 13, */  // Unused: Failed to store DM token
+                                           // and device ID.
+    ATTRIBUTE_UPDATE_FAILED = 14,          // Device attribute update failed.
+    REGISTRATION_CERT_FETCH_FAILED = 15,   // Cannot obtain registration cert.
+    NO_MACHINE_IDENTIFICATION = 16,        // Machine model or serial missing.
+    ACTIVE_DIRECTORY_POLICY_FETCH_FAILED = 17,  // Failed to fetch Active
+                                                // Directory policy via
+                                                // authpolicyd.
   };
 
   // Helpers for constructing errors for relevant cases.

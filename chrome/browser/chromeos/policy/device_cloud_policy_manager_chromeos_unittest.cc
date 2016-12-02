@@ -421,7 +421,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
         policy_fetch_status_(DM_STATUS_SUCCESS),
         robot_auth_fetch_status_(DM_STATUS_SUCCESS),
         store_result_(true),
-        status_(EnrollmentStatus::ForStatus(EnrollmentStatus::STATUS_SUCCESS)),
+        status_(EnrollmentStatus::ForStatus(EnrollmentStatus::SUCCESS)),
         done_(false) {}
 
   void SetUp() override {
@@ -463,7 +463,7 @@ class DeviceCloudPolicyManagerChromeOSEnrollmentTest
   }
 
   void ExpectSuccessfulEnrollment() {
-    EXPECT_EQ(EnrollmentStatus::STATUS_SUCCESS, status_.status());
+    EXPECT_EQ(EnrollmentStatus::SUCCESS, status_.status());
     ASSERT_TRUE(manager_->core()->client());
     EXPECT_TRUE(manager_->core()->client()->is_registered());
     EXPECT_EQ(DEVICE_MODE_ENTERPRISE, install_attributes_->GetMode());
@@ -690,7 +690,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, Reenrollment) {
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, RegistrationFailed) {
   register_status_ = DM_STATUS_REQUEST_FAILED;
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_REGISTRATION_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::REGISTRATION_FAILED);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, status_.client_status());
 }
 
@@ -698,14 +698,14 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotAuthCodeFetchFailed) {
   robot_auth_fetch_status_ = DM_STATUS_REQUEST_FAILED;
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_AUTH_FETCH_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::ROBOT_AUTH_FETCH_FAILED);
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotRefreshTokenFetchResponseCodeFailed) {
   url_fetcher_response_code_ = 400;
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_FETCH_FAILED);
   EXPECT_EQ(400, status_.http_status());
 }
 
@@ -713,7 +713,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
        RobotRefreshTokenFetchResponseStringFailed) {
   url_fetcher_response_string_ = "invalid response json";
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_FETCH_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_FETCH_FAILED);
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
@@ -725,13 +725,13 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest,
                                  "\"expires_in\":1234,"
                                  "\"refresh_token\":\"\"}";
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED);
 }
 
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, PolicyFetchFailed) {
   policy_fetch_status_ = DM_STATUS_REQUEST_FAILED;
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_POLICY_FETCH_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::POLICY_FETCH_FAILED);
   EXPECT_EQ(DM_STATUS_REQUEST_FAILED, status_.client_status());
 }
 
@@ -741,7 +741,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
   policy_fetch_response_.mutable_policy_response()->add_response()->CopyFrom(
       device_policy_.policy());
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_VALIDATION_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::VALIDATION_FAILED);
   EXPECT_EQ(CloudPolicyValidatorBase::VALIDATION_BAD_INITIAL_SIGNATURE,
             status_.validation_status());
 }
@@ -749,7 +749,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, ValidationFailed) {
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
   store_result_ = false;
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_STORE_ERROR);
+  ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_STORE_ERROR,
             status_.store_status());
 }
@@ -757,7 +757,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, StoreError) {
 TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentTest, LoadError) {
   loaded_blob_.clear();
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_STORE_ERROR);
+  ExpectFailedEnrollment(EnrollmentStatus::STORE_ERROR);
   EXPECT_EQ(CloudPolicyStore::STATUS_LOAD_ERROR,
             status_.store_status());
 }
@@ -814,7 +814,7 @@ TEST_P(DeviceCloudPolicyManagerChromeOSEnrollmentBlankSystemSaltTest,
        RobotRefreshSaveFailed) {
   // Without the system salt, the robot token can't be stored.
   RunTest();
-  ExpectFailedEnrollment(EnrollmentStatus::STATUS_ROBOT_REFRESH_STORE_FAILED);
+  ExpectFailedEnrollment(EnrollmentStatus::ROBOT_REFRESH_STORE_FAILED);
 }
 
 INSTANTIATE_TEST_CASE_P(Cert,

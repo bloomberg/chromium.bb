@@ -141,10 +141,6 @@ class EnrollmentHandlerChromeOS : public CloudPolicyClient::Observer,
   // enrollment.
   void StartLockDevice();
 
-  // Called after SetManagementSettings() is done. Proceeds to robot
-  // auth code storing if successful.
-  void HandleSetManagementSettingsDone(bool success);
-
   // Handle callback from InstallAttributes::LockDevice() and retry on failure.
   void HandleLockDeviceResult(
       chromeos::InstallAttributes::LockResult lock_result);

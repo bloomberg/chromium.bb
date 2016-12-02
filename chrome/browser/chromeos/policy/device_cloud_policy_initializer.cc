@@ -30,7 +30,6 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/cryptohome/async_method_caller.h"
 #include "chromeos/cryptohome/cryptohome_parameters.h"
-#include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/system/statistics_provider.h"
 #include "components/policy/core/common/cloud/cloud_policy_core.h"
 #include "components/policy/core/common/cloud/device_management_service.h"
@@ -245,7 +244,7 @@ void DeviceCloudPolicyInitializer::EnrollmentCompleted(
       enrollment_handler_->ReleaseClient();
   enrollment_handler_.reset();
 
-  if (status.status() == EnrollmentStatus::STATUS_SUCCESS) {
+  if (status.status() == EnrollmentStatus::SUCCESS) {
     StartConnection(std::move(client));
   } else {
     // Some attempts to create a client may be blocked because the enrollment
