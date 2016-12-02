@@ -29,8 +29,8 @@
 #include "base/strings/string_tokenizer.h"
 #include "base/strings/string_util.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/task_scheduler/post_task.h"
 #include "base/threading/thread_task_runner_handle.h"
-#include "base/threading/worker_pool.h"
 #include "base/time/time.h"
 #include "base/win/registry.h"
 #include "base/win/windows_version.h"
@@ -136,7 +136,13 @@ void RunSwReportersAfterStartup(
       FROM_HERE, base::ThreadTaskRunnerHandle::Get(),
       base::Bind(&safe_browsing::RunSwReporters, invocations, version,
                  base::ThreadTaskRunnerHandle::Get(),
-                 base::WorkerPool::GetTaskRunner(true)));
+                 // Runs LaunchAndWaitForExit() (srt_fetcher_win.cc).
+                 base::CreateTaskRunnerWithTraits(
+                     base::TaskTraits()
+                         .WithShutdownBehavior(
+                             base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                         .WithPriority(base::TaskPriority::BACKGROUND)
+                         .WithWait())));
 }
 
 // Ensures |str| contains only alphanumeric characters and characters from
