@@ -40,3 +40,7 @@ class PixelExpectations(GpuTestExpectations):
     # further.
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
                bug=660461)
+
+    # TODO(kainino): remove this once golden images are generated
+    self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+              bug=666259)

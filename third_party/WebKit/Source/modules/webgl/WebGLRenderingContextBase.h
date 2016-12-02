@@ -110,14 +110,16 @@ class WebGLRenderingContextErrorMessageCallback;
 // This class uses the color mask to prevent drawing to the alpha channel, if
 // the DrawingBuffer requires RGB emulation.
 class ScopedRGBEmulationColorMask {
+  STACK_ALLOCATED();
+
  public:
-  ScopedRGBEmulationColorMask(gpu::gles2::GLES2Interface*,
+  ScopedRGBEmulationColorMask(WebGLRenderingContextBase*,
                               GLboolean* colorMask,
                               DrawingBuffer*);
   ~ScopedRGBEmulationColorMask();
 
  private:
-  gpu::gles2::GLES2Interface* m_contextGL;
+  Member<WebGLRenderingContextBase> m_context;
   GLboolean m_colorMask[4];
   const bool m_requiresEmulation;
 };
@@ -1532,6 +1534,9 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   // number.
   static WebGLRenderingContextBase* oldestContext();
   static WebGLRenderingContextBase* oldestEvictedContext();
+
+  friend class ScopedRGBEmulationColorMask;
+  unsigned m_activeScopedRGBEmulationColorMasks;
 
   ImageBitmap* transferToImageBitmapBase(ScriptState*);
 

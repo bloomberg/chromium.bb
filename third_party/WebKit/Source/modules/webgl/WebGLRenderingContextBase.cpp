@@ -140,22 +140,26 @@ WebGLRenderingContextBaseMap& forciblyEvictedContexts() {
 }  // namespace
 
 ScopedRGBEmulationColorMask::ScopedRGBEmulationColorMask(
-    gpu::gles2::GLES2Interface* contextGL,
+    WebGLRenderingContextBase* context,
     GLboolean* colorMask,
     DrawingBuffer* drawingBuffer)
-    : m_contextGL(contextGL),
+    : m_context(context),
       m_requiresEmulation(drawingBuffer->requiresAlphaChannelToBePreserved()) {
   if (m_requiresEmulation) {
+    m_context->m_activeScopedRGBEmulationColorMasks++;
     memcpy(m_colorMask, colorMask, 4 * sizeof(GLboolean));
-    m_contextGL->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
-                           false);
+    m_context->contextGL()->ColorMask(m_colorMask[0], m_colorMask[1],
+                                      m_colorMask[2], false);
   }
 }
 
 ScopedRGBEmulationColorMask::~ScopedRGBEmulationColorMask() {
-  if (m_requiresEmulation)
-    m_contextGL->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
-                           m_colorMask[3]);
+  if (m_requiresEmulation) {
+    DCHECK(m_context->m_activeScopedRGBEmulationColorMasks);
+    m_context->m_activeScopedRGBEmulationColorMasks--;
+    m_context->contextGL()->ColorMask(m_colorMask[0], m_colorMask[1],
+                                      m_colorMask[2], m_colorMask[3]);
+  }
 }
 
 void WebGLRenderingContextBase::forciblyLoseOldestContext(
@@ -1964,7 +1968,7 @@ void WebGLRenderingContextBase::clear(GLbitfield mask) {
     return;
   }
 
-  ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask,
+  ScopedRGBEmulationColorMask emulationColorMask(this, m_colorMask,
                                                  m_drawingBuffer.get());
 
   if (clearIfComposited(mask) != CombinedClear) {
@@ -2423,7 +2427,7 @@ void WebGLRenderingContextBase::drawArrays(GLenum mode,
     return;
   }
 
-  ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask,
+  ScopedRGBEmulationColorMask emulationColorMask(this, m_colorMask,
                                                  m_drawingBuffer.get());
   clearIfComposited();
   contextGL()->DrawArrays(mode, first, count);
@@ -2443,7 +2447,7 @@ void WebGLRenderingContextBase::drawElements(GLenum mode,
     return;
   }
 
-  ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask,
+  ScopedRGBEmulationColorMask emulationColorMask(this, m_colorMask,
                                                  m_drawingBuffer.get());
   clearIfComposited();
   contextGL()->DrawElements(
@@ -2465,7 +2469,7 @@ void WebGLRenderingContextBase::drawArraysInstancedANGLE(GLenum mode,
     return;
   }
 
-  ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask,
+  ScopedRGBEmulationColorMask emulationColorMask(this, m_colorMask,
                                                  m_drawingBuffer.get());
   clearIfComposited();
   contextGL()->DrawArraysInstancedANGLE(mode, first, count, primcount);
@@ -2486,7 +2490,7 @@ void WebGLRenderingContextBase::drawElementsInstancedANGLE(GLenum mode,
     return;
   }
 
-  ScopedRGBEmulationColorMask emulationColorMask(contextGL(), m_colorMask,
+  ScopedRGBEmulationColorMask emulationColorMask(this, m_colorMask,
                                                  m_drawingBuffer.get());
   clearIfComposited();
   contextGL()->DrawElementsInstancedANGLE(
@@ -6292,8 +6296,10 @@ void WebGLRenderingContextBase::DrawingBufferClientRestoreScissorTest() {
 void WebGLRenderingContextBase::DrawingBufferClientRestoreMaskAndClearValues() {
   if (!contextGL())
     return;
+  bool colorMaskAlpha =
+      m_colorMask[3] && m_activeScopedRGBEmulationColorMasks == 0;
   contextGL()->ColorMask(m_colorMask[0], m_colorMask[1], m_colorMask[2],
-                         m_colorMask[3]);
+                         colorMaskAlpha);
   contextGL()->DepthMask(m_depthMask);
   contextGL()->StencilMaskSeparate(GL_FRONT, m_stencilMask);
 

@@ -987,6 +987,7 @@ void DrawingBuffer::resolveMultisampleFramebufferInternal() {
             .disable_multisampling_color_mask_usage) {
       m_gl->ClearColor(0, 0, 0, 1);
       m_gl->ColorMask(false, false, false, true);
+      m_gl->Clear(GL_COLOR_BUFFER_BIT);
     }
   }
 

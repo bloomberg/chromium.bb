@@ -85,6 +85,12 @@ def DefaultPages(base_name):
       revision=1),
 
     PixelTestPage(
+      'pixel_webgl_noalpha_implicit_clear.html',
+      base_name + '_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
+      test_rect=[0, 0, 300, 300],
+      revision=1),
+
+    PixelTestPage(
       'pixel_scissor.html',
       base_name + '_ScissorTestWithPreserveDrawingBuffer',
       test_rect=[0, 0, 300, 300],
