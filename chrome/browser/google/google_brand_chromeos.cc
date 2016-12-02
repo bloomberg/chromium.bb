@@ -7,8 +7,7 @@
 #include "base/files/file_util.h"
 #include "base/logging.h"
 #include "base/strings/string_util.h"
-#include "base/task_runner_util.h"
-#include "base/threading/worker_pool.h"
+#include "base/task_scheduler/post_task.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/common/pref_names.h"
 #include "chromeos/system/statistics_provider.h"
@@ -75,11 +74,13 @@ void InitBrand(const base::Closure& callback) {
     return;
   }
 
-  base::PostTaskAndReplyWithResult(
-      base::WorkerPool::GetTaskRunner(false /* task_is_slow */).get(),
-      FROM_HERE,
-      base::Bind(&ReadBrandFromFile),
-      base::Bind(&SetBrand, callback));
+  base::PostTaskWithTraitsAndReplyWithResult(
+      FROM_HERE, base::TaskTraits()
+                     .WithShutdownBehavior(
+                         base::TaskShutdownBehavior::CONTINUE_ON_SHUTDOWN)
+                     .WithPriority(base::TaskPriority::BACKGROUND)
+                     .WithFileIO(),
+      base::Bind(&ReadBrandFromFile), base::Bind(&SetBrand, callback));
 }
 
 }  // namespace chromeos
