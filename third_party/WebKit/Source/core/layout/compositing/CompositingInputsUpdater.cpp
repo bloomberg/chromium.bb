@@ -11,8 +11,6 @@
 #include "core/layout/LayoutView.h"
 #include "core/layout/compositing/CompositedLayerMapping.h"
 #include "core/layout/compositing/PaintLayerCompositor.h"
-#include "core/page/scrolling/RootScrollerController.h"
-#include "core/page/scrolling/TopDocumentRootScrollerController.h"
 #include "core/paint/PaintLayer.h"
 #include "platform/tracing/TraceEvent.h"
 
@@ -241,30 +239,10 @@ void CompositingInputsUpdater::updateRecursive(PaintLayer* layer,
   if (layer->layoutObject()->hasClipPath())
     info.hasAncestorWithClipPath = true;
 
-  bool hasDescendantWithClipPath = false;
-  bool hasNonIsolatedDescendantWithBlendMode = false;
-  bool hasRootScrollerAsDescendant = false;
   for (PaintLayer* child = layer->firstChild(); child;
-       child = child->nextSibling()) {
+       child = child->nextSibling())
     updateRecursive(child, updateType, info);
 
-    hasRootScrollerAsDescendant |= child->hasRootScrollerAsDescendant() ||
-                                   (child ==
-                                    child->layoutObject()
-                                        ->document()
-                                        .rootScrollerController()
-                                        ->rootScrollerPaintLayer());
-    hasDescendantWithClipPath |= child->hasDescendantWithClipPath() ||
-                                 child->layoutObject()->hasClipPath();
-    hasNonIsolatedDescendantWithBlendMode |=
-        (!child->stackingNode()->isStackingContext() &&
-         child->hasNonIsolatedDescendantWithBlendMode()) ||
-        child->layoutObject()->style()->hasBlendMode();
-  }
-
-  layer->updateDescendantDependentCompositingInputs(
-      hasDescendantWithClipPath, hasNonIsolatedDescendantWithBlendMode,
-      hasRootScrollerAsDescendant);
   layer->didUpdateCompositingInputs();
 
   m_geometryMap.popMappingsToAncestor(layer->parent());

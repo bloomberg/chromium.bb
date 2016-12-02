@@ -684,11 +684,7 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_childNeedsCompositingInputsUpdate;
   }
   bool needsCompositingInputsUpdate() const {
-    // While we're updating the compositing inputs, these values may differ.
-    // We should never be asking for this value when that is the case.
-    DCHECK(m_needsDescendantDependentCompositingInputsUpdate ==
-           m_needsAncestorDependentCompositingInputsUpdate);
-    return m_needsDescendantDependentCompositingInputsUpdate;
+    return m_needsAncestorDependentCompositingInputsUpdate;
   }
 
   void updateAncestorOverflowLayer(const PaintLayer* ancestorOverflowLayer) {
@@ -765,13 +761,21 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
     return m_hasAncestorWithClipPath;
   }
   bool hasDescendantWithClipPath() const {
-    DCHECK(!m_needsDescendantDependentCompositingInputsUpdate);
+    DCHECK(!m_needsDescendantDependentFlagsUpdate);
     return m_hasDescendantWithClipPath;
   }
+
+  // Returns true if there is a descendant with blend-mode that is
+  // not contained within another enclosing stacking context other
+  // than the stacking context blend-mode creates, or the stacking
+  // context this PaintLayer might create. This is needed because
+  // blend-mode content needs to blend with the containing stacking
+  // context's painted output, but not the content in any grandparent
+  // stacking contexts.
   bool hasNonIsolatedDescendantWithBlendMode() const;
 
   bool hasRootScrollerAsDescendant() const {
-    DCHECK(!m_needsDescendantDependentCompositingInputsUpdate);
+    DCHECK(!m_needsDescendantDependentFlagsUpdate);
     return m_hasRootScrollerAsDescendant;
   }
 
@@ -976,6 +980,8 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
 #endif
 
  private:
+  void setNeedsCompositingInputsUpdateInternal();
+
   // Bounding box in the coordinates of this layer.
   LayoutRect logicalBoundingBox() const;
 
@@ -1144,7 +1150,6 @@ class CORE_EXPORT PaintLayer : public DisplayItemClient {
   unsigned m_containsDirtyOverlayScrollbars : 1;
 
   unsigned m_needsAncestorDependentCompositingInputsUpdate : 1;
-  unsigned m_needsDescendantDependentCompositingInputsUpdate : 1;
   unsigned m_childNeedsCompositingInputsUpdate : 1;
 
   // Used only while determining what layers should be composited. Applies to

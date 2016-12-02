@@ -68,6 +68,7 @@
 #include "core/layout/svg/LayoutSVGResourceClipper.h"
 #include "core/layout/svg/LayoutSVGRoot.h"
 #include "core/page/Page.h"
+#include "core/page/scrolling/RootScrollerController.h"
 #include "core/page/scrolling/ScrollingCoordinator.h"
 #include "core/paint/BoxReflectionUtils.h"
 #include "core/paint/FilterEffectBuilder.h"
@@ -141,7 +142,6 @@ PaintLayer::PaintLayer(LayoutBoxModelObject* layoutObject)
       m_has3DTransformedDescendant(false),
       m_containsDirtyOverlayScrollbars(false),
       m_needsAncestorDependentCompositingInputsUpdate(true),
-      m_needsDescendantDependentCompositingInputsUpdate(true),
       m_childNeedsCompositingInputsUpdate(true),
       m_hasCompositingDescendant(false),
       m_isAllScrollingContentComposited(false),
@@ -674,6 +674,9 @@ void PaintLayer::updateScrollingStateAfterCompositingChange() {
 void PaintLayer::updateDescendantDependentFlags() {
   if (m_needsDescendantDependentFlagsUpdate) {
     m_hasVisibleDescendant = false;
+    m_hasNonIsolatedDescendantWithBlendMode = false;
+    m_hasDescendantWithClipPath = false;
+    m_hasRootScrollerAsDescendant = false;
 
     for (PaintLayer* child = firstChild(); child;
          child = child->nextSibling()) {
@@ -681,6 +684,21 @@ void PaintLayer::updateDescendantDependentFlags() {
 
       if (child->m_hasVisibleContent || child->m_hasVisibleDescendant)
         m_hasVisibleDescendant = true;
+
+      m_hasNonIsolatedDescendantWithBlendMode |=
+          (!child->stackingNode()->isStackingContext() &&
+           child->hasNonIsolatedDescendantWithBlendMode()) ||
+          child->layoutObject()->styleRef().hasBlendMode();
+
+      m_hasDescendantWithClipPath |= child->hasDescendantWithClipPath() ||
+                                     child->layoutObject()->hasClipPath();
+
+      m_hasRootScrollerAsDescendant |= child->hasRootScrollerAsDescendant() ||
+                                       (child ==
+                                        child->layoutObject()
+                                            ->document()
+                                            .rootScrollerController()
+                                            ->rootScrollerPaintLayer());
     }
 
     m_needsDescendantDependentFlagsUpdate = false;
@@ -718,7 +736,7 @@ void PaintLayer::updateDescendantDependentFlags() {
   }
 
   if (hasVisibleContent() != previouslyHasVisibleContent) {
-    setNeedsCompositingInputsUpdate();
+    setNeedsCompositingInputsUpdateInternal();
     // We need to tell m_layoutObject to recheck its rect because we
     // pretend that invisible LayoutObjects have 0x0 rects. Changing
     // visibility therefore changes our rect and we need to visit
@@ -990,8 +1008,17 @@ PaintLayer* PaintLayer::enclosingLayerForPaintInvalidation() const {
 }
 
 void PaintLayer::setNeedsCompositingInputsUpdate() {
+  setNeedsCompositingInputsUpdateInternal();
+
+  // TODO(chrishtr): This is a bit of a heavy hammer, because not all
+  // things which require compositing inputs update require a descendant-
+  // dependent flags udpate. Reduce call sites after SPv2 launch allows
+  /// removal of CompositingInputsUpdater.
+  markAncestorChainForDescendantDependentFlagsUpdate();
+}
+
+void PaintLayer::setNeedsCompositingInputsUpdateInternal() {
   m_needsAncestorDependentCompositingInputsUpdate = true;
-  m_needsDescendantDependentCompositingInputsUpdate = true;
 
   for (PaintLayer* current = this;
        current && !current->m_childNeedsCompositingInputsUpdate;
@@ -1011,17 +1038,6 @@ void PaintLayer::updateAncestorDependentCompositingInputs(
   m_needsAncestorDependentCompositingInputsUpdate = false;
 }
 
-void PaintLayer::updateDescendantDependentCompositingInputs(
-    bool hasDescendantWithClipPath,
-    bool hasNonIsolatedDescendantWithBlendMode,
-    bool hasRootScrollerAsDescendant) {
-  m_hasDescendantWithClipPath = hasDescendantWithClipPath;
-  m_hasNonIsolatedDescendantWithBlendMode =
-      hasNonIsolatedDescendantWithBlendMode;
-  m_hasRootScrollerAsDescendant = hasRootScrollerAsDescendant;
-  m_needsDescendantDependentCompositingInputsUpdate = false;
-}
-
 void PaintLayer::didUpdateCompositingInputs() {
   DCHECK(!needsCompositingInputsUpdate());
   m_childNeedsCompositingInputsUpdate = false;
@@ -1030,7 +1046,6 @@ void PaintLayer::didUpdateCompositingInputs() {
 }
 
 bool PaintLayer::hasNonIsolatedDescendantWithBlendMode() const {
-  DCHECK(!m_needsDescendantDependentCompositingInputsUpdate);
   if (m_hasNonIsolatedDescendantWithBlendMode)
     return true;
   if (layoutObject()->isSVGRoot())
@@ -3215,6 +3230,7 @@ DisableCompositingQueryAsserts::DisableCompositingQueryAsserts()
 #ifndef NDEBUG
 // FIXME: Rename?
 void showLayerTree(const blink::PaintLayer* layer) {
+  blink::DisableCompositingQueryAsserts disabler;
   if (!layer) {
     LOG(INFO) << "Cannot showLayerTree. Root is (nil)";
     return;

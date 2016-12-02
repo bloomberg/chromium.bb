@@ -112,4 +112,69 @@ TEST_F(PaintLayerTest, NonCompositedScrollingNeedsRepaint) {
   document().view()->updateAllLifecyclePhases();
 }
 
+TEST_F(PaintLayerTest, HasNonIsolatedDescendantWithBlendMode) {
+  setBodyInnerHTML(
+      "<div id='stacking-grandparent' style='isolation: isolate'>"
+      "  <div id='stacking-parent' style='isolation: isolate'>"
+      "    <div id='non-stacking-parent' style='position:relative'>"
+      "      <div id='blend-mode' style='mix-blend-mode: overlay'>"
+      "      </div>"
+      "    </div>"
+      "  </div>"
+      "</div>");
+  PaintLayer* stackingGrandparent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("stacking-grandparent"))
+          ->layer();
+  PaintLayer* stackingParent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("stacking-parent"))
+          ->layer();
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("non-stacking-parent"))
+          ->layer();
+
+  EXPECT_TRUE(parent->hasNonIsolatedDescendantWithBlendMode());
+  EXPECT_TRUE(stackingParent->hasNonIsolatedDescendantWithBlendMode());
+  EXPECT_FALSE(stackingGrandparent->hasNonIsolatedDescendantWithBlendMode());
+
+  EXPECT_FALSE(parent->hasDescendantWithClipPath());
+  EXPECT_TRUE(parent->hasVisibleDescendant());
+}
+
+TEST_F(PaintLayerTest, HasDescendantWithClipPath) {
+  setBodyInnerHTML(
+      "<div id='parent' style='position:relative'>"
+      "  <div id='clip-path' style='clip-path: circle(50px at 0 100px)'>"
+      "  </div>"
+      "</div>");
+  PaintLayer* parent =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("parent"))->layer();
+  PaintLayer* clipPath =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("clip-path"))->layer();
+
+  EXPECT_TRUE(parent->hasDescendantWithClipPath());
+  EXPECT_FALSE(clipPath->hasDescendantWithClipPath());
+
+  EXPECT_FALSE(parent->hasNonIsolatedDescendantWithBlendMode());
+  EXPECT_TRUE(parent->hasVisibleDescendant());
+}
+
+TEST_F(PaintLayerTest, HasVisibleDescendant) {
+  enableCompositing();
+  setBodyInnerHTML(
+      "<div id='invisible' style='position:relative'>"
+      "  <div id='visible' style='visibility: visible; position: relative'>"
+      "  </div>"
+      "</div>");
+  PaintLayer* invisible =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("invisible"))->layer();
+  PaintLayer* visible =
+      toLayoutBoxModelObject(getLayoutObjectByElementId("visible"))->layer();
+
+  EXPECT_TRUE(invisible->hasVisibleDescendant());
+  EXPECT_FALSE(visible->hasVisibleDescendant());
+
+  EXPECT_FALSE(invisible->hasNonIsolatedDescendantWithBlendMode());
+  EXPECT_FALSE(invisible->hasDescendantWithClipPath());
+}
+
 }  // namespace blink
