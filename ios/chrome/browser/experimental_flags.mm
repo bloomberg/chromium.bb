@@ -29,8 +29,8 @@ NSString* const kHeuristicsForPasswordGeneration =
     @"HeuristicsForPasswordGeneration";
 NSString* const kEnableNewClearBrowsingDataUI = @"EnableNewClearBrowsingDataUI";
 NSString* const kMDMIntegrationDisabled = @"MDMIntegrationDisabled";
-NSString* const kPendingIndexNavigationDisabled =
-    @"PendingIndexNavigationDisabled";
+NSString* const kPendingIndexNavigationEnabled =
+    @"PendingIndexNavigationEnabled";
 const base::Feature kIOSDownloadImageRenaming{
     "IOSDownloadImageRenaming", base::FEATURE_DISABLED_BY_DEFAULT};
 }  // namespace
@@ -185,8 +185,8 @@ bool IsMDMIntegrationEnabled() {
 }
 
 bool IsPendingIndexNavigationEnabled() {
-  return ![[NSUserDefaults standardUserDefaults]
-      boolForKey:kPendingIndexNavigationDisabled];
+  return [[NSUserDefaults standardUserDefaults]
+      boolForKey:kPendingIndexNavigationEnabled];
 }
 
 bool IsDownloadRenamingEnabled() {
