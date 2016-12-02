@@ -53,18 +53,18 @@ unsigned int ColorLUTCache::MakeLUT(const gfx::ColorSpace& from,
   std::vector<unsigned char> lut(lut_entries * 4);
   std::vector<gfx::ColorTransform::TriStim> samples(lut_samples);
   unsigned char* lutp = lut.data();
-  for (int y = 0; y < lut_samples; y++) {
-    for (int v = 0; v < lut_samples; v++) {
-      for (int u = 0; u < lut_samples; u++) {
-        samples[u].set_x(y * inverse);
-        samples[u].set_y(u * inverse);
-        samples[u].set_z(v * inverse);
+  for (int v = 0; v < lut_samples; v++) {
+    for (int u = 0; u < lut_samples; u++) {
+      for (int y = 0; y < lut_samples; y++) {
+        samples[y].set_x(y * inverse);
+        samples[y].set_y(u * inverse);
+        samples[y].set_z(v * inverse);
       }
       transform->transform(samples.data(), samples.size());
-      for (int u = 0; u < lut_samples; u++) {
-        *(lutp++) = FloatToLUT(samples[u].x());
-        *(lutp++) = FloatToLUT(samples[u].y());
-        *(lutp++) = FloatToLUT(samples[u].z());
+      for (int y = 0; y < lut_samples; y++) {
+        *(lutp++) = FloatToLUT(samples[y].x());
+        *(lutp++) = FloatToLUT(samples[y].y());
+        *(lutp++) = FloatToLUT(samples[y].z());
         *(lutp++) = 255;  // alpha
       }
     }

@@ -2138,14 +2138,14 @@ std::string FragmentShaderYUVVideo::GetShaderString(TexCoordPrecision precision,
       vec4 LUT(sampler2D sampler, vec3 pos, float size) {
         pos *= size - 1.0;
         // Select layer
-        float layer = min(floor(pos.x), size - 2.0);
-        // Compress the yz coordinates so they stay within
+        float layer = min(floor(pos.z), size - 2.0);
+        // Compress the xy coordinates so they stay within
         // [0.5 .. 31.5] / 17 (assuming a LUT size of 17^3)
-        pos.yz = (pos.yz + vec2(0.5)) / size;
-        pos.z = (pos.z + layer) / size;
-        return mix(texture2D(sampler, pos.yz),
-                   texture2D(sampler, pos.yz + vec2(0, 1.0 / size)),
-                   pos.x - layer);
+        pos.xy = (pos.xy + vec2(0.5)) / size;
+        pos.y = (pos.y + layer) / size;
+        return mix(texture2D(sampler, pos.xy),
+                   texture2D(sampler, pos.xy + vec2(0, 1.0 / size)),
+                   pos.z - layer);
       }
 
       vec3 yuv2rgb(vec3 yuv) {
