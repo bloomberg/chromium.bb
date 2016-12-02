@@ -253,7 +253,7 @@ void HistoryController::UpdateForCommit(RenderFrameImpl* frame,
       if (frame->IsMainFrame() ||
           current_entry_->root().itemSequenceNumber() ==
               provisional_entry_->root().itemSequenceNumber()) {
-        current_entry_.reset(provisional_entry_.release());
+        current_entry_ = std::move(provisional_entry_);
       }
 
       // We're guaranteed to have a current entry now.
