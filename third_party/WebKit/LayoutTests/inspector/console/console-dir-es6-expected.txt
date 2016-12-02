@@ -27,44 +27,44 @@ console-dir-es6.html:15 Object
     Symbol(a): Symbol(Symbol.iterator)
     __proto__: Object
 console-dir-es6.html:18 Symbol()
-console-dir-es6.html:22 Map
+console-dir-es6.html:22 Map(1)
     size: (...)
     __proto__: Map
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
 console-dir-es6.html:22 WeakMap
     __proto__: WeakMap
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: {Object => Object}
         length: 1
-console-dir-es6.html:26 Set
+console-dir-es6.html:26 Set(1)
     size: (...)
     __proto__: Set
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-dir-es6.html:26 WeakSet
     __proto__: WeakSet
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
-console-dir-es6.html:34 Set
+console-dir-es6.html:34 Set(1)
     size: (...)
     __proto__: Set
-    [[Entries]]: Array[1]
-        0: Set
+    [[Entries]]: Array(1)
+        0: Set(1)
         length: 1
 console-dir-es6.html:37 WeakMap
     __proto__: WeakMap
-    [[Entries]]: Array[0]
+    [[Entries]]: Array(0)
         length: 0
 console-dir-es6.html:45 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-dir-es6.html:46 MapIterator
@@ -72,7 +72,7 @@ console-dir-es6.html:46 MapIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-dir-es6.html:47 MapIterator
@@ -80,15 +80,15 @@ console-dir-es6.html:47 MapIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[1]
-        0: Array[2]
+    [[Entries]]: Array(1)
+        0: Array(2)
         length: 1
 console-dir-es6.html:45 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-dir-es6.html:46 SetIterator
@@ -96,7 +96,7 @@ console-dir-es6.html:46 SetIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-dir-es6.html:47 SetIterator
@@ -104,10 +104,10 @@ console-dir-es6.html:47 SetIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[1]
-        0: Array[2]
+    [[Entries]]: Array(1)
+        0: Array(2)
         length: 1
-console-dir-es6.html:85 Array[27]
+console-dir-es6.html:85 Array(27)
     0: class 
     1: class classWithWhitespace
     2: class FooClass
@@ -136,12 +136,12 @@ console-dir-es6.html:85 Array[27]
     25: function ({a: b})
     26: function (c = ")", {a: b})
     length: 27
-    __proto__: Array[0]
-console-dir-es6.html:93 Array[4]
+    __proto__: Array(0)
+console-dir-es6.html:93 Array(4)
     0: badArrow(x = a => {…}
     1: function (a = ")
     2: function (a = function()
     3: function (a = class{ constructor()
     length: 4
-    __proto__: Array[0]
+    __proto__: Array(0)
 

@@ -24,7 +24,7 @@ properties-special.html:12 function bound ()
     __proto__: function ()
     [[TargetFunction]]: function (a,b)
     [[BoundThis]]: Object
-    [[BoundArgs]]: Array[1]
+    [[BoundArgs]]: Array(1)
 properties-special.html:13 function* anonymous()
     arguments: (...)
     caller: (...)

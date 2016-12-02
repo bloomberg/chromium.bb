@@ -54,21 +54,21 @@ console-format-es6-2.html:11 MapIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: MapIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[0]
 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "keys"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
@@ -77,21 +77,21 @@ console-format-es6-2.html:11 MapIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 42
         1: Object
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: MapIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[1]
 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 42
         1: Object
         length: 2
@@ -100,44 +100,44 @@ console-format-es6-2.html:11 MapIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[2]
-        0: Array[2]
-        1: Array[2]
+    [[Entries]]: Array(2)
+        0: Array(2)
+        1: Array(2)
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: MapIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[2]
 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[2]
-        0: Array[2]
-        1: Array[2]
+    [[Entries]]: Array(2)
+        0: Array(2)
+        1: Array(2)
         length: 2
 console-format-es6-2.html:11 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: SetIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[3]
 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
@@ -146,21 +146,21 @@ console-format-es6-2.html:11 SetIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: SetIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[4]
 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[2]
+    [[Entries]]: Array(2)
         0: 41
         1: Object
         length: 2
@@ -169,43 +169,43 @@ console-format-es6-2.html:11 SetIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[2]
-        0: Array[2]
-        1: Array[2]
+    [[Entries]]: Array(2)
+        0: Array(2)
+        1: Array(2)
         length: 2
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: SetIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[5]
 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 0
     [[IteratorKind]]: "entries"
-    [[Entries]]: Array[2]
-        0: Array[2]
-        1: Array[2]
+    [[Entries]]: Array(2)
+        0: Array(2)
+        1: Array(2)
         length: 2
 console-format-es6-2.html:11 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: MapIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[6]
 MapIterator
     __proto__: Map Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 console-format-es6-2.html:11 SetIterator
@@ -213,20 +213,20 @@ console-format-es6-2.html:11 SetIterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
-console-format-es6-2.html:12 Array[1]
+console-format-es6-2.html:12 Array(1)
     0: SetIterator
     length: 1
-    __proto__: Array[0]
+    __proto__: Array(0)
 globals[7]
 SetIterator
     __proto__: Set Iterator
     [[IteratorHasMore]]: true
     [[IteratorIndex]]: 1
     [[IteratorKind]]: "values"
-    [[Entries]]: Array[1]
+    [[Entries]]: Array(1)
         0: Object
         length: 1
 

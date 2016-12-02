@@ -24,12 +24,12 @@ console-external-array.html:13 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 console-external-array.html:14 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 console-external-array.html:15 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
 console-external-array.html:16 [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]
-console-external-array.html:18 Int8Array[10]
-console-external-array.html:19 Int16Array[10]
-console-external-array.html:20 Int32Array[10]
-console-external-array.html:21 Uint8Array[10]
-console-external-array.html:22 Uint16Array[10]
-console-external-array.html:23 Uint32Array[10]
-console-external-array.html:24 Float32Array[10]
-console-external-array.html:25 Float64Array[10]
+console-external-array.html:18 Int8Array(10)
+console-external-array.html:19 Int16Array(10)
+console-external-array.html:20 Int32Array(10)
+console-external-array.html:21 Uint8Array(10)
+console-external-array.html:22 Uint16Array(10)
+console-external-array.html:23 Uint32Array(10)
+console-external-array.html:24 Float32Array(10)
+console-external-array.html:25 Float64Array(10)
 
