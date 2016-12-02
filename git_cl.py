@@ -2999,6 +2999,7 @@ class ChangeDescription(object):
   R_LINE = r'^[ \t]*(TBR|R)[ \t]*=[ \t]*(.*?)[ \t]*$'
   CC_LINE = r'^[ \t]*(CC)[ \t]*=[ \t]*(.*?)[ \t]*$'
   BUG_LINE = r'^[ \t]*(BUG)[ \t]*=[ \t]*(.*?)[ \t]*$'
+  CHERRY_PICK_LINE = r'^\(cherry picked from commit [a-fA-F0-9]{40}\)$'
 
   def __init__(self, description):
     self._description_lines = (description or '').strip().splitlines()
@@ -3150,6 +3151,57 @@ class ChangeDescription(object):
     matches = [re.match(self.CC_LINE, line) for line in self._description_lines]
     cced = [match.group(2).strip() for match in matches if match]
     return cleanup_list(cced)
+
+  def update_with_git_number_footers(self, parent_hash, parent_msg, dest_ref):
+    """Updates this commit description given the parent.
+
+    This is essentially what Gnumbd used to do.
+    Consult https://goo.gl/WMmpDe for more details.
+    """
+    assert parent_msg  # No, orphan branch creation isn't supported.
+    assert parent_hash
+    assert dest_ref
+    parent_footer_map = git_footers.parse_footers(parent_msg)
+    # This will also happily parse svn-position, which GnumbD is no longer
+    # supporting. While we'd generate correct footers, the verifier plugin
+    # installed in Gerrit will block such commit (ie git push below will fail).
+    parent_position = git_footers.get_position(parent_footer_map)
+
+    # Cherry-picks may have last line obscuring their prior footers,
+    # from git_footers perspective. This is also what Gnumbd did.
+    cp_line = None
+    if (self._description_lines and
+        re.match(self.CHERRY_PICK_LINE, self._description_lines[-1])):
+      cp_line = self._description_lines.pop()
+
+    top_lines, _, parsed_footers = git_footers.split_footers(self.description)
+
+    # Original-ify all Cr- footers, to avoid re-lands, cherry-picks, or just
+    # user interference with actual footers we'd insert below.
+    for i, (k, v) in enumerate(parsed_footers):
+      if k.startswith('Cr-'):
+        parsed_footers[i] = (k.replace('Cr-', 'Cr-Original-'), v)
+
+    # Add Position and Lineage footers based on the parent.
+    lineage = parent_footer_map.get('Cr-Branched-From', [])
+    if parent_position[0] == dest_ref:
+      # Same branch as parent.
+      number = int(parent_position[1]) + 1
+    else:
+      number = 1  # New branch, and extra lineage.
+      lineage.insert(0, '%s-%s@{#%d}' % (parent_hash, parent_position[0],
+                                         int(parent_position[1])))
+
+    parsed_footers.append(('Cr-Commit-Position',
+                           '%s@{#%d}' % (dest_ref, number)))
+    parsed_footers.extend(('Cr-Branched-From', v) for v in lineage)
+
+    self._description_lines = top_lines
+    if cp_line:
+      self._description_lines.append(cp_line)
+    if self._description_lines[-1] != '':
+      self._description_lines.append('')  # Ensure footer separator.
+    self._description_lines.extend('%s: %s' % kv for kv in parsed_footers)
 
 
 def get_approving_reviewers(props):
@@ -4441,6 +4493,21 @@ def SendUpstream(parser, args, cmd):
       mirror = settings.GetGitMirror(remote)
       pushurl = mirror.url if mirror else remote
       pending_prefix = settings.GetPendingRefPrefix()
+
+      if ShouldGenerateGitNumberFooters():
+        # TODO(tandrii): run git fetch in a loop + autorebase when there there
+        # is no pending ref to push to?
+        logging.debug('Adding git number footers')
+        parent_msg = RunGit(['show', '-s', '--format=%B', merge_base]).strip()
+        commit_desc.update_with_git_number_footers(merge_base, parent_msg,
+                                                   branch)
+        # TODO(tandrii): timestamp handling is missing here.
+        RunGitSilent(['commit', '--amend', '-m', commit_desc.description])
+        change_desc = ChangeDescription(commit_desc.description)
+        # If gnumbd is sitll ON and we ultimately push to branch with
+        # pending_prefix, gnumbd will modify footers we've just inserted with
+        # 'Original-', which is annoying but still technically correct.
+
       if not pending_prefix or branch.startswith(pending_prefix):
         # If not using refs/pending/heads/* at all, or target ref is already set
         # to pending, then push to the target ref directly.
@@ -4507,6 +4574,7 @@ def SendUpstream(parser, args, cmd):
       killed = True
 
   if cl.GetIssue():
+    # TODO(tandrii): figure out story of to pending + git numberer.
     to_pending = ' to pending queue' if pushed_to_pending else ''
     viewvc_url = settings.GetViewVCUrl()
     if not to_pending:

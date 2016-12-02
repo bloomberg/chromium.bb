@@ -271,6 +271,143 @@ class TestGitClBasic(unittest.TestCase):
     self.assertEqual(f('v8', 'chromium:123,456,v8:123'),
                      ['v8:456', 'chromium:123', 'v8:123'])
 
+  def _test_git_number(self, parent_msg, dest_ref, child_msg,
+                       parent_hash='parenthash'):
+    desc = git_cl.ChangeDescription(child_msg)
+    desc.update_with_git_number_footers(parent_hash, parent_msg, dest_ref)
+    return desc.description
+
+  def assertEqualByLine(self, actual, expected):
+    self.assertEqual(actual.splitlines(), expected.splitlines())
+
+  def test_git_number_bad_parent(self):
+    with self.assertRaises(ValueError):
+      self._test_git_number('Parent', 'refs/heads/master', 'Child')
+
+  def test_git_number_bad_parent_footer(self):
+    with self.assertRaises(AssertionError):
+      self._test_git_number(
+          'Parent\n'
+          '\n'
+          'Cr-Commit-Position: wrong',
+          'refs/heads/master', 'Child')
+
+  def test_git_number_bad_lineage_ignored(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#1}\n'
+        'Cr-Branched-From: mustBeReal40CharHash-branch@{#pos}',
+        'refs/heads/master', 'Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#2}\n'
+        'Cr-Branched-From: mustBeReal40CharHash-branch@{#pos}')
+
+  def test_git_number_same_branch(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
+  def test_git_number_same_branch_with_originals(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/master',
+        child_msg='Child\n'
+        '\n'
+        'Some users are smart and insert their own footers\n'
+        '\n'
+        'Cr-Whatever: value\n'
+        'Cr-Commit-Position: refs/copy/paste@{#22}')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Some users are smart and insert their own footers\n'
+        '\n'
+        'Cr-Original-Whatever: value\n'
+        'Cr-Original-Commit-Position: refs/copy/paste@{#22}\n'
+        'Cr-Commit-Position: refs/heads/master@{#13}')
+
+  def test_git_number_new_branch(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/master@{#12}')
+
+  def test_git_number_lineage(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#2}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
+  def test_git_number_moooooooore_lineage(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#5}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/mooore',
+        child_msg='Child')
+    self.assertEqualByLine(
+        actual,
+        'Child\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/mooore@{#1}\n'
+        'Cr-Branched-From: parenthash-refs/heads/branch@{#5}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
+
+  def test_git_number_cherry_pick(self):
+    actual = self._test_git_number(
+        'Parent\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/branch@{#1}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}',
+        dest_ref='refs/heads/branch',
+        child_msg='Child, which is cherry-pick from master\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#100}\n'
+        '(cherry picked from commit deadbeef12345678deadbeef12345678deadbeef)')
+    self.assertEqualByLine(
+        actual,
+        'Child, which is cherry-pick from master\n'
+        '\n'
+        '(cherry picked from commit deadbeef12345678deadbeef12345678deadbeef)\n'
+        '\n'
+        'Cr-Original-Commit-Position: refs/heads/master@{#100}\n'
+        'Cr-Commit-Position: refs/heads/branch@{#2}\n'
+        'Cr-Branched-From: somehash-refs/heads/master@{#12}')
+
 
 class TestGitCl(TestCase):
   def setUp(self):
@@ -927,6 +1064,69 @@ class TestGitCl(TestCase):
        ''),
     ]
     git_cl.main(['land'])
+
+  def test_land_rietveld_git_numberer(self):
+    self._land_rietveld_common()
+    self.mock(git_cl, 'ShouldGenerateGitNumberFooters',
+              lambda *a: self._mocked_call(['ShouldGenerateGitNumberFooters']))
+    self.calls += [
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+      ((['ShouldGenerateGitNumberFooters'],), True),
+
+      ((['git', 'show', '-s', '--format=%B', 'fake_ancestor_sha'],),
+       'This is parent commit.\n'
+       '\n'
+       'Cr-Commit-Position: refs/heads/master@{#543}\n'
+       'Cr-Branched-From: refs/svn/2014@{#2208}'),
+
+      ((['git', 'commit', '--amend', '-m',
+        'Issue: 123\n\nR=john@chromium.org\n'
+        '\n'
+        'Review URL: https://codereview.chromium.org/123 .\n'
+        '\n'
+        'Cr-Commit-Position: refs/heads/master@{#544}\n'
+        'Cr-Branched-From: refs/svn/2014@{#2208}'],), ''),
+
+      ((['git', 'push', '--porcelain', 'origin', 'HEAD:refs/heads/master'],),
+       ''),
+      ((['git', 'rev-parse', 'HEAD'],), 'fake_sha_rebased'),
+      ((['git', 'checkout', '-q', 'feature'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+      ((['git', 'config', 'rietveld.viewvc-url'],),
+       'https://chromium.googlesource.com/infra/infra/+/'),
+      ((['update_description', 123,
+         'Issue: 123\n\nR=john@chromium.org\n'
+         '\n'
+         'Review URL: https://codereview.chromium.org/123 .\n'
+         '\n'
+         'Cr-Commit-Position: refs/heads/master@{#544}\n'
+         'Cr-Branched-From: refs/svn/2014@{#2208}\n'
+         'Committed: '
+         'https://chromium.googlesource.com/infra/infra/+/fake_sha_rebased'],),
+       ''),
+      ((['add_comment', 123, 'Committed patchset #2 (id:20001) manually as '
+                             'fake_sha_rebased (presubmit successful).'],), ''),
+    ]
+    git_cl.main(['land'])
+
+  def test_land_rietveld_git_numberer_bad_parent(self):
+    self._land_rietveld_common()
+    self.mock(git_cl, 'ShouldGenerateGitNumberFooters',
+              lambda *a: self._mocked_call(['ShouldGenerateGitNumberFooters']))
+    self.calls += [
+      ((['git', 'config', 'rietveld.pending-ref-prefix'],), CERR1),
+      ((['ShouldGenerateGitNumberFooters'],), True),
+
+      ((['git', 'show', '-s', '--format=%B', 'fake_ancestor_sha'],),
+       'This is parent commit with no footer.'),
+
+      ((['git', 'checkout', '-q', 'feature'],), ''),
+      ((['git', 'branch', '-D', 'git-cl-commit'],), ''),
+    ]
+    with self.assertRaises(ValueError) as cm:
+      git_cl.main(['land'])
+    self.assertEqual(cm.exception.message,
+                     'Unable to infer commit position from footers')
 
   def test_ShouldGenerateGitNumberFooters(self):
     self.mock(git_cl, 'FindCodereviewSettingsFile', lambda: StringIO.StringIO(
