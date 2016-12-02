@@ -223,7 +223,6 @@ class CORE_EXPORT CSPDirectiveList
       const ContentSecurityPolicy::ExceptionStatus) const;
 
   bool checkEval(SourceListDirective*) const;
-  bool checkInline(SourceListDirective*) const;
   bool checkDynamic(SourceListDirective*) const;
   bool isMatchingNoncePresent(SourceListDirective*, const String&) const;
   bool checkHash(SourceListDirective*, const CSPHashValue&) const;

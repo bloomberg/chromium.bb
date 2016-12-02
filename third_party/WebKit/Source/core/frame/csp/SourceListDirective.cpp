@@ -579,6 +579,19 @@ bool SourceListDirective::hasSourceMatchInList(
   return false;
 }
 
+bool SourceListDirective::allowAllInline() {
+  const ContentSecurityPolicy::DirectiveType& type =
+      ContentSecurityPolicy::getDirectiveType(m_directiveName);
+  if (type != ContentSecurityPolicy::DirectiveType::DefaultSrc &&
+      type != ContentSecurityPolicy::DirectiveType::StyleSrc &&
+      type != ContentSecurityPolicy::DirectiveType::ScriptSrc) {
+    return false;
+  }
+  return m_allowInline && !isHashOrNoncePresent() &&
+         (type != ContentSecurityPolicy::DirectiveType::ScriptSrc ||
+          !m_allowDynamic);
+}
+
 bool SourceListDirective::subsumes(
     HeapVector<Member<SourceListDirective>> other) {
   // TODO(amalika): Handle here special keywords.
@@ -592,8 +605,27 @@ bool SourceListDirective::subsumes(
   HeapVector<Member<CSPSource>> normalizedB = other[0]->m_list;
   if (other[0]->m_allowSelf && other[0]->m_policy->getSelfSource())
     normalizedB.append(other[0]->m_policy->getSelfSource());
-  for (size_t i = 1; i < other.size(); i++)
+
+  bool allowInlineOther = other[0]->m_allowInline;
+  bool allowDynamicOther = other[0]->m_allowDynamic;
+  bool isHashOrNoncePresentOther = other[0]->isHashOrNoncePresent();
+
+  for (size_t i = 1; i < other.size(); i++) {
+    allowInlineOther = allowInlineOther && other[i]->m_allowInline;
+    allowDynamicOther = allowDynamicOther && other[i]->m_allowDynamic;
+    isHashOrNoncePresentOther =
+        isHashOrNoncePresentOther && other[i]->isHashOrNoncePresent();
     normalizedB = other[i]->getIntersectCSPSources(normalizedB);
+  }
+
+  const ContentSecurityPolicy::DirectiveType type =
+      ContentSecurityPolicy::getDirectiveType(m_directiveName);
+  bool allowAllInlineOther =
+      allowInlineOther && !isHashOrNoncePresentOther &&
+      (type != ContentSecurityPolicy::DirectiveType::ScriptSrc ||
+       !allowDynamicOther);
+  if (!allowAllInline() && allowAllInlineOther)
+    return false;
 
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }

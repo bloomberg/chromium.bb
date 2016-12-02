@@ -38,8 +38,8 @@ class SourceListDirectiveTest : public ::testing::Test {
   }
 
   ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
-    KURL url(ParsedURLString, origin);
-    RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(url));
+    KURL secureURL(ParsedURLString, origin);
+    RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(secureURL));
     Document* document = Document::create();
     document->setSecurityOrigin(secureOrigin);
     ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
@@ -561,6 +561,172 @@ TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
     }
 
     EXPECT_EQ(test.expected, A.subsumes(vectorB));
+  }
+}
+
+TEST_F(SourceListDirectiveTest, AllowAllInline) {
+  struct TestCase {
+    String sources;
+    bool expected;
+  } cases[] = {
+      // List does not contain 'unsafe-inline'.
+      {"http://example1.com/foo/", false},
+      {"'sha512-321cba'", false},
+      {"'nonce-yay'", false},
+      {"'strict-dynamic'", false},
+      {"'sha512-321cba' http://example1.com/foo/", false},
+      {"http://example1.com/foo/ 'sha512-321cba'", false},
+      {"http://example1.com/foo/ 'nonce-yay'", false},
+      {"'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {" 'sha512-321cba' 'nonce-yay' 'strict-dynamic'", false},
+      // List contains 'unsafe-inline'.
+      {"'unsafe-inline'", true},
+      {"'self' 'unsafe-inline'", true},
+      {"'unsafe-inline' http://example1.com/foo/", true},
+      {"'sha512-321cba' 'unsafe-inline'", false},
+      {"'nonce-yay' 'unsafe-inline'", false},
+      {"'strict-dynamic' 'unsafe-inline' 'nonce-yay'", false},
+      {"'sha512-321cba' http://example1.com/foo/ 'unsafe-inline'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'unsafe-inline'", false},
+      {"http://example1.com/foo/ 'nonce-yay' 'unsafe-inline'", false},
+      {"'sha512-321cba' 'nonce-yay' 'unsafe-inline'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'unsafe-inline' 'nonce-yay'",
+       false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay' 'unsafe-inline'",
+       false},
+      {" 'sha512-321cba' 'unsafe-inline' 'nonce-yay' 'strict-dynamic'", false},
+  };
+
+  // Script-src and style-src differently handle presence of 'strict-dynamic'.
+  SourceListDirective scriptSrc("script-src",
+                                "'strict-dynamic' 'unsafe-inline'", csp.get());
+  EXPECT_FALSE(scriptSrc.allowAllInline());
+
+  SourceListDirective styleSrc("style-src", "'strict-dynamic' 'unsafe-inline'",
+                               csp.get());
+  EXPECT_TRUE(styleSrc.allowAllInline());
+
+  for (const auto& test : cases) {
+    SourceListDirective scriptSrc("script-src", test.sources, csp.get());
+    EXPECT_EQ(scriptSrc.allowAllInline(), test.expected);
+
+    SourceListDirective styleSrc("style-src", test.sources, csp.get());
+    EXPECT_EQ(styleSrc.allowAllInline(), test.expected);
+
+    // If source list doesn't have a valid type, it must not allow all inline.
+    SourceListDirective imgSrc("img-src", test.sources, csp.get());
+    EXPECT_FALSE(imgSrc.allowAllInline());
+  }
+}
+
+TEST_F(SourceListDirectiveTest, SubsumesAllowAllInline) {
+  struct TestCase {
+    bool isScriptSrc;
+    String sourcesA;
+    std::vector<String> sourcesB;
+    bool expected;
+  } cases[] = {
+      // `sourcesA` allows all inline behavior.
+      {false,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'unsafe-inline' http://example1.com/foo/bar.html"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"http://example1.com/foo/ 'unsafe-inline'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'unsafe-inline' 'nonce-yay'", "'unsafe-inline'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'unsafe-inline' 'nonce-yay'", "'unsafe-inline'", "'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'unsafe-inline' 'nonce-yay'", "'unsafe-inline'",
+        "'strict-dynamic' 'nonce-yay'"},
+       true},
+      // `sourcesA` does not allow all inline behavior.
+      {false,
+       "http://example1.com/foo/ 'self' 'strict-dynamic'",
+       {"'unsafe-inline' http://example1.com/foo/bar.html"},
+       false},
+      {true, "http://example1.com/foo/ 'self'", {"'unsafe-inline'"}, false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline'",
+       {"'unsafe-inline' 'nonce-yay'", "'nonce-abc'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self'",
+       {"'unsafe-inline' https://example.test/"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'unsafe-inline' https://example.test/"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic'",
+       {"'unsafe-inline' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'nonce-yay'",
+       {"'unsafe-inline' 'nonce-yay'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic' "
+       "'nonce-yay'",
+       {"'unsafe-inline' 'nonce-yay'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic' "
+       "'nonce-yay'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba' "
+       "'strict-dynamic'",
+       {"'unsafe-inline' 'sha512-321cba'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'strict-dynamic' "
+       "'sha512-321cba'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'strict-dynamic'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/ 'unsafe-inline'",
+        "http://example1.com/foo/ 'sha512-321cba'"},
+       true},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/ 'unsafe-inline'",
+        "http://example1.com/foo/ 'unsafe-inline' 'sha512-321cba'"},
+       false},
+      {true,
+       "http://example1.com/foo/ 'self' 'unsafe-inline' 'sha512-321cba'",
+       {"http://example1.com/foo/ 'unsafe-inline' 'nonce-yay'",
+        "http://example1.com/foo/ 'unsafe-inline' 'sha512-321cba'"},
+       true},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective A(test.isScriptSrc ? "script-src" : "style-src",
+                          test.sourcesA, csp.get());
+    ContentSecurityPolicy* cspB =
+        SetUpWithOrigin("https://another.test/image.png");
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member = new SourceListDirective(
+          test.isScriptSrc ? "script-src" : "style-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(A.subsumes(vectorB), test.expected);
   }
 }
 

@@ -163,11 +163,6 @@ bool CSPDirectiveList::checkEval(SourceListDirective* directive) const {
   return !directive || directive->allowEval();
 }
 
-bool CSPDirectiveList::checkInline(SourceListDirective* directive) const {
-  return !directive ||
-         (directive->allowInline() && !directive->isHashOrNoncePresent());
-}
-
 bool CSPDirectiveList::isMatchingNoncePresent(SourceListDirective* directive,
                                               const String& nonce) const {
   return directive && directive->allowNonce(nonce);
@@ -385,7 +380,7 @@ bool CSPDirectiveList::checkInlineAndReportViolation(
     const WTF::OrdinalNumber& contextLine,
     bool isScript,
     const String& hashValue) const {
-  if (checkInline(directive))
+  if (!directive || directive->allowAllInline())
     return true;
 
   String suffix = String();
@@ -507,14 +502,16 @@ bool CSPDirectiveList::allowJavaScriptURLs(
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
   if (reportingStatus == ContentSecurityPolicy::SendReport) {
     return checkInlineAndReportViolation(
-        operativeDirective(m_scriptSrc.get()),
+        directive,
         "Refused to execute JavaScript URL because it violates the following "
         "Content Security Policy directive: ",
         element, contextURL, contextLine, true, "sha256-...");
   }
-  return checkInline(operativeDirective(m_scriptSrc.get()));
+
+  return !directive || directive->allowAllInline();
 }
 
 bool CSPDirectiveList::allowInlineEventHandlers(
@@ -522,6 +519,7 @@ bool CSPDirectiveList::allowInlineEventHandlers(
     const String& contextURL,
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus) const {
+  SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
   if (reportingStatus == ContentSecurityPolicy::SendReport) {
     return checkInlineAndReportViolation(
         operativeDirective(m_scriptSrc.get()),
@@ -529,7 +527,8 @@ bool CSPDirectiveList::allowInlineEventHandlers(
         "following Content Security Policy directive: ",
         element, contextURL, contextLine, true, "sha256-...");
   }
-  return checkInline(operativeDirective(m_scriptSrc.get()));
+
+  return !directive || directive->allowAllInline();
 }
 
 bool CSPDirectiveList::allowInlineScript(
@@ -539,7 +538,8 @@ bool CSPDirectiveList::allowInlineScript(
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus,
     const String& content) const {
-  if (isMatchingNoncePresent(operativeDirective(m_scriptSrc.get()), nonce))
+  SourceListDirective* directive = operativeDirective(m_scriptSrc.get());
+  if (isMatchingNoncePresent(directive, nonce))
     return true;
   if (element && isHTMLScriptElement(element) &&
       !toHTMLScriptElement(element)->loader()->isParserInserted() &&
@@ -548,12 +548,13 @@ bool CSPDirectiveList::allowInlineScript(
   }
   if (reportingStatus == ContentSecurityPolicy::SendReport) {
     return checkInlineAndReportViolation(
-        operativeDirective(m_scriptSrc.get()),
+        directive,
         "Refused to execute inline script because it violates the following "
         "Content Security Policy directive: ",
         element, contextURL, contextLine, true, getSha256String(content));
   }
-  return checkInline(operativeDirective(m_scriptSrc.get()));
+
+  return !directive || directive->allowAllInline();
 }
 
 bool CSPDirectiveList::allowInlineStyle(
@@ -563,16 +564,18 @@ bool CSPDirectiveList::allowInlineStyle(
     const WTF::OrdinalNumber& contextLine,
     ContentSecurityPolicy::ReportingStatus reportingStatus,
     const String& content) const {
-  if (isMatchingNoncePresent(operativeDirective(m_styleSrc.get()), nonce))
+  SourceListDirective* directive = operativeDirective(m_styleSrc.get());
+  if (isMatchingNoncePresent(directive, nonce))
     return true;
   if (reportingStatus == ContentSecurityPolicy::SendReport) {
     return checkInlineAndReportViolation(
-        operativeDirective(m_styleSrc.get()),
+        directive,
         "Refused to apply inline style because it violates the following "
         "Content Security Policy directive: ",
         element, contextURL, contextLine, false, getSha256String(content));
   }
-  return checkInline(operativeDirective(m_styleSrc.get()));
+
+  return !directive || directive->allowAllInline();
 }
 
 bool CSPDirectiveList::allowEval(
