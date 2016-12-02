@@ -379,15 +379,9 @@ _COPY_PATHS_CHROME = (
     Path('*.png'),
 ) + _COPY_PATHS_COMMON
 
-_COPY_PATHS_ENVOY = (
-    Path('envoy_shell', exe=True),
-    Path('envoy_shell.pak'),
-) + _COPY_PATHS_COMMON
-
 _COPY_PATHS_MAP = {
     'app_shell': _COPY_PATHS_APP_SHELL,
     'chrome': _COPY_PATHS_CHROME,
-    'envoy': _COPY_PATHS_ENVOY,
 }
 
 
@@ -402,8 +396,8 @@ def GetCopyPaths(deployment_type='chrome'):
   """Returns the list of copy paths used as a filter for staging files.
 
   Args:
-    deployment_type: String describing the deployment type. Either "app_shell",
-                     "chrome", or "envoy".
+    deployment_type: String describing the deployment type. Either "app_shell"
+                     or "chrome".
 
   Returns:
     The list of paths to use as a filter for staging files.

@@ -296,15 +296,6 @@ class DeployTestBuildDir(cros_test_lib.MockTempDirTestCase):
 class TestDeploymentType(DeployTestBuildDir):
   """Test detection of deployment type using build dir."""
 
-  def testEnvoyDetection(self):
-    """Check for an envoy deployment"""
-    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'envoy_shell'),
-                  makedirs=True)
-    self.deploy._CheckDeployType()
-    self.assertTrue(self.getCopyPath('envoy_shell'))
-    self.assertFalse(self.getCopyPath('app_shell'))
-    self.assertFalse(self.getCopyPath('chrome'))
-
   def testAppShellDetection(self):
     """Check for an app_shell deployment"""
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'app_shell'),
@@ -312,20 +303,16 @@ class TestDeploymentType(DeployTestBuildDir):
     self.deploy._CheckDeployType()
     self.assertTrue(self.getCopyPath('app_shell'))
     self.assertFalse(self.getCopyPath('chrome'))
-    self.assertFalse(self.getCopyPath('envoy_shell'))
 
   def testChromeAndAppShellDetection(self):
-    """Check for a chrome deployment when app_shell/envoy_shell also exist."""
+    """Check for a chrome deployment when app_shell also exists."""
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'chrome'),
                   makedirs=True)
     osutils.Touch(os.path.join(self.deploy.options.build_dir, 'app_shell'),
                   makedirs=True)
-    osutils.Touch(os.path.join(self.deploy.options.build_dir, 'envoy_shell'),
-                  makedirs=True)
     self.deploy._CheckDeployType()
     self.assertTrue(self.getCopyPath('chrome'))
     self.assertFalse(self.getCopyPath('app_shell'))
-    self.assertFalse(self.getCopyPath('envoy_shell'))
 
   def testChromeDetection(self):
     """Check for a regular chrome deployment"""
@@ -334,4 +321,3 @@ class TestDeploymentType(DeployTestBuildDir):
     self.deploy._CheckDeployType()
     self.assertTrue(self.getCopyPath('chrome'))
     self.assertFalse(self.getCopyPath('app_shell'))
-    self.assertFalse(self.getCopyPath('envoy_shell'))

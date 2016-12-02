@@ -209,8 +209,6 @@ class LinkageTest(image_test_lib.NonForgivingImageTestCase):
     if not self._IsPackageMerged('chromeos-base/chromeos-chrome[pgo_generate]'):
       if self._IsPackageMerged('chromeos-base/chromeos-chrome[app_shell]'):
         binaries.append('opt/google/chrome/app_shell')
-      elif self._IsPackageMerged('chromeos-base/chromeos-chrome[envoy]'):
-        binaries.append('opt/google/chrome/envoy_shell')
       elif self._IsPackageMerged('chromeos-base/chromeos-chrome'):
         binaries.append('opt/google/chrome/chrome')
 
