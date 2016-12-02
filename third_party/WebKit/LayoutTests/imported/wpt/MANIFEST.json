@@ -11,6 +11,42 @@
     "deleted_reftests": {},
     "items": {
       "manual": {
+        "annotation-vocab/01-validJSON-LD-manual.html": [
+          {
+            "path": "annotation-vocab/01-validJSON-LD-manual.html",
+            "url": "/annotation-vocab/01-validJSON-LD-manual.html"
+          }
+        ],
+        "annotation-vocab/02-context-to-triples-manual.html": [
+          {
+            "path": "annotation-vocab/02-context-to-triples-manual.html",
+            "url": "/annotation-vocab/02-context-to-triples-manual.html"
+          }
+        ],
+        "annotation-vocab/03-graphs-are-isomorphic-manual.html": [
+          {
+            "path": "annotation-vocab/03-graphs-are-isomorphic-manual.html",
+            "url": "/annotation-vocab/03-graphs-are-isomorphic-manual.html"
+          }
+        ],
+        "annotation-vocab/04-graphs-convert-lossless-manual.html": [
+          {
+            "path": "annotation-vocab/04-graphs-convert-lossless-manual.html",
+            "url": "/annotation-vocab/04-graphs-convert-lossless-manual.html"
+          }
+        ],
+        "annotation-vocab/05-ontology-parsed-as-valid-manual.html": [
+          {
+            "path": "annotation-vocab/05-ontology-parsed-as-valid-manual.html",
+            "url": "/annotation-vocab/05-ontology-parsed-as-valid-manual.html"
+          }
+        ],
+        "annotation-vocab/06-ontology-internally-consistent-manual.html": [
+          {
+            "path": "annotation-vocab/06-ontology-internally-consistent-manual.html",
+            "url": "/annotation-vocab/06-ontology-internally-consistent-manual.html"
+          }
+        ],
         "fullscreen/api/document-exit-fullscreen-manual.html": [
           {
             "path": "fullscreen/api/document-exit-fullscreen-manual.html",
@@ -5328,6 +5364,12 @@
             "url": "/IndexedDB/list_ordering.htm"
           }
         ],
+        "IndexedDB/name-scopes.html": [
+          {
+            "path": "IndexedDB/name-scopes.html",
+            "url": "/IndexedDB/name-scopes.html"
+          }
+        ],
         "IndexedDB/objectstore_keyorder.htm": [
           {
             "path": "IndexedDB/objectstore_keyorder.htm",
@@ -7671,6 +7713,126 @@
             "path": "dom/traversal/TreeWalker.html",
             "timeout": "long",
             "url": "/dom/traversal/TreeWalker.html"
+          }
+        ],
+        "domparsing/DOMParser-parseFromString-html.html": [
+          {
+            "path": "domparsing/DOMParser-parseFromString-html.html",
+            "url": "/domparsing/DOMParser-parseFromString-html.html"
+          }
+        ],
+        "domparsing/DOMParser-parseFromString-xml-doctype.html": [
+          {
+            "path": "domparsing/DOMParser-parseFromString-xml-doctype.html",
+            "url": "/domparsing/DOMParser-parseFromString-xml-doctype.html"
+          }
+        ],
+        "domparsing/DOMParser-parseFromString-xml.html": [
+          {
+            "path": "domparsing/DOMParser-parseFromString-xml.html",
+            "url": "/domparsing/DOMParser-parseFromString-xml.html"
+          }
+        ],
+        "domparsing/XMLSerializer-serializeToString.html": [
+          {
+            "path": "domparsing/XMLSerializer-serializeToString.html",
+            "url": "/domparsing/XMLSerializer-serializeToString.html"
+          }
+        ],
+        "domparsing/createContextualFragment.html": [
+          {
+            "path": "domparsing/createContextualFragment.html",
+            "url": "/domparsing/createContextualFragment.html"
+          }
+        ],
+        "domparsing/innerhtml-01.xhtml": [
+          {
+            "path": "domparsing/innerhtml-01.xhtml",
+            "url": "/domparsing/innerhtml-01.xhtml"
+          }
+        ],
+        "domparsing/innerhtml-03.xhtml": [
+          {
+            "path": "domparsing/innerhtml-03.xhtml",
+            "url": "/domparsing/innerhtml-03.xhtml"
+          }
+        ],
+        "domparsing/innerhtml-04.html": [
+          {
+            "path": "domparsing/innerhtml-04.html",
+            "url": "/domparsing/innerhtml-04.html"
+          }
+        ],
+        "domparsing/innerhtml-05.xhtml": [
+          {
+            "path": "domparsing/innerhtml-05.xhtml",
+            "url": "/domparsing/innerhtml-05.xhtml"
+          }
+        ],
+        "domparsing/innerhtml-06.html": [
+          {
+            "path": "domparsing/innerhtml-06.html",
+            "url": "/domparsing/innerhtml-06.html"
+          }
+        ],
+        "domparsing/innerhtml-07.html": [
+          {
+            "path": "domparsing/innerhtml-07.html",
+            "url": "/domparsing/innerhtml-07.html"
+          }
+        ],
+        "domparsing/insert-adjacent.html": [
+          {
+            "path": "domparsing/insert-adjacent.html",
+            "url": "/domparsing/insert-adjacent.html"
+          }
+        ],
+        "domparsing/insert_adjacent_html-xhtml.xhtml": [
+          {
+            "path": "domparsing/insert_adjacent_html-xhtml.xhtml",
+            "url": "/domparsing/insert_adjacent_html-xhtml.xhtml"
+          }
+        ],
+        "domparsing/insert_adjacent_html.html": [
+          {
+            "path": "domparsing/insert_adjacent_html.html",
+            "url": "/domparsing/insert_adjacent_html.html"
+          }
+        ],
+        "domparsing/outerhtml-01.html": [
+          {
+            "path": "domparsing/outerhtml-01.html",
+            "url": "/domparsing/outerhtml-01.html"
+          }
+        ],
+        "domparsing/outerhtml-02.html": [
+          {
+            "path": "domparsing/outerhtml-02.html",
+            "url": "/domparsing/outerhtml-02.html"
+          }
+        ],
+        "domparsing/style_attribute_html.html": [
+          {
+            "path": "domparsing/style_attribute_html.html",
+            "url": "/domparsing/style_attribute_html.html"
+          }
+        ],
+        "domparsing/xml-serialization.xhtml": [
+          {
+            "path": "domparsing/xml-serialization.xhtml",
+            "url": "/domparsing/xml-serialization.xhtml"
+          }
+        ],
+        "domxpath/evaluator-constructor.html": [
+          {
+            "path": "domxpath/evaluator-constructor.html",
+            "url": "/domxpath/evaluator-constructor.html"
+          }
+        ],
+        "domxpath/xml_xpath_runner.html": [
+          {
+            "path": "domxpath/xml_xpath_runner.html",
+            "url": "/domxpath/xml_xpath_runner.html"
           }
         ],
         "encoding/api-basics.html": [
@@ -13916,6 +14078,18 @@
             "url": "/html/webappapis/timers/evil-spec-example.html"
           }
         ],
+        "innerText/getter.html": [
+          {
+            "path": "innerText/getter.html",
+            "url": "/innerText/getter.html"
+          }
+        ],
+        "innerText/setter.html": [
+          {
+            "path": "innerText/setter.html",
+            "url": "/innerText/setter.html"
+          }
+        ],
         "mediacapture-streams/GUM-api.https.html": [
           {
             "path": "mediacapture-streams/GUM-api.https.html",
@@ -15958,18 +16132,6 @@
           {
             "path": "web-animations/timing-model/animations/updating-the-finished-state.html",
             "url": "/web-animations/timing-model/animations/updating-the-finished-state.html"
-          }
-        ],
-        "webrtc/RTCDataChannelEvent-constructor.html": [
-          {
-            "path": "webrtc/RTCDataChannelEvent-constructor.html",
-            "url": "/webrtc/RTCDataChannelEvent-constructor.html"
-          }
-        ],
-        "webrtc/RTCPeerConnectionIceEvent-constructor.html": [
-          {
-            "path": "webrtc/RTCPeerConnectionIceEvent-constructor.html",
-            "url": "/webrtc/RTCPeerConnectionIceEvent-constructor.html"
           }
         ],
         "webrtc/datachannel-emptystring.html": [

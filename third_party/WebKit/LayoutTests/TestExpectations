@@ -1547,11 +1547,13 @@ crbug.com/626703 imported/wpt/pointerevents/pointerevent_element_haspointercaptu
 crbug.com/626703 imported/wpt/svg/linking/reftests/href-filter-element.html [ Failure ]
 crbug.com/626703 imported/wpt/web-animations/timing-model/animations/set-the-target-effect-of-an-animation.html [ Failure ]
 
-# Newly imported and untriaged tests from WPT that time out.
+# Other untriaged test failures, timeouts and crashes from newly-imported WPT tests.
+crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
+crbug.com/626703 imported/wpt/domparsing/innerhtml-05.xhtml [ Timeout Crash ]
+crbug.com/626703 imported/wpt/domxpath/xml_xpath_runner.html [ Timeout ]
 crbug.com/626703 imported/wpt/html/browsers/windows/nested-browsing-contexts/frameElement.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/browsers/windows/targeting-cross-origin-nested-browsing-contexts.html [ Timeout Failure ]
 crbug.com/626703 imported/wpt/html/dom/documents/dom-tree-accessors/Document.currentScript.html [ Timeout Failure ]
-crbug.com/626703 imported/wpt/dom/events/Event-dispatch-click.html [ Timeout Crash ]
 
 crbug.com/662264 imported/wpt/html/browsers/sandboxing/sandbox-disallow-same-origin.html [ Timeout Failure ]
 

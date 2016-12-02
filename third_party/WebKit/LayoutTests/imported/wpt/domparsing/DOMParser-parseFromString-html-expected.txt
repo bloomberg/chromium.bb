@@ -1,0 +1,13 @@
+This is a testharness.js-based test.
+PASS Parsing of id attribute 
+PASS contentType 
+PASS characterSet 
+PASS inputEncoding 
+PASS charset 
+FAIL URL value assert_equals: The document must have a URL value equal to the URL of the active document. expected (string) "file:///.../domparsing/DOMParser-parseFromString-html.html" but got (object) null
+FAIL baseURI value assert_equals: expected (string) "file:///.../domparsing/DOMParser-parseFromString-html.html" but got (object) null
+PASS Location value 
+PASS DOMParser parses HTML tag soup with no problems 
+PASS DOMParser throws on an invalid enum value 
+Harness: the test ran to completion.
+
