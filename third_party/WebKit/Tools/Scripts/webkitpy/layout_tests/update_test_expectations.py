@@ -112,9 +112,10 @@ class RemoveFlakesOMatic(object):
 
             if not builder_name:
                 _log.debug('No builder with config %s', config)
-                # TODO(bokan): Matching configurations often give us bots that don't have a
-                # builder in builders.py's exact_matches. Should we ignore those or be conservative
-                # and assume we need these expectations to make a decision?
+                # For many configurations, there is no matching builder in
+                # webkitpy/common/config/builders.py. We ignore these
+                # configurations and make decisions based only on configurations
+                # with actual builders.
                 continue
 
             builders_checked.append(builder_name)
@@ -125,7 +126,7 @@ class RemoveFlakesOMatic(object):
 
             results_by_path = self._builder_results_by_path[builder_name]
 
-            # No results means the tests were all skipped or all results are passing.
+            # No results means the tests were all skipped, or all results are passing.
             if test_expectation_line.path not in results_by_path.keys():
                 continue
 
@@ -158,7 +159,7 @@ class RemoveFlakesOMatic(object):
                 e.g. ['IMAGE', 'IMAGE', 'PASS']
 
         Returns:
-            A set containing expectations that occured in the results.
+            A set containing expectations that occurred in the results.
         """
         # TODO(bokan): Does this not exist in a more central place?
         def replace_failing_with_fail(expectation):
@@ -271,8 +272,10 @@ class RemoveFlakesOMatic(object):
     def _expectations_to_remove(self):
         """Computes and returns the expectation lines that should be removed.
 
-        returns a list of TestExpectationLines that can be removed from the test expectations
-        file. The result is memoized so that subsequent calls will not recompute the result.
+        Returns:
+            A list of TestExpectationLine objects for lines that can be removed
+            from the test expectations file. The result is memoized so that
+            subsequent calls will not recompute the result.
         """
         if self._expectations_to_remove_list is not None:
             return self._expectations_to_remove_list

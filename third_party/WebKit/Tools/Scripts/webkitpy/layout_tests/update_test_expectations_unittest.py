@@ -22,7 +22,7 @@ class FakeBotTestExpectations(object):
     def __init__(self, results_by_path):
         self._results = {}
 
-        # Make the results distinct like the real BotTestExpectations
+        # Make the results distinct like the real BotTestExpectations.
         for path, results in results_by_path.iteritems():
             self._results[path] = list(set(results))
 
@@ -34,7 +34,8 @@ class FakeBotTestExpectationsFactory(object):
 
     def __init__(self):
         """The distinct results seen in at least one run of the test.
-        E.g. if the bot results for mytest.html are:
+
+        For example, if the bot results for mytest.html are:
             PASS PASS FAIL PASS TIMEOUT
         then _all_results_by_builder would be:
             {
@@ -303,7 +304,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         """Tests basic functionality with a single builder.
 
         Test that flaky expectations with results from a single bot showing the
-        expected failure isn't occuring should be removed. Results with failures
+        expected failure isn't occurring should be removed. Results with failures
         of the expected type shouldn't be removed but other kinds of failures
         allow removal.
         """
@@ -915,7 +916,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
         doesn't exist.
         """
 
-        # Setup the mock host and port.
+        # Set up the mock host and port.
         host = MockHost()
         host.port_factory = FakePortFactory(host)
 
@@ -957,7 +958,7 @@ class UpdateTestExpectationsTest(LoggingTestCase):
             },
         })
 
-        # Setup the mock host and port.
+        # Set up the mock host and port.
         host = MockHost()
         host.port_factory = FakePortFactory(
             host,
@@ -996,9 +997,9 @@ class UpdateTestExpectationsTest(LoggingTestCase):
     def test_show_results(self):
         """Tests that passing --show-results shows the removed results.
 
-        --show-results opens the removed tests in the layout dashboard using the default browser.
-        This tests mocks the webbrowser.open function and checks that it was called with the correct
-        url.
+        --show-results opens the removed tests in the layout dashboard using
+        the default browser. This tests mocks the webbrowser.open function and
+        checks that it was called with the correct URL.
         """
         test_expectations_before = (
             """# Remove this since it's passing all runs.
