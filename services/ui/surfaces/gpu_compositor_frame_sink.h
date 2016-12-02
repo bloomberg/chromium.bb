@@ -13,10 +13,7 @@
 #include "base/memory/weak_ptr.h"
 #include "cc/ipc/compositor_frame.mojom.h"
 #include "cc/ipc/mojo_compositor_frame_sink.mojom.h"
-#include "cc/output/context_provider.h"
-#include "cc/output/in_process_context_provider.h"
 #include "cc/scheduler/begin_frame_source.h"
-#include "cc/surfaces/display.h"
 #include "cc/surfaces/display_client.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/surface_factory.h"
@@ -25,12 +22,8 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace base {
-class SingleThreadTaskRunner;
-}
-
-namespace gpu {
-class GpuMemoryBufferManager;
+namespace cc {
+class Display;
 }
 
 namespace ui {
@@ -47,9 +40,7 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   GpuCompositorFrameSink(
       DisplayCompositor* display_compositor,
       const cc::FrameSinkId& frame_sink_id,
-      gpu::SurfaceHandle widget,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<cc::InProcessContextProvider> context_provider,
+      std::unique_ptr<cc::Display> display,
       cc::mojom::MojoCompositorFrameSinkRequest request,
       cc::mojom::MojoCompositorFrameSinkPrivateRequest private_request,
       cc::mojom::MojoCompositorFrameSinkClientPtr client);
@@ -67,11 +58,6 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
       const cc::FrameSinkId& child_frame_sink_id) override;
 
  private:
-  void InitDisplay(
-      gpu::SurfaceHandle widget,
-      gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<cc::InProcessContextProvider> context_provider);
-
   void DidReceiveCompositorFrameAck();
 
   // cc::DisplayClient implementation.
@@ -95,9 +81,8 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   void OnPrivateConnectionLost();
 
   const cc::FrameSinkId frame_sink_id_;
-  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
-  DisplayCompositor* display_compositor_;  // owns this.
+  DisplayCompositor* const display_compositor_;  // owns this.
 
   // GpuCompositorFrameSink holds a cc::Display if it created with
   // non-null gpu::SurfaceHandle. In the window server, the display root

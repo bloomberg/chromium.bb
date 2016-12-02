@@ -31,9 +31,9 @@ class ImageFactory;
 }
 
 namespace cc {
-class SurfaceHittest;
+class Display;
 class SurfaceManager;
-}  // namespace cc
+}
 
 namespace ui {
 
@@ -89,6 +89,10 @@ class DisplayCompositor : public cc::SurfaceObserver,
  private:
   friend class test::DisplayCompositorTest;
 
+  std::unique_ptr<cc::Display> CreateDisplay(
+      const cc::FrameSinkId& frame_sink_id,
+      gpu::SurfaceHandle surface_handle);
+
   const cc::SurfaceId& GetRootSurfaceId() const;
 
   // cc::SurfaceObserver implementation.
@@ -102,18 +106,21 @@ class DisplayCompositor : public cc::SurfaceObserver,
   // destroyed in order to ensure that all other objects that depend on it have
   // access to a valid pointer for the entirety of their liftimes.
   cc::SurfaceManager manager_;
-  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
-  std::unordered_map<cc::FrameSinkId,
-                     std::unique_ptr<GpuCompositorFrameSink>,
-                     cc::FrameSinkIdHash>
-      compositor_frame_sinks_;
-  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
-  gpu::ImageFactory* image_factory_;
-  cc::mojom::DisplayCompositorClientPtr client_;
 
   // Will normally point to |manager_| as it provides the interface. For tests
   // it will be swapped out with a mock implementation.
   cc::SurfaceReferenceManager* reference_manager_;
+
+  scoped_refptr<gpu::InProcessCommandBuffer::Service> gpu_service_;
+  std::unique_ptr<gpu::GpuMemoryBufferManager> gpu_memory_buffer_manager_;
+  gpu::ImageFactory* image_factory_;
+
+  std::unordered_map<cc::FrameSinkId,
+                     std::unique_ptr<GpuCompositorFrameSink>,
+                     cc::FrameSinkIdHash>
+      compositor_frame_sinks_;
+
+  scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
 
   // SurfaceIds that have temporary references from top level root so they
   // aren't GC'd before DisplayCompositorClient can add a real reference. This
@@ -127,6 +134,7 @@ class DisplayCompositor : public cc::SurfaceObserver,
 
   base::ThreadChecker thread_checker_;
 
+  cc::mojom::DisplayCompositorClientPtr client_;
   mojo::Binding<cc::mojom::DisplayCompositor> binding_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayCompositor);
