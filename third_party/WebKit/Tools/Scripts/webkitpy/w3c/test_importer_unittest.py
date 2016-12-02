@@ -31,7 +31,6 @@ import unittest
 from webkitpy.common.host_mock import MockHost
 from webkitpy.common.system.filesystem_mock import MockFileSystem
 from webkitpy.common.system.executive_mock import MockExecutive2, ScriptError
-from webkitpy.common.system.outputcapture import OutputCapture
 from webkitpy.w3c.test_importer import TestImporter
 
 
@@ -69,15 +68,8 @@ class TestImporterTest(unittest.TestCase):
         host.executive = MockExecutive2(exception=ScriptError(
             "abort: no repository found in '/Volumes/Source/src/wk/Tools/Scripts/webkitpy/w3c'"))
         host.filesystem = MockFileSystem(files=FAKE_FILES)
-
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
-
-        oc = OutputCapture()
-        oc.capture_output()
-        try:
-            importer.do_import()
-        finally:
-            oc.restore_output()
+        importer.do_import()  # No exception raised.
 
     def test_path_too_long_true(self):
         importer = TestImporter(MockHost(), FAKE_SOURCE_REPO_DIR, self.options())
@@ -127,8 +119,7 @@ class TestImporterTest(unittest.TestCase):
                 }
             ])
 
-    def test_executablebit(self):
-        # executable source files are executable after importing
+    def test_files_with_shebang_are_made_executable(self):
         host = MockHost()
         host.filesystem = MockFileSystem(files=FAKE_FILES)
         importer = TestImporter(host, FAKE_SOURCE_REPO_DIR, self.options())
