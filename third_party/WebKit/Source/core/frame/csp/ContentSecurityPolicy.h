@@ -341,6 +341,8 @@ class CORE_EXPORT ContentSecurityPolicy
 
   bool shouldSendCSPHeader(Resource::Type) const;
 
+  CSPSource* getSelfSource() const { return m_selfSource; }
+
   static bool shouldBypassMainWorld(const ExecutionContext*);
 
   static bool isNonceableElement(const Element*);

@@ -585,12 +585,17 @@ bool SourceListDirective::subsumes(
   if (!m_list.size() || !other.size())
     return !m_list.size();
 
-  HeapVector<Member<CSPSource>> normalizedA = other[0]->m_list;
-  for (size_t i = 1; i < other.size(); i++) {
-    normalizedA = other[i]->getIntersectCSPSources(normalizedA);
-  }
+  HeapVector<Member<CSPSource>> normalizedA = m_list;
+  if (m_allowSelf && other[0]->m_policy->getSelfSource())
+    normalizedA.append(other[0]->m_policy->getSelfSource());
 
-  return CSPSource::firstSubsumesSecond(m_list, normalizedA);
+  HeapVector<Member<CSPSource>> normalizedB = other[0]->m_list;
+  if (other[0]->m_allowSelf && other[0]->m_policy->getSelfSource())
+    normalizedB.append(other[0]->m_policy->getSelfSource());
+  for (size_t i = 1; i < other.size(); i++)
+    normalizedB = other[i]->getIntersectCSPSources(normalizedB);
+
+  return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
 
 HashMap<String, CSPSource*> SourceListDirective::getIntersectSchemesOnly(
@@ -630,7 +635,10 @@ HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
     }
   }
 
-  for (const auto& sourceA : m_list) {
+  HeapVector<Member<CSPSource>> thisVector = m_list;
+  if (m_allowSelf)
+    thisVector.append(m_policy->getSelfSource());
+  for (const auto& sourceA : thisVector) {
     if (schemesMap.contains(sourceA->getScheme()))
       continue;
 

@@ -37,6 +37,16 @@ class SourceListDirectiveTest : public ::testing::Test {
     csp->bindToExecutionContext(document.get());
   }
 
+  ContentSecurityPolicy* SetUpWithOrigin(const String& origin) {
+    KURL url(ParsedURLString, origin);
+    RefPtr<SecurityOrigin> secureOrigin(SecurityOrigin::create(url));
+    Document* document = Document::create();
+    document->setSecurityOrigin(secureOrigin);
+    ContentSecurityPolicy* csp = ContentSecurityPolicy::create();
+    csp->bindToExecutionContext(document);
+    return csp;
+  }
+
   bool equalSources(const Source& a, const Source& b) {
     return a.scheme == b.scheme && a.host == b.host && a.port == b.port &&
            a.path == b.path && a.hostWildcard == b.hostWildcard &&
@@ -434,6 +444,123 @@ TEST_F(SourceListDirectiveTest, Subsumes) {
     EXPECT_TRUE(
         requiredIsEmpty.subsumes(HeapVector<Member<SourceListDirective>>()));
     EXPECT_TRUE(requiredIsEmpty.subsumes(returned));
+  }
+}
+
+TEST_F(SourceListDirectiveTest, SubsumesWithSelf) {
+  SourceListDirective A("script-src",
+                        "http://example1.com/foo/ http://*.example2.com/bar/ "
+                        "http://*.example3.com:*/bar/ 'self'",
+                        csp.get());
+
+  struct TestCase {
+    std::vector<const char*> sourcesB;
+    const char* originB;
+    bool expected;
+  } cases[] = {
+      // "https://example.test/" is a secure origin for both A and B.
+      {{"'self'"}, "https://example.test/", true},
+      {{"'self' 'self' 'self'"}, "https://example.test/", true},
+      {{"'self'", "'self'", "'self'"}, "https://example.test/", true},
+      {{"'self'", "'self'", "https://*.example.test/"},
+       "https://example.test/",
+       true},
+      {{"'self'", "'self'", "https://*.example.test/bar/"},
+       "https://example.test/",
+       true},
+      {{"'self' https://another.test/bar", "'self' http://*.example.test/bar",
+        "https://*.example.test/bar/"},
+       "https://example.test/",
+       true},
+      {{"http://example1.com/foo/ 'self'"}, "https://example.test/", true},
+      {{"http://example1.com/foo/ https://example.test/"},
+       "https://example.test/",
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/"},
+       "https://example.test/",
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ https://example.test/"},
+       "https://example.test/",
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ 'self'"},
+       "https://example.test/",
+       true},
+      {{"'self'", "'self'", "https://example.test/"},
+       "https://example.test/",
+       true},
+      {{"'self'", "https://example.test/folder/"},
+       "https://example.test/",
+       true},
+      {{"'self'", "http://example.test/folder/"},
+       "https://example.test/",
+       true},
+      {{"'self' https://example.com/", "https://example.com/"},
+       "https://example.test/",
+       false},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/",
+        "http://example1.com/foo/ http://*.example2.com/bar/ 'self'"},
+       "https://example.test/",
+       true},
+      {{"http://*.example1.com/foo/", "http://*.example1.com/foo/ 'self'"},
+       "https://example.test/",
+       false},
+      {{"https://*.example.test/", "https://*.example.test/ 'self'"},
+       "https://example.test/",
+       false},
+      {{"http://example.test/"}, "https://example.test/", false},
+      {{"https://example.test/"}, "https://example.test/", true},
+      // Origins of A and B do not match.
+      {{"https://example.test/"}, "https://other-origin.test/", false},
+      {{"'self'"}, "https://other-origin.test/", true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ 'self'"},
+       "https://other-origin.test/",
+       true},
+      {{"http://example1.com/foo/ http://*.example2.com/bar/ "
+        "http://*.example3.com:*/bar/ https://other-origin.test/"},
+       "https://other-origin.test/",
+       true},
+      {{"http://example1.com/foo/ 'self'"}, "https://other-origin.test/", true},
+      {{"'self'", "https://example.test/"}, "https://other-origin.test/", true},
+      {{"'self' https://example.test/", "https://example.test/"},
+       "https://other-origin.test/",
+       false},
+      {{"https://example.test/", "http://example.test/"},
+       "https://other-origin.test/",
+       false},
+      {{"'self'", "http://other-origin.test/"},
+       "https://other-origin.test/",
+       true},
+      {{"'self'", "https://non-example.test/"},
+       "https://other-origin.test/",
+       true},
+      // B's origin matches one of sources in the source list of A.
+      {{"'self'", "http://*.example1.com/foo/"}, "http://example1.com/", true},
+      {{"http://*.example2.com/bar/", "'self'"},
+       "http://example2.com/bar/",
+       true},
+      {{"'self' http://*.example1.com/foo/", "http://*.example1.com/foo/"},
+       "http://example1.com/",
+       false},
+      {{"http://*.example2.com/bar/ http://example1.com/",
+        "'self' http://example1.com/"},
+       "http://example2.com/bar/",
+       false},
+  };
+
+  for (const auto& test : cases) {
+    ContentSecurityPolicy* cspB = SetUpWithOrigin(String(test.originB));
+
+    HeapVector<Member<SourceListDirective>> vectorB;
+    for (const auto& sources : test.sourcesB) {
+      SourceListDirective* member =
+          new SourceListDirective("script-src", sources, cspB);
+      vectorB.append(member);
+    }
+
+    EXPECT_EQ(test.expected, A.subsumes(vectorB));
   }
 }
 
