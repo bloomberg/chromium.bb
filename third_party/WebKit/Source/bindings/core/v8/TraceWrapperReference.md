@@ -41,7 +41,7 @@ class SomeDOMObject : public ScriptWrappable {          // (1)
   // ...
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(SomeDOMObject) {          // (5)
+DEFINE_TRACE_WRAPPERS(SomeDOMObject) {                  // (5)
   visitor->traceWrappers(m_otherWrappable);             // (6)
   visitor->traceWrappers(m_v8object);                   // (6)
 }
@@ -125,7 +125,7 @@ class SomeDOMObject : public ScriptWrappable {
   Member<NonWrappable> m_nonWrappable;
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(SomeDOMObject) {
+DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
   visitor->traceWrappers(m_otherWrappable);
 }
 ```
@@ -158,7 +158,7 @@ class SomeDOMObject : public ScriptWrappable {
   Member<NonWrappable> m_nonWrappable;
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(SomeDOMObject) {
+DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
   visitor->traceWrappers(m_otherWrappable);
 }
 ```
@@ -183,7 +183,7 @@ class SomeDOMObject : public ScriptWrappable {
   HeapVector<TraceWrapperMember<OtherWrappable>> m_otherWrappables;
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(SomeDOMObject) {
+DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
   for (auto other : m_otherWrappables)
     visitor->traceWrappers(other);
 }
@@ -224,7 +224,7 @@ class SomeDOMObject : public ScriptWrappable {
   HeapVector<TraceWrapperMember<OtherWrappable>> m_otherWrappables;
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(SomeDOMObject) {
+DEFINE_TRACE_WRAPPERS(SomeDOMObject) {
   for (auto other : m_otherWrappables)
     visitor->traceWrappers(other);
 }
@@ -282,7 +282,7 @@ class ManualWrappable : public ScriptWrappable {
   Member<OtherWrappable>> m_otherWrappable;
 };
 
-DEFINE_VIRTUAL_TRACE_WRAPPERS(ManualWrappable) {
+DEFINE_TRACE_WRAPPERS(ManualWrappable) {
   for (auto other : m_otherWrappables)
     visitor->traceWrappersWithManualWriteBarrier(other);
 }
