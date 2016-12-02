@@ -193,6 +193,7 @@
 #include "services/service_manager/public/cpp/interface_registry.h"
 #include "services/service_manager/public/cpp/service.h"
 #include "storage/browser/fileapi/external_mount_points.h"
+#include "third_party/WebKit/public/platform/modules/shapedetection/barcodedetection.mojom.h"
 #include "third_party/WebKit/public/platform/modules/webshare/webshare.mojom.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/resource/resource_bundle.h"
@@ -1440,7 +1441,8 @@ bool IsAutoReloadVisibleOnlyEnabled() {
   return true;
 }
 
-#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN)
+#if defined(OS_LINUX) || defined(OS_CHROMEOS) || defined(OS_WIN) || \
+    defined(OS_ANDROID)
 bool AreExperimentalWebPlatformFeaturesEnabled() {
   const base::CommandLine& browser_command_line =
       *base::CommandLine::ForCurrentProcess();
@@ -3027,6 +3029,19 @@ void ChromeContentBrowserClient::RegisterRenderFrameMojoInterfaces(
     }
   }
 #endif
+
+#if defined(OS_ANDROID)
+  if (AreExperimentalWebPlatformFeaturesEnabled()) {
+    content::WebContents* web_contents =
+        content::WebContents::FromRenderFrameHost(render_frame_host);
+    if (web_contents) {
+      registry->AddInterface(
+          web_contents->GetJavaInterfaces()
+              ->CreateInterfaceFactory<blink::mojom::BarcodeDetection>());
+    }
+  }
+#endif
+
 }
 
 void ChromeContentBrowserClient::ExposeInterfacesToGpuProcess(

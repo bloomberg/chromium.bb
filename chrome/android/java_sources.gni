@@ -863,6 +863,8 @@ chrome_java_sources = [
   "java/src/org/chromium/chrome/browser/services/gcm/GcmUma.java",
   "java/src/org/chromium/chrome/browser/services/gcm/InvalidationGcmUpstreamSender.java",
   "java/src/org/chromium/chrome/browser/sessions/SessionTabHelper.java",
+  "java/src/org/chromium/chrome/browser/shapedetection/BarcodeDetectionFactory.java",
+  "java/src/org/chromium/chrome/browser/shapedetection/BarcodeDetectionImpl.java",
   "java/src/org/chromium/chrome/browser/share/ShareDialogAdapter.java",
   "java/src/org/chromium/chrome/browser/share/ShareHelper.java",
   "java/src/org/chromium/chrome/browser/signin/AccountAdder.java",

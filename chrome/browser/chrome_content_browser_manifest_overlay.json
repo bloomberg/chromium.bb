@@ -44,6 +44,7 @@
         "renderer": [
           "autofill::mojom::AutofillDriver",
           "autofill::mojom::PasswordManagerDriver",
+          "blink::mojom::BarcodeDetection",
           "blink::mojom::ShareService",
           "bluetooth::mojom::AdapterFactory",
           "device::usb::ChooserService",
