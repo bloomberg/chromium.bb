@@ -616,19 +616,22 @@ class CheckedNumericState {};
 template <typename T>
 class CheckedNumericState<T, NUMERIC_INTEGER> {
  private:
-  T value_;
+  // is_valid_ precedes value_ because member intializers in the constructors
+  // are evaluated in field order, and is_valid_ must be read when initializing
+  // value_.
   bool is_valid_;
+  T value_;
 
  public:
   template <typename Src, NumericRepresentation type>
   friend class CheckedNumericState;
 
-  constexpr CheckedNumericState() : value_(0), is_valid_(true) {}
+  constexpr CheckedNumericState() : is_valid_(true), value_(0) {}
 
   template <typename Src>
   constexpr CheckedNumericState(Src value, bool is_valid)
-      : value_(static_cast<T>(value)),
-        is_valid_(is_valid && IsValueInRangeForNumericType<T>(value)) {
+      : is_valid_(is_valid && IsValueInRangeForNumericType<T>(value)),
+        value_(is_valid_ ? static_cast<T>(value) : 0) {
     static_assert(std::numeric_limits<Src>::is_specialized,
                   "Argument must be numeric.");
   }
@@ -636,15 +639,16 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   // Copy constructor.
   template <typename Src>
   constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
-      : value_(static_cast<T>(rhs.value())), is_valid_(rhs.IsValid()) {}
+      : is_valid_(rhs.IsValid()),
+        value_(is_valid_ ? static_cast<T>(rhs.value()) : 0) {}
 
   template <typename Src>
   constexpr explicit CheckedNumericState(
       Src value,
       typename std::enable_if<std::numeric_limits<Src>::is_specialized,
                               int>::type = 0)
-      : value_(static_cast<T>(value)),
-        is_valid_(IsValueInRangeForNumericType<T>(value)) {}
+      : is_valid_(IsValueInRangeForNumericType<T>(value)),
+        value_(is_valid_ ? static_cast<T>(value) : 0) {}
 
   constexpr bool is_valid() const { return is_valid_; }
   constexpr T value() const { return value_; }
