@@ -374,7 +374,12 @@ cr.define('login', function() {
      * Shows the icon.
      */
     show: function() {
-      this.hidden = false;
+      // Show the icon if the current iconId is valid.
+      var validIcon = false;
+      UserPodCustomIcon.ICONS.forEach(function(icon) {
+        validIcon = validIcon || this.iconId_ == icon.id;
+      }, this);
+      this.hidden = validIcon ? false : true;
     },
 
     /**
