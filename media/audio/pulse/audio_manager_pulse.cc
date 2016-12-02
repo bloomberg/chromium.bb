@@ -143,6 +143,10 @@ AudioParameters AudioManagerPulse::GetInputStreamParameters(
                          buffer_size);
 }
 
+const char* AudioManagerPulse::GetName() {
+  return "PulseAudio";
+}
+
 AudioOutputStream* AudioManagerPulse::MakeLinearOutputStream(
     const AudioParameters& params,
     const LogCallback& log_callback) {

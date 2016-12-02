@@ -116,6 +116,7 @@ class MockAudioManager : public AudioManagerBase {
                scoped_refptr<base::SingleThreadTaskRunner>());
   MOCK_METHOD1(GetAudioInputDeviceNames, void(
       media::AudioDeviceNames* device_name));
+  MOCK_METHOD0(GetName, const char*());
 
   MOCK_METHOD2(MakeLinearOutputStream,
                AudioOutputStream*(const AudioParameters& params,

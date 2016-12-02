@@ -34,6 +34,10 @@ bool FakeAudioManager::HasAudioOutputDevices() { return false; }
 
 bool FakeAudioManager::HasAudioInputDevices() { return false; }
 
+const char* FakeAudioManager::GetName() {
+  return "Fake";
+}
+
 // Implementation of AudioManagerBase.
 AudioOutputStream* FakeAudioManager::MakeLinearOutputStream(
     const AudioParameters& params,

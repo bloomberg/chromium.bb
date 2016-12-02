@@ -228,6 +228,10 @@ AudioParameters AudioManagerCras::GetInputStreamParameters(
   return params;
 }
 
+const char* AudioManagerCras::GetName() {
+  return "CRAS";
+}
+
 AudioOutputStream* AudioManagerCras::MakeLinearOutputStream(
     const AudioParameters& params,
     const LogCallback& log_callback) {

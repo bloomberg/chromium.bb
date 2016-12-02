@@ -105,4 +105,8 @@ std::unique_ptr<AudioLog> MockAudioManager::CreateAudioLog(
   return nullptr;
 }
 
+const char* MockAudioManager::GetName() {
+  return nullptr;
+}
+
 }  // namespace media.

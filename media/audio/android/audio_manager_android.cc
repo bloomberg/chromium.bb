@@ -161,6 +161,10 @@ AudioParameters AudioManagerAndroid::GetInputStreamParameters(
   return params;
 }
 
+const char* AudioManagerAndroid::GetName() {
+  return "Android";
+}
+
 AudioOutputStream* AudioManagerAndroid::MakeAudioOutputStream(
     const AudioParameters& params,
     const std::string& device_id,

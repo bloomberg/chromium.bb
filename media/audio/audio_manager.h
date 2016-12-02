@@ -253,6 +253,9 @@ class MEDIA_EXPORT AudioManager {
   virtual std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) = 0;
 
+  // Gets the name of the audio manager (e.g., Windows, Mac, PulseAudio).
+  virtual const char* GetName() = 0;
+
  protected:
   AudioManager(scoped_refptr<base::SingleThreadTaskRunner> task_runner,
                scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner);

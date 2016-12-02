@@ -127,6 +127,10 @@ AudioParameters AudioManagerAlsa::GetInputStreamParameters(
       kDefaultSampleRate, 16, kDefaultInputBufferSize);
 }
 
+const char* AudioManagerAlsa::GetName() {
+  return "ALSA";
+}
+
 void AudioManagerAlsa::GetAlsaAudioDevices(StreamType type,
                                            AudioDeviceNames* device_names) {
   // Constants specified by the ALSA API for device hints.

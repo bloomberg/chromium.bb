@@ -603,6 +603,10 @@ std::string AudioManagerMac::GetAssociatedOutputDeviceID(
   return std::string();
 }
 
+const char* AudioManagerMac::GetName() {
+  return "Mac";
+}
+
 AudioOutputStream* AudioManagerMac::MakeLinearOutputStream(
     const AudioParameters& params,
     const LogCallback& log_callback) {

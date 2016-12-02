@@ -24,6 +24,7 @@
 #include "content/public/browser/gpu_data_manager.h"
 #include "content/public/browser/render_process_host.h"
 #include "gpu/config/gpu_info.h"
+#include "media/audio/audio_manager.h"
 #include "net/base/ip_address.h"
 #include "net/base/network_change_notifier.h"
 #include "net/base/network_interfaces.h"
@@ -473,6 +474,13 @@ void WebRtcTextLogHandler::LogInitialInfoOnIOThread(
   LogToCircularBuffer("OpenGL: gl-vendor=" + gpu_info.gl_vendor +
                       ", gl-renderer=" + gpu_info.gl_renderer +
                       ", gl-version=" + gpu_info.gl_version);
+
+  // Audio manager
+  // On some platforms, this can vary depending on build flags and failure
+  // fallbacks. On Linux for example, we fallback on ALSA if PulseAudio fails to
+  // initialize.
+  LogToCircularBuffer(base::StringPrintf(
+      "Audio manager: %s", media::AudioManager::Get()->GetName()));
 
   // Network interfaces
   LogToCircularBuffer("Discovered " + base::SizeTToString(network_list.size()) +

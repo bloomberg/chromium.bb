@@ -62,6 +62,8 @@ class MockAudioManager : public media::AudioManager {
   std::unique_ptr<AudioLog> CreateAudioLog(
       AudioLogFactory::AudioComponent component) override;
 
+  const char* GetName() override;
+
  protected:
   ~MockAudioManager() override;
 

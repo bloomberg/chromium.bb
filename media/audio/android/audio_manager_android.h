@@ -45,6 +45,7 @@ class MEDIA_EXPORT AudioManagerAndroid : public AudioManagerBase {
       const LogCallback& log_callback) override;
   void ReleaseOutputStream(AudioOutputStream* stream) override;
   void ReleaseInputStream(AudioInputStream* stream) override;
+  const char* GetName() override;
 
   // Implementation of AudioManagerBase.
   AudioOutputStream* MakeLinearOutputStream(

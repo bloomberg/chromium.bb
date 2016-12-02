@@ -331,6 +331,10 @@ std::string AudioManagerWin::GetAssociatedOutputDeviceID(
   return CoreAudioUtil::GetMatchingOutputDeviceID(input_device_id);
 }
 
+const char* AudioManagerWin::GetName() {
+  return "Windows";
+}
+
 // Factory for the implementations of AudioOutputStream for AUDIO_PCM_LINEAR
 // mode.
 // - PCMWaveOutAudioOutputStream: Based on the waveOut API.
