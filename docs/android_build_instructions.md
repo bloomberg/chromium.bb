@@ -98,6 +98,10 @@ to get all of the dependencies you need to build on Linux, *plus* all of the
 Android-specific dependencies (you need some of the regular Linux dependencies
 because an Android build includes a bunch of the Linux tools and utilities).
 
+*** aside
+If you're running Debian, you'll also need to install the package `lib32z1`.
+***
+
 ### Run the hooks
 
 Once you've run `install-build-deps` at least once, you can now run the

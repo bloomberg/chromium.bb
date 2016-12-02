@@ -76,15 +76,9 @@ $ cd src
 Once you have checked out the code, and assuming you're using Ubuntu, run
 [build/install-build-deps.sh](/build/install-build-deps.sh)
 
-Here are some instructions for what to do instead for
-
-* [Debian](linux_debian_build_instructions.md)
-* [Fedora](linux_fedora_build_instructions.md)
-* [Arch Linux](linux_arch_build_instructions.md)
-* [Open SUSE](linux_open_suse_build_instrctions.md)
-* [Mandriva](linux_mandriva_build_instrctions.md)
-
-For Gentoo, you can just run `emerge www-client/chromium`.
+You may need to adjust the build dependencies for other distros. There are
+some [notes](#notes) at the end of this document, but we make no guarantees
+for their accuracy.
 
 ### Run the hooks
 
@@ -125,8 +119,107 @@ $ gn gen out/Default
 
 ### Faster builds
 
+This section contains some things you can change to speed up your builds,
+sorted so that the things that make the biggest difference are first.
+
+#### Disable NaCl
+
+By default, the build includes support for
+[Native Client (NaCl)](https://developer.chrome.com/native-client), but
+most of the time you won't need it. You can set the GN argument 
+`enable_nacl=false` and it won't be built.
+
+#### Include fewer debug symbols
+
+By default GN produces a build with all of the debug assertions enabled
+(`is_debug=true`) and including full debug info (`symbol_level=2`). Setting
+`symbol_level=1` will produce enough information for stack traces, but not
+line-by-line debugging. Setting `symbol_level=0` will include no debug
+symbols at all. Either will speed up the build compared to full symbols.
+
 See [faster builds on Linux](linux_faster_builds.md) for various tips and
 settings that may speed up your build.
+
+#### Disable debug symbols for Blink
+
+Due to its extensive use of templates, the Blink code produces about half
+of our debug symbols. If you don't ever need to debug Blink, you can set
+the GN arg `remove_webcore_debug_symbols=true`.
+
+#### Use Icecc
+
+[Icecc](https://github.com/icecc/icecream) is the distributed compiler with a
+central scheduler to share build load. Currently, many external contributors use
+it. e.g. Intel, Opera, Samsung (Googlers use an internal system called Goma).
+
+In order to use `icecc`, set the following GN args:
+
+```
+linux_use_bundled_binutils=false
+use_debug_fission=false
+is_clang=false
+use_sysroot=false
+```
+
+See these links for more on the 
+[bundled_binutils limitation](https://github.com/icecc/icecream/commit/b2ce5b9cc4bd1900f55c3684214e409fa81e7a92),
+the [debug fission limitation](http://gcc.gnu.org/wiki/DebugFission).
+
+Using the system linker may also be necessary when using glibc 2.21 or newer.
+See [related bug](https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=808181).
+
+#### ccache
+
+You can use [ccache](https://ccache.samba.org) to speed up local builds (again,
+this is not useful if you're using a Googler using Goma).
+
+Increase your ccache hit rate by setting `CCACHE_BASEDIR` to a parent directory
+that the working directories all have in common (e.g.,
+`/home/yourusername/development`). Consider using
+`CCACHE_SLOPPINESS=include_file_mtime` (since if you are using multiple working
+directories, header times in svn sync'ed portions of your trees will be
+different - see
+[the ccache troubleshooting section](http://ccache.samba.org/manual.html#_troubleshooting)
+for additional information). If you use symbolic links from your home directory
+to get to the local physical disk directory where you keep those working
+development directories, consider putting
+
+    alias cd="cd -P"
+
+in your `.bashrc` so that `$PWD` or `cwd` always refers to a physical, not
+logical directory (and make sure `CCACHE_BASEDIR` also refers to a physical
+parent).
+
+If you tune ccache correctly, a second working directory that uses a branch
+tracking trunk and is up to date with trunk and was gclient sync'ed at about the
+same time should build chrome in about 1/3 the time, and the cache misses as
+reported by `ccache -s` should barely increase.
+
+This is especially useful if you use `git-new-workdir` and keep multiple local
+working directories going at once.
+
+#### Using tmpfs
+
+You can use tmpfs for the build output to reduce the amount of disk writes
+required. I.e. mount tmpfs to the output directory where the build output goes:
+
+As root:
+
+    mount -t tmpfs -o size=20G,nr_inodes=40k,mode=1777 tmpfs /path/to/out
+
+*** note
+**Caveat:** You need to have enough RAM + swap to back the tmpfs. For a full
+debug build, you will need about 20 GB. Less for just building the chrome target
+or for a release build.
+***
+
+Quick and dirty benchmark numbers on a HP Z600 (Intel core i7, 16 cores
+hyperthreaded, 12 GB RAM)
+
+*   With tmpfs:
+    *   12m:20s
+*   Without tmpfs
+    *   15m:40s
 
 ## Build Chromium
 
@@ -217,8 +310,197 @@ other settings):
 *   Want to use your built version as your default browser? See
     [LinuxDevBuildAsDefaultBrowser](linux_dev_build_as_default_browser.md).
 
-### Next Steps
+## Next Steps
 
 If you want to contribute to the effort toward a Chromium-based browser for
 Linux, please check out the [Linux Development page](linux_development.md) for
 more information.
+
+## Notes for other distros <a name="notes"></a>
+
+### Arch Linux
+
+Instead of running `install-build-deps.sh` to install build dependencies, run:
+
+```shell
+$ sudo pacman -S --needed python perl gcc gcc-libs bison flex gperf pkgconfig \
+nss alsa-lib gconf glib2 gtk2 nspr ttf-ms-fonts freetype2 cairo dbus \
+libgnome-keyring
+```
+
+For the optional packages on Arch Linux:
+
+*   `php-cgi` is provided with `pacman`
+*   `wdiff` is not in the main repository but `dwdiff` is. You can get `wdiff`
+    in AUR/`yaourt`
+*   `sun-java6-fonts` do not seem to be in main repository or AUR.
+
+### Debian
+
+`build/install-build-deps.sh` doesn't currently run on Debian, but you can
+probably hack it to get it to work. You will probably need to update the
+following package names:
+
+*   `libexpat-dev` → `libexpat1-dev`
+*   `freetype-dev` → `libfreetype6-dev`
+*   `libbzip2-dev` → `libbz2-dev`
+*   `libcupsys2-dev` → `libcups2-dev`
+
+### Fedora
+
+Instead of running `build/install-build-deps.sh`, run:
+
+```shell
+su -c 'yum install git python bzip2 tar pkgconfig atk-devel alsa-lib-devel \
+bison binutils brlapi-devel bluez-libs-devel bzip2-devel cairo-devel \
+cups-devel dbus-devel dbus-glib-devel expat-devel fontconfig-devel \
+freetype-devel gcc-c++ GConf2-devel glib2-devel glibc.i686 gperf \
+glib2-devel gtk2-devel gtk3-devel java-1.*.0-openjdk-devel libatomic \
+libcap-devel libffi-devel libgcc.i686 libgnome-keyring-devel libjpeg-devel \
+libstdc++.i686 libX11-devel libXScrnSaver-devel libXtst-devel \
+libxkbcommon-x11-devel ncurses-compat-libs nspr-devel nss-devel pam-devel \
+pango-devel pciutils-devel pulseaudio-libs-devel zlib.i686 httpd mod_ssl \
+php php-cli python-psutil wdiff'
+```
+
+The `msttcorefonts` packages can be obtained by following [these
+instructions](http://www.fedorafaq.org/#installfonts). For the optional
+packages:
+
+* `php-cgi` is provided by the `php-cli` package.
+* `sun-java6-fonts` doesn't exist in Fedora repositories, needs investigating.
+
+### Gentoo
+
+You can just run `emerge www-client/chromium`.
+
+### Mandriva
+
+Instead of running `build/install-build-deps.sh`, run:
+
+```shell
+urpmi lib64fontconfig-devel lib64alsa2-devel lib64dbus-1-devel \
+lib64GConf2-devel lib64freetype6-devel lib64atk1.0-devel lib64gtk+2.0_0-devel \
+lib64pango1.0-devel lib64cairo-devel lib64nss-devel lib64nspr-devel g++ python \
+perl bison flex subversion gperf
+```
+
+* `msttcorefonts` are not available, you will need to build your own (see
+  instructions, not hard to do, see
+  [mandriva_msttcorefonts.md](mandriva_msttcorefonts.md)) or use `drakfont` to
+  import the fonts from a Windows installation.
+
+### OpenSUSE
+
+Use `zypper` command to install dependencies:
+
+(openSUSE 11.1 and higher)
+
+```shell
+sudo zypper in subversion pkg-config python perl \
+     bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
+     wdiff lighttpd gcc gcc-c++ gconf2-devel mozilla-nspr \
+     mozilla-nspr-devel php5-fastcgi alsa-devel libexpat-devel \
+     libjpeg-devel libbz2-devel
+```
+
+For 11.0, use `libnspr4-0d` and `libnspr4-dev` instead of `mozilla-nspr` and
+`mozilla-nspr-devel`, and use `php5-cgi` instead of `php5-fastcgi`. And need
+`gtk2-devel`.
+
+(openSUSE 11.0)
+
+```shell
+sudo zypper in subversion pkg-config python perl \
+     bison flex gperf mozilla-nss-devel glib2-devel gtk-devel \
+     libnspr4-0d libnspr4-dev wdiff lighttpd gcc gcc-c++ libexpat-devel \
+     php5-cgi gconf2-devel alsa-devel gtk2-devel jpeg-devel
+```
+
+The Ubuntu package `sun-java6-fonts` contains a subset of Java of the fonts used.
+Since this package requires Java as a prerequisite anyway, we can do the same
+thing by just installing the equivalent openSUSE Sun Java package:
+
+```shell
+sudo zypper in java-1_6_0-sun
+```
+
+WebKit is currently hard-linked to the Microsoft fonts. To install these using `zypper`
+
+```shell
+sudo zypper in fetchmsttfonts pullin-msttf-fonts
+```
+
+To make the fonts installed above work, as the paths are hardcoded for Ubuntu,
+create symlinks to the appropriate locations:
+
+```shell
+sudo mkdir -p /usr/share/fonts/truetype/msttcorefonts
+sudo ln -s /usr/share/fonts/truetype/arial.ttf /usr/share/fonts/truetype/msttcorefonts/Arial.ttf
+sudo ln -s /usr/share/fonts/truetype/arialbd.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/arialbi.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/ariali.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/comic.ttf /usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf
+sudo ln -s /usr/share/fonts/truetype/comicbd.ttf /usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/cour.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf
+sudo ln -s /usr/share/fonts/truetype/courbd.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/courbi.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/couri.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/impact.ttf /usr/share/fonts/truetype/msttcorefonts/Impact.ttf
+sudo ln -s /usr/share/fonts/truetype/times.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf
+sudo ln -s /usr/share/fonts/truetype/timesbd.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/timesbi.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/timesi.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/verdana.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanab.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanai.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanaz.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf
+```
+
+The Ubuntu package `sun-java6-fonts` contains a subset of Java of the fonts used.
+Since this package requires Java as a prerequisite anyway, we can do the same
+thing by just installing the equivalent openSUSE Sun Java package:
+
+```shell
+sudo zypper in java-1_6_0-sun
+```
+
+WebKit is currently hard-linked to the Microsoft fonts. To install these using `zypper`
+
+```shell
+sudo zypper in fetchmsttfonts pullin-msttf-fonts
+```
+
+To make the fonts installed above work, as the paths are hardcoded for Ubuntu,
+create symlinks to the appropriate locations:
+
+```shell
+sudo mkdir -p /usr/share/fonts/truetype/msttcorefonts
+sudo ln -s /usr/share/fonts/truetype/arial.ttf /usr/share/fonts/truetype/msttcorefonts/Arial.ttf
+sudo ln -s /usr/share/fonts/truetype/arialbd.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/arialbi.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/ariali.ttf /usr/share/fonts/truetype/msttcorefonts/Arial_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/comic.ttf /usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS.ttf
+sudo ln -s /usr/share/fonts/truetype/comicbd.ttf /usr/share/fonts/truetype/msttcorefonts/Comic_Sans_MS_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/cour.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New.ttf
+sudo ln -s /usr/share/fonts/truetype/courbd.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/courbi.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/couri.ttf /usr/share/fonts/truetype/msttcorefonts/Courier_New_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/impact.ttf /usr/share/fonts/truetype/msttcorefonts/Impact.ttf
+sudo ln -s /usr/share/fonts/truetype/times.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman.ttf
+sudo ln -s /usr/share/fonts/truetype/timesbd.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/timesbi.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Bold_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/timesi.ttf /usr/share/fonts/truetype/msttcorefonts/Times_New_Roman_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/verdana.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanab.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Bold.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanai.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Italic.ttf
+sudo ln -s /usr/share/fonts/truetype/verdanaz.ttf /usr/share/fonts/truetype/msttcorefonts/Verdana_Bold_Italic.ttf
+```
+
+And then for the Java fonts:
+
+```shell
+sudo mkdir -p /usr/share/fonts/truetype/ttf-lucida
+sudo find /usr/lib*/jvm/java-1.6.*-sun-*/jre/lib -iname '*.ttf' -print \
+     -exec ln -s {} /usr/share/fonts/truetype/ttf-lucida \;
+```
