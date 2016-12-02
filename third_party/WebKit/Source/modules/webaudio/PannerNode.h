@@ -233,9 +233,9 @@ class PannerNode final : public AudioNode {
   String distanceModel() const;
   void setDistanceModel(const String&);
   double refDistance() const;
-  void setRefDistance(double);
+  void setRefDistance(double, ExceptionState&);
   double maxDistance() const;
-  void setMaxDistance(double);
+  void setMaxDistance(double, ExceptionState&);
   double rolloffFactor() const;
   void setRolloffFactor(double);
   double coneInnerAngle() const;

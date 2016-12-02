@@ -678,9 +678,9 @@ PannerNode* PannerNode::create(BaseAudioContext* context,
     node->orientationZ()->setValue(options.orientationZ());
 
   if (options.hasRefDistance())
-    node->setRefDistance(options.refDistance());
+    node->setRefDistance(options.refDistance(), exceptionState);
   if (options.hasMaxDistance())
-    node->setMaxDistance(options.maxDistance());
+    node->setMaxDistance(options.maxDistance(), exceptionState);
   if (options.hasRolloffFactor())
     node->setRolloffFactor(options.rolloffFactor());
   if (options.hasConeInnerAngle())
@@ -725,7 +725,15 @@ double PannerNode::refDistance() const {
   return pannerHandler().refDistance();
 }
 
-void PannerNode::setRefDistance(double distance) {
+void PannerNode::setRefDistance(double distance,
+                                ExceptionState& exceptionState) {
+  if (distance <= 0) {
+    exceptionState.throwDOMException(
+        V8RangeError, ExceptionMessages::indexExceedsMinimumBound<double>(
+                          "refDistance", distance, 0));
+    return;
+  }
+
   pannerHandler().setRefDistance(distance);
 }
 
@@ -733,7 +741,15 @@ double PannerNode::maxDistance() const {
   return pannerHandler().maxDistance();
 }
 
-void PannerNode::setMaxDistance(double distance) {
+void PannerNode::setMaxDistance(double distance,
+                                ExceptionState& exceptionState) {
+  if (distance <= 0) {
+    exceptionState.throwDOMException(
+        V8RangeError, ExceptionMessages::indexExceedsMinimumBound<double>(
+                          "maxDistance", distance, 0));
+    return;
+  }
+
   pannerHandler().setMaxDistance(distance);
 }
 
