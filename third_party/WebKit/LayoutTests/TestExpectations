@@ -1475,15 +1475,6 @@ crbug.com/490015 virtual/stable/http/tests/navigation/beacon-blob-with-non-simpl
 # This test fails with the stable release mode.
 crbug.com/490015 virtual/stable/http/tests/navigation/same-and-different-back.html [ Skip ]
 
-# SK_ANALYTIC_AA
-crbug.com/662722 css1/basic/grouping.html [ NeedsRebaseline ]
-crbug.com/662722 css1/box_properties/border_left_width.html [ NeedsRebaseline ]
-crbug.com/662722 css1/box_properties/border_top_inline.html [ NeedsRebaseline ]
-crbug.com/662722 css1/pseudo/anchor.html [ NeedsRebaseline ]
-crbug.com/662722 css3/filters/effect-contrast-hw.html [ NeedsRebaseline ]
-crbug.com/662722 svg/wicd/test-scalable-background-image1.xhtml [ NeedsRebaseline ]
-crbug.com/662722 svg/wicd/test-scalable-background-image2.xhtml [ NeedsRebaseline ]
-
 # ====== New tests from w3c-test-autoroller added here ======
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001a.xhtml [ Failure ]
 crbug.com/626703 imported/csswg-test/vendor-imports/mozilla/mozilla-central-reftests/flexbox/flexbox-align-self-baseline-horiz-001b.xhtml [ Failure ]
@@ -1734,9 +1725,8 @@ crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.
 # Flaky failures (text diff).
 crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Failure ]
 
-# TODO(mgiuca): This was previously marked as [ NeedsRebaseline ] for [ Precise ] only.
-crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
-crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ NeedsRebaseline ]
+crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
+crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
 
 crbug.com/619427 [ Linux ] fast/overflow/overflow-height-float-not-removed-crash3.html [ Pass Failure ]
 
@@ -1758,11 +1748,6 @@ crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-put.htt
 
 # Flaky on Linux dbg
 crbug.com/667953 [ Linux Debug ] virtual/android/media/mediadocument/media-document-with-download-button.html [ Pass Failure ]
-
-crbug.com/664782 images/huge-image-viewport-scale.html [ NeedsRebaseline ]
-crbug.com/664782 virtual/gpu-rasterization/images/huge-image-viewport-scale.html [ NeedsRebaseline ]
-
-crbug.com/475556 virtual/stable/webexposed/global-interface-listing.html [ NeedsRebaseline ]
 
 # [css-ui] Imported tests from W3C suite.
 crbug.com/669473 imported/csswg-test/css-ui-3/box-sizing-014.html [ Failure ]
