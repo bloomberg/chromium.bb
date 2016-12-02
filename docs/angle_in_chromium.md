@@ -32,7 +32,7 @@ ninja -C out\Release libEGL.dll
 
 Change files then commit locally.
 
-Upload to gerrit for review. You will need to have installed the git hook as
+Upload to Gerrit for review. You will need to have installed the git hook as
 described in the "Getting started with Gerrit for ANGLE" section of the
 ContributingCode doc before committing them locally.
 
@@ -40,10 +40,10 @@ ContributingCode doc before committing them locally.
 git cl upload
 ```
 
-As with subversion and rietveld: visit the upload link for the review site,
+As with subversion and Rietveld: visit the upload link for the review site,
 check the diff and the commit message then add reviewer(s) and publish.
 
-Land your changes to the upstream repository from the gerrit web interface.
+Land your changes to the upstream repository from the Gerrit web interface.
 
 If there are upstream changes, you may need to rebase your patches and reupload
 them.

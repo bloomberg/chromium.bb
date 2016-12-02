@@ -19,11 +19,11 @@ with how to use it. See the
 
 There are two parts to actually extending framework to test a piece of software.
 The first part is extending certain files in:
-[/third_party/Webkit/Tools/Scripts/webkitpy/layout_tests/](/third_party/Webkit/Tools/Scripts/webkitpy/layout_tests/)
+[/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/](/third_party/WebKit/Tools/Scripts/webkitpy/layout_tests/)
 The code in `webkitpy/layout_tests` is the layout test framework itself
 
 The second part is creating a driver (program) to actually communicate the
-layout test framework. This part is significantly more tricky and dependant on
+layout test framework. This part is significantly more tricky and dependent on
 what exactly exactly is being tested.
 
 ### Part 1
@@ -109,7 +109,7 @@ and MacPort (and maybe the android port class) should be extended as they
 provide platform specific overrides/extensions that implement most of the
 important functionality. While there are many functions in Port, overriding one
 function will affect most of the other ones to get the desired behavior. For
-example, if `layout_tests_dir()` is overriden, not only will the code look for
+example, if `layout_tests_dir()` is overridden, not only will the code look for
 tests in that directory, but it will find the correct TestExpectations file, the
 platform specific expected files, etc.
 

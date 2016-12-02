@@ -44,7 +44,7 @@ tags](https://developers.google.com/closure/compiler/docs/js-for-compiler)
 ```js
 /**
  * @param {string} version A software version number (i.e. "50.0.2661.94").
- * @return {!Array<number>} Numbers corresponing to |version| (i.e. [50, 0, 2661, 94]).
+ * @return {!Array<number>} Numbers corresponding to |version| (i.e. [50, 0, 2661, 94]).
  */
 function versionSplit(version) {
   return version.split('.').map(Number);

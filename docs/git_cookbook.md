@@ -9,7 +9,7 @@ See also [Git Tips](git_tips.md).
 ## Introduction
 
 This is designed to be a cookbook for common command sequences/tasks relating to
-git, git-cl, and how they work with chromium development. It might be a little
+git, git-cl, and how they work with Chromium development. It might be a little
 light on explanations.
 
 If you are new to git, or do not have much experience with a distributed version
@@ -152,7 +152,7 @@ git cl issue 12345      # restore the rietveld issue that was cleared on commit
 ```
 
 And now you can continue hacking where you left off, and since you're reusing
-the Reitveld issue you don't have to rewrite the commit message. (You may want
+the Rietveld issue you don't have to rewrite the commit message. (You may want
 to go manually reopen the issue on the Rietveld site -- `git cl status` will
 give you the URL.)
 
@@ -178,7 +178,7 @@ understands relative paths.
 
 ## Checking out pristine branch from git-svn
 
-In the backend, git-svn keeps a remote tracking branch that points to the the
+In the backend, git-svn keeps a remote tracking branch that points to the
 commit tree representing the svn repository. The name of this branch is
 configured during `git svn init`. The git-svn remote branch is often named
 `origin/trunk` for Chromium, and `origin/master` for WebKit.

@@ -6,12 +6,12 @@
 ## Introduction
 
 When you call /build/android/run_tests.py or
-/build/android/run_instrumentation_tests.py it assumes an android device
+/build/android/run_instrumentation_tests.py it assumes an Android device
 is attached to the local host.
 
 TODO: these scripts do not exist.
 
-If you want to work remotely from your laptop with an android device attached to
+If you want to work remotely from your laptop with an Android device attached to
 it, while keeping an ssh connection to a remote desktop machine where you have
 your build environment setup, you will have to use one of the two alternatives
 listed below.
@@ -33,7 +33,7 @@ See also
 
 ### On your laptop
 
-You have to have an android device attached to it.
+You have to have an Android device attached to it.
 
 ```shell
 # Install sshfs
@@ -45,7 +45,7 @@ laptop$ sudo apt-get install sshfs
 laptop$ mkdir ~/chrome_sshfs
 laptop$ sshfs your.host.machine:/usr/local/code/chrome/src ./chrome_sshfs
 
-# Setup enviroment.
+# Setup environment.
 
 laptop$ cd chrome_sshfs
 laptop$ . build/android/envsetup.sh
@@ -66,7 +66,7 @@ This is assuming you have the exact same linux version on your host machine and
 in your laptop.
 ***
 
-But if you have different versions, lets say, ubuntu lucid on your laptop, and the newer ubuntu precise on your host machine, some binaries compiled on the host will not work on your laptop.
+But if you have different versions, lets say, Ubuntu Lucid on your laptop, and the newer Ubuntu Precise on your host machine, some binaries compiled on the host will not work on your laptop.
 In this case you will have to recompile these binaries in your laptop:
 
 ```shell

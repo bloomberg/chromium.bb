@@ -12,7 +12,7 @@ Currently, WPAD is pretty slow when we're starting up Chrome - we have to query
 the local network for WPAD servers using DNS (and maybe NetBIOS), and we wait
 all the way until the resolver timeout before we try sending any HTTP requests
 if there's no WPAD server. This is a really crappy user experience, since the
-browser's basically unuseable for a couple of seconds after startup if
+browser's basically unusable for a couple of seconds after startup if
 autoconfig is turned on and there's no WPAD server.
 
 ## Solution

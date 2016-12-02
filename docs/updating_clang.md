@@ -4,7 +4,7 @@
     changes
 1.  Run `python tools/clang/scripts/upload_revision.py --clang_revision=NNNN`
     with the target LLVM SVN revision number
-1.  If the clang upload trybots succeed, run the goma package update script to
+1.  If the clang upload try bots succeed, run the goma package update script to
     push these packages to goma. If you do not have the necessary credentials to
     do the upload, ask clang@chromium.org to find someone who does
 1.  Run an exhaustive set of try jobs to test the new compiler:

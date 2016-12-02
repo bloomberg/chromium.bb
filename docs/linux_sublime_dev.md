@@ -96,10 +96,10 @@ The settings will take effect as soon as you save the file.
 *   `Alt + PageUp`/`Alt + PageDown` (`Alt + Cmd + Left`/`Alt + Cmd + Right` on
     Mac) moves between tabs
 *   `F12` (`Alt + Cmd + Down` on Mac) goes to the symbol's definition
-*   With text selected, `Ctrl + D` will multi-select the next occurrance (so
+*   With text selected, `Ctrl + D` will multi-select the next occurrence (so
     typing in one types in all of them), and `Ctrl+U` deselects
 *   Similarly, after finding something with `Ctrl + F`, `Alt + Enter` will
-    select all occurrances of the search query, which can be multi-edited
+    select all occurrences of the search query, which can be multi-edited
 *   `Ctrl + X` without anything selected cuts the current line, then move to a
     different line and `Ctrl + V` pastes it below the current line
 

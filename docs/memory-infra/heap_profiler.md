@@ -2,7 +2,7 @@
 
 As of Chrome 48, MemoryInfra supports heap profiling. The core principle is
 a solution that JustWorks™ on all platforms without patching or rebuilding,
-intergrated with the chrome://tracing ecosystem.
+integrated with the chrome://tracing ecosystem.
 
 [TOC]
 
@@ -121,7 +121,7 @@ size concerns. Development builds have full type information.
 
 To keep the trace log small, uninteresting information is omitted from heap
 dumps. The long tail of small nodes is not dumped, but grouped in an `<other>`
-node instead. Note that altough these small nodes are insignificant on their
+node instead. Note that although these small nodes are insignificant on their
 own, together they can be responsible for a significant portion of the heap. The
 `<other>` node is large in that case.
 

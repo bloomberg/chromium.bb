@@ -1,6 +1,6 @@
 # Linux Profiling
 
-How to profile chromium on Linux.
+How to profile Chromium on Linux.
 
 See
 [Profiling Chromium and WebKit](https://sites.google.com/a/chromium.org/dev/developers/profiling-chromium-and-webkit)
@@ -172,7 +172,7 @@ executables well).
 First, you will need to build massif from valgrind-variant project yourself,
 it's [easy](http://code.google.com/p/valgrind-variant/wiki/HowTo).
 
-Then, make sure your chromium is built using the
+Then, make sure your Chromium is built using the
 [valgrind instructions](http://www.chromium.org/developers/how-tos/using-valgrind).
 Now, you can run massif like this:
 

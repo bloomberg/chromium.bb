@@ -92,7 +92,7 @@ resizing arrows when the mouse hovers over the resize widget area.
 
 To make sure that the scroll bars (handled by `WebKit`) are not drawn on top of
 the resizer widget (or vice versa), we need to properly implement the callback
-specifyinhg the rectangle covered by the resizer. This callback is implemented
+specifying the rectangle covered by the resizer. This callback is implemented
 on the `RenderWidget` class that can delegate to a derive class via a new
 virtual method which returns an empty rect on the base class. Via a series of
 delegate interface calls, we eventually get back to the browser view which can

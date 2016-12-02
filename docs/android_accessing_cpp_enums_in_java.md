@@ -20,7 +20,7 @@ directive (optional)
 the `GENERATED_JAVA_PREFIX_TO_STRIP` directive (optional)
 * Supports
 [`@IntDef`](https://developer.android.com/reference/android/support/annotation/IntDef.html)
-* Copies comments that directly preceed enum entries into the generated Java
+* Copies comments that directly precede enum entries into the generated Java
 class
 
 ## Usage

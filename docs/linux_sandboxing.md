@@ -46,7 +46,7 @@ network, something that is difficult to perform at the layer-2.
 | [Seccomp-BPF](#The_seccomp-bpf_sandbox.md) | Layer-2 in some Zygote processes (renderers, PPAPI, [NaCl](http://www.chromium.org/nativeclient)), Layer-1 + Layer-2 in GPU process | Linux kernel >= 3.5, Chrome OS and Ubuntu | Enabled by default and actively developed |
 | [Seccomp-legacy](#The_seccomp_sandbox.md) | Layer-2 in renderers  | All                               | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=197301&view=revision)  |
 | [SELinux](#SELinux.md) | Layer-1 in Zygote processes (renderers, PPAPI) | SELinux distributions             | [Deprecated](https://src.chromium.org/viewvc/chrome?revision=200838&view=revision) |
-| Apparmor | Outer layer-1 in Zygote processes (renderers, PPAPI) | Not used                          | Deprecated |
+| AppArmor | Outer layer-1 in Zygote processes (renderers, PPAPI) | Not used                          | Deprecated |
 
 ## The setuid sandbox
 

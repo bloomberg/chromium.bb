@@ -1,6 +1,6 @@
 # IPC Fuzzer
 
-A chromium IPC fuzzer is under development by aedla and tsepez. The fuzzer lives
+A Chromium IPC fuzzer is under development by aedla and tsepez. The fuzzer lives
 under `src/tools/ipc_fuzzer/` and is running on ClusterFuzz. A previous version
 of the fuzzer was a simple bitflipper, which caught around 10 bugs. A new
 version is doing smarter mutations and generational fuzzing. To do so, each

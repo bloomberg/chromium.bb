@@ -73,7 +73,7 @@ The algorithm is as follows:
     * If the next top entry is transient, do nothing, since if there is any
       persistent session that is active, it is already ducking.
     * If the next top entry is persistent, let the next top entry start ducking,
-      since it is the only active persisten session.
+      since it is the only active persistent session.
 
 * When a `MediaSession` abandons audio focus:
 

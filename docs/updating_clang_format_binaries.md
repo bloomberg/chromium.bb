@@ -19,7 +19,7 @@ consistent state.
 
 ## Build a release-mode clang-format on each platform
 
-Follow the the official instructions here:
+Follow the official instructions here:
 http://clang.llvm.org/get_started.html.
 
 Windows step-by-step:

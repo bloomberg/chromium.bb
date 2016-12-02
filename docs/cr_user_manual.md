@@ -5,7 +5,7 @@ behind an abstraction layer. Nothing that cr does can't be done manually, but cr
 attempts to make things nicer. Its main additional feature is that it allows you
 to build many configurations and run targets within a single checkout (by not
 relying on a directory called 'out'). This is especially important when you want
-to cross-compile (for instance, building android from linux or building arm from
+to cross-compile (for instance, building Android from Linux or building arm from
 intel), but it extends to any build variation.
 
 [TOC]
@@ -52,7 +52,7 @@ will list all the commands installed
 
 will give you more detailed help for a specific command.
 
-_**A note to existing android developers:**_
+_**A note to existing Android developers:**_
 
 *   Do not source envsetup! ever!
 *   If you use cr in a shell that has had envsetup sourced, miscellaneous things
@@ -93,7 +93,7 @@ Build a target.
     install
 
 Install a binary. Does build first unless `--builder==skip`. This does nothing
-on linux, and installs the apk onto the device for android builds.
+on Linux, and installs the apk onto the device for Android builds.
 
     run
 
@@ -116,7 +116,7 @@ Run an exernal command in a cr environment. This is an escape hatch, if passed
 a command it runs it in the correct environment for the current output
 directory, otherwise it starts a sub shell with that environment. This allows
 you to run any commands that don't have shims, or are too specialized to get
-one. This is especially important on android where the environment is heavily
+one. This is especially important on Android where the environment is heavily
 modified.
 
 ## Preparing to build
@@ -126,8 +126,8 @@ You do this with:
 
     cr init
 
-By default on linux this will prepare a linux x86 release build output
-directory, called `out_linux/Release`, if you want an android debug one, you can
+By default on Linux this will prepare a Linux x86 release build output
+directory, called `out_linux/Release`, if you want an Android debug one, you can
 use:
 
     cr init --out=out_android/Debug
@@ -136,7 +136,7 @@ The output directory can be called anything you like, but if you pick a non
 standard name cr might not be able to infer the platform, in which case you need
 to specify it. The second part **must** be either Release or Debug. All options
 can be shortened to the shortest non ambiguous prefix, so the short command line
-to prepare an android debug output directory in out is:
+to prepare an Android debug output directory in out is:
 
     cr init --o=out/Debug --p=android
 
@@ -209,7 +209,7 @@ query, but here are the high level issues:
     to infer from the target whether it is a runnable binary or a test. The
     inference could be improved, and it needs to handle the other test types as
     well.
-*   **No support for windows or mac** : allowed for in the design, but need
+*   **No support for Windows or Mac** : allowed for in the design, but need
     people with expertise on those platforms to help out
 *   **Bash completion** : The hooks for it are there, but at the moment it only
     ever completes the command, not any of the arguments

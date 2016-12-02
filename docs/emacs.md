@@ -61,7 +61,7 @@ file:
 ```el
 ;; For dealing with WebKit long lines and word wrapping.
 (defun c-mode-adaptive-indent (beg end)
-  "Set the wrap-prefix for the the region between BEG and END with adaptive filling."
+  "Set the wrap-prefix for the region between BEG and END with adaptive filling."
   (goto-char beg)
   (while
       (let ((lbp (line-beginning-position))

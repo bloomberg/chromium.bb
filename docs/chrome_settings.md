@@ -78,7 +78,7 @@ For simple prefs, the UI is kept in sync with the value automagically (see
 `CoreOptionsHandler`). Find the handler most closely relevant to your pref. The
 only action we need take here is to make the page aware of the new string.
 Locate the method in the handler called `GetLocalizedStrings` and look at its
-body for examples of `SetString` usage. The first parameter is the javascript
+body for examples of `SetString` usage. The first parameter is the JavaScript
 name for the string.
 
 ### 4. HTML/CSS/JS

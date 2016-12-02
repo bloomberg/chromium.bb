@@ -110,6 +110,6 @@ keep it in shared Drive folders.
 
 Do not write your own guide to a common technology or process. Link to it
 instead. If the guide doesn't exist or it's badly out of date, submit your
-updates to the appriopriate docs/ directory or create a package-level
+updates to the appropriate docs/ directory or create a package-level
 README.md. **Take ownership and don't be shy**: Other teams will usually welcome
 your contributions.

@@ -375,15 +375,15 @@ for discussion of a simpler way.)
 
     BROWSER_WRAPPER='xterm -e gdb --args' out/Debug/browser_tests
 
-### Replicating Trybot Slowness
+### Replicating try bot Slowness
 
-Trybots are pretty stressed, and can sometimes expose timing issues you can't
+Try bots are pretty stressed, and can sometimes expose timing issues you can't
 normally reproduce locally.
 
 You can simulate this by shutting down all but one of the CPUs
 (http://www.cyberciti.biz/faq/debian-rhel-centos-redhat-suse-hotplug-cpu/) and
 running a CPU loading tool (e.g., http://www.devin.com/lookbusy/). Now run your
-test. It will run slowly, but any flakiness found by the trybot should replicate
+test. It will run slowly, but any flakiness found by the try bot should replicate
 locally now - and often nearly 100% of the time.
 
 ## Logging
@@ -393,7 +393,7 @@ locally now - and often nearly 100% of the time.
 Default log level hides `LOG(INFO)`. Run with `--log-level=0` and
 `--enable-logging=stderr` flags.
 
-Newer versions of chromium with VLOG may need --v=1 too. For more VLOG tips, see
+Newer versions of Chromium with VLOG may need --v=1 too. For more VLOG tips, see
 [the chromium-dev thread](http://groups.google.com/a/chromium.org/group/chromium-dev/browse_thread/thread/dcd0cd7752b35de6?pli=1).
 
 ### Seeing IPC debug messages

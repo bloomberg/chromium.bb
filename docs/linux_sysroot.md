@@ -22,7 +22,7 @@ hooks. When run from hooks this script in a no-op on non-linux platforms.
 ## Rebuilding the sysroot image
 
 The pre-built sysroot images occasionally needs to be rebuilt.  For example,
-when security updates to debian are released, or when a new package is needed by
+when security updates to Debian are released, or when a new package is needed by
 the chromium build.
 
 ### Rebuilding

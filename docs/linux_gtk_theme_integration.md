@@ -1,4 +1,4 @@
-# Linux GTK Theme Integration
+Linux GTK Theme Integration
 
 The GTK+ port of Chromium has a mode where we try to match the user's GTK theme
 (which can be enabled under Wrench -> Options -> Personal Stuff -> Set to GTK+

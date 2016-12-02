@@ -17,7 +17,7 @@ don’t mind erasing all data, rooting, and installing a userdebug build on.
 [Android Build Instructions](android_build_instructions.md).)
 
 1.  Get the code! You’ll want a second checkout as this will be
-    android-specific. You know the drill:
+    Android-specific. You know the drill:
     https://www.chromium.org/developers/how-tos/get-the-code
 1.  Append this to your `.gclient` file: `target_os = ['android']`
 1.  Create `chromium.gyp_env` next to your `.gclient` file:
@@ -112,7 +112,7 @@ Telemetry" steps below).
 
 ## Install `/system/bin/perf` on your device (not needed for Telemetry)
 
-    # From inside the android source tree (not inside Chromium)
+    # From inside the Android source tree (not inside Chromium)
     mmm external/linux-tools-perf/
     adb remount # (allows you to write to the system image)
     adb sync

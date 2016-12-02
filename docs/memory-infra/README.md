@@ -69,7 +69,7 @@ process. This is what exerts memory pressure on the system.
  * **Swapped**: The total size of anonymous memory used by process, which is
    swapped out of RAM.
 
-**Columns in black** reflect a best estimation of the the amount of physical
+**Columns in black** reflect a best estimation of the amount of physical
 memory used by various subsystems of Chrome.
 
  * **Blink GC**: Memory used by [Oilpan][oilpan].

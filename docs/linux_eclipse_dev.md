@@ -294,7 +294,7 @@ best for me.
     1.  This creates a single list of include directories and preprocessor
         definitions to be used for all source files, and so is a little
         inaccurate. Here are some tips for compensating for the limitations:
-        1.  If you care about blink, move 'third\_party/Webkit/Source' to the
+        1.  If you care about blink, move 'third\_party/WebKit/Source' to the
             top of the list to better resolve ambiguous include paths (eg.
             `config.h`).
 1.  Import paths and symbols

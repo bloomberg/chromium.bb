@@ -44,7 +44,7 @@ gn args:
 
 Chromium's testing infrastructure for ARM/Linux is somewhat limited.
 There are currently two builders setup, one on the FYI waterfall and one
-the the trybot waterfall:
+the the try bot waterfall:
 
 *   [Linux ARM](http://build.chromium.org/p/chromium.fyi/builders/Linux%20ARM)
 *   [linux_arm](http://build.chromium.org/p/tryserver.chromium.linux/builders/linux_arm)

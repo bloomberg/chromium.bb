@@ -113,7 +113,7 @@ It is important to use --bootstrap as there appear to be [bugs](https://crbug.co
 in the clang library this script produces if you build it with gcc, which is the default.
 
 ## Running
-First, build all chromium targets to avoid failures due to missing dependecies
+First, build all Chromium targets to avoid failures due to missing dependencies
 that are generated as part of the build:
 
 ```shell

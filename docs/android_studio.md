@@ -47,7 +47,7 @@ Gradle sub-project.
 
 Gradle supports source directories but not source files. However, some
 `java/src/` directories in Chromium are split amonst multiple GN targets. To
-accomodate this, the script detects such targets and creates a `symlinked-java/`
+accommodate this, the script detects such targets and creates a `symlinked-java/`
 directory to point gradle at. Be warned that creating new files from Android
 Studio within these symlink-based projects will cause new files to be created in
 the generated `symlinked-java/` rather than the source tree where you want it.
