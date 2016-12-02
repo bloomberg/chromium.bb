@@ -167,6 +167,10 @@ FFMPEG_TEST_CASE(Cr599625,
 // twice under ASAN.  If run once, then it doesn't.  However, it still catches
 // issues in crbug.com/662118, so it's included anyway.
 FFMPEG_TEST_CASE(Cr658440, "security/658440.flac", PIPELINE_OK, PIPELINE_OK);
+FFMPEG_TEST_CASE(Cr665305,
+                 "crbug665305.flac",
+                 PIPELINE_OK,
+                 PIPELINE_ERROR_DECODE);
 
 // General MP4 test cases.
 FFMPEG_TEST_CASE(MP4_0,
