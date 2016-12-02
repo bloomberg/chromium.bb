@@ -1,0 +1,28 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/infobar_close.png",
+    "resources/infobar_close@2x.png",
+    "resources/infobar_close@3x.png",
+    "resources/infobar_downloading.png",
+    "resources/infobar_downloading@2x.png",
+    "resources/infobar_downloading@3x.png",
+    "resources/infobar_popup_blocker.png",
+    "resources/infobar_popup_blocker@2x.png",
+    "resources/infobar_popup_blocker@3x.png",
+    "resources/infobar_shadow.png",
+    "resources/infobar_shadow@2x.png",
+    "resources/infobar_update.png",
+    "resources/infobar_update@2x.png",
+    "resources/infobar_update@3x.png",
+    "resources/infobar_warning.png",
+    "resources/infobar_warning@2x.png",
+    "resources/infobar_warning@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
