@@ -308,10 +308,36 @@ TEST_F(TextFinderTest, ScopeTextMatchesSimple) {
   WebFindOptions findOptions;  // Default.
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
+  EXPECT_EQ(2, textFinder().totalMatchCount());
+  WebVector<WebFloatRect> matchRects;
+  textFinder().findMatchRects(matchRects);
+  ASSERT_EQ(2u, matchRects.size());
+  EXPECT_EQ(findInPageRect(textNode, 4, textNode, 10), matchRects[0]);
+  EXPECT_EQ(findInPageRect(textNode, 14, textNode, 20), matchRects[1]);
+}
+
+TEST_F(TextFinderTest, ScopeTextMatchesRepeated) {
+  document().body()->setInnerHTML("XXXXFindMeYYYYfindmeZZZZ");
+  document().updateStyleAndLayout();
+
+  Node* textNode = document().body()->firstChild();
+
+  int identifier = 0;
+  WebString searchText1(String("XFindMe"));
+  WebString searchText2(String("FindMe"));
+  WebFindOptions findOptions;  // Default.
+
+  textFinder().resetMatchCount();
+  textFinder().startScopingStringMatches(identifier, searchText1, findOptions);
+  textFinder().startScopingStringMatches(identifier, searchText2, findOptions);
+  while (textFinder().scopingInProgress())
+    runPendingTasks();
+
+  // Only searchText2 should be highlighted.
   EXPECT_EQ(2, textFinder().totalMatchCount());
   WebVector<WebFloatRect> matchRects;
   textFinder().findMatchRects(matchRects);
@@ -336,7 +362,7 @@ TEST_F(TextFinderTest, ScopeTextMatchesWithShadowDOM) {
   WebFindOptions findOptions;  // Default.
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
@@ -366,7 +392,7 @@ TEST_F(TextFinderTest, ScopeRepeatPatternTextMatches) {
   WebFindOptions findOptions;  // Default.
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
@@ -389,7 +415,7 @@ TEST_F(TextFinderTest, OverlappingMatches) {
   WebFindOptions findOptions;  // Default.
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
@@ -412,7 +438,7 @@ TEST_F(TextFinderTest, SequentialMatches) {
   WebFindOptions findOptions;  // Default.
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
@@ -436,7 +462,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   bool activeNow;
 
   textFinder().resetMatchCount();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 
@@ -466,7 +492,7 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
   findOptions.findNext = false;
   textFinder().resetMatchCount();
   textFinder().cancelPendingScopingEffort();
-  textFinder().scopeStringMatches(identifier, searchText, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
   EXPECT_EQ(2, textFinder().totalMatchCount());
@@ -526,7 +552,8 @@ TEST_F(TextFinderFakeTimerTest, ScopeWithTimeouts) {
 
   // There will be only one iteration before timeout, because increment
   // of the TimeProxyPlatform timer is greater than timeout threshold.
-  textFinder().scopeStringMatches(identifier, searchPattern, findOptions, true);
+  textFinder().startScopingStringMatches(identifier, searchPattern,
+                                         findOptions);
   while (textFinder().scopingInProgress())
     runPendingTasks();
 

@@ -70,10 +70,9 @@ class TextFinder::DeferredScopeStringMatches
   static DeferredScopeStringMatches* create(TextFinder* textFinder,
                                             int identifier,
                                             const WebString& searchText,
-                                            const WebFindOptions& options,
-                                            bool reset) {
+                                            const WebFindOptions& options) {
     return new DeferredScopeStringMatches(textFinder, identifier, searchText,
-                                          options, reset);
+                                          options);
   }
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_textFinder); }
@@ -84,20 +83,18 @@ class TextFinder::DeferredScopeStringMatches
   DeferredScopeStringMatches(TextFinder* textFinder,
                              int identifier,
                              const WebString& searchText,
-                             const WebFindOptions& options,
-                             bool reset)
+                             const WebFindOptions& options)
       : m_timer(this, &DeferredScopeStringMatches::doTimeout),
         m_textFinder(textFinder),
         m_identifier(identifier),
         m_searchText(searchText),
-        m_options(options),
-        m_reset(reset) {
+        m_options(options) {
     m_timer.startOneShot(0.0, BLINK_FROM_HERE);
   }
 
   void doTimeout(TimerBase*) {
-    m_textFinder->callScopeStringMatches(this, m_identifier, m_searchText,
-                                         m_options, m_reset);
+    m_textFinder->resumeScopingStringMatches(m_identifier, m_searchText,
+                                             m_options);
   }
 
   Timer<DeferredScopeStringMatches> m_timer;
@@ -105,7 +102,6 @@ class TextFinder::DeferredScopeStringMatches
   const int m_identifier;
   const WebString m_searchText;
   const WebFindOptions m_options;
-  const bool m_reset;
 };
 
 bool TextFinder::find(int identifier,
@@ -263,45 +259,45 @@ void TextFinder::reportFindInPageResultToAccessibility(int identifier) {
   }
 }
 
+void TextFinder::startScopingStringMatches(int identifier,
+                                           const WebString& searchText,
+                                           const WebFindOptions& options) {
+  cancelPendingScopingEffort();
+
+  // This is a brand new search, so we need to reset everything.
+  // Scoping is just about to begin.
+  m_scopingInProgress = true;
+
+  // Need to keep the current identifier locally in order to finish the
+  // request in case the frame is detached during the process.
+  m_findRequestIdentifier = identifier;
+
+  // Clear highlighting for this frame.
+  unmarkAllTextMatches();
+
+  // Clear the tickmarks and results cache.
+  clearFindMatchesCache();
+
+  // Clear the total match count and increment markers version.
+  resetMatchCount();
+
+  // Clear the counters from last operation.
+  m_lastMatchCount = 0;
+  m_nextInvalidateAfter = 0;
+  m_resumeScopingFromRange = nullptr;
+
+  // The view might be null on detached frames.
+  LocalFrame* frame = ownerFrame().frame();
+  if (frame && frame->page())
+    m_frameScoping = true;
+
+  // Now, defer scoping until later to allow find operation to finish quickly.
+  scopeStringMatchesSoon(identifier, searchText, options);
+}
+
 void TextFinder::scopeStringMatches(int identifier,
                                     const WebString& searchText,
-                                    const WebFindOptions& options,
-                                    bool reset) {
-  // TODO(dglazkov): The reset/continue cases need to be untangled into two
-  // separate functions. This collation of logic is unnecessary and adds to
-  // overall complexity of the code.
-  if (reset) {
-    // This is a brand new search, so we need to reset everything.
-    // Scoping is just about to begin.
-    m_scopingInProgress = true;
-
-    // Need to keep the current identifier locally in order to finish the
-    // request in case the frame is detached during the process.
-    m_findRequestIdentifier = identifier;
-
-    // Clear highlighting for this frame.
-    unmarkAllTextMatches();
-
-    // Clear the tickmarks and results cache.
-    clearFindMatchesCache();
-
-    // Clear the counters from last operation.
-    m_lastMatchCount = 0;
-    m_nextInvalidateAfter = 0;
-    m_resumeScopingFromRange = nullptr;
-
-    // The view might be null on detached frames.
-    LocalFrame* frame = ownerFrame().frame();
-    if (frame && frame->page())
-      m_frameScoping = true;
-
-    // Now, defer scoping until later to allow find operation to finish quickly.
-    scopeStringMatchesSoon(
-        identifier, searchText, options,
-        false);  // false means just reset, so don't do it again.
-    return;
-  }
-
+                                    const WebFindOptions& options) {
   if (!shouldScopeMatches(searchText, options)) {
     finishCurrentScopingEffort(identifier);
     return;
@@ -429,8 +425,7 @@ void TextFinder::scopeStringMatches(int identifier,
       invalidateIfNecessary();
 
     // Scoping effort ran out of time, lets ask for another time-slice.
-    scopeStringMatchesSoon(identifier, searchText, options,
-                           false);  // don't reset.
+    scopeStringMatchesSoon(identifier, searchText, options);
     return;                         // Done for now, resume work later.
   }
 
@@ -456,9 +451,10 @@ void TextFinder::finishCurrentScopingEffort(int identifier) {
 }
 
 void TextFinder::cancelPendingScopingEffort() {
-  for (DeferredScopeStringMatches* deferredWork : m_deferredScopingWork)
-    deferredWork->dispose();
-  m_deferredScopingWork.clear();
+  if (m_deferredScopingWork) {
+    m_deferredScopingWork->dispose();
+    m_deferredScopingWork.clear();
+  }
 
   m_activeMatchIndex = -1;
 
@@ -731,21 +727,18 @@ bool TextFinder::shouldScopeMatches(const String& searchText,
 
 void TextFinder::scopeStringMatchesSoon(int identifier,
                                         const WebString& searchText,
-                                        const WebFindOptions& options,
-                                        bool reset) {
-  m_deferredScopingWork.append(DeferredScopeStringMatches::create(
-      this, identifier, searchText, options, reset));
+                                        const WebFindOptions& options) {
+  DCHECK_EQ(m_deferredScopingWork, nullptr);
+  m_deferredScopingWork =
+      DeferredScopeStringMatches::create(this, identifier, searchText, options);
 }
 
-void TextFinder::callScopeStringMatches(DeferredScopeStringMatches* caller,
-                                        int identifier,
-                                        const WebString& searchText,
-                                        const WebFindOptions& options,
-                                        bool reset) {
-  size_t index = m_deferredScopingWork.find(caller);
-  m_deferredScopingWork.remove(index);
+void TextFinder::resumeScopingStringMatches(int identifier,
+                                            const WebString& searchText,
+                                            const WebFindOptions& options) {
+  m_deferredScopingWork.clear();
 
-  scopeStringMatches(identifier, searchText, options, reset);
+  scopeStringMatches(identifier, searchText, options);
 }
 
 void TextFinder::invalidateIfNecessary() {

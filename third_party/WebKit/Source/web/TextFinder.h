@@ -72,20 +72,11 @@ class WEB_EXPORT TextFinder final
   void findMatchRects(WebVector<WebFloatRect>&);
   int selectNearestFindMatch(const WebFloatPoint&, WebRect* selectionRect);
 
-  // Counts how many times a particular string occurs within the frame.  It
-  // also retrieves the location of the string and updates a vector in the
-  // frame so that tick-marks and highlighting can be drawn.  This function
-  // does its work asynchronously, by running for a certain time-slice and
-  // then scheduling itself (co-operative multitasking) to be invoked later
-  // (repeating the process until all matches have been found).  This allows
-  // multiple frames to be searched at the same time and provides a way to
-  // cancel at any time (see cancelPendingScopingEffort).  The parameter
-  // searchText specifies what to look for and |reset| signals whether this is
-  // a brand new request or a continuation of the last scoping effort.
-  void scopeStringMatches(int identifier,
-                          const WebString& searchText,
-                          const WebFindOptions&,
-                          bool reset);
+  // Starts brand new scoping request: resets the scoping state and
+  // asyncronously calls scopeStringMatches().
+  void startScopingStringMatches(int identifier,
+                                 const WebString& searchText,
+                                 const WebFindOptions&);
 
   // Cancels any outstanding requests for scoping string matches on the frame.
   void cancelPendingScopingEffort();
@@ -187,18 +178,28 @@ class WEB_EXPORT TextFinder final
   // appropriate.
   void finishCurrentScopingEffort(int identifier);
 
+  // Counts how many times a particular string occurs within the frame.  It
+  // also retrieves the location of the string and updates a vector in the
+  // frame so that tick-marks and highlighting can be drawn.  This function
+  // does its work asynchronously, by running for a certain time-slice and
+  // then scheduling itself (co-operative multitasking) to be invoked later
+  // (repeating the process until all matches have been found).  This allows
+  // multiple frames to be searched at the same time and provides a way to
+  // cancel at any time (see cancelPendingScopingEffort).  The parameter
+  // searchText specifies what to look for.
+  void scopeStringMatches(int identifier,
+                          const WebString& searchText,
+                          const WebFindOptions&);
+
   // Queue up a deferred call to scopeStringMatches.
   void scopeStringMatchesSoon(int identifier,
                               const WebString& searchText,
-                              const WebFindOptions&,
-                              bool reset);
+                              const WebFindOptions&);
 
   // Called by a DeferredScopeStringMatches instance.
-  void callScopeStringMatches(DeferredScopeStringMatches*,
-                              int identifier,
-                              const WebString& searchText,
-                              const WebFindOptions&,
-                              bool reset);
+  void resumeScopingStringMatches(int identifier,
+                                  const WebString& searchText,
+                                  const WebFindOptions&);
 
   // Determines whether to invalidate the content area and scrollbar.
   void invalidateIfNecessary();
@@ -254,8 +255,8 @@ class WEB_EXPORT TextFinder final
   // and the frame area.
   int m_nextInvalidateAfter;
 
-  // A list of all of the pending calls to scopeStringMatches.
-  HeapVector<Member<DeferredScopeStringMatches>> m_deferredScopingWork;
+  // Pending call to scopeStringMatches.
+  Member<DeferredScopeStringMatches> m_deferredScopingWork;
 
   // Version number incremented whenever this frame's find-in-page match
   // markers change.

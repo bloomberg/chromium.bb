@@ -4647,9 +4647,10 @@ TEST_P(ParameterizedWebFrameTest, FindInPageMatchRects) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4710,18 +4711,20 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
   mainFrame->stopFinding(WebLocalFrame::StopFindActionClearSelection);
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4734,9 +4737,10 @@ TEST_F(WebFrameTest, FindInPageActiveIndex) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchTextNew,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchTextNew, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4775,9 +4779,10 @@ TEST_P(ParameterizedWebFrameTest, FindOnDetachedFrame) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4814,9 +4819,10 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameBeforeScopeStrings) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4850,12 +4856,13 @@ TEST_P(ParameterizedWebFrameTest, FindDetachFrameWhileScopingStrings) {
   mainFrame->ensureTextFinder().resetMatchCount();
 
   for (WebLocalFrameImpl* frame = mainFrame; frame;
-       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext()))
-    frame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                 options, true);
+       frame = static_cast<WebLocalFrameImpl*>(frame->traverseNext())) {
+    frame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                        searchText, options);
+  }
 
-  // The first scopeStringMatches will have reset the state. Detach before it
-  // actually scopes.
+  // The first startScopingStringMatches will have reset the state. Detach
+  // before it actually scopes.
   removeElementById(mainFrame, "frame");
 
   runPendingTasks();
@@ -4910,8 +4917,8 @@ TEST_P(ParameterizedWebFrameTest, SetTickmarks) {
   EXPECT_TRUE(mainFrame->find(kFindIdentifier, searchText, options, false));
 
   mainFrame->ensureTextFinder().resetMatchCount();
-  mainFrame->ensureTextFinder().scopeStringMatches(kFindIdentifier, searchText,
-                                                   options, true);
+  mainFrame->ensureTextFinder().startScopingStringMatches(kFindIdentifier,
+                                                          searchText, options);
 
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
@@ -4962,8 +4969,8 @@ TEST_P(ParameterizedWebFrameTest, FindInPageJavaScriptUpdatesDOM) {
   bool activeNow;
 
   frame->ensureTextFinder().resetMatchCount();
-  frame->ensureTextFinder().scopeStringMatches(findIdentifier, searchText,
-                                               options, true);
+  frame->ensureTextFinder().startScopingStringMatches(findIdentifier,
+                                                      searchText, options);
   runPendingTasks();
   EXPECT_TRUE(client.findResultsAreReady());
 

@@ -2125,14 +2125,9 @@ void WebLocalFrameImpl::requestFind(int identifier,
     return;
   }
 
-  // Scoping effort begins.
-  ensureTextFinder().resetMatchCount();
-  textFinder()->cancelPendingScopingEffort();
-
   // Start a new scoping request. If the scoping function determines that it
   // needs to scope, it will defer until later.
-  textFinder()->scopeStringMatches(identifier, searchText, options,
-                                   true /* reset */);
+  ensureTextFinder().startScopingStringMatches(identifier, searchText, options);
 }
 
 bool WebLocalFrameImpl::find(int identifier,
