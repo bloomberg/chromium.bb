@@ -594,8 +594,12 @@ public class Stack {
         }
 
         if (mOverviewAnimationType != OverviewAnimationType.NONE) {
-            // sync the scrollTarget and scrollOffset;
-            setScrollTarget(mScrollOffset, true);
+            // sync the scrollTarget and scrollOffset. For ENTER_STACK animation, don't sync to
+            // ensure the tab can tilt back.
+            if (mOverviewAnimationType != OverviewAnimationType.ENTER_STACK) {
+                setScrollTarget(mScrollOffset, true);
+            }
+
             mOverviewAnimationType = OverviewAnimationType.NONE;
         }
         mTabAnimations = null;
