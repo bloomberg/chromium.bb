@@ -22,7 +22,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
       NGPhysicalSize overflow,
       HeapVector<Member<const NGPhysicalFragmentBase>>& children,
       HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
-      Vector<NGLogicalOffset> out_of_flow_offsets,
+      Vector<NGStaticPosition>& out_of_flow_positions,
       NGMarginStrut margin_strut);
 
   const HeapVector<Member<const NGPhysicalFragmentBase>>& Children() const {
@@ -34,8 +34,8 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
     return out_of_flow_descendants_;
   }
 
-  const Vector<NGLogicalOffset>& OutOfFlowOffsets() const {
-    return out_of_flow_offsets_;
+  const Vector<NGStaticPosition>& OutOfFlowPositions() const {
+    return out_of_flow_positions_;
   }
 
   NGMarginStrut MarginStrut() const { return margin_strut_; }
@@ -45,7 +45,7 @@ class CORE_EXPORT NGPhysicalFragment final : public NGPhysicalFragmentBase {
  private:
   HeapVector<Member<const NGPhysicalFragmentBase>> children_;
   HeapLinkedHashSet<WeakMember<NGBlockNode>> out_of_flow_descendants_;
-  Vector<NGLogicalOffset> out_of_flow_offsets_;
+  Vector<NGStaticPosition> out_of_flow_positions_;
   NGMarginStrut margin_strut_;
 };
 

@@ -44,11 +44,78 @@ NGFragmentBuilder& NGFragmentBuilder::SetBlockOverflow(LayoutUnit size) {
 }
 
 NGFragmentBuilder& NGFragmentBuilder::AddChild(NGFragmentBase* child,
-                                               NGLogicalOffset offset) {
+                                               NGLogicalOffset child_offset) {
   DCHECK_EQ(type_, NGPhysicalFragmentBase::kFragmentBox)
       << "Only box fragments can have children";
   children_.append(child->PhysicalFragment());
-  offsets_.append(offset);
+  offsets_.append(child_offset);
+  // Collect child's out of flow descendants.
+  // TODO(atotic) All fragments can carry oof descendants.
+  // Therefore, oof descendants should move from NGPhysicalFragment to
+  // NGPhysicalFragmentBase
+  if (child->PhysicalFragment()->Type() ==
+      NGPhysicalFragmentBase::kFragmentBox) {
+    const NGPhysicalFragment* physical_child =
+        static_cast<const NGPhysicalFragment*>(&*child->PhysicalFragment());
+    const Vector<NGStaticPosition>& oof_positions =
+        physical_child->OutOfFlowPositions();
+    size_t oof_index = 0;
+    for (auto& oof_node : physical_child->OutOfFlowDescendants()) {
+      NGStaticPosition oof_position = oof_positions[oof_index++];
+      out_of_flow_descendant_candidates_.add(oof_node);
+      out_of_flow_candidate_placements_.append(
+          OutOfFlowPlacement{child_offset, oof_position});
+    }
+  }
+  return *this;
+}
+
+NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowChildCandidate(
+    NGBlockNode* child,
+    NGLogicalOffset child_offset) {
+  out_of_flow_descendant_candidates_.add(child);
+  NGStaticPosition child_position =
+      NGStaticPosition::Create(writing_mode_, direction_, NGPhysicalOffset());
+  out_of_flow_candidate_placements_.append(
+      OutOfFlowPlacement{child_offset, child_position});
+  return *this;
+}
+
+void NGFragmentBuilder::GetAndClearOutOfFlowDescendantCandidates(
+    WeakBoxList* descendants,
+    Vector<NGStaticPosition>* descendant_positions) {
+  DCHECK(descendants->isEmpty());
+  DCHECK(descendant_positions->isEmpty());
+
+  DCHECK_GE(size_.inline_size, LayoutUnit());
+  DCHECK_GE(size_.block_size, LayoutUnit());
+  NGPhysicalSize builder_physical_size{size_.ConvertToPhysical(writing_mode_)};
+
+  size_t placement_index = 0;
+  for (auto& oof_node : out_of_flow_descendant_candidates_) {
+    OutOfFlowPlacement oof_placement =
+        out_of_flow_candidate_placements_[placement_index++];
+
+    NGPhysicalOffset child_offset =
+        oof_placement.child_offset.ConvertToPhysical(
+            writing_mode_, direction_, builder_physical_size, NGPhysicalSize());
+
+    NGStaticPosition builder_relative_position;
+    builder_relative_position.type = oof_placement.descendant_position.type;
+    builder_relative_position.offset =
+        child_offset + oof_placement.descendant_position.offset;
+    descendants->add(oof_node);
+    descendant_positions->append(builder_relative_position);
+  }
+  out_of_flow_descendant_candidates_.clear();
+  out_of_flow_candidate_placements_.clear();
+}
+
+NGFragmentBuilder& NGFragmentBuilder::AddOutOfFlowDescendant(
+    NGBlockNode* descendant,
+    const NGStaticPosition& position) {
+  out_of_flow_descendants_.add(descendant);
+  out_of_flow_positions_.append(position);
   return *this;
 }
 
@@ -83,11 +150,12 @@ NGPhysicalFragment* NGFragmentBuilder::ToFragment() {
   }
   return new NGPhysicalFragment(
       physical_size, overflow_.ConvertToPhysical(writing_mode_), children,
-      out_of_flow_descendants_, out_of_flow_offsets_, margin_strut_);
+      out_of_flow_descendants_, out_of_flow_positions_, margin_strut_);
 }
 
 DEFINE_TRACE(NGFragmentBuilder) {
   visitor->trace(children_);
+  visitor->trace(out_of_flow_descendant_candidates_);
   visitor->trace(out_of_flow_descendants_);
 }
 

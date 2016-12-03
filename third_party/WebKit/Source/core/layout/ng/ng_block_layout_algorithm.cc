@@ -244,6 +244,15 @@ NGLayoutStatus NGBlockLayoutAlgorithm::Layout(
     }
     case kStateChildLayout: {
       if (current_child_) {
+        // TODO(atotic): uncomment this code when implementing oof layout.
+        // This code cannot be turned on because it prevents layout of
+        // oof children, and non-layedout objects trigger  a DCHECK.
+        // EPosition position = current_child_->Style()->position();
+        // if ((position == AbsolutePosition || position == FixedPosition)) {
+        //   builder_->AddOutOfFlowCandidateChild(current_child_,
+        //   GetChildSpaceOffset());
+        // }
+        // else
         if (!LayoutCurrentChild())
           return kNotFinished;
         current_child_ = current_child_->NextSibling();
@@ -431,8 +440,7 @@ NGBlockLayoutAlgorithm::CreateConstraintSpaceForCurrentChild() const {
   NGConstraintSpace* child_space = space_builder_->ToConstraintSpace();
 
   // TODO(layout-ng): Set offset through the space builder.
-  child_space->SetOffset(
-      NGLogicalOffset(border_and_padding_.inline_start, content_size_));
+  child_space->SetOffset(GetChildSpaceOffset());
   return child_space;
 }
 

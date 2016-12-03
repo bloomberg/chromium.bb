@@ -134,6 +134,16 @@ String NGLogicalOffset::ToString() const {
   return String::format("%dx%d", inline_offset.toInt(), block_offset.toInt());
 }
 
+NGPhysicalOffset NGPhysicalOffset::operator+(
+    const NGPhysicalOffset& other) const {
+  return NGPhysicalOffset{this->left + other.left, this->top + other.top};
+}
+
+NGPhysicalOffset& NGPhysicalOffset::operator+=(const NGPhysicalOffset& other) {
+  *this = *this + other;
+  return *this;
+}
+
 bool NGBoxStrut::IsEmpty() const {
   return *this == NGBoxStrut();
 }
@@ -250,6 +260,29 @@ inline NGExclusions& NGExclusions::operator=(const NGExclusions& other) {
   for (const auto& exclusion : other.storage)
     Add(*exclusion);
   return *this;
+}
+
+NGStaticPosition NGStaticPosition::Create(NGWritingMode writing_mode,
+                                          TextDirection direction,
+                                          NGPhysicalOffset offset) {
+  NGStaticPosition position;
+  position.offset = offset;
+  switch (writing_mode) {
+    case kHorizontalTopBottom:
+      position.type = (direction == LTR) ? kTopLeft : kTopRight;
+      break;
+    case kVerticalRightLeft:
+    case kSidewaysRightLeft:
+      position.type = (direction == LTR) ? kTopRight : kBottomRight;
+      break;
+    case kVerticalLeftRight:
+      position.type = (direction == LTR) ? kTopLeft : kBottomLeft;
+      break;
+    case kSidewaysLeftRight:
+      position.type = (direction == LTR) ? kBottomLeft : kTopLeft;
+      break;
+  }
+  return position;
 }
 
 }  // namespace blink

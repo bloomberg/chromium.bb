@@ -80,6 +80,10 @@ class CORE_EXPORT NGBlockLayoutAlgorithm : public NGLayoutAlgorithm {
   // keeps updating block-end (on every non-zero height child).
   void UpdateMarginStrut(const NGMarginStrut& from);
 
+  NGLogicalOffset GetChildSpaceOffset() const {
+    return NGLogicalOffset(border_and_padding_.inline_start, content_size_);
+  }
+
   // Read-only Getters.
   const ComputedStyle& CurrentChildStyle() const {
     DCHECK(current_child_);

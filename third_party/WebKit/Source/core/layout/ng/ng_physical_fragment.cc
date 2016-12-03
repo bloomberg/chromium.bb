@@ -14,13 +14,13 @@ NGPhysicalFragment::NGPhysicalFragment(
     NGPhysicalSize overflow,
     HeapVector<Member<const NGPhysicalFragmentBase>>& children,
     HeapLinkedHashSet<WeakMember<NGBlockNode>>& out_of_flow_descendants,
-    Vector<NGLogicalOffset> out_of_flow_offsets,
+    Vector<NGStaticPosition>& out_of_flow_positions,
     NGMarginStrut margin_strut)
     : NGPhysicalFragmentBase(size, overflow, kFragmentBox),
       margin_strut_(margin_strut) {
   children_.swap(children);
   out_of_flow_descendants_.swap(out_of_flow_descendants);
-  out_of_flow_offsets_.swap(out_of_flow_offsets);
+  out_of_flow_positions_.swap(out_of_flow_positions);
 }
 
 DEFINE_TRACE_AFTER_DISPATCH(NGPhysicalFragment) {

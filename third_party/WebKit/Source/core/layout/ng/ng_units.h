@@ -57,6 +57,9 @@ struct NGLogicalOffset {
 
   // Converts a logical offset to a physical offset. See:
   // https://drafts.csswg.org/css-writing-modes-3/#logical-to-physical
+  // PhysicalOffset will be the physical top left point of the rectangle
+  // described by offset + inner_size. Setting inner_size to 0,0 will return
+  // the same point.
   // @param outer_size the size of the rect (typically a fragment).
   // @param inner_size the size of the inner rect (typically a child fragment).
   CORE_EXPORT NGPhysicalOffset
@@ -64,6 +67,7 @@ struct NGLogicalOffset {
                     TextDirection,
                     NGPhysicalSize outer_size,
                     NGPhysicalSize inner_size) const;
+
   bool operator==(const NGLogicalOffset& other) const;
 
   NGLogicalOffset operator+(const NGLogicalOffset& other) const;
@@ -92,6 +96,9 @@ struct NGPhysicalOffset {
 
   LayoutUnit left;
   LayoutUnit top;
+
+  NGPhysicalOffset operator+(const NGPhysicalOffset& other) const;
+  NGPhysicalOffset& operator+=(const NGPhysicalOffset& other);
 };
 
 struct NGPhysicalSize {
@@ -284,6 +291,19 @@ inline std::ostream& operator<<(std::ostream& stream,
 struct NGEdge {
   LayoutUnit start;
   LayoutUnit end;
+};
+
+// Represents static position of an out of flow descendant.
+struct CORE_EXPORT NGStaticPosition {
+  enum Type { kTopLeft, kTopRight, kBottomLeft, kBottomRight };
+
+  Type type;  // Logical corner that corresponds to physical top left.
+  NGPhysicalOffset offset;
+
+  // Creates a position with proper type wrt writing mode and direction.
+  static NGStaticPosition Create(NGWritingMode,
+                                 TextDirection,
+                                 NGPhysicalOffset);
 };
 
 }  // namespace blink
