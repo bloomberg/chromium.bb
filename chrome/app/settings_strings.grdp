@@ -2,6 +2,9 @@
 <!-- Settings-specific strings (included from generated_resources.grd). -->
 <grit-part>
   <!-- About Page -->
+  <message name="IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION" desc="The text label describing the version of the browser, example: Version 57.0.2937.0 (Developer Build) unknown (64-bit)">
+    Version <ph name="PRODUCT_VERSION">$1<ex>15.0.865.0</ex></ph> (<ph name="PRODUCT_CHANNEL">$2<ex>Developer Build</ex></ph>) <ph name="PRODUCT_MODIFIER">$3</ph> <ph name="PRODUCT_VERSION_BITS">$4</ph>
+  </message>
   <if expr="chromeos">
     <message name="IDS_SETTINGS_ABOUT_PAGE_DETAILED_BUILD_INFO" desc="Label describing the section that shows detailed information about the current Chrome build.">
       Detailed build information

@@ -263,8 +263,18 @@ AboutHandler* AboutHandler::Create(content::WebUIDataSource* html_source,
                                    Profile* profile) {
   html_source->AddString(
       "aboutBrowserVersion",
-      l10n_util::GetStringFUTF16(IDS_ABOUT_PRODUCT_VERSION,
-                                 BuildBrowserVersionString()));
+      l10n_util::GetStringFUTF16(
+          IDS_SETTINGS_ABOUT_PAGE_BROWSER_VERSION,
+          base::UTF8ToUTF16(version_info::GetVersionNumber()),
+          l10n_util::GetStringUTF16(version_info::IsOfficialBuild()
+                                        ? IDS_VERSION_UI_OFFICIAL
+                                        : IDS_VERSION_UI_UNOFFICIAL),
+          base::UTF8ToUTF16(chrome::GetChannelString()),
+#if defined(ARCH_CPU_64_BITS)
+          l10n_util::GetStringUTF16(IDS_VERSION_UI_64BIT)));
+#else
+          l10n_util::GetStringUTF16(IDS_VERSION_UI_32BIT)));
+#endif
 
   html_source->AddString(
       "aboutProductCopyright",
@@ -394,21 +404,6 @@ void AboutHandler::Observe(int type,
   // A version update is installed and ready to go. Refresh the UI so the
   // correct state will be shown.
   RequestUpdate();
-}
-
-// static
-base::string16 AboutHandler::BuildBrowserVersionString() {
-  std::string version = version_info::GetVersionNumber();
-
-  std::string modifier = chrome::GetChannelString();
-  if (!modifier.empty())
-    version += " " + modifier;
-
-#if defined(ARCH_CPU_64_BITS)
-  version += " (64-bit)";
-#endif
-
-  return base::UTF8ToUTF16(version);
 }
 
 void AboutHandler::OnDeviceAutoUpdatePolicyChanged(
