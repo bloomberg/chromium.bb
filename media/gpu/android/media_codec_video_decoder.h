@@ -34,9 +34,6 @@ namespace media {
 class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
     : public AVDACodecAllocatorClient {
  public:
-  static VideoDecodeAccelerator::Capabilities GetCapabilities(
-      const gpu::GpuPreferences& gpu_preferences);
-
   MediaCodecVideoDecoder(
       const MakeGLContextCurrentCallback& make_context_current_cb,
       const GetGLES2DecoderCallback& get_gles2_decoder_cb);

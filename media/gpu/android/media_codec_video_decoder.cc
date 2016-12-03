@@ -60,28 +60,6 @@ namespace {
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
 enum { kMaxBitstreamsNotifiedInAdvance = 32 };
 
-// MediaCodec is only guaranteed to support baseline, but some devices may
-// support others. Advertise support for all H264 profiles and let the
-// MediaCodec fail when decoding if it's not actually supported. It's assumed
-// that consumers won't have software fallback for H264 on Android anyway.
-constexpr VideoCodecProfile kSupportedH264Profiles[] = {
-    H264PROFILE_BASELINE,
-    H264PROFILE_MAIN,
-    H264PROFILE_EXTENDED,
-    H264PROFILE_HIGH,
-    H264PROFILE_HIGH10PROFILE,
-    H264PROFILE_HIGH422PROFILE,
-    H264PROFILE_HIGH444PREDICTIVEPROFILE,
-    H264PROFILE_SCALABLEBASELINE,
-    H264PROFILE_SCALABLEHIGH,
-    H264PROFILE_STEREOHIGH,
-    H264PROFILE_MULTIVIEWHIGH};
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-constexpr VideoCodecProfile kSupportedHevcProfiles[] = {HEVCPROFILE_MAIN,
-                                                        HEVCPROFILE_MAIN10};
-#endif
-
 // Because MediaCodec is thread-hostile (must be poked on a single thread) and
 // has no callback mechanism (b/11990118), we must drive it by polling for
 // complete frames (and available input buffers, when the codec is fully
@@ -112,6 +90,61 @@ bool ShouldDeferSurfaceCreation(int surface_id, VideoCodec codec) {
          AVDACodecAllocator::Instance()->IsAnyRegisteredAVDA() &&
          (base::android::BuildInfo::GetInstance()->sdk_int() <= 18 ||
           base::SysInfo::IsLowEndDevice());
+}
+
+// Don't use MediaCodecs internal software decoders when we have more secure and
+// up to date versions in the renderer process.
+bool IsMediaCodecSoftwareDecodingForbidden(const VideoDecoderConfig& config) {
+  return !config.is_encrypted() &&
+         (config.codec() == kCodecVP8 || _config.codec() == kCodecVP9);
+}
+
+bool ConfigSupported(const VideoDecoderConfig& config) {
+  const auto codec = config.codec();
+
+  // Only use MediaCodec for VP8 or VP9 if it's likely backed by hardware or if
+  // the stream is encrypted.
+  if (IsMediaCodecSoftwareDecodingForbidden(config) &&
+      VideoCodecBridge::IsKnownUnaccelerated(codec, MEDIA_CODEC_DECODER)) {
+    DVLOG(1) << "Config not supported: " << GetCodecName(codec)
+             << " is not hardware accelerated";
+    return false;
+  }
+
+  // Don't support larger than 4k because it won't perform well on many devices.
+  const auto size = config.coded_size();
+  if (size.width() > 3840 || size.height() > 2160)
+    return false;
+
+  switch (codec) {
+    case kCodecVP8:
+    case kCodecVP9: {
+      if ((codec == kCodecVP8 && !MediaCodecUtil::IsVp8DecoderAvailable()) ||
+          (codec == kCodecVP9 && !MediaCodecUtil::IsVp9DecoderAvailable())) {
+        return false;
+      }
+
+      // There's no fallback for encrypted content so we support all sizes.
+      if (config.is_encrypted())
+        return true;
+
+      // Below 360p there's little to no power benefit to using MediaCodec over
+      // libvpx so we prefer to use our newer version of libvpx, sandboxed in
+      // the renderer.
+      if (size.width() < 480 || size.height() < 360)
+        return false;
+
+      return true;
+    }
+    case kCodecH264:
+      return true;
+#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
+    case kCodecHEVC:
+      return true;
+#endif
+    default:
+      return false;
+  }
 }
 
 }  // namespace
@@ -1191,109 +1224,6 @@ void MediaCodecVideoDecoder::ManageTimer(bool did_work) {
     g_mcvd_manager.Get().StopTimer(this);
 }
 
-// static
-VideoDecodeAccelerator::Capabilities MediaCodecVideoDecoder::GetCapabilities(
-    const gpu::GpuPreferences& gpu_preferences) {
-  Capabilities capabilities;
-  SupportedProfiles& profiles = capabilities.supported_profiles;
-
-  if (MediaCodecUtil::IsVp8DecoderAvailable()) {
-    SupportedProfile profile;
-    profile.profile = VP8PROFILE_ANY;
-    // Since there is little to no power benefit below 360p, don't advertise
-    // support for it.  Let libvpx decode it, and save a MediaCodec instance.
-    // Note that we allow it anyway for encrypted content, since we push a
-    // separate profile for that.
-    profile.min_resolution.SetSize(480, 360);
-    profile.max_resolution.SetSize(3840, 2160);
-    // If we know MediaCodec will just create a software codec, prefer our
-    // internal software decoder instead. It's more up to date and secured
-    // within the renderer sandbox. However if the content is encrypted, we
-    // must use MediaCodec anyways since MediaDrm offers no way to decrypt
-    // the buffers and let us use our internal software decoders.
-    profile.encrypted_only =
-        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP8, MEDIA_CODEC_DECODER);
-    profiles.push_back(profile);
-
-    // Always allow encrypted content, even at low resolutions.
-    profile.min_resolution.SetSize(0, 0);
-    profile.encrypted_only = true;
-    profiles.push_back(profile);
-  }
-
-  if (MediaCodecUtil::IsVp9DecoderAvailable()) {
-    const VideoCodecProfile profile_types[] = {
-        VP9PROFILE_PROFILE0, VP9PROFILE_PROFILE1, VP9PROFILE_PROFILE2,
-        VP9PROFILE_PROFILE3, VIDEO_CODEC_PROFILE_UNKNOWN};
-    const bool is_known_unaccelerated =
-        VideoCodecBridge::IsKnownUnaccelerated(kCodecVP9, MEDIA_CODEC_DECODER);
-    for (int i = 0; profile_types[i] != VIDEO_CODEC_PROFILE_UNKNOWN; i++) {
-      SupportedProfile profile;
-      // Limit to 360p, like we do for vp8.  See above.
-      profile.min_resolution.SetSize(480, 360);
-      profile.max_resolution.SetSize(3840, 2160);
-      // If we know MediaCodec will just create a software codec, prefer our
-      // internal software decoder instead. It's more up to date and secured
-      // within the renderer sandbox. However if the content is encrypted, we
-      // must use MediaCodec anyways since MediaDrm offers no way to decrypt
-      // the buffers and let us use our internal software decoders.
-      profile.encrypted_only = is_known_unaccelerated;
-      profile.profile = profile_types[i];
-      profiles.push_back(profile);
-
-      // Always allow encrypted content.
-      profile.min_resolution.SetSize(0, 0);
-      profile.encrypted_only = true;
-      profiles.push_back(profile);
-    }
-  }
-
-  for (const auto& supported_profile : kSupportedH264Profiles) {
-    SupportedProfile profile;
-    profile.profile = supported_profile;
-    profile.min_resolution.SetSize(0, 0);
-    // Advertise support for 4k and let the MediaCodec fail when decoding if it
-    // doesn't support the resolution. It's assumed that consumers won't have
-    // software fallback for H264 on Android anyway.
-    profile.max_resolution.SetSize(3840, 2160);
-    profiles.push_back(profile);
-  }
-
-  capabilities.flags =
-      VideoDecodeAccelerator::Capabilities::SUPPORTS_DEFERRED_INITIALIZATION;
-  capabilities.flags |=
-      VideoDecodeAccelerator::Capabilities::NEEDS_ALL_PICTURE_BUFFERS_TO_DECODE;
-
-  // If we're using threaded texture mailboxes the COPY_REQUIRED flag must be
-  // set on the video frames (http://crbug.com/582170), and SurfaceView output
-  // is disabled (http://crbug.com/582170).
-  if (gpu_preferences.enable_threaded_texture_mailboxes) {
-    capabilities.flags |=
-        VideoDecodeAccelerator::Capabilities::REQUIRES_TEXTURE_COPY;
-  } else if (MediaCodecUtil::IsSurfaceViewOutputSupported()) {
-    capabilities.flags |=
-        VideoDecodeAccelerator::Capabilities::SUPPORTS_EXTERNAL_OUTPUT_SURFACE;
-  }
-
-#if BUILDFLAG(ENABLE_HEVC_DEMUXING)
-  for (const auto& supported_profile : kSupportedHevcProfiles) {
-    SupportedProfile profile;
-    profile.profile = supported_profile;
-    profile.min_resolution.SetSize(0, 0);
-    profile.max_resolution.SetSize(3840, 2160);
-    profiles.push_back(profile);
-  }
-#endif
-
-  return capabilities;
-}
-
-bool MediaCodecVideoDecoder::IsMediaCodecSoftwareDecodingForbidden() const {
-  // Prevent MediaCodec from using its internal software decoders when we have
-  // more secure and up to date versions in the renderer process.
-  return !config_.is_encrypted && (codec_config_->codec_ == kCodecVP8 ||
-                                   codec_config_->codec_ == kCodecVP9);
-}
 
 bool MediaCodecVideoDecoder::UpdateSurface() {
   DCHECK(pending_surface_id_);
