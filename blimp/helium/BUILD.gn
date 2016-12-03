@@ -8,6 +8,7 @@ component("helium") {
     "compound_syncable.cc",
     "compound_syncable.h",
     "errors.h",
+    "lazy_syncable_adapter.h",
     "lww_register.h",
     "owned_register.h",
     "result.cc",
@@ -56,6 +57,7 @@ source_set("unit_tests") {
   sources = [
     "compound_syncable_unittest.cc",
     "helium_test.h",
+    "lazy_syncable_adapter_unittest.cc",
     "lww_register_unittest.cc",
     "owned_register_unittest.cc",
     "result_unittest.cc",
