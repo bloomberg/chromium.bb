@@ -2,18 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_
-#define NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_
+#ifndef NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_EPOLL_CLOCK_H_
+#define NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_EPOLL_CLOCK_H_
 
 #include "base/compiler_specific.h"
 #include "base/macros.h"
-#include "net/quic/core/quic_clock.h"
 #include "net/quic/core/quic_time.h"
+#include "net/quic/platform/api/quic_clock.h"
 
 namespace net {
 
 class EpollServer;
-
 
 // Clock to efficiently retrieve an approximately accurate time from an
 // EpollServer.
@@ -47,4 +46,4 @@ class QuicEpollClock : public QuicClock {
 
 }  // namespace net
 
-#endif  // NET_TOOLS_QUIC_QUIC_EPOLL_CLOCK_H_
+#endif  // NET_TOOLS_QUIC_PLATFORM_IMPL_QUIC_EPOLL_CLOCK_H_

@@ -9,7 +9,7 @@
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/time/time.h"
-#include "net/quic/core/quic_clock.h"
+#include "net/quic/platform/api/quic_clock.h"
 
 namespace net {
 

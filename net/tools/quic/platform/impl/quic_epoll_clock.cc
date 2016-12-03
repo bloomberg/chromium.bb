@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/tools/quic/quic_epoll_clock.h"
+#include "net/tools/quic/platform/impl/quic_epoll_clock.h"
 
 #include "net/tools/epoll_server/epoll_server.h"
 
