@@ -19,6 +19,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "chromeos/dbus/fake_session_manager_client.h"
+#include "chromeos/dbus/shill_manager_client.h"
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/test_utils.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -158,6 +159,17 @@ class HandsOffNetworkScreenTest : public NetworkScreenTest {
  public:
   HandsOffNetworkScreenTest() {}
 
+ protected:
+  void SetUpOnMainThread() override {
+    NetworkScreenTest::SetUpOnMainThread();
+
+    // Set up fake networks.
+    DBusThreadManager::Get()
+        ->GetShillManagerClient()
+        ->GetTestInterface()
+        ->SetupDefaultEnvironment();
+  }
+
  private:
   // Overridden from InProcessBrowserTest:
   void SetUpCommandLine(base::CommandLine* command_line) override {
@@ -168,13 +180,7 @@ class HandsOffNetworkScreenTest : public NetworkScreenTest {
   DISALLOW_COPY_AND_ASSIGN(HandsOffNetworkScreenTest);
 };
 
-#if defined(OS_CHROMEOS)
-#define MAYBE_RequiresNoInput DISABLED_RequiresNoInput
-#else
-#define MAYBE_RequiresNoInput RequiresNoInput
-#endif
-
-IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, MAYBE_RequiresNoInput) {
+IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, RequiresNoInput) {
   WizardController* wizard_controller = WizardController::default_controller();
 
   // Allow the WizardController to advance throught the enrollment flow.
@@ -182,6 +188,7 @@ IN_PROC_BROWSER_TEST_F(HandsOffNetworkScreenTest, MAYBE_RequiresNoInput) {
 
   // Simulate a network connection.
   EXPECT_CALL(*mock_network_state_helper_, IsConnected())
+      .Times(AnyNumber())
       .WillRepeatedly((Return(true)));
   network_screen_->UpdateStatus();
 
