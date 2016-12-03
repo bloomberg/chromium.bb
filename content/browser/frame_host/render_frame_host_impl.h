@@ -79,6 +79,7 @@ class AssociatedInterfaceProviderImpl;
 class CrossProcessFrameConnector;
 class FrameTree;
 class FrameTreeNode;
+class MediaInterfaceProxy;
 class NavigationHandleImpl;
 class PermissionServiceContext;
 class RenderFrameHostDelegate;
@@ -195,10 +196,6 @@ class CONTENT_EXPORT RenderFrameHostImpl
 
   // SiteInstanceImpl::Observer
   void RenderProcessGone(SiteInstanceImpl* site_instance) override;
-
-  // service_manager::InterfaceFactory<media::mojom::InterfaceFactory>
-  void Create(const service_manager::Identity& remote_identity,
-              media::mojom::InterfaceFactoryRequest request) override;
 
   // Creates a RenderFrame in the renderer process.
   bool CreateRenderFrame(int proxy_routing_id,
@@ -806,6 +803,13 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Deletes the Web Bluetooth Service owned by the frame.
   void DeleteWebBluetoothService();
 
+  // service_manager::InterfaceFactory<media::mojom::InterfaceFactory>
+  void Create(const service_manager::Identity& remote_identity,
+              media::mojom::InterfaceFactoryRequest request) override;
+
+  // Callback for connection error on the media::mojom::InterfaceFactory client.
+  void OnMediaInterfaceFactoryConnectionError();
+
   // Allows tests to disable the swapout event timer to simulate bugs that
   // happen before it fires (to avoid flakiness).
   void DisableSwapOutTimerForTesting();
@@ -1065,6 +1069,10 @@ class CONTENT_EXPORT RenderFrameHostImpl
   // Callback for responding when
   // |FrameHostMsg_TextSurroundingSelectionResponse| message comes.
   TextSurroundingSelectionCallback text_surrounding_selection_callback_;
+
+  // Hosts media::mojom::InterfaceFactory for the RenderFrame and forwards
+  // media::mojom::InterfaceFactory calls to the remote "media" service.
+  std::unique_ptr<MediaInterfaceProxy> media_interface_proxy_;
 
   std::vector<std::unique_ptr<service_manager::InterfaceRegistry>>
       media_registries_;

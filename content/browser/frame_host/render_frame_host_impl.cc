@@ -38,6 +38,7 @@
 #include "content/browser/frame_host/render_frame_proxy_host.h"
 #include "content/browser/frame_host/render_widget_host_view_child_frame.h"
 #include "content/browser/loader/resource_dispatcher_host_impl.h"
+#include "content/browser/media/media_interface_proxy.h"
 #include "content/browser/media/session/media_session_service_impl.h"
 #include "content/browser/permissions/permission_service_context.h"
 #include "content/browser/permissions/permission_service_impl.h"
@@ -121,10 +122,6 @@
 
 #if defined(OS_MACOSX)
 #include "content/browser/frame_host/popup_menu_helper_mac.h"
-#endif
-
-#if defined(ENABLE_MOJO_CDM)
-#include "content/public/browser/provision_fetcher_impl.h"
 #endif
 
 #if defined(ENABLE_WEBVR)
@@ -854,38 +851,6 @@ void RenderFrameHostImpl::RenderProcessGone(SiteInstanceImpl* site_instance) {
   // Any future UpdateState or UpdateTitle messages from this or a recreated
   // process should be ignored until the next commit.
   set_nav_entry_id(0);
-}
-
-void RenderFrameHostImpl::Create(
-    const service_manager::Identity& remote_identity,
-    media::mojom::InterfaceFactoryRequest request) {
-  auto registry = base::MakeUnique<service_manager::InterfaceRegistry>(
-      std::string());
-#if defined(ENABLE_MOJO_CDM)
-  net::URLRequestContextGetter* context_getter =
-      BrowserContext::GetDefaultStoragePartition(
-          GetProcess()->GetBrowserContext())
-          ->GetURLRequestContext();
-  registry->AddInterface(
-      base::Bind(&ProvisionFetcherImpl::Create, context_getter));
-#endif  // defined(ENABLE_MOJO_CDM)
-  GetContentClient()->browser()->ExposeInterfacesToMediaService(registry.get(),
-                                                                this);
-  service_manager::mojom::InterfaceProviderPtr interfaces;
-  registry->Bind(GetProxy(&interfaces),
-                 service_manager::Identity(),
-                 service_manager::InterfaceProviderSpec(),
-                 service_manager::Identity(),
-                 service_manager::InterfaceProviderSpec());
-  media_registries_.push_back(std::move(registry));
-
-  // TODO(slan): Use the BrowserContext Connector instead. See crbug.com/638950.
-  media::mojom::MediaServicePtr media_service;
-  service_manager::Connector* connector =
-      ServiceManagerConnection::GetForProcess()->GetConnector();
-  connector->ConnectToInterface("media", &media_service);
-  media_service->CreateInterfaceFactory(std::move(request),
-                                        std::move(interfaces));
 }
 
 bool RenderFrameHostImpl::CreateRenderFrame(int proxy_routing_id,
@@ -3260,6 +3225,21 @@ WebBluetoothServiceImpl* RenderFrameHostImpl::CreateWebBluetoothService(
 
 void RenderFrameHostImpl::DeleteWebBluetoothService() {
   web_bluetooth_service_.reset();
+}
+
+void RenderFrameHostImpl::Create(
+    const service_manager::Identity& remote_identity,
+    media::mojom::InterfaceFactoryRequest request) {
+  DCHECK(!media_interface_proxy_);
+  media_interface_proxy_.reset(new MediaInterfaceProxy(
+      this, std::move(request),
+      base::Bind(&RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError,
+                 base::Unretained(this))));
+}
+
+void RenderFrameHostImpl::OnMediaInterfaceFactoryConnectionError() {
+  DCHECK(media_interface_proxy_);
+  media_interface_proxy_.reset();
 }
 
 std::unique_ptr<NavigationHandleImpl>
