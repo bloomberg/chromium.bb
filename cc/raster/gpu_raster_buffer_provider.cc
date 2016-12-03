@@ -26,17 +26,32 @@
 namespace cc {
 namespace {
 
-static sk_sp<SkPicture> PlaybackToPicture(
+static void RasterizeSource(
     const RasterSource* raster_source,
     bool resource_has_previous_content,
     const gfx::Size& resource_size,
     const gfx::Rect& raster_full_rect,
     const gfx::Rect& raster_dirty_rect,
     const gfx::SizeF& scales,
-    const RasterSource::PlaybackSettings& playback_settings) {
-  // GPU raster doesn't do low res tiles, so should always include images.
-  DCHECK(!playback_settings.skip_images);
+    const RasterSource::PlaybackSettings& playback_settings,
+    ContextProvider* context_provider,
+    ResourceProvider::ScopedWriteLockGL* resource_lock,
+    bool async_worker_context_enabled,
+    bool use_distance_field_text,
+    int msaa_sample_count) {
+  ScopedGpuRaster gpu_raster(context_provider);
 
+  ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
+      context_provider, resource_lock, async_worker_context_enabled,
+      use_distance_field_text, raster_source->CanUseLCDText(),
+      raster_source->HasImpliedColorSpace(), msaa_sample_count);
+  SkSurface* sk_surface = scoped_surface.sk_surface();
+  // Allocating an SkSurface will fail after a lost context.  Pretend we
+  // rasterized, as the contents of the resource don't matter anymore.
+  if (!sk_surface)
+    return;
+
+  // Playback
   gfx::Rect playback_rect = raster_full_rect;
   if (resource_has_previous_content) {
     playback_rect.Intersect(raster_dirty_rect);
@@ -58,71 +73,8 @@ static sk_sp<SkPicture> PlaybackToPicture(
         100.0f * fraction_saved);
   }
 
-  // Play back raster_source into temp SkPicture.
-  SkPictureRecorder recorder;
-  SkCanvas* canvas =
-      recorder.beginRecording(resource_size.width(), resource_size.height());
-  canvas->save();
-
-  // The GPU image decode controller assumes that Skia is done with an image
-  // when playback is complete. However, in this case, where we play back to a
-  // picture, we don't actually finish with the images until the picture is
-  // rasterized later. This can cause lifetime issues in the GPU image decode
-  // controller. To avoid this, we disable the image hijack canvas (and image
-  // decode controller) for this playback step, instead enabling it for the
-  // later picture rasterization.
-  RasterSource::PlaybackSettings settings = playback_settings;
-  settings.use_image_hijack_canvas = false;
-  raster_source->PlaybackToCanvas(canvas, raster_full_rect, playback_rect,
-                                  scales, settings);
-  canvas->restore();
-  return recorder.finishRecordingAsPicture();
-}
-
-static void RasterizePicture(SkPicture* picture,
-                             ContextProvider* context_provider,
-                             ResourceProvider::ScopedWriteLockGL* resource_lock,
-                             bool async_worker_context_enabled,
-                             bool use_distance_field_text,
-                             bool can_use_lcd_text,
-                             bool ignore_resource_color_space,
-                             int msaa_sample_count,
-                             ImageDecodeCache* image_decode_cache,
-                             bool use_image_hijack_canvas) {
-  ScopedGpuRaster gpu_raster(context_provider);
-
-  ResourceProvider::ScopedSkSurfaceProvider scoped_surface(
-      context_provider, resource_lock, async_worker_context_enabled,
-      use_distance_field_text, can_use_lcd_text, ignore_resource_color_space,
-      msaa_sample_count);
-  SkSurface* sk_surface = scoped_surface.sk_surface();
-  // Allocating an SkSurface will fail after a lost context.  Pretend we
-  // rasterized, as the contents of the resource don't matter anymore.
-  if (!sk_surface)
-    return;
-
-  // As we did not use the image hijack canvas during the initial playback to
-  // |picture| (see PlaybackToPicture), we must enable it here if requested.
-  SkCanvas* canvas = sk_surface->getCanvas();
-  std::unique_ptr<ImageHijackCanvas> hijack_canvas;
-  if (use_image_hijack_canvas) {
-    DCHECK(image_decode_cache);
-    const SkImageInfo& info = canvas->imageInfo();
-    hijack_canvas.reset(
-        new ImageHijackCanvas(info.width(), info.height(), image_decode_cache));
-    SkIRect raster_bounds;
-    canvas->getClipDeviceBounds(&raster_bounds);
-    hijack_canvas->clipRect(SkRect::MakeFromIRect(raster_bounds));
-    hijack_canvas->setMatrix(canvas->getTotalMatrix());
-    hijack_canvas->addCanvas(canvas);
-
-    // Replace canvas with our ImageHijackCanvas which is wrapping it.
-    canvas = hijack_canvas.get();
-  }
-
-  SkMultiPictureDraw multi_picture_draw;
-  multi_picture_draw.add(canvas, picture);
-  multi_picture_draw.draw(false);
+  raster_source->PlaybackToCanvas(sk_surface->getCanvas(), raster_full_rect,
+                                  playback_rect, scales, playback_settings);
 }
 
 }  // namespace
@@ -261,21 +213,16 @@ void GpuRasterBufferProvider::PlaybackOnWorkerThread(
     gl->WaitSyncTokenCHROMIUM(sync_token.GetConstData());
   }
 
-  sk_sp<SkPicture> picture = PlaybackToPicture(
-      raster_source, resource_has_previous_content, resource_lock->size(),
-      raster_full_rect, raster_dirty_rect, scales, playback_settings);
-
   // Turn on distance fields for layers that have ever animated.
   bool use_distance_field_text =
       use_distance_field_text_ ||
       raster_source->ShouldAttemptToUseDistanceFieldText();
 
-  RasterizePicture(picture.get(), worker_context_provider_, resource_lock,
-                   async_worker_context_enabled_, use_distance_field_text,
-                   raster_source->CanUseLCDText(),
-                   raster_source->HasImpliedColorSpace(), msaa_sample_count_,
-                   raster_source->image_decode_cache(),
-                   playback_settings.use_image_hijack_canvas);
+  RasterizeSource(raster_source, resource_has_previous_content,
+                  resource_lock->size(), raster_full_rect, raster_dirty_rect,
+                  scales, playback_settings, worker_context_provider_,
+                  resource_lock, async_worker_context_enabled_,
+                  use_distance_field_text, msaa_sample_count_);
 
   const uint64_t fence_sync = gl->InsertFenceSyncCHROMIUM();
 

@@ -133,15 +133,6 @@ class CC_EXPORT RasterSource : public base::RefCountedThreadSafe<RasterSource> {
     image_decode_cache_ = image_decode_cache;
   }
 
-  // Returns the ImageDecodeCache, currently only used by
-  // GpuRasterBufferProvider in order to create its own ImageHijackCanvas.
-  // Because of the MultiPictureDraw approach used by GPU raster, it does not
-  // integrate well with the use of the ImageHijackCanvas internal to this
-  // class. See gpu_raster_buffer_provider.cc for more information.
-  // TODO(crbug.com/628394): Redesign this to avoid exposing
-  // ImageDecodeCache from the raster source.
-  ImageDecodeCache* image_decode_cache() const { return image_decode_cache_; }
-
  protected:
   friend class base::RefCountedThreadSafe<RasterSource>;
 
