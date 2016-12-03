@@ -86,6 +86,7 @@ TestShellDelegate::TestShellDelegate()
     : num_exit_requests_(0),
       multi_profiles_enabled_(false),
       force_maximize_on_first_run_(false),
+      touchscreen_enabled_in_local_pref_(true),
       app_list_presenter_delegate_factory_(new AppListPresenterDelegateFactory(
           base::WrapUnique(new AppListViewDelegateFactoryImpl))) {}
 
@@ -183,6 +184,19 @@ base::string16 TestShellDelegate::GetProductName() const {
 gfx::Image TestShellDelegate::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
+
+bool TestShellDelegate::IsTouchscreenEnabledInPrefs(
+    bool use_local_state) const {
+  return use_local_state ? touchscreen_enabled_in_local_pref_ : true;
+}
+
+void TestShellDelegate::SetTouchscreenEnabledInPrefs(bool enabled,
+                                                     bool use_local_state) {
+  if (use_local_state)
+    touchscreen_enabled_in_local_pref_ = enabled;
+}
+
+void TestShellDelegate::UpdateTouchscreenStatusFromPrefs() {}
 
 void TestShellDelegate::SetMediaCaptureState(MediaCaptureState state) {
 #if defined(OS_CHROMEOS)

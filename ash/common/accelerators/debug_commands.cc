@@ -128,7 +128,11 @@ void HandleToggleTouchpad() {
 
 void HandleToggleTouchscreen() {
   base::RecordAction(base::UserMetricsAction("Accel_Toggle_Touchscreen"));
-  ash::WmShell::Get()->delegate()->ToggleTouchscreen();
+  ShellDelegate* delegate = WmShell::Get()->delegate();
+  delegate->SetTouchscreenEnabledInPrefs(
+      !delegate->IsTouchscreenEnabledInPrefs(false /* use_local_state */),
+      false /* use_local_state */);
+  delegate->UpdateTouchscreenStatusFromPrefs();
 }
 
 void HandleToggleTouchView() {

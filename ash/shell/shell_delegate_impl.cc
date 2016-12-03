@@ -265,5 +265,15 @@ gfx::Image ShellDelegateImpl::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
+bool ShellDelegateImpl::IsTouchscreenEnabledInPrefs(
+    bool use_local_state) const {
+  return true;
+}
+
+void ShellDelegateImpl::SetTouchscreenEnabledInPrefs(bool enabled,
+                                                     bool use_local_state) {}
+
+void ShellDelegateImpl::UpdateTouchscreenStatusFromPrefs() {}
+
 }  // namespace shell
 }  // namespace ash

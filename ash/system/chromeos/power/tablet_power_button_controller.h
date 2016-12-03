@@ -72,8 +72,10 @@ class ASH_EXPORT TabletPowerButtonController
   void SetTickClockForTesting(std::unique_ptr<base::TickClock> tick_clock);
 
  private:
-  // Set backlights to |forced_off| if they aren't already.
-  void SetBacklightsForcedOff(bool forced_off);
+  // Updates the power manager's backlights-forced-off state and enables or
+  // disables the touchscreen. No-op if |backlights_forced_off_| already equals
+  // |forced_off|.
+  void SetDisplayForcedOff(bool forced_off);
 
   // Sends a request to powerd to get the backlights forced off state so that
   // |backlights_forced_off_| can be initialized.

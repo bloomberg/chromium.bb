@@ -707,8 +707,7 @@ void Preferences::ApplyPreferences(ApplyReason reason,
                                              prefs::kUse24HourClock, value);
   }
 
-  system::InputDeviceSettings::Get()
-      ->UpdateTouchDevicesStatusFromActiveProfilePrefs();
+  system::InputDeviceSettings::Get()->UpdateTouchDevicesStatusFromPrefs();
 }
 
 void Preferences::OnIsSyncingChanged() {

@@ -60,6 +60,11 @@ class TestShellDelegate : public ShellDelegate {
   base::string16 GetProductName() const override;
   gfx::Image GetDeprecatedAcceleratorImage() const override;
 
+  bool IsTouchscreenEnabledInPrefs(bool use_local_state) const override;
+  void SetTouchscreenEnabledInPrefs(bool enabled,
+                                    bool use_local_state) override;
+  void UpdateTouchscreenStatusFromPrefs() override;
+
   int num_exit_requests() const { return num_exit_requests_; }
 
   app_list::AppListPresenterImpl* app_list_presenter() {
@@ -75,6 +80,7 @@ class TestShellDelegate : public ShellDelegate {
   int num_exit_requests_;
   bool multi_profiles_enabled_;
   bool force_maximize_on_first_run_;
+  bool touchscreen_enabled_in_local_pref_;
 
   std::unique_ptr<app_list::AppListPresenterDelegateFactory>
       app_list_presenter_delegate_factory_;

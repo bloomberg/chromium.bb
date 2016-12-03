@@ -293,8 +293,8 @@ extern const char kTimeOnOobe[];
 extern const char kCurrentWallpaperAppName[];
 extern const char kFileSystemProviderMounted[];
 extern const char kTouchVirtualKeyboardEnabled[];
-extern const char kTouchScreenEnabled[];
-extern const char kTouchPadEnabled[];
+extern const char kTouchscreenEnabled[];
+extern const char kTouchpadEnabled[];
 extern const char kWakeOnWifiDarkConnect[];
 extern const char kCaptivePortalAuthenticationIgnoresProxy[];
 extern const char kForceMaximizeOnFirstRun[];
@@ -664,6 +664,7 @@ extern const char kConsumerManagementStage[];
 extern const char kIsBootstrappingSlave[];
 extern const char kReportArcStatusEnabled[];
 extern const char kNetworkThrottlingEnabled[];
+extern const char kTouchscreenEnabledLocal[];
 #endif  // defined(OS_CHROMEOS)
 
 extern const char kClearPluginLSODataEnabled[];

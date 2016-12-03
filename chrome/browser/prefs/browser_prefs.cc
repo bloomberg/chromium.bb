@@ -429,6 +429,7 @@ void RegisterLocalState(PrefRegistrySimple* registry) {
   chromeos::SigninScreenHandler::RegisterPrefs(registry);
   chromeos::StartupUtils::RegisterPrefs(registry);
   chromeos::system::AutomaticRebootManager::RegisterPrefs(registry);
+  chromeos::system::InputDeviceSettings::RegisterPrefs(registry);
   chromeos::TimeZoneResolver::RegisterPrefs(registry);
   chromeos::UserImageManager::RegisterPrefs(registry);
   chromeos::UserSessionManager::RegisterPrefs(registry);
@@ -707,8 +708,8 @@ void RegisterLoginProfilePrefs(user_prefs::PrefRegistrySyncable* registry) {
 void MigrateObsoleteBrowserPrefs(Profile* profile, PrefService* local_state) {
 #if defined(OS_CHROMEOS)
   // Added 11/2016
-  local_state->ClearPref(prefs::kTouchScreenEnabled);
-  local_state->ClearPref(prefs::kTouchPadEnabled);
+  local_state->ClearPref(prefs::kTouchscreenEnabled);
+  local_state->ClearPref(prefs::kTouchpadEnabled);
 #endif  // defined(OS_CHROMEOS)
 }
 

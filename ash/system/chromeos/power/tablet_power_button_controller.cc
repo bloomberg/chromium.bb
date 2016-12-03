@@ -6,6 +6,7 @@
 
 #include "ash/common/accessibility_delegate.h"
 #include "ash/common/session/session_state_delegate.h"
+#include "ash/common/shell_delegate.h"
 #include "ash/common/wm/maximize_mode/maximize_mode_controller.h"
 #include "ash/common/wm_shell.h"
 #include "ash/shell.h"
@@ -96,24 +97,27 @@ void TabletPowerButtonController::OnPowerButtonEvent(
   // backlight has been turned back on before seeing the power button events
   // that woke the system. Ignore events just after resuming to ensure that we
   // don't turn the screen off in response to the events.
+  //
+  // TODO(warx): pressing power button should also StartShutdownTimer() in this
+  // case. Reorganize the code to support that.
   if (timestamp - last_resume_time_ <=
       base::TimeDelta::FromMilliseconds(kIgnorePowerButtonAfterResumeMs)) {
     // If backlights are forced off, stop forcing off because resuming system
     // doesn't handle this.
     if (down && backlights_forced_off_)
-      SetBacklightsForcedOff(false);
+      SetDisplayForcedOff(false);
     return;
   }
 
   if (down) {
     screen_off_when_power_button_down_ = brightness_level_is_zero_;
-    SetBacklightsForcedOff(false);
+    SetDisplayForcedOff(false);
     StartShutdownTimer();
   } else {
     if (shutdown_timer_.IsRunning()) {
       shutdown_timer_.Stop();
       if (!screen_off_when_power_button_down_) {
-        SetBacklightsForcedOff(true);
+        SetDisplayForcedOff(true);
         LockScreenIfRequired();
       }
     }
@@ -149,7 +153,7 @@ void TabletPowerButtonController::OnKeyEvent(ui::KeyEvent* event) {
     return;
 
   if (!IsTabletModeActive() && backlights_forced_off_)
-    SetBacklightsForcedOff(false);
+    SetDisplayForcedOff(false);
 }
 
 void TabletPowerButtonController::OnMouseEvent(ui::MouseEvent* event) {
@@ -161,13 +165,13 @@ void TabletPowerButtonController::OnMouseEvent(ui::MouseEvent* event) {
   }
 
   if (!IsTabletModeActive() && backlights_forced_off_)
-    SetBacklightsForcedOff(false);
+    SetDisplayForcedOff(false);
 }
 
 void TabletPowerButtonController::OnStylusStateChanged(ui::StylusState state) {
   if (IsTabletModeSupported() && state == ui::StylusState::REMOVED &&
       backlights_forced_off_) {
-    SetBacklightsForcedOff(false);
+    SetDisplayForcedOff(false);
   }
 }
 
@@ -177,14 +181,20 @@ void TabletPowerButtonController::SetTickClockForTesting(
   tick_clock_ = std::move(tick_clock);
 }
 
-void TabletPowerButtonController::SetBacklightsForcedOff(bool forced_off) {
+void TabletPowerButtonController::SetDisplayForcedOff(bool forced_off) {
   if (backlights_forced_off_ == forced_off)
     return;
 
+  // Set the display and keyboard backlights (if present) to |forced_off|.
   chromeos::DBusThreadManager::Get()
       ->GetPowerManagerClient()
       ->SetBacklightsForcedOff(forced_off);
   backlights_forced_off_ = forced_off;
+
+  ShellDelegate* delegate = WmShell::Get()->delegate();
+  delegate->SetTouchscreenEnabledInPrefs(!forced_off,
+                                         true /* use_local_state */);
+  delegate->UpdateTouchscreenStatusFromPrefs();
 
   // Send an a11y alert.
   WmShell::Get()->accessibility_delegate()->TriggerAccessibilityAlert(

@@ -844,9 +844,9 @@ const char kFileSystemProviderMounted[] = "file_system_provider.mounted";
 // A boolean pref set to true if the virtual keyboard should be enabled.
 const char kTouchVirtualKeyboardEnabled[] = "ui.touch_virtual_keyboard_enabled";
 
-// Boolean prefs for the status of the touch screen and the touchpad.
-const char kTouchScreenEnabled[] = "events.touch_screen.enabled";
-const char kTouchPadEnabled[] = "events.touch_pad.enabled";
+// Boolean prefs for the status of the touchscreen and the touchpad.
+const char kTouchscreenEnabled[] = "events.touch_screen.enabled";
+const char kTouchpadEnabled[] = "events.touch_pad.enabled";
 
 // A boolean pref that controls whether the dark connect feature is enabled.
 // The dark connect feature allows a Chrome OS device to periodically wake
@@ -1415,13 +1415,6 @@ const char kTaskManagerColumnVisibility[] = "task_manager.column_visibility";
 // A boolean indicating if ending processes are enabled or disabled by policy.
 const char kTaskManagerEndProcessEnabled[] = "task_manager.end_process_enabled";
 
-#if defined(OS_CHROMEOS)
-// Dictionary indicating current network bandwidth throttling settings.
-// Contains a boolean (is throttling enabled) and two integers (upload rate
-// and download rate in kbits/s to throttle to)
-const char kNetworkThrottlingEnabled[] = "net.throttling_enabled";
-#endif
-
 // A collection of position, size, and other data relating to app windows to
 // restore on startup.
 const char kAppWindowPlacement[] = "browser.app_window_placement";
@@ -1882,6 +1875,14 @@ const char kIsBootstrappingSlave[] = "is_oobe_bootstrapping_slave";
 
 // A preference that controlles Android status reporting.
 const char kReportArcStatusEnabled[] = "arc.status_reporting_enabled";
+
+// Dictionary indicating current network bandwidth throttling settings.
+// Contains a boolean (is throttling enabled) and two integers (upload rate
+// and download rate in kbits/s to throttle to)
+const char kNetworkThrottlingEnabled[] = "net.throttling_enabled";
+
+// Boolean prefs for the local status of the touchscreen.
+const char kTouchscreenEnabledLocal[] = "events.touch_screen.enabled_local";
 
 #endif  // defined(OS_CHROMEOS)
 

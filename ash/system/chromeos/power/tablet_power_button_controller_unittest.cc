@@ -13,6 +13,7 @@
 #include "ash/shell.h"
 #include "ash/test/ash_test_base.h"
 #include "ash/test/lock_state_controller_test_api.h"
+#include "ash/test/test_shell_delegate.h"
 #include "ash/wm/lock_state_controller.h"
 #include "ash/wm/power_button_controller.h"
 #include "base/command_line.h"
@@ -64,6 +65,8 @@ class TabletPowerButtonControllerTest : public AshTestBase {
     tick_clock_ = new base::SimpleTestTickClock;
     tablet_controller_->SetTickClockForTesting(
         std::unique_ptr<base::TickClock>(tick_clock_));
+    shell_delegate_ =
+        static_cast<TestShellDelegate*>(WmShell::Get()->delegate());
     generator_ = &AshTestBase::GetEventGenerator();
     power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
     EXPECT_FALSE(GetBacklightsForcedOff());
@@ -119,6 +122,7 @@ class TabletPowerButtonControllerTest : public AshTestBase {
   TabletPowerButtonController* tablet_controller_;  // Not owned.
   std::unique_ptr<TabletPowerButtonController::TestApi> test_api_;
   base::SimpleTestTickClock* tick_clock_;  // Not owned.
+  TestShellDelegate* shell_delegate_;      // Not owned.
   ui::test::EventGenerator* generator_ = nullptr;
 
   DISALLOW_COPY_AND_ASSIGN(TabletPowerButtonControllerTest);
@@ -354,6 +358,44 @@ TEST_F(TabletPowerButtonControllerTest, IgnorePowerOnKeyEvent) {
   tablet_controller_->OnKeyEvent(&power_key_released);
   tablet_controller_->OnKeyEvent(&power_key_released);
   EXPECT_EQ(1, power_manager_client_->num_set_backlights_forced_off_calls());
+}
+
+// Tests that under (1) tablet power button pressed/released, (2) keyboard/mouse
+// events on laptop mode when screen is off, requesting/stopping backlights
+// forced off should also set corresponding touch screen state in local pref.
+TEST_F(TabletPowerButtonControllerTest, TouchScreenState) {
+  // Tests tablet power button.
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  PressPowerButton();
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  ReleasePowerButton();
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  EnableMaximizeMode(false);
+  // KeyEvent on laptop mode when screen is off.
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  generator_->PressKey(ui::VKEY_L, ui::EF_NONE);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+
+  // MouseEvent on laptop mode when screen is off.
+  PressPowerButton();
+  ReleasePowerButton();
+  power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_TRUE(GetBacklightsForcedOff());
+  EXPECT_FALSE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
+  generator_->MoveMouseBy(1, 1);
+  power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  EXPECT_TRUE(shell_delegate_->IsTouchscreenEnabledInPrefs(true));
 }
 
 }  // namespace test

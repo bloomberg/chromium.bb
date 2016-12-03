@@ -231,4 +231,18 @@ gfx::Image ShellDelegateMus::GetDeprecatedAcceleratorImage() const {
   return gfx::Image();
 }
 
+bool ShellDelegateMus::IsTouchscreenEnabledInPrefs(bool use_local_state) const {
+  NOTIMPLEMENTED();
+  return true;
+}
+
+void ShellDelegateMus::SetTouchscreenEnabledInPrefs(bool enabled,
+                                                    bool use_local_state) {
+  NOTIMPLEMENTED();
+}
+
+void ShellDelegateMus::UpdateTouchscreenStatusFromPrefs() {
+  NOTIMPLEMENTED();
+}
+
 }  // namespace ash
