@@ -28,7 +28,6 @@
 #include "media/gpu/ipc/service/gpu_video_encode_accelerator.h"
 #include "media/gpu/ipc/service/media_gpu_channel_manager.h"
 #include "mojo/public/cpp/bindings/strong_binding.h"
-#include "services/ui/common/mus_gpu_memory_buffer_manager.h"
 #include "ui/gl/gl_implementation.h"
 #include "ui/gl/gl_switches.h"
 #include "ui/gl/gpu_switching_manager.h"

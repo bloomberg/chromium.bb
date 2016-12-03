@@ -5,5 +5,12 @@ include_rules = [
   "+gpu/ipc/common",
   "+gpu/ipc/service",
   "+media/gpu/ipc/service",
-  "+services/ui/surfaces",
+  "-services/ui/common",
 ]
+
+specific_include_rules = {
+  "gpu_main.*": [
+    "+services/ui/common",
+    "+services/ui/surfaces",
+  ]
+}

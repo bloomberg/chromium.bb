@@ -8,6 +8,7 @@ include_rules = [
   "+services/service_manager",
   "+services/tracing/public",
   "-services/ui/gpu",
+  "-services/ui/surfaces",
   "+third_party/skia/include",
   "+ui",
 ]
