@@ -10,6 +10,7 @@
 #include "core/dom/Element.h"
 #include "core/dom/Node.h"
 #include "core/dom/NodeList.h"
+#include "core/dom/shadow/ElementShadow.h"
 #include "core/inspector/IdentifiersFactory.h"
 #include "core/inspector/InspectorDOMAgent.h"
 #include "core/inspector/InspectorStyleSheet.h"
@@ -510,10 +511,14 @@ void InspectorAccessibilityAgent::populateDOMNodeRelatives(
   nodeObject.setChildIds(std::move(childIds));
 
   // Walk up parents until an AXObject can be found.
-  Node* parentNode = FlatTreeTraversal::parent(inspectedDOMNode);
+  Node* parentNode = inspectedDOMNode.isShadowRoot()
+                         ? &toShadowRoot(inspectedDOMNode).host()
+                         : FlatTreeTraversal::parent(inspectedDOMNode);
   AXObject* parentAXObject = cache.getOrCreate(parentNode);
   while (parentNode && !parentAXObject) {
-    parentNode = FlatTreeTraversal::parent(inspectedDOMNode);
+    parentNode = parentNode->isShadowRoot()
+                     ? &toShadowRoot(parentNode)->host()
+                     : FlatTreeTraversal::parent(*parentNode);
     parentAXObject = cache.getOrCreate(parentNode);
   };
 
@@ -545,7 +550,20 @@ void InspectorAccessibilityAgent::findDOMNodeChildren(
     Node& inspectedDOMNode,
     std::unique_ptr<protocol::Array<AXNode>>& nodes,
     AXObjectCacheImpl& cache) const {
+  if (inspectedDOMNode.isShadowRoot() &&
+      &parentNode == toShadowRoot(inspectedDOMNode).host()) {
+    childIds->addItem(String::number(kIDForInspectedNodeWithNoAXNode));
+    return;
+  }
   NodeList* childNodes = parentNode.childNodes();
+  if (!childNodes->length() && parentNode.isElementNode()) {
+    Element& parentElement = toElement(parentNode);
+    ElementShadow* elementShadow = parentElement.shadow();
+    if (elementShadow) {
+      ShadowRoot& shadowRoot = elementShadow->youngestShadowRoot();
+      childNodes = shadowRoot.childNodes();
+    }
+  }
   for (size_t i = 0; i < childNodes->length(); ++i) {
     Node* childNode = childNodes->item(i);
     if (childNode == &inspectedDOMNode) {
