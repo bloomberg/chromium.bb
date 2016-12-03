@@ -37,7 +37,11 @@ id<GREYMatcher> webViewCssSelector(std::string selector, WebState* web_state);
 // Matcher for WKWebView's scroll view.
 id<GREYMatcher> webViewScrollView(WebState* web_state);
 
-// Matcher for interstitial page containing |text|.
+// Matcher for an interstitial page. Does not wait if the page is not displayed.
+id<GREYMatcher> interstitial(WebState* web_state);
+
+// Matcher for interstitial page containing |text|. Waits until the text is
+// displayed or timed out.
 id<GREYMatcher> interstitialContainingText(NSString* text, WebState* web_state);
 
 }  // namespace web

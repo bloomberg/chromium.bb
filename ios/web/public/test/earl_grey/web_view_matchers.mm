@@ -174,16 +174,29 @@ id<GREYMatcher> webViewScrollView(WebState* web_state) {
       autorelease];
 }
 
+id<GREYMatcher> interstitial(WebState* web_state) {
+  MatchesBlock matches = ^BOOL(WKWebView* view) {
+    web::WebInterstitialImpl* interstitial =
+        static_cast<web::WebInterstitialImpl*>(web_state->GetWebInterstitial());
+    return interstitial &&
+           [view isDescendantOfView:interstitial->GetContentView()];
+  };
+
+  DescribeToBlock describe = ^(id<GREYDescription> description) {
+    [description appendText:@"interstitial displayed"];
+  };
+
+  return grey_allOf(webViewInWebState(web_state),
+                    [[[GREYElementMatcherBlock alloc]
+                        initWithMatchesBlock:matches
+                            descriptionBlock:describe] autorelease],
+                    nil);
+}
+
 id<GREYMatcher> interstitialContainingText(NSString* text,
                                            WebState* web_state) {
   MatchesBlock matches = ^BOOL(WKWebView* view) {
     return WaitUntilConditionOrTimeout(testing::kWaitForUIElementTimeout, ^{
-      web::WebInterstitialImpl* interstitial =
-          static_cast<web::WebInterstitialImpl*>(
-              web_state->GetWebInterstitial());
-      if (![view isDescendantOfView:interstitial->GetContentView()])
-        return false;
-
       NSString* script = base::SysUTF8ToNSString(kGetDocumentBodyJavaScript);
       id body = ExecuteScriptOnInterstitial(web_state, script);
       return [body containsString:text] ? true : false;
@@ -195,7 +208,7 @@ id<GREYMatcher> interstitialContainingText(NSString* text,
     [description appendText:text];
   };
 
-  return grey_allOf(webViewInWebState(web_state),
+  return grey_allOf(interstitial(web_state),
                     [[[GREYElementMatcherBlock alloc]
                         initWithMatchesBlock:matches
                             descriptionBlock:describe] autorelease],
