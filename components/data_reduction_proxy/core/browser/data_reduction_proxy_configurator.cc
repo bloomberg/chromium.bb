@@ -43,6 +43,7 @@ void DataReductionProxyConfigurator::Enable(
 net::ProxyConfig DataReductionProxyConfigurator::CreateProxyConfig(
     bool secure_transport_restricted,
     const std::vector<net::ProxyServer>& proxies_for_http) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   net::ProxyConfig config;
   config.proxy_rules().type =
       net::ProxyConfig::ProxyRules::TYPE_PROXY_PER_SCHEME;

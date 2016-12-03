@@ -193,6 +193,7 @@ DataReductionProxyNetworkDelegate::~DataReductionProxyNetworkDelegate() {
 void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
     DataReductionProxyIOData* io_data,
     DataReductionProxyBypassStats* bypass_stats) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(bypass_stats);
   data_reduction_proxy_io_data_ = io_data;
   data_reduction_proxy_bypass_stats_ = bypass_stats;
@@ -200,6 +201,7 @@ void DataReductionProxyNetworkDelegate::InitIODataAndUMA(
 
 std::unique_ptr<base::Value>
 DataReductionProxyNetworkDelegate::SessionNetworkStatsInfoToValue() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   auto dict = base::MakeUnique<base::DictionaryValue>();
   // Use strings to avoid overflow. base::Value only supports 32-bit integers.
   dict->SetString("session_received_content_length",
@@ -213,6 +215,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeURLRequestInternal(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     GURL* new_url) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (data_use_group_provider_) {
     // Creates and initializes a |DataUseGroup| for the |request| if it does not
     // exist. Even though we do not use the |DataUseGroup| here, we want to
@@ -234,6 +237,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeStartTransactionInternal(
     net::URLRequest* request,
     const net::CompletionCallback& callback,
     net::HttpRequestHeaders* headers) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!data_reduction_proxy_io_data_)
     return;
   if (!data_reduction_proxy_io_data_->lofi_decider())
@@ -249,6 +253,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
     const net::ProxyInfo& proxy_info,
     const net::ProxyRetryInfoMap& proxy_retry_info,
     net::HttpRequestHeaders* headers) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(data_reduction_proxy_config_);
   DCHECK(request);
 
@@ -330,6 +335,7 @@ void DataReductionProxyNetworkDelegate::OnBeforeSendHeadersInternal(
 void DataReductionProxyNetworkDelegate::OnCompletedInternal(
     net::URLRequest* request,
     bool started) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
   // TODO(maksims): remove this once OnCompletedInternal() has net_error in
   // arguments.
@@ -383,6 +389,7 @@ void DataReductionProxyNetworkDelegate::CalculateAndRecordDataUsage(
     DataReductionProxyRequestType request_type,
     int64_t original_content_length,
     int net_error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_LE(-1, original_content_length);
   int64_t data_used = request.GetTotalReceivedBytes();
 
@@ -411,6 +418,7 @@ void DataReductionProxyNetworkDelegate::AccumulateDataUsage(
     DataReductionProxyRequestType request_type,
     const scoped_refptr<DataUseGroup>& data_use_group,
     const std::string& mime_type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK_GE(data_used, 0);
   DCHECK_GE(original_size, 0);
   if (data_reduction_proxy_io_data_) {
@@ -426,6 +434,7 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
     const net::URLRequest& request,
     DataReductionProxyRequestType request_type,
     int64_t original_content_length) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   if (!request.response_headers() || request.was_cached() ||
       request.received_response_content_length() == 0) {
     return;
@@ -457,6 +466,7 @@ void DataReductionProxyNetworkDelegate::RecordContentLength(
 
 void DataReductionProxyNetworkDelegate::RecordLitePageTransformationType(
     LitePageTransformationType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   UMA_HISTOGRAM_ENUMERATION("DataReductionProxy.LoFi.TransformationType", type,
                             LITE_PAGE_TRANSFORMATION_TYPES_INDEX_BOUNDARY);
 }
@@ -465,6 +475,7 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
     const net::URLRequest& request,
     const net::ProxyInfo& proxy_info,
     const net::ProxyRetryInfoMap& proxy_retry_info) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(proxy_info.is_empty() || proxy_info.is_direct() ||
          !data_reduction_proxy_config_->IsDataReductionProxy(
              proxy_info.proxy_server(), nullptr));
@@ -482,6 +493,7 @@ bool DataReductionProxyNetworkDelegate::WasEligibleWithoutHoldback(
 
 void DataReductionProxyNetworkDelegate::SetDataUseGroupProvider(
     std::unique_ptr<DataUseGroupProvider> data_use_group_provider) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   data_use_group_provider_ = std::move(data_use_group_provider);
 }
 

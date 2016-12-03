@@ -167,6 +167,9 @@ DataReductionProxyIOData::DataReductionProxyIOData(
 }
 
 DataReductionProxyIOData::~DataReductionProxyIOData() {
+  // Guaranteed to be destroyed on IO thread if the IO thread is still
+  // available at the time of destruction. If the IO thread is unavailable,
+  // then the destruction will happen on the UI thread.
 }
 
 void DataReductionProxyIOData::ShutdownOnUIThread() {
@@ -194,6 +197,7 @@ void DataReductionProxyIOData::SetDataReductionProxyService(
 void DataReductionProxyIOData::InitializeOnIOThread() {
   DCHECK(io_task_runner_->BelongsToCurrentThread());
   config_->InitializeOnIOThread(basic_url_request_context_getter_.get());
+  bypass_stats_->InitializeOnIOThread();
   proxy_delegate_->InitializeOnIOThread();
   if (config_client_.get())
     config_client_->InitializeOnIOThread(url_request_context_getter_);

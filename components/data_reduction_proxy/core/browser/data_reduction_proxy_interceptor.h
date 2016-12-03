@@ -8,6 +8,7 @@
 #include <memory>
 
 #include "base/macros.h"
+#include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/common/data_reduction_proxy_headers.h"
 #include "net/url_request/url_request_interceptor.h"
 
@@ -84,6 +85,8 @@ class DataReductionProxyInterceptor : public net::URLRequestInterceptor {
   // data reduction proxy to be bypassed, and for triggering proxy bypasses in
   // these cases.
   std::unique_ptr<DataReductionProxyBypassProtocol> bypass_protocol_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyInterceptor);
 };

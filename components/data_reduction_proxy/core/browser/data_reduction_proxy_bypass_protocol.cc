@@ -85,6 +85,7 @@ bool DataReductionProxyBypassProtocol::MaybeBypassProxyAndPrepareToRetry(
     net::URLRequest* request,
     DataReductionProxyBypassType* proxy_bypass_type,
     DataReductionProxyInfo* data_reduction_proxy_info) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DCHECK(request);
   const net::HttpResponseHeaders* response_headers =
       request->response_info().headers.get();

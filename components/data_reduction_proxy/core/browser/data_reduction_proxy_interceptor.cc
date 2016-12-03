@@ -38,6 +38,8 @@ DataReductionProxyInterceptor::~DataReductionProxyInterceptor() {
 net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptRequest(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   return nullptr;
 }
 
@@ -45,12 +47,16 @@ net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptRedirect(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate,
     const GURL& location) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   return MaybeInterceptResponseOrRedirect(request, network_delegate);
 }
 
 net::URLRequestJob* DataReductionProxyInterceptor::MaybeInterceptResponse(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   return MaybeInterceptResponseOrRedirect(request, network_delegate);
 }
 
@@ -58,6 +64,8 @@ net::URLRequestJob*
 DataReductionProxyInterceptor::MaybeInterceptResponseOrRedirect(
     net::URLRequest* request,
     net::NetworkDelegate* network_delegate) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   DCHECK(request);
   if (request->response_info().was_cached)
     return nullptr;
@@ -107,6 +115,8 @@ void DataReductionProxyInterceptor::MaybeAddBypassEvent(
     const DataReductionProxyInfo& data_reduction_proxy_info,
     DataReductionProxyBypassType bypass_type,
     bool should_retry) const {
+  DCHECK(thread_checker_.CalledOnValidThread());
+
   if (data_reduction_proxy_info.bypass_action != BYPASS_ACTION_TYPE_NONE) {
     event_creator_->AddBypassActionEvent(
         request->net_log(), data_reduction_proxy_info.bypass_action,

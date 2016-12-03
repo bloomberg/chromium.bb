@@ -134,17 +134,24 @@ DataReductionProxyBypassStats::DataReductionProxyBypassStats(
       proxy_net_errors_count_(0),
       unavailable_(false) {
   DCHECK(config);
-  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+  // Constructed on the UI thread, but should be checked on the IO thread.
+  thread_checker_.DetachFromThread();
 }
 
 DataReductionProxyBypassStats::~DataReductionProxyBypassStats() {
   NetworkChangeNotifier::RemoveNetworkChangeObserver(this);
 }
 
+void DataReductionProxyBypassStats::InitializeOnIOThread() {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  NetworkChangeNotifier::AddNetworkChangeObserver(this);
+}
+
 void DataReductionProxyBypassStats::OnUrlRequestCompleted(
     const net::URLRequest* request,
     bool started,
     int net_error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DataReductionProxyTypeInfo proxy_info;
   // Ignore requests that did not use the data reduction proxy. The check for
   // LOAD_BYPASS_PROXY is necessary because the proxy_server() in the |request|
@@ -184,12 +191,14 @@ void DataReductionProxyBypassStats::OnUrlRequestCompleted(
 
 void DataReductionProxyBypassStats::SetBypassType(
     DataReductionProxyBypassType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   last_bypass_type_ = type;
   triggering_request_ = true;
 }
 
 DataReductionProxyBypassType
 DataReductionProxyBypassStats::GetBypassType() const {
+  DCHECK(thread_checker_.CalledOnValidThread());
   return last_bypass_type_;
 }
 
@@ -197,6 +206,7 @@ void DataReductionProxyBypassStats::RecordBytesHistograms(
     const net::URLRequest& request,
     bool data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   RecordBypassedBytesHistograms(request, data_reduction_proxy_enabled,
                                 data_reduction_proxy_config);
   RecordMissingViaHeaderBytes(request);
@@ -205,6 +215,7 @@ void DataReductionProxyBypassStats::RecordBytesHistograms(
 void DataReductionProxyBypassStats::OnProxyFallback(
     const net::ProxyServer& bypassed_proxy,
     int net_error) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   DataReductionProxyTypeInfo data_reduction_proxy_info;
   if (bypassed_proxy.is_valid() && !bypassed_proxy.is_direct() &&
       data_reduction_proxy_config_->IsDataReductionProxy(
@@ -237,11 +248,13 @@ void DataReductionProxyBypassStats::OnProxyFallback(
 }
 
 void DataReductionProxyBypassStats::ClearRequestCounts() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   successful_requests_through_proxy_count_ = 0;
   proxy_net_errors_count_ = 0;
 }
 
 void DataReductionProxyBypassStats::NotifyUnavailabilityIfChanged() {
+  DCHECK(thread_checker_.CalledOnValidThread());
   bool prev_unavailable = unavailable_;
   unavailable_ =
       (proxy_net_errors_count_ >= kMinFailedRequestsWhenUnavailable &&
@@ -255,6 +268,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
     const net::URLRequest& request,
     bool data_reduction_proxy_enabled,
     const net::ProxyConfig& data_reduction_proxy_config) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   int64_t content_length = request.received_response_content_length();
 
   // Only record histograms when the data reduction proxy is enabled.
@@ -370,6 +384,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytesHistograms(
 
 void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
     const URLRequest& request) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Responses that were served from cache should have been filtered out
   // already.
   DCHECK(!request.was_cached());
@@ -395,6 +410,7 @@ void DataReductionProxyBypassStats::RecordMissingViaHeaderBytes(
 
 void DataReductionProxyBypassStats::OnNetworkChanged(
     NetworkChangeNotifier::ConnectionType type) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   ClearRequestCounts();
 }
 
@@ -402,6 +418,7 @@ void DataReductionProxyBypassStats::RecordBypassedBytes(
     DataReductionProxyBypassType bypass_type,
     DataReductionProxyBypassStats::BypassedBytesType bypassed_bytes_type,
     int64_t content_length) {
+  DCHECK(thread_checker_.CalledOnValidThread());
   // Individual histograms are needed to count the bypassed bytes for each
   // bypass type so that we can see the size of requests. This helps us
   // remove outliers that would skew the sum of bypassed bytes for each type.

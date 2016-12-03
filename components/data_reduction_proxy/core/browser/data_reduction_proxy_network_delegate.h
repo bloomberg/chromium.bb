@@ -13,6 +13,7 @@
 #include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "base/memory/ref_counted.h"
+#include "base/threading/thread_checker.h"
 #include "components/data_reduction_proxy/core/browser/data_reduction_proxy_metrics.h"
 #include "net/base/completion_callback.h"
 #include "net/base/layered_network_delegate.h"
@@ -170,6 +171,8 @@ class DataReductionProxyNetworkDelegate : public net::LayeredNetworkDelegate {
   const DataReductionProxyConfigurator* configurator_;
 
   std::unique_ptr<DataUseGroupProvider> data_use_group_provider_;
+
+  base::ThreadChecker thread_checker_;
 
   DISALLOW_COPY_AND_ASSIGN(DataReductionProxyNetworkDelegate);
 };
