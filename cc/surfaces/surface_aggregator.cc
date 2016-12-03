@@ -93,29 +93,6 @@ SurfaceAggregator::ClipData SurfaceAggregator::CalculateClipRect(
   return out_clip;
 }
 
-class SurfaceAggregator::RenderPassIdAllocator {
- public:
-  explicit RenderPassIdAllocator(int* next_index) : next_index_(next_index) {}
-  ~RenderPassIdAllocator() {}
-
-  void AddKnownPass(RenderPassId id) {
-    if (id_to_index_map_.find(id) != id_to_index_map_.end())
-      return;
-    id_to_index_map_[id] = (*next_index_)++;
-  }
-
-  RenderPassId Remap(RenderPassId id) {
-    DCHECK(id_to_index_map_.find(id) != id_to_index_map_.end());
-    return RenderPassId(1, id_to_index_map_[id]);
-  }
-
- private:
-  std::unordered_map<RenderPassId, int, RenderPassIdHash> id_to_index_map_;
-  int* next_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(RenderPassIdAllocator);
-};
-
 static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
                         const ReturnedResourceArray& resources,
                         BlockingTaskRunner* main_thread_task_runner) {
@@ -125,12 +102,17 @@ static void UnrefHelper(base::WeakPtr<SurfaceFactory> surface_factory,
 
 RenderPassId SurfaceAggregator::RemapPassId(RenderPassId surface_local_pass_id,
                                             const SurfaceId& surface_id) {
-  std::unique_ptr<RenderPassIdAllocator>& allocator =
-      render_pass_allocator_map_[surface_id];
-  if (!allocator)
-    allocator.reset(new RenderPassIdAllocator(&next_render_pass_id_));
-  allocator->AddKnownPass(surface_local_pass_id);
-  return allocator->Remap(surface_local_pass_id);
+  auto key = std::make_pair(surface_id, surface_local_pass_id);
+  auto it = render_pass_allocator_map_.find(key);
+  if (it != render_pass_allocator_map_.end()) {
+    it->second.in_use = true;
+    return it->second.id;
+  }
+
+  RenderPassInfo render_pass_info;
+  render_pass_info.id = RenderPassId(1, next_render_pass_id_++);
+  render_pass_allocator_map_[key] = render_pass_info;
+  return render_pass_info.id;
 }
 
 int SurfaceAggregator::ChildIdForSurface(Surface* surface) {
@@ -791,6 +773,17 @@ CompositorFrame SurfaceAggregator::Aggregate(const SurfaceId& surface_id) {
   moved_pixel_passes_.clear();
   copy_request_passes_.clear();
   render_pass_dependencies_.clear();
+
+  // Remove all render pass mappings that weren't used in the current frame.
+  for (auto it = render_pass_allocator_map_.begin();
+       it != render_pass_allocator_map_.end();) {
+    if (it->second.in_use) {
+      it->second.in_use = false;
+      it++;
+    } else {
+      it = render_pass_allocator_map_.erase(it);
+    }
+  }
 
   DCHECK(referenced_surfaces_.empty());
 

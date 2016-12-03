@@ -5,6 +5,7 @@
 #ifndef CC_SURFACES_SURFACE_AGGREGATOR_H_
 #define CC_SURFACES_SURFACE_AGGREGATOR_H_
 
+#include <map>
 #include <memory>
 #include <set>
 #include <unordered_map>
@@ -62,6 +63,13 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
     bool may_contain_video = false;
   };
 
+  struct RenderPassInfo {
+    // This is the id the pass is mapped to.
+    RenderPassId id;
+    // This is true if the pass was used in the last aggregated frame.
+    bool in_use = true;
+  };
+
   ClipData CalculateClipRect(const ClipData& surface_clip,
                              const ClipData& quad_clip,
                              const gfx::Transform& target_transform);
@@ -108,11 +116,12 @@ class CC_SURFACES_EXPORT SurfaceAggregator {
   SurfaceManager* manager_;
   ResourceProvider* provider_;
 
-  class RenderPassIdAllocator;
+  // Every Surface has its own RenderPass ID namespace. This structure maps
+  // each source RenderPassID to a unified ID namespace that's used in the
+  // aggregated frame. An entry is removed from the map if it's not used
+  // for one output frame.
   using RenderPassIdAllocatorMap =
-      std::unordered_map<SurfaceId,
-                         std::unique_ptr<RenderPassIdAllocator>,
-                         SurfaceIdHash>;
+      std::map<std::pair<SurfaceId, RenderPassId>, RenderPassInfo>;
   RenderPassIdAllocatorMap render_pass_allocator_map_;
   int next_render_pass_id_;
   const bool aggregate_only_damaged_;

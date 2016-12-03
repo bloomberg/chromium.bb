@@ -260,6 +260,59 @@ TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassSimpleFrame) {
   AggregateAndVerify(passes, arraysize(passes), ids, arraysize(ids));
 }
 
+// Ensure that the render pass ID map properly keeps and deletes entries.
+TEST_F(SurfaceAggregatorValidSurfaceTest, MultiPassDeallocation) {
+  test::Quad quads[][2] = {{test::Quad::SolidColorQuad(SK_ColorWHITE),
+                            test::Quad::SolidColorQuad(SK_ColorLTGRAY)},
+                           {test::Quad::SolidColorQuad(SK_ColorGRAY),
+                            test::Quad::SolidColorQuad(SK_ColorDKGRAY)}};
+  test::Pass passes[] = {
+      test::Pass(quads[0], arraysize(quads[0]), RenderPassId(1, 2)),
+      test::Pass(quads[1], arraysize(quads[1]), RenderPassId(1, 1))};
+
+  SubmitCompositorFrame(&factory_, passes, arraysize(passes),
+                        root_local_frame_id_);
+
+  SurfaceId surface_id(factory_.frame_sink_id(), root_local_frame_id_);
+
+  CompositorFrame aggregated_frame;
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  RenderPassId id0 = aggregated_frame.render_pass_list[0]->id;
+  RenderPassId id1 = aggregated_frame.render_pass_list[1]->id;
+  EXPECT_NE(id1, id0);
+
+  // Aggregated RenderPassIds should remain the same between frames.
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  EXPECT_EQ(id0, aggregated_frame.render_pass_list[0]->id);
+  EXPECT_EQ(id1, aggregated_frame.render_pass_list[1]->id);
+
+  test::Pass passes2[] = {
+      test::Pass(quads[0], arraysize(quads[0]), RenderPassId(1, 3)),
+      test::Pass(quads[1], arraysize(quads[1]), RenderPassId(1, 1))};
+
+  SubmitCompositorFrame(&factory_, passes2, arraysize(passes2),
+                        root_local_frame_id_);
+
+  // The RenderPass that still exists should keep the same ID.
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  RenderPassId id2 = aggregated_frame.render_pass_list[0]->id;
+  EXPECT_NE(id2, id1);
+  EXPECT_NE(id2, id0);
+  EXPECT_EQ(id1, aggregated_frame.render_pass_list[1]->id);
+
+  SubmitCompositorFrame(&factory_, passes, arraysize(passes),
+                        root_local_frame_id_);
+
+  // RenderPassId(1, 2) didn't exist in the previous frame, so it should be
+  // mapped to a new ID.
+  aggregated_frame = aggregator_.Aggregate(surface_id);
+  RenderPassId id3 = aggregated_frame.render_pass_list[0]->id;
+  EXPECT_NE(id3, id2);
+  EXPECT_NE(id3, id1);
+  EXPECT_NE(id3, id0);
+  EXPECT_EQ(id1, aggregated_frame.render_pass_list[1]->id);
+}
+
 // This tests very simple embedding. root_surface has a frame containing a few
 // solid color quads and a surface quad referencing embedded_surface.
 // embedded_surface has a frame containing only a solid color quad. The solid
