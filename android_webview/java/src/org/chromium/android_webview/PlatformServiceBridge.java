@@ -49,5 +49,13 @@ public class PlatformServiceBridge {
         return sInstance;
     }
 
+    // Try to enable WebView to use Google Play Services (a.k.a. GMS) APIs. Return true on success.
+    // Do not use GMS APIs before this has returned true, or if it returns false. This can be called
+    // from multiple threads, so long as no thread uses GMS APIs before at least one call has
+    // returned true. (The easy way is for each thread to wait for its own call to return true.)
+    public boolean tryEnableGms() {
+        return false;
+    }
+
     public void setMetricsSettingListener(ValueCallback<Boolean> callback) {}
 }
