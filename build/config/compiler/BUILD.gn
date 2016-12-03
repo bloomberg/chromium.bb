@@ -321,6 +321,12 @@ config("compiler") {
 
   if (is_posix && use_lld && !is_nacl) {
     ldflags += [ "-fuse-ld=lld" ]
+
+    # LLD as of 2016/12/02 seems to behave poorly with multi-threading.
+    # Disable threads on LLD trunk bots to see if they hurt build time.
+    if (llvm_force_head_revision) {
+      ldflags += [ "-Wl,-no-threads" ]
+    }
   } else if (use_gold) {
     ldflags += [ "-fuse-ld=gold" ]
     if (is_android) {
