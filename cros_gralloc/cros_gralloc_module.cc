@@ -169,8 +169,9 @@ static int cros_gralloc_lock(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888) {
-		cros_gralloc_error("YUV format not compatible.");
+	if ((hnd->droid_format == HAL_PIXEL_FORMAT_YCbCr_420_888)) {
+		cros_gralloc_error("HAL_PIXEL_FORMAT_YCbCr_*_888 format not "
+				   "compatible.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
@@ -298,7 +299,8 @@ static int cros_gralloc_lock_ycbcr(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888)) {
+	if ((hnd->droid_format != HAL_PIXEL_FORMAT_YCbCr_420_888) &&
+	    (hnd->droid_format != HAL_PIXEL_FORMAT_YV12)) {
 		cros_gralloc_error("Non-YUV format not compatible.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
