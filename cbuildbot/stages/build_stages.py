@@ -107,10 +107,9 @@ class CleanUpStage(generic_stages.BuilderStage):
     """Cancel the obsolete slave builds scheduled by the previous master."""
     logging.info('Cancelling obsolete slave builds.')
 
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      buildbucket_client = buildbucket_lib.BuildbucketClient(
-          service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
+    buildbucket_client = self.GetBuildbucketClient()
 
+    if buildbucket_client is not None:
       buildbucket_ids = []
       # Search for scheduled/started slave builds in chromiumos waterfall
       # and chromeos waterfall.
@@ -191,7 +190,8 @@ class CleanUpStage(generic_stages.BuilderStage):
       # Only enable CancelObsoleteSlaveBuilds on the master builds
       # which use the Buildbucket scheduler, it checks for builds in
       # ChromiumOs and ChromeOs waterfalls.
-      if config_lib.UseBuildbucketScheduler(self._run.config):
+      if (config_lib.UseBuildbucketScheduler(self._run.config) and
+          config_lib.IsMasterBuild(self._run.config)):
         tasks.append(self.CancelObsoleteSlaveBuilds)
 
       parallel.RunParallelSteps(tasks)

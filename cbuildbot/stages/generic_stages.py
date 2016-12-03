@@ -22,18 +22,20 @@ try:
 except ImportError:
   mox = None
 
+from chromite.cbuildbot import buildbucket_lib
 from chromite.cbuildbot import commands
-from chromite.lib import failures_lib
-from chromite.lib import results_lib
-from chromite.lib import constants
 from chromite.cbuildbot import repository
+from chromite.lib import config_lib
+from chromite.lib import constants
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_logging as logging
+from chromite.lib import failures_lib
 from chromite.lib import gs
 from chromite.lib import metrics
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import portage_util
+from chromite.lib import results_lib
 from chromite.lib import retry_util
 from chromite.lib import timeout_util
 
@@ -279,6 +281,31 @@ class BuilderStage(object):
       kwargs.setdefault('preserve_paths', self._run.options.preserve_paths)
 
     return repository.RepoRepository(manifest_url, self._build_root, **kwargs)
+
+  def GetBuildbucketClient(self):
+    """Build a buildbucket_client instance for Buildbucket related operations.
+
+    Returns:
+      An instance of buildbucket_lib.BuildbucketClient if the build is using
+      Buildbucket as the scheduler; else, None.
+    """
+    buildbucket_client = None
+
+    if config_lib.UseBuildbucketScheduler(self._run.config):
+      if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
+        buildbucket_client = buildbucket_lib.BuildbucketClient(
+            service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
+
+      if buildbucket_client is None and self._run.InProduction():
+        # If the build using Buildbucket is running on buildbot and
+        # is in production mode, buildbucket_client cannot be None.
+        raise buildbucket_lib.NoBuildbucketClientException(
+            'Buildbucket_client is None. '
+            'Please check if the buildbot has a valid service account file. '
+            'Please find the service account json file at %s.' %
+            constants.CHROMEOS_SERVICE_ACCOUNT)
+
+    return buildbucket_client
 
   def _Print(self, msg):
     """Prints a msg to stderr."""

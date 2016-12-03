@@ -358,6 +358,8 @@ class MockPatch(mock.MagicMock):
 class SyncStageTest(generic_stages_unittest.AbstractStageTestCase):
   """Tests the SyncStage."""
 
+  BOT_ID = 'master-paladin'
+
   def setUp(self):
     self.PatchObject(buildbucket_lib, 'GetServiceAccount',
                      return_value='server_account')

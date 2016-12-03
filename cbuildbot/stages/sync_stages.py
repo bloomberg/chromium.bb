@@ -365,23 +365,7 @@ class SyncStage(generic_stages.BuilderStage):
     # TODO(mtennant): Why keep a duplicate copy of this config value
     # at self.internal when it can always be retrieved from config?
     self.internal = self._run.config.internal
-
-    self.buildbucket_client = None
-    if buildbucket_lib.GetServiceAccount(constants.CHROMEOS_SERVICE_ACCOUNT):
-      self.buildbucket_client = buildbucket_lib.BuildbucketClient(
-          service_account=constants.CHROMEOS_SERVICE_ACCOUNT)
-
-    if (config_lib.UseBuildbucketScheduler(self._run.config) and
-        self._run.InProduction() and
-        self.buildbucket_client is None):
-      # If it's CQ-master build, running on a buildbot and in production
-      # mode, buildbucket_client cannot be None in order to schedule
-      # slave builds.
-      raise buildbucket_lib.NoBuildbucketClientException(
-          'Buildbucket_client is None. '
-          'Please check if the buildbot has a valid service account file. '
-          'Please find the service account json file at %s.' %
-          constants.CHROMEOS_SERVICE_ACCOUNT)
+    self.buildbucket_client = self.GetBuildbucketClient()
 
   def _GetManifestVersionsRepoUrl(self, internal=None, test=False):
     if internal is None:

@@ -13,22 +13,24 @@ import os
 import sys
 import unittest
 
+from chromite.cbuildbot import buildbucket_lib
+from chromite.cbuildbot import cbuildbot_run
+from chromite.cbuildbot import chromeos_config
 from chromite.cbuildbot import commands
+from chromite.cbuildbot.stages import generic_stages
+from chromite.lib import auth
 from chromite.lib import config_lib
 from chromite.lib import constants
-from chromite.lib import failures_lib
-from chromite.cbuildbot import chromeos_config
-from chromite.lib import results_lib
-from chromite.cbuildbot import cbuildbot_run
-from chromite.cbuildbot.stages import generic_stages
 from chromite.lib import cidb
 from chromite.lib import cros_build_lib
 from chromite.lib import cros_build_lib_unittest
 from chromite.lib import cros_test_lib
+from chromite.lib import failures_lib
 from chromite.lib import osutils
 from chromite.lib import parallel
 from chromite.lib import partial_mock
 from chromite.lib import portage_util
+from chromite.lib import results_lib
 from chromite.scripts import cbuildbot
 
 
@@ -474,6 +476,53 @@ class BuilderStageTest(AbstractStageTestCase):
     self.mock_cidb.FinishBuildStage.assert_called_once_with(
         DEFAULT_BUILD_STAGE_ID,
         constants.BUILDER_STATUS_FAILED)
+
+
+class MasterConfigBuilderStageTest(AbstractStageTestCase):
+  """Tests for BuilderStage on master build."""
+
+  BOT_ID = 'master-paladin'
+
+  def setUp(self):
+    self._Prepare(waterfall=constants.WATERFALL_EXTERNAL)
+    self.mock_cidb = mock.MagicMock()
+    cidb.CIDBConnectionFactory.SetupMockCidb(self.mock_cidb)
+    results_lib.Results.Clear()
+
+  def tearDown(self):
+    cidb.CIDBConnectionFactory.ClearMock()
+
+  def ConstructStage(self):
+    return generic_stages.BuilderStage(self._run)
+
+  def testGetBuildbucketClient(self):
+    """GetBuildbucketClient returns not None."""
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=True)
+    self.PatchObject(auth.AuthorizedHttp, '__init__',
+                     return_value=None)
+    self.PatchObject(buildbucket_lib.BuildbucketClient,
+                     '_GetHost',
+                     return_value=buildbucket_lib.BUILDBUCKET_TEST_HOST)
+    stage = self.ConstructStage()
+    self.assertIsNotNone(stage.GetBuildbucketClient())
+
+  def testGetBuildbucketClientWithoutServiceAccount(self):
+    """GetBuildbucketClient returns None with no ServiceAccount."""
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=False)
+    stage = self.ConstructStage()
+    self.assertIsNone(stage.GetBuildbucketClient())
+
+  def testGetBuildbucketClientRaisesException(self):
+    """GetBuildbucketClient raises exceptions correctly."""
+    self.PatchObject(buildbucket_lib, 'GetServiceAccount',
+                     return_value=False)
+    self.PatchObject(cbuildbot_run._BuilderRunBase, 'InProduction',
+                     return_value=True)
+    stage = self.ConstructStage()
+    self.assertRaises(buildbucket_lib.NoBuildbucketClientException,
+                      stage.GetBuildbucketClient)
 
 
 class BoardSpecificBuilderStageTest(AbstractStageTestCase):

@@ -872,6 +872,23 @@ class GetConfigTests(cros_test_lib.TestCase):
 class ConfigLibHelperTests(cros_test_lib.TestCase):
   """Tests related to helper methods in config_lib."""
 
+  def testUseBuildbucketScheduler(self):
+    """Test UseBuildbucketScheduler."""
+    cq_master_config = config_lib.BuildConfig(
+        name=constants.CQ_MASTER)
+    self.assertTrue(config_lib.UseBuildbucketScheduler(
+        cq_master_config))
+
+    pre_cq_config = config_lib.BuildConfig(
+        name=constants.PRE_CQ_LAUNCHER_NAME)
+    self.assertTrue(config_lib.UseBuildbucketScheduler(
+        pre_cq_config))
+
+    pfq_master_config = config_lib.BuildConfig(
+        name=constants.PFQ_MASTER)
+    self.assertFalse(config_lib.UseBuildbucketScheduler(
+        pfq_master_config))
+
   def testScheduledByBuildbucket(self):
     """Test ScheduledByBuildbucket."""
     cq_master_config = config_lib.BuildConfig(
