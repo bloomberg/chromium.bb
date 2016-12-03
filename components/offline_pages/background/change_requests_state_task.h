@@ -32,21 +32,15 @@ class ChangeRequestsStateTask : public Task {
  private:
   // Step 1. Reading the requests.
   void ReadRequests();
-  // Step 2. Selecting requests to be updated. Calls update.
-  void SelectItemsToUpdate(
-      bool success,
-      std::vector<std::unique_ptr<SavePageRequest>> requests);
+  // Step 2. Updates available requests.
+  void UpdateRequests(std::unique_ptr<UpdateRequestsResult> read_result);
   // Step 3. Processes update result, calls callback.
   void UpdateCompleted(std::unique_ptr<UpdateRequestsResult> update_result);
 
-  // Completions.
-  void CompleteEarly(ItemActionStatus status);
-  void CompleteWithStatus(std::unique_ptr<UpdateRequestsResult> result,
-                          ItemActionStatus status);
-
   // Store that this task updates.
   RequestQueueStore* store_;
-  // Request IDs to be updated.
+  // Request IDs to be updated. Kept as a set to remove duplicates and simplify
+  // the look up of requests that are not found in step 3.
   std::unordered_set<int64_t> request_ids_;
   // New state to be set on all entries.
   SavePageRequest::RequestState new_state_;

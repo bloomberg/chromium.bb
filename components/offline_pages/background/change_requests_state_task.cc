@@ -26,38 +26,26 @@ void ChangeRequestsStateTask::Run() {
 }
 
 void ChangeRequestsStateTask::ReadRequests() {
-  if (request_ids_.empty()) {
-    CompleteEarly(ItemActionStatus::NOT_FOUND);
-    return;
-  }
-
-  store_->GetRequests(base::Bind(&ChangeRequestsStateTask::SelectItemsToUpdate,
-                                 weak_ptr_factory_.GetWeakPtr()));
+  std::vector<int64_t> request_ids(request_ids_.begin(), request_ids_.end());
+  store_->GetRequestsByIds(request_ids,
+                           base::Bind(&ChangeRequestsStateTask::UpdateRequests,
+                                      weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ChangeRequestsStateTask::SelectItemsToUpdate(
-    bool success,
-    std::vector<std::unique_ptr<SavePageRequest>> requests) {
-  if (!success) {
-    CompleteEarly(ItemActionStatus::STORE_ERROR);
+void ChangeRequestsStateTask::UpdateRequests(
+    std::unique_ptr<UpdateRequestsResult> read_result) {
+  if (read_result->store_state != StoreState::LOADED ||
+      read_result->updated_items.empty()) {
+    UpdateCompleted(std::move(read_result));
     return;
   }
 
+  // We are only going to make an update to the items that were found. Statuses
+  // of the missing items will be added at the end.
   std::vector<SavePageRequest> items_to_update;
-  for (const auto& request : requests) {
-    // If this request is in our list, update it.
-    if (request_ids_.count(request->request_id()) > 0) {
-      request->set_request_state(new_state_);
-      items_to_update.push_back(*request);
-      // Items that are missing before the update will be marked as not found
-      // before the callback.
-      request_ids_.erase(request->request_id());
-    }
-  }
-
-  if (items_to_update.empty()) {
-    CompleteEarly(ItemActionStatus::NOT_FOUND);
-    return;
+  for (auto request : read_result->updated_items) {
+    request.set_request_state(new_state_);
+    items_to_update.push_back(request);
   }
 
   store_->UpdateRequests(items_to_update,
@@ -67,23 +55,22 @@ void ChangeRequestsStateTask::SelectItemsToUpdate(
 
 void ChangeRequestsStateTask::UpdateCompleted(
     std::unique_ptr<UpdateRequestsResult> update_result) {
-  CompleteWithStatus(std::move(update_result), ItemActionStatus::NOT_FOUND);
-}
+  // Because the first step might not have found some of the items, we should
+  // look their IDs now and include in the final result as not found.
 
-void ChangeRequestsStateTask::CompleteEarly(ItemActionStatus status) {
-  // TODO(fgorski): store_->state() once implemented
-  std::unique_ptr<UpdateRequestsResult> result(
-      new UpdateRequestsResult(StoreState::LOADED));
-  CompleteWithStatus(std::move(result), status);
-}
+  // Look up the missing items by removing the items present in the result
+  // statuses from original list of request IDs.
+  for (const auto& id_status_pair : update_result->item_statuses)
+    request_ids_.erase(id_status_pair.first);
 
-void ChangeRequestsStateTask::CompleteWithStatus(
-    std::unique_ptr<UpdateRequestsResult> result,
-    ItemActionStatus status) {
-  // Mark items as not found, if they are still in the request IDs set.
-  for (int64_t request_id : request_ids_)
-    result->item_statuses.push_back(std::make_pair(request_id, status));
-  callback_.Run(std::move(result));
+  // Update the final result for the items that are left in |request_ids_|, as
+  // these are identified as being missing from the final result.
+  for (int64_t request_id : request_ids_) {
+    update_result->item_statuses.push_back(
+        std::make_pair(request_id, ItemActionStatus::NOT_FOUND));
+  }
+
+  callback_.Run(std::move(update_result));
   TaskComplete();
 }
 

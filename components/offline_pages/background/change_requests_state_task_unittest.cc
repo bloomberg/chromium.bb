@@ -145,20 +145,31 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMultipleItems) {
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
-  EXPECT_EQ(2UL, last_result()->item_statuses.size());
-  EXPECT_EQ(kRequestId1, last_result()->item_statuses.at(0).first);
+  ASSERT_EQ(2UL, last_result()->item_statuses.size());
+
+  // Calculating the position of the items in the vector here, because it does
+  // not matter, and might be platform dependent.
+  // |index_id_1| is expected to correspond to |kRequestId1|.
+  int index_id_1 =
+      last_result()->item_statuses.at(0).first == kRequestId1 ? 0 : 1;
+  // |index_id_2| is expected to correspond to |kRequestId2|.
+  int index_id_2 = 1 - index_id_1;
+
+  EXPECT_EQ(kRequestId1, last_result()->item_statuses.at(index_id_1).first);
   EXPECT_EQ(ItemActionStatus::SUCCESS,
-            last_result()->item_statuses.at(0).second);
-  EXPECT_EQ(kRequestId2, last_result()->item_statuses.at(1).first);
+            last_result()->item_statuses.at(index_id_1).second);
+  EXPECT_EQ(kRequestId2, last_result()->item_statuses.at(index_id_2).first);
   EXPECT_EQ(ItemActionStatus::SUCCESS,
-            last_result()->item_statuses.at(1).second);
-  EXPECT_EQ(2UL, last_result()->updated_items.size());
-  EXPECT_EQ(kRequestId1, last_result()->updated_items.at(0).request_id());
+            last_result()->item_statuses.at(index_id_2).second);
+  ASSERT_EQ(2UL, last_result()->updated_items.size());
+  EXPECT_EQ(kRequestId1,
+            last_result()->updated_items.at(index_id_1).request_id());
   EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(0).request_state());
-  EXPECT_EQ(kRequestId2, last_result()->updated_items.at(1).request_id());
+            last_result()->updated_items.at(index_id_1).request_state());
+  EXPECT_EQ(kRequestId2,
+            last_result()->updated_items.at(index_id_2).request_id());
   EXPECT_EQ(SavePageRequest::RequestState::PAUSED,
-            last_result()->updated_items.at(1).request_state());
+            last_result()->updated_items.at(index_id_2).request_state());
 }
 
 TEST_F(ChangeRequestsStateTaskTest, EmptyRequestsList) {
@@ -190,7 +201,7 @@ TEST_F(ChangeRequestsStateTaskTest, UpdateMissingItem) {
   task.Run();
   PumpLoop();
   ASSERT_TRUE(last_result());
-  EXPECT_EQ(2UL, last_result()->item_statuses.size());
+  ASSERT_EQ(2UL, last_result()->item_statuses.size());
   EXPECT_EQ(kRequestId1, last_result()->item_statuses.at(0).first);
   EXPECT_EQ(ItemActionStatus::SUCCESS,
             last_result()->item_statuses.at(0).second);
