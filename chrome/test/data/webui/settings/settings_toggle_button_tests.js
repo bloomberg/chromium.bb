@@ -12,18 +12,19 @@ cr.define('settings_toggle_button', function() {
        */
       var testElement;
 
-      /**
-       * Pref value used in tests, should reflect the 'checked' attribute.
-       * @type {SettingsCheckbox}
-       */
-      var pref = {
-        key: 'test',
-        type: chrome.settingsPrivate.PrefType.BOOLEAN,
-        value: true
-      };
-
       // Initialize a checked control before each test.
       setup(function() {
+        /**
+         * Pref value used in tests, should reflect the 'checked' attribute.
+         * Create a new pref for each test() to prevent order (state)
+         * dependencies between tests.
+         * @type {chrome.settingsPrivate.PrefObject}
+         */
+        var pref = {
+          key: 'test',
+          type: chrome.settingsPrivate.PrefType.BOOLEAN,
+          value: true
+        };
         PolymerTest.clearBody();
         testElement = document.createElement('settings-toggle-button');
         testElement.set('pref', pref);
@@ -35,11 +36,24 @@ cr.define('settings_toggle_button', function() {
 
         testElement.removeAttribute('checked');
         assertFalse(testElement.checked);
-        assertFalse(pref.value);
+        assertFalse(testElement.pref.value);
 
         testElement.setAttribute('checked', '');
         assertTrue(testElement.checked);
-        assertTrue(pref.value);
+        assertTrue(testElement.pref.value);
+      });
+
+      test('value changes on tap', function() {
+        assertTrue(testElement.checked);
+        assertTrue(testElement.pref.value);
+
+        MockInteractions.tap(testElement.$.control);
+        assertFalse(testElement.checked);
+        assertFalse(testElement.pref.value);
+
+        MockInteractions.tap(testElement.$.control);
+        assertTrue(testElement.checked);
+        assertTrue(testElement.pref.value);
       });
 
       test('fires a change event', function(done) {
@@ -47,6 +61,7 @@ cr.define('settings_toggle_button', function() {
           assertFalse(testElement.checked);
           done();
         });
+        assertTrue(testElement.checked);
         MockInteractions.tap(testElement.$.control);
       });
 
