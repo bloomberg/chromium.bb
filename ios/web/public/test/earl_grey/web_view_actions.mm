@@ -22,6 +22,11 @@ namespace {
 // Long press duration to trigger context menu.
 const NSTimeInterval kContextMenuLongPressDuration = 0.3;
 
+// Duration to wait for verification of JavaScript action.
+// TODO(crbug.com/670910): Reduce duration if the time required for verification
+// is reduced on devices.
+const NSTimeInterval kWaitForVerificationTimeout = 8.0;
+
 // Callback prefix for injected verifiers.
 const std::string CallbackPrefixForElementId(const std::string& element_id) {
   return "__web_test_" + element_id + "_interaction";
@@ -175,7 +180,7 @@ id<GREYAction> webViewVerifiedActionOnElement(WebState* state,
                                    @"verified before timing out.",
                                    action.name, element_id.c_str()];
     GREYAssert(testing::WaitUntilConditionOrTimeout(
-                   testing::kWaitForJSCompletionTimeout,
+                   kWaitForVerificationTimeout,
                    ^{
                      return verified;
                    }),
