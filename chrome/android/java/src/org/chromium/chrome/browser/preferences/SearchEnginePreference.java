@@ -6,7 +6,7 @@ package org.chromium.chrome.browser.preferences;
 
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
-import android.widget.LinearLayout.LayoutParams;
+import android.view.ViewGroup.MarginLayoutParams;
 import android.widget.ListView;
 
 import org.chromium.base.VisibleForTesting;
@@ -48,8 +48,7 @@ public class SearchEnginePreference extends PreferenceFragment {
         mListView = (ListView) getView().findViewById(android.R.id.list);
         int marginTop = getActivity().getResources().getDimensionPixelSize(
                 R.dimen.search_engine_list_margin_top);
-        LayoutParams layoutParams =
-                new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT);
+        MarginLayoutParams layoutParams = (MarginLayoutParams) mListView.getLayoutParams();
         layoutParams.setMargins(0, marginTop, 0, 0);
         mListView.setLayoutParams(layoutParams);
         mListView.setAdapter(mSearchEngineAdapter);
