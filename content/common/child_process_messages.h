@@ -179,23 +179,6 @@ IPC_SYNC_MESSAGE_CONTROL1_0(ChildProcessHostMsg_PreCacheFont,
 IPC_MESSAGE_CONTROL0(ChildProcessHostMsg_ReleaseCachedFonts)
 #endif  // defined(OS_WIN)
 
-// Asks the browser to create a block of shared memory for the child process to
-// fill in and pass back to the browser.
-IPC_SYNC_MESSAGE_CONTROL2_1(ChildProcessHostMsg_SyncAllocateSharedBitmap,
-                            uint32_t /* buffer size */,
-                            cc::SharedBitmapId,
-                            base::SharedMemoryHandle)
-
-// Informs the browser that the child allocated a shared bitmap.
-IPC_MESSAGE_CONTROL3(ChildProcessHostMsg_AllocatedSharedBitmap,
-                     uint32_t /* buffer size */,
-                     base::SharedMemoryHandle,
-                     cc::SharedBitmapId)
-
-// Informs the browser that the child deleted a shared bitmap.
-IPC_MESSAGE_CONTROL1(ChildProcessHostMsg_DeletedSharedBitmap,
-                     cc::SharedBitmapId)
-
 // Asks the browser to create a gpu memory buffer.
 IPC_SYNC_MESSAGE_CONTROL5_1(ChildProcessHostMsg_SyncAllocateGpuMemoryBuffer,
                             gfx::GpuMemoryBufferId /* new_id */,

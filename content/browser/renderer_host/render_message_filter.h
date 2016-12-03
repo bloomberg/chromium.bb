@@ -129,6 +129,9 @@ class CONTENT_EXPORT RenderMessageFilter
   void CreateFullscreenWidget(
       int opener_id,
       const CreateFullscreenWidgetCallback& callback) override;
+  void AllocatedSharedBitmap(mojo::ScopedSharedBufferHandle buffer,
+                             const cc::SharedBitmapId& id) override;
+  void DeletedSharedBitmap(const cc::SharedBitmapId& id) override;
 
   // Message handlers called on the browser IO thread:
   void OnEstablishGpuChannel(IPC::Message* reply);
@@ -140,19 +143,6 @@ class CONTENT_EXPORT RenderMessageFilter
   void GetGpuProcessHandlesCallback(
       std::unique_ptr<IPC::Message> reply,
       const std::list<base::ProcessHandle>& handles);
-  // Used to ask the browser to allocate a block of shared memory for the
-  // renderer to send back data in, since shared memory can't be created
-  // in the renderer on POSIX due to the sandbox.
-  void AllocateSharedBitmapOnFileThread(uint32_t buffer_size,
-                                        const cc::SharedBitmapId& id,
-                                        IPC::Message* reply_msg);
-  void OnAllocateSharedBitmap(uint32_t buffer_size,
-                              const cc::SharedBitmapId& id,
-                              IPC::Message* reply_msg);
-  void OnAllocatedSharedBitmap(size_t buffer_size,
-                               const base::SharedMemoryHandle& handle,
-                               const cc::SharedBitmapId& id);
-  void OnDeletedSharedBitmap(const cc::SharedBitmapId& id);
   void OnResolveProxy(const GURL& url, IPC::Message* reply_msg);
 
 #if defined(OS_LINUX)
