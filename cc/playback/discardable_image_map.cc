@@ -61,11 +61,9 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
   DiscardableImagesMetadataCanvas(
       int width,
       int height,
-      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set,
-      DiscardableImageMap::ImageToRegionMap* image_to_region)
+      std::vector<std::pair<DrawImage, gfx::Rect>>* image_set)
       : SkNWayCanvas(width, height),
         image_set_(image_set),
-        image_id_to_region_(image_to_region),
         canvas_bounds_(SkRect::MakeIWH(width, height)),
         canvas_size_(width, height) {}
 
@@ -175,18 +173,12 @@ class DiscardableImagesMetadataCanvas : public SkNWayCanvas {
 
     SkIRect src_irect;
     src_rect.roundOut(&src_irect);
-    gfx::Rect image_rect = SafeClampPaintRectToSize(paint_rect, canvas_size_);
-
-    Region& region = (*image_id_to_region_)[image->uniqueID()];
-    region.Union(image_rect);
-
     image_set_->push_back(std::make_pair(
         DrawImage(std::move(image), src_irect, filter_quality, matrix),
-        image_rect));
+        SafeClampPaintRectToSize(paint_rect, canvas_size_)));
   }
 
   std::vector<std::pair<DrawImage, gfx::Rect>>* image_set_;
-  DiscardableImageMap::ImageToRegionMap* image_id_to_region_;
   const SkRect canvas_bounds_;
   const gfx::Size canvas_size_;
   std::vector<SkPaint> saved_paints_;
@@ -202,7 +194,7 @@ std::unique_ptr<SkCanvas> DiscardableImageMap::BeginGeneratingMetadata(
     const gfx::Size& bounds) {
   DCHECK(all_images_.empty());
   return base::MakeUnique<DiscardableImagesMetadataCanvas>(
-      bounds.width(), bounds.height(), &all_images_, &image_id_to_region_);
+      bounds.width(), bounds.height(), &all_images_);
 }
 
 void DiscardableImageMap::EndGeneratingMetadata() {
@@ -220,11 +212,6 @@ void DiscardableImageMap::GetDiscardableImagesInRect(
   images_rtree_.Search(rect, &indices);
   for (size_t index : indices)
     images->push_back(all_images_[index].first.ApplyScale(raster_scales));
-}
-
-Region DiscardableImageMap::GetRegionForImage(uint32_t image_id) const {
-  const auto& it = image_id_to_region_.find(image_id);
-  return it == image_id_to_region_.end() ? Region() : it->second;
 }
 
 DiscardableImageMap::ScopedMetadataGenerator::ScopedMetadataGenerator(

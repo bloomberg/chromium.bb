@@ -168,7 +168,6 @@ class CC_EXPORT DisplayItemList
   void GetDiscardableImagesInRect(const gfx::Rect& rect,
                                   const gfx::SizeF& raster_scales,
                                   std::vector<DrawImage>* images);
-  Region GetRegionForImage(uint32_t image_id);
 
   void SetRetainVisualRectsForTesting(bool retain) {
     retain_visual_rects_ = retain;

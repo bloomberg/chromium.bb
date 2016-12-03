@@ -271,8 +271,4 @@ void DisplayItemList::GetDiscardableImagesInRect(
   image_map_.GetDiscardableImagesInRect(rect, raster_scales, images);
 }
 
-Region DisplayItemList::GetRegionForImage(uint32_t image_id) {
-  return image_map_.GetRegionForImage(image_id);
-}
-
 }  // namespace cc
