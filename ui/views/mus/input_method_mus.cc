@@ -8,7 +8,7 @@
 
 #include "services/ui/public/cpp/window.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/base/ime/text_input_client.h"
 #include "ui/events/event.h"
 #include "ui/platform_window/mojo/ime_type_converters.h"

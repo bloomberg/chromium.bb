@@ -11,7 +11,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/service_manager/public/cpp/service_test.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "ui/events/event.h"
 
 class TestTextInputClient : public ui::mojom::TextInputClient {
@@ -19,26 +19,30 @@ class TestTextInputClient : public ui::mojom::TextInputClient {
   explicit TestTextInputClient(ui::mojom::TextInputClientRequest request)
       : binding_(this, std::move(request)) {}
 
-  ui::mojom::CompositionEventPtr WaitUntilCompositionEvent() {
-    if (!receieved_composition_event_) {
+  std::unique_ptr<ui::Event> WaitUntilInsertChar() {
+    if (!receieved_event_) {
       run_loop_.reset(new base::RunLoop);
       run_loop_->Run();
       run_loop_.reset();
     }
 
-    return std::move(receieved_composition_event_);
+    return std::move(receieved_event_);
   }
 
  private:
-  void OnCompositionEvent(ui::mojom::CompositionEventPtr event) override {
-    receieved_composition_event_ = std::move(event);
+  void SetCompositionText(const ui::CompositionText& composition) override {}
+  void ConfirmCompositionText() override {}
+  void ClearCompositionText() override {}
+  void InsertText(const std::string& text) override {}
+  void InsertChar(std::unique_ptr<ui::Event> event) override {
+    receieved_event_ = std::move(event);
     if (run_loop_)
       run_loop_->Quit();
   }
 
   mojo::Binding<ui::mojom::TextInputClient> binding_;
   std::unique_ptr<base::RunLoop> run_loop_;
-  ui::mojom::CompositionEventPtr receieved_composition_event_;
+  std::unique_ptr<ui::Event> receieved_event_;
 
   DISALLOW_COPY_AND_ASSIGN(TestTextInputClient);
 };
@@ -95,15 +99,10 @@ TEST_F(IMEAppTest, ProcessKeyEvent) {
   ui::KeyEvent char_event('A', ui::VKEY_A, 0);
   EXPECT_TRUE(ProcessKeyEvent(&input_method, ui::Event::Clone(char_event)));
 
-  ui::mojom::CompositionEventPtr composition_event =
-      client.WaitUntilCompositionEvent();
-  EXPECT_EQ(ui::mojom::CompositionEventType::INSERT_CHAR,
-            composition_event->type);
-  EXPECT_TRUE(composition_event->key_event);
-  EXPECT_TRUE(composition_event->key_event.value()->IsKeyEvent());
+  std::unique_ptr<ui::Event> received_event = client.WaitUntilInsertChar();
+  ASSERT_TRUE(received_event && received_event->IsKeyEvent());
 
-  ui::KeyEvent* received_key_event =
-      composition_event->key_event.value()->AsKeyEvent();
+  ui::KeyEvent* received_key_event = received_event->AsKeyEvent();
   EXPECT_EQ(ui::ET_KEY_PRESSED, received_key_event->type());
   EXPECT_TRUE(received_key_event->is_char());
   EXPECT_EQ(char_event.GetCharacter(), received_key_event->GetCharacter());

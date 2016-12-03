@@ -11,7 +11,7 @@
 #include <memory>
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 
 namespace ui {
 namespace test {

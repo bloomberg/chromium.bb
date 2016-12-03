@@ -7,7 +7,7 @@
 #include <utility>
 
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/mus/text_input_client_impl.h"
 #include "ui/aura/mus/window_port_mus.h"

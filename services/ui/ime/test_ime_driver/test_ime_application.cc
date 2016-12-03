@@ -9,7 +9,7 @@
 #include "services/service_manager/public/cpp/service_context.h"
 #include "services/ui/ime/test_ime_driver/test_ime_driver.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 
 namespace ui {
 namespace test {

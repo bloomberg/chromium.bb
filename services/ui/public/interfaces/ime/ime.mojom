@@ -6,24 +6,24 @@ module ui.mojom;
 
 import "ui/events/mojo/event.mojom";
 import "ui/gfx/geometry/mojo/geometry.mojom";
+import "ui/gfx/range/mojo/range.mojom";
 
-struct CompositionEvent {
-  CompositionEventType type;
-
-  // Used when |type| is INSERT_CHAR. See the comments for
-  // ui::TextInputClient::InsertChar() for more information.
-  Event? key_event;
-
-  // TODO(moshayedi): crbug.com/631524. Add fields required for other types of
-  // composition event.
+// Represents an underlined segment of text currently composed by IME.
+// Corresponds to ui::CompositionUnderline.
+struct CompositionUnderline {
+  uint32 start_offset;
+  uint32 end_offset;
+  bool thick;
+  uint32 color;
+  uint32 background_color;
 };
 
-enum CompositionEventType {
-  UPDATE,
-  CONFIRM,
-  CLEAR,
-  INSERT_CHAR,
-  INSERT_TEXT
+// Represents a text currently being composed by IME. Corresponds to
+// ui::CompositionText.
+struct CompositionText {
+  string text;
+  array<CompositionUnderline> underlines;
+  gfx.mojom.Range selection;
 };
 
 // See comments for ui::TextInputType for more details.
@@ -96,7 +96,7 @@ interface InputMethod {
   // Called to process a key event. The callback function will be called to
   // notify the client if the event was handled or not. A handled event may
   // generate zero or more composition events which will be sent to the client
-  // by calling TextInputClient::OnCompositionEvent().
+  // using the "input method result" functions of TextInputClient interface.
   ProcessKeyEvent(ui.mojom.Event key_event) => (bool handled);
 
   CancelComposition();
@@ -104,12 +104,32 @@ interface InputMethod {
 
 // IME drivers send updates to clients using the TextInputClient interface.
 interface TextInputClient {
-  // Corresponds to "input method result" functions of ui::TextInputClient.
-  // See comments for InputMethod::ProcessKeyEvent() for when this is called.
-  OnCompositionEvent(CompositionEvent event);
+  // Functions corresponding to "input method result" functions of
+  // ui::TextInputClient. See comments for InputMethod::ProcessKeyEvent() for
+  // when these are called.
+
+  // Sets composition text and attributes. See comments for
+  // ui::TextInputClient::SetCompositionText() for more details.
+  SetCompositionText(CompositionText composition);
+  
+  // Converts current composition text into final content.
+  ConfirmCompositionText();
+
+  // Removes current composition text.
+  ClearCompositionText();
+
+  // Inserts a given text at the insertion point. Current composition text or
+  // selection will be removed. This method should never be called when the
+  // current text input type is TEXT_INPUT_TYPE_NONE.
+  InsertText(string text);
+
+  // Inserts a single character at the insertion point. Unlike InsertText(),
+  // the character is not processed. See ui::TextInputClient::InsertChar()
+  // for more details.
+  InsertChar(ui.mojom.Event event);
 
   // TODO(moshayedi): Add functions corresponding to ui::TextInputClient for:
-  // - Input text confirmation
+  // - Input context information
   // - Document content operations
   // - Miscellaneous functions
   // crbug.com/631527.

@@ -9,7 +9,7 @@
 #include "mojo/public/cpp/bindings/strong_binding.h"
 #include "services/service_manager/public/cpp/connector.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 
 namespace {
 
@@ -31,11 +31,7 @@ class InputMethod : public ui::mojom::InputMethod {
     DCHECK(key_event->IsKeyEvent());
 
     if (key_event->AsKeyEvent()->is_char()) {
-      ui::mojom::CompositionEventPtr composition_event =
-          ui::mojom::CompositionEvent::New();
-      composition_event->type = ui::mojom::CompositionEventType::INSERT_CHAR;
-      composition_event->key_event = std::move(key_event);
-      client_->OnCompositionEvent(std::move(composition_event));
+      client_->InsertChar(std::move(key_event));
       callback.Run(true);
     } else {
       callback.Run(false);

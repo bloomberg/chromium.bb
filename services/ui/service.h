@@ -24,7 +24,7 @@
 #include "services/ui/public/interfaces/clipboard.mojom.h"
 #include "services/ui/public/interfaces/display_manager.mojom.h"
 #include "services/ui/public/interfaces/gpu_service.mojom.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 #include "services/ui/public/interfaces/user_access_manager.mojom.h"
 #include "services/ui/public/interfaces/user_activity_monitor.mojom.h"
 #include "services/ui/public/interfaces/window_manager_window_tree_factory.mojom.h"

@@ -121,6 +121,7 @@ component("ime") {
 
   public_deps = [
     ":text_input_types",
+    "//skia",
   ]
 
   if (!use_aura || (!is_linux && !use_ozone)) {

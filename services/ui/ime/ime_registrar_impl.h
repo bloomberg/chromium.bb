@@ -7,7 +7,7 @@
 
 #include "mojo/public/cpp/bindings/binding_set.h"
 #include "services/ui/ime/ime_server_impl.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
 
 namespace ui {
 

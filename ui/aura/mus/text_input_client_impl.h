@@ -6,7 +6,8 @@
 #define UI_AURA_MUS_TEXT_INPUT_CLIENT_IMPL_H_
 
 #include "mojo/public/cpp/bindings/binding.h"
-#include "services/ui/public/interfaces/ime.mojom.h"
+#include "services/ui/public/interfaces/ime/ime.mojom.h"
+#include "ui/base/ime/composition_text.h"
 
 namespace ui {
 class TextInputClient;
@@ -25,7 +26,11 @@ class TextInputClientImpl : public ui::mojom::TextInputClient {
 
  private:
   // ui::mojom::TextInputClient:
-  void OnCompositionEvent(ui::mojom::CompositionEventPtr event) override;
+  void SetCompositionText(const ui::CompositionText& composition) override;
+  void ConfirmCompositionText() override;
+  void ClearCompositionText() override;
+  void InsertText(const std::string& text) override;
+  void InsertChar(std::unique_ptr<ui::Event> event) override;
 
   ui::TextInputClient* text_input_client_;
   mojo::Binding<ui::mojom::TextInputClient> binding_;
