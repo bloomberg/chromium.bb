@@ -25,6 +25,9 @@ cc_source_set("surface_id") {
 cc_component("surfaces") {
   output_name = "cc_surfaces"
   sources = [
+    "compositor_frame_sink_support.cc",
+    "compositor_frame_sink_support.h",
+    "compositor_frame_sink_support_client.h",
     "direct_compositor_frame_sink.cc",
     "direct_compositor_frame_sink.h",
     "display.cc",
