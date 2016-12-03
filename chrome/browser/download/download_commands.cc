@@ -37,7 +37,7 @@
 #endif
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #endif  // defined(OS_CHROMEOS)
 
 namespace {
@@ -357,7 +357,7 @@ void DownloadCommands::ExecuteCommand(Command command) {
     case ANNOTATE:
 #if defined(OS_CHROMEOS)
       if (DownloadItemModel(download_item_).HasSupportedImageMimeType()) {
-        chromeos::LaunchNoteTakingAppForNewNote(
+        chromeos::NoteTakingHelper::Get()->LaunchAppForNewNote(
             Profile::FromBrowserContext(download_item_->GetBrowserContext()),
             download_item_->GetTargetFilePath());
       }

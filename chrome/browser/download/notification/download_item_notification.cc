@@ -46,7 +46,7 @@
 #include "ui/message_center/message_center_style.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #endif  // defined(OS_CHROMEOS)
 
 using base::UserMetricsAction;
@@ -655,7 +655,7 @@ DownloadItemNotification::GetExtraActions() const {
       if (!notification_->image().IsEmpty()) {
         actions->push_back(DownloadCommands::COPY_TO_CLIPBOARD);
 #if defined(OS_CHROMEOS)
-        if (chromeos::IsNoteTakingAppAvailable(profile()))
+        if (chromeos::NoteTakingHelper::Get()->IsAppAvailable(profile()))
           actions->push_back(DownloadCommands::ANNOTATE);
 #endif  // defined(OS_CHROMEOS)
       }

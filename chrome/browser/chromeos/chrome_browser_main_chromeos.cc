@@ -65,6 +65,7 @@
 #include "chrome/browser/chromeos/net/network_pref_state_observer.h"
 #include "chrome/browser/chromeos/net/network_throttling_observer.h"
 #include "chrome/browser/chromeos/net/wake_on_wifi_manager.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 #include "chrome/browser/chromeos/options/cert_library.h"
 #include "chrome/browser/chromeos/ownership/owner_settings_service_chromeos_factory.h"
 #include "chrome/browser/chromeos/policy/browser_policy_connector_chromeos.h"
@@ -486,6 +487,8 @@ void ChromeBrowserMainPartsChromeos::PreProfileInit() {
 
   media::SoundsManager::Create();
 
+  NoteTakingHelper::Initialize();
+
   AccessibilityManager::Initialize();
 
   if (!chrome::IsRunningInMash()) {
@@ -846,6 +849,8 @@ void ChromeBrowserMainPartsChromeos::PostMainMessageLoopRun() {
 
   if (!chrome::IsRunningInMash())
     MagnificationManager::Shutdown();
+
+  NoteTakingHelper::Shutdown();
 
   media::SoundsManager::Shutdown();
 

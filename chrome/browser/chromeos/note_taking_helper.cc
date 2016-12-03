@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/note_taking_app_utils.h"
+#include "chrome/browser/chromeos/note_taking_helper.h"
 
 #include <string>
 #include <vector>
@@ -24,6 +24,9 @@ namespace app_runtime = extensions::api::app_runtime;
 
 namespace chromeos {
 namespace {
+
+// Pointer to singleton instance.
+NoteTakingHelper* g_helper = nullptr;
 
 // TODO(derat): Add more IDs.
 const char* const kExtensionIds[] = {
@@ -67,13 +70,32 @@ const extensions::Extension* GetApp(Profile* profile) {
 
 }  // namespace
 
-bool IsNoteTakingAppAvailable(Profile* profile) {
+// static
+void NoteTakingHelper::Initialize() {
+  DCHECK(!g_helper);
+  g_helper = new NoteTakingHelper();
+}
+
+// static
+void NoteTakingHelper::Shutdown() {
+  DCHECK(g_helper);
+  delete g_helper;
+  g_helper = nullptr;
+}
+
+// static
+NoteTakingHelper* NoteTakingHelper::Get() {
+  DCHECK(g_helper);
+  return g_helper;
+}
+
+bool NoteTakingHelper::IsAppAvailable(Profile* profile) {
   DCHECK(profile);
   return ash::IsPaletteFeatureEnabled() && GetApp(profile);
 }
 
-void LaunchNoteTakingAppForNewNote(Profile* profile,
-                                   const base::FilePath& path) {
+void NoteTakingHelper::LaunchAppForNewNote(Profile* profile,
+                                           const base::FilePath& path) {
   DCHECK(profile);
   const extensions::Extension* app = GetApp(profile);
   if (!app) {
@@ -85,5 +107,9 @@ void LaunchNoteTakingAppForNewNote(Profile* profile,
   action_data->action_type = app_runtime::ActionType::ACTION_TYPE_NEW_NOTE;
   apps::LaunchPlatformAppWithAction(profile, app, std::move(action_data), path);
 }
+
+NoteTakingHelper::NoteTakingHelper() {}
+
+NoteTakingHelper::~NoteTakingHelper() {}
 
 }  // namespace chromeos
