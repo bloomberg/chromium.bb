@@ -1,0 +1,52 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/border_frame_bottom.png",
+    "resources/border_frame_bottom@2x.png",
+    "resources/border_frame_bottom@3x.png",
+    "resources/border_frame_incognito_bottom.png",
+    "resources/border_frame_incognito_bottom@2x.png",
+    "resources/border_frame_incognito_bottom@3x.png",
+    "resources/border_frame_incognito_left.png",
+    "resources/border_frame_incognito_left@2x.png",
+    "resources/border_frame_incognito_left@3x.png",
+    "resources/border_frame_incognito_right.png",
+    "resources/border_frame_incognito_right@2x.png",
+    "resources/border_frame_incognito_right@3x.png",
+    "resources/border_frame_incognito_top.png",
+    "resources/border_frame_incognito_top@2x.png",
+    "resources/border_frame_incognito_top@3x.png",
+    "resources/border_frame_left.png",
+    "resources/border_frame_left@2x.png",
+    "resources/border_frame_left@3x.png",
+    "resources/border_frame_right.png",
+    "resources/border_frame_right@2x.png",
+    "resources/border_frame_right@3x.png",
+    "resources/border_frame_top.png",
+    "resources/border_frame_top@2x.png",
+    "resources/border_frame_top@3x.png",
+    "resources/card_close_button.png",
+    "resources/card_close_button@2x.png",
+    "resources/card_close_button@3x.png",
+    "resources/card_close_button_incognito.png",
+    "resources/card_close_button_incognito@2x.png",
+    "resources/card_close_button_incognito@3x.png",
+    "resources/card_close_button_pressed.png",
+    "resources/card_close_button_pressed@2x.png",
+    "resources/card_close_button_pressed@3x.png",
+    "resources/card_frame_shadow.png",
+    "resources/card_frame_shadow@2x.png",
+    "resources/card_frame_shadow@3x.png",
+    "resources/stack_view_background_noise.jpg",
+    "resources/stack_view_background_noise@2x.jpg",
+    "resources/stack_view_background_noise@2x~ipad.jpg",
+    "resources/stack_view_background_noise@3x.jpg",
+    "resources/stack_view_background_noise~ipad.jpg",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
