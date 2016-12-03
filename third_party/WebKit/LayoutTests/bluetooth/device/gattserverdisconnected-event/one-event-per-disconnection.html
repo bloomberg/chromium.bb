@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+ 'use strict';
+ promise_test(t => {
+   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => {
+      return device.gatt.connect()
+        .then(gattServer => get_request_disconnection(gattServer))
+        .then(requestDisconnection => {
+          let numEvents = 0;
+          let eventCounter = () => { numEvents++; };
+          device.addEventListener('gattserverdisconnected', eventCounter);
+          requestDisconnection();
+          device.gatt.disconnect();
+          device.gatt.disconnect();
+          return new Promise(resolve => {
+            setTimeout(() => {
+              device.removeEventListener('gattserverdisconnected', eventCounter);
+              resolve(numEvents);
+            }, 100);
+          });
+        }).then(numEvents => assert_equals(numEvents, 1));
+    });
+ }, 'If a site disconnects from a device while the platform is disconnecting ' +
+    'that device, only one gattserverdisconnected event should fire.');
+</script>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      assert_equals(characteristic.value, null);
+      return characteristic.readValue().then(() => {
+        let decoder = new TextDecoder('utf-8');
+        let value_str = decoder.decode(characteristic.value);
+        assert_equals(value_str, 'Heart Rate Device');
+      })
+    });
+}, 'Succesful read should update characteristic.value');
+</script>

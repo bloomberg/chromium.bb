@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('BlocklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: [blocklist_test_service_uuid]}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.peripheral_privacy_flag'))
+    .then(characteristic => {
+      return characteristic.readValue()
+        .then(() => assert_promise_rejects_with_message(
+          characteristic.writeValue(new Uint8Array(1 /* length */)),
+          new DOMException(
+            'writeValue() called on blocklisted object marked exclude-writes.' +
+            ' https://goo.gl/4NeimX',
+            'SecurityError'),
+          'writeValue() should reject.'));
+    });
+}, 'Characteristic with exclude-writes fullfills read and rejects write.');
+</script>

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{name: 'Heart Rate Device'}],
+      optionalServices: ['battery_service']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => assert_promise_rejects_with_message(
+        gattServer.getPrimaryServices(),
+      new DOMException('No Services found in device.', 'NotFoundError')));
+}, 'Request for present service without permission for that service. Reject with NotFoundError.');
+</script>

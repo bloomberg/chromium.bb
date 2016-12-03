@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(t => {
+  return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => {
+      return device.gatt.connect().then(gattServer => {
+        return get_request_disconnection(gattServer)
+          .then(requestDisconnection1 => {
+            // 1. Attach a listener that tries to reconnect.
+            let waitUntilReconnection = new Promise(resolve => {
+              let reconnectThenResolver = function(event) {
+                device.removeEventListener(
+                  'gattserverdisconnected', reconnectThenResolver);
+                device.gatt.connect().then(resolve);
+              };
+              device.addEventListener(
+                'gattserverdisconnected', reconnectThenResolver);
+            });
+            // 2. Disconnect.
+            requestDisconnection1();
+            return waitUntilReconnection
+              .then(() => get_request_disconnection(gattServer))
+              .then(requestDisconnection2 => {
+                // Resolves after disconnected event.
+                let disconnected = eventPromise(
+                  device, 'gattserverdisconnected');
+                // 3. Disconnect after reconnecting.
+                requestDisconnection2();
+                return disconnected;
+              });
+          });
+      });
+    });
+}, 'A device that reconnects during the gattserverdisconnected event ' +
+   'should still receive gattserverdisconnected events after re-connection.');
+</script>

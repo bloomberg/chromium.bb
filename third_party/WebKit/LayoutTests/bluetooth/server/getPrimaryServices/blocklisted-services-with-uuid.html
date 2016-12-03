@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('BlocklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['device_information']}],
+      optionalServices: ['human_interface_device']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => assert_promise_rejects_with_message(
+      gattServer.getPrimaryServices('human_interface_device'),
+
+      new DOMException('Origin is not allowed to access the service. ' +
+                       'Tip: Add the service UUID to \'optionalServices\' ' +
+                       'in requestDevice() options. https://goo.gl/HxfxSQ',
+      'SecurityError')));
+}, 'Request for services. Does not return blocklisted service.');
+</script>

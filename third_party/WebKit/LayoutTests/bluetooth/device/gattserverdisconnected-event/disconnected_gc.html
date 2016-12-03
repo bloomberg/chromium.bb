@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+ 'use strict';
+ promise_test(t => {
+   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => device.gatt.connect())
+    .then(gattServer => get_request_disconnection(gattServer))
+    .then(requestDisconnection => {
+      requestDisconnection();
+      requestDisconnection = undefined;
+      return runGarbageCollection();
+      // Wait 50ms after the GC runs for the disconnection event to come back.
+      // There's nothing to assert other than that only valid memory is used.
+    }).then(() => new Promise(resolve => setTimeout(resolve, 50)));
+ }, 'A device disconnecting after the BluetoothDevice object has been gced ' +
+    'should not access freed memory.');
+</script>

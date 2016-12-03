@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['generic_access']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryService('generic_access'))
+    .then(service => service.getCharacteristic('gap.device_name'))
+    .then(characteristic => {
+      return assert_promise_rejects_with_message(
+        characteristic.writeValue(new Uint8Array(513 /* length */)),
+        new DOMException(
+          'Value can\'t exceed 512 bytes.', 'InvalidModificationError'),
+        'Value passed was too long.');
+    });
+}, 'Trying to write more than 512 bytes should return an error.');
+</script>

@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+ 'use strict';
+ promise_test(t => {
+   return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => {
+      return device.gatt.connect()
+        .then(gattServer => get_request_disconnection(gattServer))
+        .then(requestDisconnection => {
+          // This promise hangs unless gattserverdisconnected is fired.
+          let disconnected = eventPromise(device, 'gattserverdisconnected');
+          return Promise.all([requestDisconnection(),
+                              disconnected]);
+        }).then(([, disconnected]) => assert_true(disconnected.bubbles));
+    });
+ }, 'A device disconnecting while connected should fire the gattserverdisconnected event.');
+</script>

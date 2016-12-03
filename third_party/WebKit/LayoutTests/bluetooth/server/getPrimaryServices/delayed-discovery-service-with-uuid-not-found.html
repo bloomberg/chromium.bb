@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('DelayedServicesDiscoveryAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: ['battery_service']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => {
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryServices('battery_service'),
+        new DOMException('No Services with specified UUID found in Device.',
+                         'NotFoundError'));
+    });
+}, 'Request for absent service with UUID. Must reject with NotFoundError ' +
+   'even when the services are not immediately discovered');
+</script>

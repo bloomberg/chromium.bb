@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('BlocklistTestAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['device_information']}],
+      optionalServices: [
+        blocklist_test_service_uuid, 'device_information', 'generic_access',
+       'heart_rate', 'human_interface_device']}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => gattServer.getPrimaryServices())
+    .then(services => {
+      assert_equals(services.length, 4);
+      assert_equals(services[0].uuid,
+                    BluetoothUUID.getService(blocklist_test_service_uuid));
+      assert_equals(services[1].uuid,
+                    BluetoothUUID.getService('device_information'));
+      assert_equals(services[2].uuid,
+                    BluetoothUUID.getService('generic_access'));
+      assert_equals(services[3].uuid,
+                    BluetoothUUID.getService('heart_rate'));
+    });
+}, 'Request for services. Does not return blocklisted service.');
+</script>

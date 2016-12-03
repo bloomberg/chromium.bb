@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+// The following tests make sure the Web Bluetooth implementation
+// responds correctly to the different types of errors the
+// underlying platform might throw.
+
+// Each implementation maps these devices to specific code paths
+// that result in different errors thus increasing code coverage
+// when testing. Therefore some of these devices might not be useful
+// for all implementations.
+
+let connection_test_specs = [{
+  testName: 'Unknown error when connnecting.',
+  uuid: errorUUID(0x0),
+  error: new DOMException('Unknown error when connecting to the device.',
+                          'NetworkError')
+}, {
+  testName: 'Connection was already in progress.',
+  uuid: errorUUID(0x1),
+  error: new DOMException('Connection already in progress.',
+                          'NetworkError')
+}, {
+  testName: 'Connection failed.',
+  uuid: errorUUID(0x2),
+  error: new DOMException('Connection failed for unknown reason.',
+                          'NetworkError')
+}, {
+  testName: 'Authentication failed when connecting.',
+  uuid: errorUUID(0x3),
+  error: new DOMException('Authentication failed.',
+                          'NetworkError')
+}, {
+  testName: 'Authentication canceled when connecting.',
+  uuid: errorUUID(0x4),
+  error: new DOMException('Authentication canceled.',
+                          'NetworkError')
+}, {
+  testName: 'Authentication rejected when connecting.',
+  uuid: errorUUID(0x5),
+  error: new DOMException('Authentication rejected.',
+                          'NetworkError')
+}, {
+  testName: 'Authentication timed out when connecting.',
+  uuid: errorUUID(0x6),
+  error: new DOMException('Authentication timeout.',
+                          'NetworkError')
+}, {
+  testName: 'Tried to connect to an unsupported device.',
+  uuid: errorUUID(0x7),
+  error: new DOMException('Unsupported device.',
+                          'NetworkError')
+}, {
+  testName: 'A write operation exceeds the maximum length of the attribute.',
+  uuid: errorUUID(0x8),
+  error: new DOMException('Attribute length invalid.',
+                          'NetworkError')
+}, {
+  testName: 'A remote device connection is congested.',
+  uuid: errorUUID(0x9),
+  error: new DOMException('Connection congested.',
+                          'NetworkError')
+}, {
+  testName: 'Insufficient encryption for a given operation.',
+  uuid: errorUUID(0xa),
+  error: new DOMException('Insufficient encryption.',
+                          'NetworkError')
+}, {
+  testName: 'A read or write operation was requested with an invalid offset.',
+  uuid: errorUUID(0xb),
+  error: new DOMException('Offset invalid.',
+                          'NetworkError')
+}, {
+  testName: 'GATT read operation is not permitted.',
+  uuid: errorUUID(0xc),
+  error: new DOMException('Read not permitted.',
+                          'NetworkError')
+}, {
+  testName: 'The given request is not supported.',
+  uuid: errorUUID(0xd),
+  error: new DOMException('Request not supported.',
+                          'NetworkError')
+}, {
+  testName: 'GATT write operation is not permitted.',
+  uuid: errorUUID(0xe),
+  error: new DOMException('Write not permitted.',
+                          'NetworkError')
+}];
+
+promise_test(() => {
+  return setBluetoothFakeAdapter('FailingConnectionsAdapter')
+      .then(() => {
+        let test_promises = Promise.resolve();
+        connection_test_specs.forEach(testSpec => {
+          test_promises = test_promises
+            .then(() => requestDeviceWithKeyDown({
+              filters: [{services: [testSpec.uuid]}]}));
+            // This test was not returning the assert_promise_rejects_with_message
+            // promise so when the underlying implementation of BluetoothDevice
+            // changed no one noticed that the promise started to reject.
+            // Furthermore, no platform returns the new errors added so they
+            // need to be cleaned up.
+            // TODO(ortuno): Re-enable the test when the errors are cleaned up.
+            // http://crbug.com/598341
+            // .then(device => assert_promise_rejects_with_message(
+            //   device.gatt.connect(),
+            //   testSpec.error,
+            //   testSpec.testName));
+          });
+        return test_promises;
+      });
+}, 'Adapter fails to connect to device. Should reject with the correct ' +
+   'exception.');
+</script>

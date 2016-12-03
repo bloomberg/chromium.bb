@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('HeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}]}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => {
+      return assert_promise_rejects_with_message(
+        gattServer.getPrimaryService('wrong_name'), new DOMException(
+          'Failed to execute \'getPrimaryService\' on ' +
+          '\'BluetoothRemoteGATTServer\': Invalid Service name: ' +
+          '\'wrong_name\'. ' +
+          'It must be a valid UUID alias (e.g. 0x1234), ' +
+          'UUID (lowercase hex characters e.g. ' +
+          '\'00001234-0000-1000-8000-00805f9b34fb\'), ' +
+          'or recognized standard name from ' +
+          'https://developer.bluetooth.org/gatt/services/Pages/ServicesHome.aspx' +
+          ' e.g. \'alert_notification\'.',
+          'TypeError'),
+        'Wrong Service name passed.');
+    });
+}, 'Wrong Service name. Reject with TypeError.');
+</script>

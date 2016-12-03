@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('DisconnectingHeartRateAdapter')
+    .then(() => requestDeviceWithKeyDown({
+      filters: [{services: ['heart_rate']}],
+      optionalServices: [request_disconnection_service_uuid]
+    }))
+    .then(device => device.gatt.connect())
+    .then(gattServer => {
+      let heart_rate_service;
+      return gattServer.getPrimaryService('heart_rate')
+        .then(hrs => heart_rate_service = hrs)
+        .then(() => get_request_disconnection(gattServer))
+        .then(requestDisconnection => requestDisconnection())
+        .then(() => assert_promise_rejects_with_message(
+          heart_rate_service.getCharacteristics(),
+          new DOMException(
+            'GATT Server is disconnected. Cannot retrieve characteristics.',
+            'NetworkError')));
+    });
+}, 'Device disconnects before getCharacteristics. Reject with NetworkError');
+</script>
