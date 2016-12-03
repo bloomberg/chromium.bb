@@ -411,7 +411,6 @@ ResourceProvider::ResourceProvider(
       use_texture_format_bgra_(false),
       use_texture_usage_hint_(false),
       use_compressed_texture_etc1_(false),
-      yuv_resource_format_(LUMINANCE_8),
       max_texture_size_(0),
       best_texture_format_(RGBA_8888),
       best_render_buffer_format_(RGBA_8888),
@@ -449,15 +448,6 @@ ResourceProvider::ResourceProvider(
   use_texture_format_bgra_ = caps.texture_format_bgra8888;
   use_texture_usage_hint_ = caps.texture_usage;
   use_compressed_texture_etc1_ = caps.texture_format_etc1;
-
-  if (caps.disable_one_component_textures) {
-    yuv_resource_format_ = yuv_highbit_resource_format_ = RGBA_8888;
-  } else {
-    yuv_resource_format_ = caps.texture_rg ? RED_8 : LUMINANCE_8;
-    yuv_highbit_resource_format_ =
-        caps.texture_half_float_linear ? LUMINANCE_F16 : yuv_resource_format_;
-  }
-
   use_sync_query_ = caps.sync_query;
 
   GLES2Interface* gl = ContextGL();
@@ -547,14 +537,6 @@ void ResourceProvider::LoseResourceForTesting(ResourceId id) {
   Resource* resource = GetResource(id);
   DCHECK(resource);
   resource->lost = true;
-}
-
-ResourceFormat ResourceProvider::YuvResourceFormat(int bits) const {
-  if (bits > 8) {
-    return yuv_highbit_resource_format_;
-  } else {
-    return yuv_resource_format_;
-  }
 }
 
 ResourceId ResourceProvider::CreateResource(
