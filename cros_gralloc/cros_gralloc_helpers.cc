@@ -156,9 +156,11 @@ int32_t cros_gralloc_validate_handle(struct cros_gralloc_handle *hnd)
 void cros_gralloc_log(const char *prefix, const char *file, int line,
 		      const char *format, ...)
 {
+	char buf[50];
+	snprintf(buf, sizeof(buf), "[%s:%s(%d)]", prefix, basename(file), line);
+
 	va_list args;
 	va_start(args, format);
-	ALOGE("%s - [%s(%d)]", prefix, basename(file), line);
-	__android_log_vprint(ANDROID_LOG_ERROR, prefix, format, args);
+	__android_log_vprint(ANDROID_LOG_ERROR, buf, format, args);
 	va_end(args);
 }

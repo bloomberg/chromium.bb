@@ -80,7 +80,7 @@ void cros_gralloc_log(const char *prefix, const char *file, int line,
 
 #define cros_gralloc_error(...)                                     \
 	do {                                                        \
-		cros_gralloc_log("cros_gralloc_error", __FILE__,    \
+		cros_gralloc_log("CROS_GRALLOC_ERROR", __FILE__,    \
 				 __LINE__, __VA_ARGS__);            \
 	} while (0)
 
