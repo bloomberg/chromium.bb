@@ -409,6 +409,8 @@ crbug.com/520739 [ Mac ] virtual/mojo-loading/http/tests/websocket/close-code-an
 crbug.com/520737 [ Mac ] imported/csswg-test/css-writing-modes-3/writing-mode-vertical-rl-001.xht [ Failure Pass Timeout ]
 crbug.com/520736 [ Win7 ] media/W3C/video/networkState/networkState_during_progress.html [ Failure Pass ]
 
+crbug.com/109362 inspector/sources/debugger-pause/debugger-pause-in-internal.html [ NeedsManualRebaseline ]
+
 crbug.com/522647 http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522647 virtual/mojo-loading/http/tests/notifications/close-dispatch-asynchronous.html [ Failure Pass ]
 crbug.com/522648 fast/events/touch/compositor-touch-hit-rects-iframes.html [ Crash Failure Pass ]
