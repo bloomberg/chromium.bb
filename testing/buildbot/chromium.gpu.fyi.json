@@ -3115,7 +3115,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -3508,7 +3508,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -3901,7 +3901,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -4294,7 +4294,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -4744,7 +4744,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -4770,7 +4770,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -5163,7 +5163,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-gl=angle",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -5189,7 +5189,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -6244,7 +6244,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -6617,7 +6617,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -7351,7 +7351,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -7737,7 +7737,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -8187,7 +8187,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -8931,7 +8931,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9039,7 +9039,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9127,7 +9127,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9194,7 +9194,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9262,7 +9262,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9383,7 +9383,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -9539,7 +9539,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -10383,7 +10383,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -12032,7 +12032,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -12483,7 +12483,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -12913,7 +12913,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13343,7 +13343,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13866,7 +13866,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -14319,7 +14319,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -15197,7 +15197,7 @@
           "--browser=release_x64",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -16067,7 +16067,7 @@
           "--browser=release",
           "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc",
-          "--webgl-conformance-version=2.0.0",
+          "--webgl-conformance-version=2.0.1",
           "--read-abbreviated-json-results-from=../../content/test/data/gpu/webgl2_conformance_tests_output.json"
         ],
         "isolate_name": "telemetry_gpu_integration_test",

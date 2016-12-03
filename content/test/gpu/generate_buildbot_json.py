@@ -1234,7 +1234,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
     ],
     'target_name': 'webgl_conformance',
     'args': [
-      '--webgl-conformance-version=2.0.0',
+      '--webgl-conformance-version=2.0.1',
       # The current working directory when run via isolate is
       # out/Debug or out/Release. Reference this file relatively to
       # it.
@@ -1273,7 +1273,7 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-gl=angle',
     ],
     'args': [
-      '--webgl-conformance-version=2.0.0',
+      '--webgl-conformance-version=2.0.1',
       # The current working directory when run via isolate is
       # out/Debug or out/Release. Reference this file relatively to
       # it.

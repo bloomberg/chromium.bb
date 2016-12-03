@@ -37,34 +37,31 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Conformance expectations
     # ========================
 
-    # 2.0.1 OR LATER
     # Too slow (take about one hour to run)
     self.Skip('deqp/functional/gles3/builtinprecision/*.html', bug=619403)
 
-    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
-    self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
-        ['linux'], bug=483282)
-
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
-        ['mac'], bug=654187)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
-        ['mac'], bug=654187)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
-        ['mac'], bug=654187)
-    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
-        ['mac'], bug=654187)
-
     # All platforms.
     self.Flaky('conformance2/query/occlusion-query.html', bug=603168)
+    self.Fail('conformance2/glsl3/tricky-loop-conditions.html', bug=483282)
+    self.Fail('conformance2/rendering/rendering-sampling-feedback-loop.html',
+        bug=660844)
+    self.Fail('conformance2/textures/misc/' +
+        'integer-cubemap-specification-order-bug.html',
+        bug=483282) # owner:cwallez, test might be buggy
 
     # Windows only.
-    # We are awesome!
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
+        ['win'], bug=634519)
+    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
+        ['win'], bug=644740)
 
     # Win / NVidia
     self.Flaky('deqp/functional/gles3/fbomultisample*',
         ['win', 'nvidia'], bug=631317)
 
     # Win / AMD
+    self.Fail('conformance2/rendering/blitframebuffer-stencil-only.html',
+        ['win', 'amd'], bug=483282) # owner:jmadill
 
     # Failing on old R5 230 configuration.
     self.Fail('deqp/functional/gles3/shadertexturefunction/' +
@@ -82,7 +79,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Keep a separate set of failures for the R7 240, since it can use a new
     # and updated driver. The older drivers won't ever get fixes from AMD.
     # Use ['win', ('amd', 0x6613)] for the R7 240 devices.
-    # We are awesome!
 
     # It's unfortunate that these suppressions need to be so broad, but
     # basically any test that uses readPixels is potentially flaky, and
@@ -142,6 +138,18 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/renderbuffers/framebuffer-test.html',
         ['mac'], bug=641149)
+
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_28.html',
+        ['mac'], bug=654187)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_30.html',
+        ['mac'], bug=654187)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_31.html',
+        ['mac'], bug=654187)
+    self.Fail('deqp/functional/gles3/framebufferblit/conversion_33.html',
+        ['mac'], bug=654187)
+
+    self.Fail('conformance2/reading/format-r11f-g11f-b10f.html',
+        ['mac'], bug=1832) # khronos WebGL issue
 
     # Mac Retina NVIDIA
     self.Fail('deqp/functional/gles3/fbomultisample*',
@@ -385,6 +393,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/shaderindexing/mat_02.html',
         ['mac', 'amd'], bug=644360)
 
+    self.Fail('conformance2/rendering/clipping-wide-points.html',
+        ['mac', 'amd'], bug=642822)
+    self.Fail('conformance2/reading/read-pixels-from-rgb8-into-pbo-bug.html',
+        ['mac', 'amd'], bug=646182)
+    self.Fail('conformance2/rendering/instanced-rendering-bug.html',
+        ['mac', 'amd'], bug=645298)
+
     # Mac Pro with AMD GPU
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
         ['mac', ('amd', 0x679e)], bug=483282)
@@ -490,6 +505,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         'tex-2d-r8ui-red_integer-unsigned_byte.html',
         ['mac', 'intel'], bug=665197)
 
+    self.Fail('conformance2/textures/misc/' +
+        'integer-cubemap-texture-sampling.html',
+        ['mac', 'intel'], bug=658930)
+
     # Fixed on OSX 10.11
     self.Fail('deqp/functional/gles3/uniformbuffers/random.html',
         ['mac', 'intel'], bug=618464)
@@ -510,6 +529,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('conformance/textures/video/' +
                'tex-2d-rgb-rgb-unsigned_short_5_6_5.html',
                ['linux'], bug=627525)
+    self.Fail('conformance2/glsl3/vector-dynamic-indexing-nv-driver-bug.html',
+        ['linux'], bug=483282)
 
     # Linux Multi-vendor failures.
     self.Skip('deqp/data/gles3/shaders/qualification_order.html',
