@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include <algorithm>
+#include <limits>
 
 #include "base/strings/string_util.h"
 #include "net/http/http_util.h"
@@ -960,6 +961,70 @@ TEST(HttpUtilTest, ParseRanges) {
                   ranges[j].suffix_length());
       }
     }
+  }
+}
+
+TEST(HttpUtilTest, ParseContentRangeHeader) {
+  const struct {
+    const char* const content_range_header_spec;
+    bool expected_return_value;
+    int64_t expected_first_byte_position;
+    int64_t expected_last_byte_position;
+    int64_t expected_instance_length;
+  } tests[] = {
+      {"", false, -1, -1, -1},
+      {"megabytes 0-10/50", false, -1, -1, -1},
+      {"0-10/50", false, -1, -1, -1},
+      {"Bytes 0-50/51", true, 0, 50, 51},
+      {"bytes 0-50/51", true, 0, 50, 51},
+      {"bytes\t0-50/51", false, -1, -1, -1},
+      {"    bytes 0-50/51", true, 0, 50, 51},
+      {"    bytes    0    -   50  \t / \t51", true, 0, 50, 51},
+      {"bytes 0\t-\t50\t/\t51\t", true, 0, 50, 51},
+      {"  \tbytes\t\t\t 0\t-\t50\t/\t51\t", true, 0, 50, 51},
+      {"\t   bytes \t  0    -   50   /   5   1", false, 0, 50, -1},
+      {"\t   bytes \t  0    -   5 0   /   51", false, -1, -1, -1},
+      {"bytes 50-0/51", false, 50, 0, -1},
+      {"bytes * /*", false, -1, -1, -1},
+      {"bytes *   /    *   ", false, -1, -1, -1},
+      {"bytes 0-50/*", false, 0, 50, -1},
+      {"bytes 0-50  /    * ", false, 0, 50, -1},
+      {"bytes 0-10000000000/10000000001", true, 0, 10000000000ll,
+       10000000001ll},
+      {"bytes 0-10000000000/10000000000", false, 0, 10000000000ll,
+       10000000000ll},
+      // 64 bit wraparound.
+      {"bytes 0 - 9223372036854775807 / 100", false, 0,
+       std::numeric_limits<int64_t>::max(), 100},
+      // 64 bit wraparound.
+      {"bytes 0 - 100 / -9223372036854775808", false, 0, 100,
+       std::numeric_limits<int64_t>::min()},
+      {"bytes */50", false, -1, -1, 50},
+      {"bytes 0-50/10", false, 0, 50, 10},
+      {"bytes 40-50/45", false, 40, 50, 45},
+      {"bytes 0-50/-10", false, 0, 50, -10},
+      {"bytes 0-0/1", true, 0, 0, 1},
+      {"bytes 0-40000000000000000000/40000000000000000001", false, -1, -1, -1},
+      {"bytes 1-/100", false, -1, -1, -1},
+      {"bytes -/100", false, -1, -1, -1},
+      {"bytes -1/100", false, -1, -1, -1},
+      {"bytes 0-1233/*", false, 0, 1233, -1},
+      {"bytes -123 - -1/100", false, -1, -1, -1},
+  };
+
+  for (const auto& test : tests) {
+    int64_t first_byte_position, last_byte_position, instance_length;
+    EXPECT_EQ(test.expected_return_value,
+              HttpUtil::ParseContentRangeHeader(
+                  test.content_range_header_spec, &first_byte_position,
+                  &last_byte_position, &instance_length))
+        << test.content_range_header_spec;
+    EXPECT_EQ(test.expected_first_byte_position, first_byte_position)
+        << test.content_range_header_spec;
+    EXPECT_EQ(test.expected_last_byte_position, last_byte_position)
+        << test.content_range_header_spec;
+    EXPECT_EQ(test.expected_instance_length, instance_length)
+        << test.content_range_header_spec;
   }
 }
 
