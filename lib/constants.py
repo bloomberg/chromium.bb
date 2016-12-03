@@ -315,6 +315,7 @@ ANDROID_BUILD_TARGETS = {
     'ARM': ('linux-cheets_arm-user', r'(\.zip|/adb)$'),
     'X86': ('linux-cheets_x86-user', r'\.zip$'),
     'X86_USERDEBUG': ('linux-cheets_x86-userdebug', r'\.zip$'),
+    'AOSP_X86_USERDEBUG': ('linux-aosp_cheets_x86-userdebug', r'\.zip$'),
     'SDK_TOOLS': ('linux-static_sdk_tools', r'/(aapt|adb)$'),
 }
 ANDROID_GTS_BUILD_BRANCH = 'git_mnc-dev'
@@ -326,6 +327,7 @@ ARC_BUCKET_ACLS = {
     'ARM': 'googlestorage_acl_arm.txt',
     'X86': 'googlestorage_acl_x86.txt',
     'X86_USERDEBUG': 'googlestorage_acl_x86.txt',
+    'AOSP_X86_USERDEBUG': 'googlestorage_acl_x86.txt',
     'SDK_TOOLS': 'googlestorage_acl_public.txt',
     'XTS': 'googlestorage_acl_cts.txt',
 }
