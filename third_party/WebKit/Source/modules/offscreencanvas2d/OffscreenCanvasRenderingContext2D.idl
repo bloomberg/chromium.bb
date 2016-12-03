@@ -13,12 +13,39 @@
 
     [CallWith=ScriptState, RaisesException] void commit();
 
+    // state
+    void save(); // push state on state stack
+    void restore(); // pop state stack and restore state
+
+    // transformations (default transform is the identity matrix)
+    void scale(unrestricted double x, unrestricted double y);
+    void rotate(unrestricted double angle);
+    void translate(unrestricted double x, unrestricted double y);
+    void transform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
+    void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
+    void resetTransform();
+
+    // compositing
+    attribute unrestricted double globalAlpha; // (default 1.0)
+    attribute DOMString globalCompositeOperation; // (default source-over)
+    [Exposed=Window] attribute DOMString filter;
+
+    // image smoothing
+    attribute boolean imageSmoothingEnabled; // (default True)
+    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
+
     // colors and styles
     attribute (DOMString or CanvasGradient or CanvasPattern) strokeStyle; // (default black)
     attribute (DOMString or CanvasGradient or CanvasPattern) fillStyle; // (default black)
     CanvasGradient createLinearGradient(double x0, double y0, double x1, double y1);
     [RaisesException] CanvasGradient createRadialGradient(double x0, double y0, double r0, double x1, double y1, double r1);
     [CallWith=ExecutionContext, RaisesException] CanvasPattern? createPattern(CanvasImageSource image, [TreatNullAs=NullString] DOMString repetitionType);
+
+    // shadows
+    attribute unrestricted double shadowOffsetX;
+    attribute unrestricted double shadowOffsetY;
+    attribute unrestricted double shadowBlur;
+    attribute DOMString shadowColor;
 
     // CanvasRect interface
     void clearRect(unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
@@ -39,6 +66,13 @@
     [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y, unrestricted double width, unrestricted double height);
     [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double sx, unrestricted double sy, unrestricted double sw, unrestricted double sh, unrestricted double dx, unrestricted double dy, unrestricted double dw, unrestricted double dh);
 
+    // pixel manipulation
+    [RaisesException] ImageData createImageData(ImageData imagedata);
+    [RaisesException] ImageData createImageData(double sw, double sh);
+    [RaisesException] ImageData getImageData(double sx, double sy, double sw, double sh);
+    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy);
+    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight);
+
     // Line caps/joins
     attribute unrestricted double lineWidth; // (default 1)
     attribute DOMString lineCap; // "butt", "round", "square" (default "butt")
@@ -49,41 +83,6 @@
     void setLineDash(sequence<unrestricted double> dash);
     sequence<unrestricted double> getLineDash();
     attribute unrestricted double lineDashOffset;
-
-    // state
-    void save(); // push state on state stack
-    void restore(); // pop state stack and restore state
-
-    // transformations (default transform is the identity matrix)
-    void scale(unrestricted double x, unrestricted double y);
-    void rotate(unrestricted double angle);
-    void translate(unrestricted double x, unrestricted double y);
-    void transform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
-    void setTransform(unrestricted double a, unrestricted double b, unrestricted double c, unrestricted double d, unrestricted double e, unrestricted double f);
-    void resetTransform();
-
-    // compositing
-    attribute unrestricted double globalAlpha; // (default 1.0)
-    attribute DOMString globalCompositeOperation; // (default source-over)
-
-    // image smoothing
-    attribute boolean imageSmoothingEnabled; // (default True)
-    attribute ImageSmoothingQuality imageSmoothingQuality; // (default "low")
-
-    // shadows
-    attribute unrestricted double shadowOffsetX;
-    attribute unrestricted double shadowOffsetY;
-    attribute unrestricted double shadowBlur;
-    attribute DOMString shadowColor;
-
-    // pixel manipulation
-    [RaisesException] ImageData createImageData(ImageData imagedata);
-    [RaisesException] ImageData createImageData(double sw, double sh);
-    [RaisesException] ImageData getImageData(double sx, double sy, double sw, double sh);
-    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy);
-    [RaisesException] void putImageData(ImageData imagedata, double dx, double dy, double dirtyX, double dirtyY, double dirtyWidth, double dirtyHeight);
-
-    [Exposed=Window] attribute DOMString filter;
 };
 
 OffscreenCanvasRenderingContext2D implements CanvasPathMethods;
