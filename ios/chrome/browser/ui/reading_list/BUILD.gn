@@ -1,0 +1,23 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/distillation_fail.png",
+    "resources/distillation_fail@2x.png",
+    "resources/distillation_fail@3x.png",
+    "resources/distillation_success.png",
+    "resources/distillation_success@2x.png",
+    "resources/distillation_success@3x.png",
+    "resources/reading_list_icon.png",
+    "resources/reading_list_icon@2x.png",
+    "resources/reading_list_icon@3x.png",
+    "resources/share_icon.png",
+    "resources/share_icon@2x.png",
+    "resources/share_icon@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
