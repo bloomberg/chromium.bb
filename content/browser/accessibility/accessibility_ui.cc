@@ -16,6 +16,7 @@
 #include "content/browser/accessibility/accessibility_tree_formatter_blink.h"
 #include "content/browser/accessibility/browser_accessibility_manager.h"
 #include "content/browser/accessibility/browser_accessibility_state_impl.h"
+#include "content/browser/renderer_host/render_view_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_impl.h"
 #include "content/browser/renderer_host/render_widget_host_view_base.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -115,6 +116,9 @@ bool HandleRequestCallback(BrowserContext* current_context,
       continue;
     RenderViewHost* rvh = RenderViewHost::From(widget);
     if (!rvh)
+      continue;
+    // Ignore views that are never visible, like background pages.
+    if (static_cast<RenderViewHostImpl*>(rvh)->GetDelegate()->IsNeverVisible())
       continue;
     BrowserContext* context = rvh->GetProcess()->GetBrowserContext();
     if (context != current_context)

@@ -2843,8 +2843,9 @@ bool RenderFrameHostImpl::IsSameSiteInstance(
   return GetSiteInstance() == other_render_frame_host->GetSiteInstance();
 }
 
-void RenderFrameHostImpl::SetAccessibilityMode(AccessibilityMode mode) {
-  Send(new FrameMsg_SetAccessibilityMode(routing_id_, mode));
+void RenderFrameHostImpl::UpdateAccessibilityMode() {
+  AccessibilityMode accessibility_mode = delegate_->GetAccessibilityMode();
+  Send(new FrameMsg_SetAccessibilityMode(routing_id_, accessibility_mode));
 }
 
 void RenderFrameHostImpl::RequestAXTreeSnapshot(

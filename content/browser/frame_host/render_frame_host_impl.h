@@ -443,8 +443,9 @@ class CONTENT_EXPORT RenderFrameHostImpl
                               const base::string16& user_input,
                               bool dialog_was_suppressed);
 
-  // Send a message to the renderer process to change the accessibility mode.
-  void SetAccessibilityMode(AccessibilityMode AccessibilityMode);
+  // Get the accessibility mode from the delegate and Send a message to the
+  // renderer process to change the accessibility mode.
+  void UpdateAccessibilityMode();
 
   // Request a one-time snapshot of the accessibility tree without changing
   // the accessibility mode.

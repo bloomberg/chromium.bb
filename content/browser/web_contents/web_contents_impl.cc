@@ -206,9 +206,8 @@ bool HasMatchingWidgetHost(FrameTree* tree, RenderWidgetHost* host) {
   return false;
 }
 
-void SetAccessibilityModeOnFrame(AccessibilityMode mode,
-                                 RenderFrameHost* frame_host) {
-  static_cast<RenderFrameHostImpl*>(frame_host)->SetAccessibilityMode(mode);
+void UpdateAccessibilityModeOnFrame(RenderFrameHost* frame_host) {
+  static_cast<RenderFrameHostImpl*>(frame_host)->UpdateAccessibilityMode();
 }
 
 void ResetAccessibility(RenderFrameHost* rfh) {
@@ -940,14 +939,19 @@ void WebContentsImpl::SetAccessibilityMode(AccessibilityMode mode) {
   if (mode == accessibility_mode_)
     return;
 
+  // Don't allow accessibility to be enabled for WebContents that are never
+  // visible, like background pages.
+  if (IsNeverVisible())
+    return;
+
   accessibility_mode_ = mode;
 
   for (FrameTreeNode* node : frame_tree_.Nodes()) {
-    SetAccessibilityModeOnFrame(mode, node->current_frame_host());
+    UpdateAccessibilityModeOnFrame(node->current_frame_host());
     RenderFrameHost* pending_frame_host =
         node->render_manager()->pending_frame_host();
     if (pending_frame_host)
-      SetAccessibilityModeOnFrame(mode, pending_frame_host);
+      UpdateAccessibilityModeOnFrame(pending_frame_host);
   }
 }
 
@@ -4060,7 +4064,7 @@ const GURL& WebContentsImpl::GetMainFrameLastCommittedURL() const {
 void WebContentsImpl::RenderFrameCreated(RenderFrameHost* render_frame_host) {
   for (auto& observer : observers_)
     observer.RenderFrameCreated(render_frame_host);
-  SetAccessibilityModeOnFrame(accessibility_mode_, render_frame_host);
+  UpdateAccessibilityModeOnFrame(render_frame_host);
 
   if (!render_frame_host->IsRenderFrameLive() || render_frame_host->GetParent())
     return;
