@@ -46,7 +46,10 @@ var test = function()
             {
                 sourceFrame = frame;
                 InspectorTest.setBreakpoint(sourceFrame, 11, "", true);
-                InspectorTest.waitUntilPaused(pausedInF1);
+                Promise.all([
+                    InspectorTest.waitBreakpointSidebarPane(true),
+                    InspectorTest.waitUntilPausedPromise()
+                ]).then(pausedInF1);
                 InspectorTest.evaluateInPageWithTimeout("f1()");
             }
 
@@ -65,7 +68,10 @@ var test = function()
             function uiSourceCodeScriptFormatted()
             {
                 // There should be a breakpoint in f1 although script is pretty-printed.
-                InspectorTest.waitUntilPaused(pausedInF1Again);
+                Promise.all([
+                    InspectorTest.waitBreakpointSidebarPane(true),
+                    InspectorTest.waitUntilPausedPromise()
+                ]).then(pausedInF1Again);
                 InspectorTest.evaluateInPageWithTimeout("f1()");
             }
 

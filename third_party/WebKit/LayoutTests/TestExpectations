@@ -1720,9 +1720,6 @@ crbug.com/618616 imported/wpt/service-workers/service-worker/fetch-mixed-content
 crbug.com/595993 imported/wpt/service-workers/service-worker/fetch-header-visibility.https.html [ Failure ]
 crbug.com/595993 imported/wpt/service-workers/service-worker/request-end-to-end.https.html [ Failure ]
 
-# Flaky failures (text diff).
-crbug.com/666602 inspector-enabled/sources/debugger/script-formatter-breakpoints-1.html [ Failure ]
-
 crbug.com/666628 http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
 crbug.com/666628 virtual/mojo-loading/http/tests/inspector-enabled/console-stack-overflow-source-url.html [ Pass Failure ]
 

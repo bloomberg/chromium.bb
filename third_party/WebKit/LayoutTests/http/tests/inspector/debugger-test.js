@@ -163,6 +163,11 @@ InspectorTest.waitUntilPaused = function(callback)
         InspectorTest._waitUntilPausedCallback = callback;
 };
 
+InspectorTest.waitUntilPausedPromise = function()
+{
+    return new Promise(resolve => InspectorTest.waitUntilPaused(resolve));
+}
+
 InspectorTest.waitUntilResumedNextTime = function(callback)
 {
     InspectorTest._waitUntilResumedCallback = InspectorTest.safeWrap(callback);
