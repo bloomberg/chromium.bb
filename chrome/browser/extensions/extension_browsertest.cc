@@ -17,6 +17,7 @@
 #include "base/strings/string_number_conversions.h"
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
+#include "base/threading/sequenced_worker_pool.h"
 #include "build/build_config.h"
 #include "chrome/browser/extensions/browsertest_util.h"
 #include "chrome/browser/extensions/chrome_test_extension_loader.h"
@@ -58,6 +59,7 @@
 #include "extensions/browser/uninstall_reason.h"
 #include "extensions/common/constants.h"
 #include "extensions/common/extension_set.h"
+#include "net/url_request/url_request_file_job.h"
 
 #if defined(OS_CHROMEOS)
 #include "chromeos/chromeos_switches.h"
@@ -69,6 +71,39 @@ using extensions::ExtensionRegistry;
 using extensions::FeatureSwitch;
 using extensions::Manifest;
 using extensions::ScopedTestDialogAutoConfirm;
+
+namespace {
+
+// Maps all chrome-extension://<id>/_test_resources/foo requests to
+// chrome/test/data/extensions/foo. This is what allows us to share code between
+// tests without needing to duplicate files in each extension.
+net::URLRequestJob* ExtensionProtocolTestHandler(
+    const base::FilePath& test_dir_root,
+    net::URLRequest* request,
+    net::NetworkDelegate* network_delegate,
+    const base::FilePath& relative_path) {
+  // Only map paths that begin with _test_resources.
+  if (!base::FilePath(FILE_PATH_LITERAL("_test_resources"))
+           .IsParent(relative_path)) {
+    return nullptr;
+  }
+
+  // Replace _test_resources/foo with chrome/test/data/foo.
+  std::vector<base::FilePath::StringType> components;
+  relative_path.GetComponents(&components);
+  DCHECK_GT(components.size(), 1u);
+  base::FilePath resource_path = test_dir_root;
+  for (size_t i = 1u; i < components.size(); ++i)
+    resource_path = resource_path.Append(components[i]);
+
+  return new net::URLRequestFileJob(
+      request, network_delegate, resource_path,
+      content::BrowserThread::GetBlockingPool()
+          ->GetTaskRunnerWithShutdownBehavior(
+              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN));
+}
+
+}  // namespace
 
 ExtensionBrowserTest::ExtensionBrowserTest()
     : loaded_(false),
@@ -153,11 +188,22 @@ void ExtensionBrowserTest::SetUpOnMainThread() {
     extension_service()->updater()->SetExtensionCacheForTesting(
         test_extension_cache_.get());
   }
+
+  // We don't use test_data_dir_ here because we want this to point to
+  // chrome/test/data/extensions, and subclasses have a nasty habit of altering
+  // the data dir in SetUpCommandLine().
+  base::FilePath test_root_path;
+  PathService::Get(chrome::DIR_TEST_DATA, &test_root_path);
+  test_root_path = test_root_path.AppendASCII("extensions");
+  test_protocol_handler_ =
+      base::Bind(&ExtensionProtocolTestHandler, test_root_path);
+  extensions::SetExtensionProtocolTestHandler(&test_protocol_handler_);
 }
 
 void ExtensionBrowserTest::TearDownOnMainThread() {
   ExtensionMessageBubbleFactory::set_override_for_tests(
       ExtensionMessageBubbleFactory::NO_OVERRIDE);
+  extensions::SetExtensionProtocolTestHandler(nullptr);
   InProcessBrowserTest::TearDownOnMainThread();
 }
 
