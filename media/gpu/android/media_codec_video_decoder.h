@@ -29,15 +29,10 @@
 #include "ui/gl/android/scoped_java_surface.h"
 
 namespace media {
-class SharedMemoryRegion;
 
-// A VideoDecodeAccelerator implementation for Android. This class decodes the
-// encded input stream using Android's MediaCodec. It handles the work of
-// transferring data to and from MediaCodec, and delegates attaching MediaCodec
-// output buffers to PictureBuffers to AVDAPictureBufferManager.
+// An Android VideoDecoder that delegates to MediaCodec.
 class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
-    : public VideoDecodeAccelerator,
-      public AVDACodecAllocatorClient {
+    : public AVDACodecAllocatorClient {
  public:
   static VideoDecodeAccelerator::Capabilities GetCapabilities(
       const gpu::GpuPreferences& gpu_preferences);
@@ -51,16 +46,10 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // VideoDecodeAccelerator implementation:
   bool Initialize(const Config& config, Client* client) override;
   void Decode(const BitstreamBuffer& bitstream_buffer) override;
-  void AssignPictureBuffers(const std::vector<PictureBuffer>& buffers) override;
-  void ReusePictureBuffer(int32_t picture_buffer_id) override;
   void Flush() override;
   void Reset() override;
   void SetSurface(int32_t surface_id) override;
   void Destroy() override;
-  bool TryToSetupDecodeOnSeparateThread(
-      const base::WeakPtr<Client>& decode_client,
-      const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner)
-      override;
 
   // AVDACodecAllocatorClient implementation:
   void OnSurfaceAvailable(bool success) override;
@@ -71,7 +60,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
  private:
   friend class MCVDManager;
 
-  // TODO(timav): evaluate the need for more states in the MCVD state machine.
   enum State {
     NO_ERROR,
     ERROR,
@@ -110,17 +98,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // |state_| is no longer WAITING_FOR_CODEC.
   void ConfigureMediaCodecAsynchronously();
 
-  // Like ConfigureMediaCodecAsynchronously, but synchronous.  Returns true if
-  // and only if |media_codec_| is non-null.  Since all configuration is done
-  // synchronously, there is no concern with modifying |codec_config_| after
-  // this returns.
-  bool ConfigureMediaCodecSynchronously();
-
-  // Instantiate a media codec using |codec_config|.
-  // This may be called on any thread.
-  static std::unique_ptr<VideoCodecBridge> ConfigureMediaCodecOnAnyThread(
-      scoped_refptr<CodecConfig> codec_config);
-
   // Sends the decoded frame specified by |codec_buffer_index| to the client.
   void SendDecodedFrameToClient(int32_t codec_buffer_index,
                                 int32_t bitstream_id);
@@ -140,9 +117,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // more output.
   bool DequeueOutput();
 
-  // Requests picture buffers from the client.
-  void RequestPictureBuffers();
-
   // Decode the content in the |bitstream_buffer|. Note that a
   // |bitstream_buffer| of id as -1 indicates a flush command.
   void DecodeBuffer(const BitstreamBuffer& bitstream_buffer);
@@ -156,22 +130,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
 
   // Called when a new key is added to the CDM.
   void OnKeyAdded();
-
-  // Notifies the client of the result of deferred initialization.
-  void NotifyInitializationComplete(bool success);
-
-  // Notifies the client about the availability of a picture.
-  void NotifyPictureReady(const Picture& picture);
-
-  // Notifies the client that the input buffer identifed by input_buffer_id has
-  // been processed.
-  void NotifyEndOfBitstreamBuffer(int input_buffer_id);
-
-  // Notifies the client that the decoder was flushed.
-  void NotifyFlushDone();
-
-  // Notifies the client that the decoder was reset.
-  void NotifyResetDone();
 
   // Notifies the client about the error and sets |state_| to |ERROR|.
   void NotifyError(Error error);
@@ -215,48 +173,19 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Used to DCHECK that we are called on the correct thread.
   base::ThreadChecker thread_checker_;
 
-  // To expose client callbacks from VideoDecodeAccelerator.
-  Client* client_;
-
   // Callback to set the correct gl context.
   MakeGLContextCurrentCallback make_context_current_cb_;
 
   // Callback to get the GLES2Decoder instance.
   GetGLES2DecoderCallback get_gles2_decoder_cb_;
 
-  // The current state of this class. For now, this is used only for setting
-  // error state.
   State state_;
-
-  // The assigned picture buffers by picture buffer id.
-  AVDAPictureBufferManager::PictureBufferMap output_picture_buffers_;
-
-  // This keeps the free picture buffer ids which can be used for sending
-  // decoded frames to the client.
-  std::queue<int32_t> free_picture_ids_;
 
   // The low-level decoder which Android SDK provides.
   std::unique_ptr<VideoCodecBridge> media_codec_;
 
-  // Set to true after requesting picture buffers to the client.
-  bool picturebuffers_requested_;
-
   // The resolution of the stream.
   gfx::Size size_;
-
-  // Handy structure to remember a BitstreamBuffer and also its shared memory,
-  // if any.  The goal is to prevent leaving a BitstreamBuffer's shared memory
-  // handle open.
-  struct BitstreamRecord {
-    BitstreamRecord(const BitstreamBuffer&);
-    BitstreamRecord(BitstreamRecord&& other);
-    ~BitstreamRecord();
-
-    BitstreamBuffer buffer;
-
-    // |memory| is not mapped, and may be null if buffer has no data.
-    std::unique_ptr<SharedMemoryRegion> memory;
-  };
 
   // Encoded bitstream buffers to be passed to media codec, queued until an
   // input buffer is available.
@@ -297,10 +226,6 @@ class MEDIA_GPU_EXPORT MediaCodecVideoDecoder
   // Index of the dequeued and filled buffer that we keep trying to enqueue.
   // Such buffer appears in MEDIA_CODEC_NO_KEY processing.
   int pending_input_buf_index_;
-
-  // Monotonically increasing value that is used to prevent old, delayed errors
-  // from being sent after a reset.
-  int error_sequence_token_;
 
   // True if and only if VDA initialization is deferred, and we have not yet
   // called NotifyInitializationComplete.

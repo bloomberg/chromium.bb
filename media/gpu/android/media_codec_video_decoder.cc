@@ -1,4 +1,4 @@
-// Copyright (c) 2013 The Chromium Authors. All rights reserved.
+// Copyright 2016 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,6 @@
 namespace media {
 
 namespace {
-
-enum { kNumPictureBuffers = limits::kMaxVideoFrames + 1 };
 
 // Max number of bitstreams notified to the client with
 // NotifyEndOfBitstreamBuffer() before getting output from the bitstream.
@@ -229,7 +227,6 @@ MediaCodecVideoDecoder::MediaCodecVideoDecoder(
       make_context_current_cb_(make_context_current_cb),
       get_gles2_decoder_cb_(get_gles2_decoder_cb),
       state_(NO_ERROR),
-      picturebuffers_requested_(false),
       picture_buffer_manager_(get_gles2_decoder_cb),
       drain_type_(DRAIN_TYPE_NONE),
       media_drm_bridge_cdm_context_(nullptr),
@@ -260,7 +257,7 @@ MediaCodecVideoDecoder::~MediaCodecVideoDecoder() {
 }
 
 bool MediaCodecVideoDecoder::Initialize(const Config& config, Client* client) {
-  DVLOG(1) << __FUNCTION__ << ": " << config.AsHumanReadableString();
+  DVLOG(1) << __func__ << ": " << config.AsHumanReadableString();
   TRACE_EVENT0("media", "MCVD::Initialize");
   DCHECK(!media_codec_);
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -384,14 +381,6 @@ bool MediaCodecVideoDecoder::InitializePictureBufferManager() {
     ConfigureMediaCodecAsynchronously();
     return true;
   }
-
-  // If the client doesn't support deferred initialization (WebRTC), then we
-  // should complete it now and return a meaningful result.  Note that it would
-  // be nice if we didn't have to worry about starting codec configuration at
-  // all (::Initialize or the wrapper can do it), but then they have to remember
-  // not to start codec config if we have to wait for the cdm.  It's somewhat
-  // clearer for us to handle both cases.
-  return ConfigureMediaCodecSynchronously();
 }
 
 void MediaCodecVideoDecoder::DoIOTask(bool start_timer) {
@@ -507,7 +496,7 @@ bool MediaCodecVideoDecoder::QueueInput() {
         subsamples, presentation_timestamp);
   }
 
-  DVLOG(2) << __FUNCTION__
+  DVLOG(2) << __func__
            << ": Queue(Secure)InputBuffer: pts:" << presentation_timestamp
            << " status:" << status;
 
@@ -550,15 +539,6 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
   TRACE_EVENT0("media", "MCVD::DequeueOutput");
   if (state_ == ERROR || state_ == WAITING_FOR_CODEC)
     return false;
-  // If we're draining for reset or destroy, then we don't need picture buffers
-  // since we won't send any decoded frames anyway.  There might not be any,
-  // since the pipeline might not be sending them back and / or they don't
-  // exist anymore.  From the pipeline's point of view, for Destroy at least,
-  // the VDA is already gone.
-  if (picturebuffers_requested_ && output_picture_buffers_.empty() &&
-      !IsDrainingForResetOrDestroy()) {
-    return false;
-  }
   if (!output_picture_buffers_.empty() && free_picture_ids_.empty() &&
       !IsDrainingForResetOrDestroy()) {
     // Don't have any picture buffer to send. Need to wait.
@@ -595,7 +575,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
         // Do not post an error if we are draining for reset and destroy.
         // Instead, run the drain completion task.
         if (IsDrainingForResetOrDestroy()) {
-          DVLOG(1) << __FUNCTION__ << ": error while codec draining";
+          DVLOG(1) << __func__ << ": error while codec draining";
           state_ = ERROR;
           OnDrainCompleted();
         } else {
@@ -618,25 +598,8 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
           return false;
         }
 
-        DVLOG(3) << __FUNCTION__
+        DVLOG(3) << __func__
                  << " OUTPUT_FORMAT_CHANGED, new size: " << size_.ToString();
-
-        // Don't request picture buffers if we already have some. This avoids
-        // having to dismiss the existing buffers which may actively reference
-        // decoded images. Breaking their connection to the decoded image will
-        // cause rendering of black frames. Instead, we let the existing
-        // PictureBuffers live on and we simply update their size the next time
-        // they're attached to an image of the new resolution. See the
-        // size update in |SendDecodedFrameToClient| and https://crbug/587994.
-        if (output_picture_buffers_.empty() && !picturebuffers_requested_) {
-          picturebuffers_requested_ = true;
-          base::ThreadTaskRunnerHandle::Get()->PostTask(
-              FROM_HERE,
-              base::Bind(&MediaCodecVideoDecoder::RequestPictureBuffers,
-                         weak_this_factory_.GetWeakPtr()));
-          return false;
-        }
-
         return true;
       }
 
@@ -645,7 +608,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
 
       case MEDIA_CODEC_OK:
         DCHECK_GE(buf_index, 0);
-        DVLOG(3) << __FUNCTION__ << ": pts:" << presentation_timestamp
+        DVLOG(3) << __func__ << ": pts:" << presentation_timestamp
                  << " buf_index:" << buf_index << " offset:" << offset
                  << " size:" << size << " eos:" << eos;
         break;
@@ -666,13 +629,10 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     return true;
   }
 
-  if (!picturebuffers_requested_) {
-    // In 0.01% of playbacks MediaCodec returns a frame before FORMAT_CHANGED.
-    // Occurs on JB and M. (See the Media.MCVD.MissingFormatChanged histogram.)
-    media_codec_->ReleaseOutputBuffer(buf_index, false);
-    NOTIFY_ERROR(PLATFORM_FAILURE, "Dequeued buffers before FORMAT_CHANGED.");
-    return false;
-  }
+  // TODO(watk): Handle the case where we get a decoded buffer before
+  // FORMAT_CHANGED.
+  // In 0.01% of playbacks MediaCodec returns a frame before FORMAT_CHANGED.
+  // Occurs on JB and M. (See the Media.MCVD.MissingFormatChanged histogram.)
 
   // Get the bitstream buffer id from the timestamp.
   auto it = bitstream_buffers_in_decoder_.find(presentation_timestamp);
@@ -702,7 +662,7 @@ bool MediaCodecVideoDecoder::DequeueOutput() {
     // correction and provides a non-decreasing timestamp sequence, which might
     // result in timestamp duplicates. Discard the frame if we cannot get the
     // corresponding buffer id.
-    DVLOG(3) << __FUNCTION__ << ": Releasing buffer with unexpected PTS: "
+    DVLOG(3) << __func__ << ": Releasing buffer with unexpected PTS: "
              << presentation_timestamp;
     media_codec_->ReleaseOutputBuffer(buf_index, false);
   }
@@ -805,66 +765,8 @@ void MediaCodecVideoDecoder::DecodeBuffer(
   DoIOTask(true);
 }
 
-void MediaCodecVideoDecoder::RequestPictureBuffers() {
-  if (client_) {
-    // Allocate a picture buffer that is the actual frame size.  Note that it
-    // will be an external texture anyway, so it doesn't allocate an image of
-    // that size.  It's important to get the coded size right, so that
-    // VideoLayerImpl doesn't try to scale the texture when building the quad
-    // for it.
-    client_->ProvidePictureBuffers(kNumPictureBuffers, PIXEL_FORMAT_UNKNOWN, 1,
-                                   size_,
-                                   AVDAPictureBufferManager::kTextureTarget);
-  }
-}
-
-void MediaCodecVideoDecoder::AssignPictureBuffers(
-    const std::vector<PictureBuffer>& buffers) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(output_picture_buffers_.empty());
-  DCHECK(free_picture_ids_.empty());
-
-  if (buffers.size() < kNumPictureBuffers) {
-    NOTIFY_ERROR(INVALID_ARGUMENT, "Not enough picture buffers assigned.");
-    return;
-  }
-
-  const bool have_context = make_context_current_cb_.Run();
-  LOG_IF(WARNING, !have_context)
-      << "Failed to make GL context current for Assign, continuing.";
-
-  for (size_t i = 0; i < buffers.size(); ++i) {
-    DCHECK(buffers[i].size() == size_);
-    int32_t id = buffers[i].id();
-    output_picture_buffers_.insert(std::make_pair(id, buffers[i]));
-    free_picture_ids_.push(id);
-
-    picture_buffer_manager_.AssignPictureBuffer(buffers[i], size_,
-                                                have_context);
-  }
-  TRACE_COUNTER1("media", "MCVD::FreePictureIds", free_picture_ids_.size());
-  DoIOTask(true);
-}
-
-void MediaCodecVideoDecoder::ReusePictureBuffer(int32_t picture_buffer_id) {
-  DCHECK(thread_checker_.CalledOnValidThread());
-
-  free_picture_ids_.push(picture_buffer_id);
-  TRACE_COUNTER1("media", "MCVD::FreePictureIds", free_picture_ids_.size());
-
-  auto it = output_picture_buffers_.find(picture_buffer_id);
-  if (it == output_picture_buffers_.end()) {
-    NOTIFY_ERROR(PLATFORM_FAILURE, "Can't find PictureBuffer id "
-                                       << picture_buffer_id);
-    return;
-  }
-
-  picture_buffer_manager_.ReusePictureBuffer(it->second);
-  DoIOTask(true);
-}
-
 void MediaCodecVideoDecoder::Flush() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   if (state_ == SURFACE_DESTROYED || defer_surface_creation_)
@@ -905,25 +807,6 @@ void MediaCodecVideoDecoder::ConfigureMediaCodecAsynchronously() {
       weak_this_factory_.GetWeakPtr(), codec_config_);
 }
 
-bool MediaCodecVideoDecoder::ConfigureMediaCodecSynchronously() {
-  DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK(!media_codec_);
-  DCHECK_NE(state_, WAITING_FOR_CODEC);
-  state_ = WAITING_FOR_CODEC;
-
-  codec_config_->task_type_ =
-      AVDACodecAllocator::Instance()->TaskTypeForAllocation();
-  if (codec_config_->task_type_ == TaskType::FAILED_CODEC) {
-    OnCodecConfigured(nullptr);
-    return false;
-  }
-
-  std::unique_ptr<VideoCodecBridge> media_codec =
-      AVDACodecAllocator::Instance()->CreateMediaCodecSync(codec_config_);
-  OnCodecConfigured(std::move(media_codec));
-  return !!media_codec_;
-}
-
 void MediaCodecVideoDecoder::OnCodecConfigured(
     std::unique_ptr<VideoCodecBridge> media_codec) {
   DCHECK(thread_checker_.CalledOnValidThread());
@@ -958,7 +841,7 @@ void MediaCodecVideoDecoder::OnCodecConfigured(
 }
 
 void MediaCodecVideoDecoder::StartCodecDrain(DrainType drain_type) {
-  DVLOG(2) << __FUNCTION__ << " drain_type:" << drain_type;
+  DVLOG(2) << __func__ << " drain_type:" << drain_type;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // We assume that DRAIN_FOR_FLUSH and DRAIN_FOR_RESET cannot come while
@@ -980,7 +863,7 @@ bool MediaCodecVideoDecoder::IsDrainingForResetOrDestroy() const {
 }
 
 void MediaCodecVideoDecoder::OnDrainCompleted() {
-  DVLOG(2) << __FUNCTION__;
+  DVLOG(2) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // If we were waiting for an EOS, clear the state and reset the MediaCodec
@@ -1053,21 +936,20 @@ void MediaCodecVideoDecoder::ResetCodecState() {
   // Flush the codec if possible, or create a new one if not.
   if (!did_codec_error_happen &&
       !MediaCodecUtil::CodecNeedsFlushWorkaround(media_codec_.get())) {
-    DVLOG(3) << __FUNCTION__ << " Flushing MediaCodec.";
+    DVLOG(3) << __func__ << " Flushing MediaCodec.";
     media_codec_->Flush();
     // Since we just flushed all the output buffers, make sure that nothing is
     // using them.
     picture_buffer_manager_.CodecChanged(media_codec_.get());
   } else {
-    DVLOG(3) << __FUNCTION__
-             << " Deleting the MediaCodec and creating a new one.";
+    DVLOG(3) << __func__ << " Deleting the MediaCodec and creating a new one.";
     g_mcvd_manager.Get().StopTimer(this);
     ConfigureMediaCodecAsynchronously();
   }
 }
 
 void MediaCodecVideoDecoder::Reset() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
   TRACE_EVENT0("media", "MCVD::Reset");
 
@@ -1128,7 +1010,7 @@ void MediaCodecVideoDecoder::SetSurface(int32_t surface_id) {
 }
 
 void MediaCodecVideoDecoder::Destroy() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   picture_buffer_manager_.Destroy(output_picture_buffers_);
@@ -1150,7 +1032,7 @@ void MediaCodecVideoDecoder::Destroy() {
 }
 
 void MediaCodecVideoDecoder::ActualDestroy() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
   DCHECK(thread_checker_.CalledOnValidThread());
 
   // Note that async codec construction might still be in progress.  In that
@@ -1168,12 +1050,6 @@ void MediaCodecVideoDecoder::ActualDestroy() {
   AVDACodecAllocator::Instance()->DeallocateSurface(this, config_.surface_id);
 
   delete this;
-}
-
-bool MediaCodecVideoDecoder::TryToSetupDecodeOnSeparateThread(
-    const base::WeakPtr<Client>& decode_client,
-    const scoped_refptr<base::SingleThreadTaskRunner>& decode_task_runner) {
-  return false;
 }
 
 void MediaCodecVideoDecoder::OnSurfaceDestroyed() {
@@ -1218,7 +1094,7 @@ void MediaCodecVideoDecoder::OnSurfaceDestroyed() {
 }
 
 void MediaCodecVideoDecoder::InitializeCdm() {
-  DVLOG(2) << __FUNCTION__ << ": " << config_.cdm_id;
+  DVLOG(2) << __func__ << ": " << config_.cdm_id;
 
 #if !defined(ENABLE_MOJO_MEDIA_IN_GPU_PROCESS)
   NOTIMPLEMENTED();
@@ -1257,7 +1133,7 @@ void MediaCodecVideoDecoder::InitializeCdm() {
 void MediaCodecVideoDecoder::OnMediaCryptoReady(
     MediaDrmBridgeCdmContext::JavaObjectPtr media_crypto,
     bool needs_protected_surface) {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (!media_crypto) {
     LOG(ERROR) << "MediaCrypto is not available, can't play encrypted stream.";
@@ -1281,37 +1157,12 @@ void MediaCodecVideoDecoder::OnMediaCryptoReady(
 }
 
 void MediaCodecVideoDecoder::OnKeyAdded() {
-  DVLOG(1) << __FUNCTION__;
+  DVLOG(1) << __func__;
 
   if (state_ == WAITING_FOR_KEY)
     state_ = NO_ERROR;
 
   DoIOTask(true);
-}
-
-void MediaCodecVideoDecoder::NotifyInitializationComplete(bool success) {
-  if (client_)
-    client_->NotifyInitializationComplete(success);
-}
-
-void MediaCodecVideoDecoder::NotifyPictureReady(const Picture& picture) {
-  if (client_)
-    client_->PictureReady(picture);
-}
-
-void MediaCodecVideoDecoder::NotifyEndOfBitstreamBuffer(int input_buffer_id) {
-  if (client_)
-    client_->NotifyEndOfBitstreamBuffer(input_buffer_id);
-}
-
-void MediaCodecVideoDecoder::NotifyFlushDone() {
-  if (client_)
-    client_->NotifyFlushDone();
-}
-
-void MediaCodecVideoDecoder::NotifyResetDone() {
-  if (client_)
-    client_->NotifyResetDone();
 }
 
 void MediaCodecVideoDecoder::NotifyError(Error error) {
