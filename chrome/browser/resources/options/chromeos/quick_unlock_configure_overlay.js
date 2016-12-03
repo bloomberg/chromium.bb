@@ -39,6 +39,29 @@ cr.define('options', function() {
 
     /** @override */
     didShowPage: function() {
+      this.ensurePolymerIsLoaded_().then(this.onPolymerLoaded_.bind(this));
+    },
+
+    /**
+     * @return {!Promise}
+     * @private
+     */
+    ensurePolymerIsLoaded_: function() {
+      this.loaded_ = this.loaded_ || new Promise(function(resolve) {
+        var link = document.createElement('link');
+        link.rel = 'import';
+        link.href = 'chrome://settings-frame/options_polymer.html';
+        link.onload = resolve;
+        document.head.appendChild(link);
+      });
+      return this.loaded_;
+    },
+
+    /**
+     * Called when polymer has been loaded and the dialog should be displayed.
+     * @private
+     */
+    onPolymerLoaded_: function() {
       settings.navigateTo(settings.Route.LOCK_SCREEN);
       var lockScreen = document.querySelector('settings-lock-screen');
 
@@ -54,7 +77,6 @@ cr.define('options', function() {
         }
       }.bind(this));
     },
-
   };
 
   QuickUnlockConfigureOverlay.dismiss = function() {
