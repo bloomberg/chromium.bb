@@ -59,6 +59,11 @@ void OffscreenCanvasCompositorFrameSink::SetNeedsBeginFrame(
   NOTIMPLEMENTED();
 }
 
+void OffscreenCanvasCompositorFrameSink::EvictFrame() {
+  // TODO(fsamuel, staraz): Implement this
+  NOTIMPLEMENTED();
+}
+
 void OffscreenCanvasCompositorFrameSink::ReturnResources(
     const cc::ReturnedResourceArray& resources) {
   if (resources.empty())

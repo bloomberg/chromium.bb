@@ -378,6 +378,11 @@ void OffscreenCanvasFrameDispatcherImpl::ReclaimResources(
   }
 }
 
+void OffscreenCanvasFrameDispatcherImpl::WillDrawSurface() {
+  // TODO(fsamuel, staraz): Implement this.
+  NOTIMPLEMENTED();
+}
+
 void OffscreenCanvasFrameDispatcherImpl::reclaimResource(unsigned resourceId) {
   // An image resource needs to be returned by both the
   // CompositorFrameSink and the HTMLCanvasElement. These

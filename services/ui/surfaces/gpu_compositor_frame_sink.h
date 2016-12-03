@@ -51,6 +51,7 @@ class GpuCompositorFrameSink : public cc::mojom::MojoCompositorFrameSink,
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
+  void EvictFrame() override;
 
   // cc::mojom::MojoCompositorFrameSinkPrivate:
   void AddChildFrameSink(const cc::FrameSinkId& child_frame_sink_id) override;

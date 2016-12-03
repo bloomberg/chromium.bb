@@ -47,6 +47,7 @@ class WindowCompositorFrameSink
   void DidReceiveCompositorFrameAck() override;
   void OnBeginFrame(const cc::BeginFrameArgs& begin_frame_args) override;
   void ReclaimResources(const cc::ReturnedResourceArray& resources) override;
+  void WillDrawSurface() override;
 
   // cc::ExternalBeginFrameSourceClient implementation.
   void OnNeedsBeginFrames(bool needs_begin_frames) override;

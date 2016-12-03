@@ -88,6 +88,10 @@ void GpuCompositorFrameSink::SubmitCompositorFrame(
   }
 }
 
+void GpuCompositorFrameSink::EvictFrame() {
+  surface_factory_.EvictSurface();
+}
+
 void GpuCompositorFrameSink::DidReceiveCompositorFrameAck() {
   if (!client_)
     return;

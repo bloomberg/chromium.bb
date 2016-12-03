@@ -125,6 +125,11 @@ void FrameGenerator::ReclaimResources(
   // any resources.
 }
 
+void FrameGenerator::WillDrawSurface() {
+  // TODO(fsamuel, staraz): Implement this.
+  NOTIMPLEMENTED();
+}
+
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
     const gfx::Rect& output_rect) {
   const cc::RenderPassId render_pass_id(1, 1);

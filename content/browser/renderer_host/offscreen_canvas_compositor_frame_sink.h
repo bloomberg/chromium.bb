@@ -28,6 +28,7 @@ class OffscreenCanvasCompositorFrameSink
   void SubmitCompositorFrame(const cc::LocalFrameId& local_frame_id,
                              cc::CompositorFrame frame) override;
   void SetNeedsBeginFrame(bool needs_begin_frame) override;
+  void EvictFrame() override;
 
   // cc::SurfaceFactoryClient implementation.
   void ReturnResources(const cc::ReturnedResourceArray& resources) override;

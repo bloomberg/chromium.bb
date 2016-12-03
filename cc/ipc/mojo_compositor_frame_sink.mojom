@@ -31,6 +31,10 @@ interface MojoCompositorFrameSink {
   SubmitCompositorFrame(cc.mojom.LocalFrameId local_frame_id,
                         cc.mojom.CompositorFrame frame);
 
+  // Notify that the surface is no longer in use (and is okay to be evicted) so
+  // that its resources gets returned in time.
+  EvictFrame();
+
   // TODO(fsamuel): ReadbackBitmap API would be useful here.
 };
 
@@ -49,6 +53,9 @@ interface MojoCompositorFrameSinkClient {
 
   // Returns resources sent to SubmitCompositorFrame to be reused or freed.
   ReclaimResources(ReturnedResourceArray resources);
+
+  // Called when surface is being scheduled for a draw.
+  WillDrawSurface();
 };
 
 // MojoCompositorFrameSinkPrivate is used by the display compositor host to set
