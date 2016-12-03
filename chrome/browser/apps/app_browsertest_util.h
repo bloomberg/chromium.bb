@@ -7,9 +7,15 @@
 
 #include <stddef.h>
 
+#include <string>
+
 #include "base/macros.h"
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "extensions/browser/app_window/app_window.h"
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/media/router/mock_media_router.h"
+#endif
 
 namespace base {
 class CommandLine;
@@ -31,6 +37,8 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   PlatformAppBrowserTest();
 
   void SetUpCommandLine(base::CommandLine* command_line) override;
+  void SetUpInProcessBrowserTestFixture() override;
+  void TearDownInProcessBrowserTestFixture() override;
 
   // Gets the first app window that is found for a given browser.
   static AppWindow* GetFirstAppWindowForBrowser(Browser* browser);
@@ -117,6 +125,10 @@ class PlatformAppBrowserTest : public ExtensionApiTest {
   AppWindow* CreateTestAppWindow(const std::string& window_create_options);
 
  private:
+#if defined(OS_CHROMEOS)
+  media_router::MockMediaRouter media_router_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(PlatformAppBrowserTest);
 };
 

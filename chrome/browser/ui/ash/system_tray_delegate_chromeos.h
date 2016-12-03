@@ -7,6 +7,7 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <string>
 #include <vector>
 
@@ -103,7 +104,6 @@ class SystemTrayDelegateChromeOS
   bool GetBluetoothAvailable() override;
   bool GetBluetoothEnabled() override;
   bool GetBluetoothDiscovering() override;
-  ash::CastConfigDelegate* GetCastConfigDelegate() override;
   ash::NetworkingConfigDelegate* GetNetworkingConfigDelegate() const override;
   bool GetSessionStartTime(base::TimeTicks* session_start_time) override;
   bool GetSessionLengthLimit(base::TimeDelta* session_length_limit) override;
@@ -239,7 +239,6 @@ class SystemTrayDelegateChromeOS
   scoped_refptr<device::BluetoothAdapter> bluetooth_adapter_;
   std::unique_ptr<device::BluetoothDiscoverySession>
       bluetooth_discovery_session_;
-  std::unique_ptr<ash::CastConfigDelegate> cast_config_delegate_;
   std::unique_ptr<ash::NetworkingConfigDelegate> networking_config_delegate_;
   std::unique_ptr<AccessibilityStatusSubscription> accessibility_subscription_;
 
@@ -254,4 +253,5 @@ class SystemTrayDelegateChromeOS
 ash::SystemTrayDelegate* CreateSystemTrayDelegate();
 
 }  // namespace chromeos
+
 #endif  // CHROME_BROWSER_UI_ASH_SYSTEM_TRAY_DELEGATE_CHROMEOS_H_

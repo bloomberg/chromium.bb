@@ -69,7 +69,6 @@ struct ASH_EXPORT UpdateInfo {
   bool factory_reset_required;
 };
 
-class CastConfigDelegate;
 class NetworkingConfigDelegate;
 
 // SystemTrayDelegate is intended for delegating tasks in the System Tray to the
@@ -183,9 +182,6 @@ class ASH_EXPORT SystemTrayDelegate {
 
   // Returns whether the delegate has initiated a bluetooth discovery session.
   virtual bool GetBluetoothDiscovering();
-
-  // Returns CastConfigDelegate. May return nullptr.
-  virtual CastConfigDelegate* GetCastConfigDelegate();
 
   // Returns NetworkingConfigDelegate. May return nullptr.
   virtual NetworkingConfigDelegate* GetNetworkingConfigDelegate() const;

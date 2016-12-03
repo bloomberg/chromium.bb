@@ -44,6 +44,7 @@ namespace ash {
 class AcceleratorController;
 class AccessibilityDelegate;
 class BrightnessControlDelegate;
+class CastConfigController;
 class FocusCycler;
 class ImmersiveContextAsh;
 class ImmersiveFullscreenController;
@@ -121,6 +122,8 @@ class ASH_EXPORT WmShell {
   BrightnessControlDelegate* brightness_control_delegate() {
     return brightness_control_delegate_.get();
   }
+
+  CastConfigController* cast_config() { return cast_config_.get(); }
 
   FocusCycler* focus_cycler() { return focus_cycler_.get(); }
 
@@ -479,6 +482,7 @@ class ASH_EXPORT WmShell {
   std::unique_ptr<AcceleratorController> accelerator_controller_;
   std::unique_ptr<AccessibilityDelegate> accessibility_delegate_;
   std::unique_ptr<BrightnessControlDelegate> brightness_control_delegate_;
+  std::unique_ptr<CastConfigController> cast_config_;
   std::unique_ptr<FocusCycler> focus_cycler_;
   std::unique_ptr<ImmersiveContextAsh> immersive_context_;
   std::unique_ptr<KeyboardBrightnessControlDelegate>

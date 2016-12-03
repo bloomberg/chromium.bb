@@ -41,10 +41,6 @@ class TrayCastTestAPI {
   // environment, this method is invoked by the casting system in Chrome.
   void OnCastingSessionStartedOrStopped(bool is_casting);
 
-  // Release callback hooks in config delegate. They will get re-registered if
-  // the tray is used again.
-  void ReleaseConfigCallbacks();
-
  private:
   bool IsViewDrawn(TrayCast::ChildViewId id) const;
 

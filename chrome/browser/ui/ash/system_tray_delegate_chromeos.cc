@@ -7,6 +7,7 @@
 #include <stddef.h>
 
 #include <algorithm>
+#include <memory>
 #include <set>
 #include <string>
 #include <utility>
@@ -54,7 +55,6 @@
 #include "chrome/browser/chromeos/profiles/multiprofiles_intro_dialog.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/profiles/profile_manager.h"
-#include "chrome/browser/ui/ash/cast_config_delegate_media_router.h"
 #include "chrome/browser/ui/ash/multi_user/multi_user_util.h"
 #include "chrome/browser/ui/ash/networking_config_delegate_chromeos.h"
 #include "chrome/browser/ui/ash/system_tray_client.h"
@@ -142,8 +142,7 @@ bool IsSessionInSecondaryLoginScreen() {
 }  // namespace
 
 SystemTrayDelegateChromeOS::SystemTrayDelegateChromeOS()
-    : cast_config_delegate_(base::MakeUnique<CastConfigDelegateMediaRouter>()),
-      networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
+    : networking_config_delegate_(new NetworkingConfigDelegateChromeos()),
       weak_ptr_factory_(this) {
   // Register notifications on construction so that events such as
   // PROFILE_CREATED do not get missed if they happen before Initialize().
@@ -541,10 +540,6 @@ bool SystemTrayDelegateChromeOS::GetBluetoothEnabled() {
 bool SystemTrayDelegateChromeOS::GetBluetoothDiscovering() {
   return bluetooth_discovery_session_ &&
          bluetooth_discovery_session_->IsActive();
-}
-
-ash::CastConfigDelegate* SystemTrayDelegateChromeOS::GetCastConfigDelegate() {
-  return cast_config_delegate_.get();
 }
 
 ash::NetworkingConfigDelegate*

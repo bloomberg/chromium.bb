@@ -14,8 +14,10 @@
 #include "chrome/browser/chromeos/file_manager/volume_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/extensions/extension_apitest.h"
+#include "chrome/browser/media/router/mock_media_router.h"
 #include "chrome/browser/profiles/profile.h"
 #include "chrome/browser/profiles/profile_manager.h"
+#include "chrome/browser/ui/ash/cast_config_client_media_router.h"
 #include "chrome/browser/ui/browser.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -368,7 +370,20 @@ class FileSystemExtensionApiTestBase : public ExtensionApiTest {
 
   void SetUpOnMainThread() override {
     AddTestMountPoint();
+
+    // Mock the Media Router in extension api tests. Dispatches to the message
+    // loop now try to handle mojo messages that will call back into Profile
+    // creation through the media router, which then confuse the drive code.
+    ON_CALL(media_router_, RegisterMediaSinksObserver(testing::_))
+        .WillByDefault(testing::Return(true));
+    CastConfigClientMediaRouter::SetMediaRouterForTest(&media_router_);
+
     ExtensionApiTest::SetUpOnMainThread();
+  }
+
+  void TearDownOnMainThread() override {
+    CastConfigClientMediaRouter::SetMediaRouterForTest(nullptr);
+    ExtensionApiTest::TearDownOnMainThread();
   }
 
   // Runs a file system extension API test.
@@ -429,6 +444,11 @@ class FileSystemExtensionApiTestBase : public ExtensionApiTest {
   virtual void InitTestFileSystem() = 0;
   // Registers mount point used in the test.
   virtual void AddTestMountPoint() = 0;
+
+ private:
+  media_router::MockMediaRouter media_router_;
+
+  DISALLOW_COPY_AND_ASSIGN(FileSystemExtensionApiTestBase);
 };
 
 // Tests for a native local file system.

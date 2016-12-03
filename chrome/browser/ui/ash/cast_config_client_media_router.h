@@ -2,14 +2,18 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_UI_ASH_CAST_CONFIG_DELEGATE_MEDIA_ROUTER_H_
-#define CHROME_BROWSER_UI_ASH_CAST_CONFIG_DELEGATE_MEDIA_ROUTER_H_
+#ifndef CHROME_BROWSER_UI_ASH_CAST_CONFIG_CLIENT_MEDIA_ROUTER_H_
+#define CHROME_BROWSER_UI_ASH_CAST_CONFIG_CLIENT_MEDIA_ROUTER_H_
 
-#include "ash/common/cast_config_delegate.h"
+#include <memory>
+
+#include "ash/public/interfaces/cast_config.mojom.h"
 #include "base/macros.h"
 #include "base/observer_list.h"
 #include "content/public/browser/notification_observer.h"
 #include "content/public/browser/notification_registrar.h"
+#include "mojo/public/cpp/bindings/associated_binding.h"
+#include "mojo/public/cpp/bindings/interface_ptr_set.h"
 
 namespace media_router {
 class MediaRouter;
@@ -18,21 +22,19 @@ class MediaRouter;
 class CastDeviceCache;
 
 // A class which allows the ash tray to communicate with the media router.
-class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate,
-                                      public content::NotificationObserver {
+class CastConfigClientMediaRouter : public ash::mojom::CastConfigClient,
+                                    public content::NotificationObserver {
  public:
-  CastConfigDelegateMediaRouter();
-  ~CastConfigDelegateMediaRouter() override;
+  CastConfigClientMediaRouter();
+  ~CastConfigClientMediaRouter() override;
 
   static void SetMediaRouterForTest(media_router::MediaRouter* media_router);
 
  private:
-  // CastConfigDelegate:
+  // CastConfigClient:
   void RequestDeviceRefresh() override;
-  void CastToSink(const Sink& sink) override;
-  void StopCasting(const Route& route) override;
-  void AddObserver(ash::CastConfigDelegate::Observer* observer) override;
-  void RemoveObserver(ash::CastConfigDelegate::Observer* observer) override;
+  void CastToSink(ash::mojom::CastSinkPtr sink) override;
+  void StopCasting(ash::mojom::CastRoutePtr route) override;
 
   // content::NotificationObserver:
   void Observe(int type,
@@ -46,9 +48,11 @@ class CastConfigDelegateMediaRouter : public ash::CastConfigDelegate,
 
   content::NotificationRegistrar registrar_;
 
-  base::ObserverList<ash::CastConfigDelegate::Observer> observer_list_;
+  ash::mojom::CastConfigPtr cast_config_;
 
-  DISALLOW_COPY_AND_ASSIGN(CastConfigDelegateMediaRouter);
+  mojo::AssociatedBinding<ash::mojom::CastConfigClient> binding_;
+
+  DISALLOW_COPY_AND_ASSIGN(CastConfigClientMediaRouter);
 };
 
-#endif  // CHROME_BROWSER_UI_ASH_CAST_CONFIG_DELEGATE_MEDIA_ROUTER_H_
+#endif  // CHROME_BROWSER_UI_ASH_CAST_CONFIG_CLIENT_MEDIA_ROUTER_H_

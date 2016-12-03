@@ -659,6 +659,7 @@ if (!is_android) {
       ]
       deps += [
         "//ash/resources",
+        "//chrome/browser/media/router:test_support",
         "//chromeos",
       ]
 

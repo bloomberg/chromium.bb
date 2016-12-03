@@ -123,10 +123,6 @@ bool SystemTrayDelegate::GetBluetoothDiscovering() {
   return false;
 }
 
-CastConfigDelegate* SystemTrayDelegate::GetCastConfigDelegate() {
-  return nullptr;
-}
-
 NetworkingConfigDelegate* SystemTrayDelegate::GetNetworkingConfigDelegate()
     const {
   return nullptr;

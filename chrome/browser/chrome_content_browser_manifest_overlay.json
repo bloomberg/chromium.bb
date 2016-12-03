@@ -19,6 +19,7 @@
         "ash": [
           // Under classic ash the browser provides some of the ash interfaces
           // to itself.
+          "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::NewWindowClient",
           "ash::mojom::ShelfController",

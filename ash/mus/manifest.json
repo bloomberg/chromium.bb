@@ -5,6 +5,7 @@
     "service_manager:connector": {
       "provides": {
         "ash": [
+          "ash::mojom::CastConfig",
           "ash::mojom::LocaleNotificationController",
           "ash::mojom::ShelfController",
           "ash::mojom::ShutdownController",

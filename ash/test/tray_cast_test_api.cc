@@ -4,7 +4,6 @@
 
 #include "ash/test/tray_cast_test_api.h"
 
-#include "ash/common/cast_config_delegate.h"
 #include "ash/common/system/tray/system_tray.h"
 #include "ash/common/system/tray/system_tray_delegate.h"
 #include "ash/common/wm_shell.h"
@@ -46,15 +45,6 @@ void TrayCastTestAPI::StopCast() {
 
 void TrayCastTestAPI::OnCastingSessionStartedOrStopped(bool is_casting) {
   tray_cast_->OnCastingSessionStartedOrStopped(is_casting);
-}
-
-void TrayCastTestAPI::ReleaseConfigCallbacks() {
-  if (WmShell::Get() && WmShell::Get()->system_tray_delegate()) {
-    WmShell::Get()
-        ->system_tray_delegate()
-        ->GetCastConfigDelegate()
-        ->RemoveObserver(tray_cast_);
-  }
 }
 
 bool TrayCastTestAPI::IsViewDrawn(TrayCast::ChildViewId id) const {

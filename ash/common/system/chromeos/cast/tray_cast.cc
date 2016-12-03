@@ -4,6 +4,12 @@
 
 #include "ash/common/system/chromeos/cast/tray_cast.h"
 
+#include <map>
+#include <string>
+#include <utility>
+#include <vector>
+
+#include "ash/common/cast_config_controller.h"
 #include "ash/common/material_design/material_design_controller.h"
 #include "ash/common/session/session_state_delegate.h"
 #include "ash/common/shelf/wm_shelf_util.h"
@@ -21,8 +27,10 @@
 #include "ash/common/system/tray/tray_utils.h"
 #include "ash/common/wm_shell.h"
 #include "ash/public/cpp/shelf_types.h"
+#include "ash/public/interfaces/cast_config.mojom.h"
 #include "ash/resources/vector_icons/vector_icons.h"
 #include "base/bind.h"
+#include "base/strings/utf_string_conversions.h"
 #include "grit/ash_resources.h"
 #include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
@@ -43,12 +51,6 @@ namespace ash {
 namespace {
 
 const size_t kMaximumStatusStringLength = 100;
-
-// Returns the active CastConfigDelegate instance.
-CastConfigDelegate* GetCastConfigDelegate() {
-  ash::SystemTrayDelegate* delegate = WmShell::Get()->system_tray_delegate();
-  return delegate ? delegate->GetCastConfigDelegate() : nullptr;
-}
 
 // Helper method to elide the given string to the maximum length. If a string is
 // contains user-input and is displayed, we should elide it.
@@ -114,11 +116,11 @@ class CastCastView : public ScreenStatusView {
 
   void StopCasting();
 
-  const std::string& displayed_route_id() const { return displayed_route_.id; }
+  const std::string& displayed_route_id() const { return displayed_route_->id; }
 
   // Updates the label for the stop view to include information about the
   // current device that is being casted.
-  void UpdateLabel(const CastConfigDelegate::SinksAndRoutes& sinks_routes);
+  void UpdateLabel(const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
 
  private:
   // Overridden from views::ButtonListener.
@@ -126,7 +128,7 @@ class CastCastView : public ScreenStatusView {
 
   // The cast activity id that we are displaying. If the user stops a cast, we
   // send this value to the config delegate so that we stop the right cast.
-  CastConfigDelegate::Route displayed_route_;
+  mojom::CastRoutePtr displayed_route_;
 
   DISALLOW_COPY_AND_ASSIGN(CastCastView);
 };
@@ -148,34 +150,36 @@ CastCastView::CastCastView()
 CastCastView::~CastCastView() {}
 
 void CastCastView::StopCasting() {
-  GetCastConfigDelegate()->StopCasting(displayed_route_);
+  WmShell::Get()->cast_config()->StopCasting(displayed_route_.Clone());
   WmShell::Get()->RecordUserMetricsAction(UMA_STATUS_AREA_CAST_STOP_CAST);
 }
 
 void CastCastView::UpdateLabel(
-    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
+    const std::vector<mojom::SinkAndRoutePtr>& sinks_routes) {
   for (auto& i : sinks_routes) {
-    const CastConfigDelegate::Sink& sink = i.sink;
-    const CastConfigDelegate::Route& route = i.route;
+    const mojom::CastSinkPtr& sink = i->sink;
+    const mojom::CastRoutePtr& route = i->route;
 
-    if (!route.id.empty()) {
-      displayed_route_ = route;
+    if (!route->id.empty()) {
+      displayed_route_ = route.Clone();
 
       // We want to display different labels inside of the title depending on
       // what we are actually casting - either the desktop, a tab, or a fallback
       // that catches everything else (ie, an extension tab).
-      switch (route.content_source) {
-        case CastConfigDelegate::Route::ContentSource::UNKNOWN:
+      switch (route->content_source) {
+        case ash::mojom::ContentSource::UNKNOWN:
           label()->SetText(
               l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_UNKNOWN));
           break;
-        case CastConfigDelegate::Route::ContentSource::TAB:
+        case ash::mojom::ContentSource::TAB:
           label()->SetText(ElideString(l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_CAST_CAST_TAB, route.title, sink.name)));
+              IDS_ASH_STATUS_TRAY_CAST_CAST_TAB,
+              base::UTF8ToUTF16(route->title), base::UTF8ToUTF16(sink->name))));
           break;
-        case CastConfigDelegate::Route::ContentSource::DESKTOP:
-          label()->SetText(ElideString(l10n_util::GetStringFUTF16(
-              IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP, sink.name)));
+        case ash::mojom::ContentSource::DESKTOP:
+          label()->SetText(ElideString(
+              l10n_util::GetStringFUTF16(IDS_ASH_STATUS_TRAY_CAST_CAST_DESKTOP,
+                                         base::UTF8ToUTF16(sink->name))));
           break;
       }
 
@@ -185,7 +189,7 @@ void CastCastView::UpdateLabel(
       // If this machine is the source of the activity, then we want to display
       // it over any other activity. There can be multiple activities if other
       // devices on the network are casting at the same time.
-      if (route.is_local_source)
+      if (route->is_local_source)
         break;
     }
   }
@@ -203,7 +207,7 @@ class CastDuplexView : public views::View {
  public:
   CastDuplexView(SystemTrayItem* owner,
                  bool show_more,
-                 const CastConfigDelegate::SinksAndRoutes& sinks_routes);
+                 const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
   ~CastDuplexView() override;
 
   // Activate either the casting or select view.
@@ -231,7 +235,7 @@ class CastDuplexView : public views::View {
 CastDuplexView::CastDuplexView(
     SystemTrayItem* owner,
     bool show_more,
-    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
+    const std::vector<mojom::SinkAndRoutePtr>& sinks_routes) {
   select_view_ = new CastSelectDefaultView(owner, show_more);
   cast_view_ = new CastCastView();
   cast_view_->UpdateLabel(sinks_routes);
@@ -314,7 +318,7 @@ CastTrayView::~CastTrayView() {}
 class CastDetailedView : public TrayDetailsView {
  public:
   CastDetailedView(SystemTrayItem* owner,
-                   const CastConfigDelegate::SinksAndRoutes& sinks_and_routes);
+                   const std::vector<mojom::SinkAndRoutePtr>& sinks_and_routes);
   ~CastDetailedView() override;
 
   // Makes the detail view think the view associated with the given receiver_id
@@ -323,29 +327,28 @@ class CastDetailedView : public TrayDetailsView {
 
   // Updates the list of available receivers.
   void UpdateReceiverList(
-      const CastConfigDelegate::SinksAndRoutes& sinks_routes);
+      const std::vector<mojom::SinkAndRoutePtr>& sinks_routes);
 
  private:
   void CreateItems();
 
   void UpdateReceiverListFromCachedData();
-  views::View* AddToReceiverList(
-      const CastConfigDelegate::SinkAndRoute& sink_route);
+  views::View* AddToReceiverList(const mojom::SinkAndRoutePtr& sink_route);
 
   // TrayDetailsView:
   void HandleViewClicked(views::View* view) override;
 
   // A mapping from the receiver id to the receiver/activity data.
-  std::map<std::string, CastConfigDelegate::SinkAndRoute> sinks_and_routes_;
+  std::map<std::string, ash::mojom::SinkAndRoutePtr> sinks_and_routes_;
   // A mapping from the view pointer to the associated activity id.
-  std::map<views::View*, CastConfigDelegate::Sink> view_to_sink_map_;
+  std::map<views::View*, ash::mojom::CastSinkPtr> view_to_sink_map_;
 
   DISALLOW_COPY_AND_ASSIGN(CastDetailedView);
 };
 
 CastDetailedView::CastDetailedView(
     SystemTrayItem* owner,
-    const CastConfigDelegate::SinksAndRoutes& sinks_routes)
+    const std::vector<mojom::SinkAndRoutePtr>& sinks_routes)
     : TrayDetailsView(owner) {
   CreateItems();
   UpdateReceiverList(sinks_routes);
@@ -356,7 +359,7 @@ CastDetailedView::~CastDetailedView() {}
 void CastDetailedView::SimulateViewClickedForTest(
     const std::string& receiver_id) {
   for (const auto& it : view_to_sink_map_) {
-    if (it.second.id == receiver_id) {
+    if (it.second->id == receiver_id) {
       HandleViewClicked(it.first);
       break;
     }
@@ -369,18 +372,18 @@ void CastDetailedView::CreateItems() {
 }
 
 void CastDetailedView::UpdateReceiverList(
-    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
+    const std::vector<mojom::SinkAndRoutePtr>& sinks_routes) {
   // Add/update existing.
   for (const auto& it : sinks_routes)
-    sinks_and_routes_[it.sink.id] = it;
+    sinks_and_routes_[it->sink->id] = it->Clone();
 
   // Remove non-existent sinks. Removing an element invalidates all existing
   // iterators.
   auto i = sinks_and_routes_.begin();
   while (i != sinks_and_routes_.end()) {
     bool has_receiver = false;
-    for (auto receiver : sinks_routes) {
-      if (i->first == receiver.sink.id)
+    for (auto& receiver : sinks_routes) {
+      if (i->first == receiver->sink->id)
         has_receiver = true;
     }
 
@@ -402,9 +405,9 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
 
   // Add a view for each receiver.
   for (auto& it : sinks_and_routes_) {
-    const CastConfigDelegate::SinkAndRoute& sink_route = it.second;
+    const ash::mojom::SinkAndRoutePtr& sink_route = it.second;
     views::View* container = AddToReceiverList(sink_route);
-    view_to_sink_map_[container] = sink_route.sink;
+    view_to_sink_map_[container] = sink_route->sink.Clone();
   }
 
   scroll_content()->SizeToPreferredSize();
@@ -412,7 +415,7 @@ void CastDetailedView::UpdateReceiverListFromCachedData() {
 }
 
 views::View* CastDetailedView::AddToReceiverList(
-    const CastConfigDelegate::SinkAndRoute& sink_route) {
+    const ash::mojom::SinkAndRoutePtr& sink_route) {
   const gfx::ImageSkia image =
       MaterialDesignController::IsSystemTrayMenuMaterial()
           ? gfx::CreateVectorIcon(kSystemMenuCastDeviceIcon, kMenuIconColor)
@@ -422,8 +425,9 @@ views::View* CastDetailedView::AddToReceiverList(
 
   HoverHighlightView* container = new HoverHighlightView(this);
   container->AddIconAndLabelCustomSize(
-      image, sink_route.sink.name, false, kTrayPopupDetailsIconWidth,
-      kTrayPopupPaddingHorizontal, kTrayPopupPaddingBetweenItems);
+      image, base::UTF8ToUTF16(sink_route->sink->name), false,
+      kTrayPopupDetailsIconWidth, kTrayPopupPaddingHorizontal,
+      kTrayPopupPaddingBetweenItems);
 
   scroll_content()->AddChildView(container);
   return container;
@@ -433,7 +437,7 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
   // Find the receiver we are going to cast to.
   auto it = view_to_sink_map_.find(view);
   if (it != view_to_sink_map_.end()) {
-    GetCastConfigDelegate()->CastToSink(it->second);
+    WmShell::Get()->cast_config()->CastToSink(it->second.Clone());
     WmShell::Get()->RecordUserMetricsAction(
         UMA_STATUS_AREA_DETAILED_CAST_VIEW_LAUNCH_CAST);
   }
@@ -444,19 +448,12 @@ void CastDetailedView::HandleViewClicked(views::View* view) {
 TrayCast::TrayCast(SystemTray* system_tray)
     : SystemTrayItem(system_tray, UMA_CAST) {
   WmShell::Get()->AddShellObserver(this);
-
-  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
-  if (cast_config_delegate) {
-    cast_config_delegate->AddObserver(this);
-    cast_config_delegate->RequestDeviceRefresh();
-  }
+  WmShell::Get()->cast_config()->AddObserver(this);
+  WmShell::Get()->cast_config()->RequestDeviceRefresh();
 }
 
 TrayCast::~TrayCast() {
-  CastConfigDelegate* cast_config_delegate = GetCastConfigDelegate();
-  if (cast_config_delegate)
-    cast_config_delegate->RemoveObserver(this);
-
+  WmShell::Get()->cast_config()->RemoveObserver(this);
   WmShell::Get()->RemoveShellObserver(this);
 }
 
@@ -516,9 +513,8 @@ void TrayCast::DestroyDetailedView() {
   detailed_ = nullptr;
 }
 
-void TrayCast::OnDevicesUpdated(
-    const CastConfigDelegate::SinksAndRoutes& sinks_routes) {
-  sinks_and_routes_ = sinks_routes;
+void TrayCast::OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) {
+  sinks_and_routes_ = std::move(devices);
   UpdatePrimaryView();
 
   if (default_) {
@@ -531,7 +527,8 @@ void TrayCast::OnDevicesUpdated(
 }
 
 void TrayCast::UpdatePrimaryView() {
-  if (GetCastConfigDelegate() && !sinks_and_routes_.empty()) {
+  if (WmShell::Get()->cast_config()->Connected() &&
+      !sinks_and_routes_.empty()) {
     if (default_) {
       if (HasActiveRoute())
         default_->ActivateCastView();
@@ -554,7 +551,7 @@ bool TrayCast::HasActiveRoute() {
     return true;
 
   for (const auto& sr : sinks_and_routes_) {
-    if (!sr.route.title.empty())
+    if (!sr->route->title.empty())
       return true;
   }
 

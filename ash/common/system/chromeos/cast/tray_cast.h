@@ -5,7 +5,10 @@
 #ifndef ASH_COMMON_SYSTEM_CHROMEOS_CAST_TRAY_CAST_H_
 #define ASH_COMMON_SYSTEM_CHROMEOS_CAST_TRAY_CAST_H_
 
-#include "ash/common/cast_config_delegate.h"
+#include <string>
+#include <vector>
+
+#include "ash/common/cast_config_controller.h"
 #include "ash/common/shell_observer.h"
 #include "ash/common/system/tray/system_tray_item.h"
 #include "base/macros.h"
@@ -19,7 +22,7 @@ class CastDuplexView;
 
 class ASH_EXPORT TrayCast : public SystemTrayItem,
                             public ShellObserver,
-                            public CastConfigDelegate::Observer {
+                            public CastConfigControllerObserver {
  public:
   explicit TrayCast(SystemTray* system_tray);
   ~TrayCast() override;
@@ -46,9 +49,8 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   // Overridden from ShellObserver.
   void OnCastingSessionStartedOrStopped(bool started) override;
 
-  // Overridden from CastConfigDelegate::Observer.
-  void OnDevicesUpdated(
-      const CastConfigDelegate::SinksAndRoutes& devices) override;
+  // Overridden from CastConfigObserver.
+  void OnDevicesUpdated(std::vector<mojom::SinkAndRoutePtr> devices) override;
 
   // This makes sure that the current view displayed in the tray is the correct
   // one, depending on if we are currently casting. If we're casting, then a
@@ -63,7 +65,7 @@ class ASH_EXPORT TrayCast : public SystemTrayItem,
   // device is not actively transmitting information to the cast sink.
   bool HasActiveRoute();
 
-  CastConfigDelegate::SinksAndRoutes sinks_and_routes_;
+  std::vector<mojom::SinkAndRoutePtr> sinks_and_routes_;
 
   // True if there is a mirror-based cast session and the active-cast tray icon
   // should be shown.

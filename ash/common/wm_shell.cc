@@ -9,6 +9,7 @@
 #include "ash/common/accelerators/accelerator_controller.h"
 #include "ash/common/accelerators/ash_focus_manager_factory.h"
 #include "ash/common/accessibility_delegate.h"
+#include "ash/common/cast_config_controller.h"
 #include "ash/common/devtools/ash_devtools_css_agent.h"
 #include "ash/common/devtools/ash_devtools_dom_agent.h"
 #include "ash/common/focus_cycler.h"
@@ -247,6 +248,7 @@ void WmShell::SetPaletteDelegateForTesting(
 
 WmShell::WmShell(std::unique_ptr<ShellDelegate> shell_delegate)
     : delegate_(std::move(shell_delegate)),
+      cast_config_(base::MakeUnique<CastConfigController>()),
       focus_cycler_(base::MakeUnique<FocusCycler>()),
       immersive_context_(base::MakeUnique<ImmersiveContextAsh>()),
       locale_notification_controller_(
