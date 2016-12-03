@@ -62,35 +62,31 @@ PerformanceMonitor::HandlerCall::~HandlerCall() {
 
 // static
 void PerformanceMonitor::willExecuteScript(ExecutionContext* context) {
-  PerformanceMonitor* performanceMonitor =
-      PerformanceMonitor::instrumentingMonitor(context);
+  PerformanceMonitor* performanceMonitor = PerformanceMonitor::monitor(context);
   if (performanceMonitor)
-    performanceMonitor->innerWillExecuteScript(context);
+    performanceMonitor->alwaysWillExecuteScript(context);
 }
 
 // static
 void PerformanceMonitor::didExecuteScript(ExecutionContext* context) {
-  PerformanceMonitor* performanceMonitor =
-      PerformanceMonitor::instrumentingMonitor(context);
+  PerformanceMonitor* performanceMonitor = PerformanceMonitor::monitor(context);
   if (performanceMonitor)
-    performanceMonitor->didExecuteScript();
+    performanceMonitor->alwaysDidExecuteScript();
 }
 
 // static
 void PerformanceMonitor::willCallFunction(ExecutionContext* context) {
-  PerformanceMonitor* performanceMonitor =
-      PerformanceMonitor::instrumentingMonitor(context);
+  PerformanceMonitor* performanceMonitor = PerformanceMonitor::monitor(context);
   if (performanceMonitor)
-    performanceMonitor->innerWillCallFunction(context);
+    performanceMonitor->alwaysWillCallFunction(context);
 }
 
 // static
 void PerformanceMonitor::didCallFunction(ExecutionContext* context,
                                          v8::Local<v8::Function> function) {
-  PerformanceMonitor* performanceMonitor =
-      PerformanceMonitor::instrumentingMonitor(context);
+  PerformanceMonitor* performanceMonitor = PerformanceMonitor::monitor(context);
   if (performanceMonitor)
-    performanceMonitor->didCallFunction(function);
+    performanceMonitor->alwaysDidCallFunction(function);
 }
 
 // static
@@ -178,11 +174,12 @@ PerformanceMonitor* PerformanceMonitor::instrumentingMonitor(
 PerformanceMonitor::PerformanceMonitor(LocalFrame* localRoot)
     : m_localRoot(localRoot) {
   std::fill(std::begin(m_thresholds), std::end(m_thresholds), 0);
+  Platform::current()->currentThread()->addTaskTimeObserver(this);
+  Platform::current()->currentThread()->addTaskObserver(this);
 }
 
 PerformanceMonitor::~PerformanceMonitor() {
-  m_subscriptions.clear();
-  updateInstrumentation();
+  shutdown();
 }
 
 void PerformanceMonitor::subscribe(Violation violation,
@@ -204,8 +201,14 @@ void PerformanceMonitor::unsubscribeAll(Client* client) {
   updateInstrumentation();
 }
 
+void PerformanceMonitor::shutdown() {
+  m_subscriptions.clear();
+  updateInstrumentation();
+  Platform::current()->currentThread()->removeTaskTimeObserver(this);
+  Platform::current()->currentThread()->removeTaskObserver(this);
+}
+
 void PerformanceMonitor::updateInstrumentation() {
-  bool longTaskObserverEnabled = !!m_thresholds[kLongTask];
   std::fill(std::begin(m_thresholds), std::end(m_thresholds), 0);
 
   for (const auto& it : m_subscriptions) {
@@ -218,21 +221,11 @@ void PerformanceMonitor::updateInstrumentation() {
     }
   }
 
-  if (!m_thresholds[kLongTask] != !longTaskObserverEnabled) {
-    if (m_thresholds[kLongTask]) {
-      Platform::current()->currentThread()->addTaskTimeObserver(this);
-      Platform::current()->currentThread()->addTaskObserver(this);
-    } else {
-      Platform::current()->currentThread()->removeTaskTimeObserver(this);
-      Platform::current()->currentThread()->removeTaskObserver(this);
-    }
-  }
-
   m_enabled = std::count(std::begin(m_thresholds), std::end(m_thresholds), 0) <
               static_cast<int>(kAfterLast);
 }
 
-void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
+void PerformanceMonitor::alwaysWillExecuteScript(ExecutionContext* context) {
   // Heuristic for minimal frame context attribution: note the frame context
   // for each script execution. When a long task is encountered,
   // if there is only one frame context involved, then report it.
@@ -240,23 +233,30 @@ void PerformanceMonitor::innerWillExecuteScript(ExecutionContext* context) {
   // NOTE: This heuristic is imperfect and will be improved in V2 API.
   // In V2, timing of script execution along with style & layout updates will be
   // accounted for detailed and more accurate attribution.
-  if (context->isDocument() && toDocument(context)->frame())
-    m_frameContexts.add(toDocument(context)->frame());
   ++m_scriptDepth;
+  if (!m_taskExecutionContext)
+    m_taskExecutionContext = context;
+  else if (m_taskExecutionContext != context)
+    m_taskHasMultipleContexts = true;
 }
 
-void PerformanceMonitor::didExecuteScript() {
+void PerformanceMonitor::alwaysDidExecuteScript() {
   --m_scriptDepth;
 }
 
-void PerformanceMonitor::innerWillCallFunction(ExecutionContext* context) {
-  if (!m_scriptDepth && m_thresholds[m_handlerType])
+void PerformanceMonitor::alwaysWillCallFunction(ExecutionContext* context) {
+  alwaysWillExecuteScript(context);
+  if (!m_enabled)
+    return;
+  if (m_scriptDepth == 1 && m_thresholds[m_handlerType])
     m_scriptStartTime = WTF::monotonicallyIncreasingTime();
-  innerWillExecuteScript(context);
 }
 
-void PerformanceMonitor::didCallFunction(v8::Local<v8::Function> function) {
-  didExecuteScript();
+void PerformanceMonitor::alwaysDidCallFunction(
+    v8::Local<v8::Function> function) {
+  alwaysDidExecuteScript();
+  if (!m_enabled)
+    return;
   if (m_scriptDepth)
     return;
   if (m_handlerType == kAfterLast)
@@ -302,6 +302,13 @@ void PerformanceMonitor::didRecalculateStyle() {
 }
 
 void PerformanceMonitor::willProcessTask() {
+  // Reset m_taskExecutionContext. We don't clear this in didProcessTask
+  // as it is needed in ReportTaskTime which occurs after didProcessTask.
+  m_taskExecutionContext = nullptr;
+  m_taskHasMultipleContexts = false;
+
+  if (!m_enabled)
+    return;
   m_scriptDepth = 0;
   m_scriptStartTime = 0;
   m_layoutStartTime = 0;
@@ -310,13 +317,11 @@ void PerformanceMonitor::willProcessTask() {
   m_perTaskStyleAndLayoutTime = 0;
   m_handlerType = Violation::kAfterLast;
   m_handlerDepth = 0;
-
-  // Reset m_frameContexts. We don't clear this in didProcessTask
-  // as it is needed in ReportTaskTime which occurs after didProcessTask.
-  m_frameContexts.clear();
 }
 
 void PerformanceMonitor::didProcessTask() {
+  if (!m_enabled)
+    return;
   double layoutThreshold = m_thresholds[kLongLayout];
   if (!layoutThreshold || m_perTaskStyleAndLayoutTime < layoutThreshold)
     return;
@@ -344,20 +349,26 @@ void PerformanceMonitor::reportGenericViolation(Violation violation,
 void PerformanceMonitor::ReportTaskTime(scheduler::TaskQueue*,
                                         double startTime,
                                         double endTime) {
+  if (!m_enabled)
+    return;
   double taskTime = endTime - startTime;
   if (!m_thresholds[kLongTask] || taskTime < m_thresholds[kLongTask])
     return;
 
   ClientThresholds* clientThresholds = m_subscriptions.get(kLongTask);
   for (const auto& it : *clientThresholds) {
-    if (it.value < taskTime)
-      it.key->reportLongTask(startTime, endTime, m_frameContexts);
+    if (it.value < taskTime) {
+      it.key->reportLongTask(
+          startTime, endTime,
+          m_taskHasMultipleContexts ? nullptr : m_taskExecutionContext,
+          m_taskHasMultipleContexts);
+    }
   }
 }
 
 DEFINE_TRACE(PerformanceMonitor) {
   visitor->trace(m_localRoot);
-  visitor->trace(m_frameContexts);
+  visitor->trace(m_taskExecutionContext);
   visitor->trace(m_subscriptions);
 }
 

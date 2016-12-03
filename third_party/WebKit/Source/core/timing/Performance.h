@@ -77,13 +77,15 @@ class CORE_EXPORT Performance final : public PerformanceBase,
   void frameDestroyed() override;
 
   static std::pair<String, DOMWindow*> sanitizedAttribution(
-      const HeapHashSet<Member<Frame>>& frames,
+      ExecutionContext*,
+      bool hasMultipleContexts,
       Frame* observerFrame);
 
   // PerformanceMonitor::Client implementation.
   void reportLongTask(double startTime,
                       double endTime,
-                      const HeapHashSet<Member<Frame>>& contextFrames) override;
+                      ExecutionContext* taskContext,
+                      bool hasMultipleContexts) override;
 
   mutable Member<PerformanceNavigation> m_navigation;
   mutable Member<PerformanceTiming> m_timing;

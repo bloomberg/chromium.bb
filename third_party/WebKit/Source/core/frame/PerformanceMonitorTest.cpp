@@ -29,7 +29,7 @@ class PerformanceMonitorTest : public ::testing::Test {
   }
 
   void willExecuteScript(ExecutionContext* executionContext) {
-    m_monitor->innerWillExecuteScript(executionContext);
+    m_monitor->alwaysWillExecuteScript(executionContext);
   }
 
   void willProcessTask() { m_monitor->willProcessTask(); }
@@ -64,14 +64,18 @@ void PerformanceMonitorTest::SetUp() {
 
 String PerformanceMonitorTest::frameContextURL() {
   // This is reported only if there is a single frameContext URL.
-  if (m_monitor->m_frameContexts.size() != 1)
+  if (m_monitor->m_taskHasMultipleContexts)
     return "";
-  Frame* frame = (*m_monitor->m_frameContexts.begin()).get();
+  Frame* frame = toDocument(m_monitor->m_taskExecutionContext)->frame();
   return toLocalFrame(frame)->document()->location()->href();
 }
 
 int PerformanceMonitorTest::numUniqueFrameContextsSeen() {
-  return m_monitor->m_frameContexts.size();
+  if (!m_monitor->m_taskExecutionContext)
+    return 0;
+  if (!m_monitor->m_taskHasMultipleContexts)
+    return 1;
+  return 2;
 }
 
 TEST_F(PerformanceMonitorTest, SingleScriptInTask) {

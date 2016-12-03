@@ -46,7 +46,7 @@
 static const double kLongTaskThreshold = 0.05;
 
 static const char kUnknownAttribution[] = "unknown";
-static const char kAmbugiousAttribution[] = "multiple-contexts";
+static const char kAmbiguousAttribution[] = "multiple-contexts";
 static const char kSameOriginAttribution[] = "same-origin";
 static const char kAncestorAttribution[] = "cross-origin-ancestor";
 static const char kDescendantAttribution[] = "cross-origin-descendant";
@@ -166,19 +166,22 @@ static bool canAccessOrigin(Frame* frame1, Frame* frame2) {
  */
 // static
 std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
-    const HeapHashSet<Member<Frame>>& frames,
+    ExecutionContext* taskContext,
+    bool hasMultipleContexts,
     Frame* observerFrame) {
-  if (frames.size() == 0) {
+  if (hasMultipleContexts) {
+    // Unable to attribute, multiple script execution contents were involved.
+    return std::make_pair(kAmbiguousAttribution, nullptr);
+  }
+
+  if (!taskContext || !taskContext->isDocument() ||
+      !toDocument(taskContext)->frame()) {
     // Unable to attribute as no script was involved.
     return std::make_pair(kUnknownAttribution, nullptr);
   }
-  if (frames.size() > 1) {
-    // Unable to attribute, multiple script execution contents were involved.
-    return std::make_pair(kAmbugiousAttribution, nullptr);
-  }
+
   // Exactly one culprit location, attribute based on origin boundary.
-  DCHECK_EQ(1u, frames.size());
-  Frame* culpritFrame = *frames.begin();
+  Frame* culpritFrame = toDocument(taskContext)->frame();
   DCHECK(culpritFrame);
   if (canAccessOrigin(observerFrame, culpritFrame)) {
     // From accessible frames or same origin, return culprit location URL.
@@ -208,12 +211,12 @@ std::pair<String, DOMWindow*> Performance::sanitizedAttribution(
   return std::make_pair(kCrossOriginAttribution, nullptr);
 }
 
-void Performance::reportLongTask(
-    double startTime,
-    double endTime,
-    const HeapHashSet<Member<Frame>>& contextFrames) {
-  std::pair<String, DOMWindow*> attribution =
-      Performance::sanitizedAttribution(contextFrames, frame());
+void Performance::reportLongTask(double startTime,
+                                 double endTime,
+                                 ExecutionContext* taskContext,
+                                 bool hasMultipleContexts) {
+  std::pair<String, DOMWindow*> attribution = Performance::sanitizedAttribution(
+      taskContext, hasMultipleContexts, frame());
   DOMWindow* culpritDomWindow = attribution.second;
   if (!culpritDomWindow || !culpritDomWindow->document() ||
       !culpritDomWindow->document()->localOwner()) {

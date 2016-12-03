@@ -391,6 +391,9 @@ void LocalFrame::detach(FrameDetachType type) {
   // DCHECK(!m_isDetaching) here.
   m_isDetaching = true;
 
+  if (isLocalRoot())
+    m_performanceMonitor->shutdown();
+
   PluginScriptForbiddenScope forbidPluginDestructorScripting;
   m_loader.stopAllLoaders();
   // Don't allow any new child frames to load in this frame: attaching a new

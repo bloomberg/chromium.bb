@@ -40,13 +40,20 @@ class PerformanceTest : public ::testing::Test {
 
   LocalFrame* frame() const { return m_pageHolder->document().frame(); }
 
+  Document* document() const { return &m_pageHolder->document(); }
+
   LocalFrame* anotherFrame() const {
     return m_anotherPageHolder->document().frame();
   }
 
-  String sanitizedAttribution(const HeapHashSet<Member<Frame>>& frames,
+  Document* anotherDocument() const { return &m_anotherPageHolder->document(); }
+
+  String sanitizedAttribution(ExecutionContext* context,
+                              bool hasMultipleContexts,
                               Frame* observerFrame) {
-    return Performance::sanitizedAttribution(frames, observerFrame).first;
+    return Performance::sanitizedAttribution(context, hasMultipleContexts,
+                                             observerFrame)
+        .first;
   }
 
   Persistent<Performance> m_performance;
@@ -70,27 +77,23 @@ TEST_F(PerformanceTest, LongTaskObserverInstrumentation) {
 }
 
 TEST_F(PerformanceTest, SanitizedLongTaskName) {
-  HeapHashSet<Member<Frame>> frameContexts;
   // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedAttribution(frameContexts, frame()));
+  EXPECT_EQ("unknown", sanitizedAttribution(nullptr, false, frame()));
 
   // Attribute for same context (and same origin).
-  frameContexts.add(frame());
-  EXPECT_EQ("same-origin", sanitizedAttribution(frameContexts, frame()));
+  EXPECT_EQ("same-origin", sanitizedAttribution(document(), false, frame()));
 
   // Unable to attribute, when multiple script execution contents are involved.
-  frameContexts.add(anotherFrame());
-  EXPECT_EQ("multiple-contexts", sanitizedAttribution(frameContexts, frame()));
+  EXPECT_EQ("multiple-contexts",
+            sanitizedAttribution(document(), true, frame()));
 }
 
 TEST_F(PerformanceTest, SanitizedLongTaskName_CrossOrigin) {
-  HeapHashSet<Member<Frame>> frameContexts;
   // Unable to attribute, when no execution contents are available.
-  EXPECT_EQ("unknown", sanitizedAttribution(frameContexts, frame()));
+  EXPECT_EQ("unknown", sanitizedAttribution(nullptr, false, frame()));
 
   // Attribute for same context (and same origin).
-  frameContexts.add(anotherFrame());
   EXPECT_EQ("cross-origin-unreachable",
-            sanitizedAttribution(frameContexts, frame()));
+            sanitizedAttribution(anotherDocument(), false, frame()));
 }
 }
