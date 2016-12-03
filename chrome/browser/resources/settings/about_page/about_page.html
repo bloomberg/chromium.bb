@@ -141,18 +141,24 @@
               </span>
             </div>
             <div id="help" class="settings-box" on-tap="onHelpTap_" actionable>
-              $i18n{aboutGetHelpUsingChrome}
+              <div class="start">$i18n{aboutGetHelpUsingChrome}</div>
+              <button class="icon-external" is="paper-icon-button-light">
+              </button>
             </div>
 <if expr="_google_chrome">
             <div id="reportIssue" class="settings-box" actionable
                 on-tap="onReportIssueTap_">
-              $i18n{aboutReportAnIssue}
+              <div class="start">$i18n{aboutReportAnIssue}</div>
+              <button class="subpage-arrow" is="paper-icon-button-light">
+              </button>
             </div>
 </if>
 <if expr="chromeos">
             <div class="settings-box" on-tap="onDetailedBuildInfoTap_"
                 actionable>
-              $i18n{aboutDetailedBuildInfo}
+              <div class="start">$i18n{aboutDetailedBuildInfo}</div>
+              <button class="subpage-arrow" is="paper-icon-button-light">
+              </button>
             </div>
 </if>
             <div class="settings-box product-info copyable">
