@@ -351,7 +351,6 @@ std::string VertexShaderPosTexTransform::GetShaderHead() {
     uniform TexCoordPrecision vec4 texTransform[NUM_STATIC_QUADS];
     uniform float opacity[NUM_STATIC_QUADS * 4];
     varying TexCoordPrecision vec2 v_texCoord;
-    varying float v_index;
     varying float v_alpha;
   });
 }
@@ -360,7 +359,6 @@ std::string VertexShaderPosTexTransform::GetShaderBody() {
   return SHADER0([]() {
     void main() {
       int quad_index = int(a_index * 0.25);  // NOLINT
-      v_index = float(quad_index);
       gl_Position = matrix[quad_index] * a_position;
       TexCoordPrecision vec4 texTrans = texTransform[quad_index];
       v_texCoord = a_texCoord * texTrans.zw + texTrans.xy;
@@ -1218,124 +1216,58 @@ void FragmentShaderRGBATexColorMatrixAlpha::FillLocations(
   locations->backdrop_rect = backdrop_rect_location();
 }
 
-int FragmentTexQuadBase::background_color_location() const {
-  return -1;
-}
-
-int FragmentTexQuadBase::tex_clamp_rect_location() const {
-  return -1;
-}
-
-void FragmentTexClampBinding::Init(GLES2Interface* context,
-                                   unsigned program,
-                                   int* base_uniform_index) {
-  static const char* uniforms[] = {
-      "s_texture", "tex_clamp_rect",
-  };
-  int locations[arraysize(uniforms)];
-
-  GetProgramUniformLocations(context, program, arraysize(uniforms), uniforms,
-                             locations, base_uniform_index);
-
-  sampler_location_ = locations[0];
-  DCHECK_NE(sampler_location_, -1);
-
-  tex_clamp_rect_location_ = locations[1];
-  DCHECK_NE(tex_clamp_rect_location_, -1);
-}
-
-int FragmentTexClampBinding::tex_clamp_rect_location() const {
-  return tex_clamp_rect_location_;
-}
-
-std::string FragmentShaderRGBATexClampVaryingAlpha::GetShaderString(
+std::string FragmentShaderRGBATexVaryingAlpha::GetShaderString(
     TexCoordPrecision precision,
     SamplerType sampler) const {
   return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
 }
 
-std::string FragmentShaderRGBATexClampVaryingAlpha::GetShaderHead() {
-  return base::StringPrintf("#define NUM_STATIC_QUADS %d\n",
-                            StaticGeometryBinding::NUM_QUADS) +
-         SHADER0([]() {
-           precision mediump float;
-           varying TexCoordPrecision vec2 v_texCoord;
-           varying float v_index;
-           varying float v_alpha;
-           uniform SamplerType s_texture;
-           uniform vec4 tex_clamp_rect[NUM_STATIC_QUADS];
-         });
+std::string FragmentShaderRGBATexVaryingAlpha::GetShaderHead() {
+  return SHADER0([]() {
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    varying float v_alpha;
+    uniform SamplerType s_texture;
+  });
 }
 
-std::string FragmentShaderRGBATexClampVaryingAlpha::GetShaderBody() {
+std::string FragmentShaderRGBATexVaryingAlpha::GetShaderBody() {
   return SHADER0([]() {
     void main() {
-      vec2 tex_clamped = max(tex_clamp_rect[int(v_index)].xy,
-                             min(tex_clamp_rect[int(v_index)].zw, v_texCoord));
-      vec4 texColor = TextureLookup(s_texture, tex_clamped);
+      vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = texColor * v_alpha;
     }
   });
 }
 
-std::string FragmentShaderRGBATexClampPremultiplyAlpha::GetShaderString(
+std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderString(
     TexCoordPrecision precision,
     SamplerType sampler) const {
   return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
 }
 
-std::string FragmentShaderRGBATexClampPremultiplyAlpha::GetShaderHead() {
-  return base::StringPrintf("#define NUM_STATIC_QUADS %d\n",
-                            StaticGeometryBinding::NUM_QUADS) +
-         SHADER0([]() {
-           precision mediump float;
-           varying TexCoordPrecision vec2 v_texCoord;
-           varying float v_index;
-           varying float v_alpha;
-           uniform SamplerType s_texture;
-           uniform vec4 tex_clamp_rect[NUM_STATIC_QUADS];
-         });
+std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderHead() {
+  return SHADER0([]() {
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    varying float v_alpha;
+    uniform SamplerType s_texture;
+  });
 }
 
-std::string FragmentShaderRGBATexClampPremultiplyAlpha::GetShaderBody() {
+std::string FragmentShaderRGBATexPremultiplyAlpha::GetShaderBody() {
   return SHADER0([]() {
     void main() {
-      vec2 tex_clamped = max(tex_clamp_rect[int(v_index)].xy,
-                             min(tex_clamp_rect[int(v_index)].zw, v_texCoord));
-      vec4 texColor = TextureLookup(s_texture, tex_clamped);
+      vec4 texColor = TextureLookup(s_texture, v_texCoord);
       texColor.rgb *= texColor.a;
       gl_FragColor = texColor * v_alpha;
     }
   });
 }
 
-std::string FragmentShaderRGBATexClamp::GetShaderString(
-    TexCoordPrecision precision,
-    SamplerType sampler) const {
-  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
-}
-
-std::string FragmentShaderRGBATexClamp::GetShaderHead() {
-  return SHADER0([]() {
-    precision mediump float;
-    varying TexCoordPrecision vec2 v_texCoord;
-    uniform SamplerType s_texture;
-    uniform vec4 tex_clamp_rect;
-  });
-}
-
-std::string FragmentShaderRGBATexClamp::GetShaderBody() {
-  return SHADER0([]() {
-    void main() {
-      vec2 tex_clamped =
-          max(tex_clamp_rect.xy, min(tex_clamp_rect.zw, v_texCoord));
-      gl_FragColor = TextureLookup(s_texture, tex_clamped);
-    }
-  });
-}
-
 FragmentTexBackgroundBinding::FragmentTexBackgroundBinding()
-    : background_color_location_(-1) {}
+    : background_color_location_(-1), sampler_location_(-1) {
+}
 
 void FragmentTexBackgroundBinding::Init(GLES2Interface* context,
                                         unsigned program,
@@ -1357,10 +1289,6 @@ void FragmentTexBackgroundBinding::Init(GLES2Interface* context,
 
   background_color_location_ = locations[1];
   DCHECK_NE(background_color_location_, -1);
-}
-
-int FragmentTexBackgroundBinding::background_color_location() const {
-  return background_color_location_;
 }
 
 std::string FragmentShaderTexBackgroundVaryingAlpha::GetShaderString(
@@ -1436,6 +1364,25 @@ std::string FragmentShaderRGBATexOpaque::GetShaderBody() {
       vec4 texColor = TextureLookup(s_texture, v_texCoord);
       gl_FragColor = vec4(texColor.rgb, 1.0);
     }
+  });
+}
+
+std::string FragmentShaderRGBATex::GetShaderString(TexCoordPrecision precision,
+                                                   SamplerType sampler) const {
+  return FRAGMENT_SHADER(GetShaderHead(), GetShaderBody());
+}
+
+std::string FragmentShaderRGBATex::GetShaderHead() {
+  return SHADER0([]() {
+    precision mediump float;
+    varying TexCoordPrecision vec2 v_texCoord;
+    uniform SamplerType s_texture;
+  });
+}
+
+std::string FragmentShaderRGBATex::GetShaderBody() {
+  return SHADER0([]() {
+    void main() { gl_FragColor = TextureLookup(s_texture, v_texCoord); }
   });
 }
 

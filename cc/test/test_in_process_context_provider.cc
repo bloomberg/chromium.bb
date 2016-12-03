@@ -109,10 +109,6 @@ gpu::Capabilities TestInProcessContextProvider::ContextCapabilities() {
   gpu::Capabilities capabilities;
   capabilities.texture_rectangle = true;
   capabilities.sync_query = true;
-  capabilities.disable_one_component_textures =
-      capabilities_disable_one_component_textures_;
-  capabilities.texture_half_float_linear =
-      capabilities_texture_half_float_linear_;
   switch (PlatformColor::Format()) {
     case PlatformColor::SOURCE_FORMAT_RGBA8:
       capabilities.texture_format_bgra8888 = false;

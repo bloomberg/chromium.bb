@@ -50,13 +50,6 @@ class TestInProcessContextProvider : public ContextProvider {
   void SetLostContextCallback(
       const LostContextCallback& lost_context_callback) override;
 
-  void SetDisableOneComponentTextures(bool disable) {
-    capabilities_disable_one_component_textures_ = disable;
-  }
-  void SetSupportTextureHalfFloatLinear(bool support) {
-    capabilities_texture_half_float_linear_ = support;
-  }
-
  protected:
   friend class base::RefCountedThreadSafe<TestInProcessContextProvider>;
   ~TestInProcessContextProvider() override;
@@ -68,9 +61,6 @@ class TestInProcessContextProvider : public ContextProvider {
   std::unique_ptr<skia_bindings::GrContextForGLES2Interface> gr_context_;
   std::unique_ptr<ContextCacheController> cache_controller_;
   base::Lock context_lock_;
-
-  bool capabilities_disable_one_component_textures_ = false;
-  bool capabilities_texture_half_float_linear_ = false;
 };
 
 }  // namespace cc

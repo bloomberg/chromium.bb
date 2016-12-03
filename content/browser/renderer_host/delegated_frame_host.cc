@@ -386,8 +386,7 @@ void DelegatedFrameHost::AttemptFrameSubscriberCapture(
   if (subscriber_texture.get()) {
     request->SetTextureMailbox(cc::TextureMailbox(
         subscriber_texture->mailbox(), subscriber_texture->sync_token(),
-        subscriber_texture->target(), current_frame_size_in_dip_, false,
-        false));
+        subscriber_texture->target()));
   }
 
   if (local_frame_id_.is_valid()) {

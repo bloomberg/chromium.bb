@@ -41,20 +41,6 @@ class PixelExpectations(GpuTestExpectations):
     self.Flaky('Pixel_ScissorTestWithPreserveDrawingBuffer', ['mac'],
                bug=660461)
 
-    # TODO(dshwang): remove these after new reference images are generated.
-    self.Fail('Pixel_2DCanvasWebGL', bug=615325)
-    self.Fail('Pixel_2DCanvasWebGLES3', bug=615325)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefault', bug=615325)
-    self.Fail('Pixel_OffscreenCanvasWebGLDefaultWorker', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_Alpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_Alpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlpha', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_AlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_AA_NoAlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_AlphaES3', bug=615325)
-    self.Fail('Pixel_WebGLGreenTriangle_NoAA_NoAlphaES3', bug=615325)
-
     # TODO(kainino): remove this once golden images are generated
     self.Fail('Pixel_WebGLTransparentGreenTriangle_NoAlpha_ImplicitClear',
               bug=666259)

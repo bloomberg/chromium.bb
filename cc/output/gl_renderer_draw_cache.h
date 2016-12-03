@@ -38,7 +38,6 @@ struct TexturedQuadDrawCache {
 
   // Information about the program binding that is required to draw.
   int uv_xform_location;
-  int tex_clamp_rect_location = -1;
   int background_color_location;
   int vertex_opacity_location;
   int matrix_location;
@@ -46,7 +45,6 @@ struct TexturedQuadDrawCache {
 
   // A cache for the coalesced quad data.
   std::vector<Float4> uv_xform_data;
-  std::vector<Float4> tex_clamp_rect_data;
   std::vector<float> vertex_opacity_data;
   std::vector<Float16> matrix_data;
 
