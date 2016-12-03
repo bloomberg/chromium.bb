@@ -50,7 +50,7 @@ class OfflinePageTestArchiver : public OfflinePageArchiver {
                      const CreateArchiveCallback& callback) override;
 
   // Completes the creation of archive. Should be used with |set_delayed| set to
-  // ture.
+  // true.
   void CompleteCreateArchive();
 
   // When set to true, |CompleteCreateArchive| should be called explicitly for

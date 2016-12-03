@@ -59,6 +59,7 @@ RecentTabHelper::RecentTabHelper(content::WebContents* web_contents)
       page_model_(nullptr),
       snapshots_enabled_(false),
       is_page_ready_for_snapshot_(false),
+      previous_request_id_for_load_(OfflinePageModel::kInvalidOfflineId),
       delegate_(new DefaultDelegate()),
       weak_ptr_factory_(this) {
   DCHECK_CURRENTLY_ON(content::BrowserThread::UI);
@@ -160,6 +161,7 @@ void RecentTabHelper::DidFinishNavigation(
   }
 
   is_page_ready_for_snapshot_ = false;
+  previous_request_id_for_load_ = OfflinePageModel::kInvalidOfflineId;
 
   // New navigation, new snapshot session.
   snapshot_url_ = web_contents()->GetLastCommittedURL();
@@ -225,9 +227,17 @@ void RecentTabHelper::ContinueSnapshotWithIdsToPurge(
   if (!download_info_)
     return;
 
-  // Also remove the download page if this is not a first snapshot.
   std::vector<int64_t> ids(page_ids);
+  // Also remove the download page if this is not a first snapshot.
   ids.push_back(download_info_->request_id_);
+  // Do not delete a previous save from the same page load right now as it's
+  // unknown at this point in time if this snapshot will succeed.
+  for (auto it = ids.begin(); it != ids.end(); ++it) {
+    if (*it == previous_request_id_for_load_) {
+      ids.erase(it);
+      break;
+    }
+  }
 
   page_model_->DeletePagesByOfflineId(
       ids, base::Bind(&RecentTabHelper::ContinueSnapshotAfterPurge,
@@ -259,6 +269,30 @@ void RecentTabHelper::SavePageCallback(OfflinePageModel::SavePageResult result,
     return;
   download_info_->page_snapshot_completed_ =
       (result == SavePageResult::SUCCESS);
+
+  if (download_info_->page_snapshot_completed_) {
+    int64_t previous_request_id = previous_request_id_for_load_;
+    previous_request_id_for_load_ = offline_id;
+
+    // If there is a previous snapshot saved during the same page load it must
+    // be deleted before finishing the snapshot process.
+    if (previous_request_id != OfflinePageModel::kInvalidOfflineId) {
+      std::vector<int64_t> page_id = {previous_request_id};
+      page_model_->DeletePagesByOfflineId(
+          page_id, base::Bind(&RecentTabHelper::PreviousSaveWasPurged,
+                              weak_ptr_factory_.GetWeakPtr()));
+      return;
+    }
+  }
+
+  ReportSnapshotCompleted();
+}
+
+void RecentTabHelper::PreviousSaveWasPurged(
+    OfflinePageModel::DeletePageResult result) {
+  if (!download_info_)
+    return;
+
   ReportSnapshotCompleted();
 }
 

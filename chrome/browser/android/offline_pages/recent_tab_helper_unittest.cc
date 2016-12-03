@@ -32,6 +32,8 @@ const int kTabId = 153;
 
 class TestDelegate: public RecentTabHelper::Delegate {
  public:
+  const size_t kArchiveSizeToReport = 1234;
+
   explicit TestDelegate(
       OfflinePageTestArchiver::Observer* observer,
       scoped_refptr<base::SingleThreadTaskRunner> task_runner,
@@ -45,11 +47,24 @@ class TestDelegate: public RecentTabHelper::Delegate {
     // There is no expectations that tab_id is always present.
   bool GetTabId(content::WebContents* web_contents, int* tab_id) override;
 
+  void set_archive_result(
+      offline_pages::OfflinePageArchiver::ArchiverResult result) {
+    archive_result_ = result;
+  }
+
+  void set_archive_size(int64_t size) { archive_size_ = size; }
+
  private:
   OfflinePageTestArchiver::Observer* observer_;  // observer owns this.
   scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
   int tab_id_;
   bool tab_id_result_;
+
+  // These values can be updated so that new OfflinePageTestArchiver instances
+  // will return different results.
+  offline_pages::OfflinePageArchiver::ArchiverResult archive_result_ =
+      offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED;
+  int64_t archive_size_ = kArchiveSizeToReport;
 };
 
 class RecentTabHelperTest
@@ -124,10 +139,8 @@ TestDelegate::TestDelegate(
 
 std::unique_ptr<OfflinePageArchiver> TestDelegate::CreatePageArchiver(
     content::WebContents* web_contents) {
-  const size_t kArchiveSizeToReport = 1234;
   std::unique_ptr<OfflinePageTestArchiver> archiver(new OfflinePageTestArchiver(
-      observer_, web_contents->GetLastCommittedURL(),
-      offline_pages::OfflinePageArchiver::ArchiverResult::SUCCESSFULLY_CREATED,
+      observer_, web_contents->GetLastCommittedURL(), archive_result_,
       base::string16(), kArchiveSizeToReport,
       base::ThreadTaskRunnerHandle::Get()));
   return std::move(archiver);
@@ -203,12 +216,14 @@ void RecentTabHelperTest::FastForwardSnapshotController() {
   task_runner_->FastForwardBy(base::TimeDelta::FromMilliseconds(kLongDelayMs));
 }
 
+// Checks the test setup.
 TEST_F(RecentTabHelperTest, Basic) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.Init();
   EXPECT_NE(nullptr, recent_tab_helper());
 }
 
+// Loads a page and verifies that a snapshot is created.
 TEST_F(RecentTabHelperTest, SimpleCapture) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
@@ -220,6 +235,7 @@ TEST_F(RecentTabHelperTest, SimpleCapture) {
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 }
 
+// Checks that WebContents with no tab IDs are properly ignored.
 TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   // Create delegate that returns 'false' as TabId retrieval result.
   recent_tab_helper()->SetDelegate(base::MakeUnique<TestDelegate>(
@@ -235,8 +251,121 @@ TEST_F(RecentTabHelperTest, NoTabIdNoCapture) {
   EXPECT_EQ(0U, all_pages().size());
 }
 
-// Should end up with 1 page.
-TEST_F(RecentTabHelperTest, TwoCapturesSameUrl) {
+// Triggers two snapshot captures during a single page load. Should end up with
+// one offline page (the 2nd snapshot should be kept).
+TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoad) {
+  NavigateAndCommit(kTestPageUrl);
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentAvailableInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, model_changed_count());
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(0U, model_removed_count());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  int64_t first_offline_id = all_pages()[0].offline_id;
+
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(1U, model_removed_count());
+  // the same page should be simply overridden.
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  EXPECT_NE(first_offline_id, all_pages()[0].offline_id);
+}
+
+// Triggers two snapshot captures during a single page load, where the 2nd one
+// fails. Should end up with one offline page (the 1st, successful snapshot
+// should be kept).
+TEST_F(RecentTabHelperTest, TwoCapturesSamePageLoadSecondFails) {
+  NavigateAndCommit(kTestPageUrl);
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentAvailableInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, model_changed_count());
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(0U, model_removed_count());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  int64_t first_offline_id = all_pages()[0].offline_id;
+
+  // Sets a new delegate that will make the second snapshot fail.
+  TestDelegate* failing_delegate =
+      new TestDelegate(this, task_runner(), kTabId, true);
+  failing_delegate->set_archive_size(-1);
+  failing_delegate->set_archive_result(
+      offline_pages::OfflinePageArchiver::ArchiverResult::
+          ERROR_ARCHIVE_CREATION_FAILED);
+  recent_tab_helper()->SetDelegate(
+      std::unique_ptr<TestDelegate>(failing_delegate));
+
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(0U, model_removed_count());
+  // The exact same page should still be available.
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  EXPECT_EQ(first_offline_id, all_pages()[0].offline_id);
+}
+
+// Triggers two snapshot captures for two different page loads for the same URL.
+// Should end up with one offline page (snapshot from the 2nd load).
+TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrl) {
+  NavigateAndCommit(kTestPageUrl);
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentAvailableInMainFrame();
+  RunUntilIdle();
+  EXPECT_TRUE(model()->is_loaded());
+  EXPECT_EQ(0U, model_changed_count());
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(1U, model_changed_count());
+  EXPECT_EQ(0U, model_removed_count());
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  int64_t first_offline_id = all_pages()[0].offline_id;
+
+  NavigateAndCommit(kTestPageUrl);
+  // Triggers snapshot after a time delay.
+  recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
+  // Move the snapshot controller's time forward so it gets past timeouts.
+  FastForwardSnapshotController();
+  RunUntilIdle();
+  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(1U, model_removed_count());
+  // the same page should be simply overridden.
+  GetAllPages();
+  EXPECT_EQ(1U, all_pages().size());
+  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  EXPECT_NE(first_offline_id, all_pages()[0].offline_id);
+}
+
+// Triggers two snapshot captures for two different page loads for the same URL,
+// where the 2nd one fails. Should end up with no offline pages (privacy driven
+// decision).
+TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsSameUrlSecondFails) {
   NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentAvailableInMainFrame();
@@ -252,21 +381,32 @@ TEST_F(RecentTabHelperTest, TwoCapturesSameUrl) {
   EXPECT_EQ(1U, all_pages().size());
   EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
 
+  // Sets a new delegate that will make the second snapshot fail.
+  TestDelegate* failing_delegate =
+      new TestDelegate(this, task_runner(), kTabId, true);
+  failing_delegate->set_archive_size(-1);
+  failing_delegate->set_archive_result(
+      offline_pages::OfflinePageArchiver::ArchiverResult::
+          ERROR_ARCHIVE_CREATION_FAILED);
+  recent_tab_helper()->SetDelegate(
+      std::unique_ptr<TestDelegate>(failing_delegate));
+
+  NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
   // Move the snapshot controller's time forward so it gets past timeouts.
   FastForwardSnapshotController();
   RunUntilIdle();
-  EXPECT_EQ(2U, model_changed_count());
+  EXPECT_EQ(1U, model_changed_count());
   EXPECT_EQ(1U, model_removed_count());
   // the same page should be simply overridden.
   GetAllPages();
-  EXPECT_EQ(1U, all_pages().size());
-  EXPECT_EQ(kTestPageUrl, all_pages()[0].url);
+  EXPECT_EQ(0U, all_pages().size());
 }
 
-// Should end up with 1 page.
-TEST_F(RecentTabHelperTest, TwoCapturesDifferentUrls) {
+// Triggers two snapshot captures for two different page loads and URLs. Should
+// end up with one offline page.
+TEST_F(RecentTabHelperTest, TwoCapturesDifferentPageLoadsAndUrls) {
   NavigateAndCommit(kTestPageUrl);
   // Triggers snapshot after a time delay.
   recent_tab_helper()->DocumentAvailableInMainFrame();
@@ -296,6 +436,8 @@ TEST_F(RecentTabHelperTest, TwoCapturesDifferentUrls) {
   EXPECT_EQ(kTestPageUrlOther, all_pages()[0].url);
 }
 
+// Simulates an error (disconnection) during the load of a page. Should end up
+// with no offline pages.
 TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   FailLoad(kTestPageUrl);
   recent_tab_helper()->DocumentOnLoadCompletedInMainFrame();
@@ -306,6 +448,8 @@ TEST_F(RecentTabHelperTest, NoCaptureOnErrorPage) {
   EXPECT_EQ(0U, all_pages().size());
 }
 
+// Checks that no snapshots are created if the Offline Page Cache feature is
+// disabled.
 TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   base::test::ScopedFeatureList scoped_feature_list;
   scoped_feature_list.Init();
@@ -319,6 +463,8 @@ TEST_F(RecentTabHelperTest, FeatureNotEnabled) {
   EXPECT_EQ(0U, all_pages().size());
 }
 
+// Simulates a download request to offline the current page. Should end up with
+// no offline pages.
 TEST_F(RecentTabHelperTest, DISABLED_DownloadRequest) {
   NavigateAndCommit(kTestPageUrl);
   recent_tab_helper()->ObserveAndDownloadCurrentPage(

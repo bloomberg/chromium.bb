@@ -98,6 +98,7 @@ class RecentTabHelper
   void ContinueSnapshotAfterPurge(OfflinePageModel::DeletePageResult result);
   void SavePageCallback(OfflinePageModel::SavePageResult result,
                         int64_t offline_id);
+  void PreviousSaveWasPurged(OfflinePageModel::DeletePageResult result);
   void ReportSnapshotCompleted();
   void ReportDownloadStatusToRequestCoordinator();
   bool IsSamePage() const;
@@ -118,6 +119,10 @@ class RecentTabHelper
   // Info for the offline page to capture. Null if the tab is not capturing
   // current page.
   std::unique_ptr<DownloadPageInfo> download_info_;
+
+  // Stores the request/offline ID of successful snapshots that happened during
+  // a single ongoing page load.
+  int64_t previous_request_id_for_load_;
 
   // If empty, the tab does not have AndroidId and can not capture pages.
   std::string tab_id_;
