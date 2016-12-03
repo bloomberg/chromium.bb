@@ -88,6 +88,18 @@ StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
 #endif
 }
 
+mojo::ScopedHandle StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
+                                gfx::GpuMemoryBufferHandle>::
+    mach_port(const gfx::GpuMemoryBufferHandle& handle) {
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (handle.type != gfx::IO_SURFACE_BUFFER)
+    return mojo::ScopedHandle();
+  return mojo::WrapMachPort(handle.mach_port.get());
+#else
+  return mojo::ScopedHandle();
+#endif
+}
+
 bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
                   gfx::GpuMemoryBufferHandle>::
     Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
@@ -121,6 +133,16 @@ bool StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   if (out->type == gfx::OZONE_NATIVE_PIXMAP &&
       !data.ReadNativePixmapHandle(&out->native_pixmap_handle))
     return false;
+#endif
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+  if (out->type == gfx::IO_SURFACE_BUFFER) {
+    mach_port_t mach_port;
+    MojoResult unwrap_result =
+        mojo::UnwrapMachPort(data.TakeMachPort(), &mach_port);
+    if (unwrap_result != MOJO_RESULT_OK)
+      return false;
+    out->mach_port.reset(mach_port);
+  }
 #endif
   return true;
 }

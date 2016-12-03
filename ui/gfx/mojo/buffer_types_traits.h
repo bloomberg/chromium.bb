@@ -269,6 +269,7 @@ struct StructTraits<gfx::mojom::GpuMemoryBufferHandleDataView,
   }
   static const gfx::NativePixmapHandle& native_pixmap_handle(
       const gfx::GpuMemoryBufferHandle& handle);
+  static mojo::ScopedHandle mach_port(const gfx::GpuMemoryBufferHandle& handle);
   static bool Read(gfx::mojom::GpuMemoryBufferHandleDataView data,
                    gfx::GpuMemoryBufferHandle* handle);
 };

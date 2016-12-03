@@ -74,5 +74,5 @@ struct GpuMemoryBufferHandle {
   uint32 offset;
   uint32 stride;
   NativePixmapHandle? native_pixmap_handle;
-  // TODO: Add support for mach_port on mac.
+  handle? mach_port;
 };

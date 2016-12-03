@@ -4,6 +4,11 @@
 
 #include "mojo/public/cpp/system/platform_handle.h"
 
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+#include <mach/mach.h>
+#include "base/mac/mach_logging.h"
+#endif
+
 namespace mojo {
 
 namespace {
@@ -125,5 +130,40 @@ MojoResult UnwrapSharedMemoryHandle(ScopedSharedBufferHandle handle,
 
   return MOJO_RESULT_OK;
 }
+
+#if defined(OS_MACOSX) && !defined(OS_IOS)
+ScopedHandle WrapMachPort(mach_port_t port) {
+  kern_return_t kr =
+      mach_port_mod_refs(mach_task_self(), port, MACH_PORT_RIGHT_SEND, 1);
+  MACH_LOG_IF(ERROR, kr != KERN_SUCCESS, kr)
+      << "MachPortAttachmentMac mach_port_mod_refs";
+  if (kr != KERN_SUCCESS)
+    return ScopedHandle();
+
+  MojoPlatformHandle platform_handle;
+  platform_handle.struct_size = sizeof(MojoPlatformHandle);
+  platform_handle.type = MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT;
+  platform_handle.value = static_cast<uint64_t>(port);
+
+  MojoHandle mojo_handle;
+  MojoResult result = MojoWrapPlatformHandle(&platform_handle, &mojo_handle);
+  CHECK_EQ(result, MOJO_RESULT_OK);
+
+  return ScopedHandle(Handle(mojo_handle));
+}
+
+MojoResult UnwrapMachPort(ScopedHandle handle, mach_port_t* port) {
+  MojoPlatformHandle platform_handle;
+  platform_handle.struct_size = sizeof(MojoPlatformHandle);
+  MojoResult result =
+      MojoUnwrapPlatformHandle(handle.release().value(), &platform_handle);
+  if (result != MOJO_RESULT_OK)
+    return result;
+
+  CHECK_EQ(platform_handle.type, MOJO_PLATFORM_HANDLE_TYPE_MACH_PORT);
+  *port = static_cast<mach_port_t>(platform_handle.value);
+  return MOJO_RESULT_OK;
+}
+#endif  // defined(OS_MACOSX) && !defined(OS_IOS)
 
 }  // namespace mojo
