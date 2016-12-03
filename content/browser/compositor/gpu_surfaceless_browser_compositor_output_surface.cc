@@ -22,8 +22,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
     GpuSurfacelessBrowserCompositorOutputSurface(
         scoped_refptr<ContextProviderCommandBuffer> context,
         gpu::SurfaceHandle surface_handle,
-        scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-        cc::SyntheticBeginFrameSource* begin_frame_source,
+        const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator,
         unsigned int target,
@@ -31,8 +30,7 @@ GpuSurfacelessBrowserCompositorOutputSurface::
         gfx::BufferFormat format,
         gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager)
     : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        std::move(vsync_manager),
-                                        begin_frame_source,
+                                        update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       gpu_memory_buffer_manager_(gpu_memory_buffer_manager) {
   capabilities_.uses_default_gl_framebuffer = false;

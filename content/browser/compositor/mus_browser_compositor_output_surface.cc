@@ -26,13 +26,11 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     ui::Window* window,
     scoped_refptr<ContextProviderCommandBuffer> context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-    cc::SyntheticBeginFrameSource* begin_frame_source,
+    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        std::move(vsync_manager),
-                                        begin_frame_source,
+                                        update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       ui_window_(window) {
   ui_compositor_frame_sink_ = ui_window_->RequestCompositorFrameSink(
@@ -45,13 +43,11 @@ MusBrowserCompositorOutputSurface::MusBrowserCompositorOutputSurface(
     aura::Window* window,
     scoped_refptr<ContextProviderCommandBuffer> context,
     gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-    cc::SyntheticBeginFrameSource* begin_frame_source,
+    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : GpuBrowserCompositorOutputSurface(std::move(context),
-                                        std::move(vsync_manager),
-                                        begin_frame_source,
+                                        update_vsync_parameters_callback,
                                         std::move(overlay_candidate_validator)),
       window_(window) {
   aura::WindowPortMus* window_port = aura::WindowPortMus::Get(window_);

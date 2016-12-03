@@ -10,11 +10,9 @@
 #include "build/build_config.h"
 #include "cc/output/output_surface.h"
 #include "content/common/content_export.h"
-#include "ui/compositor/compositor_vsync_manager.h"
 
 namespace cc {
 class SoftwareOutputDevice;
-class SyntheticBeginFrameSource;
 }
 
 namespace display_compositor {
@@ -31,15 +29,15 @@ class ReflectorImpl;
 class CONTENT_EXPORT BrowserCompositorOutputSurface
     : public cc::OutputSurface {
  public:
+  using UpdateVSyncParametersCallback =
+      base::Callback<void(base::TimeTicks timebase, base::TimeDelta interval)>;
+
   ~BrowserCompositorOutputSurface() override;
 
   // cc::OutputSurface implementation.
   cc::OverlayCandidateValidator* GetOverlayCandidateValidator() const override;
   bool HasExternalStencilTest() const override;
   void ApplyExternalStencil() override;
-
-  void OnUpdateVSyncParametersFromGpu(base::TimeTicks timebase,
-                                      base::TimeDelta interval);
 
   void SetReflector(ReflectorImpl* reflector);
 
@@ -54,25 +52,21 @@ class CONTENT_EXPORT BrowserCompositorOutputSurface
   // Constructor used by the accelerated implementation.
   BrowserCompositorOutputSurface(
       scoped_refptr<cc::ContextProvider> context,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
   // Constructor used by the software implementation.
   BrowserCompositorOutputSurface(
       std::unique_ptr<cc::SoftwareOutputDevice> software_device,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source);
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
 
   // Constructor used by the Vulkan implementation.
   BrowserCompositorOutputSurface(
       const scoped_refptr<cc::VulkanContextProvider>& vulkan_context_provider,
-      const scoped_refptr<ui::CompositorVSyncManager>& vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source);
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback);
 
-  scoped_refptr<ui::CompositorVSyncManager> vsync_manager_;
-  cc::SyntheticBeginFrameSource* synthetic_begin_frame_source_;
+  const UpdateVSyncParametersCallback update_vsync_parameters_callback_;
   ReflectorImpl* reflector_;
 
  private:

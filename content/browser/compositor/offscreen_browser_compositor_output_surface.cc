@@ -30,13 +30,11 @@ static cc::ResourceFormat kFboTextureFormat = cc::RGBA_8888;
 OffscreenBrowserCompositorOutputSurface::
     OffscreenBrowserCompositorOutputSurface(
         scoped_refptr<ContextProviderCommandBuffer> context,
-        scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-        cc::SyntheticBeginFrameSource* begin_frame_source,
+        const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
         std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
             overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(vsync_manager),
-                                     begin_frame_source,
+                                     update_vsync_parameters_callback,
                                      std::move(overlay_candidate_validator)),
       weak_ptr_factory_(this) {
   capabilities_.uses_default_gl_framebuffer = false;

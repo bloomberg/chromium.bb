@@ -12,10 +12,10 @@ namespace content {
 
 VulkanBrowserCompositorOutputSurface::VulkanBrowserCompositorOutputSurface(
     scoped_refptr<cc::VulkanContextProvider> context,
-    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
+    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     cc::SyntheticBeginFrameSource* begin_frame_source)
     : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(vsync_manager),
+                                     update_vsync_parameters_callback,
                                      begin_frame_source),
       weak_ptr_factory_(this) {}
 

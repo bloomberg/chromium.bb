@@ -22,13 +22,11 @@ namespace content {
 
 GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
     scoped_refptr<ContextProviderCommandBuffer> context,
-    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-    cc::SyntheticBeginFrameSource* begin_frame_source,
+    const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
     std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
         overlay_candidate_validator)
     : BrowserCompositorOutputSurface(std::move(context),
-                                     std::move(vsync_manager),
-                                     begin_frame_source,
+                                     update_vsync_parameters_callback,
                                      std::move(overlay_candidate_validator)),
       weak_ptr_factory_(this) {
   if (capabilities_.uses_default_gl_framebuffer) {
@@ -37,8 +35,10 @@ GpuBrowserCompositorOutputSurface::GpuBrowserCompositorOutputSurface(
   }
 }
 
-GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() =
-    default;
+GpuBrowserCompositorOutputSurface::~GpuBrowserCompositorOutputSurface() {
+  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
+      UpdateVSyncParametersCallback());
+}
 
 void GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted(
     const std::vector<ui::LatencyInfo>& latency_info,
@@ -66,9 +66,8 @@ void GpuBrowserCompositorOutputSurface::BindToClient(
   GetCommandBufferProxy()->SetSwapBuffersCompletionCallback(
       base::Bind(&GpuBrowserCompositorOutputSurface::OnGpuSwapBuffersCompleted,
                  weak_ptr_factory_.GetWeakPtr()));
-  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(base::Bind(
-      &GpuBrowserCompositorOutputSurface::OnUpdateVSyncParametersFromGpu,
-      weak_ptr_factory_.GetWeakPtr()));
+  GetCommandBufferProxy()->SetUpdateVSyncParametersCallback(
+      update_vsync_parameters_callback_);
 }
 
 void GpuBrowserCompositorOutputSurface::EnsureBackbuffer() {}

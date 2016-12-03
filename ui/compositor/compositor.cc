@@ -371,6 +371,11 @@ void Compositor::SetAuthoritativeVSyncInterval(
 
 void Compositor::SetDisplayVSyncParameters(base::TimeTicks timebase,
                                            base::TimeDelta interval) {
+  if (interval.is_zero()) {
+    // TODO(brianderson): We should not be receiving 0 intervals.
+    interval = cc::BeginFrameArgs::DefaultInterval();
+  }
+
   context_factory_->SetDisplayVSyncParameters(this, timebase, interval);
   vsync_manager_->UpdateVSyncParameters(timebase, interval);
 }

@@ -15,10 +15,6 @@
 #include "build/build_config.h"
 #include "content/browser/compositor/browser_compositor_output_surface.h"
 
-namespace ui {
-class CompositorVSyncManager;
-}
-
 namespace content {
 class ContextProviderCommandBuffer;
 class ReflectorTexture;
@@ -28,8 +24,7 @@ class OffscreenBrowserCompositorOutputSurface
  public:
   OffscreenBrowserCompositorOutputSurface(
       scoped_refptr<ContextProviderCommandBuffer> context,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

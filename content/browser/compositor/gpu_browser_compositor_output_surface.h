@@ -23,7 +23,6 @@ struct GpuProcessHostedCALayerTreeParamsMac;
 }
 
 namespace ui {
-class CompositorVSyncManager;
 class LatencyInfo;
 }
 
@@ -39,8 +38,7 @@ class GpuBrowserCompositorOutputSurface
  public:
   GpuBrowserCompositorOutputSurface(
       scoped_refptr<ContextProviderCommandBuffer> context,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

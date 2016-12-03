@@ -24,7 +24,7 @@ class VulkanBrowserCompositorOutputSurface
  public:
   VulkanBrowserCompositorOutputSurface(
       scoped_refptr<cc::VulkanContextProvider> context,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       cc::SyntheticBeginFrameSource* begin_frame_source);
 
   ~VulkanBrowserCompositorOutputSurface() override;

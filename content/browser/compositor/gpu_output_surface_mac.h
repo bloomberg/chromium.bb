@@ -18,8 +18,7 @@ class GpuOutputSurfaceMac
       gfx::AcceleratedWidget widget,
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager);

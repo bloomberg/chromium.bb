@@ -44,8 +44,7 @@ class MusBrowserCompositorOutputSurface
       ui::Window* window,
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 
@@ -53,8 +52,7 @@ class MusBrowserCompositorOutputSurface
       aura::Window* window,
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::GpuMemoryBufferManager* gpu_memory_buffer_manager,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator);
 

@@ -27,8 +27,7 @@ class GpuSurfacelessBrowserCompositorOutputSurface
   GpuSurfacelessBrowserCompositorOutputSurface(
       scoped_refptr<ContextProviderCommandBuffer> context,
       gpu::SurfaceHandle surface_handle,
-      scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-      cc::SyntheticBeginFrameSource* begin_frame_source,
+      const UpdateVSyncParametersCallback& update_vsync_parameters_callback,
       std::unique_ptr<display_compositor::CompositorOverlayCandidateValidator>
           overlay_candidate_validator,
       unsigned int target,

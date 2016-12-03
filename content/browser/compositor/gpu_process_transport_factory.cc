@@ -447,13 +447,15 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             compositor->task_runner().get())));
   }
 
+  BrowserCompositorOutputSurface::UpdateVSyncParametersCallback vsync_callback =
+      base::Bind(&ui::Compositor::SetDisplayVSyncParameters, compositor);
+
   std::unique_ptr<BrowserCompositorOutputSurface> display_output_surface;
 #if defined(ENABLE_VULKAN)
   std::unique_ptr<VulkanBrowserCompositorOutputSurface> vulkan_surface;
   if (vulkan_context_provider) {
     vulkan_surface.reset(new VulkanBrowserCompositorOutputSurface(
-        vulkan_context_provider, compositor->vsync_manager(),
-        begin_frame_source.get()));
+        vulkan_context_provider, vsync_callback));
     if (!vulkan_surface->Initialize(compositor.get()->widget())) {
       vulkan_surface->Destroy();
       vulkan_surface.reset();
@@ -467,8 +469,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
     if (!create_gpu_output_surface) {
       display_output_surface =
           base::MakeUnique<SoftwareBrowserCompositorOutputSurface>(
-              CreateSoftwareOutputDevice(compositor.get()),
-              compositor->vsync_manager(), begin_frame_source.get(),
+              CreateSoftwareOutputDevice(compositor.get()), vsync_callback,
               compositor->task_runner());
     } else {
       DCHECK(context_provider);
@@ -476,22 +477,20 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
       if (data->surface_handle == gpu::kNullSurfaceHandle) {
         display_output_surface =
             base::MakeUnique<OffscreenBrowserCompositorOutputSurface>(
-                context_provider, compositor->vsync_manager(),
-                begin_frame_source.get(),
+                context_provider, vsync_callback,
                 std::unique_ptr<
                     display_compositor::CompositorOverlayCandidateValidator>());
       } else if (capabilities.surfaceless) {
 #if defined(OS_MACOSX)
         display_output_surface = base::MakeUnique<GpuOutputSurfaceMac>(
             compositor->widget(), context_provider, data->surface_handle,
-            compositor->vsync_manager(), begin_frame_source.get(),
+            vsync_callback,
             CreateOverlayCandidateValidator(compositor->widget()),
             GetGpuMemoryBufferManager());
 #else
         display_output_surface =
             base::MakeUnique<GpuSurfacelessBrowserCompositorOutputSurface>(
-                context_provider, data->surface_handle,
-                compositor->vsync_manager(), begin_frame_source.get(),
+                context_provider, data->surface_handle, vsync_callback,
                 CreateOverlayCandidateValidator(compositor->widget()),
                 GL_TEXTURE_2D, GL_RGB, ui::DisplaySnapshot::PrimaryFormat(),
                 GetGpuMemoryBufferManager());
@@ -508,8 +507,7 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
         if (!use_mus) {
           display_output_surface =
               base::MakeUnique<GpuBrowserCompositorOutputSurface>(
-                  context_provider, compositor->vsync_manager(),
-                  begin_frame_source.get(), std::move(validator));
+                  context_provider, vsync_callback, std::move(validator));
         } else {
 #if defined(USE_AURA)
           if (compositor->window()) {
@@ -518,8 +516,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             display_output_surface =
                 base::MakeUnique<MusBrowserCompositorOutputSurface>(
                     compositor->window(), context_provider,
-                    GetGpuMemoryBufferManager(), compositor->vsync_manager(),
-                    begin_frame_source.get(), std::move(validator));
+                    GetGpuMemoryBufferManager(), vsync_callback,
+                    std::move(validator));
           } else {
             aura::WindowTreeHost* host =
                 aura::WindowTreeHost::GetForAcceleratedWidget(
@@ -527,8 +525,8 @@ void GpuProcessTransportFactory::EstablishedGpuChannel(
             display_output_surface =
                 base::MakeUnique<MusBrowserCompositorOutputSurface>(
                     host->window(), context_provider,
-                    GetGpuMemoryBufferManager(), compositor->vsync_manager(),
-                    begin_frame_source.get(), std::move(validator));
+                    GetGpuMemoryBufferManager(), vsync_callback,
+                    std::move(validator));
           }
 #else
           NOTREACHED();
@@ -614,6 +612,7 @@ void GpuProcessTransportFactory::RemoveCompositor(ui::Compositor* compositor) {
   if (data->surface_handle)
     gpu::GpuSurfaceTracker::Get()->RemoveSurface(data->surface_handle);
 #endif
+
   per_compositor_data_.erase(it);
   if (per_compositor_data_.empty()) {
     // Destroying the GLHelper may cause some async actions to be cancelled,

@@ -76,14 +76,10 @@ CreateTestValidatorOzone() {
 
 class TestOutputSurface : public BrowserCompositorOutputSurface {
  public:
-  TestOutputSurface(scoped_refptr<cc::ContextProvider> context_provider,
-                    scoped_refptr<ui::CompositorVSyncManager> vsync_manager,
-                    cc::SyntheticBeginFrameSource* begin_frame_source)
+  TestOutputSurface(scoped_refptr<cc::ContextProvider> context_provider)
       : BrowserCompositorOutputSurface(std::move(context_provider),
-                                       std::move(vsync_manager),
-                                       begin_frame_source,
-                                       CreateTestValidatorOzone()) {
-  }
+                                       UpdateVSyncParametersCallback(),
+                                       CreateTestValidatorOzone()) {}
 
   void SetFlip(bool flip) { capabilities_.flipped_output_surface = flip; }
 
@@ -144,9 +140,8 @@ class ReflectorImplTest : public testing::Test {
 
     auto context_provider = cc::TestContextProvider::Create();
     context_provider->BindToCurrentThread();
-    output_surface_ = base::MakeUnique<TestOutputSurface>(
-        std::move(context_provider), compositor_->vsync_manager(),
-        begin_frame_source_.get());
+    output_surface_ =
+        base::MakeUnique<TestOutputSurface>(std::move(context_provider));
 
     root_layer_.reset(new ui::Layer(ui::LAYER_SOLID_COLOR));
     compositor_->SetRootLayer(root_layer_.get());
