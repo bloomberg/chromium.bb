@@ -1,0 +1,41 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/collapse.png",
+    "resources/collapse@2x.png",
+    "resources/collapse@3x.png",
+    "resources/collapse_incognito.png",
+    "resources/collapse_incognito@2x.png",
+    "resources/collapse_incognito@3x.png",
+    "resources/collapse_pressed.png",
+    "resources/collapse_pressed@2x.png",
+    "resources/collapse_pressed@3x.png",
+    "resources/collapse_pressed_incognito.png",
+    "resources/collapse_pressed_incognito@2x.png",
+    "resources/collapse_pressed_incognito@3x.png",
+    "resources/incognito_marker_typing.png",
+    "resources/incognito_marker_typing@2x.png",
+    "resources/incognito_marker_typing@3x.png",
+    "resources/toolbar_dark_newtab.png",
+    "resources/toolbar_dark_newtab@2x.png",
+    "resources/toolbar_dark_newtab@3x.png",
+    "resources/toolbar_dark_newtab_active.png",
+    "resources/toolbar_dark_newtab_active@2x.png",
+    "resources/toolbar_dark_newtab_active@3x.png",
+    "resources/toolbar_dark_newtab_incognito.png",
+    "resources/toolbar_dark_newtab_incognito@2x.png",
+    "resources/toolbar_dark_newtab_incognito@3x.png",
+    "resources/toolbar_dark_newtab_incognito_active.png",
+    "resources/toolbar_dark_newtab_incognito_active@2x.png",
+    "resources/toolbar_dark_newtab_incognito_active@3x.png",
+    "resources/toolbar_tools.png",
+    "resources/toolbar_tools@2x.png",
+    "resources/toolbar_tools@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}

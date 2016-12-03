@@ -1,0 +1,50 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+bundle_data("resources") {
+  sources = [
+    "resources/tabswitcher_full_history.png",
+    "resources/tabswitcher_full_history@2x.png",
+    "resources/tabswitcher_full_history@3x.png",
+    "resources/tabswitcher_incognito.png",
+    "resources/tabswitcher_incognito@2x.png",
+    "resources/tabswitcher_incognito@3x.png",
+    "resources/tabswitcher_laptop.png",
+    "resources/tabswitcher_laptop@2x.png",
+    "resources/tabswitcher_laptop@3x.png",
+    "resources/tabswitcher_menu.png",
+    "resources/tabswitcher_menu@2x.png",
+    "resources/tabswitcher_menu@3x.png",
+    "resources/tabswitcher_new_tab.png",
+    "resources/tabswitcher_new_tab@2x.png",
+    "resources/tabswitcher_new_tab@3x.png",
+    "resources/tabswitcher_new_tab_fab.png",
+    "resources/tabswitcher_new_tab_fab@2x.png",
+    "resources/tabswitcher_new_tab_fab@3x.png",
+    "resources/tabswitcher_open_tabs.png",
+    "resources/tabswitcher_open_tabs@2x.png",
+    "resources/tabswitcher_open_tabs@3x.png",
+    "resources/tabswitcher_other_devices.png",
+    "resources/tabswitcher_other_devices@2x.png",
+    "resources/tabswitcher_other_devices@3x.png",
+    "resources/tabswitcher_overflow_arrow.png",
+    "resources/tabswitcher_overflow_arrow@2x.png",
+    "resources/tabswitcher_overflow_arrow@3x.png",
+    "resources/tabswitcher_phone.png",
+    "resources/tabswitcher_phone@2x.png",
+    "resources/tabswitcher_phone@3x.png",
+    "resources/tabswitcher_recently_closed.png",
+    "resources/tabswitcher_recently_closed@2x.png",
+    "resources/tabswitcher_recently_closed@3x.png",
+    "resources/tabswitcher_tab_switcher_button.png",
+    "resources/tabswitcher_tab_switcher_button@2x.png",
+    "resources/tabswitcher_tab_switcher_button@3x.png",
+    "resources/tabswitcher_tablet.png",
+    "resources/tabswitcher_tablet@2x.png",
+    "resources/tabswitcher_tablet@3x.png",
+  ]
+  outputs = [
+    "{{bundle_resources_dir}}/{{source_file_part}}",
+  ]
+}
