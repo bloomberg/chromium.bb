@@ -649,6 +649,8 @@ RenderWidgetHostInputEventRouter::GetRenderWidgetHostAtPoint(
     RenderWidgetHostViewBase* root_view,
     const gfx::Point& point,
     gfx::Point* transformed_point) {
+  if (!root_view)
+    return nullptr;
   return RenderWidgetHostImpl::From(
       FindEventTarget(root_view, point, transformed_point)
           ->GetRenderWidgetHost());

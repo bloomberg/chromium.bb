@@ -134,6 +134,13 @@ int GetModifierFlags() {
   NSPoint viewPoint = [self flipWindowPointToView:windowPoint view:view];
   NSPoint screenPoint = [self flipWindowPointToScreen:windowPoint view:view];
   gfx::Point transformedPt;
+  if (!webContents_->GetRenderWidgetHostView()) {
+    // TODO(ekaramad, paulmeyer): Find a better way than toggling |canceled_|.
+    // This could happen when the renderer process for the top-level RWH crashes
+    // (see https://crbug.com/670645).
+    canceled_ = true;
+    return NSDragOperationNone;
+  }
   currentRWHForDrag_ =
       [self GetRenderWidgetHostAtPoint:viewPoint transformedPt:&transformedPt]
           ->GetWeakPtr();
@@ -201,8 +208,13 @@ int GetModifierFlags() {
   dropData_.reset();
 }
 
-- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info
-                              view:(NSView*)view {
+- (NSDragOperation)draggingUpdated:(id<NSDraggingInfo>)info view:(NSView*)view {
+  if (canceled_) {
+    // TODO(ekaramad,paulmeyer): We probably shouldn't be checking for
+    // |canceled_| twice in this method.
+    return NSDragOperationNone;
+  }
+
   // Create the appropriate mouse locations for WebCore. The draggingLocation
   // is in window coordinates. Both need to be flipped.
   NSPoint windowPoint = [info draggingLocation];
