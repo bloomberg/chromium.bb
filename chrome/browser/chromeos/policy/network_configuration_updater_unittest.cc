@@ -312,10 +312,12 @@ class NetworkConfigurationUpdaterTest : public testing::Test {
   std::unique_ptr<PolicyServiceImpl> policy_service_;
   FakeUser fake_user_;
 
+  // Must outlive |profile_|.
+  content::TestBrowserThreadBundle thread_bundle_;
+
   TestingProfile profile_;
 
   std::unique_ptr<NetworkConfigurationUpdater> network_configuration_updater_;
-  content::TestBrowserThreadBundle thread_bundle_;
 };
 
 TEST_F(NetworkConfigurationUpdaterTest, CellularAllowRoaming) {

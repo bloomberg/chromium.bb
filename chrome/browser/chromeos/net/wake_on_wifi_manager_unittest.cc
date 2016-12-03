@@ -31,13 +31,15 @@ class WakeOnWifiObserverTest : public ::testing::Test {
   }
   ~WakeOnWifiObserverTest() override {}
 
+ private:
+  // Must outlive |profile_|.
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   StrictMock<MockNetworkDeviceHandler> mock_network_device_handler_;
   TestingProfile profile_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
   DISALLOW_COPY_AND_ASSIGN(WakeOnWifiObserverTest);
 };
 

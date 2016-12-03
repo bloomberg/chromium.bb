@@ -57,11 +57,15 @@ class HatsFinchHelperTest : public testing::Test {
     return params;
   }
 
+ private:
+  // Must outlive |profile_|.
+  content::TestBrowserThreadBundle thread_bundle_;
+
+ protected:
   TestingProfile profile_;
 
  private:
   variations::testing::VariationParamsManager params_manager_;
-  content::TestBrowserThreadBundle thread_bundle_;
   base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsFinchHelperTest);

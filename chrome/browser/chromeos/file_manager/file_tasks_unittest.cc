@@ -167,9 +167,11 @@ TEST(FileManagerFileTasksTest, ParseTaskID_UnknownTaskType) {
 }
 
 TEST(FileManagerFileTasksTest, FindDriveAppTasks) {
-  TestingProfile profile;
-  // For DriveAppRegistry, which checks CurrentlyOn(BrowserThread::UI).
+  // For DriveAppRegistry and TestingProfile, which check
+  // CurrentlyOn(BrowserThread::UI).
   content::TestBrowserThreadBundle thread_bundle;
+
+  TestingProfile profile;
 
   // Foo.app can handle "text/plain" and "text/html"
   std::unique_ptr<google_apis::AppResource> foo_app(

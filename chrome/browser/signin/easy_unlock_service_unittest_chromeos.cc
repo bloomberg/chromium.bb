@@ -296,14 +296,16 @@ class EasyUnlockServiceTest : public testing::Test {
                                                 account_id.GetUserEmail());
   }
 
+ private:
+  // Must outlive TestingProfiles.
+  content::TestBrowserThreadBundle thread_bundle_;
+
  protected:
   std::unique_ptr<TestingProfile> profile_;
   std::unique_ptr<TestingProfile> secondary_profile_;
   chromeos::MockUserManager* mock_user_manager_;
 
  private:
-  content::TestBrowserThreadBundle thread_bundle_;
-
   chromeos::ScopedUserManagerEnabler scoped_user_manager_;
 
   FakePowerManagerClient* power_manager_client_;
