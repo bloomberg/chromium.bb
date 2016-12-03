@@ -35,6 +35,7 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // MediaObserver implementations.
   void OnEnteredFullscreen() override;
   void OnExitedFullscreen() override;
+  void OnBecameDominantVisibleContent(bool is_dominant) override;
   void OnSetCdm(CdmContext* cdm_context) override;
   void OnMetadataChanged(const PipelineMetadata& metadata) override;
   void OnRemotePlaybackDisabled(bool disabled) override;
@@ -112,6 +113,9 @@ class RemotingRendererController final : public RemotingSourceImpl::Client,
   // Remote Playback API spec for more details:
   // https://w3c.github.io/remote-playback
   bool is_remote_playback_disabled_ = true;
+
+  // Indicates whether video is the dominant visible content in the tab.
+  bool is_dominant_content_ = false;
 
   // The callback to switch the media renderer.
   base::Closure switch_renderer_cb_;

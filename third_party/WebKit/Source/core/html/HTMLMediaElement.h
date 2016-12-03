@@ -333,6 +333,9 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   virtual void setDisplayMode(DisplayMode mode) { m_displayMode = mode; }
 
  private:
+  // Friend class for testing.
+  friend class MediaElementFillingViewportTest;
+
   void resetMediaPlayerAndMediaSource();
 
   bool alwaysCreateUserAgentShadowRoot() const final { return true; }
@@ -540,10 +543,14 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   void onVisibilityChangedForAutoplay(bool isVisible);
 
+  void checkViewportIntersectionChanged();
+  void viewportFillDebouncerTimerFired(TimerBase*);
+
   UnthrottledThreadTimer<HTMLMediaElement> m_loadTimer;
   UnthrottledThreadTimer<HTMLMediaElement> m_progressEventTimer;
   UnthrottledThreadTimer<HTMLMediaElement> m_playbackProgressTimer;
   UnthrottledThreadTimer<HTMLMediaElement> m_audioTracksTimer;
+  UnthrottledThreadTimer<HTMLMediaElement> m_viewportFillDebouncerTimer;
   Member<TimeRanges> m_playedTimeRanges;
   Member<GenericEventQueue> m_asyncEventQueue;
 
@@ -643,6 +650,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   // Whether this element is in overlay fullscreen mode.
   bool m_inOverlayFullscreenVideo : 1;
 
+  bool m_mostlyFillingViewport : 1;
+
   TraceWrapperMember<AudioTrackList> m_audioTracks;
   TraceWrapperMember<VideoTrackList> m_videoTracks;
   TraceWrapperMember<TextTrackList> m_textTracks;
@@ -723,6 +732,8 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
 
   // class AutoplayVisibilityObserver;
   Member<ElementVisibilityObserver> m_autoplayVisibilityObserver;
+
+  IntRect m_currentIntersectRect;
 
   static URLRegistry* s_mediaStreamRegistry;
 };

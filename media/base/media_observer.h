@@ -20,6 +20,10 @@ class MEDIA_EXPORT MediaObserver {
   virtual void OnEnteredFullscreen() = 0;
   virtual void OnExitedFullscreen() = 0;
 
+  // Called when the media element starts/stops being the dominant visible
+  // content.
+  virtual void OnBecameDominantVisibleContent(bool is_dominant) {}
+
   // Called when CDM is attached to the media element. The |cdm_context| is
   // only guaranteed to be valid in this call.
   virtual void OnSetCdm(CdmContext* cdm_context) = 0;

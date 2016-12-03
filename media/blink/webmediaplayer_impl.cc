@@ -365,6 +365,11 @@ void WebMediaPlayerImpl::exitedFullscreen() {
     observer_->OnExitedFullscreen();
 }
 
+void WebMediaPlayerImpl::becameDominantVisibleContent(bool isDominant) {
+  if (observer_)
+    observer_->OnBecameDominantVisibleContent(isDominant);
+}
+
 void WebMediaPlayerImpl::DoLoad(LoadType load_type,
                                 const blink::WebURL& url,
                                 CORSMode cors_mode) {

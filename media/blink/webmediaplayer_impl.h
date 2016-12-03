@@ -181,6 +181,7 @@ class MEDIA_BLINK_EXPORT WebMediaPlayerImpl
   bool supportsOverlayFullscreenVideo() override;
   void enteredFullscreen() override;
   void exitedFullscreen() override;
+  void becameDominantVisibleContent(bool isDominant) override;
 
   // WebMediaPlayerDelegate::Observer implementation.
   void OnHidden() override;

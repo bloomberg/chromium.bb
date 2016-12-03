@@ -39,6 +39,7 @@
 #include "core/dom/ElementTraversal.h"
 #include "core/dom/ElementVisibilityObserver.h"
 #include "core/dom/Fullscreen.h"
+#include "core/dom/IntersectionGeometry.h"
 #include "core/dom/TaskRunnerHelper.h"
 #include "core/dom/shadow/ShadowRoot.h"
 #include "core/events/Event.h"
@@ -124,6 +125,9 @@ using DocumentElementSetMap =
     HeapHashMap<WeakMember<Document>, Member<WeakMediaElementSet>>;
 
 namespace {
+
+constexpr float kMostlyFillViewportThreshold = 0.85f;
+constexpr double kMostlyFillViewportBecomeStableSeconds = 5;
 
 enum MediaControlsShow {
   MediaControlsShowAttribute = 0,
@@ -344,6 +348,9 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_playbackProgressTimer(this,
                               &HTMLMediaElement::playbackProgressTimerFired),
       m_audioTracksTimer(this, &HTMLMediaElement::audioTracksTimerFired),
+      m_viewportFillDebouncerTimer(
+          this,
+          &HTMLMediaElement::viewportFillDebouncerTimerFired),
       m_playedTimeRanges(),
       m_asyncEventQueue(GenericEventQueue::create(this)),
       m_playbackRate(1.0f),
@@ -383,6 +390,7 @@ HTMLMediaElement::HTMLMediaElement(const QualifiedName& tagName,
       m_processingPreferenceChange(false),
       m_playingRemotely(false),
       m_inOverlayFullscreenVideo(false),
+      m_mostlyFillingViewport(false),
       m_audioTracks(this, AudioTrackList::create(*this)),
       m_videoTracks(this, VideoTrackList::create(*this)),
       m_textTracks(this, nullptr),
@@ -1126,6 +1134,8 @@ void HTMLMediaElement::startPlayerLoad(const KURL& playerProvidedUrl) {
 
   if (isFullscreen())
     m_webMediaPlayer->enteredFullscreen();
+
+  m_webMediaPlayer->becameDominantVisibleContent(m_mostlyFillingViewport);
 }
 
 void HTMLMediaElement::setPlayerPreload() {
@@ -2408,6 +2418,8 @@ void HTMLMediaElement::startPlaybackProgressTimer() {
 }
 
 void HTMLMediaElement::playbackProgressTimerFired(TimerBase*) {
+  checkViewportIntersectionChanged();
+
   if (!std::isnan(m_fragmentEndTime) && currentTime() >= m_fragmentEndTime &&
       getDirectionOfPlayback() == Forward) {
     m_fragmentEndTime = std::numeric_limits<double>::quiet_NaN();
@@ -4031,6 +4043,44 @@ DEFINE_TRACE(HTMLMediaElement::AudioClientImpl) {
 
 DEFINE_TRACE(HTMLMediaElement::AudioSourceProviderImpl) {
   visitor->trace(m_client);
+}
+
+void HTMLMediaElement::checkViewportIntersectionChanged() {
+  // TODO(xjz): Early return if we not in tab mirroring.
+
+  IntersectionGeometry geometry(
+      &document(), this, Vector<Length>(),
+      IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds);
+  geometry.computeGeometry();
+  IntRect intersectRect = geometry.intersectionIntRect();
+  if (m_currentIntersectRect == intersectRect)
+    return;
+
+  m_currentIntersectRect = intersectRect;
+  // Reset on any intersection change, since this indicates the user is
+  // scrolling around in the document, the document is changing layout, etc.
+  m_viewportFillDebouncerTimer.stop();
+  bool isMostlyFillingViewport =
+      (m_currentIntersectRect.size().area() >
+       kMostlyFillViewportThreshold * geometry.rootIntRect().size().area());
+  if (m_mostlyFillingViewport == isMostlyFillingViewport)
+    return;
+
+  if (!isMostlyFillingViewport) {
+    m_mostlyFillingViewport = isMostlyFillingViewport;
+    if (m_webMediaPlayer)
+      m_webMediaPlayer->becameDominantVisibleContent(m_mostlyFillingViewport);
+    return;
+  }
+
+  m_viewportFillDebouncerTimer.startOneShot(
+      kMostlyFillViewportBecomeStableSeconds, BLINK_FROM_HERE);
+}
+
+void HTMLMediaElement::viewportFillDebouncerTimerFired(TimerBase*) {
+  m_mostlyFillingViewport = true;
+  if (m_webMediaPlayer)
+    m_webMediaPlayer->becameDominantVisibleContent(m_mostlyFillingViewport);
 }
 
 }  // namespace blink

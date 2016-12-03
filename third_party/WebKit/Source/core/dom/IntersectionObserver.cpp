@@ -20,8 +20,6 @@
 #include "core/frame/LocalFrame.h"
 #include "core/html/HTMLFrameOwnerElement.h"
 #include "core/inspector/ConsoleMessage.h"
-#include "core/layout/api/LayoutAPIShim.h"
-#include "core/layout/api/LayoutViewItem.h"
 #include "core/timing/DOMWindowPerformance.h"
 #include "core/timing/Performance.h"
 #include "platform/Timer.h"
@@ -243,13 +241,6 @@ void IntersectionObserver::clearWeakMembers(Visitor* visitor) {
   m_root = nullptr;
 }
 
-LayoutObject* IntersectionObserver::rootLayoutObject() const {
-  Node* node = rootNode();
-  if (node->isDocumentNode())
-    return LayoutAPIShim::layoutObjectFrom(toDocument(node)->layoutViewItem());
-  return toElement(node)->layoutObject();
-}
-
 void IntersectionObserver::observe(Element* target,
                                    ExceptionState& exceptionState) {
   if (!m_root) {
@@ -279,8 +270,11 @@ void IntersectionObserver::observe(Element* target,
     isDOMDescendant = (targetFrame->tree().top() == rootFrame);
   }
 
-  IntersectionObservation* observation =
-      new IntersectionObservation(*this, *target, shouldReportRootBounds);
+  IntersectionObservation* observation = new IntersectionObservation(
+      *this, *target,
+      shouldReportRootBounds
+          ? IntersectionGeometry::ReportRootBounds::kShouldReportRootBounds
+          : IntersectionGeometry::ReportRootBounds::kShouldNotReportRootBounds);
   target->ensureIntersectionObserverData().addObservation(*observation);
   m_observations.add(observation);
 
@@ -404,29 +398,6 @@ void IntersectionObserver::enqueueIntersectionObserverEntry(
   toDocument(m_callback->getExecutionContext())
       ->ensureIntersectionObserverController()
       .scheduleIntersectionObserverForDelivery(*this);
-}
-
-static LayoutUnit computeMargin(const Length& length,
-                                LayoutUnit referenceLength) {
-  if (length.type() == Percent)
-    return LayoutUnit(
-        static_cast<int>(referenceLength.toFloat() * length.percent() / 100.0));
-  DCHECK_EQ(length.type(), Fixed);
-  return LayoutUnit(length.intValue());
-}
-
-void IntersectionObserver::applyRootMargin(LayoutRect& rect) const {
-  // TODO(szager): Make sure the spec is clear that left/right margins are
-  // resolved against width and not height.
-  LayoutUnit topMargin = computeMargin(m_topMargin, rect.height());
-  LayoutUnit rightMargin = computeMargin(m_rightMargin, rect.width());
-  LayoutUnit bottomMargin = computeMargin(m_bottomMargin, rect.height());
-  LayoutUnit leftMargin = computeMargin(m_leftMargin, rect.width());
-
-  rect.setX(rect.x() - leftMargin);
-  rect.setWidth(rect.width() + leftMargin + rightMargin);
-  rect.setY(rect.y() - topMargin);
-  rect.setHeight(rect.height() + topMargin + bottomMargin);
 }
 
 unsigned IntersectionObserver::firstThresholdGreaterThan(float ratio) const {

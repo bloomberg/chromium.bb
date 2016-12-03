@@ -19,7 +19,6 @@ namespace blink {
 class Document;
 class Element;
 class ExceptionState;
-class LayoutObject;
 class IntersectionObserverCallback;
 class IntersectionObserverInit;
 
@@ -64,14 +63,12 @@ class CORE_EXPORT IntersectionObserver final
   const Vector<float>& thresholds() const { return m_thresholds; }
 
   Node* rootNode() const { return m_root.get(); }
-  LayoutObject* rootLayoutObject() const;
   const Length& topMargin() const { return m_topMargin; }
   const Length& rightMargin() const { return m_rightMargin; }
   const Length& bottomMargin() const { return m_bottomMargin; }
   const Length& leftMargin() const { return m_leftMargin; }
   void computeIntersectionObservations();
   void enqueueIntersectionObserverEntry(IntersectionObserverEntry&);
-  void applyRootMargin(LayoutRect&) const;
   unsigned firstThresholdGreaterThan(float ratio) const;
   void deliver();
   void removeObservation(IntersectionObservation&);

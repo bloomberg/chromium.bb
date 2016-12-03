@@ -229,6 +229,10 @@ class WebMediaPlayer {
   virtual void enteredFullscreen() {}
   virtual void exitedFullscreen() {}
 
+  // Inform WebMediaPlayer when the element starts/stops being the dominant
+  // visible content.
+  virtual void becameDominantVisibleContent(bool isDominant) {}
+
   virtual void enabledAudioTracksChanged(
       const WebVector<TrackId>& enabledTrackIds) {}
   // |selectedTrackId| is null if no track is selected.

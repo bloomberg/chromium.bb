@@ -60,6 +60,13 @@ void RemotingRendererController::OnExitedFullscreen() {
   UpdateAndMaybeSwitch();
 }
 
+void RemotingRendererController::OnBecameDominantVisibleContent(
+    bool is_dominant) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  is_dominant_content_ = is_dominant;
+  UpdateAndMaybeSwitch();
+}
+
 void RemotingRendererController::OnSetCdm(CdmContext* cdm_context) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
@@ -215,10 +222,10 @@ bool RemotingRendererController::ShouldBeRemoting() {
   if (is_remote_playback_disabled_)
     return false;
 
-  // Normally, entering fullscreen is the signal that starts remote rendering.
-  // However, current technical limitations require encrypted content be remoted
-  // without waiting for a user signal.
-  return is_fullscreen_;
+  // Normally, entering fullscreen or being the dominant visible content is the
+  // signal that starts remote rendering. However, current technical limitations
+  // require encrypted content be remoted without waiting for a user signal.
+  return is_fullscreen_ || is_dominant_content_;
 }
 
 void RemotingRendererController::UpdateAndMaybeSwitch() {
