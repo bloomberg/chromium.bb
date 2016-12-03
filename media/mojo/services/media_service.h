@@ -50,7 +50,7 @@ class MEDIA_MOJO_EXPORT MediaService
   // mojom::MediaService implementation.
   void CreateInterfaceFactory(
       mojom::InterfaceFactoryRequest request,
-      service_manager::mojom::InterfaceProviderPtr remote_interfaces) final;
+      service_manager::mojom::InterfaceProviderPtr host_interfaces) final;
 
   // Note: Since each instance runs on a different thread, do not share a common
   // MojoMediaClient with other instances to avoid threading issues. Hence using

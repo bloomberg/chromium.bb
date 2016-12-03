@@ -16,6 +16,7 @@ class SingleThreadTaskRunner;
 }
 
 namespace service_manager {
+class Connector;
 namespace mojom {
 class InterfaceProvider;
 }
@@ -38,8 +39,9 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   // up tasks requiring the message loop must be completed before returning.
   virtual ~MojoMediaClient();
 
-  // Called exactly once before any other method.
-  virtual void Initialize();
+  // Called exactly once before any other method. |connector| can be used by
+  // |this| to connect to other services. It is guaranteed to outlive |this|.
+  virtual void Initialize(service_manager::Connector* connector);
 
   virtual std::unique_ptr<AudioDecoder> CreateAudioDecoder(
       scoped_refptr<base::SingleThreadTaskRunner> task_runner);
@@ -61,9 +63,11 @@ class MEDIA_MOJO_EXPORT MojoMediaClient {
   virtual std::unique_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log);
 
-  // Returns the CdmFactory to be used by MojoCdmService.
+  // Returns the CdmFactory to be used by MojoCdmService. |host_interfaces| can
+  // be used to request interfaces provided remotely by the host. It may be a
+  // nullptr if the host chose not to bind the InterfacePtr.
   virtual std::unique_ptr<CdmFactory> CreateCdmFactory(
-      service_manager::mojom::InterfaceProvider* interface_provider);
+      service_manager::mojom::InterfaceProvider* host_interfaces);
 
  protected:
   MojoMediaClient();

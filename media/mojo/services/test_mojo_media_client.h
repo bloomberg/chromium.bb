@@ -30,7 +30,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   ~TestMojoMediaClient() final;
 
   // MojoMediaClient implementation.
-  void Initialize() final;
+  void Initialize(service_manager::Connector* connector) final;
   scoped_refptr<AudioRendererSink> CreateAudioRendererSink(
       const std::string& audio_device_id) final;
   std::unique_ptr<VideoRendererSink> CreateVideoRendererSink(
@@ -38,8 +38,7 @@ class TestMojoMediaClient : public MojoMediaClient {
   std::unique_ptr<RendererFactory> CreateRendererFactory(
       const scoped_refptr<MediaLog>& media_log) final;
   std::unique_ptr<CdmFactory> CreateCdmFactory(
-      service_manager::mojom::InterfaceProvider* /* interface_provider */)
-      final;
+      service_manager::mojom::InterfaceProvider* /* host_interfaces */) final;
 
  private:
   ScopedAudioManagerPtr audio_manager_;

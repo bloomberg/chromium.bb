@@ -92,12 +92,19 @@ CastMojoMediaClient::CastMojoMediaClient(
     const CreateCdmFactoryCB& create_cdm_factory_cb,
     VideoResolutionPolicy* video_resolution_policy,
     MediaResourceTracker* media_resource_tracker)
-    : create_backend_cb_(create_backend_cb),
+    : connector_(nullptr),
+      create_backend_cb_(create_backend_cb),
       create_cdm_factory_cb_(create_cdm_factory_cb),
       video_resolution_policy_(video_resolution_policy),
       media_resource_tracker_(media_resource_tracker) {}
 
 CastMojoMediaClient::~CastMojoMediaClient() {}
+
+void CastMojoMediaClient::Initialize(service_manager::Connector* connector) {
+  DCHECK(!connector_);
+  DCHECK(connector);
+  connector_ = connector;
+}
 
 scoped_refptr<::media::AudioRendererSink>
 CastMojoMediaClient::CreateAudioRendererSink(
@@ -114,7 +121,7 @@ CastMojoMediaClient::CreateRendererFactory(
 }
 
 std::unique_ptr<::media::CdmFactory> CastMojoMediaClient::CreateCdmFactory(
-    service_manager::mojom::InterfaceProvider* interface_provider) {
+    service_manager::mojom::InterfaceProvider* /* host_interfaces */) {
   return create_cdm_factory_cb_.Run();
 }
 

@@ -29,7 +29,7 @@ void MediaService::OnStart() {
   ref_factory_.reset(new service_manager::ServiceContextRefFactory(
       base::Bind(&service_manager::ServiceContext::RequestQuit,
                  base::Unretained(context()))));
-  mojo_media_client_->Initialize();
+  mojo_media_client_->Initialize(context()->connector());
 }
 
 bool MediaService::OnConnect(const service_manager::ServiceInfo& remote_info,
@@ -50,14 +50,14 @@ void MediaService::Create(const service_manager::Identity& remote_identity,
 
 void MediaService::CreateInterfaceFactory(
     mojom::InterfaceFactoryRequest request,
-    service_manager::mojom::InterfaceProviderPtr remote_interfaces) {
+    service_manager::mojom::InterfaceProviderPtr host_interfaces) {
   // Ignore request if service has already stopped.
   if (!mojo_media_client_)
     return;
 
   mojo::MakeStrongBinding(
       base::MakeUnique<InterfaceFactoryImpl>(
-          std::move(remote_interfaces), media_log_, ref_factory_->CreateRef(),
+          std::move(host_interfaces), media_log_, ref_factory_->CreateRef(),
           mojo_media_client_.get()),
       std::move(request));
 }
