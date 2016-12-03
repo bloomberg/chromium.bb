@@ -51,7 +51,6 @@ class InspectorOverlay;
 class InspectorResourceContainer;
 class InspectorResourceContentLoader;
 class LocalFrame;
-class Page;
 class WebDevToolsAgentClient;
 class WebFrameWidgetImpl;
 class WebLayerTreeView;

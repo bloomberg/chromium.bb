@@ -46,8 +46,6 @@
 
 namespace blink {
 
-class Dictionary;
-
 class ElementAnimation {
   STATIC_ONLY(ElementAnimation);
 

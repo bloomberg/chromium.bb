@@ -33,6 +33,7 @@ namespace blink {
 
 class HitTestRequest;
 class HitTestResult;
+class InlineFlowBox;
 class LayoutObject;
 class RootInlineBox;
 

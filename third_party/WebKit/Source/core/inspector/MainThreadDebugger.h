@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ErrorEvent;
 class LocalFrame;
 class SecurityOrigin;

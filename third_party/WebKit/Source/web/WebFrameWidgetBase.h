@@ -14,11 +14,9 @@ namespace blink {
 
 class CompositorAnimationTimeline;
 class CompositorProxyClient;
-class DragController;
 class GraphicsLayer;
 class WebImage;
 class WebLayer;
-class WebLocalFrameImpl;
 class WebViewImpl;
 class HitTestResult;
 struct WebPoint;

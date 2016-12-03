@@ -51,7 +51,6 @@ namespace blink {
 class ExecutionContext;
 class WebServiceWorker;
 class WebServiceWorkerProvider;
-class WebServiceWorkerRegistration;
 
 class MODULES_EXPORT ServiceWorkerContainer final
     : public EventTargetWithInlineData,

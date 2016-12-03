@@ -38,7 +38,6 @@
 namespace blink {
 
 class LocalFrame;
-class Resource;
 class ResourceResponse;
 struct ProgressItem;
 

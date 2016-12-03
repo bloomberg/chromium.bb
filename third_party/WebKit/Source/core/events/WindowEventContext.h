@@ -35,7 +35,6 @@ namespace blink {
 
 class EventTarget;
 class Event;
-class Node;
 class NodeEventContext;
 
 class WindowEventContext : public GarbageCollected<WindowEventContext> {

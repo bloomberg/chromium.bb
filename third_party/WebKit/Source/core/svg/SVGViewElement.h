@@ -28,8 +28,6 @@
 
 namespace blink {
 
-class SVGStaticStringList;
-
 class SVGViewElement final : public SVGElement,
                              public SVGFitToViewBox,
                              public SVGZoomAndPan {

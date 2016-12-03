@@ -43,10 +43,8 @@
 namespace blink {
 
 class WebAXObject;
-class WebAutofillClient;
 class WebCompositedDisplayList;
 class WebCredentialManagerClient;
-class WebDragData;
 class WebFrame;
 class WebHitTestResult;
 class WebLocalFrame;

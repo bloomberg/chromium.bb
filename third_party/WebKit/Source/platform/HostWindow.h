@@ -34,7 +34,6 @@
 namespace blink {
 class IntRect;
 class Widget;
-struct WebScreenInfo;
 
 class PLATFORM_EXPORT HostWindow
     : public GarbageCollectedFinalized<HostWindow> {

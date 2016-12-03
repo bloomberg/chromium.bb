@@ -40,7 +40,6 @@
 namespace blink {
 
 class Node;
-class Range;
 class RenderedDocumentMarker;
 class Text;
 

@@ -12,8 +12,6 @@ namespace blink {
 
 class CSSStyleSheet;
 class RuleSet;
-class StyleEngine;
-class TreeScope;
 
 using ActiveStyleSheet = std::pair<Member<CSSStyleSheet>, Member<RuleSet>>;
 using ActiveStyleSheetVector = HeapVector<ActiveStyleSheet>;

@@ -38,8 +38,6 @@
 
 namespace blink {
 
-class Font;
-
 struct ShapeCacheEntry {
   DISALLOW_NEW_EXCEPT_PLACEMENT_NEW();
   ShapeCacheEntry() { m_shapeResult = nullptr; }

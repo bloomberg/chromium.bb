@@ -43,7 +43,6 @@ class DocumentFragment;
 class Element;
 class ExceptionState;
 class Node;
-class Range;
 class StylePropertySet;
 
 enum EChildrenOnly { IncludeNode, ChildrenOnly };

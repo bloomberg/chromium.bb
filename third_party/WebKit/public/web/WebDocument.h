@@ -40,13 +40,6 @@
 #include "public/platform/WebSecurityOrigin.h"
 #include "public/platform/WebVector.h"
 
-#if BLINK_IMPLEMENTATION
-namespace WTF {
-template <typename T>
-class PassRefPtr;
-}
-#endif
-
 namespace v8 {
 class Value;
 template <class T>
@@ -56,7 +49,6 @@ class Local;
 namespace blink {
 
 class Document;
-class DocumentType;
 class WebAXObject;
 class WebElement;
 class WebFormElement;

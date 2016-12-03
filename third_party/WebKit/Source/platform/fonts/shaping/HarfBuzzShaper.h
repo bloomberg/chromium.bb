@@ -45,7 +45,6 @@ namespace blink {
 class Font;
 class SimpleFontData;
 class HarfBuzzShaper;
-class UnicodeRangeSet;
 
 // Shaping text runs is split into several stages: Run segmentation, shaping the
 // initial segment, identify shaped and non-shaped sequences of the shaping

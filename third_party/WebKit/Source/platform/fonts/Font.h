@@ -41,7 +41,6 @@
 
 class SkCanvas;
 class SkPaint;
-struct SkPoint;
 
 namespace blink {
 

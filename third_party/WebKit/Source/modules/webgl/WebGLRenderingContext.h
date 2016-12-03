@@ -37,12 +37,16 @@ class CanvasContextCreationAttributes;
 class EXTBlendMinMax;
 class EXTFragDepth;
 class EXTShaderTextureLOD;
+class EXTsRGB;
 class EXTTextureFilterAnisotropic;
 class OESElementIndexUint;
 class OESStandardDerivatives;
+class OESTextureFloat;
 class OESTextureFloatLinear;
+class OESTextureHalfFloat;
 class OESTextureHalfFloatLinear;
 class WebGLDebugRendererInfo;
+class WebGLDepthTexture;
 class WebGLLoseContext;
 
 class WebGLRenderingContext final : public WebGLRenderingContextBase {

@@ -47,7 +47,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ParentFrameTaskRunners;
 class WebApplicationCacheHost;
 class WebApplicationCacheHostClient;

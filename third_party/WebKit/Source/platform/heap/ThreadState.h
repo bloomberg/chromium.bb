@@ -55,7 +55,6 @@ namespace blink {
 
 class BasePage;
 class CallbackStack;
-struct GCInfo;
 class GarbageCollectedMixinConstructorMarker;
 class PersistentNode;
 class PersistentRegion;

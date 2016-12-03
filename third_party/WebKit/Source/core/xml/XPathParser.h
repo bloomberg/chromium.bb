@@ -42,7 +42,6 @@ namespace XPath {
 class Expression;
 class LocationPath;
 class Parser;
-class Predicate;
 
 struct Token {
   STACK_ALLOCATED();

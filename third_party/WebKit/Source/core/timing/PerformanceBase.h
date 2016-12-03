@@ -47,7 +47,6 @@
 
 namespace blink {
 
-class DOMWindow;
 class ExceptionState;
 class LocalFrame;
 class PerformanceObserver;

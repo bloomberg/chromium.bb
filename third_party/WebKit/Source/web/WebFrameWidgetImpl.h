@@ -51,7 +51,6 @@ class Frame;
 class Element;
 class InspectorOverlay;
 class LocalFrame;
-class Page;
 class PaintLayerCompositor;
 class UserGestureToken;
 class CompositorAnimationTimeline;

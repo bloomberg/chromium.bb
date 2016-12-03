@@ -42,7 +42,6 @@ class AudioSourceProvider;
 class ExceptionState;
 class MediaTrackConstraints;
 class MediaStream;
-class MediaStreamTrackSourcesCallback;
 class MediaTrackSettings;
 
 class MODULES_EXPORT MediaStreamTrack : public EventTargetWithInlineData,

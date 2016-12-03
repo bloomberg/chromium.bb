@@ -57,8 +57,6 @@
 #include "cc/resources/shared_bitmap.h"
 #include "cc/surfaces/frame_sink_id.h"
 
-class GrContext;
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -89,7 +87,6 @@ class WebGestureCurve;
 class WebGraphicsContext3DProvider;
 class WebIDBFactory;
 class WebImageCaptureFrameGrabber;
-class WebInstalledApp;
 class WebMIDIAccessor;
 class WebMIDIAccessorClient;
 class WebMediaPlayer;
@@ -102,7 +99,6 @@ class WebMessagePortChannel;
 class WebNotificationManager;
 class WebPluginListBuilder;
 class WebPrescientNetworking;
-class WebProcessMemoryDump;
 class WebPublicSuffixList;
 class WebPushProvider;
 class WebRTCCertificateGenerator;

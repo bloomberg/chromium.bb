@@ -70,12 +70,10 @@ class LocalDOMWindow;
 class NavigationScheduler;
 class Node;
 class NodeTraversal;
-class Performance;
 class PerformanceMonitor;
 template <typename Strategy>
 class PositionWithAffinityTemplate;
 class PluginData;
-class Range;
 class ScriptController;
 class SpellChecker;
 class WebFrameScheduler;

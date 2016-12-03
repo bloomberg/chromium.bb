@@ -35,7 +35,6 @@
 namespace blink {
 
 class IncrementLoadEventDelayCount;
-class Document;
 class Element;
 class ImageLoader;
 class LayoutImageResource;

@@ -10,7 +10,6 @@
 
 namespace v8 {
 class Value;
-class Object;
 template <class T>
 class PersistentBase;
 }

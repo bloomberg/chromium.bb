@@ -29,7 +29,6 @@
 #include "WebCommon.h"
 #include "WebLayer.h"
 
-class SkBitmap;
 class SkImage;
 
 namespace blink {

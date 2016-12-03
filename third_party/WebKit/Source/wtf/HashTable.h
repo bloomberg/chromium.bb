@@ -86,6 +86,19 @@
 
 namespace WTF {
 
+// This is for tracing inside collections that have special support for weak
+// pointers. The trait has a trace method which returns true if there are weak
+// pointers to things that have not (yet) been marked live. Returning true
+// indicates that the entry in the collection may yet be removed by weak
+// handling. Default implementation for non-weak types is to use the regular
+// non-weak TraceTrait. Default implementation for types with weakness is to
+// call traceInCollection on the type's trait.
+template <WeakHandlingFlag weakHandlingFlag,
+          ShouldWeakPointersBeMarkedStrongly strongify,
+          typename T,
+          typename Traits>
+struct TraceInCollectionTrait;
+
 #if DUMP_HASHTABLE_STATS
 struct WTF_EXPORT HashTableStats {
   HashTableStats()

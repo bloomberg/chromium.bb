@@ -36,7 +36,6 @@
 namespace blink {
 
 class WebAssociatedURLLoaderClient;
-class WebLocalFrameImpl;
 class WebTaskRunner;
 class WebURLRequest;
 

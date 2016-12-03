@@ -14,7 +14,6 @@
 namespace blink {
 
 class Document;
-class Event;
 
 class MODULES_EXPORT DOMWindowStorageController final
     : public GarbageCollected<DOMWindowStorageController>,

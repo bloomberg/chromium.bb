@@ -17,7 +17,6 @@
 #include "third_party/skia/include/core/SkRegion.h"
 
 class SkColorFilter;
-class SkImageFilter;
 class SkMatrix44;
 class SkPicture;
 struct SkRect;

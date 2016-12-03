@@ -41,7 +41,6 @@
 namespace blink {
 
 class CachedMetadataHandler;
-class Resource;
 class ScriptResource;
 class ScriptSourceCode;
 class ExecutionContext;

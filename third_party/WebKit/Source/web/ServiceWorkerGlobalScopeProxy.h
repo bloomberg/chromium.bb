@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class Document;
 class FetchEvent;
 class ServiceWorkerGlobalScope;

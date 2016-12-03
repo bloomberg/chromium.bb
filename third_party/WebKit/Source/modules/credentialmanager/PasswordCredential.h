@@ -16,7 +16,6 @@
 
 namespace blink {
 
-class FormData;
 class HTMLFormElement;
 class PasswordCredentialData;
 class WebPasswordCredential;

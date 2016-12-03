@@ -18,7 +18,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ExecutionContext;
 class SourceLocation;
 

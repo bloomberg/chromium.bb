@@ -17,7 +17,6 @@ class GraphicsContext;
 class LayoutPoint;
 struct PaintInfo;
 class LayoutObject;
-class ComputedStyle;
 
 class ObjectPainter {
   STACK_ALLOCATED();

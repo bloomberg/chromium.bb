@@ -21,7 +21,6 @@ class BluetoothAttributeInstanceMap;
 class BluetoothRemoteGATTCharacteristic;
 class BluetoothRemoteGATTServer;
 class BluetoothRemoteGATTService;
-class ScriptPromise;
 class ScriptPromiseResolver;
 
 struct WebBluetoothRemoteGATTCharacteristicInit;

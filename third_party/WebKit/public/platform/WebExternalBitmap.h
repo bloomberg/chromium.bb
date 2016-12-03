@@ -33,8 +33,6 @@
 
 #include "WebSize.h"
 
-class SkColorSpace;
-
 namespace blink {
 
 class WebExternalBitmap {

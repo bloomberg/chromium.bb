@@ -50,10 +50,8 @@ class Document;
 class Element;
 class Interpolation;
 class MatchResult;
-class MediaQueryEvaluator;
 class RuleSet;
 class StylePropertySet;
-class StyleRule;
 class StyleRuleUsageTracker;
 
 enum StyleSharingBehavior {

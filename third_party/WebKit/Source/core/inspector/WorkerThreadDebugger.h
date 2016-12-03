@@ -36,7 +36,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ErrorEvent;
 class SourceLocation;
 class WorkerThread;

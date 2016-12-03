@@ -17,7 +17,6 @@ class NGBlockNode;
 class NGConstraintSpace;
 class NGFragmentBase;
 class NGPhysicalFragmentBase;
-class NGPhysicalFragment;
 
 enum NGLayoutStatus { kNotFinished, kChildAlgorithmRequired, kNewFragment };
 

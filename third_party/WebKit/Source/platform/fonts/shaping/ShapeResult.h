@@ -48,7 +48,6 @@ class Font;
 class ShapeResultSpacing;
 class SimpleFontData;
 class TextRun;
-struct GlyphData;
 
 class PLATFORM_EXPORT ShapeResult : public RefCounted<ShapeResult> {
  public:

@@ -13,7 +13,6 @@
 namespace blink {
 
 class Image;
-class IntSize;
 class OffscreenCanvasFrameDispatcher;
 class WebTaskRunner;
 

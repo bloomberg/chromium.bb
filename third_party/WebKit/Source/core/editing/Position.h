@@ -39,7 +39,6 @@
 namespace blink {
 
 class Node;
-class Text;
 enum class TextAffinity;
 class TreeScope;
 

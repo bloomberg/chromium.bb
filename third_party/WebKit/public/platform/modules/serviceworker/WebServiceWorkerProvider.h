@@ -40,7 +40,6 @@
 namespace blink {
 
 class WebURL;
-class WebServiceWorker;
 class WebServiceWorkerProviderClient;
 struct WebServiceWorkerError;
 

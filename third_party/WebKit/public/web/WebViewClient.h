@@ -41,7 +41,6 @@
 
 namespace blink {
 
-class WebAXObject;
 class WebDateTimeChooserCompletion;
 class WebFileChooserCompletion;
 class WebHitTestResult;
@@ -54,7 +53,6 @@ class WebView;
 class WebWidget;
 struct WebDateTimeChooserParams;
 struct WebPoint;
-struct WebPopupMenuInfo;
 struct WebRect;
 struct WebSize;
 struct WebWindowFeatures;

@@ -25,7 +25,6 @@
 
 namespace blink {
 
-struct PathSegmentData;
 class SVGPathConsumer;
 class SVGPathByteStreamSource;
 

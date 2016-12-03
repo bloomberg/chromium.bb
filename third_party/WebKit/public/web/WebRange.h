@@ -41,7 +41,6 @@ namespace blink {
 class LocalFrame;
 class PlainTextRange;
 class Range;
-class WebString;
 
 class WebRange final {
  public:

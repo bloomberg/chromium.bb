@@ -50,7 +50,6 @@ class WebCompositeAndReadbackAsyncCallback;
 class WebInputEvent;
 class WebLayoutAndPaintAsyncCallback;
 class WebPagePopup;
-class WebString;
 struct WebPoint;
 template <typename T>
 class WebVector;

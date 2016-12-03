@@ -15,7 +15,6 @@ namespace blink {
 
 class BluetoothDevice;
 class ExecutionContext;
-class ScriptPromiseResolver;
 
 struct WebBluetoothRemoteGATTCharacteristicInit;
 struct WebBluetoothRemoteGATTService;

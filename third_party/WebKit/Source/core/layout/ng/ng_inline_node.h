@@ -18,15 +18,12 @@
 namespace blink {
 
 class ComputedStyle;
-class LayoutBox;
 class LayoutObject;
 class NGConstraintSpace;
 class NGFragmentBase;
 class NGLayoutAlgorithm;
 class NGLayoutInlineItem;
 class NGLayoutInlineItemsBuilder;
-class NGPhysicalFragment;
-struct MinAndMaxContentSizes;
 
 // Represents an inline node to be laid out.
 class CORE_EXPORT NGInlineNode : public NGLayoutInputNode {

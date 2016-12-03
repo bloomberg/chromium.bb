@@ -18,7 +18,6 @@
 
 namespace blink {
 
-class Blob;
 class ExceptionState;
 class ResponseInit;
 class ScriptState;

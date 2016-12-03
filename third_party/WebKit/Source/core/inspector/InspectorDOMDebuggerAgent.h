@@ -44,7 +44,6 @@
 namespace blink {
 
 class Element;
-class Event;
 class InspectorDOMAgent;
 class Node;
 

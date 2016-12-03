@@ -14,6 +14,7 @@ namespace blink {
 
 struct CharacterRange;
 class GlyphBuffer;
+struct GlyphData;
 class TextRun;
 
 class ShapeResultBuffer {

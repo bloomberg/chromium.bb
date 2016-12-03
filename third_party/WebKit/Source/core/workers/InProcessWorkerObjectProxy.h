@@ -42,7 +42,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ExecutionContext;
 class InProcessWorkerMessagingProxy;
 class WorkerGlobalScope;

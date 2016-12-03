@@ -40,7 +40,6 @@
 
 namespace blink {
 
-class Font;
 class SimpleFontData;
 
 struct HarfBuzzRunGlyphData {

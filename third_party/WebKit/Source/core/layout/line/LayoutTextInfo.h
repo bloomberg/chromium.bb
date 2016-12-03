@@ -30,7 +30,6 @@
 namespace blink {
 
 class Font;
-class LayoutText;
 
 struct LayoutTextInfo {
   STACK_ALLOCATED();

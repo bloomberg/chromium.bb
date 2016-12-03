@@ -42,7 +42,6 @@
 namespace blink {
 
 class Dictionary;
-class Request;
 class ScriptPromise;
 class ScriptState;
 class ServiceWorkerClients;

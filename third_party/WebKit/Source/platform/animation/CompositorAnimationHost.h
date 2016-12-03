@@ -13,10 +13,6 @@
 
 #include <memory>
 
-namespace cc {
-struct ScrollOffsetAnimationUpdate;
-}
-
 namespace blink {
 
 // A compositor representation for cc::AnimationHost.

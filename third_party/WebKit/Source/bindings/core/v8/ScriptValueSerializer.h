@@ -24,7 +24,6 @@ class DOMArrayBuffer;
 class DOMArrayBufferView;
 class File;
 class FileList;
-class ImageData;
 class StaticBitmapImage;
 
 typedef Vector<WTF::ArrayBufferContents, 1> ArrayBufferContentsArray;

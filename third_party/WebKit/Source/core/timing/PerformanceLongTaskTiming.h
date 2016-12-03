@@ -12,8 +12,6 @@
 
 namespace blink {
 
-class DOMWindow;
-
 class PerformanceLongTaskTiming final : public PerformanceEntry {
   DEFINE_WRAPPERTYPEINFO();
 

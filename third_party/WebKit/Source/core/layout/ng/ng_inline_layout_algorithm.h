@@ -14,7 +14,6 @@ namespace blink {
 
 class ComputedStyle;
 class NGConstraintSpace;
-class NGPhysicalFragment;
 class NGBreakToken;
 
 // A class for inline layout (e.g. a anonymous block with inline-level children

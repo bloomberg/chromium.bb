@@ -34,8 +34,6 @@
 #include "WebFloatPoint.h"
 #include "WebSize.h"
 
-class SkBitmap;
-
 namespace cc {
 class AnimationTimeline;
 }
@@ -46,9 +44,7 @@ class WebCompositeAndReadbackAsyncCallback;
 class WebLayer;
 class WebLayoutAndPaintAsyncCallback;
 struct WebPoint;
-struct WebSelectionBound;
 class WebSelection;
-class WebWidget;
 
 class WebLayerTreeView {
  public:

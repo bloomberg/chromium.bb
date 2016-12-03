@@ -39,12 +39,9 @@
 #include "public/web/WebTreeScopeType.h"
 #include <memory>
 
-struct NPObject;
-
 namespace v8 {
 class Context;
 class Function;
-class Object;
 class Value;
 template <class T>
 class Local;
@@ -63,7 +60,6 @@ class WebDataSource;
 class WebDocument;
 class WebElement;
 class WebFrameImplBase;
-class WebLayer;
 class WebLocalFrame;
 class WebPerformance;
 class WebRemoteFrame;

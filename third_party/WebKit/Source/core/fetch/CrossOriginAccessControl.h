@@ -39,7 +39,6 @@ namespace blink {
 
 using HTTPHeaderSet = HashSet<String, CaseFoldingHash>;
 
-class Resource;
 struct ResourceLoaderOptions;
 class ResourceRequest;
 class ResourceResponse;

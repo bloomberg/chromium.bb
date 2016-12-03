@@ -39,7 +39,6 @@ class WebDragData;
 class WebFrame;
 class WebInputEvent;
 class WebPluginContainer;
-class WebURL;
 class WebURLResponse;
 struct WebPluginParams;
 

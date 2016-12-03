@@ -31,7 +31,6 @@
 namespace blink {
 
 class BeforeTextInsertedEvent;
-class ExceptionState;
 
 class CORE_EXPORT HTMLTextAreaElement final : public TextControlElement {
   DEFINE_WRAPPERTYPEINFO();

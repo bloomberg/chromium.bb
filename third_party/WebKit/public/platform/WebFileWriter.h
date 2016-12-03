@@ -37,7 +37,6 @@
 namespace blink {
 
 class WebString;
-class WebURL;
 
 class WebFileWriter {
  public:

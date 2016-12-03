@@ -45,12 +45,10 @@
 #include <memory>
 
 class SkBitmap;
-class SkImage;
 class SkPaint;
 class SkPath;
 class SkPicture;
 class SkRRect;
-struct SkImageInfo;
 struct SkRect;
 
 namespace blink {

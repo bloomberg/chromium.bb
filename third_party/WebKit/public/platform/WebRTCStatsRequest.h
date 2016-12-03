@@ -39,7 +39,6 @@ namespace blink {
 
 class RTCStatsRequest;
 class WebMediaStreamTrack;
-class WebMediaStream;
 class WebRTCStatsResponse;
 
 // The WebRTCStatsRequest class represents a JavaScript call on

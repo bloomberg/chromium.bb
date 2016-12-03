@@ -30,7 +30,6 @@ namespace blink {
 
 class Font;
 class ComputedStyle;
-class SVGComputedStyle;
 
 // Helper class used by SVGTextLayoutEngine to handle 'alignment-baseline' /
 // 'dominant-baseline' and 'baseline-shift'.

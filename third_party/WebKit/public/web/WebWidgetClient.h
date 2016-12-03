@@ -48,7 +48,6 @@ namespace blink {
 class WebDragData;
 class WebGestureEvent;
 class WebImage;
-class WebLocalFrame;
 class WebNode;
 class WebString;
 class WebWidget;
@@ -56,7 +55,6 @@ struct WebCursorInfo;
 struct WebFloatPoint;
 struct WebFloatRect;
 struct WebFloatSize;
-struct WebSize;
 
 class WebWidgetClient {
  public:

@@ -36,7 +36,6 @@
 namespace blink {
 
 class HTMLInputElement;
-class WebElementCollection;
 class WebOptionElement;
 
 // Provides readonly access to some properties of a DOM input element node.

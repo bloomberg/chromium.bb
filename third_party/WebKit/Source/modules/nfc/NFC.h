@@ -18,7 +18,6 @@
 namespace blink {
 
 class MessageCallback;
-class NFCError;
 class NFCPushOptions;
 using NFCPushMessage = StringOrArrayBufferOrNFCMessage;
 class NFCWatchOptions;

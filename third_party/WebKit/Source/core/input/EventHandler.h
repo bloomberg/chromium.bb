@@ -53,7 +53,6 @@
 
 namespace blink {
 
-class ContainerNode;
 class DataTransfer;
 class PaintLayer;
 class Element;
@@ -77,7 +76,6 @@ class ScrollableArea;
 class Scrollbar;
 class SelectionController;
 class TextEvent;
-class WheelEvent;
 
 class CORE_EXPORT EventHandler final
     : public GarbageCollectedFinalized<EventHandler> {

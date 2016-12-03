@@ -28,7 +28,6 @@ struct BeginFrameArgs;
 }
 
 namespace blink {
-class WebLocalFrame;
 class WebThread;
 }
 

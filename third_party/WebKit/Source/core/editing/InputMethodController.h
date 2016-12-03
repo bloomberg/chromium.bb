@@ -43,7 +43,6 @@ namespace blink {
 class Editor;
 class LocalFrame;
 class Range;
-class Text;
 
 class CORE_EXPORT InputMethodController final
     : public GarbageCollectedFinalized<InputMethodController>,

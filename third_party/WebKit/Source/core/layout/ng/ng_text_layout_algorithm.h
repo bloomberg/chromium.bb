@@ -14,7 +14,6 @@ namespace blink {
 
 class ComputedStyle;
 class NGConstraintSpace;
-class NGPhysicalFragment;
 class NGBreakToken;
 
 // A class for text layout. This takes a NGInlineNode which consists only

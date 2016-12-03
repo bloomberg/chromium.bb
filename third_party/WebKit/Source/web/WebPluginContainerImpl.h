@@ -42,8 +42,6 @@
 #include "wtf/Vector.h"
 #include "wtf/text/WTFString.h"
 
-struct NPObject;
-
 namespace blink {
 
 class GestureEvent;

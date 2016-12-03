@@ -64,7 +64,6 @@ class HTMLPreloadScanner;
 class HTMLResourcePreloader;
 class HTMLScriptRunner;
 class HTMLTreeBuilder;
-class PumpSession;
 class SegmentedString;
 class TokenizedChunkQueue;
 class DocumentWriteEvaluator;

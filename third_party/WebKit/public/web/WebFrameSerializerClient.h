@@ -34,7 +34,6 @@
 namespace blink {
 
 class WebCString;
-class WebURL;
 
 // This class is used for providing sink interface that can be used to receive
 // the individual chunks of data to be saved.

@@ -11,7 +11,6 @@
 namespace blink {
 
 class FontDescription;
-class ShapeResult;
 class TextRun;
 
 class PLATFORM_EXPORT ShapeResultSpacing final {

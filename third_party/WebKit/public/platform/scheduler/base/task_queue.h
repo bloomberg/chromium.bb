@@ -20,11 +20,7 @@ class BlameContext;
 
 namespace blink {
 namespace scheduler {
-namespace internal {
-class TaskQueueImpl;
-}  // namespace internal
-class FakeWebTaskRunner;
-class LazyNow;
+
 class TimeDomain;
 
 class BLINK_PLATFORM_EXPORT TaskQueue : public base::SingleThreadTaskRunner {

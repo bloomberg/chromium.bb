@@ -16,10 +16,6 @@ namespace blink {
 
 class Color;
 
-namespace protocol {
-class Value;
-}
-
 struct CORE_EXPORT InspectorHighlightConfig {
   USING_FAST_MALLOC(InspectorHighlightConfig);
 

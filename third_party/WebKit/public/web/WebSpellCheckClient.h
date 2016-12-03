@@ -38,7 +38,6 @@ namespace blink {
 
 class WebString;
 class WebTextCheckingCompletion;
-struct WebTextCheckingResult;
 
 class WebSpellCheckClient {
  public:

@@ -13,7 +13,6 @@
 namespace blink {
 
 class WebServiceWorkerRegistration;
-struct WebPushSubscription;
 struct WebPushSubscriptionOptions;
 
 class WebPushClient {

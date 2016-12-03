@@ -72,7 +72,6 @@
 namespace blink {
 
 class BrowserControls;
-class DataObject;
 class DevToolsEmulator;
 class Frame;
 class FullscreenController;
@@ -89,7 +88,6 @@ class WebInputMethodControllerImpl;
 class WebLayerTreeView;
 class WebLocalFrame;
 class WebLocalFrameImpl;
-class WebImage;
 class CompositorMutatorImpl;
 class WebPagePopupImpl;
 class WebPlugin;

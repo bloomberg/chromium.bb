@@ -35,7 +35,6 @@ class HitTestResult;
 class LineLayoutBlockFlow;
 
 struct BidiStatus;
-struct GapRects;
 
 class RootInlineBox : public InlineFlowBox {
  public:

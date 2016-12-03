@@ -47,7 +47,6 @@
 namespace blink {
 
 struct FetchInitiatorInfo;
-class CachedMetadata;
 class FetchRequest;
 class ResourceClient;
 class ResourceTimingInfo;

@@ -135,10 +135,6 @@ struct FinalizerTrait<HeapVectorBacking<T, Traits>> {
   }
 };
 
-// s_gcInfoTable holds the per-class GCInfo descriptors; each heap
-// object header keeps its index into this table.
-extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
-
 // GCInfo contains meta-data associated with objects allocated in the
 // Blink heap. This meta-data consists of a function pointer used to
 // trace the pointers in the object during garbage collection, an
@@ -155,6 +151,10 @@ struct GCInfo {
   bool m_nonTrivialFinalizer;
   bool m_hasVTable;
 };
+
+// s_gcInfoTable holds the per-class GCInfo descriptors; each heap
+// object header keeps its index into this table.
+extern PLATFORM_EXPORT GCInfo const** s_gcInfoTable;
 
 #if ENABLE(ASSERT)
 PLATFORM_EXPORT void assertObjectHasGCInfo(const void*, size_t gcInfoIndex);

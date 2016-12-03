@@ -55,8 +55,6 @@ enum WorldIdConstants {
 };
 
 class DOMObjectHolderBase;
-template <typename T>
-class DOMObjectHolder;
 
 // This class represent a collection of DOM wrappers for a specific world.
 class CORE_EXPORT DOMWrapperWorld : public RefCounted<DOMWrapperWorld> {

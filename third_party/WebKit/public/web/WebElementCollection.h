@@ -37,10 +37,6 @@
 
 #if BLINK_IMPLEMENTATION
 #include "platform/heap/Handle.h"
-namespace WTF {
-template <typename T>
-class PassRefPtr;
-}
 #endif
 
 namespace blink {

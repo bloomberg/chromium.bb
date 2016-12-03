@@ -57,8 +57,6 @@ using BackgroundPaintLocation = uint32_t;
 enum LinePositionMode { PositionOnContainingLine, PositionOfInteriorLineBoxes };
 enum LineDirectionMode { HorizontalLine, VerticalLine };
 
-class InlineFlowBox;
-
 struct LayoutBoxModelObjectRareData {
   WTF_MAKE_NONCOPYABLE(LayoutBoxModelObjectRareData);
   USING_FAST_MALLOC(LayoutBoxModelObjectRareData);

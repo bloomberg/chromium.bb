@@ -76,9 +76,9 @@ class WebLayer;
 struct CompositedSelection;
 struct DateTimeChooserParameters;
 struct FrameLoadRequest;
-struct GraphicsDeviceAdapter;
 struct ViewportDescription;
 struct WebPoint;
+struct WebScreenInfo;
 struct WindowFeatures;
 
 class CORE_EXPORT ChromeClient : public HostWindow {

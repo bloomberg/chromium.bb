@@ -68,7 +68,6 @@ namespace blink {
 
 class EXTDisjointTimerQuery;
 class EXTDisjointTimerQueryWebGL2;
-class EXTsRGB;
 class ExceptionState;
 class HTMLCanvasElementOrOffscreenCanvas;
 class HTMLImageElement;
@@ -77,8 +76,6 @@ class ImageBitmap;
 class ImageBuffer;
 class ImageData;
 class IntSize;
-class OESTextureFloat;
-class OESTextureHalfFloat;
 class OESVertexArrayObject;
 class WebGLActiveInfo;
 class WebGLBuffer;
@@ -92,7 +89,6 @@ class WebGLCompressedTextureS3TCsRGB;
 class WebGLContextGroup;
 class WebGLContextObject;
 class WebGLDebugShaders;
-class WebGLDepthTexture;
 class WebGLDrawBuffers;
 class WebGLExtension;
 class WebGLFramebuffer;

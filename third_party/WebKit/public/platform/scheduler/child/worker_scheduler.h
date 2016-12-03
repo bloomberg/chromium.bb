@@ -13,10 +13,6 @@
 #include "public/platform/scheduler/child/single_thread_idle_task_runner.h"
 #include "public/platform/WebCommon.h"
 
-namespace base {
-class MessageLoop;
-}
-
 namespace blink {
 namespace scheduler {
 class SchedulerTqmDelegate;

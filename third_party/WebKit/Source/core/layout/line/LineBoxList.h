@@ -43,7 +43,6 @@ class LayoutPoint;
 class LayoutUnit;
 class LineLayoutBoxModel;
 class LineLayoutItem;
-struct PaintInfo;
 
 class LineBoxList {
   DISALLOW_NEW();

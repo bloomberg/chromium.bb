@@ -18,10 +18,7 @@ class SkPaint;
 
 namespace blink {
 
-class FloatPoint;
 class FloatRect;
-class FloatSize;
-class GraphicsContext;
 class ImageObserver;
 
 // A generated placeholder image that shows a translucent gray rectangle.

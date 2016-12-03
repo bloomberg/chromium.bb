@@ -46,13 +46,11 @@
 
 namespace blink {
 
-class Attribute;
 class ContainerNode;
 class Document;
 class Element;
 class ElementShadow;
 class Event;
-class EventListener;
 class ExceptionState;
 class GetRootNodeOptions;
 class HTMLQualifiedName;
@@ -76,7 +74,6 @@ class StaticNodeTypeList;
 using StaticNodeList = StaticNodeTypeList<Node>;
 class StyleChangeReasonForTracing;
 class Text;
-class TouchEvent;
 
 const int nodeStyleChangeShift = 18;
 const int nodeCustomElementShift = 20;

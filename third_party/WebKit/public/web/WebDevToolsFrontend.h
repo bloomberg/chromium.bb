@@ -37,8 +37,6 @@ namespace blink {
 
 class WebDevToolsFrontendClient;
 class WebLocalFrame;
-class WebString;
-class WebView;
 
 // WebDevToolsFrontend represents DevTools client sitting in the Glue. It
 // provides direct and delegate Apis to the host.

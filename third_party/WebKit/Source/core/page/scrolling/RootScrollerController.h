@@ -14,7 +14,6 @@ class Document;
 class Element;
 class PaintLayer;
 class PaintLayerScrollableArea;
-class ScrollableArea;
 
 // Manages the root scroller associated with a given document. The root
 // scroller causes browser controls movement, overscroll effects and prevents

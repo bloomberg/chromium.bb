@@ -29,7 +29,6 @@
 
 namespace blink {
 
-class BidiContext;
 class InlineBox;
 
 struct BidiRun : BidiCharacterRun {

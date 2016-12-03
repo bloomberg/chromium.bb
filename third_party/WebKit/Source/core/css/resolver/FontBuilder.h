@@ -34,7 +34,6 @@
 
 namespace blink {
 
-class CSSValue;
 class FontSelector;
 class ComputedStyle;
 

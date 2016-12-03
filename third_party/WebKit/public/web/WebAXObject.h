@@ -39,13 +39,6 @@
 #include "WebAXEnums.h"
 #include <memory>
 
-#if BLINK_IMPLEMENTATION
-namespace WTF {
-template <typename T>
-class PassRefPtr;
-}
-#endif
-
 class SkMatrix44;
 
 namespace blink {

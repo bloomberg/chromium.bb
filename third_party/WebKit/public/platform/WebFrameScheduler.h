@@ -11,7 +11,6 @@
 
 namespace blink {
 
-class WebSecurityOrigin;
 class WebTaskRunner;
 class WebViewScheduler;
 

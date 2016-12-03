@@ -35,8 +35,6 @@
 #include "../platform/WebCommon.h"
 #include <v8.h>
 
-struct NPObject;
-
 namespace blink {
 
 class WebDocument;

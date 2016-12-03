@@ -31,8 +31,6 @@
 
 typedef id ScrollbarPainter;
 
-class SkCanvas;
-
 namespace blink {
 
 class Pattern;

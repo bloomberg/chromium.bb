@@ -39,7 +39,6 @@
 
 namespace blink {
 
-class ConsoleMessage;
 class ParentFrameTaskRunners;
 class SourceLocation;
 class WorkerOrWorkletGlobalScope;

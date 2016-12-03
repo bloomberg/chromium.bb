@@ -22,7 +22,6 @@ namespace blink {
 class BluetoothCharacteristicProperties;
 class ExecutionContext;
 class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptState;
 
 // BluetoothRemoteGATTCharacteristic represents a GATT Characteristic, which is

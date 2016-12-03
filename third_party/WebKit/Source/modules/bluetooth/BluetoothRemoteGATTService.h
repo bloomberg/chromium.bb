@@ -18,7 +18,6 @@
 namespace blink {
 
 class ScriptPromise;
-class ScriptPromiseResolver;
 class ScriptState;
 
 // Represents a GATT Service within a Bluetooth Peripheral, a collection of

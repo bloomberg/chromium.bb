@@ -47,8 +47,6 @@
 namespace blink {
 
 class ArchiveResource;
-class DocumentResource;
-class ImageResource;
 class MHTMLArchive;
 class KURL;
 class ResourceTimingInfo;

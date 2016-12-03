@@ -41,7 +41,6 @@ namespace blink {
 
 class WebEncryptedMediaKeyInformation;
 class WebString;
-class WebURL;
 
 class BLINK_PLATFORM_EXPORT WebContentDecryptionModuleSession {
  public:

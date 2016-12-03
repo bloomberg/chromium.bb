@@ -69,7 +69,6 @@ class LocalFrame;
 class ResourceError;
 class ResourceRequest;
 class ResourceResponse;
-class ScriptState;
 class SecurityOrigin;
 class SharedWorkerRepositoryClient;
 class SubstituteData;

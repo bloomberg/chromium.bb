@@ -34,13 +34,8 @@
 namespace blink {
 
 class WebFormControlElement;
-class WebFormElement;
 class WebInputElement;
 class WebKeyboardEvent;
-class WebNode;
-
-template <typename T>
-class WebVector;
 
 class WebAutofillClient {
  public:

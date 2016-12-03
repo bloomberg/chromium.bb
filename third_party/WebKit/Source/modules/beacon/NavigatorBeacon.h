@@ -12,7 +12,6 @@
 
 namespace blink {
 
-class Blob;
 class ExceptionState;
 class ExecutionContext;
 class KURL;

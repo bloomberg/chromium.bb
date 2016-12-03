@@ -21,7 +21,6 @@ class MediaKeys;
 class ScriptPromise;
 class ScriptState;
 class WebContentDecryptionModule;
-class WebMediaPlayer;
 
 class MODULES_EXPORT HTMLMediaElementEncryptedMedia final
     : public GarbageCollectedFinalized<HTMLMediaElementEncryptedMedia>,

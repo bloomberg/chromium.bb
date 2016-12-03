@@ -45,7 +45,6 @@ class SkMatrix44;
 namespace blink {
 
 class AXObject;
-class AXObjectCache;
 class AXObjectCacheImpl;
 class Element;
 class FrameView;

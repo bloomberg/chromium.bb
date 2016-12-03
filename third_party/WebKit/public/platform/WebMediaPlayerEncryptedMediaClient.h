@@ -36,9 +36,6 @@
 
 namespace blink {
 
-class WebString;
-class WebURL;
-
 class BLINK_PLATFORM_EXPORT WebMediaPlayerEncryptedMediaClient {
  public:
   virtual void encrypted(WebEncryptedMediaInitDataType,

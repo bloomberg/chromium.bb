@@ -42,7 +42,6 @@ class Blob;
 class DOMArrayBuffer;
 class DOMArrayBufferView;
 class ExceptionState;
-class RTCPeerConnection;
 class WebRTCDataChannelHandler;
 class WebRTCPeerConnectionHandler;
 struct WebRTCDataChannelInit;

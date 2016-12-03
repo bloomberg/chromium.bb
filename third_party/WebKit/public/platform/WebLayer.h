@@ -39,7 +39,6 @@
 #include "WebVector.h"
 
 class SkMatrix44;
-class SkImageFilter;
 
 namespace cc {
 class Layer;

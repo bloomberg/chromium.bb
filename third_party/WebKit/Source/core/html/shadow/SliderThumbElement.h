@@ -40,6 +40,7 @@ namespace blink {
 
 class HTMLInputElement;
 class Event;
+class TouchEvent;
 
 class SliderThumbElement final : public HTMLDivElement {
  public:

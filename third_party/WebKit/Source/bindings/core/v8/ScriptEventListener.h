@@ -42,7 +42,6 @@ class ExecutionContext;
 class LocalFrame;
 class Node;
 class QualifiedName;
-class ScheduledAction;
 class SourceLocation;
 
 V8LazyEventListener* createAttributeEventListener(

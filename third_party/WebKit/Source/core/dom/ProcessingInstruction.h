@@ -31,7 +31,6 @@
 namespace blink {
 
 class StyleSheet;
-class CSSStyleSheet;
 class EventListener;
 
 class ProcessingInstruction final : public CharacterData,
