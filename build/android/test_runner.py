@@ -15,6 +15,7 @@ import os
 import signal
 import sys
 import threading
+import traceback
 import unittest
 
 import devil_chromium
@@ -703,7 +704,19 @@ def RunTestsInPlatformMode(args):
   ### Set up sigterm handler.
 
   def unexpected_sigterm(_signum, _frame):
-    infra_error('Received SIGTERM. Shutting down.')
+    msg = [
+      'Received SIGTERM. Shutting down.',
+    ]
+    for live_thread in threading.enumerate():
+      # pylint: disable=protected-access
+      thread_stack = ''.join(traceback.format_stack(
+          sys._current_frames()[live_thread.ident]))
+      msg.extend([
+        'Thread "%s" (ident: %s) is currently running:' % (
+            live_thread.name, live_thread.ident),
+        thread_stack])
+
+    infra_error('\n'.join(msg))
 
   sigterm_handler = signal_handler.SignalHandler(
       signal.SIGTERM, unexpected_sigterm)
