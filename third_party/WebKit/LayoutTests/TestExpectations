@@ -1737,10 +1737,6 @@ crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-idle-perio
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/callback-timeout-with-raf.html [ Timeout ]
 crbug.com/666993 imported/wpt/html/webappapis/idle-callbacks/basic.html [ Timeout ]
 
-# These tests (erroneously?) see a platform-specific 'server' header
-crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-match.https.html [ Pass Failure ]
-crbug.com/667376 imported/wpt/service-workers/cache-storage/window/cache-put.https.html [ Pass Failure ]
-
 # Flaky on Linux dbg
 crbug.com/667953 [ Linux Debug ] virtual/android/media/mediadocument/media-document-with-download-button.html [ Pass Failure ]
 
@@ -1807,6 +1803,8 @@ Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-stor
 Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/cache-storage-match.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/serviceworker/credentials.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/window/cache-add.https.html [ Failure ]
+Bug(dpranke) imported/wpt/service-workers/cache-storage/window/cache-match.https.html [ Failure ]
+Bug(dpranke) imported/wpt/service-workers/cache-storage/window/cache-put.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/worker/cache-add.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/worker/cache-match.https.html [ Failure ]
 Bug(dpranke) imported/wpt/service-workers/cache-storage/worker/cache-put.https.html [ Failure ]

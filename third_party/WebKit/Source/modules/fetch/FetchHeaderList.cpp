@@ -7,6 +7,7 @@
 #include "core/fetch/FetchUtils.h"
 #include "platform/network/HTTPParsers.h"
 #include "wtf/PtrUtil.h"
+#include <algorithm>
 
 namespace blink {
 
@@ -14,7 +15,7 @@ FetchHeaderList* FetchHeaderList::create() {
   return new FetchHeaderList();
 }
 
-FetchHeaderList* FetchHeaderList::clone() {
+FetchHeaderList* FetchHeaderList::clone() const {
   FetchHeaderList* list = create();
   for (size_t i = 0; i < m_headerList.size(); ++i)
     list->append(m_headerList[i]->first, m_headerList[i]->second);
@@ -124,6 +125,19 @@ bool FetchHeaderList::containsNonSimpleHeader() const {
       return true;
   }
   return false;
+}
+
+void FetchHeaderList::sortAndCombine() {
+  // https://fetch.spec.whatwg.org/#concept-header-list-sort-and-combine
+  // "To sort and combine a header list..."
+
+  // TODO(jsbell): Implement the combining part - this currently just sorts.
+
+  std::sort(
+      m_headerList.begin(), m_headerList.end(),
+      [](const std::unique_ptr<Header>& a, const std::unique_ptr<Header>& b) {
+        return WTF::codePointCompareLessThan(a->first, b->first);
+      });
 }
 
 bool FetchHeaderList::isValidHeaderName(const String& name) {

@@ -23,7 +23,7 @@ class MODULES_EXPORT FetchHeaderList final
  public:
   typedef std::pair<String, String> Header;
   static FetchHeaderList* create();
-  FetchHeaderList* clone();
+  FetchHeaderList* clone() const;
 
   ~FetchHeaderList();
   void append(const String&, const String&);
@@ -39,6 +39,7 @@ class MODULES_EXPORT FetchHeaderList final
   void clearList();
 
   bool containsNonSimpleHeader() const;
+  void sortAndCombine();
 
   const Vector<std::unique_ptr<Header>>& list() const { return m_headerList; }
   const Header& entry(size_t index) const {

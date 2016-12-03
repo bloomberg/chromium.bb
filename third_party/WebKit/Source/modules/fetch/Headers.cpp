@@ -21,15 +21,18 @@ namespace {
 class HeadersIterationSource final
     : public PairIterable<String, String>::IterationSource {
  public:
-  explicit HeadersIterationSource(FetchHeaderList* headers)
-      : m_headers(headers), m_current(0) {}
+  explicit HeadersIterationSource(const FetchHeaderList* headers)
+      : m_headers(headers->clone()), m_current(0) {
+    m_headers->sortAndCombine();
+  }
 
   bool next(ScriptState* scriptState,
             String& key,
             String& value,
             ExceptionState& exception) override {
-    // FIXME: This simply advances an index and returns the next value if
-    // any, so if the iterated object is mutated values may be skipped.
+    // This simply advances an index and returns the next value if any; the
+    // iterated list is not exposed to script so it will never be mutated
+    // during iteration.
     if (m_current >= m_headers->size())
       return false;
 

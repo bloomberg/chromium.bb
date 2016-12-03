@@ -221,4 +221,36 @@ test(function() {
                   'should throw');
   }, 'Headers');
 
+test(function(t) {
+    const headers = new Headers;
+    headers.set('b', '1');
+    headers.set('c', '2');
+    headers.set('a', '3');
+
+    const keys = [];
+    for (let [key, value] of headers)
+        keys.push(key);
+    assert_array_equals(keys, ['a', 'b', 'c'],
+                        'The pairs to iterate over should be sorted.');
+}, 'Iteration order');
+
+test(function(t) {
+    const headers = new Headers;
+    headers.set('a', '1');
+    headers.set('b', '2');
+    headers.set('c', '3');
+
+    const iterator = headers.entries();
+
+    headers.delete('a');
+    headers.set('d', '4');
+
+    const keys = [];
+    for (let [key, value] of iterator)
+        keys.push(key);
+    assert_array_equals(keys, ['a', 'b', 'c'],
+                        'The pairs to iterate over should be the return ' +
+                        'value of an algorithm that implicitly makes a copy.');
+}, 'Iteration mutation');
+
 done();
