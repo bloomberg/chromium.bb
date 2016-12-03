@@ -285,9 +285,6 @@ Press Ctrl+Alt+Z to disable.
         Mute
       </message>
 
-      <message name="IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME" desc="Label shown in tray for a display whose name is unknown.">
-        Unknown Display
-      </message>
       <message name="IDS_ASH_STATUS_TRAY_DRIVE" desc="The label used for Google Drive tray details header.">
         Google Drive
       </message>
@@ -401,12 +398,6 @@ Press Ctrl+Alt+Z to disable.
 
       <message name="IDS_ASH_NOTIFICATION_UNREAD_COUNT_NINE_PLUS" desc="The text shown in the notification icon for the unread count when the count is more than 9.">
         9+
-      </message>
-      <message name="IDS_ASH_INTERNAL_DISPLAY_NAME" desc="The name used for internal displays, which is shown in the display settings.">
-        Internal Display
-      </message>
-      <message name="IDS_ASH_VIRTUAL_DISPLAY_NAME" desc="The name used for virtual displays, which is shown in the display settings. Virtual displays are not associated with a physical monitor.">
-        Virtual Display
       </message>
       <message name="IDS_ASH_EXIT_WARNING_POPUP_TEXT" desc="The text of the popup when the user preses the exit shortcut.">
         Press Ctrl+Shift+Q twice to quit.

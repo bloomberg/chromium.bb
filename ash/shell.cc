@@ -124,6 +124,7 @@
 #include "ash/display/projecting_observer_chromeos.h"
 #include "ash/display/resolution_notification_controller.h"
 #include "ash/display/screen_orientation_controller_chromeos.h"
+#include "ash/display/shutdown_observer_chromeos.h"
 #include "ash/sticky_keys/sticky_keys_controller.h"
 #include "ash/system/chromeos/power/power_event_observer.h"
 #include "ash/system/chromeos/power/video_activity_notifier.h"
@@ -558,6 +559,7 @@ Shell::~Shell() {
     wm_shell_->RemoveShellObserver(projecting_observer_.get());
   }
   display_change_observer_.reset();
+  shutdown_observer_.reset();
 
   PowerStatus::Shutdown();
 
@@ -620,7 +622,12 @@ void Shell::Init(const ShellInitParams& init_params) {
   wm_shell_->AddShellObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
-    display_change_observer_.reset(new DisplayChangeObserver);
+    display_change_observer_ = base::MakeUnique<DisplayChangeObserver>(
+        display_configurator_.get(), display_manager_.get());
+
+    shutdown_observer_ =
+        base::MakeUnique<ShutdownObserver>(display_configurator_.get());
+
     // Register |display_change_observer_| first so that the rest of
     // observer gets invoked after the root windows are configured.
     display_configurator_->AddObserver(display_change_observer_.get());

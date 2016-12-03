@@ -654,6 +654,8 @@ component("ash") {
     "display/screen_position_controller.h",
     "display/shared_display_edge_indicator.cc",
     "display/shared_display_edge_indicator.h",
+    "display/shutdown_observer_chromeos.cc",
+    "display/shutdown_observer_chromeos.h",
     "display/unified_mouse_warp_controller.cc",
     "display/unified_mouse_warp_controller.h",
     "display/window_tree_host_manager.cc",

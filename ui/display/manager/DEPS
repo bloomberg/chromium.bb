@@ -1,3 +1,5 @@
 include_rules = [
+  "+ui/base",
   "+ui/events/devices",
+  "+ui/strings",
 ]

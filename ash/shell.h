@@ -106,6 +106,7 @@ class ScreenPositionController;
 class SessionStateDelegate;
 class ShellDelegate;
 struct ShellInitParams;
+class ShutdownObserver;
 class StickyKeysController;
 class SystemGestureEventFilter;
 class SystemModalContainerEventFilter;
@@ -509,6 +510,9 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
 
   // Listens for output changes and updates the display manager.
   std::unique_ptr<DisplayChangeObserver> display_change_observer_;
+
+  // Listens for shutdown and updates DisplayConfigurator.
+  std::unique_ptr<ShutdownObserver> shutdown_observer_;
 
   // Implements content::ScreenOrientationController for ChromeOS
   std::unique_ptr<ScreenOrientationController> screen_orientation_controller_;

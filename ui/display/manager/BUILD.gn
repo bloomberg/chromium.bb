@@ -43,6 +43,7 @@ component("manager") {
     "//ui/base",
     "//ui/display/util",
     "//ui/events/devices",
+    "//ui/strings",
   ]
 
   defines = [ "DISPLAY_MANAGER_IMPLEMENTATION" ]

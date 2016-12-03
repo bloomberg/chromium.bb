@@ -25,6 +25,7 @@
 #include "base/strings/stringprintf.h"
 #include "base/strings/utf_string_conversions.h"
 #include "base/threading/thread_task_runner_handle.h"
+#include "ui/base/l10n/l10n_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_observer.h"
 #include "ui/display/display_switches.h"
@@ -35,6 +36,7 @@
 #include "ui/gfx/font_render_params.h"
 #include "ui/gfx/geometry/rect.h"
 #include "ui/gfx/geometry/size_conversions.h"
+#include "ui/strings/grit/ui_strings.h"
 
 #if defined(OS_CHROMEOS)
 #include "base/sys_info.h"
@@ -582,7 +584,7 @@ void DisplayManager::OnNativeDisplaysChanged(
       // in docked mode.
       ManagedDisplayInfo internal_display_info(
           Display::InternalDisplayId(),
-          delegate_->GetInternalDisplayNameString(),
+          l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL),
           false /*Internal display must not have overscan */);
       internal_display_info.SetBounds(gfx::Rect(0, 0, 800, 600));
       display_info_[Display::InternalDisplayId()] = internal_display_info;
@@ -900,7 +902,7 @@ const Display DisplayManager::GetMirroringDisplayById(
 
 std::string DisplayManager::GetDisplayNameForId(int64_t id) {
   if (id == kInvalidDisplayId)
-    return delegate_->GetInternalDisplayNameString();
+    return l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);
 
   std::map<int64_t, ManagedDisplayInfo>::const_iterator iter =
       display_info_.find(id);

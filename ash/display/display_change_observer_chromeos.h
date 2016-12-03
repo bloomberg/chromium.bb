@@ -7,25 +7,28 @@
 
 #include <stdint.h>
 
+#include <memory>
 #include <vector>
 
 #include "ash/ash_export.h"
-#include "ash/common/shell_observer.h"
 #include "base/macros.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
+namespace display {
+class DisplayManager;
+}
+
 namespace ash {
 
 class DisplaySnapshot;
 
-// An object that observes changes in display configuration and
-// update DisplayManagers.
+// An object that observes changes in display configuration and updates
+// DisplayManager.
 class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
                               public ui::DisplayConfigurator::Observer,
-                              public ui::InputDeviceEventObserver,
-                              public ShellObserver {
+                              public ui::InputDeviceEventObserver {
  public:
   // Returns the mode list for internal display.
   ASH_EXPORT static display::ManagedDisplayInfo::ManagedDisplayModeList
@@ -37,7 +40,8 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   ASH_EXPORT static display::ManagedDisplayInfo::ManagedDisplayModeList
   GetExternalManagedDisplayModeList(const ui::DisplaySnapshot& output);
 
-  DisplayChangeObserver();
+  DisplayChangeObserver(ui::DisplayConfigurator* display_configurator,
+                        display::DisplayManager* display_manager);
   ~DisplayChangeObserver() override;
 
   // ui::DisplayConfigurator::StateController overrides:
@@ -56,13 +60,15 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   // Overriden from ui::InputDeviceEventObserver:
   void OnTouchscreenDeviceConfigurationChanged() override;
 
-  // Overriden from ShellObserver:
-  void OnAppTerminating() override;
-
   // Exposed for testing.
   ASH_EXPORT static float FindDeviceScaleFactor(float dpi);
 
  private:
+  // Both |display_configurator_| and |display_manager_| are not owned and must
+  // outlive DisplayChangeObserver.
+  ui::DisplayConfigurator* display_configurator_;
+  display::DisplayManager* display_manager_;
+
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);
 };
 

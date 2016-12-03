@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CONTROLLER_H_
-#define ASH_DISPLAY_DISPLAY_CONTROLLER_H_
+#ifndef ASH_DISPLAY_WINDOW_TREE_HOST_MANAGER_H_
+#define ASH_DISPLAY_WINDOW_TREE_HOST_MANAGER_H_
 
 #include <stdint.h>
 
@@ -160,8 +160,6 @@ class ASH_EXPORT WindowTreeHostManager
 #if defined(OS_CHROMEOS)
   ui::DisplayConfigurator* display_configurator() override;
 #endif
-  std::string GetInternalDisplayNameString() override;
-  std::string GetUnknownDisplayNameString() override;
 
   // ui::internal::InputMethodDelegate overrides:
   ui::EventDispatchDetails DispatchKeyEventPostIME(
@@ -223,4 +221,4 @@ class ASH_EXPORT WindowTreeHostManager
 
 }  // namespace ash
 
-#endif  // ASH_DISPLAY_DISPLAY_CONTROLLER_H_
+#endif  // ASH_DISPLAY_WINDOW_TREE_HOST_MANAGER_H_

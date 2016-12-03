@@ -32,6 +32,7 @@
 #include "ui/message_center/message_center.h"
 #include "ui/message_center/notification.h"
 #include "ui/message_center/notification_delegate.h"
+#include "ui/strings/grit/ui_strings.h"
 
 using message_center::Notification;
 
@@ -117,7 +118,7 @@ base::string16 GetExternalDisplayName() {
   }
 
   if (external_id == display::kInvalidDisplayId)
-    return l10n_util::GetStringUTF16(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
+    return l10n_util::GetStringUTF16(IDS_DISPLAY_NAME_UNKNOWN);
 
   // The external display name may have an annotation of "(width x height)" in
   // case that the display is rotated or its resolution is changed.

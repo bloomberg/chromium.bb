@@ -11,15 +11,9 @@
 #include <utility>
 #include <vector>
 
-#include "ash/common/wm_shell.h"
-#include "ash/display/display_util.h"
-#include "ash/shell.h"
-#include "base/command_line.h"
 #include "base/logging.h"
-#include "grit/ash_strings.h"
 #include "ui/base/l10n/l10n_util.h"
 #include "ui/base/user_activity/user_activity_detector.h"
-#include "ui/compositor/dip_util.h"
 #include "ui/display/display.h"
 #include "ui/display/display_layout.h"
 #include "ui/display/manager/chromeos/touchscreen_util.h"
@@ -31,6 +25,7 @@
 #include "ui/display/util/display_util.h"
 #include "ui/events/devices/input_device_manager.h"
 #include "ui/events/devices/touchscreen_device.h"
+#include "ui/strings/grit/ui_strings.h"
 
 namespace ash {
 
@@ -58,7 +53,7 @@ const float kInchInMm = 25.4f;
 const int kMinimumWidthFor4K = 3840;
 
 // The list of device scale factors (in addition to 1.0f) which is
-// available in extrenal large monitors.
+// available in external large monitors.
 const float kAdditionalDeviceScaleFactorsFor4k[] = {1.25f, 2.0f};
 
 void UpdateInternalDisplayId(
@@ -112,7 +107,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
 
     // Add the display mode if it isn't already present and override interlaced
     // display modes with non-interlaced ones.
-    DisplayModeMap::iterator display_mode_it = display_mode_map.find(size);
+    auto display_mode_it = display_mode_map.find(size);
     if (display_mode_it == display_mode_map.end())
       display_mode_map.insert(std::make_pair(size, display_mode));
     else if (display_mode_it->second->is_interlaced() &&
@@ -127,7 +122,7 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
   if (output.native_mode()) {
     const std::pair<int, int> size(native_mode->size().width(),
                                    native_mode->size().height());
-    DisplayModeMap::iterator it = display_mode_map.find(size);
+    auto it = display_mode_map.find(size);
     DCHECK(it != display_mode_map.end())
         << "Native mode must be part of the mode list.";
 
@@ -150,14 +145,16 @@ DisplayChangeObserver::GetExternalManagedDisplayModeList(
   return display_mode_list;
 }
 
-DisplayChangeObserver::DisplayChangeObserver() {
-  WmShell::Get()->AddShellObserver(this);
+DisplayChangeObserver::DisplayChangeObserver(
+    ui::DisplayConfigurator* display_configurator,
+    display::DisplayManager* display_manager)
+    : display_configurator_(display_configurator),
+      display_manager_(display_manager) {
   ui::InputDeviceManager::GetInstance()->AddObserver(this);
 }
 
 DisplayChangeObserver::~DisplayChangeObserver() {
   ui::InputDeviceManager::GetInstance()->RemoveObserver(this);
-  WmShell::Get()->RemoveShellObserver(this);
 }
 
 ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
@@ -171,10 +168,8 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
         return display_state->display_id();
       });
 
-  const display::DisplayLayout& layout = Shell::GetInstance()
-                                             ->display_manager()
-                                             ->layout_store()
-                                             ->GetRegisteredDisplayLayout(list);
+  const display::DisplayLayout& layout =
+      display_manager_->layout_store()->GetRegisteredDisplayLayout(list);
   return layout.mirrored ? ui::MULTIPLE_DISPLAY_STATE_DUAL_MIRROR
                          : ui::MULTIPLE_DISPLAY_STATE_DUAL_EXTENDED;
 }
@@ -182,8 +177,7 @@ ui::MultipleDisplayState DisplayChangeObserver::GetStateForDisplayIds(
 bool DisplayChangeObserver::GetResolutionForDisplayId(int64_t display_id,
                                                       gfx::Size* size) const {
   scoped_refptr<display::ManagedDisplayMode> mode =
-      Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
-          display_id);
+      display_manager_->GetSelectedModeForDisplayId(display_id);
   if (!mode)
     return false;
   *size = mode->size();
@@ -212,8 +206,7 @@ void DisplayChangeObserver::OnDisplayModeChanged(
         device_scale_factor = FindDeviceScaleFactor(dpi);
     } else {
       scoped_refptr<display::ManagedDisplayMode> mode =
-          Shell::GetInstance()->display_manager()->GetSelectedModeForDisplayId(
-              state->display_id());
+          display_manager_->GetSelectedModeForDisplayId(state->display_id());
       if (mode) {
         device_scale_factor = mode->device_scale_factor();
       } else {
@@ -237,17 +230,17 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     std::string name;
     switch (state->type()) {
       case ui::DISPLAY_CONNECTION_TYPE_INTERNAL:
-        name = l10n_util::GetStringUTF8(IDS_ASH_INTERNAL_DISPLAY_NAME);
+        name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_INTERNAL);
         break;
       case ui::DISPLAY_CONNECTION_TYPE_VIRTUAL:
-        name = l10n_util::GetStringUTF8(IDS_ASH_VIRTUAL_DISPLAY_NAME);
+        name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_VIRTUAL);
         break;
       default:
         name = state->display_name();
     }
 
     if (name.empty())
-      name = l10n_util::GetStringUTF8(IDS_ASH_STATUS_TRAY_UNKNOWN_DISPLAY_NAME);
+      name = l10n_util::GetStringUTF8(IDS_DISPLAY_NAME_UNKNOWN);
 
     bool has_overscan = state->has_overscan();
     int64_t id = state->display_id();
@@ -271,17 +264,14 @@ void DisplayChangeObserver::OnDisplayModeChanged(
     new_info.SetManagedDisplayModes(display_modes);
 
     new_info.set_available_color_profiles(
-        Shell::GetInstance()
-            ->display_configurator()
-            ->GetAvailableColorCalibrationProfiles(id));
+        display_configurator_->GetAvailableColorCalibrationProfiles(id));
     new_info.set_maximum_cursor_size(state->maximum_cursor_size());
   }
 
   display::AssociateTouchscreens(
       &displays,
       ui::InputDeviceManager::GetInstance()->GetTouchscreenDevices());
-  // DisplayManager can be null during the boot.
-  Shell::GetInstance()->display_manager()->OnNativeDisplaysChanged(displays);
+  display_manager_->OnNativeDisplaysChanged(displays);
 
   // For the purposes of user activity detection, ignore synthetic mouse events
   // that are triggered by screen resizes: http://crbug.com/360634
@@ -297,14 +287,12 @@ void DisplayChangeObserver::OnDisplayModeChangeFailed(
   // If display configuration failed during startup, simply update the display
   // manager with detected displays. If no display is detected, it will
   // create a pseudo display.
-  if (Shell::GetInstance()->display_manager()->GetNumDisplays() == 0)
+  if (display_manager_->GetNumDisplays() == 0)
     OnDisplayModeChanged(displays);
 }
 
-void DisplayChangeObserver::OnAppTerminating() {
-  // Stop handling display configuration events once the shutdown
-  // process starts. crbug.com/177014.
-  Shell::GetInstance()->display_configurator()->PrepareForExit();
+void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
+  OnDisplayModeChanged(display_configurator_->cached_displays());
 }
 
 // static
@@ -314,11 +302,6 @@ float DisplayChangeObserver::FindDeviceScaleFactor(float dpi) {
       return kThresholdTable[i].device_scale_factor;
   }
   return 1.0f;
-}
-
-void DisplayChangeObserver::OnTouchscreenDeviceConfigurationChanged() {
-  OnDisplayModeChanged(
-      Shell::GetInstance()->display_configurator()->cached_displays());
 }
 
 }  // namespace ash
