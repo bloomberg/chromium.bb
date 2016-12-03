@@ -689,14 +689,12 @@ void URLRequestHttpJob::AddCookieHeaderAndStart() {
     //   which target a top-level browsing context.
     //
     // * Otherwise, do not include same-site cookies.
-    url::Origin requested_origin(request_->url());
-    url::Origin site_for_cookies(request_->first_party_for_cookies());
-
     if (registry_controlled_domains::SameDomainOrHost(
-            requested_origin, site_for_cookies,
+            request_->url(), request_->first_party_for_cookies(),
             registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
-      if (registry_controlled_domains::SameDomainOrHost(
-              requested_origin, request_->initiator(),
+      if (request_->initiator() &&
+          registry_controlled_domains::SameDomainOrHost(
+              request_->url(), request_->initiator().value().GetURL(),
               registry_controlled_domains::INCLUDE_PRIVATE_REGISTRIES)) {
         options.set_same_site_cookie_mode(
             CookieOptions::SameSiteCookieMode::INCLUDE_STRICT_AND_LAX);
