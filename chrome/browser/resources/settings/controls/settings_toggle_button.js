@@ -10,4 +10,10 @@ Polymer({
   is: 'settings-toggle-button',
 
   behaviors: [SettingsBooleanControlBehavior],
+
+  /** @private */
+  onLabelWrapperTap_: function() {
+    if (!this.controlDisabled_())
+      this.checked = !this.checked;
+  },
 });

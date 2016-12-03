@@ -26,7 +26,8 @@
       }
     </style>
     <div id="outerRow" noSubLabel$="[[!subLabel]]">
-      <div class="flex">
+      <div class="flex" on-tap="onLabelWrapperTap_"
+          actionable$="[[!controlDisabled_(disabled, pref)]]">
         <div>[[label]]</div>
         <div class="secondary">[[subLabel]]</div>
       </div>

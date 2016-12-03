@@ -107,13 +107,11 @@ var SettingsBooleanControlBehaviorImpl = {
   },
 
   /**
-   * @param {boolean} disabled
-   * @param {!chrome.settingsPrivate.PrefObject} pref
    * @return {boolean} Whether the checkbox should be disabled.
    * @private
    */
-  controlDisabled_: function(disabled, pref) {
-    return disabled || this.isPrefPolicyControlled(pref);
+  controlDisabled_: function() {
+    return this.disabled || this.isPrefPolicyControlled(assert(this.pref));
   },
 };
 
