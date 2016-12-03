@@ -153,9 +153,8 @@ void RecentTabHelper::DidFinishNavigation(
   }
 
   if (offline_pages::IsOffliningRecentPagesEnabled()) {
-    int64_t proposed_id = OfflinePageModel::kInvalidOfflineId;
     download_info_ = base::MakeUnique<DownloadPageInfo>(
-        GetRecentPagesClientId(), proposed_id);
+        GetRecentPagesClientId(), OfflinePageModel::kInvalidOfflineId);
   } else {
     download_info_.reset();
   }

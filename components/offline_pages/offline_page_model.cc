@@ -8,6 +8,8 @@
 
 namespace offline_pages {
 
+const int64_t OfflinePageModel::kInvalidOfflineId;
+
 OfflinePageModel::SavePageParams::SavePageParams()
     : proposed_offline_id(OfflinePageModel::kInvalidOfflineId) {
 }
