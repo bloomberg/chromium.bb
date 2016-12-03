@@ -62,6 +62,10 @@ Current patches:
     commit e4decbe7 includes a downstream declaration of |ret| in
     mov_seek_stream in mov.c.
 
+  Other changes to libavformat/mov.c:
+    Avoid heap allocation wrap when allocating title_str in mov_read_hdlr().
+    TODO: push upstream.
+
   Changes to libavformat/matroskadec.c
     Add CONFIG_LZO and CONFIG_SIPR_DECODER (and other CONFIG_*) checks to remove
     code that may be a security risk. Discuss with cevans@ before removing.
@@ -74,7 +78,7 @@ Current patches:
     Fixes for MSAN Use-of-uninitialized-value. http://crbug.com/666874.
     TODO(chcunningham): Submit upstream.
 
-    Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 - 
+    Other changes: TODO(chcunningham/dalecurtis): https://crbug.com/504623 -
     Determine whether these changes are still necessary and either remove or
     document them.
 
