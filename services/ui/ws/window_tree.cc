@@ -1717,13 +1717,17 @@ void WindowTree::CancelWindowMove(Id window_id) {
       window_server_->GetCurrentMoveLoopChangeId());
 }
 
-void WindowTree::AddAccelerator(uint32_t id,
-                                mojom::EventMatcherPtr event_matcher,
-                                const AddAcceleratorCallback& callback) {
+void WindowTree::AddAccelerators(
+    std::vector<mojom::AcceleratorPtr> accelerators,
+    const AddAcceleratorsCallback& callback) {
   DCHECK(window_manager_state_);
-  const bool success =
-      window_manager_state_->event_dispatcher()->AddAccelerator(
-          id, std::move(event_matcher));
+
+  bool success = true;
+  for (auto iter = accelerators.begin(); iter != accelerators.end(); ++iter) {
+    if (!window_manager_state_->event_dispatcher()->AddAccelerator(
+            iter->get()->id, std::move(iter->get()->event_matcher)))
+      success = false;
+  }
   callback.Run(success);
 }
 

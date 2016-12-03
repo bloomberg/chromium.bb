@@ -14,6 +14,7 @@
 #include "base/bind.h"
 #include "base/memory/ptr_util.h"
 #include "services/service_manager/public/cpp/connector.h"
+#include "services/ui/common/accelerator_util.h"
 #include "services/ui/public/cpp/property_type_converters.h"
 #include "services/ui/public/interfaces/constants.mojom.h"
 #include "services/ui/public/interfaces/window_manager.mojom.h"
@@ -1436,8 +1437,8 @@ void WindowTreeClient::AddAccelerator(
     ui::mojom::EventMatcherPtr event_matcher,
     const base::Callback<void(bool)>& callback) {
   if (window_manager_internal_client_) {
-    window_manager_internal_client_->AddAccelerator(
-        id, std::move(event_matcher), callback);
+    window_manager_internal_client_->AddAccelerators(
+        ui::CreateAcceleratorVector(id, std::move(event_matcher)), callback);
   }
 }
 

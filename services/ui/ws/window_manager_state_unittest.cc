@@ -12,7 +12,7 @@
 #include "base/test/test_simple_task_runner.h"
 #include "base/threading/thread_task_runner_handle.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/ui/common/event_matcher_util.h"
+#include "services/ui/common/accelerator_util.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display.h"
 #include "services/ui/ws/display_manager.h"
@@ -231,6 +231,7 @@ TEST_F(WindowManagerStateTest, PreTargetConsumed) {
   {
     mojom::EventMatcherPtr matcher = ui::CreateKeyMatcher(
         ui::mojom::KeyboardCode::W, ui::mojom::kEventFlagControlDown);
+
     ASSERT_TRUE(window_manager_state()->event_dispatcher()->AddAccelerator(
         accelerator_id, std::move(matcher)));
   }

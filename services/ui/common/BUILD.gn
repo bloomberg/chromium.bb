@@ -8,8 +8,8 @@ import("//testing/test.gni")
 
 source_set("mus_common") {
   sources = [
-    "event_matcher_util.cc",
-    "event_matcher_util.h",
+    "accelerator_util.cc",
+    "accelerator_util.h",
     "switches.cc",
     "switches.h",
     "transient_window_utils.h",

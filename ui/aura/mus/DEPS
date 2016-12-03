@@ -9,6 +9,7 @@ include_rules = [
   "+gpu/ipc/client/gpu_channel_host.h",
   "+mojo/public/cpp/system/buffer.h",
   "+mojo/public/cpp/system/platform_handle.h",
+  "+services/ui/common/accelerator_util.h",
   "+services/ui/public/cpp/context_provider.h",
   "+services/ui/public/cpp/gpu",
   "+services/ui/public/cpp/property_type_converters.h",

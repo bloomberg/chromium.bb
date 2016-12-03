@@ -8,7 +8,7 @@
 
 #include "base/memory/weak_ptr.h"
 #include "services/service_manager/public/interfaces/connector.mojom.h"
-#include "services/ui/common/event_matcher_util.h"
+#include "services/ui/common/accelerator_util.h"
 #include "services/ui/ws/accelerator.h"
 #include "services/ui/ws/display_manager.h"
 #include "services/ui/ws/platform_display.h"

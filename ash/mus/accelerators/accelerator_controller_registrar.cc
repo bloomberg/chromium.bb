@@ -13,7 +13,7 @@
 #include "ash/mus/bridge/wm_window_mus.h"
 #include "ash/mus/window_manager.h"
 #include "base/logging.h"
-#include "services/ui/common/event_matcher_util.h"
+#include "services/ui/common/accelerator_util.h"
 #include "services/ui/public/cpp/window_manager_delegate.h"
 #include "services/ui/public/cpp/window_tree_client.h"
 #include "ui/base/accelerators/accelerator_history.h"
@@ -126,12 +126,16 @@ void AcceleratorControllerRegistrar::OnAcceleratorRegistered(
   post_event_matcher->accelerator_phase =
       ui::mojom::AcceleratorPhase::POST_TARGET;
 
-  window_manager_->window_manager_client()->AddAccelerator(
-      ComputeAcceleratorId(id_namespace_, ids.pre_id), std::move(event_matcher),
+  window_manager_->window_manager_client()->AddAccelerators(
+      ui::CreateAcceleratorVector(
+          ComputeAcceleratorId(id_namespace_, ids.pre_id),
+          std::move(event_matcher)),
       base::Bind(OnAcceleratorAdded, accelerator));
-  window_manager_->window_manager_client()->AddAccelerator(
-      ComputeAcceleratorId(id_namespace_, ids.post_id),
-      std::move(post_event_matcher),
+
+  window_manager_->window_manager_client()->AddAccelerators(
+      ui::CreateAcceleratorVector(
+          ComputeAcceleratorId(id_namespace_, ids.post_id),
+          std::move(post_event_matcher)),
       base::Bind(OnAcceleratorAdded, accelerator));
 }
 

@@ -14,7 +14,7 @@
 #include "base/macros.h"
 #include "services/ui/common/types.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
-#include "services/ui/public/interfaces/event_matcher.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/ws/drag_cursor_updater.h"
 #include "services/ui/ws/modal_window_controller.h"
 #include "services/ui/ws/server_window_observer.h"
@@ -126,6 +126,7 @@ class EventDispatcher : public ServerWindowObserver, public DragCursorUpdater {
   // already exists with the same id or the same matcher, then the accelerator
   // is not added. Returns whether adding the accelerator was successful or not.
   bool AddAccelerator(uint32_t id, mojom::EventMatcherPtr event_matcher);
+
   void RemoveAccelerator(uint32_t id);
 
   // Processes the supplied event, informing the delegate as approriate. This
