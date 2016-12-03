@@ -487,9 +487,15 @@ function showPage(pageDivId) {
 
   hideOverlay();
   var doc = appWindow.contentWindow.document;
-  var pages = doc.getElementsByClassName('section');
-  for (var i = 0; i < pages.length; i++) {
-    pages[i].hidden = pages[i].id != pageDivId;
+  // If the request is lso-loading and arc-loading page is currently shown,
+  // then we do not switch the view. This is because both pages are saying
+  // "operation in progress", and switching the page looks unwanted message
+  // change from users' point of view.
+  if (pageDivId != 'lso-loading' || doc.getElementById('arc-loading').hidden) {
+    var pages = doc.getElementsByClassName('section');
+    for (var i = 0; i < pages.length; i++) {
+      pages[i].hidden = pages[i].id != pageDivId;
+    }
   }
 
   if (pageDivId == 'lso-loading') {
