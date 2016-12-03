@@ -67,7 +67,9 @@ bear-1280x720-a_frag-cenc_missing-saiz-saio.mp4 - An invalid file similar to bea
 bear-320x240-v_frag-vp9.mp4 - Bear video with VP9 codec in MP4 container. Generated with shaka-packager (https://github.com/google/shaka-packager):
                               packager in=bear-vp9.webm,stream=video,out=bear-320x240-v_frag-vp9.mp4
 bear-320x240-v_frag-vp9-cenc.mp4 - Same as above, with video encrypted using key ID [1] and key [2]. Generated with shaka-packager (https://github.com/google/shaka-packager):
-                                   packager in=bear-vp9.webm,stream=video,out=bear-320x240-v_frag-vp9-cenc.mp4 --enable_fixed_key_encryption --key_id 30313233343536373839303132333435 --key ebdd62f16814d27b68ef122afce4ae3c
+                                   packager in=bear-vp9.webm,stream=video,out=bear-320x240-v_frag-vp9-cenc.mp4 --enable_fixed_key_encryption --key_id 30313233343536373839303132333435
+                                            --key ebdd62f16814d27b68ef122afce4ae3c --clear_lead 0
+                                            --pssh 0000003470737368010000001077EFECC0B24D02ACE33C1E52E2FB4B000000013031323334353637383930313233343500000000000000467073736800000000EDEF8BA979D64ACEA3C827DCD51D21ED000000261210303132333435363738393031323334351A00221030313233343536373839303132333435
 bear-320x240-16x9-aspect-av_enc-av.webm - bear-320x240-16x9-aspect.webm with audio & video encrypted using key ID [1] and key [2]
 bear-320x240-av_enc-av.webm - bear-320x240.webm with audio & video encrypted using key ID [1] and key [2].
 bear-320x240-av_enc-av_clear-1s.webm - Same as bear-320x240-av_enc-av.webm but with no frames in the first second encrypted.

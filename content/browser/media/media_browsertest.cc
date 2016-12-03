@@ -13,6 +13,7 @@
 #include "content/public/test/browser_test_utils.h"
 #include "content/public/test/content_browser_test_utils.h"
 #include "content/shell/browser/shell.h"
+#include "media/base/media_switches.h"
 #include "media/base/test_data_util.h"
 #include "net/test/embedded_test_server/embedded_test_server.h"
 
@@ -26,6 +27,7 @@ const char MediaBrowserTest::kFailed[] = "FAILED";
 void MediaBrowserTest::SetUpCommandLine(base::CommandLine* command_line) {
   command_line->AppendSwitch(
       switches::kDisableGestureRequirementForMediaPlayback);
+  command_line->AppendSwitch(switches::kEnableVp9InMp4);
 }
 
 void MediaBrowserTest::RunMediaTestPage(const std::string& html_page,
@@ -148,6 +150,10 @@ IN_PROC_BROWSER_TEST_P(MediaTest, VideoBear12DepthVP9) {
 #endif
 IN_PROC_BROWSER_TEST_P(MediaTest, MAYBE_VideoBearMp4) {
   PlayVideo("bear.mp4", GetParam());
+}
+
+IN_PROC_BROWSER_TEST_P(MediaTest, VideoBearMp4Vp9) {
+  PlayVideo("bear-320x240-v_frag-vp9.mp4", GetParam());
 }
 
 // Android devices usually only support baseline, main and high.

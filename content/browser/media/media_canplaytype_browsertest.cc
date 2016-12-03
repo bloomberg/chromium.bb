@@ -797,9 +797,9 @@ IN_PROC_BROWSER_TEST_F(MediaCanPlayTypeTest, CodecSupportTest_mp4) {
   EXPECT_EQ(kHevcSupported,
             CanPlay("'video/mp4; codecs=\"hvc1.1.6.L93.B0, mp4a.40.5\"'"));
 
-  // Note: set to kPropProbably when switches::kEnableVp9InMp4 is enabled by
-  // default.
-  EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"vp09.00.01.08.02.01.01.00\"'"));
+  // switches::kEnableVp9InMp4 is enabled in MediaBrowserTest.
+  EXPECT_EQ(kPropProbably,
+            CanPlay("'video/mp4; codecs=\"vp09.00.01.08.02.01.01.00\"'"));
 
   TestMPEGUnacceptableCombinations("video/mp4");
   EXPECT_EQ(kNot, CanPlay("'video/mp4; codecs=\"flac\"'"));
@@ -1645,7 +1645,6 @@ class MediaCanPlayTypeTestMp4Vp9Demuxing
       public ::testing::WithParamInterface<bool> {
  public:
   void SetUpCommandLine(base::CommandLine* command_line) override {
-    MediaCanPlayTypeTest::SetUpCommandLine(command_line);
     const bool enable_mp4_vp9_demuxing = GetParam();
     if (enable_mp4_vp9_demuxing)
       command_line->AppendSwitch(switches::kEnableVp9InMp4);

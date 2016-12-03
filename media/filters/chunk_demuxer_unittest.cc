@@ -10,6 +10,7 @@
 #include <utility>
 
 #include "base/bind.h"
+#include "base/command_line.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
 #include "base/run_loop.h"
@@ -21,6 +22,7 @@
 #include "media/base/decoder_buffer.h"
 #include "media/base/decrypt_config.h"
 #include "media/base/media.h"
+#include "media/base/media_switches.h"
 #include "media/base/media_tracks.h"
 #include "media/base/mock_demuxer_host.h"
 #include "media/base/mock_media_log.h"
@@ -35,12 +37,14 @@
 
 using ::testing::AnyNumber;
 using ::testing::Exactly;
+using ::testing::HasSubstr;
 using ::testing::InSequence;
 using ::testing::NotNull;
 using ::testing::Return;
 using ::testing::SaveArg;
 using ::testing::SetArgumentPointee;
 using ::testing::StrictMock;
+using ::testing::WithParamInterface;
 using ::testing::_;
 
 namespace media {
@@ -4745,5 +4749,40 @@ TEST_F(ChunkDemuxerTest, RemovingIdMustRemoveStreams) {
 // TODO(servolk): Add a unit test with multiple audio/video tracks using the
 // same codec type in a single SourceBufferState, when WebM parser supports
 // multiple tracks. crbug.com/646900
+
+class ChunkDemuxerMp4Vp9Test : public ChunkDemuxerTest,
+                               public WithParamInterface<bool> {
+ public:
+  void SetUp() override {
+    ChunkDemuxerTest::SetUp();
+    const bool enable_mp4_vp9_demuxing = GetParam();
+    if (enable_mp4_vp9_demuxing) {
+      base::CommandLine::ForCurrentProcess()->AppendSwitch(
+          switches::kEnableVp9InMp4);
+    }
+  }
+};
+
+TEST_P(ChunkDemuxerMp4Vp9Test, CodecSupport) {
+  ChunkDemuxer::Status expected = ChunkDemuxer::kNotSupported;
+
+#if defined(USE_PROPRIETARY_CODECS)
+  const bool enable_mp4_vp9_demuxing = GetParam();
+  if (enable_mp4_vp9_demuxing) {
+    expected = ChunkDemuxer::kOk;
+  } else {
+    EXPECT_MEDIA_LOG(HasSubstr(
+        "Codec 'vp09.00.01.08.02.01.01.00' is not supported for 'video/mp4'"));
+  }
+#endif
+
+  EXPECT_EQ(
+      demuxer_->AddId("source_id", "video/mp4", "vp09.00.01.08.02.01.01.00"),
+      expected);
+}
+
+INSTANTIATE_TEST_CASE_P(EnableDisableMp4Vp9Demuxing,
+                        ChunkDemuxerMp4Vp9Test,
+                        ::testing::Bool());
 
 }  // namespace media
