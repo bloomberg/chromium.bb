@@ -7,6 +7,7 @@
 #include <iterator>
 #include <utility>
 
+#include "base/debug/alias.h"
 #include "base/logging.h"
 #include "base/metrics/histogram_macros.h"
 #include "base/trace_event/trace_event.h"
@@ -233,9 +234,17 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
     safe_browsing::SBThreatType threat_type,
     const safe_browsing::ThreatMetadata& metadata) {
   CHECK_EQ(state_, STATE_CHECKING_URL);
+  // TODO(vakh): The following base::debug::Alias() and CHECK calls should be
+  // removed after http://crbug.com/660293 is fixed.
   CHECK(url.is_valid());
   CHECK(url_being_checked_.is_valid());
-  CHECK_EQ(url, url_being_checked_);
+  if (url != url_being_checked_) {
+    char buf[2000];
+    snprintf(buf, sizeof(buf), "sbtr::ocbur:%s -- %s\n", url.spec().c_str(),
+             url_being_checked_.spec().c_str());
+    base::debug::Alias(buf);
+    CHECK(false) << "buf: " << buf;
+  }
 
   timer_.Stop();  // Cancel the timeout timer.
   threat_type_ = threat_type;
