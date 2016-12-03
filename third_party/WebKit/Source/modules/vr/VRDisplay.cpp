@@ -365,7 +365,12 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
     return promise;
   }
 
-  if (firstPresent) {
+  if (!m_pendingPresentResolvers.isEmpty()) {
+    // If we are waiting on the results of a previous requestPresent call don't
+    // fire a new request, just cache the resolver and resolve it when the
+    // original request returns.
+    m_pendingPresentResolvers.append(resolver);
+  } else if (firstPresent) {
     bool secureContext = scriptState->getExecutionContext()->isSecureContext();
     if (!m_display) {
       forceExitPresent();
@@ -374,10 +379,11 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
       resolver->reject(exception);
       return promise;
     }
-    m_display->RequestPresent(
-        secureContext, convertToBaseCallback(WTF::bind(
-                           &VRDisplay::onPresentComplete, wrapPersistent(this),
-                           wrapPersistent(resolver))));
+
+    m_pendingPresentResolvers.append(resolver);
+    m_display->RequestPresent(secureContext, convertToBaseCallback(WTF::bind(
+                                                 &VRDisplay::onPresentComplete,
+                                                 wrapPersistent(this))));
   } else {
     updateLayerBounds();
     resolver->resolve();
@@ -387,15 +393,18 @@ ScriptPromise VRDisplay::requestPresent(ScriptState* scriptState,
   return promise;
 }
 
-void VRDisplay::onPresentComplete(ScriptPromiseResolver* resolver,
-                                  bool success) {
+void VRDisplay::onPresentComplete(bool success) {
   if (success) {
-    this->beginPresent(resolver);
+    this->beginPresent();
   } else {
     this->forceExitPresent();
     DOMException* exception = DOMException::create(
         NotAllowedError, "Presentation request was denied.");
-    resolver->reject(exception);
+
+    while (!m_pendingPresentResolvers.isEmpty()) {
+      ScriptPromiseResolver* resolver = m_pendingPresentResolvers.takeFirst();
+      resolver->reject(exception);
+    }
   }
 }
 
@@ -426,7 +435,7 @@ ScriptPromise VRDisplay::exitPresent(ScriptState* scriptState) {
   return promise;
 }
 
-void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
+void VRDisplay::beginPresent() {
   Document* doc = m_navigatorVR->document();
   std::unique_ptr<UserGestureIndicator> gestureIndicator;
   if (m_capabilities->hasExternalDisplay()) {
@@ -434,7 +443,10 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
     DOMException* exception = DOMException::create(
         InvalidStateError,
         "VR Presentation not implemented for this VRDisplay.");
-    resolver->reject(exception);
+    while (!m_pendingPresentResolvers.isEmpty()) {
+      ScriptPromiseResolver* resolver = m_pendingPresentResolvers.takeFirst();
+      resolver->reject(exception);
+    }
     ReportPresentationResult(
         PresentationResult::PresentationNotSupportedByDisplay);
     return;
@@ -493,7 +505,10 @@ void VRDisplay::beginPresent(ScriptPromiseResolver* resolver) {
 
   updateLayerBounds();
 
-  resolver->resolve();
+  while (!m_pendingPresentResolvers.isEmpty()) {
+    ScriptPromiseResolver* resolver = m_pendingPresentResolvers.takeFirst();
+    resolver->resolve();
+  }
   OnPresentChange();
 }
 
@@ -735,6 +750,7 @@ DEFINE_TRACE(VRDisplay) {
   visitor->trace(m_layer);
   visitor->trace(m_renderingContext);
   visitor->trace(m_scriptedAnimationController);
+  visitor->trace(m_pendingPresentResolvers);
 }
 
 }  // namespace blink

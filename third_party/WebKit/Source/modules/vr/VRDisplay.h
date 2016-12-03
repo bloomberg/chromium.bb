@@ -94,7 +94,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
 
   void updatePose();
 
-  void beginPresent(ScriptPromiseResolver*);
+  void beginPresent();
   void forceExitPresent();
 
   void updateLayerBounds();
@@ -104,7 +104,7 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
 
  private:
   void onFullscreenCheck(TimerBase*);
-  void onPresentComplete(ScriptPromiseResolver*, bool);
+  void onPresentComplete(bool);
 
   void onConnected();
   void onDisconnected();
@@ -154,6 +154,8 @@ class VRDisplay final : public GarbageCollectedFinalized<VRDisplay>,
   device::mojom::blink::VRDisplayPtr m_display;
 
   mojo::Binding<device::mojom::blink::VRDisplayClient> m_binding;
+
+  HeapDeque<Member<ScriptPromiseResolver>> m_pendingPresentResolvers;
 };
 
 using VRDisplayVector = HeapVector<Member<VRDisplay>>;
