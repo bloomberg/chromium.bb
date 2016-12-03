@@ -11,10 +11,6 @@
 #include "ppapi/tests/test_case.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-namespace pp {
-class MessageLoop;
-}
-
 class TestMessageLoop : public TestCase {
  public:
   explicit TestMessageLoop(TestingInstance* instance);

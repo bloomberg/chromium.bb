@@ -12,7 +12,6 @@
 #include "ppapi/tests/test_case.h"
 
 namespace pp {
-class FileIO;
 class FileSystem;
 }  // namespace pp
 

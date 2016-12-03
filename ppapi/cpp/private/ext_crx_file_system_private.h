@@ -14,8 +14,6 @@
 
 namespace pp {
 
-class CompletionCallback;
-
 class ExtCrxFileSystemPrivate {
  public:
   ExtCrxFileSystemPrivate();

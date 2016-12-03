@@ -22,8 +22,6 @@ struct PP_Size;
 
 namespace ppapi {
 
-class HostResource;
-
 namespace proxy {
 
 struct Connection;

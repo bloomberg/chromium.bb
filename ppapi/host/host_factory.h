@@ -16,10 +16,6 @@ class Message;
 
 namespace ppapi {
 
-namespace proxy {
-class ResourceMessageCallParams;
-}
-
 namespace host {
 
 class PpapiHost;

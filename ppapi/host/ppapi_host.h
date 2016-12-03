@@ -23,7 +23,6 @@ namespace ppapi {
 
 namespace proxy {
 class ResourceMessageCallParams;
-class ResourceMessageReplyParams;
 class SerializedHandle;
 }
 

@@ -11,8 +11,6 @@
 #include "ppapi/c/ppb_var_array_buffer.h"
 #include "ppapi/shared_impl/ppapi_shared_export.h"
 
-struct PP_Var;
-
 namespace ppapi {
 
 class PPAPI_SHARED_EXPORT PPB_Var_Shared {

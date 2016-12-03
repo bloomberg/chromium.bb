@@ -14,7 +14,6 @@
 
 namespace pp {
 
-class CompletionCallback;
 class Instance;
 class Var;
 

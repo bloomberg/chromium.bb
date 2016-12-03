@@ -12,7 +12,6 @@
 namespace pp {
 
 class Instance;
-class VideoDecoder_Dev;
 
 // This class provides a C++ interface for callbacks related to video decoding.
 // It is the C++ counterpart to PPP_VideoDecoder_Dev.

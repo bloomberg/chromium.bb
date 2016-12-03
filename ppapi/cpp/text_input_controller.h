@@ -19,7 +19,6 @@
 namespace pp {
 
 class Rect;
-class Instance;
 
 /// This class can be used for giving hints to the browser about the text input
 /// status of plugins.

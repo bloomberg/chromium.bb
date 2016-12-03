@@ -26,8 +26,6 @@
 namespace ppapi {
 namespace proxy {
 
-class PluginDispatcher;
-
 class PPAPI_PROXY_EXPORT PluginResource : public Resource {
  public:
   enum Destination {

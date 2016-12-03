@@ -15,8 +15,6 @@
 
 namespace pp {
 
-class CompletionCallback;
-
 class IsolatedFileSystemPrivate {
  public:
   IsolatedFileSystemPrivate();

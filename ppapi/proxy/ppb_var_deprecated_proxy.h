@@ -19,7 +19,6 @@ struct PPB_Var_Deprecated;
 namespace ppapi {
 namespace proxy {
 
-class SerializedVar;
 class SerializedVarReceiveInput;
 class SerializedVarVectorOutParam;
 class SerializedVarVectorReceiveInput;

@@ -23,8 +23,6 @@
 #undef PostMessage
 #endif
 
-struct PP_InputEvent;
-
 /// The C++ interface to the Pepper API.
 namespace pp {
 

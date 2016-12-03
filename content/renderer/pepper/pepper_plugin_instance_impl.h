@@ -95,6 +95,7 @@ namespace ppapi {
 class Resource;
 struct InputEventData;
 struct PPP_Instance_Combined;
+struct URLResponseInfoData;
 class ScopedPPVar;
 }
 

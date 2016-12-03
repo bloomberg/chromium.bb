@@ -43,8 +43,6 @@ struct ViewData;
 
 namespace thunk {
 
-class PPB_Flash_API;
-
 class PPB_Instance_API {
  public:
   virtual ~PPB_Instance_API() {}

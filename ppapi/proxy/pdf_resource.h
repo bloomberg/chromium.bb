@@ -17,8 +17,6 @@
 namespace ppapi {
 namespace proxy {
 
-class PluginDispatcher;
-
 class PPAPI_PROXY_EXPORT PDFResource
     : public PluginResource,
       public thunk::PPB_PDF_API {

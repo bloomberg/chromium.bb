@@ -15,7 +15,6 @@ struct PP_BrowserFont_Trusted_Description;
 
 namespace pp {
 
-class ImageData;
 class InstanceHandle;
 class Var;
 

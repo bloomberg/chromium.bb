@@ -19,6 +19,9 @@
 #include "ppapi/thunk/ppb_url_loader_api.h"
 
 namespace ppapi {
+
+struct URLResponseInfoData;
+
 namespace proxy {
 
 class URLResponseInfoResource;

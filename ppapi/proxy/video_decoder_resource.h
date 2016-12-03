@@ -30,7 +30,6 @@ class GLES2Implementation;
 
 namespace ppapi {
 
-class PPB_Graphics3D_Shared;
 class TrackedCallback;
 
 namespace proxy {

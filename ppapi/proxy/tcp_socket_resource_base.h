@@ -24,7 +24,6 @@ namespace ppapi {
 
 class PPB_X509Certificate_Fields;
 class PPB_X509Certificate_Private_Shared;
-class SocketOptionData;
 
 namespace proxy {
 

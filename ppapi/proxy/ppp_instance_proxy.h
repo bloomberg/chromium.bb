@@ -16,8 +16,6 @@
 #include "ppapi/shared_impl/host_resource.h"
 #include "ppapi/shared_impl/ppp_instance_combined.h"
 
-struct PP_Rect;
-
 namespace ppapi {
 
 struct URLResponseInfoData;

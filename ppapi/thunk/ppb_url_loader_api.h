@@ -15,7 +15,6 @@ namespace ppapi {
 
 class TrackedCallback;
 struct URLRequestInfoData;
-struct URLResponseInfoData;
 
 namespace thunk {
 

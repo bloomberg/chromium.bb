@@ -18,10 +18,6 @@ class PickleIterator;
 
 struct PP_Flash_Menu;
 
-namespace IPC {
-class Message;
-}
-
 namespace ppapi {
 namespace proxy {
 

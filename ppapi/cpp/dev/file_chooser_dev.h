@@ -16,7 +16,6 @@
 
 namespace pp {
 
-class CompletionCallback;
 class FileRef;
 class InstanceHandle;
 class Var;

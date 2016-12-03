@@ -17,6 +17,8 @@
 namespace ppapi {
 namespace proxy {
 
+class PluginDispatcher;
+
 class VideoCaptureResource
     : public PluginResource,
       public ::ppapi::thunk::PPB_VideoCapture_API {

@@ -29,7 +29,6 @@ class TrackedCallback;
 
 namespace proxy {
 
-class SerializedHandle;
 class VideoFrameResource;
 
 class PPAPI_PROXY_EXPORT VideoEncoderResource

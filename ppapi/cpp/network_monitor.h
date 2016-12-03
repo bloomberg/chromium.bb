@@ -12,7 +12,6 @@
 
 namespace pp {
 
-class Instance;
 class NetworkList;
 
 template <typename T> class CompletionCallbackWithOutput;

@@ -45,8 +45,6 @@ struct Capabilities;
 namespace ppapi {
 
 struct FileRefCreateInfo;
-struct URLRequestInfoData;
-struct URLResponseInfoData;
 
 namespace thunk {
 
