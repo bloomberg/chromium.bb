@@ -86,9 +86,15 @@ uint32_t cros_gralloc_convert_format(int format)
 }
 
 static int32_t cros_gralloc_query_rendernode(struct driver **drv,
-					     const char *name)
+					     const char *undesired)
 {
-	/* TODO(gsingh): Enable render nodes on udl/evdi. */
+	/*
+	 * Create a driver from rendernode while filtering out
+	 * the specified undesired driver.
+	 *
+	 * TODO(gsingh): Enable render nodes on udl/evdi.
+	 */
+
 	int fd;
 	drmVersionPtr version;
 	char const *str = "%s/renderD%d";
@@ -109,8 +115,10 @@ static int32_t cros_gralloc_query_rendernode(struct driver **drv,
 			continue;
 
 		version = drmGetVersion(fd);
+		if (!version)
+			continue;
 
-		if (version && name && !strcmp(version->name, name)) {
+		if (undesired && !strcmp(version->name, undesired)) {
 			drmFreeVersion(version);
 			continue;
 		}
@@ -128,11 +136,11 @@ static int32_t cros_gralloc_query_rendernode(struct driver **drv,
 int32_t cros_gralloc_rendernode_open(struct driver **drv)
 {
 	int32_t ret;
-	ret = cros_gralloc_query_rendernode(drv, NULL);
+	ret = cros_gralloc_query_rendernode(drv, "vgem");
 
-	/* Look for vgem driver if no hardware is found. */
+	/* Allow vgem driver if no hardware is found. */
 	if (ret)
-		ret = cros_gralloc_query_rendernode(drv, "vgem");
+		ret = cros_gralloc_query_rendernode(drv, NULL);
 
 	return ret;
 }
