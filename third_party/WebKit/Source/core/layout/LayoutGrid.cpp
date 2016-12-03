@@ -1385,8 +1385,11 @@ LayoutUnit LayoutGrid::minContentForChild(LayoutBox& child,
     // FIXME: It's unclear if we should return the intrinsic width or the
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-    return child.minPreferredLogicalWidth() +
-           marginIntrinsicLogicalWidthForChild(child);
+    LayoutUnit marginLogicalWidth =
+        child.needsLayout()
+            ? computeMarginLogicalSizeForChild(InlineDirection, child)
+            : child.marginLogicalWidth();
+    return child.minPreferredLogicalWidth() + marginLogicalWidth;
   }
 
   // All orthogonal flow boxes were already laid out during an early layout
@@ -1425,8 +1428,11 @@ LayoutUnit LayoutGrid::maxContentForChild(LayoutBox& child,
     // FIXME: It's unclear if we should return the intrinsic width or the
     // preferred width.
     // See http://lists.w3.org/Archives/Public/www-style/2013Jan/0245.html
-    return child.maxPreferredLogicalWidth() +
-           marginIntrinsicLogicalWidthForChild(child);
+    LayoutUnit marginLogicalWidth =
+        child.needsLayout()
+            ? computeMarginLogicalSizeForChild(InlineDirection, child)
+            : child.marginLogicalWidth();
+    return child.maxPreferredLogicalWidth() + marginLogicalWidth;
   }
 
   // All orthogonal flow boxes were already laid out during an early layout
@@ -2886,12 +2892,10 @@ LayoutUnit LayoutGrid::computeMarginLogicalSizeForChild(
   LayoutUnit marginEnd;
   LayoutUnit logicalSize =
       isRowAxis ? child.logicalWidth() : child.logicalHeight();
-  Length marginStartLength = isRowAxis
-                                 ? child.styleRef().marginStart()
-                                 : child.styleRef().marginBeforeUsing(style());
-  Length marginEndLength = isRowAxis
-                               ? child.styleRef().marginEnd()
-                               : child.styleRef().marginAfterUsing(style());
+  Length marginStartLength = isRowAxis ? child.styleRef().marginStart()
+                                       : child.styleRef().marginBefore();
+  Length marginEndLength =
+      isRowAxis ? child.styleRef().marginEnd() : child.styleRef().marginAfter();
   child.computeMarginsForDirection(
       forDirection, this, child.containingBlockLogicalWidthForContent(),
       logicalSize, marginStart, marginEnd, marginStartLength, marginEndLength);
