@@ -99,14 +99,14 @@ PrefService* GetPrefsForWindow(const views::Widget* window) {
 }
 
 #if defined(OS_WIN)
-bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
+bool MonitorHasAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
   APPBARDATA taskbar_data = { sizeof(APPBARDATA), NULL, 0, edge };
   taskbar_data.hWnd = ::GetForegroundWindow();
 
   // TODO(robliao): Remove ScopedTracker below once crbug.com/462368 is fixed.
   tracked_objects::ScopedTracker tracking_profile(
       FROM_HERE_WITH_EXPLICIT_FUNCTION(
-          "462368 MonitorHasTopmostAutohideTaskbarForEdge"));
+          "462368 MonitorHasAutohideTaskbarForEdge"));
 
   // MSDN documents an ABM_GETAUTOHIDEBAREX, which supposedly takes a monitor
   // rect and returns autohide bars on that monitor.  This sounds like a good
@@ -139,8 +139,25 @@ bool MonitorHasTopmostAutohideTaskbarForEdge(UINT edge, HMONITOR monitor) {
       taskbar = taskbar_data.hWnd;
   }
 
-  if (::IsWindow(taskbar) &&
-      (GetWindowLong(taskbar, GWL_EXSTYLE) & WS_EX_TOPMOST)) {
+  // There is a potential race condition here:
+  // 1. A maximized chrome window is fullscreened.
+  // 2. It is switched back to maximized.
+  // 3. In the process the window gets a WM_NCCACLSIZE message which calls us to
+  //    get the autohide state.
+  // 4. The worker thread is invoked. It calls the API to get the autohide
+  //    state. On Windows versions  earlier than Windows 7, taskbars could
+  //    easily be always on top or not.
+  //    This meant that we only want to look for taskbars which have the topmost
+  //    bit set.  However this causes problems in cases where the window on the
+  //    main thread is still in the process of switching away from fullscreen.
+  //    In this case the taskbar might not yet have the topmost bit set.
+  // 5. The main thread resumes and does not leave space for the taskbar and
+  //    hence it does not pop when hovered.
+  //
+  // To address point 4 above, it is best to not check for the WS_EX_TOPMOST
+  // window style on the taskbar, as starting from Windows 7, the topmost
+  // style is always set. We don't support XP and Vista anymore.
+  if (::IsWindow(taskbar)) {
     if (MonitorFromWindow(taskbar, MONITOR_DEFAULTTONEAREST) == monitor)
       return true;
     // In some cases like when the autohide taskbar is on the left of the
@@ -159,13 +176,13 @@ int GetAppbarAutohideEdgesOnWorkerThread(HMONITOR monitor) {
   DCHECK(monitor);
 
   int edges = 0;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_LEFT, monitor))
+  if (MonitorHasAutohideTaskbarForEdge(ABE_LEFT, monitor))
     edges |= views::ViewsDelegate::EDGE_LEFT;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_TOP, monitor))
+  if (MonitorHasAutohideTaskbarForEdge(ABE_TOP, monitor))
     edges |= views::ViewsDelegate::EDGE_TOP;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_RIGHT, monitor))
+  if (MonitorHasAutohideTaskbarForEdge(ABE_RIGHT, monitor))
     edges |= views::ViewsDelegate::EDGE_RIGHT;
-  if (MonitorHasTopmostAutohideTaskbarForEdge(ABE_BOTTOM, monitor))
+  if (MonitorHasAutohideTaskbarForEdge(ABE_BOTTOM, monitor))
     edges |= views::ViewsDelegate::EDGE_BOTTOM;
   return edges;
 }
@@ -477,6 +494,10 @@ int ChromeViewsDelegate::GetAppbarAutohideEdges(HMONITOR monitor,
   // edges.
   if (!appbar_autohide_edge_map_.count(monitor))
     appbar_autohide_edge_map_[monitor] = EDGE_BOTTOM;
+
+  // We use the SHAppBarMessage API to get the taskbar autohide state. This API
+  // spins a modal loop which could cause callers to be reentered. To avoid
+  // that we retrieve the taskbar state in a worker thread.
   if (monitor && !in_autohide_edges_callback_) {
     base::PostTaskAndReplyWithResult(
         content::BrowserThread::GetBlockingPool(),
