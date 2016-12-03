@@ -463,7 +463,7 @@ class MockObserver : public SafeBrowsingUIManager::Observer {
   MockObserver() {}
   virtual ~MockObserver() {}
   MOCK_METHOD1(OnSafeBrowsingHit,
-               void(const SafeBrowsingUIManager::UnsafeResource&));
+               void(const security_interstitials::UnsafeResource&));
 };
 
 MATCHER_P(IsUnsafeResourceFor, url, "") {

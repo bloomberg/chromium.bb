@@ -50,7 +50,7 @@ class ThreatDetails : public base::RefCountedThreadSafe<
                           content::BrowserThread::DeleteOnUIThread>,
                       public content::WebContentsObserver {
  public:
-  typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
+  typedef security_interstitials::UnsafeResource UnsafeResource;
 
   // Constructs a new ThreatDetails instance, using the factory.
   static ThreatDetails* NewThreatDetails(SafeBrowsingUIManager* ui_manager,

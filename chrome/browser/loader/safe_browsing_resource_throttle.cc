@@ -282,7 +282,7 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
   const content::ResourceRequestInfo* info =
       content::ResourceRequestInfo::ForRequest(request_);
 
-  SafeBrowsingUIManager::UnsafeResource resource;
+  security_interstitials::UnsafeResource resource;
   resource.url = url;
   resource.original_url = request_->original_url();
   resource.redirect_urls = redirect_urls_;
@@ -308,7 +308,7 @@ void SafeBrowsingResourceThrottle::OnCheckBrowseUrlResult(
 void SafeBrowsingResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    const SafeBrowsingUIManager::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource) {
   content::WebContents* web_contents = resource.web_contents_getter.Run();
   if (web_contents) {
     prerender::PrerenderContents* prerender_contents =

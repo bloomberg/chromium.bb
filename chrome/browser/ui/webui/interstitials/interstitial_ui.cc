@@ -243,7 +243,7 @@ safe_browsing::SafeBrowsingBlockingPage* CreateSafeBrowsingBlockingPage(
   resource.is_subframe = false;
   resource.threat_type = threat_type;
   resource.web_contents_getter =
-      safe_browsing::SafeBrowsingUIManager::UnsafeResource::
+      security_interstitials::UnsafeResource::
           GetWebContentsGetter(web_contents->GetRenderProcessHost()->GetID(),
                                web_contents->GetMainFrame()->GetRoutingID());
   resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;

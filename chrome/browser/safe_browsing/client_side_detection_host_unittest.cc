@@ -143,7 +143,8 @@ class MockSafeBrowsingUIManager : public SafeBrowsingUIManager {
 
   // Helper function which calls OnBlockingPageComplete for this client
   // object.
-  void InvokeOnBlockingPageComplete(const UrlCheckCallback& callback) {
+  void InvokeOnBlockingPageComplete(
+    const security_interstitials::UnsafeResource::UrlCheckCallback& callback) {
     DCHECK_CURRENTLY_ON(BrowserThread::IO);
     // Note: this will delete the client object in the case of the CsdClient
     // implementation.
@@ -204,7 +205,7 @@ class MockBrowserFeatureExtractor : public BrowserFeatureExtractor {
 
 class ClientSideDetectionHostTest : public ChromeRenderViewHostTestHarness {
  public:
-  typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
+  typedef security_interstitials::UnsafeResource UnsafeResource;
 
   void SetUp() override {
     ChromeRenderViewHostTestHarness::SetUp();

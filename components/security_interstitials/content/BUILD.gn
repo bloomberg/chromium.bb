@@ -1,0 +1,17 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+static_library("unsafe_resource") {
+  sources = [
+    "unsafe_resource.cc",
+    "unsafe_resource.h",
+  ]
+
+  deps = [
+    "//base",
+    "//components/safe_browsing_db:hit_report",
+    "//components/safe_browsing_db:util",
+    "//content/public/browser",
+  ]
+}

@@ -151,7 +151,7 @@ class ThreatDetailsWrap : public ThreatDetails {
   ThreatDetailsWrap(
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
-      const SafeBrowsingUIManager::UnsafeResource& unsafe_resource,
+      const security_interstitials::UnsafeResource& unsafe_resource,
       net::URLRequestContextGetter* request_context_getter)
       : ThreatDetails(ui_manager, web_contents, unsafe_resource) {
     request_context_getter_ = request_context_getter;

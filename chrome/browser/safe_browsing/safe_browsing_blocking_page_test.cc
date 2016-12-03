@@ -211,7 +211,7 @@ class TestThreatDetailsFactory : public ThreatDetailsFactory {
   ThreatDetails* CreateThreatDetails(
       SafeBrowsingUIManager* delegate,
       WebContents* web_contents,
-      const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) override {
+      const security_interstitials::UnsafeResource& unsafe_resource) override {
     details_ = new ThreatDetails(delegate, web_contents, unsafe_resource);
     return details_;
   }
@@ -1330,7 +1330,7 @@ class SafeBrowsingBlockingPageIDNTest
     resource.is_subresource = is_subresource;
     resource.threat_type = testing::get<1>(GetParam());
     resource.web_contents_getter =
-        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+        security_interstitials::UnsafeResource::GetWebContentsGetter(
             contents->GetRenderProcessHost()->GetID(),
             contents->GetMainFrame()->GetRoutingID());
     resource.threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;

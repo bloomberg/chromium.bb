@@ -97,7 +97,7 @@ class WhitelistUrlSet : public base::SupportsUserData::Data {
 // Returns the URL that should be used in a WhitelistUrlSet for the given
 // |resource|.
 GURL GetMainFrameWhitelistUrlForResource(
-    const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource) {
   if (resource.is_subresource) {
     NavigationEntry* entry = resource.GetNavigationEntryForResource();
     if (!entry)
@@ -133,62 +133,6 @@ WhitelistUrlSet* GetOrCreateWhitelist(content::WebContents* web_contents) {
 }  // namespace
 
 namespace safe_browsing {
-
-// SafeBrowsingUIManager::UnsafeResource ---------------------------------------
-
-SafeBrowsingUIManager::UnsafeResource::UnsafeResource()
-    : is_subresource(false),
-      is_subframe(false),
-      threat_type(SB_THREAT_TYPE_SAFE),
-      threat_source(safe_browsing::ThreatSource::UNKNOWN) {}
-
-SafeBrowsingUIManager::UnsafeResource::UnsafeResource(
-    const UnsafeResource& other) = default;
-
-SafeBrowsingUIManager::UnsafeResource::~UnsafeResource() { }
-
-bool SafeBrowsingUIManager::UnsafeResource::IsMainPageLoadBlocked() const {
-  // Subresource hits cannot happen until after main page load is committed.
-  if (is_subresource)
-    return false;
-
-  // Client-side phishing detection interstitials never block the main frame
-  // load, since they happen after the page is finished loading.
-  if (threat_type == SB_THREAT_TYPE_CLIENT_SIDE_PHISHING_URL ||
-      threat_type == SB_THREAT_TYPE_CLIENT_SIDE_MALWARE_URL) {
-    return false;
-  }
-
-  return true;
-}
-
-content::NavigationEntry*
-SafeBrowsingUIManager::UnsafeResource::GetNavigationEntryForResource() const {
-  content::WebContents* web_contents = web_contents_getter.Run();
-  if (!web_contents)
-    return nullptr;
-  // If a safebrowsing hit occurs during main frame navigation, the navigation
-  // will not be committed, and the pending navigation entry refers to the hit.
-  if (IsMainPageLoadBlocked())
-    return web_contents->GetController().GetPendingEntry();
-  // If a safebrowsing hit occurs on a subresource load, or on a main frame
-  // after the navigation is committed, the last committed navigation entry
-  // refers to the page with the hit. Note that there may concurrently be an
-  // unrelated pending navigation to another site, so GetActiveEntry() would be
-  // wrong.
-  return web_contents->GetController().GetLastCommittedEntry();
-}
-
-// static
-base::Callback<content::WebContents*(void)>
-SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
-    int render_process_host_id,
-    int render_frame_id) {
-  return base::Bind(&tab_util::GetWebContentsByFrameID, render_process_host_id,
-                    render_frame_id);
-}
-
-// SafeBrowsingUIManager -------------------------------------------------------
 
 SafeBrowsingUIManager::SafeBrowsingUIManager(
     const scoped_refptr<SafeBrowsingService>& service)
@@ -545,7 +489,7 @@ bool SafeBrowsingUIManager::IsUrlWhitelistedOrPendingForWebContents(
 
 // Static.
 GURL SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
-    const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource) {
   return GetMainFrameWhitelistUrlForResource(resource);
 }
 

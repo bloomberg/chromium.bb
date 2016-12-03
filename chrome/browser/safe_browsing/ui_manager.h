@@ -19,6 +19,7 @@
 #include "chrome/browser/permissions/permission_uma_util.h"
 #include "components/safe_browsing_db/hit_report.h"
 #include "components/safe_browsing_db/util.h"
+#include "components/security_interstitials/content/unsafe_resource.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/permission_type.h"
 #include "url/gurl.h"
@@ -36,54 +37,7 @@ class SafeBrowsingService;
 class SafeBrowsingUIManager
     : public base::RefCountedThreadSafe<SafeBrowsingUIManager> {
  public:
-  // Passed a boolean indicating whether or not it is OK to proceed with
-  // loading an URL.
-  typedef base::Callback<void(bool /*proceed*/)> UrlCheckCallback;
-
-  // Structure used to pass parameters between the IO and UI thread when
-  // interacting with the blocking page.
-  struct UnsafeResource {
-    UnsafeResource();
-    UnsafeResource(const UnsafeResource& other);
-    ~UnsafeResource();
-
-    // Returns true if this UnsafeResource is a main frame load that was blocked
-    // while the navigation is still pending. Note that a main frame hit may not
-    // be blocking, eg. client side detection happens after the load is
-    // committed.
-    bool IsMainPageLoadBlocked() const;
-
-    // Returns the NavigationEntry for this resource (for a main frame hit) or
-    // for the page which contains this resource (for a subresource hit).
-    // This method must only be called while the UnsafeResource is still
-    // "valid".
-    // I.e,
-    //   For MainPageLoadBlocked resources, it must not be called if the load
-    //   was aborted (going back or replaced with a different navigation),
-    //   or resumed (proceeded through warning or matched whitelist).
-    //   For non-MainPageLoadBlocked resources, it must not be called if any
-    //   other navigation has committed (whether by going back or unrelated
-    //   navigations), though a pending navigation is okay.
-    content::NavigationEntry* GetNavigationEntryForResource() const;
-
-    // Helper to build a getter for WebContents* from render frame id.
-    static base::Callback<content::WebContents*(void)> GetWebContentsGetter(
-        int render_process_host_id,
-        int render_frame_id);
-
-    GURL url;
-    GURL original_url;
-    std::vector<GURL> redirect_urls;
-    bool is_subresource;
-    bool is_subframe;
-    SBThreatType threat_type;
-    ThreatMetadata threat_metadata;
-    UrlCheckCallback callback;  // This is called back on |callback_thread|.
-    scoped_refptr<base::SingleThreadTaskRunner> callback_thread;
-    base::Callback<content::WebContents*(void)> web_contents_getter;
-    safe_browsing::ThreatSource threat_source;
-  };
-
+  typedef security_interstitials::UnsafeResource UnsafeResource;
   // Observer class can be used to get notified when a SafeBrowsing hit
   // was found.
   class Observer {

@@ -575,7 +575,7 @@ TEST_F(BrowserFeatureExtractorTest, SafeBrowsingFeatures) {
   request.set_client_score(0.5);
 
   browse_info_->unsafe_resource.reset(
-      new SafeBrowsingUIManager::UnsafeResource);
+      new security_interstitials::UnsafeResource);
   browse_info_->unsafe_resource->url = GURL("http://www.malware.com/");
   browse_info_->unsafe_resource->original_url = GURL("http://www.good.com/");
   browse_info_->unsafe_resource->is_subresource = true;

@@ -409,7 +409,7 @@ void ClientSideDetectionHost::DidNavigateMainFrame(
 }
 
 void ClientSideDetectionHost::OnSafeBrowsingHit(
-    const SafeBrowsingUIManager::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource) {
   if (!web_contents())
     return;
 
@@ -431,7 +431,7 @@ void ClientSideDetectionHost::OnSafeBrowsingHit(
 
   // We also keep the resource around in order to be able to send the
   // malicious URL to the server.
-  unsafe_resource_.reset(new SafeBrowsingUIManager::UnsafeResource(resource));
+  unsafe_resource_.reset(new security_interstitials::UnsafeResource(resource));
   unsafe_resource_->callback.Reset();  // Don't do anything stupid.
 }
 
@@ -555,7 +555,7 @@ void ClientSideDetectionHost::MaybeShowPhishingWarning(GURL phishing_url,
   if (is_phishing) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {
-      SafeBrowsingUIManager::UnsafeResource resource;
+      security_interstitials::UnsafeResource resource;
       resource.url = phishing_url;
       resource.original_url = phishing_url;
       resource.is_subresource = false;
@@ -591,7 +591,7 @@ void ClientSideDetectionHost::MaybeShowMalwareWarning(GURL original_url,
   if (is_malware && malware_url.is_valid() && original_url.is_valid()) {
     DCHECK(web_contents());
     if (ui_manager_.get()) {
-      SafeBrowsingUIManager::UnsafeResource resource;
+      security_interstitials::UnsafeResource resource;
       resource.url = malware_url;
       resource.original_url = original_url;
       resource.is_subresource = (malware_url.host() != original_url.host());

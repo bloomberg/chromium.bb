@@ -86,7 +86,7 @@ class DataReductionProxyResourceThrottle
   static void StartDisplayingBlockingPage(
       const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
       scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager,
-      const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
+      const security_interstitials::UnsafeResource& resource);
 
   // Resumes the request, by continuing the deferred action (either starting the
   // request, or following a redirect).

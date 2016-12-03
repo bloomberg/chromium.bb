@@ -159,7 +159,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   }
 
   void ShowInterstitial(bool is_subresource, const char* url) {
-    SafeBrowsingUIManager::UnsafeResource resource;
+    security_interstitials::UnsafeResource resource;
     InitResource(&resource, is_subresource, GURL(url));
     SafeBrowsingBlockingPage::ShowBlockingPage(ui_manager_.get(), resource);
   }
@@ -204,7 +204,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
   scoped_refptr<TestSafeBrowsingUIManager> ui_manager_;
 
  private:
-  void InitResource(SafeBrowsingUIManager::UnsafeResource* resource,
+  void InitResource(security_interstitials::UnsafeResource* resource,
                     bool is_subresource,
                     const GURL& url) {
     resource->callback =
@@ -216,7 +216,7 @@ class SafeBrowsingBlockingPageTest : public ChromeRenderViewHostTestHarness {
     resource->is_subresource = is_subresource;
     resource->threat_type = SB_THREAT_TYPE_URL_MALWARE;
     resource->web_contents_getter =
-        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+        security_interstitials::UnsafeResource::GetWebContentsGetter(
             web_contents()->GetRenderProcessHost()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
     resource->threat_source = safe_browsing::ThreatSource::LOCAL_PVER3;

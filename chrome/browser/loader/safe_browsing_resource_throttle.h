@@ -132,7 +132,7 @@ class SafeBrowsingResourceThrottle
   static void StartDisplayingBlockingPage(
       const base::WeakPtr<SafeBrowsingResourceThrottle>& throttle,
       scoped_refptr<safe_browsing::SafeBrowsingUIManager> ui_manager,
-      const safe_browsing::SafeBrowsingUIManager::UnsafeResource& resource);
+      const security_interstitials::UnsafeResource& resource);
 
   // Called on the IO thread if the request turned out to be for a prerendered
   // page.

@@ -79,34 +79,34 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 
   void TearDown() override { ChromeRenderViewHostTestHarness::TearDown(); }
 
-  bool IsWhitelisted(SafeBrowsingUIManager::UnsafeResource resource) {
+  bool IsWhitelisted(security_interstitials::UnsafeResource resource) {
     return ui_manager_->IsWhitelisted(resource);
   }
 
-  void AddToWhitelist(SafeBrowsingUIManager::UnsafeResource resource) {
+  void AddToWhitelist(security_interstitials::UnsafeResource resource) {
     ui_manager_->AddToWhitelistUrlSet(
         SafeBrowsingUIManager::GetMainFrameWhitelistUrlForResourceForTesting(
             resource),
         web_contents(), false, resource.threat_type);
   }
 
-  SafeBrowsingUIManager::UnsafeResource MakeUnsafeResource(
+  security_interstitials::UnsafeResource MakeUnsafeResource(
       const char* url,
       bool is_subresource) {
-    SafeBrowsingUIManager::UnsafeResource resource;
+    security_interstitials::UnsafeResource resource;
     resource.url = GURL(url);
     resource.is_subresource = is_subresource;
     resource.web_contents_getter =
-        SafeBrowsingUIManager::UnsafeResource::GetWebContentsGetter(
+        security_interstitials::UnsafeResource::GetWebContentsGetter(
             web_contents()->GetRenderProcessHost()->GetID(),
             web_contents()->GetMainFrame()->GetRoutingID());
     resource.threat_type = SB_THREAT_TYPE_URL_MALWARE;
     return resource;
   }
 
-  SafeBrowsingUIManager::UnsafeResource MakeUnsafeResourceAndStartNavigation(
+  security_interstitials::UnsafeResource MakeUnsafeResourceAndStartNavigation(
       const char* url) {
-    SafeBrowsingUIManager::UnsafeResource resource =
+    security_interstitials::UnsafeResource resource =
         MakeUnsafeResource(url, false /* is_subresource */);
 
     // The WC doesn't have a URL without a navigation. A main-frame malware
@@ -116,7 +116,7 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
   }
 
   void SimulateBlockingPageDone(
-      const std::vector<SafeBrowsingUIManager::UnsafeResource>& resources,
+      const std::vector<security_interstitials::UnsafeResource>& resources,
       bool proceed) {
     GURL main_frame_url;
     content::NavigationEntry* entry =
@@ -136,20 +136,20 @@ class SafeBrowsingUIManagerTest : public ChromeRenderViewHostTestHarness {
 };
 
 TEST_F(SafeBrowsingUIManagerTest, Whitelist) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
   EXPECT_TRUE(IsWhitelisted(resource));
 }
 
 TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresSitesNotAdded) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kGoodURL);
   EXPECT_FALSE(IsWhitelisted(resource));
 }
 
 TEST_F(SafeBrowsingUIManagerTest, WhitelistRemembersThreatType) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
   EXPECT_TRUE(IsWhitelisted(resource));
@@ -164,25 +164,25 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistRemembersThreatType) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresPath) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
   EXPECT_TRUE(IsWhitelisted(resource));
 
   content::WebContentsTester::For(web_contents())->CommitPendingNavigation();
 
-  SafeBrowsingUIManager::UnsafeResource resource_path =
+  security_interstitials::UnsafeResource resource_path =
       MakeUnsafeResourceAndStartNavigation(kBadURLWithPath);
   EXPECT_TRUE(IsWhitelisted(resource_path));
 }
 
 TEST_F(SafeBrowsingUIManagerTest, WhitelistIgnoresThreatType) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   AddToWhitelist(resource);
   EXPECT_TRUE(IsWhitelisted(resource));
 
-  SafeBrowsingUIManager::UnsafeResource resource_phishing =
+  security_interstitials::UnsafeResource resource_phishing =
       MakeUnsafeResource(kBadURL, false /* is_subresource */);
   resource_phishing.threat_type = SB_THREAT_TYPE_URL_PHISHING;
   EXPECT_TRUE(IsWhitelisted(resource_phishing));
@@ -193,7 +193,7 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistWithUnrelatedPendingLoad) {
   NavigateAndCommit(GURL(kLandingURL));
   {
     // Simulate subresource malware hit on the landing page.
-    SafeBrowsingUIManager::UnsafeResource resource =
+    security_interstitials::UnsafeResource resource =
         MakeUnsafeResource(kBadURL, true /* is_subresource */);
 
     // Start pending load to unrelated site.
@@ -210,7 +210,7 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistWithUnrelatedPendingLoad) {
   {
     // The unrelated site is not on the whitelist, even if the same subresource
     // was on it.
-    SafeBrowsingUIManager::UnsafeResource resource =
+    security_interstitials::UnsafeResource resource =
         MakeUnsafeResource(kBadURL, true /* is_subresource */);
     EXPECT_FALSE(IsWhitelisted(resource));
   }
@@ -218,7 +218,7 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistWithUnrelatedPendingLoad) {
   // Navigate back to the original landing url.
   NavigateAndCommit(GURL(kLandingURL));
   {
-    SafeBrowsingUIManager::UnsafeResource resource =
+    security_interstitials::UnsafeResource resource =
         MakeUnsafeResource(kBadURL, true /* is_subresource */);
     // Original resource url is whitelisted.
     EXPECT_TRUE(IsWhitelisted(resource));
@@ -226,14 +226,14 @@ TEST_F(SafeBrowsingUIManagerTest, WhitelistWithUnrelatedPendingLoad) {
   {
     // A different malware subresource on the same page is also whitelisted.
     // (The whitelist is by the page url, not the resource url.)
-    SafeBrowsingUIManager::UnsafeResource resource2 =
+    security_interstitials::UnsafeResource resource2 =
         MakeUnsafeResource(kAnotherBadURL, true /* is_subresource */);
     EXPECT_TRUE(IsWhitelisted(resource2));
   }
 }
 
 TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -241,7 +241,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
                  base::Unretained(&waiter));
   resource.callback_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
   EXPECT_TRUE(IsWhitelisted(resource));
@@ -251,7 +251,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackProceed) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, UICallbackDontProceed) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -259,7 +259,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackDontProceed) {
                  base::Unretained(&waiter));
   resource.callback_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::UI);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);
   EXPECT_FALSE(IsWhitelisted(resource));
@@ -269,7 +269,7 @@ TEST_F(SafeBrowsingUIManagerTest, UICallbackDontProceed) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, IOCallbackProceed) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -277,7 +277,7 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackProceed) {
                  base::Unretained(&waiter));
   resource.callback_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, true);
   EXPECT_TRUE(IsWhitelisted(resource));
@@ -287,7 +287,7 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackProceed) {
 }
 
 TEST_F(SafeBrowsingUIManagerTest, IOCallbackDontProceed) {
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResourceAndStartNavigation(kBadURL);
   SafeBrowsingCallbackWaiter waiter;
   resource.callback =
@@ -295,7 +295,7 @@ TEST_F(SafeBrowsingUIManagerTest, IOCallbackDontProceed) {
                  base::Unretained(&waiter));
   resource.callback_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
   SimulateBlockingPageDone(resources, false);
   EXPECT_FALSE(IsWhitelisted(resource));
@@ -378,7 +378,7 @@ TEST_F(SafeBrowsingUIManagerTest,
   web_contents()->SetDelegate(&delegate);
 
   // Simulate a blocking page showing for an unsafe subresource.
-  SafeBrowsingUIManager::UnsafeResource resource =
+  security_interstitials::UnsafeResource resource =
       MakeUnsafeResource(kBadURL, true /* is_subresource */);
   // Needed for showing the blocking page.
   resource.threat_source = safe_browsing::ThreatSource::REMOTE;
@@ -396,7 +396,7 @@ TEST_F(SafeBrowsingUIManagerTest,
                  base::Unretained(&waiter));
   resource.callback_thread =
       BrowserThread::GetTaskRunnerForThread(BrowserThread::IO);
-  std::vector<SafeBrowsingUIManager::UnsafeResource> resources;
+  std::vector<security_interstitials::UnsafeResource> resources;
   resources.push_back(resource);
 
   delegate.ClearVisibleSecurityStateChanged();

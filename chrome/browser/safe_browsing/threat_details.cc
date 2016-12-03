@@ -130,7 +130,7 @@ class ThreatDetailsFactoryImpl : public ThreatDetailsFactory {
   ThreatDetails* CreateThreatDetails(
       SafeBrowsingUIManager* ui_manager,
       WebContents* web_contents,
-      const SafeBrowsingUIManager::UnsafeResource& unsafe_resource) override {
+      const security_interstitials::UnsafeResource& unsafe_resource) override {
     return new ThreatDetails(ui_manager, web_contents, unsafe_resource);
   }
 

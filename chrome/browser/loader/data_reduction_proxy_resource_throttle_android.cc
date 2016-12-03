@@ -86,7 +86,7 @@ void DataReductionProxyResourceThrottle::WillRedirectRequest(
       content::ResourceRequestInfo::ForRequest(request_);
 
   state_ = STATE_DISPLAYING_BLOCKING_PAGE;
-  SafeBrowsingUIManager::UnsafeResource unsafe_resource;
+  security_interstitials::UnsafeResource unsafe_resource;
   unsafe_resource.url = redirect_info.new_url;
   unsafe_resource.original_url = request_->original_url();
   unsafe_resource.redirect_urls = redirect_urls_;
@@ -118,7 +118,7 @@ const char* DataReductionProxyResourceThrottle::GetNameForLogging() const {
 void DataReductionProxyResourceThrottle::StartDisplayingBlockingPage(
     const base::WeakPtr<DataReductionProxyResourceThrottle>& throttle,
     scoped_refptr<SafeBrowsingUIManager> ui_manager,
-    const SafeBrowsingUIManager::UnsafeResource& resource) {
+    const security_interstitials::UnsafeResource& resource) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
 
   content::WebContents* web_contents = resource.web_contents_getter.Run();

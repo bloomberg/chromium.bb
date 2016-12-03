@@ -50,7 +50,7 @@ class ThreatDetails;
 
 class SafeBrowsingBlockingPage : public SecurityInterstitialPage {
  public:
-  typedef SafeBrowsingUIManager::UnsafeResource UnsafeResource;
+  typedef security_interstitials::UnsafeResource UnsafeResource;
   typedef std::vector<UnsafeResource> UnsafeResourceList;
   typedef std::map<content::WebContents*, UnsafeResourceList> UnsafeResourceMap;
 

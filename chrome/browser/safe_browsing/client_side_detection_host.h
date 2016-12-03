@@ -53,7 +53,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Called when the SafeBrowsingService found a hit with one of the
   // SafeBrowsing lists.  This method is called on the UI thread.
   void OnSafeBrowsingHit(
-      const SafeBrowsingUIManager::UnsafeResource& resource) override;
+      const security_interstitials::UnsafeResource& resource) override;
 
   virtual scoped_refptr<SafeBrowsingDatabaseManager> database_manager();
 
@@ -162,7 +162,7 @@ class ClientSideDetectionHost : public content::WebContentsObserver,
   // Unique page ID of the most recent unsafe site that was loaded in this tab
   // as well as the UnsafeResource.
   int unsafe_unique_page_id_;
-  std::unique_ptr<SafeBrowsingUIManager::UnsafeResource> unsafe_resource_;
+  std::unique_ptr<security_interstitials::UnsafeResource> unsafe_resource_;
 
   base::WeakPtrFactory<ClientSideDetectionHost> weak_factory_;
 
