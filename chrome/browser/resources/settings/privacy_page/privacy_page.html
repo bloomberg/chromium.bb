@@ -151,14 +151,12 @@
 </if>
         </div>
 <if expr="_google_chrome">
-        <div class="settings-box two-line" actionable
-            on-tap="onUseSpellingServiceTap_">
-          <div class="start">
-            $i18n{spellingPref}
-            <div class="secondary">$i18n{spellingDescription}</div>
-          </div>
-          <paper-toggle-button id="spellingServiceToggleButton">
-          </paper-toggle-button>
+        <div class="settings-box two-line">
+          <settings-toggle-button class="start"
+              pref="{{prefs.spellcheck.use_spelling_service}}"
+              label="$i18n{spellingPref}"
+              sub-label="$i18n{spellingDescription}">
+          </settings-toggle-button>
         </div>
 </if>
 <if expr="use_nss_certs or is_win or is_macosx">

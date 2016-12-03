@@ -44,18 +44,8 @@ Polymer({
     showClearBrowsingDataDialog_: Boolean,
   },
 
-<if expr="_google_chrome">
-  observers: [
-    'updateSpellingService_(prefs.spellcheck.use_spelling_service.value)',
-  ],
-</if>
-
   ready: function() {
     this.ContentSettingsTypes = settings.ContentSettingsTypes;
-
-<if expr="_google_chrome">
-    this.updateSpellingService_();
-</if>
 
 <if expr="_google_chrome and not chromeos">
     var boundSetMetricsReporting = this.setMetricsReporting_.bind(this);
@@ -164,20 +154,6 @@ Polymer({
   setSafeBrowsingExtendedReporting_: function(enabled) {
     this.safeBrowsingExtendedReportingEnabled_ = enabled;
   },
-
-<if expr="_google_chrome">
-  /** @private */
-  updateSpellingService_: function() {
-    this.$.spellingServiceToggleButton.checked =
-        this.get('prefs.spellcheck.use_spelling_service.value');
-  },
-
-  /** @private */
-  onUseSpellingServiceTap_: function() {
-    this.set('prefs.spellcheck.use_spelling_service.value',
-        this.$.spellingServiceToggleButton.checked);
-  },
-</if>
 
   /**
    * The sub-page title for the site or content settings.
