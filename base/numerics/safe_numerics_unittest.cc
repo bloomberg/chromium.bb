@@ -26,6 +26,8 @@ using base::IsValidForType;
 using base::ValueOrDieForType;
 using base::ValueOrDefaultForType;
 using base::CheckNum;
+using base::CheckMax;
+using base::CheckMin;
 using base::CheckAdd;
 using base::CheckSub;
 using base::CheckMul;
@@ -38,9 +40,9 @@ using base::IsValueInRangeForNumericType;
 using base::IsValueNegative;
 using base::SizeT;
 using base::StrictNumeric;
+using base::MakeStrictNum;
 using base::saturated_cast;
 using base::strict_cast;
-using base::StrictNumeric;
 using base::internal::MaxExponent;
 using base::internal::RANGE_VALID;
 using base::internal::RANGE_INVALID;
@@ -438,37 +440,63 @@ template <typename Dst, typename Src>
 void TestStrictComparison() {
   typedef numeric_limits<Dst> DstLimits;
   typedef numeric_limits<Src> SrcLimits;
-  static_assert(StrictNumeric<Src>(SrcLimits::min()) < DstLimits::max(), "");
-  static_assert(StrictNumeric<Src>(SrcLimits::min()) < SrcLimits::max(), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::min()) >= DstLimits::max()),
+  static_assert(StrictNumeric<Src>(SrcLimits::lowest()) < DstLimits::max(), "");
+  static_assert(StrictNumeric<Src>(SrcLimits::lowest()) < SrcLimits::max(), "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::lowest()) >= DstLimits::max()),
                 "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::min()) >= SrcLimits::max()),
+  static_assert(!(StrictNumeric<Src>(SrcLimits::lowest()) >= SrcLimits::max()),
                 "");
-  static_assert(StrictNumeric<Src>(SrcLimits::min()) <= DstLimits::max(), "");
-  static_assert(StrictNumeric<Src>(SrcLimits::min()) <= SrcLimits::max(), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::min()) > DstLimits::max()), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::min()) > SrcLimits::max()), "");
-  static_assert(StrictNumeric<Src>(SrcLimits::max()) > DstLimits::min(), "");
-  static_assert(StrictNumeric<Src>(SrcLimits::max()) > SrcLimits::min(), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) <= DstLimits::min()),
+  static_assert(StrictNumeric<Src>(SrcLimits::lowest()) <= DstLimits::max(),
                 "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) <= SrcLimits::min()),
+  static_assert(StrictNumeric<Src>(SrcLimits::lowest()) <= SrcLimits::max(),
                 "");
-  static_assert(StrictNumeric<Src>(SrcLimits::max()) >= DstLimits::min(), "");
-  static_assert(StrictNumeric<Src>(SrcLimits::max()) >= SrcLimits::min(), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) < DstLimits::min()), "");
-  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) < SrcLimits::min()), "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::lowest()) > DstLimits::max()),
+                "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::lowest()) > SrcLimits::max()),
+                "");
+  static_assert(StrictNumeric<Src>(SrcLimits::max()) > DstLimits::lowest(), "");
+  static_assert(StrictNumeric<Src>(SrcLimits::max()) > SrcLimits::lowest(), "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) <= DstLimits::lowest()),
+                "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) <= SrcLimits::lowest()),
+                "");
+  static_assert(StrictNumeric<Src>(SrcLimits::max()) >= DstLimits::lowest(),
+                "");
+  static_assert(StrictNumeric<Src>(SrcLimits::max()) >= SrcLimits::lowest(),
+                "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) < DstLimits::lowest()),
+                "");
+  static_assert(!(StrictNumeric<Src>(SrcLimits::max()) < SrcLimits::lowest()),
+                "");
   static_assert(StrictNumeric<Src>(static_cast<Src>(1)) == static_cast<Dst>(1),
                 "");
   static_assert(StrictNumeric<Src>(static_cast<Src>(1)) != static_cast<Dst>(0),
                 "");
   static_assert(StrictNumeric<Src>(SrcLimits::max()) != static_cast<Dst>(0),
                 "");
-  static_assert(StrictNumeric<Src>(SrcLimits::max()) != DstLimits::min(), "");
+  static_assert(StrictNumeric<Src>(SrcLimits::max()) != DstLimits::lowest(),
+                "");
   static_assert(
       !(StrictNumeric<Src>(static_cast<Src>(1)) != static_cast<Dst>(1)), "");
   static_assert(
       !(StrictNumeric<Src>(static_cast<Src>(1)) == static_cast<Dst>(0)), "");
+
+  // Due to differences in float handling between compilers, these aren't
+  // compile-time constants everywhere. So, we use run-time tests.
+  EXPECT_EQ(SrcLimits::max(),
+            CheckNum(SrcLimits::max()).Max(DstLimits::lowest()).ValueOrDie());
+  EXPECT_EQ(DstLimits::max(),
+            CheckNum(SrcLimits::lowest()).Max(DstLimits::max()).ValueOrDie());
+  EXPECT_EQ(DstLimits::lowest(),
+            CheckNum(SrcLimits::max()).Min(DstLimits::lowest()).ValueOrDie());
+  EXPECT_EQ(SrcLimits::lowest(),
+            CheckNum(SrcLimits::lowest()).Min(DstLimits::max()).ValueOrDie());
+  EXPECT_EQ(SrcLimits::lowest(), CheckMin(MakeStrictNum(1), CheckNum(0),
+                                          DstLimits::max(), SrcLimits::lowest())
+                                     .ValueOrDie());
+  EXPECT_EQ(DstLimits::max(), CheckMax(MakeStrictNum(1), CheckNum(0),
+                                       DstLimits::max(), SrcLimits::lowest())
+                                  .ValueOrDie());
 }
 
 template <typename Dst, typename Src>

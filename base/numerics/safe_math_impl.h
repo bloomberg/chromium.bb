@@ -474,6 +474,46 @@ struct CheckedXorOp<T,
   }
 };
 
+// Max doesn't really need to be implemented this way because it can't fail,
+// but it makes the code much cleaner to use the MathOp wrappers.
+template <typename T, typename U, class Enable = void>
+struct CheckedMaxOp {};
+
+template <typename T, typename U>
+struct CheckedMaxOp<
+    T,
+    U,
+    typename std::enable_if<std::is_arithmetic<T>::value &&
+                            std::is_arithmetic<U>::value>::type> {
+  using result_type = typename MaxExponentPromotion<T, U>::type;
+  template <typename V = result_type>
+  static bool Do(T x, U y, V* result) {
+    *result = IsGreater<T, U>::Test(x, y) ? static_cast<result_type>(x)
+                                          : static_cast<result_type>(y);
+    return true;
+  }
+};
+
+// Min doesn't really need to be implemented this way because it can't fail,
+// but it makes the code much cleaner to use the MathOp wrappers.
+template <typename T, typename U, class Enable = void>
+struct CheckedMinOp {};
+
+template <typename T, typename U>
+struct CheckedMinOp<
+    T,
+    U,
+    typename std::enable_if<std::is_arithmetic<T>::value &&
+                            std::is_arithmetic<U>::value>::type> {
+  using result_type = typename LowestValuePromotion<T, U>::type;
+  template <typename V = result_type>
+  static bool Do(T x, U y, V* result) {
+    *result = IsLess<T, U>::Test(x, y) ? static_cast<result_type>(x)
+                                       : static_cast<result_type>(y);
+    return true;
+  }
+};
+
 template <typename T>
 typename std::enable_if<std::numeric_limits<T>::is_integer &&
                             std::numeric_limits<T>::is_signed,
@@ -688,7 +728,12 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
   constexpr CheckedNumericState(const CheckedNumericState<Src>& rhs)
       : value_(static_cast<T>(rhs.value())) {}
 
-  constexpr bool is_valid() const { return std::isfinite(value_); }
+  constexpr bool is_valid() const {
+    // Written this way because std::isfinite is not reliably constexpr.
+    // TODO(jschuh): Fix this if the libraries ever get fixed.
+    return value_ <= std::numeric_limits<T>::max() &&
+           value_ >= std::numeric_limits<T>::lowest();
+  }
   constexpr T value() const { return value_; }
 };
 

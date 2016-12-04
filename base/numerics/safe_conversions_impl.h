@@ -335,11 +335,7 @@ enum ArithmeticPromotionCategory {
   RIGHT_PROMOTION  // Use the type of the right-hand argument.
 };
 
-template <ArithmeticPromotionCategory Promotion,
-          typename Lhs,
-          typename Rhs = Lhs>
-struct ArithmeticPromotion;
-
+// Determines the type that can represent the largest positive value.
 template <typename Lhs,
           typename Rhs,
           ArithmeticPromotionCategory Promotion =
@@ -358,6 +354,34 @@ struct MaxExponentPromotion<Lhs, Rhs, RIGHT_PROMOTION> {
   using type = Rhs;
 };
 
+// Determines the type that can represent the lowest arithmetic value.
+template <typename Lhs,
+          typename Rhs,
+          ArithmeticPromotionCategory Promotion =
+              std::is_signed<Lhs>::value
+                  ? (std::is_signed<Rhs>::value
+                         ? (MaxExponent<Lhs>::value > MaxExponent<Rhs>::value
+                                ? LEFT_PROMOTION
+                                : RIGHT_PROMOTION)
+                         : LEFT_PROMOTION)
+                  : (std::is_signed<Rhs>::value
+                         ? RIGHT_PROMOTION
+                         : (MaxExponent<Lhs>::value < MaxExponent<Rhs>::value
+                                ? LEFT_PROMOTION
+                                : RIGHT_PROMOTION))>
+struct LowestValuePromotion;
+
+template <typename Lhs, typename Rhs>
+struct LowestValuePromotion<Lhs, Rhs, LEFT_PROMOTION> {
+  using type = Lhs;
+};
+
+template <typename Lhs, typename Rhs>
+struct LowestValuePromotion<Lhs, Rhs, RIGHT_PROMOTION> {
+  using type = Rhs;
+};
+
+// Determines the type that is best able to represent an arithmetic result.
 template <typename Lhs,
           typename Rhs = Lhs,
           bool is_intmax_type =

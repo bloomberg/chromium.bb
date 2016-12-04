@@ -42,6 +42,8 @@ namespace base {
 //      across any range of arithmetic types. StrictNumeric is the return type
 //      for values extracted from a CheckedNumeric class instance. The raw
 //      arithmetic value is extracted via static_cast to the underlying type.
+//  MakeStrictNum() - Creates a new StrictNumeric from the underlying type of
+//      the supplied arithmetic or StrictNumeric type.
 
 // Convenience function that returns true if the supplied value is in range
 // for the destination type.
@@ -229,6 +231,13 @@ class StrictNumeric {
   const T value_;
 };
 
+// Convience wrapper returns a StrictNumeric from the provided arithmetic type.
+template <typename T>
+constexpr StrictNumeric<typename UnderlyingType<T>::type> MakeStrictNum(
+    const T value) {
+  return value;
+}
+
 // Overload the ostream output operator to make logging work nicely.
 template <typename T>
 std::ostream& operator<<(std::ostream& os, const StrictNumeric<T>& value) {
@@ -258,6 +267,7 @@ STRICT_COMPARISON_OP(IsNotEqual, !=);
 using internal::strict_cast;
 using internal::saturated_cast;
 using internal::StrictNumeric;
+using internal::MakeStrictNum;
 
 // Explicitly make a shorter size_t typedef for convenience.
 typedef StrictNumeric<size_t> SizeT;
