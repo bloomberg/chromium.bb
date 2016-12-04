@@ -4,8 +4,21 @@
 
 import base64
 import json
-import httplib2
 import logging
+import os
+import sys
+
+from webkitpy.common.system.filesystem import FileSystem
+from webkitpy.common.webkit_finder import WebKitFinder
+
+# httplib2 is part of the hermetic depot_tools install,
+# but we first need to find a path to it.
+# TODO(dglazkov): libhttp2 needs to be imported into thirdparty dir.
+# See http://crbug.com/670987 for details.
+_DEPOT_TOOLS_ROOT = WebKitFinder(FileSystem()).depot_tools_base()
+sys.path.append(os.path.join(_DEPOT_TOOLS_ROOT, 'third_party'))
+
+import httplib2
 
 _log = logging.getLogger(__name__)
 API_BASE = 'https://api.github.com'
