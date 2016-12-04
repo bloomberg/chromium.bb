@@ -40,6 +40,7 @@
 {%- endfor %}
 {%- for interface in interfaces %}
   exports.{{interface.name}} = {{interface.name}};
+  exports.{{interface.name}}Ptr = {{interface.name}}Ptr;
 {#--- Interface Client #}
 {%-   if interface.client in interfaces|map(attribute='name') %}
   exports.{{interface.name}}.client = {{interface.client}};

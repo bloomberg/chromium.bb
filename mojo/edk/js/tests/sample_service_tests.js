@@ -7,11 +7,10 @@ define([
     "mojo/public/interfaces/bindings/tests/sample_service.mojom",
     "mojo/public/interfaces/bindings/tests/sample_import.mojom",
     "mojo/public/interfaces/bindings/tests/sample_import2.mojom",
-    "mojo/public/js/connection",
+    "mojo/public/js/bindings",
     "mojo/public/js/core",
     "mojo/public/js/threading",
-  ], function(expect, sample, imported, imported2, connection, core,
-              threading) {
+  ], function(expect, sample, imported, imported2, bindings, core, threading) {
   testDefaultValues()
       .then(testSampleService)
       .then(function() {
@@ -71,26 +70,23 @@ define([
     function ServiceImpl() {
     }
 
-    ServiceImpl.prototype = Object.create(sample.Service.stubClass.prototype);
-
     ServiceImpl.prototype.frobinate = function(foo, baz, port) {
       checkFoo(foo);
       expect(baz).toBe(sample.Service.BazOptions.EXTRA);
-      expect(core.isHandle(port)).toBeTruthy();
+      bindings.ProxyBindings(port).close();
       return Promise.resolve({result: 1234});
     };
 
     var foo = makeFoo();
     checkFoo(foo);
 
-    var sampleServicePipe = core.createMessagePipe();
-    var connection0 = new connection.Connection(sampleServicePipe.handle0,
-                                                ServiceImpl);
-    var connection1 = new connection.Connection(
-        sampleServicePipe.handle1, undefined, sample.Service.proxyClass);
+    var service = new sample.ServicePtr();
+    var request = bindings.makeRequest(service);
+    var serviceBinding = new bindings.Binding(
+        sample.Service, new ServiceImpl(), request);
 
     var pipe = core.createMessagePipe();
-    var promise = connection1.remote.frobinate(
+    var promise = service.frobinate(
         foo, sample.Service.BazOptions.EXTRA, pipe.handle0)
             .then(function(response) {
       expect(response.result).toBe(1234);

@@ -24,7 +24,9 @@ source_set("js_to_cpp_tests") {
   ]
 
   data = [
+    "binding_tests.js",
     "connection_tests.js",
+    "interface_ptr_tests.js",
     "js_to_cpp_tests.js",
     "sample_service_tests.js",
   ]

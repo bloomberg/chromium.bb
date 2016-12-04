@@ -45,12 +45,20 @@ void RunTest(std::string test) {
   gin::RunTestFromFile(path, &delegate, false);
 }
 
-TEST(JSTest, connection) {
+TEST(JSTest, Connection) {
   RunTest("connection_tests.js");
 }
 
-TEST(JSTest, sample_service) {
+TEST(JSTest, SampleService) {
   RunTest("sample_service_tests.js");
+}
+
+TEST(JSTest, InterfacePtr) {
+  RunTest("interface_ptr_tests.js");
+}
+
+TEST(JSTest, Binding) {
+  RunTest("binding_tests.js");
 }
 
 }  // namespace

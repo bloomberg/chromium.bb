@@ -2,12 +2,21 @@
   var k{{interface.name}}_{{method.name}}_Name = {{method.ordinal}};
 {%- endfor %}
 
+  function {{interface.name}}Ptr() {
+    this.ptr = new bindings.InterfacePtrController({{interface.name}});
+  }
+
   function {{interface.name}}Proxy(receiver) {
     bindings.ProxyBase.call(this, receiver);
   }
   {{interface.name}}Proxy.prototype = Object.create(bindings.ProxyBase.prototype);
 
 {%- for method in interface.methods %}
+  {{interface.name}}Ptr.prototype.{{method.name|stylize_method}} = function() {
+    return {{interface.name}}Proxy.prototype.{{method.name|stylize_method}}
+        .apply(this.ptr.connection.remote, arguments);
+  };
+
   {{interface.name}}Proxy.prototype.{{method.name|stylize_method}} = function(
 {%- for parameter in method.parameters -%}
 {{parameter.name}}{% if not loop.last %}, {% endif %}
