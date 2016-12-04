@@ -30,7 +30,13 @@ namespace blink {
 WebGLContextGroup::WebGLContextGroup() : m_numberOfContextLosses(0) {}
 
 gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
-  ASSERT(!m_contexts.isEmpty());
+  // During an Oilpan GC where WebGL objects become unreachable at the same
+  // time the context does, the m_contexts set can be fully cleared out
+  // before WebGLObjects' destructors run. Since the calling code handles
+  // this gracefully, explicitly test for this possibility.
+  if (m_contexts.isEmpty())
+    return nullptr;
+
   // Weak processing removes dead entries from the HeapHashSet, so it's
   // guaranteed that this will not return null for the reason that a
   // WeakMember was nulled out.
