@@ -1,3 +1,6 @@
+interface BarcodeDetector
+    method constructor
+    method detect
 interface Blob
     getter isClosed
     getter size
@@ -194,6 +197,9 @@ interface ExtendableMessageEvent : ExtendableEvent
     getter ports
     getter source
     method constructor
+interface FaceDetector
+    method constructor
+    method detect
 interface FetchEvent : ExtendableEvent
     getter clientId
     getter isReload

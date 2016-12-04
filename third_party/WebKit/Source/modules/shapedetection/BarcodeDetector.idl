@@ -7,6 +7,7 @@
 [
     Constructor,
     ConstructorCallWith=Document,
+    Exposed=(Window,Worker),
     RuntimeEnabled=ShapeDetection,
 ] interface BarcodeDetector {
     [CallWith=ScriptState] Promise<sequence<DetectedBarcode>> detect(CanvasImageSource image);
