@@ -166,10 +166,6 @@ class KeywordTable : public WebDatabaseTable {
                           const std::string& table_name,
                           std::string* result);
 
-  // Migrates table |name| (which should be either "keywords" or
-  // "keywords_backup") from version 44 to version 45.
-  bool MigrateKeywordsTableForVersion45(const std::string& name);
-
   DISALLOW_COPY_AND_ASSIGN(KeywordTable);
 };
 
