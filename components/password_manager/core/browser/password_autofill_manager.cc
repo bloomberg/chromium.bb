@@ -232,6 +232,10 @@ void PasswordAutofillManager::OnShowPasswordSuggestions(
           l10n_util::GetStringUTF8(IDS_AUTOFILL_PASSWORD_HTTP_WARNING_MESSAGE),
           l10n_util::GetStringUTF8(IDS_AUTOFILL_HTTP_WARNING_LEARN_MORE),
           icon_str, autofill::POPUP_ITEM_ID_HTTP_NOT_SECURE_WARNING_MESSAGE);
+#if !defined(OS_ANDROID)
+      suggestions.insert(suggestions.begin(), autofill::Suggestion());
+      suggestions.front().frontend_id = autofill::POPUP_ITEM_ID_SEPARATOR;
+#endif
       suggestions.insert(suggestions.begin(),
                          password_field_http_warning_suggestion);
     }

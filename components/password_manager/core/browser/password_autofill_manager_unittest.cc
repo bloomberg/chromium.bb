@@ -619,13 +619,17 @@ TEST_F(PasswordAutofillManagerTest, NonSecurePasswordFieldHttpWarningMessage) {
           kMarkHttpWithPasswordsOrCcWithChipAndFormWarning);
 
   // Http warning message shows for non-secure context and switch flag on, so
-  // there are 3 suggestions in total, and the message comes first among
-  // suggestions.
+  // there are 3 suggestions (+ 1 separator on desktop) in total, and the
+  // message comes first among suggestions.
+  auto elements = testing::ElementsAre(warning_message,
+#if !defined(OS_ANDROID)
+                                       base::string16(),
+#endif
+                                       title, test_username_);
+
   EXPECT_CALL(*autofill_client,
               ShowAutofillPopup(element_bounds, _,
-                                SuggestionVectorValuesAre(testing::ElementsAre(
-                                    warning_message, title, test_username_)),
-                                _));
+                                SuggestionVectorValuesAre(elements), _));
   password_autofill_manager_->OnShowPasswordSuggestions(
       dummy_key, base::i18n::RIGHT_TO_LEFT, test_username_,
       autofill::IS_PASSWORD_FIELD, element_bounds);

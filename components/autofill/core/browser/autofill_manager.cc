@@ -593,6 +593,10 @@ void AutofillManager::OnQueryFormFieldAutofill(int query_id,
         // On top of the explanation message, first show a "Payment not secure"
         // message.
         if (IsCreditCardAutofillHttpWarningEnabled()) {
+#if !defined(OS_ANDROID)
+          suggestions.insert(suggestions.begin(), Suggestion());
+          suggestions.front().frontend_id = POPUP_ITEM_ID_SEPARATOR;
+#endif
           suggestions.insert(suggestions.begin(),
                              CreateHttpWarningMessageSuggestionItem(
                                  form_structure->source_url()));
