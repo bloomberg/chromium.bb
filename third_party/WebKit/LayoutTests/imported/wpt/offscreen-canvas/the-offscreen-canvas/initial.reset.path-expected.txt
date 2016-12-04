@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Resetting the canvas state resets the current path offscreenCanvas2 is not defined
+Harness: the test ran to completion.
+

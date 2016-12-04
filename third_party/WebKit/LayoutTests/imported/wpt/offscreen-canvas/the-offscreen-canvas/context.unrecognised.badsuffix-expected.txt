@@ -1,0 +1,4 @@
+This is a testharness.js-based test.
+FAIL Context name "2d" plus a suffix is unrecognised Failed to execute 'getContext' on 'OffscreenCanvas': The provided value '2d#' is not a valid enum value of type OffscreenRenderingContextType.
+Harness: the test ran to completion.
+
