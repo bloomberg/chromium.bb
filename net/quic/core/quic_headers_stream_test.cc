@@ -545,7 +545,7 @@ TEST_P(QuicHeadersStreamTest, ProcessPushPromiseDisabledSetting) {
     EXPECT_CALL(
         *connection_,
         CloseConnection(QUIC_INVALID_HEADERS_STREAM_DATA,
-                        "Unsupported field of HTTP/2 SETTINGS frame: 9", _));
+                        "Unsupported field of HTTP/2 SETTINGS frame: 2", _));
   }
   headers_stream_->OnStreamFrame(stream_frame_);
   EXPECT_EQ(

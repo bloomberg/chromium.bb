@@ -1351,26 +1351,22 @@ size_t SpdyFramer::ProcessSettingsFramePayload(const char* data,
 }
 
 bool SpdyFramer::ProcessSetting(const char* data) {
-  int id_field;
-  SpdySettingsIds id;
-  uint8_t flags = 0;
-  uint32_t value;
-
   // Extract fields.
   // Maintain behavior of old SPDY 2 bug with byte ordering of flags/id.
-  id_field = base::NetToHost16(*(reinterpret_cast<const uint16_t*>(data)));
-  value = base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data + 2)));
+  int id_field = base::NetToHost16(*(reinterpret_cast<const uint16_t*>(data)));
+  int32_t value =
+      base::NetToHost32(*(reinterpret_cast<const uint32_t*>(data + 2)));
 
   // Validate id.
-  if (!SpdyConstants::IsValidSettingId(id_field)) {
+  SpdySettingsIds setting_id;
+  if (!SpdyConstants::ParseSettingsId(id_field, &setting_id)) {
     DLOG(WARNING) << "Unknown SETTINGS ID: " << id_field;
     // Ignore unknown settings for extensibility.
     return true;
   }
-  id = SpdyConstants::ParseSettingId(id_field);
 
   // Validation succeeded. Pass on to visitor.
-  visitor_->OnSetting(id, flags, value);
+  visitor_->OnSetting(setting_id, /*flags=*/0, value);
   return true;
 }
 
@@ -1918,9 +1914,8 @@ SpdySerializedFrame SpdyFramer::SerializeSettings(
 
   DCHECK_EQ(GetSettingsMinimumSize(), builder.length());
   for (SpdySettingsIR::ValueMap::const_iterator it = values->begin();
-       it != values->end();
-       ++it) {
-    int setting_id = SpdyConstants::SerializeSettingId(it->first);
+       it != values->end(); ++it) {
+    int setting_id = it->first;
     DCHECK_GE(setting_id, 0);
     builder.WriteUInt16(static_cast<uint16_t>(setting_id));
     builder.WriteUInt32(it->second.value);

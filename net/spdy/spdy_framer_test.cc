@@ -1688,30 +1688,30 @@ TEST_F(SpdyFramerTest, CreateSettings) {
         0x04,                    //   Type: SETTINGS
         0x00,                    //  Flags: none
         0x00, 0x00, 0x00, 0x00,  // Stream: 0
-        0x00, 0x03,              //  Param: MAX_CONCURRENT_STREAMS
-        0x00, 0x00, 0x00, 0x07,  //  Value: 7
-        0x00, 0x04,              //  Param: INITIAL_WINDOW_SIZE
-        0x00, 0x00, 0x00, 0x08,  //  Value: 8
         0x00, 0x01,              //  Param: HEADER_TABLE_SIZE
         0x00, 0x00, 0x00, 0x05,  //  Value: 5
         0x00, 0x02,              //  Param: ENABLE_PUSH
         0x00, 0x00, 0x00, 0x06,  //  Value: 6
+        0x00, 0x03,              //  Param: MAX_CONCURRENT_STREAMS
+        0x00, 0x00, 0x00, 0x07,  //  Value: 7
+        0x00, 0x04,              //  Param: INITIAL_WINDOW_SIZE
+        0x00, 0x00, 0x00, 0x08,  //  Value: 8
     };
 
     SpdySettingsIR settings_ir;
-    settings_ir.AddSetting(SpdyConstants::ParseSettingId(1),
+    settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
                            false,  // persist
                            false,  // persisted
                            5);
-    settings_ir.AddSetting(SpdyConstants::ParseSettingId(2),
+    settings_ir.AddSetting(SETTINGS_ENABLE_PUSH,
                            false,  // persist
                            false,  // persisted
                            6);
-    settings_ir.AddSetting(SpdyConstants::ParseSettingId(3),
+    settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS,
                            false,  // persist
                            false,  // persisted
                            7);
-    settings_ir.AddSetting(SpdyConstants::ParseSettingId(4),
+    settings_ir.AddSetting(SETTINGS_INITIAL_WINDOW_SIZE,
                            false,  // persist
                            false,  // persisted
                            8);
@@ -2786,15 +2786,15 @@ TEST_F(SpdyFramerTest, ReadBogusLenSettingsFrame) {
 TEST_F(SpdyFramerTest, ReadLargeSettingsFrame) {
   SpdyFramer framer;
   SpdySettingsIR settings_ir;
-  settings_ir.AddSetting(SpdyConstants::ParseSettingId(1),
+  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
                          false,  // persist
                          false,  // persisted
                          5);
-  settings_ir.AddSetting(SpdyConstants::ParseSettingId(2),
+  settings_ir.AddSetting(SETTINGS_ENABLE_PUSH,
                          false,  // persist
                          false,  // persisted
                          6);
-  settings_ir.AddSetting(SpdyConstants::ParseSettingId(3),
+  settings_ir.AddSetting(SETTINGS_MAX_CONCURRENT_STREAMS,
                          false,  // persist
                          false,  // persisted
                          7);
@@ -3369,7 +3369,7 @@ TEST_F(SpdyFramerTest, ReadUnknownExtensionFrame) {
   // Follow it up with a valid control frame to make sure we handle
   // subsequent frames correctly.
   SpdySettingsIR settings_ir;
-  settings_ir.AddSetting(SpdyConstants::ParseSettingId(1),
+  settings_ir.AddSetting(SETTINGS_HEADER_TABLE_SIZE,
                          false,  // persist
                          false,  // persisted
                          10);
