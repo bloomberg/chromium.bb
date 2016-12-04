@@ -403,9 +403,21 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
 
   // Multiple passes might be required for column based layout.
   // The number of passes could be as high as the number of columns.
-  bool done = false;
-  while (!done)
-    done = layoutBlockFlow(relayoutChildren, layoutScope);
+  LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
+  do {
+    layoutBlockFlow(relayoutChildren, layoutScope);
+
+    if (flowThread && flowThread->columnHeightsChanged()) {
+      setChildNeedsLayout(MarkOnlyThis);
+      continue;
+    }
+
+    if (shouldBreakAtLineToAvoidWidow()) {
+      setEverHadLayout();
+      continue;
+    }
+    break;
+  } while (true);
 
   updateLayerTransformAfterLayout();
 
@@ -462,7 +474,7 @@ void LayoutBlockFlow::resetLayout() {
 }
 
 DISABLE_CFI_PERF
-inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
+inline void LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
                                              SubtreeLayoutScope& layoutScope) {
   LayoutUnit oldLeft = logicalLeft();
   bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
@@ -503,25 +515,14 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
     // potential infinite loop, run layout again with auto scrollbars frozen in
     // their current state.
     PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
-    return layoutBlockFlow(relayoutChildren, layoutScope);
+    layoutBlockFlow(relayoutChildren, layoutScope);
+    return;
   }
 
   // Expand our intrinsic height to encompass floats.
   if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) &&
       createsNewFormattingContext())
     setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
-
-  if (LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread()) {
-    if (flowThread->columnHeightsChanged()) {
-      setChildNeedsLayout(MarkOnlyThis);
-      return false;
-    }
-  }
-
-  if (shouldBreakAtLineToAvoidWidow()) {
-    setEverHadLayout();
-    return false;
-  }
 
   // Remember the automatic logical height we got from laying out the children.
   LayoutUnit unconstrainedHeight = logicalHeight();
@@ -546,7 +547,6 @@ inline bool LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
   computeOverflow(unconstrainedClientAfterEdge);
 
   m_descendantsWithFloatsMarkedForLayout = false;
-  return true;
 }
 
 void LayoutBlockFlow::addOverhangingFloatsFromChildren(
