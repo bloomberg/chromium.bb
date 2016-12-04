@@ -1809,6 +1809,8 @@ LayoutUnit LayoutBlockFlow::collapseMargins(LayoutBox& child,
                        previousBlockFlow->lowestFloatLogicalBottom();
     if (lowestFloat > logicalTop)
       addOverhangingFloats(previousBlockFlow, false);
+    else
+      break;
     LayoutObject* prev = previousBlockFlow->previousSibling();
     if (prev && prev->isLayoutBlockFlow())
       previousBlockFlow = toLayoutBlockFlow(prev);
