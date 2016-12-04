@@ -2,42 +2,42 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
-#define ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
+#ifndef UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_CHANGE_OBSERVER_H_
+#define UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_CHANGE_OBSERVER_H_
 
 #include <stdint.h>
 
 #include <memory>
 #include <vector>
 
-#include "ash/ash_export.h"
 #include "base/macros.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
+#include "ui/display/manager/display_manager_export.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/events/devices/input_device_event_observer.h"
 
-namespace display {
-class DisplayManager;
+namespace ui {
+class DisplaySnapshot;
 }
 
-namespace ash {
+namespace display {
 
-class DisplaySnapshot;
+class DisplayManager;
 
 // An object that observes changes in display configuration and updates
 // DisplayManager.
-class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
-                              public ui::DisplayConfigurator::Observer,
-                              public ui::InputDeviceEventObserver {
+class DISPLAY_MANAGER_EXPORT DisplayChangeObserver
+    : public ui::DisplayConfigurator::StateController,
+      public ui::DisplayConfigurator::Observer,
+      public ui::InputDeviceEventObserver {
  public:
   // Returns the mode list for internal display.
-  ASH_EXPORT static display::ManagedDisplayInfo::ManagedDisplayModeList
-  GetInternalManagedDisplayModeList(
-      const display::ManagedDisplayInfo& display_info,
-      const ui::DisplaySnapshot& output);
+  DISPLAY_EXPORT static ManagedDisplayInfo::ManagedDisplayModeList
+  GetInternalManagedDisplayModeList(const ManagedDisplayInfo& display_info,
+                                    const ui::DisplaySnapshot& output);
 
   // Returns the resolution list.
-  ASH_EXPORT static display::ManagedDisplayInfo::ManagedDisplayModeList
+  DISPLAY_EXPORT static ManagedDisplayInfo::ManagedDisplayModeList
   GetExternalManagedDisplayModeList(const ui::DisplaySnapshot& output);
 
   DisplayChangeObserver(ui::DisplayConfigurator* display_configurator,
@@ -61,17 +61,17 @@ class DisplayChangeObserver : public ui::DisplayConfigurator::StateController,
   void OnTouchscreenDeviceConfigurationChanged() override;
 
   // Exposed for testing.
-  ASH_EXPORT static float FindDeviceScaleFactor(float dpi);
+  DISPLAY_EXPORT static float FindDeviceScaleFactor(float dpi);
 
  private:
   // Both |display_configurator_| and |display_manager_| are not owned and must
   // outlive DisplayChangeObserver.
   ui::DisplayConfigurator* display_configurator_;
-  display::DisplayManager* display_manager_;
+  DisplayManager* display_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(DisplayChangeObserver);
 };
 
-}  // namespace ash
+}  // namespace display
 
-#endif  // ASH_DISPLAY_DISPLAY_CHANGE_OBSERVER_CHROMEOS_H_
+#endif  // UI_DISPLAY_MANAGER_CHROMEOS_DISPLAY_CHANGE_OBSERVER_H_

@@ -118,7 +118,6 @@
 #include "ash/common/ash_constants.h"
 #include "ash/common/system/chromeos/bluetooth/bluetooth_notification_controller.h"
 #include "ash/common/system/chromeos/power/power_status.h"
-#include "ash/display/display_change_observer_chromeos.h"
 #include "ash/display/display_color_manager_chromeos.h"
 #include "ash/display/display_error_observer_chromeos.h"
 #include "ash/display/projecting_observer_chromeos.h"
@@ -136,6 +135,7 @@
 #include "chromeos/chromeos_switches.h"
 #include "chromeos/dbus/dbus_thread_manager.h"
 #include "ui/chromeos/user_activity_power_manager_notifier.h"
+#include "ui/display/manager/chromeos/display_change_observer.h"
 #include "ui/display/manager/chromeos/display_configurator.h"
 
 #if defined(USE_X11)
@@ -622,7 +622,7 @@ void Shell::Init(const ShellInitParams& init_params) {
   wm_shell_->AddShellObserver(projecting_observer_.get());
 
   if (!display_initialized && base::SysInfo::IsRunningOnChromeOS()) {
-    display_change_observer_ = base::MakeUnique<DisplayChangeObserver>(
+    display_change_observer_ = base::MakeUnique<display::DisplayChangeObserver>(
         display_configurator_.get(), display_manager_.get());
 
     shutdown_observer_ =

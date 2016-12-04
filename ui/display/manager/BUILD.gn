@@ -10,6 +10,8 @@ component("manager") {
     "chromeos/apply_content_protection_task.h",
     "chromeos/configure_displays_task.cc",
     "chromeos/configure_displays_task.h",
+    "chromeos/display_change_observer.cc",
+    "chromeos/display_change_observer.h",
     "chromeos/display_configurator.cc",
     "chromeos/display_configurator.h",
     "chromeos/display_layout_manager.h",

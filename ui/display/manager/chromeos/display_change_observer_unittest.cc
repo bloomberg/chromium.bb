@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "ash/display/display_change_observer_chromeos.h"
+#include "ui/display/manager/chromeos/display_change_observer.h"
+
+#include <string>
 
 #include "base/memory/ptr_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -10,10 +12,12 @@
 #include "ui/display/manager/chromeos/display_configurator.h"
 #include "ui/display/manager/managed_display_info.h"
 #include "ui/display/types/display_mode.h"
+#include "ui/gfx/geometry/rect.h"
+#include "ui/gfx/geometry/size.h"
 
 using ui::DisplayConfigurator;
 
-namespace ash {
+namespace display {
 
 namespace {
 
@@ -38,7 +42,7 @@ std::unique_ptr<ui::DisplayMode> MakeDisplayMode(int width,
 
 TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1200, false, 60))
           // All non-interlaced (as would be seen with different refresh rates).
@@ -59,7 +63,7 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
           .AddMode(MakeDisplayMode(640, 480, true, 60))
           .Build();
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           *display_snapshot);
   ASSERT_EQ(6u, display_modes.size());
@@ -89,12 +93,12 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList) {
 }
 
 TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
-  display::FakeDisplaySnapshot display_snapshot(
+  FakeDisplaySnapshot display_snapshot(
       123, gfx::Point(), gfx::Size(), ui::DISPLAY_CONNECTION_TYPE_UNKNOWN,
       false, false, false, std::string(), 0,
       std::vector<std::unique_ptr<const ui::DisplayMode>>(), nullptr, nullptr);
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           display_snapshot);
   EXPECT_EQ(0u, display_modes.size());
@@ -102,7 +106,7 @@ TEST(DisplayChangeObserverTest, GetEmptyExternalManagedDisplayModeList) {
 
 TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1366, 768, false, 60))
           .AddMode(MakeDisplayMode(1024, 768, false, 60))
@@ -111,10 +115,10 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
           .AddMode(MakeDisplayMode(640, 480, false, 59.9))
           .Build();
 
-  display::ManagedDisplayInfo info(1, "", false);
+  ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1366, 768));
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, *display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
@@ -147,18 +151,18 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList) {
 TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
   // Data picked from peppy.
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(2560, 1700, false, 60))
           .AddMode(MakeDisplayMode(2048, 1536, false, 60))
           .AddMode(MakeDisplayMode(1920, 1440, false, 60))
           .Build();
 
-  display::ManagedDisplayInfo info(1, "", false);
+  ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 2560, 1700));
   info.set_device_scale_factor(2.0f);
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, *display_snapshot);
   ASSERT_EQ(8u, display_modes.size());
@@ -206,16 +210,16 @@ TEST(DisplayChangeObserverTest, GetInternalHiDPIManagedDisplayModeList) {
 TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
   // Data picked from peppy.
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1080, false, 60))
           .Build();
 
-  display::ManagedDisplayInfo info(1, "", false);
+  ManagedDisplayInfo info(1, "", false);
   info.SetBounds(gfx::Rect(0, 0, 1920, 1080));
   info.set_device_scale_factor(1.25);
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetInternalManagedDisplayModeList(
           info, *display_snapshot);
   ASSERT_EQ(5u, display_modes.size());
@@ -247,7 +251,7 @@ TEST(DisplayChangeObserverTest, GetInternalManagedDisplayModeList1_25) {
 
 TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(3840, 2160, false, 30))
           .AddMode(MakeDisplayMode(1920, 1200, false, 60))
@@ -269,10 +273,10 @@ TEST(DisplayChangeObserverTest, GetExternalManagedDisplayModeList4K) {
           .AddMode(MakeDisplayMode(640, 480, true, 60))
           .Build();
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           *display_snapshot);
-  display::ManagedDisplayInfo info(1, "", false);
+  ManagedDisplayInfo info(1, "", false);
   info.SetManagedDisplayModes(display_modes);  // Sort as external display.
   display_modes = info.display_modes();
 
@@ -348,13 +352,13 @@ TEST(DisplayChangeObserverTest, FindDeviceScaleFactor) {
 
 TEST(DisplayChangeObserverTest, FindExternalDisplayNativeModeWhenOverwritten) {
   std::unique_ptr<ui::DisplaySnapshot> display_snapshot =
-      display::FakeDisplaySnapshot::Builder()
+      FakeDisplaySnapshot::Builder()
           .SetId(123)
           .SetNativeMode(MakeDisplayMode(1920, 1080, true, 60))
           .AddMode(MakeDisplayMode(1920, 1080, false, 60))
           .Build();
 
-  display::ManagedDisplayInfo::ManagedDisplayModeList display_modes =
+  ManagedDisplayInfo::ManagedDisplayModeList display_modes =
       DisplayChangeObserver::GetExternalManagedDisplayModeList(
           *display_snapshot);
   ASSERT_EQ(2u, display_modes.size());
@@ -369,4 +373,4 @@ TEST(DisplayChangeObserverTest, FindExternalDisplayNativeModeWhenOverwritten) {
   EXPECT_EQ(display_modes[1]->refresh_rate(), 60);
 }
 
-}  // namespace ash
+}  // namespace display

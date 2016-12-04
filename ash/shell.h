@@ -39,6 +39,7 @@ class AudioA11yController;
 }
 
 namespace display {
+class DisplayChangeObserver;
 class DisplayManager;
 }
 
@@ -73,7 +74,6 @@ class AcceleratorControllerDelegateAura;
 class AshNativeCursorManager;
 class AutoclickController;
 class BluetoothNotificationController;
-class DisplayChangeObserver;
 class DisplayColorManager;
 class DisplayConfigurationController;
 class DisplayErrorObserver;
@@ -509,7 +509,7 @@ class ASH_EXPORT Shell : public SystemModalContainerEventFilterDelegate,
   std::unique_ptr<ProjectingObserver> projecting_observer_;
 
   // Listens for output changes and updates the display manager.
-  std::unique_ptr<DisplayChangeObserver> display_change_observer_;
+  std::unique_ptr<display::DisplayChangeObserver> display_change_observer_;
 
   // Listens for shutdown and updates DisplayConfigurator.
   std::unique_ptr<ShutdownObserver> shutdown_observer_;

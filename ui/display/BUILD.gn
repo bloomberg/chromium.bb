@@ -137,6 +137,7 @@ test("display_unittests") {
     "fake_display_snapshot_unittests.cc",
     "manager/chromeos/apply_content_protection_task_unittest.cc",
     "manager/chromeos/configure_displays_task_unittest.cc",
+    "manager/chromeos/display_change_observer_unittest.cc",
     "manager/chromeos/display_configurator_unittest.cc",
     "manager/chromeos/query_content_protection_task_unittest.cc",
     "manager/chromeos/touchscreen_util_unittest.cc",
