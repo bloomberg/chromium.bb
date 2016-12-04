@@ -1,0 +1,44 @@
+# Copyright 2016 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+assert(is_chromeos, "Non-ChromeOS builds cannot depend on //chromeos")
+
+static_library("tether") {
+  sources = [
+    "initializer.cc",
+    "initializer.h",
+  ]
+
+  deps = [
+    "//base",
+  ]
+}
+
+static_library("test_support") {
+  testonly = true
+
+  sources = []
+
+  public_deps = [
+    ":tether",
+  ]
+
+  deps = [
+    "//base",
+    "//testing/gmock",
+  ]
+}
+
+source_set("unit_tests") {
+  testonly = true
+
+  sources = []
+
+  deps = [
+    ":test_support",
+    ":tether",
+    "//base/test:test_support",
+    "//testing/gtest",
+  ]
+}
