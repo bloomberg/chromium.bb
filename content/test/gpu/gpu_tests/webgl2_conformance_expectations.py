@@ -538,6 +538,12 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/functional/gles3/texturespecification/' +
         'random_teximage2d_2d.html',
         ['linux', 'amd', 'intel'], bug=618447)
+    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
+        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
+    self.Fail('conformance2/rendering/clipping-wide-points.html',
+        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
+        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
     # This test is flaky both with and without ANGLE.
@@ -608,6 +614,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=483282)
     self.Fail('conformance2/rendering/blitframebuffer-filter-srgb.html',
         ['linux', 'amd'], bug=634525)
+    self.Fail('conformance2/rendering/blitframebuffer-outside-readbuffer.html',
+        ['linux', 'amd'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/renderbuffers/framebuffer-texture-layer.html',
         ['linux', 'amd'], bug=295792)
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
