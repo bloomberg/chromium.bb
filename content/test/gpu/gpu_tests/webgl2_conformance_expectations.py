@@ -564,6 +564,10 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
 
     self.Fail('conformance2/textures/misc/tex-mipmap-levels.html',
        ['linux', 'intel'], bug=666384)
+
+    self.Fail('conformance2/textures/misc/tex-subimage3d-pixel-buffer-bug.html',
+       ['linux', 'intel'], bug=662644) # WebGL 2.0.1
+
     self.Fail('deqp/functional/gles3/shadertexturefunction/texturesize.html',
        ['linux', 'intel'], bug=666384)
 
