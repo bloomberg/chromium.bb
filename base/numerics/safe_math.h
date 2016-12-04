@@ -80,8 +80,8 @@ namespace internal {
 //  CheckedNumeric::Cast<Dst>() - Instance method returning a CheckedNumeric
 //          derived from casting the current instance to a CheckedNumeric of
 //          the supplied destination type.
-//  CheckNum() - Creates a new CheckedNumeric from the underlying type of the
-//          supplied arithmetic, CheckedNumeric, or StrictNumeric type.
+//  MakeCheckedNum() - Creates a new CheckedNumeric from the underlying type of
+//          the supplied arithmetic, CheckedNumeric, or StrictNumeric type.
 //
 // Comparison operations are explicitly not supported because they could result
 // in a crash on an unexpected CHECK condition. You should use patterns like the
@@ -396,7 +396,7 @@ struct ResultType {
 // Convience wrapper to return a new CheckedNumeric from the provided arithmetic
 // or CheckedNumericType.
 template <typename T>
-constexpr CheckedNumeric<typename UnderlyingType<T>::type> CheckNum(
+constexpr CheckedNumeric<typename UnderlyingType<T>::type> MakeCheckedNum(
     const T value) {
   return value;
 }
@@ -493,7 +493,7 @@ using internal::CheckedNumeric;
 using internal::IsValidForType;
 using internal::ValueOrDieForType;
 using internal::ValueOrDefaultForType;
-using internal::CheckNum;
+using internal::MakeCheckedNum;
 using internal::CheckMax;
 using internal::CheckMin;
 using internal::CheckAdd;

@@ -25,7 +25,7 @@ using base::CheckedNumeric;
 using base::IsValidForType;
 using base::ValueOrDieForType;
 using base::ValueOrDefaultForType;
-using base::CheckNum;
+using base::MakeCheckedNum;
 using base::CheckMax;
 using base::CheckMin;
 using base::CheckAdd;
@@ -252,7 +252,7 @@ static void TestSpecializedArithmetic(
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(0) & 1);
   TEST_EXPECTED_VALUE(0, CheckedNumeric<Dst>(1) & 0);
   TEST_EXPECTED_VALUE(std::numeric_limits<Dst>::max(),
-                      CheckNum(DstLimits::max()) & -1);
+                      MakeCheckedNum(DstLimits::max()) & -1);
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) | 1);
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(1) | 0);
   TEST_EXPECTED_VALUE(1, CheckedNumeric<Dst>(0) | 1);
@@ -483,18 +483,22 @@ void TestStrictComparison() {
 
   // Due to differences in float handling between compilers, these aren't
   // compile-time constants everywhere. So, we use run-time tests.
-  EXPECT_EQ(SrcLimits::max(),
-            CheckNum(SrcLimits::max()).Max(DstLimits::lowest()).ValueOrDie());
-  EXPECT_EQ(DstLimits::max(),
-            CheckNum(SrcLimits::lowest()).Max(DstLimits::max()).ValueOrDie());
-  EXPECT_EQ(DstLimits::lowest(),
-            CheckNum(SrcLimits::max()).Min(DstLimits::lowest()).ValueOrDie());
-  EXPECT_EQ(SrcLimits::lowest(),
-            CheckNum(SrcLimits::lowest()).Min(DstLimits::max()).ValueOrDie());
-  EXPECT_EQ(SrcLimits::lowest(), CheckMin(MakeStrictNum(1), CheckNum(0),
+  EXPECT_EQ(
+      SrcLimits::max(),
+      MakeCheckedNum(SrcLimits::max()).Max(DstLimits::lowest()).ValueOrDie());
+  EXPECT_EQ(
+      DstLimits::max(),
+      MakeCheckedNum(SrcLimits::lowest()).Max(DstLimits::max()).ValueOrDie());
+  EXPECT_EQ(
+      DstLimits::lowest(),
+      MakeCheckedNum(SrcLimits::max()).Min(DstLimits::lowest()).ValueOrDie());
+  EXPECT_EQ(
+      SrcLimits::lowest(),
+      MakeCheckedNum(SrcLimits::lowest()).Min(DstLimits::max()).ValueOrDie());
+  EXPECT_EQ(SrcLimits::lowest(), CheckMin(MakeStrictNum(1), MakeCheckedNum(0),
                                           DstLimits::max(), SrcLimits::lowest())
                                      .ValueOrDie());
-  EXPECT_EQ(DstLimits::max(), CheckMax(MakeStrictNum(1), CheckNum(0),
+  EXPECT_EQ(DstLimits::max(), CheckMax(MakeStrictNum(1), MakeCheckedNum(0),
                                        DstLimits::max(), SrcLimits::lowest())
                                   .ValueOrDie());
 }
@@ -868,9 +872,9 @@ TEST(SafeNumerics, CastTests) {
   EXPECT_EQ(0, saturated_cast<int>(not_a_number));
 
   // Test the CheckedNumeric value extractions functions.
-  auto int8_min = CheckNum(numeric_limits<int8_t>::min());
-  auto int8_max = CheckNum(numeric_limits<int8_t>::max());
-  auto double_max = CheckNum(numeric_limits<double>::max());
+  auto int8_min = MakeCheckedNum(numeric_limits<int8_t>::min());
+  auto int8_max = MakeCheckedNum(numeric_limits<int8_t>::max());
+  auto double_max = MakeCheckedNum(numeric_limits<double>::max());
   static_assert(
       std::is_same<int16_t,
                    decltype(int8_min.ValueOrDie<int16_t>())::type>::value,
@@ -1015,19 +1019,19 @@ TEST(SafeNumerics, CompoundNumericOperations) {
 }
 
 TEST(SafeNumerics, VariadicNumericOperations) {
-  auto a = CheckAdd(1, 2UL, CheckNum(3LL), 4).ValueOrDie();
+  auto a = CheckAdd(1, 2UL, MakeCheckedNum(3LL), 4).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(a)::type>(10), a);
-  auto b = CheckSub(CheckNum(20.0), 2UL, 4).ValueOrDie();
+  auto b = CheckSub(MakeCheckedNum(20.0), 2UL, 4).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(b)::type>(14.0), b);
-  auto c = CheckMul(20.0, CheckNum(1), 5, 3UL).ValueOrDie();
+  auto c = CheckMul(20.0, MakeCheckedNum(1), 5, 3UL).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(c)::type>(300.0), c);
-  auto d = CheckDiv(20.0, 2.0, CheckNum(5LL), -4).ValueOrDie();
+  auto d = CheckDiv(20.0, 2.0, MakeCheckedNum(5LL), -4).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(d)::type>(-.5), d);
-  auto e = CheckMod(CheckNum(20), 3).ValueOrDie();
+  auto e = CheckMod(MakeCheckedNum(20), 3).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(e)::type>(2), e);
-  auto f = CheckLsh(1, CheckNum(2)).ValueOrDie();
+  auto f = CheckLsh(1, MakeCheckedNum(2)).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(f)::type>(4), f);
-  auto g = CheckRsh(4, CheckNum(2)).ValueOrDie();
+  auto g = CheckRsh(4, MakeCheckedNum(2)).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(g)::type>(1), g);
   auto h = CheckRsh(CheckAdd(1, 1, 1, 1), CheckSub(4, 2)).ValueOrDie();
   EXPECT_EQ(static_cast<decltype(h)::type>(1), h);
