@@ -99,7 +99,7 @@ Run the `fetch` tool from `depot_tools` to check out the code and its
 dependencies.
 
 ```shell
-$ fetch ios
+$ fetch chromium
 ```
 
 If you don't want the full repo history, you can save a lot of time by
