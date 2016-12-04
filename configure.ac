@@ -182,6 +182,7 @@ PKG_CHECK_MODULES(LIBDRM, [libdrm],
 AC_ARG_ENABLE(x11-compositor, [  --enable-x11-compositor],,
 	      enable_x11_compositor=yes)
 AM_CONDITIONAL(ENABLE_X11_COMPOSITOR, test x$enable_x11_compositor = xyes)
+have_xcb_xkb=no
 if test x$enable_x11_compositor = xyes; then
   PKG_CHECK_MODULES([XCB], xcb)
   xcb_save_LIBS=$LIBS
@@ -353,6 +354,7 @@ AS_IF([test "x$have_webp" = "xyes"],
 
 AC_ARG_ENABLE(vaapi-recorder, [  --enable-vaapi-recorder],,
 	      enable_vaapi_recorder=auto)
+have_libva=no
 if test x$enable_vaapi_recorder != xno; then
   PKG_CHECK_MODULES(LIBVA, [libva >= 0.34.0 libva-drm >= 0.34.0],
                     [have_libva=yes], [have_libva=no])
@@ -417,6 +419,7 @@ AM_CONDITIONAL(BUILD_SIMPLE_DMABUF_V4L_CLIENT, test "x$enable_simple_dmabuf_v4l_
 
 AC_ARG_ENABLE(clients, [  --enable-clients],, enable_clients=yes)
 AM_CONDITIONAL(BUILD_CLIENTS, test x$enable_clients = xyes)
+have_cairo_egl=no
 if test x$enable_clients = xyes; then
   AC_DEFINE([BUILD_CLIENTS], [1], [Build the Wayland clients])
 
@@ -477,6 +480,7 @@ AC_ARG_ENABLE(colord,
               AS_HELP_STRING([--disable-colord],
                              [do not build colord CMS support]),,
 	      enable_colord=auto)
+have_colord=no
 if test "x$enable_colord" != "xno"; then
 	PKG_CHECK_MODULES(COLORD,
 			  colord >= 0.1.27,
@@ -602,6 +606,7 @@ AC_ARG_ENABLE(libunwind,
                              [Disable libunwind usage for backtraces]),,
               enable_libunwind=auto)
 AM_CONDITIONAL(HAVE_LIBUNWIND, [test "x$enable_libunwind" = xyes])
+have_libunwind=no
 if test "x$enable_libunwind" != "xno"; then
         PKG_CHECK_MODULES(LIBUNWIND,
                           libunwind,
@@ -641,6 +646,7 @@ AC_ARG_ENABLE(lcms,
               AS_HELP_STRING([--disable-lcms],
                              [Disable lcms support]),,
               enable_lcms=auto)
+have_lcms=no
 if test "x$enable_lcms" != "xno"; then
         PKG_CHECK_MODULES(LCMS,
                           lcms2,
