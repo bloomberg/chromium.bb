@@ -81,9 +81,11 @@
 
     /**
      * Handles tapping on the "Add address" button.
+     * @param {!Event} e The polymer event.
      * @private
      */
-    onAddAddressTap_: function() {
+    onAddAddressTap_: function(e) {
+      e.preventDefault();
       this.activeAddress = {};
       this.showAddressDialog_ = true;
     },
@@ -95,9 +97,11 @@
 
     /**
      * Handles tapping on the "Edit" address button.
+     * @param {!Event} e The polymer event.
      * @private
      */
-    onMenuEditAddressTap_: function() {
+    onMenuEditAddressTap_: function(e) {
+      e.preventDefault();
       if (this.activeAddress.metadata.isLocal)
         this.showAddressDialog_ = true;
       else
@@ -137,6 +141,7 @@
      * @private
      */
     onAddCreditCardTap_: function(e) {
+      e.preventDefault();
       var date = new Date();  // Default to current month/year.
       var expirationMonth = date.getMonth() + 1;  // Months are 0 based.
       this.activeCreditCard = {
@@ -153,9 +158,11 @@
 
     /**
      * Handles tapping on the "Edit" credit card button.
+     * @param {!Event} e The polymer event.
      * @private
      */
-    onMenuEditCreditCardTap_: function() {
+    onMenuEditCreditCardTap_: function(e) {
+      e.preventDefault();
       if (this.activeCreditCard.metadata.isLocal)
         this.showCreditCardDialog_ = true;
       else
