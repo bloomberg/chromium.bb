@@ -71,7 +71,7 @@ PermissionRequest::IconId PermissionRequestImpl::GetIconId() const {
 #if defined(OS_CHROMEOS)
     // TODO(xhwang): fix this icon, see crrev.com/863263007
     case content::PermissionType::PROTECTED_MEDIA_IDENTIFIER:
-      return gfx::VectorIconId::CHROME_PRODUCT;
+      return gfx::VectorIconId::PRODUCT;
 #endif
     case content::PermissionType::MIDI_SYSEX:
       return gfx::VectorIconId::MIDI;
