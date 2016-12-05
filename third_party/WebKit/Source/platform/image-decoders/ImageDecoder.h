@@ -370,6 +370,18 @@ class PLATFORM_EXPORT ImageDecoder {
   //         false otherwise.
   bool postDecodeProcessing(size_t);
 
+  // The GIF and PNG decoders set the default alpha setting of the ImageFrame to
+  // true. When the frame rect does not contain any (semi-) transparent pixels,
+  // this may need to be changed to false. This depends on whether the required
+  // previous frame adds transparency to the image, outside of the frame rect.
+  // This methods corrects the alpha setting of the frame buffer to false when
+  // the whole frame is opaque.
+  //
+  // This method should be called by the GIF and PNG decoder when the pixels in
+  // the frame rect do *not* contain any transparent pixels. Before calling
+  // this method, the caller must verify that the frame exists.
+  void correctAlphaWhenFrameBufferSawNoAlpha(size_t);
+
   RefPtr<SegmentReader> m_data;  // The encoded data.
   Vector<ImageFrame, 1> m_frameBufferCache;
   const bool m_premultiplyAlpha;

@@ -192,43 +192,12 @@ bool GIFImageDecoder::parseCompleted() const {
 bool GIFImageDecoder::frameComplete(size_t frameIndex) {
   // Initialize the frame if necessary.  Some GIFs insert do-nothing frames,
   // in which case we never reach haveDecodedRow() before getting here.
-  ImageFrame& buffer = m_frameBufferCache[frameIndex];
   if (!initFrameBuffer(frameIndex))
     return false;  // initFrameBuffer() has already called setFailed().
 
-  buffer.setStatus(ImageFrame::FrameComplete);
-
-  if (!m_currentBufferSawAlpha) {
-    // The whole frame was non-transparent, so it's possible that the entire
-    // resulting buffer was non-transparent, and we can setHasAlpha(false).
-    if (buffer.originalFrameRect().contains(IntRect(IntPoint(), size()))) {
-      buffer.setHasAlpha(false);
-      buffer.setRequiredPreviousFrameIndex(kNotFound);
-    } else if (buffer.requiredPreviousFrameIndex() != kNotFound) {
-      // Tricky case.  This frame does not have alpha only if everywhere
-      // outside its rect doesn't have alpha.  To know whether this is
-      // true, we check the start state of the frame -- if it doesn't have
-      // alpha, we're safe.
-      const ImageFrame* prevBuffer =
-          &m_frameBufferCache[buffer.requiredPreviousFrameIndex()];
-      ASSERT(prevBuffer->getDisposalMethod() !=
-             ImageFrame::DisposeOverwritePrevious);
-
-      // Now, if we're at a DisposeNotSpecified or DisposeKeep frame, then
-      // we can say we have no alpha if that frame had no alpha.  But
-      // since in initFrameBuffer() we already copied that frame's alpha
-      // state into the current frame's, we need do nothing at all here.
-      //
-      // The only remaining case is a DisposeOverwriteBgcolor frame.  If
-      // it had no alpha, and its rect is contained in the current frame's
-      // rect, we know the current frame has no alpha.
-      if ((prevBuffer->getDisposalMethod() ==
-           ImageFrame::DisposeOverwriteBgcolor) &&
-          !prevBuffer->hasAlpha() &&
-          buffer.originalFrameRect().contains(prevBuffer->originalFrameRect()))
-        buffer.setHasAlpha(false);
-    }
-  }
+  m_frameBufferCache[frameIndex].setStatus(ImageFrame::FrameComplete);
+  if (!m_currentBufferSawAlpha)
+    correctAlphaWhenFrameBufferSawNoAlpha(frameIndex);
 
   return true;
 }

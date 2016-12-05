@@ -304,6 +304,57 @@ bool ImageDecoder::postDecodeProcessing(size_t index) {
   return true;
 }
 
+void ImageDecoder::correctAlphaWhenFrameBufferSawNoAlpha(size_t index) {
+  DCHECK(index < m_frameBufferCache.size());
+  ImageFrame& buffer = m_frameBufferCache[index];
+
+  // When this frame spans the entire image rect we can set hasAlpha to false,
+  // since there are logically no transparent pixels outside of the frame rect.
+  if (buffer.originalFrameRect().contains(IntRect(IntPoint(), size()))) {
+    buffer.setHasAlpha(false);
+    buffer.setRequiredPreviousFrameIndex(kNotFound);
+  } else if (buffer.requiredPreviousFrameIndex() != kNotFound) {
+    // When the frame rect does not span the entire image rect, and it does
+    // *not* have a required previous frame, the pixels outside of the frame
+    // rect will be fully transparent, so we shoudn't set hasAlpha to false.
+    //
+    // It is a tricky case when the frame does have a required previous frame.
+    // The frame does not have alpha only if everywhere outside its rect
+    // doesn't have alpha.  To know whether this is true, we check the start
+    // state of the frame -- if it doesn't have alpha, we're safe.
+    //
+    // We first check that the required previous frame does not have
+    // DisposeOverWritePrevious as its disposal method - this should never
+    // happen, since the required frame should in that case be the required
+    // frame of this frame's required frame.
+    //
+    // If |prevBuffer| is DisposeNotSpecified or DisposeKeep, |buffer| has no
+    // alpha if |prevBuffer| had no alpha. Since initFrameBuffer() already
+    // copied the alpha state, there's nothing to do here.
+    //
+    // The only remaining case is a DisposeOverwriteBgcolor frame.  If
+    // it had no alpha, and its rect is contained in the current frame's
+    // rect, we know the current frame has no alpha.
+    //
+    // For DisposeNotSpecified, DisposeKeep and DisposeOverwriteBgcolor there
+    // is one situation that is not taken into account - when |prevBuffer|
+    // *does* have alpha, but only in the frame rect of |buffer|, we can still
+    // say that this frame has no alpha. However, to determine this, we
+    // potentially need to analyze all image pixels of |prevBuffer|, which is
+    // too computationally expensive.
+    const ImageFrame* prevBuffer =
+        &m_frameBufferCache[buffer.requiredPreviousFrameIndex()];
+    DCHECK(prevBuffer->getDisposalMethod() !=
+           ImageFrame::DisposeOverwritePrevious);
+
+    if ((prevBuffer->getDisposalMethod() ==
+         ImageFrame::DisposeOverwriteBgcolor) &&
+        !prevBuffer->hasAlpha() &&
+        buffer.originalFrameRect().contains(prevBuffer->originalFrameRect()))
+      buffer.setHasAlpha(false);
+  }
+}
+
 bool ImageDecoder::initFrameBuffer(size_t frameIndex) {
   DCHECK(frameIndex < m_frameBufferCache.size());
 
