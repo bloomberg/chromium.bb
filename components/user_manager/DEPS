@@ -5,6 +5,7 @@ include_rules = [
 "+google_apis/gaia/gaia_auth_util.h",
 "+third_party/skia/include",
 "+ui/gfx/codec",
+"+ui/gfx/geometry",
 "+ui/gfx/image",
 "+url",
 ]

@@ -22,15 +22,31 @@ namespace user_manager {
 // profile images and user wallpapers.
 class USER_MANAGER_EXPORT UserImage {
  public:
-  // Encodes the given bitmap to bytes representation for WebUI. Returns null
-  // on failure.
-  static scoped_refptr<base::RefCountedBytes> Encode(const SkBitmap& bitmap);
+  // The format of the user image's bytes representation. PNG can support
+  // transparent background that's not supported with JPEG.
+  enum ImageFormat {
+    FORMAT_JPEG,
+    FORMAT_PNG,
+    FORMAT_UNKNOWN,
+  };
+
+  // Encodes the given bitmap to bytes representation in |image_format| for
+  // WebUI. Returns nullptr on failure.
+  static scoped_refptr<base::RefCountedBytes> Encode(const SkBitmap& bitmap,
+                                                     ImageFormat image_format);
 
   // Creates a new instance from a given still frame and tries to encode it
-  // to bytes representation for WebUI. Always returns a non-null result.
+  // to bytes representation in |image_format| for WebUI. Always returns a
+  // non-null result.
   // TODO(ivankr): remove eventually.
   static std::unique_ptr<UserImage> CreateAndEncode(
-      const gfx::ImageSkia& image);
+      const gfx::ImageSkia& image,
+      ImageFormat image_format);
+
+  // Choose the image format suitable for the given bitmap. Returns
+  // FORMAT_PNG if the bitmap contains transparent/translucent
+  // pixels. Otherwise, returns FORMAT_JPEG.
+  static ImageFormat ChooseImageFormat(const SkBitmap& bitmap);
 
   // Create instance with an empty still frame and no bytes
   // representation for WebUI.
@@ -43,7 +59,8 @@ class USER_MANAGER_EXPORT UserImage {
   // Creates a new instance from a given still frame and bytes
   // representation for WebUI.
   UserImage(const gfx::ImageSkia& image,
-            scoped_refptr<base::RefCountedBytes> image_bytes);
+            scoped_refptr<base::RefCountedBytes> image_bytes,
+            ImageFormat image_format);
 
   virtual ~UserImage();
 
@@ -54,6 +71,8 @@ class USER_MANAGER_EXPORT UserImage {
   scoped_refptr<base::RefCountedBytes> image_bytes() const {
     return image_bytes_;
   }
+  // Format of the bytes representation.
+  ImageFormat image_format() const { return image_format_; }
 
   // URL from which this image was originally downloaded, if any.
   void set_url(const GURL& url) { url_ = url; }
@@ -77,6 +96,7 @@ class USER_MANAGER_EXPORT UserImage {
   // If image was loaded from the local file, file path is stored here.
   base::FilePath file_path_;
   bool is_safe_format_ = false;
+  ImageFormat image_format_ = FORMAT_UNKNOWN;
 
   DISALLOW_COPY_AND_ASSIGN(UserImage);
 };

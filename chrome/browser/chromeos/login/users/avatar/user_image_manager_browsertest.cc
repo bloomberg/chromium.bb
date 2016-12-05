@@ -306,8 +306,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, PRE_SaveAndLoadUserImage) {
       default_user_image::kFirstDefaultImageIndex);
   UserImageManager* user_image_manager =
       ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
-  user_image_manager->SaveUserImage(
-      user_manager::UserImage::CreateAndEncode(image));
+  user_image_manager->SaveUserImage(user_manager::UserImage::CreateAndEncode(
+      image, user_manager::UserImage::FORMAT_JPEG));
   run_loop_->Run();
 }
 
@@ -380,8 +380,8 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImage) {
   run_loop_.reset(new base::RunLoop);
   UserImageManager* user_image_manager =
       ChromeUserManager::Get()->GetUserImageManager(test_account_id1_);
-  user_image_manager->SaveUserImage(
-      user_manager::UserImage::CreateAndEncode(custom_image));
+  user_image_manager->SaveUserImage(user_manager::UserImage::CreateAndEncode(
+      custom_image, user_manager::UserImage::FORMAT_JPEG));
   run_loop_->Run();
 
   EXPECT_FALSE(user->HasDefaultImage());
@@ -437,6 +437,36 @@ IN_PROC_BROWSER_TEST_F(UserImageManagerTest, SaveUserImageFromFile) {
   // Check image dimensions. Images can't be compared since JPEG is lossy.
   EXPECT_EQ(custom_image->width(), saved_image->width());
   EXPECT_EQ(custom_image->height(), saved_image->height());
+
+  // Replace the user image with a PNG file with transparent pixels.
+  const base::FilePath transparent_image_path =
+      test_data_dir_.Append(test::kUserAvatarImage3RelativePath);
+  const std::unique_ptr<gfx::ImageSkia> transparent_image =
+      test::ImageLoader(transparent_image_path).Load();
+  ASSERT_TRUE(transparent_image);
+  // This image should have transparent pixels (i.e. not opaque).
+  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*transparent_image->bitmap()));
+
+  run_loop_.reset(new base::RunLoop);
+  user_image_manager->SaveUserImageFromFile(transparent_image_path);
+  run_loop_->Run();
+
+  EXPECT_TRUE(test::AreImagesEqual(*transparent_image, user->GetImage()));
+  ExpectUserImageInfo(test_account_id1_,
+                      user_manager::User::USER_IMAGE_EXTERNAL,
+                      GetUserImagePath(test_account_id1_, "png"));
+
+  const std::unique_ptr<gfx::ImageSkia> new_saved_image =
+      test::ImageLoader(GetUserImagePath(test_account_id1_, "png")).Load();
+  ASSERT_TRUE(new_saved_image);
+
+  // The saved image should have transparent pixels (i.e. not opaque).
+  EXPECT_FALSE(SkBitmap::ComputeIsOpaque(*new_saved_image->bitmap()));
+
+  // The old user image file in JPEG should be deleted. Only the PNG version
+  // should stay.
+  EXPECT_FALSE(base::PathExists(GetUserImagePath(test_account_id1_, "jpg")));
+  EXPECT_TRUE(base::PathExists(GetUserImagePath(test_account_id1_, "png")));
 }
 
 IN_PROC_BROWSER_TEST_F(UserImageManagerTest,

@@ -193,8 +193,8 @@ void UserImageScreen::OnImageAccepted() {
         accept_photo_after_decoding_ = true;
         return;
       }
-      image_manager->SaveUserImage(
-          user_manager::UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(user_manager::UserImage::CreateAndEncode(
+          user_photo_, user_manager::UserImage::FORMAT_JPEG));
       uma_index = default_user_image::kHistogramImageFromCamera;
       break;
     case user_manager::User::USER_IMAGE_PROFILE:

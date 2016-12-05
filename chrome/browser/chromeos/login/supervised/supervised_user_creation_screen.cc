@@ -499,8 +499,8 @@ void SupervisedUserCreationScreen::ApplyPicture() {
         apply_photo_after_decoding_ = true;
         return;
       }
-      image_manager->SaveUserImage(
-          user_manager::UserImage::CreateAndEncode(user_photo_));
+      image_manager->SaveUserImage(user_manager::UserImage::CreateAndEncode(
+          user_photo_, user_manager::UserImage::FORMAT_JPEG));
       break;
     case user_manager::User::USER_IMAGE_PROFILE:
       NOTREACHED() << "Supervised users have no profile pictures";

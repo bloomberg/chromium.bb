@@ -353,7 +353,8 @@ void ChangePictureOptionsHandler::HandleSelectImage(
     // Previous image (from camera or manually uploaded) re-selected.
     DCHECK(!previous_image_.isNull());
     user_image_manager->SaveUserImage(
-        user_manager::UserImage::CreateAndEncode(previous_image_));
+        user_manager::UserImage::CreateAndEncode(
+            previous_image_, user_manager::UserImage::FORMAT_JPEG));
 
     UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                               default_user_image::kHistogramImageOld,
@@ -417,7 +418,8 @@ void ChangePictureOptionsHandler::SetImageFromCamera(
     const gfx::ImageSkia& photo) {
   ChromeUserManager::Get()
       ->GetUserImageManager(GetUser()->GetAccountId())
-      ->SaveUserImage(user_manager::UserImage::CreateAndEncode(photo));
+      ->SaveUserImage(user_manager::UserImage::CreateAndEncode(
+          photo, user_manager::UserImage::FORMAT_JPEG));
   UMA_HISTOGRAM_ENUMERATION("UserImage.ChangeChoice",
                             default_user_image::kHistogramImageFromCamera,
                             default_user_image::kHistogramImagesCount);

@@ -138,6 +138,11 @@ class USER_MANAGER_EXPORT User : public UserInfo {
   scoped_refptr<base::RefCountedBytes> image_bytes() const {
     return user_image_->image_bytes();
   }
+  // Returns image format of the bytes representation of static user image
+  // for WebUI.
+  UserImage::ImageFormat image_format() const {
+    return user_image_->image_format();
+  }
 
   // Whether |user_image_| contains data in format that is considered safe to
   // decode in sensitive environment (on Login screen).
