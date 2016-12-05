@@ -175,7 +175,6 @@ PerformanceMonitor::PerformanceMonitor(LocalFrame* localRoot)
     : m_localRoot(localRoot) {
   std::fill(std::begin(m_thresholds), std::end(m_thresholds), 0);
   Platform::current()->currentThread()->addTaskTimeObserver(this);
-  Platform::current()->currentThread()->addTaskObserver(this);
 }
 
 PerformanceMonitor::~PerformanceMonitor() {
@@ -205,7 +204,6 @@ void PerformanceMonitor::shutdown() {
   m_subscriptions.clear();
   updateInstrumentation();
   Platform::current()->currentThread()->removeTaskTimeObserver(this);
-  Platform::current()->currentThread()->removeTaskObserver(this);
 }
 
 void PerformanceMonitor::updateInstrumentation() {
@@ -301,7 +299,8 @@ void PerformanceMonitor::didRecalculateStyle() {
   }
 }
 
-void PerformanceMonitor::willProcessTask() {
+void PerformanceMonitor::willProcessTask(scheduler::TaskQueue*,
+                                         double startTime) {
   // Reset m_taskExecutionContext. We don't clear this in didProcessTask
   // as it is needed in ReportTaskTime which occurs after didProcessTask.
   m_taskExecutionContext = nullptr;
@@ -319,17 +318,32 @@ void PerformanceMonitor::willProcessTask() {
   m_handlerDepth = 0;
 }
 
-void PerformanceMonitor::didProcessTask() {
+void PerformanceMonitor::didProcessTask(scheduler::TaskQueue*,
+                                        double startTime,
+                                        double endTime) {
   if (!m_enabled)
     return;
   double layoutThreshold = m_thresholds[kLongLayout];
-  if (!layoutThreshold || m_perTaskStyleAndLayoutTime < layoutThreshold)
-    return;
-  ClientThresholds* clientThresholds = m_subscriptions.get(kLongLayout);
-  DCHECK(clientThresholds);
-  for (const auto& it : *clientThresholds) {
-    if (it.value < m_perTaskStyleAndLayoutTime)
-      it.key->reportLongLayout(m_perTaskStyleAndLayoutTime);
+  if (layoutThreshold && m_perTaskStyleAndLayoutTime > layoutThreshold) {
+    ClientThresholds* clientThresholds = m_subscriptions.get(kLongLayout);
+    DCHECK(clientThresholds);
+    for (const auto& it : *clientThresholds) {
+      if (it.value < m_perTaskStyleAndLayoutTime)
+        it.key->reportLongLayout(m_perTaskStyleAndLayoutTime);
+    }
+  }
+
+  double taskTime = endTime - startTime;
+  if (m_thresholds[kLongTask] && taskTime > m_thresholds[kLongTask]) {
+    ClientThresholds* clientThresholds = m_subscriptions.get(kLongTask);
+    for (const auto& it : *clientThresholds) {
+      if (it.value < taskTime) {
+        it.key->reportLongTask(
+            startTime, endTime,
+            m_taskHasMultipleContexts ? nullptr : m_taskExecutionContext,
+            m_taskHasMultipleContexts);
+      }
+    }
   }
 }
 
@@ -343,26 +357,6 @@ void PerformanceMonitor::reportGenericViolation(Violation violation,
   for (const auto& it : *clientThresholds) {
     if (it.value < time)
       it.key->reportGenericViolation(violation, text, time, location);
-  }
-}
-
-void PerformanceMonitor::ReportTaskTime(scheduler::TaskQueue*,
-                                        double startTime,
-                                        double endTime) {
-  if (!m_enabled)
-    return;
-  double taskTime = endTime - startTime;
-  if (!m_thresholds[kLongTask] || taskTime < m_thresholds[kLongTask])
-    return;
-
-  ClientThresholds* clientThresholds = m_subscriptions.get(kLongTask);
-  for (const auto& it : *clientThresholds) {
-    if (it.value < taskTime) {
-      it.key->reportLongTask(
-          startTime, endTime,
-          m_taskHasMultipleContexts ? nullptr : m_taskExecutionContext,
-          m_taskHasMultipleContexts);
-    }
   }
 }
 

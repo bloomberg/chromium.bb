@@ -232,11 +232,6 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     queues_to_delete_.clear();
 
   LazyNow lazy_now(real_time_domain()->CreateLazyNow());
-  base::TimeTicks task_start_time;
-
-  if (!delegate_->IsNested() && task_time_observers_.might_have_observers())
-    task_start_time = lazy_now.Now();
-
   UpdateWorkQueues(lazy_now);
 
   for (int i = 0; i < work_batch_size_; i++) {
@@ -244,11 +239,7 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
     if (!SelectWorkQueueToService(&work_queue))
       break;
 
-    // TaskQueueManager guarantees that task queue will not be deleted
-    // when we are in DoWork (but WorkQueue may be deleted).
-    internal::TaskQueueImpl* task_queue = work_queue->task_queue();
-
-    switch (ProcessTaskFromWorkQueue(work_queue)) {
+    switch (ProcessTaskFromWorkQueue(work_queue, &lazy_now)) {
       case ProcessTaskResult::DEFERRED:
         // If a task was deferred, try again with another task.
         continue;
@@ -256,18 +247,6 @@ void TaskQueueManager::DoWork(base::TimeTicks run_time, bool from_main_thread) {
         break;
       case ProcessTaskResult::TASK_QUEUE_MANAGER_DELETED:
         return;  // The TaskQueueManager got deleted, we must bail out.
-    }
-
-    lazy_now = real_time_domain()->CreateLazyNow();
-    if (!delegate_->IsNested() && task_start_time != base::TimeTicks()) {
-      // Only report top level task durations.
-      base::TimeTicks task_end_time = lazy_now.Now();
-      for (auto& observer : task_time_observers_) {
-        observer.ReportTaskTime(task_queue,
-                                MonotonicTimeInSeconds(task_start_time),
-                                MonotonicTimeInSeconds(task_end_time));
-      }
-      task_start_time = task_end_time;
     }
 
     work_queue = nullptr;  // The queue may have been unregistered.
@@ -312,7 +291,8 @@ void TaskQueueManager::DidQueueTask(
 }
 
 TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
-    internal::WorkQueue* work_queue) {
+    internal::WorkQueue* work_queue,
+    LazyNow* lazy_now) {
   DCHECK(main_thread_checker_.CalledOnValidThread());
   scoped_refptr<DeletionSentinel> protect(deletion_sentinel_);
   internal::TaskQueueImpl::Task pending_task =
@@ -341,13 +321,23 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
 
   MaybeRecordTaskDelayHistograms(pending_task, queue);
 
+  double task_start_time = 0;
   TRACE_TASK_EXECUTION("TaskQueueManager::ProcessTaskFromWorkQueue",
                        pending_task);
   if (queue->GetShouldNotifyObservers()) {
     for (auto& observer : task_observers_)
       observer.WillProcessTask(pending_task);
     queue->NotifyWillProcessTask(pending_task);
+
+    bool notify_time_observers =
+        !delegate_->IsNested() && task_time_observers_.might_have_observers();
+    if (notify_time_observers) {
+      task_start_time = MonotonicTimeInSeconds(lazy_now->Now());
+      for (auto& observer : task_time_observers_)
+        observer.willProcessTask(queue, task_start_time);
+    }
   }
+
   TRACE_EVENT1(tracing_category_, "TaskQueueManager::RunTask", "queue",
                queue->GetName());
   // NOTE when TaskQueues get unregistered a reference ends up getting retained
@@ -364,7 +354,15 @@ TaskQueueManager::ProcessTaskResult TaskQueueManager::ProcessTaskFromWorkQueue(
 
   currently_executing_task_queue_ = prev_executing_task_queue;
 
+  *lazy_now = real_time_domain()->CreateLazyNow();
+
   if (queue->GetShouldNotifyObservers()) {
+    if (task_start_time) {
+      double task_end_time = MonotonicTimeInSeconds(lazy_now->Now());
+      for (auto& observer : task_time_observers_)
+        observer.didProcessTask(queue, task_start_time, task_end_time);
+    }
+
     for (auto& observer : task_observers_)
       observer.DidProcessTask(pending_task);
     queue->NotifyDidProcessTask(pending_task);

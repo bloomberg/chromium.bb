@@ -1661,7 +1661,7 @@ void RendererSchedulerImpl::OnTriedToExecuteBlockedTask(
   }
 }
 
-void RendererSchedulerImpl::ReportTaskTime(TaskQueue* task_queue,
+void RendererSchedulerImpl::didProcessTask(TaskQueue* task_queue,
                                            double start_time,
                                            double end_time) {
   // TODO(scheduler-dev): Remove conversions when Blink starts using

@@ -188,7 +188,8 @@ class BLINK_PLATFORM_EXPORT TaskQueueManager
     EXECUTED,
     TASK_QUEUE_MANAGER_DELETED
   };
-  ProcessTaskResult ProcessTaskFromWorkQueue(internal::WorkQueue* work_queue);
+  ProcessTaskResult ProcessTaskFromWorkQueue(internal::WorkQueue* work_queue,
+                                             LazyNow*);
 
   bool RunsTasksOnCurrentThread() const;
   bool PostNonNestableDelayedTask(const tracked_objects::Location& from_here,

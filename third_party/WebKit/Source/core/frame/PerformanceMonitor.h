@@ -28,7 +28,6 @@ class SourceLocation;
 // (in the local frame tree) in m_webPerformanceObservers.
 class CORE_EXPORT PerformanceMonitor final
     : public GarbageCollectedFinalized<PerformanceMonitor>,
-      public WebThread::TaskObserver,
       public scheduler::TaskTimeObserver {
   WTF_MAKE_NONCOPYABLE(PerformanceMonitor);
 
@@ -118,12 +117,9 @@ class CORE_EXPORT PerformanceMonitor final
                               double time,
                               SourceLocation*);
 
-  // WebThread::TaskObserver implementation.
-  void willProcessTask() override;
-  void didProcessTask() override;
-
   // scheduler::TaskTimeObserver implementation
-  void ReportTaskTime(scheduler::TaskQueue*,
+  void willProcessTask(scheduler::TaskQueue*, double startTime) override;
+  void didProcessTask(scheduler::TaskQueue*,
                       double startTime,
                       double endTime) override;
 
