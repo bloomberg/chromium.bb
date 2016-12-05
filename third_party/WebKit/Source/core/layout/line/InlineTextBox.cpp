@@ -379,7 +379,7 @@ LayoutUnit InlineTextBox::placeEllipsisBox(bool flowIsLTR,
     // text and its flow have opposite directions then our offset into the text
     // is at the start of the part that will be visible.
     LayoutUnit widthOfVisibleText(getLineLayoutItem().width(
-        ltr == flowIsLTR ? m_start : offset,
+        ltr == flowIsLTR ? m_start : m_start + offset,
         ltr == flowIsLTR ? offset : m_len - offset, textPos(),
         flowIsLTR ? LTR : RTL, isFirstLineStyle()));
 

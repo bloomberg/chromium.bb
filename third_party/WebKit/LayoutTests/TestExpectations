@@ -1607,6 +1607,12 @@ crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-blobtype.ht
 crbug.com/602693 imported/wpt/service-workers/service-worker/invalid-header.https.html [ Skip ]
 crbug.com/602693 imported/wpt/service-workers/service-worker/referer.https.html [ Skip ]
 
+crbug.com/667128 [ Mac Win ] editing/selection/select-text-overflow-ellipsis-mixed-in-ltr.html [ NeedsRebaseline ]
+crbug.com/667128 [ Mac Win ] fast/css/text-overflow-ellipsis-strict.html [ NeedsRebaseline ]
+crbug.com/667128 [ Mac Win ] fast/css/text-overflow-ellipsis.html [ NeedsRebaseline ]
+crbug.com/667128 [ Mac Win ] fast/text/ellipsis-ltr-text-in-rtl-flow-leading-space.html [ NeedsRebaseline ]
+crbug.com/667128 [ Mac Win ] fast/text/ellipsis-mixed-text-in-ltr-flow-underline.html [ NeedsRebaseline ]
+
 # mojo-loading: This is an experimental feature. failing virtual tests are
 # listed below.
 crbug.com/659917 virtual/mojo-loading/http/tests/xmlhttprequest/upload-onload-event.html [ Failure Timeout ]
