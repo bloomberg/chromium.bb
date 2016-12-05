@@ -199,8 +199,6 @@ class CORE_EXPORT DocumentThreadableLoader final : public ThreadableLoader,
   // True while the initial URL and all the URLs of the redirects this object
   // has followed, if any, are same-origin to getSecurityOrigin().
   bool m_sameOriginRequest;
-  // Set to true if the current request is cross-origin and not simple.
-  bool m_crossOriginNonSimpleRequest;
 
   // Set to true when the response data is given to a data consumer handle.
   bool m_isUsingDataConsumerHandle;

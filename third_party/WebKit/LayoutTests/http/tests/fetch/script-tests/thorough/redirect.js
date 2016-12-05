@@ -211,20 +211,21 @@ var TEST_TARGETS = [
   //  [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
   //  [methodIsPOST]],
 
-  // Once CORS preflight flag is set, redirecting to the cross-origin is not
-  // allowed.
   // Custom method
   [OTHER_REDIRECT_URL +
    encodeURIComponent(BASE_URL + 'ACAOrigin=*&ACAMethods=PUT') +
    '&mode=cors&credentials=same-origin&method=PUT&ACAOrigin=*&ACAMethods=PUT',
-   [fetchRejected]],
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, authCheckNone]],
   // Custom header
   [OTHER_REDIRECT_URL +
    encodeURIComponent(
        BASE_URL +
-       'ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test') +
-   '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM&ACAOrigin=*',
-   [fetchRejected]],
+       'ACAOrigin=*&ACAHeaders=x-serviceworker-test') +
+   '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM' +
+   '&ACAOrigin=*&ACAHeaders=x-serviceworker-test',
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader, authCheckNone]],
 
   // Redirect: other origin -> other origin
   [OTHER_REDIRECT_URL + encodeURIComponent(OTHER_BASE_URL) +
@@ -293,13 +294,12 @@ var TEST_TARGETS = [
    [fetchResolved, noContentLength, hasServerHeader, hasBody, typeCors],
    [methodIsGET, authCheckNone]],
 
-  // Once CORS preflight flag is set, redirecting to the cross-origin is not
-  // allowed.
   // Custom method
   [OTHER_REDIRECT_URL +
    encodeURIComponent(OTHER_BASE_URL + 'ACAOrigin=*&ACAMethods=PUT') +
    '&mode=cors&credentials=same-origin&method=PUT&ACAOrigin=*&ACAMethods=PUT',
-   [fetchRejected]],
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsPUT, authCheckNone]],
   // Custom header
   [OTHER_REDIRECT_URL +
    encodeURIComponent(
@@ -307,7 +307,8 @@ var TEST_TARGETS = [
      'ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test') +
    '&mode=cors&credentials=same-origin&method=GET&headers=CUSTOM' +
    '&ACAOrigin=' + BASE_ORIGIN + '&ACAHeaders=x-serviceworker-test',
-   [fetchRejected]],
+   [fetchResolved, noContentLength, noServerHeader, hasBody, typeCors],
+   [methodIsGET, hasCustomHeader, authCheckNone]],
 ];
 
 if (self.importScripts) {

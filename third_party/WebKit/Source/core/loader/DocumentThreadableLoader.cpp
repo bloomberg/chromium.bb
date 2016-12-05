@@ -161,7 +161,6 @@ DocumentThreadableLoader::DocumentThreadableLoader(
       m_forceDoNotAllowStoredCredentials(false),
       m_securityOrigin(m_resourceLoaderOptions.securityOrigin),
       m_sameOriginRequest(false),
-      m_crossOriginNonSimpleRequest(false),
       m_isUsingDataConsumerHandle(false),
       m_async(blockingBehavior == LoadAsynchronously),
       m_requestContext(WebURLRequest::RequestContextUnspecified),
@@ -374,8 +373,6 @@ void DocumentThreadableLoader::makeCrossOriginAccessRequest(
     prepareCrossOriginRequest(crossOriginRequest);
     loadRequest(crossOriginRequest, crossOriginOptions);
   } else {
-    m_crossOriginNonSimpleRequest = true;
-
     bool shouldForcePreflight =
         request.isExternalRequest() ||
         InspectorInstrumentation::shouldForceCORSPreflight(m_document);
@@ -560,16 +557,8 @@ bool DocumentThreadableLoader::redirectReceived(
   bool allowRedirect = false;
   String accessControlErrorDescription;
 
-  if (m_crossOriginNonSimpleRequest) {
-    // Non-simple cross origin requests (both preflight and actual one) are not
-    // allowed to follow redirect.
-    accessControlErrorDescription =
-        "Redirect from '" + redirectResponse.url().getString() + "' to '" +
-        request.url().getString() +
-        "' has been blocked by CORS policy: Request requires preflight, which "
-        "is disallowed to follow cross-origin redirect.";
-  } else if (!CrossOriginAccessControl::isLegalRedirectLocation(
-                 request.url(), accessControlErrorDescription)) {
+  if (!CrossOriginAccessControl::isLegalRedirectLocation(
+          request.url(), accessControlErrorDescription)) {
     accessControlErrorDescription =
         "Redirect from '" + redirectResponse.url().getString() +
         "' has been blocked by CORS policy: " + accessControlErrorDescription;

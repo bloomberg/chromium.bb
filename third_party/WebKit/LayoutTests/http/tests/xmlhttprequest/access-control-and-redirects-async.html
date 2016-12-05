@@ -49,20 +49,18 @@ var tests = [
 
 // Receives a redirect response with CORS headers. The redirect response passes the access check and the resource response
 // passes the access check.
-// FIXME: this test fails because the redirect is vetoed. There are continued bugs with redirects when the original
-// request was cross-origin.
 ["http://localhost:8000/xmlhttprequest/resources/redirect-cors.php?url=http://localhost:8000/xmlhttprequest/resources/access-control-basic-allow-star.cgi&\
-  access-control-allow-origin=http://localhost:8000",
+  access-control-allow-origin=http://127.0.0.1:8000",
   withoutCredentials, noCustomHeader, succeeds],
 
 // Receives a redirect response with a URL containing the userinfo production.
 ["http://localhost:8000/xmlhttprequest/resources/redirect-cors.php?url=http://username:password@localhost:8000/xmlhttprequest/resources/access-control-basic-allow-star.cgi&\
-  access-control-allow-origin=http://localhost:8000",
+  access-control-allow-origin=http://127.0.0.1:8000",
   withoutCredentials, noCustomHeader, fails],
 
 // Receives a redirect response with a URL with an unsupported scheme.
 ["http://localhost:8000/xmlhttprequest/resources/redirect-cors.php?url=foo://bar.cgi&\
-  access-control-allow-origin=http://localhost:8000",
+  access-control-allow-origin=http://127.0.0.1:8000",
   withoutCredentials, noCustomHeader, fails],
 
 // 2) Test preflighted cross origin requests that receive redirects.
