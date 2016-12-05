@@ -16,23 +16,26 @@ namespace blink {
 
 namespace RootScrollerUtil {
 
-ScrollableArea* scrollableAreaForRootScroller(const Element& element) {
-  if (&element == element.document().documentElement()) {
-    if (!element.document().view())
+ScrollableArea* scrollableAreaForRootScroller(const Element* element) {
+  if (!element)
+    return nullptr;
+
+  if (element == element->document().documentElement()) {
+    if (!element->document().view())
       return nullptr;
 
     // For a FrameView, we use the layoutViewport rather than the
     // getScrollableArea() since that could be the RootFrameViewport. The
     // rootScroller's ScrollableArea will be swapped in as the layout viewport
     // in RootFrameViewport so we need to ensure we get the layout viewport.
-    return element.document().view()->layoutViewportScrollableArea();
+    return element->document().view()->layoutViewportScrollableArea();
   }
 
-  if (!element.layoutObject() || !element.layoutObject()->isBox())
+  if (!element->layoutObject() || !element->layoutObject()->isBox())
     return nullptr;
 
   return static_cast<PaintInvalidationCapableScrollableArea*>(
-      toLayoutBoxModelObject(element.layoutObject())->getScrollableArea());
+      toLayoutBoxModelObject(element->layoutObject())->getScrollableArea());
 }
 
 PaintLayer* paintLayerForRootScroller(const Element* element) {

@@ -126,7 +126,7 @@ bool RootScrollerController::isValidRootScroller(const Element& element) const {
   if (!element.layoutObject())
     return false;
 
-  if (!RootScrollerUtil::scrollableAreaForRootScroller(element))
+  if (!RootScrollerUtil::scrollableAreaForRootScroller(&element))
     return false;
 
   if (!fillsViewport(element))

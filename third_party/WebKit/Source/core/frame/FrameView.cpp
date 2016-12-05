@@ -3547,12 +3547,11 @@ bool FrameView::visualViewportSuppliesScrollbars() {
   const TopDocumentRootScrollerController& controller =
       m_frame->host()->globalRootScrollerController();
 
-  if (!controller.globalRootScroller())
+  if (!layoutViewportScrollableArea())
     return false;
 
   return RootScrollerUtil::scrollableAreaForRootScroller(
-             *controller.globalRootScroller()) ==
-         layoutViewportScrollableArea();
+             controller.globalRootScroller()) == layoutViewportScrollableArea();
 }
 
 AXObjectCache* FrameView::axObjectCache() const {

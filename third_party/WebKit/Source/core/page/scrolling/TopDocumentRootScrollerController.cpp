@@ -43,11 +43,9 @@ void TopDocumentRootScrollerController::didChangeRootScroller() {
 
 void TopDocumentRootScrollerController::mainFrameViewResized() {
   Element* rootScroller = globalRootScroller();
-  if (!rootScroller)
-    return;
 
   ScrollableArea* area =
-      RootScrollerUtil::scrollableAreaForRootScroller(*rootScroller);
+      RootScrollerUtil::scrollableAreaForRootScroller(rootScroller);
 
   if (!area)
     return;
@@ -90,11 +88,11 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
     return;
 
   Element* target = findGlobalRootScrollerElement();
-  if (!target || target == m_globalRootScroller)
+  if (target == m_globalRootScroller)
     return;
 
   ScrollableArea* targetScroller =
-      RootScrollerUtil::scrollableAreaForRootScroller(*target);
+      RootScrollerUtil::scrollableAreaForRootScroller(target);
 
   if (!targetScroller)
     return;
@@ -117,9 +115,7 @@ void TopDocumentRootScrollerController::recomputeGlobalRootScroller() {
   setNeedsCompositingInputsUpdateOnGlobalRootScroller();
 
   ScrollableArea* oldRootScrollerArea =
-      m_globalRootScroller ? RootScrollerUtil::scrollableAreaForRootScroller(
-                                 *m_globalRootScroller.get())
-                           : nullptr;
+      RootScrollerUtil::scrollableAreaForRootScroller(m_globalRootScroller);
 
   m_globalRootScroller = target;
 
@@ -195,11 +191,8 @@ bool TopDocumentRootScrollerController::isViewportScrollCallback(
 }
 
 GraphicsLayer* TopDocumentRootScrollerController::rootScrollerLayer() const {
-  if (!m_globalRootScroller)
-    return nullptr;
-
   ScrollableArea* area =
-      RootScrollerUtil::scrollableAreaForRootScroller(*m_globalRootScroller);
+      RootScrollerUtil::scrollableAreaForRootScroller(m_globalRootScroller);
 
   if (!area)
     return nullptr;

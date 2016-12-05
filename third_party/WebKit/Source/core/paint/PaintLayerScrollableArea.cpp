@@ -1780,11 +1780,8 @@ bool PaintLayerScrollableArea::visualViewportSuppliesScrollbars() const {
   const TopDocumentRootScrollerController& controller =
       layoutBox()->document().frameHost()->globalRootScrollerController();
 
-  if (!controller.globalRootScroller())
-    return false;
-
   return RootScrollerUtil::scrollableAreaForRootScroller(
-             *controller.globalRootScroller()) == this;
+             controller.globalRootScroller()) == this;
 }
 
 Widget* PaintLayerScrollableArea::getWidget() {
