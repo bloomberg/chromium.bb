@@ -51,7 +51,7 @@ IN_PROC_BROWSER_TEST_F(SingleClientSupervisedUserSettingsSyncTest, Sanity) {
       GoogleServiceAuthError(GoogleServiceAuthError::NONE),
       std::string("token value doesn't matter in tests"));
 
-  ASSERT_TRUE(GetClient(0)->AwaitBackendInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
   ASSERT_TRUE(GetClient(0)->AwaitSyncSetupCompletion());
 
   // TODO(pvalenzuela): Add additional tests and some verification of sync-

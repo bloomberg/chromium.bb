@@ -49,7 +49,7 @@ class FakeSyncService : public SyncService {
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
-  bool IsBackendInitialized() const override;
+  bool IsEngineInitialized() const override;
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
@@ -69,7 +69,7 @@ class FakeSyncService : public SyncService {
   std::string QuerySyncStatusSummaryString() override;
   bool QueryDetailedSyncStatus(SyncStatus* result) override;
   base::string16 GetLastSyncedTimeString() const override;
-  std::string GetBackendInitializationStateString() const override;
+  std::string GetEngineInitializationStateString() const override;
   SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMap() override;
   const GURL& sync_service_url() const override;

@@ -50,19 +50,19 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     }
 
     private static class StubProfileSyncService extends ProfileSyncService {
-        private boolean mSyncInitialized = false;
+        private boolean mEngineInitialized = false;
 
         public StubProfileSyncService() {
             super();
         }
 
         @Override
-        public boolean isBackendInitialized() {
-            return mSyncInitialized;
+        public boolean isEngineInitialized() {
+            return mEngineInitialized;
         }
 
-        public void setSyncInitialized(boolean syncInitialized) {
-            mSyncInitialized = syncInitialized;
+        public void setEngineInitialized(boolean engineInitialized) {
+            mEngineInitialized = engineInitialized;
             syncStateChanged();
         }
     }
@@ -85,7 +85,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         ContextUtils.initApplicationContext(getTargetContext().getApplicationContext());
 
         // This is a PrecacheLauncher with a stubbed out nativeShouldRun so we can change that on
-        // the fly without needing to set up a sync backend.
+        // the fly without needing to set up a sync engine.
         mLauncher = new PrecacheLauncherUnderTest();
 
         mPrecacheTaskScheduler = new MockPrecacheTaskScheduler();
@@ -104,7 +104,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                // The StubProfileSyncService stubs out isBackendInitialized so we can change that
+                // The StubProfileSyncService stubs out isEngineInitialized so we can change that
                 // on the fly.
                 mSync = new StubProfileSyncService();
                 ProfileSyncService.overrideForTests(mSync);
@@ -131,7 +131,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
                              FailureReason.NATIVE_SHOULD_RUN_IS_FALSE),
                 failureReasons());
 
-        setSyncInitialized(true);
+        setEngineInitialized(true);
         assertEquals(false, isPrecachingEnabled());
         assertEquals(EnumSet.of(FailureReason.NATIVE_SHOULD_RUN_IS_FALSE), failureReasons());
     }
@@ -149,7 +149,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
                 failureReasons());
 
         mLauncher.setShouldRun(true);
-        setSyncInitialized(true);
+        setEngineInitialized(true);
         assertEquals(true, isPrecachingEnabled());
         assertEquals(EnumSet.noneOf(FailureReason.class), failureReasons());
     }
@@ -157,7 +157,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     @SmallTest
     @Feature({"Precache"})
     public void testUpdateEnabled_Disabled_ThenEnabled() {
-        setSyncInitialized(true);
+        setEngineInitialized(true);
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
@@ -173,7 +173,7 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
     @Feature({"Precache"})
     public void testUpdateEnabled_Enabled_ThenDisabled() {
         mLauncher.setShouldRun(true);
-        setSyncInitialized(true);
+        setEngineInitialized(true);
         mLauncher.updateEnabled(getTargetContext());
         waitUntilUiThreadIdle();
 
@@ -225,12 +225,12 @@ public class PrecacheLauncherTest extends NativeLibraryTestBase {
         });
     }
 
-    /** Pretend the sync backend is initialized or not. */
-    private void setSyncInitialized(final boolean syncInitialized) {
+    /** Pretend the sync engine is initialized or not. */
+    private void setEngineInitialized(final boolean syncInitialized) {
         ThreadUtils.runOnUiThreadBlocking(new Runnable() {
             @Override
             public void run() {
-                mSync.setSyncInitialized(syncInitialized);
+                mSync.setEngineInitialized(syncInitialized);
             }
         });
     }

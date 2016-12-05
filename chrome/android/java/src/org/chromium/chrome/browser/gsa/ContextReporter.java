@@ -212,7 +212,7 @@ public class ContextReporter {
      * Records an appropriate status via UMA given the current sync status.
      */
     public static void reportSyncStatus(@Nullable ProfileSyncService syncService) {
-        if (syncService == null || !syncService.isBackendInitialized()) {
+        if (syncService == null || !syncService.isEngineInitialized()) {
             reportStatus(STATUS_SYNC_NOT_INITIALIZED);
         } else if (!syncService.getActiveDataTypes().contains(ModelType.TYPED_URLS)) {
             reportStatus(STATUS_SYNC_NOT_SYNCING_URLS);

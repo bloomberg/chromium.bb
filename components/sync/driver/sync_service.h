@@ -64,7 +64,7 @@ class SyncService : public DataTypeEncryptionHandler {
   };
 
   // Passed as an argument to RequestStop to control whether or not the sync
-  // backend should clear its data directory when it shuts down. See
+  // engine should clear its data directory when it shuts down. See
   // RequestStop for more information.
   enum SyncStopDataFate {
     KEEP_DATA,
@@ -75,7 +75,7 @@ class SyncService : public DataTypeEncryptionHandler {
   struct SyncTokenStatus {
     SyncTokenStatus();
 
-    // Sync server connection status reported by sync backend.
+    // Sync server connection status reported by sync engine.
     base::Time connection_status_update_time;
     ConnectionStatus connection_status;
 
@@ -147,7 +147,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual bool CanSyncStart() const = 0;
 
   // Stops sync at the user's request. |data_fate| controls whether the sync
-  // backend should clear its data directory when it shuts down. Generally
+  // engine should clear its data directory when it shuts down. Generally
   // KEEP_DATA is used when the user just stops sync, and CLEAR_DATA is used
   // when they sign out of the profile entirely.
   virtual void RequestStop(SyncStopDataFate data_fate) = 0;
@@ -201,7 +201,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual bool HasUnrecoverableError() const = 0;
 
   // Returns true if the SyncEngine has told us it's ready to accept changes.
-  virtual bool IsBackendInitialized() const = 0;
+  virtual bool IsEngineInitialized() const = 0;
 
   // Return the active OpenTabsUIDelegate. If open/proxy tabs is not enabled or
   // not currently syncing, returns nullptr.
@@ -217,7 +217,7 @@ class SyncService : public DataTypeEncryptionHandler {
   virtual base::Time GetExplicitPassphraseTime() const = 0;
 
   // Returns true if a secondary (explicit) passphrase is being used. It is not
-  // legal to call this method before the backend is initialized.
+  // legal to call this method before the engine is initialized.
   virtual bool IsUsingSecondaryPassphrase() const = 0;
 
   // Turns on encryption for all data. Callers must call OnUserChoseDatatypes()
@@ -273,16 +273,16 @@ class SyncService : public DataTypeEncryptionHandler {
   // Get a description of the sync status for displaying in the user interface.
   virtual std::string QuerySyncStatusSummaryString() = 0;
 
-  // Initializes a struct of status indicators with data from the backend.
-  // Returns false if the backend was not available for querying; in that case
+  // Initializes a struct of status indicators with data from the engine.
+  // Returns false if the engine was not available for querying; in that case
   // the struct will be filled with default data.
   virtual bool QueryDetailedSyncStatus(SyncStatus* result) = 0;
 
   // Returns a user-friendly string form of last synced time (in minutes).
   virtual base::string16 GetLastSyncedTimeString() const = 0;
 
-  // Returns a human readable string describing backend initialization state.
-  virtual std::string GetBackendInitializationStateString() const = 0;
+  // Returns a human readable string describing engine initialization state.
+  virtual std::string GetEngineInitializationStateString() const = 0;
 
   virtual SyncCycleSnapshot GetLastCycleSnapshot() const = 0;
 

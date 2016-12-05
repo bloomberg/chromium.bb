@@ -562,15 +562,14 @@ void SyncBackendHostImpl::HandleInitializationSuccessOnFrontendLoop(
   // experimental types to enable. This should be done before we inform
   // the host to ensure they're visible in the customize screen.
   AddExperimentalTypes();
-  host_->OnBackendInitialized(js_backend, debug_info_listener, cache_guid,
-                              true);
+  host_->OnEngineInitialized(js_backend, debug_info_listener, cache_guid, true);
 }
 
 void SyncBackendHostImpl::HandleInitializationFailureOnFrontendLoop() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  host_->OnBackendInitialized(WeakHandle<JsBackend>(),
-                              WeakHandle<DataTypeDebugInfoListener>(), "",
-                              false);
+  host_->OnEngineInitialized(WeakHandle<JsBackend>(),
+                             WeakHandle<DataTypeDebugInfoListener>(), "",
+                             false);
 }
 
 void SyncBackendHostImpl::HandleSyncCycleCompletedOnFrontendLoop(

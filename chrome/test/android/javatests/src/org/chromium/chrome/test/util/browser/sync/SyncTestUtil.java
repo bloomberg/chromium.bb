@@ -11,15 +11,16 @@ import android.util.Pair;
 
 import junit.framework.Assert;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.chrome.browser.invalidation.InvalidationServiceFactory;
 import org.chromium.chrome.browser.profiles.Profile;
 import org.chromium.chrome.browser.sync.ProfileSyncService;
 import org.chromium.content.browser.test.util.Criteria;
 import org.chromium.content.browser.test.util.CriteriaHelper;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -76,14 +77,14 @@ public final class SyncTestUtil {
     }
 
     /**
-     * Waits for sync's backend to be initialized.
+     * Waits for sync's engine to be initialized.
      */
-    public static void waitForBackendInitialized() throws InterruptedException {
+    public static void waitForEngineInitialized() throws InterruptedException {
         CriteriaHelper.pollUiThread(
-                new Criteria("Timed out waiting for sync's backend to initialize.") {
+                new Criteria("Timed out waiting for sync's engine to initialize.") {
                     @Override
                     public boolean isSatisfied() {
-                        return ProfileSyncService.get().isBackendInitialized();
+                        return ProfileSyncService.get().isEngineInitialized();
                     }
                 },
                 TIMEOUT_MS, INTERVAL_MS);

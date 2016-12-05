@@ -431,11 +431,11 @@ void SyncSetupHandler::DisplaySpinner() {
   base::DictionaryValue args;
 
   const int kTimeoutSec = 30;
-  DCHECK(!backend_start_timer_);
-  backend_start_timer_.reset(new base::OneShotTimer());
-  backend_start_timer_->Start(FROM_HERE,
-                              base::TimeDelta::FromSeconds(kTimeoutSec),
-                              this, &SyncSetupHandler::DisplayTimeout);
+  DCHECK(!engine_start_timer_);
+  engine_start_timer_.reset(new base::OneShotTimer());
+  engine_start_timer_->Start(FROM_HERE,
+                             base::TimeDelta::FromSeconds(kTimeoutSec), this,
+                             &SyncSetupHandler::DisplayTimeout);
 
   web_ui()->CallJavascriptFunctionUnsafe("SyncSetupOverlay.showSyncSetupPage",
                                          page, args);
@@ -445,7 +445,7 @@ void SyncSetupHandler::DisplaySpinner() {
 // http://crbug.com/128692
 void SyncSetupHandler::DisplayTimeout() {
   // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+  engine_start_timer_.reset();
 
   // Do not listen to sync startup events.
   sync_startup_tracker_.reset();
@@ -462,7 +462,7 @@ void SyncSetupHandler::OnDidClosePage(const base::ListValue* args) {
 
 void SyncSetupHandler::SyncStartupFailed() {
   // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+  engine_start_timer_.reset();
 
   // Just close the sync overlay (the idea is that the base settings page will
   // display the current error.)
@@ -471,10 +471,10 @@ void SyncSetupHandler::SyncStartupFailed() {
 
 void SyncSetupHandler::SyncStartupCompleted() {
   ProfileSyncService* service = GetSyncService();
-  DCHECK(service->IsBackendInitialized());
+  DCHECK(service->IsEngineInitialized());
 
   // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+  engine_start_timer_.reset();
 
   DisplayConfigureSync(false);
 }
@@ -515,7 +515,7 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 
   // If the sync engine has shutdown for some reason, just close the sync
   // dialog.
-  if (!service || !service->IsBackendInitialized()) {
+  if (!service || !service->IsEngineInitialized()) {
     CloseUI();
     return;
   }
@@ -528,7 +528,7 @@ void SyncSetupHandler::HandleConfigure(const base::ListValue* args) {
 
   // Note: Data encryption will not occur until configuration is complete
   // (when the PSS receives its CONFIGURE_DONE notification from the sync
-  // backend), so the user still has a chance to cancel out of the operation
+  // engine), so the user still has a chance to cancel out of the operation
   // if (for example) some kind of passphrase error is encountered.
   if (configuration.encrypt_all)
     service->EnableEncryptEverything();
@@ -681,7 +681,7 @@ void SyncSetupHandler::HandleCloseTimeout(const base::ListValue* args) {
 
 void SyncSetupHandler::CloseSyncSetup() {
   // Stop a timer to handle timeout in waiting for checking network connection.
-  backend_start_timer_.reset();
+  engine_start_timer_.reset();
 
   // Clear the sync startup tracker, since the setup wizard is being closed.
   sync_startup_tracker_.reset();
@@ -698,7 +698,7 @@ void SyncSetupHandler::CloseSyncSetup() {
             ProfileSyncService::CANCEL_DURING_CONFIGURE);
 
         // If the user clicked "Cancel" while setting up sync, disable sync
-        // because we don't want the sync backend to remain in the
+        // because we don't want the sync engine to remain in the
         // first-setup-incomplete state.
         // Note: In order to disable sync across restarts on Chrome OS,
         // we must call RequestStop(CLEAR_DATA), which suppresses sync startup
@@ -821,10 +821,10 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
       GetProfile())->IsAuthenticated());
   ProfileSyncService* service = GetSyncService();
   DCHECK(service);
-  if (!service->IsBackendInitialized()) {
+  if (!service->IsEngineInitialized()) {
     service->RequestStart();
 
-    // See if it's even possible to bring up the sync backend - if not
+    // See if it's even possible to bring up the sync engine - if not
     // (unrecoverable error?), don't bother displaying a spinner that will be
     // immediately closed because this leads to some ugly infinite UI loop (see
     // http://crbug.com/244769).
@@ -843,8 +843,8 @@ void SyncSetupHandler::DisplayConfigureSync(bool passphrase_failed) {
   // longer need a SyncStartupTracker.
   sync_startup_tracker_.reset();
   configuring_sync_ = true;
-  DCHECK(service->IsBackendInitialized())
-      << "Cannot configure sync until the sync backend is initialized";
+  DCHECK(service->IsEngineInitialized())
+      << "Cannot configure sync until the sync engine is initialized";
 
   // Setup args for the sync configure screen:
   //   syncAllDataTypes: true if the user wants to sync everything

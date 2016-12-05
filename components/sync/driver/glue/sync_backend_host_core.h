@@ -291,7 +291,7 @@ class SyncBackendHostCore
   std::unique_ptr<SyncManager> sync_manager_;
 
   // Temporary holder of sync manager's initialization results. Set by
-  // OnInitializeComplete, and consumed when we pass it via OnBackendInitialized
+  // OnInitializeComplete, and consumed when we pass it via OnEngineInitialized
   // in the final state of HandleInitializationSuccessOnFrontendLoop.
   WeakHandle<JsBackend> js_backend_;
   WeakHandle<DataTypeDebugInfoListener> debug_info_listener_;

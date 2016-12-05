@@ -38,14 +38,14 @@ class SyncDisabledChecker : public SingleClientStatusChangeChecker {
   std::string GetDebugMessage() const override { return "Sync Disabled"; }
 };
 
-class SyncBackendStoppedChecker : public SingleClientStatusChangeChecker {
+class SyncEngineStoppedChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit SyncBackendStoppedChecker(ProfileSyncService* service)
+  explicit SyncEngineStoppedChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   // StatusChangeChecker implementation.
   bool IsExitConditionSatisfied() override {
-    return !service()->IsBackendInitialized();
+    return !service()->IsEngineInitialized();
   }
   std::string GetDebugMessage() const override { return "Sync stopped"; }
 };
@@ -200,7 +200,7 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, BirthdayErrorUsingActionableErrorTest) {
   ASSERT_EQ(status.sync_protocol_error.error_description, description);
 }
 
-// Tests that on receiving CLIENT_DATA_OBSOLETE sync backend gets restarted and
+// Tests that on receiving CLIENT_DATA_OBSOLETE sync engine gets restarted and
 // initialized with different cache_guld.
 IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   ASSERT_TRUE(SetupSync()) << "SetupSync() failed.";
@@ -224,12 +224,12 @@ IN_PROC_BROWSER_TEST_F(SyncErrorTest, ClientDataObsoleteTest) {
   const BookmarkNode* node2 = AddFolder(0, 0, "title2");
   SetTitle(0, node2, "new_title2");
 
-  ASSERT_TRUE(SyncBackendStoppedChecker(GetSyncService(0)).Wait());
+  ASSERT_TRUE(SyncEngineStoppedChecker(GetSyncService(0)).Wait());
 
   // Make server return SUCCESS so that sync can initialize.
   EXPECT_TRUE(GetFakeServer()->TriggerError(sync_pb::SyncEnums::SUCCESS));
 
-  ASSERT_TRUE(GetClient(0)->AwaitBackendInitialization());
+  ASSERT_TRUE(GetClient(0)->AwaitEngineInitialization());
 
   // Ensure cache_guid changed.
   GetSyncService(0)->QueryDetailedSyncStatus(&status);

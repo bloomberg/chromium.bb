@@ -64,7 +64,7 @@ public class PassphraseActivity extends FragmentActivity implements
         }
 
         if (!isShowingDialog(FRAGMENT_PASSPHRASE)) {
-            if (ProfileSyncService.get().isBackendInitialized()) {
+            if (ProfileSyncService.get().isEngineInitialized()) {
                 displayPassphraseDialog();
             } else {
                 addSyncStateChangedListener();
@@ -88,7 +88,7 @@ public class PassphraseActivity extends FragmentActivity implements
         mSyncStateChangedListener = new ProfileSyncService.SyncStateChangedListener() {
             @Override
             public void syncStateChanged() {
-                if (ProfileSyncService.get().isBackendInitialized()) {
+                if (ProfileSyncService.get().isEngineInitialized()) {
                     removeSyncStateChangedListener();
                     displayPassphraseDialog();
                 }
@@ -109,7 +109,7 @@ public class PassphraseActivity extends FragmentActivity implements
     }
 
     private void displayPassphraseDialog() {
-        assert ProfileSyncService.get().isBackendInitialized();
+        assert ProfileSyncService.get().isEngineInitialized();
         FragmentTransaction ft = getFragmentManager().beginTransaction();
         ft.addToBackStack(null);
         PassphraseDialogFragment.newInstance(null).show(ft, FRAGMENT_PASSPHRASE);

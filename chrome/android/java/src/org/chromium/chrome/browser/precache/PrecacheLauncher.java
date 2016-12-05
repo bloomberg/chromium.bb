@@ -146,7 +146,7 @@ public abstract class PrecacheLauncher {
                 if (mListener == null && sync != null) {
                     mListener = new ProfileSyncService.SyncStateChangedListener() {
                         public void syncStateChanged() {
-                            if (sync.isBackendInitialized()) {
+                            if (sync.isEngineInitialized()) {
                                 mSyncInitialized = true;
                                 updateEnabledSync(context);
                             }
@@ -156,7 +156,7 @@ public abstract class PrecacheLauncher {
                 }
 
                 if (mListener != null) {
-                    // Call the listener once, in case the sync backend is already initialized.
+                    // Call the listener once, in case the sync engine is already initialized.
                     mListener.syncStateChanged();
                 }
                 Log.v(TAG, "updateEnabled complete");

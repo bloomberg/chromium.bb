@@ -82,11 +82,11 @@ class ProfileSyncServiceHarness {
   static bool AwaitQuiescence(
       const std::vector<ProfileSyncServiceHarness*>& clients);
 
-  // Blocks the caller until the sync backend is initialized or some end state
-  // (e.g., auth error) is reached. Returns true if and only if the backend
-  // initialized successfully. See ProfileSyncService's IsBackendInitialized()
-  // method for the definition of backend initialization.
-  bool AwaitBackendInitialization();
+  // Blocks the caller until the sync engine is initialized or some end state
+  // (e.g., auth error) is reached. Returns true if and only if the engine
+  // initialized successfully. See ProfileSyncService's IsEngineInitialized()
+  // method for the definition of engine initialization.
+  bool AwaitEngineInitialization();
 
   // Blocks the caller until sync setup is complete. Returns true if and only
   // if sync setup completed successfully. See syncer::SyncService's

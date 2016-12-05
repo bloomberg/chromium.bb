@@ -49,25 +49,25 @@ bool HasAuthError(ProfileSyncService* service) {
              GoogleServiceAuthError::REQUEST_CANCELED;
 }
 
-class BackendInitializeChecker : public SingleClientStatusChangeChecker {
+class EngineInitializeChecker : public SingleClientStatusChangeChecker {
  public:
-  explicit BackendInitializeChecker(ProfileSyncService* service)
+  explicit EngineInitializeChecker(ProfileSyncService* service)
       : SingleClientStatusChangeChecker(service) {}
 
   bool IsExitConditionSatisfied() override {
-    if (service()->IsBackendInitialized())
+    if (service()->IsEngineInitialized())
       return true;
-    // Backend initialization is blocked by an auth error.
+    // Engine initialization is blocked by an auth error.
     if (HasAuthError(service()))
       return true;
-    // Backend initialization is blocked by a failure to fetch Oauth2 tokens.
+    // Engine initialization is blocked by a failure to fetch Oauth2 tokens.
     if (service()->IsRetryingAccessTokenFetchForTest())
       return true;
-    // Still waiting on backend initialization.
+    // Still waiting on engine initialization.
     return false;
   }
 
-  std::string GetDebugMessage() const override { return "Backend Initialize"; }
+  std::string GetDebugMessage() const override { return "Engine Initialize"; }
 };
 
 class SyncSetupChecker : public SingleClientStatusChangeChecker {
@@ -179,7 +179,7 @@ bool ProfileSyncServiceHarness::SetupSync(
   // Now that auth is completed, request that sync actually start.
   service()->RequestStart();
 
-  if (!AwaitBackendInitialization()) {
+  if (!AwaitEngineInitialization()) {
     return false;
   }
 
@@ -246,14 +246,14 @@ bool ProfileSyncServiceHarness::AwaitQuiescence(
   return QuiesceStatusChangeChecker(services).Wait();
 }
 
-bool ProfileSyncServiceHarness::AwaitBackendInitialization() {
-  if (!BackendInitializeChecker(service()).Wait()) {
-    LOG(ERROR) << "BackendInitializeChecker timed out.";
+bool ProfileSyncServiceHarness::AwaitEngineInitialization() {
+  if (!EngineInitializeChecker(service()).Wait()) {
+    LOG(ERROR) << "EngineInitializeChecker timed out.";
     return false;
   }
 
-  if (!service()->IsBackendInitialized()) {
-    LOG(ERROR) << "Service backend not initialized.";
+  if (!service()->IsEngineInitialized()) {
+    LOG(ERROR) << "Service engine not initialized.";
     return false;
   }
 

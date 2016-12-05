@@ -112,7 +112,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     public static final String ARGUMENT_ACCOUNT = "account";
 
     private ChromeSwitchPreference mSyncSwitchPreference;
-    private boolean mIsBackendInitialized;
+    private boolean mIsEngineInitialized;
     private boolean mIsPassphraseRequired;
 
     @VisibleForTesting
@@ -152,9 +152,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
             LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         mProfileSyncService = ProfileSyncService.get();
         assert mProfileSyncService != null;
-        mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
+        mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
-                mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
+                mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
 
         getActivity().setTitle(R.string.sign_in_sync);
 
@@ -281,9 +281,9 @@ public class SyncCustomizationFragment extends PreferenceFragment
         // account preference displays the correct signed in account.
         mSyncedAccountPreference.update();
 
-        mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
+        mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
-                mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
+                mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
         // This prevents sync from actually syncing until the dialog is closed.
         mProfileSyncService.setSetupInProgress(true);
         mProfileSyncService.addSyncStateChangedListener(this);
@@ -359,17 +359,17 @@ public class SyncCustomizationFragment extends PreferenceFragment
     /**
      * Update the encryption state.
      *
-     * If sync's backend is initialized, the button is enabled and the dialog will present the
+     * If sync's engine is initialized, the button is enabled and the dialog will present the
      * valid encryption options for the user. Otherwise, any encryption dialogs will be closed
-     * and the button will be disabled because the backend is needed in order to know and
+     * and the button will be disabled because the engine is needed in order to know and
      * modify the encryption state.
      */
     private void updateEncryptionState() {
         boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
-        boolean isBackendInitialized = mProfileSyncService.isBackendInitialized();
-        mSyncEncryption.setEnabled(isSyncEnabled && isBackendInitialized);
+        boolean isEngineInitialized = mProfileSyncService.isEngineInitialized();
+        mSyncEncryption.setEnabled(isSyncEnabled && isEngineInitialized);
         mSyncEncryption.setSummary(null);
-        if (!isBackendInitialized) {
+        if (!isEngineInitialized) {
             // If sync is not initialized, encryption state is unavailable and can't be changed.
             // Leave the button disabled and the summary empty. Additionally, close the dialogs in
             // case they were open when a stop and clear comes.
@@ -454,7 +454,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
     }
 
     private void configureEncryption(String passphrase) {
-        if (mProfileSyncService.isBackendInitialized()) {
+        if (mProfileSyncService.isEngineInitialized()) {
             mProfileSyncService.enableEncryptEverything();
             mProfileSyncService.setEncryptionPassphrase(passphrase);
             // Configure the current set of data types - this tells the sync engine to
@@ -486,8 +486,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
      */
     @Override
     public boolean onPassphraseEntered(String passphrase) {
-        if (!mProfileSyncService.isBackendInitialized()) {
-            // If the backend was shut down since the dialog was opened, do nothing.
+        if (!mProfileSyncService.isEngineInitialized()) {
+            // If the engine was shut down since the dialog was opened, do nothing.
             return false;
         }
         return handleDecryption(passphrase);
@@ -505,8 +505,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
      */
     @Override
     public void onPassphraseCreated(String passphrase) {
-        if (!mProfileSyncService.isBackendInitialized()) {
-            // If the backend was shut down since the dialog was opened, do nothing.
+        if (!mProfileSyncService.isEngineInitialized()) {
+            // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
         configureEncryption(passphrase);
@@ -517,8 +517,8 @@ public class SyncCustomizationFragment extends PreferenceFragment
      */
     @Override
     public void onPassphraseTypeSelected(PassphraseType type) {
-        if (!mProfileSyncService.isBackendInitialized()) {
-            // If the backend was shut down since the dialog was opened, do nothing.
+        if (!mProfileSyncService.isEngineInitialized()) {
+            // If the engine was shut down since the dialog was opened, do nothing.
             return;
         }
 
@@ -542,7 +542,7 @@ public class SyncCustomizationFragment extends PreferenceFragment
             // roughly the same time. See http://b/5983282
             return false;
         }
-        if (preference == mSyncEncryption && mProfileSyncService.isBackendInitialized()) {
+        if (preference == mSyncEncryption && mProfileSyncService.isEngineInitialized()) {
             if (mProfileSyncService.isPassphraseRequiredForDecryption()) {
                 displayPassphraseDialog();
             } else {
@@ -587,12 +587,12 @@ public class SyncCustomizationFragment extends PreferenceFragment
      *
      * If sync is on, load the prefs from native. Otherwise, all data types are disabled and
      * checked. Note that the Password data type will be shown as disabled and unchecked between
-     * sync being turned on and the backend initialization completing.
+     * sync being turned on and the engine initialization completing.
      */
     private void updateDataTypeState() {
         boolean isSyncEnabled = mSyncSwitchPreference.isChecked();
         boolean syncEverything = mSyncEverything.isChecked();
-        boolean passwordSyncConfigurable = mProfileSyncService.isBackendInitialized()
+        boolean passwordSyncConfigurable = mProfileSyncService.isEngineInitialized()
                 && mProfileSyncService.isCryptographerReady();
         Set<Integer> syncTypes = mProfileSyncService.getPreferredDataTypes();
         boolean syncAutofill = syncTypes.contains(ModelType.AUTOFILL);
@@ -749,18 +749,18 @@ public class SyncCustomizationFragment extends PreferenceFragment
      * Listen to sync state changes.
      *
      * If the user has just turned on sync, this listener is needed in order to enable
-     * the encryption settings once the backend has initialized.
+     * the encryption settings once the engine has initialized.
      */
     @Override
     public void syncStateChanged() {
-        boolean wasSyncInitialized = mIsBackendInitialized;
+        boolean wasSyncInitialized = mIsEngineInitialized;
         boolean wasPassphraseRequired = mIsPassphraseRequired;
-        mIsBackendInitialized = mProfileSyncService.isBackendInitialized();
+        mIsEngineInitialized = mProfileSyncService.isEngineInitialized();
         mIsPassphraseRequired =
-                mIsBackendInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
-        if (mIsBackendInitialized != wasSyncInitialized
+                mIsEngineInitialized && mProfileSyncService.isPassphraseRequiredForDecryption();
+        if (mIsEngineInitialized != wasSyncInitialized
                 || mIsPassphraseRequired != wasPassphraseRequired) {
-            // Update all because Password syncability is also affected by the backend.
+            // Update all because Password syncability is also affected by the engine.
             updateSyncStateFromSwitch();
         } else {
             updateSyncErrorCard();

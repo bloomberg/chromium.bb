@@ -74,7 +74,7 @@ public class PassphraseActivityTest extends NativeLibraryTestBase {
                 getInstrumentation().callActivityOnSaveInstanceState(activity, bundle);
                 // Fake sync's backend finishing its initialization.
                 FakeProfileSyncService pss = (FakeProfileSyncService) ProfileSyncService.get();
-                pss.setSyncInitialized(true);
+                pss.setEngineInitialized(true);
                 pss.syncStateChanged();
             }
         });

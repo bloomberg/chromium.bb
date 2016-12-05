@@ -93,11 +93,10 @@ struct UserShare;
 namespace browser_sync {
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
-// and the sync backend.  Each subsystem is logically thought of as being
-// a sync datatype.
-//
-// Individual datatypes can, at any point, be in a variety of stages of being
-// "enabled".  Here are some specific terms for concepts used in this class:
+// and the sync engine. Each subsystem is logically thought of as being a sync
+// datatype. Individual datatypes can, at any point, be in a variety of stages
+// of being "enabled". Here are some specific terms for concepts used in this
+// class:
 //
 //   'Registered' (feature suppression for a datatype)
 //
@@ -127,7 +126,7 @@ namespace browser_sync {
 //      synchronized: the syncer has been instructed to querying the server
 //      for this datatype, first-time merges have finished, and there is an
 //      actively installed ChangeProcessor that listens for changes to this
-//      datatype, propagating such changes into and out of the sync backend
+//      datatype, propagating such changes into and out of the sync engine
 //      as necessary.
 //
 //      When a datatype is in the process of becoming active, it may be
@@ -282,7 +281,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool ConfigurationDone() const override;
   const GoogleServiceAuthError& GetAuthError() const override;
   bool HasUnrecoverableError() const override;
-  bool IsBackendInitialized() const override;
+  bool IsEngineInitialized() const override;
   sync_sessions::OpenTabsUIDelegate* GetOpenTabsUIDelegate() override;
   bool IsPassphraseRequiredForDecryption() const override;
   base::Time GetExplicitPassphraseTime() const override;
@@ -307,7 +306,7 @@ class ProfileSyncService : public syncer::SyncService,
   std::string QuerySyncStatusSummaryString() override;
   bool QueryDetailedSyncStatus(syncer::SyncStatus* result) override;
   base::string16 GetLastSyncedTimeString() const override;
-  std::string GetBackendInitializationStateString() const override;
+  std::string GetEngineInitializationStateString() const override;
   syncer::SyncCycleSnapshot GetLastCycleSnapshot() const override;
   std::unique_ptr<base::Value> GetTypeStatusMap() override;
   const GURL& sync_service_url() const override;
@@ -359,7 +358,7 @@ class ProfileSyncService : public syncer::SyncService,
   void OnSessionRestoreComplete();
 
   // SyncEngineHost implementation.
-  void OnBackendInitialized(
+  void OnEngineInitialized(
       const syncer::WeakHandle<syncer::JsBackend>& js_backend,
       const syncer::WeakHandle<syncer::DataTypeDebugInfoListener>&
           debug_info_listener,
@@ -416,10 +415,10 @@ class ProfileSyncService : public syncer::SyncService,
   SyncStatusSummary QuerySyncStatusSummary();
 
   // Reconfigures the data type manager with the latest enabled types.
-  // Note: Does not initialize the backend if it is not already initialized.
+  // Note: Does not initialize the engine if it is not already initialized.
   // This function needs to be called only after sync has been initialized
   // (i.e.,only for reconfigurations). The reason we don't initialize the
-  // backend is because if we had encountered an unrecoverable error we don't
+  // engine is because if we had encountered an unrecoverable error we don't
   // want to startup once more.
   // This function is called by |SetSetupInProgress|.
   virtual void ReconfigureDatatypeManager();
@@ -456,7 +455,7 @@ class ProfileSyncService : public syncer::SyncService,
                             const std::string& message) override;
 
   // The functions below (until ActivateDataType()) should only be
-  // called if IsBackendInitialized() is true.
+  // called if IsEngineInitialized() is true.
 
   // TODO(akalin): These two functions are used only by
   // ProfileSyncServiceHarness.  Figure out a different way to expose
@@ -484,7 +483,7 @@ class ProfileSyncService : public syncer::SyncService,
 
   // Changes which data types we're going to be syncing to |preferred_types|.
   // If it is running, the DataTypeManager will be instructed to reconfigure
-  // the sync backend so that exactly these datatypes are actively synced.  See
+  // the sync engine so that exactly these datatypes are actively synced. See
   // class comment for more on what it means for a datatype to be Preferred.
   virtual void ChangePreferredDataTypes(syncer::ModelTypeSet preferred_types);
 
@@ -592,7 +591,7 @@ class ProfileSyncService : public syncer::SyncService,
   enum UnrecoverableErrorReason {
     ERROR_REASON_UNSET,
     ERROR_REASON_SYNCER,
-    ERROR_REASON_BACKEND_INIT_FAILURE,
+    ERROR_REASON_ENGINE_INIT_FAILURE,
     ERROR_REASON_CONFIGURATION_RETRY,
     ERROR_REASON_CONFIGURATION_FAILURE,
     ERROR_REASON_ACTIONABLE_ERROR,
@@ -627,9 +626,9 @@ class ProfileSyncService : public syncer::SyncService,
   // Helper to install and configure a data type manager.
   void ConfigureDataTypeManager();
 
-  // Shuts down the backend sync components.
+  // Shuts down the engine sync components.
   // |reason| dictates if syncing is being disabled or not, and whether
-  // to claim ownership of sync thread from backend.
+  // to claim ownership of sync thread from engine.
   void ShutdownImpl(syncer::ShutdownReason reason);
 
   // Return SyncCredentials from the OAuth2TokenService.
@@ -655,13 +654,13 @@ class ProfileSyncService : public syncer::SyncService,
   // Update the last auth error and notify observers of error state.
   void UpdateAuthErrorState(const GoogleServiceAuthError& error);
 
-  // Puts the backend's sync scheduler into NORMAL mode.
+  // Puts the engine's sync scheduler into NORMAL mode.
   // Called when configuration is complete.
   void StartSyncingWithServer();
 
   // During initial signin, ProfileSyncService caches the user's signin
   // passphrase so it can be used to encrypt/decrypt data after sync starts up.
-  // This routine is invoked once the backend has started up to use the
+  // This routine is invoked once the engine has started up to use the
   // cached passphrase and clear it out when it is done.
   void ConsumeCachedPassphraseIfPossible();
 
@@ -671,12 +670,12 @@ class ProfileSyncService : public syncer::SyncService,
   // token.
   void RequestAccessToken();
 
-  // Return true if backend should start from a fresh sync DB.
+  // Return true if engine should start from a fresh sync DB.
   bool ShouldDeleteSyncFolder();
 
   // If |delete_sync_data_folder| is true, then this method will delete all
   // previous "Sync Data" folders. (useful if the folder is partial/corrupt).
-  void InitializeBackend(bool delete_sync_data_folder);
+  void InitializeEngine(bool delete_sync_data_folder);
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -689,8 +688,8 @@ class ProfileSyncService : public syncer::SyncService,
 
   void ClearUnrecoverableError();
 
-  // Starts up the backend sync components.
-  void StartUpSlowBackendComponents();
+  // Starts up the engine sync components.
+  virtual void StartUpSlowEngineComponents();
 
   // Collects preferred sync data types from |preference_providers_|.
   syncer::ModelTypeSet GetDataTypesFromPreferenceProviders() const;
@@ -714,24 +713,24 @@ class ProfileSyncService : public syncer::SyncService,
                                     bool delete_sync_database,
                                     UnrecoverableErrorReason reason);
 
-  // Update UMA for syncing backend.
-  void UpdateBackendInitUMA(bool success);
+  // Update UMA for syncing engine.
+  void UpdateEngineInitUMA(bool success);
 
-  // Various setup following backend initialization, mostly for syncing backend.
-  void PostBackendInitialization();
+  // Various setup following engine initialization, mostly for syncing engine.
+  void PostEngineInitialization();
 
   // Whether sync has been authenticated with an account ID.
   bool IsSignedIn() const;
 
-  // The backend can only start if sync can start and has an auth token. This is
-  // different fron CanSyncStart because it represents whether the backend can
+  // The engine can only start if sync can start and has an auth token. This is
+  // different fron CanSyncStart because it represents whether the engine can
   // be started at this moment, whereas CanSyncStart represents whether sync can
   // conceptually start without further user action (acquiring a token is an
   // automatic process).
-  bool CanBackendStart() const;
+  bool CanEngineStart() const;
 
-  // True if a syncing backend exists.
-  bool HasSyncingBackend() const;
+  // True if a syncing engine exists.
+  bool HasSyncingEngine() const;
 
   // Update first sync time stored in preferences
   void UpdateFirstSyncTimePref();
@@ -756,7 +755,7 @@ class ProfileSyncService : public syncer::SyncService,
   // Calls data type manager to start catch up configure.
   void BeginConfigureCatchUpBeforeClear();
 
-  // Calls sync backend to send ClearServerDataMessage to server.
+  // Calls sync engine to send ClearServerDataMessage to server.
   void ClearAndRestartSyncForPassphraseEncryption();
 
   // Restarts sync clearing directory in the process.
@@ -773,9 +772,9 @@ class ProfileSyncService : public syncer::SyncService,
   // user.
   GoogleServiceAuthError last_auth_error_;
 
-  // Our asynchronous backend to communicate with sync components living on
+  // Our asynchronous engine to communicate with sync components living on
   // other threads.
-  std::unique_ptr<syncer::SyncEngine> backend_;
+  std::unique_ptr<syncer::SyncEngine> engine_;
 
   // Was the last SYNC_PASSPHRASE_REQUIRED notification sent because it
   // was required for encryption, decryption with a cached passphrase, or
@@ -799,7 +798,7 @@ class ProfileSyncService : public syncer::SyncService,
   // OnConfigureDone is called.
   base::Time sync_configure_start_time_;
 
-  // Callback to update the network time; used for initializing the backend.
+  // Callback to update the network time; used for initializing the engine.
   syncer::NetworkTimeUpdateCallback network_time_update_callback_;
 
   // The path to the base directory under which sync should store its
@@ -819,7 +818,7 @@ class ProfileSyncService : public syncer::SyncService,
   base::SequencedWorkerPool* blocking_pool_;
 
   // Indicates if this is the first time sync is being configured.  This value
-  // is equal to !IsFirstSetupComplete() at the time of OnBackendInitialized().
+  // is equal to !IsFirstSetupComplete() at the time of OnEngineInitialized().
   bool is_first_time_sync_configure_;
 
   // Number of UIs currently configuring the Sync service. When this number
@@ -830,15 +829,15 @@ class ProfileSyncService : public syncer::SyncService,
   syncer::DataTypeController::TypeMap data_type_controllers_;
 
   // Whether the SyncEngine has been initialized.
-  bool backend_initialized_;
+  bool engine_initialized_;
 
   // Set when sync receives DISABLED_BY_ADMIN error from server. Prevents
-  // ProfileSyncService from starting backend till browser restarted or user
+  // ProfileSyncService from starting engine till browser restarted or user
   // signed out.
   bool sync_disabled_by_admin_;
 
   // Set to true if a signin has completed but we're still waiting for the
-  // backend to refresh its credentials.
+  // engine to refresh its credentials.
   bool is_auth_in_progress_;
 
   // Encapsulates user signin - used to set/get the user's authenticated
@@ -867,7 +866,7 @@ class ProfileSyncService : public syncer::SyncService,
   bool expect_sync_configuration_aborted_;
 
   // Sometimes we need to temporarily hold on to a passphrase because we don't
-  // yet have a backend to send it to.  This happens during initialization as
+  // yet have a engine to send it to.  This happens during initialization as
   // we don't StartUp until we have a valid token, which happens after valid
   // credentials were provided.
   std::string cached_passphrase_;
@@ -964,7 +963,7 @@ class ProfileSyncService : public syncer::SyncService,
   std::unique_ptr<base::MemoryPressureListener> memory_pressure_listener_;
 
   // Nigori state after user switching to custom passphrase, saved until
-  // transition steps complete. It will be injected into new backend after sync
+  // transition steps complete. It will be injected into new engine after sync
   // restart.
   std::unique_ptr<syncer::SyncEncryptionHandler::NigoriState>
       saved_nigori_state_;

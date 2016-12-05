@@ -55,7 +55,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   void OpenSyncSetup(bool creating_supervised_user);
 
   // Shows advanced configuration dialog without going through sign in dialog.
-  // Kicks the sync backend if necessary with showing spinner dialog until it
+  // Kicks the sync engine if necessary with showing spinner dialog until it
   // gets ready.
   void OpenConfigureSync();
 
@@ -65,7 +65,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
  protected:
   friend class SyncSetupHandlerTest;
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest,
-                           DisplayConfigureWithBackendDisabledAndCancel);
+                           DisplayConfigureWithEngineDisabledAndCancel);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, HandleSetupUIWhenSyncDisabled);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, SelectCustomEncryption);
   FRIEND_TEST_ALL_PREFIXES(SyncSetupHandlerTest, ShowSyncSetupWhenNotSignedIn);
@@ -135,7 +135,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // is running in the background.
   void DisplaySpinner();
 
-  // Displays an error dialog which shows timeout of starting the sync backend.
+  // Displays an error dialog which shows timeout of starting the sync engine.
   void DisplayTimeout();
 
   // Closes the associated sync settings page.
@@ -154,7 +154,7 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // requires a passphrase and one hasn't been provided or it was invalid.
   void DisplayConfigureSync(bool passphrase_failed);
 
-  // Helper object used to wait for the sync backend to startup.
+  // Helper object used to wait for the sync engine to startup.
   std::unique_ptr<SyncStartupTracker> sync_startup_tracker_;
 
   // Prevents Sync from running until configuration is complete.
@@ -165,9 +165,9 @@ class SyncSetupHandler : public options::OptionsPageUIHandler,
   // histograms in the case that the user cancels out.
   bool configuring_sync_;
 
-  // The OneShotTimer object used to timeout of starting the sync backend
+  // The OneShotTimer object used to timeout of starting the sync engine
   // service.
-  std::unique_ptr<base::OneShotTimer> backend_start_timer_;
+  std::unique_ptr<base::OneShotTimer> engine_start_timer_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSetupHandler);
 };

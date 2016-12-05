@@ -26,7 +26,7 @@ public abstract class GmsCoreSyncListener implements ProfileSyncService.SyncStat
     @VisibleForTesting
     public void syncStateChanged() {
         ProfileSyncService syncService = ProfileSyncService.get();
-        boolean passphraseSet = syncService.isBackendInitialized()
+        boolean passphraseSet = syncService.isEngineInitialized()
                 && syncService.isUsingSecondaryPassphrase() && syncService.isCryptographerReady();
         if (passphraseSet && !mGmsCoreInformed) {
             byte[] key = syncService.getCustomPassphraseKey();

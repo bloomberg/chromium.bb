@@ -389,7 +389,7 @@ std::unique_ptr<base::DictionaryValue> ConstructAboutInformation(
   last_synced.SetValue(service->GetLastSyncedTimeString());
   is_setup_complete.SetValue(service->IsFirstSetupComplete());
   backend_initialization.SetValue(
-      service->GetBackendInitializationStateString());
+      service->GetEngineInitializationStateString());
   if (is_status_valid) {
     is_syncing.SetValue(full_status.syncing);
     retry_time.SetValue(GetTimeStr(full_status.retry_time,

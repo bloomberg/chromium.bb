@@ -34,20 +34,19 @@ class SyncEngineHost {
   SyncEngineHost();
   virtual ~SyncEngineHost();
 
-  // The backend has completed initialization and it is now ready to
-  // accept and process changes.  If success is false, initialization
-  // wasn't able to be completed and should be retried.
+  // The engine has completed initialization and it is now ready to accept and
+  // process changes. If success is false, initialization wasn't able to be
+  // completed and should be retried.
   //
-  // |js_backend| is what about:sync interacts with; it's different
-  // from the 'Backend' in 'OnBackendInitialized' (unfortunately).  It
-  // is initialized only if |success| is true.
-  virtual void OnBackendInitialized(
+  // |js_backend| is what about:sync interacts with. It is initialized only if
+  // |success| is true.
+  virtual void OnEngineInitialized(
       const WeakHandle<JsBackend>& js_backend,
       const WeakHandle<DataTypeDebugInfoListener>& debug_info_listener,
       const std::string& cache_guid,
       bool success) = 0;
 
-  // The backend queried the server recently and received some updates.
+  // The engine queried the server recently and received some updates.
   virtual void OnSyncCycleCompleted() = 0;
 
   // Informs the host of some network event. These notifications are disabled by
@@ -60,7 +59,7 @@ class SyncEngineHost {
   // Called when we receive an updated commit counter for a directory type.
   //
   // Disabled by default.  Enable by calling
-  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  // EnableDirectoryTypeDebugInfoForwarding() on the engine.
   virtual void OnDirectoryTypeCommitCounterUpdated(
       ModelType type,
       const CommitCounters& counters) = 0;
@@ -68,7 +67,7 @@ class SyncEngineHost {
   // Called when we receive an updated update counter for a directory type.
   //
   // Disabled by default.  Enable by calling
-  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  // EnableDirectoryTypeDebugInfoForwarding() on the engine.
   virtual void OnDirectoryTypeUpdateCounterUpdated(
       ModelType type,
       const UpdateCounters& counters) = 0;
@@ -76,7 +75,7 @@ class SyncEngineHost {
   // Called when we receive an updated status counter for a datatype.
   //
   // Disabled by default.  Enable by calling
-  // EnableDirectoryTypeDebugInfoForwarding() on the backend.
+  // EnableDirectoryTypeDebugInfoForwarding() on the engine.
   virtual void OnDatatypeStatusCounterUpdated(
       ModelType type,
       const StatusCounters& counters) = 0;
@@ -131,7 +130,7 @@ class SyncEngineHost {
   //
   // |nigori_state| contains the new (post custom passphrase) encryption keys
   // and can be used to restore SyncEncryptionHandler's state across sync
-  // backend instances. See also SyncEncryptionHandlerImpl::RestoreNigori.
+  // engine instances. See also SyncEncryptionHandlerImpl::RestoreNigori.
   virtual void OnLocalSetPassphraseEncryption(
       const SyncEncryptionHandler::NigoriState& nigori_state) = 0;
 };

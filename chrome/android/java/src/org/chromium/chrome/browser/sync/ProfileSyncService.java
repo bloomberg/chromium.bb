@@ -4,14 +4,15 @@
 
 package org.chromium.chrome.browser.sync;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+
 import org.chromium.base.ThreadUtils;
 import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.SuppressFBWarnings;
 import org.chromium.components.sync.ModelType;
 import org.chromium.components.sync.PassphraseType;
-import org.json.JSONArray;
-import org.json.JSONException;
 
 import java.util.HashSet;
 import java.util.List;
@@ -159,15 +160,14 @@ public class ProfileSyncService {
     }
 
     /**
-     * Returns the actual passphrase type being used for encryption.
-     * The sync backend must be running (isBackendInitialized() returns true) before
-     * calling this function.
+     * Returns the actual passphrase type being used for encryption. The sync engine must be
+     * running (isEngineInitialized() returns true) before calling this function.
      * <p/>
      * This method should only be used if you want to know the raw value. For checking whether
      * we should ask the user for a passphrase, use isPassphraseRequiredForDecryption().
      */
     public PassphraseType getPassphraseType() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         int passphraseType = nativeGetPassphraseType(mNativeProfileSyncServiceAndroid);
         return PassphraseType.fromInternalValue(passphraseType);
     }
@@ -176,7 +176,7 @@ public class ProfileSyncService {
      * Returns true if the current explicit passphrase time is defined.
      */
     public boolean hasExplicitPassphraseTime() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeHasExplicitPassphraseTime(mNativeProfileSyncServiceAndroid);
     }
 
@@ -184,22 +184,22 @@ public class ProfileSyncService {
      * Returns the current explicit passphrase time in milliseconds since epoch.
      */
     public long getExplicitPassphraseTime() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeGetExplicitPassphraseTime(mNativeProfileSyncServiceAndroid);
     }
 
     public String getSyncEnterGooglePassphraseBodyWithDateText() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeGetSyncEnterGooglePassphraseBodyWithDateText(mNativeProfileSyncServiceAndroid);
     }
 
     public String getSyncEnterCustomPassphraseBodyWithDateText() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeGetSyncEnterCustomPassphraseBodyWithDateText(mNativeProfileSyncServiceAndroid);
     }
 
     public String getCurrentSignedInAccountText() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeGetCurrentSignedInAccountText(mNativeProfileSyncServiceAndroid);
     }
 
@@ -208,13 +208,13 @@ public class ProfileSyncService {
     }
 
     /**
-     * Checks if sync is currently set to use a custom passphrase. The sync backend must be running
-     * (isBackendInitialized() returns true) before calling this function.
+     * Checks if sync is currently set to use a custom passphrase. The sync engine must be running
+     * (isEngineInitialized() returns true) before calling this function.
      *
      * @return true if sync is using a custom passphrase.
      */
     public boolean isUsingSecondaryPassphrase() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeIsUsingSecondaryPassphrase(mNativeProfileSyncServiceAndroid);
     }
 
@@ -230,17 +230,17 @@ public class ProfileSyncService {
      * @return true if we need a passphrase.
      */
     public boolean isPassphraseRequiredForDecryption() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeIsPassphraseRequiredForDecryption(mNativeProfileSyncServiceAndroid);
     }
 
     /**
-     * Checks if the sync backend is running.
+     * Checks if the sync engine is running.
      *
      * @return true if sync is initialized/running.
      */
-    public boolean isBackendInitialized() {
-        return nativeIsBackendInitialized(mNativeProfileSyncServiceAndroid);
+    public boolean isEngineInitialized() {
+        return nativeIsEngineInitialized(mNativeProfileSyncServiceAndroid);
     }
 
     /**
@@ -250,7 +250,7 @@ public class ProfileSyncService {
      * be encrypted.
      */
     public boolean isEncryptEverythingAllowed() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeIsEncryptEverythingAllowed(mNativeProfileSyncServiceAndroid);
     }
 
@@ -260,7 +260,7 @@ public class ProfileSyncService {
      * @return true if all data types are encrypted, false if only passwords are encrypted.
      */
     public boolean isEncryptEverythingEnabled() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeIsEncryptEverythingEnabled(mNativeProfileSyncServiceAndroid);
     }
 
@@ -269,22 +269,22 @@ public class ProfileSyncService {
      * completed and setPreferredDataTypes() is invoked.
      */
     public void enableEncryptEverything() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         nativeEnableEncryptEverything(mNativeProfileSyncServiceAndroid);
     }
 
     public void setEncryptionPassphrase(String passphrase) {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         nativeSetEncryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
     }
 
     public boolean isCryptographerReady() {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeIsCryptographerReady(mNativeProfileSyncServiceAndroid);
     }
 
     public boolean setDecryptionPassphrase(String passphrase) {
-        assert isBackendInitialized();
+        assert isEngineInitialized();
         return nativeSetDecryptionPassphrase(mNativeProfileSyncServiceAndroid, passphrase);
     }
 
@@ -547,7 +547,7 @@ public class ProfileSyncService {
     private native String nativeQuerySyncStatusSummary(long nativeProfileSyncServiceAndroid);
     private native int nativeGetAuthError(long nativeProfileSyncServiceAndroid);
     private native int nativeGetProtocolErrorClientAction(long nativeProfileSyncServiceAndroid);
-    private native boolean nativeIsBackendInitialized(long nativeProfileSyncServiceAndroid);
+    private native boolean nativeIsEngineInitialized(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingAllowed(long nativeProfileSyncServiceAndroid);
     private native boolean nativeIsEncryptEverythingEnabled(long nativeProfileSyncServiceAndroid);
     private native void nativeEnableEncryptEverything(long nativeProfileSyncServiceAndroid);

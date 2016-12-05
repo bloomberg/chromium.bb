@@ -172,11 +172,11 @@ jboolean ProfileSyncServiceAndroid::IsSyncActive(
   return sync_service_->IsSyncActive();
 }
 
-jboolean ProfileSyncServiceAndroid::IsBackendInitialized(
+jboolean ProfileSyncServiceAndroid::IsEngineInitialized(
     JNIEnv* env,
     const JavaParamRef<jobject>&) {
   DCHECK_CURRENTLY_ON(BrowserThread::UI);
-  return sync_service_->IsBackendInitialized();
+  return sync_service_->IsEngineInitialized();
 }
 
 void ProfileSyncServiceAndroid::SetSetupInProgress(

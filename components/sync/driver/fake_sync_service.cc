@@ -92,7 +92,7 @@ bool FakeSyncService::HasUnrecoverableError() const {
   return false;
 }
 
-bool FakeSyncService::IsBackendInitialized() const {
+bool FakeSyncService::IsEngineInitialized() const {
   return false;
 }
 
@@ -166,7 +166,7 @@ base::string16 FakeSyncService::GetLastSyncedTimeString() const {
   return base::string16();
 }
 
-std::string FakeSyncService::GetBackendInitializationStateString() const {
+std::string FakeSyncService::GetEngineInitializationStateString() const {
   return std::string();
 }
 

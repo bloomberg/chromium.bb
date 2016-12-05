@@ -10,20 +10,19 @@ package org.chromium.chrome.browser.sync;
  * Only what has been needed for tests so far has been faked.
  */
 public class FakeProfileSyncService extends ProfileSyncService {
-
-    private boolean mBackendInitialized;
+    private boolean mEngineInitialized;
 
     public FakeProfileSyncService() {
         super();
     }
 
     @Override
-    public boolean isBackendInitialized() {
-        return mBackendInitialized;
+    public boolean isEngineInitialized() {
+        return mEngineInitialized;
     }
 
-    public void setSyncInitialized(boolean syncInitialized) {
-        mBackendInitialized = syncInitialized;
+    public void setEngineInitialized(boolean engineInitialized) {
+        mEngineInitialized = engineInitialized;
     }
 
     @Override

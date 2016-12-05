@@ -75,7 +75,7 @@ class MockSyncEngineHost : public SyncEngineHost {
  public:
   virtual ~MockSyncEngineHost() {}
 
-  MOCK_METHOD4(OnBackendInitialized,
+  MOCK_METHOD4(OnEngineInitialized,
                void(const WeakHandle<JsBackend>&,
                     const WeakHandle<DataTypeDebugInfoListener>&,
                     const std::string&,
@@ -205,7 +205,7 @@ class SyncEngineTest : public testing::Test {
 
   // Synchronously initializes the backend.
   void InitializeBackend(bool expect_success) {
-    EXPECT_CALL(mock_host_, OnBackendInitialized(_, _, _, expect_success))
+    EXPECT_CALL(mock_host_, OnEngineInitialized(_, _, _, expect_success))
         .WillOnce(InvokeWithoutArgs(QuitMessageLoop));
     SyncEngine::HttpPostProviderFactoryGetter
         http_post_provider_factory_getter =

@@ -234,10 +234,9 @@ class SyncSetupHandlerTest : public testing::Test {
 
   void SetupInitializedProfileSyncService() {
     // An initialized ProfileSyncService will have already completed sync setup
-    // and will have an initialized sync backend.
+    // and will have an initialized sync engine.
     ASSERT_TRUE(mock_signin_->IsInitialized());
-    EXPECT_CALL(*mock_pss_, IsBackendInitialized())
-        .WillRepeatedly(Return(true));
+    EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(true));
   }
 
   void ExpectConfig() {
@@ -358,15 +357,15 @@ TEST_F(SyncSetupHandlerTest, HandleSetupUIWhenSyncDisabled) {
 
 // Verifies that the handler correctly handles a cancellation when
 // it is displaying the spinner to the user.
-TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
+TEST_F(SyncSetupHandlerTest, DisplayConfigureWithEngineDisabledAndCancel) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
 
-  // We're simulating a user setting up sync, which would cause the backend to
+  // We're simulating a user setting up sync, which would cause the engine to
   // kick off initialization, but not download user data types. The sync
-  // backend will try to download control data types (e.g encryption info), but
+  // engine will try to download control data types (e.g encryption info), but
   // that won't finish for this test as we're simulating cancelling while the
   // spinner is showing.
   handler_->HandleShowSetupUI(NULL);
@@ -381,12 +380,12 @@ TEST_F(SyncSetupHandlerTest, DisplayConfigureWithBackendDisabledAndCancel) {
 // Verifies that the handler correctly transitions from showing the spinner
 // to showing a configuration page when sync setup completes successfully.
 TEST_F(SyncSetupHandlerTest,
-       DisplayConfigureWithBackendDisabledAndSyncStartupCompleted) {
+       DisplayConfigureWithEngineDisabledAndSyncStartupCompleted) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  // Sync backend is stopped initially, and will start up.
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
+  // Sync engine is stopped initially, and will start up.
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
   SetDefaultExpectationsForConfigPage();
 
   handler_->OpenSyncSetup(false /* creating_supervised_user */);
@@ -403,7 +402,7 @@ TEST_F(SyncSetupHandlerTest,
   Mock::VerifyAndClearExpectations(mock_pss_);
   // Now, act as if the ProfileSyncService has started up.
   SetDefaultExpectationsForConfigPage();
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(true));
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(true));
   error_ = GoogleServiceAuthError::AuthErrorNone();
   EXPECT_CALL(*mock_pss_, GetAuthError()).WillRepeatedly(ReturnRef(error_));
   NotifySyncListeners();
@@ -423,17 +422,17 @@ TEST_F(SyncSetupHandlerTest,
   CheckBool(dictionary, "usePassphrase", false);
 }
 
-// Verifies the case where the user cancels after the sync backend has
+// Verifies the case where the user cancels after the sync engine has
 // initialized (meaning it already transitioned from the spinner to a proper
 // configuration page, tested by
-// DisplayConfigureWithBackendDisabledAndSigninSuccess), but before the user
-// before the user has continued on.
+// DisplayConfigureWithEngineDisabledAndSyncStartupCompleted), but before the
+// user has continued on.
 TEST_F(SyncSetupHandlerTest,
-       DisplayConfigureWithBackendDisabledAndCancelAfterSigninSuccess) {
+       DisplayConfigureWithEngineDisabledAndCancelAfterSigninSuccess) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized())
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized())
       .WillOnce(Return(false))
       .WillRepeatedly(Return(true));
   SetDefaultExpectationsForConfigPage();
@@ -452,11 +451,11 @@ TEST_F(SyncSetupHandlerTest,
 }
 
 TEST_F(SyncSetupHandlerTest,
-       DisplayConfigureWithBackendDisabledAndSigninFailed) {
+       DisplayConfigureWithEngineDisabledAndSigninFailed) {
   EXPECT_CALL(*mock_pss_, CanSyncStart()).WillRepeatedly(Return(true));
   EXPECT_CALL(*mock_pss_, IsFirstSetupComplete()).WillRepeatedly(Return(false));
   error_ = GoogleServiceAuthError::AuthErrorNone();
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
 
   handler_->OpenSyncSetup(false /* creating_supervised_user */);
   const content::TestWebUI::CallData& data = *web_ui_.call_data()[0];
@@ -736,11 +735,11 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
       .WillRepeatedly(Return(false));
   EXPECT_CALL(*mock_pss_, IsUsingSecondaryPassphrase())
       .WillRepeatedly(Return(false));
-  EXPECT_CALL(*mock_pss_, IsBackendInitialized()).WillRepeatedly(Return(false));
+  EXPECT_CALL(*mock_pss_, IsEngineInitialized()).WillRepeatedly(Return(false));
 
 #if defined(OS_CHROMEOS)
   // On ChromeOS, auth errors are ignored - instead we just try to start the
-  // sync backend (which will fail due to the auth error). This should only
+  // sync engine (which will fail due to the auth error). This should only
   // happen if the user manually navigates to chrome://settings/syncSetup -
   // clicking on the button in the UI will sign the user out rather than
   // displaying a spinner. Should be no visible UI on ChromeOS in this case.
@@ -749,7 +748,7 @@ TEST_F(SyncSetupHandlerTest, ShowSigninOnAuthError) {
 #else
 
   // On ChromeOS, this should display the spinner while we try to startup the
-  // sync backend, and on desktop this displays the login dialog.
+  // sync engine, and on desktop this displays the login dialog.
   handler_->OpenSyncSetup(false /* creating_supervised_user */);
 
   // Sync setup is closed when re-auth is in progress.

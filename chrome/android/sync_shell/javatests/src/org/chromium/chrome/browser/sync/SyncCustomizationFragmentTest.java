@@ -139,7 +139,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
      */
     @SmallTest
     @Feature({"Sync"})
-    public void testOpeningSettingsDoesntStartBackend() throws Exception {
+    public void testOpeningSettingsDoesntStartEngine() throws Exception {
         setUpTestAccountAndSignIn();
         stopSync();
         startSyncCustomizationFragment();
@@ -147,7 +147,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
             @Override
             public void run() {
                 assertFalse(mProfileSyncService.isSyncRequested());
-                assertFalse(mProfileSyncService.isBackendInitialized());
+                assertFalse(mProfileSyncService.isEngineInitialized());
             }
         });
     }
@@ -160,7 +160,7 @@ public class SyncCustomizationFragmentTest extends SyncTestBase {
         SyncCustomizationFragment fragment = startSyncCustomizationFragment();
         assertDefaultSyncOffState(fragment);
         togglePreference(getSyncSwitch(fragment));
-        SyncTestUtil.waitForBackendInitialized();
+        SyncTestUtil.waitForEngineInitialized();
         assertDefaultSyncOnState(fragment);
     }
 

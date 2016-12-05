@@ -408,7 +408,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(observer_, OnStateChanged()).Times(AnyNumber());
   IssueTestTokens(account_id);
   sync_service_->Initialize();
-  EXPECT_TRUE(sync_service_->IsBackendInitialized());
+  EXPECT_TRUE(sync_service_->IsEngineInitialized());
   EXPECT_TRUE(sync_service_->IsSyncActive());
 
   // The service should stop when switching to managed mode.
@@ -417,7 +417,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
       .WillOnce(Return(DataTypeManager::CONFIGURED));
   EXPECT_CALL(*data_type_manager, Stop()).Times(1);
   pref_service()->SetBoolean(syncer::prefs::kSyncManaged, true);
-  EXPECT_FALSE(sync_service_->IsBackendInitialized());
+  EXPECT_FALSE(sync_service_->IsEngineInitialized());
   // Note that PSS no longer references |data_type_manager| after stopping.
 
   // When switching back to unmanaged, the state should change but sync should
@@ -427,7 +427,7 @@ TEST_F(ProfileSyncServiceStartupTest, SwitchManaged) {
   EXPECT_CALL(*component_factory_, CreateDataTypeManager(_, _, _, _, _))
       .Times(0);
   pref_service()->ClearPref(syncer::prefs::kSyncManaged);
-  EXPECT_FALSE(sync_service_->IsBackendInitialized());
+  EXPECT_FALSE(sync_service_->IsEngineInitialized());
   EXPECT_FALSE(sync_service_->IsSyncActive());
 }
 

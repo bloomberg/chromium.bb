@@ -61,8 +61,8 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
     return SYNC_STARTUP_ERROR;
   }
 
-  // If the sync backend has started up, notify the callback.
-  if (service->IsBackendInitialized())
+  // If the sync engine has started up, notify the callback.
+  if (service->IsEngineInitialized())
     return SYNC_STARTUP_COMPLETE;
 
   // If the sync service has some kind of error, report to the user.
@@ -76,7 +76,7 @@ SyncStartupTracker::SyncServiceState SyncStartupTracker::GetSyncServiceState(
     return SYNC_STARTUP_ERROR;
   }
 
-  // No error detected yet, but the sync backend hasn't started up yet, so
+  // No error detected yet, but the sync engine hasn't started up yet, so
   // we're in the pending state.
   return SYNC_STARTUP_PENDING;
 }

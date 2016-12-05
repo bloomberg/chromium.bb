@@ -108,9 +108,9 @@ bool IsCreditCardUploadEnabled(const PrefService* pref_service,
   // Users who have enabled a passphrase have chosen to not make their sync
   // information accessible to Google. Since upload makes credit card data
   // available to other Google systems, disable it for passphrase users.
-  // We can't determine the passphrase state until the sync backend is
+  // We can't determine the passphrase state until the sync engine is
   // initialized so disable upload if sync is not yet available.
-  if (!sync_service->IsBackendInitialized() ||
+  if (!sync_service->IsEngineInitialized() ||
       sync_service->IsUsingSecondaryPassphrase()) {
     return false;
   }

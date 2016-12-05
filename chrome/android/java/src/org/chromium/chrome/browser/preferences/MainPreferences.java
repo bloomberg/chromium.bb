@@ -123,9 +123,8 @@ public class MainPreferences extends PreferenceFragment
         ProfileSyncService syncService = ProfileSyncService.get();
 
         if (AndroidSyncSettings.isSyncEnabled(getActivity().getApplicationContext())
-                  && syncService.isBackendInitialized()
-                  && !syncService.isUsingSecondaryPassphrase()
-                  && ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
+                && syncService.isEngineInitialized() && !syncService.isUsingSecondaryPassphrase()
+                && ChromeFeatureList.isEnabled(VIEW_PASSWORDS)) {
             passwordsPref.setKey(PREF_MANAGE_ACCOUNT_LINK);
             passwordsPref.setTitle(R.string.redirect_to_passwords_text);
             passwordsPref.setSummary(R.string.redirect_to_passwords_link);

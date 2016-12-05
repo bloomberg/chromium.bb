@@ -72,7 +72,7 @@ public class FirstRunTest extends SyncTestBase {
         // User should be signed in and the sync backend should initialize, but sync should not
         // become fully active until the settings page is closed.
         assertEquals(testAccount, SigninTestUtil.getCurrentAccount());
-        SyncTestUtil.waitForBackendInitialized();
+        SyncTestUtil.waitForEngineInitialized();
         assertFalse(SyncTestUtil.isSyncActive());
 
         // Close the settings fragment.
