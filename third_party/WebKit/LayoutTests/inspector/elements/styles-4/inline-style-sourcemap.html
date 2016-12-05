@@ -14,14 +14,15 @@ function embedInlineStyleSheet()
 
 function test()
 {
-    SDK.targetManager.addModelListener(SDK.CSSModel, SDK.CSSModel.Events.StyleSheetAdded, onStyleSheetAdded);
-    InspectorTest.evaluateInPage("embedInlineStyleSheet()", function() { });
+    SDK.targetManager.addModelListener(SDK.CSSModel, SDK.CSSModel.Events.StyleSheetAdded, function() { });
+    InspectorTest.evaluateInPage("embedInlineStyleSheet()", onEvaluated);
 
-    function onStyleSheetAdded(event)
-    {
-        var header = event.data;
+    function onEvaluated() {
+        InspectorTest.selectNodeAndWaitForStyles("inspect", onSelected);
+    }
 
-        InspectorTest.addResult("\nheader.sourceMapURL = " + header.sourceMapURL);
+    function onSelected() {
+        InspectorTest.dumpSelectedElementStyles(true, false, false);
         InspectorTest.completeTest();
     }
 };
@@ -30,7 +31,7 @@ function test()
 
 </head>
 
-<body onload="runTest()">
+<body id="inspect" onload="runTest()">
 <p>Verify that inline style sourceMappingURL is resolved properly.</p>
 <pre class="stylesheet-text">.red,body{color:red}body{background-color:red}
 /*# sourceMappingURL=data:application/json;base64,eyJ2ZXJzaW9uIjozLCJzb3VyY2VzIjpbIm1peGluLmxlc3MiLCJ0ZXN0Lmxlc3MiXSwibmFtZXMiOltdLCJtYXBwaW5ncyI6IkFBQUEsS0NJQSxLREhFLE1BQUEsSUNHRixLQUVFLGlCQUFBIn0=*/</pre>
