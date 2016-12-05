@@ -152,13 +152,6 @@ LayoutRect unionRectEvenIfEmpty(const Vector<LayoutRect>& rects) {
   return result;
 }
 
-IntRect enclosingIntRect(const LayoutRect& rect) {
-  IntPoint location = flooredIntPoint(rect.minXMinYCorner());
-  IntPoint maxPoint = ceiledIntPoint(rect.maxXMaxYCorner());
-
-  return IntRect(location, maxPoint - location);
-}
-
 LayoutRect enclosingLayoutRect(const FloatRect& rect) {
   LayoutPoint location = flooredLayoutPoint(rect.minXMinYCorner());
   LayoutPoint maxPoint = ceiledLayoutPoint(rect.maxXMaxYCorner());

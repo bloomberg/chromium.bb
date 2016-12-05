@@ -278,7 +278,12 @@ inline IntRect pixelSnappedIntRect(const LayoutRect& rect) {
                          snapSizeToPixel(rect.height(), rect.y())));
 }
 
-PLATFORM_EXPORT IntRect enclosingIntRect(const LayoutRect&);
+inline IntRect enclosingIntRect(const LayoutRect& rect) {
+  IntPoint location = flooredIntPoint(rect.minXMinYCorner());
+  IntPoint maxPoint = ceiledIntPoint(rect.maxXMaxYCorner());
+  return IntRect(location, maxPoint - location);
+}
+
 PLATFORM_EXPORT LayoutRect enclosingLayoutRect(const FloatRect&);
 
 inline IntRect pixelSnappedIntRect(LayoutUnit left,
