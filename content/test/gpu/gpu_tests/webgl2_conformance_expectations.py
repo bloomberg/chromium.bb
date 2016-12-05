@@ -549,8 +549,6 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
     self.Fail('conformance2/rendering/clipping-wide-points.html',
         ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
-    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
-        ['linux', 'amd', 'intel'], bug=662644) # WebGL 2.0.1
 
     # Linux NVIDIA
     # This test is flaky both with and without ANGLE.
@@ -585,6 +583,8 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     # Linux Intel with ANGLE only
     self.Fail('deqp/functional/gles3/framebufferblit/conversion_07.html',
         ['linux', 'intel', 'opengl'], bug=598902)
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
+        ['linux', 'intel', 'opengl'], bug=634519) # WebGL 2.0.1
 
     # Linux AMD only.
     # It looks like AMD shader compiler rejects many valid ES3 semantics.
@@ -776,6 +776,9 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
         ['linux', 'amd'], bug=633022)
     self.Fail('conformance2/rendering/blitframebuffer-filter-outofbounds.html',
         ['linux', 'amd'], bug=655147)
+
+    self.Fail('conformance2/textures/misc/tex-srgb-mipmap.html',
+        ['linux', 'amd'], bug=634519) # WebGL 2.0.1
 
     # Uniform buffer related failures
     self.Fail('deqp/functional/gles3/uniformbuffers/single_struct_array.html',
