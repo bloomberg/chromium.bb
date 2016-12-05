@@ -93,9 +93,9 @@ class MemoryCoordinatorTest : public testing::Test {
 TEST_F(MemoryCoordinatorTest, ChildRemovedOnConnectionError) {
   TestMemoryCoordinator mc;
   mc.CreateChildMemoryCoordinator(1);
-  ASSERT_EQ(1u, mc.NumChildrenForTesting());
+  ASSERT_EQ(1u, mc.children().size());
   mc.OnConnectionError(1);
-  EXPECT_EQ(0u, mc.NumChildrenForTesting());
+  EXPECT_EQ(0u, mc.children().size());
 }
 
 TEST_F(MemoryCoordinatorTest, SetMemoryStateFailsInvalidState) {

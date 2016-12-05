@@ -73,10 +73,6 @@ void MemoryCoordinator::CreateHandle(
   CreateChildInfoMapEntry(render_process_id, std::move(handle));
 }
 
-size_t MemoryCoordinator::NumChildrenForTesting() {
-  return children_.size();
-}
-
 bool MemoryCoordinator::SetChildMemoryState(int render_process_id,
                                             mojom::MemoryState memory_state) {
   // Can't set an invalid memory state.
@@ -168,7 +164,8 @@ void MemoryCoordinator::OnConnectionError(int render_process_id) {
 }
 
 bool MemoryCoordinator::CanThrottleRenderer(int render_process_id) {
-  // If there is no delegate (i.e. tests), renderers are always throttleable.
+  // If there is no delegate (i.e. unittests), renderers are always
+  // throttleable.
   // TODO(bashi): We check |delegate_| to avoid calling FromID() on a
   // wrong thread in tests. Figure out a better way to handle tests.
   if (!delegate_)
@@ -178,13 +175,19 @@ bool MemoryCoordinator::CanThrottleRenderer(int render_process_id) {
 }
 
 bool MemoryCoordinator::CanSuspendRenderer(int render_process_id) {
-  // If there is no delegate (i.e. tests), renderers are always suspendable.
+  // If there is no delegate (i.e. unittests), renderers are always suspendable.
   if (!delegate_)
     return true;
   auto* render_process_host = RenderProcessHost::FromID(render_process_id);
   if (!render_process_host || !render_process_host->IsProcessBackgrounded())
     return false;
   return delegate_->CanSuspendBackgroundedRenderer(render_process_id);
+}
+
+void MemoryCoordinator::SetDelegateForTesting(
+    std::unique_ptr<MemoryCoordinatorDelegate> delegate) {
+  CHECK(!delegate_);
+  delegate_ = std::move(delegate);
 }
 
 void MemoryCoordinator::CreateChildInfoMapEntry(

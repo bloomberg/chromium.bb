@@ -12,6 +12,19 @@
 
 namespace content {
 
+class TestMemoryCoordinatorDelegate : public MemoryCoordinatorDelegate {
+ public:
+  TestMemoryCoordinatorDelegate() {}
+  ~TestMemoryCoordinatorDelegate() override {}
+
+  bool CanSuspendBackgroundedRenderer(int render_process_id) override {
+    return true;
+  }
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(TestMemoryCoordinatorDelegate);
+};
+
 class MemoryCoordinatorTest : public ContentBrowserTest {
  public:
   MemoryCoordinatorTest() {}
@@ -27,16 +40,40 @@ class MemoryCoordinatorTest : public ContentBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(MemoryCoordinatorTest);
 };
 
-// TODO(bashi): Enable this test on macos when MemoryMonitorMac is implemented.
-#if defined(OS_MACOSX)
-#define MAYBE_HandleAdded DISABLED_HandleAdded
-#else
-#define MAYBE_HandleAdded HandleAdded
-#endif
-IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, MAYBE_HandleAdded) {
+// TODO(bashi): Enable these tests on macos when MemoryMonitorMac is
+// implemented.
+#if !defined(OS_MACOSX)
+
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, HandleAdded) {
   GURL url = GetTestUrl("", "simple_page.html");
   NavigateToURL(shell(), url);
-  EXPECT_EQ(1u, MemoryCoordinator::GetInstance()->NumChildrenForTesting());
+  EXPECT_EQ(1u, MemoryCoordinator::GetInstance()->children().size());
 }
+
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, CanSuspendRenderer) {
+  GURL url = GetTestUrl("", "simple_page.html");
+  NavigateToURL(shell(), url);
+  auto* memory_coordinator = MemoryCoordinator::GetInstance();
+  memory_coordinator->SetDelegateForTesting(
+      base::MakeUnique<TestMemoryCoordinatorDelegate>());
+  EXPECT_EQ(1u, memory_coordinator->children().size());
+  int render_process_id = memory_coordinator->children().begin()->first;
+  // Foreground tab cannot be suspended.
+  EXPECT_FALSE(memory_coordinator->CanSuspendRenderer(render_process_id));
+}
+
+IN_PROC_BROWSER_TEST_F(MemoryCoordinatorTest, CanThrottleRenderer) {
+  GURL url = GetTestUrl("", "simple_page.html");
+  NavigateToURL(shell(), url);
+  auto* memory_coordinator = MemoryCoordinator::GetInstance();
+  memory_coordinator->SetDelegateForTesting(
+      base::MakeUnique<TestMemoryCoordinatorDelegate>());
+  EXPECT_EQ(1u, memory_coordinator->children().size());
+  int render_process_id = memory_coordinator->children().begin()->first;
+  // Foreground tab cannot be throttled.
+  EXPECT_FALSE(memory_coordinator->CanThrottleRenderer(render_process_id));
+}
+
+#endif  // !defined(OS_MACOSX)
 
 }  // namespace content

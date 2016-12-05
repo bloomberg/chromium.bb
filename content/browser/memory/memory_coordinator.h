@@ -38,9 +38,6 @@ class CONTENT_EXPORT MemoryCoordinator {
   void CreateHandle(int render_process_id,
                     mojom::MemoryCoordinatorHandleRequest request);
 
-  // Returns number of children. Only used for testing.
-  size_t NumChildrenForTesting();
-
   // Dispatches a memory state change to the provided process. Returns true if
   // the process is tracked by this coordinator and successfully dispatches,
   // returns false otherwise.
@@ -106,6 +103,17 @@ class CONTENT_EXPORT MemoryCoordinator {
   ChildInfoMap& children() { return children_; }
 
 private:
+#if !defined(OS_MACOSX)
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, HandleAdded);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, CanSuspendRenderer);
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest, CanThrottleRenderer);
+#endif
+  FRIEND_TEST_ALL_PREFIXES(MemoryCoordinatorTest,
+                           ChildRemovedOnConnectionError);
+
+  void SetDelegateForTesting(
+      std::unique_ptr<MemoryCoordinatorDelegate> delegate);
+
   // Helper function of CreateHandle and AddChildForTesting.
   void CreateChildInfoMapEntry(
       int render_process_id,
