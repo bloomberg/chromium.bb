@@ -6,6 +6,7 @@ import("//ios/build/config.gni")
 import("//testing/test.gni")
 
 source_set("ios_test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   deps = [
