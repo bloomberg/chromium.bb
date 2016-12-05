@@ -36,6 +36,7 @@ source_set("prefs") {
 }
 
 source_set("tts") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "text_to_speech_listener.h",
     "text_to_speech_listener.mm",

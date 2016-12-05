@@ -16,6 +16,10 @@
 #include "net/base/url_util.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 bool VoiceSearchURLRewriter(GURL* url, web::BrowserState* browser_state) {
   if (!google_util::IsGoogleSearchUrl(*url))
     return false;

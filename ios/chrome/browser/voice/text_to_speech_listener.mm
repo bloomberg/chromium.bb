@@ -6,15 +6,19 @@
 
 #include <memory>
 
-#include "base/ios/weak_nsobject.h"
 #include "base/logging.h"
 #include "base/mac/scoped_nsobject.h"
+#include "base/memory/ptr_util.h"
 #include "ios/web/public/navigation_manager.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "ios/web/public/web_state/web_state_observer.h"
 #import "ios/chrome/browser/voice/text_to_speech_parser.h"
 #import "ios/chrome/browser/voice/voice_search_url_rewriter.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 #pragma mark - TextToSpeechListener Private Interface
 
@@ -23,7 +27,7 @@ class TextToSpeechWebStateObserver;
 @interface TextToSpeechListener ()
 
 // The TextToSpeechListenerDelegate passed on initialization.
-@property(nonatomic, readonly) id<TextToSpeechListenerDelegate> delegate;
+@property(weak, nonatomic, readonly) id<TextToSpeechListenerDelegate> delegate;
 
 @end
 
@@ -63,7 +67,7 @@ void TextToSpeechWebStateObserver::PageLoaded(
   BOOL shouldParse = [listener_.delegate shouldTextToSpeechListener:listener_
                                                    parseDataFromURL:url];
   if (shouldParse) {
-    base::WeakNSObject<TextToSpeechListener> weakListener(listener_);
+    __weak TextToSpeechListener* weakListener = listener_;
     ExtractVoiceSearchAudioDataFromWebState(web_state(), ^(NSData* audioData) {
       [[weakListener delegate] textToSpeechListener:weakListener
                                    didReceiveResult:audioData];
@@ -78,21 +82,20 @@ void TextToSpeechWebStateObserver::WebStateDestroyed() {
 }
 
 #pragma mark - TextToSpeechListener
-
 @implementation TextToSpeechListener {
-  // Backing object for property of the same name.
-  base::WeakNSProtocol<id<TextToSpeechListenerDelegate>> _delegate;
   // The TextToSpeechWebStateObserver that listens for Text-To-Speech data.
   std::unique_ptr<TextToSpeechWebStateObserver> _webStateObserver;
 }
+@synthesize delegate = _delegate;
 
 - (instancetype)initWithWebState:(web::WebState*)webState
                         delegate:(id<TextToSpeechListenerDelegate>)delegate {
   if ((self = [super init])) {
     DCHECK(webState);
     DCHECK(delegate);
-    _webStateObserver.reset(new TextToSpeechWebStateObserver(webState, self));
-    _delegate.reset(delegate);
+    _webStateObserver =
+        base::MakeUnique<TextToSpeechWebStateObserver>(webState, self);
+    _delegate = delegate;
   }
   return self;
 }
@@ -101,10 +104,6 @@ void TextToSpeechWebStateObserver::WebStateDestroyed() {
 
 - (web::WebState*)webState {
   return _webStateObserver->web_state();
-}
-
-- (id<TextToSpeechListenerDelegate>)delegate {
-  return _delegate.get();
 }
 
 @end

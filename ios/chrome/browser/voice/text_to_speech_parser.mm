@@ -9,6 +9,10 @@
 #include "ios/web/public/web_state/web_state.h"
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // The start and end tags that delimit TTS audio data.
