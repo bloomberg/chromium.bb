@@ -78,12 +78,12 @@ class FakeAuthInstance : public arc::mojom::AuthInstance {
 
 }  // namespace
 
-class ArcRobotAuthBrowserTest : public InProcessBrowserTest {
+class ArcRobotAuthCodeFetcherBrowserTest : public InProcessBrowserTest {
  protected:
-  ArcRobotAuthBrowserTest() = default;
+  ArcRobotAuthCodeFetcherBrowserTest() = default;
 
   // InProcessBrowserTest:
-  ~ArcRobotAuthBrowserTest() override = default;
+  ~ArcRobotAuthCodeFetcherBrowserTest() override = default;
 
   void SetUpCommandLine(base::CommandLine* command_line) override {
     InProcessBrowserTest::SetUpCommandLine(command_line);
@@ -144,10 +144,11 @@ class ArcRobotAuthBrowserTest : public InProcessBrowserTest {
  private:
   std::unique_ptr<chromeos::ScopedUserManagerEnabler> user_manager_enabler_;
 
-  DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthBrowserTest);
+  DISALLOW_COPY_AND_ASSIGN(ArcRobotAuthCodeFetcherBrowserTest);
 };
 
-IN_PROC_BROWSER_TEST_F(ArcRobotAuthBrowserTest, RequestAccountInfoSuccess) {
+IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
+                       RequestAccountInfoSuccess) {
   interceptor_->PushJobCallback(base::Bind(&ResponseJob));
 
   auth_instance_.callback =
@@ -162,13 +163,15 @@ IN_PROC_BROWSER_TEST_F(ArcRobotAuthBrowserTest, RequestAccountInfoSuccess) {
   base::RunLoop().RunUntilIdle();
 }
 
-IN_PROC_BROWSER_TEST_F(ArcRobotAuthBrowserTest, RequestAccountInfoError) {
+IN_PROC_BROWSER_TEST_F(ArcRobotAuthCodeFetcherBrowserTest,
+                       RequestAccountInfoError) {
   interceptor_->PushJobCallback(
       policy::TestRequestInterceptor::BadRequestJob());
 
   auth_instance_.callback =
       base::Bind([](const mojom::AccountInfoPtr&) { FAIL(); });
 
+  ArcSessionManager::Get()->StartArc();
   ArcAuthService::GetForTest()->RequestAccountInfo();
   // This MessageLoop will be stopped by AttemptUserExit(), that is called as
   // a result of error of auth code fetching.

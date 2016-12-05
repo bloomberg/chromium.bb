@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/auth/arc_robot_auth.h"
+#include "chrome/browser/chromeos/arc/auth/arc_robot_auth_code_fetcher.h"
+
+#include <string>
 
 #include "base/bind.h"
 #include "chrome/browser/browser_process.h"
@@ -36,11 +38,11 @@ const policy::CloudPolicyClient* GetCloudPolicyClient() {
 
 namespace arc {
 
-ArcRobotAuth::ArcRobotAuth() : weak_ptr_factory_(this) {}
+ArcRobotAuthCodeFetcher::ArcRobotAuthCodeFetcher() : weak_ptr_factory_(this) {}
 
-ArcRobotAuth::~ArcRobotAuth() = default;
+ArcRobotAuthCodeFetcher::~ArcRobotAuthCodeFetcher() = default;
 
-void ArcRobotAuth::FetchRobotAuthCode(const RobotAuthCodeCallback& callback) {
+void ArcRobotAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   DCHECK(!fetch_request_job_);
   const policy::CloudPolicyClient* client = GetCloudPolicyClient();
 
@@ -58,12 +60,12 @@ void ArcRobotAuth::FetchRobotAuthCode(const RobotAuthCodeCallback& callback) {
   request->add_auth_scope(GaiaConstants::kAnyApiOAuth2Scope);
 
   fetch_request_job_->Start(
-      base::Bind(&ArcRobotAuth::OnFetchRobotAuthCodeCompleted,
+      base::Bind(&ArcRobotAuthCodeFetcher::OnFetchRobotAuthCodeCompleted,
                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
-void ArcRobotAuth::OnFetchRobotAuthCodeCompleted(
-    RobotAuthCodeCallback callback,
+void ArcRobotAuthCodeFetcher::OnFetchRobotAuthCodeCompleted(
+    FetchCallback callback,
     policy::DeviceManagementStatus status,
     int net_error,
     const enterprise_management::DeviceManagementResponse& response) {

@@ -14,11 +14,9 @@
 #include "base/logging.h"
 #include "base/strings/string16.h"
 #include "base/time/time.h"
-#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
 #include "chrome/browser/chromeos/arc/arc_auth_context.h"
 #include "chrome/browser/chromeos/arc/arc_optin_uma.h"
 #include "chrome/browser/chromeos/arc/arc_support_host.h"
-#include "chrome/browser/chromeos/arc/auth/arc_robot_auth.h"
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
@@ -251,6 +249,14 @@ void ArcSessionManager::OnProvisioningFinished(ProvisioningResult result) {
   DCHECK_EQ(state_, State::ACTIVE);
 
   if (result == ProvisioningResult::CHROME_SERVER_COMMUNICATION_ERROR) {
+    if (IsArcKioskMode()) {
+      VLOG(1) << "Robot account auth code fetching error";
+      // Log out the user. All the cleanup will be done in Shutdown() method.
+      // The callback is not called because auth code is empty.
+      chrome::AttemptUserExit();
+      return;
+    }
+
     // For backwards compatibility, use NETWORK_ERROR for
     // CHROME_SERVER_COMMUNICATION_ERROR case.
     UpdateOptInCancelUMA(OptInCancelReason::NETWORK_ERROR);

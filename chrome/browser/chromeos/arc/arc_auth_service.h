@@ -10,27 +10,20 @@
 
 #include "base/macros.h"
 #include "base/memory/weak_ptr.h"
-#include "chrome/browser/chromeos/arc/arc_support_host.h"
 #include "components/arc/arc_service.h"
 #include "components/arc/common/auth.mojom.h"
 #include "components/arc/instance_holder.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace net {
-class URLRequestContextGetter;
-}
-
 namespace arc {
 
 class ArcAuthCodeFetcher;
-class ArcRobotAuth;
 
 // Implementation of ARC authorization.
 // TODO(hidehiko): Move to c/b/c/arc/auth with adding tests.
 class ArcAuthService : public ArcService,
                        public mojom::AuthHost,
-                       public InstanceHolder<mojom::AuthInstance>::Observer,
-                       public ArcSupportHost::Observer {
+                       public InstanceHolder<mojom::AuthInstance>::Observer {
  public:
   explicit ArcAuthService(ArcBridgeService* bridge_service);
   ~ArcAuthService() override;
@@ -60,10 +53,6 @@ class ArcAuthService : public ArcService,
   void GetIsAccountManagedDeprecated(
       const GetIsAccountManagedDeprecatedCallback& callback) override;
 
-  // ArcSupportHost::Observer:
-  void OnAuthSucceeded(const std::string& auth_code) override;
-  void OnRetryClicked() override;
-
  private:
   using AccountInfoCallback = base::Callback<void(mojom::AccountInfoPtr)>;
   class AccountInfoNotifier;
@@ -72,28 +61,16 @@ class ArcAuthService : public ArcService,
   void RequestAccountInfoInternal(
       std::unique_ptr<AccountInfoNotifier> account_info_notifier);
 
-  // Called when HTTP context is prepared.
-  void OnContextPrepared(net::URLRequestContextGetter* request_context_getter);
-
-  void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
-
-  // Callback for Robot auth in Kiosk mode.
-  void OnRobotAuthCodeFetched(const std::string& auth_code);
-
-  // Callback for automatic auth code fetching when --arc-user-auth-endpoint
-  // flag is set.
+  // Callback on auth_code fetched.
   void OnAuthCodeFetched(const std::string& auth_code);
 
-  // Common procedure across LSO auth code fetching, automatic auth code
-  // fetching, and Robot auth.
-  void OnAuthCodeObtained(const std::string& auth_code);
+  // Called to let ARC container know the account info.
+  void OnAccountInfoReady(mojom::AccountInfoPtr account_info);
 
   mojo::Binding<mojom::AuthHost> binding_;
 
-  std::unique_ptr<ArcAuthCodeFetcher> auth_code_fetcher_;
-  std::unique_ptr<ArcRobotAuth> arc_robot_auth_;
-
   std::unique_ptr<AccountInfoNotifier> notifier_;
+  std::unique_ptr<ArcAuthCodeFetcher> fetcher_;
 
   base::WeakPtrFactory<ArcAuthService> weak_ptr_factory_;
 

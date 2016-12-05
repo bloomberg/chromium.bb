@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/arc/arc_auth_code_fetcher.h"
+#include "chrome/browser/chromeos/arc/auth/arc_background_auth_code_fetcher.h"
+
+#include <utility>
 
 #include "base/bind.h"
 #include "base/callback_helpers.h"
@@ -45,24 +47,25 @@ constexpr char kEndPoint[] =
 
 }  // namespace
 
-ArcAuthCodeFetcher::ArcAuthCodeFetcher(Profile* profile,
-                                       ArcAuthContext* context)
+ArcBackgroundAuthCodeFetcher::ArcBackgroundAuthCodeFetcher(
+    Profile* profile,
+    ArcAuthContext* context)
     : OAuth2TokenService::Consumer(kConsumerName),
       profile_(profile),
       context_(context),
       weak_ptr_factory_(this) {}
 
-ArcAuthCodeFetcher::~ArcAuthCodeFetcher() = default;
+ArcBackgroundAuthCodeFetcher::~ArcBackgroundAuthCodeFetcher() = default;
 
-void ArcAuthCodeFetcher::Fetch(const FetchCallback& callback) {
+void ArcBackgroundAuthCodeFetcher::Fetch(const FetchCallback& callback) {
   DCHECK(callback_.is_null());
   callback_ = callback;
 
-  context_->Prepare(base::Bind(&ArcAuthCodeFetcher::OnPrepared,
+  context_->Prepare(base::Bind(&ArcBackgroundAuthCodeFetcher::OnPrepared,
                                weak_ptr_factory_.GetWeakPtr()));
 }
 
-void ArcAuthCodeFetcher::OnPrepared(
+void ArcBackgroundAuthCodeFetcher::OnPrepared(
     net::URLRequestContextGetter* request_context_getter) {
   if (!request_context_getter) {
     base::ResetAndReturn(&callback_).Run(std::string());
@@ -82,7 +85,7 @@ void ArcAuthCodeFetcher::OnPrepared(
   login_token_request_ = token_service->StartRequest(account_id, scopes, this);
 }
 
-void ArcAuthCodeFetcher::OnGetTokenSuccess(
+void ArcBackgroundAuthCodeFetcher::OnGetTokenSuccess(
     const OAuth2TokenService::Request* request,
     const std::string& access_token,
     const base::Time& expiration_time) {
@@ -111,7 +114,7 @@ void ArcAuthCodeFetcher::OnGetTokenSuccess(
   auth_code_fetcher_->Start();
 }
 
-void ArcAuthCodeFetcher::OnGetTokenFailure(
+void ArcBackgroundAuthCodeFetcher::OnGetTokenFailure(
     const OAuth2TokenService::Request* request,
     const GoogleServiceAuthError& error) {
   VLOG(2) << "Failed to get LST " << error.ToString() << ".";
@@ -119,7 +122,8 @@ void ArcAuthCodeFetcher::OnGetTokenFailure(
   base::ResetAndReturn(&callback_).Run(std::string());
 }
 
-void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
+void ArcBackgroundAuthCodeFetcher::OnURLFetchComplete(
+    const net::URLFetcher* source) {
   const int response_code = source->GetResponseCode();
   std::string json_string;
   source->GetResponseAsString(&json_string);
@@ -162,7 +166,7 @@ void ArcAuthCodeFetcher::OnURLFetchComplete(const net::URLFetcher* source) {
   base::ResetAndReturn(&callback_).Run(auth_code);
 }
 
-void ArcAuthCodeFetcher::ResetFetchers() {
+void ArcBackgroundAuthCodeFetcher::ResetFetchers() {
   login_token_request_.reset();
   auth_code_fetcher_.reset();
 }
