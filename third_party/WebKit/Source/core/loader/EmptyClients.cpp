@@ -71,6 +71,7 @@ class EmptyPopupMenu : public PopupMenu {
 
 class EmptyFrameScheduler : public WebFrameScheduler {
  public:
+  EmptyFrameScheduler() { DCHECK(isMainThread()); }
   void setFrameVisible(bool) override {}
   WebTaskRunner* loadingTaskRunner() override;
   WebTaskRunner* timerTaskRunner() override;
@@ -78,15 +79,15 @@ class EmptyFrameScheduler : public WebFrameScheduler {
 };
 
 WebTaskRunner* EmptyFrameScheduler::loadingTaskRunner() {
-  return Platform::current()->currentThread()->getWebTaskRunner();
+  return Platform::current()->mainThread()->getWebTaskRunner();
 }
 
 WebTaskRunner* EmptyFrameScheduler::timerTaskRunner() {
-  return Platform::current()->currentThread()->getWebTaskRunner();
+  return Platform::current()->mainThread()->getWebTaskRunner();
 }
 
 WebTaskRunner* EmptyFrameScheduler::unthrottledTaskRunner() {
-  return Platform::current()->currentThread()->getWebTaskRunner();
+  return Platform::current()->mainThread()->getWebTaskRunner();
 }
 
 PopupMenu* EmptyChromeClient::openPopupMenu(LocalFrame&, HTMLSelectElement&) {
