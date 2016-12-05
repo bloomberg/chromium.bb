@@ -5,7 +5,6 @@
 #include "storage/browser/blob/blob_memory_controller.h"
 
 #include <algorithm>
-#include <numeric>
 
 #include "base/callback.h"
 #include "base/callback_helpers.h"
@@ -46,8 +45,6 @@ File::Error CreateBlobDirectory(const FilePath& blob_storage_dir) {
   base::CreateDirectoryAndGetError(blob_storage_dir, &error);
   UMA_HISTOGRAM_ENUMERATION("Storage.Blob.CreateDirectoryResult", -error,
                             -File::FILE_ERROR_MAX);
-  DLOG_IF(ERROR, error != File::FILE_OK)
-      << "Error creating blob storage directory: " << error;
   return error;
 }
 
@@ -74,6 +71,15 @@ std::pair<std::vector<FileCreationInfo>, File::Error> CreateEmptyFiles(
     creation_info.file_deletion_runner = file_task_runner;
     creation_info.error = file.error_details();
     if (creation_info.error != File::FILE_OK) {
+      return std::make_pair(std::vector<FileCreationInfo>(),
+                            creation_info.error);
+    }
+
+    // Grab the file info to get the "last modified" time and store the file.
+    File::Info file_info;
+    bool success = file.GetInfo(&file_info);
+    creation_info.error = success ? File::FILE_OK : File::FILE_ERROR_FAILED;
+    if (!success) {
       return std::make_pair(std::vector<FileCreationInfo>(),
                             creation_info.error);
     }
@@ -128,10 +134,6 @@ FileCreationInfo CreateFileAndWriteItems(
     if (bytes_written < 0)
       break;
   }
-  if (!file.Flush()) {
-    creation_info.error = File::FILE_ERROR_FAILED;
-    return creation_info;
-  }
 
   File::Info info;
   bool success = file.GetInfo(&info);
@@ -160,10 +162,6 @@ uint64_t GetTotalSizeAndFileSizes(
   for (const auto& size_pair : file_id_to_sizes) {
     file_sizes_output->push_back(size_pair.second);
   }
-  DCHECK_EQ(std::accumulate(file_sizes_output->begin(),
-                            file_sizes_output->end(), 0ull),
-            total_size_output)
-      << "Illegal builder configuration, temporary files must be totally used.";
   return total_size_output;
 }
 
@@ -300,7 +298,7 @@ class BlobMemoryController::FileQuotaAllocationTask
   }
   ~FileQuotaAllocationTask() override {}
 
-  void RunDoneCallback(std::vector<FileCreationInfo> file_info, bool success) {
+  void RunDoneCallback(bool success, std::vector<FileCreationInfo> file_info) {
     // Make sure we clear the weak pointers we gave to the caller beforehand.
     weak_factory_.InvalidateWeakPtrs();
 
@@ -315,7 +313,7 @@ class BlobMemoryController::FileQuotaAllocationTask
       controller_->pending_file_quota_tasks_.erase(my_list_position_);
     }
 
-    done_callback_.Run(std::move(file_info), success);
+    done_callback_.Run(success, std::move(file_info));
   }
 
   base::WeakPtr<QuotaAllocationTask> GetWeakPtr() {
@@ -343,7 +341,7 @@ class BlobMemoryController::FileQuotaAllocationTask
     for (size_t i = 0; i < files.size(); i++) {
       files[i].file_reference = std::move(references[i]);
     }
-    RunDoneCallback(std::move(files), true);
+    RunDoneCallback(true, std::move(files));
   }
 
   // The my_list_position_ iterator is stored so that we can remove ourself
@@ -381,7 +379,6 @@ BlobMemoryController::~BlobMemoryController() {}
 void BlobMemoryController::DisableFilePaging(base::File::Error reason) {
   UMA_HISTOGRAM_ENUMERATION("Storage.Blob.PagingDisabled", -reason,
                             -File::FILE_ERROR_MAX);
-  DLOG(ERROR) << "Blob storage paging disabled, reason: " << reason;
   file_paging_enabled_ = false;
   in_flight_memory_used_ = 0;
   items_paging_to_file_.clear();
@@ -401,7 +398,7 @@ void BlobMemoryController::DisableFilePaging(base::File::Error reason) {
     memory_request->RunDoneCallback(false);
   }
   for (auto& file_request : old_file_tasks) {
-    file_request->RunDoneCallback(std::vector<FileCreationInfo>(), false);
+    file_request->RunDoneCallback(false, std::vector<FileCreationInfo>());
   }
 }
 

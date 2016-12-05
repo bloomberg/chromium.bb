@@ -99,16 +99,10 @@ void SaveBlobStatusAndFiles(BlobStatus* status_ptr,
                             std::vector<FileCreationInfo>* files_ptr,
                             BlobStatus status,
                             std::vector<FileCreationInfo> files) {
-  EXPECT_FALSE(BlobStatusIsError(status));
   *status_ptr = status;
   for (FileCreationInfo& info : files) {
     files_ptr->push_back(std::move(info));
   }
-}
-
-void IncrementNumber(size_t* number, BlobStatus status) {
-  EXPECT_EQ(BlobStatus::DONE, status);
-  *number = *number + 1;
 }
 
 }  // namespace
@@ -118,16 +112,7 @@ class BlobStorageContextTest : public testing::Test {
   BlobStorageContextTest() {}
   ~BlobStorageContextTest() override {}
 
-  void SetUp() override {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    context_ = base::MakeUnique<BlobStorageContext>();
-  }
-
-  void TearDown() override {
-    base::RunLoop().RunUntilIdle();
-    file_runner_->RunPendingTasks();
-    ASSERT_TRUE(temp_dir_.Delete());
-  }
+  void SetUp() override { context_ = base::MakeUnique<BlobStorageContext>(); }
 
   std::unique_ptr<BlobDataHandle> SetupBasicBlob(const std::string& id) {
     BlobDataBuilder builder(id);
@@ -156,8 +141,6 @@ class BlobStorageContextTest : public testing::Test {
   }
 
   std::vector<FileCreationInfo> files_;
-  base::ScopedTempDir temp_dir_;
-  scoped_refptr<TestSimpleTaskRunner> file_runner_ = new TestSimpleTaskRunner();
 
   base::MessageLoop fake_io_message_loop_;
   std::unique_ptr<BlobStorageContext> context_;
@@ -528,60 +511,6 @@ TEST_F(BlobStorageContextTest, BuildDiskCacheBlob) {
   base::RunLoop().RunUntilIdle();
 }
 
-TEST_F(BlobStorageContextTest, BuildFutureFileOnlyBlob) {
-  const std::string kId1("id1");
-  context_ =
-      base::MakeUnique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
-  SetTestMemoryLimits();
-
-  BlobDataBuilder builder(kId1);
-  builder.set_content_type("text/plain");
-  builder.AppendFutureFile(0, 10, 0);
-
-  BlobStatus status = BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS;
-  std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-      builder, base::Bind(&SaveBlobStatusAndFiles, &status, &files_));
-
-  size_t blobs_finished = 0;
-  EXPECT_EQ(BlobStatus::PENDING_QUOTA, handle->GetBlobStatus());
-  EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS, status);
-  handle->RunOnConstructionComplete(
-      base::Bind(&IncrementNumber, &blobs_finished));
-  EXPECT_EQ(0u, blobs_finished);
-
-  EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
-  EXPECT_EQ(0u, blobs_finished);
-  EXPECT_EQ(BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS, status);
-  EXPECT_EQ(BlobStatus::PENDING_QUOTA, handle->GetBlobStatus());
-  base::RunLoop().RunUntilIdle();
-
-  EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, status);
-  EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, handle->GetBlobStatus());
-  EXPECT_EQ(0u, blobs_finished);
-
-  ASSERT_EQ(1u, files_.size());
-
-  builder.PopulateFutureFile(0, files_[0].file_reference, base::Time::Max());
-  context_->NotifyTransportComplete(kId1);
-
-  EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
-  EXPECT_EQ(0u, blobs_finished);
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(1u, blobs_finished);
-
-  builder.Clear();
-  handle.reset();
-  files_.clear();
-  base::RunLoop().RunUntilIdle();
-  // We should have file cleanup tasks.
-  EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
-  EXPECT_EQ(0lu, context_->memory_controller().disk_usage());
-}
-
 TEST_F(BlobStorageContextTest, CompoundBlobs) {
   const std::string kId1("id1");
   const std::string kId2("id2");
@@ -726,171 +655,6 @@ TEST_F(BlobStorageContextTest, TestUnknownBrokenAndBuildingBlobReference) {
   EXPECT_FALSE(context_->registry().HasEntry(kReferencingId));
 }
 
-namespace {
-constexpr size_t kTotalRawBlobs = 200;
-constexpr size_t kTotalSlicedBlobs = 100;
-constexpr char kTestDiskCacheData[] = "Test Blob Data";
+// TODO(michaeln): tests for the depcrecated url stuff
 
-// Appends data and data types that depend on the index. This is designed to
-// exercise all types of combinations of data, future data, files, future files,
-// and disk cache entries.
-size_t AppendDataInBuilder(BlobDataBuilder* builder,
-                           size_t index,
-                           disk_cache::Entry* cache_entry) {
-  size_t size = 0;
-  // We can't have both future data and future files, so split those up.
-  if (index % 2 != 0) {
-    builder->AppendFutureData(5u);
-    size += 5u;
-    if (index % 3 == 1) {
-      builder->AppendData("abcdefghij", 4u);
-      size += 4u;
-    }
-    if (index % 3 == 0) {
-      builder->AppendFutureData(1u);
-      size += 1u;
-    }
-  } else if (index % 3 == 0) {
-    builder->AppendFutureFile(0lu, 3lu, 0);
-    size += 3u;
-  }
-  if (index % 5 != 0) {
-    builder->AppendFile(
-        base::FilePath::FromUTF8Unsafe(base::SizeTToString(index)), 0ul, 20ul,
-        base::Time::Max());
-    size += 20u;
-  }
-  if (index % 3 != 0) {
-    scoped_refptr<BlobDataBuilder::DataHandle> disk_cache_data_handle =
-        new EmptyDataHandle();
-    builder->AppendDiskCacheEntry(disk_cache_data_handle, cache_entry,
-                                  kTestDiskCacheStreamIndex);
-    size += strlen(kTestDiskCacheData);
-  }
-  return size;
-}
-
-bool DoesBuilderHaveFutureData(size_t index) {
-  return index < kTotalRawBlobs && (index % 2 != 0 || index % 3 == 0);
-}
-
-void PopulateDataInBuilder(BlobDataBuilder* builder,
-                           size_t index,
-                           base::TaskRunner* file_runner) {
-  if (index % 2 != 0) {
-    builder->PopulateFutureData(0, "abcde", 0, 5);
-    if (index % 3 == 0) {
-      builder->PopulateFutureData(1, "z", 0, 1);
-    }
-  } else if (index % 3 == 0) {
-    scoped_refptr<ShareableFileReference> file_ref =
-        ShareableFileReference::GetOrCreate(
-            base::FilePath::FromUTF8Unsafe(
-                base::SizeTToString(index + kTotalRawBlobs)),
-            ShareableFileReference::DONT_DELETE_ON_FINAL_RELEASE, file_runner);
-    builder->PopulateFutureFile(0, file_ref, base::Time::Max());
-  }
-}
-}  // namespace
-
-TEST_F(BlobStorageContextTest, BuildBlobCombinations) {
-  const std::string kId("id");
-
-  context_ =
-      base::MakeUnique<BlobStorageContext>(temp_dir_.GetPath(), file_runner_);
-
-  SetTestMemoryLimits();
-  std::unique_ptr<disk_cache::Backend> cache = CreateInMemoryDiskCache();
-  ASSERT_TRUE(cache);
-  disk_cache::ScopedEntryPtr entry =
-      CreateDiskCacheEntry(cache.get(), "test entry", kTestDiskCacheData);
-
-  // This tests mixed blob content with both synchronous and asynchronous
-  // construction. Blobs should also be paged to disk during execution.
-  std::vector<std::unique_ptr<BlobDataBuilder>> builders;
-  std::vector<size_t> sizes;
-  for (size_t i = 0; i < kTotalRawBlobs; i++) {
-    builders.emplace_back(new BlobDataBuilder(base::SizeTToString(i)));
-    auto& builder = *builders.back();
-    size_t size = AppendDataInBuilder(&builder, i, entry.get());
-    EXPECT_NE(0u, size);
-    sizes.push_back(size);
-  }
-
-  for (size_t i = 0; i < kTotalSlicedBlobs; i++) {
-    builders.emplace_back(
-        new BlobDataBuilder(base::SizeTToString(i + kTotalRawBlobs)));
-    size_t source_size = sizes[i];
-    size_t offset = source_size == 1 ? 0 : i % (source_size - 1);
-    size_t size = (i % (source_size - offset)) + 1;
-    builders.back()->AppendBlob(base::SizeTToString(i), offset, size);
-  }
-
-  size_t total_finished_blobs = 0;
-  std::vector<std::unique_ptr<BlobDataHandle>> handles;
-  std::vector<BlobStatus> statuses;
-  std::vector<bool> populated;
-  statuses.resize(kTotalRawBlobs,
-                  BlobStatus::ERR_INVALID_CONSTRUCTION_ARGUMENTS);
-  populated.resize(kTotalRawBlobs, false);
-  for (size_t i = 0; i < builders.size(); i++) {
-    BlobDataBuilder& builder = *builders[i];
-    builder.set_content_type("text/plain");
-    bool has_pending_memory = DoesBuilderHaveFutureData(i);
-    std::unique_ptr<BlobDataHandle> handle = context_->BuildBlob(
-        builder,
-        has_pending_memory
-            ? base::Bind(&SaveBlobStatusAndFiles, &statuses[0] + i, &files_)
-            : BlobStorageContext::TransportAllowedCallback());
-    handle->RunOnConstructionComplete(
-        base::Bind(&IncrementNumber, &total_finished_blobs));
-    handles.push_back(std::move(handle));
-  }
-  base::RunLoop().RunUntilIdle();
-
-  // We should be needing to send a page or two to disk.
-  EXPECT_TRUE(file_runner_->HasPendingTask());
-  do {
-    file_runner_->RunPendingTasks();
-    base::RunLoop().RunUntilIdle();
-    // Continue populating data for items that can fit.
-    for (size_t i = 0; i < kTotalRawBlobs; i++) {
-      BlobDataBuilder* builder = builders[i].get();
-      if (DoesBuilderHaveFutureData(i) && !populated[i] &&
-          statuses[i] == BlobStatus::PENDING_TRANSPORT) {
-        PopulateDataInBuilder(builder, i, file_runner_.get());
-        context_->NotifyTransportComplete(base::SizeTToString(i));
-        populated[i] = true;
-      }
-    }
-    base::RunLoop().RunUntilIdle();
-  } while (file_runner_->HasPendingTask());
-
-  // Check all builders with future items were signalled and populated.
-  for (size_t i = 0; i < populated.size(); i++) {
-    if (DoesBuilderHaveFutureData(i)) {
-      EXPECT_EQ(BlobStatus::PENDING_TRANSPORT, statuses[i]) << i;
-      EXPECT_TRUE(populated[i]) << i;
-    }
-  }
-  base::RunLoop().RunUntilIdle();
-
-  // We should be completely built now.
-  EXPECT_EQ(kTotalRawBlobs + kTotalSlicedBlobs, total_finished_blobs);
-  for (std::unique_ptr<BlobDataHandle>& handle : handles) {
-    EXPECT_EQ(BlobStatus::DONE, handle->GetBlobStatus());
-  }
-  handles.clear();
-  base::RunLoop().RunUntilIdle();
-  files_.clear();
-  // We should have file cleanup tasks.
-  EXPECT_TRUE(file_runner_->HasPendingTask());
-  file_runner_->RunPendingTasks();
-  base::RunLoop().RunUntilIdle();
-  EXPECT_EQ(0lu, context_->memory_controller().memory_usage());
-  EXPECT_EQ(0lu, context_->memory_controller().disk_usage());
-}
-
-// TODO(michaeln): tests for the deprecated url stuff
-
-}  // namespace storage
+}  // namespace content

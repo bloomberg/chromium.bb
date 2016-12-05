@@ -103,7 +103,7 @@ class STORAGE_EXPORT BlobMemoryController {
   // The bool argument is true if we successfully received file quota, and the
   // vector argument provides the file info.
   using FileQuotaRequestCallback =
-      base::Callback<void(std::vector<FileCreationInfo>, bool)>;
+      base::Callback<void(bool, std::vector<FileCreationInfo>)>;
 
   // We enable file paging if |file_runner| isn't a nullptr.
   BlobMemoryController(const base::FilePath& storage_directory,

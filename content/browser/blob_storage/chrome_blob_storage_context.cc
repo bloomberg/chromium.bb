@@ -7,14 +7,7 @@
 #include <utility>
 
 #include "base/bind.h"
-#include "base/files/file.h"
-#include "base/files/file_enumerator.h"
-#include "base/files/file_util.h"
 #include "base/guid.h"
-#include "base/metrics/histogram_macros.h"
-#include "base/single_thread_task_runner.h"
-#include "base/task_runner.h"
-#include "base/threading/sequenced_worker_pool.h"
 #include "content/public/browser/blob_handle.h"
 #include "content/public/browser/browser_context.h"
 #include "content/public/browser/browser_thread.h"
@@ -22,35 +15,14 @@
 #include "storage/browser/blob/blob_data_handle.h"
 #include "storage/browser/blob/blob_storage_context.h"
 
-using base::FilePath;
 using base::UserDataAdapter;
 using storage::BlobStorageContext;
 
 namespace content {
 
 namespace {
-const FilePath::CharType kBlobStorageContextKeyName[] =
-    FILE_PATH_LITERAL("content_blob_storage_context");
-const FilePath::CharType kBlobStorageParentDirectory[] =
-    FILE_PATH_LITERAL("blob_storage");
 
-// Removes all folders in the parent directory except for the
-// |current_run_dir| folder. If this path is empty, then we delete all folders.
-void RemoveOldBlobStorageDirectories(FilePath blob_storage_parent,
-                                     const FilePath& current_run_dir) {
-  if (!base::DirectoryExists(blob_storage_parent)) {
-    return;
-  }
-  base::FileEnumerator enumerator(blob_storage_parent, false /* recursive */,
-                                  base::FileEnumerator::DIRECTORIES);
-  bool success = true;
-  for (FilePath name = enumerator.Next(); !name.empty();
-       name = enumerator.Next()) {
-    if (current_run_dir.empty() || name != current_run_dir)
-      success &= base::DeleteFile(name, true /* recursive */);
-  }
-  LOCAL_HISTOGRAM_BOOLEAN("Storage.Blob.CleanupSuccess", success);
-}
+const char kBlobStorageContextKeyName[] = "content_blob_storage_context";
 
 class BlobHandleImpl : public BlobHandle {
  public:
@@ -77,39 +49,11 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
     context->SetUserData(
         kBlobStorageContextKeyName,
         new UserDataAdapter<ChromeBlobStorageContext>(blob.get()));
-
     // Check first to avoid memory leak in unittests.
-    bool io_thread_valid = BrowserThread::IsMessageLoopValid(BrowserThread::IO);
-
-    // Resolve our storage directories.
-    FilePath blob_storage_parent =
-        context->GetPath().Append(kBlobStorageParentDirectory);
-    FilePath blob_storage_dir = blob_storage_parent.Append(
-        FilePath::FromUTF8Unsafe(base::GenerateGUID()));
-
-    // Only populate the task runner if we're not off the record. This enables
-    // paging/saving blob data to disk.
-    scoped_refptr<base::TaskRunner> file_task_runner;
-
-    // If we're not incognito mode, schedule all of our file tasks to enable
-    // disk on the storage context.
-    if (!context->IsOffTheRecord() && io_thread_valid) {
-      file_task_runner =
-          BrowserThread::GetBlockingPool()->GetTaskRunnerWithShutdownBehavior(
-              base::SequencedWorkerPool::SKIP_ON_SHUTDOWN);
-      // Removes our old blob directories if they exist.
-      BrowserThread::PostAfterStartupTask(
-          FROM_HERE, file_task_runner,
-          base::Bind(&RemoveOldBlobStorageDirectories,
-                     base::Passed(&blob_storage_parent), blob_storage_dir));
-    }
-
-    if (io_thread_valid) {
+    if (BrowserThread::IsMessageLoopValid(BrowserThread::IO)) {
       BrowserThread::PostTask(
           BrowserThread::IO, FROM_HERE,
-          base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread, blob,
-                     base::Passed(&blob_storage_dir),
-                     base::Passed(&file_task_runner)));
+          base::Bind(&ChromeBlobStorageContext::InitializeOnIOThread, blob));
     }
   }
 
@@ -117,12 +61,9 @@ ChromeBlobStorageContext* ChromeBlobStorageContext::GetFor(
       context, kBlobStorageContextKeyName);
 }
 
-void ChromeBlobStorageContext::InitializeOnIOThread(
-    FilePath blob_storage_dir,
-    scoped_refptr<base::TaskRunner> file_task_runner) {
+void ChromeBlobStorageContext::InitializeOnIOThread() {
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
-  context_.reset(new BlobStorageContext(std::move(blob_storage_dir),
-                                        std::move(file_task_runner)));
+  context_.reset(new BlobStorageContext());
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
@@ -145,7 +86,7 @@ std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateMemoryBackedBlob(
 }
 
 std::unique_ptr<BlobHandle> ChromeBlobStorageContext::CreateFileBackedBlob(
-    const FilePath& path,
+    const base::FilePath& path,
     int64_t offset,
     int64_t size,
     const base::Time& expected_modification_time) {
