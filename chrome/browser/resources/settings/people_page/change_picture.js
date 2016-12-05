@@ -240,7 +240,7 @@ Polymer({
 
   /**
    * Handler for when accessibility-specific keys are pressed.
-   * @param {!{detail: !{key: string}}} e
+   * @param {!{detail: !{key: string, keyboardEvent: Object}}} e
    */
   onKeysPress_: function(e) {
     if (!this.selectedItem_)
@@ -268,6 +268,7 @@ Polymer({
         } while (this.selectedItem_.hidden);
 
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
+        e.detail.keyboardEvent.preventDefault();
         break;
 
       case 'down':
@@ -279,6 +280,7 @@ Polymer({
         } while (this.selectedItem_.hidden);
 
         this.lastSelectedImageType_ = this.selectedItem_.dataset.type;
+        e.detail.keyboardEvent.preventDefault();
         break;
 
       case 'enter':
