@@ -573,6 +573,7 @@ void StyleEngine::markTreeScopeDirty(TreeScope& scope) {
 
   DCHECK(m_styleSheetCollectionMap.contains(&scope));
   m_dirtyTreeScopes.add(&scope);
+  document().scheduleLayoutTreeUpdateIfNeeded();
 }
 
 void StyleEngine::markDocumentDirty() {
@@ -581,6 +582,8 @@ void StyleEngine::markDocumentDirty() {
     viewportRulesChanged();
   if (document().importLoader())
     document().importsController()->master()->styleEngine().markDocumentDirty();
+  else
+    document().scheduleLayoutTreeUpdateIfNeeded();
 }
 
 CSSStyleSheet* StyleEngine::createSheet(Element& element,
