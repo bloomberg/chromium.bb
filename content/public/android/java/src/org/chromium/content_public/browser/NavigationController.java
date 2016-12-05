@@ -71,11 +71,6 @@ public interface NavigationController {
     public void reload(boolean checkForRepost);
 
     /**
-     * Reload the current page to refresh page contents, may not revalidate the cache contents.
-     */
-    public void reloadToRefreshContent(boolean checkForRepost);
-
-    /**
      * Reload the current page, bypassing the contents of the cache.
      */
     public void reloadBypassingCache(boolean checkForRepost);

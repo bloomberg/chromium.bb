@@ -124,10 +124,6 @@ public class NavigationPopupTest extends ChromeActivityTestCaseBase<ChromeActivi
         }
 
         @Override
-        public void reloadToRefreshContent(boolean checkForRepost) {
-        }
-
-        @Override
         public void reloadBypassingCache(boolean checkForRepost) {
         }
 

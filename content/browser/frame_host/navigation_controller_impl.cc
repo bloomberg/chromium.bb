@@ -267,9 +267,6 @@ void NavigationControllerImpl::Restore(
 void NavigationControllerImpl::Reload(bool check_for_repost) {
   ReloadInternal(check_for_repost, ReloadType::MAIN_RESOURCE);
 }
-void NavigationControllerImpl::ReloadToRefreshContent(bool check_for_repost) {
-  ReloadInternal(check_for_repost, ReloadType::MAIN_RESOURCE);
-}
 void NavigationControllerImpl::ReloadBypassingCache(bool check_for_repost) {
   ReloadInternal(check_for_repost, ReloadType::BYPASSING_CACHE);
 }

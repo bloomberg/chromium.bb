@@ -54,9 +54,6 @@ class CONTENT_EXPORT NavigationControllerAndroid {
   void Reload(JNIEnv* env,
               const base::android::JavaParamRef<jobject>& obj,
               jboolean check_for_repost);
-  void ReloadToRefreshContent(JNIEnv* env,
-                              jobject obj,
-                              jboolean check_for_repost);
   void ReloadBypassingCache(JNIEnv* env,
                             const base::android::JavaParamRef<jobject>& obj,
                             jboolean check_for_repost);

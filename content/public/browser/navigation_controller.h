@@ -355,12 +355,6 @@ class NavigationController {
   // is showing, initiates a new navigation to its URL.
   virtual void Reload(bool check_for_repost) = 0;
 
-  // Like Reload(), but for refreshing page content and may not need to
-  // validate cache content.
-  // TODO(kinuko): Update the comment once we fix the cache validation
-  // behavior.
-  virtual void ReloadToRefreshContent(bool check_for_repost) = 0;
-
   // Like Reload(), but don't use caches (aka "shift-reload").
   virtual void ReloadBypassingCache(bool check_for_repost) = 0;
 

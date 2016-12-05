@@ -115,13 +115,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     }
 
     @Override
-    public void reloadToRefreshContent(boolean checkForRepost) {
-        if (mNativeNavigationControllerAndroid != 0) {
-            nativeReloadToRefreshContent(mNativeNavigationControllerAndroid, checkForRepost);
-        }
-    }
-
-    @Override
     public void reloadBypassingCache(boolean checkForRepost) {
         if (mNativeNavigationControllerAndroid != 0) {
             nativeReloadBypassingCache(mNativeNavigationControllerAndroid, checkForRepost);
@@ -315,8 +308,6 @@ import org.chromium.content_public.common.ResourceRequestBody;
     private native void nativeCancelPendingReload(long nativeNavigationControllerAndroid);
     private native void nativeContinuePendingReload(long nativeNavigationControllerAndroid);
     private native void nativeReload(long nativeNavigationControllerAndroid,
-            boolean checkForRepost);
-    private native void nativeReloadToRefreshContent(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
     private native void nativeReloadBypassingCache(long nativeNavigationControllerAndroid,
             boolean checkForRepost);
