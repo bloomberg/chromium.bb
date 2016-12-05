@@ -484,15 +484,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     base::TimeTicks start_time_ticks;
     ServiceWorkerMetrics::EventType event_type;
 
-    // -------------------------------------------------------------------------
-    // For Mojo requests.
-    // -------------------------------------------------------------------------
-    // Name of the mojo service this request is associated with. Used to call
-    // the callback when a connection closes with outstanding requests. Compared
-    // as pointer, so should only contain static strings. Typically this would
-    // be Interface::Name_ for some mojo interface.
-    const char* mojo_service = nullptr;
-
     // ------------------------------------------------------------------------
     // For IPC message requests.
     // ------------------------------------------------------------------------
@@ -503,41 +494,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
     bool is_dispatched = false;
   };
 
-  // Base class to enable storing a list of mojo interface pointers for
-  // arbitrary interfaces. The destructor is also responsible for calling the
-  // error callbacks for any outstanding requests using this service.
-  class CONTENT_EXPORT BaseMojoServiceWrapper {
-   public:
-    BaseMojoServiceWrapper(ServiceWorkerVersion* worker,
-                           const char* service_name);
-    virtual ~BaseMojoServiceWrapper();
-
-   private:
-    ServiceWorkerVersion* worker_;
-    const char* service_name_;
-
-    DISALLOW_COPY_AND_ASSIGN(BaseMojoServiceWrapper);
-  };
-
-  // Wrapper around a mojo::InterfacePtr, which passes out WeakPtr's to the
-  // interface.
-  template <typename Interface>
-  class MojoServiceWrapper : public BaseMojoServiceWrapper {
-   public:
-    MojoServiceWrapper(ServiceWorkerVersion* worker,
-                       mojo::InterfacePtr<Interface> interface_ptr)
-        : BaseMojoServiceWrapper(worker, Interface::Name_),
-          interface_(std::move(interface_ptr)),
-          weak_ptr_factory_(interface_.get()) {}
-
-    base::WeakPtr<Interface> GetWeakPtr() {
-      return weak_ptr_factory_.GetWeakPtr();
-    }
-
-   private:
-    mojo::InterfacePtr<Interface> interface_;
-    base::WeakPtrFactory<Interface> weak_ptr_factory_;
-  };
 
   typedef ServiceWorkerVersion self;
   using ServiceWorkerClients = std::vector<ServiceWorkerClientInfo>;
@@ -716,9 +672,6 @@ class CONTENT_EXPORT ServiceWorkerVersion
       scoped_refptr<ServiceWorkerRegistration> registration);
 
   void OnStoppedInternal(EmbeddedWorkerStatus old_status);
-
-  // Called when the remote side of a connection to a mojo service is lost.
-  void OnMojoConnectionError(const char* service_name);
 
   // Called at the beginning of each Dispatch*Event function: records
   // the time elapsed since idle (generally the time since the previous

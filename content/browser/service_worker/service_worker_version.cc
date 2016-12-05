@@ -863,26 +863,6 @@ ServiceWorkerVersion::PendingRequest::PendingRequest(
 
 ServiceWorkerVersion::PendingRequest::~PendingRequest() {}
 
-ServiceWorkerVersion::BaseMojoServiceWrapper::BaseMojoServiceWrapper(
-    ServiceWorkerVersion* worker,
-    const char* service_name)
-    : worker_(worker), service_name_(service_name) {}
-
-ServiceWorkerVersion::BaseMojoServiceWrapper::~BaseMojoServiceWrapper() {
-  IDMap<std::unique_ptr<PendingRequest>>::iterator iter(
-      &worker_->pending_requests_);
-  while (!iter.IsAtEnd()) {
-    PendingRequest* request = iter.GetCurrentValue();
-    if (request->mojo_service == service_name_) {
-      TRACE_EVENT_ASYNC_END1("ServiceWorker", "ServiceWorkerVersion::Request",
-                             request, "Error", "Service Disconnected");
-      request->error_callback.Run(SERVICE_WORKER_ERROR_FAILED);
-      worker_->pending_requests_.Remove(iter.GetCurrentKey());
-    }
-    iter.Advance();
-  }
-}
-
 void ServiceWorkerVersion::OnThreadStarted() {
   DCHECK_EQ(EmbeddedWorkerStatus::STARTING, running_status());
   // Activate ping/pong now that JavaScript execution will start.
