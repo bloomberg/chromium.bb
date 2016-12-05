@@ -201,7 +201,7 @@ ResizeObserver status=experimental
 // Handles frame scrolling via the root PaintLayer instead of the FrameView.
 // crbug.com/417782 tracks enabling this by default.
 RootLayerScrolling
-RTCPeerConnectionNewGetStats status=test
+RTCPeerConnectionNewGetStats status=experimental
 ScriptedSpeech status=stable
 // Scrolls to compensate for layout movements (bit.ly/scroll-anchoring).
 ScrollAnchoring status=experimental, settable_from_internals=True
