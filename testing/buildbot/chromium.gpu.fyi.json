@@ -9971,6 +9971,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -10119,6 +10142,29 @@
             }
           ],
           "shards": 15
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
         }
       },
       {
@@ -10524,6 +10570,29 @@
         "name": "trace_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0412",
+              "os": "Windows-10-10586"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -11017,6 +11086,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0412",
+              "os": "Windows-10-10586"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -11454,6 +11546,29 @@
           "--show-stdout",
           "--browser=debug",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -11851,6 +11966,29 @@
         "name": "trace_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12288,6 +12426,29 @@
         "name": "trace_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0412",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -12750,6 +12911,29 @@
             }
           ],
           "shards": 15
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6779",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
         }
       },
       {
@@ -13232,6 +13416,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "1002:6613",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -13685,6 +13892,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:041a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -14130,6 +14360,29 @@
             }
           ],
           "shards": 15
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:0f02",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
         }
       },
       {
@@ -14684,6 +14937,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -15160,6 +15436,29 @@
           "--show-stdout",
           "--browser=release",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "8086:0412",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -15557,6 +15856,29 @@
         "name": "trace_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug_x64",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16084,6 +16406,29 @@
           "--show-stdout",
           "--browser=release_x64",
           "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2008ServerR2-SP1"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release_x64",
+          "-v",
           "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d9"
         ],
         "isolate_name": "telemetry_gpu_integration_test",
@@ -16504,6 +16849,29 @@
         "name": "trace_test",
         "override_compile_targets": [
           "telemetry_gpu_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2012ServerR2-SP0"
+            }
+          ]
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=debug",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
         ],
         "swarming": {
           "can_use_on_swarming_builders": true,
@@ -16992,6 +17360,29 @@
             }
           ],
           "shards": 15
+        }
+      },
+      {
+        "args": [
+          "webgl_conformance",
+          "--show-stdout",
+          "--browser=release",
+          "-v",
+          "--extra-browser-args=--enable-logging=stderr --js-flags=--expose-gc --use-angle=d3d11 --use-passthrough-cmd-decoder"
+        ],
+        "isolate_name": "telemetry_gpu_integration_test",
+        "name": "webgl_conformance_d3d11_passthrough_tests",
+        "override_compile_targets": [
+          "telemetry_gpu_integration_test_run"
+        ],
+        "swarming": {
+          "can_use_on_swarming_builders": true,
+          "dimension_sets": [
+            {
+              "gpu": "10de:104a",
+              "os": "Windows-2012ServerR2-SP0"
+            }
+          ]
         }
       },
       {

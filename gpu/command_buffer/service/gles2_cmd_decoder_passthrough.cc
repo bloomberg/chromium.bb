@@ -171,9 +171,9 @@ bool GLES2DecoderPassthroughImpl::Initialize(
 
   // Check for required extensions
   if (!feature_info_->feature_flags().angle_robust_client_memory ||
-      !feature_info_->feature_flags().chromium_bind_generates_resource ||
-      (feature_info_->IsWebGLContext() !=
-       feature_info_->feature_flags().angle_webgl_compatibility)) {
+      !feature_info_->feature_flags().chromium_bind_generates_resource) {
+    // TODO(geofflang): Verify that ANGLE_webgl_compatibility is enabled if this
+    // is a WebGL context (depends on crbug.com/671217).
     Destroy(true);
     return false;
   }

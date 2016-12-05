@@ -1220,6 +1220,20 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       '--use-gl=angle',
     ],
   },
+  'webgl_conformance_d3d11_passthrough': {
+    'tester_configs': [
+      {
+        'fyi_only': True,
+        'os_types': ['win'],
+        'run_on_optional': True,
+      }
+    ],
+    'target_name': 'webgl_conformance',
+    'extra_browser_args': [
+      '--use-angle=d3d11',
+      '--use-passthrough-cmd-decoder',
+    ],
+  },
   'webgl2_conformance_tests': {
     'tester_configs': [
       {
