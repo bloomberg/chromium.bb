@@ -80,6 +80,11 @@ class LayoutSVGBlock : public LayoutBlockFlow {
                    const HitTestLocation& locationInContainer,
                    const LayoutPoint& accumulatedOffset,
                    HitTestAction) override;
+
+  // The inherited version doesn't check for SVG effects.
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override {
+    return false;
+  }
 };
 
 }  // namespace blink

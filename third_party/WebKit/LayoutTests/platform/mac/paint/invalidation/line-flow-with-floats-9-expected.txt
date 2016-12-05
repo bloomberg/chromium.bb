@@ -94,6 +94,11 @@
         {
           "object": "LayoutView #document",
           "rect": [485, 0, 15, 600],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [485, 0, 15, 600],
           "reason": "scroll"
         }
       ]
@@ -107,6 +112,10 @@
     {
       "object": "VerticalScrollbar",
       "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
     },
     {
       "object": "LayoutBlockFlow P",

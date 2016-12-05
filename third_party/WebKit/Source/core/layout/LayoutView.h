@@ -265,6 +265,8 @@ class CORE_EXPORT LayoutView final : public LayoutBlockFlow {
   int viewLogicalWidthForBoxSizing() const;
   int viewLogicalHeightForBoxSizing() const;
 
+  bool paintedOutputOfObjectHasNoEffectRegardlessOfSize() const override;
+
   UntracedMember<FrameView> m_frameView;
 
   // The current selection represented as 2 boundaries.
