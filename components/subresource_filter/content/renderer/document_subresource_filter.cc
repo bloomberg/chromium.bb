@@ -13,6 +13,7 @@
 #include "components/subresource_filter/core/common/first_party_origin.h"
 #include "components/subresource_filter/core/common/memory_mapped_ruleset.h"
 #include "components/subresource_filter/core/common/scoped_timers.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 #include "third_party/WebKit/public/platform/WebURL.h"
 
 namespace subresource_filter {
@@ -130,18 +131,18 @@ bool DocumentSubresourceFilter::allowLoad(
   TRACE_EVENT1("loader", "DocumentSubresourceFilter::allowLoad", "url",
                resourceUrl.string().utf8());
 
-  auto wall_duration_exporter = [this](base::TimeDelta delta) {
-    statistics_.evaluation_total_wall_duration += delta;
-    UMA_HISTOGRAM_MICRO_TIMES(
-        "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
-  };
-  auto cpu_duration_exporter = [this](base::TimeDelta delta) {
-    statistics_.evaluation_total_cpu_duration += delta;
-    UMA_HISTOGRAM_MICRO_TIMES(
-        "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);
-  };
-  SCOPED_TIMER(wall_duration_exporter);
-  SCOPED_THREAD_TIMER(cpu_duration_exporter);
+  auto wall_duration_timer = ScopedTimers::StartIf(
+      ScopedThreadTimers::IsSupported(), [this](base::TimeDelta delta) {
+        statistics_.evaluation_total_wall_duration += delta;
+        UMA_HISTOGRAM_MICRO_TIMES(
+            "SubresourceFilter.SubresourceLoad.Evaluation.WallDuration", delta);
+      });
+  auto cpu_duration_timer =
+      ScopedThreadTimers::Start([this](base::TimeDelta delta) {
+        statistics_.evaluation_total_cpu_duration += delta;
+        UMA_HISTOGRAM_MICRO_TIMES(
+            "SubresourceFilter.SubresourceLoad.Evaluation.CPUDuration", delta);
+      });
 
   ++statistics_.num_loads_total;
 

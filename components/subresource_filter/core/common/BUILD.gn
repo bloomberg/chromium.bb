@@ -25,6 +25,7 @@ static_library("common") {
     "ngram_extractor.h",
     "scoped_timers.h",
     "string_splitter.h",
+    "time_measurements.h",
     "uint64_hasher.h",
     "unindexed_ruleset.cc",
     "unindexed_ruleset.h",

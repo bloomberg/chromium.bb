@@ -28,7 +28,7 @@
 #include "components/subresource_filter/core/common/copying_file_stream.h"
 #include "components/subresource_filter/core/common/indexed_ruleset.h"
 #include "components/subresource_filter/core/common/proto/rules.pb.h"
-#include "components/subresource_filter/core/common/scoped_timers.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 #include "components/subresource_filter/core/common/unindexed_ruleset.h"
 #include "third_party/protobuf/src/google/protobuf/io/zero_copy_stream_impl_lite.h"
 

@@ -6,11 +6,12 @@
 
 #include "base/test/histogram_tester.h"
 #include "base/time/time.h"
+#include "components/subresource_filter/core/common/time_measurements.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
 
-class ExportFunctorForTests {
+class MockExportFunctor {
  public:
   int number_of_calls() const { return number_of_calls_; }
   void operator()(base::TimeDelta) { ++number_of_calls_; }
@@ -19,73 +20,137 @@ class ExportFunctorForTests {
   int number_of_calls_ = 0;
 };
 
-// Casts an l-value parameter to a reference to it.
-template <typename T>
-T& reference(T& value) {
-  return value;
+template <typename TimerFactory>
+void ExpectFunctorIsCalledOnceOnDestruction() {
+  MockExportFunctor export_functor;
+  {
+    auto scoped_timer = TimerFactory::Start(export_functor);
+    EXPECT_EQ(0, export_functor.number_of_calls());
+  }
+  const int expected_number_of_calls = TimerFactory::IsSupported() ? 1 : 0;
+  EXPECT_EQ(expected_number_of_calls, export_functor.number_of_calls());
+}
+
+template <typename TimerFactory>
+void ExpectStoredLambdaIsInvokedOnceOnDestruction() {
+  bool export_is_called = false;
+  auto export_functor = [&export_is_called](base::TimeDelta) {
+    EXPECT_FALSE(export_is_called);
+    export_is_called = true;
+  };
+
+  {
+    auto scoped_timer = TimerFactory::Start(export_functor);
+    EXPECT_FALSE(export_is_called);
+  }
+  EXPECT_EQ(TimerFactory::IsSupported(), export_is_called);
+}
+
+template <typename TimerFactory>
+void ExpectInlineLambdaIsInvokedOnceOnDestruction() {
+  bool export_is_called = false;
+  {
+    auto scoped_timer =
+        TimerFactory::Start([&export_is_called](base::TimeDelta) {
+          EXPECT_FALSE(export_is_called);
+          export_is_called = true;
+        });
+    EXPECT_FALSE(export_is_called);
+  }
+  EXPECT_EQ(TimerFactory::IsSupported(), export_is_called);
+}
+
+template <typename TimerFactory>
+void ExpectWellBehavedStartIf(bool condition) {
+  bool export_is_called = false;
+  auto export_functor = [&export_is_called](base::TimeDelta) {
+    EXPECT_FALSE(export_is_called);
+    export_is_called = true;
+  };
+
+  {
+    auto scoped_timer = TimerFactory::StartIf(condition, export_functor);
+    EXPECT_FALSE(export_is_called);
+  }
+  EXPECT_EQ(condition && TimerFactory::IsSupported(), export_is_called);
+}
+
+template <typename TimerFactory>
+void ExpectWellBehavedMoveContructor() {
+  MockExportFunctor export_functor;
+  const int expected_number_of_calls = TimerFactory::IsSupported() ? 1 : 0;
+  {
+    auto scoped_timer = TimerFactory::Start(export_functor);
+    EXPECT_EQ(0, export_functor.number_of_calls());
+    {
+      auto another_scoped_timer = std::move(scoped_timer);
+      EXPECT_EQ(0, export_functor.number_of_calls());
+    }
+    // |another_scoped_timer| should have called |export_functor|.
+    EXPECT_EQ(expected_number_of_calls, export_functor.number_of_calls());
+  }
+  // But |scoped_timer| should have not since then.
+  EXPECT_EQ(expected_number_of_calls, export_functor.number_of_calls());
+}
+
+template <typename TimerFactory>
+void ExpectWellBehavedMoveAssignment() {
+  MockExportFunctor export_functor;
+  const int expected_number_of_calls = TimerFactory::IsSupported() ? 1 : 0;
+  {
+    auto scoped_timer = TimerFactory::Start(export_functor);
+    EXPECT_EQ(0, export_functor.number_of_calls());
+    {
+      auto another_scoped_timer = std::move(scoped_timer);
+      scoped_timer = std::move(another_scoped_timer);
+      EXPECT_EQ(0, export_functor.number_of_calls());
+    }
+    // |another_scoped_timer| shouldn't have called |export_functor|.
+    EXPECT_EQ(0, export_functor.number_of_calls());
+  }
+  // But |scoped_timer| should have because it owns the measurement.
+  EXPECT_EQ(expected_number_of_calls, export_functor.number_of_calls());
 }
 
 }  // namespace
 
 namespace subresource_filter {
 
-TEST(ScopedTimersTest, ScopedTimerCallsFunctor) {
-  ExportFunctorForTests export_functor;
-  {
-    // Reference is needed to bypass object copying.
-    SCOPED_TIMER(reference(export_functor));
-    EXPECT_EQ(0, export_functor.number_of_calls());
-  }
-  EXPECT_EQ(1, export_functor.number_of_calls());
+TEST(ScopedTimersTest, CallsFunctor) {
+  ExpectFunctorIsCalledOnceOnDestruction<ScopedTimers>();
+  ExpectFunctorIsCalledOnceOnDestruction<ScopedThreadTimers>();
 }
 
-TEST(ScopedTimersTest, ScopedThreadTimerCallsFunctor) {
-  ExportFunctorForTests export_functor;
-  {
-    // Reference is needed to bypass functor copying.
-    SCOPED_THREAD_TIMER(reference(export_functor));
-    EXPECT_EQ(0, export_functor.number_of_calls());
-  }
-  const int expected_number_of_calls = base::ThreadTicks::IsSupported() ? 1 : 0;
-  EXPECT_EQ(expected_number_of_calls, export_functor.number_of_calls());
+TEST(ScopedTimersTest, CallsStoredLambdaFunctor) {
+  ExpectStoredLambdaIsInvokedOnceOnDestruction<ScopedTimers>();
+  ExpectStoredLambdaIsInvokedOnceOnDestruction<ScopedThreadTimers>();
 }
 
-TEST(ScopedTimersTest, ScopedTimersCopyFunctor) {
-  ExportFunctorForTests export_functor;
-  {
-    SCOPED_TIMER(export_functor);
-    SCOPED_THREAD_TIMER(export_functor);
-    EXPECT_EQ(0, export_functor.number_of_calls());
-  }
-  EXPECT_EQ(0, export_functor.number_of_calls());
+TEST(ScopedTimersTest, CallsInlineLambdaFunctor) {
+  ExpectInlineLambdaIsInvokedOnceOnDestruction<ScopedTimers>();
+  ExpectInlineLambdaIsInvokedOnceOnDestruction<ScopedThreadTimers>();
 }
 
-TEST(ScopedTimersTest, ScopedThreadTimerCallsStoredLambdaFunctor) {
-  bool export_is_called = false;
-  auto export_functor = [&export_is_called](base::TimeDelta) {
-    EXPECT_FALSE(export_is_called);
-    export_is_called = true;
-  };
+TEST(ScopedTimersTest, StartIf) {
+  ExpectWellBehavedStartIf<ScopedTimers>(false);
+  ExpectWellBehavedStartIf<ScopedTimers>(true);
 
-  {
-    SCOPED_THREAD_TIMER(export_functor);
-    EXPECT_FALSE(export_is_called);
-  }
-  EXPECT_EQ(base::ThreadTicks::IsSupported(), export_is_called);
+  ExpectWellBehavedStartIf<ScopedThreadTimers>(false);
+  ExpectWellBehavedStartIf<ScopedThreadTimers>(true);
 }
 
-TEST(ScopedTimersTest, ScopedTimerCallsStoredLambdaFunctor) {
-  bool export_is_called = false;
-  auto export_functor = [&export_is_called](base::TimeDelta) {
-    export_is_called = true;
-  };
-
-  {
-    SCOPED_TIMER(export_functor);
-    EXPECT_FALSE(export_is_called);
-  }
-  EXPECT_TRUE(export_is_called);
+TEST(ScopedTimersTest, MoveConstructTimer) {
+  ExpectWellBehavedMoveContructor<ScopedTimers>();
+  ExpectWellBehavedMoveContructor<ScopedThreadTimers>();
 }
+
+TEST(ScopedTimersTest, MoveAssignTimer) {
+  ExpectWellBehavedMoveAssignment<ScopedTimers>();
+  ExpectWellBehavedMoveAssignment<ScopedThreadTimers>();
+}
+
+// Below are tests for macros in "time_measurements.h" -------------------------
+// TODO(pkalinnikov): Move these to a separate file?
 
 TEST(ScopedTimersTest, ScopedUmaHistogramMacros) {
   base::HistogramTester tester;
@@ -99,11 +164,12 @@ TEST(ScopedTimersTest, ScopedUmaHistogramMacros) {
     tester.ExpectTotalCount("ScopedTimers.MicroTimer", 0);
   }
 
-  const int expected_count = base::ThreadTicks::IsSupported() ? 1 : 0;
+  int expected_count = ScopedTimers::IsSupported() ? 1 : 0;
+  tester.ExpectTotalCount("ScopedTimers.MicroTimer", expected_count);
+
+  expected_count = ScopedThreadTimers::IsSupported() ? 1 : 0;
   tester.ExpectTotalCount("ScopedTimers.ThreadTimer", expected_count);
   tester.ExpectTotalCount("ScopedTimers.MicroThreadTimer", expected_count);
-
-  tester.ExpectTotalCount("ScopedTimers.MicroTimer", 1);
 }
 
 TEST(ScopedTimersTest, UmaHistogramMicroTimesFromExportFunctor) {
@@ -112,7 +178,7 @@ TEST(ScopedTimersTest, UmaHistogramMicroTimesFromExportFunctor) {
     UMA_HISTOGRAM_MICRO_TIMES("ScopedTimers.MicroTimes", delta);
   };
   {
-    SCOPED_TIMER(export_functor);
+    auto scoped_timer = ScopedTimers::Start(export_functor);
     tester.ExpectTotalCount("ScopedTimers.MicroTimes", 0);
   }
   tester.ExpectTotalCount("ScopedTimers.MicroTimes", 1);
