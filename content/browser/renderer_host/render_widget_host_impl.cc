@@ -1420,6 +1420,11 @@ void RenderWidgetHostImpl::NotifyScreenInfoChanged() {
   // the screen info as well as the new size (if the screen has changed scale
   // factor).
   WasResized();
+
+  if (touch_emulator_) {
+    touch_emulator_->SetDeviceScaleFactor(
+        view_.get() ? content::GetScaleFactorForView(view_.get()) : 1.0f);
+  }
 }
 
 void RenderWidgetHostImpl::GetSnapshotFromBrowser(

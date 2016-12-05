@@ -77,7 +77,9 @@ class TouchEmulatorTest : public testing::Test,
     }
   }
 
-  void SetCursor(const WebCursor& cursor) override {}
+  void SetCursor(const WebCursor& cursor) override {
+    cursor_ = cursor;
+  }
 
   void ShowContextMenuAtPoint(const gfx::Point& point) override {}
 
@@ -241,6 +243,12 @@ class TouchEmulatorTest : public testing::Test,
 
   void DisableSynchronousTouchAck() { ack_touches_synchronously_ = false; }
 
+  float GetCursorScaleFactor() {
+    WebCursor::CursorInfo info;
+    cursor_.GetCursorInfo(&info);
+    return info.image_scale_factor;
+  }
+
  private:
   std::unique_ptr<TouchEmulator> emulator_;
   std::vector<WebInputEvent::Type> forwarded_events_;
@@ -253,6 +261,7 @@ class TouchEmulatorTest : public testing::Test,
   int last_mouse_y_;
   std::vector<WebTouchEvent> touch_events_to_ack_;
   base::MessageLoopForUI message_loop_;
+  WebCursor cursor_;
 };
 
 
@@ -567,6 +576,27 @@ TEST_F(TouchEmulatorTest, CancelAfterDisableDoesNotCrash) {
 
 TEST_F(TouchEmulatorTest, ConstructorWithHighDeviceScaleDoesNotCrash) {
   TouchEmulator(this, 4.0f);
+}
+
+TEST_F(TouchEmulatorTest, CursorScaleFactor) {
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+  emulator()->SetDeviceScaleFactor(3.0f);
+  EXPECT_EQ(2.0f, GetCursorScaleFactor());
+  emulator()->SetDeviceScaleFactor(1.33f);
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+  emulator()->Disable();
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+  emulator()->SetDeviceScaleFactor(3.0f);
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+  emulator()->Enable(ui::GestureProviderConfigType::GENERIC_MOBILE);
+  EXPECT_EQ(2.0f, GetCursorScaleFactor());
+  emulator()->SetDeviceScaleFactor(1.0f);
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+
+  TouchEmulator another(this, 4.0f);
+  EXPECT_EQ(1.0f, GetCursorScaleFactor());
+  another.Enable(ui::GestureProviderConfigType::GENERIC_MOBILE);
+  EXPECT_EQ(2.0f, GetCursorScaleFactor());
 }
 
 }  // namespace content

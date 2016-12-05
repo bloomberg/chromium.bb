@@ -27,6 +27,9 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   void Enable(ui::GestureProviderConfigType config_type);
   void Disable();
 
+  // Call when device scale factor changes.
+  void SetDeviceScaleFactor(float device_scale_factor);
+
   // See GestureProvider::SetDoubleTapSupportForPageEnabled.
   void SetDoubleTapSupportForPageEnabled(bool enabled);
 
@@ -57,6 +60,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   // Returns cursor size in DIP.
   gfx::SizeF InitCursorFromResource(
       WebCursor* cursor, float scale, int resource_id);
+  bool InitCursors(float device_scale_factor, bool force);
   void ResetState();
   void UpdateCursor();
   bool UpdateShiftPressed(bool shift_pressed);
@@ -86,6 +90,7 @@ class CONTENT_EXPORT TouchEmulator : public ui::GestureProviderClient {
   ui::GestureProviderConfigType gesture_provider_config_type_;
   bool double_tap_enabled_;
 
+  bool use_2x_cursors_;
   // While emulation is on, default cursor is touch. Pressing shift changes
   // cursor to the pinch one.
   WebCursor pointer_cursor_;

@@ -56,25 +56,12 @@ TouchEmulator::TouchEmulator(TouchEmulatorClient* client,
       gesture_provider_config_type_(
           ui::GestureProviderConfigType::CURRENT_PLATFORM),
       double_tap_enabled_(true),
+      use_2x_cursors_(false),
       emulated_stream_active_sequence_count_(0),
       native_stream_active_sequence_count_(0) {
   DCHECK(client_);
   ResetState();
-
-  bool use_2x = device_scale_factor > 1.5f;
-  float cursor_scale_factor = use_2x ? 2.f : 1.f;
-  cursor_size_ = InitCursorFromResource(&touch_cursor_,
-      cursor_scale_factor,
-      use_2x ? IDR_DEVTOOLS_TOUCH_CURSOR_ICON_2X :
-          IDR_DEVTOOLS_TOUCH_CURSOR_ICON);
-  InitCursorFromResource(&pinch_cursor_,
-      cursor_scale_factor,
-      use_2x ? IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X :
-          IDR_DEVTOOLS_PINCH_CURSOR_ICON);
-
-  WebCursor::CursorInfo cursor_info;
-  cursor_info.type = blink::WebCursorInfo::TypePointer;
-  pointer_cursor_.InitFromCursorInfo(cursor_info);
+  InitCursors(device_scale_factor, true);
 }
 
 TouchEmulator::~TouchEmulator() {
@@ -115,10 +102,38 @@ void TouchEmulator::Disable() {
   ResetState();
 }
 
+void TouchEmulator::SetDeviceScaleFactor(float device_scale_factor) {
+  if (!InitCursors(device_scale_factor, false))
+    return;
+  if (enabled())
+    UpdateCursor();
+}
+
 void TouchEmulator::SetDoubleTapSupportForPageEnabled(bool enabled) {
   double_tap_enabled_ = enabled;
   if (gesture_provider_)
     gesture_provider_->SetDoubleTapSupportForPageEnabled(enabled);
+}
+
+bool TouchEmulator::InitCursors(float device_scale_factor, bool force) {
+  bool use_2x = device_scale_factor > 1.5f;
+  if (use_2x == use_2x_cursors_ && !force)
+    return false;
+  use_2x_cursors_ = use_2x;
+  float cursor_scale_factor = use_2x ? 2.f : 1.f;
+  cursor_size_ = InitCursorFromResource(&touch_cursor_,
+      cursor_scale_factor,
+      use_2x ? IDR_DEVTOOLS_TOUCH_CURSOR_ICON_2X :
+          IDR_DEVTOOLS_TOUCH_CURSOR_ICON);
+  InitCursorFromResource(&pinch_cursor_,
+      cursor_scale_factor,
+      use_2x ? IDR_DEVTOOLS_PINCH_CURSOR_ICON_2X :
+          IDR_DEVTOOLS_PINCH_CURSOR_ICON);
+
+  WebCursor::CursorInfo cursor_info;
+  cursor_info.type = blink::WebCursorInfo::TypePointer;
+  pointer_cursor_.InitFromCursorInfo(cursor_info);
+  return true;
 }
 
 gfx::SizeF TouchEmulator::InitCursorFromResource(
