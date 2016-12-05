@@ -724,6 +724,7 @@ class CORE_EXPORT HTMLMediaElement : public HTMLElement,
   friend class Internals;
   friend class TrackDisplayUpdateScope;
   friend class MediaControlsTest;
+  friend class HTMLMediaElementTest;
   friend class HTMLVideoElementTest;
 
   Member<AutoplayUmaHelper> m_autoplayUmaHelper;

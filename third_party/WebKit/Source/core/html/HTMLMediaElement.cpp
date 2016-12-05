@@ -2072,10 +2072,13 @@ WebMediaPlayer::Preload HTMLMediaElement::preloadType() const {
     return WebMediaPlayer::PreloadNone;
   }
 
-  // Force preload to 'none' on Data Saver and for low end devices.
+  // If the source scheme is requires network, force preload to 'none' on Data
+  // Saver and for low end devices.
   if (document().settings() &&
       (document().settings()->dataSaverEnabled() ||
-       document().settings()->forcePreloadNoneForMediaElements())) {
+       document().settings()->forcePreloadNoneForMediaElements()) &&
+      (m_currentSrc.protocol() != "blob" && m_currentSrc.protocol() != "data" &&
+       m_currentSrc.protocol() != "file")) {
     UseCounter::count(document(),
                       UseCounter::HTMLMediaElementPreloadForcedNone);
     return WebMediaPlayer::PreloadNone;
