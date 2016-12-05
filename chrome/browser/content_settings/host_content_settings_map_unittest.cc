@@ -1801,3 +1801,19 @@ TEST_F(HostContentSettingsMapTest, ClearSettingsForOneTypeWithPredicate) {
   EXPECT_EQ(ContentSettingsPattern::FromURLNoWildcard(url1),
             host_settings[0].primary_pattern);
 }
+
+TEST_F(HostContentSettingsMapTest, CanSetNarrowestSetting) {
+  TestingProfile profile;
+  const auto* map = HostContentSettingsMapFactory::GetForProfile(&profile);
+
+  GURL valid_url("http://google.com");
+  EXPECT_TRUE(map->CanSetNarrowestContentSetting(
+      valid_url, valid_url,
+      CONTENT_SETTINGS_TYPE_POPUPS));
+
+  GURL invalid_url("about:blank");
+  EXPECT_FALSE(map->CanSetNarrowestContentSetting(
+      invalid_url, invalid_url,
+      CONTENT_SETTINGS_TYPE_POPUPS));
+}
+

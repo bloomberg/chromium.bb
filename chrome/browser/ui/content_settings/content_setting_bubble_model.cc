@@ -401,7 +401,12 @@ void ContentSettingSingleRadioGroup::SetRadioGroup() {
       setting == CONTENT_SETTING_BLOCK &&
       PluginUtils::ShouldPreferHtmlOverPlugins(
           HostContentSettingsMapFactory::GetForProfile(profile()));
-  set_radio_group_enabled(setting_source == SETTING_SOURCE_USER &&
+
+  const auto* map = HostContentSettingsMapFactory::GetForProfile(profile());
+  // Prevent creation of content settings for illegal urls like about:blank
+  bool is_valid = map->CanSetNarrowestContentSetting(url, url, content_type());
+
+  set_radio_group_enabled(is_valid && setting_source == SETTING_SOURCE_USER &&
                           !flash_hidden_from_plugin_list);
 
   selected_item_ = radio_group.default_item;

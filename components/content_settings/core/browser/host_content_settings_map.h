@@ -196,6 +196,13 @@ class HostContentSettingsMap : public content_settings::Observer,
       const std::string& resource_identifier,
       std::unique_ptr<base::Value> value);
 
+  // Check if a call to SetNarrowestContentSetting would succeed or if it would
+  // fail because of an invalid pattern.
+  bool CanSetNarrowestContentSetting(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType type) const;
+
   // Sets the most specific rule that currently defines the setting for the
   // given content type. TODO(raymes): Remove this once all content settings
   // are scoped to origin scope. There is no scope more narrow than origin
@@ -363,6 +370,11 @@ class HostContentSettingsMap : public content_settings::Observer,
       ContentSettingsType content_type,
       const std::string& resource_identifier,
       content_settings::SettingInfo* info) const;
+
+  content_settings::PatternPair GetNarrowestPatterns(
+      const GURL& primary_url,
+      const GURL& secondary_url,
+      ContentSettingsType type) const;
 
   static std::unique_ptr<base::Value> GetContentSettingValueAndPatterns(
       const content_settings::ProviderInterface* provider,
