@@ -37,7 +37,6 @@
 #include "bindings/core/v8/V8ErrorEvent.h"
 #include "bindings/core/v8/V8ErrorHandler.h"
 #include "bindings/core/v8/V8GCController.h"
-#include "bindings/core/v8/V8History.h"
 #include "bindings/core/v8/V8IdleTaskRunner.h"
 #include "bindings/core/v8/V8Location.h"
 #include "bindings/core/v8/V8PerContextData.h"
@@ -80,9 +79,6 @@ static Frame* findFrame(v8::Isolate* isolate,
       return 0;
     return V8Window::toImpl(windowWrapper)->frame();
   }
-
-  if (V8History::wrapperTypeInfo.equals(type))
-    return V8History::toImpl(host)->frame();
 
   if (V8Location::wrapperTypeInfo.equals(type))
     return V8Location::toImpl(host)->frame();
