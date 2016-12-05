@@ -54,6 +54,7 @@ mojom("interfaces") {
     "selection.mojom",
     "shared_quad_state.mojom",
     "surface_id.mojom",
+    "surface_reference.mojom",
     "surface_sequence.mojom",
     "transferable_resource.mojom",
   ]
@@ -111,6 +112,7 @@ cc_source_set("struct_traits") {
     "selection_struct_traits.h",
     "shared_quad_state_struct_traits.h",
     "surface_id_struct_traits.h",
+    "surface_reference_struct_traits.h",
     "surface_sequence_struct_traits.h",
     "transferable_resource_struct_traits.cc",
     "transferable_resource_struct_traits.h",

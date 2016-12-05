@@ -95,6 +95,12 @@ class StructTraitsTest : public testing::Test, public mojom::TraitsTestService {
     callback.Run(s);
   }
 
+  void EchoSurfaceReference(
+      const SurfaceReference& s,
+      const EchoSurfaceReferenceCallback& callback) override {
+    callback.Run(s);
+  }
+
   void EchoSurfaceSequence(
       const SurfaceSequence& s,
       const EchoSurfaceSequenceCallback& callback) override {
@@ -777,6 +783,22 @@ TEST_F(StructTraitsTest, SurfaceId) {
   proxy->EchoSurfaceId(input, &output);
   EXPECT_EQ(frame_sink_id, output.frame_sink_id());
   EXPECT_EQ(local_frame_id, output.local_frame_id());
+}
+
+TEST_F(StructTraitsTest, SurfaceReference) {
+  const SurfaceId parent_id(
+      FrameSinkId(2016, 1234),
+      LocalFrameId(0xfbadbeef, base::UnguessableToken::Deserialize(123, 456)));
+  const SurfaceId child_id(
+      FrameSinkId(1111, 9999),
+      LocalFrameId(0xabcdabcd, base::UnguessableToken::Deserialize(333, 333)));
+  const SurfaceReference input(parent_id, child_id);
+
+  mojom::TraitsTestServicePtr proxy = GetTraitsTestProxy();
+  SurfaceReference output;
+  proxy->EchoSurfaceReference(input, &output);
+  EXPECT_EQ(parent_id, output.parent_id());
+  EXPECT_EQ(child_id, output.child_id());
 }
 
 TEST_F(StructTraitsTest, SurfaceSequence) {

@@ -16,6 +16,7 @@ typemaps = [
   "//cc/ipc/selection.typemap",
   "//cc/ipc/shared_quad_state.typemap",
   "//cc/ipc/surface_id.typemap",
+  "//cc/ipc/surface_reference.typemap",
   "//cc/ipc/surface_sequence.typemap",
   "//cc/ipc/transferable_resource.typemap",
 ]

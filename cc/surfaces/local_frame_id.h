@@ -13,8 +13,12 @@
 
 #include "base/hash.h"
 #include "base/unguessable_token.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
+namespace mojom {
+class LocalFrameIdDataView;
+}
 
 class LocalFrameId {
  public:
@@ -53,6 +57,8 @@ class LocalFrameId {
   std::string ToString() const;
 
  private:
+  friend struct mojo::StructTraits<mojom::LocalFrameIdDataView, LocalFrameId>;
+
   uint32_t local_id_;
   base::UnguessableToken nonce_;
 };

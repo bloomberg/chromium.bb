@@ -9,6 +9,7 @@
 #include "cc/ipc/local_frame_id_struct_traits.h"
 #include "cc/ipc/surface_id.mojom-shared.h"
 #include "cc/surfaces/frame_sink_id.h"
+#include "cc/surfaces/local_frame_id.h"
 #include "cc/surfaces/surface_id.h"
 
 namespace mojo {
@@ -24,16 +25,8 @@ struct StructTraits<cc::mojom::SurfaceIdDataView, cc::SurfaceId> {
   }
 
   static bool Read(cc::mojom::SurfaceIdDataView data, cc::SurfaceId* out) {
-    cc::FrameSinkId frame_sink_id;
-    if (!data.ReadFrameSinkId(&frame_sink_id))
-      return false;
-
-    cc::LocalFrameId local_frame_id;
-    if (!data.ReadLocalFrameId(&local_frame_id))
-      return false;
-
-    *out = cc::SurfaceId(frame_sink_id, local_frame_id);
-    return true;
+    return data.ReadFrameSinkId(&out->frame_sink_id_) &&
+           data.ReadLocalFrameId(&out->local_frame_id_);
   }
 };
 

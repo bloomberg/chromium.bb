@@ -14,8 +14,12 @@
 #include "base/hash.h"
 #include "cc/surfaces/frame_sink_id.h"
 #include "cc/surfaces/local_frame_id.h"
+#include "mojo/public/cpp/bindings/struct_traits.h"
 
 namespace cc {
+namespace mojom {
+class SurfaceIdDataView;
+}
 
 class SurfaceId {
  public:
@@ -62,6 +66,8 @@ class SurfaceId {
   }
 
  private:
+  friend struct mojo::StructTraits<mojom::SurfaceIdDataView, SurfaceId>;
+
   // See SurfaceIdAllocator::GenerateId.
   FrameSinkId frame_sink_id_;
   LocalFrameId local_frame_id_;

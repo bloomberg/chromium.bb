@@ -24,12 +24,8 @@ struct StructTraits<cc::mojom::LocalFrameIdDataView, cc::LocalFrameId> {
 
   static bool Read(cc::mojom::LocalFrameIdDataView data,
                    cc::LocalFrameId* out) {
-    base::UnguessableToken nonce;
-    if (!data.ReadNonce(&nonce))
-      return false;
-
-    *out = cc::LocalFrameId(data.local_id(), nonce);
-    return true;
+    out->local_id_ = data.local_id();
+    return data.ReadNonce(&out->nonce_);
   }
 };
 
