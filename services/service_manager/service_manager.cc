@@ -889,6 +889,9 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
     // TODO(beng): There may be some cases where it's valid to have an empty
     // spec, so we should probably include a return value in |result|.
     if (result->interface_provider_specs.empty()) {
+      LOG(ERROR)
+          << "Error: The catalog was unable to read a manifest for service \""
+          << result->name << "\".";
       if (!params->connect_callback().is_null())
         params->connect_callback().Run(mojom::ConnectResult::ACCESS_DENIED, "");
       return;
