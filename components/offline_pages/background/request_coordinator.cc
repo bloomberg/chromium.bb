@@ -888,11 +888,12 @@ bool RequestCoordinator::ShouldTryNextRequest(
     case Offliner::RequestStatus::SAVE_FAILED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_CANCELED:
     case Offliner::RequestStatus::REQUEST_COORDINATOR_TIMED_OUT:
+    case Offliner::RequestStatus::PRERENDERING_FAILED:
     case Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY:
       return true;
     case Offliner::RequestStatus::FOREGROUND_CANCELED:
     case Offliner::RequestStatus::PRERENDERING_CANCELED:
-    case Offliner::RequestStatus::PRERENDERING_FAILED:
+    case Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT:
       // No further processing in this service window.
       return false;
     default:

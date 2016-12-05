@@ -625,13 +625,12 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
                            Offliner::RequestStatus::PRERENDERING_FAILED);
   PumpLoop();
 
-  // For retriable failure, processing should stop and scheduler callback
-  // called (so that request can be retried first next processing window).
-  EXPECT_TRUE(immediate_schedule_callback_called());
+  // For retriable failure, processing should continue to 2nd request so
+  // no scheduler callback yet.
+  EXPECT_FALSE(immediate_schedule_callback_called());
 
-  // TODO(dougarnett): Consider injecting mock RequestPicker for this test
-  // and verifying that there is no attempt to pick another request following
-  // this failure code.
+  // Busy processing 2nd request.
+  EXPECT_TRUE(is_busy());
 
   coordinator()->queue()->GetRequests(
       base::Bind(&RequestCoordinatorTest::GetRequestsDone,
@@ -642,7 +641,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailed) {
   // (max number of attempts exceeded).
   EXPECT_EQ(1UL, last_requests().size());
   // Check that the observer got the notification that we failed (and the
-  // subsequent notification that the request was removed).
+  // subsequent notification that the request was removed) since we exceeded
+  // retry count.
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::RETRY_COUNT_EXCEEDED,
             observer().last_status());
@@ -669,9 +669,8 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   // no scheduler callback yet.
   EXPECT_FALSE(immediate_schedule_callback_called());
 
-  // TODO(dougarnett): Consider injecting mock RequestPicker for this test
-  // and verifying that there is as attempt to pick another request following
-  // this non-retryable failure code.
+  // Busy processing 2nd request.
+  EXPECT_TRUE(is_busy());
 
   coordinator()->queue()->GetRequests(base::Bind(
       &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
@@ -684,6 +683,38 @@ TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoRetryFailure) {
   EXPECT_TRUE(observer().completed_called());
   EXPECT_EQ(RequestCoordinator::BackgroundSavePageResult::PRERENDER_FAILURE,
             observer().last_status());
+}
+
+TEST_F(RequestCoordinatorTest, OfflinerDoneRequestFailedNoNextFailure) {
+  // Add a request to the queue, wait for callbacks to finish.
+  offline_pages::SavePageRequest request(kRequestId1, kUrl1, kClientId1,
+                                         base::Time::Now(), kUserRequested);
+  SetupForOfflinerDoneCallbackTest(&request);
+  EnableOfflinerCallback(false);
+
+  // Add second request to the queue to check handling when first fails.
+  AddRequest2();
+  PumpLoop();
+
+  // Call the OfflinerDoneCallback to simulate the request failed, wait
+  // for callbacks.
+  SendOfflinerDoneCallback(
+      request, Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT);
+  PumpLoop();
+
+  // For no next failure, processing should not continue to 2nd request so
+  // expect scheduler callback.
+  EXPECT_TRUE(immediate_schedule_callback_called());
+
+  // Not busy for NO_NEXT failure.
+  EXPECT_FALSE(is_busy());
+
+  coordinator()->queue()->GetRequests(base::Bind(
+      &RequestCoordinatorTest::GetRequestsDone, base::Unretained(this)));
+  PumpLoop();
+
+  // Both requests still in queue.
+  EXPECT_EQ(2UL, last_requests().size());
 }
 
 TEST_F(RequestCoordinatorTest, OfflinerDoneForegroundCancel) {

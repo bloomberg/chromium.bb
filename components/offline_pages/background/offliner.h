@@ -44,6 +44,9 @@ class Offliner {
     PRERENDERING_NOT_STARTED = 9,
     // Prerendering failed with hard error so should not retry the request.
     PRERENDERING_FAILED_NO_RETRY = 10,
+    // Prerendering failed with some error that suggests we should not continue
+    // processing another request at this time.
+    PRERENDERING_FAILED_NO_NEXT = 11,
     // NOTE: insert new values above this line and update histogram enum too.
     STATUS_COUNT
   };

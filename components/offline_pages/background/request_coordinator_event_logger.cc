@@ -33,6 +33,8 @@ static std::string OfflinerRequestStatusToString(
       return "PRERENDERING_NOT_STARTED";
     case Offliner::PRERENDERING_FAILED_NO_RETRY:
       return "PRERENDERING_FAILED_NO_RETRY";
+    case Offliner::PRERENDERING_FAILED_NO_NEXT:
+      return "PRERENDERING_FAILED_NO_NEXT";
     default:
       NOTREACHED();
       return std::to_string(static_cast<int>(request_status));

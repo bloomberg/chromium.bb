@@ -243,7 +243,7 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadSucceededFromPrerenderStopLoading) {
 
 TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoContent) {
   test_adapter()->Configure(nullptr /* web_contents */,
-                            prerender::FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+                            prerender::FINAL_STATUS_CACHE_OR_HISTORY_CLEARED);
   GURL gurl("http://testit.sea");
   EXPECT_TRUE(loader()->IsIdle());
   EXPECT_TRUE(loader()->LoadPage(
@@ -283,6 +283,31 @@ TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoRetry) {
   // We did not provide any WebContents for the callback so expect did not load.
   // FinalStatus is non-retryable failure.
   EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED_NO_RETRY,
+            callback_load_status());
+
+  // Stopped event causes no harm.
+  test_adapter()->GetObserver()->OnPrerenderStop();
+  PumpLoop();
+}
+
+TEST_F(PrerenderingLoaderTest, LoadPageLoadFailedNoNext) {
+  test_adapter()->Configure(nullptr /* web_contents */,
+                            prerender::FINAL_STATUS_MEMORY_LIMIT_EXCEEDED);
+  GURL gurl("http://testit.sea");
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(loader()->LoadPage(
+      gurl,
+      base::Bind(&PrerenderingLoaderTest::OnLoadDone, base::Unretained(this))));
+  EXPECT_FALSE(loader()->IsIdle());
+  EXPECT_FALSE(loader()->IsLoaded());
+
+  test_adapter()->GetObserver()->OnPrerenderDomContentLoaded();
+  PumpLoop();
+  EXPECT_TRUE(loader()->IsIdle());
+  EXPECT_TRUE(callback_called());
+  // We did not provide any WebContents for the callback so expect did not load.
+  // FinalStatus is non-next failure.
+  EXPECT_EQ(Offliner::RequestStatus::PRERENDERING_FAILED_NO_NEXT,
             callback_load_status());
 
   // Stopped event causes no harm.
