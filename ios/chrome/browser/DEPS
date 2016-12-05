@@ -15,7 +15,9 @@ include_rules = [
   "+components/crash/core/common",
   "+components/dom_distiller/core",
   "+components/dom_distiller/ios",
+  "+components/error_page/common",
   "+components/favicon/core",
+  "+components/favicon/ios",
   "+components/favicon_base",
   "+components/flags_ui",
   "+components/gcm_driver",
@@ -51,6 +53,7 @@ include_rules = [
   "+components/prefs",
   "+components/profile_metrics",
   "+components/proxy_config",
+  "+components/query_parser",
   "+components/rappor",
   "+components/reading_list",
   "+components/rlz",
@@ -64,11 +67,13 @@ include_rules = [
   "+components/signin/core/common",
   "+components/signin/ios/browser",
   "+components/ssl_config",
+  "+components/ssl_errors",
   "+components/suggestions",
   "+components/sync",
   "+components/sync_sessions",
   "+components/sync_preferences",
   "+components/task_scheduler_util",
+  "+components/toolbar",
   "+components/translate/core",
   "+components/translate/ios",
   "+components/undo",
@@ -83,7 +88,6 @@ include_rules = [
   "+components/webp_transcode",
   "+crypto",
   "+google_apis",
-  "+ios/chrome/common",
   "+ios/net",
   "+ios/public/provider/chrome",
   "+ios/public/provider/components",
@@ -101,12 +105,6 @@ include_rules = [
   # For tests.
   "+ios/chrome/test",
   "+ios/public/test",
-  "+ios/testing",
-
-  # Only parts of skia are compiled on iOS, so we explicitly list the
-  # files that can be included to avoid bringing in more code.
-  "+skia/ext/skia_utils_ios.h",
-  "+third_party/skia/include/core/SkBitmap.h",
 
   # Strings and resources.
   "+components/grit",
