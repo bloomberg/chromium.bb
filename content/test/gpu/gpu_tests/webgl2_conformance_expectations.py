@@ -88,6 +88,13 @@ class WebGL2ConformanceExpectations(WebGLConformanceExpectations):
     self.Flaky('deqp/*', ['win', ('amd', 0x6779)], bug=491419)
 
     # Win / Intel
+    self.Fail('conformance2/glsl3/' +
+        'texture-offset-uniform-texture-coordinate.html',
+        ['win', 'intel'], bug=662644) # WebGL 2.0.1
+    self.Fail('conformance2/glsl3/unary-minus-operator-in-dynamic-loop.html',
+        ['win', 'intel'], bug=662644) # WebGL 2.0.1
+    self.Fail('conformance2/rendering/clear-srgb-color-buffer.html',
+        ['win', 'intel'], bug=662644) # WebGL 2.0.1
     self.Skip('conformance2/textures/misc/copy-texture-image.html',
         ['win', 'intel'], bug=617449)
     # Seems to cause the harness to fail immediately afterward
