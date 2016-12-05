@@ -176,7 +176,7 @@ void BookmarkSuggestionsProvider::GetDismissedSuggestionsForDebugging(
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks) {
-    ConvertBookmark(bookmark, &suggestions);
+    ConvertBookmark(*bookmark, &suggestions);
   }
   callback.Run(std::move(suggestions));
 }
@@ -204,7 +204,7 @@ void BookmarkSuggestionsProvider::OnWillChangeBookmarkMetaInfo(
     BookmarkModel* model,
     const BookmarkNode* node) {
   // Store the last visit date of the node that is about to change.
-  if (!GetLastVisitDateForNTPBookmark(node,
+  if (!GetLastVisitDateForNTPBookmark(*node,
                                       consider_bookmark_visits_from_desktop_,
                                       &node_to_change_last_visit_date_)) {
     node_to_change_last_visit_date_ = base::Time::UnixEpoch();
@@ -216,7 +216,7 @@ void BookmarkSuggestionsProvider::BookmarkMetaInfoChanged(
     const BookmarkNode* node) {
   base::Time time;
   if (!GetLastVisitDateForNTPBookmark(
-          node, consider_bookmark_visits_from_desktop_, &time)) {
+          *node, consider_bookmark_visits_from_desktop_, &time)) {
     // Error in loading the last visit date after the change. This happens when
     // the bookmark just got dismissed. We must not update the suggestion in
     // such a case.
@@ -241,7 +241,7 @@ void BookmarkSuggestionsProvider::BookmarkNodeRemoved(
       const std::set<GURL>& no_longer_bookmarked) {
   base::Time time;
   if (GetLastVisitDateForNTPBookmark(
-          node, consider_bookmark_visits_from_desktop_, &time) &&
+          *node, consider_bookmark_visits_from_desktop_, &time) &&
       time < end_of_list_last_visit_date_) {
     // We know the node is too old to influence the list.
     return;
@@ -256,7 +256,7 @@ void BookmarkSuggestionsProvider::BookmarkNodeAdded(
     const bookmarks::BookmarkNode* parent,
     int index) {
   base::Time time;
-  if (!GetLastVisitDateForNTPBookmark(parent->GetChild(index),
+  if (!GetLastVisitDateForNTPBookmark(*parent->GetChild(index),
                                       consider_bookmark_visits_from_desktop_,
                                       &time) ||
       time < end_of_list_last_visit_date_) {
@@ -269,7 +269,7 @@ void BookmarkSuggestionsProvider::BookmarkNodeAdded(
 }
 
 void BookmarkSuggestionsProvider::ConvertBookmark(
-    const BookmarkNode* bookmark,
+    const BookmarkNode& bookmark,
     std::vector<ContentSuggestion>* suggestions) {
   base::Time publish_date;
   if (!GetLastVisitDateForNTPBookmark(
@@ -277,12 +277,12 @@ void BookmarkSuggestionsProvider::ConvertBookmark(
     return;
   }
 
-  ContentSuggestion suggestion(provided_category_, bookmark->url().spec(),
-                               bookmark->url());
-  suggestion.set_title(bookmark->GetTitle());
+  ContentSuggestion suggestion(provided_category_, bookmark.url().spec(),
+                               bookmark.url());
+  suggestion.set_title(bookmark.GetTitle());
   suggestion.set_snippet_text(base::string16());
   suggestion.set_publish_date(publish_date);
-  suggestion.set_publisher_name(base::UTF8ToUTF16(bookmark->url().host()));
+  suggestion.set_publisher_name(base::UTF8ToUTF16(bookmark.url().host()));
 
   suggestions->emplace_back(std::move(suggestion));
 }
@@ -299,7 +299,7 @@ void BookmarkSuggestionsProvider::FetchBookmarksInternal() {
 
   std::vector<ContentSuggestion> suggestions;
   for (const BookmarkNode* bookmark : bookmarks) {
-    ConvertBookmark(bookmark, &suggestions);
+    ConvertBookmark(*bookmark, &suggestions);
   }
 
   if (suggestions.empty()) {

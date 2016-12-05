@@ -75,7 +75,7 @@ std::vector<const BookmarkNode*>::const_iterator FindMostRecentBookmark(
 
   for (auto iter = bookmarks.begin(); iter != bookmarks.end(); ++iter) {
     base::Time last_visited;
-    if (GetLastVisitDateForNTPBookmark(*iter, consider_visits_from_desktop,
+    if (GetLastVisitDateForNTPBookmark(**iter, consider_visits_from_desktop,
                                        &last_visited) &&
         most_recent_last_visited <= last_visited) {
       most_recent = iter;
@@ -116,20 +116,20 @@ void UpdateBookmarkOnURLVisitedInMainFrame(BookmarkModel* bookmark_model,
   }
 }
 
-bool GetLastVisitDateForNTPBookmark(const BookmarkNode* node,
+bool GetLastVisitDateForNTPBookmark(const BookmarkNode& node,
                                     bool consider_visits_from_desktop,
                                     base::Time* out) {
-  if (!node || IsDismissedFromNTPForBookmark(node)) {
+  if (IsDismissedFromNTPForBookmark(node)) {
     return false;
   }
 
   bool got_mobile_date =
-      ExtractLastVisitDate(*node, kBookmarkLastVisitDateOnMobileKey, out);
+      ExtractLastVisitDate(node, kBookmarkLastVisitDateOnMobileKey, out);
 
   if (consider_visits_from_desktop) {
     // Consider the later visit from these two platform groups.
     base::Time last_visit_desktop;
-    if (ExtractLastVisitDate(*node, kBookmarkLastVisitDateOnDesktopKey,
+    if (ExtractLastVisitDate(node, kBookmarkLastVisitDateOnDesktopKey,
                              &last_visit_desktop)) {
       if (!got_mobile_date) {
         *out = last_visit_desktop;
@@ -151,14 +151,10 @@ void MarkBookmarksDismissed(BookmarkModel* bookmark_model, const GURL& url) {
   }
 }
 
-bool IsDismissedFromNTPForBookmark(const BookmarkNode* node) {
-  if (!node) {
-    return false;
-  }
-
+bool IsDismissedFromNTPForBookmark(const BookmarkNode& node) {
   std::string dismissed_from_ntp;
   bool result =
-      node->GetMetaInfo(kBookmarkDismissedFromNTP, &dismissed_from_ntp);
+      node.GetMetaInfo(kBookmarkDismissedFromNTP, &dismissed_from_ntp);
   DCHECK(!result || dismissed_from_ntp == "1");
   return result;
 }
@@ -211,7 +207,7 @@ std::vector<const BookmarkNode*> GetRecentlyVisitedBookmarks(
     // Extract the last visit of the node to use later for sorting.
     base::Time last_visit_time;
     if (!GetLastVisitDateForNTPBookmark(
-            *most_recent, consider_visits_from_desktop, &last_visit_time) ||
+            **most_recent, consider_visits_from_desktop, &last_visit_time) ||
         last_visit_time <= min_visit_time) {
       continue;
     }
@@ -256,7 +252,7 @@ std::vector<const BookmarkNode*> GetDismissedBookmarksForDebugging(
             DCHECK(!bookmarks_for_url.empty());
 
             for (const BookmarkNode* node : bookmarks_for_url) {
-              if (!IsDismissedFromNTPForBookmark(node)) {
+              if (!IsDismissedFromNTPForBookmark(*node)) {
                 return true;
               }
             }
