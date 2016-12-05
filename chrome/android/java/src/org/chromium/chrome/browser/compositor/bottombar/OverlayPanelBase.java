@@ -329,9 +329,7 @@ abstract class OverlayPanelBase {
      * @return The height of the Overlay Panel Content View in pixels.
      */
     public int getContentViewHeightPx() {
-        float barExpandedHeight = isFullWidthSizePanel()
-                ? getToolbarHeight() : mBarHeightPeeking;
-        return Math.round((mMaximumHeight - barExpandedHeight) / mPxToDp);
+        return Math.round((mMaximumHeight - getToolbarHeight()) / mPxToDp);
     }
 
     // ============================================================================================
@@ -686,11 +684,7 @@ abstract class OverlayPanelBase {
      * @return The maximized height of the panel in dps.
      */
     protected float getMaximizedHeight() {
-        if (isFullWidthSizePanel()) {
-            return getTabHeight();
-        } else {
-            return getTabHeight() - mToolbarHeight;
-        }
+        return getTabHeight();
     }
 
     /**
