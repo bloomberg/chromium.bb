@@ -61,7 +61,7 @@ function verifyPixels(
                             data[i + 1] + ", " + data[i + 2] +
                             " differ at index " + i);
     }
-    var calculated = (data[0] +
+    var calculated = (data[0] + wrap_around +
                       step * ((flip_y ? -row : row) + column)) % wrap_around;
     if (Math.abs(calculated - data[i]) > tolerance) {
       return Promise.reject(test_name + ": reference value " + data[i] +
