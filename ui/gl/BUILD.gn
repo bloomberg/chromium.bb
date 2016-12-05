@@ -154,6 +154,8 @@ component("gl") {
 
   if (use_egl) {
     sources += [
+      "angle_platform_impl.cc",
+      "angle_platform_impl.h",
       "egl_util.cc",
       "egl_util.h",
       "gl_bindings_autogen_egl.cc",
@@ -219,8 +221,6 @@ component("gl") {
   }
   if (is_win) {
     sources += [
-      "angle_platform_impl.cc",
-      "angle_platform_impl.h",
       "gl_bindings_autogen_wgl.cc",
       "gl_bindings_autogen_wgl.h",
       "gl_context_wgl.cc",
