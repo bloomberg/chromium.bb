@@ -251,6 +251,7 @@ component("base") {
     "build_time.cc",
     "build_time.h",
     "callback.h",
+    "callback_forward.h",
     "callback_helpers.cc",
     "callback_helpers.h",
     "callback_internal.cc",
