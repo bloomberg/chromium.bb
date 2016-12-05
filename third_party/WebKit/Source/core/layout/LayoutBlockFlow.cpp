@@ -391,6 +391,7 @@ bool LayoutBlockFlow::checkIfIsSelfCollapsingBlock() const {
   return false;
 }
 
+DISABLE_CFI_PERF
 void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
   ASSERT(needsLayout());
   ASSERT(isInlineBlockOrInlineTable() || !isInline());
@@ -401,11 +402,39 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
   LayoutAnalyzer::BlockScope analyzer(*this);
   SubtreeLayoutScope layoutScope(*this);
 
+  LayoutUnit previousHeight = logicalHeight();
+  LayoutUnit oldLeft = logicalLeft();
+  bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
+  relayoutChildren |= logicalWidthChanged;
+
+  TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
+  LayoutState state(*this, logicalWidthChanged);
+
+  if (m_paginationStateChanged) {
+    // We now need a deep layout to clean up struts after pagination, if we
+    // just ceased to be paginated, or, if we just became paginated on the
+    // other hand, we now need the deep layout, to insert pagination struts.
+    m_paginationStateChanged = false;
+    state.setPaginationStateChanged();
+  }
+
+  bool preferredLogicalWidthsWereDirty = preferredLogicalWidthsDirty();
+
   // Multiple passes might be required for column based layout.
   // The number of passes could be as high as the number of columns.
   LayoutMultiColumnFlowThread* flowThread = multiColumnFlowThread();
   do {
-    layoutBlockFlow(relayoutChildren, layoutScope);
+    layoutChildren(relayoutChildren, layoutScope);
+
+    if (!preferredLogicalWidthsWereDirty && preferredLogicalWidthsDirty()) {
+      // The only thing that should dirty preferred widths at this point is the
+      // addition of overflow:auto scrollbars in a descendant. To avoid a
+      // potential infinite loop, run layout again with auto scrollbars frozen
+      // in their current state.
+      PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
+      relayoutChildren |= updateLogicalWidthAndColumnWidth();
+      layoutChildren(relayoutChildren, layoutScope);
+    }
 
     if (flowThread && flowThread->columnHeightsChanged()) {
       setChildNeedsLayout(MarkOnlyThis);
@@ -418,6 +447,29 @@ void LayoutBlockFlow::layoutBlock(bool relayoutChildren) {
     }
     break;
   } while (true);
+
+  // Remember the automatic logical height we got from laying out the children.
+  LayoutUnit unconstrainedHeight = logicalHeight();
+  LayoutUnit unconstrainedClientAfterEdge = clientLogicalBottom();
+
+  // Adjust logical height to satisfy whatever computed style requires.
+  updateLogicalHeight();
+
+  if (!childrenInline())
+    addOverhangingFloatsFromChildren(unconstrainedHeight);
+
+  if (logicalHeight() != previousHeight || isDocumentElement())
+    relayoutChildren = true;
+
+  PositionedLayoutBehavior behavior = DefaultLayout;
+  if (oldLeft != logicalLeft())
+    behavior = ForcedLayoutAfterContainingBlockMoved;
+  layoutPositionedObjects(relayoutChildren, behavior);
+
+  // Add overflow from children.
+  computeOverflow(unconstrainedClientAfterEdge);
+
+  m_descendantsWithFloatsMarkedForLayout = false;
 
   updateLayerTransformAfterLayout();
 
@@ -474,23 +526,8 @@ void LayoutBlockFlow::resetLayout() {
 }
 
 DISABLE_CFI_PERF
-inline void LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
-                                             SubtreeLayoutScope& layoutScope) {
-  LayoutUnit oldLeft = logicalLeft();
-  bool logicalWidthChanged = updateLogicalWidthAndColumnWidth();
-  relayoutChildren |= logicalWidthChanged;
-
-  LayoutState state(*this, logicalWidthChanged);
-
-  if (m_paginationStateChanged) {
-    // We now need a deep layout to clean up struts after pagination, if we
-    // just ceased to be paginated, or, if we just became paginated on the
-    // other hand, we now need the deep layout, to insert pagination struts.
-    m_paginationStateChanged = false;
-    state.setPaginationStateChanged();
-  }
-
-  LayoutUnit previousHeight = logicalHeight();
+void LayoutBlockFlow::layoutChildren(bool relayoutChildren,
+                                     SubtreeLayoutScope& layoutScope) {
   resetLayout();
 
   LayoutUnit beforeEdge = borderBefore() + paddingBefore();
@@ -498,55 +535,15 @@ inline void LayoutBlockFlow::layoutBlockFlow(bool relayoutChildren,
       borderAfter() + paddingAfter() + scrollbarLogicalHeight();
   setLogicalHeight(beforeEdge);
 
-  TextAutosizer::LayoutScope textAutosizerLayoutScope(this, &layoutScope);
-
-  bool preferredLogicalWidthsWereDirty = preferredLogicalWidthsDirty();
-
   if (childrenInline())
     layoutInlineChildren(relayoutChildren, afterEdge);
   else
     layoutBlockChildren(relayoutChildren, layoutScope, beforeEdge, afterEdge);
 
-  bool preferredLogicalWidthsBecameDirty =
-      !preferredLogicalWidthsWereDirty && preferredLogicalWidthsDirty();
-  if (preferredLogicalWidthsBecameDirty) {
-    // The only thing that should dirty preferred widths at this point is the
-    // addition of overflow:auto scrollbars in a descendant. To avoid a
-    // potential infinite loop, run layout again with auto scrollbars frozen in
-    // their current state.
-    PaintLayerScrollableArea::FreezeScrollbarsScope freezeScrollbars;
-    layoutBlockFlow(relayoutChildren, layoutScope);
-    return;
-  }
-
   // Expand our intrinsic height to encompass floats.
   if (lowestFloatLogicalBottom() > (logicalHeight() - afterEdge) &&
       createsNewFormattingContext())
     setLogicalHeight(lowestFloatLogicalBottom() + afterEdge);
-
-  // Remember the automatic logical height we got from laying out the children.
-  LayoutUnit unconstrainedHeight = logicalHeight();
-  LayoutUnit unconstrainedClientAfterEdge = clientLogicalBottom();
-
-  // Adjust logical height to satisfy whatever computed style requires.
-  updateLogicalHeight();
-
-  if (!childrenInline())
-    addOverhangingFloatsFromChildren(unconstrainedHeight);
-
-  if (previousHeight != logicalHeight() || isDocumentElement())
-    relayoutChildren = true;
-
-  PositionedLayoutBehavior behavior = DefaultLayout;
-  if (oldLeft != logicalLeft())
-    behavior = ForcedLayoutAfterContainingBlockMoved;
-  layoutPositionedObjects(relayoutChildren, behavior);
-
-  // Add overflow from children (unless we're multi-column, since in that case
-  // all our child overflow is clipped anyway).
-  computeOverflow(unconstrainedClientAfterEdge);
-
-  m_descendantsWithFloatsMarkedForLayout = false;
 }
 
 void LayoutBlockFlow::addOverhangingFloatsFromChildren(

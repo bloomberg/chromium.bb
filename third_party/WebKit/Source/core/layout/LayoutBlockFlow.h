@@ -477,7 +477,7 @@ class CORE_EXPORT LayoutBlockFlow : public LayoutBlock {
 
  private:
   void resetLayout();
-  void layoutBlockFlow(bool relayoutChildren, SubtreeLayoutScope&);
+  void layoutChildren(bool relayoutChildren, SubtreeLayoutScope&);
   void addOverhangingFloatsFromChildren(LayoutUnit unconstrainedHeight);
   void layoutBlockChildren(bool relayoutChildren,
                            SubtreeLayoutScope&,
