@@ -1121,7 +1121,8 @@ public class PaymentRequestImpl implements PaymentRequest, PaymentRequestUI.Clie
         if (instruments != null) {
             for (int i = 0; i < instruments.size(); i++) {
                 PaymentInstrument instrument = instruments.get(i);
-                Set<String> instrumentMethodNames = instrument.getInstrumentMethodNames();
+                Set<String> instrumentMethodNames =
+                        new HashSet<>(instrument.getInstrumentMethodNames());
                 instrumentMethodNames.retainAll(mMethodData.keySet());
                 if (!instrumentMethodNames.isEmpty()) {
                     addPendingInstrument(instrument);
