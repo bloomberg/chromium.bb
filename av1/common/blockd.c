@@ -164,17 +164,19 @@ void av1_foreach_transformed_block(const MACROBLOCKD *const xd,
 
 #if !CONFIG_PVQ
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      TX_SIZE tx_size, int has_eob, int aoff, int loff) {
+                      int plane, TX_SIZE tx_size, int has_eob, int aoff,
+                      int loff) {
   ENTROPY_CONTEXT *const a = pd->above_context + aoff;
   ENTROPY_CONTEXT *const l = pd->left_context + loff;
   const int txs_wide = tx_size_wide_unit[tx_size];
   const int txs_high = tx_size_high_unit[tx_size];
+  const BLOCK_SIZE bsize = AOMMAX(xd->mi[0]->mbmi.sb_type, BLOCK_8X8);
+  const BLOCK_SIZE plane_bsize = get_plane_block_size(bsize, pd);
 
   // above
   if (has_eob && xd->mb_to_right_edge < 0) {
     int i;
-    const int blocks_wide =
-        pd->n4_w + (xd->mb_to_right_edge >> (5 + pd->subsampling_x));
+    const int blocks_wide = max_block_wide(xd, plane_bsize, plane);
     int above_contexts = txs_wide;
     if (above_contexts + aoff > blocks_wide)
       above_contexts = blocks_wide - aoff;
@@ -188,8 +190,7 @@ void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
   // left
   if (has_eob && xd->mb_to_bottom_edge < 0) {
     int i;
-    const int blocks_high =
-        pd->n4_h + (xd->mb_to_bottom_edge >> (5 + pd->subsampling_y));
+    const int blocks_high = max_block_high(xd, plane_bsize, plane);
     int left_contexts = txs_high;
     if (left_contexts + loff > blocks_high) left_contexts = blocks_high - loff;
 

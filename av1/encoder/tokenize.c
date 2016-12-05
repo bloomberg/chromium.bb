@@ -341,7 +341,8 @@ static void cost_coeffs_b(int plane, int block, int blk_row, int blk_col,
                              scan_order->neighbors, 0);
   args->this_rate += rate;
   (void)plane_bsize;
-  av1_set_contexts(xd, pd, tx_size, p->eobs[block] > 0, blk_col, blk_row);
+  av1_set_contexts(xd, pd, plane, tx_size, p->eobs[block] > 0, blk_col,
+                   blk_row);
 }
 
 static void set_entropy_context_b(int plane, int block, int blk_row,
@@ -354,7 +355,8 @@ static void set_entropy_context_b(int plane, int block, int blk_row,
   struct macroblock_plane *p = &x->plane[plane];
   struct macroblockd_plane *pd = &xd->plane[plane];
   (void)plane_bsize;
-  av1_set_contexts(xd, pd, tx_size, p->eobs[block] > 0, blk_col, blk_row);
+  av1_set_contexts(xd, pd, plane, tx_size, p->eobs[block] > 0, blk_col,
+                   blk_row);
 }
 
 static INLINE void add_token(TOKENEXTRA **t, const aom_prob *context_tree,
@@ -518,7 +520,7 @@ static void tokenize_b(int plane, int block, int blk_row, int blk_col,
   av1_update_scan_count_facade((AV1_COMMON *)cm, tx_size, tx_type, qcoeff, c);
 #endif
 
-  av1_set_contexts(xd, pd, tx_size, c > 0, blk_col, blk_row);
+  av1_set_contexts(xd, pd, plane, tx_size, c > 0, blk_col, blk_row);
 }
 #endif
 

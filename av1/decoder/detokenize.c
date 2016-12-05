@@ -365,7 +365,7 @@ int av1_decode_block_tokens(MACROBLOCKD *const xd, int plane,
 #endif  // CONFIG_NEW_QUANT
                    ctx, sc->scan, sc->neighbors, max_scan_line, r);
 #endif  // CONFIG_AOM_QM
-  av1_set_contexts(xd, pd, tx_size, eob > 0, x, y);
+  av1_set_contexts(xd, pd, plane, tx_size, eob > 0, x, y);
   return eob;
 }
 #endif

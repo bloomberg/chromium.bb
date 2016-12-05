@@ -879,7 +879,8 @@ void av1_foreach_transformed_block_interleave(
 #endif
 
 void av1_set_contexts(const MACROBLOCKD *xd, struct macroblockd_plane *pd,
-                      TX_SIZE tx_size, int has_eob, int aoff, int loff);
+                      int plane, TX_SIZE tx_size, int has_eob, int aoff,
+                      int loff);
 
 #if CONFIG_EXT_INTER
 static INLINE int is_interintra_allowed_bsize(const BLOCK_SIZE bsize) {
