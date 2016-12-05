@@ -49,6 +49,7 @@ source_set("prefs") {
     "//ios/chrome/browser/memory",
     "//ios/chrome/browser/metrics",
     "//ios/chrome/browser/net",
+    "//ios/chrome/browser/physical_web",
     "//ios/chrome/browser/reading_list",
     "//ios/chrome/browser/signin",
     "//ios/chrome/browser/voice:prefs",

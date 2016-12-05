@@ -5,12 +5,16 @@
 #ifndef IOS_CHROME_BROWSER_PHYSICAL_WEB_PHYSICAL_WEB_PREFS_REGISTRATION_H_
 #define IOS_CHROME_BROWSER_PHYSICAL_WEB_PHYSICAL_WEB_PREFS_REGISTRATION_H_
 
+class PrefRegistrySimple;
 namespace user_prefs {
 class PrefRegistrySyncable;
 }
 
-// Registers the prefs needed by physical web.
+// Registers browser state prefs needed by the Physical Web.
 void RegisterPhysicalWebBrowserStatePrefs(
     user_prefs::PrefRegistrySyncable* registry);
+
+// Registers local state prefs needed by the Physical Web.
+void RegisterPhysicalWebLocalStatePrefs(PrefRegistrySimple* registry);
 
 #endif  // IOS_CHROME_BROWSER_PHYSICAL_WEB_PHYSICAL_WEB_PREFS_REGISTRATION_H_
