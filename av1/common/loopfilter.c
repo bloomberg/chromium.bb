@@ -1308,8 +1308,8 @@ void av1_filter_block_plane_non420_ver(AV1_COMMON *cm,
       const int skip_border_4x4_c = ss_x && mi_col + c == cm->mi_cols - 1;
       const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
 
-      TX_SIZE tx_size_c = tx_size_wide_unit[tx_size];
-      TX_SIZE tx_size_r = tx_size_high_unit[tx_size];
+      TX_SIZE tx_size_c = txsize_horz_map[tx_size];
+      TX_SIZE tx_size_r = txsize_vert_map[tx_size];
 
       int tx_size_mask = 0;
       const int c_step = (c >> ss_x);
@@ -1480,8 +1480,8 @@ void av1_filter_block_plane_non420_hor(AV1_COMMON *cm,
       const int skip_border_4x4_c = ss_x && mi_col + c == cm->mi_cols - 1;
       const int skip_border_4x4_r = ss_y && mi_row + r == cm->mi_rows - 1;
 
-      TX_SIZE tx_size_c = tx_size_wide_unit[tx_size];
-      TX_SIZE tx_size_r = tx_size_high_unit[tx_size];
+      TX_SIZE tx_size_c = txsize_horz_map[tx_size];
+      TX_SIZE tx_size_r = txsize_vert_map[tx_size];
 
       int tx_size_mask = 0;
       const int c_step = (c >> ss_x);
