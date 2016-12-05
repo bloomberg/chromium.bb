@@ -14,6 +14,8 @@
 
 (function() {
 
+    var output_document = document;
+
     // Setup for WebKit JavaScript tests
     if (self.testRunner) {
         testRunner.dumpAsText();
@@ -146,12 +148,17 @@
         }
     }, { once: true });
 
+    add_start_callback(function(properties) {
+      if (properties.output_document)
+        output_document = properties.output_document;
+    });
+
     // Using a callback function, test results will be added to the page in a
     // manner that allows dumpAsText to produce readable test results.
     add_completion_callback(function (tests, harness_status) {
 
         // Create element to hold results.
-        var results = document.createElement("pre");
+        var results = output_document.createElement("pre");
 
         // Declare result string.
         var resultStr = "This is a testharness.js-based test.\n";
@@ -167,7 +174,7 @@
         }
         // reflection tests contain huge number of tests, and Chromium code
         // review tool has the 1MB diff size limit. We merge PASS lines.
-        if (document.URL.indexOf("/html/dom/reflection") >= 0) {
+        if (output_document.URL.indexOf("/html/dom/reflection") >= 0) {
             for (var i = 0; i < tests.length; ++i) {
                 if (tests[i].status == 0) {
                     var colon = tests[i].name.indexOf(':');
@@ -215,26 +222,26 @@
                 if (isCSSWGTest() || isJSTest()) {
                     // Anything isn't material to the testrunner output, so
                     // should be hidden from the text dump.
-                    if (document.body && document.body.tagName == 'BODY')
-                        document.body.textContent = '';
+                    if (output_document.body && output_document.body.tagName == 'BODY')
+                        output_document.body.textContent = '';
                 }
             }
 
-            // Add results element to document.
-            if (!document.body || document.body.tagName != 'BODY') {
-                if (!document.documentElement)
-                    document.appendChild(document.createElement('html'));
-                else if (document.body) // document.body is <frameset>.
-                    document.body.remove();
-                document.documentElement.appendChild(document.createElement("body"));
+            // Add results element to output_document.
+            if (!output_document.body || output_document.body.tagName != 'BODY') {
+                if (!output_document.documentElement)
+                    output_document.appendChild(output_document.createElement('html'));
+                else if (output_document.body) // output_document.body is <frameset>.
+                    output_document.body.remove();
+                output_document.documentElement.appendChild(output_document.createElement("body"));
             }
-            document.body.appendChild(results);
+            output_document.body.appendChild(results);
 
             if (self.testRunner)
                 testRunner.notifyDone();
         }
 
-        if (didDispatchLoadEvent || document.readyState != 'loading') {
+        if (didDispatchLoadEvent || output_document.readyState != 'loading') {
             // This function might not be the last 'completion callback', and
             // another completion callback might generate more results.  So, we
             // don't dump the results immediately.
