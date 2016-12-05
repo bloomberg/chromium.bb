@@ -2526,6 +2526,7 @@ static void combine_interintra_highbd(
 }
 #endif  // CONFIG_AOM_HIGHBITDEPTH
 
+// TODO(urvang/davidbarker): Refactor with av1_predict_intra_block().
 static void build_intra_predictors_for_interintra(MACROBLOCKD *xd, uint8_t *ref,
                                                   int ref_stride, uint8_t *dst,
                                                   int dst_stride,

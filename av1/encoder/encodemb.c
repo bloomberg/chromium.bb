@@ -101,7 +101,7 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   av1_token_state tokens[MAX_TX_SQUARE + 1][2];
   unsigned best_index[MAX_TX_SQUARE + 1][2];
   uint8_t token_cache[MAX_TX_SQUARE];
-  const tran_low_t *const coeff = BLOCK_OFFSET(mb->plane[plane].coeff, block);
+  const tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
   tran_low_t *const qcoeff = BLOCK_OFFSET(p->qcoeff, block);
   tran_low_t *const dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   const int eob = p->eobs[block];
@@ -109,7 +109,8 @@ int av1_optimize_b(const AV1_COMMON *cm, MACROBLOCK *mb, int plane, int block,
   const int default_eob = tx_size_2d[tx_size];
   const int16_t *const dequant_ptr = pd->dequant;
   const uint8_t *const band_translate = get_band_translate(tx_size);
-  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+  TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
   const SCAN_ORDER *const scan_order =
       get_scan(cm, tx_size, tx_type, is_inter_block(&xd->mi[0]->mbmi));
   const int16_t *const scan = scan_order->scan;
@@ -486,7 +487,8 @@ void av1_xform_quant(const AV1_COMMON *cm, MACROBLOCK *x, int plane, int block,
   struct macroblockd_plane *const pd = &xd->plane[plane];
 #endif
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
-  TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+  TX_TYPE tx_type = get_tx_type(plane_type, xd, block_raster_idx, tx_size);
   const int is_inter = is_inter_block(&xd->mi[0]->mbmi);
   const SCAN_ORDER *const scan_order = get_scan(cm, tx_size, tx_type, is_inter);
   tran_low_t *const coeff = BLOCK_OFFSET(p->coeff, block);
@@ -626,8 +628,9 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   uint8_t *dst;
   ENTROPY_CONTEXT *a, *l;
   INV_TXFM_PARAM inv_txfm_param;
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
 #if CONFIG_PVQ
-  int tx_blk_size;
+  int tx_width_pixels, tx_height_pixels;
   int i, j;
 #endif
 #if CONFIG_VAR_TX
@@ -690,18 +693,20 @@ static void encode_block(int plane, int block, int blk_row, int blk_col,
   if (x->pvq_skip[plane]) return;
 
   // transform block size in pixels
-  tx_blk_size = tx_size_wide[tx_size];
+  tx_width_pixels = tx_size_wide[tx_size];
+  tx_height_pixels = tx_size_high[tx_size];
 
   // Since av1 does not have separate function which does inverse transform
   // but av1_inv_txfm_add_*x*() also does addition of predicted image to
   // inverse transformed image,
   // pass blank dummy image to av1_inv_txfm_add_*x*(), i.e. set dst as zeros
-  for (j = 0; j < tx_blk_size; j++)
-    for (i = 0; i < tx_blk_size; i++) dst[j * pd->dst.stride + i] = 0;
+  for (j = 0; j < tx_height_pixels; j++)
+    for (i = 0; i < tx_width_pixels; i++) dst[j * pd->dst.stride + i] = 0;
 #endif
 
   // inverse transform parameters
-  inv_txfm_param.tx_type = get_tx_type(pd->plane_type, xd, block, tx_size);
+  inv_txfm_param.tx_type =
+      get_tx_type(pd->plane_type, xd, block_raster_idx, tx_size);
   inv_txfm_param.tx_size = tx_size;
   inv_txfm_param.eob = p->eobs[block];
   inv_txfm_param.lossless = xd->lossless[xd->mi[0]->mbmi.segment_id];
@@ -927,7 +932,9 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   struct macroblockd_plane *const pd = &xd->plane[plane];
   tran_low_t *dqcoeff = BLOCK_OFFSET(pd->dqcoeff, block);
   PLANE_TYPE plane_type = (plane == 0) ? PLANE_TYPE_Y : PLANE_TYPE_UV;
-  const TX_TYPE tx_type = get_tx_type(plane_type, xd, block, tx_size);
+  const int block_raster_idx = av1_block_index_to_raster_order(tx_size, block);
+  const TX_TYPE tx_type =
+      get_tx_type(plane_type, xd, block_raster_idx, tx_size);
   PREDICTION_MODE mode;
   const int diff_stride = block_size_wide[plane_bsize];
   uint8_t *src, *dst;
@@ -945,13 +952,11 @@ void av1_encode_block_intra(int plane, int block, int blk_row, int blk_col,
   int i, j;
 #endif
 
-  assert(tx1d_width == tx1d_height);
-
   dst = &pd->dst.buf[(blk_row * dst_stride + blk_col) << tx_size_wide_log2[0]];
   src = &p->src.buf[(blk_row * src_stride + blk_col) << tx_size_wide_log2[0]];
   src_diff =
       &p->src_diff[(blk_row * diff_stride + blk_col) << tx_size_wide_log2[0]];
-  mode = plane == 0 ? get_y_mode(xd->mi[0], block) : mbmi->uv_mode;
+  mode = (plane == 0) ? get_y_mode(xd->mi[0], block_raster_idx) : mbmi->uv_mode;
   av1_predict_intra_block(xd, pd->width, pd->height, tx_size, mode, dst,
                           dst_stride, dst, dst_stride, blk_col, blk_row, plane);
 

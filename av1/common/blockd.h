@@ -688,7 +688,7 @@ static INLINE int is_rect_tx_allowed_bsize(BLOCK_SIZE bsize) {
 
 static INLINE int is_rect_tx_allowed(const MACROBLOCKD *xd,
                                      const MB_MODE_INFO *mbmi) {
-  return is_inter_block(mbmi) && is_rect_tx_allowed_bsize(mbmi->sb_type) &&
+  return is_rect_tx_allowed_bsize(mbmi->sb_type) &&
          !xd->lossless[mbmi->segment_id];
 }
 
@@ -699,40 +699,33 @@ static INLINE int is_rect_tx(TX_SIZE tx_size) { return tx_size >= TX_SIZES; }
 static INLINE TX_SIZE tx_size_from_tx_mode(BLOCK_SIZE bsize, TX_MODE tx_mode,
                                            int is_inter) {
   const TX_SIZE largest_tx_size = tx_mode_to_biggest_tx_size[tx_mode];
-#if CONFIG_VAR_TX
-  const TX_SIZE max_tx_size = max_txsize_rect_lookup[bsize];
-
-#if CONFIG_CB4X4
-  if (!is_inter || bsize == BLOCK_4X4)
-    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
-#else
-  if (!is_inter || bsize < BLOCK_8X8)
-    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
-#endif
-
-  if (txsize_sqr_map[max_tx_size] <= largest_tx_size)
-    return max_tx_size;
-  else
-    return largest_tx_size;
+#if CONFIG_VAR_TX || (CONFIG_EXT_TX && CONFIG_RECT_TX)
+  const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
 #else
   const TX_SIZE max_tx_size = max_txsize_lookup[bsize];
+#endif  // CONFIG_VAR_TX || (CONFIG_EXT_TX && CONFIG_RECT_TX)
+  (void)is_inter;
+#if CONFIG_VAR_TX
+#if CONFIG_CB4X4
+  if (bsize == BLOCK_4X4)
+    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
+#else
+  if (bsize < BLOCK_8X8)
+    return AOMMIN(max_txsize_lookup[bsize], largest_tx_size);
 #endif
-
-#if CONFIG_EXT_TX && CONFIG_RECT_TX
-  if (!is_inter) {
-    return AOMMIN(max_tx_size, largest_tx_size);
+  if (txsize_sqr_map[max_rect_tx_size] <= largest_tx_size)
+    return max_rect_tx_size;
+  else
+    return largest_tx_size;
+#elif CONFIG_EXT_TX && CONFIG_RECT_TX
+  if (txsize_sqr_up_map[max_rect_tx_size] <= largest_tx_size) {
+    return max_rect_tx_size;
   } else {
-    const TX_SIZE max_rect_tx_size = max_txsize_rect_lookup[bsize];
-    if (txsize_sqr_up_map[max_rect_tx_size] <= largest_tx_size) {
-      return max_rect_tx_size;
-    } else {
-      return largest_tx_size;
-    }
+    return largest_tx_size;
   }
 #else
-  (void)is_inter;
   return AOMMIN(max_tx_size, largest_tx_size);
-#endif  // CONFIG_EXT_TX && CONFIG_RECT_TX
+#endif  // CONFIG_VAR_TX
 }
 
 #if CONFIG_FILTER_INTRA

@@ -26,7 +26,7 @@ extern "C" {
 #define MAX_NEIGHBORS 2
 
 extern const SCAN_ORDER av1_default_scan_orders[TX_SIZES];
-extern const SCAN_ORDER av1_intra_scan_orders[TX_SIZES][TX_TYPES];
+extern const SCAN_ORDER av1_intra_scan_orders[TX_SIZES_ALL][TX_TYPES];
 extern const SCAN_ORDER av1_inter_scan_orders[TX_SIZES_ALL][TX_TYPES];
 
 #if CONFIG_ADAPT_SCAN
