@@ -166,3 +166,18 @@ crbug.com/664859 virtual/threaded/transitions/transition-end-event-transform.htm
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-unprefixed-02.html [ Pass Failure ]
 crbug.com/664859 virtual/threaded/transitions/transition-end-event-window.html [ Pass Failure ]
 crbug.com/664859 virtual/threaded/transitions/unprefixed-transform.html [ Pass Failure ]
+
+# Adding these temporarily until the Linux builder is upgraded from Precise to Trusty
+crbug.com/670841 [ Linux ] fast/canvas/canvas-composite-video-shadow.html [ Skip ]
+crbug.com/670841 [ Linux ] fast/text/complex-text-opacity.html [ Skip ]
+crbug.com/670841 [ Linux ] fast/text/font-fallback.html [ Skip ]
+crbug.com/670841 [ Linux ] fast/text/international/complex-character-based-fallback.html [ Skip ]
+crbug.com/670841 [ Linux ] fast/text/international/complex-joining-using-gpos.html [ Skip ]
+crbug.com/670841 [ Linux ] inspector-protocol/layout-fonts/languages-emoji-rare-glyphs.html [ Skip ]
+crbug.com/670841 [ Linux ] svg/custom/control-points-for-S-and-T.svg [ Skip ]
+crbug.com/670841 [ Linux ] svg/W3C-SVG-1.1/paths-data-03-f.svg [ Skip ]
+crbug.com/670841 [ Linux ] svg/W3C-SVG-1.1/text-align-08-b.svg [ Skip ]
+crbug.com/670841 [ Linux ] transforms/2d/hindi-rotated.html [ Skip ]
+crbug.com/670841 [ Linux ] virtual/gpu/fast/canvas/canvas-arc-circumference-fill.html [ Skip ]
+crbug.com/670841 [ Linux ] virtual/gpu/fast/canvas/canvas-lost-gpu-context.html [ Skip ]
+crbug.com/670841 [ Linux ] virtual/gpu/fast/canvas/canvas-pattern-no-repeat-with-transformations.html [ Skip ]
