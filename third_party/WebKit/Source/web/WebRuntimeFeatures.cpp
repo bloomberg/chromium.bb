@@ -360,4 +360,8 @@ void WebRuntimeFeatures::enableRemotePlaybackAPI(bool enable) {
   RuntimeEnabledFeatures::setRemotePlaybackEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableVideoFullscreenOrientationLock(bool enable) {
+  RuntimeEnabledFeatures::setVideoFullscreenOrientationLockEnabled(enable);
+}
+
 }  // namespace blink

@@ -2103,6 +2103,12 @@ const FeatureEntry kFeatureEntries[] = {
      IDS_FLAGS_MEDIA_REMOTING_ENCRYPTED_DESCRIPTION, kOsDesktop,
      FEATURE_VALUE_TYPE(features::kMediaRemotingEncrypted)},
 #endif
+#if defined(OS_ANDROID)
+    {"video-fullscreen-orientation-lock",
+     IDS_FLAGS_VIDEO_FULLSCREEN_ORIENTATION_LOCK_NAME,
+     IDS_FLAGS_VIDEO_FULLSCREEN_ORIENTATION_LOCK_DESCRIPTION, kOsAndroid,
+     FEATURE_VALUE_TYPE(media::kVideoFullscreenOrientationLock)},
+#endif
 
     // NOTE: Adding new command-line switches requires adding corresponding
     // entries to enum "LoginCustomFlags" in histograms.xml. See note in

@@ -94,6 +94,7 @@ MEDIA_EXPORT extern const base::Feature kBackgroundVideoTrackOptimization;
 
 #if defined(OS_ANDROID)
 MEDIA_EXPORT extern const base::Feature kAndroidMediaPlayerRenderer;
+MEDIA_EXPORT extern const base::Feature kVideoFullscreenOrientationLock;
 #endif  // defined(OS_ANDROID)
 }  // namespace media
 

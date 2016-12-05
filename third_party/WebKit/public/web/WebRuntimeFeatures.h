@@ -138,6 +138,7 @@ class WebRuntimeFeatures {
   BLINK_EXPORT static void enableCanvas2dDynamicRenderingModeSwitching(bool);
   BLINK_EXPORT static void enableSendBeaconThrowForBlobWithNonSimpleType(bool);
   BLINK_EXPORT static void enableBackgroundVideoTrackOptimization(bool);
+  BLINK_EXPORT static void enableVideoFullscreenOrientationLock(bool);
 
  private:
   WebRuntimeFeatures();

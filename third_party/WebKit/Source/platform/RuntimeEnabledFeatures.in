@@ -254,6 +254,7 @@ WebVR origin_trial_feature_name=WebVR
 WebVTTRegions status=experimental
 V8BasedStructuredClone status=stable
 V8IdleTasks
+VideoFullscreenOrientationLock
 VisibilityChangeOnUnload status=stable
 XSLT status=stable
 smil status=stable

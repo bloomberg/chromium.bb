@@ -247,6 +247,8 @@ struct CONTENT_EXPORT WebPreferences {
   // Specifies default setting for spellcheck when the spellcheck attribute is
   // not explicitly specified.
   bool spellcheck_enabled_by_default;
+  // If enabled, when a video goes fullscreen, the orientation should be locked.
+  bool video_fullscreen_orientation_lock_enabled;
 #endif
 
   // Default (used if the page or UA doesn't override these) values for page

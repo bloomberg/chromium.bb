@@ -1040,6 +1040,9 @@ void RenderView::ApplyWebPreferences(const WebPreferences& prefs,
       base::SysInfo::IsLowEndDevice();
   // TODO(mlamouri): rename this setting "isLowEndDevice".
   settings->setForcePreloadNoneForMediaElements(is_low_end_device);
+
+  WebRuntimeFeatures::enableVideoFullscreenOrientationLock(
+      prefs.video_fullscreen_orientation_lock_enabled);
 #endif
 
   settings->setViewportEnabled(prefs.viewport_enabled);

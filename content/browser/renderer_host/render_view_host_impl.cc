@@ -462,6 +462,9 @@ WebPreferences RenderViewHostImpl::ComputeWebkitPrefs() {
 
 #if defined(OS_ANDROID)
   prefs.device_supports_mouse = false;
+
+  prefs.video_fullscreen_orientation_lock_enabled =
+      base::FeatureList::IsEnabled(media::kVideoFullscreenOrientationLock);
 #endif
 
   prefs.pointer_events_max_touch_points = ui::MaxTouchPoints();
