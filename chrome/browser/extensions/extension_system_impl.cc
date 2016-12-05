@@ -254,21 +254,6 @@ void ExtensionSystemImpl::Shared::Init(bool extensions_enabled) {
   extension_service_->component_loader()->AddDefaultComponentExtensions(
       skip_session_extensions);
 #endif
-  if (command_line->HasSwitch(switches::kLoadComponentExtension)) {
-    base::CommandLine::StringType path_list =
-        command_line->GetSwitchValueNative(switches::kLoadComponentExtension);
-    base::StringTokenizerT<base::CommandLine::StringType,
-                           base::CommandLine::StringType::const_iterator>
-        t(path_list, FILE_PATH_LITERAL(","));
-    while (t.GetNext()) {
-      // Load the component extension manifest synchronously.
-      // Blocking the UI thread is acceptable here since
-      // this flag designated for developers.
-      base::ThreadRestrictions::ScopedAllowIO allow_io;
-      extension_service_->component_loader()->AddOrReplace(
-          base::FilePath(t.token()));
-    }
-  }
 
   app_sorting_.reset(new ChromeAppSorting(profile_));
 

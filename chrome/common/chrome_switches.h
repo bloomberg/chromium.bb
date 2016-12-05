@@ -171,7 +171,6 @@ extern const char kInterestsURL[];
 extern const char kKeepAliveForTest[];
 extern const char kKioskMode[];
 extern const char kKioskModePrinting[];
-extern const char kLoadComponentExtension[];
 extern const char kLoadExtension[];
 extern const char kLoadMediaRouterComponentExtension[];
 extern const char kMakeDefaultBrowser[];

@@ -580,9 +580,6 @@ const char kKioskMode[]                     = "kiosk";
 // See http://crbug.com/31395.
 const char kKioskModePrinting[]             = "kiosk-printing";
 
-// Comma-separated list of directories with component extensions to load.
-const char kLoadComponentExtension[]        = "load-component-extension";
-
 // Loads an extension from the specified directory.
 const char kLoadExtension[]                 = "load-extension";
 
