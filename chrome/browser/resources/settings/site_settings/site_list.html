@@ -66,10 +66,10 @@
             <div class="start layout horizontal center" on-tap="onOriginTap_"
                 actionable$="[[enableSiteSettings_]]">
               <div class="favicon-image"
-                  style$="[[computeSiteIcon(item.originForDisplay)]]">
+                  style$="[[computeSiteIcon(item.origin)]]">
               </div>
               <div class="middle">
-                <div class="selectable">[[item.originForDisplay]]</div>
+                <div class="selectable">[[item.displayName]]</div>
 
                 <!-- This div must not contain extra whitespace. -->
                 <div class="selectable secondary"

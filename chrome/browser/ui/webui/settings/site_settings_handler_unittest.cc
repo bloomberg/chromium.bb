@@ -261,8 +261,9 @@ TEST_F(SiteSettingsHandlerTest, ExceptionHelpers) {
   ContentSettingsPattern pattern =
       ContentSettingsPattern::FromString("[*.]google.com");
   std::unique_ptr<base::DictionaryValue> exception =
-      site_settings::GetExceptionForPage(pattern, pattern,
-          CONTENT_SETTING_BLOCK, "preference", false);
+      site_settings::GetExceptionForPage(pattern, pattern, pattern.ToString(),
+                                         CONTENT_SETTING_BLOCK, "preference",
+                                         false);
 
   std::string primary_pattern, secondary_pattern, type;
   bool incognito;

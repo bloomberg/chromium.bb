@@ -353,14 +353,14 @@ Polymer({
       var siteException = this.expandSiteException(sites[i]);
 
       // The All Sites category can contain duplicates (from other categories).
-      if (this.allSites && siteException.originForDisplay == lastOrigin &&
-          siteException.embeddingOriginForDisplay == lastEmbeddingOrigin) {
+      if (this.allSites && siteException.origin == lastOrigin &&
+          siteException.embeddingOrigin == lastEmbeddingOrigin) {
         continue;
       }
 
       results.push(siteException);
-      lastOrigin = siteException.originForDisplay;
-      lastEmbeddingOrigin = siteException.embeddingOriginForDisplay;
+      lastOrigin = siteException.origin;
+      lastEmbeddingOrigin = siteException.embeddingOrigin;
     }
     return results;
   },
@@ -458,14 +458,14 @@ Polymer({
    * @return {string} The site description.
    */
   computeSiteDescription_: function(item) {
-    if (item.incognito && item.embeddingOriginForDisplay.length > 0) {
+    if (item.incognito && item.embeddingDisplayName.length > 0) {
       return loadTimeData.getStringF('embeddedIncognitoSite',
-          item.embeddingOriginForDisplay);
+          item.embeddingDisplayName);
     }
 
     if (item.incognito)
       return loadTimeData.getString('incognitoSite');
-    return item.embeddingOriginForDisplay;
+    return item.embeddingDisplayName;
   },
 
   /**

@@ -943,10 +943,12 @@ void ContentSettingsHandler::CompareMediaExceptionsWithFlash(
   MediaSettingsInfo::ForOneType& settings = media_settings_->forType(type);
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
-
+  const auto* extension_registry =
+      extensions::ExtensionRegistry::Get(GetProfile());
   base::ListValue exceptions;
-  site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-      web_ui(), /*incognito=*/false, /*filter=*/nullptr, &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(
+      settings_map, type, extension_registry, web_ui(), /*incognito=*/false,
+      /*filter=*/nullptr, &exceptions);
 
   settings.exceptions.clear();
   for (base::ListValue::const_iterator entry = exceptions.begin();
@@ -1090,8 +1092,11 @@ void ContentSettingsHandler::UpdateExceptionsViewFromHostContentSettingsMap(
   base::ListValue exceptions;
   HostContentSettingsMap* settings_map =
       HostContentSettingsMapFactory::GetForProfile(GetProfile());
-  site_settings::GetExceptionsFromHostContentSettingsMap(settings_map, type,
-      web_ui(), /*incognito=*/false, /*filter=*/nullptr, &exceptions);
+  const auto* extension_registry =
+      extensions::ExtensionRegistry::Get(GetProfile());
+  site_settings::GetExceptionsFromHostContentSettingsMap(
+      settings_map, type, extension_registry, web_ui(), /*incognito=*/false,
+      /*filter=*/nullptr, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setExceptions",
@@ -1116,9 +1121,12 @@ void ContentSettingsHandler::UpdateExceptionsViewFromOTRHostContentSettingsMap(
       HostContentSettingsMapFactory::GetForProfile(GetOTRProfile());
   if (!otr_settings_map)
     return;
+  const auto* extension_registry =
+      extensions::ExtensionRegistry::Get(GetOTRProfile());
   base::ListValue exceptions;
-  site_settings::GetExceptionsFromHostContentSettingsMap(otr_settings_map, type,
-      web_ui(), /*incognito=*/true, /*filter=*/nullptr, &exceptions);
+  site_settings::GetExceptionsFromHostContentSettingsMap(
+      otr_settings_map, type, extension_registry, web_ui(), /*incognito=*/true,
+      /*filter=*/nullptr, &exceptions);
   base::StringValue type_string(
       site_settings::ContentSettingsTypeToGroupName(type));
   web_ui()->CallJavascriptFunctionUnsafe("ContentSettings.setOTRExceptions",

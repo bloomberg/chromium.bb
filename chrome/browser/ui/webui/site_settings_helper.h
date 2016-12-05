@@ -26,6 +26,10 @@ class DictionaryValue;
 class ListValue;
 }
 
+namespace extensions {
+class ExtensionRegistry;
+}
+
 namespace site_settings {
 
 // Maps from a secondary pattern to a setting.
@@ -39,6 +43,8 @@ typedef std::map<std::pair<ContentSettingsPattern, std::string>,
 
 extern const char kSetting[];
 extern const char kOrigin[];
+extern const char kDisplayName[];
+extern const char kOriginForFavicon[];
 extern const char kPolicyProviderId[];
 extern const char kSource[];
 extern const char kIncognito[];
@@ -61,6 +67,7 @@ std::string ContentSettingsTypeToGroupName(ContentSettingsType type);
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
+    const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito);
@@ -75,6 +82,7 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 void GetExceptionsFromHostContentSettingsMap(
     const HostContentSettingsMap* map,
     ContentSettingsType type,
+    const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito,
     const std::string* filter,
@@ -85,6 +93,7 @@ void GetExceptionsFromHostContentSettingsMap(
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
     std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,
+    const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito);
 

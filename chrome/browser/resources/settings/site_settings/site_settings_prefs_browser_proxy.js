@@ -9,10 +9,10 @@
 
 /**
  * @typedef {{embeddingOrigin: string,
- *            embeddingOriginForDisplay: string,
+ *            embeddingDisplayName: string,
  *            incognito: boolean,
  *            origin: string,
- *            originForDisplay: string,
+ *            displayName: string,
  *            setting: string,
  *            source: string}}
  */

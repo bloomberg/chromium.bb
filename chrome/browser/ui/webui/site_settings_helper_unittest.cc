@@ -56,8 +56,8 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
   base::ListValue exceptions;
   // Check that the initial state of the map is empty.
   site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, kContentType, nullptr /* web_ui */, false /* incognito */,
-      nullptr /* filter */, &exceptions);
+      map, kContentType, /*extension_registry=*/nullptr, /*web_ui=*/nullptr,
+      /*incognito=*/false, /*filter=*/nullptr, &exceptions);
   EXPECT_EQ(0u, exceptions.GetSize());
 
   map->SetDefaultContentSetting(kContentType, CONTENT_SETTING_ALLOW);
@@ -90,8 +90,8 @@ TEST_F(SiteSettingsHelperTest, CheckExceptionOrder) {
 
   exceptions.Clear();
   site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, kContentType, nullptr /* web_ui */, false /* incognito */,
-      nullptr /* filter */, &exceptions);
+      map, kContentType, /*extension_registry=*/nullptr, /*web_ui=*/nullptr,
+      /*incognito=*/false, /*filter=*/nullptr, &exceptions);
 
   EXPECT_EQ(5u, exceptions.GetSize());
 

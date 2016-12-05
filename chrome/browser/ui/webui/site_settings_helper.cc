@@ -15,6 +15,7 @@
 #include "chrome/common/pref_names.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/prefs/pref_service.h"
+#include "extensions/browser/extension_registry.h"
 
 namespace site_settings {
 
@@ -22,6 +23,8 @@ const char kAppName[] = "appName";
 const char kAppId[] = "appId";
 const char kSetting[] = "setting";
 const char kOrigin[] = "origin";
+const char kDisplayName[] = "displayName";
+const char kOriginForFavicon[] = "originForFavicon";
 const char kPolicyProviderId[] = "policy";
 const char kSource[] = "source";
 const char kIncognito[] = "incognito";
@@ -128,11 +131,13 @@ void AddExceptionForHostedApp(const std::string& url_pattern,
 std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
     const ContentSettingsPattern& pattern,
     const ContentSettingsPattern& secondary_pattern,
+    const std::string& display_name,
     const ContentSetting& setting,
     const std::string& provider_name,
     bool incognito) {
   base::DictionaryValue* exception = new base::DictionaryValue();
   exception->SetString(kOrigin, pattern.ToString());
+  exception->SetString(kDisplayName, display_name);
   exception->SetString(kEmbeddingOrigin,
                        secondary_pattern == ContentSettingsPattern::Wildcard() ?
                            std::string() :
@@ -148,12 +153,31 @@ std::unique_ptr<base::DictionaryValue> GetExceptionForPage(
   return base::WrapUnique(exception);
 }
 
-void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
-                                             ContentSettingsType type,
-                                             content::WebUI* web_ui,
-                                             bool incognito,
-                                             const std::string* filter,
-                                             base::ListValue* exceptions) {
+std::string GetDisplayName(
+    const ContentSettingsPattern& pattern,
+    const extensions::ExtensionRegistry* extension_registry) {
+  if (extension_registry &&
+      pattern.GetScheme() == ContentSettingsPattern::SCHEME_CHROMEEXTENSION) {
+    GURL url(pattern.ToString());
+    // For the extension scheme, the pattern must be a valid URL.
+    DCHECK(url.is_valid());
+    const extensions::Extension* extension =
+        extension_registry->GetExtensionById(
+            url.host(), extensions::ExtensionRegistry::EVERYTHING);
+    if (extension)
+      return extension->name();
+  }
+  return pattern.ToString();
+}
+
+void GetExceptionsFromHostContentSettingsMap(
+    const HostContentSettingsMap* map,
+    ContentSettingsType type,
+    const extensions::ExtensionRegistry* extension_registry,
+    content::WebUI* web_ui,
+    bool incognito,
+    const std::string* filter,
+    base::ListValue* exceptions) {
   ContentSettingsForOneType entries;
   map->GetSettingsForOneType(type, std::string(), &entries);
   // Group settings by primary_pattern.
@@ -194,6 +218,8 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
        ++i) {
     const ContentSettingsPattern& primary_pattern = i->first.first;
     const OnePatternSettings& one_settings = i->second;
+    const std::string display_name =
+        GetDisplayName(primary_pattern, extension_registry);
 
     // The "parent" entry either has an identical primary and secondary pattern,
     // or has a wildcard secondary. The two cases are indistinguishable in the
@@ -212,8 +238,9 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
         parent == one_settings.end() ? CONTENT_SETTING_DEFAULT : parent->second;
     const ContentSettingsPattern& secondary_pattern =
         parent == one_settings.end() ? primary_pattern : parent->first;
-    this_provider_exceptions.push_back(GetExceptionForPage(
-        primary_pattern, secondary_pattern, parent_setting, source, incognito));
+    this_provider_exceptions.push_back(
+        GetExceptionForPage(primary_pattern, secondary_pattern, display_name,
+                            parent_setting, source, incognito));
 
     // Add the "children" for any embedded settings.
     for (OnePatternSettings::const_iterator j = one_settings.begin();
@@ -223,8 +250,9 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
         continue;
 
       ContentSetting content_setting = j->second;
-      this_provider_exceptions.push_back(GetExceptionForPage(
-          primary_pattern, j->first, content_setting, source, incognito));
+      this_provider_exceptions.push_back(
+          GetExceptionForPage(primary_pattern, j->first, display_name,
+                              content_setting, source, incognito));
     }
   }
 
@@ -235,7 +263,8 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
     auto& policy_exceptions = all_provider_exceptions
         [HostContentSettingsMap::GetProviderTypeFromSource(kPolicyProviderId)];
     DCHECK(policy_exceptions.empty());
-    GetPolicyAllowedUrls(type, &policy_exceptions, web_ui, incognito);
+    GetPolicyAllowedUrls(type, &policy_exceptions, extension_registry, web_ui,
+                         incognito);
   }
 
   for (auto& one_provider_exceptions : all_provider_exceptions) {
@@ -247,6 +276,7 @@ void GetExceptionsFromHostContentSettingsMap(const HostContentSettingsMap* map,
 void GetPolicyAllowedUrls(
     ContentSettingsType type,
     std::vector<std::unique_ptr<base::DictionaryValue>>* exceptions,
+    const extensions::ExtensionRegistry* extension_registry,
     content::WebUI* web_ui,
     bool incognito) {
   DCHECK(type == CONTENT_SETTINGS_TYPE_MEDIASTREAM_MIC ||
@@ -279,9 +309,10 @@ void GetPolicyAllowedUrls(
       patterns.begin(), patterns.end(), std::greater<ContentSettingsPattern>());
 
   for (const ContentSettingsPattern& pattern : patterns) {
-    exceptions->push_back(GetExceptionForPage(pattern, ContentSettingsPattern(),
-                                              CONTENT_SETTING_ALLOW,
-                                              kPolicyProviderId, incognito));
+    std::string display_name = GetDisplayName(pattern, extension_registry);
+    exceptions->push_back(GetExceptionForPage(
+        pattern, ContentSettingsPattern(), display_name, CONTENT_SETTING_ALLOW,
+        kPolicyProviderId, incognito));
   }
 }
 

@@ -37,9 +37,9 @@
 
     <div class="settings-box first">
       <div class="favicon-image"
-          style$="[[computeSiteIcon(site.originForDisplay)]]">
+          style$="[[computeSiteIcon(site.origin)]]">
       </div>
-      <div class="middle">[[site.originForDisplay]]</div>
+      <div class="middle">[[site.displayName]]</div>
     </div>
     <template is="dom-if" if="[[storedData_]]">
       <div id="usage">

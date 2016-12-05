@@ -23,6 +23,7 @@
 #include "chrome/grit/generated_resources.h"
 #include "components/content_settings/core/browser/host_content_settings_map.h"
 #include "components/content_settings/core/common/content_settings_types.h"
+#include "components/crx_file/id_util.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/browser/notification_service.h"
 #include "content/public/browser/web_ui.h"
@@ -418,18 +419,20 @@ void SiteSettingsHandler::HandleGetExceptionList(const base::ListValue* args) {
 
   HostContentSettingsMap* map =
       HostContentSettingsMapFactory::GetForProfile(profile_);
+  const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
   AddExceptionsGrantedByHostedApps(profile_, APIPermissionFromGroupName(type),
       exceptions.get());
   site_settings::GetExceptionsFromHostContentSettingsMap(
-      map, content_type, web_ui(), /*incognito=*/false, /*filter=*/nullptr,
-      exceptions.get());
+      map, content_type, extension_registry, web_ui(), /*incognito=*/false,
+      /*filter=*/nullptr, exceptions.get());
 
   if (profile_->HasOffTheRecordProfile()) {
     Profile* incognito = profile_->GetOffTheRecordProfile();
     map = HostContentSettingsMapFactory::GetForProfile(incognito);
+    extension_registry = extensions::ExtensionRegistry::Get(incognito);
     site_settings::GetExceptionsFromHostContentSettingsMap(
-        map, content_type, web_ui(), /*incognito=*/true, /*filter=*/nullptr,
-        exceptions.get());
+        map, content_type, extension_registry, web_ui(), /*incognito=*/true,
+        /*filter=*/nullptr, exceptions.get());
   }
 
   ResolveJavascriptCallback(*callback_id, *exceptions.get());
@@ -546,16 +549,19 @@ void SiteSettingsHandler::HandleGetSiteDetails(
 
     HostContentSettingsMap* map =
         HostContentSettingsMapFactory::GetForProfile(profile_);
+    const auto* extension_registry =
+        extensions::ExtensionRegistry::Get(profile_);
     site_settings::GetExceptionsFromHostContentSettingsMap(
-        map, content_type, web_ui(), /*incognito=*/false, /*filter=*/&site,
-        exceptions.get());
+        map, content_type, extension_registry, web_ui(), /*incognito=*/false,
+        /*filter=*/&site, exceptions.get());
 
     if (profile_->HasOffTheRecordProfile()) {
       Profile* incognito = profile_->GetOffTheRecordProfile();
       map = HostContentSettingsMapFactory::GetForProfile(incognito);
+      extension_registry = extensions::ExtensionRegistry::Get(incognito);
       site_settings::GetExceptionsFromHostContentSettingsMap(
-          map, content_type, web_ui(), /*incognito=*/true, /*filter=*/&site,
-          exceptions.get());
+          map, content_type, extension_registry, web_ui(), /*incognito=*/true,
+          /*filter=*/&site, exceptions.get());
     }
   }
 
@@ -622,6 +628,8 @@ void SiteSettingsHandler::SendZoomLevels() {
   content::HostZoomMap::ZoomLevelVector zoom_levels(
       host_zoom_map->GetAllZoomLevels());
 
+  const auto* extension_registry = extensions::ExtensionRegistry::Get(profile_);
+
   // Sort ZoomLevelChanges by host and scheme
   // (a.com < http://a.com < https://a.com < b.com).
   std::sort(zoom_levels.begin(), zoom_levels.end(),
@@ -629,20 +637,33 @@ void SiteSettingsHandler::SendZoomLevels() {
                const content::HostZoomMap::ZoomLevelChange& b) {
               return a.host == b.host ? a.scheme < b.scheme : a.host < b.host;
             });
-
-  for (content::HostZoomMap::ZoomLevelVector::const_iterator i =
-           zoom_levels.begin();
-       i != zoom_levels.end();
-       ++i) {
+  for (const auto& zoom_level : zoom_levels) {
     std::unique_ptr<base::DictionaryValue> exception(new base::DictionaryValue);
-    switch (i->mode) {
+    switch (zoom_level.mode) {
       case content::HostZoomMap::ZOOM_CHANGED_FOR_HOST: {
-        std::string host = i->host;
+        std::string host = zoom_level.host;
         if (host == content::kUnreachableWebDataURL) {
           host =
               l10n_util::GetStringUTF8(IDS_ZOOMLEVELS_CHROME_ERROR_PAGES_LABEL);
         }
         exception->SetString(site_settings::kOrigin, host);
+
+        std::string display_name = host;
+        std::string origin_for_favicon = host;
+        // As an optimization, only check hosts that could be an extension.
+        if (crx_file::id_util::IdIsValid(host)) {
+          // Look up the host as an extension, if found then it is an extension.
+          const extensions::Extension* extension =
+              extension_registry->GetExtensionById(
+                  host, extensions::ExtensionRegistry::EVERYTHING);
+          if (extension) {
+            origin_for_favicon = extension->url().spec();
+            display_name = extension->name();
+          }
+        }
+        exception->SetString(site_settings::kDisplayName, display_name);
+        exception->SetString(site_settings::kOriginForFavicon,
+                             origin_for_favicon);
         break;
       }
       case content::HostZoomMap::ZOOM_CHANGED_FOR_SCHEME_AND_HOST:
@@ -664,7 +685,7 @@ void SiteSettingsHandler::SendZoomLevels() {
     // Calculate the zoom percent from the factor. Round up to the nearest whole
     // number.
     int zoom_percent = static_cast<int>(
-        content::ZoomLevelToZoomFactor(i->zoom_level) * 100 + 0.5);
+        content::ZoomLevelToZoomFactor(zoom_level.zoom_level) * 100 + 0.5);
     exception->SetString(kZoom, base::FormatPercent(zoom_percent));
     exception->SetString(
         site_settings::kSource, site_settings::kPreferencesSource);

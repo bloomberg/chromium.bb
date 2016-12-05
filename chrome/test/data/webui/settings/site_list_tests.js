@@ -786,7 +786,7 @@ cr.define('site_list', function() {
                       prefsMixedOriginAndPattern.exceptions.
                                                  geolocation[0].
                                                  origin,
-                      testElement.sites[0].originForDisplay);
+                      testElement.sites[0].displayName);
                 }
 
                 assertEquals(undefined, testElement.selectedOrigin);
@@ -800,7 +800,7 @@ cr.define('site_list', function() {
                       prefsMixedOriginAndPattern.exceptions.
                                                  geolocation[0].
                                                  origin,
-                      testElement.selectedSite.originForDisplay);
+                      testElement.selectedSite.displayName);
                 }
               });
             });

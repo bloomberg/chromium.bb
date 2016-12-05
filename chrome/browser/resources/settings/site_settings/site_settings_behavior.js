@@ -289,23 +289,18 @@ var SiteSettingsBehaviorImpl = {
    */
   expandSiteException: function(exception) {
     var origin = exception.origin;
-    // TODO(dschuyler): If orginForDisplay becomes different from origin in the
-    // site settings, that filtering would happen here. If that doesn't happen
-    // then originForDisplay should be removed (it's redundant with origin).
-    // e.g. var originForDisplay = someFilter(origin);
-
     var embeddingOrigin = exception.embeddingOrigin;
-    var embeddingOriginForDisplay = '';
+    var embeddingDisplayName = '';
     if (origin != embeddingOrigin) {
-      embeddingOriginForDisplay =
+      embeddingDisplayName =
           this.getEmbedderString(embeddingOrigin, this.category);
     }
 
     return {
       origin: origin,
-      originForDisplay: origin,
+      displayName: exception.displayName,
       embeddingOrigin: embeddingOrigin,
-      embeddingOriginForDisplay: embeddingOriginForDisplay,
+      embeddingDisplayName: embeddingDisplayName,
       incognito: exception.incognito,
       setting: exception.setting,
       source: exception.source,

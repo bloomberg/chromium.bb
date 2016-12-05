@@ -25,12 +25,16 @@ cr.define('zoom_levels', function() {
       var zoomList = [
           {
             origin: 'http://www.google.com',
+            displayName: 'http://www.google.com',
+            originForFavicon: 'http://www.google.com',
             setting: '',
             source: '',
             zoom: '125%',
           },
           {
             origin: 'http://www.chromium.org',
+            displayName: 'http://www.chromium.org',
+            originForFavicon: 'http://www.chromium.org',
             setting: '',
             source: '',
             zoom: '125%',
