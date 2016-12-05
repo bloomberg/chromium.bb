@@ -5252,10 +5252,6 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
     didCommitNavigation:(WKNavigation*)navigation {
   DCHECK_EQ(_webView, webView);
   _certVerificationErrors->Clear();
-  // This point should closely approximate the document object change, so reset
-  // the list of injected scripts to those that are automatically injected.
-  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
-  [self injectWindowID];
 
   // This is the point where the document's URL has actually changed, and
   // pending navigation information should be applied to state information.
@@ -5284,6 +5280,17 @@ const NSTimeInterval kSnapshotOverlayTransition = 0.5;
           base::SysNSStringToUTF8(storedMIMEType));
     }
   }
+
+  // This point should closely approximate the document object change, so reset
+  // the list of injected scripts to those that are automatically injected.
+  _injectedScriptManagers.reset([[NSMutableSet alloc] init]);
+  if ([self contentIsHTML] || self.webState->GetContentsMimeType().empty()) {
+    // In unit tests MIME type will be empty, because loadHTML:forURL: does not
+    // notify web view delegate about received response, so web controller does
+    // not get a chance to properly update MIME type.
+    [self injectWindowID];
+  }
+
   [self webPageChanged];
 
   [self updateSSLStatusForCurrentNavigationItem];
