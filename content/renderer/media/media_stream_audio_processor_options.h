@@ -52,7 +52,6 @@ class CONTENT_EXPORT MediaAudioConstraints {
   // be added.
   // TODO(hta): Switch to an interface without "cricket::" when webrtc has one.
 
-  static void ApplyFixedAudioConstraints(cricket::AudioOptions* options);
 
   // |effects| is the bitmasks telling whether certain platform
   // hardware audio effects are enabled, like hardware echo cancellation. If
