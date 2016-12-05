@@ -228,19 +228,23 @@ TEST_F(TabletPowerButtonControllerTest,
   power_manager_client_->SendSuspendDone();
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
 
-  // Send the power button event after a short delay and check that it is
-  // ignored.
+  // Send the power button event after a short delay and check that backlights
+  // are not forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(GetBacklightsForcedOff());
 
-  // Send the power button event after a longer delay and check that it is not
-  // ignored.
+  // Send the power button event after a longer delay and check that backlights
+  // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
   power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(GetBacklightsForcedOff());
 }
 
@@ -258,20 +262,24 @@ TEST_F(TabletPowerButtonControllerTest,
   // brightness.
   power_manager_client_->SendSuspendDone();
 
-  // Send the power button event after a short delay and check that it is
-  // ignored. But if backlights are forced off, stop forcing off.
+  // Send the power button event after a short delay and check that backlights
+  // are not forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(500));
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
   power_manager_client_->SendBrightnessChanged(kNonZeroBrightness, false);
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   EXPECT_FALSE(GetBacklightsForcedOff());
 
-  // Send the power button event after a longer delay and check that it is not
-  // ignored.
+  // Send the power button event after a longer delay and check that backlights
+  // are forced off.
   tick_clock_->Advance(base::TimeDelta::FromMilliseconds(1600));
   power_manager_client_->SendPowerButtonEvent(true, tick_clock_->NowTicks());
+  EXPECT_TRUE(test_api_->ShutdownTimerIsRunning());
   power_manager_client_->SendPowerButtonEvent(false, tick_clock_->NowTicks());
   power_manager_client_->SendBrightnessChanged(0, false);
+  EXPECT_FALSE(test_api_->ShutdownTimerIsRunning());
   EXPECT_TRUE(GetBacklightsForcedOff());
 }
 

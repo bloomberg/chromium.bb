@@ -68,6 +68,7 @@ TabletPowerButtonController::TabletPowerButtonController(
     LockStateController* controller)
     : tick_clock_(new base::DefaultTickClock()),
       last_resume_time_(base::TimeTicks()),
+      force_off_on_button_up_(true),
       controller_(controller),
       weak_ptr_factory_(this) {
   chromeos::DBusThreadManager::Get()->GetPowerManagerClient()->AddObserver(
@@ -92,36 +93,28 @@ bool TabletPowerButtonController::ShouldHandlePowerButtonEvents() const {
 void TabletPowerButtonController::OnPowerButtonEvent(
     bool down,
     const base::TimeTicks& timestamp) {
-  // When the system resumes in response to the power button being pressed,
-  // Chrome receives powerd's SuspendDone signal and notification that the
-  // backlight has been turned back on before seeing the power button events
-  // that woke the system. Ignore events just after resuming to ensure that we
-  // don't turn the screen off in response to the events.
-  //
-  // TODO(warx): pressing power button should also StartShutdownTimer() in this
-  // case. Reorganize the code to support that.
-  if (timestamp - last_resume_time_ <=
-      base::TimeDelta::FromMilliseconds(kIgnorePowerButtonAfterResumeMs)) {
-    // If backlights are forced off, stop forcing off because resuming system
-    // doesn't handle this.
-    if (down && backlights_forced_off_)
-      SetDisplayForcedOff(false);
-    return;
-  }
-
   if (down) {
+    force_off_on_button_up_ = true;
+    // When the system resumes in response to the power button being pressed,
+    // Chrome receives powerd's SuspendDone signal and notification that the
+    // backlight has been turned back on before seeing the power button events
+    // that woke the system. Avoid forcing off display just after resuming to
+    // ensure that we don't turn the display off in response to the events.
+    if (timestamp - last_resume_time_ <=
+        base::TimeDelta::FromMilliseconds(kIgnorePowerButtonAfterResumeMs)) {
+      force_off_on_button_up_ = false;
+    }
     screen_off_when_power_button_down_ = brightness_level_is_zero_;
     SetDisplayForcedOff(false);
     StartShutdownTimer();
   } else {
     if (shutdown_timer_.IsRunning()) {
       shutdown_timer_.Stop();
-      if (!screen_off_when_power_button_down_) {
+      if (!screen_off_when_power_button_down_ && force_off_on_button_up_) {
         SetDisplayForcedOff(true);
         LockScreenIfRequired();
       }
     }
-    screen_off_when_power_button_down_ = false;
 
     // When power button is released, cancel shutdown animation whenever it is
     // still cancellable.
