@@ -30,10 +30,12 @@ namespace blink {
 WebGLContextGroup::WebGLContextGroup() : m_numberOfContextLosses(0) {}
 
 gpu::gles2::GLES2Interface* WebGLContextGroup::getAGLInterface() {
-  // During an Oilpan GC where WebGL objects become unreachable at the same
-  // time the context does, the m_contexts set can be fully cleared out
-  // before WebGLObjects' destructors run. Since the calling code handles
-  // this gracefully, explicitly test for this possibility.
+  // It's possible that all of the WebGLRenderingContextBases (currently
+  // only one) referenced weakly by this WebGLContextGroup are GC'd before
+  // the (shared) WebGLObjects that it created. Since the calling code
+  // handles this gracefully, and since the graphical resources will have
+  // been implicitly reclaimed by the deletion of the context, explicitly
+  // test for this possibility.
   if (m_contexts.isEmpty())
     return nullptr;
 
