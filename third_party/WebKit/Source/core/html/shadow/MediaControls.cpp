@@ -339,8 +339,7 @@ void MediaControls::reset() {
   m_timeline->setPosition(mediaElement().currentTime());
 
   onVolumeChange();
-
-  refreshClosedCaptionsButtonVisibility();
+  onTextTracksAddedOrRemoved();
 
   m_fullscreenButton->setIsWanted(shouldShowFullscreenButton(mediaElement()));
 
@@ -452,15 +451,6 @@ void MediaControls::updateCurrentTimeDisplay() {
       LayoutTheme::theme().formatMediaControlsCurrentTime(now, duration),
       IGNORE_EXCEPTION);
   m_currentTimeDisplay->setCurrentValue(now);
-}
-
-void MediaControls::changedClosedCaptionsVisibility() {
-  m_toggleClosedCaptionsButton->updateDisplayType();
-}
-
-void MediaControls::refreshClosedCaptionsButtonVisibility() {
-  m_toggleClosedCaptionsButton->setIsWanted(mediaElement().hasClosedCaptions());
-  BatchedControlUpdate batch(this);
 }
 
 void MediaControls::toggleTextTrackList() {
@@ -722,6 +712,15 @@ void MediaControls::onPause() {
   makeOpaque();
 
   stopHideMediaControlsTimer();
+}
+
+void MediaControls::onTextTracksAddedOrRemoved() {
+  m_toggleClosedCaptionsButton->setIsWanted(mediaElement().hasClosedCaptions());
+  BatchedControlUpdate batch(this);
+}
+
+void MediaControls::onTextTracksChanged() {
+  m_toggleClosedCaptionsButton->updateDisplayType();
 }
 
 void MediaControls::notifyPanelWidthChanged(const LayoutUnit& newWidth) {

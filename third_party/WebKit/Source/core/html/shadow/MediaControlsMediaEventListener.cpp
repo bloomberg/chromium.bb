@@ -7,6 +7,7 @@
 #include "core/events/Event.h"
 #include "core/html/HTMLMediaElement.h"
 #include "core/html/shadow/MediaControls.h"
+#include "core/html/track/TextTrackList.h"
 
 namespace blink {
 
@@ -23,6 +24,12 @@ MediaControlsMediaEventListener::MediaControlsMediaEventListener(
                                                     false);
   m_mediaControls->m_mediaElement->addEventListener(EventTypeNames::pause, this,
                                                     false);
+
+  // TextTracks events.
+  TextTrackList* textTracks = m_mediaControls->m_mediaElement->textTracks();
+  textTracks->addEventListener(EventTypeNames::addtrack, this, false);
+  textTracks->addEventListener(EventTypeNames::change, this, false);
+  textTracks->addEventListener(EventTypeNames::removetrack, this, false);
 }
 
 bool MediaControlsMediaEventListener::operator==(
@@ -51,6 +58,17 @@ void MediaControlsMediaEventListener::handleEvent(
   }
   if (event->type() == EventTypeNames::pause) {
     m_mediaControls->onPause();
+    return;
+  }
+
+  // TextTracks events.
+  if (event->type() == EventTypeNames::addtrack ||
+      event->type() == EventTypeNames::removetrack) {
+    m_mediaControls->onTextTracksAddedOrRemoved();
+    return;
+  }
+  if (event->type() == EventTypeNames::change) {
+    m_mediaControls->onTextTracksChanged();
     return;
   }
 

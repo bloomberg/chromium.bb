@@ -1251,9 +1251,14 @@ void HTMLMediaElement::textTrackReadyStateChanged(TextTrack* track) {
     // clicking the captions button. In this case, a check whether all the
     // resources have failed loading should be done in order to hide the CC
     // button.
+    // TODO(mlamouri): when an HTMLTrackElement fails to load, it is not
+    // propagated to the TextTrack object in a web exposed fashion. We have to
+    // keep relying on a custom glue to the controls while this is taken care
+    // of on the web side. See https://crbug.com/669977
     if (mediaControls() &&
-        track->getReadinessState() == TextTrack::FailedToLoad)
-      mediaControls()->refreshClosedCaptionsButtonVisibility();
+        track->getReadinessState() == TextTrack::FailedToLoad) {
+      mediaControls()->onTrackElementFailedToLoad();
+    }
   }
 }
 
@@ -1702,11 +1707,8 @@ void HTMLMediaElement::setReadyState(ReadyState state) {
     shouldUpdateDisplayState = true;
   }
 
-  if (shouldUpdateDisplayState) {
+  if (shouldUpdateDisplayState)
     updateDisplayState();
-    if (mediaControls())
-      mediaControls()->refreshClosedCaptionsButtonVisibility();
-  }
 
   updatePlayState();
   cueTimeline().updateActiveCues(currentTime());
@@ -2609,7 +2611,7 @@ void HTMLMediaElement::addTextTrack(WebInbandTextTrack* webTrack) {
   // cancelable, and that uses the TrackEvent interface, with the track
   // attribute initialized to the text track's TextTrack object, at the media
   // element's textTracks attribute's TextTrackList object.
-  addTextTrack(textTrack);
+  textTracks()->append(textTrack);
 }
 
 void HTMLMediaElement::removeTextTrack(WebInbandTextTrack* webTrack) {
@@ -2623,24 +2625,7 @@ void HTMLMediaElement::removeTextTrack(WebInbandTextTrack* webTrack) {
   if (!textTrack)
     return;
 
-  removeTextTrack(textTrack);
-}
-
-void HTMLMediaElement::textTracksChanged() {
-  if (mediaControls())
-    mediaControls()->refreshClosedCaptionsButtonVisibility();
-}
-
-void HTMLMediaElement::addTextTrack(TextTrack* track) {
-  textTracks()->append(track);
-
-  textTracksChanged();
-}
-
-void HTMLMediaElement::removeTextTrack(TextTrack* track) {
-  m_textTracks->remove(track);
-
-  textTracksChanged();
+  m_textTracks->remove(textTrack);
 }
 
 void HTMLMediaElement::forgetResourceSpecificTracks() {
@@ -2650,7 +2635,6 @@ void HTMLMediaElement::forgetResourceSpecificTracks() {
   if (m_textTracks) {
     TrackDisplayUpdateScope scope(this->cueTimeline());
     m_textTracks->removeAllInbandTracks();
-    textTracksChanged();
   }
 
   m_audioTracks->removeAll();
@@ -2683,7 +2667,7 @@ TextTrack* HTMLMediaElement::addTextTrack(const AtomicString& kind,
   //    interface, with the track attribute initialised to the new text
   //    track's TextTrack object, at the media element's textTracks
   //    attribute's TextTrackList object.
-  addTextTrack(textTrack);
+  textTracks()->append(textTrack);
 
   // Note: Due to side effects when changing track parameters, we have to
   // first append the track to the text track list.
@@ -2715,7 +2699,7 @@ void HTMLMediaElement::didAddTrackElement(HTMLTrackElement* trackElement) {
   if (!textTrack)
     return;
 
-  addTextTrack(textTrack);
+  textTracks()->append(textTrack);
 
   // Do not schedule the track loading until parsing finishes so we don't start
   // before all tracks in the markup have been added.
@@ -2741,7 +2725,7 @@ void HTMLMediaElement::didRemoveTrackElement(HTMLTrackElement* trackElement) {
   // When a track element's parent element changes and the old parent was a
   // media element, then the user agent must remove the track element's
   // corresponding text track from the media element's list of text tracks.
-  removeTextTrack(textTrack);
+  m_textTracks->remove(textTrack);
 
   size_t index = m_textTracksWhenResourceSelectionBegan.find(textTrack);
   if (index != kNotFound)
@@ -2768,8 +2752,6 @@ void HTMLMediaElement::honorUserPreferencesForAutomaticTextTrackSelection() {
 
   AutomaticTrackSelection trackSelection(configuration);
   trackSelection.perform(*m_textTracks);
-
-  textTracksChanged();
 }
 
 bool HTMLMediaElement::havePotentialSourceChild() {
@@ -3432,12 +3414,14 @@ WebLayer* HTMLMediaElement::platformLayer() const {
 }
 
 bool HTMLMediaElement::hasClosedCaptions() const {
-  if (m_textTracks) {
-    for (unsigned i = 0; i < m_textTracks->length(); ++i) {
-      if (m_textTracks->anonymousIndexedGetter(i)->canBeRendered())
-        return true;
-    }
+  if (!m_textTracks)
+    return false;
+
+  for (unsigned i = 0; i < m_textTracks->length(); ++i) {
+    if (m_textTracks->anonymousIndexedGetter(i)->canBeRendered())
+      return true;
   }
+
   return false;
 }
 
@@ -3643,9 +3627,6 @@ void HTMLMediaElement::configureTextTrackDisplay() {
 
   if (!haveVisibleTextTrack && !mediaControls())
     return;
-
-  if (mediaControls())
-    mediaControls()->changedClosedCaptionsVisibility();
 
   cueTimeline().updateActiveCues(currentTime());
 

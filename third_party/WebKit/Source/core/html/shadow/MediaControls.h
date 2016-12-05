@@ -53,8 +53,6 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
 
   void updateCurrentTimeDisplay();
 
-  void changedClosedCaptionsVisibility();
-  void refreshClosedCaptionsButtonVisibility();
   void toggleTextTrackList();
   void showTextTrackAtIndex(unsigned indexToEnable);
   void disableShowingTextTracks();
@@ -94,6 +92,11 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void toggleOverflowMenu();
 
   bool overflowMenuVisible();
+
+  // TODO(mlamouri): this is temporary to notify the controls that an
+  // HTMLTrackElement failed to load because there is no web exposed way to
+  // be notified on the TextTrack object. See https://crbug.com/669977
+  void onTrackElementFailedToLoad() { onTextTracksAddedOrRemoved(); }
 
   DECLARE_VIRTUAL_TRACE();
 
@@ -148,6 +151,8 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void onTimeUpdate();
   void onPlay();
   void onPause();
+  void onTextTracksAddedOrRemoved();
+  void onTextTracksChanged();
 
   Member<HTMLMediaElement> m_mediaElement;
 
