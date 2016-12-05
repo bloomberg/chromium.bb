@@ -43,6 +43,7 @@ class WebRtcTestBase : public InProcessBrowserTest {
   static const char kFailedWithPermissionDismissedError[];
 
   static const char kUseDefaultCertKeygen[];
+  static const char kUseDefaultAudioCodec[];
   static const char kUseDefaultVideoCodec[];
 
  protected:
@@ -174,7 +175,9 @@ class WebRtcTestBase : public InProcessBrowserTest {
   std::vector<std::string> GetWhitelistedStatsTypes(
       content::WebContents* tab) const;
 
-  // Change the default video codec in the offer SDP.
+  // Change the default audio/video codec in the offer SDP.
+  void SetDefaultAudioCodec(content::WebContents* tab,
+                            const std::string& audio_codec) const;
   void SetDefaultVideoCodec(content::WebContents* tab,
                             const std::string& video_codec) const;
 

@@ -23,7 +23,13 @@ var gIceCandidates = [];
 var gHasSeenCryptoInSdp = 'no-crypto-seen';
 
 /**
- * The default video codec that should be used.
+ * The default audio codec that should be used when creating an offer.
+ * @private
+ */
+var gDefaultAudioCodec = null;
+
+/**
+ * The default video codec that should be used when creating an offer.
  * @private
  */
 var gDefaultVideoCodec = null;
@@ -88,15 +94,29 @@ function forceOpusDtx() {
 }
 
 /**
- * Sets the default video codec be used when creating an offer.
+ * Sets the default audio codec to be used when creating an offer and returns
+ * "ok" to test.
+ * @param {string} audioCodec promotes the specified codec to be the default
+ *     audio codec, e.g. the first one in the list on the 'm=audio' SDP offer
+ *     line. |audioCodec| is the case-sensitive codec name, e.g. 'opus' or
+ *     'ISAC'.
+ */
+function setDefaultAudioCodec(audioCodec) {
+  gDefaultAudioCodec = audioCodec;
+  returnToTest('ok');
+}
+
+/**
+ * Sets the default video codec to be used when creating an offer and returns
+ * "ok" to test.
  * @param {string} videoCodec promotes the specified codec to be the default
  *     video codec, e.g. the first one in the list on the 'm=video' SDP offer
  *     line. |videoCodec| is the case-sensitive codec name, e.g. 'VP8' or
  *     'H264'.
  */
-function forceVideoCodec(videoCodec) {
+function setDefaultVideoCodec(videoCodec) {
   gDefaultVideoCodec = videoCodec;
-  returnToTest('ok-forced');
+  returnToTest('ok');
 }
 
 /**
@@ -121,6 +141,10 @@ function createLocalOffer(constraints) {
         success('createOffer');
 
         setLocalDescription(peerConnection, localOffer);
+        if (gDefaultAudioCodec !== null) {
+          localOffer.sdp = setSdpDefaultAudioCodec(localOffer.sdp,
+                                                   gDefaultAudioCodec);
+        }
         if (gDefaultVideoCodec !== null) {
           localOffer.sdp = setSdpDefaultVideoCodec(localOffer.sdp,
                                                    gDefaultVideoCodec);
@@ -170,33 +194,47 @@ function receiveOfferFromPeer(sessionDescJson, constraints) {
 }
 
 /**
- * Verifies that the codec previously set using forceVideoCodec() is the
- * default video codec, e.g. the first one in the list on the 'm=video' SDP
- * answer line. If this is not the case, |failure| occurs. If no codec was
- * previously set using forceVideoCodec(), this function will return
- * 'ok-no-default-set'.
+ * Verifies that the codec previously set using setDefault[Audio/Video]Codec()
+ * is the default audio/video codec, e.g. the first one in the list on the
+ * 'm=audio'/'m=video' SDP answer line. If this is not the case, |failure|
+ * occurs. If no codec was previously set using setDefault[Audio/Video]Codec(),
+ * this function will return 'ok-no-defaults-set'.
  *
  * @param {!string} sessionDescJson A JSON-encoded session description.
  */
-function verifyDefaultVideoCodec(sessionDescJson) {
-  var sessionDesc = parseJson_(sessionDescJson);
-  if (gDefaultVideoCodec === null) {
-    returnToTest('ok-no-default-set');
-    return;
-  }
+function verifyDefaultCodecs(sessionDescJson) {
+  let sessionDesc = parseJson_(sessionDescJson);
   if (!sessionDesc.type) {
-    failure('verifyDefaultVideoCodec',
+    failure('verifyDefaultCodecs',
              'Invalid session description: ' + sessionDescJson);
   }
-  var defaultVideoCodec = getSdpDefaultVideoCodec(sessionDesc.sdp);
-  if (defaultVideoCodec === null) {
-    failure('verifyDefaultVideoCodec',
-             'Could not determine default video codec.');
+  if (gDefaultAudioCodec !== null && gDefaultVideoCodec !== null) {
+    returnToTest('ok-no-defaults-set');
+    return;
   }
-  if (gDefaultVideoCodec !== defaultVideoCodec) {
-    failure('verifyDefaultVideoCodec',
-             'Expected default video codec ' + gDefaultVideoCodec +
-             ', got ' + defaultVideoCodec + '.');
+  if (gDefaultAudioCodec !== null) {
+    let defaultAudioCodec = getSdpDefaultAudioCodec(sessionDesc.sdp);
+    if (defaultAudioCodec === null) {
+      failure('verifyDefaultCodecs',
+               'Could not determine default audio codec.');
+    }
+    if (gDefaultAudioCodec !== defaultAudioCodec) {
+      failure('verifyDefaultCodecs',
+               'Expected default audio codec ' + gDefaultAudioCodec +
+               ', got ' + defaultAudioCodec + '.');
+    }
+  }
+  if (gDefaultVideoCodec !== null) {
+    let defaultVideoCodec = getSdpDefaultVideoCodec(sessionDesc.sdp);
+    if (defaultVideoCodec === null) {
+      failure('verifyDefaultCodecs',
+               'Could not determine default video codec.');
+    }
+    if (gDefaultVideoCodec !== defaultVideoCodec) {
+      failure('verifyDefaultCodecs',
+               'Expected default video codec ' + gDefaultVideoCodec +
+               ', got ' + defaultVideoCodec + '.');
+    }
   }
   returnToTest('ok-verified');
 }

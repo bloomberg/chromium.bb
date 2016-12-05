@@ -59,6 +59,7 @@ const char WebRtcTestBase::kAudioVideoCallConstraints720p[] =
    "{audio: true, video: {mandatory: {minWidth: 1280, maxWidth: 1280, "
    " minHeight: 720, maxHeight: 720}}}";
 const char WebRtcTestBase::kUseDefaultCertKeygen[] = "null";
+const char WebRtcTestBase::kUseDefaultAudioCodec[] = "";
 const char WebRtcTestBase::kUseDefaultVideoCodec[] = "";
 
 namespace {
@@ -379,7 +380,7 @@ std::string WebRtcTestBase::CreateAnswer(std::string local_offer,
 
   std::string answer = response.substr(3);
   response = ExecuteJavascript(
-      base::StringPrintf("verifyDefaultVideoCodec('%s')", answer.c_str()),
+      base::StringPrintf("verifyDefaultCodecs('%s')", answer.c_str()),
       to_tab);
   EXPECT_EQ("ok-", response.substr(0, 3))
       << "Receiving peer failed to verify default codec: " << response;
@@ -517,11 +518,18 @@ std::vector<std::string> WebRtcTestBase::GetWhitelistedStatsTypes(
       ExecuteJavascript("getWhitelistedStatsTypes()", tab));
 }
 
+void WebRtcTestBase::SetDefaultAudioCodec(
+    content::WebContents* tab,
+    const std::string& audio_codec) const {
+  EXPECT_EQ("ok", ExecuteJavascript(
+      "setDefaultAudioCodec('" + audio_codec + "')", tab));
+}
+
 void WebRtcTestBase::SetDefaultVideoCodec(
     content::WebContents* tab,
     const std::string& video_codec) const {
-  EXPECT_EQ("ok-forced",
-            ExecuteJavascript("forceVideoCodec('" + video_codec + "')", tab));
+  EXPECT_EQ("ok", ExecuteJavascript(
+      "setDefaultVideoCodec('" + video_codec + "')", tab));
 }
 
 void WebRtcTestBase::EnableOpusDtx(content::WebContents* tab) const {
