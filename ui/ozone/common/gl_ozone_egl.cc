@@ -41,7 +41,7 @@ void GLOzoneEGL::InitializeDebugGLBindings() {
 }
 
 void GLOzoneEGL::ShutdownGL() {
-  gl::GLSurfaceEGL::ShutdownOneOff();
+  gl::GLSurfaceEGL::ResetForTesting();
   gl::ClearBindingsGL();
   gl::ClearBindingsEGL();
 }

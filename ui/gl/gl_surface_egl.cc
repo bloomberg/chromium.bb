@@ -12,7 +12,6 @@
 #include <vector>
 
 #include "base/command_line.h"
-#include "base/lazy_instance.h"
 #include "base/logging.h"
 #include "base/macros.h"
 #include "base/message_loop/message_loop.h"
@@ -22,7 +21,6 @@
 #include "base/trace_event/trace_event.h"
 #include "build/build_config.h"
 #include "ui/gfx/geometry/rect.h"
-#include "ui/gl/angle_platform_impl.h"
 #include "ui/gl/egl_util.h"
 #include "ui/gl/gl_context.h"
 #include "ui/gl/gl_context_egl.h"
@@ -135,10 +133,6 @@ bool g_egl_window_fixed_size_supported = false;
 bool g_egl_surfaceless_context_supported = false;
 bool g_egl_surface_orientation_supported = false;
 bool g_use_direct_composition = false;
-
-base::LazyInstance<ANGLEPlatformImpl> g_angle_platform_impl =
-    LAZY_INSTANCE_INITIALIZER;
-ANGLEPlatformShutdownFunc g_angle_platform_shutdown = nullptr;
 
 EGLDisplay GetPlatformANGLEDisplay(EGLNativeDisplayType native_display,
                                    EGLenum platform_type,
@@ -539,11 +533,7 @@ bool GLSurfaceEGL::InitializeOneOff(EGLNativeDisplayType native_display) {
 }
 
 // static
-void GLSurfaceEGL::ShutdownOneOff() {
-  if (g_angle_platform_shutdown) {
-    g_angle_platform_shutdown();
-  }
-
+void GLSurfaceEGL::ResetForTesting() {
   if (g_display != EGL_NO_DISPLAY)
     eglTerminate(g_display);
   g_display = EGL_NO_DISPLAY;
@@ -616,17 +606,6 @@ EGLDisplay GLSurfaceEGL::InitializeDisplay(
   }
 
   g_native_display = native_display;
-
-  // Init ANGLE platform here, before we call GetPlatformDisplay().
-  ANGLEPlatformInitializeFunc angle_platform_init =
-      reinterpret_cast<ANGLEPlatformInitializeFunc>(
-          eglGetProcAddress("ANGLEPlatformInitialize"));
-  if (angle_platform_init) {
-    angle_platform_init(&g_angle_platform_impl.Get());
-
-    g_angle_platform_shutdown = reinterpret_cast<ANGLEPlatformShutdownFunc>(
-        eglGetProcAddress("ANGLEPlatformShutdown"));
-  }
 
   // If EGL_EXT_client_extensions not supported this call to eglQueryString
   // will return NULL.

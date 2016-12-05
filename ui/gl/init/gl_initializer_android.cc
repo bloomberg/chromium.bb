@@ -97,7 +97,6 @@ void InitializeDebugGLBindings() {
 }
 
 void ShutdownGLPlatform() {
-  GLSurfaceEGL::ShutdownOneOff();
   ClearBindingsEGL();
   ClearBindingsGL();
   ClearBindingsOSMESA();

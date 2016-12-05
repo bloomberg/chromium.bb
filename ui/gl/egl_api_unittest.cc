@@ -25,7 +25,6 @@ class EGLApiTest : public testing::Test {
     g_driver_egl.fn.eglGetCurrentDisplayFn = &FakeGetCurrentDisplay;
     g_driver_egl.fn.eglGetDisplayFn = &FakeGetDisplay;
     g_driver_egl.fn.eglGetErrorFn = &FakeGetError;
-    g_driver_egl.fn.eglGetProcAddressFn = &FakeGetProcAddress;
   }
 
   void TearDown() override {
@@ -81,11 +80,6 @@ class EGLApiTest : public testing::Test {
 
   static EGLint GL_BINDING_CALL FakeGetError() {
     return EGL_SUCCESS;
-  }
-
-  static __eglMustCastToProperFunctionPointerType GL_BINDING_CALL
-  FakeGetProcAddress(const char* procname) {
-    return nullptr;
   }
 
   std::pair<const char*, const char*> GetExtensions() {
