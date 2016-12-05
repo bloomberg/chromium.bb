@@ -1271,7 +1271,7 @@ void Tab::PaintInactiveTabBackground(gfx::Canvas* canvas,
       use_fill_and_stroke_images ? canvas : nullptr);
   if (use_fill_and_stroke_images) {
     canvas->DrawImageInt(it->fill_image, 0, 0);
-    canvas->sk_canvas()->clipPath(clip, SkRegion::kDifference_Op, true);
+    canvas->sk_canvas()->clipPath(clip, kDifference_SkClipOp, true);
   }
   canvas->DrawImageInt(it->stroke_image, 0, 0);
 }

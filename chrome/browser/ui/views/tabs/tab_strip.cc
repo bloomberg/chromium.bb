@@ -398,7 +398,7 @@ void NewTabButton::OnPaint(gfx::Canvas* canvas) {
     canvas->ClipPath(stroke, true);
   Op(stroke, fill, kDifference_SkPathOp, &stroke);
   if (!pressed)
-    canvas->sk_canvas()->clipPath(fill, SkRegion::kDifference_Op, true);
+    canvas->sk_canvas()->clipPath(fill, kDifference_SkClipOp, true);
   // Now draw the stroke and shadow; the stroke will always be visible, while
   // the shadow will be affected by the clip we set above.
   SkPaint paint;
@@ -1468,7 +1468,7 @@ void TabStrip::PaintChildren(const ui::PaintContext& context) {
   if (active_tab) {
     canvas->sk_canvas()->clipRect(
         gfx::RectToSkRect(active_tab->GetMirroredBounds()),
-        SkRegion::kDifference_Op);
+        kDifference_SkClipOp);
   }
   BrowserView::Paint1pxHorizontalLine(canvas, GetToolbarTopSeparatorColor(),
                                       GetLocalBounds(), true);

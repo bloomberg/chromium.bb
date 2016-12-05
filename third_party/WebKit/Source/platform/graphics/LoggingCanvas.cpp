@@ -493,19 +493,19 @@ std::unique_ptr<JSONArray> arrayForSkScalars(size_t n,
   return scalarsArray;
 }
 
-String regionOpName(SkRegion::Op op) {
+String clipOpName(SkClipOp op) {
   switch (op) {
-    case SkRegion::kDifference_Op:
+    case kDifference_SkClipOp:
       return "kDifference_Op";
-    case SkRegion::kIntersect_Op:
+    case kIntersect_SkClipOp:
       return "kIntersect_Op";
-    case SkRegion::kUnion_Op:
+    case kUnion_SkClipOp:
       return "kUnion_Op";
-    case SkRegion::kXOR_Op:
+    case kXOR_SkClipOp:
       return "kXOR_Op";
-    case SkRegion::kReverseDifference_Op:
+    case kReverseDifference_SkClipOp:
       return "kReverseDifference_Op";
-    case SkRegion::kReplace_Op:
+    case kReplace_SkClipOp:
       return "kReplace_Op";
     default:
       return "Unknown type";
@@ -818,42 +818,42 @@ void LoggingCanvas::onDrawTextBlob(const SkTextBlob* blob,
 }
 
 void LoggingCanvas::onClipRect(const SkRect& rect,
-                               SkRegion::Op op,
+                               SkClipOp op,
                                ClipEdgeStyle style) {
   AutoLogger logger(this);
   JSONObject* params = logger.logItemWithParams("clipRect");
   params->setObject("rect", objectForSkRect(rect));
-  params->setString("SkRegion::Op", regionOpName(op));
+  params->setString("SkRegion::Op", clipOpName(op));
   params->setBoolean("softClipEdgeStyle", kSoft_ClipEdgeStyle == style);
   this->SkCanvas::onClipRect(rect, op, style);
 }
 
 void LoggingCanvas::onClipRRect(const SkRRect& rrect,
-                                SkRegion::Op op,
+                                SkClipOp op,
                                 ClipEdgeStyle style) {
   AutoLogger logger(this);
   JSONObject* params = logger.logItemWithParams("clipRRect");
   params->setObject("rrect", objectForSkRRect(rrect));
-  params->setString("SkRegion::Op", regionOpName(op));
+  params->setString("SkRegion::Op", clipOpName(op));
   params->setBoolean("softClipEdgeStyle", kSoft_ClipEdgeStyle == style);
   this->SkCanvas::onClipRRect(rrect, op, style);
 }
 
 void LoggingCanvas::onClipPath(const SkPath& path,
-                               SkRegion::Op op,
+                               SkClipOp op,
                                ClipEdgeStyle style) {
   AutoLogger logger(this);
   JSONObject* params = logger.logItemWithParams("clipPath");
   params->setObject("path", objectForSkPath(path));
-  params->setString("SkRegion::Op", regionOpName(op));
+  params->setString("SkRegion::Op", clipOpName(op));
   params->setBoolean("softClipEdgeStyle", kSoft_ClipEdgeStyle == style);
   this->SkCanvas::onClipPath(path, op, style);
 }
 
-void LoggingCanvas::onClipRegion(const SkRegion& region, SkRegion::Op op) {
+void LoggingCanvas::onClipRegion(const SkRegion& region, SkClipOp op) {
   AutoLogger logger(this);
   JSONObject* params = logger.logItemWithParams("clipRegion");
-  params->setString("op", regionOpName(op));
+  params->setString("op", clipOpName(op));
   this->SkCanvas::onClipRegion(region, op);
 }
 

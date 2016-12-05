@@ -65,15 +65,12 @@ void ClipDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
 void ClipDisplayItem::Raster(SkCanvas* canvas,
                              SkPicture::AbortCallback* callback) const {
   canvas->save();
-  canvas->clipRect(gfx::RectToSkRect(clip_rect_), SkRegion::kIntersect_Op,
-                   antialias_);
+  canvas->clipRect(gfx::RectToSkRect(clip_rect_), antialias_);
   for (size_t i = 0; i < rounded_clip_rects_.size(); ++i) {
     if (rounded_clip_rects_[i].isRect()) {
-      canvas->clipRect(rounded_clip_rects_[i].rect(), SkRegion::kIntersect_Op,
-                       antialias_);
+      canvas->clipRect(rounded_clip_rects_[i].rect(), antialias_);
     } else {
-      canvas->clipRRect(rounded_clip_rects_[i], SkRegion::kIntersect_Op,
-                        antialias_);
+      canvas->clipRRect(rounded_clip_rects_[i], antialias_);
     }
   }
 }

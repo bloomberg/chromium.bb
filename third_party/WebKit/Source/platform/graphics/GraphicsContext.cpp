@@ -854,8 +854,7 @@ void GraphicsContext::drawImageRRect(
   } else {
     // Clip-based fallback.
     SkAutoCanvasRestore autoRestore(m_canvas, true);
-    m_canvas->clipRRect(dest, SkRegion::kIntersect_Op,
-                        imagePaint.isAntiAlias());
+    m_canvas->clipRRect(dest, imagePaint.isAntiAlias());
     image->draw(m_canvas, imagePaint, dest.rect(), srcRect, respectOrientation,
                 Image::ClampImageToSourceRect);
   }
@@ -1138,17 +1137,17 @@ void GraphicsContext::strokeEllipse(const FloatRect& ellipse) {
 }
 
 void GraphicsContext::clipRoundedRect(const FloatRoundedRect& rrect,
-                                      SkRegion::Op regionOp,
+                                      SkClipOp clipOp,
                                       AntiAliasingMode shouldAntialias) {
   if (contextDisabled())
     return;
 
   if (!rrect.isRounded()) {
-    clipRect(rrect.rect(), shouldAntialias, regionOp);
+    clipRect(rrect.rect(), shouldAntialias, clipOp);
     return;
   }
 
-  clipRRect(rrect, shouldAntialias, regionOp);
+  clipRRect(rrect, shouldAntialias, clipOp);
 }
 
 void GraphicsContext::clipOut(const Path& pathToClip) {
@@ -1167,12 +1166,12 @@ void GraphicsContext::clipOutRoundedRect(const FloatRoundedRect& rect) {
   if (contextDisabled())
     return;
 
-  clipRoundedRect(rect, SkRegion::kDifference_Op);
+  clipRoundedRect(rect, kDifference_SkClipOp);
 }
 
 void GraphicsContext::clipRect(const SkRect& rect,
                                AntiAliasingMode aa,
-                               SkRegion::Op op) {
+                               SkClipOp op) {
   if (contextDisabled())
     return;
   ASSERT(m_canvas);
@@ -1182,7 +1181,7 @@ void GraphicsContext::clipRect(const SkRect& rect,
 
 void GraphicsContext::clipPath(const SkPath& path,
                                AntiAliasingMode aa,
-                               SkRegion::Op op) {
+                               SkClipOp op) {
   if (contextDisabled())
     return;
   ASSERT(m_canvas);
@@ -1192,7 +1191,7 @@ void GraphicsContext::clipPath(const SkPath& path,
 
 void GraphicsContext::clipRRect(const SkRRect& rect,
                                 AntiAliasingMode aa,
-                                SkRegion::Op op) {
+                                SkClipOp op) {
   if (contextDisabled())
     return;
   ASSERT(m_canvas);

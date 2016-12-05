@@ -187,16 +187,16 @@ void Canvas::Restore() {
   canvas_->restore();
 }
 
-void Canvas::ClipRect(const Rect& rect, SkRegion::Op op) {
+void Canvas::ClipRect(const Rect& rect, SkClipOp op) {
   canvas_->clipRect(RectToSkRect(rect), op);
 }
 
-void Canvas::ClipRect(const RectF& rect, SkRegion::Op op) {
+void Canvas::ClipRect(const RectF& rect, SkClipOp op) {
   canvas_->clipRect(RectFToSkRect(rect), op);
 }
 
 void Canvas::ClipPath(const SkPath& path, bool do_anti_alias) {
-  canvas_->clipPath(path, SkRegion::kIntersect_Op, do_anti_alias);
+  canvas_->clipPath(path, kIntersect_SkClipOp, do_anti_alias);
 }
 
 bool Canvas::IsClipEmpty() const {

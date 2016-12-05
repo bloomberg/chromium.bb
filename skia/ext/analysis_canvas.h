@@ -86,15 +86,15 @@ class SK_API AnalysisCanvas final : public SkNoDrawCanvas,
   void willRestore() override;
 
   void onClipRect(const SkRect& rect,
-                  SkRegion::Op op,
+                  SkClipOp op,
                   ClipEdgeStyle edge_style) override;
   void onClipRRect(const SkRRect& rrect,
-                   SkRegion::Op op,
+                   SkClipOp op,
                    ClipEdgeStyle edge_style) override;
   void onClipPath(const SkPath& path,
-                  SkRegion::Op op,
+                  SkClipOp op,
                   ClipEdgeStyle edge_style) override;
-  void onClipRegion(const SkRegion& deviceRgn, SkRegion::Op op) override;
+  void onClipRegion(const SkRegion& deviceRgn, SkClipOp op) override;
 
   void onDrawText(const void* text,
                   size_t byteLength,

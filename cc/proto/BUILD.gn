@@ -48,6 +48,7 @@ proto_library("proto_internal") {
     "scroll_offset.proto",
     "size.proto",
     "sizef.proto",
+    "skclipop.proto",
     "skregion.proto",
     "skrrect.proto",
     "skxfermode.proto",

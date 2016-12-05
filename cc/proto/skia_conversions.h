@@ -6,12 +6,11 @@
 #define CC_PROTO_SKIA_CONVERSIONS_H_
 
 #include "cc/base/cc_export.h"
-#include "cc/proto/skregion.pb.h"
+#include "cc/proto/skclipop.pb.h"
 #include "cc/proto/skxfermode.pb.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
-#include "third_party/skia/include/core/SkRegion.h"
+#include "third_party/skia/include/core/SkClipOp.h"
 
-class SkRegion;
 class SkRRect;
 
 namespace cc {
@@ -22,8 +21,8 @@ class SkRRect;
 
 // TODO(dtrainor): Move these to a class and make them static
 // (crbug.com/548432).
-CC_EXPORT SkRegion::Op SkRegionOpFromProto(proto::SkRegion::Op op);
-CC_EXPORT proto::SkRegion::Op SkRegionOpToProto(SkRegion::Op op);
+CC_EXPORT SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op);
+CC_EXPORT proto::SkClipOp::Op SkClipOpToProto(SkClipOp op);
 
 CC_EXPORT SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode);
 CC_EXPORT proto::SkXfermode::Mode SkXfermodeModeToProto(SkBlendMode mode);

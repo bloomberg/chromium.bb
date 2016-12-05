@@ -6,6 +6,7 @@
 
 #include "base/logging.h"
 #include "cc/proto/gfx_conversions.h"
+#include "cc/proto/skclipop.pb.h"
 #include "cc/proto/skrrect.pb.h"
 #include "third_party/skia/include/core/SkRRect.h"
 #include "ui/gfx/skia_util.h"
@@ -25,40 +26,40 @@ SkPoint ProtoToSkPoint(const proto::PointF& proto) {
 
 }  // namespace
 
-SkRegion::Op SkRegionOpFromProto(proto::SkRegion::Op op) {
+SkClipOp SkClipOpFromProto(proto::SkClipOp::Op op) {
   switch (op) {
-    case proto::SkRegion::DIFFERENCE_:
-      return SkRegion::Op::kDifference_Op;
-    case proto::SkRegion::INTERSECT:
-      return SkRegion::Op::kIntersect_Op;
-    case proto::SkRegion::UNION:
-      return SkRegion::Op::kUnion_Op;
-    case proto::SkRegion::XOR:
-      return SkRegion::Op::kXOR_Op;
-    case proto::SkRegion::REVERSE_DIFFERENCE:
-      return SkRegion::Op::kReverseDifference_Op;
-    case proto::SkRegion::REPLACE:
-      return SkRegion::Op::kReplace_Op;
+    case proto::SkClipOp::DIFFERENCE_:
+      return kDifference_SkClipOp;
+    case proto::SkClipOp::INTERSECT:
+      return kIntersect_SkClipOp;
+    case proto::SkClipOp::UNION:
+      return kUnion_SkClipOp;
+    case proto::SkClipOp::XOR:
+      return kXOR_SkClipOp;
+    case proto::SkClipOp::REVERSE_DIFFERENCE:
+      return kReverseDifference_SkClipOp;
+    case proto::SkClipOp::REPLACE:
+      return kReplace_SkClipOp;
   }
-  return SkRegion::Op::kDifference_Op;
+  return kDifference_SkClipOp;
 }
 
-proto::SkRegion::Op SkRegionOpToProto(SkRegion::Op op) {
+proto::SkClipOp::Op SkClipOpToProto(SkClipOp op) {
   switch (op) {
-    case SkRegion::Op::kDifference_Op:
-      return proto::SkRegion::DIFFERENCE_;
-    case SkRegion::Op::kIntersect_Op:
-      return proto::SkRegion::INTERSECT;
-    case SkRegion::Op::kUnion_Op:
-      return proto::SkRegion::UNION;
-    case SkRegion::Op::kXOR_Op:
-      return proto::SkRegion::XOR;
-    case SkRegion::Op::kReverseDifference_Op:
-      return proto::SkRegion::REVERSE_DIFFERENCE;
-    case SkRegion::Op::kReplace_Op:
-      return proto::SkRegion::REPLACE;
+    case kDifference_SkClipOp:
+      return proto::SkClipOp::DIFFERENCE_;
+    case kIntersect_SkClipOp:
+      return proto::SkClipOp::INTERSECT;
+    case kUnion_SkClipOp:
+      return proto::SkClipOp::UNION;
+    case kXOR_SkClipOp:
+      return proto::SkClipOp::XOR;
+    case kReverseDifference_SkClipOp:
+      return proto::SkClipOp::REVERSE_DIFFERENCE;
+    case kReplace_SkClipOp:
+      return proto::SkClipOp::REPLACE;
   }
-  return proto::SkRegion::DIFFERENCE_;
+  return proto::SkClipOp::DIFFERENCE_;
 }
 
 SkBlendMode SkXfermodeModeFromProto(proto::SkXfermode::Mode mode) {

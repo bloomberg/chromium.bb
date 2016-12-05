@@ -35,10 +35,10 @@
 #include "platform/graphics/GraphicsContextState.h"
 #include "platform/graphics/ImageOrientation.h"
 #include "platform/graphics/skia/SkiaUtils.h"
+#include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkMetaData.h"
 #include "third_party/skia/include/core/SkPictureRecorder.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkRegion.h"
 #include "wtf/Allocator.h"
 #include "wtf/Forward.h"
 #include "wtf/Noncopyable.h"
@@ -220,22 +220,22 @@ class PLATFORM_EXPORT GraphicsContext {
   void clip(const IntRect& rect) { clipRect(rect); }
   void clip(const FloatRect& rect) { clipRect(rect); }
   void clipRoundedRect(const FloatRoundedRect&,
-                       SkRegion::Op = SkRegion::kIntersect_Op,
+                       SkClipOp = kIntersect_SkClipOp,
                        AntiAliasingMode = AntiAliased);
   void clipOut(const IntRect& rect) {
-    clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op);
+    clipRect(rect, NotAntiAliased, kDifference_SkClipOp);
   }
   void clipOut(const FloatRect& rect) {
-    clipRect(rect, NotAntiAliased, SkRegion::kDifference_Op);
+    clipRect(rect, NotAntiAliased, kDifference_SkClipOp);
   }
   void clipOut(const Path&);
   void clipOutRoundedRect(const FloatRoundedRect&);
   void clipPath(const SkPath&,
                 AntiAliasingMode = NotAntiAliased,
-                SkRegion::Op = SkRegion::kIntersect_Op);
+                SkClipOp = kIntersect_SkClipOp);
   void clipRect(const SkRect&,
                 AntiAliasingMode = NotAntiAliased,
-                SkRegion::Op = SkRegion::kIntersect_Op);
+                SkClipOp = kIntersect_SkClipOp);
 
   void drawText(const Font&, const TextRunPaintInfo&, const FloatPoint&);
   void drawText(const Font&,
@@ -397,7 +397,7 @@ class PLATFORM_EXPORT GraphicsContext {
   // SkCanvas wrappers.
   void clipRRect(const SkRRect&,
                  AntiAliasingMode = NotAntiAliased,
-                 SkRegion::Op = SkRegion::kIntersect_Op);
+                 SkClipOp = kIntersect_SkClipOp);
   void concat(const SkMatrix&);
 
   // Apply deferred paint state saves

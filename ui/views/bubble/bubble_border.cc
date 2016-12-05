@@ -358,7 +358,7 @@ void BubbleBorder::Paint(const views::View& view, gfx::Canvas* canvas) {
 
   // Clip the arrow bounds out to avoid painting the overlapping edge area.
   canvas->Save();
-  canvas->ClipRect(arrow_bounds, SkRegion::kDifference_Op);
+  canvas->ClipRect(arrow_bounds, kDifference_SkClipOp);
   Painter::PaintPainterAt(canvas, images_->border_painter.get(), bounds);
   canvas->Restore();
 
@@ -538,7 +538,7 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
   paint.setAntiAlias(true);
 
   SkRRect r_rect = GetClientRect(view);
-  canvas->sk_canvas()->clipRRect(r_rect, SkRegion::kDifference_Op,
+  canvas->sk_canvas()->clipRRect(r_rect, kDifference_SkClipOp,
                                  true /*doAntiAlias*/);
 
   // The border is drawn outside the content area.
@@ -550,7 +550,7 @@ void BubbleBorder::PaintMd(const View& view, gfx::Canvas* canvas) {
 
 void BubbleBorder::PaintNoAssets(const View& view, gfx::Canvas* canvas) {
   gfx::ScopedCanvas scoped(canvas);
-  canvas->sk_canvas()->clipRRect(GetClientRect(view), SkRegion::kDifference_Op,
+  canvas->sk_canvas()->clipRRect(GetClientRect(view), kDifference_SkClipOp,
                                  true /*doAntiAlias*/);
   canvas->sk_canvas()->drawColor(SK_ColorTRANSPARENT, SkBlendMode::kSrc);
 }

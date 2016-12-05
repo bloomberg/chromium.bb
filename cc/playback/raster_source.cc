@@ -172,7 +172,7 @@ void RasterSource::PrepareForPlaybackToCanvas(SkCanvas* canvas) const {
     // Use clipRegion to bypass CTM because the rects are device rects.
     SkRegion interest_region;
     interest_region.setRect(interest_rect);
-    canvas->clipRegion(interest_region, SkRegion::kDifference_Op);
+    canvas->clipRegion(interest_region, kDifference_SkClipOp);
     canvas->clear(DebugColors::MissingResizeInvalidations());
     canvas->restore();
   }

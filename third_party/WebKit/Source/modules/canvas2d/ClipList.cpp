@@ -29,7 +29,7 @@ void ClipList::clipPath(const SkPath& path,
 
 void ClipList::playback(SkCanvas* canvas) const {
   for (const ClipOp* it = m_clipList.begin(); it < m_clipList.end(); it++) {
-    canvas->clipPath(it->m_path, SkRegion::kIntersect_Op,
+    canvas->clipPath(it->m_path, kIntersect_SkClipOp,
                      it->m_antiAliasingMode == AntiAliased);
   }
 }

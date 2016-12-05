@@ -13,11 +13,12 @@
 #include "WebVector.h"
 
 #include "third_party/skia/include/core/SkBlendMode.h"
+#include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkRefCnt.h"
-#include "third_party/skia/include/core/SkRegion.h"
 
 class SkColorFilter;
 class SkMatrix44;
+class SkPath;
 class SkPicture;
 struct SkRect;
 class SkRRect;
@@ -46,8 +47,7 @@ class WebDisplayItemList {
   virtual void appendClipItem(const WebRect& clipRect,
                               const WebVector<SkRRect>& roundedClipRects) {}
   virtual void appendEndClipItem() {}
-  virtual void appendClipPathItem(const SkPath&, SkRegion::Op, bool antialias) {
-  }
+  virtual void appendClipPathItem(const SkPath&, SkClipOp, bool antialias) {}
   virtual void appendEndClipPathItem() {}
   virtual void appendFloatClipItem(const WebFloatRect& clipRect) {}
   virtual void appendEndFloatClipItem() {}

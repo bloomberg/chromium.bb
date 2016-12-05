@@ -230,7 +230,7 @@ class ScrollContentsView : public views::View,
                         kSeparatorColor);
     paint.setLooper(gfx::CreateShadowDrawLooperCorrectBlur(shadow));
     paint.setAntiAlias(true);
-    canvas->ClipRect(shadowed_area, SkRegion::kDifference_Op);
+    canvas->ClipRect(shadowed_area, kDifference_SkClipOp);
     canvas->DrawRect(shadowed_area, paint);
   }
 

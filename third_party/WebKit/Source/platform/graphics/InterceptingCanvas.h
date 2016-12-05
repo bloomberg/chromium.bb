@@ -144,10 +144,10 @@ class InterceptingCanvasBase : public SkCanvas {
                       SkScalar x,
                       SkScalar y,
                       const SkPaint&) override = 0;
-  void onClipRect(const SkRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
-  void onClipRRect(const SkRRect&, SkRegion::Op, ClipEdgeStyle) override = 0;
-  void onClipPath(const SkPath&, SkRegion::Op, ClipEdgeStyle) override = 0;
-  void onClipRegion(const SkRegion&, SkRegion::Op) override = 0;
+  void onClipRect(const SkRect&, SkClipOp, ClipEdgeStyle) override = 0;
+  void onClipRRect(const SkRRect&, SkClipOp, ClipEdgeStyle) override = 0;
+  void onClipPath(const SkPath&, SkClipOp, ClipEdgeStyle) override = 0;
+  void onClipRegion(const SkRegion&, SkClipOp) override = 0;
   void onDrawPicture(const SkPicture*,
                      const SkMatrix*,
                      const SkPaint*) override = 0;
@@ -317,27 +317,27 @@ class InterceptingCanvas : public InterceptingCanvasBase {
   }
 
   void onClipRect(const SkRect& rect,
-                  SkRegion::Op op,
+                  SkClipOp op,
                   ClipEdgeStyle edgeStyle) override {
     Interceptor interceptor(this);
     this->SkCanvas::onClipRect(rect, op, edgeStyle);
   }
 
   void onClipRRect(const SkRRect& rrect,
-                   SkRegion::Op op,
+                   SkClipOp op,
                    ClipEdgeStyle edgeStyle) override {
     Interceptor interceptor(this);
     this->SkCanvas::onClipRRect(rrect, op, edgeStyle);
   }
 
   void onClipPath(const SkPath& path,
-                  SkRegion::Op op,
+                  SkClipOp op,
                   ClipEdgeStyle edgeStyle) override {
     Interceptor interceptor(this);
     this->SkCanvas::onClipPath(path, op, edgeStyle);
   }
 
-  void onClipRegion(const SkRegion& region, SkRegion::Op op) override {
+  void onClipRegion(const SkRegion& region, SkClipOp op) override {
     Interceptor interceptor(this);
     this->SkCanvas::onClipRegion(region, op);
   }

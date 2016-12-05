@@ -176,7 +176,7 @@ void Windows10CaptionButton::PaintSymbol(gfx::Canvas* canvas) {
       DrawRect(canvas, symbol_rect, paint);
 
       // Top right ("behind") square.
-      canvas->ClipRect(symbol_rect, SkRegion::kDifference_Op);
+      canvas->ClipRect(symbol_rect, kDifference_SkClipOp);
       symbol_rect.Offset(separation, -separation);
       DrawRect(canvas, symbol_rect, paint);
       return;

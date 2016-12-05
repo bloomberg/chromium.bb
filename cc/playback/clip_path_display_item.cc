@@ -16,7 +16,7 @@
 namespace cc {
 
 ClipPathDisplayItem::ClipPathDisplayItem(const SkPath& clip_path,
-                                         SkRegion::Op clip_op,
+                                         SkClipOp clip_op,
                                          bool antialias) {
   SetNew(clip_path, clip_op, antialias);
 }
@@ -25,7 +25,7 @@ ClipPathDisplayItem::ClipPathDisplayItem(const proto::DisplayItem& proto) {
   DCHECK_EQ(proto::DisplayItem::Type_ClipPath, proto.type());
 
   const proto::ClipPathDisplayItem& details = proto.clip_path_item();
-  SkRegion::Op clip_op = SkRegionOpFromProto(details.clip_op());
+  SkClipOp clip_op = SkClipOpFromProto(details.clip_op());
   bool antialias = details.antialias();
 
   SkPath clip_path;
@@ -42,7 +42,7 @@ ClipPathDisplayItem::~ClipPathDisplayItem() {
 }
 
 void ClipPathDisplayItem::SetNew(const SkPath& clip_path,
-                                 SkRegion::Op clip_op,
+                                 SkClipOp clip_op,
                                  bool antialias) {
   clip_path_ = clip_path;
   clip_op_ = clip_op;
@@ -53,7 +53,7 @@ void ClipPathDisplayItem::ToProtobuf(proto::DisplayItem* proto) const {
   proto->set_type(proto::DisplayItem::Type_ClipPath);
 
   proto::ClipPathDisplayItem* details = proto->mutable_clip_path_item();
-  details->set_clip_op(SkRegionOpToProto(clip_op_));
+  details->set_clip_op(SkClipOpToProto(clip_op_));
   details->set_antialias(antialias_);
 
   // Just use skia's serialization method for the SkPath for now.

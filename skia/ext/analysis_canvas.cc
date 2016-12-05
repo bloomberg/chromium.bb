@@ -391,13 +391,13 @@ void AnalysisCanvas::OnComplexClip() {
 }
 
 void AnalysisCanvas::onClipRect(const SkRect& rect,
-                                SkRegion::Op op,
+                                SkClipOp op,
                                 ClipEdgeStyle edge_style) {
   INHERITED::onClipRect(rect, op, edge_style);
 }
 
 void AnalysisCanvas::onClipPath(const SkPath& path,
-                                SkRegion::Op op,
+                                SkClipOp op,
                                 ClipEdgeStyle edge_style) {
   OnComplexClip();
   INHERITED::onClipRect(path.getBounds(), op, edge_style);
@@ -424,7 +424,7 @@ bool doesCoverCanvas(const SkRRect& rr,
 }
 
 void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
-                                 SkRegion::Op op,
+                                 SkClipOp op,
                                  ClipEdgeStyle edge_style) {
   SkIRect clip_device_bounds;
   if (getClipDeviceBounds(&clip_device_bounds) &&
@@ -438,7 +438,7 @@ void AnalysisCanvas::onClipRRect(const SkRRect& rrect,
   INHERITED::onClipRect(rrect.getBounds(), op, edge_style);
 }
 
-void AnalysisCanvas::onClipRegion(const SkRegion& deviceRgn, SkRegion::Op op) {
+void AnalysisCanvas::onClipRegion(const SkRegion& deviceRgn, SkClipOp op) {
   const ClipEdgeStyle edge_style = kHard_ClipEdgeStyle;
   if (deviceRgn.isRect()) {
     onClipRect(SkRect::MakeFromIRect(deviceRgn.getBounds()), op, edge_style);

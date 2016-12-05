@@ -145,7 +145,7 @@ void SoftwareRenderer::SetClipRect(const gfx::Rect& rect) {
   // Skia applies the current matrix to clip rects so we reset it temporary.
   SkMatrix current_matrix = current_canvas_->getTotalMatrix();
   current_canvas_->resetMatrix();
-  current_canvas_->clipRect(gfx::RectToSkRect(rect), SkRegion::kReplace_Op);
+  current_canvas_->clipRect(gfx::RectToSkRect(rect), kReplace_SkClipOp);
   current_canvas_->setMatrix(current_matrix);
 }
 
@@ -257,8 +257,7 @@ void SoftwareRenderer::DoDrawQuad(DrawingFrame* frame,
     QuadFToSkPoints(local_draw_region, clip_points);
     draw_region_clip_path.addPoly(clip_points, 4, true);
 
-    current_canvas_->clipPath(draw_region_clip_path, SkRegion::kIntersect_Op,
-                              false);
+    current_canvas_->clipPath(draw_region_clip_path);
   }
 
   switch (quad->material) {

@@ -11,16 +11,22 @@
 #include "cc/proto/skxfermode.pb.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "third_party/skia/include/core/SkBlendMode.h"
+#include "third_party/skia/include/core/SkClipOp.h"
 #include "third_party/skia/include/core/SkRRect.h"
-#include "third_party/skia/include/core/SkRegion.h"
 
 namespace cc {
 namespace {
 
-TEST(SkiaProtoConversionsTest, SerializeDeserializeSkRegionOp) {
-  for (size_t i = 0; i < SkRegion::Op::kLastOp; i++) {
-    SkRegion::Op op = static_cast<SkRegion::Op>(i);
-    EXPECT_EQ(op, SkRegionOpFromProto(SkRegionOpToProto(op)));
+TEST(SkiaProtoConversionsTest, SerializeDeserializeSkClipOp) {
+  // explicitly list the clipops, as this list will be reduced overtime
+  // as skia constricts the valid ops for clipping
+  // https://bugs.chromium.org/p/skia/issues/detail?id=3191
+  const SkClipOp ops[] = {
+      kDifference_SkClipOp, kIntersect_SkClipOp,         kUnion_SkClipOp,
+      kXOR_SkClipOp,        kReverseDifference_SkClipOp, kReplace_SkClipOp,
+  };
+  for (SkClipOp op : ops) {
+    EXPECT_EQ(op, SkClipOpFromProto(SkClipOpToProto(op)));
   }
 }
 

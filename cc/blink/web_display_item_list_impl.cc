@@ -70,10 +70,9 @@ void WebDisplayItemListImpl::appendEndClipItem() {
   display_item_list_->CreateAndAppendPairedEndItem<cc::EndClipDisplayItem>();
 }
 
-void WebDisplayItemListImpl::appendClipPathItem(
-    const SkPath& clip_path,
-    SkRegion::Op clip_op,
-    bool antialias) {
+void WebDisplayItemListImpl::appendClipPathItem(const SkPath& clip_path,
+                                                SkClipOp clip_op,
+                                                bool antialias) {
   display_item_list_->CreateAndAppendPairedBeginItem<cc::ClipPathDisplayItem>(
       clip_path, clip_op, antialias);
 }

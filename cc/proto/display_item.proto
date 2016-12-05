@@ -4,7 +4,7 @@
 
 syntax = "proto2";
 
-import "skregion.proto";
+import "skclipop.proto";
 import "skrrect.proto";
 import "skxfermode.proto";
 import "rect.proto";
@@ -61,7 +61,7 @@ message ClipDisplayItem {
 }
 
 message ClipPathDisplayItem {
-  optional cc.proto.SkRegion.Op clip_op = 1;
+  optional cc.proto.SkClipOp.Op clip_op = 1;
   optional bool antialias = 2;
   optional bytes clip_path = 3; /* SkPath */
 }

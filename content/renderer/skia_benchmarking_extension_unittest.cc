@@ -53,7 +53,7 @@ TEST(SkiaBenchmarkingExtensionTest, BenchmarkingCanvas) {
 
   // Draw a trivial scene.
   benchmarking_canvas.save();
-  benchmarking_canvas.clipRect(fullRect, SkRegion::kIntersect_Op, false);
+  benchmarking_canvas.clipRect(fullRect);
   benchmarking_canvas.setMatrix(trans);
   benchmarking_canvas.drawRect(fillRect, red_paint);
   benchmarking_canvas.restore();
