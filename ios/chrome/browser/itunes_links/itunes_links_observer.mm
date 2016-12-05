@@ -7,12 +7,15 @@
 #include <memory>
 
 #include "base/logging.h"
-#import "base/mac/scoped_nsobject.h"
 #include "base/strings/sys_string_conversions.h"
 #import "ios/chrome/browser/storekit_launcher.h"
 #import "ios/web/public/web_state/web_state_observer_bridge.h"
 #include "ios/web/public/web_state/web_state.h"
 #include "url/gurl.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 @interface ITunesLinksObserver ()
 
@@ -25,7 +28,7 @@
 @end
 
 @implementation ITunesLinksObserver {
-  base::WeakNSProtocol<id<StoreKitLauncher>> _storeKitLauncher;
+  __weak id<StoreKitLauncher> _storeKitLauncher;
   std::unique_ptr<web::WebStateObserverBridge> _webStateObserverBridge;
 }
 
@@ -64,7 +67,7 @@
 }
 
 - (void)setStoreKitLauncher:(id<StoreKitLauncher>)storeKitLauncher {
-  _storeKitLauncher.reset(storeKitLauncher);
+  _storeKitLauncher = storeKitLauncher;
 }
 
 @end
