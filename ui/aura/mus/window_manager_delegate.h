@@ -14,7 +14,7 @@
 
 #include "base/callback_forward.h"
 #include "services/ui/public/interfaces/cursor.mojom.h"
-#include "services/ui/public/interfaces/event_matcher.mojom.h"
+#include "services/ui/public/interfaces/window_manager.mojom.h"
 #include "services/ui/public/interfaces/window_manager_constants.mojom.h"
 #include "services/ui/public/interfaces/window_tree_constants.mojom.h"
 #include "ui/aura/aura_export.h"
@@ -48,9 +48,9 @@ class AURA_EXPORT WindowManagerClient {
   virtual void SetNonClientCursor(Window* window,
                                   ui::mojom::Cursor non_client_cursor) = 0;
 
-  virtual void AddAccelerator(uint32_t id,
-                              ui::mojom::EventMatcherPtr event_matcher,
-                              const base::Callback<void(bool)>& callback) = 0;
+  virtual void AddAccelerators(
+      std::vector<ui::mojom::AcceleratorPtr> accelerators,
+      const base::Callback<void(bool)>& callback) = 0;
   virtual void RemoveAccelerator(uint32_t id) = 0;
   virtual void AddActivationParent(Window* window) = 0;
   virtual void RemoveActivationParent(Window* window) = 0;

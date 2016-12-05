@@ -1438,13 +1438,12 @@ void WindowTreeClient::SetNonClientCursor(Window* window,
       WindowMus::Get(window)->server_id(), cursor_id);
 }
 
-void WindowTreeClient::AddAccelerator(
-    uint32_t id,
-    ui::mojom::EventMatcherPtr event_matcher,
+void WindowTreeClient::AddAccelerators(
+    std::vector<ui::mojom::AcceleratorPtr> accelerators,
     const base::Callback<void(bool)>& callback) {
   if (window_manager_internal_client_) {
-    window_manager_internal_client_->AddAccelerators(
-        ui::CreateAcceleratorVector(id, std::move(event_matcher)), callback);
+    window_manager_internal_client_->AddAccelerators(std::move(accelerators),
+                                                     callback);
   }
 }
 
