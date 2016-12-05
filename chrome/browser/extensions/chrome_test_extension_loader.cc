@@ -57,8 +57,14 @@ scoped_refptr<const Extension> ChromeTestExtensionLoader::LoadExtension(
     return nullptr;
 
   extension_id_ = extension->id();
-  extension = nullptr;
-  CheckPermissions(extension_id_);
+  // Trying to reload a shared module (as we do when adjusting extension
+  // permissions) causes ExtensionService to crash. Only adjust permissions for
+  // non-shared modules.
+  // TODO(devlin): That's not good; we shouldn't be crashing.
+  if (!SharedModuleInfo::IsSharedModule(extension.get())) {
+    extension = nullptr;
+    CheckPermissions(extension_id_);
+  }
 
   if (!install_param_.empty()) {
     ExtensionPrefs::Get(browser_context_)
