@@ -93,12 +93,13 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   void addSourceHash(const ContentSecurityPolicyHashAlgorithm&,
                      const DigestValue& hash);
 
-  static void addSourceToMap(HashMap<String, CSPSource*>&, CSPSource*);
+  static void addSourceToMap(HeapHashMap<String, Member<CSPSource>>&,
+                             CSPSource*);
 
   bool hasSourceMatchInList(const KURL&, ResourceRequest::RedirectStatus) const;
   HeapVector<Member<CSPSource>> getIntersectCSPSources(
       HeapVector<Member<CSPSource>> other);
-  HashMap<String, CSPSource*> getIntersectSchemesOnly(
+  HeapHashMap<String, Member<CSPSource>> getIntersectSchemesOnly(
       HeapVector<Member<CSPSource>> other);
 
   Member<ContentSecurityPolicy> m_policy;

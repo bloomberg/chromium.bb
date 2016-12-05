@@ -78,12 +78,22 @@ class HashMap {
   class HashMapValuesProxy;
 
  public:
+  HashMap() {
+    static_assert(Allocator::isGarbageCollected ||
+                      !IsPointerToGarbageCollectedType<KeyArg>::value,
+                  "Cannot put raw pointers to garbage-collected classes into "
+                  "an off-heap HashMap.  Use HeapHashMap<> instead.");
+    static_assert(Allocator::isGarbageCollected ||
+                      !IsPointerToGarbageCollectedType<MappedArg>::value,
+                  "Cannot put raw pointers to garbage-collected classes into "
+                  "an off-heap HashMap.  Use HeapHashMap<> instead.");
+  }
+
   typedef HashTableIteratorAdapter<HashTableType, ValueType> iterator;
   typedef HashTableConstIteratorAdapter<HashTableType, ValueType>
       const_iterator;
   typedef typename HashTableType::AddResult AddResult;
 
- public:
   void swap(HashMap& ref) { m_impl.swap(ref.m_impl); }
 
   unsigned size() const;

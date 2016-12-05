@@ -598,8 +598,14 @@ class LinkedHashSetConstReverseIterator
   friend class LinkedHashSet;
 };
 
-template <typename T, typename U, typename V, typename W>
-inline LinkedHashSet<T, U, V, W>::LinkedHashSet() {}
+template <typename T, typename U, typename V, typename Allocator>
+inline LinkedHashSet<T, U, V, Allocator>::LinkedHashSet() {
+  static_assert(
+      Allocator::isGarbageCollected ||
+          !IsPointerToGarbageCollectedType<T>::value,
+      "Cannot put raw pointers to garbage-collected classes into "
+      "an off-heap LinkedHashSet. Use HeapLinkedHashSet<Member<T>> instead.");
+}
 
 template <typename T, typename U, typename V, typename W>
 inline LinkedHashSet<T, U, V, W>::LinkedHashSet(const LinkedHashSet& other)

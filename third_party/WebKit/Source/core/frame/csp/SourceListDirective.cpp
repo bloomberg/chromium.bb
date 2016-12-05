@@ -565,8 +565,9 @@ void SourceListDirective::addSourceHash(
   m_hashAlgorithmsUsed |= algorithm;
 }
 
-void SourceListDirective::addSourceToMap(HashMap<String, CSPSource*>& hashMap,
-                                         CSPSource* source) {
+void SourceListDirective::addSourceToMap(
+    HeapHashMap<String, Member<CSPSource>>& hashMap,
+    CSPSource* source) {
   hashMap.add(source->getScheme(), source);
   if (source->getScheme() == "http")
     hashMap.add("https", source);
@@ -648,16 +649,17 @@ bool SourceListDirective::subsumes(
   return CSPSource::firstSubsumesSecond(normalizedA, normalizedB);
 }
 
-HashMap<String, CSPSource*> SourceListDirective::getIntersectSchemesOnly(
+HeapHashMap<String, Member<CSPSource>>
+SourceListDirective::getIntersectSchemesOnly(
     HeapVector<Member<CSPSource>> other) {
-  HashMap<String, CSPSource*> schemesA;
+  HeapHashMap<String, Member<CSPSource>> schemesA;
   for (const auto& sourceA : m_list) {
     if (sourceA->isSchemeOnly())
       addSourceToMap(schemesA, sourceA);
   }
   // Add schemes only sources if they are present in both `this` and `other`,
   // allowing upgrading `http` to `https` and `ws` to `wss`.
-  HashMap<String, CSPSource*> intersect;
+  HeapHashMap<String, Member<CSPSource>> intersect;
   for (const auto& sourceB : other) {
     if (sourceB->isSchemeOnly()) {
       if (schemesA.contains(sourceB->getScheme()))
@@ -674,14 +676,14 @@ HashMap<String, CSPSource*> SourceListDirective::getIntersectSchemesOnly(
 
 HeapVector<Member<CSPSource>> SourceListDirective::getIntersectCSPSources(
     HeapVector<Member<CSPSource>> other) {
-  HashMap<String, CSPSource*> schemesMap = getIntersectSchemesOnly(other);
+  auto schemesMap = getIntersectSchemesOnly(other);
   HeapVector<Member<CSPSource>> normalized;
   // Add all normalized scheme source expressions.
-  for (auto it = schemesMap.begin(); it != schemesMap.end(); ++it) {
+  for (const auto& it : schemesMap) {
     // We do not add secure versions if insecure schemes are present.
-    if ((it->key != "https" || !schemesMap.contains("http")) &&
-        (it->key != "wss" || !schemesMap.contains("ws"))) {
-      normalized.append(it->value);
+    if ((it.key != "https" || !schemesMap.contains("http")) &&
+        (it.key != "wss" || !schemesMap.contains("ws"))) {
+      normalized.append(it.value);
     }
   }
 

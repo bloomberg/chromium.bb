@@ -63,7 +63,12 @@ class HashSet {
       const_iterator;
   typedef typename HashTableType::AddResult AddResult;
 
-  HashSet() = default;
+  HashSet() {
+    static_assert(Allocator::isGarbageCollected ||
+                      !IsPointerToGarbageCollectedType<ValueArg>::value,
+                  "Cannot put raw pointers to garbage-collected classes into "
+                  "an off-heap HashSet. Use HeapHashSet<Member<T>> instead.");
+  }
   HashSet(const HashSet&) = default;
   HashSet& operator=(const HashSet&) = default;
   HashSet(HashSet&&) = default;

@@ -53,7 +53,13 @@ class HashCountedSet {
   typedef typename ImplType::const_iterator const_iterator;
   typedef typename ImplType::AddResult AddResult;
 
-  HashCountedSet() {}
+  HashCountedSet() {
+    static_assert(Allocator::isGarbageCollected ||
+                      !IsPointerToGarbageCollectedType<Value>::value,
+                  "Cannot put raw pointers to garbage-collected classes into "
+                  "an off-heap HashCountedSet. Use "
+                  "HeapHashCountedSet<Member<T>> instead.");
+  }
 
   void swap(HashCountedSet& other) { m_impl.swap(other.m_impl); }
 

@@ -733,9 +733,15 @@ struct ListHashSetTranslator {
   }
 };
 
-template <typename T, size_t inlineCapacity, typename U, typename V>
-inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet()
-    : m_head(nullptr), m_tail(nullptr) {}
+template <typename T, size_t inlineCapacity, typename U, typename Allocator>
+inline ListHashSet<T, inlineCapacity, U, Allocator>::ListHashSet()
+    : m_head(nullptr), m_tail(nullptr) {
+  static_assert(
+      Allocator::isGarbageCollected ||
+          !IsPointerToGarbageCollectedType<T>::value,
+      "Cannot put raw pointers to garbage-collected classes into "
+      "an off-heap ListHashSet. Use HeapListHashSet<Member<T>> instead.");
+}
 
 template <typename T, size_t inlineCapacity, typename U, typename V>
 inline ListHashSet<T, inlineCapacity, U, V>::ListHashSet(
