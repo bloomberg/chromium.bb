@@ -912,6 +912,7 @@ net::URLRequestContext* IOThread::ConstructSystemRequestContext(
       new net::HttpNetworkSession(system_params));
   globals->system_http_transaction_factory.reset(
       new net::HttpNetworkLayer(globals->system_http_network_session.get()));
+  context->set_name("system");
   context->set_http_transaction_factory(
       globals->system_http_transaction_factory.get());
 
@@ -1059,6 +1060,7 @@ net::URLRequestContext* IOThread::ConstructProxyScriptFetcherContext(
   globals->proxy_script_fetcher_http_transaction_factory.reset(
       new net::HttpNetworkLayer(
           globals->proxy_script_fetcher_http_network_session.get()));
+  context->set_name("proxy");
   context->set_http_transaction_factory(
       globals->proxy_script_fetcher_http_transaction_factory.get());
 

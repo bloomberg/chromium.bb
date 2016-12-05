@@ -574,9 +574,8 @@ void ProfileImplIOData::InitializeInternal(
   // Create a media request context based on the main context, but using a
   // media cache.  It shares the same job factory as the main context.
   StoragePartitionDescriptor details(profile_path_, false);
-  media_request_context_.reset(InitializeMediaRequestContext(main_context,
-                                                             details));
-
+  media_request_context_.reset(
+      InitializeMediaRequestContext(main_context, details, "main_media"));
   lazy_params_.reset();
 }
 
@@ -716,12 +715,12 @@ net::URLRequestContext* ProfileImplIOData::InitializeAppRequestContext(
   return context;
 }
 
-net::URLRequestContext*
-ProfileImplIOData::InitializeMediaRequestContext(
+net::URLRequestContext* ProfileImplIOData::InitializeMediaRequestContext(
     net::URLRequestContext* original_context,
-    const StoragePartitionDescriptor& partition_descriptor) const {
+    const StoragePartitionDescriptor& partition_descriptor,
+    const std::string& name) const {
   // Copy most state from the original context.
-  MediaRequestContext* context = new MediaRequestContext();
+  MediaRequestContext* context = new MediaRequestContext(name);
   context->CopyFrom(original_context);
 
   // For in-memory context, return immediately after creating the new
@@ -791,8 +790,8 @@ ProfileImplIOData::AcquireIsolatedMediaRequestContext(
     net::URLRequestContext* app_context,
     const StoragePartitionDescriptor& partition_descriptor) const {
   // We create per-app media contexts on demand, unlike the others above.
-  net::URLRequestContext* media_request_context =
-      InitializeMediaRequestContext(app_context, partition_descriptor);
+  net::URLRequestContext* media_request_context = InitializeMediaRequestContext(
+      app_context, partition_descriptor, "isolated_media");
   DCHECK(media_request_context);
   return media_request_context;
 }

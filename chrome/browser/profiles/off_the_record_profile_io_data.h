@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_PROFILES_OFF_THE_RECORD_PROFILE_IO_DATA_H_
 
 #include <memory>
+#include <string>
 
 #include "base/callback.h"
 #include "base/containers/hash_tables.h"
@@ -125,7 +126,8 @@ class OffTheRecordProfileIOData : public ProfileIOData {
       const override;
   net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
-      const StoragePartitionDescriptor& partition_descriptor) const override;
+      const StoragePartitionDescriptor& partition_descriptor,
+      const std::string& name) const override;
   net::URLRequestContext* AcquireMediaRequestContext() const override;
   net::URLRequestContext* AcquireIsolatedAppRequestContext(
       net::URLRequestContext* main_context,

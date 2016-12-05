@@ -554,7 +554,9 @@ void ProfileIOData::InitializeOnUIThread(Profile* profile) {
   BrowserContext::EnsureResourceContextInitialized(profile);
 }
 
-ProfileIOData::MediaRequestContext::MediaRequestContext() {
+ProfileIOData::MediaRequestContext::MediaRequestContext(
+    const std::string& name) {
+  set_name(name);
 }
 
 void ProfileIOData::MediaRequestContext::SetHttpTransactionFactory(
@@ -568,6 +570,7 @@ ProfileIOData::MediaRequestContext::~MediaRequestContext() {
 }
 
 ProfileIOData::AppRequestContext::AppRequestContext() {
+  set_name("app_request");
 }
 
 void ProfileIOData::AppRequestContext::SetCookieStore(
@@ -1022,6 +1025,8 @@ void ProfileIOData::Init(
   main_request_context_storage_.reset(
       new net::URLRequestContextStorage(main_request_context_.get()));
   extensions_request_context_.reset(new net::URLRequestContext());
+  main_request_context_->set_name("main");
+  extensions_request_context_->set_name("extensions");
 
   main_request_context_->set_enable_brotli(io_thread_globals->enable_brotli);
 

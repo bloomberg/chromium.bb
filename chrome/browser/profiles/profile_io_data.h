@@ -271,7 +271,10 @@ class ProfileIOData {
   // it is deleted.
   class MediaRequestContext : public net::URLRequestContext {
    public:
-    MediaRequestContext();
+    // |name| is used to describe this context. Currently there are two kinds of
+    // media request context -- main media request context ("main_meda") and
+    // isolated app media request context ("isolated_media").
+    explicit MediaRequestContext(const std::string& name);
 
     void SetHttpTransactionFactory(
         std::unique_ptr<net::HttpTransactionFactory> http_factory);
@@ -492,7 +495,8 @@ class ProfileIOData {
   // isolated app.
   virtual net::URLRequestContext* InitializeMediaRequestContext(
       net::URLRequestContext* original_context,
-      const StoragePartitionDescriptor& details) const = 0;
+      const StoragePartitionDescriptor& details,
+      const std::string& name) const = 0;
 
   // These functions are used to transfer ownership of the lazily initialized
   // context from ProfileIOData to the URLRequestContextGetter.

@@ -217,6 +217,7 @@ SafeBrowsingURLRequestContextGetter::GetURLRequestContext() {
       safe_browsing_request_context_->set_http_transaction_factory(
           http_transaction_factory_.get());
     }
+    safe_browsing_request_context_->set_name("safe_browsing");
   }
 
   return safe_browsing_request_context_.get();

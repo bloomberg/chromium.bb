@@ -215,7 +215,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
   void SetUpTest() {
     DCHECK(io_thread_->task_runner()->BelongsToCurrentThread());
     mock_service_.reset(new MockAppCacheService);
-    mock_service_->set_request_context(&empty_context_);
+    // Initializes URLRequestContext on the IO thread.
+    empty_context_.reset(new net::URLRequestContext);
+    mock_service_->set_request_context(empty_context_.get());
     mock_policy_.reset(new MockAppCachePolicy);
     mock_service_->set_appcache_policy(mock_policy_.get());
     mock_frontend_.reset(new MockFrontend);
@@ -226,7 +228,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     backend_impl_->RegisterHost(kHostId);
     host_ = backend_impl_->GetHost(kHostId);
     job_factory_.reset(new MockURLRequestJobFactory());
-    empty_context_.set_job_factory(job_factory_.get());
+    empty_context_->set_job_factory(job_factory_.get());
   }
 
   void TearDownTest() {
@@ -239,6 +241,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_service_.reset();
     mock_policy_.reset();
     job_factory_.reset();
+    empty_context_.reset();
     host_ = NULL;
   }
 
@@ -277,8 +280,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Miss,
                    base::Unretained(this)));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -325,8 +328,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Hit,
                    base::Unretained(this)));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -375,8 +378,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Fallback,
                    base::Unretained(this)));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -457,9 +460,9 @@ class AppCacheRequestHandlerTest : public testing::Test {
         &AppCacheRequestHandlerTest::Verify_MainResource_FallbackOverride,
         base::Unretained(this)));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/fallback-override"), net::DEFAULT_PRIORITY,
-        &delegate_);
+    request_ =
+        empty_context_->CreateRequest(GURL("http://blah/fallback-override"),
+                                      net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -523,8 +526,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // SubResource_Miss_WithNoCacheSelected ----------------------------------
 
   void SubResource_Miss_WithNoCacheSelected() {
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -543,8 +546,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // in a network or fallback namespace, should result in a failed request.
     host_->AssociateCompleteCache(MakeNewCache());
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -575,8 +578,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     host_->pending_selected_cache_id_ = cache->cache_id();
     host_->set_preferred_manifest_url(cache->owning_group()->manifest_url());
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -610,8 +613,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -643,8 +646,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -677,8 +680,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(AppCacheEntry::EXPLICIT, 1), false);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -712,8 +715,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(), AppCacheEntry(), true);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -742,8 +745,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -770,8 +773,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // Precondition, the host is waiting on cache selection.
     host_->pending_selected_cache_id_ = 1;
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -806,8 +809,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     mock_storage()->SimulateFindSubResource(
         AppCacheEntry(AppCacheEntry::EXPLICIT, 1), AppCacheEntry(), false);
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -836,8 +839,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   }
 
   void DestroyedServiceWithCrossSiteNav() {
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -870,8 +873,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     // Precondition, the host is waiting on cache selection.
     host_->pending_selected_cache_id_ = 1;
 
-    request_ = empty_context_.CreateRequest(
-        GURL("ftp://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("ftp://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_SUB_RESOURCE,
                                                false));
@@ -892,8 +895,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
   // CanceledRequest -----------------------------
 
   void CanceledRequest() {
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -933,8 +936,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
     EXPECT_FALSE(AppCacheRequestHandler::IsMainResourceType(
         RESOURCE_TYPE_WORKER));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
 
     const int kParentHostId = host_->host_id();
     const int kWorkerHostId = 2;
@@ -971,8 +974,8 @@ class AppCacheRequestHandlerTest : public testing::Test {
         base::Bind(&AppCacheRequestHandlerTest::Verify_MainResource_Blocked,
                    base::Unretained(this)));
 
-    request_ = empty_context_.CreateRequest(
-        GURL("http://blah/"), net::DEFAULT_PRIORITY, &delegate_);
+    request_ = empty_context_->CreateRequest(GURL("http://blah/"),
+                                             net::DEFAULT_PRIORITY, &delegate_);
     handler_.reset(host_->CreateRequestHandler(request_.get(),
                                                RESOURCE_TYPE_MAIN_FRAME,
                                                false));
@@ -1033,7 +1036,7 @@ class AppCacheRequestHandlerTest : public testing::Test {
   std::unique_ptr<MockFrontend> mock_frontend_;
   std::unique_ptr<MockAppCachePolicy> mock_policy_;
   AppCacheHost* host_;
-  net::URLRequestContext empty_context_;
+  std::unique_ptr<net::URLRequestContext> empty_context_;
   std::unique_ptr<MockURLRequestJobFactory> job_factory_;
   MockURLRequestDelegate delegate_;
   std::unique_ptr<net::URLRequest> request_;
