@@ -68,6 +68,7 @@ class CORE_EXPORT TextIteratorTextState {
   Node* positionNode() const { return m_positionNode; }
   bool hasEmitted() const { return m_hasEmitted; }
   UChar lastCharacter() const { return m_lastCharacter; }
+  int textStartOffset() const { return m_textStartOffset; }
   void resetRunInformation() {
     m_positionNode = nullptr;
     m_textLength = 0;
@@ -98,6 +99,10 @@ class CORE_EXPORT TextIteratorTextState {
   bool m_hasEmitted;
   UChar m_lastCharacter;
   bool m_emitsOriginalText;
+
+  // Stores the length of :first-letter when we are at the remaining text.
+  // Equals to 0 in all other cases.
+  int m_textStartOffset;
 };
 
 }  // namespace blink

@@ -6,8 +6,6 @@
 <script>
 const isMac = navigator.platform.indexOf('Mac') !== -1;
 
-// The current behavior is wrong. The correct expectation should be
-// 'hello |world' on Windows and 'hello| world' on other platforms.
 test(() => assert_selection(
     [
       '<style>:first-letter{color:red;}</style>',
@@ -16,8 +14,12 @@ test(() => assert_selection(
     selection => selection.modify('move', 'forward', 'word'),
     [
       '<style>:first-letter{color:red;}</style>',
-      isMac ? '<div contenteditable> hello wor|ld\'</div>'
-            : '<div contenteditable> hello world\'|</div>'
+      isMac ? '<div contenteditable> hello| world\'</div>'
+            // The current non-Mac behavior is wrong. The correct expectation
+            // should be 'hello |world'. A deeper reason is that Blink performs
+            // backward word boundary searches to refine the final selection,
+            // which doesn't work with first-letter (crbug.com/671104).
+            : '<div contenteditable> hell|o world\'</div>'
     ].join('')), 'Move forward by word');
 
 test(() => assert_selection(
@@ -31,8 +33,6 @@ test(() => assert_selection(
       '<div contenteditable> |hello world\'</div>'
     ].join('')), 'Move backward by word');
 
-// The current behavior is wrong. The correct expectation should be
-// 'hello |world' on Windows and 'hello| world' on other platforms.
 test(() => assert_selection(
     [
       '<style>:first-letter{color:red;}</style>',
@@ -41,8 +41,12 @@ test(() => assert_selection(
     selection => selection.modify('move', 'forward', 'word'),
     [
       '<style>:first-letter{color:red;}</style>',
-      isMac ? '<div contenteditable style="white-space:pre"> hello wor|ld\'</div>'
-            : '<div contenteditable style="white-space:pre"> hello world\'|</div>'
+      isMac ? '<div contenteditable style="white-space:pre"> hello| world\'</div>'
+            // The current non-Mac behavior is wrong. The correct expectation
+            // should be 'hello |world'. A deeper reason is that Blink performs
+            // backward word boundary searches to refine the final selection,
+            // which doesn't work with first-letter (crbug.com/671104).
+            : '<div contenteditable style="white-space:pre"> hell|o world\'</div>'
     ].join('')), 'Move forward by word with white-space:pre');
 
 test(() => assert_selection(

@@ -6,9 +6,6 @@
 <script>
 const middot = String.fromCharCode(183); // &middot;
 const isMac = navigator.platform.indexOf('Mac') !== -1;
-
-// The current behavior is wrong. The correct focus should be at 'Steak |& ...'
-// on Windows, and 'Steak| & ....' on other platforms.
 test(() => assert_selection(
     [
       '<style>ul li:first-letter {color: red;}</style>',
@@ -31,7 +28,12 @@ test(() => assert_selection(
           `<li>${middot} <a href="foo.html">^Appetizers</a></li>`,
           `<li>${middot} <a href="foo.html">Soups & Salads</a></li>`,
           `<li>${middot} <a href="foo.html">Sandwiches & Burgers</a></li>`,
-          isMac ? `<li>${middot} <a href="foo.html">Stea|k & Ribs</a></li>`
+          isMac ? `<li>${middot} <a href="foo.html">Steak| & Ribs</a></li>`
+                // The current non-Mac behavior is wrong. The correct focus
+                // should be at 'Steak & |Ribs'. A deeper reason is that Blink
+                // performs backward word boundary searches to refine the final
+                // selection, which doesn't work with first-letter
+                // (crbug.com/671104).
                 : `<li>${middot} <a href="foo.html">Steak &| Ribs</a></li>`,
           `<li>${middot} <a href="foo.html">Seafood</a></li>`,
           `<li>${middot} <a href="foo.html">Combos</a></li>`,

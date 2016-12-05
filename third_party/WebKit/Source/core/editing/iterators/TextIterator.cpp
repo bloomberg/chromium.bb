@@ -64,6 +64,8 @@ using namespace HTMLNames;
 
 namespace {
 
+const int kInvalidOffset = -1;
+
 template <typename Strategy>
 TextIteratorBehaviorFlags adjustBehaviorFlags(TextIteratorBehaviorFlags);
 
@@ -164,6 +166,8 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
       m_handledFirstLetter(false),
       m_shouldStop(false),
       m_handleShadowRoot(false),
+      m_firstLetterStartOffset(kInvalidOffset),
+      m_remainingTextStartOffset(kInvalidOffset),
       // The call to emitsOriginalText() must occur after m_behavior is
       // initialized.
       m_textState(emitsOriginalText()) {
@@ -184,6 +188,43 @@ TextIteratorAlgorithm<Strategy>::TextIteratorAlgorithm(
   }
   initialize(start.computeContainerNode(), start.computeOffsetInContainerNode(),
              end.computeContainerNode(), end.computeOffsetInContainerNode());
+}
+
+template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::prepareForFirstLetterInitialization() {
+  if (m_node != m_startContainer)
+    return false;
+
+  if (m_node->getNodeType() != Node::kTextNode)
+    return false;
+
+  Text* textNode = toText(m_node);
+  LayoutText* layoutObject = textNode->layoutObject();
+  if (!layoutObject || !layoutObject->isTextFragment())
+    return false;
+
+  LayoutTextFragment* textFragment = toLayoutTextFragment(layoutObject);
+  if (!textFragment->isRemainingTextLayoutObject())
+    return false;
+
+  if (static_cast<unsigned>(m_startOffset) >= textFragment->textStartOffset()) {
+    m_remainingTextStartOffset =
+        m_startOffset - textFragment->textStartOffset();
+  } else {
+    m_firstLetterStartOffset = m_startOffset;
+  }
+  m_offset = 0;
+
+  return true;
+}
+
+template <typename Strategy>
+bool TextIteratorAlgorithm<Strategy>::hasNotAdvancedToStartPosition() {
+  if (atEnd())
+    return false;
+  if (m_remainingTextStartOffset == kInvalidOffset)
+    return false;
+  return m_node == m_startContainer;
 }
 
 template <typename Strategy>
@@ -220,7 +261,8 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer,
     return;
 
   m_fullyClippedStack.setUpFullyClippedStack(m_node);
-  m_offset = m_node == m_startContainer ? m_startOffset : 0;
+  if (!prepareForFirstLetterInitialization())
+    m_offset = m_node == m_startContainer ? m_startOffset : 0;
   m_iterationProgress = HandledNone;
 
   // Calculate first out of bounds node.
@@ -229,6 +271,16 @@ void TextIteratorAlgorithm<Strategy>::initialize(Node* startContainer,
 
   // Identify the first run.
   advance();
+
+  // The current design cannot start in a text node with arbitrary offset, if
+  // the node has :first-letter. Instead, we start with offset 0, and have extra
+  // advance() calls until we have moved to/past the starting position.
+  while (hasNotAdvancedToStartPosition())
+    advance();
+
+  // Clear temporary data for initialization with :first-letter.
+  m_firstLetterStartOffset = kInvalidOffset;
+  m_remainingTextStartOffset = kInvalidOffset;
 }
 
 template <typename Strategy>
@@ -1152,10 +1204,56 @@ void TextIteratorAlgorithm<Strategy>::spliceBuffer(UChar c,
 }
 
 template <typename Strategy>
+int TextIteratorAlgorithm<Strategy>::adjustedStartForFirstLetter(
+    const Node& textNode,
+    const LayoutText& layoutObject,
+    int textStartOffset,
+    int textEndOffset) {
+  if (m_firstLetterStartOffset == kInvalidOffset)
+    return textStartOffset;
+  if (textNode != m_startContainer)
+    return textStartOffset;
+  if (!layoutObject.isTextFragment())
+    return textStartOffset;
+  if (toLayoutTextFragment(layoutObject).isRemainingTextLayoutObject())
+    return textStartOffset;
+  if (textEndOffset <= m_firstLetterStartOffset)
+    return textStartOffset;
+  int adjustedOffset = std::max(textStartOffset, m_firstLetterStartOffset);
+  m_firstLetterStartOffset = kInvalidOffset;
+  return adjustedOffset;
+}
+
+template <typename Strategy>
+int TextIteratorAlgorithm<Strategy>::adjustedStartForRemainingText(
+    const Node& textNode,
+    const LayoutText& layoutObject,
+    int textStartOffset,
+    int textEndOffset) {
+  if (m_remainingTextStartOffset == kInvalidOffset)
+    return textStartOffset;
+  if (textNode != m_startContainer)
+    return textStartOffset;
+  if (!layoutObject.isTextFragment())
+    return textStartOffset;
+  if (!toLayoutTextFragment(layoutObject).isRemainingTextLayoutObject())
+    return textStartOffset;
+  if (textEndOffset <= m_remainingTextStartOffset)
+    return textStartOffset;
+  int adjustedOffset = std::max(textStartOffset, m_remainingTextStartOffset);
+  m_remainingTextStartOffset = kInvalidOffset;
+  return adjustedOffset;
+}
+
+template <typename Strategy>
 void TextIteratorAlgorithm<Strategy>::emitText(Node* textNode,
                                                LayoutText* layoutObject,
                                                int textStartOffset,
                                                int textEndOffset) {
+  textStartOffset = adjustedStartForFirstLetter(*textNode, *layoutObject,
+                                                textStartOffset, textEndOffset);
+  textStartOffset = adjustedStartForRemainingText(
+      *textNode, *layoutObject, textStartOffset, textEndOffset);
   // Since m_lastTextNodeEndedWithCollapsedSpace seems better placed in
   // TextIterator, but is always reset when we call spliceBuffer, we
   // wrap TextIteratorTextState::spliceBuffer() with this function.
@@ -1168,12 +1266,8 @@ EphemeralRangeTemplate<Strategy> TextIteratorAlgorithm<Strategy>::range()
     const {
   // use the current run information, if we have it
   if (m_textState.positionNode()) {
-    m_textState.flushPositionOffsets();
-    return EphemeralRangeTemplate<Strategy>(
-        PositionTemplate<Strategy>(m_textState.positionNode(),
-                                   m_textState.positionStartOffset()),
-        PositionTemplate<Strategy>(m_textState.positionNode(),
-                                   m_textState.positionEndOffset()));
+    return EphemeralRangeTemplate<Strategy>(startPositionInCurrentContainer(),
+                                            endPositionInCurrentContainer());
   }
 
   // otherwise, return the end of the overall range we were given
@@ -1208,7 +1302,7 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::startOffsetInCurrentContainer() const {
   if (m_textState.positionNode()) {
     m_textState.flushPositionOffsets();
-    return m_textState.positionStartOffset();
+    return m_textState.positionStartOffset() + m_textState.textStartOffset();
   }
   DCHECK(m_endContainer);
   return m_endOffset;
@@ -1218,7 +1312,7 @@ template <typename Strategy>
 int TextIteratorAlgorithm<Strategy>::endOffsetInCurrentContainer() const {
   if (m_textState.positionNode()) {
     m_textState.flushPositionOffsets();
-    return m_textState.positionEndOffset();
+    return m_textState.positionEndOffset() + m_textState.textStartOffset();
   }
   DCHECK(m_endContainer);
   return m_endOffset;

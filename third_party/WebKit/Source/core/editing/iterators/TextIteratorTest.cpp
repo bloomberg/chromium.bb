@@ -640,4 +640,98 @@ TEST_F(TextIteratorTest, PreserveOnlyLeadingSpace) {
                                  TextIteratorEmitsImageAltText));
 }
 
+TEST_F(TextIteratorTest, StartAtFirstLetter) {
+  setBodyContent("<style>div:first-letter {color:red;}</style><div>Axyz</div>");
+
+  Element* div = document().querySelector("div");
+  Node* text = div->firstChild();
+  Position start(text, 0);
+  Position end(text, 4);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(1, iter.length());
+  EXPECT_EQ(1, iter.copyTextTo(&buffer, 0)) << "Should emit 'A'.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 0), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 1), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.copyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 1), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 4), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_TRUE(iter.atEnd());
+
+  EXPECT_EQ("Axyz", String(buffer.data()));
+}
+
+TEST_F(TextIteratorTest, StartInMultiCharFirstLetterWithCollapsedSpace) {
+  setBodyContent(
+      "<style>div:first-letter {color:red;}</style><div>  (A)  xyz</div>");
+
+  Element* div = document().querySelector("div");
+  Node* text = div->firstChild();
+  Position start(text, 3);
+  Position end(text, 10);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(2, iter.length());
+  EXPECT_EQ(2, iter.copyTextTo(&buffer, 0)) << "Should emit 'A)'.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 3), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 5), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(1, iter.length());
+  EXPECT_EQ(1, iter.copyTextTo(&buffer, 0)) << "Should emit ' '.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 5), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 6), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.copyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 7), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 10), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_TRUE(iter.atEnd());
+
+  EXPECT_EQ("A) xyz", String(buffer.data()));
+}
+
+TEST_F(TextIteratorTest, StartAtRemainingText) {
+  setBodyContent("<style>div:first-letter {color:red;}</style><div>Axyz</div>");
+
+  Element* div = document().querySelector("div");
+  Node* text = div->firstChild();
+  Position start(text, 1);
+  Position end(text, 4);
+  TextIterator iter(start, end);
+  ForwardsTextBuffer buffer;
+
+  EXPECT_FALSE(iter.atEnd());
+  EXPECT_EQ(3, iter.length());
+  EXPECT_EQ(3, iter.copyTextTo(&buffer, 0)) << "Should emit 'xyz'.";
+  EXPECT_EQ(text, iter.currentContainer());
+  EXPECT_EQ(Position(text, 1), iter.startPositionInCurrentContainer());
+  EXPECT_EQ(Position(text, 4), iter.endPositionInCurrentContainer());
+
+  iter.advance();
+  EXPECT_TRUE(iter.atEnd());
+
+  EXPECT_EQ("xyz", String(buffer.data()));
+}
+
 }  // namespace blink
