@@ -49,7 +49,7 @@ HTMLFieldSetElement* HTMLFieldSetElement::create(Document& document,
 }
 
 DEFINE_TRACE(HTMLFieldSetElement) {
-  visitor->trace(m_associatedElements);
+  visitor->trace(m_listedElements);
   HTMLFormControlElement::trace(visitor);
 }
 
@@ -58,7 +58,7 @@ bool HTMLFieldSetElement::matchesValidityPseudoClasses() const {
 }
 
 bool HTMLFieldSetElement::isValidElement() {
-  const FormAssociatedElement::List& elements = associatedElements();
+  const ListedElement::List& elements = listedElements();
   for (unsigned i = 0; i < elements.size(); ++i) {
     if (elements[i]->isFormControlElement()) {
       HTMLFormControlElement* control =
@@ -122,25 +122,24 @@ void HTMLFieldSetElement::refreshElementsIfNeeded() const {
 
   m_documentVersion = docVersion;
 
-  m_associatedElements.clear();
+  m_listedElements.clear();
 
   for (HTMLElement& element : Traversal<HTMLElement>::descendantsOf(*this)) {
     if (isHTMLObjectElement(element)) {
-      m_associatedElements.append(toHTMLObjectElement(&element));
+      m_listedElements.append(toHTMLObjectElement(&element));
       continue;
     }
 
     if (!element.isFormControlElement())
       continue;
 
-    m_associatedElements.append(toHTMLFormControlElement(&element));
+    m_listedElements.append(toHTMLFormControlElement(&element));
   }
 }
 
-const FormAssociatedElement::List& HTMLFieldSetElement::associatedElements()
-    const {
+const ListedElement::List& HTMLFieldSetElement::listedElements() const {
   refreshElementsIfNeeded();
-  return m_associatedElements;
+  return m_listedElements;
 }
 
 int HTMLFieldSetElement::tabIndex() const {

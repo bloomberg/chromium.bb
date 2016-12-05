@@ -22,8 +22,8 @@
  *
  */
 
-#ifndef FormAssociatedElement_h
-#define FormAssociatedElement_h
+#ifndef ListedElement_h
+#define ListedElement_h
 
 #include "core/CoreExport.h"
 #include "platform/heap/Handle.h"
@@ -40,9 +40,10 @@ class HTMLFormElement;
 class Node;
 class ValidityState;
 
-class CORE_EXPORT FormAssociatedElement : public GarbageCollectedMixin {
+// https://html.spec.whatwg.org/multipage/forms.html#category-listed
+class CORE_EXPORT ListedElement : public GarbageCollectedMixin {
  public:
-  virtual ~FormAssociatedElement();
+  virtual ~ListedElement();
 
   static HTMLFormElement* findAssociatedForm(const HTMLElement*);
   HTMLFormElement* form() const { return m_form.get(); }
@@ -87,12 +88,12 @@ class CORE_EXPORT FormAssociatedElement : public GarbageCollectedMixin {
 
   void formAttributeTargetChanged();
 
-  typedef HeapVector<Member<FormAssociatedElement>> List;
+  typedef HeapVector<Member<ListedElement>> List;
 
   DECLARE_VIRTUAL_TRACE();
 
  protected:
-  FormAssociatedElement();
+  ListedElement();
 
   void insertedInto(ContainerNode*);
   void removedFrom(ContainerNode*);
@@ -124,11 +125,11 @@ class CORE_EXPORT FormAssociatedElement : public GarbageCollectedMixin {
   bool m_formWasSetByParser;
 };
 
-CORE_EXPORT HTMLElement* toHTMLElement(FormAssociatedElement*);
-CORE_EXPORT HTMLElement& toHTMLElement(FormAssociatedElement&);
-CORE_EXPORT const HTMLElement* toHTMLElement(const FormAssociatedElement*);
-CORE_EXPORT const HTMLElement& toHTMLElement(const FormAssociatedElement&);
+CORE_EXPORT HTMLElement* toHTMLElement(ListedElement*);
+CORE_EXPORT HTMLElement& toHTMLElement(ListedElement&);
+CORE_EXPORT const HTMLElement* toHTMLElement(const ListedElement*);
+CORE_EXPORT const HTMLElement& toHTMLElement(const ListedElement&);
 
 }  // namespace blink
 
-#endif  // FormAssociatedElement_h
+#endif  // ListedElement_h

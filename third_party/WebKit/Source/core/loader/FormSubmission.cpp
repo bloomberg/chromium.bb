@@ -227,8 +227,8 @@ FormSubmission* FormSubmission::create(HTMLFormElement* form,
   if (submitButton)
     submitButton->setActivatedSubmit(true);
   bool containsPasswordData = false;
-  for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
-    FormAssociatedElement* control = form->associatedElements()[i];
+  for (unsigned i = 0; i < form->listedElements().size(); ++i) {
+    ListedElement* control = form->listedElements()[i];
     DCHECK(control);
     HTMLElement& element = toHTMLElement(*control);
     if (!element.isDisabledFormControl())

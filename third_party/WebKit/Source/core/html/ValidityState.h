@@ -25,7 +25,7 @@
 #define ValidityState_h
 
 #include "bindings/core/v8/ScriptWrappable.h"
-#include "core/html/FormAssociatedElement.h"
+#include "core/html/ListedElement.h"
 
 namespace blink {
 
@@ -35,7 +35,7 @@ class ValidityState final : public GarbageCollected<ValidityState>,
   WTF_MAKE_NONCOPYABLE(ValidityState);
 
  public:
-  static ValidityState* create(FormAssociatedElement* control) {
+  static ValidityState* create(ListedElement* control) {
     return new ValidityState(control);
   }
   DEFINE_INLINE_TRACE() { visitor->trace(m_control); }
@@ -57,9 +57,9 @@ class ValidityState final : public GarbageCollected<ValidityState>,
   bool valid() const;
 
  private:
-  explicit ValidityState(FormAssociatedElement* control) : m_control(control) {}
+  explicit ValidityState(ListedElement* control) : m_control(control) {}
 
-  Member<FormAssociatedElement> m_control;
+  Member<ListedElement> m_control;
 };
 
 }  // namespace blink

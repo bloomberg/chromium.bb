@@ -26,8 +26,8 @@
 #define HTMLFormControlElement_h
 
 #include "core/CoreExport.h"
-#include "core/html/FormAssociatedElement.h"
 #include "core/html/LabelableElement.h"
+#include "core/html/ListedElement.h"
 
 namespace blink {
 
@@ -40,10 +40,10 @@ enum CheckValidityEventBehavior {
 };
 
 // HTMLFormControlElement is the default implementation of
-// FormAssociatedElement, and form-associated element implementations should use
+// ListedElement, and listed element implementations should use
 // HTMLFormControlElement unless there is a special reason.
 class CORE_EXPORT HTMLFormControlElement : public LabelableElement,
-                                           public FormAssociatedElement {
+                                           public ListedElement {
   USING_GARBAGE_COLLECTED_MIXIN(HTMLFormControlElement);
 
  public:
@@ -213,7 +213,7 @@ inline bool isHTMLFormControlElement(const Element& element) {
 
 DEFINE_HTMLELEMENT_TYPE_CASTS_WITH_FUNCTION(HTMLFormControlElement);
 DEFINE_TYPE_CASTS(HTMLFormControlElement,
-                  FormAssociatedElement,
+                  ListedElement,
                   control,
                   control->isFormControlElement(),
                   control.isFormControlElement());

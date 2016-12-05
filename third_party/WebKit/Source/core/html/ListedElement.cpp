@@ -22,7 +22,7 @@
  *
  */
 
-#include "core/html/FormAssociatedElement.h"
+#include "core/html/ListedElement.h"
 
 #include "core/HTMLNames.h"
 #include "core/dom/IdTargetObserver.h"
@@ -39,42 +39,42 @@ using namespace HTMLNames;
 class FormAttributeTargetObserver : public IdTargetObserver {
  public:
   static FormAttributeTargetObserver* create(const AtomicString& id,
-                                             FormAssociatedElement*);
+                                             ListedElement*);
   DECLARE_VIRTUAL_TRACE();
   void idTargetChanged() override;
 
  private:
-  FormAttributeTargetObserver(const AtomicString& id, FormAssociatedElement*);
+  FormAttributeTargetObserver(const AtomicString& id, ListedElement*);
 
-  Member<FormAssociatedElement> m_element;
+  Member<ListedElement> m_element;
 };
 
-FormAssociatedElement::FormAssociatedElement() : m_formWasSetByParser(false) {}
+ListedElement::ListedElement() : m_formWasSetByParser(false) {}
 
-FormAssociatedElement::~FormAssociatedElement() {
+ListedElement::~ListedElement() {
   // We can't call setForm here because it contains virtual calls.
 }
 
-DEFINE_TRACE(FormAssociatedElement) {
+DEFINE_TRACE(ListedElement) {
   visitor->trace(m_formAttributeTargetObserver);
   visitor->trace(m_form);
   visitor->trace(m_validityState);
 }
 
-ValidityState* FormAssociatedElement::validity() {
+ValidityState* ListedElement::validity() {
   if (!m_validityState)
     m_validityState = ValidityState::create(this);
 
   return m_validityState.get();
 }
 
-void FormAssociatedElement::didMoveToNewDocument(Document& oldDocument) {
+void ListedElement::didMoveToNewDocument(Document& oldDocument) {
   HTMLElement* element = toHTMLElement(this);
   if (element->fastHasAttribute(formAttr))
     setFormAttributeTargetObserver(nullptr);
 }
 
-void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint) {
+void ListedElement::insertedInto(ContainerNode* insertionPoint) {
   if (!m_formWasSetByParser || !m_form ||
       NodeTraversal::highestAncestorOrSelf(*insertionPoint) !=
           NodeTraversal::highestAncestorOrSelf(*m_form.get()))
@@ -88,7 +88,7 @@ void FormAssociatedElement::insertedInto(ContainerNode* insertionPoint) {
     resetFormAttributeTargetObserver();
 }
 
-void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint) {
+void ListedElement::removedFrom(ContainerNode* insertionPoint) {
   HTMLElement* element = toHTMLElement(this);
   if (insertionPoint->isConnected() && element->fastHasAttribute(formAttr)) {
     setFormAttributeTargetObserver(nullptr);
@@ -104,8 +104,7 @@ void FormAssociatedElement::removedFrom(ContainerNode* insertionPoint) {
     resetFormOwner();
 }
 
-HTMLFormElement* FormAssociatedElement::findAssociatedForm(
-    const HTMLElement* element) {
+HTMLFormElement* ListedElement::findAssociatedForm(const HTMLElement* element) {
   const AtomicString& formId(element->fastGetAttribute(formAttr));
   // 3. If the element is reassociateable, has a form content attribute, and
   // is itself in a Document, then run these substeps:
@@ -126,14 +125,14 @@ HTMLFormElement* FormAssociatedElement::findAssociatedForm(
   return element->findFormAncestor();
 }
 
-void FormAssociatedElement::formRemovedFromTree(const Node& formRoot) {
+void ListedElement::formRemovedFromTree(const Node& formRoot) {
   DCHECK(m_form);
   if (NodeTraversal::highestAncestorOrSelf(toHTMLElement(*this)) == formRoot)
     return;
   resetFormOwner();
 }
 
-void FormAssociatedElement::associateByParser(HTMLFormElement* form) {
+void ListedElement::associateByParser(HTMLFormElement* form) {
   if (form && form->isConnected()) {
     m_formWasSetByParser = true;
     setForm(form);
@@ -141,7 +140,7 @@ void FormAssociatedElement::associateByParser(HTMLFormElement* form) {
   }
 }
 
-void FormAssociatedElement::setForm(HTMLFormElement* newForm) {
+void ListedElement::setForm(HTMLFormElement* newForm) {
   if (m_form.get() == newForm)
     return;
   willChangeForm();
@@ -156,16 +155,16 @@ void FormAssociatedElement::setForm(HTMLFormElement* newForm) {
   didChangeForm();
 }
 
-void FormAssociatedElement::willChangeForm() {}
+void ListedElement::willChangeForm() {}
 
-void FormAssociatedElement::didChangeForm() {
+void ListedElement::didChangeForm() {
   if (!m_formWasSetByParser && m_form && m_form->isConnected()) {
     HTMLElement* element = toHTMLElement(this);
     element->document().didAssociateFormControl(element);
   }
 }
 
-void FormAssociatedElement::resetFormOwner() {
+void ListedElement::resetFormOwner() {
   m_formWasSetByParser = false;
   HTMLElement* element = toHTMLElement(this);
   const AtomicString& formId(element->fastGetAttribute(formAttr));
@@ -180,49 +179,49 @@ void FormAssociatedElement::resetFormOwner() {
   setForm(findAssociatedForm(element));
 }
 
-void FormAssociatedElement::formAttributeChanged() {
+void ListedElement::formAttributeChanged() {
   resetFormOwner();
   resetFormAttributeTargetObserver();
 }
 
-bool FormAssociatedElement::customError() const {
+bool ListedElement::customError() const {
   const HTMLElement* element = toHTMLElement(this);
   return element->willValidate() && !m_customValidationMessage.isEmpty();
 }
 
-bool FormAssociatedElement::hasBadInput() const {
+bool ListedElement::hasBadInput() const {
   return false;
 }
 
-bool FormAssociatedElement::patternMismatch() const {
+bool ListedElement::patternMismatch() const {
   return false;
 }
 
-bool FormAssociatedElement::rangeOverflow() const {
+bool ListedElement::rangeOverflow() const {
   return false;
 }
 
-bool FormAssociatedElement::rangeUnderflow() const {
+bool ListedElement::rangeUnderflow() const {
   return false;
 }
 
-bool FormAssociatedElement::stepMismatch() const {
+bool ListedElement::stepMismatch() const {
   return false;
 }
 
-bool FormAssociatedElement::tooLong() const {
+bool ListedElement::tooLong() const {
   return false;
 }
 
-bool FormAssociatedElement::tooShort() const {
+bool ListedElement::tooShort() const {
   return false;
 }
 
-bool FormAssociatedElement::typeMismatch() const {
+bool ListedElement::typeMismatch() const {
   return false;
 }
 
-bool FormAssociatedElement::valid() const {
+bool ListedElement::valid() const {
   bool someError = typeMismatch() || stepMismatch() || rangeUnderflow() ||
                    rangeOverflow() || tooLong() || tooShort() ||
                    patternMismatch() || valueMissing() || hasBadInput() ||
@@ -230,88 +229,86 @@ bool FormAssociatedElement::valid() const {
   return !someError;
 }
 
-bool FormAssociatedElement::valueMissing() const {
+bool ListedElement::valueMissing() const {
   return false;
 }
 
-String FormAssociatedElement::customValidationMessage() const {
+String ListedElement::customValidationMessage() const {
   return m_customValidationMessage;
 }
 
-String FormAssociatedElement::validationMessage() const {
+String ListedElement::validationMessage() const {
   return customError() ? m_customValidationMessage : String();
 }
 
-String FormAssociatedElement::validationSubMessage() const {
+String ListedElement::validationSubMessage() const {
   return String();
 }
 
-void FormAssociatedElement::setCustomValidity(const String& error) {
+void ListedElement::setCustomValidity(const String& error) {
   m_customValidationMessage = error;
 }
 
-void FormAssociatedElement::setFormAttributeTargetObserver(
+void ListedElement::setFormAttributeTargetObserver(
     FormAttributeTargetObserver* newObserver) {
   if (m_formAttributeTargetObserver)
     m_formAttributeTargetObserver->unregister();
   m_formAttributeTargetObserver = newObserver;
 }
 
-void FormAssociatedElement::resetFormAttributeTargetObserver() {
+void ListedElement::resetFormAttributeTargetObserver() {
   HTMLElement* element = toHTMLElement(this);
   const AtomicString& formId(element->fastGetAttribute(formAttr));
-  if (!formId.isNull() && element->isConnected())
+  if (!formId.isNull() && element->isConnected()) {
     setFormAttributeTargetObserver(
         FormAttributeTargetObserver::create(formId, this));
-  else
+  } else {
     setFormAttributeTargetObserver(nullptr);
+  }
 }
 
-void FormAssociatedElement::formAttributeTargetChanged() {
+void ListedElement::formAttributeTargetChanged() {
   resetFormOwner();
 }
 
-const AtomicString& FormAssociatedElement::name() const {
+const AtomicString& ListedElement::name() const {
   const AtomicString& name = toHTMLElement(this)->getNameAttribute();
   return name.isNull() ? emptyAtom : name;
 }
 
-bool FormAssociatedElement::isFormControlElementWithState() const {
+bool ListedElement::isFormControlElementWithState() const {
   return false;
 }
 
-const HTMLElement& toHTMLElement(
-    const FormAssociatedElement& associatedElement) {
-  if (associatedElement.isFormControlElement())
-    return toHTMLFormControlElement(associatedElement);
-  return toHTMLObjectElement(associatedElement);
+const HTMLElement& toHTMLElement(const ListedElement& listedElement) {
+  if (listedElement.isFormControlElement())
+    return toHTMLFormControlElement(listedElement);
+  return toHTMLObjectElement(listedElement);
 }
 
-const HTMLElement* toHTMLElement(
-    const FormAssociatedElement* associatedElement) {
-  DCHECK(associatedElement);
-  return &toHTMLElement(*associatedElement);
+const HTMLElement* toHTMLElement(const ListedElement* listedElement) {
+  DCHECK(listedElement);
+  return &toHTMLElement(*listedElement);
 }
 
-HTMLElement* toHTMLElement(FormAssociatedElement* associatedElement) {
-  return const_cast<HTMLElement*>(toHTMLElement(
-      static_cast<const FormAssociatedElement*>(associatedElement)));
+HTMLElement* toHTMLElement(ListedElement* listedElement) {
+  return const_cast<HTMLElement*>(
+      toHTMLElement(static_cast<const ListedElement*>(listedElement)));
 }
 
-HTMLElement& toHTMLElement(FormAssociatedElement& associatedElement) {
-  return const_cast<HTMLElement&>(toHTMLElement(
-      static_cast<const FormAssociatedElement&>(associatedElement)));
+HTMLElement& toHTMLElement(ListedElement& listedElement) {
+  return const_cast<HTMLElement&>(
+      toHTMLElement(static_cast<const ListedElement&>(listedElement)));
 }
 
 FormAttributeTargetObserver* FormAttributeTargetObserver::create(
     const AtomicString& id,
-    FormAssociatedElement* element) {
+    ListedElement* element) {
   return new FormAttributeTargetObserver(id, element);
 }
 
-FormAttributeTargetObserver::FormAttributeTargetObserver(
-    const AtomicString& id,
-    FormAssociatedElement* element)
+FormAttributeTargetObserver::FormAttributeTargetObserver(const AtomicString& id,
+                                                         ListedElement* element)
     : IdTargetObserver(
           toHTMLElement(element)->treeScope().idTargetObserverRegistry(),
           id),

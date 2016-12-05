@@ -70,7 +70,7 @@ void getFormEncoding(const HTMLFormElement& form, WTF::TextEncoding* encoding) {
 // button is returned.
 HTMLFormControlElement* buttonToActivate(const HTMLFormElement& form) {
   HTMLFormControlElement* firstSubmitButton = nullptr;
-  for (auto& element : form.associatedElements()) {
+  for (auto& element : form.listedElements()) {
     if (!element->isFormControlElement())
       continue;
     HTMLFormControlElement* control = toHTMLFormControlElement(element);
@@ -138,7 +138,7 @@ bool isInDefaultState(const HTMLFormControlElement& formElement) {
 //  - More than one text field
 HTMLInputElement* findSuitableSearchInputElement(const HTMLFormElement& form) {
   HTMLInputElement* textElement = nullptr;
-  for (const auto& item : form.associatedElements()) {
+  for (const auto& item : form.listedElements()) {
     if (!item->isFormControlElement())
       continue;
 
@@ -184,7 +184,7 @@ bool buildSearchString(const HTMLFormElement& form,
                        const WTF::TextEncoding& encoding,
                        const HTMLInputElement* textElement) {
   bool isElementFound = false;
-  for (const auto& item : form.associatedElements()) {
+  for (const auto& item : form.listedElements()) {
     if (!item->isFormControlElement())
       continue;
 

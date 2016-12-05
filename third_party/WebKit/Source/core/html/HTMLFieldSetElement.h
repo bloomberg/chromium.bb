@@ -61,11 +61,11 @@ class CORE_EXPORT HTMLFieldSetElement final : public HTMLFormControlElement {
 
   static void invalidateDisabledStateUnder(Element&);
   void refreshElementsIfNeeded() const;
-  const FormAssociatedElement::List& associatedElements() const;
+  const ListedElement::List& listedElements() const;
 
-  // TODO(tkent): Remove m_associcatedElements.
-  mutable FormAssociatedElement::List m_associatedElements;
-  // When dom tree is modified, we have to refresh the m_associatedElements
+  // TODO(tkent): Remove m_listedElements.
+  mutable ListedElement::List m_listedElements;
+  // When dom tree is modified, we have to refresh the m_listedElements
   // array.
   mutable uint64_t m_documentVersion;
 };

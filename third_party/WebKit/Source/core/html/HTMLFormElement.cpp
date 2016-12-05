@@ -67,7 +67,7 @@ using namespace HTMLNames;
 
 HTMLFormElement::HTMLFormElement(Document& document)
     : HTMLElement(formTag, document),
-      m_associatedElementsAreDirty(false),
+      m_listedElementsAreDirty(false),
       m_imageElementsAreDirty(false),
       m_hasElementsAssociatedByParser(false),
       m_hasElementsAssociatedByFormAttribute(false),
@@ -85,7 +85,7 @@ HTMLFormElement::~HTMLFormElement() {}
 DEFINE_TRACE(HTMLFormElement) {
   visitor->trace(m_pastNamesMap);
   visitor->trace(m_radioButtonGroupScope);
-  visitor->trace(m_associatedElements);
+  visitor->trace(m_listedElements);
   visitor->trace(m_imageElements);
   visitor->trace(m_plannedNavigation);
   HTMLElement::trace(visitor);
@@ -154,15 +154,15 @@ void HTMLFormElement::removedFrom(ContainerNode* insertionPoint) {
   // attribute becuse IdTargetObserver handles it.
   if (m_hasElementsAssociatedByParser) {
     Node& root = NodeTraversal::highestAncestorOrSelf(*this);
-    if (!m_associatedElementsAreDirty) {
-      FormAssociatedElement::List elements(associatedElements());
+    if (!m_listedElementsAreDirty) {
+      ListedElement::List elements(listedElements());
       notifyFormRemovedFromTree(elements, root);
     } else {
-      FormAssociatedElement::List elements;
-      collectAssociatedElements(
+      ListedElement::List elements;
+      collectListedElements(
           NodeTraversal::highestAncestorOrSelf(*insertionPoint), elements);
       notifyFormRemovedFromTree(elements, root);
-      collectAssociatedElements(root, elements);
+      collectListedElements(root, elements);
       notifyFormRemovedFromTree(elements, root);
     }
 
@@ -194,7 +194,7 @@ void HTMLFormElement::handleLocalEvents(Event& event) {
 }
 
 unsigned HTMLFormElement::length() const {
-  const FormAssociatedElement::List& elements = associatedElements();
+  const ListedElement::List& elements = listedElements();
   unsigned len = 0;
   for (unsigned i = 0; i < elements.size(); ++i) {
     if (elements[i]->isEnumeratable())
@@ -211,13 +211,12 @@ void HTMLFormElement::submitImplicitly(Event* event,
                                        bool fromImplicitSubmissionTrigger) {
   int submissionTriggerCount = 0;
   bool seenDefaultButton = false;
-  const FormAssociatedElement::List& elements = associatedElements();
+  const ListedElement::List& elements = listedElements();
   for (unsigned i = 0; i < elements.size(); ++i) {
-    FormAssociatedElement* formAssociatedElement = elements[i];
-    if (!formAssociatedElement->isFormControlElement())
+    ListedElement* ListedElement = elements[i];
+    if (!ListedElement->isFormControlElement())
       continue;
-    HTMLFormControlElement* control =
-        toHTMLFormControlElement(formAssociatedElement);
+    HTMLFormControlElement* control = toHTMLFormControlElement(ListedElement);
     if (!seenDefaultButton && control->canBeSuccessfulSubmitButton()) {
       if (fromImplicitSubmissionTrigger)
         seenDefaultButton = true;
@@ -239,7 +238,7 @@ void HTMLFormElement::submitImplicitly(Event* event,
 
 bool HTMLFormElement::validateInteractively() {
   UseCounter::count(document(), UseCounter::FormValidationStarted);
-  const FormAssociatedElement::List& elements = associatedElements();
+  const ListedElement::List& elements = listedElements();
   for (unsigned i = 0; i < elements.size(); ++i) {
     if (elements[i]->isFormControlElement())
       toHTMLFormControlElement(elements[i])->hideVisibleValidationMessage();
@@ -370,11 +369,10 @@ void HTMLFormElement::submit(Event* event,
     // event handler might add a submit button. We search for a submit
     // button again.
     // TODO(tkent): Do we really need to activate such submit button?
-    for (const auto& associatedElement : associatedElements()) {
-      if (!associatedElement->isFormControlElement())
+    for (const auto& listedElement : listedElements()) {
+      if (!listedElement->isFormControlElement())
         continue;
-      HTMLFormControlElement* control =
-          toHTMLFormControlElement(associatedElement);
+      HTMLFormControlElement* control = toHTMLFormControlElement(listedElement);
       DCHECK(!control->isActivatedSubmit());
       if (control->isSuccessfulSubmitButton()) {
         submitButton = control;
@@ -473,7 +471,7 @@ void HTMLFormElement::reset() {
     return;
   }
 
-  const FormAssociatedElement::List& elements = associatedElements();
+  const ListedElement::List& elements = listedElements();
   for (unsigned i = 0; i < elements.size(); ++i) {
     if (elements[i]->isFormControlElement())
       toHTMLFormControlElement(elements[i])->reset();
@@ -514,16 +512,16 @@ void HTMLFormElement::parseAttribute(const QualifiedName& name,
   }
 }
 
-void HTMLFormElement::associate(FormAssociatedElement& e) {
-  m_associatedElementsAreDirty = true;
-  m_associatedElements.clear();
+void HTMLFormElement::associate(ListedElement& e) {
+  m_listedElementsAreDirty = true;
+  m_listedElements.clear();
   if (toHTMLElement(e).fastHasAttribute(formAttr))
     m_hasElementsAssociatedByFormAttribute = true;
 }
 
-void HTMLFormElement::disassociate(FormAssociatedElement& e) {
-  m_associatedElementsAreDirty = true;
-  m_associatedElements.clear();
+void HTMLFormElement::disassociate(ListedElement& e) {
+  m_listedElementsAreDirty = true;
+  m_listedElements.clear();
   removeFromPastNamesMap(toHTMLElement(e));
 }
 
@@ -558,28 +556,28 @@ HTMLFormControlsCollection* HTMLFormElement::elements() {
   return ensureCachedCollection<HTMLFormControlsCollection>(FormControls);
 }
 
-void HTMLFormElement::collectAssociatedElements(
+void HTMLFormElement::collectListedElements(
     Node& root,
-    FormAssociatedElement::List& elements) const {
+    ListedElement::List& elements) const {
   elements.clear();
   for (HTMLElement& element : Traversal<HTMLElement>::startsAfter(root)) {
-    FormAssociatedElement* associatedElement = 0;
+    ListedElement* listedElement = 0;
     if (element.isFormControlElement())
-      associatedElement = toHTMLFormControlElement(&element);
+      listedElement = toHTMLFormControlElement(&element);
     else if (isHTMLObjectElement(element))
-      associatedElement = toHTMLObjectElement(&element);
+      listedElement = toHTMLObjectElement(&element);
     else
       continue;
-    if (associatedElement->form() == this)
-      elements.append(associatedElement);
+    if (listedElement->form() == this)
+      elements.append(listedElement);
   }
 }
 
 // This function should be const conceptually. However we update some fields
 // because of lazy evaluation.
-const FormAssociatedElement::List& HTMLFormElement::associatedElements() const {
-  if (!m_associatedElementsAreDirty)
-    return m_associatedElements;
+const ListedElement::List& HTMLFormElement::listedElements() const {
+  if (!m_listedElementsAreDirty)
+    return m_listedElements;
   HTMLFormElement* mutableThis = const_cast<HTMLFormElement*>(this);
   Node* scope = mutableThis;
   if (m_hasElementsAssociatedByParser)
@@ -587,9 +585,9 @@ const FormAssociatedElement::List& HTMLFormElement::associatedElements() const {
   if (isConnected() && m_hasElementsAssociatedByFormAttribute)
     scope = &treeScope().rootNode();
   DCHECK(scope);
-  collectAssociatedElements(*scope, mutableThis->m_associatedElements);
-  mutableThis->m_associatedElementsAreDirty = false;
-  return m_associatedElements;
+  collectListedElements(*scope, mutableThis->m_listedElements);
+  mutableThis->m_listedElementsAreDirty = false;
+  return m_listedElements;
 }
 
 void HTMLFormElement::collectImageElements(
@@ -643,7 +641,7 @@ void HTMLFormElement::setMethod(const AtomicString& value) {
 }
 
 HTMLFormControlElement* HTMLFormElement::findDefaultButton() const {
-  for (const auto& element : associatedElements()) {
+  for (const auto& element : listedElements()) {
     if (!element->isFormControlElement())
       continue;
     HTMLFormControlElement* control = toHTMLFormControlElement(element);
@@ -661,14 +659,13 @@ bool HTMLFormElement::checkValidity() {
 bool HTMLFormElement::checkInvalidControlsAndCollectUnhandled(
     HeapVector<Member<HTMLFormControlElement>>* unhandledInvalidControls,
     CheckValidityEventBehavior eventBehavior) {
-  // Copy associatedElements because event handlers called from
-  // HTMLFormControlElement::checkValidity() might change associatedElements.
-  const FormAssociatedElement::List& associatedElements =
-      this->associatedElements();
-  HeapVector<Member<FormAssociatedElement>> elements;
-  elements.reserveCapacity(associatedElements.size());
-  for (unsigned i = 0; i < associatedElements.size(); ++i)
-    elements.append(associatedElements[i]);
+  // Copy listedElements because event handlers called from
+  // HTMLFormControlElement::checkValidity() might change listedElements.
+  const ListedElement::List& listedElements = this->listedElements();
+  HeapVector<Member<ListedElement>> elements;
+  elements.reserveCapacity(listedElements.size());
+  for (unsigned i = 0; i < listedElements.size(); ++i)
+    elements.append(listedElements[i]);
   int invalidControlsCount = 0;
   for (unsigned i = 0; i < elements.size(); ++i) {
     if (elements[i]->form() == this && elements[i]->isFormControlElement()) {
@@ -703,11 +700,11 @@ Element* HTMLFormElement::elementFromPastNamesMap(
   if (isHTMLImageElement(*element)) {
     SECURITY_DCHECK(imageElements().find(element) != kNotFound);
   } else if (isHTMLObjectElement(*element)) {
-    SECURITY_DCHECK(associatedElements().find(toHTMLObjectElement(element)) !=
+    SECURITY_DCHECK(listedElements().find(toHTMLObjectElement(element)) !=
                     kNotFound);
   } else {
-    SECURITY_DCHECK(associatedElements().find(
-                        toHTMLFormControlElement(element)) != kNotFound);
+    SECURITY_DCHECK(listedElements().find(toHTMLFormControlElement(element)) !=
+                    kNotFound);
   }
 #endif
   return element;
@@ -812,7 +809,7 @@ void HTMLFormElement::setDemoted(bool demoted) {
 }
 
 void HTMLFormElement::invalidateDefaultButtonStyle() const {
-  for (const auto& control : associatedElements()) {
+  for (const auto& control : listedElements()) {
     if (!control->isFormControlElement())
       continue;
     if (toHTMLFormControlElement(control)->canBeSuccessfulSubmitButton())

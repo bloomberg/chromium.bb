@@ -34,7 +34,7 @@
 namespace blink {
 
 class Event;
-class FormAssociatedElement;
+class ListedElement;
 class HTMLFormControlElement;
 class HTMLFormControlsCollection;
 class HTMLImageElement;
@@ -62,8 +62,8 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   bool shouldAutocomplete() const;
 
-  void associate(FormAssociatedElement&);
-  void disassociate(FormAssociatedElement&);
+  void associate(ListedElement&);
+  void disassociate(ListedElement&);
   void associate(HTMLImageElement&);
   void disassociate(HTMLImageElement&);
   void didAssociateByParser();
@@ -98,7 +98,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
     return m_radioButtonGroupScope;
   }
 
-  const FormAssociatedElement::List& associatedElements() const;
+  const ListedElement::List& listedElements() const;
   const HeapVector<Member<HTMLImageElement>>& imageElements();
 
   void anonymousNamedGetter(const AtomicString& name, RadioNodeListOrElement&);
@@ -129,8 +129,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   void scheduleFormSubmission(FormSubmission*);
 
-  void collectAssociatedElements(Node& root,
-                                 FormAssociatedElement::List&) const;
+  void collectListedElements(Node& root, ListedElement::List&) const;
   void collectImageElements(Node& root, HeapVector<Member<HTMLImageElement>>&);
 
   // Returns true if the submission should proceed.
@@ -154,9 +153,9 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
 
   RadioButtonGroupScope m_radioButtonGroupScope;
 
-  // Do not access m_associatedElements directly. Use associatedElements()
+  // Do not access m_listedElements directly. Use listedElements()
   // instead.
-  FormAssociatedElement::List m_associatedElements;
+  ListedElement::List m_listedElements;
   // Do not access m_imageElements directly. Use imageElements() instead.
   HeapVector<Member<HTMLImageElement>> m_imageElements;
 
@@ -168,7 +167,7 @@ class CORE_EXPORT HTMLFormElement final : public HTMLElement {
   bool m_isSubmitting = false;
   bool m_inUserJSSubmitEvent = false;
 
-  bool m_associatedElementsAreDirty : 1;
+  bool m_listedElementsAreDirty : 1;
   bool m_imageElementsAreDirty : 1;
   bool m_hasElementsAssociatedByParser : 1;
   bool m_hasElementsAssociatedByFormAttribute : 1;

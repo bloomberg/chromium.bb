@@ -58,7 +58,7 @@ class CORE_EXPORT HTMLFormControlElementWithState
 };
 
 DEFINE_TYPE_CASTS(HTMLFormControlElementWithState,
-                  FormAssociatedElement,
+                  ListedElement,
                   control,
                   control->isFormControlElementWithState(),
                   control.isFormControlElementWithState());

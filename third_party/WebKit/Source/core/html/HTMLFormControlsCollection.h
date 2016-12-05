@@ -25,9 +25,9 @@
 #ifndef HTMLFormControlsCollection_h
 #define HTMLFormControlsCollection_h
 
-#include "core/html/FormAssociatedElement.h"
 #include "core/html/HTMLCollection.h"
 #include "core/html/HTMLElement.h"
+#include "core/html/ListedElement.h"
 #include "core/html/RadioNodeList.h"
 
 namespace blink {
@@ -61,7 +61,7 @@ class HTMLFormControlsCollection final : public HTMLCollection {
   void updateIdNameCache() const override;
   void supportedPropertyNames(Vector<String>& names) override;
 
-  const FormAssociatedElement::List& formControlElements() const;
+  const ListedElement::List& listedElements() const;
   const HeapVector<Member<HTMLImageElement>>& formImageElements() const;
   HTMLElement* virtualItemAfter(Element*) const override;
   void invalidateCache(Document* oldDocument = 0) const override;

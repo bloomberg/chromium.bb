@@ -66,7 +66,7 @@ HTMLFormControlElement::HTMLFormControlElement(const QualifiedName& tagName,
 HTMLFormControlElement::~HTMLFormControlElement() {}
 
 DEFINE_TRACE(HTMLFormControlElement) {
-  FormAssociatedElement::trace(visitor);
+  ListedElement::trace(visitor);
   LabelableElement::trace(visitor);
 }
 
@@ -245,7 +245,7 @@ void HTMLFormControlElement::attachLayoutTree(const AttachContext& context) {
 }
 
 void HTMLFormControlElement::didMoveToNewDocument(Document& oldDocument) {
-  FormAssociatedElement::didMoveToNewDocument(oldDocument);
+  ListedElement::didMoveToNewDocument(oldDocument);
   HTMLElement::didMoveToNewDocument(oldDocument);
 }
 
@@ -255,7 +255,7 @@ Node::InsertionNotificationRequest HTMLFormControlElement::insertedInto(
   m_dataListAncestorState = Unknown;
   setNeedsWillValidateCheck();
   HTMLElement::insertedInto(insertionPoint);
-  FormAssociatedElement::insertedInto(insertionPoint);
+  ListedElement::insertedInto(insertionPoint);
   fieldSetAncestorsSetNeedsValidityCheck(insertionPoint);
 
   // Trigger for elements outside of forms.
@@ -273,18 +273,18 @@ void HTMLFormControlElement::removedFrom(ContainerNode* insertionPoint) {
   m_dataListAncestorState = Unknown;
   setNeedsWillValidateCheck();
   HTMLElement::removedFrom(insertionPoint);
-  FormAssociatedElement::removedFrom(insertionPoint);
+  ListedElement::removedFrom(insertionPoint);
 }
 
 void HTMLFormControlElement::willChangeForm() {
-  FormAssociatedElement::willChangeForm();
+  ListedElement::willChangeForm();
   formOwnerSetNeedsValidityCheck();
   if (formOwner() && canBeSuccessfulSubmitButton())
     formOwner()->invalidateDefaultButtonStyle();
 }
 
 void HTMLFormControlElement::didChangeForm() {
-  FormAssociatedElement::didChangeForm();
+  ListedElement::didChangeForm();
   formOwnerSetNeedsValidityCheck();
   if (formOwner() && isConnected() && canBeSuccessfulSubmitButton())
     formOwner()->invalidateDefaultButtonStyle();
@@ -315,7 +315,7 @@ void HTMLFormControlElement::dispatchChangeEvent() {
 }
 
 HTMLFormElement* HTMLFormControlElement::formOwner() const {
-  return FormAssociatedElement::form();
+  return ListedElement::form();
 }
 
 bool HTMLFormControlElement::isDisabledFormControl() const {
@@ -586,7 +586,7 @@ void HTMLFormControlElement::setNeedsValidityCheck() {
 }
 
 void HTMLFormControlElement::setCustomValidity(const String& error) {
-  FormAssociatedElement::setCustomValidity(error);
+  ListedElement::setCustomValidity(error);
   setNeedsValidityCheck();
 }
 

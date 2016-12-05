@@ -72,7 +72,7 @@ HTMLObjectElement* HTMLObjectElement::create(Document& document,
 }
 
 DEFINE_TRACE(HTMLObjectElement) {
-  FormAssociatedElement::trace(visitor);
+  ListedElement::trace(visitor);
   HTMLPlugInElement::trace(visitor);
 }
 
@@ -336,13 +336,13 @@ void HTMLObjectElement::updateWidgetInternal() {
 Node::InsertionNotificationRequest HTMLObjectElement::insertedInto(
     ContainerNode* insertionPoint) {
   HTMLPlugInElement::insertedInto(insertionPoint);
-  FormAssociatedElement::insertedInto(insertionPoint);
+  ListedElement::insertedInto(insertionPoint);
   return InsertionDone;
 }
 
 void HTMLObjectElement::removedFrom(ContainerNode* insertionPoint) {
   HTMLPlugInElement::removedFrom(insertionPoint);
-  FormAssociatedElement::removedFrom(insertionPoint);
+  ListedElement::removedFrom(insertionPoint);
 }
 
 void HTMLObjectElement::childrenChanged(const ChildrenChange& change) {
@@ -445,12 +445,12 @@ bool HTMLObjectElement::containsJavaApplet() const {
 }
 
 void HTMLObjectElement::didMoveToNewDocument(Document& oldDocument) {
-  FormAssociatedElement::didMoveToNewDocument(oldDocument);
+  ListedElement::didMoveToNewDocument(oldDocument);
   HTMLPlugInElement::didMoveToNewDocument(oldDocument);
 }
 
 HTMLFormElement* HTMLObjectElement::formOwner() const {
-  return FormAssociatedElement::form();
+  return ListedElement::form();
 }
 
 bool HTMLObjectElement::isInteractiveContent() const {

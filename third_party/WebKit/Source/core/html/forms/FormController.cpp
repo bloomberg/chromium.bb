@@ -327,7 +327,7 @@ static inline void recordFormStructure(const HTMLFormElement& form,
                                        StringBuilder& builder) {
   // 2 is enough to distinguish forms in webkit.org/b/91209#c0
   const size_t namedControlsToBeRecorded = 2;
-  const FormAssociatedElement::List& controls = form.associatedElements();
+  const ListedElement::List& controls = form.listedElements();
   builder.append(" [");
   for (size_t i = 0, namedControls = 0;
        i < controls.size() && namedControls < namedControlsToBeRecorded; ++i) {
@@ -538,7 +538,7 @@ void FormController::restoreControlStateFor(
 
 void FormController::restoreControlStateIn(HTMLFormElement& form) {
   EventQueueScope scope;
-  const FormAssociatedElement::List& elements = form.associatedElements();
+  const ListedElement::List& elements = form.listedElements();
   for (const auto& element : elements) {
     if (!element->isFormControlElementWithState())
       continue;

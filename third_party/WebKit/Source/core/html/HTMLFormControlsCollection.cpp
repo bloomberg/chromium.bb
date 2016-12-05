@@ -54,9 +54,8 @@ HTMLFormControlsCollection* HTMLFormControlsCollection::create(
 
 HTMLFormControlsCollection::~HTMLFormControlsCollection() {}
 
-const FormAssociatedElement::List&
-HTMLFormControlsCollection::formControlElements() const {
-  return toHTMLFormElement(ownerNode()).associatedElements();
+const ListedElement::List& HTMLFormControlsCollection::listedElements() const {
+  return toHTMLFormElement(ownerNode()).listedElements();
 }
 
 const HeapVector<Member<HTMLImageElement>>&
@@ -64,14 +63,13 @@ HTMLFormControlsCollection::formImageElements() const {
   return toHTMLFormElement(ownerNode()).imageElements();
 }
 
-static unsigned findFormAssociatedElement(
-    const FormAssociatedElement::List& associatedElements,
-    Element* element) {
+static unsigned findListedElement(const ListedElement::List& listedElements,
+                                  Element* element) {
   unsigned i = 0;
-  for (; i < associatedElements.size(); ++i) {
-    FormAssociatedElement* associatedElement = associatedElements[i];
-    if (associatedElement->isEnumeratable() &&
-        toHTMLElement(associatedElement) == element)
+  for (; i < listedElements.size(); ++i) {
+    ListedElement* listedElement = listedElements[i];
+    if (listedElement->isEnumeratable() &&
+        toHTMLElement(listedElement) == element)
       break;
   }
   return i;
@@ -79,19 +77,19 @@ static unsigned findFormAssociatedElement(
 
 HTMLElement* HTMLFormControlsCollection::virtualItemAfter(
     Element* previous) const {
-  const FormAssociatedElement::List& associatedElements = formControlElements();
+  const ListedElement::List& listedElements = this->listedElements();
   unsigned offset;
   if (!previous)
     offset = 0;
   else if (m_cachedElement == previous)
     offset = m_cachedElementOffsetInArray + 1;
   else
-    offset = findFormAssociatedElement(associatedElements, previous) + 1;
+    offset = findListedElement(listedElements, previous) + 1;
 
-  for (unsigned i = offset; i < associatedElements.size(); ++i) {
-    FormAssociatedElement* associatedElement = associatedElements[i];
-    if (associatedElement->isEnumeratable()) {
-      m_cachedElement = toHTMLElement(associatedElement);
+  for (unsigned i = offset; i < listedElements.size(); ++i) {
+    ListedElement* listedElement = listedElements[i];
+    if (listedElement->isEnumeratable()) {
+      m_cachedElement = toHTMLElement(listedElement);
       m_cachedElementOffsetInArray = i;
       return m_cachedElement;
     }
@@ -105,10 +103,9 @@ void HTMLFormControlsCollection::invalidateCache(Document* oldDocument) const {
   m_cachedElementOffsetInArray = 0;
 }
 
-static HTMLElement* firstNamedItem(
-    const FormAssociatedElement::List& elementsArray,
-    const QualifiedName& attrName,
-    const String& name) {
+static HTMLElement* firstNamedItem(const ListedElement::List& elementsArray,
+                                   const QualifiedName& attrName,
+                                   const String& name) {
   DCHECK(attrName == idAttr || attrName == nameAttr);
 
   for (unsigned i = 0; i < elementsArray.size(); ++i) {
@@ -127,9 +124,9 @@ HTMLElement* HTMLFormControlsCollection::namedItem(
   // attribute. If a match is not found, the method then searches for an
   // object with a matching name attribute, but only on those elements
   // that are allowed a name attribute.
-  if (HTMLElement* item = firstNamedItem(formControlElements(), idAttr, name))
+  if (HTMLElement* item = firstNamedItem(listedElements(), idAttr, name))
     return item;
-  return firstNamedItem(formControlElements(), nameAttr, name);
+  return firstNamedItem(listedElements(), nameAttr, name);
 }
 
 void HTMLFormControlsCollection::updateIdNameCache() const {
@@ -139,12 +136,12 @@ void HTMLFormControlsCollection::updateIdNameCache() const {
   NamedItemCache* cache = NamedItemCache::create();
   HashSet<StringImpl*> foundInputElements;
 
-  const FormAssociatedElement::List& elementsArray = formControlElements();
+  const ListedElement::List& elementsArray = listedElements();
 
   for (unsigned i = 0; i < elementsArray.size(); ++i) {
-    FormAssociatedElement* associatedElement = elementsArray[i];
-    if (associatedElement->isEnumeratable()) {
-      HTMLElement* element = toHTMLElement(associatedElement);
+    ListedElement* listedElement = elementsArray[i];
+    if (listedElement->isEnumeratable()) {
+      HTMLElement* element = toHTMLElement(listedElement);
       const AtomicString& idAttrVal = element->getIdAttribute();
       const AtomicString& nameAttrVal = element->getNameAttribute();
       if (!idAttrVal.isEmpty()) {

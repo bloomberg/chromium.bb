@@ -84,8 +84,8 @@ FormData::FormData(HTMLFormElement* form) : m_encoding(UTF8Encoding()) {
   if (!form)
     return;
 
-  for (unsigned i = 0; i < form->associatedElements().size(); ++i) {
-    FormAssociatedElement* element = form->associatedElements()[i];
+  for (unsigned i = 0; i < form->listedElements().size(); ++i) {
+    ListedElement* element = form->listedElements()[i];
     if (!toHTMLElement(element)->isDisabledFormControl())
       element->appendToFormData(*this);
   }
