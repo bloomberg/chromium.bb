@@ -31,12 +31,16 @@ class MODULES_EXPORT NavigatorServiceWorker final
   static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
                                                Navigator&,
                                                ExceptionState&);
+  static ServiceWorkerContainer* serviceWorker(ExecutionContext*,
+                                               Navigator&,
+                                               String& errorMessage);
 
   DECLARE_VIRTUAL_TRACE();
 
  private:
   explicit NavigatorServiceWorker(Navigator&);
   ServiceWorkerContainer* serviceWorker(LocalFrame*, ExceptionState&);
+  ServiceWorkerContainer* serviceWorker(LocalFrame*, String& errorMessage);
 
   static const char* supplementName();
 

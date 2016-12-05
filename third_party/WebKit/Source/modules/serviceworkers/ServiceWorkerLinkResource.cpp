@@ -79,19 +79,16 @@ void ServiceWorkerLinkResource::process() {
     scopeURL = document.completeURL(scope);
   scopeURL.removeFragmentIdentifier();
 
-  DummyExceptionStateForTesting exceptionState;
-
+  String errorMessage;
   ServiceWorkerContainer* container = NavigatorServiceWorker::serviceWorker(
-      &document, *document.frame()->domWindow()->navigator(), exceptionState);
+      &document, *document.frame()->domWindow()->navigator(), errorMessage);
 
   if (!container) {
-    DCHECK(exceptionState.hadException());
-    String message = exceptionState.message();
     document.addConsoleMessage(ConsoleMessage::create(
         JSMessageSource, ErrorMessageLevel,
-        "Cannot register service worker with <link> element. " + message));
+        "Cannot register service worker with <link> element. " + errorMessage));
     makeUnique<RegistrationCallback>(m_owner)->onError(WebServiceWorkerError(
-        WebServiceWorkerError::ErrorTypeSecurity, message));
+        WebServiceWorkerError::ErrorTypeSecurity, errorMessage));
     return;
   }
 

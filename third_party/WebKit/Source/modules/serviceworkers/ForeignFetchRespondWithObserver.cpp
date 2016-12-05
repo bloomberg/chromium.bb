@@ -27,11 +27,13 @@ ForeignFetchRespondWithObserver* ForeignFetchRespondWithObserver::create(
 void ForeignFetchRespondWithObserver::responseWasFulfilled(
     const ScriptValue& value) {
   ASSERT(getExecutionContext());
-  DummyExceptionStateForTesting exceptionState;
+  ExceptionState exceptionState(value.isolate(), ExceptionState::UnknownContext,
+                                "ForeignFetchEvent", "respondWith");
   ForeignFetchResponse foreignFetchResponse =
       ScriptValue::to<ForeignFetchResponse>(toIsolate(getExecutionContext()),
                                             value, exceptionState);
   if (exceptionState.hadException()) {
+    exceptionState.clearException();
     responseWasRejected(WebServiceWorkerResponseErrorNoForeignFetchResponse);
     return;
   }
