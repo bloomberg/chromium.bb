@@ -25,7 +25,6 @@
 #include "ui/gfx/native_widget_types.h"
 
 namespace gpu {
-class GpuChannelHost;
 class GpuMemoryBufferFactory;
 class GpuWatchdogThread;
 class SyncPointManager;

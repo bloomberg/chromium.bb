@@ -19,10 +19,6 @@ namespace base {
 class WaitableEvent;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 
 namespace mojom {

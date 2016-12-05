@@ -11,9 +11,6 @@
 namespace ui {
 namespace ws {
 
-class Display;
-class WindowManagerState;
-
 class UserDisplayManagerDelegate {
  public:
   // Gets the frame decorations for the specified user. Returns true if the

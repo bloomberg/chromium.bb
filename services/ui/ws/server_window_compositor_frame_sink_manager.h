@@ -14,10 +14,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace ui {
 namespace ws {
 

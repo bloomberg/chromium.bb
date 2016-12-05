@@ -17,14 +17,12 @@
 namespace ui {
 
 namespace mojom {
-class WindowManagerFactory;
 class WindowTree;
 }
 
 namespace ws {
 
 class Display;
-class ServerWindow;
 class WindowServer;
 class WindowTree;
 class WindowTreeBinding;

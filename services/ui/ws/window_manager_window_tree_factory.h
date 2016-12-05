@@ -14,7 +14,6 @@
 namespace ui {
 namespace ws {
 
-class ServerWindow;
 class WindowManagerWindowTreeFactorySet;
 class WindowServer;
 class WindowTree;

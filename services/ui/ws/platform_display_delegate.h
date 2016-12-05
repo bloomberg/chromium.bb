@@ -5,10 +5,6 @@
 #ifndef SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 #define SERVICES_UI_WS_PLATFORM_DISPLAY_DELEGATE_H_
 
-namespace gfx {
-class Size;
-}
-
 namespace ui {
 
 class Event;

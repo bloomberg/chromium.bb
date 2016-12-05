@@ -23,10 +23,6 @@
 #include "ui/gfx/transform.h"
 #include "ui/platform_window/text_input_state.h"
 
-namespace gpu {
-class GpuMemoryBufferManager;
-}
-
 namespace ui {
 namespace ws {
 

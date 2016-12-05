@@ -20,7 +20,6 @@ class FocusControllerDelegate;
 class FocusControllerObserver;
 class ServerWindow;
 class ServerWindowDrawnTracker;
-struct WindowId;
 
 // Describes the source of the change.
 enum class FocusControllerChangeSource {

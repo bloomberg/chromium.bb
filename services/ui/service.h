@@ -44,10 +44,6 @@ namespace display {
 class ScreenManager;
 }
 
-namespace gfx {
-class Rect;
-}
-
 namespace service_manager {
 class Connector;
 }
@@ -57,7 +53,6 @@ namespace ui {
 class PlatformEventSource;
 
 namespace ws {
-class ForwardingWindowManager;
 class WindowServer;
 }
 

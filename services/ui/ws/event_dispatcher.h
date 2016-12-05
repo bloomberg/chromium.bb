@@ -33,7 +33,6 @@ class DragSource;
 class DragTargetConnection;
 class EventDispatcherDelegate;
 class ServerWindow;
-class WindowTree;
 
 namespace test {
 class EventDispatcherTestApi;

@@ -9,10 +9,6 @@
 
 #include "base/macros.h"
 
-namespace display {
-class Display;
-}
-
 namespace ui {
 
 class TestWindowTree;

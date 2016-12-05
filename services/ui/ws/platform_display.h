@@ -18,10 +18,6 @@ namespace gfx {
 class Rect;
 }
 
-namespace gpu {
-class GpuChannelHost;
-}
-
 namespace ui {
 
 struct TextInputState;

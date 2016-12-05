@@ -27,10 +27,6 @@ class RenderPass;
 class SurfaceId;
 }
 
-namespace gpu {
-class GpuChannelHost;
-}
-
 namespace ui {
 
 class DisplayCompositor;

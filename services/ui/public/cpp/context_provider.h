@@ -17,10 +17,6 @@ namespace gpu {
 class GpuChannelHost;
 }
 
-namespace service_manager {
-class Connector;
-}
-
 namespace ui {
 
 class GLES2Context;

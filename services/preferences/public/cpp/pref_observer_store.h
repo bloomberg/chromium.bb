@@ -13,10 +13,6 @@
 #include "mojo/public/cpp/bindings/binding.h"
 #include "services/preferences/public/interfaces/preferences.mojom.h"
 
-namespace shell {
-class Connector;
-}
-
 class PrefObserverStoreTest;
 
 // An implementation of PrefStore which uses prefs::mojom::PreferenceManager as

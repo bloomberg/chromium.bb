@@ -7,10 +7,6 @@
 
 #include "base/memory/ref_counted.h"
 
-namespace gpu {
-class GpuChannelHost;
-}
-
 namespace ui {
 namespace ws {
 

@@ -15,10 +15,6 @@
 #include "services/service_manager/public/cpp/service.h"
 #include "services/service_manager/public/cpp/service_context_ref.h"
 
-namespace content {
-class BrowserContext;
-}
-
 namespace navigation {
 
 std::unique_ptr<service_manager::Service> CreateNavigationService();

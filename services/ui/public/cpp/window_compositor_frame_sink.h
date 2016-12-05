@@ -14,10 +14,6 @@
 #include "cc/surfaces/surface_id_allocator.h"
 #include "mojo/public/cpp/bindings/binding.h"
 
-namespace gpu {
-class GpuChannelHost;
-}
-
 namespace ui {
 
 class WindowCompositorFrameSinkBinding;

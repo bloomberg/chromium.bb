@@ -43,13 +43,11 @@ class AccessPolicy;
 class DisplayManager;
 class Display;
 class DragTargetConnection;
-class EventMatcher;
 class ServerWindow;
 class TargetedEvent;
 class WindowManagerDisplayRoot;
 class WindowManagerState;
 class WindowServer;
-class WindowTreeTest;
 
 namespace test {
 class WindowTreeTestApi;

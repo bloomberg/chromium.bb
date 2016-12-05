@@ -12,8 +12,6 @@ namespace ws {
 
 class ServerWindow;
 class WindowServer;
-class WindowTree;
-struct WindowId;
 
 class WindowServerTestImpl : public mojom::WindowServerTest {
  public:

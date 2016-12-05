@@ -18,8 +18,6 @@ namespace ui {
 
 namespace ws {
 
-struct WindowId;
-
 class TestServerWindowDelegate : public ServerWindowDelegate {
  public:
   TestServerWindowDelegate();

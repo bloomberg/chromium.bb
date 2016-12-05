@@ -11,10 +11,6 @@
 #include "services/ui/public/interfaces/window_tree.mojom.h"
 
 namespace ui {
-class Event;
-}
-
-namespace ui {
 
 class Window;
 class WindowTreeClient;

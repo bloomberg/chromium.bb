@@ -21,10 +21,6 @@
 #include "ui/gfx/geometry/insets.h"
 #include "ui/gfx/geometry/rect.h"
 
-namespace gfx {
-class Size;
-}
-
 namespace gpu {
 class GpuMemoryBufferManager;
 }
@@ -32,11 +28,9 @@ class GpuMemoryBufferManager;
 namespace ui {
 
 class InputEventHandler;
-class ServiceProviderImpl;
 class SurfaceIdHandler;
 class WindowCompositorFrameSinkBinding;
 class WindowObserver;
-class WindowSurface;
 class WindowDropTarget;
 class WindowTreeClient;
 class WindowTreeClientPrivate;

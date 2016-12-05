@@ -21,9 +21,7 @@ namespace ui {
 
 namespace ws {
 
-struct ClientWindowId;
 class ServerWindow;
-struct WindowId;
 
 class ServerWindowDelegate {
  public:
