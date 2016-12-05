@@ -113,7 +113,6 @@ void WindowCompositorFrameSink::ReclaimResources(
 
 void WindowCompositorFrameSink::WillDrawSurface() {
   // TODO(fsamuel, staraz): Implement this.
-  NOTIMPLEMENTED();
 }
 
 void WindowCompositorFrameSink::OnNeedsBeginFrames(bool needs_begin_frames) {

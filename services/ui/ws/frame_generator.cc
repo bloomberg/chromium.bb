@@ -127,7 +127,6 @@ void FrameGenerator::ReclaimResources(
 
 void FrameGenerator::WillDrawSurface() {
   // TODO(fsamuel, staraz): Implement this.
-  NOTIMPLEMENTED();
 }
 
 cc::CompositorFrame FrameGenerator::GenerateCompositorFrame(
