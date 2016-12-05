@@ -1171,8 +1171,10 @@ public class Stack {
                 float maxScreen = tab0ScreenAfter;
                 for (int i = pinch0TabIndex; i <= pinch1TabIndex; i++) {
                     float screenBefore = approxScreen(mStackTabs[i], oldScrollTarget);
-                    float t = (screenBefore - tab0ScreenBefore)
-                            / (tab1ScreenBefore - tab0ScreenBefore);
+                    float t = (tab1ScreenBefore == tab0ScreenBefore)
+                            ? 1
+                            : ((screenBefore - tab0ScreenBefore)
+                                      / (tab1ScreenBefore - tab0ScreenBefore));
                     float screenAfter = (1 - t) * tab0ScreenAfter + t * tab1ScreenAfter;
                     screenAfter = Math.max(minScreen, screenAfter);
                     screenAfter = Math.min(maxScreen, screenAfter);
