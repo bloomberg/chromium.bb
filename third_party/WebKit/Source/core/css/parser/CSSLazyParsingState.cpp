@@ -5,6 +5,7 @@
 #include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSLazyPropertyParserImpl.h"
 #include "core/css/parser/CSSParserTokenRange.h"
+#include "core/dom/Document.h"
 #include "core/frame/UseCounter.h"
 #include "platform/Histogram.h"
 
@@ -21,7 +22,8 @@ CSSLazyParsingState::CSSLazyParsingState(const CSSParserContext& context,
       m_parsedStyleRules(0),
       m_totalStyleRules(0),
       m_styleRulesNeededForNextMilestone(0),
-      m_usage(UsageGe0) {
+      m_usage(UsageGe0),
+      m_shouldUseCount(!!m_context.useCounter()) {
   recordUsageMetrics();
 }
 
@@ -33,9 +35,21 @@ CSSLazyPropertyParserImpl* CSSLazyParsingState::createLazyParser(
 
 const CSSParserContext& CSSLazyParsingState::context() {
   DCHECK(m_owningContents);
-  UseCounter* sheetCounter = UseCounter::getFrom(m_owningContents);
-  if (sheetCounter != m_context.useCounter())
-    m_context = CSSParserContext(m_context, sheetCounter);
+  if (!m_shouldUseCount) {
+    DCHECK(!m_context.useCounter());
+    return m_context;
+  }
+
+  // Try as best as possible to grab a valid UseCounter if the underlying
+  // document has gone away.
+  if (!m_document)
+    m_document = m_owningContents->anyOwnerDocument();
+
+  // Always refresh the UseCounter, as the Document can outlive its
+  // underlying frame host causing a use-after-free of m_context's counter.
+  UseCounter* useCounter = UseCounter::getFrom(m_document);
+  if (useCounter != m_context.useCounter())
+    m_context = CSSParserContext(m_context, useCounter);
   return m_context;
 }
 
@@ -104,6 +118,11 @@ void CSSLazyParsingState::recordUsageMetrics() {
   }
 
   usageHistogram.count(m_usage);
+}
+
+DEFINE_TRACE(CSSLazyParsingState) {
+  visitor->trace(m_owningContents);
+  visitor->trace(m_document);
 }
 
 }  // namespace blink

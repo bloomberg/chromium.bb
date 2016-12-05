@@ -491,6 +491,10 @@ Document* StyleSheetContents::singleOwnerDocument() const {
   return root->clientSingleOwnerDocument();
 }
 
+Document* StyleSheetContents::anyOwnerDocument() const {
+  return rootStyleSheet()->clientAnyOwnerDocument();
+}
+
 static bool childRulesHaveFailedOrCanceledSubresources(
     const HeapVector<Member<StyleRuleBase>>& rules) {
   for (unsigned i = 0; i < rules.size(); ++i) {
@@ -531,13 +535,16 @@ bool StyleSheetContents::hasFailedOrCanceledSubresources() const {
   return childRulesHaveFailedOrCanceledSubresources(m_childRules);
 }
 
-Document* StyleSheetContents::clientSingleOwnerDocument() const {
-  if (!m_hasSingleOwnerDocument || clientSize() <= 0)
+Document* StyleSheetContents::clientAnyOwnerDocument() const {
+  if (clientSize() <= 0)
     return nullptr;
-
   if (m_loadingClients.size())
     return (*m_loadingClients.begin())->ownerDocument();
   return (*m_completedClients.begin())->ownerDocument();
+}
+
+Document* StyleSheetContents::clientSingleOwnerDocument() const {
+  return m_hasSingleOwnerDocument ? clientAnyOwnerDocument() : nullptr;
 }
 
 StyleSheetContents* StyleSheetContents::parentStyleSheet() const {

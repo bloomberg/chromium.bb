@@ -29,6 +29,7 @@ class CSSLazyParsingTest : public testing::Test {
 
  protected:
   HistogramTester m_histogramTester;
+  Persistent<StyleSheetContents> m_cachedContents;
 };
 
 TEST_F(CSSLazyParsingTest, Simple) {
@@ -119,42 +120,52 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
       DummyPageHolder::create(IntSize(500, 500));
   CSSParserContext context(HTMLStandardMode,
                            UseCounter::getFrom(&dummyHolder->document()));
-  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
-  CSSStyleSheet* sheet =
-      CSSStyleSheet::create(styleSheet, dummyHolder->document());
-  DCHECK(sheet);
+  m_cachedContents = StyleSheetContents::create(context);
+  {
+    CSSStyleSheet* sheet =
+        CSSStyleSheet::create(m_cachedContents, dummyHolder->document());
+    DCHECK(sheet);
 
-  String sheetText = "body { background-color: red; } p { color: orange;  }";
-  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+    String sheetText = "body { background-color: red; } p { color: orange;  }";
+    CSSParser::parseSheet(context, m_cachedContents, sheetText,
+                          true /* lazy parse */);
 
-  // Parse the first property set with the first document as owner.
-  StyleRule* rule = ruleAt(styleSheet, 0);
-  EXPECT_FALSE(hasParsedProperties(rule));
-  rule->properties();
-  EXPECT_TRUE(hasParsedProperties(rule));
+    // Parse the first property set with the first document as owner.
+    StyleRule* rule = ruleAt(m_cachedContents, 0);
+    EXPECT_FALSE(hasParsedProperties(rule));
+    rule->properties();
+    EXPECT_TRUE(hasParsedProperties(rule));
 
-  EXPECT_EQ(&dummyHolder->document(), styleSheet->singleOwnerDocument());
+    EXPECT_EQ(&dummyHolder->document(),
+              m_cachedContents->singleOwnerDocument());
+    UseCounter& useCounter1 = dummyHolder->document().frameHost()->useCounter();
+    EXPECT_TRUE(useCounter1.isCounted(CSSPropertyBackgroundColor));
+    EXPECT_FALSE(useCounter1.isCounted(CSSPropertyColor));
 
-  // Change owner document.
-  styleSheet->unregisterClient(sheet);
+    // Change owner document.
+    m_cachedContents->unregisterClient(sheet);
+    dummyHolder.reset();
+  }
+  // Ensure no stack references to oilpan objects.
+  ThreadState::current()->collectAllGarbage();
+
   std::unique_ptr<DummyPageHolder> dummyHolder2 =
       DummyPageHolder::create(IntSize(500, 500));
-  CSSStyleSheet::create(styleSheet, dummyHolder2->document());
+  CSSStyleSheet* sheet2 =
+      CSSStyleSheet::create(m_cachedContents, dummyHolder2->document());
 
-  EXPECT_EQ(&dummyHolder2->document(), styleSheet->singleOwnerDocument());
+  EXPECT_EQ(&dummyHolder2->document(), m_cachedContents->singleOwnerDocument());
 
   // Parse the second property set with the second document as owner.
-  StyleRule* rule2 = ruleAt(styleSheet, 1);
+  StyleRule* rule2 = ruleAt(m_cachedContents, 1);
   EXPECT_FALSE(hasParsedProperties(rule2));
   rule2->properties();
   EXPECT_TRUE(hasParsedProperties(rule2));
 
-  UseCounter& useCounter1 = dummyHolder->document().frameHost()->useCounter();
   UseCounter& useCounter2 = dummyHolder2->document().frameHost()->useCounter();
-  EXPECT_TRUE(useCounter1.isCounted(CSSPropertyBackgroundColor));
+  EXPECT_TRUE(sheet2);
   EXPECT_TRUE(useCounter2.isCounted(CSSPropertyColor));
   EXPECT_FALSE(useCounter2.isCounted(CSSPropertyBackgroundColor));
-  EXPECT_FALSE(useCounter1.isCounted(CSSPropertyColor));
 }
 
 TEST_F(CSSLazyParsingTest, SimpleRuleUsagePercent) {

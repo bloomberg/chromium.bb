@@ -37,7 +37,7 @@ class CSSLazyParsingState
   bool shouldLazilyParseProperties(const CSSSelectorList&,
                                    const CSSParserTokenRange& block) const;
 
-  DEFINE_INLINE_TRACE() { visitor->trace(m_owningContents); }
+  DECLARE_TRACE();
 
   // Exposed for tests. This enum is used to back a histogram, so new values
   // must be appended to the end, before UsageLastValue.
@@ -66,6 +66,10 @@ class CSSLazyParsingState
   // it should (we DCHECK this fact).
   WeakMember<StyleSheetContents> m_owningContents;
 
+  // Cache the document as a proxy for caching the UseCounter. Grabbing the
+  // UseCounter per every property parse is a bit more expensive.
+  WeakMember<Document> m_document;
+
   // Used for calculating the % of rules that ended up being parsed.
   int m_parsedStyleRules;
   int m_totalStyleRules;
@@ -73,6 +77,11 @@ class CSSLazyParsingState
   int m_styleRulesNeededForNextMilestone;
 
   int m_usage;
+
+  // Whether or not use counting is enabled for parsing. This will usually be
+  // true, except for when stylesheets with @imports are removed from the page.
+  // See StyleRuleImport::setCSSStyleSheet.
+  const bool m_shouldUseCount;
 };
 
 }  // namespace blink

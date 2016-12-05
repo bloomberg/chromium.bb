@@ -86,6 +86,10 @@ class CORE_EXPORT StyleSheetContents
   Document* singleOwnerDocument() const;
   bool hasSingleOwnerDocument() const { return m_hasSingleOwnerDocument; }
 
+  // Gets the first owner document in the list of registered clients, or nullptr
+  // if there are none.
+  Document* anyOwnerDocument() const;
+
   const String& charset() const { return m_parserContext.charset(); }
 
   bool loadCompleted() const;
@@ -187,6 +191,7 @@ class CORE_EXPORT StyleSheetContents
   void notifyRemoveFontFaceRule(const StyleRuleFontFace*);
 
   Document* clientSingleOwnerDocument() const;
+  Document* clientAnyOwnerDocument() const;
 
   Member<StyleRuleImport> m_ownerRule;
 
