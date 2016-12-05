@@ -397,7 +397,7 @@ void EventRouter::AddFilterToEvent(const std::string& event_name,
     filtered_events = update.Create();
 
   ListValue* filter_list = nullptr;
-  if (!filtered_events->GetList(event_name, &filter_list)) {
+  if (!filtered_events->GetListWithoutPathExpansion(event_name, &filter_list)) {
     filter_list = new ListValue;
     filtered_events->SetWithoutPathExpansion(event_name,
                                              base::WrapUnique(filter_list));
@@ -419,10 +419,10 @@ void EventRouter::RemoveFilterFromEvent(const std::string& event_name,
   }
 
   for (size_t i = 0; i < filter_list->GetSize(); i++) {
-    DictionaryValue* filter = NULL;
-    CHECK(filter_list->GetDictionary(i, &filter));
-    if (filter->Equals(filter)) {
-      filter_list->Remove(i, NULL);
+    DictionaryValue* filter_value = nullptr;
+    CHECK(filter_list->GetDictionary(i, &filter_value));
+    if (filter_value->Equals(filter)) {
+      filter_list->Remove(i, nullptr);
       break;
     }
   }

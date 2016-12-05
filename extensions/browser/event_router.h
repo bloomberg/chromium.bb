@@ -198,6 +198,7 @@ class EventRouter : public KeyedService,
                    bool did_enqueue);
 
  private:
+  friend class EventRouterFilterTest;
   friend class EventRouterTest;
 
   // The extension and process that contains the event listener for a given
