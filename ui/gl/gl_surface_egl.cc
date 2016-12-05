@@ -762,7 +762,7 @@ bool NativeViewGLSurfaceEGL::Initialize(
           switches::kEnableSwapBuffersWithDamage);
 
   if (sync_provider)
-    vsync_provider_.reset(sync_provider.release());
+    vsync_provider_ = std::move(sync_provider);
   else if (g_egl_sync_control_supported)
     vsync_provider_.reset(new EGLSyncControlVSyncProvider(surface_));
   return true;
