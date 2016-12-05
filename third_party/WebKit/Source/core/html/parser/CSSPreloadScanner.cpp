@@ -320,6 +320,18 @@ void CSSPreloaderResourceClient::fetchPreloads(PreloadRequestStream& preloads) {
 }
 
 void CSSPreloaderResourceClient::clearResource() {
+  // Do not remove the client for unused, speculative markup preloads. This will
+  // trigger cancellation of the request and potential removal from memory
+  // cache. Link preloads are an exception because they support dynamic removal
+  // cancelling the request (and have their own passive resource client).
+  // Note: Speculative preloads which remain unused for their lifetime will
+  // never have this client removed. This should be fine because we only hold
+  // weak references to the resource.
+  if (m_resource && m_resource->isUnusedPreload() &&
+      !m_resource->isLinkPreload()) {
+    return;
+  }
+
   if (m_resource)
     m_resource->removeClient(this);
   m_resource.clear();
