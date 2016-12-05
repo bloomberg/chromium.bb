@@ -59,13 +59,6 @@ public class ThreadedInputConnectionFactoryTest {
         }
 
         @Override
-        protected Handler createHandler() {
-            mImeHandler = super.createHandler();
-            mImeShadowLooper = (ShadowLooper) ShadowExtractor.extract(mImeHandler.getLooper());
-            return mImeHandler;
-        }
-
-        @Override
         protected ThreadedInputConnectionProxyView createProxyView(Handler handler,
                 View containerView) {
             return mProxyView;
@@ -135,6 +128,8 @@ public class ThreadedInputConnectionFactoryTest {
 
         mFactory = new TestFactory(new InputMethodManagerWrapper(mContext));
         mFactory.onWindowFocusChanged(true);
+        mImeHandler = mFactory.getHandler();
+        mImeShadowLooper = (ShadowLooper) ShadowExtractor.extract(mImeHandler.getLooper());
 
         when(mContext.getSystemService(Context.INPUT_METHOD_SERVICE))
                 .thenReturn(mInputMethodManager);
