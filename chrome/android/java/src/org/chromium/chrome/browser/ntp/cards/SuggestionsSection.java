@@ -50,7 +50,7 @@ public class SuggestionsSection extends InnerNode {
         mOfflinePageBridge = offlinePageBridge;
 
         mHeader = new SectionHeader(info.getTitle());
-        mSuggestionsList = new SuggestionsList(this);
+        mSuggestionsList = new SuggestionsList(this, info);
         mStatus = StatusItem.createNoSuggestionsItem(this);
         mMoreButton = new ActionItem(this);
         mProgressIndicator = new ProgressItem(this);
@@ -61,9 +61,11 @@ public class SuggestionsSection extends InnerNode {
 
     private static class SuggestionsList extends ChildNode implements Iterable<SnippetArticle> {
         private final List<SnippetArticle> mSuggestions = new ArrayList<>();
+        private final SuggestionsCategoryInfo mCategoryInfo;
 
-        public SuggestionsList(NodeParent parent) {
+        public SuggestionsList(NodeParent parent, SuggestionsCategoryInfo categoryInfo) {
             super(parent);
+            mCategoryInfo = categoryInfo;
         }
 
         @Override
@@ -80,7 +82,8 @@ public class SuggestionsSection extends InnerNode {
         @Override
         public void onBindViewHolder(NewTabPageViewHolder holder, int position) {
             assert holder instanceof SnippetArticleViewHolder;
-            ((SnippetArticleViewHolder) holder).onBindViewHolder(getSuggestionAt(position));
+            ((SnippetArticleViewHolder) holder)
+                    .onBindViewHolder(getSuggestionAt(position), mCategoryInfo);
         }
 
         @Override

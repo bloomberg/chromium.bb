@@ -32,7 +32,6 @@ import org.chromium.chrome.browser.ntp.snippets.SuggestionsSource;
 import org.chromium.chrome.browser.offlinepages.OfflinePageBridge;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -118,10 +117,10 @@ public class NewTabPageAdapter
 
             // We use our own implementation of the dismissal animation, so we don't call the
             // parent implementation. (by default it changes the translation-X and elevation)
-            mRecyclerView.updateViewStateForDismiss(dX, viewHolder);
+            mRecyclerView.updateViewStateForDismiss(dX, (NewTabPageViewHolder) viewHolder);
 
             // If there is another item that should be animated at the same time, do the same to it.
-            ViewHolder siblingViewHolder = getDismissSibling(viewHolder);
+            NewTabPageViewHolder siblingViewHolder = getDismissSibling(viewHolder);
             if (siblingViewHolder != null) {
                 mRecyclerView.updateViewStateForDismiss(dX, siblingViewHolder);
             }
@@ -388,24 +387,12 @@ public class NewTabPageAdapter
         return RecyclerView.NO_POSITION;
     }
 
-    public int getSignInPromoPosition() {
-        return getChildPositionOffset(mSigninPromo);
-    }
-
-    public int getBottomSpacerPosition() {
+    int getBottomSpacerPosition() {
         return getChildPositionOffset(mBottomSpacer);
     }
 
-    public int getLastContentItemPosition() {
+    int getLastContentItemPosition() {
         return getChildPositionOffset(hasAllBeenDismissed() ? mAllDismissed : mFooter);
-    }
-
-    public int getSuggestionPosition(SnippetArticle article) {
-        for (int i = 0; i < mRoot.getItemCount(); i++) {
-            SnippetArticle articleToCheck = mRoot.getSuggestionAt(i);
-            if (articleToCheck != null && articleToCheck.equals(article)) return i;
-        }
-        return RecyclerView.NO_POSITION;
     }
 
     private void setSuggestions(@CategoryInt int category, List<SnippetArticle> suggestions,
@@ -560,24 +547,16 @@ public class NewTabPageAdapter
     /**
      * Returns another view holder that should be dismissed at the same time as the provided one.
      */
-    public ViewHolder getDismissSibling(ViewHolder viewHolder) {
+    public NewTabPageViewHolder getDismissSibling(ViewHolder viewHolder) {
         int swipePos = viewHolder.getAdapterPosition();
         int siblingPosDelta = mRoot.getDismissSiblingPosDelta(swipePos);
         if (siblingPosDelta == 0) return null;
 
-        return mRecyclerView.findViewHolderForAdapterPosition(siblingPosDelta + swipePos);
+        return (NewTabPageViewHolder) mRecyclerView.findViewHolderForAdapterPosition(
+                siblingPosDelta + swipePos);
     }
 
-    /**
-     * @return The info associated to the provided category.
-     * @throws NullPointerException if {@code category} isn't currently registered with the adapter.
-     * */
-    public SuggestionsCategoryInfo getCategoryInfo(@CategoryInt int category) {
-        return mSections.get(category).getCategoryInfo();
-    }
-
-    @VisibleForTesting
-    public boolean hasAllBeenDismissed() {
+    private boolean hasAllBeenDismissed() {
         return mSections.isEmpty() && !mSigninPromo.isVisible();
     }
 
@@ -601,20 +580,13 @@ public class NewTabPageAdapter
      * @return Returns the {@link SuggestionsSection} that contains the item at
      *     {@code itemPosition}, or null if the item is not part of one.
      */
-    @VisibleForTesting
-    SuggestionsSection getSuggestionsSection(int itemPosition) {
+    private SuggestionsSection getSuggestionsSection(int itemPosition) {
         TreeNode child = mRoot.getChildForPosition(itemPosition);
         if (!(child instanceof SuggestionsSection)) return null;
         return (SuggestionsSection) child;
     }
 
-    @VisibleForTesting
-    List<TreeNode> getChildren() {
-        return Collections.unmodifiableList(mChildren);
-    }
-
-    @VisibleForTesting
-    int getChildPositionOffset(TreeNode child) {
+    private int getChildPositionOffset(TreeNode child) {
         return mRoot.getStartingOffsetForChild(child);
     }
 
@@ -632,12 +604,20 @@ public class NewTabPageAdapter
         return RecyclerView.NO_POSITION;
     }
 
-    private void announceItemRemoved(String suggestionTitle) {
+    SuggestionsSection getSectionForTesting(@CategoryInt int category) {
+        return mSections.get(category);
+    }
+
+    InnerNode getRootForTesting() {
+        return mRoot;
+    }
+
+    private void announceItemRemoved(String itemTitle) {
         // In tests the RecyclerView can be null.
         if (mRecyclerView == null) return;
 
         mRecyclerView.announceForAccessibility(mRecyclerView.getResources().getString(
-                R.string.ntp_accessibility_item_removed, suggestionTitle));
+                R.string.ntp_accessibility_item_removed, itemTitle));
     }
 
     private void announceItemRemoved(@StringRes int stringToAnnounce) {

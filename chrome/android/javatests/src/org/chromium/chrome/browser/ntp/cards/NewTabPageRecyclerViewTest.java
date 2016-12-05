@@ -117,7 +117,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
         // Scroll the last suggestion into view and click it.
         SnippetArticle suggestion = suggestions.get(suggestions.size() - 1);
-        int suggestionPosition = getAdapter().getSuggestionPosition(suggestion);
+        int suggestionPosition = getSuggestionPosition(suggestion);
         scrollToPosition(suggestionPosition);
         final View suggestionView = waitForView(suggestionPosition);
         ChromeTabUtils.waitForTabPageLoaded(mTab, new Runnable() {
@@ -135,12 +135,13 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
     public void testAllDismissed() throws InterruptedException, TimeoutException {
         setSuggestionsAndWaitForUpdate(3);
         assertEquals(3, mSource.getSuggestionsForCategory(KnownCategories.ARTICLES).size());
-        assertFalse(getAdapter().hasAllBeenDismissed());
+        assertEquals(RecyclerView.NO_POSITION,
+                getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED));
         assertEquals(1, mSource.getCategories().length);
         assertEquals(KnownCategories.ARTICLES, mSource.getCategories()[0]);
 
         // Dismiss the sign in promo.
-        int signinPromoPosition = getAdapter().getSignInPromoPosition();
+        int signinPromoPosition = getAdapter().getFirstPositionForType(ItemViewType.PROMO);
         scrollToPosition(signinPromoPosition);
         View signinPromoView = waitForView(signinPromoPosition);
         getAdapter().dismissItem(signinPromoPosition);
@@ -155,11 +156,11 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
             waitForViewToDetach(cardView);
             cardPosition = getAdapter().getFirstCardPosition();
         }
-        assertTrue(getAdapter().hasAllBeenDismissed());
         assertEquals(0, mSource.getCategories().length);
 
         // Click the refresh button on the all dismissed item.
-        int allDismissedPosition = getAdapter().getLastContentItemPosition();
+        int allDismissedPosition = getAdapter().getFirstPositionForType(ItemViewType.ALL_DISMISSED);
+        assertTrue(allDismissedPosition != RecyclerView.NO_POSITION);
         scrollToPosition(allDismissedPosition);
         View allDismissedView = waitForView(allDismissedPosition);
         singleClickView(allDismissedView.findViewById(R.id.action_button));
@@ -178,8 +179,7 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
         assertEquals(10, suggestions.size());
 
         // Scroll a suggestion into view.
-        int suggestionPosition =
-                getAdapter().getSuggestionPosition(suggestions.get(suggestions.size() - 1));
+        int suggestionPosition = getSuggestionPosition(suggestions.get(suggestions.size() - 1));
         scrollToPosition(suggestionPosition);
         View suggestionView = waitForView(suggestionPosition);
 
@@ -244,6 +244,15 @@ public class NewTabPageRecyclerViewTest extends ChromeTabbedActivityTestBase {
 
     private NewTabPageAdapter getAdapter() {
         return getRecyclerView().getNewTabPageAdapter();
+    }
+
+    private int getSuggestionPosition(SnippetArticle article) {
+        NewTabPageAdapter adapter = getAdapter();
+        for (int i = 0; i < adapter.getItemCount(); i++) {
+            SnippetArticle articleToCheck = adapter.getSuggestionAt(i);
+            if (articleToCheck != null && articleToCheck.equals(article)) return i;
+        }
+        return RecyclerView.NO_POSITION;
     }
 
     private void scrollToPosition(final int position) {

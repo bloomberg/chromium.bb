@@ -185,7 +185,7 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * Updates the space added at the end of the list to make sure the above/below the fold
      * distinction can be preserved.
      */
-    public void refreshBottomSpacing() {
+    private void refreshBottomSpacing() {
         ViewHolder bottomSpacingViewHolder = findBottomSpacer();
 
         // It might not be in the layout yet if it's not visible or ready to be displayed.
@@ -536,8 +536,8 @@ public class NewTabPageRecyclerView extends RecyclerView implements TouchDisable
      * @param dX The amount of horizontal displacement caused by user's action.
      * @param viewHolder The view holder containing the view to be updated.
      */
-    public void updateViewStateForDismiss(float dX, ViewHolder viewHolder) {
-        if (!((NewTabPageViewHolder) viewHolder).isDismissable()) return;
+    public void updateViewStateForDismiss(float dX, NewTabPageViewHolder viewHolder) {
+        if (!viewHolder.isDismissable()) return;
 
         viewHolder.itemView.setTranslationX(dX);
 

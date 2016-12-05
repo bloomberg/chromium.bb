@@ -66,6 +66,7 @@ public class SnippetArticleViewHolder
 
     private FetchImageCallback mImageCallback;
     private SnippetArticle mArticle;
+    private SuggestionsCategoryInfo mCategoryInfo;
     private int mPublisherFaviconSizePx;
 
     private final boolean mUseFaviconService;
@@ -149,10 +150,9 @@ public class SnippetArticleViewHolder
      * Updates the layout taking into account screen dimensions and the type of snippet displayed.
      */
     private void updateLayout() {
-        SuggestionsCategoryInfo info =
-                mRecyclerView.getNewTabPageAdapter().getCategoryInfo(mArticle.mCategory);
         boolean narrow = mUiConfig.getCurrentDisplayStyle() == UiConfig.DISPLAY_STYLE_NARROW;
-        boolean minimal = info.getCardLayout() == ContentSuggestionsCardLayout.MINIMAL_CARD;
+        boolean minimal =
+                mCategoryInfo.getCardLayout() == ContentSuggestionsCardLayout.MINIMAL_CARD;
 
         // If the screen is narrow or we are using the minimal layout, hide the article snippet.
         boolean hideSnippet = narrow || minimal;
@@ -185,13 +185,14 @@ public class SnippetArticleViewHolder
         mPublisherBar.setLayoutParams(params);
     }
 
-    public void onBindViewHolder(SnippetArticle article) {
+    public void onBindViewHolder(SnippetArticle article, SuggestionsCategoryInfo categoryInfo) {
         super.onBindViewHolder();
 
         // No longer listen for offline status changes to the old article.
         if (mArticle != null) mArticle.setOfflineStatusChangeRunnable(null);
 
         mArticle = article;
+        mCategoryInfo = categoryInfo;
         updateLayout();
 
         mHeadlineTextView.setText(mArticle.mTitle);
