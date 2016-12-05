@@ -508,6 +508,57 @@ TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOM) {
             matchRects[1]);
 }
 
+TEST_F(TextFinderTest, FindTextJavaScriptUpdatesDOMAfterNoMatches) {
+  document().body()->setInnerHTML("<b>XXXXYYYY</b><i></i>");
+  document().updateStyleAndLayout();
+
+  int identifier = 0;
+  WebString searchText(String("FindMe"));
+  WebFindOptions findOptions;  // Default.
+  bool wrapWithinFrame = true;
+  bool activeNow = false;
+
+  textFinder().resetMatchCount();
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
+  while (textFinder().scopingInProgress())
+    runPendingTasks();
+
+  findOptions.findNext = true;
+  ASSERT_FALSE(textFinder().find(identifier, searchText, findOptions,
+                                 wrapWithinFrame, &activeNow));
+  EXPECT_FALSE(activeNow);
+
+  // Add new text to DOM and try FindNext.
+  Element* iElement = toElement(document().body()->lastChild());
+  ASSERT_TRUE(iElement);
+  iElement->setInnerHTML("ZZFindMe");
+  document().updateStyleAndLayout();
+
+  ASSERT_TRUE(textFinder().find(identifier, searchText, findOptions,
+                                wrapWithinFrame, &activeNow));
+  Range* activeMatch = textFinder().activeMatch();
+  ASSERT_TRUE(activeMatch);
+  EXPECT_FALSE(activeNow);
+  EXPECT_EQ(2, activeMatch->startOffset());
+  EXPECT_EQ(8, activeMatch->endOffset());
+
+  // Restart full search and check that added text is found.
+  findOptions.findNext = false;
+  textFinder().resetMatchCount();
+  textFinder().cancelPendingScopingEffort();
+  textFinder().startScopingStringMatches(identifier, searchText, findOptions);
+  while (textFinder().scopingInProgress())
+    runPendingTasks();
+  EXPECT_EQ(1, textFinder().totalMatchCount());
+
+  WebVector<WebFloatRect> matchRects;
+  textFinder().findMatchRects(matchRects);
+  ASSERT_EQ(1u, matchRects.size());
+  Node* textInIElement = document().body()->lastChild()->firstChild();
+  EXPECT_EQ(findInPageRect(textInIElement, 2, textInIElement, 8),
+            matchRects[0]);
+}
+
 class TextFinderFakeTimerTest : public TextFinderTest {
  protected:
   void SetUp() override {

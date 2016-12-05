@@ -207,6 +207,9 @@ bool TextFinder::find(int identifier,
                               identifier);
   }
 
+  // We found something, so the result of the previous scoping may be outdated.
+  m_lastFindRequestCompletedWithNoMatches = false;
+
   return true;
 }
 
