@@ -185,8 +185,9 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   int borderBefore() const override;
   int borderAfter() const override;
 
-  void collectBorderValues(LayoutTable::CollapsedBorderValues&);
-  static void sortBorderValues(LayoutTable::CollapsedBorderValues&);
+  // Returns true if any collapsed borders related to this cell changed.
+  bool collectBorderValues(Vector<CollapsedBorderValue>&);
+  static void sortBorderValues(Vector<CollapsedBorderValue>&);
 
   void layout() override;
 
@@ -289,33 +290,22 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   bool backgroundIsKnownToBeOpaqueInRect(const LayoutRect&) const override;
   void invalidateDisplayItemClients(PaintInvalidationReason) const override;
 
-  // TODO(wkorman): Consider renaming to more clearly differentiate from
-  // CollapsedBorderValue.
-  class CollapsedBorderValues : public DisplayItemClient {
-   public:
-    CollapsedBorderValues(const LayoutTable&,
-                          const CollapsedBorderValue& startBorder,
-                          const CollapsedBorderValue& endBorder,
-                          const CollapsedBorderValue& beforeBorder,
-                          const CollapsedBorderValue& afterBorder);
+  struct CollapsedBorderValues {
+    CollapsedBorderValue startBorder;
+    CollapsedBorderValue endBorder;
+    CollapsedBorderValue beforeBorder;
+    CollapsedBorderValue afterBorder;
 
-    const CollapsedBorderValue& startBorder() const { return m_startBorder; }
-    const CollapsedBorderValue& endBorder() const { return m_endBorder; }
-    const CollapsedBorderValue& beforeBorder() const { return m_beforeBorder; }
-    const CollapsedBorderValue& afterBorder() const { return m_afterBorder; }
-
-    void setCollapsedBorderValues(const CollapsedBorderValues& other);
-
-    // DisplayItemClient methods.
-    String debugName() const;
-    LayoutRect visualRect() const;
-
-   private:
-    const LayoutTable& m_layoutTable;
-    CollapsedBorderValue m_startBorder;
-    CollapsedBorderValue m_endBorder;
-    CollapsedBorderValue m_beforeBorder;
-    CollapsedBorderValue m_afterBorder;
+    bool allBordersAreInvisible() const {
+      return !startBorder.isVisible() && !endBorder.isVisible() &&
+             !beforeBorder.isVisible() && !afterBorder.isVisible();
+    }
+    bool bordersVisuallyEqual(const CollapsedBorderValues& other) const {
+      return startBorder.visuallyEquals(other.startBorder) &&
+             endBorder.visuallyEquals(other.endBorder) &&
+             beforeBorder.visuallyEquals(other.beforeBorder) &&
+             afterBorder.visuallyEquals(other.afterBorder);
+    }
   };
 
   class RowBackgroundDisplayItemClient : public DisplayItemClient {
@@ -331,6 +321,7 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   };
 
   bool usesCompositedCellDisplayItemClients() const;
+
   const CollapsedBorderValues* collapsedBorderValues() const {
     return m_collapsedBorderValues.get();
   }
@@ -349,6 +340,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   LayoutBox* locationContainer() const override { return section(); }
 
   void ensureIsReadyForPaintInvalidation() override;
+
+  LayoutRect localVisualRect() const override;
 
  protected:
   void styleDidChange(StyleDifference, const ComputedStyle* oldStyle) override;
@@ -373,7 +366,6 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   void paintMask(const PaintInfo&, const LayoutPoint&) const override;
 
   LayoutSize offsetFromContainer(const LayoutObject*) const override;
-  LayoutRect localVisualRect() const override;
 
   int borderHalfLeft(bool outer) const;
   int borderHalfRight(bool outer) const;
@@ -411,8 +403,8 @@ class CORE_EXPORT LayoutTableCell final : public LayoutBlockFlow {
   // See also https://code.google.com/p/chromium/issues/detail?id=128227 for
   // some history.
   //
-  // Those functions are called when the cache (m_collapsedBorders) is
-  // invalidated on LayoutTable.
+  // Those functions are called before paint invalidation if the collapsed
+  // borders cache is invalidated on LayoutTable.
   CollapsedBorderValue computeCollapsedStartBorder(
       IncludeBorderColorOrNot = IncludeBorderColor) const;
   CollapsedBorderValue computeCollapsedEndBorder(

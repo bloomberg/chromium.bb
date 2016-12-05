@@ -8,8 +8,8 @@
       "paintInvalidations": [
         {
           "object": "LayoutTable TABLE",
-          "rect": [8, 58, 114, 4],
-          "reason": "incremental"
+          "rect": [8, 8, 114, 54],
+          "reason": "forced by layout"
         },
         {
           "object": "LayoutTableCell TD id='foo'",
@@ -25,27 +25,14 @@
           "object": "LayoutTableCell TD",
           "rect": [62, 8, 55, 52],
           "reason": "bounds change"
-        },
-        {
-          "object": "LayoutTable TABLE",
-          "rect": [116, 8, 6, 54],
-          "reason": "incremental"
         }
       ]
     }
   ],
   "objectPaintInvalidations": [
     {
-      "object": "LayoutTableCell TD id='foo'",
-      "reason": "style change"
-    },
-    {
-      "object": "LayoutTableCell TD",
-      "reason": "style change"
-    },
-    {
       "object": "LayoutTable TABLE",
-      "reason": "incremental"
+      "reason": "forced by layout"
     },
     {
       "object": "LayoutTableRow TR",
