@@ -4,8 +4,21 @@
 
 package org.chromium.policy;
 
+import android.annotation.TargetApi;
+import android.os.Build;
+import android.os.Bundle;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import org.chromium.base.Log;
+import org.chromium.base.VisibleForTesting;
 import org.chromium.base.annotations.CalledByNative;
 import org.chromium.base.annotations.JNINamespace;
+
+import java.util.Arrays;
+import java.util.Set;
 
 /**
  * Allows converting Java policies, contained as key/value pairs in {@link android.os.Bundle}s to
@@ -19,6 +32,7 @@ import org.chromium.base.annotations.JNINamespace;
  */
 @JNINamespace("policy::android")
 public class PolicyConverter {
+    private static final String TAG = "PolicyConverter";
     private long mNativePolicyConverter;
 
     private PolicyConverter(long nativePolicyConverter) {
@@ -45,11 +59,69 @@ public class PolicyConverter {
             nativeSetPolicyStringArray(mNativePolicyConverter, key, (String[]) value);
             return;
         }
+        // App restrictions can only contain bundles and bundle arrays on Android M, however our
+        // version of Robolectric only supports Lollipop, and allowing this on LOLLIPOP doesn't
+        // cause problems.
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+            if (value instanceof Bundle) {
+                Bundle bundle = (Bundle) value;
+                // JNI can't take a Bundle argument without a lot of extra work, but the native code
+                // already accepts arbitrary JSON strings, so convert to JSON.
+                try {
+                    nativeSetPolicyString(
+                            mNativePolicyConverter, key, convertBundleToJson(bundle).toString());
+                } catch (JSONException e) {
+                    // Chrome requires all policies to be expressible as JSON, so this can't be a
+                    // valid policy.
+                    Log.w(TAG, "Invalid bundle in app restrictions " + bundle.toString()
+                                    + " for key " + key);
+                }
+                return;
+            }
+            if (value instanceof Bundle[]) {
+                Bundle[] bundleArray = (Bundle[]) value;
+                // JNI can't take a Bundle[] argument without a lot of extra work, but the native
+                // code already accepts arbitrary JSON strings, so convert to JSON.
+                try {
+                    nativeSetPolicyString(mNativePolicyConverter, key,
+                            convertBundleArrayToJson(bundleArray).toString());
+                } catch (JSONException e) {
+                    // Chrome requires all policies to be expressible as JSON, so this can't be a
+                    // valid policy.
+                    Log.w(TAG, "Invalid bundle array in app restrictions "
+                                    + Arrays.toString(bundleArray) + " for key " + key);
+                }
+                return;
+            }
+        }
         assert false : "Invalid setting " + value + " for key " + key;
     }
 
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private JSONObject convertBundleToJson(Bundle bundle) throws JSONException {
+        JSONObject json = new JSONObject();
+        Set<String> keys = bundle.keySet();
+        for (String key : keys) {
+            Object value = bundle.get(key);
+            if (value instanceof Bundle) value = convertBundleToJson((Bundle) value);
+            if (value instanceof Bundle[]) value = convertBundleArrayToJson((Bundle[]) value);
+            json.put(key, JSONObject.wrap(value));
+        }
+        return json;
+    }
+
+    @TargetApi(Build.VERSION_CODES.LOLLIPOP)
+    private JSONArray convertBundleArrayToJson(Bundle[] bundleArray) throws JSONException {
+        JSONArray json = new JSONArray();
+        for (Bundle bundle : bundleArray) {
+            json.put(convertBundleToJson(bundle));
+        }
+        return json;
+    }
+
+    @VisibleForTesting
     @CalledByNative
-    private static PolicyConverter create(long nativePolicyConverter) {
+    static PolicyConverter create(long nativePolicyConverter) {
         return new PolicyConverter(nativePolicyConverter);
     }
 
@@ -58,12 +130,13 @@ public class PolicyConverter {
         mNativePolicyConverter = 0;
     }
 
-    private native void nativeSetPolicyBoolean(
-            long nativePolicyConverter, String policyKey, boolean value);
-    private native void nativeSetPolicyInteger(
-            long nativePolicyConverter, String policyKey, int value);
-    private native void nativeSetPolicyString(
-            long nativePolicyConverter, String policyKey, String value);
-    private native void nativeSetPolicyStringArray(
+    @VisibleForTesting
+    native void nativeSetPolicyBoolean(long nativePolicyConverter, String policyKey, boolean value);
+    @VisibleForTesting
+    native void nativeSetPolicyInteger(long nativePolicyConverter, String policyKey, int value);
+    @VisibleForTesting
+    native void nativeSetPolicyString(long nativePolicyConverter, String policyKey, String value);
+    @VisibleForTesting
+    native void nativeSetPolicyStringArray(
             long nativePolicyConverter, String policyKey, String[] value);
 }
