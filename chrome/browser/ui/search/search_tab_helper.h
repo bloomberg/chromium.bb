@@ -17,6 +17,7 @@
 #include "chrome/browser/ui/search/search_model.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "components/ntp_tiles/ntp_tile_source.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/reload_type.h"
 #include "content/public/browser/web_contents_observer.h"
@@ -146,10 +147,12 @@ class SearchTabHelper : public content::WebContentsObserver,
   void OnUndoMostVisitedDeletion(const GURL& url) override;
   void OnUndoAllMostVisitedDeletions() override;
   void OnLogEvent(NTPLoggingEventType event, base::TimeDelta time) override;
-  void OnLogMostVisitedImpression(int position,
-                                  NTPLoggingTileSource tile_source) override;
-  void OnLogMostVisitedNavigation(int position,
-                                  NTPLoggingTileSource tile_source) override;
+  void OnLogMostVisitedImpression(
+      int position,
+      ntp_tiles::NTPTileSource tile_source) override;
+  void OnLogMostVisitedNavigation(
+      int position,
+      ntp_tiles::NTPTileSource tile_source) override;
   void PasteIntoOmnibox(const base::string16& text) override;
   void OnChromeIdentityCheck(const base::string16& identity) override;
   void OnHistorySyncCheck() override;

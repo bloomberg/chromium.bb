@@ -16,6 +16,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::Bucket;
+using ntp_tiles::NTPTileSource;
 using testing::ElementsAre;
 using testing::IsEmpty;
 
@@ -44,7 +45,7 @@ TEST(NTPUserDataLoggerTest, TestNumberOfTiles) {
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
 
   for (int i = 0; i < 8; ++i)
-    logger.LogMostVisitedImpression(i, NTPLoggingTileSource::SERVER);
+    logger.LogMostVisitedImpression(i, NTPTileSource::SUGGESTIONS_SERVICE);
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
   EXPECT_THAT(histogram_tester.GetAllSamples("NewTabPage.NumberOfTiles"),
               ElementsAre(Bucket(8, 1)));
@@ -75,24 +76,24 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
   base::TimeDelta delta = base::TimeDelta::FromMilliseconds(0);
 
   // Impressions increment the associated bins.
-  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(4, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(5, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(6, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(7, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(0, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(1, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(2, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(3, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(4, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedImpression(5, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedImpression(6, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedImpression(7, NTPTileSource::TOP_SITES);
 
   // Repeated impressions for the same bins are ignored.
-  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(0, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(1, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedImpression(2, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(3, NTPTileSource::TOP_SITES);
 
   // Impressions are silently ignored for tiles >= 8.
-  logger.LogMostVisitedImpression(8, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(9, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(8, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(9, NTPTileSource::TOP_SITES);
 
   // The actual histograms are emitted only after the ALL_TILES_LOADED event, so
   // at this point everything should still be empty.
@@ -125,10 +126,10 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedImpression) {
                                GURL("http://chromium.org"));
   logger.NavigatedFromURLToURL(GURL("http://chromium.org"),
                                GURL("chrome://newtab/"));
-  logger.LogMostVisitedImpression(0, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(1, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedImpression(2, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedImpression(3, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedImpression(0, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(1, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedImpression(2, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedImpression(3, NTPTileSource::TOP_SITES);
   logger.LogEvent(NTP_ALL_TILES_LOADED, delta);
 
   EXPECT_THAT(
@@ -151,7 +152,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
 
   TestNTPUserDataLogger logger;
 
-  logger.LogMostVisitedNavigation(0, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedNavigation(0, NTPTileSource::SUGGESTIONS_SERVICE);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1)));
@@ -162,7 +163,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
       IsEmpty());
 
-  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::SERVER);
+  logger.LogMostVisitedNavigation(1, NTPTileSource::SUGGESTIONS_SERVICE);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1), Bucket(1, 1)));
@@ -173,7 +174,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
       IsEmpty());
 
-  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedNavigation(2, NTPTileSource::TOP_SITES);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1)));
@@ -184,7 +185,7 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
       histogram_tester.GetAllSamples("NewTabPage.MostVisited.client"),
       ElementsAre(Bucket(2, 1)));
 
-  logger.LogMostVisitedNavigation(3, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedNavigation(3, NTPTileSource::TOP_SITES);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 1), Bucket(1, 1), Bucket(2, 1), Bucket(3, 1)));
@@ -196,10 +197,10 @@ TEST(NTPUserDataLoggerTest, TestLogMostVisitedNavigation) {
       ElementsAre(Bucket(2, 1), Bucket(3, 1)));
 
   // Navigations always increase.
-  logger.LogMostVisitedNavigation(0, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedNavigation(1, NTPLoggingTileSource::CLIENT);
-  logger.LogMostVisitedNavigation(2, NTPLoggingTileSource::SERVER);
-  logger.LogMostVisitedNavigation(3, NTPLoggingTileSource::CLIENT);
+  logger.LogMostVisitedNavigation(0, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedNavigation(1, NTPTileSource::TOP_SITES);
+  logger.LogMostVisitedNavigation(2, NTPTileSource::SUGGESTIONS_SERVICE);
+  logger.LogMostVisitedNavigation(3, NTPTileSource::TOP_SITES);
   EXPECT_THAT(
       histogram_tester.GetAllSamples("NewTabPage.MostVisited"),
       ElementsAre(Bucket(0, 2), Bucket(1, 2), Bucket(2, 2), Bucket(3, 2)));

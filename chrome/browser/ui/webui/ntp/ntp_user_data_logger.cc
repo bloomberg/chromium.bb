@@ -40,17 +40,6 @@ void RecordSyncSessionMetrics(content::WebContents* contents) {
       sessions);
 }
 
-ntp_tiles::NTPTileSource ConvertTileSource(NTPLoggingTileSource tile_source) {
-  switch (tile_source) {
-    case NTPLoggingTileSource::CLIENT:
-      return ntp_tiles::NTPTileSource::TOP_SITES;
-    case NTPLoggingTileSource::SERVER:
-      return ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE;
-  }
-  NOTREACHED();
-  return ntp_tiles::NTPTileSource::TOP_SITES;
-}
-
 }  // namespace
 
 DEFINE_WEB_CONTENTS_USER_DATA_KEY(NTPUserDataLogger);
@@ -109,7 +98,8 @@ void NTPUserDataLogger::LogEvent(NTPLoggingEventType event,
 }
 
 void NTPUserDataLogger::LogMostVisitedImpression(
-    int position, NTPLoggingTileSource tile_source) {
+    int position,
+    ntp_tiles::NTPTileSource tile_source) {
   if ((position >= kNumMostVisited) || impression_was_logged_[position]) {
     return;
   }
@@ -118,8 +108,9 @@ void NTPUserDataLogger::LogMostVisitedImpression(
 }
 
 void NTPUserDataLogger::LogMostVisitedNavigation(
-    int position, NTPLoggingTileSource tile_source) {
-  ntp_tiles::metrics::RecordTileClick(position, ConvertTileSource(tile_source),
+    int position,
+    ntp_tiles::NTPTileSource tile_source) {
+  ntp_tiles::metrics::RecordTileClick(position, tile_source,
                                       ntp_tiles::metrics::THUMBNAIL);
 
   // Records the action. This will be available as a time-stamped stream
@@ -172,10 +163,11 @@ void NTPUserDataLogger::EmitNtpStatistics(base::TimeDelta load_time) {
     if (!impression_was_logged_[i]) {
       break;
     }
-    if (impression_tile_source_[i] == NTPLoggingTileSource::SERVER) {
+    if (impression_tile_source_[i] ==
+        ntp_tiles::NTPTileSource::SUGGESTIONS_SERVICE) {
       has_server_side_suggestions = true;
     }
-    tiles.emplace_back(ConvertTileSource(impression_tile_source_[i]),
+    tiles.emplace_back(impression_tile_source_[i],
                        ntp_tiles::metrics::THUMBNAIL);
   }
   ntp_tiles::metrics::RecordPageImpression(tiles);

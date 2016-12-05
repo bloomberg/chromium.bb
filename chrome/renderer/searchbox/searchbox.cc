@@ -267,13 +267,13 @@ void SearchBox::LogEvent(NTPLoggingEventType event) {
 }
 
 void SearchBox::LogMostVisitedImpression(int position,
-                                         NTPLoggingTileSource tile_source) {
+                                         ntp_tiles::NTPTileSource tile_source) {
   render_view()->Send(new ChromeViewHostMsg_LogMostVisitedImpression(
       render_view()->GetRoutingID(), page_seq_no_, position, tile_source));
 }
 
 void SearchBox::LogMostVisitedNavigation(int position,
-                                         NTPLoggingTileSource tile_source) {
+                                         ntp_tiles::NTPTileSource tile_source) {
   render_view()->Send(new ChromeViewHostMsg_LogMostVisitedNavigation(
       render_view()->GetRoutingID(), page_seq_no_, position, tile_source));
 }

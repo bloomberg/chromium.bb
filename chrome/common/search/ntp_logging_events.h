@@ -53,13 +53,4 @@ enum NTPLoggingEventType {
   NTP_EVENT_TYPE_LAST = NTP_ALL_TILES_LOADED
 };
 
-// The source of an NTP tile.
-// Note: Keep in sync with browser/resources/local_ntp/most_visited_single.js.
-// TODO(treib): Merge this into MostVisitedSource from components/ntp_tiles.
-enum class NTPLoggingTileSource {
-  CLIENT = 0,
-  SERVER = 1,
-  LAST = SERVER
-};
-
 #endif  // CHROME_COMMON_SEARCH_NTP_LOGGING_EVENTS_H_

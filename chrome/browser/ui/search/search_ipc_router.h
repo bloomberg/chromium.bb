@@ -13,6 +13,7 @@
 #include "base/time/time.h"
 #include "chrome/common/search/instant_types.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "components/ntp_tiles/ntp_tile_source.h"
 #include "components/omnibox/common/omnibox_focus_state.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "ui/base/window_open_disposition.h"
@@ -58,12 +59,12 @@ class SearchIPCRouter : public content::WebContentsObserver {
     // Called to log an impression from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedImpression(
         int position,
-        NTPLoggingTileSource tile_source) = 0;
+        ntp_tiles::NTPTileSource tile_source) = 0;
 
     // Called to log a navigation from a given provider on the New Tab Page.
     virtual void OnLogMostVisitedNavigation(
         int position,
-        NTPLoggingTileSource tile_source) = 0;
+        ntp_tiles::NTPTileSource tile_source) = 0;
 
     // Called when the page wants to paste the |text| (or the clipboard contents
     // if the |text| is empty) into the omnibox.
@@ -180,10 +181,10 @@ class SearchIPCRouter : public content::WebContentsObserver {
                   base::TimeDelta time) const;
   void OnLogMostVisitedImpression(int page_seq_no,
                                   int position,
-                                  NTPLoggingTileSource tile_source) const;
+                                  ntp_tiles::NTPTileSource tile_source) const;
   void OnLogMostVisitedNavigation(int page_seq_no,
                                   int position,
-                                  NTPLoggingTileSource tile_source) const;
+                                  ntp_tiles::NTPTileSource tile_source) const;
   void OnPasteAndOpenDropDown(int page_seq_no,
                               const base::string16& text) const;
   void OnChromeIdentityCheck(int page_seq_no,

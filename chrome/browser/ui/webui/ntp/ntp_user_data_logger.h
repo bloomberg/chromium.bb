@@ -13,6 +13,7 @@
 #include "base/macros.h"
 #include "base/time/time.h"
 #include "chrome/common/search/ntp_logging_events.h"
+#include "components/ntp_tiles/ntp_tile_source.h"
 #include "content/public/browser/web_contents_observer.h"
 #include "content/public/browser/web_contents_user_data.h"
 
@@ -39,10 +40,12 @@ class NTPUserDataLogger
   void LogEvent(NTPLoggingEventType event, base::TimeDelta time);
 
   // Logs an impression on one of the NTP tiles by a given source.
-  void LogMostVisitedImpression(int position, NTPLoggingTileSource tile_source);
+  void LogMostVisitedImpression(int position,
+                                ntp_tiles::NTPTileSource tile_source);
 
   // Logs a navigation on one of the NTP tiles by a given source.
-  void LogMostVisitedNavigation(int position, NTPLoggingTileSource tile_source);
+  void LogMostVisitedNavigation(int position,
+                                ntp_tiles::NTPTileSource tile_source);
 
  protected:
   explicit NTPUserDataLogger(content::WebContents* contents);
@@ -80,7 +83,7 @@ class NTPUserDataLogger
 
   // Stores the tile source for each impression. Entries are only valid if the
   // corresponding entry in |impression_was_logged_| is true.
-  std::vector<NTPLoggingTileSource> impression_tile_source_;
+  std::vector<ntp_tiles::NTPTileSource> impression_tile_source_;
 
   // Whether we have already emitted NTP stats for this web contents.
   bool has_emitted_;

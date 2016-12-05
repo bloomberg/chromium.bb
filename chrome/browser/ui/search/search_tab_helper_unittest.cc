@@ -58,9 +58,9 @@ class MockSearchIPCRouterDelegate : public SearchIPCRouter::Delegate {
   MOCK_METHOD2(OnLogEvent, void(NTPLoggingEventType event,
                                 base::TimeDelta time));
   MOCK_METHOD2(OnLogMostVisitedImpression,
-               void(int position, NTPLoggingTileSource tile_source));
+               void(int position, ntp_tiles::NTPTileSource tile_source));
   MOCK_METHOD2(OnLogMostVisitedNavigation,
-               void(int position, NTPLoggingTileSource tile_source));
+               void(int position, ntp_tiles::NTPTileSource tile_source));
   MOCK_METHOD1(PasteIntoOmnibox, void(const base::string16&));
   MOCK_METHOD1(OnChromeIdentityCheck, void(const base::string16& identity));
   MOCK_METHOD0(OnHistorySyncCheck, void());
