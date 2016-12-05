@@ -1746,6 +1746,7 @@ test("blink_platform_unittests") {
     "image-decoders/gif/GIFImageDecoderTest.cpp",
     "image-decoders/ico/ICOImageDecoderTest.cpp",
     "image-decoders/jpeg/JPEGImageDecoderTest.cpp",
+    "image-decoders/png/PNGImageDecoderTest.cpp",
     "image-decoders/webp/WEBPImageDecoderTest.cpp",
     "json/JSONParserTest.cpp",
     "json/JSONValuesTest.cpp",
