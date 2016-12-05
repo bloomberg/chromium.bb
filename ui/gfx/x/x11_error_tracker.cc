@@ -22,7 +22,7 @@ int X11ErrorHandler(Display* display, XErrorEvent* error) {
 namespace gfx {
 
 X11ErrorTracker::X11ErrorTracker() {
-  // This is a poor-man's check for incorrect usage. It disallows nested
+  // This is a non-exhaustive check for incorrect usage. It disallows nested
   // X11ErrorTracker instances on the same thread.
   DCHECK(g_handler == NULL);
   g_handler = this;

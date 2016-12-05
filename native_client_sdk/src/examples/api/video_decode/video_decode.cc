@@ -29,7 +29,7 @@
 #define USE_VP8_TESTDATA_INSTEAD_OF_H264
 #include "testdata.h"
 
-// Use assert as a poor-man's CHECK, even in non-debug mode.
+// Use assert as a makeshift CHECK, even in non-debug mode.
 // Since <assert.h> redefines assert on every inclusion (it doesn't use
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG

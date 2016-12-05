@@ -39,7 +39,7 @@ namespace nacl {
 
 namespace {
 
-// This is a poor man's check on whether we are sandboxed.
+// This is a simplistic check of whether we are sandboxed.
 bool IsSandboxed() {
   int proc_fd = open("/proc/self/exe", O_RDONLY);
   if (proc_fd >= 0) {

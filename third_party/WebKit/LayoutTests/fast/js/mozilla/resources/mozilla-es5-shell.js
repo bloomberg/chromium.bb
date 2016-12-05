@@ -94,8 +94,7 @@ function parseRaisesException(exception) {
 
 /*
  * Return the result of applying uneval to VAL, and replacing all runs
- * of whitespace with a single horizontal space (poor man's
- * tokenization).
+ * of whitespace with a single horizontal space (simple tokenization).
  */
 function clean_uneval(val) {
   return uneval(val).replace(/\s+/g, ' ');

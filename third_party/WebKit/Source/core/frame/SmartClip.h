@@ -59,8 +59,8 @@ class CORE_EXPORT SmartClipData {
 // SmartClip implements support for the copy operation
 // with an S-Pen on Samsung devices. The behavior of this
 // class is quirky and poorly tested. It's approximately
-// trying to do a poor-mans implementation of columnar
-// selection followed by a copy operation.
+// trying to do an implementation of columnar selection
+// followed by a copy operation.
 class CORE_EXPORT SmartClip {
   STACK_ALLOCATED();
 

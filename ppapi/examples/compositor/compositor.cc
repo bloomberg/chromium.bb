@@ -29,7 +29,7 @@
 #include "ppapi/lib/gl/include/GLES2/gl2ext.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
-// Use assert as a poor-man's CHECK, even in non-debug mode.
+// Use assert as a makeshift CHECK, even in non-debug mode.
 // Since <assert.h> redefines assert on every inclusion (it doesn't use
 // include-guards), make sure this is the last file #include'd in this file.
 #undef NDEBUG
