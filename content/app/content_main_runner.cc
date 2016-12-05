@@ -155,9 +155,9 @@ void InitializeFieldTrialAndFeatureList(
 #endif
 
   std::unique_ptr<base::FeatureList> feature_list(new base::FeatureList);
-  feature_list->InitializeFromCommandLine(
-      command_line.GetSwitchValueASCII(switches::kEnableFeatures),
-      command_line.GetSwitchValueASCII(switches::kDisableFeatures));
+  base::FieldTrialList::CreateFeaturesFromCommandLine(
+      command_line, switches::kEnableFeatures, switches::kDisableFeatures,
+      feature_list.get());
   base::FeatureList::SetInstance(std::move(feature_list));
 }
 

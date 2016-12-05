@@ -219,19 +219,11 @@ void BrowserChildProcessHostImpl::TerminateAll() {
 // static
 void BrowserChildProcessHostImpl::CopyFeatureAndFieldTrialFlags(
     base::CommandLine* cmd_line) {
-  std::string enabled_features;
-  std::string disabled_features;
-  base::FeatureList::GetInstance()->GetFeatureOverrides(&enabled_features,
-                                                        &disabled_features);
-  if (!enabled_features.empty())
-    cmd_line->AppendSwitchASCII(switches::kEnableFeatures, enabled_features);
-  if (!disabled_features.empty())
-    cmd_line->AppendSwitchASCII(switches::kDisableFeatures, disabled_features);
-
   // If we run base::FieldTrials, we want to pass to their state to the
   // child process so that it can act in accordance with each state.
-  base::FieldTrialList::CopyFieldTrialStateToFlags(switches::kFieldTrialHandle,
-                                                   cmd_line);
+  base::FieldTrialList::CopyFieldTrialStateToFlags(
+      switches::kFieldTrialHandle, switches::kEnableFeatures,
+      switches::kDisableFeatures, cmd_line);
 }
 
 void BrowserChildProcessHostImpl::Launch(
