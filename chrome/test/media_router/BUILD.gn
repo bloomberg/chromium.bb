@@ -2,6 +2,24 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+group("media_router_perf_tests") {
+  testonly = true
+  deps = [
+    ":test_extension_resource_files",
+  ]
+  data_deps = [
+    "//chrome:chrome",
+  ]
+  data = [
+    "$root_out_dir/mr_extension/release/",
+    "internal/",
+    "telemetry/",
+    "../../../third_party/catapult/",
+    "../../../tools/perf/",
+    "../../../tools/variations/fieldtrial_util.py",
+  ]
+}
+
 group("media_router_tests") {
   testonly = true
   data_deps = [
