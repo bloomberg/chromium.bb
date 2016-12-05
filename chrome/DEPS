@@ -33,8 +33,6 @@ include_rules = [
   "-webkit",
   "-tools",
 
-  "-crypto/third_party",
-
   # Allow inclusion of WebKit API files.
   "+third_party/WebKit/public/platform",
   "+third_party/WebKit/public/public_features.h",
