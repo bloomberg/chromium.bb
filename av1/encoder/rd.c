@@ -550,8 +550,8 @@ static void get_entropy_contexts_plane(
     BLOCK_SIZE plane_bsize, TX_SIZE tx_size, const struct macroblockd_plane *pd,
     ENTROPY_CONTEXT t_above[2 * MAX_MIB_SIZE],
     ENTROPY_CONTEXT t_left[2 * MAX_MIB_SIZE]) {
-  const int num_4x4_w = num_4x4_blocks_wide_lookup[plane_bsize];
-  const int num_4x4_h = num_4x4_blocks_high_lookup[plane_bsize];
+  const int num_4x4_w = block_size_wide[plane_bsize] >> tx_size_wide_log2[0];
+  const int num_4x4_h = block_size_high[plane_bsize] >> tx_size_high_log2[0];
   const ENTROPY_CONTEXT *const above = pd->above_context;
   const ENTROPY_CONTEXT *const left = pd->left_context;
 
