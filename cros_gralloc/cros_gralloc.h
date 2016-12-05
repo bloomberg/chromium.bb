@@ -20,11 +20,16 @@ struct cros_gralloc_bo {
 	void *map_data;
 };
 
+struct handle_info {
+	cros_gralloc_bo *bo;
+	int32_t registrations;
+};
+
 struct cros_gralloc_module {
 	gralloc_module_t base;
 	struct driver *drv;
 	std::mutex mutex;
-	std::unordered_set<uint64_t> handles;
+	std::unordered_map<cros_gralloc_handle*, handle_info> handles;
 	std::unordered_map<uint32_t, cros_gralloc_bo*> buffers;
 };
 

@@ -95,7 +95,6 @@ static struct cros_gralloc_handle *cros_gralloc_handle_from_bo(struct bo *bo)
 	hnd->format = drv_bo_get_format(bo);
 
 	hnd->magic = cros_gralloc_magic();
-	hnd->registrations = 0;
 
 	hnd->pixel_stride = hnd->strides[0];
 	hnd->pixel_stride /= drv_stride_from_format(hnd->format, 1, 0);
@@ -117,10 +116,10 @@ static int cros_gralloc_alloc(alloc_device_t *dev, int w, int h, int format,
 	hnd->droid_format = static_cast<int32_t>(format);
 	hnd->usage = static_cast<int32_t>(usage);
 
-	hnd->bo = reinterpret_cast<uint64_t>(bo);
+	mod->handles[hnd].registrations = 0;
+	mod->handles[hnd].bo = bo;
 	bo->hnd = hnd;
 
-	mod->handles.insert(reinterpret_cast<uint64_t>(&hnd->base));
 	mod->buffers[drv_bo_get_plane_handle(bo->bo, 0).u32] = bo;
 
 	*stride = static_cast<int>(hnd->pixel_stride);
@@ -146,7 +145,7 @@ static int cros_gralloc_free(alloc_device_t *dev, buffer_handle_t handle)
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (hnd->registrations > 0) {
+	if (mod->handles[hnd].registrations > 0) {
 		cros_gralloc_error("Deallocating before unregistering.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}

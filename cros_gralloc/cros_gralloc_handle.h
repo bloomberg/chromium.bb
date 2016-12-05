@@ -31,11 +31,6 @@ struct cros_gralloc_handle {
 	uint32_t pixel_stride;
 	int32_t droid_format;
 	int32_t usage;              /* Android usage. */
-	uint64_t bo;		    /* Pointer to cros_gralloc_bo. */
-	int32_t registrations;      /*
-				     * Number of times (*register)() has been
-				     * called on this handle.
-				     */
 };
 
 #endif

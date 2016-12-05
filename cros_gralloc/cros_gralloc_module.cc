@@ -13,12 +13,10 @@ int cros_gralloc_validate_reference(struct cros_gralloc_module *mod,
 				    struct cros_gralloc_handle *hnd,
 				    struct cros_gralloc_bo **bo)
 {
-	uint64_t key = reinterpret_cast<uint64_t>(&hnd->base);
-
-	if (!mod->handles.count(key))
+	if (!mod->handles.count(hnd))
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 
-	*bo = reinterpret_cast<cros_gralloc_bo*>(hnd->bo);
+	*bo = mod->handles[hnd].bo;
 	return CROS_GRALLOC_ERROR_NONE;
 }
 
@@ -35,6 +33,7 @@ int cros_gralloc_decrement_reference_count(struct cros_gralloc_module *mod,
 		drv_bo_destroy(bo->bo);
 
 		if (bo->hnd) {
+			mod->handles.erase(bo->hnd);
 			native_handle_close(&bo->hnd->base);
 			delete bo->hnd;
 		}
@@ -68,7 +67,7 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 
 	if (!cros_gralloc_validate_reference(mod, hnd, &bo)) {
 		bo->refcount++;
-		hnd->registrations++;
+		mod->handles[hnd].registrations++;
 		return CROS_GRALLOC_ERROR_NONE;
 	}
 
@@ -80,7 +79,6 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 	if (mod->buffers.count(id)) {
 		bo = mod->buffers[id];
 		bo->refcount++;
-		hnd->bo = reinterpret_cast<uint64_t>(bo);
 	} else {
 		struct drv_import_fd_data data;
 		size_t num_planes = drv_num_planes_from_format(hnd->format);
@@ -110,11 +108,10 @@ static int cros_gralloc_register_buffer(struct gralloc_module_t const* module,
 		mod->buffers[id] = bo;
 
 		bo->refcount = 1;
-		hnd->bo = reinterpret_cast<uint64_t>(bo);
 	}
 
-	hnd->registrations = 1;
-	mod->handles.insert(reinterpret_cast<uint64_t>(&hnd->base));
+	mod->handles[hnd].bo = bo;
+	mod->handles[hnd].registrations = 1;
 
 	return CROS_GRALLOC_ERROR_NONE;
 }
@@ -137,15 +134,15 @@ static int cros_gralloc_unregister_buffer(struct gralloc_module_t const* module,
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	if (hnd->registrations <= 0) {
+	if (mod->handles[hnd].registrations <= 0) {
 		cros_gralloc_error("Handle not registered.");
 		return CROS_GRALLOC_ERROR_BAD_HANDLE;
 	}
 
-	hnd->registrations--;
+	mod->handles[hnd].registrations--;
 
-	if (!hnd->registrations)
-		mod->handles.erase(reinterpret_cast<uint64_t>(&hnd->base));
+	if (!mod->handles[hnd].registrations)
+		mod->handles.erase(hnd);
 
 	return cros_gralloc_decrement_reference_count(mod, bo);
 }
