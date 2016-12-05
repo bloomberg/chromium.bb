@@ -19,7 +19,6 @@
 #include "chrome/browser/sessions/tab_restore_service_factory.h"
 #include "chrome/browser/web_data_service_factory.h"
 #include "components/keyed_service/content/browser_context_dependency_manager.h"
-#include "components/power/origin_power_map_factory.h"
 #include "content/public/browser/browser_context.h"
 #include "extensions/features/features.h"
 
@@ -59,7 +58,6 @@ BrowsingDataRemoverFactory::BrowsingDataRemoverFactory()
   DependsOn(HistoryServiceFactory::GetInstance());
   DependsOn(HostContentSettingsMapFactory::GetInstance());
   DependsOn(PasswordStoreFactory::GetInstance());
-  DependsOn(power::OriginPowerMapFactory::GetInstance());
   DependsOn(prerender::PrerenderManagerFactory::GetInstance());
   DependsOn(TabRestoreServiceFactory::GetInstance());
   DependsOn(TemplateURLServiceFactory::GetInstance());

@@ -65,8 +65,6 @@
 #include "components/ntp_snippets/content_suggestions_service.h"
 #include "components/omnibox/browser/omnibox_pref_names.h"
 #include "components/password_manager/core/browser/password_store.h"
-#include "components/power/origin_power_map.h"
-#include "components/power/origin_power_map_factory.h"
 #include "components/prefs/pref_service.h"
 #include "components/previews/core/previews_ui_service.h"
 #include "components/search_engines/template_url_service.h"
@@ -556,13 +554,6 @@ void BrowsingDataRemover::RemoveImpl(
       extension_prefs->ClearLastLaunchTimes();
     }
 #endif
-
-    // The power consumption history by origin contains details of websites
-    // that were visited.
-    power::OriginPowerMap* origin_power_map =
-        power::OriginPowerMapFactory::GetForBrowserContext(profile_);
-    if (origin_power_map)
-      origin_power_map->ClearOriginMap(nullable_filter);
 
     // Need to clear the host cache and accumulated speculative data, as it also
     // reveals some history. We have no mechanism to track when these items were

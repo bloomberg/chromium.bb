@@ -193,7 +193,6 @@ test("components_unittests") {
       "//components/offline_pages/content/background_loader:unit_tests",
       "//components/packed_ct_ev_whitelist:unit_tests",
       "//components/password_manager/content/browser:unit_tests",
-      "//components/power:unit_tests",
       "//components/precache/content:unit_tests",
       "//components/safe_browsing_db:unit_tests",
       "//components/safe_json:unit_tests",

@@ -72,7 +72,6 @@
 #include "chrome/browser/net/crl_set_fetcher.h"
 #include "chrome/browser/performance_monitor/performance_monitor.h"
 #include "chrome/browser/plugins/plugin_prefs.h"
-#include "chrome/browser/power/process_power_collector.h"
 #include "chrome/browser/prefs/chrome_command_line_pref_store.h"
 #include "chrome/browser/prefs/chrome_pref_service_factory.h"
 #include "chrome/browser/prefs/incognito_mode_prefs.h"
@@ -1914,13 +1913,13 @@ int ChromeBrowserMainParts::PreMainMessageLoopRunImpl() {
   run_message_loop_ = started;
   browser_creator_.reset();
 
-#if !defined(OS_LINUX) || defined(OS_CHROMEOS)  // http://crbug.com/426393
+#if !defined(OS_LINUX) || defined(OS_CHROMEOS)
+  // Collects power-related UMA stats for Windows, Mac, and ChromeOS.
+  // Linux is not supported (crbug.com/426393).
   power_usage_monitor_.reset(new PowerUsageMonitor());
   power_usage_monitor_->Start();
 #endif  // !defined(OS_LINUX) || defined(OS_CHROMEOS)
 
-  process_power_collector_.reset(new ProcessPowerCollector);
-  process_power_collector_->Initialize();
 #endif  // !defined(OS_ANDROID)
 
   PostBrowserStart();
@@ -2010,10 +2009,6 @@ void ChromeBrowserMainParts::PostMainMessageLoopRun() {
 
   // Disarm the startup hang detector time bomb if it is still Arm'ed.
   startup_watcher_->Disarm();
-
-  // Remove observers attached to D-Bus clients before DbusThreadManager is
-  // shut down.
-  process_power_collector_.reset();
 
   web_usb_detector_.reset();
 

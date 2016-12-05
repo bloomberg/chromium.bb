@@ -519,7 +519,6 @@ split_static_library("ui") {
     "//components/password_manager/sync/browser",
     "//components/pdf/browser",
     "//components/policy/core/browser",
-    "//components/power",
     "//components/pref_registry",
     "//components/proximity_auth",
     "//components/proxy_config",

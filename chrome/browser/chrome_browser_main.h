@@ -27,7 +27,6 @@ class BrowserProcessImpl;
 class ChromeBrowserMainExtraParts;
 class FieldTrialSynchronizer;
 class PrefService;
-class ProcessPowerCollector;
 class Profile;
 class StartupBrowserCreator;
 class StartupTimeBomb;
@@ -147,9 +146,6 @@ class ChromeBrowserMainParts : public content::BrowserMainParts {
   ChromeBrowserFieldTrials browser_field_trials_;
 
 #if !defined(OS_ANDROID) && !defined(OS_IOS)
-  // A monitor for attributing power consumption to origins.
-  std::unique_ptr<ProcessPowerCollector> process_power_collector_;
-
   std::unique_ptr<WebUsbDetector> web_usb_detector_;
 #endif
 
