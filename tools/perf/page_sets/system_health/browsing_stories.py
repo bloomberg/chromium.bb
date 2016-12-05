@@ -40,7 +40,7 @@ class _BrowsingStory(system_health_story.SystemHealthStory):
     self._WaitForNavigation(action_runner)
 
   def _NavigateBack(self, action_runner):
-    action_runner.ExecuteJavaScript('window.history.back()')
+    action_runner.NavigateBack()
     self._WaitForNavigation(action_runner)
 
 
