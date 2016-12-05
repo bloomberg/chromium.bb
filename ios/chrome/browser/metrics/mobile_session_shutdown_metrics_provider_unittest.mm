@@ -20,6 +20,10 @@
 #include "testing/gtest/include/gtest/gtest-param-test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 // An MobileSessionShutdownMetricsProvider that returns fake values for the last
 // session environment query methods.
 class MobileSessionShutdownMetricsProviderForTesting

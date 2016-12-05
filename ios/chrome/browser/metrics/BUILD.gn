@@ -57,6 +57,7 @@ source_set("metrics") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "ios_chrome_metrics_service_accessor_unittest.cc",
