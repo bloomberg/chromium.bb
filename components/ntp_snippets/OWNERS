@@ -1,4 +1,10 @@
-noyau@chromium.org
+# Main owners:
 bauerb@chromium.org
+jkrcal@chromium.org
 treib@chromium.org
+
+# For ios:
+noyau@chromium.org
+
+# Fallback, in case all of the above are OOO:
 markusheintz@chromium.org
