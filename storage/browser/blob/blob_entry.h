@@ -24,16 +24,15 @@ class BlobDataHandle;
 class ShareableBlobDataItem;
 class ViewBlobInternalsJob;
 
-// This class represents a blob in BlobStorageRegistry. We export this only for
-// unit tests.
+// Represents a blob in BlobStorageRegistry. Exported only for unit tests.
 class STORAGE_EXPORT BlobEntry {
  public:
   using TransportAllowedCallback =
       base::Callback<void(BlobStatus,
                           std::vector<BlobMemoryController::FileCreationInfo>)>;
 
-  // This records a copy from a referenced blob. When we finish building our
-  // blob we perform all of these copies.
+  // Records a copy from a referenced blob. Copies happen after referenced blobs
+  // are complete & quota for the copies is granted.
   struct STORAGE_EXPORT ItemCopyEntry {
     ItemCopyEntry(scoped_refptr<ShareableBlobDataItem> source_item,
                   size_t source_item_offset,
@@ -50,11 +49,11 @@ class STORAGE_EXPORT BlobEntry {
     DISALLOW_COPY_AND_ASSIGN(ItemCopyEntry);
   };
 
-  // This keeps track of our building state for our blob. While building, four
-  // things can be happening mostly simultaneously:
-  // 1. Waiting for quota to be reserved for memory needed (PENDING_QUOTA)
+  // Building state for pending blobs. State can include:
+  // 1. Waiting for quota to be granted for transport data (PENDING_QUOTA)
   // 2. Waiting for user population of data after quota (PENDING_TRANSPORT)
-  // 3. Waiting for blobs we reference to complete (PENDING_INTERNALS)
+  // 3. Waiting for blobs we reference to complete & quota granted for possible
+  //    copies. (PENDING_INTERNALS)
   struct STORAGE_EXPORT BuildingState {
     // |transport_allowed_callback| is not null when data needs population. See
     // BlobStorageContext::BuildBlob for when the callback is called.
@@ -62,6 +61,9 @@ class STORAGE_EXPORT BlobEntry {
                   TransportAllowedCallback transport_allowed_callback,
                   size_t num_building_dependent_blobs);
     ~BuildingState();
+
+    // Cancels pending memory or file requests.
+    void CancelRequests();
 
     const bool transport_items_present;
     // We can have trasnport data that's either populated or unpopulated. If we
@@ -75,7 +77,10 @@ class STORAGE_EXPORT BlobEntry {
     size_t num_building_dependent_blobs;
 
     base::WeakPtr<BlobMemoryController::QuotaAllocationTask>
-        memory_quota_request;
+        transport_quota_request;
+
+    // Copy quota is always memory.
+    base::WeakPtr<BlobMemoryController::QuotaAllocationTask> copy_quota_request;
 
     // These are copies from a referenced blob item to our blob items. Some of
     // these entries may have changed from bytes to files if they were paged.
@@ -97,7 +102,9 @@ class STORAGE_EXPORT BlobEntry {
 
   // Returns if we're a pending blob that can finish building.
   bool CanFinishBuilding() const {
-    return status_ == BlobStatus::PENDING_INTERNALS &&
+    // PENDING_INTERNALS means transport is finished.
+    return status_ == BlobStatus::PENDING_INTERNALS && building_state_ &&
+           !building_state_->copy_quota_request &&
            building_state_->num_building_dependent_blobs == 0;
   }
 

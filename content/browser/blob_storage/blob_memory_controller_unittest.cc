@@ -74,7 +74,7 @@ class BlobMemoryControllerTest : public testing::Test {
     controller->set_limits_for_testing(limits);
   }
 
-  void SaveFileCreationInfo(bool success, std::vector<FileCreationInfo> info) {
+  void SaveFileCreationInfo(std::vector<FileCreationInfo> info, bool success) {
     file_quota_result_ = success;
     if (success) {
       files_created_.swap(info);

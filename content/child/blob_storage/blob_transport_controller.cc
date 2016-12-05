@@ -90,27 +90,23 @@ bool WriteSingleChunk(base::File* file, const char* memory, size_t size) {
   return true;
 }
 
-base::Optional<base::Time> WriteSingleRequestToDisk(
-    const BlobConsolidation* consolidation,
-    const BlobItemBytesRequest& request,
-    File* file) {
+bool WriteSingleRequestToDisk(const BlobConsolidation* consolidation,
+                              const BlobItemBytesRequest& request,
+                              File* file) {
   if (!file->IsValid())
-    return base::nullopt;
+    return false;
   int64_t seek_distance = file->Seek(
       File::FROM_BEGIN, base::checked_cast<int64_t>(request.handle_offset));
   bool seek_failed = seek_distance < 0;
   UMA_HISTOGRAM_BOOLEAN("Storage.Blob.RendererFileSeekFailed", seek_failed);
-  if (seek_failed) {
-    return base::nullopt;
-  }
+  if (seek_failed)
+    return false;
   BlobConsolidation::ReadStatus status = consolidation->VisitMemory(
       request.renderer_item_index, request.renderer_item_offset, request.size,
       base::Bind(&WriteSingleChunk, file));
   if (status != BlobConsolidation::ReadStatus::OK)
-    return base::nullopt;
-  File::Info info;
-  file->GetInfo(&info);
-  return base::make_optional(info.last_modified);
+    return false;
+  return true;
 }
 
 base::Optional<std::vector<BlobItemBytesResponse>> WriteDiskRequests(
@@ -118,8 +114,6 @@ base::Optional<std::vector<BlobItemBytesResponse>> WriteDiskRequests(
     std::unique_ptr<std::vector<BlobItemBytesRequest>> requests,
     const std::vector<IPC::PlatformFileForTransit>& file_handles) {
   std::vector<BlobItemBytesResponse> responses;
-  std::vector<base::Time> last_modified_times;
-  last_modified_times.resize(file_handles.size());
   // We grab ownership of the file handles here. When this vector is destroyed
   // it will close the files.
   std::vector<File> files;
@@ -128,13 +122,24 @@ base::Optional<std::vector<BlobItemBytesResponse>> WriteDiskRequests(
     files.emplace_back(IPC::PlatformFileForTransitToFile(file_handle));
   }
   for (const auto& request : *requests) {
-    base::Optional<base::Time> last_modified = WriteSingleRequestToDisk(
-        consolidation.get(), request, &files[request.handle_index]);
-    if (!last_modified) {
+    if (!WriteSingleRequestToDisk(consolidation.get(), request,
+                                  &files[request.handle_index])) {
       return base::nullopt;
     }
-    last_modified_times[request.handle_index] = last_modified.value();
   }
+  // The last modified time needs to be collected after we flush the file.
+  std::vector<base::Time> last_modified_times;
+  last_modified_times.resize(file_handles.size());
+  for (size_t i = 0; i < files.size(); ++i) {
+    auto& file = files[i];
+    if (!file.Flush())
+      return base::nullopt;
+    File::Info info;
+    if (!file.GetInfo(&info))
+      return base::nullopt;
+    last_modified_times[i] = info.last_modified;
+  }
+
   for (const auto& request : *requests) {
     responses.push_back(BlobItemBytesResponse(request.request_number));
     responses.back().time_file_modified =
