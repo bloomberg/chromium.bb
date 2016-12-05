@@ -245,7 +245,7 @@ void SRGBConverter::Blit(
     glBindTexture(GL_TEXTURE_2D, srgb_converter_textures_[1]);
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F,
                  c.width(), c.height(),
-                 0, GL_RGBA, GL_UNSIGNED_BYTE, nullptr);
+                 0, GL_RGBA, GL_FLOAT, nullptr);
     glBindFramebufferEXT(GL_FRAMEBUFFER, srgb_decoder_fbo_);
     glFramebufferTexture2DEXT(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, srgb_converter_textures_[1], 0);
@@ -279,7 +279,7 @@ void SRGBConverter::Blit(
         GL_TEXTURE_2D, 0, decode ? GL_RGBA32F : src_framebuffer_internal_format,
         width_draw, height_draw, 0,
         decode ? GL_RGBA : src_framebuffer_format,
-        decode ? GL_UNSIGNED_BYTE : src_framebuffer_type,
+        decode ? GL_FLOAT : src_framebuffer_type,
         nullptr);
 
     glBindFramebufferEXT(GL_DRAW_FRAMEBUFFER, srgb_encoder_fbo_);
@@ -354,9 +354,11 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   GLsizei depth;
   GLenum type = 0;
   GLenum internal_format = 0;
+  GLenum format = 0;
   GLsizei base_level = tex->base_level();
   tex->GetLevelSize(target, base_level, &width, &height, &depth);
   tex->GetLevelType(target, base_level, &type, &internal_format);
+  format = TextureManager::ExtractFormatFromStorageFormat(internal_format);
   const GLint mipmap_levels =
       TextureManager::ComputeMipMapCount(target, width, height, depth);
 
@@ -364,7 +366,7 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
   if (feature_info_->ext_color_buffer_float_available() &&
       feature_info_->oes_texture_float_linear_available()) {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA,
-                 GL_UNSIGNED_BYTE, nullptr);
+                 GL_FLOAT, nullptr);
   } else {
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA,
                  GL_UNSIGNED_BYTE, nullptr);
@@ -411,7 +413,7 @@ void SRGBConverter::GenerateMipmap(const gles2::GLES2Decoder* decoder,
     // generate mipmap for tex manually
     glBindTexture(GL_TEXTURE_2D, tex->service_id());
     glTexImage2D(GL_TEXTURE_2D, level, internal_format, width, height, 0,
-                 GL_SRGB, type, NULL);
+                 format, type, nullptr);
     glFramebufferTexture2DEXT(GL_DRAW_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
                               GL_TEXTURE_2D, tex->service_id(), level);
 
