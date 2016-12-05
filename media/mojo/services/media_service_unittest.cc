@@ -68,7 +68,7 @@ class MockRendererClient : public mojom::RendererClient {
 class MediaServiceTest : public service_manager::test::ServiceTest {
  public:
   MediaServiceTest()
-      : ServiceTest("media_mojo_shell_unittests"),
+      : ServiceTest("media_service_unittests"),
         renderer_client_binding_(&renderer_client_),
         video_stream_(DemuxerStream::VIDEO) {}
   ~MediaServiceTest() override {}

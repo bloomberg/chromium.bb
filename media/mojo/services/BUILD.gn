@@ -150,11 +150,11 @@ service("media") {
   ]
 }
 
-test("media_mojo_shell_unittests") {
+test("media_service_unittests") {
   testonly = true
 
   sources = [
-    "media_mojo_unittest.cc",
+    "media_service_unittest.cc",
   ]
 
   deps = [
@@ -181,7 +181,7 @@ service_manifest("media_manifest") {
 }
 
 service_manifest("test_manifest") {
-  name = "media_mojo_shell_unittests"
+  name = "media_service_unittests"
   source = "test_manifest.json"
 }
 

@@ -571,8 +571,8 @@
     "label": "//media:media_unittests",
     "type": "windowed_test_launcher",
   },
-  "media_mojo_shell_unittests": {
-    "label": "//media/mojo/services:media_mojo_shell_unittests",
+  "media_service_unittests": {
+    "label": "//media/mojo/services:media_service_unittests",
     "type": "console_test_launcher",
   },
   "media_blink_unittests": {

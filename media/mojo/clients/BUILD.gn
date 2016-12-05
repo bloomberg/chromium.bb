@@ -11,7 +11,7 @@ source_set("clients") {
     # TODO(xhwang): Only allow //media/mojo:media_mojo_unittests
     "//media/mojo:*",
 
-    # TODO(xhwang): Only allow //media/mojo/services:media_mojo_shell_unittests
+    # TODO(xhwang): Only allow //media/mojo/services:media_service_unittests
     "//media/mojo/services:*",
 
     "//media/test/*",

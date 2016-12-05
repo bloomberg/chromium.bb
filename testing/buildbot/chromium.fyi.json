@@ -12720,7 +12720,7 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "media_mojo_shell_unittests"
+        "test": "media_service_unittests"
       },
       {
         "swarming": {
@@ -12756,7 +12756,7 @@
         "swarming": {
           "can_use_on_swarming_builders": false
         },
-        "test": "media_mojo_shell_unittests"
+        "test": "media_service_unittests"
       },
       {
         "swarming": {
