@@ -3,6 +3,8 @@
 This is a through document for Oilpan API usage.
 If you want to learn the API usage quickly, look at
 [this tutorial](https://docs.google.com/presentation/d/1XPu03ymz8W295mCftEC9KshH9Icxfq81YwIJQzQrvxo/edit#slide=id.p).
+If you're just interested in wrapper tracing,
+see [Wrapper Tracing Reference](../../bindings/core/v8/TraceWrapperReference.md).
 
 [TOC]
 
@@ -424,3 +426,45 @@ needs to (also) happen during finalization.
 Weak callbacks have so far seen little use in Blink, but a mechanism that's available.
 
 ## Heap collections
+
+Heap collections are WTF collection types that support `Member<T>`, `WeakMember<T>`(see [below](#Weak collections)), and garbage collected objects as its elements.
+
+Here is the complete list:
+
+- WTF::Vector → blink::HeapVector
+- WTF::Deque → blink::HeapDeque
+- WTF::HashMap → blink::HeapHashMap
+- WTF::HashSet → blink::HeapHashSet
+- WTF::LinkedHashSet → blink::HeapLinkedHashSet
+- WTF::ListHashSet → blink::HeapListHashSet
+- WTF::HashCountedSet → blink::HeapHashCountedSet
+
+These heap collections work mostly the same way as their WTF collection counterparts but there are some things to keep in mind.
+
+Heap collections are special in that the types themselves do not inherit from GarbageCollected (hence they are not allocated on the Oilpan heap) but they still *need to be traced* from the trace method (because we need to trace the backing store which is on the Oilpan heap).
+
+```c++
+class MyGarbageCollectedClass : public GarbageCollected<MyGarbageCollectedClass> {
+public:
+    DEFINE_INLINE_TRACE() { visitor->trace(m_list); }
+private:
+    HeapVector<Member<AnotherGarbageCollectedClass>> m_list;
+};
+```
+
+When you want to add a heap collection as a member of a non-garbage-collected class, please use the persistent variants (just prefix the type with Persistent e.g. PersistentHeapVector, PersistentHeapHashMap, etc.).
+
+```c++
+class MyNotGarbageCollectedClass {
+private:
+    PersistentHeapVector<Member<MyGarbageCollectedClass>> m_list;
+};
+```
+
+Please be very cautious if you want to use a heap collection from multiple threads. Reference to heap collections may be passed to another thread using CrossThreadPersistents, but *you may not modify the collection from the non-owner thread*. This is because modifications to collections may trigger backing store reallocations, and Oilpan's per thread heap requires that modifications to a heap happen on its owner thread.
+
+### Weak collections
+
+You can put `WeakMember<T>` in heap collections except for `HeapVector` and `HeapDeque` which we do not support.
+
+During an Oilpan GC, the weak members that refernce a collected object will be removed from its heap collection, meaning the size of the collection will shrink and you do not have to check for null weak members when iterating through the collection.
