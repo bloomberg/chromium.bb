@@ -389,7 +389,6 @@ InlineBox* RootInlineBox::lastSelectedBox() const {
 
 LayoutUnit RootInlineBox::selectionTop() const {
   LayoutUnit selectionTop = m_lineTop;
-
   if (m_hasAnnotationsBefore)
     selectionTop -= !getLineLayoutItem().style()->isFlippedLinesWritingMode()
                         ? computeOverAnnotationAdjustment(m_lineTop)
@@ -399,25 +398,7 @@ LayoutUnit RootInlineBox::selectionTop() const {
       !prevRootBox())
     return selectionTop;
 
-  LayoutUnit prevBottom = prevRootBox()->selectionBottom();
-  if (prevBottom < selectionTop && block().containsFloats()) {
-    // This line has actually been moved further down, probably from a large
-    // line-height, but possibly because the line was forced to clear floats.
-    // If so, let's check the offsets, and only be willing to use the previous
-    // line's bottom if the offsets are greater on both sides.
-    LayoutUnit prevLeft =
-        block().logicalLeftOffsetForLine(prevBottom, DoNotIndentText);
-    LayoutUnit prevRight =
-        block().logicalRightOffsetForLine(prevBottom, DoNotIndentText);
-    LayoutUnit newLeft =
-        block().logicalLeftOffsetForLine(selectionTop, DoNotIndentText);
-    LayoutUnit newRight =
-        block().logicalRightOffsetForLine(selectionTop, DoNotIndentText);
-    if (prevLeft > newLeft || prevRight < newRight)
-      return selectionTop;
-  }
-
-  return prevBottom;
+  return std::min(selectionTop, prevRootBox()->selectionBottom());
 }
 
 LayoutUnit RootInlineBox::selectionBottom() const {
@@ -434,25 +415,7 @@ LayoutUnit RootInlineBox::selectionBottom() const {
       !nextRootBox())
     return selectionBottom;
 
-  LayoutUnit nextTop = nextRootBox()->selectionTop();
-  if (nextTop > selectionBottom && block().containsFloats()) {
-    // The next line has actually been moved further over, probably from a large
-    // line-height, but possibly because the line was forced to clear floats.
-    // If so, let's check the offsets, and only be willing to use the next
-    // line's top if the offsets are greater on both sides.
-    LayoutUnit nextLeft =
-        block().logicalLeftOffsetForLine(nextTop, DoNotIndentText);
-    LayoutUnit nextRight =
-        block().logicalRightOffsetForLine(nextTop, DoNotIndentText);
-    LayoutUnit newLeft =
-        block().logicalLeftOffsetForLine(selectionBottom, DoNotIndentText);
-    LayoutUnit newRight =
-        block().logicalRightOffsetForLine(selectionBottom, DoNotIndentText);
-    if (nextLeft > newLeft || nextRight < newRight)
-      return selectionBottom;
-  }
-
-  return nextTop;
+  return std::max(selectionBottom, nextRootBox()->selectionTop());
 }
 
 LayoutUnit RootInlineBox::blockDirectionPointInLine() const {
