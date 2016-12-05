@@ -34,21 +34,22 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::AUDIO> {
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
+  static std::string ToString();
+  static bool NeedsBitstreamConversion(DecoderType* decoder);
+  static void ReportStatistics(const StatisticsCB& statistics_cb,
+                               int bytes_decoded);
+  static scoped_refptr<OutputType> CreateEOSOutput();
+
   explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log);
 
-  static std::string ToString();
   void InitializeDecoder(DecoderType* decoder,
                          DemuxerStream* stream,
                          CdmContext* cdm_context,
                          const InitCB& init_cb,
                          const OutputCB& output_cb);
-  static bool NeedsBitstreamConversion(DecoderType* decoder);
   void OnDecode(const scoped_refptr<DecoderBuffer>& buffer);
   void OnDecodeDone(const scoped_refptr<OutputType>& buffer);
   void OnStreamReset(DemuxerStream* stream);
-  static void ReportStatistics(const StatisticsCB& statistics_cb,
-                               int bytes_decoded);
-  static scoped_refptr<OutputType> CreateEOSOutput();
 
  private:
   // Validates encoded timestamps match decoded output duration. MEDIA_LOG warns
@@ -68,21 +69,22 @@ class MEDIA_EXPORT DecoderStreamTraits<DemuxerStream::VIDEO> {
   typedef base::Callback<void(bool success)> InitCB;
   typedef base::Callback<void(const scoped_refptr<OutputType>&)> OutputCB;
 
+  static std::string ToString();
+  static bool NeedsBitstreamConversion(DecoderType* decoder);
+  static void ReportStatistics(const StatisticsCB& statistics_cb,
+                               int bytes_decoded);
+  static scoped_refptr<OutputType> CreateEOSOutput();
+
   explicit DecoderStreamTraits(const scoped_refptr<MediaLog>& media_log) {}
 
-  static std::string ToString();
   void InitializeDecoder(DecoderType* decoder,
                          DemuxerStream* stream,
                          CdmContext* cdm_context,
                          const InitCB& init_cb,
                          const OutputCB& output_cb);
-  static bool NeedsBitstreamConversion(DecoderType* decoder);
   void OnDecode(const scoped_refptr<DecoderBuffer>& buffer) {}
   void OnDecodeDone(const scoped_refptr<OutputType>& buffer) {}
   void OnStreamReset(DemuxerStream* stream) {}
-  static void ReportStatistics(const StatisticsCB& statistics_cb,
-                               int bytes_decoded);
-  static scoped_refptr<OutputType> CreateEOSOutput();
 };
 
 }  // namespace media
