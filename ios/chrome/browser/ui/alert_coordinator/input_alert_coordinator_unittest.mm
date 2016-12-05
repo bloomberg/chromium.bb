@@ -8,14 +8,17 @@
 #import "third_party/ocmock/OCMock/OCMock.h"
 #include "third_party/ocmock/gtest_support.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 TEST(InputAlertCoordinatorTest, AddTextField) {
   // Setup.
-  UIViewController* viewController =
-      [[[UIViewController alloc] init] autorelease];
-  InputAlertCoordinator* alertCoordinator = [[[InputAlertCoordinator alloc]
-      initWithBaseViewController:viewController
-                           title:@"Test"
-                         message:nil] autorelease];
+  UIViewController* viewController = [[UIViewController alloc] init];
+  InputAlertCoordinator* alertCoordinator =
+      [[InputAlertCoordinator alloc] initWithBaseViewController:viewController
+                                                          title:@"Test"
+                                                        message:nil];
 
   void (^emptyHandler)(UITextField* textField) = ^(UITextField* textField) {
   };
@@ -32,12 +35,11 @@ TEST(InputAlertCoordinatorTest, AddTextField) {
 
 TEST(InputAlertCoordinatorTest, GetTextFields) {
   // Setup.
-  UIViewController* viewController =
-      [[[UIViewController alloc] init] autorelease];
-  InputAlertCoordinator* alertCoordinator = [[[InputAlertCoordinator alloc]
-      initWithBaseViewController:viewController
-                           title:@"Test"
-                         message:nil] autorelease];
+  UIViewController* viewController = [[UIViewController alloc] init];
+  InputAlertCoordinator* alertCoordinator =
+      [[InputAlertCoordinator alloc] initWithBaseViewController:viewController
+                                                          title:@"Test"
+                                                        message:nil];
 
   NSArray<UITextField*>* array = [NSArray array];
   id alert =

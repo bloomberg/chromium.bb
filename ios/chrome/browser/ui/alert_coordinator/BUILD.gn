@@ -20,6 +20,7 @@ source_set("alert_coordinator") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "action_sheet_coordinator_unittest.mm",
