@@ -97,9 +97,6 @@ bool NGBlockNode::ComputeMinAndMaxContentSizes(MinAndMaxContentSizes* sizes) {
     builder.SetAvailableSize(NGLogicalSize(LayoutUnit(), LayoutUnit()));
     builder.SetPercentageResolutionSize(
         NGLogicalSize(LayoutUnit(), LayoutUnit()));
-    // TODO(layoutng): Use builder.ToConstraintSpace.ToLogicalConstraintSpace
-    // once
-    // that's available.
     NGConstraintSpace* constraint_space =
         NGConstraintSpaceBuilder(
             FromPlatformWritingMode(Style()->getWritingMode()))
