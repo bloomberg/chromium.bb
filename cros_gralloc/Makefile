@@ -4,8 +4,9 @@
 
 GRALLOC = gralloc.cros.so
 
-SOURCES =  $(wildcard *.cc)
-SOURCES += $(wildcard ../*.c)
+SRCS    = $(wildcard *.cc)
+SRCS   += $(wildcard ../*.c)
+SOURCES = $(filter-out ../gbm%, $(SRCS))
 
 VPATH = $(dir $(SOURCES))
 
