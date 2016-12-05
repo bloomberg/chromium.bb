@@ -355,7 +355,7 @@ def AddInstrumentationTestOptions(parser):
                      help='Path or name of the apk containing the tests '
                           '(name is without the .apk extension; '
                           'e.g. "ContentShellTest").')
-  group.add_argument('--test-jar', required=True,
+  group.add_argument('--test-jar',
                      help='Path of jar containing test java files.')
   group.add_argument('--test-apk-incremental-install-script',
                      type=os.path.realpath,
