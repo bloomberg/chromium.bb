@@ -97,7 +97,7 @@ class CheckedNumeric {
                 "CheckedNumeric<T>: T must be a numeric type.");
 
  public:
-  typedef T type;
+  using type = T;
 
   constexpr CheckedNumeric() {}
 
@@ -114,8 +114,7 @@ class CheckedNumeric {
   template <typename Src>
   constexpr CheckedNumeric(Src value)  // NOLINT(runtime/explicit)
       : state_(value) {
-    static_assert(std::numeric_limits<Src>::is_specialized,
-                  "Argument must be numeric.");
+    static_assert(std::is_arithmetic<Src>::value, "Argument must be numeric.");
   }
 
   // This is not an explicit constructor because we want a seamless conversion
@@ -208,7 +207,7 @@ class CheckedNumeric {
   CheckedNumeric operator-() const {
     // Negation is always valid for floating point.
     T value = 0;
-    bool is_valid = (std::numeric_limits<T>::is_iec559 || IsValid()) &&
+    bool is_valid = (std::is_floating_point<T>::value || IsValid()) &&
                     CheckedNeg(state_.value(), &value);
     return CheckedNumeric<T>(value, is_valid);
   }
@@ -223,7 +222,7 @@ class CheckedNumeric {
   CheckedNumeric Abs() const {
     // Absolute value is always valid for floating point.
     T value = 0;
-    bool is_valid = (std::numeric_limits<T>::is_iec559 || IsValid()) &&
+    bool is_valid = (std::is_floating_point<T>::value || IsValid()) &&
                     CheckedAbs(state_.value(), &value);
     return CheckedNumeric<T>(value, is_valid);
   }
@@ -387,10 +386,8 @@ template <template <typename, typename, typename> class M,
           typename R,
           typename... Args>
 struct ResultType {
-  // The typedef was required here because MSVC fails to compile with "using".
-  typedef
-      typename ResultType<M, typename ResultType<M, L, R>::type, Args...>::type
-          type;
+  using type =
+      typename ResultType<M, typename ResultType<M, L, R>::type, Args...>::type;
 };
 
 // Convience wrapper to return a new CheckedNumeric from the provided arithmetic

@@ -55,19 +55,17 @@ constexpr bool IsValueInRangeForNumericType(Src value) {
 
 // Convenience function for determining if a numeric value is negative without
 // throwing compiler warnings on: unsigned(value) < 0.
-template <typename T>
-constexpr typename std::enable_if<std::numeric_limits<T>::is_signed, bool>::type
-IsValueNegative(T value) {
-  static_assert(std::numeric_limits<T>::is_specialized,
-                "Argument must be numeric.");
+template <typename T,
+          typename std::enable_if<std::is_signed<T>::value>::type* = nullptr>
+constexpr bool IsValueNegative(T value) {
+  static_assert(std::is_arithmetic<T>::value, "Argument must be numeric.");
   return value < 0;
 }
 
-template <typename T>
-constexpr typename std::enable_if<!std::numeric_limits<T>::is_signed,
-                                  bool>::type IsValueNegative(T) {
-  static_assert(std::numeric_limits<T>::is_specialized,
-                "Argument must be numeric.");
+template <typename T,
+          typename std::enable_if<!std::is_signed<T>::value>::type* = nullptr>
+constexpr bool IsValueNegative(T) {
+  static_assert(std::is_arithmetic<T>::value, "Argument must be numeric.");
   return false;
 }
 
@@ -117,7 +115,7 @@ constexpr Dst saturated_cast_impl(const Src value,
   return constraint == RANGE_VALID
              ? static_cast<Dst>(value)
              : (constraint == RANGE_UNDERFLOW
-                    ? std::numeric_limits<Dst>::min()
+                    ? std::numeric_limits<Dst>::lowest()
                     : (constraint == RANGE_OVERFLOW
                            ? std::numeric_limits<Dst>::max()
                            : NaNHandler::template HandleFailure<Dst>()));
@@ -132,7 +130,7 @@ template <typename Dst,
           typename Src>
 constexpr Dst saturated_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
-  return std::numeric_limits<Dst>::is_iec559
+  return std::is_floating_point<Dst>::value
              ? static_cast<Dst>(
                    static_cast<SrcType>(value))  // Floating point optimization.
              : internal::saturated_cast_impl<Dst, NaNHandler>(
@@ -147,8 +145,7 @@ template <typename Dst, typename Src>
 constexpr Dst strict_cast(Src value) {
   using SrcType = typename UnderlyingType<Src>::type;
   static_assert(UnderlyingType<Src>::is_numeric, "Argument must be numeric.");
-  static_assert(std::numeric_limits<Dst>::is_specialized,
-                "Result must be numeric.");
+  static_assert(std::is_arithmetic<Dst>::value, "Result must be numeric.");
 
   // If you got here from a compiler error, it's because you tried to assign
   // from a source type to a destination type that has insufficient range.
@@ -193,7 +190,7 @@ struct IsNumericRangeContained<
 template <typename T>
 class StrictNumeric {
  public:
-  typedef T type;
+  using type = T;
 
   constexpr StrictNumeric() : value_(0) {}
 
@@ -269,8 +266,8 @@ using internal::saturated_cast;
 using internal::StrictNumeric;
 using internal::MakeStrictNum;
 
-// Explicitly make a shorter size_t typedef for convenience.
-typedef StrictNumeric<size_t> SizeT;
+// Explicitly make a shorter size_t alias for convenience.
+using SizeT = StrictNumeric<size_t>;
 
 }  // namespace base
 

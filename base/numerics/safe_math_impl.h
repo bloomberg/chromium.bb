@@ -28,18 +28,18 @@ namespace internal {
 // However, there is no corresponding implementation of e.g. SafeUnsignedAbs,
 // so the float versions will not compile.
 template <typename Numeric,
-          bool IsInteger = std::numeric_limits<Numeric>::is_integer,
-          bool IsFloat = std::numeric_limits<Numeric>::is_iec559>
+          bool IsInteger = std::is_integral<Numeric>::value,
+          bool IsFloat = std::is_floating_point<Numeric>::value>
 struct UnsignedOrFloatForSize;
 
 template <typename Numeric>
 struct UnsignedOrFloatForSize<Numeric, true, false> {
-  typedef typename UnsignedIntegerForSize<Numeric>::type type;
+  using type = typename std::make_unsigned<Numeric>::type;
 };
 
 template <typename Numeric>
 struct UnsignedOrFloatForSize<Numeric, false, true> {
-  typedef Numeric type;
+  using type = Numeric;
 };
 
 // Helper templates for integer manipulations.
@@ -47,7 +47,7 @@ struct UnsignedOrFloatForSize<Numeric, false, true> {
 template <typename T>
 constexpr bool HasSignBit(T x) {
   // Cast to unsigned since right shift on signed is undefined.
-  return !!(static_cast<typename UnsignedIntegerForSize<T>::type>(x) >>
+  return !!(static_cast<typename std::make_unsigned<T>::type>(x) >>
             PositionOfSignBit<T>::value);
 }
 
@@ -66,23 +66,19 @@ constexpr T BinaryComplement(T x) {
 #define USE_OVERFLOW_BUILTINS (0)
 #endif
 
-// Here are the actual portable checked integer math implementations.
-// TODO(jschuh): Break this code out from the enable_if pattern and find a clean
-// way to coalesce things into the CheckedNumericState specializations below.
-
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer, bool>::type
-CheckedAddImpl(T x, T y, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+bool CheckedAddImpl(T x, T y, T* result) {
   // Since the value of x+y is undefined if we have a signed type, we compute
   // it using the unsigned type of the same size.
-  typedef typename UnsignedIntegerForSize<T>::type UnsignedDst;
+  using UnsignedDst = typename std::make_unsigned<T>::type;
   UnsignedDst ux = static_cast<UnsignedDst>(x);
   UnsignedDst uy = static_cast<UnsignedDst>(y);
   UnsignedDst uresult = static_cast<UnsignedDst>(ux + uy);
   *result = static_cast<T>(uresult);
   // Addition is valid if the sign of (x + y) is equal to either that of x or
   // that of y.
-  return (std::numeric_limits<T>::is_signed)
+  return (std::is_signed<T>::value)
              ? HasSignBit(BinaryComplement(
                    static_cast<UnsignedDst>((uresult ^ ux) & (uresult ^ uy))))
              : (BinaryComplement(x) >=
@@ -93,11 +89,10 @@ template <typename T, typename U, class Enable = void>
 struct CheckedAddOp {};
 
 template <typename T, typename U>
-struct CheckedAddOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedAddOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
@@ -123,19 +118,19 @@ struct CheckedAddOp<
   }
 };
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer, bool>::type
-CheckedSubImpl(T x, T y, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+bool CheckedSubImpl(T x, T y, T* result) {
   // Since the value of x+y is undefined if we have a signed type, we compute
   // it using the unsigned type of the same size.
-  typedef typename UnsignedIntegerForSize<T>::type UnsignedDst;
+  using UnsignedDst = typename std::make_unsigned<T>::type;
   UnsignedDst ux = static_cast<UnsignedDst>(x);
   UnsignedDst uy = static_cast<UnsignedDst>(y);
   UnsignedDst uresult = static_cast<UnsignedDst>(ux - uy);
   *result = static_cast<T>(uresult);
   // Subtraction is valid if either x and y have same sign, or (x-y) and x have
   // the same sign.
-  return (std::numeric_limits<T>::is_signed)
+  return (std::is_signed<T>::value)
              ? HasSignBit(BinaryComplement(
                    static_cast<UnsignedDst>((uresult ^ ux) & (ux ^ uy))))
              : (x >= y);
@@ -145,11 +140,10 @@ template <typename T, typename U, class Enable = void>
 struct CheckedSubOp {};
 
 template <typename T, typename U>
-struct CheckedSubOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedSubOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
@@ -179,36 +173,37 @@ struct CheckedSubOp<
 // we just promote to a twice wider type, and range check the result. In the
 // slow case we need to manually check that the result won't be truncated by
 // checking with division against the appropriate bound.
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            sizeof(T) * 2 <= sizeof(uintmax_t),
-                        bool>::type
-CheckedMulImpl(T x, T y, T* result) {
-  typedef typename TwiceWiderInteger<T>::type IntermediateType;
+template <typename T,
+          typename std::enable_if<
+              std::is_integral<T>::value &&
+              ((IntegerBitsPlusSign<T>::value * 2) <=
+               IntegerBitsPlusSign<intmax_t>::value)>::type* = nullptr>
+bool CheckedMulImpl(T x, T y, T* result) {
+  using IntermediateType = typename TwiceWiderInteger<T>::type;
   IntermediateType tmp =
       static_cast<IntermediateType>(x) * static_cast<IntermediateType>(y);
   *result = static_cast<T>(tmp);
   return DstRangeRelationToSrcRange<T>(tmp) == RANGE_VALID;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<T>::is_signed &&
-                            (sizeof(T) * 2 > sizeof(uintmax_t)),
-                        bool>::type
-CheckedMulImpl(T x, T y, T* result) {
+template <typename T,
+          typename std::enable_if<
+              std::is_integral<T>::value && std::is_signed<T>::value &&
+              ((IntegerBitsPlusSign<T>::value * 2) >
+               IntegerBitsPlusSign<intmax_t>::value)>::type* = nullptr>
+bool CheckedMulImpl(T x, T y, T* result) {
   if (x && y) {
     if (x > 0) {
       if (y > 0) {
         if (x > std::numeric_limits<T>::max() / y)
           return false;
       } else {
-        if (y < std::numeric_limits<T>::min() / x)
+        if (y < std::numeric_limits<T>::lowest() / x)
           return false;
       }
     } else {
       if (y > 0) {
-        if (x < std::numeric_limits<T>::min() / y)
+        if (x < std::numeric_limits<T>::lowest() / y)
           return false;
       } else {
         if (y < std::numeric_limits<T>::max() / x)
@@ -220,12 +215,12 @@ CheckedMulImpl(T x, T y, T* result) {
   return true;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed &&
-                            (sizeof(T) * 2 > sizeof(uintmax_t)),
-                        bool>::type
-CheckedMulImpl(T x, T y, T* result) {
+template <typename T,
+          typename std::enable_if<
+              std::is_integral<T>::value && !std::is_signed<T>::value &&
+              ((IntegerBitsPlusSign<T>::value * 2) >
+               IntegerBitsPlusSign<uintmax_t>::value)>::type* = nullptr>
+bool CheckedMulImpl(T x, T y, T* result) {
   *result = x * y;
   return (y == 0 || x <= std::numeric_limits<T>::max() / y);
 }
@@ -234,11 +229,10 @@ template <typename T, typename U, class Enable = void>
 struct CheckedMulOp {};
 
 template <typename T, typename U>
-struct CheckedMulOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedMulOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
@@ -248,8 +242,12 @@ struct CheckedMulOp<
     // support full-width, mixed-sign multiply builtins.
     // https://crbug.com/613003
     static const bool kUseMaxInt =
-        sizeof(__typeof__(x * y)) < sizeof(intptr_t) ||
-        (sizeof(__typeof__(x * y)) == sizeof(intptr_t) &&
+        // Narrower type than uintptr_t is always safe.
+        std::numeric_limits<__typeof__(x * y)>::digits <
+            std::numeric_limits<intptr_t>::digits ||
+        // Safe for intptr_t and uintptr_t if the sign matches.
+        (IntegerBitsPlusSign<__typeof__(x * y)>::value ==
+             IntegerBitsPlusSign<intptr_t>::value &&
          std::is_signed<T>::value == std::is_signed<U>::value);
 #else
     static const bool kUseMaxInt = true;
@@ -280,11 +278,11 @@ struct CheckedMulOp<
 
 // Division just requires a check for a zero denominator or an invalid negation
 // on signed min/-1.
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer, bool>::type
-CheckedDivImpl(T x, T y, T* result) {
-  if (y && (!std::numeric_limits<T>::is_signed ||
-            x != std::numeric_limits<T>::min() || y != static_cast<T>(-1))) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+bool CheckedDivImpl(T x, T y, T* result) {
+  if (y && (!std::is_signed<T>::value ||
+            x != std::numeric_limits<T>::lowest() || y != static_cast<T>(-1))) {
     *result = x / y;
     return true;
   }
@@ -295,11 +293,10 @@ template <typename T, typename U, class Enable = void>
 struct CheckedDivOp {};
 
 template <typename T, typename U>
-struct CheckedDivOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedDivOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
@@ -316,24 +313,10 @@ struct CheckedDivOp<
   }
 };
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedModImpl(T x, T y, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value>::type* = nullptr>
+bool CheckedModImpl(T x, T y, T* result) {
   if (y > 0) {
-    *result = static_cast<T>(x % y);
-    return true;
-  }
-  return false;
-}
-
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedModImpl(T x, T y, T* result) {
-  if (y != 0) {
     *result = static_cast<T>(x % y);
     return true;
   }
@@ -344,11 +327,10 @@ template <typename T, typename U, class Enable = void>
 struct CheckedModOp {};
 
 template <typename T, typename U>
-struct CheckedModOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedModOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = typename MaxExponentPromotion<T, U>::type;
   template <typename V>
   static bool Do(T x, U y, V* result) {
@@ -368,16 +350,15 @@ struct CheckedLshOp {};
 // of bits in the promoted type are undefined. Shifts of negative values
 // are undefined. Otherwise it is defined when the result fits.
 template <typename T, typename U>
-struct CheckedLshOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedLshOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = T;
   template <typename V>
   static bool Do(T x, U shift, V* result) {
-    using ShiftType = typename UnsignedIntegerForSize<T>::type;
-    static const ShiftType kBitWidth = CHAR_BIT * sizeof(T);
+    using ShiftType = typename std::make_unsigned<T>::type;
+    static const ShiftType kBitWidth = IntegerBitsPlusSign<T>::value;
     const ShiftType real_shift = static_cast<ShiftType>(shift);
     // Signed shift is not legal on negative values.
     if (!IsValueNegative(x) && real_shift < kBitWidth) {
@@ -398,17 +379,16 @@ struct CheckedRshOp {};
 // of bits in the promoted type are undefined. Otherwise, it is always defined,
 // but a right shift of a negative value is implementation-dependent.
 template <typename T, typename U>
-struct CheckedRshOp<
-    T,
-    U,
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<U>::is_integer>::type> {
+struct CheckedRshOp<T,
+                    U,
+                    typename std::enable_if<std::is_integral<T>::value &&
+                                            std::is_integral<U>::value>::type> {
   using result_type = T;
   template <typename V = result_type>
   static bool Do(T x, U shift, V* result) {
     // Use the type conversion push negative values out of range.
-    using ShiftType = typename UnsignedIntegerForSize<T>::type;
-    if (static_cast<ShiftType>(shift) < (CHAR_BIT * sizeof(T))) {
+    using ShiftType = typename std::make_unsigned<T>::type;
+    if (static_cast<ShiftType>(shift) < IntegerBitsPlusSign<T>::value) {
       T tmp = x >> shift;
       *result = static_cast<V>(tmp);
       return IsValueInRangeForNumericType<V>(tmp);
@@ -426,7 +406,7 @@ struct CheckedAndOp<T,
                     U,
                     typename std::enable_if<std::is_integral<T>::value &&
                                             std::is_integral<U>::value>::type> {
-  using result_type = typename UnsignedIntegerForSize<
+  using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
@@ -445,7 +425,7 @@ struct CheckedOrOp<T,
                    U,
                    typename std::enable_if<std::is_integral<T>::value &&
                                            std::is_integral<U>::value>::type> {
-  using result_type = typename UnsignedIntegerForSize<
+  using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
@@ -464,7 +444,7 @@ struct CheckedXorOp<T,
                     U,
                     typename std::enable_if<std::is_integral<T>::value &&
                                             std::is_integral<U>::value>::type> {
-  using result_type = typename UnsignedIntegerForSize<
+  using result_type = typename std::make_unsigned<
       typename MaxExponentPromotion<T, U>::type>::type;
   template <typename V = result_type>
   static bool Do(T x, U y, V* result) {
@@ -514,99 +494,90 @@ struct CheckedMinOp<
   }
 };
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedNeg(T value, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  std::is_signed<T>::value>::type* = nullptr>
+bool CheckedNeg(T value, T* result) {
   // The negation of signed min is min, so catch that one.
-  if (value != std::numeric_limits<T>::min()) {
+  if (value != std::numeric_limits<T>::lowest()) {
     *result = static_cast<T>(-value);
     return true;
   }
   return false;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedNeg(T value, T* result) {
-  if (!value) {  // The only legal unsigned negation is zero.
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+bool CheckedNeg(T value, T* result) {
+  if (!value) {
     *result = static_cast<T>(0);
     return true;
   }
   return false;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedInv(T value, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+bool CheckedInv(T value, T* result) {
   *result = ~value;
   return true;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedAbs(T value, T* result) {
-  if (value != std::numeric_limits<T>::min()) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  std::is_signed<T>::value>::type* = nullptr>
+bool CheckedAbs(T value, T* result) {
+  if (value != std::numeric_limits<T>::lowest()) {
     *result = std::abs(value);
     return true;
   }
   return false;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                            !std::numeric_limits<T>::is_signed,
-                        bool>::type
-CheckedAbs(T value, T* result) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+bool CheckedAbs(T value, T* result) {
   // T is unsigned, so |value| must already be positive.
   *result = value;
   return true;
 }
 
-template <typename T>
-constexpr
-    typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                                std::numeric_limits<T>::is_signed,
-                            typename UnsignedIntegerForSize<T>::type>::type
-    SafeUnsignedAbs(T value) {
-  typedef typename UnsignedIntegerForSize<T>::type UnsignedT;
-  return value == std::numeric_limits<T>::min()
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  std::is_signed<T>::value>::type* = nullptr>
+constexpr typename std::make_unsigned<T>::type SafeUnsignedAbs(T value) {
+  using UnsignedT = typename std::make_unsigned<T>::type;
+  return value == std::numeric_limits<T>::lowest()
              ? static_cast<UnsignedT>(std::numeric_limits<T>::max()) + 1
              : static_cast<UnsignedT>(std::abs(value));
 }
 
-template <typename T>
-constexpr typename std::enable_if<std::numeric_limits<T>::is_integer &&
-                                      !std::numeric_limits<T>::is_signed,
-                                  T>::type
-SafeUnsignedAbs(T value) {
+template <typename T,
+          typename std::enable_if<std::is_integral<T>::value &&
+                                  !std::is_signed<T>::value>::type* = nullptr>
+constexpr T SafeUnsignedAbs(T value) {
   // T is unsigned, so |value| must already be positive.
   return static_cast<T>(value);
 }
 
 // This is just boilerplate that wraps the standard floating point arithmetic.
 // A macro isn't the nicest solution, but it beats rewriting these repeatedly.
-#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                               \
-  template <typename T, typename U>                                       \
-  struct Checked##NAME##Op<                                               \
-      T, U,                                                               \
-      typename std::enable_if<std::numeric_limits<T>::is_iec559 ||        \
-                              std::numeric_limits<U>::is_iec559>::type> { \
-    using result_type = typename MaxExponentPromotion<T, U>::type;        \
-    template <typename V>                                                 \
-    static bool Do(T x, U y, V* result) {                                 \
-      using Promotion = typename MaxExponentPromotion<T, U>::type;        \
-      Promotion presult = x OP y;                                         \
-      *result = static_cast<V>(presult);                                  \
-      return IsValueInRangeForNumericType<V>(presult);                    \
-    }                                                                     \
+#define BASE_FLOAT_ARITHMETIC_OPS(NAME, OP)                                    \
+  template <typename T, typename U>                                            \
+  struct Checked##NAME##Op<                                                    \
+      T, U, typename std::enable_if<std::is_floating_point<T>::value ||        \
+                                    std::is_floating_point<U>::value>::type> { \
+    using result_type = typename MaxExponentPromotion<T, U>::type;             \
+    template <typename V>                                                      \
+    static bool Do(T x, U y, V* result) {                                      \
+      using Promotion = typename MaxExponentPromotion<T, U>::type;             \
+      Promotion presult = x OP y;                                              \
+      *result = static_cast<V>(presult);                                       \
+      return IsValueInRangeForNumericType<V>(presult);                         \
+    }                                                                          \
   };
 
 BASE_FLOAT_ARITHMETIC_OPS(Add, +)
@@ -616,16 +587,18 @@ BASE_FLOAT_ARITHMETIC_OPS(Div, /)
 
 #undef BASE_FLOAT_ARITHMETIC_OPS
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_iec559, bool>::type
-CheckedNeg(T value, T* result) {
+template <
+    typename T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+bool CheckedNeg(T value, T* result) {
   *result = static_cast<T>(-value);
   return true;
 }
 
-template <typename T>
-typename std::enable_if<std::numeric_limits<T>::is_iec559, bool>::type
-CheckedAbs(T value, T* result) {
+template <
+    typename T,
+    typename std::enable_if<std::is_floating_point<T>::value>::type* = nullptr>
+bool CheckedAbs(T value, T* result) {
   *result = static_cast<T>(std::abs(value));
   return true;
 }
@@ -642,10 +615,10 @@ enum NumericRepresentation {
 template <typename NumericType>
 struct GetNumericRepresentation {
   static const NumericRepresentation value =
-      std::numeric_limits<NumericType>::is_integer
+      std::is_integral<NumericType>::value
           ? NUMERIC_INTEGER
-          : (std::numeric_limits<NumericType>::is_iec559 ? NUMERIC_FLOATING
-                                                         : NUMERIC_UNKNOWN);
+          : (std::is_floating_point<NumericType>::value ? NUMERIC_FLOATING
+                                                        : NUMERIC_UNKNOWN);
 };
 
 template <typename T, NumericRepresentation type =
@@ -672,8 +645,7 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
   constexpr CheckedNumericState(Src value, bool is_valid)
       : is_valid_(is_valid && IsValueInRangeForNumericType<T>(value)),
         value_(is_valid_ ? static_cast<T>(value) : 0) {
-    static_assert(std::numeric_limits<Src>::is_specialized,
-                  "Argument must be numeric.");
+    static_assert(std::is_arithmetic<Src>::value, "Argument must be numeric.");
   }
 
   // Copy constructor.
@@ -683,10 +655,7 @@ class CheckedNumericState<T, NUMERIC_INTEGER> {
         value_(is_valid_ ? static_cast<T>(rhs.value()) : 0) {}
 
   template <typename Src>
-  constexpr explicit CheckedNumericState(
-      Src value,
-      typename std::enable_if<std::numeric_limits<Src>::is_specialized,
-                              int>::type = 0)
+  constexpr explicit CheckedNumericState(Src value)
       : is_valid_(IsValueInRangeForNumericType<T>(value)),
         value_(is_valid_ ? static_cast<T>(value) : 0) {}
 
@@ -707,20 +676,13 @@ class CheckedNumericState<T, NUMERIC_FLOATING> {
   constexpr CheckedNumericState() : value_(0.0) {}
 
   template <typename Src>
-  constexpr CheckedNumericState(
-      Src value,
-      bool is_valid,
-      typename std::enable_if<std::numeric_limits<Src>::is_integer, int>::type =
-          0)
+  constexpr CheckedNumericState(Src value, bool is_valid)
       : value_((is_valid && IsValueInRangeForNumericType<T>(value))
                    ? static_cast<T>(value)
                    : std::numeric_limits<T>::quiet_NaN()) {}
 
   template <typename Src>
-  constexpr explicit CheckedNumericState(
-      Src value,
-      typename std::enable_if<std::numeric_limits<Src>::is_specialized,
-                              int>::type = 0)
+  constexpr explicit CheckedNumericState(Src value)
       : value_(static_cast<T>(value)) {}
 
   // Copy constructor.
