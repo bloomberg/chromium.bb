@@ -10,7 +10,6 @@
 
 #include "base/bind.h"
 #include "base/command_line.h"
-#include "base/debug/alias.h"
 #include "base/guid.h"
 #include "base/logging.h"
 #include "base/macros.h"
@@ -928,19 +927,8 @@ void ServiceManager::OnGotResolvedName(std::unique_ptr<ConnectParams> params,
         package_path = result->package_path;
       }
 
-      Identity source_instance_identity;
-      base::debug::Alias(&has_source_instance);
-      base::debug::Alias(&package_path);
-      base::debug::Alias(&source);
-      base::debug::Alias(&target);
-      if (source_instance)
-        source_instance_identity = source_instance->identity();
-      base::debug::Alias(&source_instance_identity);
-#if defined(GOOGLE_CHROME_BUILD)
-      // We do not currently want to hit this code path in production, but it's
-      // happening somehow. https://crbug.com/649673.
-      CHECK(false);
-#endif
+      // TODO(rockot): Find a way to block this code path for content but allow
+      // it for chrome_mash.
       instance->StartWithFilePath(package_path);
     }
   }
