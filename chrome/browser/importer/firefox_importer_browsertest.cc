@@ -38,6 +38,10 @@
 #define MAYBE_IMPORTER(x) x
 #endif
 
+// TODO(kszatan): Disabled all tests on old profiles. http://crbug.com/592239
+#undef MAYBE_IMPORTER
+#define MAYBE_IMPORTER(x) DISABLED_##x
+
 namespace {
 
 struct PasswordInfo {

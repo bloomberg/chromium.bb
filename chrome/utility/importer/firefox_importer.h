@@ -16,6 +16,7 @@
 
 #include "base/compiler_specific.h"
 #include "base/files/file_path.h"
+#include "base/gtest_prod_util.h"
 #include "base/macros.h"
 #include "build/build_config.h"
 #include "chrome/utility/importer/importer.h"
@@ -44,6 +45,7 @@ class FirefoxImporter : public Importer {
 
   ~FirefoxImporter() override;
 
+  FRIEND_TEST_ALL_PREFIXES(FirefoxImporterTest, ImportBookmarksV25);
   void ImportBookmarks();
   void ImportPasswords();
   void ImportHistory();
@@ -60,9 +62,9 @@ class FirefoxImporter : public Importer {
   struct BookmarkItem;
   using BookmarkList = std::vector<std::unique_ptr<BookmarkItem>>;
 
-  // Gets the specific IDs of bookmark root node from |db|.
-  void LoadRootNodeID(sql::Connection* db, int* toolbar_folder_id,
-                      int* menu_folder_id, int* unsorted_folder_id);
+  // Gets the specific ID of bookmark node with given GUID from |db|.
+  // Returns -1 if not found.
+  int LoadNodeIDByGUID(sql::Connection* db, const std::string& GUID);
 
   // Loads all livemark IDs from database |db|.
   void LoadLivemarkIDs(sql::Connection* db, std::set<int>* livemark);

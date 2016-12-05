@@ -3694,6 +3694,8 @@ test("unit_tests") {
       "../common/importer/firefox_importer_utils_unittest.cc",
 
       # No service process (which also requires multiprocess lock).
+      "../common/importer/mock_importer_bridge.cc",
+      "../common/importer/mock_importer_bridge.h",
       "../common/multi_process_lock_unittest.cc",
       "../test/base/browser_with_test_window_test.cc",
       "../test/base/browser_with_test_window_test.h",

@@ -205,10 +205,9 @@ void FirefoxImporter::ImportBookmarks() {
     return;
 
   // Get the bookmark folders that we are interested in.
-  int toolbar_folder_id = -1;
-  int menu_folder_id = -1;
-  int unsorted_folder_id = -1;
-  LoadRootNodeID(&db, &toolbar_folder_id, &menu_folder_id, &unsorted_folder_id);
+  int toolbar_folder_id = LoadNodeIDByGUID(&db, "toolbar_____");
+  int menu_folder_id = LoadNodeIDByGUID(&db, "menu________");
+  int unsorted_folder_id = LoadNodeIDByGUID(&db, "unfiled_____");
 
   // Load livemark IDs.
   std::set<int> livemark_id;
@@ -643,27 +642,18 @@ void FirefoxImporter::GetSearchEnginesXMLDataFromJSON(
   }
 }
 
-void FirefoxImporter::LoadRootNodeID(sql::Connection* db,
-                                      int* toolbar_folder_id,
-                                      int* menu_folder_id,
-                                      int* unsorted_folder_id) {
-  static const char kToolbarFolderName[] = "toolbar";
-  static const char kMenuFolderName[] = "menu";
-  static const char kUnsortedFolderName[] = "unfiled";
-
-  const char query[] = "SELECT root_name, folder_id FROM moz_bookmarks_roots";
+int FirefoxImporter::LoadNodeIDByGUID(sql::Connection* db,
+                                      const std::string& GUID) {
+  const char query[] =
+      "SELECT id "
+      "FROM moz_bookmarks "
+      "WHERE guid == ?";
   sql::Statement s(db->GetUniqueStatement(query));
+  s.BindString(0, GUID);
 
-  while (s.Step()) {
-    std::string folder = s.ColumnString(0);
-    int id = s.ColumnInt(1);
-    if (folder == kToolbarFolderName)
-      *toolbar_folder_id = id;
-    else if (folder == kMenuFolderName)
-      *menu_folder_id = id;
-    else if (folder == kUnsortedFolderName)
-      *unsorted_folder_id = id;
-  }
+  if (!s.Step())
+    return -1;
+  return s.ColumnInt(0);
 }
 
 void FirefoxImporter::LoadLivemarkIDs(sql::Connection* db,
