@@ -121,7 +121,6 @@ class WindowProxy final : public GarbageCollectedFinalized<WindowProxy> {
   RefPtr<ScriptState> m_scriptState;
   RefPtr<DOMWrapperWorld> m_world;
   ScopedPersistent<v8::Object> m_globalProxy;
-  ScopedPersistent<v8::Object> m_document;
 };
 
 }  // namespace blink
