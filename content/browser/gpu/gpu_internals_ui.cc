@@ -128,6 +128,9 @@ base::DictionaryValue* GpuInfoAsDictionaryValue() {
   basic_info->Append(NewDescriptionValuePair(
       "In-process GPU", new base::FundamentalValue(gpu_info.in_process_gpu)));
   basic_info->Append(NewDescriptionValuePair(
+      "Passthrough Command Decoder",
+      new base::FundamentalValue(gpu_info.passthrough_cmd_decoder)));
+  basic_info->Append(NewDescriptionValuePair(
       "Sandboxed", new base::FundamentalValue(gpu_info.sandboxed)));
   basic_info->Append(NewDescriptionValuePair(
       "GPU0", GPUDeviceToString(gpu_info.gpu)));

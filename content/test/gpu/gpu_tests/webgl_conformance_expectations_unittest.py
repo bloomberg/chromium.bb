@@ -107,6 +107,7 @@ class WebGLConformanceExpectationsTest(unittest.TestCase):
         (
           set(e.os_conditions),
           set(e.browser_conditions),
+          set(e.cmd_decoder_conditions),
           set(e.angle_conditions),
         ),
         set(e.gpu_conditions),

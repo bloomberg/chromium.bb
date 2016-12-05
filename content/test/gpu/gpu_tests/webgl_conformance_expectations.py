@@ -133,14 +133,14 @@ class WebGLConformanceExpectations(GpuTestExpectations):
 
     # Win NVIDIA failures
     self.Flaky('conformance/textures/misc/texture-npot-video.html',
-        ['win', 'nvidia'], bug=626524)
+        ['win', 'nvidia', 'no_passthrough'], bug=626524)
     self.Flaky('conformance/textures/misc/texture-upload-size.html',
         ['win', 'nvidia'], bug=630860)
 
     # Win7 / Intel failures
     self.Fail('conformance/textures/misc/' +
               'copy-tex-image-and-sub-image-2d.html',
-              ['win7', 'intel'])
+              ['win7', 'intel', 'no_passthrough'])
 
     # Win / AMD flakiness seen on new tryservers.
     # It's unfortunate that this suppression needs to be so broad, but
@@ -213,6 +213,114 @@ class WebGLConformanceExpectations(GpuTestExpectations):
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
     self.Fail('conformance/uniforms/uniform-default-values.html',
         ['win', 'intel', 'opengl'], bug=1007) # angle bug ID
+
+    # Win / Passthrough command decoder
+    self.Fail('conformance/attribs/gl-vertexattribpointer.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/extensions/*', ['win', 'passthrough', 'd3d11'],
+        bug=1523) # angle bug ID
+    self.Fail('conformance/canvas/framebuffer-bindings-unaffected-on-' +
+        'resize.html', ['win', 'passthrough', 'd3d11'], bug=665521)
+    self.Fail('conformance/glsl/bugs/essl3-shaders-with-webgl1.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/attrib-location-length-limits.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shader-varying-packing-restrictions.html',
+        ['win', 'passthrough', 'd3d11'], bug=1638) # angle bug ID
+    self.Fail('conformance/glsl/misc/shader-with-257-character-define.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shader-with-257-character-identifier.' +
+        'frag.html', ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shader-with-dfdx.frag.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shaders-with-invariance.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shaders-with-name-conflicts.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/misc/shaders-with-uniform-structs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/glsl/variables/glsl-built-ins.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/limits/gl-line-width.html',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('conformance/misc/error-reporting.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/misc/invalid-passed-params.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/misc/object-deletion-behaviour.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/misc/type-conversion-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/misc/uninitialized-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=1635) # angle bug ID
+    self.Fail('conformance/misc/webgl-specific.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/conformance/quickCheckAPI-B2.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/more/conformance/quickCheckAPI-D_G.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/more/functions/copyTexImage2D.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/more/functions/copyTexImage2DBadArgs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/copyTexSubImage2D.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/more/functions/drawArrays.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/drawArraysOutOfBounds.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/drawElementsBadArgs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/texSubImage2DBadArgs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/texSubImage2DHTMLBadArgs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/more/functions/vertexAttribPointerBadArgs.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/programs/get-active-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/programs/program-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/reading/read-pixels-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/renderbuffers/feedback-loop.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/renderbuffers/framebuffer-object-attachment.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/renderbuffers/framebuffer-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/rendering/draw-arrays-out-of-bounds.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/rendering/draw-elements-out-of-bounds.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/copy-tex-image-2d-formats.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/copy-tex-image-and-sub-image-2d.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/mipmap-fbo.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/textures/misc/tex-input-validation.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/texture-active-bind-2.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/textures/misc/texture-attachment-formats.html',
+        ['win', 'passthrough', 'd3d11'], bug=602688)
+    self.Fail('conformance/textures/misc/texture-copying-feedback-loops.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/texture-fakeblack.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/textures/misc/texture-mips.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/textures/misc/texture-npot.html',
+        ['win', 'passthrough', 'd3d11'], bug=665518)
+    self.Fail('conformance/textures/misc/texture-npot-video.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('conformance/uniforms/uniform-samplers-test.html',
+        ['win', 'passthrough', 'd3d11'], bug=1639) # angle bug ID
+    self.Fail('WebglExtension_OES_texture_float_linear',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
+    self.Fail('WebglExtension_OES_texture_half_float_linear',
+        ['win', 'passthrough', 'd3d11'], bug=1523) # angle bug ID
 
     # Mac failures
     self.Flaky('conformance/extensions/oes-texture-float-with-video.html',

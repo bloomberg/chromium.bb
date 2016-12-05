@@ -243,6 +243,10 @@ struct StructTraits<gpu::mojom::GpuInfoDataView, gpu::GPUInfo> {
     return input.in_process_gpu;
   }
 
+  static bool passthrough_cmd_decoder(const gpu::GPUInfo& input) {
+    return input.passthrough_cmd_decoder;
+  }
+
   static gpu::CollectInfoResult basic_info_state(const gpu::GPUInfo& input) {
     return input.basic_info_state;
   }

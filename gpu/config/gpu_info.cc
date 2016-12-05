@@ -76,6 +76,7 @@ GPUInfo::GPUInfo()
       sandboxed(false),
       process_crash_count(0),
       in_process_gpu(true),
+      passthrough_cmd_decoder(false),
       basic_info_state(kCollectInfoNone),
       context_info_state(kCollectInfoNone),
 #if defined(OS_WIN)
@@ -125,6 +126,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
     bool sandboxed;
     int process_crash_count;
     bool in_process_gpu;
+    bool passthrough_cmd_decoder;
     CollectInfoResult basic_info_state;
     CollectInfoResult context_info_state;
 #if defined(OS_WIN)
@@ -188,6 +190,7 @@ void GPUInfo::EnumerateFields(Enumerator* enumerator) const {
   enumerator->AddBool("sandboxed", sandboxed);
   enumerator->AddInt("processCrashCount", process_crash_count);
   enumerator->AddBool("inProcessGpu", in_process_gpu);
+  enumerator->AddBool("passthroughCmdDecoder", passthrough_cmd_decoder);
   enumerator->AddInt("basicInfoState", basic_info_state);
   enumerator->AddInt("contextInfoState", context_info_state);
 #if defined(OS_WIN)

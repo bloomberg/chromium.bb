@@ -224,6 +224,9 @@ struct GPU_EXPORT GPUInfo {
   // True if the GPU is running in the browser process instead of its own.
   bool in_process_gpu;
 
+  // True if the GPU process is using the passthrough command decoder.
+  bool passthrough_cmd_decoder;
+
   // The state of whether the basic/context/DxDiagnostics info is collected and
   // if the collection fails or not.
   CollectInfoResult basic_info_state;

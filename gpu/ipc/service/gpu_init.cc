@@ -158,6 +158,9 @@ bool GpuInit::InitializeAndStartSandbox(const base::CommandLine& command_line) {
 #endif
   gpu_info_.in_process_gpu = false;
 
+  gpu_info_.passthrough_cmd_decoder =
+      command_line.HasSwitch(switches::kUsePassthroughCmdDecoder);
+
   sandbox_helper_->PreSandboxStartup();
 
 #if defined(OS_LINUX)
