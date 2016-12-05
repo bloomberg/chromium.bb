@@ -201,7 +201,7 @@ function testWindowClose_CancelsScan(callback) {
   reportPromise(promise, callback);
 }
 
-function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir() {
+function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir(callback) {
   var controller = createController(
       VolumeManagerCommon.VolumeType.MTP,
       'mtp-volume',
@@ -212,13 +212,32 @@ function testDirectoryChange_DetailsPanelVisibility_InitialChangeDir() {
       ],
       '/DCIM');
 
+  var fileSystem = new MockFileSystem('testFs');
   var event = new Event('directory-changed');
   event.newDirEntry = new MockDirectoryEntry(
-      new MockFileSystem('testFs'),
+      fileSystem,
       '/DCIM/');
+  // ensure there is some content in the scan so the code that depends
+  // on this state doesn't croak which it finds it missing.
+  mediaScanner.fileEntries.push(
+      new MockFileEntry(fileSystem, '/DCIM/photos0/IMG00001.jpg', {size: 0}));
 
+  // Make controller enter a scanning state.
   environment.directoryChangedListener(event);
-  assertTrue(widget.detailsVisible);
+  assertFalse(widget.detailsVisible);
+
+  var promise = widget.updateResolver.promise.then(function() {
+    // "scanning..."
+    assertFalse(widget.detailsVisible);
+    widget.resetPromises();
+    mediaScanner.finalizeScans();
+    return widget.updateResolver.promise;
+  }).then(function() {
+    // "ready to update"
+    // Details should pop up.
+    assertTrue(widget.detailsVisible);
+  });
+  reportPromise(promise, callback);
 }
 
 function testDirectoryChange_DetailsPanelVisibility_SubsequentChangeDir() {
