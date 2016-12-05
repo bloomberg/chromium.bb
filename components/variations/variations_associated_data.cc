@@ -11,6 +11,7 @@
 #include "base/feature_list.h"
 #include "base/macros.h"
 #include "base/memory/singleton.h"
+#include "base/metrics/field_trial.h"
 #include "base/metrics/field_trial_param_associator.h"
 #include "base/strings/string_split.h"
 #include "components/variations/variations_http_header_provider.h"
@@ -18,8 +19,6 @@
 namespace variations {
 
 namespace {
-
-const char kGroupTesting[] = "Testing";
 
 // The internal singleton accessor for the map, used to keep it thread-safe.
 class GroupMapAccessor {
@@ -194,26 +193,6 @@ std::string GetVariationParamValueByFeature(const base::Feature& feature,
 // Functions below are exposed for testing explicitly behind this namespace.
 // They simply wrap existing functions in this file.
 namespace testing {
-
-VariationParamsManager::VariationParamsManager(
-    const std::string& trial_name,
-    const std::map<std::string, std::string>& params) {
-  SetVariationParams(trial_name, params);
-}
-
-VariationParamsManager::~VariationParamsManager() {
-  ClearAllVariationIDs();
-  ClearAllVariationParams();
-  field_trial_list_.reset();
-}
-
-void VariationParamsManager::SetVariationParams(
-    const std::string& trial_name,
-    const std::map<std::string, std::string>& params) {
-  field_trial_list_.reset(new base::FieldTrialList(nullptr));
-  variations::AssociateVariationParams(trial_name, kGroupTesting, params);
-  base::FieldTrialList::CreateFieldTrial(trial_name, kGroupTesting);
-}
 
 void ClearAllVariationIDs() {
   GroupMapAccessor::GetInstance()->ClearAllMapsForTesting();

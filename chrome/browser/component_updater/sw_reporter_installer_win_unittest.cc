@@ -23,7 +23,7 @@
 #include "base/values.h"
 #include "base/version.h"
 #include "chrome/browser/safe_browsing/srt_fetcher_win.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -137,25 +137,19 @@ class ExperimentalSwReporterInstallerTest : public SwReporterInstallerTest {
 
   void CreateFeatureWithParams(
       const std::map<std::string, std::string>& params) {
-    constexpr char kFeatureName[] = "ExperimentalSwReporterEngine";
+    constexpr char kFeatureAndTrialName[] = "ExperimentalSwReporterEngine";
 
     std::map<std::string, std::string> params_with_group = params;
     params_with_group["experiment_group_for_reporting"] = kExperimentGroupName;
 
     // Assign the given variation params to the experiment group until
     // |variations_| goes out of scope when the test exits. This will also
-    // create a FieldTrial for this group.
+    // create a FieldTrial for this group and associate the params with the
+    // feature.
     variations_ = std::make_unique<variations::testing::VariationParamsManager>(
-        kFeatureName, params_with_group);
-
-    // Create a feature list containing only the field trial for this group,
-    // and enable it for the length of the test.
-    base::FieldTrial* trial = base::FieldTrialList::Find(kFeatureName);
-    ASSERT_TRUE(trial);
-    auto feature_list = std::make_unique<base::FeatureList>();
-    feature_list->RegisterFieldTrialOverride(
-        kFeatureName, base::FeatureList::OVERRIDE_ENABLE_FEATURE, trial);
-    scoped_feature_list_.InitWithFeatureList(std::move(feature_list));
+        kFeatureAndTrialName,  // trial_name
+        params_with_group,
+        std::set<std::string>{kFeatureAndTrialName});  // associated_features
   }
 
   void ExpectAttributesWithTag(const SwReporterInstallerTraits& traits,

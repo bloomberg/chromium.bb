@@ -1651,6 +1651,7 @@ source_set("unit_tests") {
     "//components/policy:generated",
     "//components/resources",
     "//components/sync",
+    "//components/variations:test_support",
     "//crypto:platform",
     "//dbus",
     "//mojo/public/cpp/system:system",

@@ -38,7 +38,7 @@
 #include "components/prefs/testing_pref_service.h"
 #include "components/signin/core/browser/fake_profile_oauth2_token_service.h"
 #include "components/signin/core/browser/fake_signin_manager.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

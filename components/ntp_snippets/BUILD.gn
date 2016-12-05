@@ -151,7 +151,7 @@ source_set("unit_tests") {
     "//components/strings",
     "//components/sync:test_support_driver",
     "//components/sync_sessions",
-    "//components/variations",
+    "//components/variations:test_support",
     "//net:test_support",
     "//testing/gtest",
     "//third_party/icu/",

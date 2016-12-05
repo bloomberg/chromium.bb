@@ -25,7 +25,7 @@
 #include "components/signin/core/browser/fake_signin_manager.h"
 #include "components/signin/core/browser/test_signin_client.h"
 #include "components/variations/entropy_provider.h"
-#include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "net/url_request/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_test_util.h"
 #include "testing/gmock/include/gmock/gmock.h"

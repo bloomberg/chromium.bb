@@ -5,6 +5,8 @@
 #include "chrome/browser/chromeos/hats/hats_finch_helper.h"
 
 #include <map>
+#include <set>
+#include <string>
 
 #include "base/strings/string_number_conversions.h"
 #include "base/test/scoped_feature_list.h"
@@ -13,6 +15,7 @@
 #include "chrome/test/base/testing_profile.h"
 #include "components/prefs/pref_service.h"
 #include "components/variations/variations_associated_data.h"
+#include "components/variations/variations_params_manager.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -20,8 +23,7 @@ namespace chromeos {
 
 namespace {
 
-const char kGroupTesting[] = "Testing";
-const std::string kTrialName(features::kHappinessTrackingSystem.name);
+const std::string kFeatureAndTrialName(features::kHappinessTrackingSystem.name);
 
 }  // namespace
 
@@ -29,18 +31,12 @@ class HatsFinchHelperTest : public testing::Test {
  public:
   using ParamMap = std::map<std::string, std::string>;
 
-  HatsFinchHelperTest() : params_manager_(kTrialName, {{}}) {}
-
-  void SetUp() override {
-    scoped_feature_list_.InitAndEnableFeature(
-        features::kHappinessTrackingSystem);
-  }
+  HatsFinchHelperTest() {}
 
   void SetFinchSeedParams(ParamMap params) {
-    // Clear all the things.
-    variations::testing::ClearAllVariationParams();
-    variations::testing::ClearAllVariationIDs();
-    variations::AssociateVariationParams(kTrialName, kGroupTesting, params);
+    params_manager_.SetVariationParamsWithFeatureAssociations(
+        kFeatureAndTrialName /* trial name */, params,
+        std::set<std::string>{kFeatureAndTrialName} /*features to switch on */);
   }
 
   ParamMap CreateParamMap(std::string prob,
@@ -66,7 +62,6 @@ class HatsFinchHelperTest : public testing::Test {
 
  private:
   variations::testing::VariationParamsManager params_manager_;
-  base::test::ScopedFeatureList scoped_feature_list_;
 
   DISALLOW_COPY_AND_ASSIGN(HatsFinchHelperTest);
 };

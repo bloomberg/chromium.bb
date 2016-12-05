@@ -93,6 +93,22 @@ if (is_android) {
   }
 }
 
+static_library("test_support") {
+  testonly = true
+  sources = [
+    "variations_params_manager.cc",
+    "variations_params_manager.h",
+  ]
+
+  public_deps = [
+    ":variations",
+  ]
+
+  deps = [
+    "//base/test:test_support",
+  ]
+}
+
 source_set("unit_tests") {
   testonly = true
   sources = [
