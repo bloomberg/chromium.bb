@@ -188,6 +188,10 @@ LayoutTestBluetoothAdapterProvider::GetBluetoothAdapter(
     return GetMissingCharacteristicHeartRateAdapter();
   if (fake_adapter_name == "HeartRateAdapter")
     return GetHeartRateAdapter();
+  if (fake_adapter_name == "EmptyNameDeviceAdapter")
+    return GetEmptyNameDeviceAdapter();
+  if (fake_adapter_name == "NoNameDeviceAdapter")
+    return GetNoNameDeviceAdapter();
   if (fake_adapter_name == "EmptyNameHeartRateAdapter")
     return GetEmptyNameHeartRateAdapter();
   if (fake_adapter_name == "NoNameHeartRateAdapter")
@@ -710,6 +714,28 @@ LayoutTestBluetoothAdapterProvider::GetDisconnectingHealthThermometer() {
 
   adapter->AddMockDevice(std::move(device));
 
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetEmptyNameDeviceAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  std::unique_ptr<NiceMockBluetoothDevice> device(
+      GetConnectableDevice(adapter.get(), "" /* device_name */));
+
+  adapter->AddMockDevice(std::move(device));
+  return adapter;
+}
+
+// static
+scoped_refptr<NiceMockBluetoothAdapter>
+LayoutTestBluetoothAdapterProvider::GetNoNameDeviceAdapter() {
+  scoped_refptr<NiceMockBluetoothAdapter> adapter(GetEmptyAdapter());
+  std::unique_ptr<NiceMockBluetoothDevice> device(
+      GetConnectableDevice(adapter.get(), nullptr /* device_name */));
+
+  adapter->AddMockDevice(std::move(device));
   return adapter;
 }
 

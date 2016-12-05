@@ -40,14 +40,21 @@ TypeConverter<blink::mojom::WebBluetoothRequestDeviceOptionsPtr,
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
 
-  for (const auto& filter : web_options.filters) {
-    options->filters.push_back(blink::mojom::WebBluetoothScanFilter::From<
-                               blink::WebBluetoothScanFilter>(filter));
+  options->accept_all_devices = web_options.acceptAllDevices;
+
+  if (web_options.hasFilters) {
+    options->filters.emplace();
+    for (const auto& filter : web_options.filters) {
+      options->filters->push_back(blink::mojom::WebBluetoothScanFilter::From<
+                                  blink::WebBluetoothScanFilter>(filter));
+    }
   }
+
   for (const auto& optional_service : web_options.optionalServices) {
     options->optional_services.push_back(
         device::BluetoothUUID(optional_service.utf8()));
   }
+
   return options;
 }
 

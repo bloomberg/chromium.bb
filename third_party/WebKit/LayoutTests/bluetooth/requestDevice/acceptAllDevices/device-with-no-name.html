@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('NoNameDeviceAdapter')
+    .then(() => requestDeviceWithKeyDown({acceptAllDevices: true}))
+    .then(device => {
+      assert_true(device.name === null);
+    });
+}, 'Device with no name or UUIDs nearby. Should be found if ' +
+   'acceptAllDevices is true.');
+</script>

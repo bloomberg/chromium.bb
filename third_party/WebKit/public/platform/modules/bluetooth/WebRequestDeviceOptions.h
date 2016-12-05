@@ -30,7 +30,9 @@ struct WebRequestDeviceOptions {
   WebRequestDeviceOptions() {}
 
   WebVector<WebBluetoothScanFilter> filters;
+  bool hasFilters;
   WebVector<WebString> optionalServices;
+  bool acceptAllDevices;
 };
 
 }  // namespace blink

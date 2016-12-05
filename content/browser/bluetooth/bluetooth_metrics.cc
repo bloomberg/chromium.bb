@@ -101,12 +101,14 @@ static void RecordUnionOfServices(
     union_of_services.insert(service.canonical_value());
   }
 
-  for (const auto& filter : options->filters) {
-    if (!filter->services) {
-      continue;
-    }
-    for (const BluetoothUUID& service : filter->services.value()) {
-      union_of_services.insert(service.canonical_value());
+  if (options->filters) {
+    for (const auto& filter : options->filters.value()) {
+      if (!filter->services) {
+        continue;
+      }
+      for (const BluetoothUUID& service : filter->services.value()) {
+        union_of_services.insert(service.canonical_value());
+      }
     }
   }
 
@@ -124,7 +126,13 @@ static void RecordUnionOfServices(
 
 void RecordRequestDeviceOptions(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options) {
-  RecordRequestDeviceFilters(options->filters);
+  UMA_HISTOGRAM_BOOLEAN("Bluetooth.Web.RequestDevice.Options.AcceptAllDevices",
+                        options->accept_all_devices);
+
+  if (options->filters) {
+    RecordRequestDeviceFilters(options->filters.value());
+  }
+
   RecordRequestDeviceOptionalServices(options->optional_services);
   RecordUnionOfServices(options);
 }

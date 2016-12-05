@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+promise_test(() => {
+  return setBluetoothFakeAdapter('TwoHeartRateServicesAdapter')
+    .then(() => requestDeviceWithKeyDown({acceptAllDevices: true}))
+    .then(device => device.gatt.connect())
+    .then(gattServer => assert_promise_rejects_with_message(
+      gattServer.getPrimaryServices(),
+      new DOMException(
+        'Origin is not allowed to access any service. ' +
+        'Tip: Add the service UUID to \'optionalServices\' in ' +
+        'requestDevice() options. https://goo.gl/HxfxSQ',
+        'SecurityError')));
+}, 'requestDevice called with acceptAllDevices: true and with no ' +
+   'optionalServices. Should not get access to any services.');
+</script>

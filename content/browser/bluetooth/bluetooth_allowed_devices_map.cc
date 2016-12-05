@@ -166,15 +166,18 @@ void BluetoothAllowedDevicesMap::AddUnionOfServicesTo(
     const blink::mojom::WebBluetoothRequestDeviceOptionsPtr& options,
     std::unordered_set<BluetoothUUID, device::BluetoothUUIDHash>*
         unionOfServices) {
-  for (const auto& filter : options->filters) {
-    if (!filter->services) {
-      continue;
-    }
+  if (options->filters) {
+    for (const auto& filter : options->filters.value()) {
+      if (!filter->services) {
+        continue;
+      }
 
-    for (const BluetoothUUID& uuid : filter->services.value()) {
-      unionOfServices->insert(uuid);
+      for (const BluetoothUUID& uuid : filter->services.value()) {
+        unionOfServices->insert(uuid);
+      }
     }
   }
+
   for (const BluetoothUUID& uuid : options->optional_services) {
     unionOfServices->insert(uuid);
   }

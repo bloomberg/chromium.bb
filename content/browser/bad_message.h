@@ -121,7 +121,7 @@ enum BadMessageReason {
   RDH_INVALID_URL = 97,
   BDH_CHARACTERISTIC_ALREADY_SUBSCRIBED = 98,
   RFH_OWNER_PROPERTY = 99,
-  BDH_EMPTY_OR_INVALID_FILTERS = 100,
+  BDH_EMPTY_OR_INVALID_FILTERS = 100,  // obsolete; no longer used
   WC_CONTENT_WITH_CERT_ERRORS_BAD_SECURITY_INFO = 101,  // obsolete; not used
   RFMF_RENDERER_FAKED_ITS_OWN_DEATH = 102,
   DWNLD_INVALID_SAVABLE_RESOURCE_LINKS_RESPONSE = 103,
@@ -179,6 +179,7 @@ enum BadMessageReason {
   MDDH_INVALID_SUBSCRIPTION_REQUEST = 155,
   MDDH_INVALID_UNSUBSCRIPTION_REQUEST = 156,
   AOAH_NONSENSE_DEVICE_ID = 157,
+  BDH_INVALID_OPTIONS = 158,
 
   // Please add new elements here. The naming convention is abbreviated class
   // name (e.g. RenderFrameHost becomes RFH) plus a unique description of the

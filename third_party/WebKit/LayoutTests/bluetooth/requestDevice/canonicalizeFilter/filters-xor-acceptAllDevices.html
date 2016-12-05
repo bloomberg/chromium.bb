@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+'use strict';
+let test_specs = [
+  {},
+  {optionalServices: ['heart_rate']},
+  {filters: [], acceptAllDevices: true},
+  {filters: [], acceptAllDevices: true, optionalServices: ['heart_rate']}
+];
+
+promise_test(t => {
+  let test_promises = Promise.resolve();
+  test_specs.forEach(args => {
+    test_promises = test_promises
+      .then(() => assert_promise_rejects_with_message(
+        requestDeviceWithKeyDown(args),
+        new TypeError(
+          'Failed to execute \'requestDevice\' on \'Bluetooth\': ' +
+          'Either \'filters\' should be present or ' +
+          '\'acceptAllDevices\' should be true, but not both.')));
+  });
+  return test_promises;
+}, 'RequestDeviceOptions should have exactly one of \'filters\' or ' +
+   '\'acceptAllDevices:true\'. Reject with TypeError if not.')
+</script>

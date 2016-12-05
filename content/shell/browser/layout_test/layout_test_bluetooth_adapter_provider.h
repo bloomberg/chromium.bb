@@ -233,6 +233,18 @@ class LayoutTestBluetoothAdapterProvider {
   static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
   GetHeartRateAdapter();
 
+  // |GetEmptyNameDeviceAdapter|
+  // Inherits from |EmptyAdapter|
+  // Contains a single device with an empty name and no UUIDs.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetEmptyNameDeviceAdapter();
+
+  // |GetNoNameDeviceAdapter|
+  // Inherits from |EmptyAdapter|
+  // Contains a single device with no name and no UUIDs.
+  static scoped_refptr<testing::NiceMock<device::MockBluetoothAdapter>>
+  GetNoNameDeviceAdapter();
+
   // |GetEmptyNameHeartRateAdapter|
   // Inherits from |EmptyAdapter|
   // Internal Structure:

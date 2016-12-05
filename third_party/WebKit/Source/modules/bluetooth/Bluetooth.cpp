@@ -100,26 +100,37 @@ static void canonicalizeFilter(const BluetoothScanFilterInit& filter,
 static void convertRequestDeviceOptions(const RequestDeviceOptions& options,
                                         WebRequestDeviceOptions& result,
                                         ExceptionState& exceptionState) {
-  ASSERT(options.hasFilters());
-
-  if (options.filters().isEmpty()) {
+  if (!(options.hasFilters() ^ options.acceptAllDevices())) {
     exceptionState.throwTypeError(
-        "'filters' member must be non-empty to find any devices.");
+        "Either 'filters' should be present or 'acceptAllDevices' should be "
+        "true, but not both.");
+    return;
   }
 
-  Vector<WebBluetoothScanFilter> filters;
-  for (const BluetoothScanFilterInit& filter : options.filters()) {
-    WebBluetoothScanFilter canonicalizedFilter = WebBluetoothScanFilter();
+  result.acceptAllDevices = options.acceptAllDevices();
 
-    canonicalizeFilter(filter, canonicalizedFilter, exceptionState);
-
-    if (exceptionState.hadException())
+  result.hasFilters = options.hasFilters();
+  if (result.hasFilters) {
+    if (options.filters().isEmpty()) {
+      exceptionState.throwTypeError(
+          "'filters' member must be non-empty to find any devices.");
       return;
+    }
 
-    filters.append(canonicalizedFilter);
+    Vector<WebBluetoothScanFilter> filters;
+    for (const BluetoothScanFilterInit& filter : options.filters()) {
+      WebBluetoothScanFilter canonicalizedFilter = WebBluetoothScanFilter();
+
+      canonicalizeFilter(filter, canonicalizedFilter, exceptionState);
+
+      if (exceptionState.hadException())
+        return;
+
+      filters.append(canonicalizedFilter);
+    }
+
+    result.filters.assign(filters);
   }
-
-  result.filters.assign(filters);
 
   if (options.hasOptionalServices()) {
     Vector<WebString> optionalServices;
@@ -172,16 +183,16 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
                                        ExceptionState& exceptionState) {
   ExecutionContext* context = scriptState->getExecutionContext();
 
-  // 1. If the incumbent settings object is not a secure context, reject promise
-  //    with a SecurityError and abort these steps.
+  // If the incumbent settings object is not a secure context, reject promise
+  // with a SecurityError and abort these steps.
   String errorMessage;
   if (!context->isSecureContext(errorMessage)) {
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(SecurityError, errorMessage));
   }
 
-  // 2. If the algorithm is not allowed to show a popup, reject promise with a
-  //    SecurityError and abort these steps.
+  // If the algorithm is not allowed to show a popup, reject promise with a
+  // SecurityError and abort these steps.
   if (!UserGestureIndicator::consumeUserGesture()) {
     return ScriptPromise::rejectWithDOMException(
         scriptState,
@@ -196,8 +207,8 @@ ScriptPromise Bluetooth::requestDevice(ScriptState* scriptState,
     return ScriptPromise::rejectWithDOMException(
         scriptState, DOMException::create(NotSupportedError));
 
-  // 3. In order to convert the arguments from service names and aliases to just
-  //    UUIDs, do the following substeps:
+  // In order to convert the arguments from service names and aliases to just
+  // UUIDs, do the following substeps:
   WebRequestDeviceOptions webOptions;
   convertRequestDeviceOptions(options, webOptions, exceptionState);
   if (exceptionState.hadException())

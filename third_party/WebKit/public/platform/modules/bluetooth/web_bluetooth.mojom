@@ -78,8 +78,9 @@ struct WebBluetoothScanFilter {
 };
 
 struct WebBluetoothRequestDeviceOptions {
-  array<WebBluetoothScanFilter> filters;
+  array<WebBluetoothScanFilter>? filters;
   array<bluetooth.mojom.UUID> optional_services;
+  bool accept_all_devices;
 };
 
 // Indicates if the function will return a single or multiple

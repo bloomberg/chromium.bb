@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<script src="../../../resources/testharness.js"></script>
+<script src="../../../resources/testharnessreport.js"></script>
+<script src="../../../resources/bluetooth/bluetooth-helpers.js"></script>
+<script>
+promise_test(() => {
+  // The UnicodeDevice's name is '❤❤❤❤❤❤❤❤❤'. ❤ = \u2764
+  let device_name = generate_string(9, '\u2764');
+  return setBluetoothFakeAdapter('UnicodeDeviceAdapter')
+    .then(() => requestDeviceWithKeyDown({acceptAllDevices: true}))
+    .then(device => {
+      assert_equals(device.name, device_name);
+    });
+}, 'A device with name and no UUIDs nearby. Should be found if ' +
+   'acceptAllDevices is true.');
+</script>

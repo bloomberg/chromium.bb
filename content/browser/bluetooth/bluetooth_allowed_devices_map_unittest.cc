@@ -191,7 +191,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, NoPermissionForAnyService) {
       blink::mojom::WebBluetoothScanFilter::New();
 
   scan_filter->name = kDeviceName;
-  options->filters.push_back(scan_filter.Clone());
+  options->filters.emplace();
+  options->filters->push_back({scan_filter.Clone()});
 
   // Add to map.
   const WebBluetoothDeviceId device_id =
@@ -217,11 +218,12 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginOneDevice) {
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
-  options->filters.push_back(scan_filter1.Clone());
+  options->filters.emplace();
+  options->filters->push_back(scan_filter1.Clone());
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kHeartRateUUID);
-  options->filters.push_back(scan_filter2.Clone());
+  options->filters->push_back(scan_filter2.Clone());
 
   options->optional_services.push_back(kBatteryServiceUUID);
   options->optional_services.push_back(kHeartRateUUID);
@@ -260,8 +262,9 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginOneDevice) {
   blink::mojom::WebBluetoothRequestDeviceOptionsPtr options2 =
       blink::mojom::WebBluetoothRequestDeviceOptions::New();
 
-  options2->filters.push_back(scan_filter1.Clone());
-  options2->filters.push_back(scan_filter2.Clone());
+  options2->filters.emplace();
+  options2->filters->push_back(scan_filter1.Clone());
+  options2->filters->push_back(scan_filter2.Clone());
 
   const WebBluetoothDeviceId device_id2 =
       allowed_devices_map.AddDevice(kTestOrigin1, kDeviceAddress1, options2);
@@ -298,7 +301,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginTwoDevices) {
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
-  options1->filters.push_back(std::move(scan_filter1));
+  options1->filters.emplace();
+  options1->filters->push_back(std::move(scan_filter1));
 
   options1->optional_services.push_back(kHeartRateUUID);
 
@@ -310,7 +314,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_OneOriginTwoDevices) {
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kBatteryServiceUUID);
-  options2->filters.push_back(std::move(scan_filter2));
+  options2->filters.emplace();
+  options2->filters->push_back(std::move(scan_filter2));
 
   options2->optional_services.push_back(kBloodPressureUUID);
 
@@ -361,7 +366,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_TwoOriginsOneDevice) {
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
-  options1->filters.push_back(std::move(scan_filter1));
+  options1->filters.emplace();
+  options1->filters->push_back(std::move(scan_filter1));
 
   options1->optional_services.push_back(kHeartRateUUID);
 
@@ -373,7 +379,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, AllowedServices_TwoOriginsOneDevice) {
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kBatteryServiceUUID);
-  options2->filters.push_back(std::move(scan_filter2));
+  options2->filters.emplace();
+  options2->filters->push_back(std::move(scan_filter2));
 
   options2->optional_services.push_back(kBloodPressureUUID);
 
@@ -443,7 +450,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, MergeServices) {
 
   scan_filter1->services.emplace();
   scan_filter1->services->push_back(kGlucoseUUID);
-  options1->filters.push_back(std::move(scan_filter1));
+  options1->filters.emplace();
+  options1->filters->push_back(std::move(scan_filter1));
 
   options1->optional_services.push_back(kBatteryServiceUUID);
 
@@ -459,7 +467,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, MergeServices) {
 
   scan_filter2->services.emplace();
   scan_filter2->services->push_back(kHeartRateUUID);
-  options2->filters.push_back(std::move(scan_filter2));
+  options2->filters.emplace();
+  options2->filters->push_back(std::move(scan_filter2));
 
   options2->optional_services.push_back(kBloodPressureUUID);
 
@@ -499,7 +508,8 @@ TEST_F(BluetoothAllowedDevicesMapTest, NoFilterServices) {
   blink::mojom::WebBluetoothScanFilterPtr scan_filter =
       blink::mojom::WebBluetoothScanFilter::New();
 
-  options->filters.push_back(std::move(scan_filter));
+  options->filters.emplace();
+  options->filters->push_back(std::move(scan_filter));
 
   // Add to map.
   const WebBluetoothDeviceId device_id =
