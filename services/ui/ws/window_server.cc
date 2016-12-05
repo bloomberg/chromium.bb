@@ -315,19 +315,29 @@ void WindowServer::WindowManagerCreatedTopLevelWindow(
   InFlightWindowManagerChange change;
   if (!GetAndClearInFlightWindowManagerChange(window_manager_change_id,
                                               &change)) {
-    return;
-  }
-  if (!window) {
-    WindowManagerSentBogusMessage();
+    DVLOG(1) << "WindowManager responded with invalid change id; most "
+             << "likely bug in WindowManager processing WmCreateTopLevelWindow "
+             << "change_id=" << window_manager_change_id;
     return;
   }
 
   WindowTree* tree = GetTreeWithId(change.client_id);
   // The window manager should have created the window already, and it should
   // be ready for embedding.
-  if (!tree->IsWaitingForNewTopLevelWindow(window_manager_change_id) ||
-      !window || window->id().client_id != wm_tree->id() ||
-      !window->children().empty() || GetTreeWithRoot(window)) {
+  if (!tree->IsWaitingForNewTopLevelWindow(window_manager_change_id)) {
+    DVLOG(1) << "WindowManager responded with valid change id, but client "
+             << "is not waiting for top-level; possible bug in mus, change_id="
+             << window_manager_change_id;
+    WindowManagerSentBogusMessage();
+    return;
+  }
+  if (window && (window->id().client_id != wm_tree->id() ||
+                 !window->children().empty() || GetTreeWithRoot(window))) {
+    DVLOG(1)
+        << "WindowManager responded with invalid window; window should "
+        << "not have any children, not be the root of a client and should be "
+        << "created by the WindowManager, window_manager_change_id="
+        << window_manager_change_id;
     WindowManagerSentBogusMessage();
     return;
   }

@@ -115,8 +115,7 @@ class AURA_EXPORT WindowTreeClient
                         bool visible,
                         mojo::TextInputStatePtr state);
 
-  // TODO: this should take a window, not an id.
-  void Embed(Id window_id,
+  void Embed(Window* window,
              ui::mojom::WindowTreeClientPtr client,
              uint32_t flags,
              const ui::mojom::WindowTree::EmbedCallback& callback);

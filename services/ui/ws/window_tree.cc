@@ -463,6 +463,10 @@ void WindowTree::OnWindowManagerCreatedTopLevelWindow(
   // We were paused, so the id should still be valid.
   DCHECK(IsValidIdForNewWindow(
       waiting_for_top_level_window_info->client_window_id));
+  if (!window) {
+    client()->OnChangeCompleted(client_change_id, false);
+    return;
+  }
   client_id_to_window_id_map_[waiting_for_top_level_window_info
                                   ->client_window_id] = window->id();
   window_id_to_client_id_map_[window->id()] =

@@ -259,12 +259,13 @@ void WindowTreeClient::SetImeVisibility(WindowMus* window,
 }
 
 void WindowTreeClient::Embed(
-    Id window_id,
+    Window* window,
     ui::mojom::WindowTreeClientPtr client,
     uint32_t flags,
     const ui::mojom::WindowTree::EmbedCallback& callback) {
   DCHECK(tree_);
-  tree_->Embed(window_id, std::move(client), flags, callback);
+  tree_->Embed(WindowMus::Get(window)->server_id(), std::move(client), flags,
+               callback);
 }
 
 void WindowTreeClient::AttachCompositorFrameSink(
@@ -1360,6 +1361,11 @@ void WindowTreeClient::WmCreateTopLevelWindow(
   }
   Window* window = window_manager_delegate_->OnWmCreateTopLevelWindow(
       window_type, &properties);
+  if (!window) {
+    window_manager_internal_client_->OnWmCreatedTopLevelWindow(
+        change_id, kInvalidServerId);
+    return;
+  }
   embedded_windows_[requesting_client_id].insert(window);
   if (window_manager_internal_client_) {
     window_manager_internal_client_->OnWmCreatedTopLevelWindow(
