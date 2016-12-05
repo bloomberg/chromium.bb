@@ -4,24 +4,20 @@
 
 #import "ios/chrome/browser/geolocation/test_location_manager.h"
 
-#include "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
-@interface TestLocationManager () {
-  CLAuthorizationStatus _authorizationStatus;
-  base::scoped_nsobject<CLLocation> _currentLocation;
-  BOOL _locationServicesEnabled;
-  BOOL _started;
-  BOOL _stopped;
-}
+@interface TestLocationManager ()
 
 @end
 
 @implementation TestLocationManager
-
 @synthesize authorizationStatus = _authorizationStatus;
 @synthesize locationServicesEnabled = _locationServicesEnabled;
 @synthesize started = _started;
 @synthesize stopped = _stopped;
+@synthesize currentLocation = _currentLocation;
 
 - (id)init {
   self = [super init];
@@ -38,17 +34,9 @@
   }
 }
 
-- (CLLocation*)currentLocation {
-  return _currentLocation;
-}
-
-- (void)setCurrentLocation:(CLLocation*)currentLocation {
-  _currentLocation.reset([currentLocation retain]);
-}
-
 - (void)reset {
   _authorizationStatus = kCLAuthorizationStatusNotDetermined;
-  _currentLocation.reset();
+  _currentLocation = nil;
   _locationServicesEnabled = YES;
   _started = NO;
   _stopped = NO;

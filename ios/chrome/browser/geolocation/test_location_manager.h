@@ -17,7 +17,7 @@
 @property(nonatomic, assign) CLAuthorizationStatus authorizationStatus;
 
 // Writable version of the LocationManager |currentLocation| property.
-@property(nonatomic, retain) CLLocation* currentLocation;
+@property(nonatomic, strong) CLLocation* currentLocation;
 
 // Writable version of the LocationManager |locationServicesEnabled| property.
 @property(nonatomic, assign) BOOL locationServicesEnabled;

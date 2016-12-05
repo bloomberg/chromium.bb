@@ -34,6 +34,7 @@ source_set("geolocation") {
 }
 
 source_set("test_support") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
   sources = [
     "test_location_manager.h",
