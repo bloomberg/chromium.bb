@@ -12,6 +12,7 @@
 #include "base/containers/small_map.h"
 #include "base/guid.h"
 #include "base/memory/ptr_util.h"
+#include "base/stl_util.h"
 #include "base/strings/string_util.h"
 #include "chrome/browser/media/router/create_presentation_connection_request.h"
 #include "chrome/browser/media/router/media_route.h"
@@ -51,13 +52,18 @@ RenderFrameHostId GetRenderFrameHostId(RenderFrameHost* render_frame_host) {
 
 // Gets the last committed URL for the render frame specified by
 // |render_frame_host_id|.
-GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id) {
+GURL GetLastCommittedURLForFrame(RenderFrameHostId render_frame_host_id,
+                                 content::WebContents* web_contents) {
   RenderFrameHost* render_frame_host = RenderFrameHost::FromID(
       render_frame_host_id.first, render_frame_host_id.second);
+  // crbug.com/663740: The RFH may not be associated with the frame tree; in
+  // that case, GetLastCommittedOrigin() may crash.
+  if (!render_frame_host ||
+      !base::ContainsValue(web_contents->GetAllFrames(), render_frame_host))
+    return GURL();
+
   // TODO(crbug.com/632623): Use url::Origin in place of GURL for origins
-  return render_frame_host
-             ? render_frame_host->GetLastCommittedOrigin().GetURL()
-             : GURL();
+  return render_frame_host->GetLastCommittedOrigin().GetURL();
 }
 
 // Observes messages originating from the MediaSink connected to a MediaRoute
@@ -170,7 +176,7 @@ class PresentationFrame {
   RenderFrameHostId render_frame_host_id_;
 
   // References to the owning WebContents, and the corresponding MediaRouter.
-  const content::WebContents* web_contents_;
+  content::WebContents* web_contents_;
   MediaRouter* router_;
 
   DelegateObserver* delegate_observer_;
@@ -225,7 +231,8 @@ bool PresentationFrame::SetScreenAvailabilityListener(
 
   sinks_observer.reset(new PresentationMediaSinksObserver(
       router_, listener, source,
-      GetLastCommittedURLForFrame(render_frame_host_id_).GetOrigin()));
+      GetLastCommittedURLForFrame(render_frame_host_id_, web_contents_)
+          .GetOrigin()));
 
   if (!sinks_observer->Init()) {
     url_to_sinks_observer_.erase(source.id());
@@ -549,7 +556,8 @@ void PresentationFrameManager::SetDefaultPresentationUrl(
     ClearDefaultPresentationRequest();
   } else {
     DCHECK(!callback.is_null());
-    GURL frame_url(GetLastCommittedURLForFrame(render_frame_host_id));
+    GURL frame_url(
+        GetLastCommittedURLForFrame(render_frame_host_id, web_contents_));
     PresentationRequest request(render_frame_host_id,
                                 std::vector<GURL>({default_presentation_url}),
                                 frame_url);
@@ -795,7 +803,7 @@ void PresentationServiceDelegateImpl::StartSession(
   std::unique_ptr<CreatePresentationConnectionRequest> request(
       new CreatePresentationConnectionRequest(
           render_frame_host_id, presentation_url,
-          GetLastCommittedURLForFrame(render_frame_host_id),
+          GetLastCommittedURLForFrame(render_frame_host_id, web_contents_),
           base::Bind(&PresentationServiceDelegateImpl::OnStartSessionSucceeded,
                      weak_factory_.GetWeakPtr(), render_process_id,
                      render_frame_id, success_cb),
@@ -834,7 +842,7 @@ void PresentationServiceDelegateImpl::JoinSession(
   router_->JoinRoute(
       MediaSourceForPresentationUrl(presentation_url).id(), presentation_id,
       GetLastCommittedURLForFrame(
-          RenderFrameHostId(render_process_id, render_frame_id))
+          RenderFrameHostId(render_process_id, render_frame_id), web_contents_)
           .GetOrigin(),
       web_contents_, route_response_callbacks, base::TimeDelta(), incognito);
 }
