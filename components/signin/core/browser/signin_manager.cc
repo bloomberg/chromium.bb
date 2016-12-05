@@ -269,7 +269,7 @@ bool SigninManager::IsSigninAllowed() const {
 }
 
 void SigninManager::OnSigninAllowedPrefChanged() {
-  if (!IsSigninAllowed())
+  if (!IsSigninAllowed() && (IsAuthenticated() || AuthInProgress()))
     SignOut(signin_metrics::SIGNOUT_PREF_CHANGED,
             signin_metrics::SignoutDelete::IGNORE_METRIC);
 }

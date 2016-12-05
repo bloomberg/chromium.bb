@@ -308,7 +308,7 @@ void ChromeSigninClient::PostSignedIn(const std::string& account_id,
 void ChromeSigninClient::PreSignOut(const base::Callback<void()>& sign_out) {
 #if !defined(OS_ANDROID) && !defined(OS_CHROMEOS)
   if (is_force_signin_enabled_ && !profile_->IsSystemProfile() &&
-      !profile_->IsGuestSession()) {
+      !profile_->IsGuestSession() && !profile_->IsSupervised()) {
     BrowserList::CloseAllBrowsersWithProfile(
         profile_, base::Bind(&ChromeSigninClient::OnCloseBrowsersSuccess,
                              base::Unretained(this), sign_out),
