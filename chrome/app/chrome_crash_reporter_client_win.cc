@@ -110,6 +110,7 @@ size_t RegisterCrashKeysHelper() {
       {"discardable-memory-allocated", kSmallSize},
       {"discardable-memory-free", kSmallSize},
       {kFontKeyName, kSmallSize},
+      { "mojo-message-error", kMediumSize },
       {"ppapi_path", kMediumSize},
       {"subresource_url", kLargeSize},
       {"total-discardable-memory-allocated", kSmallSize},

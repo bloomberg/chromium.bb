@@ -33,6 +33,7 @@ size_t RegisterEngineCrashKeys() {
       { "channel_error_bt", crash_keys::kMediumSize },
       { "discardable-memory-allocated", crash_keys::kSmallSize },
       { "discardable-memory-free", crash_keys::kSmallSize },
+      { "mojo-message-error", crash_keys::kMediumSize },
       { "ppapi_path", crash_keys::kMediumSize },
       { "remove_route_bt", crash_keys::kMediumSize },
       { "rwhvm_window", crash_keys::kMediumSize },
