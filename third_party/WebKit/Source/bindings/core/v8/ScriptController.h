@@ -124,8 +124,6 @@ class CORE_EXPORT ScriptController final
   void enableEval();
   void disableEval(const String& errorMessage);
 
-  static bool canAccessFromCurrentOrigin(v8::Isolate*, Frame*);
-
   void collectIsolatedContexts(
       Vector<std::pair<ScriptState*, SecurityOrigin*>>&);
 

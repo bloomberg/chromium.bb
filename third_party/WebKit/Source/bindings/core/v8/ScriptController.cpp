@@ -32,7 +32,6 @@
 
 #include "bindings/core/v8/ScriptController.h"
 
-#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptSourceCode.h"
 #include "bindings/core/v8/ScriptValue.h"
 #include "bindings/core/v8/V8Binding.h"
@@ -77,16 +76,6 @@
 #include "wtf/text/TextPosition.h"
 
 namespace blink {
-
-bool ScriptController::canAccessFromCurrentOrigin(v8::Isolate* isolate,
-                                                  Frame* frame) {
-  if (!frame)
-    return false;
-  return !isolate->InContext() ||
-         BindingSecurity::shouldAllowAccessToFrame(
-             currentDOMWindow(isolate), frame,
-             BindingSecurity::ErrorReportOption::Report);
-}
 
 ScriptController::ScriptController(LocalFrame* frame)
     : m_windowProxyManager(WindowProxyManager::create(*frame)) {}

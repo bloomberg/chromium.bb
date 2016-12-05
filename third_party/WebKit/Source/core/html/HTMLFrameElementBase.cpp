@@ -23,6 +23,7 @@
 
 #include "core/html/HTMLFrameElementBase.h"
 
+#include "bindings/core/v8/BindingSecurity.h"
 #include "bindings/core/v8/ScriptController.h"
 #include "bindings/core/v8/ScriptEventListener.h"
 #include "core/HTMLNames.h"
@@ -56,10 +57,18 @@ bool HTMLFrameElementBase::isURLAllowed() const {
 
   const KURL& completeURL = document().completeURL(m_URL);
 
-  if (protocolIsJavaScript(completeURL)) {
-    if (contentFrame() &&
-        !ScriptController::canAccessFromCurrentOrigin(toIsolate(&document()),
-                                                      contentFrame()))
+  if (contentFrame() && protocolIsJavaScript(completeURL)) {
+    // Check if the caller can execute script in the context of the content
+    // frame. NB: This check can be invoked without any JS on the stack for some
+    // parser operations. In such case, we use the origin of the frame element's
+    // containing document as the caller context.
+    v8::Isolate* isolate = toIsolate(&document());
+    LocalDOMWindow* accessingWindow = isolate->InContext()
+                                          ? currentDOMWindow(isolate)
+                                          : document().domWindow();
+    if (!BindingSecurity::shouldAllowAccessToFrame(
+            accessingWindow, contentFrame(),
+            BindingSecurity::ErrorReportOption::Report))
       return false;
   }
 
