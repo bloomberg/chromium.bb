@@ -90,16 +90,19 @@ bool GLVersionInfo::IsES3Capable(
 
   bool has_transform_feedback =
       (IsAtLeastGL(4, 0) || has_extension("GL_ARB_transform_feedback2"));
-  bool has_sampler_indexing =
-      (IsAtLeastGL(4, 0) || has_extension("GL_ARB_gpu_shader5"));
+
+  // This code used to require the GL_ARB_gpu_shader5 extension in order to
+  // have support for dynamic indexing of sampler arrays, which was
+  // optionally supported in ESSL 1.00. However, since this is expressly
+  // forbidden in ESSL 3.00, and some desktop drivers (specifically
+  // Mesa/Gallium on AMD GPUs) don't support it, we no longer require it.
+
   // tex storage is available in core spec since GL 4.2.
   bool has_tex_storage = has_extension("GL_ARB_texture_storage");
 
   // TODO(cwallez) check for texture related extensions. See crbug.com/623577
 
-  return (has_transform_feedback &&
-          has_sampler_indexing &&
-          has_tex_storage);
+  return (has_transform_feedback && has_tex_storage);
 }
 
 void GLVersionInfo::ParseVersionString(const char* version_str,
