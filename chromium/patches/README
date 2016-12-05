@@ -97,10 +97,6 @@ Current patches:
     Remove static av_always_inline av_const unsigned av_clip_uintp2_arm() and
     av_clip_intp2_arm() due to compilation failure.
 
-  Disable FMA3 instructions in libavutil/log.c (http://crbug.com/440892)
-    Remove call to _set_FMA3_enable() on Windows.
-    TODO: Remove once Chromium requires VS2015.
-
   Changes to libavutil/mem.c
     Enable av_max_alloc(0) to remove alloc size bound.
 
