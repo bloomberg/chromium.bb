@@ -86,6 +86,8 @@ Polymer({
       type: Object,
       value: function() { return {}; },
     },
+
+    showAndroidApps: Boolean,
   },
 
   /** @override */

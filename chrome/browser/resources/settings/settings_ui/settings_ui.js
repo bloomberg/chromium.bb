@@ -54,6 +54,9 @@ Polymer({
     pageVisibility_: Object,
 
     /** @private */
+    showAndroidApps_: Boolean,
+
+    /** @private */
     lastSearchQuery_: {
       type: String,
       value: '',
@@ -115,6 +118,9 @@ Polymer({
 </if>
       };
     }
+
+    this.showAndroidApps_ = loadTimeData.valueExists('androidAppsAllowed') &&
+        loadTimeData.getBoolean('androidAppsAllowed');
   },
 
   /** @override */

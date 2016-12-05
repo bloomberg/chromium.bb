@@ -115,6 +115,10 @@ cr.define('settings', function() {
   r.SEARCH = r.BASIC.createSection('/search', 'search');
   r.SEARCH_ENGINES = r.SEARCH.createChild('/searchEngines');
 
+<if expr="chromeos">
+  r.ANDROID_APPS = r.BASIC.createSection('/androidApps', 'androidApps');
+</if>
+
   r.ON_STARTUP = r.BASIC.createSection('/onStartup', 'onStartup');
 
   r.PEOPLE = r.BASIC.createSection('/people', 'people');

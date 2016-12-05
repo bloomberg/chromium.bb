@@ -168,6 +168,33 @@
     </message>
   </if>
 
+  <if expr="chromeos">
+    <!-- Android Apps Page -->
+    <message name="IDS_SETTINGS_ANDROID_APPS_TITLE" desc="The title of Google Play Store (Arc++ / Android Apps) section.">
+      Google Play Store (beta)
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_ENABLE" desc="Label for the checkbox that enables Google Play Store (Arc++) apps.">
+      Enable Google Play Store on your Chromebook.
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS" desc="Label for launching Android apps settings.">
+      Manage your Android preferences
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_LEARN_MORE" desc="Link for more informaiton about installing Android apps on Chrome OS.">
+      Learn more.
+    </message>
+
+    <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE" desc="Title of the confirmation dialog for disabling android apps.">
+      Remove Android apps?
+    </message>
+    <message name="IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE" desc="Describes what will happen if the user opts out of android apps.">
+      Apps you’ve downloaded from Google Play will be deleted from this Chromebook.
+      <ph name="LINE_BREAKS1">&lt;br&gt;&lt;br&gt;</ph>
+      Content you’ve purchased such as movies, TV shows, music, books, or other in-app purchases may also be deleted.
+      <ph name="LINE_BREAKS2">&lt;br&gt;&lt;br&gt;</ph>
+      This doesn’t affect apps or content on other devices.
+    </message>
+  </if>
+
   <!-- Appearance Page -->
   <message name="IDS_SETTINGS_APPEARANCE" desc="Name of the settings page which displays appearance preferences.">
     Appearance

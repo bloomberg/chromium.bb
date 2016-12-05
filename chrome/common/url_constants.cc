@@ -599,11 +599,10 @@ const char kSyncErrorsHelpURL[] =
 #if defined(OS_CHROMEOS)
 const char kNaturalScrollHelpURL[] =
     "https://support.google.com/chromebook/?p=simple_scrolling";
-#endif
-
-#if defined(OS_CHROMEOS)
 const char kLearnMoreEnterpriseURL[] =
     "https://support.google.com/chromebook/?p=managed";
+const char kAndroidAppsLearnMoreURL[] =
+    "https://support.google.com/chromebook/?p=playapps";
 #endif
 
 const char kRemoveNonCWSExtensionURL[] =

@@ -1077,6 +1077,8 @@ split_static_library("ui") {
       "webui/settings/browser_lifetime_handler.h",
       "webui/settings/chromeos/accessibility_handler.cc",
       "webui/settings/chromeos/accessibility_handler.h",
+      "webui/settings/chromeos/android_apps_handler.cc",
+      "webui/settings/chromeos/android_apps_handler.h",
       "webui/settings/chromeos/change_picture_handler.cc",
       "webui/settings/chromeos/change_picture_handler.h",
       "webui/settings/chromeos/cups_printers_handler.cc",

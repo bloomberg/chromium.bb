@@ -36,7 +36,7 @@ var SettingsPageVisibility = {
   },
 
   /**
-   * @param {boolean} visibility
+   * @param {boolean|undefined} visibility
    * @return {boolean}
    */
   showPage: function(visibility) {

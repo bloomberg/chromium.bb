@@ -57,6 +57,7 @@
         'a11y_page/compiled_resources2.gyp:*',
         'about_page/compiled_resources2.gyp:*',
         'advanced_page/compiled_resources2.gyp:*',
+        'android_apps_page/compiled_resources2.gyp:*',
         'animation/compiled_resources2.gyp:*',
         'appearance_page/compiled_resources2.gyp:*',
         'basic_page/compiled_resources2.gyp:*',

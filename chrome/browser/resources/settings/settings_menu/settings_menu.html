@@ -126,6 +126,13 @@
             <iron-icon icon="cr:search"></iron-icon>
             $i18n{searchPageTitle}
           </div>
+<if expr="chromeos">
+           <div data-path="/androidApps" on-tap="openPage_"
+               hidden="[[!showAndroidApps]]">
+             <iron-icon icon="settings:android"></iron-icon>
+             $i18n{androidAppsPageTitle}
+           </div>
+</if>
 <if expr="not chromeos">
           <div data-path="/defaultBrowser" on-tap="openPage_"
               hidden="[[!pageVisibility.defaultBrowser]]">

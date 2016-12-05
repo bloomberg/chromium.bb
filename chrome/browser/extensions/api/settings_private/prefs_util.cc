@@ -239,6 +239,10 @@ const PrefsUtil::TypedPrefMap& PrefsUtil::GetWhitelistedKeys() {
   (*s_whitelist)[::prefs::kAccessibilityMonoAudioEnabled] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;
 
+  // Android Apps.
+  (*s_whitelist)[::prefs::kArcEnabled] =
+      settings_private::PrefType::PREF_TYPE_BOOLEAN;
+
   // Misc.
   (*s_whitelist)[::prefs::kUse24HourClock] =
       settings_private::PrefType::PREF_TYPE_BOOLEAN;

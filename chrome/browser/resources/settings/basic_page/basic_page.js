@@ -18,6 +18,8 @@ Polymer({
       notify: true,
     },
 
+    showAndroidApps: Boolean,
+
     /**
      * True if the basic page should currently display the reset profile banner.
      * @private {boolean}
@@ -30,7 +32,18 @@ Polymer({
     },
   },
 
+  /** @private */
   onResetDone_: function() {
     this.showResetProfileBanner_ = false;
+  },
+
+  /**
+   * @return {boolean}
+   * @private
+   */
+  shouldShowAndroidApps_: function() {
+    var visibility = /** @type {boolean|undefined} */ (
+        this.get('pageVisibility.androidApps'));
+    return this.showAndroidApps && this.showPage(visibility);
   },
 });

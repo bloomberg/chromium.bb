@@ -258,6 +258,23 @@ void AddAccountUITweaksStrings(content::WebUIDataSource* html_source,
   chromeos::AddAccountUITweaksLocalizedValues(&localized_values, profile);
   html_source->AddLocalizedStrings(localized_values);
 }
+
+void AddAndroidAppStrings(content::WebUIDataSource* html_source) {
+  LocalizedString localized_strings[] = {
+      {"androidAppsPageTitle", IDS_SETTINGS_ANDROID_APPS_TITLE},
+      {"androidAppsEnabled", IDS_SETTINGS_ANDROID_APPS_ENABLE},
+      {"androidAppsManageApps", IDS_SETTINGS_ANDROID_APPS_MANAGE_APPS},
+      {"androidAppsLearnMore", IDS_SETTINGS_ANDROID_APPS_LEARN_MORE},
+      {"androidAppsDisableDialogTitle",
+       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_TITLE},
+      {"androidAppsDisableDialogMessage",
+       IDS_SETTINGS_ANDROID_APPS_DISABLE_DIALOG_MESSAGE},
+  };
+  AddLocalizedStringsBulk(html_source, localized_strings,
+                          arraysize(localized_strings));
+  html_source->AddString("androidAppsLearnMoreUrl",
+                         chrome::kAndroidAppsLearnMoreURL);
+}
 #endif
 
 void AddAppearanceStrings(content::WebUIDataSource* html_source,
@@ -1812,6 +1829,7 @@ void AddLocalizedStrings(content::WebUIDataSource* html_source,
 
 #if defined(OS_CHROMEOS)
   AddAccountUITweaksStrings(html_source, profile);
+  AddAndroidAppStrings(html_source);
   AddBluetoothStrings(html_source);
   AddCrNetworkStrings(html_source);
   AddDateTimeStrings(html_source);

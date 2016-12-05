@@ -42,8 +42,10 @@
 
 #if defined(OS_CHROMEOS)
 #include "ash/common/system/chromeos/palette/palette_utils.h"
+#include "chrome/browser/chromeos/arc/arc_session_manager.h"
 #include "chrome/browser/chromeos/login/quick_unlock/quick_unlock_utils.h"
 #include "chrome/browser/ui/webui/settings/chromeos/accessibility_handler.h"
+#include "chrome/browser/ui/webui/settings/chromeos/android_apps_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/change_picture_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/cups_printers_handler.h"
 #include "chrome/browser/ui/webui/settings/chromeos/date_time_handler.h"
@@ -102,6 +104,7 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
 #if defined(OS_CHROMEOS)
   AddSettingsPageUIHandler(new chromeos::settings::AccessibilityHandler(
       web_ui));
+  AddSettingsPageUIHandler(new chromeos::settings::AndroidAppsHandler(profile));
   AddSettingsPageUIHandler(new chromeos::settings::ChangePictureHandler());
   AddSettingsPageUIHandler(new chromeos::settings::CupsPrintersHandler(web_ui));
   AddSettingsPageUIHandler(new chromeos::settings::KeyboardHandler(web_ui));
@@ -135,6 +138,10 @@ MdSettingsUI::MdSettingsUI(content::WebUI* web_ui, const GURL& url)
   html_source->AddBoolean("stylusAllowed", ash::IsPaletteFeatureEnabled());
   html_source->AddBoolean("pinUnlockEnabled",
                           chromeos::IsPinUnlockEnabled(profile->GetPrefs()));
+  html_source->AddBoolean(
+      "androidAppsAllowed",
+      arc::ArcSessionManager::IsAllowedForProfile(profile) &&
+          !arc::ArcSessionManager::IsOptInVerificationDisabled());
 #endif
 
   AddSettingsPageUIHandler(AboutHandler::Create(html_source, profile));

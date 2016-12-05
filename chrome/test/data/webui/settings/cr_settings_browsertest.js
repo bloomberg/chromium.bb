@@ -1090,7 +1090,33 @@ TEST_F('CrSettingsPrintingPageTest', 'CupsPrintersTest', function() {
 });
 
 GEN('#endif');
+
 GEN('#if defined(OS_CHROMEOS)');
+
+/**
+ * Test fixture for the Google Play Store (Arc++) page.
+ * @constructor
+ * @extends {CrSettingsBrowserTest}
+ */
+function CrSettingsAndroidAppsPageTest() {}
+
+CrSettingsAndroidAppsPageTest.prototype = {
+  __proto__: CrSettingsBrowserTest.prototype,
+
+  /** @override */
+  browsePreload:
+      'chrome://md-settings/android_apps_page/android_apps_page.html',
+
+  extraLibraries: CrSettingsBrowserTest.prototype.extraLibraries.concat([
+    ROOT_PATH + 'ui/webui/resources/js/promise_resolver.js',
+    'test_browser_proxy.js',
+    'android_apps_page_test.js',
+  ]),
+};
+
+TEST_F('CrSettingsAndroidAppsPageTest', 'AndroidAppsPageTest', function() {
+  mocha.run();
+});
 
 /**
  * Test fixture for the Date and Time page.

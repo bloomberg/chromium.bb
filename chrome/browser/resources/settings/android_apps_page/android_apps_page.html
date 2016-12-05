@@ -1,0 +1,62 @@
+<link rel="import" href="chrome://resources/html/i18n_behavior.html">
+<link rel="import" href="chrome://resources/html/polymer.html">
+<link rel="import" href="chrome://resources/polymer/v1_0/paper-button/paper-button.html">
+<link rel="import" href="/android_apps_page/android_apps_browser_proxy.html">
+<link rel="import" href="/controls/settings_checkbox.html">
+<link rel="import" href="/i18n_setup.html">
+<link rel="import" href="/prefs/prefs_behavior.html">
+<link rel="import" href="/settings_shared_css.html">
+
+<dom-module id="settings-android-apps-page">
+  <template>
+    <style include="settings-shared">
+      a {
+        -webkit-margin-start: 4px;
+        height: var(--checkbox-size);
+      }
+
+      .indented {
+        -webkit-margin-start: 36px;
+      }
+    </style>
+
+    <div class="settings-box first">
+      <settings-checkbox id="enabledCheckbox" pref="{{prefs.arc.enabled}}"
+          label="$i18n{androidAppsEnabled}"
+          no-set-pref on-change="onArcEnabledChange_">
+      </settings-checkbox>
+      <a href="$i18nRaw{androidAppsLearnMoreUrl}" target="_blank">
+        $i18n{androidAppsLearnMore}
+      </a>
+    </div>
+
+    <div id="manageApps" class="settings-box continuation indented"
+        on-keydown="onManageAndroidAppsKeydown_"
+        on-tap="onManageAndroidAppsTap_" actionable
+        hidden="[[!androidAppsInfo_.appReady]]">
+      <div class="start">
+        <div>$i18n{androidAppsManageApps}</div>
+      </div>
+      <button class="icon-external" is="paper-icon-button-light">
+      </button>
+    </div>
+
+    <!-- Confirm disable android apps dialog -->
+    <dialog is="cr-dialog" id="confirmDisableDialog"
+        on-cancel="onConfirmDisableDialogCancel_">
+      <div class="title">$i18n{androidAppsDisableDialogTitle}</div>
+      <div class="body" inner-h-t-m-l="[[getDialogBody_()]]"></div>
+      <div class="button-container">
+        <paper-button class="cancel-button"
+            on-tap="onConfirmDisableDialogCancel_">
+          $i18n{cancel}
+        </paper-button>
+        <paper-button class="action-button"
+            on-tap="onConfirmDisableDialogConfirm_">
+          $i18n{confirm}
+        </paper-button>
+      </div>
+    </dialog>
+  </template>
+  <script src="android_apps_page.js"></script>
+</dom-module>
