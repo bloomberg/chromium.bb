@@ -15,23 +15,41 @@
 #include "base/macros.h"
 #include "base/timer/timer.h"
 #include "services/service_manager/public/cpp/service.h"
-#include "services/ui/public/cpp/window_manager_delegate.h"
-#include "services/ui/public/cpp/window_tree_client_delegate.h"
 #include "third_party/skia/include/core/SkBitmap.h"
+#include "ui/aura/mus/window_manager_delegate.h"
+#include "ui/aura/mus/window_tree_client_delegate.h"
 #include "ui/display/screen_base.h"
 
+namespace aura {
+class Env;
+class PropertyConverter;
+
+namespace client {
+class DefaultCaptureClient;
+}
+}  // namespace aura
+
+namespace aura_extra {
+class ImageWindowDelegate;
+}
+
+namespace wm {
+class WMState;
+}
+
 namespace ui {
-class BitmapUploader;
+class ContextFactory;
 class GpuService;
 
 namespace demo {
 
-// A simple MUS Demo service. This service connects to the service:ui, creates a
-// new window and draws a spinning square in the center of the window. Provides
-// a simple way to demonstrate that the graphic stack works as intended.
+// A simple MUS Demo service. This service connects to the service:ui, adds a
+// new window to the root Window, and draws a spinning square in the center of
+// the window. Provides a simple way to demonstrate that the graphic stack works
+// as intended.
 class MusDemo : public service_manager::Service,
-                public WindowTreeClientDelegate,
-                public WindowManagerDelegate {
+                public aura::WindowTreeClientDelegate,
+                public aura::WindowManagerDelegate {
  public:
   MusDemo();
   ~MusDemo() override;
@@ -42,48 +60,66 @@ class MusDemo : public service_manager::Service,
   bool OnConnect(const service_manager::ServiceInfo& remote_info,
                  service_manager::InterfaceRegistry* registry) override;
 
-  // WindowTreeClientDelegate:
-  void OnEmbed(Window* root) override;
-  void OnEmbedRootDestroyed(Window* root) override;
-  void OnLostConnection(WindowTreeClient* client) override;
-  void OnPointerEventObserved(const PointerEvent& event,
-                              Window* target) override;
+  // aura::WindowTreeClientDelegate:
+  void OnEmbed(
+      std::unique_ptr<aura::WindowTreeHostMus> window_tree_host) override;
+  void OnUnembed(aura::Window* root) override;
+  void OnEmbedRootDestroyed(aura::Window* root) override;
+  void OnLostConnection(aura::WindowTreeClient* client) override;
+  void OnPointerEventObserved(const ui::PointerEvent& event,
+                              aura::Window* target) override;
+  aura::client::CaptureClient* GetCaptureClient() override;
+  aura::PropertyConverter* GetPropertyConverter() override;
 
-  // WindowManagerDelegate:
-  void SetWindowManagerClient(WindowManagerClient* client) override;
-  bool OnWmSetBounds(Window* window, gfx::Rect* bounds) override;
+  // aura::WindowManagerDelegate:
+  void SetWindowManagerClient(aura::WindowManagerClient* client) override;
+  bool OnWmSetBounds(aura::Window* window, gfx::Rect* bounds) override;
   bool OnWmSetProperty(
-      Window* window,
+      aura::Window* window,
       const std::string& name,
       std::unique_ptr<std::vector<uint8_t>>* new_data) override;
-  Window* OnWmCreateTopLevelWindow(
+  aura::Window* OnWmCreateTopLevelWindow(
+      ui::mojom::WindowType window_type,
       std::map<std::string, std::vector<uint8_t>>* properties) override;
-  void OnWmClientJankinessChanged(const std::set<Window*>& client_windows,
+  void OnWmClientJankinessChanged(const std::set<aura::Window*>& client_windows,
                                   bool janky) override;
-  void OnWmNewDisplay(Window* window, const display::Display& display) override;
-  void OnWmDisplayRemoved(ui::Window* window) override;
+  void OnWmWillCreateDisplay(const display::Display& display) override;
+  void OnWmNewDisplay(std::unique_ptr<aura::WindowTreeHostMus> window_tree_host,
+                      const display::Display& display) override;
+  void OnWmDisplayRemoved(aura::WindowTreeHostMus* window_tree_host) override;
   void OnWmDisplayModified(const display::Display& display) override;
-  void OnWmPerformMoveLoop(Window* window,
-                           mojom::MoveLoopSource source,
+  ui::mojom::EventResult OnAccelerator(uint32_t id,
+                                       const ui::Event& event) override;
+  void OnWmPerformMoveLoop(aura::Window* window,
+                           ui::mojom::MoveLoopSource source,
                            const gfx::Point& cursor_location,
                            const base::Callback<void(bool)>& on_done) override;
-  void OnWmCancelMoveLoop(Window* window) override;
-
-  // Allocate a bitmap the same size as the window to draw into.
-  void AllocBitmap();
+  void OnWmCancelMoveLoop(aura::Window* window) override;
+  void OnWmSetClientArea(
+      aura::Window* window,
+      const gfx::Insets& insets,
+      const std::vector<gfx::Rect>& additional_client_areas) override;
 
   // Draws one frame, incrementing the rotation angle.
   void DrawFrame();
 
-  Window* window_ = nullptr;
-  std::unique_ptr<WindowTreeClient> window_tree_client_;
-  std::unique_ptr<GpuService> gpu_service_;
-
-  // Dummy screen required to be the screen instance.
+  aura::Window* root_window_ = nullptr;
+  std::unique_ptr<aura::WindowTreeClient> window_tree_client_;
+  std::unique_ptr<aura::WindowTreeHostMus> window_tree_host_;
+  std::unique_ptr<ui::GpuService> gpu_service_;
+  std::unique_ptr<ui::ContextFactory> context_factory_;
+  std::unique_ptr<aura::Env> env_;
   std::unique_ptr<display::ScreenBase> screen_;
 
-  // Used to send frames to mus.
-  std::unique_ptr<BitmapUploader> uploader_;
+  std::unique_ptr<aura::client::DefaultCaptureClient> capture_client_;
+  std::unique_ptr<::wm::WMState> wm_state_;
+  std::unique_ptr<aura::PropertyConverter> property_converter_;
+
+  // Window to which we draw the bitmap.
+  std::unique_ptr<aura::Window> bitmap_window_;
+
+  // Destroys itself when the window gets destroyed.
+  aura_extra::ImageWindowDelegate* window_delegate_ = nullptr;
 
   // Bitmap that is the same size as our client window area.
   SkBitmap bitmap_;
@@ -101,6 +137,6 @@ class MusDemo : public service_manager::Service,
 };
 
 }  // namespace demo
-}  // namespace ui
+}  // namespace aura
 
 #endif  // SERVICES_UI_DEMO_MUS_DEMO_H_

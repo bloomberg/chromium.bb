@@ -8,8 +8,6 @@ import("//testing/test.gni")
 
 source_set("lib") {
   sources = [
-    "bitmap_uploader.cc",
-    "bitmap_uploader.h",
     "mus_demo.cc",
     "mus_demo.h",
   ]
@@ -26,7 +24,10 @@ source_set("lib") {
     "//services/ui/public/cpp",
     "//services/ui/public/cpp:internal",
     "//services/ui/public/interfaces",
+    "//ui/aura",
+    "//ui/aura_extra",
     "//ui/gfx/geometry",
+    "//ui/wm",
   ]
 }
 
