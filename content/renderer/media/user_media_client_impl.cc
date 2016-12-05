@@ -240,6 +240,13 @@ void UserMediaClientImpl::requestUserMedia(
   // webGetUserMedia.
   UpdateWebRTCMethodCount(WEBKIT_GET_USER_MEDIA);
   DCHECK(CalledOnValidThread());
+  DCHECK(!user_media_request.isNull());
+  // ownerDocument may be null if we are in a test.
+  // In that case, it's OK to not check frame().
+  DCHECK(user_media_request.ownerDocument().isNull() ||
+         render_frame()->GetWebFrame() ==
+             static_cast<blink::WebFrame*>(
+                 user_media_request.ownerDocument().frame()));
 
   if (RenderThreadImpl::current()) {
     RenderThreadImpl::current()->peer_connection_tracker()->TrackGetUserMedia(
@@ -249,61 +256,41 @@ void UserMediaClientImpl::requestUserMedia(
   int request_id = g_next_request_id++;
   std::unique_ptr<StreamControls> controls = base::MakeUnique<StreamControls>();
 
-  // |user_media_request| can't be mocked. So in order to test at all we check
-  // if it isNull.
-  // TODO(guidou): Remove this test-specific code path.
-  if (user_media_request.isNull()) {
-    // We are in a test.
-    controls->audio.requested = true;
-    controls->video.requested = true;
+  bool enable_automatic_output_device_selection = false;
+  bool request_audio_input_devices = false;
+  if (user_media_request.audio()) {
+    CopyConstraintsToTrackControls(user_media_request.audioConstraints(),
+                                   &controls->audio,
+                                   &request_audio_input_devices);
+    CopyHotwordAndLocalEchoToStreamControls(
+        user_media_request.audioConstraints(), controls.get());
+    // Check if this input device should be used to select a matching output
+    // device for audio rendering.
+    GetConstraintValueAsBoolean(
+        user_media_request.audioConstraints(),
+        &blink::WebMediaTrackConstraintSet::renderToAssociatedSink,
+        &enable_automatic_output_device_selection);
+  }
+  bool request_video_input_devices = false;
+  if (user_media_request.video()) {
+    CopyConstraintsToTrackControls(user_media_request.videoConstraints(),
+                                   &controls->video,
+                                   &request_video_input_devices);
+  }
+
+  url::Origin security_origin = user_media_request.getSecurityOrigin();
+  if (request_audio_input_devices || request_video_input_devices) {
+    GetMediaDevicesDispatcher()->EnumerateDevices(
+        request_audio_input_devices, request_video_input_devices,
+        false /* request_audio_output_devices */, security_origin,
+        base::Bind(&UserMediaClientImpl::SelectUserMediaDevice,
+                   weak_factory_.GetWeakPtr(), request_id, user_media_request,
+                   base::Passed(&controls),
+                   enable_automatic_output_device_selection, security_origin));
+  } else {
     FinalizeRequestUserMedia(
         request_id, user_media_request, std::move(controls),
-        false /* automatic_output_device_selection */, url::Origin());
-  } else {
-    // ownerDocument may be null if we are in a test.
-    // In that case, it's OK to not check frame().
-    DCHECK(user_media_request.ownerDocument().isNull() ||
-           render_frame()->GetWebFrame() ==
-               static_cast<blink::WebFrame*>(
-                   user_media_request.ownerDocument().frame()));
-
-    bool enable_automatic_output_device_selection = false;
-    bool request_audio_input_devices = false;
-    if (user_media_request.audio()) {
-      CopyConstraintsToTrackControls(user_media_request.audioConstraints(),
-                                     &controls->audio,
-                                     &request_audio_input_devices);
-      CopyHotwordAndLocalEchoToStreamControls(
-          user_media_request.audioConstraints(), controls.get());
-      // Check if this input device should be used to select a matching output
-      // device for audio rendering.
-      GetConstraintValueAsBoolean(
-          user_media_request.audioConstraints(),
-          &blink::WebMediaTrackConstraintSet::renderToAssociatedSink,
-          &enable_automatic_output_device_selection);
-    }
-    bool request_video_input_devices = false;
-    if (user_media_request.video()) {
-      CopyConstraintsToTrackControls(user_media_request.videoConstraints(),
-                                     &controls->video,
-                                     &request_video_input_devices);
-    }
-
-    url::Origin security_origin = user_media_request.getSecurityOrigin();
-    if (request_audio_input_devices || request_video_input_devices) {
-      GetMediaDevicesDispatcher()->EnumerateDevices(
-          request_audio_input_devices, request_video_input_devices,
-          false /* request_audio_output_devices */, security_origin,
-          base::Bind(&UserMediaClientImpl::SelectUserMediaDevice,
-                     weak_factory_.GetWeakPtr(), request_id, user_media_request,
-                     base::Passed(&controls),
-                     enable_automatic_output_device_selection,
-                     security_origin));
-    } else {
-      FinalizeRequestUserMedia(
-          request_id, user_media_request, std::move(controls),
-          enable_automatic_output_device_selection, security_origin);
-    }
+        enable_automatic_output_device_selection, security_origin);
   }
 }
 
@@ -445,29 +432,16 @@ void UserMediaClientImpl::OnStreamGenerated(
   }
   request_info->generated = true;
 
-  // WebUserMediaRequest don't have an implementation in unit tests.
-  // Therefore we need to check for isNull here and initialize the
-  // constraints.
-  blink::WebUserMediaRequest* request = &(request_info->request);
-  blink::WebMediaConstraints audio_constraints;
-  blink::WebMediaConstraints video_constraints;
-  if (request->isNull()) {
-    audio_constraints.initialize();
-    video_constraints.initialize();
-  } else {
-    audio_constraints = request->audioConstraints();
-    video_constraints = request->videoConstraints();
-  }
-
+  DCHECK(!request_info->request.isNull());
   blink::WebVector<blink::WebMediaStreamTrack> audio_track_vector(
       audio_array.size());
-  CreateAudioTracks(audio_array, audio_constraints, &audio_track_vector,
-                    request_info);
+  CreateAudioTracks(audio_array, request_info->request.audioConstraints(),
+                    &audio_track_vector, request_info);
 
   blink::WebVector<blink::WebMediaStreamTrack> video_track_vector(
       video_array.size());
-  CreateVideoTracks(video_array, video_constraints, &video_track_vector,
-                    request_info);
+  CreateVideoTracks(video_array, request_info->request.videoConstraints(),
+                    &video_track_vector, request_info);
 
   blink::WebString webkit_id = base::UTF8ToUTF16(label);
   blink::WebMediaStream* web_stream = &(request_info->web_stream);
