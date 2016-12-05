@@ -801,9 +801,8 @@ StyleRule* CSSParserImpl::consumeStyleRule(CSSParserTokenRange prelude,
   } else if (m_lazyState &&
              m_lazyState->shouldLazilyParseProperties(selectorList, block)) {
     DCHECK(m_styleSheet);
-    return StyleRule::createLazy(
-        std::move(selectorList),
-        new CSSLazyPropertyParserImpl(block, m_lazyState));
+    return StyleRule::createLazy(std::move(selectorList),
+                                 m_lazyState->createLazyParser(block));
   }
   consumeDeclarationList(block, StyleRule::Style);
 

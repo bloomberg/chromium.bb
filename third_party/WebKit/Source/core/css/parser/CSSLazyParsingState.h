@@ -13,6 +13,7 @@
 
 namespace blink {
 
+class CSSLazyPropertyParserImpl;
 class CSSParserTokenRange;
 
 // This class helps lazy parsing by retaining necessary state. It should not
@@ -26,14 +27,36 @@ class CSSLazyParsingState
                       const String& sheetText,
                       StyleSheetContents*);
 
+  // Helper method used to bump m_totalStyleRules.
+  CSSLazyPropertyParserImpl* createLazyParser(const CSSParserTokenRange& block);
+
   const CSSParserContext& context();
 
+  void countRuleParsed();
+
   bool shouldLazilyParseProperties(const CSSSelectorList&,
-                                   const CSSParserTokenRange& block);
+                                   const CSSParserTokenRange& block) const;
 
   DEFINE_INLINE_TRACE() { visitor->trace(m_owningContents); }
 
+  // Exposed for tests. This enum is used to back a histogram, so new values
+  // must be appended to the end, before UsageLastValue.
+  enum CSSRuleUsage {
+    UsageGe0 = 0,
+    UsageGt10 = 1,
+    UsageGt25 = 2,
+    UsageGt50 = 3,
+    UsageGt75 = 4,
+    UsageGt90 = 5,
+    UsageAll = 6,
+
+    // This value must be last.
+    UsageLastValue = 7
+  };
+
  private:
+  void recordUsageMetrics();
+
   CSSParserContext m_context;
   Vector<String> m_escapedStrings;
   // Also referenced on the css resource.
@@ -42,6 +65,14 @@ class CSSLazyParsingState
   // Weak to ensure lazy state will never cause the contents to live longer than
   // it should (we DCHECK this fact).
   WeakMember<StyleSheetContents> m_owningContents;
+
+  // Used for calculating the % of rules that ended up being parsed.
+  int m_parsedStyleRules;
+  int m_totalStyleRules;
+
+  int m_styleRulesNeededForNextMilestone;
+
+  int m_usage;
 };
 
 }  // namespace blink

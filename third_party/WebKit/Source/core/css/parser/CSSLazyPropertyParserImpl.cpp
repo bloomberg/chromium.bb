@@ -19,6 +19,7 @@ CSSLazyPropertyParserImpl::CSSLazyPropertyParserImpl(CSSParserTokenRange block,
 }
 
 StylePropertySet* CSSLazyPropertyParserImpl::parseProperties() {
+  m_lazyState->countRuleParsed();
   return CSSParserImpl::parseDeclarationListForLazyStyle(
       m_tokens, m_lazyState->context());
 }

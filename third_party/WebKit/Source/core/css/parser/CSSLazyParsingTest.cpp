@@ -5,11 +5,13 @@
 #include "core/css/CSSStyleSheet.h"
 #include "core/css/StyleRule.h"
 #include "core/css/StyleSheetContents.h"
+#include "core/css/parser/CSSLazyParsingState.h"
 #include "core/css/parser/CSSParser.h"
 #include "core/css/parser/CSSParserMode.h"
 #include "core/frame/FrameHost.h"
 #include "core/testing/DummyPageHolder.h"
 #include "platform/heap/Heap.h"
+#include "platform/testing/HistogramTester.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "wtf/text/WTFString.h"
 
@@ -24,6 +26,9 @@ class CSSLazyParsingTest : public testing::Test {
   StyleRule* ruleAt(StyleSheetContents* sheet, size_t index) {
     return toStyleRule(sheet->childRules()[index]);
   }
+
+ protected:
+  HistogramTester m_histogramTester;
 };
 
 TEST_F(CSSLazyParsingTest, Simple) {
@@ -150,6 +155,54 @@ TEST_F(CSSLazyParsingTest, ChangeDocuments) {
   EXPECT_TRUE(useCounter2.isCounted(CSSPropertyColor));
   EXPECT_FALSE(useCounter2.isCounted(CSSPropertyBackgroundColor));
   EXPECT_FALSE(useCounter1.isCounted(CSSPropertyColor));
+}
+
+TEST_F(CSSLazyParsingTest, SimpleRuleUsagePercent) {
+  CSSParserContext context(HTMLStandardMode, nullptr);
+  StyleSheetContents* styleSheet = StyleSheetContents::create(context);
+
+  std::string metricName = "Style.LazyUsage.Percent";
+  m_histogramTester.expectTotalCount(metricName, 0);
+
+  String sheetText =
+      "body { background-color: red; }"
+      "p { color: blue; }"
+      "a { color: yellow; }"
+      "#id { color: blue; }"
+      "div { color: grey; }";
+  CSSParser::parseSheet(context, styleSheet, sheetText, true /* lazy parse */);
+
+  m_histogramTester.expectTotalCount(metricName, 1);
+  m_histogramTester.expectUniqueSample(metricName,
+                                       CSSLazyParsingState::UsageGe0, 1);
+
+  ruleAt(styleSheet, 0)->properties();
+  m_histogramTester.expectTotalCount(metricName, 2);
+  m_histogramTester.expectBucketCount(metricName,
+                                      CSSLazyParsingState::UsageGt10, 1);
+
+  ruleAt(styleSheet, 1)->properties();
+  m_histogramTester.expectTotalCount(metricName, 3);
+  m_histogramTester.expectBucketCount(metricName,
+                                      CSSLazyParsingState::UsageGt25, 1);
+
+  ruleAt(styleSheet, 2)->properties();
+  m_histogramTester.expectTotalCount(metricName, 4);
+  m_histogramTester.expectBucketCount(metricName,
+                                      CSSLazyParsingState::UsageGt50, 1);
+
+  ruleAt(styleSheet, 3)->properties();
+  m_histogramTester.expectTotalCount(metricName, 5);
+  m_histogramTester.expectBucketCount(metricName,
+                                      CSSLazyParsingState::UsageGt75, 1);
+
+  // Parsing the last rule bumps both Gt90 and All buckets.
+  ruleAt(styleSheet, 4)->properties();
+  m_histogramTester.expectTotalCount(metricName, 7);
+  m_histogramTester.expectBucketCount(metricName,
+                                      CSSLazyParsingState::UsageGt90, 1);
+  m_histogramTester.expectBucketCount(metricName, CSSLazyParsingState::UsageAll,
+                                      1);
 }
 
 }  // namespace blink
