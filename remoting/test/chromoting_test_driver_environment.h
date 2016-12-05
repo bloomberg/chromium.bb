@@ -40,7 +40,7 @@ class ChromotingTestDriverEnvironment : public testing::Environment {
     std::string host_jid;
     std::string pin;
     base::FilePath refresh_token_file_path;
-    bool use_test_environment;
+    bool use_test_environment = false;
   };
 
   explicit ChromotingTestDriverEnvironment(const EnvironmentOptions& options);
