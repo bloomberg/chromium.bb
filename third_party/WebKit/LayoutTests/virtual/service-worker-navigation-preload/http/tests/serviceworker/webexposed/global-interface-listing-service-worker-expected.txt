@@ -532,6 +532,8 @@ interface OffscreenCanvasRenderingContext2D
     method fillRect
     method getImageData
     method getLineDash
+    method isPointInPath
+    method isPointInStroke
     method lineTo
     method moveTo
     method putImageData

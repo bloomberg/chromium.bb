@@ -539,6 +539,8 @@ Starting worker: resources/global-interface-listing.js
 [Worker]     method fillRect
 [Worker]     method getImageData
 [Worker]     method getLineDash
+[Worker]     method isPointInPath
+[Worker]     method isPointInStroke
 [Worker]     method lineTo
 [Worker]     method moveTo
 [Worker]     method putImageData

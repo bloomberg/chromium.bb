@@ -60,6 +60,10 @@
     void stroke(Path2D path);
     void clip();
     void clip(Path2D path);
+    boolean isPointInPath(unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    boolean isPointInPath(Path2D path, unrestricted double x, unrestricted double y, optional CanvasFillRule winding);
+    boolean isPointInStroke(unrestricted double x, unrestricted double y);
+    boolean isPointInStroke(Path2D path, unrestricted double x, unrestricted double y);
 
     // drawing images
     [CallWith=ExecutionContext, RaisesException] void drawImage(CanvasImageSource image, unrestricted double x, unrestricted double y);
