@@ -7,6 +7,8 @@
 
 namespace content {
 
+class RenderFrameHost;
+
 class MediaSessionPlayerObserver {
  public:
   MediaSessionPlayerObserver() = default;
@@ -22,6 +24,10 @@ class MediaSessionPlayerObserver {
   // the MediaSession.
   virtual void OnSetVolumeMultiplier(int player_id,
                                      double volume_multiplier) = 0;
+
+  // Returns the RenderFrameHost this player observer belongs to. Returns
+  // nullptr if unavailable.
+  virtual RenderFrameHost* GetRenderFrameHost() const = 0;
 };
 
 }  // namespace content

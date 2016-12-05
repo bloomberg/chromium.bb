@@ -20,6 +20,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnSuspend(int player_id) override;
   void OnResume(int player_id) override;
   void OnSetVolumeMultiplier(int player_id, double volume_multiplier) override;
+  RenderFrameHost* GetRenderFrameHost() const override;
 
   // Simulate that a new player started.
   // Returns the player_id.

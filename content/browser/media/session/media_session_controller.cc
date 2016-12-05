@@ -95,6 +95,10 @@ void MediaSessionController::OnSetVolumeMultiplier(int player_id,
           id_.first->GetRoutingID(), id_.second, volume_multiplier));
 }
 
+RenderFrameHost* MediaSessionController::GetRenderFrameHost() const {
+  return id_.first;
+}
+
 void MediaSessionController::OnPlaybackPaused() {
   // We check for suspension here since the renderer may issue its own pause
   // in response to or while a pause from the browser is in flight.

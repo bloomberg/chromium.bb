@@ -59,6 +59,11 @@ void PepperPlayerDelegate::OnSetVolumeMultiplier(int player_id,
   SetVolume(player_id, volume_multiplier);
 }
 
+RenderFrameHost* PepperPlayerDelegate::GetRenderFrameHost() const {
+  // TODO(zqzhang): Pepper player should be associated to a RenderFrameHost.
+  return nullptr;
+}
+
 void PepperPlayerDelegate::SetVolume(int player_id, double volume) {
   contents_->Send(new FrameMsg_SetPepperVolume(
       contents_->GetMainFrame()->routing_id(), pp_instance_, volume));

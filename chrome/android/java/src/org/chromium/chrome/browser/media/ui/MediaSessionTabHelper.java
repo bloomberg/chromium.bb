@@ -30,7 +30,6 @@ import org.chromium.ui.base.WindowAndroid;
 
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.util.HashSet;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -61,7 +60,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
     // The currently showing metadata.
     private MediaMetadata mCurrentMetadata = null;
     private MediaImageManager mMediaImageManager = null;
-    private Set<Integer> mMediaSessionActions = new HashSet<Integer>();
+    private Set<Integer> mMediaSessionActions = null;
     private Handler mHandler;
     // The delayed task to hide notification. Hiding notification can be immediate or delayed.
     // Delayed hiding will schedule this delayed task to |mHandler|. The task will be canceled when
@@ -228,16 +227,8 @@ public class MediaSessionTabHelper implements MediaImageCallback {
             }
 
             @Override
-            public void mediaSessionEnabledAction(int action) {
-                if (!MediaSessionAction.isKnownValue(action)) return;
-                mMediaSessionActions.add(action);
-                updateNotificationActions();
-            }
-
-            @Override
-            public void mediaSessionDisabledAction(int action) {
-                if (!MediaSessionAction.isKnownValue(action)) return;
-                mMediaSessionActions.remove(action);
+            public void mediaSessionActionsChanged(Set<Integer> actions) {
+                mMediaSessionActions = actions;
                 updateNotificationActions();
             }
         };
@@ -261,7 +252,7 @@ public class MediaSessionTabHelper implements MediaImageCallback {
         if (mMediaSessionObserver == null) return;
         mMediaSessionObserver.stopObserving();
         mMediaSessionObserver = null;
-        mMediaSessionActions.clear();
+        mMediaSessionActions = null;
     }
 
     private final TabObserver mTabObserver = new EmptyTabObserver() {

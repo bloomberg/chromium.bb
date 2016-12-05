@@ -4,7 +4,7 @@
 
 #include "content/browser/media/session/media_session_android.h"
 
-#include <algorithm>
+#include "base/android/jni_array.h"
 #include "content/browser/media/session/media_session_impl.h"
 #include "content/browser/web_contents/web_contents_android.h"
 #include "content/browser/web_contents/web_contents_impl.h"
@@ -103,26 +103,19 @@ void MediaSessionAndroid::MediaSessionMetadataChanged(
                                                     j_metadata);
 }
 
-void MediaSessionAndroid::MediaSessionEnabledAction(
-    blink::mojom::MediaSessionAction action) {
+void MediaSessionAndroid::MediaSessionActionsChanged(
+    const std::set<blink::mojom::MediaSessionAction>& actions) {
   ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
   if (j_local_session.is_null())
     return;
 
-  JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaSessionImpl_mediaSessionEnabledAction(env, j_local_session,
-                                                  static_cast<int>(action));
-}
-
-void MediaSessionAndroid::MediaSessionDisabledAction(
-    blink::mojom::MediaSessionAction action) {
-  ScopedJavaLocalRef<jobject> j_local_session = GetJavaObject();
-  if (j_local_session.is_null())
-    return;
+  std::vector<int> actions_vec;
+  for (auto action : actions)
+    actions_vec.push_back(static_cast<int>(action));
 
   JNIEnv* env = base::android::AttachCurrentThread();
-  Java_MediaSessionImpl_mediaSessionDisabledAction(env, j_local_session,
-                                                   static_cast<int>(action));
+  Java_MediaSessionImpl_mediaSessionActionsChanged(
+      env, j_local_session, base::android::ToJavaIntArray(env, actions_vec));
 }
 
 void MediaSessionAndroid::Resume(

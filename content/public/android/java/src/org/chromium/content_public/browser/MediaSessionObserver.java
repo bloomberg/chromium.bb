@@ -9,6 +9,8 @@ import android.support.annotation.Nullable;
 import org.chromium.content.browser.MediaSessionImpl;
 import org.chromium.content_public.common.MediaMetadata;
 
+import java.util.Set;
+
 /**
  * This class is Java implementation of native MediaSessionObserver. The class receives media
  * session messages from Java {@link MediaSession}, which acts acts as a proxy forwarding messages
@@ -56,16 +58,10 @@ public abstract class MediaSessionObserver {
     public void mediaSessionMetadataChanged(MediaMetadata metadata) {}
 
     /**
-     * Called when the observed {@link MediaSession} has enabled an action.
-     * @param action The enabled action.
+     * Called when the observed {@link MediaSession} has changed its action list.
+     * @param actions The new action list after the change.
      */
-    public void mediaSessionEnabledAction(int action) {}
-
-    /**
-     * Called when the observed {@link MediaSession} has disabled an action.
-     * @param action The disabled action.
-     */
-    public void mediaSessionDisabledAction(int action) {}
+    public void mediaSessionActionsChanged(Set<Integer> actions) {}
 
     /**
      * Stop observing the media session. Users must explicitly call this before dereferencing the

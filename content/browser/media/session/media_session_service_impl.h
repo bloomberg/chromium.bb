@@ -12,32 +12,39 @@
 
 namespace content {
 
-class MediaSessionImpl;
 class RenderFrameHost;
+class MediaSessionImpl;
 
-// There is one MediaSessionService per frame.
-class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
+// There is one MediaSessionService per frame. The class is owned by
+// RenderFrameHost and should register/unregister itself to/from
+// MediaSessionImpl when RenderFrameHost is created/destroyed.
+class CONTENT_EXPORT MediaSessionServiceImpl
+    : public blink::mojom::MediaSessionService {
  public:
   ~MediaSessionServiceImpl() override;
 
   static void Create(RenderFrameHost* render_frame_host,
                      blink::mojom::MediaSessionServiceRequest request);
   const blink::mojom::MediaSessionClientPtr& GetClient() { return client_; }
+  RenderFrameHost* GetRenderFrameHost() { return render_frame_host_; }
 
- private:
-  explicit MediaSessionServiceImpl(RenderFrameHost* render_frame_host);
+  const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
+  const std::set<blink::mojom::MediaSessionAction>& actions() const {
+    return actions_;
+  }
 
   // blink::mojom::MediaSessionService implementation.
   void SetClient(blink::mojom::MediaSessionClientPtr client) override;
 
-  void SetMetadata(
-      const base::Optional<content::MediaMetadata>& metadata) override;
+  void SetMetadata(const base::Optional<MediaMetadata>& metadata) override;
 
   void EnableAction(blink::mojom::MediaSessionAction action) override;
   void DisableAction(blink::mojom::MediaSessionAction action) override;
 
-  // Returns the content::MediaSession this service is associated with. Only
-  // returns non-null when this service is in the top-level frame.
+ protected:
+  explicit MediaSessionServiceImpl(RenderFrameHost* render_frame_host);
+
+ private:
   MediaSessionImpl* GetMediaSession();
 
   void Bind(blink::mojom::MediaSessionServiceRequest request);
@@ -48,6 +55,8 @@ class MediaSessionServiceImpl : public blink::mojom::MediaSessionService {
   // The binding is removed when binding_ is cleared or goes out of scope.
   std::unique_ptr<mojo::Binding<blink::mojom::MediaSessionService>> binding_;
   blink::mojom::MediaSessionClientPtr client_;
+  base::Optional<MediaMetadata> metadata_;
+  std::set<blink::mojom::MediaSessionAction> actions_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionServiceImpl);
 };

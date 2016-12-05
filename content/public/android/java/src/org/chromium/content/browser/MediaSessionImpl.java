@@ -12,6 +12,8 @@ import org.chromium.content_public.browser.MediaSessionObserver;
 import org.chromium.content_public.browser.WebContents;
 import org.chromium.content_public.common.MediaMetadata;
 
+import java.util.HashSet;
+
 /**
  * The MediaSessionImpl Java wrapper to allow communicating with the native MediaSessionImpl object.
  * The object is owned by Java WebContentsImpl instead of native to avoid introducing a new garbage
@@ -93,16 +95,12 @@ public class MediaSessionImpl extends MediaSession {
     }
 
     @CalledByNative
-    private void mediaSessionEnabledAction(int action) {
-        for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().mediaSessionEnabledAction(action);
-        }
-    }
+    private void mediaSessionActionsChanged(int[] actions) {
+        HashSet<Integer> actionSet = new HashSet<Integer>();
+        for (int action : actions) actionSet.add(action);
 
-    @CalledByNative
-    private void mediaSessionDisabledAction(int action) {
         for (mObserversIterator.rewind(); mObserversIterator.hasNext();) {
-            mObserversIterator.next().mediaSessionDisabledAction(action);
+            mObserversIterator.next().mediaSessionActionsChanged(actionSet);
         }
     }
 

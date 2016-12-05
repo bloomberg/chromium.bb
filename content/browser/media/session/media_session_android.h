@@ -39,10 +39,8 @@ class MediaSessionAndroid final : public MediaSessionObserver {
                                 bool is_suspended) override;
   void MediaSessionMetadataChanged(
       const base::Optional<MediaMetadata>& metadata) override;
-  void MediaSessionEnabledAction(
-      blink::mojom::MediaSessionAction action) override;
-  void MediaSessionDisabledAction(
-      blink::mojom::MediaSessionAction action) override;
+  void MediaSessionActionsChanged(
+      const std::set<blink::mojom::MediaSessionAction>& actions) override;
 
   // MediaSession method wrappers.
   void Resume(JNIEnv* env, const base::android::JavaParamRef<jobject>& j_obj);

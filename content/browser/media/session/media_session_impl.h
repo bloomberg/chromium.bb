@@ -7,6 +7,9 @@
 
 #include <stddef.h>
 
+#include <map>
+#include <set>
+
 #include "base/callback_list.h"
 #include "base/id_map.h"
 #include "base/macros.h"
@@ -35,6 +38,7 @@ namespace content {
 
 class AudioFocusDelegate;
 class AudioFocusManagerTest;
+class MediaSessionImplServiceRoutingTest;
 class MediaSessionImplStateObserver;
 class MediaSessionImplVisibilityBrowserTest;
 class MediaSessionObserver;
@@ -84,8 +88,10 @@ class MediaSessionImpl : public MediaSession,
   void AddObserver(MediaSessionObserver* observer);
   void RemoveObserver(MediaSessionObserver* observer);
 
-  void SetMetadata(const base::Optional<MediaMetadata>& metadata);
-  const base::Optional<MediaMetadata>& metadata() const { return metadata_; }
+  void NotifyMediaSessionMetadataChange(
+      const base::Optional<MediaMetadata>& metadata);
+  void NotifyMediaSessionActionsChange(
+      const std::set<blink::mojom::MediaSessionAction>& actions);
 
   // Adds the given player to the current media session. Returns whether the
   // player was successfully added. If it returns false, AddPlayer() should be
@@ -124,17 +130,6 @@ class MediaSessionImpl : public MediaSession,
   // |type| represents the origin of the request.
   CONTENT_EXPORT void Stop(MediaSession::SuspendType suspend_type) override;
 
-  // Received a media session action and forward to blink::MediaSession.
-  void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
-
-  // Called when an action is enabled in blink::MediaSession. This method will
-  // notify the observers that the action is enabled.
-  void OnMediaSessionEnabledAction(blink::mojom::MediaSessionAction action);
-
-  // Called when an action is disabled in blink::MediaSession. This method will
-  // notify the observers that the action is disabled.
-  void OnMediaSessionDisabledAction(blink::mojom::MediaSessionAction action);
-
   // Let the media session start ducking such that the volume multiplier is
   // reduced.
   CONTENT_EXPORT void StartDucking();
@@ -172,16 +167,32 @@ class MediaSessionImpl : public MediaSession,
   // WebContentsObserver implementation
   void WebContentsDestroyed() override;
 
-  // Sets the associated MediaSessionService for communicating with
-  // blink::MediaSession.
-  MediaSessionServiceImpl* GetMediaSessionService() { return service_; }
-  void SetMediaSessionService(MediaSessionServiceImpl* service);
+  // MediaSessionService-related methods
+
+  // Called when a MediaSessionService is created, which registers itself to
+  // this session.
+  void OnServiceCreated(MediaSessionServiceImpl* service);
+  // Called when a MediaSessionService is destroyed, which unregisters itself
+  // from this session.
+  void OnServiceDestroyed(MediaSessionServiceImpl* service);
+
+  // Called when the metadata of a MediaSessionService has changed. Will notify
+  // observers if the service is currently routed.
+  void OnMediaSessionMetadataChanged(MediaSessionServiceImpl* service);
+  // Called when the actions of a MediaSessionService has changed. Will notify
+  // observers if the service is currently routed.
+  void OnMediaSessionActionsChanged(MediaSessionServiceImpl* service);
+
+  // Called when a MediaSessionAction is received. The action will be forwarded
+  // to blink::MediaSession corresponding to the current routed service.
+  void DidReceiveAction(blink::mojom::MediaSessionAction action) override;
 
  private:
   friend class content::WebContentsUserData<MediaSessionImpl>;
   friend class ::MediaSessionImplBrowserTest;
   friend class content::MediaSessionImplVisibilityBrowserTest;
   friend class content::AudioFocusManagerTest;
+  friend class content::MediaSessionImplServiceRoutingTest;
   friend class content::MediaSessionImplStateObserver;
 
   CONTENT_EXPORT void SetDelegateForTests(
@@ -251,6 +262,18 @@ class MediaSessionImpl : public MediaSession,
   CONTENT_EXPORT bool AddOneShotPlayer(MediaSessionPlayerObserver* observer,
                                        int player_id);
 
+  // MediaSessionService-related methods
+
+  // Called when the routed service may have changed.
+  void UpdateRoutedService();
+
+  // Returns whether the frame |rfh| uses MediaSession API.
+  bool IsServiceActiveForRenderFrameHost(RenderFrameHost* rfh);
+
+  // Compute the MediaSessionService that should be routed, which will be used
+  // to update |routed_service_|.
+  CONTENT_EXPORT MediaSessionServiceImpl* ComputeServiceForRouting();
+
   std::unique_ptr<AudioFocusDelegate> delegate_;
   PlayersMap normal_players_;
   PlayersMap pepper_players_;
@@ -267,7 +290,6 @@ class MediaSessionImpl : public MediaSession,
   // StopDucking().
   bool is_ducking_;
 
-  base::Optional<MediaMetadata> metadata_;
   base::CallbackList<void(State)> media_session_state_listeners_;
 
   base::ObserverList<MediaSessionObserver> observers_;
@@ -276,9 +298,15 @@ class MediaSessionImpl : public MediaSession,
   std::unique_ptr<MediaSessionAndroid> session_android_;
 #endif  // defined(OS_ANDROID)
 
-  // The MediaSessionService this session is associated with (the service of the
-  // top-level frame).
-  MediaSessionServiceImpl* service_;
+  // MediaSessionService-related fields
+  using ServicesMap = std::map<RenderFrameHost*, MediaSessionServiceImpl*>;
+
+  // The collection of all managed services (non-owned pointers). The services
+  // are owned by RenderFrameHost and should be registered on creation and
+  // unregistered on destroy.
+  ServicesMap services_;
+  // The currently routed service (non-owned pointer).
+  MediaSessionServiceImpl* routed_service_;
 
   DISALLOW_COPY_AND_ASSIGN(MediaSessionImpl);
 };

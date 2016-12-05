@@ -17,13 +17,13 @@ MediaSessionServiceImpl::MediaSessionServiceImpl(
     : render_frame_host_(render_frame_host) {
   MediaSessionImpl* session = GetMediaSession();
   if (session)
-    session->SetMediaSessionService(this);
+    session->OnServiceCreated(this);
 }
 
 MediaSessionServiceImpl::~MediaSessionServiceImpl() {
   MediaSessionImpl* session = GetMediaSession();
-  if (session && session->GetMediaSessionService() == this)
-    session->SetMediaSessionService(nullptr);
+  if (session)
+    session->OnServiceDestroyed(this);
 }
 
 // static
@@ -50,32 +50,33 @@ void MediaSessionServiceImpl::SetMetadata(
         RenderProcessHost::CrashReportMode::GENERATE_CRASH_DUMP);
     return;
   }
+  metadata_ = metadata;
 
   MediaSessionImpl* session = GetMediaSession();
   if (session)
-    session->SetMetadata(metadata);
+    session->OnMediaSessionMetadataChanged(this);
 }
 
 void MediaSessionServiceImpl::EnableAction(
     blink::mojom::MediaSessionAction action) {
+  actions_.insert(action);
   MediaSessionImpl* session = GetMediaSession();
   if (session)
-    session->OnMediaSessionEnabledAction(action);
+    session->OnMediaSessionActionsChanged(this);
 }
 
 void MediaSessionServiceImpl::DisableAction(
     blink::mojom::MediaSessionAction action) {
+  actions_.erase(action);
   MediaSessionImpl* session = GetMediaSession();
   if (session)
-    session->OnMediaSessionDisabledAction(action);
+    session->OnMediaSessionActionsChanged(this);
 }
 
 MediaSessionImpl* MediaSessionServiceImpl::GetMediaSession() {
   WebContentsImpl* contents = static_cast<WebContentsImpl*>(
       WebContentsImpl::FromRenderFrameHost(render_frame_host_));
   if (!contents)
-    return nullptr;
-  if (render_frame_host_ != contents->GetMainFrame())
     return nullptr;
   return MediaSessionImpl::Get(contents);
 }

@@ -24,6 +24,7 @@ class MockMediaSessionPlayerObserver : public MediaSessionPlayerObserver {
   void OnResume(int player_id) override {}
   void OnSetVolumeMultiplier(
       int player_id, double volume_multiplier) override {}
+  RenderFrameHost* GetRenderFrameHost() const override { return nullptr; }
 };
 
 }  // anonymous namespace

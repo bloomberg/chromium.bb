@@ -40,6 +40,10 @@ void MockMediaSessionPlayerObserver::OnSetVolumeMultiplier(
   players_[player_id].volume_multiplier_ = volume_multiplier;
 }
 
+RenderFrameHost* MockMediaSessionPlayerObserver::GetRenderFrameHost() const {
+  return nullptr;
+}
+
 int MockMediaSessionPlayerObserver::StartNewPlayer() {
   players_.push_back(MockPlayer(true, 1.0f));
   return players_.size() - 1;

@@ -1130,6 +1130,7 @@ test("content_unittests") {
     "../browser/media/midi_host_unittest.cc",
     "../browser/media/session/audio_focus_manager_unittest.cc",
     "../browser/media/session/media_session_controller_unittest.cc",
+    "../browser/media/session/media_session_impl_service_routing_unittest.cc",
     "../browser/media/session/media_session_uma_helper_unittest.cc",
     "../browser/memory/memory_coordinator_impl_unittest.cc",
     "../browser/memory/memory_coordinator_unittest.cc",
