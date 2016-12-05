@@ -578,7 +578,7 @@
       'filepath': 'content/common/sandbox.*linux.cc',
     },
     'mac': {
-      'filepath': '(_|/)(cocoa|mac)(_|\.)|/(cocoa|mac)/|\.mm?$',
+      'filepath': '(_|/)(cocoa|mac)(_|\.)|/(cocoa|mac)/|^((?!ios\/).)*\.mm?$',
     },
     'manifest': {
       'filepath': 'content/(browser|renderer)/manifest/'\
