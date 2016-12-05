@@ -70,21 +70,6 @@ void LaserPointerView::Stop() {
   SchedulePaint();
 }
 
-aura::Window* LaserPointerView::GetRootWindow() {
-  return widget_->GetNativeView()->GetRootWindow();
-}
-
-void LaserPointerView::ReparentWidget(aura::Window* new_root_window) {
-  if (GetRootWindow() != new_root_window) {
-    // TODO(sammiequon): Investigate if we should stop (which removes all
-    // points) or keep the old points. See http://crbug.com/647793.
-    Stop();
-    views::Widget::ReparentNativeView(
-        widget_->GetNativeView(),
-        Shell::GetContainer(new_root_window, kShellWindowId_OverlayContainer));
-  }
-}
-
 void LaserPointerView::AddNewPoint(const gfx::Point& new_point) {
   laser_points_.AddPoint(new_point);
   OnPointsUpdated();

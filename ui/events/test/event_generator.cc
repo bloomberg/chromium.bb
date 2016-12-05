@@ -79,7 +79,7 @@ class TestTouchEvent : public ui::TouchEvent {
 
 const int kAllButtonMask = ui::EF_LEFT_MOUSE_BUTTON | ui::EF_RIGHT_MOUSE_BUTTON;
 
-void ConvertToPenPointerEvent(ui::MouseEvent* event) {
+void ConvertToPenPointerEvent(ui::TouchEvent* event) {
   auto details = event->pointer_details();
   details.pointer_type = ui::EventPointerType::POINTER_TYPE_PEN;
   event->set_pointer_details(details);
@@ -660,8 +660,8 @@ gfx::Point EventGenerator::CenterOfWindow(const EventTarget* window) const {
 }
 
 void EventGenerator::DoDispatchEvent(ui::Event* event, bool async) {
-  if (pen_pointer_mode_ && event->IsMouseEvent())
-    ConvertToPenPointerEvent(static_cast<ui::MouseEvent*>(event));
+  if (pen_pointer_mode_ && event->IsTouchEvent())
+    ConvertToPenPointerEvent(static_cast<ui::TouchEvent*>(event));
 
   if (async) {
     std::unique_ptr<ui::Event> pending_event = ui::Event::Clone(*event);

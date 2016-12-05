@@ -37,11 +37,6 @@ class LaserPointerView : public views::View {
   void UpdateTime();
   void Stop();
 
-  aura::Window* GetRootWindow();
-
-  // Reparents the widget if needed.
-  void ReparentWidget(aura::Window* new_root_window);
-
  private:
   friend class LaserPointerControllerTestApi;
 

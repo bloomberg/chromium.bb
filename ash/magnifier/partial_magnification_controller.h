@@ -51,7 +51,6 @@ class ASH_EXPORT PartialMagnificationController : public ui::EventHandler,
   class ContentMask;
 
   // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
   void OnTouchEvent(ui::TouchEvent* event) override;
 
   // WindowObserver:

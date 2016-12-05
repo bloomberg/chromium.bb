@@ -17,10 +17,6 @@ namespace base {
 class Timer;
 }
 
-namespace ui {
-class MouseEvent;
-}
-
 namespace ash {
 
 class LaserPointerView;
@@ -41,17 +37,16 @@ class ASH_EXPORT LaserPointerController : public ui::EventHandler,
   friend class LaserPointerControllerTestApi;
 
   // ui::EventHandler:
-  void OnMouseEvent(ui::MouseEvent* event) override;
+  void OnTouchEvent(ui::TouchEvent* event) override;
 
   // aura::WindowObserver:
   void OnWindowDestroying(aura::Window* window) override;
 
-  // Reparent, recreate or destroy LaserPointerView instance as needed based on
-  // the current window and the widgets window.
+  // Handles monitor disconnect/swap primary.
   void SwitchTargetRootWindowIfNeeded(aura::Window* root_window);
 
-  // Timer callback which adds a point where the mouse was last seen. This
-  // allows the trail to fade away when the mouse is stationary.
+  // Timer callback which adds a point where the stylus was last seen. This
+  // allows the trail to fade away when the stylus is stationary.
   void AddStationaryPoint();
 
   // Updates |laser_pointer_view_| by changing its root window or creating it if
@@ -59,14 +54,14 @@ class ASH_EXPORT LaserPointerController : public ui::EventHandler,
   // propagation of |event|.
   void UpdateLaserPointerView(aura::Window* current_window,
                               const gfx::Point& event_location,
-                              ui::MouseEvent* event);
+                              ui::Event* event);
 
   // Destroys |laser_pointer_view_|, if it exists.
   void DestroyLaserPointerView();
 
   void RestartTimer();
 
-  // Timer which will add a new stationary point when the mouse stops moving.
+  // Timer which will add a new stationary point when the stylus stops moving.
   // This will remove points that are too old.
   std::unique_ptr<base::Timer> stationary_timer_;
   int stationary_timer_repeat_count_ = 0;
@@ -79,8 +74,8 @@ class ASH_EXPORT LaserPointerController : public ui::EventHandler,
   // to be destroyed, such as when the stylus is released.
   bool is_fading_away_ = false;
 
-  // The last seen mouse location in screen coordinates.
-  gfx::Point current_mouse_location_;
+  // The last seen stylus location in screen coordinates.
+  gfx::Point current_stylus_location_;
 
   // |laser_pointer_view_| will only hold an instance when the laser pointer is
   // enabled and activated (pressed or dragged).

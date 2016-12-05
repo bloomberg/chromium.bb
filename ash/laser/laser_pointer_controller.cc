@@ -7,8 +7,6 @@
 #include "ash/common/system/chromeos/palette/palette_utils.h"
 #include "ash/laser/laser_pointer_view.h"
 #include "ash/shell.h"
-#include "ui/aura/window_event_dispatcher.h"
-#include "ui/aura/window_tree_host.h"
 #include "ui/display/screen.h"
 #include "ui/views/widget/widget.h"
 
@@ -24,15 +22,6 @@ const int kPointLifeDurationMs = 200;
 // |kPointLifeDurationMs| can get removed.
 const int kAddStationaryPointsDelayMs = 5;
 
-aura::Window* GetCurrentRootWindow() {
-  aura::Window::Windows root_windows = Shell::GetAllRootWindows();
-  for (aura::Window* root_window : root_windows) {
-    if (root_window->ContainsPointInRoot(
-            root_window->GetHost()->dispatcher()->GetLastMouseLocationInRoot()))
-      return root_window;
-  }
-  return nullptr;
-}
 }  // namespace
 
 LaserPointerController::LaserPointerController()
@@ -58,7 +47,7 @@ void LaserPointerController::SetEnabled(bool enabled) {
     laser_pointer_view_.reset();
 }
 
-void LaserPointerController::OnMouseEvent(ui::MouseEvent* event) {
+void LaserPointerController::OnTouchEvent(ui::TouchEvent* event) {
   if (!enabled_)
     return;
 
@@ -66,41 +55,34 @@ void LaserPointerController::OnMouseEvent(ui::MouseEvent* event) {
       ui::EventPointerType::POINTER_TYPE_PEN)
     return;
 
-  if (event->type() != ui::ET_MOUSE_DRAGGED &&
-      event->type() != ui::ET_MOUSE_PRESSED &&
-      event->type() != ui::ET_MOUSE_RELEASED)
+  if (event->type() != ui::ET_TOUCH_MOVED &&
+      event->type() != ui::ET_TOUCH_PRESSED &&
+      event->type() != ui::ET_TOUCH_RELEASED)
     return;
 
-  aura::Window* current_window = GetCurrentRootWindow();
-  if (!current_window) {
-    DestroyLaserPointerView();
-    return;
-  }
-
-  // Compute the event coordinate relative to the display it is currently on
-  // (and not the one the event was captured on).
+  // Find the root window that the event was captured on. We never need to
+  // switch between different root windows because it is not physically possible
+  // to seamlessly drag a finger between two displays like it is with a mouse.
   gfx::Point event_location = event->root_location();
-  aura::Window* target = static_cast<aura::Window*>(event->target());
-  aura::Window* event_root = target->GetRootWindow();
-  aura::Window::ConvertPointToTarget(event_root, current_window,
-                                     &event_location);
+  aura::Window* current_window =
+      static_cast<aura::Window*>(event->target())->GetRootWindow();
 
-  // Start a new laser session if the mouse is pressed but not pressed over the
+  // Start a new laser session if the stylus is pressed but not pressed over the
   // palette.
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
       !PaletteContainsPointInScreen(event_location)) {
     DestroyLaserPointerView();
     UpdateLaserPointerView(current_window, event_location, event);
   }
 
   // Do not update laser if it is in the process of fading away.
-  if (event->type() == ui::ET_MOUSE_DRAGGED && laser_pointer_view_ &&
+  if (event->type() == ui::ET_TOUCH_MOVED && laser_pointer_view_ &&
       !is_fading_away_) {
     UpdateLaserPointerView(current_window, event_location, event);
     RestartTimer();
   }
 
-  if (event->type() == ui::ET_MOUSE_RELEASED && laser_pointer_view_ &&
+  if (event->type() == ui::ET_TOUCH_RELEASED && laser_pointer_view_ &&
       !is_fading_away_) {
     is_fading_away_ = true;
     UpdateLaserPointerView(current_window, event_location, event);
@@ -116,9 +98,9 @@ void LaserPointerController::SwitchTargetRootWindowIfNeeded(
     aura::Window* root_window) {
   if (!root_window) {
     DestroyLaserPointerView();
-  } else if (laser_pointer_view_) {
-    laser_pointer_view_->ReparentWidget(root_window);
-  } else if (enabled_) {
+  }
+
+  if (!laser_pointer_view_ && enabled_) {
     laser_pointer_view_.reset(new LaserPointerView(
         base::TimeDelta::FromMilliseconds(kPointLifeDurationMs), root_window));
   }
@@ -127,10 +109,10 @@ void LaserPointerController::SwitchTargetRootWindowIfNeeded(
 void LaserPointerController::UpdateLaserPointerView(
     aura::Window* current_window,
     const gfx::Point& event_location,
-    ui::MouseEvent* event) {
+    ui::Event* event) {
   SwitchTargetRootWindowIfNeeded(current_window);
-  current_mouse_location_ = event_location;
-  laser_pointer_view_->AddNewPoint(current_mouse_location_);
+  current_stylus_location_ = event_location;
+  laser_pointer_view_->AddNewPoint(current_stylus_location_);
   event->StopPropagation();
 }
 
@@ -154,9 +136,9 @@ void LaserPointerController::AddStationaryPoint() {
   if (is_fading_away_)
     laser_pointer_view_->UpdateTime();
   else
-    laser_pointer_view_->AddNewPoint(current_mouse_location_);
+    laser_pointer_view_->AddNewPoint(current_stylus_location_);
 
-  // We can stop repeating the timer once the mouse has been stationary for
+  // We can stop repeating the timer once the stylus has been stationary for
   // longer than the life of a point.
   if (stationary_timer_repeat_count_ * kAddStationaryPointsDelayMs >=
       kPointLifeDurationMs) {

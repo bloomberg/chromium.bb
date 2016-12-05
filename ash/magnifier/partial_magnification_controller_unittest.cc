@@ -71,17 +71,17 @@ TEST_F(PartialMagnificationControllerTest, ActiveOnPointerDown) {
   GetEventGenerator().EnterPenPointerMode();
 
   // While disabled no magnifier shows up.
-  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().PressTouch();
   EXPECT_FALSE(GetTestApi().is_active());
   EXPECT_FALSE(GetTestApi().host_widget());
-  GetEventGenerator().ReleaseLeftButton();
+  GetEventGenerator().ReleaseTouch();
 
   // While enabled the magnifier is only active while the pointer is down.
   GetController()->SetEnabled(true);
-  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().PressTouch();
   EXPECT_TRUE(GetTestApi().is_active());
   EXPECT_TRUE(GetTestApi().host_widget());
-  GetEventGenerator().ReleaseLeftButton();
+  GetEventGenerator().ReleaseTouch();
   EXPECT_FALSE(GetTestApi().is_active());
   EXPECT_FALSE(GetTestApi().host_widget());
 }
@@ -96,8 +96,8 @@ TEST_F(PartialMagnificationControllerTest, MultipleDisplays) {
   // Active magnifier with two displays, move it to the second display.
   UpdateDisplay("800x600,800x600");
   GetController()->SetEnabled(true);
-  GetEventGenerator().PressLeftButton();
-  GetEventGenerator().MoveMouseTo(gfx::Point(1200, 300));
+  GetEventGenerator().PressTouch();
+  GetEventGenerator().MoveTouch(gfx::Point(1200, 300));
   EXPECT_TRUE(GetTestApi().is_active());
   EXPECT_TRUE(GetTestApi().host_widget());
 
@@ -113,7 +113,7 @@ TEST_F(PartialMagnificationControllerTest, DisablingDisablesActive) {
   GetEventGenerator().EnterPenPointerMode();
 
   GetController()->SetEnabled(true);
-  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().PressTouch();
   EXPECT_TRUE(GetTestApi().is_active());
 
   GetController()->SetEnabled(false);
@@ -124,7 +124,6 @@ TEST_F(PartialMagnificationControllerTest, DisablingDisablesActive) {
 // The magnifier only activates for pointer events.
 TEST_F(PartialMagnificationControllerTest, ActivatesOnlyForPointer) {
   GetController()->SetEnabled(true);
-  GetEventGenerator().PressRightButton();
   GetEventGenerator().PressTouch();
   EXPECT_FALSE(GetTestApi().is_active());
 }
@@ -136,29 +135,29 @@ TEST_F(PartialMagnificationControllerTest, MagnifierFollowsPointer) {
 
   // The window does not have to be centered on the press; compute the initial
   // window placement offset. Use a Vector2d for the + operator overload.
-  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().PressTouch();
   gfx::Vector2d offset(GetTestApi().GetWidgetOrigin().x(),
                        GetTestApi().GetWidgetOrigin().y());
 
   // Move the pointer around, make sure the window follows it.
-  GetEventGenerator().MoveMouseTo(gfx::Point(32, 32));
+  GetEventGenerator().MoveTouch(gfx::Point(32, 32));
   EXPECT_EQ(GetEventGenerator().current_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
-  GetEventGenerator().MoveMouseTo(gfx::Point(0, 10));
+  GetEventGenerator().MoveTouch(gfx::Point(0, 10));
   EXPECT_EQ(GetEventGenerator().current_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
-  GetEventGenerator().MoveMouseTo(gfx::Point(10, 0));
+  GetEventGenerator().MoveTouch(gfx::Point(10, 0));
   EXPECT_EQ(GetEventGenerator().current_location() + offset,
             GetTestApi().GetWidgetOrigin());
 
-  GetEventGenerator().ReleaseLeftButton();
+  GetEventGenerator().ReleaseTouch();
 
   // Make sure the window is initially placed correctly.
   GetEventGenerator().set_current_location(gfx::Point(50, 20));
   EXPECT_FALSE(GetTestApi().is_active());
-  GetEventGenerator().PressLeftButton();
+  GetEventGenerator().PressTouch();
   EXPECT_EQ(GetEventGenerator().current_location() + offset,
             GetTestApi().GetWidgetOrigin());
 }

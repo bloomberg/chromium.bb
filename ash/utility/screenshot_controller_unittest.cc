@@ -179,14 +179,14 @@ TEST_F(PartialScreenshotControllerTest,
 
   generator.EnterPenPointerMode();
   generator.set_current_location(gfx::Point(100, 100));
-  generator.PressLeftButton();
+  generator.PressTouch();
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
   EXPECT_EQ(gfx::Point(100, 100), GetStartPosition());
 
-  generator.MoveMouseBy(200, 200);
+  generator.MoveTouch(gfx::Point(300, 300));
   EXPECT_EQ(0, test_delegate->handle_take_partial_screenshot_count());
 
-  generator.ReleaseLeftButton();
+  generator.ReleaseTouch();
   EXPECT_EQ(gfx::Rect(100, 100, 200, 200),
             GetScreenshotDelegate()->last_rect());
   EXPECT_EQ(1, GetScreenshotDelegate()->handle_take_partial_screenshot_count());

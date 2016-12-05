@@ -233,10 +233,6 @@ void PartialMagnificationController::SwitchTargetRootWindowIfNeeded(
   }
 }
 
-void PartialMagnificationController::OnMouseEvent(ui::MouseEvent* event) {
-  OnLocatedEvent(event, event->pointer_details());
-}
-
 void PartialMagnificationController::OnTouchEvent(ui::TouchEvent* event) {
   OnLocatedEvent(event, event->pointer_details());
 }
@@ -283,12 +279,12 @@ void PartialMagnificationController::OnLocatedEvent(
   wm::ConvertPointToScreen(event_root, &screen_point);
 
   // If the stylus is pressed on the palette icon or widget, do not activate.
-  if (event->type() == ui::ET_MOUSE_PRESSED &&
+  if (event->type() == ui::ET_TOUCH_PRESSED &&
       !PaletteContainsPointInScreen(screen_point)) {
     SetActive(true);
   }
 
-  if (event->type() == ui::ET_MOUSE_RELEASED)
+  if (event->type() == ui::ET_TOUCH_RELEASED)
     SetActive(false);
 
   if (!is_active_)

@@ -308,10 +308,12 @@ TEST_F(TabletPowerButtonControllerTest, ConvertibleOnLaptopMode) {
   generator_->set_flags(ui::EF_NONE);
   EXPECT_TRUE(GetBacklightsForcedOff());
 
-  // Stylus mouse event should not SetBacklightsForcedOff(false).
+  // Stylus event should not SetBacklightsForcedOff(false).
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->EnterPenPointerMode();
-  generator_->MoveMouseBy(1, 1);
+  generator_->PressTouch();
+  generator_->MoveTouch(gfx::Point(1, 1));
+  generator_->ReleaseTouch();
   EXPECT_TRUE(GetBacklightsForcedOff());
   generator_->ExitPenPointerMode();
 }
