@@ -9,8 +9,6 @@
 #include "chromeos/audio/audio_pref_observer.h"
 #include "chromeos/chromeos_export.h"
 
-class PrefService;
-
 namespace chromeos {
 
 struct AudioDevice;

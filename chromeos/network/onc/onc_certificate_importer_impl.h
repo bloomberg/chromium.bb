@@ -21,7 +21,6 @@ namespace base {
 class DictionaryValue;
 class ListValue;
 class SequencedTaskRunner;
-class SingleThreadTaskRunner;
 }
 
 namespace net {

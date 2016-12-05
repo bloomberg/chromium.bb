@@ -19,7 +19,6 @@ namespace chromeos {
 class ArcObbMounterClient;
 class AuthPolicyClient;
 class CrosDisksClient;
-class CryptohomeClient;
 class DebugDaemonClient;
 class EasyUnlockClient;
 class ImageBurnerClient;

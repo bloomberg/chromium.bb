@@ -17,7 +17,6 @@
 
 namespace dbus {
 class MethodCall;
-class Response;
 }
 
 namespace chromeos {

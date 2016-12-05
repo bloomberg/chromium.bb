@@ -25,13 +25,9 @@ class DictionaryValue;
 
 namespace dbus {
 
-class Bus;
-class ErrorResponse;
 class MessageWriter;
 class MethodCall;
-class ObjectPath;
 class ObjectProxy;
-class Response;
 class Signal;
 
 }  // namespace dbus

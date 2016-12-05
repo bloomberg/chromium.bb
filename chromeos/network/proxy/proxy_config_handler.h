@@ -10,13 +10,8 @@
 #include "chromeos/chromeos_export.h"
 #include "components/onc/onc_constants.h"
 
-class PrefRegistrySimple;
 class PrefService;
 class ProxyConfigDictionary;
-
-namespace user_prefs {
-class PrefRegistrySyncable;
-}
 
 namespace chromeos {
 

@@ -17,10 +17,6 @@ namespace dbus {
 class ObjectPath;
 }
 
-namespace net {
-class IPEndPoint;
-}
-
 namespace chromeos {
 
 class ShillPropertyChangedObserver;

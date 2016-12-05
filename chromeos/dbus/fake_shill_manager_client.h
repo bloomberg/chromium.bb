@@ -12,10 +12,6 @@
 #include "chromeos/chromeos_export.h"
 #include "chromeos/dbus/shill_manager_client.h"
 
-namespace net {
-class IPEndPoint;
-}
-
 namespace chromeos {
 
 // A fake implementation of ShillManagerClient. This works in close coordination

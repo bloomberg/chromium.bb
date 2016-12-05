@@ -21,7 +21,6 @@ class FilePath;
 }
 
 namespace dbus {
-class MessageReader;
 class Response;
 }
 

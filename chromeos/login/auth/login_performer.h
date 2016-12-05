@@ -24,10 +24,6 @@ namespace net {
 class URLRequestContextGetter;
 }
 
-namespace policy {
-class WildcardLoginChecker;
-}
-
 namespace content {
 class BrowserContext;
 }

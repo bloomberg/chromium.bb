@@ -10,10 +10,6 @@
 #include "chromeos/dbus/permission_broker_client.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
-namespace dbus {
-class FileDescriptor;
-}  // namespace dbus
-
 namespace chromeos {
 
 class MockPermissionBrokerClient : public PermissionBrokerClient {

@@ -19,7 +19,6 @@ class Thread;
 
 namespace dbus {
 class Bus;
-class ObjectPath;
 }  // namespace dbus
 
 namespace chromeos {

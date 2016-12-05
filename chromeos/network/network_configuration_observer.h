@@ -15,8 +15,6 @@ class DictionaryValue;
 
 namespace chromeos {
 
-struct NetworkConfiguration;
-
 // Observer class for network configuration events.
 class NetworkConfigurationObserver {
  public:

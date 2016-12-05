@@ -22,9 +22,6 @@
 #include "chromeos/dbus/session_manager_client.h"
 #include "chromeos/dbus/volume_state.h"
 
-class PrefRegistrySimple;
-class PrefService;
-
 namespace chromeos {
 
 class AudioDevicesPrefHandler;

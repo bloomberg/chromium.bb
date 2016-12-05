@@ -8,8 +8,6 @@
 #include "base/memory/ref_counted.h"
 #include "chromeos/chromeos_export.h"
 
-class PrefRegistrySimple;
-
 namespace chromeos {
 
 // Interface for observing audio preference changes.

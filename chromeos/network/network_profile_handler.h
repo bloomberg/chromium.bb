@@ -26,7 +26,6 @@ class DictionaryValue;
 namespace chromeos {
 
 class NetworkProfileObserver;
-class NetworkStateHandler;
 
 class CHROMEOS_EXPORT NetworkProfileHandler
     : public ShillPropertyChangedObserver {
