@@ -1879,6 +1879,9 @@ To obtain new licenses, connect to the internet and play your downloaded content
       <message name="IDS_EXTERNAL_APP_LEAVE_INCOGNITO_WARNING_TITLE" desc="Title for incognito external intent. [CHAR-LIMIT=24]">
         Warning
       </message>
+      <message name="IDS_EXTERNAL_APP_RESTRICTED_ACCESS_ERROR" desc="A message shown to the user if Chrome receives a file view request to something Chrome does not have access to view.">
+        Chrome does not have access to the requested resource.
+      </message>
 
       <!-- Messages for remote media playback (casting) -->
       <message name="IDS_CAST_CASTING_VIDEO" desc="AtHome text to tell user which screen casting is happening. [CHAR LIMIT=40]">

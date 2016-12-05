@@ -55,6 +55,7 @@ import org.chromium.chrome.browser.util.IntentUtils;
 import org.chromium.chrome.browser.util.UrlUtilities;
 import org.chromium.chrome.browser.webapps.ActivityAssigner;
 import org.chromium.chrome.browser.webapps.WebappLauncherActivity;
+import org.chromium.ui.widget.Toast;
 
 import java.lang.ref.WeakReference;
 import java.net.URI;
@@ -455,7 +456,9 @@ public class ChromeLauncherActivity extends Activity
             newIntent.addFlags(Intent.FLAG_ACTIVITY_RETAIN_IN_RECENTS);
         }
         Uri uri = newIntent.getData();
+        boolean isContentScheme = false;
         if (uri != null && "content".equals(uri.getScheme())) {
+            isContentScheme = true;
             newIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         }
         if (mIsInLegacyMultiInstanceMode) {
@@ -470,6 +473,14 @@ public class ChromeLauncherActivity extends Activity
         StrictMode.allowThreadDiskWrites();
         try {
             startActivity(newIntent);
+        } catch (SecurityException ex) {
+            if (isContentScheme) {
+                Toast.makeText(
+                        this, R.string.external_app_restricted_access_error,
+                        Toast.LENGTH_LONG).show();
+            } else {
+                throw ex;
+            }
         } finally {
             StrictMode.setThreadPolicy(oldPolicy);
         }

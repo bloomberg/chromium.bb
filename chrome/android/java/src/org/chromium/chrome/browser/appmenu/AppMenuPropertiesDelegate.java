@@ -92,6 +92,7 @@ public class AppMenuPropertiesDelegate {
             boolean isChromeScheme = url.startsWith(UrlConstants.CHROME_SCHEME)
                     || url.startsWith(UrlConstants.CHROME_NATIVE_SCHEME);
             boolean isFileScheme = url.startsWith(UrlConstants.FILE_SCHEME);
+            boolean isContentScheme = url.startsWith(UrlConstants.CONTENT_SCHEME);
             boolean shouldShowIconRow = !mActivity.isTablet()
                     || mActivity.getWindow().getDecorView().getWidth()
                             < DeviceFormFactor.getMinimumTabletWidthPx(mActivity);
@@ -156,15 +157,18 @@ public class AppMenuPropertiesDelegate {
                     !currentTab.isNativePage() && currentTab.getWebContents() != null);
 
             // Hide 'Add to homescreen' for the following:
-            // 1.) chrome:// pages - Android doesn't know how to direct those URLs.
-            // 2.) incognito pages - To avoid problems where users create shortcuts in incognito
-            //                       mode and then open the webapp in regular mode.
-            // 3.) file:// - After API 24, file: URIs are not supported in VIEW intents and thus
-            //               can not be added to the homescreen.
-            // 4.) If creating shortcuts it not supported by the current home screen.
+            // * chrome:// pages - Android doesn't know how to direct those URLs.
+            // * incognito pages - To avoid problems where users create shortcuts in incognito
+            //                      mode and then open the webapp in regular mode.
+            // * file:// - After API 24, file: URIs are not supported in VIEW intents and thus
+            //             can not be added to the homescreen.
+            // * content:// - Accessing external content URIs requires the calling app to grant
+            //                access to the resource via FLAG_GRANT_READ_URI_PERMISSION, and that
+            //                is not persisted when adding to the homescreen.
+            // * If creating shortcuts it not supported by the current home screen.
             MenuItem homescreenItem = menu.findItem(R.id.add_to_homescreen_id);
             boolean homescreenItemVisible = ShortcutHelper.isAddToHomeIntentSupported(mActivity)
-                    && !isChromeScheme && !isFileScheme && !isIncognito;
+                    && !isChromeScheme && !isFileScheme && !isContentScheme && !isIncognito;
             if (homescreenItemVisible) {
                 homescreenItem.setTitle(AppBannerManager.getHomescreenLanguageOption());
             }
