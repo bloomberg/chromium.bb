@@ -180,7 +180,7 @@ class SessionsSyncManager : public syncer::SyncableService,
                            ProcessRemoteDeleteOfLocalSession);
   FRIEND_TEST_ALL_PREFIXES(SessionsSyncManagerTest, SetVariationIds);
 
-  void InitializeCurrentMachineTag();
+  void InitializeCurrentMachineTag(const std::string& cache_guid);
 
   // Load and add window or tab data for a foreign session to our internal
   // tracking.
@@ -299,9 +299,10 @@ class SessionsSyncManager : public syncer::SyncableService,
       const syncer::SyncDataList& restored_tabs,
       syncer::SyncChangeList* change_output);
 
-  // Stops and re-starts syncing to rebuild association mappings.
+  // Stops and re-starts syncing to rebuild association mappings. Returns true
+  // when re-starting succeeds.
   // See |local_tab_pool_out_of_sync_|.
-  void RebuildAssociations();
+  bool RebuildAssociations();
 
   // Validates the content of a SessionHeader protobuf.
   // Returns false if validation fails.
@@ -351,8 +352,9 @@ class SessionsSyncManager : public syncer::SyncableService,
   // Unique client tag.
   std::string current_machine_tag_;
 
-  // User-visible machine name.
+  // User-visible machine name and device type to populate header.
   std::string current_session_name_;
+  sync_pb::SyncEnums::DeviceType current_device_type_;
 
   // SyncID for the sync node containing all the window information for this
   // client.

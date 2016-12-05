@@ -10,14 +10,14 @@
 #include "base/macros.h"
 #include "components/prefs/pref_change_registrar.h"
 #include "components/sync/device_info/local_device_info_provider.h"
-#include "components/sync/driver/ui_data_type_controller.h"
+#include "components/sync/driver/non_ui_data_type_controller.h"
 
 namespace sync_sessions {
 
 // Overrides StartModels to avoid sync contention with sessions during
 // a session restore operation at startup and to wait for the local
 // device info to become available.
-class SessionDataTypeController : public syncer::UIDataTypeController {
+class SessionDataTypeController : public syncer::NonUIDataTypeController {
  public:
   // |dump_stack| is called when an unrecoverable error occurs.
   SessionDataTypeController(const base::Closure& dump_stack,
@@ -26,7 +26,7 @@ class SessionDataTypeController : public syncer::UIDataTypeController {
                             const char* history_disabled_pref_name);
   ~SessionDataTypeController() override;
 
-  // UIDataTypeController implementation.
+  // NonUIDataTypeController implementation.
   bool StartModels() override;
   void StopModels() override;
   bool ReadyForStart() const override;
