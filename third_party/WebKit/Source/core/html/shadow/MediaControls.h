@@ -57,6 +57,10 @@ class CORE_EXPORT MediaControls final : public HTMLDivElement {
   void showTextTrackAtIndex(unsigned indexToEnable);
   void disableShowingTextTracks();
 
+  // Called by the fullscreen buttons to toggle fulllscreen on/off.
+  void enterFullscreen();
+  void exitFullscreen();
+
   void enteredFullscreen();
   void exitedFullscreen();
 

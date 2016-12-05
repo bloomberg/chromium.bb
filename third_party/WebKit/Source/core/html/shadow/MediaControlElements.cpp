@@ -887,11 +887,11 @@ void MediaControlFullscreenButtonElement::defaultEventHandler(Event* event) {
     if (mediaElement().isFullscreen()) {
       Platform::current()->recordAction(
           UserMetricsAction("Media.Controls.ExitFullscreen"));
-      mediaElement().exitFullscreen();
+      mediaControls().exitFullscreen();
     } else {
       Platform::current()->recordAction(
           UserMetricsAction("Media.Controls.EnterFullscreen"));
-      mediaElement().enterFullscreen();
+      mediaControls().enterFullscreen();
     }
     event->setDefaultHandled();
   }

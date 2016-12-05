@@ -529,6 +529,16 @@ void MediaControls::showOverlayCastButtonIfNeeded() {
   resetHideMediaControlsTimer();
 }
 
+void MediaControls::enterFullscreen() {
+  // TODO(foolip): switch to Fullscreen::UnprefixedRequest when the unprefixed
+  // Fullscreen API has launched.
+  Fullscreen::requestFullscreen(mediaElement(), Fullscreen::PrefixedRequest);
+}
+
+void MediaControls::exitFullscreen() {
+  Fullscreen::exitFullscreen(document());
+}
+
 void MediaControls::enteredFullscreen() {
   m_fullscreenButton->setIsFullscreen(true);
   stopHideMediaControlsTimer();
