@@ -61,9 +61,6 @@ class ForeignSessionHandler : public content::WebUIMessageHandler,
   void OnSyncConfigurationCompleted() override;
   void OnForeignSessionUpdated() override;
 
-  // Returns true if tab sync is enabled for this profile, otherwise false.
-  bool IsTabSyncEnabled();
-
   // Returns a string used to show the user when a session was last modified.
   base::string16 FormatSessionTime(const base::Time& time);
 

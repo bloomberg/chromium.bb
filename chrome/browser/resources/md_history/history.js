@@ -68,16 +68,14 @@ function showNotification(
 /**
  * Receives the synced history data. An empty list means that either there are
  * no foreign sessions, or tab sync is disabled for this profile.
- * |isTabSyncEnabled| makes it possible to distinguish between the cases.
  *
  * @param {!Array<!ForeignSession>} sessionList Array of objects describing the
  *     sessions from other devices.
- * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
  */
-function setForeignSessions(sessionList, isTabSyncEnabled) {
+function setForeignSessions(sessionList) {
   waitForAppUpgrade().then(function() {
     /** @type {HistoryAppElement} */($('history-app'))
-        .setForeignSessions(sessionList, isTabSyncEnabled);
+        .setForeignSessions(sessionList);
   });
 }
 

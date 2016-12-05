@@ -541,18 +541,12 @@ DevicesView.prototype.displayResults_ = function() {
 /**
  * Sets the menu model data. An empty list means that either there are no
  * foreign sessions, or tab sync is disabled for this profile.
- * |isTabSyncEnabled| makes it possible to distinguish between the cases.
  *
  * @param {Array} sessionList Array of objects describing the sessions
  *     from other devices.
- * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
  */
-function setForeignSessions(sessionList, isTabSyncEnabled) {
-  // The other devices is shown iff tab sync is enabled.
-  if (isTabSyncEnabled)
-    devicesView.setSessionList(sessionList);
-  else
-    devicesView.clearDOM();
+function setForeignSessions(sessionList) {
+  devicesView.setSessionList(sessionList);
 }
 
 /**

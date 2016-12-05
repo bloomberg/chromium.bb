@@ -237,13 +237,6 @@ void ForeignSessionHandler::OnForeignSessionUpdated() {
   HandleGetForeignSessions(nullptr);
 }
 
-bool ForeignSessionHandler::IsTabSyncEnabled() {
-  Profile* profile = Profile::FromWebUI(web_ui());
-  browser_sync::ProfileSyncService* service =
-      ProfileSyncServiceFactory::GetInstance()->GetForProfile(profile);
-  return service && service->GetActiveDataTypes().Has(syncer::PROXY_TABS);
-}
-
 base::string16 ForeignSessionHandler::FormatSessionTime(
     const base::Time& time) {
   // Return a time like "1 hour ago", "2 days ago", etc.
@@ -338,9 +331,7 @@ void ForeignSessionHandler::HandleGetForeignSessions(
       session_list.Append(std::move(session_data));
     }
   }
-  base::FundamentalValue tab_sync_enabled(IsTabSyncEnabled());
-  web_ui()->CallJavascriptFunctionUnsafe("setForeignSessions", session_list,
-                                         tab_sync_enabled);
+  web_ui()->CallJavascriptFunctionUnsafe("setForeignSessions", session_list);
 }
 
 void ForeignSessionHandler::HandleOpenForeignSession(

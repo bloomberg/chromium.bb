@@ -266,21 +266,8 @@ Polymer({
   /**
    * @param {!Array<!ForeignSession>} sessionList Array of objects describing
    *     the sessions from other devices.
-   * @param {boolean} isTabSyncEnabled Is tab sync enabled for this profile?
    */
-  setForeignSessions: function(sessionList, isTabSyncEnabled) {
-    if (!isTabSyncEnabled) {
-      var syncedDeviceManagerElem =
-      /** @type {HistorySyncedDeviceManagerElement} */this
-          .$$('history-synced-device-manager');
-      if (syncedDeviceManagerElem) {
-        md_history.ensureLazyLoaded().then(function() {
-          syncedDeviceManagerElem.tabSyncDisabled();
-        });
-      }
-      return;
-    }
-
+  setForeignSessions: function(sessionList) {
     this.set('queryResult_.sessionList', sessionList);
   },
 

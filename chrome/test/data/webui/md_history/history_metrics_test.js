@@ -168,7 +168,7 @@ suite('Metrics', function() {
             ]
         ),
       ];
-      setForeignSessions(sessionList, true);
+      setForeignSessions(sessionList);
       return PolymerTest.flushTasks();
     }).then(() => {
       assertEquals(1, histogram[SyncedTabsHistogram.HAS_FOREIGN_DATA]);
