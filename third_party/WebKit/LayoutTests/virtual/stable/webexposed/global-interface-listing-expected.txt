@@ -3228,10 +3228,12 @@ interface MediaDeviceInfo
     method toJSON
 interface MediaDevices : EventTarget
     attribute @@toStringTag
+    getter ondevicechange
     method constructor
     method enumerateDevices
     method getSupportedConstraints
     method getUserMedia
+    setter ondevicechange
 interface MediaElementAudioSourceNode : AudioSourceNode
     attribute @@toStringTag
     getter mediaElement

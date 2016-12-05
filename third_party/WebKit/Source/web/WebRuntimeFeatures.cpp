@@ -178,6 +178,10 @@ void WebRuntimeFeatures::enableNetworkInformation(bool enable) {
   RuntimeEnabledFeatures::setNetworkInformationEnabled(enable);
 }
 
+void WebRuntimeFeatures::enableOnDeviceChange(bool enable) {
+  RuntimeEnabledFeatures::setOnDeviceChangeEnabled(enable);
+}
+
 void WebRuntimeFeatures::enableOrientationEvent(bool enable) {
   RuntimeEnabledFeatures::setOrientationEventEnabled(enable);
 }

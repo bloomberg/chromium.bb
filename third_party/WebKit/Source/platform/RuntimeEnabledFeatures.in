@@ -155,7 +155,7 @@ NotificationBadge status=stable
 NotificationContentImage status=stable
 NotificationInlineReplies status=experimental
 Notifications status=stable
-OnDeviceChange status=experimental
+OnDeviceChange status=stable
 OrientationEvent
 OriginTrials status=stable
 // Define a sample API for testing integration with the Origin Trials Framework.

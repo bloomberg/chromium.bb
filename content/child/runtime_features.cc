@@ -42,6 +42,8 @@ static void SetRuntimeFeatureDefaultsForPlatform() {
   // Android does not yet support switching of audio output devices
   WebRuntimeFeatures::enableAudioOutputDevices(false);
   WebRuntimeFeatures::enableAutoplayMutedVideos(true);
+  // Android does not yet support SystemMonitor.
+  WebRuntimeFeatures::enableOnDeviceChange(false);
 #else
   WebRuntimeFeatures::enableNavigatorContentUtils(true);
 #endif  // defined(OS_ANDROID)
