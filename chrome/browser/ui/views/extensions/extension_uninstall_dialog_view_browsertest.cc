@@ -15,12 +15,6 @@
 #include "extensions/common/extension_builder.h"
 #include "extensions/common/value_builder.h"
 
-#if defined(OS_MACOSX)
-#include "base/command_line.h"
-#include "chrome/browser/ui/browser_dialogs.h"
-#include "content/public/common/content_switches.h"
-#endif
-
 namespace {
 
 scoped_refptr<extensions::Extension> BuildTestExtension() {
@@ -60,17 +54,11 @@ class TestExtensionUninstallDialogDelegate
 
 typedef InProcessBrowserTest ExtensionUninstallDialogViewBrowserTest;
 
-// Test that ExtensionUninstallDialog cancels the uninstall if the aura::Window
-// which is passed to ExtensionUninstallDialog::Create() is destroyed before
+// Test that ExtensionUninstallDialog cancels the uninstall if the Window which
+// is passed to ExtensionUninstallDialog::Create() is destroyed before
 // ExtensionUninstallDialogDelegateView is created.
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
                        TrackParentWindowDestruction) {
-#if defined(OS_MACOSX)
- base::CommandLine::ForCurrentProcess()->
-     AppendSwitchASCII(switches::kEnableFeatures,
-                       chrome::kMacViewsWebUIDialogs.name);
-#endif
-
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionSystem::Get(browser()->profile())->extension_service()
       ->AddExtension(extension.get());
@@ -91,17 +79,11 @@ IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
   EXPECT_TRUE(delegate.canceled());
 }
 
-// Test that ExtensionUninstallDialog cancels the uninstall if the aura::Window
-// which is passed to ExtensionUninstallDialog::Create() is destroyed after
+// Test that ExtensionUninstallDialog cancels the uninstall if the Window which
+// is passed to ExtensionUninstallDialog::Create() is destroyed after
 // ExtensionUninstallDialogDelegateView is created.
 IN_PROC_BROWSER_TEST_F(ExtensionUninstallDialogViewBrowserTest,
                        TrackParentWindowDestructionAfterViewCreation) {
-#if defined(OS_MACOSX)
- base::CommandLine::ForCurrentProcess()->
-     AppendSwitchASCII(switches::kEnableFeatures,
-                       chrome::kMacViewsWebUIDialogs.name);
-#endif
-
   scoped_refptr<extensions::Extension> extension(BuildTestExtension());
   extensions::ExtensionSystem::Get(browser()->profile())->extension_service()
       ->AddExtension(extension.get());
