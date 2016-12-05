@@ -122,6 +122,10 @@ bool BootstrapUserFlow::CanLockScreen() {
   return false;
 }
 
+bool BootstrapUserFlow::CanStartArc() {
+  return false;
+}
+
 bool BootstrapUserFlow::ShouldLaunchBrowser() {
   return finished_;
 }

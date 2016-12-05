@@ -23,6 +23,7 @@ class EasyUnlockUserLoginFlow : public chromeos::ExtendedUserFlow {
  private:
   // chromeos::ExtendedUserFlow implementation.
   bool CanLockScreen() override;
+  bool CanStartArc() override;
   bool ShouldLaunchBrowser() override;
   bool ShouldSkipPostLoginScreens() override;
   bool HandleLoginFailure(const chromeos::AuthFailure& failure) override;

@@ -22,6 +22,8 @@
 #include "chrome/browser/chromeos/arc/optin/arc_terms_of_service_negotiator.h"
 #include "chrome/browser/chromeos/arc/policy/arc_android_management_checker.h"
 #include "chrome/browser/chromeos/arc/policy/arc_policy_util.h"
+#include "chrome/browser/chromeos/login/user_flow.h"
+#include "chrome/browser/chromeos/login/users/chrome_user_manager.h"
 #include "chrome/browser/chromeos/profiles/profile_helper.h"
 #include "chrome/browser/lifetime/application_lifetime.h"
 #include "chrome/browser/policy/profile_policy_connector.h"
@@ -165,6 +167,13 @@ bool ArcSessionManager::IsAllowedForProfile(const Profile* profile) {
       chromeos::ProfileHelper::Get()->GetUserByProfile(profile);
   if ((!user || !user->HasGaiaAccount()) && !IsArcKioskMode()) {
     VLOG(1) << "Users without GAIA accounts are not supported in ARC.";
+    return false;
+  }
+
+  chromeos::UserFlow* user_flow =
+      chromeos::ChromeUserManager::Get()->GetUserFlow(user->GetAccountId());
+  if (!user_flow || !user_flow->CanStartArc()) {
+    VLOG(1) << "ARC is not allowed in the current user flow.";
     return false;
   }
 

@@ -30,6 +30,10 @@ bool DefaultUserFlow::CanLockScreen() {
   return true;
 }
 
+bool DefaultUserFlow::CanStartArc() {
+  return true;
+}
+
 bool DefaultUserFlow::ShouldShowSettings() {
   return true;
 }

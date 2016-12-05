@@ -42,6 +42,7 @@ class BootstrapUserFlow final
 
   // chromeos::ExtendedUserFlow
   bool CanLockScreen() override;
+  bool CanStartArc() override;
   bool ShouldLaunchBrowser() override;
   bool ShouldSkipPostLoginScreens() override;
   bool HandleLoginFailure(const chromeos::AuthFailure& failure) override;

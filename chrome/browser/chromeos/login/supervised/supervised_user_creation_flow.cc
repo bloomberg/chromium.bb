@@ -42,6 +42,10 @@ bool SupervisedUserCreationFlow::CanLockScreen() {
   return false;
 }
 
+bool SupervisedUserCreationFlow::CanStartArc() {
+  return false;
+}
+
 bool SupervisedUserCreationFlow::ShouldShowSettings() {
   return false;
 }

@@ -26,6 +26,7 @@ class SupervisedUserLoginFlow
   // ExtendedUserFlow overrides.
   void AppendAdditionalCommandLineSwitches() override;
   bool CanLockScreen() override;
+  bool CanStartArc() override;
   bool ShouldLaunchBrowser() override;
   bool ShouldSkipPostLoginScreens() override;
   bool SupportsEarlyRestartToApplyFlags() override;

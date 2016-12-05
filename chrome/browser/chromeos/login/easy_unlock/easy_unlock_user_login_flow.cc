@@ -16,6 +16,10 @@ bool EasyUnlockUserLoginFlow::CanLockScreen() {
   return true;
 }
 
+bool EasyUnlockUserLoginFlow::CanStartArc() {
+  return true;
+}
+
 bool EasyUnlockUserLoginFlow::ShouldLaunchBrowser() {
   return true;
 }

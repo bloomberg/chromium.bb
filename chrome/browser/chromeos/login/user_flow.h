@@ -28,6 +28,7 @@ class UserFlow {
 
   // Indicates if screen locking should be enabled or disabled for a flow.
   virtual bool CanLockScreen() = 0;
+  virtual bool CanStartArc() = 0;
   virtual bool ShouldShowSettings() = 0;
   virtual bool ShouldShowNotificationTray() = 0;
   virtual bool ShouldLaunchBrowser() = 0;
@@ -56,6 +57,7 @@ class DefaultUserFlow : public UserFlow {
 
   void AppendAdditionalCommandLineSwitches() override;
   bool CanLockScreen() override;
+  bool CanStartArc() override;
   bool ShouldShowSettings() override;
   bool ShouldShowNotificationTray() override;
   bool ShouldLaunchBrowser() override;

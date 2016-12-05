@@ -46,6 +46,10 @@ bool SupervisedUserLoginFlow::CanLockScreen() {
   return true;
 }
 
+bool SupervisedUserLoginFlow::CanStartArc() {
+  return false;
+}
+
 bool SupervisedUserLoginFlow::ShouldLaunchBrowser() {
   return data_loaded_;
 }
