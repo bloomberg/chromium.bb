@@ -160,7 +160,7 @@ using content::RenderViewHost;
     content::WebContents* webContents =
         content::WebContents::FromRenderViewHost(
             RenderViewHost::From(renderWidgetHost_));
-    webContents->Replace(base::SysNSStringToUTF16(newWord));
+    webContents->ReplaceMisspelling(base::SysNSStringToUTF16(newWord));
   }
 }
 
