@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Test OPUS Decoding</title>
+    <script src="../../resources/audio-codec-test.js"></script>
+    <script src="../../resources/audio-testing.js"></script>
+    <script src="../../resources/buffer-loader.js"></script>
+  </head>
+
+  <body>
+    <script>
+      var url = "opus-test.opus";
+
+      window.onload = function () { runDecodingTest(url, 48000) };
+    </script>
+  </body>
+</html>
