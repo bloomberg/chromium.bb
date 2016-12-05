@@ -869,7 +869,7 @@ bool VideoDecoderShim::Initialize(const Config& vda_config, Client* client) {
   DCHECK(RenderThreadImpl::current());
   DCHECK_EQ(state_, UNINITIALIZED);
 
-  if (vda_config.is_encrypted) {
+  if (vda_config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported";
     return false;
   }

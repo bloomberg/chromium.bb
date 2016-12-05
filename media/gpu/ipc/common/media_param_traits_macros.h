@@ -7,7 +7,7 @@
 
 #include "gpu/config/gpu_info.h"
 #include "ipc/ipc_message_macros.h"
-#include "media/base/ipc/media_param_traits_macros.h"
+#include "media/base/ipc/media_param_traits.h"
 #include "media/gpu/ipc/common/create_video_encoder_params.h"
 #include "media/video/jpeg_decode_accelerator.h"
 #include "media/video/video_decode_accelerator.h"
@@ -21,7 +21,7 @@ IPC_ENUM_TRAITS_MAX_VALUE(media::VideoEncodeAccelerator::Error,
 
 IPC_STRUCT_TRAITS_BEGIN(media::VideoDecodeAccelerator::Config)
   IPC_STRUCT_TRAITS_MEMBER(profile)
-  IPC_STRUCT_TRAITS_MEMBER(is_encrypted)
+  IPC_STRUCT_TRAITS_MEMBER(encryption_scheme)
   IPC_STRUCT_TRAITS_MEMBER(cdm_id)
   IPC_STRUCT_TRAITS_MEMBER(is_deferred_initialization_allowed)
   IPC_STRUCT_TRAITS_MEMBER(surface_id)

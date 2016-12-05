@@ -39,7 +39,7 @@ MediaCodecLoop::InputData::InputData(const InputData& other)
       subsamples(other.subsamples),
       presentation_time(other.presentation_time),
       is_eos(other.is_eos),
-      is_encrypted(other.is_encrypted) {}
+      encryption_scheme(other.encryption_scheme) {}
 
 MediaCodecLoop::InputData::~InputData() {}
 
@@ -199,14 +199,14 @@ void MediaCodecLoop::EnqueueInputBuffer(const InputBuffer& input_buffer) {
 
   media::MediaCodecStatus status = MEDIA_CODEC_OK;
 
-  if (input_data.is_encrypted) {
+  if (input_data.encryption_scheme.is_encrypted()) {
     // Note that input_data might not have a valid memory ptr if this is a
     // re-send of a buffer that was sent before decryption keys arrived.
 
     status = media_codec_->QueueSecureInputBuffer(
         input_buffer.index, input_data.memory, input_data.length,
         input_data.key_id, input_data.iv, input_data.subsamples,
-        input_data.presentation_time);
+        input_data.encryption_scheme, input_data.presentation_time);
 
   } else {
     status = media_codec_->QueueInputBuffer(

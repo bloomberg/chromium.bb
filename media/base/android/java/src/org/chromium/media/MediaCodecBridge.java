@@ -7,6 +7,7 @@ package org.chromium.media;
 import android.annotation.TargetApi;
 import android.media.AudioFormat;
 import android.media.MediaCodec;
+import android.media.MediaCodec.CryptoInfo;
 import android.media.MediaCrypto;
 import android.media.MediaFormat;
 import android.os.Build;
@@ -53,6 +54,14 @@ class MediaCodecBridge {
 
     // We use only one output audio format (PCM16) that has 2 bytes per sample
     private static final int PCM16_BYTES_PER_SAMPLE = 2;
+
+    // The following values should be kept in sync with the media::EncryptionScheme::CipherMode
+    // enum in media/base/encryption_scheme.h
+    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_UNENCRYPTED = 0;
+    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CTR = 1;
+    private static final int MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CBC = 2;
+
+    private static final int MEDIA_CODEC_UNKNOWN_CIPHER_MODE = -1;
 
     // TODO(qinmin): Use MediaFormat constants when part of the public API.
     private static final String KEY_CROP_LEFT = "crop-left";
@@ -401,15 +410,50 @@ class MediaCodecBridge {
         }
     }
 
+    // Incoming |native| values are as defined in media/base/encryption_scheme.h. Translated values
+    // are from MediaCodec. At present, these values are in sync. Returns
+    // MEDIA_CODEC_UNKNOWN_CIPHER_MODE in the case of unknown incoming value.
+    private int translateCipherModeValue(int nativeValue) {
+        switch (nativeValue) {
+            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_UNENCRYPTED:
+                return MediaCodec.CRYPTO_MODE_UNENCRYPTED;
+            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CTR:
+                return MediaCodec.CRYPTO_MODE_AES_CTR;
+            case MEDIA_ENCRYPTION_SCHEME_CIPHER_MODE_AES_CBC:
+                return MediaCodec.CRYPTO_MODE_AES_CBC;
+            default:
+                Log.e(TAG, "Unsupported cipher mode: " + nativeValue);
+                return MEDIA_CODEC_UNKNOWN_CIPHER_MODE;
+        }
+    }
+
     @CalledByNative
-    private int queueSecureInputBuffer(
-            int index, int offset, byte[] iv, byte[] keyId, int[] numBytesOfClearData,
-            int[] numBytesOfEncryptedData, int numSubSamples, long presentationTimeUs) {
+    private int queueSecureInputBuffer(int index, int offset, byte[] iv, byte[] keyId,
+            int[] numBytesOfClearData, int[] numBytesOfEncryptedData, int numSubSamples,
+            int cipherMode, int patternEncrypt, int patternSkip, long presentationTimeUs) {
         resetLastPresentationTimeIfNeeded(presentationTimeUs);
         try {
-            MediaCodec.CryptoInfo cryptoInfo = new MediaCodec.CryptoInfo();
-            cryptoInfo.set(numSubSamples, numBytesOfClearData, numBytesOfEncryptedData,
-                    keyId, iv, MediaCodec.CRYPTO_MODE_AES_CTR);
+            cipherMode = translateCipherModeValue(cipherMode);
+            if (cipherMode == MEDIA_CODEC_UNKNOWN_CIPHER_MODE) {
+                return MEDIA_CODEC_ERROR;
+            }
+            boolean usesCbcs = cipherMode == MediaCodec.CRYPTO_MODE_AES_CBC;
+            if (usesCbcs && !MediaCodecUtil.platformSupportsCbcsEncryption()) {
+                Log.e(TAG, "Encryption scheme 'cbcs' not supported on this platform.");
+                return MEDIA_CODEC_ERROR;
+            }
+            CryptoInfo cryptoInfo = new CryptoInfo();
+            cryptoInfo.set(numSubSamples, numBytesOfClearData, numBytesOfEncryptedData, keyId, iv,
+                    cipherMode);
+            if (patternEncrypt != 0 && patternSkip != 0) {
+                if (usesCbcs) {
+                    // Above platform check ensured that setting the pattern is indeed supported.
+                    MediaCodecUtil.setPatternIfSupported(cryptoInfo, patternEncrypt, patternSkip);
+                } else {
+                    Log.e(TAG, "Pattern encryption only supported for 'cbcs' scheme (CBC mode).");
+                    return MEDIA_CODEC_ERROR;
+                }
+            }
             mMediaCodec.queueSecureInputBuffer(index, offset, cryptoInfo, presentationTimeUs, 0);
         } catch (MediaCodec.CryptoException e) {
             if (e.getErrorCode() == MediaCodec.CryptoException.ERROR_NO_KEY) {

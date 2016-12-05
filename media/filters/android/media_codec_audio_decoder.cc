@@ -275,10 +275,10 @@ MediaCodecLoop::InputData MediaCodecAudioDecoder::ProvideInputData() {
     input_data.length = decoder_buffer->data_size();
     const DecryptConfig* decrypt_config = decoder_buffer->decrypt_config();
     if (decrypt_config && decrypt_config->is_encrypted()) {
-      input_data.is_encrypted = true;
       input_data.key_id = decrypt_config->key_id();
       input_data.iv = decrypt_config->iv();
       input_data.subsamples = decrypt_config->subsamples();
+      input_data.encryption_scheme = config_.encryption_scheme();
     }
     input_data.presentation_time = decoder_buffer->timestamp();
   }

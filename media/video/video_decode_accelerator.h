@@ -14,6 +14,7 @@
 #include "base/memory/weak_ptr.h"
 #include "media/base/bitstream_buffer.h"
 #include "media/base/cdm_context.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/surface_manager.h"
 #include "media/base/video_decoder_config.h"
 #include "media/video/picture.h"
@@ -127,12 +128,13 @@ class MEDIA_EXPORT VideoDecodeAccelerator {
     ~Config();
 
     std::string AsHumanReadableString() const;
+    bool is_encrypted() const { return encryption_scheme.is_encrypted(); }
 
     // The video codec and profile.
     VideoCodecProfile profile = VIDEO_CODEC_PROFILE_UNKNOWN;
 
-    // Whether the stream is encrypted.
-    bool is_encrypted = false;
+    // Whether the stream is encrypted, and, if so, the scheme used.
+    EncryptionScheme encryption_scheme;
 
     // The CDM that the VDA should use to decode encrypted streams. Must be
     // set to a valid ID if |is_encrypted|.

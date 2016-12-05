@@ -357,8 +357,8 @@ void GpuVideoDecoder::CompleteInitialization(int surface_id) {
   VideoDecodeAccelerator::Config vda_config;
   vda_config.profile = config_.profile();
   vda_config.cdm_id = cdm_id_;
-  vda_config.is_encrypted = config_.is_encrypted();
   vda_config.surface_id = surface_id;
+  vda_config.encryption_scheme = config_.encryption_scheme();
   vda_config.is_deferred_initialization_allowed = true;
   vda_config.initial_expected_coded_size = config_.coded_size();
 

@@ -17,6 +17,7 @@
 #include "base/timer/timer.h"
 #include "media/base/android/media_codec_bridge.h"
 #include "media/base/decode_status.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/media_export.h"
 #include "media/base/subsample_entry.h"
 
@@ -128,7 +129,7 @@ class MEDIA_EXPORT MediaCodecLoop {
     base::TimeDelta presentation_time;
 
     bool is_eos = false;
-    bool is_encrypted = false;
+    EncryptionScheme encryption_scheme;
   };
 
   // Handy enum for "no buffer".

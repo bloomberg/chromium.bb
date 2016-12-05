@@ -48,6 +48,7 @@ class MEDIA_EXPORT SdkMediaCodecBridge : public MediaCodecBridge {
       const std::vector<char>& iv,
       const SubsampleEntry* subsamples,
       int subsamples_size,
+      const EncryptionScheme& encryption_scheme,
       base::TimeDelta presentation_time) override;
   void QueueEOS(int input_buffer_index) override;
   MediaCodecStatus DequeueInputBuffer(base::TimeDelta timeout,

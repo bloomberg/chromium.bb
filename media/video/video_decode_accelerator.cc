@@ -20,7 +20,7 @@ VideoDecodeAccelerator::Config::~Config() = default;
 std::string VideoDecodeAccelerator::Config::AsHumanReadableString() const {
   std::ostringstream s;
   s << "profile: " << GetProfileName(profile) << " encrypted? "
-    << (is_encrypted ? "true" : "false");
+    << (is_encrypted() ? "true" : "false");
   return s.str();
 }
 

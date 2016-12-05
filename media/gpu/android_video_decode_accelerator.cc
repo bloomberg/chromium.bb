@@ -333,7 +333,7 @@ bool AndroidVideoDecodeAccelerator::Initialize(const Config& config,
   // We signaled that we support deferred initialization, so see if the client
   // does also.
   deferred_initialization_pending_ = config.is_deferred_initialization_allowed;
-  if (config_.is_encrypted && !deferred_initialization_pending_) {
+  if (config_.is_encrypted() && !deferred_initialization_pending_) {
     DLOG(ERROR) << "Deferred initialization must be used for encrypted streams";
     return false;
   }
@@ -374,7 +374,7 @@ bool AndroidVideoDecodeAccelerator::InitializePictureBufferManager() {
     return false;
 
   // If we are encrypted, then we aren't able to create the codec yet.
-  if (config_.is_encrypted) {
+  if (config_.is_encrypted()) {
     InitializeCdm();
     return true;
   }
@@ -504,7 +504,7 @@ bool AndroidVideoDecodeAccelerator::QueueInput() {
   } else {
     status = media_codec_->QueueSecureInputBuffer(
         input_buf_index, memory, bitstream_buffer.size(), key_id, iv,
-        subsamples, presentation_timestamp);
+        subsamples, config_.encryption_scheme, presentation_timestamp);
   }
 
   DVLOG(2) << __func__
@@ -1452,8 +1452,8 @@ bool AndroidVideoDecodeAccelerator::IsMediaCodecSoftwareDecodingForbidden()
     const {
   // Prevent MediaCodec from using its internal software decoders when we have
   // more secure and up to date versions in the renderer process.
-  return !config_.is_encrypted && (codec_config_->codec == kCodecVP8 ||
-                                   codec_config_->codec == kCodecVP9);
+  return !config_.is_encrypted() && (codec_config_->codec == kCodecVP8 ||
+                                     codec_config_->codec == kCodecVP9);
 }
 
 bool AndroidVideoDecodeAccelerator::UpdateSurface() {

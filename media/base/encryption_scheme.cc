@@ -14,6 +14,14 @@ EncryptionScheme::Pattern::Pattern(uint32_t encrypt_blocks,
 
 EncryptionScheme::Pattern::~Pattern() {}
 
+uint32_t EncryptionScheme::Pattern::encrypt_blocks() const {
+  return encrypt_blocks_;
+}
+
+uint32_t EncryptionScheme::Pattern::skip_blocks() const {
+  return skip_blocks_;
+}
+
 bool EncryptionScheme::Pattern::Matches(const Pattern& other) const {
   return encrypt_blocks_ == other.encrypt_blocks() &&
          skip_blocks_ == other.skip_blocks();
@@ -29,6 +37,18 @@ EncryptionScheme::EncryptionScheme(CipherMode mode, const Pattern& pattern)
     : mode_(mode), pattern_(pattern) {}
 
 EncryptionScheme::~EncryptionScheme() {}
+
+bool EncryptionScheme::is_encrypted() const {
+  return mode_ != CIPHER_MODE_UNENCRYPTED;
+}
+
+EncryptionScheme::CipherMode EncryptionScheme::mode() const {
+  return mode_;
+}
+
+const EncryptionScheme::Pattern& EncryptionScheme::pattern() const {
+  return pattern_;
+}
 
 bool EncryptionScheme::Matches(const EncryptionScheme& other) const {
   return mode_ == other.mode_ && pattern_.Matches(other.pattern_);

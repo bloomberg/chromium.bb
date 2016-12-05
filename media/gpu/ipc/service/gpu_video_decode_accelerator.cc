@@ -371,7 +371,7 @@ bool GpuVideoDecodeAccelerator::Initialize(
       vda_factory->CreateVDA(this, config, gpu_workarounds, gpu_preferences);
   if (!video_decode_accelerator_) {
     LOG(ERROR) << "HW video decode not available for profile " << config.profile
-               << (config.is_encrypted ? " with encryption" : "");
+               << (config.is_encrypted() ? " with encryption" : "");
     return false;
   }
 

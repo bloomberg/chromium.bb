@@ -4,6 +4,7 @@
 
 #include "media/base/android/mock_media_codec_bridge.h"
 
+#include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
 
 using ::testing::_;

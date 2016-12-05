@@ -182,6 +182,7 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
     const std::vector<char>& iv,
     const SubsampleEntry* subsamples,
     int subsamples_size,
+    const EncryptionScheme& encryption_scheme,
     base::TimeDelta presentation_time) {
   DVLOG(3) << __func__ << index << ": " << data_size;
   if (data_size >
@@ -234,6 +235,9 @@ MediaCodecStatus SdkMediaCodecBridge::QueueSecureInputBuffer(
       Java_MediaCodecBridge_queueSecureInputBuffer(
           env, j_media_codec_.obj(), index, 0, j_iv.obj(), j_key_id.obj(),
           clear_array, cypher_array, new_subsamples_size,
+          static_cast<int>(encryption_scheme.mode()),
+          static_cast<int>(encryption_scheme.pattern().encrypt_blocks()),
+          static_cast<int>(encryption_scheme.pattern().skip_blocks()),
           presentation_time.InMicroseconds()));
 }
 

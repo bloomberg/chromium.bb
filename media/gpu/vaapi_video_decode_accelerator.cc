@@ -333,7 +333,7 @@ bool VaapiVideoDecodeAccelerator::Initialize(const Config& config,
                                              Client* client) {
   DCHECK(task_runner_->BelongsToCurrentThread());
 
-  if (config.is_encrypted) {
+  if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
   }

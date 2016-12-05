@@ -306,7 +306,7 @@ bool VTVideoDecodeAccelerator::Initialize(const Config& config,
     return false;
   }
 
-  if (config.is_encrypted) {
+  if (config.is_encrypted()) {
     NOTREACHED() << "Encrypted streams are not supported for this VDA";
     return false;
   }

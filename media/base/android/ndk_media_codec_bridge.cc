@@ -13,6 +13,7 @@
 #include "base/logging.h"
 #include "base/native_library.h"
 #include "base/strings/string_util.h"
+#include "media/base/encryption_scheme.h"
 #include "media/base/subsample_entry.h"
 
 namespace {
@@ -136,6 +137,7 @@ MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
     const std::vector<char>& iv,
     const SubsampleEntry* subsamples,
     int subsamples_size,
+    const EncryptionScheme& encryption_scheme,
     base::TimeDelta presentation_time) {
   if (data_size >
       base::checked_cast<size_t>(std::numeric_limits<int32_t>::max())) {
@@ -144,6 +146,9 @@ MediaCodecStatus NdkMediaCodecBridge::QueueSecureInputBuffer(
   if (key_id.size() > 16 || iv.size())
     return MEDIA_CODEC_ERROR;
   if (data && !FillInputBuffer(index, data, data_size))
+    return MEDIA_CODEC_ERROR;
+  if (encryption_scheme.mode() != EncryptionScheme::CIPHER_MODE_AES_CTR ||
+      encryption_scheme.pattern().IsInEffect())
     return MEDIA_CODEC_ERROR;
 
   int new_subsamples_size = subsamples_size == 0 ? 1 : subsamples_size;

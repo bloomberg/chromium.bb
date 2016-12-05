@@ -6,6 +6,7 @@ package org.chromium.media;
 
 import android.annotation.TargetApi;
 import android.media.MediaCodec;
+import android.media.MediaCodec.CryptoInfo;
 import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.os.Build;
@@ -513,5 +514,28 @@ class MediaCodecUtil {
 
         Log.w(TAG, "HW encoder for " + mime + " is not available on this device.");
         return null;
+    }
+
+    /**
+     * Returns true if and only if the platform we are running on supports the 'cbcs'
+     * encryption scheme, specifically AES CBC encryption with possibility of pattern
+     * encryption.
+     * While 'cbcs' scheme was originally implemented in N, there was a bug (in the
+     * DRM code) which means that it didn't really work properly until post-N).
+     */
+    static boolean platformSupportsCbcsEncryption() {
+        return Build.VERSION.SDK_INT > Build.VERSION_CODES.N;
+    }
+
+    /**
+     * Sets the encryption pattern value if and only if CryptoInfo.setPattern method is
+     * supported.
+     * This method was introduced in Android N. Note that if platformSupportsCbcsEncryption
+     * returns true, then this function will set the pattern.
+     */
+    static void setPatternIfSupported(CryptoInfo cryptoInfo, int encrypt, int skip) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+            cryptoInfo.setPattern(new CryptoInfo.Pattern(encrypt, skip));
+        }
     }
 }

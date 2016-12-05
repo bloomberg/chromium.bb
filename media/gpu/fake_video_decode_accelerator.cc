@@ -49,7 +49,7 @@ bool FakeVideoDecodeAccelerator::Initialize(const Config& config,
     LOG(ERROR) << "unknown codec profile";
     return false;
   }
-  if (config.is_encrypted) {
+  if (config.is_encrypted()) {
     NOTREACHED() << "encrypted streams are not supported";
     return false;
   }
