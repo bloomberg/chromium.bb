@@ -71,10 +71,10 @@ class MEDIA_EXPORT AudioOutputController
   // following methods are called on the audio manager thread.
   class MEDIA_EXPORT EventHandler {
    public:
-    virtual void OnCreated() = 0;
-    virtual void OnPlaying() = 0;
-    virtual void OnPaused() = 0;
-    virtual void OnError() = 0;
+    virtual void OnControllerCreated() = 0;
+    virtual void OnControllerPlaying() = 0;
+    virtual void OnControllerPaused() = 0;
+    virtual void OnControllerError() = 0;
 
    protected:
     virtual ~EventHandler() {}
@@ -108,8 +108,8 @@ class MEDIA_EXPORT AudioOutputController
   // Factory method for creating an AudioOutputController.
   // This also creates and opens an AudioOutputStream on the audio manager
   // thread, and if this is successful, the |event_handler| will receive an
-  // OnCreated() call from the same audio manager thread.  |audio_manager| must
-  // outlive AudioOutputController.
+  // OnControllerCreated() call from the same audio manager thread.
+  // |audio_manager| must outlive AudioOutputController.
   // The |output_device_id| can be either empty (default device) or specify a
   // specific hardware device for audio output.
   static scoped_refptr<AudioOutputController> Create(
@@ -136,9 +136,10 @@ class MEDIA_EXPORT AudioOutputController
   void Pause();
 
   // Closes the audio output stream. The state is changed and the resources
-  // are freed on the audio manager thread. closed_task is executed after that.
-  // Callbacks (EventHandler and SyncReader) must exist until closed_task is
-  // called.
+  // are freed on the audio manager thread. |closed_task| is executed after
+  // that, on the thread on which Close was called. Callbacks (EventHandler and
+  // SyncReader) must exist until closed_task is called, but they are safe
+  // to delete after that.
   //
   // It is safe to call this method more than once. Calls after the first one
   // will have no effect.

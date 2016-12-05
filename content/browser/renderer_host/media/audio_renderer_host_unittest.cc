@@ -127,13 +127,11 @@ class MockAudioRendererHost : public AudioRendererHost {
                         int render_process_id,
                         media::AudioManager* audio_manager,
                         AudioMirroringManager* mirroring_manager,
-                        MediaInternals* media_internals,
                         MediaStreamManager* media_stream_manager,
                         const std::string& salt)
       : AudioRendererHost(render_process_id,
                           audio_manager,
                           mirroring_manager,
-                          media_internals,
                           media_stream_manager,
                           salt),
         shared_memory_length_(0),
@@ -147,8 +145,8 @@ class MockAudioRendererHost : public AudioRendererHost {
                     media::OutputDeviceStatus device_status,
                     const media::AudioParameters& output_params,
                     const std::string& matched_device_id));
-  MOCK_METHOD2(OnStreamCreated, void(int stream_id, int length));
-  MOCK_METHOD1(OnStreamError, void(int stream_id));
+  MOCK_METHOD2(WasNotifiedOfCreation, void(int stream_id, int length));
+  MOCK_METHOD1(WasNotifiedOfError, void(int stream_id));
 
   void ShutdownForBadMessage() override { bad_msg_count++; }
 
@@ -157,7 +155,7 @@ class MockAudioRendererHost : public AudioRendererHost {
  private:
   virtual ~MockAudioRendererHost() {
     // Make sure all audio streams have been deleted.
-    EXPECT_TRUE(audio_entries_.empty());
+    EXPECT_TRUE(delegates_.empty());
   }
 
   // This method is used to dispatch IPC messages to the renderer. We intercept
@@ -215,10 +213,10 @@ class MockAudioRendererHost : public AudioRendererHost {
     sync_socket_.reset(new base::SyncSocket(sync_socket_handle));
 
     // And then delegate the call to the mock method.
-    OnStreamCreated(stream_id, length);
+    WasNotifiedOfCreation(stream_id, length);
   }
 
-  void OnNotifyStreamError(int stream_id) { OnStreamError(stream_id); }
+  void OnNotifyStreamError(int stream_id) { WasNotifiedOfError(stream_id); }
 
   std::unique_ptr<base::SharedMemory> shared_memory_;
   std::unique_ptr<base::SyncSocket> sync_socket_;
@@ -241,8 +239,7 @@ class AudioRendererHostTest : public testing::Test {
     media_stream_manager_.reset(new MediaStreamManager(audio_manager_.get()));
     host_ = new MockAudioRendererHost(
         &auth_run_loop_, render_process_host_.GetID(), audio_manager_.get(),
-        &mirroring_manager_, MediaInternals::GetInstance(),
-        media_stream_manager_.get(), kSalt);
+        &mirroring_manager_, media_stream_manager_.get(), kSalt);
 
     // Simulate IPC channel connected.
     host_->set_peer_process_for_testing(base::Process::Current());
@@ -341,7 +338,7 @@ class AudioRendererHostTest : public testing::Test {
                   OnDeviceAuthorized(kStreamId, expected_device_status, _, _));
 
     if (expected_device_status == media::OUTPUT_DEVICE_STATUS_OK) {
-      EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _));
+      EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId, _));
       EXPECT_CALL(mirroring_manager_, AddDiverter(render_process_host_.GetID(),
                                                   kRenderFrameId, NotNull()))
           .RetiresOnSaturation();
@@ -387,11 +384,11 @@ class AudioRendererHostTest : public testing::Test {
   void CreateWithInvalidRenderFrameId() {
     // When creating a stream with an invalid render frame ID, the host will
     // reply with a stream error message.
-    EXPECT_CALL(*host_, OnStreamError(kStreamId));
+    EXPECT_CALL(*host_, WasNotifiedOfError(kStreamId));
 
     // However, validation does not block stream creation, so these method calls
     // might be made:
-    EXPECT_CALL(*host_, OnStreamCreated(kStreamId, _)).Times(AtLeast(0));
+    EXPECT_CALL(*host_, WasNotifiedOfCreation(kStreamId, _)).Times(AtLeast(0));
     EXPECT_CALL(mirroring_manager_, AddDiverter(_, _, _)).Times(AtLeast(0));
     EXPECT_CALL(mirroring_manager_, RemoveDiverter(_)).Times(AtLeast(0));
 
@@ -430,7 +427,7 @@ class AudioRendererHostTest : public testing::Test {
                 OnDeviceAuthorized(kStreamId, media::OUTPUT_DEVICE_STATUS_OK, _,
                                    hashed_output_id))
         .Times(1);
-    EXPECT_CALL(*host_.get(), OnStreamCreated(kStreamId, _));
+    EXPECT_CALL(*host_.get(), WasNotifiedOfCreation(kStreamId, _));
     EXPECT_CALL(mirroring_manager_, AddDiverter(render_process_host_.GetID(),
                                                 kRenderFrameId, NotNull()))
         .RetiresOnSaturation();
@@ -471,18 +468,18 @@ class AudioRendererHostTest : public testing::Test {
   }
 
   void SimulateError() {
-    EXPECT_EQ(1u, host_->audio_entries_.size())
+    EXPECT_EQ(1u, host_->delegates_.size())
         << "Calls Create() before calling this method";
 
     // Expect an error signal sent through IPC.
-    EXPECT_CALL(*host_.get(), OnStreamError(kStreamId));
+    EXPECT_CALL(*host_.get(), WasNotifiedOfError(kStreamId));
 
     // Simulate an error sent from the audio device.
-    host_->ReportErrorAndClose(kStreamId);
+    host_->OnStreamError(kStreamId);
     SyncWithAudioThread();
 
     // Expect the audio stream record is removed.
-    EXPECT_EQ(0u, host_->audio_entries_.size());
+    EXPECT_EQ(0u, host_->delegates_.size());
   }
 
   // SyncWithAudioThread() waits until all pending tasks on the audio thread

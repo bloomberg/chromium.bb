@@ -9,11 +9,11 @@
 #include "base/bind.h"
 #include "base/command_line.h"
 #include "base/run_loop.h"
+#include "content/browser/audio_device_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/public/browser/browser_thread.h"
 #include "content/public/test/mock_render_process_host.h"
 #include "content/public/test/test_browser_context.h"
-#include "content/public/test/test_browser_thread.h"
 #include "content/public/test/test_browser_thread_bundle.h"
 #include "media/audio/audio_device_description.h"
 #include "media/audio/fake_audio_log_factory.h"
@@ -71,23 +71,10 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
 
     thread_bundle_ = base::MakeUnique<TestBrowserThreadBundle>(
         TestBrowserThreadBundle::Options::REAL_IO_THREAD);
-    audio_thread_ = base::MakeUnique<base::Thread>("AudioThread");
-
-// Audio manager creation stolen from content/browser/browser_main_loop.cc.
-#if defined(OS_WIN)
-    audio_thread_->init_com_with_mta(true);
-#endif  // defined(OS_WIN)
-    CHECK(audio_thread_->Start());
-
-#if defined(OS_MACOSX)
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
-        base::ThreadTaskRunnerHandle::Get();
-#else
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
-        audio_thread_->task_runner();
-#endif  // defined(OS_MACOSX)
+    audio_thread_ = base::MakeUnique<AudioDeviceThread>();
     audio_manager_.reset(new media::FakeAudioManager(
-        audio_task_runner, audio_thread_->task_runner(), &log_factory_));
+        audio_thread_->GetTaskRunner(), audio_thread_->worker_task_runner(),
+        &log_factory_));
     media_stream_manager_ =
         base::MakeUnique<MediaStreamManager>(audio_manager_.get());
     // Make sure everything is done initializing:
@@ -110,7 +97,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
     for (int i = 0; i < 20; ++i) {
       base::RunLoop().RunUntilIdle();
       SyncWith(BrowserThread::GetTaskRunnerForThread(BrowserThread::IO));
-      SyncWith(audio_thread_->task_runner());
+      SyncWith(audio_manager_->GetWorkerTaskRunner());
     }
   }
 
@@ -159,7 +146,7 @@ class AudioOutputAuthorizationHandlerTest : public testing::Test {
   // DestructionObserver.
   std::unique_ptr<MediaStreamManager> media_stream_manager_;
   std::unique_ptr<TestBrowserThreadBundle> thread_bundle_;
-  std::unique_ptr<base::Thread> audio_thread_;
+  std::unique_ptr<AudioDeviceThread> audio_thread_;
   media::FakeAudioLogFactory log_factory_;
   media::ScopedAudioManagerPtr audio_manager_;
 

@@ -4,6 +4,8 @@
 
 #include "media/audio/audio_streams_tracker.h"
 
+#include <limits>
+
 namespace media {
 
 AudioStreamsTracker::AudioStreamsTracker()
@@ -17,16 +19,16 @@ AudioStreamsTracker::~AudioStreamsTracker() {
 
 void AudioStreamsTracker::IncreaseStreamCount() {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(current_stream_count_, SIZE_MAX);
+  DCHECK_NE(current_stream_count_, std::numeric_limits<size_t>::max());
   ++current_stream_count_;
   if (current_stream_count_ > max_stream_count_)
     max_stream_count_ = current_stream_count_;
 }
 
-void AudioStreamsTracker::DecreaseStreamCount() {
+void AudioStreamsTracker::DecreaseStreamCount(size_t count) {
   DCHECK(thread_checker_.CalledOnValidThread());
-  DCHECK_NE(current_stream_count_, 0u);
-  --current_stream_count_;
+  DCHECK_GE(current_stream_count_, count);
+  current_stream_count_ -= count;
 }
 
 void AudioStreamsTracker::ResetMaxStreamCount() {

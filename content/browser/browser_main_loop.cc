@@ -43,6 +43,7 @@
 #include "components/tracing/common/process_metrics_memory_dump_provider.h"
 #include "components/tracing/common/trace_to_console.h"
 #include "components/tracing/common/tracing_switches.h"
+#include "content/browser/audio_device_thread.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/device_sensors/device_sensor_service.h"
 #include "content/browser/dom_storage/dom_storage_area.h"
@@ -1606,25 +1607,10 @@ void BrowserMainLoop::CreateAudioManager() {
   audio_manager_ = GetContentClient()->browser()->CreateAudioManager(
       MediaInternals::GetInstance());
   if (!audio_manager_) {
-    audio_thread_.reset(new base::Thread("AudioThread"));
-#if defined(OS_WIN)
-    audio_thread_->init_com_with_mta(true);
-#endif  // defined(OS_WIN)
-    CHECK(audio_thread_->Start());
-#if defined(OS_MACOSX)
-    // On Mac audio task runner must belong to the main thread.
-    // See http://crbug.com/158170.
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
-        base::ThreadTaskRunnerHandle::Get();
-#else
-    scoped_refptr<base::SingleThreadTaskRunner> audio_task_runner =
-        audio_thread_->task_runner();
-#endif  // defined(OS_MACOSX)
-    scoped_refptr<base::SingleThreadTaskRunner> worker_task_runner =
-        audio_thread_->task_runner();
-    audio_manager_ = media::AudioManager::Create(std::move(audio_task_runner),
-                                                 std::move(worker_task_runner),
-                                                 MediaInternals::GetInstance());
+    audio_thread_ = base::MakeUnique<AudioDeviceThread>();
+    audio_manager_ = media::AudioManager::Create(
+        audio_thread_->GetTaskRunner(), audio_thread_->worker_task_runner(),
+        MediaInternals::GetInstance());
   }
   CHECK(audio_manager_);
 }

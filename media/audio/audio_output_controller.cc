@@ -138,14 +138,14 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
       audio_manager_->MakeAudioOutputStreamProxy(params_, output_device_id_);
   if (!stream_) {
     state_ = kError;
-    handler_->OnError();
+    handler_->OnControllerError();
     return;
   }
 
   if (!stream_->Open()) {
     DoStopCloseAndClearStream();
     state_ = kError;
-    handler_->OnError();
+    handler_->OnControllerError();
     return;
   }
 
@@ -162,7 +162,7 @@ void AudioOutputController::DoCreate(bool is_for_device_change) {
 
   // And then report we have been created if we haven't done so already.
   if (!is_for_device_change)
-    handler_->OnCreated();
+    handler_->OnControllerCreated();
 }
 
 void AudioOutputController::DoPlay() {
@@ -197,7 +197,7 @@ void AudioOutputController::DoPlay() {
       FROM_HERE, TimeDelta::FromSeconds(5), this,
       &AudioOutputController::WedgeCheck);
 
-  handler_->OnPlaying();
+  handler_->OnControllerPlaying();
 }
 
 void AudioOutputController::StopStream() {
@@ -230,7 +230,7 @@ void AudioOutputController::DoPause() {
   // a better way to know when it should exit PPB_Audio_Shared::Run().
   sync_reader_->RequestMoreData(base::TimeDelta::Max(), base::TimeTicks(), 0);
 
-  handler_->OnPaused();
+  handler_->OnControllerPaused();
 }
 
 void AudioOutputController::DoClose() {
@@ -291,7 +291,7 @@ void AudioOutputController::DoSwitchOutputDevice(
 void AudioOutputController::DoReportError() {
   DCHECK(message_loop_->BelongsToCurrentThread());
   if (state_ != kClosed)
-    handler_->OnError();
+    handler_->OnControllerError();
 }
 
 int AudioOutputController::OnMoreData(base::TimeDelta delay,

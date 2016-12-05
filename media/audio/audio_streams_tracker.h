@@ -24,7 +24,7 @@ class MEDIA_EXPORT AudioStreamsTracker {
   // Increases/decreases current stream count. Updates max stream count if
   // current count is larger.
   void IncreaseStreamCount();
-  void DecreaseStreamCount();
+  void DecreaseStreamCount(size_t count = 1);
 
   // Resets the max stream count, i.e. sets it to the current stream count.
   void ResetMaxStreamCount();

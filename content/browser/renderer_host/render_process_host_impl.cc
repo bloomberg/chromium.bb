@@ -1070,7 +1070,7 @@ void RenderProcessHostImpl::CreateMessageFilters() {
   AddFilter(audio_input_renderer_host_.get());
   audio_renderer_host_ = new AudioRendererHost(
       GetID(), audio_manager, AudioMirroringManager::GetInstance(),
-      media_internals, media_stream_manager,
+      media_stream_manager,
       browser_context->GetResourceContext()->GetMediaDeviceIDSalt());
   AddFilter(audio_renderer_host_.get());
   AddFilter(
