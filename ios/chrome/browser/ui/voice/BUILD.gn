@@ -20,6 +20,7 @@ source_set("voice") {
 }
 
 source_set("unit_tests") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   testonly = true
 
   sources = [

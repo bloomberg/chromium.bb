@@ -7,7 +7,6 @@
 #import <UIKit/UIKit.h>
 
 #include "base/mac/foundation_util.h"
-#import "base/mac/scoped_nsobject.h"
 #import "base/test/ios/wait_util.h"
 #include "base/time/time.h"
 #import "ios/chrome/browser/ui/voice/voice_search_notification_names.h"
@@ -17,13 +16,17 @@
 #include "testing/platform_test.h"
 #include "url/gurl.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 #pragma mark - TTSPlayerObserver
 
 // Test object that listens for TTS notifications.
 @interface TTSPlayerObserver : NSObject
 
 // The TextToSpeechPlayer passed on initialization.
-@property(nonatomic, retain) TextToSpeechPlayer* player;
+@property(nonatomic, strong) TextToSpeechPlayer* player;
 
 // Whether notifications have been received.
 @property(nonatomic, readonly) BOOL readyNotificationReceived;
@@ -37,23 +40,20 @@
 
 @end
 
-@implementation TTSPlayerObserver {
-  base::scoped_nsobject<TextToSpeechPlayer> _player;
-}
-
+@implementation TTSPlayerObserver
+@synthesize player = _player;
 @synthesize readyNotificationReceived = _readyNotificationReceived;
 @synthesize willStartNotificationReceived = _willStartNotificationReceived;
 @synthesize didStopNotificationReceived = _didStopNotificationReceived;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (void)setPlayer:(TextToSpeechPlayer*)player {
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter removeObserver:self];
-  _player.reset([player retain]);
+  _player = player;
   if (player) {
     [defaultCenter addObserver:self
                       selector:@selector(handleReadyNotification:)
@@ -96,21 +96,20 @@
 class TextToSpeechPlayerTest : public PlatformTest {
  protected:
   void SetUp() override {
-    tts_player_.reset([[TextToSpeechPlayer alloc] init]);
-    tts_player_observer_.reset([[TTSPlayerObserver alloc] init]);
+    tts_player_ = [[TextToSpeechPlayer alloc] init];
+    tts_player_observer_ = [[TTSPlayerObserver alloc] init];
     [tts_player_observer_ setPlayer:tts_player_];
   }
 
-  base::scoped_nsobject<TextToSpeechPlayer> tts_player_;
-  base::scoped_nsobject<TTSPlayerObserver> tts_player_observer_;
+  TextToSpeechPlayer* tts_player_;
+  TTSPlayerObserver* tts_player_observer_;
   web::TestWebThreadBundle web_thread_bundle_;
 };
 
 // Tests that kTTSAudioReadyForPlaybackNotification is received and that
 // TTSPlayer state is updated.
 TEST_F(TextToSpeechPlayerTest, ReadyForPlayback) {
-  base::scoped_nsobject<NSData> audio_data(
-      [[@"audio_data" dataUsingEncoding:NSUTF8StringEncoding] retain]);
+  NSData* audio_data = [@"audio_data" dataUsingEncoding:NSUTF8StringEncoding];
   [tts_player_ prepareToPlayAudioData:audio_data];
   EXPECT_TRUE([tts_player_observer_ readyNotificationReceived]);
   EXPECT_TRUE([tts_player_ isReadyForPlayback]);
@@ -119,8 +118,7 @@ TEST_F(TextToSpeechPlayerTest, ReadyForPlayback) {
 // Tests that kTTSAudioReadyForPlaybackNotification is received and that
 // TTSPlayer's |-readyForPlayback| is NO for empty data.
 TEST_F(TextToSpeechPlayerTest, ReadyForPlaybackEmtpyData) {
-  base::scoped_nsobject<NSData> audio_data(
-      [[@"" dataUsingEncoding:NSUTF8StringEncoding] retain]);
+  NSData* audio_data = [@"" dataUsingEncoding:NSUTF8StringEncoding];
   [tts_player_ prepareToPlayAudioData:audio_data];
   EXPECT_TRUE([tts_player_observer_ readyNotificationReceived]);
   EXPECT_FALSE([tts_player_ isReadyForPlayback]);
@@ -135,8 +133,7 @@ TEST_F(TextToSpeechPlayerTest, DISABLED_ValidPlaybackNotifications) {
       [[NSBundle mainBundle] pathForResource:@"test_sound"
                                       ofType:@"m4a"
                                  inDirectory:@"ios/chrome/test/data/voice"];
-  base::scoped_nsobject<NSData> audio_data(
-      [[NSData alloc] initWithContentsOfFile:path]);
+  NSData* audio_data = [[NSData alloc] initWithContentsOfFile:path];
   [tts_player_ prepareToPlayAudioData:audio_data];
   [tts_player_ beginPlayback];
   EXPECT_TRUE([tts_player_observer_ willStartNotificationReceived]);
@@ -155,8 +152,7 @@ TEST_F(TextToSpeechPlayerTest, DISABLED_BackgroundNotification) {
       [[NSBundle mainBundle] pathForResource:@"test_sound"
                                       ofType:@"m4a"
                                  inDirectory:@"ios/chrome/test/data/voice"];
-  base::scoped_nsobject<NSData> audio_data(
-      [[NSData alloc] initWithContentsOfFile:path]);
+  NSData* audio_data = [[NSData alloc] initWithContentsOfFile:path];
   [tts_player_ prepareToPlayAudioData:audio_data];
   [tts_player_ beginPlayback];
   EXPECT_TRUE([tts_player_observer_ willStartNotificationReceived]);
