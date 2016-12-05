@@ -178,33 +178,23 @@ void FaviconSource::SendDefaultResponse(
 }
 
 void FaviconSource::SendDefaultResponse(const IconRequest& icon_request) {
-  int favicon_index;
   int resource_id;
   switch (icon_request.size_in_dip) {
     case 64:
-      favicon_index = SIZE_64;
       resource_id = IDR_DEFAULT_FAVICON_64;
       break;
     case 32:
-      favicon_index = SIZE_32;
       resource_id = IDR_DEFAULT_FAVICON_32;
       break;
     default:
-      favicon_index = SIZE_16;
       resource_id = IDR_DEFAULT_FAVICON;
       break;
   }
-  base::RefCountedMemory* default_favicon =
-      default_favicons_[favicon_index].get();
 
-  if (!default_favicon) {
-    ui::ScaleFactor resource_scale_factor =
-        ui::GetSupportedScaleFactor(icon_request.device_scale_factor);
-    default_favicon =
-        ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
-            resource_id, resource_scale_factor);
-    default_favicons_[favicon_index] = default_favicon;
-  }
+  base::RefCountedMemory* default_favicon =
+      ResourceBundle::GetSharedInstance().LoadDataResourceBytesForScale(
+          resource_id,
+          ui::GetSupportedScaleFactor(icon_request.device_scale_factor));
 
   icon_request.callback.Run(default_favicon);
 }
