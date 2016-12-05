@@ -12,6 +12,7 @@
 #include "base/files/file_path.h"
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/simple_test_tick_clock.h"
 #include "base/time/time.h"
 #include "content/browser/browser_thread_impl.h"
 #include "content/browser/message_port_service.h"
@@ -694,11 +695,34 @@ TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent) {
                                                 version_->version_id());
   const int ref_count = sender_worker_handle->ref_count();
 
+  // Set mock clock on version_ to check timeout behavior.
+  base::SimpleTestTickClock* tick_clock = new base::SimpleTestTickClock();
+  tick_clock->SetNowTicks(base::TimeTicks::Now());
+  version_->SetTickClockForTesting(base::WrapUnique(tick_clock));
+
+  // Make sure worker has a non-zero timeout.
+  bool called = false;
+  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  version_->StartWorker(ServiceWorkerMetrics::EventType::UNKNOWN,
+                        base::Bind(&SaveStatusCallback, &called, &status));
+  base::RunLoop().RunUntilIdle();
+  EXPECT_TRUE(called);
+  EXPECT_EQ(SERVICE_WORKER_OK, status);
+  version_->StartRequestWithCustomTimeout(
+      ServiceWorkerMetrics::EventType::ACTIVATE,
+      base::Bind(&ServiceWorkerUtils::NoOpStatusCallback),
+      base::TimeDelta::FromSeconds(10), ServiceWorkerVersion::KILL_ON_TIMEOUT);
+
+  // Advance clock by a couple seconds.
+  tick_clock->Advance(base::TimeDelta::FromSeconds(4));
+  base::TimeDelta remaining_time = version_->remaining_timeout();
+  EXPECT_EQ(base::TimeDelta::FromSeconds(6), remaining_time);
+
   // Dispatch ExtendableMessageEvent.
   std::vector<int> ports;
   SetUpDummyMessagePort(&ports);
-  bool called = false;
-  ServiceWorkerStatusCode status = SERVICE_WORKER_ERROR_MAX_VALUE;
+  called = false;
+  status = SERVICE_WORKER_ERROR_MAX_VALUE;
   DispatchExtendableMessageEvent(
       version_, base::string16(), url::Origin(version_->scope().GetOrigin()),
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
@@ -714,6 +738,9 @@ TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent) {
     EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
 
   EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
+
+  // Timeout of message event should not have extended life of service worker.
+  EXPECT_EQ(remaining_time, version_->remaining_timeout());
 }
 
 TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent_Fail) {
@@ -721,19 +748,8 @@ TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent_Fail) {
   GURL script_url = GURL("http://www.example.com/service_worker.js");
 
   Initialize(base::WrapUnique(new FailToStartWorkerTestHelper));
-  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_CONTROLLER, pattern);
+  SendProviderCreated(SERVICE_WORKER_PROVIDER_FOR_WORKER, pattern);
   SetUpRegistration(pattern, script_url);
-
-  // Set the running hosted version so that we can retrieve a valid service
-  // worker object information for the source attribute of the message event.
-  provider_host_->running_hosted_version_ = version_;
-
-  // Set aside the initial refcount of the worker handle.
-  provider_host_->GetOrCreateServiceWorkerHandle(version_.get());
-  ServiceWorkerHandle* sender_worker_handle =
-      dispatcher_host_->FindServiceWorkerHandle(provider_host_->provider_id(),
-                                                version_->version_id());
-  const int ref_count = sender_worker_handle->ref_count();
 
   // Try to dispatch ExtendableMessageEvent. This should fail to start the
   // worker and to dispatch the event.
@@ -746,7 +762,6 @@ TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent_Fail) {
       ports, provider_host_, base::Bind(&SaveStatusCallback, &called, &status));
   for (int port : ports)
     EXPECT_TRUE(MessagePortService::GetInstance()->AreMessagesHeld(port));
-  EXPECT_EQ(ref_count + 1, sender_worker_handle->ref_count());
   base::RunLoop().RunUntilIdle();
   EXPECT_TRUE(called);
   EXPECT_EQ(SERVICE_WORKER_ERROR_START_WORKER_FAILED, status);
@@ -754,7 +769,6 @@ TEST_P(ServiceWorkerDispatcherHostTestP, DispatchExtendableMessageEvent_Fail) {
   // The error callback should clean up the ports and handle.
   for (int port : ports)
     EXPECT_FALSE(MessagePortService::GetInstance()->AreMessagesHeld(port));
-  EXPECT_EQ(ref_count, sender_worker_handle->ref_count());
 }
 
 TEST_P(ServiceWorkerDispatcherHostTestP, OnSetHostedVersionId) {

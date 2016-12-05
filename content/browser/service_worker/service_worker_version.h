@@ -410,6 +410,12 @@ class CONTENT_EXPORT ServiceWorkerVersion
     return external_request_uuid_to_request_id_.size();
   }
 
+  // Returns the amount of time left until the request with the latest
+  // expiration time expires.
+  base::TimeDelta remaining_timeout() const {
+    return max_request_expiration_time_ - tick_clock_->NowTicks();
+  }
+
  private:
   friend class base::RefCounted<ServiceWorkerVersion>;
   friend class ServiceWorkerMetrics;
@@ -740,6 +746,11 @@ class CONTENT_EXPORT ServiceWorkerVersion
   // to update once the worker stops, but will also update if it stays alive too
   // long.
   base::TimeTicks stale_time_;
+  // The latest expiration time of all requests that have ever been started. In
+  // particular this is not just the maximum of the expiration times of all
+  // currently existing requests, but also takes into account the former
+  // expiration times of finished requests.
+  base::TimeTicks max_request_expiration_time_;
 
   // Keeps track of requests for timeout purposes. Requests are sorted by
   // their expiration time (soonest to expire on top of the priority queue). The

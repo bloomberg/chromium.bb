@@ -944,16 +944,22 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEvent(
                          DispatchExtendableMessageEventInternal<
                              ServiceWorkerClientInfo>,
                      this, worker, message, source_origin, sent_message_ports,
-                     callback));
+                     base::nullopt, callback));
       break;
-    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER:
+    case SERVICE_WORKER_PROVIDER_FOR_CONTROLLER: {
+      // Clamp timeout to the sending worker's remaining timeout, to prevent
+      // postMessage from keeping workers alive forever.
+      base::TimeDelta timeout =
+          sender_provider_host->running_hosted_version()->remaining_timeout();
       RunSoon(base::Bind(
           &ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal<
               ServiceWorkerObjectInfo>,
-          this, worker, message, source_origin, sent_message_ports, callback,
+          this, worker, message, source_origin, sent_message_ports,
+          base::make_optional(timeout), callback,
           sender_provider_host->GetOrCreateServiceWorkerHandle(
               sender_provider_host->running_hosted_version())));
       break;
+    }
     case SERVICE_WORKER_PROVIDER_UNKNOWN:
     default:
       NOTREACHED() << sender_provider_host->provider_type();
@@ -1107,6 +1113,7 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
     const base::string16& message,
     const url::Origin& source_origin,
     const std::vector<int>& sent_message_ports,
+    const base::Optional<base::TimeDelta>& timeout,
     const StatusCallback& callback,
     const SourceInfo& source_info) {
   if (!source_info.IsValid()) {
@@ -1114,12 +1121,22 @@ void ServiceWorkerDispatcherHost::DispatchExtendableMessageEventInternal(
         sent_message_ports, source_info, callback, SERVICE_WORKER_ERROR_FAILED);
     return;
   }
+
+  // If not enough time is left to actually process the event don't even
+  // bother starting the worker and sending the event.
+  if (timeout && *timeout < base::TimeDelta::FromMilliseconds(100)) {
+    DidFailToDispatchExtendableMessageEvent<SourceInfo>(
+        sent_message_ports, source_info, callback,
+        SERVICE_WORKER_ERROR_TIMEOUT);
+    return;
+  }
+
   worker->RunAfterStartWorker(
       ServiceWorkerMetrics::EventType::MESSAGE,
       base::Bind(&ServiceWorkerDispatcherHost::
                      DispatchExtendableMessageEventAfterStartWorker,
                  this, worker, message, source_origin, sent_message_ports,
-                 ExtendableMessageEventSource(source_info), callback),
+                 ExtendableMessageEventSource(source_info), timeout, callback),
       base::Bind(
           &ServiceWorkerDispatcherHost::DidFailToDispatchExtendableMessageEvent<
               SourceInfo>,
@@ -1133,9 +1150,17 @@ void ServiceWorkerDispatcherHost::
         const url::Origin& source_origin,
         const std::vector<int>& sent_message_ports,
         const ExtendableMessageEventSource& source,
+        const base::Optional<base::TimeDelta>& timeout,
         const StatusCallback& callback) {
-  int request_id =
-      worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE, callback);
+  int request_id;
+  if (timeout) {
+    request_id = worker->StartRequestWithCustomTimeout(
+        ServiceWorkerMetrics::EventType::MESSAGE, callback, *timeout,
+        ServiceWorkerVersion::CONTINUE_ON_TIMEOUT);
+  } else {
+    request_id = worker->StartRequest(ServiceWorkerMetrics::EventType::MESSAGE,
+                                      callback);
+  }
 
   MessagePortMessageFilter* filter =
       worker->embedded_worker()->message_port_message_filter();

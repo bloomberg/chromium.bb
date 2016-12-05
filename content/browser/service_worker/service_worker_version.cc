@@ -572,6 +572,8 @@ int ServiceWorkerVersion::StartRequestWithCustomTimeout(
   base::TimeTicks expiration_time = tick_clock_->NowTicks() + timeout;
   timeout_queue_.push(
       RequestInfo(request_id, event_type, expiration_time, timeout_behavior));
+  if (expiration_time > max_request_expiration_time_)
+    max_request_expiration_time_ = expiration_time;
   return request_id;
 }
 
