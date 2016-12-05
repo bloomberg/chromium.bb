@@ -180,6 +180,10 @@ void HTMLFrameElementBase::didNotifySubtreeInsertionsToDocument() {
   if (!SubframeLoadingDisabler::canLoadFrame(*this))
     return;
 
+  // We should never have a content frame at the point where we got inserted
+  // into a tree.
+  SECURITY_CHECK(!contentFrame());
+
   setNameAndOpenURL();
 }
 
