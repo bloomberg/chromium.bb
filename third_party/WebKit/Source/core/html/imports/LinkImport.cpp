@@ -120,7 +120,7 @@ void LinkImport::ownerInserted() {
 
 void LinkImport::ownerRemoved() {
   if (m_owner)
-    m_owner->document().styleEngine().importRemoved();
+    m_owner->document().styleEngine().htmlImportAddedOrRemoved();
 }
 
 DEFINE_TRACE(LinkImport) {

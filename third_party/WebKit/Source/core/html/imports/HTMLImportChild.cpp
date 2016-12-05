@@ -54,7 +54,10 @@ HTMLImportChild::~HTMLImportChild() {}
 void HTMLImportChild::ownerInserted() {
   if (!m_loader->isDone())
     return;
-  root()->document()->styleEngine().resolverChanged(FullStyleUpdate);
+  document()->styleEngine().htmlImportAddedOrRemoved();
+  // TODO(rune@opera.com): resolverChanged() can be removed once stylesheet
+  // updates are async. https://crbug.com/567021
+  root()->document()->styleEngine().resolverChanged(AnalyzedStyleUpdate);
 }
 
 void HTMLImportChild::didShareLoader() {

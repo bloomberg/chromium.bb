@@ -1050,9 +1050,13 @@ void StyleEngine::viewportRulesChanged() {
     m_viewportResolver->setNeedsCollectRules();
 }
 
-void StyleEngine::importRemoved() {
+void StyleEngine::htmlImportAddedOrRemoved() {
   if (document().importLoader()) {
-    document().importsController()->master()->styleEngine().importRemoved();
+    document()
+        .importsController()
+        ->master()
+        ->styleEngine()
+        .htmlImportAddedOrRemoved();
     return;
   }
 
@@ -1061,11 +1065,14 @@ void StyleEngine::importRemoved() {
   // comparison of active stylesheets is not able to figure out that the order
   // of the stylesheets have changed after insertion.
   //
+  // This is also the case when we import the same document twice where the
+  // last inserted document is inserted before the first one in dom order where
+  // the last would take precedence.
+  //
   // Fall back to re-add all sheets to the scoped resolver and recalculate style
-  // for the whole document if we remove an import in case it is re-inserted
-  // into the document. The assumption is that removing html imports is very
-  // rare.
+  // for the whole document when we remove or insert an import document.
   if (ScopedStyleResolver* resolver = document().scopedStyleResolver()) {
+    markDocumentDirty();
     resolver->setNeedsAppendAllSheets();
     document().setNeedsStyleRecalc(
         SubtreeStyleChange, StyleChangeReasonForTracing::create(
