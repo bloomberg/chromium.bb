@@ -54,6 +54,7 @@ crbug.com/629058 plugins/fullscreen-plugins-dont-reload.html [ Leak ]
 # -----------------------------------------------------------------
 
 crbug.com/364417 paint/invalidation/japanese-rl-selection-clear.html [ Leak ]
+crbug.com/364417 virtual/spinvalidation/paint/invalidation/japanese-rl-selection-clear.html [ Leak ]
 
 crbug.com/455369 fast/html/marquee-destroyed-without-removed-from-crash.html [ Leak Pass ]
 
