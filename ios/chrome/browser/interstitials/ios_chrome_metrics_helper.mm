@@ -12,6 +12,10 @@
 #include "ios/chrome/browser/history/history_service_factory.h"
 #include "ios/web/public/web_state/web_state.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 IOSChromeMetricsHelper::IOSChromeMetricsHelper(
     web::WebState* web_state,
     const GURL& request_url,
