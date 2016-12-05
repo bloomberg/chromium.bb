@@ -110,7 +110,9 @@ void FontResource::setRevalidatingRequest(const ResourceRequest& request) {
 }
 
 void FontResource::startLoadLimitTimers() {
-  DCHECK(isLoading());
+  // TODO(toyoshim): Change CHECK() to DCHECK() if this can survive on Canary
+  // for some days. http://crbug.com/670638
+  CHECK(isLoading());
   DCHECK_EQ(m_loadLimitState, LoadNotStarted);
   m_loadLimitState = UnderLimit;
   m_fontLoadShortLimitTimer.startOneShot(fontLoadWaitShortLimitSec,
@@ -144,6 +146,9 @@ FontPlatformData FontResource::platformDataFromCustomData(
 }
 
 void FontResource::fontLoadShortLimitCallback(TimerBase*) {
+  // TODO(toyoshim): Change CHECK() to DCHECK() and remove if(!isLoading()) if
+  // this can survive on Canary for some days. http://crbug.com/670638
+  CHECK(isLoading());
   if (!isLoading())
     return;
   DCHECK_EQ(m_loadLimitState, UnderLimit);
@@ -154,6 +159,9 @@ void FontResource::fontLoadShortLimitCallback(TimerBase*) {
 }
 
 void FontResource::fontLoadLongLimitCallback(TimerBase*) {
+  // TODO(toyoshim): Change CHECK() to DCHECK() and remove if(!isLoading()) if
+  // this can survive on Canary for some days. http://crbug.com/670638
+  CHECK(isLoading());
   if (!isLoading())
     return;
   DCHECK_EQ(m_loadLimitState, ShortLimitExceeded);
