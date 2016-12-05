@@ -365,7 +365,7 @@ CollectInfoResult CollectGpuID(uint32_t* vendor_id, uint32_t* device_id) {
   *vendor_id = 0;
   *device_id = 0;
 
-  // Taken from http://developer.nvidia.com/object/device_ids.html
+  // Taken from http://www.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
   std::wstring id;
@@ -411,7 +411,7 @@ CollectInfoResult CollectBasicGraphicsInfo(GPUInfo* gpu_info) {
                               DISPLAY_LINK_INSTALLATION_STATUS_MAX);
   }
 
-  // Taken from http://developer.nvidia.com/object/device_ids.html
+  // Taken from http://www.nvidia.com/object/device_ids.html
   DISPLAY_DEVICE dd;
   dd.cb = sizeof(DISPLAY_DEVICE);
   std::wstring id;
