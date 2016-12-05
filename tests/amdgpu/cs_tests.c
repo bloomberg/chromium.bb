@@ -175,11 +175,11 @@ static int submit(unsigned ndw, unsigned ip)
 
 static void uvd_cmd(uint64_t addr, unsigned cmd, int *idx)
 {
-	ib_cpu[(*idx)++] = 0x3BC4;
+	ib_cpu[(*idx)++] = (family_id < AMDGPU_FAMILY_AI) ? 0x3BC4 : 0x81C4;
 	ib_cpu[(*idx)++] = addr;
-	ib_cpu[(*idx)++] = 0x3BC5;
+	ib_cpu[(*idx)++] = (family_id < AMDGPU_FAMILY_AI) ? 0x3BC5 : 0x81C5;
 	ib_cpu[(*idx)++] = addr >> 32;
-	ib_cpu[(*idx)++] = 0x3BC3;
+	ib_cpu[(*idx)++] = (family_id < AMDGPU_FAMILY_AI) ? 0x3BC3 : 0x81C3;
 	ib_cpu[(*idx)++] = cmd << 1;
 }
 
@@ -211,10 +211,12 @@ static void amdgpu_cs_uvd_create(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(msg, uvd_create_msg, sizeof(uvd_create_msg));
+
 	if (family_id >= AMDGPU_FAMILY_VI) {
 		((uint8_t*)msg)[0x10] = 7;
-		/* chip polaris 10/11 */
-		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A) {
+		/* chip beyond polaris 10/11 */
+		if ((family_id == AMDGPU_FAMILY_AI) ||
+		    (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)) {
 			/* dpb size */
 			((uint8_t*)msg)[0x28] = 0x00;
 			((uint8_t*)msg)[0x29] = 0x94;
@@ -287,13 +289,15 @@ static void amdgpu_cs_uvd_decode(void)
 	CU_ASSERT_EQUAL(r, 0);
 
 	memcpy(ptr, uvd_decode_msg, sizeof(uvd_create_msg));
+
 	if (family_id >= AMDGPU_FAMILY_VI) {
 		ptr[0x10] = 7;
 		ptr[0x98] = 0x00;
 		ptr[0x99] = 0x02;
-		/* chip polaris10/11 */
-		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A) {
-			/*dpb size */
+		/* chip beyond polaris10/11 */
+		if ((family_id == AMDGPU_FAMILY_AI) ||
+		    (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)) {
+			/* dpb size */
 			ptr[0x24] = 0x00;
 			ptr[0x25] = 0x94;
 			ptr[0x26] = 0x6B;
@@ -335,9 +339,11 @@ static void amdgpu_cs_uvd_decode(void)
 		bs_addr = fb_addr + 4*1024;
 	dpb_addr = ALIGN(bs_addr + sizeof(uvd_bitstream), 4*1024);
 
-	if ((family_id >= AMDGPU_FAMILY_VI) &&
-		(chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)) {
-		ctx_addr = ALIGN(dpb_addr + 0x006B9400, 4*1024);
+	if (family_id >= AMDGPU_FAMILY_VI) {
+		if ((family_id == AMDGPU_FAMILY_AI) ||
+		    (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)) {
+			ctx_addr = ALIGN(dpb_addr + 0x006B9400, 4*1024);
+		}
 	}
 
 	dt_addr = ALIGN(dpb_addr + dpb_size, 4*1024);
@@ -348,12 +354,15 @@ static void amdgpu_cs_uvd_decode(void)
 	uvd_cmd(dt_addr, 0x2, &i);
 	uvd_cmd(fb_addr, 0x3, &i);
 	uvd_cmd(bs_addr, 0x100, &i);
+
 	if (family_id >= AMDGPU_FAMILY_VI) {
 		uvd_cmd(it_addr, 0x204, &i);
-		if (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A)
+		if ((family_id == AMDGPU_FAMILY_AI) ||
+		    (chip_id == chip_rev+0x50 || chip_id == chip_rev+0x5A))
 			uvd_cmd(ctx_addr, 0x206, &i);
-}
-	ib_cpu[i++] = 0x3BC6;
+	}
+
+	ib_cpu[i++] = (family_id < AMDGPU_FAMILY_AI) ? 0x3BC6 : 0x81C6;
 	ib_cpu[i++] = 0x1;
 	for (; i % 16; ++i)
 		ib_cpu[i] = 0x80000000;
