@@ -8,7 +8,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_FileAPI) {
   ASSERT_TRUE(RunExtensionTest("fileapi")) << message_;
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, XHROnPersistentFileSystem) {
+// crbug.com/671144
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_XHROnPersistentFileSystem) {
   ASSERT_TRUE(RunPlatformAppTest("xhr_persistent_fs")) << message_;
 }
 
