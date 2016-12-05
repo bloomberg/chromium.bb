@@ -91,7 +91,7 @@
                 scrollable>
               <iron-list items="[[getUnpaired_(deviceList.*)]]"
                   selection-enabled selected-item="{{selectedItem}}"
-                  scroll-target="container" tabindex="0">
+                  scroll-target="container">
                 <template>
                   <bluetooth-device-list-item device="[[item]]"
                       tabindex$="[[tabIndex]]">

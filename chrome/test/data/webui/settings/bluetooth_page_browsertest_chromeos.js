@@ -99,7 +99,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       var bluetooth =
           bluetoothSection.querySelector('settings-bluetooth-page');
       assertTrue(!!bluetooth);
-      expectFalse(bluetooth.bluetoothEnabled);
+      expectFalse(bluetooth.bluetoothEnabled_);
       var enable = bluetooth.$.enableBluetooth;
       assertTrue(!!enable);
       expectFalse(enable.checked);
@@ -110,10 +110,10 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       expectTrue(enable.checked);
       expectTrue(self.bluetoothApi_.adapterState.powered);
       // Confirm that 'bluetoothEnabled' remains set to true.
-      expectTrue(bluetooth.bluetoothEnabled);
+      expectTrue(bluetooth.bluetoothEnabled_);
       // Set 'bluetoothEnabled' directly and confirm that the checkbox
       // toggles.
-      bluetooth.bluetoothEnabled = false;
+      bluetooth.bluetoothEnabled_ = false;
       Polymer.dom.flush();
       expectFalse(enable.checked);
     });
@@ -137,7 +137,7 @@ TEST_F('SettingsBluetoothPageBrowserTest', 'MAYBE_Bluetooth', function() {
       // should be hidden.
       self.bluetoothApi_.setDevicesForTest(fakeDevices_);
       Polymer.dom.flush();
-      assertEquals(bluetooth.deviceList.length, 4);
+      assertEquals(bluetooth.deviceList_.length, 4);
       var devicesIronList = bluetooth.$$('#deviceList iron-list');
       assertTrue(!!devicesIronList);
       devicesIronList.notifyResize();

@@ -39,17 +39,18 @@
     </style>
     <settings-animated-pages id="pages" section="bluetooth">
       <neon-animatable route-path="default">
-        <div class="settings-box first">
+        <div class="settings-box first"
+            on-tap="toggleDeviceListExpanded_">
           <iron-icon icon="settings:bluetooth"></iron-icon>
           <span class="middle">$i18n{bluetoothEnable}</span>
           <cr-expand-button id="expandListButton"
               alt="$i18n{bluetoothExpandA11yLabel}"
-              hidden$="[[!bluetoothEnabled]]"
-              expanded="{{deviceListExpanded}}">
+              hidden$="[[!bluetoothEnabled_]]"
+              expanded="{{deviceListExpanded_}}">
           </cr-expand-button>
           <paper-toggle-button id="enableBluetooth"
-              checked="{{bluetoothEnabled}}"
-              disabled="[[!adapterState.available]]"
+              checked="{{bluetoothEnabled_}}"
+              disabled="[[!adapterState_.available]]"
               on-change="onBluetoothEnabledChange_">
           </paper-toggle-button>
           <cr-policy-pref-indicator
@@ -57,13 +58,13 @@
               hidden="[[prefs.cros.device.allow_bluetooth.value]]">
           </cr-policy-pref-indicator>
         </div>
-        <iron-collapse opened="[[canShowDeviceList_(bluetoothEnabled,
-                                                    deviceListExpanded)]]">
+        <iron-collapse opened="[[canShowDeviceList_(bluetoothEnabled_,
+                                                    deviceListExpanded_)]]">
           <div id="deviceList" class="list-frame vertical-list"
               on-device-event="onDeviceEvent_">
             <div id="container" class="layout vertical" scrollable>
-              <iron-list items="[[getPairedOrConnecting_(deviceList.*)]]"
-                  selection-enabled selected-item="{{selectedItem}}"
+              <iron-list items="[[getPairedOrConnecting_(deviceList_.*)]]"
+                  selection-enabled selected-item="{{selectedItem_}}"
                   scroll-target="container">
                 <template>
                   <bluetooth-device-list-item device="[[item]]"
@@ -73,11 +74,11 @@
               </iron-list>
             </div>
             <div class="no-devices layout horizontal center"
-                hidden$="[[haveDevices_(deviceList.*)]]">
+                hidden$="[[haveDevices_(deviceList_.*)]]">
               $i18n{bluetoothNoDevices}
             </div>
           </div>
-          <div class="settings-box" hidden$="[[!bluetoothEnabled]]">
+          <div class="settings-box" hidden$="[[!bluetoothEnabled_]]">
             <paper-button class="primary-button" on-tap="onAddDeviceTap_">
               $i18n{bluetoothAddDevice}
             </paper-button>
@@ -86,17 +87,17 @@
       </neon-animatable>
     </settings-animated-pages>
 
-    <template is="dom-if" if="[[deviceListExpanded]]">
+    <template is="dom-if" if="[[deviceListExpanded_]]">
       <bluetooth-device-dialog id="deviceDialog"
-          adapter-state="[[adapterState]]"
-          device-list="[[deviceList]]"
-          dialog-id="[[dialogId]]"
+          adapter-state="[[adapterState_]]"
+          device-list="[[deviceList_]]"
+          dialog-id="[[dialogId_]]"
           on-close="onDialogClosed_"
-          error-message="[[errorMessage]]"
+          error-message="[[errorMessage_]]"
           on-device-event="onDeviceEvent_"
           on-response="onResponse_"
-          pairing-device="[[pairingDevice]]"
-          pairing-event="[[pairingEvent]]">
+          pairing-device="[[pairingDevice_]]"
+          pairing-event="[[pairingEvent_]]">
       </bluetooth-device-dialog>
     </template>
 
