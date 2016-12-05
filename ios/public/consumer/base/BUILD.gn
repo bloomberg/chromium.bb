@@ -3,8 +3,9 @@
 # found in the LICENSE file.
 
 source_set("base") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
-    "//ios/consumer/base/debugger.mm",
+    "//ios/consumer/base/debugger.cc",
     "//ios/public/consumer/base/debugger.h",
   ]
   deps = [
