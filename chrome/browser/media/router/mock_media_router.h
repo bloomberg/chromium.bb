@@ -85,6 +85,7 @@ class MockMediaRouter : public MediaRouterBase {
     OnAddPresentationConnectionStateChangedCallbackInvoked(callback);
     return connection_state_callbacks_.Add(callback);
   }
+  MOCK_CONST_METHOD0(GetCurrentRoutes, std::vector<MediaRoute>());
 
   MOCK_METHOD0(OnIncognitoProfileShutdown, void());
   MOCK_METHOD1(OnAddPresentationConnectionStateChangedCallbackInvoked,

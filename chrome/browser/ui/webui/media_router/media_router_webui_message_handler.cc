@@ -274,7 +274,7 @@ void MediaRouterWebUIMessageHandler::OnCreateRouteResponseReceived(
   DVLOG(2) << "OnCreateRouteResponseReceived";
   if (route) {
     int current_cast_mode = CurrentCastModeForRouteId(
-        route->media_route_id(), media_router_ui_->current_cast_modes());
+        route->media_route_id(), media_router_ui_->routes_and_cast_modes());
     std::unique_ptr<base::DictionaryValue> route_value(RouteToValue(
         *route, false, media_router_ui_->GetRouteProviderExtensionId(),
         incognito_, current_cast_mode));
@@ -412,7 +412,7 @@ void MediaRouterWebUIMessageHandler::OnRequestInitialData(
 
   std::unique_ptr<base::ListValue> routes(RoutesToValue(
       media_router_ui_->routes(), media_router_ui_->joinable_route_ids(),
-      media_router_ui_->current_cast_modes()));
+      media_router_ui_->routes_and_cast_modes()));
   initial_data.Set("routes", routes.release());
 
   const std::set<MediaCastMode> cast_modes = media_router_ui_->cast_modes();

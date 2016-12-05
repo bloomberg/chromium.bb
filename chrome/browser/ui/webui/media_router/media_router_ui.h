@@ -146,9 +146,9 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
     return joinable_route_ids_;
   }
   const std::set<MediaCastMode>& cast_modes() const { return cast_modes_; }
-  const std::unordered_map<MediaRoute::Id, MediaCastMode>& current_cast_modes()
-      const {
-    return current_cast_modes_;
+  const std::unordered_map<MediaRoute::Id, MediaCastMode>&
+  routes_and_cast_modes() const {
+    return routes_and_cast_modes_;
   }
   const content::WebContents* initiator() const { return initiator_; }
 
@@ -171,10 +171,8 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
  private:
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortedSinks);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, SortSinksByIconType);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-                           UIMediaRoutesObserverFiltersNonDisplayRoutes);
-  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
-      UIMediaRoutesObserverFiltersNonDisplayJoinableRoutes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, FilterNonDisplayRoutes);
+  FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest, FilterNonDisplayJoinableRoutes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
       UIMediaRoutesObserverAssignsCurrentCastModes);
   FRIEND_TEST_ALL_PREFIXES(MediaRouterUITest,
@@ -278,6 +276,10 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   // |handler_|.
   void UpdateCastModes();
 
+  // Updates the routes-to-cast-modes mapping in |routes_and_cast_modes_| to
+  // match the value of |routes_|.
+  void UpdateRoutesToCastModesMapping();
+
   // Returns the default presentation request's frame URL if there is one.
   // Otherwise returns an empty GURL.
   GURL GetFrameURL() const;
@@ -313,7 +315,7 @@ class MediaRouterUI : public ConstrainedWebDialogUI,
   std::vector<MediaRoute> routes_;
   std::vector<MediaRoute::Id> joinable_route_ids_;
   CastModeSet cast_modes_;
-  std::unordered_map<MediaRoute::Id, MediaCastMode> current_cast_modes_;
+  std::unordered_map<MediaRoute::Id, MediaCastMode> routes_and_cast_modes_;
 
   std::unique_ptr<QueryResultManager> query_result_manager_;
 

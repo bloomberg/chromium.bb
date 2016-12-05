@@ -11,6 +11,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 using testing::_;
+using testing::SaveArg;
 
 namespace media_router {
 
@@ -33,9 +34,29 @@ class MockMediaRouterBase : public MockMediaRouter {
   void OnIncognitoProfileShutdown() override {
     MediaRouterBase::OnIncognitoProfileShutdown();
   }
+
+  std::vector<MediaRoute> GetCurrentRoutes() const override {
+    return MediaRouterBase::GetCurrentRoutes();
+  }
 };
 
-TEST(MediaRouterBaseTest, CreatePresentationIds) {
+class MediaRouterBaseTest : public testing::Test {
+ public:
+  void SetUp() override {
+    EXPECT_CALL(router_, RegisterMediaRoutesObserver(_))
+        .WillOnce(SaveArg<0>(&routes_observer_));
+    router_.Initialize();
+  }
+
+  void TearDown() override { router_.Shutdown(); }
+
+ protected:
+  content::TestBrowserThreadBundle thread_bundle_;
+  MockMediaRouterBase router_;
+  MediaRoutesObserver* routes_observer_;
+};
+
+TEST_F(MediaRouterBaseTest, CreatePresentationIds) {
   std::string id1 = MediaRouterBase::CreatePresentationId();
   std::string id2 = MediaRouterBase::CreatePresentationId();
   EXPECT_NE(id1, "");
@@ -43,22 +64,18 @@ TEST(MediaRouterBaseTest, CreatePresentationIds) {
   EXPECT_NE(id1, id2);
 }
 
-TEST(MediaRouterBaseTest, NotifyCallbacks) {
-  content::TestBrowserThreadBundle thread_bundle_;
-  MockMediaRouterBase router;
-  router.Initialize();
-
+TEST_F(MediaRouterBaseTest, NotifyCallbacks) {
   MediaRoute::Id route_id1("id1");
   MediaRoute::Id route_id2("id2");
   MockPresentationConnectionStateChangedCallback callback1;
   MockPresentationConnectionStateChangedCallback callback2;
   std::unique_ptr<PresentationConnectionStateSubscription> subscription1 =
-      router.AddPresentationConnectionStateChangedCallback(
+      router_.AddPresentationConnectionStateChangedCallback(
           route_id1,
           base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
                      base::Unretained(&callback1)));
   std::unique_ptr<PresentationConnectionStateSubscription> subscription2 =
-      router.AddPresentationConnectionStateChangedCallback(
+      router_.AddPresentationConnectionStateChangedCallback(
           route_id2,
           base::Bind(&MockPresentationConnectionStateChangedCallback::Run,
                      base::Unretained(&callback2)));
@@ -74,32 +91,50 @@ TEST(MediaRouterBaseTest, NotifyCallbacks) {
   change_info_closed.message = "Test message";
 
   EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_connected)));
-  router.NotifyPresentationConnectionStateChange(
+  router_.NotifyPresentationConnectionStateChange(
       route_id1, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 
   EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_connected)));
-  router.NotifyPresentationConnectionStateChange(
+  router_.NotifyPresentationConnectionStateChange(
       route_id2, content::PRESENTATION_CONNECTION_STATE_CONNECTED);
 
   EXPECT_CALL(callback1, Run(StateChangeInfoEquals(change_info_closed)));
-  router.NotifyPresentationConnectionClose(
+  router_.NotifyPresentationConnectionClose(
       route_id1, change_info_closed.close_reason, change_info_closed.message);
 
   // After removing a subscription, the corresponding callback should no longer
   // be called.
   subscription1.reset();
-  router.NotifyPresentationConnectionStateChange(
+  router_.NotifyPresentationConnectionStateChange(
       route_id1, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
 
   EXPECT_CALL(callback2, Run(StateChangeInfoEquals(change_info_terminated)));
-  router.NotifyPresentationConnectionStateChange(
+  router_.NotifyPresentationConnectionStateChange(
       route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
 
   subscription2.reset();
-  router.NotifyPresentationConnectionStateChange(
+  router_.NotifyPresentationConnectionStateChange(
       route_id2, content::PRESENTATION_CONNECTION_STATE_TERMINATED);
+}
 
-  router.Shutdown();
+TEST_F(MediaRouterBaseTest, GetCurrentRoutes) {
+  MediaSource source1("source_1");
+  MediaSource source2("source_1");
+  MediaRoute route1("route_1", source1, "sink_1", "", false, "", false);
+  MediaRoute route2("route_2", source2, "sink_2", "", true, "", false);
+  std::vector<MediaRoute> routes = {route1, route2};
+  std::vector<MediaRoute::Id> joinable_route_ids = {"route_1"};
+
+  EXPECT_TRUE(router_.GetCurrentRoutes().empty());
+  routes_observer_->OnRoutesUpdated(routes, joinable_route_ids);
+  std::vector<MediaRoute> current_routes = router_.GetCurrentRoutes();
+  ASSERT_EQ(current_routes.size(), 2u);
+  EXPECT_TRUE(current_routes[0].Equals(route1));
+  EXPECT_TRUE(current_routes[1].Equals(route2));
+
+  routes_observer_->OnRoutesUpdated(std::vector<MediaRoute>(),
+                                    std::vector<MediaRoute::Id>());
+  EXPECT_TRUE(router_.GetCurrentRoutes().empty());
 }
 
 }  // namespace media_router

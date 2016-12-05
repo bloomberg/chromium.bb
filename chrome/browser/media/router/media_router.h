@@ -181,6 +181,10 @@ class MediaRouter : public KeyedService {
   // This will terminate all incognito media routes.
   virtual void OnIncognitoProfileShutdown() = 0;
 
+  // Returns the media routes that currently exist. To get notified whenever
+  // there is a change to the media routes, subclass MediaRoutesObserver.
+  virtual std::vector<MediaRoute> GetCurrentRoutes() const = 0;
+
  private:
   friend class IssuesObserver;
   friend class MediaSinksObserver;
