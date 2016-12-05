@@ -103,11 +103,6 @@ struct Referrer;
     onFormResubmissionForRequest:(NSURLRequest*)request
                    continueBlock:(ProceduralBlock)continueBlock
                      cancelBlock:(ProceduralBlock)cancelBlock;
-// Returns the unique id of the download request and starts downloading the
-// image at |url| without sending the cookies. Invokes |callback| on completion.
-- (int)downloadImageAtUrl:(const GURL&)url
-    maxBitmapSize:(uint32_t)maxBitmapSize
-         callback:(const web::WebState::ImageDownloadCallback&)callback;
 
 // ---------------------------------------------------------------------
 // TODO(rohitrao): Eliminate as many of the following delegate methods as

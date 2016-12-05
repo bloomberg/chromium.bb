@@ -246,6 +246,7 @@ source_set("web") {
     "//components/url_formatter",
     "//ios/net",
     "//ios/third_party/blink:html_tokenizer",
+    "//ios/web/public/image_fetcher",
     "//mojo/public/cpp/system",
     "//mojo/public/js",
     "//net",

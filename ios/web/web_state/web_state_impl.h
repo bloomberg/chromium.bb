@@ -43,6 +43,7 @@ struct Credential;
 struct FaviconURL;
 struct LoadCommittedDetails;
 class NavigationManager;
+class ImageDataFetcher;
 class WebInterstitialImpl;
 class WebStateDelegate;
 class WebStateFacadeDelegate;
@@ -368,6 +369,9 @@ class WebStateImpl : public WebState, public NavigationManagerDelegate {
 
   // Mojo interface registry for this WebState.
   std::unique_ptr<service_manager::InterfaceRegistry> mojo_interface_registry_;
+
+  // Image Fetcher used to images.
+  std::unique_ptr<ImageDataFetcher> image_fetcher_;
 
   DISALLOW_COPY_AND_ASSIGN(WebStateImpl);
 };

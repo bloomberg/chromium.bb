@@ -1,0 +1,4 @@
+include_rules = [
+  "+skia/ext/skia_utils_ios.h",
+  "+third_party/skia/include/core/SkBitmap.h",
+]

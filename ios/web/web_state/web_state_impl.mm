@@ -16,6 +16,7 @@
 #include "ios/web/navigation/navigation_item_impl.h"
 #include "ios/web/net/request_group_util.h"
 #include "ios/web/public/browser_state.h"
+#import "ios/web/public/image_fetcher/image_data_fetcher.h"
 #import "ios/web/public/java_script_dialog_presenter.h"
 #include "ios/web/public/navigation_item.h"
 #include "ios/web/public/url_util.h"
@@ -33,7 +34,10 @@
 #import "ios/web/webui/web_ui_ios_controller_factory_registry.h"
 #import "ios/web/webui/web_ui_ios_impl.h"
 #include "net/http/http_response_headers.h"
+#include "net/url_request/url_fetcher.h"
 #include "services/service_manager/public/cpp/interface_registry.h"
+#include "skia/ext/skia_utils_ios.h"
+#include "third_party/skia/include/core/SkBitmap.h"
 
 namespace web {
 
@@ -63,6 +67,8 @@ WebStateImpl::WebStateImpl(BrowserState* browser_state)
       weak_factory_(this) {
   GlobalWebStateEventTracker::GetInstance()->OnWebStateCreated(this);
   web_controller_.reset([[CRWWebController alloc] initWithWebState:this]);
+  image_fetcher_.reset(new ImageDataFetcher(web::WebThread::GetBlockingPool()));
+  image_fetcher_->SetRequestContextGetter(browser_state->GetRequestContext());
 }
 
 WebStateImpl::~WebStateImpl() {
@@ -538,9 +544,28 @@ int WebStateImpl::DownloadImage(
   // cookies or not. Currently, only downloads without cookies are supported.
   // |bypass_cache| is ignored since the downloads never go through a cache.
   DCHECK(is_favicon);
-  return [[web_controller_ delegate] downloadImageAtUrl:url
-                                          maxBitmapSize:max_bitmap_size
-                                              callback:callback];
+
+  static int downloaded_image_count = 0;
+  int local_download_id = ++downloaded_image_count;
+  __block web::WebState::ImageDownloadCallback local_image_callback = callback;
+  __block GURL local_url(url);
+  ImageFetchedCallback local_callback =
+      ^(const GURL&, const int response_code, NSData* data) {
+        std::vector<SkBitmap> frames;
+        std::vector<gfx::Size> sizes;
+        if (data) {
+          frames = skia::ImageDataToSkBitmaps(data);
+          for (auto& frame : frames) {
+            sizes.push_back(gfx::Size(frame.width(), frame.height()));
+          }
+        }
+        if (response_code != net::URLFetcher::RESPONSE_CODE_INVALID) {
+          local_image_callback.Run(local_download_id, response_code, local_url,
+                                   frames, sizes);
+        }
+      };
+  image_fetcher_->StartDownload(url, local_callback);
+  return downloaded_image_count;
 }
 
 service_manager::InterfaceRegistry* WebStateImpl::GetMojoInterfaceRegistry() {
