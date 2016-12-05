@@ -6,7 +6,9 @@
 
 #import <objc/runtime.h>
 
-#include "base/mac/scoped_nsobject.h"
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -32,9 +34,8 @@ const NSTimeInterval kLocationShouldRefreshAge = 5.0 * 60.0;  // 5 minutes
 }
 
 - (void)cr_setAcquisitionInterval:(NSTimeInterval)interval {
-  base::scoped_nsobject<NSNumber> boxedInterval(
-      [[NSNumber alloc] initWithDouble:interval]);
-  objc_setAssociatedObject(self, &g_acquisitionIntervalKey, boxedInterval.get(),
+  NSNumber* boxedInterval = [[NSNumber alloc] initWithDouble:interval];
+  objc_setAssociatedObject(self, &g_acquisitionIntervalKey, boxedInterval,
                            OBJC_ASSOCIATION_RETAIN);
 }
 

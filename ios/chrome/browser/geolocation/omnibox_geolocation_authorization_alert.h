@@ -30,8 +30,8 @@
 @interface OmniboxGeolocationAuthorizationAlert : NSObject
 
 // The delegate for this OmniboxGeolocationAuthorizationAlert.
-@property(nonatomic, assign)
-    id<OmniboxGeolocationAuthorizationAlertDelegate> delegate;
+@property(nonatomic, weak) id<OmniboxGeolocationAuthorizationAlertDelegate>
+    delegate;
 
 // Designated initializer. Initializes this instance with |delegate|.
 - (instancetype)initWithDelegate:

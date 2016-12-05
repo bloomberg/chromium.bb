@@ -4,12 +4,14 @@
 
 #import "ios/chrome/browser/geolocation/location_manager.h"
 
-#import "base/ios/weak_nsobject.h"
-#include "base/mac/scoped_nsobject.h"
 #import "ios/chrome/browser/geolocation/CLLocation+OmniboxGeolocation.h"
 #import "ios/chrome/browser/geolocation/location_manager+Testing.h"
 #import "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 #import "ios/public/provider/chrome/browser/geolocation_updater_provider.h"
+
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
 
 namespace {
 
@@ -23,10 +25,8 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 }  // namespace
 
 @interface LocationManager () {
-  base::scoped_nsprotocol<id<GeolocationUpdater>> _locationUpdater;
-  base::scoped_nsobject<CLLocation> _currentLocation;
-  base::WeakNSProtocol<id<LocationManagerDelegate>> _delegate;
-  base::scoped_nsobject<NSDate> _startTime;
+  id<GeolocationUpdater> _locationUpdater;
+  NSDate* _startTime;
 }
 
 // Handles GeolocationUpdater notification for an updated device location.
@@ -39,6 +39,8 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 @end
 
 @implementation LocationManager
+@synthesize delegate = _delegate;
+@synthesize currentLocation = _currentLocation;
 
 - (id)init {
   self = [super init];
@@ -48,7 +50,7 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 
     // |provider| may be null in tests.
     if (provider) {
-      _locationUpdater.reset(provider->CreateGeolocationUpdater(false));
+      _locationUpdater = provider->CreateGeolocationUpdater(false);
       [_locationUpdater setDesiredAccuracy:kLocationDesiredAccuracy
                             distanceFilter:kLocationDesiredAccuracy / 2];
       [_locationUpdater setStopUpdateDelay:kLocationStopUpdateDelay];
@@ -76,7 +78,6 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [super dealloc];
 }
 
 - (CLAuthorizationStatus)authorizationStatus {
@@ -85,16 +86,8 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 
 - (CLLocation*)currentLocation {
   if (!_currentLocation)
-    _currentLocation.reset([[_locationUpdater currentLocation] retain]);
+    _currentLocation = [_locationUpdater currentLocation];
   return _currentLocation;
-}
-
-- (id<LocationManagerDelegate>)delegate {
-  return _delegate;
-}
-
-- (void)setDelegate:(id<LocationManagerDelegate>)delegate {
-  _delegate.reset(delegate);
 }
 
 - (BOOL)locationServicesEnabled {
@@ -105,7 +98,7 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
   CLLocation* currentLocation = self.currentLocation;
   if (!currentLocation || [currentLocation cr_shouldRefresh]) {
     if (![_locationUpdater isEnabled])
-      _startTime.reset([[NSDate alloc] init]);
+      _startTime = [[NSDate alloc] init];
 
     [_locationUpdater requestWhenInUseAuthorization];
     [_locationUpdater setEnabled:YES];
@@ -124,7 +117,7 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
                                  ->GetUpdateNewLocationKey();
   CLLocation* location = [[notification userInfo] objectForKey:newLocationKey];
   if (location) {
-    _currentLocation.reset([location retain]);
+    _currentLocation = location;
 
     if (_startTime) {
       NSTimeInterval interval = -[_startTime timeIntervalSinceNow];
@@ -144,7 +137,7 @@ const NSTimeInterval kLocationUpdateInterval = 365.0 * 24.0 * 60.0 * 60.0;
 #pragma mark - LocationManager+Testing
 
 - (void)setGeolocationUpdater:(id<GeolocationUpdater>)geolocationUpdater {
-  _locationUpdater.reset([geolocationUpdater retain]);
+  _locationUpdater = geolocationUpdater;
 }
 
 @end

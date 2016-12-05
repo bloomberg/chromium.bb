@@ -29,10 +29,10 @@
 @property(nonatomic, readonly) CLAuthorizationStatus authorizationStatus;
 
 // Returns the most recently fetched location.
-@property(nonatomic, readonly) CLLocation* currentLocation;
+@property(strong, nonatomic, readonly) CLLocation* currentLocation;
 
 // The delegate object for this instance of LocationManager.
-@property(nonatomic, assign) id<LocationManagerDelegate> delegate;
+@property(weak, nonatomic) id<LocationManagerDelegate> delegate;
 
 // Boolean value indicating whether location services are enabled on the
 // device. This proxies |[CLLocationManager locationServicesEnabled]|, so that

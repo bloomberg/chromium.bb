@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("geolocation") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "CLLocation+OmniboxGeolocation.h",
     "CLLocation+OmniboxGeolocation.mm",

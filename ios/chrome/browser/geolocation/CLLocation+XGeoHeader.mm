@@ -8,6 +8,10 @@
 
 #import "third_party/google_toolbox_for_mac/src/Foundation/GTMStringEncoding.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 NSString* const kGMOLocationDescriptorFormat =
     @"role: CURRENT_LOCATION\n"
     @"producer: DEVICE_LOCATION\n"
@@ -28,9 +32,8 @@ NSString* const kGMOLocationDescriptorFormat =
                 error:nullptr];
   if (base64) {
     return base64;
-  } else {
-    return @"";
   }
+  return @"";
 }
 
 // Returns the timestamp of this location in microseconds since the UNIX epoch.
