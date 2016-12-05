@@ -622,31 +622,41 @@ static const int tx_size_high[TX_SIZES_ALL] = {
 // Transform block width in unit
 static const int tx_size_wide_unit[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
-  1,
-#endif
+  1,  2, 4, 8, 16,
+#if CONFIG_TX64X64
+  32,
+#endif  // CONFIG_TX64X64
+  2,  4, 4, 8, 8,  16,
+#else  // CONFIG_CB4X4
   1,  2, 4, 8,
 #if CONFIG_TX64X64
   16,
 #endif  // CONFIG_TX64X64
   1,  2, 2, 4, 4, 8,
+#endif  // CONFIG_CB4X4
 };
 
 // Transform block height in unit
 static const int tx_size_high_unit[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
-  1,
-#endif
+  1,  2, 4, 8, 16,
+#if CONFIG_TX64X64
+  32,
+#endif  // CONFIG_TX64X64
+  4,  2, 8, 4, 16, 8,
+#else  // CONFIG_CB4X4
   1,  2, 4, 8,
 #if CONFIG_TX64X64
   16,
 #endif  // CONFIG_TX64X64
   2,  1, 4, 2, 8, 4,
+#endif  // CONFIG_CB4X4
 };
 
 // Transform block width in log2
 static const int tx_size_wide_log2[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
-  2,
+  1,
 #endif
   2, 3, 4, 5,
 #if CONFIG_TX64X64
@@ -658,7 +668,7 @@ static const int tx_size_wide_log2[TX_SIZES_ALL] = {
 // Transform block height in log2
 static const int tx_size_high_log2[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
-  2,
+  1,
 #endif
   2, 3, 4, 5,
 #if CONFIG_TX64X64
@@ -680,7 +690,7 @@ static const int tx_size_2d[TX_SIZES_ALL] = {
 
 static const BLOCK_SIZE txsize_to_bsize[TX_SIZES_ALL] = {
 #if CONFIG_CB4X4
-  BLOCK_4X4,  // TX_2X2
+  BLOCK_2X2,  // TX_2X2
 #endif
   BLOCK_4X4,    // TX_4X4
   BLOCK_8X8,    // TX_8X8
