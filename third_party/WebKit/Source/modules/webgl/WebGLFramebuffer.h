@@ -45,7 +45,8 @@ class WebGLFramebuffer final : public WebGLContextObject {
   DEFINE_WRAPPERTYPEINFO();
 
  public:
-  class WebGLAttachment : public GarbageCollected<WebGLAttachment> {
+  class WebGLAttachment : public GarbageCollected<WebGLAttachment>,
+                          public TraceWrapperBase {
    public:
     virtual WebGLSharedObject* object() const = 0;
     virtual bool isSharedObject(WebGLSharedObject*) const = 0;

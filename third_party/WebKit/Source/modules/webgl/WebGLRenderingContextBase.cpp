@@ -7693,8 +7693,7 @@ DEFINE_TRACE_WRAPPERS(WebGLRenderingContextBase) {
     visitor->traceWrappers(unit.m_texture2DArrayBinding);
   }
   for (ExtensionTracker* tracker : m_extensions) {
-    WebGLExtension* extension = tracker->getExtensionObjectIfAlreadyEnabled();
-    visitor->traceWrappers(extension);
+    visitor->traceWrappers(tracker);
   }
   CanvasRenderingContext::traceWrappers(visitor);
 }

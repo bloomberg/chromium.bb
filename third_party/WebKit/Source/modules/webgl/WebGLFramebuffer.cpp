@@ -40,6 +40,9 @@ class WebGLRenderbufferAttachment final
   static WebGLFramebuffer::WebGLAttachment* create(WebGLRenderbuffer*);
 
   DECLARE_VIRTUAL_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() {
+    visitor->traceWrappers(m_renderbuffer);
+  }
 
  private:
   explicit WebGLRenderbufferAttachment(WebGLRenderbuffer*);
@@ -55,7 +58,7 @@ class WebGLRenderbufferAttachment final
                 GLenum target,
                 GLenum attachment) override;
 
-  Member<WebGLRenderbuffer> m_renderbuffer;
+  TraceWrapperMember<WebGLRenderbuffer> m_renderbuffer;
 };
 
 WebGLFramebuffer::WebGLAttachment* WebGLRenderbufferAttachment::create(
@@ -70,7 +73,7 @@ DEFINE_TRACE(WebGLRenderbufferAttachment) {
 
 WebGLRenderbufferAttachment::WebGLRenderbufferAttachment(
     WebGLRenderbuffer* renderbuffer)
-    : m_renderbuffer(renderbuffer) {}
+    : m_renderbuffer(this, renderbuffer) {}
 
 WebGLSharedObject* WebGLRenderbufferAttachment::object() const {
   return m_renderbuffer->object() ? m_renderbuffer.get() : 0;
@@ -110,6 +113,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                                                    GLint layer);
 
   DECLARE_VIRTUAL_TRACE();
+  DEFINE_INLINE_VIRTUAL_TRACE_WRAPPERS() { visitor->traceWrappers(m_texture); }
 
  private:
   WebGLTextureAttachment(WebGLTexture*,
@@ -128,7 +132,7 @@ class WebGLTextureAttachment final : public WebGLFramebuffer::WebGLAttachment {
                 GLenum target,
                 GLenum attachment) override;
 
-  Member<WebGLTexture> m_texture;
+  TraceWrapperMember<WebGLTexture> m_texture;
   GLenum m_target;
   GLint m_level;
   GLint m_layer;
@@ -151,7 +155,10 @@ WebGLTextureAttachment::WebGLTextureAttachment(WebGLTexture* texture,
                                                GLenum target,
                                                GLint level,
                                                GLint layer)
-    : m_texture(texture), m_target(target), m_level(level), m_layer(layer) {}
+    : m_texture(this, texture),
+      m_target(target),
+      m_level(level),
+      m_layer(layer) {}
 
 WebGLSharedObject* WebGLTextureAttachment::object() const {
   return m_texture->object() ? m_texture.get() : 0;
@@ -540,7 +547,7 @@ DEFINE_TRACE(WebGLFramebuffer) {
 
 DEFINE_TRACE_WRAPPERS(WebGLFramebuffer) {
   for (const auto& attachment : m_attachments) {
-    visitor->traceWrappers(attachment.value->object());
+    visitor->traceWrappers(attachment.value);
   }
   WebGLContextObject::traceWrappers(visitor);
 }
