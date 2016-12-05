@@ -368,11 +368,6 @@ bool WebThread::IsThreadInitialized(ID identifier) {
 
 // static
 bool WebThread::CurrentlyOn(ID identifier) {
-  // This shouldn't use MessageLoop::current() since it uses LazyInstance which
-  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
-  // function.
-  // http://crbug.com/63678
-  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   WebThreadGlobals& globals = g_globals.Get();
   base::AutoLock lock(globals.lock);
   DCHECK(identifier >= 0 && identifier < ID_COUNT);
@@ -456,11 +451,6 @@ bool WebThread::GetCurrentThreadIdentifier(ID* identifier) {
   if (g_globals == nullptr)
     return false;
 
-  // This shouldn't use MessageLoop::current() since it uses LazyInstance which
-  // may be deleted by ~AtExitManager when a WorkerPool thread calls this
-  // function.
-  // http://crbug.com/63678
-  base::ThreadRestrictions::ScopedAllowSingleton allow_singleton;
   base::MessageLoop* cur_message_loop = base::MessageLoop::current();
   WebThreadGlobals& globals = g_globals.Get();
   for (int i = 0; i < ID_COUNT; ++i) {
