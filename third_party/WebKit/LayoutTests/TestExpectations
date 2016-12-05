@@ -74,6 +74,7 @@ crbug.com/606302 [ Linux Win Mac ] transforms/3d/point-mapping/3d-point-mapping-
 crbug.com/614910 [ Mac ] virtual/gpu-rasterization/images/pixel-crack-image-background-webkit-transform-scale.html [ Pass Failure ]
 
 crbug.com/619103 paint/invalidation/background-resize-width.html [ Failure ]
+crbug.com/619103 virtual/spinvalidation/paint/invalidation/background-resize-width.html [ Skip ]
 crbug.com/619103 paint/selection/text-selection-newline-mixed-ltr-rtl.html [ Failure ]
 
 # TODO(fmalita): re-enable
@@ -87,6 +88,8 @@ crbug.com/657839 images/color-profile-layer.html [ Skip ]
 
 crbug.com/626748 paint/invalidation/table/cached-change-row-border-color.html [ Failure ]
 crbug.com/626748 paint/invalidation/table/cached-change-tbody-border-color.html [ Failure ]
+crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-row-border-color.html [ Skip ]
+crbug.com/626748 virtual/spinvalidation/paint/invalidation/table/cached-change-tbody-border-color.html [ Skip ]
 
 # Very slight rendering changes caused by Skia rect clipping change.
 crbug.com/627844 virtual/gpu/fast/canvas/canvas-createImageBitmap-colorClamping.html [ Pass Failure ]
@@ -95,7 +98,8 @@ crbug.com/630615 [ Win7 ] images/color-profile-background-image-space.html [ Ski
 
 crbug.com/632000 [ Win ] images/paint-subrect-grid.html [ Pass Failure ]
 
-crbug.com/636271 paint/invalidation/resize-iframe-text.html [ Pass Failure ]
+crbug.com/636271 [ Mac10.10 ] paint/invalidation/resize-iframe-text.html [ Pass Failure ]
+crbug.com/636271 [ Mac10.10 ] virtual/spinvalidation/paint/invalidation/resize-iframe-text.html [ Skip ]
 
 crbug.com/639147 svg/wicd/test-rightsizing-b.xhtml [ Failure Pass ]
 
@@ -110,7 +114,17 @@ crbug.com/645389 [ Win ] virtual/display_list_2d_canvas/fast/canvas/canvas-hit-r
 
 crbug.com/646010 paint/selection/text-selection-newline-rtl-double-linebreak.html [ Failure ]
 crbug.com/646015 paint/invalidation/hover-invalidation-table.html [ Failure ]
+crbug.com/646015 virtual/spinvalidation/paint/invalidation/hover-invalidation-table.html [ Skip ]
 crbug.com/646016 paint/invalidation/selected-replaced.html [ Failure ]
+crbug.com/646016 virtual/spinvalidation/paint/invalidation/selected-replaced.html [ Skip ]
+
+crbug.com/671097 virtual/spinvalidation/paint/invalidation/filter-on-html-element-with-fixed-position-child.html [ Crash ]
+crbug.com/671097 virtual/spinvalidation/paint/invalidation/reflection-redraw.html [ Crash ]
+crbug.com/671097 virtual/spinvalidation/paint/invalidation/scroll-fixed-reflected-layer.html [ Crash ]
+
+crbug.com/646176 virtual/spinvalidation/paint/invalidation/svg/resize-svg-invalidate-children-2.html [ Failure ]
+crbug.com/646176 virtual/spinvalidation/paint/invalidation/svg/text-rescale.html [ Failure ]
+crbug.com/646176 virtual/spinvalidation/paint/invalidation/video-paint-invalidation.html [ Failure ]
 
 # ====== Paint team owned tests to here ======
 

@@ -1,28 +1,6 @@
 # Expectations for SlimmingPaintInvalidation feature
 
-# Rebaselined because of different clipping behavior, sometimes more accurate
-# (e.g. about css clip), sometimes less accurate (e.g. when clip has transforms)
-# which doesn't matter.
-# paint/invalidation/outline-clip-change.html
-# paint/invalidation/scroll-in-transformed-layer.html
-# paint/invalidation/scroll-with-transformed-parent-layer.html
-# paint/invalidation/shift-relative-positioned-container-with-image-addition.html
-
-# Rebaselined: We use FrameView::x() and FrameView::y() which are integers to
-# generate FrameViewpreTranslation, but the old path uses offsets in the layout tree.
-# paint/invalidation/repaint-during-scroll-with-zoom.html
-
-# Rebaselined because we expand local paint invalidation rect to whole pixels
-# before mapping it to backing so it may cover extra pixels causing incremental
-# invalidation not applicable.
-# paint/invalidation/border-radius-repaint-2.html
-# paint/invalidation/flexbox/repaint-rtl-column.html
-# paint/invalidation/flexbox/repaint.html
-# paint/invalidation/line-flow-with-floats-4.html
-# paint/invalidation/line-flow-with-floats-5.html
-# paint/invalidation/window-resize-percent-html.html
-
-# Rebaselined paint/invalidation/svg because we do more accurate pixel snapping
-# for SVGRoot instead of enclosingIntRect() on SVGRoot during rect mapping.
+# These tests run in virtual/spinvalidation suite.
+Bug(none) paint/invalidation [ Skip ]
 
 crbug.com/648274 fast/multicol/span/abspos-containing-block-outside-spanner.html [ Failure ]

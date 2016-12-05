@@ -328,5 +328,10 @@
     "prefix": "feature-policy",
     "base": "http/tests/feature-policy",
     "args": ["--enable-blink-features=FeaturePolicy"]
+  },
+  {
+    "prefix": "spinvalidation",
+    "base": "paint/invalidation",
+    "args": ["--enable-blink-features=SlimmingPaintInvalidation"]
   }
 ]

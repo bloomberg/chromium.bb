@@ -1,0 +1,100 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [785, 829],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutView #document",
+          "rect": [0, 735, 785, 94],
+          "reason": "incremental"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 180, 769, 641],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+          "rect": [8, 86, 769, 641],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutIFrame IFRAME id='iframe'",
+          "rect": [8, 86, 732, 94],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutBlockFlow HTML",
+          "rect": [10, 88, 728, 90],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutView #document",
+          "rect": [10, 88, 728, 90],
+          "reason": "style change"
+        },
+        {
+          "object": "LayoutBlockFlow BODY",
+          "rect": [18, 96, 712, 74],
+          "reason": "layoutObject insertion"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 230, 489, 537],
+          "reason": "bounds change"
+        },
+        {
+          "object": "LayoutImage IMG",
+          "rect": [58, 136, 489, 537],
+          "reason": "bounds change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutView #document",
+      "reason": "incremental"
+    },
+    {
+      "object": "LayoutIFrame IFRAME id='iframe'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow (relative positioned) DIV class='relative paddingTop'",
+      "reason": "bounds change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutImage IMG",
+      "reason": "bounds change"
+    },
+    {
+      "object": "LayoutText #text",
+      "reason": "location change"
+    },
+    {
+      "object": "VerticalScrollbar",
+      "reason": "scroll"
+    },
+    {
+      "object": "LayoutView #document",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutBlockFlow HTML",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutBlockFlow BODY",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+

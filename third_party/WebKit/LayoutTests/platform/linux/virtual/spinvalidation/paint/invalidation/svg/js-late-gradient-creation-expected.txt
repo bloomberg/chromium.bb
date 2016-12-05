@@ -1,0 +1,53 @@
+{
+  "layers": [
+    {
+      "name": "LayoutView #document",
+      "bounds": [800, 600],
+      "contentsOpaque": true,
+      "drawsContent": true,
+      "paintInvalidations": [
+        {
+          "object": "LayoutSVGInlineText #text",
+          "rect": [33, 23, 697, 194],
+          "reason": "forced by layout"
+        },
+        {
+          "object": "LayoutSVGText text",
+          "rect": [33, 23, 697, 194],
+          "reason": "style change"
+        }
+      ]
+    }
+  ],
+  "objectPaintInvalidations": [
+    {
+      "object": "LayoutSVGText text",
+      "reason": "style change"
+    },
+    {
+      "object": "RootInlineBox",
+      "reason": "style change"
+    },
+    {
+      "object": "LayoutSVGInlineText #text",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "InlineTextBox 'Gradient on fill'",
+      "reason": "forced by layout"
+    },
+    {
+      "object": "LayoutSVGResourceLinearGradient linearGradient id='dynGrad'",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    },
+    {
+      "object": "LayoutSVGGradientStop stop",
+      "reason": "layoutObject insertion"
+    }
+  ]
+}
+
