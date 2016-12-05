@@ -3105,37 +3105,37 @@ template <>
 inline CSSIdentifierValue::CSSIdentifierValue(EPointerEvents e)
     : CSSValue(IdentifierClass) {
   switch (e) {
-    case PE_NONE:
+    case EPointerEvents::PE_NONE:
       m_valueID = CSSValueNone;
       break;
-    case PE_STROKE:
+    case EPointerEvents::PE_STROKE:
       m_valueID = CSSValueStroke;
       break;
-    case PE_FILL:
+    case EPointerEvents::PE_FILL:
       m_valueID = CSSValueFill;
       break;
-    case PE_PAINTED:
+    case EPointerEvents::PE_PAINTED:
       m_valueID = CSSValuePainted;
       break;
-    case PE_VISIBLE:
+    case EPointerEvents::PE_VISIBLE:
       m_valueID = CSSValueVisible;
       break;
-    case PE_VISIBLE_STROKE:
+    case EPointerEvents::PE_VISIBLE_STROKE:
       m_valueID = CSSValueVisibleStroke;
       break;
-    case PE_VISIBLE_FILL:
+    case EPointerEvents::PE_VISIBLE_FILL:
       m_valueID = CSSValueVisibleFill;
       break;
-    case PE_VISIBLE_PAINTED:
+    case EPointerEvents::PE_VISIBLE_PAINTED:
       m_valueID = CSSValueVisiblePainted;
       break;
-    case PE_AUTO:
+    case EPointerEvents::PE_AUTO:
       m_valueID = CSSValueAuto;
       break;
-    case PE_ALL:
+    case EPointerEvents::PE_ALL:
       m_valueID = CSSValueAll;
       break;
-    case PE_BOUNDINGBOX:
+    case EPointerEvents::PE_BOUNDINGBOX:
       m_valueID = CSSValueBoundingBox;
       break;
   }
@@ -3145,33 +3145,33 @@ template <>
 inline EPointerEvents CSSIdentifierValue::convertTo() const {
   switch (m_valueID) {
     case CSSValueAll:
-      return PE_ALL;
+      return EPointerEvents::PE_ALL;
     case CSSValueAuto:
-      return PE_AUTO;
+      return EPointerEvents::PE_AUTO;
     case CSSValueNone:
-      return PE_NONE;
+      return EPointerEvents::PE_NONE;
     case CSSValueVisiblePainted:
-      return PE_VISIBLE_PAINTED;
+      return EPointerEvents::PE_VISIBLE_PAINTED;
     case CSSValueVisibleFill:
-      return PE_VISIBLE_FILL;
+      return EPointerEvents::PE_VISIBLE_FILL;
     case CSSValueVisibleStroke:
-      return PE_VISIBLE_STROKE;
+      return EPointerEvents::PE_VISIBLE_STROKE;
     case CSSValueVisible:
-      return PE_VISIBLE;
+      return EPointerEvents::PE_VISIBLE;
     case CSSValuePainted:
-      return PE_PAINTED;
+      return EPointerEvents::PE_PAINTED;
     case CSSValueFill:
-      return PE_FILL;
+      return EPointerEvents::PE_FILL;
     case CSSValueStroke:
-      return PE_STROKE;
+      return EPointerEvents::PE_STROKE;
     case CSSValueBoundingBox:
-      return PE_BOUNDINGBOX;
+      return EPointerEvents::PE_BOUNDINGBOX;
     default:
       break;
   }
 
   ASSERT_NOT_REACHED();
-  return PE_ALL;
+  return EPointerEvents::PE_ALL;
 }
 
 template <>

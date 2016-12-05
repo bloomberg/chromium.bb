@@ -372,7 +372,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
         static_cast<unsigned>(initialBoxDirection());
     m_inheritedData.m_printColorAdjust =
         static_cast<unsigned>(initialPrintColorAdjust());
-    m_inheritedData.m_pointerEvents = initialPointerEvents();
+    m_inheritedData.m_pointerEvents =
+        static_cast<unsigned>(initialPointerEvents());
     m_inheritedData.m_insideLink = NotInsideLink;
     m_inheritedData.m_writingMode = initialWritingMode();
 
@@ -2149,12 +2150,14 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
   }
 
   // pointer-events
-  static EPointerEvents initialPointerEvents() { return PE_AUTO; }
+  static EPointerEvents initialPointerEvents() {
+    return EPointerEvents::PE_AUTO;
+  }
   EPointerEvents pointerEvents() const {
     return static_cast<EPointerEvents>(m_inheritedData.m_pointerEvents);
   }
   void setPointerEvents(EPointerEvents p) {
-    m_inheritedData.m_pointerEvents = p;
+    m_inheritedData.m_pointerEvents = static_cast<unsigned>(p);
   }
   void setPointerEventsIsInherited(bool isInherited) {
     m_nonInheritedData.m_isPointerEventsInherited = isInherited;
@@ -3572,7 +3575,8 @@ class CORE_EXPORT ComputedStyle : public ComputedStyleBase,
 
   // Visibility utility functions.
   bool visibleToHitTesting() const {
-    return visibility() == EVisibility::Visible && pointerEvents() != PE_NONE;
+    return visibility() == EVisibility::Visible &&
+           pointerEvents() != EPointerEvents::PE_NONE;
   }
 
   // Animation utility functions.

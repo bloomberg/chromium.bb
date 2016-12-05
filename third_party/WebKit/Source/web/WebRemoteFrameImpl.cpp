@@ -500,7 +500,8 @@ bool WebRemoteFrameImpl::isIgnoredForHitTest() const {
   HTMLFrameOwnerElement* owner = frame()->deprecatedLocalOwner();
   if (!owner || !owner->layoutObject())
     return false;
-  return owner->layoutObject()->style()->pointerEvents() == PE_NONE;
+  return owner->layoutObject()->style()->pointerEvents() ==
+         EPointerEvents::PE_NONE;
 }
 
 void WebRemoteFrameImpl::willEnterFullscreen() {

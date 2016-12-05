@@ -496,7 +496,7 @@ enum class EDisplay : unsigned {
 
 enum EInsideLink { NotInsideLink, InsideUnvisitedLink, InsideVisitedLink };
 
-enum EPointerEvents {
+enum class EPointerEvents : unsigned {
   PE_NONE,
   PE_AUTO,
   PE_STROKE,
