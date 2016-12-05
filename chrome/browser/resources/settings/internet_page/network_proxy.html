@@ -2,7 +2,6 @@
 <link rel="import" href="chrome://resources/cr_elements/network/cr_onc_types.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_behavior.html">
 <link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_network_indicator.html">
-<link rel="import" href="chrome://resources/cr_elements/policy/cr_policy_pref_indicator.html">
 <link rel="import" href="chrome://resources/html/i18n_behavior.html">
 <link rel="import" href="chrome://resources/html/md_select_css.html">
 <link rel="import" href="chrome://resources/html/polymer.html">
@@ -10,6 +9,7 @@
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-checkbox/paper-checkbox.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input-container.html">
 <link rel="import" href="chrome://resources/polymer/v1_0/paper-input/paper-input.html">
+<link rel="import" href="/controls/extension_controlled_indicator.html">
 <link rel="import" href="/controls/settings_checkbox.html">
 <link rel="import" href="/i18n_setup.html">
 <link rel="import" href="/prefs/prefs_behavior.html">
@@ -21,9 +21,13 @@
 <dom-module id="network-proxy">
   <template>
     <style include="internet-shared md-select">
-      cr-policy-network-indicator,
-      cr-policy-pref-indicator {
+      cr-policy-network-indicator {
         -webkit-margin-end: 10px;
+      }
+
+      extension-controlled-indicator {
+        -webkit-margin-start: 0;
+        width: 100%;
       }
 
       network-proxy-input {
@@ -33,10 +37,6 @@
       /* Use .middle spacing but no flex. */
       .settings-box .middle {
         flex: none;
-      }
-
-      .settings-box.indent {
-        @apply(--settings-list-frame-padding);
       }
 
       #exceptionsDiv {
@@ -52,28 +52,33 @@
       }
     </style>
 
-    <!-- Policy indicator -->
-    <div class="settings-box first single-column"
-        hidden$="[[!isControlled(networkProperties.ProxySettings.Type)]]">
-      <div class="layout horizontal center"
-          hidden$="[[!getShowNetworkPolicyIndicator_(networkProperties)]]">
-        <cr-policy-network-indicator
-            property="[[networkProperties.ProxySettings.Type]]">
-        </cr-policy-network-indicator>
-        <div>$i18n{networkProxyEnforcedPolicy}</div>
+    <!-- Policy indicator. Only one dom-if below will be shown. -->
+    <template is="dom-if"
+        if="[[shouldShowNetworkPolicyIndicator_(networkProperties)]]">
+      <div class="settings-box continuation single-column">
+        <div class="layout horizontal center">
+          <cr-policy-network-indicator
+              property="[[networkProperties.ProxySettings.Type]]">
+          </cr-policy-network-indicator>
+          <div>$i18n{networkProxyEnforcedPolicy}</div>
+        </div>
       </div>
-      <div class="layout horizontal center"
-          hidden$="[[!getShowPrefPolicyIndicator_(networkProperties)]]">
-        <cr-policy-pref-indicator pref="[[prefs.proxy]]">
-        </cr-policy-pref-indicator>
-        <div>$i18n{networkProxyControlledExtension}</div>
+    </template>
+    <template is="dom-if"
+        if="[[shouldShowExtensionIndicator_(networkProperties)]]">
+      <div class="settings-box continuation single-column">
+        <extension-controlled-indicator
+            extension-id="[[prefs.proxy.extensionId]]"
+            extension-name="[[prefs.proxy.controlledByName]]"
+            extension-can-be-disabled="[[prefs.proxy.extensionCanBeDisabled]]">
+        </extension-controlled-indicator>
       </div>
-    </div>
+    </template>
 
     <!-- Allow shared proxies -->
     <div class="settings-box continuation"
-        hidden$="[[!getShowAllowShared_(
-                 networkProperties.ProxySettings.Type)]]">
+        hidden$="[[!shouldShowAllowShared_(
+            networkProperties.ProxySettings.Type)]]">
       <settings-checkbox id="allowShared"
           pref="{{prefs.settings.use_shared_proxies}}"
           no-set-pref label="$i18n{networkProxyAllowShared}"
@@ -88,7 +93,7 @@
         <select id="proxyType" class="md-select" on-change="onTypeChange_"
             value="[[proxy.Type]]"
             disabled="[[!isProxyEditable_(networkProperties, editable,
-                      useSharedProxies_)]]">
+                useSharedProxies_)]]">
           <template is="dom-repeat" items="[[proxyTypes_]]">
             <option value="[[item]]">[[getProxyTypeDesc_(item)]]</option>
           </template>
@@ -103,7 +108,7 @@
       <div>$i18n{networkProxyAutoConfig}</div>
       <paper-input no-label-float class="middle" value="{{proxy.PAC}}"
           disabled="[[!isEditable_(networkProperties.ProxySettings.PAC,
-                    useSharedProxies_)]]"
+              useSharedProxies_)]]"
           on-blur="onProxyInputChange_">
       </paper-input>
     </div>
@@ -127,8 +132,8 @@
         <network-proxy-input 
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
-                      networkProperties.ProxySettings.Manual.HTTPProxy.Host,
-                      editable, useSharedProxies_)]]"
+                networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+                editable, useSharedProxies_)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxy}">
         </network-proxy-input>
@@ -137,32 +142,32 @@
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
-                      networkProperties.ProxySettings.Manual.HTTPProxy.Host,
-                      editable, useSharedProxies_)]]"
+                networkProperties.ProxySettings.Manual.HTTPProxy.Host,
+                editable, useSharedProxies_)]]"
             value="{{proxy.Manual.HTTPProxy}}"
             label="$i18n{networkProxyHttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
-                      networkProperties.ProxySettings.Manual.SecureHTTPProxy.Host,
-                      editable, useSharedProxies_)]]"
+                networkProperties.ProxySettings.Manual.SecureHTTPProxy.Host,
+                editable, useSharedProxies_)]]"
             value="{{proxy.Manual.SecureHTTPProxy}}"
             label="$i18n{networkProxyShttp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
-                      networkProperties.ProxySettings.Manual.FTPProxy.Host,
-                      editable, useSharedProxies_)]]"
+                networkProperties.ProxySettings.Manual.FTPProxy.Host,
+                editable, useSharedProxies_)]]"
             value="{{proxy.Manual.FTPProxy}}"
             label="$i18n{networkProxyFtp}">
         </network-proxy-input>
         <network-proxy-input
             on-proxy-change="onProxyInputChange_"
             editable="[[isEditable_(
-                      networkProperties.ProxySettings.Manual.SOCKS.Host,
-                      editable, useSharedProxies_)]]"
+                networkProperties.ProxySettings.Manual.SOCKS.Host,
+                editable, useSharedProxies_)]]"
             value="{{proxy.Manual.SOCKS}}"
             label="$i18n{networkProxySocks}">
         </network-proxy-input>
@@ -170,7 +175,7 @@
 
       <div id="exceptionsDiv"
           hidden="[[!isProxyEditable_(networkProperties, editable,
-                  useSharedProxies_)]]">
+              useSharedProxies_)]]">
         <div>$i18n{networkProxyExceptionList}</div>
         <network-proxy-exclusions on-proxy-change="onProxyExclusionsChange_"
             exclusions="{{proxy.ExcludeDomains}}">

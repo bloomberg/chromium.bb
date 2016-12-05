@@ -91,6 +91,13 @@
             connected$="[[isConnectedState_(networkProperties)]]">
           [[getStateText_(networkProperties)]]
         </div>
+        <template is="dom-if"
+            if="[[isPolicySource(networkProperties.Source))]]">
+          <cr-policy-network-indicator
+              indicator-type="[[getIndicatorTypeForSource(
+                  networkProperties.Source)]]">
+          </cr-policy-network-indicator>
+        </template>
       </div>
       <div id="buttonDiv" class="layout horizontal center">
         <paper-button class="secondary-button" on-tap="onForgetTap_"
@@ -144,7 +151,9 @@
       <!-- Autoconnect. -->
       <template is="dom-if" if="[[showAutoConnect_(networkProperties)]]">
         <div class="settings-box">
-          <paper-checkbox checked="{{autoConnect_}}">
+          <paper-checkbox checked="{{autoConnect_}}"
+              disabled="[[isNetworkPolicyEnforced(
+                  getManagedAutoConnect_(networkProperties))]]">
             $i18n{networkAutoConnect}
           </paper-checkbox>
           <cr-policy-network-indicator

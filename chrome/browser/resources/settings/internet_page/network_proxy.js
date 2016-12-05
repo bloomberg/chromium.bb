@@ -336,7 +336,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getShowNetworkPolicyIndicator_: function() {
+  shouldShowNetworkPolicyIndicator_: function() {
     let property = this.getProxySettingsTypeProperty_();
     return !!property && !this.isExtensionControlled(property) &&
         this.isNetworkPolicyEnforced(property);
@@ -346,7 +346,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getShowPrefPolicyIndicator_: function() {
+  shouldShowExtensionIndicator_: function() {
     let property = this.getProxySettingsTypeProperty_();
     return !!property && this.isExtensionControlled(property);
   },
@@ -356,7 +356,7 @@ Polymer({
    * @return {boolean}
    * @private
    */
-  getShowAllowShared_: function(property) {
+  shouldShowAllowShared_: function(property) {
     return !this.isControlled(property) && this.isShared_();
   },
 
@@ -389,7 +389,7 @@ Polymer({
    */
   isProxyEditable_: function() {
     let property = this.getProxySettingsTypeProperty_();
-    return !!property && this.isEditable_(property);
+    return !property || this.isEditable_(property);
   },
 
   /**

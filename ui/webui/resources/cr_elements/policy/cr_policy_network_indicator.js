@@ -77,7 +77,7 @@ Polymer({
    * @private
    */
   getTooltip_: function(type, property, recommended) {
-    if (type == CrPolicyIndicatorType.NONE || typeof property != 'object')
+    if (type == CrPolicyIndicatorType.NONE)
       return '';
     if (type == CrPolicyIndicatorType.RECOMMENDED) {
       var value = property.Active;

@@ -57,7 +57,7 @@ Polymer({
     },
   },
 
-  behaviors: [I18nBehavior],
+  behaviors: [I18nBehavior, CrPolicyNetworkBehavior],
 
   /** @private */
   itemChanged_: function() {
@@ -130,6 +130,7 @@ Polymer({
    * @param {string} state The connection state.
    * @param {string} name The name of the network.
    * @return {string}
+   * @private
    */
   getConnectionStateText_: function(state, name) {
     if (state == CrOnc.ConnectionState.CONNECTED)

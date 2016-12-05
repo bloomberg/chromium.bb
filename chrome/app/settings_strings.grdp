@@ -1026,9 +1026,6 @@
     <message name="IDS_SETTINGS_INTERNET_NETWORK_SHARED" desc="Settings > Internet > Network details: Text to show when a network is shared.">
       This network is shared with other users.
     </message>
-    <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONTROLLED_EXTENSION" desc="Settings > Internet > Network details: Text to show when a network proxy is controlled by an extension.">
-      The network proxy is controlled by an extension.
-    </message>
     <message name="IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY" desc="Settings > Internet > Network details: Text to show when a network proxy is policy enforced.">
       This proxy is enforced by your administrator.
     </message>

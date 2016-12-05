@@ -23,6 +23,10 @@
       .settings-box:first-of-type {
         border-top: none;
       }
+
+      cr-policy-network-indicator {
+        padding: 0 var(--cr-icon-padding);
+      }
     </style>
     <template is="dom-repeat" items="[[fields]]"
         filter="[[computeFilter_(propertyDict, editFieldTypes)]]">

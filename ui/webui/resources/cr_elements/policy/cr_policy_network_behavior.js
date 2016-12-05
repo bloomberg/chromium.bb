@@ -68,4 +68,27 @@ var CrPolicyNetworkBehavior = {
     // If no 'Editable' sub-property exists, the policy value is enforced.
     return true;
   },
+
+  /**
+   * @param {String} source
+   * @return {boolean}
+   * @private
+   */
+  isPolicySource: function(source) {
+    return source == CrOnc.Source.DEVICE_POLICY ||
+        source == CrOnc.Source.USER_POLICY;
+  },
+
+  /**
+   * @param {String} source
+   * @return {!CrPolicyIndicatorType}
+   * @private
+   */
+  getIndicatorTypeForSource: function(source) {
+    if (source == CrOnc.Source.DEVICE_POLICY)
+      return CrPolicyIndicatorType.DEVICE_POLICY;
+    if (source == CrOnc.Source.USER_POLICY)
+      return CrPolicyIndicatorType.USER_POLICY;
+    return CrPolicyIndicatorType.NONE;
+  },
 };

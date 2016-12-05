@@ -801,8 +801,6 @@ void AddInternetStrings(content::WebUIDataSource* html_source) {
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_AUTO_CONFIG},
       {"networkProxyConnectionType",
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONNECTION_TYPE},
-      {"networkProxyControlledExtension",
-       IDS_SETTINGS_INTERNET_NETWORK_PROXY_CONTROLLED_EXTENSION},
       {"networkProxyEnforcedPolicy",
        IDS_SETTINGS_INTERNET_NETWORK_PROXY_ENFORCED_POLICY},
       {"networkProxyExceptionList",

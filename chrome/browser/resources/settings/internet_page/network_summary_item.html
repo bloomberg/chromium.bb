@@ -57,7 +57,7 @@
       <div id="details" selectable
           no-flex$="[[showSimInfo_(deviceState)]]"
           on-tap="onDetailsTap_" tabindex$="[[getTabIndex_(deviceState)]]">
-        <cr-network-list-item item="[[activeNetworkState]]">
+        <cr-network-list-item item="[[activeNetworkState]]" class="flex">
         </cr-network-list-item>
         <paper-spinner active="[[scanningIsActive_(deviceState, expanded_)]]"
             hidden$="[[!scanningIsVisible_(deviceState)]]">
