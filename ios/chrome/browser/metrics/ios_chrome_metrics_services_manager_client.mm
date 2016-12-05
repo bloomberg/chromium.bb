@@ -21,6 +21,10 @@
 #include "ios/chrome/browser/variations/ios_ui_string_overrider_factory.h"
 #include "ios/public/provider/chrome/browser/chrome_browser_provider.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 void PostStoreMetricsClientInfo(const metrics::ClientInfo& client_info) {}

@@ -3,6 +3,7 @@
 # found in the LICENSE file.
 
 source_set("metrics") {
+  configs += [ "//build/config/compiler:enable_arc" ]
   sources = [
     "field_trial_synchronizer.cc",
     "field_trial_synchronizer.h",
