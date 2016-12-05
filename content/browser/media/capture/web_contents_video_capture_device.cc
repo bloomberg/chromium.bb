@@ -957,4 +957,9 @@ void WebContentsVideoCaptureDevice::StopAndDeAllocate() {
   core_->StopAndDeAllocate();
 }
 
+void WebContentsVideoCaptureDevice::OnUtilizationReport(int frame_feedback_id,
+                                                        double utilization) {
+  core_->OnConsumerReportingUtilization(frame_feedback_id, utilization);
+}
+
 }  // namespace content

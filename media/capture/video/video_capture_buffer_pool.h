@@ -64,6 +64,7 @@ class CAPTURE_EXPORT VideoCaptureBufferPool
   virtual int ReserveForProducer(const gfx::Size& dimensions,
                                  media::VideoPixelFormat format,
                                  media::VideoPixelStorage storage,
+                                 int frame_feedback_id,
                                  int* buffer_id_to_drop) = 0;
 
   // Indicate that a buffer held for the producer should be returned back to the

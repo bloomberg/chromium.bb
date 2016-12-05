@@ -113,6 +113,14 @@ void ScreenCaptureDeviceCore::StopAndDeAllocate() {
   capture_machine_->Stop(base::Bind(&base::DoNothing));
 }
 
+void ScreenCaptureDeviceCore::OnConsumerReportingUtilization(
+    int frame_feedback_id,
+    double utilization) {
+  DCHECK(thread_checker_.CalledOnValidThread());
+  DCHECK(oracle_proxy_);
+  oracle_proxy_->OnConsumerReportingUtilization(frame_feedback_id, utilization);
+}
+
 void ScreenCaptureDeviceCore::CaptureStarted(bool success) {
   DCHECK(thread_checker_.CalledOnValidThread());
   if (!success)

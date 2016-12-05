@@ -214,7 +214,11 @@ bool VideoCaptureOracle::ObserveEventAndDecideCapture(
   return true;
 }
 
-int VideoCaptureOracle::RecordCapture(double pool_utilization) {
+int VideoCaptureOracle::next_frame_number() const {
+  return next_frame_number_;
+}
+
+void VideoCaptureOracle::RecordCapture(double pool_utilization) {
   DCHECK(std::isfinite(pool_utilization) && pool_utilization >= 0.0);
 
   smoothing_sampler_.RecordSample();
@@ -227,7 +231,7 @@ int VideoCaptureOracle::RecordCapture(double pool_utilization) {
   }
 
   num_frames_pending_++;
-  return next_frame_number_++;
+  next_frame_number_++;
 }
 
 void VideoCaptureOracle::RecordWillNotCapture(double pool_utilization) {

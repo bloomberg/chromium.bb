@@ -83,7 +83,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
     t += event_increment;
     ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
         VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-    last_frame_number = oracle.RecordCapture(0.0);
+    last_frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.0);
     ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, true, &ignored));
   }
 
@@ -94,7 +95,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
       t += event_increment;
       ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
           VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-      last_frame_number = oracle.RecordCapture(0.0);
+      last_frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(0.0);
     }
     for (int j = num_in_flight - 1; j >= 0; --j) {
       ASSERT_TRUE(
@@ -110,7 +112,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
       t += event_increment;
       ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
           VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-      last_frame_number = oracle.RecordCapture(0.0);
+      last_frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(0.0);
     }
     ASSERT_TRUE(oracle.CompleteCapture(last_frame_number, true, &ignored));
     for (int j = 1; j < num_in_flight; ++j) {
@@ -127,7 +130,8 @@ TEST(VideoCaptureOracleTest, EnforcesFramesDeliveredInOrder) {
       t += event_increment;
       ASSERT_TRUE(oracle.ObserveEventAndDecideCapture(
           VideoCaptureOracle::kCompositorUpdate, damage_rect, t));
-      last_frame_number = oracle.RecordCapture(0.0);
+      last_frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(0.0);
     }
     // Report the last frame as an out of order failure.
     ASSERT_FALSE(oracle.CompleteCapture(last_frame_number, false, &ignored));
@@ -178,7 +182,8 @@ TEST(VideoCaptureOracleTest, TransitionsSmoothlyBetweenSamplers) {
     }
     ASSERT_LT(base::TimeDelta(), oracle.estimated_frame_duration());
 
-    const int frame_number = oracle.RecordCapture(0.0);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.0);
 
     base::TimeTicks frame_timestamp;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &frame_timestamp));
@@ -217,8 +222,9 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
     t += vsync_interval;
     if (oracle.ObserveEventAndDecideCapture(
             VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t)) {
-      ASSERT_TRUE(
-          oracle.CompleteCapture(oracle.RecordCapture(0.0), true, &ignored));
+      const int frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(0.0);
+      ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       did_complete_a_capture = true;
     }
   }
@@ -234,7 +240,8 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
       break;
     }
   }
-  int frame_number = oracle.RecordCapture(0.0);
+  int frame_number = oracle.next_frame_number();
+  oracle.RecordCapture(0.0);
 
   // Stop providing the compositor events and start providing refresh request
   // events.  No overdue samplings should be recommended because of the
@@ -254,8 +261,9 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
     t += refresh_interval;
     if (oracle.ObserveEventAndDecideCapture(
             VideoCaptureOracle::kPassiveRefreshRequest, gfx::Rect(), t)) {
-      ASSERT_TRUE(
-          oracle.CompleteCapture(oracle.RecordCapture(0.0), true, &ignored));
+      const int frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(0.0);
+      ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       did_complete_a_capture = true;
     }
   }
@@ -270,7 +278,8 @@ TEST(VideoCaptureOracleTest, SamplesAtCorrectTimesAroundRefreshRequests) {
       break;
     }
   }
-  frame_number = oracle.RecordCapture(0.0);
+  frame_number = oracle.next_frame_number();
+  oracle.RecordCapture(0.0);
 
   // Confirm that the oracle does not recommend sampling until the outstanding
   // "refresh" capture completes.
@@ -306,8 +315,9 @@ TEST(VideoCaptureOracleTest, DoesNotRapidlyChangeCaptureSize) {
         VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t));
     ASSERT_EQ(Get720pSize(), oracle.capture_size());
     base::TimeTicks ignored;
-    ASSERT_TRUE(
-        oracle.CompleteCapture(oracle.RecordCapture(0.0), true, &ignored));
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.0);
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
 
   // Now run 30 seconds of frame captures with lots of random source size
@@ -334,8 +344,9 @@ TEST(VideoCaptureOracleTest, DoesNotRapidlyChangeCaptureSize) {
     }
 
     base::TimeTicks ignored;
-    ASSERT_TRUE(
-        oracle.CompleteCapture(oracle.RecordCapture(0.0), true, &ignored));
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.0);
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
 }
 
@@ -370,8 +381,8 @@ void RunAutoThrottleTest(bool is_content_animating,
         is_content_animating ? gfx::Rect(Get720pSize()) : gfx::Rect(), t));
     ASSERT_EQ(Get720pSize(), oracle.capture_size());
     const double utilization = 0.9;
-    const int frame_number =
-        oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
     if (with_consumer_feedback)
@@ -406,8 +417,8 @@ void RunAutoThrottleTest(bool is_content_animating,
       }
 
       const double utilization = stepped_down_size.IsEmpty() ? 1.5 : 0.9;
-      const int frame_number =
-          oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
+      const int frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
       base::TimeTicks ignored;
       ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       if (with_consumer_feedback)
@@ -447,8 +458,8 @@ void RunAutoThrottleTest(bool is_content_animating,
       }
 
       const double utilization = stepped_up_size.IsEmpty() ? 0.0 : 0.9;
-      const int frame_number =
-          oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
+      const int frame_number = oracle.next_frame_number();
+      oracle.RecordCapture(with_consumer_feedback ? 0.25 : utilization);
       base::TimeTicks ignored;
       ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
       if (with_consumer_feedback)
@@ -494,7 +505,8 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
       continue;
     }
     ASSERT_EQ(Get360pSize(), oracle.capture_size());
-    const int frame_number = oracle.RecordCapture(0.25);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.25);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
@@ -514,7 +526,8 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     ASSERT_LE(last_capture_size.width(), oracle.capture_size().width());
     ASSERT_LE(last_capture_size.height(), oracle.capture_size().height());
     last_capture_size = oracle.capture_size();
-    const int frame_number = oracle.RecordCapture(0.25);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.25);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
@@ -544,7 +557,8 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     }
 
     const double utilization = stepped_down_size.IsEmpty() ? 1.5 : 0.9;
-    const int frame_number = oracle.RecordCapture(utilization);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(utilization);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
@@ -576,7 +590,8 @@ TEST(VideoCaptureOracleTest, IncreasesFrequentlyOnlyAfterSourceSizeChange) {
     }
 
     const double utilization = stepped_up_size.IsEmpty() ? 0.25 : 0.9;
-    const int frame_number = oracle.RecordCapture(utilization);
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(utilization);
     base::TimeTicks ignored;
     ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
@@ -599,8 +614,9 @@ TEST(VideoCaptureOracleTest, DoesNotAutoThrottleWhenResolutionIsFixed) {
         VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t));
     ASSERT_EQ(Get720pSize(), oracle.capture_size());
     base::TimeTicks ignored;
-    ASSERT_TRUE(
-        oracle.CompleteCapture(oracle.RecordCapture(0.9), true, &ignored));
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(0.9);
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
 
   // Now run 10 seconds with overload indicated.  Still, expect no capture size
@@ -611,8 +627,9 @@ TEST(VideoCaptureOracleTest, DoesNotAutoThrottleWhenResolutionIsFixed) {
         VideoCaptureOracle::kCompositorUpdate, gfx::Rect(), t));
     ASSERT_EQ(Get720pSize(), oracle.capture_size());
     base::TimeTicks ignored;
-    ASSERT_TRUE(
-        oracle.CompleteCapture(oracle.RecordCapture(2.0), true, &ignored));
+    const int frame_number = oracle.next_frame_number();
+    oracle.RecordCapture(2.0);
+    ASSERT_TRUE(oracle.CompleteCapture(frame_number, true, &ignored));
   }
 }
 

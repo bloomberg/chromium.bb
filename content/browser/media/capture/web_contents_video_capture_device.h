@@ -42,6 +42,7 @@ class CONTENT_EXPORT WebContentsVideoCaptureDevice
   void MaybeSuspend() override;
   void Resume() override;
   void StopAndDeAllocate() override;
+  void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
   WebContentsVideoCaptureDevice(

@@ -41,13 +41,14 @@ const int kFrameRate = 30;
 
 class MockDeviceClient : public media::VideoCaptureDevice::Client {
  public:
-  MOCK_METHOD6(OnIncomingCapturedData,
+  MOCK_METHOD7(OnIncomingCapturedData,
                void(const uint8_t* data,
                     int length,
                     const media::VideoCaptureFormat& frame_format,
                     int rotation,
                     base::TimeTicks reference_time,
-                    base::TimeDelta tiemstamp));
+                    base::TimeDelta tiemstamp,
+                    int frame_feedback_id));
   MOCK_METHOD0(DoReserveOutputBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedBuffer, void(void));
   MOCK_METHOD0(DoOnIncomingCapturedVideoFrame, void(void));
@@ -57,10 +58,10 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
                     const std::string& reason));
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-  std::unique_ptr<Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override {
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
     EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
     DoReserveOutputBuffer();
@@ -80,7 +81,8 @@ class MockDeviceClient : public media::VideoCaptureDevice::Client {
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override {
+      media::VideoPixelStorage storage,
+      int frame_feedback_id) override {
     EXPECT_EQ(media::PIXEL_FORMAT_I420, format);
     EXPECT_EQ(media::PIXEL_STORAGE_CPU, storage);
     DoResurrectLastOutputBuffer();

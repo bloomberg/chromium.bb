@@ -50,13 +50,15 @@ class CAPTURE_EXPORT VideoCaptureOracle {
                                     const gfx::Rect& damage_rect,
                                     base::TimeTicks event_time);
 
+  // Returns the |frame_number| to be used with CompleteCapture().
+  int next_frame_number() const;
+
   // Record and update internal state based on whether the frame capture will be
   // started.  |pool_utilization| is a value in the range 0.0 to 1.0 to indicate
   // the current buffer pool utilization relative to a sustainable maximum (not
   // the absolute maximum).  This method should only be called if the last call
-  // to ObserveEventAndDecideCapture() returned true.  The first method returns
-  // the |frame_number| to be used with CompleteCapture().
-  int RecordCapture(double pool_utilization);
+  // to ObserveEventAndDecideCapture() returned true.
+  void RecordCapture(double pool_utilization);
   void RecordWillNotCapture(double pool_utilization);
 
   // Notify of the completion of a capture, and whether it was successful.

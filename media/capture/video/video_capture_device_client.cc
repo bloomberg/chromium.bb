@@ -41,13 +41,17 @@ namespace media {
 // implementation to guarantee proper cleanup on destruction on our side.
 class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
  public:
-  AutoReleaseBuffer(scoped_refptr<VideoCaptureBufferPool> pool, int buffer_id)
-      : id_(buffer_id),
-        pool_(std::move(pool)),
+  AutoReleaseBuffer(scoped_refptr<VideoCaptureBufferPool> pool,
+                    int buffer_id,
+                    int frame_feedback_id)
+      : pool_(std::move(pool)),
+        id_(buffer_id),
+        frame_feedback_id_(frame_feedback_id),
         buffer_handle_(pool_->GetBufferHandle(buffer_id)) {
     DCHECK(pool_.get());
   }
   int id() const override { return id_; }
+  int frame_feedback_id() const override { return frame_feedback_id_; }
   gfx::Size dimensions() const override { return buffer_handle_->dimensions(); }
   size_t mapped_size() const override { return buffer_handle_->mapped_size(); }
   void* data(int plane) override { return buffer_handle_->data(plane); }
@@ -66,8 +70,9 @@ class AutoReleaseBuffer : public media::VideoCaptureDevice::Client::Buffer {
  private:
   ~AutoReleaseBuffer() override { pool_->RelinquishProducerReservation(id_); }
 
-  const int id_;
   const scoped_refptr<VideoCaptureBufferPool> pool_;
+  const int id_;
+  const int frame_feedback_id_;
   const std::unique_ptr<VideoCaptureBufferHandle> buffer_handle_;
 };
 
@@ -93,7 +98,8 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
     const VideoCaptureFormat& frame_format,
     int rotation,
     base::TimeTicks reference_time,
-    base::TimeDelta timestamp) {
+    base::TimeDelta timestamp,
+    int frame_feedback_id) {
   TRACE_EVENT0("video", "VideoCaptureDeviceClient::OnIncomingCapturedData");
   DCHECK_EQ(media::PIXEL_STORAGE_CPU, frame_format.pixel_storage);
 
@@ -115,7 +121,7 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   if (frame_format.pixel_format == media::PIXEL_FORMAT_Y16) {
     return OnIncomingCapturedY16Data(data, length, frame_format, reference_time,
-                                     timestamp);
+                                     timestamp, frame_feedback_id);
   }
 
   // |chopped_{width,height} and |new_unrotated_{width,height}| are the lowest
@@ -142,9 +148,9 @@ void VideoCaptureDeviceClient::OnIncomingCapturedData(
 
   const gfx::Size dimensions(destination_width, destination_height);
   uint8_t *y_plane_data, *u_plane_data, *v_plane_data;
-  std::unique_ptr<Buffer> buffer(
-      ReserveI420OutputBuffer(dimensions, media::PIXEL_STORAGE_CPU,
-                              &y_plane_data, &u_plane_data, &v_plane_data));
+  std::unique_ptr<Buffer> buffer(ReserveI420OutputBuffer(
+      dimensions, media::PIXEL_STORAGE_CPU, frame_feedback_id, &y_plane_data,
+      &u_plane_data, &v_plane_data));
 #if DCHECK_IS_ON()
   dropped_frame_counter_ = buffer.get() ? 0 : dropped_frame_counter_ + 1;
   if (dropped_frame_counter_ >= kMaxDroppedFrames)
@@ -266,7 +272,8 @@ std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveOutputBuffer(
     const gfx::Size& frame_size,
     media::VideoPixelFormat pixel_format,
-    media::VideoPixelStorage pixel_storage) {
+    media::VideoPixelStorage pixel_storage,
+    int frame_feedback_id) {
   DCHECK_GT(frame_size.width(), 0);
   DCHECK_GT(frame_size.height(), 0);
   DCHECK(IsFormatSupported(pixel_format));
@@ -274,14 +281,15 @@ VideoCaptureDeviceClient::ReserveOutputBuffer(
   // TODO(mcasas): For PIXEL_STORAGE_GPUMEMORYBUFFER, find a way to indicate if
   // it's a ShMem GMB or a DmaBuf GMB.
   int buffer_id_to_drop = VideoCaptureBufferPool::kInvalidId;
-  const int buffer_id = buffer_pool_->ReserveForProducer(
-      frame_size, pixel_format, pixel_storage, &buffer_id_to_drop);
+  const int buffer_id =
+      buffer_pool_->ReserveForProducer(frame_size, pixel_format, pixel_storage,
+                                       frame_feedback_id, &buffer_id_to_drop);
   if (buffer_id_to_drop != VideoCaptureBufferPool::kInvalidId)
     receiver_->OnBufferDestroyed(buffer_id_to_drop);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return nullptr;
   return base::WrapUnique<Buffer>(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id));
+      new AutoReleaseBuffer(buffer_pool_, buffer_id, frame_feedback_id));
 }
 
 void VideoCaptureDeviceClient::OnIncomingCapturedBuffer(
@@ -324,13 +332,14 @@ std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ResurrectLastOutputBuffer(
     const gfx::Size& dimensions,
     media::VideoPixelFormat format,
-    media::VideoPixelStorage storage) {
+    media::VideoPixelStorage storage,
+    int new_frame_feedback_id) {
   const int buffer_id =
       buffer_pool_->ResurrectLastForProducer(dimensions, format, storage);
   if (buffer_id == VideoCaptureBufferPool::kInvalidId)
     return nullptr;
   return base::WrapUnique<Buffer>(
-      new AutoReleaseBuffer(buffer_pool_, buffer_id));
+      new AutoReleaseBuffer(buffer_pool_, buffer_id, new_frame_feedback_id));
 }
 
 void VideoCaptureDeviceClient::OnError(
@@ -358,6 +367,7 @@ std::unique_ptr<media::VideoCaptureDevice::Client::Buffer>
 VideoCaptureDeviceClient::ReserveI420OutputBuffer(
     const gfx::Size& dimensions,
     media::VideoPixelStorage storage,
+    int frame_feedback_id,
     uint8_t** y_plane_data,
     uint8_t** u_plane_data,
     uint8_t** v_plane_data) {
@@ -366,8 +376,8 @@ VideoCaptureDeviceClient::ReserveI420OutputBuffer(
   DCHECK(dimensions.width());
 
   const media::VideoPixelFormat format = media::PIXEL_FORMAT_I420;
-  std::unique_ptr<Buffer> buffer(
-      ReserveOutputBuffer(dimensions, media::PIXEL_FORMAT_I420, storage));
+  std::unique_ptr<Buffer> buffer(ReserveOutputBuffer(
+      dimensions, media::PIXEL_FORMAT_I420, storage, frame_feedback_id));
   if (!buffer)
     return std::unique_ptr<Buffer>();
   // TODO(emircan): See http://crbug.com/521068, move this pointer
@@ -387,10 +397,11 @@ void VideoCaptureDeviceClient::OnIncomingCapturedY16Data(
     int length,
     const VideoCaptureFormat& frame_format,
     base::TimeTicks reference_time,
-    base::TimeDelta timestamp) {
-  std::unique_ptr<Buffer> buffer(ReserveOutputBuffer(frame_format.frame_size,
-                                                     media::PIXEL_FORMAT_Y16,
-                                                     media::PIXEL_STORAGE_CPU));
+    base::TimeDelta timestamp,
+    int frame_feedback_id) {
+  std::unique_ptr<Buffer> buffer(
+      ReserveOutputBuffer(frame_format.frame_size, media::PIXEL_FORMAT_Y16,
+                          media::PIXEL_STORAGE_CPU, frame_feedback_id));
   // The input |length| can be greater than the required buffer size because of
   // paddings and/or alignments, but it cannot be smaller.
   DCHECK_GE(static_cast<size_t>(length), frame_format.ImageAllocationSize());

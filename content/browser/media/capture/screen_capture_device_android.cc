@@ -31,4 +31,10 @@ void ScreenCaptureDeviceAndroid::StopAndDeAllocate() {
 void ScreenCaptureDeviceAndroid::RequestRefreshFrame() {
   core_.RequestRefreshFrame();
 }
+
+void ScreenCaptureDeviceAndroid::OnUtilizationReport(int frame_feedback_id,
+                                                     double utilization) {
+  core_.OnConsumerReportingUtilization(frame_feedback_id, utilization);
+}
+
 }  // namespace content

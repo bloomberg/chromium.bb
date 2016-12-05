@@ -55,13 +55,14 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                               const media::VideoCaptureFormat& frame_format,
                               int rotation,
                               base::TimeTicks reference_time,
-                              base::TimeDelta timestamp) override;
-  std::unique_ptr<Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override;
+                              base::TimeDelta timestamp,
+                              int frame_feedback_id = 0) override;
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override;
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
-                                const media::VideoCaptureFormat& frame_format,
+                                const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override;
   void OnIncomingCapturedVideoFrame(
@@ -70,7 +71,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override;
+      media::VideoPixelStorage storage,
+      int new_frame_feedback_id) override;
   void OnError(const tracked_objects::Location& from_here,
                const std::string& reason) override;
   void OnLog(const std::string& message) override;
@@ -90,6 +92,7 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
   std::unique_ptr<Buffer> ReserveI420OutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelStorage storage,
+      int frame_feedback_id,
       uint8_t** y_plane_data,
       uint8_t** u_plane_data,
       uint8_t** v_plane_data);
@@ -99,7 +102,8 @@ class CAPTURE_EXPORT VideoCaptureDeviceClient
                                  int length,
                                  const VideoCaptureFormat& frame_format,
                                  base::TimeTicks reference_time,
-                                 base::TimeDelta timestamp);
+                                 base::TimeDelta timestamp,
+                                 int frame_feedback_id);
 
   // The receiver to which we post events.
   const std::unique_ptr<VideoFrameReceiver> receiver_;

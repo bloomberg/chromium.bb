@@ -41,7 +41,35 @@ class Location;
 
 namespace media {
 
-class CAPTURE_EXPORT VideoCaptureDevice {
+class CAPTURE_EXPORT VideoFrameConsumerFeedbackObserver {
+ public:
+  virtual ~VideoFrameConsumerFeedbackObserver() {}
+
+  // During processing of a video frame, consumers may report back their
+  // utilization level to the source device. The device may use this information
+  // to adjust the rate of data it pushes out. Values are interpreted as
+  // follows:
+  // Less than 0.0 is meaningless and should be ignored.  1.0 indicates a
+  // maximum sustainable utilization.  Greater than 1.0 indicates the consumer
+  // is likely to stall or drop frames if the data volume is not reduced.
+  //
+  // Example: In a system that encodes and transmits video frames over the
+  // network, this value can be used to indicate whether sufficient CPU
+  // is available for encoding and/or sufficient bandwidth is available for
+  // transmission over the network.  The maximum of the two utilization
+  // measurements would be used as feedback.
+  //
+  // The parameter |frame_feedback_id| must match a |frame_feedback_id|
+  // previously sent out by the VideoCaptureDevice we are giving feedback about.
+  // It is used to indicate which particular frame the reported utilization
+  // corresponds to.
+  virtual void OnUtilizationReport(int frame_feedback_id, double utilization) {}
+
+  static constexpr double kNoUtilizationRecorded = -1.0;
+};
+
+class CAPTURE_EXPORT VideoCaptureDevice
+    : public VideoFrameConsumerFeedbackObserver {
  public:
 
   // Interface defining the methods that clients of VideoCapture must have. It
@@ -55,6 +83,7 @@ class CAPTURE_EXPORT VideoCaptureDevice {
      public:
       virtual ~Buffer() = 0;
       virtual int id() const = 0;
+      virtual int frame_feedback_id() const = 0;
       virtual gfx::Size dimensions() const = 0;
       virtual size_t mapped_size() const = 0;
       virtual void* data(int plane) = 0;
@@ -80,12 +109,18 @@ class CAPTURE_EXPORT VideoCaptureDevice {
     // first frame in the stream and the current frame; however, the time source
     // is determined by the platform's device driver and is often not the system
     // clock, or even has a drift with respect to system clock.
+    // |frame_feedback_id| is an identifier that allows clients to refer back to
+    // this particular frame when reporting consumer feedback via
+    // OnConsumerReportingUtilization(). This identifier is needed because
+    // frames are consumed asynchronously and multiple frames can be "in flight"
+    // at the same time.
     virtual void OnIncomingCapturedData(const uint8_t* data,
                                         int length,
                                         const VideoCaptureFormat& frame_format,
                                         int clockwise_rotation,
                                         base::TimeTicks reference_time,
-                                        base::TimeDelta timestamp) = 0;
+                                        base::TimeDelta timestamp,
+                                        int frame_feedback_id = 0) = 0;
 
     // Reserve an output buffer into which contents can be captured directly.
     // The returned Buffer will always be allocated with a memory size suitable
@@ -100,7 +135,8 @@ class CAPTURE_EXPORT VideoCaptureDevice {
     virtual std::unique_ptr<Buffer> ReserveOutputBuffer(
         const gfx::Size& dimensions,
         VideoPixelFormat format,
-        VideoPixelStorage storage) = 0;
+        VideoPixelStorage storage,
+        int frame_feedback_id) = 0;
 
     // Captured new video data, held in |frame| or |buffer|, respectively for
     // OnIncomingCapturedVideoFrame() and  OnIncomingCapturedBuffer().
@@ -129,7 +165,8 @@ class CAPTURE_EXPORT VideoCaptureDevice {
     virtual std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
         const gfx::Size& dimensions,
         VideoPixelFormat format,
-        VideoPixelStorage storage) = 0;
+        VideoPixelStorage storage,
+        int new_frame_feedback_id) = 0;
 
     // An error has occurred that cannot be handled and VideoCaptureDevice must
     // be StopAndDeAllocate()-ed. |reason| is a text description of the error.
@@ -144,7 +181,7 @@ class CAPTURE_EXPORT VideoCaptureDevice {
     virtual double GetBufferPoolUtilization() const = 0;
   };
 
-  virtual ~VideoCaptureDevice();
+  ~VideoCaptureDevice() override;
 
   // Prepares the video capturer for use. StopAndDeAllocate() must be called
   // before the object is deleted.

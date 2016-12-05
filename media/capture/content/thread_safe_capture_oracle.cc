@@ -81,6 +81,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       return false;
     }
 
+    frame_number = oracle_.next_frame_number();
     visible_size = oracle_.capture_size();
     // TODO(miu): Clients should request exact padding, instead of this
     // memory-wasting hack to make frames that are compatible with all HW
@@ -91,7 +92,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     if (event == VideoCaptureOracle::kPassiveRefreshRequest) {
       output_buffer = client_->ResurrectLastOutputBuffer(
           coded_size, params_.requested_format.pixel_format,
-          params_.requested_format.pixel_storage);
+          params_.requested_format.pixel_storage, frame_number);
       if (!output_buffer) {
         TRACE_EVENT_INSTANT0("gpu.capture", "ResurrectionFailed",
                              TRACE_EVENT_SCOPE_THREAD);
@@ -100,7 +101,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
     } else {
       output_buffer = client_->ReserveOutputBuffer(
           coded_size, params_.requested_format.pixel_format,
-          params_.requested_format.pixel_storage);
+          params_.requested_format.pixel_storage, frame_number);
     }
 
     // Get the current buffer pool utilization and attenuate it: The utilization
@@ -118,7 +119,7 @@ bool ThreadSafeCaptureOracle::ObserveEventAndDecideCapture(
       return false;
     }
 
-    frame_number = oracle_.RecordCapture(attenuated_utilization);
+    oracle_.RecordCapture(attenuated_utilization);
     estimated_frame_duration = oracle_.estimated_frame_duration();
   }  // End of critical section.
 
@@ -228,25 +229,15 @@ void ThreadSafeCaptureOracle::DidCaptureFrame(
     frame->metadata()->SetTimeTicks(VideoFrameMetadata::REFERENCE_TIME,
                                     reference_time);
 
-    frame->AddDestructionObserver(
-        base::Bind(&ThreadSafeCaptureOracle::DidConsumeFrame, this,
-                   frame_number, frame->metadata()));
-
     client_->OnIncomingCapturedVideoFrame(std::move(buffer), std::move(frame));
   }
 }
 
-void ThreadSafeCaptureOracle::DidConsumeFrame(
+void ThreadSafeCaptureOracle::OnConsumerReportingUtilization(
     int frame_number,
-    const media::VideoFrameMetadata* metadata) {
-  // Note: This function may be called on any thread by the VideoFrame
-  // destructor.  |metadata| is still valid for read-access at this point.
-  double utilization = -1.0;
-  if (metadata->GetDouble(media::VideoFrameMetadata::RESOURCE_UTILIZATION,
-                          &utilization)) {
-    base::AutoLock guard(lock_);
-    oracle_.RecordConsumerFeedback(frame_number, utilization);
-  }
+    double utilization) {
+  base::AutoLock guard(lock_);
+  oracle_.RecordConsumerFeedback(frame_number, utilization);
 }
 
 }  // namespace media

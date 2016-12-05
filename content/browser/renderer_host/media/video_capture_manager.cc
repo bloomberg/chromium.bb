@@ -47,6 +47,27 @@
 
 namespace {
 
+class VideoFrameConsumerFeedbackObserverOnTaskRunner
+    : public media::VideoFrameConsumerFeedbackObserver {
+ public:
+  VideoFrameConsumerFeedbackObserverOnTaskRunner(
+      media::VideoFrameConsumerFeedbackObserver* observer,
+      scoped_refptr<base::SingleThreadTaskRunner> task_runner)
+      : observer_(observer), task_runner_(std::move(task_runner)) {}
+
+  void OnUtilizationReport(int frame_feedback_id, double utilization) override {
+    task_runner_->PostTask(
+        FROM_HERE,
+        base::Bind(
+            &media::VideoFrameConsumerFeedbackObserver::OnUtilizationReport,
+            base::Unretained(observer_), frame_feedback_id, utilization));
+  }
+
+ private:
+  media::VideoFrameConsumerFeedbackObserver* const observer_;
+  const scoped_refptr<base::SingleThreadTaskRunner> task_runner_;
+};
+
 // Compares two VideoCaptureFormat by checking smallest frame_size area, then
 // by _largest_ frame_rate. Used to order a VideoCaptureFormats vector so that
 // the first entry for a given resolution has the largest frame rate, as needed
@@ -126,9 +147,17 @@ const media::VideoCaptureSessionId kFakeSessionId = -1;
 
 namespace content {
 
-// This class owns a pair VideoCaptureDevice - VideoCaptureController.
-// VideoCaptureManager owns all such pairs and is responsible for deleting the
-// instances when they are not used any longer.
+// Instances of this struct go through 3 different phases during their lifetime.
+// Phase 1: When first created (in GetOrCreateDeviceEntry()), this consists of
+// only a controller. Clients can already connect to the controller, but there
+// is no device present.
+// Phase 2: When a request to "start" the entry comes in (via
+// HandleQueuedStartRequest()), a VideoCaptureDevice::Client is created
+// via video_capture_controller()->NewDeviceClient() and is used to schedule the
+// creation and start of a VideoCaptureDevice on the Device Thread.
+// Phase 3: As soon as the creation of the VideoCaptureDevice is complete, this
+// newly created VideoCaptureDevice instance is connected to the
+// VideoCaptureController via SetConsumerFeedbackObserver().
 class VideoCaptureManager::DeviceEntry {
  public:
   DeviceEntry(MediaStreamType stream_type,
@@ -406,9 +435,11 @@ void VideoCaptureManager::DoStopDevice(DeviceEntry* entry) {
            << " serial_id = " << entry->serial_id << ".";
   entry->video_capture_controller()->OnLog(
       base::StringPrintf("Stopping device: id: %s", entry->id.c_str()));
+  entry->video_capture_controller()->SetConsumerFeedbackObserver(nullptr);
 
+  // |entry->video_capture_device| can be null if creating the device has
+  // failed.
   if (entry->video_capture_device()) {
-    // |entry->video_capture_device| can be null if creating the device fails.
     device_task_runner_->PostTask(
         FROM_HERE,
         base::Bind(&VideoCaptureManager::DoStopDeviceOnDeviceThread, this,
@@ -504,9 +535,9 @@ void VideoCaptureManager::OnDeviceStarted(
   DVLOG(3) << __func__;
   DCHECK_CURRENTLY_ON(BrowserThread::IO);
   DCHECK_EQ(serial_id, device_start_queue_.begin()->serial_id());
+  // |device| can be null if creation failed in
+  //  DoStartDeviceCaptureOnDeviceThread.
   if (device_start_queue_.front().abort_start()) {
-    // |device| can be null if creation failed in
-    // DoStartDeviceCaptureOnDeviceThread.
     // The device is no longer wanted. Stop the device again.
     DVLOG(3) << "OnDeviceStarted but start request have been aborted.";
     media::VideoCaptureDevice* device_ptr = device.get();
@@ -521,6 +552,13 @@ void VideoCaptureManager::OnDeviceStarted(
     DeviceEntry* const entry = GetDeviceEntryBySerialId(serial_id);
     DCHECK(entry);
     DCHECK(!entry->video_capture_device());
+    // Passing raw pointer |device.get()| to the controller is safe,
+    // because we transfer ownership of it to |entry|. We are calling
+    // SetConsumerFeedbackObserver(nullptr) before releasing
+    // |entry->video_capture_device_| on the |device_task_runner_|.
+    entry->video_capture_controller()->SetConsumerFeedbackObserver(
+        base::MakeUnique<VideoFrameConsumerFeedbackObserverOnTaskRunner>(
+            device.get(), device_task_runner_));
     entry->SetVideoCaptureDevice(std::move(device));
 
     if (entry->stream_type == MEDIA_DESKTOP_VIDEO_CAPTURE) {

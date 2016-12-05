@@ -74,4 +74,9 @@ void DesktopCaptureDeviceAura::StopAndDeAllocate() {
   core_->StopAndDeAllocate();
 }
 
+void DesktopCaptureDeviceAura::OnUtilizationReport(int frame_feedback_id,
+                                                   double utilization) {
+  core_->OnConsumerReportingUtilization(frame_feedback_id, utilization);
+}
+
 }  // namespace content

@@ -32,6 +32,7 @@ class CONTENT_EXPORT DesktopCaptureDeviceAura
                         std::unique_ptr<Client> client) override;
   void RequestRefreshFrame() override;
   void StopAndDeAllocate() override;
+  void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
   explicit DesktopCaptureDeviceAura(const DesktopMediaID& source);

@@ -113,23 +113,24 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
                               const VideoCaptureFormat& format,
                               int rotation,
                               base::TimeTicks reference_time,
-                              base::TimeDelta timestamp) override {
+                              base::TimeDelta timestamp,
+                              int frame_feedback_id) override {
     ASSERT_GT(length, 0);
     ASSERT_TRUE(data);
     main_thread_->PostTask(FROM_HERE, base::Bind(frame_cb_, format));
   }
 
   // Trampoline methods to workaround GMOCK problems with std::unique_ptr<>.
-  std::unique_ptr<Buffer> ReserveOutputBuffer(
-      const gfx::Size& dimensions,
-      media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) override {
+  std::unique_ptr<Buffer> ReserveOutputBuffer(const gfx::Size& dimensions,
+                                              media::VideoPixelFormat format,
+                                              media::VideoPixelStorage storage,
+                                              int frame_feedback_id) override {
     DoReserveOutputBuffer();
     NOTREACHED() << "This should never be called";
     return std::unique_ptr<Buffer>();
   }
   void OnIncomingCapturedBuffer(std::unique_ptr<Buffer> buffer,
-                                const VideoCaptureFormat& frame_format,
+                                const VideoCaptureFormat& format,
                                 base::TimeTicks reference_time,
                                 base::TimeDelta timestamp) override {
     DoOnIncomingCapturedBuffer();
@@ -141,7 +142,8 @@ class MockVideoCaptureClient : public VideoCaptureDevice::Client {
   std::unique_ptr<Buffer> ResurrectLastOutputBuffer(
       const gfx::Size& dimensions,
       media::VideoPixelFormat format,
-      media::VideoPixelStorage storage) {
+      media::VideoPixelStorage storage,
+      int frame_feedback_id) {
     DoResurrectLastOutputBuffer();
     NOTREACHED() << "This should never be called";
     return std::unique_ptr<Buffer>();

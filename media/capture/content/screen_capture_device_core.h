@@ -89,6 +89,8 @@ class CAPTURE_EXPORT ScreenCaptureDeviceCore
   void Suspend();
   void Resume();
   void StopAndDeAllocate();
+  void OnConsumerReportingUtilization(int frame_feedback_id,
+                                      double utilization);
 
  private:
   // Flag indicating current state.

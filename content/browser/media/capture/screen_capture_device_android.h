@@ -27,6 +27,7 @@ class CONTENT_EXPORT ScreenCaptureDeviceAndroid
                         std::unique_ptr<Client> client) override;
   void StopAndDeAllocate() override;
   void RequestRefreshFrame() override;
+  void OnUtilizationReport(int frame_feedback_id, double utilization) override;
 
  private:
   media::ScreenCaptureDeviceCore core_;

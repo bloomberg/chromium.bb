@@ -319,10 +319,11 @@ void FakeVideoCaptureDevice::CaptureUsingClientBuffers(
     base::TimeTicks expected_execution_time) {
   DCHECK(thread_checker_.CalledOnValidThread());
 
+  const int arbitrary_frame_feedback_id = 0;
   std::unique_ptr<VideoCaptureDevice::Client::Buffer> capture_buffer(
-      client_->ReserveOutputBuffer(capture_format_.frame_size,
-                                   capture_format_.pixel_format,
-                                   capture_format_.pixel_storage));
+      client_->ReserveOutputBuffer(
+          capture_format_.frame_size, capture_format_.pixel_format,
+          capture_format_.pixel_storage, arbitrary_frame_feedback_id));
   DLOG_IF(ERROR, !capture_buffer) << "Couldn't allocate Capture Buffer";
   DCHECK(capture_buffer->data()) << "Buffer has NO backing memory";
 

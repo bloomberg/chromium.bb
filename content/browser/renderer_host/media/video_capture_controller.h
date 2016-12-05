@@ -72,6 +72,14 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
 
   base::WeakPtr<VideoCaptureController> GetWeakPtrForIOThread();
 
+  // Factory code creating instances of VideoCaptureController may optionally
+  // set a VideoFrameConsumerFeedbackObserver. Setting the observer is done in
+  // this method separate from the constructor to allow clients to create and
+  // use instances before they can provide the observer. (This is the case with
+  // VideoCaptureManager).
+  void SetConsumerFeedbackObserver(
+      std::unique_ptr<media::VideoFrameConsumerFeedbackObserver> observer);
+
   // Return a new VideoCaptureDeviceClient to forward capture events to this
   // instance.
   std::unique_ptr<media::VideoCaptureDevice::Client> NewDeviceClient();
@@ -139,6 +147,33 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
   struct ControllerClient;
   typedef std::list<std::unique_ptr<ControllerClient>> ControllerClients;
 
+  class BufferState {
+   public:
+    explicit BufferState(
+        int buffer_id,
+        int frame_feedback_id,
+        media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer,
+        scoped_refptr<media::VideoCaptureBufferPool> buffer_pool,
+        scoped_refptr<media::VideoFrame> frame);
+    ~BufferState();
+    BufferState(const BufferState& other);
+    void RecordConsumerUtilization(double utilization);
+    void IncreaseConsumerCount();
+    void DecreaseConsumerCount();
+    bool HasZeroConsumerHoldCount();
+    void SetConsumerFeedbackObserver(
+        media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer);
+
+   private:
+    const int buffer_id_;
+    const int frame_feedback_id_;
+    media::VideoFrameConsumerFeedbackObserver* consumer_feedback_observer_;
+    const scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
+    const scoped_refptr<media::VideoFrame> frame_;
+    double max_consumer_utilization_;
+    int consumer_hold_count_;
+  };
+
   // Notify renderer that a new buffer has been created.
   void DoNewBufferOnIOThread(ControllerClient* client,
                              media::VideoCaptureDevice::Client::Buffer* buffer,
@@ -155,6 +190,11 @@ class CONTENT_EXPORT VideoCaptureController : public media::VideoFrameReceiver {
 
   // The pool of shared-memory buffers used for capturing.
   const scoped_refptr<media::VideoCaptureBufferPool> buffer_pool_;
+
+  std::unique_ptr<media::VideoFrameConsumerFeedbackObserver>
+      consumer_feedback_observer_;
+
+  std::map<int, BufferState> buffer_id_to_state_map_;
 
   // All clients served by this controller.
   ControllerClients controller_clients_;

@@ -90,9 +90,11 @@ class VideoCaptureBufferPoolTest
                     format_and_storage.pixel_storage) << " "
              << media::VideoPixelFormatToString(format_and_storage.pixel_format)
              << " " << dimensions.ToString();
+    const int arbitrary_frame_feedback_id = 0;
     const int buffer_id = pool_->ReserveForProducer(
         dimensions, format_and_storage.pixel_format,
-        format_and_storage.pixel_storage, &buffer_id_to_drop);
+        format_and_storage.pixel_storage, arbitrary_frame_feedback_id,
+        &buffer_id_to_drop);
     if (buffer_id == media::VideoCaptureBufferPool::kInvalidId)
       return std::unique_ptr<Buffer>();
     EXPECT_EQ(expected_dropped_id_, buffer_id_to_drop);
