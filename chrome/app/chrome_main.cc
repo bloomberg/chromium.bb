@@ -46,14 +46,6 @@ DLLEXPORT int __cdecl ChromeMain(HINSTANCE instance,
 int ChromeMain(int argc, const char** argv) {
   int64_t exe_entry_point_ticks = 0;
 #endif
-#if defined(OS_WIN) && defined(ARCH_CPU_X86_64)
-  // VS2013 only checks the existence of FMA3 instructions, not the enabled-ness
-  // of them at the OS level (this is fixed in VS2015). We force off usage of
-  // FMA3 instructions in the CRT to avoid using that path and hitting illegal
-  // instructions when running on CPUs that support FMA3, but OSs that don't.
-  // See http://crbug.com/436603.
-  _set_FMA3_enable(0);
-#endif  // WIN && ARCH_CPU_X86_64
 
 #if defined(OS_WIN)
   install_static::InstallDetails::InitializeFromPrimaryModule(
