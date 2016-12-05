@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL getContext('2d') returns objects which share canvas state offscreenCanvas2 is not defined
-Harness: the test ran to completion.
-

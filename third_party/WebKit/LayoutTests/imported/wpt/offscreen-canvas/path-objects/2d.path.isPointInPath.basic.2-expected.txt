@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL isPointInPath() detects whether the point is inside the path ctx.isPointInPath is not a function
-Harness: the test ran to completion.
-

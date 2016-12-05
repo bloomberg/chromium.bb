@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL canvas is readonly assert_not_equals: offscreenCanvas !== d (got [object OffscreenCanvas][object], expected not [object OffscreenCanvas][object]) got disallowed value object "[object OffscreenCanvas]"
-Harness: the test ran to completion.
-

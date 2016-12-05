@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL getContext with empty string returns null Failed to execute 'getContext' on 'OffscreenCanvas': The provided value '' is not a valid enum value of type OffscreenRenderingContextType.
-Harness: the test ran to completion.
-

@@ -1,4 +1,0 @@
-This is a testharness.js-based test.
-FAIL Getting/setting width/height IDL attributes Failed to set the 'width' property on 'OffscreenCanvas': Value is outside the 'unsigned long' value range.
-Harness: the test ran to completion.
-
