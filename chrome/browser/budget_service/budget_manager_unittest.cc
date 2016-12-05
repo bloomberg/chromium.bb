@@ -7,6 +7,7 @@
 
 #include "base/memory/ptr_util.h"
 #include "base/run_loop.h"
+#include "base/test/histogram_tester.h"
 #include "chrome/browser/budget_service/budget_manager.h"
 #include "chrome/browser/budget_service/budget_manager_factory.h"
 #include "chrome/browser/engagement/site_engagement_service.h"
@@ -44,6 +45,17 @@ class BudgetManagerTest : public testing::Test {
   const url::Origin origin() const { return origin_; }
   void SetOrigin(const url::Origin& origin) { origin_ = origin; }
 
+  void GetBudgetCallback(base::Closure run_loop_closure,
+                         blink::mojom::BudgetServiceErrorType error,
+                         std::vector<blink::mojom::BudgetStatePtr> budget) {
+    // The BudgetDatabaseTest class tests all of the budget values returned.
+    // This is just checking that the UMA records correctly, so no need to keep
+    // track of the budget value.
+    success_ = (error == blink::mojom::BudgetServiceErrorType::NONE);
+    error_ = error;
+    run_loop_closure.Run();
+  }
+
   void ReserveCallback(base::Closure run_loop_closure,
                        blink::mojom::BudgetServiceErrorType error,
                        bool success) {
@@ -52,9 +64,18 @@ class BudgetManagerTest : public testing::Test {
     run_loop_closure.Run();
   }
 
-  void StatusCallback(base::Closure run_loop_closure, bool success) {
+  void ConsumeCallback(base::Closure run_loop_closure, bool success) {
     success_ = success;
     run_loop_closure.Run();
+  }
+
+  bool GetBudget() {
+    base::RunLoop run_loop;
+    GetManager()->GetBudget(
+        origin(), base::Bind(&BudgetManagerTest::GetBudgetCallback,
+                             base::Unretained(this), run_loop.QuitClosure()));
+    run_loop.Run();
+    return success_;
   }
 
   bool ReserveBudget(blink::mojom::BudgetOperationType type) {
@@ -71,7 +92,7 @@ class BudgetManagerTest : public testing::Test {
     base::RunLoop run_loop;
     GetManager()->Consume(
         origin(), type,
-        base::Bind(&BudgetManagerTest::StatusCallback, base::Unretained(this),
+        base::Bind(&BudgetManagerTest::ConsumeCallback, base::Unretained(this),
                    run_loop.QuitClosure()));
     run_loop.Run();
     return success_;
@@ -81,10 +102,16 @@ class BudgetManagerTest : public testing::Test {
   bool success_;
   blink::mojom::BudgetServiceErrorType error_;
 
+ protected:
+  base::HistogramTester* histogram_tester() { return &histogram_tester_; }
+
  private:
   content::TestBrowserThreadBundle thread_bundle_;
   TestingProfile profile_;
+  base::HistogramTester histogram_tester_;
   url::Origin origin_;
+
+  DISALLOW_COPY_AND_ASSIGN(BudgetManagerTest);
 };
 
 TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
@@ -96,10 +123,13 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
 
   // Spend for 24 silent push messages. This should consume all the original
   // budget grant.
-  for (int i = 0; i < 24; i++)
+  for (int i = 0; i < 24; i++) {
+    ASSERT_TRUE(GetBudget());
     ASSERT_TRUE(ReserveBudget(type));
+  }
 
   // Try to send one final silent push. The origin should be out of budget.
+  ASSERT_TRUE(GetBudget());
   ASSERT_FALSE(ReserveBudget(type));
 
   // Try to consume for the 24 messages reserved.
@@ -109,6 +139,27 @@ TEST_F(BudgetManagerTest, GetBudgetConsumedOverTime) {
   // The next consume should fail, since there is no reservation or budget
   // available.
   ASSERT_FALSE(ConsumeBudget(type));
+
+  // Check the the UMA recorded for the Reserve calls matches the operations
+  // that were executed.
+  std::vector<base::Bucket> buckets =
+      histogram_tester()->GetAllSamples("Blink.BudgetAPI.Reserve");
+  ASSERT_EQ(2U, buckets.size());
+  // 1 failed reserve call.
+  EXPECT_EQ(0, buckets[0].min);
+  EXPECT_EQ(1, buckets[0].count);
+  // 24 successful reserve calls.
+  EXPECT_EQ(1, buckets[1].min);
+  EXPECT_EQ(24, buckets[1].count);
+
+  // Check that the UMA recorded for the GetBudget calls matches the operations
+  // that were executed.
+  buckets = histogram_tester()->GetAllSamples("Blink.BudgetAPI.QueryBudget");
+
+  int num_samples = 0;
+  for (const base::Bucket& bucket : buckets)
+    num_samples += bucket.count;
+  EXPECT_EQ(25, num_samples);
 }
 
 TEST_F(BudgetManagerTest, TestInsecureOrigin) {

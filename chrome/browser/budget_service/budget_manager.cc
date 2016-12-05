@@ -74,7 +74,9 @@ void BudgetManager::GetBudget(const url::Origin& origin,
                  std::vector<blink::mojom::BudgetStatePtr>());
     return;
   }
-  db_.GetBudgetDetails(origin, callback);
+  db_.GetBudgetDetails(origin,
+                       base::Bind(&BudgetManager::DidGetBudget,
+                                  weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
 void BudgetManager::Reserve(const url::Origin& origin,
@@ -122,6 +124,20 @@ void BudgetManager::Consume(const url::Origin& origin,
                              weak_ptr_factory_.GetWeakPtr(), callback));
 }
 
+void BudgetManager::DidGetBudget(
+    const GetBudgetCallback& callback,
+    const blink::mojom::BudgetServiceErrorType error,
+    std::vector<blink::mojom::BudgetStatePtr> budget) {
+  // If there was an error, just record a budget of 0, so the API query is still
+  // counted.
+  double budget_at = 0;
+  if (error == blink::mojom::BudgetServiceErrorType::NONE)
+    budget_at = budget[0]->budget_at;
+  UMA_HISTOGRAM_COUNTS_100("Blink.BudgetAPI.QueryBudget", budget_at);
+
+  callback.Run(error, std::move(budget));
+}
+
 void BudgetManager::DidConsume(const ConsumeCallback& callback,
                                blink::mojom::BudgetServiceErrorType error,
                                bool success) {
@@ -141,6 +157,8 @@ void BudgetManager::DidReserve(const url::Origin& origin,
   // If the call succeeded, write the new reservation into the map.
   if (success && error == blink::mojom::BudgetServiceErrorType::NONE)
     reservation_map_[origin]++;
+
+  UMA_HISTOGRAM_BOOLEAN("Blink.BudgetAPI.Reserve", success);
 
   callback.Run(error, success);
 }
