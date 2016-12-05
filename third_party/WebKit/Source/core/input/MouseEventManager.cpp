@@ -732,8 +732,13 @@ WebInputEventResult MouseEventManager::handleMouseDraggedEvent(
 
   m_mouseDownMayStartDrag = false;
 
+  m_frame->eventHandler().selectionController().handleMouseDraggedEvent(
+      event, m_mouseDownPos, m_dragStartPos, m_mousePressNode.get(),
+      m_lastKnownMousePosition);
+
   if (m_mouseDownMayStartAutoscroll &&
-      !m_scrollManager->middleClickAutoscrollInProgress()) {
+      !m_scrollManager->middleClickAutoscrollInProgress() &&
+      !m_frame->selection().selectedHTMLForClipboard().isEmpty()) {
     if (AutoscrollController* controller =
             m_scrollManager->autoscrollController()) {
       controller->startAutoscrollForSelection(layoutObject);
@@ -741,9 +746,6 @@ WebInputEventResult MouseEventManager::handleMouseDraggedEvent(
     }
   }
 
-  m_frame->eventHandler().selectionController().handleMouseDraggedEvent(
-      event, m_mouseDownPos, m_dragStartPos, m_mousePressNode.get(),
-      m_lastKnownMousePosition);
   return WebInputEventResult::HandledSystem;
 }
 
