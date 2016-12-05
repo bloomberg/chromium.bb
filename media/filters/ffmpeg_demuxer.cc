@@ -275,6 +275,7 @@ FFmpegDemuxerStream::FFmpegDemuxerStream(
       video_rotation_(VIDEO_ROTATION_0),
       is_enabled_(true),
       waiting_for_keyframe_(false),
+      aborted_(false),
       fixup_negative_timestamps_(false) {
   DCHECK(demuxer_);
 
@@ -591,9 +592,11 @@ void FFmpegDemuxerStream::FlushBuffers() {
   end_of_stream_ = false;
   last_packet_timestamp_ = kNoTimestamp;
   last_packet_duration_ = kNoTimestamp;
+  aborted_ = false;
 }
 
 void FFmpegDemuxerStream::Abort() {
+  aborted_ = true;
   if (!read_cb_.is_null())
     base::ResetAndReturn(&read_cb_).Run(DemuxerStream::kAborted, nullptr);
 }
@@ -638,6 +641,11 @@ void FFmpegDemuxerStream::Read(const ReadCB& read_cb) {
   if (!is_enabled_) {
     DVLOG(1) << "Read from disabled stream, returning EOS";
     base::ResetAndReturn(&read_cb_).Run(kOk, DecoderBuffer::CreateEOSBuffer());
+    return;
+  }
+
+  if (aborted_) {
+    base::ResetAndReturn(&read_cb_).Run(kAborted, nullptr);
     return;
   }
 

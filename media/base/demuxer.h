@@ -89,7 +89,8 @@ class MEDIA_EXPORT Demuxer : public DemuxerStreamProvider {
                           bool enable_text_tracks) = 0;
 
   // Aborts any pending read operations that the demuxer is involved with; any
-  // read aborted will be aborted with a status of kAborted.
+  // read aborted will be aborted with a status of kAborted. Future reads will
+  // also be aborted until Seek() is called.
   virtual void AbortPendingReads() = 0;
 
   // Indicates that a new Seek() call is on its way. Implementations may abort

@@ -437,6 +437,10 @@ TEST_F(FFmpegDemuxerTest, AbortPendingReads) {
   demuxer_->AbortPendingReads();
   base::RunLoop().Run();
 
+  // Additional reads should also be aborted (until a Seek()).
+  audio->Read(NewReadCB(FROM_HERE, 29, 0, true, DemuxerStream::kAborted));
+  base::RunLoop().Run();
+
   // Ensure blocking thread has completed outstanding work.
   demuxer_->Stop();
   EXPECT_EQ(format_context()->pb->eof_reached, 0);

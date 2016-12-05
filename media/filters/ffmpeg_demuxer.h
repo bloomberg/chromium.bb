@@ -185,6 +185,7 @@ class FFmpegDemuxerStream : public DemuxerStream {
   VideoRotation video_rotation_;
   bool is_enabled_;
   bool waiting_for_keyframe_;
+  bool aborted_;
 
   DecoderBufferQueue buffer_queue_;
   ReadCB read_cb_;
