@@ -5,6 +5,7 @@
 #include <algorithm>
 
 #include "base/bind.h"
+#include "base/optional.h"
 #include "base/run_loop.h"
 #include "content/child/child_process.h"
 #include "content/renderer/media/webrtc/webrtc_video_capturer_adapter.h"
@@ -62,8 +63,9 @@ class WebRtcVideoCapturerAdapterTest
             gfx::Size(10, 10), gfx::Rect(10, 10), gfx::Size(10, 10),
             base::TimeDelta());
     adapter_.OnFrameCaptured(frame);
+    ASSERT_TRUE(output_frame_);
     rtc::scoped_refptr<webrtc::VideoFrameBuffer> texture_frame =
-        output_frame_.video_frame_buffer();
+        output_frame_->video_frame_buffer();
     EXPECT_EQ(media::VideoFrame::STORAGE_OPAQUE,
               static_cast<media::VideoFrame*>(texture_frame->native_handle())
                   ->storage_type());
@@ -78,7 +80,7 @@ class WebRtcVideoCapturerAdapterTest
 
   // rtc::VideoSinkInterface
   void OnFrame(const webrtc::VideoFrame& frame) override {
-    output_frame_ = frame;
+    output_frame_ = base::Optional<webrtc::VideoFrame>(frame);
     output_frame_width_ = frame.width();
     output_frame_height_ = frame.height();
   }
@@ -88,8 +90,7 @@ class WebRtcVideoCapturerAdapterTest
   const ChildProcess child_process_;
 
   WebRtcVideoCapturerAdapter adapter_;
-  // TODO(nisse): Default constructor is deprecated. Use std::optional?
-  webrtc::VideoFrame output_frame_;
+  base::Optional<webrtc::VideoFrame> output_frame_;
   int output_frame_width_;
   int output_frame_height_;
 };
