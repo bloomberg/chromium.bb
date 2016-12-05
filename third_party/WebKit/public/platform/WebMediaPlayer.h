@@ -105,6 +105,14 @@ class WebMediaPlayer {
   typedef WebString TrackId;
   enum TrackType { TextTrack, AudioTrack, VideoTrack };
 
+  // This must stay in sync with WebGLRenderingContextBase::TexImageFunctionID.
+  enum TexImageFunctionID {
+    TexImage2D,
+    TexSubImage2D,
+    TexImage3D,
+    TexSubImage3D
+  };
+
   virtual ~WebMediaPlayer() {}
 
   virtual void load(LoadType, const WebMediaPlayerSource&, CORSMode) = 0;
@@ -205,6 +213,30 @@ class WebMediaPlayer {
                                                     int yoffset,
                                                     bool premultiplyAlpha,
                                                     bool flipY) {
+    return false;
+  }
+
+  // Do tex(Sub)Image2D/3D for current frame. If it is not implemented for given
+  // parameters or fails, it returns false.
+  // The method is wrapping calls to glTexImage2D, glTexSubImage2D,
+  // glTexImage3D and glTexSubImage3D and parameters have the same name and
+  // meaning.
+  // Texture needs to be created and bound to active texture unit before this
+  // call. In addition, TexSubImage2D and TexSubImage3D require that previous
+  // TexImage2D and TexSubImage3D calls, respectivelly, defined the texture
+  // content.
+  virtual bool texImageImpl(TexImageFunctionID functionID,
+                            unsigned target,
+                            gpu::gles2::GLES2Interface* gl,
+                            int level,
+                            int internalformat,
+                            unsigned format,
+                            unsigned type,
+                            int xoffset,
+                            int yoffset,
+                            int zoffset,
+                            bool flipY,
+                            bool premultiplyAlpha) {
     return false;
   }
 

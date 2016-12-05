@@ -224,6 +224,26 @@ bool HTMLVideoElement::copyVideoTextureToPlatformTexture(
       gl, texture, internalFormat, type, premultiplyAlpha, flipY);
 }
 
+bool HTMLVideoElement::texImageImpl(
+    WebMediaPlayer::TexImageFunctionID functionID,
+    GLenum target,
+    gpu::gles2::GLES2Interface* gl,
+    GLint level,
+    GLint internalformat,
+    GLenum format,
+    GLenum type,
+    GLint xoffset,
+    GLint yoffset,
+    GLint zoffset,
+    bool flipY,
+    bool premultiplyAlpha) {
+  if (!webMediaPlayer())
+    return false;
+  return webMediaPlayer()->texImageImpl(
+      functionID, target, gl, level, internalformat, format, type, xoffset,
+      yoffset, zoffset, flipY, premultiplyAlpha);
+}
+
 bool HTMLVideoElement::hasAvailableVideoFrame() const {
   if (!webMediaPlayer())
     return false;

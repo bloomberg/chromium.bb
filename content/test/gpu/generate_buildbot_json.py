@@ -1115,6 +1115,13 @@ TELEMETRY_GPU_INTEGRATION_TESTS = {
       },
     ]
   },
+  'depth_capture': {
+    'tester_configs': [
+      {
+        'allow_on_android': True,
+      },
+    ]
+  },
   'pixel_test': {
     'target_name': 'pixel',
     'args': [

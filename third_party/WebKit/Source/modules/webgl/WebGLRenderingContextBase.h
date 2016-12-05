@@ -605,6 +605,7 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
   friend class ScopedFramebufferRestorer;
   // To allow V8WebGL[2]RenderingContext to call visitChildDOMWrappers.
   friend class V8WebGLRenderingContext;
+  friend class ScopedUnpackParametersResetRestore;
 
   WebGLRenderingContextBase(HTMLCanvasElement*,
                             std::unique_ptr<WebGraphicsContext3DProvider>,
@@ -971,6 +972,8 @@ class MODULES_EXPORT WebGLRenderingContextBase : public CanvasRenderingContext,
     CopyTexImage,
     CompressedTexImage
   };
+
+  // This must stay in sync with WebMediaPlayer::TexImageFunctionID.
   enum TexImageFunctionID {
     TexImage2D,
     TexSubImage2D,

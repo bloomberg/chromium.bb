@@ -90,6 +90,37 @@ class MEDIA_EXPORT SkCanvasVideoRenderer {
       bool premultiply_alpha,
       bool flip_y);
 
+  // Converts unsigned 16-bit value to target |format| for Y16 format and
+  // calls WebGL texImage2D.
+  // |level|, |internal_format|, |format|, |type| are WebGL texImage2D
+  // parameters.
+  // Returns false if there is no implementation for given parameters.
+  static bool TexImage2D(unsigned target,
+                         gpu::gles2::GLES2Interface* gl,
+                         VideoFrame* video_frame,
+                         int level,
+                         int internalformat,
+                         unsigned format,
+                         unsigned type,
+                         bool flip_y,
+                         bool premultiply_alpha);
+
+  // Converts unsigned 16-bit value to target |format| for Y16 format and
+  // calls WebGL texSubImage2D.
+  // |level|, |format|, |type|, |xoffset| and |yoffset| are texSubImage2D
+  // parameters.
+  // Returns false if there is no implementation for given parameters.
+  static bool TexSubImage2D(unsigned target,
+                            gpu::gles2::GLES2Interface* gl,
+                            VideoFrame* video_frame,
+                            int level,
+                            unsigned format,
+                            unsigned type,
+                            int xoffset,
+                            int yoffset,
+                            bool flip_y,
+                            bool premultiply_alpha);
+
   // In general, We hold the most recently painted frame to increase the
   // performance for the case that the same frame needs to be painted
   // repeatedly. Call this function if you are sure the most recent frame will

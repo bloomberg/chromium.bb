@@ -314,6 +314,11 @@ group("telemetry_gpu_integration_test") {
     "//content/test/gpu/",
     "//content/test/data/gpu/",
 
+    # For depth_capture
+    "//content/test/data/media/depth_stream_test_utilities.js",
+    "//content/test/data/media/getusermedia-depth-capture.html",
+    "//content/test/data/media/webrtc_test_utilities.js",
+
     # For GpuProcess.video
     "//content/test/data/media/bear.ogv",
 

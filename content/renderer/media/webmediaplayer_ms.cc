@@ -610,6 +610,41 @@ bool WebMediaPlayerMS::copyVideoTextureToPlatformTexture(
       premultiply_alpha, flip_y);
 }
 
+bool WebMediaPlayerMS::texImageImpl(TexImageFunctionID functionID,
+                                    unsigned target,
+                                    gpu::gles2::GLES2Interface* gl,
+                                    int level,
+                                    int internalformat,
+                                    unsigned format,
+                                    unsigned type,
+                                    int xoffset,
+                                    int yoffset,
+                                    int zoffset,
+                                    bool flip_y,
+                                    bool premultiply_alpha) {
+  TRACE_EVENT0("media", "WebMediaPlayerMS:texImageImpl");
+  DCHECK(thread_checker_.CalledOnValidThread());
+
+  const scoped_refptr<media::VideoFrame> video_frame =
+      compositor_->GetCurrentFrameWithoutUpdatingStatistics();
+  if (!video_frame || !video_frame->IsMappable() ||
+      video_frame->HasTextures() ||
+      video_frame->format() != media::PIXEL_FORMAT_Y16) {
+    return false;
+  }
+
+  if (functionID == TexImage2D) {
+    return media::SkCanvasVideoRenderer::TexImage2D(
+        target, gl, video_frame.get(), level, internalformat, format, type,
+        flip_y, premultiply_alpha);
+  } else if (functionID == TexSubImage2D) {
+    return media::SkCanvasVideoRenderer::TexSubImage2D(
+        target, gl, video_frame.get(), level, format, type, xoffset, yoffset,
+        flip_y, premultiply_alpha);
+  }
+  return false;
+}
+
 void WebMediaPlayerMS::OnFirstFrameReceived(media::VideoRotation video_rotation,
                                             bool is_opaque) {
   DVLOG(1) << __func__;

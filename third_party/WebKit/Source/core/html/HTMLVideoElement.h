@@ -79,6 +79,20 @@ class CORE_EXPORT HTMLVideoElement final : public HTMLMediaElement,
                                          bool premultiplyAlpha,
                                          bool flipY);
 
+  // Used by WebGL to do CPU-GPU texture upload if possible.
+  bool texImageImpl(WebMediaPlayer::TexImageFunctionID,
+                    GLenum target,
+                    gpu::gles2::GLES2Interface*,
+                    GLint level,
+                    GLint internalformat,
+                    GLenum format,
+                    GLenum type,
+                    GLint xoffset,
+                    GLint yoffset,
+                    GLint zoffset,
+                    bool flipY,
+                    bool premultiplyAlpha);
+
   bool shouldDisplayPosterImage() const { return getDisplayMode() == Poster; }
 
   bool hasAvailableVideoFrame() const;

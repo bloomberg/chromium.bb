@@ -50,6 +50,31 @@ SkColor GetColor(SkCanvas* canvas) {
   return GetColorAt(canvas, 0, 0);
 }
 
+// Generate frame pixels to provided |external_memory| and wrap it as frame.
+scoped_refptr<VideoFrame> CreateTestY16Frame(const gfx::Size& coded_size,
+                                             const gfx::Rect& visible_rect,
+                                             void* external_memory,
+                                             base::TimeDelta timestamp) {
+  const int offset_x = visible_rect.x();
+  const int offset_y = visible_rect.y();
+  const int stride = coded_size.width();
+  const size_t byte_size = stride * coded_size.height() * 2;
+
+  // In the visible rect, fill upper byte with [0-255] and lower with [255-0].
+  uint16_t* data = static_cast<uint16_t*>(external_memory);
+  for (int j = 0; j < visible_rect.height(); j++) {
+    for (int i = 0; i < visible_rect.width(); i++) {
+      const int value = i + j * visible_rect.width();
+      data[(stride * (j + offset_y)) + i + offset_x] =
+          ((value & 0xFF) << 8) | (~value & 0xFF);
+    }
+  }
+
+  return media::VideoFrame::WrapExternalData(
+      media::PIXEL_FORMAT_Y16, coded_size, visible_rect, visible_rect.size(),
+      static_cast<uint8_t*>(external_memory), byte_size, timestamp);
+}
+
 class SkCanvasVideoRendererTest : public testing::Test {
  public:
   enum Color {
@@ -525,22 +550,10 @@ TEST_F(SkCanvasVideoRendererTest, Y16) {
   std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(
       static_cast<unsigned char*>(base::AlignedAlloc(
           byte_size, media::VideoFrame::kFrameAddressAlignment)));
-
-  // In the visible rect, fill upper byte with [0-255] and lower with [255-0].
-  uint16_t* data = reinterpret_cast<uint16_t*>(memory.get());
-  for (int j = 0; j < bitmap.height(); j++) {
-    for (int i = 0; i < bitmap.width(); i++) {
-      const int value = i + j * bitmap.width();
-      data[(stride * (j + offset_y)) + i + offset_x] =
-          ((value & 0xFF) << 8) | (~value & 0xFF);
-    }
-  }
   const gfx::Rect rect(offset_x, offset_y, bitmap.width(), bitmap.height());
   scoped_refptr<media::VideoFrame> video_frame =
-      media::VideoFrame::WrapExternalData(
-          media::PIXEL_FORMAT_Y16,
-          gfx::Size(stride, offset_y + bitmap.height()), rect, rect.size(),
-          memory.get(), byte_size, cropped_frame()->timestamp());
+      CreateTestY16Frame(gfx::Size(stride, offset_y + bitmap.height()), rect,
+                         memory.get(), cropped_frame()->timestamp());
 
   SkCanvas canvas(bitmap);
   SkPaint paint;
@@ -564,6 +577,32 @@ class TestGLES2Interface : public gpu::gles2::GLES2InterfaceStub {
     DCHECK_EQ(1, n);
     *textures = 1;
   }
+
+  void TexImage2D(GLenum target,
+                  GLint level,
+                  GLint internalformat,
+                  GLsizei width,
+                  GLsizei height,
+                  GLint border,
+                  GLenum format,
+                  GLenum type,
+                  const void* pixels) override {
+    if (!teximage2d_callback_.is_null()) {
+      teximage2d_callback_.Run(target, level, internalformat, width, height,
+                               border, format, type, pixels);
+    }
+  }
+
+  base::Callback<void(GLenum target,
+                      GLint level,
+                      GLint internalformat,
+                      GLsizei width,
+                      GLsizei height,
+                      GLint border,
+                      GLenum format,
+                      GLenum type,
+                      const void* pixels)>
+      teximage2d_callback_;
 };
 void MailboxHoldersReleased(const gpu::SyncToken& sync_token) {}
 }  // namespace
@@ -633,6 +672,61 @@ TEST_F(SkCanvasVideoRendererTest, CorrectFrameSizeToVisibleRect) {
 
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().width());
   EXPECT_EQ(fWidth / 2, renderer_.LastImageDimensionsForTesting().height());
+}
+
+TEST_F(SkCanvasVideoRendererTest, TexImageImplY16) {
+  // Create test frame.
+  // |offset_x| and |offset_y| define visible rect's offset to coded rect.
+  const int offset_x = 3;
+  const int offset_y = 5;
+  const int width = 16;
+  const int height = 16;
+  const int stride = width + offset_x;
+  const size_t byte_size = stride * (height + offset_y) * 2;
+  std::unique_ptr<unsigned char, base::AlignedFreeDeleter> memory(
+      static_cast<unsigned char*>(base::AlignedAlloc(
+          byte_size, media::VideoFrame::kFrameAddressAlignment)));
+  const gfx::Rect rect(offset_x, offset_y, width, height);
+  scoped_refptr<media::VideoFrame> video_frame =
+      CreateTestY16Frame(gfx::Size(stride, offset_y + height), rect,
+                         memory.get(), cropped_frame()->timestamp());
+
+  // Create GL context.
+  sk_sp<const GrGLInterface> null_interface(GrGLCreateNullInterface());
+  sk_sp<GrContext> gr_context(GrContext::Create(
+      kOpenGL_GrBackend,
+      reinterpret_cast<GrBackendContext>(null_interface.get())));
+  TestGLES2Interface gles2;
+  Context3D context_3d(&gles2, gr_context.get());
+
+  // Bind the texImage2D callback to verify the uint16 to float32 conversion.
+  gles2.teximage2d_callback_ =
+      base::Bind([](GLenum target, GLint level, GLint internalformat,
+                    GLsizei width, GLsizei height, GLint border, GLenum format,
+                    GLenum type, const void* pixels) {
+        EXPECT_EQ(static_cast<unsigned>(GL_FLOAT), type);
+        EXPECT_EQ(static_cast<unsigned>(GL_RGBA), format);
+        EXPECT_EQ(GL_RGBA, internalformat);
+        EXPECT_EQ(0, border);
+        EXPECT_EQ(16, width);
+        EXPECT_EQ(16, height);
+        EXPECT_EQ(static_cast<unsigned>(GL_TEXTURE_2D), target);
+        const float* data = static_cast<const float*>(pixels);
+        for (int j = 0; j < height; j++) {
+          for (int i = 0; i < width; i++) {
+            const int value = i + (height - j - 1) * width;  // flip_y is true.
+            float expected_value =
+                (((value & 0xFF) << 8) | (~value & 0xFF)) / 65535.f;
+            EXPECT_EQ(expected_value, data[(i + j * width) * 4]);
+            EXPECT_EQ(expected_value, data[(i + j * width) * 4 + 1]);
+            EXPECT_EQ(expected_value, data[(i + j * width) * 4 + 2]);
+            EXPECT_EQ(1.0f, data[(i + j * width) * 4 + 3]);
+          }
+        }
+      });
+  SkCanvasVideoRenderer::TexImage2D(GL_TEXTURE_2D, &gles2, video_frame.get(), 0,
+                                    GL_RGBA, GL_RGBA, GL_FLOAT, true /*flip_y*/,
+                                    true);
 }
 
 }  // namespace media

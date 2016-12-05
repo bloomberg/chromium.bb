@@ -505,6 +505,28 @@ class ScopedFramebufferRestorer {
   Member<WebGLRenderingContextBase> m_context;
 };
 
+class ScopedUnpackParametersResetRestore {
+  STACK_ALLOCATED();
+
+ public:
+  explicit ScopedUnpackParametersResetRestore(
+      WebGLRenderingContextBase* context,
+      bool enabled = true)
+      : m_context(context), m_enabled(enabled) {
+    if (enabled)
+      m_context->resetUnpackParameters();
+  }
+
+  ~ScopedUnpackParametersResetRestore() {
+    if (m_enabled)
+      m_context->restoreUnpackParameters();
+  }
+
+ private:
+  Member<WebGLRenderingContextBase> m_context;
+  bool m_enabled;
+};
+
 static void formatWebGLStatusString(const StringView& glInfo,
                                     const StringView& infoString,
                                     StringBuilder& builder) {
@@ -4394,7 +4416,7 @@ void WebGLRenderingContextBase::texImageImpl(
     }
   }
 
-  resetUnpackParameters();
+  ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
   if (functionID == TexImage2D) {
     texImage2DBase(target, level, internalformat,
                    adjustedSourceImageRect.width(),
@@ -4420,7 +4442,6 @@ void WebGLRenderingContextBase::texImageImpl(
           depth, format, type, needConversion ? data.data() : imagePixelData);
     }
   }
-  restoreUnpackParameters();
 }
 
 bool WebGLRenderingContextBase::validateTexFunc(
@@ -4627,16 +4648,14 @@ void WebGLRenderingContextBase::texImageHelperDOMArrayBufferView(
     return;
   }
 
-  if (changeUnpackAlignment)
-    resetUnpackParameters();
+  ScopedUnpackParametersResetRestore temporaryResetUnpack(
+      this, changeUnpackAlignment);
   if (functionID == TexImage2D)
     texImage2DBase(target, level, internalformat, width, height, border, format,
                    type, data);
   else if (functionID == TexSubImage2D)
     contextGL()->TexSubImage2D(target, level, xoffset, yoffset, width, height,
                                format, type, data);
-  if (changeUnpackAlignment)
-    restoreUnpackParameters();
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target,
@@ -4724,7 +4743,7 @@ void WebGLRenderingContextBase::texImageHelperImageData(
       return;
     }
   }
-  resetUnpackParameters();
+  ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
   const uint8_t* bytes = needConversion ? data.data() : pixels->data()->data();
   if (functionID == TexImage2D) {
     DCHECK_EQ(unpackImageHeight, 0);
@@ -4753,7 +4772,6 @@ void WebGLRenderingContextBase::texImageHelperImageData(
                                  depth, format, type, bytes);
     }
   }
-  restoreUnpackParameters();
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target,
@@ -5141,19 +5159,18 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
           ImageBuffer::create(std::move(surface)));
       if (imageBuffer) {
         // The video element paints an RGBA frame into our surface here. By
-        // using an AcceleratedImageBufferSurface, we enable the
-        // WebMediaPlayer implementation to do any necessary color space
-        // conversion on the GPU (though it
-        // may still do a CPU conversion and upload the results).
+        // using an AcceleratedImageBufferSurface, we enable the WebMediaPlayer
+        // implementation to do any necessary color space conversion on the GPU
+        // (though it may still do a CPU conversion and upload the results).
         video->paintCurrentFrame(
             imageBuffer->canvas(),
             IntRect(0, 0, video->videoWidth(), video->videoHeight()), nullptr);
 
-        // This is a straight GPU-GPU copy, any necessary color space
-        // conversion was handled in the paintCurrentFrameInContext() call.
+        // This is a straight GPU-GPU copy, any necessary color space conversion
+        // was handled in the paintCurrentFrameInContext() call.
 
-        // Note that copyToPlatformTexture no longer allocates the
-        // destination texture.
+        // Note that copyToPlatformTexture no longer allocates the destination
+        // texture.
         texImage2DBase(target, level, internalformat, video->videoWidth(),
                        video->videoHeight(), 0, format, type, nullptr);
 
@@ -5165,6 +5182,20 @@ void WebGLRenderingContextBase::texImageHelperHTMLVideoElement(
         }
       }
     }
+  }
+
+  if (sourceImageRectIsDefault) {
+    // Try using optimized CPU-GPU path for some formats: e.g. Y16 and Y8. It
+    // leaves early for other formats or if frame is stored on GPU.
+    ScopedUnpackParametersResetRestore(
+        this, m_unpackFlipY || m_unpackPremultiplyAlpha);
+    if (video->texImageImpl(
+            static_cast<WebMediaPlayer::TexImageFunctionID>(functionID), target,
+            contextGL(), level, convertTexInternalFormat(internalformat, type),
+            format, type, xoffset, yoffset, zoffset, m_unpackFlipY,
+            m_unpackPremultiplyAlpha &&
+                m_unpackColorspaceConversion == GL_NONE))
+      return;
   }
 
   RefPtr<Image> image = videoFrameToImage(video);
@@ -5308,7 +5339,7 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
       return;
     }
   }
-  resetUnpackParameters();
+  ScopedUnpackParametersResetRestore temporaryResetUnpack(this);
   if (functionID == TexImage2D) {
     texImage2DBase(target, level, internalformat, width, height, 0, format,
                    type, needConversion ? data.data() : pixelDataPtr);
@@ -5326,7 +5357,6 @@ void WebGLRenderingContextBase::texImageHelperImageBitmap(
                                height, depth, format, type,
                                needConversion ? data.data() : pixelDataPtr);
   }
-  restoreUnpackParameters();
 }
 
 void WebGLRenderingContextBase::texImage2D(GLenum target,

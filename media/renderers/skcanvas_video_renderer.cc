@@ -10,6 +10,7 @@
 #include "gpu/GLES2/gl2extchromium.h"
 #include "gpu/command_buffer/client/gles2_interface.h"
 #include "gpu/command_buffer/common/mailbox_holder.h"
+#include "media/base/data_buffer.h"
 #include "media/base/video_frame.h"
 #include "media/base/yuv_convert.h"
 #include "skia/ext/texture_handle.h"
@@ -522,26 +523,87 @@ scoped_refptr<VideoFrame> DownShiftHighbitVideoFrame(
   return ret;
 }
 
-// We take the upper 8 bits of 16-bit data and convert it as luminance to ARGB.
-// We loose the precision here, but it is important not to render Y16 as RG_88.
-// To get the full precision use float textures with WebGL1 and e.g. R16UI or
-// R32F textures with WebGL2.
-void ConvertY16ToARGB(const VideoFrame* video_frame,
-                      void* argb_pixels,
-                      size_t argb_row_bytes) {
+// Converts 16-bit data to |out| buffer of specified GL |type|.
+// When the |format| is RGBA, the converted value is fed as luminance.
+void FlipAndConvertY16(const VideoFrame* video_frame,
+                       uint8_t* out,
+                       unsigned format,
+                       unsigned type,
+                       bool flip_y,
+                       size_t output_row_bytes) {
   const uint8_t* row_head = video_frame->visible_data(0);
-  uint8_t* out = static_cast<uint8_t*>(argb_pixels);
   const size_t stride = video_frame->stride(0);
-  for (int i = 0; i < video_frame->visible_rect().height(); ++i) {
-    uint32_t* rgba = reinterpret_cast<uint32_t*>(out);
-    const uint8_t* row_end = row_head + video_frame->visible_rect().width() * 2;
-    for (const uint8_t* row = row_head; row < row_end; ++row) {
-      uint32_t gray_value = *++row;
-      *rgba++ = SkColorSetRGB(gray_value, gray_value, gray_value);
+  const int height = video_frame->visible_rect().height();
+  for (int i = 0; i < height; ++i) {
+    uint8_t* out_row_head = flip_y ? out + output_row_bytes * (height - i - 1)
+                                   : out + output_row_bytes * i;
+    const uint16_t* row = reinterpret_cast<const uint16_t*>(row_head);
+    const uint16_t* row_end = row + video_frame->visible_rect().width();
+    if (type == GL_FLOAT) {
+      DCHECK_EQ(static_cast<unsigned>(GL_RGBA), format);
+      float* out_row = reinterpret_cast<float*>(out_row_head);
+      while (row < row_end) {
+        float gray_value = *row++ / 65535.f;
+        *out_row++ = gray_value;
+        *out_row++ = gray_value;
+        *out_row++ = gray_value;
+        *out_row++ = 1.0f;
+      }
+    } else if (type == GL_UNSIGNED_BYTE) {
+      // We take the upper 8 bits of 16-bit data and convert it as luminance to
+      // ARGB.  We loose the precision here, but it is important not to render
+      // Y16 as RG_88.  To get the full precision use float textures with WebGL1
+      // and e.g. R16UI or R32F textures with WebGL2.
+      DCHECK_EQ(static_cast<unsigned>(GL_RGBA), format);
+      uint32_t* rgba = reinterpret_cast<uint32_t*>(out_row_head);
+      while (row < row_end) {
+        uint32_t gray_value = *row++ >> 8;
+        *rgba++ = SkColorSetRGB(gray_value, gray_value, gray_value);
+      }
+    } else {
+      NOTREACHED() << "Unsupported Y16 conversion for format: 0x" << std::hex
+                   << format << " and type: 0x" << std::hex << type;
     }
-    out += argb_row_bytes;
     row_head += stride;
   }
+}
+
+// Common functionality of SkCanvasVideoRenderer's TexImage2D and TexSubImage2D.
+// Allocates a buffer required for conversion and converts |frame| content to
+// desired |format|.
+// Returns true if calling glTex(Sub)Image is supported for provided |frame|
+// format and parameters.
+bool TexImageHelper(VideoFrame* frame,
+                    unsigned format,
+                    unsigned type,
+                    bool flip_y,
+                    scoped_refptr<DataBuffer>* temp_buffer) {
+  unsigned output_bytes_per_pixel = 0;
+  switch (frame->format()) {
+    case PIXEL_FORMAT_Y16:
+      // Converting single component unsigned short here to FLOAT luminance.
+      switch (format) {
+        case GL_RGBA:
+          if (type == GL_FLOAT) {
+            output_bytes_per_pixel = 4 * sizeof(GLfloat);
+            break;
+          }
+        // Pass through.
+        default:
+          return false;
+      }
+      break;
+    default:
+      return false;
+  }
+
+  size_t output_row_bytes =
+      frame->visible_rect().width() * output_bytes_per_pixel;
+  *temp_buffer =
+      new DataBuffer(output_row_bytes * frame->visible_rect().height());
+  FlipAndConvertY16(frame, (*temp_buffer)->writable_data(), format, type,
+                    flip_y, output_row_bytes);
+  return true;
 }
 
 }  // anonymous namespace
@@ -648,7 +710,10 @@ void SkCanvasVideoRenderer::ConvertVideoFrameToRGBPixels(
     }
 
     case PIXEL_FORMAT_Y16:
-      ConvertY16ToARGB(video_frame, rgb_pixels, row_bytes);
+      // Since it is grayscale conversion, we disregard SK_PMCOLOR_BYTE_ORDER
+      // and always use GL_RGBA.
+      FlipAndConvertY16(video_frame, static_cast<uint8_t*>(rgb_pixels), GL_RGBA,
+                        GL_UNSIGNED_BYTE, false /*flip_y*/, row_bytes);
       break;
 
     case PIXEL_FORMAT_NV12:
@@ -769,6 +834,51 @@ bool SkCanvasVideoRenderer::CopyVideoFrameTexturesToGLTexture(
                                            premultiply_alpha, flip_y);
   }
 
+  return true;
+}
+
+bool SkCanvasVideoRenderer::TexImage2D(unsigned target,
+                                       gpu::gles2::GLES2Interface* gl,
+                                       VideoFrame* frame,
+                                       int level,
+                                       int internalformat,
+                                       unsigned format,
+                                       unsigned type,
+                                       bool flip_y,
+                                       bool premultiply_alpha) {
+  DCHECK(frame);
+  DCHECK(!frame->HasTextures());
+
+  scoped_refptr<DataBuffer> temp_buffer;
+  if (!TexImageHelper(frame, format, type, flip_y, &temp_buffer))
+    return false;
+
+  gl->TexImage2D(target, level, internalformat, frame->visible_rect().width(),
+                 frame->visible_rect().height(), 0, format, type,
+                 temp_buffer->data());
+  return true;
+}
+
+bool SkCanvasVideoRenderer::TexSubImage2D(unsigned target,
+                                          gpu::gles2::GLES2Interface* gl,
+                                          VideoFrame* frame,
+                                          int level,
+                                          unsigned format,
+                                          unsigned type,
+                                          int xoffset,
+                                          int yoffset,
+                                          bool flip_y,
+                                          bool premultiply_alpha) {
+  DCHECK(frame);
+  DCHECK(!frame->HasTextures());
+
+  scoped_refptr<DataBuffer> temp_buffer;
+  if (!TexImageHelper(frame, format, type, flip_y, &temp_buffer))
+    return false;
+
+  gl->TexSubImage2D(
+      target, level, xoffset, yoffset, frame->visible_rect().width(),
+      frame->visible_rect().height(), format, type, temp_buffer->data());
   return true;
 }
 

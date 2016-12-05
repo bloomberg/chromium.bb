@@ -156,6 +156,19 @@ class CONTENT_EXPORT WebMediaPlayerMS
                                          bool premultiply_alpha,
                                          bool flip_y) override;
 
+  bool texImageImpl(TexImageFunctionID functionID,
+                    unsigned target,
+                    gpu::gles2::GLES2Interface* gl,
+                    int level,
+                    int internalformat,
+                    unsigned format,
+                    unsigned type,
+                    int xoffset,
+                    int yoffset,
+                    int zoffset,
+                    bool flip_y,
+                    bool premultiply_alpha) override;
+
  private:
   friend class WebMediaPlayerMSTest;
 
