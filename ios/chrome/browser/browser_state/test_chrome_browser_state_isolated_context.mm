@@ -9,6 +9,10 @@
 #include "ios/web/public/web_thread.h"
 #include "net/url_request/url_request_test_util.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 TestChromeBrowserStateWithIsolatedContext::
     TestChromeBrowserStateWithIsolatedContext()
     : TestChromeBrowserState(

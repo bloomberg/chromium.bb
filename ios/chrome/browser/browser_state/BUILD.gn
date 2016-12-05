@@ -153,4 +153,6 @@ source_set("test_support") {
     "//ios/web",
     "//net:test_support",
   ]
+
+  configs += [ "//build/config/compiler:enable_arc" ]
 }
