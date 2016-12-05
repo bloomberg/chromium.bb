@@ -1216,8 +1216,11 @@ SourceListDirectiveVector CSPDirectiveList::getSourceVector(
     const CSPDirectiveListVector& policies) {
   SourceListDirectiveVector sourceListDirectives;
   for (const auto& policy : policies) {
-    if (SourceListDirective* directive = policy->operativeDirective(type))
+    if (SourceListDirective* directive = policy->operativeDirective(type)) {
+      if (directive->isNone())
+        return SourceListDirectiveVector(1, directive);
       sourceListDirectives.append(directive);
+    }
   }
 
   return sourceListDirectives;
@@ -1248,7 +1251,7 @@ bool CSPDirectiveList::subsumes(const CSPDirectiveListVector& other) {
     // Embedding-CSP.
     SourceListDirectiveVector requiredList =
         getSourceVector(directive, CSPDirectiveListVector(1, this));
-    if (requiredList.size() == 0)
+    if (!requiredList.size())
       continue;
     SourceListDirective* required = requiredList[0];
     // Aggregate all serialized source lists of the returned CSP into a vector

@@ -438,12 +438,6 @@ TEST_F(SourceListDirectiveTest, Subsumes) {
     }
 
     EXPECT_EQ(required.subsumes(returned), test.expected);
-
-    // If required is empty, any returned should be subsumed by it.
-    SourceListDirective requiredIsEmpty("script-src", "", csp.get());
-    EXPECT_TRUE(
-        requiredIsEmpty.subsumes(HeapVector<Member<SourceListDirective>>()));
-    EXPECT_TRUE(requiredIsEmpty.subsumes(returned));
   }
 }
 
@@ -816,6 +810,44 @@ TEST_F(SourceListDirectiveTest, SubsumesUnsafeAttributes) {
     }
 
     EXPECT_EQ(A.subsumes(vectorB), test.expected);
+  }
+}
+
+TEST_F(SourceListDirectiveTest, IsNone) {
+  struct TestCase {
+    String sources;
+    bool expected;
+  } cases[] = {
+      // Source list is 'none'.
+      {"'none'", true},
+      {"", true},
+      {"   ", true},
+      // Source list is not 'none'.
+      {"http://example1.com/foo/", false},
+      {"'sha512-321cba'", false},
+      {"'nonce-yay'", false},
+      {"'strict-dynamic'", false},
+      {"'sha512-321cba' http://example1.com/foo/", false},
+      {"http://example1.com/foo/ 'sha512-321cba'", false},
+      {"http://example1.com/foo/ 'nonce-yay'", false},
+      {"'none' 'sha512-321cba' http://example1.com/foo/", false},
+      {"'none' http://example1.com/foo/ 'sha512-321cba'", false},
+      {"'none' http://example1.com/foo/ 'nonce-yay'", false},
+      {"'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {"http://example1.com/foo/ 'sha512-321cba' 'nonce-yay'", false},
+      {" 'sha512-321cba' 'nonce-yay' 'strict-dynamic'", false},
+  };
+
+  for (const auto& test : cases) {
+    SourceListDirective scriptSrc("script-src", test.sources, csp.get());
+    EXPECT_EQ(scriptSrc.isNone(), test.expected);
+
+    SourceListDirective styleSrc("form-action", test.sources, csp.get());
+    EXPECT_EQ(styleSrc.isNone(), test.expected);
+
+    SourceListDirective imgSrc("frame-src", test.sources, csp.get());
+    EXPECT_EQ(styleSrc.isNone(), test.expected);
   }
 }
 

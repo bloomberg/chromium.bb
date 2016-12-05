@@ -43,6 +43,7 @@ class CORE_EXPORT SourceListDirective final : public CSPDirective {
   bool allowNonce(const String& nonce) const;
   bool allowHash(const CSPHashValue&) const;
   bool allowHashedAttributes() const;
+  bool isNone() const;
   bool isHashOrNoncePresent() const;
   uint8_t hashAlgorithmsUsed() const;
   bool allowAllInline();

@@ -103,6 +103,12 @@ bool SourceListDirective::allowHashedAttributes() const {
   return m_allowHashedAttributes;
 }
 
+bool SourceListDirective::isNone() const {
+  return !m_list.size() && !m_allowSelf && !m_allowStar && !m_allowInline &&
+         !m_allowHashedAttributes && !m_allowEval && !m_allowDynamic &&
+         !m_nonces.size() && !m_hashes.size();
+}
+
 uint8_t SourceListDirective::hashAlgorithmsUsed() const {
   return m_hashAlgorithmsUsed;
 }
@@ -595,8 +601,8 @@ bool SourceListDirective::allowAllInline() {
 bool SourceListDirective::subsumes(
     HeapVector<Member<SourceListDirective>> other) {
   // TODO(amalika): Handle here special keywords.
-  if (!m_list.size() || !other.size())
-    return !m_list.size();
+  if (!other.size() || other[0]->isNone())
+    return other.size();
 
   HeapVector<Member<CSPSource>> normalizedA = m_list;
   if (m_allowSelf && other[0]->m_policy->getSelfSource())

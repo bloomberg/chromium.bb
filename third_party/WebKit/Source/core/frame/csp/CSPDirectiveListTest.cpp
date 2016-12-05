@@ -18,6 +18,11 @@ class CSPDirectiveListTest : public ::testing::Test {
  public:
   CSPDirectiveListTest() : csp(ContentSecurityPolicy::create()) {}
 
+  virtual void SetUp() {
+    csp->setupSelf(
+        *SecurityOrigin::createFromString("https://example.test/image.png"));
+  }
+
   CSPDirectiveList* createList(const String& list,
                                ContentSecurityPolicyHeaderType type) {
     Vector<UChar> characters;
@@ -513,6 +518,106 @@ TEST_F(CSPDirectiveListTest, SubsumesBasedOnCSPSourcesOnly) {
     // Check if first policy of `listB` subsumes `A`.
     EXPECT_EQ(test.expectedFirstPolicyOpposite,
               listB[0]->subsumes(HeapVector<Member<CSPDirectiveList>>(1, A)));
+  }
+}
+
+TEST_F(CSPDirectiveListTest, SubsumesIfNoneIsPresent) {
+  struct TestCase {
+    const char* policyA;
+    const std::vector<const char*> policiesB;
+    bool expected;
+  } cases[] = {
+      // `policyA` subsumes any vector of policies.
+      {"", {""}, true},
+      {"", {"script-src http://example.com"}, true},
+      {"", {"script-src 'none'"}, true},
+      {"", {"script-src http://*.one.com", "script-src https://two.com"}, true},
+      // `policyA` is 'none', but no policy in `policiesB` is.
+      {"script-src ", {""}, false},
+      {"script-src 'none'", {""}, false},
+      {"script-src ", {"script-src http://example.com"}, false},
+      {"script-src 'none'", {"script-src http://example.com"}, false},
+      {"script-src ", {"img-src 'none'"}, false},
+      {"script-src 'none'", {"img-src 'none'"}, false},
+      {"script-src ",
+       {"script-src http://*.one.com", "img-src https://two.com"},
+       false},
+      {"script-src 'none'",
+       {"script-src http://*.one.com", "img-src https://two.com"},
+       false},
+      {"script-src 'none'",
+       {"script-src http://*.one.com", "script-src https://two.com"},
+       true},
+      {"script-src 'none'",
+       {"script-src http://*.one.com", "script-src 'self'"},
+       true},
+      // `policyA` is not 'none', but at least effective result of `policiesB`
+      // is.
+      {"script-src http://example.com 'none'", {"script-src 'none'"}, true},
+      {"script-src http://example.com", {"script-src 'none'"}, true},
+      {"script-src http://example.com 'none'",
+       {"script-src http://*.one.com", "script-src http://one.com",
+        "script-src 'none'"},
+       true},
+      {"script-src http://example.com",
+       {"script-src http://*.one.com", "script-src http://one.com",
+        "script-src 'none'"},
+       true},
+      {"script-src http://one.com 'none'",
+       {"script-src http://*.one.com", "script-src http://one.com",
+        "script-src https://one.com"},
+       true},
+      // `policyA` is `none` and at least effective result of `policiesB` is
+      // too.
+      {"script-src ", {"script-src ", "script-src "}, true},
+      {"script-src 'none'", {"script-src", "script-src 'none'"}, true},
+      {"script-src ", {"script-src 'none'", "script-src 'none'"}, true},
+      {"script-src ",
+       {"script-src 'none' http://example.com",
+        "script-src 'none' http://example.com"},
+       false},
+      {"script-src 'none'", {"script-src 'none'", "script-src 'none'"}, true},
+      {"script-src 'none'",
+       {"script-src 'none'", "script-src 'none'", "script-src 'none'"},
+       true},
+      {"script-src 'none'",
+       {"script-src http://*.one.com", "script-src http://one.com",
+        "script-src 'none'"},
+       true},
+      {"script-src 'none'",
+       {"script-src http://*.one.com", "script-src http://two.com",
+        "script-src http://three.com"},
+       true},
+      // Policies contain special keywords.
+      {"script-src ", {"script-src ", "script-src 'unsafe-eval'"}, true},
+      {"script-src 'none'",
+       {"script-src 'unsafe-inline'", "script-src 'none'"},
+       true},
+      {"script-src ",
+       {"script-src 'none' 'unsafe-inline'",
+        "script-src 'none' 'unsafe-inline'"},
+       false},
+      {"script-src ",
+       {"script-src 'none' 'unsafe-inline'",
+        "script-src 'unsafe-inline' 'strict-dynamic'"},
+       false},
+      {"script-src 'unsafe-eval'",
+       {"script-src 'unsafe-eval'", "script 'unsafe-inline'"},
+       true},
+      {"script-src 'unsafe-inline'",
+       {"script-src  ", "script http://example.com"},
+       true},
+  };
+
+  for (const auto& test : cases) {
+    CSPDirectiveList* A =
+        createList(test.policyA, ContentSecurityPolicyHeaderTypeEnforce);
+
+    HeapVector<Member<CSPDirectiveList>> listB;
+    for (const auto& policyB : test.policiesB)
+      listB.append(createList(policyB, ContentSecurityPolicyHeaderTypeEnforce));
+
+    EXPECT_EQ(test.expected, A->subsumes(listB));
   }
 }
 
