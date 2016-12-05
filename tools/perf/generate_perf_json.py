@@ -561,7 +561,7 @@ LEGACY_DEVICE_AFFIINITY_ALGORITHM = [
 ]
 
 def current_benchmarks(use_whitelist):
-  benchmarks_dir = os.path.join(os.getcwd(), 'benchmarks')
+  benchmarks_dir = os.path.join(src_dir(), 'tools', 'perf', 'benchmarks')
   top_level_dir = os.path.dirname(benchmarks_dir)
 
   all_benchmarks = discover.DiscoverClasses(
@@ -588,8 +588,10 @@ def get_sorted_benchmark_list_by_time(all_benchmarks):
   runtime_list = []
   benchmark_avgs = {}
   new_benchmarks = []
+  timing_file_path = os.path.join(src_dir(), 'tools', 'perf',
+      'desktop_benchmark_avg_times.json')
   # Load in the avg times as calculated on Nov 1st, 2016
-  with open('desktop_benchmark_avg_times.json') as f:
+  with open(timing_file_path) as f:
     benchmark_avgs = json.load(f)
 
   for benchmark in all_benchmarks:
@@ -683,19 +685,16 @@ def generate_all_tests(waterfall):
   tests['AAAAA2 See //tools/perf/generate_perf_json.py to make changes'] = {}
   filename = '%s.json' % waterfall['name']
 
-  src_dir = os.path.dirname(os.path.dirname(os.getcwd()))
-
-  with open(os.path.join(src_dir, 'testing', 'buildbot', filename), 'w') as fp:
+  buildbot_dir = os.path.join(src_dir(), 'testing', 'buildbot')
+  with open(os.path.join(buildbot_dir, filename), 'w') as fp:
     json.dump(tests, fp, indent=2, separators=(',', ': '), sort_keys=True)
     fp.write('\n')
 
-def chdir_to_parent_directory():
-  parent_directory = os.path.dirname(os.path.abspath(__file__))
-  os.chdir(parent_directory)
+def src_dir():
+  file_path = os.path.abspath(__file__)
+  return os.path.dirname(os.path.dirname(os.path.dirname(file_path)))
 
 def main():
-  chdir_to_parent_directory()
-
   waterfall = get_waterfall_config()
   waterfall['name'] = 'chromium.perf'
   fyi_waterfall = get_fyi_waterfall_config()
