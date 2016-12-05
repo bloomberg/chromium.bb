@@ -15,8 +15,6 @@ source_set("net") {
     "crl_set_fetcher.h",
     "http_server_properties_manager_factory.cc",
     "http_server_properties_manager_factory.h",
-    "image_fetcher.h",
-    "image_fetcher.mm",
     "ios_chrome_http_user_agent_settings.h",
     "ios_chrome_http_user_agent_settings.mm",
     "ios_chrome_network_delegate.cc",
@@ -46,7 +44,6 @@ source_set("net") {
     "//ios/chrome/browser/browsing_data",
     "//ios/net",
     "//ios/web",
-    "//ios/web/public/image_fetcher",
     "//net",
     "//net:extras",
     "//url",
@@ -54,18 +51,6 @@ source_set("net") {
   allow_circular_includes_from = [
     "//ios/chrome/browser",
     "//ios/chrome/browser/browser_state",
-  ]
-}
-
-source_set("test_support") {
-  testonly = true
-  sources = [
-    "mock_image_fetcher.h",
-    "mock_image_fetcher.mm",
-  ]
-  deps = [
-    ":net",
-    "//testing/gmock",
   ]
 }
 
