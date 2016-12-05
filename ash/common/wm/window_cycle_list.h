@@ -81,9 +81,6 @@ class ASH_EXPORT WindowCycleList : public WmWindowObserver,
   // i.e., the position of an active window in a global MRU ordering.
   int current_index_;
 
-  // The first direction the user stepped in (affects layout).
-  WindowCycleController::Direction initial_direction_;
-
   // Wrapper for the window brought to the front.
   // TODO(estade): remove ScopedShowWindow when we know we are happy launching
   // the |cycle_view_| version.

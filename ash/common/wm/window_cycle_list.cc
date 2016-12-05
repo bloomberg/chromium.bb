@@ -18,6 +18,7 @@
 #include "ui/compositor/scoped_layer_animation_settings.h"
 #include "ui/display/display.h"
 #include "ui/display/screen.h"
+#include "ui/gfx/canvas.h"
 #include "ui/views/background.h"
 #include "ui/views/border.h"
 #include "ui/views/controls/label.h"
@@ -245,10 +246,8 @@ class WindowPreviewView : public views::View, public WmWindowObserver {
 // A view that shows a collection of windows the user can tab through.
 class WindowCycleView : public views::WidgetDelegateView {
  public:
-  WindowCycleView(const WindowCycleList::WindowList& windows,
-                  WindowCycleController::Direction initial_direction)
-      : initial_direction_(initial_direction),
-        mirror_container_(new views::View()),
+  explicit WindowCycleView(const WindowCycleList::WindowList& windows)
+      : mirror_container_(new views::View()),
         highlight_view_(new views::View()),
         target_window_(nullptr) {
     DCHECK(!windows.empty());
@@ -262,9 +261,6 @@ class WindowCycleView : public views::WidgetDelegateView {
           base::TimeDelta::FromMilliseconds(100));
       layer()->SetOpacity(1.0);
     }
-
-    set_background(views::Background::CreateSolidBackground(
-        SkColorSetA(SK_ColorBLACK, 0xE6)));
 
     const int kInsideBorderPaddingDip = 64;
     const int kBetweenChildPaddingDip = 10;
@@ -347,22 +343,27 @@ class WindowCycleView : public views::WidgetDelegateView {
     if (first_layout)
       mirror_container_->SizeToPreferredSize();
 
-    // The preview list (|mirror_container_|) starts flush to the left of
-    // the screen but moves to the left (off the edge of the screen) as the use
-    // iterates over the previews. The list will move just enough to ensure the
-    // highlighted preview is at or to the left of the center of the workspace.
     views::View* target_view = window_view_map_[target_window_];
     gfx::RectF target_bounds(target_view->GetLocalBounds());
     views::View::ConvertRectToTarget(target_view, mirror_container_,
                                      &target_bounds);
     gfx::Rect container_bounds(mirror_container_->GetPreferredSize());
-    int x_offset =
-        width() / 2 -
-        mirror_container_->GetMirroredXInView(target_bounds.CenterPoint().x());
-    if (initial_direction_ == WindowCycleController::FORWARD)
+    // Case one: the container is narrower than the screen. Center the
+    // container.
+    int x_offset = (width() - container_bounds.width()) / 2;
+    if (x_offset < 0) {
+      // Case two: the container is wider than the screen. Center the target
+      // view by moving the list just enough to ensure the target view is in the
+      // center.
+      x_offset = width() / 2 -
+                 mirror_container_->GetMirroredXInView(
+                     target_bounds.CenterPoint().x());
+
+      // However, the container must span the screen, i.e. the maximum x is 0
+      // and the minimum for its right boundary is the width of the screen.
       x_offset = std::min(x_offset, 0);
-    else
       x_offset = std::max(x_offset, width() - container_bounds.width());
+    }
     container_bounds.set_x(x_offset);
     mirror_container_->SetBoundsRect(container_bounds);
 
@@ -391,6 +392,13 @@ class WindowCycleView : public views::WidgetDelegateView {
     WmShell::Get()->window_cycle_controller()->StopCycling();
   }
 
+  void OnPaintBackground(gfx::Canvas* canvas) override {
+    // We can't set a bg on the mirror container itself because the highlight
+    // view needs to be on top of the bg but behind the target windows.
+    canvas->FillRect(mirror_container_->bounds(),
+                     SkColorSetA(SK_ColorBLACK, 0xE6));
+  }
+
   View* GetInitiallyFocusedView() override {
     return window_view_map_[target_window_];
   }
@@ -398,7 +406,6 @@ class WindowCycleView : public views::WidgetDelegateView {
   WmWindow* target_window() { return target_window_; }
 
  private:
-  WindowCycleController::Direction initial_direction_;
   std::map<WmWindow*, views::View*> window_view_map_;
   views::View* mirror_container_;
   views::View* highlight_view_;
@@ -461,7 +468,6 @@ void ScopedShowWindow::OnWindowTreeChanging(WmWindow* window,
 WindowCycleList::WindowCycleList(const WindowList& windows)
     : windows_(windows),
       current_index_(0),
-      initial_direction_(WindowCycleController::FORWARD),
       cycle_view_(nullptr),
       cycle_ui_widget_(nullptr),
       screen_observer_(this) {
@@ -516,7 +522,6 @@ void WindowCycleList::Step(WindowCycleController::Direction direction) {
   DCHECK(static_cast<size_t>(current_index_) < windows_.size());
 
   if (!cycle_view_ && current_index_ == 0) {
-    initial_direction_ = direction;
     // Special case the situation where we're cycling forward but the MRU window
     // is not active. This occurs when all windows are minimized. The starting
     // window should be the first one rather than the second.
@@ -600,7 +605,7 @@ void WindowCycleList::InitWindowCycleView() {
   if (cycle_view_)
     return;
 
-  cycle_view_ = new WindowCycleView(windows_, initial_direction_);
+  cycle_view_ = new WindowCycleView(windows_);
   cycle_view_->SetTargetWindow(windows_[current_index_]);
 
   views::Widget* widget = new views::Widget;
