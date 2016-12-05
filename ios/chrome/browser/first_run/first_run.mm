@@ -10,6 +10,10 @@
 #include "components/pref_registry/pref_registry_syncable.h"
 #include "ios/chrome/browser/chrome_paths.h"
 
+#if !defined(__has_feature) || !__has_feature(objc_arc)
+#error "This file requires ARC support."
+#endif
+
 namespace {
 
 // The absence of kSentinelFile file will tell us it is a first run.
