@@ -68,7 +68,7 @@ void LinkImport::process() {
     // The document should be the master.
     Document& master = m_owner->document();
     DCHECK(master.frame());
-    master.setImportsController(HTMLImportsController::create(master));
+    master.createImportsController();
   }
 
   LinkRequestBuilder builder(m_owner);

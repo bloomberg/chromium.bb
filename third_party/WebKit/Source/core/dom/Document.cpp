@@ -904,11 +904,15 @@ V0CustomElementMicrotaskRunQueue* Document::customElementMicrotaskRunQueue() {
   return m_customElementMicrotaskRunQueue.get();
 }
 
-void Document::setImportsController(HTMLImportsController* controller) {
-  DCHECK(!m_importsController || !controller);
-  m_importsController = controller;
-  if (!m_importsController && !loader())
+void Document::clearImportsController() {
+  m_importsController = nullptr;
+  if (!loader())
     m_fetcher->clearContext();
+}
+
+void Document::createImportsController() {
+  DCHECK(!m_importsController);
+  m_importsController = HTMLImportsController::create(*this);
 }
 
 HTMLImportLoader* Document::importLoader() const {
@@ -2480,7 +2484,7 @@ void Document::shutdown() {
   // thinking they should have access to a valid frame when they don't.
   if (m_importsController) {
     m_importsController->dispose();
-    setImportsController(nullptr);
+    clearImportsController();
   }
 
   m_timers.setTimerTaskRunner(Platform::current()
