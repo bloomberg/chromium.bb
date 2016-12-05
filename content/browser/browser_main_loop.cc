@@ -679,7 +679,7 @@ void BrowserMainLoop::PostMainMessageLoopStart() {
   {
     TRACE_EVENT0("startup",
                  "BrowserMainLoop::Subsystem:BrowserMediaPlayerManager");
-    if (parsed_command_line_.HasSwitch(switches::kSingleProcess)) {
+    if (UsingInProcessGpu()) {
       gpu::ScopedSurfaceRequestConduit::SetInstance(
           ScopedSurfaceRequestManager::GetInstance());
     }
