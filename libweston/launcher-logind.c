@@ -830,6 +830,13 @@ launcher_logind_destroy(struct weston_launcher *launcher)
 	free(wl);
 }
 
+static int
+launcher_logind_get_vt(struct weston_launcher *launcher)
+{
+	struct launcher_logind *wl = wl_container_of(launcher, wl, base);
+	return wl->vtnr;
+}
+
 struct launcher_interface launcher_logind_iface = {
 	launcher_logind_connect,
 	launcher_logind_destroy,
@@ -837,4 +844,5 @@ struct launcher_interface launcher_logind_iface = {
 	launcher_logind_close,
 	launcher_logind_activate_vt,
 	launcher_logind_restore,
+	launcher_logind_get_vt,
 };

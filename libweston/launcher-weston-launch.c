@@ -276,6 +276,17 @@ launcher_weston_launch_destroy(struct weston_launcher *launcher_base)
 	free(launcher);
 }
 
+static int
+launcher_weston_launch_get_vt(struct weston_launcher *base)
+{
+	struct launcher_weston_launch *launcher = wl_container_of(base, launcher, base);
+	struct stat s;
+	if (fstat(launcher->tty, &s) < 0)
+		return -1;
+
+	return minor(s.st_rdev);
+}
+
 struct launcher_interface launcher_weston_launch_iface = {
 	launcher_weston_launch_connect,
 	launcher_weston_launch_destroy,
@@ -283,4 +294,5 @@ struct launcher_interface launcher_weston_launch_iface = {
 	launcher_weston_launch_close,
 	launcher_weston_launch_activate_vt,
 	launcher_weston_launch_restore,
+	launcher_weston_launch_get_vt,
 };
