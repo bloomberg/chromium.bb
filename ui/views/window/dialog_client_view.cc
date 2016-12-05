@@ -170,7 +170,7 @@ gfx::Size DialogClientView::GetPreferredSize() const {
 
   int buttons_height = GetButtonsAndExtraViewRowHeight();
   if (buttons_height != 0) {
-    size.Enlarge(0, buttons_height + kRelatedControlVerticalSpacing);
+    size.Enlarge(0, buttons_height + GetButtonsAndExtraViewRowTopPadding());
     // Inset the buttons and extra view.
     const gfx::Insets insets = GetButtonRowInsets();
     size.Enlarge(insets.width(), insets.height());
@@ -212,7 +212,7 @@ void DialogClientView::Layout() {
           GetDialogDelegate()->GetExtraViewPadding(&custom_padding)) {
         // The call to LayoutButton() will already have accounted for some of
         // the padding.
-        custom_padding -= kRelatedButtonHSpacing;
+        custom_padding -= GetButtonsAndExtraViewRowTopPadding();
         row_bounds.set_width(row_bounds.width() - custom_padding);
       }
       row_bounds.set_width(std::min(row_bounds.width(),
@@ -220,17 +220,8 @@ void DialogClientView::Layout() {
       extra_view_->SetBoundsRect(row_bounds);
     }
 
-    if (height > 0) {
-      // If the ViewsDelegate supplies a non-zero top inset, use that;
-      // otherwise, use kRelatedControlVerticalSpacing.
-      int spacing =
-          ViewsDelegate::GetInstance()
-              ? ViewsDelegate::GetInstance()->GetDialogButtonInsets().top()
-              : 0;
-      if (!spacing)
-        spacing = kRelatedControlVerticalSpacing;
-      bounds.Inset(0, 0, 0, height + spacing);
-    }
+    if (height > 0)
+      bounds.Inset(0, 0, 0, height + GetButtonsAndExtraViewRowTopPadding());
   }
 
   // Layout the contents view to the top and side edges of the contents bounds.
@@ -363,6 +354,18 @@ int DialogClientView::GetButtonsAndExtraViewRowHeight() const {
 gfx::Insets DialogClientView::GetButtonRowInsets() const {
   return GetButtonsAndExtraViewRowHeight() == 0 ? gfx::Insets()
                                                 : button_row_insets_;
+}
+
+int DialogClientView::GetButtonsAndExtraViewRowTopPadding() const {
+  int spacing = button_row_insets_.top();
+  // Some subclasses of DialogClientView, in order to do their own layout, set
+  // button_row_insets_ to gfx::Insets(). To avoid breaking behavior of those
+  // dialogs, supplying 0 for the top inset of the row falls back to
+  // kRelatedControlVerticalSpacing.
+  // TODO(ellyjones): Figure out a more principled way to approach that issue.
+  if (!spacing)
+    spacing = kRelatedControlVerticalSpacing;
+  return spacing;
 }
 
 void DialogClientView::SetupFocusChain() {

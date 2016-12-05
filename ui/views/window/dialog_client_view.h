@@ -99,6 +99,10 @@ class VIEWS_EXPORT DialogClientView : public ClientView,
   // Returns the insets for the buttons and extra view.
   gfx::Insets GetButtonRowInsets() const;
 
+  // Returns the vertical padding to place between the contents view and the
+  // buttons/extra view.
+  int GetButtonsAndExtraViewRowTopPadding() const;
+
   // How much to inset the button row.
   gfx::Insets button_row_insets_;
 
