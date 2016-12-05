@@ -50,6 +50,7 @@ test("ios_chrome_unittests") {
     "//ios/chrome/browser/web_resource:unit_tests",
     "//ios/chrome/common:unit_tests",
     "//ios/chrome/test:unit_tests",
+    "//ios/chrome/test/base:unit_tests",
   ]
 
   assert_no_deps = ios_assert_no_deps
